@@ -1,0 +1,13 @@
+#Options +Indexes
+Options +ExecCGI
+DirectoryIndex main.pl
+#SetHandler DefaultHandler
+
+
+#AddHandler cgi-script .pl
+#SetHandler cgi-script
+
+SetHandler perl-script
+PerlSendHeader On
+PerlHandler Apache::Registry
+AddDefaultCharset utf-8

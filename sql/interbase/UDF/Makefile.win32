@@ -1,0 +1,31 @@
+# ---------------------------------------------------------------------
+# CHANGE this definition to point to your InterBase installation directory
+# ---------------------------------------------------------------------
+IBASE=          c:\Progra~1\Firebird\Firebird_1_5\
+
+
+# ---------------------------------------------------------------------
+# General Compiler and linker Defines for Win32
+# ---------------------------------------------------------------------
+CC=             cl
+LINK=           link
+CFLAGS=         -I$(IBASE)\include  
+LINK_FLAGS=     -DLL  -LIBPATH:$(IBASE)\lib
+LINK_LIBS=      fbclient_ms.lib 
+
+.SUFFIXES: .obj .c
+
+.c.obj:
+        $(CC) $*.c -c $(CFLAGS) 
+
+all:    cats_udf_lib.dll
+
+cats_udf_lib.dll:     cats_udf_lib.obj
+        $(LINK) cats_udf_lib.obj $(LINK_FLAGS) $(LINK_LIBS)
+        @echo ------------------------------------------------------
+        @echo You need to copy cats_udf_lib.dll to the interbase lib directory
+        @echo in order for the server to load it. 
+        @echo ------------------------------------------------------
+
+clean:
+        del *.obj *.dll

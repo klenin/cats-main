@@ -1,0 +1,13 @@
+package cats_db;
+
+# This is a template file, you should adjust parameters below
+# and copy this file to the same folder, but with .template extenison removed
+
+# The parameters are:
+# db_dsn - string, that tells DBI how to connect to your database
+# db_user - username, used in connection to DB
+# db_password - password, used in connection to DB
+
+$db_dsn="dbi:your-db-engine:db=path-to-your-database;any-engine-specific-parameters
+$db_user="your-username";
+$db_password="your-password";

@@ -1,0 +1,9 @@
+judge/*
+spawner/*
+perl/*
+ev/*
+testutils/*
+easyGenPerl/*
+cgi-bin/download/*
+*.dll
+*.o

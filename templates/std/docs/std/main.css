@@ -1,0 +1,103 @@
+BODY { 
+    scrollbar-face-color: #ffffff; 
+    scrollbar-highlight-color: #ffffff; 
+    scrollbar-arrow-color: #ffcc55; 
+    scrollbar-base-color: #ffcc55; 
+    background-color: #ffffff;  
+    color: #000000;
+    font-family: Arial; 
+    font-size: 14px; 
+}
+
+.top { 
+    font-family: Arial; 
+    font-size: 13px; 
+    color: #ffffff 
+} 
+
+a.top, a.top:link, a.top:visited, a.top:active  { 
+    font-family: Arial; 
+    font-size: 13px; 
+    color: #ffffff; 
+    text-decoration: none 
+}
+
+a, a:link {
+    color: #4040ff;
+    font-family: Arial; 
+    text-decoration: none; 
+    font-size: 14px
+}
+
+.filter {
+    filter: Alpha(Opacity=80, FinishOpacity=20, 
+    Style=1, StartX=0, StartY=100,
+    FinishY=250);
+}
+select, option {
+    background-color: #ffffff;
+    border: 1px solid #4040ff;
+    height: 22px;
+    
+}
+
+.down {
+    background-repeat: no-repeat;
+}
+
+input {
+    height: 22px;
+}
+
+.file {
+    border: 1px solid #4040ff;
+    background=#ffffff;
+}
+
+.bordered {
+    border: 1px solid #4040ff;
+}
+
+.bordered2 {
+    color: #ffffff;
+    border: 1px solid #ffffff;
+    background-color: #ccccff;
+    
+}
+
+
+.button {
+    background-color: #ffffff;
+    border: 1px solid #4040ff;
+    color : #4040ff;
+}
+.button2 {
+    border: 1px solid #ffffff;
+    color: #ffffff;
+    background-color: #7070ff;
+}
+
+.signed, a.signed:link, a.signed:visited {
+    color: #ffffff;
+    font-size: 12px;
+}
+.signed2, a.signed2:link, a.signed2:visited {
+    color: #333300;
+    font-size: 12px;
+}
+
+
+TH { font-size: 11pt; font-weight: bold; color:#000000; }
+TD { font-size: 11pt }
+
+.small { font-size: 10pt }
+
+P { margin-top: 5; margin-bottom: 5 } 
+
+UL { margin-top: 5; margin-bottom: 5 } 
+
+H2 { margin-top: 10; margin-bottom: 10 }
+H3 { margin-top: 10; margin-bottom: 5 }
+H4 { margin-top: 10; margin-bottom: 5 }
+CODE { margin-top: 0; margin-bottom: 0 }
+PRE { margin-top: 0; margin-bottom: 0 }

@@ -1,0 +1,52 @@
+user=cats
+password=cats
+sqlplus=sqlplus
+
+$sqlplus $user/$password << EOF
+
+CREATE OR REPLACE FUNCTION CATS_DATE(adate IN DATE) RETURN VARCHAR
+AS
+date_str VARCHAR(20);
+BEGIN
+    date_str := TO_CHAR(adate, 'DD-MM-YYYY HH24:MI');
+    RETURN date_str;
+END;
+/
+
+CREATE OR REPLACE FUNCTION CATS_TO_DATE(date_str IN VARCHAR) RETURN DATE
+AS
+rdate DATE;
+BEGIN
+    rdate := TO_DATE(date_str, 'DD-MM-YYYY HH24:MI');
+    RETURN rdate;
+END;
+/
+
+CREATE OR REPLACE FUNCTION CATS_EXACT_DATE(adate IN DATE) RETURN VARCHAR
+AS
+date_str VARCHAR(20);
+BEGIN
+    date_str := TO_CHAR(adate, 'DD-MM-YYYY HH24:MI:SS');
+    RETURN date_str;
+END;
+/
+
+CREATE OR REPLACE FUNCTION CATS_TO_EXACT_DATE(date_str IN VARCHAR) RETURN DATE
+AS
+rdate DATE;
+BEGIN
+    rdate := TO_DATE(date_str, 'DD-MM-YYYY HH24:MI:SS');
+    RETURN rdate;
+END;
+/
+
+CREATE OR REPLACE FUNCTION CATS_SYSDATE RETURN DATE
+AS
+BEGIN
+    RETURN SYSDATE;
+END;
+/
+
+EXIT;
+
+EOF

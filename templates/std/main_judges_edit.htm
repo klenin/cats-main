@@ -1,0 +1,16 @@
+<TMPL_INCLUDE 'includes/menu_begin.inc'>
+
+<TMPL_IF message><i><TMPL_VAR message ESCAPE=HTML></i></TMPL_IF>
+
+<form method=post enctype='multipart/form-data' action='<TMPL_VAR href_action>'>
+<table cellpadding=0>
+<tr><td>Идентификатор судьи</td><td><input type=text name='judge_name' value='<TMPL_VAR judge_name>' class=bordered></td>
+<tr><td>Заблокирован по умолчанию</td><td><input type=checkbox name='locked' <TMPL_IF locked>checked</TMPL_IF>></td>
+</table>
+<br>
+<input type=hidden name='id' value='<TMPL_VAR id>'> 
+<input type=submit name='edit_save' value='     Ok     ' class=button> 
+<input type=submit name='edit_cancel' value='Отмена' class=button>
+</form>
+
+<TMPL_INCLUDE 'includes/menu_end.inc'>

@@ -1,0 +1,10 @@
+<body>
+<span id='console_content'>
+<TMPL_VAR console_content>
+</span>
+<script>
+    top.document.all.server_time.innerHTML = "<TMPL_VAR server_time>";
+    top.document.all.console_content.innerHTML = document.all.console_content.innerHTML;
+    setTimeout("document.location.reload(1);", 30000);
+</script>
+</body>

@@ -1,0 +1,24 @@
+<html><head>
+<title>CATS - вопрос команды</title>
+<meta name="Content-Type" content="text/html; charset=utf-8">
+<link rel="stylesheet" type="text/css" href="./docs/std/main.css">
+</head>
+<body bgcolor="#ffcc55">
+<TMPL_UNLESS clarified>
+<form method=post enctype='multipart/form-data'>
+<TMPL_VAR team_name ESCAPE=HTML>, <TMPL_VAR submit_time><br>
+<table cellpadding=3 cellspacing=2>
+<input type=text size=70 readonly value='<TMPL_VAR question_text ESCAPE=HTML>' class=bordered>
+<br>
+<input type=text size=70 value='без комментариев' name='answer_text' class=bordered>
+<br>
+<input type=submit value="Ответить" name='clarify' class=button> 
+<input type=button value="Закрыть" onClick="javascript:window.close();" class=button>
+</form>
+<TMPL_ELSE>
+<script>
+window.close();
+</script>
+</TMPL_UNLESS>
+</body>
+</html>

@@ -1,0 +1,24 @@
+Патч для FireBird 1.5.0:
+
+DBD-InterBase-0.43\Makefile.PL 66
+--            $ib_bin_dir = $key->{"/ServerDirectory"};
+--            $ib_bin_dir ||= $key->{"/DefaultInstance"} . "bin";
+--            $ib_lib_dir = $key->{"/RootDirectory"};
+--            $ib_lib_dir ||= $key->{"/DefaultInstance"};
+
+++            $ib_bin_dir = $key->{"/ServerDirectory"};
+++            $ib_bin_dir ||= $key->{"/RootDirectory"} . "bin";
+++            $ib_lib_dir = $key->{"/RootDirectory"};
+++            $ib_lib_dir ||= $key->{"/RootDirectory"} . "lib";
+
+
+
+Патч для правильного преобразования в UTF-8:
+
+CGI\Util.pm, line 193 (Version 1.3)
+--    defined($1)? chr hex($1) : utf8_chr(hex($2))/ge;
+++    defined($1)? chr hex($1) : chr(hex($2))/ge;
+ 
+CGI\Util.pm, line 206 (Version 1.3)
+--     $toencode=~s/([^a-zA-Z0-9_.-])/uc sprintf("%%%02x",ord($1))/eg;
+++     $toencode=~s/([^a-zA-Z0-9_.-])/sprintf("%%u%04x",ord($1))/eg;

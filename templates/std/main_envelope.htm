@@ -1,0 +1,25 @@
+<html><head>
+<title>CATS - результат тестирования</title>
+<meta name="Content-Type" content="text/html; charset=utf-8">
+<link rel="stylesheet" type="text/css" href="./docs/std/main.css">
+</head>
+<body bgcolor=#a0a0a0>
+<table>
+<tr><td>Команда:</td><td><TMPL_VAR team_name ESCAPE=HTML></td></tr>
+<tr><td>Время остылки на тестирования:</td><td><TMPL_VAR submit_time ESCAPE=HTML></td></tr>
+<tr><td>Время тестирования:</td><td><TMPL_VAR test_time ESCAPE=HTML></td></tr>
+<tr><td>Результат тестирования</td><td><TMPL_IF not_processed><font color="#008000">Not processed</font></TMPL_IF>
+<TMPL_IF install_processing><font color="#a0a000">Processing</font></TMPL_IF>
+<TMPL_IF unhandled_error><font color="#a00000">Unhandled error</font></TMPL_IF>
+<TMPL_IF testing><font color="#a0a000">Processing</font></TMPL_IF>
+<TMPL_IF accepted><font color="#007f00">Solution accepted</font></TMPL_IF>
+<TMPL_IF wrong_answer>Wrong answer on test <TMPL_VAR failed_test_index></TMPL_IF>
+<TMPL_IF presentation_error>Presentation error on test <TMPL_VAR failed_test_index></TMPL_IF>
+<TMPL_IF time_limit_exceeded>Time limit exceeded on test <TMPL_VAR failed_test_index></TMPL_IF>
+<TMPL_IF memory_limit_exceeded>Memory limit exceeded on test <TMPL_VAR failed_test_index></TMPL_IF>
+<TMPL_IF runtime_error>Runtime error on test <TMPL_VAR failed_test_index></TMPL_IF>
+<TMPL_IF compilation_error>Compilation error</TMPL_IF>
+<TMPL_IF security_violation>Security violation</TMPL_IF></td></tr>
+</table>
+</body>
+</html>

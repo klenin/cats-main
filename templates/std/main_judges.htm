@@ -1,0 +1,37 @@
+<TMPL_INCLUDE 'includes/menu_begin.inc'>
+
+<script>
+function delete_judge(href, name)
+{
+    if (confirm( "Вы действительно желаете удалить судью '" + name + "'?" ))
+    {
+        document.location=href;
+    }
+}
+</script>
+
+<TMPL_IF message><i><TMPL_VAR message ESCAPE=HTML></i><br></TMPL_IF>
+
+<form method=post enctype='multipart/form-data'>
+<TMPL_INCLUDE 'includes/listview_header.inc'>
+
+<table width=100% cellpadding=2 cellspacing=1 class=bordered>
+<tr bgcolor=#ccccff>
+<TMPL_INCLUDE 'includes/listview_col_defs.inc'>
+</tr>
+
+<TMPL_LOOP judges>
+<tr bgcolor=#ffffff>
+<td>
+    <a href='javascript:delete_judge("<TMPL_VAR href_delete>", "<TMPL_VAR judge_name ESCAPE=HTML>");''><img src="./images/std/waste2.gif" border=0></a> 
+    <a href='<TMPL_VAR href_edit>'><img src="./images/std/blank.gif" border=0></a> 
+    <TMPL_VAR judge_name ESCAPE=HTML>
+</td>
+<td><TMPL_VAR alive_counter ESCAPE=HTML></td>
+<td><TMPL_IF locked><font color=red>заблокирован</font><TMPL_ELSE>работает</TMPL_IF></td>
+</tr>
+</TMPL_LOOP>
+</table>
+</form>
+
+<TMPL_INCLUDE 'includes/menu_end.inc'>

@@ -1,0 +1,23 @@
+<TMPL_INCLUDE 'includes/menu_begin.inc'>
+<form method=post enctype='multipart/form-data'>
+<script>
+function send_message(href) {
+    window.open(href, '', 'width=500,height=400,location=no,menubar=no,resizable=yes,scrollbars=no,status=no,toolbar=no');
+}
+</script>
+<span id='console_content'>
+идет загрузка страницы...
+</span>
+<TMPL_IF is_team>
+<br>
+<br>
+    <table width=100% cellpadding=8 cellspacing=0 class=bordered><tr bgcolor=#ccccff><td>
+    Вопрос к жюри:
+    <input size=100 maxlength=200 name='question_text' value='<TMPL_VAR question_text ESCAPE=HTML>' class=bordered>
+    <input type=submit value='Отправить' name='send_question' class=button>
+    </td></tr>
+    </table>
+</TMPL_IF>
+</form>
+<TMPL_INCLUDE 'includes/menu_end.inc'>
+<iframe width=0 height=0 src='<TMPL_VAR href_console_content>'></iframe>

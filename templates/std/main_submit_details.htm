@@ -1,0 +1,75 @@
+<html><head>
+<title>CATS</title>
+<meta name="Content-Type" content="text/html; charset=utf-8">
+<link rel="stylesheet" type="text/css" href="./docs/std/main.css">
+</head>
+<body>
+
+<table>
+<tr><td><b>Команда:<td><b><TMPL_VAR team_name ESCAPE=HTML>
+<tr><td>Поставлено в очередь:<td><TMPL_VAR submit_time ESCAPE=HTML>
+<tr><td>Начало обработки:<td><TMPL_VAR test_time ESCAPE=HTML>
+<tr><td>Окончание обработки:<td><TMPL_VAR result_time ESCAPE=HTML>
+<tr><td>Чемпионат:<td><TMPL_VAR contest_name ESCAPE=HTML>
+<tr><td>Судья:<td><TMPL_VAR judge_name ESCAPE=HTML>
+<tr><td>Состояние:<td>
+<TMPL_IF not_processed><font color="#008000">Not processed</TMPL_IF>
+<TMPL_IF install_processing><font color="#a0a000">Installing problem</TMPL_IF>
+<TMPL_IF unhandled_error>Unhandled error</TMPL_IF>
+<TMPL_IF testing><font color="#a0a000">Now testing</TMPL_IF>
+<TMPL_IF accepted>Solution accepted</TMPL_IF>
+<TMPL_IF wrong_answer>Wrong answer on test <TMPL_VAR failed_test_index></TMPL_IF>
+<TMPL_IF presentation_error>Presentation error on test <TMPL_VAR failed_test_index></TMPL_IF>
+<TMPL_IF time_limit_exceeded>Time limit exceeded on test <TMPL_VAR failed_test_index></TMPL_IF>
+<TMPL_IF memory_limit_exceeded>Memory limit exceeded on test <TMPL_VAR failed_test_index></TMPL_IF>
+<TMPL_IF runtime_error>Runtime error on test <TMPL_VAR failed_test_index></TMPL_IF>
+<TMPL_IF compilation_error>Compilation error</TMPL_IF>
+<TMPL_IF security_violation>Security violation</TMPL_IF>
+
+</table>
+
+<form method=post enctype='multipart/form-data'>
+
+<input type=submit name='set_state' value='результат тестирования:' class=button>
+<select name='state'>
+<option>
+<option value='not_processed'>Перетестировать
+<option value='accepted'>Solution accepted
+<option value='wrong_answer'>Wrong answer
+<option value='presentation_error'>Presentation error
+<option value='time_limit_exceeded'>Time limit exceeded
+<option value='memory_limit_exceeded'>Memory limit exceeded
+<option value='runtime_error'>Runtime error
+<option value='compilation_error'>Compilation error
+<option value='security_violation'>Security violation
+</select> 
+on test #
+<select name='failed_test'>
+<option>
+<TMPL_LOOP tests>
+<option value='<TMPL_VAR test_index>'><TMPL_VAR test_index>
+</TMPL_LOOP>
+</select>
+
+</form>
+
+<TMPL_IF message><i><TMPL_VAR message ESCAPE=HTML></i><br></TMPL_IF>
+
+<h3>Исходный код решения:</h3>
+<TMPL_IF solution_code_avalaible>
+Среда разработки: <TMPL_VAR de_name ESCAPE=HTML>, имя файла: <TMPL_VAR file_name ESCAPE=HTML>
+<font color=#0000ff>
+<pre><code><TMPL_VAR solution_code ESCAPE=HTML></code></pre>
+</font>
+<TMPL_ELSE>
+Исходный код решения недоступен.
+</TMPL_IF>
+
+<TMPL_IF judge_log_dump_avalaible>
+<h3>Дамп лога судьи:</h3>
+<pre><code><TMPL_VAR judge_log_dump ESCAPE=HTML></code></pre>
+</TMPL_IF>
+
+</table>
+</body>
+</html>

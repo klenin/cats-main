@@ -1,0 +1,123 @@
+<TMPL_INCLUDE 'includes/menu_begin.inc'>
+<script>
+function delete_problem(href, name)
+{
+    if (confirm( "Вы действительно желаете удалить задачу '" + name + "'?" )) {
+        document.location=href;
+    }
+}
+
+function getSelectedButton(button) {
+    if (button.checked) { return button.value; }
+    for (var i = 0; i < button.length; i++) {
+	if (button[i].checked) {
+	    return button[i].value;
+	}
+    }
+    return -1; //no button selected
+}
+
+var a = new Array();
+<TMPL_LOOP problems>
+a["<TMPL_VAR problem_id>"] = new Array(
+  "<TMPL_VAR problem_name ESCAPE=HTML>", "<TMPL_VAR href_delete>", "<TMPL_VAR href_replace>");
+</TMPL_LOOP>
+
+function d() {
+    var v = getSelectedButton(document.problems_form.problem_id);
+    if (v < 0) {
+	alert("Не выбрана задача для удаления");
+    } else {
+	delete_problem(a[v][1], a[v][0]);
+    }
+}
+
+function r() {
+    var v = getSelectedButton(document.problems_form.problem_id);
+    if (v < 0) {
+	alert("Не выбрана задача для замены");
+    } else {
+	document.location = a[v][2];
+    }
+}
+
+</script>
+
+<TMPL_IF message><i><TMPL_VAR message ESCAPE=HTML></i><br></TMPL_IF>
+
+<TMPL_IF problem_import_log>
+Лог загрузки задачи:<br>
+<textarea cols="100" rows="10" readonly>
+<TMPL_VAR problem_import_log>
+</textarea>
+</TMPL_IF>
+
+<TMPL_IF solution_submitted>
+<TMPL_IF de_name>Определена среда разработки: '<TMPL_VAR de_name ESCAPE=HTML>'.<br></TMPL_IF>
+Для наблюдения за ходом тестирования откройте <a href='<TMPL_VAR href_console>' target=_top>консоль</a>.
+<hr>
+</TMPL_IF>
+
+<form method=post enctype='multipart/form-data' name="problems_form">
+<TMPL_INCLUDE 'includes/listview_header.inc'>
+<table border=0 width=100% cellpadding=2 cellspacing=1 class=bordered>
+<TMPL_IF is_practice>
+<tr bgcolor=#ccccff>
+<TMPL_INCLUDE 'includes/listview_col_defs.inc'>
+</tr>   
+</TMPL_IF>
+<TMPL_LOOP problems>
+<tr bgcolor=#ffffff>
+<td>
+    <TMPL_IF 0> <!--editable-->
+    <a href='javascript:delete_problem("<TMPL_VAR href_delete>", "<TMPL_VAR problem_name ESCAPE=HTML>");''><img src="./images/std/waste2.gif" border=0></a> 
+    <a href='<TMPL_VAR href_replace>'><img src="./images/std/blank.gif" border=0></a>
+    </TMPL_IF>
+    <TMPL_IF is_team>
+    <input type=radio name='problem_id' value='<TMPL_VAR problem_id>'>
+    </TMPL_IF>
+    <a href="<TMPL_VAR href_view_problem>" target=_blank><TMPL_VAR problem_name ESCAPE=HTML></a>
+    <TMPL_IF editable>&nbsp;<a href="<TMPL_VAR href_download>">[пакет]</a></TMPL_IF>
+</td>
+<TMPL_IF is_practice>
+    <td>
+        <TMPL_VAR contest_name ESCAPE=HTML>
+    </td>
+    <td width=7% align=center>
+        <TMPL_VAR accept_count>
+    </td>
+    <td width=7% align=center>
+        <TMPL_VAR wa_count>
+    </td>
+    <td width=7% align=center>
+	<TMPL_VAR tle_count>
+    </td>
+</TMPL_IF>
+</tr>
+</TMPL_LOOP>
+</table>
+<br>
+<TMPL_IF is_team>
+    Файл с решением: <input type=file name='source' class=file> &nbsp; 
+    <TMPL_IF editable>
+    Файл с задачей: <input type=file name='zip' class=file>
+    </TMPL_IF><br><br>
+    Среда разработки:
+    <select name=de_id>
+    <TMPL_LOOP de_list>
+    <option value="<TMPL_VAR de_id>"><TMPL_VAR de_name ESCAPE=HTML>
+    </TMPL_LOOP>
+    </select>
+    <br><br>    
+    <input type=submit name=submit value='отправить' class=button>
+    <TMPL_IF editable>
+    <input type=submit name=std_solution value='эталонное решение' class=button> 
+    <input type=button name="delete_solution" value="удалить" class="button" onclick="d()"/>
+    <!--input type=button name="replace_solution" value="заменить" class="button" onclick="r()"/-->
+    <input type=submit name="replace_direct" value="заменить" class="button" />
+    </TMPL_IF>
+    <br><br>
+
+</TMPL_IF>
+</form>
+<TMPL_INCLUDE 'includes/menu_end.inc'>

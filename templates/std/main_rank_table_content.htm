@@ -1,0 +1,60 @@
+<TMPL_IF message><i><TMPL_VAR message ESCAPE=HTML></i><br></TMPL_IF>
+<table width=100%> 
+<tr>
+<td align=left>
+<TMPL_IF hide_ooc>
+    <a href="<TMPL_VAR href_hide_ooc>" target=_top>спрятать ooc-команды</a>
+<TMPL_ELSE>
+    <a href="<TMPL_VAR href_show_ooc>" target=_top>показать ooc-команды</a>
+</TMPL_IF>
+| 
+<TMPL_IF hide_virtual>
+    <a href="<TMPL_VAR href_hide_virtual>" target=_top>спрятать виртуальные команды</a>
+<TMPL_ELSE>
+    <a href="<TMPL_VAR href_show_virtual>" target=_top>показать виртуальные команды</a>
+</TMPL_IF>
+
+</td>
+<td align=right>
+состояние: <TMPL_IF frozen><font color=#0000a0>заморожена</font><TMPL_ELSE><font color=#00a040>актуальное</font></TMPL_IF>
+</td>
+</tr>
+</table>
+<table width=100% cellspacing=1 class=bordered>
+<tr bgcolor=#ccccff><th width=3%>
+<!-- <th width=1%>Страна -->
+<th>Название команды
+<TMPL_LOOP problems>
+<th width=5%><TMPL_VAR code>
+</TMPL_LOOP>
+<th>=
+<th width=10%>время
+<th width=10%>место
+<th width=8%>статус
+
+<TMPL_LOOP rank>
+<tr>
+<td align=center ><TMPL_VAR contestant_number>
+<!--
+<td nowrap align=center bgcolor=#ffffff>
+<TMPL_IF flag>
+    <img src='<TMPL_VAR NAME=flag>' alt="<TMPL_VAR NAME=country ESCAPE=HTML><TMPL_IF motto> - <TMPL_VAR motto ESCAPE=HTML></TMPL_IF>">
+<TMPL_ELSE>
+    <TMPL_VAR NAME=country ESCAPE=HTML><TMPL_IF motto> - <TMPL_VAR motto ESCAPE=HTML></TMPL_IF>
+</TMPL_IF>    
+-->
+<td>
+<TMPL_VAR team_name ESCAPE=HTML>
+
+<TMPL_LOOP columns>
+<td align=center><font size="1"><TMPL_VAR time ESCAPE=HTML></font><br><TMPL_VAR td ESCAPE=HTML>
+</TMPL_LOOP>
+
+<td align=center><TMPL_VAR solved>
+<td align=center><TMPL_VAR time>
+<td align=center><TMPL_VAR place>
+<td align=center><font size="-1"><i><TMPL_IF ooc>ooc</TMPL_IF>
+<TMPL_IF remote>remote</TMPL_IF>
+<TMPL_IF virtual>virtual</TMPL_IF>
+</TMPL_LOOP>
+</table><br>
