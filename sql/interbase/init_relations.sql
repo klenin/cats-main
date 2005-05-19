@@ -8,17 +8,17 @@ CREATE TABLE judges (
     jsid    VARCHAR(30) DEFAULT NULL,
     color   VARCHAR(32),
     nick    VARCHAR(32) NOT NULL,
-    lock_counter    INTEGER,
-    alive_counter   INTEGER,
-    signal  INTEGER DEFAULT NULL,
-    accept_contests INTEGER CHECK (accept_contests IN (0, 1)),
+    lock_counter     INTEGER,
+    alive_counter    INTEGER,
+    signal  INTEGER  DEFAULT NULL,
+    accept_contests  INTEGER CHECK (accept_contests IN (0, 1)),
     accept_trainings INTEGER CHECK (accept_trainings IN (0, 1))
 );
 
 
 CREATE TABLE default_de (
-    id      INTEGER NOT NULL PRIMARY KEY,
-    code    INTEGER NOT NULL UNIQUE,
+    id          INTEGER NOT NULL PRIMARY KEY,
+    code        INTEGER NOT NULL UNIQUE,
     description VARCHAR(200),
     file_ext    VARCHAR(200),
     in_contests INTEGER DEFAULT 1 CHECK (in_contests IN (0, 1)),
@@ -34,6 +34,7 @@ CREATE TABLE accounts (
     sid     VARCHAR(30),
     srole   INTEGER NOT NULL, 
     last_login  TIMESTAMP,
+    last_ip VARCHAR(100) DEFAULT '',
     locked  INTEGER DEFAULT 0 CHECK (locked IN (0, 1)),
     team_name   VARCHAR(200),
     capitan_name VARCHAR(200),    
@@ -45,45 +46,55 @@ CREATE TABLE accounts (
 );
 
 CREATE TABLE contests (
-    id      INTEGER NOT NULL PRIMARY KEY,
-    title   VARCHAR(200) NOT NULL,
-    start_date  TIMESTAMP,
-    finish_date TIMESTAMP,
-    freeze_date TIMESTAMP,
+    id            INTEGER NOT NULL PRIMARY KEY,
+    title         VARCHAR(200) NOT NULL,
+    start_date    TIMESTAMP,
+    finish_date   TIMESTAMP,
+    freeze_date   TIMESTAMP,
     defreeze_date TIMESTAMP,    
-    closed  INTEGER DEFAULT 0 CHECK (closed IN (0, 1)),
-    history INTEGER DEFAULT 0 CHECK (history IN (0, 1)),
-    penalty INTEGER,
-    CHECK (start_date <= finish_date AND freeze_date >= start_date AND freeze_date <= finish_date AND defreeze_date >= freeze_date)
+    closed        INTEGER DEFAULT 0 CHECK (closed IN (0, 1)),
+    history       INTEGER DEFAULT 0 CHECK (history IN (0, 1)),
+    penalty       INTEGER,
+    ctype         INTEGER, /* 0 -- normal, 1 -- training session */
+
+    is_official   INTEGER DEFAULT 0 CHECK (is_official IN (0, 1)),
+    run_all_tests INTEGER DEFAULT 0 CHECK (run_all_tests IN (0, 1)),
+
+    show_all_tests       INTEGER DEFAULT 0 CHECK (show_all_tests IN (0, 1)),
+    show_test_resources  INTEGER DEFAULT 0 CHECK (show_test_resources IN (0, 1)),
+    show_checker_comment INTEGER DEFAULT 0 CHECK (show_checker_comment IN (0, 1)),
+    show_packages        INTEGER DEFAULT 0 CHECK (show_packages IN (0, 1)),
+
+    CHECK (
+        start_date <= finish_date AND freeze_date >= start_date
+        AND freeze_date <= finish_date AND defreeze_date >= freeze_date
+    )
 );
 
 
-
 CREATE TABLE contest_accounts (
-    id      INTEGER NOT NULL PRIMARY KEY,
+    id          INTEGER NOT NULL PRIMARY KEY,
     contest_id  INTEGER NOT NULL REFERENCES contests(id) ON DELETE CASCADE,    
     account_id  INTEGER NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
     is_admin    INTEGER DEFAULT 0 CHECK (is_admin IN (0, 1)),
-    is_jury INTEGER DEFAULT 0 CHECK (is_jury IN (0, 1)),
-    is_pop  INTEGER DEFAULT 0 CHECK (is_pop IN (0, 1)),
+    is_jury     INTEGER DEFAULT 0 CHECK (is_jury IN (0, 1)),
+    is_pop      INTEGER DEFAULT 0 CHECK (is_pop IN (0, 1)), /* printer operator */
     is_hidden   INTEGER DEFAULT 0 CHECK (is_hidden IN (0, 1)),
-    is_ooc  INTEGER DEFAULT 0 CHECK (is_ooc IN (0, 1)),
+    is_ooc      INTEGER DEFAULT 0 CHECK (is_ooc IN (0, 1)),
     is_remote   INTEGER DEFAULT 0 CHECK (is_remote IN (0, 1)),
     UNIQUE(contest_id, account_id)
 );
 
 
-
-
 CREATE TABLE problems (
-    id          INTEGER NOT NULL PRIMARY KEY,
+    id              INTEGER NOT NULL PRIMARY KEY,
     contest_id      INTEGER NOT NULL REFERENCES contests(id) ON DELETE CASCADE,
-    title       VARCHAR(200) NOT NULL,
-    lang        VARCHAR(200) DEFAULT '',
+    title           VARCHAR(200) NOT NULL,
+    lang            VARCHAR(200) DEFAULT '',
     time_limit      INTEGER DEFAULT 0,
     memory_limit    NUMERIC,
     difficulty      INTEGER DEFAULT 100,
-    author      VARCHAR(200) DEFAULT '',
+    author          VARCHAR(200) DEFAULT '',
     input_file      VARCHAR(200) NOT NULL,
     output_file     VARCHAR(200) NOT NULL,
     upload_date     TIMESTAMP,
@@ -97,10 +108,11 @@ CREATE TABLE problems (
 
 
 CREATE TABLE contest_problems (
-    id      INTEGER NOT NULL PRIMARY KEY,
-    problem_id  INTEGER NOT NULL REFERENCES problems(id) ON DELETE CASCADE,
-    contest_id  INTEGER NOT NULL REFERENCES contests(id) ON DELETE CASCADE,   
-    code    CHAR,
+    id         INTEGER NOT NULL PRIMARY KEY,
+    problem_id INTEGER NOT NULL REFERENCES problems(id) ON DELETE CASCADE,
+    contest_id INTEGER NOT NULL REFERENCES contests(id) ON DELETE CASCADE,   
+    code       CHAR,
+    status     INTEGER DEFAULT 0 CHECK (status IN (0, 1, 2, 3)),
     UNIQUE(problem_id, contest_id)
 );
 
@@ -114,20 +126,23 @@ CREATE TABLE training_problems (
 
 
 -- stype = 0 - test generator
--- stype = 1 - standart solution
+-- stype = 1 - solution
 -- stype = 2 - checker
 -- stype = 3 - standart solution (используется для проверки набора тестов)
 
 
 CREATE TABLE problem_sources (
     id      INTEGER NOT NULL PRIMARY KEY,
-    stype   INTEGER CHECK (stype IN (0, 1, 2, 3)),
+    stype   INTEGER,
     problem_id  INTEGER REFERENCES problems(id) ON DELETE CASCADE,
     de_id   INTEGER NOT NULL REFERENCES default_de(id) ON DELETE CASCADE,
     src     BLOB,
-    fname   VARCHAR(200)
+    fname   VARCHAR(200),
+    input_file  VARCHAR(200),
+    output_file VARCHAR(200)
 );
-
+alter table PROBLEM_SOURCES
+  add constraint CHK_PROBLEM_SOURCES_1 check (0 <= STYPE AND STYPE <= 6);
 
 CREATE TABLE pictures (
     problem_id  INTEGER REFERENCES problems(id) ON DELETE CASCADE,
@@ -139,12 +154,13 @@ CREATE TABLE pictures (
 
 CREATE TABLE tests (
     problem_id      INTEGER REFERENCES problems(id) ON DELETE CASCADE,
-    rank        INTEGER CHECK (rank > 0),
+    rank            INTEGER CHECK (rank > 0),
     generator_id    INTEGER DEFAULT NULL REFERENCES problem_sources(id),
-    param       VARCHAR(200) DEFAULT NULL,
+    param           VARCHAR(200) DEFAULT NULL,
     std_solution_id INTEGER DEFAULT NULL REFERENCES problem_sources(id),
-    in_file     BLOB,
-    out_file        BLOB
+    in_file         BLOB,
+    out_file        BLOB,
+    points          INTEGER
 );
 
 
@@ -173,7 +189,8 @@ CREATE TABLE messages (
     send_time   TIMESTAMP,
     text    BLOB,
     account_id  INTEGER REFERENCES contest_accounts(id) ON DELETE CASCADE,
-    received    INTEGER DEFAULT 0 CHECK (received IN (0, 1))
+    received    INTEGER DEFAULT 0 CHECK (received IN (0, 1)),
+    broadcast   INTEGER DEFAULT 0 CHECK (broadcast IN (0, 1))
 );
 
 
@@ -185,17 +202,30 @@ CREATE TABLE reqs (
     submit_time TIMESTAMP, /* время отсылки на тестирование */
     test_time   TIMESTAMP, /* время начала тестирования */
     result_time TIMESTAMP, /* время окончания тестирования */
-    state   INTEGER,
-    result  INTEGER,
+    state       INTEGER,
+    result      INTEGER,
     failed_test INTEGER,
     judge_id    INTEGER REFERENCES judges(id) ON DELETE SET NULL, 
     received    INTEGER DEFAULT 0 CHECK (received IN (0, 1))
 );
 
+CREATE TABLE req_details
+(
+  req_id      INTEGER NOT NULL REFERENCES REQS(ID) ON DELETE CASCADE,
+  test_rank   INTEGER NOT NULL /*REFERENCES TESTS(RANK) ON DELETE CASCADE*/,
+  result      INTEGER,
+  time_used   FLOAT,
+  memory_used INTEGER,
+  disk_used   INTEGER,
+  checker_comment VARCHAR(200),
+  
+  UNIQUE(req_id, test_rank)
+);
+                
 CREATE TABLE log_dumps (
     id      INTEGER NOT NULL PRIMARY KEY,
     dump    BLOB,
-    req_id INTEGER REFERENCES reqs(id) ON DELETE CASCADE 
+    req_id  INTEGER REFERENCES reqs(id) ON DELETE CASCADE 
 );
 
 CREATE TABLE sources (
@@ -207,13 +237,13 @@ CREATE TABLE sources (
 
 CREATE TABLE contest_photos (
     id          INTEGER NOT NULL PRIMARY KEY,
-    contest_id      INTEGER NOT NULL REFERENCES contests(id) ON DELETE CASCADE,
+    contest_id  INTEGER NOT NULL REFERENCES contests(id) ON DELETE CASCADE,
     comment     VARCHAR(200),
     photo_preview   BLOB,
     photo       BLOB,
     photo_preview_type  VARCHAR(20),
-    photo_type      VARCHAR(20),
-    upload_time     TIMESTAMP
+    photo_type  VARCHAR(20),
+    upload_time TIMESTAMP
 );
 
 

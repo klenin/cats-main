@@ -10,9 +10,9 @@ function delete_problem(href, name)
 function getSelectedButton(button) {
     if (button.checked) { return button.value; }
     for (var i = 0; i < button.length; i++) {
-	if (button[i].checked) {
-	    return button[i].value;
-	}
+        if (button[i].checked) {
+            return button[i].value;
+        }
     }
     return -1; //no button selected
 }
@@ -26,9 +26,9 @@ a["<TMPL_VAR problem_id>"] = new Array(
 function d() {
     var v = getSelectedButton(document.problems_form.problem_id);
     if (v < 0) {
-	alert("Не выбрана задача для удаления");
+        alert("Не выбрана задача для удаления");
     } else {
-	delete_problem(a[v][1], a[v][0]);
+        delete_problem(a[v][1], a[v][0]);
     }
 }
 
@@ -61,7 +61,7 @@ function r() {
 <form method=post enctype='multipart/form-data' name="problems_form">
 <TMPL_INCLUDE 'includes/listview_header.inc'>
 <table border=0 width=100% cellpadding=2 cellspacing=1 class=bordered>
-<TMPL_IF is_practice>
+<TMPL_IF is_team>
 <tr bgcolor=#ccccff>
 <TMPL_INCLUDE 'includes/listview_col_defs.inc'>
 </tr>   
@@ -69,20 +69,22 @@ function r() {
 <TMPL_LOOP problems>
 <tr bgcolor=#ffffff>
 <td>
-    <TMPL_IF 0> <!--editable-->
-    <a href='javascript:delete_problem("<TMPL_VAR href_delete>", "<TMPL_VAR problem_name ESCAPE=HTML>");''><img src="./images/std/waste2.gif" border=0></a> 
-    <a href='<TMPL_VAR href_replace>'><img src="./images/std/blank.gif" border=0></a>
-    </TMPL_IF>
     <TMPL_IF is_team>
     <input type=radio name='problem_id' value='<TMPL_VAR problem_id>'>
     </TMPL_IF>
     <a href="<TMPL_VAR href_view_problem>" target=_blank><TMPL_VAR problem_name ESCAPE=HTML></a>
-    <TMPL_IF editable>&nbsp;<a href="<TMPL_VAR href_download>">[пакет]</a></TMPL_IF>
+    <TMPL_IF show_packages>&nbsp;<a href="<TMPL_VAR href_download>">[пакет]</a></TMPL_IF>
 </td>
+<TMPL_IF editable>
+<td>
+    <TMPL_IF is_linked>[<a href="#" title="<TMPL_VAR contest_name>">L</a>]</TMPL_IF>
+    <TMPL_VAR status>
+</td>
+</TMPL_IF>
 <TMPL_IF is_practice>
-    <td>
-        <TMPL_VAR contest_name ESCAPE=HTML>
-    </td>
+    <td><TMPL_VAR contest_name ESCAPE=HTML></td>
+</TMPL_IF>
+<TMPL_IF is_team>
     <td width=7% align=center>
         <TMPL_VAR accept_count>
     </td>
@@ -98,26 +100,32 @@ function r() {
 </table>
 <br>
 <TMPL_IF is_team>
-    Файл с решением: <input type=file name='source' class=file> &nbsp; 
-    <TMPL_IF editable>
-    Файл с задачей: <input type=file name='zip' class=file>
-    </TMPL_IF><br><br>
-    Среда разработки:
-    <select name=de_id>
-    <TMPL_LOOP de_list>
-    <option value="<TMPL_VAR de_id>"><TMPL_VAR de_name ESCAPE=HTML>
-    </TMPL_LOOP>
-    </select>
-    <br><br>    
-    <input type=submit name=submit value='отправить' class=button>
-    <TMPL_IF editable>
-    <input type=submit name=std_solution value='эталонное решение' class=button> 
-    <input type=button name="delete_solution" value="удалить" class="button" onclick="d()"/>
-    <!--input type=button name="replace_solution" value="заменить" class="button" onclick="r()"/-->
-    <input type=submit name="replace_direct" value="заменить" class="button" />
-    </TMPL_IF>
-    <br><br>
-
+<table><tr>
+    <td>Файл с решением:</td><td><input type="file" name="source" class="file" size="25"/></td>
+    <TMPL_IF editable><td>&nbsp;</td><td>Файл с задачей:</td><td><input type="file" name="zip" class="file" size="25"/></td></TMPL_IF>
+</tr><tr>
+    <td>Среда разработки:</td><td>
+        <select name="de_id">
+        <TMPL_LOOP de_list><option value="<TMPL_VAR de_id>"><TMPL_VAR de_name ESCAPE=HTML></TMPL_LOOP>
+        </select>
+    </td>
+    <TMPL_IF editable><td>&nbsp;</td><td>Статус:</td>
+    <td>
+        <select name="status">
+        <TMPL_LOOP status_list><option value="<TMPL_VAR id>"><TMPL_VAR name ESCAPE=HTML></TMPL_LOOP>
+        </select>
+    </td></TMPL_IF>
+</tr><tr>
+    <td colspan="2">
+        <input type="submit" name="submit" value="отправить" class="button" />
+        <TMPL_IF editable><input type="submit" name="std_solution" value="эталонное решение" class="button" /></TMPL_IF>
+    </td>
+    <TMPL_IF editable><td>&nbsp;</td><td colspan="2" align="right">
+        <input type="button" name="change_status" value="сменить статус" class="button" />
+        <input type="button" name="delete_solution" value="удалить" class="button" onclick="d()"/>
+        <input type="submit" name="replace_direct" value="заменить" class="button" />
+    </td></TMPL_IF>
+</tr></table>
 </TMPL_IF>
 </form>
 <TMPL_INCLUDE 'includes/menu_end.inc'>

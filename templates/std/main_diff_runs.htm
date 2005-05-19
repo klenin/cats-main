@@ -1,0 +1,42 @@
+<html><head>
+<title>CATS</title>
+<meta name="Content-Type" content="text/html; charset=utf-8">
+<link rel="stylesheet" type="text/css" href="./docs/std/main.css">
+</head>
+<body>
+<script type="text/javascript">
+<!--
+  function show_ab(a, b)
+  {
+    if (!document.styleSheets[0]) return;
+    var theRules = new Array();
+    if (document.styleSheets[0].cssRules)
+      theRules = document.styleSheets[0].cssRules
+    else if (document.styleSheets[0].rules)
+      theRules = document.styleSheets[0].rules
+    for (i = 0; theRules.length > i; ++i) {
+      if (theRules[i].selectorText == ".diff_only_a")
+        theRules[i].style.display = a;
+      else if (theRules[i].selectorText == ".diff_only_b")
+        theRules[i].style.display = b;
+    }
+  }
+//-->
+</script>
+Сравнение отправленных файлов:
+<table class="internal_borders" cellpadding="3">
+<tr><th>ID</th><th>Время</th><th>Язык</th><th>Файл</th><th>Команда</th></tr>
+<TMPL_LOOP sources_info>
+<tr><td><TMPL_VAR req_id></td><td><TMPL_VAR submit_time></td><td><TMPL_VAR de_name></td><td><TMPL_VAR file_name></td><td><TMPL_VAR team_name></td></tr>
+</TMPL_LOOP>
+</table>
+<p>
+Показывать:
+[<a onclick="show_ab('', ''); return false" href="#">diff</a>]
+[<a onclick="show_ab('', 'none'); return false" href="#">только A</a>]
+[<a onclick="show_ab('none', ''); return false" href="#">только B</a>]
+</p>
+<pre class="bordered"><code><TMPL_LOOP diff_lines><TMPL_VAR line></TMPL_LOOP></code></pre>
+
+</body>
+</html>

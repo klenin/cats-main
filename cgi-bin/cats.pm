@@ -4,22 +4,6 @@ package cats;
 $htdocs = "./docs";
 $flags_path = "./images/std/countries/";
 
-
-#$db_user = "cats";
-#$db_passwd = "cats";
-#$db_dsn = "dbi\:Oracle\:host=192.168.1.252;sid=global";
-
-
-#$db_dsn="dbi:InterBase:db=/home/mike/CATS/ib_data/cats.gdb;ib_dialect=3";
-$db_dsn="dbi:InterBase:host=webtest;port=3050;db=cats.gdb;ib_dialect=3";
-$db_user="sysdba";
-$db_password="Tq1f";
-
-#$db_dsn="dbi:InterBase:db=d:/dev/CATS/ib_data/cats.gdb;ib_dialect=3;host=localhost";
-#$db_user="sysdba";
-#$db_passwd="masterkey";
-
-
 $anonymous_login = 'anonymous';
 
 # путь к шаблонам
@@ -50,6 +34,9 @@ $generator = 0;
 $solution = 1;
 $checker = 2;
 $adv_solution = 3;
+$generator_module = 4;
+$solution_module = 5;
+$checker_module = 6;
 
 # состояние запроса в очереди
 $st_not_processed = 0;
@@ -67,6 +54,11 @@ $st_runtime_error = 14;
 $st_compilation_error = 15;
 $st_security_violation = 16;
 $st_memory_limit_exceeded = 17;
+
+$problem_st_ready = 0;
+$problem_st_suspended = 1;
+$problem_st_disabled = 2;
+$problem_st_hidden = 3;
 
 # сигналы судье
 $js_nosig = 0;

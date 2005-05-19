@@ -13,25 +13,27 @@ use XML::Parser::Expat;
 my $default_mlimit = 200;
 
 my ($stml, 
-    $cid, 
-    $pid, 
-    $zip, 
-    $import_log, 
+    $cid,
+    $pid,
+    $zip,
+    $import_log,
     $zip_archive,
-    %problem, 
-    %objects, 
-    %solution, 
-    %checker, 
-    %generator, 
-    %picture, 
-    %test, 
+    %problem,
+    %objects,
+    %solution,
+    %checker,
+    %generator,
+    %generator_range,
+    %module,
+    %picture,
+    %test,
     %test_range,
     %sample,
     %test_rank_array,
     %sample_rank_array,
-    $statement, 
-    $constraints, 
-    $inputformat, 
+    $statement,
+    $constraints,
+    $inputformat,
     $outputformat,
     $user_checker);
 
@@ -63,16 +65,20 @@ sub error($)
 }
 
 
-sub start_element
+sub start_stml_element
 {
     my ($stream, $el, %atts) = @_;
     
     $$stream .= "<$el";
-    foreach my $name (keys %atts)
+    if ($el eq 'img' && !$atts{'picture'})
     {
-        $$stream .= " $name=\"$atts{$name}\"";;
+        warning "Picture not defined in img element\n";
     }
-    $$stream .= ">";
+    for my $name (keys %atts)
+    {
+        $$stream .= qq~ $name="$atts{$name}"~;
+    }
+    $$stream .= '>';
 }
 
 
@@ -80,7 +86,6 @@ sub end_element
 {
     my ($stream, $el) = @_;    
     $$stream .= "</$el>";
-
 }
 
 
@@ -113,6 +118,17 @@ sub read_member {
 }
 
 
+sub required_attributes
+{
+    my ($el, $attrs, $names) = @_;
+    for (@$names)
+    {
+        defined $attrs->{$_}
+            or error "$el.$_ not specified\n";
+    }
+}
+
+
 # 1 проход
 sub stml_text
 {
@@ -128,7 +144,7 @@ sub parse_problem
     my ($p, $el, %atts) = @_;
 
     if ($stml) { 
-        start_element($stml, $el, %atts); 
+        start_stml_element($stml, $el, %atts); 
         return; 
     }        
         
@@ -139,20 +155,7 @@ sub parse_problem
     
     if ($el eq 'Problem')
     {
-        defined $atts{'title'}
-            or error "Problem.title not specified\n";
-
-        defined $atts{'lang'}
-            or error "Problem.lang not specified\n";
-
-        defined $atts{'tlimit'}
-            or error "Problem.tlimit not specified\n";
-
-        defined $atts{'inputFile'}
-            or error "Problem.inputFile not specified\n";
-
-        defined $atts{'outputFile'}
-            or error "Problem.outputFile not specified\n";
+        required_attributes($el, \%atts, ['title', 'lang', 'tlimit', 'inputFile', 'outputFile']);
 
         defined $atts{'mlimit'}
             or warning "Problem.mlimit not specified. default: $default_mlimit\n";
@@ -364,28 +367,58 @@ sub get_de_id
 }
                     
 
+sub interpolate_rank { apply_test_rank(@_); }
+
+sub apply_test_rank
+{
+    my ($v, $rank) = @_;
+    $v =~ s/%n/$rank/g;
+    $v =~ s/%0n/sprintf("%02d", $rank)/eg;
+
+    $v;
+}
+
+
+sub read_member_named
+{
+    my %p = @_;
+    my $member = $zip->memberNamed($p{name}) 
+        or error "Invalid $p{kind} reference: '$p{name}'\n";
+
+    return
+        ('src' => read_member($member), 'path' => $p{name});
+}
+
+sub create_generator
+{
+    my %p = @_;
+    
+    my $id = new_id;
+    set_object_id($p{name}, $id);
+
+    return (  
+        'id' => $id,
+        read_member_named(name => $p{src}, kind => 'generator'),
+        'de_code' => $p{de_code},
+        'outputFile' => $p{'outputFile'},
+    );
+}
+
+
 sub parse_problem_content
 {
     my ($p, $el, %atts) = @_;
 
-    if ($el eq "Picture")
+    if ($el eq 'Picture')
     {
-        defined $atts{'src'}
-            or error "Picture.src not specified\n";
-
-        defined $atts{'name'}
-            or error "Picture.name not specified\n";
+        required_attributes($el, \%atts, ['src', 'name']);
 
         my @p = split(/\./, $atts{'src'}); my $ext = $p[-1];
         error "Invalid image extension\n" if ($ext eq '') ;
         
-        my $member = $zip->memberNamed($atts{'src'}) 
-            or error "Invalid picture reference: '$atts{'src'}'\n";
-
         %picture = (
             'id' => new_id,
-            'src' => read_member($member),
-            'path' => $atts{'src'},
+            read_member_named(name => $atts{'src'}, kind => 'picture'),
             'name' => $atts{'name'},
             'ext' => $ext
         )
@@ -393,22 +426,14 @@ sub parse_problem_content
 
     if ($el eq 'Solution')
     {
-        defined $atts{'src'}
-            or error "Solution.src not specified\n";
-
-        defined $atts{'name'}
-            or error "Solution.name not specified\n";
+        required_attributes($el, \%atts, ['src', 'name']);
 
         my $id = new_id;
         set_object_id($atts{'name'}, $id);
 
-        my $member = $zip->memberNamed($atts{'src'}) 
-            or error "Invalid solution reference: '$atts{'src'}'\n";
-
         %solution = (   
             'id' => $id,
-            'src' => read_member($member),
-            'path' => $atts{'src'},
+            read_member_named(name => $atts{'src'}, kind => 'solution'),
             'de_code' => $atts{'de_code'},
             'checkup' => $atts{'checkup'}       
         )
@@ -416,77 +441,98 @@ sub parse_problem_content
 
     if ($el eq 'Checker')
     {
-        defined $atts{'src'}
-            or error "Checker.src not specified\n";
+        required_attributes($el, \%atts, ['src']);
 
-        my $member = $zip->memberNamed($atts{'src'}) 
-            or error "Invalid checker reference: '$atts{'src'}'\n";
-            
         %checker = (    
-            'src' => read_member($member),
-            'path' => $atts{'src'},
+            'id' => new_id,
+            read_member_named(name => $atts{'src'}, kind => 'checker'),
             'de_code' => $atts{'de_code'}
         )
     }
 
     if ($el eq 'Generator')
     {
-        defined $atts{'src'}
-            or error "Generator.src not specified\n";
+        required_attributes($el, \%atts, ['src', 'name']);
+        %generator = create_generator(%atts);
+    }
 
-        defined $atts{'name'}
-            or error "Generator.name not specified\n";
-        
-        my $id = new_id;
-        set_object_id($atts{'name'}, $id);
-
-        my $member = $zip->memberNamed($atts{'src'}) 
-            or error "Invalid generator reference: '$atts{'src'}'\n";
-
-        %generator = (  
-            'id' => $id,
-            'src' => read_member($member),
+    if ($el eq 'GeneratorRange')
+    {
+        required_attributes($el, \%atts, ['src', 'name', 'from', 'to']);
+        %generator_range = (  
             'path' => $atts{'src'},
-            'de_code' => $atts{'de_code'}
-        )
+            'de_code' => $atts{'de_code'},
+            'elements' => {}
+        );
+        for ($atts{'from'} .. $atts{'to'})
+        {
+            $generator_range{'elements'}->{$_} = { create_generator(
+                name => interpolate_rank($atts{'name'}, $_),
+                src => interpolate_rank($atts{'src'}, $_),
+                de_code => $atts{'de_code'},
+                'outputFile' => $atts{'outputFile'},
+            ) };
+        }
+    }
+
+    if ($el eq 'Module')
+    {
+        required_attributes($el, \%atts, ['src', 'de_code', 'type']);
+
+        my $types = {
+          'checker' => $cats::checker_module,
+          'solution' => $cats::solution_module,
+          'generator' => $cats::generator_module,
+        };
+        exists $types->{$atts{'type'}}
+            or error "Unknown module type: $atts{'type'}\n";
+        %module = (
+            'id' => new_id,
+            read_member_named(name => $atts{'src'}, kind => 'module'),
+            'de_code' => $atts{'de_code'},
+            'type' => $atts{'type'},
+            'type_code' => $types->{$atts{'type'}},
+        );
     }
 
     if ($el eq 'Test')
     {
-        defined $atts{'rank'}
-            or error "Test.rank not specified\n";
+        required_attributes($el, \%atts, ['rank']);
 
-        if (defined $test_rank_array{$atts{'rank'}}) {            
-            error "Duplicate test $atts{'rank'}\n";
+        for ($atts{'rank'})
+        {
+            /\d+/ or error "Bad rank: '$_'";
+            !defined $test_rank_array{$_}
+                or error "Duplicate test $_\n";
+            $test_rank_array{$_} = 1;
         }
-        
+
         %test = (
             'rank' => $atts{'rank'},
+            'points' => $atts{'points'},
             'in' => 1
         );
 
-        $test_rank_array{$atts{'rank'}} = 1;
-    }   
+    }
 
     if ($el eq 'TestRange')
     {
-        defined $atts{'from'}
-            or error "TestRange.from not specified\n";
+        required_attributes($el, \%atts, ['from', 'to']);
 
-        defined $atts{'to'}
-            or error "TestRange.to not specified\n";
-              
+        $atts{'from'} <= $atts{'to'}
+            or error 'TestRange.from > TestRange.to';
+
         %test_range = (
             'from' => $atts{'from'},
             'to' => $atts{'to'},
+            'points' => $atts{'points'},
             'in' => 1
         );
 
-        foreach ($atts{'from'}..$atts{'to'})
+        for ($atts{'from'}..$atts{'to'})
         {
-            if (defined $test_rank_array{$_}) {            
-                error "Duplicate test $_\n";
-            }
+            !defined $test_rank_array{$_}            
+                or error "Duplicate test $_\n";
             $test_rank_array{$_} = 1;
         }
     }   
@@ -496,6 +542,7 @@ sub parse_problem_content
     {       
         if (defined $atts{'src'}) 
         {
+            #$test{'in_file'} = read_member_named(name => $atts{'src'}, kind => 'test input file'),
             my $member = $zip->memberNamed($atts{'src'});
             error "Invalid test input file reference: '$atts{'src'}'\n" if (!defined $member);
             $test{'in_file'} = read_member($member);                           
@@ -506,7 +553,7 @@ sub parse_problem_content
             $test{'param'} = $atts{'param'};
         }
         else {
-            error "Test input file not specified\n";
+            error "Test input file not specified for test $test{rank}\n";
         }
     }
 
@@ -521,7 +568,7 @@ sub parse_problem_content
             $test{'std_solution_id'} = get_object_id($atts{'use'});
         }
         else {
-            error "Test output file not specified\n";
+            error "Test output file not specified $test{rank}\n";
         }
     }       
 
@@ -537,7 +584,7 @@ sub parse_problem_content
             $test_range{'param'} = $atts{'param'};
         }
         else {
-            error "Test input file not specified\n";
+            error "Test input file not specified for test range\n";
         }
     }
 
@@ -551,15 +598,14 @@ sub parse_problem_content
             $test_range{'std_solution'} = $atts{'use'};
         }
         else {
-            error "Test output file not specified\n";
+            error "Test output file not specified for test range\n";
         }
     }       
 
 
     if ($el eq 'Sample')
     {
-        defined $atts{'rank'}
-            or error "Sample.rank not specified\n";
+        required_attributes($el, \%atts, ['rank']);
 
         if (defined $sample_rank_array{$atts{'rank'}}) {            
             error "Duplicate sample $atts{'rank'}\n";
@@ -600,14 +646,23 @@ sub problem_content_text
     }       
 }
 
-
-sub apply_test_rank
+sub insert_problem_source
 {
-    my ($v, $rank) = @_;
-    $v =~ s/%n/$rank/g;
-    $v =~ s/%0n/sprintf("%02d", $rank)/eg;
+  my %p = @_;
+  my $s = $p{source_object} or die;
+  
+  my $c = $dbh->prepare(qq~INSERT INTO problem_sources
+      (id, problem_id, de_id, src, fname, stype, input_file, output_file) VALUES (?,?,?,?,?,?,?,?)~);
 
-    $v;
+  $c->bind_param(1, $s->{'id'});
+  $c->bind_param(2, $pid);
+  $c->bind_param(3, get_de_id($s->{'de_code'}, $s->{'path'}));
+  $c->bind_param(4, $s->{'src'}, { ora_type => 113 });
+  $c->bind_param(5, $s->{'path'});
+  $c->bind_param(6, $p{source_type});
+  $c->bind_param(7, $s->{'inputFile'});
+  $c->bind_param(8, $s->{'outputFile'});
+  $c->execute;
 }
 
 
@@ -617,56 +672,46 @@ sub insert_problem_content
 
     if ($el eq 'Generator')
     {
-        my $c = $dbh->prepare(qq~INSERT INTO problem_sources
-        (id, problem_id, de_id, src, fname, stype) VALUES (?,?,?,?,?,?)~);
-        
-        $c->bind_param(1, $generator{'id'});
-        $c->bind_param(2, $pid);
-        $c->bind_param(3, get_de_id($generator{'de_code'}, $generator{'path'}));
-        $c->bind_param(4, $generator{'src'}, { ora_type => 113 });
-        $c->bind_param(5, $generator{'path'});
-        $c->bind_param(6, $cats::generator);
-        $c->execute;
+        insert_problem_source(source_object => \%generator, source_type => $cats::generator);
 
         note "Generator '$generator{'path'}' added\n";
-
         %generator = ();
+    }
+    if ($el eq 'GeneratorRange')
+    {
+        for (values %{$generator_range{'elements'}})
+        {
+            insert_problem_source(source_object => $_, source_type => $cats::generator);
+            note "Generator '$_->{'path'}' added\n";
+        }
+        %generator_range = ();
     }
 
     if ($el eq 'Solution')
     {
-        my $c = $dbh->prepare(qq~INSERT INTO problem_sources
-        (id, problem_id, de_id, src, fname, stype) VALUES (?,?,?,?,?,?)~);
-        
-        $c->bind_param(1, $solution{'id'}); 
-        $c->bind_param(2, $pid);
-        $c->bind_param(3, get_de_id($solution{'de_code'}, $solution{'path'}));
-        $c->bind_param(4, $solution{'src'}, { ora_type => 113 });
-        $c->bind_param(5, $solution{'path'});
-        $c->bind_param(6, (defined $solution{'checkup'} && $solution{'checkup'} == 1) ? $cats::adv_solution : $cats::solution);
-        $c->execute;
+        insert_problem_source(
+            source_object => \%solution,
+            source_type => (defined $solution{'checkup'} && $solution{'checkup'} == 1) ? $cats::adv_solution : $cats::solution
+        );
 
         note "Solution '$solution{'path'}' added\n";
-
         %solution = ();
     }
 
     if ($el eq 'Checker')
     {
-        my $c = $dbh->prepare(qq~INSERT INTO problem_sources
-        (id, problem_id, de_id, src, fname, stype) VALUES (?,?,?,?,?,?)~);
-    
-        $c->bind_param(1, new_id);
-        $c->bind_param(2, $pid);
-        $c->bind_param(3, get_de_id($checker{'de_code'}, $checker{'path'}));
-        $c->bind_param(4, $checker{'src'}, { ora_type => 113 });
-        $c->bind_param(5, $checker{'path'});
-        $c->bind_param(6, $cats::checker);
-        $c->execute;
+        insert_problem_source(source_object => \%checker, source_type => $cats::checker);
 
         note "Checker '$checker{'path'}' added\n";
-
         %checker = ();
+    }
+
+    if ($el eq 'Module')
+    {
+        insert_problem_source(source_object => \%module, source_type => $module{'type_code'});
+
+        note "Module '$module{'path'}' for $module{'type'} added\n";
+        %module = ();
     }
 
     if ($el eq 'Picture')
@@ -682,14 +727,16 @@ sub insert_problem_content
         $c->execute;
 
         note "Picture '$picture{'path'}' added\n";
-
         %picture = ();
     }                             
 
     if ($el eq 'Test')
     {
-        my $c = $dbh->prepare(qq~INSERT INTO tests (problem_id, rank, generator_id, param, std_solution_id, in_file, out_file)
-            VALUES (?,?,?,?,?,?,?)~);
+        my $c = $dbh->prepare(qq~
+            INSERT INTO tests (
+                problem_id, rank, generator_id, param, std_solution_id, in_file, out_file, points
+            ) VALUES (?,?,?,?,?,?,?,?)~
+        );
             
         $c->bind_param(1, $pid);
         $c->bind_param(2, $test{'rank'});
@@ -698,10 +745,15 @@ sub insert_problem_content
         $c->bind_param(5, $test{'std_solution_id'} );
         $c->bind_param(6, $test{'in_file'}, { ora_type => 113 });
         $c->bind_param(7, $test{'out_file'}, { ora_type => 113 });
-        $c->execute;
+        $c->bind_param(8, $test{'points'});
+        eval {
+    	    $c->execute;
+        };
+        if ($@) {
+            error "Can not add test $test{'rank'}: $@";
+        }
 
         note "Test $test{'rank'} added\n";
-
         %test = ();
     }
 
@@ -733,8 +785,11 @@ sub insert_problem_content
             my $gen = apply_test_rank($test_range{'generator'}, $rank);
             my $sol = apply_test_rank($test_range{'std_solution'}, $rank);
             
-            my $c = $dbh->prepare(qq~INSERT INTO tests (problem_id, rank, generator_id, param, std_solution_id, in_file, out_file)
-                VALUES (?,?,?,?,?,?,?)~);
+            my $c = $dbh->prepare(qq~
+                INSERT INTO tests (
+                    problem_id, rank, generator_id, param, std_solution_id, in_file, out_file, points
+                ) VALUES (?,?,?,?,?,?,?,?)~
+            );
                
             $c->bind_param(1, $pid);
             $c->bind_param(2, $rank);
@@ -743,6 +798,7 @@ sub insert_problem_content
             $c->bind_param(5, get_object_id($sol));
             $c->bind_param(6, $in_file, { ora_type => 113 });
             $c->bind_param(7, $out_file, { ora_type => 113 });
+            $c->bind_param(8, $test_range{points});
             $c->execute;
 
             note "Test $rank added\n";
@@ -762,8 +818,10 @@ sub insert_problem_content
 
     if ($el eq 'Sample')
     {
-        my $c = $dbh->prepare(qq~INSERT INTO samples (problem_id, rank, in_file, out_file)
-            VALUES (?,?,?,?)~);
+        my $c = $dbh->prepare(qq~
+            INSERT INTO samples (problem_id, rank, in_file, out_file)
+            VALUES (?,?,?,?)~
+        );
             
         $c->bind_param(1, $pid);
         $c->bind_param(2, $sample{'rank'});
@@ -790,6 +848,8 @@ sub clear_globals
     %solution = ();
     %checker = ();
     %generator = ();
+    %generator_range = ();
+    %module = ();
     %picture = ();
     %test = ();
     %test_range = ();
@@ -917,7 +977,7 @@ sub import_problem
     else {
         $dbh->rollback;
         $res = -1;
-        note "Import failed\n";
+        note "Import failed: $@\n";
     }
 
     return ($res, $import_log);

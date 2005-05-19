@@ -6,13 +6,8 @@
 <body>
 
 <table>
-<tr><td><b>Команда:<td><b><TMPL_VAR team_name ESCAPE=HTML>
-<tr><td>Поставлено в очередь:<td><TMPL_VAR submit_time ESCAPE=HTML>
-<tr><td>Начало обработки:<td><TMPL_VAR test_time ESCAPE=HTML>
-<tr><td>Окончание обработки:<td><TMPL_VAR result_time ESCAPE=HTML>
-<tr><td>Чемпионат:<td><TMPL_VAR contest_name ESCAPE=HTML>
-<tr><td>Судья:<td><TMPL_VAR judge_name ESCAPE=HTML>
-<tr><td>Состояние:<td>
+<TMPL_INCLUDE 'includes/run_details_header.inc'>
+<tr><td>Состояние:</td><td>
 <TMPL_IF not_processed><font color="#008000">Not processed</TMPL_IF>
 <TMPL_IF install_processing><font color="#a0a000">Installing problem</TMPL_IF>
 <TMPL_IF unhandled_error>Unhandled error</TMPL_IF>
@@ -25,8 +20,8 @@
 <TMPL_IF runtime_error>Runtime error on test <TMPL_VAR failed_test_index></TMPL_IF>
 <TMPL_IF compilation_error>Compilation error</TMPL_IF>
 <TMPL_IF security_violation>Security violation</TMPL_IF>
-
 </table>
+<a href="<TMPL_VAR NAME=href_run_details>">Таблица результатов</a><br/>
 
 <form method=post enctype='multipart/form-data'>
 
@@ -56,11 +51,13 @@ on test #
 <TMPL_IF message><i><TMPL_VAR message ESCAPE=HTML></i><br></TMPL_IF>
 
 <h3>Исходный код решения:</h3>
+<TMPL_IF href_previous_attempt>
+<a href="<TMPL_VAR href_previous_attempt>">Предыдущая попытка (<TMPL_VAR previous_attempt_time>)</a>
+[<a href="<TMPL_VAR href_diff_runs>">diff</a>]<br/>
+</TMPL_IF>
 <TMPL_IF solution_code_avalaible>
-Среда разработки: <TMPL_VAR de_name ESCAPE=HTML>, имя файла: <TMPL_VAR file_name ESCAPE=HTML>
-<font color=#0000ff>
-<pre><code><TMPL_VAR solution_code ESCAPE=HTML></code></pre>
-</font>
+<p>Среда разработки: <TMPL_VAR de_name ESCAPE=HTML>, имя файла: <TMPL_VAR file_name ESCAPE=HTML></p>
+<pre class="bordered"><code><TMPL_VAR solution_code ESCAPE=HTML></code></pre>
 <TMPL_ELSE>
 Исходный код решения недоступен.
 </TMPL_IF>

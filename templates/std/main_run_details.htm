@@ -1,0 +1,68 @@
+<html><head>
+<title>CATS</title>
+<meta name="Content-Type" content="text/html; charset=utf-8">
+<link rel="stylesheet" type="text/css" href="./docs/std/main.css">
+</head>
+<body>
+
+<table>
+<TMPL_INCLUDE 'includes/run_details_header.inc'>
+</table>
+<br/>
+<table border="1">
+<tr>
+  <th>Тест</th>
+  <th>Результат</th>
+  <TMPL_IF show_points>
+    <th>Баллы</th>
+  </TMPL_IF>
+  <TMPL_IF show_test_resources>
+    <th>Время, сек</th>
+    <th>Память</th>
+    <th>Диск</th>
+  </TMPL_IF>
+  <TMPL_IF show_checker_comment>
+    <th>Примечание</th>
+  </TMPL_IF>
+</tr>
+<TMPL_LOOP run_details>
+<tr
+  <TMPL_IF accepted> class="run_details_OK"</TMPL_IF>
+  <TMPL_IF wrong_answer> class="run_details_WA"</TMPL_IF>
+  <TMPL_IF presentation_error> class="run_details_PE"</TMPL_IF>
+  <TMPL_IF time_limit_exceeded> class="run_details_TL"</TMPL_IF>
+  <TMPL_IF memory_limit_exceeded> class="run_details_ML"</TMPL_IF>
+  <TMPL_IF runtime_error> class="run_details_RE"</TMPL_IF>
+>
+  <td><TMPL_VAR test_rank></td>
+  <td>
+  <TMPL_IF not_processed><font color="#008000">Not processed</TMPL_IF>
+  <TMPL_IF install_processing><font color="#a0a000">Installing problem</TMPL_IF>
+  <TMPL_IF unhandled_error>Unhandled error</TMPL_IF>
+  <TMPL_IF testing><font color="#a0a000">Now testing</TMPL_IF>
+  <TMPL_IF accepted>OK</TMPL_IF>
+  <TMPL_IF wrong_answer>WA</TMPL_IF>
+  <TMPL_IF presentation_error>PE</TMPL_IF>
+  <TMPL_IF time_limit_exceeded>Time</TMPL_IF>
+  <TMPL_IF memory_limit_exceeded>Memory</TMPL_IF>
+  <TMPL_IF runtime_error>Runtime</TMPL_IF>
+  <TMPL_IF compilation_error>Compilation error</TMPL_IF>
+  <TMPL_IF security_violation>Security violation</TMPL_IF>
+  </td>
+  <TMPL_IF show_points>
+    <td><TMPL_VAR NAME=points></td>
+  </TMPL_IF>
+  <TMPL_IF show_test_resources>
+    <td><TMPL_VAR NAME=time_used></td>
+    <td><TMPL_VAR NAME=memory_used></td>
+    <td><TMPL_VAR NAME=disk_used></td>
+  </TMPL_IF>
+  <TMPL_IF show_checker_comment>
+    <td><TMPL_VAR NAME=checker_comment></td>
+  </TMPL_IF>
+</tr>
+</TMPL_LOOP>
+</table>
+
+</body>
+</html>

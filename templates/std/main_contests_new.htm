@@ -1,15 +1,7 @@
 <TMPL_INCLUDE 'includes/menu_begin.inc'>
 
 <form method=post enctype='multipart/form-data' action='<TMPL_VAR href_action>'>
-<table cellpadding=0>
-<tr><td>Название чемпионата:<td><input type=text size=50 name='contest_name' class=bordered>
-<tr><td>Дата/время начала:<td><input type=text name='start_date' value='<TMPL_VAR start_date ESCAPE=HTML>' class=bordered>
-<tr><td>Дата/время заморозки таблицы результатов:</td><td><input type=text name='freeze_date' value='<TMPL_VAR freeze_date ESCAPE=HTML>' class=bordered>
-<tr><td>Дата/время финиша:</td><td><input type=text name='finish_date' value='<TMPL_VAR finish_date ESCAPE=HTML>' class=bordered>
-<tr><td>Дата/время открытия доступа к результатам:</td><td><input type=text name='open_date' value='<TMPL_VAR open_date ESCAPE=HTML>' class=bordered>
-<tr><td colspan=2>Свободная регистрация: <input type=checkbox name=free_registration>
-</table>
-<br>
+<TMPL_INCLUDE 'includes/contest_params.inc'>
 <input type=submit name='new_save' value='     Ok     ' class=button> 
 <input type=submit name='new_cancel' value='Отмена' class=button>
 </form>

@@ -1,0 +1,12 @@
+<TMPL_INCLUDE 'includes/menu_begin.inc'>
+
+<form method=post enctype='multipart/form-data' action='<TMPL_VAR href_action>'>
+<TMPL_INCLUDE 'includes/contest_params.inc'>
+<TMPL_IF can_edit>
+<input type="hidden" name="id" value="<TMPL_VAR id>" />
+<input type="submit" name="edit_save" value="     Ok     " class="button" /> 
+</TMPL_IF>
+<input type="submit" name="edit_cancel" value="ïÔÍÅÎÁ" class="button" />
+</form>
+
+<TMPL_INCLUDE 'includes/menu_end.inc'>

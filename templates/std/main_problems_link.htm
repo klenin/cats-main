@@ -4,7 +4,7 @@
 <TMPL_ELSE>
 <form method="post" enctype="multipart/form-data">
 <TMPL_INCLUDE 'includes/listview_header.inc'>
-</form>
+</form><br/>
 <form method="post" enctype="multipart/form-data" action="<TMPL_VAR href_action>">
 <table border=0 width=100% cellpadding=2 cellspacing=1 class=bordered>
 <tr bgcolor=#ccccff>
@@ -12,13 +12,13 @@
 </tr>   
 <TMPL_LOOP link_problem>
 <tr bgcolor=#ffffff>
-<td nowrap>
+<td>
 <input type=radio name='problem_id' value='<TMPL_VAR problem_id>' <TMPL_IF linked>disabled</TMPL_IF>>
 <a href="<TMPL_VAR href_view_problem>" target=_blank><TMPL_VAR problem_name ESCAPE=HTML></a></td>
-<td nowrap><TMPL_VAR contest_name ESCAPE=HTML></td>
-<td nowrap align=center><TMPL_VAR accept_count></td>
-<td nowrap align=center><TMPL_VAR wa_count></td>
-<td nowrap align=center><TMPL_VAR tle_count></td>
+<td><TMPL_VAR contest_name ESCAPE=HTML></td>
+<td align=center><TMPL_VAR accept_count></td>
+<td align=center><TMPL_VAR wa_count></td>
+<td align=center><TMPL_VAR tle_count></td>
 </tr>
 </TMPL_LOOP>
 </table>

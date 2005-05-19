@@ -4,15 +4,11 @@
 <tr>
 <TMPL_IF is_submit_result>
     <td nowrap width=1% class=small>
-        <TMPL_IF href_submit_details>
-        <a href="<TMPL_VAR href_submit_details>" target='_blank'><TMPL_VAR time></a>
-        <TMPL_ELSE>
-        <TMPL_VAR time>
-        </TMPL_IF>
+        <a href="<TMPL_VAR href_details>" target='_blank'><TMPL_VAR time></a>
     </td>
-    <td nowrap class=small>
+    <td class=small>
 	<TMPL_IF is_jury>	
-        [<a href="javascript:send_message('<TMPL_VAR href_send_message_box>')"><TMPL_VAR team_name ESCAPE=HTML></a>]	
+        [<a href="javascript:send_message('<TMPL_VAR href_send_message_box>')"><TMPL_VAR team_name ESCAPE=HTML></a>:<TMPL_VAR last_ip>]
 	<TMPL_ELSE>
         [<TMPL_VAR team_name ESCAPE=HTML>]
 	</TMPL_IF>
@@ -36,10 +32,11 @@
 
 <TMPL_IF is_question>
     <td nowrap width=1%><TMPL_VAR time></td>
-    <td align=left nowrap width=20% class=small>
-        [<TMPL_VAR team_name ESCAPE=HTML> &gt; жюри]
+    <td align=left nowrap class=small>
+        [<TMPL_VAR team_name ESCAPE=HTML><TMPL_IF is_jury>:<TMPL_VAR last_ip></TMPL_IF>
+        &gt; жюри]
     </td>
-    <td width=78%>
+    <td>
         <i><TMPL_VAR question_text ESCAPE=HTML></i> - 
         <TMPL_UNLESS clarified>
         <TMPL_IF href_answer_box>
@@ -53,20 +50,20 @@
 
 <TMPL_IF is_message>
     <td nowrap width=1%><TMPL_VAR time></td>
-    <td align=left nowrap width=20% class='small'>
+    <td align=left class='small'>
         [жюри &gt; <TMPL_VAR team_name ESCAPE=HTML>]
     </td>
-    <td width=78% class='small'>
+    <td class='small'>
         <font color=red><TMPL_VAR message_text ESCAPE=HTML></font>
     </td>
 </TMPL_IF>
 
 <TMPL_IF is_broadcast>
     <td nowrap width=1%><TMPL_VAR time></td>
-    <td align=left nowrap width=20% class='small'>
+    <td align=left class='small'>
         <b><font color="#ff0000">[жюри &gt; всем командам]</font></b>
     </td>
-    <td width=78% class='small'>
+    <td class='small'>
         <b><font color=red><TMPL_VAR message_text ESCAPE=HTML></font></b>
     </td>
 </TMPL_IF>

@@ -14,7 +14,7 @@ function delete_team(href, name)
 
 <form method=post enctype='multipart/form-data'>
 <TMPL_INCLUDE 'includes/listview_header.inc'>
-<table border=0 width=100% cellpadding=2 cellspacing=1 class=bordered>
+<table border=0 width=100% cellpadding=2 cellspacing=1 class=bordered bgcolor=#8060f0>
 <tr bgcolor=#ccccff>
 <TMPL_INCLUDE 'includes/listview_col_defs.inc'>
 </tr>   
@@ -29,15 +29,6 @@ function delete_team(href, name)
 </TMPL_IF>
 <td><TMPL_IF messages><input type=checkbox name=msg<TMPL_VAR id>></TMPL_IF><TMPL_VAR team_name ESCAPE=HTML>
 </td>
-<td align=center>
-<TMPL_IF flag>
-    <img src='<TMPL_VAR NAME=flag>' alt="<TMPL_VAR NAME=country ESCAPE=HTML><TMPL_IF motto> - <TMPL_VAR motto ESCAPE=HTML></TMPL_IF>">
-<TMPL_ELSE>
-    <TMPL_VAR NAME=country ESCAPE=HTML><TMPL_IF motto> - <TMPL_VAR motto ESCAPE=HTML></TMPL_IF>
-</TMPL_IF>    
-</td>
-<td align=center><TMPL_VAR accepted>
-</td>
 <TMPL_IF editable>
 <td align=center><input type=checkbox name=jury<TMPL_VAR id> <TMPL_IF jury>checked</TMPL_IF>>
 </td>
@@ -45,22 +36,34 @@ function delete_team(href, name)
 </td>
 <td align=center><input type=checkbox name=remote<TMPL_VAR id> <TMPL_IF remote>checked</TMPL_IF>>
 </td>
- <td align=center><input type=checkbox name=hidden<TMPL_VAR id> <TMPL_IF hidden>checked</TMPL_IF>>
- </td>
- </TMPL_IF>
- <td align=center><TMPL_IF virtual>virtual</TMPL_IF>
- </td>
+<td align=center><input type=checkbox name=hidden<TMPL_VAR id> <TMPL_IF hidden>checked</TMPL_IF>>
+</td>
+</TMPL_IF>
+<td align=center>
+<TMPL_IF flag>
+    <img src='<TMPL_VAR NAME=flag>' alt="<TMPL_VAR NAME=country ESCAPE=HTML><TMPL_IF motto> - <TMPL_VAR motto ESCAPE=HTML></TMPL_IF>">
+<TMPL_ELSE>
+    <TMPL_VAR NAME=country ESCAPE=HTML><TMPL_IF motto> - <TMPL_VAR motto ESCAPE=HTML></TMPL_IF>
+</TMPL_IF>    
+</td>
+<td align=center><TMPL_VAR accepted></td>
+<td align=center><TMPL_IF virtual>virtual</TMPL_IF></td>
 </tr>
 </TMPL_LOOP>
 </table>
 <br>
 <input type=hidden name=user_set VALUE='<TMPL_LOOP users><TMPL_VAR id><TMPL_UNLESS "__last__">:</TMPL_UNLESS></TMPL_LOOP>'>
-<TMPL_IF editable><input type=submit value='Сохранить атрибуты' name='save_attributes' class=button><br><br></TMPL_IF>
+<TMPL_IF editable>
+<input type="submit" value="Сохранить атрибуты" name="save_attributes" class="button" />
+Логин:&nbsp;<input type="text" name="login_to_register" class="bordered" />&nbsp;<input type="submit" value="Добавить участника" name="register_new" class="button"/>
+<br/><br/>
+</TMPL_IF>
 <TMPL_IF messages>
 <table width=100% cellpadding=8 bgcolor=#ccccff class=bordered><tr><td>
 Сообщение командам:
-<input size=100 name='message_text' value='<TMPL_VAR message_text ESCAPE=HTML>' class=bordered>
-<input type=submit value='Отправить' name='send_message' class=button> <input type=submit value='Отправить всем' name='send_message_all' class=button>
+<input size=85 name='message_text' value='<TMPL_VAR message_text ESCAPE=HTML>' class=bordered>
+<input type=submit value='Отправить' name='send_message' class=button>
+<input type=checkbox name='send_message_all'>&nbsp;Отправить всем
 </td></tr></table>
 </TMPL_IF>
 </form>

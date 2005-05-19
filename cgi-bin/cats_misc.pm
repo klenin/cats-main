@@ -6,32 +6,33 @@ BEGIN
 
     @ISA = qw( Exporter );
     @EXPORT = qw(  
-            split_fname
-            initialize
-            init_template
-            init_listview_template
-            generate_output
-            sql_connect
-            sql_disconnect
-            http_header
-            init_messages
-            msg
-            url_with_contest
-            url
-            user_authorize
-            templates_path
-            escape_html
-            order_by
-            define_columns
-            get_flag
-            generate_login
-            generate_password
-            new_id
-            res_str
-            attach_listview
-            attach_menu
-            fatal_error
-        );
+        split_fname
+        initialize
+        init_template
+        init_listview_template
+        generate_output
+        sql_connect
+        sql_disconnect
+        http_header
+        init_messages
+        msg
+        url_function
+        url_f
+        user_authorize
+        templates_path
+        escape_html
+        order_by
+        define_columns
+        get_flag
+        generate_login
+        generate_password
+        new_id
+        res_str
+        attach_listview
+        attach_menu
+        fatal_error
+        state_to_display
+    );
 
         
     @EXPORT_OK = qw( $dbh @messages $t $sid $cid $lng $uid $team_name $server_time $contest_title $dbi_error $is_practice
@@ -50,6 +51,8 @@ use MIME::Base64;
 #use FCGI;
 
 use cats;
+use cats_db;
+use cats_ip;
 use vars qw( $dbh @messages $t $sid $cid $lng $uid $team_name $server_time $contest_title $dbi_error $is_practice );
 use vars qw( $is_root $is_team $is_jury $is_virtual $virtual_diff_time $contest_elapsed_minutes);
 use vars qw( $listview_name $listview_array_name $col_defs $sort $sort_dir $search $page $visible $additional);
@@ -105,7 +108,10 @@ sub http_header {
 
 sub sql_connect 
 {
-    $dbh = DBI->connect($cats::db_dsn, $cats::db_user, $cats::db_password, { AutoCommit => 0, LongReadLen => 1024*1024*8 } );
+    $dbh = DBI->connect(
+      $cats_db::db_dsn, $cats_db::db_user, $cats_db::db_password,
+      { AutoCommit => 0, LongReadLen => 1024*1024*8, FetchHashKeyName => 'NAME_lc' }
+    );
     
     if (!defined $dbh) 
     {  
@@ -152,7 +158,7 @@ sub templates_path
 
 sub init_messages {
 
-    my $msg_file = templates_path()."/.consts";
+    my $msg_file = templates_path()."/consts";
 
     my $r = open FILE, "<".$msg_file;
    
@@ -178,7 +184,7 @@ sub init_messages {
 sub init_listview_params
 {
     ($sort, $search, $page, $visible, $sort_dir, $additional) = CGI::cookie($listview_name);
-    $search = decode_base64($search);
+    $search = decode_base64($search || '');
   
     $page = url_param('page') if (defined url_param('page'));
     
@@ -230,10 +236,11 @@ sub init_template {
         my $text_ref = shift;
 
         Encode::from_to($$text_ref, 'koi8-r', 'utf-8');
+        #$$text_ref = Encode::decode('koi8-r', $$text_ref);
     };
     
     $t = HTML::Template->new( 
-        filename => templates_path()."/".$file_name, 
+        filename => templates_path()."/".$file_name, cache => 1,
         die_on_bad_params => 0, filter => $utf8_encode, loop_context_vars => 1 );
 }
 
@@ -253,15 +260,16 @@ sub init_listview_template {
 
 sub selected_menu_item {
     
-    my $default = shift;
+    my $default = shift || '';
     my $href = shift;
 
     my $q = new CGI((split('\?', $href))[1]);
 
     my $page = CGI::url_param('f');
+    my $pf = $q->param('f') || '';
 
-    (defined $page && $q->param('f') eq $page) ||
-    (!defined $page && $q->param('f') eq $default);
+    (defined $page && $pf eq $page) ||
+    (!defined $page && $pf eq $default);
 }
 
 
@@ -301,33 +309,28 @@ sub attach_menu
 }
 
 
-sub res_str {
-    $messages[ shift ];
+sub res_str
+{
+    my $t = $messages[shift];
+    sprintf($t, @_);
 }
 
 
-sub msg {
-
-    my $id = shift;
-    
-    $t->param( message => $messages[ $id ] );
+sub msg
+{
+    $t->param( message => res_str(@_) );
 }
 
 
-sub url_with_contest {
-
-    my $url = shift;
-    my $contest_id = shift;
-
-#    my $lng = param('lng') || '';
-#    my $skin = param('skin') || '';
-        
-    $url."&sid=$sid&cid=$contest_id";
+sub url_function
+{
+  my ($f, %p) = @_;
+  join '&', "main.pl?f=$f", map { $p{$_} ? "$_=$p{$_}" : () } keys %p;
 }
 
-
-sub url {
-    url_with_contest($_[0], $cid);
+sub url_f
+{
+    url_function(@_, sid => $sid, cid => $cid);
 }
 
 
@@ -336,7 +339,7 @@ sub attach_listview {
     my( $url, $fetch_row, $c, $sort_columns ) = @_;
     my @data = ();
     my $row_count = 0;
-    my $start_row = $page * $visible;       
+    my $start_row = ($page || 0) * ($visible || 0);       
 
     my $mask = undef;
     for (split(',', $search)) {
@@ -381,6 +384,7 @@ sub attach_listview {
 
     my $page_count = int( $row_count / $visible ) + ( $row_count % $visible ? 1 : 0 ) || 1;
  
+    $page ||= 0;
     my $range_start = $page - $page % $cats::visible_pages;
     $range_start = 0 if ($range_start < 0);
 
@@ -414,7 +418,6 @@ sub attach_listview {
             text => $_
         };
     }
- 
 
     if ($range_start > 0)
     {
@@ -445,46 +448,44 @@ sub order_by
 
 sub generate_output
 {
-
-    if (defined $t)
+    defined $t or return;
+    my $cookie;
+    if ($listview_name ne '')
     {
-        my $cookie;
-        if ($listview_name ne '')
-        {
-            $cookie = CGI::cookie(-name => $listview_name, 
-	                          -value => [$sort, encode_base64($search), $page, $visible, $sort_dir, $additional], 
-				  -expires => '+1h');
-        }
-        $t->param(contest_title => $contest_title);
-        $t->param(server_time => $server_time);    
+        my @values = map { $_ || '' }
+           ($sort, encode_base64($search), $page, $visible, $sort_dir, $additional);
+        $cookie = CGI::cookie(
+            -name => $listview_name, -value => [@values], -expires => '+1h');
+    }
+    $t->param(contest_title => $contest_title);
+    $t->param(server_time => $server_time);    
 	$t->param(current_team_name => $team_name);
 	$t->param(is_virtual => $is_virtual);
 	$t->param(virtual_diff_time => $virtual_diff_time);	
 
-	if ($contest_elapsed_minutes < 0)
-	{
-    	    $t->param(show_remaining_minutes => 1,
-		      remaining_minutes => -$contest_elapsed_minutes);
-	}
-	elsif ($contest_elapsed_minutes / 1440 < 3)
-	{
-    	    $t->param(show_elapsed_minutes => 1,
-		      elapsed_minutes => $contest_elapsed_minutes);
-	}
-	else
-	{
-    	    $t->param(show_elapsed_days => 1,
-	              elapsed_days => int($contest_elapsed_minutes / 1440));
-	}
-
-        if ( defined $dbi_error ) {
-
-            $t->param(dbi_error => $dbi_error);
-        }
-
-        print STDOUT http_header('text/html', $cookie);
-        print STDOUT $t->output;
+    if ($contest_elapsed_minutes < 0)
+    {
+        $t->param(show_remaining_minutes => 1,
+            remaining_minutes => -$contest_elapsed_minutes);
     }
+    elsif ($contest_elapsed_minutes / 1440 < 3)
+    {
+        $t->param(show_elapsed_minutes => 1,
+            elapsed_minutes => $contest_elapsed_minutes);
+    }
+    else
+    {
+        $t->param(show_elapsed_days => 1,
+            elapsed_days => int($contest_elapsed_minutes / 1440));
+    }
+
+    if (defined $dbi_error)
+    {
+        $t->param(dbi_error => $dbi_error);
+    }
+
+    print STDOUT http_header('text/html', $cookie);
+    print STDOUT $t->output;
 }
 
 
@@ -496,8 +497,8 @@ sub define_columns
     $col_defs = shift;
 
 #    $sort = $default if ($sort > length(@$col_defs) or ($sort eq ''));    
-    $sort = $default if ($sort eq '');
-    $sort_dir = $default_dir if ($sort_dir eq '');
+    $sort = $default if (!defined $sort || $sort eq '');
+    $sort_dir = $default_dir if (!defined $sort_dir || $sort_dir eq '');
 
     my $i = 0;
     foreach (@$col_defs)
@@ -538,11 +539,11 @@ sub generate_login {
 
     my $login_num = undef;
     
-    if ( $cats::db_dsn =~ /InterBase/ )
+    if ( $cats_db::db_dsn =~ /InterBase/ )
     {
         $login_num = $dbh->selectrow_array('SELECT GEN_ID(login_seq, 1) FROM RDB$DATABASE');
     }
-    elsif ( $cats::db_dsn =~ /Oracle/ )
+    elsif ( $cats_db::db_dsn =~ /Oracle/ )
     {
         $login_num = $dbh->selectrow_array(qq~SELECT login_seq.nextval FROM DUAL~);
     }
@@ -570,15 +571,15 @@ sub generate_password {
 
 sub new_id {
 
-    if ( $cats::db_dsn =~ /InterBase/ )
+    if ( $cats_db::db_dsn =~ /InterBase/ )
     {
         $dbh->selectrow_array('SELECT GEN_ID(key_seq, 1) FROM RDB$DATABASE');
     }
-    elsif ( $cats::db_dsn =~ /Oracle/ )
+    elsif ( $cats_db::db_dsn =~ /Oracle/ )
     {
         $dbh->selectrow_array(qq~SELECT key_seq.nextval FROM DUAL~);
     }
-    else { undef; }
+    else { die; }
 }
 
 
@@ -594,13 +595,13 @@ sub user_authorize {
     {
         my $srole;
 
-        ( $uid, $team_name, $srole ) = $dbh->selectrow_array(
-            qq~SELECT id, team_name, srole FROM accounts WHERE sid=?~, {}, $sid );
-        if ( !defined($uid) )
+        ( $uid, $team_name, $srole, my $last_ip ) = $dbh->selectrow_array(
+            qq~SELECT id, team_name, srole, last_ip FROM accounts WHERE sid=?~, {}, $sid );
+        if ( !defined($uid) || $last_ip ne cats_ip::get_ip() )
         {
-            init_template("main_bad_sid.htm");
+            init_template('main_bad_sid.htm');
             $sid = '';
-            $t->param(href_login => url('main.pl?f=login'));
+            $t->param(href_login => url_f('login'));
             generate_output;
             exit(1);
         }
@@ -654,7 +655,7 @@ sub user_authorize {
 	    # до начала и после окончания тура команда имеет только права гостя
 	    if (!$started || $finished)
 	    {
-		$is_team = 0;
+            $is_team = 0;
 	    }
         }
     }
@@ -662,14 +663,14 @@ sub user_authorize {
     {
         $is_jury = 0;
         $is_team = 0;
-	$is_virtual = 0;
+        $is_virtual = 0;
     }
     
     $contest_elapsed_minutes = $dbh->selectrow_array(
 		    qq~SELECT (CATS_SYSDATE() - $virtual_diff_time - start_date)*1440 
 	               FROM contests WHERE id=?~, {}, $cid);
 		
-    $contest_elapsed_minutes = int($contest_elapsed_minutes);       
+    $contest_elapsed_minutes = int($contest_elapsed_minutes) || 0;       
 }
 
 
@@ -684,4 +685,26 @@ sub initialize
     $col_defs = undef;
 }
 
+
+sub state_to_display
+{
+    my ($state) = @_;
+    (
+        not_processed =>         $state == $cats::st_not_processed,
+        unhandled_error =>       $state == $cats::st_unhandled_error,
+        install_processing =>    $state == $cats::st_install_processing,
+        testing =>               $state == $cats::st_testing,
+        accepted =>              $state == $cats::st_accepted,
+        wrong_answer =>          $state == $cats::st_wrong_answer,
+        presentation_error =>    $state == $cats::st_presentation_error,
+        time_limit_exceeded =>   $state == $cats::st_time_limit_exceeded,                                
+        memory_limit_exceeded => $state == $cats::st_memory_limit_exceeded,
+        runtime_error =>         $state == $cats::st_runtime_error,
+        compilation_error =>     $state == $cats::st_compilation_error,
+        security_violation =>    $state == $cats::st_security_violation
+    );
+}
+
 1;
+
+

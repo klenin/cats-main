@@ -33,7 +33,7 @@
 <th width=8%>статус
 
 <TMPL_LOOP rank>
-<tr>
+<tr <TMPL_UNLESS row_color>bgcolor=#f4f4f4</TMPL_UNLESS>>
 <td align=center ><TMPL_VAR contestant_number>
 <!--
 <td nowrap align=center bgcolor=#ffffff>
@@ -53,8 +53,8 @@
 <td align=center><TMPL_VAR solved>
 <td align=center><TMPL_VAR time>
 <td align=center><TMPL_VAR place>
-<td align=center><font size="-1"><i><TMPL_IF ooc>ooc</TMPL_IF>
-<TMPL_IF remote>remote</TMPL_IF>
-<TMPL_IF virtual>virtual</TMPL_IF>
+<td align=center><font size="-1"><i>
+  <TMPL_IF ooc>ooc</TMPL_IF><TMPL_IF remote> remote</TMPL_IF><TMPL_IF virtual> virtual</TMPL_IF>
+  </i></font>
 </TMPL_LOOP>
 </table><br>

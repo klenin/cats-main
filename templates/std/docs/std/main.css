@@ -59,12 +59,13 @@ input {
 }
 
 .bordered2 {
-    color: #ffffff;
-    border: 1px solid #ffffff;
+    color: white;
+    border: 1px solid white;
     background-color: #ccccff;
-    
 }
 
+table.internal_borders { border-collapse: collapse; }
+table.internal_borders td, table.internal_borders th { border: 1px solid #4040ff; }
 
 .button {
     background-color: #ffffff;
@@ -90,6 +91,11 @@ input {
 TH { font-size: 11pt; font-weight: bold; color:#000000; }
 TD { font-size: 11pt }
 
+TR.run_details_OK { background-color: #A0FFA0 }
+TR.run_details_WA { background-color: #FFA0A0 }
+TR.run_details_PE { background-color: #FFFFA0 }
+TR.run_details_RE { background-color: #FFA0A0 }
+
 .small { font-size: 10pt }
 
 P { margin-top: 5; margin-bottom: 5 } 
@@ -101,3 +107,6 @@ H3 { margin-top: 10; margin-bottom: 5 }
 H4 { margin-top: 10; margin-bottom: 5 }
 CODE { margin-top: 0; margin-bottom: 0 }
 PRE { margin-top: 0; margin-bottom: 0 }
+
+.diff_only_a { background-color: #FFA0A0 }
+.diff_only_b { background-color: #A0FFA0 }

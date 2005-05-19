@@ -1,13 +1,13 @@
 <TMPL_INCLUDE 'includes/menu_begin.inc'>
-<TMPL_IF message><i><TMPL_VAR message ESCAPE=HTML></i><br></TMPL_IF>
+<TMPL_IF message><i><TMPL_VAR message ESCAPE=HTML></i><br/></TMPL_IF>
 
 <table><tr><td height=50%>
-<form method=post enctype='multipart/form-data'>
+<form method="post" enctype="multipart/form-data">
 <table>
-<tr><td>логин: <td><input type=text size=20 name=login maxlength=20 class=bordered>
-<tr><td>пароль:<td><input type=password size=20 name=passwd maxlength=20 class=bordered>
+<tr><td>логин:</td><td><input type="text" size="20" name="login" maxlength="20" class="bordered" value="<TMPL_VAR login>" /></td></tr>
+<tr><td>пароль:</td><td><input type="password" size="20" name="passwd" maxlength="20" class="bordered" /></td></tr>
 </table>
-<input type=submit name='submit' value='войти' bgcolor=#ffffff class=button>
+<input type="submit" name="submit" value="войти" class="button" />
 </form>
 
 </td></tr>
