@@ -16,12 +16,12 @@ use cats_misc qw(:all);
 use cats_ip;
 use problem;
 
-use vars qw($html_code $current_pid);
+use vars qw( $html_code $current_pid );
 
 
-sub login_frame
-{
-    init_template('main_login.htm');
+sub login_frame {
+    
+    init_template( "main_login.htm" );
 
     my $login = param('login') or return;   
     $t->param(login => $login); 
@@ -84,10 +84,8 @@ sub contests_new_frame
 
     my $date = $dbh->selectrow_array(qq~SELECT CATS_DATE(CATS_SYSDATE()) FROM accounts~);
     $date =~ s/\s*$//;
-    $t->param(
-        start_date => $date, freeze_date => $date, finish_date => $date, open_date => $date,
-        can_edit => 1,
-        href_action => url_f('contests'));
+    $t->param ( start_date => $date, freeze_date => $date, finish_date => $date, open_date => $date,
+                href_action => url_f('contests') );
 }
 
 
@@ -110,7 +108,7 @@ sub get_contest_html_params
     my $p = {};
     
     $p->{$_} = param($_) for contest_string_params();
-    $p->{$_} = (param($_) || '') eq 'on' for contest_checkbox_params();
+    $p->{$_} = param($_) eq 'on' for contest_checkbox_params();
     
     if ($p->{contest_name} eq '' || length $p->{contest_name} > 100)
     {
@@ -163,11 +161,11 @@ sub contests_new_save
 }
 
 
-sub try_contest_params_frame
+sub contests_edit_frame
 {
-    my $id = url_param('params') or return;
+    init_template('main_contests_edit.htm');  
 
-    init_template('main_contest_params.htm');  
+    my $id = url_param('edit');
 
     my $p = $dbh->selectrow_hashref(qq~
         SELECT
@@ -179,20 +177,14 @@ sub try_contest_params_frame
           1 - closed AS free_registration,
           run_all_tests, show_all_tests, show_test_resources, show_checker_comment,
           is_official, show_packages
-        FROM contests WHERE id = ?~, { Slice => {} },
+        FROM contests WHERE id=?~, { Slice => {} },
         $id
     );
     # Ask: наверное, на самом деле надо исправить CATS_DATE
     for (qw(start_date freeze_date finish_date open_date)) {
         $p->{$_} =~ s/\s*$//;
     }
-    $t->param(
-        id => $id, %$p,
-        href_action => url_f('contests'),
-        can_edit => 1 == get_registered_contestant(fields => 'is_jury', contest_id => $id),
-    );
-    
-    1;
+    $t->param(id => $id, %$p, href_action => url_f('contests'));
 }
 
 
@@ -228,10 +220,10 @@ sub get_registered_contestant
 {
     my %p = @_;
     $p{fields} ||= 1;
-    $p{account_id} ||= $uid or return undef;
+    $p{account_id} ||= $uid;
     $dbh->selectrow_array(qq~
-        SELECT $p{fields} FROM contest_accounts WHERE contest_id = ? AND account_id = ?~, {},
-        $p{contest_id}, $p{account_id});
+        SELECT $p{fields} FROM contest_accounts WHERE contest_id=? AND account_id=?~,
+        {}, $p{contest_id}, $p{account_id});
 }
 
 
@@ -241,7 +233,7 @@ sub contest_online_registration
         or return msg(111);
 
     my ($finished, $closed) = $dbh->selectrow_array(qq~
-        SELECT CATS_SYSDATE() - finish_date, closed FROM contests WHERE id = ?~, {}, $cid);
+        SELECT CATS_SYSDATE() - finish_date, closed FROM contests WHERE id=?~, {}, $cid);
         
     $finished <= 0
         or return msg(108);
@@ -250,10 +242,9 @@ sub contest_online_registration
         or return msg(105);
 
     $dbh->do(qq~
-        INSERT INTO contest_accounts (
-          id, contest_id,
-          account_id, is_jury, is_pop, is_hidden, is_ooc, is_remote, is_virtual, diff_time
-        ) VALUES (?,?,?,?,?,?,?,?,?,?)~, {},
+        INSERT INTO contest_accounts (id, contest_id,
+          account_id, is_jury, is_pop, is_hidden, is_ooc, is_remote, is_virtual, diff_time)
+        VALUES (?,?,?,?,?,?,?,?,?,?)~, {},
           new_id, $cid, $uid, 0, 0, 0, 1, 1, 0, 0);
     $dbh->commit;
 }
@@ -269,8 +260,8 @@ sub contest_virtual_registration
 
     my ($time_since_start, $time_since_finish, $closed, $is_official) = $dbh->selectrow_array(qq~
         SELECT CATS_SYSDATE() - start_date, CATS_SYSDATE() - finish_date, closed, is_official
-          FROM contests WHERE id=?~, {},
-        $cid);
+          FROM contests WHERE id=?~,
+        {}, $cid);
         
     $time_since_start >= 0
         or return msg(109);
@@ -284,8 +275,8 @@ sub contest_virtual_registration
     # при повторной регистрации удаляем старые результаты
     if ($registered)
     {
-        $dbh->do(qq~DELETE FROM reqs WHERE account_id = ? AND contest_id = ?~, {}, $uid, $cid);
-        $dbh->do(qq~DELETE FROM contest_accounts WHERE account_id = ? AND contest_id = ?~, {}, $uid, $cid);
+        $dbh->do(qq~DELETE FROM reqs WHERE account_id=? AND contest_id=?~, {}, $uid, $cid);
+        $dbh->do(qq~DELETE FROM contest_accounts WHERE account_id=? AND contest_id=?~, {}, $uid, $cid);
         $dbh->commit;
         msg(113);
     }
@@ -325,87 +316,29 @@ sub contests_select_current
 }
 
 
-sub common_contests_view ($)
-{
-    my ($c) = @_;
-    return (
-       id => $c->{id},
-       contest_name => $c->{title}, 
-       start_date => $c->{start_date}, 
-       finish_date => $c->{finish_date},
-       registration_denied => $c->{closed},
-       selected => $c->{id} == $cid,
-       is_official => $c->{is_official},
-       href_contest => url_function('contests', sid => $sid, set_contest => 1, cid => $c->{id}),
-       href_params => url_f('contests', params => $c->{id}),
-    );
-}
-
-sub authenticated_contests_view ()
-{
-    my $sth = $dbh->prepare(qq~
-        SELECT id, title, CATS_DATE(start_date) AS start_date, CATS_DATE(finish_date) AS finish_date, 
-          (SELECT COUNT(*) FROM contest_accounts WHERE contest_id=contests.id AND account_id=?) AS registered,
-          (SELECT is_virtual FROM contest_accounts WHERE contest_id=contests.id AND account_id=?) AS is_virtual,
-          (SELECT is_jury FROM contest_accounts WHERE contest_id=contests.id AND account_id=?) AS is_jury,
-          closed, is_official
-        FROM contests ~.order_by);
-    $sth->execute($uid, $uid, $uid);
-
-    my $fetch_contest = sub($) 
-    {
-        my $c = $_[0]->fetchrow_hashref or return;
-        return (
-            common_contests_view($c),
-            authorized => 1,
-            editable => $c->{is_jury},
-            deletable => $is_root,
-            registered_online => $c->{registered} && !$c->{is_virtual},
-            registered_virtual => $c->{registered} && $c->{is_virtual}, 
-            href_delete => url_f('contests', delete => $c->{id}),
-        );
-    };
-    return ($fetch_contest, $sth);
-}
-
-
-sub anonymous_contests_view ()
-{
-    my $sth = $dbh->prepare(qq~
-        SELECT id, title, closed, is_official,
-          CATS_DATE(start_date) AS start_date,
-          CATS_DATE(finish_date) AS finish_date
-          FROM contests ~.order_by
-    );
-    $sth->execute;
-
-    my $fetch_contest = sub($)
-    {
-        my $c = $_[0]->fetchrow_hashref or return;
-        return common_contests_view($c);
-    };
-    return ($fetch_contest, $sth);
-}
-
-
 sub contests_frame 
 {    
+    if (defined url_param('delete') && $is_root)   
+    {    
+        my $cid = url_param('delete');
+        $dbh->do(qq~DELETE FROM contests WHERE id=?~, {}, $cid);
+        $dbh->commit;       
+    }
+
     if (defined url_param('new') && $is_root)
     {
         contests_new_frame;
         return;
     }
 
-    try_contest_params_frame and return;
-
-    init_listview_template('contests_' . ($uid || ''), 'contests', 'main_contests.htm');
-
-    if (defined url_param('delete') && $is_root)   
-    {    
-        my $cid = url_param('delete');
-        $dbh->do(qq~DELETE FROM contests WHERE id = ?~, {}, $cid);
-        $dbh->commit;
+    if (defined url_param('edit') &&
+        get_registered_contestant fields => 'is_jury', contest_id => param('edit'))
+    {
+        contests_edit_frame;
+        return;
     }
+    
+    init_listview_template( 'contests_' . ($uid || ''), 'contests', "main_contests.htm" );
 
     if (defined param('new_save') && $is_root)
     {
@@ -440,8 +373,79 @@ sub contests_frame
         { caption => res_str(631), order_by => 'ctype DESC, finish_date', width => '20%' },
         { caption => res_str(630), order_by => 'ctype DESC, closed',      width => '20%' } ]);
 
-    attach_listview(url_f('contests'),
-        defined $uid ? authenticated_contests_view : anonymous_contests_view);
+    if (defined $uid)
+    {
+        my $c = $dbh->prepare(qq~
+            SELECT id, title, CATS_DATE(start_date) AS start_date, CATS_DATE(finish_date) AS finish_date, 
+              (SELECT COUNT(*) FROM contest_accounts WHERE contest_id=contests.id AND account_id=?) AS registered,
+              (SELECT is_virtual FROM contest_accounts WHERE contest_id=contests.id AND account_id=?) AS is_virtual,
+              (SELECT is_jury FROM contest_accounts WHERE contest_id=contests.id AND account_id=?) AS is_jury,
+              CATS_SYSDATE() - start_date, closed, is_official
+            FROM contests ~.order_by);
+        $c->execute($uid, $uid, $uid);
+
+        my $fetch_contest = sub($) 
+        {
+            my ( $contest_id, $contest_name, $start_date,
+                $finish_date, $registered, $is_virtual,
+                $is_jury, $start_diff_time,
+                $registration_denied, $is_official
+            ) = $_[0]->fetchrow_array
+                or return ();
+
+            my $started = $start_diff_time > 0;
+            return (
+                id => $contest_id,
+                authorized => defined $uid,
+                contest_name => $contest_name, 
+                start_date => $start_date, 
+                finish_date => $finish_date,
+                editable => $is_jury,
+                deletable => $is_root,
+                registered_online => $registered && !$is_virtual,
+                registered_virtual => $registered && $is_virtual, 
+                registration_denied => $registration_denied,
+                is_official => $is_official,
+                href_contest => url_function('contests', sid => $sid, set_contest => 1, cid => $contest_id),
+                selected => $contest_id == $cid,
+                href_delete => url_f('contests', delete => $contest_id),
+                href_edit => url_f('contests', edit => $contest_id) 
+            );
+        };
+
+        attach_listview(url_f('contests'), $fetch_contest, $c);
+    }
+    else
+    {
+        my $c = $dbh->prepare(qq~
+            SELECT id, title, CATS_DATE(start_date) AS start_date, CATS_DATE(finish_date) AS finish_date,
+              closed, CATS_SYSDATE() - start_date, is_official FROM contests ~.order_by
+        );
+        $c->execute;
+
+        my $fetch_contest = sub($)
+        {
+            my (
+                $contest_id, $contest_name, $start_date, $finish_date, $registration_denied, $start_diff_time, $is_official
+            ) = $_[0]->fetchrow_array
+                or return ();
+            my $started = $start_diff_time > 0;
+            return (
+                id => $contest_id,
+                contest_name => $contest_name,
+                start_date => $start_date,
+                finish_date => $finish_date,
+                registration_denied => $registration_denied,
+                is_official => $is_official,
+                selected => $contest_id == $cid,
+                changeable => $started || $is_jury,
+                href_contest =>
+                    url_function('contests', sid => $sid, set_contest => 1, cid => $contest_id)
+            );
+        };
+
+        attach_listview(url_f('contests'), $fetch_contest, $c);    
+    }
 
     if ($is_root)
     {
@@ -1034,7 +1038,6 @@ sub problems_replace_direct
     if ($st) { msg(52); }
 }
 
-
 sub download_problem {
     
     $t = undef;
@@ -1226,17 +1229,6 @@ sub problems_submit_std_solution
 }
 
 
-sub problem_status_names()
-{
-    {
-        0 => res_str(700),
-        1 => res_str(701),
-        2 => res_str(702),
-        3 => res_str(703),
-    }
-}
-
-
 sub problems_frame 
 {
     my $show_packages = 1;
@@ -1268,11 +1260,11 @@ sub problems_frame
     }
 
 
-    #if (defined url_param('replace') && $is_jury)
-    #{
-    #    problems_replace_frame;
-    #    return;
-    #}
+    if (defined url_param('replace') && $is_jury)
+    {
+        problems_replace_frame;
+        return;
+    }
 
 
     if (defined url_param('delete') && $is_jury)
@@ -1311,10 +1303,10 @@ sub problems_frame
     }
 
 
-    #if (defined param('replace_save') && $is_jury)
-    #{
-    #    problems_replace_save;
-    #}
+    if (defined param('replace_save') && $is_jury)
+    {
+        problems_replace_save;
+    }
 
     if (defined param('replace_direct') && $is_jury)
     {
@@ -1335,9 +1327,6 @@ sub problems_frame
 
     my @cols = (
         { caption => res_str(602), order_by => '3', width => '30%' },
-        ($is_jury ?
-        { caption => res_str(632), order_by => '9, 8', width => '10%' } : ()
-        ),
         ($is_practice ?
         { caption => res_str(603), order_by => '4', width => '30%' } : ()
         ),
@@ -1347,90 +1336,89 @@ sub problems_frame
     );
     define_columns(url_f('problems'), 0, 0, [ @cols ]);
 
-    my $reqs_count_sql = 'SELECT COUNT(*) FROM reqs D WHERE D.problem_id = P.id AND D.state =';
-    my $account_condition = $is_practice ? '' : ' AND D.account_id = ?';
-    my $select_code = $is_practice ? '' : q~CP.code || ' - ' || ~;
-    my $sth = $dbh->prepare(qq~
-        SELECT CP.id AS cpid, P.id AS pid, ${select_code}P.title AS problem_name, OC.title AS contest_name,
-          ($reqs_count_sql $cats::st_accepted$account_condition) AS accepted_count,
-          ($reqs_count_sql $cats::st_wrong_answer$account_condition) AS wrong_answer_count,
-          ($reqs_count_sql $cats::st_time_limit_exceeded$account_condition) AS time_limit_count,
-          P.contest_id - CP.contest_id AS is_linked, CP.status, OC.id AS original_contest_id
-        FROM problems P, contest_problems CP, contests OC
-        WHERE CP.problem_id = P.id AND OC.id = P.contest_id AND CP.contest_id = ?
-        ~ . order_by);
+    my $c;
     if ($is_practice)
     {
-        $sth->execute($cid);
+        $c = $dbh->prepare(qq~
+            SELECT CP.id, P.id, P.title, OC.title,
+              (SELECT COUNT(*) FROM reqs D WHERE D.problem_id = P.id AND D.state = $cats::st_accepted),
+              (SELECT COUNT(*) FROM reqs D WHERE D.problem_id = P.id AND D.state = $cats::st_wrong_answer),
+              (SELECT COUNT(*) FROM reqs D WHERE D.problem_id = P.id AND D.state = $cats::st_time_limit_exceeded)
+            FROM problems P, contests C, contest_problems CP, contests OC
+            WHERE CP.contest_id=C.id AND CP.problem_id=P.id AND C.id=? AND OC.id=P.contest_id 
+            ~.order_by);
+        $c->execute($cid);
     }
     else
     {
+        $c = $dbh->prepare(qq~
+            SELECT CP.id, P.id, CP.code||' - '||P.title, NULL,
+              (SELECT COUNT(*) FROM reqs D WHERE D.problem_id = P.id AND D.state = $cats::st_accepted AND D.account_id = ?),
+              (SELECT COUNT(*) FROM reqs D WHERE D.problem_id = P.id AND D.state = $cats::st_wrong_answer AND D.account_id = ?),
+              (SELECT COUNT(*) FROM reqs D WHERE D.problem_id = P.id AND D.state = $cats::st_time_limit_exceeded AND D.account_id = ?)
+              FROM problems P, contest_problems CP
+              WHERE CP.contest_id=? AND CP.problem_id=P.id
+              ~.order_by);
         my $aid = $uid || 0; # на случай анонимного пользователя
         # опять баг с порядком параметров
-        $sth->execute($cid, $aid, $aid, $aid);
+        $c->execute($cid, $aid, $aid, $aid);
     }
 
     my $fetch_record = sub($)
     {            
-        my $c = $_[0]->fetchrow_hashref or return ();
-        return ( 
-            href_delete   => url_f('problems', delete => $c->{cpid}),
-            href_replace  => url_f('problems', replace => $c->{cpid}),
-            href_download => url_f('problems', download => $c->{pid}),
-            show_packages => $show_packages,
-            is_practice => $is_practice,
-            editable => $is_jury,
-            is_linked => $c->{is_linked},
-            status => problem_status_names()->{$c->{status} || 0},
-            is_team => $is_team || $is_practice,
-            problem_id => $c->{pid},
-            problem_name => $c->{problem_name},
-            href_view_problem => url_f('problem_text', pid => $c->{pid}),
-            contest_name => $c->{contest_name},
-            accept_count => $c->{accepted_count},
-            wa_count => $c->{wrong_answer_count},
-            tle_count => $c->{time_limit_count},
-        );
+        if ( my( $cpid, $pid, $problem_name, $contest_name, $accept_count, $wa_count, $tle_count ) = $_[0]->fetchrow_array)
+        {       
+            return ( 
+                href_delete   => url_f('problems', delete => $cpid ),
+                href_replace  => url_f('problems', replace => $cpid),
+                href_download => url_f('problems', download => $pid),
+                show_packages => $show_packages,
+                is_practice => $is_practice,
+                editable => $is_jury,
+                is_team => $is_team || $is_practice,
+                problem_id => $pid,
+                problem_name => $problem_name, 
+                href_view_problem => url_f('problem_text', pid => $pid),
+                contest_name => $contest_name,
+                accept_count => $accept_count,
+                wa_count => $wa_count,
+                tle_count => $tle_count
+            );
+        }   
+
+        return ();
     };
             
-    attach_listview(url_f('problems'), $fetch_record, $sth);
+    attach_listview(url_f('problems'), $fetch_record, $c);
 
-    $sth->finish;
+    $c->finish;
 
-    $sth = $dbh->prepare(qq~SELECT id, description FROM default_de WHERE in_contests=1 ORDER BY code~);
-    $sth->execute;
+    $c = $dbh->prepare(qq~SELECT id, description FROM default_de WHERE in_contests=1 ORDER BY code~);
+    $c->execute;
 
-    my @de = ({ de_id => "by_extension", de_name => res_str(536) });
+    my @de;
+    push ( @de, { de_id => "by_extension", de_name => res_str(536) } );
 
-    while (my ($de_id, $de_name) = $sth->fetchrow_array)
+    while ( my ( $de_id, $de_name ) = $c->fetchrow_array )
     {
-        push @de, { de_id => $de_id, de_name => $de_name };
-    }
+        push ( @de, { de_id => $de_id, de_name => $de_name  } );
+    }    
 
-    $sth->finish;
+    $c->finish;
     
     my @submenu = ( { href_item => url_f('problem_text'), item_name => res_str(538), item_target=>'_blank' } );
 
     if ($is_jury)
     {
-        my $n = problem_status_names();
-        my $status_list = [];
-        for (sort keys %$n)
-        {
-            push @$status_list, { id => $_, name => $n->{$_} }; 
-        }
-        $t->param(
-            status_list => $status_list,
-            editable => 1
-        );
-
         push @submenu, (
             { href_item => url_f('problems', new => 1), item_name => res_str(539) },
             { href_item => url_f('problems', link => 1), item_name => res_str(540) } );
-    }
+    };
 
-    $t->param(submenu => [ @submenu ]);
+    $t->param(submenu => [ @submenu ] );    
     $t->param(is_team => ($is_team || $is_practice), is_practice => $is_practice, de_list => [ @de ]);
+
+    $is_jury && $t->param(editable => 1);
 }
 
 
@@ -3266,8 +3254,10 @@ sub accept_request
     generate_menu if (defined $t);
     generate_output;
 
+    $dbh->rollback;
 }
          
+
 sql_connect;
 
 #while(CGI::Fast->new)
@@ -3275,10 +3265,9 @@ sql_connect;
 #    accept_request;    
 #    exit if (-M $ENV{ SCRIPT_FILENAME } < 0); 
 #}
-#eval
-    { accept_request; };
 
-$dbh->rollback;
+accept_request;    
+   
 sql_disconnect;
 
 1;

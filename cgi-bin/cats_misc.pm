@@ -158,7 +158,7 @@ sub templates_path
 
 sub init_messages {
 
-    my $msg_file = templates_path()."/consts";
+    my $msg_file = templates_path()."/.consts";
 
     my $r = open FILE, "<".$msg_file;
    

@@ -73,28 +73,28 @@ CREATE TABLE contests (
 
 
 CREATE TABLE contest_accounts (
-    id          INTEGER NOT NULL PRIMARY KEY,
+    id      INTEGER NOT NULL PRIMARY KEY,
     contest_id  INTEGER NOT NULL REFERENCES contests(id) ON DELETE CASCADE,    
     account_id  INTEGER NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
     is_admin    INTEGER DEFAULT 0 CHECK (is_admin IN (0, 1)),
-    is_jury     INTEGER DEFAULT 0 CHECK (is_jury IN (0, 1)),
-    is_pop      INTEGER DEFAULT 0 CHECK (is_pop IN (0, 1)), /* printer operator */
+    is_jury INTEGER DEFAULT 0 CHECK (is_jury IN (0, 1)),
+    is_pop  INTEGER DEFAULT 0 CHECK (is_pop IN (0, 1)),
     is_hidden   INTEGER DEFAULT 0 CHECK (is_hidden IN (0, 1)),
-    is_ooc      INTEGER DEFAULT 0 CHECK (is_ooc IN (0, 1)),
+    is_ooc  INTEGER DEFAULT 0 CHECK (is_ooc IN (0, 1)),
     is_remote   INTEGER DEFAULT 0 CHECK (is_remote IN (0, 1)),
     UNIQUE(contest_id, account_id)
 );
 
 
 CREATE TABLE problems (
-    id              INTEGER NOT NULL PRIMARY KEY,
+    id          INTEGER NOT NULL PRIMARY KEY,
     contest_id      INTEGER NOT NULL REFERENCES contests(id) ON DELETE CASCADE,
-    title           VARCHAR(200) NOT NULL,
-    lang            VARCHAR(200) DEFAULT '',
+    title       VARCHAR(200) NOT NULL,
+    lang        VARCHAR(200) DEFAULT '',
     time_limit      INTEGER DEFAULT 0,
     memory_limit    NUMERIC,
     difficulty      INTEGER DEFAULT 100,
-    author          VARCHAR(200) DEFAULT '',
+    author      VARCHAR(200) DEFAULT '',
     input_file      VARCHAR(200) NOT NULL,
     output_file     VARCHAR(200) NOT NULL,
     upload_date     TIMESTAMP,
@@ -108,11 +108,10 @@ CREATE TABLE problems (
 
 
 CREATE TABLE contest_problems (
-    id         INTEGER NOT NULL PRIMARY KEY,
-    problem_id INTEGER NOT NULL REFERENCES problems(id) ON DELETE CASCADE,
-    contest_id INTEGER NOT NULL REFERENCES contests(id) ON DELETE CASCADE,   
-    code       CHAR,
-    status     INTEGER DEFAULT 0 CHECK (status IN (0, 1, 2, 3)),
+    id      INTEGER NOT NULL PRIMARY KEY,
+    problem_id  INTEGER NOT NULL REFERENCES problems(id) ON DELETE CASCADE,
+    contest_id  INTEGER NOT NULL REFERENCES contests(id) ON DELETE CASCADE,   
+    code    CHAR,
     UNIQUE(problem_id, contest_id)
 );
 
