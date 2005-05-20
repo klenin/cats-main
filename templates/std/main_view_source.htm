@@ -1,0 +1,15 @@
+<html><head>
+<title>CATS</title>
+<meta name="Content-Type" content="text/html; charset=utf-8">
+<link rel="stylesheet" type="text/css" href="./docs/std/main.css">
+</head>
+<body>
+<h3>Исходный код решения:</h3>
+<TMPL_IF message><i><TMPL_VAR message ESCAPE=HTML></i><br></TMPL_IF>
+<TMPL_INCLUDE 'includes/sources_info.inc'>
+<br/>
+<TMPL_LOOP sources_info>
+<pre class="bordered"><code><TMPL_VAR src ESCAPE=HTML></code></pre>
+</TMPL_LOOP>
+</body>
+</html>

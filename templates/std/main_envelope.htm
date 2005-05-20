@@ -6,7 +6,7 @@
 <body bgcolor=#a0a0a0>
 <table>
 <tr><td>Команда:</td><td><TMPL_VAR team_name ESCAPE=HTML></td></tr>
-<tr><td>Время остылки на тестирования:</td><td><TMPL_VAR submit_time ESCAPE=HTML></td></tr>
+<tr><td>Время отсылки на тестирования:</td><td><TMPL_VAR submit_time ESCAPE=HTML></td></tr>
 <tr><td>Время тестирования:</td><td><TMPL_VAR test_time ESCAPE=HTML></td></tr>
 <tr><td>Результат тестирования</td><td><TMPL_IF not_processed><font color="#008000">Not processed</font></TMPL_IF>
 <TMPL_IF install_processing><font color="#a0a000">Processing</font></TMPL_IF>

@@ -4,7 +4,11 @@
 <tr>
 <TMPL_IF is_submit_result>
     <td nowrap width=1% class=small>
+        <TMPL_IF is_jury>
+        <a href="#" onclick="add_id(<TMPL_VAR id>); return false;" title="<TMPL_VAR id>"><TMPL_VAR time></a>
+        <TMPL_ELSE>
         <a href="<TMPL_VAR href_details>" target='_blank'><TMPL_VAR time></a>
+        </TMPL_IF>
     </td>
     <td class=small>
 	<TMPL_IF is_jury>	

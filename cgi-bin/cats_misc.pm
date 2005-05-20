@@ -158,7 +158,7 @@ sub templates_path
 
 sub init_messages {
 
-    my $msg_file = templates_path()."/.consts";
+    my $msg_file = templates_path()."/consts";
 
     my $r = open FILE, "<".$msg_file;
    
@@ -325,7 +325,7 @@ sub msg
 sub url_function
 {
   my ($f, %p) = @_;
-  join '&', "main.pl?f=$f", map { $p{$_} ? "$_=$p{$_}" : () } keys %p;
+  join '&', "main.pl?f=$f", map { defined $p{$_} ? "$_=$p{$_}" : () } keys %p;
 }
 
 sub url_f

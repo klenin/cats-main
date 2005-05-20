@@ -21,7 +21,10 @@
 <TMPL_IF compilation_error>Compilation error</TMPL_IF>
 <TMPL_IF security_violation>Security violation</TMPL_IF>
 </table>
-<a href="<TMPL_VAR NAME=href_run_details>">Таблица результатов</a><br/>
+
+[ <a href="<TMPL_VAR NAME=href_run_details>">Таблица результатов</a>
+| <a href="<TMPL_VAR NAME=href_view_source>">Исходный код</a>
+]
 
 <form method=post enctype='multipart/form-data'>
 
@@ -50,17 +53,12 @@ on test #
 
 <TMPL_IF message><i><TMPL_VAR message ESCAPE=HTML></i><br></TMPL_IF>
 
-<h3>Исходный код решения:</h3>
 <TMPL_IF href_previous_attempt>
 <a href="<TMPL_VAR href_previous_attempt>">Предыдущая попытка (<TMPL_VAR previous_attempt_time>)</a>
 [<a href="<TMPL_VAR href_diff_runs>">diff</a>]<br/>
 </TMPL_IF>
-<TMPL_IF solution_code_avalaible>
+
 <p>Среда разработки: <TMPL_VAR de_name ESCAPE=HTML>, имя файла: <TMPL_VAR file_name ESCAPE=HTML></p>
-<pre class="bordered"><code><TMPL_VAR solution_code ESCAPE=HTML></code></pre>
-<TMPL_ELSE>
-Исходный код решения недоступен.
-</TMPL_IF>
 
 <TMPL_IF judge_log_dump_avalaible>
 <h3>Дамп лога судьи:</h3>
