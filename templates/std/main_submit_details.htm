@@ -5,23 +5,8 @@
 </head>
 <body>
 
-<table>
-<TMPL_INCLUDE 'includes/run_details_header.inc'>
-<tr><td>Состояние:</td><td>
-<TMPL_IF not_processed><font color="#008000">Not processed</TMPL_IF>
-<TMPL_IF install_processing><font color="#a0a000">Installing problem</TMPL_IF>
-<TMPL_IF unhandled_error>Unhandled error</TMPL_IF>
-<TMPL_IF testing><font color="#a0a000">Now testing</TMPL_IF>
-<TMPL_IF accepted>Solution accepted</TMPL_IF>
-<TMPL_IF wrong_answer>Wrong answer on test <TMPL_VAR failed_test_index></TMPL_IF>
-<TMPL_IF presentation_error>Presentation error on test <TMPL_VAR failed_test_index></TMPL_IF>
-<TMPL_IF time_limit_exceeded>Time limit exceeded on test <TMPL_VAR failed_test_index></TMPL_IF>
-<TMPL_IF memory_limit_exceeded>Memory limit exceeded on test <TMPL_VAR failed_test_index></TMPL_IF>
-<TMPL_IF runtime_error>Runtime error on test <TMPL_VAR failed_test_index></TMPL_IF>
-<TMPL_IF compilation_error>Compilation error</TMPL_IF>
-<TMPL_IF security_violation>Security violation</TMPL_IF>
-</table>
-
+<TMPL_INCLUDE 'includes/sources_info.inc'>
+<br/>
 [ <a href="<TMPL_VAR NAME=href_run_details>">Таблица результатов</a>
 | <a href="<TMPL_VAR NAME=href_view_source>">Исходный код</a>
 ]

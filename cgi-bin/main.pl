@@ -524,6 +524,7 @@ sub console
             D.t_blob AS question,
             D.t_blob AS answer,
             D.t_blob AS jury_message,
+            A.id AS team_id,
             A.team_name AS team_name,
             A.country AS country,
             A.last_ip AS last_ip,
@@ -540,6 +541,7 @@ sub console
             Q.question AS question,
             Q.answer AS answer,
             D.t_blob AS jury_message,
+            A.id AS team_id,
             A.team_name AS team_name,
             A.country AS country,
             A.last_ip AS last_ip,
@@ -556,6 +558,7 @@ sub console
             D.t_blob AS question,
             D.t_blob AS answer,
             M.text AS jury_message,
+            A.id AS team_id,
             A.team_name AS team_name,
             A.country AS country,
             A.last_ip AS last_ip,
@@ -573,6 +576,7 @@ sub console
             D.t_blob AS question,
             D.t_blob AS answer,
             M.text AS jury_message,
+            CAST(NULL AS INTEGER) AS team_id,
             CAST(NULL AS VARCHAR(200)) AS team_name,
             CAST(NULL AS VARCHAR(30)) AS country,
             CAST(NULL AS VARCHAR(100)) AS last_ip,
@@ -683,7 +687,7 @@ sub console
     {            
         my ($rtype, $rank, $submit_time, $id, $request_state, $failed_test, 
             $problem_title, $clarified, $question, $answer, $jury_message,
-            $team_name, $country_abb, $last_ip, $caid
+            $team_id, $team_name, $country_abb, $last_ip, $caid
         ) = $_[0]->fetchrow_array
             or return ();
 
@@ -699,7 +703,7 @@ sub console
             is_message =>           $rtype == 3,
             is_broadcast =>         $rtype == 4,
             clarified =>            $clarified,
-            href_details =>         url_f(($is_jury ? 'submit_details' : 'run_details'), rid => $id),
+            href_details =>         ($is_team && $uid == $team_id ? url_f('run_details', rid => $id) : ''),
             href_answer_box =>      $is_jury ? url_f('answer_box', qid => $id) : undef,
             href_send_message_box =>$is_jury ? url_f('send_message_box', caid => $caid) : undef,
             time =>                 $submit_time,
@@ -758,6 +762,48 @@ sub console
 }
 
 
+sub send_question_to_jury
+{
+    my ($question_text) = @_;
+
+    $is_team && defined $question_text && $question_text ne ''
+        or return;
+
+    my $cuid = get_registered_contestant(fields => 'id', contest_id => $cid);
+
+    my ($previous_question_text) = $dbh->selectrow_array(qq~
+        SELECT question FROM questions WHERE account_id = ? ORDER BY submit_time DESC~, {},
+        $cuid
+    );
+    $previous_question_text ne $question_text or return;
+    
+    my $s = $dbh->prepare(qq~
+        INSERT INTO questions(id, account_id, submit_time, question, received, clarified)
+        VALUES (?, ?, CATS_SYSDATE(), ?, 0, 0)~
+    );
+    $s->bind_param(1, new_id);
+    $s->bind_param(2, $cuid);       
+    $s->bind_param(3, $question_text, { ora_type => 113 } );
+    $s->execute;
+    $s->finish;
+    $dbh->commit;
+}
+
+
+sub retest_submissions
+{
+    my ($selection) = @_;
+    my $count = 0;
+    my @sanitized_runs = grep $_ ne '', split /\D+/, $selection;
+    for (@sanitized_runs)
+    {
+        update_request_state(request_id => $_, state => $cats::st_not_processed)
+            and ++$count;
+    }
+    return $count;
+}
+
+
 sub console_frame
 {        
     init_listview_template("console$cid" . ($uid || ''), 'console', 'main_console.htm');  
@@ -766,6 +812,14 @@ sub console_frame
     my $question_text = param('question_text');
     my $selection = param('selection');
    
+    if (defined param('retest'))
+    {
+        if (retest_submissions($selection))
+        {
+            $selection = '';
+        }
+    }
+
     my $my_events_only = url_param('my');
     $t->param(
         href_console_content => url_f('console_content', my => $my_events_only),
@@ -779,35 +833,10 @@ sub console_frame
         href_diff => url_f('diff_runs'),
     );
     
-    if (defined param('diff') && $is_jury)
+    if (defined param('send_question'))
     {
-        my ($r1, $r2) = $selection =~ /(\d+)\D+(\d+)/;
-        $r1 && $r2 or return msg(125);
-        print redirect url_f('diff_runs', r1 => $r1, r2 => $r2);
-        return;
+        send_question_to_jury($question_text);
     }
-    
-    defined param('send_question') && $is_team or return;
-    defined $question_text && $question_text ne '' or return;
-
-    my $cuid = get_registered_contestant(fields => 'id', contest_id => $cid);
-
-    my $q = $dbh->prepare(qq~SELECT question FROM questions WHERE account_id=? ORDER BY submit_time DESC~);
-    $q->bind_param(1, $cuid);
-    $q->execute;
-    my ($previous_question_text) = $q->fetchrow_array;
-    $previous_question_text ne $question_text or return;
-    
-    my $s = $dbh->prepare(qq~
-        INSERT INTO questions(id, account_id, submit_time, question, received, clarified)
-        VALUES (?, ?, CATS_SYSDATE(), ?, 0, 0)~
-    );
-    $s->bind_param(1, new_id);
-    $s->bind_param(2, $cuid);       
-    $s->bind_param(3, $question_text, { ora_type => 113 } );
-    $s->execute;
-    $s->finish;
-    $dbh->commit;
 }
 
 
@@ -2405,60 +2434,100 @@ sub answer_box_frame
 }
 
 
+sub get_sources_info
+{
+    my @req_ids = @_;
+    
+    @req_ids = grep defined $_ && $_ > 0, @req_ids
+        or return;
+
+    my $req_id_list = join ',', map sprintf('%d', $_), @req_ids;
+    
+    my $result = $dbh->selectall_arrayref(qq~
+        SELECT
+            S.req_id, S.src, S.fname AS file_name,
+            R.account_id, R.contest_id, R.problem_id, R.judge_id,
+            R.state, R.failed_test,
+            CATS_DATE(R.submit_time) AS submit_time,
+            CATS_DATE(R.test_time) AS test_time,
+            CATS_DATE(R.result_time) AS result_time,
+            DE.description AS de_name,
+            A.team_name,
+            P.title AS problem_name,
+            C.title AS contest_name
+        FROM sources S
+            INNER JOIN reqs R ON R.id = S.req_id
+            INNER JOIN default_de DE ON DE.id = S.de_id
+            INNER JOIN accounts A ON A.id = R.account_id
+            INNER JOIN problems P ON P.id = R.problem_id
+            INNER JOIN contests C ON C.id = R.contest_id
+        WHERE req_id IN ($req_id_list)~, { Slice => {} }
+    );
+    
+    for my $r (@$result)
+    {
+        # Только минуты от времени начала и окончания обработки.
+        ($r->{"${_}_short"} = $r->{$_}) =~ s/^(.*)\s+(\d\d:\d\d)\s*$/$2/
+            for qw(test_time result_time);
+        $r = { %$r, state_to_display($r->{state}) };
+    }
+
+    $result;
+}
+
+
 sub run_details_frame
 {
     init_template('main_run_details.htm');
+    defined $uid or return;
+
     my $rid = url_param('rid');
 
-    my (
-        $jid, $submit_time, $test_time, $result_time, $uid, $pid, $cid, $state
-    ) = $dbh->selectrow_array(qq~
-        SELECT judge_id, CATS_DATE(submit_time), CATS_DATE(test_time), CATS_DATE(result_time),
-            account_id, problem_id, contest_id, state FROM reqs WHERE id=?~,
-        {}, $rid
-    );
-   
-    my $team_name = $dbh->selectrow_array(qq~SELECT team_name FROM accounts WHERE id=?~, {}, $uid);
-    my $problem_name = $dbh->selectrow_array(qq~SELECT title FROM problems WHERE id=?~, {}, $pid);
+    my $si = get_sources_info($rid) or return;
+    @$si == 1 or return;
+    $t->param(sources_info => $si);
+    $si = $si->[0];
 
-    my $judge_name = '';
-    if (defined $jid)
+    my ($is_jury) = get_registered_contestant(
+        fields => 'is_jury', contest_id => $si->{contest_id});
+
+    $is_jury || $uid == $si->{account_id}
+        or return;
+
+    if ($is_jury && defined $si->{judge_id})
     {
-        $judge_name = $dbh->selectrow_array(qq~SELECT nick FROM judges WHERE id=?~, {}, $jid);
+        $si->{judge_name} = $dbh->selectrow_array(qq~
+            SELECT nick FROM judges WHERE id = ?~, {},
+            $si->{judge_id});
     }
 
     my $contest = $dbh->selectrow_hashref(qq~
         SELECT
-          title AS contest_name, run_all_tests,
-          show_all_tests, show_test_resources, show_checker_comment
-          FROM contests WHERE id=?~,
-        { Slice => {} },
-        $cid
+            run_all_tests, show_all_tests, show_test_resources, show_checker_comment
+            FROM contests WHERE id = ?~, { Slice => {} },
+        $si->{contest_id}
     );
     my $jury_view = $is_jury && !url_param('as_user');
-    $contest->{$_} ||= $jury_view for qw(show_all_tests show_test_resources show_checker_comment);
-    
+    $contest->{$_} ||= $jury_view
+        for qw(show_all_tests show_test_resources show_checker_comment);
+
     my $points = [];
     if ($contest->{show_all_tests})
     {
         $points = $dbh->selectcol_arrayref(qq~
-            SELECT points FROM tests WHERE problem_id = ? ORDER BY rank~,
-            {}, $pid);
+            SELECT points FROM tests WHERE problem_id = ? ORDER BY rank~, {},
+            $si->{problem_id});
     }
     my $show_points = 0 != grep $_ > 0, @$points;
 
     $t->param(
-        team_name => $team_name,
-        problem_name => $problem_name,
-        judge_name => $judge_name,
-        submit_time => $submit_time,
-        test_time => $test_time,
-        result_time => $result_time,
         %$contest,
+        is_jury => $is_jury,
         show_points => $show_points,
-        href_contest_problems => url_function('problems', cid => $cid, sid => $sid),
+        href_contest_problems => url_function(
+            'problems', cid => $si->{contest_id}, sid => $sid),
     );
-    
+
     my %run_details;
     my $rd_fields = join ', ', (
          qw(test_rank result),
@@ -2466,15 +2535,13 @@ sub run_details_frame
          ($contest->{show_checker_comment} ? qw(checker_comment) : ()),
     );
     
-    my $c = $dbh->prepare(qq~SELECT $rd_fields FROM req_details WHERE req_id = ? ORDER BY test_rank~);
+    my $c = $dbh->prepare(qq~
+        SELECT $rd_fields FROM req_details WHERE req_id = ? ORDER BY test_rank~);
     $c->execute($rid);
     my $last_test = 0;
     
     while (my $row = $c->fetchrow_hashref())
     {
-        my $prev_test = $last_test;
-        my $accepted = $row->{result} == $cats::st_accepted;
-        
         # На случай, если в БД не well-formed utf8
         if ($contest->{show_checker_comment})
         {
@@ -2482,6 +2549,9 @@ sub run_details_frame
             $row->{checker_comment} = Encode::decode('utf8', $d, Encode::FB_QUIET);
             $row->{checker_comment} .= '...' if $d ne '';
         }
+        
+        my $prev_test = $last_test;
+        my $accepted = $row->{result} == $cats::st_accepted;
         
         $run_details{$last_test = $row->{test_rank}} =
         {
@@ -2516,129 +2586,93 @@ sub run_details_frame
 }
 
 
-sub get_sources_info
-{
-    my @req_ids = @_ or return;
-    
-    @req_ids = grep defined $_ && $_ > 0, @req_ids
-        or return;
-    $_ = sprintf('%d', $_) for @req_ids;
-
-    my $req_id_list = join ',', @req_ids;
-    
-    $dbh->selectall_arrayref(qq~
-        SELECT
-            S.req_id, S.src, S.fname AS file_name,
-            CATS_DATE(R.submit_time) AS submit_time,
-            DE.description AS de_name,
-            R.account_id, A.team_name,
-            P.title AS problem_name, C.title AS contest_name
-        FROM sources S
-            INNER JOIN reqs R ON R.id = S.req_id
-            INNER JOIN default_de DE ON DE.id = S.de_id
-            INNER JOIN accounts A ON A.id = R.account_id
-            INNER JOIN problems P ON P.id = R.problem_id
-            INNER JOIN contests C ON C.id = R.contest_id
-        WHERE req_id IN ($req_id_list)~, { Slice => {} }
-    );
-}
-
-
 sub view_source_frame
 {
     init_template('main_view_source.htm');
     my $rid = url_param('rid') or return;
 
-    my $sources_info = get_sources_info(url_param 'rid') or return;
+    my $sources_info = get_sources_info($rid) or return;
     @$sources_info == 1 or return;
 
-    my $c = $sources_info->[0];
-    $is_jury || $c->{account_id} == $uid
+    $is_jury || $sources_info->[0]->{account_id} == $uid
         or return msg(126);
 
     $t->param(sources_info => $sources_info);
 }
 
 
+sub update_request_state
+{
+    my %p = @_;
+    defined $p{state} or return;
+    $dbh->do(qq~
+        UPDATE reqs
+            SET failed_test = ?, state = ?,
+                received = 0, result_time = CATS_SYSDATE(), judge_id=NULL 
+            WHERE id = ?~, {},
+        $p{failed_test}, $p{state}, $p{request_id}
+    ) or return;
+    $dbh->do(qq~DELETE FROM log_dumps WHERE req_id = ?~, {}, $p{request_id})
+        or return;
+    $dbh->commit;
+    return 1;
+}
+
+
 sub submit_details_frame
 {
-    init_template('main_submit_details.htm');   
-    
-    $is_jury or return;
-    
+    init_template('main_submit_details.htm');
     my $rid = url_param('rid') or return;
 
+    defined $uid or return;
+
+    my $si = get_sources_info($rid) or return;
+    @$si == 1 or return;
+    $t->param(sources_info => $si);
+    $si = $si->[0];
+
+    my ($is_jury) = get_registered_contestant(
+        fields => 'is_jury', contest_id => $si->{contest_id});
+
+    $is_jury or return;
+    
     if (defined param 'set_state')
     {
         my $state = 
         {       
-            not_processed =>            $cats::st_not_processed,
-            accepted =>                 $cats::st_accepted,
-            wrong_answer =>             $cats::st_wrong_answer,
-            presentation_error =>       $cats::st_presentation_error,
-            time_limit_exceeded =>      $cats::st_time_limit_exceeded,
-            memory_limit_exceeded =>    $cats::st_memory_limit_exceeded,            
-            runtime_error =>            $cats::st_runtime_error,
-            compilation_error =>        $cats::st_compilation_error,
-            security_violation =>       $cats::st_security_violation
-        } -> { param 'state' };
-                
-        my $ftest = param('failed_test');       
-       
-        if (defined $state &&
-            $dbh->do(qq~
-                UPDATE reqs
-                    SET failed_test=?, received=0, result_time=CATS_SYSDATE(), state=?, judge_id=NULL 
-                    WHERE id=?~, {}, $ftest, $state, $rid
-            ) &&
-            $dbh->do(qq~DELETE FROM log_dumps WHERE req_id=?~, {}, $rid ))
-        {
-            $dbh->commit;
-        }
+            not_processed =>         $cats::st_not_processed,
+            accepted =>              $cats::st_accepted,
+            wrong_answer =>          $cats::st_wrong_answer,
+            presentation_error =>    $cats::st_presentation_error,
+            time_limit_exceeded =>   $cats::st_time_limit_exceeded,
+            memory_limit_exceeded => $cats::st_memory_limit_exceeded,            
+            runtime_error =>         $cats::st_runtime_error,
+            compilation_error =>     $cats::st_compilation_error,
+            security_violation =>    $cats::st_security_violation,
+        } -> {param 'state'};
+
+        update_request_state(
+            request_id => $rid, failed_test => param('failed_test'), state => $state);
     }
 
-    my (
-        $jid, $submit_time, $test_time, $result_time,
-        $failed_test, $uid, $pid, $cid, $state
-    ) = $dbh->selectrow_array(qq~
-        SELECT
-          judge_id, CATS_DATE(submit_time), CATS_DATE(test_time), CATS_DATE(result_time),
-          failed_test, account_id, problem_id, contest_id, state
-          FROM reqs WHERE id=?~, {},
-        $rid
-    );
-
-    my $team_name = $dbh->selectrow_array(qq~SELECT team_name FROM accounts WHERE id=?~, {}, $uid);
-    my $problem_name = $dbh->selectrow_array(qq~SELECT title FROM problems WHERE id=?~, {}, $pid);
-
-    my $judge_name = '';
-    if (defined $jid)
+    if ($is_jury && defined $si->{judge_id})
     {
-        $judge_name = $dbh->selectrow_array(qq~SELECT nick FROM judges WHERE id=?~, {}, $jid);
+        $si->{judge_name} = $dbh->selectrow_array(qq~
+            SELECT nick FROM judges WHERE id = ?~, {},
+            $si->{judge_id});
     }
-
-    my $contest_name = $dbh->selectrow_array(qq~SELECT title FROM contests WHERE id=?~, {}, $cid);
 
     $t->param(
-        team_name => $team_name,
-        problem_name => $problem_name,
-        judge_name => $judge_name,
-        submit_time => $submit_time,
-        test_time => $test_time,
-        result_time => $result_time,
-        contest_name => $contest_name,
-        href_contest_problems => url_function('problems', cid => $cid, sid => $sid),
+        href_contest_problems => url_function('problems', cid => $si->{contest_id}, sid => $sid),
         href_run_details => url_f('run_details', rid => $rid),
-        href_view_source => url_f('view_source', rid => $rid),
-        failed_test_index => $failed_test,
-        state_to_display($state),
+        href_view_source => url_f('view_source', rid => $rid)
     );
 
     my $previous_attempt = $dbh->selectrow_hashref(qq~
         SELECT id, CATS_DATE(submit_time) AS submit_time FROM reqs
           WHERE account_id = ? AND problem_id = ? AND contest_id = ? AND id < ?
           ORDER BY id DESC~, { Slice => {} },
-        $uid, $pid, $cid, $rid
+        $uid, $si->{problem_id}, $si->{contest_id}, $rid
     );
     for ($previous_attempt)
     {
@@ -2651,29 +2685,19 @@ sub submit_details_frame
         );
     }
 
-    if ( my ($dump) =
-        $dbh->selectrow_array(qq~SELECT dump FROM log_dumps WHERE req_id=?~, {}, $rid ))
-    {
+    my ($dump) =
+        $dbh->selectrow_array(qq~SELECT dump FROM log_dumps WHERE req_id = ?~, {}, $rid);
+    if ($dump) {
         $t->param(
             judge_log_dump_avalaible => 1,
             judge_log_dump => Encode::decode('CP1251', $dump)
-        );  
+        );
     }
 
     my $tests = $dbh->selectcol_arrayref(qq~
         SELECT rank FROM tests WHERE problem_id = ? ORDER BY rank~, {},
-        $pid);
+        $si->{problem_id});
     $t->param(tests => [ map {test_index => $_}, @$tests ]);
-
-    if (my ($fname, $de_id) =
-        $dbh->selectrow_array( qq~SELECT fname, de_id FROM sources WHERE req_id=?~, {}, $rid ))
-    {
-        my $de = $dbh->selectrow_array( qq~SELECT description FROM default_de WHERE id=?~, {}, $de_id );
-
-        $t->param(
-            de_name => $de,
-            file_name => $fname );
-    }
 }
 
 

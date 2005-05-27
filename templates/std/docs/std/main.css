@@ -1,4 +1,4 @@
-BODY { 
+body { 
     scrollbar-face-color: #ffffff; 
     scrollbar-highlight-color: #ffffff; 
     scrollbar-arrow-color: #ffcc55; 
@@ -29,11 +29,14 @@ a, a:link {
     font-size: 14px
 }
 
+.linksize { font-size: 14px }
+
 .filter {
     filter: Alpha(Opacity=80, FinishOpacity=20, 
     Style=1, StartX=0, StartY=100,
     FinishY=250);
 }
+
 select, option {
     background-color: #ffffff;
     border: 1px solid #4040ff;
@@ -41,13 +44,9 @@ select, option {
     
 }
 
-.down {
-    background-repeat: no-repeat;
-}
+.down { background-repeat: no-repeat; }
 
-input {
-    height: 22px;
-}
+input { height: 22px; }
 
 .file {
     border: 1px solid #4040ff;

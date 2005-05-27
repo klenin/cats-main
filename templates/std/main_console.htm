@@ -1,5 +1,5 @@
 <TMPL_INCLUDE 'includes/menu_begin.inc'>
-<form method=post enctype="multipart/form-data">
+<form method="post" enctype="multipart/form-data">
 <script type="text/javascript">
 function send_message(href)
 {
@@ -42,8 +42,6 @@ function fill_1(aid, arg)
 {
     var a = get_element(aid);
     var e = get_element('selection');
-    var re = /^\d+$/;
-    var rs = re.exec(e.value);
     if (!e.value.match(/^\d+$/))
     {
         alert('Укажите попытку');
@@ -56,7 +54,7 @@ function fill_1(aid, arg)
 </script>
 <TMPL_IF message><i><TMPL_VAR message ESCAPE=HTML></i><br/></TMPL_IF>
 <span id='console_content'>
-идет загрузка страницы...
+идет загрузка страницы...<br/>
 </span>
 <TMPL_IF is_team>
 <br/>
@@ -73,15 +71,13 @@ function fill_1(aid, arg)
       onclick="return fill_1('a_run_log', '<TMPL_VAR href_run_log>&rid=');">лог</a>
     | <a id="a_diff" href="<TMPL_VAR href_diff>" target="_blank"
       onclick="return fill_diff();">сравнить</a>
-    | <a id="a_retest" href="<TMPL_VAR href_run_log>" target="_blank"
-      onclick="return fill_n('a_retest', '<TMPL_VAR href_run_log>&rids=');">перетестировать</a>
-    ]
+    ] <input type="submit" value="перетестировать" name="retest" class="button"/>
     </td></tr>
 </TMPL_IF>
     <tr bgcolor="#ccccff"><td>
     Вопрос к жюри:
-    <input size="100" maxlength="200" name="question_text" value="<TMPL_VAR question_text ESCAPE=HTML>" class="bordered">
-    <input type="submit" value="Отправить" name="send_question" class="button">
+    <input size="100" maxlength="200" name="question_text" value="<TMPL_VAR question_text ESCAPE=HTML>" class="bordered" />
+    <input type="submit" value="Отправить" name="send_question" class="button"/>
     </td></tr>
     </table>
 </TMPL_IF>
