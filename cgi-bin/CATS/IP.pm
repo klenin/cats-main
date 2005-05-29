@@ -1,4 +1,6 @@
-package cats_ip;
+package CATS::IP;
+use strict;
+use warnings;
 
 sub filter_ip
 {

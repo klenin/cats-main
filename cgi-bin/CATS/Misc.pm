@@ -1,4 +1,4 @@
-package cats_misc;
+package CATS::Misc;
 
 BEGIN
 {
@@ -50,9 +50,9 @@ use CGI::Util qw( rearrange unescape escape );
 use MIME::Base64;
 #use FCGI;
 
-use cats;
-use cats_db;
-use cats_ip;
+use CATS::Constants;
+use CATS::Connect;
+use CATS::IP;
 use vars qw( $dbh @messages $t $sid $cid $lng $uid $team_name $server_time $contest_title $dbi_error $is_practice );
 use vars qw( $is_root $is_team $is_jury $is_virtual $virtual_diff_time $contest_elapsed_minutes);
 use vars qw( $listview_name $listview_array_name $col_defs $sort $sort_dir $search $page $visible $additional);
@@ -109,7 +109,7 @@ sub http_header {
 sub sql_connect 
 {
     $dbh = DBI->connect(
-      $cats_db::db_dsn, $cats_db::db_user, $cats_db::db_password,
+      $CATS::Connect::db_dsn, $CATS::Connect::db_user, $CATS::Connect::db_password,
       { AutoCommit => 0, LongReadLen => 1024*1024*8, FetchHashKeyName => 'NAME_lc' }
     );
     
@@ -539,7 +539,7 @@ sub generate_login {
 
     my $login_num = undef;
     
-    if ( $cats_db::db_dsn =~ /InterBase/ )
+    if ( $CATS::Connect::db_dsn =~ /InterBase/ )
     {
         $login_num = $dbh->selectrow_array('SELECT GEN_ID(login_seq, 1) FROM RDB$DATABASE');
     }
@@ -571,11 +571,11 @@ sub generate_password {
 
 sub new_id {
 
-    if ( $cats_db::db_dsn =~ /InterBase/ )
+    if ( $CATS::Connect::db_dsn =~ /InterBase/ )
     {
         $dbh->selectrow_array('SELECT GEN_ID(key_seq, 1) FROM RDB$DATABASE');
     }
-    elsif ( $cats_db::db_dsn =~ /Oracle/ )
+    elsif ( $CATS::Connect::db_dsn =~ /Oracle/ )
     {
         $dbh->selectrow_array(qq~SELECT key_seq.nextval FROM DUAL~);
     }
@@ -597,7 +597,7 @@ sub user_authorize {
 
         ( $uid, $team_name, $srole, my $last_ip ) = $dbh->selectrow_array(
             qq~SELECT id, team_name, srole, last_ip FROM accounts WHERE sid=?~, {}, $sid );
-        if ( !defined($uid) || $last_ip ne cats_ip::get_ip() )
+        if ( !defined($uid) || $last_ip ne CATS::IP::get_ip() )
         {
             init_template('main_bad_sid.htm');
             $sid = '';
@@ -706,5 +706,3 @@ sub state_to_display
 }
 
 1;
-
-

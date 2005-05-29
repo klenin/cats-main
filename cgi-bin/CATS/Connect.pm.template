@@ -1,4 +1,4 @@
-package cats_db;
+package CATS::Connect;
 
 # This is a template file, you should adjust parameters below
 # and copy this file to the same folder, but with .template extenison removed

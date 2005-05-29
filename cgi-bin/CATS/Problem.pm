@@ -1,11 +1,11 @@
-package problem;
+package CATS::Problem;
 
 use lib './';
 use strict;
 use Encode;
 
-use cats;
-use cats_misc qw(:all);
+use CATS::Constants;
+use CATS::Misc qw(:all);
 use FileHandle;
 use Archive::Zip qw(:ERROR_CODES :CONSTANTS);
 use XML::Parser::Expat;
