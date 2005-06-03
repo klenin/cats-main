@@ -37,6 +37,7 @@ $adv_solution = 3;
 $generator_module = 4;
 $solution_module = 5;
 $checker_module = 6;
+$testlib_checker = 7;
 
 # состояние запроса в очереди
 $st_not_processed = 0;

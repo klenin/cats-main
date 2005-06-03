@@ -14,6 +14,8 @@ BEGIN
         enforce_request_state
         get_sources_info
         insert_ooc_user
+        is_jury_in_contest
+        get_judge_name
     );
 
     our %EXPORT_TAGS = (all => [ @EXPORT ]);
@@ -27,11 +29,23 @@ sub get_registered_contestant
     my %p = @_;
     $p{fields} ||= 1;
     $p{account_id} ||= $uid or return;
-    $p{contest_id} or return;
+    $p{contest_id} or die;
     
     $dbh->selectrow_array(qq~
         SELECT $p{fields} FROM contest_accounts WHERE contest_id = ? AND account_id = ?~, {},
         $p{contest_id}, $p{account_id});
+}
+
+
+sub is_jury_in_contest
+{
+    my %p = @_;
+    # Оптимизация: если запрос о текущем турнире, вывести уже считанное значение.
+    if (defined $cid && $p{contest_id} == $cid)
+    {
+        return $is_jury;
+    }
+    get_registered_contestant(fields => 'is_jury', @_);
 }
 
 
@@ -77,10 +91,12 @@ sub get_sources_info
     }
     
     $req_id_list or return;
+    
+    my $src = $p{get_source} ? ' S.src,' : '';
 
     my $result = $dbh->selectall_arrayref(qq~
         SELECT
-            S.req_id, S.src, S.fname AS file_name,
+            S.req_id,$src S.fname AS file_name,
             R.account_id, R.contest_id, R.problem_id, R.judge_id,
             R.state, R.failed_test,
             CATS_DATE(R.submit_time) AS submit_time,
@@ -89,15 +105,13 @@ sub get_sources_info
             DE.description AS de_name,
             A.team_name,
             P.title AS problem_name,
-            C.title AS contest_name,
-            CA.is_jury
+            C.title AS contest_name
         FROM sources S
             INNER JOIN reqs R ON R.id = S.req_id
             INNER JOIN default_de DE ON DE.id = S.de_id
             INNER JOIN accounts A ON A.id = R.account_id
             INNER JOIN problems P ON P.id = R.problem_id
             INNER JOIN contests C ON C.id = R.contest_id
-            INNER JOIN contest_accounts CA ON CA.contest_id =  C.id AND CA.account_id = A.id
         WHERE req_id IN ($req_id_list)~, { Slice => {} }
     ) or return;
     
@@ -110,6 +124,16 @@ sub get_sources_info
     }
 
     return ref $p{request_id} ? $result : $result->[0];
+}
+
+
+sub get_judge_name
+{
+    my ($judge_id) = @_
+        or return;
+    my ($name) = $dbh->selectrow_array(qq~SELECT nick FROM judges WHERE id = ?~, {},
+        $judge_id);
+    return $name;
 }
 
 

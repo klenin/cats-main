@@ -7,9 +7,6 @@
 
 <TMPL_INCLUDE 'includes/sources_info.inc'>
 <br/>
-[ <a href="<TMPL_VAR NAME=href_run_details>">Таблица результатов</a>
-| <a href="<TMPL_VAR NAME=href_view_source>">Исходный код</a>
-]
 
 <form method=post enctype='multipart/form-data'>
 
@@ -43,11 +40,10 @@ on test #
 [<a href="<TMPL_VAR href_diff_runs>">diff</a>]<br/>
 </TMPL_IF>
 
-<p>Среда разработки: <TMPL_VAR de_name ESCAPE=HTML>, имя файла: <TMPL_VAR file_name ESCAPE=HTML></p>
-
 <TMPL_IF judge_log_dump_avalaible>
-<h3>Дамп лога судьи:</h3>
+<h3>Дамп лога судьи</h3>
 <pre><code><TMPL_VAR judge_log_dump ESCAPE=HTML></code></pre>
+<TMPL_ELSE>лог отсутствует
 </TMPL_IF>
 
 </table>

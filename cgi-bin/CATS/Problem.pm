@@ -1,6 +1,6 @@
 package CATS::Problem;
 
-use lib './';
+#use lib './';
 use strict;
 use Encode;
 
@@ -443,10 +443,19 @@ sub parse_problem_content
     {
         required_attributes($el, \%atts, ['src']);
 
+        my $style = $atts{'style'} || 'legacy';
+        for ($style)
+        {
+            /^legacy$/ && do { note "WARNING: Legacy checker found!\n"; last; };
+            /^testlib$/ && last;
+            error "Unknown checker style (must be either 'legacy' or 'testlib')\n";
+        }
+        
         %checker = (    
             'id' => new_id,
             read_member_named(name => $atts{'src'}, kind => 'checker'),
-            'de_code' => $atts{'de_code'}
+            'de_code' => $atts{'de_code'},
+            'style' => $style
         )
     }
 
@@ -501,7 +510,7 @@ sub parse_problem_content
 
         for ($atts{'rank'})
         {
-            /\d+/ or error "Bad rank: '$_'";
+            /\d+/ or error "Bad rank: '$_'\n";
             !defined $test_rank_array{$_}
                 or error "Duplicate test $_\n";
             $test_rank_array{$_} = 1;
@@ -691,7 +700,8 @@ sub insert_problem_content
     {
         insert_problem_source(
             source_object => \%solution,
-            source_type => (defined $solution{'checkup'} && $solution{'checkup'} == 1) ? $cats::adv_solution : $cats::solution
+            source_type => (defined $solution{'checkup'} && $solution{'checkup'} == 1) ?
+                $cats::adv_solution : $cats::solution
         );
 
         note "Solution '$solution{'path'}' added\n";
@@ -700,7 +710,10 @@ sub insert_problem_content
 
     if ($el eq 'Checker')
     {
-        insert_problem_source(source_object => \%checker, source_type => $cats::checker);
+        insert_problem_source(
+            source_object => \%checker,
+            source_type => ($checker{style} eq 'legacy' ? $cats::checker : $cats::testlib_checker)
+        );
 
         note "Checker '$checker{'path'}' added\n";
         %checker = ();

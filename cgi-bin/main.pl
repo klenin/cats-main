@@ -190,7 +190,7 @@ sub try_contest_params_frame
     $t->param(
         id => $id, %$p,
         href_action => url_f('contests'),
-        can_edit => 1 == get_registered_contestant(fields => 'is_jury', contest_id => $id),
+        can_edit => get_registered_contestant(fields => 'is_jury', contest_id => $id),
     );
     
     1;
@@ -571,19 +571,26 @@ sub console
             CAST(NULL AS VARCHAR(30)) AS country,
             CAST(NULL AS VARCHAR(100)) AS last_ip,
             CAST(NULL AS INTEGER)
+            FROM messages M, dummy_table D
         ~,
     );
 
-    my $my_events_only = url_param('my') || '0';
-    if ($my_events_only !~ /[01]/)
+    my $my_events_only = url_param('my');
+    for ($my_events_only)
     {
-        $my_events_only = !$is_jury;
+        $_ = '' if !defined $_;
+        /[01]/ or $_ = !$is_jury;
     }
-    $my_events_only = 0 if !$uid;
-    
-    my $events_filter = $my_events_only ? 'AND A.id = ?' : '';
-    my @events_filter_params = $my_events_only ? ($uid) : ();
-    
+    my $events_filter = '';
+    my @events_filter_params = ();
+    if ($my_events_only)
+    {
+        $events_filter = 'AND A.id = ?';
+        @events_filter_params = $uid ? ($uid) :
+            $dbh->selectrow_array(qq~
+                SELECT id FROM accounts WHERE login=?~, {}, $cats::anonymous_login);
+    }
+
     my $c;
     if ($is_jury)
     {
@@ -611,7 +618,6 @@ sub console
 	        UNION
             SELECT
                 $console_select{broadcast}
-                FROM messages M, dummy_table D
                 WHERE (M.send_time > CATS_SYSDATE() - $day_count) AND M.broadcast=1
             ORDER BY 2 DESC~);
         $c->execute(@events_filter_params, @events_filter_params, @events_filter_params);
@@ -633,24 +639,21 @@ sub console
                 FROM questions Q, contest_accounts CA, dummy_table D, accounts A
                 WHERE (Q.submit_time > CATS_SYSDATE() - $day_count) AND
                 Q.account_id=CA.id AND CA.contest_id=? AND CA.account_id=A.id AND A.id=?
-                $events_filter
             UNION
             SELECT
                 $console_select{message}
                 FROM messages M, contest_accounts CA, dummy_table D, accounts A 
                 WHERE (M.send_time > CATS_SYSDATE() - $day_count) AND
                 M.account_id=CA.id AND CA.contest_id=? AND CA.account_id=A.id AND A.id=?
-                $events_filter
 	        UNION
             SELECT
                 $console_select{broadcast}
-                FROM messages M, dummy_table D
                 WHERE (M.send_time > CATS_SYSDATE() - $day_count) AND M.broadcast=1
             ORDER BY 2 DESC~);
         $c->execute(
             $cid, $uid, @events_filter_params,
-            $cid, $uid, @events_filter_params,
-            $cid, $uid, @events_filter_params
+            $cid, $uid,
+            $cid, $uid,
         );
     }
     else
@@ -667,12 +670,11 @@ sub console
             UNION
             SELECT
                 $console_select{broadcast}
-                FROM messages M, dummy_table D
                 WHERE (M.send_time > CATS_SYSDATE() - $day_count) AND M.broadcast=1
             ORDER BY 2 DESC~);
         $c->execute($cid, @events_filter_params);
     }
-    
+
     my $fetch_console_record = sub($)
     {            
         my ($rtype, $rank, $submit_time, $id, $request_state, $failed_test, 
@@ -819,7 +821,7 @@ sub console_frame
         selection => $selection,
         href_view_source => url_f('view_source'),
         href_run_details => url_f('run_details'),
-        href_run_log => url_f('submit_details'),
+        href_run_log => url_f('run_log'),
         href_diff => url_f('diff_runs'),
     );
     
@@ -891,13 +893,12 @@ sub problems_new_save
     {
         syswrite($fh, $buffer, $br);
     }
-
     close $fh;
 
     my $pid = new_id;
     my $problem_code = param('problem_code');
     
-    my ($st, $import_log) = problem::import_problem($fname, $cid, $pid, 0);
+    my ($st, $import_log) = CATS::Problem::import_problem($fname, $cid, $pid, 0);
    
     $import_log = Encode::encode_utf8( escape_html($import_log) );  
     $t->param(problem_import_log => $import_log);
@@ -1018,7 +1019,7 @@ sub problems_replace_direct
       msg(117);
       return;
     }
-    my ($st, $import_log) = problem::import_problem($fname, $cid, $pid, 1);
+    my ($st, $import_log) = CATS::Problem::import_problem($fname, $cid, $pid, 1);
     $import_log = Encode::encode_utf8( escape_html($import_log) );  
     $t->param(problem_import_log => $import_log);
 
@@ -1178,8 +1179,8 @@ sub problems_submit_std_solution
 {
     my $pid = param('problem_id');
 
-    unless (defined $pid) {
-        
+    unless (defined $pid)
+    {
         msg(12);
         return;
     }
@@ -1659,14 +1660,12 @@ sub users_frame
     if (defined param('new_save') && $is_jury)       
     {
         users_new_save;
-    };
-
+    }
 
     if (defined param('edit_save') && $is_jury)       
     {
         users_edit_save;
-    };
-
+    }
 
     if (defined param('save_attributes') && $is_jury)
     {
@@ -2240,13 +2239,13 @@ sub judges_frame
     {        
         judges_new_frame;
         return;
-    };
+    }
 
     if (defined url_param('edit'))
     {        
         judges_edit_frame;
         return;
-    };
+    }
 
 
     init_listview_template( "judges$cid" . ($uid || ''), 'judges', 'main_judges.htm' );      
@@ -2366,25 +2365,40 @@ sub answer_box_frame
 }
 
 
+sub source_links
+{
+    my ($si, $is_jury) = @_;
+    my ($current_link) = param('f');
+    
+    $si->{href_contest_problems} =
+        url_function('problems', cid => $si->{contest_id}, sid => $sid);
+    for (qw/run_details view_source run_log/)
+    {
+        next if $_ eq $current_link;
+        $si->{"href_$_"} = url_f($_, rid => $si->{req_id});
+        $si->{is_jury} = $is_jury;
+    }
+    $t->param(is_jury => $is_jury);
+    if ($is_jury)
+    {
+        $si->{judge_name} = get_judge_name($si->{judge_id});
+    }
+}
+
+
 sub run_details_frame
 {
     init_template('main_run_details.htm');
-    $is_jury or return;
 
     my $rid = url_param('rid');
 
     my $si = get_sources_info(request_id => $rid) or return;
     $t->param(sources_info => [$si]);
 
-    $si->{is_jury} || $uid == $si->{account_id}
-        or return;
+    my $is_jury = is_jury_in_contest(contest_id => $si->{contest_id});
 
-    if ($si->{is_jury} && defined $si->{judge_id})
-    {
-        $si->{judge_name} = $dbh->selectrow_array(qq~
-            SELECT nick FROM judges WHERE id = ?~, {},
-            $si->{judge_id});
-    }
+    $is_jury || $uid == $si->{account_id}
+        or return;
 
     my $contest = $dbh->selectrow_hashref(qq~
         SELECT
@@ -2392,7 +2406,7 @@ sub run_details_frame
             FROM contests WHERE id = ?~, { Slice => {} },
         $si->{contest_id}
     );
-    my $jury_view = $si->{is_jury} && !url_param('as_user');
+    my $jury_view = $is_jury && !url_param('as_user');
     $contest->{$_} ||= $jury_view
         for qw(show_all_tests show_test_resources show_checker_comment);
 
@@ -2403,14 +2417,12 @@ sub run_details_frame
             SELECT points FROM tests WHERE problem_id = ? ORDER BY rank~, {},
             $si->{problem_id});
     }
-    my $show_points = 0 != grep $_ > 0, @$points;
+    my $show_points = 0 != grep defined $_ && $_ > 0, @$points;
 
+    source_links($si, $is_jury);
     $t->param(
         %$contest,
-        is_jury => $si->{is_jury},
         show_points => $show_points,
-        href_contest_problems => url_function(
-            'problems', cid => $si->{contest_id}, sid => $sid),
     );
 
     my %run_details;
@@ -2476,32 +2488,35 @@ sub view_source_frame
     init_template('main_view_source.htm');
     my $rid = url_param('rid') or return;
 
-    my $sources_info = get_sources_info(request_id => $rid)
+    my $sources_info = get_sources_info(request_id => $rid, get_source => 1)
         or return;
 
-    $sources_info->{is_jury} || $sources_info->{account_id} == $uid
+    my $is_jury = is_jury_in_contest(contest_id => $sources_info->{contest_id});
+    $is_jury || $sources_info->{account_id} == $uid
         or return msg(126);
 
+    source_links($sources_info, $is_jury);
     $t->param(sources_info => [$sources_info]);
 }
 
 
-sub submit_details_frame
+sub run_log_frame
 {
-    init_template('main_submit_details.htm');
+    init_template('main_run_log.htm');
     my $rid = url_param('rid') or return;
 
     # HACK: Чтобы избежать лишнего обращения к БД, требуем, чтобы
-    # текущий пользователь являлся членом жюри не только соревнования,
-    # в котором просматривает задачу, но и исходного соревнования.
+    # пользователь являлся членом жюри не только соревнования,
+    # в котором просматривает задачу, но и своего текущего соревнования.
     $is_jury or return; 
 
     my $si = get_sources_info(request_id => $rid)
         or return;
+    is_jury_in_contest(contest_id => $si->{contest_id})
+        or return;
+
     $t->param(sources_info => [$si]);
 
-    $si->{is_jury} or return;
-    
     if (defined param 'set_state')
     {
         my $state = 
@@ -2517,35 +2532,31 @@ sub submit_details_frame
             security_violation =>    $cats::st_security_violation,
         } -> {param 'state'};
 
+        my $failed_test = sprintf '%d', param('failed_test');
         enforce_request_state(
-            request_id => $rid, failed_test => param('failed_test'), state => $state);
+            request_id => $rid, failed_test => $failed_test, state => $state);
+        my %st = state_to_display($state);
+        while (my ($k, $v) = each %st)
+        {
+            $si->{$k} = $v;
+        }
+        $si->{failed_test} = $failed_test;
     }
 
-    if (defined $si->{judge_id})
-    {
-        $si->{judge_name} = $dbh->selectrow_array(qq~
-            SELECT nick FROM judges WHERE id = ?~, {},
-            $si->{judge_id});
-    }
-
-    $t->param(
-        href_contest_problems => url_function('problems', cid => $si->{contest_id}, sid => $sid),
-        href_run_details => url_f('run_details', rid => $rid),
-        href_view_source => url_f('view_source', rid => $rid)
-    );
+    source_links($si, 1);
 
     my $previous_attempt = $dbh->selectrow_hashref(qq~
         SELECT id, CATS_DATE(submit_time) AS submit_time FROM reqs
-          WHERE account_id = ? AND problem_id = ? AND contest_id = ? AND id < ?
+          WHERE account_id = ? AND problem_id = ? AND id < ?
           ORDER BY id DESC~, { Slice => {} },
-        $uid, $si->{problem_id}, $si->{contest_id}, $rid
+        $si->{account_id}, $si->{problem_id}, $rid
     );
     for ($previous_attempt)
     {
         last unless defined $_;
         $_->{submit_time} =~ s/\s*$//;
         $t->param(
-            href_previous_attempt => url_f('submit_details', rid => $_->{id}),
+            href_previous_attempt => url_f('run_log', rid => $_->{id}),
             previous_attempt_time => $_->{submit_time},
             href_diff_runs => url_f('diff_runs', r1 => $_->{id}, r2 => $rid),
         );
@@ -2572,11 +2583,22 @@ sub diff_runs_frame
     init_template('main_diff_runs.htm');
     $is_jury or return;
     
-    my $si = get_sources_info(request_id => [ param('r1'), param('r2') ])
+    my $si = get_sources_info(
+        request_id => [ param('r1'), param('r2') ],
+        get_source => 1
+    ) or return;
+    @$si == 2 or return;
+
+    # Пользователь должен входить в жюри турниров, которым принадлежат обе задачи.
+    # Если задачи принадлежат одному и тому же турниру, проверяем его только однажды.
+    my ($cid1, $cid2) = map $_->{contest_id}, @$si;
+    is_jury_in_contest(contest_id => $cid1)
         or return;
-    @$si == 2 && $si->[0]->{is_jury} && $si->[1]->{is_jury}
+    $cid1 == $cid2 || is_jury_in_contest(contest_id => $cid2)
         or return;
-        
+
+    source_links($_, 1) for @$si;
+    
     for my $info (@$si)
     {
         $info->{lines} = [split "\n", $info->{src}];
@@ -2631,7 +2653,8 @@ sub rank_table
 
     # соответствующее требование: в одном чемпионате задача не должна дублироваться обеспечивается
     # при помощи UNIQUE(c,p)
-    my $c = $dbh->prepare(qq~SELECT problem_id, code FROM contest_problems WHERE contest_id=? ORDER BY code~);
+    my $c = $dbh->prepare(qq~
+        SELECT problem_id, code FROM contest_problems WHERE contest_id=? ORDER BY code~);
     $c->execute($cid);
     
     my ( @p_id, @problems );
@@ -3140,15 +3163,17 @@ sub interface_functions ()
         judges => \&judges_frame,
         answer_box => \&answer_box_frame,
         send_message_box => \&send_message_box_frame,
-        submit_details => \&submit_details_frame,
+        
+        run_log => \&run_log_frame,
         view_source => \&view_source_frame,
+        run_details => \&run_details_frame,
+        diff_runs => \&diff_runs_frame,
+        
         rank_table_content => \&rank_table_content_frame,
         rank_table => \&rank_table_frame,
         problem_text => \&problem_text_frame,
         envelope => \&envelope_frame,
         about => \&about_frame,
-        run_details => \&run_details_frame,
-        diff_runs => \&diff_runs_frame,
     }
 }
 
