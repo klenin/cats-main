@@ -190,7 +190,7 @@ sub try_contest_params_frame
     $t->param(
         id => $id, %$p,
         href_action => url_f('contests'),
-        can_edit => get_registered_contestant(fields => 'is_jury', contest_id => $id),
+        can_edit => (get_registered_contestant(fields => 'is_jury', contest_id => $id) ? 1 : 0),
     );
     
     1;
@@ -997,8 +997,8 @@ sub problems_replace_direct
         return;
     }
 
-    my ( $fh, $fname ) = tmpnam;
-    my ( $br, $buffer );            
+    my ($fh, $fname) = tmpnam;
+    my ($br, $buffer);            
 
     while ( $br = read( $file, $buffer, 1024 ) ) {
     
@@ -1028,19 +1028,19 @@ sub problems_replace_direct
 }
 
 
-sub download_problem {
-    
+sub download_problem
+{
     $t = undef;
 
     my $download_dir = './download';
 
     my $pid = param('download');
 
-    my ( $fh, $fname ) = tempfile( 
+    my ($fh, $fname) = tempfile( 
         'problem_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX', 
         DIR => $download_dir, SUFFIX => ".zip"  );
 
-    my ( $zip ) = 
+    my ($zip) = 
         $dbh->selectrow_array(qq~SELECT zip_archive FROM problems WHERE id=?~, {}, $pid);
 
     syswrite($fh, $zip, length($zip));    
@@ -1052,8 +1052,8 @@ sub download_problem {
 
 
 
-sub get_source_de {
-
+sub get_source_de
+{
      my $file_name = shift;
 
      my $c = $dbh->prepare(qq~SELECT id, code, description, file_ext FROM default_de WHERE in_contests=1 ORDER BY code~);
@@ -1061,15 +1061,15 @@ sub get_source_de {
     
      my ( $vol, $dir, $fname, $name, $ext ) = split_fname( lc $file_name );
 
-     while ( my ( $did, $code, $description, $file_ext ) = $c->fetchrow_array )
+     while (my ($did, $code, $description, $file_ext) = $c->fetchrow_array)
      {
-        my @ext_list = split( /\;/, $file_ext );
+        my @ext_list = split(/\;/, $file_ext);
  
-        foreach my $i ( @ext_list ) {
- 
-                if ( $i ne '' && $i eq $ext ) {
-                    return ( $did, $description );
-                }
+        foreach my $i (@ext_list)
+        {
+            if ($i ne '' && $i eq $ext) {
+                return ($did, $description);
+            }
         }
      }
      $c->finish;
@@ -2630,60 +2630,84 @@ sub diff_runs_frame
 }
 
 
+sub rank_get_problem_ids
+{
+    # соответствующее требование: в одном чемпионате задача не должна дублироваться обеспечивается
+    # при помощи UNIQUE(c,p)
+    my $problems = $dbh->selectall_arrayref(qq~
+        SELECT problem_id, code FROM contest_problems WHERE contest_id = ? ORDER BY code~,
+        { Slice => {} },
+        $cid);
+    
+    $t->param(problems => $problems);
+    map { $_->{problem_id} } @$problems;
+}
+
+
+sub rank_get_results
+{
+    my ($frozen) = @_;
+    my @conditions = ();
+    my @params = ();
+    if ($frozen && !$is_jury)
+    {
+        if ($is_team)
+        {
+            push @conditions, '(R.submit_time < C.freeze_date OR R.account_id = ?)';
+            push @params, $uid;
+        }
+        else
+        {
+            push @conditions, 'R.submit_time < C.freeze_date';
+        }
+    }
+    if ($is_team && !$is_jury && $virtual_diff_time)
+    {
+        push @conditions, "(R.submit_time - CA.diff_time < CATS_SYSDATE() - $virtual_diff_time)";
+    }
+
+    my $cond_str = join '', map " AND $_", @conditions;
+    
+    $dbh->selectall_arrayref(qq~
+        SELECT
+            R.state, ((R.submit_time - C.start_date - CA.diff_time) * 1440) AS time_elapsed,
+            R.problem_id, R.account_id
+        FROM reqs R, contests C, contest_accounts CA
+        WHERE
+            CA.contest_id = C.id AND CA.account_id = R.account_id AND R.contest_id = C.id AND
+            R.state >= ? AND C.id = ?$cond_str
+        ORDER BY R.id~, { Slice => {} },
+        $cats::request_processed, $cid, @params
+    );
+}
+
+
 sub rank_table
 {
     my $template_name = shift;
     init_template('main_rank_table_content.htm');
 
-    my $contest_title = $dbh->selectrow_array(qq~SELECT title FROM contests WHERE id=?~, {}, $cid);
-    $t->param( contest_title => $contest_title );
+    my ($contest_title, $time_since_freeze, $time_since_defreeze) = $dbh->selectrow_array(qq~
+        SELECT title, CATS_SYSDATE() - freeze_date, CATS_SYSDATE() - defreeze_date
+        FROM contests WHERE id=?~, {},
+        $cid
+    );
+    my $frozen = $time_since_freeze > 0 && $time_since_defreeze < 0;
+    $t->param(contest_title => $contest_title, frozen => $frozen);
 
     my $hide_ooc = url_param('hide_ooc') || '0';
-    unless ($hide_ooc =~ /^0$|^1$/)
+    unless ($hide_ooc =~ /^[01]$/)
     {
         $hide_ooc = 0;
     }
 
     my $hide_virtual = url_param('hide_virtual') || '0';
-    unless ($hide_virtual =~ /^0$|^1$/)
+    unless ($hide_virtual =~ /^[01]$/)
     {
         $hide_virtual = (!$is_virtual && !$is_jury || !$is_team);
     }
 
-
-    # соответствующее требование: в одном чемпионате задача не должна дублироваться обеспечивается
-    # при помощи UNIQUE(c,p)
-    my $c = $dbh->prepare(qq~
-        SELECT problem_id, code FROM contest_problems WHERE contest_id=? ORDER BY code~);
-    $c->execute($cid);
-    
-    my ( @p_id, @problems );
-    
-    while ( my ( $problem_id, $pcode ) = $c->fetchrow_array ) {
-        push @problems, { code => $pcode };
-        push @p_id, $problem_id;
-    }
-    $c->finish;
-    
-    $t->param( problems => [ @problems ] );
-
-    my @rank;
-    my $nteams = 0;
-
-    my $c2 = $dbh->prepare(qq~SELECT team_name, motto, country, B.id, 
-                            B.account_id, is_virtual, is_ooc, is_remote 
-                            FROM accounts A, contest_accounts B
-                            WHERE contest_id=? AND A.id=B.account_id AND is_hidden=0~);     
-    $c2->execute($cid);    
-
-
-    my $frozen = $dbh->selectrow_array(qq~
-        SELECT 1 FROM contests
-            WHERE id=? AND CATS_SYSDATE() > freeze_date AND CATS_SYSDATE() < defreeze_date~, {},
-        $cid);
-
-    $t->param( 
-        frozen => $frozen,
+    $t->param(
         hide_ooc => !$hide_ooc,
         hide_virtual => !$hide_virtual,
         href_hide_ooc => url_f('rank_table', hide_ooc => 1, hide_virtual => $hide_virtual),
@@ -2692,128 +2716,88 @@ sub rank_table
         href_show_virtual => url_f('rank_table', hide_virtual => 0, hide_ooc => $hide_ooc),
     );
 
-    while (my ($team_name, $motto, $country_abb, $caid, $aid, $virtual, $ooc, $remote) = $c2->fetchrow_array) 
+    my $virtual_cond = $hide_virtual ? ' AND is_virtual = 0' : '';
+    my $ooc_cond = $hide_ooc ? ' AND is_ooc = 0' : '';
+    my $teams = $dbh->selectall_hashref(qq~
+        SELECT
+            team_name, motto, country, is_virtual, is_ooc, is_remote,
+            CA.id, CA.account_id
+        FROM accounts A, contest_accounts CA
+        WHERE CA.contest_id = ? AND A.id = CA.account_id AND CA.is_hidden = 0~ .
+            $virtual_cond . $ooc_cond, 'account_id', { Slice => {} },
+        $cid
+    );
+
+    my @p_id = rank_get_problem_ids();
+
+    for (values %$teams)
     {
-        next if ($hide_ooc && $ooc || $hide_virtual && $virtual);
-        
-        my $c3;        
-        if ($is_jury)
-        {
-            $c3 = $dbh->prepare(qq~
-                SELECT R.state, ((R.submit_time - C.start_date - CA.diff_time) * 1440), R.problem_id 
-                    FROM reqs R, contests C, contest_accounts CA
-                    WHERE R.state>=? AND C.id=? AND R.contest_id=C.id AND R.account_id=? AND
-                    CA.contest_id=C.id AND CA.account_id=R.account_id ORDER BY R.id~
-            );
-            $c3->execute($cats::request_processed, $cid, $aid);
-
-        }
-        elsif ($is_team)
-        {
-            $c3 = $dbh->prepare(qq~
-                SELECT R.state, ((R.submit_time - C.start_date - CA.diff_time) * 1440), R.problem_id 
-                    FROM reqs R, contests C, contest_accounts CA
-                    WHERE R.state>=? AND C.id=? AND R.contest_id=C.id AND R.account_id=? AND
-                        (R.account_id=? OR ((R.submit_time < C.freeze_date) OR (CATS_SYSDATE() > C.defreeze_date))) AND
-                        CA.contest_id=C.id AND CA.account_id=R.account_id AND
-                        (R.submit_time - CA.diff_time < CATS_SYSDATE() - $virtual_diff_time)
-                ORDER BY R.id~);
-            $c3->execute($cats::request_processed, $cid, $aid, $uid);
-
-        }
-        else
-        {
-            $c3 = $dbh->prepare(qq~
-                SELECT R.state, ((R.submit_time - C.start_date - CA.diff_time) * 1440), R.problem_id 
-                    FROM reqs R, contests C, contest_accounts CA
-                    WHERE R.state>=? AND C.id=? AND R.contest_id=C.id AND R.account_id=? AND
-                        ((R.submit_time < C.freeze_date) OR (CATS_SYSDATE() > C.defreeze_date)) AND
-                        CA.contest_id=C.id AND CA.account_id=R.account_id
-                ORDER BY R.id~);
-            $c3->execute($cats::request_processed, $cid, $aid);
-        }
-
-        my ( $country, $flag ) = get_flag( $country_abb );
-        
-        my %r = ( team_name => $team_name, 
-		    # поскольку виртуальный участник всегда ooc, не выводим лишнюю строчку
-            ooc => ($virtual ? 0 : $ooc), 
-            remote => $remote, 
-            virtual => $virtual,
-            solved => 0,
-            submissions => 0,
-            ftime => 0,
-            time => 0,
-            aid => $aid,
-            country => $country,
-            flag => $flag,
-            motto => $motto
-        );
-        
-        foreach (@p_id) { $r{$_} = 0; }
-        while (my ($state, $time, $problem_id) = $c3->fetchrow_array) 
-        {
-            $r{"r$problem_id"} ||= 0;
-            if ($r{"r$problem_id"} <= 0)
-            {
-                if ( $state == $cats::st_accepted ) 
-                { 
-                    $r{ "r$problem_id" } = abs($r{ "r$problem_id" }) + 1;
-                    $r{ "t$problem_id" } = int($time + 0.5) + ($r{ "r$problem_id" } - 1) * $cats::penalty;
-                    $r{ time } += $r{ "t$problem_id" };
-                    $r{ solved }++;
-                }
-                elsif ($state != $cats::st_security_violation) 
-                {
-                    $r{ "r$problem_id" }--;
-                    $r{ submissions }++;
-                }
-            }
-        }
-        
-        $c3->finish;
-
-        push @rank, { %r };
-        $nteams++;
+		# поскольку виртуальный участник всегда ooc, не выводим лишнюю строчку
+        $_->{is_ooc} = 0 if $_->{is_virtual};
+        $_->{total_solved} = 0;
+        $_->{total_runs} = 0;
+        $_->{total_time} = 0;
+        my ($country, $flag) = get_flag($_->{country});
+        $_->{country} = $country;
+        $_->{flag} = $flag;
+        $_->{problems} = { map { $_ => { runs => 0, time_consumed => 0, solved => 0 } } @p_id };
     }
-    $c2->finish;
 
-    @rank = sort { $$b{ solved } <=> $$a{ solved } || $$a{ time } <=> $$b{ time } 
-        || $$b{ submissions } <=> $$a{ submissions } } @rank;
-    
-    my ($ptime, $psolved, $place, $i, $row_color) = (1000000000, -1, 1, 0, 0);
-    
-    for (@rank)
+    my $results = rank_get_results($frozen);
+    for (@$results)
     {
-        my $r = $_;
+        my $t = $teams->{$_->{account_id}};
+        my $p = $t->{problems}->{$_->{problem_id}};
+        next if $p->{solved};
+        if ($_->{state} == $cats::st_accepted) 
+        { 
+             $p->{time_consumed} = int($_->{time_elapsed} + 0.5) + $p->{runs} * $cats::penalty;
+             $p->{solved} = 1;
+             $t->{total_time} += $p->{time_consumed};
+             $t->{total_solved}++;
+        }
+        if ($_->{state} != $cats::st_security_violation) 
+        {
+             $p->{runs}++;
+             $t->{total_runs}++;
+        }
+    }
+
+    my @rank = sort {
+        $b->{total_solved} <=> $a->{total_solved} ||
+        $a->{total_time} <=> $b->{total_time} ||
+        $b->{total_runs} <=> $a->{total_runs}
+    } values %$teams;
+
+    my ($prev_time, $prev_solved, $place, $i, $row_color) = (1000000000, -1, 1, 0, 0);
+
+    for my $team (@rank)
+    {
         my @columns = ();
         
-        foreach (@p_id)
+        for (@p_id)
         {
-            my $c = $r -> { "r$_" };
+            my $p = $team->{problems}->{$_};
 
-            if (!defined $c || !$c) { $c = "." }
-            elsif ($c == 1) { $c = "+" }
-            elsif ($c >= 0) { $c = "+".($c-1); }
+            my $c = $p->{solved} ?
+                '+' . ($p->{runs} - 1 || '') :
+                -$p->{runs} || '.';
 
-            push( @columns, { td => $c, time => $r -> { "t$_" } } );        
+            push @columns, { td => $c, 'time' => ($p->{time_consumed} || '') };
         }
 
-	$row_color = 1 - $row_color if $psolved > $r -> { solved };	
-        $place++ if ( $psolved > $r -> { solved } || $ptime < $r -> { time } ); 
-        $psolved = $r -> { solved };
-        $ptime = $r -> { time };
+        $row_color = 1 - $row_color if $prev_solved > $team->{total_solved};
+        $place++ if $prev_solved > $team->{total_solved} || $prev_time < $team->{total_time};
+        $prev_solved = $team->{total_solved};
+        $prev_time = $team->{total_time};
 
+        $team->{row_color} = $row_color;
+        $team->{contestant_number} = ++$i;
+        $team->{place} = $place;       
+        $team->{columns} = [ @columns ];
+    }
 
-	$r -> { row_color } = $row_color;
-        $r -> { contestant_number } = ++$i;
-        $r -> { place } = $place;       
-        $r -> { columns } = [ @columns ];
-
-    }    
-
-    $t->param ( rank => [ @rank ] );
-
+    $t->param(rank => [ @rank ]);
 
     my $s = $t->output;
 
@@ -2888,11 +2872,11 @@ sub download_image
 
     my $download_dir = './download';
 
-    my ( $pic, $ext ) = $dbh->selectrow_array(qq~SELECT pic, extension FROM pictures WHERE id=?~, {}, $id );
+    my ($pic, $ext) = $dbh->selectrow_array(qq~SELECT pic, extension FROM pictures WHERE id=?~, {}, $id);
 
-    my ( $fh, $fname ) = tempfile( 
+    my ($fh, $fname) = tempfile(
         "img_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", 
-        DIR => $download_dir, SUFFIX => ".$ext" );
+        DIR => $download_dir, SUFFIX => ".$ext");
 
     binmode(STDOUT, ':raw');
 
@@ -2905,29 +2889,30 @@ sub download_image
 
 sub sh_1
 {
-    my ( $p, $el, %atts ) = @_;
+    my ($p, $el, %atts) = @_;
     
     if ($el eq 'img' && $atts{'picture'})
     {
-        my ( $id ) = $dbh->selectrow_array( qq~SELECT id FROM pictures WHERE problem_id=? AND name=?~, 
-            {}, $current_pid, $atts{'picture'} );
-        
-        $atts{ 'src' } = download_image($id);
-        delete $atts{'picture'};
+        my ($id) = $dbh->selectrow_array(qq~
+            SELECT id FROM pictures WHERE problem_id=? AND name=?~, {},
+            $current_pid, $atts{'picture'});
+
+        $atts{src} = download_image($id);
+        delete $atts{picture};
     }
-    start_element( $el, %atts );
+    start_element($el, %atts);
 }
 
 
 sub eh_1
 {
-    my ( $p, $el ) = @_;
-    end_element( $el );
+    my ($p, $el) = @_;
+    end_element($el);
 } 
 
 
-sub parse {
-    
+sub parse
+{
     my $xml_patch = shift;
     
     my $parser = new XML::Parser::Expat;

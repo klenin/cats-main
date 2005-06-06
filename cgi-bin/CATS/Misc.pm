@@ -122,7 +122,7 @@ sub sql_connect
     $dbh->{ HandleError } = sub {
 
         my $m = "DBI error: ".$_[0] ."\n";
-            
+        die $m;    
         fatal_error($m);
 
         #$dbi_error .= $m;
