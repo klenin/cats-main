@@ -27,7 +27,8 @@ function delete_judge(href, name)
     <a href='<TMPL_VAR href_edit>'><img src="./images/std/blank.gif" border=0></a> 
     <TMPL_VAR judge_name ESCAPE=HTML>
 </td>
-<td><TMPL_VAR alive_counter ESCAPE=HTML></td>
+<td><TMPL_VAR is_alive></td>
+<td><TMPL_VAR alive_date></td>
 <td><TMPL_IF locked><font color=red>заблокирован</font><TMPL_ELSE>работает</TMPL_IF></td>
 </tr>
 </TMPL_LOOP>

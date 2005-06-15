@@ -6,11 +6,10 @@
 CREATE TABLE judges (
     id      INTEGER NOT NULL PRIMARY KEY,
     jsid    VARCHAR(30) DEFAULT NULL,
-    color   VARCHAR(32),
     nick    VARCHAR(32) NOT NULL,
     lock_counter     INTEGER,
-    alive_counter    INTEGER,
-    signal  INTEGER  DEFAULT NULL,
+    is_alive         INTEGER DEFAULT 0 CHECK (is_alive IN (0, 1)),
+    alive_date       TIMESTAMP,
     accept_contests  INTEGER CHECK (accept_contests IN (0, 1)),
     accept_trainings INTEGER CHECK (accept_trainings IN (0, 1))
 );

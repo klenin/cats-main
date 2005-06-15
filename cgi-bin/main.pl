@@ -1,5 +1,8 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl
 use strict;
+use warnings;
+no warnings 'redefine';
+
 use File::Temp;
 use File::Temp qw/tempfile/;
 use Encode;
@@ -47,25 +50,26 @@ sub login_frame
         my $last_ip = CATS::IP::get_ip();
         
         if ($dbh->do(qq~
-            UPDATE accounts SET sid=?, last_login=CATS_SYSDATE(), last_ip=? WHERE id=?~,
+            UPDATE accounts SET sid = ?, last_login = CATS_SYSDATE(), last_ip = ?
+                WHERE id = ?~,
             {}, $sid, $last_ip, $aid
         ))
-        { 
+        {
             $dbh->commit;
 
-            my $cid = $dbh->selectrow_array(qq~SELECT id FROM contests WHERE ctype=1~);
+            my $cid = $dbh->selectrow_array(qq~SELECT id FROM contests WHERE ctype = 1~);
 
             $t = undef;
             print redirect(-uri => url_function('contests', sid => $sid, cid => $cid));
-            return;              
+            return;
         }
     }
     die 'Can not generate sid';
 }
 
 
-sub logout_frame {
-
+sub logout_frame
+{
     init_template('main_logout.htm');
 
     $cid = '';
@@ -302,7 +306,8 @@ sub contests_select_current
     return if $is_jury;
     
     my ($title, $time_since_finish) = $dbh->selectrow_array(qq~
-        SELECT title, CATS_SYSDATE() - finish_date FROM contests WHERE id=?~, {}, $cid);
+        SELECT title, CATS_SYSDATE() - finish_date FROM contests WHERE id = ?~, {},
+        $cid);
 
     $t->param(selected_contest_title => $title);
 
@@ -311,7 +316,7 @@ sub contests_select_current
     }
     elsif (!$registered) {
         msg(116);
-    }   
+    }
 }
 
 
@@ -2183,14 +2188,14 @@ sub judges_new_save
     my $judge_name = param('judge_name');
     my $locked = param('locked') eq 'on';
     
-    if ($judge_name eq '' || length $judge_name > 20)
-    {
-        msg 5;
-        return;
-    }
+    $judge_name ne '' && length $judge_name <= 20
+        or return msg(5);
     
-    $dbh->do(qq~INSERT INTO judges (id, nick, accept_contests, accept_trainings, lock_counter, alive_counter) VALUES(?,?,1,1,?,0)~, {}, 
-            new_id, $judge_name, $locked ? -1 : 0);
+    $dbh->do(qq~
+        INSERT INTO judges (
+            id, nick, accept_contests, accept_trainings, lock_counter, is_alive, alive_date
+        ) VALUES (?, ?, 1, 1, ?, 0, CATS_SYSDATE())~, {}, 
+        new_id, $judge_name, $locked ? -1 : 0);
     $dbh->commit;
 }
 
@@ -2221,7 +2226,6 @@ sub judges_edit_save
             $judge_name, $locked ? -1 : 0, $jid);
     $dbh->commit;
 }
-
 
 
 sub judges_frame 
@@ -2263,28 +2267,29 @@ sub judges_frame
 
 
     define_columns(url_f('judges'), 0, 0, 
-               [{ caption => res_str(625), order_by => '2', width => '80%' },
+               [{ caption => res_str(625), order_by => '2', width => '65%' },
                 { caption => res_str(626), order_by => '3', width => '10%' },
-                { caption => res_str(627), order_by => '4', width => '10%' }]);
+                { caption => res_str(633), order_by => '4', width => '15%' },
+                { caption => res_str(627), order_by => '5', width => '10%' }]);
 
-    my $c = $dbh->prepare(qq~SELECT id, nick, alive_counter, lock_counter FROM judges ~.order_by);
+    my $c = $dbh->prepare(qq~
+        SELECT id, nick, is_alive, CATS_DATE(alive_date), lock_counter
+            FROM judges ~.order_by);
     $c->execute;
 
     my $fetch_record = sub($)
     {            
-        if ( my( $jid, $judge_name, $alive_counter, $lock_counter ) = $_[0]->fetchrow_array)
-        {                
-            return ( 
-                'jid' => $jid, 
-                'judge_name' => $judge_name, 
-                'locked' => $lock_counter,
-                'alive_counter' => $alive_counter,
-                'href_edit' => url_f('judges', edit => $jid),
-                'href_delete' => url_f('judges', delete => $jid)
-            );
-        }
-
-        return ();
+        my($jid, $judge_name, $is_alive, $alive_date, $lock_counter) = $_[0]->fetchrow_array
+            or return ();
+        return ( 
+            jid => $jid, 
+            judge_name => $judge_name, 
+            locked => $lock_counter,
+            is_alive => $is_alive,
+            alive_date => $alive_date,
+            href_edit=> url_f('judges', edit => $jid),
+            href_delete => url_f('judges', 'delete' => $jid)
+        );
     };
              
     attach_listview(url_f('judges'), $fetch_record, $c);
@@ -2294,7 +2299,8 @@ sub judges_frame
 
     $c->finish;
     
-    $dbh->do(qq~UPDATE judges SET alive_counter=alive_counter+1~);
+    $dbh->do(qq~
+        UPDATE judges SET is_alive = 0, alive_date = CATS_SYSDATE() WHERE is_alive = 1~);
     $dbh->commit;
 }
 
