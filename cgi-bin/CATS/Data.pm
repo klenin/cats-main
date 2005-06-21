@@ -16,6 +16,7 @@ BEGIN
         insert_ooc_user
         is_jury_in_contest
         get_judge_name
+        get_contests_info
     );
 
     our %EXPORT_TAGS = (all => [ @EXPORT ]);
@@ -149,6 +150,38 @@ sub insert_ooc_user
         new_id, $p{contest_id}, $p{account_id}, 0, 0, 0, 1, $p{is_remote} || 0,
         0, 0
     );
+}
+
+
+sub get_contests_info
+{
+    my ($contest_list) = @_;
+
+    my $frozen = 0;
+    my $title_prefix;
+    my $sth = $dbh->prepare(qq~
+        SELECT title, CATS_SYSDATE() - freeze_date, CATS_SYSDATE() - defreeze_date
+        FROM contests WHERE id IN ($contest_list)~
+    );
+    $sth->execute;
+    while (my ($title, $time_since_freeze, $time_since_defreeze) = $sth->fetchrow_array)
+    {
+        $frozen = 1 if $time_since_freeze > 0 && $time_since_defreeze < 0;
+        for ($title_prefix)
+        {
+            $_ = $title, last if !defined $_;
+            my $i = 0;
+            while (
+                $i < length($_) && $i < length($title) &&
+                substr($_, $i, 1) eq substr($title, $i, 1)
+            )
+            {
+                $i++;
+            }
+            $_ = substr($_, 0, $i);
+        }
+    }
+    return ($title_prefix || '', $frozen);
 }
 
 

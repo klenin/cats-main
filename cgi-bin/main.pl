@@ -43,7 +43,7 @@ sub login_frame
 
     my $ok = 0;
     my @ch = ('A'..'Z', 'a'..'z', '0'..'9');
-    foreach (1..20)
+    for (1..20)
     {
         $sid = join '', map { $ch[rand @ch] } 1..30;
         
@@ -700,7 +700,9 @@ sub console
             is_message =>           $rtype == 3,
             is_broadcast =>         $rtype == 4,
             clarified =>            $clarified,
-            href_details =>         ($is_team && $uid == $team_id ? url_f('run_details', rid => $id) : ''),
+            href_details => (
+                ($is_team && $uid && $uid == $team_id) ? url_f('run_details', rid => $id) : ''
+            ),
             href_answer_box =>      $is_jury ? url_f('answer_box', qid => $id) : undef,
             href_send_message_box =>$is_jury ? url_f('send_message_box', caid => $caid) : undef,
             time =>                 $submit_time,
@@ -2448,7 +2450,7 @@ sub run_details_frame
         # На случай, если в БД не well-formed utf8
         if ($contest->{show_checker_comment})
         {
-            my $d = $row->{checker_comment};
+            my $d = $row->{checker_comment} || '';
             $row->{checker_comment} = Encode::decode('utf8', $d, Encode::FB_QUIET);
             $row->{checker_comment} .= '...' if $d ne '';
         }
@@ -2638,13 +2640,17 @@ sub diff_runs_frame
 
 sub rank_get_problem_ids
 {
+    my ($contest_list) = @_;
     # соответствующее требование: в одном чемпионате задача не должна дублироваться обеспечивается
     # при помощи UNIQUE(c,p)
     my $problems = $dbh->selectall_arrayref(qq~
-        SELECT problem_id, code FROM contest_problems WHERE contest_id = ? ORDER BY code~,
-        { Slice => {} },
-        $cid);
-    
+        SELECT CP.problem_id, CP.code
+        FROM contest_problems CP INNER JOIN contests C ON C.id = CP.contest_id
+        WHERE CP.contest_id IN ($contest_list)
+        ORDER BY C.start_date, CP.code~,
+        { Slice => {} }
+    );
+
     $t->param(problems => $problems);
     map { $_->{problem_id} } @$problems;
 }
@@ -2652,7 +2658,7 @@ sub rank_get_problem_ids
 
 sub rank_get_results
 {
-    my ($frozen) = @_;
+    my ($frozen, $contest_list) = @_;
     my @conditions = ();
     my @params = ();
     if ($frozen && !$is_jury)
@@ -2681,9 +2687,9 @@ sub rank_get_results
         FROM reqs R, contests C, contest_accounts CA
         WHERE
             CA.contest_id = C.id AND CA.account_id = R.account_id AND R.contest_id = C.id AND
-            R.state >= ? AND C.id = ?$cond_str
+            CA.is_hidden = 0 AND R.state >= ? AND C.id IN ($contest_list)$cond_str
         ORDER BY R.id~, { Slice => {} },
-        $cats::request_processed, $cid, @params
+        $cats::request_processed, @params
     );
 }
 
@@ -2692,26 +2698,22 @@ sub rank_table
 {
     my $template_name = shift;
     init_template('main_rank_table_content.htm');
-
-    my ($contest_title, $time_since_freeze, $time_since_defreeze) = $dbh->selectrow_array(qq~
-        SELECT title, CATS_SYSDATE() - freeze_date, CATS_SYSDATE() - defreeze_date
-        FROM contests WHERE id=?~, {},
-        $cid
-    );
-    my $frozen = $time_since_freeze > 0 && $time_since_defreeze < 0;
+    
+    my $contest_list = url_param('clist') || $cid;
+    $contest_list = 
+        join(',', grep { $_ > 0 } map { sprintf '%d', $_ } split ',', $contest_list) || $cid;
+    
+    my ($contest_title, $frozen) = get_contests_info($contest_list);
+    $contest_title ||= 'group';
     $t->param(contest_title => $contest_title, frozen => $frozen);
 
     my $hide_ooc = url_param('hide_ooc') || '0';
-    unless ($hide_ooc =~ /^[01]$/)
-    {
-        $hide_ooc = 0;
-    }
+    $hide_ooc =~ /^[01]$/
+        or $hide_ooc = 0;
 
     my $hide_virtual = url_param('hide_virtual') || '0';
-    unless ($hide_virtual =~ /^[01]$/)
-    {
-        $hide_virtual = (!$is_virtual && !$is_jury || !$is_team);
-    }
+    $hide_virtual =~ /^[01]$/
+        or $hide_virtual = (!$is_virtual && !$is_jury || !$is_team);
 
     $t->param(
         hide_ooc => !$hide_ooc,
@@ -2726,19 +2728,20 @@ sub rank_table
     my $ooc_cond = $hide_ooc ? ' AND is_ooc = 0' : '';
     my $teams = $dbh->selectall_hashref(qq~
         SELECT
-            team_name, motto, country, is_virtual, is_ooc, is_remote,
-            CA.id, CA.account_id
+            A.team_name, A.motto, A.country,
+            MAX(CA.is_virtual) AS is_virtual, MAX(CA.is_ooc) AS is_ooc, MAX(CA.is_remote) AS is_remote,
+            CA.account_id
         FROM accounts A, contest_accounts CA
-        WHERE CA.contest_id = ? AND A.id = CA.account_id AND CA.is_hidden = 0~ .
-            $virtual_cond . $ooc_cond, 'account_id', { Slice => {} },
-        $cid
+        WHERE CA.contest_id IN ($contest_list) AND A.id = CA.account_id AND CA.is_hidden = 0
+            $virtual_cond $ooc_cond
+        GROUP BY CA.account_id, A.team_name, A.motto, A.country~, 'account_id', { Slice => {} }
     );
 
-    my @p_id = rank_get_problem_ids();
+    my @p_id = rank_get_problem_ids($contest_list);
 
     for (values %$teams)
     {
-		# поскольку виртуальный участник всегда ooc, не выводим лишнюю строчку
+        # поскольку виртуальный участник всегда ooc, не выводим лишнюю строчку
         $_->{is_ooc} = 0 if $_->{is_virtual};
         $_->{total_solved} = 0;
         $_->{total_runs} = 0;
@@ -2749,7 +2752,7 @@ sub rank_table
         $_->{problems} = { map { $_ => { runs => 0, time_consumed => 0, solved => 0 } } @p_id };
     }
 
-    my $results = rank_get_results($frozen);
+    my $results = rank_get_results($frozen, $contest_list);
     for (@$results)
     {
         my $t = $teams->{$_->{account_id}};
@@ -2816,12 +2819,15 @@ sub rank_table_frame
 {
     my $hide_ooc = url_param('hide_ooc') || 0;
     my $hide_virtual = url_param('hide_virtual') || 0;
+    my $clist = url_param('clist');
     
-    #rank_table("main_rank_table.htm");  
+    #rank_table('main_rank_table.htm');  
     init_template('main_rank_table.htm');  
         
-    $t->param(href_rank_table_content => 
-        url_f('rank_table_content', hide_ooc => $hide_ooc, hide_virtual => $hide_virtual));
+    $t->param(href_rank_table_content => url_f(
+        'rank_table_content', hide_ooc => $hide_ooc, hide_virtual => $hide_virtual,
+        clist => $clist
+    ));
 }
 
 
