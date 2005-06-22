@@ -385,6 +385,13 @@ sub anonymous_contests_view ()
 
 sub contests_frame 
 {    
+    if (defined param('summary_rank'))
+    {
+        my @clist = param('contests_selection');
+        print redirect(-uri => url_f('rank_table', clist => join ',', @clist));
+        return;
+    }
+
     if (defined url_param('new') && $is_root)
     {
         contests_new_frame;
@@ -444,8 +451,11 @@ sub contests_frame
         $t->param(submenu => [ @submenu ] );
     }
 
-    $t->param(authorized => defined $uid, href_contests => url_f('contests'));    
-    $is_root && $t->param(editable => 1);
+    $t->param(
+        authorized => defined $uid,
+        href_contests => url_f('contests'),
+        editable => $is_root
+    );
 }
 
 sub init_console_listview_additionals
@@ -2644,21 +2654,48 @@ sub rank_get_problem_ids
     # соответствующее требование: в одном чемпионате задача не должна дублироваться обеспечивается
     # при помощи UNIQUE(c,p)
     my $problems = $dbh->selectall_arrayref(qq~
-        SELECT CP.problem_id, CP.code
+        SELECT CP.problem_id, CP.code, CP.contest_id, CATS_DATE(C.start_date) AS start_date
         FROM contest_problems CP INNER JOIN contests C ON C.id = CP.contest_id
         WHERE CP.contest_id IN ($contest_list)
         ORDER BY C.start_date, CP.code~,
         { Slice => {} }
     );
 
-    $t->param(problems => $problems);
+    my $w = int(50 / (@$problems + 1));
+    $w = $w < 3 ? 3 : $w > 10 ? 10 : $w;
+
+    $_->{column_width} = $w for @$problems;
+
+    my @contests = ();
+    my $prev_cid = -1;
+    for (@$problems)
+    {
+        if ($_->{contest_id} != $prev_cid)
+        {
+            $_->{start_date} =~ /^\s*(\S+)/;
+            push @contests, { start_date => $1, count => 1 };
+            $prev_cid = $_->{contest_id};
+        }
+        else
+        {
+            $contests[$#contests]->{count}++;
+        }
+    }
+
+    $t->param(
+        problems => $problems,
+        problem_column_width => $w,
+        contests => [ @contests ],
+        many_contests => @contests > 1
+    );
+    
     map { $_->{problem_id} } @$problems;
 }
 
 
 sub rank_get_results
 {
-    my ($frozen, $contest_list) = @_;
+    my ($frozen, $contest_list, $cond_str) = @_;
     my @conditions = ();
     my @params = ();
     if ($frozen && !$is_jury)
@@ -2678,7 +2715,7 @@ sub rank_get_results
         push @conditions, "(R.submit_time - CA.diff_time < CATS_SYSDATE() - $virtual_diff_time)";
     }
 
-    my $cond_str = join '', map " AND $_", @conditions;
+    $cond_str .= join '', map " AND $_", @conditions;
     
     $dbh->selectall_arrayref(qq~
         SELECT
@@ -2694,19 +2731,18 @@ sub rank_get_results
 }
 
 
+sub get_contest_list_param
+{
+    my $contest_list = url_param('clist') || $cid;
+    join(',', grep { $_ > 0 } map { sprintf '%d', $_ } split ',', $contest_list) || $cid;
+}
+
+
 sub rank_table
 {
     my $template_name = shift;
     init_template('main_rank_table_content.htm');
     
-    my $contest_list = url_param('clist') || $cid;
-    $contest_list = 
-        join(',', grep { $_ > 0 } map { sprintf '%d', $_ } split ',', $contest_list) || $cid;
-    
-    my ($contest_title, $frozen) = get_contests_info($contest_list);
-    $contest_title ||= 'group';
-    $t->param(contest_title => $contest_title, frozen => $frozen);
-
     my $hide_ooc = url_param('hide_ooc') || '0';
     $hide_ooc =~ /^[01]$/
         or $hide_ooc = 0;
@@ -2715,17 +2751,21 @@ sub rank_table
     $hide_virtual =~ /^[01]$/
         or $hide_virtual = (!$is_virtual && !$is_jury || !$is_team);
 
+    my $contest_list = get_contest_list_param;
+    my (undef, $frozen) = get_contests_info($contest_list);
+    my @p = ('rank_table', clist => $contest_list);
     $t->param(
+        frozen => $frozen,
         hide_ooc => !$hide_ooc,
         hide_virtual => !$hide_virtual,
-        href_hide_ooc => url_f('rank_table', hide_ooc => 1, hide_virtual => $hide_virtual),
-        href_show_ooc => url_f('rank_table', hide_ooc => 0, hide_virtual => $hide_virtual),
-        href_hide_virtual => url_f('rank_table', hide_virtual => 1, hide_ooc => $hide_ooc),
-        href_show_virtual => url_f('rank_table', hide_virtual => 0, hide_ooc => $hide_ooc),
+        href_hide_ooc => url_f(@p, hide_ooc => 1, hide_virtual => $hide_virtual),
+        href_show_ooc => url_f(@p, hide_ooc => 0, hide_virtual => $hide_virtual),
+        href_hide_virtual => url_f(@p, hide_virtual => 1, hide_ooc => $hide_ooc),
+        href_show_virtual => url_f(@p, hide_virtual => 0, hide_ooc => $hide_ooc),
     );
 
-    my $virtual_cond = $hide_virtual ? ' AND is_virtual = 0' : '';
-    my $ooc_cond = $hide_ooc ? ' AND is_ooc = 0' : '';
+    my $virtual_cond = $hide_virtual ? ' AND CA.is_virtual = 0' : '';
+    my $ooc_cond = $hide_ooc ? ' AND CA.is_ooc = 0' : '';
     my $teams = $dbh->selectall_hashref(qq~
         SELECT
             A.team_name, A.motto, A.country,
@@ -2738,6 +2778,9 @@ sub rank_table
     );
 
     my @p_id = rank_get_problem_ids($contest_list);
+    $t->param(
+        problem_colunm_width => @p_id <= 6 ? 6 : @p_id <= 8 ? 5 : @p_id <= 10 ? 4 : 3 
+    );
 
     for (values %$teams)
     {
@@ -2752,7 +2795,7 @@ sub rank_table
         $_->{problems} = { map { $_ => { runs => 0, time_consumed => 0, solved => 0 } } @p_id };
     }
 
-    my $results = rank_get_results($frozen, $contest_list);
+    my $results = rank_get_results($frozen, $contest_list, $virtual_cond . $ooc_cond);
     for (@$results)
     {
         my $t = $teams->{$_->{account_id}};
@@ -2819,14 +2862,16 @@ sub rank_table_frame
 {
     my $hide_ooc = url_param('hide_ooc') || 0;
     my $hide_virtual = url_param('hide_virtual') || 0;
-    my $clist = url_param('clist');
     
     #rank_table('main_rank_table.htm');  
     init_template('main_rank_table.htm');  
         
+    my $contest_list = get_contest_list_param;
+    ($contest_title, undef) = get_contests_info($contest_list);
+
     $t->param(href_rank_table_content => url_f(
-        'rank_table_content', hide_ooc => $hide_ooc, hide_virtual => $hide_virtual,
-        clist => $clist
+        'rank_table_content',
+        hide_ooc => $hide_ooc, hide_virtual => $hide_virtual, clist => $contest_list
     ));
 }
 

@@ -20,21 +20,28 @@
 </td>
 </tr>
 </table>
-<table width=100% cellspacing=1 class=bordered>
-<tr bgcolor=#ccccff><th width=3%>
+<table width="100%" cellspacing="1" class="bordered">
+<TMPL_IF many_contests>
+<tr bgcolor="#ccccff">
+<th colspan="2"></th>
+<TMPL_LOOP contests><th colspan="<TMPL_VAR count>"><TMPL_VAR start_date></th></TMPL_LOOP>
+<th colspan="4"></th>
+</TMPL_IF>
+<tr bgcolor="#ccccff">
+<th width="1%"></th>
 <!-- <th width=1%>Страна -->
-<th>Название команды
+<th>Название команды</th>
 <TMPL_LOOP problems>
-<th width=5%><TMPL_VAR code>
+<th width="<TMPL_VAR column_width>%"><TMPL_VAR code></th>
 </TMPL_LOOP>
-<th>=
-<th width=10%>время
-<th width=10%>место
-<th width=8%>статус
+<th width="<TMPL_VAR problem_column_width>%">=</th>
+<th>время</th>
+<th>место</th>
+<th>статус</th>
 
 <TMPL_LOOP rank>
 <tr <TMPL_UNLESS row_color>bgcolor=#f4f4f4</TMPL_UNLESS>>
-<td align=center ><TMPL_VAR contestant_number>
+<td align="right"><TMPL_VAR contestant_number>&nbsp;</td>
 <!--
 <td nowrap align=center bgcolor=#ffffff>
 <TMPL_IF flag>

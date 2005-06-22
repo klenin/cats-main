@@ -13,9 +13,7 @@
 	    <img src="./images/std/logo.gif" border=0>
 	</td>
 	<td valign=bottom width=100% align=left>
-	    <TMPL_IF contest_title><font size=5 color=#333300><TMPL_VAR contest_title>
-	    </font></TMPL_IF>
-
+	    <TMPL_IF contest_title><font size=5 color=#333300><TMPL_VAR contest_title></font></TMPL_IF>
 	</td>
 	<td align=right class='top' rowspan=2>	
 	<table width=550 height=72 align=left cellpadding=0 cellspacing=0 background="./images/std/bg.gif">

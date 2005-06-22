@@ -31,6 +31,7 @@ function confirm_registration(href, name)
 <TMPL_LOOP contests>
 <tr bgcolor=#ffffff>
 <td>
+    <TMPL_IF deletable><input type="checkbox" name="contests_selection" value="<TMPL_VAR id>" /></TMPL_IF>
     <TMPL_IF deletable>
     <a href='javascript:delete_contest("<TMPL_VAR href_delete>", "<TMPL_VAR contest_name ESCAPE=HTML>");''><img src="./images/std/waste2.gif" border=0></a> 
     </TMPL_IF>
@@ -58,9 +59,12 @@ function confirm_registration(href, name)
 </table>
 <br>
 <TMPL_IF authorized>
-<input type=submit value='участвовать' name='online_registration' class=button> 
-<input type=button value='участвовать виртуально' class=button onClick="confirm_registration();">
-<input type=hidden name='virtual_registration' value='0'>
+<input type="submit" value="участвовать" name="online_registration" class="button" /> 
+<input type="button" value="участвовать виртуально" class=button onClick="confirm_registration();" />
+<input type="hidden" name="virtual_registration" value="0" />
+</TMPL_IF>
+<TMPL_IF editable>
+<input type="submit" name="summary_rank" value="суммарная таблица" class="button" />
 </TMPL_IF>
 </form>
 <ul>
