@@ -652,11 +652,11 @@ sub user_authorize {
             my $started = ($start_diff_time >= 0);
             my $finished = ($finish_diff_time > 0);
 	    
-	    # до начала и после окончания тура команда имеет только права гостя
-	    if (!$started || $finished)
-	    {
-            $is_team = 0;
-	    }
+            # до начала и после окончания тура команда имеет только права гостя
+            if (!$started || $finished)
+            {
+                $is_team = 0;
+            }
         }
     }
     else

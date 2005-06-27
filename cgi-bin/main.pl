@@ -711,7 +711,7 @@ sub console
             is_broadcast =>         $rtype == 4,
             clarified =>            $clarified,
             href_details => (
-                ($is_team && $uid && $uid == $team_id) ? url_f('run_details', rid => $id) : ''
+                ($uid && $uid == $team_id) ? url_f('run_details', rid => $id) : ''
             ),
             href_answer_box =>      $is_jury ? url_f('answer_box', qid => $id) : undef,
             href_send_message_box =>$is_jury ? url_f('send_message_box', caid => $caid) : undef,
@@ -2779,8 +2779,14 @@ sub rank_table
 
     my @p_id = rank_get_problem_ids($contest_list);
     $t->param(
-        problem_colunm_width => @p_id <= 6 ? 6 : @p_id <= 8 ? 5 : @p_id <= 10 ? 4 : 3 
+        problem_colunm_width =>
+            @p_id <= 6 ? 6 :
+            @p_id <= 8 ? 5 :
+            @p_id <= 10 ? 4 :
+            @p_id <= 20 ? 3 : 2
     );
+    my $problems =
+        { map { $_ => {total_runs => 0, total_accepted => 0} } @p_id };
 
     for (values %$teams)
     {
@@ -2801,20 +2807,22 @@ sub rank_table
         my $t = $teams->{$_->{account_id}};
         my $p = $t->{problems}->{$_->{problem_id}};
         next if $p->{solved};
+
         if ($_->{state} == $cats::st_accepted) 
-        { 
-             $p->{time_consumed} = int($_->{time_elapsed} + 0.5) + $p->{runs} * $cats::penalty;
-             $p->{solved} = 1;
-             $t->{total_time} += $p->{time_consumed};
-             $t->{total_solved}++;
+        {
+            $p->{time_consumed} = int($_->{time_elapsed} + 0.5) + $p->{runs} * $cats::penalty;
+            $p->{solved} = 1;
+            $t->{total_time} += $p->{time_consumed};
+            $t->{total_solved}++;
+            $problems->{$_->{problem_id}}->{total_accepted}++;
         }
         if ($_->{state} != $cats::st_security_violation) 
         {
-             $p->{runs}++;
-             $t->{total_runs}++;
+            $problems->{$_->{problem_id}}->{total_runs}++;
+            $p->{runs}++;
+            $t->{total_runs}++;
         }
     }
-
     my @rank = sort {
         $b->{total_solved} <=> $a->{total_solved} ||
         $a->{total_time} <=> $b->{total_time} ||
@@ -2849,7 +2857,16 @@ sub rank_table
         $team->{columns} = [ @columns ];
     }
 
-    $t->param(rank => [ @rank ]);
+    $t->param(
+        problem_stats => [
+            map {{ %{$problems->{$_}},
+            percent_accepted => int(
+              $problems->{$_}->{total_accepted} /
+              ($problems->{$_}->{total_runs} || 1) * 100 + 0.5) }} @p_id 
+        ],
+        problem_stats_color => 1 - $row_color,
+        rank => [ @rank ]
+    );
 
     my $s = $t->output;
 

@@ -38,30 +38,30 @@ my ($stml,
     $user_checker);
 
 my %stml_tags = (
-    "ProblemStatement" => \$statement, 
-    "ProblemConstraints" => \$constraints,
-    "InputFormat" => \$inputformat, 
-    "OutputFormat" => \$outputformat 
-    );
+    'ProblemStatement' => \$statement, 
+    'ProblemConstraints' => \$constraints,
+    'InputFormat' => \$inputformat, 
+    'OutputFormat' => \$outputformat 
+);
 
 
-sub note($) {
+sub note($)
+{
     $import_log .= $_[0];
 }
 
 
 sub warning($) 
 {
-    my $m = "Warning: ".shift;
+    my $m = 'Warning: ' . shift;
     $import_log .= $m;
 }
 
 
 sub error($) 
 {
-    my $m = "Error: ".shift;
-    $import_log .= $m;
-    die $m;
+    $import_log .= 'Error: ' . $_[0];
+    die "Unrecoverable error\n";
 }
 
 
@@ -926,7 +926,7 @@ sub import_problem
           
         binmode(FILE, ':raw');
 
-        $zip_archive = "";
+        $zip_archive = '';
         
         my $buffer;
         while (sysread(FILE, $buffer, 4096)) {
@@ -936,7 +936,8 @@ sub import_problem
         close FILE;    
                     
         $zip = Archive::Zip->new();
-        error "read '$fname' failed\n" unless ($zip->read($fname) == AZ_OK);
+        error "read '$fname' failed -- probably not a zip archive\n"
+            unless ($zip->read($fname) == AZ_OK);
 
         my @xml_members = $zip->membersMatching('.*\.xml');
 

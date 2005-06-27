@@ -51,17 +51,24 @@
 </TMPL_IF>    
 -->
 <td>
-<TMPL_VAR team_name ESCAPE=HTML>
-
+<TMPL_VAR team_name ESCAPE=HTML></td>
 <TMPL_LOOP columns>
-<td align=center><font size="1"><TMPL_VAR time ESCAPE=HTML></font><br><TMPL_VAR td ESCAPE=HTML>
+<td align=center><font size="1"><TMPL_VAR time ESCAPE=HTML></font><br><TMPL_VAR td ESCAPE=HTML></td>
 </TMPL_LOOP>
-
-<td align=center><TMPL_VAR total_solved>
-<td align=center><TMPL_VAR total_time>
-<td align=center><TMPL_VAR place>
-<td align=center><font size="-1"><i>
+<td align="center"><TMPL_VAR total_solved></td>
+<td align="center"><TMPL_VAR total_time></td>
+<td align="center"><TMPL_VAR place></td>
+<td align="center"><font size="-1"><i>
   <TMPL_IF is_ooc>ooc</TMPL_IF><TMPL_IF is_remote> remote</TMPL_IF><TMPL_IF is_virtual> virtual</TMPL_IF>
-  </i></font>
+  </i></font></td>
+</tr>
 </TMPL_LOOP>
+<tr <TMPL_UNLESS problem_stats_color>bgcolor=#f4f4f4</TMPL_UNLESS>>
+  <td>&nbsp;</td><td>Успешных попыток</td>
+  <TMPL_LOOP problem_stats>
+    <td align="center"><font size="1"><TMPL_VAR total_accepted> / <TMPL_VAR total_runs></font><br>
+    <TMPL_VAR percent_accepted>%</td>
+  </TMPL_LOOP>
+  <td colspan="4">&nbsp;</td>
+</tr>
 </table><br>
