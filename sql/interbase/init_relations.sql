@@ -102,7 +102,8 @@ CREATE TABLE problems (
     pconstraints    BLOB,
     input_format    BLOB,
     output_format   BLOB,
-    zip_archive     BLOB
+    zip_archive     BLOB,
+    last_modified_by INTEGER REFERENCES accounts(id) ON DELETE SET NULL ON UPDATE CASCADE
 );
 
 
@@ -140,8 +141,8 @@ CREATE TABLE problem_sources (
     input_file  VARCHAR(200),
     output_file VARCHAR(200)
 );
-alter table PROBLEM_SOURCES
-  add constraint CHK_PROBLEM_SOURCES_1 check (0 <= STYPE AND STYPE <= 6);
+ALTER TABLE problem_sources
+  ADD CONSTRAINT chk_problem_sources_1 CHECK (0 <= stype AND stype <= 6);
 
 CREATE TABLE pictures (
     problem_id  INTEGER REFERENCES problems(id) ON DELETE CASCADE,
@@ -184,9 +185,9 @@ CREATE TABLE questions (
 
 
 CREATE TABLE messages (
-    id      INTEGER NOT NULL PRIMARY KEY,
+    id          INTEGER NOT NULL PRIMARY KEY,
     send_time   TIMESTAMP,
-    text    BLOB,
+    text        BLOB,
     account_id  INTEGER REFERENCES contest_accounts(id) ON DELETE CASCADE,
     received    INTEGER DEFAULT 0 CHECK (received IN (0, 1)),
     broadcast   INTEGER DEFAULT 0 CHECK (broadcast IN (0, 1))

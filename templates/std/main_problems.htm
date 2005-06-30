@@ -80,6 +80,8 @@ function r() {
     <TMPL_IF is_linked>[<a href="#" title="<TMPL_VAR contest_name>">L</a>]</TMPL_IF>
     <TMPL_VAR status>
 </td>
+<td><TMPL_VAR last_modified_by></td>
+<td align="right"><TMPL_VAR upload_date></td>
 </TMPL_IF>
 <TMPL_IF is_practice>
     <td><TMPL_VAR contest_name ESCAPE=HTML></td>

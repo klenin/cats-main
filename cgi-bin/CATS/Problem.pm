@@ -1,6 +1,6 @@
 package CATS::Problem;
 
-#use lib './';
+#use lib '..';
 use strict;
 use Encode;
 
@@ -193,28 +193,33 @@ sub problem_insert
 
     if ($el eq 'Problem')
     {   
-        my $c = $dbh->prepare(qq~INSERT INTO problems 
-            (id, contest_id, title, lang, time_limit, memory_limit, difficulty, author, 
-            input_file, output_file, 
-                statement, pconstraints, input_format, output_format, 
-            zip_archive, upload_date, std_checker) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CATS_SYSDATE(), ?)~);
+        my $c = $dbh->prepare(qq~
+            INSERT INTO problems (
+                id, contest_id, title, lang, time_limit, memory_limit, difficulty, author, 
+                input_file, output_file, statement, pconstraints, input_format, output_format, 
+                zip_archive, upload_date, std_checker, last_modified_by
+            ) VALUES (
+                ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CATS_SYSDATE(), ?, ?
+            )~
+        );
         
         $c->bind_param(1, $pid);
         $c->bind_param(2, $cid);
-        $c->bind_param(3, $problem{'title'} );
-        $c->bind_param(4, $problem{'lang'} );
-        $c->bind_param(5, $problem{'time_limit'} );
-        $c->bind_param(6, $problem{'memory_limit'} );
-        $c->bind_param(7, $problem{'difficulty'} );
-        $c->bind_param(8, $problem{'author'} );
-        $c->bind_param(9, $problem{'input_file'} );
-        $c->bind_param(10, $problem{'output_file'} );
-        $c->bind_param(11, $statement, { ora_type => 113 } );
-        $c->bind_param(12, $constraints, { ora_type => 113 } );
-        $c->bind_param(13, $inputformat, { ora_type => 113 } );
-        $c->bind_param(14, $outputformat, { ora_type => 113 } );
-        $c->bind_param(15, $zip_archive, { ora_type => 113 } );
-        $c->bind_param(16, $problem{'std_checker'} );
+        $c->bind_param(3, $problem{'title'});
+        $c->bind_param(4, $problem{'lang'});
+        $c->bind_param(5, $problem{'time_limit'});
+        $c->bind_param(6, $problem{'memory_limit'});
+        $c->bind_param(7, $problem{'difficulty'});
+        $c->bind_param(8, $problem{'author'});
+        $c->bind_param(9, $problem{'input_file'});
+        $c->bind_param(10, $problem{'output_file'});
+        $c->bind_param(11, $statement, { ora_type => 113 });
+        $c->bind_param(12, $constraints, { ora_type => 113 });
+        $c->bind_param(13, $inputformat, { ora_type => 113 });
+        $c->bind_param(14, $outputformat, { ora_type => 113 });
+        $c->bind_param(15, $zip_archive, { ora_type => 113 });
+        $c->bind_param(16, $problem{'std_checker'});
+        $c->bind_param(17, $uid);
         
         $c->execute;
 
@@ -252,11 +257,15 @@ sub problem_update
         $dbh->do(qq~DELETE FROM problem_sources WHERE problem_id=?~, {}, $pid) ||
            error "Couldn't update problem\n";
     
-        my $c = $dbh->prepare(qq~UPDATE problems 
-            SET contest_id=?, title=?, lang=?, time_limit=?, memory_limit=?, difficulty=?, author=?, 
-            input_file=?, output_file=?, 
+        my $c = $dbh->prepare(qq~
+            UPDATE problems 
+            SET
+                contest_id=?, title=?, lang=?, time_limit=?, memory_limit=?, difficulty=?, author=?, 
+                input_file=?, output_file=?, 
                 statement=?, pconstraints=?, input_format=?, output_format=?, 
-            zip_archive=?, upload_date=CATS_SYSDATE(), std_checker=? WHERE id=?~);
+                zip_archive=?, upload_date=CATS_SYSDATE(), std_checker=?, last_modified_by=?
+            WHERE id = ?~
+        );
 
         $c->bind_param(1, $cid);
         $c->bind_param(2, $problem{'title'} );
@@ -273,7 +282,8 @@ sub problem_update
         $c->bind_param(13, $outputformat, { ora_type => 113 } );
         $c->bind_param(14, $zip_archive, { ora_type => 113 } );
         $c->bind_param(15, $problem{'std_checker'} );
-        $c->bind_param(16, $pid);   
+        $c->bind_param(16, $uid);   
+        $c->bind_param(17, $pid);   
 
         $c->execute;
 

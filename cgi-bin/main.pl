@@ -711,7 +711,7 @@ sub console
             is_broadcast =>         $rtype == 4,
             clarified =>            $clarified,
             href_details => (
-                ($uid && $uid == $team_id) ? url_f('run_details', rid => $id) : ''
+                ($uid && $team_id && $uid == $team_id) ? url_f('run_details', rid => $id) : ''
             ),
             href_answer_box =>      $is_jury ? url_f('answer_box', qid => $id) : undef,
             href_send_message_box =>$is_jury ? url_f('send_message_box', caid => $caid) : undef,
@@ -1341,7 +1341,12 @@ sub problems_frame
     my @cols = (
         { caption => res_str(602), order_by => '3', width => '30%' },
         ($is_jury ?
-        { caption => res_str(632), order_by => '9, 8', width => '10%' } : ()
+        (
+            { caption => res_str(632), order_by => '9, 8', width => '5%' },
+            { caption => res_str(635), order_by => '11', width => '10%' },
+            { caption => res_str(634), order_by => '10', width => '10%' },
+        )
+        : ()
         ),
         ($is_practice ?
         { caption => res_str(603), order_by => '4', width => '30%' } : ()
@@ -1364,7 +1369,9 @@ sub problems_frame
           ($reqs_count_sql $cats::st_wrong_answer$account_condition) AS wrong_answer_count,
           ($reqs_count_sql $cats::st_time_limit_exceeded$account_condition) AS time_limit_count,
           P.contest_id - CP.contest_id AS is_linked, CP.status,
-          OC.id AS original_contest_id, CP.status
+          OC.id AS original_contest_id, CP.status,
+          CATS_DATE(P.upload_date) AS upload_date,
+          (SELECT A.login FROM accounts A WHERE A.id = P.last_modified_by) AS last_modified_by
         FROM problems P, contest_problems CP, contests OC
         WHERE CP.problem_id = P.id AND OC.id = P.contest_id AND CP.contest_id = ?$hidden_problems
         ~ . order_by
@@ -1403,6 +1410,8 @@ sub problems_frame
             accept_count => $c->{accepted_count},
             wa_count => $c->{wrong_answer_count},
             tle_count => $c->{time_limit_count},
+            upload_date => $c->{upload_date},
+            last_modified_by => $c->{last_modified_by}
         );
     };
             
@@ -1955,7 +1964,7 @@ sub settings_save
     my $motto = param('motto');
     my $home_page = param('home_page');     
     my $icq_number = param('icq_number');
-    my $set_password = param('set_password') eq 'on';
+    my $set_password = (param('set_password') || '') eq 'on';
     my $password1 = param('password1');
     my $password2 = param('password2');
 
@@ -2036,22 +2045,21 @@ sub settings_frame
         settings_save;
     }
 
-    my ($login, $team, $capitan, $motto, $country, $email, $home_page, $icq_number) = $dbh->selectrow_array(qq~
+    my $settings = $dbh->selectrow_hashref(qq~
         SELECT login, team_name, capitan_name, motto, country, email, home_page, icq_number
-        FROM accounts WHERE id=?~, {}, $uid);
+        FROM accounts WHERE id = ?~, { Slice => {} },
+        $uid
+    );
 
     my $countries = [ @cats::countries ];
 
-    foreach( @$countries ) 
+    if (defined $settings->{country})
     {
-        $$_{selected} = $$_{id} eq $country;
+        $_->{selected} = $_->{id} eq $settings->{country}
+            for @$countries;
     }
 
-    $t->param(countries => $countries);
-
-    $t->param(login => $login, href_action => url_f('users'),
-            team => $team, capitan => $capitan, motto => $motto, country => $country, email => $email, 
-            home_page => $home_page, icq_number => $icq_number);
+    $t->param(countries => $countries, href_action => url_f('users'), %$settings);
 }
 
 
@@ -2386,7 +2394,7 @@ sub answer_box_frame
 sub source_links
 {
     my ($si, $is_jury) = @_;
-    my ($current_link) = param('f');
+    my ($current_link) = param('f') || '';
     
     $si->{href_contest_problems} =
         url_function('problems', cid => $si->{contest_id}, sid => $sid);
@@ -2397,7 +2405,7 @@ sub source_links
         $si->{is_jury} = $is_jury;
     }
     $t->param(is_jury => $is_jury);
-    if ($is_jury)
+    if ($is_jury && $si->{judge_id})
     {
         $si->{judge_name} = get_judge_name($si->{judge_id});
     }
@@ -2424,11 +2432,13 @@ sub run_details_frame
             FROM contests WHERE id = ?~, { Slice => {} },
         $si->{contest_id}
     );
+
     my $jury_view = $is_jury && !url_param('as_user');
     $contest->{$_} ||= $jury_view
         for qw(show_all_tests show_test_resources show_checker_comment);
 
     my $points = [];
+
     if ($contest->{show_all_tests})
     {
         $points = $dbh->selectcol_arrayref(qq~
@@ -2449,7 +2459,7 @@ sub run_details_frame
          ($contest->{show_test_resources} ? qw(time_used memory_used disk_used) : ()),
          ($contest->{show_checker_comment} ? qw(checker_comment) : ()),
     );
-    
+
     my $c = $dbh->prepare(qq~
         SELECT $rd_fields FROM req_details WHERE req_id = ? ORDER BY test_rank~);
     $c->execute($rid);
