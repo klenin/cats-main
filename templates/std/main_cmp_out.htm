@@ -1,0 +1,50 @@
+<TMPL_INCLUDE 'includes/menu_begin.inc'>
+<form>
+  <TMPL_IF noproblems>
+    <i>Не выбрана задача!</i>
+  <TMPL_ELSE>
+    <h2><TMPL_VAR NAME=problem_title></h2>
+    <TMPL_IF team_stat>
+      <h3>Команда: <big><TMPL_VAR NAME=team_name></big></h3>
+    </TMPL_IF>
+    <br>
+    <TMPL_IF norecords>
+      <i>По запросу ничего не найдено!</i>
+    <TMPL_ELSE>
+      <table class=bordered>
+
+        <tr bgcolor=#ccccff>
+          <td>&nbsp;</td>
+          <TMPL_LOOP NAME=col_titles>
+            <td width = 100>
+               <TMPL_IF time>
+                 <a href = "<TMPL_VAR NAME=href>"><b><TMPL_VAR NAME=id></b></a> <br>
+                 <small><i><TMPL_VAR NAME=time></i></small>
+               <TMPL_ELSE>
+                 <b><TMPL_VAR NAME=id></b>
+               </TMPL_IF>
+               <br>
+               <TMPL_IF ooc><font color=red><i><small>ooc</small></i></font></TMPL_IF>
+               <br>
+               <TMPL_IF remote><font color=red><i><small>remote</small></i></font></TMPL_IF>
+            </td>
+          </TMPL_LOOP>
+        </tr>
+
+        <TMPL_LOOP NAME=row>
+          <tr>
+            <td bgcolor=#ccccff><b><TMPL_VAR NAME=id></b></td>
+            <TMPL_LOOP NAME=cells>
+              <td 
+                <TMPL_UNLESS NAME=value> bgcolor=#ccccff </TMPL_UNLESS>
+                <TMPL_IF NAME=alert> bgcolor=#ffcccc </TMPL_IF>>
+                <a href = "<TMPL_VAR NAME=href>"><TMPL_VAR NAME=value>&nbsp;</a>
+              </td>
+            </TMPL_LOOP>
+          </tr>
+        </TMPL_LOOP>
+      </table>
+    </TMPL_IF>             
+  </TMPL_IF>
+</form>
+<TMPL_INCLUDE 'includes/menu_end.inc'>

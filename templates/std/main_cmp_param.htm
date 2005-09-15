@@ -1,0 +1,103 @@
+<TMPL_INCLUDE 'includes/menu_begin.inc'>
+
+<script>
+var rvTeam = '<TMPL_VAR NAME = init_team>';
+var rvVers = '<TMPL_VAR NAME = init_vers>';
+var rvCont = '<TMPL_VAR NAME = init_cont>';
+
+function chkTeamRadio(form, value)
+{
+  rvTeam = value;
+} 
+function chkVersionsRadio(form, value)
+{
+  rvVers = value;
+} 
+function SelectContest(form, value)
+{
+  rvCont = value;
+} 
+
+function save_params()
+{
+  document.cookie = "teams="+rvTeam;
+  document.cookie = "versions="+rvVers;
+  document.cookie = "contest="+rvCont;
+  document.location = '<TMPL_VAR NAME=backlink>';
+}
+</script>
+
+<h2>Параметры построения таблицы</h2>
+
+<form name="params" method="POST" action='<TMPL_VAR NAME=backlink>'>
+
+<table class=bordered>
+  <tr><th colspan=2 bgcolor=#ccccff>Отображать версии:</th></tr>
+  <tr>
+    <td bgcolor=#ccccff><input type=radio name="versions" value="last"
+	onclick="if (this.checked) {chkVersionsRadio(this.form, this.value)}" 
+	<TMPL_IF view_last>checked</TMPL_IF>></td>
+    <td>Только последние версии решений</td>
+  </tr>
+  <tr>
+    <td bgcolor=#ccccff><input type=radio name="versions" value="all" 
+	onclick="if (this.checked) {chkVersionsRadio(this.form, this.value)}" 
+	<TMPL_IF view_all>checked</TMPL_IF>></td>
+    <td>Все версии решений</td>
+  </tr>
+</table>
+
+<br>
+
+<b>Выбрать турнир</b>
+<select name="contest">
+  <option value='<TMPL_VAR NAME=cur_cid>'
+	onclick="SelectContest(this.form, this.value)">
+	- - - - - - - - ТЕКУЩИЙ - - - - - - - -
+  <option value="all" 
+	onclick="SelectContest(this.form, this.value)"
+	<TMPL_IF contest_all>selected</TMPL_IF> >
+	- - - - - - - - ВСЕ - - - - - - - -
+  <TMPL_LOOP NAME=contests>
+    <option value="<TMPL_VAR NAME=cid>"<TMPL_IF sel> selected</TMPL_IF>
+	onclick="SelectContest(this.form, this.value)">
+    <TMPL_VAR NAME=title>
+  </TMPL_LOOP>
+</select>
+<br>
+<br>
+
+<table class=bordered>
+  <tr><th colspan=2 bgcolor=#ccccff>Учитывать команды*</th></tr>
+  <tr>
+    <td bgcolor=#ccccff><input type=radio name="teams" value="all" 
+	onclick="if (this.checked) {chkTeamRadio(this.form, this.value)}" 
+	<TMPL_IF teams_all>checked</TMPL_IF>></td>
+    <td>Все команды</td>
+  </tr>
+  <tr>
+    <td bgcolor=#ccccff><input type=radio name="teams" value="incontest" 
+	onclick="if (this.checked) {chkTeamRadio(this.form, this.value)}" 
+	<TMPL_IF teams_incontest>checked</TMPL_IF>></td>
+    <td>Только команды-участники</td>
+  </tr>
+  <tr>
+    <td bgcolor=#ccccff><input type=radio name="teams" value="ooc" 
+	onclick="if (this.checked) {chkTeamRadio(this.form, this.value)}" 
+	<TMPL_IF teams_ooc>checked</TMPL_IF>></td>
+    <td>Только ooc-команды</td>
+  </tr>
+</table>
+
+<small><i><font color=#ff0000>*При выборе всех турниров данный пункт игнорируется</font></i></small>
+<br>
+<br>
+
+<input type=button class=button name="Saveparams" value="OK" onclick="save_params()">
+<input type=button class=button name="" value="Отмена" onclick="document.location = '<TMPL_VAR NAME=backlink>'">
+<br>
+<br>
+
+</form>
+
+<TMPL_INCLUDE 'includes/menu_end.inc'>

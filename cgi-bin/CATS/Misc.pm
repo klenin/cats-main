@@ -32,6 +32,9 @@ BEGIN
         attach_menu
         fatal_error
         state_to_display
+        field_by_id
+        generate_table
+        generate_cmp_query
     );
 
         
@@ -53,6 +56,7 @@ use MIME::Base64;
 use CATS::Constants;
 use CATS::Connect;
 use CATS::IP;
+use CATS::Diff;
 use vars qw( $dbh @messages $t $sid $cid $lng $uid $team_name $server_time $contest_title $dbi_error $is_practice );
 use vars qw( $is_root $is_team $is_jury $is_virtual $virtual_diff_time $contest_elapsed_minutes);
 use vars qw( $listview_name $listview_array_name $col_defs $sort $sort_dir $search $page $visible $additional);
@@ -704,5 +708,87 @@ sub state_to_display
         security_violation =>    $state == $cats::st_security_violation
     );
 }
+
+
+sub field_by_id
+{
+    my $id = shift;
+    my $table = shift;
+    my $field = shift;
+# ‘ƒŒ…‹ ŒƒŒ•… ƒ„‚• • ‰Š„Ë‹ …–  ƒ–Š‰ ŸŒ•‚‰•
+    my $c = $dbh->prepare(qq~
+		SELECT $field FROM $table
+		WHERE id=?~);
+    $c->execute($id);
+    my $title = $c->fetchrow_array;
+    $title;
+}
+
+# Ÿƒ„…‹ €Š•‚‰• …ƒ‘Š ŸŒ…Œ•š –‹‹
+# ®…„Š–…Ÿš, ‚ ‘”… Ÿƒ„Œ ‹ŸŸ• @titles ƒ–Š‰ • “…œ %srcfiles •‹ËŒ tmp-’ˆŠ
+sub generate_table
+{
+    my ($titles_ref, $srcfiles_ref, $reqid_ref, $pid) = @_;
+    my @titles = @$titles_ref;
+    my %srcfiles = %$srcfiles_ref;
+    my %reqid = %$reqid_ref;
+    
+    my @rows;
+    my $deleted;
+    while (@titles)
+    {
+	my $title1 = $titles[0]{id};
+	my %cur_row = (id => $title1);
+	my @cells;
+        push @cells, undef foreach (1..$deleted);
+	foreach (@titles)
+	{
+            my $title2 = $$_{id};
+            my $value = CATS::Diff::cmp_diff($srcfiles{$title1},$srcfiles{$title2});
+            #CATS::Diff::cmp_advanced($srcfiles{$title1},$srcfiles{$title2});
+            #
+            my %cell = (value => $value,
+                        href => url_f('cmp', rid1 => $reqid{$title2}, rid2 => $reqid{$title1}, pid => $pid)
+			);
+            $cell{value}>=80 and $cell{alert}=1;
+            push @cells, \%cell;
+	}
+	%cur_row = (%cur_row, cells => \@cells);		
+	push @rows, \%cur_row;
+        `del $srcfiles{$titles[0]{id}}`;
+        shift @titles;
+        $deleted++;
+    }
+    
+    @rows;
+}
+
+sub generate_cmp_query
+{
+    my $contest = shift;
+    my $teams = shift;
+    my $vers = shift;
+    
+    my $query = q~SELECT A.team_name, A.id, ~;
+    $vers eq 'all' and $query .= 'R.submit_time ' or $query .='max(R.submit_time) '; # Ÿ… …Ÿ•• •Š• Š‰ ŸŠ…„Œšš
+    
+    $query .= q~FROM ACCOUNTS A, SOURCES  S, REQS    R ~;
+    
+    ($teams eq 'all' or $contest eq 'all') and $query .= 'WHERE ' or
+    $query .= q~, CONTEST_ACCOUNTS CA  WHERE CA.account_id = A.id AND~ and
+    (!$teams or $teams eq 'incontest') and                 # ˜€ Š‰ ‘‚ŸŒ•‰ ‰Œ…Ÿ
+    $query .=q~ CA.is_ooc=0 AND CA.is_remote=0 AND~ or      
+    $query .=q~ CA.is_ooc=1 AND CA.is_remote=1 AND~;         # ˜€ Š‰ ooc
+
+    $query .=q~ R.problem_id = ? AND
+                R.account_id = A.id AND
+                S.req_id = R.id AND
+                S.de_id in (7,102,3016)~;
+    $contest ne 'all' and $query .= " AND R.contest_id = ".$contest;
+    $vers ne 'all' and $query .=' GROUP BY A.team_name, A.id';   
+
+    $query;
+}
+
 
 1;
