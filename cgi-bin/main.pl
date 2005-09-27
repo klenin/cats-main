@@ -1566,7 +1566,7 @@ sub users_edit_frame
 
 sub users_edit_save
 {
-    my %up = map { $_ => param($_) } user_param_names(), qw(password1 password2);
+    my %up = map { $_ => (param($_) || '') } user_param_names(), qw(password1 password2);
     my $set_password = param('set_password') eq 'on';
     my $id = param('id');
 
@@ -3185,7 +3185,7 @@ sub cmp_output_problem
     if (! defined ($problem_id))
     {
         $t->param(noproblems => 1);
-	return;
+        return;
     }
 
 # ÑÃÌŞÅË ÌŞÃÁŞÌÕÅ ÃŞÄŞÂÕ Õ ÉÊŞÄTË ÅÖÍ Á ÃŞÖÍÊÍÁÍÉ ßĞÏŞÌÕÂÉÕ
@@ -3196,67 +3196,75 @@ sub cmp_output_problem
 # ÂÕĞŞÅË ÉÑÉÕßØ Õ Á ÃŞÁÕßÕËÍßĞÕ ÍĞ ÌÕÓ ßĞŞÁÕË ÄÍÎÍÊÌÕĞÅÊİÌØÅ ÑßÊÍÁÕÚ
   
     my $cont = (CGI::cookie('contest') or url_param('cid'));
-    my $query = generate_cmp_query ($cont, CGI::cookie ('versions'), CGI::cookie ('teams'));
+    my $query = generate_cmp_query ($cont, cookie ('teams'), cookie ('versions'));
     my $c = $dbh->prepare ($query.order_by);
-    $c->execute($problem_id);	
-	
+    $c->execute($problem_id);   
+        
     my ($tname, $tid, $stime) = $c->fetchrow_array;
-	
+        
 # ÅßÊÕ ÌŞ ÃŞÎÏÍß ÌÕÂÅÖÍ ÌÅ ÌŞÈÄÅÌÍ
     if (! defined($tname))
     {
-    	$t->param(norecords => 1);
-	return;
+        $t->param(norecords => 1);
+        return;
     }
 
 # ÒÍÏËÕÏÍÁŞÌÕÅ ÃŞÖÍÊÍÁÉÍÁ ĞŞÀÊÕÆØ
-    my @titles;		#ÃÄÅßİ ÓÏŞÌÕĞİ ÃŞÖÍÊÍÁÉÕ ĞŞÀÊÕÆØ
+    my @titles;         #ÃÄÅßİ ÓÏŞÌÕĞİ ÃŞÖÍÊÍÁÉÕ ĞŞÀÊÕÆØ
     while ($tname)
     {
-        my $cc = $dbh->prepare('SELECT is_ooc, is_remote FROM contest_accounts WHERE account_id=? AND contest_id=?');
-    	$cc->execute($tid, CGI::cookie('contest'));
-        my ($is_ooc, $is_remote) = $cc->fetchrow_array;
-        $cc->finish;
         my %col_title = (id => $tname,
+                         tid => $tid,
                          time => $stime,
-                         href => url_f('cmp', tid => $tid, pid => $problem_id));
-        $is_ooc and %col_title = (%col_title, ooc=>1);
-        $is_remote and %col_title = (%col_title, remote=>1);
-	push @titles, \%col_title;
-	($tname, $tid, $stime) = $c->fetchrow_array;
+                         href => url_f('cmp', tid=>$tid,pid=>$problem_id));
+        if (cookie('teams') eq 'all')
+        {
+            my $query = 'SELECT is_ooc, is_remote FROM contest_accounts WHERE account_id=?';
+            (defined (CGI::cookie('contest'))) and $query .= ' AND contest_id=?';
+            my $cc = $dbh->prepare($query);
+                $cc->execute($tid, CGI::cookie('contest'));
+            my ($is_ooc, $is_remote) = $cc->fetchrow_array;
+            $cc->finish;
+            $is_ooc and %col_title = (%col_title, ooc=>1);
+            $is_remote and %col_title = (%col_title, remote=>1);
+        }
+        push @titles, \%col_title;
+        ($tname, $tid, $stime) = $c->fetchrow_array;
     }
-    $c->finish;	
+    $c->finish; 
 
     my %srcfiles;
     my %reqid;
-    $dbh->{LongReadLen} = 16384;        ### 16Kb BLOB-ÎÍÊÚ
+    $dbh->{LongReadLen} = 16384;        ### 16Kb BLOB-ïîëå
     foreach (@titles)
-    {	
-	$c = $dbh->prepare(q~
+    {   
+        $c = $dbh->prepare(q~
             SELECT
-		S.src,
+                S.src,
                 R.id
             FROM
-		SOURCES S,
-		REQS	R,
-		ACCOUNTS	A
-	    WHERE
-		A.team_name = ? AND
-		R.account_id = A.id AND
-		S.req_id = R.id
-			~);
-	$c->execute($$_{id});
-	my ($src, $rid) = $c->fetchrow_array;
-	$srcfiles{$$_{id}} = CATS::Diff::prepare_src ($src);
-        $reqid{$$_{id}} = $rid;
-	$c->finish;
+                SOURCES S,
+                REQS    R,
+                ACCOUNTS        A
+            WHERE
+                A.id = ? AND
+                R.account_id = A.id AND
+                S.req_id = R.id
+                        ~);
+        $c->execute($$_{tid});
+        my ($src, $rid) = $c->fetchrow_array;
+
+        $srcfiles{$$_{tid}} = CATS::Diff::prepare_src ($src); # âîò òóò íàäî ÷òî-òî ìåíÿòü
+
+        $reqid{$$_{tid}} = $rid;
+        $c->finish;
     }
 
 # ßÍÃÄŞÅË ßÍÀßĞÁÅÌÌÍ ĞŞÀÊÕÂÉÑ
     $t->param(col_titles => \@titles);
     my @rows = generate_table (\@titles, \%srcfiles, \%reqid, $problem_id);
     $t->param(row => \@rows);
-    1;	
+    1;  
 }
 
 
@@ -3297,7 +3305,7 @@ sub cmp_output_team
     {
         my %col_title = (id => $stime);
         push @titles, \%col_title;
-	$srcfiles{$stime} = CATS::Diff::prepare_src ($src);
+        $srcfiles{$stime} = CATS::Diff::prepare_src ($src, cookie('algorythm'));
         $reqid{$stime} = $rid;
         ($src, $stime, $rid) = $c->fetchrow_array;
     }
@@ -3380,7 +3388,11 @@ sub cmp_set_params
     }
     $t->param(contest_all=>1) if $cookie=='all';
     $t->param(contests => \@contests);
-    
+
+    # êóêèñ äëÿ âûáîğà àëãîğèòìà
+    $cookie = CGI::cookie('algorythm') or $cookie = 'diff';
+    $t->param(init_algorythm => $cookie);
+    $t->param('algorythm_'.$cookie => 1);
     1;
 }
 
@@ -3389,8 +3401,8 @@ sub cmp_frame
 {       
     if (defined param("showtable") & $is_jury)
     {
-	cmp_output_problem;
-	return;
+        cmp_output_problem;
+        return;
     }
     
     if (defined param("tid") & $is_jury)
@@ -3412,48 +3424,23 @@ sub cmp_frame
     }
 
     init_listview_template( "problems$cid" . ($uid || ''), 'problems', 'main_cmp.htm' );
-
-      my @cols = 
-              ( { caption => res_str(602), order_by => '3', width => '30%' },
-                ($is_practice ? { caption => res_str(603), order_by => '4', width => '30%' } : ()),
-                { caption => res_str(604), order_by => '5', width => '5%' },
-                { caption => res_str(605), order_by => '6', width => '5%' },
-                { caption => res_str(606), order_by => '7', width => '5%' } );
+    
+    my @cols = 
+              ( { caption => res_str(602), order_by => '3', width => '40%' },
+                { caption => res_str(603), order_by => '4', width => '40%' },
+                { caption => res_str(636), order_by => '5', width => '20%' });
 
     define_columns(url_f('cmp'), 0, 0, [ @cols ]);
        
     my $c;
-    if ($is_practice)
-    {
-        $c = $dbh->prepare(qq~
-            SELECT CP.id, P.id, P.title, OC.title,
-              (SELECT COUNT(*) FROM reqs D WHERE D.problem_id = P.id AND D.state = $cats::st_accepted), 
-              (SELECT COUNT(*) FROM reqs D WHERE D.problem_id = P.id AND D.state = $cats::st_wrong_answer), 
-              (SELECT COUNT(*) FROM reqs D WHERE D.problem_id = P.id AND D.state = $cats::st_time_limit_exceeded)
-            FROM problems P, contests C, contest_problems CP, contests OC
-            WHERE CP.contest_id=C.id AND CP.problem_id=P.id AND C.id=? AND OC.id=P.contest_id 
-            ~.order_by);
-        $c->execute($cid);
-    }
-    else
-    {
-        $c = $dbh->prepare(qq~
-            SELECT CP.id, P.id, CP.code||' - '||P.title, NULL,
-              (SELECT COUNT(*) FROM reqs D WHERE D.problem_id = P.id AND D.state = $cats::st_accepted AND D.account_id = ?),
-              (SELECT COUNT(*) FROM reqs D WHERE D.problem_id = P.id AND D.state = $cats::st_wrong_answer AND D.account_id = ?), 
-              (SELECT COUNT(*) FROM reqs D WHERE D.problem_id = P.id AND D.state = $cats::st_time_limit_exceeded AND D.account_id = ?)
-              FROM problems P, contest_problems CP
-              WHERE CP.contest_id=? AND CP.problem_id=P.id 
-              ~.order_by);
-        my $aid = $uid || 0; # íà ñëó÷àé àíîíèìíîãî ïîëüçîâàòåëÿ
-        # îïÿòü áàã ñ ïîğÿäêîì ïàğàìåòğîâ
-        $c->execute($cid, $aid, $aid, $aid);
-    }
-
+    my $cont = (cookie('contest') or param ('cid'));
+    my $query = generate_count_query($cont, cookie('teams'), cookie('versions'), 1);
+    $c = $dbh->prepare($query.order_by);
+    $c->execute();
 
     my $fetch_record = sub($)
     {            
-        if ( my( $cpid, $pid, $problem_name, $contest_name, $accept_count, $wa_count, $tle_count ) = $_[0]->fetchrow_array)
+        if ( my( $pid, $problem_name, $cid, $contest_name, $count) = $_[0]->fetchrow_array)
         {       
             return ( 
                 is_practice => $is_practice,
@@ -3461,11 +3448,9 @@ sub cmp_frame
                 is_team => $is_team || $is_practice,
                 problem_id => $pid,
                 problem_name => $problem_name, 
-                href_view_problem => url('problem_text', pid => $pid),
+                href_view_problem => url_f('problem_text', pid => $pid),
                 contest_name => $contest_name,
-                accept_count => $accept_count,
-                wa_count => $wa_count,
-                tle_count => $tle_count
+                count => $count
             );
         }   
 
@@ -3479,18 +3464,7 @@ sub cmp_frame
     $c = $dbh->prepare(qq~SELECT id, description FROM default_de WHERE in_contests=1 ORDER BY code~);
     $c->execute;
 
-    my @de;
-    push ( @de, { de_id => "by_extension", de_name => res_str(536) } );
-
-    while ( my ( $de_id, $de_name ) = $c->fetchrow_array )
-    {
-        push ( @de, { de_id => $de_id, de_name => $de_name  } );
-    }    
-
-    $c->finish;
-    $t->param(is_team => ($is_team || $is_practice), is_practice => $is_practice, de_list => [ @de ]);
-
-	my @submenu = ( { href_item => url_f('cmp', setparams => 1), item_name => res_str(546)} );
+    my @submenu = ( { href_item => url_f('cmp', setparams => 1), item_name => res_str(546)} );
     $t->param(submenu => [ @submenu ] );    
 }
 

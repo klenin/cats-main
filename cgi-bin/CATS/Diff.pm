@@ -24,6 +24,7 @@ BEGIN
 		cmp_advanced
 		);
   @EXPORT_OK = qw($dbh);
+  %EXPORT_TAGS = ( all => [ @EXPORT, @EXPORT_OK ] );
 }
 
 our @keywords_pas = (
@@ -66,6 +67,8 @@ our $max;
 #сравнивает простым diff'ом
 sub cmp_diff
 {
+#  return 100; # залепон
+  
   my $tmp1 = shift;
   my $tmp2 = shift;
 
@@ -121,15 +124,20 @@ sub cmp_advanced
 # очищает код от всего ненужного, запихивает в tmp-файл и возвращает имя этого tmp-файла
 sub prepare_src
 {
-  my $src = shift;
+  my ($src, $algorythm) = @_;
+  
   $src = clean_src($src);
   $src = pas_normalize($src);
+  
+  #$algorythm eq 'diff' and   
+  $src =~ s/;(\w)/;\n$1/g;	#разнесли всё по строчкам (требуется только если сравниваем diff'ом)
+  
   my ($fh, $fname) = tmpnam;
   syswrite $fh, $src, length($src);
   $fname;
 }
 
-# убираем из кода все лишнее
+# убираем из кода все лишнее !!
 sub clean_src
 {
   my $src = shift;
@@ -159,7 +167,7 @@ sub clean_src
   $src;
 }
 
-#ставит скобочки везде, где происходит вызов функции или процедуры
+#ставит скобочки везде, где происходит вызов функции или процедуры !!
 sub call_brackets
 {
   my $src = shift;
@@ -178,7 +186,7 @@ sub call_brackets
   $src;
 }
 
-# специальное форматирование текста
+# специальное форматирование текста !!
 sub pas_normalize
 {
   my $src = shift;
@@ -224,7 +232,6 @@ sub pas_normalize
   #$src =~ s/([^A-Z]THEN)([^\n])/$1\n$2/g;
   #$src =~ s/DOBEGIN/DO BEGIN/g;	# если BEGIN относится к некоторому DO, пусть они будуь на одной строчке
   #$src =~ s/THENBEGIN/THEN BEGIN/g;	# аналогично для THEN
-  #$src =~ s/;(\w)/;\n$1/g;	#разнесли всё по строчкам (требуется только если сравниваем diff'ом)
   chop $src  ;
   
   #$src =~ s/\s/ /gs;
@@ -233,6 +240,7 @@ sub pas_normalize
 }
 
 # приведение текста программы к такому виду, чтобы можно было показывать юзеру
+# в Misc?
 sub prepare_src_show
 {
   my $src = shift;
@@ -244,7 +252,7 @@ sub prepare_src_show
   $src;
 }
 
-# подстановка фактических параметров в процедуру вместо формальных
+# подстановка фактических параметров в процедуру вместо формальных !! 
 sub subst_params
 {
   my $src = shift;	# текст процедуры
@@ -263,7 +271,7 @@ sub subst_params
   $src;
 }
 
-# макроподстановка процедур
+# макроподстановка процедур !!
 sub replace_proc
 {
   my $src = shift;
@@ -370,6 +378,8 @@ sub replace_func
   $src;
 }
 
+
+# проверка расстановки скобочек в условиях циклов и условных операторах !!
 sub check_cond_brackets
 {
   my $src = shift;
@@ -394,7 +404,7 @@ sub check_cond_brackets
   $src;
 }
 
-# удаление ненужных операторных скобочек
+# удаление ненужных операторных скобочек !!
 sub delete_obsolete_begins
 {
   my $src = shift;
@@ -418,7 +428,7 @@ sub delete_obsolete_begins
   $src;  
 }
 
-# выделяет блоки BEGIN-END и заменяет их в тексте на sub
+# выделяет блоки BEGIN-END и заменяет их в тексте на sub !!
 sub block2sub
 {
   my $src = shift;
@@ -446,7 +456,7 @@ sub block2sub
 }
 
 #переводит циклы REPEAT в WHILE по схеме:
-# REPEAT <body> UNTIL <cond>; => <body>; WHILE <cond> DO <body>;
+# REPEAT <body> UNTIL <cond>; => <body>; WHILE <cond> DO <body>; !!
 sub repeat2while
 {
   my $src = shift;
@@ -493,7 +503,7 @@ sub repeat2while
   $src;
 }
 
-# переводит циклы FOR в циклы WHILE
+# переводит циклы FOR в циклы WHILE !!
 sub for2while
 {
   my $src = shift;
@@ -524,7 +534,7 @@ sub for2while
   $src;
 }
 
-# последовательность преобразований, которую надо будет ко всему применять
+# последовательность преобразований, которую надо будет ко всему применять !!
 sub change_code
 {
   my $src = shift;
@@ -536,7 +546,7 @@ sub change_code
   $src;
 }
 
-# тут будем мучить исходный код
+# тут будем мучить исходный код	!!
 sub create_new_code
 {
   my $src = shift;

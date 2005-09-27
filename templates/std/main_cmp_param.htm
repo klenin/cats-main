@@ -4,6 +4,7 @@
 var rvTeam = '<TMPL_VAR NAME = init_team>';
 var rvVers = '<TMPL_VAR NAME = init_vers>';
 var rvCont = '<TMPL_VAR NAME = init_cont>';
+var rvAlgorythm = '<TMPL_VAR NAME = init_algorythm>';
 
 function chkTeamRadio(form, value)
 {
@@ -12,6 +13,10 @@ function chkTeamRadio(form, value)
 function chkVersionsRadio(form, value)
 {
   rvVers = value;
+} 
+function chkAlgorythmRadio(form, value)
+{
+  rvAlgorythm = value;
 } 
 function SelectContest(form, value)
 {
@@ -23,6 +28,7 @@ function save_params()
   document.cookie = "teams="+rvTeam;
   document.cookie = "versions="+rvVers;
   document.cookie = "contest="+rvCont;
+  document.cookie = "algorythm="+rvAlgorythm;
   document.location = '<TMPL_VAR NAME=backlink>';
 }
 </script>
@@ -50,17 +56,18 @@ function save_params()
 <br>
 
 <b>Выбрать турнир</b>
-<select name="contest">
+<select name="contest" 
+	onclick="SelectContest(this.form, this.value)"
+	onchange="SelectContest(this.form, this.value)">
   <option value='<TMPL_VAR NAME=cur_cid>'
-	onclick="SelectContest(this.form, this.value)">
+	>
 	- - - - - - - - ТЕКУЩИЙ - - - - - - - -
   <option value="all" 
-	onclick="SelectContest(this.form, this.value)"
 	<TMPL_IF contest_all>selected</TMPL_IF> >
 	- - - - - - - - ВСЕ - - - - - - - -
   <TMPL_LOOP NAME=contests>
-    <option value="<TMPL_VAR NAME=cid>"<TMPL_IF sel> selected</TMPL_IF>
-	onclick="SelectContest(this.form, this.value)">
+    <option value="<TMPL_VAR NAME=cid>"	<TMPL_IF sel> selected</TMPL_IF>
+	>
     <TMPL_VAR NAME=title>
   </TMPL_LOOP>
 </select>
@@ -90,6 +97,25 @@ function save_params()
 </table>
 
 <small><i><font color=#ff0000>*При выборе всех турниров данный пункт игнорируется</font></i></small>
+
+<br>
+<br>
+<table class=bordered>
+  <tr><th colspan=2 bgcolor=#ccccff>Алгоритм сравнения</th></tr>
+  <tr>
+    <td bgcolor=#ccccff><input type=radio name="algorythm" value="diff" 
+	onclick="if (this.checked) {chkAlgorythmRadio(this.form, this.value)}" 
+	<TMPL_IF algorythm_diff>checked</TMPL_IF>></td>
+    <td>DIFF</td>
+  </tr>
+  <tr>
+    <td bgcolor=#ccccff><input type=radio name="algorythm" value="special" 
+	onclick="if (this.checked) {chkAlgorythmRadio(this.form, this.value)}" 
+	<TMPL_IF algorythm_special>checked</TMPL_IF>></td>
+    <td>Специальный</td>
+  </tr>
+</table>
+
 <br>
 <br>
 

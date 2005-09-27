@@ -35,9 +35,6 @@ BEGIN
         field_by_id
         generate_table
         generate_cmp_query
-        generate_count_query
-        balance_brackets
-        balance_tags
     );
 
         
@@ -52,7 +49,6 @@ use DBD::InterBase;
 use HTML::Template;
 #use CGI::Fast( ':standard' );
 use CGI( ':standard' );
-use Text::Balanced qw(extract_tagged extract_bracketed);
 use CGI::Util qw( rearrange unescape escape );
 use MIME::Base64;
 #use FCGI;
@@ -741,13 +737,13 @@ sub generate_table
     my $deleted;
     while (@titles)
     {
-	my $title1 = $titles[0]{tid};
-	my %cur_row = (id =>  $titles[0]{id});
+	my $title1 = $titles[0]{id};
+	my %cur_row = (id => $title1);
 	my @cells;
         push @cells, undef foreach (1..$deleted);
 	foreach (@titles)
 	{
-            my $title2 = $$_{tid};
+            my $title2 = $$_{id};
             my $value = CATS::Diff::cmp_diff($srcfiles{$title1},$srcfiles{$title2});
             #CATS::Diff::cmp_advanced($srcfiles{$title1},$srcfiles{$title2});
             #
@@ -767,85 +763,31 @@ sub generate_table
     @rows;
 }
 
-
-sub generate_count_query
-{
-    my ($contest, $teams, $vers) = @_;
-
-    my $query =
-        q~SELECT
-            P.id,
-            P.title,~;
-    $contest ne 'all' and
-    $query .=q~ 
-            C.id,
-            C.title,~
-    or $query .= 'NULL, NULL,';
-    
-    $query .= '('.generate_cmp_query($contest, $teams, $vers,1).')';
-    
-    $query .=
-        q~FROM
-            problems P,
-            contests C,
-            contest_problems CP
-        WHERE
-            CP.problem_id = P.id and
-            CP.contest_id = C.id ~;
-    !$contest || $contest ne 'all' and $query .= "AND C.id = $contest ";
-    $query .= q~GROUP BY C.id, P.id, P.title, C.title ~;
-    $query;    
-}
-
-
 sub generate_cmp_query
 {
-    my ($contest, $teams, $vers, $count) = @_;
-        
-    my $query = 'SELECT ';
-    if (defined ($count))
-    {
-        $query .= 'count(';
-        $vers eq 'last' || !$vers and $query .= 'DISTINCT ';
-        $query .= 'A.id) ';
-    }
-    else
-    {
-        $query .= 'A.team_name, A.id, ';
-        $vers eq 'all' and $query .= 'R.submit_time ' or $query .='max(R.submit_time) '; # Ÿ… …Ÿ•• •Š• Š‰ ŸŠ…„Œšš
-    }
+    my $contest = shift;
+    my $teams = shift;
+    my $vers = shift;
+    
+    my $query = q~SELECT A.team_name, A.id, ~;
+    $vers eq 'all' and $query .= 'R.submit_time ' or $query .='max(R.submit_time) '; # Ÿ… …Ÿ•• •Š• Š‰ ŸŠ…„Œšš
     
     $query .= q~FROM ACCOUNTS A, SOURCES  S, REQS    R ~;
     
     ($teams eq 'all' or $contest eq 'all') and $query .= 'WHERE ' or
-    $query .= q~, CONTEST_ACCOUNTS CA  WHERE CA.account_id = A.id AND ~ and
-    (!$teams || $teams eq 'incontest') and                 # ˜€ Š‰ ‘‚ŸŒ•‰ ‰Œ…Ÿ
-    $query .=q~ CA.is_ooc=0 AND CA.is_remote=0 AND ~ or
-    $teams eq 'ooc' and
-    $query .=q~ CA.is_ooc=1 AND CA.is_remote=1 AND ~;         # ˜€ Š‰ ooc
+    $query .= q~, CONTEST_ACCOUNTS CA  WHERE CA.account_id = A.id AND~ and
+    (!$teams or $teams eq 'incontest') and                 # ˜€ Š‰ ‘‚ŸŒ•‰ ‰Œ…Ÿ
+    $query .=q~ CA.is_ooc=0 AND CA.is_remote=0 AND~ or      
+    $query .=q~ CA.is_ooc=1 AND CA.is_remote=1 AND~;         # ˜€ Š‰ ooc
 
-    $count and $query .= 'R.problem_id = P.id AND ' or $query .= 'R.problem_id = ? AND ';
-    $query .=q~ R.account_id = A.id AND
+    $query .=q~ R.problem_id = ? AND
+                R.account_id = A.id AND
                 S.req_id = R.id AND
                 S.de_id in (7,102,3016)~;
     $contest ne 'all' and $query .= " AND R.contest_id = ".$contest;
-    $vers ne 'all' && !defined($count) and $query .=' GROUP BY A.team_name, A.id';   
+    $vers ne 'all' and $query .=' GROUP BY A.team_name, A.id';   
 
     $query;
-}
-
-sub balance_brackets
-{
-    my $text = shift;
-    my @extr = extract_bracketed ($text, '()');
-    $extr[0];
-}
-
-sub balance_tags
-{
-    my ($text, $tag1, $tag2) = @_;
-    my @extr = extract_tagged ($text, $tag1, $tag2, undef);
-    $extr[0];
 }
 
 
