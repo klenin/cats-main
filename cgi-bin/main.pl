@@ -3,8 +3,8 @@ use strict;
 use warnings;
 no warnings 'redefine';
 
-use File::Temp;
-use File::Temp qw/tempfile/;
+#use File::Temp;
+use File::Temp qw/tempfile tmpnam/;
 use Encode;
 use encoding 'utf8';
 #use CGI::Fast qw(:standard);
@@ -640,14 +640,14 @@ sub console
     }
     elsif ($is_team)
     {
-        $c = $dbh->prepare(
-           qq~SELECT
+        $c = $dbh->prepare(qq~
+            SELECT
                 $console_select{run}
                 FROM reqs R, problems P, accounts A, contests C, dummy_table D, contest_accounts CA
                 WHERE (R.submit_time > CATS_SYSDATE() - $day_count) AND
-                R.problem_id=P.id AND R.contest_id=C.id AND C.id=? AND R.account_id=A.id AND
-                CA.account_id=A.id AND CA.contest_id=C.id AND CA.is_hidden=0 AND
-                (A.id=? OR (R.submit_time < C.freeze_date OR CATS_SYSDATE() > C.defreeze_date))
+                    R.problem_id=P.id AND R.contest_id=C.id AND C.id=? AND R.account_id=A.id AND
+                    CA.account_id=A.id AND CA.contest_id=C.id AND CA.is_hidden=0 AND
+                    (A.id=? OR (R.submit_time < C.freeze_date OR CATS_SYSDATE() > C.defreeze_date))
                 $events_filter
             UNION
             SELECT
@@ -660,7 +660,7 @@ sub console
                 $console_select{message}
                 FROM messages M, contest_accounts CA, dummy_table D, accounts A 
                 WHERE (M.send_time > CATS_SYSDATE() - $day_count) AND
-                M.account_id=CA.id AND CA.contest_id=? AND CA.account_id=A.id AND A.id=?
+                    M.account_id=CA.id AND CA.contest_id=? AND CA.account_id=A.id AND A.id=?
 	        UNION
             SELECT
                 $console_select{broadcast}
@@ -679,10 +679,10 @@ sub console
                 $console_select{run}
                 FROM reqs R, problems P, accounts A, dummy_table D, contests C, contest_accounts CA
                 WHERE (R.submit_time > CATS_SYSDATE() - $day_count) AND
-                R.problem_id=P.id AND R.contest_id=? AND R.account_id=A.id AND C.id=R.contest_id AND
-                CA.account_id=A.id AND CA.contest_id=C.id AND CA.is_hidden=0 AND 
-                (R.submit_time < C.freeze_date OR CATS_SYSDATE() > C.defreeze_date)
-                $events_filter
+                    R.problem_id=P.id AND R.contest_id=? AND R.account_id=A.id AND C.id=R.contest_id AND
+                    CA.account_id=A.id AND CA.contest_id=C.id AND CA.is_hidden=0 AND 
+                    (R.submit_time < C.freeze_date OR CATS_SYSDATE() > C.defreeze_date)
+                    $events_filter
             UNION
             SELECT
                 $console_select{broadcast}
@@ -702,7 +702,13 @@ sub console
         $request_state = -1 unless defined $request_state;
   
         my ($country, $flag) = get_flag($country_abb);
-        $last_ip = CATS::IP::filter_ip($last_ip);
+        my $last_ip_short = '';
+        for ($last_ip) {
+          $_ = CATS::IP::filter_ip($_);
+          m/(^\S+)/;
+          $last_ip_short = $1;
+          $_ = '' if $last_ip_short eq $_;
+        }
         return (
             country => $country,
             flag => $flag, 
@@ -716,7 +722,7 @@ sub console
             ),
             href_answer_box =>      $is_jury ? url_f('answer_box', qid => $id) : undef,
             href_send_message_box =>$is_jury ? url_f('send_message_box', caid => $caid) : undef,
-            time =>                 $submit_time,
+            'time' =>               $submit_time,
             problem_title =>        $problem_title,
             state_to_display($request_state),
             failed_test_index =>    $failed_test,
@@ -725,6 +731,7 @@ sub console
             message_text =>         $jury_message,
             team_name =>            $team_name,
             last_ip =>              $last_ip,
+            last_ip_short =>        $last_ip_short,
             is_jury =>              $is_jury,
             id      =>              $id,
         );
@@ -785,7 +792,7 @@ sub send_question_to_jury
         SELECT question FROM questions WHERE account_id = ? ORDER BY submit_time DESC~, {},
         $cuid
     );
-    $previous_question_text ne $question_text or return;
+    ($previous_question_text || '') ne $question_text or return;
     
     my $s = $dbh->prepare(qq~
         INSERT INTO questions(id, account_id, submit_time, question, received, clarified)
@@ -947,7 +954,18 @@ sub problems_link_frame
     ];
     define_columns(url_f('problems', link => 1), 0, 0, $cols);
     
-    {
+    my $security_check = $is_root ?
+      {cond => '', 'params' => []} :
+      {   
+        cond => q~
+          AND (
+            EXISTS (
+              SELECT 1 FROM contest_accounts WHERE contest_id = C.id AND account_id = ? AND is_jury = 1
+            ) OR (CURRENT_TIMESTAMP > C.finish_date)
+          )~,
+        params => [$uid]
+      };
+      
     my $c = $dbh->prepare(qq~
         SELECT P.id, P.title, C.title, 
           (SELECT COUNT(*) FROM reqs D WHERE D.problem_id = P.id AND D.state = $cats::st_accepted), 
@@ -955,9 +973,11 @@ sub problems_link_frame
           (SELECT COUNT(*) FROM reqs D WHERE D.problem_id = P.id AND D.state = $cats::st_time_limit_exceeded),
           (SELECT COUNT(*) FROM contest_problems CP WHERE CP.problem_id = P.id AND CP.contest_id=?)
         FROM problems P, contests C
-        WHERE C.id=P.contest_id 
+        WHERE
+          C.id=P.contest_id$security_check->{cond}
         ~.order_by);
-    $c->execute($cid);
+    # interbase bug
+    $c->execute(@{$security_check->{params}}, $cid);
 
     my $fetch_record = sub($)
     {            
@@ -982,7 +1002,6 @@ sub problems_link_frame
     $t->param(practice => $is_practice, href_action => url_f('problems'));
     
     $c->finish;
-    }
 }
 
 
@@ -1511,7 +1530,7 @@ sub users_new_save
 {
     $is_jury or return;
 
-    my %up = map { $_ => param($_) } user_param_names(), qw(password1 password2);
+    my %up = map { $_ => (param($_) || '') } user_param_names(), qw(password1 password2);
     
     user_validate_params(\%up, validate_password => 1) or return;
 
@@ -1555,7 +1574,8 @@ sub users_edit_frame
 
     my $countries = [ @cats::countries ];
 
-    for (@$countries) 
+    $up->{country} ||= $countries->[0]->{id};
+    for (@$countries)
     {
         $_->{selected} = $_->{id} eq $up->{country};
     }
@@ -2090,8 +2110,9 @@ sub compilers_edit_frame
 
     my $id = url_param('edit');
 
-    my( $code, $description, $supported_ext, $in_contests ) =
-        $dbh->selectrow_array(qq~SELECT code, description, file_ext, in_contests FROM default_de WHERE id=?~, {}, $id);
+    my ($code, $description, $supported_ext, $in_contests) =
+        $dbh->selectrow_array(qq~
+          SELECT code, description, file_ext, in_contests FROM default_de WHERE id=?~, {}, $id);
 
     $t->param(id => $id,
               code => $code, 
@@ -2745,6 +2766,7 @@ sub rank_get_results
 sub get_contest_list_param
 {
     my $contest_list = url_param('clist') || $cid;
+    # sanitize
     join(',', grep { $_ > 0 } map { sprintf '%d', $_ } split ',', $contest_list) || $cid;
 }
 
@@ -2763,9 +2785,10 @@ sub rank_table
         or $hide_virtual = (!$is_virtual && !$is_jury || !$is_team);
 
     my $contest_list = get_contest_list_param;
-    my (undef, $frozen) = get_contests_info($contest_list);
+    my (undef, $frozen, $not_started) = get_contests_info($contest_list, $uid);
     my @p = ('rank_table', clist => $contest_list);
     $t->param(
+        not_started => $not_started && !$is_jury,
         frozen => $frozen,
         hide_ooc => !$hide_ooc,
         hide_virtual => !$hide_virtual,
@@ -2774,6 +2797,7 @@ sub rank_table
         href_hide_virtual => url_f(@p, hide_virtual => 1, hide_ooc => $hide_ooc),
         href_show_virtual => url_f(@p, hide_virtual => 0, hide_ooc => $hide_ooc),
     );
+    #return if $not_started;
 
     my $virtual_cond = $hide_virtual ? ' AND CA.is_virtual = 0' : '';
     my $ooc_cond = $hide_ooc ? ' AND CA.is_ooc = 0' : '';
@@ -2895,7 +2919,7 @@ sub rank_table_frame
     init_template('main_rank_table.htm');  
         
     my $contest_list = get_contest_list_param;
-    ($contest_title, undef) = get_contests_info($contest_list);
+    ($contest_title) = get_contests_info($contest_list, $uid);
 
     $t->param(href_rank_table_content => url_f(
         'rank_table_content',
@@ -3170,6 +3194,12 @@ sub about_frame
     init_template('main_about.htm');
     my $problem_count = $dbh->selectrow_array(qq~SELECT COUNT(*) FROM problems~);
     $t->param(problem_count => $problem_count);
+}
+
+
+sub authors_frame
+{
+    init_template('main_authors.htm');
 }
 
 
@@ -3510,8 +3540,9 @@ sub generate_menu
         { item => res_str(544), href => url_f('about') },
         { item => res_str(501), href => url_f('registration') } );
 
-    attach_menu( "left_menu", undef, [ @left_menu ] );
-    attach_menu( "right_menu", "about", [ @right_menu ] );
+    attach_menu('left_menu', undef, [ @left_menu ]);
+    attach_menu('right_menu', 'about', [ @right_menu ]) ;
+    $t->param(url_authors => url_f('authors'));
 }
 
 
@@ -3542,6 +3573,7 @@ sub interface_functions ()
         problem_text => \&problem_text_frame,
         envelope => \&envelope_frame,
         about => \&about_frame,
+        authors => \&authors_frame,
         
         'cmp' => \&cmp_frame,
     }

@@ -1,4 +1,6 @@
 <TMPL_IF message><i><TMPL_VAR message ESCAPE=HTML></i><br></TMPL_IF>
+<TMPL_IF not_started><i>Соревнования ещё не начались</i>
+<TMPL_ELSE>
 <table width=100%> 
 <tr>
 <td align=left>
@@ -71,4 +73,6 @@
   </TMPL_LOOP>
   <td colspan="4">&nbsp;</td>
 </tr>
-</table><br>
+</table>
+</TMPL_IF>
+<br>

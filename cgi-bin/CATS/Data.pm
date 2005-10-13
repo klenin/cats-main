@@ -132,8 +132,9 @@ sub get_judge_name
 {
     my ($judge_id) = @_
         or return;
-    my ($name) = $dbh->selectrow_array(qq~SELECT nick FROM judges WHERE id = ?~, {},
-        $judge_id);
+    my ($name) = $dbh->selectrow_array(qq~
+      SELECT nick FROM judges WHERE id = ?~,
+      {}, $judge_id);
     return $name;
 }
 
@@ -155,18 +156,27 @@ sub insert_ooc_user
 
 sub get_contests_info
 {
-    my ($contest_list) = @_;
+    my ($contest_list, $uid) = @_;
+    $uid ||= 0;
 
     my $frozen = 0;
+    my $not_started = 0;
     my $title_prefix;
     my $sth = $dbh->prepare(qq~
-        SELECT title, CATS_SYSDATE() - freeze_date, CATS_SYSDATE() - defreeze_date
-        FROM contests WHERE id IN ($contest_list)~
+        SELECT C.title,
+          CATS_SYSDATE() - C.freeze_date,
+          CATS_SYSDATE() - C.defreeze_date,
+          CATS_SYSDATE() - C.start_date,
+          (SELECT COUNT(*) FROM contest_accounts WHERE contest_id = C.id AND account_id = ?)
+        FROM contests C
+        WHERE id IN ($contest_list)~
     );
-    $sth->execute;
-    while (my ($title, $time_since_freeze, $time_since_defreeze) = $sth->fetchrow_array)
+    $sth->execute($uid);
+    while (my (
+        $title, $since_freeze, $since_defreeze, $since_start, $registered) = $sth->fetchrow_array)
     {
-        $frozen = 1 if $time_since_freeze > 0 && $time_since_defreeze < 0;
+        $frozen ||= $since_freeze > 0 && $since_defreeze < 0;
+        $not_started ||= $since_start < 0 && !$registered;
         for ($title_prefix)
         {
             $_ = $title, last if !defined $_;
@@ -181,7 +191,7 @@ sub get_contests_info
             $_ = substr($_, 0, $i);
         }
     }
-    return ($title_prefix || '', $frozen);
+    return ($title_prefix || '', $frozen, $not_started);
 }
 
 

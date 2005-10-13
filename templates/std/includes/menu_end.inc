@@ -16,7 +16,7 @@
 		</TMPL_IF>		
 		</td>		
 		<td align=right>
-	    	    <a href='mailto:rozhkov at imcs dot dvgu dot ru' class=signed>&copy; 2004 Рожков М.В.</a>&nbsp;
+	    	    <a href="<TMPL_VAR url_authors>" class=signed>&copy; 2005 Авторы</a>&nbsp;
 		</td>
 	    </tr>
 	</table>

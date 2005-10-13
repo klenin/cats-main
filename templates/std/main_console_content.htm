@@ -13,7 +13,8 @@
     </td>
     <td class=small>
 	<TMPL_IF is_jury>	
-        [<a href="javascript:send_message('<TMPL_VAR href_send_message_box>')"><TMPL_VAR team_name ESCAPE=HTML></a>:<TMPL_VAR last_ip>]
+        [<a href="javascript:send_message('<TMPL_VAR href_send_message_box>')"><TMPL_VAR team_name ESCAPE=HTML></a>:
+        <TMPL_IF last_ip><a href="#" alt="<TMPL_VAR last_ip>" title="<TMPL_VAR last_ip>"><TMPL_VAR last_ip_short></a><TMPL_ELSE><TMPL_VAR last_ip_short></TMPL_IF>]
 	<TMPL_ELSE>
         [<TMPL_VAR team_name ESCAPE=HTML>]
 	</TMPL_IF>
@@ -38,8 +39,9 @@
 <TMPL_IF is_question>
     <td nowrap width=1%><TMPL_VAR time></td>
     <td align=left nowrap class=small>
-        [<TMPL_VAR team_name ESCAPE=HTML><TMPL_IF is_jury>:<TMPL_VAR last_ip></TMPL_IF>
-        &gt; ึภาษ]
+        [<TMPL_VAR team_name ESCAPE=HTML><TMPL_IF is_jury>:
+        <TMPL_IF last_ip><a href="#" alt="<TMPL_VAR last_ip>" title="<TMPL_VAR last_ip>"><TMPL_VAR last_ip_short></a><TMPL_ELSE><TMPL_VAR last_ip_short></TMPL_IF>
+        </TMPL_IF> &gt; ึภาษ]
     </td>
     <td class="small">
         <i><TMPL_VAR question_text ESCAPE=HTML></i> - 
