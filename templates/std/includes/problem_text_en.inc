@@ -1,6 +1,6 @@
 <h2>
 <TMPL_IF code>Problem <TMPL_VAR code>.</TMPL_IF>
-<TMPL_VAR problem_name ESCAPE=HTML>
+<TMPL_VAR title ESCAPE=HTML>
 </h2>
 Author: <TMPL_VAR author ESCAPE=HTML><br><br>
 
@@ -16,11 +16,6 @@ Author: <TMPL_VAR author ESCAPE=HTML><br><br>
     <TMPL_VAR statement>
 </TMPL_IF>
 
-<TMPL_IF constraints>
-    <h3><i>Constraints</i></h3>
-    <TMPL_VAR constraints>
-</TMPL_IF>
-
 <TMPL_IF input_format>
     <h3><i>Input file format</i></h3>
     <TMPL_VAR input_format>
@@ -31,9 +26,28 @@ Author: <TMPL_VAR author ESCAPE=HTML><br><br>
     <TMPL_VAR output_format>
 </TMPL_IF>
 
+<TMPL_IF pconstraints>
+    <h3><i>Constraints</i></h3>
+    <TMPL_VAR pconstraints>
+</TMPL_IF>
+
+<TMPL_IF extended_samples>
 <TMPL_LOOP samples>
 <h4><i>Sample input #<TMPL_VAR rank></i></h4>
-<pre><code><TMPL_VAR test_in></code></pre>
+<pre><code><TMPL_VAR in_file></code></pre>
 <h4><i>Sample output #<TMPL_VAR rank></i></h4>
-<pre><code><TMPL_VAR test_out></code></pre>
+<pre><code><TMPL_VAR out_file></code></pre>
 </TMPL_LOOP>
+<TMPL_ELSE>
+<h3><i>Sample tests</i></h4>
+<table class="sample">
+<tr><th>No.</th><th>Sample input</th><th>Sample output</th></tr>
+<TMPL_LOOP samples>
+<tr>
+  <td><TMPL_VAR rank></td>
+  <td><pre><code><TMPL_VAR in_file></code></pre></td>
+  <td><pre><code><TMPL_VAR out_file></code></pre></td>
+</tr>
+</TMPL_LOOP>
+</table>
+</TMPL_IF>

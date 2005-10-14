@@ -85,14 +85,14 @@ sub cmp_diff
   my $lines=1;
   while ($line)
   {
-    $line =~ m/^@@.*?/ or $lines++;
+    $line !~ /^@@/ and $lines++;
     
-    $line =~ m/^\+.*?/ and $plus++;
-    $line =~ m/^\-.*?/ and $minus++;
+    $line =~ /^\+/ and $plus++;
+    $line =~ /^\-/ and $minus++;
     
     $line = <DIFF_FILE>;
   }
-  int 100 * (1 - ($plus>$minus? $plus/$lines : $minus/$lines));
+  int 100 * (0.99 - ($plus>$minus? $plus/($lines-$minus) : $minus/($lines-$plus)));
 }
 
 # сравнивает специальным алгоритмом
@@ -129,7 +129,7 @@ sub prepare_src
   $src = clean_src($src);
   $src = pas_normalize($src);
   
-  #$algorythm eq 'diff' and   
+  #$algorythm eq 'diff' and
   $src =~ s/;(\w)/;\n$1/g;	#разнесли всё по строчкам (требуется только если сравниваем diff'ом)
   
   my ($fh, $fname) = tmpnam;
@@ -207,10 +207,10 @@ sub pas_normalize
   $src =~ s/(\W)dec\((\w*?)\)/$1$2:=$2-1/g;
   
   #$src =~ s/[a-z]+\w*?\s*?\(/f\(/g;			# все вызовы функций заменили на f
-  #$src =~ s/[a-z]+\w*?\s*?([^a-zA-Z_0-9(])/\$$1/g;	# все имена переменных заменили на $
+  $src =~ s/[a-z]+\w*?\s*?([^a-zA-Z_0-9(])/\$$1/g;	# все имена переменных заменили на $
+  $src =~ s/\$\[/\@[/g;					# все имена матриц заменили на @
   #$src =~ s/[+-]?[0-9]+/n/g;				# все целые числа заменили на n
   #$src =~ s/[+-]?\d+\.\d?([eE][+-]?\d)?/r/g;		# все вещественные числа заменили на r
-  #$src =~ s/i\[/\@[/g;					# все имена матриц заменили на @
   
   $src =~ s/\s//gs;		#удалили пробелы
 

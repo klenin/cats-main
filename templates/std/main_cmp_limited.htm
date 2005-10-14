@@ -1,0 +1,26 @@
+<TMPL_INCLUDE 'includes/menu_begin.inc'>
+
+<TMPL_IF message><i><TMPL_VAR message ESCAPE=HTML></i><br></TMPL_IF>
+
+<form method=post name=limited_form>
+
+<table border=0 width=100% cellpadding=2 cellspacing=1 class=bordered>
+<tr bgcolor=#ccccff>
+  <th>Команда</th>
+  <th>Команда</th>
+</tr>   
+<TMPL_LOOP NAME=row>
+<TMPL_LOOP NAME=cells>
+<tr>
+  <td><TMPL_VAR NAME=team1></td>
+  <td><TMPL_VAR NAME=team2></td>
+  <td><a href="<TMPL_VAR href>">код</a></td>
+  <td><a href="<TMPL_VAR diff_href>">diff</a></td>
+</tr>
+</TMPL_LOOP>
+</TMPL_LOOP>
+</table>
+
+</form>
+<TMPL_INCLUDE 'includes/menu_end.inc'>
+

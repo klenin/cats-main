@@ -65,6 +65,9 @@ input { height: 22px; }
 
 table.internal_borders { border-collapse: collapse; }
 table.internal_borders td, table.internal_borders th { border: 1px solid #4040ff; }
+table.sample { border-collapse: collapse; border: 2px; }
+table.sample td, table.sample th { border: 1px solid black; padding: 5px; }
+table.sample td { vertical-align: top; }
 
 .button {
     background-color: #ffffff;
@@ -97,15 +100,15 @@ TR.run_details_RE { background-color: #FFA0A0 }
 
 .small { font-size: 10pt }
 
-P { margin-top: 5; margin-bottom: 5 } 
+p { margin-top: 5; margin-bottom: 5 } 
 
-UL { margin-top: 5; margin-bottom: 5 } 
+ul { margin-top: 5; margin-bottom: 5 } 
 
-H2 { margin-top: 10; margin-bottom: 10 }
-H3 { margin-top: 10; margin-bottom: 5 }
-H4 { margin-top: 10; margin-bottom: 5 }
-CODE { margin-top: 0; margin-bottom: 0 }
-PRE { margin-top: 0; margin-bottom: 0 }
+h2 { margin-top: 10; margin-bottom: 10 }
+h3 { margin-top: 10; margin-bottom: 5 }
+h4 { margin-top: 10; margin-bottom: 5 }
+code { margin-top: 0; margin-bottom: 0 }
+pre { margin-top: 0; margin-bottom: 0 }
 
 .diff_only_a { background-color: #FFA0A0 }
 .diff_only_b { background-color: #A0FFA0 }

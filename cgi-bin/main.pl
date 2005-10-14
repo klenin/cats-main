@@ -20,6 +20,7 @@ use CATS::Data qw(:all);
 use CATS::IP;
 use CATS::Problem;
 use CATS::Diff;
+use CATS::TeX::HTMLGen;
 
 use vars qw($html_code $current_pid);
 
@@ -3040,6 +3041,7 @@ sub parse
 
 sub contest_visible 
 {  
+    return 1 if $is_jury;
     my $contest_visible = 0;
 
     my $pid = url_param('pid');
@@ -3047,14 +3049,14 @@ sub contest_visible
 
     if (defined $pid)
     {
-        $contest_visible = $is_jury || $dbh->selectrow_array(qq~
+        $contest_visible = $dbh->selectrow_array(qq~
             SELECT CATS_SYSDATE() - B.start_date
                 FROM problems A, contests B 
                 WHERE A.id=? AND B.id = A.contest_id~, {}, $pid) > 0;
     }
     elsif (defined $cpid)
     {
-        $contest_visible = $is_jury || $dbh->selectrow_array(qq~
+        $contest_visible = $dbh->selectrow_array(qq~
             SELECT CATS_SYSDATE() - B.start_date
                 FROM contest_problems A, contests B 
                 WHERE A.id=? AND B.id = A.contest_id~, {}, $cpid) > 0;
@@ -3062,50 +3064,57 @@ sub contest_visible
     }
     elsif (defined $cid)
     {
-        $contest_visible = $is_jury || $dbh->selectrow_array(qq~
-            SELECT CATS_SYSDATE() - A.start_date FROM contests A
+        $contest_visible = $dbh->selectrow_array(qq~
+            SELECT CATS_SYSDATE() - A.start_date
+                FROM contests A
                 WHERE A.id=?~, {}, $cid) > 0;
     }
 
-    if (!$contest_visible)
-    {
-        init_template('main_access_denied.htm');
-        return 0;
-    }
-    1;
+    init_template('main_access_denied.htm') if !$contest_visible;
+    return $contest_visible;
 }    
+
+
+sub convert_TeX
+{
+  my ($text) = @_;
+  CATS::TeX::HTMLGen::gen_html_part($text);
+}
 
 
 sub problem_text_frame
 {
-    return if (!contest_visible);
+    contest_visible() or return;
 
     init_template('main_problem_text.htm');
 
-    my ( @id_problems, @problems, %pcodes );
+    my (@id_problems, @problems, %pcodes);
     
     my $pid = url_param('pid');
     my $cpid = url_param('cpid');
 
-    if ( defined $pid )
+    if (defined $pid)
     {
         push @id_problems, $pid;
     }
-    elsif ( defined $cpid )
+    elsif (defined $cpid)
     {
-        my ( $contest_title, $problem_id, $code ) = 
-            $dbh->selectrow_array(qq~SELECT A.title, B.problem_id, B.code FROM contests A, contest_problems B
-                                     WHERE B.id=? AND B.contest_id=A.id~, {}, $cpid);    
-      
+        my ($contest_title, $problem_id, $code) = 
+            $dbh->selectrow_array(qq~
+                SELECT A.title, B.problem_id, B.code
+                FROM contests A, contest_problems B
+                WHERE B.id = ? AND B.contest_id = A.id~, {},
+                $cpid);    
         push @id_problems, $problem_id;
-        $pcodes{ $problem_id } = $code;
+        $pcodes{$problem_id} = $code;
     }
     else
     {    
-        my $c = $dbh->prepare( qq~SELECT problem_id, code FROM contest_problems WHERE contest_id=? ORDER BY code~ );
+        my $c = $dbh->prepare(qq~
+            SELECT problem_id, code FROM contest_problems WHERE contest_id=? ORDER BY code~);
 
-        $c->execute( $cid );
-        while ( my ( $problem_id, $code ) = $c->fetchrow_array )
+        $c->execute($cid);
+        while (my ($problem_id, $code) = $c->fetchrow_array)
         {
             push @id_problems, $problem_id;
             $pcodes{ $problem_id } = $code;
@@ -3113,58 +3122,41 @@ sub problem_text_frame
     }
 
 
-    foreach my $problem_id ( @id_problems )
+    CATS::TeX::HTMLGen::initialize_styles;
+    for my $problem_id (@id_problems)
     {
         $current_pid = $problem_id;
         
-        my ( $problem_name, $lang, $difficulty, $author, $input_file, $output_file,
-            $statement, $constraints, $input_format, $output_format, $time_limit, $memory_limit )
-                = $dbh->selectrow_array( qq~SELECT title, lang, difficulty, author, input_file, output_file,
-                    statement, pconstraints, input_format, output_format, time_limit, memory_limit  
-                    FROM problems WHERE id=?~, {}, $problem_id );
-        
+        my $problem_data = $dbh->selectrow_hashref(qq~
+            SELECT * FROM problems WHERE id = ?~, { Slice => {} },
+            $problem_id);
 
+        $problem_data->{samples} = $dbh->selectall_arrayref(qq~
+            SELECT rank, in_file, out_file
+            FROM samples WHERE problem_id = ? ORDER BY rank~, { Slice => {} },
+            $problem_id);
 
-        my $x;
-        foreach ( 'ru', 'en' )
+        for my $field_name qw(statement pconstraints input_format output_format)
         {
-            $x = $_;
-            last if ($lang eq $_);
+            for ($problem_data->{$field_name})
+            {
+                $_ = $_ eq '' ? undef : Encode::encode_utf8(parse($_));
+                s/(\$([^\$]*[^\\])\$)/convert_TeX($1)/eg;
+            }
         }
-
-        my $c = $dbh->prepare(qq~
-            SELECT rank, in_file, out_file FROM samples WHERE problem_id=? ORDER BY rank~);
-        $c->execute( $problem_id );
-    
-        my @samples;
-    
-        while (my ( $rank, $test_in, $test_out ) = $c->fetchrow_array )
-        {
-            push ( @samples, { rank => $rank, test_in => $test_in, test_out => $test_out } );
-        }
-
-
-
+        my $lang = $problem_data->{lang};
         push @problems,  {
-            problem_name => $problem_name,
-            code => $pcodes{ $problem_id },
-            author => $author,          
-            input_file => $input_file,
-            output_file => $output_file,
-            time_limit => $time_limit,
-            memory_limit => $memory_limit,
-            statement => ($statement ne '') ? Encode::encode_utf8( parse( $statement ) ) : undef,
-            constraints => $constraints ? Encode::encode_utf8( parse( $constraints ) ) : undef,
-            input_format => ($input_format ne '') ? Encode::encode_utf8( parse( $input_format ) ) : undef, 
-            output_format => ($output_format ne '') ? Encode::encode_utf8( parse( $output_format ) ) : undef,  
-            lang_ru => $x eq 'ru',
-            lang_en => $x eq 'en',
-            samples => [ @samples ]
+            %$problem_data,
+            code => $pcodes{$problem_id},
+            lang_ru => $lang eq 'ru',
+            lang_en => $lang eq 'en',
         };
     }    
 
-
-    $t->param(problems => [ @problems ]);
+    $t->param(
+        problems => [ @problems ],
+        tex_styles => CATS::TeX::HTMLGen::gen_styles_html()
+    );
 }
 
 
@@ -3205,48 +3197,53 @@ sub authors_frame
 
 sub cmp_output_problem
 {
-    init_template('main_cmp_out.htm');
+    (cookie('limit') eq 'none')?
+        init_template('main_cmp_out.htm'):
+        init_template("main_cmp_limited.htm");
+
 
     my @submenu = ( { href_item => url_f('cmp', setparams => 1), item_name => res_str(546)} );
     $t->param(submenu => [ @submenu ] );    
 
-# еъйу ле аьюочлч цчдчбч
+# если не выбрана задача
     my $problem_id = param("problem_id");
     if (! defined ($problem_id))
     {
-        $t->param(noproblems => 1);
+        #$t->param(noproblems => 1);
         return;
     }
 
-# яцлчек лчцачлуе цчдчбу у ийчдTк ежм а цчжмймами ъпочлубиу
+# узнаем название задачи и кладём его в заголовок странички
     $t->param(problem_title => field_by_id($problem_id, 'PROBLEMS', 'title'));
     
-# мпночайзек цчномъ
+# отправляем запрос
 
-# бупчек ияиуъь у а цчауъукмъпу мп лус ъпчаук дмнмйлупейщлье яъймауз
+# читаем кукисы и в зависимости от них ставим дополнительные условия
   
     my $cont = (CGI::cookie('contest') or url_param('cid'));
     my $query = generate_cmp_query ($cont, cookie ('teams'), cookie ('versions'));
     my $c = $dbh->prepare ($query.order_by);
     $c->execute($problem_id);   
         
-    my ($tname, $tid, $stime) = $c->fetchrow_array;
+    my ($tname, $tid, $rid) = $c->fetchrow_array;
         
-# еъйу лч цчномъ лубежм ле лчхделм
+# если на запроc ничего не найдено
     if (! defined($tname))
     {
         $t->param(norecords => 1);
         return;
     }
 
-# рмокуомачлуе цчжмймаима пчюйуфь
-    my @titles;         #цдеъщ сочлупщ цчжмймаиу пчюйуфь
+# формирование заголовков таблицы
+    my @titles;         #здесь хранить заголовки таблицы
+    my %reqid;
     while ($tname)
     {
+        my $stime = field_by_id($rid, 'reqs', 'CATS_DATE(result_time)');
+        $stime =~ s/\s+$//;
         my %col_title = (id => $tname,
-                         tid => $tid,
-                         time => $stime,
-                         href => url_f('cmp', tid=>$tid,pid=>$problem_id));
+                         tid => $tid, submit_time => $stime,
+                         rid => $rid, href => url_f('cmp', tid=>$tid, pid=>$problem_id));
         if (cookie('teams') eq 'all')
         {
             my $query = 'SELECT is_ooc, is_remote FROM contest_accounts WHERE account_id=?';
@@ -3259,44 +3256,38 @@ sub cmp_output_problem
             $is_remote and %col_title = (%col_title, remote=>1);
         }
         push @titles, \%col_title;
-        ($tname, $tid, $stime) = $c->fetchrow_array;
+        #%reqid = (%reqid, $tid => $rid);
+        ($tname, $tid, $rid) = $c->fetchrow_array;
     }
     $c->finish; 
 
     my %srcfiles;
-    my %reqid;
-    $dbh->{LongReadLen} = 16384;        ### 16Kb BLOB-ОНКЕ
+    $dbh->{LongReadLen} = 16384;        ### 16Kb BLOB-поле
     foreach (@titles)
     {   
         $c = $dbh->prepare(q~
             SELECT
-                S.src,
-                R.id
+                S.src
             FROM
-                SOURCES S,
-                REQS    R,
-                ACCOUNTS        A
+                SOURCES S
             WHERE
-                A.id = ? AND
-                R.account_id = A.id AND
-                S.req_id = R.id
+                S.req_id = ?
                         ~);
-        $c->execute($$_{tid});
-        my ($src, $rid) = $c->fetchrow_array;
+        $c->execute($$_{rid});
+        my $src = $c->fetchrow_array;
 
-        $srcfiles{$$_{tid}} = CATS::Diff::prepare_src ($src); # БНР РСР МЮДН ВРН-РН ЛЕМЪРЭ
+        $srcfiles{$$_{rid}} = CATS::Diff::prepare_src ($src); # вот тут надо что-то менять
 
-        $reqid{$$_{tid}} = $rid;
+        #$reqid{$$_{tid}} = $rid;
         $c->finish;
     }
 
-# ъмцдчек ъмюъпаеллм пчюйубия
+# создаем собственно табличку
     $t->param(col_titles => \@titles);
-    my @rows = generate_table (\@titles, \%srcfiles, \%reqid, $problem_id);
+    my @rows = generate_table (\@titles, \%srcfiles, $problem_id, (cookie('limit') eq 'none')? 0:cookie('limit'));
     $t->param(row => \@rows);
     1;  
 }
-
 
 sub cmp_output_team
 {
@@ -3307,16 +3298,16 @@ sub cmp_output_team
 
     $t->param(team_stat => 1);
 
-# яцлчек лчцачлуе цчдчбу у ийчдTк ежм а цчжмймами ъпочлубиу
+# узнаем название задачи и кладём его в заголовок странички
     $t->param(problem_title => field_by_id(param("pid"), 'PROBLEMS', 'title'));
-# яцлчек лчцачлуе имкчлдь у ийчдTк ежм пмте а цчжмймами ъпочлубиу
+# узнаем название команды и кладём его тоже в заголовок странички
     $t->param(team_name => field_by_id(param("tid"), 'ACCOUNTS', 'team_name'));
 
-    $dbh->{LongReadLen} = 16384;        ### 16Kb BLOB-нмйз
+    $dbh->{LongReadLen} = 16384;        ### 16Kb BLOB-ОНКЪ
     my $c = $dbh->prepare(q~
         SELECT
             S.src,
-            R.submit_time,
+            CATS_DATE(R.submit_time),
             R.id
         FROM
             SOURCES S,
@@ -3324,8 +3315,8 @@ sub cmp_output_team
         WHERE
             R.account_id = ? AND
             R.problem_id = ? AND
-            S.req_id = R.id
-                          ~);
+            S.req_id = R.id AND
+            R.state <> ~.$cats::st_compilation_error);
     $c->execute(param("tid"), param("pid"));
     my ($src, $stime, $rid) = $c->fetchrow_array;
     my @titles;
@@ -3333,24 +3324,30 @@ sub cmp_output_team
     my %reqid;
     while ($stime)
     {
-        my %col_title = (id => $stime);
+        my %col_title = (id => $stime, rid => $rid);
         push @titles, \%col_title;
-        $srcfiles{$stime} = CATS::Diff::prepare_src ($src, cookie('algorythm'));
-        $reqid{$stime} = $rid;
+        $srcfiles{$rid} = CATS::Diff::prepare_src ($src, cookie('algorythm'));
         ($src, $stime, $rid) = $c->fetchrow_array;
     }
 
-    my @rows = generate_table (\@titles, \%srcfiles, \%reqid, param('pid'));
+    my @rows = generate_table (\@titles, \%srcfiles, param('pid'));
     $t->param(row => \@rows);
     $t->param(col_titles => \@titles);
    
     1;
 }
 
-
 sub cmp_show_sources
 {
     init_template("main_cmp_source.htm");
+
+
+    #$t->param(diff_href => url_f('diff_runs', r1 =>param('rid1'), r2 =>param('rid2')) );
+    my @submenu = (
+        { href_item => url_f('cmp', setparams => 1), item_name => res_str(546)},
+        { href_item => url_f('diff_runs', r1 =>param('rid1'), r2 =>param('rid2')), item_name => res_str(547)}
+        );
+    $t->param(submenu => [ @submenu ] );    
     
     $t->param(problem_title => field_by_id(param("pid"), 'PROBLEMS', 'title'));
     
@@ -3386,22 +3383,24 @@ sub cmp_show_sources
     $t->param(source2 => prepare_src_show($src[1]));
 }
 
-
 sub cmp_set_params
 {
     my $backlink = shift;
     init_template("main_cmp_param.htm");
     $t->param(backlink => $backlink);
     
+    # кукис для выбора команд
     my $cookie;
     $cookie = CGI::cookie('teams') or $cookie = 'incontest';
     $t->param('teams_'.$cookie => 1);
     $t->param('init_team' => $cookie);
     
+    # кукис для выбора версий
     $cookie = CGI::cookie('versions') or $cookie = 'last';
     $t->param('view_'.$cookie => 1);
     $t->param('init_vers' => $cookie);
     
+    # кукис для выбора контеста
     $cookie = CGI::cookie('contest') or $cookie = param('cid');
     $t->param(init_cont => $cookie);
     $t->param(cur_cid => param('cid'));
@@ -3419,16 +3418,47 @@ sub cmp_set_params
     $t->param(contest_all=>1) if $cookie=='all';
     $t->param(contests => \@contests);
 
-    # ЙСЙХЯ ДКЪ БШАНПЮ ЮКЦНПХРЛЮ
+    # кукис для выбора алгоритма
     $cookie = CGI::cookie('algorythm') or $cookie = 'diff';
     $t->param(init_algorythm => $cookie);
     $t->param('algorythm_'.$cookie => 1);
+    
+    # кукис для определения фильтра
+    $cookie = cookie('limit') or $cookie = 80; #$cats::default_limit;
+    if ($cookie eq 'none')
+    {
+        #$t->param(limited=>0);
+        $t->param(init_limit=>80);
+    }
+    else
+    {
+        $t->param(limited=>1);
+        $t->param(init_limit => $cookie);
+    }
+    
     1;
 }
 
 
+sub cmp_limited_output
+{
+    init_template('main_cmp_limited.htm');
+
+    my $problem_id = param("problem_id");
+
+    my $cont = (CGI::cookie('contest') or url_param('cid'));
+    my $query = generate_cmp_query ($cont, cookie ('teams'), cookie ('versions'));
+    my $c = $dbh->prepare ($query.order_by);
+    $c->execute($problem_id);   
+        
+    my ($tname, $tid, $rid) = $c->fetchrow_array;
+
+    
+    1;
+}
+
 sub cmp_frame
-{       
+{
     if (defined param("showtable") & $is_jury)
     {
         cmp_output_problem;
@@ -3456,8 +3486,8 @@ sub cmp_frame
     init_listview_template( "problems$cid" . ($uid || ''), 'problems', 'main_cmp.htm' );
     
     my @cols = 
-              ( { caption => res_str(602), order_by => '3', width => '40%' },
-                { caption => res_str(603), order_by => '4', width => '40%' },
+              ( { caption => res_str(602), order_by => '3', width => '50%' },
+                { caption => res_str(603), order_by => '4', width => '30%' },
                 { caption => res_str(636), order_by => '5', width => '20%' });
 
     define_columns(url_f('cmp'), 0, 0, [ @cols ]);
@@ -3490,9 +3520,6 @@ sub cmp_frame
     attach_listview(url_f('cmp'), $fetch_record, $c);
 
     $c->finish;
-
-    $c = $dbh->prepare(qq~SELECT id, description FROM default_de WHERE in_contests=1 ORDER BY code~);
-    $c->execute;
 
     my @submenu = ( { href_item => url_f('cmp', setparams => 1), item_name => res_str(546)} );
     $t->param(submenu => [ @submenu ] );    

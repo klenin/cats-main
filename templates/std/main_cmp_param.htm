@@ -5,6 +5,7 @@ var rvTeam = '<TMPL_VAR NAME = init_team>';
 var rvVers = '<TMPL_VAR NAME = init_vers>';
 var rvCont = '<TMPL_VAR NAME = init_cont>';
 var rvAlgorythm = '<TMPL_VAR NAME = init_algorythm>';
+var rvLimit = '<TMPL_VAR NAME = init_limit>';
 
 function chkTeamRadio(form, value)
 {
@@ -22,13 +23,21 @@ function SelectContest(form, value)
 {
   rvCont = value;
 } 
+function ChangeLimit(form, value)
+{
+  rvLimit = value;
+}
+
 
 function save_params()
 {
-  document.cookie = "teams="+rvTeam;
-  document.cookie = "versions="+rvVers;
-  document.cookie = "contest="+rvCont;
-  document.cookie = "algorythm="+rvAlgorythm;
+  var expire = "; expires=+100y";
+  document.cookie = "teams="+rvTeam+expire;
+  document.cookie = "versions="+rvVers+expire;
+  document.cookie = "contest="+rvCont+expire;
+  document.cookie = "algorythm="+rvAlgorythm+expire;
+  if (!document.params.limit_chk.checked) document.cookie = "limit=none";
+  else document.cookie = "limit="+rvLimit;
   document.location = '<TMPL_VAR NAME=backlink>';
 }
 </script>
@@ -53,6 +62,7 @@ function save_params()
   </tr>
 </table>
 
+<br>
 <br>
 
 <b>Выбрать турнир</b>
@@ -119,9 +129,23 @@ function save_params()
 <br>
 <br>
 
+<table>
+<tr>
+  <td>
+    <input type=checkbox name=limit_chk <TMPL_IF limited>checked</TMPL_IF>>
+  </td>
+  <td>Использовать фильтр</td>
+  <td>
+    <input type=text name=limit size="5" class=bordered value = '<TMPL_VAR init_limit>'
+    onchange = "{ChangeLimit(this.form, this.value)}">
+  </td>
+</table>
+
+<br>
+<br>
+
 <input type=button class=button name="Saveparams" value="OK" onclick="save_params()">
 <input type=button class=button name="" value="Отмена" onclick="document.location = '<TMPL_VAR NAME=backlink>'">
-<br>
 <br>
 
 </form>
