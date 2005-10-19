@@ -20,7 +20,7 @@ use CATS::Data qw(:all);
 use CATS::IP;
 use CATS::Problem;
 use CATS::Diff;
-use CATS::TeX::HTMLGen;
+use CATS::TeX::Lite;
 
 use vars qw($html_code $current_pid);
 
@@ -3075,13 +3075,6 @@ sub contest_visible
 }    
 
 
-sub convert_TeX
-{
-  my ($text) = @_;
-  CATS::TeX::HTMLGen::gen_html_part($text);
-}
-
-
 sub problem_text_frame
 {
     contest_visible() or return;
@@ -3122,7 +3115,7 @@ sub problem_text_frame
     }
 
 
-    CATS::TeX::HTMLGen::initialize_styles;
+    #CATS::TeX::HTMLGen::initialize_styles;
     for my $problem_id (@id_problems)
     {
         $current_pid = $problem_id;
@@ -3141,7 +3134,8 @@ sub problem_text_frame
             for ($problem_data->{$field_name})
             {
                 $_ = $_ eq '' ? undef : Encode::encode_utf8(parse($_));
-                s/(\$([^\$]*[^\\])\$)/convert_TeX($1)/eg;
+                #s/(\$([^\$]*[^\\])\$)/convert_TeX($1)/eg;
+                CATS::TeX::Lite::convert_all($_);
             }
         }
         my $lang = $problem_data->{lang};
@@ -3155,7 +3149,8 @@ sub problem_text_frame
 
     $t->param(
         problems => [ @problems ],
-        tex_styles => CATS::TeX::HTMLGen::gen_styles_html()
+        tex_styles => CATS::TeX::Lite::styles()
+        #CATS::TeX::HTMLGen::gen_styles_html()
     );
 }
 

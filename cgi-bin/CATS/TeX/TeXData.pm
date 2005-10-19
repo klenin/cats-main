@@ -4,7 +4,7 @@ package CATS::TeX::TeXData;
 # команда ТеХ без бэкслеша => html/mathml entity без &и;
 # при добавлении новых символов могут возникнуть проблемы при отображении html
 # (только в случае отсутствия у клиента обоих используемых генератором шрифтов)
-my %binary =
+our %binary =
 ( 
  pm => '#xB1', 
  mp => '#x2213',
@@ -63,6 +63,7 @@ my %special =
  neg => '#xAC', 
  nabla => 'nabla', 
  dots => 'hellip',
+ ldots => 'hellip',
  downarrow => 'darr',
  goodbreak => 'zwnj',
  leftguilsingl => 'lsaquo',

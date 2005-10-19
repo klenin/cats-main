@@ -27,7 +27,8 @@ our @EXPORT = qw(parse);
     {
         return $_[0]->{text} if exists $_[0]->{text};
         my $arg = $_[0]->{arg};
-        $_[0]->{text} = exists $texdata::symbols{$arg} ? $texdata::symbols{$arg} : $arg; 
+        $_[0]->{text} =
+          exists $CATS::TeX::TeXData::symbols{$arg} ? $CATS::TeX::TeXData::symbols{$arg} : $arg;
     }
     sub variable 
     {
@@ -181,23 +182,24 @@ sub new_obj
         $self;
         
     }; 
-    my %math_mode_handler = ( 
-                             (map {$_, $make_letter} keys %texdata::symbols), # символы
-                             (map {$_, $make_parsym} @parsym), # интегралы, суммы..
-                             '\left' => $make_lr, # cкобки
-                             '\right' => $make_lr, 
-                             '\matrix'=> $make_mat, 
-                             '\frac' => sub {parse_the qw(Frac over under)},
-                             '\sqrt' => sub {parse_the qw(Sqrt arg)}, 
-                             '^' => sub {parse_the qw(Sup arg)}, 
-                             '_' => sub {parse_the qw(Sub arg)}, 
-                             '\=' => sub {parse_the qw/Over arg/}, #вектора
-                             '{' => sub {new_group ('{', '}')}, 
-                            ); 
+    my %math_mode_handler = (
+        (map {$_, $make_letter} keys %CATS::TeX::TeXData::symbols), # символы
+        (map {$_, $make_parsym} @parsym), # интегралы, суммы...
+        '\left' => $make_lr, # cкобки
+        '\right' => $make_lr, 
+        '\matrix'=> $make_mat, 
+        '\frac' => sub { parse_the qw(Frac over under) },
+        '\sqrt' => sub { parse_the qw(Sqrt arg) },
+        '^' => sub { parse_the qw(Sup arg) },
+        '_' => sub { parse_the qw(Sub arg) },
+        '\=' => sub { parse_the qw/Over arg/ }, #вектора
+        '{' => sub { new_group ('{', '}') },
+    ); 
     
     my %non_math_mode_handler = (
-                                 '$' => sub {new_group ('$', '$')}, 
-                                 '\\' => sub {Letter->new ( type => "eol")}); 
+        '$' => sub { new_group ('$', '$') },
+        '\\' => sub { Letter->new(type => "eol") }
+    );
     
     my $handler = $math_mode ? \%math_mode_handler : \%non_math_mode_handler;
     $handler = $handler->{$current_token}; 

@@ -111,7 +111,7 @@ sub make_table
         push(@$data, +[shift @$src]) unless @$data;
     }
     #default table data: 
-    my($attr, @rows) = {cellpadding => "0 ", cellspacing => "0 ", align => "center"} ;
+    my($attr, @rows) = {cellpadding => '0', cellspacing => '0'}; #, align => 'center'};
     extract_params $attr, \@rows, \@_;
     for my $row(@rows) 
     {
@@ -148,28 +148,28 @@ sub gen_styles
     
     my $core = mkstyle 
     (
-     'font-size' => '100%',
-     'line-height' => toproc line_height(1), 
+      'font-size' => '100%',
+      'line-height' => toproc line_height(1), 
     );
     
     my $tab_style = mkstyle 
     (
-     'padding' => '0 0 0 1 ',
-     'margin-top' => '0',
-     'margin-bottom' => '0',
-     'border' => '0 0 0 0',
+      'padding' => '0 0 0 1 ',
+      'margin-top' => '0',
+      'margin-bottom' => '0',
+      'border' => '0 0 0 0',
     ) ; 
     my $box_style = mkstyle
     (
-     '-moz-box-sizing' => 'border-box',
-     'box-sizing' => 'border-box'
+      '-moz-box-sizing' => 'border-box',
+      'box-sizing' => 'border-box'
     );
     my $span_style = mkstyle 
     (
-     %family,
-     'font-style' => 'normal',
-     'text-align' => 'center',
-     "vertical-align" => "bottom" 
+      %family,
+      'font-style' => 'normal',
+      'text-align' => 'center',
+      'vertical-align' => 'bottom',
     ) ; 
     my $all_classes;
     $all_classes .= "\n .TeX .$_ {" . mkstyle(%{$styles_{$_}}) . "}" for(sort keys %styles_) ; 

@@ -2,6 +2,7 @@
 use lib '../..';
 use CATS::TeX::HTMLGen;
 use CATS::TeX::MMLGen;
+use CATS::TeX::TeXData;
 use strict;
 use warnings;
 
@@ -32,4 +33,5 @@ sub test_gen
 } 
 
 test_gen();
+#print $TeXData::symbols
 

@@ -5,7 +5,7 @@ body {
     scrollbar-base-color: #ffcc55; 
     background-color: #ffffff;  
     color: #000000;
-    font-family: Arial; 
+    font-family: Arial;
     font-size: 14px; 
 }
 
@@ -112,3 +112,6 @@ pre { margin-top: 0; margin-bottom: 0 }
 
 .diff_only_a { background-color: #FFA0A0 }
 .diff_only_b { background-color: #A0FFA0 }
+
+span.TeX { font-family: Arial Unicode Ms, Lucida Sans Unicode, Arial, sans serif; }
+span.TeX i { font-family: Times New Roman, serif; }

@@ -6,7 +6,7 @@ use strict;
 #use warnings;
 
 use HTML::AsSubs;
-use CATS::TeX::TeXData;
+#use CATS::TeX::TeXData;
 use CATS::TeX::HTMLUtil;
 
 use Exporter;
@@ -118,7 +118,7 @@ sub Group::genHTML
         {
             push @cells, [{$self->add_classes([$padclass], $x)}, [$x->genHTML]];
         }
-        if (ref $x eq "Letter" )
+        if (ref $x eq "Letter")
         {
             $prev = $x;
             $prevclass = $padclass; 
