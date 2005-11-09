@@ -1,5 +1,5 @@
 <html><head>
-<title>CATS - <TMPL_VAR contest_title ESCAPE=HTML></title>
+<title><TMPL_VAR contest_title ESCAPE=HTML></title>
 <meta name="Content-Type" content="text/html; charset=utf-8">
 <TMPL_IF refresh>
 <meta http-equiv="Refresh" CONTENT="<TMPL_VAR refresh>">    

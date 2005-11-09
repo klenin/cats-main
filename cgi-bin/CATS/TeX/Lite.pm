@@ -1,13 +1,13 @@
 package CATS::TeX::Lite;
-
+use lib '../..';
 use strict;
 use warnings;
 
 use CATS::TeX::TeXData;
 
 my %generators = (
-    var   => sub { qq~<i>$_[0]</i>~ },
-    num   => sub { $_[0] },
+    var   => sub { ($_[1] || '') . "<i>$_[0]</i>" },
+    num   => sub { ($_[1] || '') . qq~<span class="num">$_[0]</span>~ },
     op    => sub { join '', @_ },
     spec  => sub { join '', map { $CATS::TeX::TeXData::symbols{$_} || $_ } @_ },
     sup   => sub { qq~<sup>$_[0]</sup>~ },
@@ -39,7 +39,7 @@ sub parse_token
         # один пробел после знаков препинания
         s/^([.,:;])(\s*)// && return ['op', $1, ($2 eq '' ? '' : ' ')];
         s/^{// && return parse_block();
-        s/^(\S)// && return ['num', $1];
+        s/^(\S)// && return ['op', $1];
     }
 }
 
@@ -76,6 +76,14 @@ sub asHTML
     my ($tree) = @_;
     ref $tree eq 'ARRAY' or return $tree;
     my $name = shift(@$tree);
+    my $prev = 0;
+    # вставить пробелы между подряд идущими переменными и числами
+    for (@$tree)
+    {
+        my $cur = ref $_ eq 'ARRAY' && $_->[0] =~ /^(var|num|sub|sup)$/;
+        push @$_, ' ' if $prev && $cur;
+        $prev = $cur;
+    }
     my @html_params = map { asHTML($_) } @$tree;
     return $generators{$name}->(@html_params);
 }
@@ -94,6 +102,7 @@ sub styles() { '' }
 
 
 #print convert_one('a_1, a_2, \ldots , a_{n+1}');
+#print convert_one('a + b+c');
 
 
 1;

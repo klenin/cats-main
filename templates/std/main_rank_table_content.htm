@@ -34,7 +34,7 @@
 <!-- <th width=1%>Страна -->
 <th>Название команды</th>
 <TMPL_LOOP problems>
-<th width="<TMPL_VAR column_width>%"><TMPL_VAR code></th>
+<th width="<TMPL_VAR column_width>%"><a href="<TMPL_VAR problem_text>" alt="<TMPL_VAR title>" title="<TMPL_VAR title>"><TMPL_VAR code></a></th>
 </TMPL_LOOP>
 <th width="<TMPL_VAR problem_column_width>%">=</th>
 <th>время</th>
@@ -47,7 +47,7 @@
 <!--
 <td nowrap align=center bgcolor=#ffffff>
 <TMPL_IF flag>
-    <img src='<TMPL_VAR NAME=flag>' alt="<TMPL_VAR NAME=country ESCAPE=HTML><TMPL_IF motto> - <TMPL_VAR motto ESCAPE=HTML></TMPL_IF>">
+    <img src="<TMPL_VAR NAME=flag>" alt="<TMPL_VAR NAME=country ESCAPE=HTML><TMPL_IF motto> - <TMPL_VAR motto ESCAPE=HTML></TMPL_IF>">
 <TMPL_ELSE>
     <TMPL_VAR NAME=country ESCAPE=HTML><TMPL_IF motto> - <TMPL_VAR motto ESCAPE=HTML></TMPL_IF>
 </TMPL_IF>    

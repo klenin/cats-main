@@ -611,11 +611,12 @@ sub console
     my $c;
     if ($is_jury)
     {
+        my $t = $is_root ? '' : ' C.id = ? AND';
         $c = $dbh->prepare(qq~
             SELECT
                 $console_select{run}
-                FROM reqs R, problems P, accounts A, contest_accounts CA, dummy_table D 
-                WHERE (R.submit_time > CATS_SYSDATE() - $day_count) AND
+                FROM reqs R, problems P, accounts A, contests C, contest_accounts CA, dummy_table D 
+                WHERE (R.submit_time > CATS_SYSDATE() - $day_count) AND R.contest_id=C.id AND$t
                 R.problem_id=P.id AND R.account_id=A.id AND CA.account_id=A.id AND CA.contest_id=R.contest_id
                 $events_filter
             UNION
@@ -637,7 +638,9 @@ sub console
                 $console_select{broadcast}
                 WHERE (M.send_time > CATS_SYSDATE() - $day_count) AND M.broadcast=1
             ORDER BY 2 DESC~);
-        $c->execute(@events_filter_params, @events_filter_params, @events_filter_params);
+        $c->execute(
+            ($is_root ? () : $cid),
+            @events_filter_params, @events_filter_params, @events_filter_params);
     }
     elsif ($is_team)
     {
@@ -704,11 +707,13 @@ sub console
   
         my ($country, $flag) = get_flag($country_abb);
         my $last_ip_short = '';
-        for ($last_ip) {
-          $_ = CATS::IP::filter_ip($_);
-          m/(^\S+)/;
-          $last_ip_short = $1;
-          $_ = '' if $last_ip_short eq $_;
+        $last_ip ||= '';
+        for ($last_ip)
+        {
+            $_ = CATS::IP::filter_ip($_);
+            m/(^\S+)/;
+            $last_ip_short = $1;
+            $_ = '' if $last_ip_short eq $_;
         }
         return (
             country => $country,
@@ -1145,7 +1150,7 @@ sub problems_submit
         !defined $status || $status < $cats::problem_st_disabled
             or return msg(124);
         
-        unless ($is_official)
+        unless ($is_official && !$is_virtual)
         {
             my ($current_official) = $dbh->selectrow_array(qq~
                 SELECT title FROM contests
@@ -2686,12 +2691,18 @@ sub rank_get_problem_ids
     my ($contest_list) = @_;
     # соответствующее требование: в одном чемпионате задача не должна дублироваться обеспечивается
     # при помощи UNIQUE(c,p)
+    my $hidden_problems = $is_jury ? '' : ' AND CP.status < ?';
     my $problems = $dbh->selectall_arrayref(qq~
-        SELECT CP.problem_id, CP.code, CP.contest_id, CATS_DATE(C.start_date) AS start_date
-        FROM contest_problems CP INNER JOIN contests C ON C.id = CP.contest_id
-        WHERE CP.contest_id IN ($contest_list)
+        SELECT
+            CP.problem_id, CP.code, CP.contest_id, CATS_DATE(C.start_date) AS start_date, P.title,
+            C.start_date - CATS_SYSDATE() AS since_start
+        FROM
+            contest_problems CP INNER JOIN contests C ON C.id = CP.contest_id
+            INNER JOIN problems P ON P.id = CP.problem_id
+        WHERE CP.contest_id IN ($contest_list)$hidden_problems
         ORDER BY C.start_date, CP.code~,
-        { Slice => {} }
+        { Slice => {} },
+        ($is_jury ? () : $cats::problem_st_hidden)
     );
 
     my $w = int(50 / (@$problems + 1));
@@ -2713,6 +2724,8 @@ sub rank_get_problem_ids
         {
             $contests[$#contests]->{count}++;
         }
+        $_->{title} = '' if $_->{since_start} < 0 && !$is_jury;
+        $_->{problem_text} = url_f('problem_text', cid => $_->{contest_id}, pid => $_->{problem_id});
     }
 
     $t->param(
@@ -2747,6 +2760,11 @@ sub rank_get_results
     {
         push @conditions, "(R.submit_time - CA.diff_time < CATS_SYSDATE() - $virtual_diff_time)";
     }
+    if (!$is_jury)
+    {
+        push @conditions, 'CP.status < ?';
+        push @params, $cats::problem_st_hidden;
+    }
 
     $cond_str .= join '', map " AND $_", @conditions;
     
@@ -2754,9 +2772,10 @@ sub rank_get_results
         SELECT
             R.state, ((R.submit_time - C.start_date - CA.diff_time) * 1440) AS time_elapsed,
             R.problem_id, R.account_id
-        FROM reqs R, contests C, contest_accounts CA
+        FROM reqs R, contests C, contest_accounts CA, contest_problems CP
         WHERE
             CA.contest_id = C.id AND CA.account_id = R.account_id AND R.contest_id = C.id AND
+            CP.problem_id = R.problem_id AND CP.contest_id = C.id AND
             CA.is_hidden = 0 AND R.state >= ? AND C.id IN ($contest_list)$cond_str
         ORDER BY R.id~, { Slice => {} },
         $cats::request_processed, @params
@@ -2776,7 +2795,7 @@ sub rank_table
 {
     my $template_name = shift;
     init_template('main_rank_table_content.htm');
-    
+
     my $hide_ooc = url_param('hide_ooc') || '0';
     $hide_ooc =~ /^[01]$/
         or $hide_ooc = 0;
@@ -2917,7 +2936,9 @@ sub rank_table_frame
     my $hide_virtual = url_param('hide_virtual') || 0;
     
     #rank_table('main_rank_table.htm');  
-    init_template('main_rank_table.htm');  
+    my $print = url_param('print') ? '_print' : '';
+    #init_template("main_rank_table_content$t.htm");
+    init_template("main_rank_table$print.htm");  
         
     my $contest_list = get_contest_list_param;
     ($contest_title) = get_contests_info($contest_list, $uid);
