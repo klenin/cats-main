@@ -58,8 +58,8 @@ sub enforce_request_state
     defined $p{state} or return;
     $dbh->do(qq~
         UPDATE reqs
-            SET failed_test = ?, state = ?,
-                received = 0, result_time = CATS_SYSDATE(), judge_id = NULL 
+            SET failed_test = ?, state = ?, 
+                points = NULL, received = 0, result_time = CATS_SYSDATE(), judge_id = NULL 
             WHERE id = ?~, {},
         $p{failed_test}, $p{state}, $p{request_id}
     ) or return;
@@ -121,6 +121,7 @@ sub get_sources_info
         # Только минуты от времени начала и окончания обработки.
         ($r->{"${_}_short"} = $r->{$_}) =~ s/^(.*)\s+(\d\d:\d\d)\s*$/$2/
             for qw(test_time result_time);
+        $r->{src} =~ s/</&lt;/;
         $r = { %$r, state_to_display($r->{state}) };
     }
 
@@ -162,21 +163,24 @@ sub get_contests_info
     my $frozen = 0;
     my $not_started = 0;
     my $title_prefix;
+    my $show_points = undef;
     my $sth = $dbh->prepare(qq~
         SELECT C.title,
           CATS_SYSDATE() - C.freeze_date,
           CATS_SYSDATE() - C.defreeze_date,
           CATS_SYSDATE() - C.start_date,
-          (SELECT COUNT(*) FROM contest_accounts WHERE contest_id = C.id AND account_id = ?)
+          (SELECT COUNT(*) FROM contest_accounts WHERE contest_id = C.id AND account_id = ?),
+          C.rules
         FROM contests C
         WHERE id IN ($contest_list)~
     );
     $sth->execute($uid);
     while (my (
-        $title, $since_freeze, $since_defreeze, $since_start, $registered) = $sth->fetchrow_array)
+        $title, $since_freeze, $since_defreeze, $since_start, $registered, $rules) = $sth->fetchrow_array)
     {
         $frozen ||= $since_freeze > 0 && $since_defreeze < 0;
         $not_started ||= $since_start < 0 && !$registered;
+        $show_points ||= $rules;
         for ($title_prefix)
         {
             $_ = $title, last if !defined $_;
@@ -191,7 +195,7 @@ sub get_contests_info
             $_ = substr($_, 0, $i);
         }
     }
-    return ($title_prefix || '', $frozen, $not_started);
+    return ($title_prefix || '', $frozen, $not_started, $show_points);
 }
 
 

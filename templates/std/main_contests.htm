@@ -51,8 +51,9 @@ function confirm_registration(href, name)
     <TMPL_IF registered_online>участник</TMPL_IF>
     <TMPL_IF registered_virtual>виртуальный участник</TMPL_IF>    
     </TMPL_UNLESS>
-    <TMPL_IF is_official><font color="blue">официальный турнир</font></TMPL_IF>
-    <TMPL_IF registration_denied><font color=red>регистрация участников запрещена</font></TMPL_IF>
+    <TMPL_IF is_official><font color="blue">официальный</font></TMPL_IF>
+    <TMPL_IF registration_denied><font color="red">регистрация закрыта</font></TMPL_IF>
+    <TMPL_IF show_points><font color="green">школьные правила</font></TMPL_IF>
 </td>
 </tr>
 </TMPL_LOOP>
@@ -67,7 +68,7 @@ function confirm_registration(href, name)
 </form>
 <ul>
 <TMPL_IF authorized>
-<li><font color=red><b>Виртуальное участие</b></font> позволяет решать задачи со сдвигом по времени, даже после окончания тура
+<li><b>Виртуальное участие</b> позволяет решать задачи со сдвигом по времени, даже после окончания тура
 <li>Команда может участвовать виртуально, если она не принимала участие online
 <li>Команда может регистрироваться виртуально несколько раз
 </TMPL_IF>

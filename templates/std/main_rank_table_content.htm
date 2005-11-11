@@ -18,6 +18,7 @@
 
 </td>
 <td align=right>
+правила: <font color="#00a040"><TMPL_IF show_points>школьные<TMPL_ELSE>ACM</TMPL_IF></font>
 состояние: <TMPL_IF frozen><font color=#0000a0>заморожена</font><TMPL_ELSE><font color=#00a040>актуальное</font></TMPL_IF>
 </td>
 </tr>
@@ -36,8 +37,8 @@
 <TMPL_LOOP problems>
 <th width="<TMPL_VAR column_width>%"><a href="<TMPL_VAR problem_text>" alt="<TMPL_VAR title>" title="<TMPL_VAR title>"><TMPL_VAR code></a></th>
 </TMPL_LOOP>
-<th width="<TMPL_VAR problem_column_width>%">=</th>
-<th>время</th>
+<th width="<TMPL_VAR problem_column_width>%"><TMPL_IF show_points>всего<TMPL_ELSE>=</TMPL_IF></th>
+<TMPL_UNLESS show_points><th>время</th></TMPL_UNLESS>
 <th>место</th>
 <th>статус</th>
 
@@ -54,11 +55,15 @@
 -->
 <td>
 <TMPL_VAR team_name ESCAPE=HTML></td>
+<TMPL_IF show_points>
+  <TMPL_LOOP columns><td align=center><TMPL_VAR points></td></TMPL_LOOP>
+<TMPL_ELSE>
 <TMPL_LOOP columns>
-<td align=center><font size="1"><TMPL_VAR time ESCAPE=HTML></font><br><TMPL_VAR td ESCAPE=HTML></td>
+  <td align=center><font size="1"><TMPL_VAR time ESCAPE=HTML></font><br><TMPL_VAR td ESCAPE=HTML></td>
 </TMPL_LOOP>
-<td align="center"><TMPL_VAR total_solved></td>
-<td align="center"><TMPL_VAR total_time></td>
+</TMPL_IF>
+<td align="center"><TMPL_IF show_points><TMPL_VAR total_points>
+<TMPL_ELSE><TMPL_VAR total_solved><td align="center"><TMPL_VAR total_time></TMPL_IF></td>
 <td align="center"><TMPL_VAR place></td>
 <td align="center"><font size="-1"><i>
   <TMPL_IF is_ooc>ooc</TMPL_IF><TMPL_IF is_remote> remote</TMPL_IF><TMPL_IF is_virtual> virtual</TMPL_IF>
@@ -66,12 +71,18 @@
 </tr>
 </TMPL_LOOP>
 <tr <TMPL_UNLESS problem_stats_color>bgcolor=#f4f4f4</TMPL_UNLESS>>
-  <td>&nbsp;</td><td>Успешных попыток</td>
+  <td>&nbsp;</td>
+  <TMPL_IF show_points>
+  <td>Средний балл</td><TMPL_LOOP problem_stats><td align="center"><TMPL_VAR average_points></td></TMPL_LOOP>
+  <td colspan="3">&nbsp;</td>
+  <TMPL_ELSE>
+  <td>Успешных попыток</td>
   <TMPL_LOOP problem_stats>
     <td align="center"><font size="1"><TMPL_VAR total_accepted> / <TMPL_VAR total_runs></font><br>
     <TMPL_VAR percent_accepted>%</td>
   </TMPL_LOOP>
   <td colspan="4">&nbsp;</td>
+  </TMPL_IF>
 </tr>
 </table>
 </TMPL_IF>

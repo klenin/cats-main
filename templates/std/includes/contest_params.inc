@@ -4,7 +4,13 @@
   <tr><td>Дата/время заморозки таблицы результатов:</td><td><input type="text" name="freeze_date" value="<TMPL_VAR freeze_date ESCAPE=HTML>" class="bordered" <TMPL_UNLESS can_edit>readonly="readonly"</TMPL_UNLESS>/></td></tr>
   <tr><td>Дата/время финиша:</td><td><input type="text" name="finish_date" value="<TMPL_VAR finish_date ESCAPE=HTML>" class="bordered" <TMPL_UNLESS can_edit>readonly="readonly"</TMPL_UNLESS>/></td></tr>
   <tr><td>Дата/время открытия доступа к результатам:</td><td><input type="text" name="open_date" value="<TMPL_VAR open_date ESCAPE=HTML>" class="bordered" <TMPL_UNLESS can_edit>readonly="readonly"</TMPL_UNLESS>/></td></tr>
+  <tr><td>Правила оценки:</td><td>
+    <select name="rules" class="bordered" <TMPL_UNLESS can_edit>readonly="readonly"</TMPL_UNLESS>>
+      <option value="0"<TMPL_UNLESS rules> selected="selected"</TMPL_UNLESS>>ACM</option>
+      <option value="1"<TMPL_IF rules> selected="selected"</TMPL_IF>>школьные</option>
+    </select></td></tr>
 </table>
+<br/>
 <table cellpadding="0" class="bordered" width="250">
   <tr><td>Свободная регистрация:</td><td><input type="checkbox" name="free_registration"<TMPL_IF free_registration>checked="checked"</TMPL_IF> <TMPL_UNLESS can_edit>disabled="disabled"</TMPL_UNLESS>/></td></tr>
   <tr><td>Официальный турнир:</td><td><input type="checkbox" name="is_official"<TMPL_IF is_official>checked="checked"</TMPL_IF> <TMPL_UNLESS can_edit>disabled="disabled"</TMPL_UNLESS>/></td></tr>

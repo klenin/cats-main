@@ -108,7 +108,7 @@ sub contest_checkbox_params()
 
 sub contest_string_params()
 {qw(
-    contest_name start_date freeze_date finish_date open_date
+    contest_name start_date freeze_date finish_date open_date rules
 )}
 
 
@@ -119,11 +119,8 @@ sub get_contest_html_params
     $p->{$_} = param($_) for contest_string_params();
     $p->{$_} = (param($_) || '') eq 'on' for contest_checkbox_params();
     
-    if ($p->{contest_name} eq '' || length $p->{contest_name} > 100)
-    {
-        msg(27);
-        return;
-    }
+    $p->{contest_name} ne '' && length $p->{contest_name} < 100
+        or return msg(27);
     
     $p;
 }
@@ -138,7 +135,7 @@ sub contests_new_save
     $p->{free_registration} = !$p->{free_registration};
     $dbh->do(qq~
         INSERT INTO contests (
-          id, title, start_date, freeze_date, finish_date, defreeze_date,
+          id, title, start_date, freeze_date, finish_date, defreeze_date, rules,
           ctype,
           closed, run_all_tests, show_all_tests,
           show_test_resources, show_checker_comment, is_official, show_packages
@@ -185,7 +182,7 @@ sub try_contest_params_frame
           CATS_DATE(defreeze_date) AS open_date,
           1 - closed AS free_registration,
           run_all_tests, show_all_tests, show_test_resources, show_checker_comment,
-          is_official, show_packages
+          is_official, show_packages, rules
         FROM contests WHERE id = ?~, { Slice => {} },
         $id
     );
@@ -214,7 +211,7 @@ sub contests_edit_save
     $dbh->do(qq~
         UPDATE contests SET
           title=?, start_date=CATS_TO_DATE(?), freeze_date=CATS_TO_DATE(?), 
-          finish_date=CATS_TO_DATE(?), defreeze_date=CATS_TO_DATE(?),
+          finish_date=CATS_TO_DATE(?), defreeze_date=CATS_TO_DATE(?), rules=?,
           closed=?, run_all_tests=?, show_all_tests=?,
           show_test_resources=?, show_checker_comment=?, is_official=?, show_packages=?
           WHERE id=?~,
@@ -333,6 +330,7 @@ sub common_contests_view ($)
        registration_denied => $c->{closed},
        selected => $c->{id} == $cid,
        is_official => $c->{is_official},
+       show_points => $c->{rules},
        href_contest => url_function('contests', sid => $sid, set_contest => 1, cid => $c->{id}),
        href_params => url_f('contests', params => $c->{id}),
     );
@@ -345,7 +343,7 @@ sub authenticated_contests_view ()
           (SELECT COUNT(*) FROM contest_accounts WHERE contest_id=contests.id AND account_id=?) AS registered,
           (SELECT is_virtual FROM contest_accounts WHERE contest_id=contests.id AND account_id=?) AS is_virtual,
           (SELECT is_jury FROM contest_accounts WHERE contest_id=contests.id AND account_id=?) AS is_jury,
-          closed, is_official
+          closed, is_official, rules
         FROM contests ~.order_by);
     $sth->execute($uid, $uid, $uid);
 
@@ -369,7 +367,7 @@ sub authenticated_contests_view ()
 sub anonymous_contests_view ()
 {
     my $sth = $dbh->prepare(qq~
-        SELECT id, title, closed, is_official,
+        SELECT id, title, closed, is_official, rules,
           CATS_DATE(start_date) AS start_date,
           CATS_DATE(finish_date) AS finish_date
           FROM contests ~.order_by
@@ -2476,10 +2474,7 @@ sub run_details_frame
     my $show_points = 0 != grep defined $_ && $_ > 0, @$points;
 
     source_links($si, $is_jury);
-    $t->param(
-        %$contest,
-        show_points => $show_points,
-    );
+    $t->param(%$contest, show_points => $show_points);
 
     my %run_details;
     my $rd_fields = join ', ', (
@@ -2516,8 +2511,8 @@ sub run_details_frame
             points => ($accepted ? $points->[$row->{test_rank} - 1] : 0),
         };
         # Тесты запускаются в случайном порядке.
-        # Если участинк просмотрит таблицу результатов в процессе тестирования решения,
-        # он может увидеть результат 'OK' для теста с номером, бОльшим чем первый
+        # Если участник просмотрит таблицу результатов в процессе тестирования решения,
+        # он может увидеть результат 'OK' для теста с номером, бОльшим, чем первый
         # не прошедший тест. Поэтому вывод результатов прекращаем на первом
         # не прошедшем ИЛИ не ещё запущенном тесте.
         last if
@@ -2686,6 +2681,29 @@ sub diff_runs_frame
 }
 
 
+sub cache_req_points
+{
+    my ($req_id) = @_;
+    my $points = $dbh->selectall_arrayref(qq~
+        SELECT RD.result, T.points
+        FROM
+            reqs R INNER JOIN req_details RD ON RD.req_id = R.id
+            INNER JOIN tests T ON RD.test_rank = T.rank AND T.problem_id = R.problem_id
+        WHERE R.id = ?~, { Slice => {} },
+        $req_id
+    );
+    
+    my $total = 0;
+    for (@$points)
+    {
+        $total += $_->{result} == $cats::st_accepted ? ($_->{points} || 1) : 0;
+    }
+    
+    $dbh->do(q~UPDATE reqs SET points = ? WHERE id = ?~, undef, $total, $req_id);
+    $total;
+}
+
+
 sub rank_get_problem_ids
 {
     my ($contest_list) = @_;
@@ -2700,8 +2718,7 @@ sub rank_get_problem_ids
             contest_problems CP INNER JOIN contests C ON C.id = CP.contest_id
             INNER JOIN problems P ON P.id = CP.problem_id
         WHERE CP.contest_id IN ($contest_list)$hidden_problems
-        ORDER BY C.start_date, CP.code~,
-        { Slice => {} },
+        ORDER BY C.start_date, CP.code~, { Slice => {} },
         ($is_jury ? () : $cats::problem_st_hidden)
     );
 
@@ -2770,8 +2787,8 @@ sub rank_get_results
     
     $dbh->selectall_arrayref(qq~
         SELECT
-            R.state, ((R.submit_time - C.start_date - CA.diff_time) * 1440) AS time_elapsed,
-            R.problem_id, R.account_id
+            R.id, R.state, R.problem_id, R.account_id, R.points,
+            ((R.submit_time - C.start_date - CA.diff_time) * 1440) AS time_elapsed
         FROM reqs R, contests C, contest_accounts CA, contest_problems CP
         WHERE
             CA.contest_id = C.id AND CA.account_id = R.account_id AND R.contest_id = C.id AND
@@ -2803,9 +2820,13 @@ sub rank_table
     my $hide_virtual = url_param('hide_virtual') || '0';
     $hide_virtual =~ /^[01]$/
         or $hide_virtual = (!$is_virtual && !$is_jury || !$is_team);
+        
 
     my $contest_list = get_contest_list_param;
-    my (undef, $frozen, $not_started) = get_contests_info($contest_list, $uid);
+    my (undef, $frozen, $not_started, $default_show_points) = get_contests_info($contest_list, $uid);
+    my $show_points = url_param('points');
+    defined $show_points or $show_points = $default_show_points;
+    
     my @p = ('rank_table', clist => $contest_list);
     $t->param(
         not_started => $not_started && !$is_jury,
@@ -2816,6 +2837,7 @@ sub rank_table
         href_show_ooc => url_f(@p, hide_ooc => 0, hide_virtual => $hide_virtual),
         href_hide_virtual => url_f(@p, hide_virtual => 1, hide_ooc => $hide_ooc),
         href_show_virtual => url_f(@p, hide_virtual => 0, hide_ooc => $hide_ooc),
+        show_points => $show_points
     );
     #return if $not_started;
 
@@ -2841,26 +2863,29 @@ sub rank_table
             @p_id <= 20 ? 3 : 2
     );
     my $problems =
-        { map { $_ => {total_runs => 0, total_accepted => 0} } @p_id };
+        { map { $_ => {total_runs => 0, total_accepted => 0, total_points => 0} } @p_id };
 
-    for (values %$teams)
+    for my $team (values %$teams)
     {
         # поскольку виртуальный участник всегда ooc, не выводим лишнюю строчку
-        $_->{is_ooc} = 0 if $_->{is_virtual};
-        $_->{total_solved} = 0;
-        $_->{total_runs} = 0;
-        $_->{total_time} = 0;
-        my ($country, $flag) = get_flag($_->{country});
-        $_->{country} = $country;
-        $_->{flag} = $flag;
-        $_->{problems} = { map { $_ => { runs => 0, time_consumed => 0, solved => 0 } } @p_id };
+        $team->{is_ooc} = 0 if $team->{is_virtual};
+        $team->{$_} = 0 for qw(total_solved total_runs total_time total_points);
+        ($team->{country}, $team->{flag}) = get_flag($_->{country});
+        my %init_problem = (runs => 0, time_consumed => 0, solved => 0, points => undef);
+        $team->{problems} = { map { $_ => { %init_problem } } @p_id };
     }
 
     my $results = rank_get_results($frozen, $contest_list, $virtual_cond . $ooc_cond);
+    my $need_commit = 0;
     for (@$results)
     {
         my $t = $teams->{$_->{account_id}};
         my $p = $t->{problems}->{$_->{problem_id}};
+        if ($show_points && !defined $_->{points})
+        {
+            $_->{points} = cache_req_points($_->{id});
+            $need_commit = 1;
+        }
         next if $p->{solved};
 
         if ($_->{state} == $cats::st_accepted) 
@@ -2876,48 +2901,73 @@ sub rank_table
             $problems->{$_->{problem_id}}->{total_runs}++;
             $p->{runs}++;
             $t->{total_runs}++;
+            $t->{total_points} += $_->{points} - $p->{points};
+            $problems->{$_->{problem_id}}->{total_points} += $_->{points} - $p->{points};
+            $p->{points} = $_->{points};
         }
     }
-    my @rank = sort {
-        $b->{total_solved} <=> $a->{total_solved} ||
-        $a->{total_time} <=> $b->{total_time} ||
-        $b->{total_runs} <=> $a->{total_runs}
-    } values %$teams;
 
-    my ($prev_time, $prev_solved, $place, $i, $row_color) = (1000000000, -1, 1, 0, 0);
+    $dbh->commit if $need_commit;
+
+    my $sort_criteria = $show_points ?
+        sub { $b->{total_points} <=> $a->{total_points} } :
+        sub {
+            $b->{total_solved} <=> $a->{total_solved} ||
+            $a->{total_time} <=> $b->{total_time} ||
+            $b->{total_runs} <=> $a->{total_runs}
+        };
+    my @rank = sort $sort_criteria values %$teams;
+
+    my ($row_num, $same_place_count, $row_color) = (1, 0, 0);
+    my %prev = ('time' => 1000000, solved => -1, points => -1);
 
     for my $team (@rank)
     {
         my @columns = ();
-        
+
         for (@p_id)
         {
             my $p = $team->{problems}->{$_};
 
-            my $c = $p->{solved} ?
-                '+' . ($p->{runs} - 1 || '') :
-                -$p->{runs} || '.';
+            my $c = $p->{solved} ? '+' . ($p->{runs} - 1 || '') : -$p->{runs} || '.';
 
-            push @columns, { td => $c, 'time' => ($p->{time_consumed} || '') };
+            push @columns, {
+                td => $c, 'time' => ($p->{time_consumed} || ''),
+                points => (defined $p->{points} ? $p->{points} : '.')
+            };
         }
 
-        $row_color = 1 - $row_color if $prev_solved > $team->{total_solved};
-        $place++ if $prev_solved > $team->{total_solved} || $prev_time < $team->{total_time};
-        $prev_solved = $team->{total_solved};
-        $prev_time = $team->{total_time};
+        $row_color = 1 - $row_color
+            if $show_points ? $row_num % 5 == 1 : $prev{solved} > $team->{total_solved};
+        if ($show_points ?
+                $prev{points} > $team->{total_points}:
+                $prev{solved} > $team->{total_solved} || $prev{'time'} < $team->{total_time})
+        {
+            $same_place_count = 1;
+        }
+        else
+        {
+            $same_place_count++;
+        }
+
+        $prev{$_} = $team->{"total_$_"} for keys %prev;
 
         $team->{row_color} = $row_color;
-        $team->{contestant_number} = ++$i;
-        $team->{place} = $place;       
+        $team->{contestant_number} = $row_num++;
+        $team->{place} = $row_num - $same_place_count;
         $team->{columns} = [ @columns ];
+        $team->{show_points} = $show_points;
     }
 
     $t->param(
         problem_stats => [
-            map {{ %{$problems->{$_}},
-            percent_accepted => int(
-              $problems->{$_}->{total_accepted} /
-              ($problems->{$_}->{total_runs} || 1) * 100 + 0.5) }} @p_id 
+            map {{
+                %{$problems->{$_}},
+                percent_accepted => int(
+                    $problems->{$_}->{total_accepted} /
+                    ($problems->{$_}->{total_runs} || 1) * 100 + 0.5),
+                average_points => sprintf('%.1f', $problems->{$_}->{total_points} / $row_num)
+            }} @p_id 
         ],
         problem_stats_color => 1 - $row_color,
         rank => [ @rank ]
@@ -2934,6 +2984,12 @@ sub rank_table_frame
 {
     my $hide_ooc = url_param('hide_ooc') || 0;
     my $hide_virtual = url_param('hide_virtual') || 0;
+    my $show_points = url_param('points');
+    if (!defined $show_points)
+    {
+#        $show_points = $dbh->selectrow_array(q~
+#            SELECT rules FROM contests WHERE id = ?~);
+    }
     
     #rank_table('main_rank_table.htm');  
     my $print = url_param('print') ? '_print' : '';
@@ -2945,7 +3001,8 @@ sub rank_table_frame
 
     $t->param(href_rank_table_content => url_f(
         'rank_table_content',
-        hide_ooc => $hide_ooc, hide_virtual => $hide_virtual, clist => $contest_list
+        hide_ooc => $hide_ooc, hide_virtual => $hide_virtual, clist => $contest_list,
+        points => $show_points
     ));
 }
 

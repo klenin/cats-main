@@ -22,14 +22,14 @@
 		<td align=right valign=bottom>
 		<TMPL_IF server_time>
 		<font color=#333300 size=2>		
-		<TMPL_IF show_remaining_minutes>до начала тура осталось: <TMPL_VAR remaining_minutes> (мин.)<br></TMPL_IF>
-		<TMPL_IF show_elapsed_minutes>с начала тура прошло: <TMPL_VAR elapsed_minutes> (мин.)<br></TMPL_IF>
-		<TMPL_IF show_elapsed_days>с начала тура прошло: <TMPL_VAR elapsed_days> (сут.)<br></TMPL_IF>
-		страница обновлена: <span id=server_time><TMPL_VAR server_time></span></font>
+		<TMPL_IF show_remaining_minutes>до начала тура осталось: <TMPL_VAR remaining_minutes> мин.<br></TMPL_IF>
+		<TMPL_IF show_elapsed_minutes>с начала тура прошло: <span id="elapsed_minutes"><TMPL_VAR elapsed_minutes></span> мин.<br></TMPL_IF>
+		<TMPL_IF show_elapsed_days>с начала тура прошло: <TMPL_VAR elapsed_days> сут.<br></TMPL_IF>
+		страница обновлена: <span id="server_time"><TMPL_VAR server_time></span></font>
 		</TMPL_IF>
 		</td>
 	    </tr>
-    	</table>
+    </table>
 	</td>
     </tr>
     <tr bgcolor=#ffcc55 height=3>
@@ -84,6 +84,4 @@
     <tr bgcolor=#ffffff valign=top>
 	<td colspan=3>
 	<table width=98% align=center height=100%>
-	    <tr>
-	    <td>
-	    <br>
+	    <tr><td>

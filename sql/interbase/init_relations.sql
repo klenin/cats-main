@@ -63,6 +63,7 @@ CREATE TABLE contests (
     show_test_resources  INTEGER DEFAULT 0 CHECK (show_test_resources IN (0, 1)),
     show_checker_comment INTEGER DEFAULT 0 CHECK (show_checker_comment IN (0, 1)),
     show_packages        INTEGER DEFAULT 0 CHECK (show_packages IN (0, 1)),
+    rules                INTEGER DEFAULT 0, /* правила: 0 - ACM, 1 - школьные */
 
     CHECK (
         start_date <= finish_date AND freeze_date >= start_date
@@ -206,7 +207,8 @@ CREATE TABLE reqs (
     result      INTEGER,
     failed_test INTEGER,
     judge_id    INTEGER REFERENCES judges(id) ON DELETE SET NULL, 
-    received    INTEGER DEFAULT 0 CHECK (received IN (0, 1))
+    received    INTEGER DEFAULT 0 CHECK (received IN (0, 1)),
+    points      INTEGER
 );
 
 CREATE TABLE req_details
