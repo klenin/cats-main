@@ -169,7 +169,8 @@ sub parse_problem
             'author' => $atts{'author'},
             'input_file' => $atts{'inputFile'},
             'output_file' => $atts{'outputFile'},       
-            'std_checker' => $atts{'stdChecker'}
+            'std_checker' => $atts{'stdChecker'},
+            'max_points' => $atts{'maxPoints'}
         );
     }
     elsif ($el eq 'Checker')
@@ -180,6 +181,31 @@ sub parse_problem
 
         $user_checker = 1;
     }    
+}
+
+
+sub problem_bind
+{
+    my ($c) = @_;
+    my $i = \$_[1];
+    
+    $c->bind_param($$i++, $cid);
+    $c->bind_param($$i++, $problem{'title'});
+    $c->bind_param($$i++, $problem{'lang'});
+    $c->bind_param($$i++, $problem{'time_limit'});
+    $c->bind_param($$i++, $problem{'memory_limit'});
+    $c->bind_param($$i++, $problem{'difficulty'});
+    $c->bind_param($$i++, $problem{'author'});
+    $c->bind_param($$i++, $problem{'input_file'});
+    $c->bind_param($$i++, $problem{'output_file'});
+    $c->bind_param($$i++, $statement, { ora_type => 113 });
+    $c->bind_param($$i++, $constraints, { ora_type => 113 });
+    $c->bind_param($$i++, $inputformat, { ora_type => 113 });
+    $c->bind_param($$i++, $outputformat, { ora_type => 113 });
+    $c->bind_param($$i++, $zip_archive, { ora_type => 113 });
+    $c->bind_param($$i++, $problem{'std_checker'});
+    $c->bind_param($$i++, $uid);
+    $c->bind_param($$i++, $problem{'max_points'});
 }
 
 
@@ -197,30 +223,15 @@ sub problem_insert
             INSERT INTO problems (
                 id, contest_id, title, lang, time_limit, memory_limit, difficulty, author, 
                 input_file, output_file, statement, pconstraints, input_format, output_format, 
-                zip_archive, upload_date, std_checker, last_modified_by
+                zip_archive, upload_date, std_checker, last_modified_by, max_points
             ) VALUES (
-                ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CATS_SYSDATE(), ?, ?
+                ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CATS_SYSDATE(),?,?,?
             )~
         );
         
-        $c->bind_param(1, $pid);
-        $c->bind_param(2, $cid);
-        $c->bind_param(3, $problem{'title'});
-        $c->bind_param(4, $problem{'lang'});
-        $c->bind_param(5, $problem{'time_limit'});
-        $c->bind_param(6, $problem{'memory_limit'});
-        $c->bind_param(7, $problem{'difficulty'});
-        $c->bind_param(8, $problem{'author'});
-        $c->bind_param(9, $problem{'input_file'});
-        $c->bind_param(10, $problem{'output_file'});
-        $c->bind_param(11, $statement, { ora_type => 113 });
-        $c->bind_param(12, $constraints, { ora_type => 113 });
-        $c->bind_param(13, $inputformat, { ora_type => 113 });
-        $c->bind_param(14, $outputformat, { ora_type => 113 });
-        $c->bind_param(15, $zip_archive, { ora_type => 113 });
-        $c->bind_param(16, $problem{'std_checker'});
-        $c->bind_param(17, $uid);
-        
+        my $i = 1;
+        $c->bind_param($i++, $pid);
+        problem_bind($c, $i);
         $c->execute;
 
         my $std_checker = $problem{'std_checker'};
@@ -263,28 +274,14 @@ sub problem_update
                 contest_id=?, title=?, lang=?, time_limit=?, memory_limit=?, difficulty=?, author=?, 
                 input_file=?, output_file=?, 
                 statement=?, pconstraints=?, input_format=?, output_format=?, 
-                zip_archive=?, upload_date=CATS_SYSDATE(), std_checker=?, last_modified_by=?
+                zip_archive=?, upload_date=CATS_SYSDATE(), std_checker=?, last_modified_by=?,
+                max_points=?
             WHERE id = ?~
         );
 
-        $c->bind_param(1, $cid);
-        $c->bind_param(2, $problem{'title'} );
-        $c->bind_param(3, $problem{'lang'} );
-        $c->bind_param(4, $problem{'time_limit'} );
-        $c->bind_param(5, $problem{'memory_limit'} );
-        $c->bind_param(6, $problem{'difficulty'} );
-        $c->bind_param(7, $problem{'author'} );
-        $c->bind_param(8, $problem{'input_file'} );
-        $c->bind_param(9, $problem{'output_file'} );
-        $c->bind_param(10, $statement, { ora_type => 113 } );
-        $c->bind_param(11, $constraints, { ora_type => 113 } );
-        $c->bind_param(12, $inputformat, { ora_type => 113 } );
-        $c->bind_param(13, $outputformat, { ora_type => 113 } );
-        $c->bind_param(14, $zip_archive, { ora_type => 113 } );
-        $c->bind_param(15, $problem{'std_checker'} );
-        $c->bind_param(16, $uid);   
-        $c->bind_param(17, $pid);   
-
+        my $i = 1;
+        problem_bind($c, $i);
+        $c->bind_param($i++, $pid);
         $c->execute;
 
         my $std_checker = $problem{'std_checker'};

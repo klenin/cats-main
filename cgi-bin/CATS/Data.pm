@@ -121,7 +121,7 @@ sub get_sources_info
         # Только минуты от времени начала и окончания обработки.
         ($r->{"${_}_short"} = $r->{$_}) =~ s/^(.*)\s+(\d\d:\d\d)\s*$/$2/
             for qw(test_time result_time);
-        $r->{src} =~ s/</&lt;/;
+        #$r->{src} =~ s/</&lt;/;
         $r = { %$r, state_to_display($r->{state}) };
     }
 

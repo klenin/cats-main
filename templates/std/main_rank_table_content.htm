@@ -35,7 +35,10 @@
 <!-- <th width=1%>Страна -->
 <th>Название команды</th>
 <TMPL_LOOP problems>
-<th width="<TMPL_VAR column_width>%"><a href="<TMPL_VAR problem_text>" alt="<TMPL_VAR title>" title="<TMPL_VAR title>"><TMPL_VAR code></a></th>
+<th width="<TMPL_VAR column_width>%">
+  <a href="<TMPL_VAR problem_text>" alt="<TMPL_VAR title>" title="<TMPL_VAR title>"><TMPL_VAR code></a>
+  <TMPL_IF max_points> (<TMPL_VAR max_points>)</TMPL_IF>
+</th>
 </TMPL_LOOP>
 <th width="<TMPL_VAR problem_column_width>%"><TMPL_IF show_points>всего<TMPL_ELSE>=</TMPL_IF></th>
 <TMPL_UNLESS show_points><th>время</th></TMPL_UNLESS>

@@ -9,7 +9,7 @@ use Encode;
 use encoding 'utf8';
 #use CGI::Fast qw(:standard);
 use CGI qw(:standard);
-use CGI::Util qw(rearrange unescape escape);
+use CGI::Util qw(unescape escape);
 #use FCGI;
 
 use Algorithm::Diff;
@@ -1425,7 +1425,7 @@ sub problems_frame
             status => problem_status_names()->{$c->{status}},
             disabled => !$is_jury && $c->{status} == $cats::problem_st_disabled,
             is_team => $is_team || $is_practice,
-            href_view_problem => url_f('problem_text', pid => $c->{pid}),
+            href_view_problem => url_f('problem_text', cpid => $c->{cpid}),
             
             problem_id => $c->{pid},
             problem_name => $c->{problem_name},
@@ -2704,16 +2704,26 @@ sub cache_req_points
 }
 
 
+sub cache_max_points
+{
+    my ($pid) = @_;
+    my ($max_points) = $dbh->selectrow_array(q~
+        SELECT SUM(points) FROM tests WHERE problem_id = ?~, undef, $pid);
+    $dbh->do(q~UPDATE problems SET max_points = ? WHERE id = ?~, undef, $max_points, $pid);
+    $max_points;
+}
+
+
 sub rank_get_problem_ids
 {
-    my ($contest_list) = @_;
+    my ($contest_list, $show_points) = @_;
     # соответствующее требование: в одном чемпионате задача не должна дублироваться обеспечивается
     # при помощи UNIQUE(c,p)
     my $hidden_problems = $is_jury ? '' : ' AND CP.status < ?';
     my $problems = $dbh->selectall_arrayref(qq~
         SELECT
-            CP.problem_id, CP.code, CP.contest_id, CATS_DATE(C.start_date) AS start_date, P.title,
-            C.start_date - CATS_SYSDATE() AS since_start
+            CP.id, CP.problem_id, CP.code, CP.contest_id, CATS_DATE(C.start_date) AS start_date,
+            C.start_date - CATS_SYSDATE() AS since_start, P.max_points, P.title
         FROM
             contest_problems CP INNER JOIN contests C ON C.id = CP.contest_id
             INNER JOIN problems P ON P.id = CP.problem_id
@@ -2729,6 +2739,7 @@ sub rank_get_problem_ids
 
     my @contests = ();
     my $prev_cid = -1;
+    my $need_commit = 0;
     for (@$problems)
     {
         if ($_->{contest_id} != $prev_cid)
@@ -2742,8 +2753,14 @@ sub rank_get_problem_ids
             $contests[$#contests]->{count}++;
         }
         $_->{title} = '' if $_->{since_start} < 0 && !$is_jury;
-        $_->{problem_text} = url_f('problem_text', cid => $_->{contest_id}, pid => $_->{problem_id});
+        $_->{problem_text} = url_f('problem_text', cpid => $_->{id});
+        if ($show_points && !$_->{max_points})
+        {
+            $_->{max_points} = cache_max_points($_->{problem_id});
+            $need_commit = 1;
+        }
     }
+    $dbh->commit if $need_commit;
 
     $t->param(
         problems => $problems,
@@ -2854,7 +2871,7 @@ sub rank_table
         GROUP BY CA.account_id, A.team_name, A.motto, A.country~, 'account_id', { Slice => {} }
     );
 
-    my @p_id = rank_get_problem_ids($contest_list);
+    my @p_id = rank_get_problem_ids($contest_list, $show_points);
     $t->param(
         problem_colunm_width =>
             @p_id <= 6 ? 6 :
@@ -3163,6 +3180,7 @@ sub problem_text_frame
     
     my $pid = url_param('pid');
     my $cpid = url_param('cpid');
+    my $show_points;
 
     if (defined $pid)
     {
@@ -3170,19 +3188,19 @@ sub problem_text_frame
     }
     elsif (defined $cpid)
     {
-        my ($contest_title, $problem_id, $code) = 
-            $dbh->selectrow_array(qq~
-                SELECT A.title, B.problem_id, B.code
-                FROM contests A, contest_problems B
-                WHERE B.id = ? AND B.contest_id = A.id~, {},
-                $cpid);    
+        (my $problem_id, my $code, $show_points) = $dbh->selectrow_array(qq~
+            SELECT CP.problem_id, CP.code, C.rules
+            FROM contests C INNER JOIN contest_problems CP ON CP.contest_id = C.id
+            WHERE CP.id = ?~, {},
+            $cpid);    
         push @id_problems, $problem_id;
         $pcodes{$problem_id} = $code;
     }
     else
     {    
         my $c = $dbh->prepare(qq~
-            SELECT problem_id, code FROM contest_problems WHERE contest_id=? ORDER BY code~);
+            SELECT problem_id, code FROM contest_problems
+            WHERE contest_id=? ORDER BY code~);
 
         $c->execute($cid);
         while (my ($problem_id, $code) = $c->fetchrow_array)
@@ -3199,7 +3217,12 @@ sub problem_text_frame
         $current_pid = $problem_id;
         
         my $problem_data = $dbh->selectrow_hashref(qq~
-            SELECT * FROM problems WHERE id = ?~, { Slice => {} },
+            SELECT
+                id, contest_id, title, lang, time_limit, memory_limit,
+                difficulty, author, input_file, output_file,
+                statement, pconstraints, input_format,
+                output_format, max_points
+            FROM problems WHERE id = ?~, { Slice => {} },
             $problem_id);
 
         $problem_data->{samples} = $dbh->selectall_arrayref(qq~
@@ -3222,8 +3245,9 @@ sub problem_text_frame
             code => $pcodes{$problem_id},
             lang_ru => $lang eq 'ru',
             lang_en => $lang eq 'en',
+            show_points => $show_points,
         };
-    }    
+    }
 
     $t->param(
         problems => [ @problems ],

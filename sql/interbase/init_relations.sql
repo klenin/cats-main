@@ -104,7 +104,8 @@ CREATE TABLE problems (
     input_format    BLOB,
     output_format   BLOB,
     zip_archive     BLOB,
-    last_modified_by INTEGER REFERENCES accounts(id) ON DELETE SET NULL ON UPDATE CASCADE
+    last_modified_by INTEGER REFERENCES accounts(id) ON DELETE SET NULL ON UPDATE CASCADE,
+    max_points      INTEGER
 );
 
 

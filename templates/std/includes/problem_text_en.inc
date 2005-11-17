@@ -9,6 +9,7 @@ Author: <TMPL_VAR author ESCAPE=HTML><br><br>
 <tr><td>Output file:</td><td><TMPL_VAR output_file ESCAPE=HTML></td></tr>
 <tr><td>Time limit:</td><td><TMPL_VAR time_limit> sec</td></tr>
 <tr><td>Memory limit:</td><td><TMPL_VAR memory_limit> Mb</td></tr>
+<TMPL_IF show_points><tr><td>Maximum points:</td><td><TMPL_VAR max_points></td></tr></TMPL_IF>
 </table>
 
 <TMPL_IF statement>
