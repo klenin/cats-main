@@ -61,13 +61,15 @@ use CATS::Constants;
 use CATS::Connect;
 use CATS::IP;
 use CATS::Diff;
-use vars qw( $dbh @messages $t $sid $cid $lng $uid $team_name $server_time $contest_title $dbi_error $is_practice );
-use vars qw( $is_root $is_team $is_jury $is_virtual $virtual_diff_time $contest_elapsed_minutes);
-use vars qw( $listview_name $listview_array_name $col_defs $sort $sort_dir $search $page $visible $additional);
+use vars qw(
+    $dbh @messages $t $sid $cid $lng $uid $team_name $server_time $contest_title $dbi_error $is_practice
+    $is_root $is_team $is_jury $is_virtual $virtual_diff_time $contest_elapsed_minutes
+    $listview_name $listview_array_name $col_defs $sort $sort_dir $search $page $visible $additional
+);
 
 
-sub split_fname {
-
+sub split_fname
+{
     my $path = shift;
 
     my ($vol, $dir, $fname, $name, $ext);
@@ -91,22 +93,22 @@ sub split_fname {
 }
 
 
-sub escape_html {
-
+sub escape_html
+{
     my $toencode = shift;
     
-    $toencode=~s/&/&amp;/g;
-    $toencode=~s/\'/&#39;/g;    
-    $toencode=~s/\"/&quot;/g;
-    $toencode=~s/>/&gt;/g;
-    $toencode=~s/</&lt;/g;
+    $toencode =~ s/&/&amp;/g;
+    $toencode =~ s/\'/&#39;/g;    
+    $toencode =~ s/\"/&quot;/g;
+    $toencode =~ s/>/&gt;/g;
+    $toencode =~ s/</&lt;/g;
 
     return $toencode;
 }
 
 
-sub http_header {
-    
+sub http_header
+{
     my $type = shift;
     my $cookie = shift;
 
@@ -149,23 +151,23 @@ sub sql_disconnect
 
 sub templates_path
 {
-    my $template = param( 'iface' ) || '';
+    my $template = param('iface') || '';
 
-    foreach ( @cats::templates )
+    for (@cats::templates)
     {
-        if ( $template eq $_->{ 'id' } )
+        if ($template eq $_->{id})
         {
-            return $_->{ 'path' };
+            return $_->{path};
         }
     }
     
-    $cats::templates[0] -> { 'path' };
+    $cats::templates[0]->{path};
 }
 
 
 
-sub init_messages {
-
+sub init_messages
+{
     my $msg_file = templates_path()."/consts";
 
     my $r = open FILE, "<".$msg_file;
@@ -228,15 +230,15 @@ sub init_listview_params
 }
 
 
-sub fatal_error {
-
+sub fatal_error
+{
     print STDOUT http_header('text/html')."<pre>".escape_html( $_[0] )."</pre>";
     exit( 1 );
 }
 
 
-sub init_template {
-
+sub init_template
+{
     my $file_name = shift;
 
     my $utf8_encode = sub {
@@ -254,8 +256,8 @@ sub init_template {
 
 
 
-sub init_listview_template {
-
+sub init_listview_template
+{
     $listview_name = shift;
     $listview_array_name = shift;
     my $file_name = shift;
@@ -401,11 +403,11 @@ sub attach_listview {
 
     my @pages = ();
 
-    foreach ( $range_start..$range_end )
+    for ($range_start..$range_end)
     {
         push @pages, { 
             page_number => $_ + 1,
-            href_page => $url."&page=$_",
+            href_page => $url . "&page=$_",
             current_page => $_ == $page
         };
     }
@@ -445,10 +447,10 @@ sub attach_listview {
 
 sub order_by
 {    
-   if ($sort ne '' && defined $$col_defs[$sort])
+   if ($sort ne '' && defined $col_defs->[$sort])
    {
-       my $dir = (!$sort_dir) ? 'ASC' : 'DESC';
-       return "ORDER BY ".$$col_defs[$sort]{ 'order_by' }." $dir";
+       my $dir = $sort_dir ? 'DESC' : 'ASC';
+       return 'ORDER BY ' . $col_defs->[$sort]{order_by} . " $dir";
    }
    return '';
 }
@@ -465,11 +467,12 @@ sub generate_output
         $cookie = CGI::cookie(
             -name => $listview_name, -value => [@values], -expires => '+1h');
     }
-    $t->param(contest_title => $contest_title);
-    $t->param(server_time => $server_time);    
-	$t->param(current_team_name => $team_name);
-	$t->param(is_virtual => $is_virtual);
-	$t->param(virtual_diff_time => $virtual_diff_time);	
+    $t->param(
+        contest_title => $contest_title,
+        server_time => $server_time,
+    	current_team_name => $team_name,
+    	is_virtual => $is_virtual,
+    	virtual_diff_time => $virtual_diff_time);
 
     if ($contest_elapsed_minutes < 0)
     {
@@ -509,7 +512,7 @@ sub define_columns
     $sort_dir = $default_dir if (!defined $sort_dir || $sort_dir eq '');
 
     my $i = 0;
-    foreach (@$col_defs)
+    for (@$col_defs)
     {
         my $d = $sort_dir;
         if ($sort eq $i)
@@ -517,7 +520,7 @@ sub define_columns
            ($sort_dir) ? $$_{ sort_down } = 1 : $$_{ sort_up } = 1;
            $d = int(!$d);
         }
-        $$_{ href_sort } = $url."&sort=$i&sort_dir=".$d;
+        $$_{ href_sort } = $url . "&sort=$i&sort_dir=".$d;
         $i++;
     }
     
@@ -525,8 +528,8 @@ sub define_columns
 }
 
 
-sub get_flag {
-
+sub get_flag
+{
     my $country = shift || return;
 
     foreach( @cats::countries )
@@ -543,8 +546,8 @@ sub get_flag {
 }
 
 
-sub generate_login {    
-
+sub generate_login
+{
     my $login_num = undef;
     
     if ( $CATS::Connect::db_dsn =~ /InterBase/ )
@@ -556,12 +559,12 @@ sub generate_login {
         $login_num = $dbh->selectrow_array(qq~SELECT login_seq.nextval FROM DUAL~);
     }
 
-    return "team#".$login_num if ( $login_num );
+    return 'team#' . $login_num if ( $login_num );
 }
 
 
-sub generate_password {
-    
+sub generate_password
+{
     my @ch1 = ( 'e', 'y', 'u', 'i', 'o', 'a' );
     my @ch2 = (  'w', 'r', 't', 'p', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'z', 'x', 'c', 'v', 'b', 'n', 'm' );    
 
@@ -569,16 +572,16 @@ sub generate_password {
  
     foreach (1..3)
     {
-        $passwd .= @ch1[ rand($#ch1 ) ];    
-        $passwd .= @ch2[ rand($#ch2 ) ];
+        $passwd .= @ch1[rand(@ch1)];    
+        $passwd .= @ch2[rand(@ch2)];
     }
     
     return $passwd;
 }
 
 
-sub new_id {
-
+sub new_id
+{
     if ( $CATS::Connect::db_dsn =~ /InterBase/ )
     {
         $dbh->selectrow_array('SELECT GEN_ID(key_seq, 1) FROM RDB$DATABASE');
@@ -591,8 +594,8 @@ sub new_id {
 }
 
 
-sub user_authorize {
-
+sub user_authorize
+{
     $sid = url_param('sid') || '';
 
     $is_root = 0;

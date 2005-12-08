@@ -74,8 +74,12 @@
     <TMPL_IF submenu>
         <tr bgcolor=#bbbbff height=25>
     	    <td colspan=3>&nbsp;
-    	    <TMPL_LOOP submenu>
+     	    <TMPL_LOOP submenu>
+            <TMPL_IF selected>
+            <span style="font-size: 12px"><TMPL_VAR item_name></span>
+	        <TMPL_ELSE> 
 	    	<a href='<TMPL_VAR href_item>' style='color:#3030a0; font-size:12px' <TMPL_IF item_target>target='<TMPL_VAR item_target>'</TMPL_IF>><TMPL_VAR item_name></a>
+	        </TMPL_IF>
 	        <TMPL_UNLESS "__last__">|</TMPL_UNLESS>	
 		</TMPL_LOOP>
 	    </td>

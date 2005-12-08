@@ -249,6 +249,18 @@ CREATE TABLE contest_photos (
     upload_time TIMESTAMP
 );
 
+CREATE TABLE keywords (
+    id          INTEGER NOT NULL PRIMARY KEY,
+    name_ru     VARCHAR(200),
+    name_en     VARCHAR(200)
+);
+
+CREATE TABLE problem_keywords (
+    problem_id  INTEGER NOT NULL REFERENCES problems(id) ON DELETE CASCADE,
+    keyword_id  INTEGER NOT NULL REFERENCES keywords(id) ON DELETE CASCADE,
+    PRIMARY KEY (problem_id, keyword_id)
+);
+
 
 CREATE GENERATOR key_seq;
 CREATE GENERATOR login_seq;

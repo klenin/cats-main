@@ -116,6 +116,7 @@ function r() {
         <select name="status">
         <TMPL_LOOP status_list><option value="<TMPL_VAR id>"><TMPL_VAR name ESCAPE=HTML></TMPL_LOOP>
         </select>
+        перетестировать все попытки <input name="all_runs" type="checkbox" value="1"/>
     </td></TMPL_IF>
 </tr><tr>
     <td colspan="2">
@@ -126,6 +127,7 @@ function r() {
         <input type="submit" name="change_status" value="сменить статус" class="button" />
         <input type="button" name="delete_solution" value="удалить" class="button" onclick="d()"/>
         <input type="submit" name="replace_direct" value="заменить" class="button" />
+        <input type="submit" " name="mass_retest" value="перетестировать" class="button" />
     </td></TMPL_IF>
 </tr></table>
 </TMPL_IF>

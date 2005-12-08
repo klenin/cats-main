@@ -23,13 +23,15 @@ function delete_compiler(href, name)
 <TMPL_LOOP compilers>
 <tr bgcolor=#ffffff>
 <td>
-    <a href='javascript:delete_compiler("<TMPL_VAR href_delete>", "<TMPL_VAR description ESCAPE=HTML>");''><img src="./images/std/waste2.gif" border=0></a> 
-    <a href='<TMPL_VAR href_edit>'><img src="./images/std/blank.gif" border=0></a> 
-    <TMPL_VAR code ESCAPE=HTML>
+  <TMPL_IF editable>
+  <a href='javascript:delete_compiler("<TMPL_VAR href_delete>", "<TMPL_VAR description ESCAPE=HTML>");''><img src="./images/std/waste2.gif" border=0></a> 
+  <a href='<TMPL_VAR href_edit>'><img src="./images/std/blank.gif" border=0></a> 
+  </TMPL_IF>
+  <TMPL_VAR code ESCAPE=HTML>
 </td>
 <td><TMPL_VAR description ESCAPE=HTML></td>
 <td><TMPL_VAR supported_ext ESCAPE=HTML></td>
-<td><TMPL_IF locked><font color=red>заблокирована</font><TMPL_ELSE>поддерживается</TMPL_IF></td>
+<TMPL_IF editable><td><TMPL_IF locked><font color=red>заблокирована</font><TMPL_ELSE>поддерживается</TMPL_IF></td></TMPL_IF>
 </tr>
 </TMPL_LOOP>
 </table>

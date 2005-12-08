@@ -29,7 +29,7 @@ sub login_frame
 {
     init_template('main_login.htm');
 
-    my $login = param('login') or return;   
+    my $login = param('login') or return;
     $t->param(login => $login); 
     my $cid = param('contest');
     my $passwd = param('passwd');
@@ -116,7 +116,7 @@ sub get_contest_html_params
 {
     my $p = {};
     
-    $p->{$_} = param($_) for contest_string_params();
+    $p->{$_} = scalar param($_) for contest_string_params();
     $p->{$_} = (param($_) || '') eq 'on' for contest_checkbox_params();
     
     $p->{contest_name} ne '' && length $p->{contest_name} < 100
@@ -140,7 +140,7 @@ sub contests_new_save
           closed, run_all_tests, show_all_tests,
           show_test_resources, show_checker_comment, is_official, show_packages
         ) VALUES(
-          ?, ?, CATS_TO_DATE(?), CATS_TO_DATE(?), CATS_TO_DATE(?), CATS_TO_DATE(?),
+          ?, ?, CATS_TO_DATE(?), CATS_TO_DATE(?), CATS_TO_DATE(?), CATS_TO_DATE(?), ?,
           0,
           ?, ?, ?, ?, ?, ?, ?)~,
         {},
@@ -1031,31 +1031,25 @@ sub problems_link_save
 
 sub problems_replace_direct
 {
+    my $pid = param('problem_id')
+        or return msg(54);
+   
     my $file = param('zip');
-
-    if ($file !~ /\.(zip|ZIP)$/) {
-        msg(53);
-        return;
-    }
+    $file =~ /\.(zip|ZIP)$/
+        or return msg(53);
 
     my ($fh, $fname) = tmpnam;
-    my ($br, $buffer);            
+    my ($br, $buffer);
 
-    while ( $br = read( $file, $buffer, 1024 ) ) {
-    
+    while ( $br = read( $file, $buffer, 1024 ) )
+    {
         syswrite($fh, $buffer, $br);
     }
-
     close $fh;
 
-    my $pid = param('problem_id');
-    if (!$pid) {
-        msg(54);
-        return;
-    }
-   
     my ($contest_id) = $dbh->selectrow_array(qq~SELECT contest_id FROM problems WHERE id=?~, {}, $pid);
-    if ($contest_id != $cid) {
+    if ($contest_id != $cid)
+    {
       #$t->param(linked_problem => 1);
       msg(117);
       return;
@@ -1064,7 +1058,7 @@ sub problems_replace_direct
     $import_log = Encode::encode_utf8( escape_html($import_log) );  
     $t->param(problem_import_log => $import_log);
 
-    (!$st) ? $dbh->commit : $dbh->rollback;
+    $st ? $dbh->rollback : $dbh->commit;
     if ($st) { msg(52); }
 }
 
@@ -1264,9 +1258,35 @@ sub problems_submit_std_solution
         $t->param(solution_submitted => 1, href_console => url_f('console'));
         msg(107);
     }
-    else {
+    else
+    {
         msg(106);
-    }   
+    }
+}
+
+
+sub problems_mass_retest()
+{
+    my $retest_pid = param('problem_id')
+        or return msg(12);
+    my $all_runs = param('all_runs');
+    my $runs = $dbh->selectall_arrayref(q~
+        SELECT id, account_id FROM reqs
+        WHERE contest_id = ? AND problem_id = ? ORDER BY id DESC~,
+        { Slice => {} },
+        $cid, $retest_pid
+    );
+    my $count = 0;
+    my %accounts = ();
+    for (@$runs)
+    {
+        next if !$all_runs && $accounts{$_->{account_id}};
+        $accounts{$_->{account_id}} = 1;
+        enforce_request_state(request_id => $_->{id}, state => $cats::st_not_processed)
+            and ++$count;
+    }
+    $dbh->commit;
+    return msg(128, $count);
 }
 
 
@@ -1357,9 +1377,14 @@ sub problems_frame
         problems_submit;
     }
 
-    if (defined param('std_solution'))
+    if (defined param('std_solution') && $is_jury)
     {
         problems_submit_std_solution;
+    }
+
+    if (defined param('mass_retest') && $is_jury)
+    {
+        problems_mass_retest;
     }
 
     my @cols = (
@@ -2088,6 +2113,35 @@ sub settings_frame
 }
 
 
+sub reference_names()
+{
+    (
+        { name => 'compilers', new => 542, item => 517 },
+        { name => 'judges', new => 543, item => 511 },
+        { name => 'keywords', new => 549, item => 549 },
+    )
+}
+
+
+sub references_menu
+{
+    my ($ref_name) = @_;
+    
+    my @result;
+    for (reference_names())
+    {
+        my $sel = $_->{name} eq $ref_name;
+        push @result, { href_item => url_f($_->{name}), item_name => res_str($_->{item}), selected => $sel };
+        if ($sel && $is_root)
+        {
+            unshift @result, 
+                { href_item => url_f($_->{name}, new => 1), item_name => res_str($_->{new}) };
+        }
+    }
+    @result;
+}
+
+
 sub compilers_new_frame
 {
     init_template('main_compilers_new.htm');
@@ -2102,8 +2156,9 @@ sub compilers_new_save
     my $supported_ext = param('supported_ext');
     my $locked = param('locked') eq 'on';
             
-    $dbh->do(qq~INSERT INTO default_de(id, code, description, file_ext, in_contests) VALUES(?,?,?,?,?)~, {}, 
-             new_id, $code, $description, $supported_ext, !$locked);
+    $dbh->do(qq~
+        INSERT INTO default_de(id, code, description, file_ext, in_contests) VALUES(?,?,?,?,?)~, {}, 
+        new_id, $code, $description, $supported_ext, !$locked);
     $dbh->commit;   
 }
 
@@ -2116,14 +2171,15 @@ sub compilers_edit_frame
 
     my ($code, $description, $supported_ext, $in_contests) =
         $dbh->selectrow_array(qq~
-          SELECT code, description, file_ext, in_contests FROM default_de WHERE id=?~, {}, $id);
+            SELECT code, description, file_ext, in_contests FROM default_de WHERE id=?~, {}, $id);
 
-    $t->param(id => $id,
-              code => $code, 
-              description => $description, 
-              supported_ext => $supported_ext, 
-              locked => !$in_contests,
-              href_action => url_f('compilers'));
+    $t->param(
+        id => $id,
+        code => $code, 
+        description => $description, 
+        supported_ext => $supported_ext, 
+        locked => !$in_contests,
+        href_action => url_f('compilers'));
 }
 
 
@@ -2135,90 +2191,67 @@ sub compilers_edit_save
     my $locked = param('locked') eq 'on';
     my $id = param('id');
             
-    $dbh->do(qq~UPDATE default_de SET code=?, description=?, file_ext=?, in_contests=? WHERE id=?~, {}, 
+    $dbh->do(qq~
+        UPDATE default_de SET code=?, description=?, file_ext=?, in_contests=? WHERE id=?~, {}, 
              $code, $description, $supported_ext, !$locked, $id);
     $dbh->commit;   
 }
 
 
-sub compilers_frame 
+sub compilers_frame
 {    
-    return unless $is_jury;
-
-    if (defined url_param('delete'))
+    if ($is_jury)
     {
-        my $deid = url_param('delete');
-        $dbh->do(qq~DELETE FROM default_de WHERE id=?~, {}, $deid);
-        $dbh->commit;       
+        if ($is_root && defined url_param('delete')) # extra security
+        {
+            my $deid = url_param('delete');
+            $dbh->do(qq~DELETE FROM default_de WHERE id=?~, {}, $deid);
+            $dbh->commit;       
+        }
+        
+        defined url_param('new') and return compilers_new_frame;
+        defined url_param('edit') and return compilers_edit_frame;
     }
 
-    if (defined url_param('new'))
-    {        
-        compilers_new_frame;
-        return;
-    };
+    init_listview_template("compilers$cid" . ($uid || ''), 'compilers', 'main_compilers.htm');
 
-    if (defined url_param('edit'))
-    {        
-        compilers_edit_frame;
-        return;
-    };
-
-
-    init_listview_template( "compilers$cid" . ($uid || ''), 'compilers', 'main_compilers.htm' );      
-
-    if (defined param('new_save'))       
+    if ($is_jury)
     {
-        compilers_new_save;
+        defined param('new_save') and compilers_new_save;
+        defined param('edit_save') and compilers_edit_save;
     }
 
+    define_columns(url_f('compilers'), 0, 0, [
+        { caption => res_str(619), order_by => '2', width => '10%' },
+        { caption => res_str(620), order_by => '3', width => '40%' },
+        { caption => res_str(621), order_by => '4', width => '20%' },
+        ($is_jury ? { caption => res_str(622), order_by => '5', width => '10%' } : ())
+    ]);
 
-    if (defined param('edit_save'))       
-    {
-        compilers_edit_save;
-    }
-
-
-    define_columns(url_f('compilers'), 0, 0, 
-               [{ caption => res_str(619), order_by => '2', width => '10%' },
-                { caption => res_str(620), order_by => '3', width => '40%' },
-                { caption => res_str(621), order_by => '4', width => '10%' },
-                { caption => res_str(622), order_by => '5', width => '10%' }]);
-
-    my $c = $dbh->prepare(qq~SELECT id, code, description, file_ext, in_contests FROM default_de ~.order_by);
+    my $where = $is_jury ? '' : ' WHERE in_contests = 1';
+    my $c = $dbh->prepare(qq~
+        SELECT id, code, description, file_ext, in_contests
+        FROM default_de$where ~.order_by);
     $c->execute;
 
     my $fetch_record = sub($)
     {            
-        if ( my( $did, $code, $description, $supported_ext, $in_contests ) = $_[0]->fetchrow_array)
-        {                
-            return ( 
-                'did' => $did, 
-                'code' => $code, 
-                'description' => $description,
-                'supported_ext' => $supported_ext,
-                'locked' =>     !$in_contests,
-                'href_edit' => url_f('compilers', edit => $did),
-                'href_delete' => url_f('compilers', delete => $did)
-            );
-        }
-
-        return ();
+        my ($did, $code, $description, $supported_ext, $in_contests) = $_[0]->fetchrow_array
+            or return ();
+        return ( 
+            editable => $is_jury, did => $did, code => $code, 
+            description => $description,
+            supported_ext => $supported_ext,
+            locked => !$in_contests,
+            href_edit => url_f('compilers', edit => $did),
+            href_delete => url_f('compilers', 'delete' => $did));
     };
-             
     attach_listview(url_f('compilers'), $fetch_record, $c);
 
     if ($is_jury)
     {
-        my @submenu = ( { href_item => url_f('compilers', new => 1), item_name => res_str(542) } );
-        $t->param(submenu => [ @submenu ] );    
-    };
-
-    $is_jury && $t->param(editable => 1);
-
-    $t->param(editable => 1);
-
-    $c->finish;
+        $t->param(submenu => [ references_menu('compilers') ], editable => 1);
+    }
 }
 
 
@@ -2276,7 +2309,7 @@ sub judges_edit_save
 
 sub judges_frame 
 {
-    return unless $is_jury;
+    $is_jury or return;
  
     if (defined url_param('delete'))
     {
@@ -2285,38 +2318,20 @@ sub judges_frame
         $dbh->commit;       
     }
 
-    if (defined url_param('new'))
-    {        
-        judges_new_frame;
-        return;
-    }
+    $is_root && defined url_param('new') and return judges_new_frame;
+    $is_root && defined url_param('edit') and return judges_edit_frame;
 
-    if (defined url_param('edit'))
-    {        
-        judges_edit_frame;
-        return;
-    }
+    init_listview_template("judges$cid" . ($uid || ''), 'judges', 'main_judges.htm');
 
+    $is_root && defined param('new_save') and judges_new_save;
+    $is_root && defined param('edit_save') and judges_edit_save;
 
-    init_listview_template( "judges$cid" . ($uid || ''), 'judges', 'main_judges.htm' );      
-
-    if (defined param('new_save'))
-    {
-        judges_new_save;
-    }
-
-
-    if (defined param('edit_save'))       
-    {
-        judges_edit_save;
-    }
-
-
-    define_columns(url_f('judges'), 0, 0, 
-               [{ caption => res_str(625), order_by => '2', width => '65%' },
-                { caption => res_str(626), order_by => '3', width => '10%' },
-                { caption => res_str(633), order_by => '4', width => '15%' },
-                { caption => res_str(627), order_by => '5', width => '10%' }]);
+    define_columns(url_f('judges'), 0, 0, [
+        { caption => res_str(625), order_by => '2', width => '65%' },
+        { caption => res_str(626), order_by => '3', width => '10%' },
+        { caption => res_str(633), order_by => '4', width => '15%' },
+        { caption => res_str(627), order_by => '5', width => '10%' }
+    ]);
 
     my $c = $dbh->prepare(qq~
         SELECT id, nick, is_alive, CATS_DATE(alive_date), lock_counter
@@ -2325,11 +2340,11 @@ sub judges_frame
 
     my $fetch_record = sub($)
     {            
-        my($jid, $judge_name, $is_alive, $alive_date, $lock_counter) = $_[0]->fetchrow_array
+        my ($jid, $judge_name, $is_alive, $alive_date, $lock_counter) = $_[0]->fetchrow_array
             or return ();
         return ( 
-            jid => $jid, 
-            judge_name => $judge_name, 
+            editable => $is_root,
+            jid => $jid, judge_name => $judge_name, 
             locked => $lock_counter,
             is_alive => $is_alive,
             alive_date => $alive_date,
@@ -2340,14 +2355,21 @@ sub judges_frame
              
     attach_listview(url_f('judges'), $fetch_record, $c);
 
-    my @submenu = ( { href_item => url_f('judges', new => 1), item_name => res_str(543) } );
-    $t->param(submenu => [ @submenu ], editable => 1);
-
-    $c->finish;
+    $t->param(submenu => [ references_menu('judges') ], editable => 1);
+    
+    my ($not_processed) = $dbh->selectrow_array(q~
+        SELECT COUNT(*) FROM reqs WHERE state = ?~, undef,
+        $cats::st_not_processed);
+    $t->param(not_processed => $not_processed);
     
     $dbh->do(qq~
         UPDATE judges SET is_alive = 0, alive_date = CATS_SYSDATE() WHERE is_alive = 1~);
     $dbh->commit;
+}
+
+
+sub keywords_frame
+{
 }
 
 
@@ -2903,9 +2925,9 @@ sub rank_table
             $_->{points} = cache_req_points($_->{id});
             $need_commit = 1;
         }
-        next if $p->{solved};
+        next if $p->{solved} && !$show_points;
 
-        if ($_->{state} == $cats::st_accepted) 
+        if ($_->{state} == $cats::st_accepted)
         {
             $p->{time_consumed} = int($_->{time_elapsed} + 0.5) + $p->{runs} * $cats::penalty;
             $p->{solved} = 1;
@@ -2918,6 +2940,7 @@ sub rank_table
             $problems->{$_->{problem_id}}->{total_runs}++;
             $p->{runs}++;
             $t->{total_runs}++;
+            $p->{points} ||= 0;
             $t->{total_points} += $_->{points} - $p->{points};
             $problems->{$_->{problem_id}}->{total_points} += $_->{points} - $p->{points};
             $p->{points} = $_->{points};
@@ -2927,7 +2950,10 @@ sub rank_table
     $dbh->commit if $need_commit;
 
     my $sort_criteria = $show_points ?
-        sub { $b->{total_points} <=> $a->{total_points} } :
+        sub {
+            $b->{total_points} <=> $a->{total_points} ||
+            $b->{total_runs} <=> $a->{total_runs} 
+        }:
         sub {
             $b->{total_solved} <=> $a->{total_solved} ||
             $a->{total_time} <=> $b->{total_time} ||
@@ -3002,11 +3028,6 @@ sub rank_table_frame
     my $hide_ooc = url_param('hide_ooc') || 0;
     my $hide_virtual = url_param('hide_virtual') || 0;
     my $show_points = url_param('points');
-    if (!defined $show_points)
-    {
-#        $show_points = $dbh->selectrow_array(q~
-#            SELECT rules FROM contests WHERE id = ?~);
-    }
     
     #rank_table('main_rank_table.htm');  
     my $print = url_param('print') ? '_print' : '';
@@ -3027,6 +3048,27 @@ sub rank_table_frame
 sub rank_table_content_frame
 {
     rank_table('main_rank_table_iframe.htm');  
+}
+
+
+sub rank_problem_details
+{
+    init_template('main_rank_problem_details.htm');
+    $is_jury or return;
+    
+    my ($pid) = url_param('pid') or return;
+
+    my $runs = $dbh->selectall_arrayref(q~
+        SELECT
+            R.id, R.state, R.account_id, R.points
+        FROM reqs R WHERE R.contest_id = ? AND R.problem_id = ?
+        ORDER BY R.id~, { Slice => {} },
+        $cid, $pid);
+        
+    for (@$runs)
+    {
+        1;
+    }
 }
 
 
@@ -3198,20 +3240,22 @@ sub problem_text_frame
     }
     else
     {    
+        ($show_points) = $dbh->selectrow_array(q~
+            SELECT rules FROM contests WHERE id = ?~, undef, $cid);
+
         my $c = $dbh->prepare(qq~
             SELECT problem_id, code FROM contest_problems
             WHERE contest_id=? ORDER BY code~);
-
         $c->execute($cid);
         while (my ($problem_id, $code) = $c->fetchrow_array)
         {
             push @id_problems, $problem_id;
-            $pcodes{ $problem_id } = $code;
+            $pcodes{$problem_id} = $code;
         }
     }
 
 
-    #CATS::TeX::HTMLGen::initialize_styles;
+    my $need_commit = 0;
     for my $problem_id (@id_problems)
     {
         $current_pid = $problem_id;
@@ -3224,6 +3268,11 @@ sub problem_text_frame
                 output_format, max_points
             FROM problems WHERE id = ?~, { Slice => {} },
             $problem_id);
+        if ($show_points && !$problem_data->{max_points})
+        {
+            $problem_data->{max_points} = cache_max_points($problem_data->{id});
+            $need_commit = 1;
+        }
 
         $problem_data->{samples} = $dbh->selectall_arrayref(qq~
             SELECT rank, in_file, out_file
@@ -3235,8 +3284,8 @@ sub problem_text_frame
             for ($problem_data->{$field_name})
             {
                 $_ = $_ eq '' ? undef : Encode::encode_utf8(parse($_));
-                #s/(\$([^\$]*[^\\])\$)/convert_TeX($1)/eg;
                 CATS::TeX::Lite::convert_all($_);
+                s/-{2,3}/&#151;/g; # тире
             }
         }
         my $lang = $problem_data->{lang};
@@ -3248,6 +3297,7 @@ sub problem_text_frame
             show_points => $show_points,
         };
     }
+    $dbh->commit if $need_commit;
 
     $t->param(
         problems => [ @problems ],
@@ -3630,20 +3680,21 @@ sub generate_menu
     my @left_menu = (
         { item => $logged_on ? res_str(503) : res_str(500), 
           href => $logged_on ? url_function('logout', sid => $sid) : url_f('login') },
-        { item => res_str(502), href => url_f('contests') }
+        { item => res_str(502), href => url_f('contests') },
+        { item => res_str(525), href => url_f('problems') },
+        { item => res_str(526), href => url_f('users') },
+        { item => res_str(510), href => url_f('console') },
     );   
-
-    push @left_menu,       
-      ( { item => res_str(525), href => url_f('problems') },
-        { item => res_str(526), href => url_f('users'   ) },
-        { item => res_str(510), href => url_f('console' ) } );
 
     if ($is_jury)
     {
         push @left_menu, (
-            { item => res_str(517), href => url_f('compilers') },
-            { item => res_str(511), href => url_f('judges') },
+            { item => res_str(548), href => url_f('compilers') },
             { item => res_str(545), href => url_f('cmp') } );
+    }
+    else
+    {
+        push @left_menu, { item => res_str(517), href => url_f('compilers') };
     }
 
     if (!$is_practice)
@@ -3684,6 +3735,7 @@ sub interface_functions ()
         users => \&users_frame,
         compilers => \&compilers_frame,
         judges => \&judges_frame,
+        keywords => \&keywords_frame,
         answer_box => \&answer_box_frame,
         send_message_box => \&send_message_box_frame,
         
@@ -3694,6 +3746,7 @@ sub interface_functions ()
         
         rank_table_content => \&rank_table_content_frame,
         rank_table => \&rank_table_frame,
+        rank_problem_details => \&rank_problem_details,
         problem_text => \&problem_text_frame,
         envelope => \&envelope_frame,
         about => \&about_frame,

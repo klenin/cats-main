@@ -1,22 +1,36 @@
---- /tmp/9pZPbMCphj	Sat Oct 15 18:14:53 2005
-+++ /tmp/dVx0yLegMI	Sat Oct 15 18:14:53 2005
-@@ -1,13 +1,16 @@
- ;
--FUNCTIONpeacecount($:$):$;$,$:$;
+--- /tmp/s72qp61BVv	Sat Nov 19 16:16:03 2005
++++ /tmp/wPCSD7m9Ub	Sat Nov 19 16:16:03 2005
+@@ -1,20 +1,18 @@
+-;$$=$$$;
+-PROCEDUREdfs($:$);$:$;
+-BEGIN;@[$]:=2;
+-FOR$:=0TOhigh(@[$])DOBEGIN;
+-IF@[@[$,$]]=0THENdfs(@[$,$])ELSEIF@[@[$,$]]=2THENBEGIN;
+-halt(0);
+-END;
+-END;@[$]:=1;$:=$+1;@[$]:=$;
+-END;
 -BEGIN;$:=0;
-+FUNCTIONpeacecount($:$):$;$:$;
-+BEGIN;
-+IF$<3THENBEGIN;$:=1;$;
-+END;$:=0;
- FOR$:=$TO$DOIF(@[$,$]AND(@[$]=1)AND(@[$]=0))OR(@[$,$]AND(@[$]=1)AND(@[$]=0))THENBEGIN;$:=$+1;
+-fillchar($,sizeof($),0);
++;
++BEGIN;$:=$;$:=0;$:=0;$:=0;
++fillchar($,sizeof($),$);
++fillchar($,sizeof($),$);
+ FOR$:=1TO$DOBEGIN;
+-FOR$:=1TO$DOBEGIN;
+-setlength(@[$],high(@[$])+2);@[$,high(@[$])]:=$;
++IF$<>0THENBEGIN;
++FOR$:=1TO$DOBEGIN;@[$,$]:=$;
++END;
+ END;
++END;$:=$+1;@[$]:=$;
++WHILE($<$)AND($)DOBEGIN;$:=$+1;$:=@[$];@[$]:=$;
++FOR$:=1TO$DOIF@[$,$]THENBEGIN;
++IF@[$]THEN$:=$;$:=$+1;@[$]:=$;
+ END;
+-dfs($);
+-FOR$:=1TO$DOBEGIN;;
++END;$:=$;
++IF$THENBEGIN;;
  END;
  END;
- FUNCTION$:$;
- BEGIN;$:=$;$:=0;
- FOR$:=1TO$DOFOR$:=$TO$DOIF(@[$,$]AND(@[$]=1)AND(@[$]=0))OR(@[$,$]AND(@[$]=1)AND(@[$]=0))THENBEGIN;
--IF@[$]=1THEN@[$]:=2ELSE@[$]:=2;$:=$+1;
-+IF@[$]=1THEN@[$]:=2ELSE@[$]:=2;
-+IFpeacecount($)=1THEN$:=$+1;
- END;
- END;
- BEGIN;$:=0;$:=0;$:=0;
