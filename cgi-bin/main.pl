@@ -2118,7 +2118,7 @@ sub reference_names()
     (
         { name => 'compilers', new => 542, item => 517 },
         { name => 'judges', new => 543, item => 511 },
-        { name => 'keywords', new => 549, item => 549 },
+        { name => 'keywords', new => 550, item => 549 },
     )
 }
 
@@ -2126,7 +2126,7 @@ sub reference_names()
 sub references_menu
 {
     my ($ref_name) = @_;
-    
+
     my @result;
     for (reference_names())
     {
@@ -2315,7 +2315,7 @@ sub judges_frame
     {
         my $jid = url_param('delete');
         $dbh->do(qq~DELETE FROM judges WHERE id=?~, {}, $jid);
-        $dbh->commit;       
+        $dbh->commit;
     }
 
     $is_root && defined url_param('new') and return judges_new_frame;
@@ -2368,8 +2368,97 @@ sub judges_frame
 }
 
 
+sub keywords_new_frame
+{
+    init_template('main_keywords_new.htm');
+    $t->param(href_action => url_f('keywords'));
+}
+
+
+sub keywords_new_save
+{
+    my $name_en = param('name_en');
+    my $name_ru = param('name_ru');
+    
+    $name_en ne '' && length $name_en <= 200 && length $name_ru <= 200
+        or return msg(84);
+    
+    $dbh->do(qq~
+        INSERT INTO keywords (id, name_en, name_ru) VALUES (?, ?, ?)~, {}, 
+        new_id, $name_en, $name_ru);
+    $dbh->commit;
+}
+
+
+sub keywords_edit_frame
+{
+    init_template('main_keywords_edit.htm');
+
+    my $kwid = url_param('edit');
+    my $kw = $dbh->selectrow_hashref(qq~SELECT * FROM keywords WHERE id=?~, {}, $kwid);
+    $t->param(%$kw, href_action => url_f('keywords'));
+}
+
+
+sub keywords_edit_save
+{
+    my $kwid = param('id');
+    my $name_en = param('name_en');
+    my $name_ru = param('name_ru');
+    
+    $name_en ne '' && length $name_en <= 200 && length $name_ru <= 200
+        or return msg(84);
+  
+    $dbh->do(qq~
+        UPDATE keywords SET name_en = ?, name_ru = ? WHERE id = ?~, {}, 
+        $name_en, $name_ru, $kwid);
+    $dbh->commit;
+}
+
+
 sub keywords_frame
 {
+    $is_root or return;
+ 
+    if (defined url_param('delete'))
+    {
+        my $kwid = url_param('delete');
+        $dbh->do(qq~DELETE FROM keywords WHERE id = ?~, {}, $kwid);
+        $dbh->commit;
+    }
+
+    defined url_param('new') and return keywords_new_frame;
+    defined url_param('edit') and return keywords_edit_frame;
+
+    init_listview_template('keywords' . ($uid || ''), 'keywords', 'main_keywords.htm');
+
+    defined param('new_save') and keywords_new_save;
+    defined param('edit_save') and keywords_edit_save;
+
+    define_columns(url_f('keywords'), 0, 0, [
+        { caption => res_str(636), order_by => '2', width => '47%' },
+        { caption => res_str(637), order_by => '3', width => '47%' },
+    ]);
+
+    my $c = $dbh->prepare(qq~
+        SELECT id, name_ru, name_en FROM keywords ~.order_by);
+    $c->execute;
+
+    my $fetch_record = sub($)
+    {            
+        my ($kwid, $name_ru, $name_en) = $_[0]->fetchrow_array
+            or return ();
+        return ( 
+            editable => $is_root,
+            kwid => $kwid, name_ru => $name_ru, name_en => $name_en,
+            href_edit=> url_f('keywords', edit => $kwid),
+            href_delete => url_f('keywords', 'delete' => $kwid)
+        );
+    };
+             
+    attach_listview(url_f('keywords'), $fetch_record, $c);
+
+    $t->param(submenu => [ references_menu('keywords') ], editable => 1);
 }
 
 
