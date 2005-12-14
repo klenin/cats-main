@@ -31,6 +31,7 @@ my ($stml,
     %sample,
     %test_rank_array,
     %sample_rank_array,
+    %keyword,
     $statement,
     $constraints,
     $inputformat,
@@ -265,7 +266,8 @@ sub problem_update
         $dbh->do(qq~DELETE FROM pictures WHERE problem_id=?~, {}, $pid) &&
         $dbh->do(qq~DELETE FROM samples WHERE problem_id=?~, {}, $pid) &&
         $dbh->do(qq~DELETE FROM tests WHERE problem_id=?~, {}, $pid) && 
-        $dbh->do(qq~DELETE FROM problem_sources WHERE problem_id=?~, {}, $pid) ||
+        $dbh->do(qq~DELETE FROM problem_sources WHERE problem_id=?~, {}, $pid) &&
+        $dbh->do(qq~DELETE FROM problem_keywords WHERE problem_id=?~, {}, $pid) ||
            error "Couldn't update problem\n";
     
         my $c = $dbh->prepare(qq~
@@ -420,8 +422,9 @@ sub parse_problem_content
     {
         required_attributes($el, \%atts, ['src', 'name']);
 
-        my @p = split(/\./, $atts{'src'}); my $ext = $p[-1];
-        error "Invalid image extension\n" if ($ext eq '') ;
+        my @p = split(/\./, $atts{'src'});
+        my $ext = $p[-1];
+        error "Invalid image extension\n" if $ext eq '';
         
         %picture = (
             'id' => new_id,
@@ -646,6 +649,11 @@ sub parse_problem_content
         $sample{'out'} = 1;
         $sample{'out_file'} = "";
     }
+    
+    if ($el eq 'Keyword')
+    {
+        %keyword = ('code' => $atts{'code'});
+    }
 }
 
 
@@ -664,21 +672,23 @@ sub problem_content_text
 
 sub insert_problem_source
 {
-  my %p = @_;
-  my $s = $p{source_object} or die;
+    my %p = @_;
+    my $s = $p{source_object} or die;
   
-  my $c = $dbh->prepare(qq~INSERT INTO problem_sources
-      (id, problem_id, de_id, src, fname, stype, input_file, output_file) VALUES (?,?,?,?,?,?,?,?)~);
+    my $c = $dbh->prepare(qq~
+        INSERT INTO problem_sources (
+            id, problem_id, de_id, src, fname, stype, input_file, output_file
+        ) VALUES (?,?,?,?,?,?,?,?)~);
 
-  $c->bind_param(1, $s->{'id'});
-  $c->bind_param(2, $pid);
-  $c->bind_param(3, get_de_id($s->{'de_code'}, $s->{'path'}));
-  $c->bind_param(4, $s->{'src'}, { ora_type => 113 });
-  $c->bind_param(5, $s->{'path'});
-  $c->bind_param(6, $p{source_type});
-  $c->bind_param(7, $s->{'inputFile'});
-  $c->bind_param(8, $s->{'outputFile'});
-  $c->execute;
+    $c->bind_param(1, $s->{'id'});
+    $c->bind_param(2, $pid);
+    $c->bind_param(3, get_de_id($s->{'de_code'}, $s->{'path'}));
+    $c->bind_param(4, $s->{'src'}, { ora_type => 113 });
+    $c->bind_param(5, $s->{'path'});
+    $c->bind_param(6, $p{source_type});
+    $c->bind_param(7, $s->{'inputFile'});
+    $c->bind_param(8, $s->{'outputFile'});
+    $c->execute;
 }
 
 
@@ -736,8 +746,9 @@ sub insert_problem_content
 
     if ($el eq 'Picture')
     {
-        my $c = $dbh->prepare(qq~INSERT INTO pictures
-        (id, problem_id, extension, name, pic) VALUES (?,?,?,?,?)~);
+        my $c = $dbh->prepare(qq~
+            INSERT INTO pictures(id, problem_id, extension, name, pic)
+                VALUES (?,?,?,?,?)~);
 
         $c->bind_param(1, $picture{'id'});     
         $c->bind_param(2, $pid);
@@ -748,7 +759,7 @@ sub insert_problem_content
 
         note "Picture '$picture{'path'}' added\n";
         %picture = ();
-    }                             
+    }
 
     if ($el eq 'Test')
     {
@@ -757,7 +768,7 @@ sub insert_problem_content
                 problem_id, rank, generator_id, param, std_solution_id, in_file, out_file, points
             ) VALUES (?,?,?,?,?,?,?,?)~
         );
-            
+
         $c->bind_param(1, $pid);
         $c->bind_param(2, $test{'rank'});
         $c->bind_param(3, $test{'generator_id'});
@@ -766,9 +777,7 @@ sub insert_problem_content
         $c->bind_param(6, $test{'in_file'}, { ora_type => 113 });
         $c->bind_param(7, $test{'out_file'}, { ora_type => 113 });
         $c->bind_param(8, $test{'points'});
-        eval {
-    	    $c->execute;
-        };
+        eval { $c->execute; };
         if ($@) {
             error "Can not add test $test{'rank'}: $@";
         }
@@ -853,6 +862,24 @@ sub insert_problem_content
 
         %sample = ();
     }
+    
+    if ($el eq 'Keyword')
+    {
+        my ($keyword_id) = $dbh->selectrow_array(q~
+            SELECT id FROM keywords WHERE code = ?~, undef, $keyword{code});
+        if ($keyword_id)
+        {
+            $dbh->do(q~
+                INSERT INTO problem_keywords (problem_id, keyword_id) VALUES (?, ?)~, undef,
+                $pid, $keyword_id);
+            note "Keyword added: $keyword{code}\n";
+        }
+        else
+        {
+            warning "Unknown keyword: $keyword{code}\n";
+        }
+        %keyword = ();
+    }
 } 
 
 
@@ -875,6 +902,7 @@ sub clear_globals
     %test_range = ();
     %test_rank_array = ();
     %sample_rank_array = ();
+    %keyword = ();
 
     $statement = $constraints = $inputformat = $outputformat = undef;
 }
@@ -882,32 +910,19 @@ sub clear_globals
 
 sub verify_test_order
 {
-    my @order;
-    foreach (keys %test_rank_array) {
-        push @order, $_;
-    }
+    my @order = sort { $a <=> $b } keys %test_rank_array
+        or error "Empty test set\n";
 
-    if ($#order < 0)
-    {
-	error "Empty test set\n";
-    }
-
-    @order = sort { $a <=> $b } @order;
-    for (0..$#order) {           
-        if ($order[$_] != $_ + 1) {
-            error "Missing test #".($_ + 1)."\n";
+    for (1..@order) {           
+        if ($order[$_ - 1] != $_) {
+            error "Missing test #$_\n";
         }
     }   
 
-    @order = ();
-    foreach (keys %sample_rank_array) {
-        push @order, $_;
-    }
-
-    @order = sort { $a <=> $b } @order;
-    for (0..$#order) {
-        if ($order[$_] != $_ + 1) {
-            error "Missing sample #".($_ + 1)."\n";
+    @order = sort { $a <=> $b } keys %sample_rank_array;
+    for (1..@order) {
+        if ($order[$_ - 1] != $_) {
+            error "Missing sample #$_\n";
         }
     }
 }

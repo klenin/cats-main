@@ -252,7 +252,8 @@ CREATE TABLE contest_photos (
 CREATE TABLE keywords (
     id          INTEGER NOT NULL PRIMARY KEY,
     name_ru     VARCHAR(200),
-    name_en     VARCHAR(200)
+    name_en     VARCHAR(200),
+    code        VARCHAR(200)
 );
 
 CREATE TABLE problem_keywords (

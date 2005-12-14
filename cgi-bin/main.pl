@@ -2368,6 +2368,8 @@ sub judges_frame
 }
 
 
+sub keywords_fields () { qw(name_ru name_en code) }
+
 sub keywords_new_frame
 {
     init_template('main_keywords_new.htm');
@@ -2377,15 +2379,15 @@ sub keywords_new_frame
 
 sub keywords_new_save
 {
-    my $name_en = param('name_en');
-    my $name_ru = param('name_ru');
+    my %p = map { $_ => (param($_) || '') } keywords_fields();
     
-    $name_en ne '' && length $name_en <= 200 && length $name_ru <= 200
+    $p{name_en} ne '' && 0 == grep length $p{$_} > 200, keywords_fields()
         or return msg(84);
     
+    my $field_names = join ', ', keywords_fields();
     $dbh->do(qq~
-        INSERT INTO keywords (id, name_en, name_ru) VALUES (?, ?, ?)~, {}, 
-        new_id, $name_en, $name_ru);
+        INSERT INTO keywords (id, $field_names) VALUES (?, ?, ?, ?)~, {}, 
+        new_id, @p{keywords_fields()});
     $dbh->commit;
 }
 
@@ -2403,15 +2405,15 @@ sub keywords_edit_frame
 sub keywords_edit_save
 {
     my $kwid = param('id');
-    my $name_en = param('name_en');
-    my $name_ru = param('name_ru');
-    
-    $name_en ne '' && length $name_en <= 200 && length $name_ru <= 200
+    my %p = map { $_ => (param($_) || '') } keywords_fields();
+
+    $p{name_en} ne '' && 0 == grep(length $p{$_} > 200, keywords_fields())
         or return msg(84);
-  
+
+    my $set = join ', ', map "$_ = ?", keywords_fields();
     $dbh->do(qq~
-        UPDATE keywords SET name_en = ?, name_ru = ? WHERE id = ?~, {}, 
-        $name_en, $name_ru, $kwid);
+        UPDATE keywords SET $set WHERE id = ?~, {}, 
+        @p{keywords_fields()}, $kwid);
     $dbh->commit;
 }
 
@@ -2436,21 +2438,22 @@ sub keywords_frame
     defined param('edit_save') and keywords_edit_save;
 
     define_columns(url_f('keywords'), 0, 0, [
-        { caption => res_str(636), order_by => '2', width => '47%' },
-        { caption => res_str(637), order_by => '3', width => '47%' },
+        { caption => res_str(638), order_by => '2', width => '31%' },
+        { caption => res_str(636), order_by => '3', width => '31%' },
+        { caption => res_str(637), order_by => '4', width => '31%' },
     ]);
 
     my $c = $dbh->prepare(qq~
-        SELECT id, name_ru, name_en FROM keywords ~.order_by);
+        SELECT id, code, name_ru, name_en FROM keywords ~.order_by);
     $c->execute;
 
     my $fetch_record = sub($)
     {            
-        my ($kwid, $name_ru, $name_en) = $_[0]->fetchrow_array
+        my ($kwid, $code, $name_ru, $name_en) = $_[0]->fetchrow_array
             or return ();
         return ( 
             editable => $is_root,
-            kwid => $kwid, name_ru => $name_ru, name_en => $name_en,
+            kwid => $kwid, code => $code, name_ru => $name_ru, name_en => $name_en,
             href_edit=> url_f('keywords', edit => $kwid),
             href_delete => url_f('keywords', 'delete' => $kwid)
         );
@@ -3030,8 +3033,9 @@ sub rank_table
             $p->{runs}++;
             $t->{total_runs}++;
             $p->{points} ||= 0;
-            $t->{total_points} += $_->{points} - $p->{points};
-            $problems->{$_->{problem_id}}->{total_points} += $_->{points} - $p->{points};
+            my $dp = ($_->{points} || 0) - $p->{points};
+            $t->{total_points} += $dp;
+            $problems->{$_->{problem_id}}->{total_points} += $dp;
             $p->{points} = $_->{points};
         }
     }
@@ -3357,6 +3361,18 @@ sub problem_text_frame
                 output_format, max_points
             FROM problems WHERE id = ?~, { Slice => {} },
             $problem_id);
+        my $lang = $problem_data->{lang};
+
+        if ($is_jury) {
+            my $lang_col = $lang eq 'ru' ? 'name_ru' : 'name_en';
+            my $kw_list = $dbh->selectcol_arrayref(qq~
+                SELECT $lang_col FROM keywords K
+                    INNER JOIN problem_keywords PK ON PK.keyword_id = K.id
+                    WHERE PK.problem_id = ?
+                    ORDER BY 1~, undef, $problem_id);
+           $problem_data->{keywords} = join ', ', @$kw_list;
+        }
+        
         if ($show_points && !$problem_data->{max_points})
         {
             $problem_data->{max_points} = cache_max_points($problem_data->{id});
@@ -3377,7 +3393,6 @@ sub problem_text_frame
                 s/-{2,3}/&#151;/g; # тире
             }
         }
-        my $lang = $problem_data->{lang};
         push @problems,  {
             %$problem_data,
             code => $pcodes{$problem_id},

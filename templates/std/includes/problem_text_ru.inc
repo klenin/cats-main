@@ -9,6 +9,7 @@
 <tr><td>Ограничение времени на тест:</td><td><TMPL_VAR time_limit> сек</td></tr>
 <tr><td>Ограничение памяти на тест:</td><td><TMPL_VAR memory_limit> Мб</td></tr>
 <TMPL_IF show_points><tr><td>Максимальная оценка:</td><td><TMPL_VAR max_points> баллов</td></tr></TMPL_IF>
+<TMPL_IF keywords><tr><td>Ключевые слова:</td><td><TMPL_VAR keywords></td></tr></TMPL_IF>
 </table>
 
 <TMPL_IF statement>
