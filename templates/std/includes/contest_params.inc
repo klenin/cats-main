@@ -4,11 +4,13 @@
   <tr><td>Дата/время заморозки таблицы результатов:</td><td><input type="text" name="freeze_date" value="<TMPL_VAR freeze_date ESCAPE=HTML>" class="bordered" <TMPL_UNLESS can_edit>readonly="readonly"</TMPL_UNLESS>/></td></tr>
   <tr><td>Дата/время финиша:</td><td><input type="text" name="finish_date" value="<TMPL_VAR finish_date ESCAPE=HTML>" class="bordered" <TMPL_UNLESS can_edit>readonly="readonly"</TMPL_UNLESS>/></td></tr>
   <tr><td>Дата/время открытия доступа к результатам:</td><td><input type="text" name="open_date" value="<TMPL_VAR open_date ESCAPE=HTML>" class="bordered" <TMPL_UNLESS can_edit>readonly="readonly"</TMPL_UNLESS>/></td></tr>
-  <tr><td>Правила оценки:</td><td>
-    <select name="rules" class="bordered" <TMPL_UNLESS can_edit>readonly="readonly"</TMPL_UNLESS>>
+  <tr><td>Правила оценки:</td><td><TMPL_IF can_edit>
+    <select name="rules" class="bordered">
       <option value="0"<TMPL_UNLESS rules> selected="selected"</TMPL_UNLESS>>ACM</option>
       <option value="1"<TMPL_IF rules> selected="selected"</TMPL_IF>>школьные</option>
-    </select></td></tr>
+    </select><TMPL_ELSE><TMPL_IF rules>школьные<TMPL_ELSE>ACM</TMPL_IF>
+    </TMPL_IF>
+  </td></tr>
 </table>
 <br/>
 <table cellpadding="0" class="bordered" width="250">

@@ -1,0 +1,54 @@
+.page_title {
+  font-family: Arial, sans-serif;
+  font-size: 20px;
+  font-style: bold;
+  color: #333300;
+}
+
+.down * {
+  background-color: #FFCC55;
+  color: #333300;
+  background-repeat: no-repeat;
+}
+
+.nav_href {
+  font-family: Arial;
+  font-size: 12px;
+  text-decoration: none;
+  padding-left: 3px;
+}
+
+.menu_bar {
+  height: 30px;
+  color: white;
+  background-color: #7070FF;
+}
+
+.menu_bar * { color: white; }
+
+h2 {
+  font-family: Arial;
+  font-size: 16px;
+}
+
+table.ft, table.bordered {
+  border: 1px solid black;
+  border-collapse: collapse;
+}
+
+table.bordered tr td {
+  border: 1px solid black;
+  padding: 2px;
+}
+
+table.ft tr td, table.ft tr th {
+  border: 1px solid black;
+  padding: 2px;
+  vertical-align: top;
+}
+
+table.ft tr td ul {
+  /*list-style: none;
+  margin-left: 5;*/
+  margin-bottom: 5;
+}

@@ -18,7 +18,9 @@
 
 </td>
 <td align=right>
-правила: <font color="#00a040"><TMPL_IF show_points>школьные<TMPL_ELSE>ACM</TMPL_IF></font>
+правила:
+<TMPL_IF show_points><a href="./docs/rules_school.html">школьные</a>
+<TMPL_ELSE><a href="./docs/rules_acm.html">ACM</a></TMPL_IF>
 состояние: <TMPL_IF frozen><font color=#0000a0>заморожена</font><TMPL_ELSE><font color=#00a040>актуальное</font></TMPL_IF>
 </td>
 </tr>

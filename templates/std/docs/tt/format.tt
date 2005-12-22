@@ -1,23 +1,17 @@
-<html>
+[% PROCESS header.tti title = 'Формат заданий' %]
 [%- MACRO opt BLOCK %]<sup><a href="#opt" title="Необязательный атрибут">o</a></sup>[% END -%]
 [%- MACRO v11 BLOCK %]<sup><a href="#v11" title="С версии 1.1">1.1</a></sup>[% END -%]
 [%- MACRO v12 BLOCK %]<sup><a href="#v12" title="С версии 1.2">1.2</a></sup>[% END -%]
+[%- MACRO v13 BLOCK %]<sup><a href="#v13" title="С версии 1.3">1.3</a></sup>[% END -%]
 [%- MACRO tag_in(t1, t2, m1, m2) BLOCK
 %]<tt>&lt;<a name="[% t1 %]">[% t1 %]</a>&gt;[% IF t2 != '';
   IF m1 != '' %]</tt>[% m1 %]<br/><tt>[% ELSE %]<br/>[% END
 %]&lt;<a href="#[% t2 %]">[% t2 %]</a>&gt;[% END %]</tt>[% m2;
 END -%]
 [%- MACRO tag_ref(t) BLOCK %]<tt>&lt;<a href="#[% t %]">[% t %]</a>&gt;</tt>[% END -%]
+<h2>Версия 1.3</h2>
 
-<head>
-  <meta http-equiv="Content-type" content="text/html; charset=KOI8-R" />
-  <link rel="stylesheet" type="text/css" href="format.css" />
-</head>
-<body>
-<h1>Формат заданий CATS</h1>
-<h2>Версия 1.2</h2>
-
-<p><a href="">скачать пример пакета с заданием</a></p>
+<p><a href="sample.zip">скачать пример пакета с заданием</a></p>
 <p>Для хранения задачи используется ZIP-файл, в корне которого обязательно
 должен быть 1 XML-файл с описанием условия задачи и
 некоторое множество дополнительных файлов с тестами, программами проверки и т.д.
@@ -32,7 +26,7 @@ END -%]
 </tr>
 <tr>
   <td>[% tag_in('CATS') %]</td>
-  <td>version[% opt %] (по умолчанию "1.2")</td>
+  <td>version[% opt %] (по умолчанию "1.3")</td>
   <td>Обязательный внешний тэг</td>
 </tr>
 <tr>
@@ -48,6 +42,7 @@ END -%]
       <li>outputFile - имя выходного файла;</li>
       <li>difficulty[% opt %] - авторская оценка сложности задачи в баллах от (1 до 100);</li>
       <li>stdChecker[% opt %] - имя стандартной программы проверки;</li>
+      <li>maxPoints[% opt %] [% v13 %] - максимальный балл за задачу, имеет приоритет перед суммой баллов по тестам</li>
     </ul>
   </td>
   <td>Стандартная программа проверки служит для сравнения выходного
@@ -60,6 +55,13 @@ END -%]
       <li>longstrs - проверяет совпадение длинных строк (до 10000 символов);</li>
     </ul>
   </td>
+</tr>
+<tr>
+  <td>[% tag_in('Keyword', 'Problem') %]</td>
+  <td>
+      <ul><li>name - код ключевого слова</li></ul>
+  </td>
+  <td>Код ключевого слова должен быть известен системе.</td>
 </tr>
 <tr>
   <td>[% tag_in('ProblemStatement', 'Problem') %]</td>
@@ -264,6 +266,8 @@ END -%]
   Данная возможность присутствует в CATS начиная с версии 1.1.</p>
 <a name="v12"></a><p><a href="" onclick="javascript:history.back(-1)"><sup>1.2</sup></a>
   Данная возможность присутствует в CATS начиная с версии 1.2.</p>
+<a name="v13"></a><p><a href="" onclick="javascript:history.back(-1)"><sup>1.3</sup></a>
+  Данная возможность присутствует в CATS начиная с версии 1.3.</p>
 
 
 <h2>Описание формата STML (Simple Text Markup Language)</h2>
@@ -319,3 +323,4 @@ END -%]
   <td>Ячейка таблицы.</td>
 </tr>
 </table>
+[% PROCESS footer.tti %]

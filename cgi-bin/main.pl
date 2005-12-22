@@ -942,12 +942,15 @@ sub problems_new_save
 }
 
 
-sub problems_link_frame
+sub problems_all_frame
 {
     init_listview_template('link_problem_' || ($uid || ''),
         'link_problem', 'main_problems_link.htm');
 
-    show_unused_problem_codes;
+    my $link = url_param('link');
+    my $kw = url_param('kw');
+    
+    $link and show_unused_problem_codes;
 
     my $cols = [
         { caption => res_str(602), order_by => '2', width => '30%' }, 
@@ -956,54 +959,64 @@ sub problems_link_frame
         { caption => res_str(605), order_by => '5', width => '10%' },
         { caption => res_str(606), order_by => '6', width => '10%' },
     ];
-    define_columns(url_f('problems', link => 1), 0, 0, $cols);
+    define_columns(url_f('problems', link => $link, kw => $kw), 0, 0, $cols);
     
-    my $security_check = $is_root ?
-      {cond => '', 'params' => []} :
-      {   
-        cond => q~
-          AND (
-            EXISTS (
-              SELECT 1 FROM contest_accounts WHERE contest_id = C.id AND account_id = ? AND is_jury = 1
-            ) OR (CURRENT_TIMESTAMP > C.finish_date)
-          )~,
+    my $where = $is_root ? 
+        {cond => [], 'params' => []} :
+        { #security check
+            cond => [q~
+            (
+                EXISTS (
+                    SELECT 1 FROM contest_accounts
+                    WHERE contest_id = C.id AND account_id = ? AND is_jury = 1
+                    ) OR CURRENT_TIMESTAMP > C.finish_date
+            )~],
         params => [$uid]
-      };
+    };
       
+    if ($kw) {
+        push @{$where->{cond}}, q~
+            (EXISTS (SELECT 1 FROM problem_keywords PK WHERE PK.problem_id = P.id AND PK.keyword_id = ?))~;
+        push @{$where->{params}}, $kw;
+    }
+
+    my $where_cond = join(' AND ', @{$where->{cond}}) || '1=1';
     my $c = $dbh->prepare(qq~
-        SELECT P.id, P.title, C.title, 
+        SELECT P.id, P.title, C.title, C.id,
           (SELECT COUNT(*) FROM reqs D WHERE D.problem_id = P.id AND D.state = $cats::st_accepted), 
           (SELECT COUNT(*) FROM reqs D WHERE D.problem_id = P.id AND D.state = $cats::st_wrong_answer), 
           (SELECT COUNT(*) FROM reqs D WHERE D.problem_id = P.id AND D.state = $cats::st_time_limit_exceeded),
           (SELECT COUNT(*) FROM contest_problems CP WHERE CP.problem_id = P.id AND CP.contest_id=?)
-        FROM problems P, contests C
-        WHERE
-          C.id=P.contest_id$security_check->{cond}
-        ~.order_by);
+        FROM problems P INNER JOIN contests C ON C.id = P.contest_id
+        WHERE $where_cond ~ . order_by);
     # interbase bug
-    $c->execute(@{$security_check->{params}}, $cid);
+    $c->execute(@{$where->{params}}, $cid);
 
     my $fetch_record = sub($)
-    {            
+    {
         my (
-            $pid, $problem_name, $contest_name, $accept_count, $wa_count, $tle_count, $linked
+            $pid, $problem_name, $contest_name, $contest_id, $accept_count, $wa_count, $tle_count, $linked
         ) = $_[0]->fetchrow_array
             or return ();
         return ( 
+            href_view_problem => url_f('problem_text', pid => $pid),
+            href_view_contest => url_f('problems', cid => $contest_id),
+            href_view_contest => url_function('problems', sid => $sid, cid => $contest_id),
             linked => $linked,
             problem_id => $pid,
             problem_name => $problem_name, 
-            href_view_problem => url_f('problem_text', pid => $pid),
             contest_name => $contest_name, 
             accept_count => $accept_count, 
             wa_count => $wa_count,
             tle_count => $tle_count,
         );
     };
-            
-    attach_listview(url_f('problems', link => 1), $fetch_record, $c);
+         
+    attach_listview(url_f('problems', link => $link, kw => $kw), $fetch_record, $c);
 
-    $t->param(practice => $is_practice, href_action => url_f('problems'));
+    $t->param(
+        href_action => url_f($kw ? 'keywords' : 'problems'),
+        link => !$is_practice && $link);
     
     $c->finish;
 }
@@ -1325,7 +1338,13 @@ sub problems_frame
 
     if (defined url_param('link') && $is_jury)
     {
-        problems_link_frame;
+        problems_all_frame;
+        return;
+    }
+
+    if (defined url_param('kw') && $is_jury)
+    {
+        problems_all_frame;
         return;
     }
 
@@ -2455,7 +2474,8 @@ sub keywords_frame
             editable => $is_root,
             kwid => $kwid, code => $code, name_ru => $name_ru, name_en => $name_en,
             href_edit=> url_f('keywords', edit => $kwid),
-            href_delete => url_f('keywords', 'delete' => $kwid)
+            href_delete => url_f('keywords', 'delete' => $kwid),
+            href_view_problems => url_f('problems', kw => $kwid),
         );
     };
              
@@ -2800,8 +2820,8 @@ sub cache_req_points
     my ($req_id) = @_;
     my $points = $dbh->selectall_arrayref(qq~
         SELECT RD.result, T.points
-        FROM
-            reqs R INNER JOIN req_details RD ON RD.req_id = R.id
+            FROM reqs R
+            INNER JOIN req_details RD ON RD.req_id = R.id
             INNER JOIN tests T ON RD.test_rank = T.rank AND T.problem_id = R.problem_id
         WHERE R.id = ?~, { Slice => {} },
         $req_id
@@ -3171,11 +3191,9 @@ sub start_element
     my ($el, %atts) = @_;
 
     $html_code .= "<$el";
-    foreach my $name (keys %atts)
+    for my $name (keys %atts)
     {
-        $name = $name;
         my $attrib = $atts{$name};
-
         $html_code .= " $name=\"$attrib\"";
     }
     $html_code .= ">";
@@ -3184,25 +3202,22 @@ sub start_element
 
 sub end_element 
 {
-    my ( $el ) = @_;    
-
+    my ($el) = @_;    
     $html_code .= "</$el>";
 }
 
 
 sub text
 {
-    my ( $text ) = shift;
-    
+    my ($text) = shift;
     $html_code .= $text;
 }
 
 
 sub ch_1
 {
-    my ( $p, $text ) = @_;
-        
-    text( $text );
+    my ($p, $text) = @_;
+    text($text);
 }
 
 
@@ -3248,7 +3263,7 @@ sub eh_1
 {
     my ($p, $el) = @_;
     end_element($el);
-} 
+}
 
 
 sub parse
@@ -3388,6 +3403,7 @@ sub problem_text_frame
         {
             for ($problem_data->{$field_name})
             {
+                defined $_ or next;
                 $_ = $_ eq '' ? undef : Encode::encode_utf8(parse($_));
                 CATS::TeX::Lite::convert_all($_);
                 s/-{2,3}/&#151;/g; # тире

@@ -14,10 +14,10 @@
 		<TMPL_ELSE>
 		    анонимный
 		</TMPL_IF>		
-		</td>		
-		<td align=right>
-	    	    <a href="<TMPL_VAR url_authors>" class=signed>&copy; 2005 Авторы</a>&nbsp;
 		</td>
+		<td align=right>
+        <a href="./docs/" class="signed">документация</a> | 
+        <a href="<TMPL_VAR url_authors>" class=signed>&copy; 2005 Авторы</a>&nbsp;</td>
 	    </tr>
 	</table>
     </td>
@@ -30,11 +30,7 @@
 	<a href="http://imcs.dvgu.ru" class=signed2> Институт математики и компьютерных наук&nbsp;<br> Дальневосточный государственный университет &nbsp;</a>
     </td>
 </tr>
-<tr>
-    <td>
-    &nbsp;
-    </td>
-</tr>
+<tr><td>&nbsp;</td></tr>
 </table>
 </body>
 </html>

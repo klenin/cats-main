@@ -1,0 +1,43 @@
+[% PROCESS header.tti title = 'Содержание' %]
+<ul>
+
+<li>Руководство пользователя
+<ul>
+<li><a href="man_interface_intro.html">Обзор интерфейса</a></li>
+<li><a href="man_registration.html">Регистрация / профиль</a></li>
+<li><a href="man_login.html">Вход в систему</a></li>
+<li><a href="man_contests.html">Выбор турнира</a></li>
+<li><a href="man_problems.html">Просмотр задач и отправка решений</a></li>
+<li><a href="man_console.html">Работа с консолью</a></li>
+<li><a href="man_rank_table.html">Турнирная таблица</a></li>
+<li><a href="man_lists.html">Подробное описание столбцов в списках</a></li>
+<li><a href="man_interface_lists.html">Интерфейс работы со списками</a></li>
+</ul>
+
+<li>Правила
+<ul>
+<li><a href="run_results.html">Результаты проверки решения</a></li>
+<li><a href="rules_acm.html">Правила соревнований ACM</a></li>
+<li><a href="rules_school.html">Правила школьных соревнований</a></li>
+</ul>
+</li>
+
+<li>Техническая документация</li>
+<ul>
+<li><a href="format.html">Формат заданий</a></li>
+<li><a href="spawner.html">Модуль spawner</a></li>
+<li><a href="urls.html">Формат URL</a></li>
+</ul>
+</li>
+
+<li>Литература</li>
+<ul>
+<li>Рожков М., <a href="http://imcs.dvgu.ru/courses/works/2004/259_Rozhkov_d.rar"
+>Система автоматического тестирования программ и организации соревнований по программированию</a>, 2004</li>
+<li>Коновалова Д., <a href="http://imcs.dvgu.ru/courses/works/2005/236_Konovalova_k.rar"
+>Поиск сходных алгоритмических конструкций в программном коде</a>, 2005</li>
+</ul>
+</li>
+
+</ul>
+[% PROCESS footer.tti %]
