@@ -67,7 +67,7 @@ function r() {
 </tr>   
 </TMPL_IF>
 <TMPL_LOOP problems>
-<tr bgcolor=#ffffff>
+<tr <TMPL_IF odd>bgcolor=#f4f4f4<TMPL_ELSE>bgcolor=#ffffff</TMPL_IF>>
 <td>
     <TMPL_IF is_team>
     <input type="radio" name="problem_id" value="<TMPL_VAR problem_id>"<TMPL_IF disabled> disabled="disabled"</TMPL_IF> />
@@ -107,16 +107,16 @@ function r() {
     <TMPL_IF editable><td>&nbsp;</td><td>Файл с задачей:</td><td><input type="file" name="zip" class="file" size="25"/></td></TMPL_IF>
 </tr><tr>
     <td>Среда разработки:</td><td>
-        <select name="de_id">
-        <TMPL_LOOP de_list><option value="<TMPL_VAR de_id>"><TMPL_VAR de_name ESCAPE=HTML></TMPL_LOOP>
-        </select>
+      <select name="de_id">
+      <TMPL_LOOP de_list><option value="<TMPL_VAR de_id>"><TMPL_VAR de_name ESCAPE=HTML></option></TMPL_LOOP>
+      </select>
     </td>
     <TMPL_IF editable><td>&nbsp;</td><td>Статус:</td>
     <td>
-        <select name="status">
-        <TMPL_LOOP status_list><option value="<TMPL_VAR id>"><TMPL_VAR name ESCAPE=HTML></TMPL_LOOP>
-        </select>
-        перетестировать все попытки <input name="all_runs" type="checkbox" value="1"/>
+      <select name="status">
+      <TMPL_LOOP status_list><option value="<TMPL_VAR id>"><TMPL_VAR name ESCAPE=HTML></option></TMPL_LOOP>
+      </select>
+      перетестировать все попытки <input name="all_runs" type="checkbox" value="1"/>
     </td></TMPL_IF>
 </tr><tr>
     <td colspan="2">

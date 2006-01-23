@@ -1,36 +1,42 @@
---- /tmp/s72qp61BVv	Sat Nov 19 16:16:03 2005
-+++ /tmp/wPCSD7m9Ub	Sat Nov 19 16:16:03 2005
-@@ -1,20 +1,18 @@
--;$$=$$$;
--PROCEDUREdfs($:$);$:$;
--BEGIN;@[$]:=2;
--FOR$:=0TOhigh(@[$])DOBEGIN;
--IF@[@[$,$]]=0THENdfs(@[$,$])ELSEIF@[@[$,$]]=2THENBEGIN;
--halt(0);
+--- /tmp/4bokpJHYgU	Mon Jan 23 08:46:09 2006
++++ /tmp/cFqurooDRC	Mon Jan 23 08:46:09 2006
+@@ -1,37 +1,5 @@
+ ;
+-PROCEDURE$;
+-BEGIN;
+-FOR$:=1TO$DOBEGIN;@[$,1]:=$;@[$,2]:=$;
++PROGRAM$;
+ END;
 -END;
--END;@[$]:=1;$:=$+1;@[$]:=$;
+-FUNCTIONbig($,$:$):$;$:$;
+-BEGIN;
+-IF$>$THEN$:=$ELSE$:=$;$:=$;
 -END;
--BEGIN;$:=0;
--fillchar($,sizeof($),0);
-+;
-+BEGIN;$:=$;$:=0;$:=0;$:=0;
-+fillchar($,sizeof($),$);
-+fillchar($,sizeof($),$);
- FOR$:=1TO$DOBEGIN;
--FOR$:=1TO$DOBEGIN;
--setlength(@[$],high(@[$])+2);@[$,high(@[$])]:=$;
-+IF$<>0THENBEGIN;
-+FOR$:=1TO$DOBEGIN;@[$,$]:=$;
-+END;
- END;
-+END;$:=$+1;@[$]:=$;
-+WHILE($<$)AND($)DOBEGIN;$:=$+1;$:=@[$];@[$]:=$;
-+FOR$:=1TO$DOIF@[$,$]THENBEGIN;
-+IF@[$]THEN$:=$;$:=$+1;@[$]:=$;
- END;
--dfs($);
--FOR$:=1TO$DOBEGIN;;
-+END;$:=$;
-+IF$THENBEGIN;;
- END;
+-FUNCTIONsmall($,$:$):$;
+-BEGIN;
+-IF$<$THEN$:=$ELSE$:=$;$:=$;
+-END;
+-PROCEDURE$;
+-BEGIN;$:=$;
+-FOR$:=1TO$-1DOFOR$:=$+1TO$DOBEGIN;
+-IF(@[$,1]<>@[$,1])THENBEGIN;
+-IF(@[$,1]>=0)AND(@[$,1]>=0)THEN$:=big(@[$,1],@[$,1])-small(@[$,1],@[$,1]);
+-IF((@[$,1]>0)AND(@[$,1]<0))OR((@[$,1]<0)AND(@[$,1]>0))THEN$:=abs(@[$,1])+abs(@[$,1]);
+-IF(@[$,1]<0)AND(@[$,1]<0)THEN$:=abs(small(@[$,1],@[$,1])-big(@[$,1],@[$,1]));
+-IF$<$THEN$:=$;
+-END;
+-END;$:=$;$:=$;
+-FOR$:=1TO$-1DOFOR$:=$+1TO$DOBEGIN;
+-IF(@[$,2]<>@[$,2])THENBEGIN;
+-IF(@[$,2]>=0)AND(@[$,2]>=0)THEN$:=big(@[$,2],@[$,2])-small(@[$,2],@[$,2]);
+-IF((@[$,2]>0)AND(@[$,2]<0))OR((@[$,2]<0)AND(@[$,2]>0))THEN$:=abs(@[$,2])+abs(@[$,2]);
+-IF(@[$,2]<0)AND(@[$,2]<0)THEN$:=abs(small(@[$,2],@[$,2])-big(@[$,2],@[$,2]));
+-IF$<$THEN$:=$;
+-END;
+-END;
+-IF$>$THEN$:=$ELSE$:=$;
+-IF$=2THEN$:=4ELSE$:=1;
+-END;
+-BEGIN;$;$;
++BEGIN;;
  END;

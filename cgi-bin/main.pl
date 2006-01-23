@@ -102,7 +102,7 @@ sub contest_checkbox_params()
 {qw(
     free_registration run_all_tests
     show_all_tests show_test_resources show_checker_comment
-    is_official show_packages
+    is_official show_packages local_only
 )}
 
 
@@ -115,13 +115,13 @@ sub contest_string_params()
 sub get_contest_html_params
 {
     my $p = {};
-    
+
     $p->{$_} = scalar param($_) for contest_string_params();
     $p->{$_} = (param($_) || '') eq 'on' for contest_checkbox_params();
-    
+
     $p->{contest_name} ne '' && length $p->{contest_name} < 100
         or return msg(27);
-    
+
     $p;
 }
 
@@ -138,11 +138,11 @@ sub contests_new_save
           id, title, start_date, freeze_date, finish_date, defreeze_date, rules,
           ctype,
           closed, run_all_tests, show_all_tests,
-          show_test_resources, show_checker_comment, is_official, show_packages
+          show_test_resources, show_checker_comment, is_official, show_packages, local_only
         ) VALUES(
           ?, ?, CATS_TO_DATE(?), CATS_TO_DATE(?), CATS_TO_DATE(?), CATS_TO_DATE(?), ?,
           0,
-          ?, ?, ?, ?, ?, ?, ?)~,
+          ?, ?, ?, ?, ?, ?, ?, ?)~,
         {},
         $cid, @$p{contest_string_params()},
         @$p{contest_checkbox_params()}
@@ -182,7 +182,7 @@ sub try_contest_params_frame
           CATS_DATE(defreeze_date) AS open_date,
           1 - closed AS free_registration,
           run_all_tests, show_all_tests, show_test_resources, show_checker_comment,
-          is_official, show_packages, rules
+          is_official, show_packages, local_only, rules
         FROM contests WHERE id = ?~, { Slice => {} },
         $id
     );
@@ -195,7 +195,7 @@ sub try_contest_params_frame
         href_action => url_f('contests'),
         can_edit => (get_registered_contestant(fields => 'is_jury', contest_id => $id) ? 1 : 0),
     );
-    
+
     1;
 }
 
@@ -213,7 +213,8 @@ sub contests_edit_save
           title=?, start_date=CATS_TO_DATE(?), freeze_date=CATS_TO_DATE(?), 
           finish_date=CATS_TO_DATE(?), defreeze_date=CATS_TO_DATE(?), rules=?,
           closed=?, run_all_tests=?, show_all_tests=?,
-          show_test_resources=?, show_checker_comment=?, is_official=?, show_packages=?
+          show_test_resources=?, show_checker_comment=?, is_official=?, show_packages=?,
+          local_only=?
           WHERE id=?~,
         {},
         @$p{contest_string_params()},
@@ -1319,14 +1320,28 @@ sub problems_frame
     my $show_packages = 1;
     unless ($is_jury)
     {
-        (my $start_diff_time, $show_packages) = $dbh->selectrow_array(qq~
-            SELECT CATS_SYSDATE() - start_date, show_packages FROM contests WHERE id=?~,
+        (my $start_diff_time, $show_packages, my $local_only) = $dbh->selectrow_array(qq~
+            SELECT CATS_SYSDATE() - start_date, show_packages, local_only FROM contests WHERE id = ?~,
             {}, $cid);
-        if ($start_diff_time < 0) 
+        if ($start_diff_time < 0)
         {
-            init_template( 'main_problems_inaccessible.htm' );      
-            $t->param(problems_inaccessible => 1);
-            return;
+            init_template('main_problems_inaccessible.htm');
+            return msg(130);
+        }
+        if ($local_only)
+        {
+            my $is_remote;
+            if ($uid)
+            { 
+                ($is_remote) = $dbh->selectrow_array(qq~
+                    SELECT is_remote FROM contest_accounts WHERE contest_id = ? AND account_id = ?~,
+                    {}, $cid, $uid);
+            }
+            if(!defined $is_remote || $is_remote)
+            {
+                init_template('main_problems_inaccessible.htm');
+                return msg(129);
+            }
         }
     }
 
@@ -1454,7 +1469,7 @@ sub problems_frame
         # опять баг с порядком параметров
         $sth->execute($cid, $aid, $aid, $aid);
     }
-
+    
     my $fetch_record = sub($)
     {            
         my $c = $_[0]->fetchrow_hashref or return ();
@@ -1479,7 +1494,7 @@ sub problems_frame
             wa_count => $c->{wrong_answer_count},
             tle_count => $c->{time_limit_count},
             upload_date => $c->{upload_date},
-            last_modified_by => $c->{last_modified_by}
+            last_modified_by => $c->{last_modified_by},
         );
     };
             
@@ -1535,7 +1550,7 @@ sub users_new_frame
 
 sub user_param_names ()
 {
-    qw(login team_name captain_name email country motto home_page icq_number)
+    qw(login team_name capitan_name email country motto home_page icq_number)
 }
 
 
@@ -2025,83 +2040,41 @@ sub registration_frame {
 
 sub settings_save
 {
-    my $login = param('login');
-    my $team_name = param('team_name');
-    my $capitan_name = param('capitan_name');       
-    my $email = param('email');     
-    my $country = param('country'); 
-    my $motto = param('motto');
-    my $home_page = param('home_page');     
-    my $icq_number = param('icq_number');
-    my $set_password = (param('set_password') || '') eq 'on';
-    my $password1 = param('password1');
-    my $password2 = param('password2');
+    my %up = map { $_ => (param($_) || '') } user_param_names(), qw(password1 password2);
+    my $set_password = param('set_password') eq 'on';
 
-    unless ($login && length $login <= 100)
-    {
-        msg(101);
-        return;
-    }
+    user_validate_params(\%up, validate_password => $set_password) or return;
 
-    unless ($team_name && length $team_name <= 100)
-    {
-        msg(43);
-        return;
-    }
-
-    if (length $capitan_name > 100)
-    {
-        msg(45);
-        return;
-    }
-
-    if (length $motto > 500)
-    {
-        msg(44);
-        return;
-    }
-
-    if (length $home_page > 100)
-    {
-        msg(48);
-        return;
-    }
-
-    if (length $icq_number > 100)
-    {
-        msg(47);
-        return;
-    }
-
-    if ($dbh->selectrow_array(qq~SELECT COUNT(*) FROM accounts WHERE id<>? AND login=?~, {}, $uid, $login))
-    {
-        msg(103);
-        return;       
-    }
+    $dbh->selectrow_array(qq~
+        SELECT COUNT(*) FROM accounts WHERE id <> ? AND login = ?~, {}, $uid, $up{login}
+    ) and return msg(103);
  
-    $dbh->do(qq~UPDATE accounts SET login=?, team_name=?, capitan_name=?, country=?, motto=?, email=?, home_page=?, icq_number=?
-         WHERE id=?~, {}, $login, $team_name, $capitan_name, $country, $motto, $email, $home_page, $icq_number, $uid);
-
-    $dbh->commit;       
-
-
-    if ($set_password)
-    {        
-        if (length $password1 > 50)
-        {
-            msg(102);
-            return;
-        }
-
-        unless ($password1 eq $password2)
-        {
-            msg(33);
-            return;
-        }
-        
-        $dbh->do(qq~UPDATE accounts SET passwd=? WHERE id=?~, {}, $password1, $uid);
-        $dbh->commit; 
+    if ($set_password) {
+        $up{passwd} = $up{password1};
     }
+    delete @up{qw(password1 password2)};
+    $dbh->do(_u $sql->update('accounts', \%up, { id => $uid }));
+    $dbh->commit;
+ return;
+#    $dbh->do(qq~
+#        UPDATE accounts
+#            SET login = ?, team_name = ?, capitan_name = ?, country = ?,
+#                motto = ?, email = ?, home_page = ?, icq_number = ?
+#            WHERE id = ?~, {},
+#        @up{user_param_names()}, $uid);
+#    $dbh->commit;       
+#
+#    if ($set_password)
+#    {        
+#        $dbh->do(qq~UPDATE accounts SET passwd = ? WHERE id = ?~, {}, $up{password1}, $uid);
+#        $dbh->commit; 
+#    }
+ return;
+    my ($official_contest) = $dbh->selectrow_array(qq~
+        SELECT FIRST 1 C.title FROM contests C INNER JOIN contest_accounts CA ON CA.contest_id = C.id
+            WHERE C.is_official = 1 AND CA.is_ooc = 0 AND C.finish_date < CURRENT_TIMESTAMP AND A.id = ?~, undef,
+        $uid
+    );
 }
 
 
@@ -2857,7 +2830,7 @@ sub rank_get_problem_ids
     my $problems = $dbh->selectall_arrayref(qq~
         SELECT
             CP.id, CP.problem_id, CP.code, CP.contest_id, CATS_DATE(C.start_date) AS start_date,
-            C.start_date - CATS_SYSDATE() AS since_start, P.max_points, P.title
+            CATS_SYSDATE() - C.start_date AS since_start, C.local_only, P.max_points, P.title
         FROM
             contest_problems CP INNER JOIN contests C ON C.id = CP.contest_id
             INNER JOIN problems P ON P.id = CP.problem_id
@@ -2886,7 +2859,8 @@ sub rank_get_problem_ids
         {
             $contests[$#contests]->{count}++;
         }
-        $_->{title} = '' if $_->{since_start} < 0 && !$is_jury;
+        # оптимизация: не выводить tooltip в local_only турнирах, чтобы сэкономить запрос
+        $_->{title} = '' if ($_->{since_start} < 0 || $_->{local_only}) && !$is_jury;
         $_->{problem_text} = url_f('problem_text', cpid => $_->{id});
         if ($show_points && !$_->{max_points})
         {
@@ -3227,10 +3201,10 @@ sub download_image
 
     my $download_dir = './download';
 
-    my ($pic, $ext) = $dbh->selectrow_array(qq~SELECT pic, extension FROM pictures WHERE id=?~, {}, $id);
+    my ($pic, $ext) = $dbh->selectrow_array(qq~SELECT pic, extension FROM pictures WHERE id = ?~, {}, $id);
 
     my ($fh, $fname) = tempfile(
-        "img_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", 
+        "img_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
         DIR => $download_dir, SUFFIX => ".$ext");
 
     binmode(STDOUT, ':raw');
@@ -3269,54 +3243,67 @@ sub eh_1
 sub parse
 {
     my $xml_patch = shift;
-    
     my $parser = new XML::Parser::Expat;
 
-    $html_code = "";
+    $html_code = '';
 
     $parser->setHandlers(
         'Start' => \&sh_1,
         'End'   => \&eh_1,
         'Char'  => \&ch_1);
-                
+
     $parser->parse( "<p>$xml_patch</p>" );
-    return $html_code;    
+    return $html_code;
 }
 
 
 sub contest_visible 
-{  
+{
     return 1 if $is_jury;
-    my $contest_visible = 0;
 
     my $pid = url_param('pid');
     my $cpid = url_param('cpid');
 
+    my ($s, $t, $p) = ('', '', '');
     if (defined $pid)
     {
-        $contest_visible = $dbh->selectrow_array(qq~
-            SELECT CATS_SYSDATE() - B.start_date
-                FROM problems A, contests B 
-                WHERE A.id=? AND B.id = A.contest_id~, {}, $pid) > 0;
+        $s = 'INNER JOIN problems P ON C.id = P.contest_id';
+        $t = 'P';
+        $p = $pid;
     }
     elsif (defined $cpid)
     {
-        $contest_visible = $dbh->selectrow_array(qq~
-            SELECT CATS_SYSDATE() - B.start_date
-                FROM contest_problems A, contests B 
-                WHERE A.id=? AND B.id = A.contest_id~, {}, $cpid) > 0;
-    
+        $s = 'INNER JOIN contest_problems CP ON C.id = CP.contest_id';
+        $t = 'CP';
+        $p = $cpid;
     }
     elsif (defined $cid)
     {
-        $contest_visible = $dbh->selectrow_array(qq~
-            SELECT CATS_SYSDATE() - A.start_date
-                FROM contests A
-                WHERE A.id=?~, {}, $cid) > 0;
-    }
+        $s = '';
+        $t = 'C';
+        $p = $cid;
+    }    
 
-    init_template('main_access_denied.htm') if !$contest_visible;
-    return $contest_visible;
+    my ($since_start, $local_only, $orig_cid) = $dbh->selectrow_array(qq~
+        SELECT CATS_SYSDATE() - C.start_date, C.local_only, C.id
+            FROM contests C $s WHERE $t.id = ?~,
+        {}, $p);
+    if ($since_start > 0)
+    {
+        $local_only or return 1;
+        my $is_remote;
+        if (defined $uid)
+        {
+            ($is_remote) = $dbh->selectrow_array(q~
+                SELECT C.is_remote FROM contests C
+                    INNER JOIN contest_accounts CA ON C.id = CA.contest_id
+                    WHERE CA.account_id = ?~,
+                {}, $uid);
+        }
+        return 1 if defined $is_remote && $is_remote == 0;
+    }
+    init_template('main_access_denied.htm');
+    return 0;
 }    
 
 

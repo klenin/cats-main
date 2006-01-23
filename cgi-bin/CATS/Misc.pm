@@ -38,11 +38,13 @@ BEGIN
         generate_count_query
         balance_brackets
         balance_tags
+        _u
     );
 
         
-    @EXPORT_OK = qw( $dbh @messages $t $sid $cid $lng $uid $team_name $server_time $contest_title $dbi_error $is_practice
-                    $is_root $is_team $is_jury $is_virtual $virtual_diff_time $contest_elapsed_minutes $additional $search);
+    @EXPORT_OK = qw(
+        $dbh $sql @messages $t $sid $cid $lng $uid $team_name $server_time $contest_title $dbi_error $is_practice
+        $is_root $is_team $is_jury $is_virtual $virtual_diff_time $contest_elapsed_minutes $additional $search);
 
     %EXPORT_TAGS = ( all => [ @EXPORT, @EXPORT_OK ] );
 }
@@ -56,13 +58,14 @@ use Text::Balanced qw(extract_tagged extract_bracketed);
 use CGI::Util qw( rearrange unescape escape );
 use MIME::Base64;
 #use FCGI;
+use SQL::Abstract;
 
 use CATS::Constants;
 use CATS::Connect;
 use CATS::IP;
 use CATS::Diff;
 use vars qw(
-    $dbh @messages $t $sid $cid $lng $uid $team_name $server_time $contest_title $dbi_error $is_practice
+    $dbh $sql @messages $t $sid $cid $lng $uid $team_name $server_time $contest_title $dbi_error $is_practice
     $is_root $is_team $is_jury $is_virtual $virtual_diff_time $contest_elapsed_minutes
     $listview_name $listview_array_name $col_defs $sort $sort_dir $search $page $visible $additional
 );
@@ -116,6 +119,9 @@ sub http_header
 }
 
 
+sub _u { splice(@_, 1, 0, { Slice => {} }); @_; }
+
+
 sub sql_connect 
 {
     $dbh = DBI->connect(
@@ -139,6 +145,8 @@ sub sql_connect
         
         0;
     };
+    
+    $sql = SQL::Abstract->new;
 }
 
 
@@ -384,7 +392,7 @@ sub attach_listview {
         if ($f) {
             if ($row_count >= $start_row && $row_count < $start_row + $visible) 
             {
-                push @data, { %h };
+                push @data, { %h, odd => $row_count % 2 };
             }
             $row_count++;
         }          
@@ -420,7 +428,7 @@ sub attach_listview {
 
     my @display_rows = ();
 
-    foreach ( @cats::display_rows )
+    for ( @cats::display_rows )
     {
         push @display_rows, { 
             is_current => ( $visible == $_ ),
