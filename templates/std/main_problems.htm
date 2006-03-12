@@ -63,15 +63,18 @@ function r() {
 <table border=0 width=100% cellpadding=2 cellspacing=1 class=bordered>
 <TMPL_IF is_team>
 <tr bgcolor=#ccccff>
+<th width="1%">&nbsp;</th>
 <TMPL_INCLUDE 'includes/listview_col_defs.inc'>
 </tr>   
 </TMPL_IF>
 <TMPL_LOOP problems>
 <tr <TMPL_IF odd>bgcolor=#f4f4f4<TMPL_ELSE>bgcolor=#ffffff</TMPL_IF>>
-<td>
     <TMPL_IF is_team>
+<td width="1%">
     <input type="radio" name="problem_id" value="<TMPL_VAR problem_id>"<TMPL_IF disabled> disabled="disabled"</TMPL_IF> />
+</td>
     </TMPL_IF>
+<td>
     <a href="<TMPL_VAR href_view_problem>" target="_blank"><TMPL_VAR problem_name ESCAPE=HTML></a>
     <TMPL_IF show_packages>&nbsp;<a href="<TMPL_VAR href_download>">[пакет]</a></TMPL_IF>
 </td>

@@ -249,17 +249,17 @@ sub init_template
 {
     my $file_name = shift;
 
-    my $utf8_encode = sub {
-    
+    my $utf8_encode = sub
+    {
         my $text_ref = shift;
 
         Encode::from_to($$text_ref, 'koi8-r', 'utf-8');
         #$$text_ref = Encode::decode('koi8-r', $$text_ref);
     };
-    
-    $t = HTML::Template->new( 
-        filename => templates_path()."/".$file_name, cache => 1,
-        die_on_bad_params => 0, filter => $utf8_encode, loop_context_vars => 1 );
+
+    $t = HTML::Template->new(
+        filename => templates_path() . "/$file_name", cache => 1,
+        die_on_bad_params => 0, filter => $utf8_encode, loop_context_vars => 1);
 }
 
 
@@ -352,41 +352,48 @@ sub url_f
 }
 
 
-sub attach_listview {
- 
-    my( $url, $fetch_row, $c, $sort_columns ) = @_;
+sub attach_listview
+{
+    my ($url, $fetch_row, $c, $sort_columns, $p) = @_;
     my @data = ();
     my $row_count = 0;
-    my $start_row = ($page || 0) * ($visible || 0);       
+    my $start_row = ($page || 0) * ($visible || 0);
+    my $pp = $p->{page_params} || {};
+    my $page_extra_params = join '', map "\&$_=$pp->{$_}", keys %$pp;
 
     my $mask = undef;
     for (split(',', $search)) {
-	if ($_ =~ /(.*)\=(.*)/) {
-	    $mask = {} unless defined $mask;		
-	    $mask->{$1} = $2;
+        if ($_ =~ /(.*)\=(.*)/) {
+            $mask = {} unless defined $mask;		
+            $mask->{$1} = $2;
         }
     }
     
-    while ( my %h = &$fetch_row($c) )
+    while (my %h = &$fetch_row($c))
     {            
         my $f = 1;
-        if ($search) {                                       
-            $f = 0; 
-	    if (defined $mask) {
-	        $f = 1;
-		for (keys %$mask) {
-		    if ($h{$_} ne $mask->{$_}) {
-			$f = 0;
-			last;
-		    }
-		}
-	    }
-	    else {
-                for ( keys %h  ) {   		
-
-        	    $f = 1 if (defined $h{ $_ } && index( $h{ $_ }, $search ) != -1 );
+        if ($search)
+        {
+            $f = 0;
+            if (defined $mask)
+            {
+                $f = 1;
+                for (keys %$mask)
+                {
+                    if ($h{$_} ne $mask->{$_})
+                    {
+                        $f = 0;
+                        last;
+                    }
                 }
-	    }
+	        }
+            else
+            {
+                for (keys %h)
+                {
+                    $f = 1 if defined $h{$_} && index($h{$_}, $search) != -1;
+                }
+            }
         }
 
         if ($f) {
@@ -397,8 +404,8 @@ sub attach_listview {
             $row_count++;
         }          
 	
-	last if ($row_count > $cats::max_fetch_row_count);
-    };
+	    last if ($row_count > $cats::max_fetch_row_count);
+    }
 
     my $page_count = int( $row_count / $visible ) + ( $row_count % $visible ? 1 : 0 ) || 1;
  
@@ -409,29 +416,24 @@ sub attach_listview {
     my $range_end = $range_start + $cats::visible_pages - 1;
     $range_end = $page_count - 1 if ($range_end > $page_count - 1);
 
-    my @pages = ();
+    my @pages = map {{
+        page_number => $_ + 1,
+        href_page => "$url&page=$_$page_extra_params",
+        current_page => $_ == $page
+    }} ($range_start..$range_end);
 
-    for ($range_start..$range_end)
-    {
-        push @pages, { 
-            page_number => $_ + 1,
-            href_page => $url . "&page=$_",
-            current_page => $_ == $page
-        };
-    }
- 
-    
-    $t->param( page => $page,
+    $t->param(
+        page => $page,
         pages => [@pages],
         search => $search
     );
 
     my @display_rows = ();
 
-    for ( @cats::display_rows )
+    for (@cats::display_rows)
     {
         push @display_rows, { 
-            is_current => ( $visible == $_ ),
+            is_current => ($visible == $_),
             count => $_,
             text => $_
         };
@@ -439,18 +441,17 @@ sub attach_listview {
 
     if ($range_start > 0)
     {
-        $t->param( href_prev_pages => $url.'&page='.($range_start - 1));
+        $t->param( href_prev_pages => "$url$page_extra_params&page=" . ($range_start - 1));
     }
 
     if ($range_end < $page_count - 1)
     {
-        $t->param( href_next_pages => $url.'&page='.($range_end + 1));
+        $t->param( href_next_pages => "$url$page_extra_params&page=" . ($range_end + 1));
     }     
 
     $t->param( display_rows => [ @display_rows ] );
     $t->param( $listview_array_name => [@data] );
 }
-
 
 
 sub order_by

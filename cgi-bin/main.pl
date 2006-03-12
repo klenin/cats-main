@@ -479,6 +479,14 @@ sub russian ($)
     Encode::decode('KOI8-R', $_[0]);
 }
 
+
+sub get_anonymous_uid
+{
+    scalar $dbh->selectrow_array(qq~
+        SELECT id FROM accounts WHERE login = ?~, undef, $cats::anonymous_login);
+}
+
+
 sub console_read_time_interval
 {
     my ($v, $u) = init_console_listview_additionals;
@@ -591,21 +599,12 @@ sub console
         ~,
     );
 
-    my $my_events_only = url_param('my');
-    for ($my_events_only)
-    {
-        $_ = '' if !defined $_;
-        /[01]/ or $_ = !$is_jury;
-    }
-    my $events_filter = '';
-    my @events_filter_params = ();
-    if ($my_events_only)
-    {
-        $events_filter = 'AND A.id = ?';
-        @events_filter_params = $uid ? ($uid) :
-            $dbh->selectrow_array(qq~
-                SELECT id FROM accounts WHERE login=?~, {}, $cats::anonymous_login);
-    }
+    my $user_filter =
+      sprintf('%d', url_param('uf') || 0) ||
+      ($is_jury ? 0 : ($uid || get_anonymous_uid()));
+
+    my $events_filter = $user_filter ? 'AND A.id = ?' : '';
+    my @events_filter_params = $user_filter ? ($user_filter) : ();
 
     my $c;
     if ($is_jury)
@@ -646,10 +645,15 @@ sub console
         $c = $dbh->prepare(qq~
             SELECT
                 $console_select{run}
-                FROM reqs R, problems P, accounts A, contests C, dummy_table D, contest_accounts CA
+                FROM
+                    reqs R
+                    INNER JOIN problems P ON R.problem_id = P.id
+                    INNER JOIN accounts A ON R.account_id = A.id
+                    INNER JOIN contests C ON C.id = R.contest_id
+                    INNER JOIN contest_accounts CA ON C.id = CA.contest_id AND CA.account_id = A.id
+                    ,dummy_table D
                 WHERE (R.submit_time > CATS_SYSDATE() - $day_count) AND
-                    R.problem_id=P.id AND R.contest_id=C.id AND C.id=? AND R.account_id=A.id AND
-                    CA.account_id=A.id AND CA.contest_id=C.id AND CA.is_hidden=0 AND
+                    C.id=? AND CA.is_hidden=0 AND
                     (A.id=? OR (R.submit_time < C.freeze_date OR CATS_SYSDATE() > C.defreeze_date))
                 $events_filter
             UNION
@@ -742,7 +746,7 @@ sub console
         );
     };
             
-    attach_listview(url_f('console'), $fetch_console_record, $c);
+    attach_listview(url_f('console'), $fetch_console_record, $c, undef, {page_params => { uf => $user_filter }});
       
     $c->finish;
 
@@ -770,9 +774,8 @@ sub console
     }
 
     $t->param(
-        my_events_only => $my_events_only,
-        href_my_events_only => url_f('console', my => 1),
-        href_all_events => url_f('console', my => 0),
+        href_my_events_only => url_f('console', uf => $uid),
+        href_all_events => url_f('console', uf => 0),
     );
     my $s = $t->output;
     init_template($template_name);
@@ -842,9 +845,8 @@ sub console_frame
         }
     }
 
-    my $my_events_only = url_param('my');
     $t->param(
-        href_console_content => url_f('console_content', my => $my_events_only),
+        href_console_content => url_f('console_content', uf => url_param('uf') || ''),
         is_team => $is_team,
         is_jury => $is_jury,
         question_text => $question_text,
@@ -2998,6 +3000,7 @@ sub rank_table
         ($team->{country}, $team->{flag}) = get_flag($_->{country});
         my %init_problem = (runs => 0, time_consumed => 0, solved => 0, points => undef);
         $team->{problems} = { map { $_ => { %init_problem } } @p_id };
+        $team->{href_console} = url_f('console', uf => $team->{account_id});
     }
 
     my $results = rank_get_results($frozen, $contest_list, $virtual_cond . $ooc_cond);

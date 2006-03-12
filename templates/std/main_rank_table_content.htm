@@ -58,8 +58,7 @@
     <TMPL_VAR NAME=country ESCAPE=HTML><TMPL_IF motto> - <TMPL_VAR motto ESCAPE=HTML></TMPL_IF>
 </TMPL_IF>    
 -->
-<td>
-<TMPL_VAR team_name ESCAPE=HTML></td>
+<td><a href="<TMPL_VAR href_console>"><TMPL_VAR team_name ESCAPE=HTML></a></td>
 <TMPL_IF show_points>
   <TMPL_LOOP columns><td align=center><TMPL_VAR points></td></TMPL_LOOP>
 <TMPL_ELSE>

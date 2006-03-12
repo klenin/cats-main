@@ -64,6 +64,7 @@ CREATE TABLE contests (
     show_checker_comment INTEGER DEFAULT 0 CHECK (show_checker_comment IN (0, 1)),
     show_packages        INTEGER DEFAULT 0 CHECK (show_packages IN (0, 1)),
     rules                INTEGER DEFAULT 0, /* правила: 0 - ACM, 1 - школьные */
+    local_only           SMALLINT DEFAULT 0 CHECK (local_only IN (0, 1)),
 
     CHECK (
         start_date <= finish_date AND freeze_date >= start_date
@@ -211,6 +212,8 @@ CREATE TABLE reqs (
     received    INTEGER DEFAULT 0 CHECK (received IN (0, 1)),
     points      INTEGER
 );
+CREATE DESCENDING INDEX idx_reqs_submit_time ON reqs(submit_time);
+
 
 CREATE TABLE req_details
 (
@@ -224,12 +227,14 @@ CREATE TABLE req_details
   
   UNIQUE(req_id, test_rank)
 );
+
                 
 CREATE TABLE log_dumps (
     id      INTEGER NOT NULL PRIMARY KEY,
     dump    BLOB,
     req_id  INTEGER REFERENCES reqs(id) ON DELETE CASCADE 
 );
+
 
 CREATE TABLE sources (
     req_id  INTEGER NOT NULL REFERENCES reqs(id) ON DELETE CASCADE,
@@ -238,16 +243,6 @@ CREATE TABLE sources (
     fname   VARCHAR(200)        
 );
 
-CREATE TABLE contest_photos (
-    id          INTEGER NOT NULL PRIMARY KEY,
-    contest_id  INTEGER NOT NULL REFERENCES contests(id) ON DELETE CASCADE,
-    comment     VARCHAR(200),
-    photo_preview   BLOB,
-    photo       BLOB,
-    photo_preview_type  VARCHAR(20),
-    photo_type  VARCHAR(20),
-    upload_time TIMESTAMP
-);
 
 CREATE TABLE keywords (
     id          INTEGER NOT NULL PRIMARY KEY,
@@ -255,6 +250,7 @@ CREATE TABLE keywords (
     name_en     VARCHAR(200),
     code        VARCHAR(200)
 );
+
 
 CREATE TABLE problem_keywords (
     problem_id  INTEGER NOT NULL REFERENCES problems(id) ON DELETE CASCADE,

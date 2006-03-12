@@ -13,10 +13,10 @@
 <TMPL_IF current_page>
 <TMPL_VAR page_number> 
 <TMPL_ELSE>
-<a href='<TMPL_VAR href_page>'><TMPL_VAR page_number></a> 
+<a href="<TMPL_VAR href_page>"><TMPL_VAR page_number></a> 
 </TMPL_IF>
 </TMPL_LOOP>
-<TMPL_IF href_next_pages><a href='<TMPL_VAR href_next_pages>'>&gt;&gt;</a></TMPL_IF>
+<TMPL_IF href_next_pages><a href="<TMPL_VAR href_next_pages>">&gt;&gt;</a></TMPL_IF>
 </td>
 <td width=20% align=center>
 выбирать
@@ -31,7 +31,7 @@
 </TMPL_LOOP>
 </select>
 
-<TMPL_IF my_events_only><a href="<TMPL_VAR href_all_events>">все</a>
+<TMPL_IF user_filter><a href="<TMPL_VAR href_all_events>">все</a>
 <TMPL_ELSE><a href="<TMPL_VAR href_my_events_only>">мои</a></TMPL_IF>
 </td>
 <td align=right width=20% nowrap>
