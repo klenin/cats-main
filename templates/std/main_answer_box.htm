@@ -7,6 +7,7 @@
 <TMPL_UNLESS clarified>
 <form method=post enctype='multipart/form-data'>
 <TMPL_VAR team_name ESCAPE=HTML>, <TMPL_VAR submit_time><br>
+<TMPL_IF answer><br/>Получен ответ:<TMPL_VAR answer><br/><br/></TMPL_IF>
 <table cellpadding=3 cellspacing=2>
 <input type=text size=70 readonly value='<TMPL_VAR question_text ESCAPE=HTML>' class=bordered>
 <br>

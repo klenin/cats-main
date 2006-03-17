@@ -345,7 +345,7 @@ sub authenticated_contests_view ()
           (SELECT is_virtual FROM contest_accounts WHERE contest_id=contests.id AND account_id=?) AS is_virtual,
           (SELECT is_jury FROM contest_accounts WHERE contest_id=contests.id AND account_id=?) AS is_jury,
           closed, is_official, rules
-        FROM contests ~.order_by);
+        FROM contests ~ . order_by);
     $sth->execute($uid, $uid, $uid);
 
     my $fetch_contest = sub($) 
@@ -651,7 +651,7 @@ sub console
                     INNER JOIN accounts A ON R.account_id = A.id
                     INNER JOIN contests C ON C.id = R.contest_id
                     INNER JOIN contest_accounts CA ON C.id = CA.contest_id AND CA.account_id = A.id
-                    ,dummy_table D
+                    , dummy_table D
                 WHERE (R.submit_time > CATS_SYSDATE() - $day_count) AND
                     C.id=? AND CA.is_hidden=0 AND
                     (A.id=? OR (R.submit_time < C.freeze_date OR CATS_SYSDATE() > C.defreeze_date))
@@ -729,6 +729,7 @@ sub console
             href_details => (
                 ($uid && $team_id && $uid == $team_id) ? url_f('run_details', rid => $id) : ''
             ),
+            href_delete =>          $is_root ? url_f('console', delete_question => $id) : undef,
             href_answer_box =>      $is_jury ? url_f('answer_box', qid => $id) : undef,
             href_send_message_box =>$is_jury ? url_f('send_message_box', caid => $caid) : undef,
             'time' =>               $submit_time,
@@ -812,6 +813,7 @@ sub send_question_to_jury
     $s->execute;
     $s->finish;
     $dbh->commit;
+    1;
 }
 
 
@@ -829,6 +831,15 @@ sub retest_submissions
 }
 
 
+sub delete_question
+{
+    my ($qid) = @_;
+    $is_root or return;
+    $dbh->do(qq~DELETE FROM questions WHERE id = ?~, undef, $qid);
+    $dbh->commit;
+}
+
+
 sub console_frame
 {        
     init_listview_template("console$cid" . ($uid || ''), 'console', 'main_console.htm');  
@@ -837,12 +848,23 @@ sub console_frame
     my $question_text = param('question_text');
     my $selection = param('selection');
    
+    if (my $qid = param('delete_question'))
+    {
+        delete_question($qid);
+    }
+    
     if (defined param('retest'))
     {
         if (retest_submissions($selection))
         {
             $selection = '';
         }
+    }
+
+    if (defined param('send_question'))
+    {
+        send_question_to_jury($question_text)
+            and $question_text = '';
     }
 
     $t->param(
@@ -857,10 +879,6 @@ sub console_frame
         href_diff => url_f('diff_runs'),
     );
     
-    if (defined param('send_question'))
-    {
-        send_question_to_jury($question_text);
-    }
 }
 
 
@@ -1144,20 +1162,21 @@ sub problems_submit
     {
         my ($time_since_start, $time_since_finish, $is_official, $status) = $dbh->selectrow_array(qq~
             SELECT
-              CATS_SYSDATE() - $virtual_diff_time - C.start_date,
-              CATS_SYSDATE() - $virtual_diff_time - C.finish_date,
-              C.is_official, CP.status
+                CATS_SYSDATE() - $virtual_diff_time - C.start_date,
+                CATS_SYSDATE() - $virtual_diff_time - C.finish_date,
+                C.is_official, CP.status
             FROM contests C, contest_problems CP
             WHERE CP.contest_id = C.id AND C.id = ? AND CP.problem_id = ?~, {},
             $cid, $pid);
-        
+
         $time_since_start >= 0
             or return msg(80);
-        $time_since_finish <= 0  
+        $time_since_finish <= 0
             or return msg(81);
         !defined $status || $status < $cats::problem_st_disabled
             or return msg(124);
-        
+
+        # во время официального турнира отправка заданий во все остальные временно прекращается
         unless ($is_official && !$is_virtual)
         {
             my ($current_official) = $dbh->selectrow_array(qq~
@@ -1168,6 +1187,23 @@ sub problems_submit
         }
     }
     
+    my $submit_uid = $uid;
+    if (!defined $submit_uid && $is_practice)
+    {
+        $submit_uid = get_anonymous_uid();
+    }
+
+    # Защита от Denial of Service -- запрещаем посылать решения слишком часто
+    my $prev = $dbh->selectcol_arrayref(qq~
+        SELECT FIRST 2 CATS_SYSDATE() - R.submit_time FROM reqs R
+        WHERE R.account_id = ?
+        ORDER BY R.submit_time DESC~, {},
+        $submit_uid);
+    my $SECONDS_PER_DAY = 24*60*60;
+    if (($prev->[0] || 1) < 3/$SECONDS_PER_DAY || ($prev->[1] || 1) < 60/$SECONDS_PER_DAY)
+    {
+        return msg(131);
+    }
     my $src = '';
 
     my ($br, $buffer);
@@ -1177,49 +1213,49 @@ sub problems_submit
             or return msg(10);
         $src .= $buffer;
     }
-    
+
     $src ne '' or return msg(11);
 
-    my $did;
+    # Защита от спама и случайных ошибок -- запрещаем повторяющийся исходный код.
+    my $source_hash = source_hash($src);
+    my ($same_source) = $dbh->selectrow_array(qq~
+        SELECT FIRST 1 S.req_id
+        FROM sources S INNER JOIN reqs R ON S.req_id = R.id
+        WHERE R.account_id = ? AND R.problem_id = ? AND R.contest_id = ? AND S.hash = ?~, {},
+        $submit_uid, $pid, $cid, $source_hash);
+    $same_source and return msg(132);
 
-    if ( param('de_id') eq 'by_extension' )
+    my $did = param('de_id');
+
+    if (param('de_id') eq 'by_extension')
     {
         ($did, my $de_name) = get_source_de($file);
-        
-        defined $did or return msg(13);
-        
-        $t->param( de_name => $de_name );
-    }
-    else
-    {
-        $did = param('de_id');
+        defined $did
+            or return msg(13);
+        $t->param(de_name => $de_name);
     }
 
     my $rid = new_id;
     
-    my $submit_uid = $uid;
-    if (!defined $submit_uid && $is_practice)
-    {
-        $submit_uid = $dbh->selectrow_array(qq~
-            SELECT id FROM accounts WHERE login=?~, {}, $cats::anonymous_login);
-    }
-
     $dbh->do(qq~
         INSERT INTO reqs(
-          id, account_id, problem_id, contest_id, 
-          submit_time, test_time, result_time, state, received
+            id, account_id, problem_id, contest_id, 
+            submit_time, test_time, result_time, state, received
         ) VALUES(
-          ?,?,?,?,CATS_SYSDATE(),CATS_SYSDATE(),CATS_SYSDATE(),?,?)~,
-        {}, $rid, $submit_uid, $pid, $cid, $cats::st_not_processed, 0);
+            ?,?,?,?,CATS_SYSDATE(),CATS_SYSDATE(),CATS_SYSDATE(),?,?)~,
+        {},
+        $rid, $submit_uid, $pid, $cid, $cats::st_not_processed, 0);
     
-    my $s = $dbh->prepare(qq~INSERT INTO sources(req_id, de_id, src, fname) VALUES (?,?,?,?)~ );
+    my $s = $dbh->prepare(qq~
+        INSERT INTO sources(req_id, de_id, src, fname, hash) VALUES (?,?,?,?,?)~);
     $s->bind_param(1, $rid);
     $s->bind_param(2, $did);
     $s->bind_param(3, $src, { ora_type => 113 } ); # blob
     $s->bind_param(4, "$file");
+    $s->bind_param(5, $source_hash);
     $s->execute;
-
     $dbh->commit;
+
     $t->param(solution_submitted => 1, href_console => url_f('console'));
     msg(15);
 }
@@ -1230,17 +1266,15 @@ sub problems_submit_std_solution
 {
     my $pid = param('problem_id');
 
-    unless (defined $pid)
-    {
-        msg(12);
-        return;
-    }
+    defined $pid
+        or return msg(12);
 
     my $ok = 0;
     
-    my $c = $dbh->prepare(qq~SELECT src, de_id, fname 
-                            FROM problem_sources 
-                            WHERE problem_id=? AND (stype=? OR stype=?)~);
+    my $c = $dbh->prepare(qq~
+        SELECT src, de_id, fname 
+        FROM problem_sources 
+        WHERE problem_id = ? AND (stype = ? OR stype = ?)~);
     $c->execute($pid, $cats::solution, $cats::adv_solution);
 
     while (my ($src, $did, $fname) = $c->fetchrow_array)
@@ -1477,9 +1511,11 @@ sub problems_frame
         my $c = $_[0]->fetchrow_hashref or return ();
         $c->{status} ||= 0;
         return (
-            href_delete   => url_f('problems', delete => $c->{cpid}),
+            href_delete   => url_f('problems', 'delete' => $c->{cpid}),
             href_replace  => url_f('problems', replace => $c->{cpid}),
             href_download => url_f('problems', download => $c->{pid}),
+            href_original_contest =>
+                url_function('problems', sid => $sid, cid => $c->{original_contest_id}, set_contest => 1),
             show_packages => $show_packages,
             is_practice => $is_practice,
             editable => $is_jury,
@@ -2495,21 +2531,28 @@ sub answer_box_frame
 
     my $qid = url_param('qid');
 
-    my $caid = $dbh->selectrow_array(qq~SELECT account_id FROM questions WHERE id=?~, {}, $qid);
-    my $aid = $dbh->selectrow_array(qq~SELECT account_id FROM contest_accounts WHERE id=?~, {}, $caid);
-    my $team_name = $dbh->selectrow_array(qq~SELECT login FROM accounts WHERE id=?~, {}, $aid);
+    my $r = $dbh->selectrow_hashref(qq~
+        SELECT
+            Q.account_id AS caid, CA.account_id AS aid, A.login,
+            CATS_DATE(Q.submit_time) AS submit_time, Q.question, Q.clarified, Q.answer
+        FROM questions Q
+            INNER JOIN contest_accounts CA ON CA.id = Q.account_id
+            INNER JOIN accounts A ON A.id = CA.account_id
+        WHERE Q.id = ?~, { Slice => {} },
+        $qid);
 
     $t->param(team_name => $team_name);
 
-    if (defined param('clarify'))
+    if (defined param('clarify') && (my $a = param('answer_text')))
     {
-        my $answer_text = param('answer_text');
+        $r->{answer} ||= '';
+        $r->{answer} .=  " $a";
 
         my $s = $dbh->prepare(qq~
             UPDATE questions
-                SET clarification_time=CATS_SYSDATE(), answer=?, received=0, clarified=1
+                SET clarification_time = CATS_SYSDATE(), answer = ?, received = 0, clarified = 1
                 WHERE id = ?~);
-        $s->bind_param(1, $answer_text, { ora_type => 113 } );
+        $s->bind_param(1, $r->{answer}, { ora_type => 113 } );
         $s->bind_param(2, $qid);
         $s->execute;
         $dbh->commit;
@@ -2517,11 +2560,10 @@ sub answer_box_frame
     }
     else
     {
-        my ($submit_time, $question_text) = 
-            $dbh->selectrow_array(qq~
-                SELECT CATS_DATE(submit_time), question FROM questions WHERE id=?~, {}, $qid);
-    
-        $t->param(submit_time => $submit_time, question_text => $question_text);
+        $t->param(
+            submit_time => $r->{submit_time},
+            question_text => $r->{question},
+            answer => $r->{answer});
     }
 }
 

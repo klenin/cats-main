@@ -240,7 +240,8 @@ CREATE TABLE sources (
     req_id  INTEGER NOT NULL REFERENCES reqs(id) ON DELETE CASCADE,
     de_id   INTEGER NOT NULL REFERENCES default_de(id) ON DELETE CASCADE,
     src     BLOB,
-    fname   VARCHAR(200)        
+    fname   VARCHAR(200),
+    hash    CHAR(32) /* md5_hex */
 );
 
 

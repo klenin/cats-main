@@ -39,6 +39,7 @@ BEGIN
         balance_brackets
         balance_tags
         _u
+        source_hash
     );
 
         
@@ -59,6 +60,7 @@ use CGI::Util qw( rearrange unescape escape );
 use MIME::Base64;
 #use FCGI;
 use SQL::Abstract;
+use Digest::MD5;
 
 use CATS::Constants;
 use CATS::Connect;
@@ -340,11 +342,19 @@ sub msg
 }
 
 
+sub gen_url_params
+{
+    my (%p) = @_;
+    map { defined $p{$_} ? "$_=$p{$_}" : () } keys %p;
+}
+
+
 sub url_function
 {
   my ($f, %p) = @_;
-  join '&', "main.pl?f=$f", map { defined $p{$_} ? "$_=$p{$_}" : () } keys %p;
+  join '&', "main.pl?f=$f", gen_url_params(%p);
 }
+
 
 sub url_f
 {
@@ -866,6 +876,12 @@ sub balance_tags
     my ($text, $tag1, $tag2) = @_;
     my @extr = extract_tagged ($text, $tag1, $tag2, undef);
     $extr[0];
+}
+
+
+sub source_hash
+{
+    Digest::MD5::md5_hex($_[0]);
 }
 
 

@@ -20,7 +20,7 @@
 	</TMPL_IF>
     </td>
     <td class=small><b>
-        <TMPL_VAR problem_title> -     
+        <TMPL_VAR problem_title> -
         <TMPL_IF not_processed><font color="#008000">Not processed</font></TMPL_IF>
         <TMPL_IF install_processing><font color="#a0a000">Processing</font></TMPL_IF>
         <TMPL_IF unhandled_error><font color="#a00000">Unhandled error</font></TMPL_IF>
@@ -47,11 +47,12 @@
         <i><TMPL_VAR question_text ESCAPE=HTML></i> - 
         <TMPL_UNLESS clarified>
         <TMPL_IF href_answer_box>
-        <a href="<TMPL_VAR href_answer_box>" target="_blank" class='small'>[написать ответ]</a>
+        <a href="<TMPL_VAR href_answer_box>" target="_blank" class="small">[ответить]</a>
         </TMPL_IF>
         <TMPL_ELSE>
         <font color=red><TMPL_VAR answer_text ESCAPE=HTML></font>
         </TMPL_UNLESS>
+        <TMPL_IF href_delete><a href="<TMPL_VAR href_delete>" class="small">[удалить]</a></TMPL_IF>
     </td>
 </TMPL_IF>
 
