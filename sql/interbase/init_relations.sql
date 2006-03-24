@@ -106,7 +106,8 @@ CREATE TABLE problems (
     output_format   BLOB,
     zip_archive     BLOB,
     last_modified_by INTEGER REFERENCES accounts(id) ON DELETE SET NULL ON UPDATE CASCADE,
-    max_points      INTEGER
+    max_points      INTEGER,
+    hash            VARCHAR(200)
 );
 
 

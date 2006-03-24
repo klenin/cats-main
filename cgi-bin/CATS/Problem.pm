@@ -277,7 +277,7 @@ sub problem_update
                 input_file=?, output_file=?, 
                 statement=?, pconstraints=?, input_format=?, output_format=?, 
                 zip_archive=?, upload_date=CATS_SYSDATE(), std_checker=?, last_modified_by=?,
-                max_points=?
+                max_points=?, hash=NULL
             WHERE id = ?~
         );
 
@@ -1002,7 +1002,7 @@ sub import_problem
         verify_test_order;
     };
 
-    print $@;
+    #print $@;
     
     my $res;    
     if ($@ eq '') {
@@ -1020,5 +1020,3 @@ sub import_problem
 }
 
 1;
-
-

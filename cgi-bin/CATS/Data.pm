@@ -2,6 +2,7 @@ package CATS::Data;
 use strict;
 use warnings;
 
+use Encode;
 use CATS::Misc qw(:all);
 
 BEGIN
@@ -181,6 +182,7 @@ sub get_contests_info
         $frozen ||= $since_freeze > 0 && $since_defreeze < 0;
         $not_started ||= $since_start < 0 && !$registered;
         $show_points ||= $rules;
+        $title = Encode::decode_utf8($title);
         for ($title_prefix)
         {
             $_ = $title, last if !defined $_;

@@ -1088,8 +1088,9 @@ sub problems_replace_direct
       msg(117);
       return;
     }
+
     my ($st, $import_log) = CATS::Problem::import_problem($fname, $cid, $pid, 1);
-    $import_log = Encode::encode_utf8( escape_html($import_log) );  
+    $import_log = Encode::encode_utf8(escape_html($import_log));
     $t->param(problem_import_log => $import_log);
 
     $st ? $dbh->rollback : $dbh->commit;
@@ -1099,26 +1100,35 @@ sub problems_replace_direct
 
 sub download_problem
 {
-    $t = undef;
+    undef $t;
 
     my $download_dir = './download';
 
     my $pid = param('download');
+    # Если hash уже есть, то файл не вытаскиваем, а выдаём ссылку на имеющийся
+    my ($hash) = $dbh->selectrow_array(qq~
+        SELECT hash FROM problems WHERE id = ?~, undef, $pid);
+    my $fname;
+    if (!$hash)
+    {
+        (my $fh, $fname) = tempfile( 
+            'problem_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
+            DIR => $download_dir, SUFFIX => '.zip');
+        my ($zip) = $dbh->selectrow_array(qq~
+            SELECT zip_archive FROM problems WHERE id = ?~, undef, $pid);
+        syswrite($fh, $zip, length($zip));    
+        close $fh;
+        ($hash) = ($fname =~ /problem_(.{32})\.zip/);
+        $dbh->do(q~UPDATE problems SET hash = ? WHERE id = ?~, undef, $hash, $pid);
+        $dbh->commit;
+    }
+    else
+    {
+        $fname = "$download_dir/problem_$hash.zip";
+    }
 
-    my ($fh, $fname) = tempfile( 
-        'problem_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX', 
-        DIR => $download_dir, SUFFIX => ".zip"  );
-
-    my ($zip) = 
-        $dbh->selectrow_array(qq~SELECT zip_archive FROM problems WHERE id=?~, {}, $pid);
-
-    syswrite($fh, $zip, length($zip));    
-
-    close $fh;
-    
-    print redirect(-uri=> "$fname");
+    print redirect(-uri => $fname);
 }
-
 
 
 sub get_source_de
