@@ -143,11 +143,20 @@ CREATE TABLE problem_sources (
     src     BLOB,
     fname   VARCHAR(200),
     input_file  VARCHAR(200),
-    output_file VARCHAR(200)
+    output_file VARCHAR(200),
+    guid    VARCHAR(100) /* уникальный идентификатор программы */
 );
 ALTER TABLE problem_sources
   ADD CONSTRAINT chk_problem_sources_1 CHECK (0 <= stype AND stype <= 6);
 
+CREATE TABLE problem_sources_import
+(
+    problem_id INTEGER NOT NULL REFERENCES problems(id),
+    /* ссылка на problems.guid, constraint отстутвует, чтобы упростить обновление исходной задачи */
+    guid VARCHAR(100) NOT NULL,
+    PRIMARY KEY (problem_id, guid)
+);
+            
 CREATE TABLE pictures (
     problem_id  INTEGER REFERENCES problems(id) ON DELETE CASCADE,
     name    VARCHAR(30) NOT NULL,

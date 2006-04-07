@@ -133,7 +133,7 @@ sub sql_connect
     
     if (!defined $dbh) 
     {  
-        fatal_error('Failed connection to SQL-server');
+        fatal_error("Failed connection to SQL-server $DBI::errstr");
     }
     
 

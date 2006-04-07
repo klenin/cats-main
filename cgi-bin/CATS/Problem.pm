@@ -445,7 +445,8 @@ sub parse_problem_content
             'id' => $id,
             read_member_named(name => $atts{'src'}, kind => 'solution'),
             'de_code' => $atts{'de_code'},
-            'checkup' => $atts{'checkup'}       
+            'guid' => $atts{export},
+            'checkup' => $atts{'checkup'},
         )
     }
 
@@ -465,6 +466,7 @@ sub parse_problem_content
             'id' => new_id,
             read_member_named(name => $atts{'src'}, kind => 'checker'),
             'de_code' => $atts{'de_code'},
+            'guid' => $atts{export},
             'style' => $style
         )
     }
@@ -486,10 +488,11 @@ sub parse_problem_content
         for ($atts{'from'} .. $atts{'to'})
         {
             $generator_range{'elements'}->{$_} = { create_generator(
-                name => interpolate_rank($atts{'name'}, $_),
-                src => interpolate_rank($atts{'src'}, $_),
-                de_code => $atts{'de_code'},
-                'outputFile' => $atts{'outputFile'},
+                name => interpolate_rank($atts{name}, $_),
+                src => interpolate_rank($atts{src}, $_),
+                guid => interpolate_rank($atts{export}, $_),
+                de_code => $atts{de_code},
+                outputFile => $atts{outputFile},
             ) };
         }
     }
@@ -509,6 +512,7 @@ sub parse_problem_content
             'id' => new_id,
             read_member_named(name => $atts{'src'}, kind => 'module'),
             'de_code' => $atts{'de_code'},
+            'guid' => $atts{export},
             'type' => $atts{'type'},
             'type_code' => $types->{$atts{'type'}},
         );
@@ -677,8 +681,8 @@ sub insert_problem_source
   
     my $c = $dbh->prepare(qq~
         INSERT INTO problem_sources (
-            id, problem_id, de_id, src, fname, stype, input_file, output_file
-        ) VALUES (?,?,?,?,?,?,?,?)~);
+            id, problem_id, de_id, src, fname, stype, input_file, output_file, guid
+        ) VALUES (?,?,?,?,?,?,?,?,?)~);
 
     $c->bind_param(1, $s->{'id'});
     $c->bind_param(2, $pid);
@@ -688,6 +692,7 @@ sub insert_problem_source
     $c->bind_param(6, $p{source_type});
     $c->bind_param(7, $s->{'inputFile'});
     $c->bind_param(8, $s->{'outputFile'});
+    $c->bind_param(9, $s->{'guid'});
     $c->execute;
 }
 
