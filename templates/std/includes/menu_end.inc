@@ -17,7 +17,7 @@
 		</td>
 		<td align=right>
         <a href="./docs/" class="signed">документация</a> | 
-        <a href="<TMPL_VAR url_authors>" class=signed>&copy; 2005 Авторы</a>&nbsp;</td>
+        <a href="<TMPL_VAR url_authors>" class=signed>&copy; 2002-2006 Авторы</a>&nbsp;</td>
 	    </tr>
 	</table>
     </td>

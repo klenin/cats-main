@@ -52,7 +52,7 @@ CREATE TABLE contests (
     freeze_date   TIMESTAMP,
     defreeze_date TIMESTAMP,    
     closed        INTEGER DEFAULT 0 CHECK (closed IN (0, 1)),
-    history       INTEGER DEFAULT 0 CHECK (history IN (0, 1)),
+    is_hidden     SMALLINT DEFAULT 0 CHECK (is_hidden IN (0, 1)),
     penalty       INTEGER,
     ctype         INTEGER, /* 0 -- normal, 1 -- training session */
 

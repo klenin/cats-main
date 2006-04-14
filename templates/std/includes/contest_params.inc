@@ -18,6 +18,7 @@
   <tr><td>Официальный турнир:</td><td><input type="checkbox" name="is_official"<TMPL_IF is_official>checked="checked"</TMPL_IF> <TMPL_UNLESS can_edit>disabled="disabled"</TMPL_UNLESS>/></td></tr>
   <tr><td>Запускать все тесты:</td><td><input type="checkbox" name="run_all_tests"<TMPL_IF run_all_tests>checked="checked"</TMPL_IF> <TMPL_UNLESS can_edit>disabled="disabled"</TMPL_UNLESS>/></td></tr>
   <tr><td>Только локальные участники:</td><td><input type="checkbox" name="local_only"<TMPL_IF local_only>checked="checked"</TMPL_IF> <TMPL_UNLESS can_edit>disabled="disabled"</TMPL_UNLESS>/></td></tr>
+  <tr><td>Скрытый:</td><td><input type="checkbox" name="is_hidden"<TMPL_IF is_hidden>checked="checked"</TMPL_IF> <TMPL_UNLESS can_edit>disabled="disabled"</TMPL_UNLESS>/></td></tr>
 </table>
 <br/>
 Показывать участникам

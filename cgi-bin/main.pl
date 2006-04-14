@@ -102,7 +102,7 @@ sub contest_checkbox_params()
 {qw(
     free_registration run_all_tests
     show_all_tests show_test_resources show_checker_comment
-    is_official show_packages local_only
+    is_official show_packages local_only is_hidden
 )}
 
 
@@ -138,11 +138,12 @@ sub contests_new_save
           id, title, start_date, freeze_date, finish_date, defreeze_date, rules,
           ctype,
           closed, run_all_tests, show_all_tests,
-          show_test_resources, show_checker_comment, is_official, show_packages, local_only
+          show_test_resources, show_checker_comment, is_official, show_packages, local_only,
+          is_hidden
         ) VALUES(
           ?, ?, CATS_TO_DATE(?), CATS_TO_DATE(?), CATS_TO_DATE(?), CATS_TO_DATE(?), ?,
           0,
-          ?, ?, ?, ?, ?, ?, ?, ?)~,
+          ?, ?, ?, ?, ?, ?, ?, ?, ?)~,
         {},
         $cid, @$p{contest_string_params()},
         @$p{contest_checkbox_params()}
@@ -182,11 +183,11 @@ sub try_contest_params_frame
           CATS_DATE(defreeze_date) AS open_date,
           1 - closed AS free_registration,
           run_all_tests, show_all_tests, show_test_resources, show_checker_comment,
-          is_official, show_packages, local_only, rules
+          is_official, show_packages, local_only, rules, is_hidden
         FROM contests WHERE id = ?~, { Slice => {} },
         $id
     );
-    # Ask: наверное, на самом деле надо исправить CATS_DATE
+    # наверное, на самом деле надо исправить CATS_DATE
     for (qw(start_date freeze_date finish_date open_date)) {
         $p->{$_} =~ s/\s*$//;
     }
@@ -214,7 +215,7 @@ sub contests_edit_save
           finish_date=CATS_TO_DATE(?), defreeze_date=CATS_TO_DATE(?), rules=?,
           closed=?, run_all_tests=?, show_all_tests=?,
           show_test_resources=?, show_checker_comment=?, is_official=?, show_packages=?,
-          local_only=?
+          local_only=?, is_hidden=?
           WHERE id=?~,
         {},
         @$p{contest_string_params()},
@@ -339,14 +340,28 @@ sub common_contests_view ($)
 
 sub authenticated_contests_view ()
 {
+    my $contest_fields =qq~
+        c.ctype, c.id, c.title, c.start_date AS sd, c.finish_date AS fd,
+        CATS_DATE(c.start_date) AS start_date, CATS_DATE(c.finish_date) AS finish_date,
+        c.closed, c.is_official, c.rules~;
+    my $is_hidden = 'c.is_hidden = 0 OR c.is_hidden IS NULL';
     my $sth = $dbh->prepare(qq~
-        SELECT id, title, CATS_DATE(start_date) AS start_date, CATS_DATE(finish_date) AS finish_date, 
-          (SELECT COUNT(*) FROM contest_accounts WHERE contest_id=contests.id AND account_id=?) AS registered,
-          (SELECT is_virtual FROM contest_accounts WHERE contest_id=contests.id AND account_id=?) AS is_virtual,
-          (SELECT is_jury FROM contest_accounts WHERE contest_id=contests.id AND account_id=?) AS is_jury,
-          closed, is_official, rules
-        FROM contests ~ . order_by);
-    $sth->execute($uid, $uid, $uid);
+        SELECT
+            $contest_fields, ca.is_virtual, ca.is_jury, 1 AS registered
+        FROM contests c INNER JOIN contest_accounts ca ON ca.contest_id = c.id
+        WHERE ca.account_id = ? AND ($is_hidden OR ca.is_jury = 1)
+        UNION
+        SELECT
+            $contest_fields, 0, 0, 0
+        FROM contests c
+        WHERE NOT EXISTS (
+            SELECT id FROM contest_accounts WHERE contest_id = c.id AND account_id = ?) AND ($is_hidden)
+        ~ . order_by);
+    $sth->execute($uid, $uid); #, $uid, $uid);
+#          (SELECT COUNT(*) FROM contest_accounts WHERE contest_id=contests.id AND account_id=?) AS registered,
+#          (SELECT is_virtual FROM contest_accounts WHERE contest_id=contests.id AND account_id=?) AS is_virtual,
+#          (SELECT is_jury FROM contest_accounts WHERE contest_id=contests.id AND account_id=?) AS is_jury,
+#          closed, is_official, rules
 
     my $fetch_contest = sub($) 
     {
@@ -371,7 +386,8 @@ sub anonymous_contests_view ()
         SELECT id, title, closed, is_official, rules,
           CATS_DATE(start_date) AS start_date,
           CATS_DATE(finish_date) AS finish_date
-          FROM contests ~.order_by
+          FROM contests
+          WHERE is_hidden = 0 OR is_hidden IS NULL ~.order_by
     );
     $sth->execute;
 
@@ -438,10 +454,10 @@ sub contests_frame
     }
 
     define_columns(url_f('contests'), 1, 1, [
-        { caption => res_str(601), order_by => 'ctype DESC, title',       width => '40%' },
-        { caption => res_str(600), order_by => 'ctype DESC, start_date',  width => '20%' },
-        { caption => res_str(631), order_by => 'ctype DESC, finish_date', width => '20%' },
-        { caption => res_str(630), order_by => 'ctype DESC, closed',      width => '20%' } ]);
+        { caption => res_str(601), order_by => '1 DESC, 2', width => '40%' },
+        { caption => res_str(600), order_by => '1 DESC, 4', width => '20%' },
+        { caption => res_str(631), order_by => '1 DESC, 5', width => '20%' },
+        { caption => res_str(630), order_by => '1 DESC, 8', width => '20%' } ]);
 
     attach_listview(url_f('contests'),
         defined $uid ? authenticated_contests_view : anonymous_contests_view);
