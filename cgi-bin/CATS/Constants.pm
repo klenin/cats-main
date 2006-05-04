@@ -39,6 +39,14 @@ $solution_module = 5;
 $checker_module = 6;
 $testlib_checker = 7;
 
+# типы модулей для исходников
+%source_modules = (
+    $generator => $generator_module,
+    $solution => $solution_module,
+    $checker => $checker_module,
+    $testlib_checker => $checker_module,
+);
+
 # состояние запроса в очереди
 $st_not_processed = 0;
 $st_unhandled_error = 1;

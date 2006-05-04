@@ -2,6 +2,7 @@ package CATS::Problem;
 
 #use lib '..';
 use strict;
+use warnings;
 use Encode;
 
 use CATS::Constants;
@@ -32,6 +33,7 @@ my ($stml,
     %test_rank_array,
     %sample_rank_array,
     %keyword,
+    %tag_import,
     $statement,
     $constraints,
     $inputformat,
@@ -45,6 +47,11 @@ my %stml_tags = (
     'OutputFormat' => \$outputformat 
 );
 
+my $module_types = {
+  'checker' => $cats::checker_module,
+  'solution' => $cats::solution_module,
+  'generator' => $cats::generator_module,
+};
 
 sub note($)
 {
@@ -97,8 +104,8 @@ sub text
 }
 
 
-sub read_member {
-    
+sub read_member
+{
     my $member = shift;
 
     my ($data, $status, $buffer) = "";
@@ -140,19 +147,30 @@ sub stml_text
 }
 
 
+sub user_checker_found
+{
+    if (defined $user_checker)
+    {
+        error "Found several checkers\n";
+    }
+    $user_checker = 1;
+}
+
+
 sub parse_problem
 {
     my ($p, $el, %atts) = @_;
 
-    if ($stml) { 
+    if ($stml)
+    {
         start_stml_element($stml, $el, %atts); 
         return; 
-    }        
-        
-    if (defined $stml_tags{$el}) { 
-        $stml = $stml_tags{$el}; 
     }
 
+    if (defined $stml_tags{$el})
+    {
+        $stml = $stml_tags{$el};
+    }
     
     if ($el eq 'Problem')
     {
@@ -174,14 +192,6 @@ sub parse_problem
             'max_points' => $atts{'maxPoints'}
         );
     }
-    elsif ($el eq 'Checker')
-    {
-        if (defined $user_checker) {
-            error "Found several checkers\n";
-        }
-
-        $user_checker = 1;
-    }    
 }
 
 
@@ -229,28 +239,14 @@ sub problem_insert
                 ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CATS_SYSDATE(),?,?,?
             )~
         );
-        
+
         my $i = 1;
         $c->bind_param($i++, $pid);
         problem_bind($c, $i);
         $c->execute;
 
-        my $std_checker = $problem{'std_checker'};
-        if (defined $user_checker && defined $std_checker)
-        {
-            error "User checker and standart checker specified\n";
-        }
-
-        if (!defined $user_checker && !defined $std_checker)
-        {
-            error "No checker specified\n";
-        }
-
-        if (defined $problem{'std_checker'}) {
-            note "Checker: $problem{'std_checker'}\n";
-        }
     }
-} 
+}
 
 
 sub problem_update
@@ -267,6 +263,7 @@ sub problem_update
         $dbh->do(qq~DELETE FROM samples WHERE problem_id=?~, {}, $pid) &&
         $dbh->do(qq~DELETE FROM tests WHERE problem_id=?~, {}, $pid) && 
         $dbh->do(qq~DELETE FROM problem_sources WHERE problem_id=?~, {}, $pid) &&
+        $dbh->do(qq~DELETE FROM problem_sources_import WHERE problem_id=?~, {}, $pid) &&
         $dbh->do(qq~DELETE FROM problem_keywords WHERE problem_id=?~, {}, $pid) ||
            error "Couldn't update problem\n";
     
@@ -285,21 +282,6 @@ sub problem_update
         problem_bind($c, $i);
         $c->bind_param($i++, $pid);
         $c->execute;
-
-        my $std_checker = $problem{'std_checker'};
-        if (defined $user_checker && defined $std_checker)
-        {
-            error "User checker and standart checker specified\n";
-        }
-
-        if (!defined $user_checker && !defined $std_checker)
-        {
-            error "No checker specified\n";
-        }
-
-        if (defined $problem{'std_checker'}) {
-            note "Checker: $problem{'std_checker'}\n";
-        }    
     }
 } 
 
@@ -457,11 +439,12 @@ sub parse_problem_content
         my $style = $atts{'style'} || 'legacy';
         for ($style)
         {
-            /^legacy$/ && do { note "WARNING: Legacy checker found!\n"; last; };
+            /^legacy$/ && do { warning "Legacy checker found!\n"; last; };
             /^testlib$/ && last;
             error "Unknown checker style (must be either 'legacy' or 'testlib')\n";
         }
         
+        user_checker_found();
         %checker = (    
             'id' => new_id,
             read_member_named(name => $atts{'src'}, kind => 'checker'),
@@ -501,12 +484,7 @@ sub parse_problem_content
     {
         required_attributes($el, \%atts, ['src', 'de_code', 'type']);
 
-        my $types = {
-          'checker' => $cats::checker_module,
-          'solution' => $cats::solution_module,
-          'generator' => $cats::generator_module,
-        };
-        exists $types->{$atts{'type'}}
+        exists $module_types->{$atts{'type'}}
             or error "Unknown module type: $atts{'type'}\n";
         %module = (
             'id' => new_id,
@@ -514,8 +492,21 @@ sub parse_problem_content
             'de_code' => $atts{'de_code'},
             'guid' => $atts{export},
             'type' => $atts{'type'},
-            'type_code' => $types->{$atts{'type'}},
+            'type_code' => $module_types->{$atts{'type'}},
         );
+    }
+
+    if ($el eq 'Import')
+    {
+        required_attributes($el, \%atts, ['guid']);
+        %tag_import = (guid => $atts{guid});
+        my $t = $atts{type};
+        if (defined $t)
+        {
+            exists $module_types->{$t}
+                or error "Unknown import source type: $t\n";
+            $tag_import{type} = $module_types->{$t};
+        }
     }
 
     if ($el eq 'Test')
@@ -645,15 +636,15 @@ sub parse_problem_content
     if ($el eq 'SampleIn')
     {
         $sample{'in'} = 1;
-        $sample{'in_file'} = "";
+        $sample{'in_file'} = '';
     }
 
     if ($el eq 'SampleOut')
     {
         $sample{'out'} = 1;
-        $sample{'out_file'} = "";
+        $sample{'out_file'} = '';
     }
-    
+
     if ($el eq 'Keyword')
     {
         %keyword = ('code' => $atts{'code'});
@@ -665,20 +656,31 @@ sub problem_content_text
 {
     my ($p, $text) = @_;
 
-    if ($sample{'in'}) {
+    if ($sample{'in'})
+    {
         $sample{'in_file'} .= $text;
     }
 
-    if ($sample{'out'}) {
+    if ($sample{'out'})
+    {
         $sample{'out_file'} .= $text;
-    }       
+    }
 }
 
 sub insert_problem_source
 {
     my %p = @_;
     my $s = $p{source_object} or die;
-  
+
+    if ($s->{'guid'})
+    {
+        if (my $dup_id = $dbh->selectrow_array(qq~
+            SELECT problem_id FROM problem_sources WHERE guid = ?~, undef, $s->{'guid'})
+        )
+        {
+            warning "Duplicate guid with problem $dup_id\n";
+        }
+    }
     my $c = $dbh->prepare(qq~
         INSERT INTO problem_sources (
             id, problem_id, de_id, src, fname, stype, input_file, output_file, guid
@@ -694,6 +696,9 @@ sub insert_problem_source
     $c->bind_param(8, $s->{'outputFile'});
     $c->bind_param(9, $s->{'guid'});
     $c->execute;
+
+    my $g = $s->{guid} ? ", guid=$s->{guid}" : '';
+    note "$p{type_name} '$s->{path}' added$g\n";
 }
 
 
@@ -701,55 +706,79 @@ sub insert_problem_content
 {
     my ($p, $el) = @_;
 
-    if ($el eq 'Generator')
+    if ($el eq 'Problem')
     {
-        insert_problem_source(source_object => \%generator, source_type => $cats::generator);
+        my $std_checker = $problem{'std_checker'};
+        !defined $user_checker || !defined $std_checker
+            or error "User checker and standart checker specified\n";
 
-        note "Generator '$generator{'path'}' added\n";
+        defined $user_checker || defined $std_checker
+            or error "No checker specified\n";
+
+        note "Checker: $problem{'std_checker'}\n" if $std_checker;
+    }
+    elsif ($el eq 'Generator')
+    {
+        insert_problem_source(
+            source_object => \%generator, source_type => $cats::generator, type_name => 'Generator');
         %generator = ();
     }
-    if ($el eq 'GeneratorRange')
+    elsif ($el eq 'GeneratorRange')
     {
         for (values %{$generator_range{'elements'}})
         {
-            insert_problem_source(source_object => $_, source_type => $cats::generator);
-            note "Generator '$_->{'path'}' added\n";
+            insert_problem_source(
+                source_object => $_, source_type => $cats::generator, type_name => 'Generator');
         }
         %generator_range = ();
     }
-
-    if ($el eq 'Solution')
+    elsif ($el eq 'Solution')
     {
         insert_problem_source(
-            source_object => \%solution,
-            source_type => (defined $solution{'checkup'} && $solution{'checkup'} == 1) ?
-                $cats::adv_solution : $cats::solution
-        );
-
-        note "Solution '$solution{'path'}' added\n";
+            source_object => \%solution, type_name => 'Solution',
+            source_type =>
+                defined $solution{'checkup'} && $solution{'checkup'} == 1 ?
+                $cats::adv_solution : $cats::solution);
         %solution = ();
     }
-
-    if ($el eq 'Checker')
+    elsif ($el eq 'Checker')
     {
         insert_problem_source(
-            source_object => \%checker,
+            source_object => \%checker, type_name => 'Checker',
             source_type => ($checker{style} eq 'legacy' ? $cats::checker : $cats::testlib_checker)
         );
-
-        note "Checker '$checker{'path'}' added\n";
         %checker = ();
     }
-
-    if ($el eq 'Module')
+    elsif ($el eq 'Module')
     {
-        insert_problem_source(source_object => \%module, source_type => $module{'type_code'});
-
-        note "Module '$module{'path'}' for $module{'type'} added\n";
+        insert_problem_source(
+            source_object => \%module, source_type => $module{'type_code'},
+            type_name => "Module for $module{type}");
         %module = ();
     }
-
-    if ($el eq 'Picture')
+    elsif ($el eq 'Import')
+    {
+        $dbh->do(q~
+            INSERT INTO problem_sources_import (problem_id, guid) VALUES (?, ?)~, undef,
+            $pid, $tag_import{guid});
+        my ($src_id, $stype) = $dbh->selectrow_array(qq~
+            SELECT id, stype FROM problem_sources WHERE guid = ?~, undef, $tag_import{guid});
+        if ($src_id)
+        {
+            if ($tag_import{type})
+            {
+                $stype == $tag_import{type} || $cats::source_modules{$stype} == $tag_import{type}
+                    or error "Import type check failed for guid='$tag_import{guid}' ($tag_import{type} vs $stype)\n";
+            }
+            user_checker_found() if $stype == $cats::checker || $stype == $cats::testlib_checker;
+            note "Imported source from guid='$tag_import{guid}'\n";
+        }
+        else
+        {
+            warning "Import source not found for guid='$tag_import{guid}'\n";
+        }
+    }
+    elsif ($el eq 'Picture')
     {
         my $c = $dbh->prepare(qq~
             INSERT INTO pictures(id, problem_id, extension, name, pic)
@@ -765,8 +794,7 @@ sub insert_problem_content
         note "Picture '$picture{'path'}' added\n";
         %picture = ();
     }
-
-    if ($el eq 'Test')
+    elsif ($el eq 'Test')
     {
         my $c = $dbh->prepare(qq~
             INSERT INTO tests (
@@ -790,8 +818,7 @@ sub insert_problem_content
         note "Test $test{'rank'} added\n";
         %test = ();
     }
-
-    if ($el eq 'TestRange')
+    elsif ($el eq 'TestRange')
     {
         for my $rank ($test_range{from}..$test_range{to})
         {
@@ -839,18 +866,15 @@ sub insert_problem_content
         }
         %test_range = ();
     }
-
-    if ($el eq 'SampleIn')
+    elsif ($el eq 'SampleIn')
     {
         delete $sample{'in'};
     }
-
-    if ($el eq 'SampleOut')
+    elsif ($el eq 'SampleOut')
     {
         delete $sample{'out'};
     }
-
-    if ($el eq 'Sample')
+    elsif ($el eq 'Sample')
     {
         my $c = $dbh->prepare(qq~
             INSERT INTO samples (problem_id, rank, in_file, out_file)
@@ -867,8 +891,7 @@ sub insert_problem_content
 
         %sample = ();
     }
-    
-    if ($el eq 'Keyword')
+    elsif ($el eq 'Keyword')
     {
         my ($keyword_id) = $dbh->selectrow_array(q~
             SELECT id FROM keywords WHERE code = ?~, undef, $keyword{code});
@@ -1003,12 +1026,11 @@ sub import_problem
                     'Char'  => \&problem_content_text);
         $parser->parse($xml_doc);
 
-
         verify_test_order;
     };
 
     #print $@;
-    
+
     my $res;    
     if ($@ eq '') {
         $dbh->commit;

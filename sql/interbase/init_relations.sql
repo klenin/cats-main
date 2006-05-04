@@ -122,7 +122,7 @@ CREATE TABLE contest_problems (
 
 
 CREATE TABLE training_problems (
-    id      INTEGER NOT NULL PRIMARY KEY,
+    id          INTEGER NOT NULL PRIMARY KEY,
     problem_id  INTEGER NOT NULL REFERENCES problems(id) ON DELETE CASCADE,
     account_id  INTEGER NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,   
     UNIQUE(problem_id, account_id)
@@ -136,41 +136,42 @@ CREATE TABLE training_problems (
 
 
 CREATE TABLE problem_sources (
-    id      INTEGER NOT NULL PRIMARY KEY,
-    stype   INTEGER,
+    id          INTEGER NOT NULL PRIMARY KEY,
+    stype       INTEGER,
     problem_id  INTEGER REFERENCES problems(id) ON DELETE CASCADE,
-    de_id   INTEGER NOT NULL REFERENCES default_de(id) ON DELETE CASCADE,
-    src     BLOB,
-    fname   VARCHAR(200),
+    de_id       INTEGER NOT NULL REFERENCES default_de(id) ON DELETE CASCADE,
+    src         BLOB,
+    fname       VARCHAR(200),
     input_file  VARCHAR(200),
     output_file VARCHAR(200),
-    guid    VARCHAR(100) /* уникальный идентификатор программы */
+    guid        VARCHAR(100) /* уникальный идентификатор программы */
 );
 ALTER TABLE problem_sources
   ADD CONSTRAINT chk_problem_sources_1 CHECK (0 <= stype AND stype <= 6);
+CREATE INDEX ps_guid_idx ON problem_sources (guid);
 
 CREATE TABLE problem_sources_import
 (
-    problem_id INTEGER NOT NULL REFERENCES problems(id),
+    problem_id  INTEGER NOT NULL REFERENCES problems(id) ON DELETE CASCADE,
     /* ссылка на problems.guid, constraint отстутвует, чтобы упростить обновление исходной задачи */
-    guid VARCHAR(100) NOT NULL,
+    guid        VARCHAR(100) NOT NULL,
     PRIMARY KEY (problem_id, guid)
 );
             
 CREATE TABLE pictures (
     problem_id  INTEGER REFERENCES problems(id) ON DELETE CASCADE,
-    name    VARCHAR(30) NOT NULL,
+    name        VARCHAR(30) NOT NULL,
     extension   VARCHAR(20),
-    pic     BLOB
+    pic         BLOB
 );
 
 
 CREATE TABLE tests (
     problem_id      INTEGER REFERENCES problems(id) ON DELETE CASCADE,
     rank            INTEGER CHECK (rank > 0),
-    generator_id    INTEGER DEFAULT NULL REFERENCES problem_sources(id),
+    generator_id    INTEGER DEFAULT NULL REFERENCES problem_sources(id) ON DELETE CASCASE,
     param           VARCHAR(200) DEFAULT NULL,
-    std_solution_id INTEGER DEFAULT NULL REFERENCES problem_sources(id),
+    std_solution_id INTEGER DEFAULT NULL REFERENCES problem_sources(id) ON DELETE CASCADE,
     in_file         BLOB,
     out_file        BLOB,
     points          INTEGER
@@ -179,19 +180,19 @@ CREATE TABLE tests (
 
 CREATE TABLE samples (
     problem_id      INTEGER REFERENCES problems(id) ON DELETE CASCADE,
-    rank        INTEGER CHECK (rank > 0),
-    in_file     BLOB,
+    rank            INTEGER CHECK (rank > 0),
+    in_file         BLOB,
     out_file        BLOB
 );
 
 
 CREATE TABLE questions (
-    id      INTEGER NOT NULL PRIMARY KEY,
+    id          INTEGER NOT NULL PRIMARY KEY,
     clarified   INTEGER DEFAULT 0 CHECK (clarified IN (0, 1)),
     submit_time TIMESTAMP,
     clarification_time  TIMESTAMP,    
     question    BLOB,
-    answer  BLOB,
+    answer      BLOB,
     account_id  INTEGER REFERENCES contest_accounts(id) ON DELETE CASCADE,
     received    INTEGER DEFAULT 0 CHECK (received IN (0, 1))
 );
@@ -208,7 +209,7 @@ CREATE TABLE messages (
 
 
 CREATE TABLE reqs (
-    id      INTEGER NOT NULL PRIMARY KEY,
+    id          INTEGER NOT NULL PRIMARY KEY,
     account_id  INTEGER NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
     problem_id  INTEGER NOT NULL REFERENCES problems(id) ON DELETE CASCADE,
     contest_id  INTEGER REFERENCES contests(id) ON DELETE CASCADE,

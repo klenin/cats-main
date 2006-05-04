@@ -338,30 +338,29 @@ sub common_contests_view ($)
     );
 }
 
+
+sub contest_fields ()
+{
+    qq~c.ctype, c.id, c.title, c.start_date AS sd, c.finish_date AS fd,
+    CATS_DATE(c.start_date) AS start_date, CATS_DATE(c.finish_date) AS finish_date,
+    c.closed, c.is_official, c.rules~
+}
+
 sub authenticated_contests_view ()
 {
-    my $contest_fields =qq~
-        c.ctype, c.id, c.title, c.start_date AS sd, c.finish_date AS fd,
-        CATS_DATE(c.start_date) AS start_date, CATS_DATE(c.finish_date) AS finish_date,
-        c.closed, c.is_official, c.rules~;
+    my $cf = contest_fields();
     my $is_hidden = 'c.is_hidden = 0 OR c.is_hidden IS NULL';
     my $sth = $dbh->prepare(qq~
         SELECT
-            $contest_fields, ca.is_virtual, ca.is_jury, 1 AS registered
+            $cf, ca.is_virtual, ca.is_jury, 1 AS registered
         FROM contests c INNER JOIN contest_accounts ca ON ca.contest_id = c.id
         WHERE ca.account_id = ? AND ($is_hidden OR ca.is_jury = 1)
         UNION
-        SELECT
-            $contest_fields, 0, 0, 0
-        FROM contests c
+        SELECT $cf, 0, 0, 0 FROM contests c
         WHERE NOT EXISTS (
             SELECT id FROM contest_accounts WHERE contest_id = c.id AND account_id = ?) AND ($is_hidden)
         ~ . order_by);
-    $sth->execute($uid, $uid); #, $uid, $uid);
-#          (SELECT COUNT(*) FROM contest_accounts WHERE contest_id=contests.id AND account_id=?) AS registered,
-#          (SELECT is_virtual FROM contest_accounts WHERE contest_id=contests.id AND account_id=?) AS is_virtual,
-#          (SELECT is_jury FROM contest_accounts WHERE contest_id=contests.id AND account_id=?) AS is_jury,
-#          closed, is_official, rules
+    $sth->execute($uid, $uid);
 
     my $fetch_contest = sub($) 
     {
@@ -382,12 +381,10 @@ sub authenticated_contests_view ()
 
 sub anonymous_contests_view ()
 {
+    my $cf = contest_fields();
     my $sth = $dbh->prepare(qq~
-        SELECT id, title, closed, is_official, rules,
-          CATS_DATE(start_date) AS start_date,
-          CATS_DATE(finish_date) AS finish_date
-          FROM contests
-          WHERE is_hidden = 0 OR is_hidden IS NULL ~.order_by
+        SELECT $cf FROM contests c
+          WHERE is_hidden = 0 OR is_hidden IS NULL ~ . order_by
     );
     $sth->execute;
 
