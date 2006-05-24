@@ -1,0 +1,20 @@
+--- /tmp/ykUVdDsZgH	Wed May 10 17:57:55 2006
++++ /tmp/qnIrxHvK34	Wed May 10 17:57:55 2006
+@@ -1,13 +1,7 @@
+ ;
+-BEGIN;$:=0;$:=1;
+-WHILE($-$)>$DOBEGIN;$:=$+1;$:=$*2;
+-END;$:=0;$:=1;
+-WHILE($-$)>$DOBEGIN;$:=$+1;$:=$*2;
+-END;$:=abs($-$);
+-IF$>$THENBEGIN;$:=$\(2*$);
+-END;
+-IF$>$THENBEGIN;$:=$\(2*$);
+-END;
+-WHILE$<>$DOBEGIN;$:=$\2;$:=$\2;
++PROGRAM$;
++BEGIN;
++WHILE$<>$DOBEGIN;
++IF($>$)AND($%2=0)THEN$:=$\2ELSEIF($>$)THEN$:=($-1)\2ELSEIF($>$)AND($%2=0)THEN$:=$\2ELSE$:=($-1)\2;
+ END;
+ END;

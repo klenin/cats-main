@@ -363,9 +363,9 @@ sub interpolate_rank { apply_test_rank(@_); }
 sub apply_test_rank
 {
     my ($v, $rank) = @_;
+    $v ||= '';
     $v =~ s/%n/$rank/g;
     $v =~ s/%0n/sprintf("%02d", $rank)/eg;
-
     $v;
 }
 

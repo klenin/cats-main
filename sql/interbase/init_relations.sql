@@ -121,19 +121,10 @@ CREATE TABLE contest_problems (
 );
 
 
-CREATE TABLE training_problems (
-    id          INTEGER NOT NULL PRIMARY KEY,
-    problem_id  INTEGER NOT NULL REFERENCES problems(id) ON DELETE CASCADE,
-    account_id  INTEGER NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,   
-    UNIQUE(problem_id, account_id)
-);
-
-
 -- stype = 0 - test generator
 -- stype = 1 - solution
 -- stype = 2 - checker
 -- stype = 3 - standart solution (используется для проверки набора тестов)
-
 
 CREATE TABLE problem_sources (
     id          INTEGER NOT NULL PRIMARY KEY,

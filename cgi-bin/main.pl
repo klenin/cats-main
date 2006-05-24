@@ -117,7 +117,7 @@ sub get_contest_html_params
     my $p = {};
 
     $p->{$_} = scalar param($_) for contest_string_params();
-    $p->{$_} = (param($_) || '') eq 'on' for contest_checkbox_params();
+    $p->{$_} = param_on($_) for contest_checkbox_params();
 
     $p->{contest_name} ne '' && length $p->{contest_name} < 100
         or return msg(27);
@@ -541,8 +541,8 @@ sub console
     my %console_select = (
         run => q~
             1 AS rtype,
-            R.submit_time AS rank,  
-            CATS_DATE(R.submit_time) AS submit_time, 
+            R.submit_time AS rank,
+            CATS_DATE(R.submit_time) AS submit_time,
             R.id AS id,
             R.state AS request_state,
             R.failed_test AS failed_test,
@@ -559,7 +559,7 @@ sub console
         question => q~
             2 AS rtype,
             Q.submit_time AS rank,
-            CATS_DATE(Q.submit_time) AS submit_time,  
+            CATS_DATE(Q.submit_time) AS submit_time,
             Q.id AS id,
             CAST(NULL AS INTEGER) AS request_state,
             CAST(NULL AS INTEGER) AS failed_test,
@@ -576,7 +576,7 @@ sub console
         message => q~
             3 AS rtype,
             M.send_time AS rank,
-            CATS_DATE(M.send_time) AS submit_time,  
+            CATS_DATE(M.send_time) AS submit_time,
             M.id AS id,
             CAST(NULL AS INTEGER) AS request_state,
             CAST(NULL AS INTEGER) AS failed_test,
@@ -594,7 +594,7 @@ sub console
         broadcast => q~
             4 AS rtype,
             M.send_time AS rank,
-            CATS_DATE(M.send_time) AS submit_time,  
+            CATS_DATE(M.send_time) AS submit_time,
             M.id AS id,
             CAST(NULL AS INTEGER) AS request_state,
             CAST(NULL AS INTEGER) AS failed_test,
@@ -760,8 +760,9 @@ sub console
         );
     };
             
-    attach_listview(url_f('console'), $fetch_console_record, $c, undef, {page_params => { uf => $user_filter }});
-      
+    attach_listview(
+        url_f('console'), $fetch_console_record, $c, undef, { page_params => { uf => $user_filter } });
+
     $c->finish;
 
     if ($is_team)
@@ -776,12 +777,12 @@ sub console
         {
             push @envelopes, { href_envelope => url_f('envelope', rid => $id) };
         }
-        
+
         $t->param(envelopes => [ @envelopes ]);
 
         $dbh->do(qq~
-            UPDATE reqs SET received=1 
-                WHERE account_id=? AND state>=$cats::request_processed 
+            UPDATE reqs SET received=1
+                WHERE account_id=? AND state>=$cats::request_processed
                 AND received=0 AND contest_id=?~, {},
             $uid, $cid);
         $dbh->commit;
@@ -790,14 +791,12 @@ sub console
     $t->param(
         href_my_events_only => url_f('console', uf => $uid),
         href_all_events => url_f('console', uf => 0),
+        user_filter => $user_filter,
     );
     my $s = $t->output;
     init_template($template_name);
 
-    $t->param(
-        console_content => $s,
-        is_team => $is_team,
-    );
+    $t->param(console_content => $s, is_team => $is_team);
 }
 
 
@@ -1088,7 +1087,7 @@ sub problems_replace_direct
     my ($fh, $fname) = tmpnam;
     my ($br, $buffer);
 
-    while ( $br = read( $file, $buffer, 1024 ) )
+    while ($br = read($file, $buffer, 1024))
     {
         syswrite($fh, $buffer, $br);
     }
@@ -1239,15 +1238,6 @@ sub problems_submit
 
     $src ne '' or return msg(11);
 
-    # Защита от спама и случайных ошибок -- запрещаем повторяющийся исходный код.
-    my $source_hash = source_hash($src);
-    my ($same_source) = $dbh->selectrow_array(qq~
-        SELECT FIRST 1 S.req_id
-        FROM sources S INNER JOIN reqs R ON S.req_id = R.id
-        WHERE R.account_id = ? AND R.problem_id = ? AND R.contest_id = ? AND S.hash = ?~, {},
-        $submit_uid, $pid, $cid, $source_hash);
-    $same_source and return msg(132);
-
     my $did = param('de_id');
 
     if (param('de_id') eq 'by_extension')
@@ -1257,6 +1247,17 @@ sub problems_submit
             or return msg(13);
         $t->param(de_name => $de_name);
     }
+
+    # Защита от спама и случайных ошибок -- запрещаем повторяющийся исходный код.
+    my $source_hash = source_hash($src);
+    my ($same_source) = $dbh->selectrow_array(qq~
+        SELECT FIRST 1 S.req_id
+        FROM sources S INNER JOIN reqs R ON S.req_id = R.id
+        WHERE
+            R.account_id = ? AND R.problem_id = ? AND
+            R.contest_id = ? AND S.hash = ? AND S.de_id = ?~, {},
+        $submit_uid, $pid, $cid, $source_hash, $did);
+    $same_source and return msg(132);
 
     my $rid = new_id;
     
@@ -1428,13 +1429,12 @@ sub problems_frame
         my $pid = $dbh->selectrow_array(qq~SELECT problem_id FROM contest_problems WHERE id=?~, {}, $cpid);
 
         $dbh->do(qq~DELETE FROM contest_problems WHERE id=?~, {}, $cpid);
-        $dbh->commit;       
 
         unless ($dbh->selectrow_array(qq~SELECT COUNT(*) FROM contest_problems WHERE problem_id=?~, {}, $pid))
         {
             $dbh->do(qq~DELETE FROM problems WHERE id=?~, {}, $pid);
-            $dbh->commit;       
         }
+        $dbh->commit;
     }
 
     if (defined param('download') && $show_packages)
@@ -1639,11 +1639,12 @@ sub user_validate_params
 
     if ($p{validate_password})
     {
-        length $up->{password1} <= 100
+        $up->{password1} ne '' && length $up->{password1} <= 100
             or return msg(102);
 
         $up->{password1} eq $up->{password2}
             or return msg(33);
+        msg(85);
     }
     return 1;
 }
@@ -1667,8 +1668,7 @@ sub users_new_save
     my $aid = new_id;
     $dbh->do(qq~
         INSERT INTO accounts (
-            id, srole, passwd,
-            login, team_name, capitan_name, country, motto, email, home_page, icq_number
+            id, srole, passwd, ~ . join (', ', user_param_names()) . qq~
         ) VALUES (?,?,?,?,?,?,?,?,?,?,?)~, {},
         $aid, $cats::srole_user, $up{password1},
         @up{user_param_names()}
@@ -1711,7 +1711,7 @@ sub users_edit_frame
 sub users_edit_save
 {
     my %up = map { $_ => (param($_) || '') } user_param_names(), qw(password1 password2);
-    my $set_password = param('set_password') eq 'on';
+    my $set_password = param_on('set_password');
     my $id = param('id');
 
     user_validate_params(\%up, validate_password => $set_password) or return;
@@ -1722,8 +1722,7 @@ sub users_edit_save
  
     $dbh->do(qq~
         UPDATE accounts
-            SET login = ?, team_name = ?, capitan_name = ?, country = ?,
-                motto = ?, email = ?, home_page = ?, icq_number = ?
+            SET ~ . join (', ', map "$_ = ?", user_param_names()) . qq~
             WHERE id = ?~, {},
         @up{user_param_names()}, $id);
     $dbh->commit;       
@@ -1731,7 +1730,7 @@ sub users_edit_save
     if ($set_password)
     {        
         $dbh->do(qq~UPDATE accounts SET passwd = ? WHERE id = ?~, {}, $up{password1}, $id);
-        $dbh->commit; 
+        $dbh->commit;
     }
 }
 
@@ -1746,7 +1745,7 @@ sub users_send_message
     );
     for (split ':', $p{'user_set'})
     {
-        next if param("msg$_") ne 'on';
+        next unless param_on("msg$_");
         $s->bind_param(1, new_id);
         $s->bind_param(2, $p{'message'}, { ora_type => 113 });
         $s->bind_param(3, $_);
@@ -1840,12 +1839,12 @@ sub users_frame
 
     if (defined param('save_attributes') && $is_jury)
     {
-        foreach (split(':', param('user_set')))
+        for (split(':', param('user_set')))
         {
-            my $jury = param( "jury$_" ) eq 'on';
-            my $ooc = param( "ooc$_" ) eq 'on';
-            my $remote = param( "remote$_" ) eq 'on';
-            my $hidden = param( "hidden$_" ) eq 'on';
+            my $jury = param_on("jury$_");
+            my $ooc = param_on("ooc$_");
+            my $remote = param_on("remote$_");
+            my $hidden = param_on("hidden$_");
 
             my $srole = $dbh->selectrow_array(qq~
                 SELECT srole FROM accounts
@@ -1870,7 +1869,7 @@ sub users_frame
     
     if (defined param('send_message') && $is_jury)
     {                
-        if (param('send_message_all') eq 'on')
+        if (param_on('send_message_all'))
         {
             users_send_broadcast(message => param('message_text'));                
         }
@@ -1910,50 +1909,28 @@ sub users_frame
 
     define_columns(url_f('users'), $is_jury ? 3 : 2, 1, [ @cols ] );
 
-    my $c;
+    my $sql = qq~
+        SELECT A.id, CA.id, A.country, A.login, A.team_name, 
+            CA.is_jury, CA.is_ooc, CA.is_remote, CA.is_hidden, CA.is_virtual, A.motto,
+            (SELECT COUNT(DISTINCT R.problem_id) FROM reqs R
+            WHERE R.state = $cats::st_accepted AND R.account_id=A.id AND R.contest_id=C.id%s)
+        FROM accounts A
+            INNER JOIN contest_accounts CA ON CA.account_id = A.id
+            INNER JOIN contests C ON CA.contest_id = C.id
+        WHERE C.id=?%s
+        ~.order_by;
     if ($is_jury)
     {
-        $c = $dbh->prepare(qq~
-            SELECT A.id, CA.id, A.country, A.login, A.team_name, 
-               CA.is_jury, CA.is_ooc, CA.is_remote, CA.is_hidden, CA.is_virtual, A.motto,
-               (SELECT COUNT(DISTINCT R.problem_id) FROM reqs R
-                WHERE R.state = $cats::st_accepted AND R.account_id=A.id AND R.contest_id=C.id)
-            FROM accounts A, contest_accounts CA, contests C
-            WHERE CA.account_id=A.id AND CA.contest_id=C.id AND C.id=?
-            ~.order_by);
-
-        $c->execute($cid);
-    }
-    elsif ($is_team)
-    {
-        $c = $dbh->prepare(qq~
-            SELECT A.id, CA.id, A.country, A.login, A.team_name, 
-                CA.is_jury, CA.is_ooc, CA.is_remote, CA.is_hidden, CA.is_virtual, A.motto,
-                (SELECT COUNT(DISTINCT R.problem_id) FROM reqs R
-                    WHERE R.state = $cats::st_accepted AND R.account_id=A.id 
-                    AND R.contest_id=C.id AND (R.submit_time < C.freeze_date OR C.defreeze_date < CATS_SYSDATE())
-                )
-            FROM accounts A, contest_accounts CA, contests C
-            WHERE CA.account_id=A.id AND CA.contest_id=C.id AND C.id=? AND CA.is_hidden=0 
-            ~.order_by);
-                   
-        $c->execute($cid);
+        $sql = sprintf $sql, '', '';
     }
     else
     {
-        $c = $dbh->prepare(qq~
-            SELECT A.id, CA.id, A.country, A.login, A.team_name, 
-                CA.is_jury, CA.is_ooc, CA.is_remote, CA.is_hidden, CA.is_virtual, A.motto, 
-                (SELECT COUNT(DISTINCT R.problem_id) FROM reqs R
-                    WHERE R.state = $cats::st_accepted AND R.account_id=A.id 
-                    AND R.contest_id=C.id AND (R.submit_time < C.freeze_date OR C.defreeze_date < CATS_SYSDATE())
-                ) 
-            FROM accounts A, contest_accounts CA, contests C
-            WHERE C.id=? AND CA.account_id=A.id AND CA.contest_id=C.id AND CA.is_hidden=0
-            ~.order_by);
-
-        $c->execute($cid);
+        $sql = sprintf $sql,
+            ' AND (R.submit_time < C.freeze_date OR C.defreeze_date < CATS_SYSDATE())',
+            ' AND CA.is_hidden=0';
     }
+    my $c = $dbh->prepare($sql);
+    $c->execute($cid);
 
     my $fetch_record = sub($)
     {            
@@ -1981,7 +1958,7 @@ sub users_frame
             virtual => $virtual
          );
     };
-             
+
     attach_listview(url_f('users'), $fetch_record, $c);
 
     if ($is_jury)
@@ -1990,119 +1967,71 @@ sub users_frame
             submenu => [ { href_item => url_f('users', new => 1), item_name => res_str(541) } ],
             editable => 1
         );
-    };
+    }
 
     $c->finish;
 }
 
 
-sub registration_frame {
-
+sub registration_frame
+{
     init_template('main_registration.htm');
 
     $t->param(countries => [ @cats::countries ], href_login => url_f('login'));
 
-    if (defined param('register'))
+    defined param('register')
+        or return;
+    
+    my %up = map { $_ => (param($_) || '') } user_param_names(), qw(password1 password2);
+    user_validate_params(\%up, validate_password => 1) or return;
+
+    if ($dbh->selectrow_array(qq~SELECT COUNT(*) FROM accounts WHERE login=?~, {}, $up{login}))
     {
-        my $login = param('login');
-        my $team_name = param('team_name');
-        my $capitan_name = param('capitan_name');       
-        my $email = param('email');     
-        my $country = param('country'); 
-        my $motto = param('motto');
-        my $home_page = param('home_page');     
-        my $icq_number = param('icq_number');
-        my $password1 = param('password1');
-        my $password2 = param('password2');
-
-        unless ($login && length $login <= 100)
-        {
-            msg(101);
-            return;
-        }
-
-        unless ($team_name && length $team_name <= 100)
-        {
-            msg(43);
-            return;
-        }
-
-        if (length $capitan_name > 100)
-        {
-            msg(45);
-            return;
-        }
-
-        if (length $motto > 200)
-        {
-            msg(44);
-            return;
-        }
-
-        if (length $home_page > 100)
-        {
-            msg(48);
-            return;
-        }
-
-        if (length $icq_number > 100)
-        {
-            msg(47);
-            return;
-        }
-
-        if (length $password1 > 100)
-        {
-            msg(102);
-            return;
-        }          
-
-        unless ($password1 eq $password2)
-        {
-            msg(33);
-            return;
-        }
-
-        if ($dbh->selectrow_array(qq~SELECT COUNT(*) FROM accounts WHERE login=?~, {}, $login))
-        {
-            msg(103);
-            return;       
-        }
-
-        my $aid = new_id;
-            
-        $dbh->do(qq~INSERT INTO accounts (
-            id, login, passwd, srole, team_name, capitan_name, country, motto, email, home_page, icq_number) 
-            VALUES(?,?,?,?,?,?,?,?,?,?,?)~, {},
-            $aid, $login, $password1, $cats::srole_user, $team_name, $capitan_name, $country, $motto, $email, $home_page, $icq_number);
-
-        my $c = $dbh->prepare(qq~SELECT id, closed FROM contests WHERE ctype=1~);
-        $c->execute;
-        while (my ($cid, $closed) = $c->fetchrow_array)
-        {
-            if ($closed)
-            {
-                msg(105);
-                $dbh->rollback;
-                return;
-            }
-            $dbh->do(qq~
-                INSERT INTO contest_accounts (
-                    id, contest_id, account_id, is_jury, is_pop, is_hidden, is_ooc, is_remote
-                ) VALUES(?,?,?,?,?,?,?,?)~, {},
-                new_id, $cid, $aid, 0, 0, 0, 1, 0);
-        }
-           
-        $dbh->commit;
-        $t->param(successfully_registred => 1);
+        msg(103);
+        return;       
     }
+
+    my $training_contests = $dbh->selectall_arrayref(qq~
+        SELECT id, closed FROM contests WHERE ctype = 1~, { Slice => {} });
+    0 == grep $_->{closed}, @$training_contests
+        or return msg(105);
+        
+    my $aid = new_id;
+    $dbh->do(qq~
+        INSERT INTO accounts (
+            id, srole, passwd, ~ . join (', ', user_param_names()) . qq~
+        ) VALUES (?,?,?,?,?,?,?,?,?,?,?)~, {},
+        $aid, $cats::srole_user, $up{password1},
+        @up{user_param_names()}
+    );
+    insert_ooc_user(contest_id => $_->{id}, account_id => $aid) for @$training_contests;
+         
+    $dbh->commit;
+    $t->param(successfully_registred => 1);
 }
 
 
 sub settings_save
 {
     my %up = map { $_ => (param($_) || '') } user_param_names(), qw(password1 password2);
-    my $set_password = param('set_password') eq 'on';
+    my $set_password = param_on('set_password');
+
+    # Если команда участвовала в официальных соревнованиях, запретить изменять её название.
+    my ($official_contest) = $dbh->selectrow_array(qq~
+        SELECT FIRST 1 C.title FROM contests C
+            INNER JOIN contest_accounts CA ON CA.contest_id = C.id
+            INNER JOIN accounts A ON A.id = CA.account_id
+            WHERE C.is_official = 1 AND CA.is_ooc = 0 AND CA.is_jury = 0 AND
+            C.finish_date < CURRENT_TIMESTAMP AND A.id = ?~, undef,
+        $uid
+    );
+    if ($official_contest) {
+        my ($old_team_name) = $dbh->selectrow_array(qq~
+            SELECT team_name FROM accounts WHERE id = ?~, undef,
+            $uid);
+        $old_team_name eq $up{team_name}
+            or return msg(86, $official_contest);
+    }
 
     user_validate_params(\%up, validate_password => $set_password) or return;
 
@@ -2116,26 +2045,6 @@ sub settings_save
     delete @up{qw(password1 password2)};
     $dbh->do(_u $sql->update('accounts', \%up, { id => $uid }));
     $dbh->commit;
- return;
-#    $dbh->do(qq~
-#        UPDATE accounts
-#            SET login = ?, team_name = ?, capitan_name = ?, country = ?,
-#                motto = ?, email = ?, home_page = ?, icq_number = ?
-#            WHERE id = ?~, {},
-#        @up{user_param_names()}, $uid);
-#    $dbh->commit;       
-#
-#    if ($set_password)
-#    {        
-#        $dbh->do(qq~UPDATE accounts SET passwd = ? WHERE id = ?~, {}, $up{password1}, $uid);
-#        $dbh->commit; 
-#    }
- return;
-    my ($official_contest) = $dbh->selectrow_array(qq~
-        SELECT FIRST 1 C.title FROM contests C INNER JOIN contest_accounts CA ON CA.contest_id = C.id
-            WHERE C.is_official = 1 AND CA.is_ooc = 0 AND C.finish_date < CURRENT_TIMESTAMP AND A.id = ?~, undef,
-        $uid
-    );
 }
 
 
@@ -2207,7 +2116,7 @@ sub compilers_new_save
     my $code = param('code');
     my $description = param('description');
     my $supported_ext = param('supported_ext');
-    my $locked = param('locked') eq 'on';
+    my $locked = param_on('locked');
             
     $dbh->do(qq~
         INSERT INTO default_de(id, code, description, file_ext, in_contests) VALUES(?,?,?,?,?)~, {}, 
@@ -2241,7 +2150,7 @@ sub compilers_edit_save
     my $code = param('code');
     my $description = param('description');
     my $supported_ext = param('supported_ext');
-    my $locked = param('locked') eq 'on';
+    my $locked = param_on('locked');
     my $id = param('id');
             
     $dbh->do(qq~
@@ -2318,7 +2227,7 @@ sub judges_new_frame
 sub judges_new_save
 {
     my $judge_name = param('judge_name');
-    my $locked = param('locked') eq 'on';
+    my $locked = param_on('locked');
     
     $judge_name ne '' && length $judge_name <= 20
         or return msg(5);
@@ -2345,17 +2254,15 @@ sub judges_edit_frame
 sub judges_edit_save
 {
     my $jid = param('id');
-    my $judge_name = param('judge_name');
-    my $locked = param('locked') eq 'on';
+    my $judge_name = param('judge_name') || '';
+    my $locked = param_on('locked');
     
-    if ($judge_name eq '' || length $judge_name > 20)
-    {
-        msg 5;
-        return;
-    }
+    $judge_name ne '' && length $judge_name <= 20
+        or return msg(5);
   
-    $dbh->do(qq~UPDATE judges SET nick=?, lock_counter=? WHERE id=?~, {}, 
-            $judge_name, $locked ? -1 : 0, $jid);
+    $dbh->do(qq~
+        UPDATE judges SET nick = ?, lock_counter = ? WHERE id = ?~, {},
+        $judge_name, $locked ? -1 : 0, $jid);
     $dbh->commit;
 }
 
@@ -2422,6 +2329,7 @@ sub judges_frame
 
 
 sub keywords_fields () { qw(name_ru name_en code) }
+
 
 sub keywords_new_frame
 {
@@ -2831,12 +2739,12 @@ sub diff_runs_frame
     }
     
     my @diff = ();
-    
+
     my $SL = sub { $si->[$_[0]]->{lines}->[$_[1]] }; 
     
-    my $match = sub { push @diff, $SL->(0, $_[0]) . "\n"; };
-    my $only_a = sub { push @diff, span({class=>'diff_only_a'}, $SL->(0, $_[0]) . "\n"); };
-    my $only_b = sub { push @diff, span({class=>'diff_only_b'}, $SL->(1, $_[1]) . "\n"); };
+    my $match = sub { push @diff, escape_html($SL->(0, $_[0])) . "\n"; };
+    my $only_a = sub { push @diff, span({class=>'diff_only_a'}, escape_html($SL->(0, $_[0])) . "\n"); };
+    my $only_b = sub { push @diff, span({class=>'diff_only_b'}, escape_html($SL->(1, $_[1])) . "\n"); };
 
     Algorithm::Diff::traverse_sequences(
         $si->[0]->{lines},
@@ -3072,6 +2980,7 @@ sub rank_table
     my $need_commit = 0;
     for (@$results)
     {
+        $_->{time_elapsed} ||= 0;
         my $t = $teams->{$_->{account_id}};
         my $p = $t->{problems}->{$_->{problem_id}};
         if ($show_points && !defined $_->{points})

@@ -40,6 +40,7 @@ BEGIN
         balance_tags
         _u
         source_hash
+        param_on
     );
 
         
@@ -882,6 +883,12 @@ sub balance_tags
 sub source_hash
 {
     Digest::MD5::md5_hex($_[0]);
+}
+
+
+sub param_on
+{
+    return (param($_[0]) || '') eq 'on';
 }
 
 
