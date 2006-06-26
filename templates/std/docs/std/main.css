@@ -117,3 +117,8 @@ span.TeX { font-family: Arial Unicode Ms, Lucida Sans Unicode, Arial, sans serif
 span.TeX i { font-family: Times New Roman, serif; }
 span.TeX span.num { font-family: Times New Roman, serif; }
 
+table.nobr tr td {
+    white-space: nowrap;
+}
+
+a.spell { text-decoration: underline; color: red; }

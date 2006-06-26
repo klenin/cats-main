@@ -2,16 +2,21 @@
 <TMPL_IF code>Problem <TMPL_VAR code>.</TMPL_IF>
 <TMPL_VAR title ESCAPE=HTML>
 </h2>
-Author: <TMPL_VAR author ESCAPE=HTML><br><br>
+<TMPL_IF author>Author: <TMPL_VAR author ESCAPE=HTML><br/><br/></TMPL_IF>
 
-<table>
-<tr><td>Input file:</td><td><TMPL_VAR input_file ESCAPE=HTML></td></tr>
-<tr><td>Output file:</td><td><TMPL_VAR output_file ESCAPE=HTML></td></tr>
-<tr><td>Time limit:</td><td><TMPL_VAR time_limit> sec</td></tr>
-<tr><td>Memory limit:</td><td><TMPL_VAR memory_limit> Mb</td></tr>
-<TMPL_IF show_points><tr><td>Maximum points:</td><td><TMPL_VAR max_points></td></tr></TMPL_IF>
-<TMPL_IF keywords><tr><td>Keywords:</td><td><TMPL_VAR keywords></td></tr></TMPL_IF>
+<table width="100%" class="nobr">
+<tr>
+  <td width="1%">Input file:</td><td><TMPL_VAR input_file ESCAPE=HTML></td>
+  <td>&nbsp;</td>
+  <td width="1%">Time limit:</td><td><TMPL_VAR time_limit> sec</td></tr>
+<tr>
+  <td>Output file:</td><td><TMPL_VAR output_file ESCAPE=HTML></td>
+  <td>&nbsp;</td>
+  <td>Memory limit:</td><td><TMPL_VAR memory_limit> Mb</td></tr>
+<TMPL_IF show_points><tr><td>Maximum points:</td><td><TMPL_VAR max_points></td>
+  <td colspan="3">&nbsp;</td></tr></TMPL_IF>
 </table>
+<TMPL_IF keywords>Keywords: <TMPL_VAR keywords><br/><br/></TMPL_IF>
 
 <TMPL_IF statement>
     <h3><i>Statement</i></h3>

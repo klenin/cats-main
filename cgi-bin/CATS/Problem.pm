@@ -19,6 +19,7 @@ my ($stml,
     $zip,
     $import_log,
     $zip_archive,
+    $old_title,
     %problem,
     %objects,
     %solution,
@@ -48,9 +49,9 @@ my %stml_tags = (
 );
 
 my $module_types = {
-  'checker' => $cats::checker_module,
-  'solution' => $cats::solution_module,
-  'generator' => $cats::generator_module,
+    'checker' => $cats::checker_module,
+    'solution' => $cats::solution_module,
+    'generator' => $cats::generator_module,
 };
 
 sub note($)
@@ -191,6 +192,10 @@ sub parse_problem
             'std_checker' => $atts{'stdChecker'},
             'max_points' => $atts{'maxPoints'}
         );
+        if ($old_title && $problem{title} ne $old_title)
+        {
+            error "Problem was renamed unexpectedly, old title: $old_title\n";
+        }
     }
 }
 
@@ -300,9 +305,9 @@ sub set_object_id
 
 sub get_object_id 
 {
-    my $name = shift;
+    my ($name, $tag) = @_;
     if (!defined $name) { return undef; }
-    error "Undefined object reference: '$name'\n" unless defined $objects{$name};
+    error "Undefined object reference: '$name' in '$tag'\n" unless defined $objects{$name};
 
     return $objects{$name};
 }
@@ -553,17 +558,17 @@ sub parse_problem_content
 
 
     if ($el eq 'In' && $test{in})
-    {       
-        if (defined $atts{'src'}) 
+    {
+        if (defined $atts{'src'})
         {
             #$test{'in_file'} = read_member_named(name => $atts{'src'}, kind => 'test input file'),
             my $member = $zip->memberNamed($atts{'src'});
             error "Invalid test input file reference: '$atts{'src'}'\n" if (!defined $member);
-            $test{'in_file'} = read_member($member);                           
+            $test{'in_file'} = read_member($member);
         }
         elsif (defined $atts{'use'})
         {
-            $test{'generator_id'} = get_object_id($atts{'use'});            
+            $test{'generator_id'} = get_object_id($atts{'use'}, $el);
             $test{'param'} = $atts{'param'};
         }
         else {
@@ -579,7 +584,7 @@ sub parse_problem_content
             $test{'out_file'} = read_member($member);
         }
         elsif (defined $atts{'use'}) {
-            $test{'std_solution_id'} = get_object_id($atts{'use'});
+            $test{'std_solution_id'} = get_object_id($atts{'use'}, $el);
         }
         else {
             error "Test output file not specified $test{rank}\n";
@@ -854,9 +859,9 @@ sub insert_problem_content
                
             $c->bind_param(1, $pid);
             $c->bind_param(2, $rank);
-            $c->bind_param(3, get_object_id($gen));
+            $c->bind_param(3, $gen ? get_object_id($gen, $el) : undef);
             $c->bind_param(4, $param);
-            $c->bind_param(5, get_object_id($sol));
+            $c->bind_param(5, $sol ? get_object_id($sol, $el) : undef);
             $c->bind_param(6, $in_file, { ora_type => 113 });
             $c->bind_param(7, $out_file, { ora_type => 113 });
             $c->bind_param(8, $test_range{points});
@@ -964,6 +969,7 @@ sub import_problem
     $cid = shift;    
     $pid = shift;
     $replace = shift;
+    $old_title = shift;
 
     clear_globals;
     eval 

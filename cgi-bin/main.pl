@@ -4,7 +4,7 @@ use warnings;
 no warnings 'redefine';
 
 #use File::Temp;
-use File::Temp qw/tempfile tmpnam/;
+use File::Temp qw/tempfile tmpnam mktemp/;
 use Encode;
 use encoding 'utf8';
 #use CGI::Fast qw(:standard);
@@ -13,6 +13,7 @@ use CGI::Util qw(unescape escape);
 #use FCGI;
 
 use Algorithm::Diff;
+use Text::Aspell;
 
 use CATS::Constants;
 use CATS::Misc qw(:all);
@@ -22,7 +23,7 @@ use CATS::Problem;
 use CATS::Diff;
 use CATS::TeX::Lite;
 
-use vars qw($html_code $current_pid);
+use vars qw($html_code $current_pid $spellchecker $text_span);
 
 
 sub login_frame
@@ -346,6 +347,7 @@ sub contest_fields ()
     c.closed, c.is_official, c.rules~
 }
 
+
 sub authenticated_contests_view ()
 {
     my $cf = contest_fields();
@@ -486,6 +488,7 @@ sub init_console_listview_additionals
     $additional = "${v}_$u";
     return ($v, $u);
 }
+
 
 sub russian ($)
 {
@@ -960,7 +963,7 @@ sub problems_new_save
     my $pid = new_id;
     my $problem_code = param('problem_code');
     
-    my ($st, $import_log) = CATS::Problem::import_problem($fname, $cid, $pid, 0);
+    my ($st, $import_log) = CATS::Problem::import_problem($fname, $cid, $pid, 0, '');
    
     $import_log = Encode::encode_utf8( escape_html($import_log) );  
     $t->param(problem_import_log => $import_log);
@@ -994,9 +997,10 @@ sub problems_all_frame
     ];
     define_columns(url_f('problems', link => $link, kw => $kw), 0, 0, $cols);
     
-    my $where = $is_root ? 
-        {cond => [], 'params' => []} :
-        { #security check
+    my $where =
+        $is_root ?  { cond => [], 'params' => [] } :
+        !$link ? { cond => ['CURRENT_TIMESTAMP > C.finish_date'], 'params' => [] } :
+        {
             cond => [q~
             (
                 EXISTS (
@@ -1035,7 +1039,7 @@ sub problems_all_frame
             href_view_problem => url_f('problem_text', pid => $pid),
             href_view_contest => url_f('problems', cid => $contest_id),
             href_view_contest => url_function('problems', sid => $sid, cid => $contest_id),
-            linked => $linked,
+            linked => $linked || !$link,
             problem_id => $pid,
             problem_name => $problem_name, 
             contest_name => $contest_name, 
@@ -1075,7 +1079,7 @@ sub problems_link_save
 }
 
 
-sub problems_replace_direct
+sub problems_replace
 {
     my $pid = param('problem_id')
         or return msg(54);
@@ -1087,21 +1091,20 @@ sub problems_replace_direct
     my ($fh, $fname) = tmpnam;
     my ($br, $buffer);
 
-    while ($br = read($file, $buffer, 1024))
+    while ($br = read($file, $buffer, 4096))
     {
         syswrite($fh, $buffer, $br);
     }
     close $fh;
 
-    my ($contest_id) = $dbh->selectrow_array(qq~SELECT contest_id FROM problems WHERE id=?~, {}, $pid);
-    if ($contest_id != $cid)
-    {
-      #$t->param(linked_problem => 1);
-      msg(117);
-      return;
-    }
+    my ($contest_id, $old_title) = $dbh->selectrow_array(qq~
+        SELECT contest_id, title FROM problems WHERE id=?~, {}, $pid);
+    $contest_id == $cid
+        or return msg(117);
 
-    my ($st, $import_log) = CATS::Problem::import_problem($fname, $cid, $pid, 1);
+    my $allow_rename = param('allow_rename');
+    my ($st, $import_log) = CATS::Problem::import_problem(
+        $fname, $cid, $pid, 1, $allow_rename ? '' : $old_title);
     $import_log = Encode::encode_utf8(escape_html($import_log));
     $t->param(problem_import_log => $import_log);
 
@@ -1110,35 +1113,34 @@ sub problems_replace_direct
 }
 
 
+sub save_binary_file
+{
+    my ($fname, $data) = @_;
+    open my $fh, '>', $fname;
+    binmode($fh);
+    syswrite($fh, $data, length($data));
+    close $fh;
+}
+
+
 sub download_problem
 {
     undef $t;
 
-    my $download_dir = './download';
-
     my $pid = param('download');
-    # Если hash уже есть, то файл не вытаскиваем, а выдаём ссылку на имеющийся
+    # Если hash уже есть, то файл не вытаскиваем, а выдаём ссылку на имеющийся.
+    # Предполагаем, что размер пакета достаточно велик,
+    # поэтому имеет смысл выбирать его отдельным запросом.
     my ($hash) = $dbh->selectrow_array(qq~
         SELECT hash FROM problems WHERE id = ?~, undef, $pid);
-    my $fname;
-    if (!$hash)
+    my $already_hashed = ensure_problem_hash($pid, \$hash);
+    my $fname = "./download/problem_$hash.zip";
+    unless($already_hashed && -f $fname)
     {
-        (my $fh, $fname) = tempfile( 
-            'problem_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
-            DIR => $download_dir, SUFFIX => '.zip');
         my ($zip) = $dbh->selectrow_array(qq~
             SELECT zip_archive FROM problems WHERE id = ?~, undef, $pid);
-        syswrite($fh, $zip, length($zip));    
-        close $fh;
-        ($hash) = ($fname =~ /problem_(.{32})\.zip/);
-        $dbh->do(q~UPDATE problems SET hash = ? WHERE id = ?~, undef, $hash, $pid);
-        $dbh->commit;
+        save_binary_file($fname, $zip);
     }
-    else
-    {
-        $fname = "$download_dir/problem_$hash.zip";
-    }
-
     print redirect(-uri => $fname);
 }
 
@@ -1405,23 +1407,10 @@ sub problems_frame
         }
     }
 
-    if (defined url_param('new') && $is_jury)
-    {
-        problems_new_frame;
-        return;
-    }
+    $is_jury && defined url_param('new') and return problems_new_frame;
+    $is_jury && defined url_param('link') and return problems_all_frame;
 
-    if (defined url_param('link') && $is_jury)
-    {
-        problems_all_frame;
-        return;
-    }
-
-    if (defined url_param('kw') && $is_jury)
-    {
-        problems_all_frame;
-        return;
-    }
+    defined url_param('kw') and return problems_all_frame;
 
     if (defined url_param('delete') && $is_jury)
     {
@@ -1437,47 +1426,23 @@ sub problems_frame
         $dbh->commit;
     }
 
-    if (defined param('download') && $show_packages)
-    {
-        download_problem;
-        return;
-    }
+    defined param('download') && $show_packages and download_problem;
 
     init_listview_template( "problems$cid" . ($uid || ''), 'problems', 'main_problems.htm' );      
 
-    if (defined param('link_save') && $is_jury)
+    if($is_jury)
     {
-        problems_link_save;
-    }
-
-    if (defined param('new_save') && $is_jury)
-    {
-        problems_new_save;
-    }
-
-    if (defined param('change_status') && $is_jury)
-    {
-        problems_change_status;
-    }
-
-    if (defined param('replace_direct') && $is_jury)
-    {
-        problems_replace_direct;
+        defined param('link_save') and problems_link_save;
+        defined param('new_save') and problems_new_save;
+        defined param('change_status') and problems_change_status;
+        defined param('replace_direct') and problems_replace;
+        defined param('std_solution') and problems_submit_std_solution;
+        defined param('mass_retest') and  problems_mass_retest;
     }
 
     if (defined param('submit'))
     {
         problems_submit;
-    }
-
-    if (defined param('std_solution') && $is_jury)
-    {
-        problems_submit_std_solution;
-    }
-
-    if (defined param('mass_retest') && $is_jury)
-    {
-        problems_mass_retest;
     }
 
     my @cols = (
@@ -1575,7 +1540,7 @@ sub problems_frame
 
     $sth->finish;
     
-    my @submenu = ( { href_item => url_f('problem_text'), item_name => res_str(538), item_target=>'_blank' } );
+    my @submenu = ( { href_item => url_f('problem_text'), item_name => res_str(538), item_target => '_blank' } );
 
     if ($is_jury)
     {
@@ -1788,7 +1753,9 @@ sub users_register
 
 
 sub users_frame 
-{    
+{   
+    # hack для туфанова и олейникова
+    $is_jury ||= $is_root; 
     if (defined url_param('delete') && $is_jury)
     {
         my $caid = url_param('delete');
@@ -2246,7 +2213,8 @@ sub judges_edit_frame
     init_template('main_judges_edit.htm');
 
     my $jid = url_param('edit');
-    my ($judge_name, $lock_counter) = $dbh->selectrow_array(qq~SELECT nick, lock_counter FROM judges WHERE id=?~, {}, $jid);
+    my ($judge_name, $lock_counter) = $dbh->selectrow_array(qq~
+        SELECT nick, lock_counter FROM judges WHERE id=?~, {}, $jid);
     $t->param(id => $jid, judge_name => $judge_name, locked => $lock_counter, href_action => url_f('judges'));
 }
 
@@ -2381,22 +2349,22 @@ sub keywords_edit_save
 
 sub keywords_frame
 {
-    $is_root or return;
- 
-    if (defined url_param('delete'))
+    if ($is_root)
     {
-        my $kwid = url_param('delete');
-        $dbh->do(qq~DELETE FROM keywords WHERE id = ?~, {}, $kwid);
-        $dbh->commit;
+        if (defined url_param('delete'))
+        {
+            my $kwid = url_param('delete');
+            $dbh->do(qq~DELETE FROM keywords WHERE id = ?~, {}, $kwid);
+            $dbh->commit;
+        }
+
+        defined url_param('new') and return keywords_new_frame;
+        defined url_param('edit') and return keywords_edit_frame;
     }
-
-    defined url_param('new') and return keywords_new_frame;
-    defined url_param('edit') and return keywords_edit_frame;
-
     init_listview_template('keywords' . ($uid || ''), 'keywords', 'main_keywords.htm');
 
-    defined param('new_save') and keywords_new_save;
-    defined param('edit_save') and keywords_edit_save;
+    $is_root && defined param('new_save') and keywords_new_save;
+    $is_root && defined param('edit_save') and keywords_edit_save;
 
     define_columns(url_f('keywords'), 0, 0, [
         { caption => res_str(638), order_by => '2', width => '31%' },
@@ -2409,7 +2377,7 @@ sub keywords_frame
     $c->execute;
 
     my $fetch_record = sub($)
-    {            
+    {
         my ($kwid, $code, $name_ru, $name_en) = $_[0]->fetchrow_array
             or return ();
         return ( 
@@ -2420,10 +2388,10 @@ sub keywords_frame
             href_view_problems => url_f('problems', kw => $kwid),
         );
     };
-             
+
     attach_listview(url_f('keywords'), $fetch_record, $c);
 
-    $t->param(submenu => [ references_menu('keywords') ], editable => 1);
+    $t->param(submenu => [ references_menu('keywords') ], editable => 1) if $is_root;
 }
 
 
@@ -2445,9 +2413,9 @@ sub send_message_box_frame
 
         my $s = $dbh->prepare(qq~
             INSERT INTO messages (id, send_time, text, account_id, received)
-                VALUES (?,CATS_SYSDATE(),?,?,0)~);
-        $s->bind_param(1, new_id );
-        $s->bind_param(2, $message_text, { ora_type => 113 } );
+                VALUES (?, CATS_SYSDATE(), ?, ?, 0)~);
+        $s->bind_param(1, new_id);
+        $s->bind_param(2, $message_text, { ora_type => 113 });
         $s->bind_param(3, $caid);
         $s->execute;
         $dbh->commit;
@@ -2477,7 +2445,7 @@ sub answer_box_frame
     if (defined param('clarify') && (my $a = param('answer_text')))
     {
         $r->{answer} ||= '';
-        $r->{answer} .=  " $a";
+        $r->{answer} .= " $a";
 
         my $s = $dbh->prepare(qq~
             UPDATE questions
@@ -2816,7 +2784,6 @@ sub rank_get_problem_ids
 
     my $w = int(50 / (@$problems + 1));
     $w = $w < 3 ? 3 : $w > 10 ? 10 : $w;
-
     $_->{column_width} = $w for @$problems;
 
     my @contests = ();
@@ -3136,62 +3103,112 @@ sub rank_problem_details
 }
 
 
+sub check_spelling
+{
+    for ($_[0])
+    {
+        if (/\d+/ || $spellchecker->check(my $koi = Encode::encode('KOI8-R', $_)))
+        {
+            return $_;
+        }
+        else
+        {
+            # NB: suggest иногда падает.
+            my $suggestion = $spellchecker->suggest($koi) || '';
+            $suggestion = join "\n", @$suggestion if ref $suggestion eq 'ARRAY';
+            return qq~<a class="spell" title="$suggestion">$_</a>~;
+        }
+    }
+}
+
+
+sub process_text
+{
+    if ($spellchecker)
+    {
+        my @tex_parts = split /\$/, $text_span;
+        my $i = 1;
+        for (@tex_parts)
+        {
+            $i = !$i;
+            next if $i;
+            # игнорировать entities, учитывать апострофы и дефисы, первый символ должен быть буквой
+            s/(?<!&)(\w(?:\w|[\'\-])*)/check_spelling($1)/eg;
+        }
+        $html_code .= join '$', @tex_parts;
+        # split игнорирует разделитель в конце строки
+        $html_code .= '$' if $text_span =~ /\$$/;
+    }
+    else
+    {
+        $html_code .= $text_span;
+    }
+    $text_span = '';
+}
+
+
 # генерация страницы с текстом задач
-sub start_element 
+sub start_element
 {
     my ($el, %atts) = @_;
 
+    process_text;
     $html_code .= "<$el";
     for my $name (keys %atts)
     {
         my $attrib = $atts{$name};
-        $html_code .= " $name=\"$attrib\"";
+        $html_code .= qq~ $name="$attrib"~;
     }
-    $html_code .= ">";
+    $html_code .= '>';
 }
 
 
-sub end_element 
+sub end_element
 {
-    my ($el) = @_;    
+    my ($el) = @_;
+    process_text;    
     $html_code .= "</$el>";
-}
-
-
-sub text
-{
-    my ($text) = shift;
-    $html_code .= $text;
 }
 
 
 sub ch_1
 {
     my ($p, $text) = @_;
-    text($text);
+    # Склеиваем подряд идущие текстовые элементы, и потом обрабатываем их все вместе
+    $text_span .= $text;
+}
+
+
+# если задача ещё ни разу не скачивалась, сгенерировать для неё хеш
+sub ensure_problem_hash
+{
+    my ($problem_id, $hash) = @_;
+    return 1 if $$hash;
+    $$hash = mktemp('X' x 32);
+    $dbh->do(qq~UPDATE problems SET hash = ? WHERE id = ?~, undef, $$hash, $problem_id);
+    $dbh->commit;
+    return 0;
 }
 
 
 sub download_image
 {
-    my $id = shift;
-
-    my $download_dir = './download';
-
-    my ($pic, $ext) = $dbh->selectrow_array(qq~SELECT pic, extension FROM pictures WHERE id = ?~, {}, $id);
-
-    my ($fh, $fname) = tempfile(
-        "img_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-        DIR => $download_dir, SUFFIX => ".$ext");
-
-    binmode(STDOUT, ':raw');
-
-    syswrite($fh, $pic, length($pic));    
-
-    close $fh;
-    
+    my ($name) = @_;
+    # полагаем, что картинки относительно маленькие (единицы Кб), поэтому эффективнее
+    # вытаскивать их одним запросом вместе с хешем задачи
+    my ($pic, $ext, $hash) = $dbh->selectrow_array(qq~
+        SELECT c.pic, c.extension, p.hash FROM pictures c
+        INNER JOIN problems p ON c.problem_id = p.id
+        WHERE p.id = ? AND c.name = ?~, {}, $current_pid, $name);
+    ensure_problem_hash($current_pid, \$hash);
+    # секьюрити. это может привести к дублированию картинок, например, с именами pic1 и pic.1
+    $name =~ tr/a-zA-Z0-9_//cd;
+    $ext =~ tr/a-zA-Z0-9_//cd;
+    my $fname = "./download/img/img_${hash}_$name.$ext";
+    -f $fname or save_binary_file($fname, $pic);
     return $fname;
 }
+
 
 sub sh_1
 {
@@ -3199,11 +3216,7 @@ sub sh_1
     
     if ($el eq 'img' && $atts{'picture'})
     {
-        my ($id) = $dbh->selectrow_array(qq~
-            SELECT id FROM pictures WHERE problem_id=? AND name=?~, {},
-            $current_pid, $atts{'picture'});
-
-        $atts{src} = download_image($id);
+        $atts{src} = download_image($atts{'picture'});
         delete $atts{picture};
     }
     start_element($el, %atts);
@@ -3229,7 +3242,7 @@ sub parse
         'End'   => \&eh_1,
         'Char'  => \&ch_1);
 
-    $parser->parse( "<p>$xml_patch</p>" );
+    $parser->parse("<p>$xml_patch</p>");
     return $html_code;
 }
 
@@ -3325,7 +3338,8 @@ sub problem_text_frame
             $pcodes{$problem_id} = $code;
         }
     }
-
+    
+    my $use_spellchecker = $is_jury && !param('nospell');
 
     my $need_commit = 0;
     for my $problem_id (@id_problems)
@@ -3336,22 +3350,33 @@ sub problem_text_frame
             SELECT
                 id, contest_id, title, lang, time_limit, memory_limit,
                 difficulty, author, input_file, output_file,
-                statement, pconstraints, input_format,
-                output_format, max_points
+                statement, pconstraints, input_format, output_format, max_points
             FROM problems WHERE id = ?~, { Slice => {} },
             $problem_id);
         my $lang = $problem_data->{lang};
 
-        if ($is_jury) {
+        if ($is_jury)
+        {
             my $lang_col = $lang eq 'ru' ? 'name_ru' : 'name_en';
             my $kw_list = $dbh->selectcol_arrayref(qq~
                 SELECT $lang_col FROM keywords K
                     INNER JOIN problem_keywords PK ON PK.keyword_id = K.id
                     WHERE PK.problem_id = ?
                     ORDER BY 1~, undef, $problem_id);
-           $problem_data->{keywords} = join ', ', @$kw_list;
+            $problem_data->{keywords} = join ', ', @$kw_list;
         }
-        
+        if ($use_spellchecker)
+        {
+            # Судя по документации Text::Aspell, опции нельзя менять для существующего
+            # экземпляра класса, поэтому создаём каждый раз новый экземпляр.
+            $spellchecker = Text::Aspell->new;
+            $spellchecker->set_option('lang', $lang eq 'ru' ? 'ru_RU' : 'en_US');
+        }
+        else
+        {
+            undef $spellchecker;
+        }
+
         if ($show_points && !$problem_data->{max_points})
         {
             $problem_data->{max_points} = cache_max_points($problem_data->{id});
@@ -3368,12 +3393,13 @@ sub problem_text_frame
             for ($problem_data->{$field_name})
             {
                 defined $_ or next;
+                $text_span = '';
                 $_ = $_ eq '' ? undef : Encode::encode_utf8(parse($_));
                 CATS::TeX::Lite::convert_all($_);
-                s/-{2,3}/&#151;/g; # тире
+                s/(?<=\s)-{2,3}/&#151;/g; # тире
             }
         }
-        push @problems,  {
+        push @problems, {
             %$problem_data,
             code => $pcodes{$problem_id},
             lang_ru => $lang eq 'ru',
@@ -3778,7 +3804,9 @@ sub generate_menu
     }
     else
     {
-        push @left_menu, { item => res_str(517), href => url_f('compilers') };
+        push @left_menu, (
+          { item => res_str(517), href => url_f('compilers') },
+          { item => res_str(549), href => url_f('keywords') } );
     }
 
     if (!$is_practice)

@@ -2,15 +2,20 @@
 <TMPL_IF code>Задача <TMPL_VAR code>.</TMPL_IF>
 <TMPL_VAR title ESCAPE=HTML>
 </h2>
-Автор задачи: <TMPL_VAR author ESCAPE=HTML><br><br>
-<table>
-<tr><td>Входной файл:</td><td><TMPL_VAR input_file ESCAPE=HTML></td></tr>
-<tr><td>Выходной файл:</td><td><TMPL_VAR output_file ESCAPE=HTML></td></tr>
-<tr><td>Ограничение времени на тест:</td><td><TMPL_VAR time_limit> сек</td></tr>
-<tr><td>Ограничение памяти на тест:</td><td><TMPL_VAR memory_limit> Мб</td></tr>
-<TMPL_IF show_points><tr><td>Максимальная оценка:</td><td><TMPL_VAR max_points> баллов</td></tr></TMPL_IF>
-<TMPL_IF keywords><tr><td>Ключевые слова:</td><td><TMPL_VAR keywords></td></tr></TMPL_IF>
+<TMPL_IF author>Автор задачи: <TMPL_VAR author ESCAPE=HTML><br><br></TMPL_IF>
+<table width="100%" class="nobr">
+<tr>
+  <td width="1%">Входной файл:</td><td><TMPL_VAR input_file ESCAPE=HTML></td>
+  <td>&nbsp;</td>
+  <td width="1%">Ограничение времени на тест:</td><td><TMPL_VAR time_limit> сек</td></tr>
+<tr>
+  <td>Выходной файл:</td><td><TMPL_VAR output_file ESCAPE=HTML></td>
+  <td>&nbsp;</td>
+  <td>Ограничение памяти на тест:</td><td><TMPL_VAR memory_limit> Мб</td></tr>
+  <TMPL_IF show_points><tr><td>Максимальная оценка:</td><td><TMPL_VAR max_points> баллов</td>
+  <td colspan="3">&nbsp;</td></tr></TMPL_IF>
 </table>
+<TMPL_IF keywords>Ключевые слова: <TMPL_VAR keywords><br/><br/></TMPL_IF>
 
 <TMPL_IF statement>
     <h3><i>Условие</i></h3>

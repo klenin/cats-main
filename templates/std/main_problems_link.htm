@@ -13,12 +13,12 @@
 <TMPL_LOOP link_problem>
 <tr bgcolor=#ffffff>
 <td>
-<input type=radio name='problem_id' value='<TMPL_VAR problem_id>' <TMPL_IF linked>disabled</TMPL_IF>>
-<a href="<TMPL_VAR href_view_problem>" target=_blank><TMPL_VAR problem_name ESCAPE=HTML></a></td>
+<input type="radio" name="problem_id" value="<TMPL_VAR problem_id>" <TMPL_IF linked>disabled</TMPL_IF> />
+<a href="<TMPL_VAR href_view_problem>" target="_blank"><TMPL_VAR problem_name ESCAPE=HTML></a></td>
 <td><a href="<TMPL_VAR href_view_contest>"><TMPL_VAR contest_name ESCAPE=HTML></a></td>
-<td align=center><TMPL_VAR accept_count></td>
-<td align=center><TMPL_VAR wa_count></td>
-<td align=center><TMPL_VAR tle_count></td>
+<td align="center"><TMPL_VAR accept_count></td>
+<td align="center"><TMPL_VAR wa_count></td>
+<td align="center"><TMPL_VAR tle_count></td>
 </tr>
 </TMPL_LOOP>
 </table>
@@ -26,14 +26,12 @@
 <TMPL_IF link>
 Код задачи:
 <select name="problem_code">
-<TMPL_LOOP code_array>
-<option name="<TMPL_VAR code>"><TMPL_VAR code>
-</TMPL_LOOP>
+<TMPL_LOOP code_array><option name="<TMPL_VAR code>"><TMPL_VAR code></TMPL_LOOP>
 </select>
-<br><br>
+<br/><br/>
 </TMPL_IF>
-<input type=submit name='link_save' value='     Ok     ' class=button> 
-<input type=submit name='link_cancel' value='Отмена' class=button>
+<input type="submit" name="link_save" value="     Ok     " class="button" />
+<input type="submit" name="link_cancel" value="Отмена" class="button" />
 </form>
 </TMPL_IF>
 <TMPL_INCLUDE 'includes/menu_end.inc'>

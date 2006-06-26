@@ -46,7 +46,7 @@ function r() {
 <TMPL_IF message><i><TMPL_VAR message ESCAPE=HTML></i><br></TMPL_IF>
 
 <TMPL_IF problem_import_log>
-Лог загрузки задачи:<br>
+Лог загрузки задачи:<br/>
 <textarea cols="100" rows="10" readonly>
 <TMPL_VAR problem_import_log>
 </textarea>
@@ -54,21 +54,21 @@ function r() {
 
 <TMPL_IF solution_submitted>
 <TMPL_IF de_name>Определена среда разработки: '<TMPL_VAR de_name ESCAPE=HTML>'.<br></TMPL_IF>
-Для наблюдения за ходом тестирования откройте <a href='<TMPL_VAR href_console>' target=_top>консоль</a>.
-<hr>
+Для наблюдения за ходом тестирования откройте <a href="<TMPL_VAR href_console>" target="_top">консоль</a>.
+<hr/>
 </TMPL_IF>
 
-<form method=post enctype='multipart/form-data' name="problems_form">
+<form method=post enctype="multipart/form-data" name="problems_form">
 <TMPL_INCLUDE 'includes/listview_header.inc'>
-<table border=0 width=100% cellpadding=2 cellspacing=1 class=bordered>
+<table border="0" width="100%" cellpadding="2" cellspacing="1" class="bordered">
 <TMPL_IF is_team>
-<tr bgcolor=#ccccff>
+<tr bgcolor="#ccccff">
 <th width="1%">&nbsp;</th>
 <TMPL_INCLUDE 'includes/listview_col_defs.inc'>
 </tr>   
 </TMPL_IF>
 <TMPL_LOOP problems>
-<tr <TMPL_IF odd>bgcolor=#f4f4f4<TMPL_ELSE>bgcolor=#ffffff</TMPL_IF>>
+<tr bgcolor=<TMPL_IF odd>"#f4f4f4"<TMPL_ELSE>"#ffffff"</TMPL_IF>>
     <TMPL_IF is_team>
 <td width="1%">
     <input type="radio" name="problem_id" value="<TMPL_VAR problem_id>"<TMPL_IF disabled> disabled="disabled"</TMPL_IF> />
@@ -107,7 +107,10 @@ function r() {
 <TMPL_IF is_team>
 <table><tr>
     <td>Файл с решением:</td><td><input type="file" name="source" class="file" size="25"/></td>
-    <TMPL_IF editable><td>&nbsp;</td><td>Файл с задачей:</td><td><input type="file" name="zip" class="file" size="25"/></td></TMPL_IF>
+    <TMPL_IF editable>
+      <td>&nbsp;</td><td>Файл с задачей:</td>
+      <td><input type="file" name="zip" class="file" size="25"/>
+      <input type="checkbox" name="allow_rename" value="1"/> переим.</td></TMPL_IF>
 </tr><tr>
     <td>Среда разработки:</td><td>
       <select name="de_id">
@@ -119,7 +122,7 @@ function r() {
       <select name="status">
       <TMPL_LOOP status_list><option value="<TMPL_VAR id>"><TMPL_VAR name ESCAPE=HTML></option></TMPL_LOOP>
       </select>
-      перетестировать все попытки <input name="all_runs" type="checkbox" value="1"/>
+      перетестировать все попытки <input type="checkbox" name="all_runs" value="1"/>
     </td></TMPL_IF>
 </tr><tr>
     <td colspan="2">
