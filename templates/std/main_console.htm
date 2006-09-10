@@ -53,7 +53,7 @@ function fill_1(aid, arg)
 }
 </script>
 <TMPL_IF message><i><TMPL_VAR message ESCAPE=HTML></i><br/></TMPL_IF>
-<span id='refreshable_content'>
+<span id="refreshable_content">
 <br/>Идет загрузка страницы...<br/>
 </span>
 <TMPL_IF is_team>
@@ -82,5 +82,5 @@ function fill_1(aid, arg)
     </table>
 </TMPL_IF>
 </form>
-<TMPL_INCLUDE 'includes/menu_end.inc'>
-<iframe width=0 height=0 src='<TMPL_VAR href_console_content>'></iframe>
+<TMPL_INCLUDE "includes/menu_end.inc">
+<iframe width=0 height=0 src="<TMPL_VAR href_console_content>"></iframe>

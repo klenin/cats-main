@@ -50,6 +50,7 @@ my %arrows =
 );
 my %special = 
 (
+ deg => 'deg',
  'int' => 'int',
  sum => 'sum',
  prod => 'prod',

@@ -224,8 +224,9 @@ sub contests_edit_save
         $edit_cid
     );
     $dbh->commit;
-    # если переименовали текущи турнир, сразу изменить заголовок окна
-    if ($edit_cid == $cid) {
+    # если переименовалий текущи турнир, сразу изменить заголовок окна
+    if ($edit_cid == $cid)
+    {
         $contest_title = $p->{contest_name};
     }
 }
@@ -615,9 +616,7 @@ sub console
         ~,
     );
 
-    my $user_filter =
-      sprintf('%d', url_param('uf') || 0) ||
-      ($is_jury ? 0 : ($uid || get_anonymous_uid()));
+    my $user_filter = sprintf '%d', url_param('uf') || 0;
 
     my $events_filter = $user_filter ? 'AND A.id = ?' : '';
     my @events_filter_params = $user_filter ? ($user_filter) : ();
@@ -946,35 +945,96 @@ sub problems_new_frame
 }
 
 
-sub problems_new_save
+sub add_problem_to_contest
 {
-    my $file = param('zip')
-        or return msg(53);
+    my ($pid, $problem_code) = @_;
+    # Если турнир уже идёт, добавляемые задачи сразу получают статус hidden
+    my ($since_start) = $dbh->selectrow_array(qq~
+        SELECT CATS_SYSDATE() - start_date FROM contests WHERE id = ?~, undef, $cid);
+    return $dbh->do(qq~
+        INSERT INTO contest_problems(id, contest_id, problem_id, code, status)
+            VALUES (?,?,?,?,?)~, {},
+        new_id, $cid, $pid, $problem_code,
+        $since_start > 0 ? $cats::problem_st_hidden : $cats::problem_st_ready);
+}
 
+
+sub save_uploaded_file
+{
+    my ($file) = @_;
     my ($fh, $fname) = tmpnam;
     my ($br, $buffer);
        
-    while ($br = read($file, $buffer, 1024))
+    while ($br = read($file, $buffer, 4096))
     {
         syswrite($fh, $buffer, $br);
     }
     close $fh;
+    return $fname;
+}
 
+
+sub problems_new_save
+{
+    my $file = param('zip') || '';
+    $file =~ /\.(zip|ZIP)$/
+        or return msg(53);
+    my $fname = save_uploaded_file($file);
     my $pid = new_id;
     my $problem_code = param('problem_code');
     
-    my ($st, $import_log) = CATS::Problem::import_problem($fname, $cid, $pid, 0, '');
+    my ($error, $import_log) = CATS::Problem::import_problem($fname, $cid, $pid, 0, '');
    
-    $import_log = Encode::encode_utf8( escape_html($import_log) );  
+    $import_log = Encode::encode_utf8(escape_html($import_log));
     $t->param(problem_import_log => $import_log);
 
-    $st ||= !$dbh->do(qq~
-        INSERT INTO contest_problems(id, contest_id, problem_id, code, status)
-            VALUES (?,?,?,?,0)~, {},
-        new_id, $cid, $pid, $problem_code);
+    $error ||= !add_problem_to_contest($pid, $problem_code);
 
-    (!$st) ? $dbh->commit : $dbh->rollback;
-    if ($st) { msg(52); }
+    $error ? $dbh->rollback : $dbh->commit;
+    msg(52) if $error;
+    unlink $fname;
+}
+
+
+sub problems_link_save
+{       
+    my $pid = param('problem_id')
+        or return msg(104);
+
+    my $problem_code = undef;
+    if (!$is_practice)
+    {
+        $problem_code = param('problem_code') or return;
+    }
+    add_problem_to_contest($pid, $problem_code);
+    $dbh->commit;
+}
+
+
+sub problems_replace
+{
+    my $pid = param('problem_id')
+        or return msg(54);
+   
+    my $file = param('zip') || '';
+    $file =~ /\.(zip|ZIP)$/
+        or return msg(53);
+    my ($contest_id, $old_title) = $dbh->selectrow_array(qq~
+        SELECT contest_id, title FROM problems WHERE id=?~, {}, $pid);
+    $contest_id == $cid
+        or return msg(117);
+
+    my $fname = save_uploaded_file($file);
+
+    my $allow_rename = param('allow_rename');
+    my ($error, $import_log) = CATS::Problem::import_problem(
+        $fname, $cid, $pid, 1, $allow_rename ? '' : $old_title);
+    $import_log = Encode::encode_utf8(escape_html($import_log));
+    $t->param(problem_import_log => $import_log);
+
+    $error ? $dbh->rollback : $dbh->commit;
+    msg(52) if $error;
+    unlink $fname;
 }
 
 
@@ -998,9 +1058,12 @@ sub problems_all_frame
     define_columns(url_f('problems', link => $link, kw => $kw), 0, 0, $cols);
     
     my $where =
-        $is_root ?  { cond => [], 'params' => [] } :
-        !$link ? { cond => ['CURRENT_TIMESTAMP > C.finish_date'], 'params' => [] } :
-        {
+        $is_root ? {
+            cond => [], 'params' => [] }
+        : !$link ? {
+            cond => ['CURRENT_TIMESTAMP > C.finish_date AND (C.is_hidden = 0 OR C.is_hidden IS NULL)'],
+            'params' => [] }
+        : {
             cond => [q~
             (
                 EXISTS (
@@ -1008,8 +1071,8 @@ sub problems_all_frame
                     WHERE contest_id = C.id AND account_id = ? AND is_jury = 1
                     ) OR CURRENT_TIMESTAMP > C.finish_date
             )~],
-        params => [$uid]
-    };
+            params => [$uid]
+        };
       
     if ($kw) {
         push @{$where->{cond}}, q~
@@ -1059,60 +1122,6 @@ sub problems_all_frame
 }
 
 
-sub problems_link_save
-{       
-    my $pid = param('problem_id')
-        or return msg(104);
-
-    my $problem_code = undef;
-    if (!$is_practice)
-    {
-        $problem_code = param('problem_code') or return;
-    }
-
-    $dbh->do(qq~
-        INSERT INTO contest_problems(id, contest_id, problem_id, code, status)
-            VALUES (?,?,?,?,0)~, {},
-        new_id, $cid, $pid, $problem_code);
-
-    $dbh->commit;
-}
-
-
-sub problems_replace
-{
-    my $pid = param('problem_id')
-        or return msg(54);
-   
-    my $file = param('zip');
-    $file =~ /\.(zip|ZIP)$/
-        or return msg(53);
-
-    my ($fh, $fname) = tmpnam;
-    my ($br, $buffer);
-
-    while ($br = read($file, $buffer, 4096))
-    {
-        syswrite($fh, $buffer, $br);
-    }
-    close $fh;
-
-    my ($contest_id, $old_title) = $dbh->selectrow_array(qq~
-        SELECT contest_id, title FROM problems WHERE id=?~, {}, $pid);
-    $contest_id == $cid
-        or return msg(117);
-
-    my $allow_rename = param('allow_rename');
-    my ($st, $import_log) = CATS::Problem::import_problem(
-        $fname, $cid, $pid, 1, $allow_rename ? '' : $old_title);
-    $import_log = Encode::encode_utf8(escape_html($import_log));
-    $t->param(problem_import_log => $import_log);
-
-    $st ? $dbh->rollback : $dbh->commit;
-    if ($st) { msg(52); }
-}
-
-
 sub save_binary_file
 {
     my ($fname, $data) = @_;
@@ -1149,7 +1158,8 @@ sub get_source_de
 {
      my $file_name = shift;
 
-     my $c = $dbh->prepare(qq~SELECT id, code, description, file_ext FROM default_de WHERE in_contests=1 ORDER BY code~);
+     my $c = $dbh->prepare(qq~
+        SELECT id, code, description, file_ext FROM default_de WHERE in_contests=1 ORDER BY code~);
      $c->execute;
     
      my ( $vol, $dir, $fname, $name, $ext ) = split_fname( lc $file_name );
@@ -1769,7 +1779,8 @@ sub users_frame
             $dbh->do(qq~DELETE FROM contest_accounts WHERE id=?~, {}, $caid);
             $dbh->commit;       
 
-            unless ($dbh->selectrow_array(qq~SELECT COUNT(*) FROM contest_accounts WHERE account_id=?~, {}, $aid))
+            unless ($dbh->selectrow_array(qq~
+                SELECT COUNT(*) FROM contest_accounts WHERE account_id=?~, {}, $aid))
             {
                 $dbh->do(qq~DELETE FROM accounts WHERE id=?~, {}, $aid);
                 $dbh->commit;       
@@ -2633,7 +2644,7 @@ sub run_log_frame
             security_violation =>    $cats::st_security_violation,
         } -> {param 'state'};
 
-        my $failed_test = sprintf '%d', param('failed_test');
+        my $failed_test = sprintf '%d', param('failed_test') || '0';
         enforce_request_state(
             request_id => $rid, failed_test => $failed_test, state => $state);
         my %st = state_to_display($state);
@@ -3105,20 +3116,14 @@ sub rank_problem_details
 
 sub check_spelling
 {
-    for ($_[0])
+    my ($word) = @_;
+    my $koi = Encode::encode('KOI8-R', $word);
+    if ($word =~ /^\d+$/ || $spellchecker->check($koi))
     {
-        if (/\d+/ || $spellchecker->check(my $koi = Encode::encode('KOI8-R', $_)))
-        {
-            return $_;
-        }
-        else
-        {
-            # NB: suggest иногда падает.
-            my $suggestion = $spellchecker->suggest($koi) || '';
-            $suggestion = join "\n", @$suggestion if ref $suggestion eq 'ARRAY';
-            return qq~<a class="spell" title="$suggestion">$_</a>~;
-        }
+        return $word;
     }
+    my $suggestion = join "\n", map russian($_), $spellchecker->suggest($koi);
+    return qq~<a class="spell" title="$suggestion">$word</a>~;
 }
 
 
@@ -3133,11 +3138,11 @@ sub process_text
             $i = !$i;
             next if $i;
             # игнорировать entities, учитывать апострофы и дефисы, первый символ должен быть буквой
-            s/(?<!&)(\w(?:\w|[\'\-])*)/check_spelling($1)/eg;
+            s/(?<!(?:\w|&))(\w(?:\w|[\'\-])*)/check_spelling($1)/eg;
         }
         $html_code .= join '$', @tex_parts;
-        # split игнорирует разделитель в конце строки
-        $html_code .= '$' if $text_span =~ /\$$/;
+        # split игнорирует разделитель в конце строки, m// игнорирует \n в конце строки, поэтому \z
+        $html_code .= '$' if $text_span =~ /\$\z/s;
     }
     else
     {
@@ -3166,7 +3171,7 @@ sub start_element
 sub end_element
 {
     my ($el) = @_;
-    process_text;    
+    process_text;
     $html_code .= "</$el>";
 }
 
@@ -3793,7 +3798,8 @@ sub generate_menu
         { item => res_str(502), href => url_f('contests') },
         { item => res_str(525), href => url_f('problems') },
         { item => res_str(526), href => url_f('users') },
-        { item => res_str(510), href => url_f('console') },
+        { item => res_str(510),
+          href => url_f('console', $is_jury ? () : (uf => $uid || get_anonymous_uid())) },
     );   
 
     if ($is_jury)

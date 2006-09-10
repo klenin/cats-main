@@ -295,9 +295,7 @@ sub problem_update
 sub set_object_id 
 {
     my ($name, $id) = @_;
-    if (!defined $name) { 
-        return; 
-    }
+    $name or return; 
     error "Duplicate object reference: '$name'\n" if defined $objects{$name};
     $objects{$name} = $id;
 }
@@ -306,9 +304,8 @@ sub set_object_id
 sub get_object_id 
 {
     my ($name, $tag) = @_;
-    if (!defined $name) { return undef; }
+    defined $name or return undef;
     error "Undefined object reference: '$name' in '$tag'\n" unless defined $objects{$name};
-
     return $objects{$name};
 }
 
@@ -325,7 +322,7 @@ sub get_source_de
     {
         my @ext_list = split(/\;/, $file_ext);
 
-        foreach my $i (@ext_list) {
+        for my $i (@ext_list) {
             if ($i ne '' && $i eq $ext) {
                 return ($did, $description);
             }
@@ -384,6 +381,7 @@ sub read_member_named
     return
         ('src' => read_member($member), 'path' => $p{name});
 }
+
 
 sub create_generator
 {
@@ -520,7 +518,7 @@ sub parse_problem_content
 
         for ($atts{'rank'})
         {
-            /\d+/ or error "Bad rank: '$_'\n";
+            /^\d+$/ or error "Bad rank: '$_'\n";
             !defined $test_rank_array{$_}
                 or error "Duplicate test $_\n";
             $test_rank_array{$_} = 1;
@@ -578,15 +576,18 @@ sub parse_problem_content
 
     if ($el eq 'Out' && $test{in})
     {
-        if (defined $atts{'src'}) {
+        if (defined $atts{'src'})
+        {
             my $member = $zip->memberNamed($atts{'src'}) 
                 or error "Invalid test output file reference: '$atts{'src'}'\n";
             $test{'out_file'} = read_member($member);
         }
-        elsif (defined $atts{'use'}) {
+        elsif (defined $atts{'use'})
+        {
             $test{'std_solution_id'} = get_object_id($atts{'use'}, $el);
         }
-        else {
+        else
+        {
             error "Test output file not specified $test{rank}\n";
         }
     }       
@@ -610,13 +611,16 @@ sub parse_problem_content
 
     if ($el eq 'Out' && $test_range{in})
     {
-        if (defined $atts{'src'}) {
+        if (defined $atts{'src'})
+        {
             $test_range{'out_src'} = $atts{'src'};
         }
-        elsif (defined $atts{'use'}) {
+        elsif (defined $atts{'use'})
+        {
             $test_range{'std_solution'} = $atts{'use'};
         }
-        else {
+        else
+        {
             error "Test output file not specified for test range\n";
         }
     }       

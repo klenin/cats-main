@@ -7,7 +7,7 @@
         <TMPL_IF is_jury>
             <a href="#" onclick="add_id(<TMPL_VAR id>); return false;" title="<TMPL_VAR id>"><TMPL_VAR time></a>
         <TMPL_ELSE>
-            <TMPL_IF href_details><a href="<TMPL_VAR href_details>" target='_blank'><TMPL_VAR time></a>
+            <TMPL_IF href_details><a href="<TMPL_VAR href_details>" target="_blank"><TMPL_VAR time></a>
             <TMPL_ELSE><span class="linksize"><TMPL_VAR time></span></TMPL_IF>
         </TMPL_IF>
     </td>

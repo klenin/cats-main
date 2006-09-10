@@ -22,6 +22,7 @@
 <tr><td>-ho:[0|1]</td><td>SP_HIDE_OUTPUT</td><td>Не показывать выходной поток (STDOUT) приложения.</td></tr>
 <tr><td>-sr:[file]</td><td>SP_REPORT_FILE</td><td>Сохранить отчет в файл.</td></tr>
 <tr><td>-so:[file]</td><td>SP_OUTPUT_FILE</td><td>Сохранить выходной поток в файл.</td></tr>
+<tr><td>-i:[file]</td><td>SP_INPUT_FILE</td><td>Получить входной поток из файла.</td></tr>
 </table>
 <p>
  Параметры командной строки перекрывают значения переменных окружения.</p>
