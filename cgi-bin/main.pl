@@ -3,7 +3,6 @@ use strict;
 use warnings;
 no warnings 'redefine';
 
-#use File::Temp;
 use File::Temp qw/tempfile tmpnam mktemp/;
 use Encode;
 use encoding 'utf8';
@@ -127,6 +126,19 @@ sub get_contest_html_params
 }
 
 
+sub register_contest_account
+{
+    my %p = @_;
+    $p{$_} ||= 0 for (qw(is_jury is_pop is_hidden is_virtual));
+    $p{$_} ||= 1 for (qw(is_ooc is_remote));
+    $p{id} = new_id;
+    my ($f, $v) = (join(', ', keys %p), join(',', map '?', keys %p));
+    $dbh->do(qq~
+        INSERT INTO contest_accounts ($f) VALUES ($v)~, undef,
+        values %p);
+}
+
+
 sub contests_new_save
 {
     my $p = get_contest_html_params() or return;
@@ -136,15 +148,15 @@ sub contests_new_save
     $p->{free_registration} = !$p->{free_registration};
     $dbh->do(qq~
         INSERT INTO contests (
-          id, title, start_date, freeze_date, finish_date, defreeze_date, rules,
-          ctype,
-          closed, run_all_tests, show_all_tests,
-          show_test_resources, show_checker_comment, is_official, show_packages, local_only,
-          is_hidden
+            id, title, start_date, freeze_date, finish_date, defreeze_date, rules,
+            ctype,
+            closed, run_all_tests, show_all_tests,
+            show_test_resources, show_checker_comment, is_official, show_packages, local_only,
+            is_hidden
         ) VALUES(
-          ?, ?, CATS_TO_DATE(?), CATS_TO_DATE(?), CATS_TO_DATE(?), CATS_TO_DATE(?), ?,
-          0,
-          ?, ?, ?, ?, ?, ?, ?, ?, ?)~,
+            ?, ?, CATS_TO_DATE(?), CATS_TO_DATE(?), CATS_TO_DATE(?), CATS_TO_DATE(?), ?,
+            0,
+            ?, ?, ?, ?, ?, ?, ?, ?, ?)~,
         {},
         $cid, @$p{contest_string_params()},
         @$p{contest_checkbox_params()}
@@ -155,15 +167,9 @@ sub contests_new_save
         SELECT id FROM accounts WHERE srole = ?~, undef, $cats::srole_root);
     for (@$root_accounts)
     {
-        $dbh->do(qq~
-            INSERT INTO contest_accounts (
-              id, contest_id, account_id,
-              is_jury, is_pop, is_hidden, is_ooc, is_remote
-            ) VALUES (?,?,?,?,?,?,?,?)~,
-            {},
-            new_id, $cid, $_,
-            1, 1, 1, 1, 1
-        );
+        register_contest_account(
+            contest_id => $cid, account_id => $_,
+            is_jury => 1, is_pop => 1, is_hidden => 1);
     }
     $dbh->commit;
 }
@@ -177,14 +183,14 @@ sub try_contest_params_frame
 
     my $p = $dbh->selectrow_hashref(qq~
         SELECT
-          title AS contest_name,
-          CATS_DATE(start_date) AS start_date,
-          CATS_DATE(freeze_date) AS freeze_date,
-          CATS_DATE(finish_date) AS finish_date,
-          CATS_DATE(defreeze_date) AS open_date,
-          1 - closed AS free_registration,
-          run_all_tests, show_all_tests, show_test_resources, show_checker_comment,
-          is_official, show_packages, local_only, rules, is_hidden
+            title AS contest_name,
+            CATS_DATE(start_date) AS start_date,
+            CATS_DATE(freeze_date) AS freeze_date,
+            CATS_DATE(finish_date) AS finish_date,
+            CATS_DATE(defreeze_date) AS open_date,
+            1 - closed AS free_registration,
+            run_all_tests, show_all_tests, show_test_resources, show_checker_comment,
+            is_official, show_packages, local_only, rules, is_hidden
         FROM contests WHERE id = ?~, { Slice => {} },
         $id
     );
@@ -212,12 +218,12 @@ sub contests_edit_save
     $p->{free_registration} = !$p->{free_registration};
     $dbh->do(qq~
         UPDATE contests SET
-          title=?, start_date=CATS_TO_DATE(?), freeze_date=CATS_TO_DATE(?), 
-          finish_date=CATS_TO_DATE(?), defreeze_date=CATS_TO_DATE(?), rules=?,
-          closed=?, run_all_tests=?, show_all_tests=?,
-          show_test_resources=?, show_checker_comment=?, is_official=?, show_packages=?,
-          local_only=?, is_hidden=?
-          WHERE id=?~,
+            title=?, start_date=CATS_TO_DATE(?), freeze_date=CATS_TO_DATE(?), 
+            finish_date=CATS_TO_DATE(?), defreeze_date=CATS_TO_DATE(?), rules=?,
+            closed=?, run_all_tests=?, show_all_tests=?,
+            show_test_resources=?, show_checker_comment=?, is_official=?, show_packages=?,
+            local_only=?, is_hidden=?
+        WHERE id=?~,
         {},
         @$p{contest_string_params()},
         @$p{contest_checkbox_params()},
@@ -238,7 +244,8 @@ sub contest_online_registration
         or return msg(111);
 
     my ($finished, $closed) = $dbh->selectrow_array(qq~
-        SELECT CATS_SYSDATE() - finish_date, closed FROM contests WHERE id = ?~, {}, $cid);
+        SELECT CATS_SYSDATE() - finish_date, closed FROM contests WHERE id = ?~, undef,
+        $cid);
         
     $finished <= 0
         or return msg(108);
@@ -246,12 +253,7 @@ sub contest_online_registration
     !$closed
         or return msg(105);
 
-    $dbh->do(qq~
-        INSERT INTO contest_accounts (
-          id, contest_id,
-          account_id, is_jury, is_pop, is_hidden, is_ooc, is_remote, is_virtual, diff_time
-        ) VALUES (?,?,?,?,?,?,?,?,?,?)~, {},
-          new_id, $cid, $uid, 0, 0, 0, 1, 1, 0, 0);
+    register_contest_account(contest_id => $cid, account_id => $uid, diff_time => 0);
     $dbh->commit;
 }
 
@@ -266,7 +268,7 @@ sub contest_virtual_registration
 
     my ($time_since_start, $time_since_finish, $closed, $is_official) = $dbh->selectrow_array(qq~
         SELECT CATS_SYSDATE() - start_date, CATS_SYSDATE() - finish_date, closed, is_official
-          FROM contests WHERE id=?~, {},
+            FROM contests WHERE id=?~, {},
         $cid);
         
     $time_since_start >= 0
@@ -281,20 +283,19 @@ sub contest_virtual_registration
     # при повторной регистрации удаляем старые результаты
     if ($registered)
     {
-        $dbh->do(qq~DELETE FROM reqs WHERE account_id = ? AND contest_id = ?~, {}, $uid, $cid);
-        $dbh->do(qq~DELETE FROM contest_accounts WHERE account_id = ? AND contest_id = ?~, {}, $uid, $cid);
+        $dbh->do(qq~
+            DELETE FROM reqs WHERE account_id = ? AND contest_id = ?~, undef,
+            $uid, $cid);
+        $dbh->do(qq~
+            DELETE FROM contest_accounts WHERE account_id = ? AND contest_id = ?~, undef,
+            $uid, $cid);
         $dbh->commit;
         msg(113);
     }
 
-    $dbh->do(qq~
-        INSERT INTO contest_accounts (
-          id, contest_id, account_id, is_jury, is_pop, is_hidden, is_ooc, is_remote, is_virtual, diff_time
-        ) VALUES (
-          ?,?,?,?,?,?,?,?,?,?
-        )~, {}, 
-        new_id, $cid, $uid, 0, 0, 0, 1, 1, 1, $time_since_start
-    );
+    register_contest_account(
+        contest_id => $cid, account_id => $uid,
+        is_virtual => 1, diff_time => $time_since_start);
     $dbh->commit;
 }
 
@@ -314,10 +315,12 @@ sub contests_select_current
 
     $t->param(selected_contest_title => $title);
 
-    if ($time_since_finish > 0) {
+    if ($time_since_finish > 0)
+    {
         msg(115);
     }
-    elsif (!$registered) {
+    elsif (!$registered)
+    {
         msg(116);
     }
 }
@@ -980,15 +983,12 @@ sub problems_new_save
     $file =~ /\.(zip|ZIP)$/
         or return msg(53);
     my $fname = save_uploaded_file($file);
-    my $pid = new_id;
     my $problem_code = param('problem_code');
     
-    my ($error, $import_log) = CATS::Problem::import_problem($fname, $cid, $pid, 0, '');
-   
-    $import_log = Encode::encode_utf8(escape_html($import_log));
-    $t->param(problem_import_log => $import_log);
-
-    $error ||= !add_problem_to_contest($pid, $problem_code);
+    my CATS::Problem $p = CATS::Problem->new;
+    my $error = $p->load($fname, $cid, new_id, 0);
+    $t->param(problem_import_log => $p->encoded_import_log());
+    $error ||= !add_problem_to_contest($p->{id}, $problem_code);
 
     $error ? $dbh->rollback : $dbh->commit;
     msg(52) if $error;
@@ -1026,11 +1026,10 @@ sub problems_replace
 
     my $fname = save_uploaded_file($file);
 
-    my $allow_rename = param('allow_rename');
-    my ($error, $import_log) = CATS::Problem::import_problem(
-        $fname, $cid, $pid, 1, $allow_rename ? '' : $old_title);
-    $import_log = Encode::encode_utf8(escape_html($import_log));
-    $t->param(problem_import_log => $import_log);
+    my CATS::Problem $p = CATS::Problem->new;
+    $p->{old_title} = $old_title unless param('allow_rename');
+    my $error = $p->load($fname, $cid, $pid, 1);
+    $t->param(problem_import_log => $p->encoded_import_log());
 
     $error ? $dbh->rollback : $dbh->commit;
     msg(52) if $error;
@@ -1170,7 +1169,8 @@ sub get_source_de
  
         foreach my $i (@ext_list)
         {
-            if ($i ne '' && $i eq $ext) {
+            if ($i ne '' && $i eq $ext)
+            {
                 return ($did, $description);
             }
         }
@@ -3122,7 +3122,8 @@ sub check_spelling
     {
         return $word;
     }
-    my $suggestion = join "\n", map russian($_), $spellchecker->suggest($koi);
+    my $i = 0;
+    my $suggestion = join "\n", grep $i++ < 20, map russian($_), $spellchecker->suggest($koi);
     return qq~<a class="spell" title="$suggestion">$word</a>~;
 }
 

@@ -600,8 +600,10 @@ sub generate_password
 }
 
 
+my $next_id = 100;
 sub new_id
 {
+    return $next_id++ unless $dbh;
     if ( $CATS::Connect::db_dsn =~ /InterBase/ )
     {
         $dbh->selectrow_array('SELECT GEN_ID(key_seq, 1) FROM RDB$DATABASE');
