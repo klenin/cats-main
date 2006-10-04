@@ -127,6 +127,7 @@ sub _u { splice(@_, 1, 0, { Slice => {} }); @_; }
 
 sub sql_connect 
 {
+    use Carp;
     $dbh = DBI->connect(
       $CATS::Connect::db_dsn, $CATS::Connect::db_user, $CATS::Connect::db_password,
       { AutoCommit => 0, LongReadLen => 1024*1024*8, FetchHashKeyName => 'NAME_lc' }
@@ -141,7 +142,7 @@ sub sql_connect
     $dbh->{ HandleError } = sub {
 
         my $m = "DBI error: ".$_[0] ."\n";
-        die $m;    
+        confess $m;    
         fatal_error($m);
 
         #$dbi_error .= $m;

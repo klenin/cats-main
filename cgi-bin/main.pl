@@ -15,6 +15,8 @@ use Algorithm::Diff;
 use Text::Aspell;
 
 use CATS::Constants;
+use CATS::BinaryFile;
+use CATS::DevEnv;
 use CATS::Misc qw(:all);
 use CATS::Data qw(:all);
 use CATS::IP;
@@ -1080,12 +1082,13 @@ sub problems_all_frame
     }
 
     my $where_cond = join(' AND ', @{$where->{cond}}) || '1=1';
+    # TODO: применить SUM(CASE ...) после обновления FB
     my $c = $dbh->prepare(qq~
         SELECT P.id, P.title, C.title, C.id,
-          (SELECT COUNT(*) FROM reqs D WHERE D.problem_id = P.id AND D.state = $cats::st_accepted), 
-          (SELECT COUNT(*) FROM reqs D WHERE D.problem_id = P.id AND D.state = $cats::st_wrong_answer), 
-          (SELECT COUNT(*) FROM reqs D WHERE D.problem_id = P.id AND D.state = $cats::st_time_limit_exceeded),
-          (SELECT COUNT(*) FROM contest_problems CP WHERE CP.problem_id = P.id AND CP.contest_id=?)
+            (SELECT COUNT(*) FROM reqs D WHERE D.problem_id = P.id AND D.state = $cats::st_accepted), 
+            (SELECT COUNT(*) FROM reqs D WHERE D.problem_id = P.id AND D.state = $cats::st_wrong_answer), 
+            (SELECT COUNT(*) FROM reqs D WHERE D.problem_id = P.id AND D.state = $cats::st_time_limit_exceeded),
+            (SELECT COUNT(*) FROM contest_problems CP WHERE CP.problem_id = P.id AND CP.contest_id=?)
         FROM problems P INNER JOIN contests C ON C.id = P.contest_id
         WHERE $where_cond ~ . order_by);
     # interbase bug
@@ -1121,16 +1124,6 @@ sub problems_all_frame
 }
 
 
-sub save_binary_file
-{
-    my ($fname, $data) = @_;
-    open my $fh, '>', $fname;
-    binmode($fh);
-    syswrite($fh, $data, length($data));
-    close $fh;
-}
-
-
 sub download_problem
 {
     undef $t;
@@ -1147,37 +1140,9 @@ sub download_problem
     {
         my ($zip) = $dbh->selectrow_array(qq~
             SELECT zip_archive FROM problems WHERE id = ?~, undef, $pid);
-        save_binary_file($fname, $zip);
+        CATS::BinaryFile::save($fname, $zip);
     }
     print redirect(-uri => $fname);
-}
-
-
-sub get_source_de
-{
-     my $file_name = shift;
-
-     my $c = $dbh->prepare(qq~
-        SELECT id, code, description, file_ext FROM default_de WHERE in_contests=1 ORDER BY code~);
-     $c->execute;
-    
-     my ( $vol, $dir, $fname, $name, $ext ) = split_fname( lc $file_name );
-
-     while (my ($did, $code, $description, $file_ext) = $c->fetchrow_array)
-     {
-        my @ext_list = split(/\;/, $file_ext);
- 
-        foreach my $i (@ext_list)
-        {
-            if ($i ne '' && $i eq $ext)
-            {
-                return ($did, $description);
-            }
-        }
-     }
-     $c->finish;
-    
-     return undef;
 }
 
 
@@ -1239,25 +1204,23 @@ sub problems_submit
         return msg(131);
     }
     my $src = '';
-
-    my ($br, $buffer);
-    while ($br = read($file, $buffer, 1024))
+    while (read($file, my $buffer, 1024))
     {
         length $src < 32767
             or return msg(10);
         $src .= $buffer;
     }
-
-    $src ne '' or return msg(11);
+    $src or return msg(11);
 
     my $did = param('de_id');
 
     if (param('de_id') eq 'by_extension')
     {
-        ($did, my $de_name) = get_source_de($file);
-        defined $did
+        my $de_list = CATS::DevEnv->new($dbh, active_only => 1);
+        my $de = $de_list->by_file_extension($file)
             or return msg(13);
-        $t->param(de_name => $de_name);
+        $did = $de->{id};
+        $t->param(de_name => $de->{description});
     }
 
     # Защита от спама и случайных ошибок -- запрещаем повторяющийся исходный код.
@@ -1281,7 +1244,7 @@ sub problems_submit
             ?,?,?,?,CATS_SYSDATE(),CATS_SYSDATE(),CATS_SYSDATE(),?,?)~,
         {},
         $rid, $submit_uid, $pid, $cid, $cats::st_not_processed, 0);
-    
+
     my $s = $dbh->prepare(qq~
         INSERT INTO sources(req_id, de_id, src, fname, hash) VALUES (?,?,?,?,?)~);
     $s->bind_param(1, $rid);
@@ -1387,6 +1350,34 @@ sub problem_status_names()
 }
 
 
+sub problems_frame_jury_action
+{
+    if($is_jury)
+    {
+        defined param('link_save') and return problems_link_save;
+        defined param('new_save') and return problems_new_save;
+        defined param('change_status') and return problems_change_status;
+        defined param('replace_direct') and return problems_replace;
+        defined param('std_solution') and return problems_submit_std_solution;
+        defined param('mass_retest') and return problems_mass_retest;
+    }
+
+    if (defined url_param('delete') && $is_jury)
+    {
+        my $cpid = url_param('delete');
+        my $pid = $dbh->selectrow_array(qq~SELECT problem_id FROM contest_problems WHERE id=?~, {}, $cpid);
+
+        $dbh->do(qq~DELETE FROM contest_problems WHERE id=?~, {}, $cpid);
+        unless ($dbh->selectrow_array(qq~SELECT COUNT(*) FROM contest_problems WHERE problem_id=?~, {}, $pid))
+        {
+            $dbh->do(qq~DELETE FROM problems WHERE id=?~, {}, $pid);
+        }
+        $dbh->commit;
+    }
+
+}
+
+
 sub problems_frame 
 {
     my $show_packages = 1;
@@ -1419,36 +1410,12 @@ sub problems_frame
 
     $is_jury && defined url_param('new') and return problems_new_frame;
     $is_jury && defined url_param('link') and return problems_all_frame;
-
     defined url_param('kw') and return problems_all_frame;
-
-    if (defined url_param('delete') && $is_jury)
-    {
-        my $cpid = url_param('delete');
-        my $pid = $dbh->selectrow_array(qq~SELECT problem_id FROM contest_problems WHERE id=?~, {}, $cpid);
-
-        $dbh->do(qq~DELETE FROM contest_problems WHERE id=?~, {}, $cpid);
-
-        unless ($dbh->selectrow_array(qq~SELECT COUNT(*) FROM contest_problems WHERE problem_id=?~, {}, $pid))
-        {
-            $dbh->do(qq~DELETE FROM problems WHERE id=?~, {}, $pid);
-        }
-        $dbh->commit;
-    }
 
     defined param('download') && $show_packages and download_problem;
 
     init_listview_template( "problems$cid" . ($uid || ''), 'problems', 'main_problems.htm' );      
-
-    if($is_jury)
-    {
-        defined param('link_save') and problems_link_save;
-        defined param('new_save') and problems_new_save;
-        defined param('change_status') and problems_change_status;
-        defined param('replace_direct') and problems_replace;
-        defined param('std_solution') and problems_submit_std_solution;
-        defined param('mass_retest') and  problems_mass_retest;
-    }
+    problems_frame_jury_action;
 
     if (defined param('submit'))
     {
@@ -1538,17 +1505,10 @@ sub problems_frame
 
     $sth->finish;
 
-    $sth = $dbh->prepare(qq~SELECT id, description FROM default_de WHERE in_contests=1 ORDER BY code~);
-    $sth->execute;
-
-    my @de = ({ de_id => "by_extension", de_name => res_str(536) });
-
-    while (my ($de_id, $de_name) = $sth->fetchrow_array)
-    {
-        push @de, { de_id => $de_id, de_name => $de_name };
-    }
-
-    $sth->finish;
+    my $de_list = CATS::DevEnv->new($dbh, active_only => 1);
+    my @de = (
+        { de_id => "by_extension", de_name => res_str(536) },
+        map {{ de_id => $_->{id}, de_name => $_->{description} }} @{$de_list->{_de_list}} );
     
     my @submenu = ( { href_item => url_f('problem_text'), item_name => res_str(538), item_target => '_blank' } );
 
@@ -3211,7 +3171,7 @@ sub download_image
     $name =~ tr/a-zA-Z0-9_//cd;
     $ext =~ tr/a-zA-Z0-9_//cd;
     my $fname = "./download/img/img_${hash}_$name.$ext";
-    -f $fname or save_binary_file($fname, $pic);
+    -f $fname or CATS::BinaryFile::save($fname, $pic);
     return $fname;
 }
 
@@ -3447,7 +3407,9 @@ sub envelope_frame
 sub about_frame
 {
     init_template('main_about.htm');
-    my $problem_count = $dbh->selectrow_array(qq~SELECT COUNT(*) FROM problems~);
+    my $problem_count = $dbh->selectrow_array(qq~
+        SELECT COUNT(*) FROM problems P INNER JOIN contests C ON C.id = P.contest_id
+        WHERE C.is_hidden = 0 OR C.is_hidden IS NULL~);
     $t->param(problem_count => $problem_count);
 }
 

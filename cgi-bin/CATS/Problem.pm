@@ -10,6 +10,7 @@ use CATS::Misc qw(:all);
 use CATS::BinaryFile;
 use Archive::Zip qw(:ERROR_CODES :CONSTANTS);
 use XML::Parser::Expat;
+use CATS::DevEnv;
 
 use fields qw(
     contest_id id import_log debug problem checker
@@ -17,7 +18,7 @@ use fields qw(
     tests samples objects keywords
     imports solutions generators modules pictures
     current_tests current_sample
-    stml zip zip_archive old_title replace tag_stack
+    stml zip zip_archive old_title replace tag_stack has_checker de_list
 );
 
 sub new
@@ -43,6 +44,7 @@ sub encoded_import_log
     return Encode::encode_utf8(escape_html($self->{import_log}));
 }
 
+
 sub load
 {
     my CATS::Problem $self = shift;
@@ -59,8 +61,8 @@ sub load
 
         my @xml_members = $self->{zip}->membersMatching('.*\.xml');
 
-        $self->error("*.xml not found") if !@xml_members;
-        $self->error("found severl *.xml in archive") if @xml_members > 1;
+        $self->error('*.xml not found') if !@xml_members;
+        $self->error('found several *.xml in archive') if @xml_members > 1;
 
         $self->{tag_stack} = [];
         my $parser = new XML::Parser::Expat;
@@ -81,9 +83,17 @@ sub load
     else
     {
         $dbh->commit unless $self->{debug};
-        $self->note("Success");
+        $self->note('Success');
         return 0;
     }
+}
+
+
+sub checker_added
+{
+    my CATS::Problem $self = shift;
+    $self->{has_checker} and $self->error('Found several checkers');
+    $self->{has_checker} = 1;
 }
 
 
@@ -98,8 +108,7 @@ sub validate
         my @order = sort { $a <=> $b } keys %$objects;
         for (1..@order)
         {
-            $order[$_ - 1] == $_
-                or $self->error("Missing $name #$_");
+            $order[$_ - 1] == $_ or $self->error("Missing $name #$_");
         }
     };
 
@@ -277,6 +286,7 @@ sub start_tag_Problem
         std_checker => $atts->{stdChecker},
         max_points => $atts->{maxPoints}
     };
+    $self->checker_added if $self->{problem}->{std_checker};
     my $ot = $self->{old_title};
     $self->error("Problem was renamed unexpectedly, old title: $ot")
         if $ot && $self->{problem}->{title} ne $ot;
@@ -325,13 +335,13 @@ sub start_tag_Checker
     my $style = $atts->{style} || 'legacy';
     for ($style)
     {
-        /^legacy$/ && do { $self->warning("Legacy checker found!"); last; };
+        /^legacy$/ && do { $self->warning('Legacy checker found!'); last; };
         /^testlib$/ && last;
-        $self->error("Unknown checker style (must be either 'legacy' or 'testlib')");
+        $self->error(q~Unknown checker style (must be either 'legacy' or 'testlib')~);
     }
 
-    $self->{checker} and $self->error("Found several checkers");
-    $self->{checker} = {    
+    $self->checker_added;
+    $self->{checker} = {
         id => new_id,
         $self->read_member_named(name => $atts->{src}, kind => 'checker'),
         de_code => $atts->{de_code},
@@ -344,7 +354,7 @@ sub start_tag_Checker
 sub start_tag_Generator
 {
     (my CATS::Problem $self, my $atts) = @_;
-    push @{$self->{generators}}, create_generator($atts);
+    push @{$self->{generators}}, $self->create_generator($atts);
 }
 
 
@@ -353,7 +363,7 @@ sub start_tag_GeneratorRange
     (my CATS::Problem $self, my $atts) = @_;
     for ($atts->{from} .. $atts->{to})
     {
-        push @{$self->{generators}}, create_generator({
+        push @{$self->{generators}}, $self->create_generator({
             name => interpolate_rank($atts->{name}, $_),
             src => interpolate_rank($atts->{src}, $_),
             guid => interpolate_rank($atts->{export}, $_),
@@ -398,8 +408,7 @@ sub start_tag_Import
     {
         !$t || $stype == $t || $cats::source_modules{$stype} == $t
             or $self->error("Import type check failed for guid='$guid' ($t vs $stype)");
-        $self->error("Found several checkers")
-            if $self->{checker} && ($stype == $cats::checker || $stype == $cats::testlib_checker);
+        $self->checker_added if $stype == $cats::checker || $stype == $cats::testlib_checker;
         $self->note("Imported source from guid='$guid'");
     }
     else
@@ -623,10 +632,8 @@ sub delete_child_records($)
     for (qw(pictures samples tests problem_sources problem_sources_import problem_keywords))
     {
         $dbh->do(qq~
-            DELETE FROM $_ WHERE problem_id = ?~, undef, $pid
-        ) or return undef;
+            DELETE FROM $_ WHERE problem_id = ?~, undef, $pid);
     }
-    1;
 }
 
 
@@ -640,25 +647,25 @@ sub end_tag_Problem
     
     if ($self->{replace})
     {
-        delete_child_records($self->{id})
-            or $self->error("Couldn't update problem: $dbh->errstr");
+        delete_child_records($self->{id});
     }
 
     my $sql = $self->{replace}
     ? q~
         UPDATE problems 
         SET
-            contest_id=?, title=?, lang=?, time_limit=?, memory_limit=?, difficulty=?, author=?, 
-            input_file=?, output_file=?, 
+            contest_id=?,
+            title=?, lang=?, time_limit=?, memory_limit=?, difficulty=?, author=?, input_file=?, output_file=?, 
             statement=?, pconstraints=?, input_format=?, output_format=?, 
             zip_archive=?, upload_date=CATS_SYSDATE(), std_checker=?, last_modified_by=?,
             max_points=?, hash=NULL
         WHERE id = ?~
     : q~
         INSERT INTO problems (
-            contest_id, title, lang, time_limit, memory_limit, difficulty, author, 
-            input_file, output_file, statement, pconstraints, input_format, output_format, 
-            zip_archive, upload_date, std_checker, last_modified_by, max_points, id
+            contest_id,
+            title, lang, time_limit, memory_limit, difficulty, author, input_file, output_file,
+            statement, pconstraints, input_format, output_format, zip_archive,
+            upload_date, std_checker, last_modified_by, max_points, id
         ) VALUES (
             ?,?,?,?,?,?,?,?,?,?,?,?,?,?,CATS_SYSDATE(),?,?,?,?
         )~;
@@ -674,62 +681,34 @@ sub end_tag_Problem
     $c->bind_param($i++, $uid);
     $c->bind_param($i++, $self->{problem}->{max_points});
     $c->bind_param($i++, $self->{id});
-    $c->execute or $self->error("Could not save problem: $dbh->errstr");
+    $c->execute;
     
     $self->insert_problem_content;
 }                   
                     
                     
-sub get_source_de($) 
-{
-    my $fname = shift;
-
-    my ($vol, $dir, $file_name, $name, $ext) = split_fname($fname);
-
-    my $c = $dbh->prepare(qq~SELECT id, code, description, file_ext FROM default_de~);
-    $c->execute;
-    while (my ($did, $code, $description, $file_ext) = $c->fetchrow_array)
-    {
-        my @ext_list = split(/\;/, $file_ext);
-
-        for my $i (@ext_list)
-        {
-            return ($did, $description) if $i ne '' && $i eq $ext;
-        }
-    }
-    return undef;
-}
-
-
-sub get_de_id($$)
+sub get_de_id
 {
     my CATS::Problem $self = shift;
     my ($code, $path) = @_;
+    
+    $self->{de_list} ||= CATS::DevEnv->new($dbh);
+    
+    my $de;
     if (defined $code)
     {
-        my $did = $dbh->selectrow_array(qq~SELECT id FROM default_de WHERE code=?~, {}, $code);
-        unless (defined $did)
-        {
-            $self->error("Unknown de code: '$code' for source: '$path'");
-        }
-        return $did;
-    } 
-    else 
-    {
-        my ($did, $de_desc) = get_source_de($path);
-        if (defined $did)
-        {
-            $self->note("Detected de: '$de_desc' for source: '$path'");
-            return $did;
-        }
-        else
-        {
-            self->error("Can't detect de for source: '$path'");
-        }
+        $de = $self->{de_list}->by_code($code)
+            or $self->error("Unknown DE code: '$code' for source: '$path'");
     }
-    return undef;
+    else
+    {
+        $de = $self->{de_list}->by_file_extension($path)
+            or $self->error("Can't detect de for source: '$path'");
+        $self->note("Detected DE: '$de->{description}' for source: '$path'");
+    }
+    return $de->{id};
 }
-                    
+
 
 sub apply_test_rank
 {
@@ -746,16 +725,14 @@ sub insert_problem_source
 {
     my CATS::Problem $self = shift;
     my %p = @_;
-    my $s = $p{source_object} or die;
+    use Carp;
+    my $s = $p{source_object} or confess;
 
     if ($s->{guid})
     {
-        if (my $dup_id = $dbh->selectrow_array(qq~
-            SELECT problem_id FROM problem_sources WHERE guid = ?~, undef, $s->{guid})
-        )
-        {
-            self->warning("Duplicate guid with problem $dup_id");
-        }
+        my $dup_id = $dbh->selectrow_array(qq~
+            SELECT problem_id FROM problem_sources WHERE guid = ?~, undef, $s->{guid});
+        $self->warning("Duplicate guid with problem $dup_id") if $dup_id;
     }
     my $c = $dbh->prepare(qq~
         INSERT INTO problem_sources (
@@ -764,7 +741,7 @@ sub insert_problem_source
 
     $c->bind_param(1, $s->{id});
     $c->bind_param(2, $self->{id});
-    $c->bind_param(3, get_de_id($s->{de_code}, $s->{path}));
+    $c->bind_param(3, $self->get_de_id($s->{de_code}, $s->{path}));
     $c->bind_param(4, $s->{src}, { ora_type => 113 });
     $c->bind_param(5, $s->{path});
     $c->bind_param(6, $p{source_type});
@@ -783,40 +760,37 @@ sub insert_problem_content
     my CATS::Problem $self = shift;
 
     my $p = $self->{problem};
-    !defined $p->{checker} || !defined $p->{std_checker}
-        or $self->error("Both user checker and standard checker specified");
+
+    $self->{has_checker} or $self->error('No checker specified');
+
     if ($p->{std_checker})
     {
         $self->note("Checker: $p->{std_checker}");
     }
     elsif (my $c = $p->{checker})
     {
-        insert_problem_source(
+        $self->insert_problem_source(
             source_object => $c, type_name => 'Checker',
             source_type => ($c->{style} eq 'legacy' ? $cats::checker : $cats::testlib_checker)
         );
     }
-    else
-    {
-        $self->error("No checker specified");
-    }
 
     for(@{$self->{generators}})
     {
-        insert_problem_source(
+        $self->insert_problem_source(
             source_object => $_, source_type => $cats::generator, type_name => 'Generator');
     }
 
     for(@{$self->{solutions}})
     {
-        insert_problem_source(
+        $self->insert_problem_source(
             source_object => $_, type_name => 'Solution',
             source_type => $_->{checkup} ? $cats::adv_solution : $cats::solution);
     }
 
     for (@{$self->{modules}})
     {
-        insert_problem_source(
+        $self->insert_problem_source(
             source_object => $_, source_type => $_->{type_code},
             type_name => "Module for $_->{type}");
     }
@@ -827,7 +801,7 @@ sub insert_problem_content
             INSERT INTO problem_sources_import (problem_id, guid) VALUES (?, ?)~, undef,
             $self->{id}, $_->{guid});
     }
-    
+
     my $c = $dbh->prepare(qq~
         INSERT INTO pictures(id, problem_id, extension, name, pic)
             VALUES (?,?,?,?,?)~);
@@ -850,7 +824,7 @@ sub insert_problem_content
         ) VALUES (?,?,?,?,?,?,?,?)~
     );
 
-    for (values %{$self->{tests}})
+    for (sort { $a->{rank} <=> $b->{rank} } values %{$self->{tests}})
     {
         $c->bind_param(1, $self->{id});
         $c->bind_param(2, $_->{rank});
@@ -878,21 +852,21 @@ sub insert_problem_content
         $c->execute;
         $self->note("Sample test $_->{rank} added");
     }
-    
+
     $c = $dbh->prepare(qq~
         INSERT INTO problem_keywords (problem_id, keyword_id) VALUES (?, ?)~);
     for (keys %{$self->{keywords}})
     {
         my ($keyword_id) = $dbh->selectrow_array(q~
-            SELECT id FROM keywords WHERE code = ?~, undef, $_->{code});
+            SELECT id FROM keywords WHERE code = ?~, undef, $_);
         if ($keyword_id)
         {
             $c->execute($self->{id}, $keyword_id);
-            $self->note("Keyword added: $_->{code}");
+            $self->note("Keyword added: $_");
         }
         else
         {
-            $self->warning("Unknown keyword: $_->{code}");
+            $self->warning("Unknown keyword: $_");
         }
     }
 }
