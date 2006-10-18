@@ -55,13 +55,14 @@ use strict;
 use DBD::InterBase;
 use HTML::Template;
 #use CGI::Fast( ':standard' );
-use CGI( ':standard' );
+use CGI (':standard');
 use Text::Balanced qw(extract_tagged extract_bracketed);
-use CGI::Util qw( rearrange unescape escape );
+use CGI::Util qw(rearrange unescape escape);
 use MIME::Base64;
 #use FCGI;
 use SQL::Abstract;
 use Digest::MD5;
+use Time::HiRes;
 
 use CATS::Constants;
 use CATS::Connect;
@@ -71,6 +72,7 @@ use vars qw(
     $dbh $sql @messages $t $sid $cid $lng $uid $team_name $server_time $contest_title $dbi_error $is_practice
     $is_root $is_team $is_jury $is_virtual $virtual_diff_time $contest_elapsed_minutes
     $listview_name $listview_array_name $col_defs $sort $sort_dir $search $page $visible $additional
+    $request_start_time
 );
 
 
@@ -113,6 +115,18 @@ sub escape_html
 }
 
 
+sub escape_xml
+{
+    my $t = shift;
+    
+    $t =~ s/&/&amp;/g;
+    $t =~ s/>/&gt;/g;
+    $t =~ s/</&lt;/g;
+
+    return $t;
+}
+
+
 sub http_header
 {
     my $type = shift;
@@ -128,7 +142,7 @@ sub _u { splice(@_, 1, 0, { Slice => {} }); @_; }
 sub sql_connect 
 {
     use Carp;
-    $dbh = DBI->connect(
+    $dbh ||= DBI->connect(
       $CATS::Connect::db_dsn, $CATS::Connect::db_user, $CATS::Connect::db_password,
       { AutoCommit => 0, LongReadLen => 1024*1024*8, FetchHashKeyName => 'NAME_lc' }
     );
@@ -137,26 +151,25 @@ sub sql_connect
     {  
         fatal_error("Failed connection to SQL-server $DBI::errstr");
     }
-    
 
-    $dbh->{ HandleError } = sub {
-
+    $dbh->{HandleError} = sub
+    {
         my $m = "DBI error: ".$_[0] ."\n";
         confess $m;    
         fatal_error($m);
-
         #$dbi_error .= $m;
-        
         0;
     };
-    
+
     $sql = SQL::Abstract->new;
 }
 
 
 sub sql_disconnect 
-{    
-    $dbh->disconnect if ( defined $dbh );
+{
+    $dbh or return;
+    $dbh->disconnect;
+    undef $dbh;
 }
 
 
@@ -516,6 +529,9 @@ sub generate_output
         $t->param(dbi_error => $dbi_error);
     }
 
+    $t->param(request_process_time => sprintf '%.3fs',
+        Time::HiRes::tv_interval($request_start_time, [ Time::HiRes::gettimeofday ]));
+
     print STDOUT http_header('text/html', $cookie);
     print STDOUT $t->output;
 }
@@ -629,9 +645,9 @@ sub user_authorize
     {
         my $srole;
 
-        ( $uid, $team_name, $srole, my $last_ip ) = $dbh->selectrow_array(
-            qq~SELECT id, team_name, srole, last_ip FROM accounts WHERE sid=?~, {}, $sid );
-        if ( !defined($uid) || $last_ip ne CATS::IP::get_ip() )
+        ($uid, $team_name, $srole, my $last_ip) = $dbh->selectrow_array(qq~
+            SELECT id, team_name, srole, last_ip FROM accounts WHERE sid = ?~, {}, $sid);
+        if (!defined($uid) || $last_ip ne CATS::IP::get_ip())
         {
             init_template('main_bad_sid.htm');
             $sid = '';
@@ -644,65 +660,53 @@ sub user_authorize
 
     # получение информации о текущем турнире и установка турнира по-умолчанию
     $cid = url_param('cid') || '';
-    if ($cid ne '') 
+    if ($cid) 
     {
-        my ($contest_exists, $ctype);
-
-        ( $contest_exists, $ctype, $server_time, $contest_title ) = $dbh->selectrow_array(
-            qq~SELECT 1, ctype, CATS_EXACT_DATE(CATS_SYSDATE()), title FROM contests WHERE id=?~, {}, $cid );
-        unless ($contest_exists)
-        {
-            fatal_error('invalid contest id');
-        }
-        $is_practice = ($ctype == 1);
+        (my $ctype, $server_time, $contest_title) = $dbh->selectrow_array(
+            qq~SELECT ctype, CATS_DATE(CATS_SYSDATE()), title FROM contests WHERE id = ?~, {}, $cid
+        ) or undef $cid;
+        $is_practice = ($ctype||0) == 1;
     }
-    else
+    unless ($cid)
     {
         # тренировочная сессия по умолчанию
-        ( $cid, $server_time, $contest_title ) = $dbh->selectrow_array(
-            qq~SELECT id, CATS_DATE(CATS_SYSDATE()), title FROM contests WHERE ctype=1~ );
+        ($cid, $server_time, $contest_title) = $dbh->selectrow_array(qq~
+            SELECT id, CATS_DATE(CATS_SYSDATE()), title FROM contests WHERE ctype = 1~);
         $is_practice = 1;
     }
 
     $virtual_diff_time = 0;
     # авторизация пользователя в турнире
+    $is_jury = 0;
+    $is_team = 0;
+    $is_virtual = 0;
     if (defined $uid)
     {
-        ($is_team, $is_jury, $is_virtual, $virtual_diff_time) =   
-            $dbh->selectrow_array(qq~SELECT 1, is_jury, is_virtual, diff_time FROM contest_accounts WHERE contest_id=? AND account_id=?~, {}, $cid, $uid);
+        ($is_team, $is_jury, $is_virtual, $virtual_diff_time) = $dbh->selectrow_array(qq~
+            SELECT 1, is_jury, is_virtual, diff_time
+            FROM contest_accounts WHERE contest_id=? AND account_id=?~, {}, $cid, $uid);
+    }
+    $virtual_diff_time ||= 0;
 
-	if (!defined $virtual_diff_time || $virtual_diff_time eq '')
-	{
-	    $virtual_diff_time = 0;
-	}    		
-
-        if (!$is_jury)
-        {
-		
-            my ($start_diff_time, $finish_diff_time) = 
-                $dbh->selectrow_array(qq~SELECT CATS_SYSDATE() - $virtual_diff_time - start_date, 
-					CATS_SYSDATE() - $virtual_diff_time - finish_date
-					FROM contests WHERE id=?~, {}, $cid);
-            my $started = ($start_diff_time >= 0);
-            my $finished = ($finish_diff_time > 0);
+    if (!$is_jury && $is_team)
+    {
+        my ($start_diff_time, $finish_diff_time) = 
+            $dbh->selectrow_array(qq~SELECT CATS_SYSDATE() - $virtual_diff_time - start_date, 
+                CATS_SYSDATE() - $virtual_diff_time - finish_date
+                FROM contests WHERE id = ?~, {}, $cid);
+        my $started = ($start_diff_time >= 0);
+        my $finished = ($finish_diff_time > 0);
 	    
-            # до начала и после окончания тура команда имеет только права гостя
-            if (!$started || $finished)
-            {
-                $is_team = 0;
-            }
+        # до начала и после окончания тура команда имеет только права гостя
+        if (!$started || $finished)
+        {
+            $is_team = 0;
         }
     }
-    else
-    {
-        $is_jury = 0;
-        $is_team = 0;
-        $is_virtual = 0;
-    }
     
-    $contest_elapsed_minutes = $dbh->selectrow_array(
-		    qq~SELECT (CATS_SYSDATE() - $virtual_diff_time - start_date)*1440 
-	               FROM contests WHERE id=?~, {}, $cid);
+    $contest_elapsed_minutes = $dbh->selectrow_array(qq~
+        SELECT (CATS_SYSDATE() - $virtual_diff_time - start_date)*1440 
+	        FROM contests WHERE id = ?~, {}, $cid);
 		
     $contest_elapsed_minutes = int($contest_elapsed_minutes) || 0;       
 }

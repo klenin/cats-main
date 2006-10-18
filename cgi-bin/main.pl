@@ -13,6 +13,8 @@ use CGI::Util qw(unescape escape);
 
 use Algorithm::Diff;
 use Text::Aspell;
+use Data::Dumper;
+use Storable ();
 
 use CATS::Constants;
 use CATS::BinaryFile;
@@ -21,6 +23,7 @@ use CATS::Misc qw(:all);
 use CATS::Data qw(:all);
 use CATS::IP;
 use CATS::Problem;
+use CATS::RankTable;
 use CATS::Diff;
 use CATS::TeX::Lite;
 
@@ -138,6 +141,7 @@ sub register_contest_account
     $dbh->do(qq~
         INSERT INTO contest_accounts ($f) VALUES ($v)~, undef,
         values %p);
+    unlink <./rank_cache/$p{contest_id}#*>;
 }
 
 
@@ -979,6 +983,23 @@ sub save_uploaded_file
 }
 
 
+sub check_problem_code
+{
+    my ($problem_code) = @_;
+    if ($is_practice)
+    {
+        undef $$problem_code;
+        return 1;
+    }
+    $$problem_code =~ /^[A-Z0-9]$/ or return msg(134);
+
+    my ($prev) = $dbh->selectrow_array(q~
+        SELECT id FROM contest_problems WHERE contest_id = ? AND code = ?~, {},
+        $cid, $$problem_code);
+    return $prev ? msg(133) : 1;
+}
+
+
 sub problems_new_save
 {
     my $file = param('zip') || '';
@@ -986,7 +1007,8 @@ sub problems_new_save
         or return msg(53);
     my $fname = save_uploaded_file($file);
     my $problem_code = param('problem_code');
-    
+    check_problem_code(\$problem_code) or return;
+
     my CATS::Problem $p = CATS::Problem->new;
     my $error = $p->load($fname, $cid, new_id, 0);
     $t->param(problem_import_log => $p->encoded_import_log());
@@ -1003,11 +1025,8 @@ sub problems_link_save
     my $pid = param('problem_id')
         or return msg(104);
 
-    my $problem_code = undef;
-    if (!$is_practice)
-    {
-        $problem_code = param('problem_code') or return;
-    }
+    my $problem_code = param('problem_code');
+    check_problem_code(\$problem_code) or return;
     add_problem_to_contest($pid, $problem_code);
     $dbh->commit;
 }
@@ -1023,6 +1042,9 @@ sub problems_replace
         or return msg(53);
     my ($contest_id, $old_title) = $dbh->selectrow_array(qq~
         SELECT contest_id, title FROM problems WHERE id=?~, {}, $pid);
+     
+    # Запрет на замену прилинкованных задач. По-первых, для надёжности,
+    # а во-вторых, это секурити -- чтобы не проверять is_jury($contest_id).
     $contest_id == $cid
         or return msg(117);
 
@@ -1352,33 +1374,30 @@ sub problem_status_names()
 
 sub problems_frame_jury_action
 {
-    if($is_jury)
-    {
-        defined param('link_save') and return problems_link_save;
-        defined param('new_save') and return problems_new_save;
-        defined param('change_status') and return problems_change_status;
-        defined param('replace_direct') and return problems_replace;
-        defined param('std_solution') and return problems_submit_std_solution;
-        defined param('mass_retest') and return problems_mass_retest;
-    }
+    $is_jury or return;
 
-    if (defined url_param('delete') && $is_jury)
+    defined param('link_save') and return problems_link_save;
+    defined param('new_save') and return problems_new_save;
+    defined param('change_status') and return problems_change_status;
+    defined param('replace') and return problems_replace;
+    defined param('std_solution') and return problems_submit_std_solution;
+    defined param('mass_retest') and return problems_mass_retest;
+    my $cpid = url_param('delete');
+    if (defined $cpid)
     {
-        my $cpid = url_param('delete');
-        my $pid = $dbh->selectrow_array(qq~SELECT problem_id FROM contest_problems WHERE id=?~, {}, $cpid);
+        my $pid = $dbh->selectrow_array(q~
+            SELECT problem_id FROM contest_problems WHERE id = ?~, {}, $cpid) or return;
 
-        $dbh->do(qq~DELETE FROM contest_problems WHERE id=?~, {}, $cpid);
-        unless ($dbh->selectrow_array(qq~SELECT COUNT(*) FROM contest_problems WHERE problem_id=?~, {}, $pid))
-        {
-            $dbh->do(qq~DELETE FROM problems WHERE id=?~, {}, $pid);
-        }
+        $dbh->do(qq~DELETE FROM contest_problems WHERE id = ?~, {}, $cpid);
+        $dbh->selectrow_array(qq~
+            SELECT COUNT(*) FROM contest_problems WHERE problem_id = ?~, {}, $pid
+        ) or $dbh->do(qq~DELETE FROM problems WHERE id = ?~, {}, $pid);
         $dbh->commit;
     }
-
 }
 
 
-sub problems_frame 
+sub problems_frame
 {
     my $show_packages = 1;
     unless ($is_jury)
@@ -1847,15 +1866,17 @@ sub users_frame
 
     define_columns(url_f('users'), $is_jury ? 3 : 2, 1, [ @cols ] );
 
+    my $fields =
+        'A.id, CA.id, A.country, A.login, A.team_name, ' . 
+        'CA.is_jury, CA.is_ooc, CA.is_remote, CA.is_hidden, CA.is_virtual, A.motto';
     my $sql = qq~
-        SELECT A.id, CA.id, A.country, A.login, A.team_name, 
-            CA.is_jury, CA.is_ooc, CA.is_remote, CA.is_hidden, CA.is_virtual, A.motto,
-            (SELECT COUNT(DISTINCT R.problem_id) FROM reqs R
-            WHERE R.state = $cats::st_accepted AND R.account_id=A.id AND R.contest_id=C.id%s)
+        SELECT $fields, COUNT(DISTINCT R.problem_id)
         FROM accounts A
             INNER JOIN contest_accounts CA ON CA.account_id = A.id
             INNER JOIN contests C ON CA.contest_id = C.id
-        WHERE C.id=?%s
+            LEFT JOIN reqs R ON
+                R.state = $cats::st_accepted AND R.account_id=A.id AND R.contest_id=C.id%s
+        WHERE C.id=?%s GROUP BY $fields
         ~.order_by;
     if ($is_jury)
     {
@@ -2679,7 +2700,7 @@ sub diff_runs_frame
     
     my @diff = ();
 
-    my $SL = sub { $si->[$_[0]]->{lines}->[$_[1]] }; 
+    my $SL = sub { $si->[$_[0]]->{lines}->[$_[1]] || '' }; 
     
     my $match = sub { push @diff, escape_html($SL->(0, $_[0])) . "\n"; };
     my $only_a = sub { push @diff, span({class=>'diff_only_a'}, escape_html($SL->(0, $_[0])) . "\n"); };
@@ -2740,7 +2761,6 @@ sub rank_get_problem_ids
     my ($contest_list, $show_points) = @_;
     # соответствующее требование: в одном чемпионате задача не должна дублироваться обеспечивается
     # при помощи UNIQUE(c,p)
-    my $hidden_problems = $is_jury ? '' : ' AND CP.status < ?';
     my $problems = $dbh->selectall_arrayref(qq~
         SELECT
             CP.id, CP.problem_id, CP.code, CP.contest_id, CATS_DATE(C.start_date) AS start_date,
@@ -2748,9 +2768,9 @@ sub rank_get_problem_ids
         FROM
             contest_problems CP INNER JOIN contests C ON C.id = CP.contest_id
             INNER JOIN problems P ON P.id = CP.problem_id
-        WHERE CP.contest_id IN ($contest_list)$hidden_problems
+        WHERE CP.contest_id IN ($contest_list) AND CP.status < ?
         ORDER BY C.start_date, CP.code~, { Slice => {} },
-        ($is_jury ? () : $cats::problem_st_hidden)
+        $cats::problem_st_hidden
     );
 
     my $w = int(50 / (@$problems + 1));
@@ -2796,7 +2816,7 @@ sub rank_get_problem_ids
 
 sub rank_get_results
 {
-    my ($frozen, $contest_list, $cond_str) = @_;
+    my ($frozen, $contest_list, $cond_str, $max_cached_req_id) = @_;
     my @conditions = ();
     my @params = ();
     if ($frozen && !$is_jury)
@@ -2815,14 +2835,9 @@ sub rank_get_results
     {
         push @conditions, "(R.submit_time - CA.diff_time < CATS_SYSDATE() - $virtual_diff_time)";
     }
-    if (!$is_jury)
-    {
-        push @conditions, 'CP.status < ?';
-        push @params, $cats::problem_st_hidden;
-    }
 
     $cond_str .= join '', map " AND $_", @conditions;
-    
+
     $dbh->selectall_arrayref(qq~
         SELECT
             R.id, R.state, R.problem_id, R.account_id, R.points,
@@ -2831,9 +2846,10 @@ sub rank_get_results
         WHERE
             CA.contest_id = C.id AND CA.account_id = R.account_id AND R.contest_id = C.id AND
             CP.problem_id = R.problem_id AND CP.contest_id = C.id AND
-            CA.is_hidden = 0 AND R.state >= ? AND C.id IN ($contest_list)$cond_str
+            CA.is_hidden = 0 AND CP.status < ? AND R.state >= ? AND R.id > ? AND
+            C.id IN ($contest_list)$cond_str
         ORDER BY R.id~, { Slice => {} },
-        $cats::request_processed, @params
+        $cats::problem_st_hidden, $cats::request_processed, $max_cached_req_id, @params
     );
 }
 
@@ -2864,8 +2880,11 @@ sub rank_table
     my (undef, $frozen, $not_started, $default_show_points) = get_contests_info($contest_list, $uid);
     my $show_points = url_param('points');
     defined $show_points or $show_points = $default_show_points;
+    my $use_cache = url_param('cache');
+    # по умолчанию кешируем внешние ссылки
+    $use_cache = 1 if !defined $use_cache && !defined $uid;
     
-    my @p = ('rank_table', clist => $contest_list);
+    my @p = ('rank_table', clist => $contest_list, cache => $use_cache);
     $t->param(
         not_started => $not_started && !$is_jury,
         frozen => $frozen,
@@ -2879,47 +2898,62 @@ sub rank_table
     );
     #return if $not_started;
 
+    my @p_id = rank_get_problem_ids($contest_list, $show_points);
     my $virtual_cond = $hide_virtual ? ' AND CA.is_virtual = 0' : '';
     my $ooc_cond = $hide_ooc ? ' AND CA.is_ooc = 0' : '';
-    my $teams = $dbh->selectall_hashref(qq~
-        SELECT
-            A.team_name, A.motto, A.country,
-            MAX(CA.is_virtual) AS is_virtual, MAX(CA.is_ooc) AS is_ooc, MAX(CA.is_remote) AS is_remote,
-            CA.account_id
-        FROM accounts A, contest_accounts CA
-        WHERE CA.contest_id IN ($contest_list) AND A.id = CA.account_id AND CA.is_hidden = 0
-            $virtual_cond $ooc_cond
-        GROUP BY CA.account_id, A.team_name, A.motto, A.country~, 'account_id', { Slice => {} }
-    );
 
-    my @p_id = rank_get_problem_ids($contest_list, $show_points);
-    $t->param(
-        problem_colunm_width =>
-            @p_id <= 6 ? 6 :
-            @p_id <= 8 ? 5 :
-            @p_id <= 10 ? 4 :
-            @p_id <= 20 ? 3 : 2
-    );
-    my $problems =
-        { map { $_ => {total_runs => 0, total_accepted => 0, total_points => 0} } @p_id };
+    my $cache_file = "./rank_cache/$contest_list#$hide_ooc#$hide_virtual#";
 
-    for my $team (values %$teams)
+    my $select_teams = sub
     {
-        # поскольку виртуальный участник всегда ooc, не выводим лишнюю строчку
-        $team->{is_ooc} = 0 if $team->{is_virtual};
-        $team->{$_} = 0 for qw(total_solved total_runs total_time total_points);
-        ($team->{country}, $team->{flag}) = get_flag($_->{country});
-        my %init_problem = (runs => 0, time_consumed => 0, solved => 0, points => undef);
-        $team->{problems} = { map { $_ => { %init_problem } } @p_id };
-        $team->{href_console} = url_f('console', uf => $team->{account_id});
+        my ($account_id) = @_;
+        my $acc_cond = $account_id ? 'AND A.id = ?' : '';
+        my $res = $dbh->selectall_hashref(qq~
+            SELECT
+                A.team_name, A.motto, A.country,
+                MAX(CA.is_virtual) AS is_virtual, MAX(CA.is_ooc) AS is_ooc, MAX(CA.is_remote) AS is_remote,
+                CA.account_id
+            FROM accounts A, contest_accounts CA
+            WHERE CA.contest_id IN ($contest_list) AND A.id = CA.account_id AND CA.is_hidden = 0
+                $virtual_cond $ooc_cond $acc_cond
+            GROUP BY CA.account_id, A.team_name, A.motto, A.country~, 'account_id', { Slice => {} },
+            ($account_id || ())
+        );
+
+        for my $team (values %$res)
+        {
+            # поскольку виртуальный участник всегда ooc, не выводим лишнюю строчку
+            $team->{is_ooc} = 0 if $team->{is_virtual};
+            $team->{$_} = 0 for qw(total_solved total_runs total_time total_points);
+            ($team->{country}, $team->{flag}) = get_flag($_->{country});
+            my %init_problem = (runs => 0, time_consumed => 0, solved => 0, points => undef);
+            $team->{problems} = { map { $_ => { %init_problem } } @p_id };
+            $team->{href_console} = url_f('console', uf => $team->{account_id});
+        }
+
+        $res;
+    };
+   
+    my ($teams, $problems, $max_cached_req_id) = ({}, {}, 0);
+    if ($use_cache && !$is_virtual && -f $cache_file &&
+        (my $cache = Storable::lock_retrieve($cache_file)))
+    {
+        ($teams, $problems, $max_cached_req_id) = @{$cache}{qw(t p r)};
+    }
+    else
+    {
+        $problems =
+            { map { $_ => {total_runs => 0, total_accepted => 0, total_points => 0} } @p_id };
+        $teams = $select_teams->();
     }
 
-    my $results = rank_get_results($frozen, $contest_list, $virtual_cond . $ooc_cond);
-    my $need_commit = 0;
+    my $results = rank_get_results($frozen, $contest_list, $virtual_cond . $ooc_cond, $max_cached_req_id);
+    my ($need_commit, $max_req_id) = (0, 0);
     for (@$results)
     {
+        $max_req_id = $_->{id} if $_->{id} > $max_req_id;
         $_->{time_elapsed} ||= 0;
-        my $t = $teams->{$_->{account_id}};
+        my $t = $teams->{$_->{account_id}} || $select_teams->($_->{account_id})->[0];
         my $p = $t->{problems}->{$_->{problem_id}};
         if ($show_points && !defined $_->{points})
         {
@@ -2950,6 +2984,10 @@ sub rank_table
     }
 
     $dbh->commit if $need_commit;
+    if (!$frozen && !$is_virtual && @$results)
+    {
+        Storable::lock_store({ t => $teams, p => $problems, r => $max_req_id }, $cache_file);
+    }
 
     my $sort_criteria = $show_points ?
         sub {
@@ -3005,6 +3043,11 @@ sub rank_table
     }
 
     $t->param(
+        problem_colunm_width => (
+            @p_id <= 6 ? 6 :
+            @p_id <= 8 ? 5 :
+            @p_id <= 10 ? 4 :
+            @p_id <= 20 ? 3 : 2 ),
         problem_stats => [
             map {{
                 %{$problems->{$_}},
@@ -3029,20 +3072,21 @@ sub rank_table_frame
 {
     my $hide_ooc = url_param('hide_ooc') || 0;
     my $hide_virtual = url_param('hide_virtual') || 0;
+    my $cache = url_param('cache');
     my $show_points = url_param('points');
-    
-    #rank_table('main_rank_table.htm');  
+
+    #rank_table('main_rank_table.htm');
     my $print = url_param('print') ? '_print' : '';
     #init_template("main_rank_table_content$t.htm");
-    init_template("main_rank_table$print.htm");  
-        
+    init_template("main_rank_table$print.htm");
+
     my $contest_list = get_contest_list_param;
     ($contest_title) = get_contests_info($contest_list, $uid);
 
     $t->param(href_rank_table_content => url_f(
         'rank_table_content',
-        hide_ooc => $hide_ooc, hide_virtual => $hide_virtual, clist => $contest_list,
-        points => $show_points
+        hide_ooc => $hide_ooc, hide_virtual => $hide_virtual, cache => $cache,
+        clist => $contest_list, points => $show_points
     ));
 }
 
@@ -3057,7 +3101,7 @@ sub rank_problem_details
 {
     init_template('main_rank_problem_details.htm');
     $is_jury or return;
-    
+
     my ($pid) = url_param('pid') or return;
 
     my $runs = $dbh->selectall_arrayref(q~
@@ -3066,7 +3110,7 @@ sub rank_problem_details
         FROM reqs R WHERE R.contest_id = ? AND R.problem_id = ?
         ORDER BY R.id~, { Slice => {} },
         $cid, $pid);
-        
+
     for (@$runs)
     {
         1;
@@ -3167,6 +3211,8 @@ sub download_image
         INNER JOIN problems p ON c.problem_id = p.id
         WHERE p.id = ? AND c.name = ?~, {}, $current_pid, $name);
     ensure_problem_hash($current_pid, \$hash);
+    return 'unknown' if !$name;
+    $ext ||= '';
     # секьюрити. это может привести к дублированию картинок, например, с именами pic1 и pic.1
     $name =~ tr/a-zA-Z0-9_//cd;
     $ext =~ tr/a-zA-Z0-9_//cd;
@@ -3774,14 +3820,15 @@ sub generate_menu
     else
     {
         push @left_menu, (
-          { item => res_str(517), href => url_f('compilers') },
-          { item => res_str(549), href => url_f('keywords') } );
+            { item => res_str(517), href => url_f('compilers') },
+            { item => res_str(549), href => url_f('keywords') } );
     }
 
     if (!$is_practice)
     {
-        push @left_menu, ( { item => res_str(529), href => url_f('rank_table') } );
-
+        push @left_menu, (
+            { item => res_str(529), href => url_f('rank_table', $is_jury ? () : (cache => 1)) }
+        );
     }
 
     my @right_menu = ();
@@ -3839,7 +3886,8 @@ sub interface_functions ()
 
 
 sub accept_request                                               
-{     
+{
+    $CATS::Misc::request_start_time = [ Time::HiRes::gettimeofday ];
     initialize;
 
     my $function_name = url_param('f') || '';
@@ -3852,6 +3900,7 @@ sub accept_request
 }
          
 sql_connect;
+$dbh->rollback; # на случай брошенной транзакции от предыдущего запроса
 
 #while(CGI::Fast->new)
 #{  
@@ -3862,6 +3911,6 @@ sql_connect;
     { accept_request; };
 
 $dbh->rollback;
-sql_disconnect;
+#sql_disconnect;
 
 1;

@@ -6,7 +6,7 @@ use warnings;
 use Encode;
 
 use CATS::Constants;
-use CATS::Misc qw(:all);
+use CATS::Misc qw($dbh $uid new_id);
 use CATS::BinaryFile;
 use Archive::Zip qw(:ERROR_CODES :CONSTANTS);
 use XML::Parser::Expat;
@@ -69,7 +69,7 @@ sub load
         $parser->setHandlers(
             Start => sub { $self->on_start_tag(@_) },
             End => sub { $self->on_end_tag(@_) },
-            Char => sub { ${$self->{stml}} .= $_[1] if $self->{stml} },
+            Char => sub { ${$self->{stml}} .= CATS::Misc::escape_xml($_[1]) if $self->{stml} },
         );
         $parser->parse($self->read_member($xml_members[0]));
     };
@@ -129,18 +129,18 @@ sub required_attributes
 }
 
 
-sub set_object_id 
+sub set_named_object
 {
     my CATS::Problem $self = shift;
-    my ($name, $id) = @_;
+    my ($name, $object) = @_;
     $name or return; 
     $self->error("Duplicate object reference: '$name'")
         if defined $self->{objects}->{$name};
-    $self->{objects}->{$name} = $id;
+    $self->{objects}->{$name} = $object;
 }
 
 
-sub get_object_id 
+sub get_named_object
 {
     my CATS::Problem $self = shift;
     my ($name, $tag) = @_;
@@ -148,22 +148,6 @@ sub get_object_id
     defined $self->{objects}->{$name}
         or $self->error("Undefined object reference: '$name' in '$tag'");
     return $self->{objects}->{$name};
-}
-
-
-sub create_generator
-{
-    (my CATS::Problem $self, my $p) = @_;
-    
-    my $id = new_id;
-    $self->set_object_id($p->{name}, $id);
-
-    return {
-        id => $id,
-        $self->read_member_named(name => $p->{src}, kind => 'generator'),
-        de_code => $p->{de_code},
-        outputFile => $p->{outputFile},
-    };
 }
 
 
@@ -188,8 +172,11 @@ sub on_start_tag
     {
         ${$self->{stml}} .=
             "<$el" . join ('', map qq~ $_="$atts{$_}"~, keys %atts) . '>';
-        $el ne 'img' || $atts{picture}
-            or $self->warning("Picture not defined in img element");
+        if ($el eq 'img')
+        {
+            $atts{picture} or $self->error('Picture not defined in img element');
+            $self->get_named_object($atts{picture}, 'img')->{refcount}++;
+        }
         return; 
     }
 
@@ -300,14 +287,12 @@ sub start_tag_Picture
     $atts->{src} =~ /\.([^\.]+)$/ and my $ext = $1
         or $self->error("Invalid image extension for '$atts->{src}'");
         
-    my $id = new_id;
-    $self->set_object_id($atts->{name}, $id);
-    push @{$self->{pictures}}, {
-        id => $id,
-        $self->read_member_named(name => $atts->{src}, kind => 'picture'),
-        name => $atts->{name},
-        ext => $ext
-    };
+    push @{$self->{pictures}},
+        $self->set_named_object($atts->{name}, {
+            id => new_id,
+            $self->read_member_named(name => $atts->{src}, kind => 'picture'),
+            name => $atts->{name}, ext => $ext, refcount => 0
+        });
 }
 
 
@@ -315,16 +300,13 @@ sub start_tag_Solution
 {
     (my CATS::Problem $self, my $atts) = @_;
 
-    my $id = new_id;
-    $self->set_object_id($atts->{name}, $id);
-
-    push @{$self->{solutions}}, {   
-        id => $id,
+    my $sol = $self->set_named_object($atts->{name}, {
+        id => new_id,
         $self->read_member_named(name => $atts->{src}, kind => 'solution'),
         de_code => $atts->{de_code},
-        guid => $atts->{export},
-        checkup => $atts->{checkup},
-    };
+        guid => $atts->{export}, checkup => $atts->{checkup},
+    });
+    push @{$self->{solutions}}, $sol;
 }
 
 
@@ -344,10 +326,21 @@ sub start_tag_Checker
     $self->{checker} = {
         id => new_id,
         $self->read_member_named(name => $atts->{src}, kind => 'checker'),
-        de_code => $atts->{de_code},
-        guid => $atts->{export},
-        style => $style
+        de_code => $atts->{de_code}, guid => $atts->{export}, style => $style
     };
+}
+
+
+sub create_generator
+{
+    (my CATS::Problem $self, my $p) = @_;
+    
+    return $self->set_named_object($p->{name}, {
+        id => new_id,
+        $self->read_member_named(name => $p->{src}, kind => 'generator'),
+        de_code => $p->{de_code},
+        outputFile => $p->{outputFile},
+    });
 }
 
 
@@ -384,8 +377,7 @@ sub start_tag_Module
         id => new_id,
         $self->read_member_named(name => $atts->{src}, kind => 'module'),
         de_code => $atts->{de_code},
-        guid => $atts->{export},
-        type => $atts->{type},
+        guid => $atts->{export}, type => $atts->{type},
         type_code => module_types()->{$atts->{type}},
     };
 }
@@ -476,8 +468,8 @@ sub start_tag_In
     {
         for (@t)
         {
-            $_->{generator_id} = $self->get_object_id(
-                apply_test_rank($atts->{'use'}, $_->{rank}), 'Test/In');
+            my $use = apply_test_rank($atts->{'use'}, $_->{rank});
+            $_->{generator_id} = $self->get_named_object($use, 'Test/In')->{id};
             $_->{param} = apply_test_rank($atts->{param}, $_->{rank});
         }
     }
@@ -508,8 +500,8 @@ sub start_tag_Out
     {
         for (@t)
         {
-            $_->{std_solution_id} = $self->get_object_id(
-                apply_test_rank($atts->{'use'}, $_->{rank}), 'Test/Out');
+            my $use = apply_test_rank($atts->{'use'}, $_->{rank});
+            $_->{std_solution_id} = $self->get_named_object($use, 'Test/Out')->{id};
         }
     }
     else
@@ -767,7 +759,7 @@ sub insert_problem_content
     {
         $self->note("Checker: $p->{std_checker}");
     }
-    elsif (my $c = $p->{checker})
+    elsif (my $c = $self->{checker})
     {
         $self->insert_problem_source(
             source_object => $c, type_name => 'Checker',
@@ -816,6 +808,8 @@ sub insert_problem_content
         $c->execute;
 
         $self->note("Picture '$_->{path}' added");
+        $_->{refcount}
+            or $self->warning("No references to picture '$_->{path}'");
     }
 
     $c = $dbh->prepare(qq~
