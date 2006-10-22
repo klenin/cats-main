@@ -193,6 +193,7 @@ sub templates_path
 
 sub init_messages
 {
+    return if @messages;
     my $msg_file = templates_path()."/consts";
 
     my $r = open FILE, "<".$msg_file;
@@ -636,7 +637,6 @@ sub new_id
 sub user_authorize
 {
     $sid = url_param('sid') || '';
-
     $is_root = 0;
     $uid = undef;
     $team_name = undef;

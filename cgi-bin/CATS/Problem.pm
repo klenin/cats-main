@@ -6,7 +6,7 @@ use warnings;
 use Encode;
 
 use CATS::Constants;
-use CATS::Misc qw($dbh $uid new_id);
+use CATS::Misc qw($dbh $uid new_id escape_html);
 use CATS::BinaryFile;
 use Archive::Zip qw(:ERROR_CODES :CONSTANTS);
 use XML::Parser::Expat;
@@ -867,3 +867,4 @@ sub insert_problem_content
 
 
 1;
+

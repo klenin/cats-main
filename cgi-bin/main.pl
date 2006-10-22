@@ -2928,12 +2928,11 @@ sub rank_table
             ($team->{country}, $team->{flag}) = get_flag($_->{country});
             my %init_problem = (runs => 0, time_consumed => 0, solved => 0, points => undef);
             $team->{problems} = { map { $_ => { %init_problem } } @p_id };
-            $team->{href_console} = url_f('console', uf => $team->{account_id});
         }
 
         $res;
     };
-   
+
     my ($teams, $problems, $max_cached_req_id) = ({}, {}, 0);
     if ($use_cache && !$is_virtual && -f $cache_file &&
         (my $cache = Storable::lock_retrieve($cache_file)))
@@ -2964,7 +2963,9 @@ sub rank_table
 
         if ($_->{state} == $cats::st_accepted)
         {
-            $p->{time_consumed} = int($_->{time_elapsed} + 0.5) + $p->{runs} * $cats::penalty;
+            my $te = int($_->{time_elapsed} + 0.5);
+            $p->{time_consumed} = $te + $p->{runs} * $cats::penalty;
+            $p->{time_hm} = sprintf('%d:%02d', int($te / 60), $te % 60);
             $p->{solved} = 1;
             $t->{total_time} += $p->{time_consumed};
             $t->{total_solved}++;
@@ -2984,7 +2985,7 @@ sub rank_table
     }
 
     $dbh->commit if $need_commit;
-    if (!$frozen && !$is_virtual && @$results)
+    if (!$frozen && !$is_virtual && @$results && !$is_practice)
     {
         Storable::lock_store({ t => $teams, p => $problems, r => $max_req_id }, $cache_file);
     }
@@ -3015,7 +3016,7 @@ sub rank_table
             my $c = $p->{solved} ? '+' . ($p->{runs} - 1 || '') : -$p->{runs} || '.';
 
             push @columns, {
-                td => $c, 'time' => ($p->{time_consumed} || ''),
+                td => $c, 'time' => ($p->{time_hm} || ''),
                 points => (defined $p->{points} ? $p->{points} : '.')
             };
         }
@@ -3040,6 +3041,7 @@ sub rank_table
         $team->{place} = $row_num - $same_place_count;
         $team->{columns} = [ @columns ];
         $team->{show_points} = $show_points;
+        $team->{href_console} = url_f('console', uf => $team->{account_id});
     }
 
     $t->param(
@@ -3127,7 +3129,7 @@ sub check_spelling
         return $word;
     }
     my $i = 0;
-    my $suggestion = join "\n", grep $i++ < 20, map russian($_), $spellchecker->suggest($koi);
+    my $suggestion = join ' | ', grep $i++ < 10, map russian($_), $spellchecker->suggest($koi);
     return qq~<a class="spell" title="$suggestion">$word</a>~;
 }
 
@@ -3433,7 +3435,7 @@ sub envelope_frame
 {
     init_template('main_envelope.htm');
     
-    my $rid = url_param('rid');
+    my $rid = url_param('rid') or return;
 
     my ($submit_time, $test_time, $state, $failed_test, $team_name, $contest_title) = $dbh->selectrow_array(qq~
         SELECT CATS_DATE(R.submit_time), CATS_DATE(R.test_time), R.state, R.failed_test, A.team_name, C.title
