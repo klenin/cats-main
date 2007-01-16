@@ -18,13 +18,12 @@
   <tr bgcolor="#ffcc55" height="3"><td></td></tr>
   <tr class="menu_bar"><td colspan="3">
     <a class="nav_href" href="..">на главную</a> | <a class="nav_href" href=".">содержание</a></td></tr>
-  <tr><td colspan="3" style="padding: 5px"><br/>
-<h2>Версия 1.4</h2>
+  <tr><td colspan="3" style="padding: 5px"><br/><h2>Версия 1.4</h2>
 
 <p><a href="sample.zip">скачать пример пакета с заданием</a></p>
 <p>Для хранения задачи используется ZIP-файл, в корне которого обязательно
 должен быть ровно один XML-файл с описанием условия задачи и
-некоторое множество дополнительных файлов с тестами, программами проверки и т.д.
+некоторый набор дополнительных файлов с тестами, программами проверки и т.д.
 </p>
  
 <h2>Структура XML-файла с задачей</h2>
@@ -50,7 +49,7 @@
       <li>author<sup><a href="#opt" title="Необязательный атрибут">o</a></sup> - автор;</li>
       <li>inputFile - имя входного файла;</li>
       <li>outputFile - имя выходного файла;</li>
-      <li>difficulty<sup><a href="#opt" title="Необязательный атрибут">o</a></sup> - авторская оценка сложности задачи в баллах от (1 до 100);</li>
+      <li>difficulty<sup><a href="#opt" title="Необязательный атрибут">o</a></sup> <sup><a href="#dv14" title="Устарела с версии 1.4">&minus;1.4</a></sup> - авторская оценка сложности задачи в баллах от (1 до 100);</li>
       <li>stdChecker<sup><a href="#opt" title="Необязательный атрибут">o</a></sup> <sup><a href="#dv14" title="Устарела с версии 1.4">&minus;1.4</a></sup> - имя стандартной программы проверки;</li>
       <li>maxPoints<sup><a href="#opt" title="Необязательный атрибут">o</a></sup> <sup><a href="#v13" title="С версии 1.3">1.3</a></sup> - максимальный балл за задачу, имеет приоритет перед суммой баллов по тестам</li>
     </ul>
@@ -64,14 +63,22 @@
       <li>longnums - проверяет совпадение длинных целых чисел (до 10000 цифр);</li>
       <li>longstrs - проверяет совпадение длинных строк (до 10000 символов);</li>
     </ul>
+    Начиная с версии 1.4, вместо атрибута stdChecker рекомендуется пользоваться
+    тегом <tt>&lt;<a href="#Import">Import</a>&gt;</tt> с использованием следкющих стандартных guid:
+    <ul>
+      <li>std.nums - проверяет совпадение последовательностей 32-битных целых чисел;</li>
+      <li>std.longnums - проверяет совпадение последовательностей беззнаковых целых чисел произвольной длины;</li>
+      <li>std.floats<n>, где n от 2 до 5 -- проверяет совпадение вещественных чисел с точностью до n знаков;</li>
+      <li>std.strs - проверяет совпадение наборов строк произвольной длины.</li>
+    </ul>
   </td>
 </tr>
 <tr>
   <td><tt>&lt;<a name="Keyword">Keyword</a>&gt;<br/>&lt;<a href="#Problem">Problem</a>&gt;</tt></td>
   <td>
-      <ul><li>code - код ключевого слова</li></ul>
+      <ul><li>code - код ключевого слова</li></ul>
   </td>
-  <td>Код ключевого слова должен быть известен системе.</td>
+  <td>Код ключевого слова должен быть известен системе</td>
 </tr>
 <tr>
   <td><tt>&lt;<a name="ProblemStatement">ProblemStatement</a>&gt;<br/>&lt;<a href="#Problem">Problem</a>&gt;</tt></td>
@@ -81,12 +88,12 @@
 <tr>
   <td><tt>&lt;<a name="ProblemConstraints">ProblemConstraints</a>&gt;<br/>&lt;<a href="#Problem">Problem</a>&gt;</tt></td>
   <td>&nbsp;</td>
-  <td>Описание ограничений на входные данные задачи в формате STML.</td>
+  <td>Описание ограничений на входные данные задачи в формате STML</td>
 </tr>
 <tr>
   <td><tt>&lt;<a name="InputFormat">InputFormat</a>&gt;<br/>&lt;<a href="#Problem">Problem</a>&gt;</tt></td>
   <td>&nbsp;</td>
-  <td>Описание формата входного файла в формате STML.</td>
+  <td>Описание формата входного файла в формате STML</td>
 </tr>
 <tr>
   <td><tt>&lt;<a name="OutputFormat">OutputFormat</a>&gt;<br/>&lt;<a href="#Problem">Problem</a>&gt;</tt></td>
@@ -99,7 +106,7 @@
     <ul>
       <li>name - идентификатор объекта <tt>&lt;<a href="#Checker">Checker</a>&gt;</tt> (произвольная текстовая строка);</li>
       <li>src<sup><a href="#opt" title="Необязательный атрибут">o</a></sup> - путь к файлу с исходным кодом;</li>
-      <li>de_code<sup><a href="#opt" title="Необязательный атрибут">o</a></sup> - код среды разработки.</li>
+      <li>de_code<sup><a href="#opt" title="Необязательный атрибут">o</a></sup> - код среды разработки;</li>
       <li>export<sup><a href="#opt" title="Необязательный атрибут">o</a></sup> <sup><a href="#v14" title="С версии 1.4">1.4</a></sup> - глобальный идентификатор.</li>
     </ul>
   </td>
@@ -112,13 +119,15 @@
       <li>1<sup><a href="#v12" title="С версии 1.2">1.2</a></sup> - None (h;inc)</li>
       <li>101 - Cross-platform C/C++ compiler (cpp;c)</li>
       <li>102 - GNU C++ (cc;cxx)</li>
-      <li>103 - MS Visual C++ 7.0 (cpp;c)</li>
+      <li>103 - MS Visual C++ (cpp;c)</li>
       <li>104 - Borland C++ 3.1 (cpp;c)</li>
-      <li>201 - Borland Pascal (pas)</li>
-      <li>202 - Free Pascal 1.0.10 (pp;pas)</li>
-      <li>203 - Borland Delphi 7.0 (dpr)</li>
-      <li>301 - Quick Basic 4.5 (bas)  (поддерживается не полностью)<sup><a href="#v11" title="С версии 1.1">1.1</a></sup></li>
-      <li>401 - Java 1.5 (java)<sup><a href="#v13" title="С версии 1.3">1.3</a></sup></li>
+      <li>201 - Borland Pascal 7.0 (pas)</li>
+      <li>202 - Free Pascal (pp)</li>
+      <li>203 - Borland Delphi (dpr)</li>
+      <li>301 - Quick Basic (qb)  (поддерживается не полностью)<sup><a href="#v11" title="С версии 1.1">1.1</a></sup></li>
+      <li>302 - Free Basic (bas) <sup><a href="#v14" title="С версии 1.4">1.4</a></sup></li>
+      <li>401 - Java (java)<sup><a href="#v13" title="С версии 1.3">1.3</a></sup></li>
+      <li>501 - Perl (pl)<sup><a href="#v14" title="С версии 1.4">1.4</a></sup></li>
     </ul>
 
     Если код среды разработки не указан, то он определяется по расширению файла,
@@ -149,14 +158,14 @@
 </tr>
 <tr>
   <td><tt>&lt;<a name="Generator">Generator</a>&gt;<br/>&lt;<a href="#Problem">Problem</a>&gt;</tt></td>
-  <td>	
-    <ul>   
+  <td>
+    <ul>
       <li>name - идентификатор объекта <tt>&lt;<a href="#Generator">Generator</a>&gt;</tt>;</li>
       <li>src<sup><a href="#opt" title="Необязательный атрибут">o</a></sup> - путь к файлу с исходным кодом;</li>
       <li>de_code<sup><a href="#opt" title="Необязательный атрибут">o</a></sup> - код среды разработки;</li>
-      <li>outputFile<sup><a href="#opt" title="Необязательный атрибут">o</a></sup> <sup><a href="#v12" title="С версии 1.2">1.2</a></sup> - имя выходного файла.</li>
+      <li>outputFile<sup><a href="#opt" title="Необязательный атрибут">o</a></sup> <sup><a href="#v12" title="С версии 1.2">1.2</a></sup> - имя выходного файла;</li>
       <li>export<sup><a href="#opt" title="Необязательный атрибут">o</a></sup> <sup><a href="#v14" title="С версии 1.4">1.4</a></sup> - глобальный идентификатор.</li>
-    </ul>                  
+    </ul>
   </td>
   <td>Описание генератора тестов. Генератор должен создать файл,
     имя которого заданно в атрибуте <tt>outputFile</tt>. Этот файл используется в качестве
@@ -190,40 +199,13 @@
 </tr>
 <tr>
   <td><tt>&lt;<a name="Test">Test</a>&gt;<br/>&lt;<a href="#Problem">Problem</a>&gt;</tt></td>
-  <td>rank - порядковый номер теста.</td>
-  <td>Содержит описание тестов. 
+  <td><ul>
+    <li>rank - порядковый номер теста</li>
+    <li>points - количество баллов за тест</li>
+  </ul></td>
+  <td>Содержит описание тестов.
   В задаче должны присутствовать тесты со значениями rank от 1 до некоторого N.
   Если ни одного теста нет, то любое компилируемое решение будет принято как верное.
-  </td>
-</tr>
-<tr>
-  <td><tt>&lt;<a name="Module">Module</a>&gt;</tt><sup><a href="#v12" title="С версии 1.2">1.2</a></sup><br/><tt>&lt;<a href="#Problem">Problem</a>&gt;</tt></td>
-  <td>	
-    <ul>   
-      <li>name - идентификатор объекта <tt>&lt;<a href="#Module">Module</a>&gt;</tt>;</li>
-      <li>src - путь к файлу с исходным кодом;</li>
-      <li>de_code<sup><a href="#opt" title="Необязательный атрибут">o</a></sup> - код среды разработки.</li>
-      <li>type - вид модуля (generator, checker, solution).</li>
-      <li>export<sup><a href="#opt" title="Необязательный атрибут">o</a></sup> <sup><a href="#v14" title="С версии 1.4">1.4</a></sup> - глобальный идентификатор.</li>
-    </ul>
-  </td>
-  <td>Описание модуля. Файлы модулей распаковываются и компилируются вместе с каждым объектом
-    соответствующего вида. Для модулей, отдельная компиляция которых не требуется, следует указывать
-    среду разработку "None" (de_code="1").
-    Порядок компиляции модулей совпадает с порядком перечисления в файле описания задачи.
-  </td>
-</tr>
-<tr>
-  <td><tt>&lt;<a name="Import">Import</a>&gt;</tt><sup><a href="#v14" title="С версии 1.4">1.4</a></sup><br/><tt>&lt;<a href="#Problem">Problem</a>&gt;</tt></td>
-  <td>	
-    <ul>   
-      <li>guid <sup><a href="#v14" title="С версии 1.4">1.4</a></sup> - глобальный идентификатор импортируемого объекта.</li>
-      <li>type - тип импортируемого объекта модуля (generator, checker, solution).</li>
-    </ul>
-  </td>
-  <td>Импорт объекта из существующей задачи. Поиск объекта осуществляется по guid.
-    Если указан атрибут type, проверяется соответствие тип объекта.
-    Эффект от импорта объекта эквивалентен добавлению его копии в пакет с задачей.
   </td>
 </tr>
 <tr>
@@ -231,9 +213,10 @@
   <td>
     <ul>
       <li>from - порядковый номер первого теста;</li>
-      <li>to - порядковый номер последнего теста.</li>
+      <li>to - порядковый номер последнего теста;</li>
+       <li>points - количество баллов за каждый тест диапазона.</li>
     </ul>
-  </td>	
+  </td>
   <td>Внутри тега <tt>&lt;<a href="#TestRange">TestRange</a>&gt;</tt> допускается использование контекстных переменных:
     <ul>
       <li><tt>%n</tt> - номер текущего теста;</li>
@@ -267,6 +250,36 @@
   </td>
   <td>Если указан атрибут "use", то перед тестированием решения на данном входном файле
     будет выполнено эталонное решение для генерации выходного файла теста.
+  </td>
+</tr>
+<tr>
+  <td><tt>&lt;<a name="Module">Module</a>&gt;</tt><sup><a href="#v12" title="С версии 1.2">1.2</a></sup><br/><tt>&lt;<a href="#Problem">Problem</a>&gt;</tt></td>
+  <td>
+    <ul>
+      <li>name - идентификатор объекта <tt>&lt;<a href="#Module">Module</a>&gt;</tt>;</li>
+      <li>src - путь к файлу с исходным кодом;</li>
+      <li>de_code<sup><a href="#opt" title="Необязательный атрибут">o</a></sup> - код среды разработки.</li>
+      <li>type - вид модуля (generator, checker, solution).</li>
+      <li>export<sup><a href="#opt" title="Необязательный атрибут">o</a></sup> <sup><a href="#v14" title="С версии 1.4">1.4</a></sup> - глобальный идентификатор.</li>
+    </ul>
+  </td>
+  <td>Описание модуля. Файлы модулей распаковываются и компилируются вместе с каждым объектом
+    соответствующего вида. Для модулей, отдельная компиляция которых не требуется, следует указывать
+    среду разработку "None" (de_code="1").
+    Порядок компиляции модулей совпадает с порядком перечисления в файле описания задачи.
+  </td>
+</tr>
+<tr>
+  <td><tt>&lt;<a name="Import">Import</a>&gt;</tt><sup><a href="#v14" title="С версии 1.4">1.4</a></sup><br/><tt>&lt;<a href="#Problem">Problem</a>&gt;</tt></td>
+  <td>	
+    <ul>   
+      <li>guid <sup><a href="#v14" title="С версии 1.4">1.4</a></sup> - глобальный идентификатор импортируемого объекта.</li>
+      <li>type - тип импортируемого объекта модуля (generator, checker, solution).</li>
+    </ul>
+  </td>
+  <td>Импорт объекта из существующей задачи. Поиск объекта осуществляется по guid.
+    Если указан атрибут type, проверяется соответствие тип объекта.
+    Эффект от импорта объекта эквивалентен добавлению его копии в пакет с задачей.
   </td>
 </tr>
 <tr>
@@ -350,11 +363,11 @@
 </tr>
 <tr><td><tt>&lt;<a name="tr">tr</a>&gt;<br/>&lt;<a href="#table">table</a>&gt;</tt></td>
   <td>&nbsp;</td>
-  <td>Ряд таблицы.</td>
+  <td>Ряд таблицы</td>
 </tr>
 <tr><td><tt>&lt;<a name="td">td</a>&gt;<br/>&lt;<a href="#tr">tr</a>&gt;</tt></td>
   <td>&nbsp;</td>
-  <td>Ячейка таблицы.</td>
+  <td>Ячейка таблицы</td>
 </tr>
 </table>
 </td></tr>

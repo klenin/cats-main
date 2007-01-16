@@ -1,5 +1,6 @@
 <TMPL_INCLUDE 'includes/menu_begin.inc'>
-<script>
+<TMPL_IF editable>
+<script type="text/javascript">
 function getSelectedButton(button) {
     if (button == null) return -1;
     if (button.checked) return button.value;
@@ -11,7 +12,7 @@ function getSelectedButton(button) {
 
 var a = new Array();
 <TMPL_LOOP problems>
-a["<TMPL_VAR problem_id>"] = new Array(
+a["<TMPL_VAR problem_id>"] = new Array(
   "<TMPL_VAR problem_name ESCAPE=HTML>", "<TMPL_VAR href_delete>", "<TMPL_VAR href_replace>");
 </TMPL_LOOP>
 
@@ -21,7 +22,7 @@ function d() {
         alert('Не выбрана задача для удаления');
         return;
     }
-    if (confirm("Вы действительно желаете удалить задачу '" + a[v][0] + "'?")) 
+    if (confirm("Вы действительно желаете удалить задачу '" + a[v][0] + "'?"))
         document.location = a[v][1];
 }
 
@@ -32,32 +33,31 @@ function r() {
     else
         document.location = a[v][2];
 }
-
 </script>
-
-<TMPL_IF message><i><TMPL_VAR message ESCAPE=HTML></i><br></TMPL_IF>
+</TMPL_IF>
+<TMPL_IF message><i><TMPL_VAR message ESCAPE=HTML></i><br/></TMPL_IF>
 
 <TMPL_IF problem_import_log>
 Лог загрузки задачи:<br/>
-<textarea cols="100" rows="10" readonly>
+<textarea cols="100" rows="10" readonly="readonly">
 <TMPL_VAR problem_import_log>
 </textarea>
 </TMPL_IF>
 
 <TMPL_IF solution_submitted>
-<TMPL_IF de_name>Определена среда разработки: '<TMPL_VAR de_name ESCAPE=HTML>'.<br></TMPL_IF>
+<TMPL_IF de_name>Определена среда разработки: '<TMPL_VAR de_name ESCAPE=HTML>'.<br/></TMPL_IF>
 Для наблюдения за ходом тестирования откройте <a href="<TMPL_VAR href_console>" target="_top">консоль</a>.
 <hr/>
 </TMPL_IF>
 
-<form method=post enctype="multipart/form-data" name="problems_form">
+<form method="post" enctype="multipart/form-data" name="problems_form" style="margin: 0">
 <TMPL_INCLUDE 'includes/listview_header.inc'>
-<table border="0" width="100%" cellpadding="2" cellspacing="1" class="bordered">
+<table width="100%" cellpadding="2" cellspacing="1" class="bordered">
 <TMPL_IF is_team>
 <tr bgcolor="#ccccff">
 <th width="1%">&nbsp;</th>
 <TMPL_INCLUDE 'includes/listview_col_defs.inc'>
-</tr>   
+</tr>
 </TMPL_IF>
 <TMPL_LOOP problems>
 <tr bgcolor=<TMPL_IF odd>"#f4f4f4"<TMPL_ELSE>"#ffffff"</TMPL_IF>>
@@ -78,24 +78,16 @@ function r() {
 <td><TMPL_VAR last_modified_by></td>
 <td align="right"><TMPL_VAR upload_date></td>
 </TMPL_IF>
-<TMPL_IF is_practice>
-    <td><TMPL_VAR contest_name ESCAPE=HTML></td>
-</TMPL_IF>
+<TMPL_IF is_practice><td><TMPL_VAR contest_name ESCAPE=HTML></td></TMPL_IF>
 <TMPL_IF is_team>
-    <td width=7% align=center>
-        <TMPL_VAR accept_count>
-    </td>
-    <td width=7% align=center>
-        <TMPL_VAR wa_count>
-    </td>
-    <td width=7% align=center>
-	<TMPL_VAR tle_count>
-    </td>
+    <td align="center"><TMPL_VAR accept_count></td>
+    <td align="center"><TMPL_VAR wa_count></td>
+    <td align="center"><TMPL_VAR tle_count></td>
 </TMPL_IF>
 </tr>
 </TMPL_LOOP>
 </table>
-<br>
+<br/>
 <TMPL_IF is_team>
 <table><tr>
     <td>Файл с решением:</td><td><input type="file" name="source" class="file" size="25"/></td>
@@ -104,25 +96,24 @@ function r() {
       <td><input type="file" name="zip" class="file" size="25"/>
       <input type="checkbox" name="allow_rename" value="1"/> переим.</td></TMPL_IF>
 </tr><tr>
-    <td>Среда разработки:</td><td>
+    <td>Среда разработки:</td><td>
       <select name="de_id">
-      <TMPL_LOOP de_list><option value="<TMPL_VAR de_id>"><TMPL_VAR de_name ESCAPE=HTML></option></TMPL_LOOP>
+      <TMPL_LOOP de_list><option value="<TMPL_VAR de_id>"><TMPL_VAR de_name ESCAPE=HTML></option></TMPL_LOOP>
       </select>
     </td>
-    <TMPL_IF editable><td>&nbsp;</td><td>Статус:</td>
+    <TMPL_IF editable><td>&nbsp;</td><td><input type="submit" name="change_status" value="сменить статус" class="button" /></td>
     <td>
       <select name="status">
-      <TMPL_LOOP status_list><option value="<TMPL_VAR id>"><TMPL_VAR name ESCAPE=HTML></option></TMPL_LOOP>
+      <TMPL_LOOP status_list><option value="<TMPL_VAR id>"><TMPL_VAR name ESCAPE=HTML></option></TMPL_LOOP>
       </select>
-      перетестировать все попытки <input type="checkbox" name="all_runs" value="1"/>
+      перетестировать все <input type="checkbox" name="all_runs" value="1"/>
     </td></TMPL_IF>
 </tr><tr>
     <td colspan="2">
         <input type="submit" name="submit" value="отправить" class="button" />
-        <TMPL_IF editable><input type="submit" name="std_solution" value="эталонное решение" class="button" /></TMPL_IF>
+        <TMPL_IF editable><input type="submit" name="std_solution" value="эталонное решение" class="button" /></TMPL_IF>
     </td>
-    <TMPL_IF editable><td>&nbsp;</td><td colspan="2" align="right">
-        <input type="submit" name="change_status" value="сменить статус" class="button" />
+    <TMPL_IF editable><td>&nbsp;</td><td colspan="2">
         <input type="button" name="delete" value="удалить" class="button" onclick="d()"/>
         <input type="submit" name="replace" value="заменить" class="button" />
         <input type="submit" name="mass_retest" value="перетестировать" class="button" />

@@ -1,7 +1,8 @@
-<TMPL_IF message><i><TMPL_VAR message ESCAPE=HTML></i><br></TMPL_IF>
+<TMPL_IF message><i><TMPL_VAR message ESCAPE=HTML></i><br/></TMPL_IF>
 <TMPL_IF not_started><i>Соревнования ещё не начались</i>
 <TMPL_ELSE>
-<table width=100%> 
+<table width=100%>
+<TMPL_UNLESS printable> 
 <tr>
 <td align=left>
 <TMPL_IF hide_ooc>
@@ -24,6 +25,7 @@
 состояние: <TMPL_IF frozen><font color=#0000a0>заморожена</font><TMPL_ELSE><font color=#00a040>актуальное</font></TMPL_IF>
 </td>
 </tr>
+</TMPL_UNLESS>
 </table>
 <table width="100%" cellspacing="1" class="bordered">
 <TMPL_IF many_contests>
@@ -34,40 +36,38 @@
 </TMPL_IF>
 <tr bgcolor="#ccccff">
 <th width="1%"></th>
-<!-- <th width=1%>Страна -->
+<TMPL_IF 0><th width=1%>Страна</TMPL_IF>
 <th>Название команды</th>
 <TMPL_LOOP problems>
 <th width="<TMPL_VAR column_width>%">
-  <a href="<TMPL_VAR problem_text>" alt="<TMPL_VAR title>" title="<TMPL_VAR title>"><TMPL_VAR code></a>
+  <a href="<TMPL_VAR problem_text>" alt="<TMPL_VAR title>" title="<TMPL_VAR title ESCAPE=HTML>"><TMPL_VAR code></a>
   <TMPL_IF max_points> (<TMPL_VAR max_points>)</TMPL_IF>
 </th>
 </TMPL_LOOP>
-<th width="<TMPL_VAR problem_column_width>%"><TMPL_IF show_points>всего<TMPL_ELSE>=</TMPL_IF></th>
+<th width="<TMPL_VAR problem_column_width>%"><TMPL_IF show_points>всего (<TMPL_VAR max_total_points>)<TMPL_ELSE>=</TMPL_IF></th>
 <TMPL_UNLESS show_points><th>время</th></TMPL_UNLESS>
 <th>место</th>
 <th>статус</th>
 
 <TMPL_LOOP rank>
 <tr <TMPL_UNLESS row_color>bgcolor=#f4f4f4</TMPL_UNLESS>>
-<td align="right"><TMPL_VAR contestant_number>&nbsp;</td>
-<!--
-<td nowrap align=center bgcolor=#ffffff>
+<td align="right"><TMPL_VAR contestant_number>&nbsp;</td><TMPL_IF 0><td nowrap align=center bgcolor=#ffffff>
 <TMPL_IF flag>
     <img src="<TMPL_VAR NAME=flag>" alt="<TMPL_VAR NAME=country ESCAPE=HTML><TMPL_IF motto> - <TMPL_VAR motto ESCAPE=HTML></TMPL_IF>">
 <TMPL_ELSE>
     <TMPL_VAR NAME=country ESCAPE=HTML><TMPL_IF motto> - <TMPL_VAR motto ESCAPE=HTML></TMPL_IF>
-</TMPL_IF>    
--->
-<td><a href="<TMPL_VAR href_console>"><TMPL_VAR team_name ESCAPE=HTML></a></td>
-<TMPL_IF show_points>
-  <TMPL_LOOP columns><td align=center><TMPL_VAR points></td></TMPL_LOOP>
-<TMPL_ELSE>
-<TMPL_LOOP columns>
-  <td align=center><font size="1"><TMPL_VAR time ESCAPE=HTML></font><br><TMPL_VAR td ESCAPE=HTML></td>
-</TMPL_LOOP>
+</TMPL_IF></TMPL_IF><td><a href="<TMPL_VAR href_console>"><TMPL_VAR team_name ESCAPE=HTML></a></td>
+<TMPL_IF show_points
+  ><TMPL_LOOP columns
+    ><td align=center><TMPL_VAR points></td>
+   </TMPL_LOOP>
+<TMPL_ELSE
+  ><TMPL_LOOP columns
+    ><td align=center><font size="1"><TMPL_VAR time ESCAPE=HTML></font><br><TMPL_VAR td ESCAPE=HTML></td>
+  </TMPL_LOOP>
 </TMPL_IF>
-<td align="center"><TMPL_IF show_points><TMPL_VAR total_points>
-<TMPL_ELSE><TMPL_VAR total_solved><td align="center"><TMPL_VAR total_time></TMPL_IF></td>
+<td align="center"><TMPL_IF show_points><TMPL_VAR total_points
+  ><TMPL_ELSE><TMPL_VAR total_solved><td align="center"><TMPL_VAR total_time></TMPL_IF></td>
 <td align="center"><TMPL_VAR place></td>
 <td align="center"><font size="-1"><i>
   <TMPL_IF is_ooc>ooc</TMPL_IF><TMPL_IF is_remote> remote</TMPL_IF><TMPL_IF is_virtual> virtual</TMPL_IF>

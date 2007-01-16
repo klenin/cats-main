@@ -1,0 +1,2 @@
+ExpiresActive On
+ExpiresDefault "now plus 12 hours"

@@ -34,7 +34,7 @@ sub get_registered_contestant
     $p{contest_id} or die;
     
     $dbh->selectrow_array(qq~
-        SELECT $p{fields} FROM contest_accounts WHERE contest_id = ? AND account_id = ?~, {},
+        SELECT $p{fields} FROM contest_accounts WHERE contest_id = ? AND account_id = ?~, undef,
         $p{contest_id}, $p{account_id});
 }
 
@@ -47,7 +47,8 @@ sub is_jury_in_contest
     {
         return $is_jury;
     }
-    get_registered_contestant(fields => 'is_jury', @_);
+    my ($j) = get_registered_contestant(fields => 'is_jury', @_);
+    return $j;
 }
 
 

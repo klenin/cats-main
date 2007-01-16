@@ -30,7 +30,8 @@
 </select>
 <br/><br/>
 </TMPL_IF>
-<input type="submit" name="link_save" value="     Ok     " class="button" />
+<TMPL_IF move><input type="hidden" name="move" value="1" /></TMPL_IF>
+<input type="submit" name="link_save" value="<TMPL_IF move>Переместить<TMPL_ELSE>Прилинковать</TMPL_IF>" class="button" />
 <input type="submit" name="link_cancel" value="Отмена" class="button" />
 </form>
 </TMPL_IF>

@@ -25,6 +25,7 @@ our %binary =
  'le' => 'le',
  'ge' => 'ge',
  'ne' => 'ne',
+ lt => 'lt',
  ll => '#x226A',
  gg => '#x226B', 
  approx => 'asymp',

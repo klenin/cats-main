@@ -4,8 +4,9 @@ BEGIN
 {
     use Exporter;
 
-    @ISA = qw( Exporter );
-    @EXPORT = qw(  
+    @ISA = qw(Exporter);
+    @EXPORT = qw(
+        cats_dir
         split_fname
         initialize
         init_template
@@ -43,7 +44,6 @@ BEGIN
         param_on
     );
 
-        
     @EXPORT_OK = qw(
         $dbh $sql @messages $t $sid $cid $lng $uid $team_name $server_time $contest_title $dbi_error $is_practice
         $is_root $is_team $is_jury $is_virtual $virtual_diff_time $contest_elapsed_minutes $additional $search);
@@ -52,6 +52,8 @@ BEGIN
 }
 
 use strict;
+use warnings;
+
 use DBD::InterBase;
 use HTML::Template;
 #use CGI::Fast( ':standard' );
@@ -63,6 +65,7 @@ use MIME::Base64;
 use SQL::Abstract;
 use Digest::MD5;
 use Time::HiRes;
+use Encode;
 
 use CATS::Constants;
 use CATS::Connect;
@@ -74,6 +77,13 @@ use vars qw(
     $listview_name $listview_array_name $col_defs $sort $sort_dir $search $page $visible $additional
     $request_start_time
 );
+
+
+my $cats_dir;
+sub cats_dir()
+{
+    $cats_dir ||= $ENV{CATS_DIR} || '/usr/local/apache/CATS/cgi-bin/';
+}
 
 
 sub split_fname
@@ -106,8 +116,8 @@ sub escape_html
     my $toencode = shift;
     
     $toencode =~ s/&/&amp;/g;
-    $toencode =~ s/\'/&#39;/g;    
-    $toencode =~ s/\"/&quot;/g;
+    $toencode =~ s/\'/&#39;/g;
+    $toencode =~ s/\"/&quot;/g; #"
     $toencode =~ s/>/&gt;/g;
     $toencode =~ s/</&lt;/g;
 
@@ -129,10 +139,9 @@ sub escape_xml
 
 sub http_header
 {
-    my $type = shift;
-    my $cookie = shift;
+    my ($type, $encoding, $cookie) = @_;
 
-    CGI::header(-type => $type, -cookie => $cookie, -charset => 'utf-8');
+    CGI::header(-type => $type, -cookie => $cookie, -charset => $encoding);
 }
 
 
@@ -186,7 +195,7 @@ sub templates_path
         }
     }
     
-    $cats::templates[0]->{path};
+    cats_dir() . $cats::templates[0]->{path};
 }
 
 
@@ -194,7 +203,7 @@ sub templates_path
 sub init_messages
 {
     return if @messages;
-    my $msg_file = templates_path()."/consts";
+    my $msg_file = templates_path() . "/consts";
 
     my $r = open FILE, "<".$msg_file;
    
@@ -221,9 +230,9 @@ sub init_listview_params
 {
     ($sort, $search, $page, $visible, $sort_dir, $additional) = CGI::cookie($listview_name);
     $search = decode_base64($search || '');
-  
+
     $page = url_param('page') if (defined url_param('page'));
-    
+
     if (defined param('filter'))
     {
         $search = param('search');
@@ -258,8 +267,8 @@ sub init_listview_params
 
 sub fatal_error
 {
-    print STDOUT http_header('text/html')."<pre>".escape_html( $_[0] )."</pre>";
-    exit( 1 );
+    print STDOUT http_header('text/html', 'utf-8') . '<pre>' . escape_html( $_[0] ) . '</pre>';
+    exit(1);
 }
 
 
@@ -271,8 +280,8 @@ sub init_template
     {
         my $text_ref = shift;
 
-        Encode::from_to($$text_ref, 'koi8-r', 'utf-8');
-        #$$text_ref = Encode::decode('koi8-r', $$text_ref);
+        #Encode::from_to($$text_ref, 'koi8-r', 'utf-8');
+        $$text_ref = Encode::decode('koi8-r', $$text_ref);
     };
 
     $t = HTML::Template->new(
@@ -281,21 +290,20 @@ sub init_template
 }
 
 
-
 sub init_listview_template
 {
     $listview_name = shift;
     $listview_array_name = shift;
     my $file_name = shift;
-        
+
     init_listview_params;
 
     init_template($file_name);
 }
 
 
-sub selected_menu_item {
-    
+sub selected_menu_item
+{
     my $default = shift || '';
     my $href = shift;
 
@@ -337,7 +345,7 @@ sub mark_selected
 
 
 sub attach_menu
-{   
+{
    my ($menu_name, $default, $menu) = @_;
    mark_selected($default, $menu);
 
@@ -475,13 +483,13 @@ sub attach_listview
         $t->param( href_next_pages => "$url$page_extra_params&page=" . ($range_end + 1));
     }     
 
-    $t->param( display_rows => [ @display_rows ] );
-    $t->param( $listview_array_name => [@data] );
+    $t->param(display_rows => [ @display_rows ]);
+    $t->param($listview_array_name => [@data]);
 }
 
 
 sub order_by
-{    
+{
    if ($sort ne '' && defined $col_defs->[$sort])
    {
        my $dir = $sort_dir ? 'DESC' : 'ASC';
@@ -532,9 +540,20 @@ sub generate_output
 
     $t->param(request_process_time => sprintf '%.3fs',
         Time::HiRes::tv_interval($request_start_time, [ Time::HiRes::gettimeofday ]));
-
-    print STDOUT http_header('text/html', $cookie);
-    print STDOUT $t->output;
+    if (my $enc = url_param('enc'))
+    {
+        binmode(STDOUT, ':raw');
+        $t->param(encoding => $enc);
+        print STDOUT http_header('text/html', $enc, $cookie);
+        print STDOUT Encode::encode($enc, $t->output, Encode::FB_XMLCREF);
+    }
+    else
+    {
+        binmode(STDOUT, ':utf8');
+        $t->param(encoding => 'utf-8');
+        print STDOUT http_header('text/html', 'utf-8', $cookie);
+        print STDOUT $t->output;
+    }
 }
 
 
@@ -574,7 +593,7 @@ sub get_flag
     {
         if ($_->{'id'} eq $country )
         {
-            my $flag = defined $_->{'flag'} ? $cats::flags_path."/".$_->{'flag'} : undef;
+            my $flag = defined $_->{'flag'} ? "$cats::flags_path/$_->{flag}" : undef;
 
             return ( $_->{'name'}, $flag );
         }
@@ -587,7 +606,7 @@ sub get_flag
 sub generate_login
 {
     my $login_num = undef;
-    
+
     if ( $CATS::Connect::db_dsn =~ /InterBase/ )
     {
         $login_num = $dbh->selectrow_array('SELECT GEN_ID(login_seq, 1) FROM RDB$DATABASE');
@@ -889,7 +908,7 @@ sub balance_tags
 
 sub source_hash
 {
-    Digest::MD5::md5_hex($_[0]);
+    Digest::MD5::md5_hex(Encode::encode_utf8($_[0]));
 }
 
 

@@ -1,7 +1,7 @@
 # ---------------------------------------------------------------------
 # CHANGE this definition to point to your InterBase installation directory
 # ---------------------------------------------------------------------
-IBASE=		/usr/interbase
+IBASE=		/usr/local/firebird
 
 
 # ---------------------------------------------------------------------
@@ -12,8 +12,8 @@ LINK=		gcc
 LIB_LINK=	ld
 CFLAGS=		-c -w -I$(IBASE)/include  
 LIB_CFLAGS=	-fPIC $(CFLAGS)
-LINK_FLAGS=	-lgds -ldl -lcrypt 
-LIB_LINK_FLAGS=	-shared -lgds
+LINK_FLAGS=	-lfbclient -ldl -lcrypt 
+LIB_LINK_FLAGS=	-shared -lfbclient
 RM=		rm -f
 
 .SUFFIXES: .o .c

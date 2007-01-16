@@ -32,11 +32,20 @@
 <tr><th>Ссылки</th>
 <TMPL_LOOP sources_info><td>
 <TMPL_IF href_view_source><a href="<TMPL_VAR href_view_source>">код</a><TMPL_ELSE>код</TMPL_IF> |
+<TMPL_IF href_download_source><a href="<TMPL_VAR href_download_source>">скачать</a></TMPL_IF> |
 <TMPL_IF href_run_details><a href="<TMPL_VAR href_run_details>">результаты</a><TMPL_ELSE>результаты</TMPL_IF>
 <TMPL_IF is_jury> |
 <TMPL_IF href_run_log><a href="<TMPL_VAR href_run_log>">лог</a><TMPL_ELSE>лог</TMPL_IF>
 </TMPL_IF>
 </td></TMPL_LOOP>
 </tr>
-
 </table>
+
+<form action="<TMPL_VAR href_current_link>" method="post">
+  <select name="src_enc">
+  <TMPL_LOOP source_encodings>
+  <option value="<TMPL_VAR enc>"<TMPL_IF selected>selected="selected"</TMPL_IF>><TMPL_VAR enc></option>
+  </TMPL_LOOP>
+  </select>
+  <input type="submit" value="кодировка" />
+</form>

@@ -1,5 +1,5 @@
-cd ~mike/CATS/ib_data
+cd ~ask/cats/ib_data
 ls -t backup/* | tail -n 1 | xargs rm
 backup_name=backup/`date "+cats_%Y_%m_%d.gbk"`
-/opt/interbase/bin/gbak -B cats.gdb $backup_name
+/usr/local/firebird/bin/gbak -B cats $backup_name
 gzip $backup_name
