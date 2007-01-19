@@ -26,6 +26,7 @@ BEGIN {
 use lib $cats_lib_dir;
 
 
+use CATS::DB;
 use CATS::Constants;
 use CATS::BinaryFile;
 use CATS::DevEnv;
@@ -247,7 +248,7 @@ sub contests_edit_save
         $edit_cid
     );
     $dbh->commit;
-    # если переименовалий текущи турнир, сразу изменить заголовок окна
+    # если переименовали текущи турнир, сразу изменить заголовок окна
     if ($edit_cid == $cid)
     {
         $contest_title = $p->{contest_name};
@@ -260,14 +261,10 @@ sub contest_online_registration
     !get_registered_contestant(contest_id => $cid)
         or return msg(111);
 
-    my ($finished, $closed) = $dbh->selectrow_array(qq~
-        SELECT CATS_SYSDATE() - finish_date, closed FROM contests WHERE id = ?~, undef,
-        $cid);
-        
-    $finished <= 0
+    $contest->{time_since_finish} <= 0
         or return msg(108);
 
-    !$closed
+    !$contest->{closed}
         or return msg(105);
 
     register_contest_account(contest_id => $cid, account_id => $uid, diff_time => 0);
@@ -283,18 +280,14 @@ sub contest_virtual_registration
     !$registered || $is_virtual
         or return msg(114);
 
-    my ($time_since_start, $time_since_finish, $closed, $is_official) = $dbh->selectrow_array(qq~
-        SELECT CATS_SYSDATE() - start_date, CATS_SYSDATE() - finish_date, closed, is_official
-            FROM contests WHERE id=?~, {},
-        $cid);
-        
-    $time_since_start >= 0
+    $contest->{time_since_start} >= 0
         or return msg(109);
     
-    $time_since_finish >= 0 || !$is_official
+    # В официальных турнирах виртуальное участие резрешено тоьлко после окончания.
+    $contest->{time_since_finish} >= 0 || !$contest->{is_official}
         or return msg(122);
 
-    !$closed
+    !$contest->{closed}
         or return msg(105);
 
     # при повторной регистрации удаляем старые результаты
@@ -312,7 +305,7 @@ sub contest_virtual_registration
 
     register_contest_account(
         contest_id => $cid, account_id => $uid,
-        is_virtual => 1, diff_time => $time_since_start);
+        is_virtual => 1, diff_time => $contest->{time_since_start});
     $dbh->commit;
 }
 
@@ -326,13 +319,9 @@ sub contests_select_current
     );
     return if $is_jury;
     
-    my ($title, $time_since_finish) = $dbh->selectrow_array(qq~
-        SELECT title, CATS_SYSDATE() - finish_date FROM contests WHERE id = ?~, {},
-        $cid);
+    $t->param(selected_contest_title => $contest->{title});
 
-    $t->param(selected_contest_title => $title);
-
-    if ($time_since_finish > 0)
+    if ($contest->{time_since_finish} > 0)
     {
         msg(115);
     }
@@ -363,6 +352,9 @@ sub common_contests_view ($)
 
 sub contest_fields ()
 {
+    # HACK: начальная страница -- список турниров, выводится очень часто
+    # при отсутствии поиска выбираем только первую страницу + 1 запись.
+    (($page || 0) == 0 && !$search ? 'FIRST ' . ($visible + 1) : '') .
     qq~c.ctype, c.id, c.title, c.start_date AS sd, c.finish_date AS fd,
     CATS_DATE(c.start_date) AS start_date, CATS_DATE(c.finish_date) AS finish_date,
     c.closed, c.is_official, c.rules~
@@ -372,18 +364,15 @@ sub contest_fields ()
 sub authenticated_contests_view ()
 {
     my $cf = contest_fields();
-    my $is_hidden = 'c.is_hidden = 0 OR c.is_hidden IS NULL';
+    #my $not_hidden = 'c.is_hidden = 0 OR c.is_hidden IS NULL';
     my $sth = $dbh->prepare(qq~
         SELECT
-            $cf, ca.is_virtual, ca.is_jury, 1 AS registered
-        FROM contests c INNER JOIN contest_accounts ca ON ca.contest_id = c.id
-        WHERE ca.account_id = ? AND ($is_hidden OR ca.is_jury = 1)
-        UNION
-        SELECT $cf, 0, 0, 0 FROM contests c
-        WHERE NOT EXISTS (
-            SELECT id FROM contest_accounts WHERE contest_id = c.id AND account_id = ?) AND ($is_hidden)
-        ~ . order_by);
-    $sth->execute($uid, $uid);
+            $cf, CA.is_virtual, CA.is_jury, CA.id AS registered
+        FROM contests C LEFT JOIN
+            contest_accounts CA ON CA.contest_id = C.id AND CA.account_id = ?
+        WHERE
+            CA.account_id IS NOT NULL OR COALESCE(C.is_hidden, 0) = 0 ~ . order_by);
+    $sth->execute($uid);
 
     my $fetch_contest = sub($) 
     {
@@ -406,8 +395,7 @@ sub anonymous_contests_view ()
 {
     my $cf = contest_fields();
     my $sth = $dbh->prepare(qq~
-        SELECT $cf FROM contests c
-          WHERE is_hidden = 0 OR is_hidden IS NULL ~ . order_by
+        SELECT $cf FROM contests C WHERE COALESCE(C.is_hidden, 0) = 0 ~ . order_by
     );
     $sth->execute;
 
@@ -484,8 +472,8 @@ sub contests_frame
 
     if ($is_root)
     {
-        my @submenu = ( { href_item => url_f('contests', new => 1), item_name => res_str(537) } );
-        $t->param(submenu => [ @submenu ] );
+        my $submenu = [ { href_item => url_f('contests', new => 1), item_name => res_str(537) } ];
+        $t->param(submenu => $submenu);
     }
 
     $t->param(
@@ -693,7 +681,7 @@ sub console
                     , dummy_table D
                 WHERE (R.submit_time > CATS_SYSDATE() - $day_count) AND
                     C.id=? AND CA.is_hidden=0 AND
-                    (A.id=? OR (R.submit_time < C.freeze_date OR CATS_SYSDATE() > C.defreeze_date))
+                    (A.id=? OR R.submit_time < C.freeze_date OR CATS_SYSDATE() > C.defreeze_date)
                 $events_filter
             UNION
             SELECT
@@ -817,7 +805,7 @@ sub console
     $t->param(
         href_my_events_only => url_f('console', uf => ($uid || get_anonymous_uid())),
         href_all_events => url_f('console', uf => 0),
-        user_filter => $user_filter,
+        user_filter => $user_filter
     );
     my $s = $t->output;
     init_template($template_name);
@@ -971,14 +959,13 @@ sub problems_new_frame
 sub add_problem_to_contest
 {
     my ($pid, $problem_code) = @_;
-    # Если не-архивный турнир уже идёт, добавляемые задачи сразу получают статус hidden
-    my ($since_start, $ctype) = $dbh->selectrow_array(qq~
-        SELECT CATS_SYSDATE() - start_date, ctype FROM contests WHERE id = ?~, undef, $cid);
     return $dbh->do(qq~
         INSERT INTO contest_problems(id, contest_id, problem_id, code, status)
             VALUES (?,?,?,?,?)~, {},
         new_id, $cid, $pid, $problem_code,
-        $since_start > 0 && $ctype == 0 ? $cats::problem_st_hidden : $cats::problem_st_ready);
+        # Если не-архивный турнир уже идёт, добавляемые задачи сразу получают статус hidden
+        $contest->{time_since_start} > 0 && $contest->{ctype} == 0 ?
+            $cats::problem_st_hidden : $cats::problem_st_ready);
 }
 
 
@@ -1200,6 +1187,22 @@ sub download_problem
 }
 
 
+sub upload_source
+{
+    my ($file) = @_;
+    my $src = '';
+    use bytes;
+    while (read($file, my $buffer, 4096))
+    {
+        length $src < 32767
+            or return msg(10);
+        $src .= $buffer;
+    }
+    #$src or return msg(11);
+    return $src;
+}
+
+
 sub problems_submit
 {
     # Проверяем параметры заранее, чтобы не делать бесполезных обращений к БД.
@@ -1258,17 +1261,7 @@ sub problems_submit
         return msg(131);
     }
     
-    my $src = '';
-    {
-        use bytes;
-        while (read($file, my $buffer, 4096))
-        {
-            length $src < 32767
-                or return msg(10);
-            $src .= $buffer;
-        }
-        $src or return msg(11);
-    }
+    my $src = upload_source($file) or return;
     my $did = param('de_id');
 
     if (param('de_id') eq 'by_extension')
@@ -1449,13 +1442,13 @@ sub problems_frame_jury_action
 
 sub problems_frame
 {
+    my $my_is_team = $is_team && $contest->{time_since_finish} - $virtual_diff_time < 0 || $is_practice;
     my $show_packages = 1;
     unless ($is_jury)
     {
-        (my $start_diff_time, $show_packages, my $local_only) = $dbh->selectrow_array(qq~
-            SELECT CATS_SYSDATE() - start_date, show_packages, local_only FROM contests WHERE id = ?~,
-            {}, $cid);
-        if ($start_diff_time < 0)
+        $show_packages = $contest->{show_packages};
+        my $local_only = $contest->{local_only};
+        if ($contest->{time_since_start} < 0)
         {
             init_template('main_problems_inaccessible.htm');
             return msg(130);
@@ -1556,7 +1549,7 @@ sub problems_frame
             editable => $is_jury,
             status => problem_status_names()->{$c->{status}},
             disabled => !$is_jury && $c->{status} == $cats::problem_st_disabled,
-            is_team => $is_team || $is_practice,
+            is_team => $my_is_team,
             href_view_problem => url_f('problem_text', cpid => $c->{cpid}),
             
             problem_id => $c->{pid},
@@ -1577,7 +1570,7 @@ sub problems_frame
 
     my $de_list = CATS::DevEnv->new($dbh, active_only => 1);
     my @de = (
-        { de_id => "by_extension", de_name => res_str(536) },
+        { de_id => 'by_extension', de_name => res_str(536) },
         map {{ de_id => $_->{id}, de_name => $_->{description} }} @{$de_list->{_de_list}} );
     
     my @submenu = ( { href_item => url_f('problem_text'), item_name => res_str(538), item_target => '_blank' } );
@@ -1603,7 +1596,7 @@ sub problems_frame
     }
 
     $t->param(submenu => [ @submenu ]);
-    $t->param(is_team => ($is_team || $is_practice), is_practice => $is_practice, de_list => [ @de ]);
+    $t->param(is_team => $my_is_team, is_practice => $is_practice, de_list => [ @de ]);
 }
 
 
@@ -2657,6 +2650,17 @@ sub view_source_frame
     init_template('main_view_source.htm');
     my ($sources_info, $is_jury) = prepare_source(1);
     $sources_info or return;
+    if ($is_jury && (my $file = param('replace_source')))
+    {
+        my $src = upload_source($file) or return;
+        my $s = $dbh->prepare(q~
+            UPDATE sources SET src = ? WHERE req_id = ?~);
+        $s->bind_param(1, $src, { ora_type => 113 } ); # blob
+        $s->bind_param(2, $sources_info->{req_id} );
+        $s->execute;
+        $dbh->commit;
+        $sources_info->{src} = $src;
+    }
     source_links($sources_info, $is_jury);
     $t->param(sources_info => [$sources_info]);
 }
@@ -2915,7 +2919,7 @@ sub rank_table
         href_show_ooc => url_f(@p, hide_ooc => 0, hide_virtual => $hide_virtual),
         href_hide_virtual => url_f(@p, hide_virtual => 1, hide_ooc => $hide_ooc),
         href_show_virtual => url_f(@p, hide_virtual => 0, hide_ooc => $hide_ooc),
-        show_points => $show_points
+        show_points => $show_points,
     );
     #return if $not_started;
 
@@ -3099,17 +3103,25 @@ sub rank_table_frame
     my $show_points = url_param('points');
 
     #rank_table('main_rank_table.htm');
-    #init_template("main_rank_table_content.htm");
-    init_template("main_rank_table.htm");
+    #init_template('main_rank_table_content.htm');
+    init_template('main_rank_table.htm');
 
     my $contest_list = get_contest_list_param;
     ($contest_title) = get_contests_info($contest_list, $uid);
 
-    $t->param(href_rank_table_content => url_f(
-        'rank_table_content',
+    my @params = (
         hide_ooc => $hide_ooc, hide_virtual => $hide_virtual, cache => $cache,
         clist => $contest_list, points => $show_points
-    ));
+    );
+    $t->param(href_rank_table_content => url_f('rank_table_content', @params));
+    if ($is_jury)
+    {
+        $t->param(submenu => [
+            { href_item => url_f('rank_table_content', @params, printable => 1), item_name => res_str(552) },
+            { href_item => url_f('rank_table', @params, cache => 1 - ($cache || 0)), item_name => res_str(553) },
+            { href_item => url_f('rank_table', @params, points => 1 - ($show_points || 0)), item_name => res_str(554) },
+        ]);
+    }
 }
 
 
@@ -3308,7 +3320,7 @@ sub contest_visible
         $t = 'CP';
         $p = $cpid;
     }
-    elsif (defined $cid)
+    elsif (defined $cid) # Показать все задачи турнира.
     {
         $s = '';
         $t = 'C';
@@ -3325,11 +3337,13 @@ sub contest_visible
         my $is_remote;
         if (defined $uid)
         {
+            # Должно быть локальное участие в основном турнире задачи
+            # либо, если запрошены все задачи турнира, то в этом турнире.
+            # Более полная проверка приводит к сложным условиям в составных турнирах.
             ($is_remote) = $dbh->selectrow_array(q~
-                SELECT C.is_remote FROM contests C
-                    INNER JOIN contest_accounts CA ON C.id = CA.contest_id
-                    WHERE CA.account_id = ?~, {},
-                $uid);
+                SELECT is_remote FROM contest_accounts
+                WHERE account_id = ? AND contest_id = ?~, {},
+                $uid, $orig_cid);
         }
         return 1 if defined $is_remote && $is_remote == 0;
     }
@@ -3365,7 +3379,8 @@ sub problem_text_frame
         $pcodes{$problem_id} = $code;
     }
     else
-    {    
+    {
+        # Показать все задачи турнира
         ($show_points) = $dbh->selectrow_array(q~
             SELECT rules FROM contests WHERE id = ?~, undef, $cid);
 
@@ -3853,7 +3868,7 @@ sub generate_menu
             { item => res_str(549), href => url_f('keywords') } );
     }
 
-    if (!$is_practice)
+    unless ($contest->is_practice)
     {
         push @left_menu, (
             { item => res_str(529), href => url_f('rank_table', $is_jury ? () : (cache => 1, hide_virtual => 1)) }
@@ -3918,19 +3933,19 @@ sub interface_functions ()
 sub accept_request                                               
 {
     my $q = CGI->new;
-    $CATS::Misc::request_start_time = [ Time::HiRes::gettimeofday ];
     initialize;
+    $CATS::Misc::init_time = Time::HiRes::tv_interval($CATS::Misc::request_start_time, [ Time::HiRes::gettimeofday ]);
 
     my $function_name = url_param('f') || '';
     my $fn = interface_functions()->{$function_name} || \&about_frame;
     $fn->();
 
-    generate_menu if (defined $t);
+    generate_menu if defined $t;
     generate_output;
-
 }
          
-sql_connect;
+$CATS::Misc::request_start_time = [ Time::HiRes::gettimeofday ];
+CATS::DB::sql_connect;
 $dbh->rollback; # на случай брошенной транзакции от предыдущего запроса
 
 #while(CGI::Fast->new)

@@ -40,12 +40,3 @@
 </td></TMPL_LOOP>
 </tr>
 </table>
-
-<form action="<TMPL_VAR href_current_link>" method="post">
-  <select name="src_enc">
-  <TMPL_LOOP source_encodings>
-  <option value="<TMPL_VAR enc>"<TMPL_IF selected>selected="selected"</TMPL_IF>><TMPL_VAR enc></option>
-  </TMPL_LOOP>
-  </select>
-  <input type="submit" value="кодировка" />
-</form>

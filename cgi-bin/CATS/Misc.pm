@@ -12,8 +12,6 @@ BEGIN
         init_template
         init_listview_template
         generate_output
-        sql_connect
-        sql_disconnect
         http_header
         init_messages
         msg
@@ -27,7 +25,6 @@ BEGIN
         get_flag
         generate_login
         generate_password
-        new_id
         res_str
         attach_listview
         attach_menu
@@ -39,14 +36,13 @@ BEGIN
         generate_count_query
         balance_brackets
         balance_tags
-        _u
         source_hash
         param_on
     );
 
     @EXPORT_OK = qw(
-        $dbh $sql @messages $t $sid $cid $lng $uid $team_name $server_time $contest_title $dbi_error $is_practice
-        $is_root $is_team $is_jury $is_virtual $virtual_diff_time $contest_elapsed_minutes $additional $search);
+        $contest @messages $t $sid $cid $lng $uid $team_name $server_time $contest_title $dbi_error $is_practice
+        $is_root $is_team $is_jury $is_virtual $virtual_diff_time $additional $search $page $visible $init_time);
 
     %EXPORT_TAGS = ( all => [ @EXPORT, @EXPORT_OK ] );
 }
@@ -54,7 +50,6 @@ BEGIN
 use strict;
 use warnings;
 
-use DBD::InterBase;
 use HTML::Template;
 #use CGI::Fast( ':standard' );
 use CGI (':standard');
@@ -67,15 +62,17 @@ use Digest::MD5;
 use Time::HiRes;
 use Encode;
 
+use CATS::DB;
 use CATS::Constants;
-use CATS::Connect;
 use CATS::IP;
 use CATS::Diff;
+use CATS::Contest;
+
 use vars qw(
-    $dbh $sql @messages $t $sid $cid $lng $uid $team_name $server_time $contest_title $dbi_error $is_practice
-    $is_root $is_team $is_jury $is_virtual $virtual_diff_time $contest_elapsed_minutes
+    $contest @messages $t $sid $cid $lng $uid $team_name $server_time $contest_title $dbi_error $is_practice
+    $is_root $is_team $is_jury $is_virtual $virtual_diff_time
     $listview_name $listview_array_name $col_defs $sort $sort_dir $search $page $visible $additional
-    $request_start_time
+    $request_start_time $init_time
 );
 
 
@@ -145,44 +142,6 @@ sub http_header
 }
 
 
-sub _u { splice(@_, 1, 0, { Slice => {} }); @_; }
-
-
-sub sql_connect 
-{
-    use Carp;
-    $dbh ||= DBI->connect(
-      $CATS::Connect::db_dsn, $CATS::Connect::db_user, $CATS::Connect::db_password,
-      { AutoCommit => 0, LongReadLen => 1024*1024*8, FetchHashKeyName => 'NAME_lc' }
-    );
-    
-    if (!defined $dbh) 
-    {  
-        fatal_error("Failed connection to SQL-server $DBI::errstr");
-    }
-
-    $dbh->{HandleError} = sub
-    {
-        my $m = "DBI error: ".$_[0] ."\n";
-        confess $m;    
-        fatal_error($m);
-        #$dbi_error .= $m;
-        0;
-    };
-
-    $sql = SQL::Abstract->new;
-}
-
-
-sub sql_disconnect 
-{
-    $dbh or return;
-    $dbh->disconnect;
-    undef $dbh;
-}
-
-
-
 sub templates_path
 {
     my $template = param('iface') || '';
@@ -197,7 +156,6 @@ sub templates_path
     
     cats_dir() . $cats::templates[0]->{path};
 }
-
 
 
 sub init_messages
@@ -272,9 +230,11 @@ sub fatal_error
 }
 
 
+#my $template_file;
 sub init_template
 {
     my $file_name = shift;
+    #if (defined $t && $template_file eq $file_name) { $t->param(tf=>1); return; }
 
     my $utf8_encode = sub
     {
@@ -283,7 +243,7 @@ sub init_template
         #Encode::from_to($$text_ref, 'koi8-r', 'utf-8');
         $$text_ref = Encode::decode('koi8-r', $$text_ref);
     };
-
+    #$template_file = $file_name;
     $t = HTML::Template->new(
         filename => templates_path() . "/$file_name", cache => 1,
         die_on_bad_params => 0, filter => $utf8_encode, loop_context_vars => 1);
@@ -307,40 +267,40 @@ sub selected_menu_item
     my $default = shift || '';
     my $href = shift;
 
-    my $q = new CGI((split('\?', $href))[1]);
+    my ($pf) = ($href =~ /\?f=([a-z_]+)/);
+    $pf ||= '';
+    #my $q = new CGI((split('\?', $href))[1]);
 
     my $page = CGI::url_param('f');
-    my $pf = $q->param('f') || '';
+    #my $pf = $q->param('f') || '';
 
     (defined $page && $pf eq $page) ||
     (!defined $page && $pf eq $default);
 }
 
 
-sub mark_selected 
+sub mark_selected
 {
-    my $default = shift;
-    my $menu = shift;
+    my ($default, $menu) = @_;
 
-    foreach my $i (@$menu)
+    for my $i (@$menu)
     {
-        if (selected_menu_item($default, $$i{ href }))
+        if (selected_menu_item($default, $i->{href}))
         {
-            $$i{ selected } = 1;
-            $$i{ dropped } = 1;
+            $i->{selected} = 1;
+            $i->{dropped} = 1;
         }
 
-        my $submenu = $$i{ submenu };
-    
-        foreach my $j ( @$submenu )
+        my $submenu = $i->{submenu};
+        for my $j (@$submenu)
         {
-            if (selected_menu_item($default, $$j{ href }))
+            if (selected_menu_item($default, $j->{href}))
             {
-                $$j{ selected } = 1;
-                $$i{ dropped } = 1;
+                $j->{selected} = 1;
+                $i->{dropped} = 1;
             }
         }
-    }   
+    }
 }
 
 
@@ -396,15 +356,17 @@ sub attach_listview
     my $page_extra_params = join '', map "\&$_=$pp->{$_}", keys %$pp;
 
     my $mask = undef;
-    for (split(',', $search)) {
-        if ($_ =~ /(.*)\=(.*)/) {
-            $mask = {} unless defined $mask;		
+    for (split(',', $search))
+    {
+        if ($_ =~ /(.*)\=(.*)/)
+        {
+            $mask = {} unless defined $mask;
             $mask->{$1} = $2;
         }
     }
-    
+
     while (my %h = &$fetch_row($c))
-    {            
+    {
         my $f = 1;
         if ($search)
         {
@@ -430,19 +392,20 @@ sub attach_listview
             }
         }
 
-        if ($f) {
-            if ($row_count >= $start_row && $row_count < $start_row + $visible) 
+        if ($f)
+        {
+            if ($row_count >= $start_row && $row_count < $start_row + $visible)
             {
                 push @data, { %h, odd => $row_count % 2 };
             }
             $row_count++;
-        }          
+        }
 	
-	    last if ($row_count > $cats::max_fetch_row_count);
+	    last if $row_count > $cats::max_fetch_row_count;
     }
 
-    my $page_count = int( $row_count / $visible ) + ( $row_count % $visible ? 1 : 0 ) || 1;
- 
+    my $page_count = int($row_count / $visible) + ($row_count % $visible ? 1 : 0) || 1;
+
     $page ||= 0;
     my $range_start = $page - $page % $cats::visible_pages;
     $range_start = 0 if ($range_start < 0);
@@ -517,20 +480,18 @@ sub generate_output
     	is_virtual => $is_virtual,
     	virtual_diff_time => $virtual_diff_time);
 
-    if ($contest_elapsed_minutes < 0)
+    my $elapsed_minutes = int(($contest->{time_since_start} - $virtual_diff_time) * 1440);
+    if ($elapsed_minutes < 0)
     {
-        $t->param(show_remaining_minutes => 1,
-            remaining_minutes => -$contest_elapsed_minutes);
+        $t->param(show_remaining_minutes => 1, remaining_minutes => -$elapsed_minutes);
     }
-    elsif ($contest_elapsed_minutes / 1440 < 3)
+    elsif ($elapsed_minutes < 2 * 1440)
     {
-        $t->param(show_elapsed_minutes => 1,
-            elapsed_minutes => $contest_elapsed_minutes);
+        $t->param(show_elapsed_minutes => 1, elapsed_minutes => $elapsed_minutes);
     }
     else
     {
-        $t->param(show_elapsed_days => 1,
-            elapsed_days => int($contest_elapsed_minutes / 1440));
+        $t->param(show_elapsed_days => 1, elapsed_days => int($elapsed_minutes / 1440));
     }
 
     if (defined $dbi_error)
@@ -540,6 +501,7 @@ sub generate_output
 
     $t->param(request_process_time => sprintf '%.3fs',
         Time::HiRes::tv_interval($request_start_time, [ Time::HiRes::gettimeofday ]));
+    $t->param(init_time => sprintf '%.3fs', $init_time);
     if (my $enc = url_param('enc'))
     {
         binmode(STDOUT, ':raw');
@@ -637,22 +599,6 @@ sub generate_password
 }
 
 
-my $next_id = 100;
-sub new_id
-{
-    return $next_id++ unless $dbh;
-    if ( $CATS::Connect::db_dsn =~ /InterBase/ )
-    {
-        $dbh->selectrow_array('SELECT GEN_ID(key_seq, 1) FROM RDB$DATABASE');
-    }
-    elsif ( $CATS::Connect::db_dsn =~ /Oracle/ )
-    {
-        $dbh->selectrow_array(qq~SELECT key_seq.nextval FROM DUAL~);
-    }
-    else { die; }
-}
-
-
 sub user_authorize
 {
     $sid = url_param('sid') || '';
@@ -660,7 +606,7 @@ sub user_authorize
     $uid = undef;
     $team_name = undef;
     # авторизация пользователя и установка флага администратора системы
-    if ($sid ne '') 
+    if ($sid ne '')
     {
         my $srole;
 
@@ -677,22 +623,15 @@ sub user_authorize
         $is_root = !$srole;
     }
 
-    # получение информации о текущем турнире и установка турнира по-умолчанию
+    # получение информации о текущем турнире и установка турнира по умолчанию
     $cid = url_param('cid') || '';
-    if ($cid) 
-    {
-        (my $ctype, $server_time, $contest_title) = $dbh->selectrow_array(
-            qq~SELECT ctype, CATS_DATE(CATS_SYSDATE()), title FROM contests WHERE id = ?~, {}, $cid
-        ) or undef $cid;
-        $is_practice = ($ctype||0) == 1;
-    }
-    unless ($cid)
-    {
-        # тренировочная сессия по умолчанию
-        ($cid, $server_time, $contest_title) = $dbh->selectrow_array(qq~
-            SELECT id, CATS_DATE(CATS_SYSDATE()), title FROM contests WHERE ctype = 1~);
-        $is_practice = 1;
-    }
+    $contest ||= CATS::Contest->new;
+    $contest->load($cid);
+    $contest_title = $contest->{title};
+    $is_practice = $contest->is_practice;
+    $server_time = $contest->{server_time};
+    #($server_time) = $dbh->selectrow_array(q~SELECT CATS_DATE(CATS_SYSDATE()) FROM RDB$DATABASE~);
+    $cid = $contest->{id};
 
     $virtual_diff_time = 0;
     # авторизация пользователя в турнире
@@ -703,31 +642,23 @@ sub user_authorize
     {
         ($is_team, $is_jury, $is_virtual, $virtual_diff_time) = $dbh->selectrow_array(qq~
             SELECT 1, is_jury, is_virtual, diff_time
-            FROM contest_accounts WHERE contest_id=? AND account_id=?~, {}, $cid, $uid);
+            FROM contest_accounts WHERE contest_id = ? AND account_id = ?~, {}, $cid, $uid);
     }
     $virtual_diff_time ||= 0;
 
     if (!$is_jury && $is_team)
     {
-        my ($start_diff_time, $finish_diff_time) = 
-            $dbh->selectrow_array(qq~SELECT CATS_SYSDATE() - $virtual_diff_time - start_date, 
-                CATS_SYSDATE() - $virtual_diff_time - finish_date
-                FROM contests WHERE id = ?~, {}, $cid);
+        my $start_diff_time = $contest->{time_since_start} - $virtual_diff_time;
+        my $finish_diff_time = $contest->{time_since_finish} - $virtual_diff_time;
         my $started = ($start_diff_time >= 0);
         my $finished = ($finish_diff_time > 0);
 	    
-        # до начала и после окончания тура команда имеет только права гостя
-        if (!$started || $finished)
+        # до начала тура команда имеет только права гостя
+        if (!$started) # || $finished) # и после окончания (?)
         {
             $is_team = 0;
         }
     }
-    
-    $contest_elapsed_minutes = $dbh->selectrow_array(qq~
-        SELECT (CATS_SYSDATE() - $virtual_diff_time - start_date)*1440 
-	        FROM contests WHERE id = ?~, {}, $cid);
-		
-    $contest_elapsed_minutes = int($contest_elapsed_minutes) || 0;       
 }
 
 
@@ -735,7 +666,7 @@ sub initialize
 {
     $dbi_error = undef;
     init_messages;
-    user_authorize;  
+    user_authorize;
     $t = undef;
     $listview_name = '';
     $listview_array_name = '';

@@ -6,7 +6,8 @@ use warnings;
 use Encode;
 
 use CATS::Constants;
-use CATS::Misc qw($dbh $t $is_jury url_f);
+use CATS::DB;
+use CATS::Misc qw($t $is_jury url_f);
 
 use fields qw(contest_list hide_ooc hide_virtual);
 

@@ -23,7 +23,6 @@ BEGIN
 		compare_subs
 		cmp_advanced
 		);
-  @EXPORT_OK = qw($dbh);
   %EXPORT_TAGS = ( all => [ @EXPORT, @EXPORT_OK ] );
 }
 

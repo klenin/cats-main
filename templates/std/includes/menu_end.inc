@@ -14,7 +14,7 @@
 </tr>
 <tr bgcolor="#ffcc55" height="40">
   <td background="./images/std/bg2.gif" class="down">
-    &nbsp;<font size="-3" color="#808080"><TMPL_VAR request_process_time></font>
+    &nbsp;<font size="-3" color="#808080"><TMPL_VAR request_process_time> <TMPL_VAR init_time></font>
   </td>
   <td align="right">
 	<a href="http://imcs.dvgu.ru" class="signed2"> Институт математики и компьютерных наук&nbsp;<br> Дальневосточный государственный университет &nbsp;</a>

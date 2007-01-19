@@ -3,6 +3,7 @@ use strict;
 use warnings;
 
 use Encode;
+use CATS::DB;
 use CATS::Misc qw(:all);
 
 BEGIN

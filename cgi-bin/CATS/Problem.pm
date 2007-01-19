@@ -6,7 +6,8 @@ use warnings;
 use Encode;
 
 use CATS::Constants;
-use CATS::Misc qw($dbh $uid new_id escape_html);
+use CATS::DB;
+use CATS::Misc qw($uid escape_html);
 use CATS::BinaryFile;
 use Archive::Zip qw(:ERROR_CODES :CONSTANTS);
 use XML::Parser::Expat;

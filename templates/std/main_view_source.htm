@@ -6,6 +6,30 @@
 <body>
 <TMPL_IF message><i><TMPL_VAR message ESCAPE=HTML></i><br></TMPL_IF>
 <TMPL_INCLUDE 'includes/sources_info.inc'>
+
+<table>
+<tr>
+<td>
+<form action="<TMPL_VAR href_current_link>" method="post">
+  <select name="src_enc">
+  <TMPL_LOOP source_encodings>
+  <option value="<TMPL_VAR enc>"<TMPL_IF selected>selected="selected"</TMPL_IF>><TMPL_VAR enc></option>
+  </TMPL_LOOP>
+  </select>
+  <input type="submit" class="button" value="кодировка" />
+</form>
+</td>
+<td>
+<TMPL_IF is_jury>
+<form enctype="multipart/form-data" action="<TMPL_VAR href_current_link>" method="post">
+  <input name="replace_source" type="file" class="file" size="25" />
+  <input type="submit" class="button" value="заменить" /> 
+</form>
+</TMPL_IF>
+</td>
+</tr>
+</table>
+
 <TMPL_LOOP sources_info>
 <pre class="bordered"><code><TMPL_VAR src ESCAPE=HTML></code></pre>
 </TMPL_LOOP>
