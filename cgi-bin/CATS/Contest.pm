@@ -56,4 +56,11 @@ sub is_practice
 }
 
 
+sub has_started
+{
+    my ($self, $virtual_time_offset) = @_;
+    $self->{time_since_start} >= ($virtual_time_offset || 0);
+}
+
+
 1;

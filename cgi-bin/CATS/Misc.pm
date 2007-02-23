@@ -41,10 +41,10 @@ BEGIN
     );
 
     @EXPORT_OK = qw(
-        $contest @messages $t $sid $cid $lng $uid $team_name $server_time $contest_title $dbi_error $is_practice
+        $contest @messages $t $sid $cid $lng $uid $team_name $server_time $contest_title $dbi_error
         $is_root $is_team $is_jury $is_virtual $virtual_diff_time $additional $search $page $visible $init_time);
 
-    %EXPORT_TAGS = ( all => [ @EXPORT, @EXPORT_OK ] );
+    %EXPORT_TAGS = (all => [ @EXPORT, @EXPORT_OK ]);
 }
 
 use strict;
@@ -69,7 +69,7 @@ use CATS::Diff;
 use CATS::Contest;
 
 use vars qw(
-    $contest @messages $t $sid $cid $lng $uid $team_name $server_time $contest_title $dbi_error $is_practice
+    $contest @messages $t $sid $cid $lng $uid $team_name $server_time $contest_title $dbi_error
     $is_root $is_team $is_jury $is_virtual $virtual_diff_time
     $listview_name $listview_array_name $col_defs $sort $sort_dir $search $page $visible $additional
     $request_start_time $init_time
@@ -322,7 +322,7 @@ sub res_str
 
 sub msg
 {
-    $t->param( message => res_str(@_) );
+    $t->param(message => res_str(@_));
 }
 
 
@@ -376,7 +376,7 @@ sub attach_listview
                 $f = 1;
                 for (keys %$mask)
                 {
-                    if ($h{$_} ne $mask->{$_})
+                    if (($h{$_} || '') ne ($mask->{$_} || ''))
                     {
                         $f = 0;
                         last;
@@ -464,6 +464,7 @@ sub order_by
 
 sub generate_output
 {
+    my ($output_file) = @_;
     defined $t or return;
     my $cookie;
     if ($listview_name ne '')
@@ -502,19 +503,26 @@ sub generate_output
     $t->param(request_process_time => sprintf '%.3fs',
         Time::HiRes::tv_interval($request_start_time, [ Time::HiRes::gettimeofday ]));
     $t->param(init_time => sprintf '%.3fs', $init_time);
+    my $out = '';
     if (my $enc = url_param('enc'))
     {
         binmode(STDOUT, ':raw');
         $t->param(encoding => $enc);
         print STDOUT http_header('text/html', $enc, $cookie);
-        print STDOUT Encode::encode($enc, $t->output, Encode::FB_XMLCREF);
+        print STDOUT $out = Encode::encode($enc, $t->output, Encode::FB_XMLCREF);
     }
     else
     {
         binmode(STDOUT, ':utf8');
         $t->param(encoding => 'utf-8');
         print STDOUT http_header('text/html', 'utf-8', $cookie);
-        print STDOUT $t->output;
+        print STDOUT $out = $t->output;
+    }
+    if ($output_file)
+    {
+        open my $f, '>:utf8', $output_file
+            or die "Error opening $output_file: $!";
+        print $f $out;
     }
 }
 
@@ -549,52 +557,44 @@ sub define_columns
 
 sub get_flag
 {
-    my $country = shift || return;
-
-    foreach( @cats::countries )
-    {
-        if ($_->{'id'} eq $country )
-        {
-            my $flag = defined $_->{'flag'} ? "$cats::flags_path/$_->{flag}" : undef;
-
-            return ( $_->{'name'}, $flag );
-        }
-    }
-        
-    undef;
+    my $country_id = shift || return;
+    my ($country) = grep { $_->{id} eq $country_id } @cats::countries;
+    $country or return;
+    my $flag = defined $country->{flag} ? "$cats::flags_path/$country->{flag}" : undef;
+    return ($country->{name}, $flag);
 }
 
 
 sub generate_login
 {
-    my $login_num = undef;
+    my $login_num;
 
-    if ( $CATS::Connect::db_dsn =~ /InterBase/ )
+    if ($CATS::Connect::db_dsn =~ /InterBase/)
     {
         $login_num = $dbh->selectrow_array('SELECT GEN_ID(login_seq, 1) FROM RDB$DATABASE');
     }
-    elsif ( $cats_db::db_dsn =~ /Oracle/ )
+    elsif ($cats_db::db_dsn =~ /Oracle/)
     {
         $login_num = $dbh->selectrow_array(qq~SELECT login_seq.nextval FROM DUAL~);
     }
 
-    return 'team#' . $login_num if ( $login_num );
+    return "team#$login_num" if $login_num;
 }
 
 
 sub generate_password
 {
-    my @ch1 = ( 'e', 'y', 'u', 'i', 'o', 'a' );
-    my @ch2 = (  'w', 'r', 't', 'p', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'z', 'x', 'c', 'v', 'b', 'n', 'm' );    
+    my @ch1 = ('e', 'y', 'u', 'i', 'o', 'a');
+    my @ch2 = ('w', 'r', 't', 'p', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'z', 'x', 'c', 'v', 'b', 'n', 'm');
 
-    my $passwd = "";
- 
-    foreach (1..3)
+    my $passwd = '';
+
+    for (1..3)
     {
-        $passwd .= @ch1[rand(@ch1)];    
+        $passwd .= @ch1[rand(@ch1)];
         $passwd .= @ch2[rand(@ch2)];
     }
-    
+
     return $passwd;
 }
 
@@ -628,7 +628,6 @@ sub user_authorize
     $contest ||= CATS::Contest->new;
     $contest->load($cid);
     $contest_title = $contest->{title};
-    $is_practice = $contest->is_practice;
     $server_time = $contest->{server_time};
     #($server_time) = $dbh->selectrow_array(q~SELECT CATS_DATE(CATS_SYSDATE()) FROM RDB$DATABASE~);
     $cid = $contest->{id};
@@ -643,21 +642,10 @@ sub user_authorize
         ($is_team, $is_jury, $is_virtual, $virtual_diff_time) = $dbh->selectrow_array(qq~
             SELECT 1, is_jury, is_virtual, diff_time
             FROM contest_accounts WHERE contest_id = ? AND account_id = ?~, {}, $cid, $uid);
-    }
-    $virtual_diff_time ||= 0;
+        $virtual_diff_time ||= 0;
 
-    if (!$is_jury && $is_team)
-    {
-        my $start_diff_time = $contest->{time_since_start} - $virtual_diff_time;
-        my $finish_diff_time = $contest->{time_since_finish} - $virtual_diff_time;
-        my $started = ($start_diff_time >= 0);
-        my $finished = ($finish_diff_time > 0);
-	    
         # до начала тура команда имеет только права гостя
-        if (!$started) # || $finished) # и после окончания (?)
-        {
-            $is_team = 0;
-        }
+        $is_team &&= $is_jury || $contest->has_started($virtual_diff_time);
     }
 }
 
@@ -712,7 +700,7 @@ sub generate_table
     my ($titles_ref, $srcfiles_ref, $pid, $limit) = @_;
     my @titles = @$titles_ref;
     my %srcfiles = %$srcfiles_ref;
-    
+
     my @rows;
     my $deleted;
     while (@titles)

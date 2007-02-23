@@ -17,6 +17,7 @@ use Text::Aspell;
 use Data::Dumper;
 use Storable ();
 use Time::HiRes;
+use List::Util qw(max);
 
 my $cats_lib_dir;
 BEGIN {
@@ -36,6 +37,7 @@ use CATS::IP;
 use CATS::Problem;
 use CATS::RankTable;
 use CATS::Diff;
+use CATS::StaticPages;
 use CATS::TeX::Lite;
 
 use vars qw($html_code $current_pid $spellchecker $text_span);
@@ -926,6 +928,8 @@ sub problems_change_status ()
             WHERE contest_id = ? AND problem_id = ?~, {},
         $new_status, $cid, $pid);
     $dbh->commit;
+    # Возможно изменение статуса hidden
+    CATS::StaticPages::refresh_problem_text(cid => $cid);
 }
 
 
@@ -935,8 +939,8 @@ sub show_unused_problem_codes ()
         SELECT code FROM contest_problems WHERE contest_id = ?~, {},
         $cid
     );
-    my %used_codes = ();
-    @used_codes{@$c} = undef;
+    my %used_codes;
+    $used_codes{$_ || ''} = undef for @$c;
     
     my @unused_codes = grep !exists($used_codes{$_}), 'A'..'Z';
     
@@ -978,7 +982,6 @@ sub save_uploaded_file
     #binmode $fh, ':raw'; binmode $file, ':raw'; warn $file;
     while ($br = sysread($file, $buffer, 16384))
     {
-        #warn $br;
         syswrite($fh, $buffer, $br);
     }
     close $fh;
@@ -989,7 +992,7 @@ sub save_uploaded_file
 sub check_problem_code
 {
     my ($problem_code) = @_;
-    if ($is_practice)
+    if ($contest->is_practice)
     {
         undef $$problem_code;
         return 1;
@@ -1159,7 +1162,7 @@ sub problems_all_frame
 
     $t->param(
         href_action => url_f($kw ? 'keywords' : 'problems'),
-        link => !$is_practice && $link, move => url_param('move') || 0);
+        link => !$contest->is_practice && $link, move => url_param('move') || 0);
     
     $c->finish;
 }
@@ -1181,7 +1184,7 @@ sub download_problem
     {
         my ($zip) = $dbh->selectrow_array(qq~
             SELECT zip_archive FROM problems WHERE id = ?~, undef, $pid);
-        CATS::BinaryFile::save(cats_dir() .$fname, $zip);
+        CATS::BinaryFile::save(cats_dir() . $fname, $zip);
     }
     print redirect(-uri => $fname);
 }
@@ -1244,7 +1247,7 @@ sub problems_submit
     }
     
     my $submit_uid = $uid;
-    if (!defined $submit_uid && $is_practice)
+    if (!defined $submit_uid && $contest->is_practice)
     {
         $submit_uid = get_anonymous_uid();
     }
@@ -1412,6 +1415,7 @@ sub problems_frame_jury_action
     my $cpid = url_param('delete');
     if (defined $cpid)
     {
+        warn $cpid;
         my ($pid, $old_contest) = $dbh->selectrow_array(q~
             SELECT problem_id, contest_id FROM contest_problems WHERE id = ?~, undef,
             $cpid) or return;
@@ -1442,7 +1446,9 @@ sub problems_frame_jury_action
 
 sub problems_frame
 {
-    my $my_is_team = $is_team && $contest->{time_since_finish} - $virtual_diff_time < 0 || $is_practice;
+    my $my_is_team =
+        $is_jury || $contest->is_practice ||
+        $is_team && $contest->{time_since_finish} - $virtual_diff_time < 0;
     my $show_packages = 1;
     unless ($is_jury)
     {
@@ -1474,9 +1480,9 @@ sub problems_frame
     $is_jury && defined url_param('link') and return problems_all_frame;
     defined url_param('kw') and return problems_all_frame;
 
-    defined param('download') && $show_packages and download_problem;
+    defined param('download') && $show_packages and return download_problem;
 
-    init_listview_template( "problems$cid" . ($uid || ''), 'problems', 'main_problems.htm' );      
+    init_listview_template("problems$cid" . ($uid || ''), 'problems', 'main_problems.htm');
     problems_frame_jury_action;
 
     if (defined param('submit'))
@@ -1494,7 +1500,7 @@ sub problems_frame
         )
         : ()
         ),
-        ($is_practice ?
+        ($contest->is_practice ?
         { caption => res_str(603), order_by => '4', width => '30%' } : ()
         ),
         { caption => res_str(604), order_by => '5', width => '5%' },
@@ -1504,8 +1510,8 @@ sub problems_frame
     define_columns(url_f('problems'), 0, 0, [ @cols ]);
 
     my $reqs_count_sql = 'SELECT COUNT(*) FROM reqs D WHERE D.problem_id = P.id AND D.state =';
-    my $account_condition = $is_practice ? '' : ' AND D.account_id = ?';
-    my $select_code = $is_practice ? '' : q~CP.code || ' - ' || ~;
+    my $account_condition = $contest->is_practice ? '' : ' AND D.account_id = ?';
+    my $select_code = $contest->is_practice ? '' : q~CP.code || ' - ' || ~;
     my $hidden_problems = $is_jury ? '' : " AND (CP.status IS NULL OR CP.status < $cats::problem_st_hidden)";
     my $sth = $dbh->prepare(qq~
         SELECT
@@ -1522,7 +1528,7 @@ sub problems_frame
         WHERE CP.problem_id = P.id AND OC.id = P.contest_id AND CP.contest_id = ?$hidden_problems
         ~ . order_by
     );
-    if ($is_practice)
+    if ($contest->is_practice)
     {
         $sth->execute($cid);
     }
@@ -1542,10 +1548,11 @@ sub problems_frame
             href_delete   => url_f('problems', 'delete' => $c->{cpid}),
             href_replace  => url_f('problems', replace => $c->{cpid}),
             href_download => url_f('problems', download => $c->{pid}),
+            href_compare_tests => $is_jury && url_f('compare_tests', pid => $c->{pid}),
             href_original_contest =>
                 url_function('problems', sid => $sid, cid => $c->{original_contest_id}, set_contest => 1),
             show_packages => $show_packages,
-            is_practice => $is_practice,
+            is_practice => $contest->is_practice,
             editable => $is_jury,
             status => problem_status_names()->{$c->{status}},
             disabled => !$is_jury && $c->{status} == $cats::problem_st_disabled,
@@ -1573,8 +1580,15 @@ sub problems_frame
         { de_id => 'by_extension', de_name => res_str(536) },
         map {{ de_id => $_->{id}, de_name => $_->{description} }} @{$de_list->{_de_list}} );
     
-    my @submenu = ( { href_item => url_f('problem_text'), item_name => res_str(538), item_target => '_blank' } );
-
+    my @submenu = ();
+    unless ($contest->is_practice)
+    {
+        my $pt = $is_jury ?
+            url_f('problem_text') :
+            CATS::StaticPages::url_static('problem_text', cid => $cid);
+        @submenu = ({ href_item => $pt, item_name => res_str(538), item_target => '_blank' });
+    }
+    
     if ($is_jury)
     {
         my $n = problem_status_names();
@@ -1595,8 +1609,83 @@ sub problems_frame
         );
     }
 
-    $t->param(submenu => [ @submenu ]);
-    $t->param(is_team => $my_is_team, is_practice => $is_practice, de_list => [ @de ]);
+    $t->param(submenu => \@submenu);
+    $t->param(is_team => $my_is_team, is_practice => $contest->is_practice, de_list => \@de);
+}
+
+
+sub compare_tests_frame
+{
+    init_template('main_compare_tests.htm');
+    $is_jury or return;
+    my ($pid) = param('pid') or return;
+    my ($pt) = $dbh->selectrow_array(q~
+        SELECT title FROM problems WHERE id = ?~, undef,
+        $pid);
+    $pt or return;
+    $t->param(problem_title => $pt);
+    
+    my $totals = $dbh->selectall_hashref(qq~
+        SELECT
+            SUM(CASE rd.result WHEN $cats::st_accepted THEN 1 ELSE 0 END) AS passed_count,
+            SUM(CASE rd.result WHEN $cats::st_accepted THEN 0 ELSE 1 END) AS failed_count,
+            rd.test_rank
+        FROM reqs r
+            INNER JOIN req_details rd ON rd.req_id = r.id
+            INNER JOIN contest_accounts ca ON
+                ca.contest_id = r.contest_id AND ca.account_id = r.account_id
+        WHERE
+            r.problem_id = ? AND r.contest_id = ? AND ca.is_jury = 0
+        GROUP BY rd.test_rank~, 'test_rank', { Slice => {} },
+        $pid, $cid);
+
+    my $c = $dbh->selectall_arrayref(qq~
+        SELECT COUNT(*) AS cnt, rd1.test_rank AS r1, rd2.test_rank AS r2
+            FROM reqs r
+            INNER JOIN req_details rd1 ON rd1.req_id = r.id
+            INNER JOIN req_details rd2 ON rd2.req_id = r.id
+            INNER JOIN contest_accounts ca ON
+                ca.contest_id = r.contest_id AND ca.account_id = r.account_id
+            WHERE
+                rd1.test_rank <> rd2.test_rank AND
+                rd1.result = $cats::st_accepted AND
+                rd2.result <> $cats::st_accepted AND
+                r.problem_id = ? AND r.contest_id = ? AND ca.is_jury = 0
+            GROUP BY rd1.test_rank, rd2.test_rank~, { Slice => {} },
+        $pid, $cid);
+
+    my $h = {};
+    $h->{$_->{r1}}->{$_->{r2}} = $_->{cnt} for @$c;
+    my $size = max(keys %$totals) || 0;
+    my $cm = [
+        map {
+            my $hr = $h->{$_} || {};
+            { data => [ map {{ n => ($hr->{$_} || 0) }} 1..$size ], %{$totals->{$_}} }
+        } 1..$size
+    ];
+
+    my (@equiv_tests, @simple_tests, @hard_tests);
+    for my $i (1..$size)
+    {
+        my ($too_simple, $too_hard) = (1, 1);
+        for my $j (1..$size)
+        {
+            my $zij = !exists $h->{$i} || !exists $h->{$i}->{$j};
+            my $zji = !exists $h->{$j} || !exists $h->{$j}->{$i};
+            push @equiv_tests, { t1 => $i, t2 => $j } if $zij && $zji && $j > $i;
+            $too_simple &&= $zji;
+            $too_hard &&= $zij;
+        }
+        push @simple_tests, { t => $i } if $too_simple;
+        push @hard_tests, { t => $i } if $too_hard;
+    }
+
+    $t->param(
+        comparision_matrix => $cm,
+        equiv_tests => \@equiv_tests,
+        simple_tests => \@simple_tests,
+        hard_tests => \@hard_tests,
+    );
 }
 
 
@@ -1604,7 +1693,7 @@ sub users_new_frame
 {
     init_template('main_users_new.htm');
     $t->param(login => generate_login);
-    $t->param(countries => [ @cats::countries ], href_action => url_f('users'));    
+    $t->param(countries => \@cats::countries, href_action => url_f('users'));    
 }
 
 
@@ -1695,7 +1784,7 @@ sub users_edit_frame
         $id
     ) or return;
 
-    my $countries = [ @cats::countries ];
+    my $countries = \@cats::countries;
 
     $up->{country} ||= $countries->[0]->{id};
     for (@$countries)
@@ -1789,7 +1878,7 @@ sub users_register
 sub users_frame 
 {   
     # hack для туфанова и олейникова
-    $is_jury ||= $is_root; 
+    #$is_jury ||= $is_root; 
     if (defined url_param('delete') && $is_jury)
     {
         my $caid = url_param('delete');
@@ -2826,13 +2915,13 @@ sub cache_req_points
         WHERE R.id = ?~, { Slice => {} },
         $req_id
     );
-    
+
     my $total = 0;
     for (@$points)
     {
-        $total += $_->{result} == $cats::st_accepted ? ($_->{points} || 1) : 0;
+        $total += $_->{result} == $cats::st_accepted ? max($_->{points} || 0, 0) : 0;
     }
-    
+
     $dbh->do(q~UPDATE reqs SET points = ? WHERE id = ?~, undef, $total, $req_id);
     $total;
 }
@@ -2929,6 +3018,7 @@ sub rank_table
 
     my $cache_file = cats_dir() . "./rank_cache/$contest_list#$hide_ooc#$hide_virtual#";
 
+    my %init_problem = (runs => 0, time_consumed => 0, solved => 0, points => undef);
     my $select_teams = sub
     {
         my ($account_id) = @_;
@@ -2951,7 +3041,6 @@ sub rank_table
             $team->{is_ooc} = 0 if $team->{is_virtual};
             $team->{$_} = 0 for qw(total_solved total_runs total_time total_points);
             ($team->{country}, $team->{flag}) = get_flag($_->{country});
-            my %init_problem = (runs => 0, time_consumed => 0, solved => 0, points => undef);
             $team->{problems} = { map { $_ => { %init_problem } } @p_id };
         }
 
@@ -2963,6 +3052,13 @@ sub rank_table
         (my $cache = Storable::lock_retrieve($cache_file)))
     {
         ($teams, $problems, $max_cached_req_id) = @{$cache}{qw(t p r)};
+        # Если добавилась задача, проинициализируем её данные
+        for my $p (@p_id)
+        {
+            next if $problems->{$p};
+            $problems->{$p} = { total_runs => 0, total_accepted => 0, total_points => 0 };
+            $_->{problems}->{$p} = { %init_problem } for @$teams;
+        }
     }
     else
     {
@@ -2977,7 +3073,7 @@ sub rank_table
     {
         $max_req_id = $_->{id} if $_->{id} > $max_req_id;
         $_->{time_elapsed} ||= 0;
-        my $t = $teams->{$_->{account_id}} || $select_teams->($_->{account_id})->[0];
+        my $t = $teams->{$_->{account_id}} || $select_teams->($_->{account_id});
         my $p = $t->{problems}->{$_->{problem_id}};
         if ($show_points && !defined $_->{points})
         {
@@ -3010,7 +3106,7 @@ sub rank_table
     }
 
     $dbh->commit if $need_commit;
-    if (!$frozen && !$is_virtual && @$results && !$is_practice)
+    if (!$frozen && !$is_virtual && @$results && !$contest->is_practice)
     {
         Storable::lock_store({ t => $teams, p => $problems, r => $max_req_id }, $cache_file);
     }
@@ -3378,15 +3474,16 @@ sub problem_text_frame
         push @id_problems, $problem_id;
         $pcodes{$problem_id} = $code;
     }
-    else
+    else # Показать все задачи турнира
     {
-        # Показать все задачи турнира
-        ($show_points) = $dbh->selectrow_array(q~
-            SELECT rules FROM contests WHERE id = ?~, undef, $cid);
+        ($show_points) = $contest->{rules};
 
+        # Надо либо делать проверку на статическую страницу,
+        # либо не выводить скрытые задачи даже жюри.
         my $c = $dbh->prepare(qq~
             SELECT problem_id, code FROM contest_problems
-            WHERE contest_id=? ORDER BY code~);
+            WHERE contest_id=? AND status < $cats::problem_st_hidden
+            ORDER BY code~);
         $c->execute($cid);
         while (my ($problem_id, $code) = $c->fetchrow_array)
         {
@@ -3818,9 +3915,9 @@ sub cmp_frame
         if ( my( $pid, $problem_name, $cid, $contest_name, $count) = $_[0]->fetchrow_array)
         {       
             return ( 
-                is_practice => $is_practice,
+                is_practice => $contest->is_practice,
                 editable => $is_jury,
-                is_team => $is_team || $is_practice,
+                is_team => $is_team || $contest->is_practice,
                 problem_id => $pid,
                 problem_name => $problem_name, 
                 href_view_problem => url_f('problem_text', pid => $pid),
@@ -3916,6 +4013,7 @@ sub interface_functions ()
         download_source => \&download_source_frame,
         run_details => \&run_details_frame,
         diff_runs => \&diff_runs_frame,
+        compare_tests => \&compare_tests_frame,
         
         rank_table_content => \&rank_table_content_frame,
         rank_table => \&rank_table_frame,
@@ -3924,6 +4022,7 @@ sub interface_functions ()
         envelope => \&envelope_frame,
         about => \&about_frame,
         authors => \&authors_frame,
+        static => \&static_frame,
         
         'cmp' => \&cmp_frame,
     }
@@ -3932,7 +4031,12 @@ sub interface_functions ()
 
 sub accept_request                                               
 {
-    my $q = CGI->new;
+    my $output_file = '';
+    if ((url_param('f') || '') eq 'static')
+    {
+        $output_file = CATS::StaticPages::process_static()
+            or return;
+    }
     initialize;
     $CATS::Misc::init_time = Time::HiRes::tv_interval($CATS::Misc::request_start_time, [ Time::HiRes::gettimeofday ]);
 
@@ -3941,7 +4045,7 @@ sub accept_request
     $fn->();
 
     generate_menu if defined $t;
-    generate_output;
+    generate_output($output_file);
 }
          
 $CATS::Misc::request_start_time = [ Time::HiRes::gettimeofday ];

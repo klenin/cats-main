@@ -69,6 +69,7 @@ function r() {
 <td>
     <a href="<TMPL_VAR href_view_problem>" target="_blank"><TMPL_VAR problem_name ESCAPE=HTML></a>
     <TMPL_IF show_packages>&nbsp;<a href="<TMPL_VAR href_download>">[пакет]</a></TMPL_IF>
+    <TMPL_IF href_compare_tests>&nbsp;<a href="<TMPL_VAR href_compare_tests>">[т]</a></TMPL_IF>
 </td>
 <TMPL_IF editable>
 <td>
