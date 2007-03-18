@@ -166,9 +166,9 @@ CREATE TABLE tests (
     std_solution_id INTEGER DEFAULT NULL REFERENCES problem_sources(id) ON DELETE CASCADE,
     in_file         BLOB,
     out_file        BLOB,
-    points          INTEGER
+    points          INTEGER,
+    gen_group       INTEGER
 );
-
 
 CREATE TABLE samples (
     problem_id      INTEGER REFERENCES problems(id) ON DELETE CASCADE,

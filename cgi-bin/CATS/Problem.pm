@@ -18,7 +18,7 @@ use fields qw(
     statement constraints input_format output_format
     tests samples objects keywords
     imports solutions generators modules pictures
-    current_tests current_sample
+    current_tests current_sample gen_group
     stml zip zip_archive old_title replace tag_stack has_checker de_list
 );
 
@@ -36,6 +36,7 @@ sub clear
     undef $self->{$_} for (keys %CATS::Problem::FIELDS);
     $self->{$_} = {} for qw(tests samples objects keywords);
     $self->{$_} = [] for qw(imports solutions generators modules pictures);
+    $self->{gen_group} = 0;
 }
 
 
@@ -144,10 +145,12 @@ sub set_named_object
 sub get_named_object
 {
     my CATS::Problem $self = shift;
-    my ($name, $tag) = @_;
+    my ($name) = @_;
     defined $name or return undef;
     defined $self->{objects}->{$name}
-        or $self->error("Undefined object reference: '$name' in '$tag'");
+        or $self->error(
+            "Undefined object reference: '$name' in " . join '/', @{$self->{tag_stack}}
+        );
     return $self->{objects}->{$name};
 }
 
@@ -176,18 +179,20 @@ sub on_start_tag
         if ($el eq 'img')
         {
             $atts{picture} or $self->error('Picture not defined in img element');
-            $self->get_named_object($atts{picture}, 'img')->{refcount}++;
+            $self->get_named_object($atts{picture})->{refcount}++;
         }
         return; 
     }
 
     my $h = tag_handlers()->{$el} or $self->error("Unknown tag $el");
-    $self->error(
-        sprintf 'Tag "%s" must be inside one of "%s" %s', $el, join(',', ${$h->{in}})
-    ) if $h->{in} && !$self->check_top_tag($h->{in});
+    if (my $in = $h->{in})
+    {
+        $self->check_top_tag($in)
+            or $self->error("Tag '$el' must be inside of " . join(' or ', @$in));
+    }
     $self->required_attributes($el, \%atts, $h->{r}) if $h->{r};
-    $h->{s}->($self, \%atts, $el);
     push @{$self->{tag_stack}}, $el;
+    $h->{s}->($self, \%atts, $el);
 }
 
 
@@ -196,10 +201,10 @@ sub on_end_tag
     my CATS::Problem $self = shift;
     my ($p, $el, %atts) = @_;
 
-    pop @{$self->{tag_stack}};
-
     my $h = tag_handlers()->{$el};
     $h->{e}->($self, \%atts, $el) if $h && $h->{e};
+    pop @{$self->{tag_stack}};
+
     if ($self->{stml})
     {
         ${$self->{stml}} .= "</$el>";
@@ -414,7 +419,9 @@ sub start_tag_Import
 sub add_test
 {
     (my CATS::Problem $self, my $atts, my $rank) = @_;
-    !defined $self->{tests}->{$rank} or $self->error("Duplicate test $rank");
+    $rank =~ /^\d+$/ && $rank > 0 && $rank < 1000
+        or $self->error("Bad rank: '$rank'");
+    !defined $self->{tests}->{$rank} or $self->error("Duplicate test #$rank");
     push @{$self->{current_tests}},
         $self->{tests}->{$rank} = { rank => $rank, points => $atts->{points} };
 }
@@ -423,12 +430,15 @@ sub add_test
 sub start_tag_Test
 {
     (my CATS::Problem $self, my $atts) = @_;
-
-    my $r = $atts->{rank};
-    $r =~ /^\d+$/ && $r > 0 && $r < 1000
-        or $self->error("Bad rank: '$r'");
     $self->{current_tests} = [];
-    $self->add_test($atts, $r);
+    for (split ',', $atts->{rank})
+    {
+        $_ =~ /^\s*(\d+)(?:-(\d+))?\s*$/
+            or $self->error("Bad element '$_' in rank spec '$atts->{rank}'");
+        my ($from, $to) = ($1, $2 || $1);
+        $from <= $to or $self->error("from > to in rank spec '$atts->{rank}'");
+        $self->add_test($atts, $_) for ($from..$to);
+    }
 }
 
 
@@ -467,11 +477,14 @@ sub start_tag_In
     }
     elsif (defined $atts->{'use'})
     {
+        my $gen_group = $atts->{genAll} ? ++$self->{gen_group} : undef;
         for (@t)
         {
             my $use = apply_test_rank($atts->{'use'}, $_->{rank});
-            $_->{generator_id} = $self->get_named_object($use, 'Test/In')->{id};
+            $_->{generator_id} = $self->get_named_object($use)->{id};
             $_->{param} = apply_test_rank($atts->{param}, $_->{rank});
+            # TODO
+            $_->{gen_group} = $gen_group;
         }
     }
     else
@@ -502,7 +515,7 @@ sub start_tag_Out
         for (@t)
         {
             my $use = apply_test_rank($atts->{'use'}, $_->{rank});
-            $_->{std_solution_id} = $self->get_named_object($use, 'Test/Out')->{id};
+            $_->{std_solution_id} = $self->get_named_object($use)->{id};
         }
     }
     else
@@ -679,7 +692,7 @@ sub end_tag_Problem
     $self->insert_problem_content;
 }                   
                     
-                    
+
 sub get_de_id
 {
     my CATS::Problem $self = shift;
@@ -709,7 +722,7 @@ sub apply_test_rank
     $v ||= '';
     $v =~ s/%n/$rank/g;
     $v =~ s/%0n/sprintf("%02d", $rank)/eg;
-    $v =~ s/%%/%/g; 
+    $v =~ s/%%/%/g;
     $v;
 }
 
@@ -815,8 +828,9 @@ sub insert_problem_content
 
     $c = $dbh->prepare(qq~
         INSERT INTO tests (
-            problem_id, rank, generator_id, param, std_solution_id, in_file, out_file, points
-        ) VALUES (?,?,?,?,?,?,?,?)~
+            problem_id, rank, generator_id, param, std_solution_id, in_file, out_file,
+            points, gen_group
+        ) VALUES (?,?,?,?,?,?,?,?,?)~
     );
 
     for (sort { $a->{rank} <=> $b->{rank} } values %{$self->{tests}})
@@ -829,6 +843,7 @@ sub insert_problem_content
         $c->bind_param(6, $_->{in_file}, { ora_type => 113 });
         $c->bind_param(7, $_->{out_file}, { ora_type => 113 });
         $c->bind_param(8, $_->{points});
+        $c->bind_param(9, $_->{gen_group});
         $c->execute
             or $self->error("Can not add test $_->{rank}: $dbh->errstr");
         $self->note("Test $_->{rank} added");
@@ -868,4 +883,3 @@ sub insert_problem_content
 
 
 1;
-

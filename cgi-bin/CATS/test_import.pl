@@ -9,7 +9,7 @@ use CATS::Problem;
 my CATS::Problem $p = CATS::Problem->new;
 
 $p->{debug} = 1;
-$p->load('sample.zip', 1001, 999, 0, '');
+$p->load('sample1.zip', 1001, 999, 0, '');
 print $p->{import_log}, "\n";
 
 use Data::Dumper;
