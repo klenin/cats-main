@@ -4047,6 +4047,7 @@ sub accept_request
     generate_menu if defined $t;
     generate_output($output_file);
 }
+
          
 $CATS::Misc::request_start_time = [ Time::HiRes::gettimeofday ];
 CATS::DB::sql_connect;

@@ -625,6 +625,10 @@ sub user_authorize
 
     # получение информации о текущем турнире и установка турнира по умолчанию
     $cid = url_param('cid') || '';
+    if ($contest && ref $contest ne 'CATS::Contest') {
+        warn "Strange contest: $contest";
+        undef $contest;
+    }
     $contest ||= CATS::Contest->new;
     $contest->load($cid);
     $contest_title = $contest->{title};

@@ -18,4 +18,5 @@
   <tr bgcolor="#ffcc55" height="3"><td></td></tr>
   <tr class="menu_bar"><td colspan="3">
     <a class="nav_href" href="..">на главную</a> | <a class="nav_href" href=".">содержание</a></td></tr>
-  <tr><td colspan="3" style="padding: 5px"><br/>
+</table>
+<div style="margin: 5px">
