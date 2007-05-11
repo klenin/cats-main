@@ -268,11 +268,11 @@
   <td><tt>&lt;<a name="Module">Module</a>&gt;</tt><sup><a href="#v12" title="С версии 1.2">1.2</a></sup><br/><tt>&lt;<a href="#Problem">Problem</a>&gt;</tt></td>
   <td>
     <ul>
-      <li>name - идентификатор объекта <tt>&lt;<a href="#Module">Module</a>&gt;</tt>;</li>
-      <li>src - путь к файлу с исходным кодом;</li>
-      <li>de_code<sup><a href="#opt" title="Необязательный атрибут">o</a></sup> - код среды разработки.</li>
-      <li>type - вид модуля (generator, checker, solution).</li>
-      <li>export<sup><a href="#opt" title="Необязательный атрибут">o</a></sup> <sup><a href="#v14" title="С версии 1.4">1.4</a></sup> - глобальный идентификатор.</li>
+      <li>name -- идентификатор объекта <tt>&lt;<a href="#Module">Module</a>&gt;</tt>;</li>
+      <li>src -- путь к файлу с исходным кодом;</li>
+      <li>de_code<sup><a href="#opt" title="Необязательный атрибут">o</a></sup> -- код среды разработки.</li>
+      <li>type -- вид модуля (generator, checker, solution).</li>
+      <li>export<sup><a href="#opt" title="Необязательный атрибут">o</a></sup> <sup><a href="#v14" title="С версии 1.4">1.4</a></sup> -- глобальный идентификатор.</li>
     </ul>
   </td>
   <td>Описание модуля. Файлы модулей распаковываются и компилируются вместе с каждым объектом
@@ -285,8 +285,9 @@
   <td><tt>&lt;<a name="Import">Import</a>&gt;</tt><sup><a href="#v14" title="С версии 1.4">1.4</a></sup><br/><tt>&lt;<a href="#Problem">Problem</a>&gt;</tt></td>
   <td>
     <ul>
-      <li>guid <sup><a href="#v14" title="С версии 1.4">1.4</a></sup> - глобальный идентификатор импортируемого объекта.</li>
-      <li>type - тип импортируемого объекта модуля (generator, checker, solution).</li>
+      <li>guid -- глобальный идентификатор импортируемого объекта.</li>
+      <li>type<sup><a href="#opt" title="Необязательный атрибут">o</a></sup> -- тип импортируемого объекта модуля (generator, checker, solution).</li>
+      <li>name<sup><a href="#opt" title="Необязательный атрибут">o</a></sup> <sup><a href="#v15" title="С версии 1.5">1.5</a></sup> -- идентификатор объекта для ссылок в текущей задаче</li>
     </ul>
   </td>
   <td>Импорт объекта из существующей задачи. Поиск объекта осуществляется по guid.

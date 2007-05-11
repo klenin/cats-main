@@ -1,12 +1,19 @@
-<html><head>
-<title>CATS</title>
-<meta name="Content-Type" content="text/html; charset=utf-8">
-<link rel="stylesheet" type="text/css" href="./docs/std/main.css">
+<TMPL_INCLUDE 'includes/header.inc'>
 </head>
 <body>
 
 <TMPL_INCLUDE 'includes/sources_info.inc'>
 <br/>
+
+<form action="<TMPL_VAR href_current_link>" method="post">
+  <select name="comment_enc">
+  <TMPL_LOOP source_encodings>
+  <option value="<TMPL_VAR enc>"<TMPL_IF selected>selected="selected"</TMPL_IF>><TMPL_VAR enc></option>
+  </TMPL_LOOP>
+  </select>
+  <input type="submit" class="button" value="кодировка" />
+</form>
+
 <table border="1">
 <tr>
   <th>Тест</th>

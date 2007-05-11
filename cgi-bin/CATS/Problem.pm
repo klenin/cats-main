@@ -240,7 +240,7 @@ sub tag_handlers()
     Checker => { s => \&start_tag_Checker, r => ['src'] },
     Generator => { s => \&start_tag_Generator, r => ['src', 'name'] },
     GeneratorRange => {
-        s => \&start_tag_Generator, r => ['src', 'name', 'from', 'to'] },
+        s => \&start_tag_GeneratorRange, r => ['src', 'name', 'from', 'to'] },
     Module => { s => \&start_tag_Module, r => ['src', 'de_code', 'type'] },
     Import => { s => \&start_tag_Import, r => ['guid'] },
     Test => {
@@ -345,6 +345,7 @@ sub create_generator
         id => new_id,
         $self->read_member_named(name => $p->{src}, kind => 'generator'),
         de_code => $p->{de_code},
+        guid => $p->{export}, 
         outputFile => $p->{outputFile},
     });
 }
@@ -363,9 +364,9 @@ sub start_tag_GeneratorRange
     for ($atts->{from} .. $atts->{to})
     {
         push @{$self->{generators}}, $self->create_generator({
-            name => interpolate_rank($atts->{name}, $_),
-            src => interpolate_rank($atts->{src}, $_),
-            guid => interpolate_rank($atts->{export}, $_),
+            name => apply_test_rank($atts->{name}, $_),
+            src => apply_test_rank($atts->{src}, $_),
+            export => apply_test_rank($atts->{export}, $_),
             de_code => $atts->{de_code},
             outputFile => $atts->{outputFile},
         });
@@ -394,10 +395,10 @@ sub start_tag_Import
     (my CATS::Problem $self, my $atts) = @_;
 
     my $guid = $atts->{guid};
-    push @{$self->{imports}}, my $import = { guid => $guid };
+    push @{$self->{imports}}, my $import = { guid => $guid, name => $atts->{name} };
     my ($src_id, $stype) = $self->{debug} ? (undef, undef) : $dbh->selectrow_array(qq~
         SELECT id, stype FROM problem_sources WHERE guid = ?~, undef, $guid);
-    
+
     my $t = $atts->{type};
     !$t || ($t = $import->{type} = module_types()->{$t})
         or $self->error("Unknown import source type: $t");
@@ -407,6 +408,7 @@ sub start_tag_Import
         !$t || $stype == $t || $cats::source_modules{$stype} == $t
             or $self->error("Import type check failed for guid='$guid' ($t vs $stype)");
         $self->checker_added if $stype == $cats::checker || $stype == $cats::testlib_checker;
+        $import->{src_id} = $src_id;
         $self->note("Imported source from guid='$guid'");
     }
     else
@@ -459,6 +461,17 @@ sub end_tag_Test
 }
 
 
+sub get_imported_id
+{
+    (my CATS::Problem $self, my $name) = @_;
+    for (@{$self->{imports}})
+    {
+        return $_->{src_id} if $name eq ($_->{name} || '');
+    }
+    undef;
+}
+
+
 sub start_tag_In
 {
     (my CATS::Problem $self, my $atts) = @_;
@@ -481,7 +494,7 @@ sub start_tag_In
         for (@t)
         {
             my $use = apply_test_rank($atts->{'use'}, $_->{rank});
-            $_->{generator_id} = $self->get_named_object($use)->{id};
+            $_->{generator_id} = $self->get_imported_id($use) || $self->get_named_object($use)->{id};
             $_->{param} = apply_test_rank($atts->{param}, $_->{rank});
             # TODO
             $_->{gen_group} = $gen_group;

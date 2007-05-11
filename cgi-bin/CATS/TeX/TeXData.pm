@@ -1,18 +1,18 @@
-# MathRender v1.2 by Matviyenko Victor  
+# MathRender v1.2 by Matviyenko Victor
 # ×ÓÅ ÓÉÍ×ÏÌÙ, ËÏÔÏÒÙÅ ÕÍÅÀÔ ÏÔÏÂÒÁÖÁÔØ html É mathml ÇÅÎÅÒÁÔÏÒÙ
-package CATS::TeX::TeXData; 
+package CATS::TeX::TeXData;
 # ËÏÍÁÎÄÁ ôÅè ÂÅÚ ÂÜËÓÌÅÛÁ => html/mathml entity ÂÅÚ &É;
 # ĞÒÉ ÄÏÂÁ×ÌÅÎÉÉ ÎÏ×ÙÈ ÓÉÍ×ÏÌÏ× ÍÏÇÕÔ ×ÏÚÎÉËÎÕÔØ ĞÒÏÂÌÅÍÙ ĞÒÉ ÏÔÏÂÒÁÖÅÎÉÉ html
 # (ÔÏÌØËÏ × ÓÌÕŞÁÅ ÏÔÓÕÔÓÔ×ÉÑ Õ ËÌÉÅÎÔÁ ÏÂÏÉÈ ÉÓĞÏÌØÚÕÅÍÙÈ ÇÅÎÅÒÁÔÏÒÏÍ ÛÒÉÆÔÏ×)
 our %binary =
-( 
- pm => '#xB1', 
+(
+ pm => '#xB1',
  mp => '#x2213',
  circ => '#x2218',
  bullet => 'bull',
  cap => 'cap',
  cup => 'cup',
- vee => 'and', 
+ vee => 'and',
  wedge => 'or',
  oplus => 'oplus',
  ominus => '#x2296',
@@ -25,22 +25,24 @@ our %binary =
  'le' => 'le',
  'ge' => 'ge',
  'ne' => 'ne',
- lt => 'lt',
+ 'lt' => 'lt',
+ 'gt' => 'gt',
  ll => '#x226A',
- gg => '#x226B', 
+ gg => '#x226B',
  approx => 'asymp',
  equiv => 'equiv',
  parallel =>'#x2225',
- perp => 'perp', 
+ perp => 'perp',
  in => 'isin',
- notin => 'notin', 
+ notin => 'notin',
  ni => 'ni',
  subset => 'sub',
  subseteq => 'sube',
  supset => 'sub',
- supseteq => 'supe', 
+ supseteq => 'supe',
 );
-my %arrows = 
+
+my %arrows =
 (
  to => '#x21A6',
  Rightarrow => 'rArr',
@@ -49,7 +51,8 @@ my %arrows =
  Uparrow => 'uArr',
  Downarrow => 'dArr',
 );
-my %special = 
+
+my %special =
 (
  deg => 'deg',
  'int' => 'int',
@@ -59,11 +62,11 @@ my %special =
  triangle => '#x25B3',
  angle => 'ang',
  infty => 'infin',
- forall => 'forall', 
+ forall => 'forall',
  exists => 'exist',
  emptyset => 'empty',
- neg => '#xAC', 
- nabla => 'nabla', 
+ neg => '#xAC',
+ nabla => 'nabla',
  dots => 'hellip',
  ldots => 'hellip',
  downarrow => 'darr',

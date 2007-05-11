@@ -2593,7 +2593,7 @@ sub answer_box_frame
 }
 
 
-sub source_encodings { {'UTF-8' => 1, 'WINDOWS-1251' => 1, 'KOI8-R' => 1} }
+sub source_encodings { {'UTF-8' => 1, 'WINDOWS-1251' => 1, 'KOI8-R' => 1, 'CP866' => 1} }
 
 sub source_links
 {
@@ -2612,7 +2612,7 @@ sub source_links
     {
         $si->{judge_name} = get_judge_name($si->{judge_id});
     }
-    my $se = param('src_enc') || '';
+    my $se = param('src_enc') || param('comment_enc') || '';
     $t->param(source_encodings =>
         [ map {{ enc => $_, selected => $_ eq $se }} keys %{source_encodings()} ]);
 }
@@ -2674,7 +2674,9 @@ sub run_details_frame
         if ($contest->{show_checker_comment})
         {
             my $d = $row->{checker_comment} || '';
-            $row->{checker_comment} = Encode::decode('utf8', $d, Encode::FB_QUIET);
+            my $enc = param('comment_enc') || '';
+            source_encodings()->{$enc} or $enc = 'UTF-8';
+            $row->{checker_comment} = Encode::decode($enc, $d, Encode::FB_QUIET);
             $row->{checker_comment} .= '...' if $d ne '';
         }
         

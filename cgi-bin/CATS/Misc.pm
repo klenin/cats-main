@@ -504,7 +504,7 @@ sub generate_output
         Time::HiRes::tv_interval($request_start_time, [ Time::HiRes::gettimeofday ]));
     $t->param(init_time => sprintf '%.3fs', $init_time);
     my $out = '';
-    if (my $enc = url_param('enc'))
+    if (my $enc = param('enc'))
     {
         binmode(STDOUT, ':raw');
         $t->param(encoding => $enc);
