@@ -1,4 +1,5 @@
 package CATS::TeX::Lite;
+
 use lib '../..';
 use strict;
 use warnings;
@@ -13,6 +14,7 @@ my %generators = (
     sup   => sub { qq~<sup>$_[0]</sup>~ },
     'sub' => sub { qq~<sub>$_[0]</sub>~ },
     block => sub { join '', @_ },
+    'sqrt'=> sub { qq~<span class="sqrt_sym">\&#x221A;</span><span class="sqrt">@_</span>~ },
 );
 
 my $source;
@@ -55,6 +57,10 @@ sub parse_block
             @res or die '!';
             push @res, [$1 eq '_' ? 'sub' : 'sup', parse_token()];
         }
+        elsif ($source =~ s/^\s*(\\sqrt)//)
+        {
+            push @res, ['sqrt', parse_token()];
+        }
         else
         {
             push @res, parse_token();
@@ -75,7 +81,7 @@ sub asHTML
 {
     my ($tree) = @_;
     ref $tree eq 'ARRAY' or return $tree;
-    my $name = shift(@$tree);
+    my $name = shift @$tree;
     my $prev = 0;
     # вставить пробелы между подряд идущими переменными и числами
     for (@$tree)
@@ -103,6 +109,5 @@ sub styles() { '' }
 
 #print convert_one('a_1, a_2, \ldots , a_{n+1}');
 #print convert_one('a + b+c');
-
 
 1;

@@ -78,8 +78,8 @@ END -%]
 </tr>
 <tr>
   <td>[% tag_in('ProblemStatement', 'Problem') %]</td>
-  <td>Описание условия задачи в формате STML.</td>
   <td>&nbsp;</td>
+  <td>Описание условия задачи в формате STML.</td>
 </tr>
 <tr>
   <td>[% tag_in('ProblemConstraints', 'Problem') %]</td>
@@ -95,6 +95,11 @@ END -%]
   <td>[% tag_in('OutputFormat', 'Problem') %]</td>
   <td>&nbsp;</td>
   <td>Описание формата выходного файла в формате STML.</td>
+</tr>
+<tr>
+  <td>[% tag_in('Explanation', 'Problem', v15) %]</td>
+  <td>&nbsp;</td>
+  <td>Разбор задачи в формате STML.</td>
 </tr>
 <tr>
   <td>[% tag_in('Checker', 'Problem') %]</td>

@@ -91,13 +91,13 @@ table.sample td { vertical-align: top; }
 }
 
 
-TH { font-size: 11pt; font-weight: bold; color:#000000; }
-TD { font-size: 11pt }
+th { font-size: 11pt; font-weight: bold; color:#000000; }
+td { font-size: 11pt }
 
-TR.run_details_OK { background-color: #A0FFA0 }
-TR.run_details_WA { background-color: #FFA0A0 }
-TR.run_details_PE { background-color: #FFFFA0 }
-TR.run_details_RE { background-color: #FFA0A0 }
+tr.run_details_OK { background-color: #A0FFA0 }
+tr.run_details_WA { background-color: #FFA0A0 }
+tr.run_details_PE { background-color: #FFFFA0 }
+tr.run_details_RE { background-color: #FFA0A0 }
 
 .small { font-size: 10pt }
 
@@ -117,6 +117,8 @@ pre { margin-top: 0; margin-bottom: 0 }
 span.TeX { font-family: Arial Unicode Ms, Lucida Sans Unicode, Arial, sans serif; }
 span.TeX i { font-family: Times New Roman, serif; }
 span.TeX span.num { font-family: Times New Roman, serif; }
+span.TeX span.sqrt { border-top: 1px solid black; padding-right: 2px; }
+span.TeX span.sqrt_sym { font-size: 18px; }
 
 table.nobr tr td { white-space: nowrap; }
 

@@ -250,10 +250,10 @@ sub contests_edit_save
         $edit_cid
     );
     $dbh->commit;
-    # если переименовали текущи турнир, сразу изменить заголовок окна
+    # если переименовали текущий турнир, сразу изменить заголовок окна
     if ($edit_cid == $cid)
     {
-        $contest_title = $p->{contest_name};
+        $contest->{title} = $p->{contest_name};
     }
 }
 
@@ -871,7 +871,7 @@ sub delete_question
 sub console_frame
 {        
     init_listview_template("console$cid" . ($uid || ''), 'console', 'main_console.htm');  
-    init_console_listview_additionals;
+    my ($v, $u) = init_console_listview_additionals;
     
     my $question_text = param('question_text');
     my $selection = param('selection');
@@ -895,8 +895,18 @@ sub console_frame
             and $question_text = '';
     }
 
+    my $p = sub { param($_[0]) ? ($_[0] => param($_[0])) : () };
+    
     $t->param(
-        href_console_content => url_f('console_content', uf => url_param('uf') || '', page => (url_param('page') || 0)),
+        href_console_content => url_f('console_content',
+            uf => url_param('uf') || '', page => (url_param('page') || 0),
+            # Эти параметры обычно сохраняются в cookie,
+            # но из-за асинхронности обновления iframe может оказаться,
+            # что после выбора новых значений используются всё-таки старые.
+            # Поэтому передаём параметры непосредственно в URL.
+            map { (param($_) ? ($_ => param($_)) : ()) }
+                qw(history_interval_value history_interval_units display_rows search)
+        ),
         is_team => $is_team,
         is_jury => $is_jury,
         question_text => $question_text,
@@ -929,7 +939,7 @@ sub problems_change_status ()
         $new_status, $cid, $pid);
     $dbh->commit;
     # Возможно изменение статуса hidden
-    CATS::StaticPages::refresh_problem_text(cid => $cid);
+    CATS::StaticPages::invalidate_problem_text(cid => $cid);
 }
 
 
@@ -963,6 +973,7 @@ sub problems_new_frame
 sub add_problem_to_contest
 {
     my ($pid, $problem_code) = @_;
+    CATS::StaticPages::invalidate_problem_text(cid => $cid);
     return $dbh->do(qq~
         INSERT INTO contest_problems(id, contest_id, problem_id, code, status)
             VALUES (?,?,?,?,?)~, {},
@@ -1078,6 +1089,7 @@ sub problems_replace
     $t->param(problem_import_log => $p->encoded_import_log());
 
     $error ? $dbh->rollback : $dbh->commit;
+    CATS::StaticPages::invalidate_problem_text(pid => $pid);
     msg(52) if $error;
     #unlink $fname;
 }
@@ -1146,7 +1158,6 @@ sub problems_all_frame
             or return ();
         return ( 
             href_view_problem => url_f('problem_text', pid => $pid),
-            href_view_contest => url_f('problems', cid => $contest_id),
             href_view_contest => url_function('problems', sid => $sid, cid => $contest_id),
             linked => $linked || !$link,
             problem_id => $pid,
@@ -1523,7 +1534,8 @@ sub problems_frame
             P.contest_id - CP.contest_id AS is_linked,
             OC.id AS original_contest_id, CP.status,
             CATS_DATE(P.upload_date) AS upload_date,
-            (SELECT A.login FROM accounts A WHERE A.id = P.last_modified_by) AS last_modified_by
+            (SELECT A.login FROM accounts A WHERE A.id = P.last_modified_by) AS last_modified_by,
+            SUBSTRING(P.explanation FROM 1 FOR 1) AS has_explanation
         FROM problems P, contest_problems CP, contests OC
         WHERE CP.problem_id = P.id AND OC.id = P.contest_id AND CP.contest_id = ?$hidden_problems
         ~ . order_by
@@ -1558,7 +1570,8 @@ sub problems_frame
             disabled => !$is_jury && $c->{status} == $cats::problem_st_disabled,
             is_team => $my_is_team,
             href_view_problem => url_f('problem_text', cpid => $c->{cpid}),
-            
+            href_explanation => $show_packages && $c->{has_explanation} ?
+                url_f('problem_text', cpid => $c->{cpid}, explain => 1) : '',
             problem_id => $c->{pid},
             problem_name => $c->{problem_name},
             is_linked => $c->{is_linked},
@@ -1583,10 +1596,16 @@ sub problems_frame
     my @submenu = ();
     unless ($contest->is_practice)
     {
-        my $pt = $is_jury ?
-            url_f('problem_text') :
-            CATS::StaticPages::url_static('problem_text', cid => $cid);
-        @submenu = ({ href_item => $pt, item_name => res_str(538), item_target => '_blank' });
+        my %pt_url = ( item_name => res_str(538), item_target => '_blank' );
+        push @submenu,
+            $is_jury ?
+            (
+                { %pt_url, href_item => url_f('problem_text', nospell => 1, nokw => 1, notime => 1) },
+                { %pt_url, href_item => url_f('problem_text'), item_name => res_str(555) },
+            ):
+            (
+                { %pt_url, href_item => CATS::StaticPages::url_static('problem_text', cid => $cid) }
+            );
     }
     
     if ($is_jury)
@@ -2028,7 +2047,8 @@ sub users_frame
     my $fetch_record = sub($)
     {            
         my (
-            $aid, $caid, $country_abb, $login, $team_name, $jury, $ooc, $remote, $hidden, $virtual, $motto, $accepted
+            $aid, $caid, $country_abb, $login, $team_name, $jury,
+            $ooc, $remote, $hidden, $virtual, $motto, $accepted
         ) = $_[0]->fetchrow_array
             or return ();
         my ($country, $flag) = get_flag($country_abb);
@@ -2558,7 +2578,7 @@ sub answer_box_frame
 
     my $r = $dbh->selectrow_hashref(qq~
         SELECT
-            Q.account_id AS caid, CA.account_id AS aid, A.login,
+            Q.account_id AS caid, CA.account_id AS aid, A.login, A.team_name
             CATS_DATE(Q.submit_time) AS submit_time, Q.question, Q.clarified, Q.answer
         FROM questions Q
             INNER JOIN contest_accounts CA ON CA.id = Q.account_id
@@ -2566,7 +2586,7 @@ sub answer_box_frame
         WHERE Q.id = ?~, { Slice => {} },
         $qid);
 
-    $t->param(team_name => $team_name);
+    $t->param(team_name => $r->{team_name});
 
     if (defined param('clarify') && (my $a = param('answer_text')))
     {
@@ -3205,7 +3225,7 @@ sub rank_table_frame
     init_template('main_rank_table.htm');
 
     my $contest_list = get_contest_list_param;
-    ($contest_title) = get_contests_info($contest_list, $uid);
+    ($contest->{title}) = get_contests_info($contest_list, $uid);
 
     my @params = (
         hide_ooc => $hide_ooc, hide_virtual => $hide_virtual, cache => $cache,
@@ -3253,18 +3273,15 @@ sub rank_problem_details
 sub check_spelling
 {
     my ($word) = @_;
+    return $word if $word =~ /\d/;
     my $koi = Encode::encode('KOI8-R', $word);
     {
         no encoding;
         $koi =~ s/ё/е/g;
         use encoding 'utf8', STDIN => undef;
     }
-    if ($word =~ /^\d+$/ || $spellchecker->check($koi))
-    {
-        return $word;
-    }
-    my $i = 0;
-    my $suggestion = join ' | ', grep $i++ < 10, map russian($_), $spellchecker->suggest($koi);
+    return $word if $spellchecker->check($koi);
+    my $suggestion = join ' | ', grep $_, (map russian($_), $spellchecker->suggest($koi))[0..9];
     return qq~<a class="spell" title="$suggestion">$word</a>~;
 }
 
@@ -3279,8 +3296,8 @@ sub process_text
         {
             $i = !$i;
             next if $i;
-            # игнорировать entities, учитывать апострофы и дефисы, первый символ должен быть буквой
-            s/(?<!(?:\w|&))(\w(?:\w|[\'\-])*)/check_spelling($1)/eg;
+            # игнорировать entities, учитывать апострофы как часть слов, первый символ должен быть буквой
+            s/(?<!(?:\w|&))(\w(?:\w|\')*)/check_spelling($1)/eg;
         }
         $html_code .= join '$', @tex_parts;
         # split игнорирует разделитель в конце строки, m// игнорирует \n в конце строки, поэтому \z
@@ -3398,9 +3415,9 @@ sub parse
 }
 
 
-sub contest_visible 
+sub contest_visible
 {
-    return 1 if $is_jury;
+    return (1, 1) if $is_jury;
 
     my $pid = url_param('pid');
     my $cpid = url_param('cpid');
@@ -3425,34 +3442,36 @@ sub contest_visible
         $p = $cid;
     }    
 
-    my ($since_start, $local_only, $orig_cid) = $dbh->selectrow_array(qq~
-        SELECT CATS_SYSDATE() - C.start_date, C.local_only, C.id
+    my ($since_start, $local_only, $orig_cid, $show_packages) = $dbh->selectrow_array(qq~
+        SELECT CATS_SYSDATE() - C.start_date, C.local_only, C.id, C.show_packages
             FROM contests C $s WHERE $t.id = ?~,
         {}, $p);
     if ($since_start > 0)
     {
-        $local_only or return 1;
-        my $is_remote;
-        if (defined $uid)
-        {
-            # Должно быть локальное участие в основном турнире задачи
-            # либо, если запрошены все задачи турнира, то в этом турнире.
-            # Более полная проверка приводит к сложным условиям в составных турнирах.
-            ($is_remote) = $dbh->selectrow_array(q~
-                SELECT is_remote FROM contest_accounts
-                WHERE account_id = ? AND contest_id = ?~, {},
-                $uid, $orig_cid);
-        }
-        return 1 if defined $is_remote && $is_remote == 0;
+        $local_only or return (1, $show_packages);
+        defined $uid or return (0, 0);
+        # Должно быть локальное участие в основном турнире задачи
+        # либо, если запрошены все задачи турнира, то в этом турнире.
+        # Более полная проверка приводит к сложным условиям в составных турнирах.
+        my ($is_remote) = $dbh->selectrow_array(q~
+            SELECT is_remote FROM contest_accounts
+            WHERE account_id = ? AND contest_id = ?~, {},
+            $uid, $orig_cid);
+        return (1, $show_packages) if defined $is_remote && $is_remote == 0;
     }
-    init_template('main_access_denied.htm');
-    return 0;
+    return (0, 0);
 }    
 
 
 sub problem_text_frame
 {
-    contest_visible() or return;
+    my ($show, $explain) = contest_visible();
+    if (!$show)
+    {
+        init_template('main_access_denied.htm');
+        return;
+    }
+    $explain = $explain && url_param('explain');
 
     init_template('main_problem_text.htm');
 
@@ -3505,7 +3524,8 @@ sub problem_text_frame
             SELECT
                 id, contest_id, title, lang, time_limit, memory_limit,
                 difficulty, author, input_file, output_file,
-                statement, pconstraints, input_format, output_format, max_points
+                statement, pconstraints, input_format, output_format, explanation,
+                max_points
             FROM problems WHERE id = ?~, { Slice => {} },
             $problem_id);
         my $lang = $problem_data->{lang};
@@ -3543,7 +3563,7 @@ sub problem_text_frame
             FROM samples WHERE problem_id = ? ORDER BY rank~, { Slice => {} },
             $problem_id);
 
-        for my $field_name qw(statement pconstraints input_format output_format)
+        for my $field_name qw(statement pconstraints input_format output_format explanation)
         {
             for ($problem_data->{$field_name})
             {
@@ -3554,6 +3574,7 @@ sub problem_text_frame
                 s/(?<=\s)-{2,3}/&#151;/g; # тире
             }
         }
+        $explain or undef $problem_data->{explanation};
         push @problems, {
             %$problem_data,
             code => $pcodes{$problem_id},

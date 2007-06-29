@@ -3,24 +3,27 @@ package CATS::Problem;
 use lib '..';
 use strict;
 use warnings;
+
 use Encode;
+use Archive::Zip qw(:ERROR_CODES :CONSTANTS);
+use XML::Parser::Expat;
 
 use CATS::Constants;
 use CATS::DB;
 use CATS::Misc qw($uid escape_html);
 use CATS::BinaryFile;
-use Archive::Zip qw(:ERROR_CODES :CONSTANTS);
-use XML::Parser::Expat;
 use CATS::DevEnv;
 
 use fields qw(
     contest_id id import_log debug problem checker
-    statement constraints input_format output_format
+    statement constraints input_format output_format explanation
     tests samples objects keywords
     imports solutions generators modules pictures
     current_tests current_sample gen_group
     stml zip zip_archive old_title replace tag_stack has_checker de_list
 );
+
+use CATS::Problem::Tests;
 
 sub new
 {
@@ -106,15 +109,25 @@ sub validate
     my $check_order = sub
     {
         my ($objects, $name) = @_;
-
-        my @order = sort { $a <=> $b } keys %$objects;
-        for (1..@order)
+        for (1..keys(%$objects))
         {
-            $order[$_ - 1] == $_ or $self->error("Missing $name #$_");
+            exists $objects->{$_} or $self->error("Missing $name #$_");
         }
     };
 
     $check_order->($self->{tests}, 'test');
+    my @t = values %{$self->{tests}};
+    for (@t)
+    {
+        my $error = validate_test($_) or next;
+        $self->error("$error for test $_->{rank}");
+    }
+    if (0 != grep defined $_->{points}, @t)
+    {
+        my @without_points = map $_->{rank}, grep !defined $_->{points}, @t;
+        $self->warning('Points not defined for tests: ' . join ',', @without_points)
+            if @without_points;
+    }
     $check_order->($self->{samples}, 'sample');
 }
 
@@ -232,6 +245,7 @@ sub tag_handlers()
     ProblemConstraints => { stml_handlers('constraints') },
     InputFormat => { stml_handlers('input_format') },
     OutputFormat => { stml_handlers('output_format') },
+    Explanation => { stml_handlers('explanation') },
     Problem => {
         s => \&start_tag_Problem, e => \&end_tag_Problem,
         r => ['title', 'lang', 'tlimit', 'inputFile', 'outputFile'], },
@@ -243,8 +257,7 @@ sub tag_handlers()
         s => \&start_tag_GeneratorRange, r => ['src', 'name', 'from', 'to'] },
     Module => { s => \&start_tag_Module, r => ['src', 'de_code', 'type'] },
     Import => { s => \&start_tag_Import, r => ['guid'] },
-    Test => {
-        s => \&start_tag_Test, e => \&end_tag_Test, r => ['rank'] },
+    Test => { s => \&start_tag_Test, e => \&end_tag_Test, r => ['rank'] },
     TestRange => {
         s => \&start_tag_TestRange, e => \&end_tag_Test, r => ['from', 'to'] },
     In => { s => \&start_tag_In, in => ['Test', 'TestRange'] },
@@ -260,13 +273,6 @@ sub start_tag_Problem
 {
     (my CATS::Problem $self, my $atts) = @_;
 
-    if (!defined $atts->{mlimit})
-    {
-        my $default_mlimit = 200;
-        $self->warning("Problem.mlimit not specified. default: $default_mlimit");
-        $atts->{mlimit} = $default_mlimit;
-    }
-
     $self->{problem} = {
         title => $atts->{title},
         lang => $atts->{lang},
@@ -279,7 +285,19 @@ sub start_tag_Problem
         std_checker => $atts->{stdChecker},
         max_points => $atts->{maxPoints}
     };
-    $self->checker_added if $self->{problem}->{std_checker};
+    for ($self->{problem}->{memory_limit})
+    {
+        last if defined $_;
+        $_ = 200;
+        $self->warning("Problem.mlimit not specified. default: $_");
+    }
+
+    if ($self->{problem}->{std_checker})
+    {
+        $self->warning("Deprecated attribute 'stdChecker', use Import instead");
+        $self->checker_added;
+    }
+
     my $ot = $self->{old_title};
     $self->error("Problem was renamed unexpectedly, old title: $ot")
         if $ot && $self->{problem}->{title} ne $ot;
@@ -418,49 +436,6 @@ sub start_tag_Import
 }
 
 
-sub add_test
-{
-    (my CATS::Problem $self, my $atts, my $rank) = @_;
-    $rank =~ /^\d+$/ && $rank > 0 && $rank < 1000
-        or $self->error("Bad rank: '$rank'");
-    !defined $self->{tests}->{$rank} or $self->error("Duplicate test #$rank");
-    push @{$self->{current_tests}},
-        $self->{tests}->{$rank} = { rank => $rank, points => $atts->{points} };
-}
-
-
-sub start_tag_Test
-{
-    (my CATS::Problem $self, my $atts) = @_;
-    $self->{current_tests} = [];
-    for (split ',', $atts->{rank})
-    {
-        $_ =~ /^\s*(\d+)(?:-(\d+))?\s*$/
-            or $self->error("Bad element '$_' in rank spec '$atts->{rank}'");
-        my ($from, $to) = ($1, $2 || $1);
-        $from <= $to or $self->error("from > to in rank spec '$atts->{rank}'");
-        $self->add_test($atts, $_) for ($from..$to);
-    }
-}
-
-
-sub start_tag_TestRange
-{
-    (my CATS::Problem $self, my $atts) = @_;
-    $atts->{from} <= $atts->{to}
-        or $self->error('TestRange.from > TestRange.to');
-    $self->{current_tests} = [];
-    $self->add_test($atts, $_) for ($atts->{from}..$atts->{to});
-}
-
-
-sub end_tag_Test
-{
-    my CATS::Problem $self = shift;
-    undef $self->{current_tests};
-}
-
-
 sub get_imported_id
 {
     (my CATS::Problem $self, my $name) = @_;
@@ -469,72 +444,6 @@ sub get_imported_id
         return $_->{src_id} if $name eq ($_->{name} || '');
     }
     undef;
-}
-
-
-sub start_tag_In
-{
-    (my CATS::Problem $self, my $atts) = @_;
-    
-    my @t = @{$self->{current_tests}};
-
-    if (defined $atts->{src})
-    {
-        for (@t)
-        {
-            my $src = apply_test_rank($atts->{'src'}, $_->{rank});
-            my $member = $self->{zip}->memberNamed($src)
-                or $self->error("Invalid test input file reference: '$src'");
-            $_->{in_file} = $self->{debug} ? $src : $self->read_member($member);
-        }
-    }
-    elsif (defined $atts->{'use'})
-    {
-        my $gen_group = $atts->{genAll} ? ++$self->{gen_group} : undef;
-        for (@t)
-        {
-            my $use = apply_test_rank($atts->{'use'}, $_->{rank});
-            $_->{generator_id} = $self->get_imported_id($use) || $self->get_named_object($use)->{id};
-            $_->{param} = apply_test_rank($atts->{param}, $_->{rank});
-            # TODO
-            $_->{gen_group} = $gen_group;
-        }
-    }
-    else
-    {
-        $self->error('Test input file not specified for tests ' . join (',', @t));
-    }
-}
-
-
-sub start_tag_Out
-{
-    (my CATS::Problem $self, my $atts) = @_;
-
-    my @t = @{$self->{current_tests}};
-
-    if (defined $atts->{src})
-    {
-        for (@t)
-        {
-            my $src = apply_test_rank($atts->{'src'}, $_->{rank});
-            my $member = $self->{zip}->memberNamed($src)
-                or $self->error("Invalid test output file reference: '$src'");
-            $_->{out_file} = $self->{debug} ? $src : $self->read_member($member);
-        }
-    }
-    elsif (defined $atts->{'use'})
-    {
-        for (@t)
-        {
-            my $use = apply_test_rank($atts->{'use'}, $_->{rank});
-            $_->{std_solution_id} = $self->get_named_object($use)->{id};
-        }
-    }
-    else
-    {
-        $self->error('Test output file not specified for tests ' . join (',', @t));
-    }
 }
 
 
@@ -615,7 +524,8 @@ sub error($)
 
 sub read_member
 {
-    (my CATS::Problem $self, my $member) = @_;
+    (my CATS::Problem $self, my $member, my $debug) = @_;
+    $debug and return $member->fileName();
 
     $member->desiredCompressionMethod(COMPRESSION_STORED);
     my $status = $member->rewindData();
@@ -675,18 +585,19 @@ sub end_tag_Problem
         SET
             contest_id=?,
             title=?, lang=?, time_limit=?, memory_limit=?, difficulty=?, author=?, input_file=?, output_file=?, 
-            statement=?, pconstraints=?, input_format=?, output_format=?, 
-            zip_archive=?, upload_date=CATS_SYSDATE(), std_checker=?, last_modified_by=?,
+            statement=?, pconstraints=?, input_format=?, output_format=?, explanation=?, zip_archive=?,
+            upload_date=CATS_SYSDATE(), std_checker=?, last_modified_by=?,
             max_points=?, hash=NULL
         WHERE id = ?~
     : q~
         INSERT INTO problems (
             contest_id,
             title, lang, time_limit, memory_limit, difficulty, author, input_file, output_file,
-            statement, pconstraints, input_format, output_format, zip_archive,
-            upload_date, std_checker, last_modified_by, max_points, id
+            statement, pconstraints, input_format, output_format, explanation, zip_archive,
+            upload_date, std_checker, last_modified_by,
+            max_points, id
         ) VALUES (
-            ?,?,?,?,?,?,?,?,?,?,?,?,?,?,CATS_SYSDATE(),?,?,?,?
+            ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CATS_SYSDATE(),?,?,?,?
         )~;
  
     my $c = $dbh->prepare($sql);
@@ -695,7 +606,7 @@ sub end_tag_Problem
     $c->bind_param($i++, $self->{problem}->{$_})
         for qw(title lang time_limit memory_limit difficulty author input_file output_file);
     $c->bind_param($i++, $self->{$_}, { ora_type => 113 })
-        for qw(statement constraints input_format output_format zip_archive);
+        for qw(statement constraints input_format output_format explanation zip_archive);
     $c->bind_param($i++, $self->{problem}->{std_checker});
     $c->bind_param($i++, $uid);
     $c->bind_param($i++, $self->{problem}->{max_points});
@@ -726,17 +637,6 @@ sub get_de_id
         $self->note("Detected DE: '$de->{description}' for source: '$path'");
     }
     return $de->{id};
-}
-
-
-sub apply_test_rank
-{
-    my ($v, $rank) = @_;
-    $v ||= '';
-    $v =~ s/%n/$rank/g;
-    $v =~ s/%0n/sprintf("%02d", $rank)/eg;
-    $v =~ s/%%/%/g;
-    $v;
 }
 
 

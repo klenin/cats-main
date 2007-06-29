@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use CGI;
-
+use CATS::DB;
 
 sub allowed_pages
 {{
@@ -40,16 +40,22 @@ sub name
 
 sub url_static { './static/' . name(@_) . '.html'; }
 sub path { $ENV{CATS_DIR} . '../static/' }
+sub full_name { path() . name(@_) . '.html' }
 
 
-sub refresh_problem_text
+sub invalidate_problem_text
 {
     my (%p) = @_;
-    if ($p{cid})
+    my @contest_ids = $p{cid} ? ($p{cid}) : ();
+    
+    if ($p{pid})
     {
-        my $p = path() . name('problem_text', cid => $p{cid}) . '*';
-        `rm $p`;
+        my $c = $dbh->selectcol_arrayref(q~
+            SELECT contest_id FROM contest_problems WHERE problem_id = ?~,
+            undef, $p{pid});
+        push @contest_ids, @$c;
     }
+    unlink full_name('problem_text', cid => $_) for @contest_ids;
 }
 
 

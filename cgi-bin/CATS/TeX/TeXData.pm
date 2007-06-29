@@ -40,16 +40,20 @@ our %binary =
  subseteq => 'sube',
  supset => 'sub',
  supseteq => 'supe',
+ to => '#x21A6',
 );
 
 my %arrows =
 (
- to => '#x21A6',
  Rightarrow => 'rArr',
  Leftarrow => 'lArr',
  Leftrightarrow => 'hArr',
  Uparrow => 'uArr',
  Downarrow => 'dArr',
+ leftarrow => 'larr',
+ rightarrow => 'rarr',
+ uparrow => 'uarr',
+ downarrow => 'darr',
 );
 
 my %special =
@@ -58,30 +62,31 @@ my %special =
  'int' => 'int',
  sum => 'sum',
  prod => 'prod',
+ 'sqrt' => '#x221A',
  partial => 'part',
  triangle => '#x25B3',
  angle => 'ang',
  infty => 'infin',
  forall => 'forall',
- exists => 'exist',
+ 'exists' => 'exist',
  emptyset => 'empty',
  neg => '#xAC',
  nabla => 'nabla',
  dots => 'hellip',
  ldots => 'hellip',
- downarrow => 'darr',
  goodbreak => 'zwnj',
  leftguilsingl => 'lsaquo',
  nobreak => 'zwj',
  quotedblbase => 'bdquo',
  quotesinglbase => 'sbquo',
- rightarrow => 'rarr',
  rightguilsingl => 'rsaquo',
- uparrow => 'uarr',
- leftarrow => 'larr',
+ lceil => '#x2308',
+ rceil => '#x2309',
+ lfloor => '#x230A',
+ rfloor => '#x230B',
 );
 
-my %spaces = 
+my %spaces =
 (
  #соответствие неточное
  ';' => 'nbsp',
@@ -89,7 +94,7 @@ my %spaces =
  ',' => 'nbsp',
 );
 
-my %greek = 
+my %greek =
 (
  Alpha => 'Alpha',
  Beta => 'Beta',
@@ -141,7 +146,8 @@ my %greek =
  xi => 'xi',
  zeta => 'zeta',
 );
-my %old = 
+
+my %old =
 (
  alef => '#x5D0',
  ayin => '#x5E2',
@@ -172,7 +178,7 @@ my %old =
  zayin => '#x5D6',
 );
 
-# используемый генераторами хеш 
+# используемый генераторами хеш
 our %symbols = (%binary, %arrows, %special, %spaces, %greek, %old);
 %symbols = map {+"\\$_" => "\&$symbols{$_};"} keys %symbols;
 $symbols{' '} = '&nbsp;';
@@ -180,4 +186,5 @@ $symbols{'-'} = '&minus;',
 $symbols{'\}'} = '}';
 $symbols{'\{'} = '{';
 $symbols{'\backslash'} = "\\";
+
 1;

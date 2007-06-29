@@ -41,8 +41,9 @@ BEGIN
     );
 
     @EXPORT_OK = qw(
-        $contest @messages $t $sid $cid $lng $uid $team_name $server_time $contest_title $dbi_error
-        $is_root $is_team $is_jury $is_virtual $virtual_diff_time $additional $search $page $visible $init_time);
+        $contest @messages $t $sid $cid $lng $uid $server_time
+        $is_root $is_team $is_jury $is_virtual $virtual_diff_time
+        $additional $search $page $visible $init_time);
 
     %EXPORT_TAGS = (all => [ @EXPORT, @EXPORT_OK ]);
 }
@@ -69,7 +70,7 @@ use CATS::Diff;
 use CATS::Contest;
 
 use vars qw(
-    $contest @messages $t $sid $cid $lng $uid $team_name $server_time $contest_title $dbi_error
+    $contest @messages $t $sid $cid $lng $uid $team_name $server_time $dbi_error
     $is_root $is_team $is_jury $is_virtual $virtual_diff_time
     $listview_name $listview_array_name $col_defs $sort $sort_dir $search $page $visible $additional
     $request_start_time $init_time
@@ -475,7 +476,7 @@ sub generate_output
             -name => $listview_name, -value => [@values], -expires => '+1h');
     }
     $t->param(
-        contest_title => $contest_title,
+        contest_title => $contest->{title},
         server_time => $server_time,
     	current_team_name => $team_name,
     	is_virtual => $is_virtual,
@@ -499,10 +500,12 @@ sub generate_output
     {
         $t->param(dbi_error => $dbi_error);
     }
-
-    $t->param(request_process_time => sprintf '%.3fs',
-        Time::HiRes::tv_interval($request_start_time, [ Time::HiRes::gettimeofday ]));
-    $t->param(init_time => sprintf '%.3fs', $init_time);
+    unless (param('notime'))
+    {
+        $t->param(request_process_time => sprintf '%.3fs',
+            Time::HiRes::tv_interval($request_start_time, [ Time::HiRes::gettimeofday ]));
+        $t->param(init_time => sprintf '%.3fs', $init_time);
+    }
     my $out = '';
     if (my $enc = param('enc'))
     {
@@ -631,7 +634,6 @@ sub user_authorize
     }
     $contest ||= CATS::Contest->new;
     $contest->load($cid);
-    $contest_title = $contest->{title};
     $server_time = $contest->{server_time};
     #($server_time) = $dbh->selectrow_array(q~SELECT CATS_DATE(CATS_SYSDATE()) FROM RDB$DATABASE~);
     $cid = $contest->{id};
@@ -650,6 +652,13 @@ sub user_authorize
 
         # до начала тура команда имеет только права гостя
         $is_team &&= $is_jury || $contest->has_started($virtual_diff_time);
+    }
+    if ($contest->{is_hidden} && !$is_team)
+    {
+        # При попытке просмотреть скрытый турнир показыываем вместо него тренировочный
+        $contest->load(0);
+        $server_time = $contest->{server_time};
+        $cid = $contest->{id};
     }
 }
 

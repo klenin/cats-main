@@ -1,8 +1,5 @@
-<h2>
-<TMPL_IF code>Задача <TMPL_VAR code>.</TMPL_IF>
-<TMPL_VAR title ESCAPE=HTML>
-</h2>
-<TMPL_IF author>Автор задачи: <TMPL_VAR author ESCAPE=HTML><br><br></TMPL_IF>
+<h2><TMPL_IF code>Задача <TMPL_VAR code>. </TMPL_IF><TMPL_VAR title ESCAPE=HTML></h2>
+<TMPL_IF author>Автор: <TMPL_VAR author ESCAPE=HTML><br><br></TMPL_IF>
 <table width="100%" class="nobr">
 <tr>
   <td width="1%">Входной файл:</td><td><TMPL_VAR input_file ESCAPE=HTML></td>
@@ -21,6 +18,11 @@
     <h3><i>Условие</i></h3>
     <TMPL_VAR statement>
 </TMPL_IF>
+
+<TMPL_IF explanation>
+    <h3><i>Разбор</i></h3>
+    <TMPL_VAR explanation>
+<TMPL_ELSE>
 
 <TMPL_IF input_format>
     <h3><i>Формат входного файла</i></h3>
@@ -56,4 +58,6 @@
 </tr>
 </TMPL_LOOP>
 </table>
+</TMPL_IF>
+
 </TMPL_IF>

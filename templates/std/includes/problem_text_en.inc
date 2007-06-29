@@ -1,7 +1,4 @@
-<h2>
-<TMPL_IF code>Problem <TMPL_VAR code>.</TMPL_IF>
-<TMPL_VAR title ESCAPE=HTML>
-</h2>
+<h2><TMPL_IF code>Problem <TMPL_VAR code>. </TMPL_IF><TMPL_VAR title ESCAPE=HTML></h2>
 <TMPL_IF author>Author: <TMPL_VAR author ESCAPE=HTML><br/><br/></TMPL_IF>
 
 <table width="100%" class="nobr">
@@ -22,6 +19,11 @@
     <h3><i>Statement</i></h3>
     <TMPL_VAR statement>
 </TMPL_IF>
+
+<TMPL_IF explanation>
+    <h3><i>Explanation</i></h3>
+    <TMPL_VAR explanation>
+<TMPL_ELSE>
 
 <TMPL_IF input_format>
     <h3><i>Input file format</i></h3>
@@ -57,4 +59,6 @@
 </tr>
 </TMPL_LOOP>
 </table>
+</TMPL_IF>
+
 </TMPL_IF>
