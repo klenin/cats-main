@@ -368,6 +368,7 @@ sub attach_listview
 
     while (my %h = &$fetch_row($c))
     {
+        #warn join ',', keys %h;
         my $f = 1;
         if ($search)
         {
@@ -649,6 +650,7 @@ sub user_authorize
             SELECT 1, is_jury, is_virtual, diff_time
             FROM contest_accounts WHERE contest_id = ? AND account_id = ?~, {}, $cid, $uid);
         $virtual_diff_time ||= 0;
+        $is_jury ||= $is_root;
 
         # до начала тура команда имеет только права гостя
         $is_team &&= $is_jury || $contest->has_started($virtual_diff_time);
@@ -678,6 +680,7 @@ sub initialize
 sub state_to_display
 {
     my ($state) = @_;
+    defined $state or die 'no state!';
     (
         not_processed =>         $state == $cats::st_not_processed,
         unhandled_error =>       $state == $cats::st_unhandled_error,

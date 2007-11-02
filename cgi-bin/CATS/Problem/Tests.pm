@@ -18,15 +18,15 @@ sub apply_test_rank
 sub validate_test
 {
     my ($test) = @_;
-    $test->{in_file} || $test->{generator_id}
+    defined $test->{in_file} || $test->{generator_id}
         or return 'No input source';
-    $test->{in_file} && $test->{generator_id}
+    defined $test->{in_file} && $test->{generator_id}
         and return 'Both input file and generator';
     ($test->{param} || $test->{gen_group}) && !$test->{generator_id}
         and return 'Parameters without generator';
-    $test->{out_file} || $test->{std_solution_id}
+    defined $test->{out_file} || $test->{std_solution_id}
         or return 'No output source';
-    $test->{out_file} && $test->{std_solution_id}
+    defined $test->{out_file} && $test->{std_solution_id}
         and return 'Both output file and standard solution';
     undef;
 }
@@ -120,11 +120,18 @@ sub start_tag_In
             my $use = apply_test_rank($atts->{'use'}, $_->{rank});
             $self->set_test_attr($_, 'generator_id',
                 $self->get_imported_id($use) || $self->get_named_object($use)->{id});
-            $self->set_test_attr($_, 'param', apply_test_rank($atts->{param}, $_->{rank}));
             # TODO
             $self->set_test_attr($_, 'gen_group', $gen_group);
         }
     }
+    if (defined $atts->{param})
+    {
+        for (@t)
+        {
+            $self->set_test_attr($_, 'param', apply_test_rank($atts->{param}, $_->{rank}));
+        }
+    }
+    
 }
 
 

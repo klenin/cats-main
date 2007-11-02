@@ -13,7 +13,8 @@ function getSelectedButton(button) {
 var a = new Array();
 <TMPL_LOOP problems>
 a["<TMPL_VAR problem_id>"] = new Array(
-  "<TMPL_VAR problem_name ESCAPE=HTML>", "<TMPL_VAR href_delete>", "<TMPL_VAR href_replace>");
+  "<TMPL_VAR problem_name ESCAPE=HTML>", "<TMPL_VAR href_delete>", "<TMPL_VAR href_replace>",
+  "<TMPL_VAR href_change_status>");
 </TMPL_LOOP>
 
 function d() {
@@ -33,6 +34,12 @@ function r() {
     else
         document.location = a[v][2];
 }
+
+function chg_status(st_sel, pid)
+{
+    document.location = a[pid][3] + '&status=' + st_sel.value;
+}
+
 </script>
 </TMPL_IF>
 <TMPL_IF message><i><TMPL_VAR message ESCAPE=HTML></i><br/></TMPL_IF>
@@ -61,11 +68,9 @@ function r() {
 </TMPL_IF>
 <TMPL_LOOP problems>
 <tr bgcolor=<TMPL_IF odd>"#f4f4f4"<TMPL_ELSE>"#ffffff"</TMPL_IF>>
-    <TMPL_IF is_team>
-<td width="1%">
+<TMPL_IF is_team><td width="1%">
     <input type="radio" name="problem_id" value="<TMPL_VAR problem_id>"<TMPL_IF disabled> disabled="disabled"</TMPL_IF> />
-</td>
-    </TMPL_IF>
+</td></TMPL_IF>
 <td>
     <a href="<TMPL_VAR href_view_problem>" target="_blank"><TMPL_VAR problem_name ESCAPE=HTML></a>
     <TMPL_IF href_explanation>&nbsp;[<a href="<TMPL_VAR href_explanation>" target="_blank">разбор</a>]</TMPL_IF>
@@ -74,8 +79,9 @@ function r() {
 </td>
 <TMPL_IF editable>
 <td>
-    <TMPL_IF is_linked>[<a href="<TMPL_VAR href_original_contest>" title="<TMPL_VAR contest_name>">L</a>]</TMPL_IF>
-    <TMPL_VAR status>
+    <select onchange="chg_status(this, <TMPL_VAR problem_id>)">
+    <TMPL_LOOP status_list><option value="<TMPL_VAR id>"<TMPL_IF selected> selected="selected"</TMPL_IF>><TMPL_VAR name ESCAPE=HTML></option></TMPL_LOOP>
+    </select><TMPL_IF is_linked> [<a href="<TMPL_VAR href_original_contest>" title="<TMPL_VAR contest_name>">L</a>]</TMPL_IF>
 </td>
 <td><TMPL_VAR last_modified_by></td>
 <td align="right"><TMPL_VAR upload_date></td>
@@ -103,12 +109,7 @@ function r() {
       <TMPL_LOOP de_list><option value="<TMPL_VAR de_id>"><TMPL_VAR de_name ESCAPE=HTML></option></TMPL_LOOP>
       </select>
     </td>
-    <TMPL_IF editable><td>&nbsp;</td><td><input type="submit" name="change_status" value="сменить статус" class="button" /></td>
-    <td>
-      <select name="status">
-      <TMPL_LOOP status_list><option value="<TMPL_VAR id>"><TMPL_VAR name ESCAPE=HTML></option></TMPL_LOOP>
-      </select>
-      перетестировать все <input type="checkbox" name="all_runs" value="1"/>
+    <TMPL_IF editable><td>&nbsp;</td><td colspan="2">перетестировать все <input type="checkbox" name="all_runs" value="1"/>
     </td></TMPL_IF>
 </tr><tr>
     <td colspan="2">
@@ -116,7 +117,7 @@ function r() {
         <TMPL_IF editable><input type="submit" name="std_solution" value="эталонное решение" class="button" /></TMPL_IF>
     </td>
     <TMPL_IF editable><td>&nbsp;</td><td colspan="2">
-        <input type="button" name="delete" value="удалить" class="button" onclick="d()"/>
+        <input type="button" name="delete" value="удалить" class="button" onclick="d()" />
         <input type="submit" name="replace" value="заменить" class="button" />
         <input type="submit" name="mass_retest" value="перетестировать" class="button" />
     </td></TMPL_IF>

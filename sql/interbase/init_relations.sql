@@ -113,12 +113,13 @@ CREATE TABLE problems (
 
 
 CREATE TABLE contest_problems (
-    id         INTEGER NOT NULL PRIMARY KEY,
-    problem_id INTEGER NOT NULL REFERENCES problems(id) ON DELETE CASCADE,
-    contest_id INTEGER NOT NULL REFERENCES contests(id) ON DELETE CASCADE,   
-    code       CHAR,
-    status     INTEGER DEFAULT 0 CHECK (status IN (0, 1, 2, 3)),
-    UNIQUE(problem_id, contest_id)
+    id              INTEGER NOT NULL PRIMARY KEY,
+    problem_id      INTEGER NOT NULL REFERENCES problems(id) ON DELETE CASCADE,
+    contest_id      INTEGER NOT NULL REFERENCES contests(id) ON DELETE CASCADE,   
+    code            CHAR,
+    status          INTEGER DEFAULT 0 CHECK (status IN (0, 1, 2, 3)),
+    testset_name    VARCHAR(200),
+    UNIQUE (problem_id, contest_id)
 );
 
 
@@ -150,6 +151,7 @@ CREATE TABLE problem_sources_import
     PRIMARY KEY (problem_id, guid)
 );
             
+
 CREATE TABLE pictures (
     problem_id  INTEGER REFERENCES problems(id) ON DELETE CASCADE,
     name        VARCHAR(30) NOT NULL,
@@ -169,6 +171,19 @@ CREATE TABLE tests (
     points          INTEGER,
     gen_group       INTEGER
 );
+
+
+CREATE TABLE testsets
+(
+    id              INTEGER NOT NULL,
+    problem_id      INTEGER NOT NULL,
+    name            VARCHAR(200) NOT NULL,
+    tests           VARCHAR(200) NOT NULL,
+    CONSTRAINT testsets_pk PRIMARY KEY (id),
+    /*CONSTRAINT testsets_uniq UNIQUE (name, problem_id),*/
+    FOREIGN KEY (problem_id) REFERENCES problems (id)
+);
+
 
 CREATE TABLE samples (
     problem_id      INTEGER REFERENCES problems(id) ON DELETE CASCADE,
@@ -213,20 +228,21 @@ CREATE TABLE reqs (
     failed_test INTEGER,
     judge_id    INTEGER REFERENCES judges(id) ON DELETE SET NULL, 
     received    INTEGER DEFAULT 0 CHECK (received IN (0, 1)),
-    points      INTEGER
+    points      INTEGER,
+    testset_name VARCHAR(200)
 );
 CREATE DESCENDING INDEX idx_reqs_submit_time ON reqs(submit_time);
 
 
 CREATE TABLE req_details
 (
-  req_id      INTEGER NOT NULL REFERENCES REQS(ID) ON DELETE CASCADE,
-  test_rank   INTEGER NOT NULL /*REFERENCES TESTS(RANK) ON DELETE CASCADE*/,
-  result      INTEGER,
-  time_used   FLOAT,
-  memory_used INTEGER,
-  disk_used   INTEGER,
-  checker_comment VARCHAR(200),
+  req_id            INTEGER NOT NULL REFERENCES REQS(ID) ON DELETE CASCADE,
+  test_rank         INTEGER NOT NULL /*REFERENCES TESTS(RANK) ON DELETE CASCADE*/,
+  result            INTEGER,
+  time_used         FLOAT,
+  memory_used       INTEGER,
+  disk_used         INTEGER,
+  checker_comment   VARCHAR(200),
   
   UNIQUE(req_id, test_rank)
 );

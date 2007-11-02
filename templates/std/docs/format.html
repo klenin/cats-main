@@ -222,6 +222,11 @@
   Например:<pre>&lt;Test rank="1-10"&gt;
   &lt;In src="%0n.in"/&gt;&lt;Out use="solution"/&gt;
 &lt;/Test&gt</pre>
+  Для более экономного описания можно распределять описание теста на несколько тегов, например:
+  <pre>&lt;Test rank="1-5" points="1" /&gt;
+&lt;Test rank="6-10" points="2" /&gt;
+&lt;Test rank="1-10"&gt;&lt;Out use="sol"&gt;&lt;/Test&gt;</pre>
+  При этом данные об одном тесте, указанные в различных тегах, не должны перекрываться.
 </td>
 </tr>
 <tr>

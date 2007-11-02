@@ -570,7 +570,8 @@ sub console
             A.team_name AS team_name,
             A.country AS country,
             A.last_ip AS last_ip,
-            CA.id~,
+            CA.id,
+            CA.contest_id~,
         question => q~
             2 AS rtype,
             Q.submit_time AS rank,
@@ -587,7 +588,8 @@ sub console
             A.team_name AS team_name,
             A.country AS country,
             A.last_ip AS last_ip,
-            CA.id~,
+            CA.id,
+            CA.contest_id~,
         message => q~
             3 AS rtype,
             M.send_time AS rank,
@@ -604,7 +606,8 @@ sub console
             A.team_name AS team_name,
             A.country AS country,
             A.last_ip AS last_ip,
-            CA.id
+            CA.id,
+            CA.contest_id
         ~,
         broadcast => q~
             4 AS rtype,
@@ -622,6 +625,7 @@ sub console
             CAST(NULL AS VARCHAR(200)) AS team_name,
             CAST(NULL AS VARCHAR(30)) AS country,
             CAST(NULL AS VARCHAR(100)) AS last_ip,
+            CAST(NULL AS INTEGER),
             CAST(NULL AS INTEGER)
             FROM messages M, dummy_table D
         ~,
@@ -731,7 +735,7 @@ sub console
     {            
         my ($rtype, $rank, $submit_time, $id, $request_state, $failed_test, 
             $problem_title, $clarified, $question, $answer, $jury_message,
-            $team_id, $team_name, $country_abb, $last_ip, $caid
+            $team_id, $team_name, $country_abb, $last_ip, $caid, $contest_id
         ) = $_[0]->fetchrow_array
             or return ();
 
@@ -773,6 +777,7 @@ sub console
             last_ip_short =>        $last_ip_short,
             is_jury =>              $is_jury,
             id      =>              $id,
+            contest_id =>           $contest_id,
         );
     };
             
@@ -927,7 +932,7 @@ sub console_content_frame
 
 sub problems_change_status ()
 {
-    my $pid = param('problem_id')
+    my $cpid = param('change_status')
       or return msg(54);
     
     my $new_status = param('status');
@@ -935,8 +940,8 @@ sub problems_change_status ()
     
     $dbh->do(qq~
         UPDATE contest_problems SET status = ?
-            WHERE contest_id = ? AND problem_id = ?~, {},
-        $new_status, $cid, $pid);
+            WHERE contest_id = ? AND id = ?~, {},
+        $new_status, $cid, $cpid);
     $dbh->commit;
     # Возможно изменение статуса hidden
     CATS::StaticPages::invalidate_problem_text(cid => $cid);
@@ -1426,7 +1431,6 @@ sub problems_frame_jury_action
     my $cpid = url_param('delete');
     if (defined $cpid)
     {
-        warn $cpid;
         my ($pid, $old_contest) = $dbh->selectrow_array(q~
             SELECT problem_id, contest_id FROM contest_problems WHERE id = ?~, undef,
             $cpid) or return;
@@ -1505,7 +1509,7 @@ sub problems_frame
         { caption => res_str(602), order_by => '3', width => '30%' },
         ($is_jury ?
         (
-            { caption => res_str(632), order_by => '10', width => '5%' }, # статус
+            { caption => res_str(632), order_by => '10', width => '10%' }, # статус
             { caption => res_str(635), order_by => '12', width => '10%' }, # кто изменил
             { caption => res_str(634), order_by => '11', width => '10%' }, # дата изменения
         )
@@ -1552,12 +1556,28 @@ sub problems_frame
         $sth->execute($cid, $aid, $aid, $aid, (order_by =~ /^ORDER BY\s+(5|6|7)\s+/ ? ($aid) : ()));
     }
     
+    my @status_list;
+    if ($is_jury)
+    {
+        my $n = problem_status_names();
+        for (sort keys %$n)
+        {
+            push @status_list, { id => $_, name => $n->{$_} }; 
+        }
+        $t->param(
+            status_list => \@status_list,
+            editable => 1
+        );
+    }
+
     my $fetch_record = sub($)
     {            
         my $c = $_[0]->fetchrow_hashref or return ();
         $c->{status} ||= 0;
+        my $psn = problem_status_names();
         return (
             href_delete   => url_f('problems', 'delete' => $c->{cpid}),
+            href_change_status => url_f('problems', 'change_status' => $c->{cpid}),
             href_replace  => url_f('problems', replace => $c->{cpid}),
             href_download => url_f('problems', download => $c->{pid}),
             href_compare_tests => $is_jury && url_f('compare_tests', pid => $c->{pid}),
@@ -1566,7 +1586,7 @@ sub problems_frame
             show_packages => $show_packages,
             is_practice => $contest->is_practice,
             editable => $is_jury,
-            status => problem_status_names()->{$c->{status}},
+            status => $c->{status},
             disabled => !$is_jury && $c->{status} == $cats::problem_st_disabled,
             is_team => $my_is_team,
             href_view_problem => url_f('problem_text', cpid => $c->{cpid}),
@@ -1581,6 +1601,9 @@ sub problems_frame
             tle_count => $c->{time_limit_count},
             upload_date => $c->{upload_date},
             last_modified_by => $c->{last_modified_by},
+            status_list => [
+                map {{ id => $_, name => $psn->{$_}, selected => $c->{status} == $_ }} sort keys %$psn
+            ],
         );
     };
             
@@ -1610,17 +1633,6 @@ sub problems_frame
     
     if ($is_jury)
     {
-        my $n = problem_status_names();
-        my $status_list = [];
-        for (sort keys %$n)
-        {
-            push @$status_list, { id => $_, name => $n->{$_} }; 
-        }
-        $t->param(
-            status_list => $status_list,
-            editable => 1
-        );
-
         push @submenu, (
             { href_item => url_f('problems', new => 1), item_name => res_str(539) },
             { href_item => url_f('problems', link => 1), item_name => res_str(540) },
@@ -2578,7 +2590,7 @@ sub answer_box_frame
 
     my $r = $dbh->selectrow_hashref(qq~
         SELECT
-            Q.account_id AS caid, CA.account_id AS aid, A.login, A.team_name
+            Q.account_id AS caid, CA.account_id AS aid, A.login, A.team_name,
             CATS_DATE(Q.submit_time) AS submit_time, Q.question, Q.clarified, Q.answer
         FROM questions Q
             INNER JOIN contest_accounts CA ON CA.id = Q.account_id
@@ -3035,7 +3047,7 @@ sub rank_table
     #return if $not_started;
 
     my @p_id = CATS::RankTable::get_problem_ids($contest_list, $show_points);
-    my $virtual_cond = $hide_virtual ? ' AND CA.is_virtual = 0' : '';
+    my $virtual_cond = $hide_virtual ? ' AND (CA.is_virtual = 0 OR CA.is_virtual IS NULL)' : '';
     my $ooc_cond = $hide_ooc ? ' AND CA.is_ooc = 0' : '';
 
     my $cache_file = cats_dir() . "./rank_cache/$contest_list#$hide_ooc#$hide_virtual#";
@@ -3079,7 +3091,7 @@ sub rank_table
         {
             next if $problems->{$p};
             $problems->{$p} = { total_runs => 0, total_accepted => 0, total_points => 0 };
-            $_->{problems}->{$p} = { %init_problem } for @$teams;
+            $_->{problems}->{$p} = { %init_problem } for values %$teams;
         }
     }
     else
@@ -3491,7 +3503,7 @@ sub problem_text_frame
             SELECT CP.problem_id, CP.code, C.rules
             FROM contests C INNER JOIN contest_problems CP ON CP.contest_id = C.id
             WHERE CP.id = ?~, {},
-            $cpid);    
+            $cpid) or return;
         push @id_problems, $problem_id;
         $pcodes{$problem_id} = $code;
     }

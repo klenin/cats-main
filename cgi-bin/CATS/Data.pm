@@ -43,6 +43,7 @@ sub get_registered_contestant
 sub is_jury_in_contest
 {
     my %p = @_;
+    return 1 if $is_root;
     # Оптимизация: если запрос о текущем турнире, вывести уже считанное значение.
     if (defined $cid && $p{contest_id} == $cid)
     {
@@ -201,6 +202,5 @@ sub get_contests_info
     }
     return ($title_prefix || '', $frozen, $not_started, $show_points);
 }
-
 
 1;
