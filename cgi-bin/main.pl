@@ -39,6 +39,7 @@ use CATS::RankTable;
 use CATS::Diff;
 use CATS::StaticPages;
 use CATS::TeX::Lite;
+use CATS::Testset;
 
 use vars qw($html_code $current_pid $spellchecker $text_span);
 
@@ -481,7 +482,8 @@ sub contests_frame
     $t->param(
         authorized => defined $uid,
         href_contests => url_f('contests'),
-        editable => $is_root
+        editable => $is_root,
+        is_registered => defined $uid && get_registered_contestant(contest_id => $cid) || 0,
     );
 }
 
@@ -1114,8 +1116,8 @@ sub problems_all_frame
         { caption => res_str(602), order_by => '2', width => '30%' }, 
         { caption => res_str(603), order_by => '3', width => '30%' },                    
         { caption => res_str(604), order_by => '4', width => '10%' },
-        { caption => res_str(605), order_by => '5', width => '10%' },
-        { caption => res_str(606), order_by => '6', width => '10%' },
+        #{ caption => res_str(605), order_by => '5', width => '10%' },
+        #{ caption => res_str(606), order_by => '6', width => '10%' },
     ];
     define_columns(url_f('problems', link => $link, kw => $kw), 0, 0, $cols);
 
@@ -1459,6 +1461,43 @@ sub problems_frame_jury_action
 }
 
 
+sub problem_select_testsets
+{
+    $is_jury or return;
+    my $cpid = param('cpid') or return;
+    
+    my $problem = $dbh->selectrow_hashref(q~
+        SELECT P.id, P.title, CP.id AS cpid, CP.testsets
+        FROM problems P INNER JOIN contest_problems CP ON P.id = CP.problem_id
+        WHERE CP.id = ?~, undef, $cpid);
+    my $testsets = $dbh->selectall_arrayref(q~
+        SELECT * FROM testsets WHERE problem_id = ?~, { Slice => {} },
+        $problem->{id});
+
+    if (param('save'))
+    {
+        my %sel;
+        @sel{param('sel')} = undef;
+        $_->{selected} = exists $sel{$_->{id}} for @$testsets;
+        my $ts_list = join ' ', map $_->{name}, grep $_->{selected}, @$testsets;
+        $dbh->do(q~
+            UPDATE contest_problems SET testsets = ? WHERE id = ?~, undef,
+            $ts_list, $problem->{cpid});
+        $dbh->commit;
+    }
+    else
+    {
+        my %sel;
+        @sel{split /\s+/, $problem->{testsets} || ''} = undef;
+        $_->{selected} = exists $sel{$_->{name}} for @$testsets;
+    }
+    
+    
+    init_template('main_problem_select_testsets.htm');
+    $t->param("problem_$_" => $problem->{$_}) for keys %$problem;
+    $t->param(testsets => $testsets, href_select_testsets => url_f('problem_select_testsets'));
+}
+
 sub problems_frame
 {
     my $my_is_team =
@@ -1510,17 +1549,16 @@ sub problems_frame
         ($is_jury ?
         (
             { caption => res_str(632), order_by => '10', width => '10%' }, # статус
-            { caption => res_str(635), order_by => '12', width => '10%' }, # кто изменил
+            { caption => res_str(605), order_by => '14', width => '10%' }, # набор тестов
+            { caption => res_str(635), order_by => '12', width => '5%' }, # кто изменил
             { caption => res_str(634), order_by => '11', width => '10%' }, # дата изменения
         )
         : ()
         ),
         ($contest->is_practice ?
-        { caption => res_str(603), order_by => '4', width => '30%' } : ()
+        { caption => res_str(603), order_by => '4', width => '20%' } : ()
         ),
-        { caption => res_str(604), order_by => '5', width => '5%' },
-        { caption => res_str(605), order_by => '6', width => '5%' },
-        { caption => res_str(606), order_by => '7', width => '5%' }
+        { caption => res_str(604), order_by => '5', width => '10%' },
     );
     define_columns(url_f('problems'), 0, 0, [ @cols ]);
 
@@ -1539,7 +1577,8 @@ sub problems_frame
             OC.id AS original_contest_id, CP.status,
             CATS_DATE(P.upload_date) AS upload_date,
             (SELECT A.login FROM accounts A WHERE A.id = P.last_modified_by) AS last_modified_by,
-            SUBSTRING(P.explanation FROM 1 FOR 1) AS has_explanation
+            SUBSTRING(P.explanation FROM 1 FOR 1) AS has_explanation,
+            CP.testsets
         FROM problems P, contest_problems CP, contests OC
         WHERE CP.problem_id = P.id AND OC.id = P.contest_id AND CP.contest_id = ?$hidden_problems
         ~ . order_by
@@ -1601,6 +1640,8 @@ sub problems_frame
             tle_count => $c->{time_limit_count},
             upload_date => $c->{upload_date},
             last_modified_by => $c->{last_modified_by},
+            testsets => $c->{testsets} || '*',
+            href_select_testsets => url_f('problem_select_testsets', cpid => $c->{cpid}),
             status_list => [
                 map {{ id => $_, name => $psn->{$_}, selected => $c->{status} == $_ }} sort keys %$psn
             ],
@@ -1668,7 +1709,7 @@ sub compare_tests_frame
         WHERE
             r.problem_id = ? AND r.contest_id = ? AND ca.is_jury = 0
         GROUP BY rd.test_rank~, 'test_rank', { Slice => {} },
-        $pid, $cid);
+        $pid, $cid) or return;
 
     my $c = $dbh->selectall_arrayref(qq~
         SELECT COUNT(*) AS cnt, rd1.test_rank AS r1, rd2.test_rank AS r2
@@ -1691,7 +1732,7 @@ sub compare_tests_frame
     my $cm = [
         map {
             my $hr = $h->{$_} || {};
-            { data => [ map {{ n => ($hr->{$_} || 0) }} 1..$size ], %{$totals->{$_}} }
+            { data => [ map {{ n => ($hr->{$_} || 0) }} 1..$size ], %{$totals->{$_} || {}} }
         } 1..$size
     ];
 
@@ -2738,10 +2779,13 @@ sub run_details_frame
     {
         $last_test = @$points;
     }
+    my %testset;
+    @testset{CATS::Testset::get_testset($si->{contest_id}, $si->{problem_id})} = undef;
     $t->param(run_details => [
         map {
             exists $run_details{$_} ? $run_details{$_} :
-            $contest->{show_all_tests} ? { test_rank => $_, not_processed => 1 } :
+            $contest->{show_all_tests} ?
+                { test_rank => $_, (exists $testset{$_} ? 'not_processed' : 'not_in_testset') => 1 } :
             () 
         } (1..$last_test)
     ]);
@@ -2838,7 +2882,8 @@ sub run_log_frame
             runtime_error =>         $cats::st_runtime_error,
             compilation_error =>     $cats::st_compilation_error,
             security_violation =>    $cats::st_security_violation,
-        } -> {param 'state'};
+            ignore_submit =>         $cats::st_ignore_submit,
+        } -> {param('state')};
 
         my $failed_test = sprintf '%d', param('failed_test') || '0';
         enforce_request_state(
@@ -2852,23 +2897,6 @@ sub run_log_frame
     }
 
     source_links($si, 1);
-
-    my $previous_attempt = $dbh->selectrow_hashref(qq~
-        SELECT id, CATS_DATE(submit_time) AS submit_time FROM reqs
-          WHERE account_id = ? AND problem_id = ? AND id < ?
-          ORDER BY id DESC~, { Slice => {} },
-        $si->{account_id}, $si->{problem_id}, $rid
-    );
-    for ($previous_attempt)
-    {
-        last unless defined $_;
-        $_->{submit_time} =~ s/\s*$//;
-        $t->param(
-            href_previous_attempt => url_f('run_log', rid => $_->{id}),
-            previous_attempt_time => $_->{submit_time},
-            href_diff_runs => url_f('diff_runs', r1 => $_->{id}, r2 => $rid),
-        );
-    }
 
     my ($dump) =
         $dbh->selectrow_array(qq~SELECT dump FROM log_dumps WHERE req_id = ?~, {}, $rid);
@@ -3107,6 +3135,7 @@ sub rank_table
     {
         $max_req_id = $_->{id} if $_->{id} > $max_req_id;
         $_->{time_elapsed} ||= 0;
+        next if $_->{state} == $cats::st_ignore_submit;
         my $t = $teams->{$_->{account_id}} || $select_teams->($_->{account_id});
         my $p = $t->{problems}->{$_->{problem_id}};
         if ($show_points && !defined $_->{points})
@@ -3244,14 +3273,15 @@ sub rank_table_frame
         clist => $contest_list, points => $show_points
     );
     $t->param(href_rank_table_content => url_f('rank_table_content', @params));
+    my $submenu =
+        [ { href_item => url_f('rank_table_content', @params, printable => 1), item_name => res_str(552) } ];
     if ($is_jury)
     {
-        $t->param(submenu => [
-            { href_item => url_f('rank_table_content', @params, printable => 1), item_name => res_str(552) },
+        push @$submenu,
             { href_item => url_f('rank_table', @params, cache => 1 - ($cache || 0)), item_name => res_str(553) },
-            { href_item => url_f('rank_table', @params, points => 1 - ($show_points || 0)), item_name => res_str(554) },
-        ]);
+            { href_item => url_f('rank_table', @params, points => 1 - ($show_points || 0)), item_name => res_str(554) };
     }
+    $t->param(submenu => $submenu);
 }
 
 
@@ -3991,7 +4021,8 @@ sub generate_menu
     {
         push @left_menu, (
             { item => res_str(548), href => url_f('compilers') },
-            { item => res_str(545), href => url_f('cmp') } );
+            #{ item => res_str(545), href => url_f('cmp') } 
+        );
     }
     else
     {
@@ -4003,7 +4034,7 @@ sub generate_menu
     unless ($contest->is_practice)
     {
         push @left_menu, (
-            { item => res_str(529), href => url_f('rank_table', $is_jury ? () : (cache => 1, hide_virtual => 1)) }
+            { item => res_str(529), href => url_f('rank_table', $is_jury ? () : (cache => 1, hide_virtual => !$is_virtual)) }
         );
     }
 
@@ -4036,6 +4067,7 @@ sub interface_functions ()
         console_content => \&console_content_frame,
         console => \&console_frame,
         problems => \&problems_frame,
+        problem_select_testsets => \&problem_select_testsets,
         users => \&users_frame,
         compilers => \&compilers_frame,
         judges => \&judges_frame,

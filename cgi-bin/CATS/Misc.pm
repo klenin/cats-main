@@ -192,7 +192,7 @@ sub init_listview_params
 
     $page = url_param('page') if (defined url_param('page'));
 
-    if (defined param('filter'))
+    if (defined param('search'))
     {
         $search = param('search');
         $page = 0;
@@ -203,13 +203,13 @@ sub init_listview_params
         $sort = url_param('sort');
         $page = 0;
     }
-    
+
     if (defined url_param('sort_dir'))
     {
-	$sort_dir = url_param('sort_dir');
-	$page = 0;
-    }	
-    
+        $sort_dir = url_param('sort_dir');
+        $page = 0;
+    }
+
     if (defined param('visible'))
     {
         $visible = param('display_rows');
@@ -368,7 +368,7 @@ sub attach_listview
 
     while (my %h = &$fetch_row($c))
     {
-        #warn join ',', keys %h;
+	    last if $row_count > $cats::max_fetch_row_count;
         my $f = 1;
         if ($search)
         {
@@ -403,7 +403,6 @@ sub attach_listview
             $row_count++;
         }
 	
-	    last if $row_count > $cats::max_fetch_row_count;
     }
 
     my $page_count = int($row_count / $visible) + ($row_count % $visible ? 1 : 0) || 1;
@@ -693,7 +692,8 @@ sub state_to_display
         memory_limit_exceeded => $state == $cats::st_memory_limit_exceeded,
         runtime_error =>         $state == $cats::st_runtime_error,
         compilation_error =>     $state == $cats::st_compilation_error,
-        security_violation =>    $state == $cats::st_security_violation
+        security_violation =>    $state == $cats::st_security_violation,
+        ignore_submit =>         $state == $cats::st_ignore_submit,
     );
 }
 

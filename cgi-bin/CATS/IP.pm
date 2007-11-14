@@ -8,10 +8,13 @@ sub filter_ip
     defined $ip or return;
     for ($ip)
     {
-        s/195.209.254.222/pin/;
-        s/195.209.254.4/www/;
-        s/195.209.254.3/proxy/;
+        #s/195.209.254.222/pin/;
+        #s/195.209.254.4/www/;
+        #s/195.209.254.3/proxy/;
+        s/77.234.208.5/dvgu/;
+        s/77.234.208.4/proxy/;
         s/192.168.1.5/nato/;
+        s/10.0.0.5/nato/;
     }
     return $ip;
 }

@@ -60,17 +60,18 @@ function confirm_registration(href, name)
 </table>
 <br>
 <TMPL_IF authorized>
-<input type="submit" value="участвовать" name="online_registration" class="button" /> 
+<TMPL_UNLESS is_registered><input type="submit" value="участвовать" name="online_registration" class="button" />
+</TMPL_UNLESS>
 <input type="button" value="участвовать виртуально" class=button onClick="confirm_registration();" />
 <input type="hidden" name="virtual_registration" value="0" />
 </TMPL_IF>
 <input type="submit" name="summary_rank" value="суммарная таблица" class="button" />
 </form>
+<TMPL_IF authorized><TMPL_UNLESS is_registered>
 <ul>
-<TMPL_IF authorized>
 <li><b>Виртуальное участие</b> позволяет решать задачи со сдвигом по времени, даже после окончания тура
 <li>Команда может участвовать виртуально, если она не принимала участие online
 <li>Команда может регистрироваться виртуально несколько раз
-</TMPL_IF>
 </ul>
+</TMPL_UNLESS></TMPL_IF>
 <TMPL_INCLUDE 'includes/menu_end.inc'>

@@ -1,0 +1,18 @@
+<TMPL_INCLUDE 'includes/menu_begin.inc'>
+<TMPL_VAR message ESCAPE=HTML>
+<h3><TMPL_VAR problem_title></h3>
+Выберите тестовые наборы:
+<form action="<TMPL_VAR href_problem_select_testsets>" method="POST">
+<table>
+<TMPL_LOOP testsets>
+<tr>
+  <td><input type="checkbox" name="sel" value="<TMPL_VAR id>" <TMPL_IF selected>checked="checked"</TMPL_IF></td>
+  <td><TMPL_VAR name> (<TMPL_VAR tests>)</td>
+</tr>
+</TMPL_LOOP>
+</table>
+<br/>
+<input type="hidden" name="cpid" value="<TMPL_VAR problem_cpid>" />
+<input type="submit" name="save" value="Сохранить" class="button" />
+</form>
+<TMPL_INCLUDE 'includes/menu_end.inc'>

@@ -14,7 +14,7 @@
   <input type="submit" class="button" value="кодировка" />
 </form>
 
-<table border="1">
+<table class="bordered">
 <tr>
   <th>Тест</th>
   <th>Результат</th>
@@ -31,40 +31,39 @@
   </TMPL_IF>
 </tr>
 <TMPL_LOOP run_details>
-<tr
-  <TMPL_IF accepted> class="run_details_OK"</TMPL_IF>
-  <TMPL_IF wrong_answer> class="run_details_WA"</TMPL_IF>
-  <TMPL_IF presentation_error> class="run_details_PE"</TMPL_IF>
-  <TMPL_IF time_limit_exceeded> class="run_details_TL"</TMPL_IF>
-  <TMPL_IF memory_limit_exceeded> class="run_details_ML"</TMPL_IF>
-  <TMPL_IF runtime_error> class="run_details_RE"</TMPL_IF>
->
+<tr <TMPL_IF accepted> class="run_details_OK"</TMPL_IF
+ ><TMPL_IF wrong_answer> class="run_details_WA"</TMPL_IF
+ ><TMPL_IF presentation_error> class="run_details_PE"</TMPL_IF
+ ><TMPL_IF time_limit_exceeded> class="run_details_TL"</TMPL_IF
+ ><TMPL_IF memory_limit_exceeded> class="run_details_ML"</TMPL_IF
+ ><TMPL_IF runtime_error> class="run_details_RE"</TMPL_IF
+ ><TMPL_IF not_processed> class="run_details_NP"</TMPL_IF
+ ><TMPL_IF not_in_testset> class="run_details_NT"</TMPL_IF
+ ><TMPL_IF install_processing> class="run_details_IN"</TMPL_IF
+ ><TMPL_IF now_testing> class="run_details_IN"</TMPL_IF
+>>
   <td><TMPL_VAR test_rank></td>
-  <td>
-  <TMPL_IF not_processed><font color="#008000">Not processed</TMPL_IF>
-  <TMPL_IF install_processing><font color="#a0a000">Installing problem</TMPL_IF>
-  <TMPL_IF unhandled_error>Unhandled error</TMPL_IF>
-  <TMPL_IF testing><font color="#a0a000">Now testing</TMPL_IF>
-  <TMPL_IF accepted>OK</TMPL_IF>
-  <TMPL_IF wrong_answer>WA</TMPL_IF>
-  <TMPL_IF presentation_error>PE</TMPL_IF>
-  <TMPL_IF time_limit_exceeded>Time</TMPL_IF>
-  <TMPL_IF memory_limit_exceeded>Memory</TMPL_IF>
-  <TMPL_IF runtime_error>Runtime</TMPL_IF>
-  <TMPL_IF compilation_error>Compilation error</TMPL_IF>
-  <TMPL_IF security_violation>Security violation</TMPL_IF>
-  </td>
-  <TMPL_IF show_points>
-    <td><TMPL_VAR NAME=points></td>
-  </TMPL_IF>
+  <td><TMPL_IF not_processed>Not processed</TMPL_IF
+ ><TMPL_IF not_in_testset>Not in testset</TMPL_IF
+ ><TMPL_IF install_processing>Installing problem</TMPL_IF
+ ><TMPL_IF unhandled_error>Unhandled error</TMPL_IF
+ ><TMPL_IF testing>Now testing</TMPL_IF
+ ><TMPL_IF accepted>OK</TMPL_IF
+ ><TMPL_IF wrong_answer>WA</TMPL_IF
+ ><TMPL_IF presentation_error>PE</TMPL_IF
+ ><TMPL_IF time_limit_exceeded>Time</TMPL_IF
+ ><TMPL_IF memory_limit_exceeded>Memory</TMPL_IF
+ ><TMPL_IF runtime_error>Runtime</TMPL_IF
+ ><TMPL_IF compilation_error>Compilation error</TMPL_IF
+ ><TMPL_IF security_violation>Security violation</TMPL_IF
+ ></td>
+  <TMPL_IF show_points><td><TMPL_VAR NAME=points></td></TMPL_IF>
   <TMPL_IF show_test_resources>
     <td><TMPL_VAR NAME=time_used></td>
     <td align="right"><TMPL_VAR NAME=memory_used></td>
     <td align="right"><TMPL_VAR NAME=disk_used></td>
   </TMPL_IF>
-  <TMPL_IF show_checker_comment>
-    <td><TMPL_VAR NAME=checker_comment></td>
-  </TMPL_IF>
+  <TMPL_IF show_checker_comment><td><TMPL_VAR NAME=checker_comment></td></TMPL_IF>
 </tr>
 </TMPL_LOOP>
 </table>

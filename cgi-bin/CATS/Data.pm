@@ -3,6 +3,8 @@ use strict;
 use warnings;
 
 use Encode;
+use CGI ();
+
 use CATS::DB;
 use CATS::Misc qw(:all);
 
@@ -67,8 +69,11 @@ sub enforce_request_state
             WHERE id = ?~, {},
         $p{failed_test}, $p{state}, $p{request_id}
     ) or return;
-    $dbh->do(qq~DELETE FROM log_dumps WHERE req_id = ?~, {}, $p{request_id})
-        or return;
+    if ($p{state} != $cats::st_ignore_submit) # сохраняем лог игнорируемых попыток
+    {
+        $dbh->do(qq~DELETE FROM log_dumps WHERE req_id = ?~, {}, $p{request_id})
+            or return;
+    }
     $dbh->commit;
     return 1;
 }
@@ -101,7 +106,7 @@ sub get_sources_info
 
     my $result = $dbh->selectall_arrayref(qq~
         SELECT
-            S.req_id,$src S.fname AS file_name,
+            S.req_id, $src S.fname AS file_name,
             R.account_id, R.contest_id, R.problem_id, R.judge_id,
             R.state, R.failed_test,
             CATS_DATE(R.submit_time) AS submit_time,
@@ -110,13 +115,15 @@ sub get_sources_info
             DE.description AS de_name,
             A.team_name,
             P.title AS problem_name,
-            C.title AS contest_name
+            C.title AS contest_name,
+            CP.testsets
         FROM sources S
             INNER JOIN reqs R ON R.id = S.req_id
             INNER JOIN default_de DE ON DE.id = S.de_id
             INNER JOIN accounts A ON A.id = R.account_id
             INNER JOIN problems P ON P.id = R.problem_id
             INNER JOIN contests C ON C.id = R.contest_id
+            INNER JOIN contest_problems CP ON CP.contest_id = C.id AND CP.problem_id = P.id
         WHERE req_id IN ($req_id_list)~, { Slice => {} }
     ) or return;
     
@@ -127,9 +134,31 @@ sub get_sources_info
             for qw(test_time result_time);
         #$r->{src} =~ s/</&lt;/;
         $r = { %$r, state_to_display($r->{state}) };
+        get_nearby_attempt($r, 'prev', '<', 'DESC', 1);
+        get_nearby_attempt($r, 'next', '>', 'ASC', 0);
     }
 
     return ref $p{request_id} ? $result : $result->[0];
+}
+
+sub get_nearby_attempt
+{
+    my ($si, $prevnext, $cmp, $ord, $diff) = @_;
+    my $na = $dbh->selectrow_hashref(qq~
+        SELECT FIRST 1 id, CATS_DATE(submit_time) AS submit_time FROM reqs
+          WHERE account_id = ? AND problem_id = ? AND id $cmp ?
+          ORDER BY id $ord~, { Slice => {} },
+        $si->{account_id}, $si->{problem_id}, $si->{req_id}
+    ) or return;
+    for ($na->{submit_time})
+    {
+        s/\s*$//;
+        # Если дата совпадает с текущей попыткой, выводим только время
+        my ($n_date, $n_time) = /^(\d+\-\d+\-\d+\s+)(.*)$/;
+        $si->{"${prevnext}_attempt_time"} = $si->{submit_time} =~ /^$n_date/ ? $n_time : $_;
+    }
+    $si->{"href_${prevnext}_attempt"} = url_f(CGI::url_param('f') || 'run_log', rid => $na->{id});
+    $si->{href_diff_runs} = url_f('diff_runs', r1 => $na->{id}, r2 => $si->{req_id}) if $diff;
 }
 
 

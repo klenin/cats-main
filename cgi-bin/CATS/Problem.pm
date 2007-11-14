@@ -17,7 +17,7 @@ use CATS::DevEnv;
 use fields qw(
     contest_id id import_log debug problem checker
     statement constraints input_format output_format explanation
-    tests samples objects keywords
+    tests testsets samples objects keywords
     imports solutions generators modules pictures
     current_tests current_sample gen_group
     stml zip zip_archive old_title replace tag_stack has_checker de_list
@@ -37,7 +37,7 @@ sub clear
 {
     my CATS::Problem $self = shift;
     undef $self->{$_} for (keys %CATS::Problem::FIELDS);
-    $self->{$_} = {} for qw(tests samples objects keywords);
+    $self->{$_} = {} for qw(tests testsets samples objects keywords);
     $self->{$_} = [] for qw(imports solutions generators modules pictures);
     $self->{gen_group} = 0;
 }
@@ -266,6 +266,7 @@ sub tag_handlers()
     SampleIn => { s => \&start_tag_SampleIn, e => \&end_stml, in => ['Sample'] },
     SampleOut => { s => \&start_tag_SampleOut, e => \&end_stml, in => ['Sample'] },
     Keyword => { s => \&start_tag_Keyword, r => ['code'] },
+    Testset => { s=> \&start_tag_Testset, r => ['name', 'tests'] },
 }}
 
 
@@ -492,6 +493,17 @@ sub start_tag_Keyword
 }
 
 
+sub start_tag_Testset
+{
+    (my CATS::Problem $self, my $atts) = @_;
+    my $n = $atts->{name};
+    $self->{testsets}->{$n} and $self->error("Duplicate testset '$n'");
+    $self->parse_test_rank($atts->{tests});
+    $self->{testsets}->{$n} = { id => new_id, name => $n, tests => $atts->{tests} };
+    $self->note("Testset $n added");
+}
+
+
 sub module_types()
 {{
     'checker' => $cats::checker_module,
@@ -558,7 +570,7 @@ sub read_member_named
 sub delete_child_records($)
 {
     my ($pid) = @_;
-    for (qw(pictures samples tests problem_sources problem_sources_import problem_keywords))
+    for (qw(pictures samples tests testsets problem_sources problem_sources_import problem_keywords))
     {
         $dbh->do(qq~
             DELETE FROM $_ WHERE problem_id = ?~, undef, $pid);
@@ -719,6 +731,13 @@ sub insert_problem_content
         $dbh->do(q~
             INSERT INTO problem_sources_import (problem_id, guid) VALUES (?, ?)~, undef,
             $self->{id}, $_->{guid});
+    }
+
+    for (values %{$self->{testsets}})
+    {
+        $dbh->do(q~
+            INSERT INTO testsets (id, problem_id, name, tests) VALUES (?, ?, ?, ?)~, undef,
+            $_->{id}, $self->{id}, $_->{name}, $_->{tests});
     }
 
     my $c = $dbh->prepare(qq~

@@ -41,7 +41,6 @@ select, option {
     background-color: #ffffff;
     border: 1px solid #4040ff;
     height: 22px;
-    
 }
 
 .down { background-repeat: no-repeat; }
@@ -98,6 +97,10 @@ tr.run_details_OK { background-color: #A0FFA0 }
 tr.run_details_WA { background-color: #FFA0A0 }
 tr.run_details_PE { background-color: #FFFFA0 }
 tr.run_details_RE { background-color: #FFA0A0 }
+
+tr.run_details_IN { color: #A0A000 }
+tr.run_details_NP { color: #008000 }
+tr.run_details_NT { color: #000080; font-style: italic; }
 
 .small { font-size: 10pt }
 

@@ -7,35 +7,29 @@
 
 <form method=post enctype='multipart/form-data'>
 
-<input type=submit name='set_state' value='результат тестирования:' class=button>
-<select name='state'>
-<option>
-<option value='not_processed'>Перетестировать
-<option value='accepted'>Solution accepted
-<option value='wrong_answer'>Wrong answer
-<option value='presentation_error'>Presentation error
-<option value='time_limit_exceeded'>Time limit exceeded
-<option value='memory_limit_exceeded'>Memory limit exceeded
-<option value='runtime_error'>Runtime error
-<option value='compilation_error'>Compilation error
-<option value='security_violation'>Security violation
+<input type="submit" name="set_state" value="результат тестирования:" class="button">
+<select name="state">
+<option />
+<option value="not_processed">Перетестировать</option>
+<option value="accepted">Solution accepted</option>
+<option value="wrong_answer">Wrong answer</option>
+<option value="presentation_error">Presentation error</option>
+<option value="time_limit_exceeded">Time limit exceeded</option>
+<option value="memory_limit_exceeded">Memory limit exceeded</option>
+<option value="runtime_error">Runtime error</option>
+<option value="compilation_error">Compilation error</option>
+<option value="security_violation">Security violation</option>
+<option value="ignore_submit">Ignore submit</option>
 </select> 
 on test #
-<select name='failed_test'>
-<option>
-<TMPL_LOOP tests>
-<option value='<TMPL_VAR test_index>'><TMPL_VAR test_index>
-</TMPL_LOOP>
+<select name="failed_test">
+<option />
+<TMPL_LOOP tests><option value="<TMPL_VAR test_index>"><TMPL_VAR test_index></TMPL_LOOP>
 </select>
 
 </form>
 
 <TMPL_IF message><i><TMPL_VAR message ESCAPE=HTML></i><br></TMPL_IF>
-
-<TMPL_IF href_previous_attempt>
-<a href="<TMPL_VAR href_previous_attempt>">Предыдущая попытка (<TMPL_VAR previous_attempt_time>)</a>
-[<a href="<TMPL_VAR href_diff_runs>">diff</a>]<br/>
-</TMPL_IF>
 
 <TMPL_IF judge_log_dump_avalaible>
 <h3>Дамп лога судьи</h3>

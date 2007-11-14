@@ -102,6 +102,7 @@ CREATE TABLE problems (
     upload_date     TIMESTAMP,
     std_checker     VARCHAR(60),
     statement       BLOB,
+    explanation     BLOB,
     pconstraints    BLOB,
     input_format    BLOB,
     output_format   BLOB,
@@ -118,7 +119,7 @@ CREATE TABLE contest_problems (
     contest_id      INTEGER NOT NULL REFERENCES contests(id) ON DELETE CASCADE,   
     code            CHAR,
     status          INTEGER DEFAULT 0 CHECK (status IN (0, 1, 2, 3)),
-    testset_name    VARCHAR(200),
+    testsets        VARCHAR(200),
     UNIQUE (problem_id, contest_id)
 );
 
