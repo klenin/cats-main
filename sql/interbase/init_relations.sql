@@ -84,6 +84,7 @@ CREATE TABLE contest_accounts (
     is_hidden   INTEGER DEFAULT 0 CHECK (is_hidden IN (0, 1)),
     is_ooc      INTEGER DEFAULT 0 CHECK (is_ooc IN (0, 1)),
     is_remote   INTEGER DEFAULT 0 CHECK (is_remote IN (0, 1)),
+    tag         VARCHAR(200),
     UNIQUE(contest_id, account_id)
 );
 

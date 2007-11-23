@@ -14,7 +14,7 @@ var a = new Array();
 <TMPL_LOOP problems>
 a["<TMPL_VAR problem_id>"] = new Array(
   "<TMPL_VAR problem_name ESCAPE=HTML>", "<TMPL_VAR href_delete>", "<TMPL_VAR href_replace>",
-  "<TMPL_VAR href_change_status>");
+  "<TMPL_VAR href_change_status>", "<TMPL_VAR href_change_code>");
 </TMPL_LOOP>
 
 function d() {
@@ -38,6 +38,11 @@ function r() {
 function chg_status(st_sel, pid)
 {
     document.location = a[pid][3] + '&status=' + st_sel.value;
+}
+
+function chg_code(st_sel, pid)
+{
+    document.location = a[pid][4] + '&code=' + st_sel.value;
 }
 
 </script>
@@ -69,10 +74,15 @@ function chg_status(st_sel, pid)
 <TMPL_LOOP problems>
 <tr bgcolor=<TMPL_IF odd>"#f0f0f0"<TMPL_ELSE>"#ffffff"</TMPL_IF>>
 <TMPL_IF is_team><td width="1%">
-    <input type="radio" name="problem_id" value="<TMPL_VAR problem_id>"<TMPL_IF disabled> disabled="disabled"</TMPL_IF> />
+  <input type="radio" name="problem_id" value="<TMPL_VAR problem_id>"<TMPL_IF disabled> disabled="disabled"</TMPL_IF> />
 </td></TMPL_IF>
 <td>
-    <a href="<TMPL_VAR href_view_problem>" target="_blank"><TMPL_VAR problem_name ESCAPE=HTML></a>
+    <TMPL_IF editable><TMPL_IF code
+      ><select onchange="chg_code(this, <TMPL_VAR problem_id>)"><TMPL_LOOP code_array
+        ><option value="<TMPL_VAR code>"<TMPL_IF selected> selected="selected"</TMPL_IF>><TMPL_VAR code></option></TMPL_LOOP
+    ></select> </TMPL_IF><a href="<TMPL_VAR href_view_problem>" target="_blank">
+    <TMPL_ELSE
+      ><a href="<TMPL_VAR href_view_problem>" target="_blank"><TMPL_IF code><TMPL_VAR code> - </TMPL_IF></TMPL_IF><TMPL_VAR problem_name ESCAPE=HTML></a>
     <TMPL_IF href_explanation>&nbsp;[<a href="<TMPL_VAR href_explanation>" target="_blank">разбор</a>]</TMPL_IF>
     <TMPL_IF show_packages>&nbsp;[<a href="<TMPL_VAR href_download>">пакет</a>]</TMPL_IF>
     <TMPL_IF href_compare_tests>&nbsp;[<a href="<TMPL_VAR href_compare_tests>">т</a>]</TMPL_IF>

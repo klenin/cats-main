@@ -949,6 +949,19 @@ sub problems_change_status ()
     CATS::StaticPages::invalidate_problem_text(cid => $cid);
 }
 
+sub problems_change_code ()
+{
+    my $cpid = param('change_code')
+      or return msg(54);
+    my $new_code = param('code') || '';
+    $new_code =~ /^[A-Z]$/ or return;
+    $dbh->do(qq~
+        UPDATE contest_problems SET code = ?
+            WHERE contest_id = ? AND id = ?~, {},
+        $new_code, $cid, $cpid);
+    $dbh->commit;
+    CATS::StaticPages::invalidate_problem_text(cid => $cid);
+}
 
 sub show_unused_problem_codes ()
 {
@@ -1308,10 +1321,10 @@ sub problems_submit
     my $rid = new_id;
 
     $dbh->do(qq~
-        INSERT INTO reqs(
+        INSERT INTO reqs (
             id, account_id, problem_id, contest_id, 
             submit_time, test_time, result_time, state, received
-        ) VALUES(
+        ) VALUES (
             ?,?,?,?,CATS_SYSDATE(),CATS_SYSDATE(),CATS_SYSDATE(),?,?)~,
         {},
         $rid, $submit_uid, $pid, $cid, $cats::st_not_processed, 0);
@@ -1390,7 +1403,7 @@ sub problems_mass_retest()
         or return msg(12);
     my $all_runs = param('all_runs');
     my $runs = $dbh->selectall_arrayref(q~
-        SELECT id, account_id FROM reqs
+        SELECT id, account_id, state FROM reqs
         WHERE contest_id = ? AND problem_id = ? ORDER BY id DESC~,
         { Slice => {} },
         $cid, $retest_pid
@@ -1401,8 +1414,9 @@ sub problems_mass_retest()
     {
         next if !$all_runs && $accounts{$_->{account_id}};
         $accounts{$_->{account_id}} = 1;
-        enforce_request_state(request_id => $_->{id}, state => $cats::st_not_processed)
-            and ++$count;
+        $_->{state} != $cats::ignore_submit &&
+            enforce_request_state(request_id => $_->{id}, state => $cats::st_not_processed)
+                and ++$count;
     }
     $dbh->commit;
     return msg(128, $count);
@@ -1427,6 +1441,7 @@ sub problems_frame_jury_action
     defined param('link_save') and return problems_link_save;
     defined param('new_save') and return problems_new_save;
     defined param('change_status') and return problems_change_status;
+    defined param('change_code') and return problems_change_code;
     defined param('replace') and return problems_replace;
     defined param('std_solution') and return problems_submit_std_solution;
     defined param('mass_retest') and return problems_mass_retest;
@@ -1522,7 +1537,7 @@ sub problems_frame
                     SELECT is_remote FROM contest_accounts WHERE contest_id = ? AND account_id = ?~,
                     {}, $cid, $uid);
             }
-            if(!defined $is_remote || $is_remote)
+            if (!defined $is_remote || $is_remote)
             {
                 init_template('main_problems_inaccessible.htm');
                 return msg(129);
@@ -1545,31 +1560,31 @@ sub problems_frame
     }
 
     my @cols = (
-        { caption => res_str(602), order_by => '3', width => '30%' },
+        { caption => res_str(602), order_by => '3,4', width => '30%' },
         ($is_jury ?
         (
-            { caption => res_str(632), order_by => '10', width => '10%' }, # статус
-            { caption => res_str(605), order_by => '14', width => '10%' }, # набор тестов
-            { caption => res_str(635), order_by => '12', width => '5%' }, # кто изменил
-            { caption => res_str(634), order_by => '11', width => '10%' }, # дата изменения
+            { caption => res_str(632), order_by => '11', width => '10%' }, # статус
+            { caption => res_str(605), order_by => '15', width => '10%' }, # набор тестов
+            { caption => res_str(635), order_by => '13', width => '5%' }, # кто изменил
+            { caption => res_str(634), order_by => '12', width => '10%' }, # дата изменения
         )
         : ()
         ),
         ($contest->is_practice ?
-        { caption => res_str(603), order_by => '4', width => '20%' } : ()
+        { caption => res_str(603), order_by => '5', width => '20%' } : ()
         ),
-        { caption => res_str(604), order_by => '5', width => '10%' },
+        { caption => res_str(604), order_by => '6', width => '10%' },
     );
     define_columns(url_f('problems'), 0, 0, [ @cols ]);
 
     my $reqs_count_sql = 'SELECT COUNT(*) FROM reqs D WHERE D.problem_id = P.id AND D.state =';
     my $account_condition = $contest->is_practice ? '' : ' AND D.account_id = ?';
-    my $select_code = $contest->is_practice ? '' : q~CP.code || ' - ' || ~;
+    my $select_code = $contest->is_practice ? 'NULL' : 'CP.code';
     my $hidden_problems = $is_jury ? '' : " AND (CP.status IS NULL OR CP.status < $cats::problem_st_hidden)";
     my $sth = $dbh->prepare(qq~
         SELECT
             CP.id AS cpid, P.id AS pid,
-            ${select_code}P.title AS problem_name, OC.title AS contest_name,
+            ${select_code} AS code, P.title AS problem_name, OC.title AS contest_name,
             ($reqs_count_sql $cats::st_accepted$account_condition) AS accepted_count,
             ($reqs_count_sql $cats::st_wrong_answer$account_condition) AS wrong_answer_count,
             ($reqs_count_sql $cats::st_time_limit_exceeded$account_condition) AS time_limit_count,
@@ -1603,10 +1618,7 @@ sub problems_frame
         {
             push @status_list, { id => $_, name => $n->{$_} }; 
         }
-        $t->param(
-            status_list => \@status_list,
-            editable => 1
-        );
+        $t->param(status_list => \@status_list, editable => 1);
     }
 
     my $fetch_record = sub($)
@@ -1617,6 +1629,7 @@ sub problems_frame
         return (
             href_delete   => url_f('problems', 'delete' => $c->{cpid}),
             href_change_status => url_f('problems', 'change_status' => $c->{cpid}),
+            href_change_code => url_f('problems', 'change_code' => $c->{cpid}),
             href_replace  => url_f('problems', replace => $c->{cpid}),
             href_download => url_f('problems', download => $c->{pid}),
             href_compare_tests => $is_jury && url_f('compare_tests', pid => $c->{pid}),
@@ -1632,6 +1645,7 @@ sub problems_frame
             href_explanation => $show_packages && $c->{has_explanation} ?
                 url_f('problem_text', cpid => $c->{cpid}, explain => 1) : '',
             problem_id => $c->{pid},
+            code => $c->{code},
             problem_name => $c->{problem_name},
             is_linked => $c->{is_linked},
             contest_name => $c->{contest_name},
@@ -1645,6 +1659,7 @@ sub problems_frame
             status_list => [
                 map {{ id => $_, name => $psn->{$_}, selected => $c->{status} == $_ }} sort keys %$psn
             ],
+            code_array => [ map {{code => $_, selected => ($c->{code} || '') eq $_ }} 'A' .. 'Z' ],
         );
     };
             
@@ -1915,6 +1930,24 @@ sub users_send_message
 }
 
 
+sub users_set_tag
+{
+    my %p = @_;
+    ($p{'tag'} || '') ne '' or return;
+    my $s = $dbh->prepare(qq~
+        UPDATE contest_accounts SET tag = ? WHERE id = ?~);
+    for (split ':', $p{user_set})
+    {
+        param_on("msg$_") or next;
+        $s->bind_param(1, $p{tag}, { ora_type => 113 });
+        $s->bind_param(2, $_);
+        $s->execute;
+    }
+    $s->finish;
+    $dbh->commit;
+}
+
+
 sub users_send_broadcast
 {
     my %p = @_;
@@ -1950,41 +1983,33 @@ sub users_register
 sub users_frame 
 {   
     # hack для туфанова и олейникова
-    #$is_jury ||= $is_root; 
-    if (defined url_param('delete') && $is_jury)
+    #$is_jury ||= $is_root;
+    if ($is_jury)
     {
-        my $caid = url_param('delete');
-        my ($aid, $srole) = $dbh->selectrow_array(qq~
-            SELECT A.id, A.srole FROM accounts A, contest_accounts CA
-                WHERE A.id=CA.account_id AND CA.id=?~, {},
-            $caid);
-            
-        if ($srole)
+        if (defined url_param('delete'))
         {
-            $dbh->do(qq~DELETE FROM contest_accounts WHERE id=?~, {}, $caid);
-            $dbh->commit;       
+            my $caid = url_param('delete');
+            my ($aid, $srole) = $dbh->selectrow_array(qq~
+                SELECT A.id, A.srole FROM accounts A, contest_accounts CA
+                    WHERE A.id=CA.account_id AND CA.id=?~, {},
+                $caid);
 
-            unless ($dbh->selectrow_array(qq~
-                SELECT COUNT(*) FROM contest_accounts WHERE account_id=?~, {}, $aid))
+            if ($srole)
             {
-                $dbh->do(qq~DELETE FROM accounts WHERE id=?~, {}, $aid);
+                $dbh->do(qq~DELETE FROM contest_accounts WHERE id=?~, {}, $caid);
                 $dbh->commit;       
+
+                unless ($dbh->selectrow_array(qq~
+                    SELECT COUNT(*) FROM contest_accounts WHERE account_id=?~, {}, $aid))
+                {
+                    $dbh->do(qq~DELETE FROM accounts WHERE id=?~, {}, $aid);
+                    $dbh->commit;       
+                }
             }
         }
+        return users_new_frame if defined url_param('new');
+        return users_edit_frame if defined url_param('edit');
     }
-
-    if (defined url_param('new') && $is_jury)
-    {        
-        users_new_frame;
-        return;
-    }
-
-    if (defined url_param('edit') && $is_jury)
-    {        
-        users_edit_frame;
-        return;
-    }
-
 
     init_listview_template( "users$cid" . ($uid || ''), 'users', 'main_users.htm' );      
 
@@ -2025,6 +2050,11 @@ sub users_frame
         $dbh->commit;
     }
 
+    if (defined param('set_tag') && $is_jury)
+    {
+        users_set_tag(user_set => param('user_set'), tag => param('tag_to_set'));
+    }
+    
     if (defined param('register_new') && $is_jury)
     {
         users_register(param('login_to_register'));
@@ -2050,7 +2080,8 @@ sub users_frame
     }
 
     push @cols,
-      ( { caption => res_str(608), order_by => '5', width => '20%' } );
+        { caption => res_str(608), order_by => '5', width => '20%' },
+        { caption => res_str(629), order_by => '12', width => '5%' };
 
     if ($is_jury)
     {
@@ -2064,7 +2095,7 @@ sub users_frame
 
     push @cols,
       ( { caption => res_str(607), order_by => '3', width => '10%' },
-        { caption => res_str(609), order_by => '12', width => '10%' } );
+        { caption => res_str(609), order_by => '13', width => '10%' } );
 
 
     push @cols,
@@ -2074,7 +2105,7 @@ sub users_frame
 
     my $fields =
         'A.id, CA.id, A.country, A.login, A.team_name, ' . 
-        'CA.is_jury, CA.is_ooc, CA.is_remote, CA.is_hidden, CA.is_virtual, A.motto';
+        'CA.is_jury, CA.is_ooc, CA.is_remote, CA.is_hidden, CA.is_virtual, A.motto, CA.tag';
     my $sql = qq~
         SELECT $fields, COUNT(DISTINCT R.problem_id)
         FROM accounts A
@@ -2101,7 +2132,7 @@ sub users_frame
     {            
         my (
             $aid, $caid, $country_abb, $login, $team_name, $jury,
-            $ooc, $remote, $hidden, $virtual, $motto, $accepted
+            $ooc, $remote, $hidden, $virtual, $motto, $tag, $accepted
         ) = $_[0]->fetchrow_array
             or return ();
         my ($country, $flag) = get_flag($country_abb);
@@ -2114,6 +2145,7 @@ sub users_frame
             editable => $is_jury,
             messages => $is_jury,
             team_name => $team_name,
+            tag => $tag,
             country => $country,
             flag => $flag,
             accepted => $accepted,
@@ -2740,6 +2772,7 @@ sub run_details_frame
         SELECT $rd_fields FROM req_details WHERE req_id = ? ORDER BY test_rank~);
     $c->execute($rid);
     my $last_test = 0;
+    my $total_points = 0;
     
     while (my $row = $c->fetchrow_hashref())
     {
@@ -2755,16 +2788,15 @@ sub run_details_frame
         
         my $prev_test = $last_test;
         my $accepted = $row->{result} == $cats::st_accepted;
-        
+        my $p = $accepted ? $points->[$row->{test_rank} - 1] : 0;
         $run_details{$last_test = $row->{test_rank}} =
         {
             state_to_display($row->{result}),
             map({ $_ => $contest->{$_} }
                 qw(show_test_resources show_checker_comment)),
-            %$row,
-            show_points => $show_points,
-            points => ($accepted ? $points->[$row->{test_rank} - 1] : 0),
+            %$row, show_points => $show_points, points => $p,
         };
+        $total_points += ($p || 0);
         # Тесты запускаются в случайном порядке.
         # Если участник просмотрит таблицу результатов в процессе тестирования решения,
         # он может увидеть результат 'OK' для теста с номером, бОльшим, чем первый
@@ -2781,7 +2813,9 @@ sub run_details_frame
     }
     my %testset;
     @testset{CATS::Testset::get_testset($si->{contest_id}, $si->{problem_id})} = undef;
-    $t->param(run_details => [
+    $t->param(
+        total_points => $total_points,
+        run_details => [
         map {
             exists $run_details{$_} ? $run_details{$_} :
             $contest->{show_all_tests} ?
@@ -3040,7 +3074,7 @@ sub get_contest_list_param
 sub rank_table
 {
     my $template_name = shift;
-    init_template('main_rank_table_content.htm');
+    init_template(param('js') ? 'main_rank_table_content_js.htm' : 'main_rank_table_content.htm');
     $t->param(printable => url_param('printable'));
 
     my $hide_ooc = url_param('hide_ooc') || '0';
@@ -3089,11 +3123,11 @@ sub rank_table
             SELECT
                 A.team_name, A.motto, A.country,
                 MAX(CA.is_virtual) AS is_virtual, MAX(CA.is_ooc) AS is_ooc, MAX(CA.is_remote) AS is_remote,
-                CA.account_id
+                CA.account_id, CA.tag
             FROM accounts A, contest_accounts CA
             WHERE CA.contest_id IN ($contest_list) AND A.id = CA.account_id AND CA.is_hidden = 0
                 $virtual_cond $ooc_cond $acc_cond
-            GROUP BY CA.account_id, A.team_name, A.motto, A.country~, 'account_id', { Slice => {} },
+            GROUP BY CA.account_id, CA.tag, A.team_name, A.motto, A.country~, 'account_id', { Slice => {} },
             ($account_id || ())
         );
 
@@ -3174,6 +3208,13 @@ sub rank_table
         Storable::lock_store({ t => $teams, p => $problems, r => $max_req_id }, $cache_file);
     }
 
+    my @rank = values %$teams;
+    if (my $f = param('filter'))
+    {
+        @rank = grep index(($_->{tag} || '') . $_->{team_name}, $f) >= 0, @rank;
+        # TODO: поправить total_points
+    }
+
     my $sort_criteria = $show_points ?
         sub {
             $b->{total_points} <=> $a->{total_points} ||
@@ -3184,7 +3225,7 @@ sub rank_table
             $a->{total_time} <=> $b->{total_time} ||
             $b->{total_runs} <=> $a->{total_runs}
         };
-    my @rank = sort $sort_criteria values %$teams;
+    @rank = sort $sort_criteria @rank;
 
     my ($row_num, $same_place_count, $row_color) = (1, 0, 0);
     my %prev = ('time' => 1000000, solved => -1, points => -1);
@@ -3227,7 +3268,6 @@ sub rank_table
         $team->{show_points} = $show_points;
         $team->{href_console} = url_f('console', uf => $team->{account_id});
     }
-
     $t->param(
         problem_colunm_width => (
             @p_id <= 6 ? 6 :
@@ -3270,7 +3310,7 @@ sub rank_table_frame
 
     my @params = (
         hide_ooc => $hide_ooc, hide_virtual => $hide_virtual, cache => $cache,
-        clist => $contest_list, points => $show_points
+        clist => $contest_list, points => $show_points, filter => (url_param('filter') || undef)
     );
     $t->param(href_rank_table_content => url_f('rank_table_content', @params));
     my $submenu =

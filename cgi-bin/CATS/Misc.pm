@@ -194,7 +194,7 @@ sub init_listview_params
 
     if (defined param('search'))
     {
-        $search = param('search');
+        $search = Encode::decode_utf8(param('search'));
         $page = 0;
     }
 
@@ -471,7 +471,7 @@ sub generate_output
     if ($listview_name ne '')
     {
         my @values = map { $_ || '' }
-           ($sort, encode_base64($search), $page, $visible, $sort_dir, $additional);
+           ($sort, encode_base64(Encode::encode_utf8($search)), $page, $visible, $sort_dir, $additional);
         $cookie = CGI::cookie(
             -name => $listview_name, -value => [@values], -expires => '+1h');
     }

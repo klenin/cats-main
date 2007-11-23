@@ -6,6 +6,7 @@
   <li>таблица результатов: <pre>http://imcs.dvgu.ru/cats/main.pl?f=rank_table;cid=код_турнира</pre></li>
   <li>официальная таблица результатов: <pre>http://imcs.dvgu.ru/cats/main.pl?f=rank_table;cid=код_турнира;hide_ooc=1</pre></li>
   <li>список задач: <pre>http://imcs.dvgu.ru/cats/main.pl?f=problems;cid=код_турнира</pre></li>
+  <li>список турниров с фильтрацией: <pre>http://imcs.dvgu.ru/cats/main.pl?f=contests;search=фильтр</pre></li>
 </ul>
 Кроме того, гарантируется неизменность существующих кодов турниров. Все остальные глубокие ссылки могут, потенциально,
 перестать функционировать в будущих версиях системы, поэтому указывать их на статических страницах не рекомендуется.

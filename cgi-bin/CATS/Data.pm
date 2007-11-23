@@ -157,7 +157,21 @@ sub get_nearby_attempt
         my ($n_date, $n_time) = /^(\d+\-\d+\-\d+\s+)(.*)$/;
         $si->{"${prevnext}_attempt_time"} = $si->{submit_time} =~ /^$n_date/ ? $n_time : $_;
     }
-    $si->{"href_${prevnext}_attempt"} = url_f(CGI::url_param('f') || 'run_log', rid => $na->{id});
+    my $f = CGI::url_param('f') || 'run_log';
+    my @p;
+    if ($f eq 'diff_runs')
+    {
+        for (1..2)
+        {
+            my $r = CGI::url_param("r$_") || 0;
+            push @p, "r$_" => ($r == $si->{req_id} ? $na->{id} : $r);
+        }
+    }
+    else
+    {
+        @p = (rid => $na->{id});
+    }
+    $si->{"href_${prevnext}_attempt"} = url_f($f, @p);
     $si->{href_diff_runs} = url_f('diff_runs', r1 => $na->{id}, r2 => $si->{req_id}) if $diff;
 }
 

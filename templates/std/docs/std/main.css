@@ -92,6 +92,7 @@ table.sample td { vertical-align: top; }
 
 th { font-size: 11pt; font-weight: bold; color:#000000; }
 td { font-size: 11pt }
+td.ts { font-size: 10pt; font-style: italic; }
 
 tr.run_details_OK { background-color: #A0FFA0 }
 tr.run_details_WA { background-color: #FFA0A0 }

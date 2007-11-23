@@ -24,38 +24,35 @@ function delete_team(href, name)
 <td>
     <a href='javascript:delete_team("<TMPL_VAR href_delete>", "<TMPL_VAR team_name ESCAPE=HTML>");'><img border=0 src="./images/std/waste2.gif"></a> 
     <a href='<TMPL_VAR href_edit>'><img src="./images/std/blank.gif" border=0></a> 
-    <TMPL_VAR login ESCAPE=HTML> 
+    <TMPL_VAR login ESCAPE=HTML>
 </td>
 </TMPL_IF>
-<td><TMPL_IF messages><input type=checkbox name=msg<TMPL_VAR id>></TMPL_IF><TMPL_VAR team_name ESCAPE=HTML>
-</td>
+<td><TMPL_IF messages><input type=checkbox name=msg<TMPL_VAR id>></TMPL_IF><TMPL_VAR team_name ESCAPE=HTML></td>
+<td align="center"><TMPL_VAR tag></td>
 <TMPL_IF editable>
-<td align=center><input type=checkbox name=jury<TMPL_VAR id> <TMPL_IF jury>checked</TMPL_IF>>
-</td>
-<td align=center><input type=checkbox name=ooc<TMPL_VAR id> <TMPL_IF ooc>checked</TMPL_IF>>
-</td>
-<td align=center><input type=checkbox name=remote<TMPL_VAR id> <TMPL_IF remote>checked</TMPL_IF>>
-</td>
-<td align=center><input type=checkbox name=hidden<TMPL_VAR id> <TMPL_IF hidden>checked</TMPL_IF>>
-</td>
+<td align=center><input type=checkbox name=jury<TMPL_VAR id> <TMPL_IF jury>checked</TMPL_IF>></td>
+<td align=center><input type=checkbox name=ooc<TMPL_VAR id> <TMPL_IF ooc>checked</TMPL_IF>></td>
+<td align=center><input type=checkbox name=remote<TMPL_VAR id> <TMPL_IF remote>checked</TMPL_IF>></td>
+<td align=center><input type=checkbox name=hidden<TMPL_VAR id> <TMPL_IF hidden>checked</TMPL_IF></td>
 </TMPL_IF>
 <td align=center>
 <TMPL_IF flag>
     <img src='<TMPL_VAR NAME=flag>' alt="<TMPL_VAR NAME=country ESCAPE=HTML><TMPL_IF motto> - <TMPL_VAR motto ESCAPE=HTML></TMPL_IF>">
 <TMPL_ELSE>
     <TMPL_VAR NAME=country ESCAPE=HTML><TMPL_IF motto> - <TMPL_VAR motto ESCAPE=HTML></TMPL_IF>
-</TMPL_IF>    
+</TMPL_IF>
 </td>
 <td align=center><TMPL_VAR accepted></td>
 <td align=center><TMPL_IF virtual>virtual</TMPL_IF></td>
 </tr>
 </TMPL_LOOP>
 </table>
-<br>
+<br/>
 <input type=hidden name=user_set VALUE='<TMPL_LOOP users><TMPL_VAR id><TMPL_UNLESS "__last__">:</TMPL_UNLESS></TMPL_LOOP>'>
 <TMPL_IF editable>
 <input type="submit" value="Сохранить атрибуты" name="save_attributes" class="button" />
 Логин:&nbsp;<input type="text" name="login_to_register" class="bordered" />&nbsp;<input type="submit" value="Добавить участника" name="register_new" class="button"/>
+Тег:&nbsp;<input type="text" name="tag_to_set" class="bordered" />&nbsp;<input type="submit" value="Установить" name="set_tag" class="button"/>
 <br/><br/>
 </TMPL_IF>
 <TMPL_IF messages>
