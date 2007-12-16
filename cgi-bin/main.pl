@@ -36,7 +36,6 @@ use CATS::Data qw(:all);
 use CATS::IP;
 use CATS::Problem;
 use CATS::RankTable;
-use CATS::Diff;
 use CATS::StaticPages;
 use CATS::TeX::Lite;
 use CATS::Testset;
@@ -1213,8 +1212,13 @@ sub download_problem
     my $fname = "./download/problem_$hash.zip";
     unless($already_hashed && -f $fname)
     {
-        my ($zip) = $dbh->selectrow_array(qq~
-            SELECT zip_archive FROM problems WHERE id = ?~, undef, $pid);
+        my ($zip) = eval { $dbh->selectrow_array(qq~
+            SELECT zip_archive FROM problems WHERE id = ?~, undef, $pid); };
+        if ($@)
+        {
+            print header(), $@;
+            return;
+        }
         CATS::BinaryFile::save(cats_dir() . $fname, $zip);
     }
     print redirect(-uri => $fname);
@@ -1414,7 +1418,7 @@ sub problems_mass_retest()
     {
         next if !$all_runs && $accounts{$_->{account_id}};
         $accounts{$_->{account_id}} = 1;
-        $_->{state} != $cats::ignore_submit &&
+        ($_->{state} || 0) != $cats::ignore_submit &&
             enforce_request_state(request_id => $_->{id}, state => $cats::st_not_processed)
                 and ++$count;
     }
@@ -3696,12 +3700,105 @@ sub envelope_frame
 }
 
 
+sub preprocess_source
+{
+    my $h = $_[0]->{hash} = {};
+    for (split /\n/, $_[0]->{src})
+    {
+        $_ = Encode::encode('WINDOWS-1251', $_);
+        s/\s+//g;
+        s/(\w+)/uc($1)/eg;
+        s/\d+/1/g;
+        $h->{Digest::MD5::md5_hex($_)} = 1;
+    }
+    return;
+}
+
+
+sub similarity_score
+{
+    my ($i, $j) = @_;
+    my $sim = 0;
+    $sim++ for grep exists $j->{$_}, keys %$i;
+    $sim++ for grep exists $i->{$_}, keys %$j;
+    return $sim / (keys(%$i) + keys(%$j));
+}
+
+
+sub similarity_frame
+{
+    init_template('main_similarity.htm');
+    $is_jury && !$contest->is_practice or return;
+    my $virtual = param('virtual') ? 1 : 0;
+    $t->param(virtual => $virtual);
+    my $group = param('group') ? 1 : 0;
+    $t->param(group => $group);
+    my $self_diff = param('self_diff') ? 1 : 0;
+    $t->param(self_diff => $self_diff);
+    my $p = $dbh->selectall_arrayref(q~
+        SELECT P.id, P.title, CP.code
+            FROM problems P INNER JOIN contest_problems CP ON P.id = CP.problem_id
+            WHERE CP.contest_id = ? ORDER BY CP.code~, { Slice => {} }, $cid);
+    $t->param(problems => $p);
+    my ($pid) = param('pid') or return;
+    $_->{selected} = $_->{id} == $pid for @$p;
+    # Делаем join вручную -- так быстрее
+    my $acc = $dbh->selectall_hashref(q~
+        SELECT CA.account_id, CA.is_jury, CA.is_virtual, A.team_name
+            FROM contest_accounts CA INNER JOIN accounts A ON CA.account_id = A.id
+            WHERE contest_id = ?~,
+        'account_id', { Slice => {} }, $cid);
+    my $reqs = $dbh->selectall_arrayref(q~
+        SELECT R.id, R.account_id, S.src
+            FROM reqs R INNER JOIN sources S ON S.req_id = R.id
+            WHERE R.contest_id = ? AND R.problem_id = ?~, { Slice => {} }, $cid, $pid);
+
+    preprocess_source($_) for @$reqs;
+
+    my $threshold = 0.45;
+    my @similar;
+    my $by_account = {};
+    for my $i (@$reqs)
+    {
+        my $ai = $acc->{$i->{account_id}};
+        for my $j (@$reqs)
+        {
+            my $aj = $acc->{$j->{account_id}};
+            next if
+                $i->{id} >= $j->{id} ||
+                (($i->{account_id} == $j->{account_id}) ^ $self_diff) ||
+                $ai->{is_jury} || $aj->{is_jury} ||
+                !$virtual && ($ai->{is_virtual} || $aj->{is_virtual});
+            my $score = similarity_score($i->{hash}, $j->{hash});
+            ($score > $threshold) ^ $self_diff or next;
+            my $pair = {
+                score => sprintf('%.1f%%', $score * 100), s => $score,
+                n1 => $ai->{team_name}, ($self_diff ? () : (n2 => $aj->{team_name} || '?')),
+                href_diff => url_f('diff_runs', r1 => $i->{id}, r2 => $j->{id}),
+            };
+            if ($group)
+            {
+                for ($by_account->{$i->{account_id} . '#' . $j->{account_id}})
+                {
+                    $_ = $pair if !defined $_ || (($_->{s} < $pair->{s}) ^ $self_diff);
+                }
+            }
+            else
+            {
+                push @similar, $pair;
+            }
+        }
+    }
+    @similar = values %$by_account if $group;
+    $t->param(similar => [ sort { ($b->{s} <=> $a->{s}) * ($self_diff ? -1 : 1) } @similar ]);
+}
+
 sub about_frame
 {
     init_template('main_about.htm');
     my $problem_count = $dbh->selectrow_array(qq~
         SELECT COUNT(*) FROM problems P INNER JOIN contests C ON C.id = P.contest_id
-        WHERE C.is_hidden = 0 OR C.is_hidden IS NULL~);
+            WHERE C.is_hidden = 0 OR C.is_hidden IS NULL~);
     $t->param(problem_count => $problem_count);
 }
 
@@ -3709,337 +3806,6 @@ sub about_frame
 sub authors_frame
 {
     init_template('main_authors.htm');
-}
-
-
-sub cmp_output_problem
-{
-    (cookie('limit') eq 'none')?
-        init_template('main_cmp_out.htm'):
-        init_template("main_cmp_limited.htm");
-
-
-    my @submenu = ( { href_item => url_f('cmp', setparams => 1), item_name => res_str(546)} );
-    $t->param(submenu => [ @submenu ] );    
-
-# если не выбрана задача
-    my $problem_id = param("problem_id");
-    if (! defined ($problem_id))
-    {
-        #$t->param(noproblems => 1);
-        return;
-    }
-
-# узнаем название задачи и кладём его в заголовок странички
-    $t->param(problem_title => field_by_id($problem_id, 'PROBLEMS', 'title'));
-    
-# отправляем запрос
-
-# читаем кукисы и в зависимости от них ставим дополнительные условия
-  
-    my $cont = (CGI::cookie('contest') or url_param('cid'));
-    my $query = generate_cmp_query ($cont, cookie ('teams'), cookie ('versions'));
-    my $c = $dbh->prepare ($query.order_by);
-    $c->execute($problem_id);   
-        
-    my ($tname, $tid, $rid) = $c->fetchrow_array;
-        
-# если на запроc ничего не найдено
-    if (! defined($tname))
-    {
-        $t->param(norecords => 1);
-        return;
-    }
-
-# формирование заголовков таблицы
-    my @titles;         #здесь хранить заголовки таблицы
-    my %reqid;
-    while ($tname)
-    {
-        my $stime = field_by_id($rid, 'reqs', 'CATS_DATE(result_time)');
-        $stime =~ s/\s+$//;
-        my %col_title = (id => $tname,
-                         tid => $tid, submit_time => $stime,
-                         rid => $rid, href => url_f('cmp', tid=>$tid, pid=>$problem_id));
-        if (cookie('teams') eq 'all')
-        {
-            my $query = 'SELECT is_ooc, is_remote FROM contest_accounts WHERE account_id=?';
-            (defined (CGI::cookie('contest'))) and $query .= ' AND contest_id=?';
-            my $cc = $dbh->prepare($query);
-                $cc->execute($tid, CGI::cookie('contest'));
-            my ($is_ooc, $is_remote) = $cc->fetchrow_array;
-            $cc->finish;
-            $is_ooc and %col_title = (%col_title, ooc=>1);
-            $is_remote and %col_title = (%col_title, remote=>1);
-        }
-        push @titles, \%col_title;
-        #%reqid = (%reqid, $tid => $rid);
-        ($tname, $tid, $rid) = $c->fetchrow_array;
-    }
-    $c->finish; 
-
-    my %srcfiles;
-    $dbh->{LongReadLen} = 16384;        ### 16Kb BLOB-поле
-    foreach (@titles)
-    {   
-        $c = $dbh->prepare(q~
-            SELECT
-                S.src
-            FROM
-                SOURCES S
-            WHERE
-                S.req_id = ?
-                        ~);
-        $c->execute($$_{rid});
-        my $src = $c->fetchrow_array;
-
-        $srcfiles{$$_{rid}} = CATS::Diff::prepare_src ($src); # вот тут надо что-то менять
-
-        #$reqid{$$_{tid}} = $rid;
-        $c->finish;
-    }
-
-# создаем собственно табличку
-    $t->param(col_titles => \@titles);
-    my @rows = generate_table (\@titles, \%srcfiles, $problem_id, (cookie('limit') eq 'none')? 0:cookie('limit'));
-    $t->param(row => \@rows);
-    1;  
-}
-
-sub cmp_output_team
-{
-    init_template('main_cmp_out.htm');
-
-    my @submenu = ( { href_item => url_f('cmp', setparams => 1), item_name => res_str(546)} );
-    $t->param(submenu => [ @submenu ] );    
-
-    $t->param(team_stat => 1);
-
-# узнаем название задачи и кладём его в заголовок странички
-    $t->param(problem_title => field_by_id(param("pid"), 'PROBLEMS', 'title'));
-# узнаем название команды и кладём его тоже в заголовок странички
-    $t->param(team_name => field_by_id(param("tid"), 'ACCOUNTS', 'team_name'));
-
-    $dbh->{LongReadLen} = 16384;        ### 16Kb BLOB-ОНКЪ
-    my $c = $dbh->prepare(q~
-        SELECT
-            S.src,
-            CATS_DATE(R.submit_time),
-            R.id
-        FROM
-            SOURCES S,
-            REQS R
-        WHERE
-            R.account_id = ? AND
-            R.problem_id = ? AND
-            S.req_id = R.id AND
-            R.state <> ~.$cats::st_compilation_error);
-    $c->execute(param("tid"), param("pid"));
-    my ($src, $stime, $rid) = $c->fetchrow_array;
-    my @titles;
-    my %srcfiles;
-    my %reqid;
-    while ($stime)
-    {
-        my %col_title = (id => $stime, rid => $rid);
-        push @titles, \%col_title;
-        $srcfiles{$rid} = CATS::Diff::prepare_src ($src, cookie('algorythm'));
-        ($src, $stime, $rid) = $c->fetchrow_array;
-    }
-
-    my @rows = generate_table (\@titles, \%srcfiles, param('pid'));
-    $t->param(row => \@rows);
-    $t->param(col_titles => \@titles);
-   
-    1;
-}
-
-sub cmp_show_sources
-{
-    init_template("main_cmp_source.htm");
-
-
-    #$t->param(diff_href => url_f('diff_runs', r1 =>param('rid1'), r2 =>param('rid2')) );
-    my @submenu = (
-        { href_item => url_f('cmp', setparams => 1), item_name => res_str(546)},
-        { href_item => url_f('diff_runs', r1 =>param('rid1'), r2 =>param('rid2')), item_name => res_str(547)}
-        );
-    $t->param(submenu => [ @submenu ] );    
-    
-    $t->param(problem_title => field_by_id(param("pid"), 'PROBLEMS', 'title'));
-    
-    my $c = $dbh->prepare(q~
-        SELECT
-            A.team_name,
-            S.src
-        FROM
-            ACCOUNTS A,
-            SOURCES S,
-            REQS R
-        WHERE
-            R.id = ? AND
-            A.id = R.account_id AND
-            S.req_id = R.id                
-                          ~);
-
-    my @teams_rid = (param("rid1"), param("rid2"));
-    my @team;
-    my @src;
-    foreach (@teams_rid)
-    {
-        $c->execute($_);
-        my ($tname, $tsrc) = $c->fetchrow_array;
-        push @team, $tname;
-        push @src, $tsrc;
-        $c->finish;
-    }
-    
-    $t->param(team1 => $team[0]);
-    $t->param(team2 => $team[1]);
-    $t->param(source1 => prepare_src_show($src[0]));
-    $t->param(source2 => prepare_src_show($src[1]));
-}
-
-sub cmp_set_params
-{
-    my $backlink = shift;
-    init_template("main_cmp_param.htm");
-    $t->param(backlink => $backlink);
-    
-    # кукис для выбора команд
-    my $cookie;
-    $cookie = CGI::cookie('teams') or $cookie = 'incontest';
-    $t->param('teams_'.$cookie => 1);
-    $t->param('init_team' => $cookie);
-    
-    # кукис для выбора версий
-    $cookie = CGI::cookie('versions') or $cookie = 'last';
-    $t->param('view_'.$cookie => 1);
-    $t->param('init_vers' => $cookie);
-    
-    # кукис для выбора контеста
-    $cookie = CGI::cookie('contest') or $cookie = param('cid');
-    $t->param(init_cont => $cookie);
-    $t->param(cur_cid => param('cid'));
-    my $c = $dbh->prepare(q~SELECT id, title FROM contests ORDER BY title ~);
-    $c->execute;
-    my ($cid, $title) = $c->fetchrow_array;
-    my @contests;
-    while ($cid)
-    {
-        my %rec = (cid=>$cid, title=>$title);
-        $cid == $cookie and %rec = (%rec, sel=>1);
-        push @contests, \%rec;
-        ($cid, $title) = $c->fetchrow_array;
-    }
-    $t->param(contest_all=>1) if $cookie=='all';
-    $t->param(contests => \@contests);
-
-    # кукис для выбора алгоритма
-    $cookie = CGI::cookie('algorythm') or $cookie = 'diff';
-    $t->param(init_algorythm => $cookie);
-    $t->param('algorythm_'.$cookie => 1);
-    
-    # кукис для определения фильтра
-    $cookie = cookie('limit') or $cookie = 80; #$cats::default_limit;
-    if ($cookie eq 'none')
-    {
-        #$t->param(limited=>0);
-        $t->param(init_limit=>80);
-    }
-    else
-    {
-        $t->param(limited=>1);
-        $t->param(init_limit => $cookie);
-    }
-    
-    1;
-}
-
-
-sub cmp_limited_output
-{
-    init_template('main_cmp_limited.htm');
-
-    my $problem_id = param("problem_id");
-
-    my $cont = (CGI::cookie('contest') or url_param('cid'));
-    my $query = generate_cmp_query ($cont, cookie ('teams'), cookie ('versions'));
-    my $c = $dbh->prepare ($query.order_by);
-    $c->execute($problem_id);   
-        
-    my ($tname, $tid, $rid) = $c->fetchrow_array;
-
-    
-    1;
-}
-
-sub cmp_frame
-{
-    if (defined param("showtable") & $is_jury)
-    {
-        cmp_output_problem;
-        return;
-    }
-    
-    if (defined param("tid") & $is_jury)
-    {
-        cmp_output_team;
-        return;
-    }
-    
-    if (defined param("rid1") & $is_jury)
-    {
-        cmp_show_sources;
-        return;
-    }
-    
-    if (defined param("setparams") & $is_jury)
-    {
-        cmp_set_params(url_f('cmp'));
-        return;
-    }
-
-    init_listview_template( "problems$cid" . ($uid || ''), 'problems', 'main_cmp.htm' );
-    
-    my @cols = 
-              ( { caption => res_str(602), order_by => '3', width => '50%' },
-                { caption => res_str(603), order_by => '4', width => '30%' },
-                { caption => res_str(636), order_by => '5', width => '20%' });
-
-    define_columns(url_f('cmp'), 0, 0, [ @cols ]);
-       
-    my $c;
-    my $cont = (cookie('contest') or param ('cid'));
-    my $query = generate_count_query($cont, cookie('teams'), cookie('versions'), 1);
-    $c = $dbh->prepare($query.order_by);
-    $c->execute();
-
-    my $fetch_record = sub($)
-    {            
-        if ( my( $pid, $problem_name, $cid, $contest_name, $count) = $_[0]->fetchrow_array)
-        {       
-            return ( 
-                is_practice => $contest->is_practice,
-                editable => $is_jury,
-                is_team => $is_team || $contest->is_practice,
-                problem_id => $pid,
-                problem_name => $problem_name, 
-                href_view_problem => url_f('problem_text', pid => $pid),
-                contest_name => $contest_name,
-                count => $count
-            );
-        }   
-
-        return ();
-    };
-            
-    attach_listview(url_f('cmp'), $fetch_record, $c);
-
-    $c->finish;
-
-    my @submenu = ( { href_item => url_f('cmp', setparams => 1), item_name => res_str(546)} );
-    $t->param(submenu => [ @submenu ] );    
 }
 
 
@@ -4061,7 +3827,7 @@ sub generate_menu
     {
         push @left_menu, (
             { item => res_str(548), href => url_f('compilers') },
-            #{ item => res_str(545), href => url_f('cmp') } 
+            { item => res_str(545), href => url_f('similarity') } 
         );
     }
     else
@@ -4131,7 +3897,7 @@ sub interface_functions ()
         authors => \&authors_frame,
         static => \&static_frame,
         
-        'cmp' => \&cmp_frame,
+        similarity => \&similarity_frame,
     }
 }
 

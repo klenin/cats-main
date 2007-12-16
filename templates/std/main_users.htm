@@ -30,10 +30,10 @@ function delete_team(href, name)
 <td><TMPL_IF messages><input type=checkbox name=msg<TMPL_VAR id>></TMPL_IF><TMPL_VAR team_name ESCAPE=HTML></td>
 <td align="center"><TMPL_VAR tag></td>
 <TMPL_IF editable>
-<td align=center><input type=checkbox name=jury<TMPL_VAR id> <TMPL_IF jury>checked</TMPL_IF>></td>
-<td align=center><input type=checkbox name=ooc<TMPL_VAR id> <TMPL_IF ooc>checked</TMPL_IF>></td>
-<td align=center><input type=checkbox name=remote<TMPL_VAR id> <TMPL_IF remote>checked</TMPL_IF>></td>
-<td align=center><input type=checkbox name=hidden<TMPL_VAR id> <TMPL_IF hidden>checked</TMPL_IF></td>
+<td align=center><input type="checkbox" name="jury<TMPL_VAR id>" <TMPL_IF jury>checked</TMPL_IF>></td>
+<td align=center><input type="checkbox" name="ooc<TMPL_VAR id>" <TMPL_IF ooc>checked</TMPL_IF>></td>
+<td align=center><input type="checkbox" name="remote<TMPL_VAR id>" <TMPL_IF remote>checked</TMPL_IF>></td>
+<td align=center><input type="checkbox" name="hidden<TMPL_VAR id>" <TMPL_IF hidden>checked</TMPL_IF>></td>
 </TMPL_IF>
 <td align=center>
 <TMPL_IF flag>

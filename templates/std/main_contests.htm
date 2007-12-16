@@ -9,13 +9,9 @@ function delete_contest(href, name)
     }
 }
 
-function confirm_registration(href, name)
+function confirm_registration()
 {
-    if (confirm("Внимание! Повторная виртуальная регистрация приведет к удалению попыток. Продолжить?"))
-    {
-        document.all.contest_form.all.virtual_registration.value = 1;
-        document.all.contest_form.submit();    
-    }
+    return confirm("Внимание! Повторная виртуальная регистрация приведет к удалению попыток. Продолжить?");
 }
 </script>
 
@@ -36,11 +32,11 @@ function confirm_registration(href, name)
     <a href='javascript:delete_contest("<TMPL_VAR href_delete>", "<TMPL_VAR contest_name ESCAPE=HTML>");''><img src="./images/std/waste2.gif" border=0></a> 
     </TMPL_IF>
     <TMPL_IF editable>
-    <a href='<TMPL_VAR href_params>'><img src="./images/std/edit.gif" border=0></a> 
+    <a href="<TMPL_VAR href_params>"><img src="./images/std/edit.gif" border=0></a> 
     <TMPL_ELSE>
-    <a href='<TMPL_VAR href_params>'><img src="./images/std/blank.gif" border=0></a> 
+    <a href="<TMPL_VAR href_params>"><img src="./images/std/blank.gif" border=0></a> 
     </TMPL_IF>
-    <a href='<TMPL_VAR href_contest>' <TMPL_IF selected> style="color: #000000; background-color: #ccccff"</TMPL_IF selected>>
+    <a href="<TMPL_VAR href_contest>" <TMPL_IF selected> style="color: #000000; background-color: #ccccff"</TMPL_IF selected>>
     <TMPL_VAR contest_name ESCAPE=HTML>
     </a>
 </td>
@@ -62,8 +58,9 @@ function confirm_registration(href, name)
 <TMPL_IF authorized>
 <TMPL_UNLESS is_registered><input type="submit" value="участвовать" name="online_registration" class="button" />
 </TMPL_UNLESS>
-<input type="button" value="участвовать виртуально" class=button onClick="confirm_registration();" />
-<input type="hidden" name="virtual_registration" value="0" />
+<input type="submit" name="virtual_registration"
+    value="участвовать виртуально" class="button" onclick="return confirm_registration()" />
+<input type="hidden"  value="0" />
 </TMPL_IF>
 <input type="submit" name="summary_rank" value="суммарная таблица" class="button" />
 </form>

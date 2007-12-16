@@ -1,0 +1,18 @@
+<TMPL_INCLUDE 'includes/menu_begin.inc'>
+<form method="post" enctype="multipart/form-data">
+<select name="pid"><option/>
+  <TMPL_LOOP problems><option value="<TMPL_VAR id>"<TMPL_IF selected> selected="selected"</TMPL_IF>><TMPL_VAR code> - <TMPL_VAR title></option></TMPL_LOOP>
+</select>
+<input type="submit" value="Сравнить" class="button"/>
+<br/>
+<input type="checkbox" name="virtual" value="1"<TMPL_IF virtual> checked="checked"</TMPL_IF>/> Учитывать виртуальных
+<input type="checkbox" name="group" value="1"<TMPL_IF group> checked="checked"</TMPL_IF>/> Группировать по участникам
+<input type="checkbox" name="self_diff" value="1"<TMPL_IF self_diff> checked="checked"</TMPL_IF>/> Резкие изменения
+</form>
+<table class="bordered">
+<TMPL_LOOP similar>
+  <tr><td align="right"><a href="<TMPL_VAR href_diff>" target="_blank"><TMPL_VAR score></td>
+  <td><TMPL_VAR n1 ESCAPE=HTML></td><TMPL_IF n2><td><TMPL_VAR n2 ESCAPE=HTML></td></TMPL_IF></tr>
+</TMPL_LOOP>
+</table>
+<TMPL_INCLUDE 'includes/menu_end.inc'>
