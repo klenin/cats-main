@@ -1,3 +1,4 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html><head>
 <meta name="Content-Type" content="text/html; charset=<TMPL_VAR encoding>">
 <title><TMPL_VAR contest_title ESCAPE=HTML></title>

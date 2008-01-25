@@ -21,7 +21,7 @@ use List::Util qw(max);
 
 my $cats_lib_dir;
 BEGIN {
-    $cats_lib_dir = $ENV{CATS_DIR};
+    $cats_lib_dir = $ENV{CATS_DIR} || '.';
     $cats_lib_dir =~ s/\/$//;
 }
 use lib $cats_lib_dir;
@@ -276,8 +276,8 @@ sub contest_online_registration
 
 sub contest_virtual_registration
 {
-    my ($registered, $is_virtual) = get_registered_contestant(
-         fields => '1, is_virtual', contest_id => $cid);
+    my ($registered, $is_virtual, $is_remote) = get_registered_contestant(
+         fields => '1, is_virtual, is_remote', contest_id => $cid);
         
     !$registered || $is_virtual
         or return msg(114);
@@ -285,7 +285,7 @@ sub contest_virtual_registration
     $contest->{time_since_start} >= 0
         or return msg(109);
     
-    # В официальных турнирах виртуальное участие резрешено тоьлко после окончания.
+    # В официальных турнирах виртуальное участие резрешено только после окончания.
     $contest->{time_since_finish} >= 0 || !$contest->{is_official}
         or return msg(122);
 
@@ -307,7 +307,8 @@ sub contest_virtual_registration
 
     register_contest_account(
         contest_id => $cid, account_id => $uid,
-        is_virtual => 1, diff_time => $contest->{time_since_start});
+        is_virtual => 1, is_remote => $is_remote,
+        diff_time => $contest->{time_since_start});
     $dbh->commit;
 }
 
@@ -1418,7 +1419,7 @@ sub problems_mass_retest()
     {
         next if !$all_runs && $accounts{$_->{account_id}};
         $accounts{$_->{account_id}} = 1;
-        ($_->{state} || 0) != $cats::ignore_submit &&
+        ($_->{state} || 0) != $cats::st_ignore_submit &&
             enforce_request_state(request_id => $_->{id}, state => $cats::st_not_processed)
                 and ++$count;
     }
@@ -3186,7 +3187,7 @@ sub rank_table
         if ($_->{state} == $cats::st_accepted)
         {
             my $te = int($_->{time_elapsed} + 0.5);
-            $p->{time_consumed} = $te + $p->{runs} * $cats::penalty;
+            $p->{time_consumed} = $te + ($p->{runs} || 0) * $cats::penalty;
             $p->{time_hm} = sprintf('%d:%02d', int($te / 60), $te % 60);
             $p->{solved} = 1;
             $t->{total_time} += $p->{time_consumed};

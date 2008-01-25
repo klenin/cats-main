@@ -37,7 +37,7 @@ sub set_test_attr
     (my CATS::Problem $self, my $test, my $attr, my $value) = @_;
     defined $value or return;
     defined $test->{$attr}
-        and return $self->error("Rederined attribute '$attr' for test #$test->{rank}");
+        and return $self->error("Redefined attribute '$attr' for test #$test->{rank}");
     $test->{$attr} = $value;
 }
 
@@ -96,42 +96,57 @@ sub end_tag_Test
 }
 
 
+sub do_In_src
+{
+    my ($self, $test, $attr) = @_;
+    my $src = apply_test_rank($attr, $test->{rank});
+    my $member = $self->{zip}->memberNamed($src)
+        or $self->error("Invalid test input file reference: '$src'");
+    ('in_file', $self->read_member($member, $self->{debug}));
+}
+
+
+sub do_In_param { ('param', apply_test_rank($_[2], $_[1]->{rank})) }
+
+
+sub do_In_use
+{
+    my ($self, $test, $attr) = @_;
+    my $use = apply_test_rank($attr, $test->{rank});
+    ('generator_id', $self->get_imported_id($use) || $self->get_named_object($use)->{id});
+}
+
+sub do_In_genAll
+{
+    my ($self, $test, $attr) = @_;
+    my $gg = $self->{gen_groups};
+    ('gen_group', $gg->{$test->{genarator_id}} ||= 1 + keys %$gg);
+}
+
 sub start_tag_In
 {
     (my CATS::Problem $self, my $atts) = @_;
     
     my @t = @{$self->{current_tests}};
 
-    if (defined $atts->{src})
+    for my $attr_name (qw/src param/)
     {
-        for (@t)
-        {
-            my $src = apply_test_rank($atts->{'src'}, $_->{rank});
-            my $member = $self->{zip}->memberNamed($src)
-                or $self->error("Invalid test input file reference: '$src'");
-            $self->set_test_attr($_, 'in_file', $self->read_member($member, $self->{debug}));
-        }
+        defined(my $attr_value = $atts->{$attr_name}) or next;
+        my $n = "do_In_$attr_name";
+        $self->set_test_attr($_, $self->$n($_, $attr_value)) for @t;
     }
     if (defined $atts->{'use'})
     {
-        my $gen_group = $atts->{genAll} ? ++$self->{gen_group} : undef;
+        my $gen_group = $atts->{genAll} ? ++$self->{gen_groups} : undef;
         for (@t)
         {
             my $use = apply_test_rank($atts->{'use'}, $_->{rank});
             $self->set_test_attr($_, 'generator_id',
                 $self->get_imported_id($use) || $self->get_named_object($use)->{id});
             # TODO
-            $self->set_test_attr($_, 'gen_group', $gen_group);
-        }
+            $self->set_test_attr($_, 'gen_groups', $gen_group);
+         }
     }
-    if (defined $atts->{param})
-    {
-        for (@t)
-        {
-            $self->set_test_attr($_, 'param', apply_test_rank($atts->{param}, $_->{rank}));
-        }
-    }
-    
 }
 
 

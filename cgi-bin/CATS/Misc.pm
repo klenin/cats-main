@@ -162,25 +162,18 @@ sub templates_path
 sub init_messages
 {
     return if @messages;
-    my $msg_file = templates_path() . "/consts";
+    my $msg_file = templates_path() . '/consts';
 
-    my $r = open FILE, "<".$msg_file;
-   
-    unless ( $r ) { 
-        fatal_error ( "Couldn't open message file: '$msg_file'."); 
-    }
-     
-    binmode(FILE, ':raw');    
-       
-    while( <FILE> )
+    open my $f, '<', $msg_file or
+        fatal_error "Couldn't open message file: '$msg_file'.";
+    binmode($f, ':raw');
+    while (<$f>)
     {
         Encode::from_to($_, 'koi8-r', 'utf-8');
 
-        $messages[$1] = $2 if ( $_ =~ m/(^\d*)\s*\"(.*)\"/ );
+        $messages[$1] = $2 if m/^(\d+)\s+\"(.*)\"\s*$/;
     }
-
-    close FILE;
-
+    close $f;
     1;
 }
 

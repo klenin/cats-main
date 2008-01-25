@@ -19,7 +19,7 @@ use fields qw(
     statement constraints input_format output_format explanation
     tests testsets samples objects keywords
     imports solutions generators modules pictures
-    current_tests current_sample gen_group
+    current_tests current_sample gen_groups
     stml zip zip_archive old_title replace tag_stack has_checker de_list
 );
 
@@ -39,7 +39,7 @@ sub clear
     undef $self->{$_} for (keys %CATS::Problem::FIELDS);
     $self->{$_} = {} for qw(tests testsets samples objects keywords);
     $self->{$_} = [] for qw(imports solutions generators modules pictures);
-    $self->{gen_group} = 0;
+    $self->{gen_groups} = {};
 }
 
 
