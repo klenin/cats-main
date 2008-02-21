@@ -39,6 +39,7 @@ use CATS::RankTable;
 use CATS::StaticPages;
 use CATS::TeX::Lite;
 use CATS::Testset;
+use CATS::Contest::Results;
 
 use vars qw($html_code $current_pid $spellchecker $text_span);
 
@@ -3090,15 +3091,16 @@ sub rank_table
     $hide_virtual =~ /^[01]$/
         or $hide_virtual = (!$is_virtual && !$is_jury || !$is_team);
         
-
     my $contest_list = get_contest_list_param;
-    my (undef, $frozen, $not_started, $default_show_points) = get_contests_info($contest_list, $uid);
+    $contest_list ne $cid || !$contest->is_practice or return;
+    my (undef, $frozen, $not_started, $default_show_points, $has_practice) =
+        get_contests_info($contest_list, $uid);
     my $show_points = url_param('points');
     defined $show_points or $show_points = $default_show_points;
     my $use_cache = url_param('cache');
     # по умолчанию кешируем внешние ссылки
     $use_cache = 1 if !defined $use_cache && !defined $uid;
-    
+
     my @p = ('rank_table', clist => $contest_list, cache => $use_cache);
     $t->param(
         not_started => $not_started && !$is_jury,
@@ -3116,8 +3118,6 @@ sub rank_table
     my @p_id = CATS::RankTable::get_problem_ids($contest_list, $show_points);
     my $virtual_cond = $hide_virtual ? ' AND (CA.is_virtual = 0 OR CA.is_virtual IS NULL)' : '';
     my $ooc_cond = $hide_ooc ? ' AND CA.is_ooc = 0' : '';
-
-    my $cache_file = cats_dir() . "./rank_cache/$contest_list#$hide_ooc#$hide_virtual#";
 
     my %init_problem = (runs => 0, time_consumed => 0, solved => 0, points => undef);
     my $select_teams = sub
@@ -3148,8 +3148,10 @@ sub rank_table
         $res;
     };
 
+    my $cache_file = cats_dir() . "./rank_cache/$contest_list#$hide_ooc#$hide_virtual#";
+
     my ($teams, $problems, $max_cached_req_id) = ({}, {}, 0);
-    if ($use_cache && !$is_virtual && -f $cache_file &&
+    if ($use_cache && !$is_virtual &&  -f $cache_file &&
         (my $cache = Storable::lock_retrieve($cache_file)))
     {
         ($teams, $problems, $max_cached_req_id) = @{$cache}{qw(t p r)};
@@ -3208,7 +3210,7 @@ sub rank_table
     }
 
     $dbh->commit if $need_commit;
-    if (!$frozen && !$is_virtual && @$results && !$contest->is_practice)
+    if (!$frozen && !$is_virtual && @$results && !$has_practice)
     {
         Storable::lock_store({ t => $teams, p => $problems, r => $max_req_id }, $cache_file);
     }
@@ -3840,9 +3842,10 @@ sub generate_menu
 
     unless ($contest->is_practice)
     {
-        push @left_menu, (
-            { item => res_str(529), href => url_f('rank_table', $is_jury ? () : (cache => 1, hide_virtual => !$is_virtual)) }
-        );
+        push @left_menu, ({
+            item => res_str(529),
+            href => url_f('rank_table', $is_jury ? () : (cache => 1, hide_virtual => !$is_virtual))
+        });
     }
 
     my @right_menu = ();
@@ -3899,6 +3902,7 @@ sub interface_functions ()
         static => \&static_frame,
         
         similarity => \&similarity_frame,
+        personal_official_results => \&CATS::Contest::personal_official_results,
     }
 }
 
@@ -3912,7 +3916,8 @@ sub accept_request
             or return;
     }
     initialize;
-    $CATS::Misc::init_time = Time::HiRes::tv_interval($CATS::Misc::request_start_time, [ Time::HiRes::gettimeofday ]);
+    $CATS::Misc::init_time = Time::HiRes::tv_interval(
+        $CATS::Misc::request_start_time, [ Time::HiRes::gettimeofday ]);
 
     my $function_name = url_param('f') || '';
     my $fn = interface_functions()->{$function_name} || \&about_frame;

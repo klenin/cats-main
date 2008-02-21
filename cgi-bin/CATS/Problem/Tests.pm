@@ -7,7 +7,7 @@ use warnings;
 sub apply_test_rank
 {
     my ($v, $rank) = @_;
-    $v ||= '';
+    $v = '' unless defined $v;
     $v =~ s/%n/$rank/g;
     $v =~ s/%0n/sprintf("%02d", $rank)/eg;
     $v =~ s/%%/%/g;
@@ -22,7 +22,7 @@ sub validate_test
         or return 'No input source';
     defined $test->{in_file} && $test->{generator_id}
         and return 'Both input file and generator';
-    ($test->{param} || $test->{gen_group}) && !$test->{generator_id}
+    (defined $test->{param} && $test->{param} ne '' || $test->{gen_group}) && !$test->{generator_id}
         and return 'Parameters without generator';
     defined $test->{out_file} || $test->{std_solution_id}
         or return 'No output source';

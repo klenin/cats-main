@@ -209,6 +209,7 @@ sub get_contests_info
 
     my $frozen = 0;
     my $not_started = 0;
+    my $has_practice = 0;
     my $title_prefix;
     my $show_points = undef;
     my $sth = $dbh->prepare(qq~
@@ -217,16 +218,19 @@ sub get_contests_info
           CATS_SYSDATE() - C.defreeze_date,
           CATS_SYSDATE() - C.start_date,
           (SELECT COUNT(*) FROM contest_accounts WHERE contest_id = C.id AND account_id = ?),
-          C.rules
+          C.rules,
+          C.ctype
         FROM contests C
         WHERE id IN ($contest_list)~
     );
     $sth->execute($uid);
     while (my (
-        $title, $since_freeze, $since_defreeze, $since_start, $registered, $rules) = $sth->fetchrow_array)
+        $title, $since_freeze, $since_defreeze, $since_start, $registered, $rules, $ctype) =
+        $sth->fetchrow_array)
     {
         $frozen ||= $since_freeze > 0 && $since_defreeze < 0;
         $not_started ||= $since_start < 0 && !$registered;
+        $has_practice ||= ($ctype || 0);
         $show_points ||= $rules;
         $title = Encode::decode_utf8($title);
         for ($title_prefix)
@@ -243,7 +247,7 @@ sub get_contests_info
             $_ = substr($_, 0, $i);
         }
     }
-    return ($title_prefix || '', $frozen, $not_started, $show_points);
+    return ($title_prefix || '', $frozen, $not_started, $show_points, $has_practice);
 }
 
 1;
