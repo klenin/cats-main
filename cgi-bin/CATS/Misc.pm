@@ -23,7 +23,6 @@ BEGIN
         order_by
         define_columns
         get_flag
-        generate_login
         generate_password
         res_str
         attach_listview
@@ -561,23 +560,6 @@ sub get_flag
 }
 
 
-sub generate_login
-{
-    my $login_num;
-
-    if ($CATS::Connect::db_dsn =~ /InterBase/)
-    {
-        $login_num = $dbh->selectrow_array('SELECT GEN_ID(login_seq, 1) FROM RDB$DATABASE');
-    }
-    elsif ($cats_db::db_dsn =~ /Oracle/)
-    {
-        $login_num = $dbh->selectrow_array(qq~SELECT login_seq.nextval FROM DUAL~);
-    }
-
-    return "team#$login_num" if $login_num;
-}
-
-
 sub generate_password
 {
     my @ch1 = ('e', 'y', 'u', 'i', 'o', 'a');
@@ -620,7 +602,8 @@ sub user_authorize
     }
 
     # получение информации о текущем турнире и установка турнира по умолчанию
-    $cid = url_param('cid') || '';
+    $cid = url_param('cid') || param('clist') || '';
+    $cid =~ s/^(\d+).*$/$1/; # берём первый турнир из clist
     if ($contest && ref $contest ne 'CATS::Contest') {
         warn "Strange contest: $contest";
         undef $contest;

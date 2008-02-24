@@ -40,6 +40,7 @@ use CATS::StaticPages;
 use CATS::TeX::Lite;
 use CATS::Testset;
 use CATS::Contest::Results;
+use CATS::User;
 
 use vars qw($html_code $current_pid $spellchecker $text_span);
 
@@ -1782,52 +1783,16 @@ sub compare_tests_frame
 }
 
 
-sub users_new_frame 
+sub any_official_contest_by_team($)
 {
-    init_template('main_users_new.htm');
-    $t->param(login => generate_login);
-    $t->param(countries => \@cats::countries, href_action => url_f('users'));    
-}
-
-
-sub user_param_names ()
-{
-    qw(login team_name capitan_name email country motto home_page icq_number)
-}
-
-
-sub user_validate_params
-{
-    my ($up, %p) = @_;
-
-    $up->{login} && length $up->{login} <= 100
-        or return msg(101);
-
-    $up->{team_name} && length $up->{team_name} <= 100
-        or return msg(43);
-
-    length $up->{capitan_name} <= 100
-        or return msg(45);
-
-    length $up->{motto} <= 200
-        or return msg(44);
-
-    length $up->{home_page} <= 100
-        or return msg(48);
-
-    length $up->{icq_number} <= 100
-        or return msg(47);
-
-    if ($p{validate_password})
-    {
-        $up->{password1} ne '' && length $up->{password1} <= 100
-            or return msg(102);
-
-        $up->{password1} eq $up->{password2}
-            or return msg(33);
-        msg(85);
-    }
-    return 1;
+    my ($account_id) = @_;
+    $dbh->selectrow_array(qq~
+        SELECT FIRST 1 C.title FROM contests C
+            INNER JOIN contest_accounts CA ON CA.contest_id = C.id
+            INNER JOIN accounts A ON A.id = CA.account_id
+            WHERE C.is_official = 1 AND CA.is_ooc = 0 AND CA.is_jury = 0 AND
+            C.finish_date < CURRENT_TIMESTAMP AND A.id = ?~, undef,
+        $account_id);
 }
 
 
@@ -1836,9 +1801,9 @@ sub users_new_save
 {
     $is_jury or return;
 
-    my %up = map { $_ => (param($_) || '') } user_param_names(), qw(password1 password2);
+    my %up = map { $_ => (param($_) || '') } CATS::User::param_names(), qw(password1 password2);
     
-    user_validate_params(\%up, validate_password => 1) or return;
+    CATS::User::validate_params(\%up, validate_password => 1) or return;
 
     $dbh->selectrow_array(qq~SELECT COUNT(*) FROM accounts WHERE login=?~, {}, $up{login})
         and return msg(103);
@@ -1849,10 +1814,10 @@ sub users_new_save
     my $aid = new_id;
     $dbh->do(qq~
         INSERT INTO accounts (
-            id, srole, passwd, ~ . join (', ', user_param_names()) . qq~
+            id, srole, passwd, ~ . join (', ', CATS::User::param_names()) . qq~
         ) VALUES (?,?,?,?,?,?,?,?,?,?,?)~, {},
         $aid, $cats::srole_user, $up{password1},
-        @up{user_param_names()}
+        @up{CATS::User::param_names()}
     );
 
     insert_ooc_user(account_id => $aid);
@@ -1891,11 +1856,11 @@ sub users_edit_frame
 
 sub users_edit_save
 {
-    my %up = map { $_ => (param($_) || '') } user_param_names(), qw(password1 password2);
+    my %up = map { $_ => (param($_) || '') } CATS::User::param_names(), qw(password1 password2);
     my $set_password = param_on('set_password');
     my $id = param('id');
 
-    user_validate_params(\%up, validate_password => $set_password) or return;
+    CATS::User::validate_params(\%up, validate_password => $set_password) or return;
 
     $dbh->selectrow_array(qq~
         SELECT COUNT(*) FROM accounts WHERE id <> ? AND login = ?~, {}, $id, $up{login}
@@ -1903,9 +1868,9 @@ sub users_edit_save
  
     $dbh->do(qq~
         UPDATE accounts
-            SET ~ . join (', ', map "$_ = ?", user_param_names()) . qq~
+            SET ~ . join (', ', map "$_ = ?", CATS::User::param_names()) . qq~
             WHERE id = ?~, {},
-        @up{user_param_names()}, $id);
+        @up{CATS::User::param_names()}, $id);
     $dbh->commit;       
 
     if ($set_password)
@@ -1988,8 +1953,6 @@ sub users_register
 
 sub users_frame 
 {   
-    # hack для туфанова и олейникова
-    #$is_jury ||= $is_root;
     if ($is_jury)
     {
         if (defined url_param('delete'))
@@ -1997,7 +1960,7 @@ sub users_frame
             my $caid = url_param('delete');
             my ($aid, $srole) = $dbh->selectrow_array(qq~
                 SELECT A.id, A.srole FROM accounts A, contest_accounts CA
-                    WHERE A.id=CA.account_id AND CA.id=?~, {},
+                    WHERE A.id = CA.account_id AND CA.id = ?~, {},
                 $caid);
 
             if ($srole)
@@ -2013,7 +1976,7 @@ sub users_frame
                 }
             }
         }
-        return users_new_frame if defined url_param('new');
+        return CATS::User::new_frame if defined url_param('new');
         return users_edit_frame if defined url_param('edit');
     }
 
@@ -2186,8 +2149,8 @@ sub registration_frame
     defined param('register')
         or return;
     
-    my %up = map { $_ => (param($_) || '') } user_param_names(), qw(password1 password2);
-    user_validate_params(\%up, validate_password => 1) or return;
+    my %up = map { $_ => (param($_) || '') } CATS::User::param_names(), qw(password1 password2);
+    CATS::User::validate_params(\%up, validate_password => 1) or return;
 
     if ($dbh->selectrow_array(qq~SELECT COUNT(*) FROM accounts WHERE login=?~, {}, $up{login}))
     {
@@ -2203,10 +2166,10 @@ sub registration_frame
     my $aid = new_id;
     $dbh->do(qq~
         INSERT INTO accounts (
-            id, srole, passwd, ~ . join (', ', user_param_names()) . qq~
+            id, srole, passwd, ~ . join (', ', CATS::User::param_names()) . qq~
         ) VALUES (?,?,?,?,?,?,?,?,?,?,?)~, {},
         $aid, $cats::srole_user, $up{password1},
-        @up{user_param_names()}
+        @up{CATS::User::param_names()}
     );
     insert_ooc_user(contest_id => $_->{id}, account_id => $aid) for @$training_contests;
          
@@ -2217,35 +2180,29 @@ sub registration_frame
 
 sub settings_save
 {
-    my %up = map { $_ => (param($_) || '') } user_param_names(), qw(password1 password2);
+    my %up = map { $_ => (param($_) || '') } CATS::User::param_names(), qw(password1 password2);
     my $set_password = param_on('set_password');
 
-    # Если команда участвовала в официальных соревнованиях, запретить изменять её название.
-    my ($official_contest) = $dbh->selectrow_array(qq~
-        SELECT FIRST 1 C.title FROM contests C
-            INNER JOIN contest_accounts CA ON CA.contest_id = C.id
-            INNER JOIN accounts A ON A.id = CA.account_id
-            WHERE C.is_official = 1 AND CA.is_ooc = 0 AND CA.is_jury = 0 AND
-            C.finish_date < CURRENT_TIMESTAMP AND A.id = ?~, undef,
-        $uid
-    );
-    if ($official_contest) {
-        my ($old_team_name) = $dbh->selectrow_array(qq~
-            SELECT team_name FROM accounts WHERE id = ?~, undef,
-            $uid);
-        $old_team_name eq $up{team_name}
-            or return msg(86, $official_contest);
+    my ($old_login, $old_team_name) = $dbh->selectrow_array(qq~
+        SELECT login, team_name FROM accounts WHERE id = ?~, undef,
+        $uid);
+    if (($old_team_name ne $up{team_name}) &&
+        (my ($official_contest) = any_official_contest_by_team($uid)))
+    {
+        # Если команда участвовала в официальных соревнованиях, запретить изменять её название
+        return msg(86, $official_contest);
     }
 
-    user_validate_params(\%up, validate_password => $set_password) or return;
+    CATS::User::validate_params(\%up, validate_password => $set_password) or return;
 
-    $dbh->selectrow_array(qq~
-        SELECT COUNT(*) FROM accounts WHERE id <> ? AND login = ?~, {}, $uid, $up{login}
-    ) and return msg(103);
+    if ($old_login ne $up{login})
+    {
+        $dbh->selectrow_array(qq~
+            SELECT COUNT(*) FROM accounts WHERE id <> ? AND login = ?~, {}, $uid, $up{login}
+        ) and return msg(103);
+    }
  
-    if ($set_password) {
-        $up{passwd} = $up{password1};
-    }
+    $up{passwd} = $up{password1} if $set_password;
     delete @up{qw(password1 password2)};
     $dbh->do(_u $sql->update('accounts', \%up, { id => $uid }));
     $dbh->commit;
