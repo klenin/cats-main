@@ -41,11 +41,15 @@ select, option {
     background-color: #ffffff;
     border: 1px solid #4040ff;
     height: 22px;
+    vertical-align: middle;
 }
 
 .down { background-repeat: no-repeat; }
 
-input { height: 22px; }
+input {
+    height: 22px;
+    vertical-align: middle;
+}
 
 .file {
     border: 1px solid #4040ff;

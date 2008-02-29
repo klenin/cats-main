@@ -1117,6 +1117,36 @@ sub problems_replace
 }
 
 
+sub problems_add_new
+{
+    my $file = param('zip') || '';
+    $file =~ /\.(zip|ZIP)$/
+        or return msg(53);
+    my $fname = save_uploaded_file($file);
+
+    my $problem_code;
+    if (!$contest->is_practice)
+    {
+        my $c = $dbh->selectcol_arrayref(qq~
+            SELECT code FROM contest_problems WHERE contest_id = ?~, {},
+            $cid
+        );
+        my %used_codes;
+        $used_codes{$_ || ''} = undef for @$c;
+        ($problem_code) = grep !exists($used_codes{$_}), 'A'..'Z';
+    }
+
+    my CATS::Problem $p = CATS::Problem->new;
+    my $error = $p->load($fname, $cid, new_id, 0);
+    $t->param(problem_import_log => $p->encoded_import_log());
+    $error ||= !add_problem_to_contest($p->{id}, $problem_code);
+
+    $error ? $dbh->rollback : $dbh->commit;
+    msg(52) if $error;
+    unlink $fname;
+}
+
+
 sub problems_all_frame
 {
     init_listview_template('link_problem_' || ($uid || ''),
@@ -1406,26 +1436,29 @@ sub problems_submit_std_solution
 
 sub problems_mass_retest()
 {
-    my $retest_pid = param('problem_id')
+    my @retest_pids = param('problem_id')
         or return msg(12);
     my $all_runs = param('all_runs');
-    my $runs = $dbh->selectall_arrayref(q~
-        SELECT id, account_id, state FROM reqs
-        WHERE contest_id = ? AND problem_id = ? ORDER BY id DESC~,
-        { Slice => {} },
-        $cid, $retest_pid
-    );
     my $count = 0;
-    my %accounts = ();
-    for (@$runs)
+    for my $retest_pid (@retest_pids)
     {
-        next if !$all_runs && $accounts{$_->{account_id}};
-        $accounts{$_->{account_id}} = 1;
-        ($_->{state} || 0) != $cats::st_ignore_submit &&
-            enforce_request_state(request_id => $_->{id}, state => $cats::st_not_processed)
-                and ++$count;
+        my $runs = $dbh->selectall_arrayref(q~
+            SELECT id, account_id, state FROM reqs
+            WHERE contest_id = ? AND problem_id = ? ORDER BY id DESC~,
+            { Slice => {} },
+            $cid, $retest_pid
+        );
+        my %accounts = ();
+        for (@$runs)
+        {
+            next if !$all_runs && $accounts{$_->{account_id}};
+            $accounts{$_->{account_id}} = 1;
+            ($_->{state} || 0) != $cats::st_ignore_submit &&
+                enforce_request_state(request_id => $_->{id}, state => $cats::st_not_processed)
+                    and ++$count;
+        }
+        $dbh->commit;
     }
-    $dbh->commit;
     return msg(128, $count);
 }
 
@@ -1450,6 +1483,7 @@ sub problems_frame_jury_action
     defined param('change_status') and return problems_change_status;
     defined param('change_code') and return problems_change_code;
     defined param('replace') and return problems_replace;
+    defined param('add_new') and return problems_add_new;
     defined param('std_solution') and return problems_submit_std_solution;
     defined param('mass_retest') and return problems_mass_retest;
     my $cpid = url_param('delete');
@@ -1519,6 +1553,67 @@ sub problem_select_testsets
     $t->param("problem_$_" => $problem->{$_}) for keys %$problem;
     $t->param(testsets => $testsets, href_select_testsets => url_f('problem_select_testsets'));
 }
+
+
+sub problems_retest_frame
+{
+    $is_jury && !$contest->is_practice or return;
+    init_listview_template("problems_retest$cid" . ($uid || ''), 'problems', 'main_problems_retest.htm');
+
+    defined param('mass_retest') and problems_mass_retest;
+    
+
+    my @cols = (
+        { caption => res_str(602), order_by => '3', width => '30%' }, # название
+        { caption => res_str(639), order_by => '7', width => '10%' }, # в очереди
+        { caption => res_str(632), order_by => '6', width => '10%' }, # статус
+        { caption => res_str(605), order_by => '5', width => '10%' }, # набор тестов
+        { caption => res_str(604), order_by => '8', width => '10%' }, # ok/wa/tl
+    );
+    define_columns(url_f('problems_retest'), 0, 0, [ @cols ]);
+    my $reqs_count_sql = 'SELECT COUNT(*) FROM reqs D WHERE D.problem_id = P.id AND D.state =';
+    my $sth = $dbh->prepare(qq~
+        SELECT
+            CP.id AS cpid, P.id AS pid,
+            CP.code, P.title AS problem_name, CP.testsets, CP.status,
+            ($reqs_count_sql $cats::st_accepted) AS accepted_count,
+            ($reqs_count_sql $cats::st_wrong_answer) AS wrong_answer_count,
+            ($reqs_count_sql $cats::st_time_limit_exceeded) AS time_limit_count,
+            (SELECT COUNT(*) FROM reqs R
+                WHERE R.contest_id = CP.contest_id AND R.problem_id = CP.problem_id AND
+                R.state IN ($cats::st_not_processed)) AS in_queue
+        FROM problems P INNER JOIN contest_problems CP ON CP.problem_id = P.id
+        WHERE CP.contest_id = ?~ . order_by);
+    $sth->execute($cid);
+
+    my $total_queue = 0;
+    my $fetch_record = sub($)
+    {            
+        my $c = $_[0]->fetchrow_hashref or return ();
+        $c->{status} ||= 0;
+        my $psn = problem_status_names();
+        $total_queue += $c->{in_queue};
+        return (
+            status => $psn->{$c->{status}},
+            href_view_problem => url_f('problem_text', cpid => $c->{cpid}),
+            problem_id => $c->{pid},
+            code => $c->{code},
+            problem_name => $c->{problem_name},
+            accept_count => $c->{accepted_count},
+            wa_count => $c->{wrong_answer_count},
+            tle_count => $c->{time_limit_count},
+            testsets => $c->{testsets} || '*',
+            in_queue => $c->{in_queue},
+            href_select_testsets => url_f('problem_select_testsets', cpid => $c->{cpid}),
+        );
+    };
+    attach_listview(url_f('problems_retest'), $fetch_record, $sth);
+
+    $sth->finish;
+
+    $t->param(total_queue => $total_queue);
+}
+
 
 sub problems_frame
 {
@@ -1697,9 +1792,10 @@ sub problems_frame
     if ($is_jury)
     {
         push @submenu, (
-            { href_item => url_f('problems', new => 1), item_name => res_str(539) },
+            #{ href_item => url_f('problems', new => 1), item_name => res_str(539) },
             { href_item => url_f('problems', link => 1), item_name => res_str(540) },
-            { href_item => url_f('problems', link => 1, move => 1), item_name => res_str(551) }
+            { href_item => url_f('problems', link => 1, move => 1), item_name => res_str(551) },
+            { href_item => url_f('problems_retest'), item_name => res_str(556) },
         );
     }
 
@@ -1783,101 +1879,85 @@ sub compare_tests_frame
 }
 
 
-sub any_official_contest_by_team($)
-{
-    my ($account_id) = @_;
-    $dbh->selectrow_array(qq~
-        SELECT FIRST 1 C.title FROM contests C
-            INNER JOIN contest_accounts CA ON CA.contest_id = C.id
-            INNER JOIN accounts A ON A.id = CA.account_id
-            WHERE C.is_official = 1 AND CA.is_ooc = 0 AND CA.is_jury = 0 AND
-            C.finish_date < CURRENT_TIMESTAMP AND A.id = ?~, undef,
-        $account_id);
-}
-
-
 # Администратор добавляет нового пользователя в текущий турнир.
 sub users_new_save
 {
     $is_jury or return;
-
-    my %up = map { $_ => (param($_) || '') } CATS::User::param_names(), qw(password1 password2);
-    
-    CATS::User::validate_params(\%up, validate_password => 1) or return;
-
-    $dbh->selectrow_array(qq~SELECT COUNT(*) FROM accounts WHERE login=?~, {}, $up{login})
-        and return msg(103);
-
-    my ($training_id) = $dbh->selectrow_array(qq~SELECT id FROM contests WHERE ctype = 1~)
-        or return msg(105);
-
-    my $aid = new_id;
-    $dbh->do(qq~
-        INSERT INTO accounts (
-            id, srole, passwd, ~ . join (', ', CATS::User::param_names()) . qq~
-        ) VALUES (?,?,?,?,?,?,?,?,?,?,?)~, {},
-        $aid, $cats::srole_user, $up{password1},
-        @up{CATS::User::param_names()}
-    );
-
-    insert_ooc_user(account_id => $aid);
-    if ($cid != $training_id)
-    {
-        insert_ooc_user(contest_id => $training_id, account_id => $aid);
-    }
- 
-    $dbh->commit;       
+    my $user = CATS::User->new->parse_params;
+    $user->validate_params(validate_password => 1) or return;
+    $user->insert($cid) or return;
 }
 
 
 sub users_edit_frame 
 {      
-    my $id = url_param('edit');
-
     init_template('main_users_edit.htm');
 
-    my $up = $dbh->selectrow_hashref(qq~
-        SELECT login, team_name, capitan_name, motto, country, email, home_page, icq_number
-            FROM accounts WHERE id = ?~, { Slice => {} },
-        $id
-    ) or return;
-
-    my $countries = \@cats::countries;
-
-    $up->{country} ||= $countries->[0]->{id};
-    for (@$countries)
-    {
-        $_->{selected} = $_->{id} eq $up->{country};
-    }
-
-    $t->param(%$up, id => $id, countries => $countries, href_action => url_f('users'));
+    my $id = url_param('edit');
+    my $user = CATS::User->new->load($id) or return;
+    $t->param(%$user, id => $id, countries => \@cats::countries, href_action => url_f('users'));
 }
 
 
 sub users_edit_save
 {
-    my %up = map { $_ => (param($_) || '') } CATS::User::param_names(), qw(password1 password2);
+    my $user = CATS::User->new->parse_params;
     my $set_password = param_on('set_password');
     my $id = param('id');
 
-    CATS::User::validate_params(\%up, validate_password => $set_password) or return;
+    $user->validate_params(
+        validate_password => $set_password, id => $id,
+        # Здесь недостаточно просто is_jury, поскольку можно зарегистрировать
+        # любую команду в свой турнир и потом переименовать.
+        # Надо требовать is_jury во всех официальных соревнованиях,
+        # где участвовала команда, но проще просто проверить is_root.
+        allow_official_rename => $is_root)
+        or return;
 
-    $dbh->selectrow_array(qq~
-        SELECT COUNT(*) FROM accounts WHERE id <> ? AND login = ?~, {}, $id, $up{login}
-    ) and return msg(103);
- 
-    $dbh->do(qq~
-        UPDATE accounts
-            SET ~ . join (', ', map "$_ = ?", CATS::User::param_names()) . qq~
-            WHERE id = ?~, {},
-        @up{CATS::User::param_names()}, $id);
-    $dbh->commit;       
+    $user->{passwd} = $user->{password1} if $set_password;
+    delete @$user{qw(password1 password2)};
+    $dbh->do(_u $sql->update('accounts', { %$user }, { id => $id }));
+    $dbh->commit;
+}
 
-    if ($set_password)
-    {        
-        $dbh->do(qq~UPDATE accounts SET passwd = ? WHERE id = ?~, {}, $up{password1}, $id);
-        $dbh->commit;
-    }
+
+sub registration_frame
+{
+    init_template('main_registration.htm');
+
+    $t->param(countries => [ @cats::countries ], href_login => url_f('login'));
+
+    defined param('register')
+        or return;
+    
+    my $user = CATS::User->new->parse_params;
+    $user->validate_params(validate_password => 1) or return;
+    $user->insert or return;
+    $t->param(successfully_registred => 1);
+}
+
+
+sub settings_save
+{
+    my $user = CATS::User->new->parse_params;
+    my $set_password = param_on('set_password');
+
+    $user->validate_params(validate_password => $set_password, id => $uid) or return;
+
+    $user->{passwd} = $user->{password1} if $set_password;
+    delete @$user{qw(password1 password2)};
+    $dbh->do(_u $sql->update('accounts', { %$user }, { id => $uid }));
+    $dbh->commit;
+}
+
+
+sub settings_frame
+{
+    init_template('main_settings.htm');
+    settings_save if defined param('edit_save') && $is_team;
+
+    my $user = CATS::User->new->load($uid) or return;
+    $t->param(countries => \@cats::countries, href_action => url_f('users'), %$user);
 }
 
 
@@ -1934,48 +2014,63 @@ sub users_send_broadcast
 }
 
 
-sub users_register
+sub users_delete
 {
-    my ($login) = @_;
-    defined $login && $login ne ''
-        or return msg(118);
+    my $caid = url_param('delete');
+    my ($aid, $srole) = $dbh->selectrow_array(qq~
+        SELECT A.id, A.srole FROM accounts A
+            INNER JOIN contest_accounts CA ON A.id = CA.account_id
+            WHERE CA.id = ?~, {},
+        $caid);
 
-    my ($aid) = $dbh->selectrow_array(qq~SELECT id FROM accounts WHERE login=?~, {}, $login);
-    $aid or return msg(118, $login);
-    !get_registered_contestant(contest_id => $cid, account_id => $aid)
-        or return msg(120, $login);
+    if ($srole)
+    {
+        $dbh->do(qq~DELETE FROM contest_accounts WHERE id=?~, {}, $caid);
+        $dbh->commit;       
 
-    insert_ooc_user(account_id => $aid, is_remote => 1);
-    $dbh->commit;
-    msg(119, $login);
+        unless ($dbh->selectrow_array(qq~
+            SELECT COUNT(*) FROM contest_accounts WHERE account_id=?~, {}, $aid))
+        {
+            $dbh->do(qq~DELETE FROM accounts WHERE id=?~, {}, $aid);
+            $dbh->commit;       
+        }
+    }
 }
 
 
-sub users_frame 
+sub users_save_attributes
+{
+    for (split(':', param('user_set')))
+    {
+        my $jury = param_on("jury$_");
+        my $ooc = param_on("ooc$_");
+        my $remote = param_on("remote$_");
+        my $hidden = param_on("hidden$_");
+
+        # нельзя снять is_jury у администратора
+        my ($srole) = $dbh->selectrow_array(qq~
+            SELECT A.srole FROM accounts A
+                INNER JOIN contest_accounts CA ON A.id = CA.account_id
+                WHERE CA.id = ?~, {},
+            $_
+        );
+        $jury = 1 if !$srole;
+
+        $dbh->do(qq~
+            UPDATE contest_accounts
+                SET is_jury = ?, is_hidden = ?, is_remote = ?, is_ooc = ? WHERE id = ?~, {},
+            $jury, $hidden, $remote, $ooc, $_
+        );
+    }
+    $dbh->commit;
+}
+
+
+sub users_frame
 {   
     if ($is_jury)
     {
-        if (defined url_param('delete'))
-        {
-            my $caid = url_param('delete');
-            my ($aid, $srole) = $dbh->selectrow_array(qq~
-                SELECT A.id, A.srole FROM accounts A, contest_accounts CA
-                    WHERE A.id = CA.account_id AND CA.id = ?~, {},
-                $caid);
-
-            if ($srole)
-            {
-                $dbh->do(qq~DELETE FROM contest_accounts WHERE id=?~, {}, $caid);
-                $dbh->commit;       
-
-                unless ($dbh->selectrow_array(qq~
-                    SELECT COUNT(*) FROM contest_accounts WHERE account_id=?~, {}, $aid))
-                {
-                    $dbh->do(qq~DELETE FROM accounts WHERE id=?~, {}, $aid);
-                    $dbh->commit;       
-                }
-            }
-        }
+        users_delete if defined url_param('delete');
         return CATS::User::new_frame if defined url_param('new');
         return users_edit_frame if defined url_param('edit');
     }
@@ -1984,62 +2079,29 @@ sub users_frame
 
     $t->param(messages => $is_jury);
     
-    if (defined param('new_save') && $is_jury)       
+    if ($is_jury)
     {
-        users_new_save;
-    }
+        users_new_save if defined param('new_save');
+        users_edit_save if defined param('edit_save');
 
-    if (defined param('edit_save') && $is_jury)       
-    {
-        users_edit_save;
-    }
-
-    if (defined param('save_attributes') && $is_jury)
-    {
-        for (split(':', param('user_set')))
-        {
-            my $jury = param_on("jury$_");
-            my $ooc = param_on("ooc$_");
-            my $remote = param_on("remote$_");
-            my $hidden = param_on("hidden$_");
-
-            my $srole = $dbh->selectrow_array(qq~
-                SELECT srole FROM accounts
-                    WHERE id IN (SELECT account_id FROM contest_accounts WHERE id=?)~, {},
-                $_
-            );
-            $jury = 1 if !$srole;
-
-            $dbh->do(qq~
-                UPDATE contest_accounts
-                    SET is_jury=?, is_hidden=?, is_remote=?, is_ooc=? WHERE id=?~, {},
-                $jury, $hidden, $remote, $ooc, $_
-            );
-        }
-        $dbh->commit;
-    }
-
-    if (defined param('set_tag') && $is_jury)
-    {
-        users_set_tag(user_set => param('user_set'), tag => param('tag_to_set'));
-    }
+        users_save_attributes if defined param('save_attributes');
+        users_set_tag(user_set => param('user_set'), tag => param('tag_to_set'))
+            if defined param('set_tag');
+        CATS::User::register_by_login(param('login_to_register'), $cid)
+            if defined param('register_new');
     
-    if (defined param('register_new') && $is_jury)
-    {
-        users_register(param('login_to_register'));
-    }
-    
-    if (defined param('send_message') && $is_jury)
-    {                
-        if (param_on('send_message_all'))
-        {
-            users_send_broadcast(message => param('message_text'));                
+        if (defined param('send_message'))
+        {                
+            if (param_on('send_message_all'))
+            {
+                users_send_broadcast(message => param('message_text'));                
+            }
+            else
+            {
+                users_send_message(user_set => param('user_set'), message => param('message_text'));
+            }
+            $dbh->commit;
         }
-        else
-        {
-            users_send_message(user_set => param('user_set'), message => param('message_text'));
-        }
-        $dbh->commit;
     }
 
     my @cols;
@@ -2062,50 +2124,40 @@ sub users_frame
               { caption => res_str(614), order_by => '9', width => '10%' } );
     }
 
-    push @cols,
-      ( { caption => res_str(607), order_by => '3', width => '10%' },
-        { caption => res_str(609), order_by => '13', width => '10%' } );
+    push @cols, (
+        { caption => res_str(607), order_by => '3', width => '10%' },
+        { caption => res_str(609), order_by => '13', width => '10%' },
+        { caption => res_str(632), order_by => '10', width => '10%' } );
 
-
-    push @cols,
-        ( { caption => res_str(632), order_by => '10', width => '10%' } );
-
-    define_columns(url_f('users'), $is_jury ? 3 : 2, 1, [ @cols ] );
+    define_columns(url_f('users'), $is_jury ? 3 : 2, 1, \@cols);
 
     my $fields =
         'A.id, CA.id, A.country, A.login, A.team_name, ' . 
         'CA.is_jury, CA.is_ooc, CA.is_remote, CA.is_hidden, CA.is_virtual, A.motto, CA.tag';
-    my $sql = qq~
+    my $sql = sprintf qq~
         SELECT $fields, COUNT(DISTINCT R.problem_id)
         FROM accounts A
             INNER JOIN contest_accounts CA ON CA.account_id = A.id
             INNER JOIN contests C ON CA.contest_id = C.id
             LEFT JOIN reqs R ON
-                R.state = $cats::st_accepted AND R.account_id=A.id AND R.contest_id=C.id%s
-        WHERE C.id=?%s GROUP BY $fields
-        ~.order_by;
-    if ($is_jury)
-    {
-        $sql = sprintf $sql, '', '';
-    }
-    else
-    {
-        $sql = sprintf $sql,
+                R.state = $cats::st_accepted AND R.account_id = A.id AND R.contest_id = C.id%s
+        WHERE C.id = ?%s GROUP BY $fields ~ . order_by,
+        ($is_jury ? ('', '') : (
             ' AND (R.submit_time < C.freeze_date OR C.defreeze_date < CATS_SYSDATE())',
-            ' AND CA.is_hidden=0';
-    }
+            ' AND CA.is_hidden = 0'));
+
     my $c = $dbh->prepare($sql);
     $c->execute($cid);
 
     my $fetch_record = sub($)
-    {            
+    {
         my (
             $aid, $caid, $country_abb, $login, $team_name, $jury,
             $ooc, $remote, $hidden, $virtual, $motto, $tag, $accepted
         ) = $_[0]->fetchrow_array
             or return ();
         my ($country, $flag) = get_flag($country_abb);
-        return ( 
+        return (
             href_delete => url_f('users', delete => $caid),
             href_edit => url_f('users', edit => $aid),
             motto => $motto,
@@ -2140,102 +2192,6 @@ sub users_frame
 }
 
 
-sub registration_frame
-{
-    init_template('main_registration.htm');
-
-    $t->param(countries => [ @cats::countries ], href_login => url_f('login'));
-
-    defined param('register')
-        or return;
-    
-    my %up = map { $_ => (param($_) || '') } CATS::User::param_names(), qw(password1 password2);
-    CATS::User::validate_params(\%up, validate_password => 1) or return;
-
-    if ($dbh->selectrow_array(qq~SELECT COUNT(*) FROM accounts WHERE login=?~, {}, $up{login}))
-    {
-        msg(103);
-        return;       
-    }
-
-    my $training_contests = $dbh->selectall_arrayref(qq~
-        SELECT id, closed FROM contests WHERE ctype = 1~, { Slice => {} });
-    0 == grep $_->{closed}, @$training_contests
-        or return msg(105);
-        
-    my $aid = new_id;
-    $dbh->do(qq~
-        INSERT INTO accounts (
-            id, srole, passwd, ~ . join (', ', CATS::User::param_names()) . qq~
-        ) VALUES (?,?,?,?,?,?,?,?,?,?,?)~, {},
-        $aid, $cats::srole_user, $up{password1},
-        @up{CATS::User::param_names()}
-    );
-    insert_ooc_user(contest_id => $_->{id}, account_id => $aid) for @$training_contests;
-         
-    $dbh->commit;
-    $t->param(successfully_registred => 1);
-}
-
-
-sub settings_save
-{
-    my %up = map { $_ => (param($_) || '') } CATS::User::param_names(), qw(password1 password2);
-    my $set_password = param_on('set_password');
-
-    my ($old_login, $old_team_name) = $dbh->selectrow_array(qq~
-        SELECT login, team_name FROM accounts WHERE id = ?~, undef,
-        $uid);
-    if (($old_team_name ne $up{team_name}) &&
-        (my ($official_contest) = any_official_contest_by_team($uid)))
-    {
-        # Если команда участвовала в официальных соревнованиях, запретить изменять её название
-        return msg(86, $official_contest);
-    }
-
-    CATS::User::validate_params(\%up, validate_password => $set_password) or return;
-
-    if ($old_login ne $up{login})
-    {
-        $dbh->selectrow_array(qq~
-            SELECT COUNT(*) FROM accounts WHERE id <> ? AND login = ?~, {}, $uid, $up{login}
-        ) and return msg(103);
-    }
- 
-    $up{passwd} = $up{password1} if $set_password;
-    delete @up{qw(password1 password2)};
-    $dbh->do(_u $sql->update('accounts', \%up, { id => $uid }));
-    $dbh->commit;
-}
-
-
-sub settings_frame
-{      
-    init_template('main_settings.htm');
-
-    if (defined param('edit_save') && $is_team)
-    {
-        settings_save;
-    }
-
-    my $settings = $dbh->selectrow_hashref(qq~
-        SELECT login, team_name, capitan_name, motto, country, email, home_page, icq_number
-        FROM accounts WHERE id = ?~, { Slice => {} },
-        $uid
-    );
-
-    my $countries = [ @cats::countries ];
-
-    if (defined $settings->{country})
-    {
-        $_->{selected} = $_->{id} eq $settings->{country}
-            for @$countries;
-    }
-
-    $t->param(countries => $countries, href_action => url_f('users'), %$settings);
-}
-
-
 sub reference_names()
 {
     (
@@ -2254,7 +2210,8 @@ sub references_menu
     for (reference_names())
     {
         my $sel = $_->{name} eq $ref_name;
-        push @result, { href_item => url_f($_->{name}), item_name => res_str($_->{item}), selected => $sel };
+        push @result,
+            { href_item => url_f($_->{name}), item_name => res_str($_->{item}), selected => $sel };
         if ($sel && $is_root)
         {
             unshift @result, 
@@ -3834,6 +3791,7 @@ sub interface_functions ()
         console_content => \&console_content_frame,
         console => \&console_frame,
         problems => \&problems_frame,
+        problems_retest => \&problems_retest_frame,
         problem_select_testsets => \&problem_select_testsets,
         users => \&users_frame,
         compilers => \&compilers_frame,

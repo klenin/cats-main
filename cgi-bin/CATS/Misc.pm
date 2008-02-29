@@ -71,10 +71,11 @@ use CATS::Contest;
 use vars qw(
     $contest @messages $t $sid $cid $lng $uid $team_name $server_time $dbi_error
     $is_root $is_team $is_jury $is_virtual $virtual_diff_time
-    $listview_name $listview_array_name $col_defs $sort $sort_dir $search $page $visible $additional
+    $listview_name $col_defs $sort $sort_dir $search $page $visible $additional
     $request_start_time $init_time
 );
 
+my ($listview_array_name);
 
 my $cats_dir;
 sub cats_dir()

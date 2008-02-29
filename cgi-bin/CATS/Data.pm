@@ -17,7 +17,6 @@ BEGIN
         get_registered_contestant
         enforce_request_state
         get_sources_info
-        insert_ooc_user
         is_jury_in_contest
         get_judge_name
         get_contests_info
@@ -184,21 +183,6 @@ sub get_judge_name
       SELECT nick FROM judges WHERE id = ?~,
       {}, $judge_id);
     return $name;
-}
-
-
-sub insert_ooc_user
-{
-    my %p = @_;
-    $p{contest_id} ||= $cid or return;
-    $dbh->do(qq~
-        INSERT INTO contest_accounts (
-            id, contest_id, account_id, is_jury, is_pop, is_hidden, is_ooc, is_remote,
-            is_virtual, diff_time
-        ) VALUES(?,?,?,?,?,?,?,?,?,?)~, {},
-        new_id, $p{contest_id}, $p{account_id}, 0, 0, 0, 1, $p{is_remote} || 0,
-        0, 0
-    );
 }
 
 

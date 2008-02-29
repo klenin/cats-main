@@ -118,8 +118,7 @@ function chg_code(st_sel, pid)
       <TMPL_LOOP de_list><option value="<TMPL_VAR de_id>"><TMPL_VAR de_name ESCAPE=HTML></option></TMPL_LOOP>
       </select>
     </td>
-    <TMPL_IF editable><td>&nbsp;</td><td colspan="2">перетестировать все <input type="checkbox" name="all_runs" value="1"/>
-    </td></TMPL_IF>
+    <TMPL_IF editable><td colspan="3">&nbsp;</td></TMPL_IF>
 </tr><tr>
     <td colspan="2">
         <input type="submit" name="submit" value="отправить" class="button" />
@@ -128,7 +127,7 @@ function chg_code(st_sel, pid)
     <TMPL_IF editable><td>&nbsp;</td><td colspan="2">
         <input type="button" name="delete" value="удалить" class="button" onclick="d()" />
         <input type="submit" name="replace" value="заменить" class="button" />
-        <input type="submit" name="mass_retest" value="перетестировать" class="button" />
+        <input type="submit" name="add_new" value="добавить" class="button" />
     </td></TMPL_IF>
 </tr></table>
 </TMPL_IF>
