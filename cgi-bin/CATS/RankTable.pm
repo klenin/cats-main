@@ -240,6 +240,74 @@ sub parse_params
 }
 
 
+sub prepare_ranks
+{
+    (my CATS::RankTable $self, my $teams, my @p_id) = @_;
+
+    my @rank = values %$teams;
+
+    if ($self->{filter})
+    {
+        @rank = grep index(($_->{tag} || '') . $_->{team_name}, $self->{filter}) >= 0, @rank;
+    }
+
+    my $sort_criteria = $self->{show_points} ?
+        sub {
+            $b->{total_points} <=> $a->{total_points} ||
+            $b->{total_runs} <=> $a->{total_runs} 
+        }:
+        sub {
+            $b->{total_solved} <=> $a->{total_solved} ||
+            $a->{total_time} <=> $b->{total_time} ||
+            $b->{total_runs} <=> $a->{total_runs}
+        };
+    @rank = sort $sort_criteria @rank;
+
+    my ($row_num, $same_place_count, $row_color) = (1, 0, 0);
+    my %prev = ('time' => 1000000, solved => -1, points => -1);
+
+    for my $team (@rank)
+    {
+        my @columns = ();
+
+        for (@p_id)
+        {
+            my $p = $team->{problems}->{$_};
+
+            my $c = $p->{solved} ? '+' . ($p->{runs} - 1 || '') : -$p->{runs} || '.';
+
+            push @columns, {
+                td => $c, 'time' => ($p->{time_hm} || ''),
+                points => (defined $p->{points} ? $p->{points} : '.')
+            };
+        }
+
+        $row_color = 1 - $row_color
+            if $self->{show_points} ? $row_num % 5 == 1 : $prev{solved} > $team->{total_solved};
+        if ($self->{show_points} ?
+                $prev{points} > $team->{total_points}:
+                $prev{solved} > $team->{total_solved} || $prev{'time'} < $team->{total_time})
+        {
+            $same_place_count = 1;
+        }
+        else
+        {
+            $same_place_count++;
+        }
+
+        $prev{$_} = $team->{"total_$_"} for keys %prev;
+
+        $team->{row_color} = $row_color;
+        $team->{contestant_number} = $row_num++;
+        $team->{place} = $row_num - $same_place_count;
+        $team->{columns} = [ @columns ];
+        $team->{show_points} = $self->{show_points};
+        $team->{href_console} = url_f('console', uf => $team->{account_id});
+    }
+    $self->{rank} = \@rank;
+    ($row_num, $row_color);
+}
+
 sub rank_table
 {
     (my CATS::RankTable $self) = @_;
@@ -324,7 +392,7 @@ sub rank_table
         my $p = $t->{problems}->{$_->{problem_id}};
         if ($self->{show_points} && !defined $_->{points})
         {
-            $_->{points} = CATS::RankTable::cache_req_points($_->{id});
+            $_->{points} = cache_req_points($_->{id});
             $need_commit = 1;
         }
         next if $p->{solved} && !$self->{show_points};
@@ -348,76 +416,17 @@ sub rank_table
             $p->{points} = $_->{points};
         }
     }
-
     $dbh->commit if $need_commit;
+
     if (!$self->{frozen} && !$is_virtual && @$results && !$self->{has_practice})
     {
         Storable::lock_store({ t => $teams, p => $problems, r => $max_req_id }, $cache_file);
     }
 
-    my @rank = values %$teams;
-    if ($self->{filter})
-    {
-        @rank = grep index(($_->{tag} || '') . $_->{team_name}, $self->{filter}) >= 0, @rank;
-    }
-
-    my $sort_criteria = $self->{show_points} ?
-        sub {
-            $b->{total_points} <=> $a->{total_points} ||
-            $b->{total_runs} <=> $a->{total_runs} 
-        }:
-        sub {
-            $b->{total_solved} <=> $a->{total_solved} ||
-            $a->{total_time} <=> $b->{total_time} ||
-            $b->{total_runs} <=> $a->{total_runs}
-        };
-    @rank = sort $sort_criteria @rank;
-
-    my ($row_num, $same_place_count, $row_color) = (1, 0, 0);
-    my %prev = ('time' => 1000000, solved => -1, points => -1);
-
-    for my $team (@rank)
-    {
-        my @columns = ();
-
-        for (@p_id)
-        {
-            my $p = $team->{problems}->{$_};
-
-            my $c = $p->{solved} ? '+' . ($p->{runs} - 1 || '') : -$p->{runs} || '.';
-
-            push @columns, {
-                td => $c, 'time' => ($p->{time_hm} || ''),
-                points => (defined $p->{points} ? $p->{points} : '.')
-            };
-        }
-
-        $row_color = 1 - $row_color
-            if $self->{show_points} ? $row_num % 5 == 1 : $prev{solved} > $team->{total_solved};
-        if ($self->{show_points} ?
-                $prev{points} > $team->{total_points}:
-                $prev{solved} > $team->{total_solved} || $prev{'time'} < $team->{total_time})
-        {
-            $same_place_count = 1;
-        }
-        else
-        {
-            $same_place_count++;
-        }
-
-        $prev{$_} = $team->{"total_$_"} for keys %prev;
-
-        $team->{row_color} = $row_color;
-        $team->{contestant_number} = $row_num++;
-        $team->{place} = $row_num - $same_place_count;
-        $team->{columns} = [ @columns ];
-        $team->{show_points} = $self->{show_points};
-        $team->{href_console} = url_f('console', uf => $team->{account_id});
-    }
-
+    my ($row_num, $row_color) = $self->prepare_ranks($teams, @p_id);
     # Расчёт статистики
     @$_{qw(total_runs total_accepted total_points)} = (0, 0, 0) for values %$problems;
-    for my $t (@rank)
+    for my $t (@{$self->{rank}})
     {
         for my $pid (keys %{$t->{problems}})
         {
@@ -445,9 +454,8 @@ sub rank_table
             }} @p_id 
         ],
         problem_stats_color => 1 - $row_color,
-        rank => [ @rank ]
+        rank => $self->{rank}
     );
-    $self->{rank} = \@rank;
 }
 
 

@@ -31,6 +31,7 @@ function delete_compiler(href, name)
 </td>
 <td><TMPL_VAR description ESCAPE=HTML></td>
 <td><TMPL_VAR supported_ext ESCAPE=HTML></td>
+<td><TMPL_VAR memory_handicap></td>
 <TMPL_IF editable><td><TMPL_IF locked><font color=red>заблокирована</font><TMPL_ELSE>поддерживается</TMPL_IF></td></TMPL_IF>
 </tr>
 </TMPL_LOOP>

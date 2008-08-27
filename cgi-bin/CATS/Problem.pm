@@ -13,10 +13,11 @@ use CATS::DB;
 use CATS::Misc qw($uid escape_html);
 use CATS::BinaryFile;
 use CATS::DevEnv;
+use FormalInput;
 
 use fields qw(
     contest_id id import_log debug problem checker
-    statement constraints input_format output_format explanation
+    statement constraints input_format output_format formal_input explanation
     tests testsets samples objects keywords
     imports solutions generators modules pictures
     current_tests current_sample gen_groups
@@ -245,6 +246,7 @@ sub tag_handlers()
     ProblemConstraints => { stml_handlers('constraints') },
     InputFormat => { stml_handlers('input_format') },
     OutputFormat => { stml_handlers('output_format') },
+    FormalInput => { stml_handlers('formal_input'), e => \&end_tag_FormalInput  },
     Explanation => { stml_handlers('explanation') },
     Problem => {
         s => \&start_tag_Problem, e => \&end_tag_Problem,
@@ -364,9 +366,29 @@ sub create_generator
         id => new_id,
         $self->read_member_named(name => $p->{src}, kind => 'generator'),
         de_code => $p->{de_code},
-        guid => $p->{export}, 
+        guid => $p->{export} || undef, 
         outputFile => $p->{outputFile},
     });
+}
+
+
+sub end_tag_FormalInput
+{
+    (my CATS::Problem $self, my $atts) = @_;
+    my $parser_err = FormalInput::parserValidate(${$self->{stml}});
+    #$self->note($self->{formal_input});
+    if ($parser_err)
+    {
+        my $s = FormalInput::errorMessageByCode(FormalInput::getErrCode($parser_err));
+        my $l = FormalInput::getErrLine($parser_err);
+        my $p = FormalInput::getErrPos($parser_err);
+        $self->error("FormalInput: $s. Line: $l. Pos: $p.");
+    }
+    else
+    {
+        $self->note("FormalInput OK.");
+    }
+    $self->end_stml;
 }
 
 
@@ -409,23 +431,20 @@ sub start_tag_Module
 }
 
 
-sub start_tag_Import
+sub import_one_source
 {
-    (my CATS::Problem $self, my $atts) = @_;
-
-    my $guid = $atts->{guid};
-    push @{$self->{imports}}, my $import = { guid => $guid, name => $atts->{name} };
+    (my CATS::Problem $self, my $guid, my $name, my $type) = @_;
+    push @{$self->{imports}}, my $import = { guid => $guid, name => $name };
     my ($src_id, $stype) = $self->{debug} ? (undef, undef) : $dbh->selectrow_array(qq~
         SELECT id, stype FROM problem_sources WHERE guid = ?~, undef, $guid);
 
-    my $t = $atts->{type};
-    !$t || ($t = $import->{type} = module_types()->{$t})
-        or $self->error("Unknown import source type: $t");
+    !$type || ($type = $import->{type} = module_types()->{$type})
+        or $self->error("Unknown import source type: $type");
 
     if ($src_id)
     {
-        !$t || $stype == $t || $cats::source_modules{$stype} == $t
-            or $self->error("Import type check failed for guid='$guid' ($t vs $stype)");
+        !$type || $stype == $type || $cats::source_modules{$stype} == $type
+            or $self->error("Import type check failed for guid='$guid' ($type vs $stype)");
         $self->checker_added if $stype == $cats::checker || $stype == $cats::testlib_checker;
         $import->{src_id} = $src_id;
         $self->note("Imported source from guid='$guid'");
@@ -433,6 +452,27 @@ sub start_tag_Import
     else
     {
         $self->warning("Import source not found for guid='$guid'");
+    }
+    
+}
+
+sub start_tag_Import
+{
+    (my CATS::Problem $self, my $atts) = @_;
+
+    (my $guid, my @nt) = @$atts{qw(guid name type)};
+    if ($guid =~ /\*/)
+    {
+        $guid =~ s/%/\\%/g;
+        $guid =~ s/\*/%/g;
+        my $guids = $dbh->selectcol_arrayref(qq~
+            SELECT guid FROM problem_sources WHERE guid LIKE ? ESCAPE '\\'~, undef, $guid);
+        $self->import_one_source($_, @nt) for @$guids;
+    }
+    else
+    {
+        # обычный случай -- прямая ссылка
+        $self->import_one_source($guid, @nt);
     }
 }
 
@@ -597,19 +637,19 @@ sub end_tag_Problem
         SET
             contest_id=?,
             title=?, lang=?, time_limit=?, memory_limit=?, difficulty=?, author=?, input_file=?, output_file=?, 
-            statement=?, pconstraints=?, input_format=?, output_format=?, explanation=?, zip_archive=?,
-            upload_date=CATS_SYSDATE(), std_checker=?, last_modified_by=?,
+            statement=?, pconstraints=?, input_format=?, output_format=?, formal_input=?, explanation=?, zip_archive=?,
+            upload_date=CATS_SYSDATE(), std_checker=?, last_modified_by=?, 
             max_points=?, hash=NULL
         WHERE id = ?~
     : q~
         INSERT INTO problems (
             contest_id,
             title, lang, time_limit, memory_limit, difficulty, author, input_file, output_file,
-            statement, pconstraints, input_format, output_format, explanation, zip_archive,
+            statement, pconstraints, input_format, output_format, formal_input, explanation, zip_archive,
             upload_date, std_checker, last_modified_by,
             max_points, id
         ) VALUES (
-            ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CATS_SYSDATE(),?,?,?,?
+            ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CATS_SYSDATE(),?,?,?,?
         )~;
  
     my $c = $dbh->prepare($sql);
@@ -618,7 +658,7 @@ sub end_tag_Problem
     $c->bind_param($i++, $self->{problem}->{$_})
         for qw(title lang time_limit memory_limit difficulty author input_file output_file);
     $c->bind_param($i++, $self->{$_}, { ora_type => 113 })
-        for qw(statement constraints input_format output_format explanation zip_archive);
+        for qw(statement constraints input_format output_format formal_input explanation zip_archive);
     $c->bind_param($i++, $self->{problem}->{std_checker});
     $c->bind_param($i++, $uid);
     $c->bind_param($i++, $self->{problem}->{max_points});

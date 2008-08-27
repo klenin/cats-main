@@ -29,6 +29,11 @@
     <TMPL_VAR input_format>
 </TMPL_IF>
 
+<TMPL_IF formal_input>
+    <h3><i>Формальный вход</i></h3>
+    <pre><TMPL_VAR formal_input></pre>
+</TMPL_IF>
+
 <TMPL_IF output_format>
     <h3><i>Формат выходного файла</i></h3>
     <TMPL_VAR output_format>

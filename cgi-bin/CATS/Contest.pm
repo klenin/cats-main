@@ -63,4 +63,12 @@ sub has_started
 }
 
 
+sub current_official
+{
+    $dbh->selectrow_hashref(qq~
+        SELECT id, title FROM contests
+            WHERE CATS_SYSDATE() BETWEEN start_date AND finish_date AND is_official = 1~);
+}
+
+
 1;

@@ -7,6 +7,7 @@ use CGI ();
 
 use CATS::DB;
 use CATS::Misc qw(:all);
+use CATS::Contest;
 
 BEGIN
 {
@@ -114,7 +115,7 @@ sub get_sources_info
             A.team_name,
             P.title AS problem_name,
             C.title AS contest_name,
-            CP.testsets
+            CP.testsets, C.id AS contest_id
         FROM sources S
             INNER JOIN reqs R ON R.id = S.req_id
             INNER JOIN default_de DE ON DE.id = S.de_id
@@ -125,15 +126,22 @@ sub get_sources_info
         WHERE req_id IN ($req_id_list)~, { Slice => {} }
     ) or return;
     
+    my $official = $p{get_source} && !$is_jury && CATS::Contest::current_official;
     for my $r (@$result)
     {
-        # Только минуты от времени начала и окончания обработки.
+        # Только часы и минуты от времени начала и окончания обработки.
         ($r->{"${_}_short"} = $r->{$_}) =~ s/^(.*)\s+(\d\d:\d\d)\s*$/$2/
             for qw(test_time result_time);
         #$r->{src} =~ s/</&lt;/;
         $r = { %$r, state_to_display($r->{state}) };
         get_nearby_attempt($r, 'prev', '<', 'DESC', 1);
         get_nearby_attempt($r, 'next', '>', 'ASC', 0);
+        # Во время официального турнира запретить просмотр исходного кода из других турниров,
+        # чтобы не допустить списывания.
+        if ($official && $official->{id} != $r->{contest_id})
+        {
+            $r->{src} = res_str(123, $official->{title});
+        }
     }
 
     return ref $p{request_id} ? $result : $result->[0];

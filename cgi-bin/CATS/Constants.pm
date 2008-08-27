@@ -39,6 +39,17 @@ $solution_module = 5;
 $checker_module = 6;
 $testlib_checker = 7;
 
+%source_module_names = (
+    $generator => 'generator',
+    $solution => 'solution',
+    $checker => 'checker (deprecated)',
+    $adv_solution => 'solution (autorun)',
+    $generator_module => 'generator module',
+    $solution_module => 'solution module',
+    $checker_module => 'checker module',
+    $testlib_checker => 'checker',
+);
+
 # типы модулей для исходников
 %source_modules = (
     $generator => $generator_module,

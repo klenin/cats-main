@@ -31,7 +31,7 @@ sub personal_official_results
         WHERE
             (is_hidden = 0 OR is_hidden IS NULL) AND
             defreeze_date < CURRENT_DATE AND (~ .
-            join(' OR ' => map 'title LIKE ?' => @names) . q~) ORDER BY start_date~,
+            join(' OR ' => map 'title LIKE ?' => @names) . q~) ORDER BY start_date DESC~,
         { Slice => {} }, map "$_ %", @names);
 
     my $search = Encode::decode_utf8(param('search'));

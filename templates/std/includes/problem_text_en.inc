@@ -40,6 +40,11 @@
     <TMPL_VAR pconstraints>
 </TMPL_IF>
 
+<TMPL_IF formal_input>
+    <h3><i>Formal input</i></h3>
+    <pre><TMPL_VAR formal_input></pre>
+</TMPL_IF>
+
 <TMPL_IF extended_samples>
 <TMPL_LOOP samples>
 <h4><i>Sample input #<TMPL_VAR rank></i></h4>

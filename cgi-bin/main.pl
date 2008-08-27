@@ -771,7 +771,7 @@ sub console
             href_send_message_box =>$is_jury ? url_f('send_message_box', caid => $caid) : undef,
             'time' =>               $submit_time,
             problem_title =>        $problem_title,
-            state_to_display($request_state),
+            state_to_display($request_state, !$is_jury && (!$is_team || !$team_id || $team_id != $uid)),
             failed_test_index =>    $failed_test,
             question_text =>        $question,
             answer_text =>          $answer,
@@ -924,6 +924,7 @@ sub console_frame
         href_run_details => url_f('run_details'),
         href_run_log => url_f('run_log'),
         href_diff => url_f('diff_runs'),
+        title_suffix => res_str(510),
     );
 }
 
@@ -1781,7 +1782,7 @@ sub problems_frame
         push @submenu,
             $is_jury ?
             (
-                { %pt_url, href_item => url_f('problem_text', nospell => 1, nokw => 1, notime => 1) },
+                { %pt_url, href_item => url_f('problem_text', nospell => 1, nokw => 1, notime => 1, noformal => 1) },
                 { %pt_url, href_item => url_f('problem_text'), item_name => res_str(555) },
             ):
             (
@@ -1799,7 +1800,7 @@ sub problems_frame
         );
     }
 
-    $t->param(submenu => \@submenu);
+    $t->param(submenu => \@submenu, title_suffix => res_str(525));
     $t->param(is_team => $my_is_team, is_practice => $contest->is_practice, de_list => \@de);
 }
 
@@ -2198,6 +2199,7 @@ sub reference_names()
         { name => 'compilers', new => 542, item => 517 },
         { name => 'judges', new => 543, item => 511 },
         { name => 'keywords', new => 550, item => 549 },
+        { name => 'import_sources', item => 557 },
     )
 }
 
@@ -2212,7 +2214,7 @@ sub references_menu
         my $sel = $_->{name} eq $ref_name;
         push @result,
             { href_item => url_f($_->{name}), item_name => res_str($_->{item}), selected => $sel };
-        if ($sel && $is_root)
+        if ($sel && $is_root && $_->{new})
         {
             unshift @result, 
                 { href_item => url_f($_->{name}, new => 1), item_name => res_str($_->{new}) };
@@ -2235,10 +2237,12 @@ sub compilers_new_save
     my $description = param('description');
     my $supported_ext = param('supported_ext');
     my $locked = param_on('locked');
+    my $memory_handicap = param('memory_handicap');
             
     $dbh->do(qq~
-        INSERT INTO default_de(id, code, description, file_ext, in_contests) VALUES(?,?,?,?,?)~, {}, 
-        new_id, $code, $description, $supported_ext, !$locked);
+        INSERT INTO default_de(id, code, description, file_ext, in_contests, memory_handicap)
+        VALUES(?,?,?,?,?,?)~, {}, 
+        new_id, $code, $description, $supported_ext, !$locked, $memory_handicap);
     $dbh->commit;   
 }
 
@@ -2249,9 +2253,11 @@ sub compilers_edit_frame
 
     my $id = url_param('edit');
 
-    my ($code, $description, $supported_ext, $in_contests) =
+    my ($code, $description, $supported_ext, $in_contests, $memory_handicap) =
         $dbh->selectrow_array(qq~
-            SELECT code, description, file_ext, in_contests FROM default_de WHERE id=?~, {}, $id);
+            SELECT code, description, file_ext, in_contests, memory_handicap
+            FROM default_de WHERE id = ?~, {},
+            $id);
 
     $t->param(
         id => $id,
@@ -2259,6 +2265,7 @@ sub compilers_edit_frame
         description => $description, 
         supported_ext => $supported_ext, 
         locked => !$in_contests,
+        memory_handicap => $memory_handicap,
         href_action => url_f('compilers'));
 }
 
@@ -2269,12 +2276,15 @@ sub compilers_edit_save
     my $description = param('description');
     my $supported_ext = param('supported_ext');
     my $locked = param_on('locked');
+    my $memory_handicap = param('memory_handicap');
     my $id = param('id');
-            
+
     $dbh->do(qq~
-        UPDATE default_de SET code=?, description=?, file_ext=?, in_contests=? WHERE id=?~, {}, 
-             $code, $description, $supported_ext, !$locked, $id);
-    $dbh->commit;   
+        UPDATE default_de
+        SET code = ?, description = ?, file_ext = ?, in_contests = ?, memory_handicap = ?
+        WHERE id = ?~, {}, 
+        $code, $description, $supported_ext, !$locked, $memory_handicap, $id);
+    $dbh->commit;
 }
 
 
@@ -2305,23 +2315,25 @@ sub compilers_frame
         { caption => res_str(619), order_by => '2', width => '10%' },
         { caption => res_str(620), order_by => '3', width => '40%' },
         { caption => res_str(621), order_by => '4', width => '20%' },
+        { caption => res_str(640), order_by => '6', width => '15%' },
         ($is_jury ? { caption => res_str(622), order_by => '5', width => '10%' } : ())
     ]);
 
     my $where = $is_jury ? '' : ' WHERE in_contests = 1';
     my $c = $dbh->prepare(qq~
-        SELECT id, code, description, file_ext, in_contests
+        SELECT id, code, description, file_ext, in_contests, memory_handicap
         FROM default_de$where ~.order_by);
     $c->execute;
 
     my $fetch_record = sub($)
     {            
-        my ($did, $code, $description, $supported_ext, $in_contests) = $_[0]->fetchrow_array
+        my ($did, $code, $description, $supported_ext, $in_contests, $memory_handicap) = $_[0]->fetchrow_array
             or return ();
         return ( 
-            editable => $is_jury, did => $did, code => $code, 
+            editable => $is_root, did => $did, code => $code, 
             description => $description,
             supported_ext => $supported_ext,
+            memory_handicap => $memory_handicap,
             locked => !$in_contests,
             href_edit => url_f('compilers', edit => $did),
             href_delete => url_f('compilers', 'delete' => $did));
@@ -2330,7 +2342,7 @@ sub compilers_frame
 
     if ($is_jury)
     {
-        $t->param(submenu => [ references_menu('compilers') ], editable => 1);
+        $t->param(submenu => [ references_menu('compilers') ], editable => $is_root);
     }
 }
 
@@ -2542,7 +2554,58 @@ sub keywords_frame
 
     attach_listview(url_f('keywords'), $fetch_record, $c);
 
-    $t->param(submenu => [ references_menu('keywords') ], editable => 1) if $is_root;
+    $t->param(submenu => [ references_menu('keywords') ], editable => $is_root) if $is_jury;
+}
+
+
+sub import_sources_frame
+{
+    $is_jury or return;
+    init_listview_template('import_sources' . ($uid || ''), 'import_sources', 'main_import_sources.htm');
+    define_columns(url_f('import_sources'), 0, 0, [
+        { caption => res_str(638), order_by => '2', width => '30%' },
+        { caption => res_str(642), order_by => '3', width => '30%' },
+        { caption => res_str(641), order_by => '4', width => '30%' },
+        { caption => res_str(643), order_by => '5', width => '10%' },
+    ]);
+
+    my $c = $dbh->prepare(qq~
+        SELECT ps.id, ps.guid, ps.stype, de.code,
+            (SELECT COUNT(*) FROM problem_sources_import psi WHERE ps.guid = psi.guid) AS ref_count,
+            ps.fname, ps.problem_id, p.title, p.contest_id
+            FROM problem_sources ps INNER JOIN default_de de ON de.id = ps.de_id
+            INNER JOIN problems p ON p.id = ps.problem_id
+            WHERE ps.guid IS NOT NULL ~.order_by);
+    $c->execute;
+
+    my $fetch_record = sub($)
+    {
+        my $f = $_[0]->fetchrow_hashref or return ();
+        return ( 
+            %$f,
+            stype_name => $cats::source_module_names{$f->{stype}},
+            href_problems => url_function('problems', sid => $sid, cid => $f->{contest_id}),
+            href_source => url_f('download_import_source', psid => $f->{id}),
+        );
+    };
+
+    attach_listview(url_f('import_sources'), $fetch_record, $c);
+
+    $t->param(submenu => [ references_menu('import_sources') ]);
+}
+
+
+sub download_import_source_frame
+{
+    $is_jury or return;
+    my $psid = param('psid') or return;
+    my ($fname, $src) = $dbh->selectrow_array(qq~
+        SELECT fname, src FROM problem_sources WHERE id = ? AND guid IS NOT NULL~, undef, $psid) or return;
+    binmode(STDOUT, ':raw');
+    print STDOUT CGI::header(
+        -type => 'text/plain',
+        -content_disposition => "inline;filename=$fname");
+    print STDOUT $src;
 }
 
 
@@ -2618,7 +2681,7 @@ sub answer_box_frame
 }
 
 
-sub source_encodings { {'UTF-8' => 1, 'WINDOWS-1251' => 1, 'KOI8-R' => 1, 'CP866' => 1} }
+sub source_encodings { {'UTF-8' => 1, 'WINDOWS-1251' => 1, 'KOI8-R' => 1, 'CP866' => 1, 'UCS-2LE' => 1} }
 
 sub source_links
 {
@@ -2964,7 +3027,7 @@ sub rank_table_frame
             { href_item => url_f('rank_table', @params, cache => 1 - ($cache || 0)), item_name => res_str(553) },
             { href_item => url_f('rank_table', @params, points => 1 - ($show_points || 0)), item_name => res_str(554) };
     }
-    $t->param(submenu => $submenu);
+    $t->param(submenu => $submenu, title_suffix => res_str(529));
 }
 
 
@@ -3250,7 +3313,7 @@ sub problem_text_frame
                 id, contest_id, title, lang, time_limit, memory_limit,
                 difficulty, author, input_file, output_file,
                 statement, pconstraints, input_format, output_format, explanation,
-                max_points
+                formal_input, max_points
             FROM problems WHERE id = ?~, { Slice => {} },
             $problem_id);
         my $lang = $problem_data->{lang};
@@ -3299,6 +3362,7 @@ sub problem_text_frame
                 s/(?<=\s)-{2,3}/&#151;/g; # тире
             }
         }
+        $is_jury && !param('noformal') or undef $problem_data->{formal_input};
         $explain or undef $problem_data->{explanation};
         push @problems, {
             %$problem_data,
@@ -3486,13 +3550,12 @@ sub generate_menu
 
     my @right_menu = ();
 
-    if ($is_team && (url_param('f') ne 'logout'))
+    if ($uid && (url_param('f') ne 'logout'))
     {
         @right_menu = ( { item => res_str(518), href => url_f('settings') } );
     }
     
-    push @right_menu,
-        (       
+    push @right_menu, (       
         { item => res_str(544), href => url_f('about') },
         { item => res_str(501), href => url_f('registration') } );
 
@@ -3519,6 +3582,9 @@ sub interface_functions ()
         compilers => \&compilers_frame,
         judges => \&judges_frame,
         keywords => \&keywords_frame,
+        import_sources => \&import_sources_frame,
+        download_import_source => \&download_import_source_frame,
+
         answer_box => \&answer_box_frame,
         send_message_box => \&send_message_box_frame,
         

@@ -43,13 +43,12 @@ function confirm_registration()
 <td align=center><TMPL_VAR start_date ESCAPE=HTML></td>
 <td align=center><TMPL_VAR finish_date ESCAPE=HTML></td>
 <td>
-    <TMPL_UNLESS registration_denied>
-    <TMPL_IF registered_online>участник</TMPL_IF>
-    <TMPL_IF registered_virtual>виртуальный участник</TMPL_IF>    
-    </TMPL_UNLESS>
-    <TMPL_IF is_official><font color="blue">официальный</font></TMPL_IF>
-    <TMPL_IF registration_denied><font color="red">регистрация закрыта</font></TMPL_IF>
-    <TMPL_IF show_points><font color="green">школьные правила</font></TMPL_IF>
+    <TMPL_UNLESS registration_denied><TMPL_IF registered_online>участник</TMPL_IF
+    ><TMPL_IF registered_virtual>виртуальный участник</TMPL_IF
+    > </TMPL_UNLESS
+    > <TMPL_IF is_official><font color="blue">официальный</font></TMPL_IF
+    > <TMPL_IF registration_denied><font color="red">регистрация закрыта</font></TMPL_IF
+    > <TMPL_IF show_points><font color="green">школьные правила</font></TMPL_IF>
 </td>
 </tr>
 </TMPL_LOOP>

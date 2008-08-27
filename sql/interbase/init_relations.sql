@@ -22,7 +22,8 @@ CREATE TABLE default_de (
     file_ext    VARCHAR(200),
     in_contests INTEGER DEFAULT 1 CHECK (in_contests IN (0, 1)),
     in_banks    INTEGER DEFAULT 1 CHECK (in_banks IN (0, 1)),
-    in_tsess    INTEGER DEFAULT 1 CHECK (in_tsess IN (0, 1))
+    in_tsess    INTEGER DEFAULT 1 CHECK (in_tsess IN (0, 1)),
+    memory_handicap INTEGER DEFAULT 0
 );
 
 
@@ -85,6 +86,8 @@ CREATE TABLE contest_accounts (
     is_ooc      INTEGER DEFAULT 0 CHECK (is_ooc IN (0, 1)),
     is_remote   INTEGER DEFAULT 0 CHECK (is_remote IN (0, 1)),
     tag         VARCHAR(200),
+    is_virtual  INTEGER,
+    diff_time   FLOAT,
     UNIQUE(contest_id, account_id)
 );
 
@@ -107,6 +110,7 @@ CREATE TABLE problems (
     pconstraints    BLOB,
     input_format    BLOB,
     output_format   BLOB,
+    formal_input    BLOB,
     zip_archive     BLOB,
     last_modified_by INTEGER REFERENCES accounts(id) ON DELETE SET NULL ON UPDATE CASCADE,
     max_points      INTEGER,
@@ -148,7 +152,7 @@ CREATE INDEX ps_guid_idx ON problem_sources(guid);
 CREATE TABLE problem_sources_import
 (
     problem_id  INTEGER NOT NULL REFERENCES problems(id) ON DELETE CASCADE,
-    /* ссылка на problems.guid, constraint отстутвует, чтобы упростить обновление исходной задачи */
+    /* ссылка на problem_sources.guid, constraint отстутвует, чтобы упростить обновление исходной задачи */
     guid        VARCHAR(100) NOT NULL,
     PRIMARY KEY (problem_id, guid)
 );
