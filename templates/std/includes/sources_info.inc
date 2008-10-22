@@ -1,23 +1,23 @@
 <table class="internal_borders" cellpadding="3">
-<tr><th>Команда</th><TMPL_LOOP sources_info><td><b><TMPL_VAR team_name></b></td></TMPL_LOOP></td></tr>
-<tr><th>ID</th><TMPL_LOOP sources_info><td><TMPL_VAR req_id></td></TMPL_LOOP></td></tr>
+<tr><th>Команда</th><TMPL_LOOP sources_info><td><b><TMPL_VAR team_name></b></td></TMPL_LOOP></tr>
+<tr><th>ID</th><TMPL_LOOP sources_info><td><TMPL_VAR req_id></td></TMPL_LOOP></tr>
 <tr><th>Время</th><TMPL_LOOP sources_info
   ><td>
   <TMPL_IF href_prev_attempt> <a href="<TMPL_VAR href_prev_attempt>"><TMPL_VAR prev_attempt_time>&lt;&lt;</a></TMPL_IF>
   <TMPL_VAR submit_time>
   <TMPL_IF href_next_attempt> <a href="<TMPL_VAR href_next_attempt>"><TMPL_VAR next_attempt_time>&gt;&gt;</a></TMPL_IF>
-</td></TMPL_LOOP></td></tr>
-<tr><th>Обработка</th><TMPL_LOOP sources_info><td><TMPL_VAR test_time_short> ... <TMPL_VAR result_time_short></td></TMPL_LOOP></td></tr>
-<tr><th>Язык</th><TMPL_LOOP sources_info><td><TMPL_VAR de_name></td></TMPL_LOOP></td></tr>
-<tr><th>Файл</th><TMPL_LOOP sources_info><td><TMPL_VAR file_name></td></TMPL_LOOP></td></tr>
-<tr><th>Турнир</th><TMPL_LOOP sources_info><td><TMPL_VAR contest_name></td></TMPL_LOOP></td></tr>
+</td></TMPL_LOOP></tr>
+<tr><th>Обработка</th><TMPL_LOOP sources_info><td><TMPL_VAR test_time_short> ... <TMPL_VAR result_time_short></td></TMPL_LOOP></tr>
+<tr><th>Язык</th><TMPL_LOOP sources_info><td><TMPL_VAR de_name></td></TMPL_LOOP></tr>
+<tr><th>Файл</th><TMPL_LOOP sources_info><td><TMPL_VAR file_name></td></TMPL_LOOP></tr>
+<tr><th>Турнир</th><TMPL_LOOP sources_info><td><TMPL_VAR contest_name></td></TMPL_LOOP></tr>
 <tr><th>Задача</th><TMPL_LOOP sources_info><td>
   <TMPL_IF href_contest_problems><a href="<TMPL_VAR href_contest_problems>"><TMPL_VAR problem_name></a>
   <TMPL_ELSE><TMPL_VAR problem_name></TMPL_IF>
-</td></TMPL_LOOP></td></tr>
-<tr><th>Набор тестов</th><TMPL_LOOP sources_info><td><TMPL_VAR testsets></td></TMPL_LOOP></td></tr>
+</td></TMPL_LOOP></tr>
+<tr><th>Набор тестов</th><TMPL_LOOP sources_info><td><TMPL_VAR testsets></td></TMPL_LOOP></tr>
 <TMPL_IF is_jury>
-<tr><th>Судья</th><TMPL_LOOP sources_info><td><TMPL_VAR judge_name></td></TMPL_LOOP></td></tr>
+<tr><th>Судья</th><TMPL_LOOP sources_info><td><TMPL_VAR judge_name></td></TMPL_LOOP></tr>
 </TMPL_IF>
 <tr><th>Состояние</th>
 <TMPL_LOOP sources_info><td>

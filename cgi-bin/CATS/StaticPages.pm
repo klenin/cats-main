@@ -17,7 +17,7 @@ sub process_static
 {
     my $url = $ENV{REDIRECT_URL};
     my ($f, $p) = $url =~ /^\/\w+\/static\/([a-z_]+)-([a-z_\-0-9]+)\.html/;
-    $f && $p or die;
+    $f && $p or die $ENV{REFERER};
     my $ap = allowed_pages()->{$f} or die;
     my %params;
     $p =~ s/([a-z_]+)-(\d+)/$ap->{$1} ? $params{$1} = $2 : ''/eg;
@@ -25,7 +25,7 @@ sub process_static
     my $output_file = path() . name($f, %params) . '.html';
     $params{f} = $f;
     # Чтобы работал url_param, надо заменить QUERY_STRING
-    $ENV{QUERY_STRING} = join '&', map "$_=$params{$_}", keys %params;
+    $ENV{QUERY_STRING} = join ';', map "$_=$params{$_}", keys %params;
     CGI::restore_parameters(\%params);
     return $output_file;
 }

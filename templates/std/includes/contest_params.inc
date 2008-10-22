@@ -11,6 +11,7 @@
     </select><TMPL_ELSE><TMPL_IF rules>школьные<TMPL_ELSE>ACM</TMPL_IF>
     </TMPL_IF>
   </td></tr>
+  <tr><td>Максимальное число попыток:</td><td><input type="text" name="max_reqs" value="<TMPL_VAR max_reqs ESCAPE=HTML>" class="bordered" <TMPL_UNLESS can_edit>readonly="readonly"</TMPL_UNLESS>/></td></tr>
 </table>
 <br/>
 <table cellpadding="0" class="bordered" width="250">

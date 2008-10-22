@@ -120,13 +120,13 @@ sub do_In_genAll
 {
     my ($self, $test, $attr) = @_;
     my $gg = $self->{gen_groups};
-    ('gen_group', $gg->{$test->{genarator_id}} ||= 1 + keys %$gg);
+    ('gen_group', $gg->{$test->{generator_id}} ||= 1 + keys %$gg);
 }
 
 sub start_tag_In
 {
     (my CATS::Problem $self, my $atts) = @_;
-    
+
     my @t = @{$self->{current_tests}};
 
     for my $attr_name (qw/src param/)
@@ -144,8 +144,10 @@ sub start_tag_In
             $self->set_test_attr($_, 'generator_id',
                 $self->get_imported_id($use) || $self->get_named_object($use)->{id});
             # TODO
-            $self->set_test_attr($_, 'gen_groups', $gen_group);
-         }
+            $self->set_test_attr($_, 'gen_group', $gen_group);
+        }
+        $self->note(
+            "Generator group $gen_group created for tests " . join ',', map $_->{rank}, @t) if $gen_group;
     }
 }
 

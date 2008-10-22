@@ -124,6 +124,9 @@ pre { margin-top: 0; margin-bottom: 0 }
 
 span.TeX { font-family: Arial Unicode Ms, Lucida Sans Unicode, Arial, sans serif; }
 span.TeX i { font-family: Times New Roman, serif; }
+span.TeX sup { position: relative; left: 1px; }
+span.TeX sub { position: relative; top: 2px; }
+span.TeX span.over { border-top: 1px solid black; padding: 0px 3px 0px 1px; }
 span.TeX span.num { font-family: Times New Roman, serif; }
 span.TeX span.sqrt { border-top: 1px solid black; padding-right: 2px; }
 span.TeX span.sqrt_sym { font-size: 18px; }
@@ -131,3 +134,5 @@ span.TeX span.sqrt_sym { font-size: 18px; }
 table.nobr tr td { white-space: nowrap; }
 
 a.spell { text-decoration: underline; color: red; }
+
+table.rank_table tr td p { padding: 0; margin: 0; font-size: 10px; }

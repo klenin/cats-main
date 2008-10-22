@@ -1,8 +1,8 @@
 <TMPL_IF message><i><TMPL_VAR message ESCAPE=HTML></i><br/></TMPL_IF>
 <TMPL_IF not_started><i>Соревнования ещё не начались</i>
 <TMPL_ELSE>
-<table width=100%>
 <TMPL_UNLESS printable> 
+<table width="100%">
 <tr>
 <td align=left>
 <TMPL_IF hide_ooc>
@@ -25,9 +25,10 @@
 состояние: <TMPL_IF frozen><font color=#0000a0>заморожена</font><TMPL_ELSE><font color=#00a040>актуальное</font></TMPL_IF>
 </td>
 </tr>
-</TMPL_UNLESS>
 </table>
-<table width="100%" cellspacing="1" class="bordered">
+</TMPL_UNLESS>
+
+<table width="100%" cellspacing="1" class="bordered rank_table">
 <TMPL_IF many_contests>
 <tr bgcolor="#ccccff">
 <th colspan="2"></th>
@@ -41,7 +42,7 @@
 <TMPL_IF show_points>
 <TMPL_LOOP problems>
 <th width="<TMPL_VAR column_width>%">
-  <a href="<TMPL_VAR problem_text>" alt="<TMPL_VAR title>" title="<TMPL_VAR title ESCAPE=HTML>"><TMPL_VAR code></a>
+  <a href="<TMPL_VAR problem_text>" alt="<TMPL_VAR title ESCAPE=HTML>" title="<TMPL_VAR title ESCAPE=HTML>"><TMPL_VAR code></a>
   (<TMPL_VAR max_points>)
 </th>
 </TMPL_LOOP>
@@ -57,6 +58,7 @@
 <th>место</th>
 <th>статус</th>
 
+<TMPL_IF 0>
 <TMPL_LOOP rank>
 <tr align="center"<TMPL_UNLESS row_color> bgcolor="#f4f4f4"</TMPL_UNLESS>>
 <td align="right"><TMPL_VAR contestant_number>&nbsp;</td><TMPL_IF 0><td nowrap align=center bgcolor=#ffffff>
@@ -69,7 +71,7 @@
   ><TMPL_LOOP columns><td><TMPL_VAR points></td></TMPL_LOOP
 ><TMPL_ELSE
   ><TMPL_LOOP columns
-    ><td><font size="1"><TMPL_VAR time ESCAPE=HTML></font><br/><TMPL_VAR td ESCAPE=HTML></td>
+    ><td><p><TMPL_VAR time ESCAPE=HTML></p><TMPL_VAR td ESCAPE=HTML></td>
   </TMPL_LOOP
 ></TMPL_IF
 ><td><TMPL_IF show_points><TMPL_VAR total_points
@@ -77,6 +79,37 @@
 ></td><td><TMPL_VAR place></td><td class="ts"><TMPL_IF is_ooc
   >ooc</TMPL_IF><TMPL_IF is_remote> remote</TMPL_IF><TMPL_IF is_virtual> virtual</TMPL_IF></td></tr>
 </TMPL_LOOP>
+</TMPL_IF>
+
+<TMPL_IF rank><script type="text/javascript"><!--
+var rank_table = [
+<TMPL_LOOP rank>
+  { id: <TMPL_VAR account_id>, n: '<TMPL_VAR team_name ESCAPE=HTML>',<TMPL_IF show_points>
+    pt: [<TMPL_LOOP columns>'<TMPL_VAR points>'<TMPL_UNLESS __last__>,</TMPL_UNLESS></TMPL_LOOP>], tp: <TMPL_VAR total_points><TMPL_ELSE>
+    tm: [<TMPL_LOOP columns>'<TMPL_VAR time>'<TMPL_UNLESS __last__>,</TMPL_UNLESS></TMPL_LOOP>],
+    td: [<TMPL_LOOP columns>'<TMPL_VAR td>'<TMPL_UNLESS __last__>,</TMPL_UNLESS></TMPL_LOOP>],
+    ts: <TMPL_VAR total_solved>, ttm: <TMPL_VAR total_time></TMPL_IF>,
+    pl: <TMPL_VAR place>, st: '<TMPL_IF is_ooc>ooc</TMPL_IF><TMPL_IF is_remote> remote</TMPL_IF><TMPL_IF is_virtual> virtual</TMPL_IF>'
+  }<TMPL_UNLESS __last__>,</TMPL_UNLESS></TMPL_LOOP>
+];
+
+function td(text, attr) { document.write('<td' + (attr == null ? '' : ' ' + attr) + '>' + text + '</td>'); }
+
+for(var i = 0; i < rank_table.length; ++i) {
+    var r = rank_table[i];
+    document.write('<tr align="center"' + (i % 2 ? ' bgcolor="#f4f4f4"': '') + '>');
+    td((i + 1) + '&nbsp;', 'align="right"');
+    td('<a href="<TMPL_VAR href_console>;uf=' + r.id + '">' + r.n + '</a>', 'align="left"');
+    <TMPL_IF show_points>
+    for (var j = 0; j < r.pt.length; ++j) td(r.pt[j]);
+    td(r.tp);
+    <TMPL_ELSE>
+    for (var j = 0; j < r.tm.length; ++j) td('<p>' + r.tm[j] + '</p>' + r.td[j]);
+    td(r.ts); td(r.ttm);
+    </TMPL_IF>
+    td(r.pl); td(r.st, 'class="ts"'); document.write('</tr>');
+}
+--></script></TMPL_IF>
 <tr <TMPL_UNLESS problem_stats_color>bgcolor="#f4f4f4"</TMPL_UNLESS>>
   <td>&nbsp;</td>
   <TMPL_IF show_points>
@@ -85,33 +118,10 @@
   <TMPL_ELSE>
   <td>Успешных попыток</td>
   <TMPL_LOOP problem_stats>
-    <td align="center"><font size="1"><TMPL_VAR total_accepted> / <TMPL_VAR total_runs></font><br>
-    <TMPL_VAR percent_accepted>%</td>
+    <td align="center"><p><TMPL_VAR total_accepted> / <TMPL_VAR total_runs></p><TMPL_VAR percent_accepted>%</td>
   </TMPL_LOOP>
   <td colspan="4">&nbsp;</td>
   </TMPL_IF>
 </tr>
 </table>
 </TMPL_IF>
-<TMPL_IF 0><script type="text/javascript"><!--
-var aa = { x: 1; y: 2; z: 3 };
-var rank_table = new Array(
-<TMPL_LOOP rank>
-  { id: <TMPL_VAR account_id>, n: '<TMPL_VAR team_name ESCAPE=HTML>',
-    <TMPL_IF show_points
-    >pt: new Array(<TMPL_LOOP columns>'<TMPL_VAR points>',</TMPL_LOOP>), tp: <TMPL_VAR total_points><TMPL_ELSE>
-    tm: new Array(<TMPL_LOOP columns><TMPL_VAR time>,</TMPL_LOOP>),
-    td: new Array(<TMPL_LOOP columns><TMPL_VAR td>,</TMPL_LOOP>),
-    ts: <TMPL_VAR total_solved>, ttm: <TMPL_VAR total_time></TMPL_IF>,
-    pl: <TMPL_VAR place>, st: '<TMPL_IF is_ooc>ooc</TMPL_IF><TMPL_IF is_remote> remote</TMPL_IF><TMPL_IF is_virtual> virtual</TMPL_IF>',
-  },</TMPL_LOOP>
-);
-
-//document.write('<table border=1>');
-//for(var i = 0; i < rank_table.length; ++i) {
-//    var r = rank_table[i];
-//    var c = r.columns;
-//    document.write('<tr><td>' + r.n + '</td></tr>');
-//}
-document.write('</table>');
---></script></TMPL_IF>

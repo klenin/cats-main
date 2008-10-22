@@ -62,7 +62,7 @@ function chg_code(st_sel, pid)
 <hr/>
 </TMPL_IF>
 
-<form method="post" enctype="multipart/form-data" name="problems_form" style="margin: 0">
+<TMPL_IF is_team><form method="post" enctype="multipart/form-data" name="problems_form" style="margin: 0"></TMPL_IF>
 <TMPL_INCLUDE 'includes/listview_header.inc'>
 <table width="100%" cellpadding="2" cellspacing="1" class="bordered">
 <TMPL_IF is_team>
@@ -130,6 +130,6 @@ function chg_code(st_sel, pid)
         <input type="submit" name="add_new" value="добавить" class="button" />
     </td></TMPL_IF>
 </tr></table>
-</TMPL_IF>
 </form>
+</TMPL_IF>
 <TMPL_INCLUDE 'includes/menu_end.inc'>

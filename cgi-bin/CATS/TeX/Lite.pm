@@ -15,6 +15,7 @@ my %generators = (
     'sub' => sub { qq~<sub>$_[0]</sub>~ },
     block => sub { join '', @_ },
     'sqrt'=> sub { qq~<span class="sqrt_sym">\&#x221A;</span><span class="sqrt">@_</span>~ },
+    'over'=> sub { qq~<span class="over">@_</span>~ },
 );
 
 my $source;
@@ -33,7 +34,7 @@ sub parse_token
         s/^(\s*)-(\s*)// && return ['op', sp($1), '&minus;', sp($2)];
         s/^(\s*)([+*\/><=])(\s*)// && return ['op', sp($1), $2, sp($3)];
         s/^(\s*)\\([a-zA-Z]+)(\s*)// &&
-            return ['spec', (is_binop($2) ? (sp($1), "\\$2", sp($3)) : "\\$2")];
+            return ['spec', (is_binop($2) ? (sp($1), "\\$2", sp($3)) : ('', "\\$2",  ($3 eq '' ? '' : ' ')))];
         s/^\s*//;
         s/^([()\[\]])// && return ['op', $1];
         s/^([a-zA-Z]+)// && return ['var', $1];
@@ -60,6 +61,10 @@ sub parse_block
         elsif ($source =~ s/^\s*(\\sqrt)//)
         {
             push @res, ['sqrt', parse_token()];
+        }
+        elsif ($source =~ s/^\s*(\\over)//)
+        {
+            push @res, ['over', parse_token()];
         }
         else
         {

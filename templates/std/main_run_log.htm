@@ -5,7 +5,7 @@
 <TMPL_INCLUDE 'includes/sources_info.inc'>
 <br/>
 
-<form method=post enctype='multipart/form-data'>
+<form  action="<TMPL_VAR href_current_link>" method="post">
 
 <input type="submit" name="set_state" value="результат тестирования:" class="button">
 <select name="state">
@@ -37,6 +37,5 @@ on test #
 <TMPL_ELSE>лог отсутствует
 </TMPL_IF>
 
-</table>
 </body>
 </html>

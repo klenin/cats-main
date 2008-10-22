@@ -21,6 +21,7 @@
 </TMPL_LOOP>
 </table>
 <br>
+<TMPL_IF is_jury>
 <TMPL_IF link>
 Код задачи:
 <select name="problem_code">
@@ -32,5 +33,6 @@
 <input type="submit" name="link_save" value="<TMPL_IF move>Переместить<TMPL_ELSE>Прилинковать</TMPL_IF>" class="button" />
 <input type="submit" name="link_cancel" value="Отмена" class="button" />
 </form>
+</TMPL_IF>
 </TMPL_IF>
 <TMPL_INCLUDE 'includes/menu_end.inc'>

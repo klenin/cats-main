@@ -82,7 +82,7 @@ sub login_frame
             my $cid = $dbh->selectrow_array(qq~SELECT id FROM contests WHERE ctype = 1~);
 
             $t = undef;
-            print redirect(-uri => url_function('contests', sid => $sid, cid => $cid));
+            print redirect(-uri => url_function('contests', sid => $sid, cid => $cid, filter => 'current'));
             return;
         }
     }
@@ -128,7 +128,7 @@ sub contest_checkbox_params()
 
 sub contest_string_params()
 {qw(
-    contest_name start_date freeze_date finish_date open_date rules
+    contest_name start_date freeze_date finish_date open_date rules max_reqs
 )}
 
 
@@ -170,13 +170,13 @@ sub contests_new_save
     $p->{free_registration} = !$p->{free_registration};
     $dbh->do(qq~
         INSERT INTO contests (
-            id, title, start_date, freeze_date, finish_date, defreeze_date, rules,
+            id, title, start_date, freeze_date, finish_date, defreeze_date, rules, max_reqs,
             ctype,
             closed, run_all_tests, show_all_tests,
             show_test_resources, show_checker_comment, is_official, show_packages, local_only,
             is_hidden
         ) VALUES(
-            ?, ?, CATS_TO_DATE(?), CATS_TO_DATE(?), CATS_TO_DATE(?), CATS_TO_DATE(?), ?,
+            ?, ?, CATS_TO_DATE(?), CATS_TO_DATE(?), CATS_TO_DATE(?), CATS_TO_DATE(?), ?, ?,
             0,
             ?, ?, ?, ?, ?, ?, ?, ?, ?)~,
         {},
@@ -212,7 +212,7 @@ sub try_contest_params_frame
             CATS_DATE(defreeze_date) AS open_date,
             1 - closed AS free_registration,
             run_all_tests, show_all_tests, show_test_resources, show_checker_comment,
-            is_official, show_packages, local_only, rules, is_hidden
+            is_official, show_packages, local_only, rules, is_hidden, max_reqs
         FROM contests WHERE id = ?~, { Slice => {} },
         $id
     );
@@ -241,7 +241,7 @@ sub contests_edit_save
     $dbh->do(qq~
         UPDATE contests SET
             title=?, start_date=CATS_TO_DATE(?), freeze_date=CATS_TO_DATE(?), 
-            finish_date=CATS_TO_DATE(?), defreeze_date=CATS_TO_DATE(?), rules=?,
+            finish_date=CATS_TO_DATE(?), defreeze_date=CATS_TO_DATE(?), rules=?, max_reqs=?,
             closed=?, run_all_tests=?, show_all_tests=?,
             show_test_resources=?, show_checker_comment=?, is_official=?, show_packages=?,
             local_only=?, is_hidden=?
@@ -366,17 +366,27 @@ sub contest_fields ()
 }
 
 
+sub contests_submenu_filter
+{
+    my $f = param('filter') || '';
+    {
+        'official' => 'AND C.is_official = 1 ',
+        'current' => 'AND CATS_SYSDATE() <= finish_date ' #BETWEEN start_date AND 
+    }->{$f} || '';
+}
+
+
 sub authenticated_contests_view ()
 {
     my $cf = contest_fields();
-    #my $not_hidden = 'c.is_hidden = 0 OR c.is_hidden IS NULL';
     my $sth = $dbh->prepare(qq~
         SELECT
             $cf, CA.is_virtual, CA.is_jury, CA.id AS registered
         FROM contests C LEFT JOIN
             contest_accounts CA ON CA.contest_id = C.id AND CA.account_id = ?
         WHERE
-            CA.account_id IS NOT NULL OR COALESCE(C.is_hidden, 0) = 0 ~ . order_by);
+            (CA.account_id IS NOT NULL OR COALESCE(C.is_hidden, 0) = 0) ~ .
+            contests_submenu_filter() . order_by);
     $sth->execute($uid);
 
     my $fetch_contest = sub($) 
@@ -400,7 +410,8 @@ sub anonymous_contests_view ()
 {
     my $cf = contest_fields();
     my $sth = $dbh->prepare(qq~
-        SELECT $cf FROM contests C WHERE COALESCE(C.is_hidden, 0) = 0 ~ . order_by
+        SELECT $cf FROM contests C WHERE COALESCE(C.is_hidden, 0) = 0 ~ .
+        contests_submenu_filter() . order_by
     );
     $sth->execute;
 
@@ -472,16 +483,21 @@ sub contests_frame
         { caption => res_str(631), order_by => '1 DESC, 5', width => '20%' },
         { caption => res_str(630), order_by => '1 DESC, 8', width => '20%' } ]);
 
+    my $f = param('filter') || '';
     attach_listview(url_f('contests'),
-        defined $uid ? authenticated_contests_view : anonymous_contests_view);
+        defined $uid ? authenticated_contests_view : anonymous_contests_view, undef,
+        { page_params => { filter => $f } });
 
-    if ($is_root)
-    {
-        my $submenu = [ { href_item => url_f('contests', new => 1), item_name => res_str(537) } ];
-        $t->param(submenu => $submenu);
-    }
-
+    my $submenu = [
+        map({
+            href_item => url_f('contests', filter => $_->{n}),
+            item_name => res_str($_->{i}),
+            selected => $f eq $_->{n}
+        }, { n => '', i => 558 }, { n => 'official', i => 559 }, { n => 'current', i => 560 }),
+        ($is_root ? { href_item => url_f('contests', new => 1), item_name => res_str(537) } : ()),
+    ];
     $t->param(
+        submenu => $submenu,
         authorized => defined $uid,
         href_contests => url_f('contests'),
         editable => $is_root,
@@ -1200,8 +1216,7 @@ sub problems_all_frame
             (SELECT COUNT(*) FROM contest_problems CP WHERE CP.problem_id = P.id AND CP.contest_id=?)
         FROM problems P INNER JOIN contests C ON C.id = P.contest_id
         WHERE $where_cond ~ . order_by);
-    # interbase bug
-    $c->execute(@{$where->{params}}, $cid);
+    $c->execute($cid, @{$where->{params}});
 
     my $fetch_record = sub($)
     {
@@ -1226,7 +1241,7 @@ sub problems_all_frame
 
     $t->param(
         href_action => url_f($kw ? 'keywords' : 'problems'),
-        link => !$contest->is_practice && $link, move => url_param('move') || 0);
+        link => !$contest->is_practice && $link, move => url_param('move') || 0, is_jury => $is_jury);
     
     $c->finish;
 }
@@ -1322,7 +1337,7 @@ sub problems_submit
     }
 
     # Защита от Denial of Service -- запрещаем посылать решения слишком часто
-    my $prev = $dbh->selectcol_arrayref(qq~
+    my $prev = $dbh->selectcol_arrayref(q~
         SELECT FIRST 2 CATS_SYSDATE() - R.submit_time FROM reqs R
         WHERE R.account_id = ?
         ORDER BY R.submit_time DESC~, {},
@@ -1332,7 +1347,17 @@ sub problems_submit
     {
         return msg(131);
     }
-    
+
+    if ($contest->{max_reqs})
+    {
+        my ($total_reqs) = $dbh->selectrow_array(q~
+            SELECT COUNT(*) FROM reqs R
+            WHERE
+                R.account_id = ? AND R.problem_id = ? AND R.contest_id = ?~, {},
+            $submit_uid, $pid, $cid);
+        return msg(137) if $total_reqs >= $contest->{max_reqs};
+    }
+
     my $src = upload_source($file) or return;
     my $did = param('de_id');
 
@@ -1708,9 +1733,8 @@ sub problems_frame
     else
     {
         my $aid = $uid || 0; # на случай анонимного пользователя
-        # OldParamOrdering -- опять баг с порядком параметров
         # ORDER BY subselect требует повторного указания параметра
-        $sth->execute($cid, $aid, $aid, $aid, (order_by =~ /^ORDER BY\s+(5|6|7)\s+/ ? ($aid) : ()));
+        $sth->execute($aid, $aid, $aid, $cid); #, (order_by =~ /^ORDER BY\s+(5|6|7)\s+/ ? ($aid) : ()));
     }
     
     my @status_list;
@@ -1805,6 +1829,37 @@ sub problems_frame
 }
 
 
+sub greedy_cliques
+{
+    my (@equiv_tests) = @_;
+    my $eq_lists;
+    while (@equiv_tests)
+    {
+        my $eq = [ @{$equiv_tests[0]}{qw(t1 t2)} ];
+        shift @equiv_tests;
+        my %cnt;
+        for my $et (@equiv_tests)
+        {
+            $cnt{$et->{t2}}++ if grep $_ == $et->{t1}, @$eq;
+        }
+        my $neq = @$eq;
+        for my $k (sort keys %cnt)
+        {
+            next unless $cnt{$k} == $neq;
+            push @$eq, $k;
+            my @new_et;
+            for my $et (@equiv_tests)
+            {
+                push @new_et, $et unless $et->{t2} == $k && grep $_ == $et->{t1}, @$eq;
+            }
+            @equiv_tests = @new_et;
+        }
+        push @$eq_lists, { eq => join ',', @$eq };
+    }
+    $eq_lists;
+}
+
+
 sub compare_tests_frame
 {
     init_template('main_compare_tests.htm');
@@ -1873,7 +1928,7 @@ sub compare_tests_frame
 
     $t->param(
         comparision_matrix => $cm,
-        equiv_tests => \@equiv_tests,
+        equiv_lists => greedy_cliques(@equiv_tests),
         simple_tests => \@simple_tests,
         hard_tests => \@hard_tests,
     );
@@ -2869,6 +2924,37 @@ sub download_source_frame
 }
 
 
+sub try_set_state
+{
+    my ($si, $rid) = @_;
+    defined param('set_state') or return;
+    my $state = 
+    {       
+        not_processed =>         $cats::st_not_processed,
+        accepted =>              $cats::st_accepted,
+        wrong_answer =>          $cats::st_wrong_answer,
+        presentation_error =>    $cats::st_presentation_error,
+        time_limit_exceeded =>   $cats::st_time_limit_exceeded,
+        memory_limit_exceeded => $cats::st_memory_limit_exceeded,            
+        runtime_error =>         $cats::st_runtime_error,
+        compilation_error =>     $cats::st_compilation_error,
+        security_violation =>    $cats::st_security_violation,
+        ignore_submit =>         $cats::st_ignore_submit,
+    }->{param('state')};
+    defined $state or return;
+
+    my $failed_test = sprintf '%d', param('failed_test') || '0';
+    enforce_request_state(
+        request_id => $rid, failed_test => $failed_test, state => $state);
+    my %st = state_to_display($state);
+    while (my ($k, $v) = each %st)
+    {
+        $si->{$k} = $v;
+    }
+    $si->{failed_test} = $failed_test;
+}
+
+
 sub run_log_frame
 {
     init_template('main_run_log.htm');
@@ -2885,33 +2971,7 @@ sub run_log_frame
         or return;
 
     $t->param(sources_info => [$si]);
-
-    if (defined param 'set_state')
-    {
-        my $state = 
-        {       
-            not_processed =>         $cats::st_not_processed,
-            accepted =>              $cats::st_accepted,
-            wrong_answer =>          $cats::st_wrong_answer,
-            presentation_error =>    $cats::st_presentation_error,
-            time_limit_exceeded =>   $cats::st_time_limit_exceeded,
-            memory_limit_exceeded => $cats::st_memory_limit_exceeded,            
-            runtime_error =>         $cats::st_runtime_error,
-            compilation_error =>     $cats::st_compilation_error,
-            security_violation =>    $cats::st_security_violation,
-            ignore_submit =>         $cats::st_ignore_submit,
-        } -> {param('state')};
-
-        my $failed_test = sprintf '%d', param('failed_test') || '0';
-        enforce_request_state(
-            request_id => $rid, failed_test => $failed_test, state => $state);
-        my %st = state_to_display($state);
-        while (my ($k, $v) = each %st)
-        {
-            $si->{$k} = $v;
-        }
-        $si->{failed_test} = $failed_test;
-    }
+    try_set_state($si, $rid);
 
     source_links($si, 1);
 
@@ -3391,7 +3451,7 @@ sub envelope_frame
     my ($submit_time, $test_time, $state, $failed_test, $team_name, $contest_title) = $dbh->selectrow_array(qq~
         SELECT CATS_DATE(R.submit_time), CATS_DATE(R.test_time), R.state, R.failed_test, A.team_name, C.title
             FROM reqs R, contests C, accounts A
-            WHERE R.id=? AND A.id=R.account_id AND C.id=R.contest_id~, {}, $rid);
+            WHERE R.id = ? AND A.id = R.account_id AND C.id = R.contest_id~, {}, $rid);
     $t->param(
         submit_time => $submit_time,
         test_time => $test_time,
@@ -3519,7 +3579,7 @@ sub generate_menu
     my @left_menu = (
         { item => $logged_on ? res_str(503) : res_str(500), 
           href => $logged_on ? url_function('logout', sid => $sid) : url_f('login') },
-        { item => res_str(502), href => url_f('contests') },
+        { item => res_str(502), href => url_f('contests', filter => 'current') },
         { item => res_str(525), href => url_f('problems') },
         { item => res_str(526), href => url_f('users') },
         { item => res_str(510),

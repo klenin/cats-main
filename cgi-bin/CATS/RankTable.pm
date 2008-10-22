@@ -352,7 +352,7 @@ sub rank_table
             # поскольку виртуальный участник всегда ooc, не выводим лишнюю строчку
             $team->{is_ooc} = 0 if $team->{is_virtual};
             $team->{$_} = 0 for qw(total_solved total_runs total_time total_points);
-            ($team->{country}, $team->{flag}) = get_flag($_->{country});
+            ($team->{country}, $team->{flag}) = get_flag($team->{country});
             $team->{problems} = { map { $_ => { %init_problem } } @p_id };
         }
 
@@ -454,7 +454,8 @@ sub rank_table
             }} @p_id 
         ],
         problem_stats_color => 1 - $row_color,
-        rank => $self->{rank}
+        rank => $self->{rank},
+        href_console => url_f('console'),
     );
 }
 

@@ -19,22 +19,22 @@ function confirm_registration()
 <form method=post enctype='multipart/form-data' action='<TMPL_VAR href_contests>' id="contest_form">
 <TMPL_INCLUDE 'includes/listview_header.inc'>
 
-<table border=0 width=100% cellpadding=2 cellspacing=1 class=bordered>
-<tr bgcolor=#ccccff>
+<table border=0 width="100%" cellpadding=2 cellspacing=1 class=bordered>
+<tr bgcolor="#ccccff">
 <TMPL_INCLUDE 'includes/listview_col_defs.inc'>
 </tr>
 
 <TMPL_LOOP contests>
-<tr bgcolor=#ffffff>
+<tr bgcolor="#ffffff">
 <td>
     <input type="checkbox" name="contests_selection" value="<TMPL_VAR id>" />
     <TMPL_IF deletable>
     <a href='javascript:delete_contest("<TMPL_VAR href_delete>", "<TMPL_VAR contest_name ESCAPE=HTML>");''><img src="./images/std/waste2.gif" border=0></a> 
     </TMPL_IF>
     <TMPL_IF editable>
-    <a href="<TMPL_VAR href_params>"><img src="./images/std/edit.gif" border=0></a> 
+    <a href="<TMPL_VAR href_params>"><img src="./images/std/edit.gif" border=0 alt=""></a> 
     <TMPL_ELSE>
-    <a href="<TMPL_VAR href_params>"><img src="./images/std/blank.gif" border=0></a> 
+    <a href="<TMPL_VAR href_params>"><img src="./images/std/blank.gif" border=0 alt="Параметры"></a> 
     </TMPL_IF>
     <a href="<TMPL_VAR href_contest>" <TMPL_IF selected> style="color: #000000; background-color: #ccccff"</TMPL_IF selected>>
     <TMPL_VAR contest_name ESCAPE=HTML>
