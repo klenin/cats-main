@@ -82,7 +82,8 @@ sub login_frame
             my $cid = $dbh->selectrow_array(qq~SELECT id FROM contests WHERE ctype = 1~);
 
             $t = undef;
-            print redirect(-uri => url_function('contests', sid => $sid, cid => $cid, filter => 'current'));
+            print redirect(-uri =>
+                url_function('contests', sid => $sid, cid => $cid, filter => 'current'));
             return;
         }
     }
@@ -349,7 +350,9 @@ sub common_contests_view ($)
        selected => $c->{id} == $cid,
        is_official => $c->{is_official},
        show_points => $c->{rules},
-       href_contest => url_function('contests', sid => $sid, set_contest => 1, cid => $c->{id}),
+       href_contest => url_function('contests',
+           sid => $sid, set_contest => 1, cid => $c->{id},
+           (param('filter') ? (filter => param('filter')) : ())),
        href_params => url_f('contests', params => $c->{id}),
     );
 }
@@ -490,9 +493,9 @@ sub contests_frame
 
     my $submenu = [
         map({
-            href_item => url_f('contests', filter => $_->{n}),
+            href_item => url_f('contests', page => 0, filter => $_->{n}),
             item_name => res_str($_->{i}),
-            selected => $f eq $_->{n}
+            selected => $f eq $_->{n}, 
         }, { n => '', i => 558 }, { n => 'official', i => 559 }, { n => 'current', i => 560 }),
         ($is_root ? { href_item => url_f('contests', new => 1), item_name => res_str(537) } : ()),
     ];
@@ -800,7 +803,7 @@ sub console
             contest_id =>           $contest_id,
         );
     };
-            
+
     attach_listview(
         url_f('console'), $fetch_console_record, $c, undef, { page_params => { uf => $user_filter } });
 
@@ -838,6 +841,40 @@ sub console
     init_template($template_name);
 
     $t->param(console_content => $s, is_team => $is_team);
+}
+
+
+sub console_export
+{
+    $is_jury or return;
+    my $reqs = $dbh->selectall_arrayref(q~
+        SELECT
+            R.id AS id,
+            CATS_DATE(R.submit_time) AS submit_time,
+            R.state AS request_state,
+            R.failed_test,
+            P.title AS problem_title,
+            A.id AS team_id,
+            A.team_name,
+            A.last_ip,
+            CA.is_remote,
+            CA.is_ooc
+        FROM
+            reqs R INNER JOIN
+            problems P ON R.problem_id = P.id INNER JOIN
+            contest_accounts CA ON CA.contest_id = R.contest_id AND CA.account_id = R.account_id INNER JOIN
+            accounts A ON CA.account_id = A.id
+        WHERE
+            R.contest_id = ? AND CA.is_hidden = 0 AND CA.diff_time = 0
+        ORDER BY R.submit_time ASC~, { Slice => {} },
+        $cid);
+    init_template('main_console_export.xml');
+    for my $req (@$reqs)
+    {
+        $req->{submit_time} =~ s/\s+$//;
+        $req->{s} = join '', map "<$_>$req->{$_}</$_>", keys %$req;
+    }
+    $t->param(reqs => $reqs);
 }
 
 
@@ -942,6 +979,8 @@ sub console_frame
         href_diff => url_f('diff_runs'),
         title_suffix => res_str(510),
     );
+    $t->param(submenu => [
+        { href_item => url_f('console_export'), item_name => res_str(561) }, ]) if $is_jury;
 }
 
 
@@ -1832,7 +1871,7 @@ sub problems_frame
 sub greedy_cliques
 {
     my (@equiv_tests) = @_;
-    my $eq_lists;
+    my $eq_lists = [];
     while (@equiv_tests)
     {
         my $eq = [ @{$equiv_tests[0]}{qw(t1 t2)} ];
@@ -3635,6 +3674,7 @@ sub interface_functions ()
         contests => \&contests_frame,
         console_content => \&console_content_frame,
         console => \&console_frame,
+        console_export => \&console_export,
         problems => \&problems_frame,
         problems_retest => \&problems_retest_frame,
         problem_select_testsets => \&problem_select_testsets,

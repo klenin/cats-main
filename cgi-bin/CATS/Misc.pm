@@ -40,7 +40,7 @@ BEGIN
     );
 
     @EXPORT_OK = qw(
-        $contest @messages $t $sid $cid $lng $uid $server_time
+        $contest $t $sid $cid $lng $uid $server_time
         $is_root $is_team $is_jury $is_virtual $virtual_diff_time
         $additional $search $page $visible $init_time);
 
@@ -69,13 +69,13 @@ use CATS::Diff;
 use CATS::Contest;
 
 use vars qw(
-    $contest @messages $t $sid $cid $lng $uid $team_name $server_time $dbi_error
+    $contest $t $sid $cid $lng $uid $team_name $server_time $dbi_error
     $is_root $is_team $is_jury $is_virtual $virtual_diff_time
     $listview_name $col_defs $sort $sort_dir $search $page $visible $additional
     $request_start_time $init_time
 );
 
-my ($listview_array_name);
+my ($listview_array_name, @messages, $http_mime_type);
 
 my $cats_dir;
 sub cats_dir()
@@ -227,16 +227,16 @@ sub fatal_error
 #my $template_file;
 sub init_template
 {
-    my $file_name = shift;
+    my ($file_name) = @_;
     #if (defined $t && $template_file eq $file_name) { $t->param(tf=>1); return; }
 
     my $utf8_encode = sub
     {
         my $text_ref = shift;
-
         #Encode::from_to($$text_ref, 'koi8-r', 'utf-8');
         $$text_ref = Encode::decode('koi8-r', $$text_ref);
     };
+    $http_mime_type = $file_name =~ /\.xml$/ ? 'application/xml' : 'text/html';
     #$template_file = $file_name;
     $t = HTML::Template->new(
         filename => templates_path() . "/$file_name", cache => 1,
@@ -468,6 +468,8 @@ sub generate_output
         $cookie = CGI::cookie(
             -name => $listview_name, -value => [@values], -expires => '+1h');
     }
+    use Carp;
+    $contest->{time_since_start} or Carp::cluck;
     $t->param(
         contest_title => $contest->{title},
         server_time => $server_time,
@@ -504,14 +506,14 @@ sub generate_output
     {
         binmode(STDOUT, ':raw');
         $t->param(encoding => $enc);
-        print STDOUT http_header('text/html', $enc, $cookie);
+        print STDOUT http_header($http_mime_type, $enc, $cookie);
         print STDOUT $out = Encode::encode($enc, $t->output, Encode::FB_XMLCREF);
     }
     else
     {
         binmode(STDOUT, ':utf8');
         $t->param(encoding => 'utf-8');
-        print STDOUT http_header('text/html', 'utf-8', $cookie);
+        print STDOUT http_header($http_mime_type, 'utf-8', $cookie);
         print STDOUT $out = $t->output;
     }
     if ($output_file)
@@ -606,9 +608,7 @@ sub user_authorize
     $cid = url_param('cid') || param('clist') || '';
     $cid =~ s/^(\d+).*$/$1/; # берём первый турнир из clist
     if ($contest && ref $contest ne 'CATS::Contest') {
-        use Data::Dumper;
         warn "Strange contest: $contest";
-        warn Dumper($contest);
         undef $contest;
     }
     $contest ||= CATS::Contest->new;
@@ -635,7 +635,7 @@ sub user_authorize
     }
     if ($contest->{is_hidden} && !$is_team)
     {
-        # При попытке просмотреть скрытый турнир показыываем вместо него тренировочный
+        # При попытке просмотреть скрытый турнир показываем вместо него тренировочный
         $contest->load(0);
         $server_time = $contest->{server_time};
         $cid = $contest->{id};

@@ -5,18 +5,10 @@
 <table width="100%">
 <tr>
 <td align=left>
-<TMPL_IF hide_ooc>
-    <a href="<TMPL_VAR href_hide_ooc>" target=_top>спрятать внеконкурсные</a>
-<TMPL_ELSE>
-    <a href="<TMPL_VAR href_show_ooc>" target=_top>показать внеконкурсные</a>
-</TMPL_IF>
-| 
-<TMPL_IF hide_virtual>
-    <a href="<TMPL_VAR href_hide_virtual>" target=_top>спрятать виртуальные</a>
-<TMPL_ELSE>
-    <a href="<TMPL_VAR href_show_virtual>" target=_top>показать виртуальные</a>
-</TMPL_IF>
-
+  <TMPL_IF hide_ooc><a href="<TMPL_VAR href_hide_ooc>" target=_top>спрятать внеконкурсные</a>
+  <TMPL_ELSE><a href="<TMPL_VAR href_show_ooc>" target=_top>показать внеконкурсные</a></TMPL_IF> | 
+  <TMPL_IF hide_virtual><a href="<TMPL_VAR href_hide_virtual>" target=_top>спрятать виртуальные</a>
+  <TMPL_ELSE><a href="<TMPL_VAR href_show_virtual>" target=_top>показать виртуальные</a></TMPL_IF>
 </td>
 <td align=right>
 правила:
@@ -84,7 +76,7 @@
 <TMPL_IF rank><script type="text/javascript"><!--
 var rank_table = [
 <TMPL_LOOP rank>
-  { id: <TMPL_VAR account_id>, n: '<TMPL_VAR team_name ESCAPE=HTML>',<TMPL_IF show_points>
+  { id: <TMPL_VAR account_id>, n: "<TMPL_VAR team_name ESCAPE=HTML>",<TMPL_IF show_points>
     pt: [<TMPL_LOOP columns>'<TMPL_VAR points>'<TMPL_UNLESS __last__>,</TMPL_UNLESS></TMPL_LOOP>], tp: <TMPL_VAR total_points><TMPL_ELSE>
     tm: [<TMPL_LOOP columns>'<TMPL_VAR time>'<TMPL_UNLESS __last__>,</TMPL_UNLESS></TMPL_LOOP>],
     td: [<TMPL_LOOP columns>'<TMPL_VAR td>'<TMPL_UNLESS __last__>,</TMPL_UNLESS></TMPL_LOOP>],

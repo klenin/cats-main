@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="<TMPL_VAR encoding>"?>
+<reqs>
+<TMPL_LOOP reqs>
+  <req><TMPL_VAR s></req>
+</TMPL_LOOP>
+</reqs>
