@@ -362,7 +362,7 @@ sub contest_fields ()
 {
     # HACK: начальная страница -- список турниров, выводится очень часто
     # при отсутствии поиска выбираем только первую страницу + 1 запись.
-    (($page || 0) == 0 && !$search ? 'FIRST ' . ($visible + 1) : '') .
+    # (($page || 0) == 0 && !$search ? 'FIRST ' . ($visible + 1) : '') .
     qq~c.ctype, c.id, c.title, c.start_date AS sd, c.finish_date AS fd,
     CATS_DATE(c.start_date) AS start_date, CATS_DATE(c.finish_date) AS finish_date,
     c.closed, c.is_official, c.rules~
@@ -446,8 +446,8 @@ sub contests_frame
 
     init_listview_template('contests_' . ($uid || ''), 'contests', 'main_contests.htm');
 
-    if (defined url_param('delete') && $is_root)   
-    {    
+    if (defined url_param('delete') && $is_root)
+    {
         my $cid = url_param('delete');
         $dbh->do(qq~DELETE FROM contests WHERE id = ?~, {}, $cid);
         $dbh->commit;
@@ -790,7 +790,11 @@ sub console
             href_send_message_box =>$is_jury ? url_f('send_message_box', caid => $caid) : undef,
             'time' =>               $submit_time,
             problem_title =>        $problem_title,
-            state_to_display($request_state, !$is_jury && (!$is_team || !$team_id || $team_id != $uid)),
+            state_to_display($request_state,
+                # security: во время соревноваиня не показываем участникам
+                # конкретные результаты других команд, а только accepted/rejected
+                $contest->{time_since_defreeze} <= 0 && !$is_jury &&
+                (!$is_team || !$team_id || $team_id != $uid)),
             failed_test_index =>    $failed_test,
             question_text =>        $question,
             answer_text =>          $answer,
@@ -823,7 +827,7 @@ sub console
         }
 
         $t->param(envelopes => [ @envelopes ]);
-
+        $dbh->commit; # Минимизируем шанс deadlock'а
         $dbh->do(qq~
             UPDATE reqs SET received=1
                 WHERE account_id=? AND state>=$cats::request_processed
@@ -849,16 +853,10 @@ sub console_export
     $is_jury or return;
     my $reqs = $dbh->selectall_arrayref(q~
         SELECT
-            R.id AS id,
-            CATS_DATE(R.submit_time) AS submit_time,
-            R.state AS request_state,
-            R.failed_test,
+            R.id AS id, CATS_DATE(R.submit_time) AS submit_time, R.state, R.failed_test,
             P.title AS problem_title,
-            A.id AS team_id,
-            A.team_name,
-            A.last_ip,
-            CA.is_remote,
-            CA.is_ooc
+            A.id AS team_id, A.team_name, A.last_ip,
+            CA.is_remote, CA.is_ooc
         FROM
             reqs R INNER JOIN
             problems P ON R.problem_id = P.id INNER JOIN
@@ -872,7 +870,14 @@ sub console_export
     for my $req (@$reqs)
     {
         $req->{submit_time} =~ s/\s+$//;
-        $req->{s} = join '', map "<$_>$req->{$_}</$_>", keys %$req;
+        my %st = state_to_display($req->{state});
+        for (keys %st)
+        {
+            $st{$_} or next;
+            $req->{state} = $_;
+            last;
+        }  
+        $req->{s} = join '', map "<$_>$req->{$_}</$_>", grep defined $req->{$_}, keys %$req;
     }
     $t->param(reqs => $reqs);
 }
@@ -1320,11 +1325,9 @@ sub upload_source
     use bytes;
     while (read($file, my $buffer, 4096))
     {
-        length $src < 32767
-            or return msg(10);
+        length $src < 32767 or return;
         $src .= $buffer;
     }
-    #$src or return msg(11);
     return $src;
 }
 
@@ -1397,7 +1400,9 @@ sub problems_submit
         return msg(137) if $total_reqs >= $contest->{max_reqs};
     }
 
-    my $src = upload_source($file) or return;
+    my $src = upload_source($file);
+    defined($src) or return msg(10);
+    $src or return msg(11);
     my $did = param('de_id');
 
     if (param('de_id') eq 'by_extension')
@@ -2151,13 +2156,16 @@ sub users_save_attributes
         );
         $jury = 1 if !$srole;
 
+        # security: запрещаем менять параметры пользователей в других трнирах
         $dbh->do(qq~
             UPDATE contest_accounts
-                SET is_jury = ?, is_hidden = ?, is_remote = ?, is_ooc = ? WHERE id = ?~, {},
-            $jury, $hidden, $remote, $ooc, $_
+                SET is_jury = ?, is_hidden = ?, is_remote = ?, is_ooc = ?
+                WHERE id = ? AND contest_id = ?~, {},
+            $jury, $hidden, $remote, $ooc, $_, $cid
         );
     }
     $dbh->commit;
+    CATS::RankTable::remove_cache($cid);
 }
 
 
@@ -2255,9 +2263,10 @@ sub users_frame
         return (
             href_delete => url_f('users', delete => $caid),
             href_edit => url_f('users', edit => $aid),
+            href_stats => url_f('user_stats', uid => $aid),
             motto => $motto,
             id => $caid,
-            login => $login, 
+            login => $login,
             editable => $is_jury,
             messages => $is_jury,
             team_name => $team_name,
@@ -2269,7 +2278,7 @@ sub users_frame
             hidden => $hidden,
             ooc => $ooc,
             remote => $remote,
-            virtual => $virtual
+            virtual => $virtual,
          );
     };
 
@@ -2284,6 +2293,31 @@ sub users_frame
     }
 
     $c->finish;
+}
+
+
+sub user_stats_frame
+{
+    init_template('main_user_stats.htm');
+    my $uid = param('uid') or return;
+    my $user = $dbh->selectrow_hashref(q~
+        SELECT A.*, CATS_DATE(last_login) AS last_login_date
+        FROM accounts A WHERE A.id = ?~, { Slice => {} }, $uid) or return;
+    my $contests = $dbh->selectall_arrayref(qq~
+        SELECT C.id, C.title, CATS_DATE(C.start_date + CA.diff_time) AS start_date,
+            (SELECT COUNT(DISTINCT R.problem_id) FROM reqs R
+                WHERE R.contest_id = C.id AND R.account_id = CA.account_id AND R.state = $cats::st_accepted
+            ) AS accepted_count,
+            (SELECT COUNT(*) FROM contest_problems CP
+                WHERE CP.contest_id = C.id AND CP.status < $cats::problem_st_hidden
+            ) AS problem_count
+        FROM contests C INNER JOIN contest_accounts CA ON CA.contest_id = C.id
+        WHERE
+            CA.account_id = ? AND C.ctype = 0 AND C.is_hidden = 0 AND
+            CA.is_hidden = 0 AND C.defreeze_date < CURRENT_TIMESTAMP
+        ORDER BY C.start_date + CA.diff_time DESC~,
+        { Slice => {} }, $uid);
+    $t->param(%$user, contests => $contests, is_root => $is_root);
 }
 
 
@@ -3160,7 +3194,8 @@ sub rank_problem_details
 sub check_spelling
 {
     my ($word) = @_;
-    return $word if $word =~ /\d/;
+    # символ _ приводит к SIGSEGV (!) внутри ASpell
+    return $word if $word =~ /(?:\d|_)/;
     my $koi = Encode::encode('KOI8-R', $word);
     {
         no encoding;
@@ -3333,7 +3368,7 @@ sub contest_visible
         SELECT CATS_SYSDATE() - C.start_date, C.local_only, C.id, C.show_packages
             FROM contests C $s WHERE $t.id = ?~,
         {}, $p);
-    if ($since_start > 0)
+    if (($since_start || 0) > 0)
     {
         $local_only or return (1, $show_packages);
         defined $uid or return (0, 0);
@@ -3508,6 +3543,7 @@ sub preprocess_source
     for (split /\n/, $_[0]->{src})
     {
         $_ = Encode::encode('WINDOWS-1251', $_);
+        use bytes; # MD5 работает с байтами, предотвращаем upgrade до utf8
         s/\s+//g;
         s/(\w+)/uc($1)/eg;
         s/\d+/1/g;
@@ -3679,6 +3715,7 @@ sub interface_functions ()
         problems_retest => \&problems_retest_frame,
         problem_select_testsets => \&problem_select_testsets,
         users => \&users_frame,
+        user_stats => \&user_stats_frame,
         compilers => \&compilers_frame,
         judges => \&judges_frame,
         keywords => \&keywords_frame,

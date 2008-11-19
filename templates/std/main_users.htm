@@ -17,17 +17,17 @@ function delete_team(href, name)
 <table border=0 width=100% cellpadding=2 cellspacing=1 class=bordered bgcolor=#8060f0>
 <tr bgcolor=#ccccff>
 <TMPL_INCLUDE 'includes/listview_col_defs.inc'>
-</tr>   
+</tr>
 <TMPL_LOOP users>
 <tr bgcolor=#ffffff>
 <TMPL_IF editable>
 <td>
     <a href='javascript:delete_team("<TMPL_VAR href_delete>", "<TMPL_VAR team_name ESCAPE=HTML>");'><img border=0 src="./images/std/waste2.gif"></a> 
-    <a href='<TMPL_VAR href_edit>'><img src="./images/std/blank.gif" border=0></a> 
+    <a href="<TMPL_VAR href_edit>"><img src="./images/std/blank.gif" border=0></a>
     <TMPL_VAR login ESCAPE=HTML>
 </td>
 </TMPL_IF>
-<td><TMPL_IF messages><input type=checkbox name=msg<TMPL_VAR id>></TMPL_IF><TMPL_VAR team_name ESCAPE=HTML></td>
+<td><TMPL_IF messages><input type=checkbox name=msg<TMPL_VAR id>></TMPL_IF><a href="<TMPL_VAR href_stats>"><TMPL_VAR team_name ESCAPE=HTML></a></td>
 <td align="center"><TMPL_VAR tag></td>
 <TMPL_IF editable>
 <td align=center><input type="checkbox" name="jury<TMPL_VAR id>" <TMPL_IF jury>checked</TMPL_IF>></td>
@@ -36,11 +36,8 @@ function delete_team(href, name)
 <td align=center><input type="checkbox" name="hidden<TMPL_VAR id>" <TMPL_IF hidden>checked</TMPL_IF>></td>
 </TMPL_IF>
 <td align=center>
-<TMPL_IF flag>
-    <img src='<TMPL_VAR NAME=flag>' alt="<TMPL_VAR NAME=country ESCAPE=HTML><TMPL_IF motto> - <TMPL_VAR motto ESCAPE=HTML></TMPL_IF>">
-<TMPL_ELSE>
-    <TMPL_VAR NAME=country ESCAPE=HTML><TMPL_IF motto> - <TMPL_VAR motto ESCAPE=HTML></TMPL_IF>
-</TMPL_IF>
+<TMPL_IF flag><img src="<TMPL_VAR NAME=flag>" alt="<TMPL_VAR NAME=country ESCAPE=HTML><TMPL_IF motto> - <TMPL_VAR motto ESCAPE=HTML></TMPL_IF>">
+<TMPL_ELSE><TMPL_VAR NAME=country ESCAPE=HTML><TMPL_IF motto> - <TMPL_VAR motto ESCAPE=HTML></TMPL_IF></TMPL_IF>
 </td>
 <td align=center><TMPL_VAR accepted></td>
 <td align=center><TMPL_IF virtual>virtual</TMPL_IF></td>

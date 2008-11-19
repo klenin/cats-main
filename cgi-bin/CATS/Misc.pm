@@ -29,7 +29,6 @@ BEGIN
         attach_menu
         fatal_error
         state_to_display
-        field_by_id
         generate_table
         generate_cmp_query
         generate_count_query
@@ -42,7 +41,7 @@ BEGIN
     @EXPORT_OK = qw(
         $contest $t $sid $cid $lng $uid $server_time
         $is_root $is_team $is_jury $is_virtual $virtual_diff_time
-        $additional $search $page $visible $init_time);
+        $additional $search $page1 $visible $init_time);
 
     %EXPORT_TAGS = (all => [ @EXPORT, @EXPORT_OK ]);
 }
@@ -65,7 +64,6 @@ use Encode;
 use CATS::DB;
 use CATS::Constants;
 use CATS::IP;
-use CATS::Diff;
 use CATS::Contest;
 
 use vars qw(
@@ -165,7 +163,7 @@ sub init_messages
     my $msg_file = templates_path() . '/consts';
 
     open my $f, '<', $msg_file or
-        fatal_error "Couldn't open message file: '$msg_file'.";
+        fatal_error("Couldn't open message file: '$msg_file'.");
     binmode($f, ':raw');
     while (<$f>)
     {
@@ -468,8 +466,7 @@ sub generate_output
         $cookie = CGI::cookie(
             -name => $listview_name, -value => [@values], -expires => '+1h');
     }
-    use Carp;
-    $contest->{time_since_start} or Carp::cluck;
+    $contest->{time_since_start} or warn "No contest from: ", $ENV{REFERER};
     $t->param(
         contest_title => $contest->{title},
         server_time => $server_time,
@@ -677,17 +674,6 @@ sub state_to_display
         security_violation =>    $state == $cats::st_security_violation,
         ignore_submit =>         $state == $cats::st_ignore_submit,
     );
-}
-
-
-# записи
-sub field_by_id
-{
-    my ($id, $table, $field) = @_;
-    my $c = $dbh->prepare(qq~SELECT $field FROM $table WHERE id=?~);
-    $c->execute($id);
-    my ($title) = $c->fetchrow_array;
-    $title;
 }
 
 

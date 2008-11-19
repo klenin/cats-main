@@ -12,7 +12,7 @@ sub database_fields {qw(
     local_only is_hidden
 )}
 
-use fields (database_fields(), qw(server_time time_since_start time_since_finish));
+use fields (database_fields(), qw(server_time time_since_start time_since_finish time_since_defreeze));
 
 use lib '..';
 use CATS::DB;
@@ -31,13 +31,12 @@ sub load
     my $all_fields = [
         database_fields(),
         'CATS_DATE(CATS_SYSDATE()) AS server_time',
-        'CATS_SYSDATE() - start_date AS time_since_start',
-        'CATS_SYSDATE() - finish_date AS time_since_finish'];
+        map "CATS_SYSDATE() - ${_}_date AS time_since_$_", qw(start finish defreeze)
+    ];
     my $r;
     if ($cid)
     {
-        $r = CATS::DB::select_row(
-            'contests', $all_fields, { id => $cid });
+        $r = CATS::DB::select_row('contests', $all_fields, { id => $cid });
     }
     unless ($r)
     {

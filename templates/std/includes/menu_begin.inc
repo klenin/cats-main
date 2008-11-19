@@ -7,8 +7,8 @@
 </TMPL_IF>
 <link rel="stylesheet" type="text/css" href="./docs/std/main.css">
 </head>
-<body style="margin: 0; width: 100%">
-<table width="100%" cellspacing="0" cellpadding="0">
+<body>
+<table class="iface">
   <tr bgcolor="#ffcc55" style="padding-bottom: 2px; height: 69px">
 	<td class="top" rowspan="2" width="1%">
 	    <img src="./images/std/logo.gif" border="0" alt="CATS">
@@ -32,7 +32,7 @@
     </td>
   </tr>
 </table>
-<table width="100%" cellspacing="0" cellpadding="0">
+<table class="iface">
   <tr bgcolor="#7070ff" style="height: 30px">
 	<td align="left">
     <span class="top">&nbsp;

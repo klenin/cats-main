@@ -67,7 +67,7 @@ CREATE TABLE contests (
     show_packages        INTEGER DEFAULT 0 CHECK (show_packages IN (0, 1)),
     rules                INTEGER DEFAULT 0, /* правила: 0 - ACM, 1 - школьные */
     local_only           SMALLINT DEFAULT 0 CHECK (local_only IN (0, 1)),
-    max_reqs             INTEGER DEFAULT 0,
+    max_reqs             INTEGER DEFAULT 0, /* максимум попыток по одной задаче на одного участника */
 
     CHECK (
         start_date <= finish_date AND freeze_date >= start_date

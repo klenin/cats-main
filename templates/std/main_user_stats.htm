@@ -1,0 +1,19 @@
+<TMPL_INCLUDE 'includes/menu_begin.inc'>
+
+<TMPL_IF message><i><TMPL_VAR message ESCAPE=HTML></i></TMPL_IF>
+
+<table cellpadding="0">
+<tr><td>Имя:</td><td><TMPL_VAR team_name ESCAPE=HTML></td>
+<TMPL_IF is_root>
+<tr><td>Последний вход:</td><td><TMPL_VAR last_login_date></td>
+<tr><td>Последний IP:</td><td><TMPL_VAR last_ip></td>
+</TMPL_IF>
+</table>
+
+<h3>Турниры</h3>
+<table class="internal_borders" cellpadding="3">
+<TMPL_LOOP contests
+><tr><td><TMPL_VAR start_date></td><td><TMPL_VAR title ESCAPE=HTML></td><td><TMPL_VAR accepted_count> / <TMPL_VAR problem_count></td></tr></TMPL_LOOP>
+</table>
+
+<TMPL_INCLUDE 'includes/menu_end.inc'>

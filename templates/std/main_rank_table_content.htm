@@ -50,7 +50,7 @@
 <th>место</th>
 <th>статус</th>
 
-<TMPL_IF 0>
+<TMPL_IF printable>
 <TMPL_LOOP rank>
 <tr align="center"<TMPL_UNLESS row_color> bgcolor="#f4f4f4"</TMPL_UNLESS>>
 <td align="right"><TMPL_VAR contestant_number>&nbsp;</td><TMPL_IF 0><td nowrap align=center bgcolor=#ffffff>
@@ -71,8 +71,7 @@
 ></td><td><TMPL_VAR place></td><td class="ts"><TMPL_IF is_ooc
   >ooc</TMPL_IF><TMPL_IF is_remote> remote</TMPL_IF><TMPL_IF is_virtual> virtual</TMPL_IF></td></tr>
 </TMPL_LOOP>
-</TMPL_IF>
-
+<TMPL_ELSE>
 <TMPL_IF rank><script type="text/javascript"><!--
 var rank_table = [
 <TMPL_LOOP rank>
@@ -80,7 +79,7 @@ var rank_table = [
     pt: [<TMPL_LOOP columns>'<TMPL_VAR points>'<TMPL_UNLESS __last__>,</TMPL_UNLESS></TMPL_LOOP>], tp: <TMPL_VAR total_points><TMPL_ELSE>
     tm: [<TMPL_LOOP columns>'<TMPL_VAR time>'<TMPL_UNLESS __last__>,</TMPL_UNLESS></TMPL_LOOP>],
     td: [<TMPL_LOOP columns>'<TMPL_VAR td>'<TMPL_UNLESS __last__>,</TMPL_UNLESS></TMPL_LOOP>],
-    ts: <TMPL_VAR total_solved>, ttm: <TMPL_VAR total_time></TMPL_IF>,
+    ts: <TMPL_VAR total_solved>, ttm: <TMPL_VAR total_time></TMPL_IF>, rc: <TMPL_VAR row_color>,
     pl: <TMPL_VAR place>, st: '<TMPL_IF is_ooc>ooc</TMPL_IF><TMPL_IF is_remote> remote</TMPL_IF><TMPL_IF is_virtual> virtual</TMPL_IF>'
   }<TMPL_UNLESS __last__>,</TMPL_UNLESS></TMPL_LOOP>
 ];
@@ -89,7 +88,7 @@ function td(text, attr) { document.write('<td' + (attr == null ? '' : ' ' + attr
 
 for(var i = 0; i < rank_table.length; ++i) {
     var r = rank_table[i];
-    document.write('<tr align="center"' + (i % 2 ? ' bgcolor="#f4f4f4"': '') + '>');
+    document.write('<tr align="center"' + (r.rc ? '' : ' bgcolor="#f4f4f4"') + '>');
     td((i + 1) + '&nbsp;', 'align="right"');
     td('<a href="<TMPL_VAR href_console>;uf=' + r.id + '">' + r.n + '</a>', 'align="left"');
     <TMPL_IF show_points>
@@ -102,6 +101,7 @@ for(var i = 0; i < rank_table.length; ++i) {
     td(r.pl); td(r.st, 'class="ts"'); document.write('</tr>');
 }
 --></script></TMPL_IF>
+</TMPL_IF>
 <tr <TMPL_UNLESS problem_stats_color>bgcolor="#f4f4f4"</TMPL_UNLESS>>
   <td>&nbsp;</td>
   <TMPL_IF show_points>

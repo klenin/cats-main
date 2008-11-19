@@ -158,7 +158,10 @@ sub cache_req_points
         $total += $_->{result} == $cats::st_accepted ? max($_->{points} || 0, 0) : 0;
     }
 
-    $dbh->do(q~UPDATE reqs SET points = ? WHERE id = ?~, undef, $total, $req_id);
+    # Чтобы снизить вероятность deadlock, делаем commit после каждого изменения, хотя это и медленнее
+    $dbh->do(q~
+        UPDATE reqs SET points = ? WHERE id = ? AND points IS NULL~, undef, $total, $req_id);
+    $dbh->commit;
     $total;
 }
 
@@ -308,6 +311,26 @@ sub prepare_ranks
     ($row_num, $row_color);
 }
 
+
+sub cache_file_name
+{
+    cats_dir() . './rank_cache/' . join ('#', @_, '');
+}
+
+
+sub remove_cache
+{
+    my ($contest_id) = @_;
+    for my $virt (0, 1)
+    {
+        for my $ooc (0, 1)
+        {
+            unlink cache_file_name($contest_id, $virt, $ooc);
+        }
+    }
+}
+
+
 sub rank_table
 {
     (my CATS::RankTable $self) = @_;
@@ -359,8 +382,7 @@ sub rank_table
         $res;
     };
 
-    my $cache_file =
-        cats_dir() . "./rank_cache/$self->{contest_list}#$self->{hide_ooc}#$self->{hide_virtual}#";
+    my $cache_file = cache_file_name(@$self{qw(contest_list hide_ooc hide_virtual)});
 
     my ($teams, $problems, $max_cached_req_id) = ({}, {}, 0);
     if ($self->{use_cache} && !$is_virtual &&  -f $cache_file &&
@@ -382,7 +404,7 @@ sub rank_table
     }
 
     my $results = $self->get_results($virtual_cond . $ooc_cond, $max_cached_req_id);
-    my ($need_commit, $max_req_id) = (0, 0);
+    my $max_req_id = 0;
     for (@$results)
     {
         $max_req_id = $_->{id} if $_->{id} > $max_req_id;
@@ -393,7 +415,6 @@ sub rank_table
         if ($self->{show_points} && !defined $_->{points})
         {
             $_->{points} = cache_req_points($_->{id});
-            $need_commit = 1;
         }
         next if $p->{solved} && !$self->{show_points};
 
@@ -416,7 +437,6 @@ sub rank_table
             $p->{points} = $_->{points};
         }
     }
-    $dbh->commit if $need_commit;
 
     if (!$self->{frozen} && !$is_virtual && @$results && !$self->{has_practice})
     {

@@ -6,8 +6,13 @@ body {
     background-color: #ffffff;  
     color: #000000;
     font-family: Arial;
-    font-size: 14px; 
+    font-size: 14px;
+    margin: 0;
+    width: 100%;
 }
+
+table.iface { width: 100%; border-collapse : collapse; }
+table.iface tr td { padding: 0; }
 
 .top { 
     font-family: Arial; 
@@ -93,7 +98,6 @@ table.sample td { vertical-align: top; }
     font-size: 12px;
 }
 
-
 th { font-size: 11pt; font-weight: bold; color:#000000; }
 td { font-size: 11pt }
 td.ts { font-size: 10pt; font-style: italic; }
@@ -124,8 +128,8 @@ pre { margin-top: 0; margin-bottom: 0 }
 
 span.TeX { font-family: Arial Unicode Ms, Lucida Sans Unicode, Arial, sans serif; }
 span.TeX i { font-family: Times New Roman, serif; }
-span.TeX sup { position: relative; left: 1px; }
-span.TeX sub { position: relative; top: 2px; }
+span.TeX sup { white-space: nowrap; position: relative; left: 1px; }
+span.TeX sub { white-space: nowrap; position: relative; top: 2px; }
 span.TeX span.over { border-top: 1px solid black; padding: 0px 3px 0px 1px; }
 span.TeX span.num { font-family: Times New Roman, serif; }
 span.TeX span.sqrt { border-top: 1px solid black; padding-right: 2px; }

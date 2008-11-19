@@ -1,5 +1,5 @@
 </div>
-<table width="100%" cellspacing="0" cellpadding="0">
+<table class="iface">
 <tr bgcolor="#7070ff" style="height: 30px" class="top">
   <td class="signed">
     текущий пользователь: 
