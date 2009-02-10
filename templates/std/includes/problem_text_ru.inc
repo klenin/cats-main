@@ -13,46 +13,39 @@
   <td colspan="3">&nbsp;</td></tr></TMPL_IF>
 </table>
 <TMPL_IF keywords>Ключевые слова: <TMPL_VAR keywords><br/><br/></TMPL_IF>
-
 <TMPL_IF statement>
-    <h3><i>Условие</i></h3>
-    <TMPL_VAR statement>
+  <h3>Условие</h3>
+  <TMPL_VAR statement>
 </TMPL_IF>
-
 <TMPL_IF explanation>
-    <h3><i>Разбор</i></h3>
-    <TMPL_VAR explanation>
+  <h3>Разбор</h3>
+  <TMPL_VAR explanation>
 <TMPL_ELSE>
-
 <TMPL_IF input_format>
-    <h3><i>Формат входного файла</i></h3>
-    <TMPL_VAR input_format>
+  <h3>Формат входного файла</h3>
+  <TMPL_VAR input_format>
 </TMPL_IF>
-
 <TMPL_IF formal_input>
-    <h3><i>Формальный вход</i></h3>
-    <pre><TMPL_VAR formal_input></pre>
+  <h3>Формальный вход</h3>
+  <pre><TMPL_VAR formal_input></pre>
 </TMPL_IF>
-
 <TMPL_IF output_format>
-    <h3><i>Формат выходного файла</i></h3>
-    <TMPL_VAR output_format>
+  <h3>Формат выходного файла</h3>
+  <TMPL_VAR output_format>
 </TMPL_IF>    
-
 <TMPL_IF pconstraints>
-    <h3><i>Ограничения</i></h3>
-    <TMPL_VAR pconstraints>
+  <h3>Ограничения</h3>
+  <TMPL_VAR pconstraints>
 </TMPL_IF>
-
 <TMPL_IF extended_samples>
 <TMPL_LOOP samples>
-<h4><i>Пример входного файла &#8470;<TMPL_VAR rank></i></h4>
+<h4>Пример входного файла &#8470;<TMPL_VAR rank></h4>
 <pre><code><TMPL_VAR in_file></code></pre>
-<h4><i>Пример выходного файла &#8470;<TMPL_VAR rank></i></h4>
+<h4>Пример выходного файла &#8470;<TMPL_VAR rank></h4>
 <pre><code><TMPL_VAR out_file></code></pre>
 </TMPL_LOOP>
 <TMPL_ELSE>
-<h3><i>Примеры тестов</i></h3>
+<h3>Примеры тестов</h3>
 <table class="sample">
 <tr><th>&#8470;</th><th>Входной файл</th><th>Выходной файл</th></tr>
 <TMPL_LOOP samples>
@@ -64,5 +57,4 @@
 </TMPL_LOOP>
 </table>
 </TMPL_IF>
-
 </TMPL_IF>

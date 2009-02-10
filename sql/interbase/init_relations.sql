@@ -32,7 +32,7 @@ CREATE TABLE accounts (
     login   VARCHAR(50) NOT NULL UNIQUE,
     passwd  VARCHAR(100) DEFAULT '',    
     sid     VARCHAR(30),
-    srole   INTEGER NOT NULL, 
+    srole   INTEGER NOT NULL, /* 0 - root, 1 - user, 2 - can create contests */
     last_login  TIMESTAMP,
     last_ip VARCHAR(100) DEFAULT '',
     locked  INTEGER DEFAULT 0 CHECK (locked IN (0, 1)),

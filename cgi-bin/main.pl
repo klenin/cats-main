@@ -42,7 +42,7 @@ use CATS::Testset;
 use CATS::Contest::Results;
 use CATS::User;
 
-use vars qw($html_code $current_pid $spellchecker $text_span);
+use vars qw($html_code $current_pid $spellchecker $text_span $is_static_page);
 
 
 sub login_frame
@@ -55,7 +55,7 @@ sub login_frame
     my $passwd = param('passwd');
 
     my ($aid, $passwd3, $locked) = $dbh->selectrow_array(qq~
-        SELECT id, passwd, locked FROM accounts WHERE login=?~, {}, $login);
+        SELECT id, passwd, locked FROM accounts WHERE login = ?~, {}, $login);
 
     $aid or return msg(39);
 
@@ -68,9 +68,9 @@ sub login_frame
     for (1..20)
     {
         $sid = join '', map { $ch[rand @ch] } 1..30;
-        
+
         my $last_ip = CATS::IP::get_ip();
-        
+
         if ($dbh->do(qq~
             UPDATE accounts SET sid = ?, last_login = CATS_SYSDATE(), last_ip = ?
                 WHERE id = ?~,
@@ -114,6 +114,7 @@ sub contests_new_frame
         start_date => $date, freeze_date => $date,
         finish_date => $date, open_date => $date,
         can_edit => 1,
+        is_hidden => !$is_root,
         href_action => url_f('contests')
     );
 }
@@ -188,6 +189,7 @@ sub contests_new_save
     # автоматически зарегистрировать всех администраторов как жюри
     my $root_accounts = $dbh->selectcol_arrayref(qq~
         SELECT id FROM accounts WHERE srole = ?~, undef, $cats::srole_root);
+    push @$root_accounts, $uid unless $is_root; # пользователь с ролью contests_creator
     for (@$root_accounts)
     {
         register_contest_account(
@@ -216,11 +218,9 @@ sub try_contest_params_frame
             is_official, show_packages, local_only, rules, is_hidden, max_reqs
         FROM contests WHERE id = ?~, { Slice => {} },
         $id
-    );
+    ) or return;
     # наверное, на самом деле надо исправить CATS_DATE
-    for (qw(start_date freeze_date finish_date open_date)) {
-        $p->{$_} =~ s/\s*$//;
-    }
+    $p->{$_} =~ s/\s*$// for qw(start_date freeze_date finish_date open_date);
     $t->param(
         id => $id, %$p,
         href_action => url_f('contests'),
@@ -436,7 +436,7 @@ sub contests_frame
         return;
     }
 
-    if (defined url_param('new') && $is_root)
+    if (defined url_param('new') && $CATS::Misc::can_create_contests)
     {
         contests_new_frame;
         return;
@@ -453,7 +453,7 @@ sub contests_frame
         $dbh->commit;
     }
 
-    if (defined param('new_save') && $is_root)
+    if (defined param('new_save') && $CATS::Misc::can_create_contests)
     {
         contests_new_save;
     }
@@ -497,7 +497,8 @@ sub contests_frame
             item_name => res_str($_->{i}),
             selected => $f eq $_->{n}, 
         }, { n => '', i => 558 }, { n => 'official', i => 559 }, { n => 'current', i => 560 }),
-        ($is_root ? { href_item => url_f('contests', new => 1), item_name => res_str(537) } : ()),
+        ($CATS::Misc::can_create_contests ?
+            { href_item => url_f('contests', new => 1), item_name => res_str(537) } : ()),
     ];
     $t->param(
         submenu => $submenu,
@@ -1343,9 +1344,10 @@ sub problems_submit
 
     defined param('de_id') or return msg(14);
 
+    my $time_since_finish = 0;
     unless ($is_jury)
     {
-        my ($time_since_start, $time_since_finish, $is_official, $status) = $dbh->selectrow_array(qq~
+        (my $time_since_start, $time_since_finish, my $is_official, my $status) = $dbh->selectrow_array(qq~
             SELECT
                 CATS_SYSDATE() - $virtual_diff_time - C.start_date,
                 CATS_SYSDATE() - $virtual_diff_time - C.finish_date,
@@ -1356,13 +1358,13 @@ sub problems_submit
 
         $time_since_start >= 0
             or return msg(80);
-        $time_since_finish <= 0
+        $time_since_finish <= 0 || $is_virtual
             or return msg(81);
         !defined $status || $status < $cats::problem_st_disabled
             or return msg(124);
 
         # во время официального турнира отправка заданий во все остальные временно прекращается
-        unless ($is_official && !$is_virtual)
+        if (!$is_official || $is_virtual)
         {
             my ($current_official) = $dbh->selectrow_array(qq~
                 SELECT title FROM contests
@@ -1394,8 +1396,7 @@ sub problems_submit
     {
         my ($total_reqs) = $dbh->selectrow_array(q~
             SELECT COUNT(*) FROM reqs R
-            WHERE
-                R.account_id = ? AND R.problem_id = ? AND R.contest_id = ?~, {},
+            WHERE R.account_id = ? AND R.problem_id = ? AND R.contest_id = ?~, {},
             $submit_uid, $pid, $cid);
         return msg(137) if $total_reqs >= $contest->{max_reqs};
     }
@@ -1447,7 +1448,7 @@ sub problems_submit
     $dbh->commit;
 
     $t->param(solution_submitted => 1, href_console => url_f('console'));
-    msg(15);
+    $time_since_finish <= 0 ? msg(15) : msg(87);
 }
 
 
@@ -1843,29 +1844,25 @@ sub problems_frame
         { de_id => 'by_extension', de_name => res_str(536) },
         map {{ de_id => $_->{id}, de_name => $_->{description} }} @{$de_list->{_de_list}} );
     
+    my $pt_url = sub {{
+        href_item => $_[0], item_name => ($_[1] || res_str(538)), item_target => '_blank'
+    }};
     my @submenu = ();
-    unless ($contest->is_practice)
-    {
-        my %pt_url = ( item_name => res_str(538), item_target => '_blank' );
-        push @submenu,
-            $is_jury ?
-            (
-                { %pt_url, href_item => url_f('problem_text', nospell => 1, nokw => 1, notime => 1, noformal => 1) },
-                { %pt_url, href_item => url_f('problem_text'), item_name => res_str(555) },
-            ):
-            (
-                { %pt_url, href_item => CATS::StaticPages::url_static('problem_text', cid => $cid) }
-            );
-    }
-    
     if ($is_jury)
     {
-        push @submenu, (
-            #{ href_item => url_f('problems', new => 1), item_name => res_str(539) },
+        push @submenu,
+            $pt_url->(url_f('problem_text', nospell => 1, nokw => 1, notime => 1, noformal => 1)),
+            $pt_url->(url_f('problem_text'), res_str(555))
+            unless $contest->is_practice;
+        push @submenu,
             { href_item => url_f('problems', link => 1), item_name => res_str(540) },
             { href_item => url_f('problems', link => 1, move => 1), item_name => res_str(551) },
-            { href_item => url_f('problems_retest'), item_name => res_str(556) },
-        );
+            { href_item => url_f('problems_retest'), item_name => res_str(556) };
+    }
+    else
+    {
+        push @submenu, $pt_url->(CATS::StaticPages::url_static('problem_text', cid => $cid))
+            unless $contest->is_practice;
     }
 
     $t->param(submenu => \@submenu, title_suffix => res_str(525));
@@ -1983,9 +1980,9 @@ sub compare_tests_frame
 sub users_new_save
 {
     $is_jury or return;
-    my $user = CATS::User->new->parse_params;
-    $user->validate_params(validate_password => 1) or return;
-    $user->insert($cid) or return;
+    my $u = CATS::User->new->parse_params;
+    $u->validate_params(validate_password => 1) or return;
+    $u->insert($cid) or return;
 }
 
 
@@ -1994,18 +1991,18 @@ sub users_edit_frame
     init_template('main_users_edit.htm');
 
     my $id = url_param('edit');
-    my $user = CATS::User->new->load($id) or return;
-    $t->param(%$user, id => $id, countries => \@cats::countries, href_action => url_f('users'));
+    my $u = CATS::User->new->load($id) or return;
+    $t->param(%$u, id => $id, countries => \@cats::countries, href_action => url_f('users'));
 }
 
 
 sub users_edit_save
 {
-    my $user = CATS::User->new->parse_params;
+    my $u = CATS::User->new->parse_params;
     my $set_password = param_on('set_password');
     my $id = param('id');
 
-    $user->validate_params(
+    $u->validate_params(
         validate_password => $set_password, id => $id,
         # Здесь недостаточно просто is_jury, поскольку можно зарегистрировать
         # любую команду в свой турнир и потом переименовать.
@@ -2014,9 +2011,9 @@ sub users_edit_save
         allow_official_rename => $is_root)
         or return;
 
-    $user->{passwd} = $user->{password1} if $set_password;
-    delete @$user{qw(password1 password2)};
-    $dbh->do(_u $sql->update('accounts', { %$user }, { id => $id }));
+    $u->{passwd} = $u->{password1} if $set_password;
+    delete @$u{qw(password1 password2)};
+    $dbh->do(_u $sql->update('accounts', { %$u }, { id => $id }));
     $dbh->commit;
 }
 
@@ -2030,23 +2027,23 @@ sub registration_frame
     defined param('register')
         or return;
     
-    my $user = CATS::User->new->parse_params;
-    $user->validate_params(validate_password => 1) or return;
-    $user->insert or return;
+    my $u = CATS::User->new->parse_params;
+    $u->validate_params(validate_password => 1) or return;
+    $u->insert or return;
     $t->param(successfully_registred => 1);
 }
 
 
 sub settings_save
 {
-    my $user = CATS::User->new->parse_params;
+    my $u = CATS::User->new->parse_params;
     my $set_password = param_on('set_password');
 
-    $user->validate_params(validate_password => $set_password, id => $uid) or return;
+    $u->validate_params(validate_password => $set_password, id => $uid) or return;
 
-    $user->{passwd} = $user->{password1} if $set_password;
-    delete @$user{qw(password1 password2)};
-    $dbh->do(_u $sql->update('accounts', { %$user }, { id => $uid }));
+    $u->{passwd} = $u->{password1} if $set_password;
+    delete @$u{qw(password1 password2)};
+    $dbh->do(_u $sql->update('accounts', { %$u }, { id => $uid }));
     $dbh->commit;
 }
 
@@ -2056,8 +2053,8 @@ sub settings_frame
     init_template('main_settings.htm');
     settings_save if defined param('edit_save') && $is_team;
 
-    my $user = CATS::User->new->load($uid) or return;
-    $t->param(countries => \@cats::countries, href_action => url_f('users'), %$user);
+    my $u = CATS::User->new->load($uid) or return;
+    $t->param(countries => \@cats::countries, href_action => url_f('users'), %$u);
 }
 
 
@@ -2300,7 +2297,7 @@ sub user_stats_frame
 {
     init_template('main_user_stats.htm');
     my $uid = param('uid') or return;
-    my $user = $dbh->selectrow_hashref(q~
+    my $u = $dbh->selectrow_hashref(q~
         SELECT A.*, CATS_DATE(last_login) AS last_login_date
         FROM accounts A WHERE A.id = ?~, { Slice => {} }, $uid) or return;
     my $contests = $dbh->selectall_arrayref(qq~
@@ -2317,7 +2314,7 @@ sub user_stats_frame
             CA.is_hidden = 0 AND C.defreeze_date < CURRENT_TIMESTAMP
         ORDER BY C.start_date + CA.diff_time DESC~,
         { Slice => {} }, $uid);
-    $t->param(%$user, contests => $contests, is_root => $is_root);
+    $t->param(%$u, contests => $contests, is_root => $is_root);
 }
 
 
@@ -2828,9 +2825,9 @@ sub source_links
     {
         $si->{judge_name} = get_judge_name($si->{judge_id});
     }
-    my $se = param('src_enc') || param('comment_enc') || '';
+    my $se = param('src_enc') || param('comment_enc') || 'WINDOWS-1251';
     $t->param(source_encodings =>
-        [ map {{ enc => $_, selected => $_ eq $se }} keys %{source_encodings()} ]);
+        [ map {{ enc => $_, selected => $_ eq $se }} sort keys %{source_encodings()} ]);
 }
 
 
@@ -2974,6 +2971,7 @@ sub view_source_frame
         $sources_info->{src} = $src;
     }
     source_links($sources_info, $is_jury);
+    $sources_info->{src_lines} = [ map {}, split("\n", $sources_info->{src}) ];
     $t->param(sources_info => [$sources_info]);
 }
 
@@ -3119,11 +3117,12 @@ sub diff_runs_frame
 sub rank_table
 {
     my $template_name = shift;
-    init_template(param('js') ? 'main_rank_table_content_js.htm' : 'main_rank_table_content.htm');
+    init_template('main_rank_table_content.htm');
     $t->param(printable => url_param('printable'));
     my $rt = CATS::RankTable->new;
     $rt->parse_params;
     $rt->rank_table;
+    $contest->{title} = $rt->{title};
     my $s = $t->output;
 
     init_template($template_name);  
@@ -3343,6 +3342,7 @@ sub contest_visible
 
     my $pid = url_param('pid');
     my $cpid = url_param('cpid');
+    my $contest_id = url_param('cid') || $cid;
 
     my ($s, $t, $p) = ('', '', '');
     if (defined $pid)
@@ -3357,17 +3357,17 @@ sub contest_visible
         $t = 'CP';
         $p = $cpid;
     }
-    elsif (defined $cid) # Показать все задачи турнира.
+    elsif (defined $contest_id) # Показать все задачи турнира.
     {
         $s = '';
         $t = 'C';
-        $p = $cid;
+        $p = $contest_id;
     }    
 
     my ($since_start, $local_only, $orig_cid, $show_packages) = $dbh->selectrow_array(qq~
         SELECT CATS_SYSDATE() - C.start_date, C.local_only, C.id, C.show_packages
             FROM contests C $s WHERE $t.id = ?~,
-        {}, $p);
+        undef, $p);
     if (($since_start || 0) > 0)
     {
         $local_only or return (1, $show_packages);
@@ -3390,6 +3390,7 @@ sub problem_text_frame
     my ($show, $explain) = contest_visible();
     if (!$show)
     {
+        die if $is_static_page; # В статическом режиме нельзя выводить меню
         init_template('main_access_denied.htm');
         return;
     }
@@ -3425,9 +3426,9 @@ sub problem_text_frame
         # либо не выводить скрытые задачи даже жюри.
         my $c = $dbh->prepare(qq~
             SELECT problem_id, code FROM contest_problems
-            WHERE contest_id=? AND status < $cats::problem_st_hidden
+            WHERE contest_id = ? AND status < $cats::problem_st_hidden
             ORDER BY code~);
-        $c->execute($cid);
+        $c->execute(url_param('cid') || $cid);
         while (my ($problem_id, $code) = $c->fetchrow_array)
         {
             push @id_problems, $problem_id;
@@ -3579,6 +3580,7 @@ sub similarity_frame
             WHERE CP.contest_id = ? ORDER BY CP.code~, { Slice => {} }, $cid);
     $t->param(problems => $p);
     my ($pid) = param('pid') or return;
+    $pid =~ /^\d+$/ or return;
     $_->{selected} = $_->{id} == $pid for @$p;
     # Делаем join вручную -- так быстрее
     my $acc = $dbh->selectall_hashref(q~
@@ -3750,7 +3752,7 @@ sub interface_functions ()
 sub accept_request                                               
 {
     my $output_file = '';
-    if ((url_param('f') || '') eq 'static')
+    if ($is_static_page = (url_param('f') || '') eq 'static')
     {
         $output_file = CATS::StaticPages::process_static()
             or return;

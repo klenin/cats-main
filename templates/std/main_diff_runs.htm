@@ -27,7 +27,13 @@ function show_ab(a, b)
 | <a onclick="show_ab('none', ''); return false" href="#">только B</a>
 ]
 </p>
-<pre class="bordered"><code><TMPL_LOOP diff_lines><TMPL_VAR line></TMPL_LOOP></code></pre>
+<code>
+<table class="internal_borders">
+<tr>
+<td width="1"><TMPL_LOOP diff_lines><TMPL_VAR __counter__> </TMPL_LOOP></td>
+<td style="vertical-align: top"><pre><TMPL_LOOP diff_lines><TMPL_VAR line></TMPL_LOOP></pre></td></tr>
+</table>
+</code>
 
 </body>
 </html>

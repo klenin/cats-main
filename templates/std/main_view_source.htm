@@ -28,7 +28,13 @@
 </table>
 
 <TMPL_LOOP sources_info>
-<pre class="bordered"><code><TMPL_VAR src ESCAPE=HTML></code></pre>
+<code>
+<table class="internal_borders"><tr>
+<td width="1"><TMPL_LOOP src_lines><TMPL_VAR __counter__> </TMPL_LOOP></td>
+<td style="vertical-align: top"><pre><TMPL_VAR src ESCAPE=HTML></pre></td>
+</tr></table>
+</code>
 </TMPL_LOOP>
+
 </body>
 </html>

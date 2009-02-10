@@ -140,3 +140,5 @@ table.nobr tr td { white-space: nowrap; }
 a.spell { text-decoration: underline; color: red; }
 
 table.rank_table tr td p { padding: 0; margin: 0; font-size: 10px; }
+
+body.problem_text h3, body.problem_text h4 { font-style: italic; }

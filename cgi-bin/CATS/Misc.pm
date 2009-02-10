@@ -29,9 +29,6 @@ BEGIN
         attach_menu
         fatal_error
         state_to_display
-        generate_table
-        generate_cmp_query
-        generate_count_query
         balance_brackets
         balance_tags
         source_hash
@@ -68,7 +65,7 @@ use CATS::Contest;
 
 use vars qw(
     $contest $t $sid $cid $lng $uid $team_name $server_time $dbi_error
-    $is_root $is_team $is_jury $is_virtual $virtual_diff_time
+    $is_root $is_team $is_jury $can_create_contests $is_virtual $virtual_diff_time
     $listview_name $col_defs $sort $sort_dir $search $page $visible $additional
     $request_start_time $init_time
 );
@@ -181,7 +178,7 @@ sub init_listview_params
     ($sort, $search, $page, $visible, $sort_dir, $additional) = CGI::cookie($listview_name);
     $search = decode_base64($search || '');
 
-    $page = url_param('page') if (defined url_param('page'));
+    $page = url_param('page') if defined url_param('page');
 
     if (defined param('search'))
     {
@@ -466,7 +463,7 @@ sub generate_output
         $cookie = CGI::cookie(
             -name => $listview_name, -value => [@values], -expires => '+1h');
     }
-    $contest->{time_since_start} or warn "No contest from: ", $ENV{REFERER};
+    $contest->{time_since_start} or warn 'No contest from: ', $ENV{HTTP_REFERER};
     $t->param(
         contest_title => $contest->{title},
         server_time => $server_time,
@@ -529,7 +526,7 @@ sub define_columns
     my $default_dir = shift;
     $col_defs = shift;
 
-#    $sort = $default if ($sort > length(@$col_defs) or ($sort eq ''));    
+#    $sort = $default if ($sort > length(@$col_defs) or ($sort eq ''));
     $sort = $default if (!defined $sort || $sort eq '');
     $sort_dir = $default_dir if (!defined $sort_dir || $sort_dir eq '');
 
@@ -545,7 +542,7 @@ sub define_columns
         $$_{ href_sort } = $url . ";sort=$i;sort_dir=".$d;
         $i++;
     }
-    
+
     $t->param(col_defs => $col_defs);
 }
 
@@ -581,14 +578,13 @@ sub user_authorize
 {
     $sid = url_param('sid') || '';
     $is_root = 0;
+    $can_create_contests = 0;
     $uid = undef;
     $team_name = undef;
     # авторизация пользователя и установка флага администратора системы
     if ($sid ne '')
     {
-        my $srole;
-
-        ($uid, $team_name, $srole, my $last_ip) = $dbh->selectrow_array(qq~
+        ($uid, $team_name, my $srole, my $last_ip) = $dbh->selectrow_array(qq~
             SELECT id, team_name, srole, last_ip FROM accounts WHERE sid = ?~, {}, $sid);
         if (!defined($uid) || $last_ip ne CATS::IP::get_ip())
         {
@@ -598,7 +594,8 @@ sub user_authorize
             generate_output;
             exit(1);
         }
-        $is_root = !$srole;
+        $is_root = $srole == $cats::srole_root;
+        $can_create_contests = $is_root || $srole == $cats::srole_contests_creator;
     }
 
     # получение информации о текущем турнире и установка турнира по умолчанию

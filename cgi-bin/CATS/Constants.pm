@@ -28,6 +28,7 @@ $visible_pages = 10;
 # роль пользователя в системе
 $srole_root = 0; # администратор системы
 $srole_user = 1; # пользователь системы
+$srole_contests_creator = 2; # может создавать турниры
 
 # типы исходников, в таблице problem_sources
 $generator = 0;

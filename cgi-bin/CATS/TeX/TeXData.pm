@@ -41,6 +41,10 @@ our %binary =
  supset => 'sub',
  supseteq => 'supe',
  to => '#x21A6',
+ lnot => 'not',
+ lor => 'or',
+ land => 'and',
+ cdots => '#x22ef',
 );
 
 my %arrows =

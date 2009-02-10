@@ -14,46 +14,39 @@
   <td colspan="3">&nbsp;</td></tr></TMPL_IF>
 </table>
 <TMPL_IF keywords>Keywords: <TMPL_VAR keywords><br/><br/></TMPL_IF>
-
 <TMPL_IF statement>
-    <h3><i>Statement</i></h3>
-    <TMPL_VAR statement>
+  <h3>Statement</h3>
+  <TMPL_VAR statement>
 </TMPL_IF>
-
 <TMPL_IF explanation>
-    <h3><i>Explanation</i></h3>
-    <TMPL_VAR explanation>
+  <h3>Explanation</h3>
+  <TMPL_VAR explanation>
 <TMPL_ELSE>
-
 <TMPL_IF input_format>
-    <h3><i>Input file format</i></h3>
-    <TMPL_VAR input_format>
+  <h3>Input file format</h3>
+  <TMPL_VAR input_format>
 </TMPL_IF>
-
 <TMPL_IF output_format>
-    <h3><i>Output file format</i></h3>
-    <TMPL_VAR output_format>
+  <h3>Output file format</h3>
+  <TMPL_VAR output_format>
 </TMPL_IF>
-
 <TMPL_IF pconstraints>
-    <h3><i>Constraints</i></h3>
-    <TMPL_VAR pconstraints>
+  <h3>Constraints</h3>
+  <TMPL_VAR pconstraints>
 </TMPL_IF>
-
 <TMPL_IF formal_input>
-    <h3><i>Formal input</i></h3>
-    <pre><TMPL_VAR formal_input></pre>
+  <h3>Formal input</h3>
+  <pre><TMPL_VAR formal_input></pre>
 </TMPL_IF>
-
 <TMPL_IF extended_samples>
 <TMPL_LOOP samples>
-<h4><i>Sample input #<TMPL_VAR rank></i></h4>
+<h4>Sample input #<TMPL_VAR rank></h4>
 <pre><code><TMPL_VAR in_file></code></pre>
-<h4><i>Sample output #<TMPL_VAR rank></i></h4>
+<h4>Sample output #<TMPL_VAR rank></h4>
 <pre><code><TMPL_VAR out_file></code></pre>
 </TMPL_LOOP>
 <TMPL_ELSE>
-<h3><i>Sample tests</i></h4>
+<h3>Sample tests</h4>
 <table class="sample">
 <tr><th>No.</th><th>Sample input</th><th>Sample output</th></tr>
 <TMPL_LOOP samples>
@@ -65,5 +58,4 @@
 </TMPL_LOOP>
 </table>
 </TMPL_IF>
-
 </TMPL_IF>
