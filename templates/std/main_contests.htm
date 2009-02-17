@@ -48,7 +48,8 @@ function confirm_registration()
     > </TMPL_UNLESS
     > <TMPL_IF is_official><font color="blue">официальный</font></TMPL_IF
     > <TMPL_IF registration_denied><font color="red">регистрация закрыта</font></TMPL_IF
-    > <TMPL_IF show_points><font color="green">школьные правила</font></TMPL_IF>
+    > <TMPL_IF show_points><font color="green">школьные правила</font></TMPL_IF
+    > <TMPL_IF is_hidden><font color="gray">скрытый</font></TMPL_IF>
 </td>
 </tr>
 </TMPL_LOOP>

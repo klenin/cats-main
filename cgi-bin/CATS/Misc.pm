@@ -70,7 +70,7 @@ use vars qw(
     $request_start_time $init_time
 );
 
-my ($listview_array_name, @messages, $http_mime_type);
+my ($listview_array_name, @messages, $http_mime_type, %extra_headers);
 
 my $cats_dir;
 sub cats_dir()
@@ -134,7 +134,7 @@ sub http_header
 {
     my ($type, $encoding, $cookie) = @_;
 
-    CGI::header(-type => $type, -cookie => $cookie, -charset => $encoding);
+    CGI::header(-type => $type, -cookie => $cookie, -charset => $encoding, %extra_headers);
 }
 
 
@@ -198,7 +198,7 @@ sub init_listview_params
         $page = 0;
     }
 
-    if (defined param('visible'))
+    if (defined param('display_rows'))
     {
         $visible = param('display_rows');
         $page = 0;
@@ -231,7 +231,13 @@ sub init_template
         #Encode::from_to($$text_ref, 'koi8-r', 'utf-8');
         $$text_ref = Encode::decode('koi8-r', $$text_ref);
     };
-    $http_mime_type = $file_name =~ /\.xml$/ ? 'application/xml' : 'text/html';
+    $http_mime_type =
+        $file_name =~ /\.htm$/ ? 'text/html' :
+        $file_name =~ /\.xml$/ ? 'application/xml' :
+        $file_name =~ /\.ics$/ ? 'text/calendar' :
+        die 'Unknown template extension';
+    %extra_headers = ();
+    %extra_headers = (-content_disposition => 'inline;filename=contests.ics') if $file_name =~ /\.ics$/;
     #$template_file = $file_name;
     $t = HTML::Template->new(
         filename => templates_path() . "/$file_name", cache => 1,
@@ -463,7 +469,7 @@ sub generate_output
         $cookie = CGI::cookie(
             -name => $listview_name, -value => [@values], -expires => '+1h');
     }
-    $contest->{time_since_start} or warn 'No contest from: ', $ENV{HTTP_REFERER};
+    $contest->{time_since_start} or warn 'No contest from: ', $ENV{HTTP_REFERER} || '';
     $t->param(
         contest_title => $contest->{title},
         server_time => $server_time,
@@ -602,7 +608,9 @@ sub user_authorize
     $cid = url_param('cid') || param('clist') || '';
     $cid =~ s/^(\d+).*$/$1/; # берём первый турнир из clist
     if ($contest && ref $contest ne 'CATS::Contest') {
+        use Data::Dumper;
         warn "Strange contest: $contest";
+        warn Dumper($contest);
         undef $contest;
     }
     $contest ||= CATS::Contest->new;

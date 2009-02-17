@@ -84,7 +84,7 @@ sub login_frame
             $t = undef;
             print redirect(-uri =>
                 url_function('contests', sid => $sid, cid => $cid, filter => 'current'));
-            return;
+            return -1;
         }
     }
     die 'Can not generate sid';
@@ -101,6 +101,7 @@ sub logout_frame
 
     $dbh->do(qq~UPDATE accounts SET sid = NULL WHERE id = ?~, {}, $uid);
     $dbh->commit;
+    0;
 }
 
 
@@ -337,15 +338,21 @@ sub contests_select_current
     }
 }
 
+sub date_to_iso {
+    $_[0] =~ /^\s*(\d+)-(\d+)-(\d+)\s+(\d+):(\d+)\s*$/;
+    "$3$2$1T$4${5}00";
+}
 
 sub common_contests_view ($)
 {
     my ($c) = @_;
     return (
        id => $c->{id},
-       contest_name => $c->{title}, 
-       start_date => $c->{start_date}, 
+       contest_name => $c->{title},
+       start_date => $c->{start_date},
+       start_date_iso => date_to_iso($c->{start_date}),
        finish_date => $c->{finish_date},
+       finish_date_iso => date_to_iso($c->{finish_date}),
        registration_denied => $c->{closed},
        selected => $c->{id} == $cid,
        is_official => $c->{is_official},
@@ -356,7 +363,6 @@ sub common_contests_view ($)
        href_params => url_f('contests', params => $c->{id}),
     );
 }
-
 
 sub contest_fields ()
 {
@@ -384,7 +390,7 @@ sub authenticated_contests_view ()
     my $cf = contest_fields();
     my $sth = $dbh->prepare(qq~
         SELECT
-            $cf, CA.is_virtual, CA.is_jury, CA.id AS registered
+            $cf, CA.is_virtual, CA.is_jury, CA.id AS registered, C.is_hidden
         FROM contests C LEFT JOIN
             contest_accounts CA ON CA.contest_id = C.id AND CA.account_id = ?
         WHERE
@@ -397,6 +403,7 @@ sub authenticated_contests_view ()
         my $c = $_[0]->fetchrow_hashref or return;
         return (
             common_contests_view($c),
+            is_hidden => $c->{is_hidden},
             authorized => 1,
             editable => $c->{is_jury},
             deletable => $is_root,
@@ -433,18 +440,17 @@ sub contests_frame
     {
         my @clist = param('contests_selection');
         print redirect(-uri => url_f('rank_table', clist => join ',', @clist));
-        return;
+        return -1;
     }
 
-    if (defined url_param('new') && $CATS::Misc::can_create_contests)
-    {
-        contests_new_frame;
-        return;
-    }
+    return contests_new_frame
+        if defined url_param('new') && $CATS::Misc::can_create_contests;
 
     try_contest_params_frame and return;
 
-    init_listview_template('contests_' . ($uid || ''), 'contests', 'main_contests.htm');
+    my $ical = param('ical');
+    init_listview_template('contests_' . ($uid || ''), 'contests',
+        'main_contests.' .  ($ical ? 'ics' : 'htm'));
 
     if (defined url_param('delete') && $is_root)
     {
@@ -453,38 +459,24 @@ sub contests_frame
         $dbh->commit;
     }
 
-    if (defined param('new_save') && $CATS::Misc::can_create_contests)
-    {
-        contests_new_save;
-    }
+    contests_new_save if defined param('new_save') && $CATS::Misc::can_create_contests;
 
-    if (defined param('edit_save') &&
-        get_registered_contestant(fields => 'is_jury', contest_id => param('id')))
-    {
-        contests_edit_save;
-    }
+    contests_edit_save
+        if defined param('edit_save') &&
+            get_registered_contestant(fields => 'is_jury', contest_id => param('id'));
 
-    if (defined param('online_registration'))
-    {
-        contest_online_registration;
-    }
+    contest_online_registration if defined param('online_registration');
 
     my $vr = param('virtual_registration');
-    if (defined $vr && $vr)
-    {
-        contest_virtual_registration;
-    }
+    contest_virtual_registration if defined $vr && $vr;
     
-    if (defined url_param('set_contest'))
-    {
-        contests_select_current;
-    }
+    contests_select_current if defined url_param('set_contest');
 
     define_columns(url_f('contests'), 1, 1, [
         { caption => res_str(601), order_by => '1 DESC, 2', width => '40%' },
-        { caption => res_str(600), order_by => '1 DESC, 4', width => '20%' },
-        { caption => res_str(631), order_by => '1 DESC, 5', width => '20%' },
-        { caption => res_str(630), order_by => '1 DESC, 8', width => '20%' } ]);
+        { caption => res_str(600), order_by => '1 DESC, 4', width => '15%' },
+        { caption => res_str(631), order_by => '1 DESC, 5', width => '15%' },
+        { caption => res_str(630), order_by => '1 DESC, 8', width => '30%' } ]);
 
     my $f = param('filter') || '';
     attach_listview(url_f('contests'),
@@ -499,6 +491,7 @@ sub contests_frame
         }, { n => '', i => 558 }, { n => 'official', i => 559 }, { n => 'current', i => 560 }),
         ($CATS::Misc::can_create_contests ?
             { href_item => url_f('contests', new => 1), item_name => res_str(537) } : ()),
+        { href_item => url_f('contests', ical => 1, display_rows => 50, filter => $f), item_name => res_str(562) },
     ];
     $t->param(
         submenu => $submenu,
@@ -543,7 +536,7 @@ sub console_read_time_interval
     my ($v, $u) = init_console_listview_additionals;
     my @text = split /\|/, res_str(121);
     my $units = [
-        { value => 'hours', k => 0.04167 },
+        { value => 'hours', k => 1 / 24 },
         { value => 'days', k => 1 },
         { value => 'months', k => 30 },
     ];
@@ -1316,6 +1309,7 @@ sub download_problem
         CATS::BinaryFile::save(cats_dir() . $fname, $zip);
     }
     print redirect(-uri => $fname);
+    -1;
 }
 
 
@@ -1386,7 +1380,7 @@ sub problems_submit
         WHERE R.account_id = ?
         ORDER BY R.submit_time DESC~, {},
         $submit_uid);
-    my $SECONDS_PER_DAY = 24*60*60;
+    my $SECONDS_PER_DAY = 24 * 60 * 60;
     if (($prev->[0] || 1) < 3/$SECONDS_PER_DAY || ($prev->[1] || 1) < 60/$SECONDS_PER_DAY)
     {
         return msg(131);
@@ -1611,15 +1605,14 @@ sub problem_select_testsets
             UPDATE contest_problems SET testsets = ? WHERE id = ?~, undef,
             $ts_list, $problem->{cpid});
         $dbh->commit;
+        print redirect(-uri => url_f('problems'));
+        return -1;
     }
-    else
-    {
-        my %sel;
-        @sel{split /\s+/, $problem->{testsets} || ''} = undef;
-        $_->{selected} = exists $sel{$_->{name}} for @$testsets;
-    }
-    
-    
+
+    my %sel;
+    @sel{split /\s+/, $problem->{testsets} || ''} = undef;
+    $_->{selected} = exists $sel{$_->{name}} for @$testsets;
+
     init_template('main_problem_select_testsets.htm');
     $t->param("problem_$_" => $problem->{$_}) for keys %$problem;
     $t->param(testsets => $testsets, href_select_testsets => url_f('problem_select_testsets'));
@@ -3763,13 +3756,15 @@ sub accept_request
 
     my $function_name = url_param('f') || '';
     my $fn = interface_functions()->{$function_name} || \&about_frame;
-    $fn->();
+    # Функция возвращает -1 если результат генерировать не надо --
+    # например, если был сделан redirect.
+    $fn->() == -1 and return;
 
     generate_menu if defined $t;
     generate_output($output_file);
 }
 
-         
+
 $CATS::Misc::request_start_time = [ Time::HiRes::gettimeofday ];
 CATS::DB::sql_connect;
 $dbh->rollback; # на случай брошенной транзакции от предыдущего запроса
