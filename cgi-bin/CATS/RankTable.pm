@@ -477,6 +477,7 @@ sub rank_table
         rank => $self->{rank},
         href_console => url_f('console'),
     );
+    $t->param(cache_since => $max_req_id) if $is_jury;
 }
 
 

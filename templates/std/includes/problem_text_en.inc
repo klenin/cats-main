@@ -1,7 +1,6 @@
 <h2><TMPL_IF code>Problem <TMPL_VAR code>. </TMPL_IF><TMPL_VAR title ESCAPE=HTML></h2>
 <TMPL_IF author>Author: <TMPL_VAR author ESCAPE=HTML><br/><br/></TMPL_IF>
-
-<table width="100%" class="nobr">
+<table class="nobr">
 <tr>
   <td width="1%">Input file:</td><td><TMPL_VAR input_file ESCAPE=HTML></td>
   <td>&nbsp;</td>

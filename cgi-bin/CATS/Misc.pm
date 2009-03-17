@@ -33,12 +33,13 @@ BEGIN
         balance_tags
         source_hash
         param_on
+        save_settings
     );
 
     @EXPORT_OK = qw(
         $contest $t $sid $cid $lng $uid $server_time
         $is_root $is_team $is_jury $is_virtual $virtual_diff_time
-        $additional $search $page1 $visible $init_time);
+        $additional $search $page1 $visible $init_time $settings);
 
     %EXPORT_TAGS = (all => [ @EXPORT, @EXPORT_OK ]);
 }
@@ -52,6 +53,8 @@ use CGI (':standard');
 use Text::Balanced qw(extract_tagged extract_bracketed);
 use CGI::Util qw(rearrange unescape escape);
 use MIME::Base64;
+use MIME::QuotedPrint;
+
 #use FCGI;
 use SQL::Abstract;
 use Digest::MD5;
@@ -67,7 +70,7 @@ use vars qw(
     $contest $t $sid $cid $lng $uid $team_name $server_time $dbi_error
     $is_root $is_team $is_jury $can_create_contests $is_virtual $virtual_diff_time
     $listview_name $col_defs $sort $sort_dir $search $page $visible $additional
-    $request_start_time $init_time
+    $request_start_time $init_time $settings $enc_settings
 );
 
 my ($listview_array_name, @messages, $http_mime_type, %extra_headers);
@@ -175,8 +178,9 @@ sub init_messages
 
 sub init_listview_params
 {
-    ($sort, $search, $page, $visible, $sort_dir, $additional) = CGI::cookie($listview_name);
-    $search = decode_base64($search || '');
+    ($sort, $search, $page, $visible, $sort_dir, $additional) =
+        @{$settings->{$listview_name} || []};
+    $search = decode_qp($search || '');
 
     $page = url_param('page') if defined url_param('page');
 
@@ -461,14 +465,6 @@ sub generate_output
 {
     my ($output_file) = @_;
     defined $t or return;
-    my $cookie;
-    if ($listview_name)
-    {
-        my @values = map { $_ || '' }
-           ($sort, encode_base64(Encode::encode_utf8($search)), $page, $visible, $sort_dir, $additional);
-        $cookie = CGI::cookie(
-            -name => $listview_name, -value => [@values], -expires => '+1h');
-    }
     $contest->{time_since_start} or warn 'No contest from: ', $ENV{HTTP_REFERER} || '';
     $t->param(
         contest_title => $contest->{title},
@@ -501,6 +497,7 @@ sub generate_output
             Time::HiRes::tv_interval($request_start_time, [ Time::HiRes::gettimeofday ]));
         $t->param(init_time => sprintf '%.3fs', $init_time || 0);
     }
+    my $cookie = $uid ? undef : CGI::cookie(-name => 'settings', -value => $enc_settings, -expires => '+1h');
     my $out = '';
     if (my $enc = param('enc'))
     {
@@ -580,6 +577,33 @@ sub generate_password
 }
 
 
+# авторизация пользователя, установка прав и настроек
+sub read_user
+{
+    if ($sid ne '')
+    {
+        ($uid, $team_name, my $srole, my $last_ip, $enc_settings) = $dbh->selectrow_array(qq~
+            SELECT id, team_name, srole, last_ip, settings FROM accounts WHERE sid = ?~, {}, $sid);
+        if (!defined($uid) || $last_ip ne CATS::IP::get_ip())
+        {
+            init_template('main_bad_sid.htm');
+            $sid = '';
+            $t->param(href_login => url_f('login'));
+        }
+        else
+        {
+            $is_root = $srole == $cats::srole_root;
+            $can_create_contests = $is_root || $srole == $cats::srole_contests_creator;
+        }
+    }
+    if (!$uid)
+    {
+        $enc_settings = CGI::cookie('settings');
+    }
+    $settings = eval($enc_settings || '{}') || {};
+}
+
+
 sub user_authorize
 {
     $sid = url_param('sid') || '';
@@ -587,36 +611,22 @@ sub user_authorize
     $can_create_contests = 0;
     $uid = undef;
     $team_name = undef;
-    # авторизация пользователя и установка флага администратора системы
-    if ($sid ne '')
-    {
-        ($uid, $team_name, my $srole, my $last_ip) = $dbh->selectrow_array(qq~
-            SELECT id, team_name, srole, last_ip FROM accounts WHERE sid = ?~, {}, $sid);
-        if (!defined($uid) || $last_ip ne CATS::IP::get_ip())
-        {
-            init_template('main_bad_sid.htm');
-            $sid = '';
-            $t->param(href_login => url_f('login'));
-            generate_output;
-            exit(1);
-        }
-        $is_root = $srole == $cats::srole_root;
-        $can_create_contests = $is_root || $srole == $cats::srole_contests_creator;
-    }
+    $enc_settings = '{}';
+    $settings = {};
+    read_user;
 
     # получение информации о текущем турнире и установка турнира по умолчанию
     $cid = url_param('cid') || param('clist') || '';
     $cid =~ s/^(\d+).*$/$1/; # берём первый турнир из clist
     if ($contest && ref $contest ne 'CATS::Contest') {
         use Data::Dumper;
-        warn "Strange contest: $contest";
+        warn "Strange contest: $contest from ", $ENV{HTTP_REFERER} || '';
         warn Dumper($contest);
         undef $contest;
     }
     $contest ||= CATS::Contest->new;
     $contest->load($cid);
     $server_time = $contest->{server_time};
-    #($server_time) = $dbh->selectrow_array(q~SELECT CATS_DATE(CATS_SYSDATE()) FROM RDB$DATABASE~);
     $cid = $contest->{id};
 
     $virtual_diff_time = 0;
@@ -645,12 +655,31 @@ sub user_authorize
 }
 
 
+sub save_settings
+{
+    if ($listview_name)
+    {
+        $settings->{$listview_name} = [ map { $_ || '' }
+           ($sort, encode_qp(Encode::encode_utf8($search)), $page, $visible, $sort_dir, $additional) ];
+    }
+    my $d = Data::Dumper->new([$settings]);
+    $d->Terse(1)->Indent(0);
+    my $new_enc_settings = $d->Dump;
+    $new_enc_settings ne $enc_settings or return;
+    $enc_settings = $new_enc_settings;
+    $uid or return;
+    $dbh->do(q~
+        UPDATE accounts SET settings = ? WHERE id = ?~, undef, $new_enc_settings, $uid);
+    $dbh->commit;
+}
+
+
 sub initialize
 {
     $dbi_error = undef;
     init_messages;
-    user_authorize;
     $t = undef;
+    user_authorize;
     $listview_name = '';
     $listview_array_name = '';
     $col_defs = undef;
@@ -693,7 +722,7 @@ sub balance_brackets
 sub balance_tags
 {
     my ($text, $tag1, $tag2) = @_;
-    my @extr = extract_tagged ($text, $tag1, $tag2, undef);
+    my @extr = extract_tagged($text, $tag1, $tag2, undef);
     $extr[0];
 }
 

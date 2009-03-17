@@ -1,6 +1,6 @@
 <h2><TMPL_IF code>Задача <TMPL_VAR code>. </TMPL_IF><TMPL_VAR title ESCAPE=HTML></h2>
 <TMPL_IF author>Автор: <TMPL_VAR author ESCAPE=HTML><br><br></TMPL_IF>
-<table width="100%" class="nobr">
+<table class="nobr">
 <tr>
   <td width="1%">Входной файл:</td><td><TMPL_VAR input_file ESCAPE=HTML></td>
   <td>&nbsp;</td>

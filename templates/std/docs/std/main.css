@@ -141,4 +141,5 @@ a.spell { text-decoration: underline; color: red; }
 
 table.rank_table tr td p { padding: 0; margin: 0; font-size: 10px; }
 
-body.problem_text h3, body.problem_text h4 { font-style: italic; }
+div.problem_text { margin-left: 10px; margin-right: 10px; }
+div.problem_text h3, div.problem_text h4 { font-style: italic; }

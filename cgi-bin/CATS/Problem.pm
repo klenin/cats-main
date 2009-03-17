@@ -286,7 +286,7 @@ sub start_tag_Problem
         input_file => $atts->{inputFile},
         output_file => $atts->{outputFile},
         std_checker => $atts->{stdChecker},
-        max_points => $atts->{maxPoints}
+        max_points => $atts->{maxPoints},
     };
     for ($self->{problem}->{memory_limit})
     {

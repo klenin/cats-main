@@ -82,8 +82,7 @@ sub login_frame
             my $cid = $dbh->selectrow_array(qq~SELECT id FROM contests WHERE ctype = 1~);
 
             $t = undef;
-            print redirect(-uri =>
-                url_function('contests', sid => $sid, cid => $cid, filter => 'current'));
+            print redirect(-uri => url_function('contests', sid => $sid, cid => $cid));
             return -1;
         }
     }
@@ -357,9 +356,7 @@ sub common_contests_view ($)
        selected => $c->{id} == $cid,
        is_official => $c->{is_official},
        show_points => $c->{rules},
-       href_contest => url_function('contests',
-           sid => $sid, set_contest => 1, cid => $c->{id},
-           (param('filter') ? (filter => param('filter')) : ())),
+       href_contest => url_function('contests', sid => $sid, set_contest => 1, cid => $c->{id}),
        href_params => url_f('contests', params => $c->{id}),
     );
 }
@@ -377,7 +374,7 @@ sub contest_fields ()
 
 sub contests_submenu_filter
 {
-    my $f = param('filter') || '';
+    my $f = $settings->{contests}->{filter} || '';
     {
         'official' => 'AND C.is_official = 1 ',
         'current' => 'AND CATS_SYSDATE() <= finish_date ' #BETWEEN start_date AND 
@@ -434,6 +431,9 @@ sub anonymous_contests_view ()
 }
 
 
+sub coalesce { defined && return $_ for @_ }
+
+
 sub contests_frame 
 {    
     if (defined param('summary_rank'))
@@ -478,20 +478,22 @@ sub contests_frame
         { caption => res_str(631), order_by => '1 DESC, 5', width => '15%' },
         { caption => res_str(630), order_by => '1 DESC, 8', width => '30%' } ]);
 
-    my $f = param('filter') || '';
+    $_ = coalesce(param('filter'), $_, 'current') for $settings->{contests}->{filter};
+    
     attach_listview(url_f('contests'),
         defined $uid ? authenticated_contests_view : anonymous_contests_view, undef,
-        { page_params => { filter => $f } });
+        ($uid ? () : { page_params => { filter => $settings->{contests}->{filter} } }));
 
     my $submenu = [
         map({
             href_item => url_f('contests', page => 0, filter => $_->{n}),
             item_name => res_str($_->{i}),
-            selected => $f eq $_->{n}, 
+            selected => $settings->{contests}->{filter} eq $_->{n}, 
         }, { n => '', i => 558 }, { n => 'official', i => 559 }, { n => 'current', i => 560 }),
         ($CATS::Misc::can_create_contests ?
             { href_item => url_f('contests', new => 1), item_name => res_str(537) } : ()),
-        { href_item => url_f('contests', ical => 1, display_rows => 50, filter => $f), item_name => res_str(562) },
+        { href_item => url_f('contests',
+            ical => 1, display_rows => 50, filter => $settings->{contests}->{filter}), item_name => res_str(562) },
     ];
     $t->param(
         submenu => $submenu,
@@ -1528,6 +1530,17 @@ sub problems_mass_retest()
 }
 
 
+sub problems_recalc_points()
+{
+    my @pids = param('problem_id') or return msg(12);
+    $dbh->do(q~
+        UPDATE reqs SET points = NULL
+        WHERE contest_id = ? AND problem_id IN (~ . join(',', @pids) . q~)~, undef,
+        $cid);
+    $dbh->commit;
+}
+
+
 sub problem_status_names()
 {
     return {
@@ -1625,7 +1638,7 @@ sub problems_retest_frame
     init_listview_template("problems_retest$cid" . ($uid || ''), 'problems', 'main_problems_retest.htm');
 
     defined param('mass_retest') and problems_mass_retest;
-    
+    defined param('recalc_points') and problems_recalc_points;
 
     my @cols = (
         { caption => res_str(602), order_by => '3', width => '30%' }, # название
@@ -3649,7 +3662,7 @@ sub generate_menu
     my @left_menu = (
         { item => $logged_on ? res_str(503) : res_str(500), 
           href => $logged_on ? url_function('logout', sid => $sid) : url_f('login') },
-        { item => res_str(502), href => url_f('contests', filter => 'current') },
+        { item => res_str(502), href => url_f('contests') },
         { item => res_str(525), href => url_f('problems') },
         { item => res_str(526), href => url_f('users') },
         { item => res_str(510),
@@ -3742,7 +3755,7 @@ sub interface_functions ()
 }
 
 
-sub accept_request                                               
+sub accept_request                                           
 {
     my $output_file = '';
     if ($is_static_page = (url_param('f') || '') eq 'static')
@@ -3754,11 +3767,15 @@ sub accept_request
     $CATS::Misc::init_time = Time::HiRes::tv_interval(
         $CATS::Misc::request_start_time, [ Time::HiRes::gettimeofday ]);
 
-    my $function_name = url_param('f') || '';
-    my $fn = interface_functions()->{$function_name} || \&about_frame;
-    # Функция возвращает -1 если результат генерировать не надо --
-    # например, если был сделан redirect.
-    $fn->() == -1 and return;
+    unless (defined $t)
+    {
+        my $function_name = url_param('f') || '';
+        my $fn = interface_functions()->{$function_name} || \&about_frame;
+        # Функция возвращает -1 если результат генерировать не надо --
+        # например, если был сделан redirect.
+        ($fn->() || 0) == -1 and return;
+    }
+    save_settings;
 
     generate_menu if defined $t;
     generate_output($output_file);

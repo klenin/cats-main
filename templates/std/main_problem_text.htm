@@ -1,15 +1,14 @@
 <TMPL_INCLUDE 'includes/header.inc'>
 <TMPL_VAR tex_styles>
 </head>
-<body style="margin-left: 10px" class="problem_text">
+<body>
 <TMPL_LOOP problems>
-<div <TMPL_UNLESS "__first__">style="page-break-before:always"</TMPL_UNLESS>>
+<div class="problem_text" <TMPL_UNLESS "__first__">style="page-break-before:always"</TMPL_UNLESS>>
   <TMPL_IF lang_ru><TMPL_INCLUDE 'includes/problem_text_ru.inc'></TMPL_IF>
   <TMPL_IF lang_en><TMPL_INCLUDE 'includes/problem_text_en.inc'></TMPL_IF>
   <hr>
 </div>
 </TMPL_LOOP>
-<br/>
-<font size="-3" color="#808080"><TMPL_VAR request_process_time> <TMPL_VAR init_time></font>
+<font size="-3" color="#808080">&nbsp;<TMPL_VAR request_process_time> <TMPL_VAR init_time></font>
 </body>
 </html>
