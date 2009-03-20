@@ -2,10 +2,10 @@
 <tr>
 <td align=left width=20% nowrap>
 <input type=submit value="Найти" name=filter class=button>
-<input type=text name="search" value="<TMPL_VAR search>" size="30" class=bordered>
+<input type=text name="search" value="<TMPL_VAR search>" size="30" class="bordered">
 </td>
 <td align=center width=20% nowrap>
-<TMPL_IF href_prev_pages><a href='<TMPL_VAR href_prev_pages>'>&lt;&lt;</a></TMPL_IF>
+<TMPL_IF href_prev_pages><a href="<TMPL_VAR href_prev_pages>">&lt;&lt;</a></TMPL_IF>
 
 страницы:
 
@@ -36,7 +36,7 @@
 </td>
 <td align=right width=20% nowrap>
 <input type=submit value="Показывать" name=visible class=button>
-<select name=display_rows>
+<select name="rows">
 <TMPL_LOOP display_rows>
     <option value="<TMPL_VAR count>" <TMPL_IF is_current> selected </TMPL_IF> ><TMPL_VAR text>
 </TMPL_LOOP>

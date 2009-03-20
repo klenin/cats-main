@@ -37,9 +37,9 @@ BEGIN
     );
 
     @EXPORT_OK = qw(
-        $contest $t $sid $cid $lng $uid $server_time
+        $contest $t $sid $cid $uid $server_time
         $is_root $is_team $is_jury $is_virtual $virtual_diff_time
-        $additional $search $page1 $visible $init_time $settings);
+        $listview_name $init_time $settings);
 
     %EXPORT_TAGS = (all => [ @EXPORT, @EXPORT_OK ]);
 }
@@ -53,7 +53,7 @@ use CGI (':standard');
 use Text::Balanced qw(extract_tagged extract_bracketed);
 use CGI::Util qw(rearrange unescape escape);
 use MIME::Base64;
-use MIME::QuotedPrint;
+use Storable;
 
 #use FCGI;
 use SQL::Abstract;
@@ -67,10 +67,9 @@ use CATS::IP;
 use CATS::Contest;
 
 use vars qw(
-    $contest $t $sid $cid $lng $uid $team_name $server_time $dbi_error
+    $contest $t $sid $cid $uid $team_name $server_time $dbi_error
     $is_root $is_team $is_jury $can_create_contests $is_virtual $virtual_diff_time
-    $listview_name $col_defs $sort $sort_dir $search $page $visible $additional
-    $request_start_time $init_time $settings $enc_settings
+    $listview_name $col_defs $request_start_time $init_time $settings $enc_settings
 );
 
 my ($listview_array_name, @messages, $http_mime_type, %extra_headers);
@@ -88,21 +87,21 @@ sub split_fname
 
     my ($vol, $dir, $fname, $name, $ext);
 
-    my $volRE = '(?:^(?:[a-zA-Z]:|(?:\\\\\\\\|//)[^\\\\/]+[\\\\/][^\\\\/]+)?)' ;    
-    my $dirRE = '(?:(?:.*[\\\\/](?:\.\.?$)?)?)' ;
-    if ($path =~ m/($volRE)($dirRE)(.*)$/) 
+    my $volRE = '(?:^(?:[a-zA-Z]:|(?:\\\\\\\\|//)[^\\\\/]+[\\\\/][^\\\\/]+)?)';
+    my $dirRE = '(?:(?:.*[\\\\/](?:\.\.?$)?)?)';
+    if ($path =~ m/($volRE)($dirRE)(.*)$/)
     {
         $vol = $1;
         $dir = $2;
         $fname = $3;
     }
 
-    if ($fname =~ m/^(.*)(\.)(.*)/) 
+    if ($fname =~ m/^(.*)(\.)(.*)/)
     {
         $name = $1;
         $ext = $3;
     }
-    
+
     return ($vol, $dir, $fname, $name, $ext);
 }
 
@@ -110,7 +109,7 @@ sub split_fname
 sub escape_html
 {
     my $toencode = shift;
-    
+
     $toencode =~ s/&/&amp;/g;
     $toencode =~ s/\'/&#39;/g;
     $toencode =~ s/\"/&quot;/g; #"
@@ -124,7 +123,7 @@ sub escape_html
 sub escape_xml
 {
     my $t = shift;
-    
+
     $t =~ s/&/&amp;/g;
     $t =~ s/>/&gt;/g;
     $t =~ s/</&lt;/g;
@@ -178,41 +177,37 @@ sub init_messages
 
 sub init_listview_params
 {
-    ($sort, $search, $page, $visible, $sort_dir, $additional) =
-        @{$settings->{$listview_name} || []};
-    $search = decode_qp($search || '');
+    $_ && ref $_ eq 'HASH' or $_ = {} for $settings->{$listview_name};
+    my $s = $settings->{$listview_name};
+    $s->{search} = decode_utf8($s->{search} || '');
 
-    $page = url_param('page') if defined url_param('page');
+    $s->{page} = url_param('page') if defined url_param('page');
 
     if (defined param('search'))
     {
-        $search = Encode::decode_utf8(param('search'));
-        $page = 0;
+        $s->{search} = Encode::decode_utf8(param('search'));
+        $s->{page} = 0;
     }
 
     if (defined url_param('sort'))
     {
-        $sort = url_param('sort');
-        $page = 0;
+        $s->{sort_by} = int(url_param('sort'));
+        $s->{page} = 0;
     }
 
     if (defined url_param('sort_dir'))
     {
-        $sort_dir = url_param('sort_dir');
-        $page = 0;
+        $s->{sort_dir} = int(url_param('sort_dir'));
+        $s->{page} = 0;
     }
 
-    if (defined param('display_rows'))
+    if (defined param('rows'))
     {
-        $visible = param('display_rows');
-        $page = 0;
+        $s->{rows} = param('rows');
+        $s->{page} = 0;
     }
-    $visible = $cats::display_rows[0] if (!$visible);
+    $s->{rows} ||= $cats::display_rows[0];
 
-#    $sort = int($sort);
-#    $sort_dir = int($sort_dir);
-#    $sort = $sort || '';
-#    $sort_dir = $sort_dir || '';
 }
 
 
@@ -251,9 +246,7 @@ sub init_template
 
 sub init_listview_template
 {
-    $listview_name = shift;
-    $listview_array_name = shift;
-    my $file_name = shift;
+    ($listview_name, $listview_array_name, my $file_name) = @_;
 
     init_listview_params;
 
@@ -350,12 +343,15 @@ sub attach_listview
     my ($url, $fetch_row, $c, $sort_columns, $p) = @_;
     my @data = ();
     my $row_count = 0;
-    my $start_row = ($page || 0) * ($visible || 0);
+    $listview_name or die;
+    my $s = $settings->{$listview_name};
+    my $page = \$s->{page};
+    my $start_row = ($$page || 0) * ($s->{rows} || 0);
     my $pp = $p->{page_params} || {};
     my $page_extra_params = join '', map ";$_=$pp->{$_}", keys %$pp;
 
     my $mask = undef;
-    for (split(',', $search))
+    for (split(',', $s->{search}))
     {
         if ($_ =~ /(.*)\=(.*)/)
         {
@@ -368,7 +364,7 @@ sub attach_listview
     {
 	    last if $row_count > $cats::max_fetch_row_count;
         my $f = 1;
-        if ($search)
+        if ($s->{search})
         {
             $f = 0;
             if (defined $mask)
@@ -387,14 +383,14 @@ sub attach_listview
             {
                 for (keys %h)
                 {
-                    $f = 1 if defined $h{$_} && index($h{$_}, $search) != -1;
+                    $f = 1 if defined $h{$_} && index($h{$_}, $s->{search}) != -1;
                 }
             }
         }
 
         if ($f)
         {
-            if ($row_count >= $start_row && $row_count < $start_row + $visible)
+            if ($row_count >= $start_row && $row_count < $start_row + $s->{rows})
             {
                 push @data, { %h, odd => $row_count % 2 };
             }
@@ -403,10 +399,10 @@ sub attach_listview
 	
     }
 
-    my $page_count = int($row_count / $visible) + ($row_count % $visible ? 1 : 0) || 1;
+    my $page_count = int($row_count / $s->{rows}) + ($row_count % $s->{rows} ? 1 : 0) || 1;
 
-    $page ||= 0;
-    my $range_start = $page - $page % $cats::visible_pages;
+    $$page ||= 0;
+    my $range_start = $$page - $$page % $cats::visible_pages;
     $range_start = 0 if ($range_start < 0);
 
     my $range_end = $range_start + $cats::visible_pages - 1;
@@ -415,21 +411,19 @@ sub attach_listview
     my @pages = map {{
         page_number => $_ + 1,
         href_page => "$url;page=$_$page_extra_params",
-        current_page => $_ == $page
+        current_page => $_ == $$page
     }} ($range_start..$range_end);
 
     $t->param(
-        page => $page,
-        pages => [@pages],
-        search => $search
+        page => $$page, pages => \@pages, search => $s->{search}
     );
 
     my @display_rows = ();
 
     for (@cats::display_rows)
     {
-        push @display_rows, { 
-            is_current => ($visible == $_),
+        push @display_rows, {
+            is_current => ($s->{rows} == $_),
             count => $_,
             text => $_
         };
@@ -443,7 +437,7 @@ sub attach_listview
     if ($range_end < $page_count - 1)
     {
         $t->param( href_next_pages => "$url$page_extra_params;page=" . ($range_end + 1));
-    }     
+    }
 
     $t->param(display_rows => [ @display_rows ]);
     $t->param($listview_array_name => [@data]);
@@ -452,12 +446,11 @@ sub attach_listview
 
 sub order_by
 {
-   if ($sort ne '' && defined $col_defs->[$sort])
-   {
-       my $dir = $sort_dir ? 'DESC' : 'ASC';
-       return 'ORDER BY ' . $col_defs->[$sort]{order_by} . " $dir";
-   }
-   return '';
+    my $s = $settings->{$listview_name};
+    defined $s->{sort_by} && $s->{sort_by} =~ /^\d+$/ && $col_defs->[$s->{sort_by}]
+        or return '';
+    sprintf 'ORDER BY %s %s',
+        $col_defs->[$s->{sort_by}]{order_by}, ($s->{sort_dir} ? 'DESC' : 'ASC');
 }
 
 
@@ -497,7 +490,8 @@ sub generate_output
             Time::HiRes::tv_interval($request_start_time, [ Time::HiRes::gettimeofday ]));
         $t->param(init_time => sprintf '%.3fs', $init_time || 0);
     }
-    my $cookie = $uid ? undef : CGI::cookie(-name => 'settings', -value => $enc_settings, -expires => '+1h');
+    my $cookie = $uid ? undef : CGI::cookie(
+        -name => 'settings', -value => encode_base64($enc_settings), -expires => '+1h');
     my $out = '';
     if (my $enc = param('enc'))
     {
@@ -530,8 +524,9 @@ sub define_columns
     $col_defs = shift;
 
 #    $sort = $default if ($sort > length(@$col_defs) or ($sort eq ''));
-    $sort = $default if (!defined $sort || $sort eq '');
-    $sort_dir = $default_dir if (!defined $sort_dir || $sort_dir eq '');
+    my ($sort, $sort_dir) = @{$settings->{$listview_name}}{qw(sort_by sort_dir)};
+    $sort = $default if !defined $sort || $sort eq '';
+    $sort_dir = $default_dir if !defined $sort_dir || $sort_dir eq '';
 
     my $i = 0;
     for (@$col_defs)
@@ -578,8 +573,14 @@ sub generate_password
 
 
 # авторизация пользователя, установка прав и настроек
-sub read_user
+sub init_user
 {
+    $sid = url_param('sid') || '';
+    $is_root = 0;
+    $can_create_contests = 0;
+    $uid = undef;
+    $team_name = undef;
+    $enc_settings = '';
     if ($sid ne '')
     {
         ($uid, $team_name, my $srole, my $last_ip, $enc_settings) = $dbh->selectrow_array(qq~
@@ -598,24 +599,17 @@ sub read_user
     }
     if (!$uid)
     {
-        $enc_settings = CGI::cookie('settings');
+        $enc_settings = CGI::cookie('settings') || '';
+        $enc_settings = decode_base64($enc_settings) if $enc_settings;
     }
-    $settings = eval($enc_settings || '{}') || {};
+    # При возникновении любых проблем сбрасываем настройки
+    $settings = eval { Storable::thaw($enc_settings) } || {};
 }
 
 
-sub user_authorize
+# получение информации о текущем турнире и установка турнира по умолчанию
+sub init_contest
 {
-    $sid = url_param('sid') || '';
-    $is_root = 0;
-    $can_create_contests = 0;
-    $uid = undef;
-    $team_name = undef;
-    $enc_settings = '{}';
-    $settings = {};
-    read_user;
-
-    # получение информации о текущем турнире и установка турнира по умолчанию
     $cid = url_param('cid') || param('clist') || '';
     $cid =~ s/^(\d+).*$/$1/; # берём первый турнир из clist
     if ($contest && ref $contest ne 'CATS::Contest') {
@@ -659,12 +653,11 @@ sub save_settings
 {
     if ($listview_name)
     {
-        $settings->{$listview_name} = [ map { $_ || '' }
-           ($sort, encode_qp(Encode::encode_utf8($search)), $page, $visible, $sort_dir, $additional) ];
+        my $s = $settings->{$listview_name} ||= {};
+        $s->{search} = Encode::encode_utf8($s->{search});
+        $s->{$_} or delete $s->{$_} for keys %$s;
     }
-    my $d = Data::Dumper->new([$settings]);
-    $d->Terse(1)->Indent(0);
-    my $new_enc_settings = $d->Dump;
+    my $new_enc_settings = Storable::freeze($settings);
     $new_enc_settings ne $enc_settings or return;
     $enc_settings = $new_enc_settings;
     $uid or return;
@@ -679,7 +672,8 @@ sub initialize
     $dbi_error = undef;
     init_messages;
     $t = undef;
-    user_authorize;
+    init_user;
+    init_contest;
     $listview_name = '';
     $listview_array_name = '';
     $col_defs = undef;

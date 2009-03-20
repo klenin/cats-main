@@ -14,7 +14,7 @@
 </td>
 <td align="right" width="30%" nowrap>
   <input type="submit" value="Показывать" name="visible" class="button">
-  <select name="display_rows">
+  <select name="rows">
   <TMPL_LOOP display_rows>
     <option value="<TMPL_VAR count>"<TMPL_IF is_current> selected="selected"</TMPL_IF>><TMPL_VAR text></option>
   </TMPL_LOOP>

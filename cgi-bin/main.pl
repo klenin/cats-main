@@ -23,6 +23,8 @@ my $cats_lib_dir;
 BEGIN {
     $cats_lib_dir = $ENV{CATS_DIR} || '.';
     $cats_lib_dir =~ s/\/$//;
+    $Data::Dumper::Terse = 1;
+    $Data::Dumper::Indent = 1;
 }
 use lib $cats_lib_dir;
 
@@ -365,7 +367,8 @@ sub contest_fields ()
 {
     # HACK: начальная страница -- список турниров, выводится очень часто
     # при отсутствии поиска выбираем только первую страницу + 1 запись.
-    # (($page || 0) == 0 && !$search ? 'FIRST ' . ($visible + 1) : '') .
+    # my $s = $settings->{$listview_name};
+    # (($s->{page} || 0) == 0 && !$s->{search} ? 'FIRST ' . ($s->{rows} + 1) : '') .
     qq~c.ctype, c.id, c.title, c.start_date AS sd, c.finish_date AS fd,
     CATS_DATE(c.start_date) AS start_date, CATS_DATE(c.finish_date) AS finish_date,
     c.closed, c.is_official, c.rules~
@@ -376,6 +379,7 @@ sub contests_submenu_filter
 {
     my $f = $settings->{contests}->{filter} || '';
     {
+        'all' => '',
         'official' => 'AND C.is_official = 1 ',
         'current' => 'AND CATS_SYSDATE() <= finish_date ' #BETWEEN start_date AND 
     }->{$f} || '';
@@ -449,8 +453,7 @@ sub contests_frame
     try_contest_params_frame and return;
 
     my $ical = param('ical');
-    init_listview_template('contests_' . ($uid || ''), 'contests',
-        'main_contests.' .  ($ical ? 'ics' : 'htm'));
+    init_listview_template('contests', 'contests', 'main_contests.' .  ($ical ? 'ics' : 'htm'));
 
     if (defined url_param('delete') && $is_root)
     {
@@ -489,11 +492,11 @@ sub contests_frame
             href_item => url_f('contests', page => 0, filter => $_->{n}),
             item_name => res_str($_->{i}),
             selected => $settings->{contests}->{filter} eq $_->{n}, 
-        }, { n => '', i => 558 }, { n => 'official', i => 559 }, { n => 'current', i => 560 }),
+        }, { n => 'all', i => 558 }, { n => 'official', i => 559 }, { n => 'current', i => 560 }),
         ($CATS::Misc::can_create_contests ?
             { href_item => url_f('contests', new => 1), item_name => res_str(537) } : ()),
         { href_item => url_f('contests',
-            ical => 1, display_rows => 50, filter => $settings->{contests}->{filter}), item_name => res_str(562) },
+            ical => 1, rows => 50, filter => $settings->{contests}->{filter}), item_name => res_str(562) },
     ];
     $t->param(
         submenu => $submenu,
@@ -506,17 +509,10 @@ sub contests_frame
 
 sub init_console_listview_additionals
 {
-    $additional ||= '1_hours';
-    my $v = param('history_interval_value');
-    my $u = param('history_interval_units');
-    if (!defined $v || !defined $u)
-    {
-        ($v, $u) = ( $additional =~ /^(\d+)_(\w+)$/ );
-        $v = 1 if !defined $v;
-        $u = 'hours' if !defined $u; 
-    }
-    $additional = "${v}_$u";
-    return ($v, $u);
+    my $s = $settings->{$listview_name};
+    $s->{i_value} = param('history_interval_value') || 1;
+    $s->{i_unit} = param('history_interval_units') || 'hours';
+    return @$s{qw(i_value i_unit)};
 }
 
 
@@ -569,7 +565,7 @@ sub console_read_time_interval
 sub console
 {
     my $template_name = shift;
-    init_listview_template("console$cid" . ($uid || ''), 'console', 'main_console_content.htm');
+    init_listview_template('console', 'console', 'main_console_content.htm');
 
     my $day_count = console_read_time_interval;
     my %console_select = (
@@ -933,7 +929,7 @@ sub delete_question
 
 sub console_frame
 {        
-    init_listview_template("console$cid" . ($uid || ''), 'console', 'main_console.htm');  
+    init_listview_template('console', 'console', 'main_console.htm');  
     my ($v, $u) = init_console_listview_additionals;
     
     my $question_text = param('question_text');
@@ -968,7 +964,7 @@ sub console_frame
             # что после выбора новых значений используются всё-таки старые.
             # Поэтому передаём параметры непосредственно в URL.
             map { (param($_) ? ($_ => param($_)) : ()) }
-                qw(history_interval_value history_interval_units display_rows search)
+                qw(history_interval_value history_interval_units rows search)
         ),
         is_team => $is_team,
         is_jury => $is_jury,
@@ -1206,8 +1202,7 @@ sub problems_add_new
 
 sub problems_all_frame
 {
-    init_listview_template('link_problem_' || ($uid || ''),
-        'link_problem', 'main_problems_link.htm');
+    init_listview_template('link_problem', 'link_problem', 'main_problems_link.htm');
 
     my $link = url_param('link');
     my $kw = url_param('kw');
@@ -1635,7 +1630,7 @@ sub problem_select_testsets
 sub problems_retest_frame
 {
     $is_jury && !$contest->is_practice or return;
-    init_listview_template("problems_retest$cid" . ($uid || ''), 'problems', 'main_problems_retest.htm');
+    init_listview_template('problems_retest', 'problems', 'main_problems_retest.htm');
 
     defined param('mass_retest') and problems_mass_retest;
     defined param('recalc_points') and problems_recalc_points;
@@ -1730,7 +1725,8 @@ sub problems_frame
 
     defined param('download') && $show_packages and return download_problem;
 
-    init_listview_template("problems$cid" . ($uid || ''), 'problems', 'main_problems.htm');
+    init_listview_template('problems' . ($contest->is_practice ? '_practice' : ''),
+        'problems', 'main_problems.htm');
     problems_frame_jury_action;
 
     if (defined param('submit'))
@@ -1739,13 +1735,13 @@ sub problems_frame
     }
 
     my @cols = (
-        { caption => res_str(602), order_by => '3,4', width => '30%' },
+        { caption => res_str(602), order_by => ($contest->is_practice ? '4' : '3'), width => '30%' },
         ($is_jury ?
         (
             { caption => res_str(632), order_by => '11', width => '10%' }, # статус
             { caption => res_str(605), order_by => '15', width => '10%' }, # набор тестов
             { caption => res_str(635), order_by => '13', width => '5%' }, # кто изменил
-            { caption => res_str(634), order_by => '12', width => '10%' }, # дата изменения
+            { caption => res_str(634), order_by => 'P.upload_date', width => '10%' }, # дата изменения
         )
         : ()
         ),
@@ -1754,7 +1750,7 @@ sub problems_frame
         ),
         { caption => res_str(604), order_by => '6', width => '10%' },
     );
-    define_columns(url_f('problems'), 0, 0, [ @cols ]);
+    define_columns(url_f('problems'), 0, 0, \@cols);
 
     my $reqs_count_sql = 'SELECT COUNT(*) FROM reqs D WHERE D.problem_id = P.id AND D.state =';
     my $account_condition = $contest->is_practice ? '' : ' AND D.account_id = ?';
@@ -2057,10 +2053,12 @@ sub settings_save
 sub settings_frame
 {
     init_template('main_settings.htm');
+    $settings = {} if defined param('clear') && $is_team;
     settings_save if defined param('edit_save') && $is_team;
 
     my $u = CATS::User->new->load($uid) or return;
     $t->param(countries => \@cats::countries, href_action => url_f('users'), %$u);
+    $t->param(settings => Dumper($settings)) if $is_root;
 }
 
 
@@ -2181,7 +2179,7 @@ sub users_frame
         return users_edit_frame if defined url_param('edit');
     }
 
-    init_listview_template( "users$cid" . ($uid || ''), 'users', 'main_users.htm' );      
+    init_listview_template('users' . ($contest->is_practice ? '_practice' : ''), 'users', 'main_users.htm');
 
     $t->param(messages => $is_jury);
     
@@ -2434,7 +2432,7 @@ sub compilers_frame
         defined url_param('edit') and return compilers_edit_frame;
     }
 
-    init_listview_template("compilers$cid" . ($uid || ''), 'compilers', 'main_compilers.htm');
+    init_listview_template('compilers', 'compilers', 'main_compilers.htm');
 
     if ($is_jury)
     {
@@ -2543,7 +2541,7 @@ sub judges_frame
     $is_root && defined url_param('new') and return judges_new_frame;
     $is_root && defined url_param('edit') and return judges_edit_frame;
 
-    init_listview_template("judges$cid" . ($uid || ''), 'judges', 'main_judges.htm');
+    init_listview_template('judges', 'judges', 'main_judges.htm');
 
     $is_root && defined param('new_save') and judges_new_save;
     $is_root && defined param('edit_save') and judges_edit_save;
@@ -2655,7 +2653,7 @@ sub keywords_frame
         defined url_param('new') and return keywords_new_frame;
         defined url_param('edit') and return keywords_edit_frame;
     }
-    init_listview_template('keywords' . ($uid || ''), 'keywords', 'main_keywords.htm');
+    init_listview_template('keywords', 'keywords', 'main_keywords.htm');
 
     $is_root && defined param('new_save') and keywords_new_save;
     $is_root && defined param('edit_save') and keywords_edit_save;
@@ -2692,7 +2690,7 @@ sub keywords_frame
 sub import_sources_frame
 {
     $is_jury or return;
-    init_listview_template('import_sources' . ($uid || ''), 'import_sources', 'main_import_sources.htm');
+    init_listview_template('import_sources', 'import_sources', 'main_import_sources.htm');
     define_columns(url_f('import_sources'), 0, 0, [
         { caption => res_str(638), order_by => '2', width => '30%' },
         { caption => res_str(642), order_by => '3', width => '30%' },
