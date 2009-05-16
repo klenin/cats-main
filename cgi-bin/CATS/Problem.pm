@@ -19,7 +19,7 @@ use fields qw(
     contest_id id import_log debug problem checker
     statement constraints input_format output_format formal_input explanation
     tests testsets samples objects keywords
-    imports solutions generators modules pictures
+    imports solutions generators modules pictures attachments
     current_tests current_sample gen_groups
     stml zip zip_archive old_title replace tag_stack has_checker de_list
 );
@@ -39,7 +39,7 @@ sub clear
     my CATS::Problem $self = shift;
     undef $self->{$_} for (keys %CATS::Problem::FIELDS);
     $self->{$_} = {} for qw(tests testsets samples objects keywords);
-    $self->{$_} = [] for qw(imports solutions generators modules pictures);
+    $self->{$_} = [] for qw(imports solutions generators modules pictures attachments);
     $self->{gen_groups} = {};
 }
 
@@ -195,6 +195,10 @@ sub on_start_tag
             $atts{picture} or $self->error('Picture not defined in img element');
             $self->get_named_object($atts{picture})->{refcount}++;
         }
+        elsif ($el eq 'a')
+        {
+            $self->get_named_object($atts{attachment})->{refcount}++ if $atts{attachment};
+        }
         return; 
     }
 
@@ -251,6 +255,7 @@ sub tag_handlers()
     Problem => {
         s => \&start_tag_Problem, e => \&end_tag_Problem,
         r => ['title', 'lang', 'tlimit', 'inputFile', 'outputFile'], },
+    Attachment => { s => \&start_tag_Attachment, r => ['src', 'name'] },
     Picture => { s => \&start_tag_Picture, r => ['src', 'name'] },
     Solution => { s => \&start_tag_Solution, r => ['src', 'name'] },
     Checker => { s => \&start_tag_Checker, r => ['src'] },
@@ -319,6 +324,19 @@ sub start_tag_Picture
             id => new_id,
             $self->read_member_named(name => $atts->{src}, kind => 'picture'),
             name => $atts->{name}, ext => $ext, refcount => 0
+        });
+}
+
+
+sub start_tag_Attachment
+{
+    (my CATS::Problem $self, my $atts) = @_;
+
+    push @{$self->{attachments}},
+        $self->set_named_object($atts->{name}, {
+            id => new_id,
+            $self->read_member_named(name => $atts->{src}, kind => 'attachment'),
+            name => $atts->{name}, file_name => $atts->{src}, refcount => 0
         });
 }
 
@@ -610,7 +628,7 @@ sub read_member_named
 sub delete_child_records($)
 {
     my ($pid) = @_;
-    for (qw(pictures samples tests testsets problem_sources problem_sources_import problem_keywords))
+    for (qw(pictures samples tests testsets problem_sources problem_sources_import problem_keywords problem_attachments))
     {
         $dbh->do(qq~
             DELETE FROM $_ WHERE problem_id = ?~, undef, $pid);
@@ -796,6 +814,24 @@ sub insert_problem_content
         $self->note("Picture '$_->{path}' added");
         $_->{refcount}
             or $self->warning("No references to picture '$_->{path}'");
+    }
+
+    $c = $dbh->prepare(qq~
+        INSERT INTO problem_attachments(id, problem_id, name, file_name, data)
+            VALUES (?,?,?,?,?)~);
+    for (@{$self->{attachments}})
+    {
+
+        $c->bind_param(1, $_->{id});     
+        $c->bind_param(2, $self->{id});
+        $c->bind_param(3, $_->{name});
+        $c->bind_param(4, $_->{file_name});
+        $c->bind_param(5, $_->{src}, { ora_type => 113 });
+        $c->execute;
+
+        $self->note("Attachment '$_->{path}' added");
+        $_->{refcount}
+            or $self->warning("No references to attachment '$_->{path}'");
     }
 
     $c = $dbh->prepare(qq~

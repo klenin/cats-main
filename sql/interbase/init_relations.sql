@@ -159,7 +159,17 @@ CREATE TABLE problem_sources_import
 );
             
 
+CREATE TABLE problem_attachments (
+    id          INTEGER NOT NULL PRIMARY KEY,
+    problem_id  INTEGER REFERENCES problems(id) ON DELETE CASCADE,
+    name        VARCHAR(200) NOT NULL,
+    file_name   VARCHAR(200) NOT NULL,
+    data        BLOB
+);
+
+
 CREATE TABLE pictures (
+    id          INTEGER NOT NULL PRIMARY KEY,
     problem_id  INTEGER REFERENCES problems(id) ON DELETE CASCADE,
     name        VARCHAR(30) NOT NULL,
     extension   VARCHAR(20),

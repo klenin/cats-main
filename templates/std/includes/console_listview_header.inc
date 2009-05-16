@@ -20,13 +20,13 @@
 </td>
 <td width=20% align=center>
 выбирать
-<select name="history_interval_value">
-<TMPL_LOOP history_interval_value>
+<select name="i_value">
+<TMPL_LOOP i_values>
     <option value="<TMPL_VAR value>"<TMPL_IF selected> selected</TMPL_IF>><TMPL_VAR text></option> 
 </TMPL_LOOP>
 </select>
-<select name="history_interval_units">
-<TMPL_LOOP history_interval_units>
+<select name="i_unit">
+<TMPL_LOOP i_units>
     <option value="<TMPL_VAR value>"<TMPL_IF selected> selected</TMPL_IF>><TMPL_VAR text></option> 
 </TMPL_LOOP>
 </select>

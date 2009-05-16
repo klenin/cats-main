@@ -30,7 +30,8 @@
 <TMPL_LOOP sources_info>
 <code>
 <table class="internal_borders"><tr>
-<td width="1"><TMPL_LOOP src_lines><TMPL_VAR __counter__> </TMPL_LOOP></td>
+<td width="1" align="right"><pre><TMPL_LOOP src_lines><TMPL_VAR __counter__>
+</TMPL_LOOP></pre></td>
 <td style="vertical-align: top"><pre><TMPL_VAR src ESCAPE=HTML></pre></td>
 </tr></table>
 </code>

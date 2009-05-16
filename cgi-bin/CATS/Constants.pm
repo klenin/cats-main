@@ -20,7 +20,7 @@ $max_fetch_row_count = 1000;
 $refresh_rate = 30;
 
 # количество отображаемых страниц
-$visible_pages = 10;
+$visible_pages = 5;
 
 # количество отображаемых строк с списке
 @display_rows = ( 10, 15, 20, 50, 100, 300 );

@@ -37,9 +37,7 @@ a, a:link {
 .linksize { font-size: 14px }
 
 .filter {
-    filter: Alpha(Opacity=80, FinishOpacity=20, 
-    Style=1, StartX=0, StartY=100,
-    FinishY=250);
+    /*filter: Alpha(Opacity=80, FinishOpacity=20, Style=1, StartX=0, StartY=100, FinishY=250);*/
 }
 
 select, option {
@@ -113,13 +111,13 @@ tr.run_details_NT { color: #000080; font-style: italic; }
 
 .small { font-size: 10pt }
 
-p { margin-top: 5; margin-bottom: 5 } 
+p { margin-top: 5px; margin-bottom: 5px } 
 
-ul { margin-top: 5; margin-bottom: 5 } 
+ul { margin-top: 5px; margin-bottom: 5px } 
 
-h2 { margin-top: 10; margin-bottom: 10 }
-h3 { margin-top: 10; margin-bottom: 5 }
-h4 { margin-top: 10; margin-bottom: 5 }
+h2 { margin-top: 10px; margin-bottom: 10px }
+h3 { margin-top: 10px; margin-bottom: 5px }
+h4 { margin-top: 10px; margin-bottom: 5px }
 code { margin-top: 0; margin-bottom: 0 }
 pre { margin-top: 0; margin-bottom: 0 }
 

@@ -7,6 +7,8 @@ BEGIN
     @ISA = qw(Exporter);
     @EXPORT = qw(
         cats_dir
+        coalesce
+        get_anonymous_uid
         split_fname
         initialize
         init_template
@@ -78,6 +80,16 @@ my $cats_dir;
 sub cats_dir()
 {
     $cats_dir ||= $ENV{CATS_DIR} || '/usr/local/apache/CATS/cgi-bin/';
+}
+
+
+sub coalesce { defined && return $_ for @_ }
+
+
+sub get_anonymous_uid
+{
+    scalar $dbh->selectrow_array(qq~
+        SELECT id FROM accounts WHERE login = ?~, undef, $cats::anonymous_login);
 }
 
 
@@ -340,7 +352,7 @@ sub url_f
 
 sub attach_listview
 {
-    my ($url, $fetch_row, $c, $sort_columns, $p) = @_;
+    my ($url, $fetch_row, $sth, $p) = @_;
     my @data = ();
     my $row_count = 0;
     $listview_name or die;
@@ -360,7 +372,7 @@ sub attach_listview
         }
     }
 
-    while (my %h = &$fetch_row($c))
+    while (my %h = &$fetch_row($sth))
     {
 	    last if $row_count > $cats::max_fetch_row_count;
         my $f = 1;
@@ -414,9 +426,7 @@ sub attach_listview
         current_page => $_ == $$page
     }} ($range_start..$range_end);
 
-    $t->param(
-        page => $$page, pages => \@pages, search => $s->{search}
-    );
+    $t->param(page => $$page, pages => \@pages, search => Encode::encode_utf8($s->{search}));
 
     my @display_rows = ();
 
@@ -518,27 +528,22 @@ sub generate_output
 
 sub define_columns
 {
-    my $url = shift;
-    my $default = shift;
-    my $default_dir = shift;
-    $col_defs = shift;
+    (my $url, my $default_by, my $default_dir, $col_defs) = @_;
 
-#    $sort = $default if ($sort > length(@$col_defs) or ($sort eq ''));
-    my ($sort, $sort_dir) = @{$settings->{$listview_name}}{qw(sort_by sort_dir)};
-    $sort = $default if !defined $sort || $sort eq '';
-    $sort_dir = $default_dir if !defined $sort_dir || $sort_dir eq '';
+    my $s = $settings->{$listview_name};
+    $s->{sort_by} = $default_by if !defined $s->{sort_by} || $s->{sort_by} eq '';
+    $s->{sort_dir} = $default_dir if !defined $s->{sort_dir} || $s->{sort_dir} eq '';
 
-    my $i = 0;
-    for (@$col_defs)
+    for (my $i = 0; $i < @$col_defs; ++$i)
     {
-        my $d = $sort_dir;
-        if ($sort eq $i)
+        my $def = $col_defs->[$i];
+        my $dir = 0;
+        if ($s->{sort_by} eq $i)
         {
-           ($sort_dir) ? $$_{ sort_down } = 1 : $$_{ sort_up } = 1;
-           $d = int(!$d);
+            $def->{'sort_' . ($s->{sort_dir} ? 'down' : 'up')} = 1;
+            $dir = 1 - $s->{sort_dir};
         }
-        $$_{ href_sort } = $url . ";sort=$i;sort_dir=".$d;
-        $i++;
+        $def->{href_sort} = "$url;sort=$i;sort_dir=$dir";
     }
 
     $t->param(col_defs => $col_defs);
@@ -580,7 +585,6 @@ sub init_user
     $can_create_contests = 0;
     $uid = undef;
     $team_name = undef;
-    $enc_settings = '';
     if ($sid ne '')
     {
         ($uid, $team_name, my $srole, my $last_ip, $enc_settings) = $dbh->selectrow_array(qq~
@@ -602,6 +606,7 @@ sub init_user
         $enc_settings = CGI::cookie('settings') || '';
         $enc_settings = decode_base64($enc_settings) if $enc_settings;
     }
+    $enc_settings ||= '';
     # При возникновении любых проблем сбрасываем настройки
     $settings = eval { Storable::thaw($enc_settings) } || {};
 }
@@ -661,8 +666,10 @@ sub save_settings
     $new_enc_settings ne $enc_settings or return;
     $enc_settings = $new_enc_settings;
     $uid or return;
+    $dbh->commit;
     $dbh->do(q~
-        UPDATE accounts SET settings = ? WHERE id = ?~, undef, $new_enc_settings, $uid);
+        UPDATE accounts SET settings = ? WHERE id = ?~, undef,
+        $new_enc_settings, $uid);
     $dbh->commit;
 }
 

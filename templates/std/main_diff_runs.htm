@@ -30,7 +30,8 @@ function show_ab(a, b)
 <code>
 <table class="internal_borders">
 <tr>
-<td width="1"><TMPL_LOOP diff_lines><TMPL_VAR __counter__> </TMPL_LOOP></td>
+<td width="1" align="right"><pre><TMPL_LOOP diff_lines><TMPL_VAR __counter__>
+</TMPL_LOOP></pre></td>
 <td style="vertical-align: top"><pre><TMPL_LOOP diff_lines><TMPL_VAR line></TMPL_LOOP></pre></td></tr>
 </table>
 </code>

@@ -8,13 +8,14 @@
 [%- MACRO dv14 BLOCK %]<sup><a href="#dv14" title="Устарела с версии 1.4">&minus;1.4</a></sup>[% END -%]
 [%- MACRO v15 BLOCK %]<sup><a href="#v15" title="С версии 1.5">1.5</a></sup>[% END -%]
 [%- MACRO dv15 BLOCK %]<sup><a href="#dv15" title="Устарела с версии 1.5">&minus;1.5</a></sup>[% END -%]
+[%- MACRO v16 BLOCK %]<sup><a href="#v16" title="С версии 1.6">1.6</a></sup>[% END -%]
 [%- MACRO tag_in(t1, t2, m1, m2) BLOCK
 %]<tt>&lt;<a name="[% t1 %]">[% t1 %]</a>&gt;[% IF t2 != '';
   IF m1 != '' %]</tt>[% m1 %]<br/><tt>[% ELSE %]<br/>[% END
 %]&lt;<a href="#[% t2 %]">[% t2 %]</a>&gt;[% END %]</tt>[% m2;
 END -%]
 [%- MACRO tag_ref(t) BLOCK %]<tt>&lt;<a href="#[% t %]">[% t %]</a>&gt;</tt>[% END -%]
-<h2>Версия 1.5</h2>
+<h2>Версия 1.6</h2>
 
 <p><a href="sample.zip">скачать пример пакета с заданием</a></p>
 <p>Для хранения задачи используется ZIP-файл, в корне которого обязательно
@@ -127,17 +128,23 @@ END -%]
     Перечень стандартных кодов сред разработки:
     <ul>
       <li>1[% v12 %] - None (h;inc)</li>
+      <li>2[% v16 %] - Answers in zip (zip)</li>
       <li>101 - Cross-platform C/C++ compiler (cpp;c)</li>
       <li>102 - GNU C++ (cc;cxx)</li>
       <li>103 - MS Visual C++ (cpp;c)</li>
       <li>104 - Borland C++ 3.1 (cpp;c)</li>
+      <li>105 - GNU C (c)</li>
       <li>201 - Borland Pascal 7.0 (pas)</li>
       <li>202 - Free Pascal (pp)</li>
       <li>203 - Borland Delphi (dpr)</li>
       <li>301 - Quick Basic (qb)  (поддерживается не полностью)[% v11 %]</li>
       <li>302 - Free Basic (bas) [% v14 %]</li>
       <li>401 - Java (java)[% v13 %]</li>
+      <li>402 - C# (cs)[% v16 %]</li>
       <li>501 - Perl (pl)[% v14 %]</li>
+      <li>502 - Python (py)[% v16 %]</li>
+      <li>503 - Haskell (hs)[% v16 %]</li>
+      <li>504 - Ruby (rb)[% v16 %]</li>
     </ul>
 
     Если код среды разработки не указан, то он определяется по расширению файла,
@@ -151,11 +158,21 @@ END -%]
   <td>[% tag_in('Picture', 'Problem') %]</td>
   <td>
     <ul>
-      <li>name - идентификатор объекта [% tag_ref('Picture') %] (произвольная текстовая строка);</li>
-      <li>src[% opt %] - путь к файлу с изображением.</li>
+      <li>name -- идентификатор объекта [% tag_ref('Picture') %] (произвольная текстовая строка);</li>
+      <li>src[% opt %] -- путь к файлу с изображением.</li>
     </ul>
   </td>
   <td>Описание картинки, встраиваемой в текст задачи.</td>
+</tr>
+<tr>
+  <td>[% tag_in('Attachment', 'Problem', v16) %]</td>
+  <td>
+    <ul>
+      <li>name -- идентификатор объекта [% tag_ref('Attachment') %] (произвольная текстовая строка);</li>
+      <li>src -- путь к файлу вложением.</li>
+    </ul>
+  </td>
+  <td>Произвольный файл, доступный для скачивания из текста задачи.</td>
 </tr>
 <tr>
   <td>[% tag_in('Solution', 'Problem') %]</td>
@@ -351,7 +368,11 @@ END -%]
 <a name="[% n %]"></a><p><a href="" onclick="javascript:history.back(-1)"><sup>[% v %]</sup></a>
   Данная возможность присутствует начиная с версии [% v %].</p>
 [%- END -%]
-[% since('v11', '1.1'); since('v12', '1.2'); since('v13', '1.3'); since('v14', '1.4'); since('v15', '1.5'); %]
+[%
+  since('v11', '1.1'); since('v12', '1.2');
+  since('v13', '1.3'); since('v14', '1.4');
+  since('v15', '1.5'); since('v16', '1.6');
+%]
 <a name="dv14"></a><p><a href="" onclick="javascript:history.back(-1)"><sup>&minus;1.4</sup></a>
   Данная возможность считается устаревшей начиная с версии 1.4.</p>
 <a name="dv15"></a><p><a href="" onclick="javascript:history.back(-1)"><sup>&minus;1.5</sup></a>
@@ -364,21 +385,29 @@ END -%]
 
 <h2>Описание формата STML (Simple Text Markup Language)</h2>
 
-<p>Формат STML - упрощенное подмножество HTML. В STML определены следующие тэги:</p>
+<p>Формат STML -- упрощенное подмножество HTML. В STML определены следующие тэги:</p>
 
 <table class="ft">
 <tr><th>Название тэга</br>Тэг верхнего уровня</th><th>Атрибуты</th><th>Комментарии</th></tr>
 <tr><td>[% tag_in('img') %]</td>
   <td>
     <ul>
-      <li>picture - идентификатор объекта [% tag_ref('Picture') %];</li>
-      <li>width[% opt %] - ширина изображения (в пикселях);</li>
-      <li>height[% opt %] - высота изображения (в пикселях);</li>
-      <li>align[% opt %] - метод выравнивание изображения<br/>
+      <li>picture -- идентификатор объекта [% tag_ref('Picture') %];</li>
+      <li>width[% opt %] -- ширина изображения (в пикселях);</li>
+      <li>height[% opt %] -- высота изображения (в пикселях);</li>
+      <li>align[% opt %] -- метод выравнивание изображения<br/>
         (Может принимать значения: left - выравнивание по левому краю, right - по правому краю).</li>
     </ul>
   </td>
-  <td>Вставка картинки</td>
+  <td>Вставка картинки.</td>
+</tr>
+<tr><td>[% tag_in('a'); v16 %]</td>
+  <td>
+    <ul>
+      <li>attachment -- идентификатор объекта [% tag_ref('Attachment') %];</li>
+    </ul>
+  </td>
+  <td>Вставка ссфылки на вложенный файл.</td>
 </tr>
 <tr><td>[% tag_in('i') %]</td>
   <td>&nbsp;</td>

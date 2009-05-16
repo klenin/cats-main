@@ -1,7 +1,7 @@
 <table width="100%">
 <tr>
 <td align="left" width="30%" nowrap>
-  <input type="submit" value="Найти" name="filter" class="button">
+  <input type="submit" value="Найти" name="do_search" class="button">
   <input type="text" name="search" value="<TMPL_VAR search>" size="30" maxlength="100" class="bordered">
 </td>
 <td align="center" width="30%" nowrap>

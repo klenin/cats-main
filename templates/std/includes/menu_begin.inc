@@ -1,6 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html><head>
 <meta name="Content-Type" content="text/html; charset=<TMPL_VAR encoding>">
+<link rel="shortcut icon" href="images/std/favicon.ico" type="image/x-icon" />
 <title><TMPL_VAR contest_title ESCAPE=HTML><TMPL_IF title_suffix> - <TMPL_VAR title_suffix></TMPL_IF></title>
 <TMPL_IF refresh>
 <meta http-equiv="Refresh" CONTENT="<TMPL_VAR refresh>">

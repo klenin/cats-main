@@ -9,7 +9,7 @@
   <td align="right">
     <a href="../bugs/" class="signed">Bugzilla</a> |
     <a href="docs/" class="signed">документация</a> |
-    <a href="<TMPL_VAR url_authors>" class="signed">&copy; 2002-2008 Авторы</a>&nbsp;
+    <a href="<TMPL_VAR url_authors>" class="signed">&copy; 2002-2009 Авторы</a>&nbsp;
   </td>
 </tr>
 <tr bgcolor="#ffcc55" style="height: 40px">
