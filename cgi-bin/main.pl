@@ -3094,12 +3094,20 @@ sub envelope_frame
 sub preprocess_source
 {
     my $h = $_[0]->{hash} = {};
+    my $collapse_indents = $_[1];
     for (split /\n/, $_[0]->{src})
     {
         $_ = Encode::encode('WINDOWS-1251', $_);
         use bytes; # MD5 работает с байтами, предотвращаем upgrade до utf8
         s/\s+//g;
-        s/(\w+)/uc($1)/eg;
+        if ($collapse_indents)
+        {
+            s/(\w+)/A/g;
+        }
+        else
+        {
+            s/(\w+)/uc($1)/eg;
+        }
         s/\d+/1/g;
         $h->{Digest::MD5::md5_hex($_)} = 1;
     }
@@ -3127,6 +3135,8 @@ sub similarity_frame
     $t->param(group => $group);
     my $self_diff = param('self_diff') ? 1 : 0;
     $t->param(self_diff => $self_diff);
+    my $collapse_idents = param('collapse_idents') ? 1 : 0;
+    $t->param(collapse_idents => $collapse_idents);
     my $p = $dbh->selectall_arrayref(q~
         SELECT P.id, P.title, CP.code
             FROM problems P INNER JOIN contest_problems CP ON P.id = CP.problem_id
@@ -3146,7 +3156,7 @@ sub similarity_frame
             FROM reqs R INNER JOIN sources S ON S.req_id = R.id
             WHERE R.contest_id = ? AND R.problem_id = ?~, { Slice => {} }, $cid, $pid);
 
-    preprocess_source($_) for @$reqs;
+    preprocess_source($_, $collapse_idents) for @$reqs;
 
     my $threshold = 0.45;
     my @similar;
@@ -3266,6 +3276,7 @@ sub interface_functions ()
         console_content => \&CATS::Console::content_frame,
         console => \&CATS::Console::console_frame,
         console_export => \&CATS::Console::export,
+        console_graphs => \&CATS::Console::graphs,
         problems => \&problems_frame,
         problems_retest => \&problems_retest_frame,
         problem_select_testsets => \&problem_select_testsets,

@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use CGI qw(:standard);;
+use List::Util;
 
 use CATS::DB;
 use CATS::Misc qw(:all);
@@ -358,25 +359,35 @@ sub console
 }
 
 
-sub export
+sub select_all_reqs
 {
-    $is_jury or return;
-    my $reqs = $dbh->selectall_arrayref(q~
+    my ($extra_cond) = @_;
+    $dbh->selectall_arrayref(qq~
         SELECT
             R.id AS id, CATS_DATE(R.submit_time) AS submit_time, R.state, R.failed_test,
-            P.title AS problem_title,
+            R.submit_time - C.start_date AS time_since_start,
+            CP.code, P.title AS problem_title,
             A.id AS team_id, A.team_name, A.last_ip,
             CA.is_remote, CA.is_ooc
         FROM
             reqs R INNER JOIN
             problems P ON R.problem_id = P.id INNER JOIN
             contest_accounts CA ON CA.contest_id = R.contest_id AND CA.account_id = R.account_id INNER JOIN
+            contests C ON R.contest_id = C.id INNER JOIN
+            contest_problems CP ON R.contest_id = CP.contest_id AND CP.problem_id = R.problem_id INNER JOIN
             accounts A ON CA.account_id = A.id
         WHERE
-            R.contest_id = ? AND CA.is_hidden = 0 AND CA.diff_time = 0
+            R.contest_id = ? AND CA.is_hidden = 0 AND CA.diff_time = 0$extra_cond
         ORDER BY R.submit_time ASC~, { Slice => {} },
         $cid);
+}
+
+
+sub export
+{
+    $is_jury or return;
     init_template('main_console_export.xml');
+    my $reqs = select_all_reqs;
     for my $req (@$reqs)
     {
         $req->{submit_time} =~ s/\s+$//;
@@ -386,10 +397,67 @@ sub export
             $st{$_} or next;
             $req->{state} = $_;
             last;
-        }  
+        }
         $req->{s} = join '', map "<$_>$req->{$_}</$_>", grep defined $req->{$_}, keys %$req;
     }
     $t->param(reqs => $reqs);
+}
+
+
+sub graphs
+{
+    $is_jury or return;
+    init_template('main_console_graphs.htm');
+    my $codes = $dbh->selectcol_arrayref(q~
+        SELECT CP.code FROM contest_problems CP WHERE CP.contest_id = ? ORDER BY 1~, undef,
+        $cid);
+    #push @$codes, 'all';
+    $_ = { code => $_, selected => 1 } for @$codes;
+    my $steps_per_hour = (param('steps') || 1) + 0;
+    my $accepted_only = param('accepted_only') || 0;
+    $t->param(
+        submenu => [ { href_item => url_f('console'), item_name => res_str(510) } ],
+        codes => $codes,
+        href_graphs => url_f('console_graphs'),
+        steps => $steps_per_hour,
+        accepted_only => $accepted_only);
+    param('do_graph') or return;
+    
+    my %selected_codes = map { $_ => 1 } param('selected_codes');
+    for my $c (@$codes)
+    {
+        $c->{selected} = $selected_codes{$c->{code}};
+    }
+ 
+    my $reqs = select_all_reqs($accepted_only ? " AND R.state = $cats::st_accepted" : '');
+    @$reqs or return;
+    my $init_graph = sub { (code => $_[0], by_time => []) };
+    my $graphs = { all => { $init_graph->('all') } };
+    for my $req (@$reqs)
+    {
+        $req->{time_since_start} >= 0 && $selected_codes{$req->{code}} or next;
+        my $g = $graphs->{$req->{code}} ||= { $init_graph->($req->{code}) };
+        my $step = int($req->{time_since_start} * 24 * $steps_per_hour);
+        $g->{by_time}->[$step]++;
+        $graphs->{all}->{by_time}->[$step]++;
+    }
+    my @colors = ('0000ff', '00ff00', 'ff0000', '000000', 'ff00ff', '00ffff', 'ffa040', 'a0ff40', '800000', 'a040ff');
+    my $ga = [ map $graphs->{$_}, sort keys %$graphs ];
+    my $bt = $graphs->{all}->{by_time};
+    $_ ||= 0 for @$bt;
+    my $m = List::Util::max(@$bt);
+    my $data = sub { join ',' => -1, map { ($_ || 0) / $m * 100 } @{$_[0]} };
+    my %gp = (
+      chs => '500x400',
+      chd => 't:' . join('|', map $data->($_->{by_time}), @$ga),
+      cht => 'lc',
+      chco => join(',', map $colors[$_ % @colors], 0..@$ga),
+      chdl => join('|', map $_->{code}, @$ga),
+      chxt => 'x,y',
+      chxl => '0:|' . join('|', map sprintf('%.1f', $_ / $steps_per_hour), 0..@$bt),
+      chxr => "1,0,$m",
+    );
+    $t->param(graph => join '&amp;', map "$_=$gp{$_}", keys %gp);
 }
 
 
@@ -456,7 +524,9 @@ sub console_frame
         title_suffix => res_str(510),
     );
     $t->param(submenu => [
-        { href_item => url_f('console_export'), item_name => res_str(561) }, ]) if $is_jury;
+        { href_item => url_f('console_export'), item_name => res_str(561) },
+        { href_item => url_f('console_graphs'), item_name => res_str(563) },
+    ]) if $is_jury;
 }
 
 

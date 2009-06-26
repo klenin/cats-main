@@ -1,0 +1,18 @@
+<TMPL_INCLUDE 'includes/menu_begin.inc'>
+<TMPL_IF message><i><TMPL_VAR message ESCAPE=HTML></i><br></TMPL_IF>
+
+<form method="post" enctype="multipart/form-data" action="<TMPL_VAR href_graphs>">
+<TMPL_LOOP codes><input type="checkbox" name="selected_codes" value="<TMPL_VAR code>"<TMPL_IF selected> checked="checked"</TMPL_IF>/><TMPL_VAR code>
+</TMPL_LOOP>
+<br/>
+Шагов в час: <input type="text" value="<TMPL_VAR steps>" name="steps" size="2" />
+<input type="checkbox" value="1" name="accepted_only"<TMPL_IF accepted_only> checked="checked"</TMPL_IF>/>Только принятые
+<input type="submit" value="Показать" name="do_graph" class="button"/><br/>
+</form>
+<TMPL_IF graph>
+<table border="0" cellpadding="2" cellspacing="1" class="bordered">
+<tr><td><img src="http://chart.apis.google.com/chart?<TMPL_VAR graph>"></td></tr>
+</table>
+</TMPL_IF>
+
+<TMPL_INCLUDE 'includes/menu_end.inc'>
