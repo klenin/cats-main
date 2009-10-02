@@ -172,10 +172,10 @@ sub insert
 {
     my ($self, $contest_id) = @_;
     my $training_contests = $dbh->selectall_arrayref(qq~
-        SELECT id, closed FROM contests WHERE ctype = 1~, { Slice => {} });
-    !$contest_id && 0 == grep $_->{closed}, @$training_contests
-        or return msg(105);
-        
+        SELECT id, closed FROM contests WHERE ctype = 1 AND closed = 0~,
+        { Slice => {} });
+    @$training_contests or return msg(105);
+
     my $aid = new_id;
     $dbh->do(qq~
         INSERT INTO accounts (

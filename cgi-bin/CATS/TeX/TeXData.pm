@@ -184,7 +184,7 @@ my %old =
 
 # используемый генераторами хеш
 our %symbols = (%binary, %arrows, %special, %spaces, %greek, %old);
-%symbols = map {+"\\$_" => "\&$symbols{$_};"} keys %symbols;
+%symbols = map { $_ => "\&$symbols{$_};" } keys %symbols;
 $symbols{' '} = '&nbsp;';
 $symbols{'-'} = '&minus;',
 $symbols{'\}'} = '}';

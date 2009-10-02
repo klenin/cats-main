@@ -10,12 +10,15 @@ my %generators = (
     var   => sub { ($_[1] || '') . "<i>$_[0]</i>" },
     num   => sub { ($_[1] || '') . qq~<span class="num">$_[0]</span>~ },
     op    => sub { join '', @_ },
-    spec  => sub { join '', map { $CATS::TeX::TeXData::symbols{$_} || $_ } @_ },
+    spec  => sub { join '', map { $CATS::TeX::TeXData::symbols{$_} || $_ && "<b>$_</b>" || $_ } @_ },
     sup   => sub { qq~<sup>$_[0]</sup>~ },
     'sub' => sub { qq~<sub>$_[0]</sub>~ },
+    'sub1'=> sub { qq~<table class="limits"><tr><td>$_[0]</td></tr><tr><td class="sub">$_[1]</td></tr></table>~ },
+    'sup1'=> sub { qq~<table class="limits"><tr><td class="sup">$_[1]</td></tr><tr><td>$_[0]</td></tr></table>~ },
     block => sub { join '', @_ },
     'sqrt'=> sub { qq~<span class="sqrt_sym">\&#x221A;</span><span class="sqrt">@_</span>~ },
     'over'=> sub { qq~<span class="over">@_</span>~ },
+    'frac'=> sub { qq~<table class="frac"><tr class="nom"><td>$_[0]</td></tr><tr><td>$_[1]</td></tr></table>~ },
 );
 
 my $source;
@@ -34,7 +37,7 @@ sub parse_token
         s/^(\s*)-(\s*)// && return ['op', sp($1), '&minus;', sp($2)];
         s/^(\s*)([+*\/><=])(\s*)// && return ['op', sp($1), $2, sp($3)];
         s/^(\s*)\\([a-zA-Z]+)(\s*)// &&
-            return ['spec', (is_binop($2) ? (sp($1), "\\$2", sp($3)) : ('', "\\$2",  ($3 eq '' ? '' : ' ')))];
+            return ['spec', (is_binop($2) ? (sp($1), $2, sp($3)) : ('', $2,  ($3 eq '' ? '' : ' ')))];
         s/^\s*//;
         s/^([()\[\]])// && return ['op', $1];
         s/^([a-zA-Z]+)// && return ['var', $1];
@@ -50,21 +53,37 @@ sub parse_token
 sub parse_block
 {
     my @res = ();
+    my $limits = '';
     while ($source ne '')
     {
         last if $source =~ s/^\s*}//;
-        if ($source =~ s/^(\s*[_^])//)
+        if ($source =~ s/^\s*([_^])//)
         {
             @res or die '!';
-            push @res, [$1 eq '_' ? 'sub' : 'sup', parse_token()];
+            my $f = $1 eq '_' ? 'sub' : 'sup';
+            
+            if ($limits)
+            {
+                $res[-1] = [$f . '1', $res[-1], parse_token()];
+            }
+            else
+            {
+                push @res, [$f, parse_token()];
+            }
         }
-        elsif ($source =~ s/^\s*(\\sqrt)//)
+        elsif ($source =~ s/^\s*(?:\\(sqrt|over))//)
         {
-            push @res, ['sqrt', parse_token()];
+            my $f = $1;
+            push @res, [$f, parse_token()];
         }
-        elsif ($source =~ s/^\s*(\\over)//)
+        elsif ($source =~ s/^\s*(?:\\limits)//)
         {
-            push @res, ['over', parse_token()];
+            $limits = 1;
+        }
+        elsif ($source =~ s/^\s*(?:\\(frac))//)
+        {
+            my $f = $1;
+            push @res, [$f, parse_token(), parse_token()];
         }
         else
         {
@@ -87,6 +106,7 @@ sub asHTML
     my ($tree) = @_;
     ref $tree eq 'ARRAY' or return $tree;
     my $name = shift @$tree;
+    $name or return '???';
     my $prev = 0;
     # вставить пробелы между подряд идущими переменными и числами
     for (@$tree)

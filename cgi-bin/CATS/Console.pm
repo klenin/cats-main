@@ -72,7 +72,8 @@ sub time_interval_days
 
     $t->param(
         'i_values' => [
-            map { {value => $_, text => $_ || 'all', selected => $v eq $_} } (1..5, 10, 0)
+            map { { value => $_, text => ($_ > 0 ? $_ : 'all'), selected => $v eq $_ } }
+                (1..5, 10, -1)
         ],
         'i_units' => $units
     );

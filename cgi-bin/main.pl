@@ -82,7 +82,9 @@ sub login_frame
         {
             $dbh->commit;
 
-            my $cid = $dbh->selectrow_array(qq~SELECT id FROM contests WHERE ctype = 1~);
+            my $cid =
+                url_param('cid') ||
+                $dbh->selectrow_array(qq~SELECT id FROM contests WHERE ctype = 1~);
 
             $t = undef;
             print redirect(-uri => url_function('contests', sid => $sid, cid => $cid));
