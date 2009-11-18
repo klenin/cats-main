@@ -47,12 +47,11 @@ table.bordered tr td {
 
 table.ft tr td, table.ft tr th {
   border: 1px solid black;
-  padding: 2px;
+  padding: 3px;
   vertical-align: top;
 }
 
 table.ft tr td ul {
-  /*list-style: none;
-  margin-left: 5;*/
-  margin-bottom: 5;
+  padding-left: 25px;
+  margin-bottom: 0px;
 }

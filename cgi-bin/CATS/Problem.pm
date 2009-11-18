@@ -20,7 +20,7 @@ use fields qw(
     statement constraints input_format output_format formal_input explanation
     tests testsets samples objects keywords
     imports solutions generators modules pictures attachments
-    current_tests current_sample gen_groups
+    test_defaults current_tests current_sample gen_groups
     stml zip zip_archive old_title replace tag_stack has_checker de_list
 );
 
@@ -37,8 +37,8 @@ sub new
 sub clear
 {
     my CATS::Problem $self = shift;
-    undef $self->{$_} for (keys %CATS::Problem::FIELDS);
-    $self->{$_} = {} for qw(tests testsets samples objects keywords);
+    undef $self->{$_} for keys %CATS::Problem::FIELDS;
+    $self->{$_} = {} for qw(tests test_defaults testsets samples objects keywords);
     $self->{$_} = [] for qw(imports solutions generators modules pictures attachments);
     $self->{gen_groups} = {};
 }
@@ -110,12 +110,13 @@ sub validate
     my $check_order = sub
     {
         my ($objects, $name) = @_;
-        for (1..keys(%$objects))
+        for (1 .. keys %$objects)
         {
             exists $objects->{$_} or $self->error("Missing $name #$_");
         }
     };
 
+    $self->apply_test_defaults;
     $check_order->($self->{tests}, 'test');
     my @t = values %{$self->{tests}};
     for (@t)
@@ -123,12 +124,11 @@ sub validate
         my $error = validate_test($_) or next;
         $self->error("$error for test $_->{rank}");
     }
-    if (0 != grep defined $_->{points}, @t)
-    {
-        my @without_points = map $_->{rank}, grep !defined $_->{points}, @t;
-        $self->warning('Points not defined for tests: ' . join ',', @without_points)
-            if @without_points;
-    }
+
+    my @without_points = map $_->{rank}, grep !defined $_->{points}, @t;
+    $self->warning('Points not defined for tests: ' . join ',', @without_points)
+        if @without_points && @without_points != @t;
+
     $check_order->($self->{samples}, 'sample');
 }
 
@@ -511,8 +511,7 @@ sub start_tag_Sample
     (my CATS::Problem $self, my $atts) = @_;
     
     my $r = $atts->{rank};
-    $self->error("Duplicate sample $atts->{rank}")
-        if defined $self->{samples}->{$r};
+    $self->error("Duplicate sample $r") if defined $self->{samples}->{$r};
 
     $self->{current_sample} = $self->{samples}->{$r} =
         { sample_id => new_id, rank  => $r };
@@ -526,18 +525,23 @@ sub end_tag_Sample
 }
 
 
-sub start_tag_SampleIn
+sub sample_in_out
 {
-    my CATS::Problem $self = shift;
-    $self->{stml} = \$self->{current_sample}->{in_file};
+    (my CATS::Problem $self, my $atts, my $in_out) = @_;
+    if (my $src = $atts->{src})
+    {
+        my $member = $self->{zip}->memberNamed($src)
+            or $self->error("Invalid sample $in_out reference: '$src'");
+        $self->{current_sample}->{$in_out} = $self->read_member($member, $self->{debug});
+    }
+    else
+    {
+        $self->{stml} = \$self->{current_sample}->{$in_out};
+    }
 }
 
-
-sub start_tag_SampleOut
-{
-    my CATS::Problem $self = shift;
-    $self->{stml} = \$self->{current_sample}->{out_file};
-}
+sub start_tag_SampleIn { $_[0]->sample_in_out($_[1], 'in_file'); }
+sub start_tag_SampleOut { $_[0]->sample_in_out($_[1], 'out_file'); }
 
 
 sub start_tag_Keyword

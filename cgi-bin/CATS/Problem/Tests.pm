@@ -8,6 +8,7 @@ sub apply_test_rank
 {
     my ($v, $rank) = @_;
     $v = '' unless defined $v;
+    $rank or return $v;
     $v =~ s/%n/$rank/g;
     $v =~ s/%0n/sprintf("%02d", $rank)/eg;
     $v =~ s/%%/%/g;
@@ -73,8 +74,16 @@ sub parse_test_rank
 sub start_tag_Test
 {
     (my CATS::Problem $self, my $atts) = @_;
-    $self->{current_tests} = [];
-    $self->add_test($atts, $_) for @{$self->parse_test_rank($atts->{rank})};
+    if ($atts->{rank} eq '*') #=~ /^\s*\*\s*$/)
+    {
+        $self->{current_tests} = [ $self->{test_defaults} ||= {} ];
+        $self->set_test_attr($self->{test_defaults}, 'points', $atts->{points});
+    }
+    else
+    {
+        $self->{current_tests} = [];
+        $self->add_test($atts, $_) for @{$self->parse_test_rank($atts->{rank})};
+    }
 }
 
 
@@ -116,12 +125,14 @@ sub do_In_use
     ('generator_id', $self->get_imported_id($use) || $self->get_named_object($use)->{id});
 }
 
+
 sub do_In_genAll
 {
     my ($self, $test, $attr) = @_;
     my $gg = $self->{gen_groups};
     ('gen_group', $gg->{$test->{generator_id}} ||= 1 + keys %$gg);
 }
+
 
 sub start_tag_In
 {
@@ -178,5 +189,16 @@ sub start_tag_Out
     }
 }
 
+sub apply_test_defaults
+{
+    (my CATS::Problem $self) = @_;
+    my $d = $self->{test_defaults};
+    # TODO: Вынести apply_test_rank
+    for my $attr (qw(generator_id param std_solution_id points gen_group))
+    {
+        $d->{$attr} or next;
+        $_->{$attr} ||= $d->{$attr} for values %{$self->{tests}};
+    }
+}
 
 1;
