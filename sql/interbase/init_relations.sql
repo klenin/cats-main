@@ -67,7 +67,10 @@ CREATE TABLE contests (
     show_packages        INTEGER DEFAULT 0 CHECK (show_packages IN (0, 1)),
     rules                INTEGER DEFAULT 0, /* правила: 0 - ACM, 1 - школьные */
     local_only           SMALLINT DEFAULT 0 CHECK (local_only IN (0, 1)),
-    max_reqs             INTEGER DEFAULT 0, /* максимум попыток по одной задаче на одного участника */
+    /* максимум попыток по одной задаче на одного участника */
+    max_reqs             INTEGER DEFAULT 0,
+    /* выводить попытки в замороженной таблице */
+    show_frozen_reqs     SMALLINT DEFAULT 0 CHECK (show_frozen_reqs IN (0, 1)),
 
     CHECK (
         start_date <= finish_date AND freeze_date >= start_date
@@ -246,7 +249,7 @@ CREATE TABLE reqs (
     judge_id    INTEGER REFERENCES judges(id) ON DELETE SET NULL, 
     received    INTEGER DEFAULT 0 CHECK (received IN (0, 1)),
     points      INTEGER,
-    testset_name VARCHAR(200)
+    testsets    VARCHAR(200)
 );
 CREATE DESCENDING INDEX idx_reqs_submit_time ON reqs(submit_time);
 

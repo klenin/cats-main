@@ -23,21 +23,36 @@ sub parse_test_rank
  
 sub get_testset
 {
-    my ($cid, $pid) = @_;
-    my ($testsets) = $dbh->selectrow_array(q~
-        SELECT testsets FROM contest_problems
-        WHERE contest_id = ? AND problem_id = ?~, undef,
-        $cid, $pid);
+    my ($rid, $update) = @_;
+    my ($pid, $testsets) = $dbh->selectrow_array(q~
+        SELECT R.problem_id, COALESCE(R.testsets, CP.testsets)
+        FROM reqs R
+        INNER JOIN contest_problems CP ON
+            CP.contest_id = R.contest_id AND CP.problem_id = R.problem_id
+        WHERE R.id = ?~, undef,
+        $rid);
     my @tests = @{$dbh->selectcol_arrayref(qq~
         SELECT rank FROM tests WHERE problem_id = ? ORDER BY rank~, undef,
         $pid
     )};
     $testsets or return @tests;
 
-    my %sel_testsets;
-    @sel_testsets{split /\s+/, $testsets} = undef;
+    if ($update)
+    {
+        $dbh->do(q~
+            UPDATE reqs SET testsets = ? WHERE id = ?~, undef,
+            $testsets, $rid);
+        $dbh->commit;
+    }
 
     my %tests_by_testset;
+    my %sel_testsets;
+    for (split /\s+/, $testsets)
+    {
+        $sel_testsets{$_} = 1;
+        @tests_by_testset{parse_test_rank($_)} = undef;
+    }
+
     my $all_testsets = $dbh->selectall_arrayref(q~
         SELECT name, tests FROM testsets WHERE problem_id = ?~, { Slice => {} },
         $pid);
@@ -48,5 +63,6 @@ sub get_testset
     }
     return grep exists $tests_by_testset{$_}, @tests;
 }
+
 
 1;

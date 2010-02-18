@@ -1989,10 +1989,8 @@ sub compilers_frame
     };
     attach_listview(url_f('compilers'), $fetch_record, $c);
 
-    if ($is_jury)
-    {
-        $t->param(submenu => [ references_menu('compilers') ], editable => $is_root);
-    }
+    $t->param(submenu => [ references_menu('compilers') ], editable => $is_root)
+        if ($is_jury);
 }
 
 
@@ -2209,7 +2207,6 @@ sub keywords_frame
 
 sub import_sources_frame
 {
-    $is_jury or return;
     init_listview_template('import_sources', 'import_sources', 'main_import_sources.htm');
     define_columns(url_f('import_sources'), 0, 0, [
         { caption => res_str(638), order_by => '2', width => '30%' },
@@ -2235,18 +2232,18 @@ sub import_sources_frame
             stype_name => $cats::source_module_names{$f->{stype}},
             href_problems => url_function('problems', sid => $sid, cid => $f->{contest_id}),
             href_source => url_f('download_import_source', psid => $f->{id}),
+            is_jury => $is_jury,
         );
     };
 
     attach_listview(url_f('import_sources'), $fetch_record, $c);
 
-    $t->param(submenu => [ references_menu('import_sources') ]);
+    $t->param(submenu => [ references_menu('import_sources') ], is_jury => 1) if $is_jury;
 }
 
 
 sub download_import_source_frame
 {
-    $is_jury or return;
     my $psid = param('psid') or return;
     my ($fname, $src) = $dbh->selectrow_array(qq~
         SELECT fname, src FROM problem_sources WHERE id = ? AND guid IS NOT NULL~, undef, $psid) or return;
@@ -2337,11 +2334,14 @@ sub source_links
     my ($si, $is_jury) = @_;
     my ($current_link) = url_param('f') || '';
     
-    $si->{href_contest_problems} =
+    $si->{href_contest} =
         url_function('problems', cid => $si->{contest_id}, sid => $sid);
+    $si->{href_problem} =
+        url_function('problem_text', cpid => $si->{cp_id}, cid => $si->{contest_id}, sid => $sid);
     for (qw/run_details view_source run_log download_source/)
     {
-        $si->{'href_' . ($_ eq $current_link ? 'current_link' : $_)} = url_f($_, rid => $si->{req_id});
+        $si->{"href_$_"} = url_f($_, rid => $si->{req_id});
+        $si->{"href_class_$_"} = $_ eq $current_link ? 'current_link' : '';
     }
     $si->{is_jury} = $is_jury;
     $t->param(is_jury => $is_jury);
@@ -2355,43 +2355,10 @@ sub source_links
 }
 
 
-sub run_details_frame
+sub get_run_info
 {
-    init_template('main_run_details.htm');
-
-    my $rid = url_param('rid');
-
-    my $si = get_sources_info(request_id => $rid) or return;
-    $t->param(sources_info => [$si]);
-
-    my $is_jury = is_jury_in_contest(contest_id => $si->{contest_id});
-
-    $is_jury || $uid == $si->{account_id}
-        or return;
-
-    my $contest = $dbh->selectrow_hashref(qq~
-        SELECT
-            run_all_tests, show_all_tests, show_test_resources, show_checker_comment
-            FROM contests WHERE id = ?~, { Slice => {} },
-        $si->{contest_id}
-    );
-
-    my $jury_view = $is_jury && !url_param('as_user');
-    $contest->{$_} ||= $jury_view
-        for qw(show_all_tests show_test_resources show_checker_comment);
-
-    my $points = [];
-
-    if ($contest->{show_all_tests})
-    {
-        $points = $dbh->selectcol_arrayref(qq~
-            SELECT points FROM tests WHERE problem_id = ? ORDER BY rank~, {},
-            $si->{problem_id});
-    }
-    my $show_points = 0 != grep defined $_ && $_ > 0, @$points;
-
-    source_links($si, $is_jury);
-    $t->param(%$contest, show_points => $show_points);
+    my ($contest, $rid) = @_;
+    my $points = $contest->{points};
 
     my %run_details;
     my $rd_fields = join ', ', (
@@ -2426,7 +2393,7 @@ sub run_details_frame
             state_to_display($row->{result}),
             map({ $_ => $contest->{$_} }
                 qw(show_test_resources show_checker_comment)),
-            %$row, show_points => $show_points, points => $p,
+            %$row, show_points => $contest->{show_points}, points => $p,
         };
         $total_points += ($p || 0);
         # Тесты запускаются в случайном порядке.
@@ -2444,17 +2411,80 @@ sub run_details_frame
         $last_test = @$points;
     }
     my %testset;
-    @testset{CATS::Testset::get_testset($si->{contest_id}, $si->{problem_id})} = undef;
-    $t->param(
+    @testset{CATS::Testset::get_testset($rid)} = undef;
+    
+    my $run_row = sub {
+        my ($rank) = @_;
+        return $run_details{$rank} if exists $run_details{$rank};
+        return () unless $contest->{show_all_tests};
+        my %r = ( test_rank => $rank );
+        $r{exists $testset{$rank} ? 'not_processed' : 'not_in_testset'} = 1;
+        return \%r;
+    };
+    return {
+        %$contest,
         total_points => $total_points,
-        run_details => [
-        map {
-            exists $run_details{$_} ? $run_details{$_} :
-            $contest->{show_all_tests} ?
-                { test_rank => $_, (exists $testset{$_} ? 'not_processed' : 'not_in_testset') => 1 } :
-            () 
-        } (1..$last_test)
-    ]);
+        run_details => [ map $run_row->($_), 1..$last_test ]
+    };
+}
+
+
+sub get_contest_info
+{
+    my ($si, $jury_view) = @_;
+
+    my $contest = $dbh->selectrow_hashref(qq~
+        SELECT
+            run_all_tests, show_all_tests, show_test_resources, show_checker_comment
+            FROM contests WHERE id = ?~, { Slice => {} },
+        $si->{contest_id});
+
+    $contest->{$_} ||= $jury_view
+        for qw(show_all_tests show_test_resources show_checker_comment);
+
+    my $p = $contest->{points} =
+        $contest->{show_all_tests} ?
+        $dbh->selectcol_arrayref(qq~
+            SELECT points FROM tests WHERE problem_id = ? ORDER BY rank~, {},
+            $si->{problem_id})
+        : [];
+    $contest->{show_points} = 0 != grep defined $_ && $_ > 0, @$p;
+    $contest;
+}
+
+
+sub run_details_frame
+{
+    init_template('main_run_details.htm');
+
+    my $rid = url_param('rid') or return;
+    my $rids = [ grep /^\d+$/, split /,/, $rid ];
+    my $si = get_sources_info(request_id => $rids) or return;
+    
+    my @runs;
+    my ($prev_contest_id, $is_jury, $contest) = 0;
+    for (@$si)
+    {
+        $is_jury = is_jury_in_contest(contest_id => $_->{contest_id})
+            if $_->{contest_id} != $prev_contest_id;
+        $is_jury || $uid == $_->{account_id} or next;
+
+        if ($is_jury && param('retest'))
+        {
+            enforce_request_state(
+                request_id => $_->{req_id},
+                state => $cats::st_not_processed,
+                testsets => param('testsets'));
+            $_ = get_sources_info(request_id => $_->{req_id}) or next;
+        }
+
+        source_links($_, $is_jury);
+        $contest = get_contest_info($_, $is_jury && !url_param('as_user'))
+            if $_->{contest_id} != $prev_contest_id;
+        push @runs, get_run_info($contest, $_->{req_id});
+        $prev_contest_id = $_->{contest_id};
+    }
+    $t->param(sources_info => $si, runs => \@runs);
 }
 
 
@@ -2496,7 +2526,7 @@ sub view_source_frame
     }
     source_links($sources_info, $is_jury);
     $sources_info->{src_lines} = [ map {}, split("\n", $sources_info->{src}) ];
-    $t->param(sources_info => [$sources_info]);
+    $t->param(sources_info => [ $sources_info ]);
 }
 
 
@@ -2547,6 +2577,7 @@ sub try_set_state
         $si->{$k} = $v;
     }
     $si->{failed_test} = $failed_test;
+    1;
 }
 
 
@@ -2565,8 +2596,10 @@ sub run_log_frame
     is_jury_in_contest(contest_id => $si->{contest_id})
         or return;
 
+    # перечитать параметры задачи, если обновилось её состояние
+    $si = get_sources_info(request_id => $rid)
+        if try_set_state($si, $rid);
     $t->param(sources_info => [$si]);
-    try_set_state($si, $rid);
 
     source_links($si, 1);
 
@@ -2886,7 +2919,7 @@ sub parse
         'End'   => \&eh_1,
         'Char'  => \&ch_1);
 
-    $parser->parse("<p>$xml_patch</p>");
+    $parser->parse("<div>$xml_patch</div>");
     return $html_code;
 }
 
@@ -3226,6 +3259,7 @@ sub generate_menu
         { item => res_str(526), href => url_f('users') },
         { item => res_str(510),
           href => url_f('console', $is_jury ? () : (uf => $uid || get_anonymous_uid())) },
+        ($is_jury ? () : { item => res_str(557), href => url_f('import_sources') }),
     );   
 
     if ($is_jury)

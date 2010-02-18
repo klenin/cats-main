@@ -7,15 +7,15 @@
 
 <table width=100% cellpadding=2 cellspacing=1 class=bordered>
 <tr bgcolor=#ccccff>
-<td>&nbsp;</td>
+<TMPL_IF is_jury><td>&nbsp;</td></TMPL_IF>
 <TMPL_INCLUDE 'includes/listview_col_defs.inc'>
 </tr>
 
 <TMPL_LOOP import_sources>
 <tr bgcolor=#ffffff>
-<td>
+<TMPL_IF is_jury><td>
   <a href="<TMPL_VAR href_problems>" title="<TMPL_VAR title>"><img src="./images/std/blank.gif" border="0"></a>
-</td>
+</td></TMPL_IF>
 <td><a href="<TMPL_VAR href_source>" title="<TMPL_VAR fname ESCAPE=HTML>"><TMPL_VAR guid ESCAPE=HTML></a></td>
 <td><TMPL_VAR stype_name></td>
 <td><TMPL_VAR code></td>

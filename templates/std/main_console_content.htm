@@ -1,9 +1,9 @@
 <TMPL_INCLUDE 'includes/console_listview_header.inc'>
-<table width="100%" cellspacing="3" cellpadding="3" class="bordered">
+<table width="100%" cellspacing="3" cellpadding="3" class="bordered console">
 <TMPL_LOOP console>
 <tr>
 <TMPL_IF is_submit_result>
-    <td nowrap width="1%" class="small">
+    <td nowrap width="1%">
         <TMPL_IF is_jury>
             <a href="#" onclick="add_id(<TMPL_VAR id>); return false;" title="<TMPL_VAR id>"><TMPL_VAR time></a>
         <TMPL_ELSE>
@@ -11,7 +11,7 @@
             <TMPL_ELSE><span class="linksize"><TMPL_VAR time></span></TMPL_IF>
         </TMPL_IF>
     </td>
-    <td class="small">
+    <td nowrap width="1%">
 	<TMPL_IF is_jury>	
         [<a href="javascript:send_message('<TMPL_VAR href_send_message_box>')"><TMPL_VAR team_name ESCAPE=HTML></a>:
         <TMPL_IF last_ip><a href="#" alt="<TMPL_VAR last_ip>" title="<TMPL_VAR last_ip>"><TMPL_VAR last_ip_short></a><TMPL_ELSE><TMPL_VAR last_ip_short></TMPL_IF>]
@@ -19,8 +19,8 @@
         [<TMPL_VAR team_name ESCAPE=HTML>]
 	</TMPL_IF>
     </td>
-    <td class=small><b>
-        <TMPL_VAR problem_title> - <TMPL_IF not_processed><font color="#008000">Not processed</font></TMPL_IF
+    <td>
+        <TMPL_VAR problem_title>: <b><TMPL_IF not_processed><font color="#008000">Not processed</font></TMPL_IF
         ><TMPL_IF install_processing><font color="#a0a000">Processing</font></TMPL_IF
         ><TMPL_IF unhandled_error><font color="#a00000">Unhandled error</font></TMPL_IF
         ><TMPL_IF testing><font color="#a0a000">Processing</font></TMPL_IF
@@ -37,12 +37,12 @@
     </td>
 </TMPL_IF><TMPL_IF is_question>
     <td nowrap width=1%><TMPL_VAR time></td>
-    <td align=left nowrap class=small>
+    <td align=left nowrap>
         [<TMPL_VAR team_name ESCAPE=HTML><TMPL_IF is_jury>:
         <TMPL_IF last_ip><a href="#" alt="<TMPL_VAR last_ip>" title="<TMPL_VAR last_ip>"><TMPL_VAR last_ip_short></a><TMPL_ELSE><TMPL_VAR last_ip_short></TMPL_IF>
         </TMPL_IF> &gt; жюри]
     </td>
-    <td class="small">
+    <td>
         <i><TMPL_VAR question_text ESCAPE=HTML></i> - 
         <TMPL_UNLESS clarified>
         <TMPL_IF href_answer_box>
@@ -55,18 +55,18 @@
     </td>
 </TMPL_IF><TMPL_IF is_message>
     <td nowrap width=1%><TMPL_VAR time></td>
-    <td align=left class='small'>
+    <td align=left>
         [жюри &gt; <TMPL_VAR team_name ESCAPE=HTML>]
     </td>
-    <td class="small">
+    <td>
         <font color=red><TMPL_VAR message_text ESCAPE=HTML></font>
     </td>
 </TMPL_IF><TMPL_IF is_broadcast>
     <td nowrap width=1%><TMPL_VAR time></td>
-    <td align=left class='small'>
+    <td align=left>
         <b><font color="#ff0000">[жюри &gt; всем командам]</font></b>
     </td>
-    <td class='small'>
+    <td>
         <b><font color=red><TMPL_VAR message_text ESCAPE=HTML></font></b>
     </td>
 </TMPL_IF>

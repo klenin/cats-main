@@ -14,6 +14,9 @@
   <input type="submit" class="button" value="кодировка" />
 </form>
 
+<table><tr valign="top">
+<TMPL_LOOP runs>
+<td>
 <table class="bordered">
 <tr>
   <th>Тест</th>
@@ -68,6 +71,10 @@
 </TMPL_LOOP>
 <TMPL_IF show_points><tr><td colspan="2">Всего</td><td><TMPL_VAR total_points></td></tr></TMPL_IF>
 </table>
+</td>
+</TMPL_LOOP>
+</tr></table>
 
+<font size="-3" color="#808080"><TMPL_VAR request_process_time> <TMPL_VAR init_time></font>
 </body>
 </html>

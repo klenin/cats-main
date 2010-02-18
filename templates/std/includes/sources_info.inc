@@ -7,18 +7,26 @@
   <TMPL_VAR submit_time>
   <TMPL_IF href_next_attempt> <a href="<TMPL_VAR href_next_attempt>"><TMPL_VAR next_attempt_time>&gt;&gt;</a></TMPL_IF>
 </td></TMPL_LOOP></tr>
-<tr><th>Обработка</th><TMPL_LOOP sources_info><td><TMPL_VAR test_time_short> ... <TMPL_VAR result_time_short></td></TMPL_LOOP></tr>
-<tr><th>Язык</th><TMPL_LOOP sources_info><td><TMPL_VAR de_name></td></TMPL_LOOP></tr>
-<tr><th>Файл</th><TMPL_LOOP sources_info><td><TMPL_VAR file_name></td></TMPL_LOOP></tr>
-<tr><th>Турнир</th><TMPL_LOOP sources_info><td><TMPL_VAR contest_name></td></TMPL_LOOP></tr>
+<tr><th>Обработка</th><TMPL_LOOP sources_info><td>
+<TMPL_IF is_jury><TMPL_VAR judge_name>: </TMPL_IF>
+<TMPL_VAR test_time_short> ... <TMPL_VAR result_time_short></td></TMPL_LOOP></tr>
+<tr><th>Файл</th><TMPL_LOOP sources_info><td><TMPL_VAR file_name> (<TMPL_VAR de_name>)</td></TMPL_LOOP></tr>
+<tr><th>Турнир</th><TMPL_LOOP sources_info><td>
+  <TMPL_IF href_contest><a href="<TMPL_VAR href_contest>"><TMPL_VAR contest_name><a>
+  <TMPL_ELSE><TMPL_VAR contest_name></TMPL_IF>
+</td></TMPL_LOOP></tr>
 <tr><th>Задача</th><TMPL_LOOP sources_info><td>
-  <TMPL_IF href_contest_problems><a href="<TMPL_VAR href_contest_problems>"><TMPL_VAR problem_name></a>
+  <TMPL_IF href_problem><a href="<TMPL_VAR href_problem>"><TMPL_VAR problem_name></a>
   <TMPL_ELSE><TMPL_VAR problem_name></TMPL_IF>
 </td></TMPL_LOOP></tr>
-<tr><th>Набор тестов</th><TMPL_LOOP sources_info><td><TMPL_VAR testsets></td></TMPL_LOOP></tr>
-<TMPL_IF is_jury>
-<tr><th>Судья</th><TMPL_LOOP sources_info><td><TMPL_VAR judge_name></td></TMPL_LOOP></tr>
-</TMPL_IF>
+<tr><th>Набор тестов</th><TMPL_LOOP sources_info>
+<td><TMPL_IF is_jury>
+  <form action="<TMPL_VAR href_run_details>" method="POST" class="embedded">
+  <input type="text" name="testsets" value="<TMPL_VAR testsets>" />
+  <input type="submit" name="retest" value="Перетестировать" class="button" />
+  </form>
+<TMPL_ELSE><TMPL_VAR testsets></TMPL_IF></td>
+</TMPL_LOOP></tr>
 <tr><th>Состояние</th>
 <TMPL_LOOP sources_info><td>
 <TMPL_IF not_processed><font color="#008000">Not processed</TMPL_IF>
@@ -38,13 +46,11 @@
 </tr>
 <tr><th>Ссылки</th>
 <TMPL_LOOP sources_info><td>
-<TMPL_IF href_view_source><a href="<TMPL_VAR href_view_source>">код</a><TMPL_ELSE>код</TMPL_IF> |
-<TMPL_IF href_download_source><a href="<TMPL_VAR href_download_source>">скачать</a></TMPL_IF> |
-<TMPL_IF href_run_details><a href="<TMPL_VAR href_run_details>">результаты</a><TMPL_ELSE>результаты</TMPL_IF> |
-<TMPL_IF href_diff_runs><a href="<TMPL_VAR href_diff_runs>">diff</a><TMPL_ELSE>diff</TMPL_IF>
-<TMPL_IF is_jury> |
-<TMPL_IF href_run_log><a href="<TMPL_VAR href_run_log>">лог</a><TMPL_ELSE>лог</TMPL_IF>
-</TMPL_IF>
+<a href="<TMPL_VAR href_view_source>" class="<TMPL_VAR href_class_view_source>">код</a> |
+<a href="<TMPL_VAR href_download_source>" class="<TMPL_VAR href_class_download_source>">скачать</a> |
+<a href="<TMPL_VAR href_run_details>" class="<TMPL_VAR href_class_run_details>">результаты</a> |
+<a href="<TMPL_VAR href_diff_runs>" class="<TMPL_VAR href_class_diff_runs>">diff</a>
+<TMPL_IF is_jury> | <a href="<TMPL_VAR href_run_log>" class="<TMPL_VAR href_class_run_log>">лог</a></TMPL_IF>
 </td></TMPL_LOOP>
 </tr>
 </table>

@@ -56,17 +56,17 @@ sub is_jury_in_contest
 
 
 # Вручную прописать результат попытки участника. Также можно применять для повторного тестирования.
-# Параметры: request_id, state, failed_test.
+# Параметры: request_id, state, failed_test, testsets.
 sub enforce_request_state
 {
     my %p = @_;
     defined $p{state} or return;
     $dbh->do(qq~
         UPDATE reqs
-            SET failed_test = ?, state = ?, 
-                points = NULL, received = 0, result_time = CATS_SYSDATE(), judge_id = NULL 
+            SET failed_test = ?, state = ?, testsets = ?,
+                points = NULL, received = 0, result_time = CATS_SYSDATE(), judge_id = NULL
             WHERE id = ?~, {},
-        $p{failed_test}, $p{state}, $p{request_id}
+        $p{failed_test}, $p{state}, $p{testsets}, $p{request_id}
     ) or return;
     if ($p{state} != $cats::st_ignore_submit) # сохраняем лог игнорируемых попыток
     {
@@ -83,27 +83,17 @@ sub enforce_request_state
 sub get_sources_info
 {
     my %p = @_;
-    
-    defined $p{request_id} or return;
-    
-    my $req_id_list;
-    if (ref $p{request_id} eq 'ARRAY')
-    {
-        my @req_ids = grep defined $_ && $_ > 0, @{$p{request_id}}
-            or return;
+    my $rid = $p{request_id} or return;
 
-        $req_id_list = join ',', map sprintf('%d', $_), @req_ids;
-    }
-    else
-    {
-        $req_id_list = $p{request_id};
-    }
-    
-    $req_id_list or return;
-    
+    my @req_ids = ref $rid eq 'ARRAY' ? @$rid : ($rid);
+    @req_ids = map +$_, grep defined $_ && $_ > 0, @req_ids;
+    @req_ids or return;
+
     my $src = $p{get_source} ? ' S.src,' : '';
 
-    my $result = $dbh->selectall_arrayref(qq~
+    # SELECT ... WHERE ... req_id IN (1,2,3) тормозит в Firebird 1.5,
+    # поэтому выполяем цикл вручную.
+    my $c = $dbh->prepare(qq~
         SELECT
             S.req_id, $src S.fname AS file_name,
             R.account_id, R.contest_id, R.problem_id, R.judge_id,
@@ -115,7 +105,8 @@ sub get_sources_info
             A.team_name,
             P.title AS problem_name,
             C.title AS contest_name,
-            CP.testsets, C.id AS contest_id
+            COALESCE(R.testsets, CP.testsets) AS testsets,
+            C.id AS contest_id, CP.id AS cp_id
         FROM sources S
             INNER JOIN reqs R ON R.id = S.req_id
             INNER JOIN default_de DE ON DE.id = S.de_id
@@ -123,9 +114,14 @@ sub get_sources_info
             INNER JOIN problems P ON P.id = R.problem_id
             INNER JOIN contests C ON C.id = R.contest_id
             INNER JOIN contest_problems CP ON CP.contest_id = C.id AND CP.problem_id = P.id
-        WHERE req_id IN ($req_id_list)~, { Slice => {} }
-    ) or return;
-    
+        WHERE req_id = ?~);
+    my $result = [];
+    for (@req_ids) {
+        my $row = $c->execute($_) && $c->fetchrow_hashref or return;
+        $c->finish;
+        push @$result, $row;
+    }
+
     my $official = $p{get_source} && !$is_jury && CATS::Contest::current_official;
     for my $r (@$result)
     {
@@ -144,7 +140,7 @@ sub get_sources_info
         }
     }
 
-    return ref $p{request_id} ? $result : $result->[0];
+    return ref $rid ? $result : $result->[0];
 }
 
 sub get_nearby_attempt

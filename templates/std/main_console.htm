@@ -42,7 +42,7 @@ function fill_1(aid, arg)
 {
     var a = get_element(aid);
     var e = get_element('selection');
-    if (!e.value.match(/^\d+$/))
+    if (!e.value.match(<TMPL_IF is_jury>/^[0-9,]+$/<TMPL_ELSE>/^\d+$/</TMPL_IF>))
     {
         alert('Укажите попытку');
         return false;
