@@ -2435,7 +2435,8 @@ sub get_contest_info
 
     my $contest = $dbh->selectrow_hashref(qq~
         SELECT
-            run_all_tests, show_all_tests, show_test_resources, show_checker_comment
+            id, run_all_tests, show_all_tests, show_test_resources,
+            show_checker_comment
             FROM contests WHERE id = ?~, { Slice => {} },
         $si->{contest_id});
 
@@ -2453,6 +2454,19 @@ sub get_contest_info
 }
 
 
+sub get_log_dump
+{
+    my ($rid, $compile_error) = @_;
+    my ($dump) = $dbh->selectrow_array(qq~
+        SELECT dump FROM log_dumps WHERE req_id = ?~, {},
+        $rid) or return ();
+    $dump = Encode::decode('CP1251', $dump);
+    $dump =~ s/(?:.|\n)+spawner\\sp\s((?:.|\n)+)compilation error\n/$1/m
+        if $compile_error;
+    return (judge_log_dump => $dump);
+}
+
+
 sub run_details_frame
 {
     init_template('main_run_details.htm');
@@ -2462,11 +2476,11 @@ sub run_details_frame
     my $si = get_sources_info(request_id => $rids) or return;
     
     my @runs;
-    my ($prev_contest_id, $is_jury, $contest) = 0;
+    my ($is_jury, $contest) = (0, { id => 0 });
     for (@$si)
     {
         $is_jury = is_jury_in_contest(contest_id => $_->{contest_id})
-            if $_->{contest_id} != $prev_contest_id;
+            if $_->{contest_id} != $contest->{id};
         $is_jury || $uid == $_->{account_id} or next;
 
         if ($is_jury && param('retest'))
@@ -2480,9 +2494,10 @@ sub run_details_frame
 
         source_links($_, $is_jury);
         $contest = get_contest_info($_, $is_jury && !url_param('as_user'))
-            if $_->{contest_id} != $prev_contest_id;
-        push @runs, get_run_info($contest, $_->{req_id});
-        $prev_contest_id = $_->{contest_id};
+            if $_->{contest_id} != $contest->{id};
+        push @runs,
+            $_->{state} == $cats::st_compilation_error ?
+            { get_log_dump($_->{req_id}, 1) } : get_run_info($contest, $_->{req_id});
     }
     $t->param(sources_info => $si, runs => \@runs);
 }
@@ -2602,15 +2617,7 @@ sub run_log_frame
     $t->param(sources_info => [$si]);
 
     source_links($si, 1);
-
-    my ($dump) =
-        $dbh->selectrow_array(qq~SELECT dump FROM log_dumps WHERE req_id = ?~, {}, $rid);
-    if ($dump) {
-        $t->param(
-            judge_log_dump_avalaible => 1,
-            judge_log_dump => Encode::decode('CP1251', $dump)
-        );
-    }
+    $t->param(get_log_dump($rid));
 
     my $tests = $dbh->selectcol_arrayref(qq~
         SELECT rank FROM tests WHERE problem_id = ? ORDER BY rank~, {},

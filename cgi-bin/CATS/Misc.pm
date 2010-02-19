@@ -163,7 +163,7 @@ sub templates_path
             return $_->{path};
         }
     }
-    
+
     cats_dir() . $cats::templates[0]->{path};
 }
 

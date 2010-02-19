@@ -116,7 +116,8 @@ sub get_sources_info
             INNER JOIN contest_problems CP ON CP.contest_id = C.id AND CP.problem_id = P.id
         WHERE req_id = ?~);
     my $result = [];
-    for (@req_ids) {
+    for (@req_ids)
+    {
         my $row = $c->execute($_) && $c->fetchrow_hashref or return;
         $c->finish;
         push @$result, $row;
