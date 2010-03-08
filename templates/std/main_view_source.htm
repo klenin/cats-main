@@ -1,4 +1,6 @@
 <TMPL_INCLUDE 'includes/header.inc'>
+
+<TMPL_INCLUDE 'includes/syntax_highlight.inc'>
 </head>
 <body>
 <TMPL_IF message><i><TMPL_VAR message ESCAPE=HTML></i><br></TMPL_IF>
@@ -26,15 +28,12 @@
 </td>
 </tr>
 </table>
-
 <TMPL_LOOP sources_info>
-<code>
-<table class="internal_borders"><tr>
-<td width="1" align="right"><pre><TMPL_LOOP src_lines><TMPL_VAR __counter__>
-</TMPL_LOOP></pre></td>
-<td style="vertical-align: top"><pre><TMPL_VAR src ESCAPE=HTML></pre></td>
-</tr></table>
-</code>
+<div class="bordered" style="margin: 0 10 10 0; padding: 0;">
+<TMPL_IF 0><td width="1" align="right"><pre><TMPL_LOOP src_lines><TMPL_VAR __counter__>
+</TMPL_LOOP></pre></td></TMPL_IF>
+<script type="syntaxhighlighter" class="brush: <TMPL_IF syntax><TMPL_VAR syntax><TMPL_ELSE>plain</TMPL_IF>;"><![CDATA[<TMPL_VAR src>]]></script>
+</div>
 </TMPL_LOOP>
 
 </body>

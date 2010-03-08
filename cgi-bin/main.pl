@@ -181,11 +181,11 @@ sub contests_new_save
             ctype,
             closed, run_all_tests, show_all_tests,
             show_test_resources, show_checker_comment, is_official, show_packages, local_only,
-            is_hidden
+            is_hidden, show_frozen_reqs
         ) VALUES(
             ?, ?, CATS_TO_DATE(?), CATS_TO_DATE(?), CATS_TO_DATE(?), CATS_TO_DATE(?), ?, ?,
             0,
-            ?, ?, ?, ?, ?, ?, ?, ?, ?)~,
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)~,
         {},
         $cid, @$p{contest_string_params()},
         @$p{contest_checkbox_params()}
@@ -250,7 +250,7 @@ sub contests_edit_save
             finish_date=CATS_TO_DATE(?), defreeze_date=CATS_TO_DATE(?), rules=?, max_reqs=?,
             closed=?, run_all_tests=?, show_all_tests=?,
             show_test_resources=?, show_checker_comment=?, is_official=?, show_packages=?,
-            local_only=?, is_hidden=?
+            local_only=?, is_hidden=?, show_frozen_reqs=0
         WHERE id=?~,
         {},
         @$p{contest_string_params()},
@@ -1578,7 +1578,13 @@ sub settings_frame
 
     my $u = CATS::User->new->load($uid) or return;
     $t->param(countries => \@cats::countries, href_action => url_f('users'), %$u);
-    $t->param(settings => Dumper($settings)) if $is_root;
+    if ($is_root)
+    {
+        my $d = Data::Dumper->new([ $settings ]);
+        $d->Quotekeys(0);
+        $d->Sortkeys(1);
+        $t->param(settings => $d->Dump);
+    }
 }
 
 
@@ -1887,11 +1893,12 @@ sub compilers_new_save
     my $supported_ext = param('supported_ext');
     my $locked = param_on('locked');
     my $memory_handicap = param('memory_handicap');
+    my $syntax = param('syntax');
             
     $dbh->do(qq~
-        INSERT INTO default_de(id, code, description, file_ext, in_contests, memory_handicap)
+        INSERT INTO default_de(id, code, description, file_ext, in_contests, memory_handicap, syntax)
         VALUES(?,?,?,?,?,?)~, {}, 
-        new_id, $code, $description, $supported_ext, !$locked, $memory_handicap);
+        new_id, $code, $description, $supported_ext, !$locked, $memory_handicap, $syntax);
     $dbh->commit;   
 }
 
@@ -1902,9 +1909,9 @@ sub compilers_edit_frame
 
     my $id = url_param('edit');
 
-    my ($code, $description, $supported_ext, $in_contests, $memory_handicap) =
+    my ($code, $description, $supported_ext, $in_contests, $memory_handicap, $syntax) =
         $dbh->selectrow_array(qq~
-            SELECT code, description, file_ext, in_contests, memory_handicap
+            SELECT code, description, file_ext, in_contests, memory_handicap, syntax
             FROM default_de WHERE id = ?~, {},
             $id);
 
@@ -1915,6 +1922,7 @@ sub compilers_edit_frame
         supported_ext => $supported_ext, 
         locked => !$in_contests,
         memory_handicap => $memory_handicap,
+        syntax => $syntax,
         href_action => url_f('compilers'));
 }
 
@@ -1926,13 +1934,15 @@ sub compilers_edit_save
     my $supported_ext = param('supported_ext');
     my $locked = param_on('locked');
     my $memory_handicap = param('memory_handicap');
+    my $syntax = param('syntax');
     my $id = param('id');
 
     $dbh->do(qq~
         UPDATE default_de
-        SET code = ?, description = ?, file_ext = ?, in_contests = ?, memory_handicap = ?
+        SET code = ?, description = ?, file_ext = ?, in_contests = ?,
+            memory_handicap = ?, syntax = ?
         WHERE id = ?~, {}, 
-        $code, $description, $supported_ext, !$locked, $memory_handicap, $id);
+        $code, $description, $supported_ext, !$locked, $memory_handicap, $syntax, $id);
     $dbh->commit;
 }
 
@@ -1965,24 +1975,27 @@ sub compilers_frame
         { caption => res_str(620), order_by => '3', width => '40%' },
         { caption => res_str(621), order_by => '4', width => '20%' },
         { caption => res_str(640), order_by => '6', width => '15%' },
+        { caption => 'syntax' || res_str(621), order_by => '7', width => '10%' },
         ($is_jury ? { caption => res_str(622), order_by => '5', width => '10%' } : ())
     ]);
 
     my $where = $is_jury ? '' : ' WHERE in_contests = 1';
     my $c = $dbh->prepare(qq~
-        SELECT id, code, description, file_ext, in_contests, memory_handicap
+        SELECT id, code, description, file_ext, in_contests, memory_handicap, syntax
         FROM default_de$where ~.order_by);
     $c->execute;
 
     my $fetch_record = sub($)
     {            
-        my ($did, $code, $description, $supported_ext, $in_contests, $memory_handicap) = $_[0]->fetchrow_array
+        my ($did, $code, $description, $supported_ext, $in_contests, $memory_handicap, $syntax) =
+            $_[0]->fetchrow_array
             or return ();
         return ( 
             editable => $is_root, did => $did, code => $code, 
             description => $description,
             supported_ext => $supported_ext,
             memory_handicap => $memory_handicap,
+            syntax => $syntax,
             locked => !$in_contests,
             href_edit => url_f('compilers', edit => $did),
             href_delete => url_f('compilers', 'delete' => $did));
@@ -2273,7 +2286,7 @@ sub send_message_box_frame
 
         my $s = $dbh->prepare(qq~
             INSERT INTO messages (id, send_time, text, account_id, received)
-                VALUES (?, CATS_SYSDATE(), ?, ?, 0)~);
+                VALUES (?, CURRENT_TIMESTAMP, ?, ?, 0)~);
         $s->bind_param(1, new_id);
         $s->bind_param(2, $message_text, { ora_type => 113 });
         $s->bind_param(3, $caid);
@@ -2540,6 +2553,7 @@ sub view_source_frame
         $sources_info->{src} = $src;
     }
     source_links($sources_info, $is_jury);
+    /^[a-z]+$/i and $sources_info->{syntax} = $_ for param('syntax');
     $sources_info->{src_lines} = [ map {}, split("\n", $sources_info->{src}) ];
     $t->param(sources_info => [ $sources_info ]);
 }
@@ -2959,13 +2973,15 @@ sub contest_visible
         $p = $contest_id;
     }    
 
-    my ($since_start, $local_only, $orig_cid, $show_packages) = $dbh->selectrow_array(qq~
-        SELECT CATS_SYSDATE() - C.start_date, C.local_only, C.id, C.show_packages
+    my $c = $dbh->selectrow_hashref(qq~
+        SELECT
+            CURRENT_TIMESTAMP - C.start_date AS since_start,
+            C.local_only, C.id AS orig_cid, C.show_packages, C.is_hidden
             FROM contests C $s WHERE $t.id = ?~,
         undef, $p);
-    if (($since_start || 0) > 0)
+    if (($c->{since_start} || 0) > 0 && !$c->{is_hidden})
     {
-        $local_only or return (1, $show_packages);
+        $c->{local_only} or return (1, $c->{show_packages});
         defined $uid or return (0, 0);
         # Должно быть локальное участие в основном турнире задачи
         # либо, если запрошены все задачи турнира, то в этом турнире.
@@ -2973,8 +2989,8 @@ sub contest_visible
         my ($is_remote) = $dbh->selectrow_array(q~
             SELECT is_remote FROM contest_accounts
             WHERE account_id = ? AND contest_id = ?~, {},
-            $uid, $orig_cid);
-        return (1, $show_packages) if defined $is_remote && $is_remote == 0;
+            $uid, $c->{orig_cid});
+        return (1, $c->{show_packages}) if defined $is_remote && $is_remote == 0;
     }
     return (0, 0);
 }    
@@ -3076,10 +3092,19 @@ sub problem_text_frame
             $need_commit = 1;
         }
 
-        $problem_data->{samples} = $dbh->selectall_arrayref(qq~
+        my $samples = $problem_data->{samples} = $dbh->selectall_arrayref(qq~
             SELECT rank, in_file, out_file
             FROM samples WHERE problem_id = ? ORDER BY rank~, { Slice => {} },
             $problem_id);
+        my $ws_replace = param('ws') || '';
+        if ($ws_replace)
+        {
+            $ws_replace = $ws_replace eq 'openbox' ? "\x{2423}" : "\x{22C5}";
+            for my $s (@$samples)
+            {
+                $_ =~ s/\x{0020}/$ws_replace/g for @$s{qw(in_file out_file)};
+            }
+        }
 
         for my $field_name qw(statement pconstraints input_format output_format explanation)
         {

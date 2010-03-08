@@ -23,7 +23,8 @@ CREATE TABLE default_de (
     in_contests INTEGER DEFAULT 1 CHECK (in_contests IN (0, 1)),
     in_banks    INTEGER DEFAULT 1 CHECK (in_banks IN (0, 1)),
     in_tsess    INTEGER DEFAULT 1 CHECK (in_tsess IN (0, 1)),
-    memory_handicap INTEGER DEFAULT 0
+    memory_handicap INTEGER DEFAULT 0,
+    syntax      VARCHAR(200) /* для highilghter'а */
 );
 
 
@@ -102,7 +103,7 @@ CREATE TABLE problems (
     title           VARCHAR(200) NOT NULL,
     lang            VARCHAR(200) DEFAULT '',
     time_limit      INTEGER DEFAULT 0,
-    memory_limit    NUMERIC,
+    memory_limit    INTEGER,
     difficulty      INTEGER DEFAULT 100,
     author          VARCHAR(200) DEFAULT '',
     input_file      VARCHAR(200) NOT NULL,
@@ -147,7 +148,9 @@ CREATE TABLE problem_sources (
     fname       VARCHAR(200),
     input_file  VARCHAR(200),
     output_file VARCHAR(200),
-    guid        VARCHAR(100) /* уникальный идентификатор программы */
+    guid        VARCHAR(100), /* уникальный идентификатор программы */
+    time_limit  FLOAT, /* в секундах */
+    memory_limit INTEGER /* в мегабайтах */
 );
 ALTER TABLE problem_sources
   ADD CONSTRAINT chk_problem_sources_1 CHECK (0 <= stype AND stype <= 6);

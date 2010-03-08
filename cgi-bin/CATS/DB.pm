@@ -65,7 +65,7 @@ sub sql_connect
 {
     $dbh ||= DBI->connect(
       $CATS::Connect::db_dsn, $CATS::Connect::db_user, $CATS::Connect::db_password,
-      { AutoCommit => 0, LongReadLen => 1024*1024*2, FetchHashKeyName => 'NAME_lc' }
+      { AutoCommit => 0, LongReadLen => 1024*1024*20, FetchHashKeyName => 'NAME_lc' }
     );
 
     if (!defined $dbh)

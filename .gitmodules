@@ -1,0 +1,3 @@
+[submodule "synhighlight"]
+	path = synhighlight
+	url = git://github.com/alexgorbatchev/SyntaxHighlighter.git

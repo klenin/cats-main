@@ -20,7 +20,7 @@
   <tr class="menu_bar"><td colspan="3">
     <a class="nav_href" href="..">на главную</a> | <a class="nav_href" href=".">содержание</a></td></tr>
 </table>
-<div style="margin: 5px"><h2>Версия 1.6</h2>
+<div style="margin: 5px"><h2>Версия 1.7</h2>
 
 <p><a href="sample.zip">скачать пример пакета с заданием</a></p>
 <p>Для хранения задачи используется ZIP-файл, в корне которого обязательно
@@ -124,6 +124,8 @@
         </ul>
       </li>
       <li>export<sup>&nbsp;<a href="#opt" title="Необязательный атрибут">o</a></sup> <sup><a href="#v14" title="С версии 1.4">1.4</a></sup> - глобальный идентификатор.</li>
+      <li>timeLimit<sup>&nbsp;<a href="#opt" title="Необязательный атрибут">o</a></sup> <sup><a href="#v17" title="С версии 1.7">1.7</a></sup> -- лимит времени в секундах.</li>
+      <li>memoryLimit<sup>&nbsp;<a href="#opt" title="Необязательный атрибут">o</a></sup> <sup><a href="#v17" title="С версии 1.7">1.7</a></sup> -- лимит памяти в мегабайтах.</li>
     </ul>
   </td>
   <td>
@@ -183,10 +185,12 @@
   <td><tt>&lt;<a name="Solution">Solution</a>&gt;<br/>&lt;<a href="#Problem">Problem</a>&gt;</tt></td>
   <td>
     <ul>
-      <li>name - идентификатор объекта <tt>&lt;<a href="#Solution">Solution</a>&gt;</tt>;</li>
-      <li>src<sup>&nbsp;<a href="#opt" title="Необязательный атрибут">o</a></sup> - путь к файлу с исходным кодом;</li>
-      <li>de_code<sup>&nbsp;<a href="#opt" title="Необязательный атрибут">o</a></sup> - код среды разработки.</li>
-      <li>export<sup>&nbsp;<a href="#opt" title="Необязательный атрибут">o</a></sup> <sup><a href="#v14" title="С версии 1.4">1.4</a></sup> - глобальный идентификатор.</li>
+      <li>name -- идентификатор объекта <tt>&lt;<a href="#Solution">Solution</a>&gt;</tt>;</li>
+      <li>src<sup>&nbsp;<a href="#opt" title="Необязательный атрибут">o</a></sup> -- путь к файлу с исходным кодом;</li>
+      <li>de_code<sup>&nbsp;<a href="#opt" title="Необязательный атрибут">o</a></sup> -- код среды разработки.</li>
+      <li>export<sup>&nbsp;<a href="#opt" title="Необязательный атрибут">o</a></sup> <sup><a href="#v14" title="С версии 1.4">1.4</a></sup> -- глобальный идентификатор.</li>
+      <li>timeLimit<sup>&nbsp;<a href="#opt" title="Необязательный атрибут">o</a></sup> <sup><a href="#v17" title="С версии 1.7">1.7</a></sup> -- лимит времени в секундах. По умолчанию совпадает с лимитом задачи.</li>
+      <li>memoryLimit<sup>&nbsp;<a href="#opt" title="Необязательный атрибут">o</a></sup> <sup><a href="#v17" title="С версии 1.7">1.7</a></sup> -- лимит памяти в мегабайтах. По умолчанию совпадает с лимитом задачи.</li>
     </ul>
   </td>
   <td>Описание эталонного решения.</td>
@@ -200,6 +204,8 @@
       <li>de_code<sup>&nbsp;<a href="#opt" title="Необязательный атрибут">o</a></sup> -- код среды разработки;</li>
       <li>outputFile<sup>&nbsp;<a href="#opt" title="Необязательный атрибут">o</a></sup> <sup><a href="#v12" title="С версии 1.2">1.2</a></sup> -- имя выходного файла или "*STDOUT";</li>
       <li>export<sup>&nbsp;<a href="#opt" title="Необязательный атрибут">o</a></sup> <sup><a href="#v14" title="С версии 1.4">1.4</a></sup> -- глобальный идентификатор.</li>
+      <li>timeLimit<sup>&nbsp;<a href="#opt" title="Необязательный атрибут">o</a></sup> <sup><a href="#v17" title="С версии 1.7">1.7</a></sup> -- лимит времени в секундах.</li>
+      <li>memoryLimit<sup>&nbsp;<a href="#opt" title="Необязательный атрибут">o</a></sup> <sup><a href="#v17" title="С версии 1.7">1.7</a></sup> -- лимит памяти в мегабайтах.</li>
     </ul>
   </td>
   <td>Описание генератора тестов. Генератор должен создать файл,
@@ -227,6 +233,8 @@
       <li>de_code<sup>&nbsp;<a href="#opt" title="Необязательный атрибут">o</a></sup> -- код среды разработки.</li>
       <li>outputFile<sup>&nbsp;<a href="#opt" title="Необязательный атрибут">o</a></sup> <sup><a href="#v12" title="С версии 1.2">1.2</a></sup> -- имя выходного файла или "*STDOUT".</li>
       <li>export<sup>&nbsp;<a href="#opt" title="Необязательный атрибут">o</a></sup> <sup><a href="#v14" title="С версии 1.4">1.4</a></sup> -- глобальный идентификатор.</li>
+      <li>timeLimit<sup>&nbsp;<a href="#opt" title="Необязательный атрибут">o</a></sup> <sup><a href="#v17" title="С версии 1.7">1.7</a></sup> -- лимит времени в секундах.</li>
+      <li>memoryLimit<sup>&nbsp;<a href="#opt" title="Необязательный атрибут">o</a></sup> <sup><a href="#v17" title="С версии 1.7">1.7</a></sup> -- лимит памяти в мегабайтах.</li>
     </ul>
   </td>
   <td>В атрибутах name, src и export тега <tt>&lt;<a href="#GeneratorRange">GeneratorRange</a>&gt;</tt> допускается
@@ -387,7 +395,8 @@
   Данная возможность присутствует начиная с версии 1.3.</p><a name="v14"></a><p><a href="" onclick="javascript:history.back(-1)"><sup>1.4</sup></a>
   Данная возможность присутствует начиная с версии 1.4.</p><a name="v15"></a><p><a href="" onclick="javascript:history.back(-1)"><sup>1.5</sup></a>
   Данная возможность присутствует начиная с версии 1.5.</p><a name="v16"></a><p><a href="" onclick="javascript:history.back(-1)"><sup>1.6</sup></a>
-  Данная возможность присутствует начиная с версии 1.6.</p>
+  Данная возможность присутствует начиная с версии 1.6.</p><a name="v17"></a><p><a href="" onclick="javascript:history.back(-1)"><sup>1.7</sup></a>
+  Данная возможность присутствует начиная с версии 1.7.</p>
 <a name="dv14"></a><p><a href="" onclick="javascript:history.back(-1)"><sup>&minus;1.4</sup></a>
   Данная возможность считается устаревшей начиная с версии 1.4.</p>
 <a name="dv15"></a><p><a href="" onclick="javascript:history.back(-1)"><sup>&minus;1.5</sup></a>

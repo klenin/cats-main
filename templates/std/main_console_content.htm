@@ -12,11 +12,11 @@
         </TMPL_IF>
     </td>
     <td nowrap width="1%">
-	<TMPL_IF is_jury>	
-        [<a href="javascript:send_message('<TMPL_VAR href_send_message_box>')"><TMPL_VAR team_name ESCAPE=HTML></a>:
-        <TMPL_IF last_ip><a href="#" alt="<TMPL_VAR last_ip>" title="<TMPL_VAR last_ip>"><TMPL_VAR last_ip_short></a><TMPL_ELSE><TMPL_VAR last_ip_short></TMPL_IF>]
+	<TMPL_IF is_jury>
+        <a href="javascript:send_message('<TMPL_VAR href_send_message_box>')"><TMPL_VAR team_name ESCAPE=HTML></a>
+        [<a href="http://geotool.flagfox.net/?ip=<TMPL_VAR last_ip_short>" alt="<TMPL_VAR last_ip>" title="<TMPL_VAR last_ip>"><TMPL_VAR last_ip_short></a>]
 	<TMPL_ELSE>
-        [<TMPL_VAR team_name ESCAPE=HTML>]
+        <TMPL_VAR team_name ESCAPE=HTML>
 	</TMPL_IF>
     </td>
     <td>
@@ -68,6 +68,15 @@
     </td>
     <td>
         <b><font color=red><TMPL_VAR message_text ESCAPE=HTML></font></b>
+    </td>
+</TMPL_IF><TMPL_IF is_contest>
+    <td nowrap width=1%><TMPL_VAR time></td>
+    <td align=left>
+        <b><TMPL_IF contest_start>Начался<TMPL_ELSE>Закончился</TMPL_IF>
+        <TMPL_IF is_official>официальный </TMPL_IF>турнир</b>
+    </td>
+    <td>
+        <b><a href="<TMPL_VAR href_problems>"><TMPL_VAR problem_title ESCAPE=HTML></a></b>
     </td>
 </TMPL_IF>
 </tr>

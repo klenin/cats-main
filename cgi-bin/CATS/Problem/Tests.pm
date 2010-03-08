@@ -7,8 +7,8 @@ use warnings;
 sub apply_test_rank
 {
     my ($v, $rank) = @_;
-    $v = '' unless defined $v;
-    $rank or return $v;
+    defined $v && $rank or return $v;
+    #$v = '' unless defined $v;
     $v =~ s/%n/$rank/g;
     $v =~ s/%0n/sprintf("%02d", $rank)/eg;
     $v =~ s/%%/%/g;

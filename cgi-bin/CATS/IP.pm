@@ -26,4 +26,13 @@ sub get_ip
        ($ENV{HTTP_X_FORWARDED_FOR} || ''), ($ENV{REMOTE_ADDR} || '');
 }
 
+
+sub short_long
+{
+    my ($ip) = $_[0] || '';
+    my ($short, @rest) = split /[,\s]+/, $ip;
+    my $long = @rest ? $ip : '';
+    ($short, $long);
+}
+
 1;

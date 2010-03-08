@@ -9,13 +9,14 @@
 [%- MACRO v15 BLOCK %]<sup><a href="#v15" title="С версии 1.5">1.5</a></sup>[% END -%]
 [%- MACRO dv15 BLOCK %]<sup><a href="#dv15" title="Устарела с версии 1.5">&minus;1.5</a></sup>[% END -%]
 [%- MACRO v16 BLOCK %]<sup><a href="#v16" title="С версии 1.6">1.6</a></sup>[% END -%]
+[%- MACRO v17 BLOCK %]<sup><a href="#v17" title="С версии 1.7">1.7</a></sup>[% END -%]
 [%- MACRO tag_in(t1, t2, m1, m2) BLOCK
 %]<tt>&lt;<a name="[% t1 %]">[% t1 %]</a>&gt;[% IF t2 != '';
   IF m1 != '' %]</tt>[% m1 %]<br/><tt>[% ELSE %]<br/>[% END
 %]&lt;<a href="#[% t2 %]">[% t2 %]</a>&gt;[% END %]</tt>[% m2;
 END -%]
 [%- MACRO tag_ref(t) BLOCK %]<tt>&lt;<a href="#[% t %]">[% t %]</a>&gt;</tt>[% END -%]
-<h2>Версия 1.6</h2>
+<h2>Версия 1.7</h2>
 
 <p><a href="sample.zip">скачать пример пакета с заданием</a></p>
 <p>Для хранения задачи используется ZIP-файл, в корне которого обязательно
@@ -119,6 +120,8 @@ END -%]
         </ul>
       </li>
       <li>export[% opt %] [% v14 %] - глобальный идентификатор.</li>
+      <li>timeLimit[% opt %] [% v17 %] -- лимит времени в секундах.</li>
+      <li>memoryLimit[% opt %] [% v17 %] -- лимит памяти в мегабайтах.</li>
     </ul>
   </td>
   <td>
@@ -178,10 +181,12 @@ END -%]
   <td>[% tag_in('Solution', 'Problem') %]</td>
   <td>
     <ul>
-      <li>name - идентификатор объекта [% tag_ref('Solution') %];</li>
-      <li>src[% opt %] - путь к файлу с исходным кодом;</li>
-      <li>de_code[% opt %] - код среды разработки.</li>
-      <li>export[% opt %] [% v14 %] - глобальный идентификатор.</li>
+      <li>name -- идентификатор объекта [% tag_ref('Solution') %];</li>
+      <li>src[% opt %] -- путь к файлу с исходным кодом;</li>
+      <li>de_code[% opt %] -- код среды разработки.</li>
+      <li>export[% opt %] [% v14 %] -- глобальный идентификатор.</li>
+      <li>timeLimit[% opt %] [% v17 %] -- лимит времени в секундах. По умолчанию совпадает с лимитом задачи.</li>
+      <li>memoryLimit[% opt %] [% v17 %] -- лимит памяти в мегабайтах. По умолчанию совпадает с лимитом задачи.</li>
     </ul>
   </td>
   <td>Описание эталонного решения.</td>
@@ -195,6 +200,8 @@ END -%]
       <li>de_code[% opt %] -- код среды разработки;</li>
       <li>outputFile[% opt %] [% v12 %] -- имя выходного файла или "*STDOUT";</li>
       <li>export[% opt %] [% v14 %] -- глобальный идентификатор.</li>
+      <li>timeLimit[% opt %] [% v17 %] -- лимит времени в секундах.</li>
+      <li>memoryLimit[% opt %] [% v17 %] -- лимит памяти в мегабайтах.</li>
     </ul>
   </td>
   <td>Описание генератора тестов. Генератор должен создать файл,
@@ -222,6 +229,8 @@ END -%]
       <li>de_code[% opt %] -- код среды разработки.</li>
       <li>outputFile[% opt %] [% v12 %] -- имя выходного файла или "*STDOUT".</li>
       <li>export[% opt %] [% v14 %] -- глобальный идентификатор.</li>
+      <li>timeLimit[% opt %] [% v17 %] -- лимит времени в секундах.</li>
+      <li>memoryLimit[% opt %] [% v17 %] -- лимит памяти в мегабайтах.</li>
     </ul>
   </td>
   <td>В атрибутах name, src и export тега [% tag_ref('GeneratorRange') %] допускается
@@ -384,7 +393,7 @@ END -%]
 [%
   since('v11', '1.1'); since('v12', '1.2');
   since('v13', '1.3'); since('v14', '1.4');
-  since('v15', '1.5'); since('v16', '1.6');
+  since('v15', '1.5'); since('v16', '1.6'); since('v17', '1.7');
 %]
 <a name="dv14"></a><p><a href="" onclick="javascript:history.back(-1)"><sup>&minus;1.4</sup></a>
   Данная возможность считается устаревшей начиная с версии 1.4.</p>

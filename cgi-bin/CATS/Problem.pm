@@ -65,7 +65,7 @@ sub load
         $self->{zip}->read($fname) == AZ_OK
             or $self->error("read '$fname' failed -- probably not a zip archive");
 
-        my @xml_members = $self->{zip}->membersMatching('.*\.xml');
+        my @xml_members = $self->{zip}->membersMatching('.*\.xml$');
 
         $self->error('*.xml not found') if !@xml_members;
         $self->error('found several *.xml in archive') if @xml_members > 1;
@@ -341,15 +341,26 @@ sub start_tag_Attachment
 }
 
 
+sub problem_source_common_params
+{
+    (my CATS::Problem $self, my $atts, my $kind) = @_;
+    return (
+        id => new_id,
+        $self->read_member_named(name => $atts->{src}, kind => $kind),
+        de_code => $atts->{de_code},
+        guid => $atts->{export},
+        time_limit => $atts->{timeLimit},
+        memory_limit => $atts->{memoryLimit},
+    );
+}
+
 sub start_tag_Solution
 {
     (my CATS::Problem $self, my $atts) = @_;
 
     my $sol = $self->set_named_object($atts->{name}, {
-        id => new_id,
-        $self->read_member_named(name => $atts->{src}, kind => 'solution'),
-        de_code => $atts->{de_code},
-        guid => $atts->{export}, checkup => $atts->{checkup},
+        $self->problem_source_common_params($atts, 'solution'),
+        checkup => $atts->{checkup},
     });
     push @{$self->{solutions}}, $sol;
 }
@@ -368,11 +379,7 @@ sub start_tag_Checker
     }
 
     $self->checker_added;
-    $self->{checker} = {
-        id => new_id,
-        $self->read_member_named(name => $atts->{src}, kind => 'checker'),
-        de_code => $atts->{de_code}, guid => $atts->{export}, style => $style
-    };
+    $self->{checker} = { $self->problem_source_common_params($atts, 'checker'), style => $style };
 }
 
 
@@ -381,10 +388,7 @@ sub create_generator
     (my CATS::Problem $self, my $p) = @_;
     
     return $self->set_named_object($p->{name}, {
-        id => new_id,
-        $self->read_member_named(name => $p->{src}, kind => 'generator'),
-        de_code => $p->{de_code},
-        guid => $p->{export} || undef, 
+        $self->problem_source_common_params($p, 'genertor'),
         outputFile => $p->{outputFile},
     });
 }
@@ -729,8 +733,9 @@ sub insert_problem_source
     }
     my $c = $dbh->prepare(qq~
         INSERT INTO problem_sources (
-            id, problem_id, de_id, src, fname, stype, input_file, output_file, guid
-        ) VALUES (?,?,?,?,?,?,?,?,?)~);
+            id, problem_id, de_id, src, fname, stype, input_file, output_file, guid,
+            time_limit, memory_limit
+        ) VALUES (?,?,?,?,?,?,?,?,?,?,?)~);
 
     $c->bind_param(1, $s->{id});
     $c->bind_param(2, $self->{id});
@@ -741,6 +746,8 @@ sub insert_problem_source
     $c->bind_param(7, $s->{inputFile});
     $c->bind_param(8, $s->{outputFile});
     $c->bind_param(9, $s->{guid});
+    $c->bind_param(10, $s->{time_limit});
+    $c->bind_param(11, $s->{memory_limit});
     $c->execute;
 
     my $g = $s->{guid} ? ", guid=$s->{guid}" : '';

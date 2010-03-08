@@ -8,6 +8,7 @@ use CGI ();
 use CATS::DB;
 use CATS::Misc qw(:all);
 use CATS::Contest;
+use CATS::IP;
 
 BEGIN
 {
@@ -86,23 +87,23 @@ sub get_sources_info
     my $rid = $p{request_id} or return;
 
     my @req_ids = ref $rid eq 'ARRAY' ? @$rid : ($rid);
-    @req_ids = map +$_, grep defined $_ && $_ > 0, @req_ids;
+    @req_ids = map +$_, grep $_ && /^\d+$/, @req_ids;
     @req_ids or return;
 
-    my $src = $p{get_source} ? ' S.src,' : '';
+    my $src = $p{get_source} ? ' S.src, DE.syntax,' : '';
 
     # SELECT ... WHERE ... req_id IN (1,2,3) тормозит в Firebird 1.5,
     # поэтому выполяем цикл вручную.
     my $c = $dbh->prepare(qq~
         SELECT
-            S.req_id, $src S.fname AS file_name,
+            S.req_id,$src S.fname AS file_name,
             R.account_id, R.contest_id, R.problem_id, R.judge_id,
             R.state, R.failed_test,
             CATS_DATE(R.submit_time) AS submit_time,
             CATS_DATE(R.test_time) AS test_time,
             CATS_DATE(R.result_time) AS result_time,
             DE.description AS de_name,
-            A.team_name,
+            A.team_name, A.last_ip,
             P.title AS problem_name,
             C.title AS contest_name,
             COALESCE(R.testsets, CP.testsets) AS testsets,
@@ -126,6 +127,8 @@ sub get_sources_info
     my $official = $p{get_source} && !$is_jury && CATS::Contest::current_official;
     for my $r (@$result)
     {
+        @$r{qw(last_ip_short last_ip)} =
+            CATS::IP::short_long(CATS::IP::filter_ip($r->{last_ip}));
         # Только часы и минуты от времени начала и окончания обработки.
         ($r->{"${_}_short"} = $r->{$_}) =~ s/^(.*)\s+(\d\d:\d\d)\s*$/$2/
             for qw(test_time result_time);

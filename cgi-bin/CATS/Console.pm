@@ -39,18 +39,19 @@ sub send_question_to_jury
 }
 
 
-sub get_time_interval
+sub get_settings
 {
     my $s = $settings->{$listview_name};
     $s->{i_value} = coalesce(param('i_value'), $s->{i_value}, 1);
     $s->{i_unit} = param('i_unit') || $s->{i_unit} || 'hours';
+    $s;
 }
 
 
 sub time_interval_days
 {
-    get_time_interval;
-    my ($v, $u) = @{$settings->{$listview_name}}{qw(i_value i_unit)};
+    my ($s) = @_;
+    my ($v, $u) = @$s{qw(i_value i_unit)};
     my @text = split /\|/, res_str(121);
     my $units = [
         { value => 'hours', k => 1 / 24 },
@@ -87,7 +88,20 @@ sub console
     my $template_name = shift;
     init_listview_template('console', 'console', 'main_console_content.htm');
 
-    my $day_count = time_interval_days;
+    my $s = get_settings;
+    $s->{show_results} = 1 unless defined $s->{show_results};
+    $s->{show_messages} = 1 unless defined $s->{show_messages};
+    $t->param($_ => $s->{$_}) for qw(show_contests show_messages show_results);
+
+    my $day_count = time_interval_days($s);
+    my $dummy_account_block = q~
+        CAST(NULL AS INTEGER) AS team_id,
+        CAST(NULL AS VARCHAR(200)) AS team_name,
+        CAST(NULL AS VARCHAR(30)) AS country,
+        CAST(NULL AS VARCHAR(100)) AS last_ip,
+        CAST(NULL AS INTEGER) AS caid,
+        CAST(NULL AS INTEGER) AS contest_id
+    ~;
     my %console_select = (
         run => q~
             1 AS rtype,
@@ -106,7 +120,14 @@ sub console
             A.country AS country,
             A.last_ip AS last_ip,
             CA.id,
-            CA.contest_id~,
+            R.contest_id
+            FROM reqs R
+            INNER JOIN problems P ON R.problem_id=P.id
+            INNER JOIN accounts A ON R.account_id=A.id
+            INNER JOIN contests C ON R.contest_id=C.id
+            INNER JOIN contest_accounts CA ON CA.account_id=A.id AND CA.contest_id=R.contest_id,
+            dummy_table D
+        ~,
         question => q~
             2 AS rtype,
             Q.submit_time AS rank,
@@ -144,7 +165,7 @@ sub console
             CA.id,
             CA.contest_id
         ~,
-        broadcast => q~
+        broadcast => qq~
             4 AS rtype,
             M.send_time AS rank,
             CATS_DATE(M.send_time) AS submit_time,
@@ -156,52 +177,100 @@ sub console
             D.t_blob AS question,
             D.t_blob AS answer,
             M.text AS jury_message,
-            CAST(NULL AS INTEGER) AS team_id,
-            CAST(NULL AS VARCHAR(200)) AS team_name,
-            CAST(NULL AS VARCHAR(30)) AS country,
-            CAST(NULL AS VARCHAR(100)) AS last_ip,
-            CAST(NULL AS INTEGER),
-            CAST(NULL AS INTEGER)
+            $dummy_account_block
             FROM messages M, dummy_table D
+        ~,
+        contest_start => qq~
+            5 AS rtype,
+            C.start_date AS rank,
+            CATS_DATE(C.start_date) AS submit_time,
+            C.id AS id,
+            C.is_official AS request_state,
+            CAST(NULL AS INTEGER) AS failed_test,
+            C.title AS problem_title,
+            CAST(NULL AS INTEGER) AS clarified,
+            D.t_blob AS question,
+            D.t_blob AS answer,
+            D.t_blob AS jury_message,
+            $dummy_account_block
+            FROM contests C, dummy_table D
+        ~,
+        contest_finish => qq~
+            6 AS rtype,
+            C.finish_date AS rank,
+            CATS_DATE(C.finish_date) AS submit_time,
+            C.id AS id,
+            C.is_official AS request_state,
+            CAST(NULL AS INTEGER) AS failed_test,
+            C.title AS problem_title,
+            CAST(NULL AS INTEGER) AS clarified,
+            D.t_blob AS question,
+            D.t_blob AS answer,
+            D.t_blob AS jury_message,
+            $dummy_account_block
+            FROM contests C, dummy_table D
         ~,
     );
 
     my $user_filter = sprintf '%d', url_param('uf') || 0;
 
-    my $events_filter = $user_filter ? 'AND A.id = ?' : '';
-    my @events_filter_params = $user_filter ? ($user_filter) : ();
+    my $events_filter =
+        !$s->{show_results} ? ' AND 1 = 0' :
+        $user_filter ? 'AND A.id = ?' :
+        '';
+    my @events_filter_params = $s->{show_results} && $user_filter ? ($user_filter) : ();
 
+    my $contest_start_finish = '';
+    if ($s->{show_contests})
+    {
+        my $hidden_cond = $is_root ? '' : ' AND C.is_hidden = 0';
+        $contest_start_finish = qq~
+	        UNION
+            SELECT
+                $console_select{contest_start}
+                WHERE (C.start_date > CURRENT_TIMESTAMP - $day_count) AND
+                    (C.start_date < CURRENT_TIMESTAMP)$hidden_cond
+	        UNION
+            SELECT
+                $console_select{contest_finish}
+                WHERE (C.finish_date > CURRENT_TIMESTAMP - $day_count) AND
+                    (C.finish_date < CURRENT_TIMESTAMP)$hidden_cond~;
+    }
+    
+    my $broadcast = $s->{show_messages} ? qq~
+	    UNION
+        SELECT
+            $console_select{broadcast}
+            WHERE (M.send_time > CURRENT_TIMESTAMP - $day_count) AND M.broadcast = 1~
+        : '';
+    
     my $c;
     if ($is_jury)
     {
-        my $runs_filter = $is_root ? '' : ' C.id = ? AND';
+        my $runs_filter = $is_root ? '' : ' AND C.id = ?';
         my $msg_filter = $is_root ? '' : ' AND CA.contest_id = ?';
         my @cid = $is_root ? () : ($cid);
         $c = $dbh->prepare(qq~
             SELECT
                 $console_select{run}
-                FROM reqs R, problems P, accounts A, contests C, contest_accounts CA, dummy_table D 
-                WHERE (R.submit_time > CATS_SYSDATE() - $day_count) AND R.contest_id=C.id AND$runs_filter
-                R.problem_id=P.id AND R.account_id=A.id AND CA.account_id=A.id AND CA.contest_id=R.contest_id
-                $events_filter
+                WHERE R.submit_time > CURRENT_TIMESTAMP - $day_count
+                $runs_filter$events_filter
             UNION
             SELECT
                 $console_select{question}
                 FROM questions Q, contest_accounts CA, dummy_table D, accounts A
-                WHERE (Q.submit_time > CATS_SYSDATE() - $day_count) AND
+                WHERE (Q.submit_time > CURRENT_TIMESTAMP - $day_count) AND
                 Q.account_id=CA.id AND A.id=CA.account_id$msg_filter
                 $events_filter
             UNION
             SELECT
                 $console_select{message}
                 FROM messages M, contest_accounts CA, dummy_table D, accounts A
-                WHERE (M.send_time > CATS_SYSDATE() - $day_count) AND
+                WHERE (M.send_time > CURRENT_TIMESTAMP - $day_count) AND
                 M.account_id = CA.id AND A.id = CA.account_id$msg_filter
                 $events_filter
-	        UNION
-            SELECT
-                $console_select{broadcast}
-                WHERE (M.send_time > CATS_SYSDATE() - $day_count) AND M.broadcast=1
+            $broadcast
+            $contest_start_finish
             ORDER BY 2 DESC~);
         $c->execute(
             @cid, @events_filter_params,
@@ -213,33 +282,24 @@ sub console
         $c = $dbh->prepare(qq~
             SELECT
                 $console_select{run}
-                FROM
-                    reqs R
-                    INNER JOIN problems P ON R.problem_id = P.id
-                    INNER JOIN accounts A ON R.account_id = A.id
-                    INNER JOIN contests C ON C.id = R.contest_id
-                    INNER JOIN contest_accounts CA ON C.id = CA.contest_id AND CA.account_id = A.id
-                    , dummy_table D
-                WHERE (R.submit_time > CATS_SYSDATE() - $day_count) AND
+                WHERE (R.submit_time > CURRENT_TIMESTAMP - $day_count) AND
                     C.id=? AND CA.is_hidden=0 AND
-                    (A.id=? OR R.submit_time < C.freeze_date OR CATS_SYSDATE() > C.defreeze_date)
+                    (A.id=? OR R.submit_time < C.freeze_date OR CURRENT_TIMESTAMP > C.defreeze_date)
                 $events_filter
             UNION
             SELECT
                 $console_select{question}
                 FROM questions Q, contest_accounts CA, dummy_table D, accounts A
-                WHERE (Q.submit_time > CATS_SYSDATE() - $day_count) AND
-                Q.account_id=CA.id AND CA.contest_id=? AND CA.account_id=A.id AND A.id=?
+                WHERE (Q.submit_time > CURRENT_TIMESTAMP - $day_count) AND
+                    Q.account_id=CA.id AND CA.contest_id=? AND CA.account_id=A.id AND A.id=?
             UNION
             SELECT
                 $console_select{message}
                 FROM messages M, contest_accounts CA, dummy_table D, accounts A 
-                WHERE (M.send_time > CATS_SYSDATE() - $day_count) AND
+                WHERE (M.send_time > CURRENT_TIMESTAMP - $day_count) AND
                     M.account_id=CA.id AND CA.contest_id=? AND CA.account_id=A.id AND A.id=?
-	        UNION
-            SELECT
-                $console_select{broadcast}
-                WHERE (M.send_time > CATS_SYSDATE() - $day_count) AND M.broadcast=1
+            $broadcast
+            $contest_start_finish
             ORDER BY 2 DESC~);
         $c->execute(
             $cid, $uid, @events_filter_params,
@@ -252,16 +312,12 @@ sub console
         $c = $dbh->prepare(qq~
             SELECT
                 $console_select{run}
-                FROM reqs R, problems P, accounts A, dummy_table D, contests C, contest_accounts CA
-                WHERE (R.submit_time > CATS_SYSDATE() - $day_count) AND
-                    R.problem_id=P.id AND R.contest_id=? AND R.account_id=A.id AND C.id=R.contest_id AND
-                    CA.account_id=A.id AND CA.contest_id=C.id AND CA.is_hidden=0 AND 
-                    (R.submit_time < C.freeze_date OR CATS_SYSDATE() > C.defreeze_date)
+                WHERE (R.submit_time > CURRENT_TIMESTAMP - $day_count) AND
+                    R.contest_id=? AND CA.is_hidden=0 AND 
+                    (R.submit_time < C.freeze_date OR CURRENT_TIMESTAMP > C.defreeze_date)
                     $events_filter
-            UNION
-            SELECT
-                $console_select{broadcast}
-                WHERE (M.send_time > CATS_SYSDATE() - $day_count) AND M.broadcast=1
+            $broadcast
+            $contest_start_finish
             ORDER BY 2 DESC~);
         $c->execute($cid, @events_filter_params);
     }
@@ -277,15 +333,7 @@ sub console
         $request_state = -1 unless defined $request_state;
   
         my ($country, $flag) = get_flag($country_abb);
-        my $last_ip_short = '';
-        $last_ip ||= '';
-        for ($last_ip)
-        {
-            $_ = CATS::IP::filter_ip($_);
-            m/(^\S+)/;
-            $last_ip_short = $1 || '';
-            $_ = '' if $last_ip_short eq $_;
-        }
+        (my $last_ip_short, $last_ip)  = CATS::IP::short_long(CATS::IP::filter_ip($last_ip));
         return (
             country => $country,
             flag => $flag, 
@@ -293,10 +341,14 @@ sub console
             is_question =>          $rtype == 2,
             is_message =>           $rtype == 3,
             is_broadcast =>         $rtype == 4,
+            is_contest =>           $rtype == 5 || $rtype == 6,
+            contest_start =>        $rtype == 5,
+            is_official =>          $request_state,
             clarified =>            $clarified,
             href_details => (
                 ($uid && $team_id && $uid == $team_id) ? url_f('run_details', rid => $id) : ''
             ),
+            href_problems =>        url_function('problems', sid => $sid, cid => $id),
             href_delete =>          $is_root ? url_f('console', delete_question => $id) : undef,
             href_answer_box =>      $is_jury ? url_f('answer_box', qid => $id) : undef,
             href_send_message_box =>$is_jury ? url_f('send_message_box', caid => $caid) : undef,
@@ -353,10 +405,10 @@ sub console
         href_all_events => url_f('console', uf => 0),
         user_filter => $user_filter
     );
-    my $s = $t->output;
+    my $cc = $t->output;
     init_template($template_name);
 
-    $t->param(console_content => $s, is_team => $is_team);
+    $t->param(console_content => $cc, is_team => $is_team);
 }
 
 
@@ -488,7 +540,12 @@ sub delete_question
 sub console_frame
 {        
     init_listview_template('console', 'console', 'main_console.htm');  
-    get_time_interval;
+    my $s = get_settings;
+    if (defined param('filter') || defined param('visible'))
+    {
+        $s->{$_} = param($_) ? 1 : 0
+            for qw(show_contests show_messages show_results);
+    }
 
     my $question_text = param('question_text');
     my $selection = param('selection');

@@ -195,10 +195,15 @@ sub init_listview_params
 
     $s->{page} = url_param('page') if defined url_param('page');
 
-    if (defined param('search'))
+    my $search = param('search');
+    if (defined $search)
     {
-        $s->{search} = Encode::decode_utf8(param('search'));
-        $s->{page} = 0;
+        $search = Encode::decode_utf8($search);
+        if ($s->{search} ne $search)
+        {
+            $s->{search} = $search;
+            $s->{page} = 0;
+        }
     }
 
     if (defined url_param('sort'))
@@ -213,13 +218,13 @@ sub init_listview_params
         $s->{page} = 0;
     }
 
-    if (defined param('rows'))
-    {
-        $s->{rows} = param('rows');
-        $s->{page} = 0;
-    }
     $s->{rows} ||= $cats::display_rows[0];
-
+    my $rows = param('rows');
+    if (defined $rows)
+    {
+        $s->{page} = 0 if $s->{rows} != $rows;
+        $s->{rows} = 0 + $rows;
+    }
 }
 
 
@@ -659,8 +664,8 @@ sub save_settings
     if ($listview_name)
     {
         my $s = $settings->{$listview_name} ||= {};
-        $s->{search} = Encode::encode_utf8($s->{search});
-        $s->{$_} or delete $s->{$_} for keys %$s;
+        $s->{search} = Encode::encode_utf8($s->{search}) || undef;
+        defined $s->{$_} or delete $s->{$_} for keys %$s;
     }
     my $new_enc_settings = Storable::freeze($settings);
     $new_enc_settings ne $enc_settings or return;
