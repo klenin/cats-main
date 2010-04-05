@@ -156,7 +156,7 @@ sub get_contest_html_params
 sub register_contest_account
 {
     my %p = @_;
-    $p{$_} ||= 0 for (qw(is_jury is_pop is_hidden is_virtual));
+    $p{$_} ||= 0 for (qw(is_jury is_pop is_hidden is_virtual diff_time));
     $p{$_} ||= 1 for (qw(is_ooc is_remote));
     $p{id} = new_id;
     my ($f, $v) = (join(', ', keys %p), join(',', map '?', keys %p));
@@ -271,13 +271,18 @@ sub contest_online_registration
     !get_registered_contestant(contest_id => $cid)
         or return msg(111);
 
-    $contest->{time_since_finish} <= 0
-        or return msg(108);
-
-    !$contest->{closed}
-        or return msg(105);
-
-    register_contest_account(contest_id => $cid, account_id => $uid, diff_time => 0);
+    if ($is_root)
+    {
+        register_contest_account(
+            contest_id => $cid, account_id => $uid,
+            is_jury => 1, is_pop => 1, is_hidden => 1);
+    }
+    else
+    {
+        $contest->{time_since_finish} <= 0 or return msg(108);
+        !$contest->{closed} or return msg(105);
+        register_contest_account(contest_id => $cid, account_id => $uid);
+    }
     $dbh->commit;
 }
 
@@ -3092,19 +3097,10 @@ sub problem_text_frame
             $need_commit = 1;
         }
 
-        my $samples = $problem_data->{samples} = $dbh->selectall_arrayref(qq~
+        $problem_data->{samples} = $dbh->selectall_arrayref(qq~
             SELECT rank, in_file, out_file
             FROM samples WHERE problem_id = ? ORDER BY rank~, { Slice => {} },
             $problem_id);
-        my $ws_replace = param('ws') || '';
-        if ($ws_replace)
-        {
-            $ws_replace = $ws_replace eq 'openbox' ? "\x{2423}" : "\x{22C5}";
-            for my $s (@$samples)
-            {
-                $_ =~ s/\x{0020}/$ws_replace/g for @$s{qw(in_file out_file)};
-            }
-        }
 
         for my $field_name qw(statement pconstraints input_format output_format explanation)
         {
@@ -3131,7 +3127,7 @@ sub problem_text_frame
 
     $t->param(
         problems => [ @problems ],
-        tex_styles => CATS::TeX::Lite::styles()
+        tex_styles => CATS::TeX::Lite::styles(),
         #CATS::TeX::HTMLGen::gen_styles_html()
     );
 }

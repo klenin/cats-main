@@ -204,7 +204,7 @@ CREATE TABLE testsets
     tests           VARCHAR(200) NOT NULL,
     CONSTRAINT testsets_pk PRIMARY KEY (id),
     /*CONSTRAINT testsets_uniq UNIQUE (name, problem_id),*/
-    FOREIGN KEY (problem_id) REFERENCES problems (id)
+    FOREIGN KEY (problem_id) REFERENCES problems (id) ON DELETE CASCADE
 );
 
 
@@ -301,6 +301,17 @@ CREATE TABLE problem_keywords (
     PRIMARY KEY (problem_id, keyword_id)
 );
 
+/*
+    Старые версии Firebird не умеют делать CAST в BLOB,
+    поэтому вместо константных пустых строк приходится делать
+    select полей типа BLOB из dummy_table.
+*/
+CREATE TABLE dummy_table
+(
+    t_integer INTEGER,
+    t_varchar200 VARCHAR(200),
+    t_blob BLOB SUB_TYPE 0
+);
 
 CREATE GENERATOR key_seq;
 CREATE GENERATOR login_seq;
@@ -314,3 +325,5 @@ INSERT INTO default_de (id, code, description, file_ext) VALUES (GEN_ID(key_seq,
 INSERT INTO default_de (id, code, description, file_ext) VALUES (GEN_ID(key_seq, 1), 104, 'Borland C++ 3.1', 'cpp;c');
 INSERT INTO default_de (id, code, description, file_ext) VALUES (GEN_ID(key_seq, 1), 201, 'Borland Pascal', 'pas');
 INSERT INTO default_de (id, code, description, file_ext) VALUES (GEN_ID(key_seq, 1), 301, 'Quick Basic 4.5', 'bas');
+
+INSERT INTO dummy_table VALUES (NULL, NULL, NULL);

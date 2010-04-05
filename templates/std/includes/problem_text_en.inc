@@ -46,7 +46,7 @@
 </TMPL_LOOP>
 <TMPL_ELSE>
 <h3>Sample tests</h4>
-<table class="sample">
+<table class="sample" id="sample<TMPL_VAR id>">
 <tr><th>No.</th><th>Sample input</th><th>Sample output</th></tr>
 <TMPL_LOOP samples>
 <tr>

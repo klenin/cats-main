@@ -46,7 +46,7 @@
 </TMPL_LOOP>
 <TMPL_ELSE>
 <h3>Примеры тестов</h3>
-<table class="sample">
+<table class="sample" id="sample<TMPL_VAR id>">
 <tr><th>&#8470;</th><th>Входной файл</th><th>Выходной файл</th></tr>
 <TMPL_LOOP samples>
 <tr>

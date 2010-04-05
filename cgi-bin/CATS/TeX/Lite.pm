@@ -7,18 +7,19 @@ use warnings;
 use CATS::TeX::TeXData;
 
 my %generators = (
-    var   => sub { ($_[1] || '') . "<i>$_[0]</i>" },
-    num   => sub { ($_[1] || '') . qq~<span class="num">$_[0]</span>~ },
-    op    => sub { join '', @_ },
-    spec  => sub { join '', map { $CATS::TeX::TeXData::symbols{$_} || $_ && "<b>$_</b>" || $_ } @_ },
-    sup   => sub { qq~<sup>$_[0]</sup>~ },
-    'sub' => sub { qq~<sub>$_[0]</sub>~ },
-    'sub1'=> sub { qq~<table class="limits"><tr><td>$_[0]</td></tr><tr><td class="sub">$_[1]</td></tr></table>~ },
-    'sup1'=> sub { qq~<table class="limits"><tr><td class="sup">$_[1]</td></tr><tr><td>$_[0]</td></tr></table>~ },
-    block => sub { join '', @_ },
-    'sqrt'=> sub { qq~<span class="sqrt_sym">\&#x221A;</span><span class="sqrt">@_</span>~ },
-    'over'=> sub { qq~<span class="over">@_</span>~ },
-    'frac'=> sub { qq~<table class="frac"><tr class="nom"><td>$_[0]</td></tr><tr><td>$_[1]</td></tr></table>~ },
+    var    => sub { ($_[1] || '') . "<i>$_[0]</i>" },
+    num    => sub { ($_[1] || '') . qq~<span class="num">$_[0]</span>~ },
+    op     => sub { join '', @_ },
+    spec   => sub { join '', map { $CATS::TeX::TeXData::symbols{$_} || $_ && "<b>$_</b>" || $_ } @_ },
+    sup    => sub { qq~<sup>$_[0]</sup>~ },
+    'sub'  => sub { qq~<sub>$_[0]</sub>~ },
+    sub1   => sub { qq~<table class="limits"><tr><td>$_[0]</td></tr><tr><td class="sub">$_[1]</td></tr></table>~ },
+    sup1   => sub { qq~<table class="limits"><tr><td class="sup">$_[1]</td></tr><tr><td>$_[0]</td></tr></table>~ },
+    block  => sub { join '', @_ },
+    'sqrt' => sub { qq~<span class="sqrt_sym">\&#x221A;</span><span class="sqrt">@_</span>~ },
+    over   => sub { qq~<span class="over">@_</span>~ },
+    frac   => sub { qq~<table class="frac"><tr class="nom"><td>$_[0]</td></tr><tr><td>$_[1]</td></tr></table>~ },
+    space  => sub { '&nbsp;' }
 );
 
 my $source;
@@ -39,6 +40,7 @@ sub parse_token
         s/^(\s*)\\([a-zA-Z]+)(\s*)// &&
             return ['spec', (is_binop($2) ? (sp($1), $2, sp($3)) : ('', $2,  ($3 eq '' ? '' : ' ')))];
         s/^\s*//;
+        s/^\\(,|;)// && return ['space', $1];
         s/^([()\[\]])// && return ['op', $1];
         s/^([a-zA-Z]+)// && return ['var', $1];
         s/^([0-9]+(:?\.[0-9]+)?)// && return ['num', $1];

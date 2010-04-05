@@ -176,6 +176,15 @@ sub get_contest_list_param
 }
 
 
+sub common_prefix
+{
+    my ($pa, $pb) = @_;
+    my $i = 0;
+    ++$i while $i < @$pa && $i < @$pb && $pa->[$i] eq $pb->[$i];
+    [ @$pa[0 .. $i - 1] ];
+}
+
+
 sub get_contests_info
 {
     (my CATS::RankTable $self, my $uid) = @_;
@@ -194,28 +203,23 @@ sub get_contests_info
     );
     $sth->execute($uid);
     
-    my @common_title;
+    my $common_title;
+    my $contest_count = 0;
     while (my (
         $title, $since_freeze, $since_defreeze, $since_start, $registered, $rules, $ctype) =
-        $sth->fetchrow_array)
+            $sth->fetchrow_array)
     {
+        ++$contest_count;
         $self->{frozen} ||= $since_freeze > 0 && $since_defreeze < 0;
         $self->{not_started} ||= $since_start < 0 && !$registered;
         $self->{has_practice} ||= ($ctype || 0);
         $self->{show_points} ||= $rules;
-        my @title_words = split /\s+/, Encode::decode_utf8($title);
-        if (@common_title)
-        {
-            my $i = 0;
-            $i++ while $i < @common_title && $i < @title_words && $common_title[$i] eq $title_words[$i];
-            @common_title = @common_title[0 .. $i - 1];
-        }
-        else
-        {
-            @common_title = @title_words;
-        }
+        my @title_words = grep $_, split /\s+|_/, Encode::decode_utf8($title);
+        $common_title = $common_title ? common_prefix($common_title, \@title_words) : \@title_words;
     }
-    $self->{title} = join ' ', @common_title;
+    $self->{title} =
+         (join('~', @$common_title) || 'Contests') .
+         ($contest_count > 1 ? " ($contest_count)" : '');
 }
 
 

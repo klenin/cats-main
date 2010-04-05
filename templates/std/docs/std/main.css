@@ -158,3 +158,5 @@ div.problem_text h3, div.problem_text h4 {
 }
 
 div.problem_text div { page-break-inside: avoid; }
+
+@media print { .jsonly { display: none; } }

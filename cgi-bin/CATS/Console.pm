@@ -414,7 +414,7 @@ sub console
 
 sub select_all_reqs
 {
-    my ($extra_cond) = @_;
+    my ($extra_cond) = $_[0] || '';
     $dbh->selectall_arrayref(qq~
         SELECT
             R.id AS id, CATS_DATE(R.submit_time) AS submit_time, R.state, R.failed_test,
