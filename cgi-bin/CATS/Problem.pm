@@ -10,7 +10,8 @@ use XML::Parser::Expat;
 
 use CATS::Constants;
 use CATS::DB;
-use CATS::Misc qw($uid escape_html);
+use CATS::Misc qw();
+use CATS::Utils qw(escape_html);
 use CATS::BinaryFile;
 use CATS::DevEnv;
 use FormalInput;
@@ -75,7 +76,7 @@ sub load
         $parser->setHandlers(
             Start => sub { $self->on_start_tag(@_) },
             End => sub { $self->on_end_tag(@_) },
-            Char => sub { ${$self->{stml}} .= CATS::Misc::escape_xml($_[1]) if $self->{stml} },
+            Char => sub { ${$self->{stml}} .= CATS::Utils::escape_xml($_[1]) if $self->{stml} },
         );
         $parser->parse($self->read_member($xml_members[0]));
     };
@@ -686,7 +687,7 @@ sub end_tag_Problem
     $c->bind_param($i++, $self->{$_}, { ora_type => 113 })
         for qw(statement constraints input_format output_format formal_input explanation zip_archive);
     $c->bind_param($i++, $self->{problem}->{std_checker});
-    $c->bind_param($i++, $uid);
+    $c->bind_param($i++, $CATS::Misc::uid);
     $c->bind_param($i++, $self->{problem}->{max_points});
     $c->bind_param($i++, $self->{id});
     $c->execute;

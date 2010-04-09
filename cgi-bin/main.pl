@@ -34,6 +34,7 @@ use CATS::Constants;
 use CATS::BinaryFile;
 use CATS::DevEnv;
 use CATS::Misc qw(:all);
+use CATS::Utils qw(coalesce escape_html url_function state_to_display param_on);
 use CATS::Data qw(:all);
 use CATS::IP;
 use CATS::Problem;
@@ -932,7 +933,7 @@ sub problems_submit
     }
 
     # Защита от спама и случайных ошибок -- запрещаем повторяющийся исходный код.
-    my $source_hash = source_hash($src);
+    my $source_hash = CATS::Utils::source_hash($src);
     my ($same_source) = $dbh->selectrow_array(qq~
         SELECT FIRST 1 S.req_id
         FROM sources S INNER JOIN reqs R ON S.req_id = R.id

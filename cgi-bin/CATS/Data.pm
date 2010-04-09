@@ -7,6 +7,7 @@ use CGI ();
 
 use CATS::DB;
 use CATS::Misc qw(:all);
+use CATS::Utils qw(state_to_display);
 use CATS::Contest;
 use CATS::IP;
 

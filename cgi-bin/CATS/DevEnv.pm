@@ -5,7 +5,7 @@ use warnings;
 
 use fields qw(_de_list _dbh);
 
-use CATS::Misc;
+use CATS::Utils;
 
 
 sub new
@@ -33,7 +33,7 @@ sub by_file_extension
 {
     (my CATS::DevEnv $self, my $file_name) = @_;
 
-    my (undef, undef, undef, undef, $ext) = CATS::Misc::split_fname(lc $file_name);
+    my (undef, undef, undef, undef, $ext) = CATS::Utils::split_fname(lc $file_name);
 
     for my $de (@{$self->{_de_list}})
     {

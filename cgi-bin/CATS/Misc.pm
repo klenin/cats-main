@@ -7,9 +7,7 @@ BEGIN
     @ISA = qw(Exporter);
     @EXPORT = qw(
         cats_dir
-        coalesce
         get_anonymous_uid
-        split_fname
         initialize
         init_template
         init_listview_template
@@ -17,24 +15,15 @@ BEGIN
         http_header
         init_messages
         msg
-        url_function
         url_f
         user_authorize
         templates_path
-        escape_html
         order_by
         define_columns
         get_flag
-        generate_password
         res_str
         attach_listview
         attach_menu
-        fatal_error
-        state_to_display
-        balance_brackets
-        balance_tags
-        source_hash
-        param_on
         save_settings
     );
 
@@ -52,7 +41,6 @@ use warnings;
 use HTML::Template;
 #use CGI::Fast( ':standard' );
 use CGI (':standard');
-use Text::Balanced qw(extract_tagged extract_bracketed);
 use CGI::Util qw(rearrange unescape escape);
 use MIME::Base64;
 use Storable;
@@ -67,6 +55,7 @@ use CATS::DB;
 use CATS::Constants;
 use CATS::IP;
 use CATS::Contest;
+use CATS::Utils qw();
 
 use vars qw(
     $contest $t $sid $cid $uid $team_name $server_time $dbi_error
@@ -83,64 +72,10 @@ sub cats_dir()
 }
 
 
-sub coalesce { defined && return $_ for @_ }
-
-
 sub get_anonymous_uid
 {
     scalar $dbh->selectrow_array(qq~
         SELECT id FROM accounts WHERE login = ?~, undef, $cats::anonymous_login);
-}
-
-
-sub split_fname
-{
-    my $path = shift;
-
-    my ($vol, $dir, $fname, $name, $ext);
-
-    my $volRE = '(?:^(?:[a-zA-Z]:|(?:\\\\\\\\|//)[^\\\\/]+[\\\\/][^\\\\/]+)?)';
-    my $dirRE = '(?:(?:.*[\\\\/](?:\.\.?$)?)?)';
-    if ($path =~ m/($volRE)($dirRE)(.*)$/)
-    {
-        $vol = $1;
-        $dir = $2;
-        $fname = $3;
-    }
-
-    if ($fname =~ m/^(.*)(\.)(.*)/)
-    {
-        $name = $1;
-        $ext = $3;
-    }
-
-    return ($vol, $dir, $fname, $name, $ext);
-}
-
-
-sub escape_html
-{
-    my $toencode = shift;
-
-    $toencode =~ s/&/&amp;/g;
-    $toencode =~ s/\'/&#39;/g;
-    $toencode =~ s/\"/&quot;/g; #"
-    $toencode =~ s/>/&gt;/g;
-    $toencode =~ s/</&lt;/g;
-
-    return $toencode;
-}
-
-
-sub escape_xml
-{
-    my $t = shift;
-
-    $t =~ s/&/&amp;/g;
-    $t =~ s/>/&gt;/g;
-    $t =~ s/</&lt;/g;
-
-    return $t;
 }
 
 
@@ -174,7 +109,7 @@ sub init_messages
     my $msg_file = templates_path() . '/consts';
 
     open my $f, '<', $msg_file or
-        fatal_error("Couldn't open message file: '$msg_file'.");
+        die "Couldn't open message file: '$msg_file'.";
     binmode($f, ':raw');
     while (<$f>)
     {
@@ -225,13 +160,6 @@ sub init_listview_params
         $s->{page} = 0 if $s->{rows} != $rows;
         $s->{rows} = 0 + $rows;
     }
-}
-
-
-sub fatal_error
-{
-    print STDOUT http_header('text/html', 'utf-8') . '<pre>' . escape_html( $_[0] ) . '</pre>';
-    exit(1);
 }
 
 
@@ -335,23 +263,9 @@ sub msg
 }
 
 
-sub gen_url_params
-{
-    my (%p) = @_;
-    map { defined $p{$_} ? "$_=$p{$_}" : () } keys %p;
-}
-
-
-sub url_function
-{
-  my ($f, %p) = @_;
-  join ';', "main.pl?f=$f", gen_url_params(%p);
-}
-
-
 sub url_f
 {
-    url_function(@_, sid => $sid, cid => $cid);
+    CATS::Utils::url_function(@_, sid => $sid, cid => $cid);
 }
 
 
@@ -565,23 +479,6 @@ sub get_flag
 }
 
 
-sub generate_password
-{
-    my @ch1 = ('e', 'y', 'u', 'i', 'o', 'a');
-    my @ch2 = ('w', 'r', 't', 'p', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'z', 'x', 'c', 'v', 'b', 'n', 'm');
-
-    my $passwd = '';
-
-    for (1..3)
-    {
-        $passwd .= @ch1[rand(@ch1)];
-        $passwd .= @ch2[rand(@ch2)];
-    }
-
-    return $passwd;
-}
-
-
 # авторизация пользователя, установка прав и настроек
 sub init_user
 {
@@ -689,59 +586,6 @@ sub initialize
     $listview_name = '';
     $listview_array_name = '';
     $col_defs = undef;
-}
-
-
-sub state_to_display
-{
-    my ($state, $use_rejected) = @_;
-    defined $state or die 'no state!';
-    my %error = (
-        wrong_answer =>          $state == $cats::st_wrong_answer,
-        presentation_error =>    $state == $cats::st_presentation_error,
-        time_limit_exceeded =>   $state == $cats::st_time_limit_exceeded,                                
-        memory_limit_exceeded => $state == $cats::st_memory_limit_exceeded,
-        runtime_error =>         $state == $cats::st_runtime_error,
-        compilation_error =>     $state == $cats::st_compilation_error,
-    );
-    (
-        not_processed =>         $state == $cats::st_not_processed,
-        unhandled_error =>       $state == $cats::st_unhandled_error,
-        install_processing =>    $state == $cats::st_install_processing,
-        testing =>               $state == $cats::st_testing,
-        accepted =>              $state == $cats::st_accepted,
-        ($use_rejected ? (rejected => 0 < grep $_, values %error) : %error),
-        security_violation =>    $state == $cats::st_security_violation,
-        ignore_submit =>         $state == $cats::st_ignore_submit,
-    );
-}
-
-
-sub balance_brackets
-{
-    my $text = shift;
-    my @extr = extract_bracketed($text, '()');
-    $extr[0];
-}
-
-
-sub balance_tags
-{
-    my ($text, $tag1, $tag2) = @_;
-    my @extr = extract_tagged($text, $tag1, $tag2, undef);
-    $extr[0];
-}
-
-
-sub source_hash
-{
-    Digest::MD5::md5_hex(Encode::encode_utf8($_[0]));
-}
-
-
-sub param_on
-{
-    return (param($_[0]) || '') eq 'on';
 }
 
 

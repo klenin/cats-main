@@ -9,6 +9,7 @@ use List::Util;
 use CATS::DB;
 use CATS::Misc qw(:all);
 use CATS::Data qw(:all);
+use CATS::Utils qw(coalesce url_function state_to_display);
 
 sub send_question_to_jury
 {

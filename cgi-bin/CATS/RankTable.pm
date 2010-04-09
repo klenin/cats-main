@@ -218,7 +218,7 @@ sub get_contests_info
         $common_title = $common_title ? common_prefix($common_title, \@title_words) : \@title_words;
     }
     $self->{title} =
-         (join('~', @$common_title) || 'Contests') .
+         (join(' ', @$common_title) || 'Contests') .
          ($contest_count > 1 ? " ($contest_count)" : '');
 }
 
