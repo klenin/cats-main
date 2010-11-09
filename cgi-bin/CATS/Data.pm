@@ -66,7 +66,7 @@ sub enforce_request_state
     $dbh->do(qq~
         UPDATE reqs
             SET failed_test = ?, state = ?, testsets = ?,
-                points = NULL, received = 0, result_time = CATS_SYSDATE(), judge_id = NULL
+                points = NULL, received = 0, result_time = CURRENT_TIMESTAMP, judge_id = NULL
             WHERE id = ?~, {},
         $p{failed_test}, $p{state}, $p{testsets}, $p{request_id}
     ) or return;
@@ -100,9 +100,9 @@ sub get_sources_info
             S.req_id,$src S.fname AS file_name,
             R.account_id, R.contest_id, R.problem_id, R.judge_id,
             R.state, R.failed_test,
-            CATS_DATE(R.submit_time) AS submit_time,
-            CATS_DATE(R.test_time) AS test_time,
-            CATS_DATE(R.result_time) AS result_time,
+            R.submit_time,
+            R.test_time,
+            R.result_time,
             DE.description AS de_name,
             A.team_name, A.last_ip,
             P.title AS problem_name,
@@ -134,7 +134,10 @@ sub get_sources_info
         ($r->{"${_}_short"} = $r->{$_}) =~ s/^(.*)\s+(\d\d:\d\d)\s*$/$2/
             for qw(test_time result_time);
         #$r->{src} =~ s/</&lt;/;
-        $r = { %$r, state_to_display($r->{state}) };
+        $r = {
+            %$r, state_to_display($r->{state}),
+            href_stats => url_f('user_stats', uid => $r->{account_id}),
+        };
         get_nearby_attempt($r, 'prev', '<', 'DESC', 1);
         get_nearby_attempt($r, 'next', '>', 'ASC', 0);
         # Во время официального турнира запретить просмотр исходного кода из других турниров,
@@ -152,7 +155,7 @@ sub get_nearby_attempt
 {
     my ($si, $prevnext, $cmp, $ord, $diff) = @_;
     my $na = $dbh->selectrow_hashref(qq~
-        SELECT FIRST 1 id, CATS_DATE(submit_time) AS submit_time FROM reqs
+        SELECT FIRST 1 id, submit_time FROM reqs
           WHERE account_id = ? AND problem_id = ? AND id $cmp ?
           ORDER BY id $ord~, { Slice => {} },
         $si->{account_id}, $si->{problem_id}, $si->{req_id}

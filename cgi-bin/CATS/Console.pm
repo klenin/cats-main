@@ -28,7 +28,7 @@ sub send_question_to_jury
     
     my $s = $dbh->prepare(qq~
         INSERT INTO questions(id, account_id, submit_time, question, received, clarified)
-        VALUES (?, ?, CATS_SYSDATE(), ?, 0, 0)~
+        VALUES (?, ?, CURRENT_TIMESTAMP, ?, 0, 0)~
     );
     $s->bind_param(1, new_id);
     $s->bind_param(2, $cuid);       
@@ -83,11 +83,19 @@ sub time_interval_days
     return $v > 0 ? $v * $selected_unit->{k} : 100000;
 }
 
+sub init_console_template
+{
+    my ($template_name) = @_;
+    my $se = param('se') || '';
+    $se = "_$se" if $se;
+    init_listview_template("console$se", 'console', $template_name);
+}
+
 
 sub console
 {
     my $template_name = shift;
-    init_listview_template('console', 'console', 'main_console_content.htm');
+    init_console_template('main_console_content.htm');
 
     my $s = get_settings;
     $s->{show_results} = 1 unless defined $s->{show_results};
@@ -107,7 +115,7 @@ sub console
         run => q~
             1 AS rtype,
             R.submit_time AS rank,
-            CATS_DATE(R.submit_time) AS submit_time,
+            R.submit_time,
             R.id AS id,
             R.state AS request_state,
             R.failed_test AS failed_test,
@@ -132,7 +140,7 @@ sub console
         question => q~
             2 AS rtype,
             Q.submit_time AS rank,
-            CATS_DATE(Q.submit_time) AS submit_time,
+            Q.submit_time,
             Q.id AS id,
             CAST(NULL AS INTEGER) AS request_state,
             CAST(NULL AS INTEGER) AS failed_test,
@@ -150,7 +158,7 @@ sub console
         message => q~
             3 AS rtype,
             M.send_time AS rank,
-            CATS_DATE(M.send_time) AS submit_time,
+            M.send_time AS submit_time,
             M.id AS id,
             CAST(NULL AS INTEGER) AS request_state,
             CAST(NULL AS INTEGER) AS failed_test,
@@ -169,7 +177,7 @@ sub console
         broadcast => qq~
             4 AS rtype,
             M.send_time AS rank,
-            CATS_DATE(M.send_time) AS submit_time,
+            M.send_time AS submit_time,
             M.id AS id,
             CAST(NULL AS INTEGER) AS request_state,
             CAST(NULL AS INTEGER) AS failed_test,
@@ -184,7 +192,7 @@ sub console
         contest_start => qq~
             5 AS rtype,
             C.start_date AS rank,
-            CATS_DATE(C.start_date) AS submit_time,
+            C.start_date AS submit_time,
             C.id AS id,
             C.is_official AS request_state,
             CAST(NULL AS INTEGER) AS failed_test,
@@ -199,7 +207,7 @@ sub console
         contest_finish => qq~
             6 AS rtype,
             C.finish_date AS rank,
-            CATS_DATE(C.finish_date) AS submit_time,
+            C.finish_date AS submit_time,
             C.id AS id,
             C.is_official AS request_state,
             CAST(NULL AS INTEGER) AS failed_test,
@@ -250,12 +258,16 @@ sub console
     {
         my $runs_filter = $is_root ? '' : ' AND C.id = ?';
         my $msg_filter = $is_root ? '' : ' AND CA.contest_id = ?';
+        $msg_filter .= ' AND 1 = 0' unless $s->{show_messages};
         my @cid = $is_root ? () : ($cid);
+        my $pf = param('pf');
+        my $problem_filter = $pf ? ' AND P.id = ?' : '';
+        my @pf_params = $pf ? ($pf) : ();
         $c = $dbh->prepare(qq~
             SELECT
                 $console_select{run}
                 WHERE R.submit_time > CURRENT_TIMESTAMP - $day_count
-                $runs_filter$events_filter
+                $problem_filter$runs_filter$events_filter
             UNION
             SELECT
                 $console_select{question}
@@ -274,6 +286,7 @@ sub console
             $contest_start_finish
             ORDER BY 2 DESC~);
         $c->execute(
+            @pf_params,
             @cid, @events_filter_params,
             @cid, @events_filter_params,
             @cid, @events_filter_params);
@@ -418,7 +431,7 @@ sub select_all_reqs
     my ($extra_cond) = $_[0] || '';
     $dbh->selectall_arrayref(qq~
         SELECT
-            R.id AS id, CATS_DATE(R.submit_time) AS submit_time, R.state, R.failed_test,
+            R.id AS id, R.submit_time, R.state, R.failed_test,
             R.submit_time - C.start_date AS time_since_start,
             CP.code, P.title AS problem_title,
             A.id AS team_id, A.team_name, A.last_ip,
@@ -540,7 +553,7 @@ sub delete_question
 
 sub console_frame
 {        
-    init_listview_template('console', 'console', 'main_console.htm');  
+    init_console_template('main_console.htm');
     my $s = get_settings;
     if (defined param('filter') || defined param('visible'))
     {
@@ -571,7 +584,7 @@ sub console_frame
     }
 
     $t->param(
-        href_console_content => url_f('console_content', uf => url_param('uf') || ''),
+        href_console_content => url_f('console_content', map { $_ => (url_param($_) || '') } qw(uf pf se page)),
         is_team => $is_team,
         is_jury => $is_jury,
         question_text => $question_text,

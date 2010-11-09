@@ -41,7 +41,7 @@ use warnings;
 use HTML::Template;
 #use CGI::Fast( ':standard' );
 use CGI (':standard');
-use CGI::Util qw(rearrange unescape escape);
+#use CGI::Util qw(rearrange unescape escape);
 use MIME::Base64;
 use Storable;
 
@@ -175,11 +175,19 @@ sub init_template
         #Encode::from_to($$text_ref, 'koi8-r', 'utf-8');
         $$text_ref = Encode::decode('koi8-r', $$text_ref);
     };
-    $http_mime_type =
-        $file_name =~ /\.htm$/ ? 'text/html' :
-        $file_name =~ /\.xml$/ ? 'application/xml' :
-        $file_name =~ /\.ics$/ ? 'text/calendar' :
-        die 'Unknown template extension';
+    my %ext_to_mime = (
+        htm => 'text/html',
+        xml => 'application/xml',
+        ics => 'text/calendar',
+        json => 'application/json',
+    );
+    while (my ($ext, $mime) = each %ext_to_mime)
+    {
+        $file_name =~ /\.$ext$/ or next;
+        $http_mime_type = $mime;
+        last;
+    }
+    $http_mime_type or die 'Unknown template extension';
     %extra_headers = ();
     %extra_headers = (-content_disposition => 'inline;filename=contests.ics') if $file_name =~ /\.ics$/;
     #$template_file = $file_name;

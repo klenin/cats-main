@@ -8,7 +8,7 @@ use File::Temp qw/tempfile tmpnam mktemp/;
 use Encode;
 #use CGI::Fast qw(:standard);
 use CGI qw(:standard);
-use CGI::Util qw(unescape escape);
+#use CGI::Util qw(unescape escape);
 #use FCGI;
 
 
@@ -49,11 +49,23 @@ use CATS::Console;
 use vars qw($html_code $current_pid $spellchecker $text_span $is_static_page);
 
 
+sub make_sid {
+    my @ch = ('A'..'Z', 'a'..'z', '0'..'9');
+    join '', map { $ch[rand @ch] } 1..30;
+}
+
+
 sub login_frame
 {
-    init_template('main_login.htm');
+    my $json = param('json');
+    init_template('main_login.' . ($json ? 'json' : 'htm'));
 
-    my $login = param('login') or return;
+    my $login = param('login');
+    if (!$login)
+    {
+        $t->param(message => 'No login') if $json;
+        return;
+    }
     $t->param(login => $login); 
     my $cid = param('contest');
     my $passwd = param('passwd');
@@ -67,26 +79,28 @@ sub login_frame
 
     !$locked or msg(41);
 
-    my $ok = 0;
-    my @ch = ('A'..'Z', 'a'..'z', '0'..'9');
+    my $last_ip = CATS::IP::get_ip();
+
     for (1..20)
     {
-        $sid = join '', map { $ch[rand @ch] } 1..30;
+        $sid = make_sid;
 
-        my $last_ip = CATS::IP::get_ip();
-
-        if ($dbh->do(qq~
-            UPDATE accounts SET sid = ?, last_login = CATS_SYSDATE(), last_ip = ?
+        $dbh->do(qq~
+            UPDATE accounts SET sid = ?, last_login = CURRENT_TIMESTAMP, last_ip = ?
                 WHERE id = ?~,
             {}, $sid, $last_ip, $aid
-        ))
+        ) or next;
+        $dbh->commit;
+
+        my $cid =
+            url_param('cid') ||
+            $dbh->selectrow_array(qq~SELECT id FROM contests WHERE ctype = 1~);
+        if ($json)
         {
-            $dbh->commit;
-
-            my $cid =
-                url_param('cid') ||
-                $dbh->selectrow_array(qq~SELECT id FROM contests WHERE ctype = 1~);
-
+            $t->param(sid => $sid, cid => $cid);
+            return;
+        }
+        {
             $t = undef;
             print redirect(-uri => url_function('contests', sid => $sid, cid => $cid));
             return -1;
@@ -114,7 +128,7 @@ sub contests_new_frame
 {
     init_template('main_contests_new.htm');
 
-    my $date = $dbh->selectrow_array(qq~SELECT CATS_DATE(CATS_SYSDATE()) FROM accounts~);
+    my $date = $dbh->selectrow_array(q~SELECT CURRENT_TIMESTAMP FROM RDB$DATABASE~);
     $date =~ s/\s*$//;
     $t->param(
         start_date => $date, freeze_date => $date,
@@ -184,7 +198,7 @@ sub contests_new_save
             show_test_resources, show_checker_comment, is_official, show_packages, local_only,
             is_hidden, show_frozen_reqs
         ) VALUES(
-            ?, ?, CATS_TO_DATE(?), CATS_TO_DATE(?), CATS_TO_DATE(?), CATS_TO_DATE(?), ?, ?,
+            ?, ?, ?, ?, ?, ?, ?, ?,
             0,
             ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)~,
         {},
@@ -215,18 +229,16 @@ sub try_contest_params_frame
     my $p = $dbh->selectrow_hashref(qq~
         SELECT
             title AS contest_name,
-            CATS_DATE(start_date) AS start_date,
-            CATS_DATE(freeze_date) AS freeze_date,
-            CATS_DATE(finish_date) AS finish_date,
-            CATS_DATE(defreeze_date) AS open_date,
+            start_date,
+            freeze_date,
+            finish_date,
+            defreeze_date AS open_date,
             1 - closed AS free_registration,
             run_all_tests, show_all_tests, show_test_resources, show_checker_comment,
             is_official, show_packages, local_only, rules, is_hidden, max_reqs
         FROM contests WHERE id = ?~, { Slice => {} },
         $id
     ) or return;
-    # наверное, на самом деле надо исправить CATS_DATE
-    $p->{$_} =~ s/\s*$// for qw(start_date freeze_date finish_date open_date);
     $t->param(
         id => $id, %$p,
         href_action => url_f('contests'),
@@ -247,8 +259,8 @@ sub contests_edit_save
     $p->{free_registration} = !$p->{free_registration};
     $dbh->do(qq~
         UPDATE contests SET
-            title=?, start_date=CATS_TO_DATE(?), freeze_date=CATS_TO_DATE(?), 
-            finish_date=CATS_TO_DATE(?), defreeze_date=CATS_TO_DATE(?), rules=?, max_reqs=?,
+            title=?, start_date=?, freeze_date=?, 
+            finish_date=?, defreeze_date=?, rules=?, max_reqs=?,
             closed=?, run_all_tests=?, show_all_tests=?,
             show_test_resources=?, show_checker_comment=?, is_official=?, show_packages=?,
             local_only=?, is_hidden=?, show_frozen_reqs=0
@@ -349,7 +361,7 @@ sub contests_select_current
 }
 
 sub date_to_iso {
-    $_[0] =~ /^\s*(\d+)-(\d+)-(\d+)\s+(\d+):(\d+)\s*$/;
+    $_[0] =~ /^\s*(\d+)\.(\d+)\.(\d+)\s+(\d+):(\d+)\s*$/;
     "$3$2$1T$4${5}00";
 }
 
@@ -378,9 +390,8 @@ sub contest_fields ()
     # при отсутствии поиска выбираем только первую страницу + 1 запись.
     # my $s = $settings->{$listview_name};
     # (($s->{page} || 0) == 0 && !$s->{search} ? 'FIRST ' . ($s->{rows} + 1) : '') .
-    qq~c.ctype, c.id, c.title, c.start_date AS sd, c.finish_date AS fd,
-    CATS_DATE(c.start_date) AS start_date, CATS_DATE(c.finish_date) AS finish_date,
-    c.closed, c.is_official, c.rules~
+    q~c.ctype, c.id, c.title,
+    c.start_date, c.finish_date, c.closed, c.is_official, c.rules~
 }
 
 
@@ -390,7 +401,8 @@ sub contests_submenu_filter
     {
         'all' => '',
         'official' => 'AND C.is_official = 1 ',
-        'current' => 'AND CATS_SYSDATE() <= finish_date ' #BETWEEN start_date AND 
+        'unfinished' => 'AND CURRENT_TIMESTAMP <= finish_date ',
+        'current' => 'AND CURRENT_TIMESTAMP BETWEEN start_date AND finish_date ',
     }->{$f} || '';
 }
 
@@ -459,7 +471,10 @@ sub contests_frame
     try_contest_params_frame and return;
 
     my $ical = param('ical');
-    init_listview_template('contests', 'contests', 'main_contests.' .  ($ical ? 'ics' : 'htm'));
+    my $json = param('json');
+    return if $ical && $json;
+    init_listview_template('contests', 'contests',
+        'main_contests.' .  ($ical ? 'ics' : $json ? 'json' : 'htm'));
 
     if (defined url_param('delete') && $is_root)
     {
@@ -487,7 +502,7 @@ sub contests_frame
         { caption => res_str(631), order_by => '1 DESC, 5', width => '15%' },
         { caption => res_str(630), order_by => '1 DESC, 8', width => '30%' } ]);
 
-    $_ = coalesce(param('filter'), $_, 'current') for $settings->{contests}->{filter};
+    $_ = coalesce(param('filter'), $_, 'unfinished') for $settings->{contests}->{filter};
     
     attach_listview(url_f('contests'),
         defined $uid ? authenticated_contests_view : anonymous_contests_view,
@@ -498,7 +513,7 @@ sub contests_frame
             href_item => url_f('contests', page => 0, filter => $_->{n}),
             item_name => res_str($_->{i}),
             selected => $settings->{contests}->{filter} eq $_->{n}, 
-        }, { n => 'all', i => 558 }, { n => 'official', i => 559 }, { n => 'current', i => 560 }),
+        }, { n => 'all', i => 558 }, { n => 'official', i => 559 }, { n => 'unfinished', i => 560 }),
         ($CATS::Misc::can_create_contests ?
             { href_item => url_f('contests', new => 1), item_name => res_str(537) } : ()),
         { href_item => url_f('contests',
@@ -866,8 +881,8 @@ sub problems_submit
     {
         (my $time_since_start, $time_since_finish, my $is_official, my $status) = $dbh->selectrow_array(qq~
             SELECT
-                CATS_SYSDATE() - $virtual_diff_time - C.start_date,
-                CATS_SYSDATE() - $virtual_diff_time - C.finish_date,
+                CURRENT_TIMESTAMP - $virtual_diff_time - C.start_date,
+                CURRENT_TIMESTAMP- $virtual_diff_time - C.finish_date,
                 C.is_official, CP.status
             FROM contests C, contest_problems CP
             WHERE CP.contest_id = C.id AND C.id = ? AND CP.problem_id = ?~, {},
@@ -883,11 +898,9 @@ sub problems_submit
         # во время официального турнира отправка заданий во все остальные временно прекращается
         if (!$is_official || $is_virtual)
         {
-            my ($current_official) = $dbh->selectrow_array(qq~
-                SELECT title FROM contests
-                  WHERE CATS_SYSDATE() BETWEEN start_date AND finish_date AND is_official = 1~);
+            my ($current_official) = $contest->current_official;
             !$current_official
-                or return msg(123, $current_official);
+                or return msg(123, $current_official->{title});
         }
     }
     
@@ -899,7 +912,7 @@ sub problems_submit
 
     # Защита от Denial of Service -- запрещаем посылать решения слишком часто
     my $prev = $dbh->selectcol_arrayref(q~
-        SELECT FIRST 2 CATS_SYSDATE() - R.submit_time FROM reqs R
+        SELECT FIRST 2 CURRENT_TIMESTAMP - R.submit_time FROM reqs R
         WHERE R.account_id = ?
         ORDER BY R.submit_time DESC~, {},
         $submit_uid);
@@ -909,13 +922,14 @@ sub problems_submit
         return msg(131);
     }
 
-    if ($contest->{max_reqs})
+    my $prev_reqs_count;
+    if ($contest->{max_reqs} && !$is_jury)
     {
-        my ($total_reqs) = $dbh->selectrow_array(q~
+        $prev_reqs_count = $dbh->selectrow_array(q~
             SELECT COUNT(*) FROM reqs R
             WHERE R.account_id = ? AND R.problem_id = ? AND R.contest_id = ?~, {},
             $submit_uid, $pid, $cid);
-        return msg(137) if $total_reqs >= $contest->{max_reqs};
+        return msg(137) if $prev_reqs_count >= $contest->{max_reqs};
     }
 
     my $src = upload_source($file);
@@ -950,7 +964,7 @@ sub problems_submit
             id, account_id, problem_id, contest_id, 
             submit_time, test_time, result_time, state, received
         ) VALUES (
-            ?,?,?,?,CATS_SYSDATE(),CATS_SYSDATE(),CATS_SYSDATE(),?,?)~,
+            ?,?,?,?,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP,?,?)~,
         {},
         $rid, $submit_uid, $pid, $cid, $cats::st_not_processed, 0);
 
@@ -965,7 +979,9 @@ sub problems_submit
     $dbh->commit;
 
     $t->param(solution_submitted => 1, href_console => url_f('console'));
-    $time_since_finish <= 0 ? msg(15) : msg(87);
+    $time_since_finish > 0 ? msg(87) :
+    defined $prev_reqs_count ? msg(88, $contest->{max_reqs} - $prev_reqs_count - 1) :
+    msg(15);
 }
 
 
@@ -994,7 +1010,7 @@ sub problems_submit_std_solution
                 submit_time, test_time, result_time, state, received
             ) VALUES (
                 ?, ?, ?, ?,
-                CATS_SYSDATE(), CATS_SYSDATE(), CATS_SYSDATE(), ?, 0)~,
+                CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, 0)~,
             {}, $rid, $uid, $pid, $cid, $cats::st_not_processed
         );
 
@@ -1251,8 +1267,9 @@ sub problems_frame
 
     defined param('download') && $show_packages and return download_problem;
 
+    my $json = param('json');
     init_listview_template('problems' . ($contest->is_practice ? '_practice' : ''),
-        'problems', 'main_problems.htm');
+        'problems', 'main_problems.' . ($json ? 'json' : 'htm'));
     problems_frame_jury_action;
 
     if (defined param('submit'))
@@ -1282,6 +1299,8 @@ sub problems_frame
     my $account_condition = $contest->is_practice ? '' : ' AND D.account_id = ?';
     my $select_code = $contest->is_practice ? 'NULL' : 'CP.code';
     my $hidden_problems = $is_jury ? '' : " AND (CP.status IS NULL OR CP.status < $cats::problem_st_hidden)";
+    # TODO: учитывать testsets
+    my $test_count_sql = $is_jury ? '(SELECT COUNT(*) FROM tests T WHERE T.problem_id = P.id) AS test_count,' : '';
     my $sth = $dbh->prepare(qq~
         SELECT
             CP.id AS cpid, P.id AS pid,
@@ -1291,10 +1310,10 @@ sub problems_frame
             ($reqs_count_sql $cats::st_time_limit_exceeded$account_condition) AS time_limit_count,
             P.contest_id - CP.contest_id AS is_linked,
             OC.id AS original_contest_id, CP.status,
-            CATS_DATE(P.upload_date) AS upload_date,
+            P.upload_date,
             (SELECT A.login FROM accounts A WHERE A.id = P.last_modified_by) AS last_modified_by,
             SUBSTRING(P.explanation FROM 1 FOR 1) AS has_explanation,
-            CP.testsets
+            $test_count_sql CP.testsets
         FROM problems P, contest_problems CP, contests OC
         WHERE CP.problem_id = P.id AND OC.id = P.contest_id AND CP.contest_id = ?$hidden_problems
         ~ . order_by
@@ -1309,7 +1328,7 @@ sub problems_frame
         # ORDER BY subselect требует повторного указания параметра
         $sth->execute($aid, $aid, $aid, $cid); #, (order_by =~ /^ORDER BY\s+(5|6|7)\s+/ ? ($aid) : ()));
     }
-    
+
     my @status_list;
     if ($is_jury)
     {
@@ -1355,6 +1374,7 @@ sub problems_frame
             upload_date => $c->{upload_date},
             last_modified_by => $c->{last_modified_by},
             testsets => $c->{testsets} || '*',
+            test_count => $c->{test_count},
             href_select_testsets => url_f('problem_select_testsets', cpid => $c->{cpid}),
             status_list => [
                 map {{ id => $_, name => $psn->{$_}, selected => $c->{status} == $_ }} sort keys %$psn
@@ -1362,7 +1382,7 @@ sub problems_frame
             code_array => [ map {{code => $_, selected => ($c->{code} || '') eq $_ }} 'A' .. 'Z' ],
         );
     };
-            
+
     attach_listview(url_f('problems'), $fetch_record, $sth);
 
     $sth->finish;
@@ -1371,7 +1391,7 @@ sub problems_frame
     my @de = (
         { de_id => 'by_extension', de_name => res_str(536) },
         map {{ de_id => $_->{id}, de_name => $_->{description} }} @{$de_list->{_de_list}} );
-    
+
     my $pt_url = sub {{
         href_item => $_[0], item_name => ($_[1] || res_str(538)), item_target => '_blank'
     }};
@@ -1518,7 +1538,7 @@ sub users_edit_frame
 {      
     init_template('main_users_edit.htm');
 
-    my $id = url_param('edit');
+    my $id = url_param('edit') or return;
     my $u = CATS::User->new->load($id) or return;
     $t->param(%$u, id => $id, countries => \@cats::countries, href_action => url_f('users'));
 }
@@ -1582,8 +1602,11 @@ sub settings_frame
     $settings = {} if defined param('clear') && $is_team;
     settings_save if defined param('edit_save') && $is_team;
 
+    $uid or return;
     my $u = CATS::User->new->load($uid) or return;
-    $t->param(countries => \@cats::countries, href_action => url_f('users'), %$u);
+    $t->param(
+        countries => \@cats::countries, href_action => url_f('users'),
+        title_suffix => res_str(518), %$u);
     if ($is_root)
     {
         my $d = Data::Dumper->new([ $settings ]);
@@ -1600,7 +1623,7 @@ sub users_send_message
     $p{'message'} ne '' or return;
     my $s = $dbh->prepare(qq~
         INSERT INTO messages (id, send_time, text, account_id, received)
-            VALUES (?, CATS_SYSDATE(), ?, ?, 0)~
+            VALUES (?, CURRENT_TIMESTAMP, ?, ?, 0)~
     );
     for (split ':', $p{'user_set'})
     {
@@ -1638,7 +1661,7 @@ sub users_send_broadcast
     $p{'message'} ne '' or return;
     my $s = $dbh->prepare(qq~
         INSERT INTO messages (id, send_time, text, account_id, broadcast)
-            VALUES(?, CATS_SYSDATE(), ?, NULL, 1)~
+            VALUES(?, CURRENT_TIMESTAMP, ?, NULL, 1)~
     );
     $s->bind_param(1, new_id);
     $s->bind_param(2, $p{'message'}, { ora_type => 113 });
@@ -1711,9 +1734,11 @@ sub users_frame
         return users_edit_frame if defined url_param('edit');
     }
 
-    init_listview_template('users' . ($contest->is_practice ? '_practice' : ''), 'users', 'main_users.htm');
+    init_listview_template(
+        'users' . ($contest->is_practice ? '_practice' : ''),
+        'users', 'main_users.' . (param('json') ? 'json' : 'htm'));
 
-    $t->param(messages => $is_jury);
+    $t->param(messages => $is_jury, title_suffix => res_str(526));
     
     if ($is_jury)
     {
@@ -1779,7 +1804,7 @@ sub users_frame
                 R.state = $cats::st_accepted AND R.account_id = A.id AND R.contest_id = C.id%s
         WHERE C.id = ?%s GROUP BY $fields ~ . order_by,
         ($is_jury ? ('', '') : (
-            ' AND (R.submit_time < C.freeze_date OR C.defreeze_date < CATS_SYSDATE())',
+            ' AND (R.submit_time < C.freeze_date OR C.defreeze_date < CURRENT_TIMESTAMP)',
             ' AND CA.is_hidden = 0'));
 
     my $c = $dbh->prepare($sql);
@@ -1834,10 +1859,10 @@ sub user_stats_frame
     init_template('main_user_stats.htm');
     my $uid = param('uid') or return;
     my $u = $dbh->selectrow_hashref(q~
-        SELECT A.*, CATS_DATE(last_login) AS last_login_date
+        SELECT A.*, last_login AS last_login_date
         FROM accounts A WHERE A.id = ?~, { Slice => {} }, $uid) or return;
     my $contests = $dbh->selectall_arrayref(qq~
-        SELECT C.id, C.title, CATS_DATE(C.start_date + CA.diff_time) AS start_date,
+        SELECT C.id, C.title, C.start_date + CA.diff_time AS start_date,
             (SELECT COUNT(DISTINCT R.problem_id) FROM reqs R
                 WHERE R.contest_id = C.id AND R.account_id = CA.account_id AND R.state = $cats::st_accepted
             ) AS accepted_count,
@@ -1850,7 +1875,15 @@ sub user_stats_frame
             CA.is_hidden = 0 AND C.defreeze_date < CURRENT_TIMESTAMP
         ORDER BY C.start_date + CA.diff_time DESC~,
         { Slice => {} }, $uid);
-    $t->param(%$u, contests => $contests, is_root => $is_root);
+    my $pr = sub { url_f(
+        'console', uf => $uid, i_value => -1, se => 'user_stats', search => $_[0], rows => 30
+    ) };
+    $t->param(
+        %$u, contests => $contests, is_root => $is_root,
+        href_all_problems => $pr->(''),
+        href_solved_problems => $pr->('accepted=1'),
+        title_suffix => $u->{team_name},
+    );
 }
 
 
@@ -2031,7 +2064,7 @@ sub judges_new_save
     $dbh->do(qq~
         INSERT INTO judges (
             id, nick, accept_contests, accept_trainings, lock_counter, is_alive, alive_date
-        ) VALUES (?, ?, 1, 1, ?, 0, CATS_SYSDATE())~, {}, 
+        ) VALUES (?, ?, 1, 1, ?, 0, CURRENT_TIMESTAMP)~, {}, 
         new_id, $judge_name, $locked ? -1 : 0);
     $dbh->commit;
 }
@@ -2091,7 +2124,7 @@ sub judges_frame
     ]);
 
     my $c = $dbh->prepare(qq~
-        SELECT id, nick, is_alive, CATS_DATE(alive_date), lock_counter
+        SELECT id, nick, is_alive, alive_date, lock_counter
             FROM judges ~.order_by);
     $c->execute;
 
@@ -2120,7 +2153,7 @@ sub judges_frame
     $t->param(not_processed => $not_processed);
     
     $dbh->do(qq~
-        UPDATE judges SET is_alive = 0, alive_date = CATS_SYSDATE() WHERE is_alive = 1~);
+        UPDATE judges SET is_alive = 0, alive_date = CURRENT_TIMESTAMP WHERE is_alive = 1~);
     $dbh->commit;
 }
 
@@ -2312,7 +2345,7 @@ sub answer_box_frame
     my $r = $dbh->selectrow_hashref(qq~
         SELECT
             Q.account_id AS caid, CA.account_id AS aid, A.login, A.team_name,
-            CATS_DATE(Q.submit_time) AS submit_time, Q.question, Q.clarified, Q.answer
+            Q.submit_time, Q.question, Q.clarified, Q.answer
         FROM questions Q
             INNER JOIN contest_accounts CA ON CA.id = Q.account_id
             INNER JOIN accounts A ON A.id = CA.account_id
@@ -2328,7 +2361,7 @@ sub answer_box_frame
 
         my $s = $dbh->prepare(qq~
             UPDATE questions
-                SET clarification_time = CATS_SYSDATE(), answer = ?, received = 0, clarified = 1
+                SET clarification_time = CURRENT_TIMESTAMP, answer = ?, received = 0, clarified = 1
                 WHERE id = ?~);
         $s->bind_param(1, $r->{answer}, { ora_type => 113 } );
         $s->bind_param(2, $qid);
@@ -2534,7 +2567,7 @@ sub prepare_source
     $is_jury || $sources_info->{account_id} == ($uid || 0)
         or return ($show_msg && msg(126));
     my $se = param('src_enc') || 'WINDOWS-1251';
-    if ($se && source_encodings()->{$se})
+    if ($se && source_encodings()->{$se} && $sources_info->{file_name} !~ m/\.zip$/)
     {
         Encode::from_to($sources_info->{src}, $se, 'utf-8');
     }
@@ -2558,6 +2591,9 @@ sub view_source_frame
         $dbh->commit;
         $sources_info->{src} = $src;
     }
+    if ($sources_info->{file_name} =~ m/\.zip$/) {
+        $sources_info->{src} = sprintf 'ZIP, %d bytes', length ($sources_info->{src});
+    }
     source_links($sources_info, $is_jury);
     /^[a-z]+$/i and $sources_info->{syntax} = $_ for param('syntax');
     $sources_info->{src_lines} = [ map {}, split("\n", $sources_info->{src}) ];
@@ -2578,7 +2614,7 @@ sub download_source_frame
     my $ext = $1 || 'unknown';
     binmode(STDOUT, ':raw');
     print STDOUT CGI::header(
-        -type => 'text/plain',
+        -type => ($ext eq 'zip' ? 'application/zip' : 'text/plain'),
         -content_disposition => "inline;filename=$si->{req_id}.$ext");
     print STDOUT $si->{src};
 }
@@ -2923,6 +2959,11 @@ sub sh_1
         $atts{href} = save_attachment($atts{attachment});
         delete $atts{attachment};
     }
+    elsif ($el eq 'object' && $atts{attachment})
+    {
+        $atts{data} = save_attachment($atts{attachment});
+        delete $atts{attachment};
+    }
     start_element($el, %atts);
 }
 
@@ -3126,8 +3167,9 @@ sub problem_text_frame
     }
     $dbh->commit if $need_commit;
 
+    $t->param(title_suffix => $problems[0]->{title}) if @problems == 1;
     $t->param(
-        problems => [ @problems ],
+        problems => \@problems,
         tex_styles => CATS::TeX::Lite::styles(),
         #CATS::TeX::HTMLGen::gen_styles_html()
     );
@@ -3141,7 +3183,7 @@ sub envelope_frame
     my $rid = url_param('rid') or return;
 
     my ($submit_time, $test_time, $state, $failed_test, $team_name, $contest_title) = $dbh->selectrow_array(qq~
-        SELECT CATS_DATE(R.submit_time), CATS_DATE(R.test_time), R.state, R.failed_test, A.team_name, C.title
+        SELECT R.submit_time, R.test_time, R.state, R.failed_test, A.team_name, C.title
             FROM reqs R, contests C, accounts A
             WHERE R.id = ? AND A.id = R.account_id AND C.id = R.contest_id~, {}, $rid);
     $t->param(

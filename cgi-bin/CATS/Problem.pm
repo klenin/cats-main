@@ -196,7 +196,7 @@ sub on_start_tag
             $atts{picture} or $self->error('Picture not defined in img element');
             $self->get_named_object($atts{picture})->{refcount}++;
         }
-        elsif ($el eq 'a')
+        elsif ($el =~ /^a|object$/)
         {
             $self->get_named_object($atts{attachment})->{refcount}++ if $atts{attachment};
         }
@@ -665,7 +665,7 @@ sub end_tag_Problem
             contest_id=?,
             title=?, lang=?, time_limit=?, memory_limit=?, difficulty=?, author=?, input_file=?, output_file=?, 
             statement=?, pconstraints=?, input_format=?, output_format=?, formal_input=?, explanation=?, zip_archive=?,
-            upload_date=CATS_SYSDATE(), std_checker=?, last_modified_by=?, 
+            upload_date=CURRENT_TIMESTAMP, std_checker=?, last_modified_by=?, 
             max_points=?, hash=NULL
         WHERE id = ?~
     : q~
@@ -676,7 +676,7 @@ sub end_tag_Problem
             upload_date, std_checker, last_modified_by,
             max_points, id
         ) VALUES (
-            ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CATS_SYSDATE(),?,?,?,?
+            ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP,?,?,?,?
         )~;
  
     my $c = $dbh->prepare($sql);

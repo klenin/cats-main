@@ -1,0 +1,11 @@
+[
+<TMPL_LOOP users>
+{
+"login": "<TMPL_VAR login ESCAPE=JS>",
+"name": "<TMPL_VAR team_name ESCAPE=JS>",
+"ooc": <TMPL_IF ooc>1<TMPL_ELSE>0</TMPL_IF>,
+"remote": <TMPL_IF remote>1<TMPL_ELSE>0</TMPL_IF>,
+"virtual": <TMPL_IF virtual>1<TMPL_ELSE>0</TMPL_IF>
+},
+</TMPL_LOOP>
+]

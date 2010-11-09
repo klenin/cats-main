@@ -93,7 +93,7 @@ function chg_code(st_sel, pid)
     <TMPL_LOOP status_list><option value="<TMPL_VAR id>"<TMPL_IF selected> selected="selected"</TMPL_IF>><TMPL_VAR name ESCAPE=HTML></option></TMPL_LOOP>
     </select><TMPL_IF is_linked> [<a href="<TMPL_VAR href_original_contest>" title="<TMPL_VAR contest_name>">L</a>]</TMPL_IF>
 </td>
-<td><a href="<TMPL_VAR href_select_testsets>"><TMPL_VAR testsets></a></td>
+<td><a href="<TMPL_VAR href_select_testsets>"><TMPL_VAR testsets></a> (<TMPL_VAR test_count>)</td>
 <td><TMPL_VAR last_modified_by></td>
 <td align="right"><TMPL_VAR upload_date></td>
 </TMPL_IF>

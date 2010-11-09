@@ -30,8 +30,8 @@ sub load
     my ($self, $cid) = @_;
     my $all_fields = [
         database_fields(),
-        'CATS_DATE(CATS_SYSDATE()) AS server_time',
-        map "CATS_SYSDATE() - ${_}_date AS time_since_$_", qw(start finish defreeze)
+        'CURRENT_TIMESTAMP AS server_time',
+        map "CURRENT_TIMESTAMP - ${_}_date AS time_since_$_", qw(start finish defreeze)
     ];
     my $r;
     if ($cid)
@@ -66,7 +66,7 @@ sub current_official
 {
     $dbh->selectrow_hashref(qq~
         SELECT id, title FROM contests
-            WHERE CATS_SYSDATE() BETWEEN start_date AND finish_date AND is_official = 1~);
+            WHERE CURRENT_TIMESTAMP BETWEEN start_date AND finish_date AND is_official = 1~);
 }
 
 

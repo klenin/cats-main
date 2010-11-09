@@ -64,8 +64,15 @@ sub new_id
 sub sql_connect
 {
     $dbh ||= DBI->connect(
-      $CATS::Connect::db_dsn, $CATS::Connect::db_user, $CATS::Connect::db_password,
-      { AutoCommit => 0, LongReadLen => 1024*1024*20, FetchHashKeyName => 'NAME_lc' }
+        $CATS::Connect::db_dsn, $CATS::Connect::db_user, $CATS::Connect::db_password,
+        {
+            AutoCommit => 0,
+            LongReadLen => 1024*1024*20,
+            FetchHashKeyName => 'NAME_lc',
+            ib_timestampformat => '%d.%m.%Y %H:%M',
+            ib_dateformat => '%d.%m.%Y',
+            ib_timeformat => '%H:%M:%S',
+        }
     );
 
     if (!defined $dbh)
@@ -80,7 +87,7 @@ sub sql_connect
         0;
     };
 
-    $sql ||= SQL::Abstract->new;
+    $sql ||= SQL::Abstract->new if $SQL::Abstract::VERSION;
 }
 
 

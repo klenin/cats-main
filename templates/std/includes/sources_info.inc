@@ -1,6 +1,6 @@
 <table class="internal_borders" cellpadding="3">
 <tr><th>ID</th><TMPL_LOOP sources_info><td><TMPL_VAR req_id></td></TMPL_LOOP></tr>
-<tr><th>Команда</th><TMPL_LOOP sources_info><td><b><TMPL_VAR team_name></b>
+<tr><th>Команда</th><TMPL_LOOP sources_info><td><a href="<TMPL_VAR href_stats>"><TMPL_VAR team_name></a>
 <TMPL_IF is_jury>
   [<a href="http://geotool.flagfox.net/?ip=<TMPL_VAR last_ip_short>" alt="<TMPL_VAR last_ip>" title="<TMPL_VAR last_ip>"><TMPL_VAR last_ip_short></a>]
 </TMPL_IF>

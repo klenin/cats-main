@@ -78,11 +78,17 @@ sub escape_xml
     return $t;
 }
 
+sub escape_url
+{
+    my ($url) = @_;
+    $url =~ s/([\?=%;&])/sprintf '%%%02X', ord($1)/eg;
+    $url;
+}
 
 sub gen_url_params
 {
     my (%p) = @_;
-    map { defined $p{$_} ? "$_=$p{$_}" : () } keys %p;
+    map { defined $p{$_} ? "$_=" . escape_url($p{$_}) : () } keys %p;
 }
 
 
@@ -160,7 +166,7 @@ sub source_hash
 
 sub param_on
 {
-    return (param($_[0]) || '') eq 'on';
+    return (CGI::param($_[0]) || '') eq 'on';
 }
 
 

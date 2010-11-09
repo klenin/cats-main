@@ -1,0 +1,15 @@
+{
+<TMPL_IF message>"message": "<TMPL_VAR message ESCAPE=JS>"
+<TMPL_ELSE>
+"problems": [
+<TMPL_LOOP problems>
+{
+"id": <TMPL_VAR problem_id>,
+"code": "<TMPL_VAR code>",
+"name": "<TMPL_VAR problem_name ESCAPE=JS>",
+"disabled": <TMPL_IF disabled>1<TMPL_ELSE>0</TMPL_IF>
+}
+<TMPL_UNLESS __last__>,</TMPL_UNLESS></TMPL_LOOP>
+]
+</TMPL_IF>
+}

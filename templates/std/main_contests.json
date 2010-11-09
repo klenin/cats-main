@@ -1,0 +1,17 @@
+{
+<TMPL_IF message>"message": "<TMPL_VAR message ESCAPE=JS>"<TMPL_ELSE>
+"contests": [
+<TMPL_LOOP contests>
+{
+    "name": "<TMPL_VAR contest_name ESCAPE=JS>",
+    "start_date": "<TMPL_VAR start_date>",
+    "finish_date": "<TMPL_VAR finish_date>",
+    "registration": <TMPL_IF registered_online
+    >"online"<TMPL_ELSE><TMPL_IF registered_virtual
+    >"virtual"<TMPL_ELSE>"none"</TMPL_IF></TMPL_IF>,
+    "is_official": <TMPL_IF is_official>1<TMPL_ELSE>0</TMPL_IF>,
+}
+<TMPL_UNLESS __last__>,</TMPL_UNLESS></TMPL_LOOP>
+]
+</TMPL_IF>
+}

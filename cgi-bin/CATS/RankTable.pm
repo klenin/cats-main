@@ -46,8 +46,8 @@ sub get_problem_ids
     # при помощи UNIQUE(c,p)
     my $problems = $dbh->selectall_arrayref(qq~
         SELECT
-            CP.id, CP.problem_id, CP.code, CP.contest_id, CATS_DATE(C.start_date) AS start_date,
-            CATS_SYSDATE() - C.start_date AS since_start, C.local_only, P.max_points, P.title
+            CP.id, CP.problem_id, CP.code, CP.contest_id, C.start_date,
+            CURRENT_TIMESTAMP - C.start_date AS since_start, C.local_only, P.max_points, P.title
         FROM
             contest_problems CP INNER JOIN contests C ON C.id = CP.contest_id
             INNER JOIN problems P ON P.id = CP.problem_id
@@ -68,7 +68,7 @@ sub get_problem_ids
     {
         if ($_->{contest_id} != $prev_cid)
         {
-            $_->{start_date} =~ /^\s*(\S+)/;
+            $_->{start_date} =~ /^(\S+)/;
             push @contests, { start_date => $1, count => 1 };
             $prev_cid = $_->{contest_id};
         }
@@ -119,7 +119,7 @@ sub get_results
     }
     if ($is_team && !$is_jury && $virtual_diff_time)
     {
-        push @conditions, "(R.submit_time - CA.diff_time < CATS_SYSDATE() - $virtual_diff_time)";
+        push @conditions, "(R.submit_time - CA.diff_time < CURRENT_TIMESTAMP - $virtual_diff_time)";
     }
 
     $cond_str .= join '', map " AND $_", @conditions;
@@ -193,9 +193,9 @@ sub get_contests_info
     $self->{frozen} = $self->{not_started} = $self->{has_practice} = $self->{show_points} = 0;
     my $sth = $dbh->prepare(qq~
         SELECT C.title,
-          CATS_SYSDATE() - C.freeze_date,
-          CATS_SYSDATE() - C.defreeze_date,
-          CATS_SYSDATE() - C.start_date,
+          CURRENT_TIMESTAMP - C.freeze_date,
+          CURRENT_TIMESTAMP - C.defreeze_date,
+          CURRENT_TIMESTAMP - C.start_date,
           (SELECT COUNT(*) FROM contest_accounts WHERE contest_id = C.id AND account_id = ?),
           C.rules, C.ctype
         FROM contests C
