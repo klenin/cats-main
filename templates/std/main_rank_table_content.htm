@@ -59,7 +59,8 @@
     <img src="<TMPL_VAR NAME=flag>" alt="<TMPL_VAR NAME=country ESCAPE=HTML><TMPL_IF motto> - <TMPL_VAR motto ESCAPE=HTML></TMPL_IF>">
 <TMPL_ELSE>
     <TMPL_VAR NAME=country ESCAPE=HTML><TMPL_IF motto> - <TMPL_VAR motto ESCAPE=HTML></TMPL_IF>
-</TMPL_IF></TMPL_IF><td align="left"><TMPL_IF 0><a href="<TMPL_VAR href_console>"></a></TMPL_IF><TMPL_VAR team_name ESCAPE=HTML></td>
+</TMPL_IF></TMPL_IF><td align="left"><TMPL_IF 0><a href="<TMPL_VAR href_console>" title="<TMPL_VAR city>"></a></TMPL_IF>
+<TMPL_VAR team_name ESCAPE=HTML></td>
 <TMPL_IF show_points
   ><TMPL_LOOP columns><td><TMPL_VAR points></td></TMPL_LOOP
 ><TMPL_ELSE
@@ -81,7 +82,8 @@ var rank_table = [
     tm: [<TMPL_LOOP columns>'<TMPL_VAR time>'<TMPL_UNLESS __last__>,</TMPL_UNLESS></TMPL_LOOP>],
     td: [<TMPL_LOOP columns>'<TMPL_VAR td>'<TMPL_UNLESS __last__>,</TMPL_UNLESS></TMPL_LOOP>],
     ts: <TMPL_VAR total_solved>, ttm: <TMPL_VAR total_time></TMPL_IF>, rc: <TMPL_VAR row_color>,
-    pl: <TMPL_VAR place>, st: '<TMPL_IF is_ooc>ooc</TMPL_IF><TMPL_IF is_remote> remote</TMPL_IF><TMPL_IF is_virtual> virtual</TMPL_IF>'
+    pl: <TMPL_VAR place>, st: '<TMPL_IF is_ooc>ooc</TMPL_IF><TMPL_IF is_remote> remote</TMPL_IF><TMPL_IF is_virtual> virtual</TMPL_IF>',
+    t: "<TMPL_VAR city ESCAPE=HTML>"
   }<TMPL_UNLESS __last__>,</TMPL_UNLESS></TMPL_LOOP>
 ];
 
@@ -91,7 +93,7 @@ for(var i = 0; i < rank_table.length; ++i) {
     var r = rank_table[i];
     document.write('<tr align="center"' + (r.rc ? '' : ' bgcolor="#f4f4f4"') + '>');
     td((i + 1) + '&nbsp;', 'align="right"');
-    td('<a href="<TMPL_VAR href_console>;uf=' + r.id + '">' + r.n + '</a>', 'align="left"');
+    td('<a href="<TMPL_VAR href_console>;uf=' + r.id + '" title="' + r.t + '">' + r.n + '</a>', 'align="left"');
     <TMPL_IF show_points>
     for (var j = 0; j < r.pt.length; ++j) td(r.pt[j]);
     td(r.tp);

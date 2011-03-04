@@ -6,6 +6,6 @@
 "ooc": <TMPL_IF ooc>1<TMPL_ELSE>0</TMPL_IF>,
 "remote": <TMPL_IF remote>1<TMPL_ELSE>0</TMPL_IF>,
 "virtual": <TMPL_IF virtual>1<TMPL_ELSE>0</TMPL_IF>
-},
-</TMPL_LOOP>
+}
+<TMPL_UNLESS __last__>,</TMPL_UNLESS></TMPL_LOOP>
 ]

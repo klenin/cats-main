@@ -783,22 +783,22 @@ sub problems_all_frame
     }
 
     my $where_cond = join(' AND ', @{$where->{cond}}) || '1=1';
-    # TODO: применить SUM(CASE ...) после обновления FB
     my $c = $dbh->prepare(qq~
         SELECT P.id, P.title, C.title, C.id,
-            (SELECT COUNT(*) FROM reqs D WHERE D.problem_id = P.id AND D.state = $cats::st_accepted), 
-            (SELECT COUNT(*) FROM reqs D WHERE D.problem_id = P.id AND D.state = $cats::st_wrong_answer), 
-            (SELECT COUNT(*) FROM reqs D WHERE D.problem_id = P.id AND D.state = $cats::st_time_limit_exceeded),
-            (SELECT COUNT(*) FROM contest_problems CP WHERE CP.problem_id = P.id AND CP.contest_id=?)
+            (SELECT
+                SUM(CASE R.state WHEN $cats::st_accepted THEN 1 ELSE 0 END) || ' / ' ||
+                SUM(CASE R.state WHEN $cats::st_wrong_answer THEN 1 ELSE 0 END) || ' / ' ||
+                SUM(CASE R.state WHEN $cats::st_time_limit_exceeded THEN 1 ELSE 0 END)
+                FROM reqs R WHERE R.problem_id = P.id
+            ),
+            (SELECT COUNT(*) FROM contest_problems CP WHERE CP.problem_id = P.id AND CP.contest_id = ?)
         FROM problems P INNER JOIN contests C ON C.id = P.contest_id
         WHERE $where_cond ~ . order_by);
     $c->execute($cid, @{$where->{params}});
 
     my $fetch_record = sub($)
     {
-        my (
-            $pid, $problem_name, $contest_name, $contest_id, $accept_count, $wa_count, $tle_count, $linked
-        ) = $_[0]->fetchrow_array
+        my ($pid, $problem_name, $contest_name, $contest_id, $counts, $linked) = $_[0]->fetchrow_array
             or return ();
         return ( 
             href_view_problem => url_f('problem_text', pid => $pid),
@@ -807,9 +807,7 @@ sub problems_all_frame
             problem_id => $pid,
             problem_name => $problem_name, 
             contest_name => $contest_name, 
-            accept_count => $accept_count, 
-            wa_count => $wa_count,
-            tle_count => $tle_count,
+            counts => $counts,
         );
     };
          
@@ -1540,7 +1538,10 @@ sub users_edit_frame
 
     my $id = url_param('edit') or return;
     my $u = CATS::User->new->load($id) or return;
-    $t->param(%$u, id => $id, countries => \@cats::countries, href_action => url_f('users'));
+    $t->param(
+        %$u, id => $id, countries => \@cats::countries, is_root => $is_root,
+        href_action => url_f('users'),
+        href_impersonate => url_f('users', impersonate => $id));
 }
 
 
@@ -1725,6 +1726,22 @@ sub users_save_attributes
 }
 
 
+sub users_impersonate
+{
+    my $new_user_id = param('impersonate') or return;
+    $dbh->selectrow_array(q~
+        SELECT 1 FROM accounts WHERE id = ?~, undef, $new_user_id) or return;
+    $dbh->do(q~
+        UPDATE accounts SET sid = NULL WHERE id = ?~, undef, $uid);
+    $dbh->do(q~
+        UPDATE accounts SET last_ip = ?, sid = ? WHERE id = ?~, undef,
+        CATS::IP::get_ip(), $sid, $new_user_id);
+    $dbh->commit;
+    print redirect(-uri => url_function('contests', sid => $sid));
+    -1;
+}
+
+
 sub users_frame
 {   
     if ($is_jury)
@@ -1733,6 +1750,7 @@ sub users_frame
         return CATS::User::new_frame if defined url_param('new');
         return users_edit_frame if defined url_param('edit');
     }
+    return users_impersonate if defined url_param('impersonate') && $is_root;
 
     init_listview_template(
         'users' . ($contest->is_practice ? '_practice' : ''),
@@ -1791,6 +1809,8 @@ sub users_frame
         { caption => res_str(632), order_by => '10', width => '10%' } );
 
     define_columns(url_f('users'), $is_jury ? 3 : 2, 1, \@cols);
+
+    return if !$is_jury && param('json') && $contest->is_practice;
 
     my $fields =
         'A.id, CA.id, A.country, A.login, A.team_name, ' . 
@@ -1936,7 +1956,7 @@ sub compilers_new_save
             
     $dbh->do(qq~
         INSERT INTO default_de(id, code, description, file_ext, in_contests, memory_handicap, syntax)
-        VALUES(?,?,?,?,?,?)~, {}, 
+        VALUES(?,?,?,?,?,?,?)~, {}, 
         new_id, $code, $description, $supported_ext, !$locked, $memory_handicap, $syntax);
     $dbh->commit;   
 }
@@ -2768,7 +2788,8 @@ sub rank_table_frame
 
     my @params = (
         hide_ooc => $hide_ooc, hide_virtual => $hide_virtual, cache => $cache,
-        clist => $rt->{contest_list}, points => $show_points, filter => (url_param('filter') || undef)
+        clist => $rt->{contest_list}, points => $show_points,
+        filter => Encode::decode_utf8(url_param('filter') || undef),
     );
     $t->param(href_rank_table_content => url_f('rank_table_content', @params));
     my $submenu =
@@ -3253,7 +3274,7 @@ sub similarity_frame
     $_->{selected} = $_->{id} == $pid for @$p;
     # Делаем join вручную -- так быстрее
     my $acc = $dbh->selectall_hashref(q~
-        SELECT CA.account_id, CA.is_jury, CA.is_virtual, A.team_name
+        SELECT CA.account_id, CA.is_jury, CA.is_virtual, A.team_name, A.city
             FROM contest_accounts CA INNER JOIN accounts A ON CA.account_id = A.id
             WHERE contest_id = ?~,
         'account_id', { Slice => {} }, $cid);
@@ -3282,7 +3303,7 @@ sub similarity_frame
             ($score > $threshold) ^ $self_diff or next;
             my $pair = {
                 score => sprintf('%.1f%%', $score * 100), s => $score,
-                n1 => $ai->{team_name}, ($self_diff ? () : (n2 => $aj->{team_name} || '?')),
+                n1 => [$ai], ($self_diff ? () : (n2 => [$aj])),
                 href_diff => url_f('diff_runs', r1 => $i->{id}, r2 => $j->{id}),
             };
             if ($group)

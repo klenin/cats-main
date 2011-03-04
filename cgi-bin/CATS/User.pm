@@ -90,11 +90,11 @@ sub new_frame
 
 sub param_names ()
 {
-    qw(login team_name capitan_name email country motto home_page icq_number)
+    qw(login team_name capitan_name email country motto home_page icq_number city)
 }
 
 
-sub any_official_contest_by_team($)
+sub any_official_contest_by_team
 {
     my ($account_id) = @_;
     $dbh->selectrow_array(qq~
@@ -180,7 +180,7 @@ sub insert
     $dbh->do(qq~
         INSERT INTO accounts (
             id, srole, passwd, ~ . join (', ', param_names()) . qq~
-        ) VALUES (?,?,?,?,?,?,?,?,?,?,?)~, {},
+        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)~, {},
         $aid, $cats::srole_user, $self->{password1}, $self->values
     );
     insert_ooc_user(contest_id => $_->{id}, account_id => $aid) for @$training_contests;

@@ -17,7 +17,7 @@ use CATS::Misc qw(
 use fields qw(
     contest_list hide_ooc hide_virtual show_points frozen
     title has_practice not_started filter use_cache
-    rank
+    rank problems problems_idx
 );
 
 
@@ -39,19 +39,30 @@ sub cache_max_points
 }
 
 
-sub get_problem_ids
+sub get_problems
 {
     (my CATS::RankTable $self) = @_;
+    my $checker_types =
+        join ', ', grep $cats::source_modules{$_} == $cats::checker_module, keys %cats::source_modules;
     # соответствующее требование: в одном чемпионате задача не должна дублироваться обеспечивается
     # при помощи UNIQUE(c,p)
-    my $problems = $dbh->selectall_arrayref(qq~
+    my $problems = $self->{problems} = $dbh->selectall_arrayref(qq~
         SELECT
             CP.id, CP.problem_id, CP.code, CP.contest_id, C.start_date,
-            CURRENT_TIMESTAMP - C.start_date AS since_start, C.local_only, P.max_points, P.title
+            CURRENT_TIMESTAMP - C.start_date AS since_start, C.local_only, P.max_points, P.title,
+            COALESCE(
+                (SELECT PS.stype FROM problem_sources PS
+                    WHERE PS.problem_id = P.id AND PS.stype IN ($checker_types)),
+                (SELECT PS.stype FROM problem_sources PS
+                    INNER JOIN problem_sources_import PSI ON PSI.guid = PS.guid
+                    WHERE PSI.problem_id = P.id AND PS.stype IN ($checker_types)),
+                $cats::checker
+            ) AS checker_style
         FROM
             contest_problems CP INNER JOIN contests C ON C.id = CP.contest_id
             INNER JOIN problems P ON P.id = CP.problem_id
-        WHERE CP.contest_id IN ($self->{contest_list}) AND CP.status < ?
+        WHERE
+            CP.contest_id IN ($self->{contest_list}) AND CP.status < ?
         ORDER BY C.start_date, CP.code~, { Slice => {} },
         $cats::problem_st_hidden
     );
@@ -96,7 +107,8 @@ sub get_problem_ids
         max_total_points => $max_total_points
     );
     
-    map { $_->{problem_id} } @$problems;
+    my $idx = $self->{problems_idx} = {};
+    $idx->{$_->{problem_id}} = $_ for @$problems;
 }
 
 
@@ -142,9 +154,9 @@ sub get_results
 
 sub cache_req_points
 {
-    my ($req_id) = @_;
+    my ($req_id, $partial) = @_;
     my $points = $dbh->selectall_arrayref(qq~
-        SELECT RD.result, T.points
+        SELECT RD.result, RD.checker_comment, T.points
             FROM reqs R
             INNER JOIN req_details RD ON RD.req_id = R.id
             INNER JOIN tests T ON RD.test_rank = T.rank AND T.problem_id = R.problem_id
@@ -155,7 +167,16 @@ sub cache_req_points
     my $total = 0;
     for (@$points)
     {
-        $total += $_->{result} == $cats::st_accepted ? max($_->{points} || 0, 0) : 0;
+        $_->{result} == $cats::st_accepted or next;
+        if ($partial)
+        {
+            $_->{checker_comment} =~ /^(\d+)/ or next;
+            $total += $1;
+        }
+        else
+        {
+            $total +=  max($_->{points} || 0, 0);
+        }
     }
 
     # Чтобы снизить вероятность deadlock, делаем commit после каждого изменения, хотя это и медленнее
@@ -249,13 +270,16 @@ sub parse_params
 
 sub prepare_ranks
 {
-    (my CATS::RankTable $self, my $teams, my @p_id) = @_;
+    (my CATS::RankTable $self, my $teams) = @_;
 
     my @rank = values %$teams;
 
     if ($self->{filter})
     {
-        @rank = grep index(($_->{tag} || '') . $_->{team_name}, $self->{filter}) >= 0, @rank;
+        @rank = grep index(
+            ($_->{tag} || '') . $_->{team_name} . ($_->{city} || ''),
+            Encode::decode_utf8($self->{filter})
+        ) >= 0, @rank;
     }
 
     my $sort_criteria = $self->{show_points} ?
@@ -277,9 +301,9 @@ sub prepare_ranks
     {
         my @columns = ();
 
-        for (@p_id)
+        for (@{$self->{problems}})
         {
-            my $p = $team->{problems}->{$_};
+            my $p = $team->{problems}->{$_->{problem_id}};
 
             my $c = $p->{solved} ? '+' . ($p->{runs} - 1 || '') : -$p->{runs} || '.';
 
@@ -353,7 +377,7 @@ sub rank_table
     );
     #return if $not_started;
 
-    my @p_id = $self->get_problem_ids;
+    $self->get_problems;
     my $virtual_cond = $self->{hide_virtual} ? ' AND (CA.is_virtual = 0 OR CA.is_virtual IS NULL)' : '';
     my $ooc_cond = $self->{hide_ooc} ? ' AND CA.is_ooc = 0' : '';
 
@@ -364,13 +388,13 @@ sub rank_table
         my $acc_cond = $account_id ? 'AND A.id = ?' : '';
         my $res = $dbh->selectall_hashref(qq~
             SELECT
-                A.team_name, A.motto, A.country,
+                A.team_name, A.motto, A.country, A.city,
                 MAX(CA.is_virtual) AS is_virtual, MAX(CA.is_ooc) AS is_ooc, MAX(CA.is_remote) AS is_remote,
                 CA.account_id, CA.tag
-            FROM accounts A, contest_accounts CA
-            WHERE CA.contest_id IN ($self->{contest_list}) AND A.id = CA.account_id AND CA.is_hidden = 0
+            FROM accounts A INNER JOIN contest_accounts CA ON A.id = CA.account_id
+            WHERE CA.contest_id IN ($self->{contest_list}) AND CA.is_hidden = 0
                 $virtual_cond $ooc_cond $acc_cond
-            GROUP BY CA.account_id, CA.tag, A.team_name, A.motto, A.country~, 'account_id', { Slice => {} },
+            GROUP BY CA.account_id, CA.tag, A.team_name, A.motto, A.country, A.city~, 'account_id', { Slice => {} },
             ($account_id || ())
         );
 
@@ -380,7 +404,8 @@ sub rank_table
             $team->{is_ooc} = 0 if $team->{is_virtual};
             $team->{$_} = 0 for qw(total_solved total_runs total_time total_points);
             ($team->{country}, $team->{flag}) = get_flag($team->{country});
-            $team->{problems} = { map { $_ => { %init_problem } } @p_id };
+            $team->{$_} = Encode::decode_utf8($team->{$_}) for qw(team_name city tag);
+            $team->{problems} = { map { $_->{problem_id} => { %init_problem } } @{$self->{problems}} };
         }
 
         $res;
@@ -388,22 +413,22 @@ sub rank_table
 
     my $cache_file = cache_file_name(@$self{qw(contest_list hide_ooc hide_virtual)});
 
-    my ($teams, $problems, $max_cached_req_id) = ({}, {}, 0);
+    my ($teams, $problem_stats, $max_cached_req_id) = ({}, {}, 0);
     if ($self->{use_cache} && !$is_virtual &&  -f $cache_file &&
         (my $cache = Storable::lock_retrieve($cache_file)))
     {
-        ($teams, $problems, $max_cached_req_id) = @{$cache}{qw(t p r)};
+        ($teams, $problem_stats, $max_cached_req_id) = @{$cache}{qw(t p r)};
         # Если добавилась задача, проинициализируем её данные
-        for my $p (@p_id)
+        for my $p (map $_->{problem_id}, @{$self->{problems}})
         {
-            next if $problems->{$p};
-            $problems->{$p} = {};
+            next if $problem_stats->{$p};
+            $problem_stats->{$p} = {};
             $_->{problems}->{$p} = { %init_problem } for values %$teams;
         }
     }
     else
     {
-        $problems->{$_} = {} for @p_id;
+        $problem_stats->{$_} = {} for map $_->{problem_id}, @{$self->{problems}};
         $teams = $select_teams->();
     }
 
@@ -418,7 +443,8 @@ sub rank_table
         my $p = $t->{problems}->{$_->{problem_id}};
         if ($self->{show_points} && !defined $_->{points})
         {
-            $_->{points} = cache_req_points($_->{id});
+            $_->{points} = cache_req_points(
+                $_->{id}, $self->{problems_idx}->{$_->{problem_id}}->{checker_style} == $cats::partial_checker);
         }
         next if $p->{solved} && !$self->{show_points};
 
@@ -444,17 +470,17 @@ sub rank_table
 
     if (!$self->{frozen} && !$is_virtual && @$results && !$self->{has_practice})
     {
-        Storable::lock_store({ t => $teams, p => $problems, r => $max_req_id }, $cache_file);
+        Storable::lock_store({ t => $teams, p => $problem_stats, r => $max_req_id }, $cache_file);
     }
 
-    my ($row_num, $row_color) = $self->prepare_ranks($teams, @p_id);
+    my ($row_num, $row_color) = $self->prepare_ranks($teams);
     # Расчёт статистики
-    @$_{qw(total_runs total_accepted total_points)} = (0, 0, 0) for values %$problems;
+    @$_{qw(total_runs total_accepted total_points)} = (0, 0, 0) for values %$problem_stats;
     for my $t (@{$self->{rank}})
     {
         for my $pid (keys %{$t->{problems}})
         {
-            my $stat = $problems->{$pid};
+            my $stat = $problem_stats->{$pid};
             my $tp = $t->{problems}->{$pid};
             $stat->{total_runs} += $tp->{runs};
             $stat->{total_accepted}++ if $tp->{solved};
@@ -462,20 +488,21 @@ sub rank_table
         }
     }
 
+    my $pcount = @{$self->{problems}};
     $t->param(
         problem_colunm_width => (
-            @p_id <= 6 ? 6 :
-            @p_id <= 8 ? 5 :
-            @p_id <= 10 ? 4 :
-            @p_id <= 20 ? 3 : 2 ),
+            $pcount <= 6 ? 6 :
+            $pcount <= 8 ? 5 :
+            $pcount <= 10 ? 4 :
+            $pcount <= 20 ? 3 : 2 ),
         problem_stats => [
             map {{
-                %{$problems->{$_}},
+                %$_,
                 percent_accepted => int(
-                    $problems->{$_}->{total_accepted} /
-                    ($problems->{$_}->{total_runs} || 1) * 100 + 0.5),
-                average_points => sprintf('%.1f', $problems->{$_}->{total_points} / $row_num)
-            }} @p_id 
+                    $_->{total_accepted} /
+                    ($_->{total_runs} || 1) * 100 + 0.5),
+                average_points => sprintf('%.1f', $_->{total_points} / $row_num)
+            }} map $problem_stats->{$_->{problem_id}}, @{$self->{problems}}
         ],
         problem_stats_color => 1 - $row_color,
         rank => $self->{rank},

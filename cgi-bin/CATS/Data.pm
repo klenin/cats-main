@@ -155,16 +155,16 @@ sub get_nearby_attempt
 {
     my ($si, $prevnext, $cmp, $ord, $diff) = @_;
     my $na = $dbh->selectrow_hashref(qq~
-        SELECT FIRST 1 id, submit_time FROM reqs
+        SELECT id, submit_time FROM reqs
           WHERE account_id = ? AND problem_id = ? AND id $cmp ?
-          ORDER BY id $ord~, { Slice => {} },
+          ORDER BY id $ord ROWS 1~, { Slice => {} },
         $si->{account_id}, $si->{problem_id}, $si->{req_id}
     ) or return;
     for ($na->{submit_time})
     {
         s/\s*$//;
         # Если дата совпадает с текущей попыткой, выводим только время
-        my ($n_date, $n_time) = /^(\d+\-\d+\-\d+\s+)(.*)$/;
+        my ($n_date, $n_time) = /^(\d+\.\d+\.\d+\s+)(.*)$/;
         $si->{"${prevnext}_attempt_time"} = $si->{submit_time} =~ /^$n_date/ ? $n_time : $_;
     }
     my $f = CGI::url_param('f') || 'run_log';

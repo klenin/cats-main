@@ -18,7 +18,8 @@ sub get_names
     use bytes;
     map Encode::decode('KOI8-R', $_) =>
         'òÁÊÏÎÎÁÑ ÏÌÉÍĞÉÁÄÁ', 'çÏÒÏÄÓËÁÑ ÏÌÉÍĞÉÁÄÁ', 'ëÒÁÅ×ÁÑ ÏÌÉÍĞÉÁÄÁ',
-        'ìû ÏÌÉÍĞÉÁÄÁ', 'úÁÏŞÎÁÑ ÏÌÉÍĞÉÁÄÁ', 'ûËÏÌØÎÉËÉ ACM', '÷ÅÓÅÎÎÉÊ ÔÕÒÎÉÒ';
+        'ìû ÏÌÉÍĞÉÁÄÁ', 'úÁÏŞÎÁÑ ÏÌÉÍĞÉÁÄÁ', 'ûËÏÌØÎÉËÉ ACM', '÷ÅÓÅÎÎÉÊ ÔÕÒÎÉÒ',
+        'íÕÎÉÃÉĞÁÌØÎÁÑ ÏÌÉÍĞÉÁÄÁ',
 }
 
 
@@ -44,7 +45,7 @@ sub personal_official_results
         # ŞÔÏÂÙ YAML ÎÅ ÓËÁÔÙ×ÁÌÓÑ ÎÁ backslash escaping
         $name = Encode::decode_utf8($name);
         # ÏÔÂÒÁÓÙ×ÁÅÍ ĞÒÏÂÎÙÅ ÔÕÒÙ
-        !$rest || $rest =~ m/[I\d]/ or next;
+        !$rest || $rest =~ m/^\s*[I\d]/ or next;
         ($year, $name) = ($name, $year) if $group_by_type;
         push @{$results->{$year}->{$name}}, $_->{id};
     }

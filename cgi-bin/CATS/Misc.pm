@@ -320,9 +320,10 @@ sub attach_listview
 	        }
             else
             {
-                for (keys %h)
+                my $rx = qr/\Q$s->{search}\E/i;
+                for (values %h)
                 {
-                    $f = 1 if defined $h{$_} && index($h{$_}, $s->{search}) != -1;
+                    $f = 1 if defined $_ && Encode::decode_utf8($_) =~ $rx;
                 }
             }
         }
@@ -499,7 +500,7 @@ sub init_user
     {
         ($uid, $team_name, my $srole, my $last_ip, $enc_settings) = $dbh->selectrow_array(qq~
             SELECT id, team_name, srole, last_ip, settings FROM accounts WHERE sid = ?~, {}, $sid);
-        if (!defined($uid) || $last_ip ne CATS::IP::get_ip())
+        if (!defined($uid) || ($last_ip || '') ne CATS::IP::get_ip())
         {
             init_template('main_bad_sid.htm');
             $sid = '';

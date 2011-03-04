@@ -35,15 +35,16 @@ CREATE TABLE accounts (
     sid     VARCHAR(30),
     srole   INTEGER NOT NULL, /* 0 - root, 1 - user, 2 - can create contests */
     last_login  TIMESTAMP,
-    last_ip VARCHAR(100) DEFAULT '',
-    locked  INTEGER DEFAULT 0 CHECK (locked IN (0, 1)),
+    last_ip     VARCHAR(100) DEFAULT '',
+    locked      INTEGER DEFAULT 0 CHECK (locked IN (0, 1)),
     team_name   VARCHAR(200),
     capitan_name VARCHAR(200),    
-    country VARCHAR(30),
-    motto   VARCHAR(200),
-    email   VARCHAR(200),
+    country     VARCHAR(30),
+    motto       VARCHAR(200),
+    email       VARCHAR(200),
     home_page   VARCHAR(200),
-    icq_number  VARCHAR(200)
+    icq_number  VARCHAR(200),
+    city        VARCHAR(200)
 );
 CREATE INDEX accounts_sid_idx ON accounts(sid);
 
@@ -226,6 +227,7 @@ CREATE TABLE questions (
     account_id  INTEGER REFERENCES contest_accounts(id) ON DELETE CASCADE,
     received    INTEGER DEFAULT 0 CHECK (received IN (0, 1))
 );
+CREATE DESCENDING INDEX idx_questions_submit_time ON questions(submit_time);
 
 
 CREATE TABLE messages (
@@ -236,6 +238,7 @@ CREATE TABLE messages (
     received    INTEGER DEFAULT 0 CHECK (received IN (0, 1)),
     broadcast   INTEGER DEFAULT 0 CHECK (broadcast IN (0, 1))
 );
+CREATE DESCENDING INDEX idx_messages_send_time ON messages(send_time);
 
 
 CREATE TABLE reqs (
@@ -319,11 +322,6 @@ CREATE GENERATOR login_seq;
 SET GENERATOR key_seq TO 1; 
 
 
-INSERT INTO default_de (id, code, description, file_ext) VALUES (GEN_ID(key_seq, 1), 101, 'Cross-platform C/C++ compiler', 'cpp;c');
-INSERT INTO default_de (id, code, description, file_ext) VALUES (GEN_ID(key_seq, 1), 102, 'GNU C++', 'cpp;c;cxx');
-INSERT INTO default_de (id, code, description, file_ext) VALUES (GEN_ID(key_seq, 1), 103, 'MS Visual C++', 'cpp;c');
-INSERT INTO default_de (id, code, description, file_ext) VALUES (GEN_ID(key_seq, 1), 104, 'Borland C++ 3.1', 'cpp;c');
-INSERT INTO default_de (id, code, description, file_ext) VALUES (GEN_ID(key_seq, 1), 201, 'Borland Pascal', 'pas');
 INSERT INTO default_de (id, code, description, file_ext) VALUES (GEN_ID(key_seq, 1), 301, 'Quick Basic 4.5', 'bas');
 
 INSERT INTO dummy_table VALUES (NULL, NULL, NULL);

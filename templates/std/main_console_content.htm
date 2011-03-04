@@ -14,7 +14,7 @@
     <td nowrap width="1%">
 	<TMPL_IF is_jury>
         <a href="javascript:send_message('<TMPL_VAR href_send_message_box>')"><TMPL_VAR team_name ESCAPE=HTML></a>
-        [<a href="http://geotool.flagfox.net/?ip=<TMPL_VAR last_ip_short>" alt="<TMPL_VAR last_ip>" title="<TMPL_VAR last_ip>"><TMPL_VAR last_ip_short></a>]
+        [<a href="http://whois.domaintools.com/<TMPL_VAR last_ip_short>" alt="<TMPL_VAR last_ip>" title="<TMPL_VAR last_ip>"><TMPL_VAR last_ip_short></a>]
 	<TMPL_ELSE>
         <TMPL_VAR team_name ESCAPE=HTML>
 	</TMPL_IF>

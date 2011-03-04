@@ -39,6 +39,7 @@ $generator_module = 4;
 $solution_module = 5;
 $checker_module = 6;
 $testlib_checker = 7;
+$partial_checker = 8;
 
 %source_module_names = (
     $generator => 'generator',
@@ -49,14 +50,17 @@ $testlib_checker = 7;
     $solution_module => 'solution module',
     $checker_module => 'checker module',
     $testlib_checker => 'checker',
+    $partial_checker => 'partial checker',
 );
 
 # типы модулей для исходников
 %source_modules = (
     $generator => $generator_module,
     $solution => $solution_module,
+    $adv_solution => $solution_module,
     $checker => $checker_module,
     $testlib_checker => $checker_module,
+    $partial_checker => $checker_module,
 );
 
 # состояние запроса в очереди

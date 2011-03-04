@@ -27,6 +27,13 @@ use fields qw(
 
 use CATS::Problem::Tests;
 
+sub checker_type_names
+{{
+    legacy => $cats::checker,
+    testlib => $cats::testlib_checker,
+    partial => $cats::partial_checker,
+}}
+
 sub new
 {
     my $self = shift;
@@ -372,15 +379,14 @@ sub start_tag_Checker
     (my CATS::Problem $self, my $atts) = @_;
 
     my $style = $atts->{style} || 'legacy';
-    for ($style)
-    {
-        /^legacy$/ && do { $self->warning('Legacy checker found!'); last; };
-        /^testlib$/ && last;
-        $self->error(q~Unknown checker style (must be either 'legacy' or 'testlib')~);
-    }
-
+    checker_type_names->{$style}
+        or $self->error(q~Unknown checker style (must be 'legacy', 'testlib' or 'partial')~);
+    $style ne 'legacy'
+        or $self->warning('Legacy checker found!');
     $self->checker_added;
-    $self->{checker} = { $self->problem_source_common_params($atts, 'checker'), style => $style };
+    $self->{checker} = {
+        $self->problem_source_common_params($atts, 'checker'), style => $style
+    };
 }
 
 
@@ -468,7 +474,7 @@ sub import_one_source
     {
         !$type || $stype == $type || $cats::source_modules{$stype} == $type
             or $self->error("Import type check failed for guid='$guid' ($type vs $stype)");
-        $self->checker_added if $stype == $cats::checker || $stype == $cats::testlib_checker;
+        $self->checker_added if $cats::source_modules{$stype} == $cats::checker_module;
         $import->{src_id} = $src_id;
         $self->note("Imported source from guid='$guid'");
     }
@@ -772,7 +778,7 @@ sub insert_problem_content
     {
         $self->insert_problem_source(
             source_object => $c, type_name => 'Checker',
-            source_type => ($c->{style} eq 'legacy' ? $cats::checker : $cats::testlib_checker)
+            source_type => checker_type_names->{$c->{style}},
         );
     }
 

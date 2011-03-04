@@ -13,7 +13,9 @@
 <table class="bordered">
 <TMPL_LOOP similar>
   <tr><td align="right"><a href="<TMPL_VAR href_diff>" target="_blank"><TMPL_VAR score></td>
-  <td><TMPL_VAR n1 ESCAPE=HTML></td><TMPL_IF n2><td><TMPL_VAR n2 ESCAPE=HTML></td></TMPL_IF></tr>
+  <td><TMPL_LOOP n1><TMPL_VAR team_name ESCAPE=HTML><TMPL_IF city> (<TMPL_VAR city>)</TMPL_IF></TMPL_LOOP></td>
+  <TMPL_IF n2><td><TMPL_LOOP n2><TMPL_VAR team_name ESCAPE=HTML><TMPL_IF city> (<TMPL_VAR city>)</TMPL_IF></TMPL_LOOP></td></TMPL_IF>
+  </tr>
 </TMPL_LOOP>
 </table>
 <TMPL_INCLUDE 'includes/menu_end.inc'>
