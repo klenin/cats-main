@@ -99,6 +99,12 @@ END -%]
   <td>Описание формата выходного файла в формате STML.</td>
 </tr>
 <tr>
+  <td>[% tag_in('JsonData', 'Problem', v17) %]</td>
+  <td>&nbsp;</td>
+  <td>Дополнительные данные к задче в формате JSON.
+    Рекомендуется использовать тэг [% tag_ref('include') %].</td>
+</tr>
+<tr>
   <td>[% tag_in('Explanation', 'Problem', v15) %]</td>
   <td>&nbsp;</td>
   <td>Разбор задачи в формате STML.</td>
@@ -432,6 +438,14 @@ END -%]
     </ul>
   </td>
   <td>Вставка ссылки на вложенный файл.</td>
+</tr>
+<tr><td>[% tag_in('include'); v17 %]</td>
+  <td>
+    <ul>
+      <li>src -- имя включаемого файла; файл должен иметь ту же кодировку, что и XML;</li>
+    </ul>
+  </td>
+  <td>Вставка текста из файла.</td>
 </tr>
 <tr><td>[% tag_in('i') %]</td>
   <td>&nbsp;</td>

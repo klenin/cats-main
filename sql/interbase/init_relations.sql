@@ -44,6 +44,7 @@ CREATE TABLE accounts (
     email       VARCHAR(200),
     home_page   VARCHAR(200),
     icq_number  VARCHAR(200),
+    settings    BLOB SUB_TYPE 0,
     city        VARCHAR(200)
 );
 CREATE INDEX accounts_sid_idx ON accounts(sid);
@@ -117,6 +118,7 @@ CREATE TABLE problems (
     input_format    BLOB,
     output_format   BLOB,
     formal_input    BLOB,
+    json_data       BLOB,
     zip_archive     BLOB,
     last_modified_by INTEGER REFERENCES accounts(id) ON DELETE SET NULL ON UPDATE CASCADE,
     max_points      INTEGER,
@@ -187,7 +189,7 @@ CREATE TABLE pictures (
 CREATE TABLE tests (
     problem_id      INTEGER REFERENCES problems(id) ON DELETE CASCADE,
     rank            INTEGER CHECK (rank > 0),
-    generator_id    INTEGER DEFAULT NULL REFERENCES problem_sources(id) ON DELETE CASCASE,
+    generator_id    INTEGER DEFAULT NULL REFERENCES problem_sources(id) ON DELETE CASCADE,
     param           VARCHAR(200) DEFAULT NULL,
     std_solution_id INTEGER DEFAULT NULL REFERENCES problem_sources(id) ON DELETE CASCADE,
     in_file         BLOB,
@@ -316,11 +318,11 @@ CREATE TABLE dummy_table
     t_blob BLOB SUB_TYPE 0
 );
 
+
 CREATE GENERATOR key_seq;
 CREATE GENERATOR login_seq;
 
-SET GENERATOR key_seq TO 1; 
-
+SET GENERATOR key_seq TO 1000;
 
 INSERT INTO default_de (id, code, description, file_ext) VALUES (GEN_ID(key_seq, 1), 301, 'Quick Basic 4.5', 'bas');
 

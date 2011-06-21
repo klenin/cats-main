@@ -103,6 +103,12 @@
   <td>Описание формата выходного файла в формате STML.</td>
 </tr>
 <tr>
+  <td><tt>&lt;<a name="JsonData">JsonData</a>&gt;</tt><sup><a href="#v17" title="С версии 1.7">1.7</a></sup><br/><tt>&lt;<a href="#Problem">Problem</a>&gt;</tt></td>
+  <td>&nbsp;</td>
+  <td>Дополнительные данные к задче в формате JSON.
+    Рекомендуется использовать тэг <tt>&lt;<a href="#include">include</a>&gt;</tt>.</td>
+</tr>
+<tr>
   <td><tt>&lt;<a name="Explanation">Explanation</a>&gt;</tt><sup><a href="#v15" title="С версии 1.5">1.5</a></sup><br/><tt>&lt;<a href="#Problem">Problem</a>&gt;</tt></td>
   <td>&nbsp;</td>
   <td>Разбор задачи в формате STML.</td>
@@ -434,6 +440,14 @@
     </ul>
   </td>
   <td>Вставка ссылки на вложенный файл.</td>
+</tr>
+<tr><td><tt>&lt;<a name="include">include</a>&gt;</tt><sup><a href="#v17" title="С версии 1.7">1.7</a></sup></td>
+  <td>
+    <ul>
+      <li>src -- имя включаемого файла; файл должен иметь ту же кодировку, что и XML;</li>
+    </ul>
+  </td>
+  <td>Вставка текста из файла.</td>
 </tr>
 <tr><td><tt>&lt;<a name="i">i</a>&gt;</tt></td>
   <td>&nbsp;</td>

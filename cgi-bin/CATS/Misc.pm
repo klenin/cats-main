@@ -16,7 +16,6 @@ BEGIN
         init_messages
         msg
         url_f
-        user_authorize
         templates_path
         order_by
         define_columns
@@ -502,7 +501,7 @@ sub init_user
             SELECT id, team_name, srole, last_ip, settings FROM accounts WHERE sid = ?~, {}, $sid);
         if (!defined($uid) || ($last_ip || '') ne CATS::IP::get_ip())
         {
-            init_template('main_bad_sid.htm');
+            init_template('main_bad_sid.' . (param('json') ? 'json' : 'htm'));
             $sid = '';
             $t->param(href_login => url_f('login'));
         }

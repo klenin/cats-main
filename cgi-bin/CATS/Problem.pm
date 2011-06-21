@@ -7,6 +7,7 @@ use warnings;
 use Encode;
 use Archive::Zip qw(:ERROR_CODES :CONSTANTS);
 use XML::Parser::Expat;
+use JSON::XS;
 
 use CATS::Constants;
 use CATS::DB;
@@ -18,11 +19,11 @@ use FormalInput;
 
 use fields qw(
     contest_id id import_log debug problem checker
-    statement constraints input_format output_format formal_input explanation
+    statement constraints input_format output_format formal_input json_data explanation
     tests testsets samples objects keywords
     imports solutions generators modules pictures attachments
     test_defaults current_tests current_sample gen_groups
-    stml zip zip_archive old_title replace tag_stack has_checker de_list
+    encoding stml zip zip_archive old_title replace tag_stack has_checker de_list
 );
 
 use CATS::Problem::Tests;
@@ -84,6 +85,7 @@ sub load
             Start => sub { $self->on_start_tag(@_) },
             End => sub { $self->on_end_tag(@_) },
             Char => sub { ${$self->{stml}} .= CATS::Utils::escape_xml($_[1]) if $self->{stml} },
+            XMLDecl => sub { $self->{encoding} = $_[2] },
         );
         $parser->parse($self->read_member($xml_members[0]));
     };
@@ -196,6 +198,15 @@ sub on_start_tag
 
     if ($self->{stml})
     {
+        if ($el eq 'include')
+        {
+            my $name = $atts{src} or
+                return $self->error(q~Missing required 'src' attribute of 'include' tag~);
+            my $member = $self->{zip}->memberNamed($name) 
+                or $self->error("Invalid 'include' reference: '$name'");
+            ${$self->{stml}} .= Encode::decode($self->{encoding}, $self->read_member($member));
+            return;
+        }
         ${$self->{stml}} .=
             "<$el" . join ('', map qq~ $_="$atts{$_}"~, keys %atts) . '>';
         if ($el eq 'img')
@@ -233,6 +244,7 @@ sub on_end_tag
 
     if ($self->{stml})
     {
+        return if $el eq 'include';
         ${$self->{stml}} .= "</$el>";
     }
     elsif (!$h)
@@ -258,7 +270,8 @@ sub tag_handlers()
     ProblemConstraints => { stml_handlers('constraints') },
     InputFormat => { stml_handlers('input_format') },
     OutputFormat => { stml_handlers('output_format') },
-    FormalInput => { stml_handlers('formal_input'), e => \&end_tag_FormalInput  },
+    FormalInput => { stml_handlers('formal_input'), e => \&end_tag_FormalInput },
+    JsonData => { stml_handlers('json_data'), e => \&end_tag_JsonData },
     Explanation => { stml_handlers('explanation') },
     Problem => {
         s => \&start_tag_Problem, e => \&end_tag_Problem,
@@ -415,7 +428,24 @@ sub end_tag_FormalInput
     }
     else
     {
-        $self->note("FormalInput OK.");
+        $self->note('FormalInput OK.');
+    }
+    $self->end_stml;
+}
+
+
+sub end_tag_JsonData
+{
+    (my CATS::Problem $self, my $atts) = @_;
+    #$self->note($self->{formal_input});
+    ${$self->{stml}} = Encode::encode_utf8(${$self->{stml}});
+    eval { decode_json(${$self->{stml}}) };
+    if ($@) {
+        $self->error("JsonData: $@");
+    }
+    else
+    {
+        $self->note('JsonData OK.');
     }
     $self->end_stml;
 }
@@ -670,7 +700,7 @@ sub end_tag_Problem
         SET
             contest_id=?,
             title=?, lang=?, time_limit=?, memory_limit=?, difficulty=?, author=?, input_file=?, output_file=?, 
-            statement=?, pconstraints=?, input_format=?, output_format=?, formal_input=?, explanation=?, zip_archive=?,
+            statement=?, pconstraints=?, input_format=?, output_format=?, formal_input=?, json_data=?, explanation=?, zip_archive=?,
             upload_date=CURRENT_TIMESTAMP, std_checker=?, last_modified_by=?, 
             max_points=?, hash=NULL
         WHERE id = ?~
@@ -678,11 +708,11 @@ sub end_tag_Problem
         INSERT INTO problems (
             contest_id,
             title, lang, time_limit, memory_limit, difficulty, author, input_file, output_file,
-            statement, pconstraints, input_format, output_format, formal_input, explanation, zip_archive,
+            statement, pconstraints, input_format, output_format, formal_input, json_data, explanation, zip_archive,
             upload_date, std_checker, last_modified_by,
             max_points, id
         ) VALUES (
-            ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP,?,?,?,?
+            ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP,?,?,?,?
         )~;
  
     my $c = $dbh->prepare($sql);
@@ -691,7 +721,7 @@ sub end_tag_Problem
     $c->bind_param($i++, $self->{problem}->{$_})
         for qw(title lang time_limit memory_limit difficulty author input_file output_file);
     $c->bind_param($i++, $self->{$_}, { ora_type => 113 })
-        for qw(statement constraints input_format output_format formal_input explanation zip_archive);
+        for qw(statement constraints input_format output_format formal_input json_data explanation zip_archive);
     $c->bind_param($i++, $self->{problem}->{std_checker});
     $c->bind_param($i++, $CATS::Misc::uid);
     $c->bind_param($i++, $self->{problem}->{max_points});

@@ -60,7 +60,6 @@ sub new_id
     }
 }
 
-
 sub sql_connect
 {
     $dbh ||= DBI->connect(

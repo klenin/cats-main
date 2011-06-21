@@ -403,6 +403,10 @@ sub contests_submenu_filter
         'official' => 'AND C.is_official = 1 ',
         'unfinished' => 'AND CURRENT_TIMESTAMP <= finish_date ',
         'current' => 'AND CURRENT_TIMESTAMP BETWEEN start_date AND finish_date ',
+        'json' => q~
+            AND EXISTS (
+                SELECT 1 FROM problems P INNER JOIN contest_problems CP ON P.id = CP.problem_id
+                WHERE CP.contest_id = C.id AND P.json_data IS NOT NULL)~,
     }->{$f} || '';
 }
 
@@ -693,7 +697,7 @@ sub problems_replace
     my ($contest_id, $old_title) = $dbh->selectrow_array(qq~
         SELECT contest_id, title FROM problems WHERE id=?~, {}, $pid);
      
-    # Запрет на замену прилинкованных задач. По-первых, для надёжности,
+    # Запрет на замену прилинкованных задач. Во-первых, для надёжности,
     # а во-вторых, это секурити -- чтобы не проверять is_jury($contest_id).
     $contest_id == $cid
         or return msg(117);
@@ -3075,7 +3079,8 @@ sub problem_text_frame
     }
     $explain = $explain && url_param('explain');
 
-    init_template('main_problem_text.htm');
+    my $json = param('json');
+    init_template('main_problem_text.' . ($json ? 'json' : 'htm'));
 
     my (@id_problems, @problems, %pcodes);
     
@@ -3127,7 +3132,7 @@ sub problem_text_frame
                 id, contest_id, title, lang, time_limit, memory_limit,
                 difficulty, author, input_file, output_file,
                 statement, pconstraints, input_format, output_format, explanation,
-                formal_input, max_points
+                formal_input, json_data, max_points
             FROM problems WHERE id = ?~, { Slice => {} },
             $problem_id);
         my $lang = $problem_data->{lang};
