@@ -408,7 +408,7 @@ sub create_generator
     (my CATS::Problem $self, my $p) = @_;
     
     return $self->set_named_object($p->{name}, {
-        $self->problem_source_common_params($p, 'genertor'),
+        $self->problem_source_common_params($p, 'generator'),
         outputFile => $p->{outputFile},
     });
 }

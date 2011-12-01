@@ -502,7 +502,7 @@ sub graphs
     my $graphs = { all => { $init_graph->('all') } };
     for my $req (@$reqs)
     {
-        $req->{time_since_start} >= 0 && $selected_codes{$req->{code}} or next;
+        $req->{code} && $req->{time_since_start} >= 0 && $selected_codes{$req->{code}} or next;
         my $g = $graphs->{$req->{code}} ||= { $init_graph->($req->{code}) };
         my $step = int($req->{time_since_start} * 24 * $steps_per_hour);
         $g->{by_time}->[$step]++;

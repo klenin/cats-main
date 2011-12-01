@@ -572,7 +572,7 @@ sub show_unused_problem_codes ()
     my %used_codes;
     $used_codes{$_ || ''} = undef for @$c;
     
-    my @unused_codes = grep !exists($used_codes{$_}), 'A'..'Z';
+    my @unused_codes = grep !exists($used_codes{$_}), @cats::problem_codes;
     
     $t->param(
         code_array => [ map({ code => $_ }, @unused_codes) ],
@@ -731,7 +731,7 @@ sub problems_add_new
         );
         my %used_codes;
         $used_codes{$_ || ''} = undef for @$c;
-        ($problem_code) = grep !exists($used_codes{$_}), 'A'..'Z';
+        ($problem_code) = grep !exists($used_codes{$_}), @cats::problem_codes;
     }
 
     my CATS::Problem $p = CATS::Problem->new;
@@ -1381,7 +1381,7 @@ sub problems_frame
             status_list => [
                 map {{ id => $_, name => $psn->{$_}, selected => $c->{status} == $_ }} sort keys %$psn
             ],
-            code_array => [ map {{code => $_, selected => ($c->{code} || '') eq $_ }} 'A' .. 'Z' ],
+            code_array => [ map {{code => $_, selected => ($c->{code} || '') eq $_ }} @cats::problem_codes ],
         );
     };
 

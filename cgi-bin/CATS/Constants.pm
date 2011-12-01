@@ -101,6 +101,8 @@ $slow_refresh = 30;
 $medium_refresh = 10;
 $fast_refresh = 3;
 
+@problem_codes = ('A'..'Z', '1'..'9');
+
 @skins = (
     { id => "std", path => "./../templates/std" },
     { id => "alt", path => "./../templates/alt" }
