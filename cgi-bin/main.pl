@@ -344,7 +344,7 @@ sub contests_select_current
     defined $uid or return;
 
     my ($registered, $is_virtual, $is_jury) = get_registered_contestant(
-      fields => '1, is_virtual, is_jury', contest_id => $cid
+        fields => '1, is_virtual, is_jury', contest_id => $cid
     );
     return if $is_jury;
     
@@ -554,7 +554,7 @@ sub problems_change_code ()
     my $cpid = param('change_code')
       or return msg(54);
     my $new_code = param('code') || '';
-    $new_code =~ /^[A-Z]$/ or return;
+    $new_code =~ /^[A-Z1-9]$/ or return;
     $dbh->do(qq~
         UPDATE contest_problems SET code = ?
             WHERE contest_id = ? AND id = ?~, {},
