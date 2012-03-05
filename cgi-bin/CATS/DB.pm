@@ -12,7 +12,7 @@ BEGIN
 
 
 use Carp;
-use DBD::InterBase;
+use DBD::Firebird;
 
 use CATS::Connect;
 
@@ -46,7 +46,7 @@ my $next_id = 100;
 sub new_id
 {
     return $next_id++ unless $dbh;
-    if ($CATS::Connect::db_dsn =~ /InterBase/)
+    if ($CATS::Connect::db_dsn =~ /Firebird/)
     {
         $dbh->selectrow_array(q~SELECT GEN_ID(key_seq, 1) FROM RDB$DATABASE~);
     }

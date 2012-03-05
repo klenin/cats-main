@@ -66,7 +66,7 @@ sub generate_login
 {
     my $login_num;
 
-    if ($CATS::Connect::db_dsn =~ /InterBase/)
+    if ($CATS::Connect::db_dsn =~ /Firebird/)
     {
         $login_num = $dbh->selectrow_array('SELECT GEN_ID(login_seq, 1) FROM RDB$DATABASE');
     }
