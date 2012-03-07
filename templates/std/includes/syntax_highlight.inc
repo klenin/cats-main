@@ -1,3 +1,4 @@
+<script type="text/javascript" src="synh/scripts/XRegExp.js"></script>
 <script type="text/javascript" src="synh/scripts/shCore.js"></script>
 <TMPL_IF unsupported>
 <script type="text/javascript" src="synh/scripts/shBrushBash.js"></script>
