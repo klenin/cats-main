@@ -4,6 +4,7 @@ perl/*
 ev/*
 testutils/*
 easyGenPerl/*
-cgi-bin/download/*
 *.dll
 *.o
+# Created from template
+cgi-bin/CATS/Connect.pm
