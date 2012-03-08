@@ -22,7 +22,7 @@ function delete_team(href, name)
 <tr bgcolor=#ffffff>
 <TMPL_IF editable>
 <td>
-    <a href='javascript:delete_team("<TMPL_VAR href_delete>", "<TMPL_VAR team_name ESCAPE=HTML>");'><img border=0 src="./images/std/waste2.gif"></a> 
+    <a href='javascript:delete_team("<TMPL_VAR href_delete>", "<TMPL_VAR team_name ESCAPE=HTML>");'><img border=0 src="./images/std/waste2.gif"></a>
     <a href="<TMPL_VAR href_edit>"><img src="./images/std/blank.gif" border=0></a>
     <TMPL_VAR login ESCAPE=HTML>
 </td>
@@ -60,7 +60,6 @@ function delete_team(href, name)
 <input type=checkbox name='send_message_all'>&nbsp;Отправить всем
 </td></tr></table>
 </TMPL_IF>
-</form>
 </form>
 
 <TMPL_INCLUDE 'includes/menu_end.inc'>
