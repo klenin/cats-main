@@ -853,15 +853,20 @@ sub download_problem
 
 sub upload_source
 {
-    my ($file) = @_;
     my $src = '';
-    use bytes;
-    while (read($file, my $buffer, 4096))
-    {
-        length $src < 32767 or return;
-        $src .= $buffer;
+    if ($qq) {
+        $qq->upload($_[0])->slurp($src);
     }
-    return $src;
+    else {
+        my $file = param($_[0]);
+        use bytes;
+        while (read($file, my $buffer, 4096))
+        {
+            length $src < 32767 or return;
+            $src .= $buffer;
+        }
+    }
+    $src;
 }
 
 
@@ -932,7 +937,7 @@ sub problems_submit
         return msg(137) if $prev_reqs_count >= $contest->{max_reqs};
     }
 
-    my $src = upload_source($file);
+    my $src = upload_source('source');
     defined($src) or return msg(10);
     $src or return msg(11);
     my $did = param('de_id');
@@ -2602,9 +2607,9 @@ sub view_source_frame
     init_template('main_view_source.htm');
     my ($sources_info, $is_jury) = prepare_source(1);
     $sources_info or return;
-    if ($is_jury && (my $file = param('replace_source')))
+    if ($is_jury && param('replace_source'))
     {
-        my $src = upload_source($file) or return;
+        my $src = upload_source('replace_source') or return;
         my $s = $dbh->prepare(q~
             UPDATE sources SET src = ? WHERE req_id = ?~);
         $s->bind_param(1, $src, { ora_type => 113 } ); # blob
