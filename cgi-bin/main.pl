@@ -11,6 +11,15 @@ use CGI qw(:standard);
 #use CGI::Util qw(unescape escape);
 #use FCGI;
 
+our $qq;
+
+if ($ENV{MOD_PERL}) {
+    require Apache2::Request;
+    require Apache2::Upload;
+    $qq = Apache2::Request->new(Apache2::RequestUtil->request,
+        POST_MAX => 10 * 1024 * 1024, # Actual limit is defined by Apache config.
+        DISABLE_UPLOADS => 0);
+}
 
 use Algorithm::Diff;
 use Text::Aspell;
@@ -606,17 +615,7 @@ sub add_problem_to_contest
 
 sub save_uploaded_file
 {
-    my ($file) = @_;
-    my ($fh, $fname) = tmpnam;
-    my ($br, $buffer);
-    #$file->open(':raw');
-    #binmode $fh, ':raw'; binmode $file, ':raw'; warn $file;
-    while ($br = sysread($file, $buffer, 16384))
-    {
-        syswrite($fh, $buffer, $br);
-    }
-    close $fh;
-    return $fname;
+    return $qq ? $qq->upload($_[0])->tempname : tmpFileName(param($_[0]));
 }
 
 
@@ -642,7 +641,7 @@ sub problems_new_save
     my $file = param('zip') || '';
     $file =~ /\.(zip|ZIP)$/
         or return msg(53);
-    my $fname = save_uploaded_file($file);
+    my $fname = save_uploaded_file('zip');
     my $problem_code = param('problem_code');
     check_problem_code(\$problem_code) or return;
 
@@ -701,7 +700,7 @@ sub problems_replace
     # а во-вторых, это секурити -- чтобы не проверять is_jury($contest_id).
     $contest_id == $cid
         or return msg(117);
-    my $fname = save_uploaded_file($file);
+    my $fname = save_uploaded_file('zip');
 
     my CATS::Problem $p = CATS::Problem->new;
     $p->{old_title} = $old_title unless param('allow_rename');
@@ -720,7 +719,7 @@ sub problems_add_new
     my $file = param('zip') || '';
     $file =~ /\.(zip|ZIP)$/
         or return msg(53);
-    my $fname = save_uploaded_file($file);
+    my $fname = save_uploaded_file('zip');
 
     my $problem_code;
     if (!$contest->is_practice)
