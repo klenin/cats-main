@@ -4,7 +4,6 @@ use warnings;
 no warnings 'redefine';
 use encoding 'utf8', STDIN => undef;
 
-use File::Temp qw/tempfile tmpnam mktemp/;
 use Encode;
 #use CGI::Fast qw(:standard);
 use CGI qw(:standard);
@@ -2921,7 +2920,6 @@ sub ensure_problem_hash
     return 1 if $$hash;
     my @ch = ('a'..'z', 'A'..'Z', '0'..'9');
     $$hash = join '', map @ch[rand @ch], 1..32;
-    #$$hash = mktemp('X' x 32);
     $dbh->do(qq~UPDATE problems SET hash = ? WHERE id = ?~, undef, $$hash, $problem_id);
     $dbh->commit;
     return 0;
