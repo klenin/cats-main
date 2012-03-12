@@ -19,7 +19,7 @@ use Storable ();
 use Time::HiRes;
 use List::Util qw(max);
 
-my $cats_lib_dir;
+our $cats_lib_dir;
 BEGIN {
     $cats_lib_dir = $ENV{CATS_DIR} || '.';
     $cats_lib_dir =~ s/\/$//;
