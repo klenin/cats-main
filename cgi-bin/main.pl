@@ -3355,7 +3355,7 @@ sub generate_menu
           href => $logged_on ? url_function('logout', sid => $sid) : url_f('login') },
         { item => res_str(502), href => url_f('contests') },
         { item => res_str(525), href => url_f('problems') },
-        { item => res_str(526), href => url_f('users') },
+        ($is_jury || !$contest->is_practice ? { item => res_str(526), href => url_f('users') } : ()),
         { item => res_str(510),
           href => url_f('console', $is_jury ? () : (uf => $uid || get_anonymous_uid())) },
         ($is_jury ? () : { item => res_str(557), href => url_f('import_sources') }),
