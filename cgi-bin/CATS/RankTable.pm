@@ -49,7 +49,8 @@ sub get_problems
     my $problems = $self->{problems} = $dbh->selectall_arrayref(qq~
         SELECT
             CP.id, CP.problem_id, CP.code, CP.contest_id, C.start_date,
-            CURRENT_TIMESTAMP - C.start_date AS since_start, C.local_only, P.max_points, P.title,
+            CAST(CURRENT_TIMESTAMP - C.start_date AS DOUBLE PRECISION) AS since_start,
+            C.local_only, P.max_points, P.title,
             COALESCE(
                 (SELECT PS.stype FROM problem_sources PS
                     WHERE PS.problem_id = P.id AND PS.stype IN ($checker_types)),
@@ -214,9 +215,9 @@ sub get_contests_info
     $self->{frozen} = $self->{not_started} = $self->{has_practice} = $self->{show_points} = 0;
     my $sth = $dbh->prepare(qq~
         SELECT C.title,
-          CURRENT_TIMESTAMP - C.freeze_date,
-          CURRENT_TIMESTAMP - C.defreeze_date,
-          CURRENT_TIMESTAMP - C.start_date,
+          CAST(CURRENT_TIMESTAMP - C.freeze_date AS DOUBLE PRECISION),
+          CAST(CURRENT_TIMESTAMP - C.defreeze_date AS DOUBLE PRECISION),
+          CAST(CURRENT_TIMESTAMP - C.start_date AS DOUBLE PRECISION),
           (SELECT COUNT(*) FROM contest_accounts WHERE contest_id = C.id AND account_id = ?),
           C.rules, C.ctype
         FROM contests C

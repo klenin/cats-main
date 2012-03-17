@@ -886,8 +886,8 @@ sub problems_submit
     {
         (my $time_since_start, $time_since_finish, my $is_official, my $status) = $dbh->selectrow_array(qq~
             SELECT
-                CURRENT_TIMESTAMP - $virtual_diff_time - C.start_date,
-                CURRENT_TIMESTAMP- $virtual_diff_time - C.finish_date,
+                CAST(CURRENT_TIMESTAMP - $virtual_diff_time - C.start_date AS DOUBLE PRECISION),
+                CAST(CURRENT_TIMESTAMP- $virtual_diff_time - C.finish_date AS DOUBLE PRECISION),
                 C.is_official, CP.status
             FROM contests C, contest_problems CP
             WHERE CP.contest_id = C.id AND C.id = ? AND CP.problem_id = ?~, {},
@@ -917,7 +917,7 @@ sub problems_submit
 
     # Защита от Denial of Service -- запрещаем посылать решения слишком часто
     my $prev = $dbh->selectcol_arrayref(q~
-        SELECT FIRST 2 CURRENT_TIMESTAMP - R.submit_time FROM reqs R
+        SELECT FIRST 2 CAST(CURRENT_TIMESTAMP - R.submit_time AS DOUBLE PRECISION) FROM reqs R
         WHERE R.account_id = ?
         ORDER BY R.submit_time DESC~, {},
         $submit_uid);
@@ -3050,7 +3050,7 @@ sub contest_visible
 
     my $c = $dbh->selectrow_hashref(qq~
         SELECT
-            CURRENT_TIMESTAMP - C.start_date AS since_start,
+            CAST(CURRENT_TIMESTAMP - C.start_date AS DOUBLE PRECISION) AS since_start,
             C.local_only, C.id AS orig_cid, C.show_packages, C.is_hidden
             FROM contests C $s WHERE $t.id = ?~,
         undef, $p);

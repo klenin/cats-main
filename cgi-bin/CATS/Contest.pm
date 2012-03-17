@@ -31,7 +31,8 @@ sub load
     my $all_fields = [
         database_fields(),
         'CURRENT_TIMESTAMP AS server_time',
-        map "CURRENT_TIMESTAMP - ${_}_date AS time_since_$_", qw(start finish defreeze)
+        map "CAST(CURRENT_TIMESTAMP - ${_}_date AS DOUBLE PRECISION) AS time_since_$_",
+            qw(start finish defreeze)
     ];
     my $r;
     if ($cid)
