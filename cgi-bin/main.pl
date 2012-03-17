@@ -279,7 +279,7 @@ sub contests_edit_save
         $edit_cid
     );
     $dbh->commit;
-    CATS::StaticPages::invalidate_problem_text(cid => $edit_cid);
+    CATS::StaticPages::invalidate_problem_text(cid => $edit_cid, all => 1);
     # если переименовали текущий турнир, сразу изменить заголовок окна
     if ($edit_cid == $cid)
     {
@@ -556,6 +556,7 @@ sub problems_change_status ()
     $dbh->commit;
     # Возможно изменение статуса hidden
     CATS::StaticPages::invalidate_problem_text(cid => $cid);
+    CATS::StaticPages::invalidate_problem_text(cpid => $cpid);
 }
 
 sub problems_change_code ()
@@ -570,6 +571,7 @@ sub problems_change_code ()
         $new_code, $cid, $cpid);
     $dbh->commit;
     CATS::StaticPages::invalidate_problem_text(cid => $cid);
+    CATS::StaticPages::invalidate_problem_text(cpid => $cpid);
 }
 
 sub show_unused_problem_codes ()
@@ -1116,6 +1118,7 @@ sub problems_frame_jury_action
 
         $dbh->do(qq~DELETE FROM contest_problems WHERE id = ?~, undef, $cpid);
         CATS::StaticPages::invalidate_problem_text(cid => $old_contest);
+        CATS::StaticPages::invalidate_problem_text(cpid => $cpid);
         
         my ($ref_count) = $dbh->selectrow_array(qq~
             SELECT COUNT(*) FROM contest_problems WHERE problem_id = ?~, undef, $pid);
@@ -1368,7 +1371,8 @@ sub problems_frame
             status => $c->{status},
             disabled => !$is_jury && $c->{status} == $cats::problem_st_disabled,
             is_team => $my_is_team,
-            href_view_problem => url_f('problem_text', cpid => $c->{cpid}),
+            href_view_problem => ($is_jury ? \&url_f :
+                \&CATS::StaticPages::url_static)->('problem_text', cpid => $c->{cpid}),
             href_explanation => $show_packages && $c->{has_explanation} ?
                 url_f('problem_text', cpid => $c->{cpid}, explain => 1) : '',
             problem_id => $c->{pid},

@@ -47,15 +47,26 @@ sub invalidate_problem_text
 {
     my (%p) = @_;
     my @contest_ids = $p{cid} ? ($p{cid}) : ();
+    my @cpids = $p{cpid} ? ($p{cpid}) : ();
     
     if ($p{pid})
     {
-        my $c = $dbh->selectcol_arrayref(q~
-            SELECT contest_id FROM contest_problems WHERE problem_id = ?~,
+        my $records = $dbh->selectall_arrayref(q~
+            SELECT id, contest_id FROM contest_problems WHERE problem_id = ?~,
             undef, $p{pid});
-        push @contest_ids, @$c;
+        for my $record (@$records) {
+            push @cpids, $$record[0];
+            push @contest_ids, $$record[1];
+        }
+    }
+    if ($p{all} && $p{cid}) {
+        my $c = $dbh->selectcol_arrayref(q~
+            SELECT id FROM contest_problems WHERE contest_id = ?~,
+            undef, $p{cid});
+        push @cpids, @$c;
     }
     unlink full_name('problem_text', cid => $_) for @contest_ids;
+    unlink full_name('problem_text', cpid => $_) for @cpids;
 }
 
 
