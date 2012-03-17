@@ -2454,6 +2454,7 @@ sub get_run_info
     
     while (my $row = $c->fetchrow_hashref())
     {
+        $_ and $_ = sprintf('%.3g', $_) for $row->{time_used};
         # На случай, если в БД не well-formed utf8
         if ($contest->{show_checker_comment})
         {
