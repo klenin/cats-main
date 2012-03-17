@@ -279,6 +279,7 @@ sub contests_edit_save
         $edit_cid
     );
     $dbh->commit;
+    CATS::StaticPages::invalidate_problem_text(cid => $edit_cid);
     # если переименовали текущий турнир, сразу изменить заголовок окна
     if ($edit_cid == $cid)
     {
@@ -1114,6 +1115,8 @@ sub problems_frame_jury_action
             $cpid) or return;
 
         $dbh->do(qq~DELETE FROM contest_problems WHERE id = ?~, undef, $cpid);
+        CATS::StaticPages::invalidate_problem_text(cid => $old_contest);
+        
         my ($ref_count) = $dbh->selectrow_array(qq~
             SELECT COUNT(*) FROM contest_problems WHERE problem_id = ?~, undef, $pid);
         if ($ref_count)
