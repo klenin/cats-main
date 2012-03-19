@@ -27,12 +27,15 @@ sub get_ip
 }
 
 
-sub short_long
+sub linkify_ip
 {
     my ($ip) = $_[0] || '';
     my ($short, @rest) = split /[,\s]+/, $ip;
-    my $long = @rest ? $ip : '';
-    ($short, $long);
+    (
+        last_ip_short => $short,
+        last_ip => (@rest ? $ip : ''),
+        href_whois => "http://whois.domaintools.com/$short"
+    )
 }
 
 1;

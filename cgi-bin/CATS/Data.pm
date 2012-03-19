@@ -128,8 +128,7 @@ sub get_sources_info
     my $official = $p{get_source} && !$is_jury && CATS::Contest::current_official;
     for my $r (@$result)
     {
-        @$r{qw(last_ip_short last_ip)} =
-            CATS::IP::short_long(CATS::IP::filter_ip($r->{last_ip}));
+        $r = { %$r, CATS::IP::linkify_ip CATS::IP::filter_ip $r->{last_ip} };
         # Только часы и минуты от времени начала и окончания обработки.
         ($r->{"${_}_short"} = $r->{$_}) =~ s/^(.*)\s+(\d\d:\d\d)\s*$/$2/
             for qw(test_time result_time);

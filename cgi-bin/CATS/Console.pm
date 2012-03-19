@@ -347,7 +347,6 @@ sub console
         $request_state = -1 unless defined $request_state;
   
         my ($country, $flag) = get_flag($country_abb);
-        (my $last_ip_short, $last_ip)  = CATS::IP::short_long(CATS::IP::filter_ip($last_ip));
         return (
             country => $country,
             flag => $flag, 
@@ -378,8 +377,7 @@ sub console
             answer_text =>          $answer,
             message_text =>         $jury_message,
             team_name =>            $team_name,
-            last_ip =>              $last_ip,
-            last_ip_short =>        $last_ip_short,
+            CATS::IP::linkify_ip(CATS::IP::filter_ip($last_ip)),
             is_jury =>              $is_jury,
             id      =>              $id,
             contest_id =>           $contest_id,
