@@ -3289,7 +3289,9 @@ sub similarity_frame
     my $reqs = $dbh->selectall_arrayref(q~
         SELECT R.id, R.account_id, S.src
             FROM reqs R INNER JOIN sources S ON S.req_id = R.id
-            WHERE R.contest_id = ? AND R.problem_id = ?~, { Slice => {} }, $cid, $pid);
+            INNER JOIN default_de D ON D.id = S.de_id
+            WHERE R.contest_id = ? AND R.problem_id = ? AND D.code >= 100~, # Ignore non-code DEs
+            { Slice => {} }, $cid, $pid);
 
     preprocess_source($_, $collapse_idents) for @$reqs;
 
