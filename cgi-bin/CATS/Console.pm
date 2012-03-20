@@ -222,41 +222,38 @@ sub console
     );
 
     my $user_filter = sprintf '%d', url_param('uf') || 0;
-
-    my $events_filter =
-        !$s->{show_results} ? ' AND 1 = 0' :
-        $user_filter ? 'AND A.id = ?' :
-        '';
-    my @events_filter_params = $s->{show_results} && $user_filter ? ($user_filter) : ();
+    my $runs_filter = $s->{show_results} ? '' : ' AND 1 = 0';
+    my $events_filter = $user_filter ? 'AND A.id = ?' : '';
+    my @events_filter_params = $user_filter ? ($user_filter) : ();
 
     my $contest_start_finish = '';
     if ($s->{show_contests})
     {
         my $hidden_cond = $is_root ? '' : ' AND C.is_hidden = 0';
         $contest_start_finish = qq~
-	        UNION
+                UNION
             SELECT
                 $console_select{contest_start}
                 WHERE (C.start_date > CURRENT_TIMESTAMP - $day_count) AND
                     (C.start_date < CURRENT_TIMESTAMP)$hidden_cond
-	        UNION
+                UNION
             SELECT
                 $console_select{contest_finish}
                 WHERE (C.finish_date > CURRENT_TIMESTAMP - $day_count) AND
                     (C.finish_date < CURRENT_TIMESTAMP)$hidden_cond~;
     }
-    
+
     my $broadcast = $s->{show_messages} ? qq~
-	    UNION
+            UNION
         SELECT
             $console_select{broadcast}
             WHERE (M.send_time > CURRENT_TIMESTAMP - $day_count) AND M.broadcast = 1~
         : '';
-    
+
     my $c;
     if ($is_jury)
     {
-        my $runs_filter = $is_root ? '' : ' AND C.id = ?';
+        my $jury_runs_filter = $is_root ? '' : ' AND C.id = ?';
         my $msg_filter = $is_root ? '' : ' AND CA.contest_id = ?';
         $msg_filter .= ' AND 1 = 0' unless $s->{show_messages};
         my @cid = $is_root ? () : ($cid);
@@ -267,7 +264,7 @@ sub console
             SELECT
                 $console_select{run}
                 WHERE R.submit_time > CURRENT_TIMESTAMP - $day_count
-                $problem_filter$runs_filter$events_filter
+                $problem_filter$jury_runs_filter$events_filter$runs_filter
             UNION
             SELECT
                 $console_select{question}
@@ -299,7 +296,7 @@ sub console
                 WHERE (R.submit_time > CURRENT_TIMESTAMP - $day_count) AND
                     C.id=? AND CA.is_hidden=0 AND
                     (A.id=? OR R.submit_time < C.freeze_date OR CURRENT_TIMESTAMP > C.defreeze_date)
-                $events_filter
+                $events_filter$runs_filter
             UNION
             SELECT
                 $console_select{question}
@@ -329,7 +326,7 @@ sub console
                 WHERE (R.submit_time > CURRENT_TIMESTAMP - $day_count) AND
                     R.contest_id=? AND CA.is_hidden=0 AND 
                     (R.submit_time < C.freeze_date OR CURRENT_TIMESTAMP > C.defreeze_date)
-                    $events_filter
+                    $events_filter$runs_filter
             $broadcast
             $contest_start_finish
             ORDER BY 2 DESC~);
@@ -345,7 +342,7 @@ sub console
             or return ();
 
         $request_state = -1 unless defined $request_state;
-  
+
         my ($country, $flag) = get_flag($country_abb);
         return (
             country => $country,
@@ -369,7 +366,7 @@ sub console
             'time' =>               $submit_time,
             problem_title =>        $problem_title,
             state_to_display($request_state,
-                # security: во время соревноваиня не показываем участникам
+                # security: во время соревнования не показываем участникам
                 # конкретные результаты других команд, а только accepted/rejected
                 $contest->{time_since_defreeze} <= 0 && !$is_jury &&
                 (!$is_team || !$team_id || $team_id != $uid)),
