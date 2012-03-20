@@ -1,8 +1,15 @@
+<script type="text/javascript">
+function send_message(href)
+{
+    window.open(href, '', 'width=500,height=400,location=no,menubar=no,resizable=yes,scrollbars=no,status=no,toolbar=no');
+}
+</script>
 <table class="internal_borders" cellpadding="3">
 <tr><th>ID</th><TMPL_LOOP sources_info><td><TMPL_VAR req_id></td></TMPL_LOOP></tr>
 <tr><th>Команда</th><TMPL_LOOP sources_info><td><a href="<TMPL_VAR href_stats>"><TMPL_VAR team_name></a>
 <TMPL_IF is_jury>
   [<a href="<TMPL_VAR href_whois>" alt="<TMPL_VAR last_ip>" title="<TMPL_VAR last_ip>"><TMPL_VAR last_ip_short></a>]
+  [<a href="javascript:send_message('<TMPL_VAR href_send_message>')">сообщение</a>]
 </TMPL_IF>
 </td></TMPL_LOOP></tr>
 <tr><th>Время</th><TMPL_LOOP sources_info

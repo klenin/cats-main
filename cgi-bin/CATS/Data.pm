@@ -105,7 +105,8 @@ sub get_sources_info
             P.title AS problem_name,
             C.title AS contest_name,
             COALESCE(R.testsets, CP.testsets) AS testsets,
-            C.id AS contest_id, CP.id AS cp_id
+            C.id AS contest_id, CP.id AS cp_id,
+            CA.id AS ca_id
         FROM sources S
             INNER JOIN reqs R ON R.id = S.req_id
             INNER JOIN default_de DE ON DE.id = S.de_id
@@ -113,6 +114,7 @@ sub get_sources_info
             INNER JOIN problems P ON P.id = R.problem_id
             INNER JOIN contests C ON C.id = R.contest_id
             INNER JOIN contest_problems CP ON CP.contest_id = C.id AND CP.problem_id = P.id
+            INNER JOIN contest_accounts CA ON CA.contest_id = C.id AND CA.account_id = A.id
         WHERE req_id IN ($req_id_list)~, { Slice => {} });
 
     my $official = $p{get_source} && !$is_jury && CATS::Contest::current_official;
@@ -122,6 +124,7 @@ sub get_sources_info
             %$r, state_to_display($r->{state}),
             CATS::IP::linkify_ip(CATS::IP::filter_ip $r->{last_ip}),
             href_stats => url_f('user_stats', uid => $r->{account_id}),
+            href_send_message => url_f('send_message_box', caid => $r->{ca_id}),
         };
         # Только часы и минуты от времени начала и окончания обработки.
         ($r->{"${_}_short"} = $r->{$_}) =~ s/^(.*)\s+(\d\d:\d\d)\s*$/$2/
