@@ -3077,7 +3077,8 @@ sub problem_text_frame
     my ($show, $explain) = contest_visible();
     if (!$show)
     {
-        die if $is_static_page; # В статическом режиме нельзя выводить меню
+        # We cannot return error as html for static pages, since it will cached.
+        die 'Request for cached problems of invisible contest' if $is_static_page;
         init_template('main_access_denied.htm');
         return;
     }
