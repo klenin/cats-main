@@ -14,7 +14,7 @@
 </tr>
 <tr bgcolor="#ffcc55" style="height: 40px">
   <td style="background-image: url(./images/std/bg2.gif)" class="down">
-    &nbsp;<font size="-3" color="#808080"><TMPL_VAR request_process_time> <TMPL_VAR init_time></font>
+    &nbsp;<TMPL_INCLUDE 'timing.inc'>
   </td>
   <td align="right">
     <a href="http://imcs.dvgu.ru/works" class="signed2"> Кафедра информатики &nbsp;</a><br>

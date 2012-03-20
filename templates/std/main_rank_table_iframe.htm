@@ -2,7 +2,7 @@
 <body>
 <div id='refreshable_content'>
 <TMPL_VAR rank_table_content>
-<font size="-3" color="#808080"><TMPL_VAR request_process_time></font>
+<TMPL_INCLUDE 'includes/timing.inc'>
 </div>
 <TMPL_INCLUDE 'includes/iframe_autorefresh.inc'>
 </body>

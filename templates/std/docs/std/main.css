@@ -162,3 +162,5 @@ div.problem_text div { page-break-inside: avoid; }
 @media print { .jsonly { display: none; } }
 
 table.registration tr td { padding: 5px; width: 200px; }
+
+span.timing { color: #808080; font-size: xx-small; }
