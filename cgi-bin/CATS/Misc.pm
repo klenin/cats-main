@@ -516,9 +516,8 @@ sub init_user
         $enc_settings = CGI::cookie('settings') || '';
         $enc_settings = decode_base64($enc_settings) if $enc_settings;
     }
-    $enc_settings ||= '';
     # При возникновении любых проблем сбрасываем настройки
-    $settings = eval { Storable::thaw($enc_settings) } || {};
+    $settings = eval { $enc_settings && Storable::thaw($enc_settings) } || {};
 }
 
 
