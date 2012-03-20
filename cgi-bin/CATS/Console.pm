@@ -362,7 +362,8 @@ sub console
                 ($uid && $team_id && $uid == $team_id) ? url_f('run_details', rid => $id) : ''
             ),
             href_problems =>        url_function('problems', sid => $sid, cid => $id),
-            href_delete =>          $is_root ? url_f('console', delete_question => $id) : undef,
+            href_delete_question => $is_root ? url_f('console', delete_question => $id) : undef,
+            href_delete_message =>  $is_root ? url_f('console', delete_message => $id) : undef,
             href_answer_box =>      $is_jury ? url_f('answer_box', qid => $id) : undef,
             href_send_message_box =>$is_jury ? url_f('send_message_box', caid => $caid) : undef,
             'time' =>               $submit_time,
@@ -549,8 +550,17 @@ sub delete_question
 }
 
 
+sub delete_message
+{
+    my ($mid) = @_;
+    $is_root or return;
+    $dbh->do(qq~DELETE FROM messages WHERE id = ?~, undef, $mid);
+    $dbh->commit;
+}
+
+
 sub console_frame
-{        
+{
     init_console_template('main_console.htm');
     my $s = get_settings;
     if (defined param('filter') || defined param('visible'))
@@ -562,9 +572,11 @@ sub console_frame
     my $question_text = param('question_text');
     my $selection = param('selection');
 
-    if (my $qid = param('delete_question'))
-    {
+    if (my $qid = param('delete_question')) {
         delete_question($qid);
+    }
+    if (my $mid = param('delete_message')) {
+        delete_message($mid);
     }
 
     if (defined param('retest'))
@@ -602,7 +614,7 @@ sub console_frame
 
 sub content_frame
 {
-    console('main_console_iframe.htm');  
+    console('main_console_iframe.htm');
 }
 
 

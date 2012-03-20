@@ -51,7 +51,7 @@
         <TMPL_ELSE>
         <font color=red><TMPL_VAR answer_text ESCAPE=HTML></font>
         </TMPL_UNLESS>
-        <TMPL_IF href_delete><a href="<TMPL_VAR href_delete>" class="small">[удалить]</a></TMPL_IF>
+        <TMPL_IF href_delete_question><a href="<TMPL_VAR href_delete_question>" class="small">[удалить]</a></TMPL_IF>
     </td>
 </TMPL_IF><TMPL_IF is_message>
     <td nowrap width=1%><TMPL_VAR time></td>
@@ -60,6 +60,7 @@
     </td>
     <td>
         <font color=red><TMPL_VAR message_text ESCAPE=HTML></font>
+        <TMPL_IF href_delete_message><a href="<TMPL_VAR href_delete_message>" class="small">[удалить]</a></TMPL_IF>
     </td>
 </TMPL_IF><TMPL_IF is_broadcast>
     <td nowrap width=1%><TMPL_VAR time></td>
@@ -68,6 +69,7 @@
     </td>
     <td>
         <b><font color=red><TMPL_VAR message_text ESCAPE=HTML></font></b>
+        <TMPL_IF href_delete_message><a href="<TMPL_VAR href_delete_message>" class="small">[удалить]</a></TMPL_IF>
     </td>
 </TMPL_IF><TMPL_IF is_contest>
     <td nowrap width=1%><TMPL_VAR time></td>
