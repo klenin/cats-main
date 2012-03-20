@@ -10,12 +10,12 @@ var ws = false, ranks;
 function ws_replace(s) {
     var ca = s.getElementsByTagName('code');
     for (var i = 0; i < ca.length; ++i) {
-        var t = ca[i].innerHTML;
+        var t = ca[i].firstChild.nodeValue;
         if (ws)
             t = t.replace(/\u2423/g, ' ');
         else
             t = t.replace(/ /g, '\u2423');
-        ca[i].innerHTML = t;
+        ca[i].firstChild.nodeValue = t;
     }
 }
 

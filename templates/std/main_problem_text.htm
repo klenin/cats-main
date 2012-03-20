@@ -10,7 +10,7 @@
 </div>
 </TMPL_LOOP>
 <script type="text/javascript" src="docs/std/whitespace.js"></script>
-<script type="text/javascript">ws_init('spaces', [<TMPL_LOOP problems><TMPL_VAR id>,</TMPL_LOOP>])</script>
+<script type="text/javascript">ws_init('spaces', [<TMPL_LOOP problems><TMPL_VAR id><TMPL_UNLESS __last__>,</TMPL_UNLESS></TMPL_LOOP>])</script>
 <TMPL_INCLUDE 'includes/timing.inc'>
 </body>
 </html>
