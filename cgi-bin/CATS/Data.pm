@@ -88,14 +88,11 @@ sub get_sources_info
     my $rid = $p{request_id} or return;
 
     my @req_ids = ref $rid eq 'ARRAY' ? @$rid : ($rid);
-    @req_ids = map +$_, grep $_ && /^\d+$/, @req_ids;
-    @req_ids or return;
+    @req_ids = map +$_, grep $_ && /^\d+$/, @req_ids or return;
 
     my $src = $p{get_source} ? ' S.src, DE.syntax,' : '';
-
-    # SELECT ... WHERE ... req_id IN (1,2,3) тормозит в Firebird 1.5,
-    # поэтому выполяем цикл вручную.
-    my $c = $dbh->prepare(qq~
+    my $req_id_list = join ', ', @req_ids;
+    my $result = $dbh->selectall_arrayref(qq~
         SELECT
             S.req_id,$src S.fname AS file_name,
             R.account_id, R.contest_id, R.problem_id, R.judge_id,
@@ -116,27 +113,19 @@ sub get_sources_info
             INNER JOIN problems P ON P.id = R.problem_id
             INNER JOIN contests C ON C.id = R.contest_id
             INNER JOIN contest_problems CP ON CP.contest_id = C.id AND CP.problem_id = P.id
-        WHERE req_id = ?~);
-    my $result = [];
-    for (@req_ids)
-    {
-        my $row = $c->execute($_) && $c->fetchrow_hashref or return;
-        $c->finish;
-        push @$result, $row;
-    }
+        WHERE req_id IN ($req_id_list)~, { Slice => {} });
 
     my $official = $p{get_source} && !$is_jury && CATS::Contest::current_official;
     for my $r (@$result)
     {
-        $r = { %$r, CATS::IP::linkify_ip CATS::IP::filter_ip $r->{last_ip} };
+        $r = {
+            %$r, state_to_display($r->{state}),
+            CATS::IP::linkify_ip(CATS::IP::filter_ip $r->{last_ip}),
+            href_stats => url_f('user_stats', uid => $r->{account_id}),
+        };
         # Только часы и минуты от времени начала и окончания обработки.
         ($r->{"${_}_short"} = $r->{$_}) =~ s/^(.*)\s+(\d\d:\d\d)\s*$/$2/
             for qw(test_time result_time);
-        #$r->{src} =~ s/</&lt;/;
-        $r = {
-            %$r, state_to_display($r->{state}),
-            href_stats => url_f('user_stats', uid => $r->{account_id}),
-        };
         get_nearby_attempt($r, 'prev', '<', 'DESC', 1);
         get_nearby_attempt($r, 'next', '>', 'ASC', 0);
         # Во время официального турнира запретить просмотр исходного кода из других турниров,
