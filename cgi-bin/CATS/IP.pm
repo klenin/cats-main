@@ -34,7 +34,7 @@ sub linkify_ip
     (
         last_ip_short => $short,
         last_ip => (@rest ? $ip : ''),
-        href_whois => "http://whois.domaintools.com/$short"
+        $short ? (href_whois => "http://whois.domaintools.com/$short") : (),
     )
 }
 
