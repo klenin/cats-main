@@ -18,6 +18,7 @@ if ($ENV{MOD_PERL}) {
     $qq = Apache2::Request->new(Apache2::RequestUtil->request,
         POST_MAX => 10 * 1024 * 1024, # Actual limit is defined by Apache config.
         DISABLE_UPLOADS => 0);
+    *param = sub { $qq->param(@_) };
 }
 
 use Algorithm::Diff;
