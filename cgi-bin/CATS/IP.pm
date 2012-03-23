@@ -2,6 +2,8 @@ package CATS::IP;
 use strict;
 use warnings;
 
+use List::Util qw(first);
+
 sub filter_ip
 {
     my ($ip) = @_;
@@ -27,13 +29,16 @@ sub get_ip
 }
 
 
+sub local_ip { $_[0] =~ /(\d+)\.(\d+)\.(\d+)\.(\d+)/ ? $1 == 10 || $1 == 192 && $2 == 168 : 1; }
+
 sub linkify_ip
 {
     my ($ip) = $_[0] || '';
-    my ($short, @rest) = split /[,\s]+/, $ip;
+    my (@ips) = split /[,\s]+/, $ip;
+    my $short = (first { !local_ip($_) } @ips) || $ips[0] || '';
     (
         last_ip_short => $short,
-        last_ip => (@rest ? $ip : ''),
+        last_ip => (@ips > 1 ? $ip : ''),
         $short ? (href_whois => "http://whois.domaintools.com/$short") : (),
     )
 }
