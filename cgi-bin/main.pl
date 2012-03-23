@@ -144,6 +144,7 @@ sub contests_new_frame
         finish_date => $date, open_date => $date,
         can_edit => 1,
         is_hidden => !$is_root,
+        show_all_results => 1,
         href_action => url_f('contests')
     );
 }
@@ -152,7 +153,7 @@ sub contests_new_frame
 sub contest_checkbox_params()
 {qw(
     free_registration run_all_tests
-    show_all_tests show_test_resources show_checker_comment
+    show_all_tests show_test_resources show_checker_comment show_all_results
     is_official show_packages local_only is_hidden
 )}
 
@@ -204,12 +205,12 @@ sub contests_new_save
             id, title, start_date, freeze_date, finish_date, defreeze_date, rules, max_reqs,
             ctype,
             closed, run_all_tests, show_all_tests,
-            show_test_resources, show_checker_comment, is_official, show_packages, local_only,
-            is_hidden, show_frozen_reqs
+            show_test_resources, show_checker_comment, show_all_results,
+            is_official, show_packages, local_only, is_hidden, show_frozen_reqs
         ) VALUES(
             ?, ?, ?, ?, ?, ?, ?, ?,
             0,
-            ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)~,
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)~,
         {},
         $cid, @$p{contest_string_params()},
         @$p{contest_checkbox_params()}
@@ -244,7 +245,7 @@ sub try_contest_params_frame
             defreeze_date AS open_date,
             1 - closed AS free_registration,
             run_all_tests, show_all_tests, show_test_resources, show_checker_comment,
-            is_official, show_packages, local_only, rules, is_hidden, max_reqs
+            show_all_results, is_official, show_packages, local_only, rules, is_hidden, max_reqs
         FROM contests WHERE id = ?~, { Slice => {} },
         $id
     ) or return;
@@ -271,7 +272,8 @@ sub contests_edit_save
             title=?, start_date=?, freeze_date=?, 
             finish_date=?, defreeze_date=?, rules=?, max_reqs=?,
             closed=?, run_all_tests=?, show_all_tests=?,
-            show_test_resources=?, show_checker_comment=?, is_official=?, show_packages=?,
+            show_test_resources=?, show_checker_comment=?, show_all_results=?,
+            is_official=?, show_packages=?,
             local_only=?, is_hidden=?, show_frozen_reqs=0
         WHERE id=?~,
         {},

@@ -24,7 +24,8 @@
 <br/>
 Показывать участникам
 <table cellpadding="0" class="bordered" width="250">
-  <tr><td>все результаты:</td><td><input type="checkbox" name="show_all_tests"<TMPL_IF show_all_tests>checked="checked"</TMPL_IF> <TMPL_UNLESS can_edit>disabled="disabled"</TMPL_UNLESS>/></td></tr>
+  <tr><td>результаты всех участников:</td><td><input type="checkbox" name="show_all_results"<TMPL_IF show_all_results>checked="checked"</TMPL_IF> <TMPL_UNLESS can_edit>disabled="disabled"</TMPL_UNLESS>/></td></tr>
+  <tr><td>результаты всех тестов:</td><td><input type="checkbox" name="show_all_tests"<TMPL_IF show_all_tests>checked="checked"</TMPL_IF> <TMPL_UNLESS can_edit>disabled="disabled"</TMPL_UNLESS>/></td></tr>
   <tr><td>использованные ресурсы:</td><td><input type="checkbox" name="show_test_resources"<TMPL_IF show_test_resources>checked="checked"</TMPL_IF> <TMPL_UNLESS can_edit>disabled="disabled"</TMPL_UNLESS>/></td></tr>
   <tr><td>комментарии checker'а:</td><td><input type="checkbox" name="show_checker_comment"<TMPL_IF show_checker_comment>checked="checked"</TMPL_IF> <TMPL_UNLESS can_edit>disabled="disabled"</TMPL_UNLESS>/></td></tr>
   <tr><td>пакеты задач:</td><td><input type="checkbox" name="show_packages"<TMPL_IF show_packages>checked="checked"</TMPL_IF> <TMPL_UNLESS can_edit>disabled="disabled"</TMPL_UNLESS>/></td></tr>

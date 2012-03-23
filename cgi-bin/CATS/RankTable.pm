@@ -17,7 +17,7 @@ use CATS::Misc qw(
 use fields qw(
     contest_list hide_ooc hide_virtual show_points frozen
     title has_practice not_started filter use_cache
-    rank problems problems_idx
+    rank problems problems_idx show_all_results
 );
 
 
@@ -118,21 +118,21 @@ sub get_results
     (my CATS::RankTable $self, my $cond_str, my $max_cached_req_id) = @_;
     my @conditions = ();
     my @params = ();
-    if ($self->{frozen} && !$is_jury)
-    {
-        if ($is_team)
-        {
-            push @conditions, '(R.submit_time < C.freeze_date OR R.account_id = ?)';
-            push @params, $uid;
+    unless($is_jury) {
+        if ($self->{frozen}) {
+            if ($is_team) {
+                push @conditions, '(R.submit_time < C.freeze_date OR R.account_id = ?)';
+                push @params, $uid;
+            }
+            else {
+                push @conditions, 'R.submit_time < C.freeze_date';
+            }
         }
-        else
-        {
-            push @conditions, 'R.submit_time < C.freeze_date';
+        if ($is_team && !$is_jury && $virtual_diff_time) {
+            push @conditions, "(R.submit_time - CA.diff_time < CURRENT_TIMESTAMP - $virtual_diff_time)";
         }
-    }
-    if ($is_team && !$is_jury && $virtual_diff_time)
-    {
-        push @conditions, "(R.submit_time - CA.diff_time < CURRENT_TIMESTAMP - $virtual_diff_time)";
+        push @conditions, '(C.show_all_results = 1 OR R.account_id = ?)';
+        push @params, $uid || 0;
     }
 
     $cond_str .= join '', map " AND $_", @conditions;
@@ -219,7 +219,7 @@ sub get_contests_info
           CAST(CURRENT_TIMESTAMP - C.defreeze_date AS DOUBLE PRECISION),
           CAST(CURRENT_TIMESTAMP - C.start_date AS DOUBLE PRECISION),
           (SELECT COUNT(*) FROM contest_accounts WHERE contest_id = C.id AND account_id = ?),
-          C.rules, C.ctype
+          C.rules, C.ctype, C.show_all_results
         FROM contests C
         WHERE id IN ($self->{contest_list})~
     );
@@ -227,8 +227,10 @@ sub get_contests_info
     
     my $common_title;
     my $contest_count = 0;
+    $self->{show_all_results} = 1;
     while (my (
-        $title, $since_freeze, $since_defreeze, $since_start, $registered, $rules, $ctype) =
+        $title, $since_freeze, $since_defreeze, $since_start, $registered,
+        $rules, $ctype, $show_all_results) =
             $sth->fetchrow_array)
     {
         ++$contest_count;
@@ -236,6 +238,7 @@ sub get_contests_info
         $self->{not_started} ||= $since_start < 0 && !$registered;
         $self->{has_practice} ||= ($ctype || 0);
         $self->{show_points} ||= $rules;
+        $self->{show_all_results} &&= $show_all_results;
         my @title_words = grep $_, split /\s+|_/, Encode::decode_utf8($title);
         $common_title = $common_title ? common_prefix($common_title, \@title_words) : \@title_words;
     }
@@ -265,6 +268,7 @@ sub parse_params
     $self->{use_cache} = url_param('cache');
     # по умолчанию кешируем внешние ссылки
     $self->{use_cache} = 1 if !defined $self->{use_cache} && !defined $uid;
+    $self->{use_cache} = 0 unless $self->{show_all_results};
     $self->{filter} = param('filter');
 }
 
@@ -430,7 +434,7 @@ sub rank_table
     else
     {
         $problem_stats->{$_} = {} for map $_->{problem_id}, @{$self->{problems}};
-        $teams = $select_teams->();
+        $teams = $select_teams->($is_jury || $self->{show_all_results} ? undef : $uid || -1);
     }
 
     my $results = $self->get_results($virtual_cond . $ooc_cond, $max_cached_req_id);
@@ -458,7 +462,7 @@ sub rank_table
             $t->{total_time} += $p->{time_consumed};
             $t->{total_solved}++;
         }
-        if ($_->{state} != $cats::st_security_violation) 
+        if ($_->{state} != $cats::st_security_violation) # && state != ignored ?
         {
             $p->{runs}++;
             $t->{total_runs}++;
@@ -469,7 +473,7 @@ sub rank_table
         }
     }
 
-    if (!$self->{frozen} && !$is_virtual && @$results && !$self->{has_practice})
+    if (!$self->{frozen} && !$is_virtual && @$results && !$self->{has_practice} && $self->{show_all_results})
     {
         Storable::lock_store({ t => $teams, p => $problem_stats, r => $max_req_id }, $cache_file);
     }
