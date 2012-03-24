@@ -271,7 +271,7 @@ CREATE TABLE req_details
   time_used         FLOAT,
   memory_used       INTEGER,
   disk_used         INTEGER,
-  checker_comment   VARCHAR(200),
+  checker_comment   VARCHAR(400),
   
   UNIQUE(req_id, test_rank)
 );
