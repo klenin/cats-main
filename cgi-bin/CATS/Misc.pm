@@ -572,7 +572,7 @@ sub save_settings
         defined $s->{$_} or delete $s->{$_} for keys %$s;
     }
     my $new_enc_settings = Storable::freeze($settings);
-    $new_enc_settings ne $enc_settings or return;
+    $new_enc_settings ne ($enc_settings || '') or return;
     $enc_settings = $new_enc_settings;
     $uid or return;
     $dbh->commit;
