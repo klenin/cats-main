@@ -47,7 +47,7 @@ sub load
 sub values { @{$_[0]}{param_names()} }
 
 
-sub insert_ooc_user
+sub add_to_contest
 {
     my %p = @_;
     $p{contest_id} && $p{account_id} or die;
@@ -56,7 +56,7 @@ sub insert_ooc_user
             id, contest_id, account_id, is_jury, is_pop, is_hidden, is_ooc, is_remote,
             is_virtual, diff_time
         ) VALUES(?,?,?,?,?,?,?,?,?,?)~, {},
-        new_id, $p{contest_id}, $p{account_id}, 0, 0, 0, 1, $p{is_remote} || 0,
+        new_id, $p{contest_id}, $p{account_id}, 0, 0, 0, $p{is_ooc}, $p{is_remote} || 0,
         0, 0
     );
 }
@@ -170,7 +170,7 @@ sub validate_login
 
 sub insert
 {
-    my ($self, $contest_id) = @_;
+    my ($self, $contest_id, %p) = @_;
     my $training_contests = $dbh->selectall_arrayref(qq~
         SELECT id, closed FROM contests WHERE ctype = 1 AND closed = 0~,
         { Slice => {} });
@@ -183,13 +183,13 @@ sub insert
         ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)~, {},
         $aid, $cats::srole_user, $self->{password1}, $self->values
     );
-    insert_ooc_user(contest_id => $_->{id}, account_id => $aid) for @$training_contests;
-    if ($contest_id && !grep $_->{id} == $contest_id, @$training_contests)
-    {
-        insert_ooc_user(contest_id => $contest_id, account_id => $aid);
+    add_to_contest(contest_id => $_->{id}, account_id => $aid, is_ooc => 1)
+        for @$training_contests;
+    if ($contest_id && !grep $_->{id} == $contest_id, @$training_contests) {
+        add_to_contest(contest_id => $contest_id, account_id => $aid, is_ooc => $p{is_ooc} // 1);
     }
 
-    $dbh->commit;
+    $dbh->commit if $p{commit} // 1;
     1;
 }
 
@@ -206,7 +206,7 @@ sub register_by_login
     !get_registered_contestant(contest_id => $contest_id, account_id => $aid)
         or return msg(120, $login);
 
-    insert_ooc_user(contest_id => $contest_id, account_id => $aid, is_remote => 1);
+    add_to_contest(contest_id => $contest_id, account_id => $aid, is_remote => 1, is_ooc => 1);
     $dbh->commit;
     msg(119, $login);
 }
