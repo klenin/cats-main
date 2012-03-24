@@ -69,7 +69,7 @@
     <td align="right"><TMPL_VAR NAME=memory_used></td>
     <td align="right"><TMPL_VAR NAME=disk_used></td>
   </TMPL_IF>
-  <TMPL_IF show_checker_comment><td><TMPL_VAR NAME=checker_comment></td></TMPL_IF>
+  <TMPL_IF show_checker_comment><td><pre><TMPL_VAR NAME=checker_comment></pre></td></TMPL_IF>
 </tr>
 </TMPL_LOOP>
 <TMPL_IF show_points><tr><td colspan="2">Всего</td><td><TMPL_VAR total_points></td></tr></TMPL_IF>
