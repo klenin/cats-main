@@ -7,5 +7,6 @@ easyGenPerl/*
 *.dll
 *.o
 templates/std/docs/sp.exe
+templates/std/docs/sample.zip
 # Created from template
 cgi-bin/CATS/Connect.pm
