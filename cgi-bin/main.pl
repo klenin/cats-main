@@ -700,7 +700,6 @@ sub problems_replace
         or return msg(53);
     my ($contest_id, $old_title) = $dbh->selectrow_array(qq~
         SELECT contest_id, title FROM problems WHERE id=?~, {}, $pid);
-     
     # Запрет на замену прилинкованных задач. Во-первых, для надёжности,
     # а во-вторых, это секурити -- чтобы не проверять is_jury($contest_id).
     $contest_id == $cid
@@ -1549,8 +1548,8 @@ sub users_new_save
 }
 
 
-sub users_edit_frame 
-{      
+sub users_edit_frame
+{
     init_template('main_users_edit.htm');
 
     my $id = url_param('edit') or return;
@@ -1584,6 +1583,28 @@ sub users_edit_save
 }
 
 
+sub users_import_frame
+{
+    init_template('main_users_import.htm');
+    $is_root or return;
+    $t->param(href_action => url_f('users_import'));
+    param('do') or return;
+    my $do_import = param('do_import');
+    my @report;
+    for my $line (split "\r\n", param('user_list')) {
+        my $u = CATS::User->new;
+        @$u{qw(team_name login password1 city)} = split "\t", $line;
+        my $r = eval {
+            $u->insert($contest->{id}, is_ooc => 0, commit => 0); 'ok'
+        } || $@;
+        push @report, $u->{team_name} . "-- $r";
+    }
+    $do_import ? $dbh->commit : $dbh->rollback;
+    push @report, ($do_import ? 'Import' : 'Test') . ' complete';
+    $t->param(report => join "\n", @report);
+}
+
+
 sub registration_frame
 {
     init_template('main_registration.htm');
@@ -1592,7 +1613,7 @@ sub registration_frame
 
     defined param('register')
         or return;
-    
+
     my $u = CATS::User->new->parse_params;
     $u->validate_params(validate_password => 1) or return;
     $u->insert or return;
@@ -1882,7 +1903,10 @@ sub users_frame
     if ($is_jury)
     {
         $t->param(
-            submenu => [ { href_item => url_f('users', new => 1), item_name => res_str(541) } ],
+            submenu => [
+                { href_item => url_f('users', new => 1), item_name => res_str(541) },
+                { href_item => url_f('users_import'), item_name => res_str(564) },
+            ],
             editable => 1
         );
     }
@@ -3430,6 +3454,7 @@ sub interface_functions ()
         problems_retest => \&problems_retest_frame,
         problem_select_testsets => \&problem_select_testsets,
         users => \&users_frame,
+        users_import => \&users_import_frame,
         user_stats => \&user_stats_frame,
         compilers => \&compilers_frame,
         judges => \&judges_frame,

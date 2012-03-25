@@ -1,0 +1,13 @@
+<TMPL_INCLUDE 'includes/menu_begin.inc'>
+
+<TMPL_IF message><i><TMPL_VAR message ESCAPE=HTML></i></TMPL_IF>
+
+<form method="post" action="<TMPL_VAR href_action>">
+<div>
+<textarea name="user_list" style="width: 80%"><TMPL_VAR report></textarea>
+</div>
+<input type="checkbox" name="do_import" />
+<input type="submit" class="btn" name="do" value="Импортировать" />
+</form>
+
+<TMPL_INCLUDE 'includes/menu_end.inc'>
