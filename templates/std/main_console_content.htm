@@ -38,7 +38,7 @@
 </TMPL_IF><TMPL_IF is_question>
     <td nowrap width=1%><TMPL_VAR time></td>
     <td align=left nowrap>
-        [<TMPL_VAR team_name ESCAPE=HTML><TMPL_IF is_jury>:
+      [<TMPL_IF is_jury><a href="javascript:send_message('<TMPL_VAR href_send_message_box>')"></TMPL_IF><TMPL_VAR team_name ESCAPE=HTML><TMPL_IF is_jury></a></TMPL_IF><TMPL_IF is_jury>:
         <TMPL_IF last_ip><a href="<TMPL_VAR href_whois>" alt="<TMPL_VAR last_ip>" title="<TMPL_VAR last_ip>"><TMPL_VAR last_ip_short></a><TMPL_ELSE><TMPL_VAR last_ip_short></TMPL_IF>
         </TMPL_IF> &gt; ึภาษ]
     </td>
