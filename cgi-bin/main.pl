@@ -1781,7 +1781,7 @@ sub users_impersonate
 
 
 sub users_frame
-{   
+{
     if ($is_jury)
     {
         users_delete if defined url_param('delete');
@@ -1806,12 +1806,12 @@ sub users_frame
             if defined param('set_tag');
         CATS::User::register_by_login(param('login_to_register'), $cid)
             if defined param('register_new');
-    
+
         if (defined param('send_message'))
         {                
             if (param_on('send_message_all'))
             {
-                users_send_broadcast(message => param('message_text'));                
+                users_send_broadcast(message => param('message_text'));
             }
             else
             {
@@ -1851,7 +1851,7 @@ sub users_frame
     return if !$is_jury && param('json') && $contest->is_practice;
 
     my $fields =
-        'A.id, CA.id, A.country, A.login, A.team_name, ' . 
+        'A.id, CA.id, A.country, A.login, A.team_name, A.city, ' .
         'CA.is_jury, CA.is_ooc, CA.is_remote, CA.is_hidden, CA.is_virtual, A.motto, CA.tag';
     my $sql = sprintf qq~
         SELECT $fields, COUNT(DISTINCT R.problem_id)
@@ -1871,7 +1871,7 @@ sub users_frame
     my $fetch_record = sub($)
     {
         my (
-            $aid, $caid, $country_abb, $login, $team_name, $jury,
+            $aid, $caid, $country_abb, $login, $team_name, $city, $jury,
             $ooc, $remote, $hidden, $virtual, $motto, $tag, $accepted
         ) = $_[0]->fetchrow_array
             or return ();
@@ -1886,6 +1886,7 @@ sub users_frame
             editable => $is_jury,
             messages => $is_jury,
             team_name => $team_name,
+            city => $city,
             tag => $tag,
             country => $country,
             flag => $flag,
