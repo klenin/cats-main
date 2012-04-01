@@ -28,7 +28,7 @@ sudo apt-get -y install ${packets[@]}
 formal_input='https://github.com/downloads/klenin/cats-main/FormalInput.tgz'
 DBD_firebird='http://search.cpan.org/CPAN/authors/id/M/MA/MARIUZ/DBD-Firebird-0.60.tar.gz'
 
-sudo sh -c 'wget -O - http://cpanmin.us | perl - --sudo App::cpanminus' # unsafe, but asks password once
+sudo -H sh -c 'wget -O - http://cpanmin.us | perl - --sudo App::cpanminus' # unsafe, but asks password once
 cpanm -S ${cpan_packets[@]}
 cd $CATS_ROOT
 git submodule init
