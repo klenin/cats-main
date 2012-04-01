@@ -520,11 +520,18 @@ sub init_user
     $settings = eval { $enc_settings && Storable::thaw($enc_settings) } || {};
 }
 
+sub extract_cid_from_cpid
+{
+    my $cpid = url_param('cpid') or return;
+    return $dbh->selectrow_array(qq~
+        SELECT contest_id FROM contest_problems WHERE id = ?~, undef,
+        $cpid);
+}
 
 # получение информации о текущем турнире и установка турнира по умолчанию
 sub init_contest
 {
-    $cid = url_param('cid') || param('clist') || '';
+    $cid = url_param('cid') || param('clist') || extract_cid_from_cpid || '';
     $cid =~ s/^(\d+).*$/$1/; # берём первый турнир из clist
     if ($contest && ref $contest ne 'CATS::Contest') {
         use Data::Dumper;
