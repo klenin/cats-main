@@ -13,7 +13,6 @@ BEGIN
         init_listview_template
         generate_output
         http_header
-        init_messages
         msg
         url_f
         templates_path
@@ -109,15 +108,11 @@ sub init_messages
 
     open my $f, '<', $msg_file or
         die "Couldn't open message file: '$msg_file'.";
-    binmode($f, ':raw');
-    while (<$f>)
-    {
-        Encode::from_to($_, 'koi8-r', 'utf-8');
-
-        $messages[$1] = $2 if m/^(\d+)\s+\"(.*)\"\s*$/;
+    binmode($f, ':utf8');
+    while (<$f>) {
+        $messages[$1] = $2 if m/^(\d+)\s+\"(.*)\"\s*$/ ;
     }
     close $f;
-    1;
 }
 
 
