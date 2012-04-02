@@ -21,7 +21,6 @@ if ($ENV{MOD_PERL}) {
     *param = sub { $qq->param(@_) };
 }
 
-use Algorithm::Diff;
 use Text::Aspell;
 use Data::Dumper;
 use Storable ();
@@ -2445,221 +2444,6 @@ sub answer_box_frame
 }
 
 
-sub run_details_frame
-{
-    init_template('main_run_details.htm');
-
-    my $rid = url_param('rid') or return;
-    my $rids = [ grep /^\d+$/, split /,/, $rid ];
-    my $si = get_sources_info(request_id => $rids) or return;
-    
-    my @runs;
-    my ($is_jury, $contest) = (0, { id => 0 });
-    for (@$si)
-    {
-        $is_jury = is_jury_in_contest(contest_id => $_->{contest_id})
-            if $_->{contest_id} != $contest->{id};
-        $is_jury || $uid == $_->{account_id} or next;
-
-        if ($is_jury && param('retest'))
-        {
-            enforce_request_state(
-                request_id => $_->{req_id},
-                state => $cats::st_not_processed,
-                testsets => param('testsets'));
-            $_ = get_sources_info(request_id => $_->{req_id}) or next;
-        }
-
-        source_links($_, $is_jury);
-        $contest = get_contest_info($_, $is_jury && !url_param('as_user'))
-            if $_->{contest_id} != $contest->{id};
-        push @runs,
-            $_->{state} == $cats::st_compilation_error ?
-            { get_log_dump($_->{req_id}, 1) } : get_run_info($contest, $_->{req_id});
-    }
-    $t->param(sources_info => $si, runs => \@runs);
-}
-
-
-sub prepare_source
-{
-    my ($show_msg) = @_;
-    my $rid = url_param('rid') or return;
-
-    my $sources_info = get_sources_info(request_id => $rid, get_source => 1)
-        or return;
-
-    my $is_jury = is_jury_in_contest(contest_id => $sources_info->{contest_id});
-    $is_jury || $sources_info->{account_id} == ($uid || 0)
-        or return ($show_msg && msg(126));
-    my $se = param('src_enc') || 'WINDOWS-1251';
-    if ($se && source_encodings()->{$se} && $sources_info->{file_name} !~ m/\.zip$/)
-    {
-        Encode::from_to($sources_info->{src}, $se, 'utf-8');
-    }
-    ($sources_info, $is_jury);
-}
-
-
-sub view_source_frame
-{
-    init_template('main_view_source.htm');
-    my ($sources_info, $is_jury) = prepare_source(1);
-    $sources_info or return;
-    if ($is_jury && param('replace_source'))
-    {
-        my $src = upload_source('replace_source') or return;
-        my $s = $dbh->prepare(q~
-            UPDATE sources SET src = ? WHERE req_id = ?~);
-        $s->bind_param(1, $src, { ora_type => 113 } ); # blob
-        $s->bind_param(2, $sources_info->{req_id} );
-        $s->execute;
-        $dbh->commit;
-        $sources_info->{src} = $src;
-    }
-    if ($sources_info->{file_name} =~ m/\.zip$/) {
-        $sources_info->{src} = sprintf 'ZIP, %d bytes', length ($sources_info->{src});
-    }
-    source_links($sources_info, $is_jury);
-    /^[a-z]+$/i and $sources_info->{syntax} = $_ for param('syntax');
-    $sources_info->{src_lines} = [ map {}, split("\n", $sources_info->{src}) ];
-    $t->param(sources_info => [ $sources_info ]);
-}
-
-
-sub download_source_frame
-{
-    my ($si, $is_jury) = prepare_source(0);
-    unless ($si)
-    {
-        init_template('main_view_source.htm');
-        return;
-    }
-
-    $si->{file_name} =~ m/\.([^.]+)$/;
-    my $ext = $1 || 'unknown';
-    binmode(STDOUT, ':raw');
-    print STDOUT CGI::header(
-        -type => ($ext eq 'zip' ? 'application/zip' : 'text/plain'),
-        -content_disposition => "inline;filename=$si->{req_id}.$ext");
-    print STDOUT $si->{src};
-}
-
-
-sub try_set_state
-{
-    my ($si, $rid) = @_;
-    defined param('set_state') or return;
-    my $state = 
-    {       
-        not_processed =>         $cats::st_not_processed,
-        accepted =>              $cats::st_accepted,
-        wrong_answer =>          $cats::st_wrong_answer,
-        presentation_error =>    $cats::st_presentation_error,
-        time_limit_exceeded =>   $cats::st_time_limit_exceeded,
-        memory_limit_exceeded => $cats::st_memory_limit_exceeded,            
-        runtime_error =>         $cats::st_runtime_error,
-        compilation_error =>     $cats::st_compilation_error,
-        security_violation =>    $cats::st_security_violation,
-        ignore_submit =>         $cats::st_ignore_submit,
-    }->{param('state')};
-    defined $state or return;
-
-    my $failed_test = sprintf '%d', param('failed_test') || '0';
-    enforce_request_state(
-        request_id => $rid, failed_test => $failed_test, state => $state);
-    my %st = state_to_display($state);
-    while (my ($k, $v) = each %st)
-    {
-        $si->{$k} = $v;
-    }
-    $si->{failed_test} = $failed_test;
-    1;
-}
-
-
-sub run_log_frame
-{
-    init_template('main_run_log.htm');
-    my $rid = url_param('rid') or return;
-
-    # HACK: Чтобы избежать лишнего обращения к БД, требуем, чтобы
-    # пользователь являлся членом жюри не только соревнования,
-    # в котором просматривает задачу, но и своего текущего соревнования.
-    $is_jury or return; 
-
-    my $si = get_sources_info(request_id => $rid)
-        or return;
-    is_jury_in_contest(contest_id => $si->{contest_id})
-        or return;
-
-    # перечитать параметры задачи, если обновилось её состояние
-    $si = get_sources_info(request_id => $rid)
-        if try_set_state($si, $rid);
-    $t->param(sources_info => [$si]);
-
-    source_links($si, 1);
-    $t->param(get_log_dump($rid));
-
-    my $tests = $dbh->selectcol_arrayref(qq~
-        SELECT rank FROM tests WHERE problem_id = ? ORDER BY rank~, {},
-        $si->{problem_id});
-    $t->param(tests => [ map {test_index => $_}, @$tests ]);
-}
-
-
-sub diff_runs_frame
-{
-    init_template('main_diff_runs.htm');
-    $is_jury or return;
-    
-    my $si = get_sources_info(
-        request_id => [ param('r1'), param('r2') ],
-        get_source => 1
-    ) or return;
-    @$si == 2 or return;
-
-    # Пользователь должен входить в жюри турниров, которым принадлежат обе задачи.
-    # Если задачи принадлежат одному и тому же турниру, проверяем его только однажды.
-    my ($cid1, $cid2) = map $_->{contest_id}, @$si;
-    is_jury_in_contest(contest_id => $cid1)
-        or return;
-    $cid1 == $cid2 || is_jury_in_contest(contest_id => $cid2)
-        or return;
-
-    source_links($_, 1) for @$si;
-    
-    for my $info (@$si)
-    {
-        $info->{lines} = [split "\n", $info->{src}];
-        s/\s*$// for @{$info->{lines}};
-    }
-    
-    my @diff = ();
-
-    my $SL = sub { $si->[$_[0]]->{lines}->[$_[1]] || '' }; 
-    
-    my $match = sub { push @diff, escape_html($SL->(0, $_[0])) . "\n"; };
-    my $only_a = sub { push @diff, span({class=>'diff_only_a'}, escape_html($SL->(0, $_[0])) . "\n"); };
-    my $only_b = sub { push @diff, span({class=>'diff_only_b'}, escape_html($SL->(1, $_[1])) . "\n"); };
-
-    Algorithm::Diff::traverse_sequences(
-        $si->[0]->{lines},
-        $si->[1]->{lines},
-        {
-            MATCH     => $match,     # callback on identical lines
-            DISCARD_A => $only_a,    # callback on A-only
-            DISCARD_B => $only_b,    # callback on B-only
-        }
-    );
-
-    $t->param(
-        sources_info => $si,
-        diff_lines => [map {line => $_}, @diff]
-    );
-}
-
-
 sub rank_table
 {
     my $template_name = shift;
@@ -3332,14 +3116,14 @@ sub interface_functions ()
 
         answer_box => \&answer_box_frame,
         send_message_box => \&send_message_box_frame,
-        
-        run_log => \&run_log_frame,
-        view_source => \&view_source_frame,
-        download_source => \&download_source_frame,
-        run_details => \&run_details_frame,
-        diff_runs => \&diff_runs_frame,
+
+        run_log => \&CATS::RunDetails::run_log_frame,
+        view_source => \&CATS::RunDetails::view_source_frame,
+        download_source => \&CATS::RunDetails::download_source_frame,
+        run_details => \&CATS::RunDetails::run_details_frame,
+        diff_runs => \&CATS::RunDetails::diff_runs_frame,
+
         compare_tests => \&compare_tests_frame,
-        
         rank_table_content => \&rank_table_content_frame,
         rank_table => \&rank_table_frame,
         rank_problem_details => \&rank_problem_details,
@@ -3348,7 +3132,7 @@ sub interface_functions ()
         about => \&about_frame,
         authors => \&authors_frame,
         static => \&static_frame,
-        
+
         similarity => \&similarity_frame,
         personal_official_results => \&CATS::Contest::personal_official_results,
     }
