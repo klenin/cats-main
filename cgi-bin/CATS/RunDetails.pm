@@ -7,7 +7,7 @@ use Algorithm::Diff;
 use CGI qw(param span url_param);
 use CATS::DB;
 use CATS::Utils qw(escape_html state_to_display url_function);
-use CATS::Misc qw($is_jury $sid $t $uid init_template url_f);
+use CATS::Misc qw($is_jury $sid $t $uid init_template upload_source url_f);
 use CATS::Data qw(is_jury_in_contest enforce_request_state);
 use CATS::IP;
 

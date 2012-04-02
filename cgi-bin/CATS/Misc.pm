@@ -23,6 +23,7 @@ BEGIN
         attach_listview
         attach_menu
         save_settings
+        upload_source
     );
 
     @EXPORT_OK = qw(
@@ -54,6 +55,8 @@ use CATS::Constants;
 use CATS::IP;
 use CATS::Contest;
 use CATS::Utils qw();
+
+our $qq;
 
 use vars qw(
     $contest $t $sid $cid $uid $team_name $server_time $dbi_error
@@ -595,6 +598,25 @@ sub initialize
     $listview_name = '';
     $listview_array_name = '';
     $col_defs = undef;
+}
+
+
+sub upload_source
+{
+    my $src = '';
+    if ($qq) {
+        $qq->upload($_[0])->slurp($src);
+    }
+    else {
+        my $file = param($_[0]);
+        use bytes;
+        while (read($file, my $buffer, 4096))
+        {
+            length $src < 32767 or return;
+            $src .= $buffer;
+        }
+    }
+    $src;
 }
 
 

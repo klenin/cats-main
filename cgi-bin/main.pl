@@ -856,25 +856,6 @@ sub download_problem
 }
 
 
-sub upload_source
-{
-    my $src = '';
-    if ($qq) {
-        $qq->upload($_[0])->slurp($src);
-    }
-    else {
-        my $file = param($_[0]);
-        use bytes;
-        while (read($file, my $buffer, 4096))
-        {
-            length $src < 32767 or return;
-            $src .= $buffer;
-        }
-    }
-    $src;
-}
-
-
 sub problems_submit
 {
     # Проверяем параметры заранее, чтобы не делать бесполезных обращений к БД.
