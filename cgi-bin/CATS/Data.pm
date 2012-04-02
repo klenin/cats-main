@@ -21,7 +21,6 @@ BEGIN
         enforce_request_state
         get_sources_info
         is_jury_in_contest
-        get_judge_name
     );
 
     our %EXPORT_TAGS = (all => [ @EXPORT ]);
@@ -174,17 +173,6 @@ sub get_nearby_attempt
     }
     $si->{"href_${prevnext}_attempt"} = url_f($f, @p);
     $si->{href_diff_runs} = url_f('diff_runs', r1 => $na->{id}, r2 => $si->{req_id}) if $diff;
-}
-
-
-sub get_judge_name
-{
-    my ($judge_id) = @_
-        or return;
-    my ($name) = $dbh->selectrow_array(qq~
-      SELECT nick FROM judges WHERE id = ?~,
-      {}, $judge_id);
-    return $name;
 }
 
 
