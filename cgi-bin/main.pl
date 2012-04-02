@@ -1457,10 +1457,13 @@ sub greedy_cliques
             }
             @equiv_tests = @new_et;
         }
-        push @$eq_lists, { eq => join ',', @$eq };
+        push @$eq_lists, $eq;
     }
     $eq_lists;
 }
+
+
+sub lists_to_strings { [ map { eq => join ',', @$_ }, @{$_[0]} ] }
 
 
 sub compare_tests_frame
@@ -1531,7 +1534,7 @@ sub compare_tests_frame
 
     $t->param(
         comparision_matrix => $cm,
-        equiv_lists => greedy_cliques(@equiv_tests),
+        equiv_lists => lists_to_strings(greedy_cliques(@equiv_tests)),
         simple_tests => \@simple_tests,
         hard_tests => \@hard_tests,
     );
@@ -3351,6 +3354,7 @@ sub similarity_frame
                 score => sprintf('%.1f%%', $score * 100), s => $score,
                 n1 => [$ai], ($self_diff ? () : (n2 => [$aj])),
                 href_diff => url_f('diff_runs', r1 => $i->{id}, r2 => $j->{id}),
+                t1 => $i->{account_id}, t2 => $j->{account_id},
             };
             if ($group)
             {
@@ -3366,7 +3370,12 @@ sub similarity_frame
         }
     }
     @similar = values %$by_account if $group;
-    $t->param(similar => [ sort { ($b->{s} <=> $a->{s}) * ($self_diff ? -1 : 1) } @similar ]);
+    my $ids_to_teams = sub { [ map $acc->{$_}->{team_name}, @{$_[0]} ] };
+    $t->param(
+        similar => [ sort { ($b->{s} <=> $a->{s}) * ($self_diff ? -1 : 1) } @similar ],
+        equiv_lists =>
+            lists_to_strings [ map $ids_to_teams->($_), grep @$_ > 2, @{greedy_cliques @similar} ]
+    );
 }
 
 sub about_frame

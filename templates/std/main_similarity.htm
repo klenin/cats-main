@@ -18,4 +18,8 @@
   </tr>
 </TMPL_LOOP>
 </table>
+<TMPL_IF equiv_lists>
+Группы эквивалентности:<br/>
+<TMPL_LOOP equiv_lists> (<TMPL_VAR eq>) <br/></TMPL_LOOP>
+</TMPL_IF>
 <TMPL_INCLUDE 'includes/menu_end.inc'>
