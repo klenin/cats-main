@@ -3311,6 +3311,7 @@ sub similarity_frame
     $t->param(self_diff => $self_diff);
     my $collapse_idents = param('collapse_idents') ? 1 : 0;
     $t->param(collapse_idents => $collapse_idents);
+    $t->param(threshold => my $threshold = param('threshold') || 50);
     my $p = $dbh->selectall_arrayref(q~
         SELECT P.id, P.title, CP.code
             FROM problems P INNER JOIN contest_problems CP ON P.id = CP.problem_id
@@ -3334,7 +3335,6 @@ sub similarity_frame
 
     preprocess_source($_, $collapse_idents) for @$reqs;
 
-    my $threshold = 0.45;
     my @similar;
     my $by_account = {};
     for my $i (@$reqs)
@@ -3349,7 +3349,7 @@ sub similarity_frame
                 $ai->{is_jury} || $aj->{is_jury} ||
                 !$virtual && ($ai->{is_virtual} || $aj->{is_virtual});
             my $score = similarity_score($i->{hash}, $j->{hash});
-            ($score > $threshold) ^ $self_diff or next;
+            ($score * 100 > $threshold) ^ $self_diff or next;
             my $pair = {
                 score => sprintf('%.1f%%', $score * 100), s => $score,
                 n1 => [$ai], ($self_diff ? () : (n2 => [$aj])),

@@ -1,8 +1,10 @@
 <TMPL_INCLUDE 'includes/menu_begin.inc'>
 <form method="post" enctype="multipart/form-data">
+<label for="pid">Задача:</label>
 <select name="pid"><option/>
   <TMPL_LOOP problems><option value="<TMPL_VAR id>"<TMPL_IF selected> selected="selected"</TMPL_IF>><TMPL_VAR code> - <TMPL_VAR title></option></TMPL_LOOP>
 </select>
+<label for="threshold">Порог, %:</label><input type="text" name="threshold" value="<TMPL_VAR threshold>"/>
 <input type="submit" value="Сравнить" class="button"/>
 <br/>
 <input type="checkbox" name="virtual" value="1"<TMPL_IF virtual> checked="checked"</TMPL_IF>/> Учитывать виртуальных
