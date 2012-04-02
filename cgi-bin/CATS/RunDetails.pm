@@ -8,7 +8,8 @@ use CGI qw(param span url_param);
 use CATS::DB;
 use CATS::Utils qw(escape_html state_to_display url_function);
 use CATS::Misc qw($is_jury $sid $t $uid init_template url_f);
-use CATS::Data qw(is_jury_in_contest enforce_request_state get_sources_info);
+use CATS::Data qw(is_jury_in_contest enforce_request_state);
+use CATS::IP;
 
 
 sub get_judge_name
@@ -154,6 +155,97 @@ sub get_log_dump
     return (judge_log_dump => $dump);
 }
 
+
+sub get_nearby_attempt
+{
+    my ($si, $prevnext, $cmp, $ord, $diff) = @_;
+    my $na = $dbh->selectrow_hashref(qq~
+        SELECT id, submit_time FROM reqs
+          WHERE account_id = ? AND problem_id = ? AND id $cmp ?
+          ORDER BY id $ord ROWS 1~, { Slice => {} },
+        $si->{account_id}, $si->{problem_id}, $si->{req_id}
+    ) or return;
+    for ($na->{submit_time}) {
+        s/\s*$//;
+        # If the date is the same with the current run, display only time.
+        my ($n_date, $n_time) = /^(\d+\.\d+\.\d+\s+)(.*)$/;
+        $si->{"${prevnext}_attempt_time"} = $si->{submit_time} =~ /^$n_date/ ? $n_time : $_;
+    }
+    my $f = url_param('f') || 'run_log';
+    my @p;
+    if ($f eq 'diff_runs') {
+        for (1..2) {
+            my $r = CGI::url_param("r$_") || 0;
+            push @p, "r$_" => ($r == $si->{req_id} ? $na->{id} : $r);
+        }
+    }
+    else {
+        @p = (rid => $na->{id});
+    }
+    $si->{"href_${prevnext}_attempt"} = url_f($f, @p);
+    $si->{href_diff_runs} = url_f('diff_runs', r1 => $na->{id}, r2 => $si->{req_id}) if $diff;
+}
+
+
+# Load informatin about one or several runs..
+# Parameters: request_id, may be either scalar or array ref.
+sub get_sources_info
+{
+    my %p = @_;
+    my $rid = $p{request_id} or return;
+
+    my @req_ids = ref $rid eq 'ARRAY' ? @$rid : ($rid);
+    @req_ids = map +$_, grep $_ && /^\d+$/, @req_ids or return;
+
+    my $src = $p{get_source} ? ' S.src, DE.syntax,' : '';
+    my $req_id_list = join ', ', @req_ids;
+    my $result = $dbh->selectall_arrayref(qq~
+        SELECT
+            S.req_id,$src S.fname AS file_name,
+            R.account_id, R.contest_id, R.problem_id, R.judge_id,
+            R.state, R.failed_test,
+            R.submit_time,
+            R.test_time,
+            R.result_time,
+            DE.description AS de_name,
+            A.team_name, A.last_ip,
+            P.title AS problem_name,
+            C.title AS contest_name,
+            COALESCE(R.testsets, CP.testsets) AS testsets,
+            C.id AS contest_id, CP.id AS cp_id,
+            CA.id AS ca_id
+        FROM sources S
+            INNER JOIN reqs R ON R.id = S.req_id
+            INNER JOIN default_de DE ON DE.id = S.de_id
+            INNER JOIN accounts A ON A.id = R.account_id
+            INNER JOIN problems P ON P.id = R.problem_id
+            INNER JOIN contests C ON C.id = R.contest_id
+            INNER JOIN contest_problems CP ON CP.contest_id = C.id AND CP.problem_id = P.id
+            INNER JOIN contest_accounts CA ON CA.contest_id = C.id AND CA.account_id = A.id
+        WHERE req_id IN ($req_id_list)~, { Slice => {} });
+
+    my $official = $p{get_source} && !$is_jury && CATS::Contest::current_official;
+    for my $r (@$result) {
+        $r = {
+            %$r, state_to_display($r->{state}),
+            CATS::IP::linkify_ip(CATS::IP::filter_ip $r->{last_ip}),
+            href_stats => url_f('user_stats', uid => $r->{account_id}),
+            href_send_message => url_f('send_message_box', caid => $r->{ca_id}),
+        };
+        # Just hour and minute from testing start and finish timestamps.
+        ($r->{"${_}_short"} = $r->{$_}) =~ s/^(.*)\s+(\d\d:\d\d)\s*$/$2/
+            for qw(test_time result_time);
+        get_nearby_attempt($r, 'prev', '<', 'DESC', 1);
+        get_nearby_attempt($r, 'next', '>', 'ASC', 0);
+        # During the official contest, viewing sources from other contests
+        # is disallowed to prevent cheating.
+        if ($official && $official->{id} != $r->{contest_id}) {
+            $r->{src} = res_str(123, $official->{title});
+        }
+    }
+
+    return ref $rid ? $result : $result->[0];
+}
 
 sub run_details_frame
 {
