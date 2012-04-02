@@ -12,15 +12,18 @@
         </TMPL_IF>
     </td>
     <td nowrap width="1%">
-	<TMPL_IF is_jury>
+        <TMPL_IF is_jury>
         <a href="javascript:send_message('<TMPL_VAR href_send_message_box>')"><TMPL_VAR team_name ESCAPE=HTML></a>
         [<a href="<TMPL_VAR href_whois>" alt="<TMPL_VAR last_ip>" title="<TMPL_VAR last_ip>"><TMPL_VAR last_ip_short></a>]
-	<TMPL_ELSE>
+        <TMPL_ELSE>
         <TMPL_VAR team_name ESCAPE=HTML>
-	</TMPL_IF>
+        </TMPL_IF>
     </td>
     <td>
-        <TMPL_VAR problem_title>: <b><TMPL_IF not_processed><font color="#008000">Not processed</font></TMPL_IF
+        <TMPL_IF is_jury
+          ><a href="<TMPL_VAR href_source>" title="<TMPL_VAR de>"><TMPL_VAR problem_title></a><TMPL_ELSE
+          ><TMPL_VAR problem_title></TMPL_IF>:
+        <b><TMPL_IF not_processed><font color="#008000">Not processed</font></TMPL_IF
         ><TMPL_IF install_processing><font color="#a0a000">Processing</font></TMPL_IF
         ><TMPL_IF unhandled_error><font color="#a00000">Unhandled error</font></TMPL_IF
         ><TMPL_IF testing><font color="#a0a000">Processing</font></TMPL_IF

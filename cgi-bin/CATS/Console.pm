@@ -111,8 +111,14 @@ sub console
         CAST(NULL AS INTEGER) AS caid,
         CAST(NULL AS INTEGER) AS contest_id
     ~;
+    my $no_de = 'CAST(NULL AS VARCHAR(200)) AS de';
+    my $de_sql = $is_jury ?
+        '(SELECT description FROM default_de dd
+            INNER JOIN sources s ON s.de_id = dd.id WHERE s.req_id = R.id) AS de' : $no_de;
+    my $city_sql = $is_jury ?
+        q~ || (CASE WHEN A.city IS NULL OR A.city = '' THEN '' ELSE ' (' || A.city || ')' END)~ : '';
     my %console_select = (
-        run => q~
+        run => qq~
             1 AS rtype,
             R.submit_time AS rank,
             R.submit_time,
@@ -120,12 +126,13 @@ sub console
             R.state AS request_state,
             R.failed_test AS failed_test,
             P.title AS problem_title,
+            $de_sql,
             CAST(NULL AS INTEGER) AS clarified,
             D.t_blob AS question,
             D.t_blob AS answer,
             D.t_blob AS jury_message,
             A.id AS team_id,
-            A.team_name AS team_name,
+            A.team_name$city_sql AS team_name,
             A.country AS country,
             A.last_ip AS last_ip,
             CA.id,
@@ -137,7 +144,7 @@ sub console
             INNER JOIN contest_accounts CA ON CA.account_id=A.id AND CA.contest_id=R.contest_id,
             dummy_table D
         ~,
-        question => q~
+        question => qq~
             2 AS rtype,
             Q.submit_time AS rank,
             Q.submit_time,
@@ -145,6 +152,7 @@ sub console
             CAST(NULL AS INTEGER) AS request_state,
             CAST(NULL AS INTEGER) AS failed_test,
             CAST(NULL AS VARCHAR(200)) AS problem_title,
+            $no_de,
             Q.clarified AS clarified,
             Q.question AS question,
             Q.answer AS answer,
@@ -155,7 +163,7 @@ sub console
             A.last_ip AS last_ip,
             CA.id,
             CA.contest_id~,
-        message => q~
+        message => qq~
             3 AS rtype,
             M.send_time AS rank,
             M.send_time AS submit_time,
@@ -163,6 +171,7 @@ sub console
             CAST(NULL AS INTEGER) AS request_state,
             CAST(NULL AS INTEGER) AS failed_test,
             CAST(NULL AS VARCHAR(200)) AS problem_title,
+            $no_de,
             CAST(NULL AS INTEGER) AS clarified,
             D.t_blob AS question,
             D.t_blob AS answer,
@@ -182,6 +191,7 @@ sub console
             CAST(NULL AS INTEGER) AS request_state,
             CAST(NULL AS INTEGER) AS failed_test,
             CAST(NULL AS VARCHAR(200)) AS problem_title,
+            $no_de,
             CAST(NULL AS INTEGER) AS clarified,
             D.t_blob AS question,
             D.t_blob AS answer,
@@ -197,6 +207,7 @@ sub console
             C.is_official AS request_state,
             CAST(NULL AS INTEGER) AS failed_test,
             C.title AS problem_title,
+            $no_de,
             CAST(NULL AS INTEGER) AS clarified,
             D.t_blob AS question,
             D.t_blob AS answer,
@@ -212,6 +223,7 @@ sub console
             C.is_official AS request_state,
             CAST(NULL AS INTEGER) AS failed_test,
             C.title AS problem_title,
+            $no_de,
             CAST(NULL AS INTEGER) AS clarified,
             D.t_blob AS question,
             D.t_blob AS answer,
@@ -336,7 +348,7 @@ sub console
     my $fetch_console_record = sub($)
     {            
         my ($rtype, $rank, $submit_time, $id, $request_state, $failed_test, 
-            $problem_title, $clarified, $question, $answer, $jury_message,
+            $problem_title, $de, $clarified, $question, $answer, $jury_message,
             $team_id, $team_name, $country_abb, $last_ip, $caid, $contest_id
         ) = $_[0]->fetchrow_array
             or return ();
@@ -358,6 +370,7 @@ sub console
             href_details => (
                 ($uid && $team_id && $uid == $team_id) ? url_f('run_details', rid => $id) : ''
             ),
+            href_source => url_f('view_source', rid => $id),
             href_problems =>        url_function('problems', sid => $sid, cid => $id),
             href_delete_question => $is_root ? url_f('console', delete_question => $id) : undef,
             href_delete_message =>  $is_root ? url_f('console', delete_message => $id) : undef,
@@ -365,6 +378,7 @@ sub console
             href_send_message_box =>$is_jury ? url_f('send_message_box', caid => $caid) : undef,
             'time' =>               $submit_time,
             problem_title =>        $problem_title,
+            de =>                   $de,
             state_to_display($request_state,
                 # security: во время соревнования не показываем участникам
                 # конкретные результаты других команд, а только accepted/rejected
