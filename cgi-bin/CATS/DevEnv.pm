@@ -40,7 +40,7 @@ sub by_file_extension
         grep { return $de if $_ eq $ext } split(/\;/, $de->{file_ext});
     }
 
-    return undef;
+    undef;
 }
 
 
@@ -48,7 +48,15 @@ sub by_code
 {
     (my CATS::DevEnv $self, my $code) = @_;
     my @r = grep $_->{code} eq $code, @{$self->{_de_list}};
-    return @r ? $r[0] : undef;
+    @r ? $r[0] : undef;
+}
+
+
+sub by_id
+{
+    (my CATS::DevEnv $self, my $id) = @_;
+    my @r = grep $_->{id} eq $id, @{$self->{_de_list}};
+    @r ? $r[0] : undef;
 }
 
 

@@ -22,6 +22,9 @@
 <TMPL_IF is_jury>
 <form enctype="multipart/form-data" action="<TMPL_VAR href_current_link>" method="post">
   <input name="replace_source" type="file" class="file" size="25" />
+  <select name="de_id">
+  <TMPL_LOOP de_list><option value="<TMPL_VAR de_id>"<TMPL_IF selected> selected="selected"</TMPL_IF>><TMPL_VAR de_name ESCAPE=HTML></option></TMPL_LOOP>
+  </select>
   <input type="submit" class="button" value="заменить" /> 
 </form>
 </TMPL_IF>

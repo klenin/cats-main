@@ -10,6 +10,7 @@ use CATS::Utils qw(escape_html state_to_display url_function);
 use CATS::Misc qw($is_jury $sid $t $uid init_template upload_source url_f);
 use CATS::Data qw(is_jury_in_contest enforce_request_state);
 use CATS::IP;
+use CATS::DevEnv;
 
 
 sub get_judge_name
@@ -201,7 +202,7 @@ sub get_sources_info
     my $req_id_list = join ', ', @req_ids;
     my $result = $dbh->selectall_arrayref(qq~
         SELECT
-            S.req_id,$src S.fname AS file_name,
+            S.req_id,$src S.fname AS file_name, S.de_id,
             R.account_id, R.contest_id, R.problem_id, R.judge_id,
             R.state, R.failed_test,
             R.submit_time,
@@ -305,15 +306,22 @@ sub view_source_frame
     init_template('main_view_source.htm');
     my ($sources_info, $is_jury) = prepare_source(1);
     $sources_info or return;
-    if ($is_jury && param('replace_source')) {
-        my $src = upload_source('replace_source') or return;
-        my $s = $dbh->prepare(q~
-            UPDATE sources SET src = ? WHERE req_id = ?~);
-        $s->bind_param(1, $src, { ora_type => 113 } ); # blob
-        $s->bind_param(2, $sources_info->{req_id} );
+    my $replace_source = param('replace_source');
+    my $de_id = param('de_id');
+    my $set = join ', ', ($replace_source ? 'src = ?' : ()) , ($de_id ? 'de_id = ?' : ());
+    if ($is_jury && $set) {
+        my $s = $dbh->prepare(qq~
+            UPDATE sources SET $set WHERE req_id = ?~);
+        my $i = 0;
+        if ($replace_source) {
+            my $src = upload_source('replace_source') or return;
+            $s->bind_param(++$i, $src, { ora_type => 113 } ); # blob
+            $sources_info->{src} = $src;
+        }
+        $s->bind_param(++$i, $de_id) if $de_id;
+        $s->bind_param(++$i, $sources_info->{req_id});
         $s->execute;
         $dbh->commit;
-        $sources_info->{src} = $src;
     }
     if ($sources_info->{file_name} =~ m/\.zip$/) {
         $sources_info->{src} = sprintf 'ZIP, %d bytes', length ($sources_info->{src});
@@ -322,6 +330,21 @@ sub view_source_frame
     /^[a-z]+$/i and $sources_info->{syntax} = $_ for param('syntax');
     $sources_info->{src_lines} = [ map {}, split("\n", $sources_info->{src}) ];
     $t->param(sources_info => [ $sources_info ]);
+
+    if ($is_jury) {
+        my $de_list = CATS::DevEnv->new($dbh, active_only => 1);
+        if ($de_id) {
+            $sources_info->{de_id} = $de_id;
+            $sources_info->{de_name} = $de_list->by_id($de_id)->{description};
+        }
+        $t->param(de_list => [
+            map {
+                de_id => $_->{id},
+                de_name => $_->{description},
+                selected => $_->{id} == $sources_info->{de_id},
+            }, @{$de_list->{_de_list}}
+        ]);
+    }
 }
 
 
