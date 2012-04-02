@@ -3303,20 +3303,18 @@ sub similarity_frame
 {
     init_template('main_similarity.htm');
     $is_jury && !$contest->is_practice or return;
-    my $virtual = param('virtual') ? 1 : 0;
-    $t->param(virtual => $virtual);
-    my $group = param('group') ? 1 : 0;
-    $t->param(group => $group);
-    my $self_diff = param('self_diff') ? 1 : 0;
-    $t->param(self_diff => $self_diff);
-    my $collapse_idents = param('collapse_idents') ? 1 : 0;
-    $t->param(collapse_idents => $collapse_idents);
-    $t->param(threshold => my $threshold = param('threshold') || 50);
     my $p = $dbh->selectall_arrayref(q~
         SELECT P.id, P.title, CP.code
             FROM problems P INNER JOIN contest_problems CP ON P.id = CP.problem_id
             WHERE CP.contest_id = ? ORDER BY CP.code~, { Slice => {} }, $cid);
-    $t->param(problems => $p);
+    $t->param(
+        virtual => (my $virtual = param('virtual') ? 1 : 0),
+        group => (my $group = param('group') ? 1 : 0),
+        self_diff => (my $self_diff = param('self_diff') ? 1 : 0),
+        collapse_idents => (my $collapse_idents = param('collapse_idents') ? 1 : 0),
+        threshold => my $threshold = param('threshold') || 50,
+        problems => $p,
+    );
     my ($pid) = param('pid') or return;
     $pid =~ /^\d+$/ or return;
     $_->{selected} = $_->{id} == $pid for @$p;
