@@ -1,9 +1,13 @@
 package CATS::Misc;
 
+use strict;
+use warnings;
+
 BEGIN
 {
     use Exporter;
 
+    no strict;
     @ISA = qw(Exporter);
     @EXPORT = qw(
         cats_dir
@@ -33,9 +37,6 @@ BEGIN
 
     %EXPORT_TAGS = (all => [ @EXPORT, @EXPORT_OK ]);
 }
-
-use strict;
-use warnings;
 
 use HTML::Template;
 #use CGI::Fast( ':standard' );

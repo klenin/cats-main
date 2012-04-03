@@ -1,8 +1,12 @@
 package CATS::Utils;
 
+use strict;
+use warnings;
+
 BEGIN {
     use Exporter;
 
+    no strict;
     @ISA = qw(Exporter);
     @EXPORT = qw(
         coalesce
@@ -17,9 +21,6 @@ BEGIN {
 
     %EXPORT_TAGS = (all => [@EXPORT]);
 }
-
-use strict;
-use warnings;
 
 use Text::Balanced qw(extract_tagged extract_bracketed);
 use Digest::MD5;
