@@ -25,25 +25,16 @@ use CATS::StaticPages;
 my ($current_pid, $html_code, $spellchecker, $text_span);
 
 
-sub russian ($)
-{
-    Encode::decode('KOI8-R', $_[0]);
-}
-
-
 sub check_spelling
 {
     my ($word) = @_;
     # The '_' character causes SIGSEGV (!) inside of ASpell.
     return $word if $word =~ /(?:\d|_)/;
+    # Aspell currently supports only KOI8-R russian encoding.
     my $koi = Encode::encode('KOI8-R', $word);
-    {
-        no encoding;
-        $koi =~ s/£/Å/g;
-        use encoding 'utf8', STDIN => undef;
-    }
     return $word if $spellchecker->check($koi);
-    my $suggestion = join ' | ', grep $_, (map russian($_), $spellchecker->suggest($koi))[0..9];
+    my $suggestion =
+        Encode::decode('KOI8-R', join ' | ', grep $_, ($spellchecker->suggest($koi))[0..9]);
     return qq~<a class="spell" title="$suggestion">$word</a>~;
 }
 
