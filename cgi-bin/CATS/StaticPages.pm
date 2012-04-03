@@ -3,7 +3,7 @@ package CATS::StaticPages;
 use strict;
 use warnings;
 
-use CGI;
+use CGI qw(url_param);
 use CATS::DB;
 
 sub allowed_pages
@@ -12,6 +12,9 @@ sub allowed_pages
     rank_table_content => { cid => 1, hide_ooc => 1, printable => 1 },
 }}
 
+our $is_static_page;
+
+sub is_static_page { $is_static_page = (url_param('f') || '') eq 'static' }
 
 sub process_static
 {
