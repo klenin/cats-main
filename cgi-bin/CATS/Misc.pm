@@ -114,7 +114,9 @@ sub init_messages
         die "Couldn't open message file: '$msg_file'.";
     binmode($f, ':utf8');
     while (<$f>) {
-        $messages[$1] = $2 if m/^(\d+)\s+\"(.*)\"\s*$/ ;
+        m/^(\d+)\s+\"(.*)\"\s*$/ or next;
+        $messages[$1] and die "Duplicate message id: $1";
+        $messages[$1] = $2;
     }
     close $f;
 }
