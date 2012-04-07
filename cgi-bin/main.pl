@@ -858,6 +858,16 @@ sub download_problem
 }
 
 
+sub can_upsolve
+{
+    my ($tag) = $dbh->selectrow_array(q~
+         SELECT CA.tag FROM contest_accounts CA
+             WHERE CA.contest_id = ? AND CA.account_id = ?~, undef,
+         $cid, $uid || 0);
+    !!(($tag || '') =~ /upsolve/);
+}
+
+
 sub problems_submit
 {
     # Проверяем параметры заранее, чтобы не делать бесполезных обращений к БД.
@@ -883,7 +893,7 @@ sub problems_submit
 
         $time_since_start >= 0
             or return msg(80);
-        $time_since_finish <= 0 || $is_virtual
+        $time_since_finish <= 0 || $is_virtual || can_upsolve
             or return msg(81);
         !defined $status || $status < $cats::problem_st_disabled
             or return msg(124);
@@ -1229,7 +1239,7 @@ sub problems_frame
 {
     my $my_is_team =
         $is_jury || $contest->is_practice ||
-        $is_team && $contest->{time_since_finish} - $virtual_diff_time < 0;
+        $is_team && ($contest->{time_since_finish} - $virtual_diff_time < 0 || can_upsolve);
     my $show_packages = 1;
     unless ($is_jury)
     {
