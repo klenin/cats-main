@@ -1,6 +1,6 @@
 *.txt encoding=koi8-r eol=lf whitespace=fix,trailing-space,cr-at-eol
-*.pl encoding=koi8-r eol=lf whitespace=fix,trailing-space,cr-at-eol
-*.pm encoding=koi8-r eol=lf whitespace=fix,trailing-space,cr-at-eol
+*.pl encoding=koi8-r eol=lf whitespace=fix,trailing-space,cr-at-eol diff=perl
+*.pm encoding=koi8-r eol=lf whitespace=fix,trailing-space,cr-at-eol diff=perl
 *.sql encoding=koi8-r eol=lf whitespace=fix,trailing-space,cr-at-eol
 *.cmd encoding=koi8-r eol=lf whitespace=fix,trailing-space,cr-at-eol
 *.sh encoding=koi8-r eol=lf whitespace=fix,trailing-space,cr-at-eol
