@@ -63,6 +63,7 @@ function confirm_registration()
 <input type="hidden"  value="0" />
 </TMPL_IF>
 <input type="submit" name="summary_rank" value="суммарная таблица" class="button" />
+<TMPL_IF is_root><input type="submit" name="create_group" value="создать группу" class="button" /></TMPL_IF>
 </form>
 <TMPL_IF authorized><TMPL_UNLESS is_registered>
 <ul>

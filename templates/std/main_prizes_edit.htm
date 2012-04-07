@@ -1,0 +1,29 @@
+<TMPL_INCLUDE 'includes/menu_begin.inc'>
+
+<TMPL_IF message><i><TMPL_VAR message ESCAPE=HTML></i></TMPL_IF>
+
+<form method="post" enctype="multipart/form-data" action="<TMPL_VAR href_action>">
+<table cellpadding="0">
+<tr><td>Название</td><td><input type="text" name="name" value="<TMPL_VAR name>" class="bordered" size="60"/></td>
+<tr><td>Турниры</td><td><input type="text" name="clist" value="<TMPL_VAR clist>" class="bordered" size="60" /></td>
+</table>
+<table cellpadding="0" class="bordered">
+<tr><th>Место</th><th>Приз</th></tr>
+<TMPL_LOOP prizes>
+<tr>
+  <td><input type="text" name="rank_<TMPL_VAR id>" value="<TMPL_VAR rank>" size="5" /></td>
+  <td><input type="text" name="name_<TMPL_VAR id>" value="<TMPL_VAR name>" size="40"/></td>
+</tr>
+</TMPL_LOOP>
+<tr>
+  <td><input type="text" name="rank_new" size="5" /></td>
+  <td><input type="text" name="name_new" size="40"/></td>
+</tr>
+</table>
+<br/>
+<input type="hidden" name="id" value="<TMPL_VAR id>" />
+<input type="submit" name="edit_save" value="     Ok     " class="button" />
+<input type="submit" name="edit_cancel" value="Отмена" class="button" />
+</form>
+
+<TMPL_INCLUDE 'includes/menu_end.inc'>

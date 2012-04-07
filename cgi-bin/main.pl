@@ -54,6 +54,7 @@ use CATS::Contest::Results;
 use CATS::User;
 use CATS::Console;
 use CATS::RunDetails;
+use CATS::Prizes;
 
 
 sub make_sid {
@@ -470,8 +471,8 @@ sub anonymous_contests_view ()
 }
 
 
-sub contests_frame 
-{    
+sub contests_frame
+{
     if (defined param('summary_rank'))
     {
         my @clist = param('contests_selection');
@@ -489,6 +490,8 @@ sub contests_frame
     return if $ical && $json;
     init_listview_template('contests', 'contests',
         'main_contests.' .  ($ical ? 'ics' : $json ? 'json' : 'htm'));
+
+    CATS::Prizes::contest_group_auto_new if defined param('create_group') && $is_root;
 
     if (defined url_param('delete') && $is_root)
     {
@@ -517,7 +520,7 @@ sub contests_frame
         { caption => res_str(630), order_by => '1 DESC, 8', width => '30%' } ]);
 
     $_ = coalesce(param('filter'), $_, 'unfinished') for $settings->{contests}->{filter};
-    
+
     attach_listview(url_f('contests'),
         defined $uid ? authenticated_contests_view : anonymous_contests_view,
         ($uid ? () : { page_params => { filter => $settings->{contests}->{filter} } }));
@@ -537,10 +540,11 @@ sub contests_frame
         submenu => $submenu,
         authorized => defined $uid,
         href_contests => url_f('contests'),
-        editable => $is_root,
+        is_root => $is_root,
         is_registered => defined $uid && get_registered_contestant(contest_id => $cid) || 0,
     );
 }
+
 
 sub problems_change_status ()
 {
@@ -1938,6 +1942,7 @@ sub reference_names()
         { name => 'judges', new => 543, item => 511 },
         { name => 'keywords', new => 550, item => 549 },
         { name => 'import_sources', item => 557 },
+        ($is_root ? { name => 'prizes', item => 565 } : ()),
     )
 }
 
@@ -2351,6 +2356,46 @@ sub download_import_source_frame
 }
 
 
+sub prizes_frame
+{
+    $is_root or return;
+    if (my $cgid = url_param('delete')) {
+        $dbh->do(qq~DELETE FROM contest_groups WHERE id = ?~, undef, $cgid);
+        $dbh->commit;
+    }
+
+    defined url_param('edit') and return CATS::Prizes::prizes_edit_frame;
+    init_listview_template('prizes', 'prizes', 'main_prizes.htm');
+
+    defined param('edit_save') and CATS::Prizes::prizes_edit_save;
+
+    define_columns(url_f('prizes'), 0, 0, [
+        { caption => res_str(644), order_by => '2', width => '30%' },
+        { caption => res_str(645), order_by => '3', width => '30%' },
+        { caption => res_str(646), order_by => '4', width => '40%' },
+    ]);
+
+    my $c = $dbh->prepare(qq~
+        SELECT cg.id, cg.name, cg.clist,
+            (SELECT LIST(rank || ':' || name, ' ') FROM prizes p WHERE p.cg_id = cg.id) AS prizes
+            FROM contest_groups cg ~ . order_by);
+    $c->execute;
+
+    my $fetch_record = sub {
+        my $f = $_[0]->fetchrow_hashref or return ();
+        (
+            %$f,
+            href_edit=> url_f('prizes', edit => $f->{id}),
+            href_delete => url_f('prizes', 'delete' => $f->{id}),
+        );
+    };
+
+    attach_listview(url_f('prizes'), $fetch_record, $c);
+
+    $t->param(submenu => [ references_menu('prizes') ]);
+}
+
+
 sub send_message_box_frame
 {
     init_template('main_send_message_box.htm');
@@ -2724,6 +2769,7 @@ sub interface_functions ()
         judges => \&judges_frame,
         keywords => \&keywords_frame,
         import_sources => \&import_sources_frame,
+        prizes => \&prizes_frame,
         download_import_source => \&download_import_source_frame,
 
         answer_box => \&answer_box_frame,

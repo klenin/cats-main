@@ -167,7 +167,7 @@ CREATE TABLE problem_sources_import
     guid        VARCHAR(100) NOT NULL,
     PRIMARY KEY (problem_id, guid)
 );
-            
+
 
 CREATE TABLE problem_attachments (
     id          INTEGER NOT NULL PRIMARY KEY,
@@ -276,7 +276,7 @@ CREATE TABLE req_details
   UNIQUE(req_id, test_rank)
 );
 
-                
+
 CREATE TABLE log_dumps (
     id      INTEGER NOT NULL PRIMARY KEY,
     dump    BLOB,
@@ -306,6 +306,24 @@ CREATE TABLE problem_keywords (
     keyword_id  INTEGER NOT NULL REFERENCES keywords(id) ON DELETE CASCADE,
     PRIMARY KEY (problem_id, keyword_id)
 );
+
+
+CREATE TABLE contest_groups (
+    id     INTEGER NOT NULL PRIMARY KEY,
+    name   VARCHAR(200) NOT NULL,
+    /* Comma-separated sorted list of contest ids. */
+    clist  VARCHAR(200)
+);
+CREATE INDEX idx_contest_groups_clist ON contest_groups(clist);
+
+
+CREATE TABLE prizes (
+    id     INTEGER NOT NULL PRIMARY KEY,
+    cg_id  INTEGER NOT NULL REFERENCES contest_groups(id) ON DELETE CASCADE,
+    name   VARCHAR(200) NOT NULL,
+    rank   INTEGER NOT NULL
+);
+
 
 /*
     Старые версии Firebird не умеют делать CAST в BLOB,
