@@ -2504,6 +2504,7 @@ sub rank_table_frame
         hide_ooc => $hide_ooc, hide_virtual => $hide_virtual, cache => $cache,
         clist => $rt->{contest_list}, points => $show_points,
         filter => Encode::decode_utf8(url_param('filter') || undef),
+        show_prizes => (url_param('show_prizes') || 0),
     );
     $t->param(href_rank_table_content => url_f('rank_table_content', @params));
     my $submenu =

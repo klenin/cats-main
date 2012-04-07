@@ -17,7 +17,7 @@ use CATS::Misc qw(
 use fields qw(
     contest_list hide_ooc hide_virtual show_points frozen
     title has_practice not_started filter use_cache
-    rank problems problems_idx show_all_results
+    rank problems problems_idx show_all_results show_prizes
 );
 
 
@@ -194,7 +194,8 @@ sub get_contest_list_param
     my $clist = url_param('clist') || $cid;
     # sanitize
     $self->{contest_list} =
-        join(',', grep { $_ > 0 } map { sprintf '%d', $_ } split ',', $clist) || $cid;
+        join(',', sort { $a <=> $b } grep { $_ > 0 }
+            map { sprintf '%d', $_ } split ',', $clist) || $cid;
 }
 
 
@@ -270,6 +271,7 @@ sub parse_params
     $self->{use_cache} = 1 if !defined $self->{use_cache} && !defined $uid;
     $self->{use_cache} = 0 unless $self->{show_all_results};
     $self->{filter} = param('filter');
+    $self->{show_prizes} = url_param('show_prizes');
 }
 
 
@@ -301,6 +303,15 @@ sub prepare_ranks
 
     my ($row_num, $same_place_count, $row_color) = (1, 0, 0);
     my %prev = ('time' => 1000000, solved => -1, points => -1);
+
+    my $prizes = [];
+    if ($self->{show_prizes}) {
+        $prizes = $dbh->selectall_arrayref(q~
+            SELECT p.rank, p.name FROM prizes p INNER JOIN contest_groups cg ON p.cg_id = cg.id
+            WHERE cg.clist = ? ORDER BY p.rank~, { Slice => {} },
+            $self->{contest_list});
+    }
+    my $ooc_count = 0;
 
     for my $team (@rank)
     {
@@ -339,6 +350,14 @@ sub prepare_ranks
         $team->{columns} = [ @columns ];
         $team->{show_points} = $self->{show_points};
         $team->{href_console} = url_f('console', uf => $team->{account_id});
+
+        shift @$prizes while @$prizes && $prizes->[0]->{rank} < $team->{place} - $ooc_count;
+        if ($team->{is_ooc} || $team->{is_virtual}) {
+            ++$ooc_count;
+        }
+        elsif (@$prizes) {
+            $team->{prize} = $prizes->[0]->{name};
+        }
     }
     $self->{rank} = \@rank;
     ($row_num, $row_color);

@@ -71,7 +71,8 @@
 ><td><TMPL_IF show_points><TMPL_VAR total_points
   ><TMPL_ELSE><TMPL_VAR total_solved><td><TMPL_VAR total_time></TMPL_IF
 ></td><td><TMPL_VAR place></td><td class="ts"><TMPL_IF is_ooc
-  >ooc</TMPL_IF><TMPL_IF is_remote> remote</TMPL_IF><TMPL_IF is_virtual> virtual</TMPL_IF></td></tr>
+  >ooc</TMPL_IF><TMPL_IF is_remote> remote</TMPL_IF><TMPL_IF is_virtual> virtual</TMPL_IF>
+<TMPL_VAR prize></td></tr>
 </TMPL_LOOP>
 <TMPL_ELSE>
 <TMPL_IF rank><script type="text/javascript"><!--
@@ -82,7 +83,7 @@ var rank_table = [
     tm: [<TMPL_LOOP columns>'<TMPL_VAR time>'<TMPL_UNLESS __last__>,</TMPL_UNLESS></TMPL_LOOP>],
     td: [<TMPL_LOOP columns>'<TMPL_VAR td>'<TMPL_UNLESS __last__>,</TMPL_UNLESS></TMPL_LOOP>],
     ts: <TMPL_VAR total_solved>, ttm: <TMPL_VAR total_time></TMPL_IF>, rc: <TMPL_VAR row_color>,
-    pl: <TMPL_VAR place>, st: '<TMPL_IF is_ooc>ooc</TMPL_IF><TMPL_IF is_remote> remote</TMPL_IF><TMPL_IF is_virtual> virtual</TMPL_IF>',
+    pl: <TMPL_VAR place>, st: '<TMPL_IF is_ooc>ooc</TMPL_IF><TMPL_IF is_remote> remote</TMPL_IF><TMPL_IF is_virtual> virtual</TMPL_IF> <TMPL_VAR prize>',
     t: "<TMPL_VAR city ESCAPE=HTML>"
   }<TMPL_UNLESS __last__>,</TMPL_UNLESS></TMPL_LOOP>
 ];
