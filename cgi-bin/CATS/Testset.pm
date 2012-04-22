@@ -7,25 +7,41 @@ use CATS::DB qw($dbh);
 
 sub parse_test_rank
 {
-    my ($rank_spec) = @_;
-    my @result;
-    for (split ',', $rank_spec)
-    {
-        $_ =~ /^\s*(\d+)(?:-(\d+))?\s*$/
-            or return ();
-        my ($from, $to) = ($1, $2 || $1);
-        $from <= $to or next;
-        push @result, ($from..$to);
-    }
+    my ($testsets, $rank_spec, $on_error) = @_;
+    my (@result, %used, $rec);
+    $rec = sub {
+        my ($r) = @_;
+        $r =~ s/\s+//g;
+        # Rank specifier is a comma-separated list, each element being one of:
+        # * test number,
+        # * range of test numbers,
+        # * testset name.
+        for (split ',', $r) {
+            if (/^[a-zA-Z][a-zA-Z0-9_]*$/) {
+                my $testset = $testsets->{$_} or die \"Unknown testset '$_'";
+                $used{$_}++ and die \"Recursive usage of testset '$_'";
+                $rec->($testset->{tests});
+            }
+            elsif (/^(\d+)(?:-(\d+))?$/) {
+                my ($from, $to) = ($1, $2 || $1);
+                $from <= $to or die \"from > to";
+                push @result, $from..$to;
+            }
+            else {
+                die \"Bad element '$_'";
+            }
+        }
+    };
+    eval { $rec->($rank_spec); 1 }
+        or $on_error && $on_error->(ref $@ ? "${$@} in rank spec '$rank_spec'" : $@);
     @result;
 }
 
- 
 sub get_testset
 {
     my ($rid, $update) = @_;
-    my ($pid, $testsets) = $dbh->selectrow_array(q~
-        SELECT R.problem_id, COALESCE(R.testsets, CP.testsets)
+    my ($pid, $orig_testsets, $testsets) = $dbh->selectrow_array(q~
+        SELECT R.problem_id, R.testsets, COALESCE(R.testsets, CP.testsets)
         FROM reqs R
         INNER JOIN contest_problems CP ON
             CP.contest_id = R.contest_id AND CP.problem_id = R.problem_id
@@ -37,30 +53,18 @@ sub get_testset
     )};
     $testsets or return @tests;
 
-    if ($update)
-    {
+    if ($update && ($orig_testsets || '') ne $testsets) {
         $dbh->do(q~
             UPDATE reqs SET testsets = ? WHERE id = ?~, undef,
             $testsets, $rid);
         $dbh->commit;
     }
 
-    my %tests_by_testset;
-    my %sel_testsets;
-    for (split /\s+/, $testsets)
-    {
-        $sel_testsets{$_} = 1;
-        @tests_by_testset{parse_test_rank($_)} = undef;
-    }
-
-    my $all_testsets = $dbh->selectall_arrayref(q~
-        SELECT name, tests FROM testsets WHERE problem_id = ?~, { Slice => {} },
+    my $all_testsets = $dbh->selectall_hashref(q~
+        SELECT name, tests FROM testsets WHERE problem_id = ?~, 'name', undef,
         $pid);
-    for (@$all_testsets)
-    {
-        next unless exists $sel_testsets{$_->{name}};
-        @tests_by_testset{parse_test_rank($_->{tests})} = undef;
-    }
+    my %tests_by_testset;
+    @tests_by_testset{parse_test_rank($all_testsets, $testsets)} = undef;
     return grep exists $tests_by_testset{$_}, @tests;
 }
 

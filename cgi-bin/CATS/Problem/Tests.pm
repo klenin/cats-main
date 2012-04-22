@@ -3,6 +3,8 @@ package CATS::Problem;
 use strict;
 use warnings;
 
+use CATS::Testset;
+
 
 sub apply_test_rank
 {
@@ -57,17 +59,7 @@ sub add_test
 sub parse_test_rank
 {
     (my CATS::Problem $self, my $rank_spec) = @_;
-    my $result = [];
-    # Последовательность диапазонов через запятую, например '1,5-10,2'
-    for (split ',', $rank_spec)
-    {
-        $_ =~ /^\s*(\d+)(?:-(\d+))?\s*$/
-            or $self->error("Bad element '$_' in rank spec '$rank_spec'");
-        my ($from, $to) = ($1, $2 || $1);
-        $from <= $to or $self->error("from > to in rank spec '$rank_spec'");
-        push @$result, ($from..$to);
-    }
-    $result;
+    CATS::Testset::parse_test_rank($self->{testsets}, $rank_spec, sub { $self->error(@_) });
 }
 
 
@@ -82,7 +74,7 @@ sub start_tag_Test
     else
     {
         $self->{current_tests} = [];
-        $self->add_test($atts, $_) for @{$self->parse_test_rank($atts->{rank})};
+        $self->add_test($atts, $_) for $self->parse_test_rank($atts->{rank});
     }
 }
 

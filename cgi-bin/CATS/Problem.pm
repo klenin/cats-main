@@ -601,7 +601,7 @@ sub start_tag_Testset
     (my CATS::Problem $self, my $atts) = @_;
     my $n = $atts->{name};
     $self->{testsets}->{$n} and $self->error("Duplicate testset '$n'");
-    $self->parse_test_rank($atts->{tests});
+    $self->parse_test_rank($atts->{tests}) or $self->error("Empty testset '$n'");
     $self->{testsets}->{$n} = { id => new_id, name => $n, tests => $atts->{tests} };
     $self->note("Testset $n added");
 }
