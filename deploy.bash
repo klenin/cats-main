@@ -110,7 +110,7 @@ sudo ln -s /etc/apache2/sites-{available,enabled}/000-cats
 # now adjust permissions
 sudo chgrp -R ${http_group} cgi-bin static templates
 chmod -R g+r cgi-bin
-chmod g+rw static cgi-bin/download/{,att,img,pr} cgi-bin/rank_cache
+chmod g+rw static cgi-bin/download/{,att,img,pr} cgi-bin/rank_cache{,r}
 
 sudo service apache2 restart
 

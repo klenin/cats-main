@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use CGI qw(:standard);
+use utf8;
 use Encode ();
 use YAML::Syck ();
 
@@ -15,11 +16,9 @@ use CATS::RankTable;
 
 sub get_names
 {
-    use bytes;
-    map Encode::decode('KOI8-R', $_) =>
-        'òÁÊÏÎÎÁÑ ÏÌÉÍĞÉÁÄÁ', 'çÏÒÏÄÓËÁÑ ÏÌÉÍĞÉÁÄÁ', 'ëÒÁÅ×ÁÑ ÏÌÉÍĞÉÁÄÁ',
-        'ìû ÏÌÉÍĞÉÁÄÁ', 'úÁÏŞÎÁÑ ÏÌÉÍĞÉÁÄÁ', 'ûËÏÌØÎÉËÉ ACM', '÷ÅÓÅÎÎÉÊ ÔÕÒÎÉÒ',
-        'íÕÎÉÃÉĞÁÌØÎÁÑ ÏÌÉÍĞÉÁÄÁ',
+    'Ğ Ğ°Ğ¹Ğ¾Ğ½Ğ½Ğ°Ñ Ğ¾Ğ»Ğ¸Ğ¼Ğ¿Ğ¸Ğ°Ğ´Ğ°', 'Ğ“Ğ¾Ñ€Ğ¾Ğ´ÑĞºĞ°Ñ Ğ¾Ğ»Ğ¸Ğ¼Ğ¿Ğ¸Ğ°Ğ´Ğ°', 'ĞšÑ€Ğ°ĞµĞ²Ğ°Ñ Ğ¾Ğ»Ğ¸Ğ¼Ğ¿Ğ¸Ğ°Ğ´Ğ°',
+    'Ğ›Ğ¨ Ğ¾Ğ»Ğ¸Ğ¼Ğ¿Ğ¸Ğ°Ğ´Ğ°', 'Ğ—Ğ°Ğ¾Ñ‡Ğ½Ğ°Ñ Ğ¾Ğ»Ğ¸Ğ¼Ğ¿Ğ¸Ğ°Ğ´Ğ°', 'Ğ¨ĞºĞ¾Ğ»ÑŒĞ½Ğ¸ĞºĞ¸ ACM', 'Ğ’ĞµÑĞµĞ½Ğ½Ğ¸Ğ¹ Ñ‚ÑƒÑ€Ğ½Ğ¸Ñ€',
+    'ĞœÑƒĞ½Ğ¸Ñ†Ğ¸Ğ¿Ğ°Ğ»ÑŒĞ½Ğ°Ñ Ğ¾Ğ»Ğ¸Ğ¼Ğ¿Ğ¸Ğ°Ğ´Ğ°',
 }
 
 
@@ -42,9 +41,9 @@ sub personal_official_results
     {
         my ($name, $year, $rest) = $_->{title} =~ m/^(.*)\s(\d{4})(.*)/
             or die $_->{name};
-        # ŞÔÏÂÙ YAML ÎÅ ÓËÁÔÙ×ÁÌÓÑ ÎÁ backslash escaping
+        # Prevent YAML from falling back to backslash escaping.
         $name = Encode::decode_utf8($name);
-        # ÏÔÂÒÁÓÙ×ÁÅÍ ĞÒÏÂÎÙÅ ÔÕÒÙ
+        # Filter out practice sessions.
         !$rest || $rest =~ m/^\s*[I\d]/ or next;
         ($year, $name) = ($name, $year) if $group_by_type;
         push @{$results->{$year}->{$name}}, $_->{id};
