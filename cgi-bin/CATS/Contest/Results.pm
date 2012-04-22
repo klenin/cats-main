@@ -3,7 +3,7 @@ package CATS::Contest;
 use strict;
 use warnings;
 
-use CGI qw(:standard);
+use CGI qw(param url_param);
 use utf8;
 use Encode ();
 use YAML::Syck ();
@@ -37,8 +37,7 @@ sub personal_official_results
     my $search = Encode::decode_utf8(param('search'));
     my $results;
     my $group_by_type = (url_param('group') || '') eq 'type';
-    for (@$contests)
-    {
+    for (@$contests) {
         my ($name, $year, $rest) = $_->{title} =~ m/^(.*)\s(\d{4})(.*)/
             or die $_->{name};
         # Prevent YAML from falling back to backslash escaping.
@@ -48,19 +47,15 @@ sub personal_official_results
         ($year, $name) = ($name, $year) if $group_by_type;
         push @{$results->{$year}->{$name}}, $_->{id};
     }
-    
-    for my $i (values %$results)
-    {
-        for my $j (values %$i)
-        {
+
+    for my $i (values %$results) {
+        for my $j (values %$i) {
             my $found = [];
-            if ($search)
-            {
+            if ($search) {
                 $YAML::Syck::ImplicitUnicode = 1;
                 my $clist = join ',', @$j;
                 my $cache_file = cats_dir() . "./rank_cache/r/$clist";
-                unless (-f $cache_file)
-                {
+                unless (-f $cache_file) {
                     my $rt = CATS::RankTable->new;
                     $rt->{hide_ooc} = 1;
                     $rt->{hide_virtual} = 1;
@@ -74,8 +69,7 @@ sub personal_official_results
                     YAML::Syck::DumpFile($cache_file, $short_rank);
                 }
                 my $short_rank = YAML::Syck::LoadFile($cache_file);
-                for (@$short_rank)
-                {
+                for (@$short_rank) {
                     push @$found, $_ if $_->{team_name} =~ m/\Q$search\E/i;
                 }
             }
