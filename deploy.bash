@@ -21,7 +21,7 @@ packets=(git firebird2.1-dev firebird2.1-classic build-essential libaspell-dev
 	aspell-en aspell-ru apache2 libapache2-mod-perl2 libapreq2 libapreq2-dev 
 	apache2-threaded-dev libapache2-mod-perl2-dev libexpat1 libexpat1-dev)
 cpan_packets=(DBI Algorithm::Diff Text::Aspell HTML::Template SQL::Abstract 
-	Archive::Zip JSON::XS YAML::Syck Apache2::Request XML::Parser::Expat)
+	Archive::Zip JSON::XS YAML::Syck Apache2::Request XML::Parser::Expat Template::Toolkit)
 
 sudo apt-get -y install ${packets[@]}
 
@@ -106,6 +106,11 @@ sudo ln -s /etc/apache2/sites-{available,enabled}/000-cats
 [[ -e /etc/apache2/sites-enabled/000-default ]] && sudo rm /etc/apache2/sites-enabled/000-default
 [[ -e /etc/apache2/mods-enabled/expires.load ]] || sudo ln -s /etc/apache2/mods-{available,enabled}/expires.load
 [[ -e /etc/apache2/mods-enabled/apreq.load ]] || sudo ln -s /etc/apache2/mods-{available,enabled}/apreq.load
+
+# generate docs
+cd docs
+ttree -f ttreerc
+cd ..
 
 # now adjust permissions
 sudo chgrp -R ${http_group} cgi-bin static templates

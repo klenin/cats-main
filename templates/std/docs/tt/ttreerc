@@ -1,0 +1,8 @@
+verbose
+recurse
+accept = \.tt$
+suffix tt=html
+depend *=header.tti,footer.tti
+src = .
+dest = ..
+lib = .
