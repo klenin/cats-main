@@ -86,7 +86,7 @@ APACHE_CONFIG=$(cat <<EOF
 
 	Alias /cats/docs/ "${CATS_ROOT}/docs/"
 	<Directory "${CATS_ROOT}/docs">
-	    AddDefaultCharset KOI8-R
+	    AddDefaultCharset utf-8
 	</Directory>
 
 	Alias /cats/ev/ "${CATS_ROOT}/ev/"
