@@ -1156,7 +1156,7 @@ sub problem_select_testsets
         my %sel;
         @sel{param('sel')} = undef;
         $_->{selected} = exists $sel{$_->{id}} for @$testsets;
-        my $ts_list = join ' ', map $_->{name}, grep $_->{selected}, @$testsets;
+        my $ts_list = join ',', map $_->{name}, grep $_->{selected}, @$testsets;
         $dbh->do(q~
             UPDATE contest_problems SET testsets = ? WHERE id = ?~, undef,
             $ts_list, $problem->{cpid});
@@ -1166,7 +1166,7 @@ sub problem_select_testsets
     }
 
     my %sel;
-    @sel{split /\s+/, $problem->{testsets} || ''} = undef;
+    @sel{split ',', $problem->{testsets} || ''} = undef;
     $_->{selected} = exists $sel{$_->{name}} for @$testsets;
 
     init_template('main_problem_select_testsets.htm');
