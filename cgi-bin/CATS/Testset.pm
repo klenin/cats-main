@@ -7,10 +7,10 @@ use CATS::DB qw($dbh);
 
 sub parse_test_rank
 {
-    my ($testsets, $rank_spec, $on_error) = @_;
-    my (@result, %used, $rec);
+    my ($all_testsets, $rank_spec, $on_error) = @_;
+    my (%result, %used, $rec);
     $rec = sub {
-        my ($r) = @_;
+        my ($r, $scoring_group) = @_;
         $r =~ s/\s+//g;
         # Rank specifier is a comma-separated list, each element being one of:
         # * test number,
@@ -18,23 +18,32 @@ sub parse_test_rank
         # * testset name.
         for (split ',', $r) {
             if (/^[a-zA-Z][a-zA-Z0-9_]*$/) {
-                my $testset = $testsets->{$_} or die \"Unknown testset '$_'";
+                my $testset = $all_testsets->{$_} or die \"Unknown testset '$_'";
                 $used{$_}++ and die \"Recursive usage of testset '$_'";
-                $rec->($testset->{tests});
+                my $sg = $scoring_group;
+                if ($testset->{points}) {
+                    die \"Nested scoring group '$_'" if $sg;
+                    $sg = $testset;
+                }
+                $rec->($testset->{tests}, $sg);
             }
             elsif (/^(\d+)(?:-(\d+))?$/) {
                 my ($from, $to) = ($1, $2 || $1);
                 $from <= $to or die \"from > to";
-                push @result, $from..$to;
+                for my $t ($from..$to) {
+                    die \"Ambiguous scoring group for test $t"
+                        if $scoring_group && $result{$t} && $result{$t} ne $scoring_group;
+                    $result{$t} = $scoring_group;
+                }
             }
             else {
                 die \"Bad element '$_'";
             }
         }
     };
-    eval { $rec->($rank_spec); 1 }
+    eval { $rec->($rank_spec); %result or die \'Empty rank specifier'; }
         or $on_error && $on_error->(ref $@ ? "${$@} in rank spec '$rank_spec'" : $@);
-    @result;
+    \%result;
 }
 
 sub get_testset
@@ -61,10 +70,10 @@ sub get_testset
     }
 
     my $all_testsets = $dbh->selectall_hashref(q~
-        SELECT name, tests FROM testsets WHERE problem_id = ?~, 'name', undef,
+        SELECT id, name, tests FROM testsets WHERE problem_id = ?~, 'name', undef,
         $pid);
     my %tests_by_testset;
-    @tests_by_testset{parse_test_rank($all_testsets, $testsets)} = undef;
+    @tests_by_testset{keys %{parse_test_rank($all_testsets, $testsets)}} = undef;
     return grep exists $tests_by_testset{$_}, @tests;
 }
 

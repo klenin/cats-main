@@ -59,7 +59,8 @@ sub add_test
 sub parse_test_rank
 {
     (my CATS::Problem $self, my $rank_spec) = @_;
-    CATS::Testset::parse_test_rank($self->{testsets}, $rank_spec, sub { $self->error(@_) });
+    keys %{CATS::Testset::parse_test_rank(
+        $self->{testsets}, $rank_spec, sub { $self->error(@_) })};
 }
 
 
