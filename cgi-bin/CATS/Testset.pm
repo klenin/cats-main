@@ -34,6 +34,7 @@ sub parse_test_rank
                     die \"Ambiguous scoring group for test $t"
                         if $scoring_group && $result{$t} && $result{$t} ne $scoring_group;
                     $result{$t} = $scoring_group;
+                    ++$scoring_group->{test_count} if $scoring_group;
                 }
             }
             else {
@@ -56,11 +57,11 @@ sub get_testset
             CP.contest_id = R.contest_id AND CP.problem_id = R.problem_id
         WHERE R.id = ?~, undef,
         $rid);
-    my @tests = @{$dbh->selectcol_arrayref(qq~
+    my @all_tests = @{$dbh->selectcol_arrayref(qq~
         SELECT rank FROM tests WHERE problem_id = ? ORDER BY rank~, undef,
         $pid
     )};
-    $testsets or return @tests;
+    $testsets or return map { $_ => undef } @all_tests;
 
     if ($update && ($orig_testsets || '') ne $testsets) {
         $dbh->do(q~
@@ -70,11 +71,10 @@ sub get_testset
     }
 
     my $all_testsets = $dbh->selectall_hashref(q~
-        SELECT id, name, tests FROM testsets WHERE problem_id = ?~, 'name', undef,
+        SELECT id, name, tests, points FROM testsets WHERE problem_id = ?~, 'name', undef,
         $pid);
-    my %tests_by_testset;
-    @tests_by_testset{keys %{parse_test_rank($all_testsets, $testsets)}} = undef;
-    return grep exists $tests_by_testset{$_}, @tests;
+    my %tests = %{parse_test_rank($all_testsets, $testsets)};
+    map { exists $tests{$_} ? ($_ => $tests{$_}) : () } @all_tests;
 }
 
 

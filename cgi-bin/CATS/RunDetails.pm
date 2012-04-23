@@ -66,6 +66,9 @@ sub get_run_info
     $c->execute($rid);
     my $last_test = 0;
     my $total_points = 0;
+    my %testset = CATS::Testset::get_testset($rid);
+    $contest->{show_points} ||= 0 < grep $_, values %testset;
+    my %used_testsets;
 
     while (my $row = $c->fetchrow_hashref()) {
         $_ and $_ = sprintf('%.3g', $_) for $row->{time_used};
@@ -79,15 +82,25 @@ sub get_run_info
         }
 
         my $prev_test = $last_test;
+        $last_test = $row->{test_rank};
         my $accepted = $row->{result} == $cats::st_accepted;
         my $p = $accepted ? $points->[$row->{test_rank} - 1] : 0;
-        $run_details{$last_test = $row->{test_rank}} = {
+        if (my $ts = $testset{$last_test}) {
+            $used_testsets{$ts->{name}} = $ts;
+            push @{$ts->{list} ||= []}, $last_test;
+            $p = '--';
+            $total_points += $ts->{earned_points} = $ts->{points}
+                if $accepted && ++$ts->{accepted_count} == $ts->{test_count};
+        }
+        else {
+            $total_points += ($p || 0);
+        }
+        $run_details{$last_test} = {
             state_to_display($row->{result}),
             map({ $_ => $contest->{$_} }
                 qw(show_test_resources show_checker_comment)),
             %$row, show_points => $contest->{show_points}, points => $p,
         };
-        $total_points += ($p || 0);
         # When tests are run in random order, and the user looks at the run details
         # while the testing is in progress, he may be able to see 'OK' result
         # for the test ranked above the (unknown at the moment) first failing test.
@@ -100,8 +113,6 @@ sub get_run_info
     if ($contest->{show_all_tests} && !$contest->{run_all_tests}) {
         $last_test = @$points;
     }
-    my %testset;
-    @testset{CATS::Testset::get_testset($rid)} = undef;
 
     my $run_row = sub {
         my ($rank) = @_;
@@ -111,10 +122,12 @@ sub get_run_info
         $r{exists $testset{$rank} ? 'not_processed' : 'not_in_testset'} = 1;
         return \%r;
     };
+
     return {
         %$contest,
         total_points => $total_points,
-        run_details => [ map $run_row->($_), 1..$last_test ]
+        run_details => [ map $run_row->($_), 1..$last_test ],
+        testsets => [ sort { $a->{list}[0] <=> $b->{list}[0] } values %used_testsets ],
     };
 }
 
