@@ -6,7 +6,7 @@ use warnings;
 use Encode;
 
 use CGI qw(param url_param);
-use List::Util qw(max);
+use List::Util qw(max sum);
 
 use CATS::Constants;
 use CATS::DB;
@@ -29,14 +29,21 @@ sub new
     return $self;
 }
 
+
+sub get_test_testsets
+{
+    my ($problem, $testset_spec) = @_;
+    $problem->{all_testsets} ||= CATS::Testset::get_all_testsets($problem->{problem_id});
+    CATS::Testset::parse_test_rank($problem->{all_testsets}, $testset_spec);
+}
+
 sub cache_max_points
 {
     my ($problem) = @_;
     my $pid = $problem->{problem_id};
     my $max_points = 0;
     if ($problem->{testsets}) {
-        my $all_testsets = $problem->{all_testsets} ||= CATS::Testset::get_all_testsets($pid);
-        my $test_testsets = CATS::Testset::parse_test_rank($all_testsets, $problem->{testsets});
+        my $test_testsets = get_test_testsets($problem, $problem->{testsets});
         my $test_points = $dbh->selectall_arrayref(q~
             SELECT rank, points FROM tests WHERE problem_id = ?~, { Slice => {} },
             $pid);
@@ -158,7 +165,7 @@ sub get_results
 
     $dbh->selectall_arrayref(qq~
         SELECT
-            R.id, R.state, R.problem_id, R.account_id, R.points,
+            R.id, R.state, R.problem_id, R.account_id, R.points, R.testsets,
             ((R.submit_time - C.start_date - CA.diff_time) * 1440) AS time_elapsed
         FROM reqs R, contests C, contest_accounts CA, contest_problems CP
         WHERE
@@ -174,34 +181,32 @@ sub get_results
 
 sub cache_req_points
 {
-    my ($req_id, $partial) = @_;
-    my $points = $dbh->selectall_arrayref(qq~
-        SELECT RD.result, RD.checker_comment, T.points
+    my ($req, $problem) = @_;
+    my $test_points = $dbh->selectall_arrayref(qq~
+        SELECT RD.result, RD.checker_comment, T.points, T.rank
             FROM reqs R
             INNER JOIN req_details RD ON RD.req_id = R.id
             INNER JOIN tests T ON RD.test_rank = T.rank AND T.problem_id = R.problem_id
         WHERE R.id = ?~, { Slice => {} },
-        $req_id
+        $req->{id}
     );
 
-    my $total = 0;
-    for (@$points)
-    {
-        $_->{result} == $cats::st_accepted or next;
-        if ($partial)
-        {
-            $_->{checker_comment} =~ /^(\d+)/ or next;
-            $total += $1;
-        }
-        else
-        {
-            $total +=  max($_->{points} || 0, 0);
-        }
-    }
+    my $test_testsets = $req->{testsets} ? get_test_testsets($problem, $req->{testsets}) : {};
+    my %used_testsets;
+    my $total = sum map {
+        my $t = $test_testsets->{$_->{rank}};
+        $_->{result} != $cats::st_accepted ? 0 :
+        # Scoring groups have priority over partial checkers,
+        # although they should not be used together.
+        $t ? (++$used_testsets{$t->{name}} == $t->{test_count} ? $t->{points} : 0) :
+        $problem->{checker_style} == $cats::partial_checker ?
+            ($_->{checker_comment} =~ /^(\d+)/ ? $1 : 0) :
+        max($_->{points} || 0, 0)
+    } @$test_points;
 
-    # Чтобы снизить вероятность deadlock, делаем commit после каждого изменения, хотя это и медленнее
+    # To reduce chance of deadlock, commit every change separately, even if it is slower.
     $dbh->do(q~
-        UPDATE reqs SET points = ? WHERE id = ? AND points IS NULL~, undef, $total, $req_id);
+        UPDATE reqs SET points = ? WHERE id = ? AND points IS NULL~, undef, $total, $req->{id});
     $dbh->commit;
     $total;
 }
@@ -486,8 +491,7 @@ sub rank_table
         my $p = $t->{problems}->{$_->{problem_id}};
         if ($self->{show_points} && !defined $_->{points})
         {
-            $_->{points} = cache_req_points(
-                $_->{id}, $self->{problems_idx}->{$_->{problem_id}}->{checker_style} == $cats::partial_checker);
+            $_->{points} = cache_req_points($_, $self->{problems_idx}->{$_->{problem_id}});
         }
         next if $p->{solved} && !$self->{show_points};
 
