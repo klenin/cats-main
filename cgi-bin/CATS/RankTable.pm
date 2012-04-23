@@ -10,6 +10,7 @@ use List::Util qw(max);
 
 use CATS::Constants;
 use CATS::DB;
+use CATS::Testset;
 use CATS::Misc qw(
     $t $is_jury $is_team $virtual_diff_time $cid $uid url_f $is_virtual $contest cats_dir
     get_flag);
@@ -28,13 +29,31 @@ sub new
     return $self;
 }
 
-
 sub cache_max_points
 {
-    my ($pid) = @_;
-    my ($max_points) = $dbh->selectrow_array(q~
-        SELECT SUM(points) FROM tests WHERE problem_id = ?~, undef, $pid);
-    $dbh->do(q~UPDATE problems SET max_points = ? WHERE id = ?~, undef, $max_points, $pid);
+    my ($problem) = @_;
+    my $pid = $problem->{problem_id};
+    my $max_points = 0;
+    if ($problem->{testsets}) {
+        my $all_testsets = $problem->{all_testsets} ||= CATS::Testset::get_all_testsets($pid);
+        my $test_testsets = CATS::Testset::parse_test_rank($all_testsets, $problem->{testsets});
+        my $test_points = $dbh->selectall_arrayref(q~
+            SELECT rank, points FROM tests WHERE problem_id = ?~, { Slice => {} },
+            $pid);
+        my %used_testsets;
+        for (@$test_points) {
+            my $r = $_->{rank};
+            exists $test_testsets->{$r} or next;
+            my $t = $test_testsets->{$r};
+            $max_points += !$t ? $_->{points} : $used_testsets{$t->{name}}++ ? 0 : $t->{points};
+        }
+    }
+    else {
+        $max_points = $dbh->selectrow_array(q~
+            SELECT SUM(points) FROM tests WHERE problem_id = ?~, undef, $pid);
+    }
+    $dbh->do(q~
+        UPDATE problems SET max_points = ? WHERE id = ?~, undef, $max_points, $pid);
     $max_points;
 }
 
@@ -48,7 +67,7 @@ sub get_problems
     # при помощи UNIQUE(c,p)
     my $problems = $self->{problems} = $dbh->selectall_arrayref(qq~
         SELECT
-            CP.id, CP.problem_id, CP.code, CP.contest_id, C.start_date,
+            CP.id, CP.problem_id, CP.code, CP.contest_id, CP.testsets, C.start_date,
             CAST(CURRENT_TIMESTAMP - C.start_date AS DOUBLE PRECISION) AS since_start,
             C.local_only, P.max_points, P.title,
             COALESCE(
@@ -93,7 +112,7 @@ sub get_problems
         $_->{problem_text} = url_f('problem_text', cpid => $_->{id});
         if ($self->{show_points} && !$_->{max_points})
         {
-            $_->{max_points} = cache_max_points($_->{problem_id});
+            $_->{max_points} = cache_max_points($_);
             $need_commit = 1;
         }
         $max_total_points += $_->{max_points} || 0;

@@ -5,6 +5,7 @@ use warnings;
 
 use CATS::DB qw($dbh);
 
+
 sub parse_test_rank
 {
     my ($all_testsets, $rank_spec, $on_error) = @_;
@@ -47,6 +48,16 @@ sub parse_test_rank
     \%result;
 }
 
+
+sub get_all_testsets
+{
+    $dbh->selectall_hashref(q~
+        SELECT id, name, tests, points FROM testsets WHERE problem_id = ?~,
+        'name', undef,
+        $_[0]) || {};
+}
+
+
 sub get_testset
 {
     my ($rid, $update) = @_;
@@ -70,10 +81,7 @@ sub get_testset
         $dbh->commit;
     }
 
-    my $all_testsets = $dbh->selectall_hashref(q~
-        SELECT id, name, tests, points FROM testsets WHERE problem_id = ?~, 'name', undef,
-        $pid);
-    my %tests = %{parse_test_rank($all_testsets, $testsets)};
+    my %tests = %{parse_test_rank(get_all_testsets($pid), $testsets)};
     map { exists $tests{$_} ? ($_ => $tests{$_}) : () } @all_tests;
 }
 
