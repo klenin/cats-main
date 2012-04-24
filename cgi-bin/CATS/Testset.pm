@@ -51,8 +51,8 @@ sub parse_test_rank
 
 sub get_all_testsets
 {
-    $dbh->selectall_hashref(q~
-        SELECT id, name, tests, points FROM testsets WHERE problem_id = ?~,
+    $dbh->selectall_hashref(qq~
+        SELECT id, name, tests, points, comment FROM testsets WHERE problem_id = ?~,
         'name', undef,
         $_[0]) || {};
 }

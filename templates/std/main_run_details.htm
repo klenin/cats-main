@@ -25,12 +25,13 @@
   <TMPL_IF testsets>
     <p>Наборы тестов</p>
     <table class="bordered">
-    <th>Название</th><th>Пройдено тестов</th><th>Баллы</th></tr>
+    <th>Название</th><th>Пройдено тестов</th><th>Баллы</th><th>Примечание</th></tr>
     <TMPL_LOOP testsets>
     <tr <TMPL_IF earned_points> class="run_details_OK"</TMPL_IF>>
       <td><TMPL_VAR name></td>
       <td align="right"><TMPL_VAR accepted_count> / <TMPL_VAR test_count></td>
       <td align="right"><TMPL_VAR earned_points></td>
+      <td><TMPL_VAR comment></td>
     </tr>
     </TMPL_LOOP>
     </table>

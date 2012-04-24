@@ -207,6 +207,7 @@ CREATE TABLE testsets
     name            VARCHAR(200) NOT NULL,
     tests           VARCHAR(200) NOT NULL,
     points          INTEGER,
+    comment         VARCHAR(400),
     CONSTRAINT testsets_pk PRIMARY KEY (id),
     /*CONSTRAINT testsets_uniq UNIQUE (name, problem_id),*/
     FOREIGN KEY (problem_id) REFERENCES problems (id) ON DELETE CASCADE
