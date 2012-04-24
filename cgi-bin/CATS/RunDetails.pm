@@ -11,6 +11,7 @@ use CATS::Misc qw($is_jury $sid $t $uid init_template upload_source url_f);
 use CATS::Data qw(is_jury_in_contest enforce_request_state);
 use CATS::IP;
 use CATS::DevEnv;
+use CATS::RankTable;
 
 
 sub get_judge_name
@@ -51,7 +52,7 @@ sub source_links
 
 sub get_run_info
 {
-    my ($contest, $rid) = @_;
+    my ($contest, $req) = @_;
     my $points = $contest->{points};
 
     my %run_details;
@@ -63,10 +64,10 @@ sub get_run_info
 
     my $c = $dbh->prepare(qq~
         SELECT $rd_fields FROM req_details WHERE req_id = ? ORDER BY test_rank~);
-    $c->execute($rid);
+    $c->execute($req->{req_id});
     my $last_test = 0;
     my $total_points = 0;
-    my %testset = CATS::Testset::get_testset($rid);
+    my %testset = CATS::Testset::get_testset($req->{req_id});
     $contest->{show_points} ||= 0 < grep $_, values %testset;
     my %used_testsets;
 
@@ -88,9 +89,12 @@ sub get_run_info
         if (my $ts = $testset{$last_test}) {
             $used_testsets{$ts->{name}} = $ts;
             push @{$ts->{list} ||= []}, $last_test;
-            $p = '--';
+            $p = "=> $ts->{name}";
             $total_points += $ts->{earned_points} = $ts->{points}
                 if $accepted && ++$ts->{accepted_count} == $ts->{test_count};
+        }
+        elsif ($accepted && $req->{partial_checker}) {
+            $total_points += $p = CATS::RankTable::get_partial_points($row, $p);
         }
         else {
             $total_points += ($p || 0);
@@ -213,6 +217,7 @@ sub get_sources_info
 
     my $src = $p{get_source} ? ' S.src, DE.syntax,' : '';
     my $req_id_list = join ', ', @req_ids;
+    my $pc_sql = $p{partial_checker} ? CATS::RankTable::partial_checker_sql() . ',' : '';
     my $result = $dbh->selectall_arrayref(qq~
         SELECT
             S.req_id,$src S.fname AS file_name, S.de_id,
@@ -223,7 +228,7 @@ sub get_sources_info
             R.result_time,
             DE.description AS de_name,
             A.team_name, A.last_ip,
-            P.title AS problem_name,
+            P.title AS problem_name, $pc_sql
             C.title AS contest_name,
             COALESCE(R.testsets, CP.testsets) AS testsets,
             C.id AS contest_id, CP.id AS cp_id,
@@ -267,7 +272,7 @@ sub run_details_frame
 
     my $rid = url_param('rid') or return;
     my $rids = [ grep /^\d+$/, split /,/, $rid ];
-    my $si = get_sources_info(request_id => $rids) or return;
+    my $si = get_sources_info(request_id => $rids, partial_checker => 1) or return;
 
     my @runs;
     my ($is_jury, $contest) = (0, { id => 0 });
@@ -281,7 +286,7 @@ sub run_details_frame
                 request_id => $_->{req_id},
                 state => $cats::st_not_processed,
                 testsets => param('testsets'));
-            $_ = get_sources_info(request_id => $_->{req_id}) or next;
+            $_ = get_sources_info(request_id => $_->{req_id}, partial_checker => 1) or next;
         }
 
         source_links($_, $is_jury);
@@ -289,7 +294,7 @@ sub run_details_frame
             if $_->{contest_id} != $contest->{id};
         push @runs,
             $_->{state} == $cats::st_compilation_error ?
-            { get_log_dump($_->{req_id}, 1) } : get_run_info($contest, $_->{req_id});
+            { get_log_dump($_->{req_id}, 1) } : get_run_info($contest, $_);
     }
     $t->param(sources_info => $si, runs => \@runs);
 }

@@ -6,7 +6,7 @@ use warnings;
 use Encode;
 
 use CGI qw(param url_param);
-use List::Util qw(max sum);
+use List::Util qw(max min sum);
 
 use CATS::Constants;
 use CATS::DB;
@@ -65,26 +65,29 @@ sub cache_max_points
 }
 
 
+sub partial_checker_sql {
+    my $checker_types = join ', ',
+        grep $cats::source_modules{$_} == $cats::checker_module, keys %cats::source_modules;
+    qq~
+        CASE COALESCE(
+            (SELECT PS.stype FROM problem_sources PS
+                WHERE PS.problem_id = P.id AND PS.stype IN ($checker_types)),
+            (SELECT PS.stype FROM problem_sources PS
+                INNER JOIN problem_sources_import PSI ON PSI.guid = PS.guid
+                WHERE PSI.problem_id = P.id AND PS.stype IN ($checker_types)))
+        WHEN $cats::partial_checker THEN 1 ELSE 0
+        END AS partial_checker~;
+}
+
+
 sub get_problems
 {
     (my CATS::RankTable $self) = @_;
-    my $checker_types =
-        join ', ', grep $cats::source_modules{$_} == $cats::checker_module, keys %cats::source_modules;
-    # соответствующее требование: в одном чемпионате задача не должна дублироваться обеспечивается
-    # при помощи UNIQUE(c,p)
     my $problems = $self->{problems} = $dbh->selectall_arrayref(qq~
         SELECT
             CP.id, CP.problem_id, CP.code, CP.contest_id, CP.testsets, C.start_date,
             CAST(CURRENT_TIMESTAMP - C.start_date AS DOUBLE PRECISION) AS since_start,
-            C.local_only, P.max_points, P.title,
-            COALESCE(
-                (SELECT PS.stype FROM problem_sources PS
-                    WHERE PS.problem_id = P.id AND PS.stype IN ($checker_types)),
-                (SELECT PS.stype FROM problem_sources PS
-                    INNER JOIN problem_sources_import PSI ON PSI.guid = PS.guid
-                    WHERE PSI.problem_id = P.id AND PS.stype IN ($checker_types)),
-                $cats::checker
-            ) AS checker_style
+            C.local_only, P.max_points, P.title, @{[ partial_checker_sql ]}
         FROM
             contest_problems CP INNER JOIN contests C ON C.id = CP.contest_id
             INNER JOIN problems P ON P.id = CP.problem_id
@@ -104,21 +107,18 @@ sub get_problems
     my $max_total_points = 0;
     for (@$problems)
     {
-        if ($_->{contest_id} != $prev_cid)
-        {
+        if ($_->{contest_id} != $prev_cid) {
             $_->{start_date} =~ /^(\S+)/;
             push @contests, { start_date => $1, count => 1 };
             $prev_cid = $_->{contest_id};
         }
-        else
-        {
+        else {
             $contests[$#contests]->{count}++;
         }
         # оптимизация: не выводить tooltip в local_only турнирах, чтобы сэкономить запрос
         $_->{title} = '' if ($_->{since_start} < 0 || $_->{local_only}) && !$is_jury;
         $_->{problem_text} = url_f('problem_text', cpid => $_->{id});
-        if ($self->{show_points} && !$_->{max_points})
-        {
+        if ($self->{show_points} && !$_->{max_points}) {
             $_->{max_points} = cache_max_points($_);
             $need_commit = 1;
         }
@@ -133,7 +133,7 @@ sub get_problems
         many_contests => @contests > 1,
         max_total_points => $max_total_points
     );
-    
+
     my $idx = $self->{problems_idx} = {};
     $idx->{$_->{problem_id}} = $_ for @$problems;
 }
@@ -179,6 +179,13 @@ sub get_results
 }
 
 
+sub get_partial_points
+{
+    my ($req_row, $test_max_points) = @_;
+    my $p = $req_row->{checker_comment} =~ /^(\d+)/ ? min($1, $test_max_points || $1) : 0;
+}
+
+
 sub cache_req_points
 {
     my ($req, $problem) = @_;
@@ -199,8 +206,7 @@ sub cache_req_points
         # Scoring groups have priority over partial checkers,
         # although they should not be used together.
         $t ? (++$used_testsets{$t->{name}} == $t->{test_count} ? $t->{points} : 0) :
-        $problem->{checker_style} == $cats::partial_checker ?
-            ($_->{checker_comment} =~ /^(\d+)/ ? $1 : 0) :
+        $problem->{partial_checker} ? get_partial_points($_, $_->{points}) :
         max($_->{points} || 0, 0)
     } @$test_points;
 
