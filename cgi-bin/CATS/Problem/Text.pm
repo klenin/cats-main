@@ -244,7 +244,7 @@ sub problem_text_frame
     if (!$show) {
         # We cannot return error as html for static pages, since it will cached.
         die 'Request for cached problems of invisible contest'
-          if $CATS::StaticPages::is_static_page;
+            if $CATS::StaticPages::is_static_page;
         init_template('main_access_denied.htm');
         return;
     }
@@ -253,54 +253,46 @@ sub problem_text_frame
     my $json = param('json');
     init_template('main_problem_text.' . ($json ? 'json' : 'htm'));
 
-    my (@id_problems, @problems, %pcodes);
+    my (@problems, $show_points);
 
-    my $pid = url_param('pid');
-    my $cpid = url_param('cpid');
-    my $show_points;
-
-    if (defined $pid) {
-        push @id_problems, $pid;
+    if (my $pid = url_param('pid')) {
+        push @problems, { problem_id => $pid };
     }
-    elsif (defined $cpid) {
-        (my $problem_id, my $code, $show_points) = $dbh->selectrow_array(qq~
-            SELECT CP.problem_id, CP.code, C.rules
+    elsif (my $cpid = url_param('cpid')) {
+        my $p = $dbh->selectrow_hashref(qq~
+            SELECT CP.problem_id, CP.code, CP.testsets, C.rules
             FROM contests C INNER JOIN contest_problems CP ON CP.contest_id = C.id
             WHERE CP.id = ?~, undef,
             $cpid) or return;
-        push @id_problems, $problem_id;
-        $pcodes{$problem_id} = $code;
+        $show_points = $p->{rules};
+        push @problems, $p;
     }
     else { # Show all problems from the contest.
         ($show_points) = $contest->{rules};
-
         # Should either check for a static page or hide the problem even from jury.
-        my $c = $dbh->prepare(qq~
-            SELECT problem_id, code FROM contest_problems
+        my $p = $dbh->selectall_arrayref(qq~
+            SELECT problem_id, code, testsets FROM contest_problems
             WHERE contest_id = ? AND status < $cats::problem_st_hidden
-            ORDER BY code~);
-        $c->execute(url_param('cid') || $cid);
-        while (my ($problem_id, $code) = $c->fetchrow_array) {
-            push @id_problems, $problem_id;
-            $pcodes{$problem_id} = $code;
-        }
+            ORDER BY code~, { Slice => {} },
+            url_param('cid') || $cid);
+        push @problems, @$p;
     }
 
     my $use_spellchecker = $is_jury && !param('nospell');
 
     my $need_commit = 0;
-    for my $problem_id (@id_problems) {
-        $current_pid = $problem_id;
-
-        my $problem_data = $dbh->selectrow_hashref(qq~
+    for my $problem (@problems) {
+        $current_pid = $problem->{problem_id};
+        my $p = $dbh->selectrow_hashref(qq~
             SELECT
                 id, contest_id, title, lang, time_limit, memory_limit,
                 difficulty, author, input_file, output_file,
                 statement, pconstraints, input_format, output_format, explanation,
                 formal_input, json_data, max_points
             FROM problems WHERE id = ?~, { Slice => {} },
-            $problem_id);
-        my $lang = $problem_data->{lang};
+            $problem->{problem_id}) or next;
+        $problem = { %$problem, %$p };
+        my $lang = $problem->{lang};
 
         if ($is_jury && !param('nokw')) {
             my $lang_col = $lang eq 'ru' ? 'name_ru' : 'name_en';
@@ -309,8 +301,8 @@ sub problem_text_frame
                     INNER JOIN problem_keywords PK ON PK.keyword_id = K.id
                     WHERE PK.problem_id = ?
                     ORDER BY 1~, undef,
-                $problem_id);
-            $problem_data->{keywords} = join ', ', @$kw_list;
+                $problem->{problem_id});
+            $problem->{keywords} = join ', ', @$kw_list;
         }
         if ($use_spellchecker) {
             # Judging from Text::Aspell docs, we cannot change options of the existing object,
@@ -322,18 +314,18 @@ sub problem_text_frame
             undef $spellchecker;
         }
 
-        if ($show_points && !$problem_data->{max_points}) {
-            $problem_data->{max_points} = CATS::RankTable::cache_max_points($problem_data->{id});
+        if ($show_points && !$problem->{max_points}) {
+            $problem->{max_points} = CATS::RankTable::cache_max_points($problem);
             $need_commit = 1;
         }
 
-        $problem_data->{samples} = $dbh->selectall_arrayref(qq~
+        $problem->{samples} = $dbh->selectall_arrayref(qq~
             SELECT rank, in_file, out_file
             FROM samples WHERE problem_id = ? ORDER BY rank~, { Slice => {} },
-            $problem_id);
+            $problem->{problem_id});
 
         for my $field_name qw(statement pconstraints input_format output_format explanation) {
-            for ($problem_data->{$field_name}) {
+            for ($problem->{$field_name}) {
                 defined $_ or next;
                 $text_span = '';
                 $_ = $_ eq '' ? undef : Encode::encode_utf8(parse($_));
@@ -341,11 +333,10 @@ sub problem_text_frame
                 s/(\s|~)?-{2,3}/($1 ? '&nbsp;' : '') . '&#151;'/ge; # em-dash
             }
         }
-        $is_jury && !param('noformal') or undef $problem_data->{formal_input};
-        $explain or undef $problem_data->{explanation};
-        push @problems, {
-            %$problem_data,
-            code => $pcodes{$problem_id},
+        $is_jury && !param('noformal') or undef $problem->{formal_input};
+        $explain or undef $problem->{explanation};
+        $problem = {
+            %$problem,
             lang_ru => $lang eq 'ru',
             lang_en => $lang eq 'en',
             show_points => $show_points,
