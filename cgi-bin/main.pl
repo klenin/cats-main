@@ -120,14 +120,15 @@ sub login_frame
 
 sub logout_frame
 {
-    init_template('main_logout.htm');
+    init_template('main_logout.' . (param('json') ? 'json' : 'htm'));
 
     $cid = '';
     $sid = '';
     $t->param(href_login => url_f('login'));
-
-    $dbh->do(qq~UPDATE accounts SET sid = NULL WHERE id = ?~, {}, $uid);
-    $dbh->commit;
+    if ($uid) {
+        $dbh->do(qq~UPDATE accounts SET sid = NULL WHERE id = ?~, {}, $uid);
+        $dbh->commit;
+    }
     0;
 }
 
