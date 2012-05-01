@@ -869,9 +869,22 @@ sub can_upsolve
 }
 
 
+sub problem_submit_too_frequent
+{
+    my ($submit_uid) = @_;
+    # Protect from Denial of Service -- disable too frequent submissions.
+    my $prev = $dbh->selectcol_arrayref(q~
+        SELECT FIRST 2 CAST(CURRENT_TIMESTAMP - R.submit_time AS DOUBLE PRECISION) FROM reqs R
+        WHERE R.account_id = ?
+        ORDER BY R.submit_time DESC~, {},
+        $submit_uid);
+    my $SECONDS_PER_DAY = 24 * 60 * 60;
+    ($prev->[0] || 1) < 3/$SECONDS_PER_DAY || ($prev->[1] || 1) < 60/$SECONDS_PER_DAY;
+}
+
+
 sub problems_submit
 {
-    # Проверяем параметры заранее, чтобы не делать бесполезных обращений к БД.
     my $pid = param('problem_id')
         or return msg(12);
 
@@ -882,8 +895,7 @@ sub problems_submit
     defined param('de_id') or return msg(14);
 
     my $time_since_finish = 0;
-    unless ($is_jury)
-    {
+    unless ($is_jury) {
         (my $time_since_start, $time_since_finish, my $is_official, my $status) = $dbh->selectrow_array(qq~
             SELECT
                 CAST(CURRENT_TIMESTAMP - $virtual_diff_time - C.start_date AS DOUBLE PRECISION),
@@ -900,36 +912,20 @@ sub problems_submit
         !defined $status || $status < $cats::problem_st_disabled
             or return msg(124);
 
-        # во время официального турнира отправка заданий во все остальные временно прекращается
-        if (!$is_official || $is_virtual)
-        {
+        # During the official contest, do not accept submissions for other contests.
+        if (!$is_official || $is_virtual) {
             my ($current_official) = $contest->current_official;
             !$current_official
                 or return msg(123, $current_official->{title});
         }
     }
-    
-    my $submit_uid = $uid;
-    if (!defined $submit_uid && $contest->is_practice)
-    {
-        $submit_uid = get_anonymous_uid();
-    }
 
-    # Защита от Denial of Service -- запрещаем посылать решения слишком часто
-    my $prev = $dbh->selectcol_arrayref(q~
-        SELECT FIRST 2 CAST(CURRENT_TIMESTAMP - R.submit_time AS DOUBLE PRECISION) FROM reqs R
-        WHERE R.account_id = ?
-        ORDER BY R.submit_time DESC~, {},
-        $submit_uid);
-    my $SECONDS_PER_DAY = 24 * 60 * 60;
-    if (($prev->[0] || 1) < 3/$SECONDS_PER_DAY || ($prev->[1] || 1) < 60/$SECONDS_PER_DAY)
-    {
-        return msg(131);
-    }
+    my $submit_uid = $uid // ($contest->is_practice ? get_anonymous_uid() : die);
+
+    return msg(131) if problem_submit_too_frequent($submit_uid);
 
     my $prev_reqs_count;
-    if ($contest->{max_reqs} && !$is_jury)
-    {
+    if ($contest->{max_reqs} && !$is_jury) {
         $prev_reqs_count = $dbh->selectrow_array(q~
             SELECT COUNT(*) FROM reqs R
             WHERE R.account_id = ? AND R.problem_id = ? AND R.contest_id = ?~, {},
@@ -942,8 +938,7 @@ sub problems_submit
     $src or return msg(11);
     my $did = param('de_id');
 
-    if (param('de_id') eq 'by_extension')
-    {
+    if (param('de_id') eq 'by_extension') {
         my $de_list = CATS::DevEnv->new($dbh, active_only => 1);
         my $de = $de_list->by_file_extension($file)
             or return msg(13);
@@ -951,7 +946,7 @@ sub problems_submit
         $t->param(de_name => $de->{description});
     }
 
-    # Защита от спама и случайных ошибок -- запрещаем повторяющийся исходный код.
+    # Forbid repeated submissions of the identical code with the same DE.
     my $source_hash = CATS::Utils::source_hash($src);
     my ($same_source) = $dbh->selectrow_array(qq~
         SELECT FIRST 1 S.req_id
@@ -966,7 +961,7 @@ sub problems_submit
 
     $dbh->do(qq~
         INSERT INTO reqs (
-            id, account_id, problem_id, contest_id, 
+            id, account_id, problem_id, contest_id,
             submit_time, test_time, result_time, state, received
         ) VALUES (
             ?,?,?,?,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP,?,?)~,
