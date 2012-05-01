@@ -62,7 +62,7 @@ function chg_code(st_sel, pid)
 <hr/>
 </TMPL_IF>
 
-<form method="post" enctype="multipart/form-data" name="problems_form" style="margin: 0">
+<form method="post" enctype="multipart/form-data" name="problems_form" accept-charset="UTF-8" style="margin: 0">
 <TMPL_INCLUDE 'includes/listview_header.inc'>
 <table width="100%" cellpadding="2" cellspacing="1" class="bordered">
 <TMPL_IF is_team>
@@ -104,32 +104,28 @@ function chg_code(st_sel, pid)
 </tr>
 </TMPL_LOOP>
 </table>
-<br/>
 <TMPL_IF is_team>
-<table><tr>
-    <td>Файл с решением:</td><td><input type="file" name="source" class="file" size="25"/></td>
-    <TMPL_IF editable>
-      <td>&nbsp;</td><td>Файл с задачей:</td>
-      <td><input type="file" name="zip" class="file" size="25"/>
-      <input type="checkbox" name="allow_rename" value="1"/> переим.</td></TMPL_IF>
-</tr><tr>
-    <td>Среда разработки:</td><td>
-      <select name="de_id">
-      <TMPL_LOOP de_list><option value="<TMPL_VAR de_id>"><TMPL_VAR de_name ESCAPE=HTML></option></TMPL_LOOP>
-      </select>
-    </td>
-    <TMPL_IF editable><td colspan="3">&nbsp;</td></TMPL_IF>
-</tr><tr>
-    <td colspan="2">
-        <input type="submit" name="submit" value="отправить" class="button" />
-        <TMPL_IF editable><input type="submit" name="std_solution" value="эталонное решение" class="button" /></TMPL_IF>
-    </td>
-    <TMPL_IF editable><td>&nbsp;</td><td colspan="2">
-        <input type="button" name="delete" value="удалить" class="button" onclick="d()" />
-        <input type="submit" name="replace" value="заменить" class="button" />
-        <input type="submit" name="add_new" value="добавить" class="button" />
-    </td></TMPL_IF>
-</tr></table>
+<div class="problem_submit">
+  <p><label for="source">Файл с решением:</label><input type="file" id="source" name="source" class="file" size="25"/></p>
+  <p><label for="de_id">Среда разработки:</label><select name="de_id" id="de_id">
+    <TMPL_LOOP de_list><option value="<TMPL_VAR de_id>"><TMPL_VAR de_name ESCAPE=HTML></option></TMPL_LOOP>
+    </select>
+  </p>
+  <input type="submit" name="submit" value="отправить" class="button" />
+  <TMPL_IF editable><input type="submit" name="std_solution" value="эталонное решение" class="button" /></TMPL_IF>
+</div>
+<TMPL_IF editable>
+<div class="problem_submit">
+  <p><label for="zip">Файл с задачей:</label><input type="file" id="zip" name="zip" class="file" size="25"/>
+    <label><input type="checkbox" name="allow_rename" value="1"/> переим.</label></p>
+  <p>
+    <input type="button" name="delete" value="удалить" class="button" onclick="d()" />
+    <input type="submit" name="replace" value="заменить" class="button" />
+    <input type="submit" name="add_new" value="добавить" class="button" />
+  </p>
+</div>
+</TMPL_IF>
+<div style="clear: both;"></div>
 </TMPL_IF>
 </form>
 <TMPL_INCLUDE 'includes/menu_end.inc'>
