@@ -111,6 +111,8 @@ function chg_code(st_sel, pid)
     <TMPL_LOOP de_list><option value="<TMPL_VAR de_id>"><TMPL_VAR de_name ESCAPE=HTML></option></TMPL_LOOP>
     </select>
   </p>
+  <p><label for="source_text">Текст решения:</label><br/>
+  <textarea id="source_text" name="source_text" cols="50" rows="5"></textarea></p>
   <input type="submit" name="submit" value="отправить" class="button" />
   <TMPL_IF editable><input type="submit" name="std_solution" value="эталонное решение" class="button" /></TMPL_IF>
 </div>

@@ -875,8 +875,9 @@ sub problems_submit
     my $pid = param('problem_id')
         or return msg(12);
 
-    my $file = param('source');
-    $file ne '' and length($file) <= 200 or return msg(9);
+    my $file = param('source') || '';
+    $file && length($file) <= 200 || param('source_text')
+        or return msg(9);
 
     defined param('de_id') or return msg(14);
 
@@ -936,7 +937,7 @@ sub problems_submit
         return msg(137) if $prev_reqs_count >= $contest->{max_reqs};
     }
 
-    my $src = upload_source('source');
+    my $src = param('source_text') || upload_source('source');
     defined($src) or return msg(10);
     $src or return msg(11);
     my $did = param('de_id');
@@ -977,7 +978,7 @@ sub problems_submit
     $s->bind_param(1, $rid);
     $s->bind_param(2, $did);
     $s->bind_param(3, $src, { ora_type => 113 } ); # blob
-    $s->bind_param(4, "$file");
+    $s->bind_param(4, $file ? "$file" : "$rid.txt");
     $s->bind_param(5, $source_hash);
     $s->execute;
     $dbh->commit;
@@ -1279,10 +1280,7 @@ sub problems_frame
         'problems', 'main_problems.' . ($json ? 'json' : 'htm'));
     problems_frame_jury_action;
 
-    if (defined param('submit'))
-    {
-        problems_submit;
-    }
+    problems_submit if defined param('submit');
 
     my @cols = (
         { caption => res_str(602), order_by => ($contest->is_practice ? '4' : '3'), width => '30%' },
