@@ -194,19 +194,24 @@ sub insert
 }
 
 
-# регистрация пользователя членом жюри
+# (Mass-)register users by jury.
 sub register_by_login
 {
     my ($login, $contest_id) = @_;
-    defined $login && $login ne ''
-        or return msg(118);
-
-    my ($aid) = $dbh->selectrow_array(qq~SELECT id FROM accounts WHERE login = ?~, {}, $login);
-    $aid or return msg(118, $login);
-    !get_registered_contestant(contest_id => $contest_id, account_id => $aid)
-        or return msg(120, $login);
-
-    add_to_contest(contest_id => $contest_id, account_id => $aid, is_remote => 1, is_ooc => 1);
+    my @logins = split(/\s*,\s*/, $login || '') or return msg(118);
+    my %aids;
+    for (@logins) {
+        length $_ <= 50 or return msg(101);
+        my ($aid) = $dbh->selectrow_array(qq~
+            SELECT id FROM accounts WHERE login = ?~, undef, $_);
+        $aid or return msg(118, $_);
+        !get_registered_contestant(contest_id => $contest_id, account_id => $aid)
+            or return msg(120, $_);
+        $aids{$aid} = 1;
+    }
+    %aids or return msg(118);
+    add_to_contest(contest_id => $contest_id, account_id => $_, is_remote => 1, is_ooc => 1)
+        for keys %aids;
     $dbh->commit;
     msg(119, $login);
 }
