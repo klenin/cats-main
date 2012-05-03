@@ -441,7 +441,7 @@ sub generate_output
     else
     {
         binmode(STDOUT, ':utf8');
-        $t->param(encoding => 'utf-8');
+        $t->param(encoding => 'UTF-8');
         print STDOUT http_header($http_mime_type, 'utf-8', $cookie);
         print STDOUT $out = $t->output;
     }
