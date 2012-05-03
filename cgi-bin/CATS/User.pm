@@ -111,7 +111,7 @@ sub validate_params
 {
     my ($self, %p) = @_;
 
-    $self->{login} && length $self->{login} <= 100
+    $self->{login} && length $self->{login} <= 50
         or return msg(101);
 
     $self->{team_name} && length $self->{team_name} <= 100
