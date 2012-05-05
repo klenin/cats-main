@@ -1,0 +1,1 @@
+<span class="timing">[% request_process_time %] [% init_time %]</span>
