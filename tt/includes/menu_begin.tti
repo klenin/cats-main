@@ -70,7 +70,7 @@
     </span>
     </td>
   </tr>
-  [% IF submenu %]
+  [% IF submenu && submenu.size %]
   <tr bgcolor="#bbbbff" style="height: 25px">
     <td colspan="2">&nbsp;
     [% FOREACH sm IN submenu %]
