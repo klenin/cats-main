@@ -14,22 +14,22 @@ CATS_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )" # assume, that scr
 # With:
 # Defaults env_keep="http_proxy https_proxy ftp_proxy"
 
-# Group, apache running with
+# Group, apache running under
 http_group=www-data
 
-packets=(git firebird2.1-dev firebird2.1-classic build-essential libaspell-dev
+packages=(git firebird2.1-dev firebird2.1-classic build-essential libaspell-dev
 	aspell-en aspell-ru apache2 libapache2-mod-perl2 libapreq2 libapreq2-dev 
 	apache2-threaded-dev libapache2-mod-perl2-dev libexpat1 libexpat1-dev)
-cpan_packets=(DBI Algorithm::Diff Text::Aspell HTML::Template SQL::Abstract 
+cpan_packages=(DBI Algorithm::Diff Text::Aspell HTML::Template SQL::Abstract 
 	Archive::Zip JSON::XS YAML::Syck Apache2::Request XML::Parser::Expat Template::Toolkit)
 
-sudo apt-get -y install ${packets[@]}
+sudo apt-get -y install ${packages[@]}
 
 formal_input='https://github.com/downloads/klenin/cats-main/FormalInput.tgz'
 DBD_firebird='http://search.cpan.org/CPAN/authors/id/M/MA/MARIUZ/DBD-Firebird-0.60.tar.gz'
 
 sudo -H sh -c 'wget -O - http://cpanmin.us | perl - --sudo App::cpanminus' # unsafe, but asks password once
-cpanm -S ${cpan_packets[@]}
+cpanm -S ${cpan_packages[@]}
 cd $CATS_ROOT
 git submodule init
 git submodule update
@@ -113,9 +113,9 @@ ttree -f ttreerc
 cd ..
 
 # now adjust permissions
-sudo chgrp -R ${http_group} cgi-bin static templates
+sudo chgrp -R ${http_group} cgi-bin static templates tt
 chmod -R g+r cgi-bin
-chmod g+rw static cgi-bin/download/{,att,img,pr} cgi-bin/rank_cache{,r}
+chmod g+rw static tt cgi-bin/download/{,att,img,pr} cgi-bin/rank_cache{,r}
 
 sudo service apache2 restart
 
