@@ -1,0 +1,88 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+<meta name="Content-Type" content="text/html; charset=[% encoding %]">
+<link rel="shortcut icon" href="images/std/favicon.ico" type="image/x-icon" />
+<title>[% contest_title | html %][% IF title_suffix %] - [% title_suffix %][% END %]</title>
+[% IF refresh ~%]
+  <meta http-equiv="Refresh" CONTENT="[% refresh %]">
+[%~ END %]
+<link rel="stylesheet" type="text/css" href="./docs/std/main.css">
+</head>
+<body>
+<table class="iface">
+  <tr bgcolor="#ffcc55" style="padding-bottom: 2px; height: 69px">
+	<td class="top" rowspan="2" width="1%">
+	    <img src="./images/std/logo.gif" border="0" alt="CATS">
+	</td>
+	<td valign="bottom" width="98%">
+	    [% IF contest_title ~%]
+        <font size="5" color="#333300">[% contest_title %]</font>
+      [%~ ELSE ~%]
+        &nbsp;
+      [%~ END %]
+	</td>
+	<td align="right" class="top" rowspan="2" width="1%">
+	<table width="550" style="height: 72px; background-image: url(./images/std/bg.gif)" align="left" cellpadding=0 cellspacing=0>
+    <tr><td align=right valign=bottom>
+      [% IF server_time ~%]
+        <font color="#333300" size="2">
+        [% IF show_remaining_minutes ~%]
+          до начала тура осталось: [% remaining_minutes %] мин.<br>
+        [%~ END %]
+        [% IF show_elapsed_minutes ~%]
+          с начала тура прошло: <span id="elapsed_minutes">[% elapsed_minutes %]</span> мин.<br/>
+        [%~ END %]
+        [% IF show_elapsed_days ~%]
+          с начала тура прошло: [% elapsed_days %] сут.<br>
+        [%~ END %]
+        страница обновлена: <span id="server_time">[% server_time %]</span></font>
+      [%~ END %]
+	</td></tr>
+    </table>
+    </td>
+  </tr>
+</table>
+<table class="iface">
+  <tr bgcolor="#7070ff" style="height: 30px">
+	<td align="left">
+    <span class="top">&nbsp;
+    [% IF left_menu %]
+    [[% FOREACH lm IN left_menu %]
+    [% IF lm.selected ~%]
+      <font color="#ffff00">[% lm.item | html %]</font>
+    [% ELSE ~%]
+      <a class="top" href="[% lm.href %]">[% lm.item | html %]</a>
+    [%~ END %]
+    [% UNLESS loop.last %]|[% END %]
+    [% END %]]
+    [% END %]</span>
+    </td>
+    <td align="right">
+    <span class="top">
+    [[% FOREACH rm IN right_menu %]
+    [% IF rm.selected ~%]
+      <font color="#ffff00">[% rm.item | html %]</font>
+    [% ELSE ~%]
+      <a class="top" href="[% rm.href %]">[% rm.item | html %]</a>
+    [%~ END %]
+    [% UNLESS loop.last %]|[% END %]
+    [% END %]]&nbsp;
+    </span>
+    </td>
+  </tr>
+  [% IF submenu %]
+  <tr bgcolor="#bbbbff" style="height: 25px">
+    <td colspan="2">&nbsp;
+    [% FOREACH sm IN submenu %]
+      [% IF sm.selected %]
+      <span style="font-size: 12px">[% sm.item_name %]</span>
+      [% ELSE %]
+      <a href="[% sm.href_item %]" style="color:#3030a0; font-size:12px" [% IF sm.item_target %]target="[% sm.item_target %]"[% END %]>[% sm.item_name %]</a>
+      [% END %]
+      [% UNLESS loop.last %]|[% END %]
+    [% END %]
+    </td>
+  </tr>
+  [% END %]
+</table>
+<div style="width: 99%; padding: 4px">

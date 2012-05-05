@@ -2691,7 +2691,7 @@ sub similarity_frame
 
 sub about_frame
 {
-    init_template('main_about.htm');
+    init_template('about.html.tt');
     my $problem_count = $dbh->selectrow_array(qq~
         SELECT COUNT(*) FROM problems P INNER JOIN contests C ON C.id = P.contest_id
             WHERE C.is_hidden = 0 OR C.is_hidden IS NULL~);
