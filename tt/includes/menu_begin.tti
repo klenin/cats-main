@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html><head>
-<meta name="Content-Type" content="text/html; charset=[% encoding %]">
+<meta http-equiv="Content-type" content="text/html; charset=[% encoding %]">
 <link rel="shortcut icon" href="images/std/favicon.ico" type="image/x-icon" />
 <title>[% contest_title | html %][% IF title_suffix %] - [% title_suffix %][% END %]</title>
 [% IF refresh ~%]
@@ -70,7 +70,7 @@
     </span>
     </td>
   </tr>
-  [% IF submenu %]
+  [% IF submenu && submenu.size %]
   <tr bgcolor="#bbbbff" style="height: 25px">
     <td colspan="2">&nbsp;
     [% FOREACH sm IN submenu %]
