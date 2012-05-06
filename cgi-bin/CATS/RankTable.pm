@@ -166,7 +166,7 @@ sub get_results
     $dbh->selectall_arrayref(qq~
         SELECT
             R.id, R.state, R.problem_id, R.account_id, R.points, R.testsets,
-            ((R.submit_time - C.start_date - CA.diff_time) * 1440) AS time_elapsed
+            MAXVALUE((R.submit_time - C.start_date - CA.diff_time) * 1440, 0) AS time_elapsed
         FROM reqs R, contests C, contest_accounts CA, contest_problems CP
         WHERE
             CA.contest_id = C.id AND CA.account_id = R.account_id AND R.contest_id = C.id AND
