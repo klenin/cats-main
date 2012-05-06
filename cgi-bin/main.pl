@@ -1576,7 +1576,7 @@ sub users_edit_save
 sub users_import_frame
 {
     init_template('main_users_import.htm');
-    $is_root or return;
+    $is_jury or return;
     $t->param(href_action => url_f('users_import'));
     param('do') or return;
     my $do_import = param('do_import');
