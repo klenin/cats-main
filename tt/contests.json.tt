@@ -1,0 +1,18 @@
+{
+[% IF message %]"message": "[% message | replace('"', '\"') %]"[% ELSE %]
+"contests": [
+[% FOREACH contests %]
+{
+    "id": [% id %],
+    "name": "[% contest_name | replace('"', '\"') %]",
+    "start_date": "[% start_date %]",
+    "finish_date": "[% finish_date %]",
+    "registration": [% IF registered_online ~%]
+    "online"[% ELSE %][% IF registered_virtual %]
+    "virtual"[% ELSE %]"none"[% END %][% END %],
+    "is_official": [% IF is_official %]1[% ELSE %]0[% END %]
+}
+[% UNLESS loop.last %],[% END %][% END %]
+]
+[% END %]
+}
