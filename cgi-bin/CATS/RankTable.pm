@@ -311,12 +311,11 @@ sub prepare_ranks
 
     my @rank = values %$teams;
 
-    if ($self->{filter})
-    {
-        @rank = grep index(
-            ($_->{tag} || '') . $_->{team_name} . ($_->{city} || ''),
-            Encode::decode_utf8($self->{filter})
-        ) >= 0, @rank;
+    if ($self->{filter}) {
+        my $negate = $self->{filter} =~ /^\!(.*)$/;
+        my $filter = Encode::decode_utf8($negate ? $1 : $self->{filter});
+        my $filter_fields = sub { join '', map $_ || '', @{$_[0]}{qw(tag team_name city)} };
+        @rank = grep $negate == (index($filter_fields->($_), $filter) < 0), @rank;
     }
 
     my $sort_criteria = $self->{show_points} ?
