@@ -490,7 +490,7 @@ sub contests_frame
     my $json = param('json');
     return if $ical && $json;
     init_listview_template('contests', 'contests',
-        'main_contests.' .  ($ical ? 'ics' : $json ? 'json' : 'htm'));
+        'contests.' .  ($ical ? 'ics' : $json ? 'json' : 'html') . '.tt');
 
     CATS::Prizes::contest_group_auto_new if defined param('create_group') && $is_root;
 
