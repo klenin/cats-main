@@ -1773,7 +1773,7 @@ sub users_impersonate
 sub quote_json
 {
     # Quoting will result in double-quoting by HTML::Template, so just use spaces.
-    s/\t|\n/ /g for @_;
+    $_ && s/\t|\n/ /g for @_;
 }
 
 sub users_frame
