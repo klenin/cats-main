@@ -1939,6 +1939,7 @@ sub user_stats_frame
     ) };
     $t->param(
         %$u, contests => $contests, is_root => $is_root,
+        CATS::IP::linkify_ip(CATS::IP::filter_ip $u->{last_ip}),
         href_all_problems => $pr->(''),
         href_solved_problems => $pr->('accepted=1'),
         title_suffix => $u->{team_name},

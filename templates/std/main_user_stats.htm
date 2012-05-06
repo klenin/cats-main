@@ -6,7 +6,9 @@
 <tr><td>Имя:</td><td><TMPL_VAR team_name ESCAPE=HTML></td>
 <TMPL_IF is_root>
 <tr><td>Последний вход:</td><td><TMPL_VAR last_login_date></td>
-<tr><td>Последний IP:</td><td><TMPL_VAR last_ip></td>
+<tr><td>Последний IP:</td><td>
+  [<a href="<TMPL_VAR href_whois>" alt="<TMPL_VAR last_ip>" title="<TMPL_VAR last_ip>"><TMPL_VAR last_ip_short></a>]
+</td>
 <tr><td>Задачи:</td><td><a href="<TMPL_VAR href_all_problems>">все</a> <a href="<TMPL_VAR href_solved_problems>">решённые</a></td>
 </TMPL_IF>
 </table>
