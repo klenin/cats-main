@@ -4,6 +4,7 @@
 <body>
 <TMPL_LOOP problems>
 <div class="problem_text" <TMPL_UNLESS "__first__">style="page-break-before: always"</TMPL_UNLESS>>
+  <a name="pr<TMPL_VAR code>"></a>
   <TMPL_IF lang_ru><TMPL_INCLUDE 'includes/problem_text_ru.inc'></TMPL_IF>
   <TMPL_IF lang_en><TMPL_INCLUDE 'includes/problem_text_en.inc'></TMPL_IF>
   <hr>
