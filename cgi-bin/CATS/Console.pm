@@ -95,7 +95,7 @@ sub init_console_template
 sub console
 {
     my $template_name = shift;
-    init_console_template('main_console_content.htm');
+    init_console_template('console_content.html.tt');
 
     my $s = get_settings;
     $s->{show_results} = 1 unless defined $s->{show_results};
@@ -625,7 +625,7 @@ sub console_frame
 
 sub content_frame
 {
-    console('main_console_iframe.htm');
+    console('console_iframe.html.tt');
 }
 
 
