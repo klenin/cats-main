@@ -1,0 +1,10 @@
+{
+[% IF message %]
+    "status": "error",
+    "message": "[% message | replace('"', '\"') %]"
+[% ELSE %]
+    "status": "ok",
+    "sid": "[% sid %]",
+    "cid": [% cid %]
+[% END %]
+}
