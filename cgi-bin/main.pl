@@ -66,7 +66,7 @@ sub make_sid {
 sub login_frame
 {
     my $json = param('json');
-    init_template('main_login.' . ($json ? 'json' : 'htm'));
+    init_template('login.' . ($json ? 'json' : 'html') . '.tt');
 
     my $login = param('login');
     if (!$login)
@@ -120,7 +120,7 @@ sub login_frame
 
 sub logout_frame
 {
-    init_template('main_logout.' . (param('json') ? 'json' : 'htm'));
+    init_template('logout.' . (param('json') ? 'json' : 'html') . '.tt');
 
     $cid = '';
     $sid = '';
