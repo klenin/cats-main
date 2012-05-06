@@ -7,7 +7,7 @@ use Algorithm::Diff;
 use CGI qw(param span url_param);
 use CATS::DB;
 use CATS::Utils qw(escape_html state_to_display url_function);
-use CATS::Misc qw($is_jury $sid $t $uid init_template upload_source url_f);
+use CATS::Misc qw($is_jury $sid $t $uid init_template msg upload_source url_f);
 use CATS::Data qw(is_jury_in_contest enforce_request_state);
 use CATS::IP;
 use CATS::DevEnv;
@@ -310,9 +310,9 @@ sub prepare_source
 
     my $is_jury = is_jury_in_contest(contest_id => $sources_info->{contest_id});
     $is_jury || $sources_info->{account_id} == ($uid || 0)
-        or return ($show_msg && msg(126));
+        or return $show_msg && msg(126);
     my $se = param('src_enc') || 'WINDOWS-1251';
-    if ($se && source_encodings()->{$se} && $sources_info->{file_name} !~ m/\.zip$/) {
+    if (source_encodings()->{$se} && $sources_info->{file_name} !~ m/\.zip$/) {
         Encode::from_to($sources_info->{src}, $se, 'utf-8');
     }
     ($sources_info, $is_jury);
