@@ -1627,7 +1627,7 @@ sub settings_save
 
 sub settings_frame
 {
-    init_template('main_settings.htm');
+    init_template('settings.html.tt');
     $settings = {} if defined param('clear') && $is_team;
     settings_save if defined param('edit_save') && $is_team;
 
