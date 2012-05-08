@@ -1597,7 +1597,7 @@ sub users_import_frame
 
 sub registration_frame
 {
-    init_template('main_registration.htm');
+    init_template('registration.html.tt');
 
     $t->param(countries => [ @cats::countries ], href_login => url_f('login'));
 
