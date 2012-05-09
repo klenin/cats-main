@@ -2061,7 +2061,7 @@ sub compilers_frame
         defined url_param('edit') and return compilers_edit_frame;
     }
 
-    init_listview_template('compilers', 'compilers', 'main_compilers.htm');
+    init_listview_template('compilers', 'compilers', 'compilers.html.tt');
 
     if ($is_jury)
     {
