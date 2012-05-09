@@ -1166,7 +1166,7 @@ sub problem_select_testsets
     @sel{split ',', $problem->{testsets} || ''} = undef;
     $_->{selected} = exists $sel{$_->{name}} for @$testsets;
 
-    init_template('main_problem_select_testsets.htm');
+    init_template('problem_select_testsets.html.tt');
     $t->param("problem_$_" => $problem->{$_}) for keys %$problem;
     $t->param(testsets => $testsets, href_select_testsets => url_f('problem_select_testsets'));
 }
