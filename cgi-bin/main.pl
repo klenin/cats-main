@@ -1915,7 +1915,7 @@ sub users_frame
 
 sub user_stats_frame
 {
-    init_template('main_user_stats.htm');
+    init_template('user_stats.html.tt');
     my $uid = param('uid') or return;
     my $u = $dbh->selectrow_hashref(q~
         SELECT A.*, last_login AS last_login_date
