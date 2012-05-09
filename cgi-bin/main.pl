@@ -1175,7 +1175,7 @@ sub problem_select_testsets
 sub problems_retest_frame
 {
     $is_jury && !$contest->is_practice or return;
-    init_listview_template('problems_retest', 'problems', 'main_problems_retest.htm');
+    init_listview_template('problems_retest', 'problems', 'problems_retest.html.tt');
 
     defined param('mass_retest') and problems_mass_retest;
     defined param('recalc_points') and problems_recalc_points;
