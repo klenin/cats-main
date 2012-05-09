@@ -484,7 +484,7 @@ sub export
 sub graphs
 {
     $is_jury or return;
-    init_template('main_console_graphs.htm');
+    init_template('console_graphs.html.tt');
     my $codes = $dbh->selectcol_arrayref(q~
         SELECT CP.code FROM contest_problems CP WHERE CP.contest_id = ? ORDER BY 1~, undef,
         $cid);
