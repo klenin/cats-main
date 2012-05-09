@@ -2005,7 +2005,7 @@ sub compilers_new_save
 
 sub compilers_edit_frame
 {
-    init_template('main_compilers_edit.htm');
+    init_template('compilers_edit.html.tt');
 
     my $id = url_param('edit');
 
