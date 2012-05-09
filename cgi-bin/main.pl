@@ -1980,7 +1980,7 @@ sub references_menu
 
 sub compilers_new_frame
 {
-    init_template('main_compilers_new.htm');
+    init_template('compilers_new.html.tt');
     $t->param(href_action => url_f('compilers'));
 }
 
