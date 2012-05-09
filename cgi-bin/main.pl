@@ -1272,7 +1272,7 @@ sub problems_frame
 
     my $json = param('json');
     init_listview_template('problems' . ($contest->is_practice ? '_practice' : ''),
-        'problems', 'main_problems.' . ($json ? 'json' : 'htm'));
+        'problems', 'problems.' . ($json ? 'json' : 'html') . '.tt');
     problems_frame_jury_action;
 
     problems_submit if defined param('submit');
@@ -1281,10 +1281,10 @@ sub problems_frame
         { caption => res_str(602), order_by => ($contest->is_practice ? '4' : '3'), width => '30%' },
         ($is_jury ?
         (
-            { caption => res_str(632), order_by => '11', width => '10%' }, # статус
-            { caption => res_str(605), order_by => '15', width => '10%' }, # набор тестов
-            { caption => res_str(635), order_by => '13', width => '5%' }, # кто изменил
-            { caption => res_str(634), order_by => 'P.upload_date', width => '10%' }, # дата изменения
+            { caption => res_str(632), order_by => '11', width => '10%' }, # status
+            { caption => res_str(605), order_by => '15', width => '10%' }, # tests set
+            { caption => res_str(635), order_by => '13', width => '5%' }, # who modified
+            { caption => res_str(634), order_by => 'P.upload_date', width => '10%' }, # modification date
         )
         : ()
         ),
@@ -1299,7 +1299,7 @@ sub problems_frame
     my $account_condition = $contest->is_practice ? '' : ' AND D.account_id = ?';
     my $select_code = $contest->is_practice ? 'NULL' : 'CP.code';
     my $hidden_problems = $is_jury ? '' : " AND (CP.status IS NULL OR CP.status < $cats::problem_st_hidden)";
-    # TODO: учитывать testsets
+    # TODO: take testsets into account
     my $test_count_sql = $is_jury ? '(SELECT COUNT(*) FROM tests T WHERE T.problem_id = P.id) AS test_count,' : '';
     my $sth = $dbh->prepare(qq~
         SELECT
@@ -1324,8 +1324,8 @@ sub problems_frame
     }
     else
     {
-        my $aid = $uid || 0; # на случай анонимного пользователя
-        # ORDER BY subselect требует повторного указания параметра
+        my $aid = $uid || 0; # in a case of anonymous user
+        # 'ORDER BY subselect' requires re-specifying the parameter
         $sth->execute($aid, $aid, $aid, $cid); #, (order_by =~ /^ORDER BY\s+(5|6|7)\s+/ ? ($aid) : ()));
     }
 
