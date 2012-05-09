@@ -463,7 +463,7 @@ sub select_all_reqs
 sub export
 {
     $is_jury or return;
-    init_template('main_console_export.xml');
+    init_template('console_export.xml.tt');
     my $reqs = select_all_reqs;
     for my $req (@$reqs)
     {
