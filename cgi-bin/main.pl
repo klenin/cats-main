@@ -1244,7 +1244,7 @@ sub problems_frame
         my $local_only = $contest->{local_only};
         if ($contest->{time_since_start} < 0)
         {
-            init_template('main_problems_inaccessible.htm');
+            init_template('problems_inaccessible.html.tt');
             return msg(130);
         }
         if ($local_only)
@@ -1258,7 +1258,7 @@ sub problems_frame
             }
             if (!defined $is_remote || $is_remote)
             {
-                init_template('main_problems_inaccessible.htm');
+                init_template('problems_inaccessible.html.tt');
                 return msg(129);
             }
         }
