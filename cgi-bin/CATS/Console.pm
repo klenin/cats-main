@@ -572,7 +572,7 @@ sub delete_message
 
 sub console_frame
 {
-    init_console_template('main_console.htm');
+    init_console_template('console.html.tt');
     my $s = get_settings;
     if (defined param('filter') || defined param('visible'))
     {
