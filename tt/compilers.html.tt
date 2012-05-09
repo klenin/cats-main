@@ -1,0 +1,42 @@
+[% PROCESS 'includes/menu_begin.tti' %]
+
+<script>
+function delete_compiler(href, name)
+{
+    if (confirm( "Вы действительно желаете удалить компилятор '" + name + "'?" ))
+    {
+        document.location=href;
+    }
+}
+</script>
+
+[% IF message %]<i>[% message | html %]</i><br>[% END %]
+
+<form method=post enctype='multipart/form-data'>
+[% PROCESS 'includes/listview_header.tti' %]
+
+<table width=100% cellpadding=2 cellspacing=1 class=bordered>
+<tr bgcolor=#ccccff>
+[% PROCESS 'includes/listview_col_defs.tti' %]
+</tr>
+
+[% FOREACH compilers %]
+<tr bgcolor=#ffffff>
+<td>
+  [% IF editable %]
+  <a href='javascript:delete_compiler("[% href_delete %]", "[% description | html %]");''><img src="./images/std/waste2.gif" border=0></a> 
+  <a href='[% href_edit %]'><img src="./images/std/blank.gif" border=0></a> 
+  [% END %]
+  [% code | html %]
+</td>
+<td>[% description | html %]</td>
+<td>[% supported_ext | html %]</td>
+<td>[% memory_handicap %]</td>
+<td>[% syntax %]</td>
+[% IF editable %]<td>[% IF locked %]<font color=red>заблокирована</font>[% ELSE %]поддерживается[% END %]</td>[% END %]
+</tr>
+[% END %]
+</table>
+</form>
+
+[% PROCESS 'includes/menu_end.tti' %]
