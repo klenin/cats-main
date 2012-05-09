@@ -1788,7 +1788,7 @@ sub users_frame
 
     init_listview_template(
         'users' . ($contest->is_practice ? '_practice' : ''),
-        'users', 'main_users.' . (param('json') ? 'json' : 'htm'));
+        'users', 'users.' . (param('json') ? 'json' : 'html') . '.tt');
 
     $t->param(messages => $is_jury, title_suffix => res_str(526));
 

@@ -1,0 +1,12 @@
+[
+[% FOREACH users %]
+{
+"login": "[% login | replace('"', '\"') %]",
+"name": "[% team_name | replace('"', '\"') %]",
+"ooc": [% IF ooc %]1[% ELSE %]0[% END %],
+"remote": [% IF remote %]1[% ELSE %]0[% END %],
+"virtual": [% IF virtual %]1[% ELSE %]0[% END %],
+"jury": [% IF jury %]1[% ELSE %]0[% END %]
+}
+[% UNLESS loop.last %],[% END %][% END %]
+]
