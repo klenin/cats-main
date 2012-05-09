@@ -1,0 +1,15 @@
+{
+[% IF message %]"message": "[% message | replace('"', '\"') %]"
+[% ELSE %]
+"problems": [
+[% FOREACH problems %]
+{
+"id": [% problem_id %],
+"code": "[% code %]",
+"name": "[% problem_name | replace('"', '\"') %]",
+"disabled": [% IF disabled %]1[% ELSE %]0[% END %]
+}
+[% UNLESS loop.last %],[% END %][% END %]
+]
+[% END %]
+}
