@@ -2132,7 +2132,7 @@ sub judges_new_save
 
 sub judges_edit_frame
 {
-    init_template('main_judges_edit.htm');
+    init_template('judges_edit.html.tt');
 
     my $jid = url_param('edit');
     my ($judge_name, $lock_counter) = $dbh->selectrow_array(qq~
