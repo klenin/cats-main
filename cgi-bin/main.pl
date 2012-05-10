@@ -600,7 +600,7 @@ sub show_unused_problem_codes ()
 
 sub problems_new_frame
 {
-    init_template('main_problems_new.htm');
+    init_template('problems_new.html.tt');
 
     show_unused_problem_codes;
     $t->param(href_action => url_f('problems'));
