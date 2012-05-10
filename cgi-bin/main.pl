@@ -2560,7 +2560,7 @@ sub rank_problem_details
 
 sub envelope_frame
 {
-    init_template('main_envelope.htm');
+    init_template('envelope.html.tt');
     
     my $rid = url_param('rid') or return;
 
