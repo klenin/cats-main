@@ -245,7 +245,7 @@ sub problem_text_frame
         # We cannot return error as html for static pages, since it will cached.
         die 'Request for cached problems of invisible contest'
             if $CATS::StaticPages::is_static_page;
-        init_template('main_access_denied.htm');
+        init_template('access_denied.html.tt');
         return;
     }
     $explain = $explain && url_param('explain');
