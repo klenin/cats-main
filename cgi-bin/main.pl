@@ -135,7 +135,7 @@ sub logout_frame
 
 sub contests_new_frame
 {
-    init_template('main_contests_new.htm');
+    init_template('contests_new.html.tt');
 
     my $date = $dbh->selectrow_array(q~SELECT CURRENT_TIMESTAMP FROM RDB$DATABASE~);
     $date =~ s/\s*$//;
