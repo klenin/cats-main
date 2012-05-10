@@ -2702,7 +2702,7 @@ sub about_frame
 
 sub authors_frame
 {
-    init_template('main_authors.htm');
+    init_template('authors.html.tt');
 }
 
 
