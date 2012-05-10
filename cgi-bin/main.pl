@@ -2505,7 +2505,7 @@ sub rank_table_frame
 
     #rank_table('main_rank_table.htm');
     #init_template('main_rank_table_content.htm');
-    init_template('main_rank_table.htm');
+    init_template('rank_table.html.tt');
 
     my $rt = CATS::RankTable->new;
     $rt->get_contest_list_param;
@@ -2533,7 +2533,7 @@ sub rank_table_frame
 
 sub rank_table_content_frame
 {
-    rank_table('main_rank_table_iframe.htm');  
+    rank_table('rank_table_iframe.html.tt');
 }
 
 
