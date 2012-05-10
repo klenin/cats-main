@@ -1,0 +1,20 @@
+[% PROCESS 'includes/menu_begin.tti' %]
+[% IF too_many_problems %]
+Слишком много задач
+[% ELSE %]
+<form method="post" enctype="multipart/form-data" action="[% href_action %]">
+<table><tr><td align=right>Код задачи:</td><td>
+<select name="problem_code">
+[% FOREACH code_array %]
+<option name="[% code %]">[% code %]
+[% END %]
+</select>
+</td></tr>
+<tr><td align=right>Zip-архив с задачей:</td><td>
+<input type=file name="zip" class=button></td></tr></table>
+<br>
+<input type=submit name='new_save' value='     Ok     ' class=button>
+<input type=submit name='new_cancel' value='Отмена' class=button>
+</form>
+[% END %]
+[% PROCESS 'includes/menu_end.tti' %]
