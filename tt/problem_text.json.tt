@@ -1,0 +1,12 @@
+[
+[% FOREACH problems %]
+{
+    "id": [% id %],
+    "code": "[% code %]",
+    "title": "[% title | replace('"', '\"') %]",
+    [% IF json_data %]"data": [% json_data %],[% END %]
+    "statement": "[% statement | replace('"', '\"') %]",
+    "input_format": "[% input_format | replace('"', '\"') %]"
+}
+[% UNLESS loop.last %],[% END %][% END %]
+]

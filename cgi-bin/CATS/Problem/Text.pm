@@ -251,7 +251,7 @@ sub problem_text_frame
     $explain = $explain && url_param('explain');
 
     my $json = param('json');
-    init_template('main_problem_text.' . ($json ? 'json' : 'htm'));
+    init_template('problem_text.' . ($json ? 'json' : 'html') . '.tt');
 
     my (@problems, $show_points);
 
