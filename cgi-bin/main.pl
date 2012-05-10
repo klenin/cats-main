@@ -2482,7 +2482,7 @@ sub answer_box_frame
 sub rank_table
 {
     my $template_name = shift;
-    init_template('main_rank_table_content.htm');
+    init_template('rank_table_content.html.tt');
     $t->param(printable => url_param('printable'));
     my $rt = CATS::RankTable->new;
     $rt->parse_params;
