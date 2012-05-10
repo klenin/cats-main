@@ -2172,7 +2172,7 @@ sub judges_frame
     $is_root && defined url_param('new') and return judges_new_frame;
     $is_root && defined url_param('edit') and return judges_edit_frame;
 
-    init_listview_template('judges', 'judges', 'main_judges.htm');
+    init_listview_template('judges', 'judges', 'judges.html.tt');
 
     $is_root && defined param('new_save') and judges_new_save;
     $is_root && defined param('edit_save') and judges_edit_save;
