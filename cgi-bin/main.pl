@@ -1455,7 +1455,7 @@ sub lists_to_strings { [ map { eq => join ',', @$_ }, @{$_[0]} ] }
 
 sub compare_tests_frame
 {
-    init_template('main_compare_tests.htm');
+    init_template('compare_tests.html.tt');
     $is_jury or return;
     my ($pid) = param('pid') or return;
     my ($pt) = $dbh->selectrow_array(q~
