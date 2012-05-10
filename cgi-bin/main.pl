@@ -2224,7 +2224,7 @@ sub keywords_fields () { qw(name_ru name_en code) }
 
 sub keywords_new_frame
 {
-    init_template('main_keywords_new.htm');
+    init_template('keywords_new.html.tt');
     $t->param(href_action => url_f('keywords'));
 }
 
