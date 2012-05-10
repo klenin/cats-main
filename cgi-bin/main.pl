@@ -2438,7 +2438,7 @@ sub send_message_box_frame
 
 sub answer_box_frame
 {
-    init_template('main_answer_box.htm');
+    init_template('answer_box.html.tt');
 
     my $qid = url_param('qid');
 

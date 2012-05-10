@@ -1,0 +1,24 @@
+<html><head>
+<title>CATS - вопрос команды</title>
+<meta name="Content-Type" content="text/html; charset=utf-8">
+<link rel="stylesheet" type="text/css" href="./docs/std/main.css">
+</head>
+<body style="margin: 10px">
+[% UNLESS clarified %]
+<form method="post" enctype="multipart/form-data">
+  [% team_name | html %], [% submit_time %]<br/>
+  [% IF answer %]<br/>Получен ответ:[% answer %]<br/><br/>[% END %]
+  <br/>
+  <div class="bordered">[% question_text | html %]</div>
+  <br/>
+  <input type="text" size="70" value="без комментариев" name="answer_text" class="bordered" />
+  <br/>
+  <br/>
+  <input type="submit" value="Ответить" name="clarify" class="button"/> 
+  <input type="button" value="Закрыть" onClick="javascript:window.close();" class="button" />
+</form>
+[% ELSE %]
+<script>window.close();</script>
+[% END %]
+</body>
+</html>
