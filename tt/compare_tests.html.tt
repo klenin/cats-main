@@ -1,0 +1,28 @@
+[% PROCESS 'includes/menu_begin.tti' %]
+<h3>Задача: [% problem_title %]</h3>
+<table style="text-align: right" class="bordered">
+<tr><td>&nbsp;</td>[% FOREACH comparision_matrix %]<td width="20px">[% test_rank %]</td>[% END %]
+<td>Passed</td><td>Failed</td>
+</tr>
+[% FOREACH comparision_matrix %]
+<tr><td>[% test_rank %]</td>
+[% FOREACH data %]<td [% UNLESS n %]style="background-color: #FFC0C0"[% END %]>[% n %]</td>[% END %]
+<td>[% passed_count %]</td><td>[% failed_count %]</td>
+</tr>
+[% END %]
+</table>
+<br/>
+[% IF equiv_lists.size %]
+Эквивалентные тесты:
+[% FOREACH equiv IN equiv_lists %] ([% equiv.eq %]) [% END %]<br/>
+[% END %]
+[% IF simple_tests.size %]
+Простые тесты:
+[% FOREACH st IN simple_tests %][% st.t %][% UNLESS loop.last %],[% END %][% END %]<br/>
+[% END %]
+[% IF hard_tests.size %]
+Сложные тесты:
+[% FOREACH ht IN hard_tests %][% ht.t %][% UNLESS loop.last %],[% END %][% END %]<br/>
+[% END %]
+
+[% PROCESS 'includes/menu_end.tti' %]
