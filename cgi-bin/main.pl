@@ -234,7 +234,7 @@ sub try_contest_params_frame
 {
     my $id = url_param('params') or return;
 
-    init_template('main_contest_params.htm');  
+    init_template('contest_params.html.tt');
 
     my $p = $dbh->selectrow_hashref(qq~
         SELECT
