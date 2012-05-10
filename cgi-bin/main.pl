@@ -2377,7 +2377,7 @@ sub prizes_frame
     }
 
     defined url_param('edit') and return CATS::Prizes::prizes_edit_frame;
-    init_listview_template('prizes', 'prizes', 'main_prizes.htm');
+    init_listview_template('prizes', 'prizes', 'prizes.html.tt');
 
     defined param('edit_save') and CATS::Prizes::prizes_edit_save;
 
