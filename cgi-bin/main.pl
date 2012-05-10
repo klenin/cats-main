@@ -2109,7 +2109,7 @@ sub compilers_frame
 
 sub judges_new_frame
 {
-    init_template('main_judges_new.htm');
+    init_template('judges_new.html.tt');
     $t->param(href_action => url_f('judges'));
 }
 
