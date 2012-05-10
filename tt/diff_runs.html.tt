@@ -1,4 +1,4 @@
-<TMPL_INCLUDE 'includes/header.inc'>
+[% PROCESS 'includes/header.tti' %]
 </head>
 <body>
 <script type="text/javascript">
@@ -18,24 +18,24 @@ function show_ab(a, b)
 }
 //-->
 </script>
-Сравнение отправленных файлов:
-<TMPL_INCLUDE 'includes/sources_info.inc'>
+п║я─п╟п╡п╫п╣п╫п╦п╣ п╬я┌п©я─п╟п╡п╩п╣п╫п╫я▀я┘ я└п╟п╧п╩п╬п╡:
+[% PROCESS 'includes/sources_info.tti' %]
 <p>
-Показывать:
+п÷п╬п╨п╟п╥я▀п╡п╟я┌я▄:
 [ <a onclick="show_ab('', ''); return false" href="#">diff</a>
-| <a onclick="show_ab('', 'none'); return false" href="#">только A</a>
-| <a onclick="show_ab('none', ''); return false" href="#">только B</a>
+| <a onclick="show_ab('', 'none'); return false" href="#">я┌п╬п╩я▄п╨п╬ A</a>
+| <a onclick="show_ab('none', ''); return false" href="#">я┌п╬п╩я▄п╨п╬ B</a>
 ]
 </p>
 <code>
 <table class="internal_borders">
 <tr>
-<td width="1" align="right"><pre><TMPL_LOOP diff_lines><TMPL_VAR __counter__>
-</TMPL_LOOP></pre></td>
-<td style="vertical-align: top"><pre><TMPL_LOOP diff_lines><TMPL_VAR line></TMPL_LOOP></pre></td></tr>
+<td width="1" align="right"><pre>[% FOREACH diff_lines %][% loop.count %]
+[% END %]</pre></td>
+<td style="vertical-align: top"><pre>[% FOREACH diff_lines %][% line %][% END %]</pre></td></tr>
 </table>
 </code>
 
-<TMPL_INCLUDE 'includes/timing.inc'>
+[% PROCESS 'includes/timing.tti' %]
 </body>
 </html>
