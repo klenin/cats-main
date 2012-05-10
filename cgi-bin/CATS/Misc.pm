@@ -495,7 +495,7 @@ sub init_user
             SELECT id, team_name, srole, last_ip, settings FROM accounts WHERE sid = ?~, {}, $sid);
         if (!defined($uid) || ($last_ip || '') ne CATS::IP::get_ip())
         {
-            init_template('main_bad_sid.' . (param('json') ? 'json' : 'htm'));
+            init_template('bad_sid.' . (param('json') ? 'json' : 'html') . '.tt');
             $sid = '';
             $t->param(href_login => url_f('login'));
         }

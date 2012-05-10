@@ -1,0 +1,6 @@
+[% PROCESS 'includes/menu_begin.tti' %]
+[% IF message %]<i>[% message | html %]</i><br>[% END %]
+
+Код сессии неверен или устарел. <a href="[% href_login %]">Войдите</a> в систему заново.
+
+[% PROCESS 'includes/menu_end.tti' %]
