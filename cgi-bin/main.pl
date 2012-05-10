@@ -2320,7 +2320,7 @@ sub keywords_frame
 
 sub import_sources_frame
 {
-    init_listview_template('import_sources', 'import_sources', 'main_import_sources.htm');
+    init_listview_template('import_sources', 'import_sources', 'import_sources.html.tt');
     define_columns(url_f('import_sources'), 0, 0, [
         { caption => res_str(638), order_by => '2', width => '30%' },
         { caption => res_str(642), order_by => '3', width => '30%' },
