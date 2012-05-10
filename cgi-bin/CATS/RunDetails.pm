@@ -446,7 +446,7 @@ sub run_log_frame
 
 sub diff_runs_frame
 {
-    init_template('main_diff_runs.htm');
+    init_template('diff_runs.html.tt');
     $is_jury or return;
 
     my $si = get_sources_info(
