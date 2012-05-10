@@ -2245,7 +2245,7 @@ sub keywords_new_save
 
 sub keywords_edit_frame
 {
-    init_template('main_keywords_edit.htm');
+    init_template('keywords_edit.html.tt');
 
     my $kwid = url_param('edit');
     my $kw = $dbh->selectrow_hashref(qq~SELECT * FROM keywords WHERE id=?~, {}, $kwid);
