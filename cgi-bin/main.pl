@@ -753,7 +753,7 @@ sub problems_add_new
 
 sub problems_all_frame
 {
-    init_listview_template('link_problem', 'link_problem', 'main_problems_link.htm');
+    init_listview_template('link_problem', 'link_problem', 'problems_link.html.tt');
 
     my $link = url_param('link');
     my $kw = url_param('kw');
