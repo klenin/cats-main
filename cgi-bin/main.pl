@@ -2284,7 +2284,7 @@ sub keywords_frame
         defined url_param('new') and return keywords_new_frame;
         defined url_param('edit') and return keywords_edit_frame;
     }
-    init_listview_template('keywords', 'keywords', 'main_keywords.htm');
+    init_listview_template('keywords', 'keywords', 'keywords.html.tt');
 
     $is_root && defined param('new_save') and keywords_new_save;
     $is_root && defined param('edit_save') and keywords_edit_save;
