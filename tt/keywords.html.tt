@@ -1,0 +1,41 @@
+[% PROCESS 'includes/menu_begin.tti' %]
+
+<script>
+function delete_kw(href, name)
+{
+    if (confirm( "Вы действительно желаете удалить ключевое слово '" + name + "'?" ))
+    {
+        document.location=href;
+    }
+}
+</script>
+
+[% IF message %]<i>[% message | html %]</i><br>[% END %]
+
+<form method=post enctype='multipart/form-data'>
+[% PROCESS 'includes/listview_header.tti' %]
+
+<table width=100% cellpadding=2 cellspacing=1 class=bordered>
+<tr bgcolor=#ccccff>
+[% IF editable %]<td>&nbsp;</td>[% END %]
+[% PROCESS 'includes/listview_col_defs.tti' %]
+</tr>
+
+[% FOREACH keywords %]
+<tr bgcolor=#ffffff>
+[% IF editable %]
+<td>
+  <a href='javascript:delete_kw("[% href_delete %]", "[% code | html %]");'><img src="./images/std/waste2.gif" border=0></a> 
+  <a href='[% href_edit %]'><img src="./images/std/blank.gif" border=0></a>
+</td>
+[% END %]
+<td><a href="[% href_view_problems %]">[% code | html %]</a></td>
+<td>[% name_ru | html %]</td>
+<td>[% name_en | html %]</td>
+</tr>
+[% END %]
+</table>
+
+</form>
+
+[% PROCESS 'includes/menu_end.tti' %]

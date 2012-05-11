@@ -1,0 +1,37 @@
+[% PROCESS 'includes/menu_begin.tti' %]
+
+<script>
+function delete_prize(href, name)
+{
+    if (confirm( "Вы действительно желаете удалить группу турниров '" + name + "'?" ))
+    {
+        document.location=href;
+    }
+}
+</script>
+
+[% IF message %]<i>[% message | html %]</i><br>[% END %]
+
+<form method=post enctype='multipart/form-data'>
+[% PROCESS 'includes/listview_header.tti' %]
+
+<table width=100% cellpadding=2 cellspacing=1 class=bordered>
+<tr bgcolor=#ccccff>
+[% PROCESS 'includes/listview_col_defs.tti' %]
+</tr>
+
+[% FOREACH prizes %]
+<tr bgcolor=#ffffff>
+<td>
+  <a href='javascript:delete_prize("[% href_delete %]", "[% name | html %]");'><img src="./images/std/waste2.gif" border=0></a> 
+  <a href='[% href_edit %]'><img src="./images/std/blank.gif" border=0></a>
+  [% name | html %]
+</td>
+<td>[% clist | html %]</td>
+<td>[% prizes | html %]</td>
+</tr>
+[% END %]
+</table>
+</form>
+
+[% PROCESS 'includes/menu_end.tti' %]

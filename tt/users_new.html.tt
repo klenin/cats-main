@@ -1,0 +1,17 @@
+[% PROCESS 'includes/menu_begin.tti' %]
+
+[% IF message %]<i>[% message | html %]</i><br>[% END %]
+
+<form method=post enctype='multipart/form-data' action='[% href_action %]'>
+[% PROCESS 'includes/user_main.tti' %]
+<table class="registration">
+<tr><td>Пароль</td><td> <input type=password name='password1' size=50 class=bordered></td></tr>
+<tr><td>Пароль (подтверждение)</td><td> <input type=password name='password2' size=50 class=bordered></td></tr>
+<table>
+[% PROCESS 'includes/user_extra.tti' %]
+<br/>
+<input type=submit name='new_save' value='     Ok     ' class=button> 
+<input type=submit name='new_cancel' value='Отмена' class=button>
+</form>
+
+[% PROCESS 'includes/menu_end.tti' %]

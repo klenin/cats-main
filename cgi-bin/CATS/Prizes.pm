@@ -45,7 +45,7 @@ sub contest_groups_fields () { qw(name clist) }
 
 sub prizes_edit_frame
 {
-    init_template('main_prizes_edit.htm');
+    init_template('prizes_edit.html.tt');
 
     my $cgid = url_param('edit') or return;
     my $cg = $dbh->selectrow_hashref(qq~

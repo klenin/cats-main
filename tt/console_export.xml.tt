@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="[% encoding %]"?>
+<reqs>
+[% FOREACH req IN reqs %]
+  <req>[% req.s %]</req>
+[% END %]
+</reqs>

@@ -1,0 +1,13 @@
+[% USE Javascript %]
+[
+[% FOREACH problems %]
+{
+    "id": [% id %],
+    "code": "[% code %]",
+    "title": "[% title | $Javascript %]",
+    [% IF json_data %]"data": [% json_data %],[% END %]
+    "statement": "[% statement | $Javascript %]",
+    "input_format": "[% input_format | $Javascript %]"
+}
+[% UNLESS loop.last %],[% END %][% END %]
+]

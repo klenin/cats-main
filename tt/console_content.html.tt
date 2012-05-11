@@ -1,0 +1,94 @@
+[% PROCESS 'includes/console_listview_header.tti' %]
+<table width="100%" cellspacing="3" cellpadding="3" class="bordered console">
+[% FOREACH console %]
+<tr>
+[% IF is_submit_result %]
+    <td nowrap width="1%">
+        [% IF is_jury %]
+            <a href="#" onclick="add_id([% id %]); return false;" title="[% id %]">[% time %]</a>
+        [% ELSE %]
+            [% IF href_details %]<a href="[% href_details %]" target="_blank">[% time %]</a>
+            [% ELSE %]<span class="linksize">[% time %]</span>[% END %]
+        [% END %]
+    </td>
+    <td nowrap width="1%">
+        [% IF is_jury %]
+        <a href="javascript:send_message('[% href_send_message_box %]')">[% team_name | html %]</a>
+        [<a href="[% href_whois %]" alt="[% last_ip %]" title="[% last_ip %]">[% last_ip_short %]</a>]
+        [% ELSE %]
+        [% team_name | html %]
+        [% END %]
+    </td>
+    <td>
+        [% IF is_jury ~%]
+          <a href="[% href_source %]" title="[% de %]">[% problem_title %]</a>[% ELSE ~%]
+          [% problem_title %][% END %]:
+        <b>[% IF not_processed %]<font color="#008000">Not processed</font>[% END ~%]
+        [% IF install_processing %]<font color="#a0a000">Processing</font>[% END ~%]
+        [% IF unhandled_error %]<font color="#a00000">Unhandled error</font>[% END ~%]
+        [% IF testing %]<font color="#a0a000">Processing</font>[% END ~%]
+        [% IF accepted %]<font color="#007f00">Solution accepted</font>[% END ~%]
+        [% IF rejected %]Solution rejected[% END ~%]
+        [% IF wrong_answer %]Wrong answer on test [% failed_test_index %][% END ~%]
+        [% IF presentation_error %]Presentation error on test [% failed_test_index %][% END ~%]
+        [% IF time_limit_exceeded %]Time limit exceeded on test [% failed_test_index %][% END ~%]
+        [% IF memory_limit_exceeded %]Memory limit exceeded on test [% failed_test_index %][% END ~%]
+        [% IF runtime_error %]Runtime error on test [% failed_test_index %][% END ~%]
+        [% IF compilation_error %]Compilation error[% END ~%]
+        [% IF security_violation %]Security violation[% END ~%]
+        [% IF ignore_submit %]Ignored submission[% END %]</b>
+    </td>
+[% END %][% IF is_question %]
+    <td nowrap width=1%>[% time %]</td>
+    <td align=left nowrap>
+      [[% IF is_jury %]<a href="javascript:send_message('[% href_send_message_box %]')">[% END %][% team_name | html %][% IF is_jury %]</a>[% END %][% IF is_jury %]:
+        [% IF last_ip %]<a href="[% href_whois %]" alt="[% last_ip %]" title="[% last_ip %]">[% last_ip_short %]</a>[% ELSE %][% last_ip_short %][% END %]
+        [% END %] &gt; жюри]
+    </td>
+    <td>
+        <i>[% question_text | html %]</i> - 
+        [% UNLESS clarified %]
+        [% IF href_answer_box %]
+        <a href="[% href_answer_box %]" target="_blank" class="small">[ответить]</a>
+        [% END %]
+        [% ELSE %]
+        <font color=red>[% answer_text | html %]</font>
+        [% END %]
+        [% IF href_delete_question %]<a href="[% href_delete_question %]" class="small">[удалить]</a>[% END %]
+    </td>
+[% END %][% IF is_message %]
+    <td nowrap width=1%>[% time %]</td>
+    <td align=left>
+        [жюри &gt; [% team_name | html %]]
+    </td>
+    <td>
+        <font color=red>[% message_text | html %]</font>
+        [% IF href_delete_message %]<a href="[% href_delete_message %]" class="small">[удалить]</a>[% END %]
+    </td>
+[% END %][% IF is_broadcast %]
+    <td nowrap width=1%>[% time %]</td>
+    <td align=left>
+        <b><font color="#ff0000">[жюри &gt; всем командам]</font></b>
+    </td>
+    <td>
+        <b><font color=red>[% message_text | html %]</font></b>
+        [% IF href_delete_message %]<a href="[% href_delete_message %]" class="small">[удалить]</a>[% END %]
+    </td>
+[% END %][% IF is_contest %]
+    <td nowrap width=1%>[% time %]</td>
+    <td align=left>
+        <b>[% IF contest_start %]Начался[% ELSE %]Закончился[% END %]
+        [% IF is_official %]официальный [% END %]турнир</b>
+    </td>
+    <td>
+        <b><a href="[% href_problems %]">[% problem_title | html %]</a></b>
+    </td>
+[% END %]
+</tr>
+[% END %]
+</table>
+<script>
+[% FOREACH envelopes %]
+window.open("[% href_envelope %]", '', 'width=500,height=400,location=no,menubar=no,resizable=yes,scrollbars=no,status=no,toolbar=no');
+[% END %]
+</script>
