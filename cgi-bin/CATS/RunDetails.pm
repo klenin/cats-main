@@ -416,7 +416,7 @@ sub try_set_state
 
 sub run_log_frame
 {
-    init_template('main_run_log.htm');
+    init_template('run_log.html.tt');
     my $rid = url_param('rid') or return;
 
     # HACK: To avoid extra database access, require the user

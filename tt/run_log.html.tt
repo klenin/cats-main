@@ -1,16 +1,16 @@
-<TMPL_INCLUDE 'includes/header.inc'>
+[% PROCESS 'includes/header.tti' %]
 </head>
 <body>
 
-<TMPL_INCLUDE 'includes/sources_info.inc'>
+[% PROCESS 'includes/sources_info.tti' %]
 <br/>
 
-<form  action="<TMPL_VAR href_current_link>" method="post">
+<form  action="[% href_current_link %]" method="post">
 
-<input type="submit" name="set_state" value="результат тестирования:" class="button">
+<input type="submit" name="set_state" value="я─п╣п╥я┐п╩я▄я┌п╟я┌ я┌п╣я│я┌п╦я─п╬п╡п╟п╫п╦я▐:" class="button">
 <select name="state">
 <option />
-<option value="not_processed">Перетестировать</option>
+<option value="not_processed">п÷п╣я─п╣я┌п╣я│я┌п╦я─п╬п╡п╟я┌я▄</option>
 <option value="accepted">Solution accepted</option>
 <option value="wrong_answer">Wrong answer</option>
 <option value="presentation_error">Presentation error</option>
@@ -24,19 +24,19 @@
 on test #
 <select name="failed_test">
 <option />
-<TMPL_LOOP tests><option value="<TMPL_VAR test_index>"><TMPL_VAR test_index></TMPL_LOOP>
+[% FOREACH tests %]<option value="[% test_index %]">[% test_index %][% END %]
 </select>
 
 </form>
 
-<TMPL_IF message><i><TMPL_VAR message ESCAPE=HTML></i><br></TMPL_IF>
+[% IF message %]<i>[% message | html %]</i><br>[% END %]
 
-<TMPL_IF judge_log_dump>
-<h3>Дамп лога судьи</h3>
-<pre><code><TMPL_VAR judge_log_dump ESCAPE=HTML></code></pre>
-<TMPL_ELSE>лог отсутствует
-</TMPL_IF>
+[% IF judge_log_dump %]
+<h3>п■п╟п╪п© п╩п╬пЁп╟ я│я┐п╢я▄п╦</h3>
+<pre><code>[% judge_log_dump | html %]</code></pre>
+[% ELSE %]п╩п╬пЁ п╬я┌я│я┐я┌я│я┌п╡я┐п╣я┌
+[% END %]
 
-<TMPL_INCLUDE 'includes/timing.inc'>
+[% PROCESS 'includes/timing.tti' %]
 </body>
 </html>
