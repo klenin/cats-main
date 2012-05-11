@@ -1,8 +1,9 @@
+[% USE Javascript %]
 [
 [% FOREACH users %]
 {
-"login": "[% login | replace('"', '\"') %]",
-"name": "[% team_name | replace('"', '\"') %]",
+"login": "[% login | $Javascript %]",
+"name": "[% team_name | $Javascript %]",
 "ooc": [% IF ooc %]1[% ELSE %]0[% END %],
 "remote": [% IF remote %]1[% ELSE %]0[% END %],
 "virtual": [% IF virtual %]1[% ELSE %]0[% END %],

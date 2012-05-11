@@ -1,12 +1,13 @@
+[% USE Javascript %]
 {
-[% IF message %]"message": "[% message | replace('"', '\"') %]"
+[% IF message %]"message": "[% message | $Javascript %]"
 [% ELSE %]
 "problems": [
 [% FOREACH problems %]
 {
 "id": [% problem_id %],
 "code": "[% code %]",
-"name": "[% problem_name | replace('"', '\"') %]",
+"name": "[% problem_name | $Javascript %]",
 "disabled": [% IF disabled %]1[% ELSE %]0[% END %]
 }
 [% UNLESS loop.last %],[% END %][% END %]

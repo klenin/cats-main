@@ -1,10 +1,11 @@
+[% USE Javascript %]
 {
-[% IF message %]"message": "[% message | replace('"', '\"') %]"[% ELSE %]
+[% IF message %]"message": "[% message | $Javascript %]"[% ELSE %]
 "contests": [
 [% FOREACH contests %]
 {
     "id": [% id %],
-    "name": "[% contest_name | replace('"', '\"') %]",
+    "name": "[% contest_name | $Javascript %]",
     "start_date": "[% start_date %]",
     "finish_date": "[% finish_date %]",
     "registration": [% IF registered_online ~%]
