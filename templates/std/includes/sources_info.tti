@@ -1,0 +1,67 @@
+<script type="text/javascript">
+function send_message(href)
+{
+    window.open(href, '', 'width=500,height=400,location=no,menubar=no,resizable=yes,scrollbars=no,status=no,toolbar=no');
+}
+</script>
+<table class="internal_borders" cellpadding="3">
+<tr><th>ID</th>[% FOREACH sources_info %]<td>[% req_id %]</td>[% END %]</tr>
+<tr><th>Команда</th>[% FOREACH sources_info %]<td><a href="[% href_stats %]">[% team_name %]</a>
+[% IF is_jury %]
+  [<a href="[% href_whois %]" alt="[% last_ip %]" title="[% last_ip %]">[% last_ip_short %]</a>]
+  [<a href="javascript:send_message('[% href_send_message %]')">сообщение</a>]
+[% END %]
+</td>[% END %]</tr>
+<tr><th>Время</th>[% FOREACH sources_info ~%]
+  <td>
+  [% IF href_prev_attempt %] <a href="[% href_prev_attempt %]">[% prev_attempt_time %]&lt;&lt;</a>[% END %]
+  [% submit_time %]
+  [% IF href_next_attempt %] <a href="[% href_next_attempt %]">[% next_attempt_time %]&gt;&gt;</a>[% END %]
+</td>[% END %]</tr>
+<tr><th>Обработка</th>[% FOREACH sources_info %]<td>
+[% IF is_jury %][% judge_name %]: [% END %]
+[% test_time_short %] ... [% result_time_short %]</td>[% END %]</tr>
+<tr><th>Файл</th>[% FOREACH sources_info %]<td>[% file_name %] ([% de_name %])</td>[% END %]</tr>
+<tr><th>Турнир</th>[% FOREACH sources_info %]<td>
+  [% IF href_contest %]<a href="[% href_contest %]">[% contest_name %]<a>
+  [% ELSE %][% contest_name %][% END %]
+</td>[% END %]</tr>
+<tr><th>Задача</th>[% FOREACH sources_info %]<td>
+  [% IF href_problem %]<a href="[% href_problem %]">[% problem_name %]</a>
+  [% ELSE %][% problem_name %][% END %]
+</td>[% END %]</tr>
+<tr><th>Набор тестов</th>[% FOREACH sources_info %]
+<td>[% IF is_jury %]
+  <form action="[% href_run_details %]" method="POST" class="embedded">
+  <input type="text" name="testsets" value="[% testsets %]" />
+  <input type="submit" name="retest" value="Перетестировать" class="button" />
+  </form>
+[% ELSE %][% testsets %][% END %]</td>
+[% END %]</tr>
+<tr><th>Состояние</th>
+[% FOREACH sources_info %]<td>
+[% IF not_processed %]<font color="#008000">Not processed[% END %]
+[% IF install_processing %]<font color="#a0a000">Installing problem[% END %]
+[% IF unhandled_error %]Unhandled error[% END %]
+[% IF testing %]<font color="#a0a000">Now testing[% END %]
+[% IF accepted %]Solution accepted[% END %]
+[% IF wrong_answer %]Wrong answer on test [% failed_test %][% END %]
+[% IF presentation_error %]Presentation error on test [% failed_test %][% END %]
+[% IF time_limit_exceeded %]Time limit exceeded on test [% failed_test %][% END %]
+[% IF memory_limit_exceeded %]Memory limit exceeded on test [% failed_test %][% END %]
+[% IF runtime_error %]Runtime error on test [% failed_test %][% END %]
+[% IF compilation_error %]Compilation error[% END %]
+[% IF security_violation %]Security violation[% END %]
+[% IF ignore_submit %]Ignored submission[% END %]
+</td>[% END %]
+</tr>
+<tr><th>Ссылки</th>
+[% FOREACH sources_info %]<td>
+<a href="[% href_view_source %]" class="[% href_class_view_source %]">код</a> |
+<a href="[% href_download_source %]" class="[% href_class_download_source %]">скачать</a> |
+<a href="[% href_run_details %]" class="[% href_class_run_details %]">результаты</a> |
+<a href="[% href_diff_runs %]" class="[% href_class_diff_runs %]">diff</a>
+[% IF is_jury %] | <a href="[% href_run_log %]" class="[% href_class_run_log %]">лог</a>[% END %]
+</td>[% END %]
+</tr>
+</table>

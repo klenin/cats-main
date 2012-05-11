@@ -9,5 +9,7 @@ easyGenPerl/*
 templates/std/docs/sp.exe
 templates/std/docs/sample.zip
 templates/std/docs/*.html
+# Compiled TT templates
+*.ttc
 # Created from template
 cgi-bin/CATS/Connect.pm

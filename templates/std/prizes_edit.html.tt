@@ -1,0 +1,29 @@
+[% PROCESS 'includes/menu_begin.tti' %]
+
+[% IF message %]<i>[% message | html %]</i>[% END %]
+
+<form method="post" enctype="multipart/form-data" action="[% href_action %]">
+<table cellpadding="0">
+<tr><td>Название</td><td><input type="text" name="name" value="[% name %]" class="bordered" size="60"/></td>
+<tr><td>Турниры</td><td><input type="text" name="clist" value="[% clist %]" class="bordered" size="60" /></td>
+</table>
+<table cellpadding="0" class="bordered">
+<tr><th>Место</th><th>Приз</th></tr>
+[% FOREACH prizes %]
+<tr>
+  <td><input type="text" name="rank_[% id %]" value="[% rank %]" size="5" /></td>
+  <td><input type="text" name="name_[% id %]" value="[% name %]" size="40"/></td>
+</tr>
+[% END %]
+<tr>
+  <td><input type="text" name="rank_new" size="5" /></td>
+  <td><input type="text" name="name_new" size="40"/></td>
+</tr>
+</table>
+<br/>
+<input type="hidden" name="id" value="[% id %]" />
+<input type="submit" name="edit_save" value="     Ok     " class="button" />
+<input type="submit" name="edit_cancel" value="Отмена" class="button" />
+</form>
+
+[% PROCESS 'includes/menu_end.tti' %]

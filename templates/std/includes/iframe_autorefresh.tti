@@ -1,0 +1,11 @@
+[% UNLESS printable %]
+<script>
+    var a = top.document;
+    a.getElementById('server_time').innerHTML = "[% server_time %]";
+    if (a.getElementById('elapsed_minutes') != null)
+        a.getElementById('elapsed_minutes').innerHTML = "[% elapsed_minutes %]";
+    a.getElementById('refreshable_content').innerHTML =
+        document.getElementById('refreshable_content').innerHTML;
+    setTimeout('document.location.reload(1);', 30000);
+</script>
+[% END %]

@@ -24,7 +24,7 @@ sub get_names
 
 sub personal_official_results
 {
-    init_template('main_official_results.htm');
+    init_template('official_results.html.tt');
     my @names = get_names();
     my $contests = $dbh->selectall_arrayref(q~
         SELECT id, title FROM contests
@@ -77,7 +77,7 @@ sub personal_official_results
         }
     }
 
-    init_template('main_official_results.htm');
+    init_template('official_results.html.tt');
     $t->param(results => YAML::Syck::Dump($results));
 }
 

@@ -1,0 +1,27 @@
+[% PROCESS 'includes/menu_begin.tti' %]
+<form method="post" enctype="multipart/form-data">
+<label for="pid">Задача:</label>
+<select name="pid"><option/>
+  [% FOREACH problems %]<option value="[% id %]"[% IF selected %] selected="selected"[% END %]>[% code %] - [% title %]</option>[% END %]
+</select>
+<label for="threshold">Порог, %:</label><input type="text" name="threshold" value="[% threshold %]"/>
+<input type="submit" value="Сравнить" class="button"/>
+<br/>
+<input type="checkbox" name="virtual" value="1"[% IF virtual %] checked="checked"[% END %]/> Учитывать виртуальных
+<input type="checkbox" name="group" value="1"[% IF group %] checked="checked"[% END %]/> Группировать по участникам
+<input type="checkbox" name="self_diff" value="1"[% IF self_diff %] checked="checked"[% END %]/> Резкие изменения
+<input type="checkbox" name="collapse_idents" value="1"[% IF collapse_idents %] checked="checked"[% END %]/> Игнорировать идентификаторы
+</form>
+<table class="bordered">
+[% FOREACH similar %]
+  <tr><td align="right"><a href="[% href_diff %]" target="_blank">[% score %]</td>
+  <td>[% FOREACH n1 %][% team_name | html %][% IF city %] ([% city %])[% END %][% END %]</td>
+  [% IF n2 %]<td>[% FOREACH n2 %][% team_name | html %][% IF city %] ([% city %])[% END %][% END %]</td>[% END %]
+  </tr>
+[% END %]
+</table>
+[% IF equiv_lists %]
+Группы эквивалентности:<br/>
+[% FOREACH equiv_lists %] ([% eq %]) <br/>[% END %]
+[% END %]
+[% PROCESS 'includes/menu_end.tti' %]

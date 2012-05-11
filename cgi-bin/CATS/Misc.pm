@@ -38,7 +38,7 @@ BEGIN
     %EXPORT_TAGS = (all => [ @EXPORT, @EXPORT_OK ]);
 }
 
-use HTML::Template;
+use CATS::Template;
 #use CGI::Fast( ':standard' );
 use CGI (':standard');
 #use CGI::Util qw(rearrange unescape escape);
@@ -169,21 +169,16 @@ sub init_template
     my ($file_name) = @_;
     #if (defined $t && $template_file eq $file_name) { $t->param(tf=>1); return; }
 
-    my $utf8_encode = sub
-    {
-        my $text_ref = shift;
-        #Encode::from_to($$text_ref, 'koi8-r', 'utf-8');
-        $$text_ref = Encode::decode('koi8-r', $$text_ref);
-    };
     my %ext_to_mime = (
         htm => 'text/html',
+        html => 'text/html',
         xml => 'application/xml',
         ics => 'text/calendar',
         json => 'application/json',
     );
     while (my ($ext, $mime) = each %ext_to_mime)
     {
-        $file_name =~ /\.$ext$/ or next;
+        $file_name =~ /\.$ext(\.tt)?$/ or next;
         $http_mime_type = $mime;
         last;
     }
@@ -191,10 +186,8 @@ sub init_template
     %extra_headers = ();
     %extra_headers = (-content_disposition => 'inline;filename=contests.ics') if $file_name =~ /\.ics$/;
     #$template_file = $file_name;
-    $t = HTML::Template->new(
-        filename => templates_path() . "/$file_name", cache => 1,
-        die_on_bad_params => 0, filter => $utf8_encode, loop_context_vars => 1);
-}
+    $t = CATS::Template->new($file_name, templates_path());
+;}
 
 
 sub init_listview_template
@@ -502,7 +495,7 @@ sub init_user
             SELECT id, team_name, srole, last_ip, settings FROM accounts WHERE sid = ?~, {}, $sid);
         if (!defined($uid) || ($last_ip || '') ne CATS::IP::get_ip())
         {
-            init_template('main_bad_sid.' . (param('json') ? 'json' : 'htm'));
+            init_template('bad_sid.' . (param('json') ? 'json' : 'html') . '.tt');
             $sid = '';
             $t->param(href_login => url_f('login'));
         }

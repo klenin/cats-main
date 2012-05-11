@@ -1,0 +1,11 @@
+[% USE Javascript %]
+{
+[% IF message %]
+    "status": "error",
+    "message": "[% message | $Javascript %]"
+[% ELSE %]
+    "status": "ok",
+    "sid": "[% sid %]",
+    "cid": [% cid %]
+[% END %]
+}
