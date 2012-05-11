@@ -95,7 +95,7 @@ sub init_console_template
 sub console
 {
     my $template_name = shift;
-    init_console_template('main_console_content.htm');
+    init_console_template('console_content.html.tt');
 
     my $s = get_settings;
     $s->{show_results} = 1 unless defined $s->{show_results};
@@ -463,7 +463,7 @@ sub select_all_reqs
 sub export
 {
     $is_jury or return;
-    init_template('main_console_export.xml');
+    init_template('console_export.xml.tt');
     my $reqs = select_all_reqs;
     for my $req (@$reqs)
     {
@@ -484,7 +484,7 @@ sub export
 sub graphs
 {
     $is_jury or return;
-    init_template('main_console_graphs.htm');
+    init_template('console_graphs.html.tt');
     my $codes = $dbh->selectcol_arrayref(q~
         SELECT CP.code FROM contest_problems CP WHERE CP.contest_id = ? ORDER BY 1~, undef,
         $cid);
@@ -572,7 +572,7 @@ sub delete_message
 
 sub console_frame
 {
-    init_console_template('main_console.htm');
+    init_console_template('console.html.tt');
     my $s = get_settings;
     if (defined param('filter') || defined param('visible'))
     {
@@ -625,7 +625,7 @@ sub console_frame
 
 sub content_frame
 {
-    console('main_console_iframe.htm');
+    console('console_iframe.html.tt');
 }
 
 

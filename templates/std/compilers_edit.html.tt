@@ -1,0 +1,20 @@
+[% PROCESS 'includes/menu_begin.tti' %]
+
+[% IF message %]<i>[% message | html %]</i>[% END %]
+
+<form method=post enctype='multipart/form-data' action='[% href_action %]'>
+<table cellpadding=0>
+<tr><td>Код среды разработки</td><td><input type=text name='code' value='[% code | html %]' class=bordered></td>
+<tr><td>Описание</td><td><input type=text name='description' value='[% description | html %]' class=bordered></td>
+<tr><td>Поддерживаемые расширения файлов</td><td><input type=text name='supported_ext' value='[% supported_ext | html %]' class=bordered></td>
+<tr><td>Добавочная рамять, Мб</td><td><input type=text name='memory_handicap' value='[% memory_handicap %]' class=bordered></td>
+<tr><td>Синтаксис</td><td><input type=text name='syntax' value='[% syntax %]' class=bordered></td>
+<tr><td>Заблокирована</td><td><input type=checkbox name='locked' [% IF locked %]checked[% END %]></td>
+</table>
+<br>
+<input type=hidden name='id' value="[% id %]" >
+<input type=submit name='edit_save' value='     Ok     ' class=button> 
+<input type=submit name='edit_cancel' value='Отмена' class=button>
+</form>
+
+[% PROCESS 'includes/menu_end.tti' %]

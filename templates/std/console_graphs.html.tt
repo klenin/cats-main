@@ -1,0 +1,18 @@
+[% PROCESS 'includes/menu_begin.tti' %]
+[% IF message %]<i>[% message | html %]</i><br>[% END %]
+
+<form method="post" enctype="multipart/form-data" action="[% href_graphs %]">
+[% FOREACH codes %]<input type="checkbox" name="selected_codes" value="[% code %]"[% IF selected %] checked="checked"[% END %]/>[% code %]
+[% END %]
+<br/>
+Шагов в час: <input type="text" value="[% steps %]" name="steps" size="2" />
+<input type="checkbox" value="1" name="accepted_only"[% IF accepted_only %] checked="checked"[% END %]/>Только принятые
+<input type="submit" value="Показать" name="do_graph" class="button"/><br/>
+</form>
+[% IF graph %]
+<table border="0" cellpadding="2" cellspacing="1" class="bordered">
+<tr><td><img src="http://chart.apis.google.com/chart?[% graph %]"></td></tr>
+</table>
+[% END %]
+
+[% PROCESS 'includes/menu_end.tti' %]

@@ -1,0 +1,44 @@
+[% PROCESS 'includes/header.tti' %]
+
+[% PROCESS 'includes/syntax_highlight.tti' %]
+</head>
+<body>
+[% IF message %]<i>[% message | html %]</i><br>[% END %]
+[% PROCESS 'includes/sources_info.tti' %]
+
+<table>
+<tr>
+<td>
+<form action="[% href_current_link %]" method="post">
+  <select name="src_enc">
+  [% FOREACH source_encodings %]
+  <option value="[% enc %]"[% IF selected %]selected="selected"[% END %]>[% enc %]</option>
+  [% END %]
+  </select>
+  <input type="submit" class="button" value="кодировка" />
+</form>
+</td>
+<td>
+[% IF is_jury %]
+<form enctype="multipart/form-data" action="[% href_current_link %]" method="post">
+  <input name="replace_source" type="file" class="file" size="25" />
+  <select name="de_id">
+  [% FOREACH de_list %]<option value="[% de_id %]"[% IF selected %] selected="selected"[% END %]>[% de_name | html %]</option>[% END %]
+  </select>
+  <input type="submit" class="button" value="заменить" /> 
+</form>
+[% END %]
+</td>
+</tr>
+</table>
+[% FOREACH sources_info %]
+<div class="bordered" style="margin: 0 10 10 0; padding: 0;">
+[% IF 0 %]<td width="1" align="right"><pre>[% FOREACH src_lines %][% loop.count %]
+[% END %]</pre></td>[% END %]
+<script type="syntaxhighlighter" class="brush: [% IF syntax %][% syntax %][% ELSE %]plain[% END %];"><![CDATA[[% src %]]]></script>
+</div>
+[% END %]
+
+[% PROCESS 'includes/timing.tti' %]
+</body>
+</html>

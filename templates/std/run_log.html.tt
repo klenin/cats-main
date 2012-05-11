@@ -1,0 +1,42 @@
+[% PROCESS 'includes/header.tti' %]
+</head>
+<body>
+
+[% PROCESS 'includes/sources_info.tti' %]
+<br/>
+
+<form  action="[% href_current_link %]" method="post">
+
+<input type="submit" name="set_state" value="результат тестирования:" class="button">
+<select name="state">
+<option />
+<option value="not_processed">Перетестировать</option>
+<option value="accepted">Solution accepted</option>
+<option value="wrong_answer">Wrong answer</option>
+<option value="presentation_error">Presentation error</option>
+<option value="time_limit_exceeded">Time limit exceeded</option>
+<option value="memory_limit_exceeded">Memory limit exceeded</option>
+<option value="runtime_error">Runtime error</option>
+<option value="compilation_error">Compilation error</option>
+<option value="security_violation">Security violation</option>
+<option value="ignore_submit">Ignore submit</option>
+</select> 
+on test #
+<select name="failed_test">
+<option />
+[% FOREACH tests %]<option value="[% test_index %]">[% test_index %][% END %]
+</select>
+
+</form>
+
+[% IF message %]<i>[% message | html %]</i><br>[% END %]
+
+[% IF judge_log_dump %]
+<h3>Дамп лога судьи</h3>
+<pre><code>[% judge_log_dump | html %]</code></pre>
+[% ELSE %]лог отсутствует
+[% END %]
+
+[% PROCESS 'includes/timing.tti' %]
+</body>
+</html>

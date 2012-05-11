@@ -1,0 +1,42 @@
+[% PROCESS 'includes/menu_begin.tti' %]
+
+<script>
+function delete_judge(href, name)
+{
+    if (confirm( "Вы действительно желаете удалить судью '" + name + "'?" ))
+    {
+        document.location=href;
+    }
+}
+</script>
+
+[% IF message %]<i>[% message | html %]</i><br>[% END %]
+
+<form method=post enctype='multipart/form-data'>
+[% PROCESS 'includes/listview_header.tti' %]
+
+<table width=100% cellpadding=2 cellspacing=1 class=bordered>
+<tr bgcolor=#ccccff>
+[% PROCESS 'includes/listview_col_defs.tti' %]
+</tr>
+
+[% FOREACH judges %]
+<tr bgcolor=#ffffff>
+<td>
+  [% IF editable %]
+  <a href='javascript:delete_judge("[% href_delete %]", "[% judge_name | html %]");'><img src="./images/std/waste2.gif" border=0></a> 
+  <a href='[% href_edit %]'><img src="./images/std/blank.gif" border=0></a>
+  [% END %]
+  [% judge_name | html %]
+</td>
+<td>[% is_alive %]</td>
+<td>[% alive_date %]</td>
+<td>[% IF locked %]<font color=red>заблокирован</font>[% ELSE %]работает[% END %]</td>
+</tr>
+[% END %]
+</table>
+<br/>Очередь: [% not_processed %]
+
+</form>
+
+[% PROCESS 'includes/menu_end.tti' %]

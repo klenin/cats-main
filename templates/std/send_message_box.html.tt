@@ -1,0 +1,18 @@
+<html><head>
+<title>CATS - сообщение для команды [% team | html %]</title>
+<meta name="Content-Type" content="text/html; charset=utf-8">
+<link rel="stylesheet" type="text/css" href="./docs/std/main.css">
+</head>
+<body style="margin: 10px">
+[% UNLESS sent %]
+<form method="post" enctype="multipart/form-data">
+  Сообщение для команды [% team | html %]<br/>
+  <input type="text" size="70" name="message_text" />
+  <input type="submit" value="Отправить" name="send" />
+  <input type="button" value="Закрыть" onclick="javascript:window.close();">
+</form>
+[% ELSE %]
+<script>window.close();</script>
+[% END %]
+</body>
+</html>

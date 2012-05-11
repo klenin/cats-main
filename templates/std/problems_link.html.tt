@@ -1,0 +1,38 @@
+[% PROCESS 'includes/menu_begin.tti' %]
+[% IF too_many_problems %]
+Слишком много задач
+[% ELSE %]
+<form method="post" enctype="multipart/form-data">
+[% PROCESS 'includes/listview_header.tti' %]
+</form>
+<form method="post" enctype="multipart/form-data" action="[% href_action %]">
+<table border=0 width=100% cellpadding=2 cellspacing=1 class=bordered>
+<tr bgcolor=#ccccff>
+[% PROCESS 'includes/listview_col_defs.tti' %]
+</tr>   
+[% FOREACH link_problem %]
+<tr bgcolor=#ffffff>
+<td>
+<input type="radio" name="problem_id" value="[% problem_id %]" [% IF linked %]disabled[% END %] />
+<a href="[% href_view_problem %]" target="_blank">[% problem_name | html %]</a></td>
+<td><a href="[% href_view_contest %]">[% contest_name | html %]</a></td>
+<td align="center">[% oounts %]</td>
+</tr>
+[% END %]
+</table>
+<br>
+[% IF is_jury %]
+[% IF link %]
+Код задачи:
+<select name="problem_code">
+[% FOREACH code_array %]<option name="[% code %]">[% code %][% END %]
+</select>
+<br/><br/>
+[% END %]
+[% IF move %]<input type="hidden" name="move" value="1" />[% END %]
+<input type="submit" name="link_save" value="[% IF move %]Переместить[% ELSE %]Прилинковать[% END %]" class="button" />
+<input type="submit" name="link_cancel" value="Отмена" class="button" />
+</form>
+[% END %]
+[% END %]
+[% PROCESS 'includes/menu_end.tti' %]

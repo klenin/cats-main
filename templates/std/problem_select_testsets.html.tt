@@ -1,0 +1,18 @@
+[% PROCESS 'includes/menu_begin.tti' %]
+[% message | html %]
+<h3>[% problem_title %]</h3>
+Выберите тестовые наборы:
+<form action="[% href_problem_select_testsets %]" method="POST">
+<table>
+[% FOREACH ts IN testsets %]
+<tr>
+  <td><input type="checkbox" name="sel" value="[% ts.id %]" [% IF ts.selected %]checked="checked"[% END %]</td>
+  <td>[% ts.name %] ([% ts.tests %])</td>
+</tr>
+[% END %]
+</table>
+<br/>
+<input type="hidden" name="cpid" value="[% problem_cpid %]" />
+<input type="submit" name="save" value="Сохранить" class="button" />
+</form>
+[% PROCESS 'includes/menu_end.tti' %]
