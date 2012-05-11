@@ -2409,7 +2409,7 @@ sub prizes_frame
 
 sub send_message_box_frame
 {
-    init_template('main_send_message_box.htm');
+    init_template('send_message_box.html.tt');
     return unless $is_jury;
 
     my $caid = url_param('caid');
