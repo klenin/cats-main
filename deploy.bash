@@ -20,8 +20,8 @@ http_group=www-data
 packages=(git firebird2.1-dev firebird2.1-classic build-essential libaspell-dev
 	aspell-en aspell-ru apache2 libapache2-mod-perl2 libapreq2 libapreq2-dev 
 	apache2-threaded-dev libapache2-mod-perl2-dev libexpat1 libexpat1-dev)
-cpan_packages=(DBI Algorithm::Diff Text::Aspell HTML::Template SQL::Abstract 
-	Archive::Zip JSON::XS YAML::Syck Apache2::Request XML::Parser::Expat Template::Toolkit)
+cpan_packages=(DBI Algorithm::Diff Text::Aspell SQL::Abstract Archive::Zip
+    JSON::XS YAML::Syck Apache2::Request XML::Parser::Expat Template::Toolkit)
 
 sudo apt-get -y install ${packages[@]}
 
