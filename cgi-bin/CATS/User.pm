@@ -82,7 +82,7 @@ sub generate_login
 
 sub new_frame 
 {
-    my $t = init_template('main_users_new.htm');
+    my $t = init_template('users_new.html.tt');
     $t->param(login => generate_login);
     $t->param(countries => \@cats::countries, href_action => url_f('users'));    
 }
