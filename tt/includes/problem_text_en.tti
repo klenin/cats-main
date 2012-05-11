@@ -2,11 +2,11 @@
 [% IF author %]Author: [% author | html %]<br/><br/>[% END %]
 <table class="nobr">
 <tr>
-  <td width="1%">Input file:</td><td>[% input_file | html %]</td>
+  <td width="1%">Input file:</td><td>[% (input_file == '*STDIN' ? 'Standard input' : input_file) | html %]</td>
   <td>&nbsp;</td>
   <td width="1%">Time limit:</td><td>[% time_limit %] sec</td></tr>
 <tr>
-  <td>Output file:</td><td>[% output_file | html %]</td>
+  <td>Output file:</td><td>[% (output_file == '*STDOUT' ? 'Standard output' : output_file) | html %]</td>
   <td>&nbsp;</td>
   <td>Memory limit:</td><td>[% memory_limit %] Mb</td></tr>
 [% IF show_points %]<tr><td>Maximum points:</td><td>[% max_points %]</td>
@@ -45,7 +45,7 @@
 <pre><code>[% out_file %]</code></pre>
 [% END %]
 [% ELSE %]
-<h3>Sample tests</h4>
+<h3>Sample tests</h3>
 <table class="sample" id="sample[% id %]">
 <tr><th>No.</th><th>Sample input</th><th>Sample output</th></tr>
 [% FOREACH samples %]

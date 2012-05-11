@@ -2,11 +2,11 @@
 [% IF author %]Автор: [% author | html %]<br><br>[% END %]
 <table class="nobr">
 <tr>
-  <td width="1%">Входной файл:</td><td>[% input_file | html %]</td>
+  <td width="1%">Входной файл:</td><td>[% (input_file == '*STDIN' ? 'Стандартный вход' : input_file) | html %]</td>
   <td>&nbsp;</td>
   <td width="1%">Ограничение времени на тест:</td><td>[% time_limit %] сек</td></tr>
 <tr>
-  <td>Выходной файл:</td><td>[% output_file | html %]</td>
+  <td>Выходной файл:</td><td>[% (output_file == '*STDOUT' ? 'Стандартный выход' : output_file) | html %]</td>
   <td>&nbsp;</td>
   <td>Ограничение памяти на тест:</td><td>[% memory_limit %] Мб</td></tr>
   [% IF show_points %]<tr><td>Максимальная оценка:</td><td>[% max_points %] баллов</td>
