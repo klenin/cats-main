@@ -2615,7 +2615,7 @@ sub similarity_score
 
 sub similarity_frame
 {
-    init_template('main_similarity.htm');
+    init_template('similarity.html.tt');
     $is_jury && !$contest->is_practice or return;
     my $p = $dbh->selectall_arrayref(q~
         SELECT P.id, P.title, CP.code
