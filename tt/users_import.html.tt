@@ -1,0 +1,13 @@
+[% PROCESS 'includes/menu_begin.tti' %]
+
+[% IF message %]<i>[% message | html %]</i>[% END %]
+
+<form method="post" action="[% href_action %]">
+<div>
+<textarea name="user_list" style="width: 80%">[% report %]</textarea>
+</div>
+<input type="checkbox" name="do_import" />
+<input type="submit" class="btn" name="do" value="Импортировать" />
+</form>
+
+[% PROCESS 'includes/menu_end.tti' %]

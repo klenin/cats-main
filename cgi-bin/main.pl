@@ -66,7 +66,7 @@ sub make_sid {
 sub login_frame
 {
     my $json = param('json');
-    init_template('main_login.' . ($json ? 'json' : 'htm'));
+    init_template('login.' . ($json ? 'json' : 'html') . '.tt');
 
     my $login = param('login');
     if (!$login)
@@ -120,7 +120,7 @@ sub login_frame
 
 sub logout_frame
 {
-    init_template('main_logout.' . (param('json') ? 'json' : 'htm'));
+    init_template('logout.' . (param('json') ? 'json' : 'html') . '.tt');
 
     $cid = '';
     $sid = '';
@@ -135,7 +135,7 @@ sub logout_frame
 
 sub contests_new_frame
 {
-    init_template('main_contests_new.htm');
+    init_template('contests_new.html.tt');
 
     my $date = $dbh->selectrow_array(q~SELECT CURRENT_TIMESTAMP FROM RDB$DATABASE~);
     $date =~ s/\s*$//;
@@ -234,7 +234,7 @@ sub try_contest_params_frame
 {
     my $id = url_param('params') or return;
 
-    init_template('main_contest_params.htm');  
+    init_template('contest_params.html.tt');
 
     my $p = $dbh->selectrow_hashref(qq~
         SELECT
@@ -490,7 +490,7 @@ sub contests_frame
     my $json = param('json');
     return if $ical && $json;
     init_listview_template('contests', 'contests',
-        'main_contests.' .  ($ical ? 'ics' : $json ? 'json' : 'htm'));
+        'contests.' .  ($ical ? 'ics' : $json ? 'json' : 'html') . '.tt');
 
     CATS::Prizes::contest_group_auto_new if defined param('create_group') && $is_root;
 
@@ -600,7 +600,7 @@ sub show_unused_problem_codes ()
 
 sub problems_new_frame
 {
-    init_template('main_problems_new.htm');
+    init_template('problems_new.html.tt');
 
     show_unused_problem_codes;
     $t->param(href_action => url_f('problems'));
@@ -753,7 +753,7 @@ sub problems_add_new
 
 sub problems_all_frame
 {
-    init_listview_template('link_problem', 'link_problem', 'main_problems_link.htm');
+    init_listview_template('link_problem', 'link_problem', 'problems_link.html.tt');
 
     my $link = url_param('link');
     my $kw = url_param('kw');
@@ -1166,7 +1166,7 @@ sub problem_select_testsets
     @sel{split ',', $problem->{testsets} || ''} = undef;
     $_->{selected} = exists $sel{$_->{name}} for @$testsets;
 
-    init_template('main_problem_select_testsets.htm');
+    init_template('problem_select_testsets.html.tt');
     $t->param("problem_$_" => $problem->{$_}) for keys %$problem;
     $t->param(testsets => $testsets, href_select_testsets => url_f('problem_select_testsets'));
 }
@@ -1175,7 +1175,7 @@ sub problem_select_testsets
 sub problems_retest_frame
 {
     $is_jury && !$contest->is_practice or return;
-    init_listview_template('problems_retest', 'problems', 'main_problems_retest.htm');
+    init_listview_template('problems_retest', 'problems', 'problems_retest.html.tt');
 
     defined param('mass_retest') and problems_mass_retest;
     defined param('recalc_points') and problems_recalc_points;
@@ -1244,7 +1244,7 @@ sub problems_frame
         my $local_only = $contest->{local_only};
         if ($contest->{time_since_start} < 0)
         {
-            init_template('main_problems_inaccessible.htm');
+            init_template('problems_inaccessible.html.tt');
             return msg(130);
         }
         if ($local_only)
@@ -1258,7 +1258,7 @@ sub problems_frame
             }
             if (!defined $is_remote || $is_remote)
             {
-                init_template('main_problems_inaccessible.htm');
+                init_template('problems_inaccessible.html.tt');
                 return msg(129);
             }
         }
@@ -1272,7 +1272,7 @@ sub problems_frame
 
     my $json = param('json');
     init_listview_template('problems' . ($contest->is_practice ? '_practice' : ''),
-        'problems', 'main_problems.' . ($json ? 'json' : 'htm'));
+        'problems', 'problems.' . ($json ? 'json' : 'html') . '.tt');
     problems_frame_jury_action;
 
     problems_submit if defined param('submit');
@@ -1281,10 +1281,10 @@ sub problems_frame
         { caption => res_str(602), order_by => ($contest->is_practice ? '4' : '3'), width => '30%' },
         ($is_jury ?
         (
-            { caption => res_str(632), order_by => '11', width => '10%' }, # статус
-            { caption => res_str(605), order_by => '15', width => '10%' }, # набор тестов
-            { caption => res_str(635), order_by => '13', width => '5%' }, # кто изменил
-            { caption => res_str(634), order_by => 'P.upload_date', width => '10%' }, # дата изменения
+            { caption => res_str(632), order_by => '11', width => '10%' }, # status
+            { caption => res_str(605), order_by => '15', width => '10%' }, # tests set
+            { caption => res_str(635), order_by => '13', width => '5%' }, # who modified
+            { caption => res_str(634), order_by => 'P.upload_date', width => '10%' }, # modification date
         )
         : ()
         ),
@@ -1299,7 +1299,7 @@ sub problems_frame
     my $account_condition = $contest->is_practice ? '' : ' AND D.account_id = ?';
     my $select_code = $contest->is_practice ? 'NULL' : 'CP.code';
     my $hidden_problems = $is_jury ? '' : " AND (CP.status IS NULL OR CP.status < $cats::problem_st_hidden)";
-    # TODO: учитывать testsets
+    # TODO: take testsets into account
     my $test_count_sql = $is_jury ? '(SELECT COUNT(*) FROM tests T WHERE T.problem_id = P.id) AS test_count,' : '';
     my $sth = $dbh->prepare(qq~
         SELECT
@@ -1324,8 +1324,8 @@ sub problems_frame
     }
     else
     {
-        my $aid = $uid || 0; # на случай анонимного пользователя
-        # ORDER BY subselect требует повторного указания параметра
+        my $aid = $uid || 0; # in a case of anonymous user
+        # 'ORDER BY subselect' requires re-specifying the parameter
         $sth->execute($aid, $aid, $aid, $cid); #, (order_by =~ /^ORDER BY\s+(5|6|7)\s+/ ? ($aid) : ()));
     }
 
@@ -1455,7 +1455,7 @@ sub lists_to_strings { [ map { eq => join ',', @$_ }, @{$_[0]} ] }
 
 sub compare_tests_frame
 {
-    init_template('main_compare_tests.htm');
+    init_template('compare_tests.html.tt');
     $is_jury or return;
     my ($pid) = param('pid') or return;
     my ($pt) = $dbh->selectrow_array(q~
@@ -1528,7 +1528,7 @@ sub compare_tests_frame
 }
 
 
-# Администратор добавляет нового пользователя в текущий турнир.
+# Admin adds new user to current contest
 sub users_new_save
 {
     $is_jury or return;
@@ -1540,7 +1540,7 @@ sub users_new_save
 
 sub users_edit_frame
 {
-    init_template('main_users_edit.htm');
+    init_template('users_edit.html.tt');
 
     my $id = url_param('edit') or return;
     my $u = CATS::User->new->load($id) or return;
@@ -1575,8 +1575,8 @@ sub users_edit_save
 
 sub users_import_frame
 {
-    init_template('main_users_import.htm');
-    $is_jury or return;
+    init_template('users_import.html.tt');
+    $is_root or return;
     $t->param(href_action => url_f('users_import'));
     param('do') or return;
     my $do_import = param('do_import');
@@ -1597,7 +1597,7 @@ sub users_import_frame
 
 sub registration_frame
 {
-    init_template('main_registration.htm');
+    init_template('registration.html.tt');
 
     $t->param(countries => [ @cats::countries ], href_login => url_f('login'));
 
@@ -1627,7 +1627,7 @@ sub settings_save
 
 sub settings_frame
 {
-    init_template('main_settings.htm');
+    init_template('settings.html.tt');
     $settings = {} if defined param('clear') && $is_team;
     settings_save if defined param('edit_save') && $is_team;
 
@@ -1788,7 +1788,7 @@ sub users_frame
 
     init_listview_template(
         'users' . ($contest->is_practice ? '_practice' : ''),
-        'users', 'main_users.' . (param('json') ? 'json' : 'htm'));
+        'users', 'users.' . (param('json') ? 'json' : 'html') . '.tt');
 
     $t->param(messages => $is_jury, title_suffix => res_str(526));
 
@@ -1915,7 +1915,7 @@ sub users_frame
 
 sub user_stats_frame
 {
-    init_template('main_user_stats.htm');
+    init_template('user_stats.html.tt');
     my $uid = param('uid') or return;
     my $u = $dbh->selectrow_hashref(q~
         SELECT A.*, last_login AS last_login_date
@@ -1981,7 +1981,7 @@ sub references_menu
 
 sub compilers_new_frame
 {
-    init_template('main_compilers_new.htm');
+    init_template('compilers_new.html.tt');
     $t->param(href_action => url_f('compilers'));
 }
 
@@ -2005,7 +2005,7 @@ sub compilers_new_save
 
 sub compilers_edit_frame
 {
-    init_template('main_compilers_edit.htm');
+    init_template('compilers_edit.html.tt');
 
     my $id = url_param('edit');
 
@@ -2062,7 +2062,7 @@ sub compilers_frame
         defined url_param('edit') and return compilers_edit_frame;
     }
 
-    init_listview_template('compilers', 'compilers', 'main_compilers.htm');
+    init_listview_template('compilers', 'compilers', 'compilers.html.tt');
 
     if ($is_jury)
     {
@@ -2109,7 +2109,7 @@ sub compilers_frame
 
 sub judges_new_frame
 {
-    init_template('main_judges_new.htm');
+    init_template('judges_new.html.tt');
     $t->param(href_action => url_f('judges'));
 }
 
@@ -2133,7 +2133,7 @@ sub judges_new_save
 
 sub judges_edit_frame
 {
-    init_template('main_judges_edit.htm');
+    init_template('judges_edit.html.tt');
 
     my $jid = url_param('edit');
     my ($judge_name, $lock_counter) = $dbh->selectrow_array(qq~
@@ -2172,7 +2172,7 @@ sub judges_frame
     $is_root && defined url_param('new') and return judges_new_frame;
     $is_root && defined url_param('edit') and return judges_edit_frame;
 
-    init_listview_template('judges', 'judges', 'main_judges.htm');
+    init_listview_template('judges', 'judges', 'judges.html.tt');
 
     $is_root && defined param('new_save') and judges_new_save;
     $is_root && defined param('edit_save') and judges_edit_save;
@@ -2224,7 +2224,7 @@ sub keywords_fields () { qw(name_ru name_en code) }
 
 sub keywords_new_frame
 {
-    init_template('main_keywords_new.htm');
+    init_template('keywords_new.html.tt');
     $t->param(href_action => url_f('keywords'));
 }
 
@@ -2246,7 +2246,7 @@ sub keywords_new_save
 
 sub keywords_edit_frame
 {
-    init_template('main_keywords_edit.htm');
+    init_template('keywords_edit.html.tt');
 
     my $kwid = url_param('edit');
     my $kw = $dbh->selectrow_hashref(qq~SELECT * FROM keywords WHERE id=?~, {}, $kwid);
@@ -2284,7 +2284,7 @@ sub keywords_frame
         defined url_param('new') and return keywords_new_frame;
         defined url_param('edit') and return keywords_edit_frame;
     }
-    init_listview_template('keywords', 'keywords', 'main_keywords.htm');
+    init_listview_template('keywords', 'keywords', 'keywords.html.tt');
 
     $is_root && defined param('new_save') and keywords_new_save;
     $is_root && defined param('edit_save') and keywords_edit_save;
@@ -2320,7 +2320,7 @@ sub keywords_frame
 
 sub import_sources_frame
 {
-    init_listview_template('import_sources', 'import_sources', 'main_import_sources.htm');
+    init_listview_template('import_sources', 'import_sources', 'import_sources.html.tt');
     define_columns(url_f('import_sources'), 0, 0, [
         { caption => res_str(638), order_by => '2', width => '30%' },
         { caption => res_str(642), order_by => '3', width => '30%' },
@@ -2377,7 +2377,7 @@ sub prizes_frame
     }
 
     defined url_param('edit') and return CATS::Prizes::prizes_edit_frame;
-    init_listview_template('prizes', 'prizes', 'main_prizes.htm');
+    init_listview_template('prizes', 'prizes', 'prizes.html.tt');
 
     defined param('edit_save') and CATS::Prizes::prizes_edit_save;
 
@@ -2410,7 +2410,7 @@ sub prizes_frame
 
 sub send_message_box_frame
 {
-    init_template('main_send_message_box.htm');
+    init_template('send_message_box.html.tt');
     return unless $is_jury;
 
     my $caid = url_param('caid');
@@ -2439,7 +2439,7 @@ sub send_message_box_frame
 
 sub answer_box_frame
 {
-    init_template('main_answer_box.htm');
+    init_template('answer_box.html.tt');
 
     my $qid = url_param('qid');
 
@@ -2483,7 +2483,7 @@ sub answer_box_frame
 sub rank_table
 {
     my $template_name = shift;
-    init_template('main_rank_table_content.htm');
+    init_template('rank_table_content.html.tt');
     $t->param(printable => url_param('printable'));
     my $rt = CATS::RankTable->new;
     $rt->parse_params;
@@ -2505,7 +2505,7 @@ sub rank_table_frame
 
     #rank_table('main_rank_table.htm');
     #init_template('main_rank_table_content.htm');
-    init_template('main_rank_table.htm');
+    init_template('rank_table.html.tt');
 
     my $rt = CATS::RankTable->new;
     $rt->get_contest_list_param;
@@ -2533,7 +2533,7 @@ sub rank_table_frame
 
 sub rank_table_content_frame
 {
-    rank_table('main_rank_table_iframe.htm');  
+    rank_table('rank_table_iframe.html.tt');
 }
 
 
@@ -2560,7 +2560,7 @@ sub rank_problem_details
 
 sub envelope_frame
 {
-    init_template('main_envelope.htm');
+    init_template('envelope.html.tt');
     
     my $rid = url_param('rid') or return;
 
@@ -2615,7 +2615,7 @@ sub similarity_score
 
 sub similarity_frame
 {
-    init_template('main_similarity.htm');
+    init_template('similarity.html.tt');
     $is_jury && !$contest->is_practice or return;
     my $p = $dbh->selectall_arrayref(q~
         SELECT P.id, P.title, CP.code
@@ -2692,7 +2692,7 @@ sub similarity_frame
 
 sub about_frame
 {
-    init_template('main_about.htm');
+    init_template('about.html.tt');
     my $problem_count = $dbh->selectrow_array(qq~
         SELECT COUNT(*) FROM problems P INNER JOIN contests C ON C.id = P.contest_id
             WHERE C.is_hidden = 0 OR C.is_hidden IS NULL~);
@@ -2702,7 +2702,7 @@ sub about_frame
 
 sub authors_frame
 {
-    init_template('main_authors.htm');
+    init_template('authors.html.tt');
 }
 
 

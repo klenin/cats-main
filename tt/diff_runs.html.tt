@@ -1,0 +1,41 @@
+[% PROCESS 'includes/header.tti' %]
+</head>
+<body>
+<script type="text/javascript">
+<!--
+function show_ab(a, b)
+{
+    var css = document.styleSheets[0];
+    if (!css) return;
+    var rules = new Array();
+    if (css.cssRules) rules = css.cssRules
+    else if (css.rules) rules = css.rules
+    for (i = 0; rules.length > i; ++i)
+        if (rules[i].selectorText == ".diff_only_a")
+            rules[i].style.display = a;
+        else if (rules[i].selectorText == ".diff_only_b")
+            rules[i].style.display = b;
+}
+//-->
+</script>
+Сравнение отправленных файлов:
+[% PROCESS 'includes/sources_info.tti' %]
+<p>
+Показывать:
+[ <a onclick="show_ab('', ''); return false" href="#">diff</a>
+| <a onclick="show_ab('', 'none'); return false" href="#">только A</a>
+| <a onclick="show_ab('none', ''); return false" href="#">только B</a>
+]
+</p>
+<code>
+<table class="internal_borders">
+<tr>
+<td width="1" align="right"><pre>[% FOREACH diff_lines %][% loop.count %]
+[% END %]</pre></td>
+<td style="vertical-align: top"><pre>[% FOREACH diff_lines %][% line %][% END %]</pre></td></tr>
+</table>
+</code>
+
+[% PROCESS 'includes/timing.tti' %]
+</body>
+</html>

@@ -1,0 +1,86 @@
+[% PROCESS 'includes/menu_begin.tti' %]
+<form method="post" enctype="multipart/form-data">
+<script type="text/javascript">
+function send_message(href)
+{
+    window.open(href, '', 'width=500,height=400,location=no,menubar=no,resizable=yes,scrollbars=no,status=no,toolbar=no');
+}
+function get_element(name)
+{
+  if (document.all)
+      return document.all(name);
+  else
+      return document.getElementById(name);
+}
+function add_id(id)
+{
+    var e = get_element('selection');
+    if (e.value != '') e.value += ',';
+    e.value += id;
+}
+function clear_selection()
+{
+    var e = get_element('selection');
+    e.value = '';
+}
+function fill_diff()
+{
+    var a = get_element('a_diff');
+    var e = get_element('selection');
+    var re = /^(\d+),(\d+)$/;
+    var rs = re.exec(e.value);
+    if (rs == null || rs.length != 3 || 0 >= rs[1] || 0 >= rs[2])
+    {
+        alert('Укажите две попытки для сравнения');
+        return false;
+    }
+    a.href = '[% href_diff %]&r1=' + rs[1] + '&r2=' + rs[2];
+    e.value = '';
+    return true;
+}
+function fill_1(aid, arg)
+{
+    var a = get_element(aid);
+    var e = get_element('selection');
+    if (!e.value.match([% IF is_jury %]/^[0-9,]+$/[% ELSE %]/^\d+$/[% END %]))
+    {
+        alert('Укажите попытку');
+        return false;
+    }
+    a.href = arg + e.value;
+    e.value = '';
+    return true;
+}
+</script>
+[% IF message %]<i>[% message | html %]</i><br/>[% END %]
+<span id="refreshable_content">
+<br/>Идет загрузка страницы...<br/>
+</span>
+[% IF is_team %]
+<br/>
+    <table cellpadding="6" cellspacing="0" class="bordered">
+[% IF is_jury %]
+    <tr><td>
+    Выбор: <input type="text" id="selection" name="selection" value="[% selection %]" class="bordered" />
+    [ <a href="#" onclick="clear_selection(); return false;">очистить</a>
+    | <a id="a_source" href="[% href_view_source %]" target="_blank"
+      onclick="return fill_1('a_source', '[% href_view_source %]&rid=');">программа</a>
+    | <a id="a_run_details" href="[% href_run_details %]" target="_blank"
+      onclick="return fill_1('a_run_details', '[% href_run_details %]&rid=');">результаты</a>
+    | <a id="a_run_log" href="[% href_run_log %]" target="_blank"
+      onclick="return fill_1('a_run_log', '[% href_run_log %]&rid=');">лог</a>
+    | <a id="a_diff" href="[% href_diff %]" target="_blank"
+      onclick="return fill_diff();">сравнить</a>
+    ] <input type="submit" value="перетестировать" name="retest" class="button"/>
+    </td></tr>
+[% END %]
+    <tr bgcolor="#ccccff"><td>
+    Вопрос к жюри:
+    <input size="100" maxlength="200" name="question_text" value="[% question_text | html %]" class="bordered" />
+    <input type="submit" value="Отправить" name="send_question" class="button"/>
+    </td></tr>
+    </table>
+[% END %]
+</form>
+<iframe width="0" height="0" style="display: none" src="[% href_console_content %]"></iframe>
+[% PROCESS 'includes/menu_end.tti' %]

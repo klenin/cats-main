@@ -1,0 +1,17 @@
+[% PROCESS 'includes/header.tti' %]
+[% tex_styles %]
+</head>
+<body>
+[% FOREACH problems %]
+<div class="problem_text" [% UNLESS loop.first %]style="page-break-before: always"[% END %]>
+  <a name="pr[% code %]"></a>
+  [% IF lang_ru %][% PROCESS 'includes/problem_text_ru.tti' %][% END %]
+  [% IF lang_en %][% PROCESS 'includes/problem_text_en.tti' %][% END %]
+  <hr>
+</div>
+[% END %]
+<script type="text/javascript" src="docs/std/whitespace.js"></script>
+<script type="text/javascript">ws_init('spaces', [[% FOREACH problems %][% id %][% UNLESS loop.last %],[% END %][% END %]])</script>
+[% PROCESS 'includes/timing.tti' %]
+</body>
+</html>

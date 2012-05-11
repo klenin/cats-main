@@ -1,0 +1,17 @@
+[% PROCESS 'includes/menu_begin.tti' %]
+
+[% IF message %]<i>[% message | html %]</i>[% END %]
+
+<form method="post" enctype="multipart/form-data" action="[% href_action %]">
+<table cellpadding="0">
+<tr><td>Идентификатор</td><td><input type="text" name="code" value="[% code %]" class="bordered /"></td>
+<tr><td>Название (рус)</td><td><input type="text" name="name_ru" value="[% name_ru %]" class="bordered" /></td>
+<tr><td>Название (англ)</td><td><input type="text" name="name_en" value="[% name_en %]" class="bordered" /></td>
+</table>
+<br/>
+<input type="hidden" name="id" value="[% id %]" />
+<input type="submit" name="edit_save" value="     Ok     " class="button" />
+<input type="submit" name="edit_cancel" value="Отмена" class="button" />
+</form>
+
+[% PROCESS 'includes/menu_end.tti' %]

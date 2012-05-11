@@ -268,7 +268,7 @@ sub get_sources_info
 
 sub run_details_frame
 {
-    init_template('main_run_details.htm');
+    init_template('run_details.html.tt');
 
     my $rid = url_param('rid') or return;
     my $rids = [ grep /^\d+$/, split /,/, $rid ];
@@ -321,7 +321,7 @@ sub prepare_source
 
 sub view_source_frame
 {
-    init_template('main_view_source.htm');
+    init_template('view_source.html.tt');
     my ($sources_info, $is_jury) = prepare_source(1);
     $sources_info or return;
     my $replace_source = param('replace_source');
@@ -370,7 +370,7 @@ sub download_source_frame
 {
     my ($si, $is_jury) = prepare_source(0);
     unless ($si) {
-        init_template('main_view_source.htm');
+        init_template('view_source.html.tt');
         return;
     }
 
@@ -416,7 +416,7 @@ sub try_set_state
 
 sub run_log_frame
 {
-    init_template('main_run_log.htm');
+    init_template('run_log.html.tt');
     my $rid = url_param('rid') or return;
 
     # HACK: To avoid extra database access, require the user
@@ -446,7 +446,7 @@ sub run_log_frame
 
 sub diff_runs_frame
 {
-    init_template('main_diff_runs.htm');
+    init_template('diff_runs.html.tt');
     $is_jury or return;
 
     my $si = get_sources_info(

@@ -1,0 +1,76 @@
+[% PROCESS 'includes/menu_begin.tti' %]
+
+<script type="text/javascript">
+function delete_contest(href, name)
+{
+    if (confirm( "Вы действительно желаете удалить турнир '" + name + "'?" ))
+    {
+        document.location=href;
+    }
+}
+
+function confirm_registration()
+{
+    return confirm("Внимание! Повторная виртуальная регистрация приведет к удалению попыток. Продолжить?");
+}
+</script>
+
+[% IF message %]<i>[% message | html %]</i><br>[% END %]
+<form method="post" enctype="multipart/form-data" action="[% href_contests %]" id="contest_form">
+[% PROCESS 'includes/listview_header.tti' %]
+
+<table border=0 width="100%" cellpadding=2 cellspacing=1 class=bordered>
+<tr bgcolor="#ccccff">
+[% PROCESS 'includes/listview_col_defs.tti' %]
+</tr>
+
+[% FOREACH contests %]
+<tr bgcolor="#ffffff">
+<td>
+    <input type="checkbox" name="contests_selection" value="[% id %]" />
+    [% IF deletable %]
+    <a href='javascript:delete_contest("[% href_delete %]", "[% contest_name | html %]");'><img src="./images/std/waste2.gif" border=0></a> 
+    [% END %]
+    [% IF editable %]
+    <a href="[% href_params %]"><img src="./images/std/edit.gif" border=0 alt=""></a> 
+    [% ELSE %]
+    <a href="[% href_params %]"><img src="./images/std/blank.gif" border=0 alt="Параметры"></a> 
+    [% END %]
+    <a href="[% href_contest %]" [% IF selected %] style="color: #000000; background-color: #ccccff"
+    [%~ END %]>
+    [% contest_name | html %]
+    </a>
+</td>
+<td align=center>[% start_date | html %]</td>
+<td align=center>[% finish_date | html %]</td>
+<td>
+    [% UNLESS registration_denied %][% IF registered_online %]участник[% END ~%]
+    [% IF registered_virtual %]виртуальный участник[% END =%]
+    [% END =%]
+    [% IF is_official %]<font color="blue">официальный</font>[% END =%]
+    [% IF registration_denied %]<font color="red">регистрация закрыта</font>[% END =%]
+    [% IF show_points %]<font color="green">школьные правила</font>[% END =%]
+    [% IF is_hidden %]<font color="gray">скрытый</font>[% END %]
+</td>
+</tr>
+[% END %]
+</table>
+<br>
+[% IF authorized %]
+[% UNLESS is_registered %]<input type="submit" value="участвовать" name="online_registration" class="button" />
+[% END %]
+<input type="submit" name="virtual_registration"
+    value="участвовать виртуально" class="button" onclick="return confirm_registration()" />
+<input type="hidden"  value="0" />
+[% END %]
+<input type="submit" name="summary_rank" value="суммарная таблица" class="button" />
+[% IF is_root %]<input type="submit" name="create_group" value="создать группу" class="button" />[% END %]
+</form>
+[% IF authorized %][% UNLESS is_registered %]
+<ul>
+<li><b>Виртуальное участие</b> позволяет решать задачи со сдвигом по времени, даже после окончания тура
+<li>Команда может участвовать виртуально, если она не принимала участие online
+<li>Команда может регистрироваться виртуально несколько раз
+</ul>
+[% END %][% END %]
+[% PROCESS 'includes/menu_end.tti' %]

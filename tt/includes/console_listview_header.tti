@@ -1,0 +1,46 @@
+<table width=100%>
+<tr>
+<td align=left>
+<input type=submit value="Найти" name=filter class=button>
+<input type=text name="search" value="[% search %]" size="30" class="bordered">
+</td>
+<td align=center>
+[% IF href_prev_pages %]<a href="[% href_prev_pages %]">&lt;&lt;</a>[% END %]
+страницы:
+[% FOREACH pages %]
+[% IF current_page %][% page_number %]
+[% ELSE %]<a href="[% href_page %]">[% page_number %]</a> [% END %]
+[% END %]
+[% IF href_next_pages %]<a href="[% href_next_pages %]">&gt;&gt;</a>[% END %]
+</td>
+<td align=center>
+выбирать:
+[% IF user_filter %]<a href="[% href_all_events %]">все</a>
+[% ELSE %]<a href="[% href_my_events_only %]">мои</a>[% END %]
+<input type="checkbox" id="show_contests" name="show_contests" [% IF show_contests %] checked="checked"[% END %]/>
+<label for="show_contests" title="турниры">т</label>
+<input type="checkbox" id="show_messages" name="show_messages" [% IF show_messages %] checked="checked"[% END %]/>
+<label for="show_messages" title="сообщения">с</label>
+<input type="checkbox" id="show_results" name="show_results" [% IF show_results %] checked="checked"[% END %]/>
+<label for="show_results" title="результаты">р</label>
+за <select name="i_value">
+[% FOREACH i_values %]
+    <option value="[% value %]"[% IF selected %] selected[% END %]>[% text %]</option> 
+[% END %]
+</select>
+<select name="i_unit">
+[% FOREACH i_units %]
+    <option value="[% value %]"[% IF selected %] selected[% END %]>[% text %]</option> 
+[% END %]
+</select>
+</td>
+<td align=right width=20%>
+<input type=submit value="Показывать" name=visible class=button>
+<select name="rows">
+[% FOREACH display_rows %]
+    <option value="[% count %]" [% IF is_current %] selected [% END %] >[% text %]
+[% END %]
+</select>
+</td>
+</tr>
+</table>
