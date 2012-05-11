@@ -186,7 +186,7 @@ sub init_template
     %extra_headers = ();
     %extra_headers = (-content_disposition => 'inline;filename=contests.ics') if $file_name =~ /\.ics$/;
     #$template_file = $file_name;
-    $t = CATS::Template->new($file_name, cats_dir());
+    $t = CATS::Template->new($file_name, templates_path());
 ;}
 
 
