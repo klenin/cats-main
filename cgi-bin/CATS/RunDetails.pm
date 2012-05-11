@@ -268,7 +268,7 @@ sub get_sources_info
 
 sub run_details_frame
 {
-    init_template('main_run_details.htm');
+    init_template('run_details.html.tt');
 
     my $rid = url_param('rid') or return;
     my $rids = [ grep /^\d+$/, split /,/, $rid ];
