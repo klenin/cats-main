@@ -1,0 +1,21 @@
+[% PROCESS 'includes/menu_begin.tti' %]
+
+[% IF message %]<i>[% message | html %]</i><br>[% END %]
+
+<form method=post enctype='multipart/form-data' action='[% href_action %]'>
+[% PROCESS 'includes/user_main.tti' %]
+[% PROCESS 'includes/user_extra.tti' %]
+<table class="registration">
+<tr><td>Изменить пароль</td><td><input type=checkbox name=set_password></td></tr>
+<tr><td>Пароль</td><td> <input type=password name='password1' size=50 class=bordered></td></tr>
+<tr><td>Пароль (подтверждение)</td><td> <input type=password name='password2' size=50 class=bordered></td></tr>
+</table>
+<br/>
+<input type=hidden name='id' value="[% id %]">
+<input type=submit name='edit_save' value='     Ok     ' class=button> 
+<input type=submit name='edit_cancel' value='Отмена' class=button>
+</form>
+[% IF is_root %]
+<p>[ <a href="[% href_impersonate %]">Войти под этим пользователем</a> ]</p>
+[% END %]
+[% PROCESS 'includes/menu_end.tti' %]

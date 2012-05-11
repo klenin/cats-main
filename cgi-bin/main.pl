@@ -1528,7 +1528,7 @@ sub compare_tests_frame
 }
 
 
-# Администратор добавляет нового пользователя в текущий турнир.
+# Admin adds new user to current contest
 sub users_new_save
 {
     $is_jury or return;
@@ -1540,7 +1540,7 @@ sub users_new_save
 
 sub users_edit_frame
 {
-    init_template('main_users_edit.htm');
+    init_template('users_edit.html.tt');
 
     my $id = url_param('edit') or return;
     my $u = CATS::User->new->load($id) or return;
