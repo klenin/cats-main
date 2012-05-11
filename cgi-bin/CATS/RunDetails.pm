@@ -321,7 +321,7 @@ sub prepare_source
 
 sub view_source_frame
 {
-    init_template('main_view_source.htm');
+    init_template('view_source.html.tt');
     my ($sources_info, $is_jury) = prepare_source(1);
     $sources_info or return;
     my $replace_source = param('replace_source');
@@ -370,7 +370,7 @@ sub download_source_frame
 {
     my ($si, $is_jury) = prepare_source(0);
     unless ($si) {
-        init_template('main_view_source.htm');
+        init_template('view_source.html.tt');
         return;
     }
 
