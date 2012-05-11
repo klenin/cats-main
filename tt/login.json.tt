@@ -1,7 +1,8 @@
+[% USE Javascript %]
 {
 [% IF message %]
     "status": "error",
-    "message": "[% message | replace('"', '\"') %]"
+    "message": "[% message | $Javascript %]"
 [% ELSE %]
     "status": "ok",
     "sid": "[% sid %]",

@@ -13,7 +13,10 @@ sub new
     $tt ||= Template->new({
         INCLUDE_PATH => $templates_path,
         COMPILE_EXT => '.ttc',
-        COMPILE_DIR => "$templates_path/cache/"
+        COMPILE_DIR => "$templates_path/cache/",
+        PLUGINS => {
+            Javascript => 'CATS::Template::Plugin::Javascript'
+        }
     }) || die "$Template::ERROR\n";
 
     my $self = { vars => {}, file_name => $file_name };
