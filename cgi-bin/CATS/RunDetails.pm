@@ -218,6 +218,8 @@ sub get_sources_info
     my $src = $p{get_source} ? ' S.src, DE.syntax,' : '';
     my $req_id_list = join ', ', @req_ids;
     my $pc_sql = $p{partial_checker} ? CATS::RankTable::partial_checker_sql() . ',' : '';
+    # Blobs in next querry can be in arbitary encoding, we need to decode them explicitly
+    $dbh->{ib_enable_utf8} = 0;
     my $result = $dbh->selectall_arrayref(qq~
         SELECT
             S.req_id,$src S.fname AS file_name, S.de_id,
@@ -242,9 +244,14 @@ sub get_sources_info
             INNER JOIN contest_problems CP ON CP.contest_id = C.id AND CP.problem_id = P.id
             INNER JOIN contest_accounts CA ON CA.contest_id = C.id AND CA.account_id = A.id
         WHERE req_id IN ($req_id_list)~, { Slice => {} });
+    # Resume "normal" operation
+    $dbh->{ib_enable_utf8} = 1;
 
     my $official = $p{get_source} && !$is_jury && CATS::Contest::current_official;
     for my $r (@$result) {
+        for my $need_decode (qw(problem_name contest_name team_name)) {
+            $r->{$need_decode} = Encode::decode_utf8($r->{$need_decode});
+        }
         $r = {
             %$r, state_to_display($r->{state}),
             CATS::IP::linkify_ip(CATS::IP::filter_ip $r->{last_ip}),
@@ -314,6 +321,7 @@ sub prepare_source
     my $se = param('src_enc') || 'WINDOWS-1251';
     if (source_encodings()->{$se} && $sources_info->{file_name} !~ m/\.zip$/) {
         Encode::from_to($sources_info->{src}, $se, 'utf-8');
+        $sources_info->{src} = Encode::decode_utf8($sources_info->{src});
     }
     ($sources_info, $is_jury);
 }

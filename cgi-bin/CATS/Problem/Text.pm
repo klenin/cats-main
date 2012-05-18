@@ -328,7 +328,7 @@ sub problem_text_frame
             for ($problem->{$field_name}) {
                 defined $_ or next;
                 $text_span = '';
-                $_ = $_ eq '' ? undef : Encode::encode_utf8(parse($_));
+                $_ = $_ eq '' ? undef : parse($_);
                 CATS::TeX::Lite::convert_all($_);
                 s/(\s|~)?-{2,3}/($1 ? '&nbsp;' : '') . '&#151;'/ge; # em-dash
             }

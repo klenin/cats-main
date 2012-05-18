@@ -449,14 +449,14 @@ sub generate_output
     }
     else
     {
-        binmode(STDOUT, ':utf8');
+        binmode(STDOUT, ':raw');
         $t->param(encoding => 'UTF-8');
         http_header($http_mime_type, 'utf-8', $cookie);
         print STDOUT $out = $t->output;
     }
     if ($output_file)
     {
-        open my $f, '>:utf8', $output_file
+        open my $f, '>:raw', $output_file
             or die "Error opening $output_file: $!";
         print $f $out;
     }
