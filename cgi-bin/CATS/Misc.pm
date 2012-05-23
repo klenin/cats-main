@@ -154,11 +154,10 @@ sub init_listview_params
     }
 
     $s->{rows} ||= $cats::display_rows[0];
-    my $rows = param('rows');
-    if (defined $rows)
-    {
+    my $rows = param('rows') || 0;
+    if ($rows > 0) {
         $s->{page} = 0 if $s->{rows} != $rows;
-        $s->{rows} = 0 + $rows;
+        $s->{rows} = $rows;
     }
 }
 
@@ -329,10 +328,11 @@ sub attach_listview
             }
             $row_count++;
         }
-	
+
     }
 
-    my $page_count = int($row_count / $s->{rows}) + ($row_count % $s->{rows} ? 1 : 0) || 1;
+    my $rows = $s->{rows} || 1;
+    my $page_count = int($row_count / $rows) + ($row_count % $rows ? 1 : 0) || 1;
 
     $$page ||= 0;
     my $range_start = $$page - $$page % $cats::visible_pages;
