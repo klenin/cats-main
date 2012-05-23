@@ -3,5 +3,8 @@
 <meta http-equiv="Content-type" content="text/html; charset=[% encoding %]">
 <link rel="shortcut icon" href="images/std/favicon.ico" type="image/x-icon" />
 <title>[% IF contest_title %][% contest_title | html %][% ELSE %]CATS[% END %][% IF title_suffix %] - [% title_suffix %][% END %]</title>
-[% IF printable %]<style type="text/css">[% INSERT 'docs/std/main.css' %]</style>[% ELSE -%]
-<link rel="stylesheet" type="text/css" href="docs/std/main.css">[% END %]
+[% IF printable -%]
+<style type="text/css">[% INSERT 'docs/std/main.css' %]</style>
+[%- ELSE -%]
+<link rel="stylesheet" type="text/css" href="docs/std/main.css">
+[%- END %]
