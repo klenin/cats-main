@@ -1,0 +1,498 @@
+[% PROCESS header.tti title = 'Problem description package format' %]
+[%- MACRO s(m1, m2) BLOCK; m1; ' '; m2; END -%]
+[%- MACRO opt BLOCK %]<sup>&nbsp;<a href="#opt" title="Optional attribute">o</a></sup>[% END -%]
+[%- MACRO v11 BLOCK %]<sup><a href="#v11" title="Since version 1.1">1.1</a></sup>[% END -%]
+[%- MACRO v12 BLOCK %]<sup><a href="#v12" title="Since version 1.2">1.2</a></sup>[% END -%]
+[%- MACRO v13 BLOCK %]<sup><a href="#v13" title="Since version 1.3">1.3</a></sup>[% END -%]
+[%- MACRO v14 BLOCK %]<sup><a href="#v14" title="Since version 1.4">1.4</a></sup>[% END -%]
+[%- MACRO dv14 BLOCK %]<sup><a href="#dv14" title="Deprecated since version 1.4">&minus;1.4</a></sup>[% END -%]
+[%- MACRO v15 BLOCK %]<sup><a href="#v15" title="Since version 1.5">1.5</a></sup>[% END -%]
+[%- MACRO dv15 BLOCK %]<sup><a href="#dv15" title="Deprecated since version 1.5">&minus;1.5</a></sup>[% END -%]
+[%- MACRO v16 BLOCK %]<sup><a href="#v16" title="Since version 1.6">1.6</a></sup>[% END -%]
+[%- MACRO v17 BLOCK %]<sup><a href="#v17" title="Since version 1.7">1.7</a></sup>[% END -%]
+[%- MACRO v18 BLOCK %]<sup><a href="#v18" title="Since version 1.8">1.8</a></sup>[% END -%]
+[%- MACRO tag_in(t1, t2, m1, m2) BLOCK
+%]<tt>&lt;<a name="[% t1 %]">[% t1 %]</a>&gt;[% IF t2 != '';
+  IF m1 != '' %]</tt>[% m1 %]<br/><tt>[% ELSE %]<br/>[% END
+%]&lt;<a href="#[% t2 %]">[% t2 %]</a>&gt;[% END %]</tt>[% m2;
+END -%]
+[%- MACRO tag_ref(t) BLOCK %]<tt>&lt;<a href="#[% t %]">[% t %]</a>&gt;</tt>[% END -%]
+<h2>Version 1.8</h2>
+
+<p><a href="sample.zip">download sample problem package</a></p>
+
+<p>Problem is stored in a ZIP archive, which should contain exactly one XML file
+with the problem descrition in the root directory, and arbitraty number of additional
+files with tests, solutions etc.
+</p>
+
+<h2>Structure of XML file</h2>
+
+<table class="ft">
+<col width="1%"/><col width="40%"><col width="*"/>
+<tr>
+  <th>Tag name<br/>Parent tag</th> <th>Attributes</th> <th>Comment</th>
+</tr>
+<tr>
+  <td>[% tag_in('CATS') %]</td>
+  <td>version[% opt %] ("1.4" by default)</td>
+  <td>Required top-level tag</td>
+</tr>
+<tr>
+  <td>[% tag_in('Problem', 'CATS') %]</td>
+  <td>
+    <ul>
+      <li>title - problem title;</li>
+      <li>lang[% opt %] - (natural) language of the problem text;</li>
+      <li>tlimit - time limit for a single test (in seconds);</li>
+      <li>mlimit[% v11 %] - memory limit for a single test (in megabytes);</li>
+      <li>author[% opt %] - author name;</li>
+      <li>inputFile - input file name or <tt>*STDIN</tt>[% v18 %];</li>
+      <li>outputFile - output file name or <tt>*STDOUT</tt>[% v18 %];</li>
+      <li>difficulty[% opt %] [% dv14 %] - author's estimate of the problem difficulty (1 to 100);</li>
+      <li>stdChecker[% opt %] [% dv14 %] - standard checker name;</li>
+      <li>maxPoints[% opt %] [% v13 %] - maximum number of points per problem, overrides the sum of points for each test</li>
+    </ul>
+  </td>
+  <td>Standard checker program compares output file with the answer file for a given test.
+    Following standard checkers are defined:
+    <ul>
+      <li>nums - compares lists of 4-byte integers;</li>
+      <li>floats2 - compares lists of long doubles;</li>
+      <li>strs - compares lists of short strings (up to 256 characters);</li>
+      <li>longnums - compares lists of long unmbers (up to 10000 digits);</li>
+      <li>longstrs - compares lists of long strings (up to 10000 characters);</li>
+    </ul>
+    Since version 1.4, stdChecker attribute is deprecated. It is recommended to use
+    [% tag_ref('Import') %] tag instead with the following standard guid's:
+    <ul>
+      <li>std.nums - checks equivalency of lists of 32-bit integers;</li>
+      <li>std.longnums - checks equivalency of arbitrary length unsigned integers;</li>
+      <li>std.floats&lt;n&gt;, for n from 2 to 5 -- checks equivalency of floating point numbers with precision of n digits;</li>
+      <li>std.strs - checks equivalency of arbitrary length strings.</li>
+    </ul>
+  </td>
+</tr>
+<tr>
+  <td>[% tag_in('Keyword', 'Problem') %]</td>
+  <td>
+      <ul><li>code - keyword code</li></ul>
+  </td>
+  <td>Keyword code must be pre-defined in a system.</td>
+</tr>
+<tr>
+  <td>[% tag_in('ProblemStatement', 'Problem') %]</td>
+  <td>&nbsp;</td>
+  <td>Problem statement text in STML format.</td>
+</tr>
+<tr>
+  <td>[% tag_in('ProblemConstraints', 'Problem') %]</td>
+  <td>&nbsp;</td>
+  <td>Problem input constraints in STML format.</td>
+</tr>
+<tr>
+  <td>[% tag_in('InputFormat', 'Problem') %]</td>
+  <td>&nbsp;</td>
+  <td>Input file format description in STML format.</td>
+</tr>
+<tr>
+  <td>[% tag_in('OutputFormat', 'Problem') %]</td>
+  <td>&nbsp;</td>
+  <td>Output file format description in STML format.</td>
+</tr>
+<tr>
+  <td>[% tag_in('JsonData', 'Problem', v17) %]</td>
+  <td>&nbsp;</td>
+  <td>Additional data in JSON format.
+    Recommended to use [% tag_ref('include') %] tag.</td>
+</tr>
+<tr>
+  <td>[% tag_in('Explanation', 'Problem', v15) %]</td>
+  <td>&nbsp;</td>
+  <td>Solution explanation in STML format.</td>
+</tr>
+<tr>
+  <td>[% tag_in('Checker', 'Problem') %]</td>
+  <td>
+    <ul>
+      <li>name - object identifier [% tag_ref('Checker') %] (arbitrary string);</li>
+      <li>src[% opt %] - path to the source;</li>
+      <li>de_code[% opt %] - development environment code;</li>
+      <li>style[% opt %] [% v12 %] -- checker arguments format, can be one of:
+        <ul>
+          <li>"legacy" -- arguments are <tt>input answer output</tt>, used by default for backwards compatibility</li>
+          <li>"testlib" -- arguments are <tt>input output answer</tt>, compatible with the testlib library.
+          Recommended for new problems.</li>
+          <li>"partial" -- arguments are similar to testlib.
+            Points for test are read from the checker's standard output.</li>
+        </ul>
+      </li>
+      <li>export[% opt %] [% v14 %] - global identifier.</li>
+      <li>timeLimit[% opt %] [% v17 %] -- time limit in seconds.</li>
+      <li>memoryLimit[% opt %] [% v17 %] -- memory limit in megabytes.</li>
+    </ul>
+  </td>
+  <td>
+    Checker program descriton. This tag is ignored if the problem has stdChecker attribute.
+    "src" - is a path to the file relative to the archive root.
+    Nested directories are allowed.
+    Path is case-sensitive.
+    The list of standard development environments:
+    <ul>
+      <li>1[% v12 %] - None (h;inc)</li>
+      <li>2[% v16 %] - Answers in zip (zip)</li>
+      <li>101 - Cross-platform C/C++ compiler (cpp;c)</li>
+      <li>102 - GNU C++ (cc;cxx)</li>
+      <li>103 - MS Visual C++ (cpp;c)</li>
+      <li>104 - Borland C++ 3.1 (cpp;c)</li>
+      <li>105 - GNU C (c)</li>
+      <li>201 - Borland Pascal 7.0 (pas)</li>
+      <li>202 - Free Pascal (pp)</li>
+      <li>203 - Borland Delphi (dpr)</li>
+      <li>301 - Quick Basic (qb) (partially supported)[% v11 %]</li>
+      <li>302 - Free Basic (bas) [% v14 %]</li>
+      <li>401 - Java (java)[% v13 %]</li>
+      <li>402 - C# (cs)[% v16 %]</li>
+      <li>501 - Perl (pl)[% v14 %]</li>
+      <li>502 - Python (py)[% v16 %]</li>
+      <li>503 - Haskell (hs)[% v16 %]</li>
+      <li>504 - Ruby (rb)[% v16 %]</li>
+    </ul>
+
+    If the de_code is omitted, it is defined by the source file extension
+    according to the list above.
+    <p>
+      Checker's exit code: 0 -- OK, 1 -- WA, 2 -- PE, 3 -- Internal error.
+    </p>
+  </td>
+</tr>
+<tr>
+  <td>[% tag_in('Picture', 'Problem') %]</td>
+  <td>
+    <ul>
+      <li>name -- identifier of the [% tag_ref('Picture') %] object (arbitrary string);</li>
+      <li>src[% opt %] -- path to the image file.</li>
+    </ul>
+  </td>
+  <td>Describes a picture to be inserted into a problem text.</td>
+</tr>
+<tr>
+  <td>[% tag_in('Attachment', 'Problem', v16) %]</td>
+  <td>
+    <ul>
+      <li>name -- identifier of the [% tag_ref('Attachment') %] object (arbitrary string);</li>
+      <li>src -- path to the attachment file.</li>
+    </ul>
+  </td>
+  <td>Arbitrary file available for download from the problem text.</td>
+</tr>
+<tr>
+  <td>[% tag_in('Solution', 'Problem') %]</td>
+  <td>
+    <ul>
+      <li>name -- identifier of the [% tag_ref('Solution') %] object;</li>
+      <li>src[% opt %] -- path to the source code file;</li>
+      <li>de_code[% opt %] -- development environment code.</li>
+      <li>export[% opt %] [% v14 %] -- globally unique identifier.</li>
+      <li>timeLimit[% opt %] [% v17 %] -- time limit in seconds. By default equal to the problem's limit.</li>
+      <li>memoryLimit[% opt %] [% v17 %] -- memory limit in megabytes. By default equal to the problem's limit.</li>
+    </ul>
+  </td>
+  <td>Description of the jury solution.</td>
+</tr>
+<tr>
+  <td>[% tag_in('Generator', 'Problem') %]</td>
+  <td>
+    <ul>
+      <li>name -- identifier of the [% tag_ref('Generator') %] object;</li>
+      <li>src[% opt %] -- path to the source code file;</li>
+      <li>de_code[% opt %] -- development environment code;</li>
+      <li>outputFile[% opt %] [% v12 %] -- input file name or <tt>*STDOUT</tt>;</li>
+      <li>export[% opt %] [% v14 %] -- globally unique identifier.</li>
+      <li>timeLimit[% opt %] [% v17 %] -- time limit in seconds.</li>
+      <li>memoryLimit[% opt %] [% v17 %] -- memory limit in megabytes.</li>
+    </ul>
+  </td>
+  <td>Description of the test generator. Generator must produce a file named according to the <tt>outputFile</tt> attribute. That file is used as an input data by the [% tag_ref('In') %] tag.
+    By default the file name is equal to the value of <tt>inputFile</tt> attribute of the  [% tag_ref('Problem') %] tag.
+    Special value of <tt>outputFile="*STDOUT"</tt> means that the generator should print the test to the standard output.
+    <br/>
+    Since version 1.5, for group generators outputFile attribute may contain context variables which are expanded to the test number.
+    For example, to describe a generatr producing test files t01, t02, ..., t50:
+    <pre>
+      &lt;Generatore name="gen" src="gen.pas" outputFile="t%0n" /&gt
+      &lt;Test rank="1-50" &gt; &lt;In use="gen" genAll="1"&gt; ...</pre>
+  </td>
+</tr>
+<tr>
+  <td>[% tag_in('GeneratorRange', 'Problem', v12) %]</td>
+  <td>
+    <ul>
+      <li>from -- sequential number of the first generator;</li>
+      <li>to -- sequential number of the first generator;</li>
+      <li>name -- identifier of the [% tag_ref('Generator') %] object;</li>
+      <li>src[% opt %] -- path to the source code file;</li>
+      <li>de_code[% opt %] -- development environment code.</li>
+      <li>outputFile[% opt %] [% v12 %] -- input file name or "*STDOUT".</li>
+      <li>export[% opt %] [% v14 %] -- globally unique identifier.</li>
+      <li>timeLimit[% opt %] [% v17 %] -- time limit in seconds.</li>
+      <li>memoryLimit[% opt %] [% v17 %] -- memory limit in megabytes.</li>
+    </ul>
+  </td>
+  <td>Attributes name, src and export of [% tag_ref('GeneratorRange') %] tag may contain context variables which are expanded to the current generator number.
+    For example:<br/>
+    <tt>&lt;GeneratorRange from="1" to="10" name="g%0n" src="gen%0n.pas"/&gt</tt>
+  </td>
+</tr>
+<tr>
+  <td>[% tag_in('Test', 'Problem') %]</td>
+  <td><ul>
+    <li>rank -- <a href="#rankSpec">test ranks specifier</a>.
+      If rank attribute is equal to "*", parameters given in the text are set as defaults for all tests. [% v16 %]</li>
+    <li>points[% opt %] -- number of points for the test.</li>
+  </ul></td>
+  <td>Test description.
+  Problem must have tests with ranks from 1 upto some N.
+  If there is no tests, any compilable submission will be judged WA.
+  Since version 1.5 attributes of [% tag_ref('In') %] and [% tag_ref('Out') %] tags,
+  nested inside [% tag_ref('Test') %] tag,
+  may contain context variables which are expanded to the current test number.
+  For example:<pre>&lt;Test rank="1-10"&gt;
+  &lt;In src="%0n.in"/&gt;&lt;Out use="solution"/&gt;
+&lt;/Test&gt</pre>
+  To avoid duplication, test description may be split between several tags, for example:
+  <pre>&lt;Test rank="1-5" points="1" /&gt;
+&lt;Test rank="6-10" points="2" /&gt;
+&lt;Test rank="1-10"&gt;&lt;Out use="sol"&gt;&lt;/Test&gt;</pre>
+  Despite of that, the data about each test must not overlap between tags.
+</td>
+</tr>
+<tr>
+  <td>[% tag_in('TestRange', 'Problem', s(v11, dv15)) %]</td>
+  <td>
+    <ul>
+      <li>from -- sequential number of the first test;</li>
+      <li>to -- sequential number of the last test;</li>
+       <li>points[% opt %] -- number of points for each test in range.</li>
+    </ul>
+  </td>
+  <td>
+  Since version 1.5, this tag is deprecated -- use [% tag_ref('Test') %] tag instead.<br/>
+  Attributes of [% tag_ref('In') %] and [% tag_ref('Out') %] tags,
+  nested inside [% tag_ref('TestRange') %] tag,
+  may contain context variables which are expanded to the current test number.
+  For example:<pre>&lt;TestRange from="1" to="10"&gt;
+  &lt;In src="%0n.in"/&gt;&lt;Out use="solution"/&gt;
+&lt;/TestRange&gt</pre>
+</td>
+</tr>
+<tr>
+  <td>[% tag_in('In', 'Test') %], [% tag_ref('TestRange'); v11 %]</td>
+  <td>
+    <ul>
+      <li>use[% opt %] -- identifier of the [% tag_ref('Generator') %] object;</li>
+      <li>param[% opt %] -- command-line parameters passed to the generator;</li>
+      <li>src[% opt %] -- path to the input file (if the use attribute is omitted).</li>
+      <li>genAll[% s(opt, v15) %] -- generate a group of tests with a single generator.</li>
+    </ul>
+  </td>
+  <td>Test input description.
+    If the "use" attribute is present, input file is produced by running the given test generator.
+  </td>
+</tr>
+<tr>
+  <td>[% tag_in('Out', 'Test') %], [% tag_ref('TestRange'); v11 %]</td>
+  <td>
+    <ul>
+      <li>use[% opt %] -- identifier of the [% tag_ref('Solution') %] object;</li>
+      <li>src[% opt %] -- path to the output file (if the use attribute is omitted).</li>
+    </ul>
+  </td>
+  <td>If the "use" attribute is present, output file is produced by running the given jury solution.
+  </td>
+</tr>
+<tr>
+  <td>[% tag_in('Testset', 'Problem', v15) %]</td>
+  <td><ul>
+    <li>name -- name of the test set;</li>
+    <li>tests -- <a href="#rankSpec">test rank specification</a>;</li>
+    <li>points[% opt; v18 %] -- number of points for the whole testset;</li>
+    <li>comment[% opt; v18 %] -- comment.</li>
+  </ul></td>
+  <td>Contains test set description. While adding the problem to the contest,
+    one or more testsets to use for checking may be specified.
+    By default all the available tests are used.
+    If the number of points for the testset is specified, the points are awarded
+    only if all tests have passed.
+    It is allowed to mix testsets and stand-alone tests, as well as specify
+    overlapping testsets.
+    However the test must not be included in a several concurrently used testsets with points.
+  </td>
+</tr>
+<tr>
+  <td>[% tag_in('Module', 'Problem', v12) %]</td>
+  <td>
+    <ul>
+      <li>name -- identifier of the [% tag_ref('Module') %] object;</li>
+      <li>src -- path to the source code file;</li>
+      <li>de_code[% opt %] -- development environment code.</li>
+      <li>type -- module type (generator, checker, solution).</li>
+      <li>export[% opt %] [% v14 %] -- globally unique identifier.</li>
+    </ul>
+  </td>
+  <td>Module description. Module files are unpacked and compiled together with every object of the corresponding type.
+    For the modules which do not require compilation, use development environment "None" (de_code="1").
+    Modules are compiled in the order they are listed in the package.
+  </td>
+</tr>
+<tr>
+  <td>[% tag_in('Import', 'Problem', v14) %]</td>
+  <td>
+    <ul>
+      <li>guid -- globally unique identifier of the imported object.
+        Can contain <tt>*</tt> character, designating an arbitrary substring.[% v15 %]</li>
+      <li>type[% opt %] -- type of the imported object (generator, checker, solution).</li>
+      <li>name[% opt %] [% v15 %] -- problem-local identifier of the imported object</li>
+    </ul>
+  </td>
+  <td>Import an object from the existing problem. Object is searched by guid.
+    Is the type attribute is present, the type of referenced object is checked against it.
+    The effect of importing an object is equivalent to adding that object to a package.
+  </td>
+</tr>
+<tr>
+  <td>[% tag_in('Sample', 'Problem') %]</td>
+  <td>
+    <ul>
+      <li>rank -- sequential number of the sample (independent of similar attribute of [% tag_ref('Test') %]) tag.</li>
+    </ul>
+  </td>
+  <td>Sample test descrption</td>
+</tr>
+<tr>
+  <td>[% tag_in('SampleIn', 'Sample') %]</td>
+  <td>
+    <ul>
+      <li>src[% opt %] [% v16 %] -- path to the sample input file.</li>
+    </ul>
+  </td>
+  <td>
+    If the src attribute is omitted, sample input text is nested inside the tag.
+    Whitespace is preserved exactly an in a text file.
+  </td>
+</tr>
+<tr>
+  <td>[% tag_in('SampleOut', 'Sample') %]</td>
+  <td>
+    <ul>
+      <li>src[% opt %] [% v16 %] -- path to the sample input file.</li>
+    </ul>
+  </td>
+  <td>If the src attribute is omitted, sample output text is nested inside the tag.</td>
+</tr>
+</table>
+
+<a name="opt"></a><p><a href="" onclick="javascript:history.back(-1)"><sup>o</sup></a>
+  Attributes market with this sign are optional.</p>
+[%- MACRO since(n, v) BLOCK -%]
+<a name="[% n %]"></a><p><a href="" onclick="javascript:history.back(-1)"><sup>[% v %]</sup></a>
+  This feature is available since [% v %].</p>
+[%- END -%]
+[%
+  since('v11', '1.1'); since('v12', '1.2');
+  since('v13', '1.3'); since('v14', '1.4');
+  since('v15', '1.5'); since('v16', '1.6');
+  since('v17', '1.7'); since('v18', '1.8');
+%]
+<a name="dv14"></a><p><a href="" onclick="javascript:history.back(-1)"><sup>&minus;1.4</sup></a>
+  This feature is deprecated since version 1.4.</p>
+<a name="dv15"></a><p><a href="" onclick="javascript:history.back(-1)"><sup>&minus;1.5</sup></a>
+  This feature is deprecated since version 1.5.</p>
+
+<a name="rankSpec" />
+<h2>Test case ranks specifiction</h2>
+<p>
+  Specifier is a comma-separated list of elements.
+  Each element may be one of:
+  <ul>
+    <li>Test number,</li>
+    <li>Range of test numbers, separated by "-" character [% v15 %],</li>
+    <li>Testset name ([% tag_ref('Testset') %])[% v18 %].</li>
+  </ul>
+</p>
+
+<a name="contextVars" />
+<h2>Context variables</h2>
+
+<p>Have a form of <tt>%n</tt>, <tt>%0n</tt>, meaning test number and zero-padded test number correspondingly.</p>
+
+<h2>STML (Simple Text Markup Language)</h2>
+
+<p>STML is a radically simplified subset of HTML with a few additional tags. The following tags are defined in STML:</p>
+
+<table class="ft">
+<tr><th>Tag name</br>Parent tag</th><th>Attributes</th><th>Comments</th></tr>
+<tr><td>[% tag_in('img') %]</td>
+  <td>
+    <ul>
+      <li>picture -- identifier of the [% tag_ref('Picture') %] object;</li>
+      <li>width[% opt %] -- image width (in pixels);</li>
+      <li>height[% opt %] -- image height (in pixels);</li>
+      <li>align[% opt %] -- image alignment<br/>
+        (May have value of left or right).</li>
+    </ul>
+  </td>
+  <td>Embed an image.</td>
+</tr>
+<tr><td>[% tag_in('a'); v16 %]</td>
+  <td>
+    <ul>
+      <li>attachment -- identifier of the [% tag_ref('Attachment') %] object;</li>
+    </ul>
+  </td>
+  <td>Insert a link to the attached file.</td>
+</tr>
+<tr><td>[% tag_in('include'); v17 %]</td>
+  <td>
+    <ul>
+      <li>src -- name of the file to be included; the file must have the same encoding as the XML;</li>
+    </ul>
+  </td>
+  <td>Insert a text from the file.</td>
+</tr>
+<tr><td>[% tag_in('i') %]</td>
+  <td>&nbsp;</td>
+  <td>Italics.</td>
+</tr>
+<tr><td>[% tag_in('b') %]</td>
+  <td>&nbsp;</td>
+  <td>Bold.</td>
+</tr>
+<tr><td>[% tag_in('sup') %]</td>
+  <td>&nbsp;</td>
+  <td>Upper subscript.</td>
+</tr>
+<tr><td>[% tag_in('sub') %]</td>
+  <td>&nbsp;</td>
+  <td>Lower subscript.</td>
+</tr>
+<tr><td>&lt;table&gt;</td>
+  <td>
+    <ul>
+      <li>border[% opt %] - 1 - draw border (default),<br/>
+        0 - do not draw border;</li>
+      <li>width[% opt %] - table width.</li>
+    </ul>
+  </td>
+  <td>HTML Table.</td>
+</tr>
+<tr><td>[% tag_in('tr', 'table') %]</td>
+  <td>&nbsp;</td>
+  <td>Table row</td>
+</tr>
+<tr><td>[% tag_in('td', 'tr') %]</td>
+  <td>&nbsp;</td>
+  <td>Table cell</td>
+</tr>
+</table>
+[% PROCESS footer.tti %]

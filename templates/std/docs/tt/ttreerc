@@ -1,7 +1,9 @@
 verbose
 recurse
 accept = \.tt$
+accept = \.en\.tt$
 suffix tt=html
+suffix en.tt=en.html
 depend *=header.tti,footer.tti
 src = .
 dest = ..
