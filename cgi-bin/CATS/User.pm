@@ -3,9 +3,9 @@ package CATS::User;
 use strict;
 use warnings;
 
-use CGI qw(param);
 
 use lib '..';
+use CATS::Web qw(param);
 use CATS::Misc qw(init_template msg url_f);
 use CATS::DB;
 use CATS::Connect;

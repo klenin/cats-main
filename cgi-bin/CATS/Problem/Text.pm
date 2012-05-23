@@ -13,7 +13,7 @@ BEGIN {
     );
 }
 
-use CGI qw(param url_param);
+use CATS::Web qw(param url_param);
 use Encode;
 use XML::Parser::Expat;
 use Text::Aspell;

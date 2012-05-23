@@ -14,6 +14,7 @@ sub new
         INCLUDE_PATH => $templates_path,
         COMPILE_EXT => '.ttc',
         COMPILE_DIR => "$templates_path/cache/",
+        ENCODING => 'utf8',
         PLUGINS => {
             Javascript => 'CATS::Template::Plugin::Javascript'
         }

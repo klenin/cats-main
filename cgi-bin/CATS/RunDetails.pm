@@ -4,10 +4,10 @@ use strict;
 use warnings;
 
 use Algorithm::Diff;
-use CGI qw(param span url_param);
+use CATS::Web qw(param url_param headers upload_source content_type);
 use CATS::DB;
 use CATS::Utils qw(escape_html state_to_display url_function);
-use CATS::Misc qw($is_jury $sid $t $uid init_template msg upload_source url_f);
+use CATS::Misc qw($is_jury $sid $t $uid init_template msg html_element url_f);
 use CATS::Data qw(is_jury_in_contest enforce_request_state);
 use CATS::IP;
 use CATS::DevEnv;
@@ -193,7 +193,7 @@ sub get_nearby_attempt
     my @p;
     if ($f eq 'diff_runs') {
         for (1..2) {
-            my $r = CGI::url_param("r$_") || 0;
+            my $r = url_param("r$_") || 0;
             push @p, "r$_" => ($r == $si->{req_id} ? $na->{id} : $r);
         }
     }
@@ -377,9 +377,9 @@ sub download_source_frame
     $si->{file_name} =~ m/\.([^.]+)$/;
     my $ext = $1 || 'unknown';
     binmode(STDOUT, ':raw');
-    print STDOUT CGI::header(
-        -type => ($ext eq 'zip' ? 'application/zip' : 'text/plain'),
-        -content_disposition => "inline;filename=$si->{req_id}.$ext");
+    content_type($ext eq 'zip' ? 'application/zip' : 'text/plain');
+    headers(
+        'Content-Disposition' => "inline;filename=$si->{req_id}.$ext");
     print STDOUT $si->{src};
 }
 
@@ -475,8 +475,8 @@ sub diff_runs_frame
     my $SL = sub { $si->[$_[0]]->{lines}->[$_[1]] || '' };
 
     my $match = sub { push @diff, escape_html($SL->(0, $_[0])) . "\n"; };
-    my $only_a = sub { push @diff, span({class=>'diff_only_a'}, escape_html($SL->(0, $_[0])) . "\n"); };
-    my $only_b = sub { push @diff, span({class=>'diff_only_b'}, escape_html($SL->(1, $_[1])) . "\n"); };
+    my $only_a = sub { push @diff, html_element('span', {class=>'diff_only_a'}, escape_html($SL->(0, $_[0])) . "\n"); };
+    my $only_b = sub { push @diff, html_element('span', {class=>'diff_only_b'}, escape_html($SL->(1, $_[1])) . "\n"); };
 
     Algorithm::Diff::traverse_sequences(
         $si->[0]->{lines},

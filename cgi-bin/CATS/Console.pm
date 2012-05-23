@@ -3,7 +3,7 @@ package CATS::Console;
 use strict;
 use warnings;
 
-use CGI qw(:standard);;
+use CATS::Web qw(param url_param);
 use List::Util;
 
 use CATS::DB;
