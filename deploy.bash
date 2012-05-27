@@ -55,22 +55,22 @@ rm DBD-Firebird-0.60.tar.gz
 rm -rf DBD-Firebird-0.60
 
 APACHE_CONFIG=$(cat <<EOF
+PerlSetEnv CATS_DIR ${CATS_ROOT}/cgi-bin/
 <VirtualHost *:80>
-	#    PerlRequire /var/www/perllib/startup.perl
-	PerlSetEnv CATS_DIR ${CATS_ROOT}/cgi-bin/
+	PerlRequire ${CATS_ROOT}/cgi-bin/CATS/Web/startup.pl
 	<Directory "${CATS_ROOT}/cgi-bin/">
-	    Options -Indexes +ExecCGI +FollowSymLinks
-	    DirectoryIndex main.pl
-	    LimitRequestBody 1048576
-	    AllowOverride none
-	    Order allow,deny         
-	    Allow from all
-	    <Files "main.pl">
-	        # Apache 2.x / ModPerl 2.x specific
-	        PerlHandler ModPerl::Registry
-	        PerlSendHeader On
-	        SetHandler perl-script
-	    </Files>
+		Options -Indexes +FollowSymLinks
+		DirectoryIndex main.pl
+		LimitRequestBody 1048576
+		AllowOverride none
+		Order allow,deny
+		Allow from all
+		<Files "main.pl">
+			# Apache 2.x / ModPerl 2.x specific
+			PerlResponseHandler main
+			PerlSendHeader On
+			SetHandler perl-script
+		</Files>
 	</Directory>
 
 	ExpiresActive On
@@ -78,20 +78,20 @@ APACHE_CONFIG=$(cat <<EOF
 
 	Alias /cats/static/ "${CATS_ROOT}/static/"
 	<Directory "${CATS_ROOT}/static">
-	    # Apache допускает только абсолютный URL-path
-	    ErrorDocument 404 /cats/main.pl?f=static
-	    #Options FollowSymLinks
-	    AddDefaultCharset utf-8
+		# Apache допускает только абсолютный URL-path
+		ErrorDocument 404 /cats/main.pl?f=static
+		#Options FollowSymLinks
+		AddDefaultCharset utf-8
 	</Directory>
 
 	Alias /cats/docs/ "${CATS_ROOT}/docs/"
 	<Directory "${CATS_ROOT}/docs">
-	    AddDefaultCharset utf-8
+		AddDefaultCharset utf-8
 	</Directory>
 
 	Alias /cats/ev/ "${CATS_ROOT}/ev/"
 	<Directory "${CATS_ROOT}/ev">
-	    AddDefaultCharset utf-8
+		AddDefaultCharset utf-8
 	</Directory>
 
 	Alias /cats/synh/ "${CATS_ROOT}/synhighlight/"

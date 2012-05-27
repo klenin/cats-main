@@ -24,7 +24,7 @@ BEGIN {
 
 use Text::Balanced qw(extract_tagged extract_bracketed);
 use Digest::MD5;
-
+use CATS::Web qw(param);
 
 sub coalesce { defined && return $_ for @_ }
 
@@ -167,7 +167,7 @@ sub source_hash
 
 sub param_on
 {
-    return (CGI::param($_[0]) || '') eq 'on';
+    return (param($_[0]) || '') eq 'on';
 }
 
 

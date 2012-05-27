@@ -5,7 +5,7 @@ use strict;
 use warnings;
 use Encode;
 
-use CGI qw(param url_param);
+use CATS::Web qw(param url_param);
 use List::Util qw(max min sum);
 
 use CATS::Constants;

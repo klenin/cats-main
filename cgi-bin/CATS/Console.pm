@@ -3,13 +3,14 @@ package CATS::Console;
 use strict;
 use warnings;
 
-use CGI qw(:standard);;
+use CATS::Web qw(param url_param);
 use List::Util;
 
 use CATS::DB;
 use CATS::Misc qw(:all);
 use CATS::Data qw(:all);
 use CATS::Utils qw(coalesce url_function state_to_display);
+use Encode qw(decode_utf8);
 
 sub send_question_to_jury
 {
@@ -385,9 +386,9 @@ sub console
                 $contest->{time_since_defreeze} <= 0 && !$is_jury &&
                 (!$is_team || !$team_id || $team_id != $uid)),
             failed_test_index =>    $failed_test,
-            question_text =>        $question,
-            answer_text =>          $answer,
-            message_text =>         $jury_message,
+            question_text =>        decode_utf8($question),
+            answer_text =>          decode_utf8($answer),
+            message_text =>         decode_utf8($jury_message),
             team_name =>            $team_name,
             CATS::IP::linkify_ip(CATS::IP::filter_ip($last_ip)),
             is_jury =>              $is_jury,

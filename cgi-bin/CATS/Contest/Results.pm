@@ -3,12 +3,12 @@ package CATS::Contest;
 use strict;
 use warnings;
 
-use CGI qw(param url_param);
 use utf8;
 use Encode ();
 use YAML::Syck ();
 
 use lib '..';
+use CATS::Web qw(param url_param);
 use CATS::DB;
 use CATS::Misc qw(:all);
 use CATS::RankTable;
