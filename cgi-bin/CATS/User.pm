@@ -66,12 +66,10 @@ sub generate_login
 {
     my $login_num;
 
-    if ($CATS::Connect::db_dsn =~ /Firebird/)
-    {
+    if ($CATS::Connect::db_dsn =~ /Firebird/) {
         $login_num = $dbh->selectrow_array('SELECT GEN_ID(login_seq, 1) FROM RDB$DATABASE');
     }
-    elsif ($cats_db::db_dsn =~ /Oracle/)
-    {
+    elsif ($cats_db::db_dsn =~ /Oracle/) {
         $login_num = $dbh->selectrow_array(qq~SELECT login_seq.nextval FROM DUAL~);
     }
     $login_num or die;
@@ -80,11 +78,11 @@ sub generate_login
 }
 
 
-sub new_frame 
+sub new_frame
 {
     my $t = init_template('users_new.html.tt');
     $t->param(login => generate_login);
-    $t->param(countries => \@cats::countries, href_action => url_f('users'));    
+    $t->param(countries => \@cats::countries, href_action => url_f('users'));
 }
 
 
@@ -129,8 +127,7 @@ sub validate_params
     length $self->{icq_number} <= 100
         or return msg(47);
 
-    if ($p{validate_password})
-    {
+    if ($p{validate_password}) {
         $self->{password1} ne '' && length $self->{password1} <= 100
             or return msg(102);
 
@@ -138,17 +135,16 @@ sub validate_params
             or return msg(33);
         msg(85);
     }
-    
+
     my $old_login = '';
-    if ($p{id} && !$p{allow_official_rename})
-    {
+    if ($p{id} && !$p{allow_official_rename}) {
         ($old_login, my $old_team_name) = $dbh->selectrow_array(qq~
             SELECT login, team_name FROM accounts WHERE id = ?~, undef,
             $p{id});
         if (($old_team_name ne $self->{team_name}) &&
             (my ($official_contest) = any_official_contest_by_team($p{id})))
         {
-            # Если команда участвовала в официальных соревнованиях, запретить изменять её название
+            # If the team participated in the official contest, forbid it to rename itself.
             return msg(86, $official_contest);
         }
     }
@@ -162,8 +158,8 @@ sub validate_login
     my ($self, $id) = @_;
     my $dups = $dbh->selectcol_arrayref(qq~
         SELECT id FROM accounts WHERE login = ?~, {}, $self->{login}) or return 1;
-    # Если таких же логинов несколько, либо такой ровно один, но с другим id => ошибка
-    return 
+    # Several logins, or a single login with different id => error.
+    return
         @$dups > 1 || @$dups == 1 && (!$id || $id != $dups->[0]) ? msg(103) : 1;
 }
 
