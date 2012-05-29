@@ -71,7 +71,7 @@ sub sql_connect
             ib_timestampformat => '%d.%m.%Y %H:%M',
             ib_dateformat => '%d.%m.%Y',
             ib_timeformat => '%H:%M:%S',
-            ib_enable_utf8 => 1
+            ib_enable_utf8 => 1,
         }
     );
 

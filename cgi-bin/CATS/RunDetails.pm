@@ -218,7 +218,7 @@ sub get_sources_info
     my $src = $p{get_source} ? ' S.src, DE.syntax,' : '';
     my $req_id_list = join ', ', @req_ids;
     my $pc_sql = $p{partial_checker} ? CATS::RankTable::partial_checker_sql() . ',' : '';
-    # Blobs in next querry can be in arbitary encoding, we need to decode them explicitly
+    # Source code can have arbitary encoding, we need to decode them explicitly.
     $dbh->{ib_enable_utf8} = 0;
     my $result = $dbh->selectall_arrayref(qq~
         SELECT
@@ -244,8 +244,7 @@ sub get_sources_info
             INNER JOIN contest_problems CP ON CP.contest_id = C.id AND CP.problem_id = P.id
             INNER JOIN contest_accounts CA ON CA.contest_id = C.id AND CA.account_id = A.id
         WHERE req_id IN ($req_id_list)~, { Slice => {} });
-    # Resume "normal" operation
-    $dbh->{ib_enable_utf8} = 1;
+    $dbh->{ib_enable_utf8} = 1; # Resume "normal" operation.
 
     my $official = $p{get_source} && !$is_jury && CATS::Contest::current_official;
     for my $r (@$result) {
