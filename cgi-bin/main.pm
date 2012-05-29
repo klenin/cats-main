@@ -2345,12 +2345,12 @@ sub import_sources_frame
 sub download_import_source_frame
 {
     my $psid = param('psid') or return;
+    local $dbh->{ib_enable_utf8} = 0;
     my ($fname, $src) = $dbh->selectrow_array(qq~
         SELECT fname, src FROM problem_sources WHERE id = ? AND guid IS NOT NULL~, undef, $psid) or return;
     binmode(STDOUT, ':raw');
-    headers(
-        'Content-Type' => 'text/plain',
-        'Content-Disposition' => "inline;filename=$fname");
+    CATS::Web::content_type('text/plain');
+    CATS::Web::headers('Content-Disposition' => "inline;filename=$fname");
     print STDOUT $src;
 }
 
