@@ -282,7 +282,7 @@ sub tag_handlers()
     SampleIn => { s => \&start_tag_SampleIn, e => \&end_stml, in => ['Sample'] },
     SampleOut => { s => \&start_tag_SampleOut, e => \&end_stml, in => ['Sample'] },
     Keyword => { s => \&start_tag_Keyword, r => ['code'] },
-    Testset => { s=> \&start_tag_Testset, r => ['name', 'tests'] },
+    Testset => { s => \&start_tag_Testset, r => ['name', 'tests'] },
 }}
 
 

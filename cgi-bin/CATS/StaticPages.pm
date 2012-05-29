@@ -3,7 +3,7 @@ package CATS::StaticPages;
 use strict;
 use warnings;
 
-use CGI qw(url_param);
+use CATS::Web qw(url_param restore_parameters);
 use CATS::DB;
 
 sub allowed_pages
@@ -27,9 +27,7 @@ sub process_static
     %params or die;
     my $output_file = path() . name($f, %params) . '.html';
     $params{f} = $f;
-    # Чтобы работал url_param, надо заменить QUERY_STRING
-    $ENV{QUERY_STRING} = join ';', map "$_=$params{$_}", keys %params;
-    CGI::restore_parameters(\%params);
+    restore_parameters(\%params);
     return $output_file;
 }
 

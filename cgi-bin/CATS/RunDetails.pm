@@ -4,10 +4,10 @@ use strict;
 use warnings;
 
 use Algorithm::Diff;
-use CGI qw(param span url_param);
+use CATS::Web qw(param url_param headers upload_source content_type);
 use CATS::DB;
 use CATS::Utils qw(escape_html state_to_display url_function);
-use CATS::Misc qw($is_jury $sid $t $uid init_template msg upload_source url_f);
+use CATS::Misc qw($is_jury $sid $t $uid init_template msg html_element url_f);
 use CATS::Data qw(is_jury_in_contest enforce_request_state);
 use CATS::IP;
 use CATS::DevEnv;
@@ -193,7 +193,7 @@ sub get_nearby_attempt
     my @p;
     if ($f eq 'diff_runs') {
         for (1..2) {
-            my $r = CGI::url_param("r$_") || 0;
+            my $r = url_param("r$_") || 0;
             push @p, "r$_" => ($r == $si->{req_id} ? $na->{id} : $r);
         }
     }
@@ -218,6 +218,8 @@ sub get_sources_info
     my $src = $p{get_source} ? ' S.src, DE.syntax,' : '';
     my $req_id_list = join ', ', @req_ids;
     my $pc_sql = $p{partial_checker} ? CATS::RankTable::partial_checker_sql() . ',' : '';
+    # Blobs in next querry can be in arbitary encoding, we need to decode them explicitly
+    $dbh->{ib_enable_utf8} = 0;
     my $result = $dbh->selectall_arrayref(qq~
         SELECT
             S.req_id,$src S.fname AS file_name, S.de_id,
@@ -242,9 +244,14 @@ sub get_sources_info
             INNER JOIN contest_problems CP ON CP.contest_id = C.id AND CP.problem_id = P.id
             INNER JOIN contest_accounts CA ON CA.contest_id = C.id AND CA.account_id = A.id
         WHERE req_id IN ($req_id_list)~, { Slice => {} });
+    # Resume "normal" operation
+    $dbh->{ib_enable_utf8} = 1;
 
     my $official = $p{get_source} && !$is_jury && CATS::Contest::current_official;
     for my $r (@$result) {
+        for my $need_decode (qw(problem_name contest_name team_name)) {
+            $r->{$need_decode} = Encode::decode_utf8($r->{$need_decode});
+        }
         $r = {
             %$r, state_to_display($r->{state}),
             CATS::IP::linkify_ip(CATS::IP::filter_ip $r->{last_ip}),
@@ -314,6 +321,7 @@ sub prepare_source
     my $se = param('src_enc') || 'WINDOWS-1251';
     if (source_encodings()->{$se} && $sources_info->{file_name} !~ m/\.zip$/) {
         Encode::from_to($sources_info->{src}, $se, 'utf-8');
+        $sources_info->{src} = Encode::decode_utf8($sources_info->{src});
     }
     ($sources_info, $is_jury);
 }
@@ -377,9 +385,9 @@ sub download_source_frame
     $si->{file_name} =~ m/\.([^.]+)$/;
     my $ext = $1 || 'unknown';
     binmode(STDOUT, ':raw');
-    print STDOUT CGI::header(
-        -type => ($ext eq 'zip' ? 'application/zip' : 'text/plain'),
-        -content_disposition => "inline;filename=$si->{req_id}.$ext");
+    content_type($ext eq 'zip' ? 'application/zip' : 'text/plain');
+    headers(
+        'Content-Disposition' => "inline;filename=$si->{req_id}.$ext");
     print STDOUT $si->{src};
 }
 
@@ -475,8 +483,8 @@ sub diff_runs_frame
     my $SL = sub { $si->[$_[0]]->{lines}->[$_[1]] || '' };
 
     my $match = sub { push @diff, escape_html($SL->(0, $_[0])) . "\n"; };
-    my $only_a = sub { push @diff, span({class=>'diff_only_a'}, escape_html($SL->(0, $_[0])) . "\n"); };
-    my $only_b = sub { push @diff, span({class=>'diff_only_b'}, escape_html($SL->(1, $_[1])) . "\n"); };
+    my $only_a = sub { push @diff, html_element('span', {class=>'diff_only_a'}, escape_html($SL->(0, $_[0])) . "\n"); };
+    my $only_b = sub { push @diff, html_element('span', {class=>'diff_only_b'}, escape_html($SL->(1, $_[1])) . "\n"); };
 
     Algorithm::Diff::traverse_sequences(
         $si->[0]->{lines},

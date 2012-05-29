@@ -3,7 +3,7 @@ package CATS::Prizes;
 use strict;
 use warnings;
 
-use CGI qw(param url_param);
+use CATS::Web qw(param url_param);
 use CATS::DB;
 use CATS::Misc qw($t init_template msg url_f);
 

@@ -17,6 +17,7 @@ BEGIN
         init_listview_template
         generate_output
         http_header
+        html_element
         msg
         url_f
         templates_path
@@ -27,7 +28,6 @@ BEGIN
         attach_listview
         attach_menu
         save_settings
-        upload_source
     );
 
     @EXPORT_OK = qw(
@@ -40,7 +40,7 @@ BEGIN
 
 use CATS::Template;
 #use CGI::Fast( ':standard' );
-use CGI (':standard');
+use CATS::Web qw(param url_param headers content_type cookie);
 #use CGI::Util qw(rearrange unescape escape);
 use MIME::Base64;
 use Storable;
@@ -57,7 +57,6 @@ use CATS::IP;
 use CATS::Contest;
 use CATS::Utils qw();
 
-our $qq;
 
 use vars qw(
     $contest $t $sid $cid $uid $team_name $server_time $dbi_error
@@ -85,7 +84,24 @@ sub http_header
 {
     my ($type, $encoding, $cookie) = @_;
 
-    CGI::header(-type => $type, -cookie => $cookie, -charset => $encoding, %extra_headers);
+    content_type($type, $encoding);
+    headers(cookie => $cookie, %extra_headers);
+}
+
+
+sub html_element
+{
+    my ($element, $params, @content) = @_;
+    my $attributes = '';
+    while (my ($attr, $value) = each(%{$params})) {
+        $attributes .= qq( ${attr}="${value}");
+    }
+    my $result = "<${element}${attributes}";
+    if (@content) {
+        return $result . '>' . (join '', @content) . "</${element}>";
+    } else {
+        return $result . '/>';
+    }
 }
 
 
@@ -183,7 +199,7 @@ sub init_template
     }
     $http_mime_type or die 'Unknown template extension';
     %extra_headers = ();
-    %extra_headers = (-content_disposition => 'inline;filename=contests.ics') if $file_name =~ /\.ics$/;
+    %extra_headers = ('Content-Disposition' => 'inline;filename=contests.ics') if $file_name =~ /\.ics$/;
     #$template_file = $file_name;
     $t = CATS::Template->new($file_name, cats_dir());
 ;}
@@ -208,7 +224,7 @@ sub selected_menu_item
     $pf ||= '';
     #my $q = new CGI((split('\?', $href))[1]);
 
-    my $page = CGI::url_param('f');
+    my $page = url_param('f');
     #my $pf = $q->param('f') || '';
 
     (defined $page && $pf eq $page) ||
@@ -421,26 +437,26 @@ sub generate_output
             Time::HiRes::tv_interval($request_start_time, [ Time::HiRes::gettimeofday ]));
         $t->param(init_time => sprintf '%.3fs', $init_time || 0);
     }
-    my $cookie = $uid ? undef : CGI::cookie(
+    my $cookie = $uid ? undef : cookie(
         -name => 'settings', -value => encode_base64($enc_settings), -expires => '+1h');
     my $out = '';
     if (my $enc = param('enc'))
     {
         binmode(STDOUT, ':raw');
         $t->param(encoding => $enc);
-        print STDOUT http_header($http_mime_type, $enc, $cookie);
+        http_header($http_mime_type, $enc, $cookie);
         print STDOUT $out = Encode::encode($enc, $t->output, Encode::FB_XMLCREF);
     }
     else
     {
-        binmode(STDOUT, ':utf8');
+        binmode(STDOUT, ':raw');
         $t->param(encoding => 'UTF-8');
-        print STDOUT http_header($http_mime_type, 'utf-8', $cookie);
+        http_header($http_mime_type, 'utf-8', $cookie);
         print STDOUT $out = $t->output;
     }
     if ($output_file)
     {
-        open my $f, '>:utf8', $output_file
+        open my $f, '>:raw', $output_file
             or die "Error opening $output_file: $!";
         print $f $out;
     }
@@ -507,7 +523,7 @@ sub init_user
     }
     if (!$uid)
     {
-        $enc_settings = CGI::cookie('settings') || '';
+        $enc_settings = cookie('settings') || '';
         $enc_settings = decode_base64($enc_settings) if $enc_settings;
     }
     # При возникновении любых проблем сбрасываем настройки
@@ -594,25 +610,6 @@ sub initialize
     $listview_name = '';
     $listview_array_name = '';
     $col_defs = undef;
-}
-
-
-sub upload_source
-{
-    my $src = '';
-    if ($qq) {
-        $qq->upload($_[0])->slurp($src);
-    }
-    else {
-        my $file = param($_[0]);
-        use bytes;
-        while (read($file, my $buffer, 4096))
-        {
-            length $src < 32767 or return;
-            $src .= $buffer;
-        }
-    }
-    $src;
 }
 
 
