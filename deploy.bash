@@ -2,6 +2,7 @@
 # user, that executes this script must be in sudo group
 
 CATS_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )" # assume, that script is in a root dir of repo 
+DBD_FIREBIRD_VERSION=1.00
 
 # PROXY USERS, PLEASE READ THIS
 # If your network is behind proxy please uncomment and set following variables
@@ -26,7 +27,7 @@ cpan_packages=(DBI Algorithm::Diff Text::Aspell SQL::Abstract Archive::Zip
 sudo apt-get -y install ${packages[@]}
 
 formal_input='https://github.com/downloads/klenin/cats-main/FormalInput.tgz'
-DBD_firebird='http://search.cpan.org/CPAN/authors/id/M/MA/MARIUZ/DBD-Firebird-0.60.tar.gz'
+DBD_firebird="http://search.cpan.org/CPAN/authors/id/M/MA/MARIUZ/DBD-Firebird-$DBD_FIREBIRD_VERSION.tar.gz"
 
 sudo -H sh -c 'wget -O - http://cpanmin.us | perl - --sudo App::cpanminus' # unsafe, but asks password once
 cpanm -S ${cpan_packages[@]}
@@ -45,14 +46,14 @@ rm fi.tgz
 rm -rf FormalInput
 
 wget $DBD_firebird
-tar -zxvf DBD-Firebird-0.60.tar.gz
-pushd DBD-Firebird-0.60/
+tar -zxvf DBD-Firebird-$DBD_FIREBIRD_VERSION.tar.gz
+pushd DBD-Firebird-$DBD_FIREBIRD_VERSION/
 perl Makefile.PL
 make
 sudo make install
 popd
-rm DBD-Firebird-0.60.tar.gz
-rm -rf DBD-Firebird-0.60
+rm DBD-Firebird-$DBD_FIREBIRD_VERSION.tar.gz
+rm -rf DBD-Firebird-$DBD_FIREBIRD_VERSION
 
 APACHE_CONFIG=$(cat <<EOF
 PerlSetEnv CATS_DIR ${CATS_ROOT}/cgi-bin/
