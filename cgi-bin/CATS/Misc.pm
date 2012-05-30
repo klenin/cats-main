@@ -142,14 +142,13 @@ sub init_listview_params
 {
     $_ && ref $_ eq 'HASH' or $_ = {} for $settings->{$listview_name};
     my $s = $settings->{$listview_name};
-    $s->{search} = decode_utf8($s->{search} || '');
+    $s->{search} ||= '';
 
     $s->{page} = url_param('page') if defined url_param('page');
 
-    my $search = param('search');
+    my $search = decode_utf8(param('search'));
     if (defined $search)
     {
-        $search = Encode::decode_utf8($search);
         if ($s->{search} ne $search)
         {
             $s->{search} = $search;
@@ -363,7 +362,7 @@ sub attach_listview
         current_page => $_ == $$page
     }} ($range_start..$range_end);
 
-    $t->param(page => $$page, pages => \@pages, search => Encode::encode_utf8($s->{search}));
+    $t->param(page => $$page, pages => \@pages, search => $s->{search});
 
     my @display_rows = ();
 
@@ -585,7 +584,7 @@ sub save_settings
     if ($listview_name)
     {
         my $s = $settings->{$listview_name} ||= {};
-        $s->{search} = Encode::encode_utf8($s->{search}) || undef;
+        $s->{search} ||= undef;
         defined $s->{$_} or delete $s->{$_} for keys %$s;
     }
     my $new_enc_settings = Storable::freeze($settings);
