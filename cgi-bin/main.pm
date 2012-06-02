@@ -1612,6 +1612,15 @@ sub settings_save
 }
 
 
+sub apply_rec
+{
+    my ($val, $sub) = @_;
+    ref $val eq 'HASH' ?
+        { map { $_ => apply_rec($val->{$_}, $sub) } keys %$val } :
+        $sub->($val);
+}
+
+
 sub settings_frame
 {
     init_template('settings.html.tt');
@@ -1623,12 +1632,13 @@ sub settings_frame
     $t->param(
         countries => \@cats::countries, href_action => url_f('users'),
         title_suffix => res_str(518), %$u);
-    if ($is_root)
-    {
-        my $d = Data::Dumper->new([ $settings ]);
+    if ($is_root) {
+        # Data::Dumper escapes UTF-8 characters into \x{...} sequences.
+        # Work around by dumping encoded strings, then decoding the result.
+        my $d = Data::Dumper->new([ apply_rec($settings, \&encode_utf8) ]);
         $d->Quotekeys(0);
         $d->Sortkeys(1);
-        $t->param(settings => $d->Dump);
+        $t->param(settings => decode_utf8($d->Dump));
     }
 }
 
