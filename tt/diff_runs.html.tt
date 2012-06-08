@@ -32,7 +32,13 @@ function show_ab(a, b)
 <tr>
 <td width="1" align="right"><pre>[% FOREACH diff_lines %][% loop.count %]
 [% END %]</pre></td>
-<td style="vertical-align: top"><pre>[% FOREACH diff_lines %][% line %][% END %]</pre></td></tr>
+<td style="vertical-align: top"><pre>
+[%- FOREACH dl IN diff_lines -%]
+  [%- IF dl.class %]<span class="[% dl.class %]">[% END -%]
+  [%- dl.line | html -%]
+  [%- '</span>' IF dl.class %]
+[% END -%]
+</pre></td></tr>
 </table>
 </code>
 

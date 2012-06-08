@@ -6,8 +6,8 @@ use warnings;
 use Algorithm::Diff;
 use CATS::Web qw(param url_param headers upload_source content_type);
 use CATS::DB;
-use CATS::Utils qw(escape_html state_to_display url_function);
-use CATS::Misc qw($is_jury $sid $t $uid init_template msg html_element url_f);
+use CATS::Utils qw(state_to_display url_function);
+use CATS::Misc qw($is_jury $sid $t $uid init_template msg url_f);
 use CATS::Data qw(is_jury_in_contest enforce_request_state);
 use CATS::IP;
 use CATS::DevEnv;
@@ -481,9 +481,9 @@ sub diff_runs_frame
 
     my $SL = sub { $si->[$_[0]]->{lines}->[$_[1]] || '' };
 
-    my $match = sub { push @diff, escape_html($SL->(0, $_[0])) . "\n"; };
-    my $only_a = sub { push @diff, html_element('span', {class=>'diff_only_a'}, escape_html($SL->(0, $_[0])) . "\n"); };
-    my $only_b = sub { push @diff, html_element('span', {class=>'diff_only_b'}, escape_html($SL->(1, $_[1])) . "\n"); };
+    my $match = sub { push @diff, { line => $SL->(0, $_[0]) }; };
+    my $only_a = sub { push @diff, { class => 'diff_only_a', line => $SL->(0, $_[0]) }; };
+    my $only_b = sub { push @diff, { class => 'diff_only_b', line => $SL->(1, $_[1]) }; };
 
     Algorithm::Diff::traverse_sequences(
         $si->[0]->{lines},
@@ -497,7 +497,7 @@ sub diff_runs_frame
 
     $t->param(
         sources_info => $si,
-        diff_lines => [ map {line => $_}, @diff ]
+        diff_lines => \@diff,
     );
 }
 

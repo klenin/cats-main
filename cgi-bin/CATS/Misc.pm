@@ -17,7 +17,6 @@ BEGIN
         init_listview_template
         generate_output
         http_header
-        html_element
         msg
         url_f
         templates_path
@@ -86,22 +85,6 @@ sub http_header
 
     content_type($type, $encoding);
     headers(cookie => $cookie, %extra_headers);
-}
-
-
-sub html_element
-{
-    my ($element, $params, @content) = @_;
-    my $attributes = '';
-    while (my ($attr, $value) = each(%{$params})) {
-        $attributes .= qq( ${attr}="${value}");
-    }
-    my $result = "<${element}${attributes}";
-    if (@content) {
-        return $result . '>' . (join '', @content) . "</${element}>";
-    } else {
-        return $result . '/>';
-    }
 }
 
 
