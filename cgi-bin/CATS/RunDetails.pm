@@ -248,9 +248,7 @@ sub get_sources_info
 
     my $official = $p{get_source} && !$is_jury && CATS::Contest::current_official;
     for my $r (@$result) {
-        for my $need_decode (qw(problem_name contest_name team_name)) {
-            $r->{$need_decode} = Encode::decode_utf8($r->{$need_decode});
-        }
+        $_ = Encode::decode_utf8($_) for @$r{grep /_name$/, keys %$r};
         $r = {
             %$r, state_to_display($r->{state}),
             CATS::IP::linkify_ip(CATS::IP::filter_ip $r->{last_ip}),
