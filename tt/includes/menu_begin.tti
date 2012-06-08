@@ -7,6 +7,7 @@
   <meta http-equiv="Refresh" CONTENT="[% refresh %]">
 [%~ END %]
 <link rel="stylesheet" type="text/css" href="./docs/std/main.css">
+<!--[if IE]><link rel="stylesheet" type="text/css" href="docs/std/ie.css"><![endif]-->
 </head>
 <body>
 <table class="iface">

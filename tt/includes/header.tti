@@ -5,6 +5,8 @@
 <title>[% IF contest_title %][% contest_title | html %][% ELSE %]CATS[% END %][% IF title_suffix %] - [% title_suffix %][% END %]</title>
 [% IF printable -%]
 <style type="text/css">[% INSERT 'docs/std/main.css' %]</style>
+<!--[if IE]><style type="text/css">[% INSERT 'docs/std/ie.css' %]</style><![endif]-->
 [%- ELSE -%]
 <link rel="stylesheet" type="text/css" href="docs/std/main.css">
+<!--[if IE]><link rel="stylesheet" type="text/css" href="docs/std/ie.css"><![endif]-->
 [%- END %]

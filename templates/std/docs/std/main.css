@@ -1,9 +1,5 @@
-body { 
-    scrollbar-face-color: #ffffff; 
-    scrollbar-highlight-color: #ffffff; 
-    scrollbar-arrow-color: #ffcc55; 
-    scrollbar-base-color: #ffcc55; 
-    background-color: #ffffff;  
+body {
+    background-color: #ffffff;
     color: #000000;
     font-family: Arial;
     font-size: 14px;
