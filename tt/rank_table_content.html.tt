@@ -1,50 +1,47 @@
-[% IF message %]<i>[% message | html %]</i><br/>[% END %]
-[% IF not_started %]<i>Соревнования ещё не начались</i>
-[% ELSE %]
-[% UNLESS printable %] 
+[% IF message.defined %]<i>[% message | html %]</i><br/>[% END %]
+
+[%- IF not_started -%]
+  <i>Соревнования ещё не начались</i>
+  [%- STOP -%]
+[%- END -%]
+
+[%- UNLESS printable %]
 <table width="100%">
 <tr>
 <td align=left>
   [% IF hide_ooc %]<a href="[% href_hide_ooc %]" target=_top>спрятать внеконкурсные</a>
-  [% ELSE %]<a href="[% href_show_ooc %]" target=_top>показать внеконкурсные</a>[% END %] | 
+  [% ELSE %]<a href="[% href_show_ooc %]" target=_top>показать внеконкурсные</a>[% END %] |
   [% IF hide_virtual %]<a href="[% href_hide_virtual %]" target=_top>спрятать виртуальные</a>
   [% ELSE %]<a href="[% href_show_virtual %]" target=_top>показать виртуальные</a>[% END %]
 </td>
 <td align=right>
 правила:
 [% IF show_points %]<a href="./docs/rules_school.html">школьные</a>
-[% ELSE %]<a href="./docs/rules_acm.html">ACM</a>[% END %]
+[% ELSE %]<a href="./docs/rules_acm.html">ACM</a>
+[% END %]
 состояние: [% IF frozen %]<font color=#0000a0>заморожена</font>[% ELSE %]<font color=#00a040>актуальное</font>[% END %]
 [% IF cache_since %]кеш: [% cache_since %][% END %]
 </td>
 </tr>
 </table>
-[% END %]
+[% END -%]
 
 <table width="100%" cellspacing="1" class="bordered rank_table">
-[% IF many_contests %]
-<tr bgcolor="#ccccff">
-<th colspan="2"></th>
-[% FOREACH contests %]<th colspan="[% count %]">[% start_date %]</th>[% END %]
-<th colspan="4"></th>
-[% END %]
+[%- IF many_contests %]
+  <tr bgcolor="#ccccff">
+  <th colspan="2"></th>
+  [% FOREACH c IN contests %]<th colspan="[% c.count %]">[% c.start_date %]</th>[% END %]
+  <th colspan="4"></th>
+[% END -%]
 <tr bgcolor="#ccccff">
 <th width="1%"></th>
-[% IF 0 %]<th width=1%>Страна[% END %]
+[%- IF 0 %]<th width=1%>Страна[% END -%]
 <th>Название команды</th>
-[% IF show_points %]
-[% FOREACH problems %]
-<th width="[% column_width %]%">
-  <a href="[% problem_text %]" alt="[% title | html %]" title="[% title | html %]">[% code %]</a>
-  ([% max_points %])
+[% FOREACH p IN problems %]
+<th width="[% problem_column_width %]%">
+  <a href="[% p.problem_text %]" alt="[% p.title | html%]" title="[% p.title | html %]">[% p.code %]</a>
+  [%- " ($p.max_points)" IF show_points -%]
 </th>
-[% END %]
-[% ELSE %]
-[% FOREACH problems %]
-<th width="[% column_width %]%">
-  <a href="[% problem_text %]" alt="[% title %]" title="[% title | html %]">[% code %]</a>
-</th>
-[% END %]
 [% END %]
 <th width="[% problem_column_width %]%">[% IF show_points %]всего ([% max_total_points %])[% ELSE %]=[% END %]</th>
 [% UNLESS show_points %]<th>время</th>[% END %]
@@ -52,39 +49,44 @@
 <th>статус</th>
 
 [% IF printable %]
-[% FOREACH rank %]
-<tr align="center"[% UNLESS row_color %] bgcolor="#f4f4f4"[% END %]>
-<td align="right">[% contestant_number %]&nbsp;</td>[% IF 0 %]<td nowrap align=center bgcolor=#ffffff>
-[% IF flag %]
-    <img src="[% flag %]" alt="[% country | html %][% IF motto %] - [% motto | html %][% END %]">
+[% FOREACH r IN rank %]
+<tr align="center"[% UNLESS r.row_color %] bgcolor="#f4f4f4"[% END %]>
+<td align="right">[% r.contestant_number %]&nbsp;</td>
+[%- IF 0 %]
+<td nowrap align=center bgcolor=#ffffff>
+[% IF r.flag %]
+    <img src="[% r.flag %]" alt="[% r.country | html %][% IF r.motto %] - [% r.motto | html %][% END %]">
 [% ELSE %]
-    [% country | html %][% IF motto %] - [% motto | html %][% END %]
-[% END %][% END %]<td align="left">[% IF 0 %]<a href="[% href_console %]" title="[% city %]"></a>[% END %]
-[% team_name | html %]</td>
+    [% r.country | html %][% IF r.motto %] - [% r.motto | html %][% END %]
+[% END %]
+[% END -%]
+<td align="left">
+  [%- IF 0 %]<a href="[% href_console %]" title="[% r.city %]"></a>[% END -%]
+  [%- r.team_name | html -%]
+</td>
 [% IF show_points ~%]
-  [% FOREACH columns %]<td>[% points %]</td>[% END -%]
+  [% FOREACH c IN r.columns %]<td>[% c.points %]</td>[% END -%]
 [% ELSE ~%]
-  [% FOREACH columns ~%]
-    <td><p>[% time | html %]</p>[% td | html %]</td>
+  [% FOREACH c IN r.columns ~%]
+    <td><p>[% c.time | html %]</p>[% c.td | html %]</td>
   [% END -%]
 [% END -%]
-<td>[% IF show_points %][% total_points ~%]
-  [% ELSE %][% total_solved %]<td>[% total_time %][% END -%]
-</td><td>[% place %]</td><td class="ts">[% IF is_ooc ~%]
-  ooc[% END %][% IF is_remote %] remote[% END %][% IF is_virtual %] virtual[% END %]
-[% prize %]</td></tr>
+<td>[% IF show_points %][% r.total_points ~%]
+  [% ELSE %][% r.total_solved %]<td>[% r.total_time %][% END -%]
+</td><td>[% r.place %]</td><td class="ts">[% IF r.is_ooc ~%]
+  ooc[% END %][% IF r.is_remote %] remote[% END %][% IF r.is_virtual %] virtual[% END %] [% r.prize %]</td></tr>
 [% END %]
 [% ELSE %]
 [% IF rank %]<script type="text/javascript"><!--
 var rank_table = [
-[% FOREACH rank %]
-  { id: [% account_id %], n: "[% team_name | html %]",[% IF show_points %]
-    pt: [[% FOREACH columns %]'[% points %]'[% UNLESS loop.last %],[% END %][% END %]], tp: [% total_points %][% ELSE %]
-    tm: [[% FOREACH columns %]'[% time %]'[% UNLESS loop.last %],[% END %][% END %]],
-    td: [[% FOREACH columns %]'[% td %]'[% UNLESS loop.last %],[% END %][% END %]],
-    ts: [% total_solved %], ttm: [% total_time %][% END %], rc: [% row_color %],
-    pl: [% place %], st: '[% IF is_ooc %]ooc[% END %][% IF is_remote %] remote[% END %][% IF is_virtual %] virtual[% END %] [% prize %]',
-    t: "[% city | html %]"
+[% FOREACH r IN rank %]
+  { id: [% r.account_id %], n: "[% r.team_name | html %]",[% IF show_points %]
+    pt: [[% FOREACH c IN r.columns %]'[% c.points %]'[% UNLESS loop.last %],[% END %][% END %]], tp: [% r.total_points %][% ELSE %]
+    tm: [[% FOREACH c IN r.columns %]'[% c.time %]'[% UNLESS loop.last %],[% END %][% END %]],
+    td: [[% FOREACH c IN r.columns %]'[% c.td %]'[% UNLESS loop.last %],[% END %][% END %]],
+    ts: [% r.total_solved %], ttm: [% r.total_time %][% END %], rc: [% r.row_color %],
+    pl: [% r.place %], st: '[% IF r.is_ooc %]ooc[% END %][% IF r.is_remote %] remote[% END %][% IF r.is_virtual %] virtual[% END %] [% r.prize %]',
+    t: "[% r.city | html %]"
   }[% UNLESS loop.last %],[% END %][% END %]
 ];
 
@@ -109,15 +111,14 @@ for(var i = 0; i < rank_table.length; ++i) {
 <tr [% UNLESS problem_stats_color %]bgcolor="#f4f4f4"[% END %]>
   <td>&nbsp;</td>
   [% IF show_points %]
-  <td>Средний балл</td>[% FOREACH problem_stats %]<td align="center">[% average_points %]</td>[% END %]
+  <td>Средний балл</td>[% FOREACH ps IN problem_stats %]<td align="center">[% ps.average_points %]</td>[% END %]
   <td colspan="3">&nbsp;</td>
   [% ELSE %]
   <td>Успешных попыток</td>
-  [% FOREACH problem_stats %]
-    <td align="center"><p>[% total_accepted %] / [% total_runs %]</p>[% percent_accepted %]%</td>
+  [% FOREACH ps IN problem_stats %]
+    <td align="center"><p>[% ps.total_accepted %] / [% ps.total_runs %]</p>[% ps.percent_accepted %]%</td>
   [% END %]
   <td colspan="4">&nbsp;</td>
   [% END %]
 </tr>
 </table>
-[% END %]
