@@ -314,8 +314,9 @@ sub start_tag_Problem
     }
 
     my $ot = $self->{old_title};
-    $self->error("Problem was renamed unexpectedly, old title: $ot")
-        if $ot && $self->{problem}->{title} ne $ot;
+    $self->error(sprintf
+        "Unexpected problem rename from: $ot to: $self->{problem}->{title}",
+    ) if $ot && $self->{problem}->{title} ne $ot;
 }
 
 
