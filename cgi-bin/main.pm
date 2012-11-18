@@ -1818,27 +1818,27 @@ sub users_frame
     my @cols;
     if ($is_jury)
     {
-        @cols = ( { caption => res_str(616), order_by => '4', width => '15%' } );
+        @cols = ( { caption => res_str(616), order_by => 'login', width => '25%' } );
     }
 
     push @cols,
-        { caption => res_str(608), order_by => '5', width => '20%' },
-        { caption => res_str(629), order_by => '12', width => '5%' };
+        { caption => res_str(608), order_by => 'team_name', width => '40%' },
+        { caption => res_str(629), order_by => 'tag', width => '5%' };
 
     if ($is_jury)
     {
         push @cols,
             (
-              { caption => res_str(611), order_by => '6', width => '10%' },
-              { caption => res_str(612), order_by => '7', width => '10%' },
-              { caption => res_str(613), order_by => '8', width => '10%' },
-              { caption => res_str(614), order_by => '9', width => '10%' } );
+              { caption => res_str(611), order_by => 'is_jury', width => '5%' },
+              { caption => res_str(612), order_by => 'is_ooc', width => '5%' },
+              { caption => res_str(613), order_by => 'is_remote', width => '5%' },
+              { caption => res_str(614), order_by => 'is_hidden', width => '5%' } );
     }
 
     push @cols, (
-        { caption => res_str(607), order_by => '3', width => '10%' },
-        { caption => res_str(609), order_by => '13', width => '10%' },
-        { caption => res_str(632), order_by => '10', width => '10%' } );
+        { caption => res_str(607), order_by => 'country', width => '5%' },
+        { caption => res_str(609), order_by => 'rating', width => '5%' },
+        { caption => res_str(632), order_by => 'is_virtual', width => '5%' } );
 
     define_columns(url_f('users'), $is_jury ? 3 : 2, 1, \@cols);
 
@@ -1848,7 +1848,7 @@ sub users_frame
         'A.id, CA.id, A.country, A.login, A.team_name, A.city, ' .
         'CA.is_jury, CA.is_ooc, CA.is_remote, CA.is_hidden, CA.is_virtual, A.motto, CA.tag';
     my $sql = sprintf qq~
-        SELECT $fields, COUNT(DISTINCT R.problem_id)
+        SELECT $fields, COUNT(DISTINCT R.problem_id) as rating
         FROM accounts A
             INNER JOIN contest_accounts CA ON CA.account_id = A.id
             INNER JOIN contests C ON CA.contest_id = C.id
