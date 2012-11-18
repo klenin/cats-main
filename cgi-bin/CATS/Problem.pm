@@ -58,7 +58,7 @@ sub clear
 sub encoded_import_log
 {
     my CATS::Problem $self = shift;
-    return Encode::encode_utf8(escape_html($self->{import_log}));
+    return escape_html($self->{import_log});
 }
 
 
