@@ -266,7 +266,7 @@ sub get_contests_info
     {
         ++$contest_count;
         $self->{frozen} ||= $since_freeze > 0 && $since_defreeze < 0;
-        $self->{not_started} ||= $since_start < 0 && !$registered;
+        $self->{not_started} ||= $since_start < 0 && !$is_jury;
         $self->{has_practice} ||= ($ctype || 0);
         $self->{show_points} ||= $rules;
         $self->{show_all_results} &&= $show_all_results;
