@@ -205,7 +205,7 @@ sub get_nearby_attempt
 }
 
 
-# Load informatin about one or several runs..
+# Load information about one or several runs.
 # Parameters: request_id, may be either scalar or array ref.
 sub get_sources_info
 {
@@ -218,7 +218,7 @@ sub get_sources_info
     my $src = $p{get_source} ? ' S.src, DE.syntax,' : '';
     my $req_id_list = join ', ', @req_ids;
     my $pc_sql = $p{partial_checker} ? CATS::RankTable::partial_checker_sql() . ',' : '';
-    # Source code can have arbitary encoding, we need to decode them explicitly.
+    # Source code can be in arbitary or broken encoding, we need to decode it explicitly.
     $dbh->{ib_enable_utf8} = 0;
     my $result = $dbh->selectall_arrayref(qq~
         SELECT

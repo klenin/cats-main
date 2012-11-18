@@ -276,10 +276,9 @@ sub contests_edit_save
     );
     $dbh->commit;
     CATS::StaticPages::invalidate_problem_text(cid => $edit_cid, all => 1);
-    # если переименовали текущий турнир, сразу изменить заголовок окна
-    if ($edit_cid == $cid)
-    {
-        $contest->{title} = $p->{contest_name};
+    # Change page title immediately if the current contest is renamed.
+    if ($edit_cid == $cid) {
+        $contest->{title} = Encode::decode_utf8($p->{contest_name});
     }
 }
 

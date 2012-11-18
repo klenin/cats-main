@@ -3,13 +3,14 @@ package CATS::Template;
 use strict;
 use warnings;
 use Template;
+
 my $tt;
 
 sub new
 {
     my ($class, $file_name, $cats_dir) = @_;
     my $templates_path = "${cats_dir}../tt";
-    
+
     $tt ||= Template->new({
         INCLUDE_PATH => $templates_path,
         COMPILE_EXT => '.ttc',
@@ -17,11 +18,11 @@ sub new
         ENCODING => 'utf8',
         PLUGINS => {
             Javascript => 'CATS::Template::Plugin::Javascript'
-        }
-    }) || die "$Template::ERROR\n";
+        },
+    }) || die $Template::ERROR;
 
     my $self = { vars => {}, file_name => $file_name };
-    bless ($self, $class);
+    bless $self, $class;
 
     return $self;
 }
@@ -47,9 +48,7 @@ sub param
 sub output
 {
     my $self = shift;
-    my $res;
-
-    $tt->process($self->{file_name}, $self->{vars}, \$res)
+    $tt->process($self->{file_name}, $self->{vars}, \my $res)
         or die $tt->error();
     $res;
 }

@@ -125,7 +125,7 @@ sub state_to_display
     my %error = (
         wrong_answer =>          $state == $cats::st_wrong_answer,
         presentation_error =>    $state == $cats::st_presentation_error,
-        time_limit_exceeded =>   $state == $cats::st_time_limit_exceeded,                                
+        time_limit_exceeded =>   $state == $cats::st_time_limit_exceeded,
         memory_limit_exceeded => $state == $cats::st_memory_limit_exceeded,
         runtime_error =>         $state == $cats::st_runtime_error,
         compilation_error =>     $state == $cats::st_compilation_error,
