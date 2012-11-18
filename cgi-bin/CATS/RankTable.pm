@@ -182,7 +182,7 @@ sub get_results
 sub get_partial_points
 {
     my ($req_row, $test_max_points) = @_;
-    my $p = $req_row->{checker_comment} =~ /^(\d+)/ ? min($1, $test_max_points || $1) : 0;
+    my $p = ($req_row->{checker_comment} // '') =~ /^(\d+)/ ? min($1, $test_max_points || $1) : 0;
 }
 
 
