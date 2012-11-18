@@ -1392,7 +1392,9 @@ sub problems_frame
         push @submenu,
             { href_item => url_f('problems', link => 1), item_name => res_str(540) },
             { href_item => url_f('problems', link => 1, move => 1), item_name => res_str(551) },
-            { href_item => url_f('problems_retest'), item_name => res_str(556) };
+            { href_item => url_f('problems_retest'), item_name => res_str(556) },
+            { href_item => url_f('contests', params => $cid), item_name => res_str(546) },
+            ;
     }
     else
     {
