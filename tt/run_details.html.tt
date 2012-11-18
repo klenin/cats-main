@@ -89,7 +89,7 @@
     [% IF rd.show_checker_comment %]<td><pre>[% rd.checker_comment %]</pre></td>[% END %]
   </tr>
   [% END %]
-  [% IF rd.show_points %]<tr><td colspan="2">Всего</td><td>[% rd.total_points %]</td></tr>[% END %]
+  [% IF show_points %]<tr><td colspan="2">Всего</td><td>[% total_points %]</td></tr>[% END %]
   </table>
 [% END %]
 </td>
