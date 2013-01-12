@@ -351,7 +351,7 @@ sub contests_select_current
         fields => '1, is_virtual, is_jury', contest_id => $cid
     );
     return if $is_jury;
-    
+
     $t->param(selected_contest_title => $contest->{title});
 
     if ($contest->{time_since_finish} > 0)
@@ -1326,8 +1326,10 @@ sub problems_frame
         $t->param(status_list => \@status_list, editable => 1);
     }
 
+    my $text_link_f = $is_jury || $contest->{is_hidden} ? \&url_f : \&CATS::StaticPages::url_static;
+
     my $fetch_record = sub($)
-    {            
+    {
         my $c = $_[0]->fetchrow_hashref or return ();
         $c->{status} ||= 0;
         my $psn = problem_status_names();
@@ -1346,8 +1348,7 @@ sub problems_frame
             status => $c->{status},
             disabled => !$is_jury && $c->{status} == $cats::problem_st_disabled,
             is_team => $my_is_team,
-            href_view_problem => ($is_jury ? \&url_f :
-                \&CATS::StaticPages::url_static)->('problem_text', cpid => $c->{cpid}),
+            href_view_problem => $text_link_f->('problem_text', cpid => $c->{cpid}),
             href_explanation => $show_packages && $c->{has_explanation} ?
                 url_f('problem_text', cpid => $c->{cpid}, explain => 1) : '',
             problem_id => $c->{pid},
