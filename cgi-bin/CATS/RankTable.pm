@@ -321,7 +321,7 @@ sub prepare_ranks
     my $sort_criteria = $self->{show_points} ?
         sub {
             $b->{total_points} <=> $a->{total_points} ||
-            $b->{total_runs} <=> $a->{total_runs} 
+            $b->{total_runs} <=> $a->{total_runs}
         }:
         sub {
             $b->{total_solved} <=> $a->{total_solved} ||
@@ -361,7 +361,7 @@ sub prepare_ranks
         $row_color = 1 - $row_color
             if $self->{show_points} ? $row_num % 5 == 1 : $prev{solved} > $team->{total_solved};
         if ($self->{show_points} ?
-                $prev{points} > $team->{total_points}:
+                $prev{points} > $team->{total_points} :
                 $prev{solved} > $team->{total_solved} || $prev{'time'} < $team->{total_time})
         {
             $same_place_count = 1;
@@ -389,7 +389,7 @@ sub prepare_ranks
         }
     }
     $self->{rank} = \@rank;
-    ($row_num, $row_color);
+    ($row_num - 1, $row_color);
 }
 
 
