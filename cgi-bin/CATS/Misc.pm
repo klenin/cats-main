@@ -548,9 +548,6 @@ sub init_contest
             FROM contest_accounts WHERE contest_id = ? AND account_id = ?~, {}, $cid, $uid);
         $virtual_diff_time ||= 0;
         $is_jury ||= $is_root;
-
-        # до начала тура команда имеет только права гостя
-        $is_team &&= $is_jury || $contest->has_started($virtual_diff_time);
     }
     if ($contest->{is_hidden} && !$is_team)
     {
@@ -559,6 +556,8 @@ sub init_contest
         $server_time = $contest->{server_time};
         $cid = $contest->{id};
     }
+    # до начала тура команда имеет только права гостя
+    $is_team &&= $is_jury || $contest->has_started($virtual_diff_time);
 }
 
 
