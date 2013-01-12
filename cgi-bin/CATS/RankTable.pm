@@ -553,7 +553,7 @@ sub rank_table
                 percent_accepted => int(
                     $_->{total_accepted} /
                     ($_->{total_runs} || 1) * 100 + 0.5),
-                average_points => sprintf('%.1f', $_->{total_points} / $row_num)
+                average_points => sprintf('%.1f', $_->{total_points} / max($row_num, 1))
             }} map $problem_stats->{$_->{problem_id}}, @{$self->{problems}}
         ],
         problem_stats_color => 1 - $row_color,
