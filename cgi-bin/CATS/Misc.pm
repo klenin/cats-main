@@ -479,7 +479,7 @@ sub get_flag
 }
 
 
-# авторизация пользователя, установка прав и настроек
+# Authorize user, initialize permissions and settings.
 sub init_user
 {
     $sid = url_param('sid') || '';
@@ -508,7 +508,7 @@ sub init_user
         $enc_settings = cookie('settings') || '';
         $enc_settings = decode_base64($enc_settings) if $enc_settings;
     }
-    # При возникновении любых проблем сбрасываем настройки
+    # If any problem happens during the thaw, clear settings.
     $settings = eval { $enc_settings && Storable::thaw($enc_settings) } || {};
 }
 
@@ -520,11 +520,10 @@ sub extract_cid_from_cpid
         $cpid);
 }
 
-# получение информации о текущем турнире и установка турнира по умолчанию
 sub init_contest
 {
     $cid = url_param('cid') || param('clist') || extract_cid_from_cpid || '';
-    $cid =~ s/^(\d+).*$/$1/; # берём первый турнир из clist
+    $cid =~ s/^(\d+).*$/$1/; # Get first contest if from clist.
     if ($contest && ref $contest ne 'CATS::Contest') {
         use Data::Dumper;
         warn "Strange contest: $contest from ", $ENV{HTTP_REFERER} || '';
@@ -537,10 +536,8 @@ sub init_contest
     $cid = $contest->{id};
 
     $virtual_diff_time = 0;
-    # авторизация пользователя в турнире
-    $is_jury = 0;
-    $is_team = 0;
-    $is_virtual = 0;
+    # Authorize user in the contest.
+    $is_jury = $is_team = $is_virtual = 0;
     if (defined $uid)
     {
         ($is_team, $is_jury, $is_virtual, $virtual_diff_time) = $dbh->selectrow_array(qq~
@@ -551,12 +548,12 @@ sub init_contest
     }
     if ($contest->{is_hidden} && !$is_team)
     {
-        # При попытке просмотреть скрытый турнир показываем вместо него тренировочный
+        # If user tries to look at a hidden contest, show training instead.
         $contest->load(0);
         $server_time = $contest->{server_time};
         $cid = $contest->{id};
     }
-    # до начала тура команда имеет только права гостя
+    # Only guest access before the start of the contest.
     $is_team &&= $is_jury || $contest->has_started($virtual_diff_time);
 }
 
