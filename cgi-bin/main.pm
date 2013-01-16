@@ -743,12 +743,13 @@ sub problems_all_frame
 
     my $link = url_param('link');
     my $kw = url_param('kw');
+    my $move = url_param('move') || 0;
 
     $link and show_unused_problem_codes;
 
     my $cols = [
-        { caption => res_str(602), order_by => '2', width => '30%' }, 
-        { caption => res_str(603), order_by => '3', width => '30%' },                    
+        { caption => res_str(602), order_by => '2', width => '30%' },
+        { caption => res_str(603), order_by => '3', width => '30%' },
         { caption => res_str(604), order_by => '4', width => '10%' },
         #{ caption => res_str(605), order_by => '5', width => '10%' },
         #{ caption => res_str(606), order_by => '6', width => '10%' },
@@ -771,7 +772,7 @@ sub problems_all_frame
             )~],
             params => [$uid]
         };
-      
+
     if ($kw) {
         push @{$where->{cond}}, q~
             (EXISTS (SELECT 1 FROM problem_keywords PK WHERE PK.problem_id = P.id AND PK.keyword_id = ?))~;
@@ -806,13 +807,13 @@ sub problems_all_frame
             counts => $counts,
         );
     };
-         
-    attach_listview(url_f('problems', link => $link, kw => $kw), $fetch_record, $c);
+
+    attach_listview(url_f('problems', link => $link, kw => $kw, move => $move), $fetch_record, $c);
 
     $t->param(
         href_action => url_f($kw ? 'keywords' : 'problems'),
-        link => !$contest->is_practice && $link, move => url_param('move') || 0, is_jury => $is_jury);
-    
+        link => !$contest->is_practice && $link, move => $move, is_jury => $is_jury);
+
     $c->finish;
 }
 
