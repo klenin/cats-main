@@ -1327,7 +1327,8 @@ sub problems_frame
         $t->param(status_list => \@status_list, editable => 1);
     }
 
-    my $text_link_f = $is_jury || $contest->{is_hidden} ? \&url_f : \&CATS::StaticPages::url_static;
+    my $text_link_f = $is_jury || $contest->{is_hidden} || $contest->{local_only} ?
+        \&url_f : \&CATS::StaticPages::url_static;
 
     my $fetch_record = sub($)
     {
@@ -1400,7 +1401,7 @@ sub problems_frame
     }
     else
     {
-        push @submenu, $pt_url->(CATS::StaticPages::url_static('problem_text', cid => $cid))
+        push @submenu, $pt_url->($text_link_f->('problem_text', cid => $cid))
             unless $contest->is_practice;
     }
 
