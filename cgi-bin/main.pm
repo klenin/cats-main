@@ -2453,10 +2453,11 @@ sub answer_box_frame
             INNER JOIN accounts A ON A.id = CA.account_id
         WHERE Q.id = ?~, { Slice => {} },
         $qid);
+    $_ = Encode::decode_utf8($_) for @$r{qw(question answer)};
 
     $t->param(team_name => $r->{team_name});
 
-    if (defined param('clarify') && (my $a = param('answer_text')))
+    if (defined param('clarify') && (my $a = Encode::decode_utf8(param('answer_text'))))
     {
         $r->{answer} ||= '';
         $r->{answer} .= " $a";
