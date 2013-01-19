@@ -262,6 +262,8 @@ sub console
             $console_select{broadcast}
             WHERE (M.send_time > CURRENT_TIMESTAMP - $day_count) AND M.broadcast = 1~
         : '';
+    my $submit_time_filter =
+        '(R.submit_time BETWEEN C.start_date AND C.freeze_date OR CURRENT_TIMESTAMP > C.defreeze_date)';
 
     my $c;
     if ($is_jury)
@@ -308,7 +310,7 @@ sub console
                 $console_select{run}
                 WHERE (R.submit_time > CURRENT_TIMESTAMP - $day_count) AND
                     C.id=? AND CA.is_hidden=0 AND
-                    (A.id=? OR R.submit_time < C.freeze_date OR CURRENT_TIMESTAMP > C.defreeze_date)
+                    (A.id=? OR $submit_time_filter)
                 $events_filter$runs_filter
             UNION
             SELECT
@@ -338,7 +340,7 @@ sub console
                 $console_select{run}
                 WHERE (R.submit_time > CURRENT_TIMESTAMP - $day_count) AND
                     R.contest_id=? AND CA.is_hidden=0 AND 
-                    (R.submit_time < C.freeze_date OR CURRENT_TIMESTAMP > C.defreeze_date)
+                    ($submit_time_filter)
                     $events_filter$runs_filter
             $broadcast
             $contest_start_finish
