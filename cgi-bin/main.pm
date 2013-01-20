@@ -67,7 +67,7 @@ sub login_frame
         $t->param(message => 'No login') if $json;
         return;
     }
-    $t->param(login => $login); 
+    $t->param(login => Encode::decode_utf8($login));
     my $cid = param('contest');
     my $passwd = param('passwd');
 
