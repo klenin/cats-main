@@ -163,7 +163,7 @@ sub init_listview_params
 #my $template_file;
 sub init_template
 {
-    my ($file_name) = @_;
+    my ($file_name, $p) = @_;
     #if (defined $t && $template_file eq $file_name) { $t->param(tf=>1); return; }
 
     my %ext_to_mime = (
@@ -183,17 +183,17 @@ sub init_template
     %extra_headers = ();
     %extra_headers = ('Content-Disposition' => 'inline;filename=contests.ics') if $file_name =~ /\.ics$/;
     #$template_file = $file_name;
-    $t = CATS::Template->new($file_name, cats_dir());
+    $t = CATS::Template->new($file_name, cats_dir(), $p);
 ;}
 
 
 sub init_listview_template
 {
-    ($listview_name, $listview_array_name, my $file_name) = @_;
+    ($listview_name, $listview_array_name, my $file_name, my $p) = @_;
 
     init_listview_params;
 
-    init_template($file_name);
+    init_template($file_name, $p);
 }
 
 
