@@ -39,7 +39,7 @@ sub personal_official_results
     my $group_by_type = (url_param('group') || '') eq 'type';
     for (@$contests) {
         my ($name, $year, $rest) = $_->{title} =~ m/^(.*)\s(\d{4})(.*)/
-            or die $_->{name};
+            or die $_->{title};
         # Prevent YAML from falling back to backslash escaping.
         $name = Encode::decode_utf8($name);
         # Filter out practice sessions.
@@ -78,6 +78,7 @@ sub personal_official_results
     }
 
     init_template('official_results.html.tt');
+    $YAML::Syck::ImplicitUnicode = 1;
     $t->param(results => YAML::Syck::Dump($results));
 }
 
