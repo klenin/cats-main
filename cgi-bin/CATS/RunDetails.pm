@@ -7,7 +7,7 @@ use Algorithm::Diff;
 use CATS::Web qw(param url_param headers upload_source content_type);
 use CATS::DB;
 use CATS::Utils qw(state_to_display url_function);
-use CATS::Misc qw($is_jury $sid $t $uid init_template msg url_f);
+use CATS::Misc qw($is_jury $sid $t $uid init_template msg res_str url_f);
 use CATS::Data qw(is_jury_in_contest enforce_request_state);
 use CATS::IP;
 use CATS::DevEnv;
@@ -262,9 +262,7 @@ sub get_sources_info
         get_nearby_attempt($r, 'next', '>', 'ASC', 0);
         # During the official contest, viewing sources from other contests
         # is disallowed to prevent cheating.
-        if ($official && $official->{id} != $r->{contest_id}) {
-            $r->{src} = res_str(123, $official->{title});
-        }
+        $r->{src} = \'FORBIDDEN' if $official && $official->{id} != $r->{contest_id};
     }
 
     return ref $rid ? $result : $result->[0];
@@ -313,12 +311,18 @@ sub prepare_source
         or return;
 
     my $is_jury = is_jury_in_contest(contest_id => $sources_info->{contest_id});
+
     $is_jury || $sources_info->{account_id} == ($uid || 0)
         or return $show_msg && msg(126);
-    my $se = param('src_enc') || 'WINDOWS-1251';
-    if (source_encodings()->{$se} && $sources_info->{file_name} !~ m/\.zip$/) {
-        Encode::from_to($sources_info->{src}, $se, 'utf-8');
-        $sources_info->{src} = Encode::decode_utf8($sources_info->{src});
+    if (ref $sources_info->{src} eq 'SCALAR') {
+        $sources_info->{src} = res_str(138, CATS::Contest::current_official->{title});
+    }
+    else {
+        my $se = param('src_enc') || 'WINDOWS-1251';
+        if (source_encodings()->{$se} && $sources_info->{file_name} !~ m/\.zip$/) {
+            Encode::from_to($sources_info->{src}, $se, 'utf-8');
+            $sources_info->{src} = Encode::decode_utf8($sources_info->{src});
+        }
     }
     ($sources_info, $is_jury);
 }
@@ -374,6 +378,7 @@ sub view_source_frame
 sub download_source_frame
 {
     my ($si, $is_jury) = prepare_source(0);
+
     unless ($si) {
         init_template('view_source.html.tt');
         return;
@@ -382,10 +387,9 @@ sub download_source_frame
     $si->{file_name} =~ m/\.([^.]+)$/;
     my $ext = $1 || 'unknown';
     binmode(STDOUT, ':raw');
-    content_type($ext eq 'zip' ? 'application/zip' : 'text/plain');
-    headers(
-        'Content-Disposition' => "inline;filename=$si->{req_id}.$ext");
-    print STDOUT $si->{src};
+    content_type($ext eq 'zip' ? 'application/zip' : 'text/plain', 'UTF-8');
+    headers('Content-Disposition' => "inline;filename=$si->{req_id}.$ext");
+    print STDOUT Encode::encode_utf8($si->{src});
 }
 
 
