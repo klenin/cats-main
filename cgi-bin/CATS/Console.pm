@@ -93,9 +93,8 @@ sub init_console_template
 }
 
 
-sub console
+sub console_content
 {
-    my $template_name = shift;
     init_console_template('console_content.html.tt');
 
     my $s = get_settings;
@@ -432,10 +431,6 @@ sub console
         href_all_events => url_f('console', uf => 0),
         user_filter => $user_filter
     );
-    my $cc = $t->output;
-    init_template($template_name);
-
-    $t->param(console_content => $cc, is_team => $is_team);
 }
 
 
@@ -628,7 +623,10 @@ sub console_frame
 
 sub content_frame
 {
-    console('console_iframe.html.tt');
+    console_content;
+    my $cc = $t->output;
+    init_template('console_iframe.html.tt');
+    $t->param(console_content => $cc, is_team => $is_team);
 }
 
 
