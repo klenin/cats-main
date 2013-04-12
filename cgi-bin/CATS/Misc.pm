@@ -166,22 +166,16 @@ sub init_template
     my ($file_name, $p) = @_;
     #if (defined $t && $template_file eq $file_name) { $t->param(tf=>1); return; }
 
-    my %ext_to_mime = (
+    my ($base_name, $ext) = $file_name =~ /^(\w+)\.(\w+)(:?\.tt)$/;
+    $http_mime_type = {
         htm => 'text/html',
         html => 'text/html',
         xml => 'application/xml',
         ics => 'text/calendar',
         json => 'application/json',
-    );
-    while (my ($ext, $mime) = each %ext_to_mime)
-    {
-        $file_name =~ /\.$ext(\.tt)?$/ or next;
-        $http_mime_type = $mime;
-        last;
-    }
-    $http_mime_type or die 'Unknown template extension';
-    %extra_headers = ();
-    %extra_headers = ('Content-Disposition' => 'inline;filename=contests.ics') if $file_name =~ /\.ics$/;
+    }->{$ext} or die 'Unknown template extension';
+    %extra_headers = $ext eq 'ics' ?
+        ('Content-Disposition' => "inline;filename=$base_name.ics") : ();
     #$template_file = $file_name;
     $t = CATS::Template->new($file_name, cats_dir(), $p);
 ;}
