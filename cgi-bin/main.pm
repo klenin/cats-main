@@ -1872,6 +1872,7 @@ sub users_frame
             href_stats => url_f('user_stats', uid => $aid),
             motto => $motto,
             id => $caid,
+            account_id => $aid,
             login => $login,
             editable => $is_jury,
             messages => $is_jury,
