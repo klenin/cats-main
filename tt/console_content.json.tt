@@ -1,0 +1,14 @@
+[%- USE Javascript -%]
+[
+[% FOREACH console -%]
+[% IF is_submit_result -%]
+{
+"type": "submit",
+"id": [% id %],
+"time": "[% time %]",
+"team_name": "[% team_name | $Javascript %]"
+}
+[%- ',' UNLESS loop.last %]
+[% END -%]
+[% END -%]
+]

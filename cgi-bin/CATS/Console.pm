@@ -95,7 +95,7 @@ sub init_console_template
 
 sub console_content
 {
-    init_console_template('console_content.html.tt');
+    init_console_template(auto_ext('console_content'));
 
     my $s = get_settings;
     $s->{show_results} = 1 unless defined $s->{show_results};
@@ -624,6 +624,7 @@ sub console_frame
 sub content_frame
 {
     console_content;
+    return if param('json');
     my $cc = $t->output;
     init_template('console_iframe.html.tt');
     $t->param(console_content => $cc, is_team => $is_team);
