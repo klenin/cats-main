@@ -19,7 +19,7 @@ use XML::Parser::Expat;
 use Text::Aspell;
 
 use CATS::DB;
-use CATS::Misc qw($cid $contest $is_jury $t $uid cats_dir init_template);
+use CATS::Misc qw($cid $contest $is_jury $t $uid cats_dir auto_ext init_template);
 use CATS::StaticPages;
 
 my ($current_pid, $html_code, $spellchecker, $text_span);
@@ -250,8 +250,7 @@ sub problem_text_frame
     }
     $explain = $explain && url_param('explain');
 
-    my $json = param('json');
-    init_template('problem_text.' . ($json ? 'json' : 'html') . '.tt');
+    init_template(auto_ext('problem_text'));
 
     my (@problems, $show_points);
 

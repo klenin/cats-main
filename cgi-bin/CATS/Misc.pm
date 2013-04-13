@@ -13,6 +13,7 @@ BEGIN
         cats_dir
         get_anonymous_uid
         initialize
+        auto_ext
         init_template
         init_listview_template
         generate_output
@@ -157,6 +158,14 @@ sub init_listview_params
         $s->{page} = 0 if $s->{rows} != $rows;
         $s->{rows} = $rows;
     }
+}
+
+
+sub auto_ext
+{
+    my ($file_name, $json) = @_;
+    my $ext = $json // param('json') ? 'json' : 'html';
+    "$file_name.$ext.tt";
 }
 
 
@@ -487,7 +496,7 @@ sub init_user
             SELECT id, team_name, srole, last_ip, settings FROM accounts WHERE sid = ?~, {}, $sid);
         if (!defined($uid) || ($last_ip || '') ne CATS::IP::get_ip())
         {
-            init_template('bad_sid.' . (param('json') ? 'json' : 'html') . '.tt');
+            init_template(auto_ext('bad_sid'));
             $sid = '';
             $t->param(href_login => url_f('login'));
         }

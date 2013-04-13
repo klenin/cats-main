@@ -59,7 +59,7 @@ sub make_sid {
 sub login_frame
 {
     my $json = param('json');
-    init_template('login.' . ($json ? 'json' : 'html') . '.tt');
+    init_template(auto_ext('login', $json));
 
     my $login = param('login');
     if (!$login)
@@ -113,7 +113,7 @@ sub login_frame
 
 sub logout_frame
 {
-    init_template('logout.' . (param('json') ? 'json' : 'html') . '.tt');
+    init_template(auto_ext('logout'));
 
     $cid = '';
     $sid = '';
@@ -1257,9 +1257,8 @@ sub problems_frame
 
     defined param('download') && $show_packages and return download_problem;
 
-    my $json = param('json');
     init_listview_template('problems' . ($contest->is_practice ? '_practice' : ''),
-        'problems', 'problems.' . ($json ? 'json' : 'html') . '.tt');
+        'problems', auto_ext('problems'));
     problems_frame_jury_action;
 
     problems_submit if defined param('submit');
@@ -1789,7 +1788,7 @@ sub users_frame
 
     init_listview_template(
         'users' . ($contest->is_practice ? '_practice' : ''),
-        'users', 'users.' . (param('json') ? 'json' : 'html') . '.tt');
+        'users', auto_ext('users'));
 
     $t->param(messages => $is_jury, title_suffix => res_str(526));
 
