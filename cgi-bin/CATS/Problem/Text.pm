@@ -332,6 +332,7 @@ sub problem_text_frame
                 s/(\s|~)?-{2,3}/($1 ? '&nbsp;' : '') . '&#151;'/ge; # em-dash
             }
         }
+        $_ = Encode::decode_utf8($_) for $problem->{json_data};
         $is_jury && !param('noformal') or undef $problem->{formal_input};
         $explain or undef $problem->{explanation};
         $problem = {
