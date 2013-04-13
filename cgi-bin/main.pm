@@ -1770,12 +1770,6 @@ sub users_impersonate
 }
 
 
-sub quote_json
-{
-    # Quoting will result in double-quoting by HTML::Template, so just use spaces.
-    $_ && s/\t|\n/ /g for @_;
-}
-
 sub users_frame
 {
     if ($is_jury)
@@ -1872,7 +1866,6 @@ sub users_frame
         ) = $_[0]->fetchrow_array
             or return ();
         my ($country, $flag) = get_flag($country_abb);
-        quote_json($team_name, $login, $motto) if param('json');
         return (
             href_delete => url_f('users', delete => $caid),
             href_edit => url_f('users', edit => $aid),
