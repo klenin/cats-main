@@ -1,13 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html><head>
-<meta http-equiv="Content-type" content="text/html; charset=[% encoding %]">
-<link rel="shortcut icon" href="images/std/favicon.ico" type="image/x-icon" />
-<title>[% contest_title | html %][% IF title_suffix %] - [% title_suffix %][% END %]</title>
-[% IF refresh ~%]
-  <meta http-equiv="Refresh" CONTENT="[% refresh %]">
-[%~ END %]
-<link rel="stylesheet" type="text/css" href="./docs/std/main.css">
-<!--[if IE]><link rel="stylesheet" type="text/css" href="docs/std/ie.css"><![endif]-->
+[%- PROCESS includes/header.tti %]
 </head>
 <body>
 <table class="iface header">
