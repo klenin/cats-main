@@ -1571,7 +1571,7 @@ sub users_import_frame
     param('do') or return;
     my $do_import = param('do_import');
     my @report;
-    for my $line (split "\r\n", param('user_list')) {
+    for my $line (split "\r\n", decode_utf8(param('user_list'))) {
         my $u = CATS::User->new;
         @$u{qw(team_name login password1 city)} = split "\t", $line;
         my $r = eval {
