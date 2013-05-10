@@ -233,10 +233,11 @@ sub console_content
         ~,
     );
 
-    my $user_filter = sprintf '%d', url_param('uf') || 0;
     my $runs_filter = $s->{show_results} ? '' : ' AND 1 = 0';
-    my $events_filter = $user_filter ? 'AND A.id = ?' : '';
-    my @events_filter_params = $user_filter ? ($user_filter) : ();
+    my $user_filter = url_param('uf') || '';
+    my @user_ids = grep $_, map sprintf('%d', $_), split ',', $user_filter;
+    my $events_filter = @user_ids ? 'AND (' . join(' OR ', map 'A.id = ?', @user_ids) . ')' : '';
+    my @events_filter_params = @user_ids;
 
     my $contest_start_finish = '';
     if ($s->{show_contests})
