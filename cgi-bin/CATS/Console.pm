@@ -26,13 +26,13 @@ sub send_question_to_jury
         $cuid
     );
     ($previous_question_text || '') ne $question_text or return;
-    
+
     my $s = $dbh->prepare(qq~
         INSERT INTO questions(id, account_id, submit_time, question, received, clarified)
         VALUES (?, ?, CURRENT_TIMESTAMP, ?, 0, 0)~
     );
     $s->bind_param(1, new_id);
-    $s->bind_param(2, $cuid);       
+    $s->bind_param(2, $cuid);
     $s->bind_param(3, $question_text, { ora_type => 113 } );
     $s->execute;
     $s->finish;
@@ -320,7 +320,7 @@ sub console_content
             UNION
             SELECT
                 $console_select{message}
-                FROM messages M, contest_accounts CA, dummy_table D, accounts A 
+                FROM messages M, contest_accounts CA, dummy_table D, accounts A
                 WHERE (M.send_time > CURRENT_TIMESTAMP - $day_count) AND
                     M.account_id=CA.id AND CA.contest_id=? AND CA.account_id=A.id AND A.id=?
             $broadcast
@@ -338,7 +338,7 @@ sub console_content
             SELECT
                 $console_select{run}
                 WHERE (R.submit_time > CURRENT_TIMESTAMP - $day_count) AND
-                    R.contest_id=? AND CA.is_hidden=0 AND 
+                    R.contest_id=? AND CA.is_hidden=0 AND
                     ($submit_time_filter)
                     $events_filter$runs_filter
             $broadcast
@@ -348,8 +348,8 @@ sub console_content
     }
 
     my $fetch_console_record = sub($)
-    {            
-        my ($rtype, $rank, $submit_time, $id, $request_state, $failed_test, 
+    {
+        my ($rtype, $rank, $submit_time, $id, $request_state, $failed_test,
             $problem_title, $de, $clarified, $question, $answer, $jury_message,
             $team_id, $team_name, $country_abb, $last_ip, $caid, $contest_id
         ) = $_[0]->fetchrow_array
@@ -360,7 +360,7 @@ sub console_content
         my ($country, $flag) = get_flag($country_abb);
         return (
             country => $country,
-            flag => $flag, 
+            flag => $flag,
             is_submit_result =>     $rtype == 1,
             is_question =>          $rtype == 2,
             is_message =>           $rtype == 3,
@@ -383,8 +383,8 @@ sub console_content
             de =>                   $de,
             request_state =>        $request_state,
             state_to_display($request_state,
-                # security: во время соревнования не показываем участникам
-                # конкретные результаты других команд, а только accepted/rejected
+                # Security: During the contest, do show teams only accepted/rejected
+                # instead of specific results of other teams.
                 $contest->{time_since_defreeze} <= 0 && !$is_jury &&
                 (!$is_team || !$team_id || $team_id != $uid)),
             failed_test_index =>    $failed_test,
@@ -419,7 +419,7 @@ sub console_content
         }
 
         $t->param(envelopes => [ @envelopes ]);
-        $dbh->commit; # Минимизируем шанс deadlock'а
+        $dbh->commit; # Minimize deadlock chance.
         $dbh->do(qq~
             UPDATE reqs SET received=1
                 WHERE account_id=? AND state>=$cats::request_processed
@@ -499,13 +499,13 @@ sub graphs
         steps => $steps_per_hour,
         accepted_only => $accepted_only);
     param('do_graph') or return;
-    
+
     my %selected_codes = map { $_ => 1 } param('selected_codes');
     for my $c (@$codes)
     {
         $c->{selected} = $selected_codes{$c->{code}};
     }
- 
+
     my $reqs = select_all_reqs($accepted_only ? " AND R.state = $cats::st_accepted" : '');
     @$reqs or return;
     my $init_graph = sub { (code => $_[0], by_time => []) };
