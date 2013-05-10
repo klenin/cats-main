@@ -1,8 +1,8 @@
 <table class="registration">
 <tr><td>Страна</td><td>
     <select name="country">
-    [% FOREACH countries %]
-    <option value="[% id %]" [% IF selected %]selected="selected"[% END %]>[% name | html %]</option>
+    [% FOREACH c IN countries %]
+    <option value="[% c.id %]" [% IF c.id == country %]selected="selected"[% END %]>[% c.name | html %]</option>
     [% END %]
     </select>
 </td></tr>
