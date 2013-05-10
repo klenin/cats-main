@@ -10,17 +10,50 @@ body {
 table.iface { width: 100%; border-collapse : collapse; }
 table.iface tr td { padding: 0; }
 
+table.header {
+    font-family: Arial, sans-serif;
+    color: #333300;
+    background-color: #ffcc55;
+}
+
+div.elapsed {
+    position: relative;
+    width: 550px;
+    height: 72px;
+    background-image: url(../../images/std/bg.gif);
+    margin-right: 4px;
+}
+
+div.elapsed > span {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    font-size: small;
+}
+
+.main_menu {
+    background-color: #7070ff;
+    height: 30px;
+}
+
+.sub_menu {
+    background-color: #bbbbff;
+    height: 25px;
+}
+
 .top { 
-    font-family: Arial; 
-    font-size: 13px; 
-    color: #ffffff 
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    color: white;
 } 
 
-a.top, a.top:link, a.top:visited, a.top:active  { 
-    font-family: Arial; 
-    font-size: 13px; 
-    color: #ffffff; 
-    text-decoration: none 
+a.top, a.top:link, a.top:visited, a.top:active,
+.top a, .top a:link, .top a:visited, .top a:active
+{
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    color: white;
+    text-decoration: none;
 }
 
 a, a:link {
@@ -28,6 +61,35 @@ a, a:link {
     font-family: Arial; 
     text-decoration: none; 
     font-size: 14px
+}
+
+.sub_menu a {
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    color: #3030a0;
+}
+
+a.main_menu_selected:visited { color: yellow; }
+a.sub_menu_selected:visited { color: white; }
+
+tr.footer, tr.footer td {
+    background-color: #7070ff;
+    height: 30px;
+    color: white;
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+}
+
+tr.footer2, tr.footer2 td, tr.footer2 td a {
+    background-color: #ffcc55;
+    height: 40px;
+    color: #333300;
+    font-size: 12px;
+}
+
+td.footer_image {
+    background-image: url(../../images/std/bg2.gif);
+    background-repeat: no-repeat;
 }
 
 .linksize { font-size: 14px }
@@ -42,8 +104,6 @@ select, option {
     height: 22px;
     vertical-align: middle;
 }
-
-.down { background-repeat: no-repeat; }
 
 input {
     height: 22px;
@@ -80,16 +140,6 @@ table.sample td { vertical-align: top; }
     border: 1px solid #ffffff;
     color: #ffffff;
     background-color: #7070ff;
-}
-
-.signed, a.signed:link, a.signed:visited {
-    color: #ffffff;
-    font-size: 12px;
-}
-
-.signed2, a.signed2:link, a.signed2:visited {
-    color: #333300;
-    font-size: 12px;
 }
 
 th { font-size: 11pt; font-weight: bold; color:#000000; }
