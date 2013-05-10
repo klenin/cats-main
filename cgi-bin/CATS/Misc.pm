@@ -350,17 +350,6 @@ sub attach_listview
 
     $t->param(page => $$page, pages => \@pages, search => $s->{search});
 
-    my @display_rows = ();
-
-    for (@cats::display_rows)
-    {
-        push @display_rows, {
-            is_current => ($s->{rows} == $_),
-            count => $_,
-            text => $_
-        };
-    }
-
     if ($range_start > 0)
     {
         $t->param( href_prev_pages => "$url$page_extra_params;page=" . ($range_start - 1));
@@ -371,8 +360,10 @@ sub attach_listview
         $t->param( href_next_pages => "$url$page_extra_params;page=" . ($range_end + 1));
     }
 
-    $t->param(display_rows => [ @display_rows ]);
-    $t->param($listview_array_name => [@data]);
+    $t->param(display_rows => [
+        map { value => $_, text => $_, selected => $s->{rows} == $_ }, @cats::display_rows
+    ]);
+    $t->param($listview_array_name => \@data);
 }
 
 

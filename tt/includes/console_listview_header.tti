@@ -37,8 +37,8 @@
 <td align=right width=20%>
 <input type=submit value="Показывать" name=visible class=button>
 <select name="rows">
-[% FOREACH r.display_rows %]
-    <option value="[% r.count %]"[% ' selected' IF r.is_current %]>[% r.text %]</option>
+[% FOREACH r IN display_rows %]
+    <option value="[% r.value %]"[% ' selected' IF r.selected %]>[% r.text %]</option>
 [% END %]
 </select>
 </td>

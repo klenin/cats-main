@@ -16,7 +16,7 @@
   <input type="submit" value="Показывать" name="visible" class="button">
   <select name="rows">
   [% FOREACH display_rows %]
-    <option value="[% count %]"[% IF is_current %] selected="selected"[% END %]>[% text %]</option>
+    <option value="[% value %]"[% IF selected %] selected="selected"[% END %]>[% text %]</option>
   [% END %]
   </select>
 </td>
