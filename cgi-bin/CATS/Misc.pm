@@ -282,54 +282,24 @@ sub attach_listview
     my $pp = $p->{page_params} || {};
     my $page_extra_params = join '', map ";$_=$pp->{$_}", keys %$pp;
 
-    my $mask = undef;
-    for (split(',', $s->{search}))
-    {
-        if ($_ =~ /(.*)\=(.*)/)
-        {
-            $mask = {} unless defined $mask;
-            $mask->{$1} = $2;
-        }
-    }
+    my %mask = map { /^(.*)\=(.*)$/ ? ($1 => $2) : () } split ',', $s->{search};
 
-    while (my %h = &$fetch_row($sth))
-    {
-	    last if $row_count > $cats::max_fetch_row_count;
-        my $f = 1;
-        if ($s->{search})
-        {
-            $f = 0;
-            if (defined $mask)
-            {
-                $f = 1;
-                for (keys %$mask)
-                {
-                    if (($h{$_} || '') ne ($mask->{$_} || ''))
-                    {
-                        $f = 0;
-                        last;
-                    }
-                }
-	        }
-            else
-            {
+    while (my %row = $fetch_row->($sth)) {
+        last if $row_count > $cats::max_fetch_row_count;
+        if ($s->{search}) {
+            my $f = 0;
+            if (%mask) {
+                $f = ($row{$_} || '') eq $mask{$_} or last for keys %mask;
+            }
+            else {
                 my $rx = qr/\Q$s->{search}\E/i;
-                for (values %h)
-                {
-                    $f = 1 if defined $_ && Encode::decode_utf8($_) =~ $rx;
-                }
+                $f = defined $_ && Encode::decode_utf8($_) =~ $rx and last for values %row;
             }
+            $f or next;
         }
-
-        if ($f)
-        {
-            if ($row_count >= $start_row && $row_count < $start_row + $s->{rows})
-            {
-                push @data, { %h, odd => $row_count % 2 };
-            }
-            $row_count++;
-        }
-
+        push @data, { %row, odd => $row_count % 2 }
+            if $row_count >= $start_row && $row_count < $start_row + $s->{rows};
+        $row_count++;
     }
 
     my $rows = $s->{rows} || 1;
@@ -337,29 +307,23 @@ sub attach_listview
 
     $$page ||= 0;
     my $range_start = $$page - $$page % $cats::visible_pages;
-    $range_start = 0 if ($range_start < 0);
+    $range_start = 0 if $range_start < 0;
 
     my $range_end = $range_start + $cats::visible_pages - 1;
     $range_end = $page_count - 1 if ($range_end > $page_count - 1);
 
+    my $href_page = sub { "$url$page_extra_params;page=$_[0]" };
     my @pages = map {{
         page_number => $_ + 1,
-        href_page => "$url;page=$_$page_extra_params",
+        href_page => $href_page->($_),
         current_page => $_ == $$page
     }} ($range_start..$range_end);
 
     $t->param(page => $$page, pages => \@pages, search => $s->{search});
-
-    if ($range_start > 0)
-    {
-        $t->param( href_prev_pages => "$url$page_extra_params;page=" . ($range_start - 1));
-    }
-
-    if ($range_end < $page_count - 1)
-    {
-        $t->param( href_next_pages => "$url$page_extra_params;page=" . ($range_end + 1));
-    }
-
+    $t->param(href_prev_pages => $href_page->($range_start - 1))
+        if $range_start > 0;
+    $t->param(href_next_pages => $href_page->($range_end + 1))
+        if $range_end < $page_count - 1;
     $t->param(display_rows => [
         map { value => $_, text => $_, selected => $s->{rows} == $_ }, @cats::display_rows
     ]);
