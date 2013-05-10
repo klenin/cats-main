@@ -520,14 +520,14 @@ sub contests_frame
 
     my $submenu = [
         map({
-            href_item => url_f('contests', page => 0, filter => $_->{n}),
-            item_name => res_str($_->{i}),
+            href => url_f('contests', page => 0, filter => $_->{n}),
+            item => res_str($_->{i}),
             selected => $settings->{contests}->{filter} eq $_->{n}, 
         }, { n => 'all', i => 558 }, { n => 'official', i => 559 }, { n => 'unfinished', i => 560 }),
         ($CATS::Misc::can_create_contests ?
-            { href_item => url_f('contests', new => 1), item_name => res_str(537) } : ()),
-        { href_item => url_f('contests',
-            ical => 1, rows => 50, filter => $settings->{contests}->{filter}), item_name => res_str(562) },
+            { href => url_f('contests', new => 1), item => res_str(537) } : ()),
+        { href => url_f('contests',
+            ical => 1, rows => 50, filter => $settings->{contests}->{filter}), item => res_str(562) },
     ];
     $t->param(
         submenu => $submenu,
@@ -1381,9 +1381,7 @@ sub problems_frame
         { de_id => 'by_extension', de_name => res_str(536) },
         map {{ de_id => $_->{id}, de_name => $_->{description} }} @{$de_list->{_de_list}} );
 
-    my $pt_url = sub {{
-        href_item => $_[0], item_name => ($_[1] || res_str(538)), item_target => '_blank'
-    }};
+    my $pt_url = sub {{ href => $_[0], item => ($_[1] || res_str(538)), target => '_blank' }};
     my @submenu = ();
     if ($is_jury)
     {
@@ -1392,10 +1390,10 @@ sub problems_frame
             $pt_url->(url_f('problem_text'), res_str(555))
             unless $contest->is_practice;
         push @submenu,
-            { href_item => url_f('problems', link => 1), item_name => res_str(540) },
-            { href_item => url_f('problems', link => 1, move => 1), item_name => res_str(551) },
-            { href_item => url_f('problems_retest'), item_name => res_str(556) },
-            { href_item => url_f('contests', params => $cid), item_name => res_str(546) },
+            { href => url_f('problems', link => 1), item => res_str(540) },
+            { href => url_f('problems', link => 1, move => 1), item => res_str(551) },
+            { href => url_f('problems_retest'), item => res_str(556) },
+            { href => url_f('contests', params => $cid), item => res_str(546) },
             ;
     }
     else
@@ -1896,8 +1894,8 @@ sub users_frame
     {
         $t->param(
             submenu => [
-                { href_item => url_f('users', new => 1), item_name => res_str(541) },
-                { href_item => url_f('users_import'), item_name => res_str(564) },
+                { href => url_f('users', new => 1), item => res_str(541) },
+                { href => url_f('users_import'), item => res_str(564) },
             ],
             editable => 1
         );
@@ -1962,11 +1960,11 @@ sub references_menu
     {
         my $sel = $_->{name} eq $ref_name;
         push @result,
-            { href_item => url_f($_->{name}), item_name => res_str($_->{item}), selected => $sel };
+            { href => url_f($_->{name}), item => res_str($_->{item}), selected => $sel };
         if ($sel && $is_root && $_->{new})
         {
             unshift @result, 
-                { href_item => url_f($_->{name}, new => 1), item_name => res_str($_->{new}) };
+                { href => url_f($_->{name}, new => 1), item => res_str($_->{new}) };
         }
     }
     @result;
@@ -2515,12 +2513,12 @@ sub rank_table_frame
     );
     $t->param(href_rank_table_content => url_f('rank_table_content', @params));
     my $submenu =
-        [ { href_item => url_f('rank_table_content', @params, printable => 1), item_name => res_str(552) } ];
+        [ { href => url_f('rank_table_content', @params, printable => 1), item => res_str(552) } ];
     if ($is_jury)
     {
         push @$submenu,
-            { href_item => url_f('rank_table', @params, cache => 1 - ($cache || 0)), item_name => res_str(553) },
-            { href_item => url_f('rank_table', @params, points => 1 - ($show_points || 0)), item_name => res_str(554) };
+            { href => url_f('rank_table', @params, cache => 1 - ($cache || 0)), item => res_str(553) },
+            { href => url_f('rank_table', @params, points => 1 - ($show_points || 0)), item => res_str(554) };
     }
     $t->param(submenu => $submenu, title_suffix => res_str(529));
 }

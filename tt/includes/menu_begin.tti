@@ -32,30 +32,24 @@
 [%- MACRO menu(items, selected) BLOCK -%]
     [%- FOREACH i IN items ~%]
       <a
-        [%~ " class=\"$selected\"" IF i.selected %] href="[% i.href %]">[% i.item %]</a>
+        [%~ " class=\"$selected\"" IF i.selected %] href="[% i.href %]"
+        [%- " target=\"${i.target}\"" IF i.target %]>[% i.item %]</a>
       [%- ' | ' UNLESS loop.last %]
     [% END -%]
 [%- END -%]
+
 <table class="iface">
   <tr class="main_menu top">
     <td align="left">
-    &nbsp;[% IF left_menu %][[% menu(left_menu, 'main_menu_selected') %]][% END %]
+    &nbsp;[% IF left_menu %][ [% menu(left_menu, 'main_menu_selected') %]][% END %]
     </td>
-    <td align="right">
-    [[% menu(right_menu, 'main_menu_selected') %]]&nbsp;
-    </td>
+    <td align="right">[ [% menu(right_menu, 'main_menu_selected') %]]&nbsp;</td>
   </tr>
-  [% IF submenu && submenu.size %]
+  [%- IF submenu && submenu.size %]
   <tr class="sub_menu">
-    <td colspan="2">&nbsp;
-    [%- FOREACH sm IN submenu -%]
-      <a
-        [%- ' class="sub_menu_selected"' IF sm.selected -%] href="[% sm.href_item %]"
-        [%- "target=\"${sm.item_target}\"" IF sm.item_target %]>[% sm.item_name %]</a>
-      [%- ' | ' UNLESS loop.last %]
-    [% END -%]
+    <td colspan="2">&nbsp;[% menu(submenu, 'sub_menu_selected') ~%]
     </td>
   </tr>
-  [% END %]
+  [%- END %]
 </table>
 <div style="width: 99%; padding: 4px">
