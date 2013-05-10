@@ -1,0 +1,9 @@
+[%- MACRO option(value, text, selected) BLOCK -%]
+    <option value="[% value %]"[% ' selected="selected"' IF selected %]>[% text %]</option>
+[%- END -%]
+
+[%- MACRO select(name, options) BLOCK -%]
+    <select name="[% name %]">
+    [%- FOREACH opt IN options; option(opt.value, opt.text, opt.selected); END -%]
+    </select>
+[%- END -%]

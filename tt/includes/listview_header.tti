@@ -1,3 +1,4 @@
+[% PROCESS includes/html.tti %]
 <table width="100%">
 <tr>
 <td align="left" width="30%" nowrap>
@@ -13,12 +14,7 @@
   [% IF href_next_pages %] <a href="[% href_next_pages %]">&gt;&gt;</a>[% END %]
 </td>
 <td align="right" width="30%" nowrap>
-  <input type="submit" value="Показывать" name="visible" class="button">
-  <select name="rows">
-  [% FOREACH display_rows %]
-    <option value="[% value %]"[% IF selected %] selected="selected"[% END %]>[% text %]</option>
-  [% END %]
-  </select>
+  <input type="submit" value="Показывать" name="visible" class="button"> [% select('rows', display_rows) %]
 </td>
 </tr>
 </table>

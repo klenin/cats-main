@@ -1,3 +1,4 @@
+[% PROCESS includes/html.tti %]
 <table width=100%>
 <tr>
 <td align=left>
@@ -23,24 +24,9 @@
 <input type="checkbox" name="show_messages" [% IF show_messages %] checked="checked"[% END %]/>с</label>
 <label title="результаты">
 <input type="checkbox" name="show_results" [% IF show_results %] checked="checked"[% END %]/>р</label>
-за <select name="i_value">
-[% FOREACH v IN i_values %]
-    <option value="[% v.value %]"[% ' selected' IF v.selected %]>[% v.text %]</option> 
-[% END %]
-</select>
-<select name="i_unit">
-[% FOREACH u IN i_units %]
-    <option value="[% u.value %]"[% ' selected' IF u.selected %]>[% u.text %]</option>
-[% END %]
-</select>
-</td>
-<td align=right width=20%>
-<input type=submit value="Показывать" name=visible class=button>
-<select name="rows">
-[% FOREACH r IN display_rows %]
-    <option value="[% r.value %]"[% ' selected' IF r.selected %]>[% r.text %]</option>
-[% END %]
-</select>
+за [% select('i_value', i_values) %] [% select('i_unit', i_units) %]</td>
+<td align="right" width="20%">
+<input type="submit" value="Показывать" name="visible" class="button"> [% select('rows', display_rows) %]
 </td>
 </tr>
 </table>
