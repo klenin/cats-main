@@ -1,14 +1,33 @@
 [%- USE Javascript -%]
 [
 [% FOREACH console -%]
-[% IF is_submit_result -%]
 {
+[% IF is_submit_result -%]
 "type": "submit",
 "id": [% id %],
 "time": "[% time %]",
-"team_name": "[% team_name | $Javascript %]"
+"state": [% request_state %],
+"team_id": [% team_id %],
+"contest_id": [% contest_id %],
+"problem_title" : "[% problem_title | $Javascript %]"
+[% END -%]
+[% IF is_question -%]
+"type": "question",
+"text": "[% question_text | $Javascript %]"
+[% END -%]
+[% IF is_message -%]
+"type": "message",
+"text": "[% message_text | $Javascript %]"
+[% END -%]
+[% IF is_broadcast -%]
+"type": "broadcast",
+"text": "[% message_text | $Javascript %]"
+[% END -%]
+[% IF is_contest -%]
+"type": "contest",
+"contest_start": [% contest_start ? 1 : 0 %]
+[% END -%]
 }
 [%- ',' UNLESS loop.last %]
-[% END -%]
 [% END -%]
 ]

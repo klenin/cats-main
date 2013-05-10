@@ -381,6 +381,7 @@ sub console_content
             'time' =>               $submit_time,
             problem_title =>        $problem_title,
             de =>                   $de,
+            request_state =>        $request_state,
             state_to_display($request_state,
                 # security: во время соревнования не показываем участникам
                 # конкретные результаты других команд, а только accepted/rejected
@@ -390,6 +391,7 @@ sub console_content
             question_text =>        decode_utf8($question),
             answer_text =>          decode_utf8($answer),
             message_text =>         decode_utf8($jury_message),
+            team_id =>              $team_id,
             team_name =>            $team_name,
             CATS::IP::linkify_ip(CATS::IP::filter_ip($last_ip)),
             is_jury =>              $is_jury,
