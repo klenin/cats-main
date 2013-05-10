@@ -2661,6 +2661,7 @@ sub similarity_frame
                 score => sprintf('%.1f%%', $score * 100), s => $score,
                 n1 => [$ai], ($self_diff ? () : (n2 => [$aj])),
                 href_diff => url_f('diff_runs', r1 => $i->{id}, r2 => $j->{id}),
+                href_console => url_f('console', uf => $i->{account_id} . ',' . $j->{account_id}),
                 t1 => $i->{account_id}, t2 => $j->{account_id},
             };
             if ($group)

@@ -105,7 +105,7 @@ tr.run_details_IN { color: #A0A000 }
 tr.run_details_NP { color: #008000 }
 tr.run_details_NT { color: #000080; font-style: italic; }
 
-table.console tr:hover { background-color: #ffcc55; }
+table.highlight tr:hover, table.console tr:hover { background-color: #ffcc55; }
 table.console tr td { margin: 0; padding: 1px 10px 1px 1px; }
 table.console tr td, table.console tr td a { font-size: 10pt; }
 

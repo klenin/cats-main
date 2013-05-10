@@ -12,11 +12,12 @@
 <input type="checkbox" name="self_diff" value="1"[% IF self_diff %] checked="checked"[% END %]/> Резкие изменения
 <input type="checkbox" name="collapse_idents" value="1"[% IF collapse_idents %] checked="checked"[% END %]/> Игнорировать идентификаторы
 </form>
-<table class="bordered">
+<table class="bordered highlight">
 [% FOREACH similar %]
   <tr><td align="right"><a href="[% href_diff %]" target="_blank">[% score %]</td>
   <td>[% FOREACH n1 %][% team_name | html %][% IF city %] ([% city %])[% END %][% END %]</td>
   [% IF n2 %]<td>[% FOREACH n2 %][% team_name | html %][% IF city %] ([% city %])[% END %][% END %]</td>[% END %]
+  <td><a href="[% href_console %]" target="_blank">консоль</td>
   </tr>
 [% END %]
 </table>
