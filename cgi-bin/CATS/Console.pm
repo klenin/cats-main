@@ -388,7 +388,7 @@ sub console_content
                 # instead of specific results of other teams.
                 $contest->{time_since_defreeze} <= 0 && !$is_jury &&
                 (!$is_team || !$team_id || $team_id != $uid)),
-            failed_test_index =>    $failed_test,
+            failed_test =>          $failed_test,
             question_text =>        decode_utf8($question),
             answer_text =>          decode_utf8($answer),
             message_text =>         decode_utf8($jury_message),

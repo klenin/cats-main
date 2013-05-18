@@ -2566,7 +2566,7 @@ sub envelope_frame
         test_time => $test_time,
         team_name => $team_name,
         contest_title => $contest_title,
-        failed_test_index => $failed_test,
+        failed_test => $failed_test,
         state_to_display($state)
     );
 }

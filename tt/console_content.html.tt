@@ -1,4 +1,5 @@
 [% PROCESS 'includes/console_listview_header.tti' %]
+[% PROCESS 'includes/submit_result.tti' %]
 <table width="100%" cellspacing="3" cellpadding="3" class="bordered console">
 [% FOREACH console %]
 <tr>
@@ -21,22 +22,9 @@
     </td>
     <td>
         [% IF is_jury ~%]
-          <a href="[% href_source %]" title="[% de %]">[% problem_title %]</a>[% ELSE ~%]
-          [% problem_title %][% END %]:
-        <b>[% IF not_processed %]<font color="#008000">Not processed</font>[% END ~%]
-        [% IF install_processing %]<font color="#a0a000">Processing</font>[% END ~%]
-        [% IF unhandled_error %]<font color="#a00000">Unhandled error</font>[% END ~%]
-        [% IF testing %]<font color="#a0a000">Processing</font>[% END ~%]
-        [% IF accepted %]<font color="#007f00">Solution accepted</font>[% END ~%]
-        [% IF rejected %]Solution rejected[% END ~%]
-        [% IF wrong_answer %]Wrong answer on test [% failed_test_index %][% END ~%]
-        [% IF presentation_error %]Presentation error on test [% failed_test_index %][% END ~%]
-        [% IF time_limit_exceeded %]Time limit exceeded on test [% failed_test_index %][% END ~%]
-        [% IF memory_limit_exceeded %]Memory limit exceeded on test [% failed_test_index %][% END ~%]
-        [% IF runtime_error %]Runtime error on test [% failed_test_index %][% END ~%]
-        [% IF compilation_error %]Compilation error[% END ~%]
-        [% IF security_violation %]Security violation[% END ~%]
-        [% IF ignore_submit %]Ignored submission[% END %]</b>
+        <a href="[% href_source %]" title="[% de %]">[% problem_title %]</a>[% ELSE ~%]
+        [% problem_title %][% END %]:
+        <b>[% submit_result %]</b>
     </td>
 [% END %][% IF is_question %]
     <td nowrap width=1%>[% time %]</td>

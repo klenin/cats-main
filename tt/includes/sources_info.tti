@@ -1,3 +1,4 @@
+[%- PROCESS 'includes/submit_result.tti' -%]
 <script type="text/javascript">
 function send_message(href)
 {
@@ -39,21 +40,7 @@ function send_message(href)
 [% ELSE %][% testsets %][% END %]</td>
 [% END %]</tr>
 <tr><th>Состояние</th>
-[% FOREACH sources_info %]<td>
-[% IF not_processed %]<font color="#008000">Not processed[% END %]
-[% IF install_processing %]<font color="#a0a000">Installing problem[% END %]
-[% IF unhandled_error %]Unhandled error[% END %]
-[% IF testing %]<font color="#a0a000">Now testing[% END %]
-[% IF accepted %]Solution accepted[% END %]
-[% IF wrong_answer %]Wrong answer on test [% failed_test %][% END %]
-[% IF presentation_error %]Presentation error on test [% failed_test %][% END %]
-[% IF time_limit_exceeded %]Time limit exceeded on test [% failed_test %][% END %]
-[% IF memory_limit_exceeded %]Memory limit exceeded on test [% failed_test %][% END %]
-[% IF runtime_error %]Runtime error on test [% failed_test %][% END %]
-[% IF compilation_error %]Compilation error[% END %]
-[% IF security_violation %]Security violation[% END %]
-[% IF ignore_submit %]Ignored submission[% END %]
-</td>[% END %]
+[% FOREACH sources_info %]<td>[% submit_result %]</td>[% END %]
 </tr>
 <tr><th>Ссылки</th>
 [% FOREACH sources_info %]<td>
