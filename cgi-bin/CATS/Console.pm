@@ -494,7 +494,7 @@ sub graphs
     my $steps_per_hour = (param('steps') || 1) + 0;
     my $accepted_only = param('accepted_only') || 0;
     $t->param(
-        submenu => [ { href_item => url_f('console'), item_name => res_str(510) } ],
+        submenu => [ { href => url_f('console'), item => res_str(510) } ],
         codes => $codes,
         href_graphs => url_f('console_graphs'),
         steps => $steps_per_hour,
@@ -618,8 +618,8 @@ sub console_frame
         title_suffix => res_str(510),
     );
     $t->param(submenu => [
-        { href_item => url_f('console_export'), item_name => res_str(561) },
-        { href_item => url_f('console_graphs'), item_name => res_str(563) },
+        { href => url_f('console_export'), item => res_str(561) },
+        { href => url_f('console_graphs'), item => res_str(563) },
     ]) if $is_jury;
 }
 
