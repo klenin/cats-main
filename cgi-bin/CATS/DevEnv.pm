@@ -32,6 +32,7 @@ sub load
 sub by_file_extension
 {
     (my CATS::DevEnv $self, my $file_name) = @_;
+    $file_name or return;
 
     my (undef, undef, undef, undef, $ext) = CATS::Utils::split_fname(lc $file_name);
 
