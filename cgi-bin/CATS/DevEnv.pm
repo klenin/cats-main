@@ -6,7 +6,7 @@ use warnings;
 use fields qw(_de_list _dbh);
 
 use CATS::Utils;
-
+use CATS::DB;
 
 sub new
 {
@@ -22,12 +22,15 @@ sub new
 sub load
 {
     (my CATS::DevEnv $self, my %p) = @_;
-    my $where = $p{active_only} ? 'WHERE in_contests=1' : '';
-    $self->{_de_list} = $self->{_dbh}->selectall_arrayref(qq~
-        SELECT id, code, description, file_ext FROM default_de
-        $where ORDER BY code~, { Slice => {} });
+    $self->{_de_list} = $self->{_dbh}->selectall_arrayref(
+        _u $sql->select('default_de', 'id, code, description, file_ext', {
+            ($p{active_only} ? (in_contests => 1) : ()),
+            ($p{id} ? (id => $p{id}) : ()),
+        }, 'code'));
 }
 
+
+sub split_exts { split /\;/, $_[0]->{file_ext} }
 
 sub by_file_extension
 {
@@ -38,7 +41,7 @@ sub by_file_extension
 
     for my $de (@{$self->{_de_list}})
     {
-        grep { return $de if $_ eq $ext } split(/\;/, $de->{file_ext});
+        grep { return $de if $_ eq $ext } split_exts($de);
     }
 
     undef;
@@ -58,6 +61,13 @@ sub by_id
     (my CATS::DevEnv $self, my $id) = @_;
     my @r = grep $_->{id} eq $id, @{$self->{_de_list}};
     @r ? $r[0] : undef;
+}
+
+
+sub default_extension
+{
+    (my CATS::DevEnv $self, my $id) = @_;
+    (split_exts($self->by_id($id) // ('txt')))[0];
 }
 
 

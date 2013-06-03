@@ -925,7 +925,7 @@ sub problems_submit
     $src or return msg(11);
     my $did = param('de_id');
 
-    if (param('de_id') eq 'by_extension') {
+    if ($did eq 'by_extension') {
         my $de_list = CATS::DevEnv->new($dbh, active_only => 1);
         my $de = $de_list->by_file_extension($file)
             or return msg(13);
@@ -960,7 +960,8 @@ sub problems_submit
     $s->bind_param(1, $rid);
     $s->bind_param(2, $did);
     $s->bind_param(3, $src, { ora_type => 113 } ); # blob
-    $s->bind_param(4, $file ? "$file" : "$rid.txt");
+    $s->bind_param(4, $file ? "$file" :
+        "$rid." . CATS::DevEnv->new($dbh, id => $did)->default_extension($did));
     $s->bind_param(5, $source_hash);
     $s->execute;
     $dbh->commit;
