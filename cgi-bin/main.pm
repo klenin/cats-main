@@ -2479,27 +2479,6 @@ sub rank_problem_details
 }
 
 
-sub envelope_frame
-{
-    init_template('envelope.html.tt');
-    
-    my $rid = url_param('rid') or return;
-
-    my ($submit_time, $test_time, $state, $failed_test, $team_name, $contest_title) = $dbh->selectrow_array(qq~
-        SELECT R.submit_time, R.test_time, R.state, R.failed_test, A.team_name, C.title
-            FROM reqs R, contests C, accounts A
-            WHERE R.id = ? AND A.id = R.account_id AND C.id = R.contest_id~, {}, $rid);
-    $t->param(
-        submit_time => $submit_time,
-        test_time => $test_time,
-        team_name => $team_name,
-        contest_title => $contest_title,
-        failed_test => $failed_test,
-        state_to_display($state)
-    );
-}
-
-
 sub preprocess_source
 {
     my $h = $_[0]->{hash} = {};
@@ -2721,7 +2700,7 @@ sub interface_functions ()
         rank_table => \&rank_table_frame,
         rank_problem_details => \&rank_problem_details,
         problem_text => \&problem_text_frame,
-        envelope => \&envelope_frame,
+        envelope => \&CATS::Messages::envelope_frame,
         about => \&about_frame,
         authors => \&authors_frame,
         static => \&static_frame,

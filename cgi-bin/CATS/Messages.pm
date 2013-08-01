@@ -6,6 +6,8 @@ use warnings;
 use CATS::Web qw(param url_param);
 use CATS::DB;
 use CATS::Misc qw($t $is_jury init_template);
+use CATS::Utils qw(state_to_display);
+
 
 sub send_message_box_frame
 {
@@ -78,6 +80,27 @@ sub answer_box_frame
             question_text => $r->{question},
             answer => $r->{answer});
     }
+}
+
+
+sub envelope_frame
+{
+    init_template('envelope.html.tt');
+
+    my $rid = url_param('rid') or return;
+
+    my ($submit_time, $test_time, $state, $failed_test, $team_name, $contest_title) = $dbh->selectrow_array(qq~
+        SELECT R.submit_time, R.test_time, R.state, R.failed_test, A.team_name, C.title
+            FROM reqs R, contests C, accounts A
+            WHERE R.id = ? AND A.id = R.account_id AND C.id = R.contest_id~, {}, $rid);
+    $t->param(
+        submit_time => $submit_time,
+        test_time => $test_time,
+        team_name => $team_name,
+        contest_title => $contest_title,
+        failed_test => $failed_test,
+        state_to_display($state)
+    );
 }
 
 
