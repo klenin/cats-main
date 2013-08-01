@@ -21,7 +21,7 @@ sub send_message_box_frame
         FROM accounts A INNER JOIN contest_accounts CA ON CA.account_id = A.id WHERE CA.id = ?~, undef,
         $caid) or return;
 
-    $t->param(team => $team_name);
+    $t->param(team => $team_name, title_suffix => res_str(567));
 
     defined param('send') or return;
     my $message_text = param('message_text') or return;

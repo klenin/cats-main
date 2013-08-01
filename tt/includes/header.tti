@@ -4,7 +4,7 @@
 <link rel="shortcut icon" href="images/std/favicon.ico" type="image/x-icon" />
 <title>
   [%- IF contest_title; contest_title | html; ELSE; 'CATS'; END -%]
-  [% IF title_suffix %] - [% title_suffix; END -%]
+  [% IF title_suffix %] - [% title_suffix | html; END -%]
 </title>
 [% IF refresh ~%]
   <meta http-equiv="Refresh" content="[% refresh %]">
