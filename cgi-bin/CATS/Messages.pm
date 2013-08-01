@@ -5,7 +5,7 @@ use warnings;
 
 use CATS::Web qw(param url_param);
 use CATS::DB;
-use CATS::Misc qw($t $is_jury init_template);
+use CATS::Misc qw($t $is_jury $is_team $uid init_template);
 use CATS::Utils qw(state_to_display);
 
 
@@ -87,13 +87,15 @@ sub envelope_frame
 {
     init_template('envelope.html.tt');
 
-    my $rid = url_param('rid') or return;
+    $is_team && (my $rid = url_param('rid')) or return;
 
     my $r = $dbh->selectrow_hashref(qq~
-        SELECT R.submit_time, R.test_time, R.state, R.failed_test, A.team_name, C.title
-            FROM reqs R, contests C, accounts A
-            WHERE R.id = ? AND A.id = R.account_id AND C.id = R.contest_id~, { Slice => {} },
-        $rid);
+        SELECT R.submit_time, R.test_time, R.state, R.failed_test, R.account_id, A.team_name, C.title
+            FROM reqs R
+            INNER JOIN contests C ON C.id = R.contest_id
+            INNER JOIN  accounts A ON A.id = R.account_id
+            WHERE R.id = ? AND R.account_id = ?~, { Slice => {} },
+        $rid, $uid) or return;
     $t->param(%$r, state_to_display($r->{state}));
 }
 
