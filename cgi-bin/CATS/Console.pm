@@ -408,23 +408,18 @@ sub console_content
 
     if ($is_team)
     {
-        my @envelopes;
-        my $c = $dbh->prepare(qq~
-            SELECT id FROM reqs
-              WHERE account_id=? AND state>=$cats::request_processed AND received=0 AND contest_id=?~
+        my $cond =
+            "WHERE account_id = ? AND state >= $cats::request_processed " .
+            'AND received = 0 AND contest_id = ?';
+        my $envelope_ids = $dbh->selectcol_arrayref(qq~
+            SELECT id FROM reqs $cond~, undef,
+            $uid, $cid
         );
-        $c->execute($uid, $cid);
-        while (my ($id) = $c->fetchrow_array)
-        {
-            push @envelopes, { href_envelope => url_f('envelope', rid => $id) };
-        }
-
-        $t->param(envelopes => [ @envelopes ]);
+        $t->param(envelopes => [
+            map { href_envelope => url_f('envelope', rid => $_) }, @$envelope_ids ]);
         $dbh->commit; # Minimize deadlock chance.
         $dbh->do(qq~
-            UPDATE reqs SET received=1
-                WHERE account_id=? AND state>=$cats::request_processed
-                AND received=0 AND contest_id=?~, {},
+            UPDATE reqs SET received = 1 $cond~, undef,
             $uid, $cid);
         $dbh->commit;
     }

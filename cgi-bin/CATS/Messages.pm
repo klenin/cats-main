@@ -89,18 +89,12 @@ sub envelope_frame
 
     my $rid = url_param('rid') or return;
 
-    my ($submit_time, $test_time, $state, $failed_test, $team_name, $contest_title) = $dbh->selectrow_array(qq~
+    my $r = $dbh->selectrow_hashref(qq~
         SELECT R.submit_time, R.test_time, R.state, R.failed_test, A.team_name, C.title
             FROM reqs R, contests C, accounts A
-            WHERE R.id = ? AND A.id = R.account_id AND C.id = R.contest_id~, {}, $rid);
-    $t->param(
-        submit_time => $submit_time,
-        test_time => $test_time,
-        team_name => $team_name,
-        contest_title => $contest_title,
-        failed_test => $failed_test,
-        state_to_display($state)
-    );
+            WHERE R.id = ? AND A.id = R.account_id AND C.id = R.contest_id~, { Slice => {} },
+        $rid);
+    $t->param(%$r, state_to_display($r->{state}));
 }
 
 
