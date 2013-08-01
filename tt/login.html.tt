@@ -4,11 +4,12 @@
 <table><tr><td height=50%>
 <form method="post" enctype="multipart/form-data">
 <table>
-<tr><td>логин:</td><td><input type="text" size="20" name="login" maxlength="20" class="bordered" value="
-[%- login %]" /></td></tr>
-<tr><td>пароль:</td><td><input type="password" size="20" name="passwd" maxlength="50" class="bordered" /></td></tr>
+<tr><td>[% login_capt %]:</td>
+  <td><input type="text" size="20" name="login" maxlength="20" class="bordered" value="[% login | html %]" /></td></tr>
+<tr><td>[% password_capt %]:</td>
+  <td><input type="password" size="20" name="passwd" maxlength="50" class="bordered" /></td></tr>
 </table>
-<input type="submit" name="submit" value="войти" class="button" />
+<input type="submit" name="submit" value="[% button_capt %]" class="button" />
 </form>
 
 </td></tr>

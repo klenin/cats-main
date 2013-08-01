@@ -1,0 +1,5 @@
+﻿[%
+  login_capt = 'login';
+  password_capt = 'password';
+  button_capt = 'log in';
+%]
