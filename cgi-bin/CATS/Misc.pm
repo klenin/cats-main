@@ -61,10 +61,10 @@ use CATS::Utils qw();
 use vars qw(
     $contest $t $sid $cid $uid $team_name $server_time $dbi_error
     $is_root $is_team $is_jury $can_create_contests $is_virtual $virtual_diff_time
-    $listview_name $col_defs $request_start_time $init_time $settings $enc_settings
+    $listview_name $col_defs $request_start_time $init_time $settings
 );
 
-my ($listview_array_name, @messages, $http_mime_type, %extra_headers);
+my ($listview_array_name, $messages, $http_mime_type, %extra_headers, $enc_settings);
 
 my $cats_dir;
 sub cats_dir()
@@ -104,23 +104,23 @@ sub templates_path
     cats_dir() . $cats::templates[0]->{path};
 }
 
+sub lang { $settings->{lang} || 'ru' }
 
-sub init_messages
-{
-    return if @messages;
-    my $msg_file = cats_dir() . '../tt/lang/ru/strings';
+sub init_messages_lang {
+    my ($lang) = @_;
+    my $msg_file = cats_dir() . "../tt/lang/$lang/strings";
 
+    my $r = [];
     open my $f, '<', $msg_file or
         die "Couldn't open message file: '$msg_file'.";
     binmode($f, ':utf8');
-    while (<$f>) {
-        m/^(\d+)\s+\"(.*)\"\s*$/ or next;
-        $messages[$1] and die "Duplicate message id: $1";
-        $messages[$1] = $2;
+    while (my $line = <$f>) {
+        $line =~ m/^(\d+)\s+\"(.*)\"\s*$/ or next;
+        $r->[$1] and die "Duplicate message id: $1";
+        $r->[$1] = $2;
     }
-    close $f;
+    $r;
 }
-
 
 sub init_listview_params
 {
@@ -253,7 +253,7 @@ sub attach_menu
 
 sub res_str
 {
-    my $t = $messages[shift];
+    my $t = $messages->{lang()}->[shift];
     sprintf($t, @_);
 }
 
@@ -468,6 +468,9 @@ sub init_user
     }
     # If any problem happens during the thaw, clear settings.
     $settings = eval { $enc_settings && Storable::thaw($enc_settings) } || {};
+
+    my $lang = param('lang');
+    $settings->{lang} = $lang if $lang && grep $_ eq $lang, @cats::langs;
 }
 
 sub extract_cid_from_cpid
@@ -539,7 +542,7 @@ sub save_settings
 sub initialize
 {
     $dbi_error = undef;
-    init_messages;
+    $messages //= { map { $_ => init_messages_lang($_) } @cats::langs };
     $t = undef;
     init_user;
     init_contest;

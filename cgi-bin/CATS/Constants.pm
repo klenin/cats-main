@@ -12,6 +12,7 @@ $anonymous_login = 'anonymous';
     { id => "alt", path => "./../templates/alt" }
 );
 
+@langs = qw(ru en);
 
 # максимальное количество записей, извлекаемых из датасета
 $max_fetch_row_count = 1000;
