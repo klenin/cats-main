@@ -108,7 +108,7 @@ sub templates_path
 sub init_messages
 {
     return if @messages;
-    my $msg_file = templates_path() . '/consts';
+    my $msg_file = cats_dir() . '../tt/lang/ru/strings';
 
     open my $f, '<', $msg_file or
         die "Couldn't open message file: '$msg_file'.";
