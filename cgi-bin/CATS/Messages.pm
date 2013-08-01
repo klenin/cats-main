@@ -5,7 +5,7 @@ use warnings;
 
 use CATS::Web qw(param url_param);
 use CATS::DB;
-use CATS::Misc qw($t $is_jury $is_team $uid init_template);
+use CATS::Misc qw($t $is_jury $is_team $uid init_template res_str);
 use CATS::Utils qw(state_to_display);
 
 
@@ -56,7 +56,7 @@ sub answer_box_frame
         $qid);
     $_ = Encode::decode_utf8($_) for @$r{qw(question answer)};
 
-    $t->param(team_name => $r->{team_name});
+    $t->param(team_name => $r->{team_name}, title_suffix => res_str(566));
 
     if (defined param('clarify') && (my $a = Encode::decode_utf8(param('answer_text'))))
     {

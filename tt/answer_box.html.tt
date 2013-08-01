@@ -1,7 +1,4 @@
-<html><head>
-<title>CATS - вопрос команды</title>
-<meta name="Content-Type" content="text/html; charset=utf-8">
-<link rel="stylesheet" type="text/css" href="./docs/std/main.css">
+[%- PROCESS includes/header.tti %]
 </head>
 <body style="margin: 10px">
 [% UNLESS clarified %]
