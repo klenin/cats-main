@@ -187,6 +187,7 @@ sub init_template
         ('Content-Disposition' => "inline;filename=$base_name.ics") : ();
     #$template_file = $file_name;
     $t = CATS::Template->new($file_name, cats_dir(), $p);
+    $t->param(lang => lang);
 ;}
 
 

@@ -2,6 +2,7 @@
 <html><head>
 <meta http-equiv="Content-type" content="text/html; charset=[% encoding %]">
 <link rel="shortcut icon" href="images/std/favicon.ico" type="image/x-icon" />
+[%- TRY; PROCESS "lang/$lang/${template.name}"; CATCH; ''; END -%]
 <title>
   [%- IF contest_title; contest_title | html; ELSE; 'CATS'; END -%]
   [% IF title_suffix %] - [% title_suffix | html; END -%]
