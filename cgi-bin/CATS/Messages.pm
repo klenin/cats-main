@@ -12,29 +12,29 @@ use CATS::Utils qw(state_to_display);
 sub send_message_box_frame
 {
     init_template('send_message_box.html.tt');
-    return unless $is_jury;
+    $is_jury or return;
 
-    my $caid = url_param('caid');
+    my $caid = url_param('caid') or return;
 
-    my $aid = $dbh->selectrow_array(qq~SELECT account_id FROM contest_accounts WHERE id=?~, {}, $caid);
-    my $team = $dbh->selectrow_array(qq~SELECT team_name FROM accounts WHERE id=?~, {}, $aid);
+    my $team_name = $dbh->selectrow_array(q~
+        SELECT A.team_name
+        FROM accounts A INNER JOIN contest_accounts CA ON CA.account_id = A.id WHERE CA.id = ?~, undef,
+        $caid) or return;
 
-    $t->param(team => $team);
+    $t->param(team => $team_name);
 
-    if (defined param('send'))
-    {
-        my $message_text = param('message_text');
+    defined param('send') or return;
+    my $message_text = param('message_text') or return;
 
-        my $s = $dbh->prepare(qq~
-            INSERT INTO messages (id, send_time, text, account_id, received)
-                VALUES (?, CURRENT_TIMESTAMP, ?, ?, 0)~);
-        $s->bind_param(1, new_id);
-        $s->bind_param(2, $message_text, { ora_type => 113 });
-        $s->bind_param(3, $caid);
-        $s->execute;
-        $dbh->commit;
-        $t->param(sent => 1);
-    }
+    my $s = $dbh->prepare(qq~
+        INSERT INTO messages (id, send_time, text, account_id, received)
+            VALUES (?, CURRENT_TIMESTAMP, ?, ?, 0)~);
+    $s->bind_param(1, new_id);
+    $s->bind_param(2, $message_text, { ora_type => 113 });
+    $s->bind_param(3, $caid);
+    $s->execute;
+    $dbh->commit;
+    $t->param(sent => 1);
 }
 
 
