@@ -2433,6 +2433,7 @@ sub send_message_box_frame
 sub answer_box_frame
 {
     init_template('answer_box.html.tt');
+    $is_jury or return;
 
     my $qid = url_param('qid');
 
