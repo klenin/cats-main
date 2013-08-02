@@ -6,7 +6,6 @@
 <script type="text/javascript" src="synh/scripts/shBrushDiff.js"></script>
 <script type="text/javascript" src="synh/scripts/shBrushGroovy.js"></script>
 <script type="text/javascript" src="synh/scripts/shBrushJScript.js"></script>
-<script type="text/javascript" src="synh/scripts/shBrushPhp.js"></script>
 <script type="text/javascript" src="synh/scripts/shBrushScala.js"></script>
 <script type="text/javascript" src="synh/scripts/shBrushSql.js"></script>
 <script type="text/javascript" src="synh/scripts/shBrushXml.js"></script>
@@ -16,6 +15,7 @@
 <script type="text/javascript" src="synh/scripts/shBrushDelphi.js"></script>
 <script type="text/javascript" src="synh/scripts/shBrushJava.js"></script>
 <script type="text/javascript" src="synh/scripts/shBrushPerl.js"></script>
+<script type="text/javascript" src="synh/scripts/shBrushPhp.js"></script>
 <script type="text/javascript" src="synh/scripts/shBrushPlain.js"></script>
 <script type="text/javascript" src="synh/scripts/shBrushPython.js"></script>
 <script type="text/javascript" src="synh/scripts/shBrushRuby.js"></script>
