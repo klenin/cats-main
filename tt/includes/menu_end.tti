@@ -1,18 +1,19 @@
+[%- PROCESS "lang/$lang/menu_end.tti" -%]
 </div>
 <table class="iface">
 <tr class="footer top">
   <td>
-    &nbsp;текущий пользователь:
+    &nbsp;[% current_user %]:
     [% IF current_team_name ~%]
       [% current_team_name | html %]
     [% ELSE ~%]
-      анонимный
+      [% anonymous %]
     [%- END %]
   </td>
   <td align="right">
-    <a href="https://github.com/klenin/cats-main/issues">issues</a> |
-    <a href="docs/">документация</a> |
-    <a href="[% url_authors %]">&copy; 2002-2013 Авторы</a>&nbsp;
+    <a href="https://github.com/klenin/cats-main/issues">[% issues %]</a> |
+    <a href="docs/">[% docs %]</a> |
+    <a href="[% url_authors %]">&copy; 2002-2013 [% authors %]</a>&nbsp;
   </td>
 </tr>
 <tr class="footer2">
@@ -20,8 +21,8 @@
     &nbsp;[% PROCESS 'includes/timing.tti' %]
   </td>
   <td align="right">
-    <a href="http://imcs.dvgu.ru/works"> Кафедра информатики, математического и компьютерного моделирования &nbsp;</a><br>
-    <a href="http://dvfu.ru"> Дальневосточный федеральный университет &nbsp;</a>
+    <a href="http://imcs.dvgu.ru/works"> [% dept %] &nbsp;</a><br>
+    <a href="http://dvfu.ru"> [% university %] &nbsp;</a>
   </td>
 </tr>
 </table>

@@ -1,4 +1,5 @@
 [%- PROCESS includes/header.tti %]
+[%- PROCESS "lang/$lang/menu_begin.tti" -%]
 </head>
 <body>
 <table class="iface header">
@@ -14,15 +15,15 @@
       [% IF server_time ~%]
         <span>
         [% IF show_remaining_minutes ~%]
-          до начала тура осталось: [% remaining_minutes %] мин.<br>
+          [% until_start %]: [% remaining_minutes %] [% minutes %].<br>
         [%~ END %]
         [% IF show_elapsed_minutes ~%]
-          с начала тура прошло: <span id="elapsed_minutes">[% elapsed_minutes %]</span> мин.<br/>
+          [% since_start %]: <span id="elapsed_minutes">[% elapsed_minutes %]</span> [% minutes %]<br/>
         [%~ END %]
         [% IF show_elapsed_days ~%]
-          с начала тура прошло: [% elapsed_days %] сут.<br>
+          [% since_start %]: [% elapsed_days %] [% days %]<br>
         [%~ END %]
-        страница обновлена: <span id="server_time">[% server_time %]</span>
+        [% last_updated %]: <span id="server_time">[% server_time %]</span>
         </span>
       [%~ END %]
     </div>
