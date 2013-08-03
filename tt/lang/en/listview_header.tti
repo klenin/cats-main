@@ -1,0 +1,5 @@
+[%
+  search_capt = 'search';
+  pages_capt = 'pages';
+  show_capt = 'show';
+%]
