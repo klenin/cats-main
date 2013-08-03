@@ -1,0 +1,20 @@
+[%
+  capt = {
+    team => 'Team',
+    message => 'message',
+    time => 'Time',
+    processing => 'Processing',
+    file => 'File',
+    contest => 'Contest',
+    problem => 'Problem',
+    testset => 'Testset',
+    retest => 'Retest',
+    status => 'Status',
+    refs => 'Refs',
+    source => 'source',
+    download => 'download',
+    run_details => 'results',
+    diff_runs => 'diff',
+    log => 'log',
+  }
+%]

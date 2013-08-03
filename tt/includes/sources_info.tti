@@ -1,3 +1,4 @@
+[%- PROCESS "lang/$lang/sources_info.tti" -%]
 [%- PROCESS 'includes/submit_result.tti' -%]
 <script type="text/javascript">
 function send_message(href)
@@ -7,48 +8,48 @@ function send_message(href)
 </script>
 <table class="internal_borders" cellpadding="3">
 <tr><th>ID</th>[% FOREACH sources_info %]<td>[% req_id %]</td>[% END %]</tr>
-<tr><th>Команда</th>[% FOREACH sources_info %]<td><a href="[% href_stats %]">[% team_name %]</a>
+<tr><th>[% capt.team %]</th>[% FOREACH sources_info %]<td><a href="[% href_stats %]">[% team_name %]</a>
 [% IF is_jury %]
   [<a href="[% href_whois %]" alt="[% last_ip %]" title="[% last_ip %]">[% last_ip_short %]</a>]
-  [<a href="javascript:send_message('[% href_send_message %]')">сообщение</a>]
+  [<a href="javascript:send_message('[% href_send_message %]')">[% capt.message %]</a>]
 [% END %]
 </td>[% END %]</tr>
-<tr><th>Время</th>[% FOREACH sources_info ~%]
+<tr><th>[% capt.time %]</th>[% FOREACH sources_info ~%]
   <td>
   [% IF href_prev_attempt %] <a href="[% href_prev_attempt %]">[% prev_attempt_time %]&lt;&lt;</a>[% END %]
   [% submit_time %]
   [% IF href_next_attempt %] <a href="[% href_next_attempt %]">[% next_attempt_time %]&gt;&gt;</a>[% END %]
 </td>[% END %]</tr>
-<tr><th>Обработка</th>[% FOREACH sources_info %]<td>
+<tr><th>[% capt.processing %]</th>[% FOREACH sources_info %]<td>
 [% IF is_jury %][% judge_name %]: [% END %]
 [% test_time_short %] ... [% result_time_short %]</td>[% END %]</tr>
-<tr><th>Файл</th>[% FOREACH sources_info %]<td>[% file_name %] ([% de_name %])</td>[% END %]</tr>
-<tr><th>Турнир</th>[% FOREACH sources_info %]<td>
+<tr><th>[% capt.file %]</th>[% FOREACH sources_info %]<td>[% file_name %] ([% de_name %])</td>[% END %]</tr>
+<tr><th>[% capt.contest %]</th>[% FOREACH sources_info %]<td>
   [% IF href_contest %]<a href="[% href_contest %]">[% contest_name %]<a>
   [% ELSE %][% contest_name %][% END %]
 </td>[% END %]</tr>
-<tr><th>Задача</th>[% FOREACH sources_info %]<td>
+<tr><th>[% capt.problem %]</th>[% FOREACH sources_info %]<td>
   [% IF href_problem %]<a href="[% href_problem %]">[% problem_name %]</a>
   [% ELSE %][% problem_name %][% END %]
 </td>[% END %]</tr>
-<tr><th>Набор тестов</th>[% FOREACH sources_info %]
+<tr><th>[% capt.testset %]</th>[% FOREACH sources_info %]
 <td>[% IF is_jury %]
   <form action="[% href_run_details %]" method="POST" class="embedded">
   <input type="text" name="testsets" value="[% testsets %]" />
-  <input type="submit" name="retest" value="Перетестировать" class="button" />
+  <input type="submit" name="retest" value="[% capt.retest %]" class="button" />
   </form>
 [% ELSE %][% testsets %][% END %]</td>
 [% END %]</tr>
-<tr><th>Состояние</th>
+<tr><th>[% capt.status %]</th>
 [% FOREACH sources_info %]<td>[% submit_result %]</td>[% END %]
 </tr>
-<tr><th>Ссылки</th>
+<tr><th>[% capt.refs %]</th>
 [% FOREACH sources_info %]<td>
-<a href="[% href_view_source %]" class="[% href_class_view_source %]">код</a> |
-<a href="[% href_download_source %]" class="[% href_class_download_source %]">скачать</a> |
-<a href="[% href_run_details %]" class="[% href_class_run_details %]">результаты</a> |
-<a href="[% href_diff_runs %]" class="[% href_class_diff_runs %]">diff</a>
-[% IF is_jury %] | <a href="[% href_run_log %]" class="[% href_class_run_log %]">лог</a>[% END %]
+<a href="[% href_view_source %]" class="[% href_class_view_source %]">[% capt.source %]</a> |
+<a href="[% href_download_source %]" class="[% href_class_download_source %]">[% capt.download %]</a> |
+<a href="[% href_run_details %]" class="[% href_class_run_details %]">[% capt.run_details %]</a> |
+<a href="[% href_diff_runs %]" class="[% href_class_diff_runs %]">[% capt.diff_runs %]</a>
+[% IF is_jury %] | <a href="[% href_run_log %]" class="[% href_class_run_log %]">[% capt.log %]</a>[% END %]
 </td>[% END %]
 </tr>
 </table>

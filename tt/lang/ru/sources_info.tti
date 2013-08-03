@@ -1,0 +1,20 @@
+[%
+  capt = {
+    team => 'Команда',
+    message => 'сообщение',
+    time => 'Время',
+    processing => 'Обработка',
+    file => 'Файл',
+    contest => 'Турнир',
+    problem => 'Задача',
+    testset => 'Набор тестов',
+    retest => 'Перетестировать',
+    status => 'Состояние',
+    refs => 'Ссылки',
+    source => 'код',
+    download => 'скачать',
+    run_details => 'результаты',
+    diff_runs => 'сравнить',
+    log => 'лог',
+  }
+%]
