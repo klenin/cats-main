@@ -1,4 +1,17 @@
-[% PROCESS 'includes/console_listview_header.tti' %]
+[% PROCESS includes/html.tti %]
+[% WRAPPER includes/listview_header.tti %]
+<td align=center>
+выбирать:
+[% IF user_filter %]<a href="[% href_all_events %]">все</a>
+[% ELSE %]<a href="[% href_my_events_only %]">мои</a>[% END %]
+<label title="турниры">
+<input type="checkbox" name="show_contests" [% IF show_contests %] checked="checked"[% END %]/>т</label>
+<label title="сообщения">
+<input type="checkbox" name="show_messages" [% IF show_messages %] checked="checked"[% END %]/>с</label>
+<label title="результаты">
+<input type="checkbox" name="show_results" [% IF show_results %] checked="checked"[% END %]/>р</label>
+за [% select('i_value', i_values) %] [% select('i_unit', i_units) %]</td>
+[% END %]
 [% PROCESS 'includes/submit_result.tti' %]
 <table width="100%" cellspacing="3" cellpadding="3" class="bordered console">
 [% FOREACH console %]
