@@ -1,15 +1,15 @@
+[%- PROCESS "lang/$lang/user_extra.tti" -%]
 <table class="registration">
-<tr><td>Страна</td><td>
+<tr><td>[% capt.country %]</td><td>
     <select name="country">
     [% FOREACH c IN countries %]
     <option value="[% c.id %]" [% IF c.id == country %]selected="selected"[% END %]>[% c.name | html %]</option>
     [% END %]
     </select>
 </td></tr>
-<tr><td>Город / регион</td><td> <input type=text name="city" size="50" value="[% city | html %]" class="bordered"></td></tr>
-<tr><td>Девиз команды</td><td> <input type=text name='motto' size=50 value='[% motto | html %]' class=bordered></td></tr>
-<tr><td>ФИО капитана команды</td><td> <input type=text name='capitan_name' size=50 value='[% capitan_name | html %]' class=bordered></td></tr>
-<tr><td>E-Mail</td><td> <input type=text name='email' size=50 value='[% email | html %]' class=bordered></td></tr>
-<tr><td>ICQ</td><td> <input type=text name='icq_number' size=50 value='[% icq_number | html %]' class=bordered></td></tr>
-<tr><td>Адрес домашней страницы</td><td> <input type=text name='home_page' size=50 value='[% home_page | html %]' class=bordered></td></tr>
+[%- MACRO input_tr(field) BLOCK -%]
+  <tr><td>[% capt.$field %]</td>
+  <td><input type="text" name="[% field %]" size="50" value="[% $field | html %]" class="bordered"></td></tr>
+[%- END -%]
+[% FOREACH f IN ['city', 'motto', 'capitan_name', 'email', 'icq_number', 'home_page']; input_tr(f); END %]
 </table>

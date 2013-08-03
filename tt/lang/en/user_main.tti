@@ -1,0 +1,6 @@
+[%
+  capt = {
+    team_name => 'Team name / contestant name',
+    login => 'Login',
+  }
+%]

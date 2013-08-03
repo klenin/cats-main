@@ -1,0 +1,11 @@
+[%
+  capt = {
+    country => 'Страна',
+    city => 'Город / регион',
+    motto => 'Девиз команды',
+    capitan_name => 'ФИО капитана команды',
+    email => 'E-Mail',
+    icq_number => 'ICQ',
+    home_page => 'Адрес домашней страницы',
+  }
+%]

@@ -1,0 +1,11 @@
+[%
+  capt = {
+    country => 'Country',
+    city => 'City / region',
+    motto => 'Motto',
+    capitan_name => "Team captain's name",
+    email => 'E-Mail',
+    icq_number => 'ICQ',
+    home_page => 'Home page',
+  }
+%]
