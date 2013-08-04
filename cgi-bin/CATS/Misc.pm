@@ -262,6 +262,7 @@ sub res_str
 sub msg
 {
     $t->param(message => res_str(@_));
+    undef;
 }
 
 

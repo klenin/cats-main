@@ -43,6 +43,7 @@ sub param
         my %args = @_;
         @{$self->{vars}}{keys %args} = @args{keys %args};
     }
+    $self;
 }
 
 sub output
