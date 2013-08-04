@@ -1,3 +1,4 @@
+[%- PROCESS "lang/$lang/run_details.html.tt" -%]
 [% PROCESS 'includes/header.tti' %]
 </head>
 <body>
@@ -11,7 +12,7 @@
   <option value="[% enc %]"[% IF selected %]selected="selected"[% END %]>[% enc %]</option>
   [% END %]
   </select>
-  <input type="submit" class="button" value="кодировка" />
+  <input type="submit" class="button" value="[% capt1.encoding %]" />
 </form>
 
 <table><tr valign="top">
@@ -23,9 +24,9 @@
   </table>
 [% ELSE %]
   [% IF testsets.size %]
-    <p>Наборы тестов</p>
+    <p>[% capt1.testsets %]</p>
     <table class="bordered">
-    <th>Название</th><th>Пройдено тестов</th><th>Баллы</th><th>Примечание</th></tr>
+    <th>[% capt1.name %]</th><th>[% capt1.tests_passed %]</th><th>[% capt1.points %]</th><th>[% capt1.comment %]</th></tr>
     [% FOREACH testsets %]
     <tr [% IF earned_points %] class="run_details_OK"[% END %]>
       <td>[% name %]</td>
@@ -39,18 +40,18 @@
   [% END %]
   <table class="bordered">
   <tr>
-    <th>Тест</th>
-    <th>Результат</th>
+    <th>[% capt1.test %]</th>
+    <th>[% capt1.result %]</th>
     [% IF show_points %]
-      <th>Баллы</th>
+      <th>[% capt1.points %]</th>
     [% END %]
     [% IF show_test_resources %]
-      <th>Время, сек</th>
-      <th>Память</th>
-      <th>Диск</th>
+      <th>[% capt1.time %]</th>
+      <th>[% capt1.memory %]</th>
+      <th>[% capt1.disk %]</th>
     [% END %]
     [% IF show_checker_comment %]
-      <th>Примечание</th>
+      <th>[% capt1.comment %]</th>
     [% END %]
   </tr>
   [% FOREACH rd IN run_details %]
@@ -89,7 +90,7 @@
     [% IF rd.show_checker_comment %]<td><pre>[% rd.checker_comment %]</pre></td>[% END %]
   </tr>
   [% END %]
-  [% IF show_points %]<tr><td colspan="2">Всего</td><td>[% total_points %]</td></tr>[% END %]
+  [% IF show_points %]<tr><td colspan="2">[% capt1.total %]</td><td>[% total_points %]</td></tr>[% END %]
   </table>
 [% END %]
 </td>

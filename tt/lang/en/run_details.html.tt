@@ -1,0 +1,16 @@
+[%
+  capt1 = {
+    encoding => 'encoding',
+    testsets => 'Testsets',
+    name => 'Name',
+    tests_passed => 'Tests passed',
+    points => 'Points',
+    comment => 'Comment',
+    test => 'Test',
+    result => 'Result',
+    time => 'Time, sec',
+    memory => 'Memory',
+    disk => 'Disk',
+    total => 'Total',
+  }
+%]
