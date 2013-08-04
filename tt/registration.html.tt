@@ -1,21 +1,21 @@
 [% PROCESS 'includes/menu_begin.tti' %]
+[%- PROCESS 'includes/html.tti' -%]
 
 [% IF message %]<i>[% message | html %]</i><br/>[% END %]
 [% IF successfully_registred %]
-Регистрация прошла успешно.<br/>
-Теперь Вы можете <a href="[% href_login %]">войти</a> в систему и принимать участие в турнирах.
+[% successful %]<br/>
+[% you_now_can(href(href_login, login_capt)) %]
 [% ELSE %]
-<h3>Регистрация нового пользователя</h3>
+<h3>[% new_user %]</h3>
 <form method="post" enctype="multipart/form-data">
-<h4>Обязательные поля</h4>
+<h4>[% required_fields %]</h4>
 [% PROCESS 'includes/user_main.tti' %]
 [% PROCESS 'includes/password.tti' %]
-<h4>Необязательные поля</h4>
+<h4>[% aux_fields %]</h4>
 [% PROCESS 'includes/user_extra.tti' %]
 <br/>
-<input type="submit" name="register" value="зарегистрироваться" class="button">
+<input type="submit" name="register" value="[% do_register %]" class="button">
 </form>
-
 [% END %]
 
 [% PROCESS 'includes/menu_end.tti' %]

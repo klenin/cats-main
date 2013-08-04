@@ -1,0 +1,9 @@
+[%
+  successful = 'Account created successfully.';
+  login_capt = 'log in';
+  MACRO you_now_can(enter) BLOCK; "Now you can ${enter} into the system and participate in contests."; END;
+  new_user = 'New user registration';
+  required_fields = 'Required fileds';
+  aux_fields = 'Auxiliary fialds';
+  do_register = 'register';
+%]
