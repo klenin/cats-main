@@ -1,4 +1,5 @@
 [% PROCESS 'includes/menu_begin.tti' %]
+[%- PROCESS 'includes/html.tti' -%]
 [% IF editable %]
 <script type="text/javascript">
 function getSelectedButton(button) {
@@ -20,17 +21,17 @@ a["[% problem_id %]"] = new Array(
 function d() {
     var v = getSelectedButton(document.problems_form.problem_id);
     if (v < 0) {
-        alert('Не выбрана задача для удаления');
+        alert('[% no_problem_delete %]');
         return;
     }
-    if (confirm("Вы действительно желаете удалить задачу '" + a[v][0] + "'?"))
+    if (confirm("[% want_to_delete %] '" + a[v][0] + "'?"))
         document.location = a[v][1];
 }
 
 function r() {
     var v = getSelectedButton(document.problems_form.problem_id);
     if (v < 0)
-        alert('Не выбрана задача для замены');
+        alert('[% no_problem_replace %]');
     else
         document.location = a[v][2];
 }
@@ -49,15 +50,15 @@ function chg_code(st_sel, pid)
 [% END %]
 
 [% IF problem_import_log %]
-Лог загрузки задачи:<br/>
+[% problem_import_log_capt %]:<br/>
 <textarea cols="100" rows="10" readonly="readonly">
 [% problem_import_log %]
 </textarea>
 [% END %]
 
 [% IF solution_submitted %]
-[% IF de_name %]Определена среда разработки: '[% de_name | html %]'.<br/>[% END %]
-Для наблюдения за ходом тестирования откройте <a href="[% href_console %]" target="_top">консоль</a>.
+[% IF de_name ; dev_env_detected; ': '; de_name | html %]'.<br/>[% END %]
+[% to_monitor(href(href_console, console)) %]
 <hr/>
 [% END %]
 
@@ -79,9 +80,9 @@ function chg_code(st_sel, pid)
     </select> [% END %]<a href="[% href_view_problem %]" target="_blank">
     [% ELSE ~%]
       <a href="[% href_view_problem %]" target="_blank">[% IF code %][% code %] - [% END %][% END %][% problem_name | html %]</a>
-    [% IF href_explanation %]&nbsp;[<a href="[% href_explanation %]" target="_blank">разбор</a>][% END %]
-    [% IF show_packages %]&nbsp;[<a href="[% href_download %]">пакет</a>][% END %]
-    [% IF href_compare_tests %]&nbsp;[<a href="[% href_compare_tests %]">т</a>][% END %]
+    [% IF href_explanation %]&nbsp;[<a href="[% href_explanation %]" target="_blank">[% analysis %]</a>][% END %]
+    [% IF show_packages %]&nbsp;[<a href="[% href_download %]">[% package %]</a>][% END %]
+    [% IF href_compare_tests %]&nbsp;[<a href="[% href_compare_tests %]">[% compare_tests %]</a>][% END %]
 </td>
 [% IF editable %]
 <td>
@@ -102,24 +103,24 @@ function chg_code(st_sel, pid)
 </table>
 [% IF is_team %]
 <div class="problem_submit">
-  <p><label for="source">Файл с решением:</label><input type="file" id="source" name="source" class="file" size="25"/></p>
-  <p><label for="de_id">Среда разработки:</label><select name="de_id" id="de_id">
+  <p><label for="source">[% solution_file %]:</label><input type="file" id="source" name="source" class="file" size="25"/></p>
+  <p><label for="de_id">[% dev_env %]:</label><select name="de_id" id="de_id">
     [% FOREACH de_list %]<option value="[% de_id %]">[% de_name | html %]</option>[% END %]
     </select>
   </p>
-  <p><label for="source_text">Текст решения:</label><br/>
+  <p><label for="source_text">[% solution_text %]:</label><br/>
   <textarea id="source_text" name="source_text" cols="50" rows="5"></textarea></p>
-  <input type="submit" name="submit" value="отправить" class="button" />
-  [% IF editable %]<input type="submit" name="std_solution" value="эталонное решение" class="button" />[% END %]
+  <input type="submit" name="submit" value="[% submit_capt %]" class="button" />
+  [% IF editable %]<input type="submit" name="std_solution" value="[% std_solution %]" class="button" />[% END %]
 </div>
 [% IF editable %]
 <div class="problem_submit">
-  <p><label for="zip">Файл с задачей:</label><input type="file" id="zip" name="zip" class="file" size="25"/>
-    <label><input type="checkbox" name="allow_rename" value="1"/> переим.</label></p>
+  <p><label for="zip">[% problem_file %]:</label><input type="file" id="zip" name="zip" class="file" size="25"/>
+    <label><input type="checkbox" name="allow_rename" value="1"/> [% rename_capt %]</label></p>
   <p>
-    <input type="button" name="delete" value="удалить" class="button" onclick="d()" />
-    <input type="submit" name="replace" value="заменить" class="button" />
-    <input type="submit" name="add_new" value="добавить" class="button" />
+    <input type="button" name="delete" value="[% delete_capt %]" class="button" onclick="d()" />
+    <input type="submit" name="replace" value="[% replace_capt %]" class="button" />
+    <input type="submit" name="add_new" value="[% add_new_capt %]" class="button" />
   </p>
 </div>
 [% END %]

@@ -1,0 +1,22 @@
+[%
+  no_problem_delete = 'No problem selected to delete';
+  want_to_delete = 'Do you really want to delete problem';
+  no_problem_replace = 'No problem selected to replace';
+  problem_import_log_capt = 'Problem import log';
+  dev_env_detected = 'Development environment detected';
+  MACRO to_monitor(console) BLOCK; "Open ${console} to monitor testing process"; END;
+  console = 'console';
+  analysis = 'analysis';
+  package = 'package';
+  compare_tests = 't';
+  solution_file = 'Solution file';
+  dev_env = 'Dev. environment';
+  solution_text = 'Solution text';
+  submit_capt = 'submit';
+  std_solution = 'standard solution';
+  problem_file = 'Problem file';
+  rename_capt = 'rename';
+  delete_capt = 'delete';
+  replace_capt = 'replace';
+  add_new_capt = 'add';
+%]
