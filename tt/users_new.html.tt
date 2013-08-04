@@ -4,10 +4,7 @@
 
 <form method=post enctype='multipart/form-data' action='[% href_action %]'>
 [% PROCESS 'includes/user_main.tti' %]
-<table class="registration">
-<tr><td>Пароль</td><td> <input type=password name='password1' size=50 class=bordered></td></tr>
-<tr><td>Пароль (подтверждение)</td><td> <input type=password name='password2' size=50 class=bordered></td></tr>
-<table>
+[% PROCESS 'includes/password.tti' %]
 [% PROCESS 'includes/user_extra.tti' %]
 <br/>
 <input type=submit name='new_save' value='     Ok     ' class=button> 

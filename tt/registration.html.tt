@@ -9,10 +9,7 @@
 <form method="post" enctype="multipart/form-data">
 <h4>Обязательные поля</h4>
 [% PROCESS 'includes/user_main.tti' %]
-<table class="registration">
-<tr><td>Пароль</td><td> <input type=password name='password1' size=50 class=bordered></td></tr>
-<tr><td>Пароль (подтверждение)</td><td> <input type=password name='password2' size=50 class=bordered></td></tr>
-<table>
+[% PROCESS 'includes/password.tti' %]
 <h4>Необязательные поля</h4>
 [% PROCESS 'includes/user_extra.tti' %]
 <br/>
