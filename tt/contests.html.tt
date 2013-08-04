@@ -18,10 +18,8 @@ function confirm_registration()
 <form method="post" enctype="multipart/form-data" action="[% href_contests %]" id="contest_form">
 [% PROCESS 'includes/listview_header.tti' %]
 
-<table border=0 width="100%" cellpadding=2 cellspacing=1 class=bordered>
-<tr bgcolor="#ccccff">
+<table width="100%" cellpadding=2 cellspacing=1 class=bordered>
 [% PROCESS 'includes/listview_col_defs.tti' %]
-</tr>
 
 [% FOREACH contests %]
 <tr bgcolor="#ffffff">

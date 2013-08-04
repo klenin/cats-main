@@ -65,10 +65,7 @@ function chg_code(st_sel, pid)
 [% PROCESS 'includes/listview_header.tti' %]
 <table width="100%" cellpadding="2" cellspacing="1" class="bordered">
 [% IF is_team %]
-<tr bgcolor="#ccccff">
-<th width="1%">&nbsp;</th>
-[% PROCESS 'includes/listview_col_defs.tti' %]
-</tr>
+[% PROCESS 'includes/listview_col_defs.tti' sel_col = 1 %]
 [% END %]
 [% FOREACH problems %]
 <tr bgcolor=[% IF odd %]"#f0f0f0"[% ELSE %]"#ffffff"[% END %]>

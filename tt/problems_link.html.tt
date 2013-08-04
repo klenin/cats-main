@@ -7,9 +7,7 @@
 </form>
 <form method="post" enctype="multipart/form-data" action="[% href_action %]">
 <table border=0 width=100% cellpadding=2 cellspacing=1 class=bordered>
-<tr bgcolor=#ccccff>
 [% PROCESS 'includes/listview_col_defs.tti' %]
-</tr>   
 [% FOREACH link_problem %]
 <tr bgcolor=#ffffff>
 <td>
