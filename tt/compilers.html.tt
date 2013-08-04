@@ -10,8 +10,6 @@ function delete_compiler(href, name)
 }
 </script>
 
-[% IF message %]<i>[% message | html %]</i><br>[% END %]
-
 <form method=post enctype='multipart/form-data'>
 [% PROCESS 'includes/listview_header.tti' %]
 
@@ -24,7 +22,7 @@ function delete_compiler(href, name)
 <tr bgcolor=#ffffff>
 <td>
   [% IF editable %]
-  <a href='javascript:delete_compiler("[% href_delete %]", "[% description | html %]");''><img src="./images/std/waste2.gif" border=0></a> 
+  <a href='javascript:delete_compiler("[% href_delete %]", "[% description | html %]");'><img src="./images/std/waste2.gif" border=0></a> 
   <a href='[% href_edit %]'><img src="./images/std/blank.gif" border=0></a> 
   [% END %]
   [% code | html %]

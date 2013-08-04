@@ -1,4 +1,3 @@
-[% IF message.defined %]<i>[% message | html %]</i><br/>[% END %]
 
 [%- IF not_started -%]
   <i>Соревнования ещё не начались</i>

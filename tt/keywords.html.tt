@@ -10,8 +10,6 @@ function delete_kw(href, name)
 }
 </script>
 
-[% IF message %]<i>[% message | html %]</i><br>[% END %]
-
 <form method=post enctype='multipart/form-data'>
 [% PROCESS 'includes/listview_header.tti' %]
 

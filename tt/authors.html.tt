@@ -1,5 +1,4 @@
 [% PROCESS 'includes/menu_begin.tti' %]
-[% IF message %]<i>[% message | html %]</i><br>[% END %]
 
 <b>В разработке системы принимали участие:</b>
 

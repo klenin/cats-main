@@ -19,7 +19,6 @@ a["[% problem_id %]"] = new Array(
 
 </script>
 [% END %]
-[% IF message %]<i>[% message | html %]</i><br/>[% END %]
 <i>Всего в очереди: [% total_queue %]</i><br/>
 
 <form method="post" enctype="multipart/form-data" name="problems_form" style="margin: 0">

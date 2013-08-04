@@ -15,7 +15,6 @@ function confirm_registration()
 }
 </script>
 
-[% IF message %]<i>[% message | html %]</i><br>[% END %]
 <form method="post" enctype="multipart/form-data" action="[% href_contests %]" id="contest_form">
 [% PROCESS 'includes/listview_header.tti' %]
 

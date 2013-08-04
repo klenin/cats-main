@@ -1,7 +1,6 @@
 [% PROCESS 'includes/menu_begin.tti' %]
 [%- PROCESS 'includes/html.tti' -%]
 
-[% IF message %]<i>[% message | html %]</i><br/>[% END %]
 [% IF successfully_registred %]
 [% successful %]<br/>
 [% you_now_can(href(href_login, login_capt)) %]

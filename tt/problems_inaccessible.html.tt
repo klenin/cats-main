@@ -1,3 +1,2 @@
 [% PROCESS 'includes/menu_begin.tti' %]
-[% message %]
 [% PROCESS 'includes/menu_end.tti' %]

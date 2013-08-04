@@ -1,5 +1,4 @@
 [% PROCESS 'includes/menu_begin.tti' %]
-[% IF message %]<i>[% message | html %]</i><br>[% END %]
 
 Доступ к этой странице запрещен.
 

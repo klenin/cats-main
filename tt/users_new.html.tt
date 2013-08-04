@@ -1,7 +1,5 @@
 [% PROCESS 'includes/menu_begin.tti' %]
 
-[% IF message %]<i>[% message | html %]</i><br>[% END %]
-
 <form method=post enctype='multipart/form-data' action='[% href_action %]'>
 [% PROCESS 'includes/user_main.tti' %]
 [% PROCESS 'includes/password.tti' %]

@@ -1,7 +1,5 @@
 [% PROCESS 'includes/menu_begin.tti' %]
 
-[% IF message %]<i>[% message | html %]</i>[% END %]
-
 <table cellpadding="0">
 <tr><td>Имя:</td><td>[% team_name | html %]</td>
 [% IF is_root %]

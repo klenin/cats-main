@@ -10,8 +10,6 @@ function delete_team(href, name)
 }
 </script>
 
-[% IF message %]<i>[% message | html %]</i>[% END %]
-
 <form method="post">
 [% PROCESS 'includes/listview_header.tti' %]
 <table border=0 width=100% cellpadding=2 cellspacing=1 class=bordered bgcolor=#8060f0>

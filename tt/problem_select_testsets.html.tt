@@ -1,5 +1,5 @@
 [% PROCESS 'includes/menu_begin.tti' %]
-[% message | html %]
+
 <h3>[% problem_title %]</h3>
 Выберите тестовые наборы:
 <form action="[% href_problem_select_testsets %]" method="POST">

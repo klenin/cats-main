@@ -1,7 +1,5 @@
 [% PROCESS 'includes/menu_begin.tti' %]
 
-[% IF message %]<i>[% message | html %]</i>[% END %]
-
 <form method="post" enctype="multipart/form-data" action="[% href_action %]">
 <table cellpadding="0">
 <tr><td>Идентификатор</td><td><input type="text" name="code" class="bordered"></td>

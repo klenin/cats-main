@@ -1,5 +1,4 @@
 [% PROCESS 'includes/menu_begin.tti' %]
-[% IF message %]<i>[% message | html %]</i><br>[% END %]
 
 <form method="post" enctype="multipart/form-data" action="[% href_graphs %]">
 [% FOREACH codes %]<input type="checkbox" name="selected_codes" value="[% code %]"[% IF selected %] checked="checked"[% END %]/>[% code %]

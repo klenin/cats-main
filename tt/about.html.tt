@@ -1,8 +1,5 @@
 [% PROCESS 'includes/menu_begin.tti' %]
 [% PROCESS 'includes/html.tti' %]
-[% IF message ~%]
-    <i>[% message | html %]</i><br>
-[%~ END %]
 
 <b>[% welcome %]</b><br/><br/>
 

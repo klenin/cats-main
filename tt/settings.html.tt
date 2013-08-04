@@ -1,8 +1,6 @@
 [% PROCESS 'includes/menu_begin.tti' %]
 [%- PROCESS 'includes/html.tti' -%]
 
-[% IF message %]<i>[% message | html %]</i><br/>[% END %]
-
 <form method="post" enctype="multipart/form-data">
 [% PROCESS 'includes/user_main.tti' %]
 [% PROCESS 'includes/user_extra.tti' %]

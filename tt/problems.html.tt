@@ -47,7 +47,6 @@ function chg_code(st_sel, pid)
 
 </script>
 [% END %]
-[% IF message %]<i>[% message | html %]</i><br/>[% END %]
 
 [% IF problem_import_log %]
 Лог загрузки задачи:<br/>
