@@ -2,15 +2,14 @@
 
 [% IF message %]<i>[% message | html %]</i><br/>[% END %]
 
-<form method=post enctype='multipart/form-data'>
+<form method="post" enctype="multipart/form-data">
 [% PROCESS 'includes/user_main.tti' %]
 [% PROCESS 'includes/user_extra.tti' %]
 [% PROCESS 'includes/password.tti' change_password = 1 %]
 <br>
-<input type=hidden name='id' value="[% id %]">
-<input type=submit name='edit_save' value='     Ok     ' class=button> 
-<input type=submit name='edit_cancel' value='Отмена' class=button>
-<input type="submit" name="clear" value="Сбросить настройки" class="button"/>
+<input type="submit" name="edit_save" value="     Ok     " class="button"> 
+<input type="submit" name="edit_cancel" value="[% cancel %]" class="button">
+<input type="submit" name="clear" value="[% clear %]" class="button"/>
 </form>
 
 [% IF settings %]<div><pre>[% settings %]</pre></div>[% END %]
