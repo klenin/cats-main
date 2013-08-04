@@ -1,29 +1,27 @@
 [% PROCESS 'includes/menu_begin.tti' %]
+[% PROCESS 'includes/html.tti' %]
 [% IF message ~%]
     <i>[% message | html %]</i><br>
 [%~ END %]
 
 <b>[% welcome %]</b><br/><br/>
 
-<p>На базе данной системы проводятся чемпионаты ACM по Дальневосточному региону,
-соревнования школьников, тренировки.</p>
+<p>[% purpose %]</p>
 
-<p>Количество заданий в системе: <b>[% problem_count %]</b>.</p>
+<p>[% problem_count_capt %]: <b>[% problem_count %]</b>.</p>
 
-<p>Для того чтобы в полной мере воспользоваться функциональностью системы,
-вы должны <a href="main.pl?f=registration;cid=500001">зарегистрироваться</a>.</p>
-Регистрация позволит Вам:
+<p>[% need_register %] <a href="main.pl?f=registration;cid=500001">[% register %]</a>.</p>
+[% account_you_can %]:
   <ul>
-    <li>Принимать участие в соревнованиях, в том числе виртуально -- в прошедших соревнованиях</li>
-    <li>Решать задачи из архива от своего имени</li>
-    <li>Наблюдать свои достижения в общей рейтинговой таблице участников</li>
+    <li>[% participate %]</li>
+    <li>[% solve %]</li>
+    <li>[% monitor %]</li>
   </ul>
   <br/>
+[% avail(href('docs/', documentation), href('docs/format.html', format), href('docs/sp.exe', spawner)) %]<br/>
 
-Доступна <a href="docs/">документация</a>, в том числе <a href="docs/format.html">формат заданий</a>
-и <a href="docs/sp.exe">модуль spawner</a>.<br/>
-Замечания и предложения можно сообщить с помощью
-<a href="https://github.com/klenin/cats-main/issues">системы контроля дефектов</a>
-или адресу: <img style="position: relative; top: 4px" src="http://imcs.dvgu.ru/img-email/aleksandr_klenin.gif" alt="Электронная почта Кленина А.С."/><br/><br/>
+[% suggestions %]
+<a href="https://github.com/klenin/cats-main/issues">[% issues %]</a>
+[% or_by_email %]: <img style="position: relative; top: 4px" src="http://imcs.dvgu.ru/img-email/aleksandr_klenin.gif" alt="Электронная почта Кленина А.С."/><br/><br/>
 
 [% PROCESS 'includes/menu_end.tti' %]

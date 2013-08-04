@@ -7,3 +7,5 @@
     [%- FOREACH opt IN options; option(opt.value, opt.text, opt.selected); END -%]
     </select>
 [%- END -%]
+
+[%- MACRO href(url, text) BLOCK -%]<a href="[% url %]">[% text %]</a>[% END -%]
