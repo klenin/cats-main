@@ -1,0 +1,20 @@
+[%
+  filter_capt = 'filter';
+  filter_all = 'all';
+  filter_my = 'my';
+  contests_capt = 'contests';
+  contests_short = 'c';
+  messages_capt = 'messages';
+  messages_short = 'm';
+  results_capt = 'results';
+  results_short = 'r';
+  for_capt = 'for';
+  jury = 'jury';
+  answer = 'answer';
+  delete = 'delete';
+  all_teams = 'all teams';
+  start_of = 'Start of';
+  finish_of = 'Finish of';
+  official = 'official';
+  contest => 'contest';
+%]

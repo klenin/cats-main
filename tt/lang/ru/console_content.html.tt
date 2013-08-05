@@ -1,0 +1,20 @@
+[%
+  filter_capt = 'выбирать';
+  filter_all = 'все';
+  filter_my = 'мои';
+  contests_capt = 'турниры';
+  contests_short = 'т';
+  messages_capt = 'сообщения';
+  messages_short = 'с';
+  results_capt = 'результаты';
+  results_short = 'р';
+  for_capt = 'за';
+  jury = 'жюри';
+  answer = 'ответить';
+  delete = 'удалить';
+  all_teams = 'всем командам';
+  start_of = 'Начался';
+  finish_of = 'Закончился';
+  official = 'официальный';
+  contest => 'турнир';
+%]

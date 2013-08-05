@@ -1,0 +1,14 @@
+[%
+  two_reqs = 'Укажите две попытки для сравнения';
+  no_req = 'Укажите попытку';
+  loading = 'Идет загрузка страницы...';
+  selection_capt = 'Выбор'
+  clear_capt = 'очистить';
+  source_capt = 'программа';
+  results_capt = 'результаты';
+  log_capt = 'лог';
+  compare_capt = 'сравнить';
+  retest_capt = 'перетестировать';
+  question_capt = 'Вопрос к жюри';
+  send_capt = 'Отправить';
+%]

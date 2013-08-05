@@ -1,16 +1,18 @@
-[% PROCESS includes/html.tti %]
+[%- PROCESS includes/html.tti -%]
+[%- PROCESS "lang/$lang/${template.name}" -%]
 [% WRAPPER includes/listview_header.tti %]
 <td align=center>
-выбирать:
-[% IF user_filter %]<a href="[% href_all_events %]">все</a>
-[% ELSE %]<a href="[% href_my_events_only %]">мои</a>[% END %]
-<label title="турниры">
-<input type="checkbox" name="show_contests" [% IF show_contests %] checked="checked"[% END %]/>т</label>
-<label title="сообщения">
-<input type="checkbox" name="show_messages" [% IF show_messages %] checked="checked"[% END %]/>с</label>
-<label title="результаты">
-<input type="checkbox" name="show_results" [% IF show_results %] checked="checked"[% END %]/>р</label>
-за [% select('i_value', i_values) %] [% select('i_unit', i_units) %]</td>
+
+[% filter_capt %]:
+[% IF user_filter %]<a href="[% href_all_events %]">[% filter_all %]</a>
+[% ELSE %]<a href="[% href_my_events_only %]">[% filter_my %]</a>[% END %]
+<label title="[% contests_capt %]">
+<input type="checkbox" name="show_contests" [% IF show_contests %] checked="checked"[% END %]/>[% contests_short %]</label>
+<label title="[% messages_capt %]">
+<input type="checkbox" name="show_messages" [% IF show_messages %] checked="checked"[% END %]/>[% messages_short %]</label>
+<label title="[% results_capt %]">
+<input type="checkbox" name="show_results" [% IF show_results %] checked="checked"[% END %]/>[% results_short %]</label>
+[% for_capt %] [% select('i_value', i_values) %] [% select('i_unit', i_units) %]</td>
 [% END %]
 [% PROCESS 'includes/submit_result.tti' %]
 <table width="100%" cellspacing="3" cellpadding="3" class="bordered console">
@@ -44,42 +46,42 @@
     <td align=left nowrap>
       [[% IF is_jury %]<a href="javascript:send_message('[% href_send_message_box %]')">[% END %][% team_name | html %][% IF is_jury %]</a>[% END %][% IF is_jury %]:
         [% IF last_ip %]<a href="[% href_whois %]" alt="[% last_ip %]" title="[% last_ip %]">[% last_ip_short %]</a>[% ELSE %][% last_ip_short %][% END %]
-        [% END %] &gt; жюри]
+        [% END %] &gt; [% jury %]]
     </td>
     <td>
         <i>[% question_text | html %]</i> - 
         [% UNLESS clarified %]
         [% IF href_answer_box %]
-        <a href="[% href_answer_box %]" target="_blank" class="small">[ответить]</a>
+        <a href="[% href_answer_box %]" target="_blank" class="small">[[% answer %]]</a>
         [% END %]
         [% ELSE %]
         <font color=red>[% answer_text | html %]</font>
         [% END %]
-        [% IF href_delete_question %]<a href="[% href_delete_question %]" class="small">[удалить]</a>[% END %]
+        [% IF href_delete_question %]<a href="[% href_delete_question %]" class="small">[[% delete %]]</a>[% END %]
     </td>
 [% END %][% IF is_message %]
     <td nowrap width=1%>[% time %]</td>
     <td align=left>
-        [жюри &gt; [% team_name | html %]]
+        [[% jury %] &gt; [% team_name | html %]]
     </td>
     <td>
         <font color=red>[% message_text | html %]</font>
-        [% IF href_delete_message %]<a href="[% href_delete_message %]" class="small">[удалить]</a>[% END %]
+        [% IF href_delete_message %]<a href="[% href_delete_message %]" class="small">[[% delete %]]</a>[% END %]
     </td>
 [% END %][% IF is_broadcast %]
     <td nowrap width=1%>[% time %]</td>
     <td align=left>
-        <b><font color="#ff0000">[жюри &gt; всем командам]</font></b>
+        <b><font color="#ff0000">[[% jury %] &gt; [% all_teams %]]</font></b>
     </td>
     <td>
         <b><font color=red>[% message_text | html %]</font></b>
-        [% IF href_delete_message %]<a href="[% href_delete_message %]" class="small">[удалить]</a>[% END %]
+        [% IF href_delete_message %]<a href="[% href_delete_message %]" class="small">[[% delete %]]</a>[% END %]
     </td>
 [% END %][% IF is_contest %]
     <td nowrap width=1%>[% time %]</td>
     <td align=left>
-        <b>[% IF contest_start %]Начался[% ELSE %]Закончился[% END %]
-        [% IF is_official %]официальный [% END %]турнир</b>
+        <b>[% IF contest_start; start_of; ELSE; finish_of; END %]
+        [% "$official " IF is_official; contest %]</b>
     </td>
     <td>
         <b><a href="[% href_problems %]">[% problem_title | html %]</a></b>

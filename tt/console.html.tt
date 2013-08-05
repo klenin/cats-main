@@ -31,7 +31,7 @@ function fill_diff()
     var rs = re.exec(e.value);
     if (rs == null || rs.length != 3 || 0 >= rs[1] || 0 >= rs[2])
     {
-        alert('Укажите две попытки для сравнения');
+        alert('[% two_reqs %]');
         return false;
     }
     a.href = '[% href_diff %]&r1=' + rs[1] + '&r2=' + rs[2];
@@ -44,7 +44,7 @@ function fill_1(aid, arg)
     var e = get_element('selection');
     if (!e.value.match([% IF is_jury %]/^[0-9,]+$/[% ELSE %]/^\d+$/[% END %]))
     {
-        alert('Укажите попытку');
+        alert('[% no_req %]');
         return false;
     }
     a.href = arg + e.value;
@@ -53,30 +53,31 @@ function fill_1(aid, arg)
 }
 </script>
 <span id="refreshable_content">
-<br/>Идет загрузка страницы...<br/>
+<br/>[% loading %]<br/>
 </span>
 [% IF is_team %]
 <br/>
     <table cellpadding="6" cellspacing="0" class="bordered">
 [% IF is_jury %]
     <tr><td>
-    Выбор: <input type="text" id="selection" name="selection" value="[% selection %]" class="bordered" />
-    [ <a href="#" onclick="clear_selection(); return false;">очистить</a>
+    [% selection_capt %]:
+    <input type="text" id="selection" name="selection" value="[% selection %]" class="bordered" />
+    [ <a href="#" onclick="clear_selection(); return false;">[% clear_capt %]</a>
     | <a id="a_source" href="[% href_view_source %]" target="_blank"
-      onclick="return fill_1('a_source', '[% href_view_source %]&rid=');">программа</a>
+      onclick="return fill_1('a_source', '[% href_view_source %]&rid=');">[% source_capt %]</a>
     | <a id="a_run_details" href="[% href_run_details %]" target="_blank"
-      onclick="return fill_1('a_run_details', '[% href_run_details %]&rid=');">результаты</a>
+      onclick="return fill_1('a_run_details', '[% href_run_details %]&rid=');">[% results_capt %]</a>
     | <a id="a_run_log" href="[% href_run_log %]" target="_blank"
-      onclick="return fill_1('a_run_log', '[% href_run_log %]&rid=');">лог</a>
+      onclick="return fill_1('a_run_log', '[% href_run_log %]&rid=');">[% log_capt %]</a>
     | <a id="a_diff" href="[% href_diff %]" target="_blank"
-      onclick="return fill_diff();">сравнить</a>
-    ] <input type="submit" value="перетестировать" name="retest" class="button"/>
+      onclick="return fill_diff();">[% compare_capt %]</a>
+    ] <input type="submit" value="[% retest_capt %]" name="retest" class="button"/>
     </td></tr>
 [% END %]
     <tr bgcolor="#ccccff"><td>
-    Вопрос к жюри:
+    [% question_capt %]:
     <input size="100" maxlength="200" name="question_text" value="[% question_text | html %]" class="bordered" />
-    <input type="submit" value="Отправить" name="send_question" class="button"/>
+    <input type="submit" value="[% send_capt %]" name="send_question" class="button"/>
     </td></tr>
     </table>
 [% END %]
