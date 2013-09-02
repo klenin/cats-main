@@ -1,6 +1,6 @@
 [% PROCESS 'includes/menu_begin.tti' %]
 <span id='refreshable_content'>
-<br/>Идет загрузка страницы...<br/><br/>
+<br/>[% loading %]<br/><br/>
 <!-- xTMPL_VAR rank_table_content -->
 </span>
 <iframe width=0 height=0 src="[% href_rank_table_content %]"></iframe>

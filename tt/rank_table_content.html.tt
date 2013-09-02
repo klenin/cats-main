@@ -1,6 +1,7 @@
+[%- PROCESS "lang/$lang/${template.name}" -%]
 
 [%- IF not_started -%]
-  <i>Соревнования ещё не начались</i>
+  <i>[% capt.not_started %]</i>
   [%- STOP -%]
 [%- END -%]
 
@@ -8,18 +9,19 @@
 <table width="100%">
 <tr>
 <td align=left>
-  [% IF hide_ooc %]<a href="[% href_hide_ooc %]" target=_top>спрятать внеконкурсные</a>
-  [% ELSE %]<a href="[% href_show_ooc %]" target=_top>показать внеконкурсные</a>[% END %] |
-  [% IF hide_virtual %]<a href="[% href_hide_virtual %]" target=_top>спрятать виртуальные</a>
-  [% ELSE %]<a href="[% href_show_virtual %]" target=_top>показать виртуальные</a>[% END %]
+  [% IF hide_ooc %]<a href="[% href_hide_ooc %]" target=_top>[% capt.hide_ooc %]</a>
+  [% ELSE %]<a href="[% href_show_ooc %]" target=_top>[% capt.show_ooc %]</a>[% END %] |
+  [% IF hide_virtual %]<a href="[% href_hide_virtual %]" target=_top>[% capt.hide_virtual %]</a>
+  [% ELSE %]<a href="[% href_show_virtual %]" target=_top>[% capt.show_virtual %]</a>[% END %]
 </td>
 <td align=right>
-правила:
-[% IF show_points %]<a href="./docs/rules_school.html">школьные</a>
-[% ELSE %]<a href="./docs/rules_acm.html">ACM</a>
+[% capt.rules %]:
+[% IF show_points %]<a href="./docs/rules_school.html">[% capt.school %]</a>
+[% ELSE %]<a href="./docs/rules_acm.html">[% capt.ACM %]</a>
 [% END %]
-состояние: [% IF frozen %]<font color=#0000a0>заморожена</font>[% ELSE %]<font color=#00a040>актуальное</font>[% END %]
-[% IF cache_since %]кеш: [% cache_since %][% END %]
+[% capt.status %]:
+[% IF frozen %]<font color=#0000a0>[% capt.frozen %]</font>[% ELSE %]<font color=#00a040>[% capt.actual %]</font>[% END %]
+[% IF cache_since; capt.cache %]: [% cache_since %][% END %]
 </td>
 </tr>
 </table>
@@ -34,18 +36,18 @@
 [% END -%]
 <tr bgcolor="#ccccff">
 <th width="1%"></th>
-[%- IF 0 %]<th width=1%>Страна[% END -%]
-<th>Название команды</th>
+[%- IF 0 %]<th width=1%>[% capt.country %]</th>[% END -%]
+<th>[% capt.team_name %]</th>
 [% FOREACH p IN problems %]
 <th width="[% problem_column_width %]%">
   <a href="[% p.problem_text %]" alt="[% p.title | html%]" title="[% p.title | html %]">[% p.code %]</a>
   [%- " ($p.max_points)" IF show_points -%]
 </th>
 [% END %]
-<th width="[% problem_column_width %]%">[% IF show_points %]всего ([% max_total_points %])[% ELSE %]=[% END %]</th>
-[% UNLESS show_points %]<th>время</th>[% END %]
-<th>место</th>
-<th>статус</th>
+<th width="[% problem_column_width %]%">[% IF show_points; capt.total %] ([% max_total_points %])[% ELSE %]=[% END %]</th>
+[% UNLESS show_points %]<th>[% capt.time %]</th>[% END %]
+<th>[% capt.place %]</th>
+<th>[% capt.status %]</th>
 
 [% IF printable %]
 [% FOREACH r IN rank %]
@@ -110,10 +112,10 @@ for(var i = 0; i < rank_table.length; ++i) {
 <tr [% UNLESS problem_stats_color %]bgcolor="#f4f4f4"[% END %]>
   <td>&nbsp;</td>
   [% IF show_points %]
-  <td>Средний балл</td>[% FOREACH ps IN problem_stats %]<td align="center">[% ps.average_points %]</td>[% END %]
+  <td>[% capt.average_points %]</td>[% FOREACH ps IN problem_stats %]<td align="center">[% ps.average_points %]</td>[% END %]
   <td colspan="3">&nbsp;</td>
   [% ELSE %]
-  <td>Успешных попыток</td>
+  <td>[% capt.successful_submits %]</td>
   [% FOREACH ps IN problem_stats %]
     <td align="center"><p>[% ps.total_accepted %] / [% ps.total_runs %]</p>[% ps.percent_accepted %]%</td>
   [% END %]

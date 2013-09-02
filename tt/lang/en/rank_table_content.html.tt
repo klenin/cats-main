@@ -1,0 +1,24 @@
+[%
+  capt => {
+    not_started => 'Contest has not started yet',
+    hide_ooc => 'hide ooc',
+    show_ooc => 'show ooc',
+    hide_virtual => 'hide virtual',
+    show_virtual => 'show virtual',
+    rules => 'rules',
+    school => 'school',
+    acm => 'ACM',
+    status => 'status',
+    frozen => 'frozen',
+    actual => 'actual',
+    cache => 'cache',
+    country => 'Country',
+    team_name => 'Team name',
+    total => 'total',
+    time => 'time',
+    place => 'place'
+    status => 'status',
+    average_points => 'Average points',
+    successful_submits => 'Successful submits',
+  }
+%]
