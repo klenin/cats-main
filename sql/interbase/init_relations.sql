@@ -255,7 +255,6 @@ CREATE TABLE reqs (
     test_time   TIMESTAMP, /* время начала тестирования */
     result_time TIMESTAMP, /* время окончания тестирования */
     state       INTEGER,
-    result      INTEGER,
     failed_test INTEGER,
     judge_id    INTEGER REFERENCES judges(id) ON DELETE SET NULL, 
     received    INTEGER DEFAULT 0 CHECK (received IN (0, 1)),
