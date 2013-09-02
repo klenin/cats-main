@@ -1948,7 +1948,7 @@ sub reference_names()
 {
     (
         { name => 'compilers', new => 542, item => 517 },
-        { name => 'judges', new => 543, item => 511 },
+        { name => 'judges', new => 512, item => 511 },
         { name => 'keywords', new => 550, item => 549 },
         { name => 'import_sources', item => 557 },
         ($is_root ? { name => 'prizes', item => 565 } : ()),
@@ -2445,7 +2445,7 @@ sub rank_table_frame
     );
     $t->param(href_rank_table_content => url_f('rank_table_content', @params));
     my $submenu =
-        [ { href => url_f('rank_table_content', @params, printable => 1), item => res_str(552) } ];
+        [ { href => url_f('rank_table_content', @params, printable => 1), item => res_str(538) } ];
     if ($is_jury)
     {
         push @$submenu,
