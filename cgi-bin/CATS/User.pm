@@ -173,11 +173,12 @@ sub insert
     @$training_contests or return msg(105);
 
     my $aid = new_id;
+    my $new_settings = $p{save_settings} ? Storable::freeze($CATS::Misc::settings) : '';
     $dbh->do(qq~
         INSERT INTO accounts (
-            id, srole, passwd, ~ . join (', ', param_names()) . qq~
-        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)~, {},
-        $aid, $cats::srole_user, $self->{password1}, $self->values
+            id, srole, passwd, settings, ~ . join (', ', param_names()) . qq~
+        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)~, {},
+        $aid, $cats::srole_user, $self->{password1}, $new_settings, $self->values
     );
     add_to_contest(contest_id => $_->{id}, account_id => $aid, is_ooc => 1)
         for @$training_contests;

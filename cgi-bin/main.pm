@@ -1595,7 +1595,7 @@ sub registration_frame
 
     my $u = CATS::User->new->parse_params;
     $u->validate_params(validate_password => 1) or return;
-    $u->insert or return;
+    $u->insert(undef, save_settings => 1) or return;
     $t->param(successfully_registred => 1);
 }
 
