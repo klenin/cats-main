@@ -658,8 +658,7 @@ sub problems_link_save
     my $problem_code = param('problem_code');
     check_problem_code(\$problem_code) or return;
     my $move_problem = param('move');
-    if ($move_problem)
-    {
+    if ($move_problem) {
         # Нужны права жюри в турнире, из которого перемещаем задачу
         # Проверим заранее, чтобы не нужно было делать rollback
         my ($j) = $dbh->selectrow_array(q~
@@ -671,10 +670,12 @@ sub problems_link_save
         $j or return msg(135);
     }
     add_problem_to_contest($pid, $problem_code);
-    if ($move_problem)
-    {
+    if ($move_problem) {
         $dbh->do(q~
             UPDATE problems SET contest_id = ? WHERE id = ?~, undef, $cid, $pid);
+    }
+    else {
+        msg(001);
     }
     $dbh->commit;
 }
