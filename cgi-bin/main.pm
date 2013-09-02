@@ -603,7 +603,10 @@ sub add_problem_to_contest
 {
     my ($pid, $problem_code) = @_;
     CATS::StaticPages::invalidate_problem_text(cid => $cid);
-    return $dbh->do(qq~
+    $dbh->selectrow_array(q~
+        SELECT 1 FROM contest_problems WHERE contest_id = ? and problem_id = ?~, undef,
+        $cid, $pid) and return msg(003);
+    $dbh->do(qq~
         INSERT INTO contest_problems(id, contest_id, problem_id, code, status)
             VALUES (?,?,?,?,?)~, {},
         new_id, $cid, $pid, $problem_code,
@@ -669,7 +672,7 @@ sub problems_link_save
             $uid, $pid);
         $j or return msg(135);
     }
-    add_problem_to_contest($pid, $problem_code);
+    add_problem_to_contest($pid, $problem_code) or return;
     if ($move_problem) {
         $dbh->do(q~
             UPDATE problems SET contest_id = ? WHERE id = ?~, undef, $cid, $pid);
