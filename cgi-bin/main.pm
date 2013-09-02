@@ -752,7 +752,6 @@ sub problems_all_frame
         { caption => res_str(603), order_by => '3', width => '30%' },
         { caption => res_str(604), order_by => '4', width => '10%' },
         #{ caption => res_str(605), order_by => '5', width => '10%' },
-        #{ caption => res_str(606), order_by => '6', width => '10%' },
     ];
     define_columns(url_f('problems', link => $link, kw => $kw), 0, 0, $cols);
 
@@ -1169,10 +1168,10 @@ sub problems_retest_frame
     defined param('recalc_points') and problems_recalc_points;
 
     my @cols = (
-        { caption => res_str(602), order_by => '3', width => '30%' }, # название
-        { caption => res_str(639), order_by => '7', width => '10%' }, # в очереди
-        { caption => res_str(632), order_by => '6', width => '10%' }, # статус
-        { caption => res_str(605), order_by => '5', width => '10%' }, # набор тестов
+        { caption => res_str(602), order_by => '3', width => '30%' }, # name
+        { caption => res_str(639), order_by => '7', width => '10%' }, # in queue
+        { caption => res_str(622), order_by => '6', width => '10%' }, # status
+        { caption => res_str(605), order_by => '5', width => '10%' }, # testset
         { caption => res_str(604), order_by => '8', width => '10%' }, # ok/wa/tl
     );
     define_columns(url_f('problems_retest'), 0, 0, [ @cols ]);
@@ -1268,9 +1267,9 @@ sub problems_frame
         { caption => res_str(602), order_by => ($contest->is_practice ? '4' : '3'), width => '30%' },
         ($is_jury ?
         (
-            { caption => res_str(632), order_by => '11', width => '10%' }, # status
+            { caption => res_str(622), order_by => '11', width => '10%' }, # status
             { caption => res_str(605), order_by => '15', width => '10%' }, # tests set
-            { caption => res_str(635), order_by => '13', width => '5%' }, # who modified
+            { caption => res_str(635), order_by => '13', width => '5%' }, # modified by
             { caption => res_str(634), order_by => 'P.upload_date', width => '10%' }, # modification date
         )
         : ()
@@ -1838,7 +1837,7 @@ sub users_frame
     push @cols, (
         { caption => res_str(607), order_by => 'country', width => '5%' },
         { caption => res_str(609), order_by => 'rating', width => '5%' },
-        { caption => res_str(632), order_by => 'is_virtual', width => '5%' } );
+        { caption => res_str(622), order_by => 'is_virtual', width => '5%' } );
 
     define_columns(url_f('users'), $is_jury ? 3 : 2, 1, \@cols);
 
@@ -2156,7 +2155,7 @@ sub judges_edit_save
 }
 
 
-sub judges_frame 
+sub judges_frame
 {
     $is_jury or return;
  
@@ -2179,7 +2178,7 @@ sub judges_frame
         { caption => res_str(625), order_by => '2', width => '65%' },
         { caption => res_str(626), order_by => '3', width => '10%' },
         { caption => res_str(633), order_by => '4', width => '15%' },
-        { caption => res_str(627), order_by => '5', width => '10%' }
+        { caption => res_str(622), order_by => '5', width => '10%' }
     ]);
 
     my $c = $dbh->prepare(qq~
@@ -2288,7 +2287,7 @@ sub keywords_frame
     $is_root && defined param('edit_save') and keywords_edit_save;
 
     define_columns(url_f('keywords'), 0, 0, [
-        { caption => res_str(638), order_by => '2', width => '31%' },
+        { caption => res_str(625), order_by => '2', width => '31%' },
         { caption => res_str(636), order_by => '3', width => '31%' },
         { caption => res_str(637), order_by => '4', width => '31%' },
     ]);
@@ -2320,7 +2319,7 @@ sub import_sources_frame
 {
     init_listview_template('import_sources', 'import_sources', 'import_sources.html.tt');
     define_columns(url_f('import_sources'), 0, 0, [
-        { caption => res_str(638), order_by => '2', width => '30%' },
+        { caption => res_str(625), order_by => '2', width => '30%' },
         { caption => res_str(642), order_by => '3', width => '30%' },
         { caption => res_str(641), order_by => '4', width => '30%' },
         { caption => res_str(643), order_by => '5', width => '10%' },
@@ -2380,7 +2379,7 @@ sub prizes_frame
     defined param('edit_save') and CATS::Prizes::prizes_edit_save;
 
     define_columns(url_f('prizes'), 0, 0, [
-        { caption => res_str(644), order_by => '2', width => '30%' },
+        { caption => res_str(601), order_by => '2', width => '30%' },
         { caption => res_str(645), order_by => '3', width => '30%' },
         { caption => res_str(646), order_by => '4', width => '40%' },
     ]);
