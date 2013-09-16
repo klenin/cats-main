@@ -19,6 +19,6 @@
 
 [% suggestions %]
 <a href="https://github.com/klenin/cats-main/issues">[% issues %]</a>
-[% or_by_email %]: <img style="position: relative; top: 4px" src="http://imcs.dvgu.ru/img-email/aleksandr_klenin.gif" alt="Электронная почта Кленина А.С."/><br/><br/>
+[% or_by_email %]: <img style="position: relative; top: 2px" src="images/std/maintainer_email.png" alt="[% maintainer_email %]"/><br/><br/>
 
 [% PROCESS 'includes/menu_end.tti' %]

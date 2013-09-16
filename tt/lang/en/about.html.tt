@@ -16,4 +16,5 @@
   suggestions = 'You can report errors or suggestions using';
   issues = 'issue tracker';
   or_by_email = 'or by email';
+  maintainer_email = "Maintainer's email";
 %]
