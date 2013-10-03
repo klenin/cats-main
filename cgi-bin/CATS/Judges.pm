@@ -67,9 +67,8 @@ sub judges_frame
 {
     $is_jury or return;
 
-    if (defined url_param('delete')) {
-        my $jid = url_param('delete');
-        $dbh->do(qq~DELETE FROM judges WHERE id=?~, {}, $jid);
+    if ($is_root && (my $jid = url_param('delete'))) {
+        $dbh->do(qq~DELETE FROM judges WHERE id = ?~, {}, $jid);
         $dbh->commit;
     }
 
