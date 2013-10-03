@@ -2010,10 +2010,10 @@ sub judges_new_save
 {
     my $judge_name = param('judge_name');
     my $locked = param_on('locked');
-    
+
     $judge_name ne '' && length $judge_name <= 20
-        or return msg(5);
-    
+        or return msg(005);
+
     $dbh->do(qq~
         INSERT INTO judges (
             id, nick, accept_contests, accept_trainings, lock_counter, is_alive, alive_date
@@ -2039,9 +2039,9 @@ sub judges_edit_save
     my $jid = param('id');
     my $judge_name = param('judge_name') || '';
     my $locked = param_on('locked');
-    
+
     $judge_name ne '' && length $judge_name <= 20
-        or return msg(5);
+        or return msg(005);
   
     $dbh->do(qq~
         UPDATE judges SET nick = ?, lock_counter = ? WHERE id = ?~, {},
@@ -2053,7 +2053,7 @@ sub judges_edit_save
 sub judges_frame
 {
     $is_jury or return;
- 
+
     if (defined url_param('delete'))
     {
         my $jid = url_param('delete');
@@ -2095,16 +2095,16 @@ sub judges_frame
             href_delete => url_f('judges', 'delete' => $jid)
         );
     };
-             
+
     attach_listview(url_f('judges'), $fetch_record, $c);
 
     $t->param(submenu => [ references_menu('judges') ], editable => 1);
-    
+
     my ($not_processed) = $dbh->selectrow_array(q~
         SELECT COUNT(*) FROM reqs WHERE state = ?~, undef,
         $cats::st_not_processed);
     $t->param(not_processed => $not_processed);
-    
+
     $dbh->do(qq~
         UPDATE judges SET is_alive = 0, alive_date = CURRENT_TIMESTAMP WHERE is_alive = 1~);
     $dbh->commit;
