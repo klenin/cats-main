@@ -19,20 +19,29 @@ sub judges_new_frame
 }
 
 
-sub judges_new_save
+sub get_params
 {
     my $judge_name = param('judge_name');
-    my $locked = param_on('locked');
+    my $locked = param_on('locked') ? -1 : 0;
 
     $judge_name ne '' && length $judge_name <= 20
         or return msg(005);
+    ($judge_name, $locked);
+}
+
+
+sub judges_new_save
+{
+    my ($judge_name, $locked) = get_params;
+    $judge_name or return;
 
     $dbh->do(qq~
         INSERT INTO judges (
             id, nick, accept_contests, accept_trainings, lock_counter, is_alive, alive_date
-        ) VALUES (?, ?, 1, 1, ?, 0, CURRENT_TIMESTAMP)~, {},
-        new_id, $judge_name, $locked ? -1 : 0);
+        ) VALUES (?, ?, 1, 1, ?, 0, CURRENT_TIMESTAMP)~, undef,
+        new_id, $judge_name, $locked);
     $dbh->commit;
+    msg(006);
 }
 
 
@@ -42,7 +51,7 @@ sub judges_edit_frame
 
     my $jid = url_param('edit');
     my ($judge_name, $lock_counter) = $dbh->selectrow_array(qq~
-        SELECT nick, lock_counter FROM judges WHERE id=?~, {}, $jid);
+        SELECT nick, lock_counter FROM judges WHERE id = ?~, undef, $jid);
     $t->param(id => $jid, judge_name => $judge_name, locked => $lock_counter, href_action => url_f('judges'));
 }
 
@@ -50,15 +59,12 @@ sub judges_edit_frame
 sub judges_edit_save
 {
     my $jid = param('id');
-    my $judge_name = param('judge_name') || '';
-    my $locked = param_on('locked');
-
-    $judge_name ne '' && length $judge_name <= 20
-        or return msg(005);
+    my ($judge_name, $locked) = get_params;
+    $judge_name or return;
 
     $dbh->do(qq~
-        UPDATE judges SET nick = ?, lock_counter = ? WHERE id = ?~, {},
-        $judge_name, $locked ? -1 : 0, $jid);
+        UPDATE judges SET nick = ?, lock_counter = ? WHERE id = ?~, undef,
+        $judge_name, $locked, $jid);
     $dbh->commit;
 }
 
