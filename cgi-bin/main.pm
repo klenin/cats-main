@@ -1839,38 +1839,6 @@ sub user_stats_frame
 }
 
 
-sub reference_names()
-{
-    (
-        { name => 'compilers', new => 542, item => 517 },
-        { name => 'judges', new => 512, item => 511 },
-        { name => 'keywords', new => 550, item => 549 },
-        { name => 'import_sources', item => 557 },
-        ($is_root ? { name => 'prizes', item => 565 } : ()),
-    )
-}
-
-
-sub references_menu
-{
-    my ($ref_name) = @_;
-
-    my @result;
-    for (reference_names())
-    {
-        my $sel = $_->{name} eq $ref_name;
-        push @result,
-            { href => url_f($_->{name}), item => res_str($_->{item}), selected => $sel };
-        if ($sel && $is_root && $_->{new})
-        {
-            unshift @result, 
-                { href => url_f($_->{name}, new => 1), item => res_str($_->{new}) };
-        }
-    }
-    @result;
-}
-
-
 sub compilers_new_frame
 {
     init_template('compilers_new.html.tt');
