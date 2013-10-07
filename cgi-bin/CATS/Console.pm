@@ -395,7 +395,6 @@ sub console_content
             team_id =>              $team_id,
             team_name =>            $team_name,
             CATS::IP::linkify_ip(CATS::IP::filter_ip($last_ip)),
-            is_jury =>              $is_jury,
             id      =>              $id,
             contest_id =>           $contest_id,
         );
@@ -427,7 +426,8 @@ sub console_content
     $t->param(
         href_my_events_only => url_f('console', uf => ($uid || get_anonymous_uid())),
         href_all_events => url_f('console', uf => 0),
-        user_filter => $user_filter
+        user_filter => $user_filter,
+        is_jury => $is_jury,
     );
 }
 

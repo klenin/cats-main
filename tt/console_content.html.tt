@@ -16,75 +16,75 @@
 [% END %]
 [% PROCESS 'includes/submit_result.tti' %]
 <table width="100%" cellspacing="3" cellpadding="3" class="bordered console">
-[% FOREACH console %]
+[% FOREACH c IN console %]
 <tr>
-[% IF is_submit_result %]
+[% IF c.is_submit_result %]
     <td nowrap width="1%">
         [% IF is_jury %]
-            <a href="#" onclick="add_id([% id %]); return false;" title="[% id %]">[% time %]</a>
+            <a href="#" onclick="add_id([% c.id %]); return false;" title="[% c.id %]">[% c.time %]</a>
         [% ELSE %]
-            [% IF href_details %]<a href="[% href_details %]" target="_blank">[% time %]</a>
-            [% ELSE %]<span class="linksize">[% time %]</span>[% END %]
+            [% IF c.href_details %]<a href="[% c.href_details %]" target="_blank">[% c.time %]</a>
+            [% ELSE %]<span class="linksize">[% c.time %]</span>[% END %]
         [% END %]
     </td>
     <td nowrap width="1%">
         [% IF is_jury %]
-        <a href="javascript:send_message('[% href_send_message_box %]')">[% team_name | html %]</a>
-        [<a href="[% href_whois %]" alt="[% last_ip %]" title="[% last_ip %]">[% last_ip_short %]</a>]
+        <a href="javascript:send_message('[% c.href_send_message_box %]')">[% c.team_name | html %]</a>
+        [<a href="[% c.href_whois %]" alt="[% c.last_ip %]" title="[% c.last_ip %]">[% c.last_ip_short %]</a>]
         [% ELSE %]
-        [% team_name | html %]
+        [% c.team_name | html %]
         [% END %]
     </td>
     <td>
         [% IF is_jury ~%]
-        <a href="[% href_source %]" title="[% de %]">[% problem_title %]</a>[% ELSE ~%]
-        [% problem_title %][% END %]:
-        <b>[% submit_result %]</b>
+        <a href="[% c.href_source %]" title="[% c.de %]">[% c.problem_title %]</a>[% ELSE ~%]
+        [% c.problem_title %][% END %]:
+        <b>[% submit_result(c) %]</b>
     </td>
-[% END %][% IF is_question %]
-    <td nowrap width=1%>[% time %]</td>
+[% END %][% IF c.is_question %]
+    <td nowrap width=1%>[% c.time %]</td>
     <td align=left nowrap>
-      [[% IF is_jury %]<a href="javascript:send_message('[% href_send_message_box %]')">[% END %][% team_name | html %][% IF is_jury %]</a>[% END %][% IF is_jury %]:
-        [% IF last_ip %]<a href="[% href_whois %]" alt="[% last_ip %]" title="[% last_ip %]">[% last_ip_short %]</a>[% ELSE %][% last_ip_short %][% END %]
+      [[% IF is_jury %]<a href="javascript:send_message('[% c.href_send_message_box %]')">[% END %][% c.team_name | html %][% IF is_jury %]</a>[% END %][% IF is_jury %]:
+        [% IF c.last_ip %]<a href="[% c.href_whois %]" alt="[% c.last_ip %]" title="[% c.last_ip %]">[% c.last_ip_short %]</a>[% ELSE %][% c.last_ip_short %][% END %]
         [% END %] &gt; [% jury %]]
     </td>
     <td>
-        <i>[% question_text | html %]</i> - 
-        [% UNLESS clarified %]
-        [% IF href_answer_box %]
-        <a href="[% href_answer_box %]" target="_blank" class="small">[[% answer %]]</a>
+        <i>[% c.question_text | html %]</i> - 
+        [% UNLESS c.clarified %]
+        [% IF c.href_answer_box %]
+        <a href="[% c.href_answer_box %]" target="_blank" class="small">[[% answer %]]</a>
         [% END %]
         [% ELSE %]
-        <font color=red>[% answer_text | html %]</font>
+        <font color=red>[% c.answer_text | html %]</font>
         [% END %]
-        [% IF href_delete_question %]<a href="[% href_delete_question %]" class="small">[[% delete %]]</a>[% END %]
+        [% IF c.href_delete_question %]<a href="[% c.href_delete_question %]" class="small">[[% delete %]]</a>[% END %]
     </td>
-[% END %][% IF is_message %]
-    <td nowrap width=1%>[% time %]</td>
+[% END %][% IF c.is_message %]
+    <td nowrap width=1%>[% c.time %]</td>
     <td align=left>
-        [[% jury %] &gt; [% team_name | html %]]
+        [[% jury %] &gt; [% c.team_name | html %]]
     </td>
     <td>
-        <font color=red>[% message_text | html %]</font>
-        [% IF href_delete_message %]<a href="[% href_delete_message %]" class="small">[[% delete %]]</a>[% END %]
+        <font color=red>[% c.message_text | html %]</font>
+        [% IF c.href_delete_message %]<a href="[% href_delete_message %]" class="small">[[% delete %]]</a>[% END %]
     </td>
-[% END %][% IF is_broadcast %]
-    <td nowrap width=1%>[% time %]</td>
+[% END %][% IF c.is_broadcast %]
+    <td nowrap width=1%>[% c.time %]</td>
     <td align=left>
         <b><font color="#ff0000">[[% jury %] &gt; [% all_teams %]]</font></b>
     </td>
     <td>
-        <b><font color=red>[% message_text | html %]</font></b>
-        [% IF href_delete_message %]<a href="[% href_delete_message %]" class="small">[[% delete %]]</a>[% END %]
+        <b><font color=red>[% c.message_text | html %]</font></b>
+        [% IF c.href_delete_message %]<a href="[% c.href_delete_message %]" class="small">[[% delete %]]</a>[% END %]
     </td>
-[% END %][% IF is_contest %]
-    <td nowrap width=1%>[% time %]</td>
+[% END %][% IF c.is_contest %]
+    <td nowrap width=1%>[% c.time %]</td>
     <td align=left>
-        <b>[% IF contest_start; start_of; ELSE; finish_of; END %]
-        [% "$official " IF is_official; contest %]</b>
+        <b>[% IF c.contest_start; start_of; ELSE; finish_of; END %]
+        [% "$official " IF c.is_official; contest %]</b>
     </td>
     <td>
-        <b><a href="[% href_problems %]">[% problem_title | html %]</a></b>
+        <b><a href="[% c.href_problems %]">[% c.problem_title | html %]</a></b>
     </td>
 [% END %]
 </tr>
