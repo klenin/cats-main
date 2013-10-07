@@ -92,8 +92,6 @@ td.footer_image {
     background-repeat: no-repeat;
 }
 
-.linksize { font-size: 14px }
-
 .filter {
     /*filter: Alpha(Opacity=80, FinishOpacity=20, Style=1, StartX=0, StartY=100, FinishY=250);*/
 }
@@ -158,6 +156,7 @@ tr.run_details_NT { color: #000080; font-style: italic; }
 table.highlight tr:hover, table.console tr:hover { background-color: #ffcc55; }
 table.console tr td { margin: 0; padding: 1px 10px 1px 1px; }
 table.console tr td, table.console tr td a { font-size: 10pt; }
+table.console tr td:first-child { width: 1%; white-space: nowrap; }
 
 p { margin-top: 5px; margin-bottom: 5px } 
 
@@ -213,3 +212,5 @@ span.timing { color: #808080; font-size: xx-small; }
 
 div.problem_submit { float: left; margin: 5px 20px 5px 5px; }
 div.problem_submit label { display: inline-block; width: 140px; margin-right: 5px; }
+
+span.jury_message { color: red; }
