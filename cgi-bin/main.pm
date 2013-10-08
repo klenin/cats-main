@@ -2339,6 +2339,7 @@ sub interface_functions ()
         run_details => \&CATS::RunDetails::run_details_frame,
         diff_runs => \&CATS::RunDetails::diff_runs_frame,
 
+        test_diff => \&CATS::Stats::test_diff_frame,
         compare_tests => \&CATS::Stats::compare_tests_frame,
         rank_table_content => \&rank_table_content_frame,
         rank_table => \&rank_table_frame,

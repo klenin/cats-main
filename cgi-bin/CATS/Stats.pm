@@ -8,6 +8,7 @@ use List::Util qw(max);
 use CATS::Web qw(param);
 use CATS::DB;
 use CATS::Misc qw(init_template $t $is_jury $cid $contest url_f);
+use CATS::Constants;
 
 sub greedy_cliques
 {
@@ -85,7 +86,11 @@ sub compare_tests_frame
     my $cm = [
         map {
             my $hr = $h->{$_} || {};
-            { data => [ map {{ n => ($hr->{$_} || 0) }} 1..$size ], %{$totals->{$_} || {}} }
+            {
+                data => [ map {{ n => ($hr->{$_} || 0) }} 1..$size ],
+                %{$totals->{$_} || {}},
+                href_test_diff => url_f('test_diff', pid => $pid, test => $_),
+            },
         } 1..$size
     ];
 
@@ -215,6 +220,33 @@ sub similarity_frame
         equiv_lists =>
             lists_to_strings [ map $ids_to_teams->($_), grep @$_ > 2, @{greedy_cliques @similar} ]
     );
+}
+
+
+sub test_diff_frame
+{
+    init_template('test_diff.html.tt');
+    $is_jury or return;
+    my $pid = param('pid') or return;
+    my $test_rank = param('test') or return;
+    my $reqs = $dbh->selectall_arrayref(q~
+        SELECT r.id, r.account_id, r.state, r.failed_test FROM reqs r
+        WHERE r.contest_id = ? AND r.problem_id = ? AND
+            (r.state = ? OR r.state > ? AND r.failed_test >= ?)
+        ORDER BY r.account_id, r.id~, { Slice => {} },
+        $cid, $pid, $cats::st_accepted, $cats::st_accepted, $test_rank);
+    my $prev;
+    my $fr = [ grep {
+        undef $prev if $prev && $prev->{account_id} != $_->{account_id};
+        my $ok = $prev ?
+            $prev->{state} > $cats::st_accepted && $prev->{failed_test} <= $test_rank &&
+            ($_->{state} == $cats::st_accepted  || $_->{failed_test} > $test_rank) :
+            $_->{state} > $cats::st_accepted;
+        #$_->{ok} = "$ok~" . $prev->{state};
+        $prev = $_;
+        $ok;
+    } @$reqs ];
+    $t->param(reqs => $fr, pid => $pid, test => $test_rank);
 }
 
 1;
