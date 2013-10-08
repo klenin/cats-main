@@ -242,29 +242,29 @@ sub get_contests_info
 {
     (my CATS::RankTable $self, my $uid) = @_;
     $uid ||= 0;
-
     $self->{frozen} = $self->{not_started} = $self->{has_practice} = $self->{show_points} = 0;
     my $sth = $dbh->prepare(qq~
-        SELECT C.title,
+        SELECT C.id, C.title,
           CAST(CURRENT_TIMESTAMP - C.freeze_date AS DOUBLE PRECISION),
           CAST(CURRENT_TIMESTAMP - C.defreeze_date AS DOUBLE PRECISION),
           CAST(CURRENT_TIMESTAMP - C.start_date AS DOUBLE PRECISION),
-          (SELECT COUNT(*) FROM contest_accounts WHERE contest_id = C.id AND account_id = ?),
-          C.rules, C.ctype, C.show_all_results
+          (SELECT CA.is_jury FROM contest_accounts CA WHERE CA.contest_id = C.id AND CA.account_id = ?),
+          C.is_hidden, C.rules, C.ctype, C.show_all_results
         FROM contests C
-        WHERE id IN ($self->{contest_list})~
+        WHERE C.id IN ($self->{contest_list}) ORDER BY C.id~
     );
     $sth->execute($uid);
 
     my $common_title;
-    my $contest_count = 0;
+    my @actual_contests;
     $self->{show_all_results} = 1;
     while (my (
-        $title, $since_freeze, $since_defreeze, $since_start, $registered,
-        $rules, $ctype, $show_all_results) =
+        $id, $title, $since_freeze, $since_defreeze, $since_start, $is_local_jury,
+        $is_hidden, $rules, $ctype, $show_all_results) =
             $sth->fetchrow_array)
     {
-        ++$contest_count;
+        next if $is_hidden && !$is_local_jury;
+        push @actual_contests, $id;
         $self->{frozen} ||= $since_freeze > 0 && $since_defreeze < 0;
         $self->{not_started} ||= $since_start < 0 && !$is_jury;
         $self->{has_practice} ||= ($ctype || 0);
@@ -274,8 +274,9 @@ sub get_contests_info
         $common_title = $common_title ? common_prefix($common_title, \@title_words) : \@title_words;
     }
     $self->{title} =
-         (join(' ', @$common_title) || 'Contests') .
-         ($contest_count > 1 ? " ($contest_count)" : '');
+         (join(' ', @{$common_title || []}) || 'Contests') .
+         (@actual_contests > 1 ? ' (' . @actual_contests . ')' : '');
+    $self->{contest_list} = join ',', @actual_contests;
 }
 
 
@@ -427,7 +428,7 @@ sub rank_table
         show_points => $self->{show_points},
     );
     # Results must not include practice contest.
-    !$self->{has_practice} or return;
+    !$self->{has_practice} && $self->{contest_list} or return;
     #return if $not_started;
 
     $self->get_problems;
