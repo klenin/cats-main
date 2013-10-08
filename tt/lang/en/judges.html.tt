@@ -1,0 +1,8 @@
+[%
+  capt = {
+    want_to_delete => 'Do you really want to delete judge',
+    locked => 'locked',
+    unlocked => 'working',
+    queue => 'Queue',
+  }
+%]

@@ -3,10 +3,8 @@
 <script>
 function delete_judge(href, name)
 {
-    if (confirm( "Вы действительно желаете удалить судью '" + name + "'?" ))
-    {
-        document.location=href;
-    }
+    if (confirm("[% capt.want_to_delete %] '" + name + "'?" ))
+        document.location = href;
 }
 </script>
 
@@ -27,11 +25,11 @@ function delete_judge(href, name)
 </td>
 <td>[% is_alive %]</td>
 <td>[% alive_date %]</td>
-<td>[% IF locked %]<font color=red>заблокирован</font>[% ELSE %]работает[% END %]</td>
+<td>[% IF locked %]<font color=red>[% capt.locked %]</font>[% ELSE; capt.unlocked; END %]</td>
 </tr>
 [% END %]
 </table>
-<br/>Очередь: [% not_processed %]
+<br/>[% capt.queue %]: [% not_processed %]
 
 </form>
 
