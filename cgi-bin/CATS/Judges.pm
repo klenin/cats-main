@@ -12,60 +12,43 @@ use CATS::Misc qw(
 use CATS::Utils qw(param_on);
 
 
-sub judges_new_frame
+sub edit_frame
 {
-    init_template('judges_new.html.tt');
+    init_template('judges_edit.html.tt');
+
+    if (my $jid = url_param('edit')) {
+        my ($judge_name, $lock_counter) = $dbh->selectrow_array(qq~
+            SELECT nick, lock_counter FROM judges WHERE id = ?~, undef, $jid);
+        $t->param(id => $jid, judge_name => $judge_name, locked => $lock_counter);
+    }
     $t->param(href_action => url_f('judges'));
 }
 
 
-sub get_params
+sub edit_save
 {
+    my $jid = param('id');
     my $judge_name = param('judge_name');
     my $locked = param_on('locked') ? -1 : 0;
 
     $judge_name ne '' && length $judge_name <= 20
         or return msg(005);
-    ($judge_name, $locked);
-}
 
-
-sub judges_new_save
-{
-    my ($judge_name, $locked) = get_params;
-    $judge_name or return;
-
-    $dbh->do(qq~
-        INSERT INTO judges (
-            id, nick, accept_contests, accept_trainings, lock_counter, is_alive, alive_date
-        ) VALUES (?, ?, 1, 1, ?, 0, CURRENT_TIMESTAMP)~, undef,
-        new_id, $judge_name, $locked);
-    $dbh->commit;
-    msg(006);
-}
-
-
-sub judges_edit_frame
-{
-    init_template('judges_edit.html.tt');
-
-    my $jid = url_param('edit');
-    my ($judge_name, $lock_counter) = $dbh->selectrow_array(qq~
-        SELECT nick, lock_counter FROM judges WHERE id = ?~, undef, $jid);
-    $t->param(id => $jid, judge_name => $judge_name, locked => $lock_counter, href_action => url_f('judges'));
-}
-
-
-sub judges_edit_save
-{
-    my $jid = param('id');
-    my ($judge_name, $locked) = get_params;
-    $judge_name or return;
-
-    $dbh->do(qq~
-        UPDATE judges SET nick = ?, lock_counter = ? WHERE id = ?~, undef,
-        $judge_name, $locked, $jid);
-    $dbh->commit;
+    if ($jid) {
+        $dbh->do(qq~
+            UPDATE judges SET nick = ?, lock_counter = ? WHERE id = ?~, undef,
+            $judge_name, $locked, $jid);
+        $dbh->commit;
+    }
+    else {
+        $dbh->do(qq~
+            INSERT INTO judges (
+                id, nick, accept_contests, accept_trainings, lock_counter, is_alive, alive_date
+            ) VALUES (?, ?, 1, 1, ?, 0, CURRENT_TIMESTAMP)~, undef,
+            new_id, $judge_name, $locked);
+        $dbh->commit;
+        msg(006);
+    }
 }
 
 
@@ -73,24 +56,23 @@ sub judges_frame
 {
     $is_jury or return;
 
-    if ($is_root && (my $jid = url_param('delete'))) {
-        $dbh->do(qq~DELETE FROM judges WHERE id = ?~, {}, $jid);
-        $dbh->commit;
+    if ($is_root) {
+        if (my $jid = url_param('delete')) {
+            $dbh->do(qq~DELETE FROM judges WHERE id = ?~, {}, $jid);
+            $dbh->commit;
+        }
+        defined url_param('new') || defined url_param('edit') and return edit_frame;
     }
-
-    $is_root && defined url_param('new') and return judges_new_frame;
-    $is_root && defined url_param('edit') and return judges_edit_frame;
 
     init_listview_template('judges', 'judges', 'judges.html.tt');
 
-    $is_root && defined param('new_save') and judges_new_save;
-    $is_root && defined param('edit_save') and judges_edit_save;
+    $is_root && defined param('edit_save') and edit_save;
 
     define_columns(url_f('judges'), 0, 0, [
         { caption => res_str(625), order_by => '2', width => '65%' },
         { caption => res_str(626), order_by => '3', width => '10%' },
         { caption => res_str(633), order_by => '4', width => '15%' },
-        { caption => res_str(622), order_by => '5', width => '10%' }
+        { caption => res_str(622), order_by => '5', width => '10%' },
     ]);
 
     my $c = $dbh->prepare(qq~
