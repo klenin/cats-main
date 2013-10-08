@@ -9,9 +9,7 @@ CREATE TABLE judges (
     nick    VARCHAR(32) NOT NULL,
     lock_counter     INTEGER,
     is_alive         INTEGER DEFAULT 0 CHECK (is_alive IN (0, 1)),
-    alive_date       TIMESTAMP,
-    accept_contests  INTEGER CHECK (accept_contests IN (0, 1)),
-    accept_trainings INTEGER CHECK (accept_trainings IN (0, 1))
+    alive_date       TIMESTAMP
 );
 
 

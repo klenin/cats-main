@@ -42,9 +42,8 @@ sub edit_save
     }
     else {
         $dbh->do(qq~
-            INSERT INTO judges (
-                id, nick, accept_contests, accept_trainings, lock_counter, is_alive, alive_date
-            ) VALUES (?, ?, 1, 1, ?, 0, CURRENT_TIMESTAMP)~, undef,
+            INSERT INTO judges (id, nick, lock_counter, is_alive, alive_date)
+            VALUES (?, ?, ?, 0, CURRENT_TIMESTAMP)~, undef,
             new_id, $judge_name, $locked);
         $dbh->commit;
         msg(006);
