@@ -570,8 +570,7 @@ sub console_frame
 {
     init_console_template('console.html.tt');
     my $s = get_settings;
-    if (defined param('filter') || defined param('visible'))
-    {
+    if (grep defined param($_), qw(search filter visible)) {
         $s->{$_} = param($_) ? 1 : 0
             for qw(show_contests show_messages show_results);
     }
