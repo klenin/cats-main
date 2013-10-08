@@ -293,8 +293,6 @@ sub parse_params
 
     $self->get_contest_list_param;
     $self->get_contests_info($uid);
-    # Summary results must not include practice contest.
-    !$self->{has_practice} || $self->{contest_list} eq $cid or return;
     $self->{show_points} = url_param('points') if defined url_param('points');
     $self->{use_cache} = url_param('cache');
     # Cache external links by default.
@@ -428,6 +426,8 @@ sub rank_table
         href_show_virtual => url_f(@p, hide_virtual => 0, hide_ooc => $self->{hide_ooc}),
         show_points => $self->{show_points},
     );
+    # Results must not include practice contest.
+    !$self->{has_practice} or return;
     #return if $not_started;
 
     $self->get_problems;
