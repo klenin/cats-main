@@ -115,7 +115,7 @@ sub get_problems
         else {
             $contests[$#contests]->{count}++;
         }
-        # оптимизация: не выводить tooltip в local_only турнирах, чтобы сэкономить запрос
+        # Optimization: do not output tooltip in local_only contests to avoid extra query.
         $_->{title} = '' if ($_->{since_start} < 0 || $_->{local_only}) && !$is_jury;
         $_->{problem_text} = url_f('problem_text', cpid => $_->{id});
         if ($self->{show_points} && !$_->{max_points}) {
@@ -255,7 +255,7 @@ sub get_contests_info
         WHERE id IN ($self->{contest_list})~
     );
     $sth->execute($uid);
-    
+
     my $common_title;
     my $contest_count = 0;
     $self->{show_all_results} = 1;
@@ -290,14 +290,14 @@ sub parse_params
     $self->{hide_virtual} = url_param('hide_virtual') || '0';
     $self->{hide_virtual} =~ /^[01]$/
         or $self->{hide_virtual} = (!$is_virtual && !$is_jury || !$is_team);
-        
+
     $self->get_contest_list_param;
     $self->get_contests_info($uid);
-    # суммарные результаты не должны включать тренировочный турнир
+    # Summary results must not include practice contest.
     !$self->{has_practice} || $self->{contest_list} eq $cid or return;
     $self->{show_points} = url_param('points') if defined url_param('points');
     $self->{use_cache} = url_param('cache');
-    # по умолчанию кешируем внешние ссылки
+    # Cache external links by default.
     $self->{use_cache} = 1 if !defined $self->{use_cache} && !defined $uid;
     $self->{use_cache} = 0 unless $self->{show_all_results};
     $self->{filter} = param('filter');
@@ -453,7 +453,7 @@ sub rank_table
 
         for my $team (values %$res)
         {
-            # поскольку виртуальный участник всегда ooc, не выводим лишнюю строчку
+            # Since virtual team is always ooc, do not output extra string.
             $team->{is_ooc} = 0 if $team->{is_virtual};
             $team->{$_} = 0 for qw(total_solved total_runs total_time total_points);
             ($team->{country}, $team->{flag}) = get_flag($team->{country});
@@ -471,7 +471,7 @@ sub rank_table
         (my $cache = Storable::lock_retrieve($cache_file)))
     {
         ($teams, $problem_stats, $max_cached_req_id) = @{$cache}{qw(t p r)};
-        # Если добавилась задача, проинициализируем её данные
+        # A problem was added after last cache refresh -- initialize it.
         for my $p (map $_->{problem_id}, @{$self->{problems}})
         {
             next if $problem_stats->{$p};
@@ -526,7 +526,7 @@ sub rank_table
     }
 
     my ($row_num, $row_color) = $self->prepare_ranks($teams);
-    # Расчёт статистики
+    # Calculate stats.
     @$_{qw(total_runs total_accepted total_points)} = (0, 0, 0) for values %$problem_stats;
     for my $t (@{$self->{rank}})
     {
