@@ -676,11 +676,14 @@ sub problems_replace
     $p->{old_title} = $old_title unless param('allow_rename');
     my $error = $p->load($fname, $cid, $pid, 1);
     $t->param(problem_import_log => $p->encoded_import_log());
-
-    $error ? $dbh->rollback : $dbh->commit;
-    CATS::StaticPages::invalidate_problem_text(pid => $pid);
-    msg(52) if $error;
     #unlink $fname;
+    if ($error) {
+        $dbh->rollback;
+        return msg(1008);
+    }
+    $dbh->commit;
+    CATS::StaticPages::invalidate_problem_text(pid => $pid);
+    msg(1007);
 }
 
 
@@ -709,7 +712,7 @@ sub problems_add_new
     $error ||= !add_problem_to_contest($p->{id}, $problem_code);
 
     $error ? $dbh->rollback : $dbh->commit;
-    msg(52) if $error;
+    msg(1008) if $error;
     unlink $fname;
 }
 
