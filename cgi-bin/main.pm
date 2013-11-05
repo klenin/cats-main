@@ -592,15 +592,6 @@ sub show_unused_problem_codes ()
 }
 
 
-sub problems_new_frame
-{
-    init_template('problems_new.html.tt');
-
-    show_unused_problem_codes;
-    $t->param(href_action => url_f('problems'));
-}
-
-
 sub add_problem_to_contest
 {
     my ($pid, $problem_code) = @_;
@@ -635,28 +626,8 @@ sub check_problem_code
 }
 
 
-sub problems_new_save
-{
-    my $file = param('zip') || '';
-    $file =~ /\.(zip|ZIP)$/
-        or return msg(53);
-    my $fname = save_uploaded_file('zip');
-    my $problem_code = param('problem_code');
-    check_problem_code(\$problem_code) or return;
-
-    my CATS::Problem $p = CATS::Problem->new;
-    my $error = $p->load($fname, $cid, new_id, 0);
-    $t->param(problem_import_log => $p->encoded_import_log());
-    $error ||= !add_problem_to_contest($p->{id}, $problem_code);
-
-    $error ? $dbh->rollback : $dbh->commit;
-    msg(52) if $error;
-    unlink $fname;
-}
-
-
 sub problems_link_save
-{       
+{
     my $pid = param('problem_id')
         or return msg(104);
 
@@ -1087,7 +1058,6 @@ sub problems_frame_jury_action
     $is_jury or return;
 
     defined param('link_save') and return problems_link_save;
-    defined param('new_save') and return problems_new_save;
     defined param('change_status') and return problems_change_status;
     defined param('change_code') and return problems_change_code;
     defined param('replace') and return problems_replace;
@@ -1257,7 +1227,6 @@ sub problems_frame
         }
     }
 
-    $is_jury && defined url_param('new') and return problems_new_frame;
     $is_jury && defined url_param('link') and return problems_all_frame;
     defined url_param('kw') and return problems_all_frame;
 
