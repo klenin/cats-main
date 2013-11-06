@@ -255,7 +255,8 @@ sub attach_menu
 
 sub res_str
 {
-    my $t = $messages->{lang()}->[shift];
+    my $id = shift;
+    my $t = $messages->{lang()}->[$id] or die "Unknown res_str id: $id";
     sprintf($t, @_);
 }
 
