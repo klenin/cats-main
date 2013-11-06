@@ -852,11 +852,11 @@ sub problem_submit_too_frequent
 sub problems_submit
 {
     my $pid = param('problem_id')
-        or return msg(12);
+        or return msg(1012);
 
-    my $file = param('source') || '';
-    $file && length($file) <= 200 || param('source_text')
-        or return msg(9);
+    my $file = param('source') // '';
+    $file ne '' || param('source_text') ne '' or return msg(1009);
+    length($file) <= 200 or return msg(1010);
 
     defined param('de_id') or return msg(14);
 
@@ -900,8 +900,8 @@ sub problems_submit
     }
 
     my $src = param('source_text') || upload_source('source');
-    defined($src) or return msg(10);
-    $src or return msg(11);
+    defined $src or return msg(1010);
+    $src ne '' or return msg(1011);
     my $did = param('de_id');
 
     if ($did eq 'by_extension') {
@@ -956,8 +956,7 @@ sub problems_submit_std_solution
 {
     my $pid = param('problem_id');
 
-    defined $pid
-        or return msg(12);
+    defined $pid or return msg(1012);
 
     my $ok = 0;
     
@@ -1007,8 +1006,7 @@ sub problems_submit_std_solution
 
 sub problems_mass_retest()
 {
-    my @retest_pids = param('problem_id')
-        or return msg(12);
+    my @retest_pids = param('problem_id') or return msg(1012);
     my $all_runs = param('all_runs');
     my $count = 0;
     for my $retest_pid (@retest_pids)
@@ -1036,7 +1034,7 @@ sub problems_mass_retest()
 
 sub problems_recalc_points()
 {
-    my @pids = param('problem_id') or return msg(12);
+    my @pids = param('problem_id') or return msg(1012);
     $dbh->do(q~
         UPDATE reqs SET points = NULL
         WHERE contest_id = ? AND problem_id IN (~ . join(',', @pids) . q~)~, undef,
