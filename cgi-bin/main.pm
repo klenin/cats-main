@@ -254,16 +254,16 @@ sub try_contest_params_frame
 
 
 sub contests_edit_save
-{    
+{
     my $edit_cid = param('id');
-    
+
     my $p = get_contest_html_params() or return;
-    
+
     # free_registration => closed
     $p->{free_registration} = !$p->{free_registration};
     $dbh->do(qq~
         UPDATE contests SET
-            title=?, start_date=?, freeze_date=?, 
+            title=?, start_date=?, freeze_date=?,
             finish_date=?, defreeze_date=?, rules=?, max_reqs=?,
             closed=?, run_all_tests=?, show_all_tests=?,
             show_test_resources=?, show_checker_comment=?, show_all_results=?,
@@ -310,13 +310,13 @@ sub contest_virtual_registration
 {
     my ($registered, $is_virtual, $is_remote) = get_registered_contestant(
          fields => '1, is_virtual, is_remote', contest_id => $cid);
-        
+
     !$registered || $is_virtual
         or return msg(114);
 
     $contest->{time_since_start} >= 0
         or return msg(109);
-    
+
     # В официальных турнирах виртуальное участие резрешено только после окончания.
     $contest->{time_since_finish} >= 0 || !$contest->{is_official}
         or return msg(122);
@@ -430,7 +430,7 @@ sub authenticated_contests_view ()
             contests_submenu_filter() . order_by);
     $sth->execute($uid);
 
-    my $fetch_contest = sub($) 
+    my $fetch_contest = sub($)
     {
         my $c = $_[0]->fetchrow_hashref or return;
         return (
@@ -440,7 +440,7 @@ sub authenticated_contests_view ()
             editable => $c->{is_jury},
             deletable => $is_root,
             registered_online => $c->{registered} && !$c->{is_virtual},
-            registered_virtual => $c->{registered} && $c->{is_virtual}, 
+            registered_virtual => $c->{registered} && $c->{is_virtual},
             href_delete => url_f('contests', delete => $c->{id}),
         );
     };
@@ -505,7 +505,7 @@ sub contests_frame
 
     my $vr = param('virtual_registration');
     contest_virtual_registration if defined $vr && $vr;
-    
+
     contests_select_current if defined url_param('set_contest');
 
     define_columns(url_f('contests'), 1, 1, [
@@ -524,7 +524,7 @@ sub contests_frame
         map({
             href => url_f('contests', page => 0, filter => $_->{n}),
             item => res_str($_->{i}),
-            selected => $settings->{contests}->{filter} eq $_->{n}, 
+            selected => $settings->{contests}->{filter} eq $_->{n},
         }, { n => 'all', i => 558 }, { n => 'official', i => 559 }, { n => 'unfinished', i => 560 }),
         ($CATS::Misc::can_create_contests ?
             { href => url_f('contests', new => 1), item => res_str(537) } : ()),
@@ -545,10 +545,10 @@ sub problems_change_status ()
 {
     my $cpid = param('change_status')
       or return msg(54);
-    
+
     my $new_status = param('status');
     exists problem_status_names()->{$new_status} or return;
-    
+
     $dbh->do(qq~
         UPDATE contest_problems SET status = ?
             WHERE contest_id = ? AND id = ?~, {},
@@ -582,9 +582,9 @@ sub show_unused_problem_codes ()
     );
     my %used_codes;
     $used_codes{$_ || ''} = undef for @$c;
-    
+
     my @unused_codes = grep !exists($used_codes{$_}), @cats::problem_codes;
-    
+
     $t->param(
         code_array => [ map({ code => $_ }, @unused_codes) ],
         too_many_problems => !@unused_codes,
@@ -776,13 +776,13 @@ sub problems_all_frame
     {
         my ($pid, $problem_name, $contest_name, $contest_id, $counts, $linked) = $_[0]->fetchrow_array
             or return ();
-        return ( 
+        return (
             href_view_problem => url_f('problem_text', pid => $pid),
             href_view_contest => url_function('problems', sid => $sid, cid => $contest_id),
             linked => $linked || !$link,
             problem_id => $pid,
-            problem_name => $problem_name, 
-            contest_name => $contest_name, 
+            problem_name => $problem_name,
+            contest_name => $contest_name,
             counts => $counts,
         );
     };
@@ -959,10 +959,10 @@ sub problems_submit_std_solution
     defined $pid or return msg(1012);
 
     my $ok = 0;
-    
+
     my $c = $dbh->prepare(qq~
-        SELECT src, de_id, fname 
-        FROM problem_sources 
+        SELECT src, de_id, fname
+        FROM problem_sources
         WHERE problem_id = ? AND (stype = ? OR stype = ?)~);
     $c->execute($pid, $cats::solution, $cats::adv_solution);
 
@@ -987,10 +987,10 @@ sub problems_submit_std_solution
         $s->bind_param(3, $src, { ora_type => 113 } ); # blob
         $s->bind_param(4, $fname);
         $s->execute;
-        
+
         $ok = 1;
     }
-    
+
     if ($ok)
     {
         $dbh->commit; 
@@ -1075,7 +1075,7 @@ sub problems_frame_jury_action
         $dbh->do(qq~DELETE FROM contest_problems WHERE id = ?~, undef, $cpid);
         CATS::StaticPages::invalidate_problem_text(cid => $old_contest);
         CATS::StaticPages::invalidate_problem_text(cpid => $cpid);
-        
+
         my ($ref_count) = $dbh->selectrow_array(qq~
             SELECT COUNT(*) FROM contest_problems WHERE problem_id = ?~, undef, $pid);
         if ($ref_count)
@@ -1103,7 +1103,7 @@ sub problem_select_testsets
 {
     $is_jury or return;
     my $cpid = param('cpid') or return;
-    
+
     my $problem = $dbh->selectrow_hashref(q~
         SELECT P.id, P.title, CP.id AS cpid, CP.testsets
         FROM problems P INNER JOIN contest_problems CP ON P.id = CP.problem_id
@@ -1169,7 +1169,7 @@ sub problems_retest_frame
 
     my $total_queue = 0;
     my $fetch_record = sub($)
-    {            
+    {
         my $c = $_[0]->fetchrow_hashref or return ();
         $c->{status} ||= 0;
         my $psn = problem_status_names();
@@ -1215,7 +1215,7 @@ sub problems_frame
         {
             my $is_remote;
             if ($uid)
-            { 
+            {
                 ($is_remote) = $dbh->selectrow_array(qq~
                     SELECT is_remote FROM contest_accounts WHERE contest_id = ? AND account_id = ?~,
                     {}, $cid, $uid);
@@ -1297,7 +1297,7 @@ sub problems_frame
         my $n = problem_status_names();
         for (sort keys %$n)
         {
-            push @status_list, { id => $_, name => $n->{$_} }; 
+            push @status_list, { id => $_, name => $n->{$_} };
         }
         $t->param(status_list => \@status_list, editable => 1);
     }
