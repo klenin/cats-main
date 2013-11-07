@@ -488,11 +488,11 @@ sub contests_frame
 
     CATS::Prizes::contest_group_auto_new if defined param('create_group') && $is_root;
 
-    if (defined url_param('delete') && $is_root)
-    {
+    if (defined url_param('delete') && $is_root) {
         my $cid = url_param('delete');
         $dbh->do(qq~DELETE FROM contests WHERE id = ?~, {}, $cid);
         $dbh->commit;
+        msg(1037);
     }
 
     contests_new_save if defined param('new_save') && $CATS::Misc::can_create_contests;
