@@ -8,6 +8,7 @@
   ct_denied = 'closed';
   ct_school = 'school rules';
   ct_hidden = 'hidden';
+  ct_original = 'original';
   participate = 'participate';
   participate_virtually = 'participate virtually';
   summary_rank = 'summary rank';

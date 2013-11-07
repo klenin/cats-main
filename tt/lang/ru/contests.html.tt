@@ -8,6 +8,7 @@
   ct_denied = 'регистрация закрыта';
   ct_school = 'школьные правила';
   ct_hidden = 'скрытый';
+  ct_original = 'оригинал';
   participate = 'участвовать';
   participate_virtually = 'участвовать виртуально';
   summary_rank = 'суммарная таблица';

@@ -405,11 +405,11 @@ sub contests_submenu_filter
 {
     my $f = $settings->{contests}->{filter} || '';
     {
-        'all' => '',
-        'official' => 'AND C.is_official = 1 ',
-        'unfinished' => 'AND CURRENT_TIMESTAMP <= finish_date ',
-        'current' => 'AND CURRENT_TIMESTAMP BETWEEN start_date AND finish_date ',
-        'json' => q~
+        all => '',
+        official => 'AND C.is_official = 1 ',
+        unfinished => 'AND CURRENT_TIMESTAMP <= finish_date ',
+        current => 'AND CURRENT_TIMESTAMP BETWEEN start_date AND finish_date ',
+        json => q~
             AND EXISTS (
                 SELECT 1 FROM problems P INNER JOIN contest_problems CP ON P.id = CP.problem_id
                 WHERE CP.contest_id = C.id AND P.json_data IS NOT NULL)~,
@@ -420,15 +420,22 @@ sub contests_submenu_filter
 sub authenticated_contests_view ()
 {
     my $cf = contest_fields();
+    my $has_problem = param('has_problem');
+    my $has_problem_orig = $has_problem ?
+        '(SELECT 1 FROM problems P WHERE P.contest_id = C.id AND P.id = ?)' : '0';
     my $sth = $dbh->prepare(qq~
         SELECT
-            $cf, CA.is_virtual, CA.is_jury, CA.id AS registered, C.is_hidden
+            $cf, CA.is_virtual, CA.is_jury, CA.id AS registered, C.is_hidden,
+            $has_problem_orig AS has_orig
         FROM contests C LEFT JOIN
             contest_accounts CA ON CA.contest_id = C.id AND CA.account_id = ?
         WHERE
             (CA.account_id IS NOT NULL OR COALESCE(C.is_hidden, 0) = 0) ~ .
-            contests_submenu_filter() . order_by);
-    $sth->execute($uid);
+            ($has_problem ? q~AND EXISTS (
+                SELECT 1 FROM contest_problems CP
+                WHERE CP.contest_id = C.id AND CP.problem_id = ?) ~ : contests_submenu_filter()) .
+            order_by);
+    $sth->execute($has_problem ? ($has_problem, $uid, $has_problem) : ($uid));
 
     my $fetch_contest = sub($)
     {
@@ -442,6 +449,7 @@ sub authenticated_contests_view ()
             registered_online => $c->{registered} && !$c->{is_virtual},
             registered_virtual => $c->{registered} && $c->{is_virtual},
             href_delete => url_f('contests', delete => $c->{id}),
+            has_orig => $c->{has_orig},
         );
     };
     return ($fetch_contest, $sth);
@@ -1271,6 +1279,8 @@ sub problems_frame
             ($reqs_count_sql $cats::st_wrong_answer$account_condition) AS wrong_answer_count,
             ($reqs_count_sql $cats::st_time_limit_exceeded$account_condition) AS time_limit_count,
             P.contest_id - CP.contest_id AS is_linked,
+            (SELECT COUNT(*) FROM contest_problems CP1
+                WHERE CP1.contest_id <> CP.contest_id AND CP1.problem_id = P.id) AS usage_count,
             OC.id AS original_contest_id, CP.status,
             P.upload_date,
             (SELECT A.login FROM accounts A WHERE A.id = P.last_modified_by) AS last_modified_by,
@@ -1311,7 +1321,7 @@ sub problems_frame
         $c->{status} ||= 0;
         my $psn = problem_status_names();
         return (
-            href_delete   => url_f('problems', 'delete' => $c->{cpid}),
+            href_delete => url_f('problems', 'delete' => $c->{cpid}),
             href_change_status => url_f('problems', 'change_status' => $c->{cpid}),
             href_change_code => url_f('problems', 'change_code' => $c->{cpid}),
             href_replace  => url_f('problems', replace => $c->{cpid}),
@@ -1319,6 +1329,7 @@ sub problems_frame
             href_compare_tests => $is_jury && url_f('compare_tests', pid => $c->{pid}),
             href_original_contest =>
                 url_function('problems', sid => $sid, cid => $c->{original_contest_id}, set_contest => 1),
+            href_usage => url_f('contests', has_problem => $c->{pid}),
             show_packages => $show_packages,
             is_practice => $contest->is_practice,
             editable => $is_jury,
@@ -1333,6 +1344,7 @@ sub problems_frame
             code => $c->{code},
             problem_name => $c->{problem_name},
             is_linked => $c->{is_linked},
+            usage_count => $c->{usage_count},
             contest_name => $c->{contest_name},
             accept_count => $c->{accepted_count},
             wa_count => $c->{wrong_answer_count},

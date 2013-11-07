@@ -9,6 +9,7 @@
   analysis = 'разбор';
   package = 'пакет';
   compare_tests = 'т';
+  used_in = 'Использована в турнирах';
   solution_file = 'Файл с решением';
   dev_env = 'Среда разработки';
   solution_text = 'Текст решения';

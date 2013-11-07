@@ -9,6 +9,7 @@
   analysis = 'analysis';
   package = 'package';
   compare_tests = 't';
+  used_in = 'Used in contests';
   solution_file = 'Solution file';
   dev_env = 'Dev. environment';
   solution_text = 'Solution text';

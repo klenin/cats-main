@@ -49,6 +49,7 @@ function confirm_registration()
     [% IF registration_denied %]<font color="red">[% ct_denied %]</font>[% END =%]
     [% IF show_points %]<font color="green">[% ct_school %]</font>[% END =%]
     [% IF is_hidden %]<font color="gray">[% ct_hidden %]</font>[% END %]
+    [% IF has_orig; ct_original; END %]
 </td>
 </tr>
 [% END %]
