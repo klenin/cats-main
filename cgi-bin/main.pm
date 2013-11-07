@@ -1329,6 +1329,7 @@ sub problems_frame
             href_explanation => $show_packages && $c->{has_explanation} ?
                 url_f('problem_text', cpid => $c->{cpid}, explain => 1) : '',
             problem_id => $c->{pid},
+            selected => $c->{pid} == (param('problem_id') || 0),
             code => $c->{code},
             problem_name => $c->{problem_name},
             is_linked => $c->{is_linked},

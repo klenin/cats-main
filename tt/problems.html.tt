@@ -71,7 +71,8 @@ function chg_code(st_sel, pid)
 [% FOREACH problems %]
 <tr bgcolor=[% IF odd %]"#f0f0f0"[% ELSE %]"#ffffff"[% END %]>
 [% IF is_team %]<td width="1%">
-  <input type="radio" name="problem_id" value="[% problem_id %]"[% IF disabled %] disabled="disabled"[% END %] />
+  <input type="radio" name="problem_id" value="[% problem_id %]"
+    [%- ' disabled="disabled"' IF disabled; ' checked="checked"' IF selected %] />
 </td>[% END %]
 <td>
     [% IF editable %][% IF code ~%]
