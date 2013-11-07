@@ -858,7 +858,7 @@ sub problems_submit
     $file ne '' || param('source_text') ne '' or return msg(1009);
     length($file) <= 200 or return msg(1010);
 
-    defined param('de_id') or return msg(14);
+    defined param('de_id') or return msg(1013);
 
     my $time_since_finish = 0;
     unless ($is_jury) {
@@ -907,7 +907,7 @@ sub problems_submit
     if ($did eq 'by_extension') {
         my $de_list = CATS::DevEnv->new($dbh, active_only => 1);
         my $de = $de_list->by_file_extension($file)
-            or return msg(13);
+            or return msg(1013);
         $did = $de->{id};
         $t->param(de_name => $de->{description});
     }
@@ -948,7 +948,7 @@ sub problems_submit
     $t->param(solution_submitted => 1, href_console => url_f('console'));
     $time_since_finish > 0 ? msg(87) :
     defined $prev_reqs_count ? msg(88, $contest->{max_reqs} - $prev_reqs_count - 1) :
-    msg(15);
+    msg(1014);
 }
 
 
