@@ -1,0 +1,6 @@
+[%
+  capt1 = {
+    encoding => 'encoding',
+    replace => 'replace',
+  }
+%]

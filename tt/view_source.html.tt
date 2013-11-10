@@ -15,7 +15,7 @@
   <option value="[% enc %]"[% IF selected %]selected="selected"[% END %]>[% enc %]</option>
   [% END %]
   </select>
-  <input type="submit" class="button" value="кодировка" />
+  <input type="submit" class="button" value="[% capt1.encoding %]" />
 </form>
 </td>
 <td>
@@ -25,7 +25,7 @@
   <select name="de_id">
   [% FOREACH de_list %]<option value="[% de_id %]"[% IF selected %] selected="selected"[% END %]>[% de_name | html %]</option>[% END %]
   </select>
-  <input type="submit" class="button" value="заменить" /> 
+  <input type="submit" class="button" value="[% capt1.replace %]" /> 
 </form>
 [% END %]
 </td>
