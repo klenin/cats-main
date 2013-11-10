@@ -259,7 +259,7 @@ sub problem_text_frame
     }
     elsif (my $cpid = url_param('cpid')) {
         my $p = $dbh->selectrow_hashref(qq~
-            SELECT CP.problem_id, CP.code, CP.testsets, C.rules
+            SELECT CP.id AS cpid, CP.problem_id, CP.code, CP.testsets, CP.max_points, C.rules
             FROM contests C INNER JOIN contest_problems CP ON CP.contest_id = C.id
             WHERE CP.id = ?~, undef,
             $cpid) or return;
@@ -270,7 +270,7 @@ sub problem_text_frame
         ($show_points) = $contest->{rules};
         # Should either check for a static page or hide the problem even from jury.
         my $p = $dbh->selectall_arrayref(qq~
-            SELECT problem_id, code, testsets FROM contest_problems
+            SELECT id AS cpid, problem_id, code, testsets, max_points FROM contest_problems
             WHERE contest_id = ? AND status < $cats::problem_st_hidden
             ORDER BY code~, { Slice => {} },
             url_param('cid') || $cid);
@@ -287,7 +287,7 @@ sub problem_text_frame
                 id, contest_id, title, lang, time_limit, memory_limit,
                 difficulty, author, input_file, output_file,
                 statement, pconstraints, input_format, output_format, explanation,
-                formal_input, json_data, max_points
+                formal_input, json_data, max_points AS max_points_def
             FROM problems WHERE id = ?~, { Slice => {} },
             $problem->{problem_id}) or next;
         $problem = { %$problem, %$p };
@@ -304,7 +304,7 @@ sub problem_text_frame
             $problem->{keywords} = join ', ', @$kw_list;
         }
         if ($use_spellchecker) {
-            # Judging from Text::Aspell docs, we cannot change options of the existing object,
+            # Per Text::Aspell docs, we cannot change options of the existing object,
             # so create a new one.
             $spellchecker = Text::Aspell->new;
             $spellchecker->set_option('lang', $lang eq 'ru' ? 'ru_RU' : 'en_US');

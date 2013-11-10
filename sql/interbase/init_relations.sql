@@ -132,6 +132,7 @@ CREATE TABLE contest_problems (
     code            CHAR,
     status          INTEGER DEFAULT 0 CHECK (status IN (0, 1, 2, 3)),
     testsets        VARCHAR(200),
+    max_points      INTEGER,
     UNIQUE (problem_id, contest_id)
 );
 

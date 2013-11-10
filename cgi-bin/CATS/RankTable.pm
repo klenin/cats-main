@@ -59,8 +59,13 @@ sub cache_max_points
         $max_points = $dbh->selectrow_array(q~
             SELECT SUM(points) FROM tests WHERE problem_id = ?~, undef, $pid);
     }
-    $dbh->do(q~
-        UPDATE problems SET max_points = ? WHERE id = ?~, undef, $max_points, $pid);
+    $max_points ||= $problem->{max_points_def};
+    if ($problem->{cpid}) {
+        $dbh->do(q~
+            UPDATE contest_problems SET max_points = ?
+            WHERE id = ? AND (max_points IS NULL OR max_points <> ?)~, undef,
+            $max_points, $problem->{cpid}, $max_points);
+    }
     $max_points;
 }
 
@@ -87,7 +92,8 @@ sub get_problems
         SELECT
             CP.id, CP.problem_id, CP.code, CP.contest_id, CP.testsets, C.start_date,
             CAST(CURRENT_TIMESTAMP - C.start_date AS DOUBLE PRECISION) AS since_start,
-            C.local_only, P.max_points, P.title, @{[ partial_checker_sql ]}
+            C.local_only, CP.max_points, P.title, P.max_points AS max_points_def,
+            @{[ partial_checker_sql ]}
         FROM
             contest_problems CP INNER JOIN contests C ON C.id = CP.contest_id
             INNER JOIN problems P ON P.id = CP.problem_id
