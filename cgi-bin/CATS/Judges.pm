@@ -32,7 +32,7 @@ sub edit_save
     my $locked = param_on('locked') ? -1 : 0;
 
     $judge_name ne '' && length $judge_name <= 20
-        or return msg(005);
+        or return msg(1005);
 
     if ($jid) {
         $dbh->do(qq~
@@ -46,7 +46,7 @@ sub edit_save
             VALUES (?, ?, ?, 0, CURRENT_TIMESTAMP)~, undef,
             new_id, $judge_name, $locked);
         $dbh->commit;
-        msg(006);
+        msg(1006);
     }
 }
 
