@@ -689,6 +689,8 @@ sub problems_replace
         $dbh->rollback;
         return msg(1008);
     }
+    $dbh->do(q~
+        UPDATE contest_problems SET max_points = NULL WHERE problem_id = ?~, undef, $pid);
     $dbh->commit;
     CATS::StaticPages::invalidate_problem_text(pid => $pid);
     msg(1007);
@@ -1127,7 +1129,7 @@ sub problem_select_testsets
         $_->{selected} = exists $sel{$_->{id}} for @$testsets;
         my $ts_list = join ',', map $_->{name}, grep $_->{selected}, @$testsets;
         $dbh->do(q~
-            UPDATE contest_problems SET testsets = ? WHERE id = ?~, undef,
+            UPDATE contest_problems SET testsets = ?, max_points = NULL WHERE id = ?~, undef,
             $ts_list, $problem->{cpid});
         $dbh->commit;
         redirect(url_f('problems'));
