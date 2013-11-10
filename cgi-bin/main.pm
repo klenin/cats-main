@@ -563,8 +563,7 @@ sub problems_change_status ()
         $new_status, $cid, $cpid);
     $dbh->commit;
     # Perhaps a 'hidden' status changed.
-    CATS::StaticPages::invalidate_problem_text(cid => $cid);
-    CATS::StaticPages::invalidate_problem_text(cpid => $cpid);
+    CATS::StaticPages::invalidate_problem_text(cid => $cid, cpid => $cpid);
 }
 
 sub problems_change_code ()
@@ -578,8 +577,7 @@ sub problems_change_code ()
             WHERE contest_id = ? AND id = ?~, {},
         $new_code, $cid, $cpid);
     $dbh->commit;
-    CATS::StaticPages::invalidate_problem_text(cid => $cid);
-    CATS::StaticPages::invalidate_problem_text(cpid => $cpid);
+    CATS::StaticPages::invalidate_problem_text(cid => $cid, cpid => $cpid);
 }
 
 sub show_unused_problem_codes ()
@@ -1083,8 +1081,7 @@ sub problems_frame_jury_action
             $cpid) or return;
 
         $dbh->do(qq~DELETE FROM contest_problems WHERE id = ?~, undef, $cpid);
-        CATS::StaticPages::invalidate_problem_text(cid => $old_contest);
-        CATS::StaticPages::invalidate_problem_text(cpid => $cpid);
+        CATS::StaticPages::invalidate_problem_text(cid => $old_contest, cpid => $cpid);
 
         my ($ref_count) = $dbh->selectrow_array(qq~
             SELECT COUNT(*) FROM contest_problems WHERE problem_id = ?~, undef, $pid);

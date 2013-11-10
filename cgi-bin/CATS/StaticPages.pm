@@ -50,14 +50,13 @@ sub invalidate_problem_text
     my @contest_ids = $p{cid} ? ($p{cid}) : ();
     my @cpids = $p{cpid} ? ($p{cpid}) : ();
     
-    if ($p{pid})
-    {
+    if ($p{pid}) {
         my $records = $dbh->selectall_arrayref(q~
             SELECT id, contest_id FROM contest_problems WHERE problem_id = ?~,
             undef, $p{pid});
         for my $record (@$records) {
-            push @cpids, $$record[0];
-            push @contest_ids, $$record[1];
+            push @cpids, $record->[0];
+            push @contest_ids, $record->[1];
         }
     }
     if ($p{all} && $p{cid}) {
