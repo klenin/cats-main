@@ -210,10 +210,10 @@ sub contests_new_save
         @$p{contest_checkbox_params()}
     );
 
-    # автоматически зарегистрировать всех администраторов как жюри
+    # Automatically register all admins as jury.
     my $root_accounts = $dbh->selectcol_arrayref(qq~
         SELECT id FROM accounts WHERE srole = ?~, undef, $cats::srole_root);
-    push @$root_accounts, $uid unless $is_root; # пользователь с ролью contests_creator
+    push @$root_accounts, $uid unless $is_root; # User with contests_creator role.
     for (@$root_accounts)
     {
         register_contest_account(
@@ -317,14 +317,14 @@ sub contest_virtual_registration
     $contest->{time_since_start} >= 0
         or return msg(109);
 
-    # В официальных турнирах виртуальное участие резрешено только после окончания.
+    # In official contests, virtual participation is allowed only after the finish.
     $contest->{time_since_finish} >= 0 || !$contest->{is_official}
         or return msg(122);
 
     !$contest->{closed}
         or return msg(105);
 
-    # при повторной регистрации удаляем старые результаты
+    # Repeat virtual registration removes old results.
     if ($registered)
     {
         $dbh->do(qq~
@@ -392,8 +392,8 @@ sub common_contests_view ($)
 
 sub contest_fields ()
 {
-    # HACK: начальная страница -- список турниров, выводится очень часто
-    # при отсутствии поиска выбираем только первую страницу + 1 запись.
+    # HACK: starting page is a contests list, displayed very frequently.
+    # In the absense of a filter, select only the first page + 1 record.
     # my $s = $settings->{$listview_name};
     # (($s->{page} || 0) == 0 && !$s->{search} ? 'FIRST ' . ($s->{rows} + 1) : '') .
     q~c.ctype, c.id, c.title,
@@ -562,7 +562,7 @@ sub problems_change_status ()
             WHERE contest_id = ? AND id = ?~, {},
         $new_status, $cid, $cpid);
     $dbh->commit;
-    # Возможно изменение статуса hidden
+    # Perhaps a 'hidden' status changed.
     CATS::StaticPages::invalidate_problem_text(cid => $cid);
     CATS::StaticPages::invalidate_problem_text(cpid => $cpid);
 }
