@@ -148,9 +148,8 @@ sub get_problems
 sub get_results
 {
     (my CATS::RankTable $self, my $cond_str, my $max_cached_req_id) = @_;
-    my @conditions = ();
-    my @params = ();
-    unless($is_jury) {
+    my (@conditions, @params);
+    unless ($is_jury) {
         if ($self->{frozen}) {
             if ($is_team) {
                 push @conditions, '(R.submit_time < C.freeze_date OR R.account_id = ?)';
@@ -160,7 +159,7 @@ sub get_results
                 push @conditions, 'R.submit_time < C.freeze_date';
             }
         }
-        if ($is_team && !$is_jury && $virtual_diff_time) {
+        if ($is_team && $virtual_diff_time) {
             push @conditions, "(R.submit_time - CA.diff_time < CURRENT_TIMESTAMP - $virtual_diff_time)";
         }
         push @conditions, '(C.show_all_results = 1 OR R.account_id = ?)';
@@ -172,7 +171,8 @@ sub get_results
     $dbh->selectall_arrayref(qq~
         SELECT
             R.id, R.state, R.problem_id, R.account_id, R.points, R.testsets,
-            MAXVALUE((R.submit_time - C.start_date - CA.diff_time) * 1440, 0) AS time_elapsed
+            MAXVALUE((R.submit_time - C.start_date - CA.diff_time) * 1440, 0) AS time_elapsed,
+            CASE WHEN R.submit_time >= C.freeze_date THEN 1 ELSE 0 END AS is_frozen
         FROM reqs R, contests C, contest_accounts CA, contest_problems CP
         WHERE
             CA.contest_id = C.id AND CA.account_id = R.account_id AND R.contest_id = C.id AND
@@ -271,7 +271,7 @@ sub get_contests_info
     {
         next if $is_hidden && !$is_local_jury;
         push @actual_contests, $id;
-        $self->{frozen} ||= $since_freeze > 0 && $since_defreeze < 0;
+        $self->{frozen} ||= $since_freeze >= 0 && $since_defreeze < 0;
         $self->{not_started} ||= $since_start < 0 && !$is_jury;
         $self->{has_practice} ||= ($ctype || 0);
         $self->{show_points} ||= $rules;
@@ -516,7 +516,7 @@ sub rank_table
             $t->{total_time} += $p->{time_consumed};
             $t->{total_solved}++;
         }
-        if ($_->{state} != $cats::st_security_violation) # && state != ignored ?
+        if ($_->{state} != $cats::st_security_violation)
         {
             $p->{runs}++;
             $t->{total_runs}++;
@@ -527,7 +527,7 @@ sub rank_table
         }
     }
 
-    if (!$self->{frozen} && !$is_virtual && @$results && !$self->{has_practice} && $self->{show_all_results})
+    if (!$self->{frozen} && !$is_virtual && @$results && $self->{show_all_results})
     {
         Storable::lock_store({ t => $teams, p => $problem_stats, r => $max_req_id }, $cache_file);
     }
