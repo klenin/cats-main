@@ -93,7 +93,9 @@ function chg_code(st_sel, pid)
     [%- IF is_linked %] [<a href="[% href_original_contest %]" title="[% contest_name %]">L</a>][% END %]
     [%- IF usage_count %] [<a href="[% href_usage %]" title="[% used_in %]">[% usage_count %]</a>][% END %]
 </td>
-<td><a href="[% href_select_testsets %]">[% testsets %]</a> ([% test_count %])</td>
+<td><a href="[% href_select_testsets %]">[% testsets %]</a> ([% test_count %])
+  [%- IF points_testsets %] / <a href="[% href_select_testsets %]">[% points_testsets %]</a>[% END -%]
+</td>
 <td>[% last_modified_by %]</td>
 <td align="right">[% upload_date %]</td>
 [% END %]

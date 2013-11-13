@@ -35,7 +35,9 @@ a["[% problem_id %]"] = new Array(
 </td>
 <td>[% in_queue %]</td>
 <td>[% status %]</td>
-<td><a href="[% href_select_testsets %]">[% testsets %]</a></td>
+<td><a href="[% href_select_testsets %]">[% testsets %]</a>
+  [%- IF points_testsets %] / <a href="[% href_select_testsets %]">[% points_testsets %]</a>[% END -%]
+</td>
 <td align="center">[% accept_count %] / [% wa_count %]  / [% tle_count %]</td>
 </tr>
 [% END %]

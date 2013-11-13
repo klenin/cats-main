@@ -1113,7 +1113,7 @@ sub problem_select_testsets
     my $cpid = param('cpid') or return;
 
     my $problem = $dbh->selectrow_hashref(q~
-        SELECT P.id, P.title, CP.id AS cpid, CP.contest_id, CP.testsets
+        SELECT P.id, P.title, CP.id AS cpid, CP.contest_id, CP.testsets, CP.points_testsets
         FROM problems P INNER JOIN contest_problems CP ON P.id = CP.problem_id
         WHERE CP.id = ?~, undef,
         $cpid) or return;
@@ -1123,23 +1123,27 @@ sub problem_select_testsets
         SELECT * FROM testsets WHERE problem_id = ?~, { Slice => {} },
         $problem->{id});
 
-    if (param('save'))
-    {
+    my $param_to_list = sub {
         my %sel;
-        @sel{param('sel')} = undef;
-        $_->{selected} = exists $sel{$_->{id}} for @$testsets;
-        my $ts_list = join ',', map $_->{name}, grep $_->{selected}, @$testsets;
+        @sel{param($_[0])} = undef;
+        join ',', map $_->{name}, grep exists $sel{$_->{id}}, @$testsets;
+    };
+    if (param('save')) {
         $dbh->do(q~
-            UPDATE contest_problems SET testsets = ?, max_points = NULL WHERE id = ?~, undef,
-            $ts_list, $problem->{cpid});
+            UPDATE contest_problems SET testsets = ?, points_testsets = ?, max_points = NULL
+            WHERE id = ?~, undef,
+            map($param_to_list->("sel_$_"), qw(testsets points_testsets)), $problem->{cpid});
         $dbh->commit;
         redirect(url_f('problems'));
         return -1;
     }
 
-    my %sel;
-    @sel{split ',', $problem->{testsets} || ''} = undef;
-    $_->{selected} = exists $sel{$_->{name}} for @$testsets;
+    my $list_to_selected = sub {
+        my %sel;
+        @sel{split ',', $problem->{$_[0]} || ''} = undef;
+        $_->{"sel_$_[0]"} = exists $sel{$_->{name}} for @$testsets;
+    };
+    $list_to_selected->($_) for qw(testsets points_testsets);
 
     $t->param("problem_$_" => $problem->{$_}) for keys %$problem;
     $t->param(testsets => $testsets, href_select_testsets => url_f('problem_select_testsets'));
@@ -1166,7 +1170,7 @@ sub problems_retest_frame
     my $sth = $dbh->prepare(qq~
         SELECT
             CP.id AS cpid, P.id AS pid,
-            CP.code, P.title AS problem_name, CP.testsets, CP.status,
+            CP.code, P.title AS problem_name, CP.testsets, CP.points_testsets, CP.status,
             ($reqs_count_sql $cats::st_accepted) AS accepted_count,
             ($reqs_count_sql $cats::st_wrong_answer) AS wrong_answer_count,
             ($reqs_count_sql $cats::st_time_limit_exceeded) AS time_limit_count,
@@ -1194,6 +1198,7 @@ sub problems_retest_frame
             wa_count => $c->{wrong_answer_count},
             tle_count => $c->{time_limit_count},
             testsets => $c->{testsets} || '*',
+            points_testsets => $c->{points_testsets},
             in_queue => $c->{in_queue},
             href_select_testsets => url_f('problem_select_testsets', cpid => $c->{cpid}),
         );
@@ -1287,7 +1292,7 @@ sub problems_frame
             P.upload_date,
             (SELECT A.login FROM accounts A WHERE A.id = P.last_modified_by) AS last_modified_by,
             SUBSTRING(P.explanation FROM 1 FOR 1) AS has_explanation,
-            $test_count_sql CP.testsets
+            $test_count_sql CP.testsets, CP.points_testsets
         FROM problems P, contest_problems CP, contests OC
         WHERE CP.problem_id = P.id AND OC.id = P.contest_id AND CP.contest_id = ?$hidden_problems
         ~ . order_by
@@ -1354,6 +1359,7 @@ sub problems_frame
             upload_date => $c->{upload_date},
             last_modified_by => $c->{last_modified_by},
             testsets => $c->{testsets} || '*',
+            points_testsets => $c->{points_testsets},
             test_count => $c->{test_count},
             href_select_testsets => url_f('problem_select_testsets', cpid => $c->{cpid}),
             status_list => [
