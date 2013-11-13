@@ -259,7 +259,8 @@ sub problem_text_frame
     }
     elsif (my $cpid = url_param('cpid')) {
         my $p = $dbh->selectrow_hashref(qq~
-            SELECT CP.id AS cpid, CP.problem_id, CP.code, CP.testsets, CP.max_points, C.rules
+            SELECT CP.id AS cpid, CP.problem_id, CP.code,
+            CP.testsets, CP.points_testsets, CP.max_points, C.rules
             FROM contests C INNER JOIN contest_problems CP ON CP.contest_id = C.id
             WHERE CP.id = ?~, undef,
             $cpid) or return;
@@ -270,7 +271,8 @@ sub problem_text_frame
         ($show_points) = $contest->{rules};
         # Should either check for a static page or hide the problem even from jury.
         my $p = $dbh->selectall_arrayref(qq~
-            SELECT id AS cpid, problem_id, code, testsets, max_points FROM contest_problems
+            SELECT id AS cpid, problem_id, code,
+            testsets, points_testsets, max_points FROM contest_problems
             WHERE contest_id = ? AND status < $cats::problem_st_hidden
             ORDER BY code~, { Slice => {} },
             url_param('cid') || $cid);

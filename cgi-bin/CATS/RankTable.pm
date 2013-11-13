@@ -42,8 +42,9 @@ sub cache_max_points
     my ($problem) = @_;
     my $pid = $problem->{problem_id};
     my $max_points = 0;
-    if ($problem->{testsets}) {
-        my $test_testsets = get_test_testsets($problem, $problem->{testsets});
+    my $problem_testsets = $problem->{points_testsets} || $problem->{testsets};
+    if ($problem_testsets) {
+        my $test_testsets = get_test_testsets($problem, $problem_testsets);
         my $test_points = $dbh->selectall_arrayref(q~
             SELECT rank, points FROM tests WHERE problem_id = ?~, { Slice => {} },
             $pid);
@@ -90,7 +91,8 @@ sub get_problems
     (my CATS::RankTable $self) = @_;
     my $problems = $self->{problems} = $dbh->selectall_arrayref(qq~
         SELECT
-            CP.id, CP.problem_id, CP.code, CP.contest_id, CP.testsets, C.start_date,
+            CP.id, CP.problem_id, CP.code, CP.contest_id,
+            CP.testsets, CP.points_testsets, C.start_date,
             CAST(CURRENT_TIMESTAMP - C.start_date AS DOUBLE PRECISION) AS since_start,
             C.local_only, CP.max_points, P.title, P.max_points AS max_points_def,
             @{[ partial_checker_sql ]}
