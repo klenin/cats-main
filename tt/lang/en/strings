@@ -79,6 +79,7 @@
 702 "disabled"
 703 "hidden"
 1001 "Problem was successfully linked."
+1002 "Session code is wrong or expired. Please login again."
 1003 "Unable to link the same problem twice."
 1005 "Please enter correct judge name."
 1006 "Judge created successfully."

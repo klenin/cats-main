@@ -449,24 +449,17 @@ sub init_user
     $can_create_contests = 0;
     $uid = undef;
     $team_name = undef;
-    if ($sid ne '')
-    {
+    my $bad_sid;
+    if ($sid ne '') {
         ($uid, $team_name, my $srole, my $last_ip, $enc_settings) = $dbh->selectrow_array(qq~
             SELECT id, team_name, srole, last_ip, settings FROM accounts WHERE sid = ?~, {}, $sid);
-        if (!defined($uid) || ($last_ip || '') ne CATS::IP::get_ip())
-        {
-            init_template(auto_ext('bad_sid'));
-            $sid = '';
-            $t->param(href_login => url_f('login'));
-        }
-        else
-        {
+        $bad_sid = !defined($uid) || ($last_ip || '') ne CATS::IP::get_ip();
+        if (!$bad_sid) {
             $is_root = $srole == $cats::srole_root;
             $can_create_contests = $is_root || $srole == $cats::srole_contests_creator;
         }
     }
-    if (!$uid)
-    {
+    if (!$uid) {
         $enc_settings = cookie('settings') || '';
         $enc_settings = decode_base64($enc_settings) if $enc_settings;
     }
@@ -475,6 +468,12 @@ sub init_user
 
     my $lang = param('lang');
     $settings->{lang} = $lang if $lang && grep $_ eq $lang, @cats::langs;
+    if ($bad_sid) {
+        init_template(param('json') ? 'bad_sid.json.tt' : 'login.html.tt');
+        $sid = '';
+        $t->param(href_login => url_f('login'));
+        msg(1002);
+    }
 }
 
 sub extract_cid_from_cpid

@@ -1,7 +1,7 @@
 [% PROCESS 'includes/menu_begin.tti' %]
 
 <table><tr><td height=50%>
-<form method="post" enctype="multipart/form-data">
+<form method="post" enctype="multipart/form-data" action="[% href_login %]">
 <table>
 <tr><td>[% login_capt %]:</td>
   <td><input type="text" size="20" name="login" maxlength="20" class="bordered" value="[% login | html %]" /></td></tr>

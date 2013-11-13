@@ -61,6 +61,7 @@ sub login_frame
 {
     my $json = param('json');
     init_template(auto_ext('login', $json));
+    $t->param(href_login => url_f('login'));
 
     my $login = param('login');
     if (!$login)
