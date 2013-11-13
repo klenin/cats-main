@@ -1109,13 +1109,16 @@ sub problems_frame_jury_action
 
 sub problem_select_testsets
 {
-    $is_jury or return;
+    init_template('problem_select_testsets.html.tt');
     my $cpid = param('cpid') or return;
 
     my $problem = $dbh->selectrow_hashref(q~
-        SELECT P.id, P.title, CP.id AS cpid, CP.testsets
+        SELECT P.id, P.title, CP.id AS cpid, CP.contest_id, CP.testsets
         FROM problems P INNER JOIN contest_problems CP ON P.id = CP.problem_id
-        WHERE CP.id = ?~, undef, $cpid);
+        WHERE CP.id = ?~, undef,
+        $cpid) or return;
+    is_jury_in_contest(contest_id => $problem->{contest_id}) or return;
+
     my $testsets = $dbh->selectall_arrayref(q~
         SELECT * FROM testsets WHERE problem_id = ?~, { Slice => {} },
         $problem->{id});
@@ -1138,7 +1141,6 @@ sub problem_select_testsets
     @sel{split ',', $problem->{testsets} || ''} = undef;
     $_->{selected} = exists $sel{$_->{name}} for @$testsets;
 
-    init_template('problem_select_testsets.html.tt');
     $t->param("problem_$_" => $problem->{$_}) for keys %$problem;
     $t->param(testsets => $testsets, href_select_testsets => url_f('problem_select_testsets'));
 }
