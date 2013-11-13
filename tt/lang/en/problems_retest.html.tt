@@ -1,0 +1,8 @@
+[%
+  capt = {
+    in_queue => 'Total in queue',
+    retest => 'retest',
+    recalc => 'recalculate points',
+    all_runs => 'all runs',
+  }
+%]
