@@ -381,8 +381,10 @@ sub generate_output
             Time::HiRes::tv_interval($request_start_time, [ Time::HiRes::gettimeofday ]));
         $t->param(init_time => sprintf '%.3fs', $init_time || 0);
     }
-    my $cookie = $uid ? undef : cookie(
-        -name => 'settings', -value => encode_base64($enc_settings), -expires => '+1h');
+    my $cookie = $uid && lang eq 'ru' ? undef : cookie(
+        -name => 'settings',
+        -value => encode_base64($uid ? Storable::freeze({ lang => lang }): $enc_settings),
+        -expires => '+1h');
     my $out = '';
     if (my $enc = param('enc'))
     {
