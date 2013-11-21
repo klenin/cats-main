@@ -25,6 +25,7 @@ sub parse_test_rank
                 if ($testset->{points}) {
                     die \"Nested scoring group '$_'" if $sg;
                     $sg = $testset;
+                    $sg->{test_count} = 0;
                 }
                 $rec->($testset->{tests}, $sg);
             }
