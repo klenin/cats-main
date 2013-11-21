@@ -1049,6 +1049,7 @@ sub problems_recalc_points()
         WHERE contest_id = ? AND problem_id IN (~ . join(',', @pids) . q~)~, undef,
         $cid);
     $dbh->commit;
+    CATS::RankTable::remove_cache($cid);
 }
 
 
