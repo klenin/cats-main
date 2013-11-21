@@ -316,8 +316,8 @@ files with tests, solutions etc.
   <td><ul>
     <li>name -- name of the test set;</li>
     <li>tests -- <a href="#rankSpec">test rank specification</a>;</li>
-    <li>points[% opt; v18 %] -- number of points for the whole testset;</li>
-    <li>comment[% opt; v18 %] -- comment.</li>
+    <li>points[% s(opt, v18) %] -- number of points for the whole testset;</li>
+    <li>comment[% s(opt, v18) %] -- comment.</li>
   </ul></td>
   <td>Contains test set description. While adding the problem to the contest,
     one or more testsets to use for checking may be specified.
