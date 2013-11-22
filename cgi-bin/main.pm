@@ -1327,7 +1327,6 @@ sub problems_frame
     {
         my $c = $_[0]->fetchrow_hashref or return ();
         $c->{status} ||= 0;
-        my $psn = problem_status_names();
         return (
             href_delete => url_f('problems', 'delete' => $c->{cpid}),
             href_change_status => url_f('problems', 'change_status' => $c->{cpid}),
@@ -1339,11 +1338,8 @@ sub problems_frame
                 url_function('problems', sid => $sid, cid => $c->{original_contest_id}, set_contest => 1),
             href_usage => url_f('contests', has_problem => $c->{pid}),
             show_packages => $show_packages,
-            is_practice => $contest->is_practice,
-            editable => $is_jury,
             status => $c->{status},
             disabled => !$is_jury && $c->{status} == $cats::problem_st_disabled,
-            is_team => $my_is_team,
             href_view_problem => $text_link_f->('problem_text', cpid => $c->{cpid}),
             href_explanation => $show_packages && $c->{has_explanation} ?
                 url_f('problem_text', cpid => $c->{cpid}, explain => 1) : '',
@@ -1363,10 +1359,6 @@ sub problems_frame
             points_testsets => $c->{points_testsets},
             test_count => $c->{test_count},
             href_select_testsets => url_f('problem_select_testsets', cpid => $c->{cpid}),
-            status_list => [
-                map {{ id => $_, name => $psn->{$_}, selected => $c->{status} == $_ }} sort keys %$psn
-            ],
-            code_array => [ map {{code => $_, selected => ($c->{code} || '') eq $_ }} @cats::problem_codes ],
         );
     };
 
@@ -1400,8 +1392,11 @@ sub problems_frame
             unless $contest->is_practice;
     }
 
-    $t->param(submenu => \@submenu, title_suffix => res_str(525));
-    $t->param(is_team => $my_is_team, is_practice => $contest->is_practice, de_list => \@de);
+    $t->param(
+        submenu => \@submenu, title_suffix => res_str(525),
+        is_team => $my_is_team, is_practice => $contest->is_practice,
+        de_list => \@de, problem_codes => \@cats::problem_codes,
+     );
 }
 
 

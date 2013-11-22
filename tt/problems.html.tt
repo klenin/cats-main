@@ -11,11 +11,11 @@ function getSelectedButton(button) {
     return -1; //no button selected
 }
 
-var a = new Array();
-[% FOREACH problems %]
-a["[% problem_id %]"] = new Array(
-  "[% problem_name | html %]", "[% href_delete %]", "[% href_replace %]",
-  "[% href_change_status %]", "[% href_change_code %]");
+var a = [];
+[% FOREACH p IN problems %]
+a[[% p.problem_id %]] = [
+  "[% p.problem_name | html %]", "[% p.href_delete %]", "[% p.href_replace %]",
+  "[% p.href_change_status %]", "[% p.href_change_code %]"];
 [% END %]
 
 function d() {
@@ -68,40 +68,40 @@ function chg_code(st_sel, pid)
 [% IF is_team %]
 [% PROCESS 'includes/listview_col_defs.tti' sel_col = 1 %]
 [% END %]
-[% FOREACH problems %]
-<tr bgcolor=[% IF odd %]"#f0f0f0"[% ELSE %]"#ffffff"[% END %]>
+[% FOREACH p IN problems %]
+<tr bgcolor=[% IF p.odd %]"#f0f0f0"[% ELSE %]"#ffffff"[% END %]>
 [% IF is_team %]<td width="1%">
-  <input type="radio" name="problem_id" value="[% problem_id %]"
+  <input type="radio" name="problem_id" value="[% p.problem_id %]"
     [%- ' disabled="disabled"' IF disabled; ' checked="checked"' IF selected %] />
 </td>[% END %]
 <td>
-    [% IF editable %][% IF code ~%]
-      <select onchange="chg_code(this, [% problem_id %])">[% FOREACH code_array ~%]
-        <option value="[% code %]"[% IF selected %] selected="selected"[% END %]>[% code %]</option>[% END ~%]
-    </select> [% END %]<a href="[% href_view_problem %]" target="_blank">
+    [% IF editable %][% IF p.code ~%]
+      <select onchange="chg_code(this, [% p.problem_id %])">
+      [%~ FOREACH pc IN problem_codes; option(pc, pc, pc == p.code); END ~%]
+      </select> [% END %]<a href="[% p.href_view_problem %]" target="_blank">
     [% ELSE ~%]
-      <a href="[% href_view_problem %]" target="_blank">[% IF code %][% code %] - [% END %][% END %][% problem_name | html %]</a>
-    [% IF href_explanation %]&nbsp;[<a href="[% href_explanation %]" target="_blank">[% analysis %]</a>][% END %]
-    [% IF show_packages %]&nbsp;[<a href="[% href_download %]">[% package %]</a>][% END %]
-    [% IF href_compare_tests %]&nbsp;[<a href="[% href_compare_tests %]">[% compare_tests %]</a>][% END %]
+      <a href="[% p.href_view_problem %]" target="_blank">[% IF p.code; p.code %] - [% END %][% END %][% p.problem_name | html %]</a>
+    [% IF p.href_explanation %]&nbsp;[<a href="[% p.href_explanation %]" target="_blank">[% analysis %]</a>][% END %]
+    [% IF p.show_packages %]&nbsp;[<a href="[% p.href_download %]">[% package %]</a>][% END %]
+    [% IF p.href_compare_tests %]&nbsp;[<a href="[% p.href_compare_tests %]">[% compare_tests %]</a>][% END %]
 </td>
 [% IF editable %]
 <td>
-    <select onchange="chg_status(this, [% problem_id %])">
-    [% FOREACH status_list %]<option value="[% id %]"[% IF selected %] selected="selected"[% END %]>[% name | html %]</option>[% END %]
+    <select onchange="chg_status(this, [% p.problem_id %])">
+    [%~ FOREACH sl IN status_list; option(sl.id, sl.name, sl.id == p.status); END ~%]
     </select>
-    [%- IF is_linked %] [<a href="[% href_original_contest %]" title="[% contest_name %]">L</a>][% END %]
-    [%- IF usage_count %] [<a href="[% href_usage %]" title="[% used_in %]">[% usage_count %]</a>][% END %]
+    [%- IF p.is_linked %] [<a href="[% p.href_original_contest %]" title="[% p.contest_name %]">L</a>][% END %]
+    [%- IF p.usage_count %] [<a href="[% p.href_usage %]" title="[% used_in %]">[% p.usage_count %]</a>][% END %]
 </td>
-<td><a href="[% href_select_testsets %]">[% testsets %]</a> ([% test_count %])
-  [%- IF points_testsets %] / <a href="[% href_select_testsets %]">[% points_testsets %]</a>[% END -%]
+<td><a href="[% p.href_select_testsets %]">[% p.testsets %]</a> ([% p.test_count %])
+  [%- IF p.points_testsets %] / <a href="[% p.href_select_testsets %]">[% p.points_testsets %]</a>[% END -%]
 </td>
-<td>[% last_modified_by %]</td>
-<td align="right">[% upload_date %]</td>
+<td>[% p.last_modified_by %]</td>
+<td align="right">[% p.upload_date %]</td>
 [% END %]
-[% IF is_practice %]<td>[% contest_name | html %]</td>[% END %]
+[% IF is_practice %]<td>[% p.contest_name | html %]</td>[% END %]
 [% IF is_team %]
-    <td align="center">[% accept_count %] / [% wa_count %]  / [% tle_count %]</td>
+    <td align="center">[% p.accept_count %] / [% p.wa_count %]  / [% p.tle_count %]</td>
 [% END %]
 </tr>
 [% END %]
@@ -110,7 +110,7 @@ function chg_code(st_sel, pid)
 <div class="problem_submit">
   <p><label for="source">[% solution_file %]:</label><input type="file" id="source" name="source" class="file" size="25"/></p>
   <p><label for="de_id">[% dev_env %]:</label><select name="de_id" id="de_id">
-    [% FOREACH de_list %]<option value="[% de_id %]">[% de_name | html %]</option>[% END %]
+    [% FOREACH de IN de_list; option(de.de_id, de.de_name); END %]
     </select>
   </p>
   <p><label for="source_text">[% solution_text %]:</label><br/>
