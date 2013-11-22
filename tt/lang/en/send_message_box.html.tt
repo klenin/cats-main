@@ -1,0 +1,7 @@
+[%
+  capt = {
+    message_for_team => 'Message for team',
+    send => 'Send',
+    close => 'Close',
+  }
+%]
