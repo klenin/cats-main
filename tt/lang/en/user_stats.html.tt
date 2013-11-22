@@ -1,0 +1,11 @@
+[%
+  capt = {
+    name => 'Name',
+    last_login => 'Last login',
+    last_ip => 'Last IP',
+    problems => 'Problems',
+    all => 'all',
+    solved => 'solved',
+    contests => 'Contests',
+  }
+%]

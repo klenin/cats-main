@@ -1,20 +1,20 @@
 [% PROCESS 'includes/menu_begin.tti' %]
 
 <table cellpadding="0">
-<tr><td>Имя:</td><td>[% team_name | html %]</td>
+<tr><td>[% capt.name %]:</td><td>[% team_name | html %]</td>
 [% IF is_root %]
-<tr><td>Последний вход:</td><td>[% last_login_date %]</td>
-<tr><td>Последний IP:</td><td>
+<tr><td>[% capt.last_login %]:</td><td>[% last_login_date %]</td>
+<tr><td>[% capt.last_ip %]:</td><td>
   [<a href="[% href_whois %]" alt="[% last_ip %]" title="[% last_ip %]">[% last_ip_short %]</a>]
 </td>
-<tr><td>Задачи:</td><td><a href="[% href_all_problems %]">все</a> <a href="[% href_solved_problems %]">решённые</a></td>
+<tr><td>[% capt.problems %]:</td><td><a href="[% href_all_problems %]">[% capt.all %]</a> <a href="[% href_solved_problems %]">[% capt.solved %]</a></td>
 [% END %]
 </table>
 
-<h3>Турниры</h3>
+<h3>[% capt.contests %]</h3>
 <table class="internal_borders" cellpadding="3">
-[% FOREACH contests -%]
-<tr><td>[% start_date %]</td><td>[% title | html %]</td><td>[% accepted_count %] / [% problem_count %]</td></tr>[% END %]
+[% FOREACH c IN contests -%]
+<tr><td>[% c.start_date %]</td><td>[% c.title | html %]</td><td>[% c.accepted_count %] / [% c.problem_count %]</td></tr>[% END %]
 </table>
 
 [% PROCESS 'includes/menu_end.tti' %]
