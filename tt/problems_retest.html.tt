@@ -6,7 +6,7 @@
 <table width="100%" cellpadding="2" cellspacing="1" class="bordered">
 [% PROCESS 'includes/listview_col_defs.tti' sel_col = 1 %]
 [% FOREACH p IN problems %]
-<tr bgcolor=[% IF p.odd %]"#f0f0f0"[% ELSE %]"#ffffff"[% END %]>
+<tr class="[% loop.parity() %]">
 <td width="1%">
   <input type="checkbox" name="problem_id" value="[% p.problem_id %]" />
 </td>

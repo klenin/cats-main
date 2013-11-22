@@ -51,7 +51,7 @@
 
 [% IF printable %]
 [% FOREACH r IN rank %]
-<tr align="center"[% UNLESS r.row_color %] bgcolor="#f4f4f4"[% END %]>
+<tr align="center"[% UNLESS r.row_color %] class="even"[% END %]>
 <td align="right">[% r.contestant_number %]&nbsp;</td>
 [%- IF 0 %]
 <td nowrap align=center bgcolor=#ffffff>
@@ -95,7 +95,7 @@ function td(text, attr) { document.write('<td' + (attr == null ? '' : ' ' + attr
 
 for(var i = 0; i < rank_table.length; ++i) {
     var r = rank_table[i];
-    document.write('<tr align="center"' + (r.rc ? '' : ' bgcolor="#f4f4f4"') + '>');
+    document.write('<tr align="center"' + (r.rc ? '' : ' class="even"') + '>');
     td((i + 1) + '&nbsp;', 'align="right"');
     td('<a href="[% href_console %];uf=' + r.id + '" title="' + r.t + '">' + r.n + '</a>', 'align="left"');
     [% IF show_points %]
@@ -109,7 +109,7 @@ for(var i = 0; i < rank_table.length; ++i) {
 }
 --></script>[% END %]
 [% END %]
-<tr [% UNLESS problem_stats_color %]bgcolor="#f4f4f4"[% END %]>
+<tr [% UNLESS problem_stats_color %]class="even"[% END %]>
   <td>&nbsp;</td>
   [% IF show_points %]
   <td>[% capt.average_points %]</td>[% FOREACH ps IN problem_stats %]<td align="center">[% ps.average_points %]</td>[% END %]

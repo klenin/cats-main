@@ -9,12 +9,12 @@
 <table border=0 width=100% cellpadding=2 cellspacing=1 class=bordered>
 [% PROCESS 'includes/listview_col_defs.tti' %]
 [% FOREACH link_problem %]
-<tr bgcolor=#ffffff>
+<tr class="[% loop.parity() %]">
 <td>
 <input type="radio" name="problem_id" value="[% problem_id %]" [% IF linked %]disabled[% END %] />
 <a href="[% href_view_problem %]" target="_blank">[% problem_name | html %]</a></td>
 <td><a href="[% href_view_contest %]">[% contest_name | html %]</a></td>
-<td align="center">[% oounts %]</td>
+<td align="center">[% counts %]</td>
 </tr>
 [% END %]
 </table>

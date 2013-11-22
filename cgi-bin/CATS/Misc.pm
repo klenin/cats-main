@@ -301,7 +301,7 @@ sub attach_listview
             }
             $f or next;
         }
-        push @data, { %row, odd => $row_count % 2 }
+        push @data, \%row
             if $row_count >= $start_row && $row_count < $start_row + $s->{rows};
         $row_count++;
     }

@@ -17,7 +17,7 @@ function delete_kw(href, name)
 [% PROCESS 'includes/listview_col_defs.tti' sel_col = editable %]
 
 [% FOREACH keywords %]
-<tr bgcolor=#ffffff>
+<tr class="[% loop.parity() %]">
 [% IF editable %]
 <td nowrap>
   <a href='javascript:delete_kw("[% href_delete %]", "[% code | html %]");'><img src="./images/std/waste2.gif" border=0></a> 

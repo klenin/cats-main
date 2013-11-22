@@ -7,7 +7,7 @@
 [% PROCESS 'includes/listview_col_defs.tti' sel_col = is_jury %]
 
 [% FOREACH import_sources %]
-<tr bgcolor=#ffffff>
+<tr class="[% loop.parity() %]">
 [% IF is_jury %]<td>
   <a href="[% href_problems %]" title="[% title %]"><img src="./images/std/blank.gif" border="0"></a>
 </td>[% END %]

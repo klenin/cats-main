@@ -17,7 +17,7 @@ function delete_compiler(href, name)
 [% PROCESS 'includes/listview_col_defs.tti' %]
 
 [% FOREACH compilers %]
-<tr bgcolor=#ffffff>
+<tr class="[% loop.parity() %]">
 <td>
   [% IF editable %]
   <a href='javascript:delete_compiler("[% href_delete %]", "[% description | html %]");'><img src="./images/std/waste2.gif" border=0></a> 

@@ -15,7 +15,7 @@ function delete_judge(href, name)
 [% PROCESS 'includes/listview_col_defs.tti' %]
 
 [% FOREACH judges %]
-<tr bgcolor=#ffffff>
+<tr class="[% loop.parity() %]">
 <td>
   [% IF editable %]
   <a href='javascript:delete_judge("[% href_delete %]", "[% judge_name | html %]");'><img src="./images/std/waste2.gif" border=0></a> 

@@ -69,7 +69,7 @@ function chg_code(st_sel, pid)
 [% PROCESS 'includes/listview_col_defs.tti' sel_col = 1 %]
 [% END %]
 [% FOREACH p IN problems %]
-<tr bgcolor=[% IF p.odd %]"#f0f0f0"[% ELSE %]"#ffffff"[% END %]>
+<tr class="[% loop.parity() %]">
 [% IF is_team %]<td width="1%">
   <input type="radio" name="problem_id" value="[% p.problem_id %]"
     [%- ' disabled="disabled"' IF disabled; ' checked="checked"' IF selected %] />
