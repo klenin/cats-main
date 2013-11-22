@@ -1,0 +1,13 @@
+[%
+  capt = {
+    problem => 'Problem',
+    threshold => 'Threshold',
+    compare => 'Compare',
+    include_virtual => 'Include virtual',
+    group_by_team => 'Group by team',
+    sudden_changes => 'Sudden changes',
+    collapse_idents => 'Collapse identifiers',
+    console => 'console',
+    equivalency_groups => 'Equivalency groups',
+  }
+%]

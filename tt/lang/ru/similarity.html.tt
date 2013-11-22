@@ -1,0 +1,13 @@
+[%
+  capt = {
+    problem => 'Задача',
+    threshold => 'Порог',
+    compare => 'Сравнить',
+    include_virtual => 'Учитывать виртуальных',
+    group_by_team => 'Группировать по участникам',
+    sudden_changes => 'Резкие изменения',
+    collapse_idents => 'Игнорировать идентификаторы',
+    console => 'консоль',
+    equivalency_groups => 'Группы эквивалентности',
+  }
+%]
