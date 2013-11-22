@@ -7,10 +7,10 @@
 <label for="threshold">[% capt.threshold %], %:</label><input type="text" name="threshold" value="[% threshold %]"/>
 <input type="submit" value="[% capt.compare %]" class="button"/>
 <br/>
-<input type="checkbox" name="virtual" value="1"[% IF virtual %] checked="checked"[% END %]/> [% capt.include_virtual %]
-<input type="checkbox" name="group" value="1"[% IF group %] checked="checked"[% END %]/> [% capt.group_by_team %]
-<input type="checkbox" name="self_diff" value="1"[% IF self_diff %] checked="checked"[% END %]/> [% capt.sudden_changes %]
-<input type="checkbox" name="collapse_idents" value="1"[% IF collapse_idents %] checked="checked"[% END %]/> [% capt.collapse_idents %]
+<label><input type="checkbox" name="virtual" value="1"[% IF virtual %] checked="checked"[% END %]/> [% capt.include_virtual %]</label>
+<label><input type="checkbox" name="group" value="1"[% IF group %] checked="checked"[% END %]/> [% capt.group_by_team %]</label>
+<label><input type="checkbox" name="self_diff" value="1"[% IF self_diff %] checked="checked"[% END %]/> [% capt.sudden_changes %]</label>
+<label><input type="checkbox" name="collapse_idents" value="1"[% IF collapse_idents %] checked="checked"[% END %]/> [% capt.collapse_idents %]</label>
 </form>
 <table class="bordered highlight">
 [% FOREACH similar %]
