@@ -12,7 +12,7 @@ function delete_team(href, name)
 
 <form method="post">
 [% PROCESS 'includes/listview_header.tti' %]
-<table border=0 width=100% cellpadding=2 cellspacing=1 class=bordered bgcolor=#8060f0>
+<table border=0 width=100% cellpadding=2 cellspacing=1 class="bordered highlight" bgcolor=#8060f0>
 [% PROCESS 'includes/listview_col_defs.tti' %]
 [% FOREACH users %]
 <tr bgcolor=#ffffff>

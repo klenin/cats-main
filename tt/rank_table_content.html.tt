@@ -27,7 +27,7 @@
 </table>
 [% END -%]
 
-<table width="100%" cellspacing="1" class="bordered rank_table">
+<table width="100%" cellspacing="1" class="bordered rank_table highlight">
 [%- IF many_contests %]
   <tr bgcolor="#ccccff">
   <th colspan="2"></th>

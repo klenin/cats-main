@@ -153,7 +153,7 @@ tr.run_details_IN { color: #A0A000 }
 tr.run_details_NP { color: #008000 }
 tr.run_details_NT { color: #000080; font-style: italic; }
 
-table.highlight tr:hover, table.console tr:hover { background-color: #ffcc55; }
+table.highlight tr:hover { background-color: #ffcc55; }
 table.console tr td { margin: 0; padding: 1px 10px 1px 1px; }
 table.console tr td, table.console tr td a { font-size: 10pt; }
 table.console tr td:first-child { width: 1%; white-space: nowrap; }
@@ -194,7 +194,6 @@ table.nobr tr td { white-space: nowrap; }
 a.spell { text-decoration: underline; color: red; }
 
 table.rank_table tr td p { padding: 0; margin: 0; font-size: 10px; }
-table.rank_table tr:hover {  background-color: #ffcc55; }
 
 div.problem_text { margin-left: 10px; margin-right: 10px; }
 div.problem_text h3, div.problem_text h4 {

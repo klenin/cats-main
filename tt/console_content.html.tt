@@ -15,7 +15,7 @@
 [% for_capt %] [% select('i_value', i_values) %] [% select('i_unit', i_units) %]</td>
 [% END %]
 [% PROCESS includes/submit_result.tti %]
-<table width="100%" cellspacing="3" cellpadding="3" class="bordered console">
+<table width="100%" cellspacing="3" cellpadding="3" class="bordered console highlight">
 [% FOREACH c IN console %]
 <tr>
 [% IF c.is_submit_result %]
