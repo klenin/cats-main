@@ -1,0 +1,26 @@
+[%
+  capt = {
+    contest_name => 'Contest name',
+    start_date => 'Start date/time',
+    freeze_date => 'Rank table freeze date/time',
+    finish_date => 'Finish date/time',
+    unfreeze_date => 'Rank table unfreeze date/time',
+    rules => 'Rules',
+    ACM => 'ACM',
+    school => 'school',
+    max_reqs => 'Submissions limit',
+    open_registration => 'Open registration',
+    is_official => 'Official contest',
+    run_all_tests => 'Run all tests',
+    local_only => 'Local teams only',
+    is_hidden => 'Hidden contest',
+    show_to_teams => 'Show to teams',
+    show_all_results => 'results of all teams',
+    show_all_tests => 'results of all tests',
+    show_test_resources => 'resources used',
+    show_checker_comment => 'checker comments',
+    show_packages => 'problem packages',
+    ok => '     Ok     ',
+    cancel => 'Cancel',
+  }
+%]

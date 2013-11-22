@@ -1,33 +1,34 @@
+[%- PROCESS "lang/$lang/contest_params.tti" -%]
 <table cellpadding="0">
-  <tr><td>Название чемпионата:</td><td><input type="text" size="50" name="contest_name" value="[% contest_name | html %]" class="bordered" [% UNLESS can_edit %]readonly="readonly"[% END %]/></td></tr>
-  <tr><td>Дата/время начала:</td><td><input type="text" name="start_date" value="[% start_date | html %]" class="bordered" [% UNLESS can_edit %]readonly="readonly"[% END %]/></td></tr>
-  <tr><td>Дата/время заморозки таблицы результатов:</td><td><input type="text" name="freeze_date" value="[% freeze_date | html %]" class="bordered" [% UNLESS can_edit %]readonly="readonly"[% END %]/></td></tr>
-  <tr><td>Дата/время финиша:</td><td><input type="text" name="finish_date" value="[% finish_date | html %]" class="bordered" [% UNLESS can_edit %]readonly="readonly"[% END %]/></td></tr>
-  <tr><td>Дата/время открытия доступа к результатам:</td><td><input type="text" name="open_date" value="[% open_date | html %]" class="bordered" [% UNLESS can_edit %]readonly="readonly"[% END %]/></td></tr>
-  <tr><td>Правила оценки:</td><td>[% IF can_edit %]
+  <tr><td>[% capt.contest_name %]:</td><td><input type="text" size="50" name="contest_name" value="[% contest_name | html %]" class="bordered" [% UNLESS can_edit %]readonly="readonly"[% END %]/></td></tr>
+  <tr><td>[% capt.start_date %]:</td><td><input type="text" name="start_date" value="[% start_date | html %]" class="bordered" [% UNLESS can_edit %]readonly="readonly"[% END %]/></td></tr>
+  <tr><td>[% capt.freeze_date %]:</td><td><input type="text" name="freeze_date" value="[% freeze_date | html %]" class="bordered" [% UNLESS can_edit %]readonly="readonly"[% END %]/></td></tr>
+  <tr><td>[% capt.finish_date %]:</td><td><input type="text" name="finish_date" value="[% finish_date | html %]" class="bordered" [% UNLESS can_edit %]readonly="readonly"[% END %]/></td></tr>
+  <tr><td>[% capt.unfreeze_date %]:</td><td><input type="text" name="open_date" value="[% open_date | html %]" class="bordered" [% UNLESS can_edit %]readonly="readonly"[% END %]/></td></tr>
+  <tr><td>[% capt.rules %]:</td><td>[% IF can_edit %]
     <select name="rules" class="bordered">
-      <option value="0"[% UNLESS rules %] selected="selected"[% END %]>ACM</option>
-      <option value="1"[% IF rules %] selected="selected"[% END %]>школьные</option>
-    </select>[% ELSE %][% IF rules %]школьные[% ELSE %]ACM[% END %]
+      <option value="0"[% UNLESS rules %] selected="selected"[% END %]>[% capt.ACM %]</option>
+      <option value="1"[% IF rules %] selected="selected"[% END %]>[% capt.school %]</option>
+    </select>[% ELSE %][% IF rules; capt.school; ELSE; capt.ACM; END %]
     [% END %]
   </td></tr>
-  <tr><td>Максимальное число попыток:</td><td><input type="text" name="max_reqs" value="[% max_reqs | html %]" class="bordered" [% UNLESS can_edit %]readonly="readonly"[% END %]/></td></tr>
+  <tr><td>[% capt.max_reqs %]:</td><td><input type="text" name="max_reqs" value="[% max_reqs | html %]" class="bordered" [% UNLESS can_edit %]readonly="readonly"[% END %]/></td></tr>
 </table>
 <br/>
 <table cellpadding="0" class="bordered" width="250">
-  <tr><td>Свободная регистрация:</td><td><input type="checkbox" name="free_registration"[% IF free_registration %]checked="checked"[% END %] [% UNLESS can_edit %]disabled="disabled"[% END %]/></td></tr>
-  <tr><td>Официальный турнир:</td><td><input type="checkbox" name="is_official"[% IF is_official %]checked="checked"[% END %] [% UNLESS can_edit %]disabled="disabled"[% END %]/></td></tr>
-  <tr><td>Запускать все тесты:</td><td><input type="checkbox" name="run_all_tests"[% IF run_all_tests %]checked="checked"[% END %] [% UNLESS can_edit %]disabled="disabled"[% END %]/></td></tr>
-  <tr><td>Только локальные участники:</td><td><input type="checkbox" name="local_only"[% IF local_only %]checked="checked"[% END %] [% UNLESS can_edit %]disabled="disabled"[% END %]/></td></tr>
-  <tr><td>Скрытый:</td><td><input type="checkbox" name="is_hidden"[% IF is_hidden %]checked="checked"[% END %] [% UNLESS can_edit %]disabled="disabled"[% END %]/></td></tr>
+  <tr><td>[% capt.open_registration %]:</td><td><input type="checkbox" name="free_registration"[% IF free_registration %]checked="checked"[% END %] [% UNLESS can_edit %]disabled="disabled"[% END %]/></td></tr>
+  <tr><td>[% capt.is_official %]:</td><td><input type="checkbox" name="is_official"[% IF is_official %]checked="checked"[% END %] [% UNLESS can_edit %]disabled="disabled"[% END %]/></td></tr>
+  <tr><td>[% capt.run_all_tests %]:</td><td><input type="checkbox" name="run_all_tests"[% IF run_all_tests %]checked="checked"[% END %] [% UNLESS can_edit %]disabled="disabled"[% END %]/></td></tr>
+  <tr><td>[% capt.local_only %]:</td><td><input type="checkbox" name="local_only"[% IF local_only %]checked="checked"[% END %] [% UNLESS can_edit %]disabled="disabled"[% END %]/></td></tr>
+  <tr><td>[% capt.is_hidden %]:</td><td><input type="checkbox" name="is_hidden"[% IF is_hidden %]checked="checked"[% END %] [% UNLESS can_edit %]disabled="disabled"[% END %]/></td></tr>
 </table>
 <br/>
-Показывать участникам
+[% capt.show_to_teams %]
 <table cellpadding="0" class="bordered" width="250">
-  <tr><td>результаты всех участников:</td><td><input type="checkbox" name="show_all_results"[% IF show_all_results %]checked="checked"[% END %] [% UNLESS can_edit %]disabled="disabled"[% END %]/></td></tr>
-  <tr><td>результаты всех тестов:</td><td><input type="checkbox" name="show_all_tests"[% IF show_all_tests %]checked="checked"[% END %] [% UNLESS can_edit %]disabled="disabled"[% END %]/></td></tr>
-  <tr><td>использованные ресурсы:</td><td><input type="checkbox" name="show_test_resources"[% IF show_test_resources %]checked="checked"[% END %] [% UNLESS can_edit %]disabled="disabled"[% END %]/></td></tr>
-  <tr><td>комментарии checker'а:</td><td><input type="checkbox" name="show_checker_comment"[% IF show_checker_comment %]checked="checked"[% END %] [% UNLESS can_edit %]disabled="disabled"[% END %]/></td></tr>
-  <tr><td>пакеты задач:</td><td><input type="checkbox" name="show_packages"[% IF show_packages %]checked="checked"[% END %] [% UNLESS can_edit %]disabled="disabled"[% END %]/></td></tr>
+  <tr><td>[% capt.show_all_results %]:</td><td><input type="checkbox" name="show_all_results"[% IF show_all_results %]checked="checked"[% END %] [% UNLESS can_edit %]disabled="disabled"[% END %]/></td></tr>
+  <tr><td>[% capt.show_all_tests %]:</td><td><input type="checkbox" name="show_all_tests"[% IF show_all_tests %]checked="checked"[% END %] [% UNLESS can_edit %]disabled="disabled"[% END %]/></td></tr>
+  <tr><td>[% capt.show_test_resources %]:</td><td><input type="checkbox" name="show_test_resources"[% IF show_test_resources %]checked="checked"[% END %] [% UNLESS can_edit %]disabled="disabled"[% END %]/></td></tr>
+  <tr><td>[% capt.show_checker_comment %]:</td><td><input type="checkbox" name="show_checker_comment"[% IF show_checker_comment %]checked="checked"[% END %] [% UNLESS can_edit %]disabled="disabled"[% END %]/></td></tr>
+  <tr><td>[% capt.show_packages %]:</td><td><input type="checkbox" name="show_packages"[% IF show_packages %]checked="checked"[% END %] [% UNLESS can_edit %]disabled="disabled"[% END %]/></td></tr>
 </table>
 <br/>

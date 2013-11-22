@@ -4,9 +4,9 @@
 [% PROCESS 'includes/contest_params.tti' %]
 [% IF can_edit %]
 <input type="hidden" name="id" value="[% id %]" />
-<input type="submit" name="edit_save" value="     Ok     " class="button" /> 
+<input type="submit" name="edit_save" value="[% capt.ok %]" class="button" />
 [% END %]
-<input type="submit" name="edit_cancel" value="Отмена" class="button" />
+<input type="submit" name="edit_cancel" value="[% capt.cancel %]" class="button" />
 </form>
 
 [% PROCESS 'includes/menu_end.tti' %]
