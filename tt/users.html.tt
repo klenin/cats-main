@@ -24,7 +24,7 @@ function delete_team(href, name)
 </td>
 [% END %]
 <td>[% IF messages %]<input type=checkbox name=msg[% id %]>[% END -%]
-<a href="[% href_stats %]" title="[% city | html %]">[% team_name | html %]</a></td>
+<a href="[% href_stats %]">[% team_name | html %][% IF city %] ([% city | html %])[% END %]</a></td>
 <td align="center">[% tag %]</td>
 [% IF editable %]
 <td align=center><input type="checkbox" name="jury[% id %]" [% IF jury %]checked[% END %]></td>
