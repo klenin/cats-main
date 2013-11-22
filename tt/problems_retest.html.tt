@@ -1,44 +1,24 @@
 [% PROCESS 'includes/menu_begin.tti' %]
-[% IF editable %]
-<script type="text/javascript">
-function getSelectedButton(button) {
-    if (button == null) return -1;
-    if (button.checked) return button.value;
-    for (var i = 0; i < button.length; i++)
-        if (button[i].checked)
-            return button[i].value;
-    return -1; //no button selected
-}
-
-var a = new Array();
-[% FOREACH problems %]
-a["[% problem_id %]"] = new Array(
-  "[% problem_name | html %]", "[% href_delete %]", "[% href_replace %]",
-  "[% href_change_status %]", "[% href_change_code %]");
-[% END %]
-
-</script>
-[% END %]
 <i>[% capt.in_queue %]: [% total_queue %]</i><br/>
 
 <form method="post" enctype="multipart/form-data" name="problems_form" style="margin: 0">
 [% PROCESS 'includes/listview_header.tti' %]
 <table width="100%" cellpadding="2" cellspacing="1" class="bordered">
 [% PROCESS 'includes/listview_col_defs.tti' sel_col = 1 %]
-[% FOREACH problems %]
-<tr bgcolor=[% IF odd %]"#f0f0f0"[% ELSE %]"#ffffff"[% END %]>
+[% FOREACH p IN problems %]
+<tr bgcolor=[% IF p.odd %]"#f0f0f0"[% ELSE %]"#ffffff"[% END %]>
 <td width="1%">
-  <input type="checkbox" name="problem_id" value="[% problem_id %]" />
+  <input type="checkbox" name="problem_id" value="[% p.problem_id %]" />
 </td>
 <td>
-    <a href="[% href_view_problem %]" target="_blank">[% code %] - [% problem_name | html %]</a>
+    <a href="[% p.href_view_problem %]" target="_blank">[% p.code %] - [% p.problem_name | html %]</a>
 </td>
-<td>[% in_queue %]</td>
-<td>[% status %]</td>
-<td><a href="[% href_select_testsets %]">[% testsets %]</a>
-  [%- IF points_testsets %] / <a href="[% href_select_testsets %]">[% points_testsets %]</a>[% END -%]
+<td>[% p.in_queue %]</td>
+<td>[% p.status %]</td>
+<td><a href="[% p.href_select_testsets %]">[% p.testsets %]</a>
+  [%- IF p.points_testsets %] / <a href="[% p.href_select_testsets %]">[% p.points_testsets %]</a>[% END -%]
 </td>
-<td align="center">[% accept_count %] / [% wa_count %]  / [% tle_count %]</td>
+<td align="center">[% p.accept_count %] / [% p.wa_count %]  / [% p.tle_count %]</td>
 </tr>
 [% END %]
 </table>
