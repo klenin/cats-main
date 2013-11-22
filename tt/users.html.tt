@@ -3,7 +3,7 @@
 <script>
 function delete_team(href, name)
 {
-    if (confirm( "Вы действительно желаете дисквалифицировать команду '" + name + "'?" ))
+    if (confirm("[% capt.want_to_delete %] '" + name + "'?"))
     {
         document.location=href;
     }
@@ -44,17 +44,17 @@ function delete_team(href, name)
 <br/>
 <input type=hidden name=user_set VALUE='[% FOREACH users %][% id %][% UNLESS loop.last %]:[% END %][% END %]'>
 [% IF editable %]
-<input type="submit" value="Сохранить атрибуты" name="save_attributes" class="button" />
-Логин:&nbsp;<input type="text" name="login_to_register" class="bordered" />&nbsp;<input type="submit" value="Добавить участника" name="register_new" class="button"/>
-Тег:&nbsp;<input type="text" name="tag_to_set" class="bordered" />&nbsp;<input type="submit" value="Установить" name="set_tag" class="button"/>
+<input type="submit" value="[% capt.save_attributes %]" name="save_attributes" class="button" />
+[% capt.login %]:&nbsp;<input type="text" name="login_to_register" class="bordered" />&nbsp;<input type="submit" value="[% capt.add_team %]" name="register_new" class="button"/>
+[% capt.tag %]:&nbsp;<input type="text" name="tag_to_set" class="bordered" />&nbsp;<input type="submit" value="[% capt.set %]" name="set_tag" class="button"/>
 <br/><br/>
 [% END %]
 [% IF messages %]
 <table width=100% cellpadding=8 bgcolor=#ccccff class=bordered><tr><td>
-Сообщение командам:
-<input size=85 name='message_text' value='[% message_text | html %]' class=bordered>
-<input type=submit value='Отправить' name='send_message' class=button>
-<input type=checkbox name='send_message_all'>&nbsp;Отправить всем
+[% capt.message_to_teams %]:
+<input type="text" size="85" name="message_text" value="[% message_text | html %]" class="bordered">
+<input type="submit" value='[% capt.send %]' name='send_message' class=button>
+<input type="checkbox" name="send_message_all">&nbsp;[% capt.send_to_all %]
 </td></tr></table>
 [% END %]
 </form>

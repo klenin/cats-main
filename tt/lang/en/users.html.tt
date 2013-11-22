@@ -1,0 +1,13 @@
+﻿[%
+  capt = {
+    want_to_delete => 'Do you really want do disqualify team',
+    save_attributes => 'Save attributes',
+    login => 'Login',
+    tag => 'Tag',
+    add_team => 'Add team',
+    set => 'Set',
+    message_to_teams => 'Message to teams',
+    send => 'Send',
+    send_to_all => 'broadcast',
+  }
+%]
