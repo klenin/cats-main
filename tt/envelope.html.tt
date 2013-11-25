@@ -3,10 +3,10 @@
 </head>
 <body bgcolor=#a0a0a0>
 <table>
-<tr><td>Команда:</td><td>[% team_name | html %]</td></tr>
-<tr><td>Время отсылки на тестирования:</td><td>[% submit_time | html %]</td></tr>
-<tr><td>Время тестирования:</td><td>[% test_time | html %]</td></tr>
-<tr><td>Результат тестирования</td><td>[% submit_result %]</td></tr>
+<tr><td>[% capt.team %]:</td><td>[% team_name | html %]</td></tr>
+<tr><td>[% capt.submit_time %]:</td><td>[% submit_time | html %]</td></tr>
+<tr><td>[% capt.test_time %]:</td><td>[% test_time | html %]</td></tr>
+<tr><td>[% capt.submit_result %]:</td><td>[% submit_result %]</td></tr>
 </table>
 </body>
 </html>
