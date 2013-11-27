@@ -45,6 +45,7 @@ use CATS::Web qw(param url_param headers content_type cookie);
 #use CGI::Util qw(rearrange unescape escape);
 use MIME::Base64;
 use Storable;
+use List::Util qw(min max);
 
 #use FCGI;
 use SQL::Abstract;
@@ -277,19 +278,18 @@ sub url_f
 sub attach_listview
 {
     my ($url, $fetch_row, $sth, $p) = @_;
-    my @data = ();
-    my $row_count = 0;
     $listview_name or die;
     my $s = $settings->{$listview_name};
-    my $page = \$s->{page};
-    my $start_row = ($$page || 0) * ($s->{rows} || 0);
-    my $pp = $p->{page_params} || {};
-    my $page_extra_params = join '', map ";$_=$pp->{$_}", keys %$pp;
 
-    my %mask = map { /^(.*)\=(.*)$/ ? ($1 => $2) : () } split ',', $s->{search};
+    my ($row_count, $page_count, @data) = (0, 0);
+    my $page = \$s->{page};
+    $$page ||= 0;
+    my $rows = $s->{rows} || 1;
+
+    my %mask = map { /^(.*)=(.*)$/ ? ($1 => $2) : () } split ',', $s->{search};
 
     while (my %row = $fetch_row->($sth)) {
-        last if $row_count > $cats::max_fetch_row_count;
+        last if $row_count > $cats::max_fetch_row_count || $page_count > $$page + $cats::visible_pages;
         if ($s->{search}) {
             my $f = 0;
             if (%mask) {
@@ -301,37 +301,35 @@ sub attach_listview
             }
             $f or next;
         }
-        push @data, \%row
-            if $row_count >= $start_row && $row_count < $start_row + $s->{rows};
-        $row_count++;
+        ++$row_count;
+        $page_count = int(($row_count + $rows - 1) / $rows);
+        next if $page_count > $$page + 1;
+        # Remember the last visible page data in case of a too large requested page number.
+        @data = () if @data == $rows;
+        push @data, \%row;
     }
 
-    my $rows = $s->{rows} || 1;
-    my $page_count = int($row_count / $rows) + ($row_count % $rows ? 1 : 0) || 1;
+    $$page = min(max($page_count - 1, 0), $$page);
+    my $range_start = max($$page - int($cats::visible_pages / 2), 0);
+    my $range_end = min($range_start + $cats::visible_pages - 1, $page_count - 1);
 
-    $$page ||= 0;
-    my $range_start = $$page - $$page % $cats::visible_pages;
-    $range_start = 0 if $range_start < 0;
-
-    my $range_end = $range_start + $cats::visible_pages - 1;
-    $range_end = $page_count - 1 if ($range_end > $page_count - 1);
-
+    my $pp = $p->{page_params} || {};
+    my $page_extra_params = join '', map ";$_=$pp->{$_}", keys %$pp;
     my $href_page = sub { "$url$page_extra_params;page=$_[0]" };
     my @pages = map {{
         page_number => $_ + 1,
         href_page => $href_page->($_),
         current_page => $_ == $$page
-    }} ($range_start..$range_end);
+    }} $range_start..$range_end;
 
-    $t->param(page => $$page, pages => \@pages, search => $s->{search});
-    $t->param(href_prev_pages => $href_page->($range_start - 1))
-        if $range_start > 0;
-    $t->param(href_next_pages => $href_page->($range_end + 1))
-        if $range_end < $page_count - 1;
-    $t->param(display_rows => [
-        map { value => $_, text => $_, selected => $s->{rows} == $_ }, @cats::display_rows
-    ]);
-    $t->param($listview_array_name => \@data);
+    $t->param(
+        page => $$page, pages => \@pages, search => $s->{search},
+        ($range_start > 0 ? (href_prev_pages => $href_page->($range_start - 1)) : ()),
+        ($range_end < $page_count - 1 ? (href_next_pages => $href_page->($range_end + 1)) : ()),
+        display_rows =>
+            [ map { value => $_, text => $_, selected => $s->{rows} == $_ }, @cats::display_rows ],
+        $listview_array_name => \@data,
+    );
 }
 
 
