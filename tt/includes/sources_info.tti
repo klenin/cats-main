@@ -30,7 +30,7 @@ function send_message(href)
 </td>[% END %]</tr>
 <tr><th>[% capt.problem %]</th>[% FOREACH sources_info %]<td>
   [% IF href_problem %]<a href="[% href_problem %]">[% problem_name %]</a>
-  [% ELSE %][% problem_name %][% END %]
+  [% ELSE %][% problem_name %][% END %] [% IF is_jury %]([% status_name %])[% END %]
 </td>[% END %]</tr>
 <tr><th>[% capt.testset %]</th>[% FOREACH sources_info %]
 <td>[% IF is_jury %]

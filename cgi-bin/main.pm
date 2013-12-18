@@ -1053,17 +1053,6 @@ sub problems_recalc_points()
 }
 
 
-sub problem_status_names()
-{
-    return {
-        $cats::problem_st_ready     => res_str(700),
-        $cats::problem_st_suspended => res_str(701),
-        $cats::problem_st_disabled  => res_str(702),
-        $cats::problem_st_hidden    => res_str(703),
-    };
-}
-
-
 sub problems_frame_jury_action
 {
     $is_jury or return;

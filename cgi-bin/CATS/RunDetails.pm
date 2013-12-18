@@ -7,7 +7,7 @@ use Algorithm::Diff;
 use CATS::Web qw(param url_param headers upload_source content_type);
 use CATS::DB;
 use CATS::Utils qw(state_to_display url_function);
-use CATS::Misc qw($is_jury $sid $t $uid init_template msg res_str url_f);
+use CATS::Misc qw($is_jury $sid $t $uid init_template msg res_str url_f problem_status_names);
 use CATS::Data qw(is_jury_in_contest enforce_request_state);
 use CATS::IP;
 use CATS::DevEnv;
@@ -234,6 +234,7 @@ sub get_sources_info
             C.title AS contest_name,
             COALESCE(R.testsets, CP.testsets) AS testsets,
             C.id AS contest_id, CP.id AS cp_id,
+            CP.status,
             CA.id AS ca_id
         FROM sources S
             INNER JOIN reqs R ON R.id = S.req_id
@@ -263,6 +264,7 @@ sub get_sources_info
         # During the official contest, viewing sources from other contests
         # is disallowed to prevent cheating.
         $r->{src} = \'FORBIDDEN' if $official && $official->{id} != $r->{contest_id};
+        $r->{status_name} = problem_status_names->{$r->{status}};
     }
 
     return ref $rid ? $result : $result->[0];
