@@ -45,7 +45,7 @@ use CATS::Web qw(param url_param headers content_type cookie);
 #use CGI::Util qw(rearrange unescape escape);
 use MIME::Base64;
 use Storable;
-use List::Util qw(min max);
+use List::Util qw(first min max);
 
 #use FCGI;
 use SQL::Abstract;
@@ -286,20 +286,26 @@ sub attach_listview
     $$page ||= 0;
     my $rows = $s->{rows} || 1;
 
-    my %mask = map { /^(.*)=(.*)$/ ? ($1 => $2) : () } split ',', $s->{search};
+    # <search> = <condition> { ',' <condition> }
+    # <condition> = <value> | <field name> '=' <value>
+    # Values without field name are searched in all fields.
+    # Different fields are AND'ed, multiple values of the same field are OR'ed.
+    my %mask;
+    for my $q (split ',', $s->{search}) {
+        my ($k, $v) = $q =~ /^(.*)=(.*)$/ ? ($1, $2) : ('', $q);
+        push @{$mask{$k} ||= []}, $v;
+    }
+    for (values %mask) {
+        my $s = join '|', map "\Q$_\E", @$_;
+        $_ = qr/$s/i;
+    }
 
-    while (my %row = $fetch_row->($sth)) {
+    ROWS: while (my %row = $fetch_row->($sth)) {
         last if $row_count > $cats::max_fetch_row_count || $page_count > $$page + $cats::visible_pages;
-        if ($s->{search}) {
-            my $f = 0;
-            if (%mask) {
-                $f = ($row{$_} || '') eq $mask{$_} or last for keys %mask;
-            }
-            else {
-                my $rx = qr/\Q$s->{search}\E/i;
-                $f = defined $_ && Encode::decode_utf8($_) =~ $rx and last for values %row;
-            }
-            $f or next;
+        for my $key (keys %mask) {
+            first { defined $_ && Encode::decode_utf8($_) =~ $mask{$key} }
+                ($key ? ($row{$key}) : values %row)
+                or next ROWS;
         }
         ++$row_count;
         $page_count = int(($row_count + $rows - 1) / $rows);
