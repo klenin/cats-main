@@ -14,7 +14,9 @@
 <h3>[% capt.contests %]</h3>
 <table class="internal_borders" cellpadding="3">
 [% FOREACH c IN contests -%]
-<tr><td>[% c.start_date %]</td><td>[% c.title | html %]</td><td>[% c.accepted_count %] / [% c.problem_count %]</td></tr>[% END %]
+<tr><td>[% c.start_date %]</td><td>[% c.title | html; ' *' IF c.is_jury %]</td>
+<td>[% c.accepted_count %] / [% c.problem_count %]</td></tr>
+[%- END %]
 </table>
 
 [% PROCESS 'includes/menu_end.tti' %]
