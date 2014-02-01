@@ -1110,7 +1110,7 @@ sub problem_select_testsets
     is_jury_in_contest(contest_id => $problem->{contest_id}) or return;
 
     my $testsets = $dbh->selectall_arrayref(q~
-        SELECT * FROM testsets WHERE problem_id = ?~, { Slice => {} },
+        SELECT * FROM testsets WHERE problem_id = ? ORDER BY name~, { Slice => {} },
         $problem->{id});
 
     my $param_to_list = sub {
