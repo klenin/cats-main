@@ -353,7 +353,7 @@ sub order_by
 sub generate_output
 {
     my ($output_file) = @_;
-    defined $t or return;
+    defined $t or die 'Template not defined';
     $contest->{time_since_start} or warn 'No contest from: ', $ENV{HTTP_REFERER} || '';
     $t->param(
         contest_title => $contest->{title},
