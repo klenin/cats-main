@@ -3,9 +3,10 @@
 <h3>[% problem_title %]</h3>
 Выберите тестовые наборы:
 <form action="[% href_problem_select_testsets %]" method="POST">
-<table>
+<table class="bordered">
+<tr><td>Проверять</td><td>Баллы</td><td>Название</td></tr>
 [% FOREACH ts IN testsets %]
-<tr>
+<tr class="[% loop.parity() %]">
   <td><input type="checkbox" name="sel_testsets" value="[% ts.id %]" [% IF ts.sel_testsets %]checked="checked"[% END %]</td>
   <td><input type="checkbox" name="sel_points_testsets" value="[% ts.id %]" [% IF ts.sel_points_testsets %]checked="checked"[% END %]</td>
   <td>[% ts.name %] ([% ts.tests %])</td>
