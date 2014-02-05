@@ -1361,26 +1361,19 @@ sub problems_frame
         map {{ de_id => $_->{id}, de_name => $_->{description} }} @{$de_list->{_de_list}} );
 
     my $pt_url = sub {{ href => $_[0], item => ($_[1] || res_str(538)), target => '_blank' }};
-    my @submenu = ();
-    if ($is_jury)
-    {
-        push @submenu,
-            $pt_url->(url_f('problem_text', nospell => 1, nokw => 1, notime => 1, noformal => 1)),
-            $pt_url->(url_f('problem_text'), res_str(555))
-            unless $contest->is_practice;
-        push @submenu,
+    my $p = $contest->is_practice;
+    my @submenu =  grep $_,
+        $is_jury ? (
+            !$p && $pt_url->(url_f('problem_text', nospell => 1, nokw => 1, notime => 1, noformal => 1)),
+            !$p && $pt_url->(url_f('problem_text'), res_str(555)),
             { href => url_f('problems', link => 1), item => res_str(540) },
             { href => url_f('problems', link => 1, move => 1), item => res_str(551) },
-            { href => url_f('problems_retest'), item => res_str(556) },
+            !$p && ({ href => url_f('problems_retest'), item => res_str(556) }),
             { href => url_f('contests', params => $cid), item => res_str(546) },
-            ;
-    }
-    else
-    {
-        push @submenu, $pt_url->($text_link_f->('problem_text', cid => $cid))
-            unless $contest->is_practice;
-    }
-
+        )
+        : (
+            !$p && $pt_url->($text_link_f->('problem_text', cid => $cid)),
+        );
     $t->param(
         submenu => \@submenu, title_suffix => res_str(525),
         is_team => $my_is_team, is_practice => $contest->is_practice,
