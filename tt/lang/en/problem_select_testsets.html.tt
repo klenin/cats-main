@@ -1,0 +1,9 @@
+[%
+  capt = {
+    select_testsets => 'Select testsets',
+    check => 'Check',
+    points => 'Points',
+    name => 'Name',
+    save => 'Save',
+  }
+%]

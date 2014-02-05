@@ -1,10 +1,10 @@
 [% PROCESS 'includes/menu_begin.tti' %]
 
 <h3>[% problem_title %]</h3>
-Выберите тестовые наборы:
+[% capt.select_testsets %]:
 <form action="[% href_problem_select_testsets %]" method="POST">
 <table class="bordered">
-<tr><td>Проверять</td><td>Баллы</td><td>Название</td></tr>
+<tr><td>[% capt.check %]</td><td>[% capt.points %]</td><td>[% capt.name %]</td></tr>
 [% FOREACH ts IN testsets %]
 <tr class="[% loop.parity() %]">
   <td><input type="checkbox" name="sel_testsets" value="[% ts.id %]" [% IF ts.sel_testsets %]checked="checked"[% END %]</td>
@@ -15,6 +15,6 @@
 </table>
 <br/>
 <input type="hidden" name="cpid" value="[% problem_cpid %]" />
-<input type="submit" name="save" value="Сохранить" class="button" />
+<input type="submit" name="save" value="[% capt.save %]" class="button" />
 </form>
 [% PROCESS 'includes/menu_end.tti' %]
