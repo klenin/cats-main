@@ -1,7 +1,7 @@
 [%
   successful = 'Регистрация прошла успешно.';
   login_capt = 'войти';
-  MACRO you_now_can(enter) BLOCK "Теперь Вы можете ${enter} в систему и принимать участие в турнирах."; END;
+  MACRO you_now_can(enter) BLOCK; "Теперь Вы можете ${enter} в систему и принимать участие в турнирах."; END;
   new_user = 'Регистрация нового пользователя';
   required_fields = 'Обязательные поля';
   aux_fields = 'Необязательные поля';
