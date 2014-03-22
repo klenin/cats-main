@@ -96,6 +96,14 @@ PerlSetEnv CATS_DIR ${CATS_ROOT}/cgi-bin/
 		AddDefaultCharset utf-8
 	</Directory>
 
+	<Directory "${CATS_ROOT}/docs/std/">
+		AllowOverride Options=Indexes,MultiViews,ExecCGI FileInfo
+	</Directory>
+
+	<Directory "${CATS_ROOT}/images/std/">
+		AllowOverride Options=Indexes,MultiViews,ExecCGI FileInfo
+	</Directory>
+
 	Alias /cats/synh/ "${CATS_ROOT}/synhighlight/"
 	Alias /cats/images/ "${CATS_ROOT}/images/"
 	Alias /cats/ "${CATS_ROOT}/cgi-bin/"
