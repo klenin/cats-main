@@ -13,3 +13,4 @@ templates/std/docs/*.html
 *.ttc
 # Created from template
 cgi-bin/CATS/Connect.pm
+sql/interbase/create_db.sql
