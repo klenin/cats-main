@@ -1,2 +1,2 @@
 Options +Indexes +MultiViews -ExecCGI
-SetHandler default-handler      
+SetHandler default-handler
