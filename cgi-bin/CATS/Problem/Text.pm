@@ -228,11 +228,12 @@ sub contest_visible
         # Require local participation in the original contest of the problem,
         # or, if all problems from some contest are requested, in that contest.
         # More detailed check leads to complications in non-original contests.
-        my ($is_remote) = $dbh->selectrow_array(q~
-            SELECT is_remote FROM contest_accounts
+        my ($is_remote, $is_ooc) = $dbh->selectrow_array(q~
+            SELECT is_remote, is_ooc FROM contest_accounts
             WHERE account_id = ? AND contest_id = ?~, undef,
             $uid, $c->{orig_cid});
-        return (1, $c->{show_packages}) if defined $is_remote && $is_remote == 0;
+        return (1, $c->{show_packages})
+            if defined $is_remote && $is_remote == 0 || defined $is_ooc && $is_ooc == 0;
     }
     return (0, 0);
 }

@@ -1218,14 +1218,14 @@ sub problems_frame
         }
         if ($local_only)
         {
-            my $is_remote;
+            my ($is_remote, $is_ooc);
             if ($uid)
             {
-                ($is_remote) = $dbh->selectrow_array(qq~
-                    SELECT is_remote FROM contest_accounts WHERE contest_id = ? AND account_id = ?~,
+                ($is_remote, $is_ooc) = $dbh->selectrow_array(qq~
+                    SELECT is_remote, is_ooc FROM contest_accounts WHERE contest_id = ? AND account_id = ?~,
                     {}, $cid, $uid);
             }
-            if (!defined $is_remote || $is_remote)
+            if ((!defined $is_remote || $is_remote) && (!defined $is_ooc || $is_ooc))
             {
                 init_template('problems_inaccessible.html.tt');
                 return msg(129);
