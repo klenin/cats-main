@@ -756,7 +756,7 @@ sub problems_all_frame
                 EXISTS (
                     SELECT 1 FROM contest_accounts
                     WHERE contest_id = C.id AND account_id = ? AND is_jury = 1
-                    ) OR CURRENT_TIMESTAMP > C.finish_date
+                    ) OR CURRENT_TIMESTAMP > C.finish_date AND (C.is_hidden = 0 OR C.is_hidden IS NULL)
             )~],
             params => [$uid]
         };
