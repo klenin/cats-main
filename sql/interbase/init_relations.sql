@@ -107,6 +107,8 @@ CREATE TABLE problems (
     memory_limit    INTEGER,
     difficulty      INTEGER DEFAULT 100,
     author          VARCHAR(200) DEFAULT '',
+    repo_id         VARCHAR(100) DEFAULT '',
+    commit_sha      VARCHAR(100) DEFAULT '',
     input_file      VARCHAR(200) NOT NULL,
     output_file     VARCHAR(200) NOT NULL,
     upload_date     TIMESTAMP,

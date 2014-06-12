@@ -11,7 +11,7 @@ use JSON::XS;
 
 use CATS::Constants;
 use CATS::DB;
-use CATS::Misc qw();
+use CATS::Misc qw(cats_dir);
 use CATS::Utils qw(escape_html);
 use CATS::BinaryFile;
 use CATS::DevEnv;
@@ -27,6 +27,7 @@ use fields qw(
 );
 
 use CATS::Problem::Tests;
+use CATS::Problem::Repository;
 
 
 sub checker_type_names
@@ -59,6 +60,61 @@ sub encoded_import_log
 {
     my CATS::Problem $self = shift;
     return escape_html($self->{import_log});
+}
+
+
+sub get_repo_sha
+{
+    my $id = shift;
+    return $dbh->selectrow_array(qq~
+       SELECT repo_id, commit_sha FROM problems WHERE id = ?~, undef, $id);
+}
+
+
+sub show_commit
+{
+    my ($pid, $sha) = @_;
+    my %opts = ();
+    unless (-d cats_dir() . "$cats::repos_dir$pid/") {
+        ($pid, $sha) = get_repo_sha($pid);
+    }
+    return CATS::Problem::Repository->new(dir => cats_dir() . "$cats::repos_dir$pid/")->commit_info($sha);
+}
+
+
+sub get_log
+{
+    my $pid = shift;
+    my %opts = ();
+    unless (-d cats_dir() . "$cats::repos_dir$pid/") {
+        ($pid, $opts{sha}) = get_repo_sha($pid);
+    }
+    return CATS::Problem::Repository->new(dir => cats_dir() . "$cats::repos_dir$pid/")->log(%opts);
+}
+
+
+sub add_history
+{
+    (my CATS::Problem $self, my $fname) = @_;
+    my $problem = {
+        zip => $fname,
+        id => $self->{id},
+        title => $self->{problem}{title},
+        author => $self->{problem}{author},
+    };
+    my $p = cats_dir() . $cats::repos_dir;
+    if ($self->{replace}) {
+        if (-d "$p/$self->{id}") {
+            CATS::Problem::Repository->add($p, $problem);
+        }
+        else {
+            my ($repo_id, $sha) = get_repo_sha($self->{id});
+            CATS::Problem::Repository->new_repo($p, $problem, from => $repo_id, sha => $sha);
+        }
+    }
+    else {
+        CATS::Problem::Repository->new_repo($p, $problem);
+    }
 }
 
 
@@ -97,8 +153,12 @@ sub load
         return -1;
     }
     else {
-        $dbh->commit unless $self->{debug};
-        $self->note('Success');
+        unless ($self->{debug}) {
+            $dbh->commit;
+            eval { $self->add_history($fname); };
+            $self->note($@) if $@;
+        }
+        $self->note('Success import');
         return 0;
     }
 }
