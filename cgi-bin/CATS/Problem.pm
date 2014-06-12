@@ -71,6 +71,17 @@ sub get_repo_sha
 }
 
 
+sub show_commit
+{
+    my ($pid, $sha) = @_;
+    my %opts = ();
+    unless (-d cats_dir() . "$cats::repos_dir$pid/") {
+        ($pid, $sha) = get_repo_sha($pid);
+    }
+    return CATS::Problem::Repository->new(dir => cats_dir() . "$cats::repos_dir$pid/")->commit_info($sha);
+}
+
+
 sub get_log
 {
     my $pid = shift;

@@ -10,6 +10,7 @@ use Encode;
 use Data::Dumper;
 use Storable ();
 use Time::HiRes;
+use HTML::Entities;
 
 our $cats_lib_dir;
 BEGIN {
@@ -1383,10 +1384,18 @@ sub problems_frame
 }
 
 
+sub problem_history_commit_frame
+{
+    init_template('problem_history_commit.html.tt');
+    $t->param(p_diff => encode_entities(CATS::Problem::show_commit(url_param('pid'), url_param('h'))));
+}
+
+
 sub problem_history_frame
 {
     redirect(url_function('contests', sid => $sid)) if !($is_root && defined url_param('pid'));
     my $pid = url_param('pid');
+    defined url_param('h') and return problem_history_commit_frame;
 
     init_listview_template('problem_history', 'problem_history', auto_ext('problem_history_full'));
     my @cols = (
