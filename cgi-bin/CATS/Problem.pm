@@ -93,6 +93,31 @@ sub get_log
 }
 
 
+sub add_history
+{
+    (my CATS::Problem $self, my $fname) = @_;
+    my $problem = {
+        zip => $fname,
+        id => $self->{id},
+        title => $self->{problem}{title},
+        author => $self->{problem}{author},
+    };
+    my $p = cats_dir() . $cats::repos_dir;
+    if ($self->{replace}) {
+        if (-d "$p/$self->{id}") {
+            CATS::Problem::Repository->add($p, $problem);
+        }
+        else {
+            my ($repo_id, $sha) = get_repo_sha($self->{id});
+            CATS::Problem::Repository->new_repo($p, $problem, from => $repo_id, sha => $sha);
+        }
+    }
+    else {
+        CATS::Problem::Repository->new_repo($p, $problem);
+    }
+}
+
+
 sub load
 {
     my CATS::Problem $self = shift;
@@ -128,8 +153,12 @@ sub load
         return -1;
     }
     else {
-        $dbh->commit unless $self->{debug};
-        $self->note('Success');
+        unless ($self->{debug}) {
+            $dbh->commit;
+            eval { $self->add_history($fname); };
+            $self->note($@) if $@;
+        }
+        $self->note('Success import');
         return 0;
     }
 }
