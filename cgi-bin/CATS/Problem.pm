@@ -11,7 +11,7 @@ use JSON::XS;
 
 use CATS::Constants;
 use CATS::DB;
-use CATS::Misc qw();
+use CATS::Misc qw(cats_dir);
 use CATS::Utils qw(escape_html);
 use CATS::BinaryFile;
 use CATS::DevEnv;
@@ -27,6 +27,7 @@ use fields qw(
 );
 
 use CATS::Problem::Tests;
+use CATS::Problem::Repository;
 
 
 sub checker_type_names
@@ -59,6 +60,25 @@ sub encoded_import_log
 {
     my CATS::Problem $self = shift;
     return escape_html($self->{import_log});
+}
+
+
+sub get_repo_sha
+{
+    my $id = shift;
+    return $dbh->selectrow_array(qq~
+       SELECT repo_id, commit_sha FROM problems WHERE id = ?~, undef, $id);
+}
+
+
+sub get_log
+{
+    my $pid = shift;
+    my %opts = ();
+    unless (-d cats_dir() . "$cats::repos_dir$pid/") {
+        ($pid, $opts{sha}) = get_repo_sha($pid);
+    }
+    return CATS::Problem::Repository->new(dir => cats_dir() . "$cats::repos_dir$pid/")->log(%opts);
 }
 
 
