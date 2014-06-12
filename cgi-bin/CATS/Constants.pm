@@ -14,6 +14,8 @@ $anonymous_login = 'anonymous';
 
 @langs = qw(ru en);
 
+$repos_dir = 'repos/';
+
 # максимальное количество записей, извлекаемых из датасета
 $max_fetch_row_count = 1000;
 
