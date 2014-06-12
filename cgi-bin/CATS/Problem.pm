@@ -74,6 +74,13 @@ sub get_repo
 }
 
 
+sub show_commit
+{
+    my ($pid) = get_repo(@_);
+    return CATS::Problem::Repository->new(dir => cats_dir() . "$cats::repos_dir$pid/")->commit_info($_[1]);
+}
+
+
 sub get_log
 {
     my ($pid, $sha) = get_repo(@_);
