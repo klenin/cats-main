@@ -325,7 +325,7 @@ sub problem_text_frame
             FROM samples WHERE problem_id = ? ORDER BY rank~, { Slice => {} },
             $problem->{problem_id});
 
-        for my $field_name qw(statement pconstraints input_format output_format explanation) {
+        for my $field_name (qw(statement pconstraints input_format output_format explanation)) {
             for ($problem->{$field_name}) {
                 defined $_ or next;
                 $text_span = '';
