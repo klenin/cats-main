@@ -1323,6 +1323,7 @@ sub problems_frame
             href_replace  => url_f('problems', replace => $c->{cpid}),
             href_download => url_f('problems', download => $c->{pid}),
             href_compare_tests => $is_jury && url_f('compare_tests', pid => $c->{pid}),
+            href_problem_history => $is_root && url_f('problem_history', pid => $c->{pid}),
             href_original_contest =>
                 url_function('problems', sid => $sid, cid => $c->{original_contest_id}, set_contest => 1),
             href_usage => url_f('contests', has_problem => $c->{pid}),
@@ -1379,6 +1380,33 @@ sub problems_frame
         is_team => $my_is_team, is_practice => $contest->is_practice,
         de_list => \@de, problem_codes => \@cats::problem_codes,
      );
+}
+
+
+sub problem_history_frame
+{
+    redirect(url_function('contests', sid => $sid)) if !($is_root && defined url_param('pid'));
+    my $pid = url_param('pid');
+
+    init_listview_template('problem_history', 'problem_history', auto_ext('problem_history_full'));
+    my @cols = (
+        { caption => res_str(1400), order_by => '0', width => '16%' }, # author
+        { caption => res_str(634), order_by => '1', width => '9%' }, # author date
+        { caption => res_str(1401), order_by => '2', width => '9%' }, # committer date
+        { caption => res_str(1402), order_by => '3', width => '4%' }, # commit sha
+        { caption => res_str(1403), order_by => '4', width => '40%' } # commit message
+    );
+    define_columns(url_f('problem_history', pid => $pid), 0, 0, \@cols);
+
+    my $fetch_record = sub($)
+    {
+        my $log = shift @{$_[0]} or return ();
+        return (
+            %{$log},
+            href => url_f('problem_history', pid => $pid, h => $log->{sha}),
+        );
+    };
+    attach_listview(url_f('problem_history', pid => $pid), $fetch_record, CATS::Problem::get_log($pid));
 }
 
 
@@ -2291,6 +2319,7 @@ sub interface_functions ()
         problems => \&problems_frame,
         problems_retest => \&problems_retest_frame,
         problem_select_testsets => \&problem_select_testsets,
+        problem_history => \&problem_history_frame,
         users => \&users_frame,
         users_import => \&users_import_frame,
         user_stats => \&user_stats_frame,

@@ -81,6 +81,7 @@ function chg_code(st_sel, pid)
       </select> [% END %]<a href="[% p.href_view_problem %]" target="_blank">
     [% ELSE ~%]
       <a href="[% p.href_view_problem %]" target="_blank">[% IF p.code; p.code %] - [% END %][% END %][% p.problem_name | html %]</a>
+    [% IF p.href_problem_history %]&nbsp;[<a href="[% p.href_problem_history %]">[% problem_history %]</a>][% END %]
     [% IF p.href_explanation %]&nbsp;[<a href="[% p.href_explanation %]" target="_blank">[% analysis %]</a>][% END %]
     [% IF p.show_packages %]&nbsp;[<a href="[% p.href_download %]">[% package %]</a>][% END %]
     [% IF p.href_compare_tests %]&nbsp;[<a href="[% p.href_compare_tests %]">[% compare_tests %]</a>][% END %]

@@ -16,6 +16,7 @@
   submit_capt = 'submit';
   std_solution = 'standard solution';
   problem_file = 'Problem file';
+  problem_history = 'history';
   rename_capt = 'rename';
   delete_capt = 'delete';
   replace_capt = 'replace';
