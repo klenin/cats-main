@@ -48,6 +48,7 @@ sub git
 {
     my ($self, $git_tail) = @_;
     my @lines = `git --git-dir=$self->{git_dir} --work-tree=$self->{dir} $git_tail`;  #Apache sub procces
+    $self->{logger}->note(join '', @lines) if exists $self->{logger};
     return @lines;
 }
 

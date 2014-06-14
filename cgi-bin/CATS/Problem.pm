@@ -98,7 +98,7 @@ sub add_history
         author => $self->{problem}{author},
     };
     my $path = cats_dir() . $cats::repos_dir;
-    my $p = CATS::Problem::Repository->new(dir => "$path/$self->{id}/");
+    my $p = CATS::Problem::Repository->new(dir => "$path/$self->{id}/", logger => $self);
     if ($self->{replace}) {
         my ($repo_id, $sha) = get_repo($self->{id});
         $p->move_history(from => "$path/$repo_id/", sha => $sha) unless $repo_id == $self->{id};
