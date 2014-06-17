@@ -809,9 +809,8 @@ sub problems_all_frame
 sub download_problem
 {
     my $pid = param('download');
-    # Если hash уже есть, то файл не вытаскиваем, а выдаём ссылку на имеющийся.
-    # Предполагаем, что размер пакета достаточно велик,
-    # поэтому имеет смысл выбирать его отдельным запросом.
+    # If hash is non-empty, redirect to existing file.
+    # Package size is supposed to be large enough to warrant a separate query.
     my ($hash, $status) = $dbh->selectrow_array(qq~
         SELECT P.hash, CP.status FROM problems P
         INNER JOIN contest_problems CP ON cp.problem_id = P.id
