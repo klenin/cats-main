@@ -808,14 +808,17 @@ sub problems_all_frame
 
 sub download_problem
 {
-    undef $t;
-
     my $pid = param('download');
     # Если hash уже есть, то файл не вытаскиваем, а выдаём ссылку на имеющийся.
     # Предполагаем, что размер пакета достаточно велик,
     # поэтому имеет смысл выбирать его отдельным запросом.
-    my ($hash) = $dbh->selectrow_array(qq~
-        SELECT hash FROM problems WHERE id = ?~, undef, $pid);
+    my ($hash, $status) = $dbh->selectrow_array(qq~
+        SELECT P.hash, CP.status FROM problems P
+        INNER JOIN contest_problems CP ON cp.problem_id = P.id
+        WHERE CP.contest_id = ? AND P.id = ?~, undef,
+        $cid, $pid);
+    defined $status && $status != $cats::problem_st_hidden or return;
+    undef $t;
     my $already_hashed = ensure_problem_hash($pid, \$hash);
     my $fname = "./download/pr/problem_$hash.zip";
     unless($already_hashed && -f $fname)
@@ -1236,10 +1239,9 @@ sub problems_frame
     $is_jury && defined url_param('link') and return problems_all_frame;
     defined url_param('kw') and return problems_all_frame;
 
-    defined param('download') && $show_packages and return download_problem;
-
     init_listview_template('problems' . ($contest->is_practice ? '_practice' : ''),
         'problems', auto_ext('problems'));
+    defined param('download') && $show_packages and return download_problem;
     problems_frame_jury_action;
 
     problems_submit if defined param('submit');
