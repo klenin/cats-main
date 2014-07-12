@@ -187,8 +187,8 @@ our %symbols = (%binary, %arrows, %special, %spaces, %greek, %old);
 %symbols = map { $_ => "\&$symbols{$_};" } keys %symbols;
 $symbols{' '} = '&nbsp;';
 $symbols{'-'} = '&minus;',
-$symbols{'}'} = '}';
-$symbols{'{'} = '{';
-$symbols{'backslash'} = "\\";
+$symbols{rbrace} = $symbols{'}'} = '}';
+$symbols{lbrace} = $symbols{'{'} = '{';
+$symbols{backslash} = "\\";
 
 1;
