@@ -64,7 +64,7 @@ PerlSetEnv CATS_DIR ${CATS_ROOT}/cgi-bin/
 		Options -Indexes +FollowSymLinks
 		DirectoryIndex main.pl
 		LimitRequestBody 1048576
-		AllowOverride none
+		AllowOverride all
 		Order allow,deny
 		Allow from all
 		<Files "main.pl">
@@ -80,7 +80,7 @@ PerlSetEnv CATS_DIR ${CATS_ROOT}/cgi-bin/
 
 	Alias /cats/static/ "${CATS_ROOT}/static/"
 	<Directory "${CATS_ROOT}/static">
-		# Apache допускает только абсолютный URL-path
+		# Apache allows only absolute URL-path
 		ErrorDocument 404 /cats/main.pl?f=static
 		#Options FollowSymLinks
 		AddDefaultCharset utf-8
