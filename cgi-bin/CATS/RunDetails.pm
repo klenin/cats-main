@@ -201,7 +201,7 @@ sub get_nearby_attempt
         @p = (rid => $na->{id});
     }
     $si->{"href_${prevnext}_attempt"} = url_f($f, @p);
-    $si->{href_diff_runs} = url_f('diff_runs', r1 => $na->{id}, r2 => $si->{req_id}) if $diff;
+    $si->{href_diff_runs} = url_f('diff_runs', r1 => $na->{id}, r2 => $si->{req_id}) if $diff && $is_jury;
 }
 
 

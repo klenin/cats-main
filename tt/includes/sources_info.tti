@@ -47,8 +47,8 @@ function send_message(href)
 [% FOREACH sources_info %]<td>
 <a href="[% href_view_source %]" class="[% href_class_view_source %]">[% capt.source %]</a> |
 <a href="[% href_download_source %]" class="[% href_class_download_source %]">[% capt.download %]</a> |
-<a href="[% href_run_details %]" class="[% href_class_run_details %]">[% capt.run_details %]</a> |
-<a href="[% href_diff_runs %]" class="[% href_class_diff_runs %]">[% capt.diff_runs %]</a>
+<a href="[% href_run_details %]" class="[% href_class_run_details %]">[% capt.run_details %]</a>
+[% IF href_diff_runs %] | <a href="[% href_diff_runs %]" class="[% href_class_diff_runs %]">[% capt.diff_runs %]</a>[% END %]
 [% IF is_jury %] | <a href="[% href_run_log %]" class="[% href_class_run_log %]">[% capt.log %]</a>[% END %]
 </td>[% END %]
 </tr>
