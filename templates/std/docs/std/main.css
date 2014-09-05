@@ -195,6 +195,9 @@ table.nobr tr td { white-space: nowrap; }
 
 a.spell { text-decoration: underline; color: red; }
 
+td.problem_radio { width: 1%; height: 100%; padding: 0; margin: 0; }
+td.problem_radio label { display: block; width: 100%; height: 100%; }
+
 table.rank_table tr td p { padding: 0; margin: 0; font-size: 10px; }
 
 div.problem_text { margin-left: 10px; margin-right: 10px; }

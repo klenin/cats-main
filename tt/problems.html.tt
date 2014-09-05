@@ -70,9 +70,9 @@ function chg_code(st_sel, pid)
 [% END %]
 [% FOREACH p IN problems %]
 <tr class="[% loop.parity() %]">
-[% IF is_team %]<td width="1%">
-  <input type="radio" name="problem_id" value="[% p.problem_id %]"
-    [%- ' disabled="disabled"' IF disabled; ' checked="checked"' IF selected %] />
+[% IF is_team %]<td class="problem_radio">
+  <label><input type="radio" name="problem_id" value="[% p.problem_id %]"
+    [%- ' disabled="disabled"' IF disabled; ' checked="checked"' IF selected %] /></label>
 </td>[% END %]
 <td>
     [% IF editable %][% IF p.code ~%]
