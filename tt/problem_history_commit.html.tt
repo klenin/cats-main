@@ -1,0 +1,4 @@
+[% PROCESS 'includes/menu_begin.tti' %]
+[%- PROCESS 'includes/html.tti' -%]
+<pre>[% p_diff %]</pre>
+[% PROCESS 'includes/menu_end.tti' %]
