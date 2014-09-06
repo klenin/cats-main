@@ -25,7 +25,7 @@ sub extract_zip
     my ($path, $zip_name) = @_;
     my $zip = Archive::Zip->new();
     $zip->read($zip_name) == AZ_OK or die "open zip '$zip_name' failed!\n";
-    $zip->extractTree('', $path) == AZ_OK or die "can't extract '$zip_name' to $path\n";
+    $zip->extractTree('', "$path/") == AZ_OK or die "can't extract '$zip_name' to $path\n";
 }
 
 sub new
