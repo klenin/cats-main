@@ -67,7 +67,7 @@ sub get_repo
 {
     my ($id, $sha) = @_;
     my ($db_id, $db_sha) = $dbh->selectrow_array(qq~
-       SELECT repo_id, commit_sha FROM problems WHERE id = ?~, undef, $id);
+       SELECT repo, commit_sha FROM problems WHERE id = ?~, undef, $id);
     my $p = cats_dir() . $cats::repos_dir;
     die 'Repository not found' unless (($db_id ne '' && -d "$p$db_id/") || -d "$p$id/");
     return $db_id ne '' ? ($db_id, $db_sha) : ($id, $sha // '');
@@ -104,7 +104,9 @@ sub add_history
         $p->move_history(from => "$path/$repo_id/", sha => $sha) unless $repo_id == $self->{id};
         $p->add($problem);
         $dbh->do(qq~
-            UPDATE problems SET repo_id = ?, commit_sha = ? WHERE id = ?~, undef, '', '', $self->{id}) unless $repo_id == $self->{id};
+            UPDATE problems SET repo = ?, commit_sha = ? WHERE id = ?~, undef, '', '', $self->{id})
+            unless $repo_id == $self->{id};
+        $dbh->commit;
     }
     else {
         $p->init($problem);
