@@ -82,7 +82,7 @@ sub commit_info
 sub new_repo
 {
     my ($self, $problem, %opts) = @_;
-    mkdir $self->{dir};
+    mkdir $self->{dir} or die "Unable to create repo dir: $!";
     if (exists $opts{from}) {
         $self->move_history(%opts);
     }
@@ -96,7 +96,7 @@ sub new_repo
 sub init
 {
     my ($self, $problem, %opts) = @_;
-    mkdir $self->{dir};
+    mkdir $self->{dir} or die "Unable to create repo dir: $!";
     $self->git('init');
     $self->add($problem, message => 'Initial commit');
     return $self;
