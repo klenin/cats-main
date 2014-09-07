@@ -536,6 +536,7 @@ sub graphs
 
 sub retest_submissions
 {
+    $is_jury or return;
     my ($selection) = @_;
     my $count = 0;
     my @sanitized_runs = grep $_ ne '', split /\D+/, $selection;
