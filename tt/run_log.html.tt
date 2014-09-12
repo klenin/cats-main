@@ -7,10 +7,10 @@
 
 <form  action="[% href_current_link %]" method="post">
 
-<input type="submit" name="set_state" value="результат тестирования:" class="button">
+<input type="submit" name="set_state" value="[% capt1.testing_result %]:" class="button">
 <select name="state">
 <option />
-<option value="not_processed">Перетестировать</option>
+<option value="not_processed">[% capt1.retest %]</option>
 <option value="accepted">Solution accepted</option>
 <option value="wrong_answer">Wrong answer</option>
 <option value="presentation_error">Presentation error</option>
@@ -32,9 +32,9 @@ on test #
 [% IF message %]<i>[% message | html %]</i><br>[% END %]
 
 [% IF judge_log_dump %]
-<h3>Дамп лога судьи</h3>
+<h3>[% capt1.judge_log %]</h3>
 <pre><code>[% judge_log_dump | html %]</code></pre>
-[% ELSE %]лог отсутствует
+[% ELSE; capt1.no_log %]
 [% END %]
 
 [% PROCESS 'includes/timing.tti' %]

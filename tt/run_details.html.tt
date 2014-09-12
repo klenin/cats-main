@@ -1,4 +1,3 @@
-[%- PROCESS "lang/$lang/run_details.html.tt" -%]
 [% PROCESS 'includes/header.tti' %]
 </head>
 <body>

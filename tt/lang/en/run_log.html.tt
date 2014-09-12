@@ -1,0 +1,8 @@
+[%
+  capt1 = {
+    testing_result => 'testing result',
+    retest => 'Retest',
+    judge_log => 'Judge log',
+    no_log => 'No log',
+  }
+%]
