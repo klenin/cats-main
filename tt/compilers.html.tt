@@ -3,7 +3,7 @@
 <script>
 function delete_compiler(href, name)
 {
-    if (confirm( "Вы действительно желаете удалить компилятор '" + name + "'?" ))
+    if (confirm("[% capt.want_to_delete %] '" + name + "'?" ))
     {
         document.location=href;
     }
@@ -29,7 +29,7 @@ function delete_compiler(href, name)
 <td>[% supported_ext | html %]</td>
 <td>[% memory_handicap %]</td>
 <td>[% syntax %]</td>
-[% IF editable %]<td>[% IF locked %]<font color=red>заблокирована</font>[% ELSE %]поддерживается[% END %]</td>[% END %]
+[% IF editable %]<td>[% IF locked %]<font color=red>[% capt.locked %]</font>[% ELSE; capt.unlocked; END %]</td>[% END %]
 </tr>
 [% END %]
 </table>
