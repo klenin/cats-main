@@ -35,7 +35,7 @@
 <div class="bordered" style="margin: 0 10 10 0; padding: 0;">
 [% IF 0 %]<td width="1" align="right"><pre>[% FOREACH src_lines %][% loop.count %]
 [% END %]</pre></td>[% END %]
-<script type="syntaxhighlighter" class="brush: [% IF syntax %][% syntax %][% ELSE %]plain[% END %];"><![CDATA[[% src %]]]></script>
+<script type="syntaxhighlighter" class="brush: [% syntax || 'plain' %];"><![CDATA[[% src %]]]></script>
 </div>
 [% END %]
 
