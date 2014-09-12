@@ -1,0 +1,9 @@
+[%
+  capt1 = {
+    compare_submissions => 'Compare submissions',
+    show => 'Show',
+    diff => 'diff',
+    a_only => 'A only',
+    b_only => 'B only',
+  }
+%]
