@@ -583,18 +583,10 @@ sub problems_change_code ()
 
 sub show_unused_problem_codes ()
 {
-    my $c = $dbh->selectcol_arrayref(qq~
-        SELECT code FROM contest_problems WHERE contest_id = ?~, {},
-        $cid
-    );
-    my %used_codes;
-    $used_codes{$_ || ''} = undef for @$c;
-
-    my @unused_codes = grep !exists($used_codes{$_}), @cats::problem_codes;
-
+    my @u = $contest->unused_problem_codes;
     $t->param(
-        code_array => [ map({ code => $_ }, @unused_codes) ],
-        too_many_problems => !@unused_codes,
+        code_array => [ map({ code => $_ }, @u) ],
+        too_many_problems => !@u,
     );
 }
 
@@ -704,15 +696,8 @@ sub problems_add_new
     my $fname = save_uploaded_file('zip');
 
     my $problem_code;
-    if (!$contest->is_practice)
-    {
-        my $c = $dbh->selectcol_arrayref(qq~
-            SELECT code FROM contest_problems WHERE contest_id = ?~, {},
-            $cid
-        );
-        my %used_codes;
-        $used_codes{$_ || ''} = undef for @$c;
-        ($problem_code) = grep !exists($used_codes{$_}), @cats::problem_codes;
+    if (!$contest->is_practice) {
+        ($problem_code) = $contest->unused_problem_codes;
     }
 
     my CATS::Problem $p = CATS::Problem->new;

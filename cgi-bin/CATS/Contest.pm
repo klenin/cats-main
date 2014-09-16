@@ -15,6 +15,7 @@ sub database_fields {qw(
 use fields (database_fields(), qw(server_time time_since_start time_since_finish time_since_defreeze));
 
 use lib '..';
+use CATS::Constants;
 use CATS::DB;
 
 sub new
@@ -23,7 +24,6 @@ sub new
     $self = fields::new($self) unless ref $self;
     return $self;
 }
-
 
 sub load
 {
@@ -48,20 +48,17 @@ sub load
     @$self{keys %$r} = values %$r; 
 }
 
-
 sub is_practice
 {
     my ($self) = @_;
     defined $self->{ctype} && $self->{ctype} == 1;
 }
 
-
 sub has_started
 {
     my ($self, $virtual_time_offset) = @_;
     $self->{time_since_start} >= ($virtual_time_offset || 0);
 }
-
 
 sub current_official
 {
@@ -70,5 +67,17 @@ sub current_official
             WHERE CURRENT_TIMESTAMP BETWEEN start_date AND finish_date AND is_official = 1~);
 }
 
+sub unused_problem_codes
+{
+    my ($self) = @_;
+
+    my $c = $dbh->selectcol_arrayref(qq~
+        SELECT code FROM contest_problems WHERE contest_id = ?~, {},
+        $self->{id}
+    );
+    my %used_codes;
+    @used_codes{@$c} = undef;
+    grep !exists($used_codes{$_}), @cats::problem_codes;
+}
 
 1;
