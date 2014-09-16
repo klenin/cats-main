@@ -581,16 +581,6 @@ sub problems_change_code ()
     CATS::StaticPages::invalidate_problem_text(cid => $cid, cpid => $cpid);
 }
 
-sub show_unused_problem_codes ()
-{
-    my @u = $contest->unused_problem_codes;
-    $t->param(
-        code_array => [ map({ code => $_ }, @u) ],
-        too_many_problems => !@u,
-    );
-}
-
-
 sub add_problem_to_contest
 {
     my ($pid, $problem_code) = @_;
@@ -697,7 +687,8 @@ sub problems_add_new
 
     my $problem_code;
     if (!$contest->is_practice) {
-        ($problem_code) = $contest->unused_problem_codes;
+        ($problem_code) = $contest->unused_problem_codes
+            or return msg(1017);
     }
 
     my CATS::Problem $p = CATS::Problem->new;
@@ -719,7 +710,11 @@ sub problems_all_frame
     my $kw = url_param('kw');
     my $move = url_param('move') || 0;
 
-    $link and show_unused_problem_codes;
+    if ($link) {
+        my @u = $contest->unused_problem_codes
+            or return msg(1017);
+        $t->param(code_array => [ map({ code => $_ }, @u) ]);
+    }
 
     my $cols = [
         { caption => res_str(602), order_by => '2', width => '30%' },
