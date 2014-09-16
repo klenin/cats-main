@@ -607,11 +607,7 @@ sub check_problem_code
         return 1;
     }
     $$problem_code =~ /^[A-Z0-9]$/ or return msg(134);
-
-    my ($prev) = $dbh->selectrow_array(q~
-        SELECT id FROM contest_problems WHERE contest_id = ? AND code = ?~, {},
-        $cid, $$problem_code);
-    return $prev ? msg(133) : 1;
+    1;
 }
 
 
