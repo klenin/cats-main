@@ -4,15 +4,15 @@
 [% UNLESS clarified %]
 <form method="post" enctype="multipart/form-data">
   [% team_name | html %], [% submit_time %]<br/>
-  [% IF answer %]<br/>Получен ответ:[% answer %]<br/><br/>[% END %]
+  [% IF answer %]<br/>[% capt.answered %]:[% answer %]<br/><br/>[% END %]
   <br/>
   <div class="bordered">[% question_text | html %]</div>
   <br/>
-  <input type="text" size="70" value="без комментариев" name="answer_text" class="bordered" />
+  <input type="text" size="70" value="[% capt.no_comments %]" name="answer_text" class="bordered" />
   <br/>
   <br/>
-  <input type="submit" value="Ответить" name="clarify" class="button"/> 
-  <input type="button" value="Закрыть" onClick="javascript:window.close();" class="button" />
+  <input type="submit" value="[% capt.clarify %]" name="clarify" class="button"/>
+  <input type="button" value="[% capt.close %]" onClick="javascript:window.close();" class="button" />
 </form>
 [% ELSE %]
 <script>window.close();</script>
