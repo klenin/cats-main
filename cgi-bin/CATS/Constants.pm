@@ -105,6 +105,7 @@ $medium_refresh = 10;
 $fast_refresh = 3;
 
 @problem_codes = ('A'..'Z', '1'..'9');
+sub is_good_problem_code { $_[0] =~ /^[A-Z1-9]$/ }
 
 @skins = (
     { id => "std", path => "./../templates/std" },

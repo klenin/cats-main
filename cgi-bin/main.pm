@@ -572,7 +572,7 @@ sub problems_change_code ()
     my $cpid = param('change_code')
       or return msg(54);
     my $new_code = param('code') || '';
-    $new_code =~ /^[A-Z1-9]$/ or return;
+    cats::is_good_problem_code($new_code) or return msg(1134);
     $dbh->do(qq~
         UPDATE contest_problems SET code = ?
             WHERE contest_id = ? AND id = ?~, {},
@@ -597,27 +597,16 @@ sub add_problem_to_contest
             $cats::problem_st_hidden : $cats::problem_st_ready);
 }
 
-
-sub check_problem_code
-{
-    my ($problem_code) = @_;
-    if ($contest->is_practice)
-    {
-        undef $$problem_code;
-        return 1;
-    }
-    $$problem_code =~ /^[A-Z0-9]$/ or return msg(134);
-    1;
-}
-
-
 sub problems_link_save
 {
     my $pid = param('problem_id')
         or return msg(104);
 
-    my $problem_code = param('problem_code');
-    check_problem_code(\$problem_code) or return;
+    my $problem_code;
+    if (!$contest->is_practice) {
+        $problem_code = param('problem_code');
+        cats::is_good_problem_code($problem_code) or return msg(1134);
+    }
     my $move_problem = param('move');
     if ($move_problem) {
         # Нужны права жюри в турнире, из которого перемещаем задачу
