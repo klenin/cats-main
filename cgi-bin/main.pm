@@ -713,7 +713,7 @@ sub problems_all_frame
     if ($link) {
         my @u = $contest->unused_problem_codes
             or return msg(1017);
-        $t->param(code_array => [ map({ code => $_ }, @u) ]);
+        $t->param(unused_codes => [ @u ]);
     }
 
     my $cols = [

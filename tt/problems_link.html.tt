@@ -20,7 +20,7 @@
 [% IF link %]
 Код задачи:
 <select name="problem_code">
-[% FOREACH code_array %]<option name="[% code %]">[% code %][% END %]
+[% FOREACH c IN unused_codes %]<option name="[% c %]">[% c %]</option>[% END %]
 </select>
 <br/><br/>
 [% END %]
