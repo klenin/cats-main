@@ -18,15 +18,15 @@
 <br>
 [% IF is_jury %]
 [% IF link %]
-Код задачи:
+[% capt.problem_code %]:
 <select name="problem_code">
 [% FOREACH c IN unused_codes %]<option name="[% c %]">[% c %]</option>[% END %]
 </select>
 <br/><br/>
 [% END %]
 [% IF move %]<input type="hidden" name="move" value="1" />[% END %]
-<input type="submit" name="link_save" value="[% IF move %]Переместить[% ELSE %]Прилинковать[% END %]" class="button" />
-<input type="submit" name="link_cancel" value="Отмена" class="button" />
+<input type="submit" name="link_save" value="[% move ? capt.move : capt.link %]" class="button" />
+<input type="submit" name="link_cancel" value="[% capt.cancel %]" class="button" />
 </form>
 [% END %]
 [% PROCESS 'includes/menu_end.tti' %]
