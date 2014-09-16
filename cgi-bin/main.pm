@@ -553,14 +553,13 @@ sub contests_frame
 sub problems_change_status ()
 {
     my $cpid = param('change_status')
-      or return msg(54);
+        or return msg(54);
 
     my $new_status = param('status');
     exists problem_status_names()->{$new_status} or return;
 
     $dbh->do(qq~
-        UPDATE contest_problems SET status = ?
-            WHERE contest_id = ? AND id = ?~, {},
+        UPDATE contest_problems SET status = ? WHERE contest_id = ? AND id = ?~, {},
         $new_status, $cid, $cpid);
     $dbh->commit;
     # Perhaps a 'hidden' status changed.
@@ -570,12 +569,11 @@ sub problems_change_status ()
 sub problems_change_code ()
 {
     my $cpid = param('change_code')
-      or return msg(54);
+        or return msg(54);
     my $new_code = param('code') || '';
     cats::is_good_problem_code($new_code) or return msg(1134);
     $dbh->do(qq~
-        UPDATE contest_problems SET code = ?
-            WHERE contest_id = ? AND id = ?~, {},
+        UPDATE contest_problems SET code = ? WHERE contest_id = ? AND id = ?~, {},
         $new_code, $cid, $cpid);
     $dbh->commit;
     CATS::StaticPages::invalidate_problem_text(cid => $cid, cpid => $cpid);
@@ -590,9 +588,9 @@ sub add_problem_to_contest
         $cid, $pid) and return msg(1003);
     $dbh->do(qq~
         INSERT INTO contest_problems(id, contest_id, problem_id, code, status)
-            VALUES (?,?,?,?,?)~, {},
+            VALUES (?, ?, ?, ?, ?)~, {},
         new_id, $cid, $pid, $problem_code,
-        # Если не-архивный турнир уже идёт, добавляемые задачи сразу получают статус hidden
+        # If non-archive contest is in progress, hide newly added problem immediately.
         $contest->{time_since_start} > 0 && $contest->{ctype} == 0 ?
             $cats::problem_st_hidden : $cats::problem_st_ready);
 }
@@ -622,7 +620,8 @@ sub problems_link_save
     add_problem_to_contest($pid, $problem_code) or return;
     if ($move_problem) {
         $dbh->do(q~
-            UPDATE problems SET contest_id = ? WHERE id = ?~, undef, $cid, $pid);
+            UPDATE problems SET contest_id = ? WHERE id = ?~, undef,
+            $cid, $pid);
     }
     else {
         msg(1001);
