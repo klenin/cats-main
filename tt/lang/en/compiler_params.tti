@@ -1,0 +1,10 @@
+[%
+  capt = {
+    code => 'Dev. env. code',
+    description => 'Description',
+    supported_ext => 'Supported file extensions',
+    memory_handicap => 'Memory handicap, Mb',
+    syntax => 'Syntax',
+    locked => 'Locked',
+  }
+%]
