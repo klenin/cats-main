@@ -1,0 +1,7 @@
+[%
+  capt = {
+    steps_per_hour => 'Steps per hour',
+    accepted_only => 'Accepted only',
+    show => 'Show',
+  }
+%]
