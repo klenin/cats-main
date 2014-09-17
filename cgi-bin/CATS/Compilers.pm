@@ -100,7 +100,7 @@ sub compilers_frame
         { caption => res_str(620), order_by => '3', width => '40%' },
         { caption => res_str(621), order_by => '4', width => '20%' },
         { caption => res_str(640), order_by => '6', width => '15%' },
-        { caption => 'syntax' || res_str(621), order_by => '7', width => '10%' },
+        { caption => res_str(623), order_by => '7', width => '10%' },
         ($is_jury ? { caption => res_str(622), order_by => '5', width => '10%' } : ())
     ]);
 
