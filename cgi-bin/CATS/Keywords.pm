@@ -27,7 +27,7 @@ sub edit_save
     my %p = map { $_ => (param($_) || '') } fields();
 
     $p{name_en} ne '' && 0 == grep(length $p{$_} > 200, fields())
-        or return msg(84);
+        or return msg(1084);
 
     if ($kwid) {
         my $set = join ', ', map "$_ = ?", fields();
