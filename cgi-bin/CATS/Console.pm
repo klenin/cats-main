@@ -481,26 +481,19 @@ sub graphs
 {
     $is_jury or return;
     init_template('console_graphs.html.tt');
-    my $codes = $dbh->selectcol_arrayref(q~
-        SELECT CP.code FROM contest_problems CP WHERE CP.contest_id = ? ORDER BY 1~, undef,
-        $cid);
-    #push @$codes, 'all';
-    $_ = { code => $_, selected => 1 } for @$codes;
+    my @codes = map { code => $_, selected => 1 }, @{$contest->used_problem_codes};
     my $steps_per_hour = (param('steps') || 1) + 0;
     my $accepted_only = param('accepted_only') || 0;
     $t->param(
         submenu => [ { href => url_f('console'), item => res_str(510) } ],
-        codes => $codes,
+        codes => \@codes,
         href_graphs => url_f('console_graphs'),
         steps => $steps_per_hour,
         accepted_only => $accepted_only);
     param('do_graph') or return;
 
     my %selected_codes = map { $_ => 1 } param('selected_codes');
-    for my $c (@$codes)
-    {
-        $c->{selected} = $selected_codes{$c->{code}};
-    }
+    $_->{selected} = $selected_codes{$_->{code}} || 0 for @codes;
 
     my $reqs = select_all_reqs($accepted_only ? " AND R.state = $cats::st_accepted" : '');
     @$reqs or return;

@@ -67,16 +67,20 @@ sub current_official
             WHERE CURRENT_TIMESTAMP BETWEEN start_date AND finish_date AND is_official = 1~);
 }
 
+sub used_problem_codes
+{
+    my ($self) = @_;
+    $dbh->selectcol_arrayref(qq~
+        SELECT code FROM contest_problems WHERE contest_id = ? ORDER BY 1~, undef,
+        $self->{id}
+    );
+}
+
 sub unused_problem_codes
 {
     my ($self) = @_;
-
-    my $c = $dbh->selectcol_arrayref(qq~
-        SELECT code FROM contest_problems WHERE contest_id = ?~, {},
-        $self->{id}
-    );
     my %used_codes;
-    @used_codes{@$c} = undef;
+    @used_codes{@{$self->used_problem_codes}} = undef;
     grep !exists($used_codes{$_}), @cats::problem_codes;
 }
 
