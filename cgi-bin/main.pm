@@ -970,7 +970,7 @@ sub problems_submit_std_solution
 
     if ($ok)
     {
-        $dbh->commit; 
+        $dbh->commit;
         $t->param(solution_submitted => 1, href_console => url_f('console'));
         msg(107);
     }
@@ -1583,13 +1583,13 @@ sub users_delete
     if ($srole)
     {
         $dbh->do(qq~DELETE FROM contest_accounts WHERE id=?~, {}, $caid);
-        $dbh->commit;       
+        $dbh->commit;
 
         unless ($dbh->selectrow_array(qq~
             SELECT COUNT(*) FROM contest_accounts WHERE account_id=?~, {}, $aid))
         {
             $dbh->do(qq~DELETE FROM accounts WHERE id=?~, {}, $aid);
-            $dbh->commit;       
+            $dbh->commit;
         }
     }
 }
@@ -1670,7 +1670,7 @@ sub users_frame
             if defined param('register_new');
 
         if (defined param('send_message'))
-        {                
+        {
             if (param_on('send_message_all'))
             {
                 users_send_broadcast(message => param('message_text'));
@@ -1836,7 +1836,7 @@ sub import_sources_frame
     my $fetch_record = sub($)
     {
         my $f = $_[0]->fetchrow_hashref or return ();
-        return ( 
+        return (
             %$f,
             stype_name => $cats::source_module_names{$f->{stype}},
             href_problems => url_function('problems', sid => $sid, cid => $f->{contest_id}),
@@ -1915,7 +1915,7 @@ sub rank_table
     $contest->{title} = $rt->{title};
     my $s = $t->output;
 
-    init_template($template_name);  
+    init_template($template_name);
     $t->param(rank_table_content => $s, printable => (url_param('printable') || 0));
 }
 
@@ -1995,9 +1995,9 @@ sub about_frame
 sub generate_menu
 {
     my $logged_on = $sid ne '';
-  
+
     my @left_menu = (
-        { item => $logged_on ? res_str(503) : res_str(500), 
+        { item => $logged_on ? res_str(503) : res_str(500),
           href => $logged_on ? url_function('logout', sid => $sid) : url_f('login') },
         { item => res_str(502), href => url_f('contests') },
         { item => res_str(525), href => url_f('problems') },
@@ -2005,13 +2005,13 @@ sub generate_menu
         { item => res_str(510),
           href => url_f('console', $is_jury ? () : (uf => $uid || get_anonymous_uid())) },
         ($is_jury ? () : { item => res_str(557), href => url_f('import_sources') }),
-    );   
+    );
 
     if ($is_jury)
     {
         push @left_menu, (
             { item => res_str(548), href => url_f('compilers') },
-            { item => res_str(545), href => url_f('similarity') } 
+            { item => res_str(545), href => url_f('similarity') }
         );
     }
     else
@@ -2035,7 +2035,7 @@ sub generate_menu
     {
         @right_menu = ( { item => res_str(518), href => url_f('settings') } );
     }
-    
+
     push @right_menu, (
         { item => res_str(544), href => url_f('about') },
         { item => res_str(501), href => url_f('registration') } );
@@ -2125,7 +2125,7 @@ sub accept_request
 
 sub handler {
     my $r = shift;
-    
+
     init_request($r);
     $CATS::Misc::request_start_time = [ Time::HiRes::gettimeofday ];
     CATS::DB::sql_connect;

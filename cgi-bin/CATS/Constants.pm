@@ -224,4 +224,4 @@ sub is_good_problem_code { $_[0] =~ /^[A-Z1-9]$/ }
 
 );
 
-1;                                          
+1;

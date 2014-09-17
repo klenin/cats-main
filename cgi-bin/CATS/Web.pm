@@ -53,9 +53,9 @@ sub original_param
     $qq->param(@_);
 }
 
-*_param = \&original_param; 
+*_param = \&original_param;
 
-sub param 
+sub param
 {
     _param(@_); # trick to change param implementation at runtime
 }

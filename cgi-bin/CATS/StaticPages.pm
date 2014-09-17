@@ -49,7 +49,7 @@ sub invalidate_problem_text
     my (%p) = @_;
     my @contest_ids = $p{cid} ? ($p{cid}) : ();
     my @cpids = $p{cpid} ? ($p{cpid}) : ();
-    
+
     if ($p{pid}) {
         my $records = $dbh->selectall_arrayref(q~
             SELECT id, contest_id FROM contest_problems WHERE problem_id = ?~,

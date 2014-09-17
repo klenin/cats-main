@@ -45,7 +45,7 @@ sub load
         $r = CATS::DB::select_row('contests', $all_fields, { ctype => 1 });
     }
     $r or die 'No contest';
-    @$self{keys %$r} = values %$r; 
+    @$self{keys %$r} = values %$r;
 }
 
 sub is_practice
