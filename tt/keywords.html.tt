@@ -3,7 +3,7 @@
 <script>
 function delete_kw(href, name)
 {
-    if (confirm( "Вы действительно желаете удалить ключевое слово '" + name + "'?" ))
+    if (confirm( "[% capt.want_to_delete %] '" + name + "'?" ))
     {
         document.location=href;
     }

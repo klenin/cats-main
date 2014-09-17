@@ -1,0 +1,5 @@
+[%
+  capt = {
+    want_to_delete => 'Do you really want to delete keyword',
+  }
+%]
