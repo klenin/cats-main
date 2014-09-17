@@ -1,5 +1,0 @@
-[% PROCESS 'includes/menu_begin.tti' %]
-
-Доступ к этой странице запрещен.
-
-[% PROCESS 'includes/menu_end.tti' %]

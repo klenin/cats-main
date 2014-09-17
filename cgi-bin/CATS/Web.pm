@@ -4,7 +4,7 @@ use warnings;
 use strict;
 use Apache2::Request;
 use Apache2::Upload;
-use Apache2::Const -compile => qw(OK REDIRECT);
+use Apache2::Const -compile => qw(OK REDIRECT NOT_FOUND);
 use Apache2::Cookie ();
 
 use 5.010;
@@ -81,6 +81,11 @@ sub redirect
     $return_code = Apache2::Const::REDIRECT;
 }
 
+sub not_found
+{
+    $return_code = Apache2::Const::NOT_FOUND;
+    -1;
+}
 
 sub headers
 {

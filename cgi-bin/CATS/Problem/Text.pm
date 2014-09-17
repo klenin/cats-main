@@ -242,13 +242,7 @@ sub contest_visible
 sub problem_text_frame
 {
     my ($show, $explain) = contest_visible();
-    if (!$show) {
-        # We cannot return error as html for static pages, since it will cached.
-        die 'Request for cached problems of invisible contest'
-            if $CATS::StaticPages::is_static_page;
-        init_template('access_denied.html.tt');
-        return;
-    }
+    $show or return CATS::Web::not_found;
     $explain = $explain && url_param('explain');
 
     init_template(auto_ext('problem_text'));
