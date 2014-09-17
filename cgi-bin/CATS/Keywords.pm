@@ -10,50 +10,39 @@ use CATS::Misc qw(
     init_template init_listview_template msg res_str url_f
     order_by define_columns attach_listview references_menu);
 
-sub keywords_fields () { qw(name_ru name_en code) }
+sub fields () { qw(name_ru name_en code) }
 
-sub keywords_new_frame
-{
-    init_template('keywords_new.html.tt');
-    $t->param(href_action => url_f('keywords'));
-}
-
-sub keywords_new_save
-{
-    my %p = map { $_ => (param($_) || '') } keywords_fields();
-
-    $p{name_en} ne '' && 0 == grep length $p{$_} > 200, keywords_fields()
-        or return msg(84);
-
-    my $field_names = join ', ', keywords_fields();
-    $dbh->do(qq~
-        INSERT INTO keywords (id, $field_names) VALUES (?, ?, ?, ?)~, {},
-        new_id, @p{keywords_fields()});
-    $dbh->commit;
-}
-
-sub keywords_edit_frame
+sub edit_frame
 {
     init_template('keywords_edit.html.tt');
-
     my $kwid = url_param('edit');
-    my $kw = $dbh->selectrow_hashref(qq~SELECT * FROM keywords WHERE id=?~, {}, $kwid);
+    my $kw = $kwid ? $dbh->selectrow_hashref(q~
+        SELECT * FROM keywords WHERE id = ?~, undef, $kwid) : {};
     $t->param(%$kw, href_action => url_f('keywords'));
 }
 
-sub keywords_edit_save
+sub edit_save
 {
     my $kwid = param('id');
-    my %p = map { $_ => (param($_) || '') } keywords_fields();
+    my %p = map { $_ => (param($_) || '') } fields();
 
-    $p{name_en} ne '' && 0 == grep(length $p{$_} > 200, keywords_fields())
+    $p{name_en} ne '' && 0 == grep(length $p{$_} > 200, fields())
         or return msg(84);
 
-    my $set = join ', ', map "$_ = ?", keywords_fields();
-    $dbh->do(qq~
-        UPDATE keywords SET $set WHERE id = ?~, {},
-        @p{keywords_fields()}, $kwid);
-    $dbh->commit;
+    if ($kwid) {
+        my $set = join ', ', map "$_ = ?", fields();
+        $dbh->do(qq~
+            UPDATE keywords SET $set WHERE id = ?~, undef,
+            @p{fields()}, $kwid);
+        $dbh->commit;
+    }
+    else {
+        my $field_names = join ', ', fields();
+        $dbh->do(qq~
+            INSERT INTO keywords (id, $field_names) VALUES (?, ?, ?, ?)~, undef,
+            new_id, @p{fields()});
+        $dbh->commit;
+    }
 }
 
 sub keywords_frame
@@ -61,17 +50,15 @@ sub keywords_frame
     if ($is_root) {
         if (defined url_param('delete')) {
             my $kwid = url_param('delete');
-            $dbh->do(qq~DELETE FROM keywords WHERE id = ?~, {}, $kwid);
+            $dbh->do(q~DELETE FROM keywords WHERE id = ?~, {}, $kwid);
             $dbh->commit;
         }
 
-        defined url_param('new') and return keywords_new_frame;
-        defined url_param('edit') and return keywords_edit_frame;
+        defined url_param('new') || defined url_param('edit') and return edit_frame;
     }
     init_listview_template('keywords', 'keywords', 'keywords.html.tt');
 
-    $is_root && defined param('new_save') and keywords_new_save;
-    $is_root && defined param('edit_save') and keywords_edit_save;
+    $is_root && defined param('edit_save') and edit_save;
 
     define_columns(url_f('keywords'), 0, 0, [
         { caption => res_str(625), order_by => '2', width => '31%' },
@@ -79,8 +66,8 @@ sub keywords_frame
         { caption => res_str(637), order_by => '4', width => '31%' },
     ]);
 
-    my $c = $dbh->prepare(qq~
-        SELECT id, code, name_ru, name_en FROM keywords ~.order_by);
+    my $c = $dbh->prepare(q~
+        SELECT id, code, name_ru, name_en FROM keywords ~ . order_by);
     $c->execute;
 
     my $fetch_record = sub {
