@@ -13,7 +13,7 @@
   <td align="right">
     <a href="https://github.com/klenin/cats-main/issues">[% issues %]</a> |
     <a href="docs/">[% docs %]</a> |
-    <a href="[% url_authors %]">&copy; 2002-2013 [% authors %]</a>&nbsp;
+    <a href="docs/authors.html">&copy; 2002-2014 [% authors %]</a>&nbsp;
   </td>
 </tr>
 <tr class="footer2">
@@ -21,7 +21,7 @@
     &nbsp;[% PROCESS 'includes/timing.tti' %]
   </td>
   <td align="right">
-    <a href="http://imcs.dvgu.ru/works"> [% dept %] &nbsp;</a><br>
+    <a href="http://imcs.dvfu.ru/works"> [% dept %] &nbsp;</a><br>
     <a href="http://dvfu.ru"> [% university %] &nbsp;</a>
   </td>
 </tr>

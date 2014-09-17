@@ -2,7 +2,7 @@
 <table width="100%" cellspacing="0" cellpadding="0">
 <tr class="menu_bar">
   <td><a href="." class="nav_href">&nbsp;Справочная система - CATS</a></td>
-  <td align="right"><a href="../main.pl?f=authors" class="nav_href">&copy; 2002-2013 Авторы</a>&nbsp;<td>
+  <td align="right"><a href="authors.html" class="nav_href">&copy; 2002-2014 Авторы</a>&nbsp;<td>
 </tr>
 <tr height="40" class="down">
   <td background="../images/std/bg2.gif">&nbsp;</td>

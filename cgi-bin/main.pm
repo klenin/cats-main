@@ -2090,12 +2090,6 @@ sub about_frame
 }
 
 
-sub authors_frame
-{
-    init_template('authors.html.tt');
-}
-
-
 sub generate_menu
 {
     my $logged_on = $sid ne '';
@@ -2140,13 +2134,12 @@ sub generate_menu
         @right_menu = ( { item => res_str(518), href => url_f('settings') } );
     }
     
-    push @right_menu, (       
+    push @right_menu, (
         { item => res_str(544), href => url_f('about') },
         { item => res_str(501), href => url_f('registration') } );
 
-    attach_menu('left_menu', undef, [ @left_menu ]);
-    attach_menu('right_menu', 'about', [ @right_menu ]) ;
-    $t->param(url_authors => url_f('authors'));
+    attach_menu('left_menu', undef, \@left_menu);
+    attach_menu('right_menu', 'about', \@right_menu);
 }
 
 
@@ -2193,7 +2186,6 @@ sub interface_functions ()
         problem_text => \&problem_text_frame,
         envelope => \&CATS::Messages::envelope_frame,
         about => \&about_frame,
-        authors => \&authors_frame,
         static => \&static_frame,
 
         similarity => \&CATS::Stats::similarity_frame,
