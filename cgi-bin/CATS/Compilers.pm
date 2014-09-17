@@ -11,39 +11,17 @@ use CATS::Misc qw(
     order_by define_columns attach_listview references_menu);
 use CATS::Utils qw(param_on);
 
-sub compilers_new_frame
-{
-    init_template('compilers_new.html.tt');
-    $t->param(href_action => url_f('compilers'));
-}
-
-sub compilers_new_save
-{
-    my $code = param('code');
-    my $description = param('description');
-    my $supported_ext = param('supported_ext');
-    my $locked = param_on('locked');
-    my $memory_handicap = param('memory_handicap');
-    my $syntax = param('syntax');
-
-    $dbh->do(qq~
-        INSERT INTO default_de(id, code, description, file_ext, in_contests, memory_handicap, syntax)
-        VALUES(?,?,?,?,?,?,?)~, {},
-        new_id, $code, $description, $supported_ext, !$locked, $memory_handicap, $syntax);
-    $dbh->commit;
-}
-
-sub compilers_edit_frame
+sub edit_frame
 {
     init_template('compilers_edit.html.tt');
 
     my $id = url_param('edit');
 
     my ($code, $description, $supported_ext, $in_contests, $memory_handicap, $syntax) =
-        $dbh->selectrow_array(qq~
+        $id ? $dbh->selectrow_array(q~
             SELECT code, description, file_ext, in_contests, memory_handicap, syntax
             FROM default_de WHERE id = ?~, {},
-            $id);
+            $id) : ();
 
     $t->param(
         id => $id,
@@ -56,7 +34,7 @@ sub compilers_edit_frame
         href_action => url_f('compilers'));
 }
 
-sub compilers_edit_save
+sub edit_save
 {
     my $code = param('code');
     my $description = param('description');
@@ -66,13 +44,22 @@ sub compilers_edit_save
     my $syntax = param('syntax');
     my $id = param('id');
 
-    $dbh->do(qq~
-        UPDATE default_de
-        SET code = ?, description = ?, file_ext = ?, in_contests = ?,
-            memory_handicap = ?, syntax = ?
-        WHERE id = ?~, {},
-        $code, $description, $supported_ext, !$locked, $memory_handicap, $syntax, $id);
-    $dbh->commit;
+    if ($id) {
+        $dbh->do(q~
+            UPDATE default_de
+            SET code = ?, description = ?, file_ext = ?, in_contests = ?,
+                memory_handicap = ?, syntax = ?
+            WHERE id = ?~, undef,
+            $code, $description, $supported_ext, !$locked, $memory_handicap, $syntax, $id);
+        $dbh->commit;
+    }
+    else {
+        $dbh->do(q~
+            INSERT INTO default_de(id, code, description, file_ext, in_contests, memory_handicap, syntax)
+            VALUES(?, ?, ?, ?, ?, ?, ?)~, undef,
+            new_id, $code, $description, $supported_ext, !$locked, $memory_handicap, $syntax);
+        $dbh->commit;
+    }
 }
 
 sub compilers_frame
@@ -80,20 +67,16 @@ sub compilers_frame
     if ($is_jury) {
         if ($is_root && defined url_param('delete')) { # extra security
             my $deid = url_param('delete');
-            $dbh->do(qq~DELETE FROM default_de WHERE id=?~, {}, $deid);
+            $dbh->do(qq~DELETE FROM default_de WHERE id = ?~, {}, $deid);
             $dbh->commit;
         }
 
-        defined url_param('new') and return compilers_new_frame;
-        defined url_param('edit') and return compilers_edit_frame;
+        defined url_param('new') || defined url_param('edit') and return edit_frame;
     }
 
     init_listview_template('compilers', 'compilers', 'compilers.html.tt');
 
-    if ($is_jury) {
-        defined param('new_save') and compilers_new_save;
-        defined param('edit_save') and compilers_edit_save;
-    }
+    $is_jury && defined param('edit_save') and edit_save;
 
     define_columns(url_f('compilers'), 0, 0, [
         { caption => res_str(619), order_by => '2', width => '10%' },

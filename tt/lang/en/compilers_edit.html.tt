@@ -6,5 +6,7 @@
     memory_handicap => 'Memory handicap, Mb',
     syntax => 'Syntax',
     locked => 'Locked',
+    ok => '     Ok     ',
+    cancel => 'Cancel',
   }
 %]
