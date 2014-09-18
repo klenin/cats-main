@@ -64,6 +64,7 @@ sub login_frame
     my $json = param('json');
     init_template(auto_ext('login', $json));
     $t->param(href_login => url_f('login'));
+    msg(1004) if param('logout');
 
     my $login = param('login');
     if (!$login)
@@ -116,16 +117,19 @@ sub login_frame
 
 sub logout_frame
 {
-    init_template(auto_ext('logout'));
-
     $cid = '';
     $sid = '';
-    $t->param(href_login => url_f('login'));
     if ($uid) {
         $dbh->do(qq~UPDATE accounts SET sid = NULL WHERE id = ?~, {}, $uid);
         $dbh->commit;
     }
-    0;
+    if (param('json')) {
+        init_template(auto_ext('logout'));
+        0;
+    }
+    else {
+       redirect(url_function('login', logout => 1));
+    }
 }
 
 

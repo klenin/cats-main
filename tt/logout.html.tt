@@ -1,5 +1,0 @@
-[% PROCESS 'includes/menu_begin.tti' %]
-
-<i>Сеанс работы с системой завершен.</i><br><br>
-
-[% PROCESS 'includes/menu_end.tti' %]
