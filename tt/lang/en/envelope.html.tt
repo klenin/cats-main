@@ -1,8 +1,8 @@
 [%
-  capt = {
+  capt.import({
     team => 'Team',
     submit_time => 'Submitted at',
     test_time => 'Testing started at',
     submit_result => 'Result',
-  }
+  })
 %]

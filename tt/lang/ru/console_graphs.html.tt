@@ -1,7 +1,7 @@
 [%
-  capt = {
+  capt.import({
     steps_per_hour => 'Шагов в час',
     accepted_only => 'Только принятые',
     show => 'Показать',
-  }
+  })
 %]

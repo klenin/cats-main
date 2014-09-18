@@ -1,9 +1,9 @@
 [%
-  capt = {
+  capt.import({
     select_testsets => 'Выберите тестовые наборы',
     check => 'Проверять',
     points => 'Баллы',
     name => 'Название',
     save => 'Сохранить',
-  }
+  })
 %]

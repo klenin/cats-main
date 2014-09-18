@@ -1,5 +1,5 @@
 [%
-  capt = {
+  capt.import({
     country => 'Country',
     city => 'City / region',
     motto => 'Motto',
@@ -7,5 +7,5 @@
     email => 'E-Mail',
     icq_number => 'ICQ',
     home_page => 'Home page',
-  }
+  })
 %]

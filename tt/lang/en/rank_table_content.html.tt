@@ -1,5 +1,5 @@
 [%
-  capt => {
+  capt.import({
     not_started => 'Contest has not started yet',
     hide_ooc => 'hide ooc',
     show_ooc => 'show ooc',
@@ -20,5 +20,5 @@
     status => 'status',
     average_points => 'Average points',
     successful_submits => 'Successful submits',
-  }
+  })
 %]

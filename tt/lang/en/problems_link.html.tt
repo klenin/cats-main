@@ -1,8 +1,8 @@
 [%
-  capt = {
+  capt.import({
     problem_code => 'Problem code',
     move => 'Move',
     link => 'Link',
     cancel => 'Cancel',
-  }
+  })
 %]

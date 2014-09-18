@@ -1,7 +1,7 @@
 [%
-  capt = {
+  capt.import({
     message_for_team => 'Сообщение для команды',
     send => 'Отправить',
     close => 'Закрыть',
-  }
+  })
 %]

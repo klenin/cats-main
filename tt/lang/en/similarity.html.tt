@@ -1,5 +1,5 @@
 [%
-  capt = {
+  capt.import({
     problem => 'Problem',
     threshold => 'Threshold',
     compare => 'Compare',
@@ -9,5 +9,5 @@
     collapse_idents => 'Collapse identifiers',
     console => 'console',
     equivalency_groups => 'Equivalency groups',
-  }
+  })
 %]

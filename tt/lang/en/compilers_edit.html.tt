@@ -1,5 +1,5 @@
 [%
-  capt = {
+  capt.import({
     code => 'Dev. env. code',
     description => 'Description',
     supported_ext => 'Supported file extensions',
@@ -8,5 +8,5 @@
     locked => 'Locked',
     ok => '     Ok     ',
     cancel => 'Cancel',
-  }
+  })
 %]

@@ -1,8 +1,8 @@
 [%
-  capt = {
+  capt.import({
     answered => 'Answered',
     no_comments => 'no comments',
     clarify => 'Clarify',
     close => 'Close',
-  }
+  })
 %]

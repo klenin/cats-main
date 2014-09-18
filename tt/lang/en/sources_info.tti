@@ -1,5 +1,5 @@
 [%
-  capt = {
+  capt.import({
     team => 'Team',
     message => 'message',
     time => 'Time',
@@ -16,5 +16,5 @@
     run_details => 'results',
     diff_runs => 'diff',
     log => 'log',
-  }
+  })
 %]

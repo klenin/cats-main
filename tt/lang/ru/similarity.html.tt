@@ -1,5 +1,5 @@
 [%
-  capt = {
+  capt.import({
     problem => 'Задача',
     threshold => 'Порог',
     compare => 'Сравнить',
@@ -9,5 +9,5 @@
     collapse_idents => 'Игнорировать идентификаторы',
     console => 'консоль',
     equivalency_groups => 'Группы эквивалентности',
-  }
+  })
 %]

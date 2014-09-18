@@ -1,8 +1,8 @@
 [%
-  capt = {
+  capt.import({
     problem_code => 'Код задачи',
     move => 'Переместить',
     link => 'Прилинковать',
     cancel => 'Отмена',
-  }
+  })
 %]

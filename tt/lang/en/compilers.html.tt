@@ -1,7 +1,7 @@
 [%
-  capt = {
+  capt.import({
     want_to_delete => 'Do you really want to delete compiler/environment',
     locked => 'locked',
     unlocked => 'supported',
-  }
+  })
 %]

@@ -1,5 +1,5 @@
 [%
-  capt = {
+  capt.import({
     name => 'Имя',
     last_login => 'Последний вход',
     last_ip => 'Последний IP',
@@ -7,5 +7,5 @@
     all => 'все',
     solved => 'решённые',
     contests => 'Турниры',
-  }
+  })
 %]

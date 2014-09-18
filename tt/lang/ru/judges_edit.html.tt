@@ -1,8 +1,8 @@
 [%
-  capt = {
+  capt.import({
     judge_name => 'Идентификатор судьи',
     locked => 'Заблокирован',
     ok => '     Ok     ',
     cancel => 'Отмена',
-  }
+  })
 %]

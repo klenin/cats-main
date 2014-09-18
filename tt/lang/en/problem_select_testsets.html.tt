@@ -1,9 +1,9 @@
 [%
-  capt = {
+  capt.import({
     select_testsets => 'Select testsets',
     check => 'Check',
     points => 'Points',
     name => 'Name',
     save => 'Save',
-  }
+  })
 %]

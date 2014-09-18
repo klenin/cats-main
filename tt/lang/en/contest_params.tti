@@ -1,5 +1,5 @@
 [%
-  capt = {
+  capt.import({
     contest_name => 'Contest name',
     start_date => 'Start date/time',
     freeze_date => 'Rank table freeze date/time',
@@ -22,5 +22,5 @@
     show_packages => 'problem packages',
     ok => '     Ok     ',
     cancel => 'Cancel',
-  }
+  })
 %]
