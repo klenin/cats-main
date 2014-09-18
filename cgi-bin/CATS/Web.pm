@@ -79,6 +79,7 @@ sub redirect
     my ($location,) = @_;
     headers(Location => $location);
     $return_code = Apache2::Const::REDIRECT;
+    -1;
 }
 
 sub not_found

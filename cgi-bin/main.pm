@@ -107,8 +107,7 @@ sub login_frame
         }
         {
             $t = undef;
-            redirect(url_function('contests', sid => $sid, cid => $cid));
-            return -1;
+            return redirect(url_function('contests', sid => $sid, cid => $cid));
         }
     }
     die 'Can not generate sid';
@@ -482,8 +481,7 @@ sub contests_frame
     if (defined param('summary_rank'))
     {
         my @clist = param('contests_selection');
-        redirect(url_f('rank_table', clist => join ',', @clist));
-        return -1;
+        return redirect(url_f('rank_table', clist => join ',', @clist));
     }
 
     return contests_new_frame
@@ -798,7 +796,6 @@ sub download_problem
         CATS::BinaryFile::save(cats_dir() . $fname, $zip);
     }
     redirect($fname);
-    -1;
 }
 
 
@@ -1092,8 +1089,7 @@ sub problem_select_testsets
             WHERE id = ?~, undef,
             map($param_to_list->("sel_$_"), qw(testsets points_testsets)), $problem->{cpid});
         $dbh->commit;
-        redirect(url_f('problems'));
-        return -1;
+        return redirect(url_f('problems'));
     }
 
     my $list_to_selected = sub {
@@ -1359,7 +1355,7 @@ sub problem_history_commit_frame
 
 sub problem_history_frame
 {
-    redirect(url_function('contests', sid => $sid)) if !($is_root && defined url_param('pid'));
+    return redirect(url_function('contests', sid => $sid)) if !($is_root && defined url_param('pid'));
     my $pid = url_param('pid');
     defined url_param('h') and return problem_history_commit_frame;
 
@@ -1638,7 +1634,6 @@ sub users_impersonate
         CATS::IP::get_ip(), $sid, $new_user_id);
     $dbh->commit;
     redirect(url_function('contests', sid => $sid));
-    -1;
 }
 
 
@@ -2112,8 +2107,7 @@ sub accept_request
     {
         my $function_name = url_param('f') || '';
         my $fn = interface_functions()->{$function_name} || \&about_frame;
-        # Функция возвращает -1 если результат генерировать не надо --
-        # например, если был сделан redirect.
+        # Function returns -1 if there is no need to generate output, e.g. a redirect was issued.
         ($fn->() || 0) == -1 and return;
     }
     save_settings;
