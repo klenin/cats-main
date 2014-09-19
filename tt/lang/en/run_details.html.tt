@@ -1,5 +1,5 @@
 [%
-  capt1 = {
+  capt.import({
     encoding => 'encoding',
     testsets => 'Testsets',
     name => 'Name',
@@ -12,5 +12,5 @@
     memory => 'Memory',
     disk => 'Disk',
     total => 'Total',
-  }
+  })
 %]

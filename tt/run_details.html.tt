@@ -11,7 +11,7 @@
   <option value="[% enc %]"[% IF selected %]selected="selected"[% END %]>[% enc %]</option>
   [% END %]
   </select>
-  <input type="submit" class="button" value="[% capt1.encoding %]" />
+  <input type="submit" class="button" value="[% capt.encoding %]" />
 </form>
 
 <table><tr valign="top">
@@ -23,9 +23,9 @@
   </table>
 [% ELSE %]
   [% IF testsets.size %]
-    <p>[% capt1.testsets %]</p>
+    <p>[% capt.testsets %]</p>
     <table class="bordered">
-    <th>[% capt1.name %]</th><th>[% capt1.tests_passed %]</th><th>[% capt1.points %]</th><th>[% capt1.comment %]</th></tr>
+    <th>[% capt.name %]</th><th>[% capt.tests_passed %]</th><th>[% capt.points %]</th><th>[% capt.comment %]</th></tr>
     [% FOREACH testsets %]
     <tr [% IF earned_points %] class="run_details_OK"[% END %]>
       <td>[% name %]</td>
@@ -39,18 +39,18 @@
   [% END %]
   <table class="bordered">
   <tr>
-    <th>[% capt1.test %]</th>
-    <th>[% capt1.result %]</th>
+    <th>[% capt.test %]</th>
+    <th>[% capt.result %]</th>
     [% IF show_points %]
-      <th>[% capt1.points %]</th>
+      <th>[% capt.points %]</th>
     [% END %]
     [% IF show_test_resources %]
-      <th>[% capt1.time %]</th>
-      <th>[% capt1.memory %]</th>
-      <th>[% capt1.disk %]</th>
+      <th>[% capt.time %]</th>
+      <th>[% capt.memory %]</th>
+      <th>[% capt.disk %]</th>
     [% END %]
     [% IF show_checker_comment %]
-      <th>[% capt1.comment %]</th>
+      <th>[% capt.comment %]</th>
     [% END %]
   </tr>
   [% FOREACH rd IN run_details %]
@@ -89,7 +89,7 @@
     [% IF rd.show_checker_comment %]<td><pre>[% rd.checker_comment %]</pre></td>[% END %]
   </tr>
   [% END %]
-  [% IF show_points %]<tr><td colspan="2">[% capt1.total %]</td><td>[% total_points %]</td></tr>[% END %]
+  [% IF show_points %]<tr><td colspan="2">[% capt.total %]</td><td>[% total_points %]</td></tr>[% END %]
   </table>
 [% END %]
 </td>

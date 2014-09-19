@@ -18,13 +18,13 @@ function show_ab(a, b)
 }
 //-->
 </script>
-[% capt1.compare_submissions %]:
+[% capt.compare_submissions %]:
 [% PROCESS 'includes/sources_info.tti' %]
 <p>
-[% capt1.show %]:
-[ <a onclick="show_ab('', ''); return false" href="#">[% capt1.diff %]</a>
-| <a onclick="show_ab('', 'none'); return false" href="#">[% capt1.a_only %]</a>
-| <a onclick="show_ab('none', ''); return false" href="#">[% capt1.b_only %]</a>
+[% capt.show %]:
+[ <a onclick="show_ab('', ''); return false" href="#">[% capt.diff %]</a>
+| <a onclick="show_ab('', 'none'); return false" href="#">[% capt.a_only %]</a>
+| <a onclick="show_ab('none', ''); return false" href="#">[% capt.b_only %]</a>
 ]
 </p>
 <code>

@@ -1,9 +1,9 @@
 [%
-  capt1 = {
+  capt.import({
     compare_submissions => 'Сравнение отправленных файлов',
     show => 'Показывать',
     diff => 'сравнение',
     a_only => 'только A',
     b_only => 'только B',
-  }
+  })
 %]

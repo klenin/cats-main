@@ -1,6 +1,6 @@
 [%
-  capt1 = {
+  capt.import({
     encoding => 'encoding',
     replace => 'replace',
-  }
+  })
 %]
