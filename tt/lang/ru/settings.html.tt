@@ -1,5 +1,7 @@
 [%
-  cancel = 'Отмена';
-  clear = 'Сбросить настройки';
-  change_language = 'Сменить язык';
+  capt.import({
+    cancel => 'Отмена',
+    clear => 'Сбросить настройки',
+    change_language => 'Сменить язык',
+  })
 %]

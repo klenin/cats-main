@@ -3,17 +3,17 @@
 <table class="iface">
 <tr class="footer top">
   <td>
-    &nbsp;[% current_user %]:
+    &nbsp;[% capt.current_user %]:
     [% IF current_team_name ~%]
       [% current_team_name | html %]
     [% ELSE ~%]
-      [% anonymous %]
+      [% capt.anonymous %]
     [%- END %]
   </td>
   <td align="right">
-    <a href="https://github.com/klenin/cats-main/issues">[% issues %]</a> |
-    <a href="docs/">[% docs %]</a> |
-    <a href="docs/authors.html">&copy; 2002-2014 [% authors %]</a>&nbsp;
+    <a href="https://github.com/klenin/cats-main/issues">[% capt.issues %]</a> |
+    <a href="docs/">[% capt.docs %]</a> |
+    <a href="docs/authors.html">&copy; 2002-2014 [% capt.authors %]</a>&nbsp;
   </td>
 </tr>
 <tr class="footer2">
@@ -21,8 +21,8 @@
     &nbsp;[% PROCESS 'includes/timing.tti' %]
   </td>
   <td align="right">
-    <a href="http://imcs.dvfu.ru/works"> [% dept %] &nbsp;</a><br>
-    <a href="http://dvfu.ru"> [% university %] &nbsp;</a>
+    <a href="http://imcs.dvfu.ru/works"> [% capt.dept %] &nbsp;</a><br>
+    <a href="http://dvfu.ru"> [% capt.university %] &nbsp;</a>
   </td>
 </tr>
 </table>

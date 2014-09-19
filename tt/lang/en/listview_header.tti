@@ -1,5 +1,7 @@
 [%
-  search_capt = 'search';
-  pages_capt = 'pages';
-  show_capt = 'show';
+  capt.import({
+    search => 'search',
+    pages => 'pages',
+    show => 'show',
+  })
 %]

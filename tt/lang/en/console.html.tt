@@ -1,14 +1,16 @@
 [%
-  two_reqs = 'Select two submissions to compare';
-  no_req = 'Select a submission';
-  loading = 'Loading...';
-  selection_capt = 'Selection'
-  clear_capt = 'clear';
-  source_capt = 'source';
-  results_capt = 'results';
-  log_capt = 'log';
-  compare_capt = 'compare';
-  retest_capt = 'retest';
-  question_capt = 'Question to jury';
-  send_capt = 'Send';
+  capt.import({
+    two_reqs => 'Select two submissions to compare',
+    no_req => 'Select a submission',
+    loading => 'Loading...',
+    selection => 'Selection',
+    clear => 'clear',
+    source => 'source',
+    results => 'results',
+    log => 'log',
+    compare => 'compare',
+    retest => 'retest',
+    question => 'Question to jury',
+    send => 'Send',
+  })
 %]

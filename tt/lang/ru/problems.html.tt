@@ -1,24 +1,26 @@
 [%
-  no_problem_delete = 'Не выбрана задача для удаления';
-  want_to_delete = 'Вы действительно желаете удалить задачу ';
-  no_problem_replace = 'Не выбрана задача для замены';
-  problem_import_log_capt = 'Лог загрузки задачи';
-  dev_env_detected = 'Определена среда разработки';
+  capt.import({
+    no_problem_delete => 'Не выбрана задача для удаления',
+    want_to_delete => 'Вы действительно желаете удалить задачу ',
+    no_problem_replace => 'Не выбрана задача для замены',
+    problem_import_log => 'Лог загрузки задачи',
+    dev_env_detected => 'Определена среда разработки',
+    problem_history => 'история',
+    console => 'консоль',
+    explanation => 'разбор',
+    package => 'пакет',
+    compare_tests => 'т',
+    used_in => 'Использована в турнирах',
+    solution_file => 'Файл с решением',
+    dev_env => 'Среда разработки',
+    solution_text => 'Текст решения',
+    submit => 'отправить',
+    std_solution => 'эталонное решение',
+    problem_file => 'Файл с задачей',
+    rename => 'переим.',
+    delete => 'удалить',
+    replace => 'заменить',
+    add_new => 'добавить',
+  });
   MACRO to_monitor(console) BLOCK; "Для наблюдения за ходом тестирования откройте ${console}"; END;
-  console = 'консоль';
-  analysis = 'разбор';
-  package = 'пакет';
-  compare_tests = 'т';
-  used_in = 'Использована в турнирах';
-  solution_file = 'Файл с решением';
-  dev_env = 'Среда разработки';
-  solution_text = 'Текст решения';
-  submit_capt = 'отправить';
-  std_solution = 'эталонное решение';
-  problem_file = 'Файл с задачей';
-  problem_history = 'история';
-  rename_capt = 'переим.';
-  delete_capt = 'удалить';
-  replace_capt = 'заменить';
-  add_new_capt = 'добавить';
 %]

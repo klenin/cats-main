@@ -1,5 +1,7 @@
 [%
-  search_capt = 'найти';
-  pages_capt = 'страницы';
-  show_capt = 'показать';
+  capt.import({
+    search => 'найти',
+    pages => 'страницы',
+    show => 'показать',
+  })
 %]

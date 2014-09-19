@@ -1,9 +1,11 @@
 [%
-  current_user = 'current user';
-  anonymous = 'anonymous';
-  issues = 'issues';
-  docs = 'documentation';
-  authors = 'Authors';
-  dept = 'Department of informatics, mathematical and computer modelling';
-  university = 'Far Eastern Federal Universuty';
+  capt.import({
+    current_user => 'current user',
+    anonymous => 'anonymous',
+    issues => 'issues',
+    docs => 'documentation',
+    authors => 'Authors',
+    dept => 'Department of informatics, mathematical and computer modelling',
+    university => 'Far Eastern Federal Universuty',
+  })
 %]

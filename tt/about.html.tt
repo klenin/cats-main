@@ -1,24 +1,23 @@
 [% PROCESS 'includes/menu_begin.tti' %]
 [% PROCESS 'includes/html.tti' %]
 
-<b>[% welcome %]</b><br/><br/>
+<b>[% capt.welcome %]</b><br/><br/>
 
-<p>[% purpose %]</p>
+<p>[% capt.description.join %]</p>
 
-<p>[% problem_count_capt %]: <b>[% problem_count %]</b>.</p>
+<p>[% capt.problem_count %]: <b>[% problem_count %]</b>.</p>
 
-<p>[% need_register %] <a href="main.pl?f=registration;cid=500001">[% register %]</a>.</p>
-[% account_you_can %]:
+<p>[% capt.need_register %] <a href="main.pl?f=registration;cid=500001">[% capt.register %]</a>.</p>
+[% capt.account_you_can %]:
   <ul>
-    <li>[% participate %]</li>
-    <li>[% solve %]</li>
-    <li>[% monitor %]</li>
+    [% FOREACH f IN capt.features %]<li>[% f %]</li>[% END %]
   </ul>
   <br/>
-[% avail(href('docs/', documentation), href('docs/format.html', format), href('docs/sp.exe', spawner)) %]<br/>
+[% avail(href('docs/', capt.documentation), href('docs/format.html', capt.format), href('docs/sp.exe', capt.spawner)) %]<br/>
 
-[% suggestions %]
-<a href="https://github.com/klenin/cats-main/issues">[% issues %]</a>
-[% or_by_email %]: <img style="position: relative; top: 2px" src="images/std/maintainer_email.png" alt="[% maintainer_email %]"/><br/><br/>
+[% capt.suggestions %]
+<a href="https://github.com/klenin/cats-main/issues">[% capt.issues %]</a>
+[% capt.or_by_email %]:
+<img style="position: relative; top: 2px" src="images/std/maintainer_email.png" alt="[% capt.maintainer_email %]"/><br/><br/>
 
 [% PROCESS 'includes/menu_end.tti' %]

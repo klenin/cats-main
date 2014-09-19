@@ -21,17 +21,17 @@ a[[% p.problem_id %]] = [
 function d() {
     var v = getSelectedButton(document.problems_form.problem_id);
     if (v < 0) {
-        alert('[% no_problem_delete %]');
+        alert('[% capt.no_problem_delete %]');
         return;
     }
-    if (confirm("[% want_to_delete %] '" + a[v][0] + "'?"))
+    if (confirm("[% capt.want_to_delete %] '" + a[v][0] + "'?"))
         document.location = a[v][1];
 }
 
 function r() {
     var v = getSelectedButton(document.problems_form.problem_id);
     if (v < 0)
-        alert('[% no_problem_replace %]');
+        alert('[% capt.no_problem_replace %]');
     else
         document.location = a[v][2];
 }
@@ -50,15 +50,15 @@ function chg_code(st_sel, pid)
 [% END %]
 
 [% IF problem_import_log %]
-[% problem_import_log_capt %]:<br/>
+[% capt.problem_import_log %]:<br/>
 <textarea cols="100" rows="10" readonly="readonly">
 [% problem_import_log %]
 </textarea>
 [% END %]
 
 [% IF solution_submitted %]
-[% IF de_name ; dev_env_detected; ': '; de_name | html %]'.<br/>[% END %]
-[% to_monitor(href(href_console, console)) %]
+[% IF de_name ; capt.dev_env_detected; ': '; de_name | html %]'.<br/>[% END %]
+[% to_monitor(href(href_console, capt.console)) %]
 <hr/>
 [% END %]
 
@@ -81,10 +81,10 @@ function chg_code(st_sel, pid)
       </select> [% END %]<a href="[% p.href_view_problem %]" target="_blank">
     [% ELSE ~%]
       <a href="[% p.href_view_problem %]" target="_blank">[% IF p.code; p.code %] - [% END %][% END %][% p.problem_name | html %]</a>
-    [% IF p.href_problem_history %]&nbsp;[<a href="[% p.href_problem_history %]">[% problem_history %]</a>][% END %]
-    [% IF p.href_explanation %]&nbsp;[<a href="[% p.href_explanation %]" target="_blank">[% analysis %]</a>][% END %]
-    [% IF p.show_packages %]&nbsp;[<a href="[% p.href_download %]">[% package %]</a>][% END %]
-    [% IF p.href_compare_tests %]&nbsp;[<a href="[% p.href_compare_tests %]">[% compare_tests %]</a>][% END %]
+    [% IF p.href_problem_history %]&nbsp;[<a href="[% p.href_problem_history %]">[% capt.problem_history %]</a>][% END %]
+    [% IF p.href_explanation %]&nbsp;[<a href="[% p.href_explanation %]" target="_blank">[% capt.explanation %]</a>][% END %]
+    [% IF p.show_packages %]&nbsp;[<a href="[% p.href_download %]">[% capt.package %]</a>][% END %]
+    [% IF p.href_compare_tests %]&nbsp;[<a href="[% p.href_compare_tests %]">[% capt.compare_tests %]</a>][% END %]
 </td>
 [% IF editable %]
 <td>
@@ -92,7 +92,7 @@ function chg_code(st_sel, pid)
     [%~ FOREACH sl IN status_list; option(sl.id, sl.name, sl.id == p.status); END ~%]
     </select>
     [%- IF p.is_linked %] [<a href="[% p.href_original_contest %]" title="[% p.contest_name %]">L</a>][% END %]
-    [%- IF p.usage_count %] [<a href="[% p.href_usage %]" title="[% used_in %]">[% p.usage_count %]</a>][% END %]
+    [%- IF p.usage_count %] [<a href="[% p.href_usage %]" title="[% capt.used_in %]">[% p.usage_count %]</a>][% END %]
 </td>
 <td><a href="[% p.href_select_testsets %]">[% p.testsets %]</a> ([% p.test_count %])
   [%- IF p.points_testsets %] / <a href="[% p.href_select_testsets %]">[% p.points_testsets %]</a>[% END -%]
@@ -109,24 +109,24 @@ function chg_code(st_sel, pid)
 </table>
 [% IF is_team %]
 <div class="problem_submit">
-  <p><label for="source">[% solution_file %]:</label><input type="file" id="source" name="source" class="file" size="25"/></p>
-  <p><label for="de_id">[% dev_env %]:</label><select name="de_id" id="de_id">
+  <p><label for="source">[% capt.solution_file %]:</label><input type="file" id="source" name="source" class="file" size="25"/></p>
+  <p><label for="de_id">[% capt.dev_env %]:</label><select name="de_id" id="de_id">
     [% FOREACH de IN de_list; option(de.de_id, de.de_name); END %]
     </select>
   </p>
-  <p><label for="source_text">[% solution_text %]:</label><br/>
+  <p><label for="source_text">[% capt.solution_text %]:</label><br/>
   <textarea id="source_text" name="source_text" cols="50" rows="5"></textarea></p>
-  <input type="submit" name="submit" value="[% submit_capt %]" class="button" />
-  [% IF editable %]<input type="submit" name="std_solution" value="[% std_solution %]" class="button" />[% END %]
+  <input type="submit" name="submit" value="[% capt.submit %]" class="button" />
+  [% IF editable %]<input type="submit" name="std_solution" value="[% capt.std_solution %]" class="button" />[% END %]
 </div>
 [% IF editable %]
 <div class="problem_submit">
-  <p><label for="zip">[% problem_file %]:</label><input type="file" id="zip" name="zip" class="file" size="25"/>
-    <label><input type="checkbox" name="allow_rename" value="1"/> [% rename_capt %]</label></p>
+  <p><label for="zip">[% capt.problem_file %]:</label><input type="file" id="zip" name="zip" class="file" size="25"/>
+    <label><input type="checkbox" name="allow_rename" value="1"/> [% capt.rename %]</label></p>
   <p>
-    <input type="button" name="delete" value="[% delete_capt %]" class="button" onclick="d()" />
-    <input type="submit" name="replace" value="[% replace_capt %]" class="button" />
-    <input type="submit" name="add_new" value="[% add_new_capt %]" class="button" />
+    <input type="button" name="delete" value="[% capt.delete %]" class="button" onclick="d()" />
+    <input type="submit" name="replace" value="[% capt.replace %]" class="button" />
+    <input type="submit" name="add_new" value="[% capt.add_new %]" class="button" />
   </p>
 </div>
 [% END %]

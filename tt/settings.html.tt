@@ -7,11 +7,11 @@
 [% PROCESS 'includes/password.tti' change_password = 1 %]
 <br>
 <input type="submit" name="edit_save" value="     Ok     " class="button"> 
-<input type="submit" name="edit_cancel" value="[% cancel %]" class="button">
-<input type="submit" name="clear" value="[% clear %]" class="button"/>
+<input type="submit" name="edit_cancel" value="[% capt.cancel %]" class="button">
+<input type="submit" name="clear" value="[% capt.clear %]" class="button"/>
 </form>
 
-[% IF langs; '<p>'; change_language; ': '; FOR l IN langs; href(l.href, l.name.upper); ' '; END; '</p>'; END %]
+[% IF langs; '<p>'; capt.change_language; ': '; FOR l IN langs; href(l.href, l.name.upper); ' '; END; '</p>'; END %]
 [% IF settings %]<div><pre>[% settings %]</pre></div>[% END %]
 
 [% PROCESS 'includes/menu_end.tti' %]

@@ -2,18 +2,18 @@
 [%- PROCESS 'includes/html.tti' -%]
 
 [% IF successfully_registred %]
-[% successful %]<br/>
-[% you_now_can(href(href_login, login_capt)) %]
+[% capt.successful %]<br/>
+[% you_now_can(href(href_login, capt.login)) %]
 [% ELSE %]
-<h3>[% new_user %]</h3>
+<h3>[% capt.new_user %]</h3>
 <form method="post" enctype="multipart/form-data">
-<h4>[% required_fields %]</h4>
+<h4>[% capt.required_fields %]</h4>
 [% PROCESS 'includes/user_main.tti' %]
 [% PROCESS 'includes/password.tti' %]
-<h4>[% aux_fields %]</h4>
+<h4>[% capt.aux_fields %]</h4>
 [% PROCESS 'includes/user_extra.tti' %]
 <br/>
-<input type="submit" name="register" value="[% do_register %]" class="button">
+<input type="submit" name="register" value="[% capt.do_register %]" class="button">
 </form>
 [% END %]
 

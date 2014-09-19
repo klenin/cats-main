@@ -1,5 +1,7 @@
 [%
-  login_capt = 'логин';
-  password_capt = 'пароль';
-  button_capt = 'войти';
+  capt.import({
+    login => 'логин',
+    password => 'пароль',
+    button => 'войти',
+  })
 %]

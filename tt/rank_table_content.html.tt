@@ -1,4 +1,4 @@
-[%- PROCESS "lang/$lang/${template.name}" -%]
+[%- capt = {}; PROCESS "lang/$lang/${template.name}" -%]
 
 [%- IF not_started -%]
   <i>[% capt.not_started %]</i>

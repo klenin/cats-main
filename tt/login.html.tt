@@ -3,12 +3,12 @@
 <table><tr><td height=50%>
 <form method="post" enctype="multipart/form-data" action="[% href_login %]">
 <table>
-<tr><td>[% login_capt %]:</td>
+<tr><td>[% capt.login %]:</td>
   <td><input type="text" size="20" name="login" maxlength="20" class="bordered" value="[% login | html %]" /></td></tr>
-<tr><td>[% password_capt %]:</td>
+<tr><td>[% capt.password %]:</td>
   <td><input type="password" size="20" name="passwd" maxlength="50" class="bordered" /></td></tr>
 </table>
-<input type="submit" name="submit" value="[% button_capt %]" class="button" />
+<input type="submit" name="submit" value="[% capt.button %]" class="button" />
 </form>
 
 </td></tr>

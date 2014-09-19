@@ -3,7 +3,7 @@
 <script type="text/javascript">
 function delete_contest(href, name)
 {
-    if (confirm( "[% want_to_delete %] '" + name + "'?" ))
+    if (confirm( "[% capt.want_to_delete %] '" + name + "'?" ))
     {
         document.location=href;
     }
@@ -11,7 +11,7 @@ function delete_contest(href, name)
 
 function confirm_registration()
 {
-    return confirm("[% virtual_warning %]");
+    return confirm("[% capt.virtual_warning %]");
 }
 </script>
 
@@ -31,7 +31,7 @@ function confirm_registration()
     [% IF editable %]
     <a href="[% href_params %]"><img src="./images/std/edit.gif" border=0 alt=""></a> 
     [% ELSE %]
-    <a href="[% href_params %]"><img src="./images/std/blank.gif" border=0 alt="[% alt_params %]"></a> 
+    <a href="[% href_params %]"><img src="./images/std/blank.gif" border=0 alt="[% capt.alt_params %]"></a> 
     [% END %]
     <a href="[% href_contest %]" [% IF selected %] style="color: #000000; background-color: #ccccff"
     [%~ END %]>
@@ -42,34 +42,32 @@ function confirm_registration()
 <td align=center>[% finish_date | html %]</td>
 <td>
     [% UNLESS registration_denied %]
-      [% IF registered_online; ct_participant; END ~%]
-      [% IF registered_virtual; ct_virtual; END =%]
+      [% IF registered_online; capt.ct_participant; END ~%]
+      [% IF registered_virtual; capt.ct_virtual; END =%]
     [% END =%]
-    [% IF is_official %]<font color="blue">[% ct_official %]</font>[% END =%]
-    [% IF registration_denied %]<font color="red">[% ct_denied %]</font>[% END =%]
-    [% IF show_points %]<font color="green">[% ct_school %]</font>[% END =%]
-    [% IF is_hidden %]<font color="gray">[% ct_hidden %]</font>[% END %]
-    [% IF has_orig; ct_original; END %]
+    [% IF is_official %]<font color="blue">[% capt.ct_official %]</font>[% END =%]
+    [% IF registration_denied %]<font color="red">[% capt.ct_denied %]</font>[% END =%]
+    [% IF show_points %]<font color="green">[% capt.ct_school %]</font>[% END =%]
+    [% IF is_hidden %]<font color="gray">[% capt.ct_hidden %]</font>[% END %]
+    [% IF has_orig; capt.ct_original; END %]
 </td>
 </tr>
 [% END %]
 </table>
 <br>
 [% IF authorized %]
-[% UNLESS is_registered %]<input type="submit" value="[% participate %]" name="online_registration" class="button" />
+[% UNLESS is_registered %]<input type="submit" value="[% capt.participate %]" name="online_registration" class="button" />
 [% END %]
 <input type="submit" name="virtual_registration"
-    value="[% participate_virtually %]" class="button" onclick="return confirm_registration()" />
+    value="[% capt.participate_virtually %]" class="button" onclick="return confirm_registration()" />
 <input type="hidden"  value="0" />
 [% END %]
-<input type="submit" name="summary_rank" value="[% summary_rank %]" class="button" />
-[% IF is_root %]<input type="submit" name="create_group" value="[% create_group %]" class="button" />[% END %]
+<input type="submit" name="summary_rank" value="[% capt.summary_rank %]" class="button" />
+[% IF is_root %]<input type="submit" name="create_group" value="[% capt.create_group %]" class="button" />[% END %]
 </form>
-[% IF authorized %][% UNLESS is_registered %]
+[% IF authorized && !is_registered %]
 <ul>
-<li>[% virt_help_1 %]</li>
-<li>[% virt_help_2 %]</li>
-<li>[% virt_help_3 %]</li>
+[% FOREACH vh IN capt.virt_help %]<li>[% vh %]</li>[% END %]
 </ul>
-[% END %][% END %]
+[% END %]
 [% PROCESS 'includes/menu_end.tti' %]

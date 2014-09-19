@@ -1,7 +1,9 @@
 [%
-  until_start = 'до начала тура осталось';
-  minutes = 'мин.';
-  since_start = 'с начала тура прошло';
-  days = 'сут.';
-  last_updated = 'страница обновлена';
+  capt.import({
+    until_start => 'до начала тура осталось',
+    minutes => 'мин.',
+    since_start => 'с начала тура прошло',
+    days => 'сут.',
+    last_updated => 'страница обновлена',
+  })
 %]

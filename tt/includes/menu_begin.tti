@@ -15,15 +15,15 @@
       [% IF server_time ~%]
         <span>
         [% IF show_remaining_minutes ~%]
-          [% until_start %]: [% remaining_minutes %] [% minutes %].<br>
+          [% capt.until_start %]: [% remaining_minutes %] [% capt.minutes %].<br>
         [%~ END %]
         [% IF show_elapsed_minutes ~%]
-          [% since_start %]: <span id="elapsed_minutes">[% elapsed_minutes %]</span> [% minutes %]<br/>
+          [% capt.since_start %]: <span id="elapsed_minutes">[% elapsed_minutes %]</span> [% capt.minutes %]<br/>
         [%~ END %]
         [% IF show_elapsed_days ~%]
-          [% since_start %]: [% elapsed_days %] [% days %]<br>
+          [% capt.since_start %]: [% elapsed_days %] [% capt.days %]<br>
         [%~ END %]
-        [% last_updated %]: <span id="server_time">[% server_time %]</span>
+        [% capt.last_updated %]: <span id="server_time">[% server_time %]</span>
         </span>
       [%~ END %]
     </div>

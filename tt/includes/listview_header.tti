@@ -3,12 +3,12 @@
 <table width="100%">
 <tr>
 <td align="left" width="20%" nowrap>
-  <input type="submit" value="[% search_capt %]" name="do_search" class="button">
+  <input type="submit" value="[% capt.search %]" name="do_search" class="button">
   <input type="text" name="search" value="[% search %]" size="30" maxlength="100" class="bordered">
 </td>
 <td align="center" width="20%" nowrap>
   [% IF href_prev_pages %]<a href="[% href_prev_pages %]">&lt;&lt;</a>[% END %]
-  [% pages_capt %]:
+  [% capt.pages %]:
   [% FOREACH p IN pages -%]
   [% IF p.current_page %] [% p.page_number -%]
   [% ELSE %] <a href="[% p.href_page %]">[% p.page_number %]</a>[% END %]
@@ -17,7 +17,7 @@
 </td>
 [% content %]
 <td align="right" width="20%" nowrap>
-  <input type="submit" value="[% show_capt %]" name="visible" class="button"> [% select('rows', display_rows) %]
+  <input type="submit" value="[% capt.show %]" name="visible" class="button"> [% select('rows', display_rows) %]
 </td>
 </tr>
 </table>

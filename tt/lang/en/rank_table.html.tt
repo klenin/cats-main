@@ -1,3 +1,5 @@
 [%
-  loading = 'Loading...';
+  capt.import({
+    loading => 'Loading...',
+  })
 %]
