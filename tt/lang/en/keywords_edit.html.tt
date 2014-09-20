@@ -3,7 +3,5 @@
     code => 'Identifier',
     name_ru => 'Name (ru)',
     name_en => 'Name (en)',
-    ok => '     Ok     ',
-    cancel => 'Cancel',
   })
 %]

@@ -6,8 +6,7 @@
 [% PROCESS 'includes/user_extra.tti' %]
 [% PROCESS 'includes/password.tti' change_password = 1 %]
 <br>
-<input type="submit" name="edit_save" value="     Ok     " class="button"> 
-<input type="submit" name="edit_cancel" value="[% capt.cancel %]" class="button">
+[% PROCESS includes/edit_save_cancel.tti %]
 <input type="submit" name="clear" value="[% capt.clear %]" class="button"/>
 </form>
 

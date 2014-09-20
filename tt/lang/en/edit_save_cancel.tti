@@ -1,0 +1,6 @@
+[%
+  capt.import({
+    edit_save => '     Ok     ',
+    edit_cancel => 'Cancel',
+  })
+%]

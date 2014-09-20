@@ -2,7 +2,5 @@
   capt.import({
     judge_name => 'Judge name',
     locked => 'Locked',
-    ok => '     Ok     ',
-    cancel => 'Cancel',
   })
 %]

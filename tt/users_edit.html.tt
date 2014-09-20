@@ -5,9 +5,7 @@
 [% PROCESS 'includes/user_extra.tti' %]
 [% PROCESS 'includes/password.tti' change_password = 1 %]
 <br/>
-<input type=hidden name='id' value="[% id %]">
-<input type=submit name='edit_save' value='     Ok     ' class=button> 
-<input type=submit name='edit_cancel' value='Отмена' class=button>
+[% PROCESS includes/edit_save_cancel.tti %]
 </form>
 [% IF is_root %]
 <p>[ <a href="[% href_impersonate %]">[% capt.impersonate %]</a> ]</p>

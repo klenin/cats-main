@@ -1,6 +1,5 @@
 [%
   capt.import({
-    cancel => 'Cancel',
     clear => 'Clear settings',
     change_language => 'Change language',
   })

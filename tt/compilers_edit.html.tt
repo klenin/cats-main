@@ -10,9 +10,7 @@
 <tr><td>[% capt.locked %]</td><td><input type="checkbox" name="locked" [% ' checked="checked"' IF locked %]></td>
 </table>
 <br>
-<input type="hidden" name="id" value="[% id %]">
-<input type="submit" name="edit_save" value="[% capt.ok %]" class="button">
-<input type="submit" name="edit_cancel" value="[% capt.cancel %]" class="button">
+[% PROCESS includes/edit_save_cancel.tti %]
 </form>
 
 [% PROCESS 'includes/menu_end.tti' %]
