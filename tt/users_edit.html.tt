@@ -10,6 +10,6 @@
 <input type=submit name='edit_cancel' value='Отмена' class=button>
 </form>
 [% IF is_root %]
-<p>[ <a href="[% href_impersonate %]">Войти под этим пользователем</a> ]</p>
+<p>[ <a href="[% href_impersonate %]">[% capt.impersonate %]</a> ]</p>
 [% END %]
 [% PROCESS 'includes/menu_end.tti' %]
