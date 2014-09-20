@@ -3,7 +3,7 @@
 <script>
 function delete_prize(href, name)
 {
-    if (confirm( "Вы действительно желаете удалить группу турниров '" + name + "'?" ))
+    if (confirm("[% capt.want_to_delete %] '" + name + "'?" ))
     {
         document.location=href;
     }

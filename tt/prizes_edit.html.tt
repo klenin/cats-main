@@ -2,15 +2,15 @@
 
 <form method="post" enctype="multipart/form-data" action="[% href_action %]">
 <table cellpadding="0">
-<tr><td>Название</td><td><input type="text" name="name" value="[% name %]" class="bordered" size="60"/></td>
-<tr><td>Турниры</td><td><input type="text" name="clist" value="[% clist %]" class="bordered" size="60" /></td>
+<tr><td>[% capt.name %]</td><td><input type="text" name="name" value="[% name %]" class="bordered" size="60"/></td>
+<tr><td>[% capt.contests %]</td><td><input type="text" name="clist" value="[% clist %]" class="bordered" size="60" /></td>
 </table>
 <table cellpadding="0" class="bordered">
-<tr><th>Место</th><th>Приз</th></tr>
-[% FOREACH prizes %]
+<tr><th>[% capt.place %]</th><th>[% capt.prize %]</th></tr>
+[% FOREACH p IN prizes %]
 <tr>
-  <td><input type="text" name="rank_[% id %]" value="[% rank %]" size="5" /></td>
-  <td><input type="text" name="name_[% id %]" value="[% name %]" size="40"/></td>
+  <td><input type="text" name="rank_[% p.id %]" value="[% p.rank %]" size="5" /></td>
+  <td><input type="text" name="name_[% p.id %]" value="[% p.name %]" size="40"/></td>
 </tr>
 [% END %]
 <tr>

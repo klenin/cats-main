@@ -1,0 +1,8 @@
+[%
+  capt.import({
+    name => 'Название',
+    contests => 'Турниры',
+    place => 'Место',
+    prize => 'Приз',
+  })
+%]
