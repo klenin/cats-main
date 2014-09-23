@@ -5,8 +5,8 @@
 [% PROCESS 'includes/password.tti' %]
 [% PROCESS 'includes/user_extra.tti' %]
 <br/>
-<input type=submit name='new_save' value='     Ok     ' class=button>
-<input type=submit name='new_cancel' value='Отмена' class=button>
+<input type="submit" name="new_save" value="[% capt.new_save %]" class="button">
+<input type="submit" name="new_cancel" value="[% capt.new_cancel %]" class="button">
 </form>
 
 [% PROCESS 'includes/menu_end.tti' %]

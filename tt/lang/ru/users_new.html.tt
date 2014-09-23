@@ -1,0 +1,6 @@
+[%
+  capt.import({
+    new_save => '     Ok     ',
+    new_cancel => 'Отмена',
+  })
+%]
