@@ -10,7 +10,7 @@
 <td>[% h.author %] &lt;[% h.author_email %]&gt;</td>
 <td>[% h.author_date %]</td>
 <td>[% h.committer_date %]</td>
-<td><a href="[% h.href %]">[% h.abbreviated_sha %]</a></td>
+<td><a href="[% h.href_commit %]">[% h.abbreviated_sha %]</a></td>
 <td><pre>[% h.message %]</pre></td>
 </tr>
 [% END %]

@@ -1353,15 +1353,16 @@ sub problems_frame
 sub problem_history_commit_frame
 {
     init_template('problem_history_commit.html.tt');
-    $t->param(p_diff => escape_html(CATS::Problem::show_commit(url_param('pid'), url_param('h'))));
+    $t->param(p_diff => escape_html(CATS::Problem::show_commit(@_)));
 }
 
 
 sub problem_history_frame
 {
-    return redirect(url_function('contests', sid => $sid)) if !($is_root && defined url_param('pid'));
-    my $pid = url_param('pid');
-    defined url_param('h') and return problem_history_commit_frame;
+    my $pid = url_param('pid') || 0;
+    my $h = url_param('h') || '';
+    $is_root && $pid or return redirect url_f('contests');
+    return problem_history_commit_frame($pid, $h) if $h;
 
     init_listview_template('problem_history', 'problem_history', auto_ext('problem_history_full'));
     my @cols = (
@@ -1373,12 +1374,11 @@ sub problem_history_frame
     );
     define_columns(url_f('problem_history', pid => $pid), 0, 0, \@cols);
 
-    my $fetch_record = sub($)
-    {
+    my $fetch_record = sub {
         my $log = shift @{$_[0]} or return ();
         return (
-            %{$log},
-            href => url_f('problem_history', pid => $pid, h => $log->{sha}),
+            %$log,
+            href_commit => url_f('problem_history', pid => $pid, h => $log->{sha}),
         );
     };
     attach_listview(url_f('problem_history', pid => $pid), $fetch_record, CATS::Problem::get_log($pid));
