@@ -1034,8 +1034,7 @@ sub problems_frame_jury_action
     defined param('std_solution') and return problems_submit_std_solution;
     defined param('mass_retest') and return problems_mass_retest;
     my $cpid = url_param('delete');
-    my CATS::Problem $p = CATS::Problem->new;
-    $p->delete($cpid);
+    CATS::Problem->new->delete($cpid);
 }
 
 

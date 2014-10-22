@@ -190,6 +190,7 @@ sub delete
         else
         {
             $dbh->do(qq~DELETE FROM problems WHERE id = ?~, undef, $pid);
+            CATS::Problem::Repository->new(dir => cats_dir() . "$cats::repos_dir$pid/")->delete;
         }
         $dbh->commit;
     }
