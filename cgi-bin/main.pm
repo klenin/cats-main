@@ -784,7 +784,8 @@ sub download_problem
         INNER JOIN contest_problems CP ON cp.problem_id = P.id
         WHERE CP.contest_id = ? AND P.id = ?~, undef,
         $cid, $pid);
-    defined $status && $status != $cats::problem_st_hidden or return;
+    defined $status && ($is_jury || $status != $cats::problem_st_hidden)
+        or return;
     undef $t;
     my $already_hashed = ensure_problem_hash($pid, \$hash);
     my $fname = "./download/pr/problem_$hash.zip";
