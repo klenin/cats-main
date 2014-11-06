@@ -61,16 +61,16 @@
 [% ELSIF c.is_message %]
     <td>[% c.time %]</td>
     <td align=left>
-        [[% jury %] &gt; [% c.team_name | html %]]
+        [[% capt.jury %] &gt; [% c.team_name | html %]]
     </td>
     <td>
         <span class="jury_message">[% c.message_text | html %]</span>
-        [% IF c.href_delete_message %]<a href="[% href_delete_message %]">[[% capt.delete %]]</a>[% END %]
+        [% IF c.href_delete_message %]<a href="[% c.href_delete_message %]">[[% capt.delete %]]</a>[% END %]
     </td>
 [% ELSIF c.is_broadcast %]
     <td>[% c.time %]</td>
     <td align=left>
-        <b><span class="jury_message">[[% jury %] &gt; [% capt.all_teams %]]</span></b>
+        <b><span class="jury_message">[[% capt.jury %] &gt; [% capt.all_teams %]]</span></b>
     </td>
     <td>
         <b><span class="jury_message">[% c.message_text | html %]</span></b>
