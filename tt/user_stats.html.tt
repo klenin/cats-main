@@ -1,7 +1,8 @@
 [% PROCESS 'includes/menu_begin.tti' %]
+[%- PROCESS includes/html.tti -%]
 
 <table cellpadding="0">
-<tr><td>[% capt.name %]:</td><td>[% team_name | html %]</td>
+<tr><td>[% capt.name %]:</td><td>[% maybe_href(href_edit, team_name) %]</td>
 [% IF is_root %]
 <tr><td>[% capt.last_login %]:</td><td>[% last_login_date %]</td>
 <tr><td>[% capt.last_ip %]:</td><td>

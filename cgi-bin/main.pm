@@ -1801,11 +1801,12 @@ sub user_stats_frame
         ORDER BY C.start_date + CA.diff_time DESC~,
         { Slice => {} }, $uid);
     my $pr = sub { url_f(
-        'console', uf => $uid, i_value => -1, se => 'user_stats', search => $_[0], rows => 30
+        'console', uf => $uid, i_value => -1, se => 'user_stats', show_results => 1, search => $_[0], rows => 30
     ) };
     $t->param(
         %$u, contests => $contests, is_root => $is_root,
         CATS::IP::linkify_ip(CATS::IP::filter_ip $u->{last_ip}),
+        ($is_jury ? (href_edit => url_f('users', edit => $uid)) : ()),
         href_all_problems => $pr->(''),
         href_solved_problems => $pr->('accepted=1'),
         title_suffix => $u->{team_name},
