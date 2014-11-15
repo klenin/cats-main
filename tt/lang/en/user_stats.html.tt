@@ -7,5 +7,6 @@
     all => 'all',
     solved => 'solved',
     contests => 'Contests',
+    send_message => 'message',
   })
 %]

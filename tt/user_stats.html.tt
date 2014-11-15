@@ -8,14 +8,15 @@
 <tr><td>[% capt.last_ip %]:</td><td>
   [<a href="[% href_whois %]" alt="[% last_ip %]" title="[% last_ip %]">[% last_ip_short %]</a>]
 </td>
-<tr><td>[% capt.problems %]:</td><td><a href="[% href_all_problems %]">[% capt.all %]</a> <a href="[% href_solved_problems %]">[% capt.solved %]</a></td>
+<tr><td>[% capt.problems %]:</td><td>[<a href="[% href_all_problems %]">[% capt.all %]</a>] [<a href="[% href_solved_problems %]">[% capt.solved %]</a>]</td>
 [% END %]
 </table>
 
 <h3>[% capt.contests %]</h3>
 <table class="internal_borders" cellpadding="3">
 [% FOREACH c IN contests -%]
-<tr><td>[% c.start_date %]</td><td>[% c.title | html; ' *' IF c.is_jury %]</td>
+<tr><td>[% c.start_date %]</td><td>[% href(c.href_problems, c.title); '* ' IF is_jury %]</td>
+[% IF c.href_send_message; '<td>'; href(c.href_send_message, capt.send_message); '</td>'; END %]
 <td>[% c.accepted_count %] / [% c.problem_count %]</td></tr>
 [%- END %]
 </table>

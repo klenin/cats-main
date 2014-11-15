@@ -1788,7 +1788,7 @@ sub user_stats_frame
         SELECT A.*, last_login AS last_login_date
         FROM accounts A WHERE A.id = ?~, { Slice => {} }, $uid) or return;
     my $contests = $dbh->selectall_arrayref(qq~
-        SELECT C.id, C.title, CA.is_jury, C.start_date + CA.diff_time AS start_date,
+        SELECT C.id, C.title, CA.id AS caid, CA.is_jury, C.start_date + CA.diff_time AS start_date,
             (SELECT COUNT(DISTINCT R.problem_id) FROM reqs R
                 WHERE R.contest_id = C.id AND R.account_id = CA.account_id AND R.state = $cats::st_accepted
             ) AS accepted_count,
@@ -1803,6 +1803,10 @@ sub user_stats_frame
     my $pr = sub { url_f(
         'console', uf => $uid, i_value => -1, se => 'user_stats', show_results => 1, search => $_[0], rows => 30
     ) };
+    for (@$contests) {
+        $_->{href_send_message} = url_f('send_message_box', caid => $_->{caid}) if $is_root;
+        $_->{href_problems} = url_f('problems', cid => $_->{id});
+    }
     $t->param(
         %$u, contests => $contests, is_root => $is_root,
         CATS::IP::linkify_ip(CATS::IP::filter_ip $u->{last_ip}),
