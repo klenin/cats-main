@@ -3,7 +3,7 @@
 <form method=post enctype='multipart/form-data' action='[% href_action %]'>
 [% PROCESS 'includes/user_main.tti' %]
 [% PROCESS 'includes/user_extra.tti' %]
-[% PROCESS 'includes/password.tti' change_password = 1 %]
+[% IF is_root; PROCESS 'includes/password.tti' change_password = 1; END %]
 <br/>
 [% PROCESS includes/edit_save_cancel.tti %]
 </form>

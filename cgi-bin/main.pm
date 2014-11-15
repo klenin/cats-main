@@ -1412,15 +1412,14 @@ sub users_edit_frame
 sub users_edit_save
 {
     my $u = CATS::User->new->parse_params;
-    my $set_password = param_on('set_password');
+    # Simple $is_jury check is insufficient since jury member
+    # can add any team to his contest.
+    my $set_password = param_on('set_password') && $is_root;
     my $id = param('id');
 
     $u->validate_params(
         validate_password => $set_password, id => $id,
-        # Здесь недостаточно просто is_jury, поскольку можно зарегистрировать
-        # любую команду в свой турнир и потом переименовать.
-        # Надо требовать is_jury во всех официальных соревнованиях,
-        # где участвовала команда, но проще просто проверить is_root.
+        # Need at least $is_jury in all official contests where $u participated.
         allow_official_rename => $is_root)
         or return;
 
