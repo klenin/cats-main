@@ -326,7 +326,7 @@ sub problem_text_frame
                 $text_span = '';
                 $_ = $_ eq '' ? undef : parse($_);
                 CATS::TeX::Lite::convert_all($_);
-                s/(\s|~)?-{2,3}/($1 ? '&nbsp;' : '') . '&#151;'/ge; # em-dash
+                s/(\s|~)(:?-){2,3}(?!-)/($1 ? '&nbsp;' : '') . '&#151;'/ge; # em-dash
             }
         }
         $_ = Encode::decode_utf8($_) for $problem->{json_data};
