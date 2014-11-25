@@ -5,6 +5,7 @@ use warnings;
 use POSIX qw(strftime);
 use File::Temp qw(tempdir);
 use Archive::Zip qw(:ERROR_CODES);
+use File::Path;
 use File::Copy::Recursive qw(dircopy);
 use CATS::Problem::Authors;
 
@@ -91,6 +92,13 @@ sub new_repo
     }
     $self->add($problem, message => (exists $opts{from} ? 'Update task' : 'Initial commit'));
     return $self;
+}
+
+sub delete
+{
+    my ($self) = @_;
+    die "Git repository doesn't exist" unless -d $self->{dir};
+    rmtree($self->{dir});
 }
 
 sub init
