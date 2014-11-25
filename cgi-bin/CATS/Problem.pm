@@ -163,37 +163,32 @@ sub load
 
 sub delete
 {
-    my CATS::Problem $self = shift;
     my ($cpid) = @_;
-    if (defined $cpid)
-    {
-        my ($pid, $old_contest) = $dbh->selectrow_array(q~
-            SELECT problem_id, contest_id FROM contest_problems WHERE id = ?~, undef, $cpid) or return;
+    $cpid or die;
+    my ($pid, $old_contest) = $dbh->selectrow_array(q~
+        SELECT problem_id, contest_id FROM contest_problems WHERE id = ?~, undef, $cpid) or return;
 
-        $dbh->do(qq~DELETE FROM contest_problems WHERE id = ?~, undef, $cpid);
-        CATS::StaticPages::invalidate_problem_text(cid => $old_contest, cpid => $cpid);
+    $dbh->do(qq~DELETE FROM contest_problems WHERE id = ?~, undef, $cpid);
+    CATS::StaticPages::invalidate_problem_text(cid => $old_contest, cpid => $cpid);
 
-        my ($ref_count) = $dbh->selectrow_array(qq~
-            SELECT COUNT(*) FROM contest_problems WHERE problem_id = ?~, undef, $pid);
-        if ($ref_count)
-        {
-            # Если на задачу ссылается хотя бы один турнир, переносим все попытки
-            # в "главный" турнир. Из главного турнира задача должна удаляться последней.
-            # Это ограничение можно обойти, произвольно назначая новый главный турнир.
-            my ($new_contest) = $dbh->selectrow_array(q~
-                SELECT contest_id FROM problems WHERE id = ?~, undef, $pid);
-            ($new_contest != $old_contest) or return msg(136);
-            $dbh->do(q~
-                UPDATE reqs SET contest_id = ? WHERE problem_id = ? AND contest_id = ?~, undef,
-                $new_contest, $pid, $old_contest);
-        }
-        else
-        {
-            $dbh->do(qq~DELETE FROM problems WHERE id = ?~, undef, $pid);
-            CATS::Problem::Repository->new(dir => cats_dir() . "$cats::repos_dir$pid/")->delete;
-        }
-        $dbh->commit;
+    my ($ref_count) = $dbh->selectrow_array(qq~
+        SELECT COUNT(*) FROM contest_problems WHERE problem_id = ?~, undef, $pid);
+    if ($ref_count) {
+        # If at least one contest still references the problem, move all submissions
+        # to the "origin" contest. Problem can be removed from the origin only with zero links.
+        # To work around this limitation, move the problem to a different contest before deleting.
+        my ($new_contest) = $dbh->selectrow_array(q~
+            SELECT contest_id FROM problems WHERE id = ?~, undef, $pid);
+        ($new_contest != $old_contest) or return msg(136);
+        $dbh->do(q~
+            UPDATE reqs SET contest_id = ? WHERE problem_id = ? AND contest_id = ?~, undef,
+            $new_contest, $pid, $old_contest);
     }
+    else {
+        $dbh->do(qq~DELETE FROM problems WHERE id = ?~, undef, $pid);
+        CATS::Problem::Repository->new(dir => cats_dir() . "$cats::repos_dir$pid/")->delete;
+    }
+    $dbh->commit;
 }
 
 
