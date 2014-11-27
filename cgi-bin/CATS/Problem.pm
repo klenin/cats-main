@@ -165,33 +165,33 @@ sub delete
 {
     my ($cpid) = @_;
     $cpid or die;
-    my ($pid, $old_contest, $title) = $dbh->selectrow_array(q~
-        SELECT CP.problem_id, CP.contest_id, P.title
+
+    my ($pid, $old_contest, $title, $origin_contest) = $dbh->selectrow_array(q~
+        SELECT CP.problem_id, CP.contest_id, P.title, P.contest_id AS orig
         FROM contest_problems CP INNER JOIN problems P ON CP.problem_id = P.id WHERE CP.id = ?~, undef,
         $cpid) or return;
 
-    $dbh->do(qq~DELETE FROM contest_problems WHERE id = ?~, undef, $cpid);
-    CATS::StaticPages::invalidate_problem_text(cid => $old_contest, cpid => $cpid);
-
     my ($ref_count) = $dbh->selectrow_array(qq~
         SELECT COUNT(*) FROM contest_problems WHERE problem_id = ?~, undef, $pid);
-    if ($ref_count) {
+    if ($ref_count > 1) {
         # If at least one contest still references the problem, move all submissions
         # to the "origin" contest. Problem can be removed from the origin only with zero links.
         # To work around this limitation, move the problem to a different contest before deleting.
-        my ($new_contest) = $dbh->selectrow_array(q~
-            SELECT contest_id FROM problems WHERE id = ?~, undef, $pid);
-        ($new_contest != $old_contest) or return msg(1136);
+        $old_contest != $origin_contest or return msg(1136);
+        $dbh->do(q~DELETE FROM contest_problems WHERE id = ?~, undef, $cpid);
         $dbh->do(q~
             UPDATE reqs SET contest_id = ? WHERE problem_id = ? AND contest_id = ?~, undef,
-            $new_contest, $pid, $old_contest);
+            $origin_contest, $pid, $old_contest);
     }
     else {
-        $dbh->do(qq~DELETE FROM problems WHERE id = ?~, undef, $pid);
+        # Cascade into contest_problems and reqs.
+        $dbh->do(q~DELETE FROM problems WHERE id = ?~, undef, $pid);
         CATS::Problem::Repository->new(dir => cats_dir() . "$cats::repos_dir$pid/")->delete;
     }
+
+    CATS::StaticPages::invalidate_problem_text(cid => $old_contest, cpid => $cpid);
     $dbh->commit;
-    msg(1022, $title, $ref_count);
+    msg(1022, $title, $ref_count - 1);
 }
 
 
