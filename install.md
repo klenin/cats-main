@@ -1,7 +1,7 @@
 # Environment
  * Windows XP or newer
  * Microsoft Visual C++ compiler
- * GnuWin32 utils -- bsdtar, unzip
+ * GnuWin32 utils -- bsdtar, unzip, sed, rm, cp
 
 # Apache 2.2
  * https://www.apachelounge.com/download/win32/binaries/httpd-2.2.29-win32-VC9.zip
@@ -11,6 +11,8 @@ ${APACHE_PATH} -- default is `C:\Apache2`
 # Perl
  * http://strawberryperl.com/download/5.16.3.1/strawberry-perl-5.16.3.1-32bit.msi 
  * or http://strawberryperl.com/download/5.16.3.1/strawberry-perl-5.16.3.1-32bit.zip
+
+If installing from zip -- don't forget to run bat files in root directory after unpacking
 
 ${PERL_PATH} -- default is `C:\Strawberry`
 
