@@ -1,6 +1,7 @@
 @rem = '
 @setlocal EnableDelayedExpansion
 @set CATS_ROOT=%~dp0
+@if %CATS_ROOT:~-1%==\ SET CATS_ROOT=%CATS_ROOT:~0,-1%
 @set RUNNER=%0
 @set CPAN_PACKAGES=DBI Algorithm::Diff SQL::Abstract JSON::XS YAML::Syck Apache2::Request XML::Parser::Expat Template
 @set CPAN_FORCE_PACKAGES=DBD::Firebird Text::Aspell Archive::Zip 
@@ -24,6 +25,14 @@
 @call :install_mod_perl
 @call :install_perl_modules
 @call :config_apache
+
+@rem Disabled
+::@pushd docs
+::ttree -a
+::@popd ..
+
+@call :cats_setup
+
 
 @goto :eof
 
@@ -50,7 +59,7 @@ __END__
 
 :get_firebird_path
 @setlocal
-	@set /p result=Specify Firebird path: 
+	@set /p result=Specify Firebird path(Default is - D:\Program Files (x86)\Firebird\Firebird_2_5\): 
 	@if "%result%" == "" set result=D:\Program Files (x86)\Firebird\Firebird_2_5\
 	@IF %result:~-1%==\ SET result=%result:~0,-1%
 @endlocal & set _result=%result%
@@ -95,12 +104,12 @@ __END__
 
 :create_symbolic_links
 @setlocal
-	rm images
-	rm docs
-	mklink /D images template\std\images
-	mklink /D docs templates\std\docs
+	@rm images
+	@rm docs
+	@mklink /D images template\std\images
+	@mklink /D docs templates\std\docs
 @endlocal
-goto :eof
+@goto :eof
 
 :find_dir
 @setlocal
@@ -190,7 +199,6 @@ goto :eof
 @setlocal
 
 	set CATS_ROOT=%CATS_ROOT:\=/%
-	set CATS_ROOT=%CATS_ROOT:~0,-1%
 
 	@set APACHE_CONF=PerlSetEnv CATS_DIR %CATS_ROOT%/cgi-bin/^
 
@@ -314,6 +322,62 @@ goto :eof
 
 
 @endlocal
+@goto :eof
+
+
+:cats_setup
+@setlocal
+	@set CONNECT_NAME=Connect.pm
+	@set CONNECT_ROOT=%CATS_ROOT%\cgi-bin\CATS
+	@set CREATE_DB_NAME=create_db.sql
+	@set CREATE_DB_ROOT=%CATS_ROOT%\sql\interbase
+
+	@set CONNECT="%CONNECT_ROOT%\%CONNECT_NAME%"
+	@cp "%CONNECT_ROOT%\%CONNECT_NAME%.template" %CONNECT%
+
+	@set CREATE_DB="%CREATE_DB_ROOT%\%CREATE_DB_NAME%"
+	@cp "%CREATE_DB_ROOT%\%CREATE_DB_NAME%.template" %CREATE_DB%
+
+	@echo ...
+	@echo ...
+	@echo ...
+
+	@set answer=
+	:loop_answer
+		@if "%answer%" equ "y" goto :done_answer 
+		@if "%answer%" equ "n" goto :done_answer
+	   	@set /p answer=Do you want to do the automatic setup? 
+	   	@goto :loop_answer
+	:done_answer
+
+	@if "%answer%" equ "n" (
+	   @echo Setup is done, you need to do following manualy:\n
+	   @echo  1. Navigate to %CONNECT_ROOT%\
+	   @echo  2. Adjust your database connection settings in %CONNECT_NAME%
+	   @echo  3. Navigate to %CREATE_DB_ROOT%
+	   @echo  4. Adjust your database connection settings in %CREATE_DB_NAME% and create database\n
+	   @exit 0
+	)
+
+	@set /p path_to_db=path-to-your-database: 
+	@set /p db_host=your-host: 
+	@set /p db_user=your-db-username: 
+	@set /p db_pass=your-db-password: 
+
+	@set path_to_db=%path_to_db:\=\\%
+
+	@sed -i -e "s/<path-to-your-database>/%path_to_db%/g" %CONNECT%
+	@sed -i -e "s/<your-host>/%db_host%/g" %CONNECT%
+	@sed -i -e "s/<your-username>/%db_user%/g" %CONNECT%
+	@sed -i -e "s/<your-password>/%db_pass%/g" %CONNECT%
+
+	@sed -i -e "s/<path-to-your-database>/%path_to_db%/g" %CREATE_DB%
+	@sed -i -e "s/<your-username>/%db_user%/g" %CREATE_DB%
+	@sed -i -e "s/<your-password>/%db_pass%/g" %CREATE_DB%
+	@rm sed*
 
 @endlocal
 @goto :eof
+
+
+@endlocal
