@@ -26,12 +26,12 @@
     <p>[% capt.testsets %]</p>
     <table class="bordered">
     <th>[% capt.name %]</th><th>[% capt.tests_passed %]</th><th>[% capt.points %]</th><th>[% capt.comment %]</th></tr>
-    [% FOREACH testsets %]
-    <tr [% IF earned_points %] class="run_details_OK"[% END %]>
-      <td>[% name %]</td>
-      <td align="right">[% accepted_count %] / [% test_count %]</td>
-      <td align="right">[% earned_points %]</td>
-      <td>[% comment %]</td>
+    [% FOREACH ts IN testsets %]
+    <tr [% IF ts.earned_points %] class="run_details_OK"[% END %]>
+      <td>[% ts.name %]</td>
+      <td align="right">[% ts.accepted_count || 0 %] / [% ts.test_count %]</td>
+      <td align="right">[% ts.earned_points || 0 %]</td>
+      <td>[% ts.comment %]</td>
     </tr>
     [% END %]
     </table>
