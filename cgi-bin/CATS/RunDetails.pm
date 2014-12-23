@@ -84,20 +84,33 @@ sub get_run_info
 
         my $prev_test = $last_test;
         $last_test = $row->{test_rank};
-        my $accepted = $row->{result} == $cats::st_accepted;
-        my $p = $accepted ? $points->[$row->{test_rank} - 1] : 0;
+        my $accepted = $row->{result} == $cats::st_accepted ? 1 : 0;
+        my $p = $accepted ? $points->[$row->{test_rank} - 1] || 0 : 0;
         if (my $ts = $testset{$last_test}) {
             $used_testsets{$ts->{name}} = $ts;
             push @{$ts->{list} ||= []}, $last_test;
-            $p = "=> $ts->{name}";
-            $total_points += $ts->{earned_points} = $ts->{points}
-                if $accepted && ++$ts->{accepted_count} == $ts->{test_count};
+            $ts->{accepted_count} += $accepted;
+            if ($ts->{points}) {
+                $total_points += $ts->{earned_points} = $ts->{points}
+                    if $ts->{accepted_count} == $ts->{test_count};
+            }
+            else {
+                $total_points += $p;
+                $ts->{earned_points} += $p;
+            }
+            if ($ts->{hide_details} && $contest->{hide_testset_details}) {
+                $row->{result} = $cats::st_ignore_submit;
+            }
+            if ($ts->{points} || $ts->{hide_details} && $contest->{hide_testset_details}) {
+                $p = '';
+            }
+            $p .= " => $ts->{name}";
         }
         elsif ($accepted && $req->{partial_checker}) {
             $total_points += $p = CATS::RankTable::get_partial_points($row, $p);
         }
         else {
-            $total_points += ($p || 0);
+            $total_points += $p;
         }
         $run_details{$last_test} = {
             state_to_display($row->{result}),
@@ -116,6 +129,9 @@ sub get_run_info
     # Output 'not processed' for tests we do not plan to run, but must still display.
     if ($contest->{show_all_tests} && !$contest->{run_all_tests}) {
         $last_test = @$points;
+    }
+    for (values %used_testsets) {
+        $_->{accepted_count} = '?' if $_->{hide_details} && $contest->{hide_testset_details};
     }
 
     my $run_row = sub {
@@ -142,13 +158,14 @@ sub get_contest_info
 
     my $contest = $dbh->selectrow_hashref(qq~
         SELECT
-            id, run_all_tests, show_all_tests, show_test_resources,
-            show_checker_comment
+            id, run_all_tests, show_all_tests, show_test_resources, show_checker_comment,
+            CAST(CURRENT_TIMESTAMP - defreeze_date AS DOUBLE PRECISION) AS time_since_defreeze
             FROM contests WHERE id = ?~, { Slice => {} },
         $si->{contest_id});
 
     $contest->{$_} ||= $jury_view
         for qw(show_all_tests show_test_resources show_checker_comment);
+    $contest->{hide_testset_details} = !$jury_view && $contest->{time_since_defreeze} < 0;
 
     my $p = $contest->{points} =
         $contest->{show_all_tests} ?
