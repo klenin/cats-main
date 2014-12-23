@@ -34,6 +34,7 @@
       <td>[% ts.comment %]</td>
     </tr>
     [% END %]
+    <tr><td colspan="2"/>[% capt.total %]<td align="right">[% total_points %]</td><td></td></tr>
     </table>
     <br/>
   [% END %]
