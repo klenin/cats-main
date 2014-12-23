@@ -317,6 +317,7 @@ files with tests, solutions etc.
     <li>name -- name of the test set;</li>
     <li>tests -- <a href="#rankSpec">test rank specification</a>;</li>
     <li>points[% s(opt, v18) %] -- number of points for the whole testset;</li>
+    <li>hideDetails[% s(opt, v18) %] -- hide results of individual tests;</li>
     <li>comment[% s(opt, v18) %] -- comment.</li>
   </ul></td>
   <td>Contains test set description. While adding the problem to the contest,
@@ -326,7 +327,8 @@ files with tests, solutions etc.
     only if all tests have passed.
     It is allowed to mix testsets and stand-alone tests, as well as specify
     overlapping testsets.
-    However the test must not be included in a several concurrently used testsets with points.
+    However, the test must not be included in a several concurrently used testsets
+    with points or hidden details.
   </td>
 </tr>
 <tr>
