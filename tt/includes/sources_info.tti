@@ -1,5 +1,6 @@
 [%- PROCESS "lang/$lang/sources_info.tti" -%]
 [%- PROCESS 'includes/submit_result.tti' -%]
+[%- PROCESS 'includes/html.tti' -%]
 <script type="text/javascript">
 function send_message(href)
 {
@@ -36,6 +37,7 @@ function send_message(href)
 <td>[% IF is_jury %]
   <form action="[% href_run_details %]" method="POST" class="embedded">
   <input type="text" name="testsets" value="[% testsets %]" />
+  <input type="checkbox" name="set_judge" value="1" />[% select('judge', judges) %]
   <input type="submit" name="retest" value="[% capt.retest %]" class="button" />
   </form>
 [% ELSE %][% testsets %][% END %]</td>

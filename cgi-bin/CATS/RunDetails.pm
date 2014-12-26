@@ -14,12 +14,16 @@ use CATS::DevEnv;
 use CATS::RankTable;
 
 
-sub get_judge_name
+sub get_judges
 {
-    my ($judge_id) = @_ or return;
-    scalar $dbh->selectrow_array(qq~
-      SELECT nick FROM judges WHERE id = ?~, undef,
-      $judge_id);
+    my ($si) = @_;
+    $t->param('judges') or $t->param(judges => $dbh->selectall_arrayref(q~
+        SELECT id, nick, lock_counter FROM judges ORDER BY nick~, { Slice => {} }));
+    $si->{judges} = [ {}, map {
+        value => $_->{id},
+        text => $_->{nick} . ($_->{lock_counter} ? '' : ' *'),
+        selected => ($_->{id} == ($si->{judge_id} || 0) ? $si->{judge_name} = $_->{nick} : 0),
+    }, @{$t->param('judges')} ];
 }
 
 
@@ -41,9 +45,7 @@ sub source_links
     }
     $si->{is_jury} = $is_jury;
     $t->param(is_jury => $is_jury);
-    if ($is_jury && $si->{judge_id}) {
-        $si->{judge_name} = get_judge_name($si->{judge_id});
-    }
+    get_judges($si) if $is_jury;
     my $se = param('src_enc') || param('comment_enc') || 'WINDOWS-1251';
     $t->param(source_encodings =>
         [ map {{ enc => $_, selected => $_ eq $se }} sort keys %{source_encodings()} ]);
@@ -306,7 +308,8 @@ sub run_details_frame
             enforce_request_state(
                 request_id => $_->{req_id},
                 state => $cats::st_not_processed,
-                testsets => param('testsets'));
+                testsets => param('testsets'),
+                judge_id => (param('set_judge') ? param('judge') : undef));
             $_ = get_sources_info(request_id => $_->{req_id}, partial_checker => 1) or next;
         }
 
