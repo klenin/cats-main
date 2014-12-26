@@ -25,14 +25,13 @@ function send_message(href)
   [% IF si.is_jury; si.judge_name %]: [% END %]
   [% si.test_time_short %] ... [% si.result_time_short %]</td>[% END %]</tr>
 <tr><th>[% capt.file %]</th>[% FOREACH si IN sources_info %]<td>[% si.file_name %] ([% si.de_name %])</td>[% END %]</tr>
-<tr><th>[% capt.contest %]</th>[% FOREACH si IN sources_info %]<td>
-  [% IF si.href_contest %]<a href="[% si.href_contest %]">[% si.contest_name %]<a>
-  [% ELSE %][% si.contest_name %][% END %]
-</td>[% END %]</tr>
-<tr><th>[% capt.problem %]</th>[% FOREACH si IN sources_info %]<td>
-  [% IF si.href_problem %]<a href="[% si.href_problem %]">[% si.problem_name %]</a>
-  [% ELSE %][% si.problem_name %][% END %] [% IF si.is_jury %]([% si.status_name %])[% END %]
-</td>[% END %]</tr>
+<tr><th>[% capt.contest %]</th>
+  [% FOREACH si IN sources_info %]<td>[% maybe_href(si.href_contest, si.contest_name) %]</td>
+  [% END %]</tr>
+<tr><th>[% capt.problem %]</th>
+  [% FOREACH si IN sources_info %]<td>[% maybe_href(si.href_problem, si.problem_name) ~%]
+    [%~ IF si.is_jury %] ([% si.status_name %])[% END %]</td>
+  [% END %]</tr>
 <tr><th>[% capt.testset %]</th>[% FOREACH si IN sources_info %]
 <td>[% IF si.is_jury %]
   <form action="[% si.href_run_details %]" method="POST" class="embedded">
