@@ -33,7 +33,7 @@ BEGIN
     );
 
     @EXPORT_OK = qw(
-        $contest $t $sid $cid $uid $server_time
+        $contest $t $sid $cid $uid
         $is_root $is_team $is_jury $is_virtual $virtual_diff_time
         $listview_name $init_time $settings);
 
@@ -62,7 +62,7 @@ use CATS::Utils qw();
 
 
 use vars qw(
-    $contest $t $sid $cid $uid $team_name $server_time $dbi_error
+    $contest $t $sid $cid $uid $team_name $dbi_error
     $is_root $is_team $is_jury $can_create_contests $is_virtual $virtual_diff_time
     $listview_name $col_defs $request_start_time $init_time $settings
 );
@@ -357,7 +357,7 @@ sub generate_output
     $contest->{time_since_start} or warn 'No contest from: ', $ENV{HTTP_REFERER} || '';
     $t->param(
         contest_title => $contest->{title},
-        server_time => $server_time,
+        server_time => $contest->{server_time},
     	current_team_name => $team_name,
     	is_virtual => $is_virtual,
     	virtual_diff_time => $virtual_diff_time);
@@ -503,7 +503,6 @@ sub init_contest
     }
     $contest ||= CATS::Contest->new;
     $contest->load($cid);
-    $server_time = $contest->{server_time};
     $cid = $contest->{id};
 
     $virtual_diff_time = 0;
@@ -521,7 +520,6 @@ sub init_contest
     {
         # If user tries to look at a hidden contest, show training instead.
         $contest->load(0);
-        $server_time = $contest->{server_time};
         $cid = $contest->{id};
     }
     # Only guest access before the start of the contest.
