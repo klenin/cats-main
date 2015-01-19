@@ -63,17 +63,15 @@ sub login_frame
 {
     my $json = param('json');
     init_template(auto_ext('login', $json));
-    $t->param(href_login => url_f('login'));
+    $t->param(href_login => url_function('login'));
     msg(1004) if param('logout');
 
     my $login = param('login');
-    if (!$login)
-    {
+    if (!$login) {
         $t->param(message => 'No login') if $json;
         return;
     }
     $t->param(login => Encode::decode_utf8($login));
-    my $cid = param('contest');
     my $passwd = param('passwd');
 
     my ($aid, $passwd3, $locked) = $dbh->selectrow_array(qq~
@@ -87,8 +85,8 @@ sub login_frame
 
     my $last_ip = CATS::IP::get_ip();
 
-    for (1..20)
-    {
+    my $cid = url_param('cid');
+    for (1..20) {
         $sid = make_sid;
 
         $dbh->do(qq~
@@ -98,18 +96,13 @@ sub login_frame
         ) or next;
         $dbh->commit;
 
-        my $cid =
-            url_param('cid') ||
-            $dbh->selectrow_array(qq~SELECT id FROM contests WHERE ctype = 1~);
-        if ($json)
-        {
-            $t->param(sid => $sid, cid => $cid);
+        if ($json) {
+            $contest->load($cid, ['id']);
+            $t->param(sid => $sid, cid => $contest->{id});
             return;
         }
-        {
-            $t = undef;
-            return redirect(url_function('contests', sid => $sid, cid => $cid));
-        }
+        $t = undef;
+        return redirect(url_function('contests', sid => $sid, cid => $cid));
     }
     die 'Can not generate sid';
 }
@@ -1974,7 +1967,7 @@ sub generate_menu
 
     my @left_menu = (
         { item => $logged_on ? res_str(503) : res_str(500),
-          href => $logged_on ? url_function('logout', sid => $sid) : url_f('login') },
+          href => $logged_on ? url_function('logout', sid => $sid) : url_function('login') },
         { item => res_str(502), href => url_f('contests') },
         { item => res_str(525), href => url_f('problems') },
         ($is_jury || !$contest->is_practice ? { item => res_str(526), href => url_f('users') } : ()),

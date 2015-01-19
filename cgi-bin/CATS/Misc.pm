@@ -493,7 +493,7 @@ sub extract_cid_from_cpid
 
 sub init_contest
 {
-    $cid = url_param('cid') || param('clist') || extract_cid_from_cpid || '';
+    $cid = url_param('cid') || param('clist') || extract_cid_from_cpid || $settings->{contest_id} || '';
     $cid =~ s/^(\d+).*$/$1/; # Get first contest if from clist.
     if ($contest && ref $contest ne 'CATS::Contest') {
         use Data::Dumper;
@@ -503,7 +503,7 @@ sub init_contest
     }
     $contest ||= CATS::Contest->new;
     $contest->load($cid);
-    $cid = $contest->{id};
+    $settings->{contest_id} = $cid = $contest->{id};
 
     $virtual_diff_time = 0;
     # Authorize user in the contest.
@@ -520,7 +520,7 @@ sub init_contest
     {
         # If user tries to look at a hidden contest, show training instead.
         $contest->load(0);
-        $cid = $contest->{id};
+        $settings->{contest_id} = $cid = $contest->{id};
     }
     # Only guest access before the start of the contest.
     $is_team &&= $is_jury || $contest->has_started($virtual_diff_time);
