@@ -458,9 +458,10 @@ sub init_user
     $team_name = undef;
     my $bad_sid;
     if ($sid ne '') {
-        ($uid, $team_name, my $srole, my $last_ip, $enc_settings) = $dbh->selectrow_array(qq~
-            SELECT id, team_name, srole, last_ip, settings FROM accounts WHERE sid = ?~, {}, $sid);
-        $bad_sid = !defined($uid) || ($last_ip || '') ne CATS::IP::get_ip();
+        ($uid, $team_name, my $srole, my $last_ip, my $locked, $enc_settings) = $dbh->selectrow_array(q~
+            SELECT id, team_name, srole, last_ip, locked, settings FROM accounts WHERE sid = ?~, undef,
+            $sid);
+        $bad_sid = !defined($uid) || ($last_ip || '') ne CATS::IP::get_ip() || $locked;
         if (!$bad_sid) {
             $is_root = $srole == $cats::srole_root;
             $can_create_contests = $is_root || $srole == $cats::srole_contests_creator;
