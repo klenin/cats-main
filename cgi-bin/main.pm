@@ -74,13 +74,10 @@ sub login_frame
     $t->param(login => Encode::decode_utf8($login));
     my $passwd = param('passwd');
 
-    my ($aid, $passwd3, $locked) = $dbh->selectrow_array(qq~
-        SELECT id, passwd, locked FROM accounts WHERE login = ?~, {}, $login);
+    my ($aid, $passwd2, $locked) = $dbh->selectrow_array(qq~
+        SELECT id, passwd, locked FROM accounts WHERE login = ?~, undef, $login);
 
-    $aid or return msg(39);
-
-    $passwd3 eq $passwd or return msg(40);
-
+    $aid && $passwd2 eq $passwd or return msg(40);
     !$locked or msg(41);
 
     my $last_ip = CATS::IP::get_ip();
