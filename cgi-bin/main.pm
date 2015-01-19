@@ -77,8 +77,8 @@ sub login_frame
     my ($aid, $passwd2, $locked) = $dbh->selectrow_array(qq~
         SELECT id, passwd, locked FROM accounts WHERE login = ?~, undef, $login);
 
-    $aid && $passwd2 eq $passwd or return msg(40);
-    !$locked or msg(41);
+    $aid && $passwd2 eq $passwd or return msg(1040);
+    !$locked or return msg(1041);
 
     my $last_ip = CATS::IP::get_ip();
 
