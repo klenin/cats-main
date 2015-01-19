@@ -1767,7 +1767,7 @@ sub user_stats_frame
     ) };
     for (@$contests) {
         $_->{href_send_message} = url_f('send_message_box', caid => $_->{caid}) if $is_root;
-        $_->{href_problems} = url_f('problems', cid => $_->{id});
+        $_->{href_problems} = url_function('problems', sid => $sid, cid => $_->{id});
     }
     $t->param(
         %$u, contests => $contests, is_root => $is_root,
