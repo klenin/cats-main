@@ -3,7 +3,12 @@
 <form method=post enctype='multipart/form-data' action='[% href_action %]'>
 [% PROCESS 'includes/user_main.tti' %]
 [% PROCESS 'includes/user_extra.tti' %]
-[% IF is_root; PROCESS 'includes/password.tti' change_password = 1; END %]
+[%- IF is_root -%]
+<table class="registration">
+<tr><td>[% capt.locked %]</td><td><input type="checkbox" name="locked" value="1" [% ' checked="checked"' IF locked %]</td></tr>
+</table>
+[% PROCESS 'includes/password.tti' change_password = 1 %]
+[%- END -%]
 <br/>
 [% PROCESS includes/edit_save_cancel.tti %]
 </form>

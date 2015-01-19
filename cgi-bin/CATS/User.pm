@@ -32,9 +32,10 @@ sub parse_params
 
 sub load
 {
-    my ($self, $id) = @_;
-    @$self{param_names()} = $dbh->selectrow_array(qq~
-        SELECT ~ . join(', ' => param_names()) . q~
+    my ($self, $id, $extra_fields) = @_;
+    my @fields = (param_names(), @{$extra_fields || []});
+    @$self{@fields} = $dbh->selectrow_array(qq~
+        SELECT ~ . join(', ' => @fields) . q~
             FROM accounts WHERE id = ?~, { Slice => {} },
         $id
     ) or return;

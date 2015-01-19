@@ -1363,7 +1363,7 @@ sub users_edit_frame
     init_template('users_edit.html.tt');
 
     my $id = url_param('edit') or return;
-    my $u = CATS::User->new->load($id) or return;
+    my $u = CATS::User->new->load($id, [ 'locked' ]) or return;
     $t->param(
         %$u, id => $id, countries => \@cats::countries, is_root => $is_root,
         href_action => url_f('users'),
@@ -1387,6 +1387,7 @@ sub users_edit_save
 
     $u->{passwd} = $u->{password1} if $set_password;
     delete @$u{qw(password1 password2)};
+    $u->{locked} = param('locked') ? 1 : 0 if $is_root;
     $dbh->do(_u $sql->update('accounts', { %$u }, { id => $id }));
     $dbh->commit;
 }
