@@ -47,7 +47,9 @@
 [% ELSE %]
 <h3>Примеры тестов</h3>
 <table class="sample" id="sample[% id %]">
-<tr><th>&#8470;</th><th>Входной файл</th><th>Выходной файл</th></tr>
+<tr><th>&#8470;</th>
+<th>[% IF input_file == '*STDIN' %]Стандартный вход[% ELSE %]Входной файл (<tt>[% input_file | html %]</tt>)[% END %]</th>
+<th>[% IF output_file == '*STDOUT' %]Стандартный выход[% ELSE %]Выходной файл (<tt>[% output_file | html %]</tt>)[% END %]</th></tr>
 [% FOREACH samples %]
 <tr>
   <td>[% rank %]</td>
