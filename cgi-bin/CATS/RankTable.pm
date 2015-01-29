@@ -53,7 +53,10 @@ sub cache_max_points
             my $r = $_->{rank};
             exists $test_testsets->{$r} or next;
             my $t = $test_testsets->{$r};
-            $max_points += !$t ? $_->{points} : $used_testsets{$t->{name}}++ ? 0 : $t->{points};
+            $max_points +=
+                !$t || !$t->{points} ? $_->{points} :
+                $used_testsets{$t->{name}}++ ? 0 :
+                $t->{points};
         }
     }
     else {
@@ -213,7 +216,7 @@ sub cache_req_points
         $_->{result} != $cats::st_accepted ? 0 :
         # Scoring groups have priority over partial checkers,
         # although they should not be used together.
-        $t ? (++$used_testsets{$t->{name}} == $t->{test_count} ? $t->{points} : 0) :
+        $t && $t->{points} ? (++$used_testsets{$t->{name}} == $t->{test_count} ? $t->{points} : 0) :
         $problem->{partial_checker} ? get_partial_points($_, $_->{points}) :
         max($_->{points} || 0, 0)
     } @$test_points;
