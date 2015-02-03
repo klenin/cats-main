@@ -146,7 +146,21 @@
 
 :download_file 
 @setlocal
-	@perl -x -S %RUNNER% %1 %2
+	@call :utilize_perl "download" %1 %2
+@endlocal
+@goto :eof
+
+
+:extract_file 
+@setlocal
+	@call :utilize_perl "extract" %1 %2
+@endlocal
+@goto :eof
+
+
+:utilize_perl 
+@setlocal
+	@perl -x -S %RUNNER% %1 %2 %3
 
 	@goto :endofdownload
 
@@ -157,8 +171,28 @@ use strict;
 use warnings;
 
 use LWP::Simple;
+use Archive::Extract;
 
-getstore($ARGV[0], $ARGV[1]);
+sub download {
+	my ($what, $where) = @_;
+	getstore($what, $where);
+}
+sub extract {
+	my ($what, $where) = @_;
+	my $ae = Archive::Extract->new( archive => $what );
+	if (!$where || $where eq "") {
+		$ae->extract or die $ae->error;
+		return;
+	}
+	$ae->extract( to => $where );	
+}
+if ($ARGV[0] eq "download") {
+	download($ARGV[1], $ARGV[2]);
+} elsif ($ARGV[0] eq "extract") {
+	extract($ARGV[1], $ARGV[2]);
+} elsif ($ARGV[0] eq "sed") {
+	extract($ARGV[1], $ARGV[2]);
+}
 1;
 __END__
 :endofdownload
@@ -235,7 +269,7 @@ __END__
 	@call "%vs_dir%nmake.exe" /f Makefile.win32
 	@if not exist "%CATS_ROOT%\sql\interbase\UDF\cats_udf_lib.dll" exit /B 1
 	@echo Compilation successfull!
-	@cp cats_udf_lib.dll "%fb_dir%\lib"
+	@copy cats_udf_lib.dll "%fb_dir%\lib" > nul
 	@popd
 	@popd
 	@popd
@@ -246,8 +280,8 @@ __END__
 :create_symbolic_links
 @setlocal
 	@echo Creating symbolic links to directories...
-	@rm images
-	@rm docs
+	@del /Q images > nul
+	@del /Q docs > nul
 	@mklink /D images template\std\images
 	@mklink /D docs templates\std\docs
 @endlocal
@@ -259,7 +293,7 @@ __END__
 	@echo Installing libaspell-dev...
 	@set ASPELL="http://ftp.gnu.org/gnu/aspell/w32/aspell-dev-0-50-3-3.zip"
 	@call :download_file %ASPELL% aspell.zip
-	@call unzip aspell.zip
+	@call :extract_file aspell.zip
 	@pushd aspell-dev-0-50-3-3
 		@pushd lib
 		@for %%s in (*-15*) do @(
@@ -267,11 +301,11 @@ __END__
 		  @call rename %%name%% %%name:-15=%%
 		)
 		@popd
-		@call cp -r include %perl_dir%\c\
-		@call cp -r lib %perl_dir%\c\
+		@call xcopy include %perl_dir%\c\ /e/y/i/g/h/k > nul
+		@call xcopy lib %perl_dir%\c\ /e/y/i/g/h/k > nul
 	@popd
-	@rm aspell.zip
-	@rm -rf aspell-dev-0-50-3-3
+	@del aspell.zip > nul
+	@rmdir aspell-dev-0-50-3-3 /S /Q > nul
 @endlocal
 @goto :eof
 
@@ -280,13 +314,13 @@ __END__
 	@echo Installing mod_perl...
 	@set MOD_PERL="http://people.apache.org/~stevehay/mod_perl-2.0.8-strawberryperl-5.16.3.1-32bit.zip"
 	@call :download_file %MOD_PERL% mod_perl.zip
-	@call unzip -d mod_perl mod_perl.zip
+	@call :extract_file mod_perl.zip mod_perl
 	@pushd mod_perl
-	@cp -r Apache2\* %Apache2_dir%\
-	@cp -r Strawberry\* %Perl_dir%\
+		@xcopy Apache2\* %Apache2_dir%\ /e/y/i/g/h/k > nul
+		@xcopy Strawberry\* %Perl_dir%\ /e/y/i/g/h/k > nul
 	@popd
-	@rm mod_perl.zip
-	@rm -rf mod_perl
+	@del mod_perl.zip > nul
+	@rmdir mod_perl /S /Q > nul
 @endlocal
 @goto :eof
 
@@ -298,14 +332,14 @@ __END__
 	@echo Downloading external perl modules...
 	@set formal_input="https://github.com/downloads/klenin/cats-main/FormalInput.tgz"
 	@call :download_file %formal_input% fi.tgz
-	@bsdtar -xzvf fi.tgz
+	@call :extract_file fi.tgz
 	@pushd FormalInput
 		@perl Makefile.PL
 		@dmake
 		@dmake install
 	@popd
-	@rm fi.tgz
-	@rm -rf FormalInput
+	@del fi.tgz > nul
+	@rmdir FormalInput /S /Q > nul
 
 @endlocal
 @goto :eof
@@ -453,10 +487,10 @@ __END__
 	@set CREATE_DB_ROOT=%CATS_ROOT%\sql\interbase
 
 	@set CONNECT="%CONNECT_ROOT%\%CONNECT_NAME%"
-	@cp "%CONNECT_ROOT%\%CONNECT_NAME%.template" %CONNECT%
+	@copy "%CONNECT_ROOT%\%CONNECT_NAME%.template" %CONNECT% > nul
 
 	@set CREATE_DB="%CREATE_DB_ROOT%\%CREATE_DB_NAME%"
-	@cp "%CREATE_DB_ROOT%\%CREATE_DB_NAME%.template" %CREATE_DB%
+	@copy "%CREATE_DB_ROOT%\%CREATE_DB_NAME%.template" %CREATE_DB% > nul 
 
 	@echo[
 	@echo[
@@ -490,7 +524,7 @@ __END__
 
 	@if not exist "%path_to_db%" echo You'll need to create %path_to_db% manually.
 
-	@set path_to_db=%path_to_db:\=\\%
+	@set path_to_db=%path_to_db:\=\\\\%
 
 	@sed -i -e "s/<path-to-your-database>/%path_to_db%/g" %CONNECT%
 	@sed -i -e "s/<your-host>/%db_host%/g" %CONNECT%
