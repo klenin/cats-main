@@ -894,6 +894,7 @@ sub problems_submit
 
     my $rid = new_id;
 
+    my $state = $is_jury && param('ignore') ? $cats::st_ignore_submit : $cats::st_not_processed;
     $dbh->do(qq~
         INSERT INTO reqs (
             id, account_id, problem_id, contest_id,
@@ -901,7 +902,7 @@ sub problems_submit
         ) VALUES (
             ?,?,?,?,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP,?,?)~,
         {},
-        $rid, $submit_uid, $pid, $cid, $cats::st_not_processed, 0);
+        $rid, $submit_uid, $pid, $cid, $state, 0);
 
     my $s = $dbh->prepare(qq~
         INSERT INTO sources(req_id, de_id, src, fname, hash) VALUES (?,?,?,?,?)~);
