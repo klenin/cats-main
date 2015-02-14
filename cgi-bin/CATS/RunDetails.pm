@@ -430,6 +430,7 @@ sub try_set_state
         compilation_error =>     $cats::st_compilation_error,
         security_violation =>    $cats::st_security_violation,
         ignore_submit =>         $cats::st_ignore_submit,
+        idleness_limit_exceeded=>$cats::st_idleness_limit_exceeded,
     }->{param('state')};
     defined $state or return;
 

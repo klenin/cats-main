@@ -83,6 +83,7 @@ $st_compilation_error = 15;
 $st_security_violation = 16;
 $st_memory_limit_exceeded = 17;
 $st_ignore_submit = 18;
+$st_idleness_limit_exceeded = 19;
 
 $problem_st_ready     = 0;
 $problem_st_suspended = 1;
