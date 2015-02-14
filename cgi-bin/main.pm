@@ -58,84 +58,7 @@ use CATS::UI::Contests;
 use CATS::UI::Users;
 use CATS::UI::ImportSources;
 use CATS::UI::LoginLogout;
-
-sub rank_table
-{
-    my $template_name = shift;
-    init_template('rank_table_content.html.tt');
-    $t->param(printable => url_param('printable'));
-    my $rt = CATS::RankTable->new;
-    $rt->parse_params;
-    $rt->rank_table;
-    $contest->{title} = $rt->{title};
-    my $s = $t->output;
-
-    init_template($template_name);
-    $t->param(rank_table_content => $s, printable => (url_param('printable') || 0));
-}
-
-
-sub rank_table_frame
-{
-    my $hide_ooc = url_param('hide_ooc') || 0;
-    my $hide_virtual = url_param('hide_virtual') || 0;
-    my $cache = url_param('cache');
-    my $show_points = url_param('points');
-
-    #rank_table('main_rank_table.htm');
-    #init_template('main_rank_table_content.htm');
-    init_template('rank_table.html.tt');
-
-    my $rt = CATS::RankTable->new;
-    $rt->get_contest_list_param;
-    $rt->get_contests_info($uid);
-    $contest->{title} = $rt->{title};
-
-    my @params = (
-        hide_ooc => $hide_ooc, hide_virtual => $hide_virtual, cache => $cache,
-        clist => $rt->{contest_list}, points => $show_points,
-        filter => Encode::decode_utf8(url_param('filter') || undef),
-        show_prizes => (url_param('show_prizes') || 0),
-    );
-    $t->param(href_rank_table_content => url_f('rank_table_content', @params));
-    my $submenu =
-        [ { href => url_f('rank_table_content', @params, printable => 1), item => res_str(538) } ];
-    if ($is_jury)
-    {
-        push @$submenu,
-            { href => url_f('rank_table', @params, cache => 1 - ($cache || 0)), item => res_str(553) },
-            { href => url_f('rank_table', @params, points => 1 - ($show_points || 0)), item => res_str(554) };
-    }
-    $t->param(submenu => $submenu, title_suffix => res_str(529));
-}
-
-
-sub rank_table_content_frame
-{
-    rank_table('rank_table_iframe.html.tt');
-}
-
-
-sub rank_problem_details
-{
-    init_template('main_rank_problem_details.htm');
-    $is_jury or return;
-
-    my ($pid) = url_param('pid') or return;
-
-    my $runs = $dbh->selectall_arrayref(q~
-        SELECT
-            R.id, R.state, R.account_id, R.points
-        FROM reqs R WHERE R.contest_id = ? AND R.problem_id = ?
-        ORDER BY R.id~, { Slice => {} },
-        $cid, $pid);
-
-    for (@$runs)
-    {
-        1;
-    }
-}
-
+use CATS::UI::RankTable;
 
 sub about_frame
 {
@@ -145,7 +68,6 @@ sub about_frame
             WHERE C.is_hidden = 0 OR C.is_hidden IS NULL~);
     $t->param(problem_count => $problem_count);
 }
-
 
 sub generate_menu
 {
@@ -199,7 +121,6 @@ sub generate_menu
     attach_menu('right_menu', 'about', \@right_menu);
 }
 
-
 sub interface_functions ()
 {
     {
@@ -237,9 +158,9 @@ sub interface_functions ()
 
         test_diff => \&CATS::UI::Stats::test_diff_frame,
         compare_tests => \&CATS::UI::Stats::compare_tests_frame,
-        rank_table_content => \&rank_table_content_frame,
-        rank_table => \&rank_table_frame,
-        rank_problem_details => \&rank_problem_details,
+        rank_table_content => \&CATS::UI::RankTable::rank_table_content_frame,
+        rank_table => \&CATS::UI::RankTable::rank_table_frame,
+        rank_problem_details => \&CATS::UI::RankTable::rank_problem_details,
         problem_text => \&CATS::Problem::Text::problem_text_frame,
         envelope => \&CATS::UI::Messages::envelope_frame,
         about => \&about_frame,
@@ -248,7 +169,6 @@ sub interface_functions ()
         personal_official_results => \&CATS::Contest::personal_official_results,
     }
 }
-
 
 sub accept_request
 {
@@ -275,7 +195,6 @@ sub accept_request
     generate_output($output_file);
 }
 
-
 sub handler {
     my $r = shift;
 
@@ -289,6 +208,5 @@ sub handler {
 
     return get_return_code();
 }
-
 
 1;
