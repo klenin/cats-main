@@ -73,8 +73,8 @@ sub problems_link_save
     }
     my $move_problem = param('move');
     if ($move_problem) {
-        # Нужны права жюри в турнире, из которого перемещаем задачу
-        # Проверим заранее, чтобы не нужно было делать rollback
+        # Jury account in the problem's origin contest is required.
+        # Check beforehand to avoid need for rollback.
         my ($j) = $dbh->selectrow_array(q~
             SELECT CA.is_jury FROM contest_accounts CA
                 INNER JOIN contests C ON CA.contest_id = C.id
@@ -104,8 +104,8 @@ sub problems_replace
         or return msg(53);
     my ($contest_id, $old_title) = $dbh->selectrow_array(qq~
         SELECT contest_id, title FROM problems WHERE id=?~, {}, $pid);
-    # Запрет на замену прилинкованных задач. Во-первых, для надёжности,
-    # а во-вторых, это секурити -- чтобы не проверять is_jury($contest_id).
+    # Forbid replacing linked problems. Firstly for robustness,
+    # secondly for security -- to avoid checking is_jury($contest_id).
     $contest_id == $cid
         or return msg(117);
     my $fname = save_uploaded_file('zip');
