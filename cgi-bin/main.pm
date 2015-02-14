@@ -46,6 +46,7 @@ use CATS::Contest::Results;
 use CATS::User;
 use CATS::Console;
 use CATS::RunDetails;
+
 use CATS::UI::Prizes;
 use CATS::UI::Messages;
 use CATS::UI::Stats;
@@ -55,6 +56,7 @@ use CATS::UI::Keywords;
 use CATS::UI::Problems;
 use CATS::UI::Contests;
 use CATS::UI::Users;
+use CATS::UI::ImportSources;
 
 sub make_sid {
     my @ch = ('A'..'Z', 'a'..'z', '0'..'9');
@@ -123,56 +125,6 @@ sub logout_frame
     else {
        redirect(url_function('login', logout => 1));
     }
-}
-
-
-sub import_sources_frame
-{
-    init_listview_template('import_sources', 'import_sources', 'import_sources.html.tt');
-    define_columns(url_f('import_sources'), 0, 0, [
-        { caption => res_str(625), order_by => '2', width => '30%' },
-        { caption => res_str(642), order_by => '3', width => '30%' },
-        { caption => res_str(641), order_by => '4', width => '30%' },
-        { caption => res_str(643), order_by => '5', width => '10%' },
-    ]);
-
-    my $c = $dbh->prepare(qq~
-        SELECT ps.id, ps.guid, ps.stype, de.code,
-            (SELECT COUNT(*) FROM problem_sources_import psi WHERE ps.guid = psi.guid) AS ref_count,
-            ps.fname, ps.problem_id, p.title, p.contest_id
-            FROM problem_sources ps INNER JOIN default_de de ON de.id = ps.de_id
-            INNER JOIN problems p ON p.id = ps.problem_id
-            WHERE ps.guid IS NOT NULL ~.order_by);
-    $c->execute;
-
-    my $fetch_record = sub($)
-    {
-        my $f = $_[0]->fetchrow_hashref or return ();
-        return (
-            %$f,
-            stype_name => $cats::source_module_names{$f->{stype}},
-            href_problems => url_function('problems', sid => $sid, cid => $f->{contest_id}),
-            href_source => url_f('download_import_source', psid => $f->{id}),
-            is_jury => $is_jury,
-        );
-    };
-
-    attach_listview(url_f('import_sources'), $fetch_record, $c);
-
-    $t->param(submenu => [ references_menu('import_sources') ], is_jury => 1) if $is_jury;
-}
-
-
-sub download_import_source_frame
-{
-    my $psid = param('psid') or return;
-    local $dbh->{ib_enable_utf8} = 0;
-    my ($fname, $src) = $dbh->selectrow_array(qq~
-        SELECT fname, src FROM problem_sources WHERE id = ? AND guid IS NOT NULL~, undef, $psid) or return;
-    binmode(STDOUT, ':raw');
-    CATS::Web::content_type('text/plain');
-    CATS::Web::headers('Content-Disposition' => "inline;filename=$fname");
-    print STDOUT $src;
 }
 
 
@@ -379,9 +331,9 @@ sub interface_functions ()
         compilers => \&CATS::UI::Compilers::compilers_frame,
         judges => \&CATS::UI::Judges::judges_frame,
         keywords => \&CATS::UI::Keywords::keywords_frame,
-        import_sources => \&import_sources_frame,
+        import_sources => \&CATS::UI::ImportSources::import_sources_frame,
+        download_import_source => \&CATS::UI::ImportSources::download_frame,
         prizes => \&prizes_frame,
-        download_import_source => \&download_import_source_frame,
 
         answer_box => \&CATS::UI::Messages::answer_box_frame,
         send_message_box => \&CATS::UI::Messages::send_message_box_frame,
