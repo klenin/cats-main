@@ -159,7 +159,7 @@ CREATE TABLE problem_sources (
     memory_limit INTEGER /* в мегабайтах */
 );
 ALTER TABLE problem_sources
-  ADD CONSTRAINT chk_problem_sources_1 CHECK (0 <= stype AND stype <= 6);
+  ADD CONSTRAINT chk_problem_sources_1 CHECK (0 <= stype AND stype <= 8);
 CREATE INDEX ps_guid_idx ON problem_sources(guid);
 
 CREATE TABLE problem_sources_import
