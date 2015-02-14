@@ -59,46 +59,6 @@ use CATS::UI::Users;
 use CATS::UI::ImportSources;
 use CATS::UI::LoginLogout;
 
-sub prizes_frame
-{
-    $is_root or return;
-    if (my $cgid = url_param('delete')) {
-        $dbh->do(qq~DELETE FROM contest_groups WHERE id = ?~, undef, $cgid);
-        $dbh->commit;
-    }
-
-    defined url_param('edit') and return CATS::UI::Prizes::prizes_edit_frame;
-    init_listview_template('prizes', 'prizes', 'prizes.html.tt');
-
-    defined param('edit_save') and CATS::UI::Prizes::prizes_edit_save;
-
-    define_columns(url_f('prizes'), 0, 0, [
-        { caption => res_str(601), order_by => '2', width => '30%' },
-        { caption => res_str(645), order_by => '3', width => '30%' },
-        { caption => res_str(646), order_by => '4', width => '40%' },
-    ]);
-
-    my $c = $dbh->prepare(qq~
-        SELECT cg.id, cg.name, cg.clist,
-            (SELECT LIST(rank || ':' || name, ' ') FROM prizes p WHERE p.cg_id = cg.id) AS prizes
-            FROM contest_groups cg ~ . order_by);
-    $c->execute;
-
-    my $fetch_record = sub {
-        my $f = $_[0]->fetchrow_hashref or return ();
-        (
-            %$f,
-            href_edit=> url_f('prizes', edit => $f->{id}),
-            href_delete => url_f('prizes', 'delete' => $f->{id}),
-        );
-    };
-
-    attach_listview(url_f('prizes'), $fetch_record, $c);
-
-    $t->param(submenu => [ references_menu('prizes') ]);
-}
-
-
 sub rank_table
 {
     my $template_name = shift;
@@ -264,7 +224,7 @@ sub interface_functions ()
         keywords => \&CATS::UI::Keywords::keywords_frame,
         import_sources => \&CATS::UI::ImportSources::import_sources_frame,
         download_import_source => \&CATS::UI::ImportSources::download_frame,
-        prizes => \&prizes_frame,
+        prizes => \&CATS::UI::Prizes::prizes_frame,
 
         answer_box => \&CATS::UI::Messages::answer_box_frame,
         send_message_box => \&CATS::UI::Messages::send_message_box_frame,

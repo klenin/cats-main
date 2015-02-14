@@ -5,11 +5,12 @@ use warnings;
 
 use CATS::Web qw(param url_param);
 use CATS::DB;
-use CATS::Misc qw($t init_template msg url_f);
-
+use CATS::Misc qw(
+    $t $is_jury $is_root $is_team $sid $cid $uid $contest $is_virtual $settings
+    init_template init_listview_template msg res_str url_f auto_ext
+    order_by define_columns attach_listview references_menu);
 
 sub sanitize_clist { sort { $a <=> $b } grep /^\d+$/, @_ }
-
 
 sub is_unique_contest_group
 {
@@ -17,7 +18,6 @@ sub is_unique_contest_group
         SELECT id FROM contest_groups WHERE clist = ?~, undef,
         $_[0]) ? msg(90) : 1;
 }
-
 
 sub contest_group_auto_new
 {
@@ -39,9 +39,7 @@ sub contest_group_auto_new
     msg(89, $name);
 }
 
-
 sub contest_groups_fields () { qw(name clist) }
-
 
 sub prizes_edit_frame
 {
@@ -55,9 +53,7 @@ sub prizes_edit_frame
     $t->param(%$cg, prizes => $prizes, href_action => url_f('prizes'));
 }
 
-
 sub prize_params { map { $_ => param($_ . '_' . $_[0]) } qw(rank name) }
-
 
 sub prizes_edit_save
 {
@@ -89,5 +85,43 @@ sub prizes_edit_save
     $dbh->commit;
 }
 
+sub prizes_frame
+{
+    $is_root or return;
+    if (my $cgid = url_param('delete')) {
+        $dbh->do(qq~DELETE FROM contest_groups WHERE id = ?~, undef, $cgid);
+        $dbh->commit;
+    }
+
+    defined url_param('edit') and return CATS::UI::Prizes::prizes_edit_frame;
+    init_listview_template('prizes', 'prizes', 'prizes.html.tt');
+
+    defined param('edit_save') and CATS::UI::Prizes::prizes_edit_save;
+
+    define_columns(url_f('prizes'), 0, 0, [
+        { caption => res_str(601), order_by => '2', width => '30%' },
+        { caption => res_str(645), order_by => '3', width => '30%' },
+        { caption => res_str(646), order_by => '4', width => '40%' },
+    ]);
+
+    my $c = $dbh->prepare(qq~
+        SELECT cg.id, cg.name, cg.clist,
+            (SELECT LIST(rank || ':' || name, ' ') FROM prizes p WHERE p.cg_id = cg.id) AS prizes
+            FROM contest_groups cg ~ . order_by);
+    $c->execute;
+
+    my $fetch_record = sub {
+        my $f = $_[0]->fetchrow_hashref or return ();
+        (
+            %$f,
+            href_edit=> url_f('prizes', edit => $f->{id}),
+            href_delete => url_f('prizes', 'delete' => $f->{id}),
+        );
+    };
+
+    attach_listview(url_f('prizes'), $fetch_record, $c);
+
+    $t->param(submenu => [ references_menu('prizes') ]);
+}
 
 1;
