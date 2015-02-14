@@ -14,6 +14,7 @@ use CATS::Utils qw(url_function coalesce);
 use CATS::Web qw(redirect);
 use CATS::Data qw(:all);
 use CATS::StaticPages;
+use CATS::RankTable;
 
 sub contests_new_frame
 {
