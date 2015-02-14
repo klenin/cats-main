@@ -1,7 +1,3 @@
-/*--------------------------------------------------------------
-**  definitions for CATS
-**--------------------------------------------------------------
-*/
 
 CREATE TABLE judges (
     id      INTEGER NOT NULL PRIMARY KEY,
@@ -22,7 +18,7 @@ CREATE TABLE default_de (
     in_banks    INTEGER DEFAULT 1 CHECK (in_banks IN (0, 1)),
     in_tsess    INTEGER DEFAULT 1 CHECK (in_tsess IN (0, 1)),
     memory_handicap INTEGER DEFAULT 0,
-    syntax      VARCHAR(200) /* для highilghter'а */
+    syntax      VARCHAR(200) /* For highilghter. */
 );
 
 
@@ -67,11 +63,11 @@ CREATE TABLE contests (
     show_checker_comment INTEGER DEFAULT 0 CHECK (show_checker_comment IN (0, 1)),
     show_packages        INTEGER DEFAULT 0 CHECK (show_packages IN (0, 1)),
     show_all_results     SMALLINT DEFAULT 1 NOT NULL CHECK (show_all_results IN (0, 1)),
-    rules                INTEGER DEFAULT 0, /* правила: 0 - ACM, 1 - школьные */
+    rules                INTEGER DEFAULT 0, /* 0 - ACM, 1 - school */
     local_only           SMALLINT DEFAULT 0 CHECK (local_only IN (0, 1)),
-    /* максимум попыток по одной задаче на одного участника */
+    /* Maximum requests per participant per problem. */
     max_reqs             INTEGER DEFAULT 0,
-    /* TODO: выводить попытки в замороженной таблице */
+    /* TODO: output runs in a frozen table. */
     show_frozen_reqs     SMALLINT DEFAULT 0 CHECK (show_frozen_reqs IN (0, 1)),
 
     CHECK (
@@ -140,23 +136,18 @@ CREATE TABLE contest_problems (
 );
 
 
--- stype = 0 - test generator
--- stype = 1 - solution
--- stype = 2 - checker
--- stype = 3 - standart solution (используется для проверки набора тестов)
-
 CREATE TABLE problem_sources (
     id          INTEGER NOT NULL PRIMARY KEY,
-    stype       INTEGER,
+    stype       INTEGER, /* stype: See Constants.pm */
     problem_id  INTEGER REFERENCES problems(id) ON DELETE CASCADE,
     de_id       INTEGER NOT NULL REFERENCES default_de(id) ON DELETE CASCADE,
     src         BLOB,
     fname       VARCHAR(200),
     input_file  VARCHAR(200),
     output_file VARCHAR(200),
-    guid        VARCHAR(100), /* уникальный идентификатор программы */
-    time_limit  FLOAT, /* в секундах */
-    memory_limit INTEGER /* в мегабайтах */
+    guid        VARCHAR(100), /* For cross-contest references. */
+    time_limit  FLOAT, /* In seconds. */
+    memory_limit INTEGER /* In mebibytes. */
 );
 ALTER TABLE problem_sources
   ADD CONSTRAINT chk_problem_sources_1 CHECK (0 <= stype AND stype <= 8);
@@ -165,7 +156,7 @@ CREATE INDEX ps_guid_idx ON problem_sources(guid);
 CREATE TABLE problem_sources_import
 (
     problem_id  INTEGER NOT NULL REFERENCES problems(id) ON DELETE CASCADE,
-    /* ссылка на problem_sources.guid, constraint отстутвует, чтобы упростить обновление исходной задачи */
+    /* Reference to problem_sources.guid, no constraint to simplify update of the referenced problem. */
     guid        VARCHAR(100) NOT NULL,
     PRIMARY KEY (problem_id, guid)
 );
@@ -255,9 +246,9 @@ CREATE TABLE reqs (
     account_id  INTEGER NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
     problem_id  INTEGER NOT NULL REFERENCES problems(id) ON DELETE CASCADE,
     contest_id  INTEGER REFERENCES contests(id) ON DELETE CASCADE,
-    submit_time TIMESTAMP, /* время отсылки на тестирование */
-    test_time   TIMESTAMP, /* время начала тестирования */
-    result_time TIMESTAMP, /* время окончания тестирования */
+    submit_time TIMESTAMP,
+    test_time   TIMESTAMP, /* Time of testing start. */
+    result_time TIMESTAMP, /* Time of testing finish. */
     state       INTEGER,
     failed_test INTEGER,
     judge_id    INTEGER REFERENCES judges(id) ON DELETE SET NULL,
@@ -331,9 +322,9 @@ CREATE TABLE prizes (
 
 
 /*
-    Старые версии Firebird не умеют делать CAST в BLOB,
-    поэтому вместо константных пустых строк приходится делать
-    select полей типа BLOB из dummy_table.
+    FIXME: Old Firebird versions are unable to CAST to a BLOB,
+    so instead of casting empty strings we have to select fields from this dummy table.
+    See Console.pm.
 */
 CREATE TABLE dummy_table
 (
