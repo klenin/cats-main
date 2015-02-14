@@ -1,4 +1,4 @@
-package CATS::Messages;
+package CATS::UI::Messages;
 
 use strict;
 use warnings;

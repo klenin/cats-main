@@ -1,4 +1,4 @@
-package CATS::Keywords;
+package CATS::UI::Keywords;
 
 use strict;
 use warnings;

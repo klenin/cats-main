@@ -1,4 +1,4 @@
-package CATS::Prizes;
+package CATS::UI::Prizes;
 
 use strict;
 use warnings;

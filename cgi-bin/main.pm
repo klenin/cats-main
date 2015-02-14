@@ -46,12 +46,12 @@ use CATS::Contest::Results;
 use CATS::User;
 use CATS::Console;
 use CATS::RunDetails;
-use CATS::Prizes;
-use CATS::Messages;
-use CATS::Stats;
-use CATS::Judges;
-use CATS::Compilers;
-use CATS::Keywords;
+use CATS::UI::Prizes;
+use CATS::UI::Messages;
+use CATS::UI::Stats;
+use CATS::UI::Judges;
+use CATS::UI::Compilers;
+use CATS::UI::Keywords;
 use CATS::UI::Problems;
 
 sub make_sid {
@@ -490,7 +490,7 @@ sub contests_frame
     init_listview_template('contests', 'contests',
         'contests.' .  ($ical ? 'ics' : $json ? 'json' : 'html') . '.tt');
 
-    CATS::Prizes::contest_group_auto_new if defined param('create_group') && $is_root;
+    CATS::UI::Prizes::contest_group_auto_new if defined param('create_group') && $is_root;
 
     if (defined url_param('delete') && $is_root) {
         my $cid = url_param('delete');
@@ -1036,10 +1036,10 @@ sub prizes_frame
         $dbh->commit;
     }
 
-    defined url_param('edit') and return CATS::Prizes::prizes_edit_frame;
+    defined url_param('edit') and return CATS::UI::Prizes::prizes_edit_frame;
     init_listview_template('prizes', 'prizes', 'prizes.html.tt');
 
-    defined param('edit_save') and CATS::Prizes::prizes_edit_save;
+    defined param('edit_save') and CATS::UI::Prizes::prizes_edit_save;
 
     define_columns(url_f('prizes'), 0, 0, [
         { caption => res_str(601), order_by => '2', width => '30%' },
@@ -1228,15 +1228,15 @@ sub interface_functions ()
         users => \&users_frame,
         users_import => \&users_import_frame,
         user_stats => \&user_stats_frame,
-        compilers => \&CATS::Compilers::compilers_frame,
-        judges => \&CATS::Judges::judges_frame,
-        keywords => \&CATS::Keywords::keywords_frame,
+        compilers => \&CATS::UI::Compilers::compilers_frame,
+        judges => \&CATS::UI::Judges::judges_frame,
+        keywords => \&CATS::UI::Keywords::keywords_frame,
         import_sources => \&import_sources_frame,
         prizes => \&prizes_frame,
         download_import_source => \&download_import_source_frame,
 
-        answer_box => \&CATS::Messages::answer_box_frame,
-        send_message_box => \&CATS::Messages::send_message_box_frame,
+        answer_box => \&CATS::UI::Messages::answer_box_frame,
+        send_message_box => \&CATS::UI::Messages::send_message_box_frame,
 
         run_log => \&CATS::RunDetails::run_log_frame,
         view_source => \&CATS::RunDetails::view_source_frame,
@@ -1244,17 +1244,17 @@ sub interface_functions ()
         run_details => \&CATS::RunDetails::run_details_frame,
         diff_runs => \&CATS::RunDetails::diff_runs_frame,
 
-        test_diff => \&CATS::Stats::test_diff_frame,
-        compare_tests => \&CATS::Stats::compare_tests_frame,
+        test_diff => \&CATS::UI::Stats::test_diff_frame,
+        compare_tests => \&CATS::UI::Stats::compare_tests_frame,
         rank_table_content => \&rank_table_content_frame,
         rank_table => \&rank_table_frame,
         rank_problem_details => \&rank_problem_details,
         problem_text => \&CATS::Problem::Text::problem_text_frame,
-        envelope => \&CATS::Messages::envelope_frame,
+        envelope => \&CATS::UI::Messages::envelope_frame,
         about => \&about_frame,
         static => \&static_frame,
 
-        similarity => \&CATS::Stats::similarity_frame,
+        similarity => \&CATS::UI::Stats::similarity_frame,
         personal_official_results => \&CATS::Contest::personal_official_results,
     }
 }

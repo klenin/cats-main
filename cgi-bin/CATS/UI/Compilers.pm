@@ -1,4 +1,4 @@
-package CATS::Compilers;
+package CATS::UI::Compilers;
 
 use strict;
 use warnings;
