@@ -224,7 +224,7 @@ sub users_save_attributes
         my $remote = param_on("remote$_");
         my $hidden = param_on("hidden$_");
 
-        # нельзя снять is_jury у администратора
+        # Forbid removing is_jury privilege from an admin.
         my ($srole) = $dbh->selectrow_array(qq~
             SELECT A.srole FROM accounts A
                 INNER JOIN contest_accounts CA ON A.id = CA.account_id
@@ -233,7 +233,7 @@ sub users_save_attributes
         );
         $jury = 1 if !$srole;
 
-        # security: запрещаем менять параметры пользователей в других трнирах
+        # Security: Forbid changing of user parameters in other contests.
         $dbh->do(qq~
             UPDATE contest_accounts
                 SET is_jury = ?, is_hidden = ?, is_remote = ?, is_ooc = ?
