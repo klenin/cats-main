@@ -3,7 +3,7 @@ package CATS::UI::Problems;
 use strict;
 use warnings;
 
-use CATS::Web qw(param url_param);
+use CATS::Web qw(param url_param save_uploaded_file upload_source);
 use CATS::DB;
 use CATS::Constants;
 use CATS::Misc qw(
