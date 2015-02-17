@@ -3,7 +3,7 @@ package CATS::UI::Problems;
 use strict;
 use warnings;
 
-use CATS::Web qw(param url_param);
+use CATS::Web qw(param url_param redirect upload_source save_uploaded_file);
 use CATS::DB;
 use CATS::Constants;
 use CATS::Misc qw(
@@ -11,7 +11,6 @@ use CATS::Misc qw(
     cats_dir init_template init_listview_template msg res_str url_f auto_ext
     order_by define_columns attach_listview problem_status_names);
 use CATS::Utils qw(url_function);
-use CATS::Web qw(redirect);
 use CATS::Data qw(:all);
 use CATS::StaticPages;
 use CATS::Problem::Text;

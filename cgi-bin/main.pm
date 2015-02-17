@@ -27,7 +27,7 @@ BEGIN {
 use lib $cats_lib_dir;
 
 
-use CATS::Web qw(param url_param save_uploaded_file redirect upload_source init_request get_return_code);
+use CATS::Web qw(param url_param redirect init_request get_return_code);
 use CATS::DB;
 use CATS::Constants;
 use CATS::BinaryFile;
