@@ -67,7 +67,7 @@ sub users_import_frame
     param('do') or return;
     my $do_import = param('do_import');
     my @report;
-    for my $line (split "\r\n", decode_utf8(param('user_list'))) {
+    for my $line (split "\r\n", Encode::decode_utf8(param('user_list'))) {
         my $u = CATS::User->new;
         @$u{qw(team_name login password1 city)} = split "\t", $line;
         my $r = eval {
@@ -135,10 +135,10 @@ sub settings_frame
     if ($is_root) {
         # Data::Dumper escapes UTF-8 characters into \x{...} sequences.
         # Work around by dumping encoded strings, then decoding the result.
-        my $d = Data::Dumper->new([ apply_rec($settings, \&encode_utf8) ]);
+        my $d = Data::Dumper->new([ apply_rec($settings, \&Encode::encode_utf8) ]);
         $d->Quotekeys(0);
         $d->Sortkeys(1);
-        $t->param(settings => decode_utf8($d->Dump));
+        $t->param(settings => Encode::decode_utf8($d->Dump));
     }
 }
 
