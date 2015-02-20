@@ -9,13 +9,14 @@ use CATS::DB;
 use CATS::Constants;
 use CATS::Misc qw(
     $t $is_jury $is_root $is_team $sid $cid $uid $contest $is_virtual $settings
-    init_template init_listview_template msg res_str url_f auto_ext get_flag
+    init_template init_listview_template msg res_str url_f auto_ext
     order_by define_columns attach_listview);
 use CATS::Utils qw(url_function);
 use CATS::Web qw(redirect);
 use CATS::Data qw(:all);
 use CATS::User;
 use CATS::RankTable;
+use CATS::Countries;
 
 # Admin adds new user to current contest
 sub users_new_save
@@ -33,7 +34,7 @@ sub users_edit_frame
     my $id = url_param('edit') or return;
     my $u = CATS::User->new->load($id, [ 'locked' ]) or return;
     $t->param(
-        %$u, id => $id, countries => \@cats::countries, is_root => $is_root,
+        %$u, id => $id, countries => \@CATS::Countries::countries, is_root => $is_root,
         href_action => url_f('users'),
         href_impersonate => url_f('users', impersonate => $id));
 }
@@ -84,7 +85,7 @@ sub registration_frame
 {
     init_template('registration.html.tt');
 
-    $t->param(countries => [ @cats::countries ], href_login => url_f('login'));
+    $t->param(countries => \@CATS::Countries::countries, href_login => url_f('login'));
 
     defined param('register')
         or return;
@@ -125,7 +126,7 @@ sub settings_frame
     $uid or return;
     my $u = CATS::User->new->load($uid) or return;
     $t->param(
-        countries => \@cats::countries, href_action => url_f('users'),
+        countries => \@CATS::Countries::countries, href_action => url_f('users'),
         title_suffix => res_str(518), %$u);
     if ($is_jury) {
         $t->param(langs => [
@@ -350,11 +351,11 @@ sub users_frame
     my $fetch_record = sub($)
     {
         my (
-            $aid, $caid, $country_abb, $login, $team_name, $city, $jury,
+            $aid, $caid, $country_abbr, $login, $team_name, $city, $jury,
             $ooc, $remote, $hidden, $virtual, $motto, $tag, $accepted
         ) = $_[0]->fetchrow_array
             or return ();
-        my ($country, $flag) = get_flag($country_abb);
+        my ($country, $flag) = CATS::Countries::get_flag($country_abbr);
         return (
             href_delete => url_f('users', delete => $caid),
             href_edit => url_f('users', edit => $aid),

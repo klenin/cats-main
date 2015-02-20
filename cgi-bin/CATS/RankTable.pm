@@ -12,8 +12,8 @@ use CATS::Constants;
 use CATS::DB;
 use CATS::Testset;
 use CATS::Misc qw(
-    $t $is_jury $is_team $virtual_diff_time $cid $uid url_f $is_virtual $contest cats_dir
-    get_flag);
+    $t $is_jury $is_team $virtual_diff_time $cid $uid url_f $is_virtual $contest cats_dir);
+use CATS::Countries;
 
 use fields qw(
     contest_list hide_ooc hide_virtual show_points frozen
@@ -468,7 +468,7 @@ sub rank_table
             # Since virtual team is always ooc, do not output extra string.
             $team->{is_ooc} = 0 if $team->{is_virtual};
             $team->{$_} = 0 for qw(total_solved total_runs total_time total_points);
-            ($team->{country}, $team->{flag}) = get_flag($team->{country});
+            ($team->{country}, $team->{flag}) = CATS::Countries::get_flag($team->{country});
             $team->{$_} = Encode::decode_utf8($team->{$_}) for qw(team_name city tag);
             $team->{problems} = { map { $_->{problem_id} => { %init_problem } } @{$self->{problems}} };
         }

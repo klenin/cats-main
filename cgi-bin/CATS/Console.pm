@@ -10,6 +10,7 @@ use CATS::DB;
 use CATS::Misc qw(:all);
 use CATS::Data qw(:all);
 use CATS::Utils qw(coalesce url_function state_to_display);
+use CATS::Countries;
 use Encode qw(decode_utf8);
 
 sub send_question_to_jury
@@ -352,13 +353,13 @@ sub console_content
     {
         my ($rtype, $rank, $submit_time, $id, $request_state, $failed_test,
             $problem_title, $de, $clarified, $question, $answer, $jury_message,
-            $team_id, $team_name, $country_abb, $last_ip, $caid, $contest_id
+            $team_id, $team_name, $country_abbr, $last_ip, $caid, $contest_id
         ) = $_[0]->fetchrow_array
             or return ();
 
         $request_state = -1 unless defined $request_state;
 
-        my ($country, $flag) = get_flag($country_abb);
+        my ($country, $flag) = CATS::Countries::get_flag($country_abbr);
         return (
             country => $country,
             flag => $flag,

@@ -23,7 +23,6 @@ BEGIN
         templates_path
         order_by
         define_columns
-        get_flag
         res_str
         attach_listview
         attach_menu
@@ -436,17 +435,6 @@ sub define_columns
 
     $t->param(col_defs => $col_defs);
 }
-
-
-sub get_flag
-{
-    my $country_id = shift || return;
-    my ($country) = grep { $_->{id} eq $country_id } @cats::countries;
-    $country or return;
-    my $flag = defined $country->{flag} ? "$cats::flags_path/$country->{flag}" : undef;
-    return ($country->{name}, $flag);
-}
-
 
 # Authorize user, initialize permissions and settings.
 sub init_user
