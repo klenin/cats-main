@@ -1,12 +1,9 @@
 package cats;
 
-#$htdocs = "http://imcs.dvgu.ru/acm/cats/docs";
-$htdocs = "./docs";
 $flags_path = "./images/std/countries/";
 
 $anonymous_login = 'anonymous';
 
-# путь к шаблонам
 @templates = (
     { id => "std", path => "./../templates/std" },
     { id => "alt", path => "./../templates/alt" }
@@ -16,24 +13,18 @@ $anonymous_login = 'anonymous';
 
 $repos_dir = 'repos/';
 
-# максимальное количество записей, извлекаемых из датасета
+# Optimization: limit datasets by both maximum row count and maximum visible pages.
 $max_fetch_row_count = 1000;
-
-# скорость обновления
-$refresh_rate = 30;
-
-# количество отображаемых страниц
 $visible_pages = 5;
 
-# количество отображаемых строк с списке
 @display_rows = ( 10, 20, 30, 40, 50, 100, 300 );
 
-# роль пользователя в системе
-$srole_root = 0; # администратор системы
-$srole_user = 1; # пользователь системы
-$srole_contests_creator = 2; # может создавать турниры
+# Values for accounts.srole.
+$srole_root = 0;
+$srole_user = 1;
+$srole_contests_creator = 2;
 
-# типы исходников, в таблице problem_sources
+# Values problem_sources.stype.
 $generator = 0;
 $solution = 1;
 $checker = 2;
@@ -56,7 +47,7 @@ $partial_checker = 8;
     $partial_checker => 'partial checker',
 );
 
-# типы модулей для исходников
+# Map source types to module types.
 %source_modules = (
     $generator => $generator_module,
     $solution => $solution_module,
@@ -66,12 +57,14 @@ $partial_checker = 8;
     $partial_checker => $checker_module,
 );
 
-# состояние запроса в очереди
+# Values for reqs.state.
 $st_not_processed = 0;
 $st_unhandled_error = 1;
 $st_install_processing = 2;
 $st_testing = 3;
 
+# This value should not actuall exist in the database.
+# Values greater than this indicate that judge has finished processing.
 $request_processed = 9;
 
 $st_accepted = 10;
@@ -85,33 +78,16 @@ $st_memory_limit_exceeded = 17;
 $st_ignore_submit = 18;
 $st_idleness_limit_exceeded = 19;
 
+# Values for contest_problems.status.
 $problem_st_ready     = 0;
 $problem_st_suspended = 1;
 $problem_st_disabled  = 2;
 $problem_st_hidden    = 3;
 
-# сигналы судье
-$js_nosig = 0;
-$js_kill = 1;
-
-# типы сообщений
-$msg_que = 0;
-$msg_ans = 1;
-$msg_msg = 2;
-
 $penalty = 20;
-
-$slow_refresh = 30;
-$medium_refresh = 10;
-$fast_refresh = 3;
 
 @problem_codes = ('A'..'Z', '1'..'9');
 sub is_good_problem_code { $_[0] =~ /^[A-Z1-9]$/ }
-
-@skins = (
-    { id => "std", path => "./../templates/std" },
-    { id => "alt", path => "./../templates/alt" }
-);
 
 @countries = (
 
