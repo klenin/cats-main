@@ -24,7 +24,7 @@ use fields qw(
     tests testsets samples objects keywords
     imports solutions generators modules pictures attachments
     test_defaults current_tests current_sample gen_groups
-    encoding stml zip zip_archive old_title replace tag_stack has_checker de_list
+    encoding stml zip zip_archive old_title replace tag_stack has_checker de_list run_method
 );
 
 use CATS::Problem::Tests;
@@ -227,6 +227,8 @@ sub validate
         if @without_points && @without_points != @t;
 
     $check_order->($self->{samples}, 'sample');
+
+    $self->{run_method} ||= $cats::rm_default;
 }
 
 
@@ -374,6 +376,7 @@ sub tag_handlers()
     SampleOut => { s => \&start_tag_SampleOut, e => \&end_stml, in => ['Sample'] },
     Keyword => { s => \&start_tag_Keyword, r => ['code'] },
     Testset => { s => \&start_tag_Testset, r => ['name', 'tests'] },
+    Run => { s => \&start_tag_Run, r => ['method'] },
 }}
 
 
@@ -452,6 +455,7 @@ sub problem_source_common_params
         memory_limit => $atts->{memoryLimit},
     );
 }
+
 
 sub start_tag_Solution
 {
@@ -587,6 +591,7 @@ sub import_one_source
 
 }
 
+
 sub start_tag_Import
 {
     (my CATS::Problem $self, my $atts) = @_;
@@ -648,6 +653,7 @@ sub sample_in_out
     }
 }
 
+
 sub start_tag_SampleIn { $_[0]->sample_in_out($_[1], 'in_file'); }
 sub start_tag_SampleOut { $_[0]->sample_in_out($_[1], 'out_file'); }
 
@@ -673,6 +679,20 @@ sub start_tag_Testset
         id => new_id, map { $_ => $atts->{$_} } qw(name tests points comment hideDetails) };
     $self->{testsets}->{$n}->{hideDetails} ||= 0;
     $self->note("Testset $n added");
+}
+
+
+sub start_tag_Run
+{
+    (my CATS::Problem $self, my $atts) = @_;
+    $self->error("Duplicate 'Run' tag") if defined $self->{run_method};
+    my $m = $atts->{method};
+    $self->{run_method} = {
+        default => $cats::rm_default,
+        interactive => $cats::rm_interactive,
+    }->{$m};
+    $self->error("Unknown run method: '$m'") if not defined $self->{run_method};
+    $self->note("Run method set to '$m'");
 }
 
 
@@ -768,7 +788,7 @@ sub end_tag_Problem
             title=?, lang=?, time_limit=?, memory_limit=?, difficulty=?, author=?, input_file=?, output_file=?,
             statement=?, pconstraints=?, input_format=?, output_format=?, formal_input=?, json_data=?, explanation=?, zip_archive=?,
             upload_date=CURRENT_TIMESTAMP, std_checker=?, last_modified_by=?,
-            max_points=?, hash=NULL
+            max_points=?, hash=NULL, run_method=?
         WHERE id = ?~
     : q~
         INSERT INTO problems (
@@ -776,9 +796,9 @@ sub end_tag_Problem
             title, lang, time_limit, memory_limit, difficulty, author, input_file, output_file,
             statement, pconstraints, input_format, output_format, formal_input, json_data, explanation, zip_archive,
             upload_date, std_checker, last_modified_by,
-            max_points, id
+            max_points, id, run_method
         ) VALUES (
-            ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP,?,?,?,?
+            ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP,?,?,?,?,?
         )~;
 
     my $c = $dbh->prepare($sql);
@@ -792,6 +812,7 @@ sub end_tag_Problem
     $c->bind_param($i++, $CATS::Misc::uid);
     $c->bind_param($i++, $self->{problem}->{max_points});
     $c->bind_param($i++, $self->{id});
+    $c->bind_param($i++, $self->{run_method});
     $c->execute;
 
     $self->insert_problem_content;
