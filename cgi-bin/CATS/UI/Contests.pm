@@ -3,15 +3,14 @@ package CATS::UI::Contests;
 use strict;
 use warnings;
 
-use CATS::Web qw(param url_param);
+use CATS::Web qw(param url_param redirect);
 use CATS::DB;
 use CATS::Constants;
 use CATS::Misc qw(
     $t $is_jury $is_root $is_team $sid $cid $uid $contest $is_virtual $settings
     cats_dir init_template init_listview_template msg res_str url_f auto_ext
     order_by define_columns attach_listview);
-use CATS::Utils qw(url_function coalesce);
-use CATS::Web qw(redirect);
+use CATS::Utils qw(url_function param_on coalesce);
 use CATS::Data qw(:all);
 use CATS::StaticPages;
 use CATS::RankTable;
