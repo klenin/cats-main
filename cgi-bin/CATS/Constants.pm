@@ -11,12 +11,6 @@ $anonymous_login = 'anonymous';
 
 $repos_dir = 'repos/';
 
-# Optimization: limit datasets by both maximum row count and maximum visible pages.
-$max_fetch_row_count = 1000;
-$visible_pages = 5;
-
-@display_rows = ( 10, 20, 30, 40, 50, 100, 300 );
-
 # Values for accounts.srole.
 $srole_root = 0;
 $srole_user = 1;

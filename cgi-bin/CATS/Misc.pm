@@ -68,6 +68,12 @@ use vars qw(
 
 my ($listview_array_name, $messages, $http_mime_type, %extra_headers, $enc_settings);
 
+# Optimization: limit datasets by both maximum row count and maximum visible pages.
+my $max_fetch_row_count = 1000;
+my $visible_pages = 5;
+
+my @display_rows = (10, 20, 30, 40, 50, 100, 300);
+
 my $cats_dir;
 sub cats_dir()
 {
@@ -154,7 +160,7 @@ sub init_listview_params
         $s->{page} = 0;
     }
 
-    $s->{rows} ||= $cats::display_rows[0];
+    $s->{rows} ||= $display_rows[0];
     my $rows = param('rows') || 0;
     if ($rows > 0) {
         $s->{page} = 0 if $s->{rows} != $rows;
@@ -301,7 +307,7 @@ sub attach_listview
     }
 
     ROWS: while (my %row = $fetch_row->($sth)) {
-        last if $row_count > $cats::max_fetch_row_count || $page_count > $$page + $cats::visible_pages;
+        last if $row_count > $max_fetch_row_count || $page_count > $$page + $visible_pages;
         for my $key (keys %mask) {
             first { defined $_ && Encode::decode_utf8($_) =~ $mask{$key} }
                 ($key ? ($row{$key}) : values %row)
@@ -316,8 +322,8 @@ sub attach_listview
     }
 
     $$page = min(max($page_count - 1, 0), $$page);
-    my $range_start = max($$page - int($cats::visible_pages / 2), 0);
-    my $range_end = min($range_start + $cats::visible_pages - 1, $page_count - 1);
+    my $range_start = max($$page - int($visible_pages / 2), 0);
+    my $range_end = min($range_start + $visible_pages - 1, $page_count - 1);
 
     my $pp = $p->{page_params} || {};
     my $page_extra_params = join '', map ";$_=$pp->{$_}", keys %$pp;
@@ -333,7 +339,7 @@ sub attach_listview
         ($range_start > 0 ? (href_prev_pages => $href_page->($range_start - 1)) : ()),
         ($range_end < $page_count - 1 ? (href_next_pages => $href_page->($range_end + 1)) : ()),
         display_rows =>
-            [ map { value => $_, text => $_, selected => $s->{rows} == $_ }, @cats::display_rows ],
+            [ map { value => $_, text => $_, selected => $s->{rows} == $_ }, @display_rows ],
         $listview_array_name => \@data,
     );
 }
