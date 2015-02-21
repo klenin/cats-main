@@ -3,8 +3,8 @@
 
 <form method="post" enctype="multipart/form-data" action="[% href_action %]">
 <table cellpadding="0">
-<tr><td>[% capt.judge_name %]</td><td><input type="text" name="judge_name" value="[% judge_name | html %]" class="bordered"></td>
-<tr><td>[% capt.locked %]</td><td>[% checkbox('locked', locked) %]</td>
+<tr><td>[% capt.judge_name %]</td><td><input type="text" name="judge_name" value="[% judge_name | html %]" class="bordered"></td></tr>
+<tr><td>[% capt.locked %]</td><td>[% checkbox('locked', locked) %]</td></tr>
 </table>
 <br>
 [% PROCESS includes/edit_save_cancel.tti %]

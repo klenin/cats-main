@@ -2,8 +2,8 @@
 
 <form method="post" enctype="multipart/form-data" action="[% href_action %]">
 <table cellpadding="0">
-<tr><td>[% capt.name %]</td><td><input type="text" name="name" value="[% name %]" class="bordered" size="60"/></td>
-<tr><td>[% capt.contests %]</td><td><input type="text" name="clist" value="[% clist %]" class="bordered" size="60" /></td>
+<tr><td>[% capt.name %]</td><td><input type="text" name="name" value="[% name %]" class="bordered" size="60"/></td></tr>
+<tr><td>[% capt.contests %]</td><td><input type="text" name="clist" value="[% clist %]" class="bordered" size="60" /></td></tr>
 </table>
 <table cellpadding="0" class="bordered">
 <tr><th>[% capt.place %]</th><th>[% capt.prize %]</th></tr>
