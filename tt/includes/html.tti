@@ -7,6 +7,9 @@
     [%- FOREACH opt IN options; option(opt.value, opt.text, opt.selected); END -%]
     </select>
 [%- END -%]
+[%- MACRO checkbox(name, checked, enabled) BLOCK; SET enabled = 1 UNLESS enabled.defined ~%]
+    <input type="checkbox" name="[% name %]"[% ' checked="checked"' IF checked; ' disabled="disabled"' UNLESS enabled %] />
+[%- END -%]
 
 [%- MACRO href(url, text) BLOCK -%]<a href="[% url %]">[% text | html %]</a>[% END -%]
 [%- MACRO maybe_href(url, text) BLOCK; IF url; href(url, text); ELSE; text | html ; END; END -%]

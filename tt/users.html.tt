@@ -1,4 +1,5 @@
 [% PROCESS 'includes/menu_begin.tti' %]
+[% PROCESS 'includes/html.tti' %]
 
 <script>
 function delete_team(href, name)
@@ -27,10 +28,10 @@ function delete_team(href, name)
 <a href="[% href_stats %]">[% team_name | html %][% IF city %] ([% city | html %])[% END %]</a></td>
 <td align="center">[% tag %]</td>
 [% IF editable %]
-<td align=center><input type="checkbox" name="jury[% id %]" [% IF jury %]checked[% END %]></td>
-<td align=center><input type="checkbox" name="ooc[% id %]" [% IF ooc %]checked[% END %]></td>
-<td align=center><input type="checkbox" name="remote[% id %]" [% IF remote %]checked[% END %]></td>
-<td align=center><input type="checkbox" name="hidden[% id %]" [% IF hidden %]checked[% END %]></td>
+<td align=center>[% checkbox("jury$id", jury) %]</td>
+<td align=center>[% checkbox("ooc$id", ooc) %]</td>
+<td align=center>[% checkbox("remote$id", remote) %]</td>
+<td align=center>[% checkbox("hidden$id", hidden) %]</td>
 [% END %]
 <td align=center>
 [% IF flag %]<img src="[% flag %]" alt="[% country | html %][% IF motto %] - [% motto | html %][% END %]">
