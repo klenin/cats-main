@@ -53,6 +53,9 @@
     [% IF show_checker_comment %]
       <th>[% capt.comment %]</th>
     [% END %]
+    [% IF show_test_data %]
+      <th>[% capt.test_data %]</th>
+    [% END %]
   </tr>
   [% FOREACH rd IN run_details %]
   <tr [% IF rd.accepted %] class="run_details_OK"[% END ~%]
@@ -90,6 +93,7 @@
       <td align="right">[% rd.disk_used %]</td>
     [% END %]
     [% IF show_checker_comment %]<td><pre>[% rd.checker_comment %]</pre></td>[% END %]
+    [% IF show_test_data %]<td><tt>[% rd.test_data %]</tt></td>[% END %]
   </tr>
   [% END %]
   [% IF show_points %]<tr><td colspan="2">[% capt.total %]</td><td>[% total_points %]</td></tr>[% END %]

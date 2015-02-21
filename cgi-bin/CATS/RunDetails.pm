@@ -142,10 +142,21 @@ sub get_run_info
         return \%r;
     };
 
+    my $add_testdata = sub {
+        my ($row) = @_ or return ();
+        $contest->{show_test_data} or return $row;
+        my $t = $contest->{tests}->[$row->{test_rank} - 1] or return $row;
+        $row->{test_data} =
+            $t->{input} ? "$t->{input}&hellip;" :
+            $t->{gen_group} ? "$t->{gen_name} GROUP" :
+            $t->{gen_name} ? "$t->{gen_name} $t->{param}" : '';
+        $row;
+    };
+
     return {
         %$contest,
         total_points => $total_points,
-        run_details => [ map $run_row->($_), 1..$last_test ],
+        run_details => [ map $add_testdata->($run_row->($_)), 1..$last_test ],
         testsets => [ sort { $a->{list}[0] <=> $b->{list}[0] } values %used_testsets ],
     };
 }
@@ -157,21 +168,25 @@ sub get_contest_info
 
     my $contest = $dbh->selectrow_hashref(qq~
         SELECT
-            id, run_all_tests, show_all_tests, show_test_resources, show_checker_comment,
+            id, run_all_tests, show_all_tests, show_test_resources, show_checker_comment, show_test_data,
             CAST(CURRENT_TIMESTAMP - defreeze_date AS DOUBLE PRECISION) AS time_since_defreeze
             FROM contests WHERE id = ?~, { Slice => {} },
         $si->{contest_id});
 
     $contest->{$_} ||= $jury_view
-        for qw(show_all_tests show_test_resources show_checker_comment);
+        for qw(show_all_tests show_test_resources show_checker_comment show_test_data);
     $contest->{hide_testset_details} = !$jury_view && $contest->{time_since_defreeze} < 0;
 
-    my $p = $contest->{points} =
-        $contest->{show_all_tests} ?
-        $dbh->selectcol_arrayref(qq~
-            SELECT points FROM tests WHERE problem_id = ? ORDER BY rank~, undef,
-            $si->{problem_id})
-        : [];
+    my $fields = join ', ',
+        ($contest->{show_all_tests} ? 't.points' : ()),
+        ($contest->{show_test_data} ? q~
+            (SELECT ps.fname FROM problem_sources ps WHERE ps.id = t.generator_id) AS gen_name,
+            t.param, SUBSTRING(t.in_file FROM 1 FOR 20) AS input, t.gen_group~ : ());
+    my $tests = $contest->{tests} = $fields ?
+        $dbh->selectall_arrayref(qq~
+            SELECT $fields FROM tests t WHERE t.problem_id = ? ORDER BY t.rank~, { Slice => {} },
+            $si->{problem_id}) : [];
+    my $p = $contest->{points} = $contest->{show_all_tests} ? [ map $_->{points}, @$tests ] : [];
     $contest->{show_points} = 0 != grep defined $_ && $_ > 0, @$p;
     $contest;
 }
