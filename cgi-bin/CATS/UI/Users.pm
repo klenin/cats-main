@@ -127,12 +127,9 @@ sub settings_frame
     my $u = CATS::User->new->load($uid) or return;
     $t->param(
         countries => \@CATS::Countries::countries, href_action => url_f('users'),
-        title_suffix => res_str(518), %$u);
-    if ($is_jury) {
-        $t->param(langs => [
-            map { href => url_f('settings', lang => $_), name => $_ }, @cats::langs
-        ]);
-    }
+        title_suffix => res_str(518),
+        langs => [ map { href => url_f('settings', lang => $_), name => $_ }, @cats::langs ],
+        %$u);
     if ($is_root) {
         # Data::Dumper escapes UTF-8 characters into \x{...} sequences.
         # Work around by dumping encoded strings, then decoding the result.
