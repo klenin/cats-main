@@ -8,7 +8,7 @@ sub database_fields {qw(
     start_date finish_date freeze_date defreeze_date
     closed penalty ctype rules max_reqs
     is_official run_all_tests
-    show_all_tests show_test_resources show_checker_comment show_packages
+    show_all_tests show_test_resources show_checker_comment show_packages show_test_data
     local_only is_hidden
 )}
 

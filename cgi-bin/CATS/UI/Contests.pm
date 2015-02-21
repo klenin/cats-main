@@ -35,7 +35,7 @@ sub contest_checkbox_params()
 {qw(
     free_registration run_all_tests
     show_all_tests show_test_resources show_checker_comment show_all_results
-    is_official show_packages local_only is_hidden
+    is_official show_packages local_only is_hidden show_test_data
 )}
 
 sub contest_string_params()
@@ -83,11 +83,13 @@ sub contests_new_save
             ctype,
             closed, run_all_tests, show_all_tests,
             show_test_resources, show_checker_comment, show_all_results,
-            is_official, show_packages, local_only, is_hidden, show_frozen_reqs
+            is_official, show_packages, local_only, is_hidden, show_frozen_reqs, show_test_data
         ) VALUES(
             ?, ?, ?, ?, ?, ?, ?, ?,
             0,
-            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)~,
+            ?, ?, ?,
+            ?, ?, ?,
+            ?, ?, ?, ?, 0, ?)~,
         {},
         $cid, @$p{contest_string_params()},
         @$p{contest_checkbox_params()}
@@ -120,7 +122,7 @@ sub try_contest_params_frame
             finish_date,
             defreeze_date AS open_date,
             1 - closed AS free_registration,
-            run_all_tests, show_all_tests, show_test_resources, show_checker_comment,
+            run_all_tests, show_all_tests, show_test_resources, show_checker_comment, show_test_data,
             show_all_results, is_official, show_packages, local_only, rules, is_hidden, max_reqs
         FROM contests WHERE id = ?~, { Slice => {} },
         $id
@@ -149,7 +151,7 @@ sub contests_edit_save
             closed=?, run_all_tests=?, show_all_tests=?,
             show_test_resources=?, show_checker_comment=?, show_all_results=?,
             is_official=?, show_packages=?,
-            local_only=?, is_hidden=?, show_frozen_reqs=0
+            local_only=?, is_hidden=?, show_frozen_reqs=0, show_test_data=?
         WHERE id=?~,
         {},
         @$p{contest_string_params()},

@@ -18,6 +18,7 @@
     show_all_results => 'результаты всех участников',
     show_all_tests => 'результаты всех тестов',
     show_test_resources => 'использованные ресурсы',
+    show_test_data => 'содержимое тестов',
     show_checker_comment => "комментарии checker'а",
     show_packages => 'пакеты задач',
     ok => '     Ok     ',

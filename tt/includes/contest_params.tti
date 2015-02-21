@@ -28,6 +28,7 @@
   <tr><td>[% capt.show_all_results %]:</td><td><input type="checkbox" name="show_all_results"[% IF show_all_results %]checked="checked"[% END %] [% UNLESS can_edit %]disabled="disabled"[% END %]/></td></tr>
   <tr><td>[% capt.show_all_tests %]:</td><td><input type="checkbox" name="show_all_tests"[% IF show_all_tests %]checked="checked"[% END %] [% UNLESS can_edit %]disabled="disabled"[% END %]/></td></tr>
   <tr><td>[% capt.show_test_resources %]:</td><td><input type="checkbox" name="show_test_resources"[% IF show_test_resources %]checked="checked"[% END %] [% UNLESS can_edit %]disabled="disabled"[% END %]/></td></tr>
+  <tr><td>[% capt.show_test_data %]:</td><td><input type="checkbox" name="show_test_data"[% IF show_test_data %]checked="checked"[% END %] [% UNLESS can_edit %]disabled="disabled"[% END %]/></td></tr>
   <tr><td>[% capt.show_checker_comment %]:</td><td><input type="checkbox" name="show_checker_comment"[% IF show_checker_comment %]checked="checked"[% END %] [% UNLESS can_edit %]disabled="disabled"[% END %]/></td></tr>
   <tr><td>[% capt.show_packages %]:</td><td><input type="checkbox" name="show_packages"[% IF show_packages %]checked="checked"[% END %] [% UNLESS can_edit %]disabled="disabled"[% END %]/></td></tr>
 </table>

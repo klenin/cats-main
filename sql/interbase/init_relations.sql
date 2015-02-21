@@ -69,6 +69,7 @@ CREATE TABLE contests (
     max_reqs             INTEGER DEFAULT 0,
     /* TODO: output runs in a frozen table. */
     show_frozen_reqs     SMALLINT DEFAULT 0 CHECK (show_frozen_reqs IN (0, 1)),
+    show_test_data       SMALLINT DEFAULT 0 CHECK (show_test_data IN (0, 1)),
 
     CHECK (
         start_date <= finish_date AND freeze_date >= start_date
