@@ -115,10 +115,7 @@ sub get_run_info
             $total_points += $p;
         }
         $run_details{$last_test} = {
-            state_to_display($row->{result}),
-            map({ $_ => $contest->{$_} }
-                qw(show_test_resources show_checker_comment)),
-            %$row, show_points => $contest->{show_points}, points => $p,
+            state_to_display($row->{result}), %$row, points => $p,
         };
         # When tests are run in random order, and the user looks at the run details
         # while the testing is in progress, he may be able to see 'OK' result

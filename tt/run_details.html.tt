@@ -83,13 +83,13 @@
    [% IF rd.compilation_error %]Compilation error[% END ~%]
    [% IF rd.security_violation %]Security violation[% END ~%]
    </td>
-    [% IF rd.show_points %]<td>[% rd.points %]</td>[% END %]
-    [% IF rd.show_test_resources %]
+    [% IF show_points %]<td>[% rd.points %]</td>[% END %]
+    [% IF show_test_resources %]
       <td>[% rd.time_used %]</td>
       <td align="right">[% rd.memory_used %]</td>
       <td align="right">[% rd.disk_used %]</td>
     [% END %]
-    [% IF rd.show_checker_comment %]<td><pre>[% rd.checker_comment %]</pre></td>[% END %]
+    [% IF show_checker_comment %]<td><pre>[% rd.checker_comment %]</pre></td>[% END %]
   </tr>
   [% END %]
   [% IF show_points %]<tr><td colspan="2">[% capt.total %]</td><td>[% total_points %]</td></tr>[% END %]
