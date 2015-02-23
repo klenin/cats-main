@@ -1,7 +1,8 @@
 # ---------------------------------------------------------------------
 # CHANGE this definition to point to your InterBase installation directory
 # ---------------------------------------------------------------------
-IBASE=          c:\Progra~1\Firebird\Firebird_1_5\
+IBASE=          $(IBASE_PATH)
+
 
 
 # ---------------------------------------------------------------------
@@ -9,8 +10,8 @@ IBASE=          c:\Progra~1\Firebird\Firebird_1_5\
 # ---------------------------------------------------------------------
 CC=             cl
 LINK=           link
-CFLAGS=         -I$(IBASE)\include  
-LINK_FLAGS=     -DLL  -LIBPATH:$(IBASE)\lib
+CFLAGS=         -I"$(IBASE)\include"  
+LINK_FLAGS=     -DLL  -LIBPATH:"$(IBASE)\lib"
 LINK_LIBS=      fbclient_ms.lib 
 
 .SUFFIXES: .obj .c
