@@ -670,7 +670,8 @@ sub start_tag_Testset
     $self->{testsets}->{$n} and $self->error("Duplicate testset '$n'");
     $self->parse_test_rank($atts->{tests});
     $self->{testsets}->{$n} = {
-        id => new_id, map { $_ => $atts->{$_} } qw(name tests tests points comment) };
+        id => new_id, map { $_ => $atts->{$_} } qw(name tests points comment hideDetails) };
+    $self->{testsets}->{$n}->{hideDetails} ||= 0;
     $self->note("Testset $n added");
 }
 
@@ -897,9 +898,9 @@ sub insert_problem_content
 
     for my $ts (values %{$self->{testsets}}) {
         $dbh->do(q~
-            INSERT INTO testsets (id, problem_id, name, tests, points, comment)
-            VALUES (?, ?, ?, ?, ?, ?)~, undef,
-            $ts->{id}, $self->{id}, @{$ts}{qw(name tests points comment)});
+            INSERT INTO testsets (id, problem_id, name, tests, points, comment, hide_details)
+            VALUES (?, ?, ?, ?, ?, ?, ?)~, undef,
+            $ts->{id}, $self->{id}, @{$ts}{qw(name tests points comment hideDetails)});
     }
 
     my $c = $dbh->prepare(qq~

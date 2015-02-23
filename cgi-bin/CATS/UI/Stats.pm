@@ -1,4 +1,4 @@
-package CATS::Stats;
+package CATS::UI::Stats;
 
 use strict;
 use warnings;

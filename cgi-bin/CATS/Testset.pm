@@ -22,7 +22,7 @@ sub parse_test_rank
                 my $testset = $all_testsets->{$_} or die \"Unknown testset '$_'";
                 $used{$_}++ and die \"Recursive usage of testset '$_'";
                 my $sg = $scoring_group;
-                if ($testset->{points}) {
+                if ($testset->{points} || $testset->{hide_details}) {
                     die \"Nested scoring group '$_'" if $sg;
                     $sg = $testset;
                     $sg->{test_count} = 0;
@@ -53,7 +53,8 @@ sub parse_test_rank
 sub get_all_testsets
 {
     $dbh->selectall_hashref(qq~
-        SELECT id, name, tests, points, comment FROM testsets WHERE problem_id = ?~,
+        SELECT id, name, tests, points, comment, hide_details
+        FROM testsets WHERE problem_id = ?~,
         'name', undef,
         $_[0]) || {};
 }

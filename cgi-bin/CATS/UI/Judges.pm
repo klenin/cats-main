@@ -1,4 +1,4 @@
-package CATS::Judges;
+package CATS::UI::Judges;
 
 use strict;
 use warnings;

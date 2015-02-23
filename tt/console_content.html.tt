@@ -6,12 +6,9 @@
 [% capt.filter %]:
 [% IF user_filter %]<a href="[% href_all_events %]">[% capt.filter_all %]</a>
 [% ELSE %]<a href="[% href_my_events_only %]">[% capt.filter_my %]</a>[% END %]
-<label title="[% capt.contests %]">
-<input type="checkbox" name="show_contests" [% IF show_contests %] checked="checked"[% END %]/>[% capt.contests_short %]</label>
-<label title="[% capt.messages %]">
-<input type="checkbox" name="show_messages" [% IF show_messages %] checked="checked"[% END %]/>[% capt.messages_short %]</label>
-<label title="[% capt.results %]">
-<input type="checkbox" name="show_results" [% IF show_results %] checked="checked"[% END %]/>[% capt.results_short %]</label>
+<label title="[% capt.contests %]">[% checkbox('show_contests', show_contests) %] [% capt.contests_short %]</label>
+<label title="[% capt.messages %]">[% checkbox('show_messages', show_messages) %] [% capt.messages_short %]</label>
+<label title="[% capt.results %]">[% checkbox('show_results', show_results) %] [% capt.results_short %]</label>
 [% capt.for %] [% select('i_value', i_values) %] [% select('i_unit', i_units) %]</td>
 [% END %]
 [% PROCESS includes/submit_result.tti %]

@@ -49,7 +49,7 @@ sub is_jury_in_contest
 }
 
 # Set request state manually. May be also used for retesting.
-# Params: request_id, state, failed_test, testsets.
+# Params: request_id, state, failed_test, testsets, judge_id.
 sub enforce_request_state
 {
     my %p = @_;
@@ -57,9 +57,9 @@ sub enforce_request_state
     $dbh->do(qq~
         UPDATE reqs
             SET failed_test = ?, state = ?, testsets = ?,
-                points = NULL, received = 0, result_time = CURRENT_TIMESTAMP, judge_id = NULL
+                points = NULL, received = 0, result_time = CURRENT_TIMESTAMP, judge_id = ?
             WHERE id = ?~, {},
-        $p{failed_test}, $p{state}, $p{testsets}, $p{request_id}
+        $p{failed_test}, $p{state}, $p{testsets}, $p{judge_id}, $p{request_id}
     ) or return;
     # Save log for ignored requests.
     if ($p{state} != $cats::st_ignore_submit) {

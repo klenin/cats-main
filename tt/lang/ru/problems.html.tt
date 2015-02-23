@@ -16,6 +16,7 @@
     solution_text => 'Текст решения',
     submit => 'отправить',
     std_solution => 'эталонное решение',
+    ignore_submit => 'не тестировать',
     problem_file => 'Файл с задачей',
     rename => 'переим.',
     delete => 'удалить',

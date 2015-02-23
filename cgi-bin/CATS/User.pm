@@ -11,6 +11,7 @@ use CATS::DB;
 use CATS::Connect;
 use CATS::Constants;
 use CATS::Data;
+use CATS::Countries;
 
 
 sub new
@@ -32,14 +33,15 @@ sub parse_params
 
 sub load
 {
-    my ($self, $id) = @_;
-    @$self{param_names()} = $dbh->selectrow_array(qq~
-        SELECT ~ . join(', ' => param_names()) . q~
+    my ($self, $id, $extra_fields) = @_;
+    my @fields = (param_names(), @{$extra_fields || []});
+    @$self{@fields} = $dbh->selectrow_array(qq~
+        SELECT ~ . join(', ' => @fields) . q~
             FROM accounts WHERE id = ?~, { Slice => {} },
         $id
     ) or return;
-    $self->{country} ||= $cats::countries[0]->{id};
-    $_->{selected} = $_->{id} eq $self->{country} for @$cats::countries;
+    $self->{country} ||= $CATS::Countries::countries[0]->{id};
+    $_->{selected} = $_->{id} eq $self->{country} for @CATS::Countries::countries;
     $self;
 }
 
@@ -82,7 +84,7 @@ sub new_frame
 {
     my $t = init_template('users_new.html.tt');
     $t->param(login => generate_login);
-    $t->param(countries => \@cats::countries, href_action => url_f('users'));
+    $t->param(countries => \@CATS::Countries::countries, href_action => url_f('users'));
 }
 
 

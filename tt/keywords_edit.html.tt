@@ -2,9 +2,9 @@
 
 <form method="post" enctype="multipart/form-data" action="[% href_action %]">
 <table cellpadding="0">
-<tr><td>[% capt.code %]</td><td><input type="text" name="code" value="[% code | html %]" size="50" class="bordered /"></td>
-<tr><td>[% capt.name_ru %]</td><td><input type="text" name="name_ru" value="[% name_ru | html %]" size="50" class="bordered" /></td>
-<tr><td>[% capt.name_en %]</td><td><input type="text" name="name_en" value="[% name_en | html %]" size="50" class="bordered" /></td>
+<tr><td>[% capt.code %]</td><td><input type="text" name="code" value="[% code | html %]" size="50" class="bordered /"></td></tr>
+<tr><td>[% capt.name_ru %]</td><td><input type="text" name="name_ru" value="[% name_ru | html %]" size="50" class="bordered" /></td></tr>
+<tr><td>[% capt.name_en %]</td><td><input type="text" name="name_en" value="[% name_en | html %]" size="50" class="bordered" /></td></tr>
 </table>
 <br/>
 [% PROCESS includes/edit_save_cancel.tti %]

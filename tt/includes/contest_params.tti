@@ -1,3 +1,4 @@
+[%- PROCESS includes/html.tti -%]
 [%- PROCESS "lang/$lang/contest_params.tti" -%]
 <table cellpadding="0">
   <tr><td>[% capt.contest_name %]:</td><td><input type="text" size="50" name="contest_name" value="[% contest_name | html %]" class="bordered" [% UNLESS can_edit %]readonly="readonly"[% END %]/></td></tr>
@@ -16,19 +17,20 @@
 </table>
 <br/>
 <table cellpadding="0" class="bordered" width="250">
-  <tr><td>[% capt.open_registration %]:</td><td><input type="checkbox" name="free_registration"[% IF free_registration %]checked="checked"[% END %] [% UNLESS can_edit %]disabled="disabled"[% END %]/></td></tr>
-  <tr><td>[% capt.is_official %]:</td><td><input type="checkbox" name="is_official"[% IF is_official %]checked="checked"[% END %] [% UNLESS can_edit %]disabled="disabled"[% END %]/></td></tr>
-  <tr><td>[% capt.run_all_tests %]:</td><td><input type="checkbox" name="run_all_tests"[% IF run_all_tests %]checked="checked"[% END %] [% UNLESS can_edit %]disabled="disabled"[% END %]/></td></tr>
-  <tr><td>[% capt.local_only %]:</td><td><input type="checkbox" name="local_only"[% IF local_only %]checked="checked"[% END %] [% UNLESS can_edit %]disabled="disabled"[% END %]/></td></tr>
-  <tr><td>[% capt.is_hidden %]:</td><td><input type="checkbox" name="is_hidden"[% IF is_hidden %]checked="checked"[% END %] [% UNLESS can_edit %]disabled="disabled"[% END %]/></td></tr>
+  <tr><td>[% capt.open_registration %]:</td><td>[% checkbox('free_registration', free_registration, can_edit) %]</td></tr>
+  <tr><td>[% capt.is_official %]:</td><td>[% checkbox('is_official', is_official, can_edit) %]</td></tr>
+  <tr><td>[% capt.run_all_tests %]:</td><td>[% checkbox('run_all_tests', run_all_tests, can_edit) %]</td></tr>
+  <tr><td>[% capt.local_only %]:</td><td>[% checkbox('local_only', local_only, can_edit) %]</td></tr>
+  <tr><td>[% capt.is_hidden %]:</td><td>[% checkbox('is_hidden', is_hidden, can_edit) %]</td></tr>
 </table>
 <br/>
 [% capt.show_to_teams %]
 <table cellpadding="0" class="bordered" width="250">
-  <tr><td>[% capt.show_all_results %]:</td><td><input type="checkbox" name="show_all_results"[% IF show_all_results %]checked="checked"[% END %] [% UNLESS can_edit %]disabled="disabled"[% END %]/></td></tr>
-  <tr><td>[% capt.show_all_tests %]:</td><td><input type="checkbox" name="show_all_tests"[% IF show_all_tests %]checked="checked"[% END %] [% UNLESS can_edit %]disabled="disabled"[% END %]/></td></tr>
-  <tr><td>[% capt.show_test_resources %]:</td><td><input type="checkbox" name="show_test_resources"[% IF show_test_resources %]checked="checked"[% END %] [% UNLESS can_edit %]disabled="disabled"[% END %]/></td></tr>
-  <tr><td>[% capt.show_checker_comment %]:</td><td><input type="checkbox" name="show_checker_comment"[% IF show_checker_comment %]checked="checked"[% END %] [% UNLESS can_edit %]disabled="disabled"[% END %]/></td></tr>
-  <tr><td>[% capt.show_packages %]:</td><td><input type="checkbox" name="show_packages"[% IF show_packages %]checked="checked"[% END %] [% UNLESS can_edit %]disabled="disabled"[% END %]/></td></tr>
+  <tr><td>[% capt.show_all_results %]:</td><td>[% checkbox('show_all_results', show_all_results, can_edit) %]</td></tr>
+  <tr><td>[% capt.show_all_tests %]:</td><td>[% checkbox('show_all_tests', show_all_tests, can_edit) %]</td></tr>
+  <tr><td>[% capt.show_test_resources %]:</td><td>[% checkbox('show_test_resources', show_test_resources, can_edit) %]</td></tr>
+  <tr><td>[% capt.show_test_data %]:</td><td>[% checkbox('show_test_data', show_test_data, can_edit) %]</td></tr>
+  <tr><td>[% capt.show_checker_comment %]:</td><td>[% checkbox('show_checker_comment', show_checker_comment, can_edit) %]</td></tr>
+  <tr><td>[% capt.show_packages %]:</td><td>[% checkbox('show_packages', show_packages, can_edit) %]</td></tr>
 </table>
 <br/>

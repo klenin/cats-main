@@ -6,6 +6,7 @@
     tests_passed => 'Tests passed',
     points => 'Points',
     comment => 'Comment',
+    test_data => 'Input data',
     test => 'Test',
     result => 'Result',
     time => 'Time, sec',

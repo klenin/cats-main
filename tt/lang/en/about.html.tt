@@ -14,6 +14,7 @@
       'Monitor your progress in a common rating table',
     ],
     documentation => 'Documentation',
+    format_url => 'docs/format.en.html',
     format => 'problem format',
     spawner => 'spawner module',
     suggestions => 'You can report errors or suggestions using',

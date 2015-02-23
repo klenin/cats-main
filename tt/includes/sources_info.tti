@@ -1,5 +1,6 @@
 [%- PROCESS "lang/$lang/sources_info.tti" -%]
 [%- PROCESS 'includes/submit_result.tti' -%]
+[%- PROCESS 'includes/html.tti' -%]
 <script type="text/javascript">
 function send_message(href)
 {
@@ -7,49 +8,49 @@ function send_message(href)
 }
 </script>
 <table class="internal_borders" cellpadding="3">
-<tr><th>ID</th>[% FOREACH sources_info %]<td>[% req_id %]</td>[% END %]</tr>
-<tr><th>[% capt.team %]</th>[% FOREACH sources_info %]<td><a href="[% href_stats %]">[% team_name %]</a>
-[% IF is_jury %]
-  [<a href="[% href_whois %]" alt="[% last_ip %]" title="[% last_ip %]">[% last_ip_short %]</a>]
-  [<a href="javascript:send_message('[% href_send_message %]')">[% capt.message %]</a>]
+<tr><th>ID</th>[% FOREACH si IN sources_info %]<td>[% si.req_id %]</td>[% END %]</tr>
+<tr><th>[% capt.team %]</th>[% FOREACH si IN sources_info %]<td><a href="[% si.href_stats %]">[% si.team_name %]</a>
+[% IF si.is_jury %]
+  [<a href="[% si.href_whois %]" alt="[% si.last_ip %]" title="[% si.last_ip %]">[% si.last_ip_short %]</a>]
+  [<a href="javascript:send_message('[% si.href_send_message %]')">[% capt.message %]</a>]
 [% END %]
 </td>[% END %]</tr>
-<tr><th>[% capt.time %]</th>[% FOREACH sources_info ~%]
+<tr><th>[% capt.time %]</th>[% FOREACH si IN sources_info ~%]
   <td>
-  [% IF href_prev_attempt %] <a href="[% href_prev_attempt %]">[% prev_attempt_time %]&lt;&lt;</a>[% END %]
-  [% submit_time %]
-  [% IF href_next_attempt %] <a href="[% href_next_attempt %]">[% next_attempt_time %]&gt;&gt;</a>[% END %]
+  [% IF si.href_prev_attempt %] <a href="[% si.href_prev_attempt %]">[% si.prev_attempt_time %]&lt;&lt;</a>[% END %]
+  [% si.submit_time %]
+  [% IF si.href_next_attempt %] <a href="[% si.href_next_attempt %]">[% si.next_attempt_time %]&gt;&gt;</a>[% END %]
 </td>[% END %]</tr>
-<tr><th>[% capt.processing %]</th>[% FOREACH sources_info %]<td>
-[% IF is_jury %][% judge_name %]: [% END %]
-[% test_time_short %] ... [% result_time_short %]</td>[% END %]</tr>
-<tr><th>[% capt.file %]</th>[% FOREACH sources_info %]<td>[% file_name %] ([% de_name %])</td>[% END %]</tr>
-<tr><th>[% capt.contest %]</th>[% FOREACH sources_info %]<td>
-  [% IF href_contest %]<a href="[% href_contest %]">[% contest_name %]<a>
-  [% ELSE %][% contest_name %][% END %]
-</td>[% END %]</tr>
-<tr><th>[% capt.problem %]</th>[% FOREACH sources_info %]<td>
-  [% IF href_problem %]<a href="[% href_problem %]">[% problem_name %]</a>
-  [% ELSE %][% problem_name %][% END %] [% IF is_jury %]([% status_name %])[% END %]
-</td>[% END %]</tr>
-<tr><th>[% capt.testset %]</th>[% FOREACH sources_info %]
-<td>[% IF is_jury %]
-  <form action="[% href_run_details %]" method="POST" class="embedded">
-  <input type="text" name="testsets" value="[% testsets %]" />
+<tr><th>[% capt.processing %]</th>[% FOREACH si IN sources_info %]<td>
+  [% IF si.is_jury; si.judge_name %]: [% END %]
+  [% si.test_time_short %] ... [% si.result_time_short %]</td>[% END %]</tr>
+<tr><th>[% capt.file %]</th>[% FOREACH si IN sources_info %]<td>[% si.file_name %] ([% si.de_name %])</td>[% END %]</tr>
+<tr><th>[% capt.contest %]</th>
+  [% FOREACH si IN sources_info %]<td>[% maybe_href(si.href_contest, si.contest_name) %]</td>
+  [% END %]</tr>
+<tr><th>[% capt.problem %]</th>
+  [% FOREACH si IN sources_info %]<td>[% maybe_href(si.href_problem, si.problem_name) ~%]
+    [%~ IF si.is_jury %] ([% si.status_name %])[% END %]</td>
+  [% END %]</tr>
+<tr><th>[% capt.testset %]</th>[% FOREACH si IN sources_info %]
+<td>[% IF si.is_jury %]
+  <form action="[% si.href_run_details %]" method="POST" class="embedded">
+  <input type="text" name="testsets" value="[% si.testsets %]" />
+  <input type="checkbox" name="set_judge" value="1" />[% select('judge', si.judges) %]
   <input type="submit" name="retest" value="[% capt.retest %]" class="button" />
   </form>
-[% ELSE %][% testsets %][% END %]</td>
+[% ELSE %][% si.testsets %][% END %]</td>
 [% END %]</tr>
 <tr><th>[% capt.status %]</th>
 [% FOREACH sources_info %]<td>[% submit_result %]</td>[% END %]
 </tr>
 <tr><th>[% capt.refs %]</th>
-[% FOREACH sources_info %]<td>
-<a href="[% href_view_source %]" class="[% href_class_view_source %]">[% capt.source %]</a> |
-<a href="[% href_download_source %]" class="[% href_class_download_source %]">[% capt.download %]</a> |
-<a href="[% href_run_details %]" class="[% href_class_run_details %]">[% capt.run_details %]</a>
-[% IF href_diff_runs %] | <a href="[% href_diff_runs %]" class="[% href_class_diff_runs %]">[% capt.diff_runs %]</a>[% END %]
-[% IF is_jury %] | <a href="[% href_run_log %]" class="[% href_class_run_log %]">[% capt.log %]</a>[% END %]
+[% FOREACH si IN sources_info %]<td>
+<a href="[% si.href_view_source %]" class="[% si.href_class_view_source %]">[% capt.source %]</a> |
+<a href="[% si.href_download_source %]" class="[% si.href_class_download_source %]">[% capt.download %]</a> |
+<a href="[% si.href_run_details %]" class="[% si.href_class_run_details %]">[% capt.run_details %]</a>
+[% IF si.href_diff_runs %] | <a href="[% si.href_diff_runs %]" class="[% si.href_class_diff_runs %]">[% capt.diff_runs %]</a>[% END %]
+[% IF si.is_jury %] | <a href="[% si.href_run_log %]" class="[% si.href_class_run_log %]">[% capt.log %]</a>[% END %]
 </td>[% END %]
 </tr>
 </table>

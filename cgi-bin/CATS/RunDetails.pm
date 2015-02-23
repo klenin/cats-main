@@ -14,12 +14,16 @@ use CATS::DevEnv;
 use CATS::RankTable;
 
 
-sub get_judge_name
+sub get_judges
 {
-    my ($judge_id) = @_ or return;
-    scalar $dbh->selectrow_array(qq~
-      SELECT nick FROM judges WHERE id = ?~, undef,
-      $judge_id);
+    my ($si) = @_;
+    $t->param('judges') or $t->param(judges => $dbh->selectall_arrayref(q~
+        SELECT id, nick, lock_counter FROM judges ORDER BY nick~, { Slice => {} }));
+    $si->{judges} = [ {}, map {
+        value => $_->{id},
+        text => $_->{nick} . ($_->{lock_counter} ? '' : ' *'),
+        selected => ($_->{id} == ($si->{judge_id} || 0) ? $si->{judge_name} = $_->{nick} : 0),
+    }, @{$t->param('judges')} ];
 }
 
 
@@ -41,9 +45,7 @@ sub source_links
     }
     $si->{is_jury} = $is_jury;
     $t->param(is_jury => $is_jury);
-    if ($is_jury && $si->{judge_id}) {
-        $si->{judge_name} = get_judge_name($si->{judge_id});
-    }
+    get_judges($si) if $is_jury;
     my $se = param('src_enc') || param('comment_enc') || 'WINDOWS-1251';
     $t->param(source_encodings =>
         [ map {{ enc => $_, selected => $_ eq $se }} sort keys %{source_encodings()} ]);
@@ -84,26 +86,36 @@ sub get_run_info
 
         my $prev_test = $last_test;
         $last_test = $row->{test_rank};
-        my $accepted = $row->{result} == $cats::st_accepted;
-        my $p = $accepted ? $points->[$row->{test_rank} - 1] : 0;
+        my $accepted = $row->{result} == $cats::st_accepted ? 1 : 0;
+        my $p = $accepted ? $points->[$row->{test_rank} - 1] || 0 : 0;
         if (my $ts = $testset{$last_test}) {
             $used_testsets{$ts->{name}} = $ts;
             push @{$ts->{list} ||= []}, $last_test;
-            $p = "=> $ts->{name}";
-            $total_points += $ts->{earned_points} = $ts->{points}
-                if $accepted && ++$ts->{accepted_count} == $ts->{test_count};
+            $ts->{accepted_count} += $accepted;
+            if ($ts->{points}) {
+                $total_points += $ts->{earned_points} = $ts->{points}
+                    if $ts->{accepted_count} == $ts->{test_count};
+            }
+            else {
+                $total_points += $p;
+                $ts->{earned_points} += $p;
+            }
+            if ($ts->{hide_details} && $contest->{hide_testset_details}) {
+                $row->{result} = $cats::st_ignore_submit;
+            }
+            if ($ts->{points} || $ts->{hide_details} && $contest->{hide_testset_details}) {
+                $p = '';
+            }
+            $p .= " => $ts->{name}";
         }
         elsif ($accepted && $req->{partial_checker}) {
             $total_points += $p = CATS::RankTable::get_partial_points($row, $p);
         }
         else {
-            $total_points += ($p || 0);
+            $total_points += $p;
         }
         $run_details{$last_test} = {
-            state_to_display($row->{result}),
-            map({ $_ => $contest->{$_} }
-                qw(show_test_resources show_checker_comment)),
-            %$row, show_points => $contest->{show_points}, points => $p,
+            state_to_display($row->{result}), %$row, points => $p,
         };
         # When tests are run in random order, and the user looks at the run details
         # while the testing is in progress, he may be able to see 'OK' result
@@ -117,6 +129,9 @@ sub get_run_info
     if ($contest->{show_all_tests} && !$contest->{run_all_tests}) {
         $last_test = @$points;
     }
+    for (values %used_testsets) {
+        $_->{accepted_count} = '?' if $_->{hide_details} && $contest->{hide_testset_details};
+    }
 
     my $run_row = sub {
         my ($rank) = @_;
@@ -127,10 +142,21 @@ sub get_run_info
         return \%r;
     };
 
+    my $add_testdata = sub {
+        my ($row) = @_ or return ();
+        $contest->{show_test_data} or return $row;
+        my $t = $contest->{tests}->[$row->{test_rank} - 1] or return $row;
+        $row->{test_data} =
+            $t->{input} ? "$t->{input}&hellip;" :
+            $t->{gen_group} ? "$t->{gen_name} GROUP" :
+            $t->{gen_name} ? "$t->{gen_name} $t->{param}" : '';
+        $row;
+    };
+
     return {
         %$contest,
         total_points => $total_points,
-        run_details => [ map $run_row->($_), 1..$last_test ],
+        run_details => [ map $add_testdata->($run_row->($_)), 1..$last_test ],
         testsets => [ sort { $a->{list}[0] <=> $b->{list}[0] } values %used_testsets ],
     };
 }
@@ -142,20 +168,25 @@ sub get_contest_info
 
     my $contest = $dbh->selectrow_hashref(qq~
         SELECT
-            id, run_all_tests, show_all_tests, show_test_resources,
-            show_checker_comment
+            id, run_all_tests, show_all_tests, show_test_resources, show_checker_comment, show_test_data,
+            CAST(CURRENT_TIMESTAMP - defreeze_date AS DOUBLE PRECISION) AS time_since_defreeze
             FROM contests WHERE id = ?~, { Slice => {} },
         $si->{contest_id});
 
     $contest->{$_} ||= $jury_view
-        for qw(show_all_tests show_test_resources show_checker_comment);
+        for qw(show_all_tests show_test_resources show_checker_comment show_test_data);
+    $contest->{hide_testset_details} = !$jury_view && $contest->{time_since_defreeze} < 0;
 
-    my $p = $contest->{points} =
-        $contest->{show_all_tests} ?
-        $dbh->selectcol_arrayref(qq~
-            SELECT points FROM tests WHERE problem_id = ? ORDER BY rank~, undef,
-            $si->{problem_id})
-        : [];
+    my $fields = join ', ',
+        ($contest->{show_all_tests} ? 't.points' : ()),
+        ($contest->{show_test_data} ? q~
+            (SELECT ps.fname FROM problem_sources ps WHERE ps.id = t.generator_id) AS gen_name,
+            t.param, SUBSTRING(t.in_file FROM 1 FOR 20) AS input, t.gen_group~ : ());
+    my $tests = $contest->{tests} = $fields ?
+        $dbh->selectall_arrayref(qq~
+            SELECT $fields FROM tests t WHERE t.problem_id = ? ORDER BY t.rank~, { Slice => {} },
+            $si->{problem_id}) : [];
+    my $p = $contest->{points} = $contest->{show_all_tests} ? [ map $_->{points}, @$tests ] : [];
     $contest->{show_points} = 0 != grep defined $_ && $_ > 0, @$p;
     $contest;
 }
@@ -289,7 +320,8 @@ sub run_details_frame
             enforce_request_state(
                 request_id => $_->{req_id},
                 state => $cats::st_not_processed,
-                testsets => param('testsets'));
+                testsets => param('testsets'),
+                judge_id => (param('set_judge') ? param('judge') : undef));
             $_ = get_sources_info(request_id => $_->{req_id}, partial_checker => 1) or next;
         }
 
@@ -410,6 +442,7 @@ sub try_set_state
         compilation_error =>     $cats::st_compilation_error,
         security_violation =>    $cats::st_security_violation,
         ignore_submit =>         $cats::st_ignore_submit,
+        idleness_limit_exceeded=>$cats::st_idleness_limit_exceeded,
     }->{param('state')};
     defined $state or return;
 

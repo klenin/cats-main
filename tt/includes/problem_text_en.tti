@@ -47,7 +47,9 @@
 [% ELSE %]
 <h3>Sample tests</h3>
 <table class="sample" id="sample[% id %]">
-<tr><th>No.</th><th>Sample input</th><th>Sample output</th></tr>
+<tr><th>No.</th>
+<th>[% IF input_file == '*STDIN' %]Standard input[% ELSE %]Input file (<tt>[% input_file | html %]</tt>)[% END %]</th>
+<th>[% IF output_file == '*STDOUT' %]Standard output[% ELSE %]Output file (<tt>[% output_file | html %]</tt>)[% END %]</th></tr>
 [% FOREACH samples %]
 <tr>
   <td>[% rank %]</td>

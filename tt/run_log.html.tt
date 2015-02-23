@@ -15,6 +15,7 @@
 <option value="wrong_answer">Wrong answer</option>
 <option value="presentation_error">Presentation error</option>
 <option value="time_limit_exceeded">Time limit exceeded</option>
+<option value="idleness_limit_exceeded">Idleness limit exceeded</option>
 <option value="memory_limit_exceeded">Memory limit exceeded</option>
 <option value="runtime_error">Runtime error</option>
 <option value="compilation_error">Compilation error</option>

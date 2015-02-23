@@ -8,7 +8,7 @@ sub database_fields {qw(
     start_date finish_date freeze_date defreeze_date
     closed penalty ctype rules max_reqs
     is_official run_all_tests
-    show_all_tests show_test_resources show_checker_comment show_packages
+    show_all_tests show_test_resources show_checker_comment show_packages show_test_data
     local_only is_hidden
 )}
 
@@ -27,24 +27,16 @@ sub new
 
 sub load
 {
-    my ($self, $cid) = @_;
-    my $all_fields = [
+    my ($self, $cid, $fields) = @_;
+    $fields //= [
         database_fields(),
         'CURRENT_TIMESTAMP AS server_time',
         map "CAST(CURRENT_TIMESTAMP - ${_}_date AS DOUBLE PRECISION) AS time_since_$_",
             qw(start finish defreeze)
     ];
-    my $r;
-    if ($cid)
-    {
-        $r = CATS::DB::select_row('contests', $all_fields, { id => $cid });
-    }
-    unless ($r)
-    {
-        # По умолчанию выбираем тренировочный турнир
-        $r = CATS::DB::select_row('contests', $all_fields, { ctype => 1 });
-    }
-    $r or die 'No contest';
+    my $r = $cid ? CATS::DB::select_row('contests', $fields, { id => $cid }) : undef;
+    # Choose training contest by default.
+    $r or $r = CATS::DB::select_row('contests', $fields, { ctype => 1 }) or die 'No contest';
     @$self{keys %$r} = values %$r;
 }
 

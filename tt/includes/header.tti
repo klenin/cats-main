@@ -1,7 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html><head>
 <meta http-equiv="Content-type" content="text/html; charset=[% encoding %]">
-<link rel="shortcut icon" href="images/std/favicon.ico" type="image/x-icon" />
+<link rel="shortcut icon" href="images/std/favicon.ico" type="image/x-icon">
 [%- capt = {}; TRY; PROCESS "lang/$lang/${template.name}"; CATCH; ''; END -%]
 <title>
   [%- IF contest_title; contest_title | html; ELSE; 'CATS'; END -%]

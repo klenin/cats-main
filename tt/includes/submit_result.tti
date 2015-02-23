@@ -13,4 +13,5 @@
 [% IF compilation_error %]Compilation error[% END ~%]
 [% IF security_violation %]Security violation[% END ~%]
 [% IF ignore_submit %]Ignored submission[% END %]
+[% IF idleness_limit_exceeded %]Idleness limit exceeded on test [% failed_test %][% END ~%]
 [%- END -%]

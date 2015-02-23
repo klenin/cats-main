@@ -23,7 +23,6 @@ BEGIN
         templates_path
         order_by
         define_columns
-        get_flag
         res_str
         attach_listview
         attach_menu
@@ -33,7 +32,7 @@ BEGIN
     );
 
     @EXPORT_OK = qw(
-        $contest $t $sid $cid $uid $server_time
+        $contest $t $sid $cid $uid
         $is_root $is_team $is_jury $is_virtual $virtual_diff_time
         $listview_name $init_time $settings);
 
@@ -62,12 +61,18 @@ use CATS::Utils qw();
 
 
 use vars qw(
-    $contest $t $sid $cid $uid $team_name $server_time $dbi_error
+    $contest $t $sid $cid $uid $team_name $dbi_error
     $is_root $is_team $is_jury $can_create_contests $is_virtual $virtual_diff_time
     $listview_name $col_defs $request_start_time $init_time $settings
 );
 
 my ($listview_array_name, $messages, $http_mime_type, %extra_headers, $enc_settings);
+
+# Optimization: limit datasets by both maximum row count and maximum visible pages.
+my $max_fetch_row_count = 1000;
+my $visible_pages = 5;
+
+my @display_rows = (10, 20, 30, 40, 50, 100, 300);
 
 my $cats_dir;
 sub cats_dir()
@@ -155,7 +160,7 @@ sub init_listview_params
         $s->{page} = 0;
     }
 
-    $s->{rows} ||= $cats::display_rows[0];
+    $s->{rows} ||= $display_rows[0];
     my $rows = param('rows') || 0;
     if ($rows > 0) {
         $s->{page} = 0 if $s->{rows} != $rows;
@@ -302,7 +307,7 @@ sub attach_listview
     }
 
     ROWS: while (my %row = $fetch_row->($sth)) {
-        last if $row_count > $cats::max_fetch_row_count || $page_count > $$page + $cats::visible_pages;
+        last if $row_count > $max_fetch_row_count || $page_count > $$page + $visible_pages;
         for my $key (keys %mask) {
             first { defined $_ && Encode::decode_utf8($_) =~ $mask{$key} }
                 ($key ? ($row{$key}) : values %row)
@@ -317,8 +322,8 @@ sub attach_listview
     }
 
     $$page = min(max($page_count - 1, 0), $$page);
-    my $range_start = max($$page - int($cats::visible_pages / 2), 0);
-    my $range_end = min($range_start + $cats::visible_pages - 1, $page_count - 1);
+    my $range_start = max($$page - int($visible_pages / 2), 0);
+    my $range_end = min($range_start + $visible_pages - 1, $page_count - 1);
 
     my $pp = $p->{page_params} || {};
     my $page_extra_params = join '', map ";$_=$pp->{$_}", keys %$pp;
@@ -334,7 +339,7 @@ sub attach_listview
         ($range_start > 0 ? (href_prev_pages => $href_page->($range_start - 1)) : ()),
         ($range_end < $page_count - 1 ? (href_next_pages => $href_page->($range_end + 1)) : ()),
         display_rows =>
-            [ map { value => $_, text => $_, selected => $s->{rows} == $_ }, @cats::display_rows ],
+            [ map { value => $_, text => $_, selected => $s->{rows} == $_ }, @display_rows ],
         $listview_array_name => \@data,
     );
 }
@@ -357,7 +362,7 @@ sub generate_output
     $contest->{time_since_start} or warn 'No contest from: ', $ENV{HTTP_REFERER} || '';
     $t->param(
         contest_title => $contest->{title},
-        server_time => $server_time,
+        server_time => $contest->{server_time},
     	current_team_name => $team_name,
     	is_virtual => $is_virtual,
     	virtual_diff_time => $virtual_diff_time);
@@ -437,17 +442,6 @@ sub define_columns
     $t->param(col_defs => $col_defs);
 }
 
-
-sub get_flag
-{
-    my $country_id = shift || return;
-    my ($country) = grep { $_->{id} eq $country_id } @cats::countries;
-    $country or return;
-    my $flag = defined $country->{flag} ? "$cats::flags_path/$country->{flag}" : undef;
-    return ($country->{name}, $flag);
-}
-
-
 # Authorize user, initialize permissions and settings.
 sub init_user
 {
@@ -458,9 +452,10 @@ sub init_user
     $team_name = undef;
     my $bad_sid;
     if ($sid ne '') {
-        ($uid, $team_name, my $srole, my $last_ip, $enc_settings) = $dbh->selectrow_array(qq~
-            SELECT id, team_name, srole, last_ip, settings FROM accounts WHERE sid = ?~, {}, $sid);
-        $bad_sid = !defined($uid) || ($last_ip || '') ne CATS::IP::get_ip();
+        ($uid, $team_name, my $srole, my $last_ip, my $locked, $enc_settings) = $dbh->selectrow_array(q~
+            SELECT id, team_name, srole, last_ip, locked, settings FROM accounts WHERE sid = ?~, undef,
+            $sid);
+        $bad_sid = !defined($uid) || ($last_ip || '') ne CATS::IP::get_ip() || $locked;
         if (!$bad_sid) {
             $is_root = $srole == $cats::srole_root;
             $can_create_contests = $is_root || $srole == $cats::srole_contests_creator;
@@ -493,7 +488,7 @@ sub extract_cid_from_cpid
 
 sub init_contest
 {
-    $cid = url_param('cid') || param('clist') || extract_cid_from_cpid || '';
+    $cid = url_param('cid') || param('clist') || extract_cid_from_cpid || $settings->{contest_id} || '';
     $cid =~ s/^(\d+).*$/$1/; # Get first contest if from clist.
     if ($contest && ref $contest ne 'CATS::Contest') {
         use Data::Dumper;
@@ -503,8 +498,7 @@ sub init_contest
     }
     $contest ||= CATS::Contest->new;
     $contest->load($cid);
-    $server_time = $contest->{server_time};
-    $cid = $contest->{id};
+    $settings->{contest_id} = $cid = $contest->{id};
 
     $virtual_diff_time = 0;
     # Authorize user in the contest.
@@ -521,8 +515,7 @@ sub init_contest
     {
         # If user tries to look at a hidden contest, show training instead.
         $contest->load(0);
-        $server_time = $contest->{server_time};
-        $cid = $contest->{id};
+        $settings->{contest_id} = $cid = $contest->{id};
     }
     # Only guest access before the start of the contest.
     $is_team &&= $is_jury || $contest->has_started($virtual_diff_time);

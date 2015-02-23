@@ -18,6 +18,7 @@
     show_all_results => 'results of all teams',
     show_all_tests => 'results of all tests',
     show_test_resources => 'resources used',
+    show_test_data => 'test data',
     show_checker_comment => 'checker comments',
     show_packages => 'problem packages',
     ok => '     Ok     ',
