@@ -526,15 +526,14 @@ __END__
 
 	@set path_to_db=%path_to_db:\=\\\\%
 
-	@sed -i -e "s/<path-to-your-database>/%path_to_db%/g" %CONNECT%
-	@sed -i -e "s/<your-host>/%db_host%/g" %CONNECT%
-	@sed -i -e "s/<your-username>/%db_user%/g" %CONNECT%
-	@sed -i -e "s/<your-password>/%db_pass%/g" %CONNECT%
+	@perl -pi.bak -e "s/<path-to-your-database>/%path_to_db%/g" %CONNECT%
+	@perl -pi.bak -e "s/<your-host>/%db_host%/g" %CONNECT%
+	@perl -pi.bak -e "s/<your-username>/%db_user%/g" %CONNECT%
+	@perl -pi.bak -e "s/<your-password>/%db_pass%/g" %CONNECT%
 
-	@sed -i -e "s/<path-to-your-database>/%path_to_db%/g" %CREATE_DB%
-	@sed -i -e "s/<your-username>/%db_user%/g" %CREATE_DB%
-	@sed -i -e "s/<your-password>/%db_pass%/g" %CREATE_DB%
-	@rm sed*
+	@perl -pi.bak -e "s/<path-to-your-database>/%path_to_db%/g" %CREATE_DB%
+	@perl -pi.bak -e "s/<your-username>/%db_user%/g" %CREATE_DB%
+	@perl -pi.bak -e "s/<your-password>/%db_pass%/g" %CREATE_DB%
 	@echo Configuration written to %connect% and %create_db%.
 
 @endlocal

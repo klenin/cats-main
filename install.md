@@ -1,7 +1,6 @@
 # Environment
  * Windows XP or newer
  * Microsoft Visual C++ compiler
- * GnuWin32 utils -- bsdtar, unzip, sed, rm, cp
 
 # Apache 2.2
  * https://www.apachelounge.com/download/win32/binaries/httpd-2.2.29-win32-VC9.zip
