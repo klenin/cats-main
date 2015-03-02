@@ -685,13 +685,14 @@ sub start_tag_Testset
 sub start_tag_Run
 {
     (my CATS::Problem $self, my $atts) = @_;
-    $self->error("Duplicate 'Run' tag") if defined $self->{run_method};
     my $m = $atts->{method};
-    $self->{run_method} = {
+    $self->error("Duplicate run method '$m'") if defined $self->{run_method};
+    my %methods = (
         default => $cats::rm_default,
         interactive => $cats::rm_interactive,
-    }->{$m};
-    $self->error("Unknown run method: '$m'") if not defined $self->{run_method};
+    );
+    defined($self->{run_method} = $methods{$m})
+        or $self->error("Unknown run method: '$m', must be one of: " . join ', ', keys %methods);
     $self->note("Run method set to '$m'");
 }
 
