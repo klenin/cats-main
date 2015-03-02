@@ -76,6 +76,10 @@ $problem_st_suspended = 1;
 $problem_st_disabled  = 2;
 $problem_st_hidden    = 3;
 
+# Values for problems.run_method.
+$rm_default = 0;
+$rm_interactive = 1;
+
 $penalty = 20;
 
 @problem_codes = ('A'..'Z', '1'..'9');
