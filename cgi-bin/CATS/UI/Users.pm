@@ -129,6 +129,7 @@ sub settings_frame
         countries => \@CATS::Countries::countries, href_action => url_f('users'),
         title_suffix => res_str(518),
         langs => [ map { href => url_f('settings', lang => $_), name => $_ }, @cats::langs ],
+        is_root => $is_root,
         %$u);
     if ($is_root) {
         # Data::Dumper escapes UTF-8 characters into \x{...} sequences.
