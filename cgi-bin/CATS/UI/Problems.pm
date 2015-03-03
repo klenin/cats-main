@@ -9,7 +9,7 @@ use CATS::Constants;
 use CATS::Misc qw(
     $t $is_jury $is_root $is_team $sid $cid $uid $contest $is_virtual $virtual_diff_time
     cats_dir init_template init_listview_template msg res_str url_f auto_ext
-    order_by define_columns attach_listview problem_status_names);
+    order_by sort_listview define_columns attach_listview problem_status_names);
 use CATS::Utils qw(url_function escape_html);
 use CATS::Data qw(:all);
 use CATS::StaticPages;
@@ -785,14 +785,13 @@ sub problem_history_frame
 
     init_listview_template('problem_history', 'problem_history', auto_ext('problem_history_full'));
     my @cols = (
-        { caption => res_str(1400), order_by => '0', width => '16%' }, # author
-        { caption => res_str(634), order_by => '1', width => '9%' }, # author date
-        { caption => res_str(1401), order_by => '2', width => '9%' }, # committer date
-        { caption => res_str(1402), order_by => '3', width => '4%' }, # commit sha
-        { caption => res_str(1403), order_by => '4', width => '40%' } # commit message
+        { caption => res_str(1400), width => '16%', order_by => 'author' },
+        { caption => res_str(634),  width => '9%',  order_by => 'author_date' },
+        { caption => res_str(1401), width => '9%',  order_by => 'committer_date' },
+        { caption => res_str(1402), width => '4%',  order_by => 'sha' },
+        { caption => res_str(1403), width => '40%', order_by => 'message' }
     );
-    define_columns(url_f('problem_history', pid => $pid), 0, 0, \@cols);
-
+    define_columns(url_f('problem_history', pid => $pid), 1, 0, \@cols);
     my $fetch_record = sub {
         my $log = shift @{$_[0]} or return ();
         return (
@@ -800,7 +799,7 @@ sub problem_history_frame
             href_commit => url_f('problem_history', pid => $pid, h => $log->{sha}),
         );
     };
-    attach_listview(url_f('problem_history', pid => $pid), $fetch_record, CATS::Problem::get_log($pid));
+    attach_listview(url_f('problem_history', pid => $pid), $fetch_record, sort_listview(CATS::Problem::get_log($pid)));
 }
 
 1;
