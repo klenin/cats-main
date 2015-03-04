@@ -139,8 +139,8 @@ sub move_history
 sub commit
 {
     my ($self, $message) = @_;
-    $self->git("config user.name '$self->{author_name}'");
-    $self->git("config user.email '$self->{author_email}'");
+    $self->git(qq~config user.name "$self->{author_name}"~);
+    $self->git(qq~config user.email "$self->{author_email}"~);
     $self->git('add -A');
     $self->git(qq~commit --message="$message"~);
     $self->git('gc');
