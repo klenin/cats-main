@@ -22,6 +22,7 @@ BEGIN
         url_f
         templates_path
         order_by
+        sort_listview
         define_columns
         res_str
         attach_listview
@@ -344,14 +345,31 @@ sub attach_listview
     );
 }
 
+sub check_sortable_field
+{
+    my $s = shift;
+    return defined $s->{sort_by} && $s->{sort_by} =~ /^\d+$/ && $col_defs->[$s->{sort_by}]
+}
+
 
 sub order_by
 {
     my $s = $settings->{$listview_name};
-    defined $s->{sort_by} && $s->{sort_by} =~ /^\d+$/ && $col_defs->[$s->{sort_by}]
-        or return '';
+    check_sortable_field($s) or return '';
+    my $field = $col_defs->[$s->{sort_by}]->{field_name};
     sprintf 'ORDER BY %s %s',
         $col_defs->[$s->{sort_by}]{order_by}, ($s->{sort_dir} ? 'DESC' : 'ASC');
+}
+
+
+sub sort_listview
+{
+    my $data = shift;
+    my $s = $settings->{$listview_name};
+    check_sortable_field($s) or return $data;
+    my $order_by = $col_defs->[$s->{sort_by}]{order_by};
+    my @data = sort { $s->{sort_dir} ? $a->{$order_by} cmp $b->{$order_by} : $b->{$order_by} cmp $a->{$order_by} } @$data;
+    return \@data;
 }
 
 
