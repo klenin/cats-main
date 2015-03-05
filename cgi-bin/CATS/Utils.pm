@@ -17,6 +17,7 @@ BEGIN {
         state_to_display
         source_hash
         param_on
+        date_to_iso
     );
 
     %EXPORT_TAGS = (all => [@EXPORT]);
@@ -171,5 +172,10 @@ sub param_on
     return (param($_[0]) || '') eq 'on';
 }
 
+
+sub date_to_iso {
+    $_[0] =~ /^\s*(\d+)\.(\d+)\.(\d+)\s+(\d+):(\d+)\s*$/;
+    "$3$2$1T$4${5}00";
+}
 
 1;

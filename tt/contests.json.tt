@@ -6,12 +6,18 @@
 {
     "id": [% id %],
     "name": "[% contest_name | $Javascript %]",
+    "problems_url" : "[% href_problems_text | $Javascript %]",
     "start_date": "[% start_date %]",
     "finish_date": "[% finish_date %]",
+    "start_time": "[% start_date_iso %]",
+    "finish_time": "[% finish_date_iso %]",
+    "freeze_time": "[% freeze_date_iso %]",
+    "unfreeze_time": "[% unfreeze_date_iso %]",
     "registration": [% IF registered_online ~%]
     "online"[% ELSE %][% IF registered_virtual %]
     "virtual"[% ELSE %]"none"[% END %][% END %],
-    "is_official": [% IF is_official %]1[% ELSE %]0[% END %]
+    "is_official": [% IF is_official %]1[% ELSE %]0[% END %],
+    "scoring": [% IF show_points %]"school"[% ELSE %]"acm"[% END %]
 }
 [% UNLESS loop.last %],[% END %][% END %]
 ]

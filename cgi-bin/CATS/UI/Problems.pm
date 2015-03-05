@@ -10,7 +10,7 @@ use CATS::Misc qw(
     $t $is_jury $is_root $is_team $sid $cid $uid $contest $is_virtual $virtual_diff_time
     cats_dir init_template init_listview_template msg res_str url_f auto_ext
     order_by sort_listview define_columns attach_listview problem_status_names);
-use CATS::Utils qw(url_function escape_html);
+use CATS::Utils qw(url_function escape_html date_to_iso);
 use CATS::Data qw(:all);
 use CATS::StaticPages;
 use CATS::Problem::Text;
@@ -670,7 +670,7 @@ sub problems_frame
             P.upload_date,
             (SELECT A.login FROM accounts A WHERE A.id = P.last_modified_by) AS last_modified_by,
             SUBSTRING(P.explanation FROM 1 FOR 1) AS has_explanation,
-            $test_count_sql CP.testsets, CP.points_testsets
+            $test_count_sql CP.testsets, CP.points_testsets, P.lang, P.memory_limit, P.time_limit, CP.max_points
         FROM problems P, contest_problems CP, contests OC
         WHERE CP.problem_id = P.id AND OC.id = P.contest_id AND CP.contest_id = ?$hidden_problems
         ~ . order_by
@@ -717,6 +717,7 @@ sub problems_frame
             href_usage => url_f('contests', has_problem => $c->{pid}),
             show_packages => $show_packages,
             status => $c->{status},
+            status_text => problem_status_names()->{$c->{status}},
             disabled => !$is_jury && $c->{status} == $cats::problem_st_disabled,
             href_view_problem => $text_link_f->('problem_text', cpid => $c->{cpid}),
             href_explanation => $show_packages && $c->{has_explanation} ?
@@ -732,11 +733,16 @@ sub problems_frame
             wa_count => $c->{wrong_answer_count},
             tle_count => $c->{time_limit_count},
             upload_date => $c->{upload_date},
+            upload_date_iso => date_to_iso($c->{upload_date}),
             last_modified_by => $c->{last_modified_by},
             testsets => $c->{testsets} || '*',
             points_testsets => $c->{points_testsets},
             test_count => $c->{test_count},
             href_select_testsets => url_f('problem_select_testsets', cpid => $c->{cpid}),
+            lang => $c->{lang},
+            memory_limit => $c->{memory_limit} * 1024 * 1024,
+            time_limit => $c->{time_limit},
+            max_points => $c->{max_points},
         );
     };
 
@@ -767,6 +773,7 @@ sub problems_frame
         submenu => \@submenu, title_suffix => res_str(525),
         is_team => $my_is_team, is_practice => $contest->is_practice,
         de_list => \@de, problem_codes => \@cats::problem_codes,
+        contest_id => $cid,
      );
 }
 
