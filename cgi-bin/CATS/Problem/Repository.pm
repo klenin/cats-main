@@ -117,7 +117,13 @@ sub add
     extract_zip($tmpdir, $problem->{zip});
     $self->git('rm . -r --ignore-unmatch');
     dircopy($tmpdir, $self->{dir});
-    $self->commit(exists $opts{message} ? $opts{message} : 'Update task', parse_author($problem->{author}));
+    if (!($self->{author_name} && $self->{author_email})) {
+        my ($git_author_name, $git_author_email) = get_git_author_info(parse_author($problem->{author}));
+        $self->{author_name} ||= $git_author_name;
+        $self->{author_email} ||= $git_author_email;
+        $self->{logger}->warning('git user data is not correctly configured.') if exists $self->{logger};
+    }
+    $self->commit($opts{message} || 'Update task');
     return $self;
 }
 
@@ -132,10 +138,9 @@ sub move_history
 
 sub commit
 {
-    my ($self, $message, $author) = @_;
-    my ($git_author, $git_author_email) = get_git_author_info($author);
-    $self->git("config user.name '$git_author'");
-    $self->git("config user.email '$git_author_email'");
+    my ($self, $message) = @_;
+    $self->git(qq~config user.name "$self->{author_name}"~);
+    $self->git(qq~config user.email "$self->{author_email}"~);
     $self->git('add -A');
     $self->git(qq~commit --message="$message"~);
     $self->git('gc');

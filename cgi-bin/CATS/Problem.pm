@@ -11,7 +11,7 @@ use JSON::XS;
 
 use CATS::Constants;
 use CATS::DB;
-use CATS::Misc qw(cats_dir msg);
+use CATS::Misc qw($git_author_name $git_author_email cats_dir msg);
 use CATS::Utils qw(escape_html);
 use CATS::BinaryFile;
 use CATS::StaticPages;
@@ -99,7 +99,12 @@ sub add_history
         author => $self->{problem}{author},
     };
     my $path = cats_dir() . $cats::repos_dir;
-    my $p = CATS::Problem::Repository->new(dir => "$path/$self->{id}/", logger => $self);
+    my $p = CATS::Problem::Repository->new(
+        dir => "$path/$self->{id}/",
+        logger => $self,
+        author_name => $git_author_name,
+        author_email => $git_author_email
+    );
     if ($self->{replace}) {
         my ($repo_id, $sha) = get_repo($self->{id});
         $p->move_history(from => "$path/$repo_id/", sha => $sha) unless $repo_id == $self->{id};

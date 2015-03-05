@@ -90,7 +90,7 @@ sub new_frame
 
 sub param_names ()
 {
-    qw(login team_name capitan_name email country motto home_page icq_number city)
+    qw(login team_name capitan_name email country motto home_page icq_number city git_author_name git_author_email)
 }
 
 
