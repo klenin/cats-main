@@ -368,8 +368,10 @@ sub sort_listview
     my $s = $settings->{$listview_name};
     check_sortable_field($s) or return $data;
     my $order_by = $col_defs->[$s->{sort_by}]{order_by};
-    my @data = sort { $s->{sort_dir} ? $a->{$order_by} cmp $b->{$order_by} : $b->{$order_by} cmp $a->{$order_by} } @$data;
-    return \@data;
+    my $cmp = $s->{sort_dir} ?
+        sub { $a->{$order_by} cmp $b->{$order_by} } :
+        sub { $b->{$order_by} cmp $a->{$order_by} };
+    [ sort $cmp @$data ];
 }
 
 
