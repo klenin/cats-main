@@ -1,8 +1,24 @@
-package CATS::Problem::Repository;
+package CATS::Problem::Date;
 
 use strict;
 use warnings;
 use POSIX qw(strftime);
+
+use overload
+    'cmp' => sub { $_[0]->{seconds} <=> $_[1]->{seconds} },
+    '""' => sub { strftime('%d.%m.%Y %H:%M', gmtime($_[0]->{seconds})) },
+;
+
+sub new
+{
+    my ($class, $seconds) = @_;
+    bless { seconds => $seconds }, $class;
+}
+
+package CATS::Problem::Repository;
+
+use strict;
+use warnings;
 use File::Temp qw(tempdir);
 use Archive::Zip qw(:ERROR_CODES);
 use File::Path;
@@ -67,8 +83,8 @@ sub log
             message => $message,
             author => $author,
             author_email => $email,
-            author_date => strftime('%d.%m.%Y %H:%M', gmtime($adate)), #to do: figure out about locale
-            committer_date => strftime('%d.%m.%Y %H:%M', gmtime($cdate))
+            author_date => CATS::Problem::Date->new($adate), # TODO: Figure out locales.
+            committer_date => CATS::Problem::Date->new($cdate),
         };
     }
     return \@out;
