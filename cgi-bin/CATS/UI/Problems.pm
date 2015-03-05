@@ -783,7 +783,7 @@ sub problem_history_frame
     $is_root && $pid or return redirect url_f('contests');
     return problem_history_commit_frame($pid, $h) if $h;
 
-    init_listview_template('problem_history', 'problem_history', auto_ext('problem_history_full'));
+    init_listview_template('problem_history', 'problem_history', auto_ext('problem_history'));
     my @cols = (
         { caption => res_str(1400), width => '25%', order_by => 'author' },
         { caption => res_str(634),  width => '10%', order_by => 'author_date' },
