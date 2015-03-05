@@ -1,31 +1,34 @@
 [%- USE Javascript -%]
 [
-[% FOREACH console -%]
+[% FOREACH c IN console -%]
 {
-[% IF is_submit_result -%]
+[% IF c.is_submit_result -%]
 "type": "submit",
-"id": [% id %],
-"time": "[% time %]",
-"state": [% request_state %],
-"team_id": [% team_id %],
-"contest_id": [% contest_id %],
-"problem_title" : "[% problem_title | $Javascript %]"
+"id": [% c.id %],
+"contest_id": [% c.contest_id %],
+"problem_id": [% c.problem_id %],
+"team_id": [% c.team_id %],
+"time": "[% c.time %]",
+"submit_time": "[% c.time_iso %]",
+"state": [% c.request_state %],
+"status": "[% c.request_state_text %]",
+"problem_title" : "[% c.problem_title | $Javascript %]"
 [% END -%]
-[% IF is_question -%]
-"type": "question",
-"text": "[% question_text | $Javascript %]"
+[% IF c.is_question -%]
+"type": "c.question",
+"text": "[% c.question_text | $Javascript %]"
 [% END -%]
-[% IF is_message -%]
-"type": "message",
-"text": "[% message_text | $Javascript %]"
+[% IF c.is_message -%]
+"type": "c.message",
+"text": "[% c.message_text | $Javascript %]"
 [% END -%]
-[% IF is_broadcast -%]
+[% IF c.is_broadcast -%]
 "type": "broadcast",
-"text": "[% message_text | $Javascript %]"
+"text": "[% c.message_text | $Javascript %]"
 [% END -%]
-[% IF is_contest -%]
+[% IF c.is_contest -%]
 "type": "contest",
-"contest_start": [% contest_start ? 1 : 0 %]
+"contest_start": [% c.contest_start ? 1 : 0 %]
 [% END -%]
 }
 [%- ',' UNLESS loop.last %]

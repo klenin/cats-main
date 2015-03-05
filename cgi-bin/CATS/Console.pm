@@ -9,7 +9,7 @@ use List::Util;
 use CATS::DB;
 use CATS::Misc qw(:all);
 use CATS::Data qw(:all);
-use CATS::Utils qw(coalesce url_function state_to_display);
+use CATS::Utils qw(coalesce url_function state_to_display date_to_iso);
 use CATS::Countries;
 use Encode qw(decode_utf8);
 
@@ -47,6 +47,9 @@ sub get_settings
     my $s = $settings->{$listview_name};
     $s->{i_value} = coalesce(param('i_value'), $s->{i_value}, 1);
     $s->{i_unit} = param('i_unit') || $s->{i_unit} || 'hours';
+    $s->{show_results} = param('show_results') // $s->{show_results} // 1;
+    $s->{show_messages} = param('show_messages') // $s->{show_messages} // 0;
+    $s->{show_contests} = param('show_contests') // $s->{show_contests} // 0;
     $s;
 }
 
@@ -126,6 +129,7 @@ sub console_content
             R.id AS id,
             R.state AS request_state,
             R.failed_test AS failed_test,
+            R.problem_id AS problem_id,
             P.title AS problem_title,
             $de_sql,
             CAST(NULL AS INTEGER) AS clarified,
@@ -152,6 +156,7 @@ sub console_content
             Q.id AS id,
             CAST(NULL AS INTEGER) AS request_state,
             CAST(NULL AS INTEGER) AS failed_test,
+            CAST(NULL AS INTEGER) AS problem_id,
             CAST(NULL AS VARCHAR(200)) AS problem_title,
             $no_de,
             Q.clarified AS clarified,
@@ -171,6 +176,7 @@ sub console_content
             M.id AS id,
             CAST(NULL AS INTEGER) AS request_state,
             CAST(NULL AS INTEGER) AS failed_test,
+            CAST(NULL AS INTEGER) AS problem_id,
             CAST(NULL AS VARCHAR(200)) AS problem_title,
             $no_de,
             CAST(NULL AS INTEGER) AS clarified,
@@ -191,6 +197,7 @@ sub console_content
             M.id AS id,
             CAST(NULL AS INTEGER) AS request_state,
             CAST(NULL AS INTEGER) AS failed_test,
+            CAST(NULL AS INTEGER) AS problem_id,
             CAST(NULL AS VARCHAR(200)) AS problem_title,
             $no_de,
             CAST(NULL AS INTEGER) AS clarified,
@@ -206,6 +213,7 @@ sub console_content
             C.start_date AS submit_time,
             C.id AS id,
             C.is_official AS request_state,
+            CAST(NULL AS INTEGER) AS problem_id,
             CAST(NULL AS INTEGER) AS failed_test,
             C.title AS problem_title,
             $no_de,
@@ -223,6 +231,7 @@ sub console_content
             C.id AS id,
             C.is_official AS request_state,
             CAST(NULL AS INTEGER) AS failed_test,
+            CAST(NULL AS INTEGER) AS problem_id,
             C.title AS problem_title,
             $no_de,
             CAST(NULL AS INTEGER) AS clarified,
@@ -352,7 +361,7 @@ sub console_content
     my $fetch_console_record = sub($)
     {
         my ($rtype, $rank, $submit_time, $id, $request_state, $failed_test,
-            $problem_title, $de, $clarified, $question, $answer, $jury_message,
+            $problem_id, $problem_title, $de, $clarified, $question, $answer, $jury_message,
             $team_id, $team_name, $country_abbr, $last_ip, $caid, $contest_id
         ) = $_[0]->fetchrow_array
             or return ();
@@ -360,6 +369,11 @@ sub console_content
         $request_state = -1 unless defined $request_state;
 
         my ($country, $flag) = CATS::Countries::get_flag($country_abbr);
+        my %st = state_to_display($request_state,
+            # Security: During the contest, do show teams only accepted/rejected
+            # instead of specific results of other teams.
+            $contest->{time_since_defreeze} <= 0 && !$is_jury &&
+            (!$is_team || !$team_id || $team_id != $uid));
         return (
             country => $country,
             flag => $flag,
@@ -381,14 +395,12 @@ sub console_content
             href_answer_box =>      $is_jury ? url_f('answer_box', qid => $id) : undef,
             href_send_message_box =>$is_jury ? url_f('send_message_box', caid => $caid) : undef,
             'time' =>               $submit_time,
+            'time_iso' =>           date_to_iso($submit_time),
+            problem_id =>           $problem_id,
             problem_title =>        $problem_title,
             de =>                   $de,
             request_state =>        $request_state,
-            state_to_display($request_state,
-                # Security: During the contest, do show teams only accepted/rejected
-                # instead of specific results of other teams.
-                $contest->{time_since_defreeze} <= 0 && !$is_jury &&
-                (!$is_team || !$team_id || $team_id != $uid)),
+            request_state_text => grep($st{$_}, keys %st), %st,
             failed_test =>          $failed_test,
             question_text =>        decode_utf8($question),
             answer_text =>          decode_utf8($answer),
