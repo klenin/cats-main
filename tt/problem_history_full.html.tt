@@ -1,5 +1,5 @@
-[% PROCESS 'includes/menu_begin.tti' %]
-[%- PROCESS 'includes/html.tti' -%]
+[% PROCESS includes/menu_begin.tti %]
+[%- PROCESS includes/html.tti -%]
 <form method="post" enctype="multipart/form-data" name="problems_form" accept-charset="UTF-8" style="margin: 0">
 [% PROCESS 'includes/listview_header.tti' %]
 [% IF problem_history.size %]
@@ -10,7 +10,7 @@
 <td>[% h.author %] &lt;[% h.author_email %]&gt;</td>
 <td>[% h.author_date %]</td>
 <td>[% h.committer_date %]</td>
-<td><a href="[% h.href_commit %]">[% h.abbreviated_sha %]</a></td>
+<td><a href="[% h.href_commit %]" title="[% h.sha %]" >[% h.abbreviated_sha %]&hellip;</a></td>
 <td><pre>[% h.message %]</pre></td>
 </tr>
 [% END %]
@@ -19,4 +19,4 @@
 <pre>No log information</pre>
 [% END %]
 </form>
-[% PROCESS 'includes/menu_end.tti' %]
+[% PROCESS includes/menu_end.tti %]
