@@ -794,7 +794,7 @@ sub end_tag_Problem
             title=?, lang=?, time_limit=?, memory_limit=?, difficulty=?, author=?, input_file=?, output_file=?,
             statement=?, pconstraints=?, input_format=?, output_format=?, formal_input=?, json_data=?, explanation=?, zip_archive=?,
             upload_date=CURRENT_TIMESTAMP, std_checker=?, last_modified_by=?,
-            max_points=?, hash=NULL, run_method=?
+            max_points=?, run_method=?, hash=NULL
         WHERE id = ?~
     : q~
         INSERT INTO problems (
@@ -802,7 +802,7 @@ sub end_tag_Problem
             title, lang, time_limit, memory_limit, difficulty, author, input_file, output_file,
             statement, pconstraints, input_format, output_format, formal_input, json_data, explanation, zip_archive,
             upload_date, std_checker, last_modified_by,
-            max_points, id, run_method
+            max_points, run_method, id
         ) VALUES (
             ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP,?,?,?,?,?
         )~;
@@ -817,8 +817,8 @@ sub end_tag_Problem
     $c->bind_param($i++, $self->{problem}->{std_checker});
     $c->bind_param($i++, $CATS::Misc::uid);
     $c->bind_param($i++, $self->{problem}->{max_points});
-    $c->bind_param($i++, $self->{id});
     $c->bind_param($i++, $self->{run_method});
+    $c->bind_param($i++, $self->{id});
     $c->execute;
 
     $self->insert_problem_content;
