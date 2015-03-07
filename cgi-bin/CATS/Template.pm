@@ -3,6 +3,7 @@ package CATS::Template;
 use strict;
 use warnings;
 use Template;
+use CATS::Template::Filter;
 
 my $tt;
 
@@ -19,6 +20,9 @@ sub new
         PLUGINS => {
             Javascript => 'CATS::Template::Plugin::Javascript'
         },
+        FILTERS => {
+            'quote_controls' => \&CATS::Template::Filter::quote_controls_filter
+        }
     }) || die $Template::ERROR;
 
     my $self = { vars => {}, file_name => $file_name };
