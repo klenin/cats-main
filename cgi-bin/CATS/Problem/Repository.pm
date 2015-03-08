@@ -158,7 +158,7 @@ sub commit
     $self->git(qq~config user.name "$self->{author_name}"~);
     $self->git(qq~config user.email "$self->{author_email}"~);
     $self->git('add -A');
-    $self->git(qq~commit --message="$message"~);
+    $self->git(qq~commit -m "$message"~);
     $self->git('gc');
     return $self;
 }
