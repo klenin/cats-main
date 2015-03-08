@@ -6,7 +6,7 @@ use warnings;
 
 use lib '..';
 use CATS::Web qw(param);
-use CATS::Misc qw(init_template msg url_f);
+use CATS::Misc qw(init_template msg url_f $is_root);
 use CATS::DB;
 use CATS::Connect;
 use CATS::Constants;
@@ -83,8 +83,12 @@ sub generate_login
 sub new_frame
 {
     my $t = init_template('users_new.html.tt');
-    $t->param(login => generate_login);
-    $t->param(countries => \@CATS::Countries::countries, href_action => url_f('users'));
+    $t->param(
+        login => generate_login,
+        countries => \@CATS::Countries::countries,
+        href_action => url_f('users'),
+        is_root => $is_root
+    );
 }
 
 
