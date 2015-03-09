@@ -77,13 +77,12 @@ sub log
     my @out = ();
     foreach my $log (split "\0", $s) {
         my ($sha, $abrev_sha, $author, $email, $adate, $cdate, $message) = split /\|\|/, $log;
-        my @comment_lines = split "\n\n", $message;
-        my $subject = shift @comment_lines;
+        my ($subject, $body) = split "\n\n", $message, 2;
         push @out, {
             sha => $sha,
             abbreviated_sha => $abrev_sha,
             subject => $subject,
-            body => join("\n\n", @comment_lines),
+            body => $body,
             author => $author,
             author_email => $email,
             author_date => CATS::Problem::Date->new($adate), # TODO: Figure out locales.

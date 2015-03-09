@@ -19,7 +19,7 @@
 <td>[% h.author_date %]</td>
 <td>[% h.committer_date %]</td>
 <td><a href="[% h.href_commit %]" title="[% h.sha %]" >[% h.abbreviated_sha %]&hellip;</a></td>
-<td><pre title="[% h.body %]" >[% h.subject %]</pre></td>
+<td title="[% h.body | html | replace("\n", '&#10;') %]">[% h.subject| html %]</td>
 </tr>
 [% END %]
 </table>
