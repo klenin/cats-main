@@ -147,9 +147,10 @@ sub get_run_info
         $contest->{show_test_data} or return $row;
         my $t = $contest->{tests}->[$row->{test_rank} - 1] or return $row;
         $row->{test_data} =
-            $t->{input} ? "$t->{input}&hellip;" :
+            $t->{input} ? $t->{input} :
             $t->{gen_group} ? "$t->{gen_name} GROUP" :
             $t->{gen_name} ? "$t->{gen_name} $t->{param}" : '';
+        $row->{test_data_cut} = length $t->{input} > $cats::infile_cut;
         $row;
     };
 
@@ -179,9 +180,9 @@ sub get_contest_info
 
     my $fields = join ', ',
         ($contest->{show_all_tests} ? 't.points' : ()),
-        ($contest->{show_test_data} ? q~
+        ($contest->{show_test_data} ? qq~
             (SELECT ps.fname FROM problem_sources ps WHERE ps.id = t.generator_id) AS gen_name,
-            t.param, SUBSTRING(t.in_file FROM 1 FOR 20) AS input, t.gen_group~ : ());
+            t.param, SUBSTRING(t.in_file FROM 1 FOR $cats::infile_cut + 1) AS input, t.gen_group~ : ());
     my $tests = $contest->{tests} = $fields ?
         $dbh->selectall_arrayref(qq~
             SELECT $fields FROM tests t WHERE t.problem_id = ? ORDER BY t.rank~, { Slice => {} },
