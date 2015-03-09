@@ -19,7 +19,8 @@
 "text": "[% c.question_text | $Javascript %]"
 [% END -%]
 [% IF c.is_message -%]
-"type": "c.message",
+"type": "message",
+"team_id": [% c.team_id %],
 "text": "[% c.message_text | $Javascript %]"
 [% END -%]
 [% IF c.is_broadcast -%]
