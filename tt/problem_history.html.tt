@@ -1,6 +1,14 @@
 [% PROCESS includes/menu_begin.tti %]
+[%- PROCESS "lang/$lang/problems.html.tt" -%]
 [%- PROCESS includes/html.tti -%]
-<form method="post" enctype="multipart/form-data" name="problems_form" accept-charset="UTF-8" style="margin: 0">
+
+[% IF problem_import_log %]
+[% capt.problem_import_log %]:<br/>
+<textarea cols="100" rows="10" readonly="readonly">
+[% problem_import_log %]
+</textarea>
+[% END %]
+
 [% PROCESS 'includes/listview_header.tti' %]
 [% IF problem_history.size %]
 <table width="100%" cellpadding="2" cellspacing="1" class="bordered">
@@ -11,12 +19,25 @@
 <td>[% h.author_date %]</td>
 <td>[% h.committer_date %]</td>
 <td><a href="[% h.href_commit %]" title="[% h.sha %]" >[% h.abbreviated_sha %]&hellip;</a></td>
-<td><pre>[% h.message %]</pre></td>
+<td><pre title="[% h.body %]" >[% h.subject %]</pre></td>
 </tr>
 [% END %]
 </table>
 [% ELSE %]
 <pre>No log information</pre>
 [% END %]
+<form method="post" enctype="multipart/form-data" name="problems_form" accept-charset="UTF-8" style="margin: 0">
+<div class="problem_submit">
+  <p><label for="zip">[% capt.problem_file %]:</label><input type="file" id="zip" name="zip" class="file" size="25"/>
+    <label><input type="checkbox" name="allow_rename" value="1"/> [% capt.rename %]</label></p>
+  <p>
+    <label for="message">[% capt.message %]:</label><br/>
+    <textarea id="message" name="message" cols="50" rows="5"></textarea>
+  </p>
+  <p>
+    <input type="hidden" name="problem_id" value="[% pid %]" />
+    <input type="submit" name="replace" value="[% capt.replace %]" class="button" />
+  </p>
+</div>
 </form>
 [% PROCESS includes/menu_end.tti %]

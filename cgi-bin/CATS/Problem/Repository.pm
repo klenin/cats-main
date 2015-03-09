@@ -77,10 +77,13 @@ sub log
     my @out = ();
     foreach my $log (split "\0", $s) {
         my ($sha, $abrev_sha, $author, $email, $adate, $cdate, $message) = split /\|\|/, $log;
+        my @comment_lines = split "\n\n", $message;
+        my $subject = shift @comment_lines;
         push @out, {
             sha => $sha,
             abbreviated_sha => $abrev_sha,
-            message => $message,
+            subject => $subject,
+            body => join("\n\n", @comment_lines),
             author => $author,
             author_email => $email,
             author_date => CATS::Problem::Date->new($adate), # TODO: Figure out locales.
@@ -158,7 +161,7 @@ sub commit
     $self->git(qq~config user.name "$self->{author_name}"~);
     $self->git(qq~config user.email "$self->{author_email}"~);
     $self->git('add -A');
-    $self->git(qq~commit --message="$message"~);
+    $self->git(qq~commit -m "$message"~);
     $self->git('gc');
     return $self;
 }

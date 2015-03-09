@@ -111,7 +111,7 @@ sub problems_replace
 
     my CATS::Problem $p = CATS::Problem->new;
     $p->{old_title} = $old_title unless param('allow_rename');
-    my $error = $p->load($fname, $cid, $pid, 1);
+    my $error = $p->load($fname, $cid, $pid, 1, param('message'));
     $t->param(problem_import_log => $p->encoded_import_log());
     #unlink $fname;
     if ($error) {
@@ -791,6 +791,10 @@ sub problem_history_frame
     return problem_history_commit_frame($pid, $h) if $h;
 
     init_listview_template('problem_history', 'problem_history', auto_ext('problem_history'));
+    $t->param(pid => $pid);
+
+    problems_replace if defined param('replace');
+
     my @cols = (
         { caption => res_str(1400), width => '25%', order_by => 'author' },
         { caption => res_str(634),  width => '10%', order_by => 'author_date' },

@@ -91,7 +91,7 @@ sub get_log
 
 sub add_history
 {
-    (my CATS::Problem $self, my $fname) = @_;
+    (my CATS::Problem $self, my $fname, my $message) = @_;
     my $problem = {
         zip => $fname,
         id => $self->{id},
@@ -108,7 +108,7 @@ sub add_history
     if ($self->{replace}) {
         my ($repo_id, $sha) = get_repo($self->{id});
         $p->move_history(from => "$path/$repo_id/", sha => $sha) unless $repo_id == $self->{id};
-        $p->add($problem);
+        $p->add($problem, message => $message);
         $dbh->do(qq~
             UPDATE problems SET repo = ?, commit_sha = ? WHERE id = ?~, undef, '', '', $self->{id})
             unless $repo_id == $self->{id};
@@ -123,7 +123,7 @@ sub add_history
 sub load
 {
     my CATS::Problem $self = shift;
-    (my $fname, $self->{contest_id}, $self->{id}, $self->{replace}) = @_;
+    (my $fname, $self->{contest_id}, $self->{id}, $self->{replace}, my $message) = @_;
 
     eval {
         CATS::BinaryFile::load($fname, \$self->{zip_archive})
@@ -157,7 +157,7 @@ sub load
     else {
         unless ($self->{debug}) {
             $dbh->commit;
-            eval { $self->add_history($fname); };
+            eval { $self->add_history($fname, $message); };
             $self->note("Warning: $@") if $@;
         }
         $self->note('Success import');

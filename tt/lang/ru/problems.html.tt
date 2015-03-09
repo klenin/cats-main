@@ -22,6 +22,7 @@
     delete => 'удалить',
     replace => 'заменить',
     add_new => 'добавить',
+    message => 'Сообщение',
   });
   MACRO to_monitor(console) BLOCK; "Для наблюдения за ходом тестирования откройте ${console}"; END;
 %]
