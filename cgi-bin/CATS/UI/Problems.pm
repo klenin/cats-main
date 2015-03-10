@@ -10,7 +10,7 @@ use CATS::Misc qw(
     $t $is_jury $is_root $is_team $sid $cid $uid $contest $is_virtual $virtual_diff_time
     cats_dir init_template init_listview_template msg res_str url_f auto_ext
     order_by sort_listview define_columns attach_listview problem_status_names);
-use CATS::Utils qw(url_function escape_html file_type date_to_iso);
+use CATS::Utils qw(url_function file_type date_to_iso);
 use CATS::Data qw(:all);
 use CATS::StaticPages;
 use CATS::Problem::Text;

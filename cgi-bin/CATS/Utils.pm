@@ -16,7 +16,6 @@ BEGIN {
         split_fname
         untabify
         unquote
-        escape_html
         escape_xml
         url_function
         state_to_display
@@ -177,19 +176,6 @@ sub unquote
         $str =~ s/\\([^0-7]|[0-7]{1,3})/unq($1)/eg;
     }
     return $str;
-}
-
-sub escape_html
-{
-    my $toencode = shift;
-
-    $toencode =~ s/&/&amp;/g;
-    $toencode =~ s/\'/&#39;/g;
-    $toencode =~ s/\"/&quot;/g; #"
-    $toencode =~ s/>/&gt;/g;
-    $toencode =~ s/</&lt;/g;
-
-    return $toencode;
 }
 
 # Try to chop given string on a word boundary between position

@@ -12,7 +12,6 @@ use JSON::XS;
 use CATS::Constants;
 use CATS::DB;
 use CATS::Misc qw($git_author_name $git_author_email cats_dir msg);
-use CATS::Utils qw(escape_html);
 use CATS::BinaryFile;
 use CATS::StaticPages;
 use CATS::DevEnv;
@@ -60,7 +59,7 @@ sub clear
 sub encoded_import_log
 {
     my CATS::Problem $self = shift;
-    return escape_html($self->{import_log});
+    return $self->{import_log};
 }
 
 
