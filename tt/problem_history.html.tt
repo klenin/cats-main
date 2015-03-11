@@ -9,6 +9,7 @@
 </textarea>
 [% END %]
 
+<form method="post" enctype="multipart/form-data" name="problem_history_form" accept-charset="UTF-8" style="margin: 0">
 [% PROCESS 'includes/listview_header.tti' %]
 [% IF problem_history.size %]
 <table width="100%" cellpadding="2" cellspacing="1" class="bordered">
@@ -26,7 +27,6 @@
 [% ELSE %]
 <pre>No log information</pre>
 [% END %]
-<form method="post" enctype="multipart/form-data" name="problems_form" accept-charset="UTF-8" style="margin: 0">
 <div class="problem_submit">
   <p><label for="zip">[% capt.problem_file %]:</label><input type="file" id="zip" name="zip" class="file" size="25"/></p>
   <p>
