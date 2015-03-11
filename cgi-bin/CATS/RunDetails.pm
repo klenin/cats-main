@@ -322,7 +322,7 @@ sub run_details_frame
                 request_id => $_->{req_id},
                 state => $cats::st_not_processed,
                 testsets => param('testsets'),
-                judge_id => (param('set_judge') ? param('judge') : undef));
+                judge_id => (param('set_judge') && param('judge') ? param('judge') : undef));
             $_ = get_sources_info(request_id => $_->{req_id}, partial_checker => 1) or next;
         }
 
