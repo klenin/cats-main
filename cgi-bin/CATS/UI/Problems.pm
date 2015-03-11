@@ -111,7 +111,7 @@ sub problems_replace
 
     my CATS::Problem $p = CATS::Problem->new;
     $p->{old_title} = $old_title unless param('allow_rename');
-    my $error = $p->load($fname, $cid, $pid, 1, param('message'), defined param('is_amend') && param('is_amend'));
+    my $error = $p->load($fname, $cid, $pid, 1, param('message'), param('is_amend'));
     $t->param(problem_import_log => $p->encoded_import_log());
     #unlink $fname;
     if ($error) {
