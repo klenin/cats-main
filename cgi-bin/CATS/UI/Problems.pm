@@ -111,7 +111,7 @@ sub problems_replace
 
     my CATS::Problem $p = CATS::Problem->new;
     $p->{old_title} = $old_title unless param('allow_rename');
-    my $error = $p->load($fname, $cid, $pid, 1, param('message'));
+    my $error = $p->load($fname, $cid, $pid, 1, param('message'), defined param('is_amend') && param('is_amend'));
     $t->param(problem_import_log => $p->encoded_import_log());
     #unlink $fname;
     if ($error) {
@@ -139,7 +139,7 @@ sub problems_add_new
     }
 
     my CATS::Problem $p = CATS::Problem->new;
-    my $error = $p->load($fname, $cid, new_id, 0);
+    my $error = $p->load($fname, $cid, new_id, 0, 0);
     $t->param(problem_import_log => $p->encoded_import_log());
     $error ||= !add_problem_to_contest($p->{id}, $problem_code);
 
