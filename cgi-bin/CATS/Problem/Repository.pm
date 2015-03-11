@@ -141,7 +141,7 @@ sub add
         $self->{author_email} ||= $git_author_email;
         $self->{logger}->warning('git user data is not correctly configured.') if exists $self->{logger};
     }
-    $self->commit($opts{message} || 'Update task');
+    $self->commit($opts{message} || 'Update task', $opts{is_amend} || 0);
     return $self;
 }
 
@@ -156,11 +156,12 @@ sub move_history
 
 sub commit
 {
-    my ($self, $message) = @_;
+    my ($self, $message, $is_amend) = @_;
     $self->git(qq~config user.name "$self->{author_name}"~);
     $self->git(qq~config user.email "$self->{author_email}"~);
     $self->git('add -A');
-    $self->git(qq~commit -m "$message"~);
+    my $args = $is_amend ? '--amend' : '';
+    $self->git(qq~commit $args -m "$message"~);
     $self->git('gc');
     return $self;
 }

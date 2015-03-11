@@ -22,6 +22,7 @@
     delete => 'delete',
     replace => 'replace',
     add_new => 'add',
+    amend => 'amend',
     message => 'Message',
   });
   MACRO to_monitor(console) BLOCK; "Open ${console} to monitor testing process"; END;
