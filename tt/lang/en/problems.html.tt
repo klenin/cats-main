@@ -9,6 +9,7 @@
     problem_history => 'history',
     explanation => 'analysis',
     package => 'package',
+    git_package => 'git-package',
     compare_tests => 't',
     used_in => 'Used in contests',
     solution_file => 'Solution file',

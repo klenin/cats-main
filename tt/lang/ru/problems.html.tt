@@ -9,6 +9,7 @@
     console => 'консоль',
     explanation => 'разбор',
     package => 'пакет',
+    git_package => 'git-пакет',
     compare_tests => 'т',
     used_in => 'Использована в турнирах',
     solution_file => 'Файл с решением',
