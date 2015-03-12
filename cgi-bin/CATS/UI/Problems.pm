@@ -446,6 +446,9 @@ sub problems_all_frame
         return (
             href_view_problem => url_f('problem_text', pid => $pid),
             href_view_contest => url_function('problems', sid => $sid, cid => $contest_id),
+            # Jury can download package for any problem after linking, but not before.
+            ($is_root ? (href_download => url_function('problems', sid => $sid, cid => $contest_id, download => $pid)) : ()),
+            ($is_root ? (href_problem_history => url_f('problem_history', pid => $pid)) : ()),
             linked => $linked || !$link,
             problem_id => $pid,
             problem_name => $problem_name,
