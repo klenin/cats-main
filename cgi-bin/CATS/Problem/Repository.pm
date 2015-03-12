@@ -39,40 +39,6 @@ sub parse_author
     return $1;
 }
 
-# Highlight selected fragments of string, using given CSS class,
-# and escape HTML.  It is assumed that fragments do not overlap.
-# Regions are passed as list of pairs (array references).
-#
-# Example: esc_html_hl_regions("foobar", "mark", [ 0, 3 ]) returns
-# '<span class="mark">foo</span>bar'
-sub esc_html_hl_regions
-{
-    my ($str, $css_class, @sel) = @_;
-    @sel     = grep { ref($_) eq 'ARRAY' } @sel;
-    # FIXME: This should be a template filter.
-    return $str; # unless @sel;
-
-    my $out = '';
-    my $pos = 0;
-
-    for my $s (@sel) {
-        my ($begin, $end) = @$s;
-
-        # Don't create empty <span> elements.
-        next if $end <= $begin;
-
-        my $escaped = substr($str, $begin, $end - $begin);
-
-        $out .= substr($str, $pos, $begin - $pos) if ($begin - $pos > 0);
-        $out .= sprintf('<span class="%s">%s</span>', $css_class, $escaped);
-
-        $pos = $end;
-    }
-    $out .= substr($str, $pos) if ($pos < length($str));
-
-    return $out;
-}
-
 sub parse_date
 {
     my $epoch = shift;
@@ -244,7 +210,6 @@ sub format_rem_add_lines_pair
 
     my @rem = split(//, $rem);
     my @add = split(//, $add);
-    my ($esc_rem, $esc_add);
     # Ignore leading +/- characters for each parent.
     my ($prefix_len, $suffix_len) = (1, 0);
     my ($prefix_has_nonspace, $suffix_has_nonspace);
@@ -264,20 +229,19 @@ sub format_rem_add_lines_pair
         $suffix_len++;
     }
 
+    my $diff_rem = $self->format_diff_line($rem, 'rem');
+    my $diff_add = $self->format_diff_line($add, 'add');
+
     # Mark lines that are different from each other, but have some common
     # part that isn't whitespace.  If lines are completely different, don't
     # mark them because that would make output unreadable, especially if
     # diff consists of multiple lines.
     if ($prefix_has_nonspace || $suffix_has_nonspace) {
-        $esc_rem = esc_html_hl_regions($rem, 'marked', [$prefix_len, @rem - $suffix_len]);
-        $esc_add = esc_html_hl_regions($add, 'marked', [$prefix_len, @add - $suffix_len]);
-    } else {
-        $esc_rem = $rem;
-        $esc_add = $add;
+        $diff_rem->{mark} = [ $prefix_len, @rem - $suffix_len ];
+        $diff_add->{mark} = [ $prefix_len, @add - $suffix_len ];
     }
 
-    return $self->format_diff_line($esc_rem, 'rem'),
-           $self->format_diff_line($esc_add, 'add');
+    return ($diff_rem, $diff_add);
 }
 
 # HTML-format diff context, removed and added lines.

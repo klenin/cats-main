@@ -3,6 +3,8 @@ package CATS::Template::Filter;
 use strict;
 use warnings;
 
+use Template::Filters;
+
 # Make control characters "printable", using character escape codes (CEC)
 sub quot_cec
 {
@@ -32,6 +34,44 @@ sub quote_controls_filter
     $str =~ s/ /&nbsp;/g;
     $str =~ s|([[:cntrl:]])|quot_cec($1)|eg;
     return $str;
+}
+
+sub esc { quote_controls_filter(Template::Filters::html_filter($_[0])) }
+
+# Highlight selected fragments of string, using given CSS class,
+# and escape HTML.  It is assumed that fragments do not overlap.
+# Regions are passed as list of pairs (array references).
+#
+# Example: [% 'foobar' | html_highlight_regions('mark', [ 0, 3 ]) %] returns
+# '<span class="mark">foo</span>bar'
+sub html_highlight_regions_filter
+{
+    my ($context, $css_class, @sel) = @_;
+    @sel = grep { ref($_) eq 'ARRAY' } @sel;
+    sub {
+        my ($str) = @_;
+        @sel or return esc($str);
+
+        my $out = '';
+        my $pos = 0;
+
+        for my $s (@sel) {
+            my ($begin, $end) = @$s;
+
+            # Don't create empty <span> elements.
+            next if $end <= $begin;
+
+            my $escaped = esc(substr $str, $begin, $end - $begin);
+
+            $out .= esc(substr $str, $pos, $begin - $pos) if $begin > $pos;
+            $out .= sprintf '<span class="%s">%s</span>', $css_class, $escaped;
+
+            $pos = $end;
+        }
+        $out .= esc(substr $str, $pos) if $pos < length $str;
+
+        $out;
+    }
 }
 
 1;

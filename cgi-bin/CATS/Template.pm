@@ -21,7 +21,8 @@ sub new
             Javascript => 'CATS::Template::Plugin::Javascript'
         },
         FILTERS => {
-            'quote_controls' => \&CATS::Template::Filter::quote_controls_filter
+            quote_controls => \&CATS::Template::Filter::quote_controls_filter,
+            html_highlight_regions => [ \&CATS::Template::Filter::html_highlight_regions_filter, 2 ],
         }
     }) || die $Template::ERROR;
 

@@ -55,7 +55,7 @@
                 <span class="section">[% chunk.header.text.section | html | quote_controls %]</span>
             </div>
             [% FOREACH line IN chunk.lines %]
-            <div class="[% line.class %]">[% line.text | html | quote_controls %]</div>
+            <div class="[% line.class %]">[% line.text | html_highlight_regions('marked', line.mark)  %]</div>
             [% END %]
         [% END %]
     </div>
