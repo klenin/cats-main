@@ -181,6 +181,7 @@ sub download_problem
 sub git_download_problem
 {
     my $pid = param('git_download');
+    my $sha = param('sha');
     $is_root && $pid or return redirect url_f('contests');
     my ($status) = $dbh->selectrow_array(qq~
         SELECT status FROM contest_problems
@@ -189,7 +190,7 @@ sub git_download_problem
     defined $status && ($is_jury || $status != $cats::problem_st_hidden)
         or return;
     undef $t;
-    my ($fname, $tree_id) = CATS::Problem::get_repo_archive($pid);
+    my ($fname, $tree_id) = CATS::Problem::get_repo_archive($pid, $sha);
     content_type('application/zip');
     headers(
         'Accept-Ranges', 'bytes',
@@ -826,8 +827,8 @@ sub problem_history_frame
         { caption => res_str(1400), width => '25%', order_by => 'author' },
         { caption => res_str(634),  width => '10%', order_by => 'author_date' },
         { caption => res_str(1401), width => '10%', order_by => 'committer_date' },
-        { caption => res_str(1402), width => '5%', order_by => 'sha' },
-        { caption => res_str(1403), width => '50%', order_by => 'message' }
+        { caption => res_str(1402), width => '6%', order_by => 'sha' },
+        { caption => res_str(1403), width => '49%', order_by => 'message' }
     );
     define_columns(url_f('problem_history', pid => $pid), 1, 0, \@cols);
     my $fetch_record = sub {
@@ -835,6 +836,7 @@ sub problem_history_frame
         return (
             %$log,
             href_commit => url_f('problem_history', pid => $pid, h => $log->{sha}),
+            href_download => url_f('problems', git_download => $pid, sha => $log->{sha}),
         );
     };
     attach_listview(url_f('problem_history', pid => $pid), $fetch_record, sort_listview(CATS::Problem::get_log($pid)));

@@ -19,7 +19,10 @@
 <td>[% h.author %] &lt;[% h.author_email %]&gt;</td>
 <td>[% h.author_date %]</td>
 <td>[% h.committer_date %]</td>
-<td><a href="[% h.href_commit %]" title="[% h.sha %]" >[% h.abbreviated_sha %]&hellip;</a></td>
+<td>
+  <a href="[% h.href_commit %]" title="[% h.sha %]" >[% h.abbreviated_sha %]&hellip;</a>
+  <span style="float:right;">[<a href="[% h.href_download %]">d</a>]</span>
+</td>
 <td title="[% h.body | html | replace("\n", '&#10;') %]">[% h.subject| html %]</td>
 </tr>
 [% END %]
