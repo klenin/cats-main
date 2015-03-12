@@ -48,9 +48,9 @@ sub parse_author
 sub esc_html_hl_regions
 {
     my ($str, $css_class, @sel) = @_;
-    my %opts = grep { ref($_) ne 'ARRAY' } @sel;
     @sel     = grep { ref($_) eq 'ARRAY' } @sel;
-    return $str unless @sel;
+    # FIXME: This should be a template filter.
+    return $str; # unless @sel;
 
     my $out = '';
     my $pos = 0;
@@ -64,7 +64,7 @@ sub esc_html_hl_regions
         my $escaped = substr($str, $begin, $end - $begin);
 
         $out .= substr($str, $pos, $begin - $pos) if ($begin - $pos > 0);
-        $out .= sprint('<span class="%s">%s</span>', $css_class, $escaped);
+        $out .= sprintf('<span class="%s">%s</span>', $css_class, $escaped);
 
         $pos = $end;
     }
@@ -269,17 +269,15 @@ sub format_rem_add_lines_pair
     # mark them because that would make output unreadable, especially if
     # diff consists of multiple lines.
     if ($prefix_has_nonspace || $suffix_has_nonspace) {
-        $esc_rem = esc_html_hl_regions($rem, 'marked',
-                [$prefix_len, @rem - $suffix_len], -nbsp=>1);
-        $esc_add = esc_html_hl_regions($add, 'marked',
-                [$prefix_len, @add - $suffix_len], -nbsp=>1);
+        $esc_rem = esc_html_hl_regions($rem, 'marked', [$prefix_len, @rem - $suffix_len]);
+        $esc_add = esc_html_hl_regions($add, 'marked', [$prefix_len, @add - $suffix_len]);
     } else {
         $esc_rem = $rem;
         $esc_add = $add;
     }
 
-    return $self->format_diff_line(\$esc_rem, 'rem'),
-           $self->format_diff_line(\$esc_add, 'add');
+    return $self->format_diff_line($esc_rem, 'rem'),
+           $self->format_diff_line($esc_add, 'add');
 }
 
 # HTML-format diff context, removed and added lines.
@@ -299,7 +297,7 @@ sub format_ctx_rem_add_lines
         @new_add = map { $self->format_diff_line($_, 'add') } @$add;
     }
 
-    @new_ctx = map { format_diff_line($_, 'ctx') } @$ctx;
+    @new_ctx = map { $self->format_diff_line($_, 'ctx') } @$ctx;
 
     return (@new_ctx, @new_rem, @new_add);
 }
@@ -341,7 +339,7 @@ sub format_diff_chunk
         # be reordered)
         if (!$class || ((@rem || @add) && $class eq 'ctx') ||
             (@rem && @add && $class ne $prev_class)) {
-            @{$result_chunk->{lines}} = $self->format_ctx_rem_add_lines(\@ctx, \@rem, \@add);
+            push @{$result_chunk->{lines}}, $self->format_ctx_rem_add_lines(\@ctx, \@rem, \@add);
             @ctx = @rem = @add = ();
         }
 
