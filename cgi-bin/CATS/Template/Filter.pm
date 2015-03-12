@@ -10,9 +10,11 @@ sub quot_cec
 {
     my $cntrl = shift;
     my %es = ( # character escape codes, aka escape sequences
-        "\t" => '\t',   # tab            (HT)
+        # TODO: Process \t specially.
+        "\t" => undef, #'\t',   # tab            (HT)
         "\n" => '\n',   # line feed      (LF)
-        "\r" => '\r',   # carrige return (CR)
+        # TODO: Control EOL at git level.
+        "\r" => undef, #'\r',   # carrige return (CR)
         "\f" => '\f',   # form feed      (FF)
         "\b" => '\b',   # backspace      (BS)
         "\a" => '\a',   # alarm (bell)   (BEL)
@@ -22,9 +24,9 @@ sub quot_cec
     );
     my $chr = exists $es{$cntrl}
             ? $es{$cntrl}
-            : sprintf('\%2x', ord($cntrl));
+            : sprintf('\%02X', ord($cntrl));
 
-    return "<span class=\"cntrl\">$chr</span>";
+    return $chr ? "<span class=\"cntrl\">$chr</span>" : '';
 }
 
 sub quote_controls_filter
