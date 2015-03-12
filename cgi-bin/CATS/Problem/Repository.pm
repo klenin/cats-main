@@ -628,7 +628,7 @@ sub commit_info
 {
     my ($self, $sha) = @_;
     my %co = $self->parse_commit_text($self->git("rev-list --header --max-count=1 $sha"), 1);
-    return { info => \%co, $self->commif_diff(%co) };
+    return { info => \%co, $self->commif_diff(%co), log => $self->{log} };
 }
 
 sub extract_zip

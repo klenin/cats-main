@@ -78,4 +78,5 @@
         [% END %]
     </div>
 </div>
+[%- IF commit.log %]<pre>[% commit.log | html %]</pre>[% END -%]
 [% PROCESS 'includes/menu_end.tti' %]
