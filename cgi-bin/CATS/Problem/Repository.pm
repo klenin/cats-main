@@ -19,10 +19,11 @@ package CATS::Problem::Repository;
 
 use strict;
 use warnings;
-use File::Temp qw(tempdir);
+use File::Temp qw(tempdir tempfile);
 use Archive::Zip qw(:ERROR_CODES);
 use Fcntl ':mode';
 use File::Path;
+use File::stat;
 use File::Copy::Recursive qw(dircopy);
 use CATS::Problem::Authors;
 use CATS::Utils qw(untabify unquote file_type file_type_long chop_str);
@@ -684,6 +685,15 @@ sub log
         };
     }
     return \@out;
+}
+
+sub archive
+{
+    my ($self, $tree_id) = @_;
+    $tree_id ||= 'HEAD';
+    (undef, my $fname) = tempfile(OPEN => 0, DIR => tempdir($tmp_template, TMPDIR => 1, CLEANUP => 1));
+    $self->git("archive --format=zip $tree_id > $fname");
+    return $fname;
 }
 
 sub new_repo

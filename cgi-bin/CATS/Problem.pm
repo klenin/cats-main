@@ -73,6 +73,12 @@ sub get_repo
     return $db_id ne '' ? ($db_id, $db_sha) : ($id, $sha // '');
 }
 
+sub get_repo_archive
+{
+    my ($pid, $sha) = get_repo(@_);
+    return CATS::Problem::Repository->new(dir => cats_dir . "$cats::repos_dir$pid/")->archive($sha);
+}
+
 
 sub show_commit
 {
