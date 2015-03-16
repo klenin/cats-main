@@ -720,8 +720,7 @@ sub get_dir { $_[0]->{dir} }
 sub delete
 {
     my ($self) = @_;
-    die "Git repository doesn't exist" unless -d $self->{dir};
-    rmtree($self->{dir});
+    rmtree($self->{dir}) or warn q~Git repository doesn't exist~;
 }
 
 sub init
