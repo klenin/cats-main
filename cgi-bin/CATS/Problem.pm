@@ -12,13 +12,12 @@ use JSON::XS;
 use CATS::Constants;
 use CATS::DB;
 use CATS::Misc qw($git_author_name $git_author_email cats_dir msg);
-use CATS::BinaryFile;
 use CATS::StaticPages;
 use CATS::DevEnv;
 use FormalInput;
 
 use fields qw(
-    contest_id id import_log debug problem checker
+    contest_id id import_log debug problem source checker
     statement constraints input_format output_format formal_input json_data explanation
     tests testsets samples objects keywords
     imports solutions generators modules pictures attachments
@@ -98,49 +97,22 @@ sub get_log
 
 sub add_history
 {
-    (my CATS::Problem $self, my $fname, my $message, my $is_amend) = @_;
-    my $problem = {
-        zip => $fname,
-        id => $self->{id},
-        title => $self->{problem}{title},
-        author => $self->{problem}{author},
-    };
-    my $path = cats_dir() . $cats::repos_dir;
-    my $p = CATS::Problem::Repository->new(
-        dir => "$path/$self->{id}/",
-        logger => $self,
-        author_name => $git_author_name,
-        author_email => $git_author_email
-    );
-    if ($self->{replace}) {
-        my ($repo_id, $sha) = get_repo($self->{id});
-        $p->move_history(from => "$path/$repo_id/", sha => $sha) unless $repo_id == $self->{id};
-        $p->add($problem, message => $message, is_amend => $is_amend);
-        $dbh->do(qq~
-            UPDATE problems SET repo = ?, commit_sha = ? WHERE id = ?~, undef, '', '', $self->{id})
-            unless $repo_id == $self->{id};
-        $dbh->commit;
-    }
-    else {
-        $p->init($problem);
-    }
+    my ($self, $message, $is_amend) = @_;
+    $self->{source}->finalize($dbh, $self, $message, $is_amend, get_repo($self->{id}));
 }
 
 
 sub load
 {
     my CATS::Problem $self = shift;
-    (my $fname, $self->{contest_id}, $self->{id}, $self->{replace}, my $message, my $is_amend) = @_;
+    ($self->{source}, $self->{contest_id}, $self->{id}, $self->{replace}, my $message, my $is_amend) = @_;
 
     eval {
-        CATS::BinaryFile::load($fname, \$self->{zip_archive})
-            or $self->error("open '$fname' failed: $!");
+        $self->{source}->init;
 
-        $self->{zip} = Archive::Zip->new();
-        $self->{zip}->read($fname) == AZ_OK
-            or $self->error("read '$fname' failed -- probably not a zip archive");
+        $self->{zip_archive} = $self->{source}->get_zip;
 
-        my @xml_members = $self->{zip}->membersMatching('.*\.xml$');
+        my @xml_members = $self->{source}->find_members('.*\.xml$');
 
         $self->error('*.xml not found') if !@xml_members;
         $self->error('found several *.xml in archive') if @xml_members > 1;
@@ -153,7 +125,7 @@ sub load
             Char => sub { ${$self->{stml}} .= CATS::Utils::escape_xml($_[1]) if $self->{stml} },
             XMLDecl => sub { $self->{encoding} = $_[2] },
         );
-        $parser->parse($self->read_member($xml_members[0]));
+        $parser->parse($self->{source}->read_member($xml_members[0]));
     };
 
     if ($@) {
@@ -164,7 +136,7 @@ sub load
     else {
         unless ($self->{debug}) {
             $dbh->commit;
-            eval { $self->add_history($fname, $message, $is_amend); };
+            eval { $self->add_history($message, $is_amend); };
             $self->note("Warning: $@") if $@;
         }
         $self->note('Success import');
@@ -300,9 +272,7 @@ sub on_start_tag
         if ($el eq 'include') {
             my $name = $atts{src} or
                 return $self->error(q~Missing required 'src' attribute of 'include' tag~);
-            my $member = $self->{zip}->memberNamed($name)
-                or $self->error("Invalid 'include' reference: '$name'");
-            ${$self->{stml}} .= Encode::decode($self->{encoding}, $self->read_member($member));
+            ${$self->{stml}} .= Encode::decode($self->{encoding}, $self->{source}->read_member($name, "Invalid 'include' reference: '$name'"));
             return;
         }
         ${$self->{stml}} .=
@@ -656,9 +626,7 @@ sub sample_in_out
 {
     (my CATS::Problem $self, my $atts, my $in_out) = @_;
     if (my $src = $atts->{src}) {
-        my $member = $self->{zip}->memberNamed($src)
-            or $self->error("Invalid sample $in_out reference: '$src'");
-        $self->{current_sample}->{$in_out} = $self->read_member($member, $self->{debug});
+        $self->{current_sample}->{$in_out} = $self->{source}->read_member($src, $self->{debug}, "Invalid sample $in_out reference: '$src'");
     }
     else {
         $self->{stml} = \$self->{current_sample}->{$in_out};
@@ -739,35 +707,15 @@ sub error($)
 }
 
 
-sub read_member
-{
-    (my CATS::Problem $self, my $member, my $debug) = @_;
-    $debug and return $member->fileName();
-
-    $member->desiredCompressionMethod(COMPRESSION_STORED);
-    my $status = $member->rewindData();
-    $status == AZ_OK or $self->error("code $status");
-
-    my $data = '';
-    while (!$member->readIsDone()) {
-        (my $buffer, $status) = $member->readChunk();
-        $status == AZ_OK || $status == AZ_STREAM_END or $self->error("code $status");
-        $data .= $$buffer;
-    }
-    $member->endRead();
-
-    return $data;
-}
-
-
 sub read_member_named
 {
     (my CATS::Problem $self, my %p) = @_;
+    $self->{debug} and return $p{name};
 
-    my $member = $self->{zip}->memberNamed($p{name})
-        or $self->error("Invalid $p{kind} reference: '$p{name}'");
-
-    return (src => ($self->{debug} ? $member : $self->read_member($member)), path => $p{name});
+    return (
+        src => $self->{source}->read_member($p{name}, "Invalid $p{kind} reference: '$p{name}'"),
+        path => $p{name}
+    );
 }
 
 
