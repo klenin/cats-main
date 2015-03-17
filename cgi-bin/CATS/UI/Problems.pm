@@ -16,6 +16,7 @@ use CATS::Data qw(:all);
 use CATS::StaticPages;
 use CATS::Problem::Text;
 use CATS::Problem::Source::Zip;
+use CATS::Problem::Source::Git;
 
 sub problems_change_status
 {
@@ -142,13 +143,9 @@ sub problems_replace
     msg(1007);
 }
 
-sub problems_add_new
+sub problems_add
 {
-    my $file = param('zip') || '';
-    $file =~ /\.(zip|ZIP)$/
-        or return msg(53);
-    my $fname = save_uploaded_file('zip');
-
+    my ($source, $source_name) = @_;
     my $problem_code;
     if (!$contest->is_practice) {
         ($problem_code) = $contest->unused_problem_codes
@@ -156,7 +153,7 @@ sub problems_add_new
     }
 
     my CATS::Problem $p = CATS::Problem->new;
-    my $error = $p->load(CATS::Problem::Source::Zip->new($fname, $p), $cid, new_id, 0, 0);
+    my $error = $p->load($source->new($source_name, $p), $cid, new_id, 0, 0);
     $t->param(problem_import_log => $p->encoded_import_log());
     $error ||= !add_problem_to_contest($p->{id}, $problem_code);
 
@@ -167,7 +164,23 @@ sub problems_add_new
         $dbh->rollback;
         msg(1008);
     }
+}
+
+sub problems_add_new
+{
+    my $file = param('zip') || '';
+    $file =~ /\.(zip|ZIP)$/
+        or return msg(53);
+    my $fname = save_uploaded_file('zip');
+    problems_add('CATS::Problem::Source::Zip', $fname);
     unlink $fname;
+}
+
+sub problems_add_new_remote
+{
+    my $url = param('remote_url') || '';
+    $url or return msg(1091);
+    problems_add('CATS::Problem::Source::Git', $url);
 }
 
 sub download_problem
@@ -533,6 +546,7 @@ sub problems_frame_jury_action
     defined param('change_code') and return problems_change_code;
     defined param('replace') and return problems_replace;
     defined param('add_new') and return problems_add_new;
+    defined param('add_remote') and return problems_add_new_remote;
     defined param('std_solution') and return problems_submit_std_solution;
     defined param('mass_retest') and return problems_mass_retest;
     my $cpid = url_param('delete');
