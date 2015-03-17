@@ -20,9 +20,9 @@ package CATS::Problem::Repository;
 use strict;
 use warnings;
 
-use File::Temp qw(tempdir tempfile);
 use Fcntl ':mode';
 use File::Path;
+use File::Temp qw(tempdir tempfile);
 use File::Copy::Recursive qw(dircopy);
 use CATS::Problem::Authors;
 use CATS::Utils qw(untabify unquote file_type file_type_long chop_str);
@@ -656,6 +656,14 @@ sub git
     return @lines;
 }
 
+sub find_files
+{
+    my ($self, $regexp) = @_;
+    my @files = $self->git('ls-tree HEAD --name-only');
+    chomp $_ foreach @files;
+    return grep /$regexp/, @files;
+}
+
 sub log
 {
     my ($self, %opts) = @_;
@@ -765,5 +773,13 @@ sub commit
     $self->git('gc');
     return $self;
 }
+
+sub clone
+{
+    my ($link, $dir) = @_;
+    my @lines = `git clone $link $dir`;
+    return (CATS::Problem::Repository->new(dir => $dir), @lines);
+}
+
 
 1;

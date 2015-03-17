@@ -19,6 +19,7 @@
     std_solution => 'standard solution',
     ignore_submit => 'do not test',
     problem_file => 'Problem file',
+    problem_link => 'Problem repository link',
     rename => 'rename',
     delete => 'delete',
     replace => 'replace',

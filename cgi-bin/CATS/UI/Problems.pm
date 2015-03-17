@@ -16,6 +16,7 @@ use CATS::Data qw(:all);
 use CATS::StaticPages;
 use CATS::Problem::Text;
 use CATS::Problem::Source::Zip;
+use CATS::Problem::Source::Repository;
 
 sub problems_change_status
 {
@@ -148,6 +149,25 @@ sub problems_add_new
     $error ? $dbh->rollback : $dbh->commit;
     msg(1008) if $error;
     unlink $fname;
+}
+
+sub problems_add_new_remote
+{
+    my $link = param('remote_link') || '';
+    $link or return msg(54);
+
+    my $problem_code;
+    if (!$contest->is_practice) {
+        ($problem_code) = $contest->unused_problem_codes
+            or return msg(1017);
+    }
+    my CATS::Problem $p = CATS::Problem->new;
+    my $error = $p->load(CATS::Problem::Source::Repository->new($link, $p), $cid, new_id, 0, 0);
+    $t->param(problem_import_log => $p->encoded_import_log());
+    $error ||= !add_problem_to_contest($p->{id}, $problem_code);
+
+    $error ? $dbh->rollback : $dbh->commit;
+    msg(1008) if $error;
 }
 
 sub download_problem
@@ -513,6 +533,7 @@ sub problems_frame_jury_action
     defined param('change_code') and return problems_change_code;
     defined param('replace') and return problems_replace;
     defined param('add_new') and return problems_add_new;
+    defined param('add_link') and return problems_add_new_remote;
     defined param('std_solution') and return problems_submit_std_solution;
     defined param('mass_retest') and return problems_mass_retest;
     my $cpid = url_param('delete');

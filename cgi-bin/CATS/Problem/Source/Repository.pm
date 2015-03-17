@@ -1,0 +1,75 @@
+package CATS::Problem::Source::Repository;
+
+use strict;
+use warnings;
+
+use File::Temp qw(tempdir);
+use File::Copy::Recursive qw(dircopy);
+use Archive::Zip qw(:ERROR_CODES :CONSTANTS);
+
+use CATS::Constants;
+use CATS::BinaryFile;
+use CATS::Misc qw($git_author_name $git_author_email cats_dir);
+use CATS::Problem::Repository;
+
+my $tmp_repo_template = 'repoXXXXXX';
+
+sub new
+{
+    my ($class, $link, $logger) = @_;
+    defined $link or die('No remote url specified!');
+    defined $logger or die('No logger!');
+    my %opts = (
+        dir => undef,
+        repo => undef,
+        link => $link,
+        logger => $logger,
+    );
+    return bless \%opts => $class;
+}
+
+sub get_zip
+{
+    my $self = shift;
+    my ($fname, $tree_id) = $self->{repo}->archive;
+    my $zip;
+    CATS::BinaryFile::load($fname, \$zip) or $self->{logger}->error("getting zip archive failed: $!");
+    return $zip;
+}
+
+sub init
+{
+    my $self = shift;
+    my $tmpdir = tempdir($tmp_repo_template, TMPDIR => 1, CLEANUP => 1);
+    $self->{dir} = $tmpdir;
+    ($self->{repo}, my @log) = CATS::Problem::Repository::clone($self->{link}, "$tmpdir/");
+    $self->{logger}->note(join '', @log);
+}
+
+sub find_members
+{
+    my ($self, $regexp) = @_;
+    return $self->{repo}->find_files($regexp);
+}
+
+sub read_member
+{
+    my ($self, $name, $msg) = @_;
+    my $file = $self->{repo}->get_dir . $name;
+    # warn $file;
+    open my $fh, "<", $file or $self->{logger}->error("open '$file' failed: $!");
+    binmode($fh);
+    local $/ = undef;
+    return <$fh>;
+}
+
+sub finalize
+{
+    my ($self, $dbh, $problem, $message, $is_amend, $repo_id, $sha) = @_;
+
+    my $repo_path = cats_dir() . $cats::repos_dir . "/$problem->{id}/";
+    dircopy($self->{dir}, $repo_path);
+}
+
+
+1;
