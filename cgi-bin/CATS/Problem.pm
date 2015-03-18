@@ -74,6 +74,14 @@ sub get_repo
 }
 
 
+sub get_repo_archive
+{
+    my ($pid, $sha) = @_;
+    ($pid) = get_repo($pid);
+    return CATS::Problem::Repository->new(dir => cats_dir . "$cats::repos_dir$pid/")->archive($sha);
+}
+
+
 sub show_commit
 {
     my ($pid) = get_repo(@_);

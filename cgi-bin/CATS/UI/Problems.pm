@@ -3,7 +3,8 @@ package CATS::UI::Problems;
 use strict;
 use warnings;
 
-use CATS::Web qw(param url_param redirect upload_source save_uploaded_file);
+use File::stat;
+use CATS::Web qw(param url_param redirect upload_source save_uploaded_file content_type headers);
 use CATS::DB;
 use CATS::Constants;
 use CATS::Misc qw(
@@ -175,6 +176,31 @@ sub download_problem
         CATS::BinaryFile::save(cats_dir() . $fname, $zip);
     }
     redirect($fname);
+}
+
+sub git_download_problem
+{
+    my $pid = param('git_download');
+    my $sha = param('sha');
+    $is_root && $pid or return redirect url_f('contests');
+    my ($status) = $dbh->selectrow_array(qq~
+        SELECT status FROM contest_problems
+        WHERE contest_id = ? AND problem_id = ?~, undef,
+        $cid, $pid);
+    defined $status && ($is_jury || $status != $cats::problem_st_hidden)
+        or return;
+    undef $t;
+    my ($fname, $tree_id) = CATS::Problem::get_repo_archive($pid, $sha);
+    content_type('application/zip');
+    headers(
+        'Accept-Ranges', 'bytes',
+        'Content-Length', stat($fname)->size,
+        'Content-Disposition', "attachment; filename=problem_$tree_id.zip"
+    );
+    my $content;
+    CATS::BinaryFile::load($fname, \$content) or die("open '$fname' failed: $!");
+    binmode STDOUT;
+    print $content;
 }
 
 sub can_upsolve
@@ -631,6 +657,7 @@ sub problems_frame
     init_listview_template('problems' . ($contest->is_practice ? '_practice' : ''),
         'problems', auto_ext('problems'));
     defined param('download') && $show_packages and return download_problem;
+    defined param('git_download') && $show_packages and return git_download_problem;
     problems_frame_jury_action;
 
     problems_submit if defined param('submit');
@@ -713,6 +740,7 @@ sub problems_frame
             href_change_code => url_f('problems', 'change_code' => $c->{cpid}),
             href_replace  => url_f('problems', replace => $c->{cpid}),
             href_download => url_f('problems', download => $c->{pid}),
+            href_git_download => $is_root && url_f('problems', git_download => $c->{pid}),
             href_compare_tests => $is_jury && url_f('compare_tests', pid => $c->{pid}),
             href_problem_history => $is_root && url_f('problem_history', pid => $c->{pid}),
             href_original_contest =>
@@ -802,8 +830,8 @@ sub problem_history_frame
         { caption => res_str(1400), width => '25%', order_by => 'author' },
         { caption => res_str(634),  width => '10%', order_by => 'author_date' },
         { caption => res_str(1401), width => '10%', order_by => 'committer_date' },
-        { caption => res_str(1402), width => '5%', order_by => 'sha' },
-        { caption => res_str(1403), width => '50%', order_by => 'message' }
+        { caption => res_str(1402), width => '6%', order_by => 'sha' },
+        { caption => res_str(1403), width => '49%', order_by => 'message' }
     );
     define_columns(url_f('problem_history', pid => $pid), 1, 0, \@cols);
     my $fetch_record = sub {
@@ -811,6 +839,7 @@ sub problem_history_frame
         return (
             %$log,
             href_commit => url_f('problem_history', pid => $pid, h => $log->{sha}),
+            href_download => url_f('problems', git_download => $pid, sha => $log->{sha}),
         );
     };
     attach_listview(url_f('problem_history', pid => $pid), $fetch_record, sort_listview(CATS::Problem::get_log($pid)));
