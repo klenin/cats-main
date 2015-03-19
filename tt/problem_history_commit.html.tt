@@ -34,14 +34,14 @@
 
 [%- MACRO diff_tree_row(row) BLOCK -%]
     <tr>
-        <td>[% row.file | html %]</td>
+        <td><a href="#[% row.file | uri %]">[% row.file | html %]</a></td>
         <td><span class="file_status [% row.status %]">[% IF row.status_string.length %][[% row.status_string | html %]][% END %]</span></td>
     </tr>
 [%- END -%]
 
 [%- MACRO patch_row(row) BLOCK -%]
     <div class="patch">
-        <div class="diff header">[% row.header | html %]</div>
+        <div class="diff header"><a name="[% row.to_name | uri %]"></a>[% row.header | html %]</div>
         <div class="diff extended_header">
         [% FOREACH h IN row.extended_header %]
             <div>[% h %]</div>

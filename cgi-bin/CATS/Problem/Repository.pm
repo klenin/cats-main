@@ -471,6 +471,7 @@ sub parse_patches
         } else {
             $to_name = undef;
         }
+        $patch_desc->{to_name} = $to_name;
 
         # advance raw git-diff output if needed
         $patch_idx++ if defined $diffinfo;

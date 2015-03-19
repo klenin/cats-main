@@ -37,6 +37,10 @@ table.diff_tree {
     margin: 0;
 }
 
+table.diff_tree a {
+    font-family: monospace;
+}
+
 table.diff_tree span.file_status.new {
     color: #008000;
 }
