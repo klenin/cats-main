@@ -22,6 +22,8 @@ BEGIN {
         source_hash
         param_on
         date_to_iso
+        encodings
+        encoding_param
     );
 
     %EXPORT_TAGS = (all => [@EXPORT]);
@@ -348,6 +350,13 @@ sub param_on
 sub date_to_iso {
     $_[0] =~ /^\s*(\d+)\.(\d+)\.(\d+)\s+(\d+):(\d+)\s*$/;
     "$3$2$1T$4${5}00";
+}
+
+sub encodings { {'UTF-8' => 1, 'WINDOWS-1251' => 1, 'KOI8-R' => 1, 'CP866' => 1, 'UCS-2LE' => 1} }
+
+sub encoding_param {
+    my $enc = param($_[0]) || '';
+    encodings->{$enc} ? $enc : ($_[1] || 'UTF-8');
 }
 
 1;

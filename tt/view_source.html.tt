@@ -12,7 +12,7 @@
 <form action="[% href_current_link %]" method="post">
   <select name="src_enc">
   [% FOREACH source_encodings %]
-  <option value="[% enc %]"[% IF selected %]selected="selected"[% END %]>[% enc %]</option>
+  <option value="[% enc %]"[% IF selected %] selected="selected"[% END %]>[% enc %]</option>
   [% END %]
   </select>
   <input type="submit" class="button" value="[% capt.encoding %]" />

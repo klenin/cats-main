@@ -6,7 +6,7 @@ use warnings;
 use Algorithm::Diff;
 use CATS::Web qw(param url_param headers upload_source content_type);
 use CATS::DB;
-use CATS::Utils qw(state_to_display url_function);
+use CATS::Utils qw(state_to_display url_function encodings encoding_param);
 use CATS::Misc qw($is_jury $sid $t $uid init_template msg res_str url_f problem_status_names);
 use CATS::Data qw(is_jury_in_contest enforce_request_state);
 use CATS::IP;
@@ -26,10 +26,6 @@ sub get_judges
     }, @{$t->param('judges')} ];
 }
 
-
-sub source_encodings { {'UTF-8' => 1, 'WINDOWS-1251' => 1, 'KOI8-R' => 1, 'CP866' => 1, 'UCS-2LE' => 1} }
-
-
 sub source_links
 {
     my ($si, $is_jury) = @_;
@@ -48,7 +44,7 @@ sub source_links
     get_judges($si) if $is_jury;
     my $se = param('src_enc') || param('comment_enc') || 'WINDOWS-1251';
     $t->param(source_encodings =>
-        [ map {{ enc => $_, selected => $_ eq $se }} sort keys %{source_encodings()} ]);
+        [ map {{ enc => $_, selected => $_ eq $se }} sort keys %{encodings()} ]);
 }
 
 
@@ -73,14 +69,13 @@ sub get_run_info
     $contest->{show_points} ||= 0 < grep $_, values %testset;
     my %used_testsets;
 
+    my $comment_enc = encoding_param('comment_enc');
     while (my $row = $c->fetchrow_hashref()) {
         $_ and $_ = sprintf('%.3g', $_) for $row->{time_used};
         if ($contest->{show_checker_comment}) {
             my $d = $row->{checker_comment} || '';
-            my $enc = param('comment_enc') || '';
-            source_encodings()->{$enc} or $enc = 'UTF-8';
             # Comment may be non-well-formed utf8
-            $row->{checker_comment} = Encode::decode($enc, $d, Encode::FB_QUIET);
+            $row->{checker_comment} = Encode::decode($comment_enc, $d, Encode::FB_QUIET);
             $row->{checker_comment} .= '...' if $d ne '';
         }
 
@@ -353,8 +348,8 @@ sub prepare_source
         $sources_info->{src} = res_str(138, CATS::Contest::current_official->{title});
     }
     else {
-        my $se = param('src_enc') || 'WINDOWS-1251';
-        if (source_encodings()->{$se} && $sources_info->{file_name} !~ m/\.zip$/) {
+        my $se = encoding_param('src_enc', 'WINDOWS-1251');
+        if (encodings()->{$se} && $sources_info->{file_name} !~ m/\.zip$/) {
             Encode::from_to($sources_info->{src}, $se, 'utf-8');
             $sources_info->{src} = Encode::decode_utf8($sources_info->{src});
         }
