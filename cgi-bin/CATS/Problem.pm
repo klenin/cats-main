@@ -73,6 +73,14 @@ sub get_repo
 }
 
 
+sub create_repo
+{
+    my ($pid, $sha, $need_find, %opts) = @_;
+    ($pid, $sha) = get_repo($pid, $sha) if $need_find;
+    $opts{dir} = cats_dir . "$cats::repos_dir$pid/";
+    return CATS::Problem::Repository->new(%opts);
+}
+
 sub get_repo_archive
 {
     my ($pid, $sha) = @_;
@@ -83,15 +91,15 @@ sub get_repo_archive
 
 sub show_commit
 {
-    my ($pid) = get_repo(@_);
-    return CATS::Problem::Repository->new(dir => cats_dir() . "$cats::repos_dir$pid/")->commit_info($_[1]);
+    my ($pid, $sha) = @_;
+    return create_repo($pid, $sha, 1)->commit_info($sha);
 }
 
 
 sub get_log
 {
     my ($pid, $sha) = get_repo(@_);
-    return CATS::Problem::Repository->new(dir => cats_dir() . "$cats::repos_dir$pid/")->log(sha => $sha);
+    return create_repo($pid, $sha, 0)->log(sha => $sha);
 }
 
 
@@ -170,7 +178,7 @@ sub delete
     else {
         # Cascade into contest_problems and reqs.
         $dbh->do(q~DELETE FROM problems WHERE id = ?~, undef, $pid);
-        CATS::Problem::Repository->new(dir => cats_dir() . "$cats::repos_dir$pid/")->delete;
+        create_repo($pid, undef, 0)->delete;
     }
 
     CATS::StaticPages::invalidate_problem_text(cid => $old_contest, cpid => $cpid);

@@ -757,6 +757,20 @@ sub move_history
     return $self;
 }
 
+sub get_remote_url
+{
+    my $self = shift;
+    my $remote_url;
+    for ($self->git('remote -v')) {
+        chomp;
+        if (/^.*\t(.*) \(fetch\)$/) {
+            $remote_url = $1;
+            last;
+        }
+    }
+    return $remote_url;
+}
+
 sub commit
 {
     my ($self, $problem_author, $message, $is_amend) = @_;

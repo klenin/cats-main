@@ -756,6 +756,8 @@ sub problems_frame
     {
         my $c = $_[0]->fetchrow_hashref or return ();
         $c->{status} ||= 0;
+        my $repo = CATS::Problem::create_repo($c->{pid});
+        my $remote_url = $repo->get_remote_url if defined $repo;
         return (
             href_delete => url_f('problems', 'delete' => $c->{cpid}),
             href_change_status => url_f('problems', 'change_status' => $c->{cpid}),
@@ -780,6 +782,8 @@ sub problems_frame
             code => $c->{code},
             problem_name => $c->{problem_name},
             is_linked => $c->{is_linked},
+            is_remote => defined $remote_url,
+            remote_url => $remote_url,
             usage_count => $c->{usage_count},
             contest_name => $c->{contest_name},
             accept_count => $c->{accepted_count},
