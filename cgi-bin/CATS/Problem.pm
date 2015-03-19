@@ -85,7 +85,7 @@ sub get_repo_archive
 sub show_commit
 {
     my ($pid) = get_repo(@_);
-    return CATS::Problem::Repository->new(dir => cats_dir() . "$cats::repos_dir$pid/")->commit_info($_[1]);
+    return CATS::Problem::Repository->new(dir => cats_dir() . "$cats::repos_dir$pid/")->commit_info($_[1], $_[2]);
 }
 
 

@@ -11,7 +11,7 @@ use CATS::Misc qw(
     $t $is_jury $is_root $is_team $sid $cid $uid $contest $is_virtual $virtual_diff_time
     cats_dir init_template init_listview_template msg res_str url_f auto_ext
     order_by sort_listview define_columns attach_listview problem_status_names);
-use CATS::Utils qw(url_function file_type date_to_iso);
+use CATS::Utils qw(url_function file_type date_to_iso encoding_param);
 use CATS::Data qw(:all);
 use CATS::StaticPages;
 use CATS::Problem::Text;
@@ -810,8 +810,9 @@ sub problems_frame
 
 sub problem_history_commit_frame
 {
+    my ($pid, $sha) = @_;
     init_template('problem_history_commit.html.tt');
-    $t->param(commit => CATS::Problem::show_commit(@_));
+    $t->param(commit => CATS::Problem::show_commit($pid, $sha, encoding_param('repo_enc')));
 }
 
 sub problem_history_frame

@@ -610,10 +610,11 @@ sub parse_commit_text
 sub commif_diff
 {
     my ($self, %co) = @_;
-    @{$co{parents}} <= 1 or die('Too much parents');
+    @{$co{parents}} <= 1 or die 'Too many parents'; # TODO?
     # my $hash_parent_param = @{$co{'parents'}} > 1 ? '--cc' : $co{'parent'} || '--root';
     my $hash_parent_param = $co{parent} || '--root';
-    my @lines = $self->git("diff-tree -r -M --no-commit-id --patch-with-raw --full-index $hash_parent_param ${co{id}}");
+    my @lines = map Encode::decode($co{encoding}, $_),
+        $self->git("diff-tree -r -M --no-commit-id --patch-with-raw --full-index $hash_parent_param ${co{id}}");
     my @difftree;
     while (scalar @lines) {
         my $line = shift @lines;
@@ -628,9 +629,9 @@ sub commif_diff
 
 sub commit_info
 {
-    my ($self, $sha) = @_;
+    my ($self, $sha, $enc) = @_;
     my %co = $self->parse_commit_text([ $self->git("rev-list --header --max-count=1 $sha") ], 1);
-    return { info => \%co, $self->commif_diff(%co), log => $self->{log} };
+    return { info => \%co, $self->commif_diff(%co, encoding => $enc), log => $self->{log} };
 }
 
 sub extract_zip
