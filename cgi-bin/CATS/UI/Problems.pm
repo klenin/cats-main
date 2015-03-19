@@ -810,9 +810,12 @@ sub problems_frame
 
 sub problem_history_commit_frame
 {
-    my ($pid, $sha) = @_;
+    my ($pid, $sha, $title) = @_;
     init_template('problem_history_commit.html.tt');
-    $t->param(commit => CATS::Problem::show_commit($pid, $sha, encoding_param('repo_enc')));
+    $t->param(
+        commit => CATS::Problem::show_commit($pid, $sha, encoding_param('repo_enc')),
+        problem_title => $title,
+    );
 }
 
 sub problem_history_frame
@@ -820,10 +823,18 @@ sub problem_history_frame
     my $pid = url_param('pid') || 0;
     my $h = url_param('h') || '';
     $is_root && $pid or return redirect url_f('contests');
-    return problem_history_commit_frame($pid, $h) if $h;
+
+    my ($status, $title) = $dbh->selectrow_array(q~
+        SELECT CP.status, P.title FROM contest_problems CP
+            INNER JOIN problems P ON CP.problem_id = P.id
+            WHERE CP.contest_id = ? AND P.id = ?~, undef,
+        $cid, $pid);
+    defined $status or return redirect url_f('contests');
+
+    return problem_history_commit_frame($pid, $h, $title) if $h;
 
     init_listview_template('problem_history', 'problem_history', auto_ext('problem_history'));
-    $t->param(pid => $pid);
+    $t->param(problem_title => $title, pid => $pid);
 
     problems_replace if defined param('replace');
 

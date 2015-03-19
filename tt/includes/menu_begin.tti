@@ -8,7 +8,8 @@
       <img src="./images/std/logo.gif" border="0" alt="CATS">
     </td>
     <td valign="bottom" width="98%" style="font-size: x-large;">
-      [% contest_title ? contest_title : '&nbsp;' %]
+      [% contest_title ? contest_title : '&nbsp;' | html %]
+      [% IF problem_title %]<span style="font-size: large;"> / [% problem_title | html %]</span>[% END %]
     </td>
     <td>
     <div class="elapsed">
