@@ -540,17 +540,17 @@ sub parse_patches
 
 sub parse_commit_text
 {
-    my ($self, @commit_lines, $withparents) = @_;
+    my ($self, $commit_lines, $withparents) = @_;
     my %co;
-    pop @commit_lines; # Remove '\0'
+    pop @$commit_lines; # Remove '\0'
 
-    @commit_lines or return;
+    @$commit_lines or return;
 
-    my $header = shift @commit_lines;
+    my $header = shift @$commit_lines;
     $header =~ m/^[0-9a-fA-F]{40}/ or return;
     ($co{id}, my @parents) = split ' ', $header;
 
-    while (my $line = shift @commit_lines) {
+    while (my $line = shift @$commit_lines) {
         last if $line eq "\n";
         if ($line =~ m/^tree ([0-9a-fA-F]{40})$/) {
             $co{tree} = $1;
@@ -585,7 +585,7 @@ sub parse_commit_text
     $co{parents} = \@parents;
     $co{parent} = $parents[0];
 
-    foreach my $title (@commit_lines) {
+    foreach my $title (@$commit_lines) {
         $title =~ s/^    //;
         if ($title ne '') {
             $co{title} = chop_str($title, 80, 5);
@@ -596,9 +596,9 @@ sub parse_commit_text
     if (! defined $co{title} || $co{title} eq '') {
         $co{title} = $co{title_short} = '(no commit message)';
     }
-    shift @commit_lines;
+    shift @$commit_lines;
     $co{comment_lines} = [];
-    foreach my $line (@commit_lines) {
+    foreach my $line (@$commit_lines) {
         chomp $line;
         $line =~ s/^    //;
         push @{$co{comment_lines}}, Encode::decode_utf8($line) if $line ne '';
@@ -628,7 +628,7 @@ sub commif_diff
 sub commit_info
 {
     my ($self, $sha) = @_;
-    my %co = $self->parse_commit_text($self->git("rev-list --header --max-count=1 $sha"), 1);
+    my %co = $self->parse_commit_text([ $self->git("rev-list --header --max-count=1 $sha") ], 1);
     return { info => \%co, $self->commif_diff(%co), log => $self->{log} };
 }
 
