@@ -830,8 +830,8 @@ sub problem_history_frame
         { caption => res_str(1400), width => '25%', order_by => 'author' },
         { caption => res_str(634),  width => '10%', order_by => 'author_date' },
         { caption => res_str(1401), width => '10%', order_by => 'committer_date' },
-        { caption => res_str(1402), width => '6%', order_by => 'sha' },
-        { caption => res_str(1403), width => '49%', order_by => 'message' }
+        { caption => res_str(1402), width => '8%', order_by => 'sha' },
+        { caption => res_str(1403), width => '47%', order_by => 'message' }
     );
     define_columns(url_f('problem_history', pid => $pid), 1, 0, \@cols);
     my $fetch_record = sub {

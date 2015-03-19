@@ -5,16 +5,14 @@
 </style>
 <div class="commit_header">[% commit.info.title | html %]</div>
 [%- MACRO authorship_row(who) BLOCK -%]
-    [% name = "${who}_name" %]
-    [% email = "${who}_email" %]
-    [% ts = "${who}_formatted_ts" %]
+    [%- name = "${who}_name" -%]
+    [%- email = "${who}_email" -%]
+    [%- ts = "${who}_formatted_ts" -%]
     <tr>
-        <td>[% who %]</td>
+        <td rowspan="2">[% capt.$who %]</td>
         <td>[% commit.info.$name | html %] &lt;[% commit.info.$email | html %]&gt;</td>
-        <td rowspan="2"></td>
     </tr>
     <tr>
-        <td></td>
         <td>[% commit.info.$ts %]</td>
     </tr>
 [%- END -%]
@@ -25,15 +23,17 @@
     </table>
 </div>
 <div class="page_body">
+    [% IF commit.info.comment_lines.size > 0 %]
     <div class="log">
     [% FOREACH line IN commit.info.comment_lines %]
         [% line | html %]
         <br />
     [% END %]
     </div>
+    [% END %]
 
 [%- MACRO diff_tree_row(row) BLOCK -%]
-    <tr class="dark">
+    <tr>
         <td>[% row.file | html %]</td>
         <td><span class="file_status [% row.status %]">[% IF row.status_string.length %][[% row.status_string | html %]][% END %]</span></td>
     </tr>
@@ -61,17 +61,12 @@
     </div>
 [%- END -%]
 
-    <div class="list_head">
-        [% IF commit.difftree.size > 1 %]
-            [% commit.difftree.size %] files changed:
-        [% END %]
-    </div>
+    <div class="list_head">[% capt.files_changed %]: [% commit.difftree.size %]</div>
     <table class="diff_tree">
     [% FOREACH line IN commit.difftree %]
         [% diff_tree_row(line) %]
     [% END %]
     </table>
-    <br><br>
     <div class="patchset">
         [% FOREACH patch IN commit.patches %]
             [% patch_row(patch) %]
