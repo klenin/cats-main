@@ -94,6 +94,7 @@ function chg_code(st_sel, pid)
     </select>
     [%- IF p.is_linked %] [<a href="[% p.href_original_contest %]" title="[% p.contest_name %]">L</a>][% END %]
     [%- IF p.usage_count %] [<a href="[% p.href_usage %]" title="[% capt.used_in %]">[% p.usage_count %]</a>][% END %]
+    [%- IF p.remote_url %] [<a href="[% p.remote_url %]" title="[% p.remote_url %]">R</a>][% END %]
 </td>
 <td><a href="[% p.href_select_testsets %]">[% p.testsets %]</a> ([% p.test_count %])
   [%- IF p.points_testsets %] / <a href="[% p.href_select_testsets %]">[% p.points_testsets %]</a>[% END -%]
