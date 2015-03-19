@@ -756,7 +756,7 @@ sub problems_frame
     {
         my $c = $_[0]->fetchrow_hashref or return ();
         $c->{status} ||= 0;
-        my $repo = CATS::Problem::create_repo($c->{pid});
+        my $repo = CATS::Problem::create_repo($c->{pid}, undef, 1);
         my $remote_url = $repo->get_remote_url if defined $repo;
         return (
             href_delete => url_f('problems', 'delete' => $c->{cpid}),
@@ -848,9 +848,19 @@ sub problem_history_frame
     return problem_history_commit_frame($pid, $h) if $h;
 
     init_listview_template('problem_history', 'problem_history', auto_ext('problem_history'));
-    $t->param(pid => $pid);
 
+    my $repo = CATS::Problem::create_repo($pid, undef, 1, logger => CATS::Problem->new);
+    my $remote_url = $repo->get_remote_url;
+
+    $repo->pull if defined param('pull');
     problems_replace if defined param('replace');
+    warn $repo->{logger};
+    $t->param(
+        pid => $pid,
+        is_remote => defined $remote_url,
+        remote_url => $remote_url,
+        problem_import_log => $repo->{logger}->encoded_import_log,
+    );
 
     my @cols = (
         { caption => res_str(1400), width => '25%', order_by => 'author' },

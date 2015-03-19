@@ -45,5 +45,13 @@
     <input type="submit" name="replace" value="[% capt.replace %]" class="button" />
   </p>
 </div>
+[% IF is_remote %]
+  <div class="problem_submit">
+    <p>
+      <input type="hidden" name="problem_id" value="[% pid %]" />
+      <input type="submit" name="pull" value="[% capt.pull %]" class="button" title="[% remote_url %]"/>
+    </p>
+  </div>
+[% END %]
 </form>
 [% PROCESS includes/menu_end.tti %]

@@ -22,6 +22,7 @@
     problem_link => 'Ссылка на репозиторий',
     rename => 'переим.',
     delete => 'удалить',
+    pull => 'pull',
     replace => 'заменить',
     add_new => 'добавить',
     amend => 'исправить',

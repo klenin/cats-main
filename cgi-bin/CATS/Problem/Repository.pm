@@ -650,9 +650,9 @@ sub set_repo
 
 sub git
 {
-    my ($self, $git_tail) = @_;
+    my ($self, $git_tail, $need_log) = @_;
     my @lines = `git --git-dir=$self->{git_dir} --work-tree=$self->{dir} $git_tail`;  #Apache sub procces
-    $self->{logger}->note(join '', @lines) if exists $self->{logger};
+    $self->{logger}->note(join '', @lines) if exists $self->{logger} and (defined $need_log or $need_log);
     return @lines;
 }
 
@@ -793,6 +793,13 @@ sub clone
     my ($link, $dir) = @_;
     my @lines = `git clone $link $dir`;
     return (CATS::Problem::Repository->new(dir => $dir), @lines);
+}
+
+sub pull
+{
+    my ($self) = shift;
+    my $remote_url = $self->get_remote_url;
+    $self->git("pull $remote_url master", 0);
 }
 
 
