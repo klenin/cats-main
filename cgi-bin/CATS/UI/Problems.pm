@@ -104,8 +104,8 @@ sub problems_replace
     my $file = param('zip') || '';
     $file =~ /\.(zip|ZIP)$/
         or return msg(53);
-    my ($contest_id, $old_title) = $dbh->selectrow_array(qq~
-        SELECT contest_id, title FROM problems WHERE id=?~, {}, $pid);
+    my ($contest_id, $old_title, $remote_url) = $dbh->selectrow_array(qq~
+        SELECT contest_id, title, remote_url FROM problems WHERE id=?~, {}, $pid);
     # Forbid replacing linked problems. Firstly for robustness,
     # secondly for security -- to avoid checking is_jury($contest_id).
     $contest_id == $cid
@@ -114,7 +114,7 @@ sub problems_replace
 
     my CATS::Problem $p = CATS::Problem->new;
     $p->{old_title} = $old_title unless param('allow_rename');
-    my $error = $p->load(CATS::Problem::Source::Zip->new($fname, $p), $cid, $pid, 1, param('message'), param('is_amend'));
+    my $error = $p->load(CATS::Problem::Source::Zip->new($fname, $p), $cid, $pid, 1, $remote_url, param('message'), param('is_amend'));
     $t->param(problem_import_log => $p->encoded_import_log());
     #unlink $fname;
     if ($error) {
@@ -130,7 +130,7 @@ sub problems_replace
 
 sub problems_add
 {
-    my ($source, $source_name) = @_;
+    my ($source_name, $is_remote) = @_;
     my $problem_code;
     if (!$contest->is_practice) {
         ($problem_code) = $contest->unused_problem_codes
@@ -138,7 +138,9 @@ sub problems_add
     }
 
     my CATS::Problem $p = CATS::Problem->new;
-    my $error = $p->load($source->new($source_name, $p), $cid, new_id, 0, 0);
+    my $error = $is_remote
+              ? $p->load(CATS::Problem::Source::Git->new($source_name, $p), $cid, new_id, 0, $source_name)
+              : $p->load(CATS::Problem::Source::Zip->new($source_name, $p), $cid, new_id, 0, undef);
     $t->param(problem_import_log => $p->encoded_import_log());
     $error ||= !add_problem_to_contest($p->{id}, $problem_code);
 
@@ -152,7 +154,7 @@ sub problems_add_new
     $file =~ /\.(zip|ZIP)$/
         or return msg(53);
     my $fname = save_uploaded_file('zip');
-    problems_add('CATS::Problem::Source::Zip', $fname);
+    problems_add($fname, 0);
     unlink $fname;
 }
 
@@ -160,7 +162,7 @@ sub problems_add_new_remote
 {
     my $url = param('remote_url') || '';
     $url or return msg(1091);
-    problems_add('CATS::Problem::Source::Git', $url);
+    problems_add($url, 1);
 }
 
 sub download_problem
@@ -703,7 +705,7 @@ sub problems_frame
     my $test_count_sql = $is_jury ? '(SELECT COUNT(*) FROM tests T WHERE T.problem_id = P.id) AS test_count,' : '';
     my $sth = $dbh->prepare(qq~
         SELECT
-            CP.id AS cpid, P.id AS pid,
+            CP.id AS cpid, P.id AS pid, P.remote_url,
             ${select_code} AS code, P.title AS problem_name, OC.title AS contest_name,
             ($reqs_count_sql $cats::st_accepted$account_condition) AS accepted_count,
             ($reqs_count_sql $cats::st_wrong_answer$account_condition) AS wrong_answer_count,
@@ -773,6 +775,7 @@ sub problems_frame
             code => $c->{code},
             problem_name => $c->{problem_name},
             is_linked => $c->{is_linked},
+            remote_url => $c->{remote_url},
             usage_count => $c->{usage_count},
             contest_name => $c->{contest_name},
             accept_count => $c->{accepted_count},

@@ -108,6 +108,7 @@ CREATE TABLE problems (
     author          VARCHAR(200) DEFAULT '',
     repo            VARCHAR(200) DEFAULT '', /* Default -- based on id. */
     commit_sha      CHAR(40),
+    remote_url      VARCHAR(200) DEFAULT NULL,
     input_file      VARCHAR(200) NOT NULL,
     output_file     VARCHAR(200) NOT NULL,
     upload_date     TIMESTAMP,

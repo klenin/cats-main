@@ -754,6 +754,14 @@ sub move_history
     return $self;
 }
 
+sub get_remote_url
+{
+    my $self = shift;
+    my ($remote_url) = $self->git('config remote.origin.url');
+    chomp $remote_url;
+    return $remote_url;
+}
+
 sub commit
 {
     my ($self, $problem_author, $message, $is_amend) = @_;
