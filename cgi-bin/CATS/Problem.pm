@@ -21,7 +21,7 @@ use fields qw(
     tests testsets samples objects keywords
     imports solutions generators modules pictures attachments
     test_defaults current_tests current_sample gen_groups
-    encoding stml zip zip_archive old_title replace tag_stack has_checker de_list run_method
+    encoding stml zip zip_archive old_title replace repo tag_stack has_checker de_list run_method
 );
 
 use CATS::Problem::Tests;
@@ -61,52 +61,59 @@ sub encoded_import_log
 }
 
 
-sub get_repo
+sub get_repo_id
 {
     my ($id, $sha) = @_;
     my ($db_id, $db_sha) = $dbh->selectrow_array(qq~
        SELECT repo, commit_sha FROM problems WHERE id = ?~, undef, $id);
     my $p = cats_dir() . $cats::repos_dir;
     die 'Repository not found' unless (($db_id ne '' && -d "$p$db_id/") || -d "$p$id/");
-    return $db_id ne '' ? ($db_id, $db_sha) : ($id, $sha // '');
+    return $db_id =~ '/\d+/' ? ($db_id, $db_sha) : ($id, $sha // '');
 }
 
+
+sub get_repo
+{
+    my ($pid, $sha, $need_find, %opts) = @_;
+    ($pid, $sha) = get_repo_id($pid, $sha) if $need_find;
+    $opts{dir} = cats_dir . "$cats::repos_dir$pid/";
+    return CATS::Problem::Repository->new(%opts);
+}
 
 sub get_repo_archive
 {
     my ($pid, $sha) = @_;
-    ($pid) = get_repo($pid);
+    ($pid) = get_repo_id($pid);
     return CATS::Problem::Repository->new(dir => cats_dir . "$cats::repos_dir$pid/")->archive($sha);
 }
 
 
 sub show_commit
 {
-    my ($pid) = get_repo(@_);
-    return CATS::Problem::Repository->new(dir => cats_dir() . "$cats::repos_dir$pid/")->commit_info($_[1], $_[2]);
+    my ($pid, $sha, $enc) = @_;
+    return get_repo($pid, $sha, 1)->commit_info($sha, $enc);
 }
 
 
 sub get_log
 {
     my ($pid, $sha, $max_count) = @_;
-    ($pid, $sha) = get_repo($pid, $sha);
-    return CATS::Problem::Repository->new(
-        dir => cats_dir() . "$cats::repos_dir$pid/")->log(sha => $sha, max_count => $max_count);
+    ($pid, $sha) = get_repo_id(@_);
+    return get_repo($pid, $sha, 0)->log(sha => $sha, max_count => $max_count);
 }
 
 
 sub add_history
 {
     my ($self, $message, $is_amend) = @_;
-    $self->{source}->finalize($dbh, $self, $message, $is_amend, get_repo($self->{id}));
+    $self->{source}->finalize($dbh, $self, $message, $is_amend, get_repo_id($self->{id}));
 }
 
 
 sub load
 {
     my CATS::Problem $self = shift;
-    ($self->{source}, $self->{contest_id}, $self->{id}, $self->{replace}, my $message, my $is_amend) = @_;
+    ($self->{source}, $self->{contest_id}, $self->{id}, $self->{replace}, $self->{repo}, my $message, my $is_amend) = @_;
 
     eval {
         $self->{source}->init;
@@ -171,7 +178,7 @@ sub delete
     else {
         # Cascade into contest_problems and reqs.
         $dbh->do(q~DELETE FROM problems WHERE id = ?~, undef, $pid);
-        CATS::Problem::Repository->new(dir => cats_dir() . "$cats::repos_dir$pid/")->delete;
+        get_repo($pid, undef, 0)->delete;
     }
 
     CATS::StaticPages::invalidate_problem_text(cid => $old_contest, cpid => $cpid);
@@ -750,7 +757,7 @@ sub end_tag_Problem
             title=?, lang=?, time_limit=?, memory_limit=?, difficulty=?, author=?, input_file=?, output_file=?,
             statement=?, pconstraints=?, input_format=?, output_format=?, formal_input=?, json_data=?, explanation=?, zip_archive=?,
             upload_date=CURRENT_TIMESTAMP, std_checker=?, last_modified_by=?,
-            max_points=?, run_method=?, hash=NULL
+            max_points=?, run_method=?, repo=?, hash=NULL
         WHERE id = ?~
     : q~
         INSERT INTO problems (
@@ -758,9 +765,9 @@ sub end_tag_Problem
             title, lang, time_limit, memory_limit, difficulty, author, input_file, output_file,
             statement, pconstraints, input_format, output_format, formal_input, json_data, explanation, zip_archive,
             upload_date, std_checker, last_modified_by,
-            max_points, run_method, id
+            max_points, run_method, repo, id
         ) VALUES (
-            ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP,?,?,?,?,?
+            ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP,?,?,?,?,?,?
         )~;
 
     my $c = $dbh->prepare($sql);
@@ -774,6 +781,7 @@ sub end_tag_Problem
     $c->bind_param($i++, $CATS::Misc::uid);
     $c->bind_param($i++, $self->{problem}->{max_points});
     $c->bind_param($i++, $self->{run_method});
+    $c->bind_param($i++, $self->{repo});
     $c->bind_param($i++, $self->{id});
     $c->execute;
 
