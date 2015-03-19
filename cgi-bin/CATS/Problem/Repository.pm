@@ -763,6 +763,12 @@ sub get_remote_url
     return $remote_url;
 }
 
+sub is_remote
+{
+    my $remote_url = $_[0]->get_remote_url;
+    return defined $remote_url && $remote_url ne '';
+}
+
 sub commit
 {
     my ($self, $problem_author, $message, $is_amend) = @_;
@@ -785,6 +791,12 @@ sub clone
     my ($link, $dir) = @_;
     my @lines = `git clone $link $dir`;
     return (CATS::Problem::Repository->new(dir => $dir), @lines);
+}
+
+sub pull
+{
+    my ($self, $remote_url) = @_;
+    $self->git("pull $remote_url master");
 }
 
 

@@ -123,9 +123,12 @@ sub problems_replace
     # secondly for security -- to avoid checking is_jury($contest_id).
     $contest_id == $cid
         or return msg(117);
-    my $fname = save_uploaded_file('zip');
 
     my CATS::Problem $p = CATS::Problem->new;
+    return if CATS::Problem::get_repo($pid, undef, 1, logger => CATS::Problem->new)->is_remote;
+
+    my $fname = save_uploaded_file('zip');
+
     $p->{old_title} = $old_title unless param('allow_rename');
     my $error = $p->load(CATS::Problem::Source::Zip->new($fname, $p), $cid, $pid, 1, $repo, param('message'), param('is_amend'));
     $t->param(problem_import_log => $p->encoded_import_log());
@@ -880,7 +883,19 @@ sub problem_history_frame
     init_listview_template('problem_history', 'problem_history', auto_ext('problem_history'));
     $t->param(problem_title => $title, pid => $pid);
 
+    my $repo = CATS::Problem::get_repo($pid, undef, 1, logger => CATS::Problem->new);
+
     problems_replace if defined param('replace');
+
+    my $remote_url = $repo->get_remote_url;
+    if (defined param('pull') && $remote_url) {
+        $repo->pull($remote_url);
+        $t->param(problem_import_log => $repo->{logger}->encoded_import_log);
+    }
+    $t->param(
+        pid => $pid,
+        remote_url => $remote_url,
+    );
 
     my @cols = (
         { caption => res_str(1400), width => '25%', order_by => 'author' },

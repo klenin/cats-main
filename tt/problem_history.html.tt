@@ -31,6 +31,12 @@
 <pre>No log information</pre>
 [% END %]
 <div class="problem_submit">
+  <input type="hidden" name="problem_id" value="[% pid %]" />
+[% IF remote_url %]
+  <p>
+    <input type="submit" name="pull" value="[% capt.pull %]" class="button" title="[% remote_url %]"/>
+  </p>
+[% ELSE %]
   <p><label for="zip">[% capt.problem_file %]:</label><input type="file" id="zip" name="zip" class="file" size="25"/></p>
   <p>
     <label><input type="checkbox" name="allow_rename" value="1"/> [% capt.rename %]</label>
@@ -41,9 +47,9 @@
     <textarea id="message" name="message" cols="50" rows="5"></textarea>
   </p>
   <p>
-    <input type="hidden" name="problem_id" value="[% pid %]" />
     <input type="submit" name="replace" value="[% capt.replace %]" class="button" />
   </p>
+[% END %]
 </div>
 </form>
 [% PROCESS includes/menu_end.tti %]
