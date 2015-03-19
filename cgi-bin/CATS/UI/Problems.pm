@@ -859,7 +859,18 @@ sub problem_history_frame
     init_listview_template('problem_history', 'problem_history', auto_ext('problem_history'));
     $t->param(problem_title => $title, pid => $pid);
 
-    problems_replace if defined param('replace');
+    my $repo = CATS::Problem::get_repo($pid, undef, 1, logger => CATS::Problem->new);
+    my $remote_url = $repo->get_remote_url;
+
+    problems_replace if defined param('replace') && !$remote_url;
+    if (defined param('pull') && $remote_url) {
+        $repo->pull;
+        $t->param(problem_import_log => $repo->{logger}->encoded_import_log);
+    }
+    $t->param(
+        pid => $pid,
+        remote_url => $remote_url,
+    );
 
     my @cols = (
         { caption => res_str(1400), width => '25%', order_by => 'author' },
