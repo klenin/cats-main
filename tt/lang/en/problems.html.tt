@@ -22,6 +22,7 @@
     problem_url => 'Problem repository url',
     rename => 'rename',
     delete => 'delete',
+    pull => 'pull',
     replace => 'replace',
     add_new => 'add',
     amend => 'amend',

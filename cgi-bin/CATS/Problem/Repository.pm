@@ -786,5 +786,11 @@ sub clone
     return (CATS::Problem::Repository->new(dir => $dir), @lines);
 }
 
+sub pull
+{
+    my ($self, $remote_url) = @_;
+    $self->git("pull $remote_url master");
+}
+
 
 1;
