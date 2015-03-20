@@ -15,6 +15,8 @@ use CATS::Utils qw(url_function file_type date_to_iso);
 use CATS::Data qw(:all);
 use CATS::StaticPages;
 use CATS::Problem::Text;
+use CATS::Problem::Source::Zip;
+use CATS::Problem::Source::Repository;
 
 sub problems_change_status
 {
@@ -112,7 +114,7 @@ sub problems_replace
 
     my CATS::Problem $p = CATS::Problem->new;
     $p->{old_title} = $old_title unless param('allow_rename');
-    my $error = $p->load($fname, $cid, $pid, 1, param('message'), param('is_amend'));
+    my $error = $p->load(CATS::Problem::Source::Zip->new($fname, $p), $cid, $pid, 1, param('message'), param('is_amend'));
     $t->param(problem_import_log => $p->encoded_import_log());
     #unlink $fname;
     if ($error) {
@@ -140,13 +142,32 @@ sub problems_add_new
     }
 
     my CATS::Problem $p = CATS::Problem->new;
-    my $error = $p->load($fname, $cid, new_id, 0, 0);
+    my $error = $p->load(CATS::Problem::Source::Zip->new($fname, $p), $cid, new_id, 0, 0);
     $t->param(problem_import_log => $p->encoded_import_log());
     $error ||= !add_problem_to_contest($p->{id}, $problem_code);
 
     $error ? $dbh->rollback : $dbh->commit;
     msg(1008) if $error;
     unlink $fname;
+}
+
+sub problems_add_new_remote
+{
+    my $link = param('remote_link') || '';
+    $link or return msg(54);
+
+    my $problem_code;
+    if (!$contest->is_practice) {
+        ($problem_code) = $contest->unused_problem_codes
+            or return msg(1017);
+    }
+    my CATS::Problem $p = CATS::Problem->new;
+    my $error = $p->load(CATS::Problem::Source::Repository->new($link, $p), $cid, new_id, 0, 0);
+    $t->param(problem_import_log => $p->encoded_import_log());
+    $error ||= !add_problem_to_contest($p->{id}, $problem_code);
+
+    $error ? $dbh->rollback : $dbh->commit;
+    msg(1008) if $error;
 }
 
 sub download_problem
@@ -512,6 +533,7 @@ sub problems_frame_jury_action
     defined param('change_code') and return problems_change_code;
     defined param('replace') and return problems_replace;
     defined param('add_new') and return problems_add_new;
+    defined param('add_link') and return problems_add_new_remote;
     defined param('std_solution') and return problems_submit_std_solution;
     defined param('mass_retest') and return problems_mass_retest;
     my $cpid = url_param('delete');
@@ -734,6 +756,8 @@ sub problems_frame
     {
         my $c = $_[0]->fetchrow_hashref or return ();
         $c->{status} ||= 0;
+        my $repo = CATS::Problem::create_repo($c->{pid}, undef, 1);
+        my $remote_url = $repo->get_remote_url if defined $repo;
         return (
             href_delete => url_f('problems', 'delete' => $c->{cpid}),
             href_change_status => url_f('problems', 'change_status' => $c->{cpid}),
@@ -758,6 +782,8 @@ sub problems_frame
             code => $c->{code},
             problem_name => $c->{problem_name},
             is_linked => $c->{is_linked},
+            is_remote => defined $remote_url,
+            remote_url => $remote_url,
             usage_count => $c->{usage_count},
             contest_name => $c->{contest_name},
             accept_count => $c->{accepted_count},
@@ -822,9 +848,19 @@ sub problem_history_frame
     return problem_history_commit_frame($pid, $h) if $h;
 
     init_listview_template('problem_history', 'problem_history', auto_ext('problem_history'));
-    $t->param(pid => $pid);
 
-    problems_replace if defined param('replace');
+    my $repo = CATS::Problem::create_repo($pid, undef, 1, logger => CATS::Problem->new);
+    my $remote_url = $repo->get_remote_url;
+
+    $repo->pull if defined param('pull');
+    problems_replace if defined param('replace') and !defined $remote_url;
+    warn $repo->{logger};
+    $t->param(
+        pid => $pid,
+        is_remote => defined $remote_url,
+        remote_url => $remote_url,
+        problem_import_log => $repo->{logger}->encoded_import_log,
+    );
 
     my @cols = (
         { caption => res_str(1400), width => '25%', order_by => 'author' },
