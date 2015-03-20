@@ -31,6 +31,12 @@
 <pre>No log information</pre>
 [% END %]
 <div class="problem_submit">
+[% IF is_remote %]
+  <p>
+    <input type="hidden" name="problem_id" value="[% pid %]" />
+    <input type="submit" name="pull" value="[% capt.pull %]" class="button" title="[% remote_url %]"/>
+  </p>
+[% ELSE %]
   <p><label for="zip">[% capt.problem_file %]:</label><input type="file" id="zip" name="zip" class="file" size="25"/></p>
   <p>
     <label><input type="checkbox" name="allow_rename" value="1"/> [% capt.rename %]</label>
@@ -44,14 +50,7 @@
     <input type="hidden" name="problem_id" value="[% pid %]" />
     <input type="submit" name="replace" value="[% capt.replace %]" class="button" />
   </p>
-</div>
-[% IF is_remote %]
-  <div class="problem_submit">
-    <p>
-      <input type="hidden" name="problem_id" value="[% pid %]" />
-      <input type="submit" name="pull" value="[% capt.pull %]" class="button" title="[% remote_url %]"/>
-    </p>
-  </div>
 [% END %]
+</div>
 </form>
 [% PROCESS includes/menu_end.tti %]

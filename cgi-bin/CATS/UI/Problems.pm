@@ -853,7 +853,7 @@ sub problem_history_frame
     my $remote_url = $repo->get_remote_url;
 
     $repo->pull if defined param('pull');
-    problems_replace if defined param('replace');
+    problems_replace if defined param('replace') and !defined $remote_url;
     warn $repo->{logger};
     $t->param(
         pid => $pid,
