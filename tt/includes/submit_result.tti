@@ -2,7 +2,7 @@
 [% IF not_processed %]<font color="#008000">Not processed</font>[% END ~%]
 [% IF install_processing %]<font color="#a0a000">Processing</font>[% END ~%]
 [% IF unhandled_error %]<font color="#a00000">Unhandled error</font>[% END ~%]
-[% IF testing %]<font color="#a0a000">Processing</font>[% END ~%]
+[% IF testing %]<font color="#a0a000">Processing</font> [% accepted_count %] of [% total_count %][% END ~%]
 [% IF accepted %]<font color="#007f00">Solution accepted</font>[% END ~%]
 [% IF rejected %]Solution rejected[% END ~%]
 [% IF wrong_answer %]Wrong answer on test [% failed_test %][% END ~%]

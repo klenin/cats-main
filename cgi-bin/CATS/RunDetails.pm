@@ -63,12 +63,12 @@ sub get_run_info
          ($contest->{show_test_resources} ? qw(time_used memory_used disk_used) : ()),
          ($contest->{show_checker_comment} ? qw(checker_comment) : ()),
     );
-
     my $c = $dbh->prepare(qq~
         SELECT $rd_fields FROM req_details WHERE req_id = ? ORDER BY test_rank~);
     $c->execute($req->{req_id});
     my $last_test = 0;
     my $total_points = 0;
+    my $accepted_count = 0;
     my %testset = CATS::Testset::get_testset($req->{req_id});
     $contest->{show_points} ||= 0 < grep $_, values %testset;
     my %used_testsets;
@@ -87,6 +87,7 @@ sub get_run_info
         my $prev_test = $last_test;
         $last_test = $row->{test_rank};
         my $accepted = $row->{result} == $cats::st_accepted ? 1 : 0;
+        $accepted_count += $accepted;
         my $p = $accepted ? $points->[$row->{test_rank} - 1] || 0 : 0;
         if (my $ts = $testset{$last_test}) {
             $used_testsets{$ts->{name}} = $ts;
@@ -157,6 +158,7 @@ sub get_run_info
     return {
         %$contest,
         total_points => $total_points,
+        accepted_count => $accepted_count,
         run_details => [ map $add_testdata->($run_row->($_)), 1..$last_test ],
         testsets => [ sort { $a->{list}[0] <=> $b->{list}[0] } values %used_testsets ],
     };
@@ -166,7 +168,6 @@ sub get_run_info
 sub get_contest_info
 {
     my ($si, $jury_view) = @_;
-
     my $contest = $dbh->selectrow_hashref(qq~
         SELECT
             id, run_all_tests, show_all_tests, show_test_resources, show_checker_comment, show_test_data,
@@ -329,9 +330,13 @@ sub run_details_frame
         source_links($_, $is_jury);
         $contest = get_contest_info($_, $is_jury && !url_param('as_user'))
             if $_->{contest_id} != $contest->{id};
-        push @runs,
-            $_->{state} == $cats::st_compilation_error ?
+         
+        my $run = $_->{state} == $cats::st_compilation_error ?
             { get_log_dump($_->{req_id}, 1) } : get_run_info($contest, $_);
+        push @runs, $run;
+        $_->{accepted_count} = $run->{accepted_count};
+        $_->{total_count} = 0+@{$run->{run_details}};
+
     }
     $t->param(sources_info => $si, runs => \@runs);
 }

@@ -129,6 +129,8 @@ sub console_content
             R.id AS id,
             R.state AS request_state,
             R.failed_test AS failed_test,
+            RD.ac AS accepted_count,
+            RD.tc AS total_count,
             R.problem_id AS problem_id,
             P.title AS problem_title,
             $de_sql,
@@ -146,7 +148,14 @@ sub console_content
             INNER JOIN problems P ON R.problem_id=P.id
             INNER JOIN accounts A ON R.account_id=A.id
             INNER JOIN contests C ON R.contest_id=C.id
-            INNER JOIN contest_accounts CA ON CA.account_id=A.id AND CA.contest_id=R.contest_id,
+            INNER JOIN contest_accounts CA ON CA.account_id=A.id AND CA.contest_id=R.contest_id
+            LEFT OUTER JOIN (SELECT 
+                req_id,
+                count(req_id) AS tc,
+                sum(case result when $cats::st_accepted then 1 else null end) AS ac
+                FROM req_details
+                GROUP BY req_id
+            ) RD ON RD.req_id=R.id,
             dummy_table D
         ~,
         question => qq~
@@ -156,6 +165,8 @@ sub console_content
             Q.id AS id,
             CAST(NULL AS INTEGER) AS request_state,
             CAST(NULL AS INTEGER) AS failed_test,
+            CAST(NULL AS INTEGER) AS accepted_count,
+            CAST(NULL AS INTEGER) AS total_count,
             CAST(NULL AS INTEGER) AS problem_id,
             CAST(NULL AS VARCHAR(200)) AS problem_title,
             $no_de,
@@ -176,6 +187,8 @@ sub console_content
             M.id AS id,
             CAST(NULL AS INTEGER) AS request_state,
             CAST(NULL AS INTEGER) AS failed_test,
+            CAST(NULL AS INTEGER) AS accepted_count,
+            CAST(NULL AS INTEGER) AS total_count,
             CAST(NULL AS INTEGER) AS problem_id,
             CAST(NULL AS VARCHAR(200)) AS problem_title,
             $no_de,
@@ -197,6 +210,8 @@ sub console_content
             M.id AS id,
             CAST(NULL AS INTEGER) AS request_state,
             CAST(NULL AS INTEGER) AS failed_test,
+            CAST(NULL AS INTEGER) AS accepted_count,
+            CAST(NULL AS INTEGER) AS total_count,
             CAST(NULL AS INTEGER) AS problem_id,
             CAST(NULL AS VARCHAR(200)) AS problem_title,
             $no_de,
@@ -214,6 +229,8 @@ sub console_content
             C.id AS id,
             C.is_official AS request_state,
             CAST(NULL AS INTEGER) AS failed_test,
+            CAST(NULL AS INTEGER) AS accepted_count,
+            CAST(NULL AS INTEGER) AS total_count,
             CAST(NULL AS INTEGER) AS problem_id,
             C.title AS problem_title,
             $no_de,
@@ -231,6 +248,8 @@ sub console_content
             C.id AS id,
             C.is_official AS request_state,
             CAST(NULL AS INTEGER) AS failed_test,
+            CAST(NULL AS INTEGER) AS accepted_count,
+            CAST(NULL AS INTEGER) AS total_count,
             CAST(NULL AS INTEGER) AS problem_id,
             C.title AS problem_title,
             $no_de,
@@ -360,9 +379,9 @@ sub console_content
 
     my $fetch_console_record = sub($)
     {
-        my ($rtype, $rank, $submit_time, $id, $request_state, $failed_test,
-            $problem_id, $problem_title, $de, $clarified, $question, $answer, $jury_message,
-            $team_id, $team_name, $country_abbr, $last_ip, $caid, $contest_id
+        my ($rtype, $rank, $submit_time, $id, $request_state, $failed_test, $accepted_count,
+            $total_count, $problem_id, $problem_title, $de, $clarified, $question, $answer, 
+            $jury_message, $team_id, $team_name, $country_abbr, $last_ip, $caid, $contest_id
         ) = $_[0]->fetchrow_array
             or return ();
 
@@ -402,6 +421,8 @@ sub console_content
             request_state =>        $request_state,
             request_state_text =>   scalar grep($st{$_}, keys %st), %st,
             failed_test =>          $failed_test,
+            accepted_count=>        $accepted_count,
+            total_count=>           $total_count,
             question_text =>        decode_utf8($question),
             answer_text =>          decode_utf8($answer),
             message_text =>         decode_utf8($jury_message),
