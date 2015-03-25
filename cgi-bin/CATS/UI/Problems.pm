@@ -788,7 +788,7 @@ sub problems_frame
 
     my $pt_url = sub {{ href => $_[0], item => ($_[1] || res_str(538)), target => '_blank' }};
     my $p = $contest->is_practice;
-    my @submenu =  grep $_,
+    my @submenu = grep $_,
         $is_jury ? (
             !$p && $pt_url->(url_f('problem_text', nospell => 1, nokw => 1, notime => 1, noformal => 1)),
             !$p && $pt_url->(url_f('problem_text'), res_str(555)),
@@ -812,9 +812,14 @@ sub problem_history_commit_frame
 {
     my ($pid, $sha, $title) = @_;
     init_template('problem_history_commit.html.tt');
+    my $submenu = [
+        { href => url_f('problem_history', pid => $pid), item => res_str(568) },
+        { href => url_f('problems', git_download => $pid, sha => $sha), item => res_str(569) },
+    ];
     $t->param(
         commit => CATS::Problem::show_commit($pid, $sha, encoding_param('repo_enc')),
         problem_title => $title,
+        submenu => $submenu,
     );
 }
 
