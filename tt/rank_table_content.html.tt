@@ -96,12 +96,12 @@ function cats_score_init() {
         'ifmo/table_acm', 'ifmo/table_school', 'ifmo/history', 'ifmo/contests',
         'codeforces/table_acm', 'codeforces/table_school', 'codeforces/history', 'codeforces/contests',
         'cats/table_acm', 'cats/table_school', 'cats/history', 'cats/contests',
+        'opencup/table_acm', 'opencup/table_school', 'opencup/history', 'opencup/contests',
     ];
     var templates_names = [], templates =[];
 
     for (var i = 0; i < skins_names.length; ++i) {
         templates[skins_names[i]] = arguments[i];
-        console.log("template " + skins_names[i] + " loaded");
     }
 
     var view = new CATS.View(templates, './score/app/skins/');
@@ -110,7 +110,7 @@ function cats_score_init() {
     view.display({
         with_header: [% IF is_root %] true [% ELSE %] false [% END %],
         with_pagination: false,
-        with_css: false,
+        with_css: [% IF is_root %] true [% ELSE %] false [% END %],
         default_url_hash: "!show_rank_table/cats_rank_table/table/cats/" + contests_ids.join(",") + "/" + "[% lang %]"
     });
 };

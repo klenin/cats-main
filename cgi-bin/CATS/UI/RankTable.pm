@@ -16,6 +16,7 @@ sub rank_table
     my $template_name = shift;
     init_template('rank_table_content.html.tt');
     $t->param(printable => url_param('printable'));
+    $t->param(is_root => $is_root);
     my $rt = CATS::RankTable->new;
     $rt->parse_params;
     $rt->rank_table;
@@ -35,6 +36,7 @@ sub rank_table_frame
 
     init_template('rank_table_content.html.tt');
     $t->param(printable => url_param('printable'));
+    $t->param(is_root => $is_root);
     my $rt = CATS::RankTable->new;
     $rt->parse_params;
     $rt->rank_table;
