@@ -9,6 +9,7 @@
     problem_history => 'history',
     explanation => 'analysis',
     package => 'package',
+    git_package => 'git package',
     compare_tests => 't',
     used_in => 'Used in contests',
     solution_file => 'Solution file',
@@ -22,6 +23,8 @@
     delete => 'delete',
     replace => 'replace',
     add_new => 'add',
+    amend => 'amend',
+    message => 'Message',
   });
   MACRO to_monitor(console) BLOCK; "Open ${console} to monitor testing process"; END;
 %]

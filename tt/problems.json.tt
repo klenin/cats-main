@@ -3,12 +3,21 @@
 [% IF message %]"message": "[% message | $Javascript %]"
 [% ELSE %]
 "problems": [
-[% FOREACH problems %]
+[% FOREACH p IN problems %]
 {
-"id": [% problem_id %],
-"code": "[% code %]",
-"name": "[% problem_name | $Javascript %]",
-"disabled": [% IF disabled %]1[% ELSE %]0[% END %]
+"id": [% p.problem_id %],
+"name": "[% p.problem_name | $Javascript %]",
+"code": "[% p.code %]",
+"contest_id": "[% contest_id %]",
+"language": "[% p.lang %]",
+"text_url": "[% p.href_view_problem %]",
+"package_url": "[% p.href_download %]",
+"disabled": [% IF p.disabled %]1[% ELSE %]0[% END %],
+"status": "[% p.status_text %]",
+[% IF p.max_points %]"max_points": "[% p.max_points %]",
+[% END -%]
+"last_update_time": "[% p.upload_date_iso %]",
+"limits": { "time": [% p.time_limit %], "memory": [% p.memory_limit %] }
 }
 [% UNLESS loop.last %],[% END %][% END %]
 ]

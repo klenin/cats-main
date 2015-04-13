@@ -22,6 +22,7 @@ BEGIN
         url_f
         templates_path
         order_by
+        sort_listview
         define_columns
         res_str
         attach_listview
@@ -32,7 +33,7 @@ BEGIN
     );
 
     @EXPORT_OK = qw(
-        $contest $t $sid $cid $uid
+        $contest $t $sid $cid $uid $git_author_name $git_author_email
         $is_root $is_team $is_jury $is_virtual $virtual_diff_time
         $listview_name $init_time $settings);
 
@@ -61,7 +62,7 @@ use CATS::Utils qw();
 
 
 use vars qw(
-    $contest $t $sid $cid $uid $team_name $dbi_error
+    $contest $t $sid $cid $uid $team_name $dbi_error $git_author_name $git_author_email
     $is_root $is_team $is_jury $can_create_contests $is_virtual $virtual_diff_time
     $listview_name $col_defs $request_start_time $init_time $settings
 );
@@ -345,13 +346,32 @@ sub attach_listview
 }
 
 
+sub check_sortable_field
+{
+    my $s = shift;
+    return defined $s->{sort_by} && $s->{sort_by} =~ /^\d+$/ && $col_defs->[$s->{sort_by}]
+}
+
+
 sub order_by
 {
     my $s = $settings->{$listview_name};
-    defined $s->{sort_by} && $s->{sort_by} =~ /^\d+$/ && $col_defs->[$s->{sort_by}]
-        or return '';
+    check_sortable_field($s) or return '';
     sprintf 'ORDER BY %s %s',
         $col_defs->[$s->{sort_by}]{order_by}, ($s->{sort_dir} ? 'DESC' : 'ASC');
+}
+
+
+sub sort_listview
+{
+    my $data = shift;
+    my $s = $settings->{$listview_name};
+    check_sortable_field($s) or return $data;
+    my $order_by = $col_defs->[$s->{sort_by}]{order_by};
+    my $cmp = $s->{sort_dir} ?
+        sub { $a->{$order_by} cmp $b->{$order_by} } :
+        sub { $b->{$order_by} cmp $a->{$order_by} };
+    [ sort $cmp @$data ];
 }
 
 
@@ -450,10 +470,12 @@ sub init_user
     $can_create_contests = 0;
     $uid = undef;
     $team_name = undef;
+    $git_author_name = undef;
+    $git_author_email = undef;
     my $bad_sid;
     if ($sid ne '') {
-        ($uid, $team_name, my $srole, my $last_ip, my $locked, $enc_settings) = $dbh->selectrow_array(q~
-            SELECT id, team_name, srole, last_ip, locked, settings FROM accounts WHERE sid = ?~, undef,
+        ($uid, $team_name, my $srole, my $last_ip, my $locked, $git_author_name, $git_author_email, $enc_settings) = $dbh->selectrow_array(q~
+            SELECT id, team_name, srole, last_ip, locked, git_author_name, git_author_email, settings FROM accounts WHERE sid = ?~, undef,
             $sid);
         $bad_sid = !defined($uid) || ($last_ip || '') ne CATS::IP::get_ip() || $locked;
         if (!$bad_sid) {

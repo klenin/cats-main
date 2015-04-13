@@ -5,13 +5,16 @@
 <form method="post" enctype="multipart/form-data" action="[% href_action %]">
 <table border=0 width=100% cellpadding=2 cellspacing=1 class=bordered>
 [% PROCESS 'includes/listview_col_defs.tti' %]
-[% FOREACH link_problem %]
+[% FOREACH p IN link_problem %]
 <tr class="[% loop.parity() %]">
 <td>
-<input type="radio" name="problem_id" value="[% problem_id %]" [% IF linked %]disabled[% END %] />
-<a href="[% href_view_problem %]" target="_blank">[% problem_name | html %]</a></td>
-<td><a href="[% href_view_contest %]">[% contest_name | html %]</a></td>
-<td align="center">[% counts %]</td>
+<input type="radio" name="problem_id" value="[% p.problem_id %]" [% IF p.linked %]disabled[% END %] />
+<a href="[% p.href_view_problem %]" target="_blank">[% p.problem_name | html %]</a>
+[% IF p.href_problem_history %]&nbsp;[<a href="[% p.href_problem_history %]">[% capt.problem_history %]</a>][% END %]
+[% IF p.href_download %]&nbsp;[<a href="[% p.href_download %]">[% capt.package %]</a>][% END %]
+</td>
+<td><a href="[% p.href_view_contest %]">[% p.contest_name | html %]</a></td>
+<td align="center">[% p.counts %]</td>
 </tr>
 [% END %]
 </table>

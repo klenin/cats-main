@@ -6,7 +6,7 @@ use warnings;
 use Algorithm::Diff;
 use CATS::Web qw(param url_param headers upload_source content_type);
 use CATS::DB;
-use CATS::Utils qw(state_to_display url_function);
+use CATS::Utils qw(state_to_display url_function encodings encoding_param);
 use CATS::Misc qw($is_jury $sid $t $uid init_template msg res_str url_f problem_status_names);
 use CATS::Data qw(is_jury_in_contest enforce_request_state);
 use CATS::IP;
@@ -26,10 +26,6 @@ sub get_judges
     }, @{$t->param('judges')} ];
 }
 
-
-sub source_encodings { {'UTF-8' => 1, 'WINDOWS-1251' => 1, 'KOI8-R' => 1, 'CP866' => 1, 'UCS-2LE' => 1} }
-
-
 sub source_links
 {
     my ($si, $is_jury) = @_;
@@ -48,7 +44,7 @@ sub source_links
     get_judges($si) if $is_jury;
     my $se = param('src_enc') || param('comment_enc') || 'WINDOWS-1251';
     $t->param(source_encodings =>
-        [ map {{ enc => $_, selected => $_ eq $se }} sort keys %{source_encodings()} ]);
+        [ map {{ enc => $_, selected => $_ eq $se }} sort keys %{encodings()} ]);
 }
 
 
@@ -73,14 +69,13 @@ sub get_run_info
     $contest->{show_points} ||= 0 < grep $_, values %testset;
     my %used_testsets;
 
+    my $comment_enc = encoding_param('comment_enc');
     while (my $row = $c->fetchrow_hashref()) {
         $_ and $_ = sprintf('%.3g', $_) for $row->{time_used};
         if ($contest->{show_checker_comment}) {
             my $d = $row->{checker_comment} || '';
-            my $enc = param('comment_enc') || '';
-            source_encodings()->{$enc} or $enc = 'UTF-8';
             # Comment may be non-well-formed utf8
-            $row->{checker_comment} = Encode::decode($enc, $d, Encode::FB_QUIET);
+            $row->{checker_comment} = Encode::decode($comment_enc, $d, Encode::FB_QUIET);
             $row->{checker_comment} .= '...' if $d ne '';
         }
 
@@ -147,9 +142,10 @@ sub get_run_info
         $contest->{show_test_data} or return $row;
         my $t = $contest->{tests}->[$row->{test_rank} - 1] or return $row;
         $row->{test_data} =
-            $t->{input} ? "$t->{input}&hellip;" :
+            $t->{input} ? $t->{input} :
             $t->{gen_group} ? "$t->{gen_name} GROUP" :
             $t->{gen_name} ? "$t->{gen_name} $t->{param}" : '';
+        $row->{test_data_cut} = length $t->{input} > $cats::infile_cut;
         $row;
     };
 
@@ -179,9 +175,9 @@ sub get_contest_info
 
     my $fields = join ', ',
         ($contest->{show_all_tests} ? 't.points' : ()),
-        ($contest->{show_test_data} ? q~
+        ($contest->{show_test_data} ? qq~
             (SELECT ps.fname FROM problem_sources ps WHERE ps.id = t.generator_id) AS gen_name,
-            t.param, SUBSTRING(t.in_file FROM 1 FOR 20) AS input, t.gen_group~ : ());
+            t.param, SUBSTRING(t.in_file FROM 1 FOR $cats::infile_cut + 1) AS input, t.gen_group~ : ());
     my $tests = $contest->{tests} = $fields ?
         $dbh->selectall_arrayref(qq~
             SELECT $fields FROM tests t WHERE t.problem_id = ? ORDER BY t.rank~, { Slice => {} },
@@ -321,7 +317,7 @@ sub run_details_frame
                 request_id => $_->{req_id},
                 state => $cats::st_not_processed,
                 testsets => param('testsets'),
-                judge_id => (param('set_judge') ? param('judge') : undef));
+                judge_id => (param('set_judge') && param('judge') ? param('judge') : undef));
             $_ = get_sources_info(request_id => $_->{req_id}, partial_checker => 1) or next;
         }
 
@@ -352,8 +348,8 @@ sub prepare_source
         $sources_info->{src} = res_str(138, CATS::Contest::current_official->{title});
     }
     else {
-        my $se = param('src_enc') || 'WINDOWS-1251';
-        if (source_encodings()->{$se} && $sources_info->{file_name} !~ m/\.zip$/) {
+        my $se = encoding_param('src_enc', 'WINDOWS-1251');
+        if (encodings()->{$se} && $sources_info->{file_name} !~ m/\.zip$/) {
             Encode::from_to($sources_info->{src}, $se, 'utf-8');
             $sources_info->{src} = Encode::decode_utf8($sources_info->{src});
         }

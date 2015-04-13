@@ -1,0 +1,149 @@
+/* git stylesheets */
+
+div.commit_header {
+    font-weight: bold;
+    padding: 8px;
+    background-color: #edece6;
+}
+
+div.title_text {
+    padding: 6px 0px;
+    border: solid #d9d8d1;
+    border-width: 0px 0px 1px;
+    font-size: small;
+}
+
+div.title_text > table.object_header {
+    border-spacing: 0;
+}
+
+div.title_text > table.object_header td {
+    vertical-align: top;
+    padding-right: 8px;
+}
+
+div.page_body {
+}
+
+div.list_head {
+    padding: 4px 0px;
+    border: solid #d9d8d1;
+    border-width: 1px 0px 0px;
+    font-style: italic;
+}
+
+table.diff_tree {
+    font-family: monospace;
+    margin: 0;
+}
+
+table.diff_tree a {
+    font-family: monospace;
+}
+
+table.diff_tree span.file_status.new {
+    color: #008000;
+}
+
+table.diff_tree span.file_status.deleted {
+    color: #c00000;
+}
+
+table.diff_tree span.file_status.moved,
+table.diff_tree span.file_status.mode_chnge {
+    color: #777777;
+}
+
+table.diff_tree span.file_status.copied {
+    color: #70a070;
+}
+
+/* styling of diffs (patchsets): commitdiff */
+div.patchset {
+    font-family: monospace;
+}
+
+div.diff.header,
+div.diff.extended_header {
+    white-space: normal;
+}
+
+div.diff.header {
+    font-weight: bold;
+    background-color: #edece6;
+    margin-top: 4px;
+    padding: 4px 0px 2px 0px;
+    border: solid #d9d8d1;
+    border-width: 1px 0px 1px 0px;
+}
+
+div.diff.header a.path {
+    text-decoration: underline;
+}
+
+div.diff.extended_header,
+div.diff.extended_header a.path,
+div.diff.extended_header a.hash {
+    color: #777777;
+}
+
+div.diff.extended_header .info {
+    color: #b0b0b0;
+}
+
+div.diff.extended_header {
+    background-color: #f6f5ee;
+    padding: 2px 0px 2px 0px;
+}
+
+div.diff.to_file a.path,
+div.diff.to_file {
+    color: #007000;
+}
+
+div.diff.from_file a.path,
+div.diff.from_file {
+    color: #aa0000;
+}
+
+div.diff.add {
+    color: #008800;
+}
+
+div.diff.add span.marked {
+    background-color: #aaffaa;
+}
+
+div.diff.rem {
+    color: #cc0000;
+}
+
+div.diff.rem span.marked {
+    background-color: #ffaaaa;
+}
+
+div.diff.chunk_header a,
+div.diff.chunk_header {
+    color: #990099;
+}
+
+div.diff.chunk_header {
+    border: dotted #ffe0ff;
+    border-width: 1px 0px 0px 0px;
+    margin-top: 2px;
+}
+
+div.diff.chunk_header span.chunk_info {
+    background-color: #ffeeff;
+}
+
+div.diff.chunk_header span.section {
+    color: #aa22aa;
+}
+
+span.cntrl {
+    border: dashed #aaaaaa;
+    border-width: 1px;
+    padding: 0px 2px 0px 2px;
+    margin:  0px 2px 0px 2px;
+}

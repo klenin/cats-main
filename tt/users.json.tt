@@ -9,7 +9,8 @@
 "ooc": [% IF ooc %]1[% ELSE %]0[% END %],
 "remote": [% IF remote %]1[% ELSE %]0[% END %],
 "virtual": [% IF virtual %]1[% ELSE %]0[% END %],
-"jury": [% IF jury %]1[% ELSE %]0[% END %]
+"jury": [% IF jury %]1[% ELSE %]0[% END %],
+"role": [% IF jury %]"jury"[% ELSIF ooc %]"out_of_contest"[% ELSIF virtual %]"vitrual"[% ELSE %]"in_contest"[% END %]
 }
 [%- ',' UNLESS loop.last %]
 [% END -%]

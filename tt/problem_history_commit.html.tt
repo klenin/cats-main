@@ -1,4 +1,77 @@
 [% PROCESS 'includes/menu_begin.tti' %]
 [%- PROCESS 'includes/html.tti' -%]
-<pre>[% p_diff %]</pre>
+<style>
+  @import 'docs/std/git.css';
+</style>
+<div class="commit_header">[% commit.info.title | html %]</div>
+[%- MACRO authorship_row(who) BLOCK -%]
+    [%- name = "${who}_name" -%]
+    [%- email = "${who}_email" -%]
+    [%- ts = "${who}_formatted_ts" -%]
+    <tr>
+        <td rowspan="2">[% capt.$who %]</td>
+        <td>[% commit.info.$name | html %] &lt;[% commit.info.$email | html %]&gt;</td>
+    </tr>
+    <tr>
+        <td>[% commit.info.$ts %]</td>
+    </tr>
+[%- END -%]
+<div class="title_text">
+    <table class="object_header">
+        [% authorship_row('author') %]
+        [% authorship_row('committer') %]
+    </table>
+</div>
+<div class="page_body">
+    [% IF commit.info.comment_lines.size > 0 %]
+    <div class="log">
+    [% FOREACH line IN commit.info.comment_lines %]
+        [% line | html %]
+        <br />
+    [% END %]
+    </div>
+    [% END %]
+
+[%- MACRO diff_tree_row(row) BLOCK -%]
+    <tr>
+        <td><a href="#[% row.file | uri %]">[% row.file | html %]</a></td>
+        <td><span class="file_status [% row.status %]">[% IF row.status_string.length %][[% row.status_string | html %]][% END %]</span></td>
+    </tr>
+[%- END -%]
+
+[%- MACRO patch_row(row) BLOCK -%]
+    <div class="patch">
+        <div class="diff header"><a name="[% row.to_name | uri %]"></a>[% row.header | html %]</div>
+        <div class="diff extended_header">
+        [% FOREACH h IN row.extended_header %]
+            <div>[% h %]</div>
+        [% END %]
+        </div>
+        <div class="diff from_file">[% row.from.header | html %]</div>
+        <div class="diff to_file">[% row.to.header | html %]</div>
+        [% FOREACH chunk IN row.chunks %]
+            <div class="[% chunk.header.class %]">
+                <span class="chunk_info">[% chunk.header.text.info %]</span>
+                <span class="section">[% chunk.header.text.section | html | quote_controls %]</span>
+            </div>
+            [% FOREACH line IN chunk.lines %]
+            <div class="[% line.class %]">[% line.text | html_highlight_regions('marked', line.mark)  %]</div>
+            [% END %]
+        [% END %]
+    </div>
+[%- END -%]
+
+    <div class="list_head">[% capt.files_changed %]: [% commit.difftree.size %]</div>
+    <table class="diff_tree">
+    [% FOREACH line IN commit.difftree %]
+        [% diff_tree_row(line) %]
+    [% END %]
+    </table>
+    <div class="patchset">
+        [% FOREACH patch IN commit.patches %]
+            [% patch_row(patch) %]
+        [% END %]
+    </div>
+</div>
+[%- IF commit.log %]<pre>[% commit.log | html %]</pre>[% END -%]
 [% PROCESS 'includes/menu_end.tti' %]

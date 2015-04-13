@@ -9,6 +9,7 @@
     console => 'консоль',
     explanation => 'разбор',
     package => 'пакет',
+    git_package => 'git пакет',
     compare_tests => 'т',
     used_in => 'Использована в турнирах',
     solution_file => 'Файл с решением',
@@ -22,6 +23,8 @@
     delete => 'удалить',
     replace => 'заменить',
     add_new => 'добавить',
+    amend => 'исправить',
+    message => 'Сообщение',
   });
   MACRO to_monitor(console) BLOCK; "Для наблюдения за ходом тестирования откройте ${console}"; END;
 %]

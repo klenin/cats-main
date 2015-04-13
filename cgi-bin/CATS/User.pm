@@ -6,7 +6,7 @@ use warnings;
 
 use lib '..';
 use CATS::Web qw(param);
-use CATS::Misc qw(init_template msg url_f);
+use CATS::Misc qw(init_template msg url_f $is_root);
 use CATS::DB;
 use CATS::Connect;
 use CATS::Constants;
@@ -83,14 +83,18 @@ sub generate_login
 sub new_frame
 {
     my $t = init_template('users_new.html.tt');
-    $t->param(login => generate_login);
-    $t->param(countries => \@CATS::Countries::countries, href_action => url_f('users'));
+    $t->param(
+        login => generate_login,
+        countries => \@CATS::Countries::countries,
+        href_action => url_f('users'),
+        is_root => $is_root
+    );
 }
 
 
 sub param_names ()
 {
-    qw(login team_name capitan_name email country motto home_page icq_number city)
+    qw(login team_name capitan_name email country motto home_page icq_number city git_author_name git_author_email)
 }
 
 
@@ -179,7 +183,7 @@ sub insert
     $dbh->do(qq~
         INSERT INTO accounts (
             id, srole, passwd, settings, ~ . join (', ', param_names()) . qq~
-        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)~, {},
+        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)~, {},
         $aid, $cats::srole_user, $self->{password1}, $new_settings, $self->values
     );
     add_to_contest(contest_id => $_->{id}, account_id => $aid, is_ooc => 1)

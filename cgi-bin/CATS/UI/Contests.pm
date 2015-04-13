@@ -10,7 +10,7 @@ use CATS::Misc qw(
     $t $is_jury $is_root $is_team $sid $cid $uid $contest $is_virtual $settings
     cats_dir init_template init_listview_template msg res_str url_f auto_ext
     order_by define_columns attach_listview);
-use CATS::Utils qw(url_function param_on coalesce);
+use CATS::Utils qw(url_function param_on coalesce date_to_iso);
 use CATS::Data qw(:all);
 use CATS::StaticPages;
 use CATS::RankTable;
@@ -246,27 +246,25 @@ sub contests_select_current
     }
 }
 
-sub date_to_iso {
-    $_[0] =~ /^\s*(\d+)\.(\d+)\.(\d+)\s+(\d+):(\d+)\s*$/;
-    "$3$2$1T$4${5}00";
-}
-
 sub common_contests_view ($)
 {
     my ($c) = @_;
     return (
-       id => $c->{id},
-       contest_name => $c->{title},
-       start_date => $c->{start_date},
-       start_date_iso => date_to_iso($c->{start_date}),
-       finish_date => $c->{finish_date},
-       finish_date_iso => date_to_iso($c->{finish_date}),
-       registration_denied => $c->{closed},
-       selected => $c->{id} == $cid,
-       is_official => $c->{is_official},
-       show_points => $c->{rules},
-       href_contest => url_function('contests', sid => $sid, set_contest => 1, cid => $c->{id}),
-       href_params => url_f('contests', params => $c->{id}),
+        id => $c->{id},
+        contest_name => $c->{title},
+        start_date => $c->{start_date},
+        start_date_iso => date_to_iso($c->{start_date}),
+        finish_date => $c->{finish_date},
+        finish_date_iso => date_to_iso($c->{finish_date}),
+        freeze_date_iso => date_to_iso($c->{freeze_date}),
+        unfreeze_date_iso => date_to_iso($c->{defreeze_date}),
+        registration_denied => $c->{closed},
+        selected => $c->{id} == $cid,
+        is_official => $c->{is_official},
+        show_points => $c->{rules},
+        href_contest => url_function('contests', sid => $sid, set_contest => 1, cid => $c->{id}),
+        href_params => url_f('contests', params => $c->{id}),
+        href_problems_text => CATS::StaticPages::url_static('problem_text', cid => $c->{id}),
     );
 }
 
@@ -277,7 +275,7 @@ sub contest_fields ()
     # my $s = $settings->{$listview_name};
     # (($s->{page} || 0) == 0 && !$s->{search} ? 'FIRST ' . ($s->{rows} + 1) : '') .
     q~c.ctype, c.id, c.title,
-    c.start_date, c.finish_date, c.closed, c.is_official, c.rules~
+    c.start_date, c.finish_date, c.freeze_date, c.defreeze_date, c.closed, c.is_official, c.rules~
 }
 
 sub contests_submenu_filter

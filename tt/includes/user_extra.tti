@@ -11,5 +11,10 @@
   <tr><td>[% capt.$field %]</td>
   <td><input type="text" name="[% field %]" size="50" value="[% $field | html %]" class="bordered"></td></tr>
 [%- END -%]
-[% FOREACH f IN ['city', 'motto', 'capitan_name', 'email', 'icq_number', 'home_page']; input_tr(f); END %]
+
+[%
+  fields = ['city', 'motto', 'capitan_name', 'email', 'icq_number', 'home_page'];
+  fields.push('git_author_name', 'git_author_email') IF is_root;
+  FOREACH f IN fields; input_tr(f); END
+%]
 </table>

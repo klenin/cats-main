@@ -1,0 +1,7 @@
+[%
+  capt.import({
+    author => 'Автор',
+    committer => 'Коммиттер',
+    files_changed => 'Изменено файлов',
+  })
+%]

@@ -3,14 +3,15 @@ package CATS::UI::Problems;
 use strict;
 use warnings;
 
-use CATS::Web qw(param url_param redirect upload_source save_uploaded_file);
+use File::stat;
+use CATS::Web qw(param url_param redirect upload_source save_uploaded_file content_type headers);
 use CATS::DB;
 use CATS::Constants;
 use CATS::Misc qw(
     $t $is_jury $is_root $is_team $sid $cid $uid $contest $is_virtual $virtual_diff_time
     cats_dir init_template init_listview_template msg res_str url_f auto_ext
-    order_by define_columns attach_listview problem_status_names);
-use CATS::Utils qw(url_function escape_html);
+    order_by sort_listview define_columns attach_listview problem_status_names);
+use CATS::Utils qw(url_function file_type date_to_iso encoding_param);
 use CATS::Data qw(:all);
 use CATS::StaticPages;
 use CATS::Problem::Text;
@@ -111,7 +112,7 @@ sub problems_replace
 
     my CATS::Problem $p = CATS::Problem->new;
     $p->{old_title} = $old_title unless param('allow_rename');
-    my $error = $p->load($fname, $cid, $pid, 1);
+    my $error = $p->load($fname, $cid, $pid, 1, param('message'), param('is_amend'));
     $t->param(problem_import_log => $p->encoded_import_log());
     #unlink $fname;
     if ($error) {
@@ -139,7 +140,7 @@ sub problems_add_new
     }
 
     my CATS::Problem $p = CATS::Problem->new;
-    my $error = $p->load($fname, $cid, new_id, 0);
+    my $error = $p->load($fname, $cid, new_id, 0, 0);
     $t->param(problem_import_log => $p->encoded_import_log());
     $error ||= !add_problem_to_contest($p->{id}, $problem_code);
 
@@ -175,6 +176,31 @@ sub download_problem
         CATS::BinaryFile::save(cats_dir() . $fname, $zip);
     }
     redirect($fname);
+}
+
+sub git_download_problem
+{
+    my $pid = param('git_download');
+    my $sha = param('sha');
+    $is_root && $pid or return redirect url_f('contests');
+    my ($status) = $dbh->selectrow_array(qq~
+        SELECT status FROM contest_problems
+        WHERE contest_id = ? AND problem_id = ?~, undef,
+        $cid, $pid);
+    defined $status && ($is_jury || $status != $cats::problem_st_hidden)
+        or return;
+    undef $t;
+    my ($fname, $tree_id) = CATS::Problem::get_repo_archive($pid, $sha);
+    content_type('application/zip');
+    headers(
+        'Accept-Ranges', 'bytes',
+        'Content-Length', stat($fname)->size,
+        'Content-Disposition', "attachment; filename=problem_$tree_id.zip"
+    );
+    my $content;
+    CATS::BinaryFile::load($fname, \$content) or die("open '$fname' failed: $!");
+    binmode STDOUT;
+    print $content;
 }
 
 sub can_upsolve
@@ -446,6 +472,9 @@ sub problems_all_frame
         return (
             href_view_problem => url_f('problem_text', pid => $pid),
             href_view_contest => url_function('problems', sid => $sid, cid => $contest_id),
+            # Jury can download package for any problem after linking, but not before.
+            ($is_root ? (href_download => url_function('problems', sid => $sid, cid => $contest_id, download => $pid)) : ()),
+            ($is_root ? (href_problem_history => url_f('problem_history', pid => $pid)) : ()),
             linked => $linked || !$link,
             problem_id => $pid,
             problem_name => $problem_name,
@@ -628,6 +657,7 @@ sub problems_frame
     init_listview_template('problems' . ($contest->is_practice ? '_practice' : ''),
         'problems', auto_ext('problems'));
     defined param('download') && $show_packages and return download_problem;
+    defined param('git_download') && $show_packages and return git_download_problem;
     problems_frame_jury_action;
 
     problems_submit if defined param('submit');
@@ -670,7 +700,7 @@ sub problems_frame
             P.upload_date,
             (SELECT A.login FROM accounts A WHERE A.id = P.last_modified_by) AS last_modified_by,
             SUBSTRING(P.explanation FROM 1 FOR 1) AS has_explanation,
-            $test_count_sql CP.testsets, CP.points_testsets
+            $test_count_sql CP.testsets, CP.points_testsets, P.lang, P.memory_limit, P.time_limit, CP.max_points
         FROM problems P, contest_problems CP, contests OC
         WHERE CP.problem_id = P.id AND OC.id = P.contest_id AND CP.contest_id = ?$hidden_problems
         ~ . order_by
@@ -710,6 +740,7 @@ sub problems_frame
             href_change_code => url_f('problems', 'change_code' => $c->{cpid}),
             href_replace  => url_f('problems', replace => $c->{cpid}),
             href_download => url_f('problems', download => $c->{pid}),
+            href_git_download => $is_root && url_f('problems', git_download => $c->{pid}),
             href_compare_tests => $is_jury && url_f('compare_tests', pid => $c->{pid}),
             href_problem_history => $is_root && url_f('problem_history', pid => $c->{pid}),
             href_original_contest =>
@@ -717,6 +748,7 @@ sub problems_frame
             href_usage => url_f('contests', has_problem => $c->{pid}),
             show_packages => $show_packages,
             status => $c->{status},
+            status_text => problem_status_names()->{$c->{status}},
             disabled => !$is_jury && $c->{status} == $cats::problem_st_disabled,
             href_view_problem => $text_link_f->('problem_text', cpid => $c->{cpid}),
             href_explanation => $show_packages && $c->{has_explanation} ?
@@ -732,11 +764,16 @@ sub problems_frame
             wa_count => $c->{wrong_answer_count},
             tle_count => $c->{time_limit_count},
             upload_date => $c->{upload_date},
+            upload_date_iso => date_to_iso($c->{upload_date}),
             last_modified_by => $c->{last_modified_by},
             testsets => $c->{testsets} || '*',
             points_testsets => $c->{points_testsets},
             test_count => $c->{test_count},
             href_select_testsets => url_f('problem_select_testsets', cpid => $c->{cpid}),
+            lang => $c->{lang},
+            memory_limit => $c->{memory_limit} * 1024 * 1024,
+            time_limit => $c->{time_limit},
+            max_points => $c->{max_points},
         );
     };
 
@@ -751,7 +788,7 @@ sub problems_frame
 
     my $pt_url = sub {{ href => $_[0], item => ($_[1] || res_str(538)), target => '_blank' }};
     my $p = $contest->is_practice;
-    my @submenu =  grep $_,
+    my @submenu = grep $_,
         $is_jury ? (
             !$p && $pt_url->(url_f('problem_text', nospell => 1, nokw => 1, notime => 1, noformal => 1)),
             !$p && $pt_url->(url_f('problem_text'), res_str(555)),
@@ -767,13 +804,23 @@ sub problems_frame
         submenu => \@submenu, title_suffix => res_str(525),
         is_team => $my_is_team, is_practice => $contest->is_practice,
         de_list => \@de, problem_codes => \@cats::problem_codes,
+        contest_id => $cid,
      );
 }
 
 sub problem_history_commit_frame
 {
+    my ($pid, $sha, $title) = @_;
     init_template('problem_history_commit.html.tt');
-    $t->param(p_diff => escape_html(CATS::Problem::show_commit(@_)));
+    my $submenu = [
+        { href => url_f('problem_history', pid => $pid), item => res_str(568) },
+        { href => url_f('problems', git_download => $pid, sha => $sha), item => res_str(569) },
+    ];
+    $t->param(
+        commit => CATS::Problem::show_commit($pid, $sha, encoding_param('repo_enc')),
+        problem_title => $title,
+        submenu => $submenu,
+    );
 }
 
 sub problem_history_frame
@@ -781,26 +828,38 @@ sub problem_history_frame
     my $pid = url_param('pid') || 0;
     my $h = url_param('h') || '';
     $is_root && $pid or return redirect url_f('contests');
-    return problem_history_commit_frame($pid, $h) if $h;
 
-    init_listview_template('problem_history', 'problem_history', auto_ext('problem_history_full'));
+    my ($status, $title) = $dbh->selectrow_array(q~
+        SELECT CP.status, P.title FROM contest_problems CP
+            INNER JOIN problems P ON CP.problem_id = P.id
+            WHERE CP.contest_id = ? AND P.id = ?~, undef,
+        $cid, $pid);
+    defined $status or return redirect url_f('contests');
+
+    return problem_history_commit_frame($pid, $h, $title) if $h;
+
+    init_listview_template('problem_history', 'problem_history', auto_ext('problem_history'));
+    $t->param(problem_title => $title, pid => $pid);
+
+    problems_replace if defined param('replace');
+
     my @cols = (
-        { caption => res_str(1400), order_by => '0', width => '16%' }, # author
-        { caption => res_str(634), order_by => '1', width => '9%' }, # author date
-        { caption => res_str(1401), order_by => '2', width => '9%' }, # committer date
-        { caption => res_str(1402), order_by => '3', width => '4%' }, # commit sha
-        { caption => res_str(1403), order_by => '4', width => '40%' } # commit message
+        { caption => res_str(1400), width => '25%', order_by => 'author' },
+        { caption => res_str(634),  width => '10%', order_by => 'author_date' },
+        { caption => res_str(1401), width => '10%', order_by => 'committer_date' },
+        { caption => res_str(1402), width => '8%', order_by => 'sha' },
+        { caption => res_str(1403), width => '47%', order_by => 'message' }
     );
-    define_columns(url_f('problem_history', pid => $pid), 0, 0, \@cols);
-
+    define_columns(url_f('problem_history', pid => $pid), 1, 0, \@cols);
     my $fetch_record = sub {
         my $log = shift @{$_[0]} or return ();
         return (
             %$log,
             href_commit => url_f('problem_history', pid => $pid, h => $log->{sha}),
+            href_download => url_f('problems', git_download => $pid, sha => $log->{sha}),
         );
     };
-    attach_listview(url_f('problem_history', pid => $pid), $fetch_record, CATS::Problem::get_log($pid));
+    attach_listview(url_f('problem_history', pid => $pid), $fetch_record, sort_listview(CATS::Problem::get_log($pid)));
 }
 
 1;

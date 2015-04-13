@@ -10,13 +10,20 @@ BEGIN {
     @ISA = qw(Exporter);
     @EXPORT = qw(
         coalesce
+        file_type
+        file_type_long
+        chop_str
         split_fname
-        escape_html
+        untabify
+        unquote
         escape_xml
         url_function
         state_to_display
         source_hash
         param_on
+        date_to_iso
+        encodings
+        encoding_param
     );
 
     %EXPORT_TAGS = (all => [@EXPORT]);
@@ -24,9 +31,77 @@ BEGIN {
 
 use Text::Balanced qw(extract_tagged extract_bracketed);
 use Digest::MD5;
+use Fcntl ':mode';
 use CATS::Web qw(param);
 
+use constant {
+    S_IFGITLINK => 0160000,
+};
+
+
 sub coalesce { defined && return $_ for @_ }
+
+
+# submodule/subproject, a commit object reference
+sub S_ISGITLINK
+{
+    my $mode = shift;
+
+    return (($mode & S_IFMT) == S_IFGITLINK)
+}
+
+
+sub file_type
+{
+    my $mode = shift;
+
+    if ($mode !~ m/^[0-7]+$/) {
+        return $mode;
+    } else {
+        $mode = oct $mode;
+    }
+
+    if (S_ISGITLINK($mode)) {
+        return "submodule";
+    } elsif (S_ISDIR($mode & S_IFMT)) {
+        return "directory";
+    } elsif (S_ISLNK($mode)) {
+        return "symlink";
+    } elsif (S_ISREG($mode)) {
+        return "file";
+    } else {
+        return "unknown";
+    }
+}
+
+
+# convert file mode in octal to file type description string
+sub file_type_long
+{
+    my $mode = shift;
+
+    if ($mode !~ m/^[0-7]+$/) {
+        return $mode;
+    } else {
+        $mode = oct $mode;
+    }
+
+    if (S_ISGITLINK($mode)) {
+        return "submodule";
+    } elsif (S_ISDIR($mode & S_IFMT)) {
+        return "directory";
+    } elsif (S_ISLNK($mode)) {
+        return "symlink";
+    } elsif (S_ISREG($mode)) {
+        if ($mode & S_IXUSR) {
+            return "executable";
+        } else {
+            return "file";
+        };
+    } else {
+        return "unknown";
+    }
+}
 
 
 sub split_fname
@@ -53,18 +128,118 @@ sub split_fname
     return ($vol, $dir, $fname, $name, $ext);
 }
 
-
-sub escape_html
+# escape tabs (convert tabs to spaces)
+sub untabify
 {
-    my $toencode = shift;
+    my $line = shift;
 
-    $toencode =~ s/&/&amp;/g;
-    $toencode =~ s/\'/&#39;/g;
-    $toencode =~ s/\"/&quot;/g; #"
-    $toencode =~ s/>/&gt;/g;
-    $toencode =~ s/</&lt;/g;
+    while ((my $pos = index($line, "\t")) != -1) {
+        if (my $count = (8 - ($pos % 8))) {
+            my $spaces = ' ' x $count;
+            $line =~ s/\t/$spaces/;
+        }
+    }
 
-    return $toencode;
+    return $line;
+}
+
+# git may return quoted and escaped filenames
+sub unquote
+{
+    my $str = shift;
+
+    sub unq {
+        my $seq = shift;
+        my %es = ( # character escape codes, aka escape sequences
+            't' => "\t",   # tab            (HT, TAB)
+            'n' => "\n",   # newline        (NL)
+            'r' => "\r",   # return         (CR)
+            'f' => "\f",   # form feed      (FF)
+            'b' => "\b",   # backspace      (BS)
+            'a' => "\a",   # alarm (bell)   (BEL)
+            'e' => "\e",   # escape         (ESC)
+            'v' => "\013", # vertical tab   (VT)
+        );
+
+        if ($seq =~ m/^[0-7]{1,3}$/) {
+            # octal char sequence
+            return chr(oct($seq));
+        } elsif (exists $es{$seq}) {
+            # C escape sequence, aka character escape code
+            return $es{$seq};
+        }
+        # quoted ordinary character
+        return $seq;
+    }
+
+    if ($str =~ m/^"(.*)"$/) {
+        # needs unquoting
+        $str = $1;
+        $str =~ s/\\([^0-7]|[0-7]{1,3})/unq($1)/eg;
+    }
+    return $str;
+}
+
+# Try to chop given string on a word boundary between position
+# $len and $len+$add_len. If there is no word boundary there,
+# chop at $len+$add_len. Do not chop if chopped part plus ellipsis
+# (marking chopped part) would be longer than given string.
+sub chop_str
+{
+    my $str = shift;
+    my $len = shift;
+    my $add_len = shift || 10;
+    my $where = shift || 'right'; # 'left' | 'center' | 'right'
+
+    # Make sure perl knows it is utf8 encoded so we don't
+    # cut in the middle of a utf8 multibyte char.
+    # $str = to_utf8($str);
+    $str = Encode::decode_utf8($str);
+
+    # allow only $len chars, but don't cut a word if it would fit in $add_len
+    # if it doesn't fit, cut it if it's still longer than the dots we would add
+    # remove chopped character entities entirely
+
+    # when chopping in the middle, distribute $len into left and right part
+    # return early if chopping wouldn't make string shorter
+    if ($where eq 'center') {
+        return $str if ($len + 5 >= length($str)); # filler is length 5
+        $len = int($len/2);
+    } else {
+        return $str if ($len + 4 >= length($str)); # filler is length 4
+    }
+
+    # regexps: ending and beginning with word part up to $add_len
+    my $endre = qr/.{$len}\w{0,$add_len}/;
+    my $begre = qr/\w{0,$add_len}.{$len}/;
+
+    if ($where eq 'left') {
+        $str =~ m/^(.*?)($begre)$/;
+        my ($lead, $body) = ($1, $2);
+        if (length($lead) > 4) {
+            $lead = " ...";
+        }
+        return "$lead$body";
+
+    } elsif ($where eq 'center') {
+        $str =~ m/^($endre)(.*)$/;
+        my ($left, $str)  = ($1, $2);
+        $str =~ m/^(.*?)($begre)$/;
+        my ($mid, $right) = ($1, $2);
+        if (length($mid) > 5) {
+            $mid = " ... ";
+        }
+        return "$left$mid$right";
+
+    } else {
+        $str =~ m/^($endre)(.*)$/;
+        my $body = $1;
+        my $tail = $2;
+        if (length($tail) > 4) {
+            $tail = "... ";
+        }
+        return "$body$tail";
+    }
 }
 
 
@@ -171,5 +346,17 @@ sub param_on
     return (param($_[0]) || '') eq 'on';
 }
 
+
+sub date_to_iso {
+    $_[0] =~ /^\s*(\d+)\.(\d+)\.(\d+)\s+(\d+):(\d+)\s*$/;
+    "$3$2$1T$4${5}00";
+}
+
+sub encodings { {'UTF-8' => 1, 'WINDOWS-1251' => 1, 'KOI8-R' => 1, 'CP866' => 1, 'UCS-2LE' => 1} }
+
+sub encoding_param {
+    my $enc = param($_[0]) || '';
+    encodings->{$enc} ? $enc : ($_[1] || 'UTF-8');
+}
 
 1;

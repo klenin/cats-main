@@ -11,8 +11,7 @@ use JSON::XS;
 
 use CATS::Constants;
 use CATS::DB;
-use CATS::Misc qw(cats_dir msg);
-use CATS::Utils qw(escape_html);
+use CATS::Misc qw($git_author_name $git_author_email cats_dir msg);
 use CATS::BinaryFile;
 use CATS::StaticPages;
 use CATS::DevEnv;
@@ -24,7 +23,7 @@ use fields qw(
     tests testsets samples objects keywords
     imports solutions generators modules pictures attachments
     test_defaults current_tests current_sample gen_groups
-    encoding stml zip zip_archive old_title replace tag_stack has_checker de_list
+    encoding stml zip zip_archive old_title replace tag_stack has_checker de_list run_method
 );
 
 use CATS::Problem::Tests;
@@ -60,7 +59,7 @@ sub clear
 sub encoded_import_log
 {
     my CATS::Problem $self = shift;
-    return escape_html($self->{import_log});
+    return $self->{import_log};
 }
 
 
@@ -75,10 +74,18 @@ sub get_repo
 }
 
 
+sub get_repo_archive
+{
+    my ($pid, $sha) = @_;
+    ($pid) = get_repo($pid);
+    return CATS::Problem::Repository->new(dir => cats_dir . "$cats::repos_dir$pid/")->archive($sha);
+}
+
+
 sub show_commit
 {
     my ($pid) = get_repo(@_);
-    return CATS::Problem::Repository->new(dir => cats_dir() . "$cats::repos_dir$pid/")->commit_info($_[1]);
+    return CATS::Problem::Repository->new(dir => cats_dir() . "$cats::repos_dir$pid/")->commit_info($_[1], $_[2]);
 }
 
 
@@ -91,7 +98,7 @@ sub get_log
 
 sub add_history
 {
-    (my CATS::Problem $self, my $fname) = @_;
+    (my CATS::Problem $self, my $fname, my $message, my $is_amend) = @_;
     my $problem = {
         zip => $fname,
         id => $self->{id},
@@ -99,11 +106,16 @@ sub add_history
         author => $self->{problem}{author},
     };
     my $path = cats_dir() . $cats::repos_dir;
-    my $p = CATS::Problem::Repository->new(dir => "$path/$self->{id}/", logger => $self);
+    my $p = CATS::Problem::Repository->new(
+        dir => "$path/$self->{id}/",
+        logger => $self,
+        author_name => $git_author_name,
+        author_email => $git_author_email
+    );
     if ($self->{replace}) {
         my ($repo_id, $sha) = get_repo($self->{id});
         $p->move_history(from => "$path/$repo_id/", sha => $sha) unless $repo_id == $self->{id};
-        $p->add($problem);
+        $p->add($problem, message => $message, is_amend => $is_amend);
         $dbh->do(qq~
             UPDATE problems SET repo = ?, commit_sha = ? WHERE id = ?~, undef, '', '', $self->{id})
             unless $repo_id == $self->{id};
@@ -118,7 +130,7 @@ sub add_history
 sub load
 {
     my CATS::Problem $self = shift;
-    (my $fname, $self->{contest_id}, $self->{id}, $self->{replace}) = @_;
+    (my $fname, $self->{contest_id}, $self->{id}, $self->{replace}, my $message, my $is_amend) = @_;
 
     eval {
         CATS::BinaryFile::load($fname, \$self->{zip_archive})
@@ -152,7 +164,7 @@ sub load
     else {
         unless ($self->{debug}) {
             $dbh->commit;
-            eval { $self->add_history($fname); };
+            eval { $self->add_history($fname, $message, $is_amend); };
             $self->note("Warning: $@") if $@;
         }
         $self->note('Success import');
@@ -227,6 +239,8 @@ sub validate
         if @without_points && @without_points != @t;
 
     $check_order->($self->{samples}, 'sample');
+
+    $self->{run_method} ||= $cats::rm_default;
 }
 
 
@@ -374,6 +388,7 @@ sub tag_handlers()
     SampleOut => { s => \&start_tag_SampleOut, e => \&end_stml, in => ['Sample'] },
     Keyword => { s => \&start_tag_Keyword, r => ['code'] },
     Testset => { s => \&start_tag_Testset, r => ['name', 'tests'] },
+    Run => { s => \&start_tag_Run, r => ['method'] },
 }}
 
 
@@ -452,6 +467,7 @@ sub problem_source_common_params
         memory_limit => $atts->{memoryLimit},
     );
 }
+
 
 sub start_tag_Solution
 {
@@ -587,6 +603,7 @@ sub import_one_source
 
 }
 
+
 sub start_tag_Import
 {
     (my CATS::Problem $self, my $atts) = @_;
@@ -648,6 +665,7 @@ sub sample_in_out
     }
 }
 
+
 sub start_tag_SampleIn { $_[0]->sample_in_out($_[1], 'in_file'); }
 sub start_tag_SampleOut { $_[0]->sample_in_out($_[1], 'out_file'); }
 
@@ -673,6 +691,21 @@ sub start_tag_Testset
         id => new_id, map { $_ => $atts->{$_} } qw(name tests points comment hideDetails) };
     $self->{testsets}->{$n}->{hideDetails} ||= 0;
     $self->note("Testset $n added");
+}
+
+
+sub start_tag_Run
+{
+    (my CATS::Problem $self, my $atts) = @_;
+    my $m = $atts->{method};
+    $self->error("Duplicate run method '$m'") if defined $self->{run_method};
+    my %methods = (
+        default => $cats::rm_default,
+        interactive => $cats::rm_interactive,
+    );
+    defined($self->{run_method} = $methods{$m})
+        or $self->error("Unknown run method: '$m', must be one of: " . join ', ', keys %methods);
+    $self->note("Run method set to '$m'");
 }
 
 
@@ -768,7 +801,7 @@ sub end_tag_Problem
             title=?, lang=?, time_limit=?, memory_limit=?, difficulty=?, author=?, input_file=?, output_file=?,
             statement=?, pconstraints=?, input_format=?, output_format=?, formal_input=?, json_data=?, explanation=?, zip_archive=?,
             upload_date=CURRENT_TIMESTAMP, std_checker=?, last_modified_by=?,
-            max_points=?, hash=NULL
+            max_points=?, run_method=?, hash=NULL
         WHERE id = ?~
     : q~
         INSERT INTO problems (
@@ -776,9 +809,9 @@ sub end_tag_Problem
             title, lang, time_limit, memory_limit, difficulty, author, input_file, output_file,
             statement, pconstraints, input_format, output_format, formal_input, json_data, explanation, zip_archive,
             upload_date, std_checker, last_modified_by,
-            max_points, id
+            max_points, run_method, id
         ) VALUES (
-            ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP,?,?,?,?
+            ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP,?,?,?,?,?
         )~;
 
     my $c = $dbh->prepare($sql);
@@ -791,6 +824,7 @@ sub end_tag_Problem
     $c->bind_param($i++, $self->{problem}->{std_checker});
     $c->bind_param($i++, $CATS::Misc::uid);
     $c->bind_param($i++, $self->{problem}->{max_points});
+    $c->bind_param($i++, $self->{run_method});
     $c->bind_param($i++, $self->{id});
     $c->execute;
 

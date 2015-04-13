@@ -7,5 +7,7 @@
     email => 'E-Mail',
     icq_number => 'ICQ',
     home_page => 'Адрес домашней страницы',
+    git_author_name => 'Имя git автора',
+    git_author_email => 'E-mail git автора'
   })
 %]

@@ -33,9 +33,11 @@ CREATE TABLE accounts (
     locked      INTEGER DEFAULT 0 CHECK (locked IN (0, 1)),
     team_name   VARCHAR(200),
     capitan_name VARCHAR(200),
+    git_author_name VARCHAR(200) DEFAULT NULL,
     country     VARCHAR(30),
     motto       VARCHAR(200),
     email       VARCHAR(200),
+    git_author_email VARCHAR(200) DEFAULT NULL,
     home_page   VARCHAR(200),
     icq_number  VARCHAR(200),
     settings    BLOB SUB_TYPE 0,
@@ -120,7 +122,8 @@ CREATE TABLE problems (
     zip_archive     BLOB,
     last_modified_by INTEGER REFERENCES accounts(id) ON DELETE SET NULL ON UPDATE CASCADE,
     max_points      INTEGER,
-    hash            VARCHAR(200)
+    hash            VARCHAR(200),
+    run_method      SMALLINT DEFAULT 0 CHECK (run_method IN (0, 1))
 );
 
 

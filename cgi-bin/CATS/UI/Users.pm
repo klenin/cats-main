@@ -11,7 +11,7 @@ use CATS::Misc qw(
     $t $is_jury $is_root $is_team $sid $cid $uid $contest $is_virtual $settings
     init_template init_listview_template msg res_str url_f auto_ext
     order_by define_columns attach_listview);
-use CATS::Utils qw(url_function);
+use CATS::Utils qw(url_function param_on);
 use CATS::Web qw(redirect);
 use CATS::Data qw(:all);
 use CATS::User;
@@ -129,6 +129,7 @@ sub settings_frame
         countries => \@CATS::Countries::countries, href_action => url_f('users'),
         title_suffix => res_str(518),
         langs => [ map { href => url_f('settings', lang => $_), name => $_ }, @cats::langs ],
+        is_root => $is_root,
         %$u);
     if ($is_root) {
         # Data::Dumper escapes UTF-8 characters into \x{...} sequences.
