@@ -27,99 +27,93 @@
 </table>
 [% END -%]
 
-<table width="100%" cellspacing="1" class="bordered rank_table highlight">
-[%- IF many_contests %]
-  <tr bgcolor="#ccccff">
-  <th colspan="2"></th>
-  [% FOREACH c IN contests %]<th colspan="[% c.count %]">[% c.start_date %]</th>[% END %]
-  <th colspan="4"></th>
-[% END -%]
-<tr bgcolor="#ccccff">
-<th width="1%"></th>
-[%- IF 0 %]<th width=1%>[% capt.country %]</th>[% END -%]
-<th>[% capt.team_name %]</th>
-[% FOREACH p IN problems %]
-<th width="[% problem_column_width %]%">
-  <a href="[% p.problem_text %]" alt="[% p.title | html%]" title="[% p.title | html %]">[% p.code %]</a>
-  [%- " ($p.max_points)" IF show_points -%]
-</th>
-[% END %]
-<th width="[% problem_column_width %]%">[% IF show_points; capt.total %] ([% max_total_points %])[% ELSE %]=[% END %]</th>
-[% UNLESS show_points %]<th>[% capt.time %]</th>[% END %]
-<th>[% capt.place %]</th>
-<th>[% capt.status %]</th>
+<div id="wrapper">
+<br/>[% loading %]<br/>
+</div>
 
-[% IF printable %]
-[% FOREACH r IN rank %]
-<tr align="center"[% UNLESS r.row_color %] class="even"[% END %]>
-<td align="right">[% r.contestant_number %]&nbsp;</td>
-[%- IF 0 %]
-<td nowrap align=center bgcolor=#ffffff>
-[% IF r.flag %]
-    <img src="[% r.flag %]" alt="[% r.country | html %][% IF r.motto %] - [% r.motto | html %][% END %]">
-[% ELSE %]
-    [% r.country | html %][% IF r.motto %] - [% r.motto | html %][% END %]
+<script>
+var problems = [
+[% FOREACH p IN problems %]
+  {
+    'id': '[% p.problem_id %]',
+    'name': '[% p.title | html %]',
+    'text_url': '[% p.problem_text %]',
+    'code': '[% p.code %]',
+    'max_points': '[% p.max_points %]',
+    'contest_id': '[% p.contest_id %]',
+    'start_date': '[% p.start_date %]',
+    'scoring': [% IF p.max_points == undef %] "acm" [% ELSE %] "school" [% END %],
+  },
 [% END %]
-[% END -%]
-<td align="left">
-  [%- IF 0 %]<a href="[% href_console %]" title="[% r.city %]"></a>[% END -%]
-  [%- r.team_name | html -%]
-</td>
-[% IF show_points ~%]
-  [% FOREACH c IN r.columns %]<td>[% c.points %]</td>[% END -%]
-[% ELSE ~%]
-  [% FOREACH c IN r.columns ~%]
-    <td><p>[% c.time | html %]</p>[% c.td | html %]</td>
-  [% END -%]
-[% END -%]
-<td>[% IF show_points %][% r.total_points ~%]
-  [% ELSE %][% r.total_solved %]<td>[% r.total_time %][% END -%]
-</td><td>[% r.place %]</td><td class="ts">[% IF r.is_ooc ~%]
-  ooc[% END %][% IF r.is_remote %] remote[% END %][% IF r.is_virtual %] virtual[% END %] [% r.prize %]</td></tr>
-[% END %]
-[% ELSE %]
-[% IF rank %]<script type="text/javascript"><!--
-var rank_table = [
+];
+
+var old_contest_id = -1, contest_idx = -1;
+var table_contests = [];
+var contests_ids = [];
+for (var i in problems) {
+    var p = problems[i];
+    var p_clean = {id: p.id, code: p.code, name: p.name, text_url: p.text_url, max_points: p.max_points};
+    if (p.contest_id != old_contest_id) {
+        contest_idx++;
+        contests_ids.push(p.contest_id);
+        old_contest_id = p.contest_id;
+        table_contests[contest_idx] = {id: old_contest_id, start_date: p.start_date, scoring: p.scoring};
+        table_contests[contest_idx].problems = [];
+    }
+    table_contests[contest_idx].problems.push(p_clean);
+}
+
+
+
+
+var table_rows = [
 [% FOREACH r IN rank %]
-  { id: [% r.account_id %], n: "[% r.team_name | html %]",[% IF show_points %]
-    pt: [[% FOREACH c IN r.columns %]'[% c.points %]'[% UNLESS loop.last %],[% END %][% END %]], tp: [% r.total_points %][% ELSE %]
+  { id: [% r.account_id %], name: "[% r.team_name | html %]",
+    console_url: "[% href_console %];uf=[% r.account_id %]",
+    [% IF show_points %]
+    pt: [[% FOREACH c IN r.columns %]'[% c.points %]'[% UNLESS loop.last %],[% END %][% END %]],[% ELSE %]
     tm: [[% FOREACH c IN r.columns %]'[% c.time %]'[% UNLESS loop.last %],[% END %][% END %]],
     td: [[% FOREACH c IN r.columns %]'[% c.td %]'[% UNLESS loop.last %],[% END %][% END %]],
-    ts: [% r.total_solved %], ttm: [% r.total_time %][% END %], rc: [% r.row_color %],
-    pl: [% r.place %], st: '[% IF r.is_ooc %]ooc[% END %][% IF r.is_remote %] remote[% END %][% IF r.is_virtual %] virtual[% END %] [% r.prize %]',
+    solved_cnt: [% r.total_solved %], penalty: [% r.total_time %],[% END %]
+    place: [% r.place %], state: '[% IF r.is_ooc %]ooc[% END %][% IF r.is_virtual %] virtual[% END %] [% r.prize %]',
+    remote: [% r.is_remote %],
     t: "[% r.city | html %]"
   }[% UNLESS loop.last %],[% END %][% END %]
 ];
 
-function td(text, attr) { document.write('<td' + (attr == null ? '' : ' ' + attr) + '>' + text + '</td>'); }
+function cats_score_init() {
+    CATS.App = new CATS.Controller();
+    CATS.App.register_adapter(new CATS.Adapter.Cats_rank_table([-1], {
+        contests: table_contests,
+        rows: table_rows
+    }));
+    CATS.App.register_rule(new CATS.Rule.Acm());
+    CATS.App.register_rule(new CATS.Rule.School());
 
-for(var i = 0; i < rank_table.length; ++i) {
-    var r = rank_table[i];
-    document.write('<tr align="center"' + (r.rc ? '' : ' class="even"') + '>');
-    td((i + 1) + '&nbsp;', 'align="right"');
-    td('<a href="[% href_console %];uf=' + r.id + '" title="' + r.t + '">' + r.n + '</a>', 'align="left"');
-    [% IF show_points %]
-    for (var j = 0; j < r.pt.length; ++j) td(r.pt[j]);
-    td(r.tp);
-    [% ELSE %]
-    for (var j = 0; j < r.tm.length; ++j) td('<p>' + r.tm[j] + '</p>' + r.td[j]);
-    td(r.ts); td(r.ttm);
-    [% END %]
-    td(r.pl); td(r.st, 'class="ts"'); document.write('</tr>');
-}
---></script>[% END %]
-[% END %]
-<tr [% UNLESS problem_stats_color %]class="even"[% END %]>
-  <td>&nbsp;</td>
-  [% IF show_points %]
-  <td>[% capt.average_points %]</td>[% FOREACH ps IN problem_stats %]<td align="center">[% ps.average_points %]</td>[% END %]
-  <td colspan="3">&nbsp;</td>
-  [% ELSE %]
-  <td>[% capt.successful_submits %]</td>
-  [% FOREACH ps IN problem_stats %]
-    <td align="center"><p>[% ps.total_accepted %] / [% ps.total_runs %]</p>[% ps.percent_accepted %]%</td>
-  [% END %]
-  <td colspan="4">&nbsp;</td>
-  [% END %]
-</tr>
-</table>
+    var skins_names = [
+        'header_rank_table', 'header_contests_list',
+        'default/table_acm', 'default/table_school', 'default/history', 'default/contests',
+        'ifmo/table_acm', 'ifmo/table_school', 'ifmo/history', 'ifmo/contests',
+        'codeforces/table_acm', 'codeforces/table_school', 'codeforces/history', 'codeforces/contests',
+        'cats/table_acm', 'cats/table_school', 'cats/history', 'cats/contests',
+    ];
+    var templates_names = [], templates =[];
+
+    for (var i = 0; i < skins_names.length; ++i) {
+        templates[skins_names[i]] = arguments[i];
+        console.log("template " + skins_names[i] + " loaded");
+    }
+
+    var view = new CATS.View(templates, './score/app/skins/');
+
+    //argument is optional
+    view.display({
+        with_header: [% IF is_root %] true [% ELSE %] false [% END %],
+        with_pagination: false,
+        with_css: false,
+        default_url_hash: "!show_rank_table/cats_rank_table/table/cats/" + contests_ids.join(",") + "/" + "[% lang %]"
+    });
+};
+
+</script>
+<script type="text/javascript" src="./js/libs/require.js" data-main="./js/cats-score.min.js"></script>
