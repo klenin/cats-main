@@ -16,6 +16,7 @@ sub rank_table
     my $template_name = shift;
     init_template('rank_table_content.html.tt');
     $t->param(printable => url_param('printable'));
+    $t->param(is_root => $is_root);
     my $rt = CATS::RankTable->new;
     $rt->parse_params;
     $rt->rank_table;
@@ -33,6 +34,15 @@ sub rank_table_frame
     my $cache = url_param('cache');
     my $show_points = url_param('points');
 
+    init_template('rank_table_content.html.tt');
+    $t->param(printable => url_param('printable'));
+    $t->param(is_root => $is_root);
+    my $rt = CATS::RankTable->new;
+    $rt->parse_params;
+    $rt->rank_table;
+    $contest->{title} = $rt->{title};
+    my $s = $t->output;
+
     #rank_table('main_rank_table.htm');
     #init_template('main_rank_table_content.htm');
     init_template('rank_table.html.tt');
@@ -48,7 +58,9 @@ sub rank_table_frame
         filter => Encode::decode_utf8(url_param('filter') || undef),
         show_prizes => (url_param('show_prizes') || 0),
     );
-    $t->param(href_rank_table_content => url_f('rank_table_content', @params));
+
+    $t->param(rank_table_content => $s);
+
     my $submenu =
         [ { href => url_f('rank_table_content', @params, printable => 1), item => res_str(538) } ];
     if ($is_jury)
