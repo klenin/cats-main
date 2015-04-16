@@ -115,9 +115,9 @@ PerlSetEnv CATS_DIR ${CATS_ROOT}/cgi-bin/
 EOF
 )
 
-sudo sh -c "echo '$APACHE_CONFIG' > /etc/apache2/sites-available/000-cats"
-sudo ln -s /etc/apache2/sites-{available,enabled}/000-cats
-[[ -e /etc/apache2/sites-enabled/000-default ]] && sudo rm /etc/apache2/sites-enabled/000-default
+sudo sh -c "echo '$APACHE_CONFIG' > /etc/apache2/sites-available/000-cats.conf"
+sudo ln -s /etc/apache2/sites-{available,enabled}/000-cats.conf
+[[ -e /etc/apache2/sites-enabled/000-default ]] && sudo rm /etc/apache2/sites-enabled/000-default.conf
 [[ -e /etc/apache2/mods-enabled/expires.load ]] || sudo ln -s /etc/apache2/mods-{available,enabled}/expires.load
 [[ -e /etc/apache2/mods-enabled/apreq2.load ]] || sudo ln -s /etc/apache2/mods-{available,enabled}/apreq2.load
 
