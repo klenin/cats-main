@@ -13,6 +13,7 @@ sub apply_test_rank
     #$v = '' unless defined $v;
     $v =~ s/%n/$rank/g;
     $v =~ s/%0n/sprintf("%02d", $rank)/eg;
+    $v =~ s/%00n/sprintf("%03d", $rank)/eg;
     $v =~ s/%%/%/g;
     $v;
 }
