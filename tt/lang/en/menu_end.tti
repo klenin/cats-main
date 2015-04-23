@@ -6,6 +6,6 @@
     docs => 'documentation',
     authors => 'Authors',
     dept => 'Department of informatics, mathematical and computer modelling',
-    university => 'Far Eastern Federal Universuty',
+    university => 'Far Eastern Federal University',
   })
 %]
