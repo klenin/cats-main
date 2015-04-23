@@ -37,14 +37,7 @@
   <h3>Ограничения</h3>
   [% pconstraints %]
 [% END %]
-[% IF extended_samples %]
-[% FOREACH samples %]
-<h4>Пример входного файла &#8470;[% rank %]</h4>
-<pre><code>[% in_file %]</code></pre>
-<h4>Пример выходного файла &#8470;[% rank %]</h4>
-<pre><code>[% out_file %]</code></pre>
-[% END %]
-[% ELSE %]
+[% IF samples.size %]
 <h3>Примеры тестов</h3>
 <table class="sample" id="sample[% id %]">
 <tr><th>&#8470;</th>
