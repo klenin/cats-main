@@ -12,11 +12,11 @@ use CATS::Misc qw(
 
 sub sanitize_clist { sort { $a <=> $b } grep /^\d+$/, @_ }
 
-sub is_unique_contest_group
+sub contest_group_by_clist
 {
     $dbh->selectrow_array(q~
         SELECT id FROM contest_groups WHERE clist = ?~, undef,
-        $_[0]) ? msg(90) : 1;
+        $_[0]);
 }
 
 sub contest_group_auto_new
@@ -24,7 +24,7 @@ sub contest_group_auto_new
     my @clist = sanitize_clist param('contests_selection');
     @clist && @clist < 100 or return;
     my $clist = join ',', @clist;
-    is_unique_contest_group($clist) or return;
+    return msg(90) if contest_group_by_clist($clist);
     my $names = $dbh->selectcol_arrayref(_u
         $sql->select('contests', 'title', { id => \@clist })) or return;
     my $name = join ' ', @{(
@@ -57,13 +57,13 @@ sub prize_params { map { $_ => param($_ . '_' . $_[0]) } qw(rank name) }
 
 sub prizes_edit_save
 {
-    my $cgid = param('id');
+    my $cgid = param('id') or return;
     my %cg = map { $_ => (param($_) || '') } contest_groups_fields;
 
     my @clist = sanitize_clist split ',', $cg{clist};
     @clist && @clist < 100 or return;
     $cg{clist} = join ',', @clist;
-    is_unique_contest_group($cg{clist}) or return;
+    return msg(90) if $cgid != (contest_group_by_clist($cg{clist}) // 0);
 
     $dbh->do(_u $sql->update('contest_groups', \%cg, { id => $cgid }));
     my $prizes = $dbh->selectall_arrayref(qq~
