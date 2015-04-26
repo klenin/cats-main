@@ -24,7 +24,7 @@ sub contest_group_auto_new
     my @clist = sanitize_clist param('contests_selection');
     @clist && @clist < 100 or return;
     my $clist = join ',', @clist;
-    return msg(90) if contest_group_by_clist($clist);
+    return msg(1090) if contest_group_by_clist($clist);
     my $names = $dbh->selectcol_arrayref(_u
         $sql->select('contests', 'title', { id => \@clist })) or return;
     my $name = join ' ', @{(
@@ -36,7 +36,7 @@ sub contest_group_auto_new
         VALUES (gen_id(key_seq, 1), ?, ?)~, undef,
         $name, $clist);
     $dbh->commit;
-    msg(89, $name);
+    msg(1089, $name);
 }
 
 sub contest_groups_fields () { qw(name clist) }
@@ -63,7 +63,7 @@ sub prizes_edit_save
     my @clist = sanitize_clist split ',', $cg{clist};
     @clist && @clist < 100 or return;
     $cg{clist} = join ',', @clist;
-    return msg(90) if $cgid != (contest_group_by_clist($cg{clist}) // 0);
+    return msg(1090) if $cgid != (contest_group_by_clist($cg{clist}) // 0);
 
     $dbh->do(_u $sql->update('contest_groups', \%cg, { id => $cgid }));
     my $prizes = $dbh->selectall_arrayref(qq~
