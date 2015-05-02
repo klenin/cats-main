@@ -195,10 +195,22 @@ sub accept_request
     generate_output($output_file);
 }
 
+use LWP::UserAgent;
+
 sub handler {
     my $r = shift;
-
     init_request($r);
+    if ((param('f') || '') eq 'proxy') {
+        my $url = param('u') or die;
+        $url =~ m|^http://neerc.ifmo.ru/| or die;
+        my $ua = LWP::UserAgent->new;
+        $ua->proxy(http => 'http://proxy.dvfu.ru:3128');
+        my $res = $ua->request(HTTP::Request->new(GET => $url));
+        $res->is_success or die $res->status_line;
+        CATS::Web::content_type('text/plain');
+        print $res->content;
+        return get_return_code();
+    }
     $CATS::Misc::request_start_time = [ Time::HiRes::gettimeofday ];
     CATS::DB::sql_connect;
     $dbh->rollback; # In a case of abandoned transaction
