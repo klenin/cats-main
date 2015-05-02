@@ -1,4 +1,5 @@
-[% USE Javascript %]
+[%- WRAPPER includes/jsonp.tti -%]
+[%- USE Javascript -%]
 {
 [% IF message %]"message": "[% message | $Javascript %]"
 [% ELSE %]
@@ -23,3 +24,4 @@
 ]
 [% END %]
 }
+[%-END -%]

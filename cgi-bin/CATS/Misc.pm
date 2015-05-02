@@ -196,8 +196,9 @@ sub init_template
         ('Content-Disposition' => "inline;filename=$base_name.ics") : ();
     #$template_file = $file_name;
     $t = CATS::Template->new($file_name, cats_dir(), $p);
-    $t->param(lang => lang);
-;}
+    my $json = param('json');
+    $t->param(lang => lang, $json =~ /^[a-zA-Z][a-zA-Z0-9_]+$/ ? (jsonp => $json) : ());
+}
 
 
 sub init_listview_template

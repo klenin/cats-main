@@ -1,3 +1,5 @@
+[%- WRAPPER includes/jsonp.tti -%]
 {
     "error": "bad sid"
 }
+[%- END -%]

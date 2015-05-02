@@ -1,3 +1,4 @@
+[%- WRAPPER includes/jsonp.tti -%]
 [%- USE Javascript -%]
 [
 [% FOREACH c IN console -%]
@@ -35,3 +36,4 @@
 [%- ',' UNLESS loop.last %]
 [% END -%]
 ]
+[%- END -%]

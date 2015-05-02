@@ -1,3 +1,4 @@
+[%- WRAPPER includes/jsonp.tti -%]
 [%- USE Javascript -%]
 [
 [% FOREACH users -%]
@@ -15,3 +16,4 @@
 [%- ',' UNLESS loop.last %]
 [% END -%]
 ]
+[%- END -%]

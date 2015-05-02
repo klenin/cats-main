@@ -1,4 +1,5 @@
-[% USE Javascript %]
+[%- WRAPPER includes/jsonp.tti -%]
+[%- USE Javascript -%]
 [
 [% FOREACH problems %]
 {
@@ -11,3 +12,4 @@
 }
 [% UNLESS loop.last %],[% END %][% END %]
 ]
+[%- END -%]
