@@ -95,6 +95,19 @@ sub problems_link_save
     $dbh->commit;
 }
 
+sub set_problem_import_diff
+{
+    my $pid = shift;
+    my $log = CATS::Problem::get_log($pid, undef, 1);
+    if (@$log) {
+        my $log_line = shift @$log;
+        $t->param(problem_import_diff => {
+            %$log_line,
+            href_commit => url_f('problem_history', pid => $pid, h => $log_line->{sha}),
+        });
+    }
+}
+
 sub problems_replace
 {
     my $pid = param('problem_id')
@@ -115,7 +128,9 @@ sub problems_replace
     my $error = $p->load($fname, $cid, $pid, 1, param('message'), param('is_amend'));
     $t->param(problem_import_log => $p->encoded_import_log());
     #unlink $fname;
-    if ($error) {
+    if (!$error) {
+        set_problem_import_diff($pid);
+    } else {
         $dbh->rollback;
         return msg(1008);
     }
@@ -144,8 +159,13 @@ sub problems_add_new
     $t->param(problem_import_log => $p->encoded_import_log());
     $error ||= !add_problem_to_contest($p->{id}, $problem_code);
 
-    $error ? $dbh->rollback : $dbh->commit;
-    msg(1008) if $error;
+    if (!$error) {
+        $dbh->commit;
+        set_problem_import_diff($p->{id});
+    } else {
+        $dbh->rollback;
+        msg(1008);
+    }
     unlink $fname;
 }
 

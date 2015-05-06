@@ -4,6 +4,7 @@
     want_to_delete => 'Вы действительно желаете удалить задачу ',
     no_problem_replace => 'Не выбрана задача для замены',
     problem_import_log => 'Лог загрузки задачи',
+    problem_import_diff => 'Изменения',
     dev_env_detected => 'Определена среда разработки',
     problem_history => 'история',
     console => 'консоль',

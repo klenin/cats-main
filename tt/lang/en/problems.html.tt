@@ -4,6 +4,7 @@
     want_to_delete => 'Do you really want to delete problem',
     no_problem_replace => 'No problem selected to replace',
     problem_import_log => 'Problem import log',
+    problem_import_diff => 'Diff',
     dev_env_detected => 'Development environment detected',
     console => 'console',
     problem_history => 'history',
