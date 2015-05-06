@@ -19,11 +19,10 @@ package CATS::Problem::Repository;
 
 use strict;
 use warnings;
-use File::Temp qw(tempdir tempfile);
-use Archive::Zip qw(:ERROR_CODES);
+
 use Fcntl ':mode';
 use File::Path;
-use File::stat;
+use File::Temp qw(tempdir tempfile);
 use File::Copy::Recursive qw(dircopy);
 use CATS::Problem::Authors;
 use CATS::Utils qw(untabify unquote file_type file_type_long chop_str);
@@ -634,14 +633,6 @@ sub commit_info
     return { info => \%co, $self->commif_diff(%co, encoding => $enc), log => $self->{log} };
 }
 
-sub extract_zip
-{
-    my ($path, $zip_name) = @_;
-    my $zip = Archive::Zip->new();
-    $zip->read($zip_name) == AZ_OK or die "open zip '$zip_name' failed!\n";
-    $zip->extractTree('', "$path/") == AZ_OK or die "can't extract '$zip_name' to $path\n";
-}
-
 sub new
 {
     my ($class, %opts) = @_;
@@ -664,6 +655,14 @@ sub git
     my @lines = `git --git-dir=$self->{git_dir} --work-tree=$self->{dir} $git_tail`;  #Apache sub procces
     $self->{logger}->note(join '', @lines) if exists $self->{logger};
     return @lines;
+}
+
+sub find_files
+{
+    my ($self, $regexp) = @_;
+    my @files = $self->git('ls-tree HEAD --name-only');
+    chomp $_ foreach @files;
+    return grep /$regexp/, @files;
 }
 
 sub log
@@ -715,36 +714,33 @@ sub new_repo
     return $self;
 }
 
+sub get_dir { $_[0]->{dir} }
+
 sub delete
 {
     my ($self) = @_;
-    die "Git repository doesn't exist" unless -d $self->{dir};
-    rmtree($self->{dir});
+    rmtree($self->{dir}) or warn q~Git repository doesn't exist~;
 }
 
 sub init
 {
-    my ($self, $problem, %opts) = @_;
+    my ($self, %opts) = @_;
     mkdir $self->{dir} or die "Unable to create repo dir: $!";
     $self->git('init');
-    $self->add($problem, message => 'Initial commit');
+    return $self;
+}
+
+sub rm
+{
+    my ($self, @args) = @_;
+    $self->git('rm ' . join(' ', @args));
     return $self;
 }
 
 sub add
 {
-    my ($self, $problem, %opts) = @_;
-    my $tmpdir = tempdir($tmp_template, TMPDIR => 1, CLEANUP => 1);
-    extract_zip($tmpdir, $problem->{zip});
-    $self->git('rm . -r --ignore-unmatch');
-    dircopy($tmpdir, $self->{dir});
-    if (!($self->{author_name} && $self->{author_email})) {
-        my ($git_author_name, $git_author_email) = get_git_author_info(parse_author($problem->{author}));
-        $self->{author_name} ||= $git_author_name;
-        $self->{author_email} ||= $git_author_email;
-        $self->{logger}->warning('git user data is not correctly configured.') if exists $self->{logger};
-    }
-    $self->commit($opts{message} || 'Update task', $opts{is_amend} || 0);
+    my $self = shift;
+    $self->git('add -A');
     return $self;
 }
 
@@ -757,16 +753,43 @@ sub move_history
     return $self;
 }
 
+sub get_remote_url
+{
+    my $self = shift;
+    my ($remote_url) = $self->git('config remote.origin.url');
+    chomp $remote_url;
+    return $remote_url;
+}
+
 sub commit
 {
-    my ($self, $message, $is_amend) = @_;
+    my ($self, $problem_author, $message, $is_amend) = @_;
+    if (!($self->{author_name} && $self->{author_email})) {
+        my ($git_author_name, $git_author_email) = get_git_author_info(parse_author($problem_author));
+        $self->{author_name} ||= $git_author_name;
+        $self->{author_email} ||= $git_author_email;
+        $self->{logger}->warning('git user data is not correctly configured.') if exists $self->{logger};
+    }
     $self->git(qq~config user.name "$self->{author_name}"~);
     $self->git(qq~config user.email "$self->{author_email}"~);
-    $self->git('add -A');
     my $args = $is_amend ? '--amend' : '';
     $self->git(qq~commit $args -m "$message"~);
     $self->git('gc');
     return $self;
 }
+
+sub clone
+{
+    my ($link, $dir) = @_;
+    my @lines = `git clone $link $dir`;
+    return (CATS::Problem::Repository->new(dir => $dir), @lines);
+}
+
+sub pull
+{
+    my ($self, $remote_url) = @_;
+    $self->git("pull $remote_url master");
+}
+
 
 1;
