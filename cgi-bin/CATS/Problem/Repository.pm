@@ -804,7 +804,8 @@ sub clone
 sub pull
 {
     my ($self, $remote_url) = @_;
-    $self->git("pull $remote_url master");
+    $self->git("fetch $remote_url");
+    $self->git('merge origin/master');
 }
 
 1;
