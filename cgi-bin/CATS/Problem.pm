@@ -91,9 +91,10 @@ sub show_commit
 
 sub get_log
 {
-    my ($pid, $sha, $amount) = @_;
+    my ($pid, $sha, $max_count) = @_;
     ($pid, $sha) = get_repo($pid, $sha);
-    return CATS::Problem::Repository->new(dir => cats_dir() . "$cats::repos_dir$pid/")->log(sha => $sha, amount => $amount);
+    return CATS::Problem::Repository->new(
+        dir => cats_dir() . "$cats::repos_dir$pid/")->log(sha => $sha, max_count => $max_count);
 }
 
 

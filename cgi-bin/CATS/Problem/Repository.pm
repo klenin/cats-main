@@ -670,8 +670,8 @@ sub log
 {
     my ($self, %opts) = @_;
     my $sha = $opts{sha} // '';
-    my $amount = $opts{amount} ? "-$opts{amount}" : '';
-    my $s = Encode::decode_utf8(join '', $self->git("log -z $amount --format=format:'%H||%h||%an||%ae||%at||%ct||%B' $sha"));
+    my $max_count = $opts{max_count} ? "--max-count=$opts{max_count} " : '';
+    my $s = Encode::decode_utf8(join '', $self->git("log -z $max_count--format=format:'%H||%h||%an||%ae||%at||%ct||%B' $sha"));
     my @out = ();
     foreach my $log (split "\0", $s) {
         my ($sha, $abrev_sha, $author, $email, $adate, $cdate, $message) = split /\|\|/, $log;
