@@ -12,4 +12,6 @@ our $db_dsn = 'dbi:Firebird:dbname=<path-to-your-database>;host=<your-host>;ib_c
 our $db_user = '<your-username>';
 our $db_password = '<your-password>';
 
+our $proxy = '<your-proxy-server>';
+
 1;

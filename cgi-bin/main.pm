@@ -29,6 +29,7 @@ use lib $cats_lib_dir;
 
 use CATS::Web qw(param url_param redirect init_request get_return_code);
 use CATS::DB;
+use CATS::Config;
 use CATS::Constants;
 use CATS::BinaryFile;
 use CATS::DevEnv;
@@ -204,7 +205,7 @@ sub handler {
         my $url = param('u') or die;
         $url =~ m|^http://neerc.ifmo.ru/| or die;
         my $ua = LWP::UserAgent->new;
-        $ua->proxy(http => 'http://proxy.dvfu.ru:3128');
+        $ua->proxy(http => $CATS::Config::proxy) if $CATS::Config::proxy;
         my $res = $ua->request(HTTP::Request->new(GET => $url));
         $res->is_success or die $res->status_line;
         CATS::Web::content_type('text/plain');
