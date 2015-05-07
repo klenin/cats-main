@@ -24,6 +24,7 @@ use Fcntl ':mode';
 use File::Path;
 use File::Temp qw(tempdir tempfile);
 use File::Copy::Recursive qw(dircopy);
+
 use CATS::Problem::Authors;
 use CATS::Utils qw(untabify unquote file_type file_type_long chop_str);
 
@@ -649,11 +650,19 @@ sub set_repo
     return $self;
 }
 
+sub exec_or_die
+{
+    # Apache subprocces, capture both stdout and stderr.
+    my @r = `$_[0] 2>&1`;
+    die join "\n", $_[0], @r, "Error $?" if $?;
+    @r;
+}
+
 sub git
 {
     my ($self, $git_tail) = @_;
-    my @lines = `git --git-dir=$self->{git_dir} --work-tree=$self->{dir} $git_tail`;  #Apache sub procces
-    $self->{logger}->note(join '', @lines) if exists $self->{logger};
+    my @lines = exec_or_die("git --git-dir=$self->{git_dir} --work-tree=$self->{dir} $git_tail");
+    $self->{logger}->note(join "\n", @lines) if exists $self->{logger};
     return @lines;
 }
 
@@ -788,7 +797,7 @@ sub commit
 sub clone
 {
     my ($link, $dir) = @_;
-    my @lines = `git clone $link $dir`;
+    my @lines = exec_or_die("git clone $link $dir");
     return (CATS::Problem::Repository->new(dir => $dir), @lines);
 }
 
@@ -797,6 +806,5 @@ sub pull
     my ($self, $remote_url) = @_;
     $self->git("pull $remote_url master");
 }
-
 
 1;

@@ -42,7 +42,7 @@ sub init
     my $tmpdir = tempdir($tmp_repo_template, TMPDIR => 1, CLEANUP => 1);
     $self->{dir} = $tmpdir;
     ($self->{repo}, my @log) = CATS::Problem::Repository::clone($self->{link}, "$tmpdir/");
-    $self->{logger}->note(join '', @log);
+    $self->{logger}->note(join "\n", @log);
 }
 
 sub find_members
