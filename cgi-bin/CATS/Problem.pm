@@ -5,25 +5,23 @@ use strict;
 use warnings;
 
 use Encode;
-use Archive::Zip qw(:ERROR_CODES :CONSTANTS);
 use XML::Parser::Expat;
 use JSON::XS;
 
 use CATS::Constants;
 use CATS::DB;
-use CATS::Misc qw($git_author_name $git_author_email cats_dir msg);
-use CATS::BinaryFile;
+use CATS::Misc qw(cats_dir msg);
 use CATS::StaticPages;
 use CATS::DevEnv;
 use FormalInput;
 
 use fields qw(
-    contest_id id import_log debug problem checker
+    contest_id id import_log debug problem source checker
     statement constraints input_format output_format formal_input json_data explanation
     tests testsets samples objects keywords
     imports solutions generators modules pictures attachments
     test_defaults current_tests current_sample gen_groups
-    encoding stml zip zip_archive old_title replace tag_stack has_checker de_list run_method
+    encoding stml zip zip_archive old_title replace repo tag_stack has_checker de_list run_method
 );
 
 use CATS::Problem::Tests;
@@ -63,86 +61,66 @@ sub encoded_import_log
 }
 
 
-sub get_repo
+sub get_repo_id
 {
     my ($id, $sha) = @_;
     my ($db_id, $db_sha) = $dbh->selectrow_array(qq~
        SELECT repo, commit_sha FROM problems WHERE id = ?~, undef, $id);
     my $p = cats_dir() . $cats::repos_dir;
-    die 'Repository not found' unless (($db_id ne '' && -d "$p$db_id/") || -d "$p$id/");
-    return $db_id ne '' ? ($db_id, $db_sha) : ($id, $sha // '');
+    warn 'Repository not found' unless (($db_id ne '' && -d "$p$db_id/") || -d "$p$id/");
+    return $db_id =~ '/\d+/' ? ($db_id, $db_sha) : ($id, $sha // '');
 }
 
+
+sub get_repo
+{
+    my ($pid, $sha, $need_find, %opts) = @_;
+    ($pid, $sha) = get_repo_id($pid, $sha) if $need_find;
+    $opts{dir} = cats_dir . "$cats::repos_dir$pid/";
+    return CATS::Problem::Repository->new(%opts);
+}
 
 sub get_repo_archive
 {
     my ($pid, $sha) = @_;
-    ($pid) = get_repo($pid);
+    ($pid) = get_repo_id($pid);
     return CATS::Problem::Repository->new(dir => cats_dir . "$cats::repos_dir$pid/")->archive($sha);
 }
 
 
 sub show_commit
 {
-    my ($pid) = get_repo(@_);
-    return CATS::Problem::Repository->new(dir => cats_dir() . "$cats::repos_dir$pid/")->commit_info($_[1], $_[2]);
+    my ($pid, $sha, $enc) = @_;
+    return get_repo($pid, $sha, 1)->commit_info($sha, $enc);
 }
 
 
 sub get_log
 {
     my ($pid, $sha, $max_count) = @_;
-    ($pid, $sha) = get_repo($pid, $sha);
-    return CATS::Problem::Repository->new(
-        dir => cats_dir() . "$cats::repos_dir$pid/")->log(sha => $sha, max_count => $max_count);
+    ($pid, $sha) = get_repo_id(@_);
+    return get_repo($pid, $sha, 0)->log(sha => $sha, max_count => $max_count);
 }
 
 
 sub add_history
 {
-    (my CATS::Problem $self, my $fname, my $message, my $is_amend) = @_;
-    my $problem = {
-        zip => $fname,
-        id => $self->{id},
-        title => $self->{problem}{title},
-        author => $self->{problem}{author},
-    };
-    my $path = cats_dir() . $cats::repos_dir;
-    my $p = CATS::Problem::Repository->new(
-        dir => "$path/$self->{id}/",
-        logger => $self,
-        author_name => $git_author_name,
-        author_email => $git_author_email
-    );
-    if ($self->{replace}) {
-        my ($repo_id, $sha) = get_repo($self->{id});
-        $p->move_history(from => "$path/$repo_id/", sha => $sha) unless $repo_id == $self->{id};
-        $p->add($problem, message => $message, is_amend => $is_amend);
-        $dbh->do(qq~
-            UPDATE problems SET repo = ?, commit_sha = ? WHERE id = ?~, undef, '', '', $self->{id})
-            unless $repo_id == $self->{id};
-        $dbh->commit;
-    }
-    else {
-        $p->init($problem);
-    }
+    my ($self, $message, $is_amend) = @_;
+    $self->{source}->finalize($dbh, $self, $message, $is_amend, get_repo_id($self->{id}));
 }
 
 
 sub load
 {
     my CATS::Problem $self = shift;
-    (my $fname, $self->{contest_id}, $self->{id}, $self->{replace}, my $message, my $is_amend) = @_;
+    ($self->{source}, $self->{contest_id}, $self->{id}, $self->{replace}, $self->{repo}, my $message, my $is_amend) = @_;
 
     eval {
-        CATS::BinaryFile::load($fname, \$self->{zip_archive})
-            or $self->error("open '$fname' failed: $!");
+        $self->{source}->init;
 
-        $self->{zip} = Archive::Zip->new();
-        $self->{zip}->read($fname) == AZ_OK
-            or $self->error("read '$fname' failed -- probably not a zip archive");
+        $self->{zip_archive} = $self->{source}->get_zip;
 
-        my @xml_members = $self->{zip}->membersMatching('.*\.xml$');
+        my @xml_members = $self->{source}->find_members('.*\.xml$');
 
         $self->error('*.xml not found') if !@xml_members;
         $self->error('found several *.xml in archive') if @xml_members > 1;
@@ -155,7 +133,7 @@ sub load
             Char => sub { ${$self->{stml}} .= CATS::Utils::escape_xml($_[1]) if $self->{stml} },
             XMLDecl => sub { $self->{encoding} = $_[2] },
         );
-        $parser->parse($self->read_member($xml_members[0]));
+        $parser->parse($self->{source}->read_member($xml_members[0]));
     };
 
     if ($@) {
@@ -166,7 +144,7 @@ sub load
     else {
         unless ($self->{debug}) {
             $dbh->commit;
-            eval { $self->add_history($fname, $message, $is_amend); };
+            eval { $self->add_history($message, $is_amend); };
             $self->note("Warning: $@") if $@;
         }
         $self->note('Success import');
@@ -200,7 +178,7 @@ sub delete
     else {
         # Cascade into contest_problems and reqs.
         $dbh->do(q~DELETE FROM problems WHERE id = ?~, undef, $pid);
-        CATS::Problem::Repository->new(dir => cats_dir() . "$cats::repos_dir$pid/")->delete;
+        get_repo($pid, undef, 0)->delete;
     }
 
     CATS::StaticPages::invalidate_problem_text(cid => $old_contest, cpid => $cpid);
@@ -302,9 +280,7 @@ sub on_start_tag
         if ($el eq 'include') {
             my $name = $atts{src} or
                 return $self->error(q~Missing required 'src' attribute of 'include' tag~);
-            my $member = $self->{zip}->memberNamed($name)
-                or $self->error("Invalid 'include' reference: '$name'");
-            ${$self->{stml}} .= Encode::decode($self->{encoding}, $self->read_member($member));
+            ${$self->{stml}} .= Encode::decode($self->{encoding}, $self->{source}->read_member($name, "Invalid 'include' reference: '$name'"));
             return;
         }
         ${$self->{stml}} .=
@@ -658,9 +634,7 @@ sub sample_in_out
 {
     (my CATS::Problem $self, my $atts, my $in_out) = @_;
     if (my $src = $atts->{src}) {
-        my $member = $self->{zip}->memberNamed($src)
-            or $self->error("Invalid sample $in_out reference: '$src'");
-        $self->{current_sample}->{$in_out} = $self->read_member($member, $self->{debug});
+        $self->{current_sample}->{$in_out} = $self->{source}->read_member($src, "Invalid sample $in_out reference: '$src'");
     }
     else {
         $self->{stml} = \$self->{current_sample}->{$in_out};
@@ -741,35 +715,15 @@ sub error($)
 }
 
 
-sub read_member
-{
-    (my CATS::Problem $self, my $member, my $debug) = @_;
-    $debug and return $member->fileName();
-
-    $member->desiredCompressionMethod(COMPRESSION_STORED);
-    my $status = $member->rewindData();
-    $status == AZ_OK or $self->error("code $status");
-
-    my $data = '';
-    while (!$member->readIsDone()) {
-        (my $buffer, $status) = $member->readChunk();
-        $status == AZ_OK || $status == AZ_STREAM_END or $self->error("code $status");
-        $data .= $$buffer;
-    }
-    $member->endRead();
-
-    return $data;
-}
-
-
 sub read_member_named
 {
     (my CATS::Problem $self, my %p) = @_;
+    $self->{debug} and return $p{name};
 
-    my $member = $self->{zip}->memberNamed($p{name})
-        or $self->error("Invalid $p{kind} reference: '$p{name}'");
-
-    return (src => ($self->{debug} ? $member : $self->read_member($member)), path => $p{name});
+    return (
+        src => $self->{source}->read_member($p{name}, "Invalid $p{kind} reference: '$p{name}'"),
+        path => $p{name}
+    );
 }
 
 
@@ -803,7 +757,7 @@ sub end_tag_Problem
             title=?, lang=?, time_limit=?, memory_limit=?, difficulty=?, author=?, input_file=?, output_file=?,
             statement=?, pconstraints=?, input_format=?, output_format=?, formal_input=?, json_data=?, explanation=?, zip_archive=?,
             upload_date=CURRENT_TIMESTAMP, std_checker=?, last_modified_by=?,
-            max_points=?, run_method=?, hash=NULL
+            max_points=?, run_method=?, repo=?, hash=NULL
         WHERE id = ?~
     : q~
         INSERT INTO problems (
@@ -811,9 +765,9 @@ sub end_tag_Problem
             title, lang, time_limit, memory_limit, difficulty, author, input_file, output_file,
             statement, pconstraints, input_format, output_format, formal_input, json_data, explanation, zip_archive,
             upload_date, std_checker, last_modified_by,
-            max_points, run_method, id
+            max_points, run_method, repo, id
         ) VALUES (
-            ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP,?,?,?,?,?
+            ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP,?,?,?,?,?,?
         )~;
 
     my $c = $dbh->prepare($sql);
@@ -827,6 +781,7 @@ sub end_tag_Problem
     $c->bind_param($i++, $CATS::Misc::uid);
     $c->bind_param($i++, $self->{problem}->{max_points});
     $c->bind_param($i++, $self->{run_method});
+    $c->bind_param($i++, $self->{repo});
     $c->bind_param($i++, $self->{id});
     $c->execute;
 

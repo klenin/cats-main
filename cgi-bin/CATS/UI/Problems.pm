@@ -15,6 +15,8 @@ use CATS::Utils qw(url_function file_type date_to_iso encoding_param);
 use CATS::Data qw(:all);
 use CATS::StaticPages;
 use CATS::Problem::Text;
+use CATS::Problem::Source::Zip;
+use CATS::Problem::Source::Git;
 
 sub problems_change_status
 {
@@ -115,17 +117,20 @@ sub problems_replace
     my $file = param('zip') || '';
     $file =~ /\.(zip|ZIP)$/
         or return msg(53);
-    my ($contest_id, $old_title) = $dbh->selectrow_array(qq~
-        SELECT contest_id, title FROM problems WHERE id=?~, {}, $pid);
+    my ($contest_id, $old_title, $repo) = $dbh->selectrow_array(qq~
+        SELECT contest_id, title, repo FROM problems WHERE id=?~, {}, $pid);
     # Forbid replacing linked problems. Firstly for robustness,
     # secondly for security -- to avoid checking is_jury($contest_id).
     $contest_id == $cid
         or return msg(117);
-    my $fname = save_uploaded_file('zip');
 
     my CATS::Problem $p = CATS::Problem->new;
+    return if CATS::Problem::get_repo($pid, undef, 1, logger => CATS::Problem->new)->is_remote;
+
+    my $fname = save_uploaded_file('zip');
+
     $p->{old_title} = $old_title unless param('allow_rename');
-    my $error = $p->load($fname, $cid, $pid, 1, param('message'), param('is_amend'));
+    my $error = $p->load(CATS::Problem::Source::Zip->new($fname, $p), $cid, $pid, 1, $repo, param('message'), param('is_amend'));
     $t->param(problem_import_log => $p->encoded_import_log());
     #unlink $fname;
     if (!$error) {
@@ -141,13 +146,9 @@ sub problems_replace
     msg(1007);
 }
 
-sub problems_add_new
+sub problems_add
 {
-    my $file = param('zip') || '';
-    $file =~ /\.(zip|ZIP)$/
-        or return msg(53);
-    my $fname = save_uploaded_file('zip');
-
+    my ($source_name, $is_remote) = @_;
     my $problem_code;
     if (!$contest->is_practice) {
         ($problem_code) = $contest->unused_problem_codes
@@ -155,7 +156,9 @@ sub problems_add_new
     }
 
     my CATS::Problem $p = CATS::Problem->new;
-    my $error = $p->load($fname, $cid, new_id, 0, 0);
+    my $error = $is_remote
+              ? $p->load(CATS::Problem::Source::Git->new($source_name, $p), $cid, new_id, 0, $source_name)
+              : $p->load(CATS::Problem::Source::Zip->new($source_name, $p), $cid, new_id, 0, undef);
     $t->param(problem_import_log => $p->encoded_import_log());
     $error ||= !add_problem_to_contest($p->{id}, $problem_code);
 
@@ -166,7 +169,23 @@ sub problems_add_new
         $dbh->rollback;
         msg(1008);
     }
+}
+
+sub problems_add_new
+{
+    my $file = param('zip') || '';
+    $file =~ /\.(zip|ZIP)$/
+        or return msg(53);
+    my $fname = save_uploaded_file('zip');
+    problems_add($fname, 0);
     unlink $fname;
+}
+
+sub problems_add_new_remote
+{
+    my $url = param('remote_url') || '';
+    $url or return msg(1091);
+    problems_add($url, 1);
 }
 
 sub download_problem
@@ -532,6 +551,7 @@ sub problems_frame_jury_action
     defined param('change_code') and return problems_change_code;
     defined param('replace') and return problems_replace;
     defined param('add_new') and return problems_add_new;
+    defined param('add_remote') and return problems_add_new_remote;
     defined param('std_solution') and return problems_submit_std_solution;
     defined param('mass_retest') and return problems_mass_retest;
     my $cpid = url_param('delete');
@@ -708,7 +728,7 @@ sub problems_frame
     my $test_count_sql = $is_jury ? '(SELECT COUNT(*) FROM tests T WHERE T.problem_id = P.id) AS test_count,' : '';
     my $sth = $dbh->prepare(qq~
         SELECT
-            CP.id AS cpid, P.id AS pid,
+            CP.id AS cpid, P.id AS pid, P.repo,
             ${select_code} AS code, P.title AS problem_name, OC.title AS contest_name,
             ($reqs_count_sql $cats::st_accepted$account_condition) AS accepted_count,
             ($reqs_count_sql $cats::st_wrong_answer$account_condition) AS wrong_answer_count,
@@ -754,6 +774,7 @@ sub problems_frame
     {
         my $c = $_[0]->fetchrow_hashref or return ();
         $c->{status} ||= 0;
+        my $remote_url = defined $c->{repo} && $c->{repo} !~ '\d+' ? $c->{repo} : undef;
         return (
             href_delete => url_f('problems', 'delete' => $c->{cpid}),
             href_change_status => url_f('problems', 'change_status' => $c->{cpid}),
@@ -778,6 +799,7 @@ sub problems_frame
             code => $c->{code},
             problem_name => $c->{problem_name},
             is_linked => $c->{is_linked},
+            remote_url => $remote_url,
             usage_count => $c->{usage_count},
             contest_name => $c->{contest_name},
             accept_count => $c->{accepted_count},
@@ -861,7 +883,19 @@ sub problem_history_frame
     init_listview_template('problem_history', 'problem_history', auto_ext('problem_history'));
     $t->param(problem_title => $title, pid => $pid);
 
+    my $repo = CATS::Problem::get_repo($pid, undef, 1, logger => CATS::Problem->new);
+
     problems_replace if defined param('replace');
+
+    my $remote_url = $repo->get_remote_url;
+    if (defined param('pull') && $remote_url) {
+        $repo->pull($remote_url);
+        $t->param(problem_import_log => $repo->{logger}->encoded_import_log);
+    }
+    $t->param(
+        pid => $pid,
+        remote_url => $remote_url,
+    );
 
     my @cols = (
         { caption => res_str(1400), width => '25%', order_by => 'author' },

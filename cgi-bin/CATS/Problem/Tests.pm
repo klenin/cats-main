@@ -103,9 +103,7 @@ sub do_In_src
 {
     my ($self, $test, $attr) = @_;
     my $src = apply_test_rank($attr, $test->{rank});
-    my $member = $self->{zip}->memberNamed($src)
-        or $self->error("Invalid test input file reference: '$src'");
-    ('in_file', $self->read_member($member, $self->{debug}));
+    ('in_file', $self->{source}->read_member($src, "Invalid test input file reference: '$src'"));
 }
 
 
@@ -168,9 +166,7 @@ sub start_tag_Out
         for (@t)
         {
             my $src = apply_test_rank($atts->{'src'}, $_->{rank});
-            my $member = $self->{zip}->memberNamed($src)
-                or $self->error("Invalid test output file reference: '$src'");
-            $self->set_test_attr($_, 'out_file', $self->read_member($member, $self->{debug}));
+            $self->set_test_attr($_, 'out_file', $self->{source}->read_member($src, "Invalid test output file reference: '$src'"));
         }
     }
     if (defined $atts->{'use'})

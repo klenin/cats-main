@@ -191,6 +191,7 @@
 1136 "Must remove all links before removing problem."
 137 "Превышено максимально разрешённое число попыток. Обратитесь в жюри"
 138 "Сейчас проходит официальный турнир '%s', загрузка попыток из других турниров временно запрещена"
+1091 "Remote repository is not specified"
 1400 "Author"
 1401 "Commit date"
 1402 "SHA-1"
