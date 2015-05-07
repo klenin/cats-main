@@ -8,6 +8,8 @@ package CATS::Config;
 # db_user - username, used in connection to DB
 # db_password - password, used in connection to DB
 
-$db_dsn="dbi:Firebird:dbname=<path-to-your-database>;host=<your-host>;ib_charset=UTF8;";
-$db_user="<your-username>";
-$db_password="<your-password>";
+our $db_dsn = 'dbi:Firebird:dbname=<path-to-your-database>;host=<your-host>;ib_charset=UTF8;';
+our $db_user = '<your-username>';
+our $db_password = '<your-password>';
+
+1;
