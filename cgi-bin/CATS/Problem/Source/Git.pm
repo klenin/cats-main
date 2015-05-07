@@ -5,11 +5,10 @@ use warnings;
 
 use File::Temp qw(tempdir);
 use File::Copy::Recursive qw(dircopy);
-use Archive::Zip qw(:ERROR_CODES :CONSTANTS);
 
 use CATS::Constants;
 use CATS::BinaryFile;
-use CATS::Misc qw($git_author_name $git_author_email cats_dir);
+use CATS::Misc qw(cats_dir);
 use CATS::Problem::Repository;
 
 my $tmp_repo_template = 'repoXXXXXX';
