@@ -14,7 +14,7 @@ BEGIN
 use Carp;
 use DBD::Firebird;
 
-use CATS::Connect;
+use CATS::Config;
 
 use vars qw($dbh $sql);
 
@@ -46,11 +46,11 @@ my $next_id = 100;
 sub new_id
 {
     return $next_id++ unless $dbh;
-    if ($CATS::Connect::db_dsn =~ /Firebird/)
+    if ($CATS::Config::db_dsn =~ /Firebird/)
     {
         $dbh->selectrow_array(q~SELECT GEN_ID(key_seq, 1) FROM RDB$DATABASE~);
     }
-    elsif ($CATS::Connect::db_dsn =~ /Oracle/)
+    elsif ($CATS::Config::db_dsn =~ /Oracle/)
     {
         $dbh->selectrow_array(q~SELECT key_seq.nextval FROM DUAL~);
     }
@@ -63,7 +63,7 @@ sub new_id
 sub sql_connect
 {
     $dbh ||= DBI->connect(
-        $CATS::Connect::db_dsn, $CATS::Connect::db_user, $CATS::Connect::db_password,
+        $CATS::Config::db_dsn, $CATS::Config::db_user, $CATS::Config::db_password,
         {
             AutoCommit => 0,
             LongReadLen => 1024*1024*20,

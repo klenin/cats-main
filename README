@@ -13,6 +13,6 @@ under. Then simply execute script:
 
 $ ./deploy.bash
 
-And if everything is ok you should copy Connect.pm.template to Connect.pm in
+And if everything is ok you should copy Config.pm.template to Config.pm in
 cgi-bin/CATS/ and adjust connection settings to your DB. Congratulations, you
 now have a working CATS setup.

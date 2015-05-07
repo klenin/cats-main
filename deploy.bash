@@ -133,13 +133,13 @@ chmod g+rw static tt cgi-bin/download/{,att,img,pr} cgi-bin/rank_cache{,/r}
 
 sudo service apache2 restart
 
-CONNECT_NAME="Connect.pm"
-CONNECT_ROOT="${CATS_ROOT}/cgi-bin/CATS"
+CONFIG_NAME="Config.pm"
+CONFIG_ROOT="${CATS_ROOT}/cgi-bin/CATS"
 CREATE_DB_NAME="create_db.sql"
 CREATE_DB_ROOT="${CATS_ROOT}/sql/interbase"
 
-CONNECT="$CONNECT_ROOT/$CONNECT_NAME"
-cp "$CONNECT_ROOT/${CONNECT_NAME}.template" $CONNECT
+CONFIG="$CONFIG_ROOT/$CONFIG_NAME"
+cp "$CONFIG_ROOT/${CONFIG_NAME}.template" $CONFIG
 
 CREATE_DB="$CREATE_DB_ROOT/$CREATE_DB_NAME"
 cp "$CREATE_DB_ROOT/${CREATE_DB_NAME}.template" $CREATE_DB
@@ -154,8 +154,8 @@ done
 
 if [ "$answer" = "n" ]; then
    echo -e "Setup is done, you need to do following manualy:\n"
-   echo -e " 1. Navigate to ${CONNECT_ROOT}/"
-   echo -e " 2. Adjust your database connection settings in ${CONNECT_NAME}"
+   echo -e " 1. Navigate to ${CONFIG_ROOT}/"
+   echo -e " 2. Adjust your database connection settings in ${CONFIG_NAME}"
    echo -e " 3. Navigate to ${CREATE_DB_ROOT}/"
    echo -e " 4. Adjust your database connection settings in ${CREATE_DB_NAME} and create database\n"
    exit 0
@@ -166,10 +166,10 @@ echo -n "your-host: " && read db_host
 echo -n "your-db-username: "&& read db_user
 echo -n "your-db-password: " && read db_pass
 
-sed -i -e "s/<path-to-your-database>/$path_to_db/g" $CONNECT
-sed -i -e "s/<your-host>/$db_host/g" $CONNECT
-sed -i -e "s/<your-username>/$db_user/g" $CONNECT
-sed -i -e "s/<your-password>/$db_pass/g" $CONNECT
+sed -i -e "s/<path-to-your-database>/$path_to_db/g" $CONFIG
+sed -i -e "s/<your-host>/$db_host/g" $CONFIG
+sed -i -e "s/<your-username>/$db_user/g" $CONFIG
+sed -i -e "s/<your-password>/$db_pass/g" $CONFIG
 
 sed -i -e "s/<path-to-your-database>/$path_to_db/g" $CREATE_DB
 sed -i -e "s/<your-username>/$db_user/g" $CREATE_DB

@@ -481,13 +481,13 @@ __END__
 :cats_setup
 @setlocal
 	@echo Configuring CATS...
-	@set CONNECT_NAME=Connect.pm
-	@set CONNECT_ROOT=%CATS_ROOT%\cgi-bin\CATS
+	@set CONFIG_NAME=Config.pm
+	@set CONFIG_ROOT=%CATS_ROOT%\cgi-bin\CATS
 	@set CREATE_DB_NAME=create_db.sql
 	@set CREATE_DB_ROOT=%CATS_ROOT%\sql\interbase
 
-	@set CONNECT="%CONNECT_ROOT%\%CONNECT_NAME%"
-	@copy "%CONNECT_ROOT%\%CONNECT_NAME%.template" %CONNECT% > nul
+	@set CONFIG="%CONFIG_ROOT%\%CONFIG_NAME%"
+	@copy "%CONFIG_ROOT%\%CONFIG_NAME%.template" %CONFIG% > nul
 
 	@set CREATE_DB="%CREATE_DB_ROOT%\%CREATE_DB_NAME%"
 	@copy "%CREATE_DB_ROOT%\%CREATE_DB_NAME%.template" %CREATE_DB% > nul 
@@ -506,8 +506,8 @@ __END__
 
 	@if "%answer%" equ "n" (
 	   @echo Setup is done, you need to do following manualy:
-	   @echo  1. Navigate to %CONNECT_ROOT%\
-	   @echo  2. Adjust your database connection settings in %CONNECT_NAME%
+	   @echo  1. Navigate to %CONFIG_ROOT%\
+	   @echo  2. Adjust your database connection settings in %CONFIG_NAME%
 	   @echo  3. Navigate to %CREATE_DB_ROOT%\
 	   @echo  4. Adjust your database connection settings in %CREATE_DB_NAME% and create database
 	   @exit 0
@@ -526,15 +526,15 @@ __END__
 
 	@set path_to_db=%path_to_db:\=\\\\%
 
-	@perl -pi.bak -e "s/<path-to-your-database>/%path_to_db%/g" %CONNECT%
-	@perl -pi.bak -e "s/<your-host>/%db_host%/g" %CONNECT%
-	@perl -pi.bak -e "s/<your-username>/%db_user%/g" %CONNECT%
-	@perl -pi.bak -e "s/<your-password>/%db_pass%/g" %CONNECT%
+	@perl -pi.bak -e "s/<path-to-your-database>/%path_to_db%/g" %CONFIG%
+	@perl -pi.bak -e "s/<your-host>/%db_host%/g" %CONFIG%
+	@perl -pi.bak -e "s/<your-username>/%db_user%/g" %CONFIG%
+	@perl -pi.bak -e "s/<your-password>/%db_pass%/g" %CONFIG%
 
 	@perl -pi.bak -e "s/<path-to-your-database>/%path_to_db%/g" %CREATE_DB%
 	@perl -pi.bak -e "s/<your-username>/%db_user%/g" %CREATE_DB%
 	@perl -pi.bak -e "s/<your-password>/%db_pass%/g" %CREATE_DB%
-	@echo Configuration written to %connect% and %create_db%.
+	@echo Configuration written to %CONFIG% and %CREATE_DB%.
 
 @endlocal
 @goto :eof

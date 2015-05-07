@@ -8,7 +8,7 @@ use lib '..';
 use CATS::Web qw(param);
 use CATS::Misc qw(init_template msg url_f $is_root);
 use CATS::DB;
-use CATS::Connect;
+use CATS::Config;
 use CATS::Constants;
 use CATS::Data;
 use CATS::Countries;
@@ -68,7 +68,7 @@ sub generate_login
 {
     my $login_num;
 
-    if ($CATS::Connect::db_dsn =~ /Firebird/) {
+    if ($CATS::Config::db_dsn =~ /Firebird/) {
         $login_num = $dbh->selectrow_array('SELECT GEN_ID(login_seq, 1) FROM RDB$DATABASE');
     }
     elsif ($cats_db::db_dsn =~ /Oracle/) {

@@ -12,5 +12,5 @@ templates/std/docs/*.html
 # Compiled TT templates
 *.ttc
 # Created from template
-cgi-bin/CATS/Connect.pm
+cgi-bin/CATS/Config.pm
 sql/interbase/create_db.sql
