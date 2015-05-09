@@ -19,7 +19,7 @@ use fields qw(
     contest_id id import_log debug problem source checker
     statement constraints input_format output_format formal_input json_data explanation
     tests testsets samples objects keywords
-    imports solutions generators modules pictures attachments
+    imports solutions generators validators modules pictures attachments
     test_defaults current_tests current_sample gen_groups
     encoding stml zip zip_archive old_title replace repo tag_stack has_checker de_list run_method
 );
@@ -49,7 +49,7 @@ sub clear
     my CATS::Problem $self = shift;
     undef $self->{$_} for keys %CATS::Problem::FIELDS;
     $self->{$_} = {} for qw(tests test_defaults testsets samples objects keywords);
-    $self->{$_} = [] for qw(imports solutions generators modules pictures attachments);
+    $self->{$_} = [] for qw(imports solutions generators validators modules pictures attachments);
     $self->{gen_groups} = {};
 }
 
@@ -352,6 +352,7 @@ sub tag_handlers()
     Solution => { s => \&start_tag_Solution, r => ['src', 'name'] },
     Checker => { s => \&start_tag_Checker, r => ['src'] },
     Generator => { s => \&start_tag_Generator, r => ['src', 'name'] },
+    Validator => { s => \&start_tag_Validator, r => ['src', 'name'] },
     GeneratorRange => {
         s => \&start_tag_GeneratorRange, r => ['src', 'name', 'from', 'to'] },
     Module => { s => \&start_tag_Module, r => ['src', 'de_code', 'type'] },
@@ -485,6 +486,14 @@ sub create_generator
     });
 }
 
+sub create_validator
+{
+    (my CATS::Problem $self, my $p) = @_;
+    return $self->set_named_object($p->{name}, {
+        $self->problem_source_common_params($p, 'validator')
+    });
+}
+
 
 sub end_tag_FormalInput
 {
@@ -524,6 +533,12 @@ sub start_tag_Generator
 {
     (my CATS::Problem $self, my $atts) = @_;
     push @{$self->{generators}}, $self->create_generator($atts);
+}
+
+sub start_tag_Validator
+{
+    (my CATS::Problem $self, my $atts) = @_;
+    push @{$self->{validators}}, $self->create_validator($atts);
 }
 
 
@@ -690,6 +705,7 @@ sub module_types()
     'checker' => $cats::checker_module,
     'solution' => $cats::solution_module,
     'generator' => $cats::generator_module,
+    'validator' => $cats::validator_module,
 }}
 
 
@@ -864,6 +880,12 @@ sub insert_problem_content
         );
     }
 
+    for (@{$self->{validators}}) {
+        $self->insert_problem_source(
+            source_object => $_, type_name => 'Validator', source_type => $cats::validator
+        )
+    }
+
     for(@{$self->{generators}}) {
         $self->insert_problem_source(
             source_object => $_, source_type => $cats::generator, type_name => 'Generator');
@@ -931,8 +953,8 @@ sub insert_problem_content
     $c = $dbh->prepare(qq~
         INSERT INTO tests (
             problem_id, rank, generator_id, param, std_solution_id, in_file, out_file,
-            points, gen_group
-        ) VALUES (?,?,?,?,?,?,?,?,?)~
+            points, gen_group, input_validator_id
+        ) VALUES (?,?,?,?,?,?,?,?,?,?)~
     );
 
     for (sort { $a->{rank} <=> $b->{rank} } values %{$self->{tests}}) {
@@ -945,6 +967,7 @@ sub insert_problem_content
         $c->bind_param(7, $_->{out_file}, { ora_type => 113 });
         $c->bind_param(8, $_->{points});
         $c->bind_param(9, $_->{gen_group});
+        $c->bind_param(10, $_->{input_validator_id});
         $c->execute
             or $self->error("Can not add test $_->{rank}: $dbh->errstr");
         $self->note("Test $_->{rank} added");

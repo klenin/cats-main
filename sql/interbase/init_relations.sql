@@ -154,7 +154,7 @@ CREATE TABLE problem_sources (
     memory_limit INTEGER /* In mebibytes. */
 );
 ALTER TABLE problem_sources
-  ADD CONSTRAINT chk_problem_sources_1 CHECK (0 <= stype AND stype <= 8);
+  ADD CONSTRAINT chk_problem_sources_1 CHECK (0 <= stype AND stype <= 10);
 CREATE INDEX ps_guid_idx ON problem_sources(guid);
 
 CREATE TABLE problem_sources_import
@@ -187,6 +187,7 @@ CREATE TABLE pictures (
 CREATE TABLE tests (
     problem_id      INTEGER REFERENCES problems(id) ON DELETE CASCADE,
     rank            INTEGER CHECK (rank > 0),
+    input_validator_id INTEGER DEFAULT NULL REFERENCES problem_sources(id) ON DELETE CASCADE,
     generator_id    INTEGER DEFAULT NULL REFERENCES problem_sources(id) ON DELETE CASCADE,
     param           VARCHAR(200) DEFAULT NULL,
     std_solution_id INTEGER DEFAULT NULL REFERENCES problem_sources(id) ON DELETE CASCADE,
