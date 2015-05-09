@@ -728,7 +728,7 @@ sub problems_frame
     my $test_count_sql = $is_jury ? '(SELECT COUNT(*) FROM tests T WHERE T.problem_id = P.id) AS test_count,' : '';
     my $sth = $dbh->prepare(qq~
         SELECT
-            CP.id AS cpid, P.id AS pid, P.repo,
+            CP.id AS cpid, P.id AS pid,
             ${select_code} AS code, P.title AS problem_name, OC.title AS contest_name,
             ($reqs_count_sql $cats::st_accepted$account_condition) AS accepted_count,
             ($reqs_count_sql $cats::st_wrong_answer$account_condition) AS wrong_answer_count,
@@ -740,7 +740,7 @@ sub problems_frame
             P.upload_date,
             (SELECT A.login FROM accounts A WHERE A.id = P.last_modified_by) AS last_modified_by,
             SUBSTRING(P.explanation FROM 1 FOR 1) AS has_explanation,
-            $test_count_sql CP.testsets, CP.points_testsets, P.lang, P.memory_limit, P.time_limit, CP.max_points
+            $test_count_sql CP.testsets, CP.points_testsets, P.lang, P.memory_limit, P.time_limit, CP.max_points, P.repo
         FROM problems P, contest_problems CP, contests OC
         WHERE CP.problem_id = P.id AND OC.id = P.contest_id AND CP.contest_id = ?$hidden_problems
         ~ . order_by
