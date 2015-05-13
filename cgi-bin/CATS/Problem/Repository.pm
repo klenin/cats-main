@@ -766,7 +766,7 @@ sub move_history
 sub get_remote_url
 {
     my $self = shift;
-    my ($remote_url) = $self->git('config remote.origin.url');
+    my ($remote_url) = eval { $self->git('config remote.origin.url'); };
     chomp $remote_url;
     return $remote_url;
 }
