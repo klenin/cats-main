@@ -152,6 +152,13 @@ sub start_tag_In
         $self->note(
             "Generator group $gen_group created for tests " . join ',', map $_->{rank}, @t) if $gen_group;
     }
+    if (defined $atts->{validate}) {
+        for (@t) {
+            my $validate = apply_test_rank($atts->{validate}, $_->{rank});
+            $self->set_test_attr($_, 'input_validator_id',
+                $self->get_imported_id($validate) || $self->get_named_object($validate)->{id});
+        }
+    }
 }
 
 
@@ -184,7 +191,7 @@ sub apply_test_defaults
     (my CATS::Problem $self) = @_;
     my $d = $self->{test_defaults};
     # TODO: Вынести apply_test_rank
-    for my $attr (qw(generator_id param std_solution_id points gen_group))
+    for my $attr (qw(generator_id input_validator_id param std_solution_id points gen_group))
     {
         $d->{$attr} or next;
         $_->{$attr} ||= $d->{$attr} for values %{$self->{tests}};
