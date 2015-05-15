@@ -10,6 +10,7 @@ use Encode;
 use Data::Dumper;
 use Storable ();
 use Time::HiRes;
+use JSON::XS;
 
 our $cats_lib_dir;
 BEGIN {
@@ -208,8 +209,14 @@ sub handler {
         $ua->proxy(http => $CATS::Config::proxy) if $CATS::Config::proxy;
         my $res = $ua->request(HTTP::Request->new(GET => $url));
         $res->is_success or die $res->status_line;
-        CATS::Web::content_type('text/plain');
-        print $res->content;
+        if ((my $json = param('json')) =~ /^[a-zA-Z0-9_]+$/) {
+            CATS::Web::content_type('application/json');
+            print $json, '(', encode_json({ result => $res->content }), ')';
+        }
+        else {
+            CATS::Web::content_type('text/plain');
+            print $res->content;
+        }
         return get_return_code();
     }
     $CATS::Misc::request_start_time = [ Time::HiRes::gettimeofday ];
