@@ -204,7 +204,7 @@ sub handler {
     init_request($r);
     if ((param('f') || '') eq 'proxy') {
         my $url = param('u') or die;
-        $url =~ m|^http://neerc.ifmo.ru/| or die;
+        $url =~ m[^http://(neerc\.ifmo\.ru|judge\.u-aizu\.ac\.jp)/] or die;
         my $ua = LWP::UserAgent->new;
         $ua->proxy(http => $CATS::Config::proxy) if $CATS::Config::proxy;
         my $res = $ua->request(HTTP::Request->new(GET => $url));
