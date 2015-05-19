@@ -108,16 +108,26 @@ PerlSetEnv CATS_DIR ${CATS_ROOT}/cgi-bin/
 		AllowOverride Options=Indexes,MultiViews,ExecCGI FileInfo
 	</Directory>
 
+	<Directory "${CATS_ROOT}/score/">
+        AllowOverride Options=Indexes,MultiViews,ExecCGI FileInfo
+    </Directory>
+
+    <Directory "${CATS_ROOT}/js/">
+        AllowOverride Options=Indexes,MultiViews,ExecCGI FileInfo
+    </Directory>
+
 	Alias /cats/synh/ "${CATS_ROOT}/synhighlight/"
 	Alias /cats/images/ "${CATS_ROOT}/images/"
+	Alias /cats/score/ "${CATS_ROOT}/score/"
+	Alias /cats/js/ "${CATS_ROOT}/js/"
 	Alias /cats/ "${CATS_ROOT}/cgi-bin/"
 </VirtualHost>
 EOF
 )
 
-sudo sh -c "echo '$APACHE_CONFIG' > /etc/apache2/sites-available/000-cats"
-sudo ln -s /etc/apache2/sites-{available,enabled}/000-cats
-[[ -e /etc/apache2/sites-enabled/000-default ]] && sudo rm /etc/apache2/sites-enabled/000-default
+sudo sh -c "echo '$APACHE_CONFIG' > /etc/apache2/sites-available/000-cats.conf"
+sudo ln -s /etc/apache2/sites-{available,enabled}/000-cats.conf
+[[ -e /etc/apache2/sites-enabled/000-default ]] && sudo rm /etc/apache2/sites-enabled/000-default.conf
 [[ -e /etc/apache2/mods-enabled/expires.load ]] || sudo ln -s /etc/apache2/mods-{available,enabled}/expires.load
 [[ -e /etc/apache2/mods-enabled/apreq2.load ]] || sudo ln -s /etc/apache2/mods-{available,enabled}/apreq2.load
 

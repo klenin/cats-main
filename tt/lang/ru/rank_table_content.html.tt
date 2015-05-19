@@ -20,5 +20,6 @@
     status => 'статус',
     average_points => 'Средний балл',
     successful_submits => 'Успешных попыток',
+    loading => 'Идет загрузка страницы...',
   })
 %]
