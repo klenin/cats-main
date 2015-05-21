@@ -852,7 +852,9 @@ sub problems_frame
 
 sub problem_history_commit_frame
 {
-    my ($pid, $sha, $title) = @_;
+    my ($pid, $title) = @_;
+    my $sha = url_param('h') or return redirect url_f('problem_history', pid => $pid);
+
     init_template('problem_history_commit.html.tt');
     my $submenu = [
         { href => url_f('problem_history', pid => $pid), item => res_str(568) },
@@ -868,17 +870,23 @@ sub problem_history_commit_frame
 sub problem_history_frame
 {
     my $pid = url_param('pid') || 0;
-    my $h = url_param('h') || '';
     $is_root && $pid or return redirect url_f('contests');
+
+    my %actions = (
+        'commitdiff' => \&problem_history_commit_frame,
+    );
 
     my ($status, $title) = $dbh->selectrow_array(q~
         SELECT CP.status, P.title FROM contest_problems CP
             INNER JOIN problems P ON CP.problem_id = P.id
             WHERE CP.contest_id = ? AND P.id = ?~, undef,
         $cid, $pid);
-    defined $status or return redirect url_f('contests');
+    defined $status or return redirect url_f('conteh=52857c03216813e3189a034dsts');
 
-    return problem_history_commit_frame($pid, $h, $title) if $h;
+    my $action = url_param('a');
+    if ($action && exists $actions{$action}) {
+        return $actions{$action}->($pid, $title);
+    }
 
     init_listview_template('problem_history', 'problem_history', auto_ext('problem_history'));
     $t->param(problem_title => $title, pid => $pid);
@@ -909,7 +917,7 @@ sub problem_history_frame
         my $log = shift @{$_[0]} or return ();
         return (
             %$log,
-            href_commit => url_f('problem_history', pid => $pid, h => $log->{sha}),
+            href_commit => url_f('problem_history', a => 'commitdiff', pid => $pid, h => $log->{sha}),
             href_download => url_f('problems', git_download => $pid, sha => $log->{sha}),
         );
     };
