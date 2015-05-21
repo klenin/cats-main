@@ -95,6 +95,13 @@ sub show_commit
 }
 
 
+sub show_tree
+{
+    my ($pid, $hash_base, $file, $enc) = @_;
+    return get_repo($pid, $hash_base, 1)->tree($hash_base, $file, $enc);
+}
+
+
 sub get_log
 {
     my ($pid, $sha, $max_count) = @_;

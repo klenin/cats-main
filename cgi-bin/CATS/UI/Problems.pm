@@ -858,6 +858,7 @@ sub problem_history_commit_frame
     init_template('problem_history_commit.html.tt');
     my $submenu = [
         { href => url_f('problem_history', pid => $pid), item => res_str(568) },
+        { href => url_f('problem_history', a => 'tree', hb => $sha, pid => $pid), item => res_str(570) },
         { href => url_f('problems', git_download => $pid, sha => $sha), item => res_str(569) },
     ];
     $t->param(
@@ -867,12 +868,41 @@ sub problem_history_commit_frame
     );
 }
 
+sub problem_history_tree_frame
+{
+    my ($pid, $title) = @_;
+    my $hash_base = url_param('hb') or return redirect url_f('problem_history', pid => $pid);
+
+    init_template('problem_history_tree.html.tt');
+
+    my $tree = CATS::Problem::show_tree($pid, $hash_base, url_param('file') || undef, encoding_param('repo_enc'));
+    foreach (@{$tree->{entries}}) {
+        next if $_->{type} ne 'blob' && $_->{type} ne 'tree';
+        $_->{href} = url_f('problem_history', a => $_->{type}, file => $_->{name}, pid => $pid, h => $_->{hash}, hb => $hash_base);
+    }
+    foreach (@{$tree->{paths}}) {
+        $_->{href} = url_f('problem_history', a => $_->{type}, file => $_->{name}, pid => $pid, hb => $_->{hash_base});
+    }
+
+    my $submenu = [
+        { href => url_f('problem_history', pid => $pid), item => res_str(568) },
+        { href => url_f('problem_history', a => 'commitdiff', pid => $pid, h => $hash_base), item => res_str(571) },
+        { href => url_f('problems', git_download => $pid, sha => $hash_base), item => res_str(569) },
+    ];
+    $t->param(
+        tree => $tree,
+        submenu => $submenu,
+        problem_title => $title
+    );
+}
+
 sub problem_history_frame
 {
     my $pid = url_param('pid') || 0;
     $is_root && $pid or return redirect url_f('contests');
 
     my %actions = (
+        'tree' => \&problem_history_tree_frame,
         'commitdiff' => \&problem_history_commit_frame,
     );
 
@@ -918,6 +948,7 @@ sub problem_history_frame
         return (
             %$log,
             href_commit => url_f('problem_history', a => 'commitdiff', pid => $pid, h => $log->{sha}),
+            href_tree => url_f('problem_history', a => 'tree', pid => $pid, hb => $log->{sha}),
             href_download => url_f('problems', git_download => $pid, sha => $log->{sha}),
         );
     };

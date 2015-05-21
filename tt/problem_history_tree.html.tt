@@ -1,0 +1,28 @@
+[% PROCESS 'includes/menu_begin.tti' %]
+[%- PROCESS 'includes/html.tti' -%]
+<style>
+    @import 'docs/std/git.css';
+</style>
+<div class="commit_header">[% tree.commit.title | html %]</div>
+<div class="page_path">
+    [% FOREACH path IN tree.paths %]
+        <a href="[% path.href %]">[% path.file_name %]</a>
+        /
+    [% END %]
+</div>
+[%- MACRO tree_entry(entry) BLOCK -%]
+    <tr class="light">
+        <td class="mode">[% entry.mode %]</td>
+        <td class="size">[% entry.size %]</td>
+        <td class="list"><a class="list" href="[% entry.href %]">[% entry.file_name %]</a></td>
+        <td class="link"></td>
+    </tr>
+[%- END -%]
+<div class="page_body">
+    <table class="tree">
+        [% FOREACH entry IN tree.entries %]
+            [% tree_entry(entry) %]
+        [% END %]
+    </table>
+</div>
+[% PROCESS 'includes/menu_end.tti' %]

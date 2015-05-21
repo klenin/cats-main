@@ -10,6 +10,7 @@ BEGIN {
     @ISA = qw(Exporter);
     @EXPORT = qw(
         coalesce
+        mode_str
         file_type
         file_type_long
         chop_str
@@ -48,6 +49,30 @@ sub S_ISGITLINK
     my $mode = shift;
 
     return (($mode & S_IFMT) == S_IFGITLINK)
+}
+
+
+# convert file mode in octal to symbolic file mode string
+sub mode_str
+{
+    my $mode = oct shift;
+
+    if (S_ISGITLINK($mode)) {
+        return 'm---------';
+    } elsif (S_ISDIR($mode & S_IFMT)) {
+        return 'drwxr-xr-x';
+    } elsif (S_ISLNK($mode)) {
+        return 'lrwxrwxrwx';
+    } elsif (S_ISREG($mode)) {
+        # git cares only about the executable bit
+        if ($mode & S_IXUSR) {
+            return '-rwxr-xr-x';
+        } else {
+            return '-rw-r--r--';
+        };
+    } else {
+        return '----------';
+    }
 }
 
 
