@@ -811,6 +811,24 @@ sub blob
     return $result;
 }
 
+sub blob_plain
+{
+    my ($self, $hash_base, $file) = @_;
+    die "No file name defined" if !defined $file;
+
+    my $hash = $self->git_get_hash_by_path($hash_base, $file, 'blob');
+
+    my $fd = $self->git_handler("cat-file blob $hash");
+    my $mimetype = blob_mimetype($fd, $file);
+    my $content = join '', <$fd>;
+    close $fd;
+
+    return {
+        type => $mimetype,
+        content => $content,
+    };
+}
+
 sub new
 {
     my ($class, %opts) = @_;

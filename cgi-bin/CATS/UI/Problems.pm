@@ -898,6 +898,9 @@ sub problem_history_tree_frame
     foreach (@{$tree->{entries}}) {
         next if $_->{type} ne 'blob' && $_->{type} ne 'tree';
         $_->{href} = url_f('problem_history', a => $_->{type}, file => $_->{name}, pid => $pid, h => $_->{hash}, hb => $hash_base);
+        if ($_->{type} eq 'blob') {
+            $_->{href_raw} = url_f('problem_history', a => 'blob_plain', file => $_->{name}, pid => $pid, hb => $hash_base);
+        }
     }
     set_history_paths_urls($pid, $tree->{paths});
     set_submenu_for_tree_frame($pid, $hash_base);
@@ -923,6 +926,20 @@ sub problem_history_blob_frame
     );
 }
 
+sub problem_history_blob_plain_frame
+{
+    my ($pid, $title) = @_;
+    my $hash_base = url_param('hb') or return redirect url_f('problem_history', pid => $pid);
+    my $file = url_param('file') || undef;
+
+    my $blob = CATS::Problem::show_blob_plain($pid, $hash_base, $file);
+    content_type($blob->{type});
+    headers('Content-Disposition', "inline; filename=$file");
+    binmode STDOUT, ':raw';
+    print $blob->{content};
+    binmode STDOUT, ':utf8';
+}
+
 sub problem_history_frame
 {
     my $pid = url_param('pid') || 0;
@@ -930,6 +947,7 @@ sub problem_history_frame
 
     my %actions = (
         'blob' => \&problem_history_blob_frame,
+        'blob_plain' => \&problem_history_blob_plain_frame,
         'tree' => \&problem_history_tree_frame,
         'commitdiff' => \&problem_history_commit_frame,
     );
