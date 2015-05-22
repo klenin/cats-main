@@ -15,7 +15,9 @@
         <td class="mode">[% entry.mode %]</td>
         <td class="size">[% entry.size %]</td>
         <td class="list"><a class="list" href="[% entry.href %]">[% entry.file_name %]</a></td>
-        <td class="link"></td>
+        <td class="link">
+            <a href="[% entry.href %]">[% entry.type %]</a>
+        </td>
     </tr>
 [%- END -%]
 <div class="page_body">

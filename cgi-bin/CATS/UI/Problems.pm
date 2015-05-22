@@ -868,6 +868,25 @@ sub problem_history_commit_frame
     );
 }
 
+sub set_history_paths_urls
+{
+    my ($pid, $paths) = @_;
+    foreach (@$paths) {
+        $_->{href} = url_f('problem_history', a => $_->{type}, file => $_->{name}, pid => $pid, hb => $_->{hash_base});
+    }
+}
+
+sub set_submenu_for_tree_frame
+{
+    my ($pid, $hash) = @_;
+    my $submenu = [
+        { href => url_f('problem_history', pid => $pid), item => res_str(568) },
+        { href => url_f('problem_history', a => 'commitdiff', pid => $pid, h => $hash), item => res_str(571) },
+        { href => url_f('problems', git_download => $pid, sha => $hash), item => res_str(569) },
+    ];
+    $t->param(submenu => $submenu);
+}
+
 sub problem_history_tree_frame
 {
     my ($pid, $title) = @_;
@@ -880,19 +899,27 @@ sub problem_history_tree_frame
         next if $_->{type} ne 'blob' && $_->{type} ne 'tree';
         $_->{href} = url_f('problem_history', a => $_->{type}, file => $_->{name}, pid => $pid, h => $_->{hash}, hb => $hash_base);
     }
-    foreach (@{$tree->{paths}}) {
-        $_->{href} = url_f('problem_history', a => $_->{type}, file => $_->{name}, pid => $pid, hb => $_->{hash_base});
-    }
-
-    my $submenu = [
-        { href => url_f('problem_history', pid => $pid), item => res_str(568) },
-        { href => url_f('problem_history', a => 'commitdiff', pid => $pid, h => $hash_base), item => res_str(571) },
-        { href => url_f('problems', git_download => $pid, sha => $hash_base), item => res_str(569) },
-    ];
+    set_history_paths_urls($pid, $tree->{paths});
+    set_submenu_for_tree_frame($pid, $hash_base);
     $t->param(
         tree => $tree,
-        submenu => $submenu,
         problem_title => $title
+    );
+}
+
+sub problem_history_blob_frame
+{
+    my ($pid, $title) = @_;
+    my $hash_base = url_param('hb') or return redirect url_f('problem_history', pid => $pid);
+
+    init_template('problem_history_blob.html.tt');
+
+    my $blob = CATS::Problem::show_blob($pid, $hash_base, url_param('file') || undef);
+    set_history_paths_urls($pid, $blob->{paths});
+    set_submenu_for_tree_frame($pid, $hash_base);
+    $t->param(
+        blob => $blob,
+        problem_title => $title,
     );
 }
 
@@ -902,6 +929,7 @@ sub problem_history_frame
     $is_root && $pid or return redirect url_f('contests');
 
     my %actions = (
+        'blob' => \&problem_history_blob_frame,
         'tree' => \&problem_history_tree_frame,
         'commitdiff' => \&problem_history_commit_frame,
     );
