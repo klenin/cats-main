@@ -545,7 +545,6 @@ sub parse_patches
 
         # from-file/to-file diff header
         if (!$patch_line) {
-            die('error');
             last PATCH;
         }
         next PATCH if $patch_line =~ m/^diff /;
