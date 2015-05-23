@@ -22,11 +22,12 @@ use warnings;
 
 use Fcntl ':mode';
 use File::Path;
+use File::Spec;
 use File::Temp qw(tempdir tempfile);
 use File::Copy::Recursive qw(dircopy);
 
 use CATS::Problem::Authors;
-use CATS::Utils qw(untabify unquote file_type file_type_long chop_str);
+use CATS::Utils qw(blob_mimetype untabify unquote mode_str file_type file_type_long chop_str);
 
 my $tmp_template = 'zipXXXXXX';
 
@@ -370,6 +371,50 @@ sub format_git_diff_header_line
     return $line;
 }
 
+sub format_page_path
+{
+    my ($self, $name, $type, $hb) = @_;
+    my @dirname = split '/', join '', $self->git('rev-parse --show-toplevel');
+    my $project = pop @dirname;
+    chomp $project;
+    my @parts = ({
+        name => '',
+        file_name => $project,
+        hash_base => $hb,
+        title => 'tree root',
+        type => 'tree'
+    });
+    if (defined $name) {
+        my @dirname = split '/', $name;
+        my $basename = pop @dirname;
+        my $fullname = '';
+
+        foreach my $dir (@dirname) {
+            $fullname .= ($fullname ? '/' : '') . $dir;
+            push @parts, {
+                type => 'tree',
+                name => $fullname,
+                file_name => $dir,
+                hash_base => $hb,
+                title => $fullname,
+            };
+        }
+        if (defined $type && $type eq 'blob') {
+            $type = 'blob_plain'
+        } elsif (defined $type && $type eq 'tree') {
+            $type = 'tree';
+        }
+        push @parts, {
+            type => $type,
+            name => $name,
+            file_name => $basename,
+            hash_base => $hb,
+            title => $name,
+        };
+    }
+    return \@parts;
+}
+
 # parse line of git-diff-tree "raw" output
 sub parse_difftree_raw_line
 {
@@ -501,7 +546,6 @@ sub parse_patches
 
         # from-file/to-file diff header
         if (!$patch_line) {
-            die('error');
             last PATCH;
         }
         next PATCH if $patch_line =~ m/^diff /;
@@ -627,11 +671,166 @@ sub commif_diff
     return (difftree => $self->format_difftree(@difftree), patches => $patches);
 }
 
+sub parse_commit
+{
+    my ($self, $sha) = @_;
+    return $self->parse_commit_text([ $self->git("rev-list --header --max-count=1 $sha") ], 1);
+}
+
 sub commit_info
 {
     my ($self, $sha, $enc) = @_;
-    my %co = $self->parse_commit_text([ $self->git("rev-list --header --max-count=1 $sha") ], 1);
+    my %co = $self->parse_commit($sha);
     return { info => \%co, $self->commif_diff(%co, encoding => $enc), log => $self->{log} };
+}
+
+# format tree entry (row of git_tree)
+sub format_tree_entry
+{
+    my ($self, $t, $basedir) = @_;
+    $t->{mode} = mode_str($t->{mode});
+    $t->{size} = $t->{size} if exists $t->{size};
+}
+
+sub parse_ls_tree_line
+{
+    my ($self, $line, $basedir) = @_;
+    my %res;
+
+    #'100644 blob 0fa3f3a66fb6a137f6ec2c19351ed4d807070ffa   16717  panic.c'
+    $line =~ m/^([0-9]+) (.+) ([0-9a-fA-F]{40}) +(-|[0-9]+)\t(.+)$/s;
+
+    return (
+        mode => $1,
+        type => $2,
+        hash => $3,
+        size => $4,
+        name => "$basedir$5",
+        file_name => $5
+    );
+}
+
+sub git_get_hash_by_path
+{
+    my $self = shift;
+    my $base = shift;
+    my $path = shift || return undef;
+    my $type = shift;
+
+    $path =~ s,/+$,,;
+
+    my $line = join '', $self->git("ls-tree $base -- $path");
+
+    if (!defined $line) {
+        # there is no tree or hash given by $path at $base
+        return undef;
+    }
+
+    #'100644 blob 0fa3f3a66fb6a137f6ec2c19351ed4d807070ffa  panic.c'
+    $line =~ m/^([0-9]+) (.+) ([0-9a-fA-F]{40})\t/;
+    if (defined $type && $type ne $2) {
+        # type doesn't match
+        return undef;
+    }
+
+    return $3;
+}
+
+sub tree
+{
+    my ($self, $hash_base, $file, $enc) = @_;
+    my $hash = defined $file ? $self->git_get_hash_by_path($hash_base, $file, 'tree') : $hash_base;
+
+    my $basedir = '';
+    if (defined $file) {
+        $basedir = $file;
+        if ($basedir ne '' && substr($basedir, -1) ne '/') {
+            $basedir .= '/';
+        }
+    }
+
+    my @entries = ();
+    if (defined $hash_base && defined $file && $file =~ m![^/]+$!) {
+        my $up = $file;
+        $up =~ s!/?[^/]+$!!;
+        undef $up unless $up;
+        push @entries, {
+            mode => mode_str('040000'),
+            size => '',
+            hash => $hash_base,
+            type => 'tree',
+            name => $up,
+            file_name => '..'
+        };
+    }
+
+    foreach my $line (map { chomp; $_ } split "\0", join '', $self->git("ls-tree -z -l $hash")) {
+        my %t = $self->parse_ls_tree_line($line, $basedir);
+        $self->format_tree_entry(\%t, '');
+        push @entries, \%t;
+    }
+
+    my %co = $self->parse_commit($hash_base);
+    return { entries => \@entries, commit => \%co, basedir => $basedir, paths => $self->format_page_path($file, 'tree', $hash_base)};
+}
+
+sub blob
+{
+    my ($self, $hash_base, $file) = @_;
+    die "No file name defined" if !defined $file;
+
+    my $hash = $self->git_get_hash_by_path($hash_base, $file, 'blob');
+
+    my $fd = $self->git_handler("cat-file blob $hash");
+
+    my $result = {
+        lines => [],
+        paths => $self->format_page_path($file, 'blob', $hash_base),
+        latest_sha => $self->get_latest_master_sha,
+        is_remote => $self->get_remote_url,
+    };
+
+    my $mimetype = blob_mimetype($fd, $file);
+    # use 'blob_plain' (aka 'raw') view for files that cannot be displayed
+    if ($mimetype !~ m!^(?:text/|image/(?:gif|png|jpeg)$)! && -B $fd) {
+        close $fd;
+        return $result;
+    }
+
+    if ($mimetype =~ m!^image/!) {
+        my @parts = split $cats::repos_dir, $self->{dir} . $file;
+        $result->{image} = $cats::repos_dir . $parts[1];
+    } else {
+        my $nr;
+        while (my $line = <$fd>) {
+            chomp $line;
+            $line = untabify($line);
+            $nr++;
+            push @{$result->{lines}}, {number => $nr, text => $line};
+        }
+    }
+    close $fd;
+
+    return $result;
+}
+
+sub blob_plain
+{
+    my ($self, $hash_base, $file) = @_;
+    die "No file name defined" if !defined $file;
+
+    my $hash = $self->git_get_hash_by_path($hash_base, $file, 'blob');
+
+    my $fd = $self->git_handler("cat-file blob $hash");
+    my $mimetype = blob_mimetype($fd, $file);
+    my $content = join '', <$fd>;
+    close $fd;
+
+    return {
+        type => $mimetype,
+        content => $content,
+        latest_sha => $self->get_latest_master_sha,
+    };
 }
 
 sub new
@@ -650,6 +849,14 @@ sub set_repo
     return $self;
 }
 
+sub set_author_data
+{
+    my ($self, $author_name, $author_email) = @_;
+    $self->{author_name} = $author_name;
+    $self->{author_email} = $author_email;
+    return $self;
+}
+
 sub exec_or_die
 {
     # Apache subprocces, capture both stdout and stderr.
@@ -664,6 +871,13 @@ sub git
     my @lines = exec_or_die("git --git-dir=$self->{git_dir} --work-tree=$self->{dir} $git_tail");
     $self->{logger}->note(join "\n", @lines) if exists $self->{logger};
     return @lines;
+}
+
+sub git_handler
+{
+    my ($self, $git_tail) = @_;
+    open my $fd, '-|', "git --git-dir=$self->{git_dir} --work-tree=$self->{dir} $git_tail" or die("cannot run git command: $!");
+    return $fd;
 }
 
 sub find_files
@@ -754,6 +968,15 @@ sub add
     return $self;
 }
 
+sub replace_file_content
+{
+    my ($self, $file, $content) = @_;
+    my $fname = File::Spec->catpath('', $self->{dir}, $file);
+    open my $fh, '>', $fname or die("Cannot open file $fname: $!");
+    print $fh $content;
+    close $fh;
+}
+
 sub move_history
 {
     my ($self, %opts) = @_;
@@ -771,20 +994,40 @@ sub get_remote_url
     return $remote_url;
 }
 
+sub get_latest_master_sha
+{
+    my $self = shift;
+    my $sha = join '', $self->git('rev-parse master');
+    chomp $sha;
+    return $sha;
+}
+
 sub is_remote
 {
     my $remote_url = $_[0]->get_remote_url;
     return defined $remote_url && $remote_url ne '';
 }
 
+sub checkout
+{
+    my ($self, $what) = @_;
+    $what //= '.';
+    $self->git("checkout $what");
+    return $self;
+}
+
 sub commit
 {
-    my ($self, $problem_author, $message, $is_amend) = @_;
+    my ($self, $problem_author, $message, $is_amend, $crlf) = @_;
     if (!($self->{author_name} && $self->{author_email})) {
         my ($git_author_name, $git_author_email) = get_git_author_info(parse_author($problem_author));
         $self->{author_name} ||= $git_author_name;
         $self->{author_email} ||= $git_author_email;
         $self->{logger}->warning('git user data is not correctly configured.') if exists $self->{logger};
+    }
+    if (defined $crlf && ($crlf =~ /crlf/ || $crlf =~ /lf/)) {
+        my $value = $crlf =~ /crlf/ ? 'true' : 'input';
+        $self->git("config core.autocrlf $value");
     }
     $self->git(qq~config user.name "$self->{author_name}"~);
     $self->git(qq~config user.email "$self->{author_email}"~);

@@ -23,6 +23,7 @@ div.title_text > table.object_header td {
 }
 
 div.page_body {
+    padding: 8px;
 }
 
 div.list_head {
@@ -56,6 +57,43 @@ table.diff_tree span.file_status.mode_chnge {
 
 table.diff_tree span.file_status.copied {
     color: #70a070;
+}
+
+tr.light {
+    background-color: #ffffff;
+}
+
+tr.light:hover {
+    background-color: #edece6;
+}
+
+td.mode {
+    font-family: monospace;
+}
+
+td.size {
+    font-family: monospace;
+    text-align: center;
+}
+
+td.list {
+    font-family: monospace;
+    text-align: left;
+}
+
+a.list {
+    font-family: monospace;
+    text-decoration: none;
+    color: #000000;
+}
+
+a.list:hover {
+    text-decoration: underline !important;
+    color: #880000;
+}
+
+a.list img.avatar {
+    border-style: none;
 }
 
 /* styling of diffs (patchsets): commitdiff */
@@ -139,6 +177,24 @@ div.diff.chunk_header span.chunk_info {
 
 div.diff.chunk_header span.section {
     color: #aa22aa;
+}
+
+div.page_path {
+    padding: 8px;
+    font-weight: bold;
+    border: solid #d9d8d1;
+    border-width: 0px 0px 1px;
+}
+
+div.pre {
+    font-family: monospace;
+    font-size: 12px;
+    white-space: pre;
+}
+
+span.linenr {
+    color: #999999;
+    margin-right: 5px;
 }
 
 span.cntrl {
