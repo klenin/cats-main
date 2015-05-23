@@ -774,7 +774,7 @@ sub problems_frame
     {
         my $c = $_[0]->fetchrow_hashref or return ();
         $c->{status} ||= 0;
-        my $remote_url = defined $c->{repo} && $c->{repo} !~ '\d+' ? $c->{repo} : undef;
+        my $remote_url = CATS::Problem::get_remote_url($c->{repo});
         return (
             href_delete => url_f('problems', 'delete' => $c->{cpid}),
             href_change_status => url_f('problems', 'change_status' => $c->{cpid}),
@@ -878,11 +878,12 @@ sub set_history_paths_urls
 
 sub set_submenu_for_tree_frame
 {
-    my ($pid, $hash) = @_;
+    my ($pid, $hash, @items) = @_;
     my $submenu = [
         { href => url_f('problem_history', pid => $pid), item => res_str(568) },
         { href => url_f('problem_history', a => 'commitdiff', pid => $pid, h => $hash), item => res_str(571) },
         { href => url_f('problems', git_download => $pid, sha => $hash), item => res_str(569) },
+        @items,
     ];
     $t->param(submenu => $submenu);
 }
@@ -914,12 +915,17 @@ sub problem_history_blob_frame
 {
     my ($pid, $title) = @_;
     my $hash_base = url_param('hb') or return redirect url_f('problem_history', pid => $pid);
+    my $file = url_param('file') || undef;
 
     init_template('problem_history_blob.html.tt');
 
-    my $blob = CATS::Problem::show_blob($pid, $hash_base, url_param('file') || undef);
+    my $blob = CATS::Problem::show_blob($pid, $hash_base, $file);
     set_history_paths_urls($pid, $blob->{paths});
-    set_submenu_for_tree_frame($pid, $hash_base);
+    my @items = !$blob->{is_remote} && !$blob->{image} && $blob->{latest_sha} eq $hash_base
+              ? { href => url_f('problem_history', a => 'edit', file => $file, hb => $hash_base, pid => $pid), item => res_str(572) }
+              : ();
+    set_submenu_for_tree_frame($pid, $hash_base, @items);
+
     $t->param(
         blob => $blob,
         problem_title => $title,
@@ -940,20 +946,61 @@ sub problem_history_blob_plain_frame
     binmode STDOUT, ':utf8';
 }
 
+sub problem_history_edit_frame
+{
+    my ($pid, $title, $repo_name) = @_;
+    my $hash_base = url_param('hb');
+    my $file = url_param('file');
+
+    if (!$hash_base || !$file || CATS::Problem::get_remote_url($repo_name) || $hash_base ne CATS::Problem::get_latest_master_sha($pid) ) {
+        return redirect url_f('problem_history', pid => $pid);
+    }
+    init_template('problem_history_edit_file.html.tt');
+
+    my $content = param('source');
+    if (defined param('save')) {
+        my CATS::Problem $p = CATS::Problem->new;
+        my ($error, $latest_sha) = $p->change_file($cid, $pid, $file, $content, param('message'), param('is_amend') || 0, param('line_breaks'));
+        if (!$error) {
+            $dbh->commit;
+            return redirect url_f('problem_history', a => 'commitdiff', pid => $pid, h => $latest_sha);
+        } else {
+            $dbh->rollback;
+            msg(1008);
+        }
+        $t->param(
+            content => $content,
+            problem_import_log => $p->encoded_import_log()
+        );
+    }
+
+    my $blob = CATS::Problem::show_blob($pid, $hash_base, $file);
+
+    set_submenu_for_tree_frame($pid, $hash_base);
+    set_history_paths_urls($pid, $blob->{paths});
+
+    $t->param(
+        file => $file,
+        blob => $blob,
+        problem_title => $title,
+    );
+}
+
 sub problem_history_frame
 {
     my $pid = url_param('pid') || 0;
     $is_root && $pid or return redirect url_f('contests');
 
     my %actions = (
+        'edit' => \&problem_history_edit_frame,
         'blob' => \&problem_history_blob_frame,
         'blob_plain' => \&problem_history_blob_plain_frame,
         'tree' => \&problem_history_tree_frame,
         'commitdiff' => \&problem_history_commit_frame,
     );
 
-    my ($status, $title) = $dbh->selectrow_array(q~
-        SELECT CP.status, P.title FROM contest_problems CP
+    my ($status, $title, $repo_name) = $dbh->selectrow_array(q~
+        SELECT CP.status, P.title, P.repo FROM contest_problems CP
             INNER JOIN problems P ON CP.problem_id = P.id
             WHERE CP.contest_id = ? AND P.id = ?~, undef,
         $cid, $pid);
@@ -961,7 +1008,7 @@ sub problem_history_frame
 
     my $action = url_param('a');
     if ($action && exists $actions{$action}) {
-        return $actions{$action}->($pid, $title);
+        return $actions{$action}->($pid, $title, $repo_name);
     }
 
     init_listview_template('problem_history', 'problem_history', auto_ext('problem_history'));

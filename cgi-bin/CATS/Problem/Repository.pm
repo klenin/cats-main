@@ -22,6 +22,7 @@ use warnings;
 
 use Fcntl ':mode';
 use File::Path;
+use File::Spec;
 use File::Temp qw(tempdir tempfile);
 use File::Copy::Recursive qw(dircopy);
 
@@ -785,6 +786,8 @@ sub blob
     my $result = {
         lines => [],
         paths => $self->format_page_path($file, 'blob', $hash_base),
+        latest_sha => $self->get_latest_master_sha,
+        is_remote => $self->get_remote_url,
     };
 
     my $mimetype = blob_mimetype($fd, $file);
@@ -826,6 +829,7 @@ sub blob_plain
     return {
         type => $mimetype,
         content => $content,
+        latest_sha => $self->get_latest_master_sha,
     };
 }
 
@@ -842,6 +846,14 @@ sub set_repo
     my ($self, $dir) = @_;
     $self->{dir} = $dir;
     $self->{git_dir} = "$dir.git";
+    return $self;
+}
+
+sub set_author_data
+{
+    my ($self, $author_name, $author_email) = @_;
+    $self->{author_name} = $author_name;
+    $self->{author_email} = $author_email;
     return $self;
 }
 
@@ -956,6 +968,15 @@ sub add
     return $self;
 }
 
+sub replace_file_content
+{
+    my ($self, $file, $content) = @_;
+    my $fname = File::Spec->catpath('', $self->{dir}, $file);
+    open my $fh, '>', $fname or die("Cannot open file $fname: $!");
+    print $fh $content;
+    close $fh;
+}
+
 sub move_history
 {
     my ($self, %opts) = @_;
@@ -973,20 +994,40 @@ sub get_remote_url
     return $remote_url;
 }
 
+sub get_latest_master_sha
+{
+    my $self = shift;
+    my $sha = join '', $self->git('rev-parse master');
+    chomp $sha;
+    return $sha;
+}
+
 sub is_remote
 {
     my $remote_url = $_[0]->get_remote_url;
     return defined $remote_url && $remote_url ne '';
 }
 
+sub checkout
+{
+    my ($self, $what) = @_;
+    $what //= '.';
+    $self->git("checkout $what");
+    return $self;
+}
+
 sub commit
 {
-    my ($self, $problem_author, $message, $is_amend) = @_;
+    my ($self, $problem_author, $message, $is_amend, $crlf) = @_;
     if (!($self->{author_name} && $self->{author_email})) {
         my ($git_author_name, $git_author_email) = get_git_author_info(parse_author($problem_author));
         $self->{author_name} ||= $git_author_name;
         $self->{author_email} ||= $git_author_email;
         $self->{logger}->warning('git user data is not correctly configured.') if exists $self->{logger};
+    }
+    if (defined $crlf && ($crlf =~ /crlf/ || $crlf =~ /lf/)) {
+        my $value = $crlf =~ /crlf/ ? 'true' : 'input';
+        $self->git("config core.autocrlf $value");
     }
     $self->git(qq~config user.name "$self->{author_name}"~);
     $self->git(qq~config user.email "$self->{author_email}"~);

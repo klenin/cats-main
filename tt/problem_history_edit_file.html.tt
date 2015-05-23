@@ -1,0 +1,50 @@
+[% PROCESS 'includes/menu_begin.tti' %]
+[%- PROCESS "lang/$lang/problems.html.tt" -%]
+[%- PROCESS 'includes/html.tti' -%]
+<style>
+    @import 'docs/std/git.css';
+</style>
+
+[% IF problem_import_log %]
+[% capt.problem_import_log %]:<br/>
+<textarea cols="100" rows="10" readonly="readonly">
+[% problem_import_log %]
+</textarea>
+[% END %]
+
+<div class="commit_header">[% capt.file_editing %] [% file %]</div>
+<div class="page_path">
+    [% FOREACH path IN blob.paths %]
+        <a href="[% path.href %]">[% path.file_name %]</a>
+        /
+    [% END %]
+</div>
+<div class="page_body">
+    <form method="post" accept-charset="UTF-8" style="margin: 0">
+        <div>
+            <textarea rows="40" cols="100" name="source">[% IF content %][% content %][% ELSE %][% FOREACH line IN blob.lines %]
+[% line.text %][% END %][% END %]</textarea>
+        </div>
+        <div class="problem_submit">
+          <p><label><input type="checkbox" name="is_amend" value="1"/> [% capt.amend %]</label></p>
+          <p>
+            <label for="message">[% capt.message %]:</label><br/>
+            <textarea id="message" name="message" cols="50" rows="5"></textarea>
+          </p>
+          <p>
+            <input type="submit" name="save" value="[% capt.save %]" class="button" />
+          </p>
+        </div>
+        <div class="problem_submit">
+          <p>
+            <label for="line_breaks">[% capt.line_breaks %]:</label><br/>
+            <select id="line_breaks" name="line_breaks">
+                <option value="" selected="selected"></option>
+                <option value="lf">lf</option>
+                <option value="crlf">crlf</option>
+            </select>
+          </p>
+        </div>
+    </form>
+</div>
+[% PROCESS 'includes/menu_end.tti' %]
