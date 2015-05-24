@@ -8,9 +8,10 @@ use Encode;
 use XML::Parser::Expat;
 use JSON::XS;
 
+use CATS::Problem::Source::PlainFiles;
 use CATS::Constants;
 use CATS::DB;
-use CATS::Misc qw(cats_dir msg);
+use CATS::Misc qw($git_author_name $git_author_email cats_dir msg);
 use CATS::StaticPages;
 use CATS::DevEnv;
 use FormalInput;
@@ -72,6 +73,12 @@ sub get_repo_id
 }
 
 
+sub get_remote_url
+{
+    defined $_[0] && $_[0] !~ /^\d+$/ ? $_[0] : undef;
+}
+
+
 sub get_repo
 {
     my ($pid, $sha, $need_find, %opts) = @_;
@@ -85,6 +92,12 @@ sub get_repo_archive
     my ($pid, $sha) = @_;
     ($pid) = get_repo_id($pid);
     return CATS::Problem::Repository->new(dir => cats_dir . "$cats::repos_dir$pid/")->archive($sha);
+}
+
+
+sub get_latest_master_sha
+{
+    get_repo(@_)->get_latest_master_sha;
 }
 
 
@@ -129,11 +142,10 @@ sub add_history
     $self->{source}->finalize($self, $message, $is_amend, get_repo_id($self->{id}));
 }
 
-
-sub load
+sub load_problem
 {
     my CATS::Problem $self = shift;
-    ($self->{source}, $self->{contest_id}, $self->{id}, $self->{replace}, $self->{repo}, my $message, my $is_amend) = @_;
+    my ($message, $is_amend) = @_;
 
     eval {
         $self->{source}->init;
@@ -170,6 +182,28 @@ sub load
         $self->note('Success import');
         return (0, $repo->get_latest_master_sha);
     }
+}
+
+
+sub load
+{
+    my CATS::Problem $self = shift;
+    ($self->{source}, $self->{contest_id}, $self->{id}, $self->{replace}, $self->{repo}, my $message, my $is_amend) = @_;
+
+    return $self->load_problem($message, $is_amend);
+}
+
+sub change_file
+{
+    my CATS::Problem $self = shift;
+    ($self->{contest_id}, $self->{id}, my $file, my $content, my $message, my $is_amend) = @_;
+    my $repo = get_repo($self->{id});
+    $repo->replace_file_content($file, $content);
+
+    $self->{replace} = 1;
+    $self->{source} = CATS::Problem::Source::PlainFiles->new(dir => $repo->get_dir, logger => $self);
+
+    return $self->load_problem($message, $is_amend);
 }
 
 
