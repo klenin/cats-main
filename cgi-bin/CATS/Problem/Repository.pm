@@ -26,7 +26,7 @@ use File::Temp qw(tempdir tempfile);
 use File::Copy::Recursive qw(dircopy);
 
 use CATS::Problem::Authors;
-use CATS::Utils qw(untabify unquote mode_str file_type file_type_long chop_str);
+use CATS::Utils qw(blob_mimetype untabify unquote mode_str file_type file_type_long chop_str);
 
 my $tmp_template = 'zipXXXXXX';
 
@@ -774,6 +774,44 @@ sub tree
     return { entries => \@entries, commit => \%co, basedir => $basedir, paths => $self->format_page_path($file, 'tree', $hash_base)};
 }
 
+sub blob
+{
+    my ($self, $hash_base, $file) = @_;
+    die "No file name defined" if !defined $file;
+
+    my $hash = $self->git_get_hash_by_path($hash_base, $file, 'blob');
+
+    my $fd = $self->git_handler("cat-file blob $hash");
+
+    my $result = {
+        lines => [],
+        paths => $self->format_page_path($file, 'blob', $hash_base),
+    };
+
+    my $mimetype = blob_mimetype($fd, $file);
+    # use 'blob_plain' (aka 'raw') view for files that cannot be displayed
+    if ($mimetype !~ m!^(?:text/|image/(?:gif|png|jpeg)|application/xml$)! && -B $fd) {
+        close $fd;
+        return $result;
+    }
+
+    if ($mimetype =~ m!^image/!) {
+        my @parts = split $cats::repos_dir, $self->{dir} . $file;
+        $result->{image} = $cats::repos_dir . $parts[1];
+    } else {
+        my $nr;
+        while (my $line = <$fd>) {
+            chomp $line;
+            $line = untabify($line);
+            $nr++;
+            push @{$result->{lines}}, {number => $nr, text => $line};
+        }
+    }
+    close $fd;
+
+    return $result;
+}
+
 sub new
 {
     my ($class, %opts) = @_;
@@ -804,6 +842,13 @@ sub git
     my @lines = exec_or_die("git --git-dir=$self->{git_dir} --work-tree=$self->{dir} $git_tail");
     $self->{logger}->note(join "\n", @lines) if exists $self->{logger};
     return @lines;
+}
+
+sub git_handler
+{
+    my ($self, $git_tail) = @_;
+    open my $fd, '-|', "git --git-dir=$self->{git_dir} --work-tree=$self->{dir} $git_tail" or die("cannot run git command: $!");
+    return $fd;
 }
 
 sub find_files

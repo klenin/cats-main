@@ -23,6 +23,7 @@ div.title_text > table.object_header td {
 }
 
 div.page_body {
+    padding: 8px;
 }
 
 div.list_head {
@@ -179,6 +180,17 @@ div.page_path {
     font-weight: bold;
     border: solid #d9d8d1;
     border-width: 0px 0px 1px;
+}
+
+div.pre {
+    font-family: monospace;
+    font-size: 12px;
+    white-space: pre;
+}
+
+span.linenr {
+    color: #999999;
+    margin-right: 5px;
 }
 
 span.cntrl {
