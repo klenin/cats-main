@@ -399,7 +399,7 @@ sub format_page_path
             };
         }
         if (defined $type && $type eq 'blob') {
-            $type = 'blob_plain'
+            $type = 'raw'
         } elsif (defined $type && $type eq 'tree') {
             $type = 'tree';
         }
@@ -809,6 +809,24 @@ sub blob
     close $fd;
 
     return $result;
+}
+
+sub raw
+{
+    my ($self, $hash_base, $file) = @_;
+    die "No file name defined" if !defined $file;
+
+    my $hash = $self->git_get_hash_by_path($hash_base, $file, 'blob');
+
+    my $fd = $self->git_handler("cat-file blob $hash");
+    my $mimetype = blob_mimetype($fd, $file);
+    my $content = join '', <$fd>;
+    close $fd;
+
+    return {
+        type => $mimetype,
+        content => $content,
+    };
 }
 
 sub new

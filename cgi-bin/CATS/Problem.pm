@@ -108,6 +108,13 @@ sub show_blob
 }
 
 
+sub show_raw
+{
+    my ($pid, $hash_base, $file) = @_;
+    return get_repo($pid, $hash_base, 1)->raw($hash_base, $file);
+}
+
+
 sub get_log
 {
     my ($pid, $sha, $max_count) = @_;
