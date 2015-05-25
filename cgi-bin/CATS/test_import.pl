@@ -4,9 +4,9 @@ use warnings;
 use lib '..';
 
 use Carp;
-use CATS::Problem;
+use CATS::ProblemStorage;
 
-my CATS::Problem $p = CATS::Problem->new;
+my CATS::ProblemStorage $p = CATS::ProblemStorage->new;
 
 $p->{debug} = 1;
 $p->load('sample.zip', 1001, 999, 0, '', 0);

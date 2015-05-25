@@ -38,7 +38,6 @@ use CATS::Misc qw(:all);
 use CATS::Utils qw(coalesce url_function state_to_display param_on);
 use CATS::Data qw(:all);
 use CATS::IP;
-use CATS::Problem;
 use CATS::Problem::Text;
 use CATS::RankTable;
 use CATS::StaticPages;

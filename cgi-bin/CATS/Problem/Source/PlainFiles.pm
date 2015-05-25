@@ -60,13 +60,13 @@ sub read_member
 sub finalize
 {
     # TODO: needed some changes in architecture
-    my ($self, $problem, $message, $is_amend, $repo_id, $sha) = @_;
+    my ($self, $dbh, $logger, $problem, $message, $is_amend, $repo_id, $sha) = @_;
 
     my $path = cats_dir() . $cats::repos_dir;
 
     my $repo = CATS::Problem::Repository->new(
         dir => "$path/$problem->{id}/",
-        logger => $problem,
+        logger => $logger,
         author_name => $git_author_name,
         author_email => $git_author_email
     );
