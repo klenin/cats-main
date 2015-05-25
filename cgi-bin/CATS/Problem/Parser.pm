@@ -18,6 +18,7 @@ sub new
 {
     my ($class, %opts) = @_;
     $opts{source} or die "Unknown source for parser";
+    $opts{import_source} or die "Unknown import source";
     return bless \%opts => $class;
 }
 
@@ -445,8 +446,7 @@ sub import_one_source
 {
     my ($self, $guid, $name, $type) = @_;
     push @{$self->{imports}}, my $import = { guid => $guid, name => $name };
-    my ($src_id, $stype) = $self->{debug} ? (undef, undef) : $dbh->selectrow_array(qq~
-        SELECT id, stype FROM problem_sources WHERE guid = ?~, undef, $guid);
+    my ($src_id, $stype) = $self->{debug} ? (undef, undef) : $self->{import_source}->get_sources($guid);
 
     !$type || ($type = $import->{type} = module_types()->{$type})
         or $self->error("Unknown import source type: $type");
@@ -466,14 +466,11 @@ sub import_one_source
 sub start_tag_Import
 {
     my ($self, $atts) = @_;
-
     my ($guid, @nt) = @$atts{qw(guid name type)};
     if ($guid =~ /\*/) {
         $guid =~ s/%/\\%/g;
         $guid =~ s/\*/%/g;
-        my $guids = $dbh->selectcol_arrayref(qq~
-            SELECT guid FROM problem_sources WHERE guid LIKE ? ESCAPE '\\'~, undef, $guid);
-        $self->import_one_source($_, @nt) for @$guids;
+        $self->import_one_source($_, @nt) for $self->{import_source}->get_guids($guid);
     } else {
         $self->import_one_source($guid, @nt);
     }

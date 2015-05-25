@@ -15,6 +15,7 @@ use CATS::StaticPages;
 use CATS::DevEnv;
 use CATS::Problem::Parser;
 use CATS::Problem::Repository;
+use CATS::Problem::ImportSource::DB;
 use FormalInput;
 
 use fields qw(contest_id id import_log debug source parser encoding old_title replace repo de_list);
@@ -95,7 +96,12 @@ sub load
 {
     my CATS::Problem $self = shift;
     ($self->{source}, $self->{contest_id}, $self->{id}, $self->{replace}, $self->{repo}, my $message, my $is_amend) = @_;
-    $self->{parser} = CATS::Problem::Parser->new(source => $self->{source}, logger => $self, old_title => $self->{old_title});
+    $self->{parser} = CATS::Problem::Parser->new(
+        source => $self->{source},
+        import_source => CATS::Problem::ImportSource::DB->new,
+        logger => $self,
+        old_title => $self->{old_title}
+    );
 
     my $error = $self->{parser}->parse;
     if ($error) {
