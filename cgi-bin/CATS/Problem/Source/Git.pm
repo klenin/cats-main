@@ -11,6 +11,8 @@ use CATS::BinaryFile;
 use CATS::Misc qw(cats_dir);
 use CATS::Problem::Repository;
 
+use base qw(CATS::Problem::Source::Base);
+
 my $tmp_repo_template = 'repoXXXXXX';
 
 sub new
