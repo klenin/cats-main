@@ -11,6 +11,8 @@ use CATS::Constants;
 use CATS::BinaryFile;
 use CATS::Misc qw($git_author_name $git_author_email cats_dir);
 
+use base qw(CATS::Problem::Source::Base);
+
 my $tmp_template = 'zipXXXXXX';
 
 sub new
