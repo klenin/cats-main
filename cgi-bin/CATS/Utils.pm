@@ -9,7 +9,9 @@ BEGIN {
     no strict;
     @ISA = qw(Exporter);
     @EXPORT = qw(
+        blob_mimetype
         coalesce
+        mode_str
         file_type
         file_type_long
         chop_str
@@ -48,6 +50,89 @@ sub S_ISGITLINK
     my $mode = shift;
 
     return (($mode & S_IFMT) == S_IFGITLINK)
+}
+
+# mimetype related functions
+
+sub mimetype_guess_file
+{
+    my ($filename, $mimemap) = @_;
+    -r $mimemap or return undef;
+
+    my %mimemap;
+    open (my $mh, '<', $mimemap) or return undef;
+    while (<$mh>) {
+        next if m/^#/; # skip comments
+        my ($mimetype, @exts) = split(/\s+/);
+        foreach my $ext (@exts) {
+            $mimemap{$ext} = $mimetype;
+        }
+    }
+    close($mh);
+
+    $filename =~ /\.([^.]*)$/;
+    return $mimemap{$1};
+}
+
+sub mimetype_guess
+{
+    my $filename = shift;
+    my $mime;
+    $filename =~ /\./ or return undef;
+
+    $mime ||= mimetype_guess_file($filename, '/etc/mime.types');
+    return $mime;
+}
+
+sub blob_mimetype
+{
+    my ($fd, $filename) = @_;
+
+    if ($filename) {
+        my $mime = mimetype_guess($filename);
+        $mime and return $mime;
+    }
+
+    # just in case
+    return 'text/plain' unless $fd;
+
+    if (-T $fd) {
+        return 'text/plain';
+    } elsif (! $filename) {
+        return 'application/octet-stream';
+    } elsif ($filename =~ m/\.png$/i) {
+        return 'image/png';
+    } elsif ($filename =~ m/\.gif$/i) {
+        return 'image/gif';
+    } elsif ($filename =~ m/\.jpe?g$/i) {
+        return 'image/jpeg';
+    } else {
+        return 'application/octet-stream';
+    }
+}
+
+
+# convert file mode in octal to symbolic file mode string
+sub mode_str
+{
+    my $mode = oct shift;
+
+    if (S_ISGITLINK($mode)) {
+        return 'm---------';
+    } elsif (S_ISDIR($mode & S_IFMT)) {
+        return 'drwxr-xr-x';
+    } elsif (S_ISLNK($mode)) {
+        return 'lrwxrwxrwx';
+    } elsif (S_ISREG($mode)) {
+        # git cares only about the executable bit
+        if ($mode & S_IXUSR) {
+            return '-rwxr-xr-x';
+        } else {
+            return '-rw-r--r--';
+        };
+    } else {
+        return '----------';
+    }
 }
 
 

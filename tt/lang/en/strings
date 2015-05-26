@@ -77,6 +77,8 @@
 567 "message for team"
 568 "history"
 569 "download this version"
+570 "files"
+571 "commit diff"
 700 "ok"
 701 "on hold"
 702 "disabled"
