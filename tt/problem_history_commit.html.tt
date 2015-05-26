@@ -30,6 +30,7 @@
     </table>
 </div>
 <div class="page_body">
+    [% PROCESS 'includes/encoding_form.html.tti' capt_enc = capt.enc %]
     [% IF commit.info.comment_lines.size > 0 %]
     <div class="log">
     [% FOREACH line IN commit.info.comment_lines %]

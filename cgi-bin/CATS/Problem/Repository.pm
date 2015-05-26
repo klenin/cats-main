@@ -777,8 +777,9 @@ sub tree
 
 sub blob
 {
-    my ($self, $hash_base, $file) = @_;
+    my ($self, $hash_base, $file, $enc) = @_;
     die "No file name defined" if !defined $file;
+    die 'No encoding defined' if !defined $enc;
 
     my $hash = $self->git_get_hash_by_path($hash_base, $file, 'blob');
 
@@ -805,6 +806,7 @@ sub blob
         my $nr;
         while (my $line = <$fd>) {
             chomp $line;
+            $line = Encode::decode($enc, $line);
             $line = untabify($line);
             $nr++;
             push @{$result->{lines}}, {number => $nr, text => $line};

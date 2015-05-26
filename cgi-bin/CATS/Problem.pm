@@ -116,8 +116,8 @@ sub show_tree
 
 sub show_blob
 {
-    my ($pid, $hash_base, $file) = @_;
-    return get_repo($pid, $hash_base, 1)->blob($hash_base, $file);
+    my ($pid, $hash_base, $file, $enc) = @_;
+    return get_repo($pid, $hash_base, 1)->blob($hash_base, $file, $enc);
 }
 
 

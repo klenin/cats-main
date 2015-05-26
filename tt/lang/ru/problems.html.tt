@@ -30,6 +30,7 @@
     amend => 'исправить',
     message => 'Сообщение',
     file_editing => 'Редактирование файла',
+    enc => 'Кодировка',
   });
   MACRO to_monitor(console) BLOCK; "Для наблюдения за ходом тестирования откройте ${console}"; END;
 %]

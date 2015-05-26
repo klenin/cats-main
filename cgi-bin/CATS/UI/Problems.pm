@@ -11,7 +11,7 @@ use CATS::Misc qw(
     $t $is_jury $is_root $is_team $sid $cid $uid $contest $is_virtual $virtual_diff_time
     cats_dir init_template init_listview_template msg res_str url_f auto_ext
     order_by sort_listview define_columns attach_listview problem_status_names);
-use CATS::Utils qw(url_function file_type date_to_iso encoding_param);
+use CATS::Utils qw(url_function file_type date_to_iso encoding_param source_encodings);
 use CATS::Data qw(:all);
 use CATS::StaticPages;
 use CATS::Problem::Text;
@@ -849,7 +849,7 @@ sub problems_frame
 
 sub problem_commitdiff
 {
-    my ($pid, $title, $sha, $import_log) = @_;
+    my ($pid, $title, $sha, $se, $import_log) = @_;
 
     init_template('problem_history_commit.html.tt');
     my $submenu = [
@@ -858,10 +858,11 @@ sub problem_commitdiff
         { href => url_f('problems', git_download => $pid, sha => $sha), item => res_str(569) },
     ];
     $t->param(
-        commit => CATS::Problem::show_commit($pid, $sha, encoding_param('repo_enc')),
+        commit => CATS::Problem::show_commit($pid, $sha, $se),
         problem_title => $title,
         submenu => $submenu,
         problem_import_log => $import_log,
+        source_encodings => source_encodings($se),
     );
 }
 
@@ -869,7 +870,8 @@ sub problem_history_commit_frame
 {
     my ($pid, $title) = @_;
     my $sha = url_param('h') or return redirect url_f('problem_history', pid => $pid);
-    problem_commitdiff($pid, $title, $sha);
+    my $se = param('src_enc') || 'WINDOWS-1251';
+    problem_commitdiff($pid, $title, $sha, $se);
 }
 
 sub set_history_paths_urls
@@ -923,7 +925,8 @@ sub problem_history_blob_frame
 
     init_template('problem_history_blob.html.tt');
 
-    my $blob = CATS::Problem::show_blob($pid, $hash_base, $file);
+    my $se = param('src_enc') || 'WINDOWS-1251';
+    my $blob = CATS::Problem::show_blob($pid, $hash_base, $file, $se);
     set_history_paths_urls($pid, $blob->{paths});
     my @items = !$blob->{is_remote} && !$blob->{image} && $blob->{latest_sha} eq $hash_base
               ? { href => url_f('problem_history', a => 'edit', file => $file, hb => $hash_base, pid => $pid), item => res_str(572) }
@@ -933,6 +936,7 @@ sub problem_history_blob_frame
     $t->param(
         blob => $blob,
         problem_title => $title,
+        source_encodings => source_encodings($se),
     );
 }
 
