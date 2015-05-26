@@ -964,26 +964,30 @@ sub problem_history_edit_frame
         && $hash_base eq CATS::Problem::get_latest_master_sha($pid) || return redirect url_f('problem_history', pid => $pid);
     init_template('problem_history_edit_file.html.tt');
 
+    my $se = param('src_enc') || 'WINDOWS-1251';
     if (defined param('save')) {
         my $content = param('source');
         my CATS::Problem $p = CATS::Problem->new;
+        Encode::from_to($content, 'utf8', $se);
         my ($error, $latest_sha) = $p->change_file($cid, $pid, $file, $content, param('message'), param('is_amend') || 0);
-        $error or return problem_commitdiff($pid, $title, $latest_sha, $p->encoded_import_log());
+
+        $error or return problem_commitdiff($pid, $title, $latest_sha, $se, $p->encoded_import_log());
+
         $t->param(
-            content => $content,
+            content => Encode::decode('utf8', param('source')),
             problem_import_log => $p->encoded_import_log()
         );
     }
 
-    my $blob = CATS::Problem::show_blob($pid, $hash_base, $file);
+    my $blob = CATS::Problem::show_blob($pid, $hash_base, $file, $se);
 
     set_submenu_for_tree_frame($pid, $hash_base);
     set_history_paths_urls($pid, $blob->{paths});
-
     $t->param(
         file => $file,
         blob => $blob,
         problem_title => $title,
+        source_encodings => source_encodings($se),
     );
 }
 

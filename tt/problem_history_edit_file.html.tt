@@ -20,6 +20,7 @@
     [% END %]
 </div>
 <div class="page_body">
+    [% PROCESS 'includes/encoding_form.html.tti' capt_enc = capt.enc %]
     <form method="post" accept-charset="UTF-8" style="margin: 0">
         <div>
 <textarea rows="40" cols="100" name="source">
