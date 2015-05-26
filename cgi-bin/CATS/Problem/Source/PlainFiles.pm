@@ -60,7 +60,7 @@ sub read_member
 sub finalize
 {
     # TODO: needed some changes in architecture
-    my ($self, $dbh, $problem, $message, $is_amend, $repo_id, $sha) = @_;
+    my ($self, $problem, $message, $is_amend, $repo_id, $sha) = @_;
 
     my $path = cats_dir() . $cats::repos_dir;
 

@@ -126,7 +126,7 @@ sub get_log
 sub add_history
 {
     my ($self, $message, $is_amend) = @_;
-    $self->{source}->finalize($dbh, $self, $message, $is_amend, get_repo_id($self->{id}));
+    $self->{source}->finalize($self, $message, $is_amend, get_repo_id($self->{id}));
 }
 
 
@@ -154,19 +154,19 @@ sub load
             XMLDecl => sub { $self->{encoding} = $_[2] },
         );
         $parser->parse($self->{source}->read_member($xml_members[0]));
+        $self->add_history($message, $is_amend);
     };
 
-    if ($@) {
+    my $repo = get_repo($self->{id}, undef, 0);
+    if (my $err = $@) {
+        eval { $self->{replace} ? $repo->reset('HEAD')->checkout : $repo->delete; };
         $dbh->rollback unless $self->{debug};
-        $self->note("Import failed: $@");
+        $self->note("Import failed: $err");
+        $self->note("Cleaning of repository failed: $@") if $@;
         return -1;
     }
     else {
-        unless ($self->{debug}) {
-            $dbh->commit;
-            eval { $self->add_history($message, $is_amend); };
-            $self->note("Warning: $@") if $@;
-        }
+        $dbh->commit unless $self->{debug};
         $self->note('Success import');
         return 0;
     }

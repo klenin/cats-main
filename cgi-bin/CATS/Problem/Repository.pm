@@ -979,6 +979,21 @@ sub is_remote
     return defined $remote_url && $remote_url ne '';
 }
 
+sub reset
+{
+    my ($self, $arg) = @_;
+    $self->git("reset $arg");
+    return $self;
+}
+
+sub checkout
+{
+    my ($self, $what) = @_;
+    $what //= '.';
+    $self->git("checkout $what");
+    return $self;
+}
+
 sub commit
 {
     my ($self, $problem_author, $message, $is_amend) = @_;

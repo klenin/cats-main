@@ -7,6 +7,7 @@ use File::Temp qw(tempdir);
 use File::Copy::Recursive qw(dirmove);
 use Archive::Zip qw(:ERROR_CODES :CONSTANTS);
 
+use CATS::DB;
 use CATS::Constants;
 use CATS::BinaryFile;
 use CATS::Misc qw($git_author_name $git_author_email cats_dir);
@@ -82,7 +83,7 @@ sub extract
 
 sub finalize
 {
-    my ($self, $dbh, $problem, $message, $is_amend, $repo_id, $sha) = @_;
+    my ($self, $problem, $message, $is_amend, $repo_id, $sha) = @_;
 
     my $path = cats_dir() . $cats::repos_dir;
 
@@ -109,7 +110,6 @@ sub finalize
         $dbh->do(qq~
             UPDATE problems SET repo = ?, commit_sha = ? WHERE id = ?~, undef,
                 '', '', $problem->{id});
-        $dbh->commit;
     }
 }
 
