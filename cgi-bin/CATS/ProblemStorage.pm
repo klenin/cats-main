@@ -9,8 +9,10 @@ use CATS::Constants;
 use CATS::Misc qw(cats_dir msg);
 use CATS::StaticPages;
 use CATS::DevEnv;
+
 use CATS::Problem::Parser;
 use CATS::Problem::Repository;
+use CATS::Problem::ImportSource;
 use CATS::Problem::Source::PlainFiles;
 
 use fields qw(old_title import_log debug parser de_list);
@@ -128,6 +130,7 @@ sub load_problem
 
     $self->{parser} = CATS::Problem::Parser->new(
         source => $source,
+        import_source => CATS::Problem::ImportSource::DB->new,
         logger => $self,
         problem_desc => {
             id => $pid,

@@ -20,6 +20,7 @@ sub new
     my ($class, %opts) = @_;
     $opts{source} or die "Unknown source for parser";
     $opts{problem} = CATS::Problem->new(%{$opts{problem_desc}});
+    $opts{import_source} or die 'Unknown import source';
     delete $opts{problem_desc};
     return bless \%opts => $class;
 }
@@ -443,8 +444,7 @@ sub import_one_source
     my CATS::Problem::Parser $self = shift;
     my ($guid, $name, $type) = @_;
     push @{$self->{problem}{imports}}, my $import = { guid => $guid, name => $name };
-    my ($src_id, $stype) = $dbh->selectrow_array(qq~
-        SELECT id, stype FROM problem_sources WHERE guid = ?~, undef, $guid);
+    my ($src_id, $stype) = $self->{import_source}->get_source($guid);
 
     !$type || ($type = $import->{type} = CATS::Problem::module_types()->{$type})
         or $self->error("Unknown import source type: $type");
@@ -469,9 +469,7 @@ sub start_tag_Import
     if ($guid =~ /\*/) {
         $guid =~ s/%/\\%/g;
         $guid =~ s/\*/%/g;
-        my $guids = $dbh->selectcol_arrayref(qq~
-            SELECT guid FROM problem_sources WHERE guid LIKE ? ESCAPE '\\'~, undef, $guid);
-        $self->import_one_source($_, @nt) for @$guids;
+        $self->import_one_source($_, @nt) for $self->{import_source}->get_guids($guid);
     } else {
         $self->import_one_source($guid, @nt);
     }
