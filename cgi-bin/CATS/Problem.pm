@@ -163,12 +163,12 @@ sub load
         $dbh->rollback unless $self->{debug};
         $self->note("Import failed: $err");
         $self->note("Cleaning of repository failed: $@") if $@;
-        return -1;
+        return (-1, undef);
     }
     else {
         $dbh->commit unless $self->{debug};
         $self->note('Success import');
-        return 0;
+        return (0, $repo->get_latest_master_sha);
     }
 }
 

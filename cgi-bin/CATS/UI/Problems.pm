@@ -99,15 +99,12 @@ sub problems_link_save
 
 sub set_problem_import_diff
 {
-    my $pid = shift;
-    my $log = CATS::Problem::get_log($pid, undef, 1);
-    if (@$log) {
-        my $log_line = shift @$log;
-        $t->param(problem_import_diff => {
-            %$log_line,
-            href_commit => url_f('problem_history', pid => $pid, h => $log_line->{sha}),
-        });
-    }
+    my ($pid, $sha) = @_;
+    $t->param(problem_import_diff => {
+        sha => $sha,
+        abbreviated_sha => substr($sha, 0, 8),
+        href_commit => url_f('problem_history', pid => $pid, h => $sha),
+    });
 }
 
 sub problems_replace
@@ -130,11 +127,11 @@ sub problems_replace
     my $fname = save_uploaded_file('zip');
 
     $p->{old_title} = $old_title unless param('allow_rename');
-    my $error = $p->load(CATS::Problem::Source::Zip->new($fname, $p), $cid, $pid, 1, $repo, param('message'), param('is_amend'));
+    my ($error, $result_sha) = $p->load(CATS::Problem::Source::Zip->new($fname, $p), $cid, $pid, 1, $repo, param('message'), param('is_amend'));
     $t->param(problem_import_log => $p->encoded_import_log());
     #unlink $fname;
     if (!$error) {
-        set_problem_import_diff($pid);
+        set_problem_import_diff($pid, $result_sha);
     } else {
         $dbh->rollback;
         return msg(1008);
@@ -156,7 +153,7 @@ sub problems_add
     }
 
     my CATS::Problem $p = CATS::Problem->new;
-    my $error = $is_remote
+    my ($error, $result_sha) = $is_remote
               ? $p->load(CATS::Problem::Source::Git->new($source_name, $p), $cid, new_id, 0, $source_name)
               : $p->load(CATS::Problem::Source::Zip->new($source_name, $p), $cid, new_id, 0, undef);
     $t->param(problem_import_log => $p->encoded_import_log());
@@ -164,7 +161,7 @@ sub problems_add
 
     if (!$error) {
         $dbh->commit;
-        set_problem_import_diff($p->{id});
+        set_problem_import_diff($p->{id}, $result_sha);
     } else {
         $dbh->rollback;
         msg(1008);

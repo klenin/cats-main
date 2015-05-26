@@ -973,6 +973,14 @@ sub get_remote_url
     return $remote_url;
 }
 
+sub get_latest_master_sha
+{
+    my $self = shift;
+    my $sha = join '', $self->git('rev-parse master');
+    chomp $sha;
+    return $sha;
+}
+
 sub is_remote
 {
     my $remote_url = $_[0]->get_remote_url;
