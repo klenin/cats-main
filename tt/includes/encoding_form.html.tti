@@ -1,0 +1,9 @@
+[% DEFAULT select_name = 'src_enc'%]
+<form action="[% enc_from_link %]" method="post">
+  <select name="[% select_name %]">
+    [% FOREACH source_encodings %]
+      <option value="[% enc %]"[% IF selected %] selected="selected"[% END %]>[% enc %]</option>
+    [% END %]
+  </select>
+  <input type="submit" class="button" value="[% capt_enc %]" />
+</form>
