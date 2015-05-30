@@ -5,7 +5,7 @@
 [% IF problem_import_log %]
 [% capt.problem_import_log %]:<br/>
 <textarea cols="100" rows="10" readonly="readonly">
-[% problem_import_log %]
+[% problem_import_log | html %]
 </textarea>
 [% END %]
 

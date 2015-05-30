@@ -9,14 +9,10 @@
 <table>
 <tr>
 <td>
-<form action="[% href_current_link %]" method="post">
-  <select name="src_enc">
-  [% FOREACH source_encodings %]
-  <option value="[% enc %]"[% IF selected %] selected="selected"[% END %]>[% enc %]</option>
-  [% END %]
-  </select>
-  <input type="submit" class="button" value="[% capt.encoding %]" />
-</form>
+[% PROCESS 'includes/encoding_form.html.tti'
+    capt_enc = capt.encoding
+    enc_form_link = href_current_link
+%]
 </td>
 <td>
 [% IF is_jury %]

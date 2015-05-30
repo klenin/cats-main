@@ -6,7 +6,7 @@ use warnings;
 use Algorithm::Diff;
 use CATS::Web qw(param url_param headers upload_source content_type);
 use CATS::DB;
-use CATS::Utils qw(state_to_display url_function encodings encoding_param);
+use CATS::Utils qw(state_to_display url_function encodings source_encodings encoding_param);
 use CATS::Misc qw($is_jury $sid $t $uid init_template msg res_str url_f problem_status_names);
 use CATS::Data qw(is_jury_in_contest enforce_request_state);
 use CATS::IP;
@@ -43,8 +43,7 @@ sub source_links
     $t->param(is_jury => $is_jury);
     get_judges($si) if $is_jury;
     my $se = param('src_enc') || param('comment_enc') || 'WINDOWS-1251';
-    $t->param(source_encodings =>
-        [ map {{ enc => $_, selected => $_ eq $se }} sort keys %{encodings()} ]);
+    $t->param(source_encodings => source_encodings($se));
 }
 
 

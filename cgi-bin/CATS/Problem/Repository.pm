@@ -22,10 +22,12 @@ use warnings;
 
 use Fcntl ':mode';
 use File::Path;
+use File::Spec;
 use File::Temp qw(tempdir tempfile);
 use File::Copy::Recursive qw(dircopy);
 
 use CATS::Problem::Authors;
+use CATS::BinaryFile;
 use CATS::Utils qw(blob_mimetype untabify unquote mode_str file_type file_type_long chop_str);
 
 my $tmp_template = 'zipXXXXXX';
@@ -775,8 +777,9 @@ sub tree
 
 sub blob
 {
-    my ($self, $hash_base, $file) = @_;
+    my ($self, $hash_base, $file, $enc) = @_;
     die "No file name defined" if !defined $file;
+    die 'No encoding defined' if !defined $enc;
 
     my $hash = $self->git_get_hash_by_path($hash_base, $file, 'blob');
 
@@ -785,6 +788,8 @@ sub blob
     my $result = {
         lines => [],
         paths => $self->format_page_path($file, 'blob', $hash_base),
+        latest_sha => $self->get_latest_master_sha,
+        is_remote => $self->get_remote_url,
     };
 
     my $mimetype = blob_mimetype($fd, $file);
@@ -801,6 +806,7 @@ sub blob
         my $nr;
         while (my $line = <$fd>) {
             chomp $line;
+            $line = Encode::decode($enc, $line);
             $line = untabify($line);
             $nr++;
             push @{$result->{lines}}, {number => $nr, text => $line};
@@ -826,6 +832,7 @@ sub raw
     return {
         type => $mimetype,
         content => $content,
+        latest_sha => $self->get_latest_master_sha,
     };
 }
 
@@ -956,6 +963,12 @@ sub add
     return $self;
 }
 
+sub replace_file_content
+{
+    my ($self, $file, $content) = @_;
+    CATS::BinaryFile::save(File::Spec->catfile($self->{dir}, $file), $content);
+}
+
 sub move_history
 {
     my ($self, %opts) = @_;
@@ -973,10 +986,33 @@ sub get_remote_url
     return $remote_url;
 }
 
+sub get_latest_master_sha
+{
+    my $self = shift;
+    my $sha = join '', $self->git('rev-parse master');
+    chomp $sha;
+    return $sha;
+}
+
 sub is_remote
 {
     my $remote_url = $_[0]->get_remote_url;
     return defined $remote_url && $remote_url ne '';
+}
+
+sub reset
+{
+    my ($self, $arg) = @_;
+    $self->git("reset $arg");
+    return $self;
+}
+
+sub checkout
+{
+    my ($self, $what) = @_;
+    $what //= '.';
+    $self->git("checkout $what");
+    return $self;
 }
 
 sub commit
