@@ -109,7 +109,7 @@ sub finalize
     if ($problem->{replace} && $repo_id != $problem->{id}) {
         $dbh->do(qq~
             UPDATE problems SET repo = ?, commit_sha = ? WHERE id = ?~, undef,
-                '', '', $problem->{id});
+                undef, undef, $problem->{id});
     }
 }
 

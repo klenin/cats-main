@@ -972,7 +972,8 @@ sub replace_file_content
 sub move_history
 {
     my ($self, %opts) = @_;
-    mkdir $self->{dir} unless -d $self->{dir};
+    rmtree $self->{dir};
+    mkdir $self->{dir};
     dircopy($opts{from}, $self->{dir}) or die "Can't copy dir: $!";
     $self->git("reset --hard $opts{sha}");
     return $self;
