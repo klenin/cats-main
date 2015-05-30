@@ -92,6 +92,7 @@ sub finalize
     );
 
     if ($problem->{replace}) {
+        $repo->init unless -d $repo->{dir}; # Some repos were not created during mass import.
         $repo->move_history(from => "$path/$repo_id/", sha => $sha) unless $repo_id == $problem->{id};
         $self->extract($repo);
         $message ||= 'Update task';
