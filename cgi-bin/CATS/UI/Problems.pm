@@ -205,13 +205,8 @@ sub download_problem
     my $fname = "./download/pr/problem_$hash.zip";
     unless($already_hashed && -f $fname)
     {
-        my ($zip) = eval { $dbh->selectrow_array(qq~
-            SELECT zip_archive FROM problems WHERE id = ?~, undef, $pid); };
-        if ($@)
-        {
-            print header(), $@;
-            return;
-        }
+        my ($zip) = $dbh->selectrow_array(qq~
+            SELECT zip_archive FROM problems WHERE id = ?~, undef, $pid);
         CATS::BinaryFile::save(cats_dir() . $fname, $zip);
     }
     redirect($fname);
