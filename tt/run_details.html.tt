@@ -4,15 +4,11 @@
 
 [% PROCESS 'includes/sources_info.tti' %]
 <br/>
-
-<form action="[% href_current_link %]" method="post">
-  <select name="comment_enc">
-  [% FOREACH source_encodings %]
-  <option value="[% enc %]"[% IF selected %]selected="selected"[% END %]>[% enc %]</option>
-  [% END %]
-  </select>
-  <input type="submit" class="button" value="[% capt.encoding %]" />
-</form>
+[% PROCESS 'includes/encoding_form.html.tti'
+    capt_enc = capt.encoding
+    select_name = 'comment_enc'
+    enc_form_link = href_current_link
+%]
 
 <table><tr valign="top">
 [% FOREACH runs %]

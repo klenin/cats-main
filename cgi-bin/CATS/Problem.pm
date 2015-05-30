@@ -8,9 +8,10 @@ use Encode;
 use XML::Parser::Expat;
 use JSON::XS;
 
+use CATS::Problem::Source::PlainFiles;
 use CATS::Constants;
 use CATS::DB;
-use CATS::Misc qw(cats_dir msg);
+use CATS::Misc qw($git_author_name $git_author_email cats_dir msg);
 use CATS::StaticPages;
 use CATS::DevEnv;
 use FormalInput;
@@ -68,7 +69,13 @@ sub get_repo_id
        SELECT repo, commit_sha FROM problems WHERE id = ?~, undef, $id);
     my $p = cats_dir() . $cats::repos_dir;
     warn 'Repository not found' unless (($db_id ne '' && -d "$p$db_id/") || -d "$p$id/");
-    return $db_id =~ '/\d+/' ? ($db_id, $db_sha) : ($id, $sha // '');
+    $db_id =~ /^\d+$/ ? ($db_id, $db_sha) : ($id, $sha // '');
+}
+
+
+sub get_remote_url
+{
+    defined $_[0] && $_[0] !~ /^\d+$/ ? $_[0] : undef;
 }
 
 
@@ -88,6 +95,12 @@ sub get_repo_archive
 }
 
 
+sub get_latest_master_sha
+{
+    get_repo(@_)->get_latest_master_sha;
+}
+
+
 sub show_commit
 {
     my ($pid, $sha, $enc) = @_;
@@ -103,8 +116,8 @@ sub show_tree
 
 sub show_blob
 {
-    my ($pid, $hash_base, $file) = @_;
-    return get_repo($pid, $hash_base, 1)->blob($hash_base, $file);
+    my ($pid, $hash_base, $file, $enc) = @_;
+    return get_repo($pid, $hash_base, 1)->blob($hash_base, $file, $enc);
 }
 
 
@@ -126,14 +139,13 @@ sub get_log
 sub add_history
 {
     my ($self, $message, $is_amend) = @_;
-    $self->{source}->finalize($dbh, $self, $message, $is_amend, get_repo_id($self->{id}));
+    $self->{source}->finalize($self, $message, $is_amend, get_repo_id($self->{id}));
 }
 
-
-sub load
+sub load_problem
 {
     my CATS::Problem $self = shift;
-    ($self->{source}, $self->{contest_id}, $self->{id}, $self->{replace}, $self->{repo}, my $message, my $is_amend) = @_;
+    my ($message, $is_amend) = @_;
 
     eval {
         $self->{source}->init;
@@ -154,22 +166,44 @@ sub load
             XMLDecl => sub { $self->{encoding} = $_[2] },
         );
         $parser->parse($self->{source}->read_member($xml_members[0]));
+        $self->add_history($message, $is_amend);
     };
 
-    if ($@) {
+    my $repo = get_repo($self->{id}, undef, 0);
+    if (my $err = $@) {
+        eval { $self->{replace} ? $repo->reset('HEAD')->checkout : $repo->delete; };
         $dbh->rollback unless $self->{debug};
-        $self->note("Import failed: $@");
-        return -1;
+        $self->note("Import failed: $err");
+        $self->note("Cleaning of repository failed: $@") if $@;
+        return (-1, undef);
     }
     else {
-        unless ($self->{debug}) {
-            $dbh->commit;
-            eval { $self->add_history($message, $is_amend); };
-            $self->note("Warning: $@") if $@;
-        }
+        $dbh->commit unless $self->{debug};
         $self->note('Success import');
-        return 0;
+        return (0, $repo->get_latest_master_sha);
     }
+}
+
+
+sub load
+{
+    my CATS::Problem $self = shift;
+    ($self->{source}, $self->{contest_id}, $self->{id}, $self->{replace}, $self->{repo}, my $message, my $is_amend) = @_;
+
+    return $self->load_problem($message, $is_amend);
+}
+
+sub change_file
+{
+    my CATS::Problem $self = shift;
+    ($self->{contest_id}, $self->{id}, my $file, my $content, my $message, my $is_amend) = @_;
+    my $repo = get_repo($self->{id});
+    $repo->replace_file_content($file, $content);
+
+    $self->{replace} = 1;
+    $self->{source} = CATS::Problem::Source::PlainFiles->new(dir => $repo->get_dir, logger => $self);
+
+    return $self->load_problem($message, $is_amend);
 }
 
 

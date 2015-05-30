@@ -1,4 +1,5 @@
 [% PROCESS 'includes/menu_begin.tti' %]
+[%- PROCESS "lang/$lang/problems.html.tt" -%]
 [%- PROCESS 'includes/html.tti' -%]
 <style>
     @import 'docs/std/git.css';
@@ -13,9 +14,14 @@
 <div class="page_body">
     [% IF blob.image %]
     <img src="[% blob.image %]">
-    [% END %]
+    [% ELSE %]
+        [% PROCESS 'includes/encoding_form.html.tti'
+            capt_enc = capt.enc
+            enc_form_link = href_current_link
+        %]
     [% FOREACH line IN blob.lines %]
         <div class="pre"><span class="linenr">[% line.number %]</span> [% line.text | html | quote_controls %]</div>
+    [% END %]
     [% END %]
 </div>
 [% PROCESS 'includes/menu_end.tti' %]

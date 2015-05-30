@@ -1,8 +1,15 @@
 [% PROCESS 'includes/menu_begin.tti' %]
+[%- PROCESS "lang/$lang/problems.html.tt" -%]
 [%- PROCESS 'includes/html.tti' -%]
 <style>
   @import 'docs/std/git.css';
 </style>
+[% IF problem_import_log %]
+[% capt.problem_import_log %]:<br/>
+<textarea cols="100" rows="10" readonly="readonly">
+[% problem_import_log %]
+</textarea>
+[% END %]
 <div class="commit_header">[% commit.info.title | html %]</div>
 [%- MACRO authorship_row(who) BLOCK -%]
     [%- name = "${who}_name" -%]
@@ -23,6 +30,7 @@
     </table>
 </div>
 <div class="page_body">
+    [% PROCESS 'includes/encoding_form.html.tti' capt_enc = capt.enc %]
     [% IF commit.info.comment_lines.size > 0 %]
     <div class="log">
     [% FOREACH line IN commit.info.comment_lines %]
