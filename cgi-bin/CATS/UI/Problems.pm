@@ -963,13 +963,13 @@ sub problem_history_edit_frame
     if (defined param('save')) {
         my $content = param('source');
         my CATS::Problem $p = CATS::Problem->new;
-        Encode::from_to($content, 'utf8', $se);
+        Encode::from_to($content, encoding_param('enc'), $se);
         my ($error, $latest_sha) = $p->change_file($cid, $pid, $file, $content, param('message'), param('is_amend') || 0);
 
         $error or return problem_commitdiff($pid, $title, $latest_sha, $se, $p->encoded_import_log());
 
         $t->param(
-            content => Encode::decode('utf8', param('source')),
+            content => Encode::decode(encoding_param('enc'), param('source')),
             problem_import_log => $p->encoded_import_log()
         );
     }
