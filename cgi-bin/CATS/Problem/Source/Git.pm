@@ -63,7 +63,7 @@ sub read_member
 
 sub finalize
 {
-    my ($self, $problem, $message, $is_amend, $repo_id, $sha) = @_;
+    my ($self, $dbh, $logger, $problem, $message, $is_amend, $repo_id, $sha) = @_;
 
     my $repo_path = cats_dir() . $cats::repos_dir . "/$problem->{id}/";
     dircopy($self->{dir}, $repo_path);

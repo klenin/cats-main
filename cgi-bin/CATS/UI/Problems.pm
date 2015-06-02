@@ -14,6 +14,7 @@ use CATS::Misc qw(
 use CATS::Utils qw(url_function file_type date_to_iso encoding_param source_encodings);
 use CATS::Data qw(:all);
 use CATS::StaticPages;
+use CATS::ProblemStorage;
 use CATS::Problem::Text;
 use CATS::Problem::Source::Zip;
 use CATS::Problem::Source::Git;
@@ -121,8 +122,8 @@ sub problems_replace
     $contest_id == $cid
         or return msg(117);
 
-    my CATS::Problem $p = CATS::Problem->new;
-    return if CATS::Problem::get_repo($pid, undef, 1, logger => CATS::Problem->new)->is_remote;
+    my CATS::ProblemStorage $p = CATS::ProblemStorage->new;
+    return if CATS::ProblemStorage::get_repo($pid, undef, 1, logger => CATS::ProblemStorage->new)->is_remote;
 
     my $fname = save_uploaded_file('zip');
 
@@ -152,16 +153,16 @@ sub problems_add
             or return msg(1017);
     }
 
-    my CATS::Problem $p = CATS::Problem->new;
-    my ($error, $result_sha) = $is_remote
+    my CATS::ProblemStorage $p = CATS::ProblemStorage->new;
+    my ($error, $result_sha, $problem) = $is_remote
               ? $p->load(CATS::Problem::Source::Git->new($source_name, $p), $cid, new_id, 0, $source_name)
               : $p->load(CATS::Problem::Source::Zip->new($source_name, $p), $cid, new_id, 0, undef);
     $t->param(problem_import_log => $p->encoded_import_log());
-    $error ||= !add_problem_to_contest($p->{id}, $problem_code);
+    $error ||= !add_problem_to_contest($problem->{id}, $problem_code);
 
     if (!$error) {
         $dbh->commit;
-        set_problem_import_diff($p->{id}, $result_sha);
+        set_problem_import_diff($problem->{id}, $result_sha);
     } else {
         $dbh->rollback;
         msg(1008);
@@ -221,7 +222,7 @@ sub git_download_problem
     defined $status && ($is_jury || $status != $cats::problem_st_hidden)
         or return;
     undef $t;
-    my ($fname, $tree_id) = CATS::Problem::get_repo_archive($pid, $sha);
+    my ($fname, $tree_id) = CATS::ProblemStorage::get_repo_archive($pid, $sha);
     content_type('application/zip');
     headers(
         'Accept-Ranges', 'bytes',
@@ -547,7 +548,7 @@ sub problems_frame_jury_action
     defined param('std_solution') and return problems_submit_std_solution;
     defined param('mass_retest') and return problems_mass_retest;
     my $cpid = url_param('delete');
-    CATS::Problem::delete($cpid) if $cpid;
+    CATS::ProblemStorage::delete($cpid) if $cpid;
 }
 
 sub problem_select_testsets_frame
@@ -766,7 +767,7 @@ sub problems_frame
     {
         my $c = $_[0]->fetchrow_hashref or return ();
         $c->{status} ||= 0;
-        my $remote_url = CATS::Problem::get_remote_url($c->{repo});
+        my $remote_url = CATS::ProblemStorage::get_remote_url($c->{repo});
         return (
             href_delete => url_f('problems', 'delete' => $c->{cpid}),
             href_change_status => url_f('problems', 'change_status' => $c->{cpid}),
@@ -853,7 +854,7 @@ sub problem_commitdiff
         { href => url_f('problems', git_download => $pid, sha => $sha), item => res_str(569) },
     ];
     $t->param(
-        commit => CATS::Problem::show_commit($pid, $sha, $se),
+        commit => CATS::ProblemStorage::show_commit($pid, $sha, $se),
         problem_title => $title,
         submenu => $submenu,
         problem_import_log => $import_log,
@@ -896,7 +897,7 @@ sub problem_history_tree_frame
 
     init_template('problem_history_tree.html.tt');
 
-    my $tree = CATS::Problem::show_tree($pid, $hash_base, url_param('file') || undef, encoding_param('repo_enc'));
+    my $tree = CATS::ProblemStorage::show_tree($pid, $hash_base, url_param('file') || undef, encoding_param('repo_enc'));
     for (@{$tree->{entries}}) {
         $_->{href} = url_f('problem_history', a => $_->{type}, file => $_->{name}, pid => $pid, h => $_->{hash}, hb => $hash_base)
             if $_->{type} eq 'blob' || $_->{type} eq 'tree';
@@ -921,7 +922,7 @@ sub problem_history_blob_frame
     init_template('problem_history_blob.html.tt');
 
     my $se = param('src_enc') || 'WINDOWS-1251';
-    my $blob = CATS::Problem::show_blob($pid, $hash_base, $file, $se);
+    my $blob = CATS::ProblemStorage::show_blob($pid, $hash_base, $file, $se);
     set_history_paths_urls($pid, $blob->{paths});
     my @items = !$blob->{is_remote} && !$blob->{image} && $blob->{latest_sha} eq $hash_base
               ? { href => url_f('problem_history', a => 'edit', file => $file, hb => $hash_base, pid => $pid), item => res_str(572) }
@@ -941,7 +942,7 @@ sub problem_history_raw_frame
     my $hash_base = url_param('hb') or return redirect url_f('problem_history', pid => $pid);
     my $file = url_param('file') || undef;
 
-    my $blob = CATS::Problem::show_raw($pid, $hash_base, $file);
+    my $blob = CATS::ProblemStorage::show_raw($pid, $hash_base, $file);
     content_type($blob->{type});
     headers('Content-Disposition', "inline; filename=$file");
     binmode STDOUT, ':raw';
@@ -955,14 +956,14 @@ sub problem_history_edit_frame
     my $hash_base = url_param('hb');
     my $file = url_param('file');
 
-    $hash_base && $file && !CATS::Problem::get_remote_url($repo_name)
-        && $hash_base eq CATS::Problem::get_latest_master_sha($pid) || return redirect url_f('problem_history', pid => $pid);
+    $hash_base && $file && !CATS::ProblemStorage::get_remote_url($repo_name)
+        && $hash_base eq CATS::ProblemStorage::get_latest_master_sha($pid) || return redirect url_f('problem_history', pid => $pid);
     init_template('problem_history_edit_file.html.tt');
 
     my $se = param('src_enc') || 'WINDOWS-1251';
     if (defined param('save')) {
         my $content = param('source');
-        my CATS::Problem $p = CATS::Problem->new;
+        my CATS::ProblemStorage $p = CATS::ProblemStorage->new;
         Encode::from_to($content, encoding_param('enc'), $se);
         my ($error, $latest_sha) = $p->change_file($cid, $pid, $file, $content, param('message'), param('is_amend') || 0);
 
@@ -974,7 +975,7 @@ sub problem_history_edit_frame
         );
     }
 
-    my $blob = CATS::Problem::show_blob($pid, $hash_base, $file, $se);
+    my $blob = CATS::ProblemStorage::show_blob($pid, $hash_base, $file, $se);
 
     set_submenu_for_tree_frame($pid, $hash_base);
     set_history_paths_urls($pid, $blob->{paths});
@@ -1014,7 +1015,7 @@ sub problem_history_frame
     init_listview_template('problem_history', 'problem_history', auto_ext('problem_history'));
     $t->param(problem_title => $title, pid => $pid);
 
-    my $repo = CATS::Problem::get_repo($pid, undef, 1, logger => CATS::Problem->new);
+    my $repo = CATS::ProblemStorage::get_repo($pid, undef, 1, logger => CATS::ProblemStorage->new);
 
     problems_replace if defined param('replace');
 
@@ -1045,7 +1046,7 @@ sub problem_history_frame
             href_download => url_f('problems', git_download => $pid, sha => $log->{sha}),
         );
     };
-    attach_listview(url_f('problem_history', pid => $pid), $fetch_record, sort_listview(CATS::Problem::get_log($pid)));
+    attach_listview(url_f('problem_history', pid => $pid), $fetch_record, sort_listview(CATS::ProblemStorage::get_log($pid)));
 }
 
 1;
