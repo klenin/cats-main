@@ -132,6 +132,7 @@ sub load_problem
         source => $source,
         import_source => CATS::Problem::ImportSource::DB->new,
         logger => $self,
+        id_gen => \&new_id,
         problem_desc => {
             id => $pid,
             repo => $remote_url,
