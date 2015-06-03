@@ -1,4 +1,5 @@
 [%- capt = {}; PROCESS "lang/$lang/${template.name}" -%]
+[%- USE Javascript -%]
 
 [%- IF not_started -%]
   <i>[% capt.not_started %]</i>
@@ -81,7 +82,7 @@
 [% IF rank %]<script type="text/javascript"><!--
 var rank_table = [
 [% FOREACH r IN rank %]
-  { id: [% r.account_id %], n: "[% r.team_name | html %]",[% IF show_points %]
+  { id: [% r.account_id %], n: "[% r.team_name | $Javascript %]",[% IF show_points %]
     pt: [[% FOREACH c IN r.columns %]'[% c.points %]'[% UNLESS loop.last %],[% END %][% END %]], tp: [% r.total_points %][% ELSE %]
     tm: [[% FOREACH c IN r.columns %]'[% c.time %]'[% UNLESS loop.last %],[% END %][% END %]],
     td: [[% FOREACH c IN r.columns %]'[% c.td %]'[% UNLESS loop.last %],[% END %][% END %]],
