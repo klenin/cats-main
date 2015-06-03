@@ -24,8 +24,8 @@
     <form method="post" accept-charset="UTF-8" style="margin: 0">
         <div>
 <textarea rows="40" cols="100" name="source">
-[%- IF content; content; ELSE; FOREACH line IN blob.lines %]
-[% line.text %]
+[%- IF content; content | html; ELSE; FOREACH line IN blob.lines %]
+[% line.text | html %]
 [%- END; END -%]
 </textarea>
         </div>
