@@ -256,7 +256,7 @@ sub on_end_tag
 sub stml_handlers
 {
     my $v = $_[0];
-    ( s => sub { $_[0]->{stml} = \$_[0]->{$v} }, e => \&end_stml );
+    ( s => sub { $_[0]->{stml} = \$_[0]->{problem}->{$v} }, e => \&end_stml );
 }
 
 sub end_stml
