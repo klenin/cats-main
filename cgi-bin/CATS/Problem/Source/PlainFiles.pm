@@ -7,8 +7,6 @@ use File::Spec;
 use Archive::Zip qw(:ERROR_CODES :CONSTANTS);
 
 use CATS::BinaryFile;
-use CATS::Config qw(cats_dir);
-use CATS::Misc qw($git_author_name $git_author_email);
 
 use base qw(CATS::Problem::Source::Base);
 
@@ -60,16 +58,7 @@ sub read_member
 sub finalize
 {
     # TODO: needed some changes in architecture
-    my ($self, $dbh, $logger, $problem, $message, $is_amend, $repo_id, $sha) = @_;
-
-    my $path = $CATS::Config::repos_dir;
-
-    my $repo = CATS::Problem::Repository->new(
-        dir => "$path/$problem->{id}/",
-        logger => $logger,
-        author_name => $git_author_name,
-        author_email => $git_author_email
-    );
+    my ($self, $dbh, $repo, $problem, $message, $is_amend, $repo_id, $sha) = @_;
     $repo->add()->commit($self->{problem}{author}, $message, $is_amend);
 }
 

@@ -8,8 +8,6 @@ use File::Copy::Recursive qw(dirmove);
 use Archive::Zip qw(:ERROR_CODES :CONSTANTS);
 
 use CATS::BinaryFile;
-use CATS::Config qw(cats_dir);
-use CATS::Misc qw($git_author_name $git_author_email);
 
 use base qw(CATS::Problem::Source::Base);
 
@@ -82,20 +80,11 @@ sub extract
 
 sub finalize
 {
-    my ($self, $dbh, $logger, $problem, $message, $is_amend, $repo_id, $sha) = @_;
-
-    my $path = $CATS::Config::repos_dir;
-
-    my $repo = CATS::Problem::Repository->new(
-        dir => "$path/$problem->{id}/",
-        logger => $logger,
-        author_name => $git_author_name,
-        author_email => $git_author_email
-    );
+    my ($self, $dbh, $repo, $problem, $message, $is_amend, $repo_id, $sha) = @_;
 
     if ($problem->{replace}) {
         $repo->init unless -d $repo->{dir}; # Some repos were not created during mass import.
-        $repo->move_history(from => "$path/$repo_id/", sha => $sha) unless $repo_id == $problem->{id};
+        $repo->move_history(from => $CATS::Config::repos_dir . "/$repo_id/", sha => $sha) unless $repo_id == $problem->{id};
         $self->extract($repo);
         $message ||= 'Update task';
     } else {
