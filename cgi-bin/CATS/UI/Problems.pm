@@ -983,6 +983,7 @@ sub problem_history_edit_frame
         file => $file,
         blob => $blob,
         problem_title => $title,
+        src_enc => $se,
         source_encodings => source_encodings($se),
     );
 }
