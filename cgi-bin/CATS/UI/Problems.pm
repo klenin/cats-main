@@ -962,14 +962,16 @@ sub problem_history_edit_frame
 
     my $se = param('src_enc') || 'WINDOWS-1251';
     if (defined param('save')) {
+        my $message = param('message');
         my $content = param('source');
         my CATS::ProblemStorage $p = CATS::ProblemStorage->new;
         Encode::from_to($content, encoding_param('enc'), $se);
-        my ($error, $latest_sha) = $p->change_file($cid, $pid, $file, $content, param('message'), param('is_amend') || 0);
+        my ($error, $latest_sha) = $p->change_file($cid, $pid, $file, $content, $message, param('is_amend') || 0);
 
         $error or return problem_commitdiff($pid, $title, $latest_sha, $se, $p->encoded_import_log());
 
         $t->param(
+            message => $message,
             content => Encode::decode(encoding_param('enc'), param('source')),
             problem_import_log => $p->encoded_import_log()
         );
