@@ -33,7 +33,7 @@
           <p><label><input type="checkbox" name="is_amend" value="1"/> [% capt.amend %]</label></p>
           <p>
             <label for="message">[% capt.message %]:</label><br/>
-            <textarea id="message" name="message" cols="50" rows="5"></textarea>
+            <textarea id="message" name="message" cols="50" rows="5">[% IF message; message; END %]</textarea>
           </p>
           <p>
             <input type="submit" name="save" value="[% capt.save %]" class="button" />
