@@ -13,6 +13,8 @@
 "submit_time": "[% c.time_iso %]",
 "state": [% c.request_state %],
 "status": "[% c.request_state_text %]",
+[% IF c.points.defined %]"points": [% c.points %],
+[% END -%]
 "problem_title" : "[% c.problem_title | $Javascript %]"
 [% END -%]
 [% IF c.is_question -%]

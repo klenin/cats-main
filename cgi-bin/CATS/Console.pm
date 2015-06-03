@@ -132,7 +132,7 @@ sub console_content
             R.problem_id AS problem_id,
             P.title AS problem_title,
             $de_sql,
-            CAST(NULL AS INTEGER) AS clarified,
+            R.points AS clarified,
             D.t_blob AS question,
             D.t_blob AS answer,
             D.t_blob AS jury_message,
@@ -384,6 +384,8 @@ sub console_content
             is_contest =>           $rtype == 5 || $rtype == 6,
             contest_start =>        $rtype == 5,
             is_official =>          $request_state,
+            # Hack: re-use 'clarified' field since it is relevant for questions only.
+            points =>               $clarified,
             clarified =>            $clarified,
             href_details => (
                 ($uid && $team_id && $uid == $team_id) ? url_f('run_details', rid => $id) : ''
