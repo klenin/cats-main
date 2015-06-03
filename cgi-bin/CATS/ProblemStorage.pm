@@ -6,7 +6,7 @@ use warnings;
 
 use CATS::DB;
 use CATS::Constants;
-use CATS::Misc qw(msg);
+use CATS::Misc qw($git_author_name $git_author_email msg);
 use CATS::StaticPages;
 use CATS::DevEnv;
 
@@ -119,7 +119,8 @@ sub get_log
 sub add_history
 {
     my ($self, $source, $problem, $message, $is_amend) = @_;
-    $source->finalize($dbh, $self, $problem, $message, $is_amend, get_repo_id($problem->{id}));
+    my $repo = get_repo($problem->{id}, undef, 0, logger => $self, author_name => $git_author_name, author_email => $git_author_email);
+    $source->finalize($dbh, $repo, $problem, $message, $is_amend, get_repo_id($problem->{id}));
 }
 
 
