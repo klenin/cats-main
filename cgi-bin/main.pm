@@ -198,17 +198,20 @@ sub accept_request
 
 use LWP::UserAgent;
 
+my @whitelist = qw(www.codechef.com judge.u-aizu.ac.jp compprog.win.tue.nl);
+
 sub handler {
     my $r = shift;
     init_request($r);
     if ((param('f') || '') eq 'proxy') {
         my $url = param('u') or die;
-        $url =~ m[^http://(neerc\.ifmo\.ru|judge\.u-aizu\.ac\.jp)/] or die;
+        my $r = join '|', map "\Q$_\E", @whitelist;
+        $url =~ m[^http(s)?://($r)/] or die;
         my $ua = LWP::UserAgent->new;
         $ua->proxy(http => $CATS::Config::proxy) if $CATS::Config::proxy;
         my $res = $ua->request(HTTP::Request->new(GET => $url));
         $res->is_success or die $res->status_line;
-        if ((my $json = param('json')) =~ /^[a-zA-Z0-9_]+$/) {
+        if ((my $json = param('json')) =~ /^[a-zA-Z_][a-zA-Z0-9_]*$/) {
             CATS::Web::content_type('application/json');
             print $json, '(', encode_json({ result => $res->content }), ')';
         }
