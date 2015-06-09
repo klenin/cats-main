@@ -7,7 +7,7 @@ use CATS::Web qw(param url_param);
 use CATS::DB;
 use CATS::Misc qw(
     $t $is_jury $is_root $is_team $sid $cid $uid $contest $is_virtual $settings
-    cats_dir init_template init_listview_template msg res_str url_f auto_ext
+    init_template init_listview_template msg res_str url_f auto_ext
     order_by define_columns attach_listview references_menu);
 use CATS::RankTable;
 

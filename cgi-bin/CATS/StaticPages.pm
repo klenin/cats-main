@@ -5,7 +5,6 @@ use warnings;
 
 use CATS::Web qw(url_param restore_parameters);
 use CATS::DB;
-use CATS::Misc qw(cats_dir);
 
 sub allowed_pages
 {{
@@ -41,7 +40,7 @@ sub name
 
 
 sub url_static { './static/' . name(@_) . '.html'; }
-sub path { cats_dir() . '../static/' }
+sub path { CATS::Config::cats_dir() . '../static/' }
 sub full_name { path() . name(@_) . '.html' }
 
 

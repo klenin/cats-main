@@ -8,7 +8,7 @@ use CATS::DB;
 use CATS::Constants;
 use CATS::Misc qw(
     $t $is_jury $is_root $is_team $sid $cid $uid $contest $is_virtual $settings
-    cats_dir init_template init_listview_template msg res_str url_f auto_ext
+    init_template init_listview_template msg res_str url_f auto_ext
     order_by define_columns attach_listview);
 use CATS::Utils qw(url_function param_on coalesce date_to_iso);
 use CATS::Data qw(:all);
@@ -66,7 +66,7 @@ sub register_contest_account
     $dbh->do(qq~
         INSERT INTO contest_accounts ($f) VALUES ($v)~, undef,
         values %p);
-    my $p = cats_dir() . "./rank_cache/$p{contest_id}#";
+    my $p = CATS::Config::cats_dir() . "./rank_cache/$p{contest_id}#";
     unlink <$p*>;
 }
 

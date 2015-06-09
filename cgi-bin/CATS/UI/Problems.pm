@@ -9,7 +9,7 @@ use CATS::DB;
 use CATS::Constants;
 use CATS::Misc qw(
     $t $is_jury $is_root $is_team $sid $cid $uid $contest $is_virtual $virtual_diff_time
-    cats_dir init_template init_listview_template msg res_str url_f auto_ext
+    init_template init_listview_template msg res_str url_f auto_ext
     order_by sort_listview define_columns attach_listview problem_status_names);
 use CATS::Utils qw(url_function file_type date_to_iso encoding_param source_encodings);
 use CATS::Data qw(:all);
@@ -205,7 +205,7 @@ sub download_problem
     {
         my ($zip) = $dbh->selectrow_array(qq~
             SELECT zip_archive FROM problems WHERE id = ?~, undef, $pid);
-        CATS::BinaryFile::save(cats_dir() . $fname, $zip);
+        CATS::BinaryFile::save(CATS::Config::cats_dir() . $fname, $zip);
     }
     redirect($fname);
 }

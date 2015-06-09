@@ -10,7 +10,6 @@ BEGIN
     no strict;
     @ISA = qw(Exporter);
     @EXPORT = qw(
-        cats_dir
         get_anonymous_uid
         initialize
         auto_ext
@@ -75,12 +74,6 @@ my $visible_pages = 5;
 
 my @display_rows = (10, 20, 30, 40, 50, 100, 300);
 
-my $cats_dir;
-sub cats_dir()
-{
-    $cats_dir ||= $ENV{CATS_DIR} || '/usr/local/apache/CATS/cgi-bin/';
-}
-
 
 sub get_anonymous_uid
 {
@@ -110,14 +103,14 @@ sub templates_path
         }
     }
 
-    cats_dir() . $cats::templates[0]->{path};
+    CATS::Config::cats_dir() . $cats::templates[0]->{path};
 }
 
 sub lang { $settings->{lang} || 'ru' }
 
 sub init_messages_lang {
     my ($lang) = @_;
-    my $msg_file = cats_dir() . "../tt/lang/$lang/strings";
+    my $msg_file = CATS::Config::cats_dir() . "../tt/lang/$lang/strings";
 
     my $r = [];
     open my $f, '<', $msg_file or
@@ -195,7 +188,7 @@ sub init_template
     %extra_headers = $ext eq 'ics' ?
         ('Content-Disposition' => "inline;filename=$base_name.ics") : ();
     #$template_file = $file_name;
-    $t = CATS::Template->new($file_name, cats_dir(), $p);
+    $t = CATS::Template->new($file_name, CATS::Config::cats_dir(), $p);
     my $json = param('json');
     $t->param(lang => lang, $json =~ /^[a-zA-Z][a-zA-Z0-9_]+$/ ? (jsonp => $json) : ());
 }

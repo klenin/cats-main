@@ -54,7 +54,7 @@ sub personal_official_results
             if ($search) {
                 $YAML::Syck::ImplicitUnicode = 1;
                 my $clist = join ',', @$j;
-                my $cache_file = cats_dir() . "./rank_cache/r/$clist";
+                my $cache_file = CATS::Config::cats_dir() . "./rank_cache/r/$clist";
                 unless (-f $cache_file) {
                     my $rt = CATS::RankTable->new;
                     $rt->{hide_ooc} = 1;

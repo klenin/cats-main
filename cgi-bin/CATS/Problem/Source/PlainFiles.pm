@@ -8,7 +8,7 @@ use Archive::Zip qw(:ERROR_CODES :CONSTANTS);
 
 use CATS::Constants;
 use CATS::BinaryFile;
-use CATS::Misc qw($git_author_name $git_author_email cats_dir);
+use CATS::Misc qw($git_author_name $git_author_email);
 
 use base qw(CATS::Problem::Source::Base);
 
@@ -62,7 +62,7 @@ sub finalize
     # TODO: needed some changes in architecture
     my ($self, $dbh, $logger, $problem, $message, $is_amend, $repo_id, $sha) = @_;
 
-    my $path = cats_dir() . $cats::repos_dir;
+    my $path = CATS::Config::cats_dir() . $cats::repos_dir;
 
     my $repo = CATS::Problem::Repository->new(
         dir => "$path/$problem->{id}/",

@@ -8,7 +8,6 @@ use File::Copy::Recursive qw(dircopy);
 
 use CATS::Constants;
 use CATS::BinaryFile;
-use CATS::Misc qw(cats_dir);
 use CATS::Problem::Repository;
 
 use base qw(CATS::Problem::Source::Base);
@@ -65,7 +64,7 @@ sub finalize
 {
     my ($self, $dbh, $logger, $problem, $message, $is_amend, $repo_id, $sha) = @_;
 
-    my $repo_path = cats_dir() . $cats::repos_dir . "/$problem->{id}/";
+    my $repo_path = CATS::Config::cats_dir() . $cats::repos_dir . "/$problem->{id}/";
     dircopy($self->{dir}, $repo_path);
 }
 
