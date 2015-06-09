@@ -9,8 +9,6 @@ $anonymous_login = 'anonymous';
 
 @langs = qw(ru en);
 
-$repos_dir = 'repos/';
-
 # Values for accounts.srole.
 $srole_root = 0;
 $srole_user = 1;

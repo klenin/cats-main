@@ -52,7 +52,7 @@ sub get_repo_id
     my ($id, $sha) = @_;
     my ($db_id, $db_sha) = $dbh->selectrow_array(qq~
        SELECT repo, commit_sha FROM problems WHERE id = ?~, undef, $id);
-    my $p = cats_dir() . $cats::repos_dir;
+    my $p = $CATS::Config::repos_dir;
     warn 'Repository not found' unless (($db_id ne '' && -d "$p$db_id/") || -d "$p$id/");
     $db_id =~ /^\d+$/ ? ($db_id, $db_sha) : ($id, $sha // '');
 }
@@ -62,7 +62,7 @@ sub get_repo
 {
     my ($pid, $sha, $need_find, %opts) = @_;
     ($pid, $sha) = get_repo_id($pid, $sha) if $need_find;
-    $opts{dir} = cats_dir() . "$cats::repos_dir$pid/";
+    $opts{dir} = $CATS::Config::repos_dir . "$pid/";
     return CATS::Problem::Repository->new(%opts);
 }
 
@@ -71,7 +71,7 @@ sub get_repo_archive
 {
     my ($pid, $sha) = @_;
     ($pid) = get_repo_id($pid);
-    return CATS::Problem::Repository->new(dir => cats_dir . "$cats::repos_dir$pid/")->archive($sha);
+    return CATS::Problem::Repository->new(dir => $CATS::Config::repos_dir . "$pid/")->archive($sha);
 }
 
 

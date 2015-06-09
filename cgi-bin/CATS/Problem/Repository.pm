@@ -800,8 +800,8 @@ sub blob
     }
 
     if ($mimetype =~ m!^image/!) {
-        my @parts = split $cats::repos_dir, $self->{dir} . $file;
-        $result->{image} = $cats::repos_dir . $parts[1];
+        my @parts = split CATS::Config::cats_dir, $self->{dir} . $file;
+        $result->{image} = $parts[1];
     } else {
         my $nr;
         while (my $line = <$fd>) {
