@@ -772,7 +772,14 @@ sub tree
     }
 
     my %co = $self->parse_commit($hash_base);
-    return { entries => \@entries, commit => \%co, basedir => $basedir, paths => $self->format_page_path($file, 'tree', $hash_base)};
+    return {
+        entries => \@entries,
+        commit => \%co,
+        basedir => $basedir,
+        paths => $self->format_page_path($file, 'tree', $hash_base),
+        latest_sha => $self->get_latest_master_sha,
+        is_remote => $self->get_remote_url,
+    };
 }
 
 sub blob

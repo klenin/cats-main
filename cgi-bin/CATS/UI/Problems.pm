@@ -903,6 +903,8 @@ sub problem_history_tree_frame
             if $_->{type} eq 'blob' || $_->{type} eq 'tree';
         if ($_->{type} eq 'blob') {
             $_->{href_raw} = url_f('problem_history', a => 'raw', file => $_->{name}, pid => $pid, hb => $hash_base);
+            $_->{href_edit} = url_f('problem_history', a => 'edit', file => $_->{name}, pid => $pid, hb => $hash_base)
+                if !$tree->{is_remote} && !$tree->{image} && $tree->{latest_sha} eq $hash_base
         }
     }
     set_history_paths_urls($pid, $tree->{paths});
