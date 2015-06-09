@@ -26,7 +26,6 @@ BEGIN {
         date_to_iso
         encodings
         source_encodings
-        encoding_param
     );
 
     %EXPORT_TAGS = (all => [@EXPORT]);
@@ -35,7 +34,6 @@ BEGIN {
 use Text::Balanced qw(extract_tagged extract_bracketed);
 use Digest::MD5;
 use Fcntl ':mode';
-use CATS::Web qw(param);
 
 use constant {
     S_IFGITLINK => 0160000,
@@ -443,11 +441,6 @@ sub encodings { {'UTF-8' => 1, 'WINDOWS-1251' => 1, 'KOI8-R' => 1, 'CP866' => 1,
 sub source_encodings
 {
     [ map {{ enc => $_, selected => $_ eq $_[0] }} sort keys %{encodings()} ];
-}
-
-sub encoding_param {
-    my $enc = param($_[0]) || '';
-    encodings->{$enc} ? $enc : ($_[1] || 'UTF-8');
 }
 
 1;

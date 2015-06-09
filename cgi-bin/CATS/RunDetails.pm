@@ -4,9 +4,9 @@ use strict;
 use warnings;
 
 use Algorithm::Diff;
-use CATS::Web qw(param url_param headers upload_source content_type);
+use CATS::Web qw(param encoding_param url_param headers upload_source content_type);
 use CATS::DB;
-use CATS::Utils qw(state_to_display url_function encodings source_encodings encoding_param);
+use CATS::Utils qw(state_to_display url_function encodings source_encodings);
 use CATS::Misc qw($is_jury $sid $t $uid init_template msg res_str url_f problem_status_names);
 use CATS::Data qw(is_jury_in_contest enforce_request_state);
 use CATS::IP;
