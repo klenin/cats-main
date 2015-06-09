@@ -4,14 +4,14 @@ use strict;
 use warnings;
 
 use File::stat;
-use CATS::Web qw(param url_param redirect upload_source save_uploaded_file content_type headers);
+use CATS::Web qw(param url_param encoding_param redirect upload_source save_uploaded_file content_type headers);
 use CATS::DB;
 use CATS::Constants;
 use CATS::Misc qw(
     $t $is_jury $is_root $is_team $sid $cid $uid $contest $is_virtual $virtual_diff_time
     init_template init_listview_template msg res_str url_f auto_ext
     order_by sort_listview define_columns attach_listview problem_status_names);
-use CATS::Utils qw(url_function file_type date_to_iso encoding_param source_encodings);
+use CATS::Utils qw(url_function file_type date_to_iso source_encodings);
 use CATS::Data qw(:all);
 use CATS::StaticPages;
 use CATS::ProblemStorage;
