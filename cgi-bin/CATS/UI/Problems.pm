@@ -891,6 +891,11 @@ sub set_submenu_for_tree_frame
     $t->param(submenu => $submenu);
 }
 
+sub is_allow_editing {
+    my ($git_data, $hb) = @_;
+    !$git_data->{is_remote} && !$git_data->{image} && $git_data->{latest_sha} eq $hb;
+}
+
 sub problem_history_tree_frame
 {
     my ($pid, $title) = @_;
@@ -904,6 +909,8 @@ sub problem_history_tree_frame
             if $_->{type} eq 'blob' || $_->{type} eq 'tree';
         if ($_->{type} eq 'blob') {
             $_->{href_raw} = url_f('problem_history', a => 'raw', file => $_->{name}, pid => $pid, hb => $hash_base);
+            $_->{href_edit} = url_f('problem_history', a => 'edit', file => $_->{name}, pid => $pid, hb => $hash_base)
+                if is_allow_editing($tree, $hash_base)
         }
     }
     set_history_paths_urls($pid, $tree->{paths});
@@ -925,7 +932,7 @@ sub problem_history_blob_frame
     my $se = param('src_enc') || 'WINDOWS-1251';
     my $blob = CATS::ProblemStorage::show_blob($pid, $hash_base, $file, $se);
     set_history_paths_urls($pid, $blob->{paths});
-    my @items = !$blob->{is_remote} && !$blob->{image} && $blob->{latest_sha} eq $hash_base
+    my @items = is_allow_editing($blob, $hash_base)
               ? { href => url_f('problem_history', a => 'edit', file => $file, hb => $hash_base, pid => $pid), item => res_str(572) }
               : ();
     set_submenu_for_tree_frame($pid, $hash_base, @items);
