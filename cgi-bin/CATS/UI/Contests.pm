@@ -8,8 +8,9 @@ use CATS::DB;
 use CATS::Constants;
 use CATS::Misc qw(
     $t $is_jury $is_root $is_team $sid $cid $uid $contest $is_virtual $settings
-    cats_dir init_template init_listview_template msg res_str url_f auto_ext
+    init_template init_listview_template msg res_str url_f auto_ext
     order_by define_columns attach_listview);
+use CATS::Config qw(cats_dir);
 use CATS::Utils qw(url_function param_on coalesce date_to_iso);
 use CATS::Data qw(:all);
 use CATS::StaticPages;

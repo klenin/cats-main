@@ -8,7 +8,8 @@ use Archive::Zip qw(:ERROR_CODES :CONSTANTS);
 
 use CATS::Constants;
 use CATS::BinaryFile;
-use CATS::Misc qw($git_author_name $git_author_email cats_dir);
+use CATS::Config qw(cats_dir);
+use CATS::Misc qw($git_author_name $git_author_email);
 
 use base qw(CATS::Problem::Source::Base);
 

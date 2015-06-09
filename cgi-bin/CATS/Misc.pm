@@ -10,7 +10,6 @@ BEGIN
     no strict;
     @ISA = qw(Exporter);
     @EXPORT = qw(
-        cats_dir
         get_anonymous_uid
         initialize
         auto_ext
@@ -59,6 +58,7 @@ use CATS::Constants;
 use CATS::IP;
 use CATS::Contest;
 use CATS::Utils qw();
+use CATS::Config qw(cats_dir);
 
 
 use vars qw(
@@ -74,12 +74,6 @@ my $max_fetch_row_count = 1000;
 my $visible_pages = 5;
 
 my @display_rows = (10, 20, 30, 40, 50, 100, 300);
-
-my $cats_dir;
-sub cats_dir()
-{
-    $cats_dir ||= $ENV{CATS_DIR} || '/usr/local/apache/CATS/cgi-bin/';
-}
 
 
 sub get_anonymous_uid

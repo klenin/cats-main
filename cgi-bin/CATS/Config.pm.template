@@ -1,5 +1,15 @@
 package CATS::Config;
 
+BEGIN {
+    use Exporter;
+
+    no strict;
+    @ISA = qw(Exporter);
+    @EXPORT = qw(cats_dir);
+
+    %EXPORT_TAGS = (all => [@EXPORT]);
+}
+
 # This is a template file, you should adjust parameters below
 # and copy this file to the same folder, but with .template extenison removed
 
@@ -13,5 +23,11 @@ our $db_user = '<your-username>';
 our $db_password = '<your-password>';
 
 our $proxy = '<your-proxy-server>';
+
+our $cats_dir;
+sub cats_dir()
+{
+    $cats_dir ||= $ENV{CATS_DIR} || '/usr/local/apache/CATS/cgi-bin/';
+}
 
 1;

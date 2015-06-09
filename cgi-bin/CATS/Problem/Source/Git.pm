@@ -6,9 +6,9 @@ use warnings;
 use File::Temp qw(tempdir);
 use File::Copy::Recursive qw(dircopy);
 
+use CATS::Config qw(cats_dir);
 use CATS::Constants;
 use CATS::BinaryFile;
-use CATS::Misc qw(cats_dir);
 use CATS::Problem::Repository;
 
 use base qw(CATS::Problem::Source::Base);

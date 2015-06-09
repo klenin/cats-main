@@ -11,6 +11,7 @@ use lib '..';
 use CATS::Web qw(param url_param);
 use CATS::DB;
 use CATS::Misc qw(:all);
+use CATS::Config qw(cats_dir);
 use CATS::RankTable;
 
 

@@ -12,7 +12,8 @@ use CATS::Constants;
 use CATS::DB;
 use CATS::Testset;
 use CATS::Misc qw(
-    $t $is_jury $is_team $virtual_diff_time $cid $uid url_f $is_virtual $contest cats_dir);
+    $t $is_jury $is_team $virtual_diff_time $cid $uid url_f $is_virtual $contest);
+use CATS::Config qw(cats_dir);
 use CATS::Countries;
 
 use fields qw(

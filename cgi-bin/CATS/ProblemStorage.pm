@@ -6,7 +6,8 @@ use warnings;
 
 use CATS::DB;
 use CATS::Constants;
-use CATS::Misc qw(cats_dir msg);
+use CATS::Misc qw(msg);
+use CATS::Config qw(cats_dir);
 use CATS::StaticPages;
 use CATS::DevEnv;
 
@@ -61,7 +62,7 @@ sub get_repo
 {
     my ($pid, $sha, $need_find, %opts) = @_;
     ($pid, $sha) = get_repo_id($pid, $sha) if $need_find;
-    $opts{dir} = cats_dir . "$cats::repos_dir$pid/";
+    $opts{dir} = cats_dir() . "$cats::repos_dir$pid/";
     return CATS::Problem::Repository->new(%opts);
 }
 

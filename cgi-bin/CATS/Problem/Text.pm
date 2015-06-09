@@ -19,7 +19,8 @@ use XML::Parser::Expat;
 use Text::Aspell;
 
 use CATS::DB;
-use CATS::Misc qw($cid $contest $is_jury $t $uid cats_dir auto_ext init_template);
+use CATS::Config qw(cats_dir);
+use CATS::Misc qw($cid $contest $is_jury $t $uid auto_ext init_template);
 use CATS::StaticPages;
 
 my ($current_pid, $html_code, $spellchecker, $text_span);
