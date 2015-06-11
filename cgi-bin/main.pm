@@ -35,7 +35,7 @@ use CATS::Constants;
 use CATS::BinaryFile;
 use CATS::DevEnv;
 use CATS::Misc qw(:all);
-use CATS::Utils qw(coalesce url_function state_to_display param_on);
+use CATS::Utils qw(coalesce url_function state_to_display);
 use CATS::Data qw(:all);
 use CATS::IP;
 use CATS::Problem::Text;

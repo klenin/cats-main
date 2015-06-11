@@ -22,7 +22,6 @@ BEGIN {
         url_function
         state_to_display
         source_hash
-        param_on
         date_to_iso
         encodings
         source_encodings
@@ -422,12 +421,6 @@ sub balance_tags
 sub source_hash
 {
     Digest::MD5::md5_hex(Encode::encode_utf8($_[0]));
-}
-
-
-sub param_on
-{
-    return (param($_[0]) || '') eq 'on';
 }
 
 

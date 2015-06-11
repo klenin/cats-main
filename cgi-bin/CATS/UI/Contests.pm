@@ -3,7 +3,7 @@ package CATS::UI::Contests;
 use strict;
 use warnings;
 
-use CATS::Web qw(param url_param redirect);
+use CATS::Web qw(param param_on url_param redirect);
 use CATS::DB;
 use CATS::Constants;
 use CATS::Misc qw(
@@ -11,7 +11,7 @@ use CATS::Misc qw(
     init_template init_listview_template msg res_str url_f auto_ext
     order_by define_columns attach_listview);
 use CATS::Config qw(cats_dir);
-use CATS::Utils qw(url_function param_on coalesce date_to_iso);
+use CATS::Utils qw(url_function coalesce date_to_iso);
 use CATS::Data qw(:all);
 use CATS::StaticPages;
 use CATS::RankTable;

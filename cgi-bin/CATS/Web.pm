@@ -17,6 +17,7 @@ BEGIN {
         init_request
         url_param
         param
+        param_on
         encoding_param
         redirect
         headers
@@ -70,6 +71,12 @@ sub param
     _param(@_); # trick to change param implementation at runtime
 }
 *url_param = \&param;
+
+
+sub param_on
+{
+    return (param($_[0]) || '') eq 'on';
+}
 
 
 sub save_uploaded_file
