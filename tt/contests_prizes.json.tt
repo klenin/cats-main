@@ -1,0 +1,21 @@
+[%- WRAPPER includes/jsonp.tti -%]
+[%- USE Javascript -%]
+{
+[% IF message %]"message": "[% message | $Javascript %]"[% ELSE %]
+"contest_group": {
+  "id": [% cg.id %],
+  "name": "[% cg.name | $Javascript %]",
+  "contests": [[% cg.clist %]]
+},
+"prizes": [
+[% FOREACH cp IN contests_prizes %]
+{
+  "id": [% cp.id %],
+  "rank": [% cp.rank %],
+  "name": "[% cp.name | $Javascript %]"
+}
+[% UNLESS loop.last %],[% END %][% END %]
+]
+[% END %]
+}
+[%- END -%]
