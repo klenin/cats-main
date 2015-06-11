@@ -3,13 +3,12 @@ package CATS::UI::Compilers;
 use strict;
 use warnings;
 
-use CATS::Web qw(param url_param);
+use CATS::Web qw(param param_on url_param);
 use CATS::DB;
 use CATS::Misc qw(
     $t $is_jury $is_root
     init_template init_listview_template msg res_str url_f
     order_by define_columns attach_listview references_menu);
-use CATS::Utils qw(param_on);
 
 sub edit_frame
 {
