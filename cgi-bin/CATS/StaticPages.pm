@@ -40,7 +40,7 @@ sub name
 
 
 sub url_static { './static/' . name(@_) . '.html'; }
-sub path { $ENV{CATS_DIR} . '../static/' }
+sub path { CATS::Config::cats_dir() . '../static/' }
 sub full_name { path() . name(@_) . '.html' }
 
 

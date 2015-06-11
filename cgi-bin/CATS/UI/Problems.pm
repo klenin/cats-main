@@ -4,14 +4,14 @@ use strict;
 use warnings;
 
 use File::stat;
-use CATS::Web qw(param url_param redirect upload_source save_uploaded_file content_type headers);
+use CATS::Web qw(param url_param encoding_param redirect upload_source save_uploaded_file content_type headers);
 use CATS::DB;
 use CATS::Constants;
 use CATS::Misc qw(
     $t $is_jury $is_root $is_team $sid $cid $uid $contest $is_virtual $virtual_diff_time
-    cats_dir init_template init_listview_template msg res_str url_f auto_ext
+    init_template init_listview_template msg res_str url_f auto_ext
     order_by sort_listview define_columns attach_listview problem_status_names);
-use CATS::Utils qw(url_function file_type date_to_iso encoding_param source_encodings);
+use CATS::Utils qw(url_function file_type date_to_iso source_encodings);
 use CATS::Data qw(:all);
 use CATS::StaticPages;
 use CATS::ProblemStorage;
@@ -205,7 +205,7 @@ sub download_problem
     {
         my ($zip) = $dbh->selectrow_array(qq~
             SELECT zip_archive FROM problems WHERE id = ?~, undef, $pid);
-        CATS::BinaryFile::save(cats_dir() . $fname, $zip);
+        CATS::BinaryFile::save(CATS::Config::cats_dir() . $fname, $zip);
     }
     redirect($fname);
 }
@@ -904,6 +904,8 @@ sub problem_history_tree_frame
             if $_->{type} eq 'blob' || $_->{type} eq 'tree';
         if ($_->{type} eq 'blob') {
             $_->{href_raw} = url_f('problem_history', a => 'raw', file => $_->{name}, pid => $pid, hb => $hash_base);
+            $_->{href_edit} = url_f('problem_history', a => 'edit', file => $_->{name}, pid => $pid, hb => $hash_base)
+                if !$tree->{is_remote} && !$tree->{image} && $tree->{latest_sha} eq $hash_base
         }
     }
     set_history_paths_urls($pid, $tree->{paths});

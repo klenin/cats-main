@@ -6,6 +6,7 @@ use Apache2::Request;
 use Apache2::Upload;
 use Apache2::Const -compile => qw(OK REDIRECT NOT_FOUND);
 use Apache2::Cookie ();
+use CATS::Utils qw(encodings);
 
 use 5.010;
 
@@ -16,6 +17,7 @@ BEGIN {
         init_request
         url_param
         param
+        encoding_param
         redirect
         headers
         get_return_code
@@ -54,6 +56,14 @@ sub original_param
 }
 
 *_param = \&original_param;
+
+
+sub encoding_param
+{
+    my $enc = param($_[0]) || '';
+    encodings->{$enc} ? $enc : ($_[1] || 'UTF-8');
+}
+
 
 sub param
 {

@@ -14,4 +14,12 @@ our $db_password = '<your-password>';
 
 our $proxy = '<your-proxy-server>';
 
+our $repos_dir = cats_dir() . 'repos/';
+
+our $cats_dir;
+sub cats_dir()
+{
+    $cats_dir ||= $ENV{CATS_DIR} || '/usr/local/apache/CATS/cgi-bin/';
+}
+
 1;

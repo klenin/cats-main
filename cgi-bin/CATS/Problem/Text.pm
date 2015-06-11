@@ -19,7 +19,7 @@ use XML::Parser::Expat;
 use Text::Aspell;
 
 use CATS::DB;
-use CATS::Misc qw($cid $contest $is_jury $t $uid cats_dir auto_ext init_template);
+use CATS::Misc qw($cid $contest $is_jury $t $uid auto_ext init_template);
 use CATS::StaticPages;
 
 my ($current_pid, $html_code, $spellchecker, $text_span);
@@ -121,7 +121,7 @@ sub download_image
     $name =~ tr/a-zA-Z0-9_//cd;
     $ext =~ tr/a-zA-Z0-9_//cd;
     my $fname = "./download/img/img_${hash}_$name.$ext";
-    -f cats_dir() . $fname or CATS::BinaryFile::save(cats_dir() . $fname, $pic);
+    -f CATS::Config::cats_dir() . $fname or CATS::BinaryFile::save(CATS::Config::cats_dir() . $fname, $pic);
     return $fname;
 }
 
@@ -142,7 +142,7 @@ sub save_attachment
     $file =~ tr/a-zA-Z0-9_.//cd;
     $file =~ s/\.+/\./g;
     my $fname = "./download/att/${hash}_$file";
-    -f cats_dir() . $fname or CATS::BinaryFile::save(cats_dir() . $fname, $data);
+    -f CATS::Config::cats_dir() . $fname or CATS::BinaryFile::save(CATS::Config::cats_dir() . $fname, $data);
     return $fname;
 }
 
