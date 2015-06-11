@@ -831,6 +831,7 @@ sub problems_frame
             { href => url_f('problems', link => 1, move => 1), item => res_str(551) },
             !$p && ({ href => url_f('problems_retest'), item => res_str(556) }),
             { href => url_f('contests', params => $cid), item => res_str(546) },
+            { href => url_f('contests_prizes', clist => $cid), item => res_str(565) },
         )
         : (
             !$p && $pt_url->($text_link_f->('problem_text', cid => $cid)),

@@ -147,6 +147,7 @@ sub interface_functions ()
         import_sources => \&CATS::UI::ImportSources::import_sources_frame,
         download_import_source => \&CATS::UI::ImportSources::download_frame,
         prizes => \&CATS::UI::Prizes::prizes_frame,
+        contests_prizes => \&CATS::UI::Prizes::contests_prizes_frame,
 
         answer_box => \&CATS::UI::Messages::answer_box_frame,
         send_message_box => \&CATS::UI::Messages::send_message_box_frame,

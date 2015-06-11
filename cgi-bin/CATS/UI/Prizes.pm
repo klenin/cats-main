@@ -124,4 +124,38 @@ sub prizes_frame
     $t->param(submenu => [ references_menu('prizes') ]);
 }
 
+sub contests_prizes_frame
+{
+    init_listview_template('contests_prizes', 'contests_prizes', 'contests_prizes.html.tt');
+
+    my @clist = sanitize_clist param('clist');
+    @clist && @clist < 100 or return;
+    my $clist = join ',', @clist;
+
+    my $cg = $dbh->selectall_arrayref(q~
+        SELECT cg.id, cg.name FROM contest_groups cg WHERE clist = ?~, { Slice => {} },
+        $clist) or return;
+    $cg = $cg->[0] or return;
+
+    define_columns(url_f('contests_prizes', clist => $clist), 0, 0, [
+        { caption => res_str(647), order_by => '2', width => '30%' },
+        { caption => res_str(648), order_by => '3', width => '70%' },
+    ]);
+
+    my $c = $dbh->prepare(q~
+        SELECT p.id, p.rank, p.name FROM prizes p WHERE p.cg_id = ? ~ . order_by);
+    $c->execute($cg->{id});
+
+    my $fetch_record = sub {
+        my $f = $_[0]->fetchrow_hashref or return ();
+        (
+            %$f,
+        );
+    };
+
+    attach_listview(url_f('contests_prizes'), $fetch_record, $c);
+
+    #$t->param(submenu => [ references_menu('prizes') ]);
+}
+
 1;
