@@ -73,7 +73,7 @@ sub extract
     my ($self, $repo) = @_;
     my $tmpdir = tempdir($tmp_template, TMPDIR => 1, CLEANUP => 1);
     $self->{zip}->extractTree('', "$tmpdir/") == AZ_OK or die "can't extract '$self->{zip}' to $tmpdir\n";
-    $repo->rm(qw/'.' '-r' '--ignore-unmatch'/);
+    $repo->rm(qw/. -r --ignore-unmatch/);
     dirmove($tmpdir, $repo->get_dir);
     return $self;
 }
