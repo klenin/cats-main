@@ -134,7 +134,7 @@ chmod g+rw static tt cgi-bin/download/{,att,img,pr} cgi-bin/rank_cache{,/r}
 sudo service apache2 restart
 
 CONFIG_NAME="Config.pm"
-CONFIG_ROOT="${CATS_ROOT}/cgi-bin/CATS"
+CONFIG_ROOT="${CATS_ROOT}/cgi-bin/cats-problem/CATS"
 CREATE_DB_NAME="create_db.sql"
 CREATE_DB_ROOT="${CATS_ROOT}/sql/interbase"
 

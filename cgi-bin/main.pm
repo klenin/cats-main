@@ -13,9 +13,11 @@ use Time::HiRes;
 use JSON::XS;
 
 our $cats_lib_dir;
+our $cats_problem_lib_dir;
 BEGIN {
     $cats_lib_dir = $ENV{CATS_DIR} || '.';
     $cats_lib_dir =~ s/\/$//;
+    $cats_problem_lib_dir = "$cats_lib_dir/cats-problem";
     $Data::Dumper::Terse = 1;
     $Data::Dumper::Indent = 1;
     require Exporter;
@@ -26,6 +28,7 @@ BEGIN {
     our %EXPORT_TAGS = (all => [@EXPORT_OK]);
 }
 use lib $cats_lib_dir;
+use lib $cats_problem_lib_dir;
 
 
 use CATS::Web qw(param url_param redirect init_request get_return_code);
