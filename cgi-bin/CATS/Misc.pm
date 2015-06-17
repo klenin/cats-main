@@ -190,7 +190,7 @@ sub init_template
         ('Content-Disposition' => "inline;filename=$base_name.ics") : ();
     #$template_file = $file_name;
     $t = CATS::Template->new($file_name, cats_dir(), $p);
-    my $json = param('json');
+    my $json = param('json') || '';
     $t->param(lang => lang, $json =~ /^[a-zA-Z][a-zA-Z0-9_]+$/ ? (jsonp => $json) : ());
 }
 
@@ -378,9 +378,9 @@ sub generate_output
     $t->param(
         contest_title => $contest->{title},
         server_time => $contest->{server_time},
-    	current_team_name => $team_name,
-    	is_virtual => $is_virtual,
-    	virtual_diff_time => $virtual_diff_time);
+        current_team_name => $team_name,
+        is_virtual => $is_virtual,
+        virtual_diff_time => $virtual_diff_time);
 
     my $elapsed_minutes = int(($contest->{time_since_start} - $virtual_diff_time) * 1440);
     if ($elapsed_minutes < 0)
