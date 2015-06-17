@@ -227,7 +227,7 @@ sub handler {
     }
     $CATS::Misc::request_start_time = [ Time::HiRes::gettimeofday ];
     CATS::DB::sql_connect({
-        ib_timestampformat => '%d.%m.%Y %H:%M!',
+        ib_timestampformat => '%d.%m.%Y %H:%M',
         ib_dateformat => '%d.%m.%Y',
         ib_timeformat => '%H:%M:%S',
     });
