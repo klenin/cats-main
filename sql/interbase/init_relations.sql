@@ -123,7 +123,9 @@ CREATE TABLE problems (
     last_modified_by INTEGER REFERENCES accounts(id) ON DELETE SET NULL ON UPDATE CASCADE,
     max_points      INTEGER,
     hash            VARCHAR(200),
-    run_method      SMALLINT DEFAULT 0 CHECK (run_method IN (0, 1))
+    run_method      SMALLINT DEFAULT 0 CHECK (run_method IN (0, 1)),
+    statement_url   VARCHAR(200) DEFAULT '',
+    explanation_url VARCHAR(200) DEFAULT ''
 );
 
 
