@@ -90,10 +90,18 @@ sub envelope_frame
     $is_team && (my $rid = url_param('rid')) or return;
 
     my $r = $dbh->selectrow_hashref(qq~
-        SELECT R.submit_time, R.test_time, R.state, R.failed_test, R.account_id, A.team_name, C.title
+        SELECT R.submit_time, R.test_time, R.state, R.failed_test, R.account_id, A.team_name, C.title, 
+            RD.ac AS accepted_count, RD.tc AS total_count
             FROM reqs R
             INNER JOIN contests C ON C.id = R.contest_id
             INNER JOIN  accounts A ON A.id = R.account_id
+            LEFT OUTER JOIN (SELECT 
+                req_id,
+                count(req_id) AS tc,
+                sum(case result when $cats::st_accepted then 1 else null end) AS ac
+                FROM req_details
+                GROUP BY req_id
+            ) RD ON RD.req_id=R.id
             WHERE R.id = ? AND R.account_id = ?~, { Slice => {} },
         $rid, $uid) or return;
     $t->param(%$r, state_to_display($r->{state}));
