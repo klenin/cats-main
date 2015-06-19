@@ -125,6 +125,16 @@ sub add_history
 }
 
 
+sub fail_loading
+{
+    my ($self, $repo, $problem, $replace, $err, $revision) = @_;
+    eval { $replace ? $repo->reset($revision)->checkout : $repo->delete; };
+    $self->note("Import failed: $err");
+    $self->note("Cleaning of repository failed: $@") if $@;
+    return (-1, undef, $problem);
+}
+
+
 sub load_problem
 {
     my CATS::ProblemStorage $self = shift;
@@ -152,16 +162,13 @@ sub load_problem
     };
     my $repo = get_repo($pid, undef, 0);
     if (my $err = $@) {
-        eval { $replace ? $repo->reset('HEAD')->checkout : $repo->delete; };
         $dbh->rollback unless $self->{debug};
-        $self->note("Import failed: $err");
-        $self->note("Cleaning of repository failed: $@") if $@;
-        return (-1, undef, $problem);
+        return $self->fail_loading($repo, $problem, $replace, $err, 'HEAD');
     } else {
-        $dbh->commit unless $self->{debug};
+        return $self->fail_loading($repo, $problem, $replace, $dbh->errstr, 'HEAD^') unless $self->{debug} || $dbh->commit;
         $self->note('Success import');
-        return (0, $repo->get_latest_master_sha, $problem);
     }
+    return (0, $repo->get_latest_master_sha, $problem);
 }
 
 sub load
