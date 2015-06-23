@@ -309,7 +309,7 @@ sub run_details_frame
     for (@$si) {
         $is_jury = is_jury_in_contest(contest_id => $_->{contest_id})
             if $_->{contest_id} != $contest->{id};
-        $is_jury || $uid == $_->{account_id} or next;
+        $is_jury || ($uid || 0) == $_->{account_id} or next;
 
         if ($is_jury && param('retest')) {
             enforce_request_state(

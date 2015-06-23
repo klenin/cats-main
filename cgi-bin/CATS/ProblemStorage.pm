@@ -53,7 +53,8 @@ sub get_repo_id
     my ($db_id, $db_sha) = $dbh->selectrow_array(qq~
        SELECT repo, commit_sha FROM problems WHERE id = ?~, undef, $id);
     my $p = $CATS::Config::repos_dir;
-    warn 'Repository not found' unless (($db_id ne '' && -d "$p$db_id/") || -d "$p$id/");
+    $db_id //= '';
+    warn 'Repository not found' unless ($db_id ne '' && -d "$p$db_id/") || -d "$p$id/";
     $db_id =~ /^\d+$/ ? ($db_id, $db_sha) : ($id, $sha // '');
 }
 
