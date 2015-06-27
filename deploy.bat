@@ -466,6 +466,8 @@ __END__
 
 	Alias /cats/images/ "%CATS_ROOT%/images/"^
 
+	Alias /cats/js/ "%CATS_ROOT%/js/"^
+
 	Alias /cats/ "%CATS_ROOT%/cgi-bin/"^
 
 ^</VirtualHost^>
