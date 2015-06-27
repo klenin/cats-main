@@ -87,13 +87,13 @@ sub prizes_edit_save
 
 sub prizes_frame
 {
-    $is_root or return;
-    if (my $cgid = url_param('delete')) {
-        $dbh->do(qq~DELETE FROM contest_groups WHERE id = ?~, undef, $cgid);
+    if ($is_root && (my $cgid = url_param('delete'))) {
+        $dbh->do(qq~
+            DELETE FROM contest_groups WHERE id = ?~, undef, $cgid);
         $dbh->commit;
     }
 
-    defined url_param('edit') and return CATS::UI::Prizes::prizes_edit_frame;
+    $is_root && defined url_param('edit') and return CATS::UI::Prizes::prizes_edit_frame;
     init_listview_template('prizes', 'prizes', 'prizes.html.tt');
 
     defined param('edit_save') and CATS::UI::Prizes::prizes_edit_save;
@@ -114,8 +114,8 @@ sub prizes_frame
         my $f = $_[0]->fetchrow_hashref or return ();
         (
             %$f,
-            href_edit=> url_f('prizes', edit => $f->{id}),
-            href_delete => url_f('prizes', 'delete' => $f->{id}),
+            ($is_root ? (href_edit => url_f('prizes', edit => $f->{id})) : ()),
+            ($is_root ? (href_delete => url_f('prizes', 'delete' => $f->{id})) : ()),
         );
     };
 
