@@ -5,6 +5,7 @@
       'This system is used for Far Eastern Subregional ACM ICPC, other student competitions and training.',
     ],
     problem_count => 'Total number of problems',
+    queue_length => 'Submissions queued for evaluation',
     need_register => 'To access all available features, you need to',
     register => 'create an account',
     account_you_can => 'After loggin in, you will be able to',

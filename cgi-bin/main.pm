@@ -70,7 +70,10 @@ sub about_frame
     my $problem_count = $dbh->selectrow_array(qq~
         SELECT COUNT(*) FROM problems P INNER JOIN contests C ON C.id = P.contest_id
             WHERE C.is_hidden = 0 OR C.is_hidden IS NULL~);
-    $t->param(problem_count => $problem_count);
+    my $queue_length = $dbh->selectrow_array(qq~
+        SELECT COUNT(*) FROM reqs R
+            WHERE R.state = $cats::st_not_processed AND R.submit_time > CURRENT_TIMESTAMP - 30~);
+    $t->param(problem_count => $problem_count, queue_length => $queue_length);
 }
 
 sub generate_menu
