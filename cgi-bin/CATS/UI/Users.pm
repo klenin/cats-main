@@ -18,6 +18,16 @@ use CATS::User;
 use CATS::RankTable;
 use CATS::Countries;
 
+my $hash_password;
+BEGIN {
+    $hash_password = eval { require Authen::Passphrase::BlowfishCrypt; } ?
+        sub {
+            Authen::Passphrase::BlowfishCrypt->new(
+                cost => 8, salt_random => 1, passphrase => $_[0])->as_rfc2307;
+        } :
+        sub { $_[0] }
+}
+
 # Admin adds new user to current contest
 sub users_new_save
 {
@@ -53,7 +63,7 @@ sub users_edit_save
         allow_official_rename => $is_root)
         or return;
 
-    $u->{passwd} = $u->{password1} if $set_password;
+    $u->{passwd} = $hash_password->($u->{password1}) if $set_password;
     delete @$u{qw(password1 password2)};
     $u->{locked} = param('locked') ? 1 : 0 if $is_root;
     $dbh->do(_u $sql->update('accounts', { %$u }, { id => $id }));
@@ -103,7 +113,7 @@ sub settings_save
 
     $u->validate_params(validate_password => $set_password, id => $uid) or return;
 
-    $u->{passwd} = $u->{password1} if $set_password;
+    $u->{passwd} = $hash_password->($u->{password1}) if $set_password;
     delete @$u{qw(password1 password2)};
     $dbh->do(_u $sql->update('accounts', { %$u }, { id => $uid }));
     $dbh->commit;

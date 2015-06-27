@@ -12,6 +12,17 @@ use CATS::Misc qw(
 use CATS::Utils qw(url_function);
 use CATS::Web qw(redirect);
 
+my $check_password;
+BEGIN {
+    $check_password = eval { require Authen::Passphrase; } ?
+        sub {
+            my ($password, $hash) = @_;
+            my $p = eval { Authen::Passphrase->from_rfc2307($hash) };
+            $p ? $p->match($password) : $password eq $hash;
+        } :
+        sub { $_[0] eq $_[1] }
+}
+
 sub make_sid {
     my @ch = ('A'..'Z', 'a'..'z', '0'..'9');
     join '', map { $ch[rand @ch] } 1..30;
@@ -32,10 +43,10 @@ sub login_frame
     $t->param(login => Encode::decode_utf8($login));
     my $passwd = param('passwd');
 
-    my ($aid, $passwd2, $locked) = $dbh->selectrow_array(qq~
+    my ($aid, $hash, $locked) = $dbh->selectrow_array(qq~
         SELECT id, passwd, locked FROM accounts WHERE login = ?~, undef, $login);
 
-    $aid && $passwd2 eq $passwd or return msg(1040);
+    $aid && $check_password->($passwd, $hash) or return msg(1040);
     !$locked or return msg(1041);
 
     my $last_ip = CATS::IP::get_ip();

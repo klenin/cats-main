@@ -7,8 +7,8 @@
 @set CATS_ROOT=%~dp0
 @if %CATS_ROOT:~-1%==\ SET CATS_ROOT=%CATS_ROOT:~0,-1%
 @set RUNNER=%0
-@set CPAN_PACKAGES=DBI Algorithm::Diff SQL::Abstract JSON::XS YAML::Syck Apache2::Request XML::Parser::Expat Template
-@set CPAN_FORCE_PACKAGES=DBD::Firebird Text::Aspell Archive::Zip 
+@set CPAN_PACKAGES=DBI Algorithm::Diff SQL::Abstract JSON::XS YAML::Syck Apache2::Request XML::Parser::Expat Template Authen::Passphrase
+@set CPAN_FORCE_PACKAGES=DBD::Firebird Text::Aspell Archive::Zip
 
 @echo This script will automatically install CATS server on current machine.
 @echo Consult with install.md if you having any problems with installing.
