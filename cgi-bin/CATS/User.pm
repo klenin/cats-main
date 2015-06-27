@@ -139,7 +139,6 @@ sub validate_params
 
         $self->{password1} eq $self->{password2}
             or return msg(33);
-        msg(85);
     }
 
     my $old_login = '';

@@ -50,6 +50,15 @@ sub users_edit_frame
         href_impersonate => url_f('users', impersonate => $id));
 }
 
+sub prepare_password {
+    my ($u, $set_password) = @_;
+    if ($set_password) {
+        $u->{passwd} = $hash_password->($u->{password1});
+        msg(85);
+    }
+    delete @$u{qw(password1 password2)};
+}
+
 sub users_edit_save
 {
     my $u = CATS::User->new->parse_params;
@@ -63,9 +72,7 @@ sub users_edit_save
         # Need at least $is_jury in all official contests where $u participated.
         allow_official_rename => $is_root)
         or return;
-
-    $u->{passwd} = $hash_password->($u->{password1}) if $set_password;
-    delete @$u{qw(password1 password2)};
+    prepare_password($u, $set_password);
     $u->{locked} = param('locked') ? 1 : 0 if $is_root;
     $dbh->do(_u $sql->update('accounts', { %$u }, { id => $id }));
     $dbh->commit;
@@ -115,9 +122,7 @@ sub settings_save
     my $set_password = param_on('set_password');
 
     $u->validate_params(validate_password => $set_password, id => $uid) or return;
-
-    $u->{passwd} = $hash_password->($u->{password1}) if $set_password;
-    delete @$u{qw(password1 password2)};
+    prepare_password($u, $set_password);
     $dbh->do(_u $sql->update('accounts', { %$u }, { id => $uid }));
     $dbh->commit;
 }
