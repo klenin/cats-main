@@ -134,11 +134,11 @@ sub validate_params
         or return msg(47);
 
     if ($p{validate_password}) {
-        $self->{password1} ne '' && length $self->{password1} <= 100
-            or return msg(102);
+        $self->{password1} ne '' && length $self->{password1} <= 72
+            or return msg(1032);
 
         $self->{password1} eq $self->{password2}
-            or return msg(33);
+            or return msg(1033);
     }
 
     my $old_login = '';
