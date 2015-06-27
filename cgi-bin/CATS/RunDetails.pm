@@ -144,7 +144,7 @@ sub get_run_info
             $t->{input} ? $t->{input} :
             $t->{gen_group} ? "$t->{gen_name} GROUP" :
             $t->{gen_name} ? "$t->{gen_name} $t->{param}" : '';
-        $row->{test_data_cut} = length $t->{input} > $cats::infile_cut;
+        $row->{test_data_cut} = length($t->{input} || '') > $cats::infile_cut;
         $row;
     };
 
