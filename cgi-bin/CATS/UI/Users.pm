@@ -54,7 +54,7 @@ sub prepare_password {
     my ($u, $set_password) = @_;
     if ($set_password) {
         $u->{passwd} = $hash_password->($u->{password1});
-        msg(85);
+        msg(1085);
     }
     delete @$u{qw(password1 password2)};
 }
