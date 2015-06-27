@@ -34,6 +34,7 @@ sub users_new_save
     $is_jury or return;
     my $u = CATS::User->new->parse_params;
     $u->validate_params(validate_password => 1) or return;
+    $u->{password1} = $hash_password->($u->{password1});
     $u->insert($cid) or return;
 }
 
@@ -82,6 +83,7 @@ sub users_import_frame
         my $u = CATS::User->new;
         @$u{qw(team_name login password1 city)} = split "\t", $line;
         my $r = eval {
+	    $u->{password1} = $hash_password->($u->{password1});
             $u->insert($contest->{id}, is_ooc => 0, commit => 0); 'ok'
         } || $@;
         push @report, $u->{team_name} . "-- $r";
@@ -102,6 +104,7 @@ sub registration_frame
 
     my $u = CATS::User->new->parse_params;
     $u->validate_params(validate_password => 1) or return;
+    $u->{password1} = $hash_password->($u->{password1});
     $u->insert(undef, save_settings => 1) or return;
     $t->param(successfully_registred => 1);
 }
