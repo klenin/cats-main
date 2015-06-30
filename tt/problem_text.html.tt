@@ -1,5 +1,17 @@
 [% PROCESS 'includes/header.tti' %]
 [% tex_styles %]
+<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/javascript">window.MathJax || document.write('<script src="js/lib/MathJax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"><\/script>')</script>
+<script type="text/javascript" src="js/lib/jquery.min.js"></script>
+<script type="text/javascript">
+function setTex(tex) { tex.html("\\" + '(' + tex.attr('title') + '\\' + ')'); }
+
+window.$ && window.MathJax && $(document).ready(function() {
+     $('span.TeX').each(function () {
+        MathJax.Hub.Queue([ setTex, $(this) ], [ 'Typeset', MathJax.Hub, this ]);
+    });
+});
+</script>
 </head>
 <body>
 [% FOREACH problems %]
@@ -11,7 +23,7 @@
 </div>
 [% END %]
 <script type="text/javascript" src="docs/std/whitespace.js"></script>
-<script type="text/javascript">ws_init('spaces', [[% FOREACH problems %][% id %][% UNLESS loop.last %],[% END %][% END %]])</script>
+<script type="text/javascript">ws_init('spaces', [[% FOREACH problems; id; ',' UNLESS loop.last; END %]])</script>
 [% PROCESS 'includes/timing.tti' %]
 </body>
 </html>

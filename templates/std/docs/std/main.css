@@ -190,6 +190,7 @@ span.TeX table.frac tr.nom td { border-bottom: 1px solid black; }
 span.TeX table.limits { border: 0; border-collapse: collapse; display: inline; text-align: center; vertical-align: middle; }
 span.TeX table.limits tr { vertical-align: middle; padding: 0; margin: 0; }
 span.TeX table.limits tr td.sub { vertical-align: top; padding: 0; margin: 0; font-size: small; }
+span.TeX .MathJax { font-weight: 200; }
 
 table.nobr tr td { white-space: nowrap; }
 

@@ -122,7 +122,7 @@ sub asHTML
 }
 
 
-sub convert_one { '<span class="TeX">' . asHTML(parse($_[0])) . '</span>'; }
+sub convert_one { sprintf '<span class="TeX" title="%s">%s</span>', $_[0], asHTML(parse($_[0])) }
 
 
 sub convert_all
