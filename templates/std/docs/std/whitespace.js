@@ -1,5 +1,5 @@
 
-function $(id) {
+function $1(id) {
     if (document.getElementById) return document.getElementById(id);
     else if (document.all) return document.all[id];
     else if (document.layers) return document.layers[id];
@@ -21,7 +21,7 @@ function ws_replace(s) {
 
 function ws_toggle() {
     for (var i = 0; i < ranks.length; ++i)
-        ws_replace($('sample' + ranks[i]));
+        ws_replace($1('sample' + ranks[i]));
     ws = !ws;
 }
 
