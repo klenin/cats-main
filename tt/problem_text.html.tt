@@ -1,5 +1,6 @@
 [% PROCESS 'includes/header.tti' %]
 [% tex_styles %]
+[% IF mathjax %]
 <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 <script type="text/javascript">window.MathJax || document.write('<script src="js/lib/MathJax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"><\/script>')</script>
 <script type="text/javascript" src="js/lib/jquery.min.js"></script>
@@ -12,6 +13,7 @@ window.$ && window.MathJax && $(document).ready(function() {
     });
 });
 </script>
+[% END %]
 </head>
 <body>
 [% FOREACH problems %]

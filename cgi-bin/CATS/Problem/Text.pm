@@ -346,6 +346,7 @@ sub problem_text_frame
     $t->param(
         problems => \@problems,
         tex_styles => CATS::TeX::Lite::styles(),
+        mathjax => !param('nomath'),
         #CATS::TeX::HTMLGen::gen_styles_html()
     );
 }
