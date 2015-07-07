@@ -40,7 +40,7 @@ sub parse_token
         s/^(\s*)\\([a-zA-Z]+|\{|\})(\s*)// &&
             return ['spec', (is_binop($2) ? (sp($1), $2, sp($3)) : ('', $2,  ($3 eq '' ? '' : ' ')))];
         s/^\s*//;
-        s/^\\(,|;)// && return ['space', $1];
+        s/^\\(,|;|\s+)// && return ['space', $1];
         s/^([()\[\]])// && return ['op', $1];
         s/^([a-zA-Z]+)// && return ['var', $1];
         s/^([0-9]+(:?\.[0-9]+)?)// && return ['num', $1];
