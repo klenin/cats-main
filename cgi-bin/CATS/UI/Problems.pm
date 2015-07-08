@@ -977,7 +977,10 @@ sub problem_history_edit_frame
         Encode::from_to($content, encoding_param('enc'), $se);
         my ($error, $latest_sha) = $p->change_file($cid, $pid, $file, $content, $message, param('is_amend') || 0);
 
-        $error or return problem_commitdiff($pid, $title, $latest_sha, $se, $p->encoded_import_log());
+        unless ($error) {
+            CATS::StaticPages::invalidate_problem_text(pid => $pid);
+            return problem_commitdiff($pid, $title, $latest_sha, $se, $p->encoded_import_log());
+        }
 
         $t->param(
             message => $message,
