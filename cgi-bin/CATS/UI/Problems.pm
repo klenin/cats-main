@@ -262,6 +262,7 @@ sub problems_submit
 {
     my $pid = param('problem_id')
         or return msg(1012);
+    $is_team or return msg(1116);
 
     my $file = param('source') // '';
     $file ne '' || param('source_text') ne '' or return msg(1009);
