@@ -243,7 +243,7 @@ sub contests_select_current
     }
     elsif (!$registered)
     {
-        msg(116);
+        msg(1116);
     }
 }
 
