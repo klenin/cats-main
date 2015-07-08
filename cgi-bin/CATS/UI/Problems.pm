@@ -269,17 +269,16 @@ sub problems_submit
 
     defined param('de_id') or return msg(1013);
 
-    my $time_since_finish = 0;
-    unless ($is_jury) {
-        (my $time_since_start, $time_since_finish, my $is_official, my $status) = $dbh->selectrow_array(qq~
-            SELECT
-                CAST(CURRENT_TIMESTAMP - $virtual_diff_time - C.start_date AS DOUBLE PRECISION),
-                CAST(CURRENT_TIMESTAMP- $virtual_diff_time - C.finish_date AS DOUBLE PRECISION),
-                C.is_official, CP.status
-            FROM contests C, contest_problems CP
-            WHERE CP.contest_id = C.id AND C.id = ? AND CP.problem_id = ?~, {},
-            $cid, $pid);
+    my ($time_since_start, $time_since_finish, $is_official, $status) = $dbh->selectrow_array(qq~
+        SELECT
+            CAST(CURRENT_TIMESTAMP - $virtual_diff_time - C.start_date AS DOUBLE PRECISION),
+            CAST(CURRENT_TIMESTAMP- $virtual_diff_time - C.finish_date AS DOUBLE PRECISION),
+            C.is_official, CP.status
+        FROM contests C INNER JOIN contest_problems CP ON CP.contest_id = C.id
+        WHERE C.id = ? AND CP.problem_id = ?~, {},
+        $cid, $pid) or return msg(1012);
 
+    unless ($is_jury) {
         $time_since_start >= 0
             or return msg(80);
         $time_since_finish <= 0 || $is_virtual || can_upsolve
