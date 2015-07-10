@@ -61,21 +61,24 @@ sub keywords_frame
     $is_root && defined param('edit_save') and edit_save;
 
     define_columns(url_f('keywords'), 0, 0, [
-        { caption => res_str(625), order_by => '2', width => '31%' },
-        { caption => res_str(636), order_by => '3', width => '31%' },
-        { caption => res_str(637), order_by => '4', width => '31%' },
+        { caption => res_str(625), order_by => '2', width => '30%' },
+        { caption => res_str(636), order_by => '3', width => '30%' },
+        { caption => res_str(637), order_by => '4', width => '30%' },
+        { caption => res_str(643), order_by => '5', width => '10%' },
     ]);
 
     my $c = $dbh->prepare(q~
-        SELECT id, code, name_ru, name_en FROM keywords ~ . order_by);
+        SELECT k.id, k.code, k.name_ru, k.name_en,
+            (SELECT COUNT(*) FROM problem_keywords pk WHERE pk.keyword_id = k.id) AS ref_count
+        FROM keywords k ~ . order_by);
     $c->execute;
 
     my $fetch_record = sub {
-        my ($kwid, $code, $name_ru, $name_en) = $_[0]->fetchrow_array
+        my ($kwid, $code, $name_ru, $name_en, $ref_count) = $_[0]->fetchrow_array
             or return ();
         return (
             editable => $is_root,
-            kwid => $kwid, code => $code, name_ru => $name_ru, name_en => $name_en,
+            kwid => $kwid, code => $code, name_ru => $name_ru, name_en => $name_en, ref_count => $ref_count,
             href_edit=> url_f('keywords', edit => $kwid),
             href_delete => url_f('keywords', 'delete' => $kwid),
             href_view_problems => url_f('problems', kw => $kwid),

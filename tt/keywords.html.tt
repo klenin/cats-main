@@ -27,6 +27,7 @@ function delete_kw(href, name)
 <td><a href="[% href_view_problems %]">[% code | html %]</a></td>
 <td>[% name_ru | html %]</td>
 <td>[% name_en | html %]</td>
+<td>[% ref_count %]</td>
 </tr>
 [% END %]
 </table>
