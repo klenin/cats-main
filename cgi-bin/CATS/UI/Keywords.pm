@@ -68,20 +68,18 @@ sub keywords_frame
     ]);
 
     my $c = $dbh->prepare(q~
-        SELECT k.id, k.code, k.name_ru, k.name_en,
+        SELECT k.id AS kwid, k.code, k.name_ru, k.name_en,
             (SELECT COUNT(*) FROM problem_keywords pk WHERE pk.keyword_id = k.id) AS ref_count
         FROM keywords k ~ . order_by);
     $c->execute;
 
     my $fetch_record = sub {
-        my ($kwid, $code, $name_ru, $name_en, $ref_count) = $_[0]->fetchrow_array
-            or return ();
+        my $row = $_[0]->fetchrow_hashref or return ();
         return (
-            editable => $is_root,
-            kwid => $kwid, code => $code, name_ru => $name_ru, name_en => $name_en, ref_count => $ref_count,
-            href_edit=> url_f('keywords', edit => $kwid),
-            href_delete => url_f('keywords', 'delete' => $kwid),
-            href_view_problems => url_f('problems', kw => $kwid),
+            %$row,
+            href_edit=> url_f('keywords', edit => $row->{kwid}),
+            href_delete => url_f('keywords', 'delete' => $row->{kwid}),
+            href_view_problems => url_f('problems', kw => $row->{kwid}),
         );
     };
 

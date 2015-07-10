@@ -1,4 +1,4 @@
-[% PROCESS 'includes/menu_begin.tti' %]
+[% PROCESS includes/menu_begin.tti %]
 
 <script>
 function delete_kw(href, name)
@@ -10,28 +10,28 @@ function delete_kw(href, name)
 }
 </script>
 
-<form method=post enctype='multipart/form-data'>
-[% PROCESS 'includes/listview_header.tti' %]
+<form method="post" enctype="multipart/form-data">
+[% PROCESS includes/listview_header.tti %]
 
-<table width=100% cellpadding=2 cellspacing=1 class=bordered>
-[% PROCESS 'includes/listview_col_defs.tti' sel_col = editable %]
+<table width="100%" cellpadding="2" cellspacing="1" class="bordered">
+[% PROCESS includes/listview_col_defs.tti sel_col = editable %]
 
-[% FOREACH keywords %]
+[% FOREACH k IN keywords %]
 <tr class="[% loop.parity() %]">
 [% IF editable %]
 <td nowrap>
-  <a href='javascript:delete_kw("[% href_delete %]", "[% code | html %]");'><img src="./images/std/waste2.gif" border=0></a> 
-  <a href='[% href_edit %]'><img src="./images/std/blank.gif" border=0></a>
+  <a href="javascript:delete_kw('[% k.href_delete %]', '[% k.code | html %]');"><img src="./images/std/waste2.gif" border="0"></a> 
+  <a href="[% k.href_edit %]"><img src="./images/std/blank.gif" border="0"></a>
 </td>
 [% END %]
-<td><a href="[% href_view_problems %]">[% code | html %]</a></td>
-<td>[% name_ru | html %]</td>
-<td>[% name_en | html %]</td>
-<td>[% ref_count %]</td>
+<td><a href="[% k.href_view_problems %]">[% k.code | html %]</a></td>
+<td>[% k.name_ru | html %]</td>
+<td>[% k.name_en | html %]</td>
+<td>[% k.ref_count %]</td>
 </tr>
 [% END %]
 </table>
 
 </form>
 
-[% PROCESS 'includes/menu_end.tti' %]
+[% PROCESS includes/menu_end.tti %]
