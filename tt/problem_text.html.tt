@@ -5,7 +5,21 @@
 <script type="text/javascript">window.MathJax || document.write('<script src="js/lib/MathJax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"><\/script>')</script>
 <script type="text/javascript" src="js/lib/jquery.min.js"></script>
 <script type="text/javascript">
-function setTex(tex) { tex.html("\\" + '(' + tex.attr('title') + '\\' + ')'); }
+function setTex(tex) {
+[%#
+    CATS::TeX::Lite preserves spaces between identifiers.
+    Emulate that for compatibility by replacing such spaces with "\,".
+    Future problems should use "\," or "\ " explicitly.
+    Since JavaScript RegExp does not support lookbehind, use magic
+    to distinguish identifiers (abc) from TeX commands (\abc).
+-%]
+    var magic = '~!!!~';
+    var t = tex.attr('title');
+    t = t.replace(/(\\[a-zA-Z]+)/g, '$1' + magic);
+    t = t.replace(/([a-zA-Z},])\s+(?=[a-zA-Z])/g, '$1\\,');
+    t = t.replace(new RegExp(magic, 'g'), '');
+    tex.html("\\(" + t + '\\)');
+}
 
 window.$ && window.MathJax && $(document).ready(function() {
     MathJax.Hub.Config({
