@@ -18,7 +18,8 @@ my %generators = (
     block  => sub { join '', @_ },
     'sqrt' => sub { qq~<span class="sqrt_sym">\&#x221A;</span><span class="sqrt">@_</span>~ },
     over   => sub { qq~<span class="over">@_</span>~ },
-    frac   => sub { qq~<table class="frac"><tr class="nom"><td>$_[0]</td></tr><tr><td>$_[1]</td></tr></table>~ },
+    frac   => sub { qq~<table class="frac sfrac"><tr class="nom"><td>$_[0]</td></tr><tr><td>$_[1]</td></tr></table>~ },
+    dfrac  => sub { qq~<table class="frac dfrac"><tr class="nom"><td>$_[0]</td></tr><tr><td>$_[1]</td></tr></table>~ },
     space  => sub { '&nbsp;' }
 );
 
@@ -82,7 +83,7 @@ sub parse_block
         {
             $limits = 1;
         }
-        elsif ($source =~ s/^\s*(?:\\(frac))//)
+        elsif ($source =~ s/^\s*(?:\\(d?frac))//)
         {
             my $f = $1;
             push @res, [$f, parse_token(), parse_token()];
