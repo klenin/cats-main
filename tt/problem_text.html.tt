@@ -16,7 +16,7 @@ function setTex(tex) {
     var magic = '~!!!~';
     var t = tex.attr('title');
     t = t.replace(/(\\[a-zA-Z]+)/g, '$1' + magic);
-    t = t.replace(/([a-zA-Z},])\s+(?=[a-zA-Z])/g, '$1\\,');
+    t = t.replace(/([a-zA-Z0-9},])\s+(?=[a-zA-Z])/g, '$1\\,');
     t = t.replace(new RegExp(magic, 'g'), '');
     tex.html("\\(" + t + '\\)');
 }
