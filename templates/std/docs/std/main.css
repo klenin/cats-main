@@ -185,7 +185,8 @@ span.TeX span.over { border-top: 1px solid black; padding: 0px 3px 0px 1px; }
 span.TeX span.num { font-family: Times New Roman, serif; }
 span.TeX span.sqrt { border-top: 1px solid black; padding-right: 2px; }
 span.TeX span.sqrt_sym { font-size: 18px; }
-span.TeX table.frac { border: 0; border-collapse: collapse; display: inline; vertical-align: middle; }
+span.TeX table.frac { border: 0; border-collapse: collapse; display: inline; vertical-align: middle; position: relative; top: -1ex; }
+span.TeX table.frac tr td { text-align: center; font-size: small; }
 span.TeX table.frac tr.nom td { border-bottom: 1px solid black; }
 span.TeX table.limits { border: 0; border-collapse: collapse; display: inline; text-align: center; vertical-align: middle; }
 span.TeX table.limits tr { vertical-align: middle; padding: 0; margin: 0; }
