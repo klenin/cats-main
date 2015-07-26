@@ -213,9 +213,13 @@ sub handler {
     if ((param('f') || '') eq 'proxy') {
         my $url = param('u') or die;
         my $r = join '|', map "\Q$_\E", @whitelist;
-        $url =~ m[^http(s)?://($r)/] or die;
+        $url =~ m[^http(s?)://($r)/] or die;
+        my $is_https = $1;
         my $ua = LWP::UserAgent->new;
-        $ua->proxy(http => $CATS::Config::proxy) if $CATS::Config::proxy;
+        # Workaround for LWP bug with https proxies, see http://www.perlmonks.org/?node_id=1028125
+        # Use postfix 'if' to avoid trapping 'local' inside a block.
+        local $ENV{https_proxy} = $CATS::Config::proxy if $CATS::Config::proxy;
+        $ua->proxy($is_https ? (https => undef) : (http => "http://$CATS::Config::proxy")) if $CATS::Config::proxy;
         my $res = $ua->request(HTTP::Request->new(GET => $url));
         $res->is_success or die $res->status_line;
         if ((my $json = param('json')) =~ /^[a-zA-Z_][a-zA-Z0-9_]*$/) {
