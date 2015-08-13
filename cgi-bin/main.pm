@@ -205,7 +205,7 @@ sub accept_request
 
 use LWP::UserAgent;
 
-my @whitelist = qw(www.codechef.com judge.u-aizu.ac.jp compprog.win.tue.nl);
+my @whitelist = qw(www.codechef.com judge.u-aizu.ac.jp compprog.win.tue.nl stats.ioinformatics.org scoreboard.ioinformatics.org);
 
 sub handler {
     my $r = shift;
