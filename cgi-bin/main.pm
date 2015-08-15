@@ -220,8 +220,8 @@ sub handler {
         # Use postfix 'if' to avoid trapping 'local' inside a block.
         local $ENV{https_proxy} = $CATS::Config::proxy if $CATS::Config::proxy;
         $ua->proxy($is_https ? (https => undef) : (http => "http://$CATS::Config::proxy")) if $CATS::Config::proxy;
-        my $res = $ua->request(HTTP::Request->new(GET => $url));
-        $res->is_success or die $res->status_line;
+        my $res = $ua->request(HTTP::Request->new(GET => $url, [ 'Accept', '*/*' ]));
+        $res->is_success or die sprintf 'proxy http error: url=%s result=%s', $url, $res->status_line;
         if ((my $json = param('json')) =~ /^[a-zA-Z_][a-zA-Z0-9_]*$/) {
             CATS::Web::content_type('application/json');
             print $json, '(', encode_json({ result => $res->content }), ')';
