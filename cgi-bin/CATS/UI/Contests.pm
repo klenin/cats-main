@@ -265,6 +265,7 @@ sub common_contests_view ($)
         show_points => $c->{rules},
         href_contest => url_function('contests', sid => $sid, set_contest => 1, cid => $c->{id}),
         href_params => url_f('contests', params => $c->{id}),
+        href_problems => url_function('problems', sid => $sid, cid => $c->{id}),
         href_problems_text => CATS::StaticPages::url_static('problem_text', cid => $c->{id}),
     );
 }
