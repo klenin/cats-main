@@ -5,7 +5,7 @@ use base qw(Template::Plugin::Filter);
 
 sub filter {
     my ($self, $text) = @_;
-    $text =~ s/[\\'"]/\\$&/g;
+    $text =~ s/[\\\/"]/\\$&/g;
     $text =~ s/[\n]/\\n/g;
     $text =~ s/[\b]/\\b/g;
     $text =~ s/[\f]/\\f/g;
