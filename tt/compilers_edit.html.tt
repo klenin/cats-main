@@ -5,7 +5,7 @@
 <table cellpadding="0">
 <tr><td>[% capt.code %]</td><td><input type="text" name="code" value="[% code | html %]" class="bordered"></td></tr>
 <tr><td>[% capt.description %]</td><td><input type="text" name="description" value="[% description | html %]" size="50" class="bordered"></td></tr>
-<tr><td>[% capt.supported_ext %]</td><td><input type="text" name="supported_ext" value="[% supported_ext | html %]" class="bordered"></td></tr>
+<tr><td>[% capt.file_ext %]</td><td><input type="text" name="file_ext" value="[% file_ext | html %]" class="bordered"></td></tr>
 <tr><td>[% capt.memory_handicap %]</td><td><input type="text" name="memory_handicap" value="[% memory_handicap %]" class="bordered"></td></tr>
 <tr><td>[% capt.syntax %]</td><td><input type="text" name="syntax" value="[% syntax %]" class="bordered"></td></tr>
 <tr><td>[% capt.locked %]</td><td>[% checkbox('locked', locked) %]</td>

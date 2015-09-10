@@ -10,55 +10,38 @@ use CATS::Misc qw(
     init_template init_listview_template msg res_str url_f
     order_by define_columns attach_listview references_menu);
 
+sub fields() {qw(code description file_ext in_contests memory_handicap syntax)}
+
 sub edit_frame
 {
     init_template('compilers_edit.html.tt');
 
     my $id = url_param('edit');
 
-    my ($code, $description, $supported_ext, $in_contests, $memory_handicap, $syntax) =
-        $id ? $dbh->selectrow_array(q~
-            SELECT code, description, file_ext, in_contests, memory_handicap, syntax
-            FROM default_de WHERE id = ?~, {},
-            $id) : ();
+    my $field_values = $id ? CATS::DB::select_row('default_de', [ fields() ], { id => $id }) : {};
 
     $t->param(
         id => $id,
-        code => $code,
-        description => $description,
-        supported_ext => $supported_ext,
-        locked => !$in_contests,
-        memory_handicap => $memory_handicap,
-        syntax => $syntax,
+        %$field_values,
+        locked => !$field_values->{in_contests},
         href_action => url_f('compilers'));
 }
 
 sub edit_save
 {
-    my $code = param('code');
-    my $description = param('description');
-    my $supported_ext = param('supported_ext');
-    my $locked = param_on('locked');
-    my $memory_handicap = param('memory_handicap');
-    my $syntax = param('syntax');
+    my %params;
+    $params{$_} = param($_) for fields();
+    $params{in_contests} = !param_on('locked');
     my $id = param('id');
 
     if ($id) {
-        $dbh->do(q~
-            UPDATE default_de
-            SET code = ?, description = ?, file_ext = ?, in_contests = ?,
-                memory_handicap = ?, syntax = ?
-            WHERE id = ?~, undef,
-            $code, $description, $supported_ext, !$locked, $memory_handicap, $syntax, $id);
-        $dbh->commit;
+        $dbh->do(_u $sql->update('default_de', \%params, { id => $id }));
     }
     else {
-        $dbh->do(q~
-            INSERT INTO default_de(id, code, description, file_ext, in_contests, memory_handicap, syntax)
-            VALUES(?, ?, ?, ?, ?, ?, ?)~, undef,
-            new_id, $code, $description, $supported_ext, !$locked, $memory_handicap, $syntax);
-        $dbh->commit;
+        $params{id} = new_id;
+        $dbh->do(_u $sql->insert('default_de', \%params, { id => $id }));
     }
+    $dbh->commit;
 }
 
 sub compilers_frame
@@ -86,25 +69,17 @@ sub compilers_frame
         ($is_jury ? { caption => res_str(622), order_by => '5', width => '10%' } : ())
     ]);
 
-    my $where = $is_jury ? '' : ' WHERE in_contests = 1';
-    my $c = $dbh->prepare(qq~
-        SELECT id, code, description, file_ext, in_contests, memory_handicap, syntax
-        FROM default_de$where ~.order_by);
-    $c->execute;
+    my ($q, @bind) = $sql->select('default_de', [ 'id as did', fields() ], $is_jury ? {} : { in_contests => 1 });
+    my $c = $dbh->prepare("$q " . order_by);
+    $c->execute(@bind);
 
     my $fetch_record = sub {
-        my ($did, $code, $description, $supported_ext, $in_contests, $memory_handicap, $syntax) =
-            $_[0]->fetchrow_array
-            or return ();
+        my $row = $_[0]->fetchrow_hashref or return ();
         return (
-            editable => $is_root, did => $did, code => $code,
-            description => $description,
-            supported_ext => $supported_ext,
-            memory_handicap => $memory_handicap,
-            syntax => $syntax,
-            locked => !$in_contests,
-            href_edit => url_f('compilers', edit => $did),
-            href_delete => url_f('compilers', 'delete' => $did));
+            %$row,
+            locked => !$row->{in_contests},
+            href_edit => url_f('compilers', edit => $row->{did}),
+            href_delete => url_f('compilers', 'delete' => $row->{did}));
     };
     attach_listview(url_f('compilers'), $fetch_record, $c);
 

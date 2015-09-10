@@ -16,20 +16,20 @@ function delete_compiler(href, name)
 <table width=100% cellpadding=2 cellspacing=1 class=bordered>
 [% PROCESS 'includes/listview_col_defs.tti' %]
 
-[% FOREACH compilers %]
+[% FOREACH c IN compilers %]
 <tr class="[% loop.parity() %]">
 <td>
   [% IF editable %]
-  <a href='javascript:delete_compiler("[% href_delete %]", "[% description | html %]");'><img src="./images/std/waste2.gif" border=0></a> 
-  <a href='[% href_edit %]'><img src="./images/std/blank.gif" border=0></a> 
+  <a href='javascript:delete_compiler("[% c.href_delete %]", "[% c.description | html %]");'><img src="./images/std/waste2.gif" border=0></a>
+  <a href='[% c.href_edit %]'><img src="./images/std/blank.gif" border=0></a>
   [% END %]
-  [% code | html %]
+  [% c.code | html %]
 </td>
-<td>[% description | html %]</td>
-<td>[% supported_ext | html %]</td>
-<td>[% memory_handicap %]</td>
-<td>[% syntax %]</td>
-[% IF editable %]<td>[% IF locked %]<font color=red>[% capt.locked %]</font>[% ELSE; capt.unlocked; END %]</td>[% END %]
+<td>[% c.description | html %]</td>
+<td>[% c.file_ext | html %]</td>
+<td>[% c.memory_handicap %]</td>
+<td>[% c.syntax %]</td>
+[% IF editable %]<td>[% IF c.locked %]<font color=red>[% capt.locked %]</font>[% ELSE; capt.unlocked; END %]</td>[% END %]
 </tr>
 [% END %]
 </table>
