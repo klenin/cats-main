@@ -14,6 +14,7 @@ CREATE TABLE default_de (
     code        INTEGER NOT NULL UNIQUE,
     description VARCHAR(200),
     file_ext    VARCHAR(200),
+    default_file_ext VARCHAR(200),
     in_contests INTEGER DEFAULT 1 CHECK (in_contests IN (0, 1)),
     in_banks    INTEGER DEFAULT 1 CHECK (in_banks IN (0, 1)),
     in_tsess    INTEGER DEFAULT 1 CHECK (in_tsess IN (0, 1)),

@@ -23,7 +23,7 @@ sub load
 {
     (my CATS::DevEnv $self, my %p) = @_;
     $self->{_de_list} = $self->{_dbh}->selectall_arrayref(
-        _u $sql->select('default_de', 'id, code, description, file_ext', {
+        _u $sql->select('default_de', 'id, code, description, file_ext, default_file_ext', {
             ($p{active_only} ? (in_contests => 1) : ()),
             ($p{id} ? (id => $p{id}) : ()),
         }, 'code'));
@@ -67,7 +67,8 @@ sub by_id
 sub default_extension
 {
     (my CATS::DevEnv $self, my $id) = @_;
-    (split_exts($self->by_id($id) // ('txt')))[0];
+    my $de = $self->by_id($id) or return 'txt';
+    $de->{default_file_ext} // (split_exts($de))[0] // 'txt';
 }
 
 

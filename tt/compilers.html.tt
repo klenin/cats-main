@@ -27,6 +27,7 @@ function delete_compiler(href, name)
 </td>
 <td>[% c.description | html %]</td>
 <td>[% c.file_ext | html %]</td>
+[% IF editable %]<td>[% c.default_file_ext | html %]</td>[% END %]
 <td>[% c.memory_handicap %]</td>
 <td>[% c.syntax %]</td>
 [% IF editable %]<td>[% IF c.locked %]<font color=red>[% capt.locked %]</font>[% ELSE; capt.unlocked; END %]</td>[% END %]

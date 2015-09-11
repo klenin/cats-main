@@ -10,7 +10,7 @@ use CATS::Misc qw(
     init_template init_listview_template msg res_str url_f
     order_by define_columns attach_listview references_menu);
 
-sub fields() {qw(code description file_ext in_contests memory_handicap syntax)}
+sub fields() {qw(code description file_ext default_file_ext in_contests memory_handicap syntax)}
 
 sub edit_frame
 {
@@ -63,10 +63,11 @@ sub compilers_frame
     define_columns(url_f('compilers'), 0, 0, [
         { caption => res_str(619), order_by => '2', width => '10%' },
         { caption => res_str(620), order_by => '3', width => '40%' },
-        { caption => res_str(621), order_by => '4', width => '20%' },
-        { caption => res_str(640), order_by => '6', width => '15%' },
-        { caption => res_str(623), order_by => '7', width => '10%' },
-        ($is_jury ? { caption => res_str(622), order_by => '5', width => '10%' } : ())
+        { caption => res_str(621), order_by => '4', width => '10%' },
+        ($is_root ? { caption => res_str(624), order_by => '5', width => '10%' } : ()),
+        { caption => res_str(640), order_by => '7', width => '10%' },
+        { caption => res_str(623), order_by => '8', width => '10%' },
+        ($is_jury ? { caption => res_str(622), order_by => '5', width => '10%' } : ()),
     ]);
 
     my ($q, @bind) = $sql->select('default_de', [ 'id as did', fields() ], $is_jury ? {} : { in_contests => 1 });
