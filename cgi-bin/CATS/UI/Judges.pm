@@ -3,13 +3,12 @@ package CATS::UI::Judges;
 use strict;
 use warnings;
 
-use CATS::Web qw(param param_on url_param);
+use CATS::Web qw(param param_on url_param redirect);
 use CATS::DB;
 use CATS::Misc qw(
     $t $is_jury $is_root
     init_template init_listview_template msg res_str url_f
     order_by define_columns attach_listview references_menu);
-
 
 sub edit_frame
 {
@@ -23,6 +22,13 @@ sub edit_frame
     $t->param(href_action => url_f('judges'));
 }
 
+sub ping {
+    my ($jid) = @_;
+    $dbh->do(qq~
+        UPDATE judges SET is_alive = 0 WHERE is_alive = 1 AND id = ?~, undef,
+        $jid);
+    $dbh->commit;
+}
 
 sub edit_save
 {
@@ -49,12 +55,15 @@ sub edit_save
     }
 }
 
-
 sub judges_frame
 {
     $is_jury or return;
 
     if ($is_root) {
+        if (my $jid = param('ping')) {
+            ping($jid);
+            return redirect(url_f('judges'));
+        }
         if (my $jid = url_param('delete')) {
             $dbh->do(qq~DELETE FROM judges WHERE id = ?~, {}, $jid);
             $dbh->commit;
@@ -88,6 +97,7 @@ sub judges_frame
             locked => $lock_counter,
             is_alive => $is_alive,
             alive_date => $alive_date,
+            href_ping=> url_f('judges', ping => $jid),
             href_edit=> url_f('judges', edit => $jid),
             href_delete => url_f('judges', 'delete' => $jid)
         );
@@ -101,11 +111,6 @@ sub judges_frame
         SELECT COUNT(*) FROM reqs WHERE state = ?~, undef,
         $cats::st_not_processed);
     $t->param(not_processed => $not_processed);
-
-    $dbh->do(qq~
-        UPDATE judges SET is_alive = 0, alive_date = CURRENT_TIMESTAMP WHERE is_alive = 1~);
-    $dbh->commit;
 }
-
 
 1;

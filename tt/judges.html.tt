@@ -23,7 +23,7 @@ function delete_judge(href, name)
   [% END %]
   [% judge_name | html %]
 </td>
-<td>[% is_alive %]</td>
+<td>[% is_alive %][% IF editable && is_alive %] [<a href="[% href_ping %]">[% capt.ping %]</a>][% END %]</td>
 <td>[% alive_date %]</td>
 <td>[% IF locked %]<font color=red>[% capt.locked %]</font>[% ELSE; capt.unlocked; END %]</td>
 </tr>

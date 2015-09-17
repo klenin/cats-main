@@ -1,6 +1,7 @@
 [%
   capt.import({
     want_to_delete => 'Do you really want to delete judge',
+    ping => 'ping',
     locked => 'locked',
     unlocked => 'working',
     queue => 'Queue',
