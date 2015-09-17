@@ -305,7 +305,7 @@ sub attach_listview
     ROWS: while (my %row = $fetch_row->($sth)) {
         last if $row_count > $max_fetch_row_count || $page_count > $$page + $visible_pages;
         for my $key (keys %mask) {
-            first { defined $_ && Encode::decode_utf8($_) =~ $mask{$key} }
+            defined first { Encode::decode_utf8($_ // '') =~ $mask{$key} }
                 ($key ? ($row{$key}) : values %row)
                 or next ROWS;
         }
