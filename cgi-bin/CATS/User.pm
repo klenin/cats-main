@@ -165,7 +165,7 @@ sub validate_login
         SELECT id FROM accounts WHERE login = ?~, {}, $self->{login}) or return 1;
     # Several logins, or a single login with different id => error.
     return
-        @$dups > 1 || @$dups == 1 && (!$id || $id != $dups->[0]) ? msg(103) : 1;
+        @$dups > 1 || @$dups == 1 && (!$id || $id != $dups->[0]) ? msg(1103) : 1;
 }
 
 
