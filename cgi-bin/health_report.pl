@@ -62,6 +62,16 @@ CATS::DB::sql_connect({
     $r->{short}->{Q} = $ql if $ql > 1;
 }
 
+{
+    my ($jtotal, $jalive) = $dbh->selectrow_array(qq~
+        SELECT SUM(CASE WHEN CURRENT_TIMESTAMP - J.alive_date < ? THEN 1 ELSE 0 END), COUNT(*)
+            FROM judges J WHERE J.lock_counter = 0~, undef,
+        3 * $CATS::Config::judge_alive_interval);
+    $r->{long}->{'Judges active'} = $jtotal;
+    $r->{long}->{'Judges alive'} = $jalive;
+    $r->{short}->{J} = "$jalive/$jtotal" if $jalive < $jtotal || !$jtotal;
+}
+
 $dbh->disconnect;
 
 my $text = sprintf "Subject: CATS Health Report (%s)\n\n%s\n", $r->construct_short, $r->construct_long;
