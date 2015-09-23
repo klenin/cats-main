@@ -404,11 +404,11 @@ sub problems_submit_std_solution
     {
         $dbh->commit;
         $t->param(solution_submitted => 1, href_console => url_f('console'));
-        msg(107);
+        msg(1107);
     }
     else
     {
-        msg(106);
+        msg(1106);
     }
 }
 

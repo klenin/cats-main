@@ -64,8 +64,8 @@ function chg_code(st_sel, pid)
 [% END %]
 
 [% IF solution_submitted %]
-[% IF de_name ; capt.dev_env_detected; ': '; de_name | html %]'.<br/>[% END %]
-[% to_monitor(href(href_console, capt.console)) %]
+[% IF de_name; capt.dev_env_detected; ': '; de_name | html %]'.<br/>[% END %]
+[% to_monitor(href(href_console, capt.console)) %].
 <hr/>
 [% END %]
 
