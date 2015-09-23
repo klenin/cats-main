@@ -63,6 +63,14 @@ CATS::DB::sql_connect({
 }
 
 {
+    my ($u) = $dbh->selectrow_array(qq~
+        SELECT COUNT(*) FROM reqs R
+            WHERE R.state = $cats::st_unhandled_error AND R.submit_time > CURRENT_TIMESTAMP - 30~);
+    $r->{long}->{'Unhandled errors'} = $u;
+    $r->{short}->{U} = $u if $u;
+}
+
+{
     my ($jtotal, $jalive) = $dbh->selectrow_array(qq~
         SELECT SUM(CASE WHEN CURRENT_TIMESTAMP - J.alive_date < ? THEN 1 ELSE 0 END), COUNT(*)
             FROM judges J WHERE J.lock_counter = 0~, undef,
