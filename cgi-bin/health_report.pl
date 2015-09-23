@@ -23,6 +23,7 @@ package main;
 use strict;
 use warnings;
 
+use Encode;
 use File::Spec;
 use Getopt::Long;
 use Net::SMTP::SSL;
@@ -78,6 +79,15 @@ CATS::DB::sql_connect({
     $r->{long}->{'Judges active'} = $jtotal;
     $r->{long}->{'Judges alive'} = $jalive;
     $r->{short}->{J} = "$jalive/$jtotal" if $jalive < $jtotal || !$jtotal;
+}
+
+{
+    my ($p) = $dbh->selectall_arrayref(qq~
+        SELECT id, title
+            FROM problems P WHERE CURRENT_TIMESTAMP - P.upload_date <= 1~, { Slice => {} });
+    if (@$p) {
+        $r->{long}->{'Problems changed'} = join ', ', map '"' . Encode::decode_utf8($_->{title}) . '"', @$p;
+    }
 }
 
 $dbh->disconnect;
