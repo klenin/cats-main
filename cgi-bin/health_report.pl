@@ -82,6 +82,13 @@ CATS::DB::sql_connect({
 }
 
 {
+    $r->{long}->{'Questions unanswered'} = my $q = $dbh->selectrow_array(q~
+        SELECT COUNT(*) FROM questions Q
+            WHERE Q.clarified = 0 AND Q.submit_time > CURRENT_TIMESTAMP - 30~);
+    $r->{short}->{'?'} = $q if $q;
+}
+
+{
     my ($p) = $dbh->selectall_arrayref(qq~
         SELECT id, title
             FROM problems P WHERE CURRENT_TIMESTAMP - P.upload_date <= 1~, { Slice => {} });
