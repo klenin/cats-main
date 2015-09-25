@@ -11,6 +11,7 @@
 <select name="state">
 <option />
 <option value="not_processed">[% capt.retest %]</option>
+<option value="awaiting_verification">Awaiing verification</option>
 <option value="accepted">Solution accepted</option>
 <option value="wrong_answer">Wrong answer</option>
 <option value="presentation_error">Presentation error</option>
@@ -21,6 +22,7 @@
 <option value="compilation_error">Compilation error</option>
 <option value="security_violation">Security violation</option>
 <option value="ignore_submit">Ignore submit</option>
+<option value="manually_rejected">Reject by manual verification</option>
 </select> 
 on test #
 <select name="failed_test">

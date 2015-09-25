@@ -428,6 +428,7 @@ sub try_set_state
     defined param('set_state') or return;
     my $state = {
         not_processed =>         $cats::st_not_processed,
+        awaiting_verification => $cats::st_awaiting_verification,
         accepted =>              $cats::st_accepted,
         wrong_answer =>          $cats::st_wrong_answer,
         presentation_error =>    $cats::st_presentation_error,
@@ -438,6 +439,7 @@ sub try_set_state
         security_violation =>    $cats::st_security_violation,
         ignore_submit =>         $cats::st_ignore_submit,
         idleness_limit_exceeded=>$cats::st_idleness_limit_exceeded,
+        manually_rejected =>     $cats::st_manually_rejected,
     }->{param('state')};
     defined $state or return;
 
