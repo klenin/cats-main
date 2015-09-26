@@ -133,12 +133,15 @@ CREATE TABLE contest_problems (
     problem_id      INTEGER NOT NULL REFERENCES problems(id) ON DELETE CASCADE,
     contest_id      INTEGER NOT NULL REFERENCES contests(id) ON DELETE CASCADE,
     code            CHAR,
-    status          INTEGER DEFAULT 0 CHECK (status IN (0, 1, 2, 3)),
+    /* See $cats::problem_st constants */
+    status          INTEGER DEFAULT 1 NOT NULL,
     testsets        VARCHAR(200),
     points_testsets VARCHAR(200),
     max_points      INTEGER,
     UNIQUE (problem_id, contest_id)
 );
+ALTER TABLE contest_problems
+  ADD CONSTRAINT chk_contest_problems_st CHECK (0 <= status AND status <= 4);
 
 
 CREATE TABLE problem_sources (

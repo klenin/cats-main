@@ -1046,7 +1046,7 @@ sub problem_history_frame
 
     my @cols = (
         { caption => res_str(650), width => '25%', order_by => 'author' },
-        { caption => res_str(634),  width => '10%', order_by => 'author_date' },
+        { caption => res_str(634), width => '10%', order_by => 'author_date' },
         { caption => res_str(651), width => '10%', order_by => 'committer_date' },
         { caption => res_str(652), width => '8%', order_by => 'sha' },
         { caption => res_str(653), width => '47%', order_by => 'message' }
