@@ -717,7 +717,7 @@ sub problems_frame
     my $reqs_count_sql = 'SELECT COUNT(*) FROM reqs D WHERE D.problem_id = P.id AND D.state =';
     my $account_condition = $contest->is_practice ? '' : ' AND D.account_id = ?';
     my $select_code = $contest->is_practice ? 'NULL' : 'CP.code';
-    my $hidden_problems = $is_jury ? '' : " AND (CP.status IS NULL OR CP.status < $cats::problem_st_hidden)";
+    my $hidden_problems = $is_jury ? '' : " AND CP.status < $cats::problem_st_hidden";
     # TODO: take testsets into account
     my $test_count_sql = $is_jury ? '(SELECT COUNT(*) FROM tests T WHERE T.problem_id = P.id) AS test_count,' : '';
     my $sth = $dbh->prepare(qq~
