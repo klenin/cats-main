@@ -104,7 +104,7 @@ function chg_code(st_sel, pid)
     [% IF p.remote_url %] [<a href="[% p.remote_url %]" title="[% p.remote_url %]">R</a>][% END %]
 </td>
 <td><a href="[% p.href_select_testsets %]">[% p.testsets %]</a> ([% p.test_count %])
-  [%- IF p.points_testsets %] / <a href="[% p.href_select_testsets %]">[% p.points_testsets %]</a>[% END -%]
+  [%- IF p.points_testsets %] / <a href="[% p.href_select_testsets %]">[% p.points_testsets.replace(',', ',&#8203;') %]</a>[% END -%]
 </td>
 <td>[% p.last_modified_by %]</td>
 <td align="right">[% p.upload_date %]</td>
