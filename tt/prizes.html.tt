@@ -21,7 +21,7 @@ function delete_prize(href, name)
 <td>
   <a href='javascript:delete_prize("[% href_delete %]", "[% name | html %]");'><img src="./images/std/waste2.gif" border=0></a> 
   <a href='[% href_edit %]'><img src="./images/std/blank.gif" border=0></a>
-  [% name | html %]
+  <a href="[% href_rank_table %]">[% name | html %]</a>
 </td>
 <td>[% clist | html %]</td>
 <td>[% prizes | html %]</td>

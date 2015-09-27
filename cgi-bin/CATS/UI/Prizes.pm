@@ -116,6 +116,7 @@ sub prizes_frame
             %$f,
             ($is_root ? (href_edit => url_f('prizes', edit => $f->{id})) : ()),
             ($is_root ? (href_delete => url_f('prizes', 'delete' => $f->{id})) : ()),
+            href_rank_table => url_f('rank_table', clist => $f->{clist}, hide_ooc => 1, show_prizes => 1),
         );
     };
 
