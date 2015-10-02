@@ -10,6 +10,8 @@ use CATS::Misc qw(
     init_template init_listview_template msg res_str url_f
     order_by define_columns attach_listview references_menu);
 
+use CATS::Judge;
+
 sub edit_frame
 {
     init_template('judges_edit.html.tt');
@@ -20,14 +22,6 @@ sub edit_frame
         $t->param(id => $jid, judge_name => $judge_name, locked => $lock_counter);
     }
     $t->param(href_action => url_f('judges'));
-}
-
-sub ping {
-    my ($jid) = @_;
-    $dbh->do(qq~
-        UPDATE judges SET is_alive = 0 WHERE is_alive = 1 AND id = ?~, undef,
-        $jid);
-    $dbh->commit;
 }
 
 sub edit_save
@@ -61,7 +55,7 @@ sub judges_frame
 
     if ($is_root) {
         if (my $jid = param('ping')) {
-            ping($jid);
+            CATS::Judge::ping($jid);
             return redirect(url_f('judges'));
         }
         if (my $jid = url_param('delete')) {
