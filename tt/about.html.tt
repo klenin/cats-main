@@ -5,6 +5,7 @@
 
 <p>[% capt.description.join %]</p>
 
+<p>[% capt.judges_active %]: <b>[% judges_active %] / [% judges_total %]</b>.</p>
 <p>[% capt.queue_length %]: <b>[% queue_length %]</b>.</p>
 <p>[% capt.problem_count %]: <b>[% problem_count %]</b>.</p>
 

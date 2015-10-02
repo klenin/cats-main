@@ -50,6 +50,7 @@ use CATS::Contest::Results;
 use CATS::User;
 use CATS::Console;
 use CATS::RunDetails;
+use CATS::Judge;
 
 use CATS::UI::Prizes;
 use CATS::UI::Messages;
@@ -73,7 +74,13 @@ sub about_frame
     my $queue_length = $dbh->selectrow_array(qq~
         SELECT COUNT(*) FROM reqs R
             WHERE R.state = $cats::st_not_processed AND R.submit_time > CURRENT_TIMESTAMP - 30~);
-    $t->param(problem_count => $problem_count, queue_length => $queue_length);
+    my ($jactive, $jtotal) = CATS::Judge::get_active_count;
+    $t->param(
+        problem_count => $problem_count,
+        queue_length => $queue_length,
+        judges_active => $jactive,
+        judges_total => $jtotal,
+    );
 }
 
 sub generate_menu
