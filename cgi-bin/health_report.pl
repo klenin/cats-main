@@ -1,3 +1,6 @@
+use strict;
+use warnings;
+
 package CATS::Report;
 
 sub new {
@@ -20,19 +23,19 @@ sub construct_long {
 
 package main;
 
-use strict;
-use warnings;
-
 use Encode;
 use File::Spec;
 use Getopt::Long;
 use Net::SMTP::SSL;
 
 use lib File::Spec->catdir((File::Spec->splitpath(File::Spec->rel2abs($0)))[0, 1], 'cats-problem');
+use lib File::Spec->catdir((File::Spec->splitpath(File::Spec->rel2abs($0)))[0, 1]);
 
 use CATS::Constants;
 use CATS::Config;
 use CATS::DB;
+
+use CATS::Judge;
 
 GetOptions(help => \(my $help = 0), 'output=s' => \(my $output = ''));
 
@@ -72,10 +75,7 @@ CATS::DB::sql_connect({
 }
 
 {
-    my ($jtotal, $jalive) = $dbh->selectrow_array(qq~
-        SELECT SUM(CASE WHEN CURRENT_TIMESTAMP - J.alive_date < ? THEN 1 ELSE 0 END), COUNT(*)
-            FROM judges J WHERE J.lock_counter = 0~, undef,
-        3 * $CATS::Config::judge_alive_interval);
+    my ($jtotal, $jalive) = CATS::Judge::get_active_count;
     $r->{long}->{'Judges active'} = $jtotal;
     $r->{long}->{'Judges alive'} = $jalive;
     $r->{short}->{J} = "$jalive/$jtotal" if $jalive < $jtotal || !$jtotal;
@@ -118,5 +118,5 @@ if ($output eq 'mail') {
     $mailer->quit or die $mailer->message;
 }
 else {
-    print $text;
+    print Encode::encode_utf8($text);
 }

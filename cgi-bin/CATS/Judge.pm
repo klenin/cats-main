@@ -14,4 +14,11 @@ sub ping {
     $dbh->commit;
 }
 
+sub get_active_count {
+    $dbh->selectrow_array(qq~
+        SELECT SUM(CASE WHEN CURRENT_TIMESTAMP - J.alive_date < ? THEN 1 ELSE 0 END), COUNT(*)
+            FROM judges J WHERE J.lock_counter = 0~, undef,
+        3 * $CATS::Config::judge_alive_interval);
+}
+
 1;
