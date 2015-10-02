@@ -14,6 +14,8 @@ use CATS::Misc qw(
 use CATS::Config qw(cats_dir);
 use CATS::Utils qw(url_function file_type date_to_iso source_encodings);
 use CATS::Data qw(:all);
+
+use CATS::Judge;
 use CATS::StaticPages;
 use CATS::ProblemStorage;
 use CATS::Problem::Text;
@@ -817,6 +819,8 @@ sub problems_frame
 
     $sth->finish;
 
+    my ($jactive) = CATS::Judge::get_active_count;
+
     my $de_list = CATS::DevEnv->new($dbh, active_only => 1);
     my @de = (
         { de_id => 'by_extension', de_name => res_str(536) },
@@ -841,7 +845,7 @@ sub problems_frame
         submenu => \@submenu, title_suffix => res_str(525),
         is_team => $my_is_team, is_practice => $contest->is_practice,
         de_list => \@de, problem_codes => \@cats::problem_codes,
-        contest_id => $cid,
+        contest_id => $cid, no_judges => !$jactive,
      );
 }
 

@@ -5,6 +5,7 @@
     no_problem_replace => 'No problem selected to replace',
     problem_import_log => 'Problem import log',
     problem_import_diff => 'Diff',
+    no_judges => 'There are currently no active judging computers. Solution evaluation will be posponed.',
     dev_env_detected => 'Development environment detected',
     console => 'console',
     problem_history => 'history',
