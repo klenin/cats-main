@@ -6,5 +6,7 @@
     with_points => 'with points',
     judge_log => 'Judge log',
     no_log => 'No log',
+    delete => 'Delete run request',
+    confirm_delete => 'Delete this run request. Are you sure?',
   })
 %]

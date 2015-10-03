@@ -41,6 +41,10 @@
 [% ELSE; capt.no_log %]
 [% END %]
 
+<form method="post">
+<input type="submit" name="delete" class="button" value="[% capt.delete %]" onclick="return confirm('[% capt.confirm_delete %]')"/>
+</form>
+
 [% PROCESS 'includes/timing.tti' %]
 </body>
 </html>

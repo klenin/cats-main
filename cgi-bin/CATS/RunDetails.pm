@@ -471,6 +471,14 @@ sub run_log_frame
     is_jury_in_contest(contest_id => $si->{contest_id})
         or return;
 
+    if (param('delete')) {
+        $dbh->do(q~
+            DELETE FROM reqs WHERE id = ?~, undef,
+            $rid);
+        $dbh->commit;
+        return;
+    }
+
     # Reload problem after the successful state change.
     $si = get_sources_info(request_id => $rid)
         if try_set_state($si, $rid);
