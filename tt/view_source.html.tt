@@ -9,14 +9,11 @@
 <table>
 <tr>
 <td>
-[% PROCESS 'includes/encoding_form.html.tti'
-    capt_enc = capt.encoding
-    enc_form_link = href_current_link
-%]
+[% PROCESS 'includes/encoding_form.html.tti' capt_enc = capt.encoding %]
 </td>
 <td>
 [% IF is_jury %]
-<form enctype="multipart/form-data" action="[% href_current_link %]" method="post">
+<form enctype="multipart/form-data" method="post">
   <input name="replace_source" type="file" class="file" size="25" />
   <select name="de_id">
   [% FOREACH de_list %]<option value="[% de_id %]"[% IF selected %] selected="selected"[% END %]>[% de_name | html %]</option>[% END %]

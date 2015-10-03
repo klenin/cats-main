@@ -5,7 +5,7 @@
 [% PROCESS 'includes/sources_info.tti' %]
 <br/>
 
-<form  action="[% href_current_link %]" method="post">
+<form method="post">
 
 <input type="submit" name="set_state" value="[% capt.testing_result %]:" class="button">
 <select name="state">

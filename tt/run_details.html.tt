@@ -12,7 +12,6 @@
 [% PROCESS 'includes/encoding_form.html.tti'
     capt_enc = capt.encoding
     select_name = 'comment_enc'
-    enc_form_link = href_current_link
 %]
 
 [% IF is_jury %]

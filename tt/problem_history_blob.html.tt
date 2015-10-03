@@ -15,10 +15,7 @@
     [% IF blob.image %]
     <img src="[% blob.image %]">
     [% ELSE %]
-        [% PROCESS 'includes/encoding_form.html.tti'
-            capt_enc = capt.enc
-            enc_form_link = href_current_link
-        %]
+        [% PROCESS 'includes/encoding_form.html.tti' capt_enc = capt.enc %]
     [% FOREACH line IN blob.lines %]
         <div class="pre"><span class="linenr">[% line.number %]</span> [% line.text | html | quote_controls %]</div>
     [% END %]
