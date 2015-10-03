@@ -7,7 +7,7 @@ use Algorithm::Diff;
 use CATS::Web qw(param encoding_param url_param headers upload_source content_type);
 use CATS::DB;
 use CATS::Utils qw(state_to_display url_function encodings source_encodings);
-use CATS::Misc qw($is_jury $sid $t $uid init_template msg res_str url_f problem_status_names);
+use CATS::Misc qw($is_jury $is_root $sid $t $uid init_template msg res_str url_f problem_status_names);
 use CATS::Data qw(is_jury_in_contest enforce_request_state);
 use CATS::IP;
 use CATS::DevEnv;
@@ -258,6 +258,7 @@ sub get_sources_info
             A.team_name, A.last_ip,
             P.title AS problem_name, $pc_sql
             C.title AS contest_name,
+            C.is_official,
             COALESCE(R.testsets, CP.testsets) AS testsets,
             C.id AS contest_id, CP.id AS cp_id,
             CP.status,
@@ -471,7 +472,7 @@ sub run_log_frame
     is_jury_in_contest(contest_id => $si->{contest_id})
         or return;
 
-    if (param('delete')) {
+    if (param('delete') && (!$si->{is_official} || $is_root)) {
         $dbh->do(q~
             DELETE FROM reqs WHERE id = ?~, undef,
             $rid);
