@@ -3,6 +3,7 @@
     testing_result => 'testing result',
     retest => 'Retest',
     on_test => 'on test #',
+    with_points => 'with points',
     judge_log => 'Judge log',
     no_log => 'No log',
   })

@@ -444,8 +444,9 @@ sub try_set_state
     defined $state or return;
 
     my $failed_test = sprintf '%d', param('failed_test') || '0';
+    my $points = sprintf '%d', param('points') || '0';
     enforce_request_state(
-        request_id => $rid, failed_test => $failed_test, state => $state);
+        request_id => $rid, failed_test => $failed_test, state => $state, points => $points);
     my %st = state_to_display($state);
     while (my ($k, $v) = each %st) {
         $si->{$k} = $v;

@@ -29,6 +29,7 @@
 <option />
 [% FOREACH tests %]<option value="[% test_index %]">[% test_index %][% END %]
 </select>
+[% capt.with_points %] <input name="points" size="3"/>
 
 </form>
 
