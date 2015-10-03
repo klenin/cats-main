@@ -24,7 +24,7 @@
 <option value="ignore_submit">Ignore submit</option>
 <option value="manually_rejected">Reject by manual verification</option>
 </select> 
-on test #
+[% capt.on_test %]
 <select name="failed_test">
 <option />
 [% FOREACH tests %]<option value="[% test_index %]">[% test_index %][% END %]

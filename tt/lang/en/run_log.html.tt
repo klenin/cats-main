@@ -2,6 +2,7 @@
   capt.import({
     testing_result => 'testing result',
     retest => 'Retest',
+    on_test => 'on test #',
     judge_log => 'Judge log',
     no_log => 'No log',
   })
