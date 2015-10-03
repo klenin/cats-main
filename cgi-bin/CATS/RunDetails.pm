@@ -250,7 +250,7 @@ sub get_sources_info
         SELECT
             S.req_id,$src S.fname AS file_name, S.de_id,
             R.account_id, R.contest_id, R.problem_id, R.judge_id,
-            R.state, R.failed_test,
+            R.state, R.failed_test, R.points,
             R.submit_time,
             R.test_time,
             R.result_time,

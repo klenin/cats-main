@@ -42,7 +42,7 @@ function send_message(href)
 [% ELSE %][% si.testsets %][% END %]</td>
 [% END %]</tr>
 <tr><th>[% capt.status %]</th>
-[% FOREACH sources_info %]<td>[% submit_result %]</td>[% END %]
+[% FOREACH sources_info %]<td>[% submit_result; "($points)" IF points %]</td>[% END %]
 </tr>
 <tr><th>[% capt.refs %]</th>
 [% FOREACH si IN sources_info %]<td>
