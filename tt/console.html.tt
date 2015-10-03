@@ -34,7 +34,7 @@ function fill_diff()
         alert('[% capt.two_reqs %]');
         return false;
     }
-    a.href = '[% href_diff %]&r1=' + rs[1] + '&r2=' + rs[2];
+    a.href = '[% href_diff %];r1=' + rs[1] + ';r2=' + rs[2];
     e.value = '';
     return true;
 }
@@ -64,11 +64,11 @@ function fill_1(aid, arg)
     <input type="text" id="selection" name="selection" value="[% selection %]" class="bordered" />
     [ <a href="#" onclick="clear_selection(); return false;">[% capt.clear %]</a>
     | <a id="a_source" href="[% href_view_source %]" target="_blank"
-      onclick="return fill_1('a_source', '[% href_view_source %]&rid=');">[% capt.source %]</a>
+      onclick="return fill_1('a_source', '[% href_view_source %];rid=');">[% capt.source %]</a>
     | <a id="a_run_details" href="[% href_run_details %]" target="_blank"
-      onclick="return fill_1('a_run_details', '[% href_run_details %]&rid=');">[% capt.results %]</a>
+      onclick="return fill_1('a_run_details', '[% href_run_details %];rid=');">[% capt.results %]</a>
     | <a id="a_run_log" href="[% href_run_log %]" target="_blank"
-      onclick="return fill_1('a_run_log', '[% href_run_log %]&rid=');">[% capt.log %]</a>
+      onclick="return fill_1('a_run_log', '[% href_run_log %];rid=');">[% capt.log %]</a>
     | <a id="a_diff" href="[% href_diff %]" target="_blank"
       onclick="return fill_diff();">[% capt.compare %]</a>
     ] <input type="submit" value="[% capt.retest %]" name="retest" class="button"/>
