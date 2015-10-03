@@ -7,6 +7,7 @@ function send_message(href)
     window.open(href, '', 'width=500,height=400,location=no,menubar=no,resizable=yes,scrollbars=no,status=no,toolbar=no');
 }
 </script>
+[% UNLESS sources_info.size; capt.no_sources; RETURN; END %]
 <table class="internal_borders" cellpadding="3">
 <tr><th>ID</th>[% FOREACH si IN sources_info %]<td>[% si.req_id %]</td>[% END %]</tr>
 <tr><th>[% capt.team %]</th>[% FOREACH si IN sources_info %]<td><a href="[% si.href_stats %]">[% si.team_name %]</a>

@@ -1,5 +1,6 @@
 [%
   capt.import({
+    no_sources => 'No requests found.',
     team => 'Team',
     message => 'message',
     time => 'Time',
