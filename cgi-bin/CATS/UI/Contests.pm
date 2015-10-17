@@ -145,27 +145,31 @@ sub contests_edit_save
 
     # free_registration => closed
     $p->{free_registration} = !$p->{free_registration};
-    $dbh->do(qq~
-        UPDATE contests SET
-            title=?, start_date=?, freeze_date=?,
-            finish_date=?, defreeze_date=?, rules=?, max_reqs=?,
-            closed=?, run_all_tests=?, show_all_tests=?,
-            show_test_resources=?, show_checker_comment=?, show_all_results=?,
-            is_official=?, show_packages=?,
-            local_only=?, is_hidden=?, show_frozen_reqs=0, show_test_data=?
-        WHERE id=?~,
-        {},
-        @$p{contest_string_params()},
-        @$p{contest_checkbox_params()},
-        $edit_cid
-    );
-    $dbh->commit;
+    eval {
+        $dbh->do(qq~
+            UPDATE contests SET
+                title=?, start_date=?, freeze_date=?,
+                finish_date=?, defreeze_date=?, rules=?, max_reqs=?,
+                closed=?, run_all_tests=?, show_all_tests=?,
+                show_test_resources=?, show_checker_comment=?, show_all_results=?,
+                is_official=?, show_packages=?,
+                local_only=?, is_hidden=?, show_frozen_reqs=0, show_test_data=?
+            WHERE id=?~,
+            {},
+            @$p{contest_string_params()},
+            @$p{contest_checkbox_params()},
+            $edit_cid
+        );
+        $dbh->commit;
+        1;
+    } or return msg(1035, $@);
     CATS::StaticPages::invalidate_problem_text(cid => $edit_cid, all => 1);
     CATS::RankTable::remove_cache($edit_cid);
     # Change page title immediately if the current contest is renamed.
     if ($edit_cid == $cid) {
         $contest->{title} = Encode::decode_utf8($p->{contest_name});
     }
+    msg(1036);
 }
 
 sub contest_online_registration
