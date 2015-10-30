@@ -1,6 +1,5 @@
 package CATS::ProblemStorage;
 
-use lib '..';
 use strict;
 use warnings;
 

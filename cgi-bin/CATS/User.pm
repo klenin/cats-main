@@ -4,7 +4,6 @@ use strict;
 use warnings;
 
 
-use lib '..';
 use CATS::Web qw(param);
 use CATS::Misc qw(init_template msg url_f $is_root);
 use CATS::DB;

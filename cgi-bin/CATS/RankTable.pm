@@ -1,6 +1,5 @@
 package CATS::RankTable;
 
-use lib '..';
 use strict;
 use warnings;
 use Encode;

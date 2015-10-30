@@ -14,7 +14,6 @@ sub database_fields {qw(
 
 use fields (database_fields(), qw(server_time time_since_start time_since_finish time_since_defreeze));
 
-use lib '..';
 use CATS::Constants;
 use CATS::DB;
 

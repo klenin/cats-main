@@ -1,6 +1,5 @@
 package CATS::TeX::Lite;
 
-use lib '../..';
 use strict;
 use warnings;
 
