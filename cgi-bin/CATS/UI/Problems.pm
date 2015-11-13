@@ -668,7 +668,7 @@ sub problems_frame
         if ($contest->{time_since_start} < 0)
         {
             init_template('problems_inaccessible.html.tt');
-            return msg(130);
+            return msg(1130);
         }
         if ($local_only)
         {
@@ -682,7 +682,7 @@ sub problems_frame
             if ((!defined $is_remote || $is_remote) && (!defined $is_ooc || $is_ooc))
             {
                 init_template('problems_inaccessible.html.tt');
-                return msg(129);
+                return msg(1129);
             }
         }
     }
