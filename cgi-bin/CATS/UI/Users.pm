@@ -167,15 +167,18 @@ sub users_send_message
         INSERT INTO messages (id, send_time, text, account_id, received)
             VALUES (?, CURRENT_TIMESTAMP, ?, ?, 0)~
     );
+    my $count = 0;
     for (split ':', $p{'user_set'})
     {
         next unless param_on("msg$_");
+        ++$count;
         $s->bind_param(1, new_id);
         $s->bind_param(2, $p{'message'}, { ora_type => 113 });
         $s->bind_param(3, $_);
         $s->execute;
     }
     $s->finish;
+    $count;
 }
 
 sub users_set_tag
@@ -308,10 +311,13 @@ sub users_frame
             if (param_on('send_message_all'))
             {
                 users_send_broadcast(message => param('message_text'));
+                msg(1058);
             }
             else
             {
-                users_send_message(user_set => param('user_set'), message => param('message_text'));
+                my $count = users_send_message(
+                    user_set => param('user_set'), message => param('message_text'));
+                msg(1057, $count);
             }
             $dbh->commit;
         }
