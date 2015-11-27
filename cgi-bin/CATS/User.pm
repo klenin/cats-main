@@ -3,6 +3,7 @@ package CATS::User;
 use strict;
 use warnings;
 
+use Encode;
 
 use CATS::Web qw(param);
 use CATS::Misc qw(init_template msg url_f $is_root);
@@ -115,7 +116,7 @@ sub validate_params
     my ($self, %p) = @_;
 
     $self->{login} && length $self->{login} <= 50
-        or return msg(101);
+        or return msg(1102);
 
     $self->{team_name} && length $self->{team_name} <= 100
         or return msg(43);
@@ -199,22 +200,23 @@ sub insert
 sub register_by_login
 {
     my ($login, $contest_id) = @_;
-    my @logins = split(/\s*,\s*/, $login || '') or return msg(118);
+    $login = Encode::decode_utf8($login);
+    my @logins = split(/\s*,\s*/, $login || '') or return msg(1101);
     my %aids;
     for (@logins) {
-        length $_ <= 50 or return msg(101);
+        length $_ <= 50 or return msg(1101);
         my ($aid) = $dbh->selectrow_array(qq~
             SELECT id FROM accounts WHERE login = ?~, undef, $_);
-        $aid or return msg(118, $_);
+        $aid or return msg(1118, $_);
         !get_registered_contestant(contest_id => $contest_id, account_id => $aid)
-            or return msg(120, $_);
+            or return msg(1120, $_);
         $aids{$aid} = 1;
     }
-    %aids or return msg(118);
+    %aids or return msg(1118);
     add_to_contest(contest_id => $contest_id, account_id => $_, is_remote => 1, is_ooc => 1)
         for keys %aids;
     $dbh->commit;
-    msg(119, $login);
+    msg(1119, $login);
 }
 
 
