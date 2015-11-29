@@ -509,7 +509,7 @@ sub problems_all_frame
             href_view_contest => url_function('problems', sid => $sid, cid => $contest_id),
             # Jury can download package for any problem after linking, but not before.
             ($is_root ? (href_download => url_function('problems', sid => $sid, cid => $contest_id, download => $pid)) : ()),
-            ($is_root ? (href_problem_history => url_f('problem_history', pid => $pid)) : ()),
+            ($is_jury ? (href_problem_history => url_f('problem_history', pid => $pid)) : ()),
             linked => $linked || !$link,
             problem_id => $pid,
             problem_name => $problem_name,
@@ -694,7 +694,7 @@ sub problems_frame
     init_listview_template('problems' . ($contest->is_practice ? '_practice' : ''),
         'problems', auto_ext('problems'));
     defined param('download') && $show_packages and return download_problem;
-    defined param('git_download') && $show_packages and return git_download_problem;
+    $is_jury && defined param('git_download') && $show_packages and return git_download_problem;
     problems_frame_jury_action;
 
     problems_submit if defined param('submit');
@@ -778,9 +778,9 @@ sub problems_frame
             href_change_code => url_f('problems', 'change_code' => $c->{cpid}),
             href_replace  => url_f('problems', replace => $c->{cpid}),
             href_download => url_f('problems', download => $c->{pid}),
-            href_git_download => $is_root && url_f('problems', git_download => $c->{pid}),
+            href_git_download => $is_jury && url_f('problems', git_download => $c->{pid}),
             href_compare_tests => $is_jury && url_f('compare_tests', pid => $c->{pid}),
-            href_problem_history => $is_root && url_f('problem_history', pid => $c->{pid}),
+            href_problem_history => $is_jury && url_f('problem_history', pid => $c->{pid}),
             href_original_contest =>
                 url_function('problems', sid => $sid, cid => $c->{original_contest_id}, set_contest => 1),
             href_usage => url_f('contests', has_problem => $c->{pid}),
@@ -966,6 +966,7 @@ sub problem_history_raw_frame
 
 sub problem_history_edit_frame
 {
+    $is_root or return;
     my ($pid, $title, $repo_name) = @_;
     my $hash_base = url_param('hb');
     my $file = url_param('file');
@@ -1010,7 +1011,7 @@ sub problem_history_edit_frame
 sub problem_history_frame
 {
     my $pid = url_param('pid') || 0;
-    $is_root && $pid or return redirect url_f('contests');
+    $is_jury && $pid or return redirect url_f('contests');
 
     my %actions = (
         'edit' => \&problem_history_edit_frame,
