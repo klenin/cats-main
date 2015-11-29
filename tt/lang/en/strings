@@ -191,7 +191,6 @@
 126 "Недостаточно прав для просмотра исходного кода"
 127 "Неверно указаны попытки"
 128 "Отправлено на перетестирование попыток: %d"
-1129 "Problems are <a href="docs/rules_school.html#localonly">temporarily available</a> to local contestants only."
 1130 "Problems are not available before the start of the contest."
 131 "С момента отправки предыдущей попытки прошло слишком мало времени. Повторите отправку через минуту."
 132 "Этот исходный код уже был отправлен"

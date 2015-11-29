@@ -664,12 +664,12 @@ sub problems_frame
     unless ($is_jury)
     {
         $show_packages = $contest->{show_packages};
-        my $local_only = $contest->{local_only};
         if ($contest->{time_since_start} < 0)
         {
             init_template('problems_inaccessible.html.tt');
             return msg(1130);
         }
+        my $local_only = $contest->{local_only};
         if ($local_only)
         {
             my ($is_remote, $is_ooc);
@@ -682,7 +682,8 @@ sub problems_frame
             if ((!defined $is_remote || $is_remote) && (!defined $is_ooc || $is_ooc))
             {
                 init_template('problems_inaccessible.html.tt');
-                return msg(1129);
+                $t->param(local_only => 1);
+                return;
             }
         }
     }
