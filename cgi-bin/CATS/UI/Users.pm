@@ -423,7 +423,7 @@ sub user_stats_frame
     init_template('user_stats.html.tt');
     my $uid = param('uid') or return;
     my $hidden_cond = $is_root ? '' :
-        'AND (CA.is_hidden = 0 OR CA.is_hidden IS NULL) AND C.defreeze_date < CURRENT_TIMESTAMP';
+        'AND C.is_hidden = 0 AND (CA.is_hidden = 0 OR CA.is_hidden IS NULL) AND C.defreeze_date < CURRENT_TIMESTAMP';
     my $u = $dbh->selectrow_hashref(q~
         SELECT A.*, last_login AS last_login_date
         FROM accounts A WHERE A.id = ?~, { Slice => {} }, $uid) or return;
@@ -437,7 +437,7 @@ sub user_stats_frame
             ) AS problem_count
         FROM contests C INNER JOIN contest_accounts CA ON CA.contest_id = C.id
         WHERE
-            CA.account_id = ? AND C.ctype = 0 AND C.is_hidden = 0 $hidden_cond
+            CA.account_id = ? AND C.ctype = 0 $hidden_cond
         ORDER BY C.start_date + CA.diff_time DESC~,
         { Slice => {} }, $uid);
     my $pr = sub { url_f(
