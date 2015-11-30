@@ -143,11 +143,15 @@ sub settings_frame
 
     $uid or return;
     my $u = CATS::User->new->load($uid) or return;
+    my ($is_some_jury) = $is_jury || $dbh->selectrow_array(q~
+        SELECT CA.contest_id FROM contest_accounts CA WHERE CA.account_id = ? AND CA.is_jury = 1~, undef,
+        $uid);
     $t->param(
         countries => \@CATS::Countries::countries, href_action => url_f('users'),
         title_suffix => res_str(518),
         langs => [ map { href => url_f('settings', lang => $_), name => $_ }, @cats::langs ],
         is_root => $is_root,
+        is_some_jury => $is_some_jury,
         %$u);
     if ($is_root) {
         # Data::Dumper escapes UTF-8 characters into \x{...} sequences.
