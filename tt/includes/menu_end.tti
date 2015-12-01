@@ -13,7 +13,7 @@
   <td align="right">
     <a href="https://github.com/klenin/cats-main/issues">[% capt.issues %]</a> |
     <a href="docs/">[% capt.docs %]</a> |
-    <a href="docs/authors.html">&copy; 2002-2014 [% capt.authors %]</a>&nbsp;
+    <a href="docs/authors.html">&copy; 2002-2015 [% capt.authors %]</a>&nbsp;
   </td>
 </tr>
 <tr class="footer2">
