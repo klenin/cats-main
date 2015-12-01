@@ -73,7 +73,7 @@ function chg_code(st_sel, pid)
 <p><b>[% capt.no_judges %]</b></p>
 [% END %]
 
-<form method="post" enctype="multipart/form-data" name="problems_form" accept-charset="UTF-8" style="margin: 0">
+<form method="post" enctype="multipart/form-data" name="problems_form" accept-charset="UTF-8" style="margin: 0" action="[% href_action %]">
 [% PROCESS 'includes/listview_header.tti' %]
 <table width="100%" cellpadding="2" cellspacing="1" class="bordered">
 [% IF is_team %]

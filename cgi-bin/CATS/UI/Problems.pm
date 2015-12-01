@@ -843,6 +843,7 @@ sub problems_frame
             !$p && $pt_url->($text_link_f->('problem_text', cid => $cid)),
         );
     $t->param(
+        href_action => url_f('problems'),
         submenu => \@submenu, title_suffix => res_str(525),
         is_team => $my_is_team, is_practice => $contest->is_practice,
         de_list => \@de, problem_codes => \@cats::problem_codes,
