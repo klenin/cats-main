@@ -82,13 +82,13 @@
 [% IF rank %]<script type="text/javascript"><!--
 var rank_table = [
 [% FOREACH r IN rank %]
-  { id: [% r.account_id %], n: "[% r.team_name | $Javascript %]",[% IF show_points %]
+  { id: [% r.account_id %], n: "[% r.team_name | html | $Javascript %]",[% IF show_points %]
     pt: [[% FOREACH c IN r.columns %]'[% c.points %]'[% UNLESS loop.last %],[% END %][% END %]], tp: [% r.total_points %][% ELSE %]
     tm: [[% FOREACH c IN r.columns %]'[% c.time %]'[% UNLESS loop.last %],[% END %][% END %]],
     td: [[% FOREACH c IN r.columns %]'[% c.td %]'[% UNLESS loop.last %],[% END %][% END %]],
     ts: [% r.total_solved %], ttm: [% r.total_time %][% END %], rc: [% r.row_color %],
     pl: [% r.place %], st: '[% IF r.is_ooc %]ooc[% END %][% IF r.is_remote %] remote[% END %][% IF r.is_virtual %] virtual[% END %] [% r.prize %]',
-    t: "[% r.city | html %]"
+    t: "[% r.city | html | $Javascript %]"
   }[% UNLESS loop.last %],[% END %][% END %]
 ];
 
