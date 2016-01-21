@@ -5,6 +5,8 @@ use warnings;
 
 use List::Util qw(first);
 
+use CATS::Config;
+
 sub filter_ip
 {
     my ($ip) = @_;
@@ -40,7 +42,7 @@ sub linkify_ip
     (
         last_ip_short => $short,
         last_ip => (@ips > 1 ? $ip : ''),
-        $short ? (href_whois => "http://whois.domaintools.com/$short") : (),
+        $short ? (href_whois => sprintf $CATS::Config::ip_info, $short) : (),
     )
 }
 
