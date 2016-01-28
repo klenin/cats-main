@@ -118,11 +118,19 @@ sub asHTML
         $prev = $cur;
     }
     my @html_params = map { asHTML($_) } @$tree;
-    return $generators{$name}->(@html_params);
+    $generators{$name}->(@html_params);
 }
 
+sub quote_attr {
+    my ($attr) = $_[0];
+    $attr =~ s/"/&quot;/g;
+    $attr =~ s/&/&amp;/g;
+    $attr;
+}
 
-sub convert_one { sprintf '<span class="TeX" title="%s">%s</span>', $_[0], asHTML(parse($_[0])) }
+sub convert_one {
+    sprintf '<span class="TeX" title="%s">%s</span>', quote_attr($_[0]), asHTML(parse($_[0]))
+}
 
 
 sub convert_all
