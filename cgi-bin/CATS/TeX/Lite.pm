@@ -34,7 +34,7 @@ sub parse_token
 {
     for ($source)
     {
-        # пробелы вокруг операций превращаются в &nbsp;
+        # Translate spaces about operations to &nbsp;.
         s/^(\s*)-(\s*)// && return ['op', sp($1), '&minus;', sp($2)];
         s/^(\s*)([+*\/><=])(\s*)// && return ['op', sp($1), $2, sp($3)];
         s/^(\s*)\\([a-zA-Z]+|\{|\})(\s*)// &&
@@ -44,7 +44,7 @@ sub parse_token
         s/^([()\[\]])// && return ['op', $1];
         s/^([a-zA-Z]+)// && return ['var', $1];
         s/^([0-9]+(:?\.[0-9]+)?)// && return ['num', $1];
-        # один пробел после знаков препинания
+        # Single space after punctuation.
         s/^([.,:;])(\s*)// && return ['op', $1, ($2 eq '' ? '' : ' ')];
         s/^{// && return parse_block();
         s/^(\S)// && return ['op', $1];
@@ -110,7 +110,7 @@ sub asHTML
     my $name = shift @$tree;
     $name or return '???';
     my $prev = 0;
-    # вставить пробелы между подряд идущими переменными и числами
+    # Insert space between directly adjacent variables and numbers.
     for (@$tree)
     {
         my $cur = ref $_ eq 'ARRAY' && $_->[0] =~ /^(var|num|sub|sup)$/;
