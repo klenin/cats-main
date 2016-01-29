@@ -129,7 +129,13 @@ sub quote_attr {
 }
 
 sub convert_one {
-    sprintf '<span class="TeX" title="%s">%s</span>', quote_attr($_[0]), asHTML(parse($_[0]))
+    my ($tex) = @_;
+    # Reverse Unicode characters to ASCII, allowing TeX to re-generate them properly.
+    for ($tex) {
+        s/\xA0/ /g; # Non-breaking space.
+        s/[\x{2013}\x{2212}]/-/g; # En-dash, minus sign.
+    }
+    sprintf '<span class="TeX" title="%s">%s</span>', quote_attr($tex), asHTML(parse($tex))
 }
 
 
