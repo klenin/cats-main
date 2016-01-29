@@ -597,6 +597,7 @@ sub references_menu
             unshift @result,
                 { href => url_f($_->{name}, new => 1), item => res_str($_->{new}) };
         }
+        $t->param(title_suffix => res_str($_->{item})) if $sel;
     }
     @result;
 }
