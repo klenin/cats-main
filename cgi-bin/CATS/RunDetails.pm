@@ -123,8 +123,11 @@ sub get_run_info
     if ($contest->{show_all_tests} && !$contest->{run_all_tests}) {
         $last_test = @$points;
     }
-    for (values %used_testsets) {
-        $_->{accepted_count} = '?' if $_->{hide_details} && $contest->{hide_testset_details};
+    if ($contest->{hide_testset_details}) {
+        for (values %used_testsets) {
+            $_->{accepted_count} = '?'
+                if $_->{hide_details} && $_->{accepted_count} != $_->{test_count};
+        }
     }
 
     my $run_row = sub {
