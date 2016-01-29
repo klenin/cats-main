@@ -20,7 +20,7 @@ use Text::Aspell;
 
 use CATS::DB;
 use CATS::Config qw(cats_dir);
-use CATS::Misc qw($cid $contest $is_jury $t $uid auto_ext init_template);
+use CATS::Misc qw($cid $contest $is_jury $t $uid auto_ext init_template res_str);
 use CATS::StaticPages;
 
 my ($current_pid, $html_code, $spellchecker, $text_span);
@@ -342,7 +342,7 @@ sub problem_text_frame
     }
     $dbh->commit if $need_commit;
 
-    $t->param(title_suffix => $problems[0]->{title}) if @problems == 1;
+    $t->param(title_suffix => @problems == 1 ? $problems[0]->{title} : res_str(524));
     $t->param(
         problems => \@problems,
         tex_styles => CATS::TeX::Lite::styles(),
