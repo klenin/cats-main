@@ -68,7 +68,7 @@ sub default_extension
 {
     (my CATS::DevEnv $self, my $id) = @_;
     my $de = $self->by_id($id) or return 'txt';
-    $de->{default_file_ext} // (split_exts($de))[0] // 'txt';
+    $de->{default_file_ext} || (split_exts($de))[0] || 'txt';
 }
 
 
