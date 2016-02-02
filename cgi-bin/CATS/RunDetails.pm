@@ -476,7 +476,9 @@ sub run_log_frame
     is_jury_in_contest(contest_id => $si->{contest_id})
         or return;
 
-    if (param('delete') && (!$si->{is_official} || $is_root)) {
+    my $can_delete = !$si->{is_official} || $is_root;
+    $t->param(can_delete => $can_delete);
+    if (param('delete') && $can_delete) {
         $dbh->do(q~
             DELETE FROM reqs WHERE id = ?~, undef,
             $rid);
