@@ -54,7 +54,13 @@ function filter() {
     $.plot($('#plot'), series, { series: { lines: { show: true }, points: { show: true } }, legend: { container: '#plot-legend' } });
     return false;
 }
-$(document).ready(function() { $('#filter_form').show(); });
+function toggle_show_test_data() {
+    $('.test_data').toggleClass('hidden', !($('#show_test_data')[0]).checked);
+}
+$(document).ready(function() {
+    $('#filter_form').show();
+    toggle_show_test_data();
+});
 </script>
 <div id="filter_form" style="display: none;">
 <form action="" onsubmit="return filter()">
@@ -63,6 +69,7 @@ $(document).ready(function() { $('#filter_form').show(); });
 <div style="clear: both;"></div>
 <input type="text" name="n_regexp" id="n_regexp" size="40" />
 <input type="submit" value="filter" class="button"/>
+<label><input type="checkbox" id="show_test_data" onclick="toggle_show_test_data()"/> [% capt.show_test_data %]</label>
 </form>
 </div>
 [% END %]
@@ -106,7 +113,7 @@ $(document).ready(function() { $('#filter_form').show(); });
       <th class="data">[% capt.comment %]</th>
     [% END %]
     [% IF show_test_data %]
-      <th class="data">[% capt.test_data %]</th>
+      <th class="data test_data">[% capt.test_data %]</th>
     [% END %]
   </tr>
   [% FOREACH rd IN run_details %]
@@ -145,7 +152,7 @@ $(document).ready(function() { $('#filter_form').show(); });
       <td align="right">[% rd.disk_used %]</td>
     [% END %]
     [% IF show_checker_comment %]<td><pre>[% rd.checker_comment | html %]</pre></td>[% END %]
-    [% IF show_test_data %]<td><tt>[% rd.test_data | html; '&hellip;' IF rd.test_data_cut %]</tt></td>[% END %]
+    [% IF show_test_data %]<td class="test_data"><tt>[% rd.test_data | html; '&hellip;' IF rd.test_data_cut %]</tt></td>[% END %]
   </tr>
   [% END %]
   [% IF show_points %]<tr><td colspan="2">[% capt.total %]</td><td>[% total_points %]</td></tr>[% END %]

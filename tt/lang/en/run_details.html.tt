@@ -7,6 +7,7 @@
     points => 'Points',
     comment => 'Comment',
     test_data => 'Input data',
+    show_test_data => 'Show input data',
     test => 'Test',
     result => 'Result',
     time => 'Time, sec',

@@ -153,6 +153,8 @@ tr.run_details_IN { color: #A0A000 }
 tr.run_details_NP { color: #008000 }
 tr.run_details_NT { color: #000080; font-style: italic; }
 
+.hidden { display: none; }
+
 tr.odd { background-color: #ffffff; }
 tr.even { background-color: #f0f0f0; }
 table.highlight tr:hover { background-color: #ffcc55; }
