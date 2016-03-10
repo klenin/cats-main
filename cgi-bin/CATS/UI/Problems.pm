@@ -784,6 +784,7 @@ sub problems_frame
             href_original_contest =>
                 url_function('problems', sid => $sid, cid => $c->{original_contest_id}, set_contest => 1),
             href_usage => url_f('contests', has_problem => $c->{pid}),
+            href_problem_console => $is_jury && url_f('console', pf => $c->{pid}),
             show_packages => $show_packages,
             status => $c->{status},
             status_text => problem_status_names()->{$c->{status}},

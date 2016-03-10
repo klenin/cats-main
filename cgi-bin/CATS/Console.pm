@@ -416,7 +416,8 @@ sub console_content
     };
 
     attach_listview(
-        url_f('console'), $fetch_console_record, $c, { page_params => { uf => $user_filter } });
+        url_f('console'), $fetch_console_record, $c,
+        { page_params => { uf => $user_filter, pf => param('pf') } });
 
     $c->finish;
 
