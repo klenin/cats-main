@@ -390,8 +390,6 @@ sub users_frame
             id => $caid,
             account_id => $aid,
             login => $login,
-            editable => $is_jury,
-            messages => $is_jury,
             team_name => $team_name,
             city => $city,
             tag => $tag,
