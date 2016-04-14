@@ -666,7 +666,7 @@ sub problems_frame
         $show_packages = $contest->{show_packages};
         if ($contest->{time_since_start} < 0)
         {
-            init_template('problems_inaccessible.html.tt');
+            init_template(auto_ext('problems_inaccessible'));
             return msg(1130);
         }
         my $local_only = $contest->{local_only};
@@ -681,7 +681,7 @@ sub problems_frame
             }
             if ((!defined $is_remote || $is_remote) && (!defined $is_ooc || $is_ooc))
             {
-                init_template('problems_inaccessible.html.tt');
+                init_template(auto_ext('problems_inaccessible'));
                 $t->param(local_only => 1);
                 return;
             }

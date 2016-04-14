@@ -1,0 +1,10 @@
+[%- WRAPPER includes/jsonp.tti -%]
+[%- USE Javascript -%]
+{
+[% IF local_only %]"message": "local contestants only",
+[% ELSIF message %]"message": "[% message | $Javascript %]",
+[% END %]
+"problems": [
+]
+}
+[%-END -%]
