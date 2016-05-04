@@ -78,17 +78,11 @@ sub param_on
     return (param($_[0]) || '') eq 'on';
 }
 
+sub ensure_upload { $qq->upload($_[0]) || die "Bad upload for parameter '$_[0]'" }
 
-sub save_uploaded_file
-{
-    return $qq->upload($_[0])->tempname;
-}
+sub save_uploaded_file { ensure_upload($_[0])->tempname }
 
-
-sub get_return_code
-{
-    $return_code;
-}
+sub get_return_code { $return_code }
 
 
 sub redirect
@@ -138,7 +132,7 @@ sub cookie
 sub upload_source
 {
     my $src = '';
-    $qq->upload($_[0])->slurp($src);
+    ensure_upload($_[0])->slurp($src);
     $src;
 }
 
