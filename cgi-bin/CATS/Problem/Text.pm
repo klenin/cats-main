@@ -31,6 +31,7 @@ sub check_spelling
     my ($word) = @_;
     # The '_' character causes SIGSEGV (!) inside of ASpell.
     return $word if $word =~ /(?:\d|_)/;
+    $word =~ s/\x{AD}//g; # Ignore soft hypens.
     # Aspell currently supports only KOI8-R russian encoding.
     my $koi = Encode::encode('KOI8-R', $word);
     return $word if $spellchecker->check($koi);
@@ -49,7 +50,7 @@ sub process_text
             $i = !$i;
             next if $i;
             # Ignore entities, count apostrophe as part of word except in the beginning of word.
-            s/(?<!(?:\w|&))(\w(?:\w|\')*)/check_spelling($1)/eg;
+            s/(?<!(?:\w|&))(\w(?:\w|\'|\x{AD})*)/check_spelling($1)/eg;
         }
         $html_code .= join '$', @tex_parts;
         # split ignores separator at EOL, m// ignores \n at EOL, hence \z
