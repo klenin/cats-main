@@ -283,6 +283,18 @@ sub users_impersonate
     redirect(url_function('contests', sid => $sid));
 }
 
+sub format_diff_time {
+    my ($dt) = @_;
+    my $days = int($dt);
+    $dt = ($dt - $days) * 24;
+    my $hours = int($dt);
+    $dt = ($dt - $hours) * 60;
+    my $minutes = int($dt + 0.5);
+    !$days && !$hours ? $minutes :
+    !$days ? sprintf('%d:%02d', $hours, $minutes) :
+    sprintf('%d %02d:%02d', $days, $hours, $minutes);
+}
+
 sub users_frame
 {
     if ($is_jury)
@@ -339,26 +351,27 @@ sub users_frame
 
     if ($is_jury)
     {
-        push @cols,
-            (
-              { caption => res_str(611), order_by => 'is_jury', width => '5%' },
-              { caption => res_str(612), order_by => 'is_ooc', width => '5%' },
-              { caption => res_str(613), order_by => 'is_remote', width => '5%' },
-              { caption => res_str(614), order_by => 'is_hidden', width => '5%' } );
+        push @cols, (
+            { caption => res_str(611), order_by => 'is_jury', width => '5%' },
+            { caption => res_str(612), order_by => 'is_ooc', width => '5%' },
+            { caption => res_str(613), order_by => 'is_remote', width => '5%' },
+            { caption => res_str(614), order_by => 'is_hidden', width => '5%' },
+        );
     }
 
     push @cols, (
         { caption => res_str(607), order_by => 'country', width => '5%' },
         { caption => res_str(609), order_by => 'rating', width => '5%' },
-        { caption => res_str(622), order_by => 'is_virtual', width => '5%' } );
+        { caption => res_str(622), order_by => 'is_virtual', width => '5%' },
+    );
 
     define_columns(url_f('users'), $is_jury ? 3 : 2, 1, \@cols);
 
     return if !$is_jury && param('json') && $contest->is_practice;
 
     my $fields =
-        'A.id, CA.id, A.country, A.login, A.team_name, A.city, ' .
-        'CA.is_jury, CA.is_ooc, CA.is_remote, CA.is_hidden, CA.is_virtual, A.motto, CA.tag';
+        'A.id, CA.id, A.country, A.motto, A.login, A.team_name, A.city, ' .
+        'CA.is_jury, CA.is_ooc, CA.is_remote, CA.is_hidden, CA.is_virtual, CA.diff_time, CA.tag';
     my $sql = sprintf qq~
         SELECT $fields, COUNT(DISTINCT R.problem_id) as rating
         FROM accounts A
@@ -377,8 +390,8 @@ sub users_frame
     my $fetch_record = sub($)
     {
         my (
-            $aid, $caid, $country_abbr, $login, $team_name, $city, $jury,
-            $ooc, $remote, $hidden, $virtual, $motto, $tag, $accepted
+            $aid, $caid, $country_abbr, $motto, $login, $team_name, $city, $jury,
+            $ooc, $remote, $hidden, $virtual, $virtual_diff_time, $tag, $accepted
         ) = $_[0]->fetchrow_array
             or return ();
         my ($country, $flag) = CATS::Countries::get_flag($country_abbr);
@@ -401,6 +414,8 @@ sub users_frame
             ooc => $ooc,
             remote => $remote,
             virtual => $virtual,
+            virtual_diff_time => $virtual_diff_time,
+            virtual_diff_time_fmt => format_diff_time($virtual_diff_time),
          );
     };
 
