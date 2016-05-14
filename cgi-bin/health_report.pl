@@ -67,11 +67,11 @@ CATS::DB::sql_connect({
 }
 
 {
-    my ($u) = $dbh->selectrow_array(qq~
-        SELECT COUNT(*) FROM reqs R
+    my $u = $dbh->selectcol_arrayref(qq~
+        SELECT R.id FROM reqs R
             WHERE R.state = $cats::st_unhandled_error AND R.submit_time > CURRENT_TIMESTAMP - 30~);
-    $r->{long}->{'Unhandled errors'} = $u;
-    $r->{short}->{U} = $u if $u;
+    $r->{long}->{'Unhandled errors'} = join ' ', scalar(@$u), @$u;
+    $r->{short}->{U} = scalar @$u if @$u;
 }
 
 {
