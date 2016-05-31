@@ -422,6 +422,7 @@ sub remove_cache
     }
 }
 
+sub same_or_default { @_ > 1 ? -1 : $_[0]; }
 
 sub rank_table
 {
@@ -438,6 +439,7 @@ sub rank_table
         href_hide_virtual => url_f(@p, hide_virtual => 1, hide_ooc => $self->{hide_ooc}),
         href_show_virtual => url_f(@p, hide_virtual => 0, hide_ooc => $self->{hide_ooc}),
         show_points => $self->{show_points},
+        req_selection => same_or_default(values %{$self->{req_selection}}),
     );
     # Results must not include practice contest.
     !$self->{has_practice} && $self->{contest_list} or return;

@@ -17,7 +17,10 @@
 </td>
 <td align=right>
 [% capt.rules %]:
-[% IF show_points %]<a href="./docs/rules_school.html">[% capt.school %]</a>
+[% IF show_points %]<a href="./docs/rules_school.html">[% capt.school -%]
+[%- " / ${capt.req_selection_last}" IF req_selection == 0 -%]
+[%- " / ${capt.req_selection_best}" IF req_selection == 1 -%]
+</a>
 [% ELSE %]<a href="./docs/rules_acm.html">[% capt.ACM %]</a>
 [% END %]
 [% capt.status %]:

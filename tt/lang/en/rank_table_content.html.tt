@@ -7,6 +7,8 @@
     show_virtual => 'show virtual',
     rules => 'rules',
     school => 'school',
+    req_selection_last => 'last',
+    req_selection_best => 'best',
     acm => 'ACM',
     status => 'status',
     frozen => 'frozen',
