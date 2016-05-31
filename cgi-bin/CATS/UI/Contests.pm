@@ -41,7 +41,7 @@ sub contest_checkbox_params()
 
 sub contest_string_params()
 {qw(
-    contest_name start_date freeze_date finish_date open_date rules max_reqs
+    contest_name start_date freeze_date finish_date open_date rules req_selection max_reqs
 )}
 
 sub get_contest_html_params
@@ -80,13 +80,13 @@ sub contests_new_save
     $p->{free_registration} = !$p->{free_registration};
     $dbh->do(qq~
         INSERT INTO contests (
-            id, title, start_date, freeze_date, finish_date, defreeze_date, rules, max_reqs,
+            id, title, start_date, freeze_date, finish_date, defreeze_date, rules, req_selection, max_reqs,
             ctype,
             closed, run_all_tests, show_all_tests,
             show_test_resources, show_checker_comment, show_all_results,
             is_official, show_packages, local_only, is_hidden, show_frozen_reqs, show_test_data
         ) VALUES(
-            ?, ?, ?, ?, ?, ?, ?, ?,
+            ?, ?, ?, ?, ?, ?, ?, ?, ?,
             0,
             ?, ?, ?,
             ?, ?, ?,
@@ -124,7 +124,8 @@ sub try_contest_params_frame
             defreeze_date AS open_date,
             1 - closed AS free_registration,
             run_all_tests, show_all_tests, show_test_resources, show_checker_comment, show_test_data,
-            show_all_results, is_official, show_packages, local_only, rules, is_hidden, max_reqs
+            show_all_results, is_official, show_packages, local_only, rules, req_selection,
+            is_hidden, max_reqs
         FROM contests WHERE id = ?~, { Slice => {} },
         $id
     ) or return;
@@ -149,7 +150,7 @@ sub contests_edit_save
         $dbh->do(qq~
             UPDATE contests SET
                 title=?, start_date=?, freeze_date=?,
-                finish_date=?, defreeze_date=?, rules=?, max_reqs=?,
+                finish_date=?, defreeze_date=?, rules=?, req_selection=?, max_reqs=?,
                 closed=?, run_all_tests=?, show_all_tests=?,
                 show_test_resources=?, show_checker_comment=?, show_all_results=?,
                 is_official=?, show_packages=?,

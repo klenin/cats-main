@@ -13,6 +13,13 @@
     </select>[% ELSE %][% IF rules; capt.school; ELSE; capt.ACM; END %]
     [% END %]
   </td></tr>
+  <tr><td>[% capt.req_selection %]:</td><td>[% IF can_edit %]
+    <select name="req_selection" class="bordered">
+      <option value="0"[% UNLESS req_selection %] selected="selected"[% END %]>[% capt.req_selection_last %]</option>
+      <option value="1"[% IF req_selection == 1 %] selected="selected"[% END %]>[% capt.req_selection_best %]</option>
+    </select>[% ELSE %][% IF req_selection; capt.req_selection_best; ELSE; capt.req_selection_last; END %]
+    [% END %]
+  </td></tr>
   <tr><td>[% capt.max_reqs %]:</td><td><input type="text" name="max_reqs" value="[% max_reqs | html %]" class="bordered" [% UNLESS can_edit %]readonly="readonly"[% END %]/></td></tr>
 </table>
 <br/>
