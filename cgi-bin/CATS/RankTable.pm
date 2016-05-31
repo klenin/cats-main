@@ -18,7 +18,7 @@ use CATS::Countries;
 use fields qw(
     contest_list hide_ooc hide_virtual show_points frozen
     title has_practice not_started filter use_cache
-    rank problems problems_idx show_all_results show_prizes
+    rank problems problems_idx show_all_results show_prizes req_selection
 );
 
 
@@ -175,7 +175,7 @@ sub get_results
 
     $dbh->selectall_arrayref(qq~
         SELECT
-            R.id, R.state, R.problem_id, R.account_id, R.points, R.testsets,
+            R.id, R.state, R.problem_id, R.account_id, R.points, R.testsets, CA.contest_id,
             MAXVALUE((R.submit_time - C.start_date - CA.diff_time) * 1440, 0) AS time_elapsed,
             CASE WHEN R.submit_time >= C.freeze_date THEN 1 ELSE 0 END AS is_frozen
         FROM reqs R, contests C, contest_accounts CA, contest_problems CP
@@ -260,7 +260,7 @@ sub get_contests_info
           CAST(CURRENT_TIMESTAMP - C.defreeze_date AS DOUBLE PRECISION),
           CAST(CURRENT_TIMESTAMP - C.start_date AS DOUBLE PRECISION),
           (SELECT CA.is_jury FROM contest_accounts CA WHERE CA.contest_id = C.id AND CA.account_id = ?),
-          C.is_hidden, C.rules, C.ctype, C.show_all_results
+          C.is_hidden, C.rules, C.ctype, C.show_all_results, C.req_selection
         FROM contests C
         WHERE C.id IN ($self->{contest_list}) ORDER BY C.id~
     );
@@ -271,7 +271,7 @@ sub get_contests_info
     $self->{show_all_results} = 1;
     while (my (
         $id, $title, $since_freeze, $since_defreeze, $since_start, $is_local_jury,
-        $is_hidden, $rules, $ctype, $show_all_results) =
+        $is_hidden, $rules, $ctype, $show_all_results, $req_selection) =
             $sth->fetchrow_array)
     {
         next if $is_hidden && !$is_local_jury;
@@ -281,6 +281,7 @@ sub get_contests_info
         $self->{has_practice} ||= ($ctype || 0);
         $self->{show_points} ||= $rules;
         $self->{show_all_results} &&= $show_all_results;
+        $self->{req_selection}->{$id} = $req_selection;
         my @title_words = grep $_, split /\s+|_/, Encode::decode_utf8($title);
         $common_title = $common_title ? common_prefix($common_title, \@title_words) : \@title_words;
     }
@@ -527,8 +528,11 @@ sub rank_table
             $t->{total_runs}++;
             $p->{points} ||= 0;
             my $dp = ($_->{points} || 0) - $p->{points};
-            $t->{total_points} += $dp;
-            $p->{points} = $_->{points};
+            # If req_selection is set to 'best', ignore negative point changes.
+            if ($self->{req_selection}->{$_->{contest_id}} == 0 || $dp > 0) {
+                $t->{total_points} += $dp;
+                $p->{points} = $_->{points};
+            }
         }
     }
 
