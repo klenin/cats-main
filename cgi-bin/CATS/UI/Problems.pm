@@ -441,12 +441,24 @@ sub problems_mass_retest()
     return msg(128, $count);
 }
 
-sub problems_all_frame
-{
+sub prepare_keyword {
+    my ($where, $p) = @_;
+    $p->{kw} or return;
+    my $name_field = 'name_' . CATS::Misc::lang();
+    my ($code, $name) = $dbh->selectrow_array(qq~
+        SELECT code, $name_field FROM keywords WHERE id = ?~, undef,
+        $p->{kw}) or do { $p->{kw} = undef; return; };
+    msg(1016, $code, $name);
+    push @{$where->{cond}}, q~
+        (EXISTS (SELECT 1 FROM problem_keywords PK WHERE PK.problem_id = P.id AND PK.keyword_id = ?))~;
+    push @{$where->{params}}, $p->{kw};
+}
+
+sub problems_all_frame {
+    my ($p) = @_;
     init_listview_template('link_problem', 'link_problem', 'problems_link.html.tt');
 
     my $link = url_param('link');
-    my $kw = url_param('kw');
     my $move = url_param('move') || 0;
 
     if ($link) {
@@ -454,14 +466,6 @@ sub problems_all_frame
             or return msg(1017);
         $t->param(unused_codes => [ @u ]);
     }
-
-    my $cols = [
-        { caption => res_str(602), order_by => '2', width => '30%' },
-        { caption => res_str(603), order_by => '3', width => '30%' },
-        { caption => res_str(604), order_by => '4', width => '10%' },
-        #{ caption => res_str(605), order_by => '5', width => '10%' },
-    ];
-    define_columns(url_f('problems', link => $link, kw => $kw), 0, 0, $cols);
 
     my $where =
         $is_root ? {
@@ -479,14 +483,16 @@ sub problems_all_frame
             )~],
             params => [$uid]
         };
-
-    if ($kw) {
-        push @{$where->{cond}}, q~
-            (EXISTS (SELECT 1 FROM problem_keywords PK WHERE PK.problem_id = P.id AND PK.keyword_id = ?))~;
-        push @{$where->{params}}, $kw;
-    }
-
+    prepare_keyword($where, $p);
     my $where_cond = join(' AND ', @{$where->{cond}}) || '1=1';
+
+    define_columns(url_f('problems', link => $link, kw => $p->{kw}), 0, 0, [
+        { caption => res_str(602), order_by => '2', width => '30%' },
+        { caption => res_str(603), order_by => '3', width => '30%' },
+        { caption => res_str(604), order_by => '4', width => '10%' },
+        #{ caption => res_str(605), order_by => '5', width => '10%' },
+    ]);
+
     my $c = $dbh->prepare(qq~
         SELECT P.id, P.title, C.title, C.id,
             (SELECT
@@ -518,10 +524,10 @@ sub problems_all_frame
         );
     };
 
-    attach_listview(url_f('problems', link => $link, kw => $kw, move => $move), $fetch_record, $c);
+    attach_listview(url_f('problems', link => $link, kw => $p->{kw}, move => $move), $fetch_record, $c);
 
     $t->param(
-        href_action => url_f($kw ? 'keywords' : 'problems'),
+        href_action => url_f($p->{kw} ? 'keywords' : 'problems'),
         link => !$contest->is_practice && $link, move => $move, is_jury => $is_jury);
 
     $c->finish;
@@ -655,8 +661,8 @@ sub problems_retest_frame
     $t->param(total_queue => $total_queue);
 }
 
-sub problems_frame
-{
+sub problems_frame {
+    my ($p) = @_;
     my $my_is_team =
         $is_jury || $contest->is_practice ||
         $is_team && ($contest->{time_since_finish} - $virtual_diff_time < 0 || can_upsolve);
@@ -688,8 +694,8 @@ sub problems_frame
         }
     }
 
-    $is_jury && defined url_param('link') and return problems_all_frame;
-    defined url_param('kw') and return problems_all_frame;
+    $is_jury && defined url_param('link') and return problems_all_frame($p);
+    $p->{kw} and return problems_all_frame($p);
 
     init_listview_template('problems' . ($contest->is_practice ? '_practice' : ''),
         'problems', auto_ext('problems'));
@@ -829,19 +835,19 @@ sub problems_frame
         map {{ de_id => $_->{id}, de_name => $_->{description} }} @{$de_list->{_de_list}} );
 
     my $pt_url = sub {{ href => $_[0], item => ($_[1] || res_str(538)), target => '_blank' }};
-    my $p = $contest->is_practice;
+    my $pr = $contest->is_practice;
     my @submenu = grep $_,
         $is_jury ? (
-            !$p && $pt_url->(url_f('problem_text', nospell => 1, nokw => 1, notime => 1, noformal => 1)),
-            !$p && $pt_url->(url_f('problem_text'), res_str(555)),
+            !$pr && $pt_url->(url_f('problem_text', nospell => 1, nokw => 1, notime => 1, noformal => 1)),
+            !$pr && $pt_url->(url_f('problem_text'), res_str(555)),
             { href => url_f('problems', link => 1), item => res_str(540) },
             { href => url_f('problems', link => 1, move => 1), item => res_str(551) },
-            !$p && ({ href => url_f('problems_retest'), item => res_str(556) }),
+            !$pr && ({ href => url_f('problems_retest'), item => res_str(556) }),
             { href => url_f('contests', params => $cid), item => res_str(546) },
             { href => url_f('contests_prizes', clist => $cid), item => res_str(565) },
         )
         : (
-            !$p && $pt_url->($text_link_f->('problem_text', cid => $cid)),
+            !$pr && $pt_url->($text_link_f->('problem_text', cid => $cid)),
         );
     $t->param(
         href_action => url_f('problems'),
