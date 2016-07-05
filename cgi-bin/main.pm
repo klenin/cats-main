@@ -22,10 +22,8 @@ BEGIN {
     $Data::Dumper::Indent = 1;
     require Exporter;
     our @ISA = qw(Exporter);
-    our @EXPORT_OK = qw(
-        handler
-        );
-    our %EXPORT_TAGS = (all => [@EXPORT_OK]);
+    our @EXPORT_OK = qw(handler);
+    our %EXPORT_TAGS = (all => [ @EXPORT_OK ]);
 }
 use lib $cats_lib_dir;
 use lib $cats_problem_lib_dir;
@@ -38,7 +36,7 @@ use CATS::Constants;
 use CATS::BinaryFile;
 use CATS::DevEnv;
 use CATS::Misc qw(:all);
-use CATS::Utils qw(coalesce url_function state_to_display);
+use CATS::Utils qw(url_function);
 use CATS::Data qw(:all);
 use CATS::IP;
 use CATS::Problem::Text;
@@ -65,10 +63,9 @@ use CATS::UI::ImportSources;
 use CATS::UI::LoginLogout;
 use CATS::UI::RankTable;
 
-sub about_frame
-{
+sub about_frame {
     init_template('about.html.tt');
-    my $problem_count = $dbh->selectrow_array(qq~
+    my $problem_count = $dbh->selectrow_array(q~
         SELECT COUNT(*) FROM problems P INNER JOIN contests C ON C.id = P.contest_id
             WHERE C.is_hidden = 0 OR C.is_hidden IS NULL~);
     my $queue_length = $dbh->selectrow_array(qq~
@@ -83,8 +80,7 @@ sub about_frame
     );
 }
 
-sub generate_menu
-{
+sub generate_menu {
     my $logged_on = $sid ne '';
 
     my @left_menu = (
@@ -98,22 +94,19 @@ sub generate_menu
         ($is_jury ? () : { item => res_str(557), href => url_f('import_sources') }),
     );
 
-    if ($is_jury)
-    {
+    if ($is_jury) {
         push @left_menu, (
             { item => res_str(548), href => url_f('compilers') },
             { item => res_str(545), href => url_f('similarity') }
         );
     }
-    else
-    {
+    else {
         push @left_menu, (
             { item => res_str(517), href => url_f('compilers') },
             { item => res_str(549), href => url_f('keywords') } );
     }
 
-    unless ($contest->is_practice)
-    {
+    unless ($contest->is_practice) {
         push @left_menu, ({
             item => res_str(529),
             href => url_f('rank_table', $is_jury ? () : (cache => 1, hide_virtual => !$is_virtual))
@@ -122,8 +115,7 @@ sub generate_menu
 
     my @right_menu = ();
 
-    if ($uid && (url_param('f') ne 'logout'))
-    {
+    if ($uid && (url_param('f') ne 'logout')) {
         @right_menu = ( { item => res_str(518), href => url_f('settings') } );
     }
 
@@ -135,8 +127,7 @@ sub generate_menu
     attach_menu('right_menu', 'about', \@right_menu);
 }
 
-sub interface_functions ()
-{
+sub interface_functions() {
     {
         login => \&CATS::UI::LoginLogout::login_frame,
         logout => \&CATS::UI::LoginLogout::logout_frame,
@@ -185,11 +176,9 @@ sub interface_functions ()
     }
 }
 
-sub accept_request
-{
+sub accept_request {
     my $output_file = '';
-    if (CATS::StaticPages::is_static_page)
-    {
+    if (CATS::StaticPages::is_static_page) {
         $output_file = CATS::StaticPages::process_static()
             or return;
     }
@@ -197,8 +186,7 @@ sub accept_request
     $CATS::Misc::init_time = Time::HiRes::tv_interval(
         $CATS::Misc::request_start_time, [ Time::HiRes::gettimeofday ]);
 
-    unless (defined $t)
-    {
+    unless (defined $t) {
         my $function_name = url_param('f') || '';
         my $fn = interface_functions()->{$function_name} || \&about_frame;
         # Function returns -1 if there is no need to generate output, e.g. a redirect was issued.
