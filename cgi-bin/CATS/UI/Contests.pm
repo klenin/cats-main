@@ -300,19 +300,18 @@ sub contests_submenu_filter
     }->{$f} || '';
 }
 
-sub authenticated_contests_view ()
-{
+sub authenticated_contests_view {
+    my ($p) = @_;
     my $cf = contest_fields();
-    my $has_problem = param('has_problem');
     my $original_contest = 0;
-    if ($has_problem) {
+    if ($p->{has_problem}) {
         ($original_contest, my $title) = $dbh->selectrow_array(q~
-            SELECT P.contest_id, P.title FROM problems P WHERE P.id = ?~, undef, $has_problem);
+            SELECT P.contest_id, P.title FROM problems P WHERE P.id = ?~, undef, $p->{has_problem});
         if ($original_contest) {
             msg(1015, $title);
         }
         else {
-            $has_problem = 0;
+            $p->{has_problem} = undef;
         }
     }
     my $sth = $dbh->prepare(qq~
@@ -322,11 +321,11 @@ sub authenticated_contests_view ()
             contest_accounts CA ON CA.contest_id = C.id AND CA.account_id = ?
         WHERE
             (CA.account_id IS NOT NULL OR COALESCE(C.is_hidden, 0) = 0) ~ .
-            ($has_problem ? q~AND EXISTS (
+            ($p->{has_problem} ? q~AND EXISTS (
                 SELECT 1 FROM contest_problems CP
                 WHERE CP.contest_id = C.id AND CP.problem_id = ?) ~ : contests_submenu_filter()) .
             order_by);
-    $sth->execute($uid, $has_problem ? $has_problem : ());
+    $sth->execute($uid, $p->{has_problem} ? $p->{has_problem} : ());
 
     my $fetch_contest = sub {
         my $c = $_[0]->fetchrow_hashref or return;
@@ -345,8 +344,7 @@ sub authenticated_contests_view ()
     return ($fetch_contest, $sth);
 }
 
-sub anonymous_contests_view ()
-{
+sub anonymous_contests_view {
     my $cf = contest_fields();
     my $sth = $dbh->prepare(qq~
         SELECT $cf FROM contests C WHERE COALESCE(C.is_hidden, 0) = 0 ~ .
@@ -362,8 +360,9 @@ sub anonymous_contests_view ()
     return ($fetch_contest, $sth);
 }
 
-sub contests_frame
-{
+sub contests_frame {
+    my ($p) = @_;
+
     if (defined param('summary_rank'))
     {
         my @clist = param('contests_selection');
@@ -403,7 +402,7 @@ sub contests_frame
 
     contests_select_current if defined url_param('set_contest');
 
-    define_columns(url_f('contests'), 1, 1, [
+    define_columns(url_f('contests', has_problem => $p->{has_problem}), 1, 1, [
         { caption => res_str(601), order_by => '1 DESC, 2', width => '40%' },
         { caption => res_str(600), order_by => '1 DESC, 4', width => '15%' },
         { caption => res_str(631), order_by => '1 DESC, 5', width => '15%' },
@@ -412,7 +411,7 @@ sub contests_frame
     $_ = coalesce(param('filter'), $_, 'unfinished') for $settings->{contests}->{filter};
 
     attach_listview(url_f('contests'),
-        defined $uid ? authenticated_contests_view : anonymous_contests_view,
+        defined $uid ? authenticated_contests_view($p) : anonymous_contests_view($p),
         ($uid ? () : { page_params => { filter => $settings->{contests}->{filter} } }));
 
     my $submenu = [
