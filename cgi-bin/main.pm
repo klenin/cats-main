@@ -8,6 +8,7 @@ use encoding 'utf8', STDIN => undef;
 use Encode;
 
 use Data::Dumper;
+use DBI::Profile;
 use Storable ();
 use Time::HiRes;
 use JSON::XS;
@@ -162,7 +163,7 @@ sub routes() {
         view_source => \&CATS::RunDetails::view_source_frame,
         download_source => \&CATS::RunDetails::download_source_frame,
         run_details => \&CATS::RunDetails::run_details_frame,
-        diff_runs => \&CATS::RunDetails::diff_runs_frame,
+        diff_runs => [ \&CATS::RunDetails::diff_runs_frame, r1 => $int, r2 => $int, ],
 
         test_diff => \&CATS::UI::Stats::test_diff_frame,
         compare_tests => \&CATS::UI::Stats::compare_tests_frame,
@@ -247,6 +248,9 @@ sub handler {
         ib_timeformat => '%H:%M:%S',
     });
     $dbh->rollback; # In a case of abandoned transaction
+    $DBI::Profile::ON_DESTROY_DUMP = undef;
+    $dbh->{Profile} = DBI::Profile->new(Path => []); # '!Statement'
+    $dbh->{Profile}->{Data} = undef;
 
     accept_request();
     $dbh->rollback;

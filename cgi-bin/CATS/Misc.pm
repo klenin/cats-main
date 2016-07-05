@@ -380,7 +380,10 @@ sub generate_output
         server_time => $contest->{server_time},
         current_team_name => $team_name,
         is_virtual => $is_virtual,
-        virtual_diff_time => $virtual_diff_time);
+        virtual_diff_time => $virtual_diff_time,
+        dbi_profile => $dbh->{Profile}->{Data}->[0],
+        #dbi_profile => Data::Dumper::Dumper($dbh->{Profile}->{Data}),
+    );
 
     my $elapsed_minutes = int(($contest->{time_since_start} - $virtual_diff_time) * 1440);
     if ($elapsed_minutes < 0)

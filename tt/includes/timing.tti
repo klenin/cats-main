@@ -1,1 +1,1 @@
-<span class="timing">[% request_process_time %] [% init_time %]</span>
+<span class="timing">[% request_process_time %] [% init_time %] [% IF dbi_profile.length > 10 %]<pre>[% dbi_profile %]</pre>[% ELSE; dbi_profile; END %]</span>
