@@ -13,9 +13,7 @@ use CATS::IP;
 use CATS::DevEnv;
 use CATS::RankTable;
 
-
-sub get_judges
-{
+sub get_judges {
     my ($si) = @_;
     $t->param('judges') or $t->param(judges => $dbh->selectall_arrayref(q~
         SELECT id, nick, lock_counter FROM judges ORDER BY nick~, { Slice => {} }));
@@ -26,9 +24,8 @@ sub get_judges
     }, @{$t->param('judges')} ];
 }
 
-sub source_links
-{
-    my ($si, $is_jury) = @_;
+sub source_links {
+    my ($si) = @_;
     my ($current_link) = url_param('f') || '';
 
     $si->{href_contest} =
@@ -39,16 +36,13 @@ sub source_links
         $si->{"href_$_"} = url_f($_, rid => $si->{req_id});
         $si->{"href_class_$_"} = $_ eq $current_link ? 'current_link' : '';
     }
-    $si->{is_jury} = $is_jury;
-    $t->param(is_jury => $is_jury);
-    get_judges($si) if $is_jury;
+    $t->param(is_jury => $si->{is_jury});
+    get_judges($si) if $si->{is_jury};
     my $se = param('src_enc') || param('comment_enc') || 'WINDOWS-1251';
     $t->param(source_encodings => source_encodings($se));
 }
 
-
-sub get_run_info
-{
+sub get_run_info {
     my ($contest, $req) = @_;
     my $points = $contest->{points};
 
@@ -159,9 +153,7 @@ sub get_run_info
     };
 }
 
-
-sub get_contest_info
-{
+sub get_contest_info {
     my ($si, $jury_view) = @_;
 
     my $contest = $dbh->selectrow_hashref(qq~
@@ -189,9 +181,7 @@ sub get_contest_info
     $contest;
 }
 
-
-sub get_log_dump
-{
+sub get_log_dump {
     my ($rid, $compile_error) = @_;
     my ($dump) = $dbh->selectrow_array(qq~
         SELECT dump FROM log_dumps WHERE req_id = ?~, undef,
@@ -202,14 +192,13 @@ sub get_log_dump
     return (judge_log_dump => $dump);
 }
 
-
-sub get_nearby_attempt
-{
+sub get_nearby_attempt {
     my ($si, $prevnext, $cmp, $ord, $diff) = @_;
+    # TODO: Сheck neighbour's contest to ensure correct access privileges.
     my $na = $dbh->selectrow_hashref(qq~
         SELECT id, submit_time FROM reqs
-          WHERE account_id = ? AND problem_id = ? AND id $cmp ?
-          ORDER BY id $ord ROWS 1~, { Slice => {} },
+        WHERE account_id = ? AND problem_id = ? AND id $cmp ?
+        ORDER BY id $ord ROWS 1~, { Slice => {} },
         $si->{account_id}, $si->{problem_id}, $si->{req_id}
     ) or return;
     for ($na->{submit_time}) {
@@ -230,14 +219,12 @@ sub get_nearby_attempt
         @p = (rid => $na->{id});
     }
     $si->{"href_${prevnext}_attempt"} = url_f($f, @p);
-    $si->{href_diff_runs} = url_f('diff_runs', r1 => $na->{id}, r2 => $si->{req_id}) if $diff && $is_jury;
+    $si->{href_diff_runs} = url_f('diff_runs', r1 => $na->{id}, r2 => $si->{req_id}) if $diff && $uid;
 }
-
 
 # Load information about one or several runs.
 # Parameters: request_id, may be either scalar or array ref.
-sub get_sources_info
-{
+sub get_sources_info {
     my %p = @_;
     my $rid = $p{request_id} or return;
 
@@ -277,11 +264,25 @@ sub get_sources_info
         WHERE req_id IN ($req_id_list)~, { Slice => {} });
     $dbh->{ib_enable_utf8} = 1; # Resume "normal" operation.
 
-    my $official = $p{get_source} && !$is_jury && CATS::Contest::current_official;
+    # User must be either jury or request owner to access a request.
+    # Cache is_jury_in_contest since it requires a database request.
+    my %jury_cache;
+    my $is_jury_cached = sub {
+        $jury_cache{$_[0]} //= is_jury_in_contest(contest_id => $_[0]) ? 1 : 0
+    };
+    $result = [ grep {
+        ($_->{is_jury} = $is_jury_cached->($_->{contest_id})) ||
+        ($_->{account_id} == $uid || 0) } @$result
+    ];
+
+    my $official = $p{get_source} && CATS::Contest::current_official;
+    $official = 0 if $official && $is_jury_cached->($official->{id});
+    my $se = encoding_param('src_enc', 'WINDOWS-1251');
+
     for my $r (@$result) {
         $_ = Encode::decode_utf8($_) for @$r{grep /_name$/, keys %$r};
         $r = {
-            %$r, state_to_display($r->{state}),
+              %$r, state_to_display($r->{state}),
             CATS::IP::linkify_ip(CATS::IP::filter_ip $r->{last_ip}),
             href_stats => url_f('user_stats', uid => $r->{account_id}),
             href_send_message => url_f('send_message_box', caid => $r->{ca_id}),
@@ -293,29 +294,32 @@ sub get_sources_info
         get_nearby_attempt($r, 'next', '>', 'ASC', 0);
         # During the official contest, viewing sources from other contests
         # is disallowed to prevent cheating.
-        $r->{src} = \'FORBIDDEN' if $official && $official->{id} != $r->{contest_id};
+        if ($official && $official->{id} != $r->{contest_id}) {
+            $r->{src} = res_str(138, $official->{title});
+        }
+        elsif ($p{encode_source}) {
+            if (encodings()->{$se} && $r->{file_name} !~ m/\.zip$/) {
+                Encode::from_to($r->{src}, $se, 'utf-8');
+                $r->{src} = Encode::decode_utf8($r->{src});
+            }
+        }
         $r->{status_name} = problem_status_names->{$r->{status}};
     }
 
     return ref $rid ? $result : $result->[0];
 }
 
-sub run_details_frame
-{
+sub run_details_frame {
     init_template('run_details.html.tt');
 
     my $rid = url_param('rid') or return;
     my $rids = [ grep /^\d+$/, split /,/, $rid ];
-    my $si = get_sources_info(request_id => $rids, partial_checker => 1) or return;
+    my $sources_info = get_sources_info(request_id => $rids, partial_checker => 1) or return;
 
     my @runs;
-    my ($is_jury, $contest) = (0, { id => 0 });
-    for (@$si) {
-        $is_jury = is_jury_in_contest(contest_id => $_->{contest_id})
-            if $_->{contest_id} != $contest->{id};
-        $is_jury || ($uid || 0) == $_->{account_id} or next;
-
-        if ($is_jury && param('retest')) {
+    my $contest = { id => 0 };
+    for (@$sources_info) {
+        if ($_->{is_jury} && param('retest')) {
             enforce_request_state(
                 request_id => $_->{req_id},
                 state => $cats::st_not_processed,
@@ -325,52 +329,26 @@ sub run_details_frame
             $_ = get_sources_info(request_id => $_->{req_id}, partial_checker => 1) or next;
         }
 
-        source_links($_, $is_jury);
-        $contest = get_contest_info($_, $is_jury && !url_param('as_user'))
+        source_links($_);
+        $contest = get_contest_info($_, $_->{is_jury} && !url_param('as_user'))
             if $_->{contest_id} != $contest->{id};
         push @runs,
             $_->{state} == $cats::st_compilation_error ?
             { get_log_dump($_->{req_id}, 1) } : get_run_info($contest, $_);
     }
-    $t->param(sources_info => $si, runs => \@runs);
+    $t->param(sources_info => $sources_info, runs => \@runs);
 }
 
-
-sub prepare_source
-{
-    my ($show_msg) = @_;
-    my $rid = url_param('rid') or return;
-
-    my $sources_info = get_sources_info(request_id => $rid, get_source => 1)
-        or return;
-
-    my $is_jury = is_jury_in_contest(contest_id => $sources_info->{contest_id});
-
-    $is_jury || $sources_info->{account_id} == ($uid || 0)
-        or return $show_msg && msg(126);
-    if (ref $sources_info->{src} eq 'SCALAR') {
-        $sources_info->{src} = res_str(138, CATS::Contest::current_official->{title});
-    }
-    else {
-        my $se = encoding_param('src_enc', 'WINDOWS-1251');
-        if (encodings()->{$se} && $sources_info->{file_name} !~ m/\.zip$/) {
-            Encode::from_to($sources_info->{src}, $se, 'utf-8');
-            $sources_info->{src} = Encode::decode_utf8($sources_info->{src});
-        }
-    }
-    ($sources_info, $is_jury);
-}
-
-
-sub view_source_frame
-{
+sub view_source_frame {
     init_template('view_source.html.tt');
-    my ($sources_info, $is_jury) = prepare_source(1);
+    my $rid = url_param('rid') or return;
+    my $sources_info = get_sources_info(request_id => $rid, get_source => 1, encode_source => 1);
     $sources_info or return;
+
     my $replace_source = param('replace_source');
     my $de_id = param('de_id');
     my $set = join ', ', ($replace_source ? 'src = ?' : ()) , ($de_id ? 'de_id = ?' : ());
-    if ($is_jury && $set) {
+    if ($sources_info->{is_jury} && $set) {
         my $s = $dbh->prepare(qq~
             UPDATE sources SET $set WHERE req_id = ?~);
         my $i = 0;
@@ -387,12 +365,12 @@ sub view_source_frame
     if ($sources_info->{file_name} =~ m/\.zip$/) {
         $sources_info->{src} = sprintf 'ZIP, %d bytes', length ($sources_info->{src});
     }
-    source_links($sources_info, $is_jury);
+    source_links($sources_info);
     /^[a-z]+$/i and $sources_info->{syntax} = $_ for param('syntax');
     $sources_info->{src_lines} = [ map {}, split("\n", $sources_info->{src}) ];
     $t->param(sources_info => [ $sources_info ]);
 
-    if ($is_jury) {
+    if ($sources_info->{is_jury}) {
         my $de_list = CATS::DevEnv->new($dbh, active_only => 1);
         if ($de_id) {
             $sources_info->{de_id} = $de_id;
@@ -408,10 +386,9 @@ sub view_source_frame
     }
 }
 
-
-sub download_source_frame
-{
-    my ($si, $is_jury) = prepare_source(0);
+sub download_source_frame {
+    my $rid = url_param('rid') or return;
+    my $si = get_sources_info(request_id => $rid, get_source => 1, encode_source => 1);
 
     unless ($si) {
         init_template('view_source.html.tt');
@@ -426,9 +403,7 @@ sub download_source_frame
     print STDOUT Encode::encode_utf8($si->{src});
 }
 
-
-sub try_set_state
-{
+sub try_set_state {
     my ($si, $rid) = @_;
     defined param('set_state') or return;
     my $state = {
@@ -460,21 +435,13 @@ sub try_set_state
     1;
 }
 
-
-sub run_log_frame
-{
+sub run_log_frame {
     init_template('run_log.html.tt');
     my $rid = url_param('rid') or return;
 
-    # HACK: To avoid extra database access, require the user
-    # to be jury not only in the contest of the problem to be viewed,
-    # but in the current contest as well.
-    $is_jury or return;
-
     my $si = get_sources_info(request_id => $rid)
         or return;
-    is_jury_in_contest(contest_id => $si->{contest_id})
-        or return;
+    $si->{is_jury} or return;
 
     my $can_delete = !$si->{is_official} || $is_root;
     $t->param(can_delete => $can_delete);
@@ -489,9 +456,9 @@ sub run_log_frame
     # Reload problem after the successful state change.
     $si = get_sources_info(request_id => $rid)
         if try_set_state($si, $rid);
-    $t->param(sources_info => [$si]);
+    $t->param(sources_info => [ $si ]);
 
-    source_links($si, 1);
+    source_links($si);
     $t->param(get_log_dump($rid));
 
     my $tests = $dbh->selectcol_arrayref(qq~
@@ -500,27 +467,16 @@ sub run_log_frame
     $t->param(tests => [ map {test_index => $_}, @$tests ]);
 }
 
-
-sub diff_runs_frame
-{
+sub diff_runs_frame {
+    my ($p) = @_;
     init_template('diff_runs.html.tt');
-    $is_jury or return;
+    $p->{r1} && $p->{r2} or return;
 
     my $si = get_sources_info(
-        request_id => [ param('r1'), param('r2') ],
-        get_source => 1
-    ) or return;
+        request_id => [ $p->{r1}, $p->{r2} ], get_source => 1) or return;
     @$si == 2 or return;
 
-    # User must be jury in contests of both compared problems.
-    # Check for jury only once if the contest is the same.
-    my ($cid1, $cid2) = map $_->{contest_id}, @$si;
-    is_jury_in_contest(contest_id => $cid1)
-        or return;
-    $cid1 == $cid2 || is_jury_in_contest(contest_id => $cid2)
-        or return;
-
-    source_links($_, 1) for @$si;
+    source_links($_) for @$si;
 
     for my $info (@$si) {
         $info->{lines} = [ split "\n", $info->{src} ];
@@ -550,6 +506,5 @@ sub diff_runs_frame
         diff_lines => \@diff,
     );
 }
-
 
 1;
