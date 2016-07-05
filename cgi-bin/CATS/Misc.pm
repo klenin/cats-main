@@ -561,6 +561,7 @@ sub save_settings
 
 sub initialize
 {
+    $Storable::canonical = 1;
     $dbi_error = undef;
     $messages //= { map { $_ => init_messages_lang($_) } @cats::langs };
     $t = undef;
