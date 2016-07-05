@@ -127,13 +127,15 @@ sub generate_menu {
     attach_menu('right_menu', 'about', \@right_menu);
 }
 
-sub interface_functions() {
+my $int = qr/\d+/;
+
+sub routes() {
     {
         login => \&CATS::UI::LoginLogout::login_frame,
         logout => \&CATS::UI::LoginLogout::logout_frame,
         registration => \&CATS::UI::Users::registration_frame,
         settings => \&CATS::UI::Users::settings_frame,
-        contests => \&CATS::UI::Contests::contests_frame,
+        contests => [ \&CATS::UI::Contests::contests_frame, has_problem => $int ],
         console_content => \&CATS::Console::content_frame,
         console => \&CATS::Console::console_frame,
         console_export => \&CATS::Console::export,
@@ -188,9 +190,20 @@ sub accept_request {
 
     unless (defined $t) {
         my $function_name = url_param('f') || '';
-        my $fn = interface_functions()->{$function_name} || \&about_frame;
+        my $route = routes()->{$function_name} || \&about_frame;
+        my $fn = $route;
+        my $p = {};
+        if (ref $route eq 'ARRAY') {
+            $fn = shift @$route;
+            while (@$route) {
+                my $name = shift @$route;
+                my $type = shift @$route;
+                my $value = param($name);
+                $p->{$name} = $value if defined $value && $value =~ /^$type$/;
+            }
+        }
         # Function returns -1 if there is no need to generate output, e.g. a redirect was issued.
-        ($fn->() || 0) == -1 and return;
+        ($fn->($p) || 0) == -1 and return;
     }
     save_settings;
 
