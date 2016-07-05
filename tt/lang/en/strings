@@ -107,6 +107,7 @@
 1012 "Please select a problem."
 1013 "Unable to determine the development environnment."
 1014 "Solution is queued for testing."
+1015 "Contests including '%s' problem."
 1017 "No more problem codes available."
 018 "Права команд были успешно измненены."
 019 "Не удается изменить права команд."

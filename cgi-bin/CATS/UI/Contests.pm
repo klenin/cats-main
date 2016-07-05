@@ -304,12 +304,20 @@ sub authenticated_contests_view ()
 {
     my $cf = contest_fields();
     my $has_problem = param('has_problem');
-    my $has_problem_orig = $has_problem ?
-        '(SELECT 1 FROM problems P WHERE P.contest_id = C.id AND P.id = ?)' : '0';
+    my $original_contest = 0;
+    if ($has_problem) {
+        ($original_contest, my $title) = $dbh->selectrow_array(q~
+            SELECT P.contest_id, P.title FROM problems P WHERE P.id = ?~, undef, $has_problem);
+        if ($original_contest) {
+            msg(1015, $title);
+        }
+        else {
+            $has_problem = 0;
+        }
+    }
     my $sth = $dbh->prepare(qq~
         SELECT
-            $cf, CA.is_virtual, CA.is_jury, CA.id AS registered, C.is_hidden,
-            $has_problem_orig AS has_orig
+            $cf, CA.is_virtual, CA.is_jury, CA.id AS registered, C.is_hidden
         FROM contests C LEFT JOIN
             contest_accounts CA ON CA.contest_id = C.id AND CA.account_id = ?
         WHERE
@@ -318,10 +326,9 @@ sub authenticated_contests_view ()
                 SELECT 1 FROM contest_problems CP
                 WHERE CP.contest_id = C.id AND CP.problem_id = ?) ~ : contests_submenu_filter()) .
             order_by);
-    $sth->execute($has_problem ? ($has_problem, $uid, $has_problem) : ($uid));
+    $sth->execute($uid, $has_problem ? $has_problem : ());
 
-    my $fetch_contest = sub($)
-    {
+    my $fetch_contest = sub {
         my $c = $_[0]->fetchrow_hashref or return;
         return (
             common_contests_view($c),
@@ -332,7 +339,7 @@ sub authenticated_contests_view ()
             registered_online => $c->{registered} && !$c->{is_virtual},
             registered_virtual => $c->{registered} && $c->{is_virtual},
             href_delete => url_f('contests', delete => $c->{id}),
-            has_orig => $c->{has_orig},
+            has_orig => $c->{id} == $original_contest,
         );
     };
     return ($fetch_contest, $sth);
