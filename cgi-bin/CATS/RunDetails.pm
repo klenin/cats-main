@@ -251,7 +251,7 @@ sub get_sources_info {
             C.is_official,
             COALESCE(R.testsets, CP.testsets) AS testsets,
             C.id AS contest_id, CP.id AS cp_id,
-            CP.status,
+            CP.status, CP.code,
             CA.id AS ca_id
         FROM sources S
             INNER JOIN reqs R ON R.id = S.req_id

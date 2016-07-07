@@ -30,7 +30,7 @@ function send_message(href)
   [% FOREACH si IN sources_info %]<td>[% maybe_href(si.href_contest, si.contest_name) %]</td>
   [% END %]</tr>
 <tr><th>[% capt.problem %]</th>
-  [% FOREACH si IN sources_info %]<td>[% maybe_href(si.href_problem, si.problem_name) ~%]
+  [% FOREACH si IN sources_info %]<td>[% si.code; ': '; maybe_href(si.href_problem, si.problem_name) ~%]
     [%~ IF si.is_jury %] ([% si.status_name %])[% END %]</td>
   [% END %]</tr>
 <tr><th>[% capt.testset %]</th>[% FOREACH si IN sources_info %]
