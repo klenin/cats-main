@@ -533,6 +533,59 @@ sub problems_all_frame {
     $c->finish;
 }
 
+sub problems_udebug_frame {
+    my ($p) = @_;
+    init_listview_template('problems_udebug', 'problems_udebug', auto_ext('problems_udebug'));
+
+    define_columns(url_f('problems'), 0, 0, [
+        { caption => res_str(602), order_by => '2', width => '30%' },
+    ]);
+
+    my $c = $dbh->prepare(qq~
+        SELECT
+            CP.id AS cpid, P.id AS pid, CP.code, P.title AS problem_name, P.lang, C.title AS contest_name,
+            SUBSTRING(P.explanation FROM 1 FOR 1) AS has_explanation,
+            CP.status, P.upload_date
+        FROM contest_problems CP
+            INNER JOIN problems P ON CP.problem_id = P.id
+            INNER JOIN contests C ON CP.contest_id = C.id
+        WHERE
+            C.is_official = 1 AND C.show_packages = 1 AND
+            CURRENT_TIMESTAMP > C.finish_date AND (C.is_hidden = 0 OR C.is_hidden IS NULL) AND
+            CP.status < $cats::problem_st_hidden AND P.lang = 'en' ~ . order_by);
+    $c->execute();
+
+    my $sol_sth = $dbh->prepare(qq~
+        SELECT PS.fname, PS.src, DE.code
+        FROM problem_sources PS INNER JOIN default_de DE ON DE.id = PS.de_id
+        WHERE PS.problem_id = ? AND PS.stype = $cats::solution~);
+
+    my $fetch_record = sub($)
+    {
+        my $r = $_[0]->fetchrow_hashref or return ();
+        $sol_sth->execute($r->{pid});
+        my $sols = $sol_sth->fetchall_arrayref({});
+        return (
+            href_view_problem => CATS::StaticPages::url_static('problem_text', cpid => $r->{cpid}),
+            href_explanation => $r->{has_explanation} ?
+                url_f('problem_text', cpid => $r->{cpid}, explain => 1) : '',
+            href_download => url_function('problems', download => $r->{pid}),
+            cpid => $r->{cpid},
+            pid => $r->{pid},
+            code => $r->{code},
+            problem_name => $r->{problem_name},
+            contest_name => $r->{contest_name},
+            lang => $r->{lang},
+            status_text => problem_status_names()->{$r->{status}},
+            upload_date_iso => date_to_iso($r->{upload_date}),
+            solutions => $sols,
+        );
+    };
+
+    attach_listview(url_f('problems_udebug'), $fetch_record, $c);
+    $c->finish;
+}
+
 sub problems_recalc_points()
 {
     my @pids = param('problem_id') or return msg(1012);

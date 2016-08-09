@@ -1,0 +1,34 @@
+[%- WRAPPER includes/jsonp.tti -%]
+[%- USE Javascript -%]
+{
+[% IF message %]"message": "[% message | $Javascript %]"
+[% ELSE %]
+"problems": [
+[%- FOREACH p IN problems_udebug %]
+{
+"id": [% p.cpid %],
+"name": "[% p.problem_name | $Javascript %]",
+"code": "[% p.code %]",
+"contest": "[% p.contest_name | $Javascript %]",
+"language": "[% p.lang %]",
+"text_url": "[% p.href_view_problem %]",
+"package_url": "[% p.href_download %]",
+[% IF p.href_explanation %]"explanation_url": "[% p.href_explanation %]",
+[% END -%]
+"status": "[% p.status_text %]",
+"last_update_time": "[% p.upload_date_iso %]",
+"solutions": [
+[%- FOREACH s IN p.solutions %]
+{
+"de": [% s.code %],
+"name": "[% s.fname | $Javascript %]",
+"src": "[% s.src | $Javascript %]"
+}
+[% UNLESS loop.last %],[% END %][% END %]
+]
+}
+[% UNLESS loop.last %],[% END %][% END %]
+]
+[% END %]
+}
+[%-END -%]

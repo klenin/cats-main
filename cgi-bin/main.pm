@@ -142,6 +142,7 @@ sub routes() {
         console_export => \&CATS::Console::export,
         console_graphs => \&CATS::Console::graphs,
         problems => [ \&CATS::UI::Problems::problems_frame, kw => $int, ],
+        problems_udebug => [ \&CATS::UI::Problems::problems_udebug_frame, ],
         problems_retest => \&CATS::UI::Problems::problems_retest_frame,
         problem_select_testsets => \&CATS::UI::Problems::problem_select_testsets_frame,
         problem_history => \&CATS::UI::Problems::problem_history_frame,
