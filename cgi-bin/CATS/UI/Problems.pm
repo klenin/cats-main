@@ -924,6 +924,7 @@ sub problem_commitdiff
     $t->param(
         commit => CATS::ProblemStorage::show_commit($pid, $sha, $se),
         problem_title => $title,
+        title_suffix => $title,
         submenu => $submenu,
         problem_import_log => $import_log,
         source_encodings => source_encodings($se),
@@ -984,7 +985,8 @@ sub problem_history_tree_frame
     set_submenu_for_tree_frame($pid, $hash_base);
     $t->param(
         tree => $tree,
-        problem_title => $title
+        problem_title => $title,
+        title_suffix => $title,
     );
 }
 
@@ -1007,6 +1009,7 @@ sub problem_history_blob_frame
     $t->param(
         blob => $blob,
         problem_title => $title,
+        title_suffix => "$file",
         source_encodings => source_encodings($se),
     );
 }
@@ -1064,6 +1067,7 @@ sub problem_history_edit_frame
         file => $file,
         blob => $blob,
         problem_title => $title,
+        title_suffix => "$file",
         src_enc => $se,
         source_encodings => source_encodings($se),
     );
@@ -1075,11 +1079,11 @@ sub problem_history_frame
     $is_jury && $pid or return redirect url_f('contests');
 
     my %actions = (
-        'edit' => \&problem_history_edit_frame,
-        'blob' => \&problem_history_blob_frame,
-        'raw' => \&problem_history_raw_frame,
-        'tree' => \&problem_history_tree_frame,
-        'commitdiff' => \&problem_history_commit_frame,
+        edit => \&problem_history_edit_frame,
+        blob => \&problem_history_blob_frame,
+        raw => \&problem_history_raw_frame,
+        tree => \&problem_history_tree_frame,
+        commitdiff => \&problem_history_commit_frame,
     );
 
     my ($status, $title, $repo_name) = $dbh->selectrow_array(q~
@@ -1109,6 +1113,7 @@ sub problem_history_frame
     $t->param(
         pid => $pid,
         remote_url => $remote_url,
+        title_suffix => $title,
     );
 
     my @cols = (
