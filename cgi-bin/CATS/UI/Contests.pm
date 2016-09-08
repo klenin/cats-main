@@ -305,6 +305,10 @@ sub authenticated_contests_view {
     my $cf = contest_fields();
     my $original_contest = 0;
     if ($p->{has_problem}) {
+        my ($has_problem_pid) = $dbh->selectrow_array(q~
+            SELECT CP.problem_id FROM contest_problems CP WHERE CP.id = ?~, undef,
+            $p->{has_problem});
+        $p->{has_problem} = $has_problem_pid if $has_problem_pid;
         ($original_contest, my $title) = $dbh->selectrow_array(q~
             SELECT P.contest_id, P.title FROM problems P WHERE P.id = ?~, undef, $p->{has_problem});
         if ($original_contest) {
