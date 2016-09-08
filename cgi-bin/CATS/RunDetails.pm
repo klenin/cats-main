@@ -282,7 +282,7 @@ sub get_sources_info {
     for my $r (@$result) {
         $_ = Encode::decode_utf8($_) for @$r{grep /_name$/, keys %$r};
         $r = {
-              %$r, state_to_display($r->{state}),
+            %$r, state_to_display($r->{state}),
             CATS::IP::linkify_ip(CATS::IP::filter_ip $r->{last_ip}),
             href_stats => url_f('user_stats', uid => $r->{account_id}),
             href_send_message => url_f('send_message_box', caid => $r->{ca_id}),
@@ -307,6 +307,20 @@ sub get_sources_info {
     }
 
     return ref $rid ? $result : $result->[0];
+}
+
+sub build_title_suffix {
+    my ($si) = @_;
+    my %fn;
+    $fn{$_->{file_name}}++ for @$si;
+    join ',', map $_ . ($fn{$_} > 1 ? "*$fn{$_}" : ''), sort keys %fn;
+}
+
+sub sources_info_param {
+    $t->param(
+        title_suffix => build_title_suffix($_[0]),
+        sources_info => $_[0],
+    );
 }
 
 sub run_details_frame {
@@ -336,7 +350,8 @@ sub run_details_frame {
             $_->{state} == $cats::st_compilation_error ?
             { get_log_dump($_->{req_id}, 1) } : get_run_info($contest, $_);
     }
-    $t->param(sources_info => $sources_info, runs => \@runs);
+    sources_info_param($sources_info);
+    $t->param(runs => \@runs);
 }
 
 sub view_source_frame {
@@ -368,7 +383,7 @@ sub view_source_frame {
     source_links($sources_info);
     /^[a-z]+$/i and $sources_info->{syntax} = $_ for param('syntax');
     $sources_info->{src_lines} = [ map {}, split("\n", $sources_info->{src}) ];
-    $t->param(sources_info => [ $sources_info ]);
+    sources_info_param([ $sources_info ]);
 
     if ($sources_info->{is_jury}) {
         my $de_list = CATS::DevEnv->new($dbh, active_only => 1);
@@ -456,7 +471,7 @@ sub run_log_frame {
     # Reload problem after the successful state change.
     $si = get_sources_info(request_id => $rid)
         if try_set_state($si, $rid);
-    $t->param(sources_info => [ $si ]);
+    sources_info_param([ $si ]);
 
     source_links($si);
     $t->param(get_log_dump($rid));
@@ -501,10 +516,8 @@ sub diff_runs_frame {
         }
     );
 
-    $t->param(
-        sources_info => $si,
-        diff_lines => \@diff,
-    );
+    sources_info_param($si);
+    $t->param(diff_lines => \@diff);
 }
 
 1;
