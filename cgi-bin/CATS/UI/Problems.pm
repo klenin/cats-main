@@ -363,13 +363,16 @@ sub problems_submit
     msg(1014);
 }
 
-sub problems_submit_std_solution
-{
+sub problems_submit_std_solution {
     my $pid = param('problem_id');
 
     defined $pid or return msg(1012);
 
-    my $ok = 0;
+    my ($title) = $dbh->selectrow_array(q~
+        SELECT title FROM problems WHERE id = ?~, undef,
+        $pid) or return msg(1012);
+
+    my $sol_count = 0;
 
     my $c = $dbh->prepare(qq~
         SELECT src, de_id, fname
@@ -377,8 +380,7 @@ sub problems_submit_std_solution
         WHERE problem_id = ? AND (stype = ? OR stype = ?)~);
     $c->execute($pid, $cats::solution, $cats::adv_solution);
 
-    while (my ($src, $did, $fname) = $c->fetchrow_array)
-    {
+    while (my ($src, $did, $fname) = $c->fetchrow_array) {
         my $rid = new_id;
 
         $dbh->do(qq~
@@ -399,19 +401,13 @@ sub problems_submit_std_solution
         $s->bind_param(4, $fname);
         $s->execute;
 
-        $ok = 1;
+        ++$sol_count;
     }
 
-    if ($ok)
-    {
-        $dbh->commit;
-        $t->param(solution_submitted => 1, href_console => url_f('console'));
-        msg(1107);
-    }
-    else
-    {
-        msg(1106);
-    }
+    $sol_count or return msg(1106, $title);
+    $dbh->commit;
+    $t->param(solution_submitted => 1, href_console => url_f('console'));
+    msg(1107, $title, $sol_count);
 }
 
 sub problems_mass_retest()
