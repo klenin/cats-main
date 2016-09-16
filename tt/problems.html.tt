@@ -80,7 +80,7 @@ function chg_code(st_sel, pid)
 [% PROCESS 'includes/listview_col_defs.tti' sel_col = 1 %]
 [% END %]
 [% FOREACH p IN problems %]
-<tr class="[% loop.parity() %]">
+<tr class="[% loop.parity() %] problem_row" id="pr_[% p.cpid %]">
 [% IF is_team %]<td class="problem_radio">
   <label><input type="radio" name="problem_id" value="[% p.problem_id %]"
     [%- ' disabled="disabled"' IF p.disabled; ' checked="checked"' IF p.selected %] /></label>
@@ -115,11 +115,11 @@ function chg_code(st_sel, pid)
 [% END %]
 [% IF is_practice %]<td>[% p.contest_name | html %]</td>[% END %]
 [% IF is_team %]
-    <td align="center">
+    <td class="problem_req_count"><div>
     [%- IF p.href_problem_console %]<a href="[% p.href_problem_console %]">[% END -%]
     [% p.accept_count %] / [% p.wa_count %]  / [% p.tle_count %]
     [%- IF p.href_problem_console %]</a>[% END -%]
-    </td>
+    </div></td>
 [% END %]
 </tr>
 [% END %]
@@ -157,4 +157,24 @@ function chg_code(st_sel, pid)
 <div style="clear: both;"></div>
 [% END %]
 </form>
+[% IF editable %]
+<script type="text/javascript" src="js/lib/jquery.min.js"></script>
+<script type="text/javascript">
+(function add_udebug_hrefs() {
+  $.get('https://www.udebug.com/api/CATS').then(function (json) {
+    var h = {};
+    for (var i = 0; i < json.length; ++i)
+      h[json[i]] = 1;
+    var rows = $('tr.problem_row');
+    for (i = 0; i < rows.length; ++i) {
+      var cpid = rows[i].id.substr(3);
+      if (!h[cpid]) continue;
+      $(rows[i]).find('td.problem_req_count>div').append(
+        '<a class="problem_req_count_udebug" title="udebug" ' +
+        'href="https://www.udebug.com/CATS/' + cpid + '"></a>');
+    }
+  });
+})();
+</script>
+[% END %]
 [% PROCESS 'includes/menu_end.tti' %]
