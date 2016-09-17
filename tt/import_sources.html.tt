@@ -3,7 +3,7 @@
 <form method=post enctype="multipart/form-data">
 [% PROCESS 'includes/listview_header.tti' %]
 
-<table width=100% cellpadding=2 cellspacing=1 class=bordered>
+<table width=100% cellpadding=2 cellspacing=1 class="bordered highlight">
 [% PROCESS 'includes/listview_col_defs.tti' sel_col = is_jury %]
 
 [% FOREACH import_sources %]
