@@ -33,7 +33,7 @@ function confirm_registration()
     [% ELSE %]
     <a href="[% c.href_params %]" class="icon view" title="[% capt.alt_params %]"></a>
     [% END %]
-    <a href="[% c.href_contest %]" [% IF c.selected %] style="color: #000000; background-color: #ccccff"[% END %]>[% c.contest_name | html %]</a>
+    <a href="[% c.href_contest %]"[% ' class="contest_selected"' IF c.selected %]>[% c.contest_name | html %]</a>
     [<a href="[% c.href_problems %]">[% capt.problems %]</a>]
 </td>
 <td align=center>[% c.start_date | html %]</td>

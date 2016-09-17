@@ -179,6 +179,8 @@ a.edit { background-image: url(../../images/std/icons/edit.png); }
 a.view { background-image: url(../../images/std/icons/view.png); }
 a.delete { background-image: url(../../images/std/icons/delete.png); }
 
+a.contest_selected { color: black; background-color: #ccccff; }
+
 p { margin-top: 5px; margin-bottom: 5px } 
 
 ul { margin-top: 5px; margin-bottom: 5px } 
