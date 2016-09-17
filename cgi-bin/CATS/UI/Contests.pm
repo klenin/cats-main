@@ -161,17 +161,18 @@ sub contests_edit_save
 sub contest_online_registration
 {
     !get_registered_contestant(contest_id => $cid)
-        or return msg(111);
+        or return msg(1111, $contest->{title});
 
     if ($is_root) {
         $contest->register_account(account_id => $uid, is_jury => 1, is_pop => 1, is_hidden => 1);
     }
     else {
-        $contest->{time_since_finish} <= 0 or return msg(108);
-        !$contest->{closed} or return msg(105);
+        !$contest->{closed} or return msg(1105, $contest->{title});
+        $contest->{time_since_finish} <= 0 or return msg(1108, $contest->{title});
         $contest->register_account(account_id => $uid);
     }
     $dbh->commit;
+    msg(1110, $contest->{title});
 }
 
 sub contest_virtual_registration
@@ -180,28 +181,27 @@ sub contest_virtual_registration
          fields => '1, is_virtual, is_remote', contest_id => $cid);
 
     !$registered || $is_already_virtual
-        or return msg(114);
+        or return msg(1114, $contest->{title});
+
+    !$contest->{closed}
+        or return msg(1105, $contest->{title});
 
     $contest->{time_since_start} >= 0
-        or return msg(109);
+        or return msg(1109);
 
     # In official contests, virtual participation is allowed only after the finish.
     $contest->{time_since_finish} >= 0 || !$contest->{is_official}
-        or return msg(122);
+        or return msg(1122);
 
-    !$contest->{closed}
-        or return msg(105);
-
+    my $removed_req_count = 0;
     # Repeat virtual registration removes old results.
     if ($registered) {
-        $dbh->do(qq~
+        $removed_req_count = $dbh->do(qq~
             DELETE FROM reqs WHERE account_id = ? AND contest_id = ?~, undef,
             $uid, $cid);
         $dbh->do(qq~
             DELETE FROM contest_accounts WHERE account_id = ? AND contest_id = ?~, undef,
             $uid, $cid);
-        $dbh->commit;
-        msg(113);
     }
 
     $contest->register_account(
@@ -209,6 +209,7 @@ sub contest_virtual_registration
         is_virtual => 1, is_remote => $is_remote,
         diff_time => $contest->{time_since_start});
     $dbh->commit;
+    msg($removed_req_count > 0 ? 1113 : 1112, $contest->{title}, $removed_req_count);
 }
 
 sub contests_select_current
@@ -222,12 +223,10 @@ sub contests_select_current
 
     $t->param(selected_contest_title => $contest->{title});
 
-    if ($contest->{time_since_finish} > 0)
-    {
-        msg(115);
+    if ($contest->{time_since_finish} > 0) {
+        msg(1115, $contest->{title});
     }
-    elsif (!$registered)
-    {
+    elsif (!$registered) {
         msg(1116);
     }
 }

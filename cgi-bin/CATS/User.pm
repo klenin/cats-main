@@ -175,7 +175,7 @@ sub insert
     my $training_contests = $dbh->selectall_arrayref(qq~
         SELECT id, closed FROM contests WHERE ctype = 1 AND closed = 0~,
         { Slice => {} });
-    @$training_contests or return msg(105);
+    @$training_contests or return msg(1092);
 
     my $aid = new_id;
     my $new_settings = $p{save_settings} ? Storable::freeze($CATS::Misc::settings) : '';
