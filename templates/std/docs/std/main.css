@@ -158,6 +158,7 @@ tr.run_details_NT { color: #000080; font-style: italic; }
 tr.odd { background-color: #ffffff; }
 tr.even { background-color: #f0f0f0; }
 table.highlight tr:hover { background-color: #ffcc55; }
+table.highlight tr.col_defs:hover, tr.col_defs { background-color: #ccccff }
 table.console tr td { margin: 0; padding: 1px 10px 1px 1px; }
 table.console tr td, table.console tr td a { font-size: 10pt; }
 table.console tr td:first-child { width: 1%; white-space: nowrap; }

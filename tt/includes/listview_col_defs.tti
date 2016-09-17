@@ -1,4 +1,4 @@
-<tr bgcolor=#ccccff>
+<tr class="col_defs">
 [% IF sel_col %]<th width="1%">&nbsp;</th>[% END %]
 [% FOREACH col_def IN col_defs %]
 <th [% IF col_def.width %]width="[% col_def.width %]"[% END %]>
