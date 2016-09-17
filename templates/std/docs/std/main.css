@@ -108,6 +108,11 @@ input {
     vertical-align: middle;
 }
 
+input.listview_checkbox {
+    height: auto;
+    vertical-align: baseline;
+}
+
 .file {
     border: 1px solid #4040ff;
     background: #ffffff;
@@ -162,6 +167,17 @@ table.highlight tr.col_defs:hover, tr.col_defs { background-color: #ccccff }
 table.console tr td { margin: 0; padding: 1px 10px 1px 1px; }
 table.console tr td, table.console tr td a { font-size: 10pt; }
 table.console tr td:first-child { width: 1%; white-space: nowrap; }
+
+a.icon {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    background-repeat: no-repeat;
+}
+
+a.edit { background-image: url(../../images/std/icons/edit.png); }
+a.view { background-image: url(../../images/std/icons/view.png); }
+a.delete { background-image: url(../../images/std/icons/delete.png); }
 
 p { margin-top: 5px; margin-bottom: 5px } 
 

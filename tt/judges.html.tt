@@ -18,8 +18,8 @@ function delete_judge(href, name)
 <tr class="[% loop.parity() %]">
 <td>
   [% IF editable %]
-  <a href='javascript:delete_judge("[% href_delete %]", "[% judge_name | html %]");'><img src="./images/std/waste2.gif" border=0></a> 
-  <a href='[% href_edit %]'><img src="./images/std/blank.gif" border=0></a>
+  <a href="javascript:delete_judge('[% href_delete %]', '[% judge_name | html %]');" class="icon delete"></a>
+  <a href="[% href_edit %]" class="icon edit"></a>
   [% END %]
   [% judge_name | html %]
 </td>

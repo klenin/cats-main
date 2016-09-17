@@ -20,8 +20,8 @@ function delete_kw(href, name)
 <tr class="[% loop.parity() %]">
 [% IF editable %]
 <td nowrap>
-  <a href="javascript:delete_kw('[% k.href_delete %]', '[% k.code | html %]');"><img src="./images/std/waste2.gif" border="0"></a> 
-  <a href="[% k.href_edit %]"><img src="./images/std/blank.gif" border="0"></a>
+  <a href="javascript:delete_kw('[% k.href_delete %]', '[% k.code | html %]');" class="icon delete"></a>
+  <a href="[% k.href_edit %]" class="icon edit"></a>
 </td>
 [% END %]
 <td><a href="[% k.href_view_problems %]">[% k.code | html %]</a></td>

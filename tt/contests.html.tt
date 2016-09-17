@@ -24,14 +24,14 @@ function confirm_registration()
 [% FOREACH contests %]
 <tr bgcolor="#ffffff">
 <td>
-    <input type="checkbox" name="contests_selection" value="[% id %]" />
+    <input type="checkbox" class="listview_checkbox" name="contests_selection" value="[% id %]" />
     [% IF deletable %]
-    <a href='javascript:delete_contest("[% href_delete %]", "[% contest_name | html %]");'><img src="./images/std/waste2.gif" border=0></a> 
+    <a href="javascript:delete_contest('[% href_delete %]', '[% contest_name | html %]');" class="icon delete"></a>
     [% END %]
     [% IF editable %]
-    <a href="[% href_params %]"><img src="./images/std/edit.gif" border=0 alt=""></a> 
+    <a href="[% href_params %]" class="icon edit"></a>
     [% ELSE %]
-    <a href="[% href_params %]"><img src="./images/std/blank.gif" border=0 alt="[% capt.alt_params %]"></a> 
+    <a href="[% href_params %]" class="icon view" title="[% capt.alt_params %]"></a>
     [% END %]
     <a href="[% href_contest %]" [% IF selected %] style="color: #000000; background-color: #ccccff"[% END %]>[% contest_name | html %]</a>
     [<a href="[% href_problems %]">[% capt.problems %]</a>]

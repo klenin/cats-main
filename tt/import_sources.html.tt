@@ -9,7 +9,7 @@
 [% FOREACH import_sources %]
 <tr class="[% loop.parity() %]">
 [% IF is_jury %]<td>
-  <a href="[% href_problems %]" title="[% title %]"><img src="./images/std/blank.gif" border="0"></a>
+  <a href="[% href_problems %]" title="[% title %]" class="icon view"></a>
 </td>[% END %]
 <td><a href="[% href_source %]" title="[% fname | html %]">[% guid | html %] ([% fname | html %])</a></td>
 <td>[% stype_name %]</td>

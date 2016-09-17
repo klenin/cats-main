@@ -20,8 +20,8 @@ function delete_compiler(href, name)
 <tr class="[% loop.parity() %]">
 <td>
   [% IF editable %]
-  <a href='javascript:delete_compiler("[% c.href_delete %]", "[% c.description | html %]");'><img src="./images/std/waste2.gif" border=0></a>
-  <a href='[% c.href_edit %]'><img src="./images/std/blank.gif" border=0></a>
+  <a href="javascript:delete_compiler('[% c.href_delete %]', '[% c.description | html %]');" class="icon delete"></a>
+  <a href="[% c.href_edit %]" class="icon edit"></a>
   [% END %]
   [% c.code | html %]
 </td>
