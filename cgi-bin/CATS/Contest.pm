@@ -14,6 +14,7 @@ sub database_fields {qw(
 
 use fields (database_fields(), qw(server_time time_since_start time_since_finish time_since_defreeze));
 
+use CATS::Config qw(cats_dir);
 use CATS::Constants;
 use CATS::DB;
 
@@ -73,6 +74,21 @@ sub unused_problem_codes
     my %used_codes;
     @used_codes{@{$self->used_problem_codes}} = undef;
     grep !exists($used_codes{$_}), @cats::problem_codes;
+}
+
+sub register_account {
+    my ($self, %p) = @_;
+    $p{account_id} or die;
+    $p{contest_id} ||= $self->{id};
+    $p{$_} ||= 0 for (qw(is_jury is_pop is_hidden is_virtual diff_time));
+    $p{$_} ||= 1 for (qw(is_ooc is_remote));
+    $p{id} = new_id;
+    my ($f, $v) = (join(', ', keys %p), join(',', map '?', keys %p));
+    $dbh->do(qq~
+        INSERT INTO contest_accounts ($f) VALUES ($v)~, undef,
+        values %p);
+    my $p = cats_dir() . "./rank_cache/$p{contest_id}#";
+    unlink <$p*>;
 }
 
 1;
