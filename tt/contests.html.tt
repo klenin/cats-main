@@ -16,38 +16,38 @@ function confirm_registration()
 </script>
 
 <form method="post" enctype="multipart/form-data" action="[% href_contests %]" id="contest_form">
-[% PROCESS 'includes/listview_header.tti' %]
+[% PROCESS includes/listview_header.tti %]
 
 <table width="100%" cellpadding=2 cellspacing=1 class="bordered highlight">
-[% PROCESS 'includes/listview_col_defs.tti' %]
+[% PROCESS includes/listview_col_defs.tti %]
 
-[% FOREACH contests %]
-<tr bgcolor="#ffffff">
+[% FOREACH c IN contests %]
+<tr class="[% loop.parity() %]">
 <td>
-    <input type="checkbox" class="listview_checkbox" name="contests_selection" value="[% id %]" />
-    [% IF deletable %]
-    <a href="javascript:delete_contest('[% href_delete %]', '[% contest_name | html %]');" class="icon delete"></a>
+    <input type="checkbox" class="listview_checkbox" name="contests_selection" value="[% c.id %]" />
+    [% IF c.deletable %]
+    <a href="javascript:delete_contest('[% c.href_delete %]', '[% c.contest_name | html %]');" class="icon delete"></a>
     [% END %]
-    [% IF editable %]
-    <a href="[% href_params %]" class="icon edit"></a>
+    [% IF c.editable %]
+    <a href="[% c.href_params %]" class="icon edit"></a>
     [% ELSE %]
-    <a href="[% href_params %]" class="icon view" title="[% capt.alt_params %]"></a>
+    <a href="[% c.href_params %]" class="icon view" title="[% capt.alt_params %]"></a>
     [% END %]
-    <a href="[% href_contest %]" [% IF selected %] style="color: #000000; background-color: #ccccff"[% END %]>[% contest_name | html %]</a>
-    [<a href="[% href_problems %]">[% capt.problems %]</a>]
+    <a href="[% c.href_contest %]" [% IF c.selected %] style="color: #000000; background-color: #ccccff"[% END %]>[% c.contest_name | html %]</a>
+    [<a href="[% c.href_problems %]">[% capt.problems %]</a>]
 </td>
-<td align=center>[% start_date | html %]</td>
-<td align=center>[% finish_date | html %]</td>
+<td align=center>[% c.start_date | html %]</td>
+<td align=center>[% c.finish_date | html %]</td>
 <td>
-    [% UNLESS registration_denied %]
-      [% IF registered_online; capt.ct_participant; END ~%]
-      [% IF registered_virtual; capt.ct_virtual; END =%]
+    [% UNLESS c.registration_denied %]
+      [% IF c.registered_online; capt.ct_participant; END ~%]
+      [% IF c.registered_virtual; capt.ct_virtual; END =%]
     [% END =%]
-    [% IF is_official %]<font color="blue">[% capt.ct_official %]</font>[% END =%]
-    [% IF registration_denied %]<font color="red">[% capt.ct_denied %]</font>[% END =%]
-    [% IF show_points %]<font color="green">[% capt.ct_school %]</font>[% END =%]
-    [% IF is_hidden %]<font color="gray">[% capt.ct_hidden %]</font>[% END %]
-    [% IF has_orig; capt.ct_original; END %]
+    [% IF c.is_official %]<font color="blue">[% capt.ct_official %]</font>[% END =%]
+    [% IF c.registration_denied %]<font color="red">[% capt.ct_denied %]</font>[% END =%]
+    [% IF c.show_points %]<font color="green">[% capt.ct_school %]</font>[% END =%]
+    [% IF c.is_hidden %]<font color="gray">[% capt.ct_hidden %]</font>[% END %]
+    [% IF c.has_orig; capt.ct_original; END %]
 </td>
 </tr>
 [% END %]
