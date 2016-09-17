@@ -13,4 +13,7 @@
 <link type="text/css" rel="alternate stylesheet" href="synh/styles/shThemeFadeToGrey.css" title="fade to grey"/>
 <link type="text/css" rel="alternate stylesheet" href="synh/styles/shThemeMidnight.css" title="midnight"/>
 <link type="text/css" rel="alternate stylesheet" href="synh/styles/shThemeRDark.css" title="rdark"/>
-<script type="text/javascript">SyntaxHighlighter.all();</script>
+<script type="text/javascript">
+SyntaxHighlighter.defaults.toolbar = false;
+SyntaxHighlighter.all();
+</script>
