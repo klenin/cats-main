@@ -477,7 +477,7 @@ sub problems_all_frame {
                     WHERE contest_id = C.id AND account_id = ? AND is_jury = 1
                     ) OR CURRENT_TIMESTAMP > C.finish_date AND (C.is_hidden = 0 OR C.is_hidden IS NULL)
             )~],
-            params => [$uid]
+            params => [ $uid // 0 ]
         };
     prepare_keyword($where, $p);
     my $where_cond = join(' AND ', @{$where->{cond}}) || '1=1';
