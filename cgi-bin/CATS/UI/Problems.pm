@@ -465,10 +465,10 @@ sub problems_all_frame {
 
     my $where =
         $is_root ? {
-            cond => [], 'params' => [] }
+            cond => [], params => [] }
         : !$link ? {
             cond => ['CURRENT_TIMESTAMP > C.finish_date AND (C.is_hidden = 0 OR C.is_hidden IS NULL)'],
-            'params' => [] }
+            params => [] }
         : {
             cond => [q~
             (
