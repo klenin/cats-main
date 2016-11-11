@@ -67,7 +67,7 @@
 [% END -%]
 <td align="left">
   [%- IF 0 %]<a href="[% href_console %]" title="[% r.city %]"></a>[% END -%]
-  [%- r.team_name | html -%]
+  [%- r.team_name | html; IF show_regions && r.city; ' ('; r.city; ')'; END -%]
 </td>
 [% IF show_points ~%]
   [% FOREACH c IN r.columns %]<td>[% c.points %]</td>[% END -%]
@@ -101,7 +101,7 @@ for(var i = 0; i < rank_table.length; ++i) {
     var r = rank_table[i];
     document.write('<tr align="center"' + (r.rc ? '' : ' class="even"') + '>');
     td((i + 1) + '&nbsp;', 'align="right"');
-    td('<a href="[% href_console %];uf=' + r.id + '" title="' + r.t + '">' + r.n + '</a>', 'align="left"');
+    td('<a href="[% href_console %];uf=' + r.id + '" title="' + r.t + '">' + r.n + [% IF show_regions %](r.t ? ' (' + r.t + ')' : '') + [% END %]'</a>', 'align="left"');
     [% IF show_points %]
     for (var j = 0; j < r.pt.length; ++j) td(r.pt[j]);
     td(r.tp);

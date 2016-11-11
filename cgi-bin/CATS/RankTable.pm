@@ -18,7 +18,7 @@ use CATS::Countries;
 use fields qw(
     contest_list hide_ooc hide_virtual show_points frozen
     title has_practice not_started filter use_cache
-    rank problems problems_idx show_all_results show_prizes req_selection
+    rank problems problems_idx show_all_results show_prizes req_selection show_regions
 );
 
 
@@ -313,6 +313,7 @@ sub parse_params
     $self->{use_cache} = 0 unless $self->{show_all_results};
     $self->{filter} = param('filter');
     $self->{show_prizes} = url_param('show_prizes');
+    $self->{show_regions} = url_param('show_regions');
 }
 
 
@@ -439,6 +440,7 @@ sub rank_table
         href_hide_virtual => url_f(@p, hide_virtual => 1, hide_ooc => $self->{hide_ooc}),
         href_show_virtual => url_f(@p, hide_virtual => 0, hide_ooc => $self->{hide_ooc}),
         show_points => $self->{show_points},
+        show_regions => $self->{show_regions},
         req_selection => same_or_default(values %{$self->{req_selection}}),
     );
     # Results must not include practice contest.
