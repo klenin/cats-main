@@ -472,6 +472,14 @@ sub select_all_reqs
 }
 
 
+sub xml_quote {
+    my ($s) = @_;
+    $s =~ s/</&lt;/g;
+    $s =~ s/"/&quot;/g;
+    $s =~ s/&/&amp;/g;
+    $s;
+}
+
 sub export
 {
     $is_jury or return;
@@ -487,7 +495,8 @@ sub export
             $req->{state} = $_;
             last;
         }
-        $req->{s} = join '', map "<$_>$req->{$_}</$_>", grep defined $req->{$_}, keys %$req;
+        $req->{s} = join '', map "<$_>" . xml_quote($req->{$_}) . "</$_>",
+            grep defined $req->{$_}, keys %$req;
     }
     $t->param(reqs => $reqs);
 }
