@@ -285,14 +285,15 @@ sub users_impersonate
 
 sub format_diff_time {
     my ($dt) = @_;
+    my $sign = $dt < 0 ? '-' : '+';
+    $dt = abs($dt);
     my $days = int($dt);
     $dt = ($dt - $days) * 24;
     my $hours = int($dt);
     $dt = ($dt - $hours) * 60;
     my $minutes = int($dt + 0.5);
     !$days && !$hours ? $minutes :
-    !$days ? sprintf('%d:%02d', $hours, $minutes) :
-    sprintf('%d %02d:%02d', $days, $hours, $minutes);
+        sprintf($days ? '%s%dd %02d:%02d' : '%s%3$d:%4$02d', $sign, $days, $hours, $minutes);
 }
 
 sub users_frame
