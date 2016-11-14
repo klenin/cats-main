@@ -14,8 +14,11 @@
     answer => 'answer',
     delete => 'delete',
     all_teams => 'all teams',
-    start_of => 'Start of',
-    finish_of => 'Finish of',
+    contest_dates => {
+      start => 'Start of',
+      freeze => 'Freeze of',
+      finish => 'Finish of',
+    },
     official_contest => 'official contest',
     contest => 'contest',
   })

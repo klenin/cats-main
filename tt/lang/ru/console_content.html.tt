@@ -14,8 +14,11 @@
     answer => 'ответить',
     delete => 'удалить',
     all_teams => 'всем командам',
-    start_of => 'Начался',
-    finish_of => 'Закончился',
+    contest_dates => {
+      start => 'Начался',
+      freeze => 'Заморожен',
+      finish => 'Закончился',
+    },
     official_contest => 'официальный турнир',
     contest => 'турнир',
   })

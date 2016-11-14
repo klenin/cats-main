@@ -121,6 +121,7 @@ sub console_content
             INNER JOIN sources s ON s.de_id = dd.id WHERE s.req_id = R.id) AS de' : $no_de;
     my $city_sql = $is_jury ?
         q~ || (CASE WHEN A.city IS NULL OR A.city = '' THEN '' ELSE ' (' || A.city || ')' END)~ : '';
+    my @contest_date_types = qw(start freeze finish);
     my %console_select = (
         run => qq~
             1 AS rtype,
@@ -207,13 +208,13 @@ sub console_content
             $dummy_account_block
             FROM messages M, dummy_table D
         ~,
-        contest_start => qq~
+        (map { +"contest_$contest_date_types[$_]" => qq~
             5 AS rtype,
-            C.start_date AS rank,
-            C.start_date AS submit_time,
+            C.$contest_date_types[$_]_date AS rank,
+            C.$contest_date_types[$_]_date AS submit_time,
             C.id AS id,
             C.is_official AS request_state,
-            CAST(NULL AS INTEGER) AS failed_test,
+            $_ AS failed_test,
             CAST(NULL AS INTEGER) AS problem_id,
             C.title AS problem_title,
             $no_de,
@@ -223,24 +224,7 @@ sub console_content
             D.t_blob AS jury_message,
             $dummy_account_block
             FROM contests C, dummy_table D
-        ~,
-        contest_finish => qq~
-            6 AS rtype,
-            C.finish_date AS rank,
-            C.finish_date AS submit_time,
-            C.id AS id,
-            C.is_official AS request_state,
-            CAST(NULL AS INTEGER) AS failed_test,
-            CAST(NULL AS INTEGER) AS problem_id,
-            C.title AS problem_title,
-            $no_de,
-            CAST(NULL AS INTEGER) AS clarified,
-            D.t_blob AS question,
-            D.t_blob AS answer,
-            D.t_blob AS jury_message,
-            $dummy_account_block
-            FROM contests C, dummy_table D
-        ~,
+        ~ } 0 .. $#contest_date_types),
     );
 
     my $runs_filter = $s->{show_results} ? '' : ' AND 1 = 0';
@@ -249,21 +233,18 @@ sub console_content
     my $events_filter = @user_ids ? 'AND (' . join(' OR ', map 'A.id = ?', @user_ids) . ')' : '';
     my @events_filter_params = @user_ids;
 
-    my $contest_start_finish = '';
+    my $contest_dates = '';
     if ($s->{show_contests})
     {
+        my %extra_cond = (start => '', freeze => ' AND C.freeze_date < C.finish_date', finish => '');
         my $hidden_cond = $is_root ? '' : ' AND C.is_hidden = 0';
-        $contest_start_finish = qq~
+        $contest_dates = join '', map qq~
                 UNION
             SELECT
-                $console_select{contest_start}
-                WHERE (C.start_date > CURRENT_TIMESTAMP - $day_count) AND
-                    (C.start_date < CURRENT_TIMESTAMP)$hidden_cond
-                UNION
-            SELECT
-                $console_select{contest_finish}
-                WHERE (C.finish_date > CURRENT_TIMESTAMP - $day_count) AND
-                    (C.finish_date < CURRENT_TIMESTAMP)$hidden_cond~;
+                $console_select{"contest_$_"}
+                WHERE (C.${_}_date > CURRENT_TIMESTAMP - $day_count) AND
+                    (C.${_}_date < CURRENT_TIMESTAMP)$extra_cond{$_}$hidden_cond~,
+                    qw(start freeze finish);
     }
 
     my $broadcast = $s->{show_messages} ? qq~
@@ -305,7 +286,7 @@ sub console_content
                 M.account_id = CA.id AND A.id = CA.account_id$msg_filter
                 $events_filter
             $broadcast
-            $contest_start_finish
+            $contest_dates
             ORDER BY 2 DESC~);
         $c->execute(
             @pf_params,
@@ -335,7 +316,7 @@ sub console_content
                 WHERE (M.send_time > CURRENT_TIMESTAMP - $day_count) AND
                     M.account_id=CA.id AND CA.contest_id=? AND CA.account_id=A.id AND A.id=?
             $broadcast
-            $contest_start_finish
+            $contest_dates
             ORDER BY 2 DESC~);
         $c->execute(
             $cid, $uid, @events_filter_params,
@@ -353,7 +334,7 @@ sub console_content
                     ($submit_time_filter)
                     $events_filter$runs_filter
             $broadcast
-            $contest_start_finish
+            $contest_dates
             ORDER BY 2 DESC~);
         $c->execute($cid, @events_filter_params);
     }
@@ -370,7 +351,7 @@ sub console_content
 
         my ($country, $flag) = CATS::Countries::get_flag($country_abbr);
         my %st = state_to_display($request_state,
-            # Security: During the contest, do show teams only accepted/rejected
+            # Security: During the contest, show teams only accepted/rejected
             # instead of specific results of other teams.
             $contest->{time_since_defreeze} <= 0 && !$is_jury &&
             (!$is_team || !$team_id || $team_id != $uid));
@@ -381,8 +362,8 @@ sub console_content
             is_question =>          $rtype == 2,
             is_message =>           $rtype == 3,
             is_broadcast =>         $rtype == 4,
-            is_contest =>           $rtype == 5 || $rtype == 6,
-            contest_start =>        $rtype == 5,
+            is_contest =>           $rtype == 5,
+            ($rtype == 5 ? (contest_date_type => $contest_date_types[$failed_test]) : ()),
             is_official =>          $request_state,
             # Hack: re-use 'clarified' field since it is relevant for questions only.
             points =>               $clarified,

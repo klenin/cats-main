@@ -76,7 +76,7 @@
 [% ELSIF c.is_contest %]
     <td>[% c.time %]</td>
     <td align=left>
-        <b>[% IF c.contest_start; capt.start_of; ELSE; capt.finish_of; END %]
+        <b>[% capt.contest_dates.item(c.contest_date_type) %]
         [% c.is_official ? capt.official_contest : capt.contest %]</b>
     </td>
     <td>
