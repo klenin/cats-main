@@ -1032,8 +1032,10 @@ sub problem_history_edit_frame
     my $hash_base = url_param('hb');
     my $file = url_param('file');
 
-    $hash_base && $file && !CATS::ProblemStorage::get_remote_url($repo_name)
-        && $hash_base eq CATS::ProblemStorage::get_latest_master_sha($pid) || return redirect url_f('problem_history', pid => $pid);
+    $hash_base && $file &&
+        !CATS::ProblemStorage::get_remote_url($repo_name) &&
+        $hash_base eq CATS::ProblemStorage::get_latest_master_sha($pid)
+        or return redirect url_f('problem_history', pid => $pid);
     init_template('problem_history_edit_file.html.tt');
 
     my $se = param('src_enc') || 'WINDOWS-1251';

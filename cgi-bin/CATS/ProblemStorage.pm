@@ -50,7 +50,8 @@ sub get_repo_id
 {
     my ($id, $sha) = @_;
     my ($db_id, $db_sha) = $dbh->selectrow_array(qq~
-       SELECT repo, commit_sha FROM problems WHERE id = ?~, undef, $id);
+       SELECT repo, commit_sha FROM problems WHERE id = ?~, undef,
+       $id);
     my $p = $CATS::Config::repos_dir;
     $db_id //= '';
     warn 'Repository not found' unless ($db_id ne '' && -d "$p$db_id/") || -d "$p$id/";
@@ -120,7 +121,10 @@ sub get_log
 sub add_history
 {
     my ($self, $source, $problem, $message, $is_amend) = @_;
-    my $repo = get_repo($problem->{id}, undef, 0, logger => $self, author_name => $git_author_name, author_email => $git_author_email);
+    my $repo = get_repo(
+        $problem->{id}, undef, 0, logger => $self,
+        author_name => $git_author_name,
+        author_email => $git_author_email);
     $source->finalize($dbh, $repo, $problem, $message, $is_amend, get_repo_id($problem->{id}));
 }
 
@@ -165,7 +169,8 @@ sub load_problem
         $dbh->rollback unless $self->{debug};
         return $self->fail_loading($repo, $problem, $replace, $err, 'HEAD');
     } else {
-        return $self->fail_loading($repo, $problem, $replace, $dbh->errstr, 'HEAD^') unless $self->{debug} || $dbh->commit;
+        return $self->fail_loading($repo, $problem, $replace, $dbh->errstr, 'HEAD^')
+            unless $self->{debug} || $dbh->commit;
         $self->note('Success import');
     }
     return (0, $repo->get_latest_master_sha, $problem);
