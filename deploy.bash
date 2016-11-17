@@ -126,6 +126,7 @@ CONFIG_NAME="Config.pm"
 CONFIG_ROOT="${CATS_ROOT}/cgi-bin/cats-problem/CATS"
 CREATE_DB_NAME="create_db.sql"
 CREATE_DB_ROOT="${CATS_ROOT}/sql/interbase"
+FB_ALIASES="/etc/firebird/2.5/aliases.conf"
 
 CONFIG="$CONFIG_ROOT/$CONFIG_NAME"
 cp "$CONFIG_ROOT/${CONFIG_NAME}.template" $CONFIG
@@ -150,16 +151,30 @@ if [ "$answer" = "n" ]; then
    exit 0
 fi
 
-echo -n "path-to-your-database: " && read path_to_db
-echo -n "your-host: " && read db_host
-echo -n "your-db-username: "&& read db_user
-echo -n "your-db-password: " && read db_pass
+def_path_to_db="$HOME/.cats/cats.fdb"
+def_db_host="localhost"
 
-sed -i -e "s/<path-to-your-database>/$path_to_db/g" $CONFIG
+read -e -p "Path to database: " -i $def_path_to_db path_to_db
+read -e -p "Host: " -i $def_db_host db_host
+read -e -p "Username: " -i "SYSDBA" db_user
+read -e -p "Password: " db_pass
+
+sudo sh -c "echo 'cats=$path_to_db' > $FB_ALIASES"
+
+if [[ "$path_to_db" = "$def_path_to_db" ]]; then
+	mkdir "$HOME/.cats"
+fi
+
+sed -i -e "s/<path-to-your-database>/cats/g" $CONFIG
 sed -i -e "s/<your-host>/$db_host/g" $CONFIG
 sed -i -e "s/<your-username>/$db_user/g" $CONFIG
 sed -i -e "s/<your-password>/$db_pass/g" $CONFIG
 
-sed -i -e "s/<path-to-your-database>/$path_to_db/g" $CREATE_DB
+sed -i -e "s/<path-to-your-database>/cats/g" $CREATE_DB
 sed -i -e "s/<your-username>/$db_user/g" $CREATE_DB
 sed -i -e "s/<your-password>/$db_pass/g" $CREATE_DB
+
+sudo chown firebird.firebird $(dirname "$path_to_db")
+cd "$CREATE_DB_ROOT"
+sudo isql-fb -i "$CREATE_DB_NAME"
+cd "$CATS_ROOT"
