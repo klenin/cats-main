@@ -1,6 +1,30 @@
 #!/usr/bin/env bash
 # user, that executes this script must be in sudo group
 
+#parse command line
+step="*"
+
+while [[ $# -gt 1 ]]; do
+	key=$1
+	case $key in 
+	-s|--step)
+		step="$2"
+		shift
+	;;
+	*)
+		echo 'Unknown option: '
+		tail -1 $key
+		exit
+	;;
+	esac
+	shift
+done
+if [[ -n $1 ]]; then
+	echo "Last option not have argument: "
+	tail -1 $1
+	exit
+fi
+
 CATS_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )" # assume, that script is in a root dir of repo
 
 # PROXY USERS, PLEASE READ THIS
@@ -17,33 +41,66 @@ CATS_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )" # assume, that scr
 # Group, apache running under
 http_group=www-data
 
-packages=(git firebird2.5-dev firebird2.5-classic build-essential libaspell-dev
-	aspell-en aspell-ru apache2 libapache2-mod-perl2 libapreq2-3 libapreq2-dev
-	libapache2-mod-perl2-dev libexpat1 libexpat1-dev libapache2-request-perl cpanminus)
+echo "1. Install apt packages... "
+if [[ $step =~ (^|,)1(,|$)  || $step == "*" ]]; then
+	packages=(git firebird2.5-dev firebird2.5-classic build-essential libaspell-dev
+		aspell-en aspell-ru apache2 libapache2-mod-perl2 libapreq2-3 libapreq2-dev
+		libapache2-mod-perl2-dev libexpat1 libexpat1-dev libapache2-request-perl cpanminus)
+	sudo apt-get -y install ${packages[@]}
+	echo "ok"
+else
+	echo "skip"
+fi
 
-cpan_packages=(DBI DBD:Firebird Algorithm::Diff Text::Aspell SQL::Abstract Archive::Zip
-    JSON::XS YAML::Syck Apache2::Request XML::Parser::Expat Template Authen::Passphrase)
+echo "2. Install cpan packages... "
+if [[ $step =~ (^|,)2(,|$) || $step == "*" ]]; then
+	cpan_packages=(DBI DBD::Firebird Algorithm::Diff Text::Aspell SQL::Abstract Archive::Zip
+	    JSON::XS YAML::Syck Apache2::Request XML::Parser::Expat Template Authen::Passphrase)
+	sudo cpanm -S ${cpan_packages[@]}
+	echo "ok"
+else
+	echo "skip"
+fi
 
-formal_input='https://github.com/downloads/klenin/cats-main/FormalInput.tgz'
+echo "3. Init and update submodules... "
+if [[ $step =~ (^|,)3(,|$) || $step == "*" ]]; then
+	git submodule init
+	git submodule update
+	echo "ok"
+else
+	echo "skip"
+fi
 
-sudo apt-get -y install ${packages[@]}
 
-sudo cpanm -S ${cpan_packages[@]}
+echo "4. Install formal input... "
+if [[ $step =~ (^|,)4(,|$) || $step == "*" ]]; then
+	formal_input='https://github.com/downloads/klenin/cats-main/FormalInput.tgz'
+	wget $formal_input -O fi.tgz
+	tar -xzvf fi.tgz
+	pushd FormalInput/
+	perl Makefile.PL
+	make
+	sudo make install
+	popd
+	rm fi.tgz
+	rm -rf FormalInput
+	echo "ok"
+else
+	echo "skip"
+fi
 
-cd $CATS_ROOT
-git submodule init
-git submodule update
+echo "5. Generating docs... "
+if [[ $step =~ (^|,)5(,|$) || $step == "*" ]]; then
+	cd docs/tt
+	ttree -f ttreerc
+	cd $CATS_ROOT
+	echo "ok"
+else
+	echo "skip"
+fi
 
-wget $formal_input -O fi.tgz
-tar -xzvf fi.tgz
-pushd FormalInput/
-perl Makefile.PL
-make
-sudo make install
-popd
-rm fi.tgz
-rm -rf FormalInput
-
+echo "6. Configure Apache... "
+if [[ $step =~ (^|,)6(,|$) || $step == "*" ]]; then
 APACHE_CONFIG="PerlSetEnv CATS_DIR ${CATS_ROOT}/cgi-bin/
 <VirtualHost *:80>
 	PerlRequire ${CATS_ROOT}/cgi-bin/CATS/Web/startup.pl
@@ -104,77 +161,80 @@ APACHE_CONFIG="PerlSetEnv CATS_DIR ${CATS_ROOT}/cgi-bin/
 	Alias /cats/ \"${CATS_ROOT}/cgi-bin/\"
 </VirtualHost>"
 
-sudo sh -c "echo '$APACHE_CONFIG' > /etc/apache2/sites-available/000-cats.conf"
-sudo a2ensite 000-cats
-sudo a2dissite 000-default
-sudo a2enmod expires
-sudo a2enmod apreq2
-
-# generate docs
-cd docs
-ttree -f ttreerc
-cd ..
-
-# now adjust permissions
-sudo chgrp -R ${http_group} cgi-bin static templates tt
-chmod -R g+r cgi-bin
-chmod g+rw static tt cgi-bin/download/{,att,img,pr} cgi-bin/rank_cache{,/r}
-
-sudo service apache2 reload
-
-CONFIG_NAME="Config.pm"
-CONFIG_ROOT="${CATS_ROOT}/cgi-bin/cats-problem/CATS"
-CREATE_DB_NAME="create_db.sql"
-CREATE_DB_ROOT="${CATS_ROOT}/sql/interbase"
-FB_ALIASES="/etc/firebird/2.5/aliases.conf"
-
-CONFIG="$CONFIG_ROOT/$CONFIG_NAME"
-cp "$CONFIG_ROOT/${CONFIG_NAME}.template" $CONFIG
-
-CREATE_DB="$CREATE_DB_ROOT/$CREATE_DB_NAME"
-cp "$CREATE_DB_ROOT/${CREATE_DB_NAME}.template" $CREATE_DB
-
-echo -e "...\n...\n..."
-
-answer=""
-while [ "$answer" != "y" -a "$answer" != "n" ]; do
-   echo -n "Do you want to do the automatic setup? "
-   read answer
-done
-
-if [ "$answer" = "n" ]; then
-   echo -e "Setup is done, you need to do following manualy:\n"
-   echo -e " 1. Navigate to ${CONFIG_ROOT}/"
-   echo -e " 2. Adjust your database connection settings in ${CONFIG_NAME}"
-   echo -e " 3. Navigate to ${CREATE_DB_ROOT}/"
-   echo -e " 4. Adjust your database connection settings in ${CREATE_DB_NAME} and create database\n"
-   exit 0
+	sudo sh -c "echo '$APACHE_CONFIG' > /etc/apache2/sites-available/000-cats.conf"
+	sudo a2ensite 000-cats
+	sudo a2dissite 000-default
+	sudo a2enmod expires
+	sudo a2enmod apreq2
+	# now adjust permissions
+	sudo chgrp -R ${http_group} cgi-bin static templates tt
+	chmod -R g+r cgi-bin
+	chmod g+rw static tt cgi-bin/download/{,att,img,pr} cgi-bin/rank_cache{,/r}
+	sudo service apache2 reload
+	echo "ok"
+else
+	echo "skip"
 fi
 
-def_path_to_db="$HOME/.cats/cats.fdb"
-def_db_host="localhost"
+echo "7. Configure and init cats database... "
+if [[ $step =~ (^|,)7(,|$) || $step == "*" ]]; then
+	CONFIG_NAME="Config.pm"
+	CONFIG_ROOT="${CATS_ROOT}/cgi-bin/cats-problem/CATS"
+	CREATE_DB_NAME="create_db.sql"
+	CREATE_DB_ROOT="${CATS_ROOT}/sql/interbase"
+	FB_ALIASES="/etc/firebird/2.5/aliases.conf"
 
-read -e -p "Path to database: " -i $def_path_to_db path_to_db
-read -e -p "Host: " -i $def_db_host db_host
-read -e -p "Username: " -i "SYSDBA" db_user
-read -e -p "Password: " db_pass
+	CONFIG="$CONFIG_ROOT/$CONFIG_NAME"
+	cp "$CONFIG_ROOT/${CONFIG_NAME}.template" $CONFIG
 
-sudo sh -c "echo 'cats=$path_to_db' > $FB_ALIASES"
+	CREATE_DB="$CREATE_DB_ROOT/$CREATE_DB_NAME"
+	cp "$CREATE_DB_ROOT/${CREATE_DB_NAME}.template" $CREATE_DB
 
-if [[ "$path_to_db" = "$def_path_to_db" ]]; then
-	mkdir "$HOME/.cats"
+	echo -e "...\n...\n..."
+
+	answer=""
+	while [ "$answer" != "y" -a "$answer" != "n" ]; do
+	   echo -n "Do you want to do the automatic setup? "
+	   read answer
+	done
+
+	if [ "$answer" = "n" ]; then
+	   echo -e "Setup is done, you need to do following manualy:\n"
+	   echo -e " 1. Navigate to ${CONFIG_ROOT}/"
+	   echo -e " 2. Adjust your database connection settings in ${CONFIG_NAME}"
+	   echo -e " 3. Navigate to ${CREATE_DB_ROOT}/"
+	   echo -e " 4. Adjust your database connection settings in ${CREATE_DB_NAME} and create database\n"
+	   exit 0
+	fi
+
+	def_path_to_db="$HOME/.cats/cats.fdb"
+	def_db_host="localhost"
+
+	read -e -p "Path to database: " -i $def_path_to_db path_to_db
+	read -e -p "Host: " -i $def_db_host db_host
+	read -e -p "Username: " db_user
+	read -e -p "Password: " db_pass
+
+	sudo sh -c "echo 'cats=$path_to_db' > $FB_ALIASES"
+
+	if [[ "$path_to_db" = "$def_path_to_db" ]]; then
+		mkdir "$HOME/.cats"
+	fi
+
+	sed -i -e "s/<path-to-your-database>/cats/g" $CONFIG
+	sed -i -e "s/<your-host>/$db_host/g" $CONFIG
+	sed -i -e "s/<your-username>/$db_user/g" $CONFIG
+	sed -i -e "s/<your-password>/$db_pass/g" $CONFIG
+
+	sed -i -e "s/<path-to-your-database>/cats/g" $CREATE_DB
+	sed -i -e "s/<your-username>/$db_user/g" $CREATE_DB
+	sed -i -e "s/<your-password>/$db_pass/g" $CREATE_DB
+
+	sudo chown firebird.firebird $(dirname "$path_to_db")
+	cd "$CREATE_DB_ROOT"
+	sudo isql-fb -i "$CREATE_DB_NAME"
+	cd "$CATS_ROOT"
+	echo "ok"
+else
+	echo "skip"
 fi
-
-sed -i -e "s/<path-to-your-database>/cats/g" $CONFIG
-sed -i -e "s/<your-host>/$db_host/g" $CONFIG
-sed -i -e "s/<your-username>/$db_user/g" $CONFIG
-sed -i -e "s/<your-password>/$db_pass/g" $CONFIG
-
-sed -i -e "s/<path-to-your-database>/cats/g" $CREATE_DB
-sed -i -e "s/<your-username>/$db_user/g" $CREATE_DB
-sed -i -e "s/<your-password>/$db_pass/g" $CREATE_DB
-
-sudo chown firebird.firebird $(dirname "$path_to_db")
-cd "$CREATE_DB_ROOT"
-sudo isql-fb -i "$CREATE_DB_NAME"
-cd "$CATS_ROOT"
