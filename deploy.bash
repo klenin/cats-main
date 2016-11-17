@@ -44,71 +44,71 @@ popd
 rm fi.tgz
 rm -rf FormalInput
 
-APACHE_CONFIG=$(cat <<EOF
-PerlSetEnv CATS_DIR ${CATS_ROOT}/cgi-bin/
+APACHE_CONFIG="PerlSetEnv CATS_DIR ${CATS_ROOT}/cgi-bin/
 <VirtualHost *:80>
 	PerlRequire ${CATS_ROOT}/cgi-bin/CATS/Web/startup.pl
-	<Directory "${CATS_ROOT}/cgi-bin/">
+	<Directory \"${CATS_ROOT}/cgi-bin/\">
 		Options -Indexes +FollowSymLinks
 		DirectoryIndex main.pl
 		LimitRequestBody 1048576
 		AllowOverride all
-		Order allow,deny
-		Allow from all
-		<Files "main.pl">
+		Require all granted
+		<Files \"main.pl\">
 			# Apache 2.x / ModPerl 2.x specific
 			PerlResponseHandler main
 			PerlSendHeader On
 			SetHandler perl-script
 		</Files>
 	</Directory>
-
 	ExpiresActive On
-	ExpiresDefault "access plus 5 seconds"
-	ExpiresByType text/css "access plus 1 week"
-	ExpiresByType application/javascript "access plus 1 week"
-	ExpiresByType image/gif "access plus 1 week"
-	ExpiresByType image/x-icon "access plus 1 week"
+	ExpiresDefault \"access plus 5 seconds\"
+	ExpiresByType text/css \"access plus 1 week\"
+	ExpiresByType application/javascript \"access plus 1 week\"
+	ExpiresByType image/gif \"access plus 1 week\"
+	ExpiresByType image/x-icon \"access plus 1 week\"
 
-	Alias /cats/static/ "${CATS_ROOT}/static/"
-	<Directory "${CATS_ROOT}/static">
+	Alias /cats/static/ \"${CATS_ROOT}/static/\"
+	<Directory \"${CATS_ROOT}/static\">
 		# Apache allows only absolute URL-path
 		ErrorDocument 404 /cats/main.pl?f=static
 		#Options FollowSymLinks
 		AddDefaultCharset utf-8
+		Require all granted
 	</Directory>
 
-	Alias /cats/docs/ "${CATS_ROOT}/docs/"
-	<Directory "${CATS_ROOT}/docs">
+	Alias /cats/docs/ \"${CATS_ROOT}/docs/\"
+	<Directory \"${CATS_ROOT}/docs\">
 		AddDefaultCharset utf-8
+		Require all granted
 	</Directory>
 
-	Alias /cats/ev/ "${CATS_ROOT}/ev/"
-	<Directory "${CATS_ROOT}/ev">
+	Alias /cats/ev/ \"${CATS_ROOT}/ev/\"
+	<Directory \"${CATS_ROOT}/ev\">
 		AddDefaultCharset utf-8
+		Require all granted
 	</Directory>
 
-	<Directory "${CATS_ROOT}/docs/std/">
+	<Directory \"${CATS_ROOT}/docs/std/\">
 		AllowOverride Options=Indexes,MultiViews,ExecCGI FileInfo
+		Require all granted
 	</Directory>
 
-	<Directory "${CATS_ROOT}/images/std/">
+	<Directory \"${CATS_ROOT}/images/std/\">
 		AllowOverride Options=Indexes,MultiViews,ExecCGI FileInfo
+		Require all granted
 	</Directory>
 
-	Alias /cats/synh/ "${CATS_ROOT}/synhighlight/"
-	Alias /cats/images/ "${CATS_ROOT}/images/"
-	Alias /cats/js/ "${CATS_ROOT}/js/"
-	Alias /cats/ "${CATS_ROOT}/cgi-bin/"
-</VirtualHost>
-EOF
-)
+	Alias /cats/synh/ \"${CATS_ROOT}/synhighlight/\"
+	Alias /cats/images/ \"${CATS_ROOT}/images/\"
+	Alias /cats/js/ \"${CATS_ROOT}/js/\"
+	Alias /cats/ \"${CATS_ROOT}/cgi-bin/\"
+</VirtualHost>"
 
-sudo sh -c "echo '$APACHE_CONFIG' > /etc/apache2/sites-available/000-cats"
-sudo ln -s /etc/apache2/sites-{available,enabled}/000-cats
-[[ -e /etc/apache2/sites-enabled/000-default ]] && sudo rm /etc/apache2/sites-enabled/000-default
-[[ -e /etc/apache2/mods-enabled/expires.load ]] || sudo ln -s /etc/apache2/mods-{available,enabled}/expires.load
-[[ -e /etc/apache2/mods-enabled/apreq2.load ]] || sudo ln -s /etc/apache2/mods-{available,enabled}/apreq2.load
+sudo sh -c "echo '$APACHE_CONFIG' > /etc/apache2/sites-available/000-cats.conf"
+sudo a2ensite 000-cats
+sudo a2dissite 000-default
+sudo a2enmod expires
+sudo a2enmod apreq2
 
 # generate docs
 cd docs
@@ -120,7 +120,7 @@ sudo chgrp -R ${http_group} cgi-bin static templates tt
 chmod -R g+r cgi-bin
 chmod g+rw static tt cgi-bin/download/{,att,img,pr} cgi-bin/rank_cache{,/r}
 
-sudo service apache2 restart
+sudo service apache2 reload
 
 CONFIG_NAME="Config.pm"
 CONFIG_ROOT="${CATS_ROOT}/cgi-bin/cats-problem/CATS"
