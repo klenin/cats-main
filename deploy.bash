@@ -18,20 +18,20 @@ DBD_FIREBIRD_VERSION=1.00
 # Group, apache running under
 http_group=www-data
 
-packages=(git firebird2.1-dev firebird2.1-classic build-essential libaspell-dev
+packages=(git firebird2.5-dev firebird2.5-classic build-essential libaspell-dev
 	aspell-en aspell-ru apache2 libapache2-mod-perl2 libapreq2-3 libapreq2-dev
-	apache2-threaded-dev libapache2-mod-perl2-dev libexpat1 libexpat1-dev libapache2-request-perl)
+	libapache2-mod-perl2-dev libexpat1 libexpat1-dev libapache2-request-perl cpanminus)
 
 cpan_packages=(DBI Algorithm::Diff Text::Aspell SQL::Abstract Archive::Zip
     JSON::XS YAML::Syck Apache2::Request XML::Parser::Expat Template Authen::Passphrase)
 
-sudo apt-get -y install ${packages[@]}
-
 formal_input='https://github.com/downloads/klenin/cats-main/FormalInput.tgz'
 DBD_firebird="http://search.cpan.org/CPAN/authors/id/M/MA/MARIUZ/DBD-Firebird-$DBD_FIREBIRD_VERSION.tar.gz"
 
-sudo -H sh -c 'wget -O - http://cpanmin.us | perl - --sudo App::cpanminus' # unsafe, but asks password once
-cpanm -S ${cpan_packages[@]}
+sudo apt-get -y install ${packages[@]}
+
+sudo cpanm -S ${cpan_packages[@]}
+
 cd $CATS_ROOT
 git submodule init
 git submodule update
