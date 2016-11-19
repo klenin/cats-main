@@ -101,16 +101,17 @@ fi
 
 echo "6. Configure Apache... "
 if [[ $step =~ (^|,)6(,|$) || $step == "*" ]]; then
-APACHE_CONFIG="PerlSetEnv CATS_DIR ${CATS_ROOT}/cgi-bin/
+APACHE_CONFIG=$(cat <<EOF
+PerlSetEnv CATS_DIR ${CATS_ROOT}/cgi-bin/
 <VirtualHost *:80>
 	PerlRequire ${CATS_ROOT}/cgi-bin/CATS/Web/startup.pl
-	<Directory \"${CATS_ROOT}/cgi-bin/\">
+	<Directory "${CATS_ROOT}/cgi-bin/">
 		Options -Indexes +FollowSymLinks
 		DirectoryIndex main.pl
 		LimitRequestBody 1048576
 		AllowOverride all
 		Require all granted
-		<Files \"main.pl\">
+		<Files "main.pl">
 			# Apache 2.x / ModPerl 2.x specific
 			PerlResponseHandler main
 			PerlSendHeader On
@@ -118,14 +119,14 @@ APACHE_CONFIG="PerlSetEnv CATS_DIR ${CATS_ROOT}/cgi-bin/
 		</Files>
 	</Directory>
 	ExpiresActive On
-	ExpiresDefault \"access plus 5 seconds\"
-	ExpiresByType text/css \"access plus 1 week\"
-	ExpiresByType application/javascript \"access plus 1 week\"
-	ExpiresByType image/gif \"access plus 1 week\"
-	ExpiresByType image/x-icon \"access plus 1 week\"
+	ExpiresDefault "access plus 5 seconds"
+	ExpiresByType text/css "access plus 1 week"
+	ExpiresByType application/javascript "access plus 1 week"
+	ExpiresByType image/gif "access plus 1 week"
+	ExpiresByType image/x-icon "access plus 1 week"
 
-	Alias /cats/static/ \"${CATS_ROOT}/static/\"
-	<Directory \"${CATS_ROOT}/static\">
+	Alias /cats/static/ "${CATS_ROOT}/static/"
+	<Directory "${CATS_ROOT}/static">
 		# Apache allows only absolute URL-path
 		ErrorDocument 404 /cats/main.pl?f=static
 		#Options FollowSymLinks
@@ -133,34 +134,36 @@ APACHE_CONFIG="PerlSetEnv CATS_DIR ${CATS_ROOT}/cgi-bin/
 		Require all granted
 	</Directory>
 
-	Alias /cats/docs/ \"${CATS_ROOT}/docs/\"
-	<Directory \"${CATS_ROOT}/docs\">
+	Alias /cats/docs/ "${CATS_ROOT}/docs/"
+	<Directory "${CATS_ROOT}/docs">
 		AddDefaultCharset utf-8
 		Require all granted
 	</Directory>
 
-	Alias /cats/ev/ \"${CATS_ROOT}/ev/\"
-	<Directory \"${CATS_ROOT}/ev\">
+	Alias /cats/ev/ "${CATS_ROOT}/ev/"
+	<Directory "${CATS_ROOT}/ev">
 		AddDefaultCharset utf-8
 		Require all granted
 	</Directory>
 
-	<Directory \"${CATS_ROOT}/docs/std/\">
+	<Directory "${CATS_ROOT}/docs/std/">
 		AllowOverride Options=Indexes,MultiViews,ExecCGI FileInfo
 		Require all granted
 	</Directory>
 
-	<Directory \"${CATS_ROOT}/images/std/\">
+	<Directory "${CATS_ROOT}/images/std/">
 		AllowOverride Options=Indexes,MultiViews,ExecCGI FileInfo
 		Require all granted
 	</Directory>
 
-	Alias /cats/synh/ \"${CATS_ROOT}/synhighlight/\"
-	Alias /cats/images/ \"${CATS_ROOT}/images/\"
-	Alias /cats/js/ \"${CATS_ROOT}/js/\"
-	Alias /cats/ \"${CATS_ROOT}/cgi-bin/\"
-</VirtualHost>"
-
+	Alias /cats/synh/ "${CATS_ROOT}/synhighlight/"
+	Alias /cats/images/ "${CATS_ROOT}/images/"
+	Alias /cats/js/ "${CATS_ROOT}/js/"
+	Alias /cats/ "${CATS_ROOT}/cgi-bin/"
+</VirtualHost>
+EOF
+)
+	
 	sudo sh -c "echo '$APACHE_CONFIG' > /etc/apache2/sites-available/000-cats.conf"
 	sudo a2ensite 000-cats
 	sudo a2dissite 000-default
