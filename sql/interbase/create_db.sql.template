@@ -1,7 +1,7 @@
 SET names UTF8;
 
-CREATE DATABASE '<path-to-your-database>' USER '<your-username>' PASSWORD '<your-password>';
+CREATE DATABASE 'localhost:<path-to-your-database>' USER '<your-username>' PASSWORD '<your-password>';
 
-INSERT INTO contests(id, title, ctype) VALUES(1, 'Турнир', 1);
+INPUT init_relations.sql;
 
 COMMIT;
