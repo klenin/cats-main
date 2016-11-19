@@ -50,6 +50,11 @@ sub init_request
     *_param = \&original_param;
 }
 
+sub print
+{
+    $r->print($_[0]);
+}
+
 
 sub original_param
 {

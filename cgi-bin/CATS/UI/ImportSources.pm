@@ -55,10 +55,9 @@ sub download_frame
     local $dbh->{ib_enable_utf8} = 0;
     my ($fname, $src) = $dbh->selectrow_array(qq~
         SELECT fname, src FROM problem_sources WHERE id = ? AND guid IS NOT NULL~, undef, $psid) or return;
-    binmode(STDOUT, ':raw');
     CATS::Web::content_type('text/plain');
     CATS::Web::headers('Content-Disposition' => "inline;filename=$fname");
-    print STDOUT $src;
+    CATS::Web::print($src);
 }
 
 1;

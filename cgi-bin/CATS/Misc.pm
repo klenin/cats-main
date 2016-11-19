@@ -416,17 +416,15 @@ sub generate_output
     my $out = '';
     if (my $enc = param('enc'))
     {
-        binmode(STDOUT, ':raw');
         $t->param(encoding => $enc);
         http_header($http_mime_type, $enc, $cookie);
-        print STDOUT $out = Encode::encode($enc, $t->output, Encode::FB_XMLCREF);
+        CATS::Web::print($out = Encode::encode($enc, $t->output, Encode::FB_XMLCREF));
     }
     else
     {
-        binmode(STDOUT, ':utf8');
         $t->param(encoding => 'UTF-8');
         http_header($http_mime_type, 'utf-8', $cookie);
-        print STDOUT $out = $t->output;
+        CATS::Web::print($out = $t->output);
     }
     if ($output_file)
     {

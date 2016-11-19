@@ -412,10 +412,9 @@ sub download_source_frame {
 
     $si->{file_name} =~ m/\.([^.]+)$/;
     my $ext = $1 || 'unknown';
-    binmode(STDOUT, ':raw');
     content_type($ext eq 'zip' ? 'application/zip' : 'text/plain', 'UTF-8');
     headers('Content-Disposition' => "inline;filename=$si->{req_id}.$ext");
-    print STDOUT Encode::encode_utf8($si->{src});
+    CATS::Web::print(Encode::encode_utf8($si->{src}));
 }
 
 sub try_set_state {
