@@ -356,11 +356,12 @@ INSERT INTO default_de (id, code, description, file_ext) VALUES (GEN_ID(key_seq,
 INSERT INTO default_de (id, code, description, file_ext) VALUES (GEN_ID(key_seq, 1), 103, 'MS Visual C++', 'cpp;c');
 INSERT INTO default_de (id, code, description, file_ext) VALUES (GEN_ID(key_seq, 1), 104, 'Borland C++ 3.1', 'cpp;c');
 INSERT INTO default_de (id, code, description, file_ext) VALUES (GEN_ID(key_seq, 1), 201, 'Borland Pascal', 'pas');
-INSERT INTO DEFAULT_DE (id, code, description, file_ext) VALUES (GEN_ID(key_seq, 1), 202, 'Free Pascal', 'pas'); 
+INSERT INTO default_de (id, code, description, file_ext) VALUES (GEN_ID(key_seq, 1), 202, 'Free Pascal', 'pas;pp');
+INSERT INTO default_de (id, code, description, file_ext) VALUES (GEN_ID(key_seq, 1), 204, 'Free Pascal in Delphi mode', 'dpr');
 INSERT INTO default_de (id, code, description, file_ext) VALUES (GEN_ID(key_seq, 1), 301, 'Quick Basic 4.5', 'bas');
 
 INSERT INTO dummy_table VALUES (NULL, NULL, NULL);
-INSERT INTO contests(id, title, ctype) VALUES(1, 'Турнир', 1);
-INSERT INTO accounts(id, login, passwd, srole) VALUES(1, 'root', 'root', 0);
-INSERT INTO contest_accounts(id, contest_id, account_id, is_admin) VALUES (1, 1, 1, 1);
-INSERT INTO judges(id, nick) VALUES (1, 'fox'); 
+INSERT INTO contests(id, title, ctype, start_date) VALUES(1, 'Турнир', 1, CURRENT_DATE - 100);
+INSERT INTO accounts(id, login, passwd, srole) VALUES(2, 'root', 'root', 0);
+INSERT INTO contest_accounts(id, contest_id, account_id, is_jury) VALUES (3, 1, 2, 1);
+INSERT INTO judges(id, nick, lock_counter) VALUES (4, 'fox', 0);
