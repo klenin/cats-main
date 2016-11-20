@@ -345,6 +345,22 @@ sub anonymous_contests_view {
     return ($fetch_contest, $sth);
 }
 
+sub contest_delete {
+    my $delete_cid = url_param('delete');
+    $is_root or return;
+    my ($cname, $problem_count) = $dbh->selectrow_array(q~
+        SELECT title, (SELECT COUNT(*) FROM contest_problems CP WHERE CP.contest_id = C.id) AS pc
+        FROM contests C WHERE C.id = ?~, undef,
+        $delete_cid);
+    $cname or return;
+    return  msg(1038, $cname, $problem_count) if $problem_count;
+    $dbh->do(q~
+        DELETE FROM contests WHERE id = ?~, undef,
+        $delete_cid);
+    $dbh->commit;
+    msg(1037, $cname);
+}
+
 sub contests_frame {
     my ($p) = @_;
 
@@ -367,12 +383,7 @@ sub contests_frame {
 
     CATS::UI::Prizes::contest_group_auto_new if defined param('create_group') && $is_root;
 
-    if (defined url_param('delete') && $is_root) {
-        my $cid = url_param('delete');
-        $dbh->do(qq~DELETE FROM contests WHERE id = ?~, {}, $cid);
-        $dbh->commit;
-        msg(1037);
-    }
+    contest_delete if url_param('delete');
 
     contests_new_save if defined param('new_save') && $CATS::Misc::can_create_contests;
 
