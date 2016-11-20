@@ -188,18 +188,18 @@ sub users_send_message
 sub users_set_tag
 {
     my %p = @_;
-    ($p{'tag'} || '') ne '' or return;
-    my $s = $dbh->prepare(qq~
+    my $s = $dbh->prepare(q~
         UPDATE contest_accounts SET tag = ? WHERE id = ?~);
-    for (split ':', $p{user_set})
-    {
-        param_on("msg$_") or next;
+    my $set_count = 0;
+    for my $user_id (split ':', $p{user_set}) {
+        param_on("msg$user_id") or next;
         $s->bind_param(1, $p{tag}, { ora_type => 113 });
-        $s->bind_param(2, $_);
-        $s->execute;
+        $s->bind_param(2, $user_id);
+        $set_count += $s->execute;
     }
     $s->finish;
     $dbh->commit;
+    msg(1019, $set_count);
 }
 
 sub users_send_broadcast
