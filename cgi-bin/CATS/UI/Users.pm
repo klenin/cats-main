@@ -38,6 +38,18 @@ sub users_new_save
     $u->insert($cid) or return;
 }
 
+sub user_submenu
+{
+    my ($selected, $user_id) = @_;
+    my @m = (
+        ($is_jury ?
+            ({ href => url_f('users', edit => $user_id), item => res_str(573), selected => 'edit' }) : ()),
+        { href => url_f('user_stats', uid => $user_id), item => res_str(574), selected => 'user_stats' },
+    );
+    $_->{selected} = $_->{selected} eq $selected for @m;
+    (submenu => \@m);
+}
+
 sub users_edit_frame
 {
     init_template('users_edit.html.tt');
@@ -45,6 +57,7 @@ sub users_edit_frame
     my $id = url_param('edit') or return;
     my $u = CATS::User->new->load($id, [ 'locked' ]) or return;
     $t->param(
+        user_submenu('edit', $uid),
         %$u, id => $id, countries => \@CATS::Countries::countries, is_root => $is_root,
         href_action => url_f('users'),
         href_impersonate => url_f('users', impersonate => $id));
@@ -475,6 +488,7 @@ sub user_stats_frame
         $_->{href_problems} = url_function('problems', sid => $sid, cid => $_->{id});
     }
     $t->param(
+        user_submenu('user_stats', $uid),
         %$u, contests => $contests, is_root => $is_root,
         CATS::IP::linkify_ip(CATS::IP::filter_ip $u->{last_ip}),
         ($is_jury ? (href_edit => url_f('users', edit => $uid)) : ()),

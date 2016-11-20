@@ -45,6 +45,8 @@
 570 "files"
 571 "commit diff"
 572 "edit file"
+573 "user"
+574 "statistics"
 600 "Start time"
 601 "Name"
 602 "Problem"
