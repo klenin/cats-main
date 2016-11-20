@@ -50,9 +50,11 @@ sub get_contest_html_params
     $p->{$_} = scalar param($_) for contest_string_params();
     $p->{$_} = param_on($_) for contest_checkbox_params();
 
-    $p->{contest_name} ne '' && length $p->{contest_name} < 100
-        or return msg(27);
-
+    for ($p->{contest_name}) {
+        $_ //= '';
+        s/^\s+|\s+$//g;
+        $_ ne '' && length $_ < 100  or return msg(1027);
+    }
     $p;
 }
 
