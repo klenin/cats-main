@@ -293,6 +293,7 @@ sub users_impersonate
 
 sub format_diff_time {
     my ($dt) = @_;
+    $dt or return '';
     my $sign = $dt < 0 ? '-' : '+';
     $dt = abs($dt);
     my $days = int($dt);
