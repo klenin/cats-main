@@ -151,11 +151,10 @@ sub contests_edit_save
     } or return msg(1035, $@);
     CATS::StaticPages::invalidate_problem_text(cid => $edit_cid, all => 1);
     CATS::RankTable::remove_cache($edit_cid);
+    my $contest_name = Encode::decode_utf8($p->{contest_name});
     # Change page title immediately if the current contest is renamed.
-    if ($edit_cid == $cid) {
-        $contest->{title} = Encode::decode_utf8($p->{contest_name});
-    }
-    msg(1036);
+    $contest->{title} = $contest_name if $edit_cid == $cid;
+    msg(1036, $contest_name);
 }
 
 sub contest_online_registration

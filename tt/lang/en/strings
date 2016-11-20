@@ -126,7 +126,7 @@
 1032 "Password length must be from 1 to 72 characters."
 1033 "Entered passwords are different."
 1035 "Failed to change contest properties: %s."
-1036 "Contest properties were changed."
+1036 "Contest '%s' properties changed."
 1037 "Contest was successfully deleted."
 038 "Ошибка при удалении чемпионата."
 1040 "Incorrect login or password."
