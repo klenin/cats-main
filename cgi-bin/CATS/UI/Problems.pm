@@ -234,8 +234,7 @@ sub git_download_problem
     );
     my $content;
     CATS::BinaryFile::load($fname, \$content) or die("open '$fname' failed: $!");
-    binmode STDOUT;
-    print $content;
+    CATS::Web::print($content);
 }
 
 sub can_upsolve
@@ -1020,9 +1019,7 @@ sub problem_history_raw_frame
     my $blob = CATS::ProblemStorage::show_raw($pid, $hash_base, $file);
     content_type($blob->{type});
     headers('Content-Disposition', "inline; filename=$file");
-    binmode STDOUT, ':raw';
-    print $blob->{content};
-    binmode STDOUT, ':utf8';
+    CATS::Web::print($blob->{content});
 }
 
 sub problem_history_edit_frame

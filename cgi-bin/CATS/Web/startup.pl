@@ -1,5 +1,6 @@
 use Apache2::RequestRec ();
 use Apache2::Request;
+use Apache2::RequestIO ();
 use Apache2::Const -compile => ":common";
 
 our $cats_lib_dir;
