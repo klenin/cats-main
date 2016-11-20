@@ -94,6 +94,7 @@ sub contests_new_save
             is_jury => 1, is_pop => 1, is_hidden => 1);
     }
     $dbh->commit;
+    msg(1028, Encode::decode_utf8($p->{contest_name}));
 }
 
 sub try_contest_params_frame
