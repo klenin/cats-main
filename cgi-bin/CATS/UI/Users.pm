@@ -241,32 +241,40 @@ sub users_delete
 
 sub users_save_attributes
 {
-    for (split(':', param('user_set')))
-    {
-        my $jury = param_on("jury$_");
-        my $ooc = param_on("ooc$_");
-        my $remote = param_on("remote$_");
-        my $hidden = param_on("hidden$_");
+    my $changed_count = 0;
+    for my $user_id (split(':', param('user_set'))) {
+        my $jury = param_on("jury$user_id");
+        my $ooc = param_on("ooc$user_id");
+        my $remote = param_on("remote$user_id");
+        my $hidden = param_on("hidden$user_id");
 
         # Forbid removing is_jury privilege from an admin.
-        my ($srole) = $dbh->selectrow_array(qq~
+        my ($srole) = $dbh->selectrow_array(q~
             SELECT A.srole FROM accounts A
                 INNER JOIN contest_accounts CA ON A.id = CA.account_id
-                WHERE CA.id = ?~, {},
-            $_
+                WHERE CA.id = ?~, undef,
+            $user_id
         );
-        $jury = 1 if !$srole;
+        $jury = 1 if $srole == 0;
 
         # Security: Forbid changing of user parameters in other contests.
-        $dbh->do(qq~
+        my $changed = $dbh->do(q~
             UPDATE contest_accounts
                 SET is_jury = ?, is_hidden = ?, is_remote = ?, is_ooc = ?
-                WHERE id = ? AND contest_id = ?~, {},
-            $jury, $hidden, $remote, $ooc, $_, $cid
+                WHERE id = ? AND contest_id = ? AND
+                    (is_jury <> ? OR is_hidden <> ? OR is_remote <> ? OR is_ooc <> ?)~, undef,
+            $jury, $hidden, $remote, $ooc,
+            $user_id, $cid,
+            $jury, $hidden, $remote, $ooc,
         );
+        $changed_count += $changed;
     }
-    $dbh->commit;
-    CATS::RankTable::remove_cache($cid);
+    if ($changed_count) {
+        $dbh->commit;
+        CATS::RankTable::remove_cache($cid);
+    }
+    msg(1018, $changed_count);
+
 }
 
 sub users_impersonate
