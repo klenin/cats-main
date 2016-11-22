@@ -118,6 +118,7 @@ PerlSetEnv CATS_DIR ${CATS_ROOT}/cgi-bin/
 	ExpiresByType text/css "access plus 1 week"
 	ExpiresByType application/javascript "access plus 1 week"
 	ExpiresByType image/gif "access plus 1 week"
+	ExpiresByType image/png "access plus 1 week"
 	ExpiresByType image/x-icon "access plus 1 week"
 
 	Alias /cats/static/ "${CATS_ROOT}/static/"
