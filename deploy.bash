@@ -134,6 +134,12 @@ PerlSetEnv CATS_DIR ${CATS_ROOT}/cgi-bin/
 		Require all granted
 	</Directory>
 
+	Alias /cats/download/ "${CATS_ROOT}/download/"
+	<Directory "${CATS_ROOT}/download">
+		Options -Indexes
+		Require all granted
+	</Directory>
+
 	Alias /cats/docs/ "${CATS_ROOT}/docs/"
 	<Directory "${CATS_ROOT}/docs">
 		AddDefaultCharset utf-8
