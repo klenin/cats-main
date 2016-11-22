@@ -20,6 +20,8 @@ BEGIN
         msg
         url_f
         templates_path
+        downloads_path
+        downloads_url
         order_by
         sort_listview
         define_columns
@@ -106,6 +108,9 @@ sub templates_path
 
     cats_dir() . $cats::templates[0]->{path};
 }
+
+sub downloads_path { cats_dir() . '../download/' }
+sub downloads_url { 'download/' }
 
 sub lang { $settings->{lang} || 'ru' }
 

@@ -219,6 +219,7 @@ my @whitelist = qw(www.codechef.com judge.u-aizu.ac.jp compprog.win.tue.nl stats
 
 sub handler {
     my $r = shift;
+    return CATS::Web::not_found unless $r->uri =~ m~/cats/(|main.pl)$~;
     init_request($r);
     if ((param('f') || '') eq 'proxy') {
         my $url = param('u') or die;

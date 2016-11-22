@@ -203,14 +203,15 @@ sub download_problem
         or return;
     undef $t;
     my $already_hashed = ensure_problem_hash($pid, \$hash);
-    my $fname = "./download/pr/problem_$hash.zip";
-    unless($already_hashed && -f $fname)
+    my $fname = "pr/problem_$hash.zip";
+    my $fpath = CATS::Misc::downloads_path . $fname;
+    unless($already_hashed && -f $fpath)
     {
         my ($zip) = $dbh->selectrow_array(qq~
             SELECT zip_archive FROM problems WHERE id = ?~, undef, $pid);
-        CATS::BinaryFile::save(cats_dir() . $fname, $zip);
+        CATS::BinaryFile::save($fpath, $zip);
     }
-    redirect($fname);
+    redirect(CATS::Misc::downloads_url . $fname);
 }
 
 sub git_download_problem

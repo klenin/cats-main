@@ -122,9 +122,10 @@ sub download_image
     # Security: this may lead to duplicate names, e.g. pic1 and pic-1.
     $name =~ tr/a-zA-Z0-9_//cd;
     $ext =~ tr/a-zA-Z0-9_//cd;
-    my $fname = "./download/img/img_${hash}_$name.$ext";
-    -f cats_dir() . $fname or CATS::BinaryFile::save(cats_dir() . $fname, $pic);
-    return $fname;
+    my $fname = "img/img_${hash}_$name.$ext";
+    my $fpath = CATS::Misc::downloads_path . $fname;
+    -f $fpath or CATS::BinaryFile::save($fpath, $pic);
+    return CATS::Misc::downloads_url . $fname;
 }
 
 
@@ -143,9 +144,10 @@ sub save_attachment
     # Security
     $file =~ tr/a-zA-Z0-9_.//cd;
     $file =~ s/\.+/\./g;
-    my $fname = "./download/att/${hash}_$file";
-    -f cats_dir() . $fname or CATS::BinaryFile::save(cats_dir() . $fname, $data);
-    return $fname;
+    my $fname = "att/${hash}_$file";
+    my $fpath = CATS::Misc::downloads_path . $fname;
+    -f $fpath or CATS::BinaryFile::save($fpath, $data);
+    return CATS::Misc::downloads_url . $fname;
 }
 
 
