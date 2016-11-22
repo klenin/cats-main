@@ -171,9 +171,9 @@ EOF
 	sudo a2enmod expires
 	sudo a2enmod apreq2
 	# now adjust permissions
-	sudo chgrp -R ${http_group} cgi-bin static templates tt
+	sudo chgrp -R ${http_group} cgi-bin download static templates tt
 	chmod -R g+r cgi-bin
-	chmod g+rw static tt cgi-bin/download/{,att,img,pr} cgi-bin/rank_cache{,/r}
+	chmod g+rw static tt download/{,att,img,pr} cgi-bin/rank_cache{,/r}
 	sudo service apache2 reload
 	echo "ok"
 else
