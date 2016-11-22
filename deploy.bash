@@ -106,17 +106,12 @@ PerlSetEnv CATS_DIR ${CATS_ROOT}/cgi-bin/
 <VirtualHost *:80>
 	PerlRequire ${CATS_ROOT}/cgi-bin/CATS/Web/startup.pl
 	<Directory "${CATS_ROOT}/cgi-bin/">
-		Options -Indexes +FollowSymLinks
-		DirectoryIndex main.pl
+		Options -Indexes
 		LimitRequestBody 1048576
-		AllowOverride all
 		Require all granted
-		<Files "main.pl">
-			# Apache 2.x / ModPerl 2.x specific
-			PerlResponseHandler main
-			PerlSendHeader On
-			SetHandler perl-script
-		</Files>
+		PerlSendHeader On
+		SetHandler perl-script
+		PerlResponseHandler main
 	</Directory>
 	ExpiresActive On
 	ExpiresDefault "access plus 5 seconds"
