@@ -49,8 +49,8 @@ use CATS::Contest::Results;
 use CATS::User;
 use CATS::Console;
 use CATS::RunDetails;
-use CATS::Judge;
 
+use CATS::UI::About;
 use CATS::UI::Prizes;
 use CATS::UI::Messages;
 use CATS::UI::Stats;
@@ -63,23 +63,6 @@ use CATS::UI::Users;
 use CATS::UI::ImportSources;
 use CATS::UI::LoginLogout;
 use CATS::UI::RankTable;
-
-sub about_frame {
-    init_template('about.html.tt');
-    my $problem_count = $dbh->selectrow_array(q~
-        SELECT COUNT(*) FROM problems P INNER JOIN contests C ON C.id = P.contest_id
-            WHERE C.is_hidden = 0 OR C.is_hidden IS NULL~);
-    my $queue_length = $dbh->selectrow_array(qq~
-        SELECT COUNT(*) FROM reqs R
-            WHERE R.state = $cats::st_not_processed AND R.submit_time > CURRENT_TIMESTAMP - 30~);
-    my ($jactive, $jtotal) = CATS::Judge::get_active_count;
-    $t->param(
-        problem_count => $problem_count,
-        queue_length => $queue_length,
-        judges_active => $jactive,
-        judges_total => $jtotal,
-    );
-}
 
 sub generate_menu {
     my $logged_on = $sid ne '';
@@ -173,7 +156,7 @@ sub routes() {
         rank_problem_details => \&CATS::UI::RankTable::rank_problem_details,
         problem_text => \&CATS::Problem::Text::problem_text_frame,
         envelope => \&CATS::UI::Messages::envelope_frame,
-        about => \&about_frame,
+        about => \&CATS::UI::About::about_frame,
 
         similarity => \&CATS::UI::Stats::similarity_frame,
         personal_official_results => \&CATS::Contest::personal_official_results,
