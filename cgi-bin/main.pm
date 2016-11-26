@@ -40,46 +40,12 @@ use CATS::Misc qw(:all);
 use CATS::Utils qw(url_function);
 use CATS::Data qw(:all);
 use CATS::IP;
-use CATS::Problem::Text;
 use CATS::RankTable;
 use CATS::StaticPages;
 use CATS::TeX::Lite;
 use CATS::Testset;
-use CATS::Contest::Results;
 use CATS::User;
-use CATS::Console;
-use CATS::RunDetails;
-use CATS::Judge;
-
-use CATS::UI::Prizes;
-use CATS::UI::Messages;
-use CATS::UI::Stats;
-use CATS::UI::Judges;
-use CATS::UI::Compilers;
-use CATS::UI::Keywords;
-use CATS::UI::Problems;
-use CATS::UI::Contests;
-use CATS::UI::Users;
-use CATS::UI::ImportSources;
-use CATS::UI::LoginLogout;
-use CATS::UI::RankTable;
-
-sub about_frame {
-    init_template('about.html.tt');
-    my $problem_count = $dbh->selectrow_array(q~
-        SELECT COUNT(*) FROM problems P INNER JOIN contests C ON C.id = P.contest_id
-            WHERE C.is_hidden = 0 OR C.is_hidden IS NULL~);
-    my $queue_length = $dbh->selectrow_array(qq~
-        SELECT COUNT(*) FROM reqs R
-            WHERE R.state = $cats::st_not_processed AND R.submit_time > CURRENT_TIMESTAMP - 30~);
-    my ($jactive, $jtotal) = CATS::Judge::get_active_count;
-    $t->param(
-        problem_count => $problem_count,
-        queue_length => $queue_length,
-        judges_active => $jactive,
-        judges_total => $jtotal,
-    );
-}
+use CATS::Router;
 
 sub generate_menu {
     my $logged_on = $sid ne '';
@@ -128,58 +94,6 @@ sub generate_menu {
     attach_menu('right_menu', 'about', \@right_menu);
 }
 
-my $int = qr/\d+/;
-
-sub routes() {
-    {
-        login => \&CATS::UI::LoginLogout::login_frame,
-        logout => \&CATS::UI::LoginLogout::logout_frame,
-        registration => \&CATS::UI::Users::registration_frame,
-        settings => \&CATS::UI::Users::settings_frame,
-        contests => [ \&CATS::UI::Contests::contests_frame, has_problem => $int, ],
-        console_content => \&CATS::Console::content_frame,
-        console => \&CATS::Console::console_frame,
-        console_export => \&CATS::Console::export,
-        console_graphs => \&CATS::Console::graphs,
-        problems => [ \&CATS::UI::Problems::problems_frame, kw => $int, ],
-        problems_udebug => [ \&CATS::UI::Problems::problems_udebug_frame, ],
-        problems_retest => \&CATS::UI::Problems::problems_retest_frame,
-        problem_select_testsets => \&CATS::UI::Problems::problem_select_testsets_frame,
-        problem_history => \&CATS::UI::Problems::problem_history_frame,
-        users => \&CATS::UI::Users::users_frame,
-        users_import => \&CATS::UI::Users::users_import_frame,
-        user_stats => \&CATS::UI::Users::user_stats_frame,
-        compilers => \&CATS::UI::Compilers::compilers_frame,
-        judges => \&CATS::UI::Judges::judges_frame,
-        keywords => \&CATS::UI::Keywords::keywords_frame,
-        import_sources => \&CATS::UI::ImportSources::import_sources_frame,
-        download_import_source => \&CATS::UI::ImportSources::download_frame,
-        prizes => \&CATS::UI::Prizes::prizes_frame,
-        contests_prizes => \&CATS::UI::Prizes::contests_prizes_frame,
-
-        answer_box => \&CATS::UI::Messages::answer_box_frame,
-        send_message_box => \&CATS::UI::Messages::send_message_box_frame,
-
-        run_log => \&CATS::RunDetails::run_log_frame,
-        view_source => \&CATS::RunDetails::view_source_frame,
-        download_source => \&CATS::RunDetails::download_source_frame,
-        run_details => \&CATS::RunDetails::run_details_frame,
-        diff_runs => [ \&CATS::RunDetails::diff_runs_frame, r1 => $int, r2 => $int, ],
-
-        test_diff => \&CATS::UI::Stats::test_diff_frame,
-        compare_tests => \&CATS::UI::Stats::compare_tests_frame,
-        rank_table_content => \&CATS::UI::RankTable::rank_table_content_frame,
-        rank_table => \&CATS::UI::RankTable::rank_table_frame,
-        rank_problem_details => \&CATS::UI::RankTable::rank_problem_details,
-        problem_text => \&CATS::Problem::Text::problem_text_frame,
-        envelope => \&CATS::UI::Messages::envelope_frame,
-        about => \&about_frame,
-
-        similarity => \&CATS::UI::Stats::similarity_frame,
-        personal_official_results => \&CATS::Contest::personal_official_results,
-    }
-}
-
 sub accept_request {
     my $output_file = '';
     if (CATS::StaticPages::is_static_page) {
@@ -191,19 +105,7 @@ sub accept_request {
         $CATS::Misc::request_start_time, [ Time::HiRes::gettimeofday ]);
 
     unless (defined $t) {
-        my $function_name = url_param('f') || '';
-        my $route = routes()->{$function_name} || \&about_frame;
-        my $fn = $route;
-        my $p = {};
-        if (ref $route eq 'ARRAY') {
-            $fn = shift @$route;
-            while (@$route) {
-                my $name = shift @$route;
-                my $type = shift @$route;
-                my $value = param($name);
-                $p->{$name} = $value if defined $value && $value =~ /^$type$/;
-            }
-        }
+        my ($fn, $p) = CATS::Router::route;
         # Function returns -1 if there is no need to generate output, e.g. a redirect was issued.
         ($fn->($p) || 0) == -1 and return;
     }
@@ -218,9 +120,9 @@ use LWP::UserAgent;
 my @whitelist = qw(www.codechef.com judge.u-aizu.ac.jp compprog.win.tue.nl stats.ioinformatics.org scoreboard.ioinformatics.org rosoi.net);
 
 sub handler {
-    my $r = shift;
-    return CATS::Web::not_found unless $r->uri =~ m~/cats/(|main.pl)$~;
+    my $r = shift;    
     init_request($r);
+    return CATS::Web::not_found unless CATS::Router::parse_uri;
     if ((param('f') || '') eq 'proxy') {
         my $url = param('u') or die;
         my $r = join '|', map "\Q$_\E", @whitelist;
