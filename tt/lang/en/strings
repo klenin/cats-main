@@ -162,7 +162,7 @@
 1085 "Password has been changed."
 086 "Название не может быть изменено, поскольку команда участвовала в официальных соревнованиях '%s'"
 087 "Время турнира истекло. Решение принято в режиме дорешивания"
-088 "Решение принято на тестирование. Осталось попыток: %d"
+1088 "Solution queued for testing. Attempts left: %d"
 1089 "Tournament group '%s' created successfully."
 1090 "Group of selected tournaments already exists."
 1091 "Remote repository is not specified."
