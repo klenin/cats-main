@@ -55,6 +55,7 @@ sub print
     $r->print($_[0]);
 }
 
+sub get_uri() { $r->uri }
 
 sub original_param
 {
