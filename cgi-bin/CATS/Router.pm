@@ -79,13 +79,12 @@ sub main_routes() {
 }
 
 sub parse_uri {
-    return unless CATS::Web::get_uri =~ m~/cats/(|main.pl)$~;
-    $routes = main_routes;
-    $function = url_param('f') || '';
-    1;
+    CATS::Web::get_uri =~ m~/cats/(|main.pl)$~;
 }
 
 sub route {
+    $routes = main_routes;
+    $function = url_param('f') || '';
     my $route = $routes->{$function} || \&CATS::UI::About::about_frame;
     my $fn = $route;
     my $p = {};
