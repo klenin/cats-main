@@ -50,7 +50,7 @@ sub get_run_info {
     my $rd_fields = join ', ', (
          qw(test_rank result),
          ($contest->{show_test_resources} ? qw(time_used memory_used disk_used) : ()),
-         ($contest->{show_checker_comment} ? qw(checker_comment) : ()),
+         ($contest->{show_checker_comment} || $req->{partial_checker} ? qw(checker_comment) : ()),
     );
 
     my $c = $dbh->prepare(qq~
