@@ -325,14 +325,14 @@ sub problems_submit
 
     # Forbid repeated submissions of the identical code with the same DE.
     my $source_hash = CATS::Utils::source_hash($src);
-    my ($same_source) = $dbh->selectrow_array(qq~
-        SELECT FIRST 1 S.req_id
+    my ($same_source, $prev_submit_time) = $dbh->selectrow_array(qq~
+        SELECT FIRST 1 S.req_id, R.submit_time
         FROM sources S INNER JOIN reqs R ON S.req_id = R.id
         WHERE
             R.account_id = ? AND R.problem_id = ? AND
             R.contest_id = ? AND S.hash = ? AND S.de_id = ?~, {},
         $submit_uid, $pid, $cid, $source_hash, $did);
-    $same_source and return msg(132);
+    $same_source and return msg(1132, $prev_submit_time);
 
     my $rid = new_id;
 

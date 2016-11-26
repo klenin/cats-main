@@ -197,7 +197,7 @@
 128 "Отправлено на перетестирование попыток: %d"
 1130 "Problems are not available before the start of the contest."
 131 "С момента отправки предыдущей попытки прошло слишком мало времени. Повторите отправку через минуту."
-132 "Этот исходный код уже был отправлен"
+1132 "This source was already submitted: %s."
 1134 "Invalid problem code"
 135 "Недостаточно прав для выполнения операции"
 1136 "Must remove all links before removing problem."
