@@ -120,7 +120,7 @@ use LWP::UserAgent;
 my @whitelist = qw(www.codechef.com judge.u-aizu.ac.jp compprog.win.tue.nl stats.ioinformatics.org scoreboard.ioinformatics.org rosoi.net);
 
 sub handler {
-    my $r = shift;    
+    my $r = shift;
     init_request($r);
     return CATS::Web::not_found unless CATS::Router::parse_uri;
     if ((param('f') || '') eq 'proxy') {

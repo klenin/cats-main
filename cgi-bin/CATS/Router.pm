@@ -1,4 +1,3 @@
-#!/usr/bin/perl
 package CATS::Router;
 
 use strict;
