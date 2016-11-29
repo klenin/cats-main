@@ -220,4 +220,9 @@ sub register_by_login
 }
 
 
+sub make_sid {
+    my @ch = ('A'..'Z', 'a'..'z', '0'..'9');
+    join '', map { $ch[rand @ch] } 1..30;
+}
+
 1;

@@ -10,6 +10,7 @@ use CATS::Misc qw(
     $t $is_jury $is_root $is_team $sid $cid $uid $contest $is_virtual $settings
     init_template init_listview_template msg res_str url_f auto_ext);
 use CATS::Utils qw(url_function);
+use CATS::User;
 use CATS::Web qw(redirect);
 
 my $check_password;
@@ -21,11 +22,6 @@ BEGIN {
             $p ? $p->match($password) : $password eq $hash;
         } :
         sub { $_[0] eq $_[1] }
-}
-
-sub make_sid {
-    my @ch = ('A'..'Z', 'a'..'z', '0'..'9');
-    join '', map { $ch[rand @ch] } 1..30;
 }
 
 sub login_frame
@@ -53,7 +49,7 @@ sub login_frame
 
     my $cid = url_param('cid');
     for (1..20) {
-        $sid = make_sid;
+        $sid = CATS::User::make_sid;
 
         $dbh->do(qq~
             UPDATE accounts SET sid = ?, last_login = CURRENT_TIMESTAMP, last_ip = ?
