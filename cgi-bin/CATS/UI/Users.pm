@@ -57,7 +57,7 @@ sub users_edit_frame
     my $id = url_param('edit') or return;
     my $u = CATS::User->new->load($id, [ 'locked' ]) or return;
     $t->param(
-        user_submenu('edit', $uid),
+        user_submenu('edit', $id),
         %$u, id => $id, countries => \@CATS::Countries::countries, is_root => $is_root,
         href_action => url_f('users'),
         href_impersonate => url_f('users', impersonate => $id));
