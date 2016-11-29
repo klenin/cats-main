@@ -293,15 +293,14 @@ sub users_save_attributes
 sub users_impersonate
 {
     my $new_user_id = param('impersonate') or return;
+    my $new_sid = CATS::User::make_sid;
     $dbh->selectrow_array(q~
         SELECT 1 FROM accounts WHERE id = ?~, undef, $new_user_id) or return;
     $dbh->do(q~
-        UPDATE accounts SET sid = NULL WHERE id = ?~, undef, $uid);
-    $dbh->do(q~
         UPDATE accounts SET last_ip = ?, sid = ? WHERE id = ?~, undef,
-        CATS::IP::get_ip(), $sid, $new_user_id);
+        CATS::IP::get_ip, $new_sid, $new_user_id);
     $dbh->commit;
-    redirect(url_function('contests', sid => $sid));
+    redirect(url_function('contests', sid => $new_sid, cid => $cid));
 }
 
 sub format_diff_time {
