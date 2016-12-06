@@ -17,9 +17,11 @@ sub edit_frame
     init_template('judges_edit.html.tt');
 
     if (my $jid = url_param('edit')) {
-        my ($judge_name, $lock_counter) = $dbh->selectrow_array(qq~
-            SELECT nick, lock_counter FROM judges WHERE id = ?~, undef, $jid);
-        $t->param(id => $jid, judge_name => $judge_name, locked => $lock_counter);
+        my ($judge_name, $account_name, $lock_counter) = $dbh->selectrow_array(q~
+            SELECT J.nick, A.login, J.lock_counter
+            FROM judges J LEFT JOIN accounts A ON A.id = J.account_id WHERE J.id = ?~, undef,
+            $jid);
+        $t->param(id => $jid, judge_name => $judge_name, account_name => $account_name, locked => $lock_counter);
     }
     $t->param(href_action => url_f('judges'));
 }
@@ -28,22 +30,30 @@ sub edit_save
 {
     my $jid = param('id');
     my $judge_name = param('judge_name');
+    my $account_name = param('account_name') // '';
     my $locked = param_on('locked') ? -1 : 0;
 
     $judge_name ne '' && length $judge_name <= 20
         or return msg(1005);
 
+    my $account_id;
+    if ($account_name) {
+        $account_id = $dbh->selectrow_array(q~
+            SELECT id FROM accounts WHERE login = ?~, undef,
+            $account_name) or return msg(1139, $account_name);
+    }
+
     if ($jid) {
-        $dbh->do(qq~
-            UPDATE judges SET nick = ?, lock_counter = ? WHERE id = ?~, undef,
-            $judge_name, $locked, $jid);
+        $dbh->do(q~
+            UPDATE judges SET nick = ?, account_id = ?, lock_counter = ? WHERE id = ?~, undef,
+            $judge_name, $account_id, $locked, $jid);
         $dbh->commit;
     }
     else {
-        $dbh->do(qq~
-            INSERT INTO judges (id, nick, lock_counter, is_alive, alive_date)
-            VALUES (?, ?, ?, 0, CURRENT_TIMESTAMP)~, undef,
-            new_id, $judge_name, $locked);
+        $dbh->do(q~
+            INSERT INTO judges (id, nick, account_id, lock_counter, is_alive, alive_date)
+            VALUES (?, ?, ?, ?, 0, CURRENT_TIMESTAMP)~, undef,
+            new_id, $judge_name, $account_id, $locked);
         $dbh->commit;
         msg(1006);
     }
@@ -59,7 +69,7 @@ sub judges_frame
             return redirect(url_f('judges'));
         }
         if (my $jid = url_param('delete')) {
-            $dbh->do(qq~DELETE FROM judges WHERE id = ?~, {}, $jid);
+            $dbh->do(q~DELETE FROM judges WHERE id = ?~, {}, $jid);
             $dbh->commit;
         }
         defined url_param('new') || defined url_param('edit') and return edit_frame;
@@ -76,24 +86,27 @@ sub judges_frame
         { caption => res_str(622), order_by => '5', width => '10%' },
     ]);
 
-    my $c = $dbh->prepare(qq~
-        SELECT id, nick, is_alive, alive_date, lock_counter
-            FROM judges ~ . order_by);
+    my $c = $dbh->prepare(q~
+        SELECT J.id, J.nick, A.login, A.id, J.is_alive, J.alive_date, J.lock_counter
+            FROM judges J LEFT JOIN accounts A ON A.id = J.account_id ~ . order_by);
     $c->execute;
 
     my $fetch_record = sub($)
     {
-        my ($jid, $judge_name, $is_alive, $alive_date, $lock_counter) = $_[0]->fetchrow_array
+        my ($jid, $judge_name, $account_name, $account_id, $is_alive, $alive_date, $lock_counter) = $_[0]->fetchrow_array
             or return ();
         return (
             editable => $is_root,
-            jid => $jid, judge_name => $judge_name,
+            jid => $jid,
+            judge_name => $judge_name,
+            account_name => $account_name,
             locked => $lock_counter,
             is_alive => $is_alive,
             alive_date => $alive_date,
-            href_ping=> url_f('judges', ping => $jid),
-            href_edit=> url_f('judges', edit => $jid),
-            href_delete => url_f('judges', 'delete' => $jid)
+            href_ping => url_f('judges', ping => $jid),
+            href_edit => url_f('judges', edit => $jid),
+            href_delete => url_f('judges', 'delete' => $jid),
+            href_account => url_f('users', edit => $account_id),
         );
     };
 
