@@ -1,8 +1,8 @@
 
 CREATE TABLE judges (
-    id      INTEGER NOT NULL PRIMARY KEY,
-    jsid    VARCHAR(30) DEFAULT NULL,
-    nick    VARCHAR(32) NOT NULL,
+    id               INTEGER NOT NULL PRIMARY KEY,
+    account_id       INTEGER UNIQUE REFERENCES accounts(id) ON DELETE SET NULL,
+    nick             VARCHAR(32) NOT NULL,
     lock_counter     INTEGER,
     is_alive         INTEGER DEFAULT 0 CHECK (is_alive IN (0, 1)),
     alive_date       TIMESTAMP
@@ -363,5 +363,6 @@ INSERT INTO default_de (id, code, description, file_ext) VALUES (GEN_ID(key_seq,
 INSERT INTO dummy_table VALUES (NULL, NULL, NULL);
 INSERT INTO contests(id, title, ctype, start_date) VALUES(1, 'Турнир', 1, CURRENT_DATE - 100);
 INSERT INTO accounts(id, login, passwd, srole) VALUES(2, 'root', 'root', 0);
+INSERT INTO accounts(id, login, passwd, srole) VALUES(5, 'fox', 'fox', 0);
 INSERT INTO contest_accounts(id, contest_id, account_id, is_jury) VALUES (3, 1, 2, 1);
-INSERT INTO judges(id, nick, lock_counter) VALUES (4, 'fox', 0);
+INSERT INTO judges(id, nick, lock_counter, account_id) VALUES (4, 'fox', 0, 5);
