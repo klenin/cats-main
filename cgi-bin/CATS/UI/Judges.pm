@@ -29,7 +29,7 @@ sub edit_frame
 sub edit_save
 {
     my $jid = param('id');
-    my $judge_name = param('judge_name');
+    my $judge_name = param('judge_name') // '';
     my $account_name = param('account_name') // '';
     my $locked = param_on('locked') ? -1 : 0;
 
@@ -48,6 +48,7 @@ sub edit_save
             UPDATE judges SET nick = ?, account_id = ?, lock_counter = ? WHERE id = ?~, undef,
             $judge_name, $account_id, $locked, $jid);
         $dbh->commit;
+        msg(1140, $judge_name);
     }
     else {
         $dbh->do(q~
@@ -55,7 +56,7 @@ sub edit_save
             VALUES (?, ?, ?, ?, 0, CURRENT_TIMESTAMP)~, undef,
             new_id, $judge_name, $account_id, $locked);
         $dbh->commit;
-        msg(1006);
+        msg(1006, $judge_name);
     }
 }
 

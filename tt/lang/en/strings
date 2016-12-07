@@ -100,7 +100,7 @@
 1003 "Unable to link the same problem twice."
 1004 "You have been logged out. You may login again."
 1005 "Please enter correct judge name."
-1006 "Judge created successfully."
+1006 "Judge '%s' created successfully."
 1007 "Problem was successfully replaced."
 1008 "Error while loading problem."
 1009 "Please enter solution file or text."
@@ -204,3 +204,4 @@
 137 "Превышено максимально разрешённое число попыток. Обратитесь в жюри"
 138 "Сейчас проходит официальный турнир '%s', загрузка попыток из других турниров временно запрещена"
 1139 "Unable to find an account with login '%s'."
+1140 "Judge '%s' changed successfully."
