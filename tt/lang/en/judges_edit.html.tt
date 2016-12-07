@@ -1,6 +1,7 @@
 [%
   capt.import({
     judge_name => 'Judge name',
+    account_name => 'Account login',
     locked => 'Locked',
   })
 %]

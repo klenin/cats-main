@@ -1,0 +1,2 @@
+ALTER TABLE judges DROP jsid;
+ALTER TABLE judges ADD account_id INTEGER UNIQUE REFERENCES accounts(id) ON DELETE SET NULL;
