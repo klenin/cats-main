@@ -22,9 +22,9 @@ function delete_judge(href, name)
   <a href="[% href_edit %]" class="icon edit"></a>
   [% END %]
   [% judge_name | html -%]
-  [%- IF account_name %] (<a href="[% href_account %]">[% account_name | html %]</a>)[% END %]
 </td>
-<td>[% is_alive %][% IF editable && is_alive %] [<a href="[% href_ping %]">[% capt.ping %]</a>][% END %]</td>
+<td>[% IF account_name %]<a href="[% href_account %]">[% account_name | html %]</a>[% END %]</td>
+<td>[% is_alive; IF editable && is_alive %] [<a href="[% href_ping %]">[% capt.ping %]</a>][% END %]</td>
 <td>[% alive_date %]</td>
 <td>[% IF locked %]<font color=red>[% capt.locked %]</font>[% ELSE; capt.unlocked; END %]</td>
 </tr>

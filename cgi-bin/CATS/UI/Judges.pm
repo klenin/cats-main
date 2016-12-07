@@ -91,10 +91,11 @@ sub judges_frame
     }
 
     define_columns(url_f('judges'), 0, 0, [
-        { caption => res_str(625), order_by => '2', width => '65%' },
-        { caption => res_str(626), order_by => '3', width => '10%' },
-        { caption => res_str(633), order_by => '4', width => '15%' },
-        { caption => res_str(622), order_by => '5', width => '10%' },
+        { caption => res_str(625), order_by => '2', width => '35%' },
+        { caption => res_str(616), order_by => '3', width => '30%' },
+        { caption => res_str(626), order_by => '4', width => '10%' },
+        { caption => res_str(633), order_by => '5', width => '15%' },
+        { caption => res_str(622), order_by => '6', width => '10%' },
     ]);
 
     my $c = $dbh->prepare(q~
