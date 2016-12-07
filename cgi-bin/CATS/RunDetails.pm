@@ -138,7 +138,7 @@ sub get_run_info {
         $contest->{show_test_data} or return $row;
         my $t = $contest->{tests}->[$row->{test_rank} - 1] or return $row;
         $row->{test_data} =
-            $t->{input} ? $t->{input} :
+            defined $t->{input} ? $t->{input} :
             $t->{gen_group} ? "$t->{gen_name} GROUP" :
             $t->{gen_name} ? "$t->{gen_name} $t->{param}" : '';
         $row->{test_data_cut} = length($t->{input} || '') > $cats::infile_cut;
