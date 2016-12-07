@@ -50,6 +50,7 @@ use Storable;
 use List::Util qw(first min max);
 
 #use FCGI;
+use Carp qw(croak);
 use SQL::Abstract;
 use Digest::MD5;
 use Time::HiRes;
@@ -271,6 +272,7 @@ sub res_str
 
 sub msg
 {
+    defined $t or croak q~Call to 'msg' before 'init_template'~;
     $t->param(message => res_str(@_));
     undef;
 }
