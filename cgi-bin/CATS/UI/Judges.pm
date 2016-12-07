@@ -69,16 +69,26 @@ sub judges_frame
             CATS::Judge::ping($jid);
             return redirect(url_f('judges'));
         }
-        if (my $jid = url_param('delete')) {
-            $dbh->do(q~DELETE FROM judges WHERE id = ?~, {}, $jid);
-            $dbh->commit;
-        }
         defined url_param('new') || defined url_param('edit') and return edit_frame;
     }
 
     init_listview_template('judges', 'judges', 'judges.html.tt');
 
-    $is_root && defined param('edit_save') and edit_save;
+    if ($is_root) {
+        defined param('edit_save') and edit_save;
+        if (my $jid = url_param('delete')) {
+            my $judge_name = $dbh->selectrow_array(q~
+                SELECT nick FROM judges WHERE id = ?~, undef,
+                $jid);
+            if ($judge_name) {
+                $dbh->do(q~
+                    DELETE FROM judges WHERE id = ?~, undef,
+                    $jid);
+                $dbh->commit;
+                msg(1020, $judge_name);
+            }
+        }
+    }
 
     define_columns(url_f('judges'), 0, 0, [
         { caption => res_str(625), order_by => '2', width => '65%' },
