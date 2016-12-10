@@ -1,12 +1,12 @@
 [% PROCESS 'includes/menu_begin.tti' %]
 <h3>[% capt.problem %]: [% problem_title %]</h3>
-<table style="text-align: right" class="bordered">
+<table style="text-align: right" class="bordered compare_tests">
 <tr><td>&nbsp;</td>[% FOREACH cm IN comparison_matrix %]<td width="20px">[% cm.test_rank %]</td>[% END %]
 <td>[% capt.passed %]</td><td>[% capt.failed %]</td>
 </tr>
 [% FOREACH cm IN comparison_matrix %]
-<tr><td><a href="[% cm.href_test_diff %]">[% cm.test_rank %]</a></td>
-[% FOREACH d IN cm.data %]<td [% UNLESS d.n %]style="background-color: #FFC0C0"[% END %]>[% d.n %]</td>[% END %]
+<tr class="[% loop.parity %]"><td><a href="[% cm.href_test_diff %]">[% cm.test_rank %]</a></td>
+[% FOREACH d IN cm.data %]<td[% ' class="z"' UNLESS d.n %]>[% d.n %]</td>[% END %]
 <td>[% cm.passed_count %]</td><td>[% cm.failed_count %]</td>
 </tr>
 [% END %]
