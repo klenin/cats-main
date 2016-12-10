@@ -12,6 +12,7 @@ use CATS::Data qw(is_jury_in_contest enforce_request_state);
 use CATS::IP;
 use CATS::DevEnv;
 use CATS::RankTable;
+use CATS::Problem::Text qw(ensure_problem_hash);
 
 sub get_judges {
     my ($si) = @_;
@@ -133,6 +134,14 @@ sub get_run_info {
         return \%r;
     };
 
+    my $visualizers = $dbh->selectall_arrayref(q~
+        SELECT PS.id, PS.name
+        FROM problem_sources PS
+        INNER JOIN problems P ON PS.problem_id = P.id
+        INNER JOIN reqs R ON R.problem_id = P.id
+        WHERE R.id = ? AND PS.stype = ?~, { Slice => {} },
+        $req->{req_id}, $cats::visualizer);
+
     my $add_testdata = sub {
         my ($row) = @_ or return ();
         $contest->{show_test_data} or return $row;
@@ -142,6 +151,11 @@ sub get_run_info {
             $t->{gen_group} ? "$t->{gen_name} GROUP" :
             $t->{gen_name} ? "$t->{gen_name} $t->{param}" : '';
         $row->{test_data_cut} = length($t->{input} || '') > $cats::infile_cut;
+        $row->{visualize_test_hrefs} =
+            defined $t->{input} ? [ map +{
+                href => url_f('visualize_test', rid => $req->{req_id}, test_rank => $row->{test_rank}, vid => $_->{id}),
+                name => $_->{name}
+            }, @$visualizers ] : [];
         $row;
     };
 
@@ -150,6 +164,7 @@ sub get_run_info {
         total_points => $total_points,
         run_details => [ map $add_testdata->($run_row->($_)), 1..$last_test ],
         testsets => [ sort { $a->{list}[0] <=> $b->{list}[0] } values %used_testsets ],
+        has_visualizer => @$visualizers > 0,
     };
 }
 
@@ -352,6 +367,62 @@ sub run_details_frame {
     }
     sources_info_param($sources_info);
     $t->param(runs => \@runs);
+}
+
+sub save_visualizer {
+    my ($data, $lfname, $pid, $hash) = @_;
+
+    ensure_problem_hash($pid, \$hash);
+
+    my $fname = "vis/${hash}_$lfname";
+    my $fpath = CATS::Misc::downloads_path . $fname;
+    -f $fpath or CATS::BinaryFile::save($fpath, $data);
+    return CATS::Misc::downloads_url . $fname;
+}
+
+sub visualize_test_frame {
+    init_template('visualize_test.html.tt');
+
+    $uid or return;
+    my $rid = url_param('rid') or return;
+    my $vid = url_param('vid') or return;
+    my $test_rank = url_param('test_rank') or return;
+
+    $dbh->selectrow_array(q~
+        SELECT CA.is_jury
+        FROM reqs R
+        INNER JOIN contest_accounts CA ON CA.contest_id = r.contest_id
+        INNER JOIN accounts A ON A.id = CA.account_id
+        WHERE R.id = ? AND A.id = ?~, undef,
+        $rid, $uid) or return;
+
+    my $visualizer = $dbh->selectrow_hashref(q~
+        SELECT PS.src, PS.fname, P.id AS problem_id, P.hash
+        FROM problem_sources PS
+        INNER JOIN problems P ON PS.problem_id = P.id
+        INNER JOIN reqs R ON R.problem_id = P.id
+        WHERE R.id = ? AND PS.id = ? AND PS.stype = ?~, { Slice => {} },
+        $rid, $vid, $cats::visualizer) or return;
+
+    my @imports_js = ($dbh->selectall_array(q~
+        SELECT PS.src, PS.fname, PS.problem_id, P.hash
+        FROM problem_sources_import PSI
+        INNER JOIN problem_sources PS ON PS.guid = PSI.GUID
+        INNER JOIN problems P ON P.id = PS.problem_id
+        WHERE PSI.problem_id = ? AND PS.stype = ?~, { Slice => {} },
+        $visualizer->{problem_id}, $cats::visualizer_module), $visualizer);
+
+    my $script_srcs_links = [ map save_visualizer($_->{src}, $_->{fname}, $_->{problem_id}, $_->{hash}), @imports_js ];
+
+    my $input_file = $dbh->selectrow_array(q~
+        SELECT T.in_file
+        FROM tests T
+        INNER JOIN reqs R ON R.problem_id = T.problem_id
+        WHERE R.id = ? AND T.rank = ?~, undef,
+        $rid, $test_rank) or return;
+
+    $t->param(import_scripts => $script_srcs_links);
+    $t->param(input_file => $input_file);
 }
 
 sub view_source_frame {

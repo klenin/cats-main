@@ -114,6 +114,9 @@ $(document).ready(function() {
     [% END %]
     [% IF show_test_data %]
       <th class="data test_data">[% capt.test_data %]</th>
+      [% IF has_visualizer %]
+        <th class="test_data">[% capt.visualize %]</th>
+      [% END %]
     [% END %]
   </tr>
   [% FOREACH rd IN run_details %]
@@ -152,7 +155,16 @@ $(document).ready(function() {
       <td align="right">[% rd.disk_used %]</td>
     [% END %]
     [% IF show_checker_comment %]<td><pre>[% rd.checker_comment | html %]</pre></td>[% END %]
-    [% IF show_test_data %]<td class="test_data"><tt>[% rd.test_data | html; '&hellip;' IF rd.test_data_cut %]</tt></td>[% END %]
+    [% IF show_test_data %]
+      <td class="test_data"><tt>[% rd.test_data | html; '&hellip;' IF rd.test_data_cut %]</tt></td>
+      [% IF has_visualizer %]
+        <td class = "test_data">
+          [% FOREACH a IN rd.visualize_test_hrefs %]
+            <a href="[% a.href %]">[% a.name %]</a>
+          [% END %]
+        </td>
+      [% END %]
+    [% END %]
   </tr>
   [% END %]
   [% IF show_points %]<tr><td colspan="2">[% capt.total %]</td><td>[% total_points %]</td></tr>[% END %]
