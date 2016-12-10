@@ -153,6 +153,7 @@ CREATE TABLE problem_sources (
     de_id       INTEGER NOT NULL REFERENCES default_de(id) ON DELETE CASCADE,
     src         BLOB,
     fname       VARCHAR(200),
+    name        VARCHAR(60),
     input_file  VARCHAR(200),
     output_file VARCHAR(200),
     guid        VARCHAR(100), /* For cross-contest references. */
@@ -160,7 +161,7 @@ CREATE TABLE problem_sources (
     memory_limit INTEGER /* In mebibytes. */
 );
 ALTER TABLE problem_sources
-  ADD CONSTRAINT chk_problem_sources_1 CHECK (0 <= stype AND stype <= 10);
+  ADD CONSTRAINT chk_problem_sources_1 CHECK (0 <= stype AND stype <= 12);
 CREATE INDEX ps_guid_idx ON problem_sources(guid);
 
 CREATE TABLE problem_sources_import
@@ -359,6 +360,7 @@ INSERT INTO default_de (id, code, description, file_ext) VALUES (GEN_ID(key_seq,
 INSERT INTO default_de (id, code, description, file_ext) VALUES (GEN_ID(key_seq, 1), 202, 'Free Pascal', 'pas;pp');
 INSERT INTO default_de (id, code, description, file_ext) VALUES (GEN_ID(key_seq, 1), 204, 'Free Pascal in Delphi mode', 'dpr');
 INSERT INTO default_de (id, code, description, file_ext) VALUES (GEN_ID(key_seq, 1), 301, 'Quick Basic 4.5', 'bas');
+INSERT INTO default_de (id, code, description, file_ext, in_contests) VALUES (GEN_ID(key_seq, 1), 401, 'JavaScript', 'js', 0);
 
 INSERT INTO dummy_table VALUES (NULL, NULL, NULL);
 INSERT INTO contests(id, title, ctype, start_date) VALUES(1, 'Турнир', 1, CURRENT_DATE - 100);

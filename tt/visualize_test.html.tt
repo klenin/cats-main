@@ -1,0 +1,18 @@
+[%- USE Javascript -%]
+[% PROCESS 'includes/header.tti' %]
+
+<script>
+    var input_file = "[% input_file | $Javascript %]";
+</script>
+
+</head>
+<body>
+
+<canvas id="visualizer_canvas" width="800" height="800">
+</canvas>
+
+[% FOREACH script IN import_scripts %]
+    <script type="text/javascript" src="[% script | $Javascript %]"></script>
+[% END %]
+
+</body>
