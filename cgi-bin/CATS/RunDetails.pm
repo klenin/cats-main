@@ -404,15 +404,13 @@ sub visualize_test_frame {
         WHERE R.id = ? AND PS.id = ? AND PS.stype = ?~, { Slice => {} },
         $rid, $vid, $cats::visualizer) or return;
 
-    my @imports_js = ($dbh->selectall_array(q~
+    my @imports_js = (@{$dbh->selectall_arrayref(q~
         SELECT PS.src, PS.fname, PS.problem_id, P.hash
         FROM problem_sources_import PSI
         INNER JOIN problem_sources PS ON PS.guid = PSI.GUID
         INNER JOIN problems P ON P.id = PS.problem_id
         WHERE PSI.problem_id = ? AND PS.stype = ?~, { Slice => {} },
-        $visualizer->{problem_id}, $cats::visualizer_module), $visualizer);
-
-    my $script_srcs_links = [ map save_visualizer($_->{src}, $_->{fname}, $_->{problem_id}, $_->{hash}), @imports_js ];
+        $visualizer->{problem_id}, $cats::visualizer_module)}, $visualizer);
 
     my $input_file = $dbh->selectrow_array(q~
         SELECT T.in_file
@@ -421,8 +419,12 @@ sub visualize_test_frame {
         WHERE R.id = ? AND T.rank = ?~, undef,
         $rid, $test_rank) or return;
 
-    $t->param(import_scripts => $script_srcs_links);
-    $t->param(input_file => $input_file);
+    $t->param(
+        import_scripts => [
+            map save_visualizer($_->{src}, $_->{fname}, $_->{problem_id}, $_->{hash}), @imports_js
+        ],
+        input_file => $input_file,
+    );
 }
 
 sub view_source_frame {

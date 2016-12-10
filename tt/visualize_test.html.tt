@@ -2,7 +2,7 @@
 [% PROCESS 'includes/header.tti' %]
 
 <script>
-    var input_file = "[% input_file | $Javascript %]";
+  var input_file = "[% input_file | $Javascript %]";
 </script>
 
 </head>
@@ -12,7 +12,7 @@
 </canvas>
 
 [% FOREACH script IN import_scripts %]
-    <script type="text/javascript" src="[% script | $Javascript %]"></script>
+  <script type="text/javascript" src="[% script | $Javascript %]"></script>
 [% END %]
 
 </body>
