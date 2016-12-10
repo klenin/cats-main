@@ -11,13 +11,14 @@
 [%- MACRO v16 BLOCK %]<sup><a href="#v16" title="Since version 1.6">1.6</a></sup>[% END -%]
 [%- MACRO v17 BLOCK %]<sup><a href="#v17" title="Since version 1.7">1.7</a></sup>[% END -%]
 [%- MACRO v18 BLOCK %]<sup><a href="#v18" title="Since version 1.8">1.8</a></sup>[% END -%]
+[%- MACRO v19 BLOCK %]<sup><a href="#v19" title="Since version 1.9">1.9</a></sup>[% END -%]
 [%- MACRO tag_in(t1, t2, m1, m2) BLOCK
 %]<tt>&lt;<a name="[% t1 %]">[% t1 %]</a>&gt;[% IF t2 != '';
   IF m1 != '' %]</tt>[% m1 %]<br/><tt>[% ELSE %]<br/>[% END
 %]&lt;<a href="#[% t2 %]">[% t2 %]</a>&gt;[% END %]</tt>[% m2;
 END -%]
 [%- MACRO tag_ref(t) BLOCK %]<tt>&lt;<a href="#[% t %]">[% t %]</a>&gt;</tt>[% END -%]
-<h2>Version 1.8</h2>
+<h2>Version 1.9</h2>
 
 <p><a href="sample.zip">download sample problem package</a></p>
 
@@ -243,6 +244,18 @@ files with tests, solutions etc.
     For example:<br/>
     <tt>&lt;GeneratorRange from="1" to="10" name="g%0n" src="gen%0n.pas"/&gt</tt>
   </td>
+</tr>
+<tr>
+  <td>[% tag_in('Visualizer', 'Problem', v19) %]</td>
+  <td>
+    <ul>
+      <li>name -- identifier of the [% tag_ref('Visualizer') %] object;</li>
+      <li>src[% opt %] -- path to the source code file;</li>
+      <li>de_code[% opt %] -- development environment code, it is recommended to use code 1;</li>
+      <li>export[% opt %] -- globally unique identifier.</li>
+    </ul>
+  </td>
+  <td>Test data visualizer.</td>
 </tr>
 <tr>
   <td>[% tag_in('Test', 'Problem') %]</td>
