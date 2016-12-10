@@ -91,27 +91,29 @@ sub judges_frame
     }
 
     define_columns(url_f('judges'), 0, 0, [
-        { caption => res_str(625), order_by => '2', width => '35%' },
-        { caption => res_str(616), order_by => '3', width => '30%' },
+        { caption => res_str(625), order_by => '2', width => '30%' },
+        ($is_root ? ({ caption => res_str(616), order_by => '3', width => '30%' }) : ()),
         { caption => res_str(626), order_by => '4', width => '10%' },
         { caption => res_str(633), order_by => '5', width => '15%' },
         { caption => res_str(622), order_by => '6', width => '10%' },
     ]);
 
     my $c = $dbh->prepare(q~
-        SELECT J.id, J.nick, A.login, A.id, J.is_alive, J.alive_date, J.lock_counter
+        SELECT J.id, J.nick, A.login, J.is_alive, J.alive_date, J.lock_counter, A.id, A.last_ip
             FROM judges J LEFT JOIN accounts A ON A.id = J.account_id ~ . order_by);
     $c->execute;
 
     my $fetch_record = sub($)
     {
-        my ($jid, $judge_name, $account_name, $account_id, $is_alive, $alive_date, $lock_counter) = $_[0]->fetchrow_array
-            or return ();
+        my (
+            $jid, $judge_name, $account_name, $is_alive, $alive_date, $lock_counter, $account_id, $last_ip
+        ) = $_[0]->fetchrow_array or return ();
         return (
             editable => $is_root,
             jid => $jid,
             judge_name => $judge_name,
             account_name => $account_name,
+            last_ip => $last_ip,
             locked => $lock_counter,
             is_alive => $is_alive,
             alive_date => $alive_date,
