@@ -396,6 +396,12 @@ sub insert_problem_content
         )
     }
 
+    for (@{$problem->{visualizers}}) {
+        $self->insert_problem_source(
+            source_object => $_, type_name => 'Visualizer', pid => $problem->{id}, source_type => $cats::visualizer
+        )
+    }
+
     for(@{$problem->{generators}}) {
         $self->insert_problem_source(
             source_object => $_, source_type => $cats::generator, pid => $problem->{id}, type_name => 'Generator');
