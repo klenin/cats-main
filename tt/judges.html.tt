@@ -14,24 +14,24 @@ function delete_judge(href, name)
 <table width=100% cellpadding=2 cellspacing=1 class="bordered highlight">
 [% PROCESS 'includes/listview_col_defs.tti' %]
 
-[% FOREACH judges %]
+[% FOREACH j IN judges %]
 <tr class="[% loop.parity() %]">
 <td>
   [% IF editable %]
-  <a href="javascript:delete_judge('[% href_delete %]', '[% judge_name | html %]');" class="icon delete"></a>
-  <a href="[% href_edit %]" class="icon edit"></a>
+  <a href="javascript:delete_judge('[% j.href_delete %]', '[% j.judge_name | html %]');" class="icon delete"></a>
+  <a href="[% j.href_edit %]" class="icon edit"></a>
   [% END %]
-  [% judge_name | html -%]
+  [% j.judge_name | html -%]
 </td>
 [% IF editable %]<td>
-[%- IF account_name %]<a href="[% href_account %]">[% account_name | html %]</a>[% END -%]
-[%- IF last_ip %] [[% last_ip | html %]][% END -%]
+[%- IF j.account_name %]<a href="[% j.href_account %]">[% j.account_name | html %]</a>[% END -%]
+[%- IF j.last_ip %] [[% j.last_ip | html %]][% END -%]
 </td>
 [% END %]
 
-<td>[% is_alive; IF editable && is_alive %] [<a href="[% href_ping %]">[% capt.ping %]</a>][% END %]</td>
-<td>[% alive_date %]</td>
-<td>[% IF locked %]<font color=red>[% capt.locked %]</font>[% ELSE; capt.unlocked; END %]</td>
+<td>[% j.is_alive; IF editable && j.is_alive %] [<a href="[% j.href_ping %]">[% capt.ping %]</a>][% END %]</td>
+<td>[% j.alive_date %]</td>
+<td>[% IF j.locked %]<font color=red>[% capt.locked %]</font>[% ELSE; capt.unlocked; END %]</td>
 </tr>
 [% END %]
 </table>

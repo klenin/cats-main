@@ -103,13 +103,11 @@ sub judges_frame
             FROM judges J LEFT JOIN accounts A ON A.id = J.account_id ~ . order_by);
     $c->execute;
 
-    my $fetch_record = sub($)
-    {
+    my $fetch_record = sub {
         my (
             $jid, $judge_name, $account_name, $is_alive, $alive_date, $lock_counter, $account_id, $last_ip
         ) = $_[0]->fetchrow_array or return ();
         return (
-            editable => $is_root,
             jid => $jid,
             judge_name => $judge_name,
             account_name => $account_name,
@@ -126,7 +124,7 @@ sub judges_frame
 
     attach_listview(url_f('judges'), $fetch_record, $c);
 
-    $t->param(submenu => [ references_menu('judges') ], editable => 1);
+    $t->param(submenu => [ references_menu('judges') ], editable => $is_root);
 
     my ($not_processed) = $dbh->selectrow_array(q~
         SELECT COUNT(*) FROM reqs WHERE state = ?~, undef,
