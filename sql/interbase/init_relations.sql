@@ -153,6 +153,7 @@ CREATE TABLE problem_sources (
     de_id       INTEGER NOT NULL REFERENCES default_de(id) ON DELETE CASCADE,
     src         BLOB,
     fname       VARCHAR(200),
+    name        VARCHAR(60),
     input_file  VARCHAR(200),
     output_file VARCHAR(200),
     guid        VARCHAR(100), /* For cross-contest references. */

@@ -352,21 +352,22 @@ sub insert_problem_source
     }
     my $c = $dbh->prepare(qq~
         INSERT INTO problem_sources (
-            id, problem_id, de_id, src, fname, stype, input_file, output_file, guid,
+            id, problem_id, de_id, src, fname, name, stype, input_file, output_file, guid,
             time_limit, memory_limit
-        ) VALUES (?,?,?,?,?,?,?,?,?,?,?)~);
+        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)~);
 
     $c->bind_param(1, $s->{id});
     $c->bind_param(2, $p{pid});
     $c->bind_param(3, $self->get_de_id($s->{de_code}, $s->{path}));
     $c->bind_param(4, $s->{src}, { ora_type => 113 });
     $c->bind_param(5, $s->{path});
-    $c->bind_param(6, $p{source_type});
-    $c->bind_param(7, $s->{inputFile});
-    $c->bind_param(8, $s->{outputFile});
-    $c->bind_param(9, $s->{guid});
-    $c->bind_param(10, $s->{time_limit});
-    $c->bind_param(11, $s->{memory_limit});
+    $c->bind_param(6, $s->{name});
+    $c->bind_param(7, $p{source_type});
+    $c->bind_param(8, $s->{inputFile});
+    $c->bind_param(9, $s->{outputFile});
+    $c->bind_param(10, $s->{guid});
+    $c->bind_param(11, $s->{time_limit});
+    $c->bind_param(12, $s->{memory_limit});
     $c->execute;
 
     my $g = $s->{guid} ? ", guid=$s->{guid}" : '';
