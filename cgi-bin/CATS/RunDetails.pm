@@ -13,6 +13,7 @@ use CATS::IP;
 use CATS::DevEnv;
 use CATS::RankTable;
 use CATS::Problem::Text qw(ensure_problem_hash);
+use CATS::Testset;
 
 sub get_judges {
     my ($si) = @_;

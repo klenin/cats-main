@@ -14,6 +14,7 @@ use CATS::Misc qw(
 use CATS::Config qw(cats_dir);
 use CATS::Utils qw(url_function file_type date_to_iso source_encodings);
 use CATS::Data qw(:all);
+use CATS::DevEnv;
 
 use CATS::Judge;
 use CATS::StaticPages;

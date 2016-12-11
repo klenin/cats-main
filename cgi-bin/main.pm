@@ -34,17 +34,11 @@ use CATS::DB;
 use CATS::Config;
 use CATS::Constants;
 use CATS::BinaryFile;
-use CATS::DevEnv;
 use CATS::Misc qw(:all);
 use CATS::Utils qw(url_function);
-use CATS::Data qw(:all);
-use CATS::IP;
 use CATS::Proxy;
 use CATS::Router;
 use CATS::StaticPages;
-use CATS::TeX::Lite;
-use CATS::Testset;
-use CATS::User;
 
 sub generate_menu {
     my $logged_on = $sid ne '';

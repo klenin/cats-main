@@ -22,6 +22,7 @@ use CATS::DB;
 use CATS::Config qw(cats_dir);
 use CATS::Misc qw($cid $contest $is_jury $t $uid auto_ext init_template res_str);
 use CATS::StaticPages;
+use CATS::TeX::Lite;
 
 my ($current_pid, $html_code, $spellchecker, $text_span);
 
