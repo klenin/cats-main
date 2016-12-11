@@ -34,16 +34,18 @@ window.$ && window.MathJax && $(document).ready(function() {
 [% END %]
 </head>
 <body>
-[% FOREACH problems %]
+[% MACRO text_ru PROCESS includes/problem_text_ru.tti %]
+[% MACRO text_en PROCESS includes/problem_text_en.tti %]
+[% FOREACH p IN problems %]
 <div class="problem_text" [% UNLESS loop.first %]style="page-break-before: always"[% END %]>
-  <a name="pr[% code %]"></a>
-  [% IF lang_ru %][% PROCESS 'includes/problem_text_ru.tti' %][% END %]
-  [% IF lang_en %][% PROCESS 'includes/problem_text_en.tti' %][% END %]
+  <a name="pr[% p.code %]"></a>
+  [% text_ru(p) IF p.lang_ru %]
+  [% text_en(p) IF p.lang_en %]
   <hr>
 </div>
 [% END %]
 <script type="text/javascript" src="docs/std/whitespace.js"></script>
-<script type="text/javascript">ws_init('spaces', [[% FOREACH problems; id; ',' UNLESS loop.last; END %]])</script>
+<script type="text/javascript">ws_init('spaces', [[% FOREACH p IN problems; p.id; ',' UNLESS loop.last; END %]])</script>
 [% PROCESS 'includes/timing.tti' %]
 </body>
 </html>

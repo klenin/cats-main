@@ -43,11 +43,11 @@
 <tr><th>&#8470;</th>
 <th>[% IF input_file == '*STDIN' %]Стандартный вход[% ELSE %]Входной файл (<tt>[% input_file | html %]</tt>)[% END %]</th>
 <th>[% IF output_file == '*STDOUT' %]Стандартный выход[% ELSE %]Выходной файл (<tt>[% output_file | html %]</tt>)[% END %]</th></tr>
-[% FOREACH samples %]
+[% FOREACH s IN samples %]
 <tr>
-  <td>[% rank %]</td>
-  <td><pre><code>[% in_file %]</code></pre></td>
-  <td><pre><code>[% out_file %]</code></pre></td>
+  <td>[% s.rank %]</td>
+  <td><pre><code>[% s.in_file %]</code></pre></td>
+  <td><pre><code>[% s.out_file %]</code></pre></td>
 </tr>
 [% END %]
 </table>

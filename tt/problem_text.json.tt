@@ -1,14 +1,14 @@
 [%- WRAPPER includes/jsonp.tti -%]
 [%- USE Javascript -%]
 [
-[% FOREACH problems %]
+[% FOREACH p IN problems %]
 {
-    "id": [% id %],
-    "code": "[% code %]",
-    "title": "[% title | $Javascript %]",
-    [% IF json_data %]"data": [% json_data %],[% END %]
-    "statement": "[% statement | $Javascript %]",
-    "input_format": "[% input_format | $Javascript %]"
+    "id": [% p.id %],
+    "code": "[% p.code %]",
+    "title": "[% p.title | $Javascript %]",
+    [% IF p.json_data %]"data": [% p.json_data %],[% END %]
+    "statement": "[% p.statement | $Javascript %]",
+    "input_format": "[% p.input_format | $Javascript %]"
 }
 [% UNLESS loop.last %],[% END %][% END %]
 ]
