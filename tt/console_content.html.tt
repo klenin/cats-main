@@ -87,7 +87,7 @@
 [% END %]
 </table>
 <script>
-[% FOREACH envelopes %]
-window.open("[% href_envelope %]", '', 'width=500,height=400,location=no,menubar=no,resizable=yes,scrollbars=no,status=no,toolbar=no');
+[% FOREACH e IN envelopes %]
+window.open("[% e.href_envelope %]", '', 'width=500,height=400,location=no,menubar=no,resizable=yes,scrollbars=no,status=no,toolbar=no');
 [% END %]
 </script>

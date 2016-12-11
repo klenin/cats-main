@@ -19,11 +19,11 @@ TZNAME:VLAT
 DTSTART:19701025T030000
 RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU
 END:STANDARD
-END:VTIMEZONE[% FOREACH contests %]
+END:VTIMEZONE[% FOREACH c IN contests %]
 BEGIN:VEVENT
-UID:CATScontest[% id %]
-DTSTART:[% start_date_iso %]
-DTEND:[% finish_date_iso %]
-SUMMARY:[% contest_name %]
+UID:CATScontest[% c.id %]
+DTSTART:[% c.start_date_iso %]
+DTEND:[% c.finish_date_iso %]
+SUMMARY:[% c.contest_name %]
 END:VEVENT[% END %]
 END:VCALENDAR

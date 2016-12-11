@@ -3,22 +3,22 @@
 {
 [% IF message %]"message": "[% message | $Javascript %]"[% ELSE %]
 "contests": [
-[% FOREACH contests %]
+[% FOREACH c IN contests %]
 {
-    "id": [% id %],
-    "name": "[% contest_name | $Javascript %]",
-    "problems_url" : "[% href_problems_text | $Javascript %]",
-    "start_date": "[% start_date %]",
-    "finish_date": "[% finish_date %]",
-    "start_time": "[% start_date_iso %]",
-    "finish_time": "[% finish_date_iso %]",
-    "freeze_time": "[% freeze_date_iso %]",
-    "unfreeze_time": "[% unfreeze_date_iso %]",
-    "registration": [% IF registered_online ~%]
-    "online"[% ELSE %][% IF registered_virtual %]
+    "id": [% c.id %],
+    "name": "[% c.contest_name | $Javascript %]",
+    "problems_url" : "[% c.href_problems_text | $Javascript %]",
+    "start_date": "[% c.start_date %]",
+    "finish_date": "[% c.finish_date %]",
+    "start_time": "[% c.start_date_iso %]",
+    "finish_time": "[% c.finish_date_iso %]",
+    "freeze_time": "[% c.freeze_date_iso %]",
+    "unfreeze_time": "[% c.unfreeze_date_iso %]",
+    "registration": [% IF c.registered_online ~%]
+    "online"[% ELSE; IF c.registered_virtual ~%]
     "virtual"[% ELSE %]"none"[% END %][% END %],
-    "is_official": [% IF is_official %]1[% ELSE %]0[% END %],
-    "scoring": [% IF show_points %]"school"[% ELSE %]"acm"[% END %]
+    "is_official": [% IF c.is_official %]1[% ELSE %]0[% END %],
+    "scoring": [% IF c.show_points %]"school"[% ELSE %]"acm"[% END %]
 }
 [% UNLESS loop.last %],[% END %][% END %]
 ]
