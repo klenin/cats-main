@@ -21,18 +21,18 @@
 </div>
 [% END %]
 <table><tr valign="top">
-[% FOREACH runs %]
+[% FOREACH r IN runs %]
 <td>
-[% IF judge_log_dump %]
+[% IF r.judge_log_dump %]
   <table class="bordered">
-  <tr><td><pre>[% judge_log_dump %]</pre></td></tr>
+  <tr><td><pre>[% r.judge_log_dump %]</pre></td></tr>
   </table>
 [% ELSE %]
-  [% IF testsets.size %]
+  [% IF r.testsets.size %]
     <p>[% capt.testsets %]</p>
     <table class="bordered">
     <th>[% capt.name %]</th><th>[% capt.tests_passed %]</th><th>[% capt.points %]</th><th>[% capt.comment %]</th></tr>
-    [% FOREACH ts IN testsets %]
+    [% FOREACH ts IN r.testsets %]
     <tr [% IF ts.earned_points %] class="run_details_OK"[% END %]>
       <td>[% ts.name %]</td>
       <td align="right">[% ts.accepted_count || 0 %] / [% ts.test_count %]</td>
@@ -40,7 +40,7 @@
       <td>[% ts.comment %]</td>
     </tr>
     [% END %]
-    <tr><td colspan="2"/>[% capt.total %]<td align="right">[% total_points %]</td><td></td></tr>
+    <tr><td colspan="2"/>[% capt.total %]<td align="right">[% r.total_points %]</td><td></td></tr>
     </table>
     <br/>
   [% END %]
@@ -48,23 +48,23 @@
   <tr>
     <th>[% capt.test %]</th>
     <th>[% capt.result %]</th>
-    [% IF show_points %]
+    [% IF r.show_points %]
       <th>[% capt.points %]</th>
     [% END %]
-    [% IF show_test_resources %]
+    [% IF r.show_test_resources %]
       <th class="resource">[% capt.time %]</th>
       <th class="resource">[% capt.memory %]</th>
       <th class="resource">[% capt.disk %]</th>
     [% END %]
-    [% IF show_checker_comment %]
+    [% IF r.show_checker_comment %]
       <th class="data">[% capt.comment %]</th>
     [% END %]
-    [% IF show_test_data %]
+    [% IF r.show_test_data %]
       <th class="data test_data">[% capt.test_data %]</th>
-      [% IF has_visualizer %]<th class="test_data">[% capt.visualize %]</th>[% END %]
+      [% IF r.has_visualizer %]<th class="test_data">[% capt.visualize %]</th>[% END %]
     [% END %]
   </tr>
-  [% FOREACH rd IN run_details %]
+  [% FOREACH rd IN r.run_details %]
   <tr [% IF rd.accepted %] class="run_details_OK"[% END ~%]
    [% IF rd.wrong_answer %] class="run_details_WA"[% END ~%]
    [% IF rd.presentation_error %] class="run_details_PE"[% END ~%]
@@ -93,16 +93,16 @@
    [% IF rd.compilation_error %]Compilation error[% END ~%]
    [% IF rd.security_violation %]Security violation[% END ~%]
    </td>
-    [% IF show_points %]<td>[% rd.points %]</td>[% END %]
-    [% IF show_test_resources %]
+    [% IF r.show_points %]<td>[% rd.points %]</td>[% END %]
+    [% IF r.show_test_resources %]
       <td>[% rd.time_used %]</td>
       <td align="right">[% rd.memory_used %]</td>
       <td align="right">[% rd.disk_used %]</td>
     [% END %]
-    [% IF show_checker_comment %]<td><pre>[% rd.checker_comment | html %]</pre></td>[% END %]
-    [% IF show_test_data %]
+    [% IF r.show_checker_comment %]<td><pre>[% rd.checker_comment | html %]</pre></td>[% END %]
+    [% IF r.show_test_data %]
       <td class="test_data"><tt>[% rd.test_data | html; '&hellip;' IF rd.test_data_cut %]</tt></td>
-      [% IF has_visualizer %]
+      [% IF r.has_visualizer %]
         <td class = "test_data">
           [% FOREACH a IN rd.visualize_test_hrefs %]
             <a href="[% a.href %]">[% a.name %]</a>
@@ -112,7 +112,7 @@
     [% END %]
   </tr>
   [% END %]
-  [% IF show_points %]<tr><td colspan="2">[% capt.total %]</td><td>[% total_points %]</td></tr>[% END %]
+  [% IF r.show_points %]<tr><td colspan="2">[% capt.total %]</td><td>[% r.total_points %]</td></tr>[% END %]
   </table>
 [% END %]
 </td>
