@@ -30,7 +30,7 @@ function show_ab(a, b)
 <code>
 <table class="internal_borders">
 <tr>
-<td width="1" align="right"><pre>[% FOREACH diff_lines %][% loop.count %]
+<td width="1" align="right"><pre>[% FOREACH dl IN diff_lines; loop.count %]
 [% END %]</pre></td>
 <td style="vertical-align: top"><pre>
 [%- FOREACH dl IN diff_lines -%]

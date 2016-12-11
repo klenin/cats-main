@@ -16,7 +16,9 @@
 <form enctype="multipart/form-data" method="post">
   <input name="replace_source" type="file" class="file" size="25" />
   <select name="de_id">
-  [% FOREACH de_list %]<option value="[% de_id %]"[% IF selected %] selected="selected"[% END %]>[% de_name | html %]</option>[% END %]
+    [%- FOREACH de IN de_list %]
+    <option value="[% de.de_id %]"[% ' selected="selected"' IF de.selected %]>[% de.de_name | html %]</option>
+    [%~ END %]
   </select>
   <input type="submit" class="button" value="[% capt.replace %]" /> 
 </form>
@@ -24,11 +26,9 @@
 </td>
 </tr>
 </table>
-[% FOREACH sources_info %]
+[% FOREACH si IN sources_info %]
 <div class="bordered" style="margin: 0 10 10 0; padding: 0;">
-[% IF 0 %]<td width="1" align="right"><pre>[% FOREACH src_lines %][% loop.count %]
-[% END %]</pre></td>[% END %]
-<script type="syntaxhighlighter" class="brush: [% syntax.lower || 'plain' %];"><![CDATA[[% src %]]]></script>
+<script type="syntaxhighlighter" class="brush: [% si.syntax.lower || 'plain' %];"><![CDATA[[% si.src %]]]></script>
 </div>
 [% END %]
 

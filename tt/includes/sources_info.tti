@@ -40,10 +40,10 @@ function send_message(href)
   <input type="checkbox" name="set_judge" value="1" />[% select('judge', si.judges) %]
   <input type="submit" name="retest" value="[% capt.retest %]" class="button" />
   </form>
-[% ELSE %][% si.testsets %][% END %]</td>
+[% ELSE; si.testsets; END %]</td>
 [% END %]</tr>
 <tr><th>[% capt.status %]<sup style="font-weight: normal;">&nbsp;[<a href="docs/run_results.html">?</a>]</span></th>
-[% FOREACH sources_info %]<td>[% submit_result; "($points)" IF points %]</td>[% END %]
+[% FOREACH si IN sources_info %]<td>[% submit_result(si); " ($si.points)" IF si.points %]</td>[% END %]
 </tr>
 <tr><th>[% capt.refs %]</th>
 [% FOREACH si IN sources_info %]<td>

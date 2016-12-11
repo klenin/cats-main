@@ -26,8 +26,10 @@
 </select> 
 [% capt.on_test %]
 <select name="failed_test">
-<option />
-[% FOREACH tests %]<option value="[% test_index %]">[% test_index %][% END %]
+  <option />
+  [%- FOREACH t IN tests %]
+  <option value="[% t.test_index %]">[% t.test_index %]</option>
+  [%- END %]
 </select>
 [% capt.with_points %] <input name="points" size="3"/>
 
