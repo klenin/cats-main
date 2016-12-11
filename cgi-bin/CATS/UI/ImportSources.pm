@@ -23,24 +23,23 @@ sub import_sources_frame
         { caption => res_str(643), order_by => '5', width => '10%' },
     ]);
 
-    my $c = $dbh->prepare(qq~
+    my $c = $dbh->prepare(q~
         SELECT ps.id, ps.guid, ps.stype, de.code,
             (SELECT COUNT(*) FROM problem_sources_import psi WHERE ps.guid = psi.guid) AS ref_count,
-            ps.fname, ps.problem_id, p.title, p.contest_id
+            ps.fname, ps.problem_id, p.title, p.contest_id,
+            (SELECT CA.is_jury FROM contest_accounts CA WHERE CA.account_id = ? AND CA.contest_id = p.contest_id)
             FROM problem_sources ps INNER JOIN default_de de ON de.id = ps.de_id
             INNER JOIN problems p ON p.id = ps.problem_id
             WHERE ps.guid IS NOT NULL ~.order_by);
-    $c->execute;
+    $c->execute($uid);
 
-    my $fetch_record = sub($)
-    {
+    my $fetch_record = sub {
         my $f = $_[0]->fetchrow_hashref or return ();
         return (
             %$f,
             stype_name => $cats::source_module_names{$f->{stype}},
             href_problems => url_function('problems', sid => $sid, cid => $f->{contest_id}),
             href_source => url_f('download_import_source', psid => $f->{id}),
-            is_jury => $is_jury,
         );
     };
 
