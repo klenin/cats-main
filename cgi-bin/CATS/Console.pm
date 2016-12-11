@@ -3,15 +3,18 @@ package CATS::Console;
 use strict;
 use warnings;
 
-use CATS::Web qw(param url_param);
+use Encode qw(decode_utf8);
 use List::Util;
 
-use CATS::DB;
-use CATS::Misc qw(:all);
-use CATS::Data qw(:all);
-use CATS::Utils qw(coalesce url_function state_to_display date_to_iso);
 use CATS::Countries;
-use Encode qw(decode_utf8);
+use CATS::Data qw(:all);
+use CATS::DB;
+use CATS::Misc qw(
+    $t $cid $is_team $is_jury $is_root $uid $settings $listview_name $contest $sid
+    init_template init_listview_template url_f auto_ext res_str msg attach_listview
+);
+use CATS::Utils qw(coalesce url_function state_to_display date_to_iso);
+use CATS::Web qw(param url_param);
 
 sub send_question_to_jury
 {

@@ -1,6 +1,5 @@
 package CATS::Diff;
 
-use CATS::Misc qw(:all);
 use File::Temp;
 use Text::Balanced qw(extract_tagged extract_bracketed);
 

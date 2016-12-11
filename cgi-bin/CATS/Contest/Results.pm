@@ -9,7 +9,7 @@ use YAML::Syck ();
 
 use CATS::Web qw(param url_param);
 use CATS::DB;
-use CATS::Misc qw(:all);
+use CATS::Misc qw(init_template $t);
 use CATS::Config qw(cats_dir);
 use CATS::RankTable;
 

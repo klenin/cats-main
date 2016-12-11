@@ -37,8 +37,6 @@ BEGIN
         $contest $t $sid $cid $uid $git_author_name $git_author_email
         $is_root $is_team $is_jury $is_virtual $virtual_diff_time
         $listview_name $init_time $settings);
-
-    %EXPORT_TAGS = (all => [ @EXPORT, @EXPORT_OK ]);
 }
 
 use CATS::Template;

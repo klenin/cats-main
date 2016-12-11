@@ -34,7 +34,9 @@ use CATS::DB;
 use CATS::Config;
 use CATS::Constants;
 use CATS::BinaryFile;
-use CATS::Misc qw(:all);
+use CATS::Misc qw(
+    $is_jury $uid $sid $contest $is_virtual $t
+    res_str url_f get_anonymous_uid initialize save_settings generate_output attach_menu);
 use CATS::Utils qw(url_function);
 use CATS::Proxy;
 use CATS::Router;
