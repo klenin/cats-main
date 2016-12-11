@@ -214,7 +214,7 @@ sub selected_menu_item
     my $default = shift || '';
     my $href = shift;
 
-    my ($pf) = ($href =~ /\?f=([a-z_]+)/);
+    my ($pf) = ($href =~ /[?;]f=([a-z_]+)/);
     $pf ||= '';
     #my $q = new CGI((split('\?', $href))[1]);
 
