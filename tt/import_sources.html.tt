@@ -1,24 +1,24 @@
-[% PROCESS 'includes/menu_begin.tti' %]
+[% PROCESS includes/menu_begin.tti %]
 
 <form method=post enctype="multipart/form-data">
-[% PROCESS 'includes/listview_header.tti' %]
+[% PROCESS includes/listview_header.tti %]
 
 <table width=100% cellpadding=2 cellspacing=1 class="bordered highlight">
-[% PROCESS 'includes/listview_col_defs.tti' sel_col = is_jury %]
+[% PROCESS includes/listview_col_defs.tti sel_col = is_jury %]
 
-[% FOREACH import_sources %]
+[% FOREACH is IN import_sources %]
 <tr class="[% loop.parity() %]">
-[% IF is_jury %]<td>
-  <a href="[% href_problems %]" title="[% title %]" class="icon view"></a>
+[% IF is.is_jury %]<td>
+  <a href="[% is.href_problems %]" title="[% is.title | html %]" class="icon view"></a>
 </td>[% END %]
-<td><a href="[% href_source %]" title="[% fname | html %]">[% guid | html %] ([% fname | html %])</a></td>
-<td>[% stype_name %]</td>
-<td>[% code %]</td>
-<td>[% ref_count %]</td>
+<td><a href="[% is.href_source %]" title="[% is.fname | html %]">[% is.guid | html %] ([% is.fname | html %])</a></td>
+<td>[% is.stype_name %]</td>
+<td>[% is.code %]</td>
+<td>[% is.ref_count %]</td>
 </tr>
 [% END %]
 </table>
 
 </form>
 
-[% PROCESS 'includes/menu_end.tti' %]
+[% PROCESS includes/menu_end.tti %]

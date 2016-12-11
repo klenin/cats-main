@@ -1,20 +1,20 @@
 [%- WRAPPER includes/jsonp.tti -%]
 [%- USE Javascript -%]
 [
-[% FOREACH users -%]
+[% FOREACH u IN users -%]
 {
-"id": [% id %],
-"account_id": [% account_id %],
-"login": "[% login | $Javascript %]",
-"name": "[% team_name | $Javascript %]",
-[%- IF city || country %]
-"affiliation": { "city" : "[% city | $Javascript %]", "country" : "[% country | $Javascript %]" },
+"id": [% u.id %],
+"account_id": [% u.account_id %],
+"login": "[% u.login | $Javascript %]",
+"name": "[% u.team_name | $Javascript %]",
+[%- IF u.city || u.country %]
+"affiliation": { "city" : "[% u.city | $Javascript %]", "country" : "[% u.country | $Javascript %]" },
 [%- END %]
-"ooc": [% IF ooc %]1[% ELSE %]0[% END %],
-"remote": [% IF remote %]1[% ELSE %]0[% END %],
-"virtual": [% IF virtual %]1[% ELSE %]0[% END %],
-"jury": [% IF jury %]1[% ELSE %]0[% END %],
-"role": [% IF jury %]"jury"[% ELSIF ooc %]"out_of_contest"[% ELSIF virtual %]"vitrual"[% ELSE %]"in_contest"[% END %]
+"ooc": [% IF u.ooc %]1[% ELSE %]0[% END %],
+"remote": [% IF u.remote %]1[% ELSE %]0[% END %],
+"virtual": [% IF u.virtual %]1[% ELSE %]0[% END %],
+"jury": [% IF u.jury %]1[% ELSE %]0[% END %],
+"role": [% IF u.jury %]"jury"[% ELSIF u.ooc %]"out_of_contest"[% ELSIF u.virtual %]"vitrual"[% ELSE %]"in_contest"[% END %]
 }
 [%- ',' UNLESS loop.last %]
 [% END -%]

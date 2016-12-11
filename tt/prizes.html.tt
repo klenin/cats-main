@@ -1,4 +1,4 @@
-[% PROCESS 'includes/menu_begin.tti' %]
+[% PROCESS includes/menu_begin.tti %]
 
 <script>
 function delete_prize(href, name)
@@ -11,23 +11,23 @@ function delete_prize(href, name)
 </script>
 
 <form method=post enctype='multipart/form-data'>
-[% PROCESS 'includes/listview_header.tti' %]
+[% PROCESS includes/listview_header.tti %]
 
 <table width=100% cellpadding=2 cellspacing=1 class="bordered highlight">
-[% PROCESS 'includes/listview_col_defs.tti' %]
+[% PROCESS includes/listview_col_defs.tti %]
 
-[% FOREACH prizes %]
+[% FOREACH p IN prizes %]
 <tr class="[% loop.parity() %]">
 <td>
-  <a href="javascript:delete_prize('[% href_delete %]', '[% name | html %]');" class="icon delete"></a>
-  <a href="[% href_edit %]" class="icon edit"></a>
-  <a href="[% href_rank_table %]">[% name | html %]</a>
+  <a href="javascript:delete_prize('[% p.href_delete %]', '[% p.name | html %]');" class="icon delete"></a>
+  <a href="[% p.href_edit %]" class="icon edit"></a>
+  <a href="[% p.href_rank_table %]">[% p.name | html %]</a>
 </td>
-<td>[% clist | html %]</td>
-<td>[% prizes | html %]</td>
+<td>[% p.clist | html %]</td>
+<td>[% p.prizes | html %]</td>
 </tr>
 [% END %]
 </table>
 </form>
 
-[% PROCESS 'includes/menu_end.tti' %]
+[% PROCESS includes/menu_end.tti %]
