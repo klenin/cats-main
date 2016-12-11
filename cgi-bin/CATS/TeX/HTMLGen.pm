@@ -9,9 +9,8 @@ use HTML::AsSubs;
 #use CATS::TeX::TeXData;
 use CATS::TeX::HTMLUtil;
 
-use Exporter;
-our @ISA = ("Exporter");
-our @EXPORT = qw/&gen_html/;
+use Exporter qw(import);
+our @EXPORT = qw(gen_html);
 
 # class: Node
 

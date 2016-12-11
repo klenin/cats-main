@@ -6,8 +6,8 @@ use strict;
 
 use CATS::TeX::TeXData;
 use Text::TeX;
-use Exporter;
-our @ISA = qw(Exporter);
+
+use Exporter qw(import);
 our @EXPORT = qw(parse); 
 
 {

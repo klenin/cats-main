@@ -2,34 +2,32 @@ package CATS::Web;
 
 use warnings;
 use strict;
-use Apache2::Request;
-use Apache2::Upload;
+
 use Apache2::Const -compile => qw(OK REDIRECT NOT_FOUND);
 use Apache2::Cookie ();
+use Apache2::Request;
+use Apache2::Upload;
+
 use CATS::Utils qw(encodings);
 
 use 5.010;
 
-BEGIN {
-    require Exporter;
-    our @ISA = qw(Exporter);
-    our @EXPORT_OK = qw(
-        init_request
-        url_param
-        param
-        param_on
-        encoding_param
-        redirect
-        headers
-        get_return_code
-        save_uploaded_file
-        cookie
-        content_type
-        upload_source
-        restore_parameters
-    );
-    our %EXPORT_TAGS = (all => [ @EXPORT_OK ]);
-}
+use Exporter qw(import);
+our @EXPORT_OK = qw(
+    init_request
+    url_param
+    param
+    param_on
+    encoding_param
+    redirect
+    headers
+    get_return_code
+    save_uploaded_file
+    cookie
+    content_type
+    upload_source
+    restore_parameters
+);
 
 my $r;
 my $jar;

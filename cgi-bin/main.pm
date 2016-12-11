@@ -20,11 +20,8 @@ BEGIN {
     $cats_problem_lib_dir = "$cats_lib_dir/cats-problem";
     $Data::Dumper::Terse = 1;
     $Data::Dumper::Indent = 1;
-    require Exporter;
-    our @ISA = qw(Exporter);
-    our @EXPORT_OK = qw(handler);
-    our %EXPORT_TAGS = (all => [ @EXPORT_OK ]);
 }
+
 use lib $cats_lib_dir;
 use lib $cats_problem_lib_dir;
 

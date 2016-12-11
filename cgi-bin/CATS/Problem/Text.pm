@@ -3,26 +3,23 @@ package CATS::Problem::Text;
 use strict;
 use warnings;
 
-BEGIN {
-    use Exporter;
+use Exporter qw(import);
 
-    our @ISA = qw(Exporter);
-    our @EXPORT = qw(
-        ensure_problem_hash
-        problem_text_frame
-    );
-}
+our @EXPORT = qw(
+    ensure_problem_hash
+    problem_text_frame
+);
 
-use CATS::Web qw(param url_param);
 use Encode;
-use XML::Parser::Expat;
 use Text::Aspell;
+use XML::Parser::Expat;
 
-use CATS::DB;
 use CATS::Config qw(cats_dir);
+use CATS::DB;
 use CATS::Misc qw($cid $contest $is_jury $t $uid auto_ext init_template res_str);
 use CATS::StaticPages;
 use CATS::TeX::Lite;
+use CATS::Web qw(param url_param);
 
 my ($current_pid, $html_code, $spellchecker, $text_span);
 

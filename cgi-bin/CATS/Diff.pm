@@ -3,12 +3,10 @@ package CATS::Diff;
 use File::Temp;
 use Text::Balanced qw(extract_tagged extract_bracketed);
 
-BEGIN
-{
-  use Exporter;
+use Exporter qw(import);
 
-  @ISA = qw ( Exporter );
-  @EXPORT = qw (check_diff 
+our @EXPORT = qw (
+    check_diff
 		diff_table
 		diff
 		prepare_src
@@ -22,8 +20,7 @@ BEGIN
 		compare_subs
 		cmp_advanced
 		);
-  %EXPORT_TAGS = ( all => [ @EXPORT, @EXPORT_OK ] );
-}
+our %EXPORT_TAGS = ( all => [ @EXPORT, @EXPORT_OK ] );
 
 our @keywords_pas = (
     "begin",

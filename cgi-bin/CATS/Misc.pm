@@ -3,36 +3,31 @@ package CATS::Misc;
 use strict;
 use warnings;
 
-BEGIN
-{
-    use Exporter;
+use Exporter qw(import);
 
-    no strict;
-    @ISA = qw(Exporter);
-    @EXPORT = qw(
-        get_anonymous_uid
-        initialize
-        auto_ext
-        init_template
-        generate_output
-        http_header
-        msg
-        url_f
-        templates_path
-        downloads_path
-        downloads_url
-        res_str
-        attach_menu
-        save_settings
-        references_menu
-        problem_status_names
-    );
+our @EXPORT = qw(
+    get_anonymous_uid
+    initialize
+    auto_ext
+    init_template
+    generate_output
+    http_header
+    msg
+    url_f
+    templates_path
+    downloads_path
+    downloads_url
+    res_str
+    attach_menu
+    save_settings
+    references_menu
+    problem_status_names
+);
 
-    @EXPORT_OK = qw(
-        $contest $t $sid $cid $uid $git_author_name $git_author_email
-        $is_root $is_team $is_jury $is_virtual $virtual_diff_time
-        $listview_name $init_time $settings);
-}
+our @EXPORT_OK = qw(
+    $contest $t $sid $cid $uid $git_author_name $git_author_email
+    $is_root $is_team $is_jury $is_virtual $virtual_diff_time
+    $listview_name $init_time $settings);
 
 #use CGI::Fast( ':standard' );
 #use CGI::Util qw(rearrange unescape escape);
