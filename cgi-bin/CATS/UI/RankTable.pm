@@ -6,7 +6,7 @@ use warnings;
 use CATS::DB;
 use CATS::Misc qw(
     $t $is_jury $is_root $is_team $sid $cid $uid $contest $is_virtual $settings
-    init_template msg res_str url_f auto_ext references_menu);
+    init_template msg res_str url_f);
 use CATS::RankTable;
 use CATS::Web qw(param url_param);
 

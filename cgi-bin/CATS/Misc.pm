@@ -31,15 +31,14 @@ our @EXPORT_OK = qw(
 
 #use CGI::Fast( ':standard' );
 #use CGI::Util qw(rearrange unescape escape);
-use MIME::Base64;
-use Storable;
-
 #use FCGI;
+
 use Carp qw(croak);
-use SQL::Abstract;
-use Digest::MD5;
-use Time::HiRes;
 use Encode();
+use MIME::Base64;
+use SQL::Abstract;
+use Storable;
+use Time::HiRes;
 
 use CATS::Config qw(cats_dir);
 use CATS::Constants;
@@ -50,10 +49,10 @@ use CATS::Template;
 use CATS::Utils qw();
 use CATS::Web qw(param url_param headers content_type cookie);
 
-use vars qw(
-    $contest $t $sid $cid $uid $team_name $dbi_error $git_author_name $git_author_email
-    $is_root $is_team $is_jury $can_create_contests $is_virtual $virtual_diff_time
-    $listview_name $col_defs $request_start_time $init_time $settings
+our (
+    $contest, $t, $sid, $cid, $uid, $team_name, $dbi_error, $git_author_name, $git_author_email,
+    $is_root, $is_team, $is_jury, $can_create_contests, $is_virtual, $virtual_diff_time,
+    $listview_name, $request_start_time, $init_time, $settings
 );
 
 my ($messages, $http_mime_type, %extra_headers, $enc_settings);
