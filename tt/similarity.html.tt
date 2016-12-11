@@ -1,8 +1,10 @@
-[% PROCESS 'includes/menu_begin.tti' %]
+[% PROCESS includes/menu_begin.tti %]
 <form method="post" enctype="multipart/form-data">
 <label for="pid">[% capt.problem %]:</label>
 <select name="pid"><option/>
-  [% FOREACH problems %]<option value="[% id %]"[% IF selected %] selected="selected"[% END %]>[% code %] - [% title %]</option>[% END %]
+  [% FOREACH p IN problems %]
+  <option value="[% p.id %]"[% ' selected="selected"' IF p.selected %]>[% p.code %] - [% p.title %]</option>
+  [% END %]
 </select>
 <label for="threshold">[% capt.threshold %], %:</label><input type="text" name="threshold" value="[% threshold %]"/>
 <input type="submit" value="[% capt.compare %]" class="button"/>
@@ -13,16 +15,16 @@
 <label><input type="checkbox" name="collapse_idents" value="1"[% IF collapse_idents %] checked="checked"[% END %]/> [% capt.collapse_idents %]</label>
 </form>
 <table class="bordered highlight">
-[% FOREACH similar %]
-  <tr><td align="right"><a href="[% href_diff %]" target="_blank">[% score %]</td>
-  <td>[% FOREACH n1 %][% team_name | html %][% IF city %] ([% city %])[% END %][% END %]</td>
-  [% IF n2 %]<td>[% FOREACH n2 %][% team_name | html %][% IF city %] ([% city %])[% END %][% END %]</td>[% END %]
-  <td><a href="[% href_console %]" target="_blank">[% capt.console %]</td>
+[% FOREACH s IN similar %]
+  <tr><td align="right"><a href="[% s.href_diff %]" target="_blank">[% s.score %]</td>
+  <td>[% FOREACH t1 IN s.n1; t1.team_name | html; " ($t1.city)" IF t1.city; END %]</td>
+  [% IF s.n2 %]<td>[% FOREACH t2 IN s.n2; t2.team_name | html; " ($t2.city)" IF t2.city; END %]</td>[% END %]
+  <td><a href="[% s.href_console %]" target="_blank">[% capt.console %]</td>
   </tr>
 [% END %]
 </table>
 [% IF equiv_lists %]
 [% capt.equivalency_groups %]:<br/>
-[% FOREACH equiv_lists %] ([% eq %]) <br/>[% END %]
+[% FOREACH el IN equiv_lists %] ([% el.eq %]) <br/>[% END %]
 [% END %]
-[% PROCESS 'includes/menu_end.tti' %]
+[% PROCESS includes/menu_end.tti %]
