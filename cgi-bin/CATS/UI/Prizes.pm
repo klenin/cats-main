@@ -3,12 +3,12 @@ package CATS::UI::Prizes;
 use strict;
 use warnings;
 
-use CATS::Web qw(param url_param);
 use CATS::DB;
+use CATS::ListView qw(init_listview_template order_by define_columns attach_listview);
 use CATS::Misc qw(
     $t $is_jury $is_root $is_team $sid $cid $uid $contest $is_virtual $settings
-    init_template init_listview_template msg res_str url_f auto_ext
-    order_by define_columns attach_listview references_menu);
+    init_template msg res_str url_f auto_ext references_menu);
+use CATS::Web qw(param url_param);
 
 sub sanitize_clist { sort { $a <=> $b } grep /^\d+$/, @_ }
 

@@ -3,12 +3,12 @@ package CATS::UI::Compilers;
 use strict;
 use warnings;
 
-use CATS::Web qw(param param_on url_param);
 use CATS::DB;
+use CATS::ListView qw(init_listview_template order_by define_columns attach_listview);
 use CATS::Misc qw(
     $t $is_jury $is_root
-    init_template init_listview_template msg res_str url_f
-    order_by define_columns attach_listview references_menu);
+    init_template msg res_str url_f references_menu);
+use CATS::Web qw(param param_on url_param);
 
 sub fields() {qw(code description file_ext default_file_ext in_contests memory_handicap syntax)}
 

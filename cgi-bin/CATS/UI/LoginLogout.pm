@@ -3,15 +3,14 @@ package CATS::UI::LoginLogout;
 use strict;
 use warnings;
 
-use CATS::Web qw(param url_param);
 use CATS::DB;
 use CATS::Constants;
 use CATS::Misc qw(
     $t $is_jury $is_root $is_team $sid $cid $uid $contest $is_virtual $settings
-    init_template init_listview_template msg res_str url_f auto_ext);
+    init_template msg res_str url_f auto_ext);
 use CATS::Utils qw(url_function);
 use CATS::User;
-use CATS::Web qw(redirect);
+use CATS::Web qw(param redirect url_param);
 
 my $check_password;
 BEGIN {

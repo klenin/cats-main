@@ -5,10 +5,10 @@ use warnings;
 
 use List::Util qw(max);
 
-use CATS::Web qw(param);
+use CATS::Constants;
 use CATS::DB;
 use CATS::Misc qw(init_template $t $is_jury $cid $contest url_f);
-use CATS::Constants;
+use CATS::Web qw(param);
 
 sub greedy_cliques
 {

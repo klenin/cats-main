@@ -3,10 +3,10 @@ package CATS::UI::Messages;
 use strict;
 use warnings;
 
-use CATS::Web qw(param url_param);
 use CATS::DB;
 use CATS::Misc qw($t $is_jury $is_team $uid init_template res_str);
 use CATS::Utils qw(state_to_display);
+use CATS::Web qw(param url_param);
 
 
 sub send_message_box_frame

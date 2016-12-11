@@ -4,19 +4,19 @@ use strict;
 use warnings;
 
 use Data::Dumper;
-use CATS::Web qw(param param_on url_param);
-use CATS::DB;
+
 use CATS::Constants;
+use CATS::Countries;
+use CATS::Data qw(:all);
+use CATS::DB;
+use CATS::ListView qw(init_listview_template order_by define_columns attach_listview);
 use CATS::Misc qw(
     $t $is_jury $is_root $is_team $sid $cid $uid $contest $is_virtual $settings
-    init_template init_listview_template msg res_str url_f auto_ext
-    order_by define_columns attach_listview);
-use CATS::Utils qw(url_function);
-use CATS::Web qw(redirect);
-use CATS::Data qw(:all);
-use CATS::User;
+    init_template msg res_str url_f auto_ext);
 use CATS::RankTable;
-use CATS::Countries;
+use CATS::User;
+use CATS::Utils qw(url_function);
+use CATS::Web qw(param param_on redirect url_param);
 
 my $hash_password;
 BEGIN {

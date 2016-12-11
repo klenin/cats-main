@@ -9,9 +9,10 @@ use List::Util;
 use CATS::Countries;
 use CATS::Data qw(:all);
 use CATS::DB;
+use CATS::ListView qw(init_listview_template attach_listview);
 use CATS::Misc qw(
     $t $cid $is_team $is_jury $is_root $uid $settings $listview_name $contest $sid
-    init_template init_listview_template url_f auto_ext res_str msg attach_listview
+    init_template url_f auto_ext res_str msg
 );
 use CATS::Utils qw(coalesce url_function state_to_display date_to_iso);
 use CATS::Web qw(param url_param);
