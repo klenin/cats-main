@@ -286,8 +286,8 @@ sub init_user
     $team_name = undef;
     $git_author_name = undef;
     $git_author_email = undef;
-    my $bad_sid;
-    if ($sid ne '' && length $sid <= 30) {
+    my $bad_sid = length $sid > 30;
+    if ($sid ne '' && !$bad_sid) {
         ($uid, $team_name, my $srole, my $last_ip, my $locked, $git_author_name, $git_author_email, $enc_settings) = $dbh->selectrow_array(q~
             SELECT id, team_name, srole, last_ip, locked, git_author_name, git_author_email, settings FROM accounts WHERE sid = ?~, undef,
             $sid);
