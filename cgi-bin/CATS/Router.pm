@@ -82,6 +82,7 @@ sub main_routes() {
 sub api_judge_routes() {
     {
         get_judge_id => \&CATS::ApiJudge::get_judge_id,
+        api_judge_update_state => \&CATS::ApiJudge::update_state,
     }
 }
 
