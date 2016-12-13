@@ -12,7 +12,7 @@
 </canvas>
 
 [% FOREACH script IN import_scripts %]
-  <script type="text/javascript" src="[% script | $Javascript %]"></script>
+  <script type="text/javascript" src="[% script | url %]"></script>
 [% END %]
 
 </body>
