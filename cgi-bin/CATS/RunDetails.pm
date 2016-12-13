@@ -288,7 +288,7 @@ sub get_sources_info {
     };
     $result = [ grep {
         ($_->{is_jury} = $is_jury_cached->($_->{contest_id})) ||
-        ($_->{account_id} == $uid || 0) } @$result
+        ($_->{account_id} == ($uid || 0)) } @$result
     ];
 
     my $official = $p{get_source} && CATS::Contest::current_official;
