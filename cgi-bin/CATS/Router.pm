@@ -5,6 +5,7 @@ use warnings;
 
 use CATS::Web qw(url_param param);
 
+use CATS::ApiJudge;
 use CATS::Console;
 use CATS::RunDetails;
 use CATS::Problem::Text;
@@ -79,12 +80,18 @@ sub main_routes() {
     }
 }
 
+sub api_judge_routes() {
+    {
+        get_judge_id => \&CATS::ApiJudge::get_judge_id,
+    }
+}
+
 sub parse_uri {
     CATS::Web::get_uri =~ m~/cats/(|main.pl)$~;
 }
 
 sub route {
-    $routes = main_routes;
+    $routes = { %{(main_routes)}, %{(api_judge_routes)} };
     $function = url_param('f') || '';
     my $route = $routes->{$function} || \&CATS::UI::About::about_frame;
     my $fn = $route;
