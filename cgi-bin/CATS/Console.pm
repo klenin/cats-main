@@ -12,7 +12,7 @@ use CATS::DB;
 use CATS::ListView qw(init_listview_template attach_listview);
 use CATS::Misc qw(
     $t $cid $is_team $is_jury $is_root $uid $settings $listview_name $contest $sid
-    init_template url_f auto_ext res_str msg
+    get_anonymous_uid init_template url_f auto_ext res_str msg
 );
 use CATS::Utils qw(coalesce url_function state_to_display date_to_iso);
 use CATS::Web qw(param url_param);
