@@ -7,9 +7,9 @@ use CATS::Web qw(url_param param);
 
 use CATS::ApiJudge;
 use CATS::Console;
-use CATS::RunDetails;
-use CATS::Problem::Text;
 use CATS::Contest::Results;
+use CATS::Problem::Text;
+use CATS::RunDetails;
 
 use CATS::UI::About;
 use CATS::UI::Prizes;
@@ -25,7 +25,6 @@ use CATS::UI::ImportSources;
 use CATS::UI::LoginLogout;
 use CATS::UI::RankTable;
 
-my $routes;
 my $function;
 
 my $int = qr/\d+/;
@@ -91,9 +90,11 @@ sub parse_uri {
 }
 
 sub route {
-    $routes = { %{(main_routes)}, %{(api_judge_routes)} };
     $function = url_param('f') || '';
-    my $route = $routes->{$function} || \&CATS::UI::About::about_frame;
+    my $route =
+        main_routes->{$function} ||
+        api_judge_routes->{$function} ||
+        \&CATS::UI::About::about_frame;
     my $fn = $route;
     my $p = {};
     if (ref $route eq 'ARRAY') {
