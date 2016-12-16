@@ -1,14 +1,4 @@
 
-CREATE TABLE judges (
-    id               INTEGER NOT NULL PRIMARY KEY,
-    account_id       INTEGER UNIQUE REFERENCES accounts(id) ON DELETE SET NULL,
-    nick             VARCHAR(32) NOT NULL,
-    lock_counter     INTEGER,
-    is_alive         INTEGER DEFAULT 0 CHECK (is_alive IN (0, 1)),
-    alive_date       TIMESTAMP
-);
-
-
 CREATE TABLE default_de (
     id          INTEGER NOT NULL PRIMARY KEY,
     code        INTEGER NOT NULL UNIQUE,
@@ -45,6 +35,15 @@ CREATE TABLE accounts (
     city        VARCHAR(200)
 );
 CREATE INDEX accounts_sid_idx ON accounts(sid);
+
+CREATE TABLE judges (
+    id               INTEGER NOT NULL PRIMARY KEY,
+    account_id       INTEGER UNIQUE REFERENCES accounts(id) ON DELETE SET NULL,
+    nick             VARCHAR(32) NOT NULL,
+    lock_counter     INTEGER,
+    is_alive         INTEGER DEFAULT 0 CHECK (is_alive IN (0, 1)),
+    alive_date       TIMESTAMP
+);
 
 CREATE TABLE contests (
     id            INTEGER NOT NULL PRIMARY KEY,
