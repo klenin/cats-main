@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use CATS::DB;
+use CATS::IP;
 use CATS::ListView qw(init_listview_template order_by define_columns attach_listview);
 use CATS::Misc qw(
     $t $is_jury $is_root
@@ -111,7 +112,7 @@ sub judges_frame
             jid => $jid,
             judge_name => $judge_name,
             account_name => $account_name,
-            last_ip => $last_ip,
+            last_ip => CATS::IP::filter_ip($last_ip),
             locked => $lock_counter,
             is_alive => $is_alive,
             alive_date => $alive_date,
