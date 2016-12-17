@@ -10,18 +10,19 @@ use CATS::Config;
 sub filter_ip
 {
     my ($ip) = @_;
-    defined $ip or return;
+    defined $ip or return undef;
     for ($ip)
     {
         #s/195.209.254.222/pin/;
         #s/195.209.254.4/www/;
         #s/195.209.254.3/proxy/;
-        s/77.234.208.5/dvgu/;
-        s/77.234.208.4/proxy/;
-        s/192.168.9.5/dvgu/;
-        s/10.0.0.5/nato/;
+        #s/77.234.208.5/dvgu/;
+        #s/77.234.208.4/proxy/;
+        #s/192.168.9.5/dvgu/;
+        #s/10.0.0.5/nato/;
+        s/10.101.1.135/www/;
     }
-    return $ip;
+    $ip;
 }
 
 
