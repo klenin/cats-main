@@ -65,7 +65,7 @@ sub contests_new_save
     my $new_cid = new_id;
     # free_registration => closed
     $p->{free_registration} = !$p->{free_registration};
-    $dbh->do(qq~
+    eval { $dbh->do(q~
         INSERT INTO contests (
             id, title, start_date, freeze_date, finish_date, defreeze_date, rules, req_selection, max_reqs,
             ctype,
@@ -81,10 +81,10 @@ sub contests_new_save
         {},
         $new_cid, @$p{contest_string_params()},
         @$p{contest_checkbox_params()}
-    );
+    ); 1; } or return msg(1026, $@);
 
     # Automatically register all admins as jury.
-    my $root_accounts = $dbh->selectcol_arrayref(qq~
+    my $root_accounts = $dbh->selectcol_arrayref(q~
         SELECT id FROM accounts WHERE srole = ?~, undef,
         $cats::srole_root);
     push @$root_accounts, $uid unless $is_root; # User with contests_creator role.

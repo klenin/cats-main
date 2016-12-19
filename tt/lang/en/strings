@@ -120,7 +120,7 @@
 023 "Ошибка при удалении задачи."
 024 "Линк на задачу был успешно удален."
 025 "Ошибка при удалении линка на задачу."
-026 "Не удается создать чемпионат."
+1026 "Unable to create contest: '%s'."
 1027 "Contest name must be 1 to 100 characters long."
 1028 "Contest '%s' created."
 1029 "Settings cleared for team '%s'."
