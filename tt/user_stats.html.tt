@@ -9,6 +9,7 @@
   [<a href="[% href_whois %]" alt="[% last_ip %]" title="[% last_ip %]">[% last_ip_short %]</a>]
 </td></tr>
 <tr><td>[% capt.problems %]:</td><td>[<a href="[% href_all_problems %]">[% capt.all %]</a>] [<a href="[% href_solved_problems %]">[% capt.solved %]</a>]</td></tr>
+<tr><td>[% capt.envelopes %]:</td><td>[% envelopes %]</td></tr>
 [% END %]
 </table>
 

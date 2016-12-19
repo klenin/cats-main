@@ -490,11 +490,14 @@ sub user_stats_frame
 {
     init_template('user_stats.html.tt');
     my $uid = param('uid') or return;
+    my $envelopes_sql = $is_root ?
+        ', (SELECT COUNT(*) FROM reqs R WHERE R.account_id = A.id AND R.received = 0) AS envelopes' : '';
+    my $u = $dbh->selectrow_hashref(qq~
+        SELECT A.*, last_login AS last_login_date$envelopes_sql
+        FROM accounts A WHERE A.id = ?~, { Slice => {} },
+        $uid) or return;
     my $hidden_cond = $is_root ? '' :
         'AND C.is_hidden = 0 AND (CA.is_hidden = 0 OR CA.is_hidden IS NULL) AND C.defreeze_date < CURRENT_TIMESTAMP';
-    my $u = $dbh->selectrow_hashref(q~
-        SELECT A.*, last_login AS last_login_date
-        FROM accounts A WHERE A.id = ?~, { Slice => {} }, $uid) or return;
     my $contests = $dbh->selectall_arrayref(qq~
         SELECT C.id, C.title, CA.id AS caid, CA.is_jury, C.start_date + CA.diff_time AS start_date,
             (SELECT COUNT(DISTINCT R.problem_id) FROM reqs R
