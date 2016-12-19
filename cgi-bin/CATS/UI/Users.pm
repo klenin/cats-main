@@ -107,7 +107,7 @@ sub users_import_frame
         my $u = CATS::User->new;
         @$u{qw(team_name login password1 city)} = split "\t", $line;
         my $r = eval {
-	    $u->{password1} = $hash_password->($u->{password1});
+            $u->{password1} = $hash_password->($u->{password1});
             $u->insert($contest->{id}, is_ooc => 0, commit => 0); 'ok'
         } || $@;
         push @report, $u->{team_name} . "-- $r";
@@ -166,7 +166,10 @@ sub display_settings
 sub settings_frame
 {
     init_template('settings.html.tt');
-    $settings = {} if defined param('clear') && $is_team;
+    if(defined param('clear') && $is_team) {
+        $settings = {};
+        msg(1029, $CATS::Misc::team_name);
+    }
     settings_save if defined param('edit_save') && $is_team;
 
     $uid or return;
@@ -510,9 +513,20 @@ sub user_settings_frame
     init_template('user_settings.html.tt');
     $is_root or return;
     my $user_id = param('uid') or return;
+
+    my $cleared;
+    if (param('clear')) {
+        $cleared = $dbh->do(q~
+            UPDATE accounts SET settings = NULL WHERE id = ?~, undef,
+            $user_id
+        ) && $dbh->commit;
+    }
+
     my ($team_name, $user_settings) = $dbh->selectrow_array(q~
         SELECT team_name, settings FROM accounts WHERE id = ?~, undef,
         $user_id);
+
+    msg(1029, $team_name) if $cleared;
     display_settings(thaw($user_settings));
     $t->param(
         user_submenu('user_settings', $user_id),
