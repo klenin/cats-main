@@ -61,6 +61,7 @@ sub users_edit_frame
     my $u = CATS::User->new->load($id, [ 'locked' ]) or return;
     $t->param(
         user_submenu('edit', $id),
+        title_suffix => $u->{team_name},
         %$u, id => $id, countries => \@CATS::Countries::countries, is_root => $is_root,
         href_action => url_f('users'),
         href_impersonate => url_f('users', impersonate => $id));
@@ -514,8 +515,9 @@ sub user_settings_frame
         $user_id);
     display_settings(thaw($user_settings));
     $t->param(
-        team_name => $team_name,
         user_submenu('user_settings', $user_id),
+        team_name => $team_name,
+        title_suffix => $team_name,
     );
 }
 
