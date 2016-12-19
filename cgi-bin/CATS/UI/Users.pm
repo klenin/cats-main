@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use Data::Dumper;
-use Storable qw(thaw);
+use Storable qw(freeze thaw);
 
 use CATS::Constants;
 use CATS::Countries;
@@ -58,7 +58,7 @@ sub users_edit_frame
     init_template('users_edit.html.tt');
 
     my $id = url_param('edit') or return;
-    my $u = CATS::User->new->load($id, [ 'locked' ]) or return;
+    my $u = CATS::User->new->load($id, [ qw(locked settings) ]) or return;
     $t->param(
         user_submenu('edit', $id),
         title_suffix => $u->{team_name},
@@ -76,6 +76,11 @@ sub prepare_password {
     delete @$u{qw(password1 password2)};
 }
 
+sub set_or_delete {
+    my ($h, $k, $v) = @_;
+    $v ? $h->{$k} = 1 : delete $_[0]->{$k};
+}
+
 sub users_edit_save
 {
     my $u = CATS::User->new->parse_params;
@@ -83,6 +88,7 @@ sub users_edit_save
     # can add any team to his contest.
     my $set_password = param_on('set_password') && $is_root;
     my $id = param('id');
+    my $old_user = $id ? CATS::User->new->load($id, [ qw(settings) ]) : undef;
 
     $u->validate_params(
         validate_password => $set_password, id => $id,
@@ -90,7 +96,16 @@ sub users_edit_save
         allow_official_rename => $is_root)
         or return;
     prepare_password($u, $set_password);
+
     $u->{locked} = param('locked') ? 1 : 0 if $is_root;
+
+    my $hide_envelopes = param_on('settings.hide_envelopes') || 0;
+    if ($hide_envelopes != ($old_user->{settings}->{hide_envelopes} || 0)) {
+        my $s = $old_user->{settings};
+        set_or_delete($s, 'hide_envelopes', $hide_envelopes);
+        $u->{settings} = freeze($s);
+    }
+
     $dbh->do(_u $sql->update('accounts', { %$u }, { id => $id }));
     $dbh->commit;
 }
@@ -140,6 +155,7 @@ sub settings_save
 
     $u->validate_params(validate_password => $set_password, id => $uid) or return;
     prepare_password($u, $set_password);
+    set_or_delete($settings, 'hide_envelopes', param_on('settings.hide_envelopes'));
     $dbh->do(_u $sql->update('accounts', { %$u }, { id => $uid }));
     $dbh->commit;
 }
@@ -155,12 +171,14 @@ sub apply_rec
 sub display_settings
 {
     my ($s) = @_;
+    $t->param(settings => $s);
+    $is_root or return;
     # Data::Dumper escapes UTF-8 characters into \x{...} sequences.
     # Work around by dumping encoded strings, then decoding the result.
     my $d = Data::Dumper->new([ apply_rec($s, \&Encode::encode_utf8) ]);
     $d->Quotekeys(0);
     $d->Sortkeys(1);
-    $t->param(settings => Encode::decode_utf8($d->Dump));
+    $t->param(settings_dump => Encode::decode_utf8($d->Dump));
 }
 
 sub settings_frame
@@ -184,7 +202,7 @@ sub settings_frame
         is_root => $is_root,
         is_some_jury => $is_some_jury,
         %$u);
-    display_settings($settings) if $is_root;
+    display_settings($settings);
 }
 
 sub users_send_message

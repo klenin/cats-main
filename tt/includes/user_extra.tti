@@ -16,5 +16,6 @@
   fields.push('git_author_name', 'git_author_email') IF is_some_jury || git_author_name || git_author_email;
   FOREACH f IN fields; input_tr(f); END
 %]
-
+  <tr><td>[% capt.hide_envelopes %]</td>
+  <td>[% checkbox('settings.hide_envelopes', settings.hide_envelopes) %]</td></tr>
 </table>

@@ -9,5 +9,6 @@
     home_page => 'Home page',
     git_author_name => "Git author's name",
     git_author_email => "Git author's e-mail",
+    hide_envelopes => 'Hide envelopes',
   })
 %]

@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use Encode;
+use Storable;
 
 use CATS::Web qw(param);
 use CATS::Misc qw(init_template msg url_f $is_root);
@@ -41,6 +42,7 @@ sub load
         $id
     ) or return;
     $self->{country} ||= $CATS::Countries::countries[0]->{id};
+    $self->{settings} = Storable::thaw($self->{settings}) if $self->{settings};
     $_->{selected} = $_->{id} eq $self->{country} for @CATS::Countries::countries;
     $self;
 }

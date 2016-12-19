@@ -3,7 +3,7 @@
 
 <p>[% capt.name %]: [% team_name %]</p>
 <p>[% capt.settings %]
-[% IF settings %]<div><pre>[% settings %]</pre></div>[% END %]
+[% IF settings_dump %]<div><pre>[% settings_dump %]</pre></div>[% END %]
 </p>
 
 <form method="post" enctype="multipart/form-data">

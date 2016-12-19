@@ -11,6 +11,6 @@
 </form>
 
 [% IF langs; '<p>'; capt.change_language; ': '; FOR l IN langs; href(l.href, l.name.upper); ' '; END; '</p>'; END %]
-[% IF settings %]<div><pre>[% settings %]</pre></div>[% END %]
+[% IF settings_dump %]<div><pre>[% settings_dump %]</pre></div>[% END %]
 
 [% PROCESS 'includes/menu_end.tti' %]
