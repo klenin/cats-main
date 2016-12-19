@@ -81,6 +81,8 @@ sub set_or_delete {
     $v ? $h->{$k} = 1 : delete $_[0]->{$k};
 }
 
+my @editable_settings = qw(hide_envelopes display_input);
+
 sub users_edit_save
 {
     my $u = CATS::User->new->parse_params;
@@ -99,12 +101,14 @@ sub users_edit_save
 
     $u->{locked} = param('locked') ? 1 : 0 if $is_root;
 
-    my $hide_envelopes = param_on('settings.hide_envelopes') || 0;
-    if ($hide_envelopes != ($old_user->{settings}->{hide_envelopes} || 0)) {
-        my $s = $old_user->{settings};
-        set_or_delete($s, 'hide_envelopes', $hide_envelopes);
-        $u->{settings} = freeze($s);
+    my $settings_changed;
+    for my $n (@editable_settings) {
+        my $new_value = param_on("settings.$n") || 0;
+        $new_value != ($old_user->{settings}->{$n} || 0) or next;
+        set_or_delete($old_user->{settings}, $n, $new_value);
+        $settings_changed = 1;
     }
+    $u->{settings} = freeze($old_user->{settings}) if $settings_changed;
 
     $dbh->do(_u $sql->update('accounts', { %$u }, { id => $id }));
     $dbh->commit;
@@ -155,7 +159,7 @@ sub profile_save
 
     $u->validate_params(validate_password => $set_password, id => $uid) or return;
     prepare_password($u, $set_password);
-    set_or_delete($settings, 'hide_envelopes', param_on('settings.hide_envelopes'));
+    set_or_delete($settings, $_, param_on("settings.$_")) for @editable_settings;
     $dbh->do(_u $sql->update('accounts', { %$u }, { id => $uid }));
     $dbh->commit;
 }

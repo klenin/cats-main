@@ -10,5 +10,6 @@
     git_author_name => 'Имя git автора',
     git_author_email => 'E-mail git автора',
     hide_envelopes => 'Скрывать оповещения',
+    display_input => 'Показывать входные данные',
   })
 %]

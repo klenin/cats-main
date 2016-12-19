@@ -16,7 +16,10 @@
 <div style="clear: both;"></div>
 <input type="text" name="n_regexp" id="n_regexp" size="40" />
 <input type="submit" value="filter" class="button"/>
-<label><input type="checkbox" id="show_test_data" onclick="toggle_show_test_data()"/> [% capt.show_test_data %]</label>
+<label>
+<input type="checkbox" id="show_test_data" onclick="toggle_show_test_data()" [% ' checked="checked"' IF display_input %]/>
+[% capt.show_test_data %]
+</label>
 </form>
 </div>
 [% END %]

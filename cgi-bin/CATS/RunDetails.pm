@@ -7,7 +7,7 @@ use Algorithm::Diff;
 use CATS::Web qw(param encoding_param url_param headers upload_source content_type);
 use CATS::DB;
 use CATS::Utils qw(state_to_display url_function encodings source_encodings);
-use CATS::Misc qw($is_jury $is_root $sid $t $uid init_template msg res_str url_f problem_status_names);
+use CATS::Misc qw($is_jury $is_root $sid $t $uid $settings init_template msg res_str url_f problem_status_names);
 use CATS::Data qw(is_jury_in_contest enforce_request_state);
 use CATS::IP;
 use CATS::DevEnv;
@@ -367,7 +367,7 @@ sub run_details_frame {
             { get_log_dump($_->{req_id}, 1) } : get_run_info($contest, $_);
     }
     sources_info_param($sources_info);
-    $t->param(runs => \@runs);
+    $t->param(runs => \@runs, display_input => $settings->{display_input});
 }
 
 sub save_visualizer {
