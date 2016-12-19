@@ -8,7 +8,6 @@ use CATS::Misc qw($t $is_jury $is_team $uid init_template res_str);
 use CATS::Utils qw(state_to_display);
 use CATS::Web qw(param url_param);
 
-
 sub send_message_box_frame
 {
     init_template('send_message_box.html.tt');
@@ -36,7 +35,6 @@ sub send_message_box_frame
     $dbh->commit;
     $t->param(sent => 1);
 }
-
 
 sub answer_box_frame
 {
@@ -82,22 +80,23 @@ sub answer_box_frame
     }
 }
 
-
 sub envelope_frame
 {
     init_template('envelope.html.tt');
 
     $is_team && (my $rid = url_param('rid')) or return;
 
-    my $r = $dbh->selectrow_hashref(qq~
-        SELECT R.submit_time, R.test_time, R.state, R.failed_test, R.account_id, A.team_name, C.title
-            FROM reqs R
+    my $r = $dbh->selectrow_hashref(q~
+        SELECT
+            R.submit_time, R.test_time, R.state, R.failed_test, R.account_id,
+            A.team_name, C.title, P.title AS problem_name
+        FROM reqs R
             INNER JOIN contests C ON C.id = R.contest_id
-            INNER JOIN  accounts A ON A.id = R.account_id
-            WHERE R.id = ? AND R.account_id = ?~, { Slice => {} },
+            INNER JOIN accounts A ON A.id = R.account_id
+            INNER JOIN problems P ON P.id = R.problem_id
+        WHERE R.id = ? AND R.account_id = ?~, { Slice => {} },
         $rid, $uid) or return;
     $t->param(%$r, state_to_display($r->{state}));
 }
-
 
 1;

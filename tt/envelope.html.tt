@@ -1,9 +1,11 @@
-[% PROCESS 'includes/submit_result.tti' %]
-[% PROCESS 'includes/header.tti' %]
+[% PROCESS includes/submit_result.tti %]
+[% PROCESS includes/header.tti %]
 </head>
-<body bgcolor=#a0a0a0>
+<body>
 <table>
+<tr><td>[% capt.contest %]:</td><td>[% title | html %]</td></tr>
 <tr><td>[% capt.team %]:</td><td>[% team_name | html %]</td></tr>
+<tr><td>[% capt.problem %]:</td><td>[% problem_name | html %]</td></tr>
 <tr><td>[% capt.submit_time %]:</td><td>[% submit_time | html %]</td></tr>
 <tr><td>[% capt.test_time %]:</td><td>[% test_time | html %]</td></tr>
 <tr><td>[% capt.submit_result %]:</td><td>[% submit_result %]</td></tr>
