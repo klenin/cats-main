@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use Data::Dumper;
+use Storable qw(thaw);
 
 use CATS::Constants;
 use CATS::Countries;
@@ -42,9 +43,11 @@ sub user_submenu
 {
     my ($selected, $user_id) = @_;
     my @m = (
-        ($is_jury ?
-            ({ href => url_f('users', edit => $user_id), item => res_str(573), selected => 'edit' }) : ()),
+        (!$is_jury ? () :
+            ({ href => url_f('users', edit => $user_id), item => res_str(573), selected => 'edit' })),
         { href => url_f('user_stats', uid => $user_id), item => res_str(574), selected => 'user_stats' },
+        (!$is_root ? () :
+            ({ href => url_f('user_settings', uid => $user_id), item => res_str(575), selected => 'user_settings' })),
     );
     $_->{selected} = $_->{selected} eq $selected for @m;
     (submenu => \@m);
@@ -148,6 +151,17 @@ sub apply_rec
         $sub->($val);
 }
 
+sub display_settings
+{
+    my ($s) = @_;
+    # Data::Dumper escapes UTF-8 characters into \x{...} sequences.
+    # Work around by dumping encoded strings, then decoding the result.
+    my $d = Data::Dumper->new([ apply_rec($s, \&Encode::encode_utf8) ]);
+    $d->Quotekeys(0);
+    $d->Sortkeys(1);
+    $t->param(settings => Encode::decode_utf8($d->Dump));
+}
+
 sub settings_frame
 {
     init_template('settings.html.tt');
@@ -166,14 +180,7 @@ sub settings_frame
         is_root => $is_root,
         is_some_jury => $is_some_jury,
         %$u);
-    if ($is_root) {
-        # Data::Dumper escapes UTF-8 characters into \x{...} sequences.
-        # Work around by dumping encoded strings, then decoding the result.
-        my $d = Data::Dumper->new([ apply_rec($settings, \&Encode::encode_utf8) ]);
-        $d->Quotekeys(0);
-        $d->Sortkeys(1);
-        $t->param(settings => Encode::decode_utf8($d->Dump));
-    }
+    display_settings($settings) if $is_root;
 }
 
 sub users_send_message
@@ -494,6 +501,21 @@ sub user_stats_frame
         href_all_problems => $pr->(''),
         href_solved_problems => $pr->('accepted=1'),
         title_suffix => $u->{team_name},
+    );
+}
+
+sub user_settings_frame
+{
+    init_template('user_settings.html.tt');
+    $is_root or return;
+    my $user_id = param('uid') or return;
+    my ($team_name, $user_settings) = $dbh->selectrow_array(q~
+        SELECT team_name, settings FROM accounts WHERE id = ?~, undef,
+        $user_id);
+    display_settings(thaw($user_settings));
+    $t->param(
+        team_name => $team_name,
+        user_submenu('user_settings', $user_id),
     );
 }
 

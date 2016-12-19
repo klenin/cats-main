@@ -47,6 +47,7 @@ sub main_routes() {
         users => \&CATS::UI::Users::users_frame,
         users_import => \&CATS::UI::Users::users_import_frame,
         user_stats => \&CATS::UI::Users::user_stats_frame,
+        user_settings => \&CATS::UI::Users::user_settings_frame,
         compilers => \&CATS::UI::Compilers::compilers_frame,
         judges => \&CATS::UI::Judges::judges_frame,
         keywords => \&CATS::UI::Keywords::keywords_frame,
