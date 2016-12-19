@@ -76,7 +76,7 @@ sub generate_menu {
     my @right_menu = ();
 
     if ($uid && (url_param('f') ne 'logout')) {
-        @right_menu = ( { item => res_str(518), href => url_f('settings') } );
+        @right_menu = ( { item => res_str(518), href => url_f('profile') } );
     }
 
     push @right_menu, (

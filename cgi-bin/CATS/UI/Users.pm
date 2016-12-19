@@ -148,7 +148,7 @@ sub registration_frame
     $t->param(successfully_registred => 1);
 }
 
-sub settings_save
+sub profile_save
 {
     my $u = CATS::User->new->parse_params;
     my $set_password = param_on('set_password');
@@ -181,14 +181,14 @@ sub display_settings
     $t->param(settings_dump => Encode::decode_utf8($d->Dump));
 }
 
-sub settings_frame
+sub profile_frame
 {
-    init_template('settings.html.tt');
+    init_template('user_profile.html.tt');
     if(defined param('clear') && $is_team) {
         $settings = {};
         msg(1029, $CATS::Misc::team_name);
     }
-    settings_save if defined param('edit_save') && $is_team;
+    profile_save if defined param('edit_save') && $is_team;
 
     $uid or return;
     my $u = CATS::User->new->load($uid) or return;
@@ -196,9 +196,10 @@ sub settings_frame
         SELECT CA.contest_id FROM contest_accounts CA WHERE CA.account_id = ? AND CA.is_jury = 1~, undef,
         $uid);
     $t->param(
-        countries => \@CATS::Countries::countries, href_action => url_f('users'),
+        countries => \@CATS::Countries::countries,
+        href_action => url_f('users'),
         title_suffix => res_str(518),
-        langs => [ map { href => url_f('settings', lang => $_), name => $_ }, @cats::langs ],
+        langs => [ map { href => url_f('profile', lang => $_), name => $_ }, @cats::langs ],
         is_root => $is_root,
         is_some_jury => $is_some_jury,
         %$u);

@@ -33,7 +33,7 @@ sub main_routes() {
         login => \&CATS::UI::LoginLogout::login_frame,
         logout => \&CATS::UI::LoginLogout::logout_frame,
         registration => \&CATS::UI::Users::registration_frame,
-        settings => \&CATS::UI::Users::settings_frame,
+        profile => \&CATS::UI::Users::profile_frame,
         contests => [ \&CATS::UI::Contests::contests_frame, has_problem => $int, ],
         console_content => \&CATS::Console::content_frame,
         console => \&CATS::Console::console_frame,
