@@ -15,6 +15,13 @@ sub print_json {
     -1;
 }
 
+sub bad_judge {
+    $sid && $dbh->selectrow_array(q~
+        SELECT J.id FROM judges J LEFT JOIN accounts A
+        ON A.id = J.account_id WHERE A.sid = ?~, undef,
+        $sid) ? 0 : print_json({ error => 'bad sid' });
+}
+
 sub get_judge_id {
     my $id = $sid && $dbh->selectrow_array(q~
         SELECT J.id FROM judges J LEFT JOIN accounts A
@@ -24,7 +31,7 @@ sub get_judge_id {
 }
 
 sub update_state {
-    $sid or print_json({ error => "bad sid"});
+    bad_judge and return -1;
 
     my ($is_alive, $lock_counter, $jid, $time_since_alive) = $dbh->selectrow_array(q~
         SELECT J.is_alive, J.lock_counter, J.id, CURRENT_TIMESTAMP - J.alive_date
@@ -40,7 +47,7 @@ sub update_state {
 }
 
 sub get_DEs {
-    $sid or print_json({ error => "bad sid"});
+    bad_judge and return -1;
 
     my $db_de = $dbh->selectall_arrayref(q~
         SELECT id, code, description, memory_handicap FROM default_de~, { Slice => {} });
@@ -49,7 +56,7 @@ sub get_DEs {
 }
 
 sub get_problem {
-    $sid or print_json({ error => "bad sid"});
+    bad_judge and return -1;
     my ($p) = @_;
 
     my $problem = $dbh->selectrow_hashref(q~
@@ -64,7 +71,7 @@ sub get_problem {
 }
 
 sub get_problem_sources {
-    $sid or print_json({ error => "bad sid"});
+    bad_judge and return -1;
     my ($p) = @_;
 
     my $problem_sources = $dbh->selectall_arrayref(q~
@@ -85,7 +92,7 @@ sub get_problem_sources {
 }
 
 sub get_problem_tests {
-    $sid or print_json({ error => "bad sid"});
+    bad_judge and return -1;
     my ($p) = @_;
 
     my $tests = $dbh->selectall_arrayref(q~
