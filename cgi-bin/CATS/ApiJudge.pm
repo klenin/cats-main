@@ -64,7 +64,7 @@ sub get_problem {
             id, title, upload_date, time_limit, memory_limit,
             input_file, output_file, std_checker, contest_id, formal_input,
             run_method
-        FROM problems WHERE id = ?~, { Slice => {} }, $p->{pid});
+        FROM problems WHERE id = ?~, { Slice => {}, ib_timestampformat => '%d-%m-%Y %H:%M:%S' }, $p->{pid});
     $problem->{run_method} //= $cats::rm_default;
 
     print_json({ problem => $problem });
