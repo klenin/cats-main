@@ -405,8 +405,7 @@ sub console_content
 
     $c->finish;
 
-    if ($is_team)
-    {
+    if ($is_team && !$settings->{hide_envelopes}) {
         my $cond =
             "WHERE account_id = ? AND state >= $cats::request_processed " .
             'AND received = 0 AND contest_id = ?';
