@@ -20,7 +20,7 @@
         [% IF is_jury %]
             <a href="#" onclick="add_id([% c.id %]); return false;" title="[% c.id %]">[% c.time %]</a>
         [% ELSE %]
-            [% IF c.href_details %]<a href="[% c.href_details %]" target="_blank">[% c.time %]</a>[% ELSE; c.time; END %]
+            [% IF c.href_details %]<a href="[% c.href_details %]" title="[% DEs.item(c.de).description %]" target="_blank">[% c.time %]</a>[% ELSE; c.time; END %]
         [% END %]
     </td>
     <td nowrap width="1%">
@@ -31,7 +31,7 @@
     </td>
     <td>
         [% IF is_jury ~%]
-        <a href="[% c.href_source %]" title="[% c.de %]">[% c.problem_title | html %]</a>
+        <a href="[% c.href_source %]" title="[% DEs.item(c.de).description %]">[% c.problem_title | html %]</a>
         [% ELSE; c.problem_title | html; END %]:
         <b>[% submit_result(c) %]</b>[% " ($c.points)" IF is_jury && c.points %]
     </td>

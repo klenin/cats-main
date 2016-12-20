@@ -120,9 +120,6 @@ sub console_content
         CAST(NULL AS INTEGER) AS contest_id
     ~;
     my $no_de = 'CAST(NULL AS VARCHAR(200)) AS de';
-    my $de_sql = $is_jury ?
-        '(SELECT description FROM default_de dd
-            INNER JOIN sources s ON s.de_id = dd.id WHERE s.req_id = R.id) AS de' : $no_de;
     my $city_sql = $is_jury ?
         q~ || (CASE WHEN A.city IS NULL OR A.city = '' THEN '' ELSE ' (' || A.city || ')' END)~ : '';
     my @contest_date_types = qw(start freeze finish);
@@ -136,7 +133,7 @@ sub console_content
             R.failed_test AS failed_test,
             R.problem_id AS problem_id,
             P.title AS problem_title,
-            $de_sql,
+            (SELECT s.de_id FROM sources s WHERE s.req_id = R.id) AS de,
             R.points AS clarified,
             D.t_blob AS question,
             D.t_blob AS answer,
@@ -260,6 +257,8 @@ sub console_content
     my $submit_time_filter =
         '(R.submit_time BETWEEN C.start_date AND C.freeze_date OR CURRENT_TIMESTAMP > C.defreeze_date)';
 
+    my $DEs = $is_team ? $dbh->selectall_hashref(q~
+        SELECT id, description FROM default_de~, 'id') : {};
     my $c;
     if ($is_jury)
     {
@@ -429,6 +428,7 @@ sub console_content
         href_all_events => url_f('console', uf => 0),
         user_filter => $user_filter,
         is_jury => $is_jury,
+        DEs => $DEs,
     );
 }
 
