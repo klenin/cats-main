@@ -58,7 +58,7 @@ sub users_edit_frame
     init_template('users_edit.html.tt');
 
     my $id = url_param('edit') or return;
-    my $u = CATS::User->new->load($id, [ qw(locked settings) ]) or return;
+    my $u = CATS::User->new->load($id, [ qw(locked settings srole) ]) or return;
     $t->param(
         user_submenu('edit', $id),
         title_suffix => $u->{team_name},
