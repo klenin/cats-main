@@ -34,6 +34,7 @@ function delete_compiler(href, name)
 </tr>
 [% END %]
 </table>
+[% PROCESS includes/pages.tti %]
 </form>
 
 [% PROCESS 'includes/menu_end.tti' %]

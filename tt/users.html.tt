@@ -45,6 +45,7 @@ function delete_team(href, name)
 [% END %]
 </table>
 <br/>
+[% PROCESS includes/pages.tti %]
 <input type="hidden" name="user_set" VALUE="[% FOREACH u IN users; u.id; ':' UNLESS loop.last; END %]">
 [% IF editable %]
 <input type="submit" value="[% capt.save_attributes %]" name="save_attributes" class="button" />

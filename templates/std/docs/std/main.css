@@ -52,11 +52,13 @@ table.listview_header {
     table-layout: fixed;
     width: 100%;
 }
-.listview_header { line-height: 1.5; }
+.listview_header { line-height: 2; }
 
-span.pages { padding: 2px 0px; }
-span.pages a { padding: 2px; }
-span.pages a:hover { background-color: #bbbbff; }
+.listview_header div.pages { margin: 0; float: none; }
+div.pages { display: inline-block; margin: 4px 0; float: right; }
+div.pages span { padding: 2px 0px; }
+div.pages a { padding: 2px; }
+div.pages a:hover { background-color: #bbbbff; }
 
 a.top, a.top:link, a.top:visited, a.top:active,
 .top a, .top a:link, .top a:visited, .top a:active

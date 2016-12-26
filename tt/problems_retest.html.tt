@@ -22,6 +22,7 @@
 </tr>
 [% END %]
 </table>
+[% PROCESS includes/pages.tti %]
 <br/>
 <input type="submit" name="mass_retest" value="[% capt.retest %]" class="button" />
 <input type="submit" name="recalc_points" value="[% capt.recalc %]" class="button" />

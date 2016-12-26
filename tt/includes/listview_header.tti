@@ -1,6 +1,6 @@
 [%- PROCESS "lang/$lang/listview_header.tti" -%]
 [% PROCESS includes/html.tti %]
-<table class="listview_header"
+<table class="listview_header" cellpadding="0">
 <tr>
 <td align="left">
   <input type="submit" value="[% capt.search %]" name="do_search" class="button" style="min-width: 50px; width: 15%;">
@@ -11,16 +11,7 @@
 </td>
 <td align="right">
   <input type="submit" value="[% capt.show %]" name="visible" class="button"> [% select('rows', display_rows) %]
-  <span class="nobr">
-  [% capt.pages %]:
-  <span class="bordered pages">[%# Must have spaces inside. ~%]
-  [%~ href(href_prev_pages, '<<') IF href_prev_pages ~%]
-  [%~ FOREACH p IN pages ~%]
-  <a href="[% p.href_page %]"[% ' class="current_link"' IF p.current_page %]>[% p.page_number %]</a>
-  [%~ END ~%]
-  [%~ href(href_next_pages, '>>') IF href_next_pages ~%]
-  </span>
-  </span>
+  [% PROCESS includes/pages.tti is_header = 1 %]
 </td>
 </tr>
 </table>

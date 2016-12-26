@@ -35,8 +35,8 @@ function delete_judge(href, name)
 </tr>
 [% END %]
 </table>
-<br/>[% capt.queue %]: [% not_processed %]
-
+<div style="float: left;">[% capt.queue %]: [% not_processed %]</div>
+[% PROCESS includes/pages.tti %]
 </form>
 
 [% PROCESS 'includes/menu_end.tti' %]

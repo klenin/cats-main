@@ -31,7 +31,7 @@
 [% ELSE %]
 <pre>No log information</pre>
 [% END %]
-<div class="problem_submit">
+<div class="problem_submit" style="float: left;">
   <input type="hidden" name="problem_id" value="[% pid %]" />
 [% IF remote_url %]
   <p>
@@ -52,5 +52,6 @@
   </p>
 [% END %]
 </div>
+[% PROCESS includes/pages.tti %]
 </form>
 [% PROCESS includes/menu_end.tti %]

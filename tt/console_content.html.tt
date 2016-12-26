@@ -86,6 +86,7 @@
 </tr>
 [% END %]
 </table>
+[% PROCESS includes/pages.tti %]
 <script>
 [% FOREACH e IN envelopes %]
 window.open("[% e.href_envelope %]", '', 'width=500,height=400,location=no,menubar=no,resizable=yes,scrollbars=no,status=no,toolbar=no');

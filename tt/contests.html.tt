@@ -62,6 +62,7 @@ function confirm_registration()
 [% END %]
 <input type="submit" name="summary_rank" value="[% capt.summary_rank %]" class="button" />
 [% IF is_root %]<input type="submit" name="create_group" value="[% capt.create_group %]" class="button" />[% END %]
+[% PROCESS includes/pages.tti %]
 </form>
 [% IF authorized && !is_registered %]
 <ul>

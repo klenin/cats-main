@@ -18,6 +18,7 @@
 </tr>
 [% END %]
 </table>
+[% PROCESS includes/pages.tti %]
 <br>
 [% IF is_jury %]
 [% IF link %]
