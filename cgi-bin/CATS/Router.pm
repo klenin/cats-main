@@ -28,6 +28,9 @@ use CATS::UI::RankTable;
 my $function;
 
 my $int = qr/\d+/;
+my $int_list = qr/[\d,]+/;
+my $str = qr/.+/;
+
 sub main_routes() {
     {
         login => \&CATS::UI::LoginLogout::login_frame,
@@ -88,6 +91,20 @@ sub api_judge_routes() {
         api_judge_get_problem => [ \&CATS::ApiJudge::get_problem, pid => $int, ],
         api_judge_get_problem_sources => [ \&CATS::ApiJudge::get_problem_sources, pid => $int, ],
         api_judge_get_problem_tests => [ \&CATS::ApiJudge::get_problem_tests, pid => $int, ],
+        api_judge_is_problem_uptodate => [ \&CATS::ApiJudge::is_problem_uptodate, pid => $int, date => $str, ],
+        api_judge_save_log_dump => [ \&CATS::ApiJudge::save_log_dump, req_id => $int, dump => $str, ],
+        api_judge_select_request => [ \&CATS::ApiJudge::select_request, supported_DEs => $int_list, ],
+        api_judge_set_request_state => [
+            \&CATS::ApiJudge::set_request_state,
+            req_id => $int,
+            state => $int,
+            problem_id => $int,
+            contest_id => $int,
+            failed_test => $int,
+        ],
+        api_judge_delete_req_details => [ \&CATS::ApiJudge::delete_req_details, req_id => $int, ],
+        api_judge_insert_req_details => [ \&CATS::ApiJudge::insert_req_details, params => $str, ],
+        api_judge_get_testset => [ \&CATS::ApiJudge::get_testset, req_id => $int, update => $int, ],
     }
 }
 
