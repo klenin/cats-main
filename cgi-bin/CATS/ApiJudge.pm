@@ -5,8 +5,10 @@ use warnings;
 
 use JSON::XS;
 
+use CATS::Constants;
 use CATS::DB;
 use CATS::Misc qw($sid);
+use CATS::Testset;
 use CATS::Web;
 
 sub print_json {
@@ -101,6 +103,84 @@ sub get_problem_tests {
         $p->{pid});
 
     print_json({ tests => $tests });
+}
+
+sub is_problem_uptodate {
+    bad_judge and return -1;
+    my ($p) = @_;
+
+    my $ok = scalar $dbh->selectrow_array(q~
+        SELECT 1 FROM problems
+        WHERE id = ? AND upload_date - 1.0000000000 / 24 / 60 / 60 <= ?~, undef,
+        $p->{pid}, $p->{date});
+
+    print_json({ uptodate => $ok });
+}
+
+sub set_request_state {
+    bad_judge and return -1;
+    my ($p) = @_;
+
+    my ($jid) = $dbh->selectrow_array(q~
+        SELECT J.id FROM judges J INNER JOIN accounts A ON J.account_id = A.id WHERE A.sid = ?~, undef,
+        $sid);
+
+    $dbh->do(qq~
+        UPDATE reqs SET state = ?, failed_test = ?, result_time = CURRENT_TIMESTAMP
+        WHERE id = ? AND judge_id = ?~, {},
+        $p->{state}, $p->{failed_test}, $p->{req_id}, $jid);
+    if ($p->{state} == $cats::st_unhandled_error && defined $p->{problem_id} && defined $p->{contest_id}) {
+        $dbh->do(qq~
+            UPDATE contest_problems SET status = ?
+            WHERE problem_id = ? AND contest_id = ?~, {},
+            $cats::problem_st_suspended, $p->{problem_id}, $p->{contest_id});
+    }
+    $dbh->commit;
+
+    print_json({ ok => 1 });
+}
+
+sub select_request {
+    bad_judge and return -1;
+    my ($p) = @_;
+    $p->{supported_DEs} or return print_json({ error => 'bad request' });
+
+    my ($jid) = $dbh->selectrow_array(q~
+        SELECT J.id FROM judges J INNER JOIN accounts A ON J.account_id = A.id WHERE A.sid = ?~, undef,
+        $sid);
+    my $sth = $dbh->prepare_cached(qq~
+        SELECT
+            R.id, R.problem_id, R.contest_id, R.state, CA.is_jury, C.run_all_tests,
+            CP.status, S.fname, S.src, S.de_id
+        FROM reqs R
+        INNER JOIN contest_accounts CA ON CA.account_id = R.account_id AND CA.contest_id = R.contest_id
+        INNER JOIN contests C ON C.id = R.contest_id
+        INNER JOIN sources S ON S.req_id = R.id
+        INNER JOIN default_de D ON D.id = S.de_id
+        LEFT JOIN contest_problems CP ON CP.contest_id = R.contest_id AND CP.problem_id = R.problem_id
+        WHERE R.state = ? AND
+            (CP.status <= ? OR CA.is_jury = 1) AND
+            D.code IN ($p->{supported_DEs}) AND (judge_id IS NULL OR judge_id = ?)
+        ROWS 1~);
+    my $req = $dbh->selectrow_hashref(
+        $sth, { Slice => {} }, $cats::st_not_processed, $cats::problem_st_ready, $jid)
+        or return print_json({ request => undef });
+
+    $dbh->do(q~
+        UPDATE reqs SET state = ?, judge_id = ? WHERE id = ?~, {},
+        $cats::st_install_processing, $jid, $req->{id});
+    $dbh->commit;
+
+    print_json({ request => $req });
+}
+
+sub get_testset {
+    bad_judge and return -1;
+    my ($p) = @_;
+
+    my %testset = CATS::Testset::get_testset($p->{rid}, $p->{update});
+
+    print_json({ testset => \%testset });
 }
 
 1;
