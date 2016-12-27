@@ -121,7 +121,6 @@ sub save_log_dump {
     bad_judge and return -1;
     my ($p) = @_;
 
-    warn $p->{dump};
     my $log_id = $dbh->selectrow_array(q~
         SELECT id FROM log_dumps WHERE req_id = ?~, undef, $p->{req_id});
     if (defined $log_id) {
@@ -172,7 +171,7 @@ sub select_request {
     my ($jid) = $dbh->selectrow_array(q~
         SELECT J.id FROM judges J INNER JOIN accounts A ON J.account_id = A.id WHERE A.sid = ?~, undef,
         $sid);
-    my $sth = $dbh->prepare_cached(qq~
+    my $sth = $dbh->prepare(qq~
         SELECT
             R.id, R.problem_id, R.contest_id, R.state, CA.is_jury, C.run_all_tests,
             CP.status, S.fname, S.src, S.de_id
