@@ -117,6 +117,30 @@ sub is_problem_uptodate {
     print_json({ uptodate => $ok });
 }
 
+sub save_log_dump {
+    bad_judge and return -1;
+    my ($p) = @_;
+
+    warn $p->{dump};
+    my $log_id = $dbh->selectrow_array(q~
+        SELECT id FROM log_dumps WHERE req_id = ?~, undef, $p->{req_id});
+    if (defined $log_id) {
+        my $c = $dbh->prepare(q~UPDATE log_dumps SET dump = ? WHERE id = ?~);
+        $c->bind_param(1, $p->{dump}, { ora_type => 113 });
+        $c->bind_param(2, $log_id);
+        $c->execute;
+    }
+    else {
+        my $c = $dbh->prepare(q~INSERT INTO log_dumps (id, dump, req_id) VALUES (?, ?, ?)~);
+        $c->bind_param(1, new_id);
+        $c->bind_param(2, $p->{dump}, { ora_type => 113 });
+        $c->bind_param(3, $p->{rid});
+        $c->execute;
+    }
+
+    print_json({ ok => 1 });
+}
+
 sub set_request_state {
     bad_judge and return -1;
     my ($p) = @_;
@@ -174,11 +198,42 @@ sub select_request {
     print_json({ request => $req });
 }
 
+sub delete_req_details {
+    bad_judge and return -1;
+    my ($p) = @_;
+
+    $dbh->do(q~DELETE FROM req_details WHERE req_id = ?~, undef, $p->{req_id});
+    $dbh->commit;
+
+    print_json({ ok => 1 });
+}
+
+my @req_details_fields = qw(req_id test_rank result time_used memory_used disk_used checker_comment);
+
+sub insert_req_details {
+    bad_judge and return -1;
+    my ($p) = @_;
+
+    my $params = decode_json($p->{params});
+    my %filtered_params = map { exists $params->{$_} ? ($_ => $params->{$_}) : () } @req_details_fields;
+
+    $dbh->do(
+        sprintf(
+            q~INSERT INTO req_details (%s) VALUES (%s)~,
+            join(', ', keys %filtered_params), join(', ', ('?') x keys %filtered_params)
+        ),
+        undef, values %filtered_params
+    );
+    $dbh->commit;
+
+    print_json({ ok => 1 });
+}
+
 sub get_testset {
     bad_judge and return -1;
     my ($p) = @_;
 
-    my %testset = CATS::Testset::get_testset($p->{rid}, $p->{update});
+    my %testset = CATS::Testset::get_testset($p->{req_id}, $p->{update});
 
     print_json({ testset => \%testset });
 }
