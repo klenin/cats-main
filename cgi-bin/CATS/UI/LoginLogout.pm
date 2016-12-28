@@ -63,7 +63,18 @@ sub login_frame
             return;
         }
         $t = undef;
-        return redirect(url_function('contests', sid => $sid, cid => $cid));
+        my $nf = url_param('nf') || 'contests';
+        if ($nf eq "login") {
+            $nf = 'contests';
+        }
+        my %oldparams;
+        my %excludes = map { $_ => 1 } ("f", "nf", "sid", "cid", "login", "logout", "passwd", "submit");
+        foreach my $param (url_param()) {
+            if (!exists($excludes{$param})) {
+                $oldparams{$param} = url_param($param);
+            }
+        }
+        return redirect(url_function($nf, %oldparams, sid => $sid, cid => $cid));
     }
     die 'Can not generate sid';
 }

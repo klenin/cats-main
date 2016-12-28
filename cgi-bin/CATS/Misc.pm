@@ -306,10 +306,21 @@ sub init_user
 
     my $lang = param('lang');
     $settings->{lang} = $lang if $lang && grep $_ eq $lang, @cats::langs;
+
     if ($bad_sid) {
+        my %oldparams = ();
+        my $parname = "";
+        foreach $parname (url_param()) {
+            if ($parname eq "sid") {} 
+            elsif ($parname eq "f") {
+		$oldparams{"nf"} = url_param($parname);
+            } else {
+		$oldparams{$parname} = url_param($parname);
+            }
+	}
         init_template(param('json') ? 'bad_sid.json.tt' : 'login.html.tt');
         $sid = '';
-        $t->param(href_login => url_f('login'));
+        $t->param(href_login => url_f('login', %oldparams));
         msg(1002);
     }
 }
