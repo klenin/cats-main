@@ -120,9 +120,11 @@ sub is_problem_uptodate {
 sub save_log_dump {
     bad_judge and return -1;
     my ($p) = @_;
+    $p->{req_id} or return print_json({ error => 'No req_id' });
 
     my $log_id = $dbh->selectrow_array(q~
-        SELECT id FROM log_dumps WHERE req_id = ?~, undef, $p->{req_id});
+        SELECT id FROM log_dumps WHERE req_id = ?~, undef,
+        $p->{req_id});
     if (defined $log_id) {
         my $c = $dbh->prepare(q~UPDATE log_dumps SET dump = ? WHERE id = ?~);
         $c->bind_param(1, $p->{dump}, { ora_type => 113 });
@@ -133,9 +135,10 @@ sub save_log_dump {
         my $c = $dbh->prepare(q~INSERT INTO log_dumps (id, dump, req_id) VALUES (?, ?, ?)~);
         $c->bind_param(1, new_id);
         $c->bind_param(2, $p->{dump}, { ora_type => 113 });
-        $c->bind_param(3, $p->{rid});
+        $c->bind_param(3, $p->{req_id});
         $c->execute;
     }
+    $dbh->commit;
 
     print_json({ ok => 1 });
 }

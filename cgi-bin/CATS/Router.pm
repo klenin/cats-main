@@ -92,7 +92,7 @@ sub api_judge_routes() {
         api_judge_get_problem_sources => [ \&CATS::ApiJudge::get_problem_sources, pid => $int, ],
         api_judge_get_problem_tests => [ \&CATS::ApiJudge::get_problem_tests, pid => $int, ],
         api_judge_is_problem_uptodate => [ \&CATS::ApiJudge::is_problem_uptodate, pid => $int, date => $str, ],
-        api_judge_save_log_dump => [ \&CATS::ApiJudge::save_log_dump, req_id => $int, dump => $str, ],
+        api_judge_save_log_dump => [ \&CATS::ApiJudge::save_log_dump, req_id => $int, dump => undef, ],
         api_judge_select_request => [ \&CATS::ApiJudge::select_request, supported_DEs => $int_list, ],
         api_judge_set_request_state => [
             \&CATS::ApiJudge::set_request_state,
@@ -126,7 +126,7 @@ sub route {
             my $name = shift @$route;
             my $type = shift @$route;
             my $value = param($name);
-            $p->{$name} = $value if defined $value && $value =~ /^$type$/;
+            $p->{$name} = $value if defined $value && (!defined($type) || $value =~ /^$type$/);
         }
     }
 
