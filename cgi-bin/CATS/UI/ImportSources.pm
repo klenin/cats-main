@@ -30,7 +30,7 @@ sub import_sources_frame
             FROM problem_sources ps INNER JOIN default_de de ON de.id = ps.de_id
             INNER JOIN problems p ON p.id = ps.problem_id
             WHERE ps.guid IS NOT NULL ~.order_by);
-    $c->execute($uid);
+    $c->execute($uid // 0);
 
     my $fetch_record = sub {
         my $f = $_[0]->fetchrow_hashref or return ();
