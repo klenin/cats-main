@@ -308,19 +308,18 @@ sub init_user
     $settings->{lang} = $lang if $lang && grep $_ eq $lang, @cats::langs;
 
     if ($bad_sid) {
-        my %oldparams = ();
+        my $oldparams = "";
         my $parname = "";
         foreach $parname (url_param()) {
-            if ($parname eq "sid") {} 
-            elsif ($parname eq "f") {
-		$oldparams{"nf"} = url_param($parname);
+            if ($parname eq "sid") {
             } else {
-		$oldparams{$parname} = url_param($parname);
+		$oldparams .= $parname . "=" . url_param($parname) . ";";
             }
-	}
+        }
         init_template(param('json') ? 'bad_sid.json.tt' : 'login.html.tt');
         $sid = '';
-        $t->param(href_login => url_f('login', %oldparams));
+        $oldparams = encode_base64($oldparams, "");
+        $t->param(href_login => url_f('login', "nf" => $oldparams));
         msg(1002);
     }
 }

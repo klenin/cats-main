@@ -12,6 +12,8 @@ use CATS::Utils qw(url_function);
 use CATS::User;
 use CATS::Web qw(param redirect url_param);
 
+use MIME::Base64;
+
 my $check_password;
 BEGIN {
     $check_password = eval { require Authen::Passphrase; } ?
@@ -63,18 +65,14 @@ sub login_frame
             return;
         }
         $t = undef;
-        my $nf = url_param('nf') || 'contests';
-        if ($nf eq "login") {
-            $nf = 'contests';
-        }
-        my %oldparams;
-        my %excludes = map { $_ => 1 } ("f", "nf", "sid", "cid", "login", "logout", "passwd", "submit");
-        foreach my $param (url_param()) {
-            if (!exists($excludes{$param})) {
-                $oldparams{$param} = url_param($param);
-            }
-        }
-        return redirect(url_function($nf, %oldparams, sid => $sid, cid => $cid));
+        my %params;
+        my $nf = decode_base64(url_param('nf')) || "";
+        if (length($nf) > 0) {
+            %params = map(split("=", $_), split(";", $nf));
+        }        
+        $params{"sid"} = $sid;
+        $params{"cid"} = $cid;
+        return redirect(url_function($params{"f"} || "contests", %params));
     }
     die 'Can not generate sid';
 }
