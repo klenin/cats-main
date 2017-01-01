@@ -22,6 +22,7 @@ our @EXPORT = qw(
     save_settings
     references_menu
     problem_status_names
+    unpack_redir_params
 );
 
 our @EXPORT_OK = qw(
@@ -318,6 +319,8 @@ sub init_user
         msg(1002);
     }
 }
+
+sub unpack_redir_params { url_param('redir') ? %{Storable::thaw(decode_base64(url_param('redir')))} : () }
 
 sub extract_cid_from_cpid
 {

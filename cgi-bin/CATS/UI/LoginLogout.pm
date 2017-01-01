@@ -3,14 +3,11 @@ package CATS::UI::LoginLogout;
 use strict;
 use warnings;
 
-use MIME::Base64;
-use Storable;
-
 use CATS::DB;
 use CATS::Constants;
 use CATS::Misc qw(
     $t $is_jury $is_root $is_team $sid $cid $uid $contest $is_virtual $settings
-    init_template msg res_str url_f auto_ext);
+    init_template msg res_str url_f auto_ext unpack_redir_params);
 use CATS::Utils qw(url_function);
 use CATS::User;
 use CATS::Web qw(param redirect url_param);
@@ -66,13 +63,9 @@ sub login_frame
             return;
         }
         $t = undef;
-        my $f = 'contests';
-        my %params;
-        if (my $redir = url_param('redir')) {
-            %params = %{Storable::thaw(decode_base64($redir))};
-            $f = $params{f} if $params{f};
-            delete $params{f};
-        }
+        my %params = unpack_redir_params;
+        my $f = $params{f} || 'contests';
+        delete $params{f};
         $params{sid} = $sid;
         $params{cid} ||= $cid;
         return redirect(url_function($f, %params));
