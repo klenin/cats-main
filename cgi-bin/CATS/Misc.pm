@@ -288,9 +288,11 @@ sub init_user
     $git_author_email = undef;
     my $bad_sid = length $sid > 30;
     if ($sid ne '' && !$bad_sid) {
-        ($uid, $team_name, my $srole, my $last_ip, my $locked, $git_author_name, $git_author_email, $enc_settings) = $dbh->selectrow_array(q~
-            SELECT id, team_name, srole, last_ip, locked, git_author_name, git_author_email, settings FROM accounts WHERE sid = ?~, undef,
-            $sid);
+        ($uid, $team_name, my $srole, my $last_ip, my $locked, $git_author_name, $git_author_email, $enc_settings) =
+            $dbh->selectrow_array(q~
+                SELECT id, team_name, srole, last_ip, locked, git_author_name, git_author_email, settings
+                FROM accounts WHERE sid = ?~, undef,
+                $sid);
         $bad_sid = !defined($uid) || ($last_ip || '') ne CATS::IP::get_ip() || $locked;
         if (!$bad_sid) {
             $is_root = $srole == $cats::srole_root;
