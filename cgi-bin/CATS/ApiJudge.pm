@@ -230,7 +230,7 @@ sub get_testset {
     bad_judge and return -1;
     my ($p) = @_;
 
-    my %testset = CATS::Testset::get_testset($p->{req_id}, $p->{update});
+    my %testset = CATS::Testset::get_testset($dbh, $p->{req_id}, $p->{update});
 
     print_json({ testset => \%testset });
 }
