@@ -32,22 +32,6 @@ sub get_judge_id {
     print_json($id ? { id => $id } : { error => 'bad sid' });
 }
 
-sub update_state {
-    bad_judge and return -1;
-
-    my ($is_alive, $lock_counter, $jid, $time_since_alive) = $dbh->selectrow_array(q~
-        SELECT J.is_alive, J.lock_counter, J.id, CURRENT_TIMESTAMP - J.alive_date
-        FROM judges J INNER JOIN accounts A ON J.account_id = A.id WHERE A.sid = ?~, undef,
-        $sid);
-
-    $dbh->do(q~
-        UPDATE judges SET is_alive = 1, alive_date = CURRENT_TIMESTAMP WHERE id = ?~, undef,
-        $jid) if !$is_alive || $time_since_alive > $CATS::Config::judge_alive_interval / 24;
-    $dbh->commit;
-
-    print_json({ lock_counter => $lock_counter, is_alive => $is_alive });
-}
-
 sub get_DEs {
     bad_judge and return -1;
 
@@ -171,9 +155,20 @@ sub select_request {
     my ($p) = @_;
     $p->{supported_DEs} or return print_json({ error => 'bad request' });
 
-    my ($jid) = $dbh->selectrow_array(q~
-        SELECT J.id FROM judges J INNER JOIN accounts A ON J.account_id = A.id WHERE A.sid = ?~, undef,
+    my $response = { request => undef };
+
+    ($response->{was_pinged}, $response->{lock_counter}, my $jid, my $time_since_alive) = $dbh->selectrow_array(q~
+        SELECT 1 - J.is_alive, J.lock_counter, J.id, CURRENT_TIMESTAMP - J.alive_date
+        FROM judges J INNER JOIN accounts A ON J.account_id = A.id WHERE A.sid = ?~, undef,
         $sid);
+
+    $dbh->do(q~
+        UPDATE judges SET is_alive = 1, alive_date = CURRENT_TIMESTAMP WHERE id = ?~, undef,
+        $jid) if $response->{was_pinged} || $time_since_alive > $CATS::Config::judge_alive_interval / 24;
+    $dbh->commit;
+
+    return print_json($response) if $response->{lock_counter};
+
     my $sth = $dbh->prepare(qq~
         SELECT
             R.id, R.problem_id, R.contest_id, R.state, CA.is_jury, C.run_all_tests,
@@ -188,16 +183,16 @@ sub select_request {
             (CP.status <= ? OR CA.is_jury = 1) AND
             D.code IN ($p->{supported_DEs}) AND (judge_id IS NULL OR judge_id = ?)
         ROWS 1~);
-    my $req = $dbh->selectrow_hashref(
+    $response->{request} = $dbh->selectrow_hashref(
         $sth, { Slice => {} }, $cats::st_not_processed, $cats::problem_st_ready, $jid)
-        or return print_json({ request => undef });
+        or return print_json($response);
 
     $dbh->do(q~
         UPDATE reqs SET state = ?, judge_id = ? WHERE id = ?~, {},
-        $cats::st_install_processing, $jid, $req->{id});
+        $cats::st_install_processing, $jid, $response->{request}->{id});
     $dbh->commit;
 
-    print_json({ request => $req });
+    print_json($response);
 }
 
 sub delete_req_details {
