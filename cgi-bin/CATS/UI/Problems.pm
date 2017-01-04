@@ -312,7 +312,7 @@ sub problems_submit
         return msg(137) if $prev_reqs_count >= $contest->{max_reqs};
     }
 
-    my $src = param('source_text') || upload_source('source');
+    my $src = param('source_text') // upload_source('source');
     defined $src or return msg(1010);
     $src ne '' or return msg(1011);
     my $did = param('de_id');
