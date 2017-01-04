@@ -86,7 +86,6 @@ sub main_routes() {
 sub api_judge_routes() {
     {
         get_judge_id => \&CATS::ApiJudge::get_judge_id,
-        api_judge_update_state => \&CATS::ApiJudge::update_state,
         api_judge_get_des => \&CATS::ApiJudge::get_DEs,
         api_judge_get_problem => [ \&CATS::ApiJudge::get_problem, pid => $int, ],
         api_judge_get_problem_sources => [ \&CATS::ApiJudge::get_problem_sources, pid => $int, ],
