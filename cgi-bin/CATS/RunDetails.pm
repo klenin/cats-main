@@ -60,7 +60,7 @@ sub get_run_info {
     $c->execute($req->{req_id});
     my $last_test = 0;
     my $total_points = 0;
-    my %testset = CATS::Testset::get_testset($req->{req_id});
+    my %testset = CATS::Testset::get_testset($dbh, $req->{req_id});
     $contest->{show_points} ||= 0 < grep $_, values %testset;
     my %used_testsets;
 

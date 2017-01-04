@@ -33,7 +33,7 @@ sub new
 sub get_test_testsets
 {
     my ($problem, $testset_spec) = @_;
-    $problem->{all_testsets} ||= CATS::Testset::get_all_testsets($problem->{problem_id});
+    $problem->{all_testsets} ||= CATS::Testset::get_all_testsets($dbh, $problem->{problem_id});
     CATS::Testset::parse_test_rank($problem->{all_testsets}, $testset_spec);
 }
 
