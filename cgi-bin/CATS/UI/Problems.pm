@@ -27,7 +27,7 @@ use CATS::Problem::Source::Git;
 sub problems_change_status
 {
     my $cpid = param('change_status')
-        or return msg(54);
+        or return msg(1012);
 
     my $new_status = param('status');
     exists problem_status_names()->{$new_status} or return;
@@ -43,7 +43,7 @@ sub problems_change_status
 sub problems_change_code
 {
     my $cpid = param('change_code')
-        or return msg(54);
+        or return msg(1012);
     my $new_code = param('code') || '';
     cats::is_good_problem_code($new_code) or return msg(1134);
     $dbh->do(qq~
@@ -72,7 +72,7 @@ sub add_problem_to_contest
 sub problems_link_save
 {
     my $pid = param('problem_id')
-        or return msg(104);
+        or return msg(1012);
 
     my $problem_code;
     if (!$contest->is_practice) {
@@ -116,7 +116,7 @@ sub set_problem_import_diff
 sub problems_replace
 {
     my $pid = param('problem_id')
-        or return msg(54);
+        or return msg(1012);
     my $file = param('zip') || '';
     $file =~ /\.(zip|ZIP)$/
         or return msg(53);
