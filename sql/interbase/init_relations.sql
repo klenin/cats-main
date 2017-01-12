@@ -48,6 +48,7 @@ CREATE TABLE judges (
 CREATE TABLE contests (
     id            INTEGER NOT NULL PRIMARY KEY,
     title         VARCHAR(200) NOT NULL,
+    short_descr   BLOB SUB_TYPE TEXT,
     start_date    TIMESTAMP,
     finish_date   TIMESTAMP,
     freeze_date   TIMESTAMP,

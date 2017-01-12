@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 sub database_fields {qw(
-    id title
+    id title short_descr
     start_date finish_date freeze_date defreeze_date
     closed penalty ctype rules max_reqs
     is_official run_all_tests

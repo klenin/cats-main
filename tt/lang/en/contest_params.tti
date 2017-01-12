@@ -1,6 +1,7 @@
 [%
   capt.import({
     contest_name => 'Contest name',
+    short_descr => 'Short description',
     start_date => 'Start date/time',
     freeze_date => 'Rank table freeze date/time',
     finish_date => 'Finish date/time',

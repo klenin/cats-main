@@ -40,7 +40,7 @@ sub contest_checkbox_params()
 
 sub contest_string_params()
 {qw(
-    contest_name start_date freeze_date finish_date open_date rules req_selection max_reqs
+    contest_name short_descr start_date freeze_date finish_date open_date rules req_selection max_reqs
 )}
 
 sub get_contest_html_params
@@ -67,13 +67,13 @@ sub contests_new_save
     $p->{free_registration} = !$p->{free_registration};
     eval { $dbh->do(q~
         INSERT INTO contests (
-            id, title, start_date, freeze_date, finish_date, defreeze_date, rules, req_selection, max_reqs,
+            id, title, short_descr, start_date, freeze_date, finish_date, defreeze_date, rules, req_selection, max_reqs,
             ctype,
             closed, run_all_tests, show_all_tests,
             show_test_resources, show_checker_comment, show_all_results,
             is_official, show_packages, local_only, is_hidden, show_frozen_reqs, show_test_data
         ) VALUES(
-            ?, ?, ?, ?, ?, ?, ?, ?, ?,
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
             0,
             ?, ?, ?,
             ?, ?, ?,
@@ -106,6 +106,7 @@ sub try_contest_params_frame
     my $p = $dbh->selectrow_hashref(qq~
         SELECT
             title AS contest_name,
+            short_descr,
             start_date,
             freeze_date,
             finish_date,
@@ -137,7 +138,7 @@ sub contests_edit_save
     eval {
         $dbh->do(qq~
             UPDATE contests SET
-                title=?, start_date=?, freeze_date=?,
+                title=?, short_descr=?, start_date=?, freeze_date=?,
                 finish_date=?, defreeze_date=?, rules=?, req_selection=?, max_reqs=?,
                 closed=?, run_all_tests=?, show_all_tests=?,
                 show_test_resources=?, show_checker_comment=?, show_all_results=?,
@@ -239,6 +240,7 @@ sub common_contests_view ($)
     return (
         id => $c->{id},
         contest_name => $c->{title},
+        short_descr => $c->{short_descr},
         start_date => $c->{start_date},
         start_date_iso => date_to_iso($c->{start_date}),
         finish_date => $c->{finish_date},
@@ -262,7 +264,7 @@ sub contest_fields ()
     # In the absense of a filter, select only the first page + 1 record.
     # my $s = $settings->{$listview_name};
     # (($s->{page} || 0) == 0 && !$s->{search} ? 'FIRST ' . ($s->{rows} + 1) : '') .
-    q~c.ctype, c.id, c.title,
+    q~c.ctype, c.id, c.title, c.short_descr,
     c.start_date, c.finish_date, c.freeze_date, c.defreeze_date, c.closed, c.is_official, c.rules~
 }
 
@@ -400,9 +402,9 @@ sub contests_frame {
 
     define_columns(url_f('contests', has_problem => $p->{has_problem}), 1, 1, [
         { caption => res_str(601), order_by => '1 DESC, 2', width => '40%' },
-        { caption => res_str(600), order_by => '1 DESC, 4', width => '15%' },
-        { caption => res_str(631), order_by => '1 DESC, 5', width => '15%' },
-        { caption => res_str(630), order_by => '1 DESC, 8', width => '30%' } ]);
+        { caption => res_str(600), order_by => '1 DESC, 5', width => '15%' },
+        { caption => res_str(631), order_by => '1 DESC, 6', width => '15%' },
+        { caption => res_str(630), order_by => '1 DESC, 9', width => '30%' } ]);
 
     $_ = coalesce(param('filter'), $_, 'unfinished') for $settings->{contests}->{filter};
 
