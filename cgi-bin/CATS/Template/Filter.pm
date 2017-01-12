@@ -76,4 +76,12 @@ sub html_highlight_regions_filter
     }
 }
 
+# Replaces [http://url|text] with <a> tags. Apply after html filter.
+sub linkify
+{
+    my ($s) = @_;
+    $s =~ s~\[\s*(https?://[^\s|]+)(?:\s*\|\s*([^\]]+))?\s*\]~<a href="$1">@{[$2 || $1]}</a>~g;
+    $s;
+}
+
 1;

@@ -23,6 +23,7 @@ sub new
         FILTERS => {
             quote_controls => \&CATS::Template::Filter::quote_controls_filter,
             html_highlight_regions => [ \&CATS::Template::Filter::html_highlight_regions_filter, 2 ],
+            linkify => \&CATS::Template::Filter::linkify,
         }
     }) || die $Template::ERROR;
 
