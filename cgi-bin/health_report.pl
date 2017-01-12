@@ -67,6 +67,12 @@ CATS::DB::sql_connect({
 }
 
 {
+    $r->{long}->{'Requests today'} = $dbh->selectrow_array(q~
+        SELECT COUNT(*) FROM reqs R
+            WHERE R.submit_time > CURRENT_TIMESTAMP - 1~);
+}
+
+{
     my $u = $dbh->selectcol_arrayref(qq~
         SELECT R.id FROM reqs R
             WHERE R.state = $cats::st_unhandled_error AND R.submit_time > CURRENT_TIMESTAMP - 30~);
