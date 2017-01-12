@@ -266,24 +266,31 @@ sub users_send_broadcast
 sub users_delete
 {
     my $caid = url_param('delete');
-    my ($aid, $srole) = $dbh->selectrow_array(qq~
-        SELECT A.id, A.srole FROM accounts A
+    my ($aid, $srole, $name) = $dbh->selectrow_array(q~
+        SELECT A.id, A.srole, A.team_name FROM accounts A
             INNER JOIN contest_accounts CA ON A.id = CA.account_id
-            WHERE CA.id = ?~, {},
+            WHERE CA.id = ?~, undef,
         $caid);
+    $aid or return;
+    $name = Encode::decode_utf8($name);
+    $srole != $cats::srole_root or return msg(1095, $name);
 
-    if ($srole)
-    {
-        $dbh->do(qq~DELETE FROM contest_accounts WHERE id=?~, {}, $caid);
-        $dbh->commit;
-
-        unless ($dbh->selectrow_array(qq~
-            SELECT COUNT(*) FROM contest_accounts WHERE account_id=?~, {}, $aid))
-        {
-            $dbh->do(qq~DELETE FROM accounts WHERE id=?~, {}, $aid);
-            $dbh->commit;
-        }
+    $dbh->do(q~
+        DELETE FROM contest_accounts WHERE id = ?~, undef,
+        $caid);
+    my $contests_left = $dbh->selectrow_array(q~
+        SELECT COUNT(*) FROM contest_accounts WHERE account_id=?~, undef,
+        $aid);
+    if ($contests_left) {
+        msg(1093, $name, $contests_left)
     }
+    else {
+        $dbh->do(q~
+            DELETE FROM accounts WHERE id = ?~, undef,
+            $aid);
+        msg(1094, $name);
+    }
+    $dbh->commit;
 }
 
 sub users_save_attributes
@@ -353,9 +360,7 @@ sub format_diff_time {
 
 sub users_frame
 {
-    if ($is_jury)
-    {
-        users_delete if defined url_param('delete');
+    if ($is_jury) {
         return CATS::User::new_frame if defined url_param('new');
         return users_edit_frame if defined url_param('edit');
     }
@@ -364,11 +369,10 @@ sub users_frame
     init_listview_template(
         'users' . ($contest->is_practice ? '_practice' : ''),
         'users', auto_ext('users'));
-
     $t->param(messages => $is_jury, title_suffix => res_str(526));
 
-    if ($is_jury)
-    {
+    if ($is_jury) {
+        users_delete if defined url_param('delete');
         users_new_save if defined param('new_save');
         users_edit_save if defined param('edit_save');
 
