@@ -11,7 +11,7 @@ use CATS::Data qw(:all);
 use CATS::DB;
 use CATS::ListView qw(init_listview_template attach_listview);
 use CATS::Misc qw(
-    $t $cid $is_team $is_jury $is_root $uid $settings $listview_name $contest $sid
+    $t $cid $is_team $is_jury $is_root $privs $uid $settings $listview_name $contest $sid
     get_anonymous_uid init_template url_f auto_ext res_str msg
 );
 use CATS::Utils qw(coalesce url_function state_to_display date_to_iso);
@@ -376,8 +376,10 @@ sub console_content
             ),
             href_source => url_f('view_source', rid => $id),
             href_problems =>        url_function('problems', sid => $sid, cid => $id),
-            href_delete_question => $is_root ? url_f('console', delete_question => $id) : undef,
-            href_delete_message =>  $is_root ? url_f('console', delete_message => $id) : undef,
+            ($is_jury && $privs->{moderate_messages} ? (
+                href_delete_question => url_f('console', delete_question => $id),
+                href_delete_message =>  url_f('console', delete_message => $id),
+            ) : ()),
             href_answer_box =>      $is_jury ? url_f('answer_box', qid => $id) : undef,
             href_send_message_box =>$is_jury ? url_f('send_message_box', caid => $caid) : undef,
             'time' =>               $submit_time,
@@ -554,8 +556,8 @@ sub retest_submissions
 sub delete_question
 {
     my ($qid) = @_;
-    $is_root or return;
-    $dbh->do(qq~DELETE FROM questions WHERE id = ?~, undef, $qid);
+    $is_jury && $privs->{moderate_messages} or return;
+    $dbh->do(q~DELETE FROM questions WHERE id = ?~, undef, $qid);
     $dbh->commit;
 }
 
@@ -563,8 +565,8 @@ sub delete_question
 sub delete_message
 {
     my ($mid) = @_;
-    $is_root or return;
-    $dbh->do(qq~DELETE FROM messages WHERE id = ?~, undef, $mid);
+    $is_jury && $privs->{moderate_messages} or return;
+    $dbh->do(q~DELETE FROM messages WHERE id = ?~, undef, $mid);
     $dbh->commit;
 }
 

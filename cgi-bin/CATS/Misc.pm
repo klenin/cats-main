@@ -298,6 +298,7 @@ sub init_user
         if (!$bad_sid) {
             $is_root = $srole == $cats::srole_root;
             $privs->{create_contests} = $is_root || ($srole & $cats::srole_contests_creator);
+            $privs->{moderate_messages} = $is_root || ($srole & $cats::srole_messages_moderator);
         }
     }
     if (!$uid) {
