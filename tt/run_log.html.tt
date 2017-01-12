@@ -11,7 +11,7 @@
 <select name="state">
 <option />
 <option value="not_processed">[% capt.retest %]</option>
-<option value="awaiting_verification">Awaiing verification</option>
+<option value="awaiting_verification">Awaiting verification</option>
 <option value="accepted">Solution accepted</option>
 <option value="wrong_answer">Wrong answer</option>
 <option value="presentation_error">Presentation error</option>

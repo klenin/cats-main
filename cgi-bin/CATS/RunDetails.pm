@@ -520,6 +520,7 @@ sub try_set_state {
         $si->{$k} = $v;
     }
     $si->{failed_test} = $failed_test;
+    msg(1055);
     1;
 }
 
