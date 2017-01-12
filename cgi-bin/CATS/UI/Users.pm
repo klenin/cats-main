@@ -63,7 +63,10 @@ sub users_edit_frame
     $t->param(
         user_submenu('edit', $id),
         title_suffix => $u->{team_name},
-        %$u, id => $id, countries => \@CATS::Countries::countries, is_root => $is_root,
+        %$u, privs => CATS::Misc::unpack_privs($u->{srole}),
+        is_root => $is_root,
+        id => $id,
+        countries => \@CATS::Countries::countries,
         href_action => url_f('users'),
         href_impersonate => url_f('users', impersonate => $id));
 }

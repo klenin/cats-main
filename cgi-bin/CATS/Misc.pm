@@ -23,6 +23,7 @@ our @EXPORT = qw(
     references_menu
     problem_status_names
     unpack_redir_params
+    unpack_privs
 );
 
 our @EXPORT_OK = qw(
@@ -277,6 +278,16 @@ sub generate_output
     }
 }
 
+sub unpack_privs
+{
+    my ($srole) = @_;
+    my $p = {};
+    my $r = $p->{is_root} = $srole == $cats::srole_root;
+    $p->{create_contests} = $r || ($srole & $cats::srole_contests_creator);
+    $p->{moderate_messages} = $r || ($srole & $cats::srole_messages_moderator);
+    $p;
+}
+
 # Authorize user, initialize permissions and settings.
 sub init_user
 {
@@ -296,9 +307,8 @@ sub init_user
                 $sid);
         $bad_sid = !defined($uid) || ($last_ip || '') ne CATS::IP::get_ip() || $locked;
         if (!$bad_sid) {
-            $is_root = $srole == $cats::srole_root;
-            $privs->{create_contests} = $is_root || ($srole & $cats::srole_contests_creator);
-            $privs->{moderate_messages} = $is_root || ($srole & $cats::srole_messages_moderator);
+            $privs = unpack_privs($srole);
+            $is_root = $privs->{is_root};
         }
     }
     if (!$uid) {

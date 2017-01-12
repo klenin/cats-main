@@ -2,11 +2,11 @@
   capt.import({
     locked => 'Locked',
     impersonate => 'Impersonate this user',
-    role => 'Role',
     roles => {
-      '0' => 'administrator',
-      '1' => 'user',
-      '2' => 'can create contests',
+      roles => 'Roles',
+      root => 'administrator',
+      create_contests => 'can create contests',
+      moderate_messages => 'can moderate messages',
     },
   })
 %]

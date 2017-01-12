@@ -7,7 +7,14 @@
 [%- IF is_root -%]
 <table class="registration">
 <tr><td>[% capt.locked %]</td><td><input type="checkbox" name="locked" value="1" [% ' checked="checked"' IF locked %]</td></tr>
-<tr><td>[% capt.role %]</td><td>[% capt.roles.$srole %]</td></tr>
+<tr><td>[% capt.roles.roles %]</td><td>
+  [% IF privs.is_root %]
+  [% capt.roles.root %]
+  [% ELSE %]
+  <label class="nobr">[% checkbox('create_contests', privs.create_contests, 0); capt.roles.create_contests %]</label>
+  <label class="nobr">[% checkbox('moderate_messages', privs.moderate_messages, 0); capt.roles.moderate_messages %]</label>
+  [% END %]
+</td></tr>
 </table>
 [% PROCESS 'includes/password.tti' change_password = 1 %]
 [%- END -%]
