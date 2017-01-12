@@ -889,18 +889,18 @@ sub problems_frame {
     my $pt_url = sub {{ href => $_[0], item => ($_[1] || res_str(538)), target => '_blank' }};
     my $pr = $contest->is_practice;
     my @submenu = grep $_,
-        $is_jury ? (
+        ($is_jury ? (
             !$pr && $pt_url->(url_f('problem_text', nospell => 1, nokw => 1, notime => 1, noformal => 1)),
             !$pr && $pt_url->(url_f('problem_text'), res_str(555)),
             { href => url_f('problems', link => 1), item => res_str(540) },
             { href => url_f('problems', link => 1, move => 1), item => res_str(551) },
             !$pr && ({ href => url_f('problems_retest'), item => res_str(556) }),
-            { href => url_f('contests', params => $cid), item => res_str(546) },
             { href => url_f('contests_prizes', clist => $cid), item => res_str(565) },
         )
         : (
             !$pr && $pt_url->($text_link_f->('problem_text', cid => $cid)),
-        );
+        )),
+        { href => url_f('contests', params => $cid), item => res_str(546) };
     $t->param(
         href_action => url_f('problems'),
         submenu => \@submenu, title_suffix => res_str(525),
