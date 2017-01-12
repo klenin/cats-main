@@ -79,6 +79,9 @@ sub problems_link_save
         $problem_code = param('problem_code');
         cats::is_good_problem_code($problem_code) or return msg(1134);
     }
+    my $title = $dbh->selectrow_array(q~
+        SELECT title FROM problems WHERE id = ?~, undef,
+        $pid) or return msg(1012);
     my $move_problem = param('move');
     if ($move_problem) {
         # Jury account in the problem's origin contest is required.
@@ -89,16 +92,17 @@ sub problems_link_save
                 INNER JOIN problems P ON C.id = P.contest_id
             WHERE CA.account_id = ? AND P.id = ?~, undef,
             $uid, $pid);
-        $j or return msg(135);
+        $j or return msg(1135, $title);
     }
     add_problem_to_contest($pid, $problem_code) or return;
     if ($move_problem) {
         $dbh->do(q~
             UPDATE problems SET contest_id = ? WHERE id = ?~, undef,
             $cid, $pid);
+        msg(1021, $title);
     }
     else {
-        msg(1001);
+        msg(1001, $title);
     }
     $dbh->commit;
 }
