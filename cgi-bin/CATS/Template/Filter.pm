@@ -80,7 +80,7 @@ sub html_highlight_regions_filter
 sub linkify
 {
     my ($s) = @_;
-    $s =~ s~\[\s*(https?://[^\s|]+)(?:\s*\|\s*([^\]]+))?\s*\]~<a href="$1">@{[$2 || $1]}</a>~g;
+    $s =~ s~\[\s*((?:https?:/|\.)/[^\s|]+)(?:\s*\|\s*([^\]]+))?\s*\]~<a href="$1">@{[$2 || $1]}</a>~g;
     $s;
 }
 
