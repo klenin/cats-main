@@ -74,7 +74,7 @@ function chg_code(st_sel, pid)
 [% END %]
 
 [% IF contest_descr %]
-<p>[% contest_descr | html %]</p>
+<p>[% contest_descr | html | linkify %]</p>
 [% END %]
 
 <form method="post" enctype="multipart/form-data" name="problems_form" accept-charset="UTF-8" style="margin: 0" action="[% href_action %]">
