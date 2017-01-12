@@ -27,7 +27,7 @@ our @EXPORT = qw(
 
 our @EXPORT_OK = qw(
     $contest $t $sid $cid $uid $git_author_name $git_author_email
-    $is_root $is_team $is_jury $is_virtual $virtual_diff_time
+    $is_root $is_team $is_jury $privs $is_virtual $virtual_diff_time
     $listview_name $init_time $settings);
 
 #use CGI::Fast( ':standard' );
@@ -52,7 +52,7 @@ use CATS::Web qw(param url_param headers content_type cookie);
 
 our (
     $contest, $t, $sid, $cid, $uid, $team_name, $dbi_error, $git_author_name, $git_author_email,
-    $is_root, $is_team, $is_jury, $can_create_contests, $is_virtual, $virtual_diff_time,
+    $is_root, $is_team, $is_jury, $privs, $is_virtual, $virtual_diff_time,
     $listview_name, $request_start_time, $init_time, $settings
 );
 
@@ -282,7 +282,7 @@ sub init_user
 {
     $sid = url_param('sid') || '';
     $is_root = 0;
-    $can_create_contests = 0;
+    $privs = {};
     $uid = undef;
     $team_name = undef;
     $git_author_name = undef;
@@ -297,7 +297,7 @@ sub init_user
         $bad_sid = !defined($uid) || ($last_ip || '') ne CATS::IP::get_ip() || $locked;
         if (!$bad_sid) {
             $is_root = $srole == $cats::srole_root;
-            $can_create_contests = $is_root || $srole == $cats::srole_contests_creator;
+            $privs->{create_contests} = $is_root || ($srole & $cats::srole_contests_creator);
         }
     }
     if (!$uid) {

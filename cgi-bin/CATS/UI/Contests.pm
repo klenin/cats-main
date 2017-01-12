@@ -7,7 +7,7 @@ use CATS::DB;
 use CATS::Constants;
 use CATS::ListView qw(init_listview_template order_by define_columns attach_listview);
 use CATS::Misc qw(
-    $t $is_jury $is_root $is_team $sid $cid $uid $contest $is_virtual $settings
+    $t $is_jury $is_root $is_team $privs $sid $cid $uid $contest $is_virtual $settings
     init_template msg res_str url_f auto_ext);
 use CATS::Utils qw(url_function coalesce date_to_iso);
 use CATS::Data qw(:all);
@@ -373,7 +373,7 @@ sub contests_frame {
     }
 
     return contests_new_frame
-        if defined url_param('new') && $CATS::Misc::can_create_contests;
+        if defined url_param('new') && $privs->{create_contests};
 
     try_contest_params_frame and return;
 
@@ -387,7 +387,7 @@ sub contests_frame {
 
     contest_delete if url_param('delete');
 
-    contests_new_save if defined param('new_save') && $CATS::Misc::can_create_contests;
+    contests_new_save if defined param('new_save') && $privs->{create_contests};
 
     contests_edit_save
         if defined param('edit_save') &&
@@ -418,7 +418,7 @@ sub contests_frame {
             item => res_str($_->{i}),
             selected => $settings->{contests}->{filter} eq $_->{n},
         }, { n => 'all', i => 558 }, { n => 'official', i => 559 }, { n => 'unfinished', i => 560 }),
-        ($CATS::Misc::can_create_contests ?
+        ($privs->{create_contests} ?
             { href => url_f('contests', new => 1), item => res_str(537) } : ()),
         { href => url_f('contests',
             ical => 1, rows => 50, filter => $settings->{contests}->{filter}), item => res_str(562) },
