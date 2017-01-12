@@ -34,6 +34,7 @@ use lib File::Spec->catdir((File::Spec->splitpath(File::Spec->rel2abs($0)))[0, 1
 use CATS::Constants;
 use CATS::Config;
 use CATS::DB;
+use CATS::Utils;
 
 use CATS::Judge;
 
@@ -72,11 +73,17 @@ CATS::DB::sql_connect({
             WHERE R.submit_time > CURRENT_TIMESTAMP - 1~);
 }
 
+sub log_url {
+    $CATS::Config::absolute_url .
+        url_function('run_log', rid => $_[0]->{id}, cid => $_[0]->{contest_id}, sid => 'z')
+}
+
 {
-    my $u = $dbh->selectcol_arrayref(qq~
-        SELECT R.id FROM reqs R
-            WHERE R.state = $cats::st_unhandled_error AND R.submit_time > CURRENT_TIMESTAMP - 30~);
-    $r->{long}->{'Unhandled errors'} = join ' ', scalar(@$u), @$u;
+    my $u = $dbh->selectall_arrayref(qq~
+        SELECT R.id, R.contest_id FROM reqs R
+            WHERE R.state = $cats::st_unhandled_error AND R.submit_time > CURRENT_TIMESTAMP - 30
+            ORDER BY R.submit_time DESC~, { Slice => {} });
+    $r->{long}->{'Unhandled errors'} = join "\n", scalar(@$u), map '    ' . log_url($_), @$u;
     $r->{short}->{U} = scalar @$u if @$u;
 }
 
