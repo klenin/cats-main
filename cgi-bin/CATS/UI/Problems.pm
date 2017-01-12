@@ -123,13 +123,14 @@ sub problems_replace
         or return msg(1012);
     my $file = param('zip') || '';
     $file =~ /\.(zip|ZIP)$/
-        or return msg(53);
-    my ($contest_id, $old_title, $repo) = $dbh->selectrow_array(qq~
-        SELECT contest_id, title, repo FROM problems WHERE id=?~, {}, $pid);
+        or return msg(1053);
+    my ($contest_id, $old_title, $repo) = $dbh->selectrow_array(q~
+        SELECT contest_id, title, repo FROM problems WHERE id = ?~, undef,
+        $pid);
     # Forbid replacing linked problems. Firstly for robustness,
     # secondly for security -- to avoid checking is_jury($contest_id).
     $contest_id == $cid
-        or return msg(117);
+        or return msg(1117, $old_title);
 
     my CATS::ProblemStorage $p = CATS::ProblemStorage->new;
     return if CATS::ProblemStorage::get_repo($pid, undef, 1, logger => CATS::ProblemStorage->new)->is_remote;
@@ -182,7 +183,7 @@ sub problems_add_new
 {
     my $file = param('zip') || '';
     $file =~ /\.(zip|ZIP)$/
-        or return msg(53);
+        or return msg(1053);
     my $fname = save_uploaded_file('zip');
     problems_add($fname, 0);
     unlink $fname;
