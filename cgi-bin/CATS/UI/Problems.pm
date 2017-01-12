@@ -903,6 +903,7 @@ sub problems_frame {
         { href => url_f('contests', params => $cid), item => res_str(546) };
     $t->param(
         href_action => url_f('problems'),
+        contest_descr => $contest->{short_descr},
         submenu => \@submenu, title_suffix => res_str(525),
         is_team => $my_is_team, is_practice => $contest->is_practice,
         de_list => \@de, problem_codes => \@cats::problem_codes,
