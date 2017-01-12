@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use Data::Dumper;
+use Encode;
 use Storable qw(freeze thaw);
 
 use CATS::Constants;
@@ -309,7 +310,7 @@ sub users_save_attributes
                 WHERE CA.id = ?~, undef,
             $user_id
         );
-        $jury = 1 if $srole == 0;
+        $jury = 1 if $srole == $cats::srole_root;
 
         # Security: Forbid changing of user parameters in other contests.
         my $changed = $dbh->do(q~
