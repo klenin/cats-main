@@ -210,7 +210,7 @@ sub delete
     my ($pid, $old_contest, $title, $origin_contest) = $dbh->selectrow_array(q~
         SELECT CP.problem_id, CP.contest_id, P.title, P.contest_id AS orig
         FROM contest_problems CP INNER JOIN problems P ON CP.problem_id = P.id WHERE CP.id = ?~, undef,
-        $cpid) or return;
+        $cpid) or return msg(1012);
 
     my ($ref_count) = $dbh->selectrow_array(qq~
         SELECT COUNT(*) FROM contest_problems WHERE problem_id = ?~, undef, $pid);
@@ -218,7 +218,7 @@ sub delete
         # If at least one contest still references the problem, move all submissions
         # to the "origin" contest. Problem can be removed from the origin only with zero links.
         # To work around this limitation, move the problem to a different contest before deleting.
-        $old_contest != $origin_contest or return msg(1136);
+        $old_contest != $origin_contest or return msg(1136, $title);
         $dbh->do(q~DELETE FROM contest_problems WHERE id = ?~, undef, $cpid);
         $dbh->do(q~
             UPDATE reqs SET contest_id = ? WHERE problem_id = ? AND contest_id = ?~, undef,
