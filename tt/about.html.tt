@@ -15,7 +15,7 @@
     [% FOREACH f IN capt.features %]<li>[% f %]</li>[% END %]
   </ul>
   <br/>
-[% avail(href('docs/', capt.documentation), href(capt.format_url, capt.format), href('docs/sp.exe', capt.spawner)) %]<br/>
+[% avail(href('docs/', capt.documentation), href(capt.format_url, capt.format), href('https://github.com/klenin/spawner-bin', capt.spawner)) %]<br/>
 
 [% capt.suggestions %]
 <a href="https://github.com/klenin/cats-main/issues">[% capt.issues %]</a>
