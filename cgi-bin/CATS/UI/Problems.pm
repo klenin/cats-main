@@ -273,11 +273,18 @@ sub problems_submit
         or return msg(1012);
     $is_team or return msg(1116);
 
+    # Use explicit empty string comparisons to avoid problems with solutions containing only '0'.
     my $file = param('source') // '';
-    $file ne '' || param('source_text') ne '' or return msg(1009);
+    my $source_text = param('source_text') // '';
+    $file ne '' || $source_text ne '' or return msg(1009);
+    $file eq '' || $source_text eq '' or return msg(1042);
     length($file) <= 200 or return msg(1010);
+    if ($source_text eq '') {
+        $source_text = upload_source('source');
+        $source_text ne '' or return msg(1011);
+    }
 
-    defined param('de_id') or return msg(1013);
+    my $did = param('de_id') or return msg(1013);
 
     my ($time_since_start, $time_since_finish, $is_official, $status) = $dbh->selectrow_array(qq~
         SELECT
@@ -317,11 +324,6 @@ sub problems_submit
         return msg(137) if $prev_reqs_count >= $contest->{max_reqs};
     }
 
-    my $src = param('source_text') // upload_source('source');
-    defined $src or return msg(1010);
-    $src ne '' or return msg(1011);
-    my $did = param('de_id');
-
     if ($did eq 'by_extension') {
         my $de_list = CATS::DevEnv->new($dbh, active_only => 1);
         my $de = $de_list->by_file_extension($file)
@@ -331,7 +333,7 @@ sub problems_submit
     }
 
     # Forbid repeated submissions of the identical code with the same DE.
-    my $source_hash = CATS::Utils::source_hash($src);
+    my $source_hash = CATS::Utils::source_hash($source_text);
     my ($same_source, $prev_submit_time) = $dbh->selectrow_array(qq~
         SELECT FIRST 1 S.req_id, R.submit_time
         FROM sources S INNER JOIN reqs R ON S.req_id = R.id
@@ -357,7 +359,7 @@ sub problems_submit
         INSERT INTO sources(req_id, de_id, src, fname, hash) VALUES (?,?,?,?,?)~);
     $s->bind_param(1, $rid);
     $s->bind_param(2, $did);
-    $s->bind_param(3, $src, { ora_type => 113 } ); # blob
+    $s->bind_param(3, $source_text, { ora_type => 113 } ); # blob
     $s->bind_param(4, $file ? "$file" :
         "$rid." . CATS::DevEnv->new($dbh, id => $did)->default_extension($did));
     $s->bind_param(5, $source_hash);
