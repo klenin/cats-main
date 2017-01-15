@@ -286,34 +286,36 @@ sub problems_submit
 
     my $did = param('de_id') or return msg(1013);
 
-    my ($time_since_start, $time_since_finish, $is_official, $status) = $dbh->selectrow_array(qq~
+    my ($time_since_start, $time_since_finish, $is_official, $status, $title) = $dbh->selectrow_array(qq~
         SELECT
             CAST(CURRENT_TIMESTAMP - $virtual_diff_time - C.start_date AS DOUBLE PRECISION),
             CAST(CURRENT_TIMESTAMP- $virtual_diff_time - C.finish_date AS DOUBLE PRECISION),
-            C.is_official, CP.status
-        FROM contests C INNER JOIN contest_problems CP ON CP.contest_id = C.id
-        WHERE C.id = ? AND CP.problem_id = ?~, {},
+            C.is_official, CP.status, P.title
+        FROM contests C
+        INNER JOIN contest_problems CP ON CP.contest_id = C.id
+        INNER JOIN problems P ON P.id = CP.problem_id
+        WHERE C.id = ? AND CP.problem_id = ?~, undef,
         $cid, $pid) or return msg(1012);
 
     unless ($is_jury) {
         $time_since_start >= 0
-            or return msg(80);
+            or return msg(1080);
         $time_since_finish <= 0 || $is_virtual || can_upsolve
-            or return msg(81);
+            or return msg(1081);
         !defined $status || $status < $cats::problem_st_disabled
-            or return msg(124);
+            or return msg(1124, $title);
 
         # During the official contest, do not accept submissions for other contests.
         if (!$is_official || $is_virtual) {
             my ($current_official) = $contest->current_official;
             !$current_official
-                or return msg(123, $current_official->{title});
+                or return msg(1123, $current_official->{title});
         }
     }
 
     my $submit_uid = $uid // ($contest->is_practice ? get_anonymous_uid() : die);
 
-    return msg(131) if problem_submit_too_frequent($submit_uid);
+    return msg(1131) if problem_submit_too_frequent($submit_uid);
 
     my $prev_reqs_count;
     if ($contest->{max_reqs} && !$is_jury) {
@@ -321,7 +323,7 @@ sub problems_submit
             SELECT COUNT(*) FROM reqs R
             WHERE R.account_id = ? AND R.problem_id = ? AND R.contest_id = ?~, {},
             $submit_uid, $pid, $cid);
-        return msg(137) if $prev_reqs_count >= $contest->{max_reqs};
+        return msg(1137) if $prev_reqs_count >= $contest->{max_reqs};
     }
 
     if ($did eq 'by_extension') {
@@ -367,7 +369,7 @@ sub problems_submit
     $dbh->commit;
 
     $t->param(solution_submitted => 1, href_console => url_f('console'));
-    $time_since_finish > 0 ? msg(87) :
+    $time_since_finish > 0 ? msg(1087) :
     defined $prev_reqs_count ?
         msg(1088, $contest->{max_reqs} - $prev_reqs_count - 1) : msg(1014);
 }
