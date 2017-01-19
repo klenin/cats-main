@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use CATS::DB;
+use CATS::Form;
 use CATS::ListView qw(init_listview_template order_by define_columns attach_listview);
 use CATS::Misc qw(
     $t $is_jury $is_root
@@ -12,14 +13,14 @@ use CATS::Web qw(param url_param);
 
 sub fields () { qw(name_ru name_en code) }
 
-sub edit_frame
-{
-    init_template('keywords_edit.html.tt');
-    my $kwid = url_param('edit');
-    my $kw = $kwid ? $dbh->selectrow_hashref(q~
-        SELECT * FROM keywords WHERE id = ?~, undef, $kwid) : {};
-    $t->param(%$kw, href_action => url_f('keywords'));
-}
+my $form = CATS::Form->new({
+    table => 'keywords',
+    fields => [ map +{ name => $_ }, fields() ],
+    templates => { edit_frame => 'keywords_edit.html.tt' },
+    href_action => 'keywords',
+});
+
+sub edit_frame { $form->edit_frame }
 
 sub edit_save
 {

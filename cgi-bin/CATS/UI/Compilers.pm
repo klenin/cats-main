@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use CATS::DB;
+use CATS::Form;
 use CATS::ListView qw(init_listview_template order_by define_columns attach_listview);
 use CATS::Misc qw(
     $t $is_jury $is_root
@@ -12,36 +13,19 @@ use CATS::Web qw(param param_on url_param);
 
 sub fields() {qw(code description file_ext default_file_ext in_contests memory_handicap syntax)}
 
-sub edit_frame
-{
-    init_template('compilers_edit.html.tt');
+my $form = CATS::Form->new({
+    table => 'default_de',
+    fields => [ map +{ name => $_ }, fields() ],
+    templates => { edit_frame => 'compilers_edit.html.tt' },
+    href_action => 'compilers',
+});
 
-    my $id = url_param('edit');
-
-    my $field_values = $id ? CATS::DB::select_row('default_de', [ fields() ], { id => $id }) : {};
-
-    $t->param(
-        id => $id,
-        %$field_values,
-        locked => !$field_values->{in_contests},
-        href_action => url_f('compilers'));
+sub edit_frame {
+    $form->edit_frame(sub { $_[0]->{locked} = !$_[0]->{in_contests} });
 }
 
-sub edit_save
-{
-    my %params;
-    $params{$_} = param($_) for fields();
-    $params{in_contests} = !param_on('locked');
-    my $id = param('id');
-
-    if ($id) {
-        $dbh->do(_u $sql->update('default_de', \%params, { id => $id }));
-    }
-    else {
-        $params{id} = new_id;
-        $dbh->do(_u $sql->insert('default_de', \%params, { id => $id }));
-    }
-    $dbh->commit;
+sub edit_save {
+    $form->edit_save(sub { $_[0]->{in_contests} = !param_on('locked') });
 }
 
 sub compilers_frame
