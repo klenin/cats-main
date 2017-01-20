@@ -1,0 +1,7 @@
+[%
+  capt.import({
+    title => 'Name',
+    lang => 'Language',
+    original_contest => 'Original contest',
+  })
+%]

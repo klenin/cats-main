@@ -101,6 +101,7 @@ function chg_code(st_sel, pid)
     [% IF p.show_packages %]&nbsp;[<a href="[% p.href_download %]">[% capt.package %]</a>][% END %]
     [% IF p.href_git_download %] &nbsp;[<a href="[% p.href_git_download %]">[% capt.git_package %]</a>][% END %]
     [% IF p.href_compare_tests %]&nbsp;[<a href="[% p.href_compare_tests %]">[% capt.compare_tests %]</a>][% END %]
+    [% IF p.href_problem_details %]&nbsp;[<a href="[% p.href_problem_details %]">...</a>][% END %]
 </td>
 [% IF editable %]
 <td>

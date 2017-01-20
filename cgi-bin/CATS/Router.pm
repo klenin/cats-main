@@ -19,6 +19,7 @@ use CATS::UI::Judges;
 use CATS::UI::Compilers;
 use CATS::UI::Keywords;
 use CATS::UI::Problems;
+use CATS::UI::ProblemDetails;
 use CATS::UI::Contests;
 use CATS::UI::Users;
 use CATS::UI::ImportSources;
@@ -46,6 +47,7 @@ sub main_routes() {
         problems_udebug => [ \&CATS::UI::Problems::problems_udebug_frame, ],
         problems_retest => \&CATS::UI::Problems::problems_retest_frame,
         problem_select_testsets => \&CATS::UI::Problems::problem_select_testsets_frame,
+        problem_details => [ \&CATS::UI::ProblemDetails::problem_details_frame, pid => $int, ],
         problem_history => \&CATS::UI::Problems::problem_history_frame,
         users => \&CATS::UI::Users::users_frame,
         users_import => \&CATS::UI::Users::users_import_frame,

@@ -847,6 +847,7 @@ sub problems_frame {
             href_git_download => $is_jury && url_f('problems', git_download => $c->{pid}),
             href_compare_tests => $is_jury && url_f('compare_tests', pid => $c->{pid}),
             href_problem_history => $is_jury && url_f('problem_history', pid => $c->{pid}),
+            href_problem_details => $is_jury && url_f('problem_details', pid => $c->{pid}),
             href_original_contest =>
                 url_function('problems', sid => $sid, cid => $c->{original_contest_id}, set_contest => 1),
             href_usage => url_f('contests', has_problem => $c->{pid}),
@@ -1123,6 +1124,10 @@ sub problem_history_frame
         pid => $pid,
         remote_url => $remote_url,
         title_suffix => $title,
+        submenu => [
+            { href => url_f('problem_details', pid => $pid), item => res_str(602) },
+            { href => url_f('compare_tests', pid => $pid), item => res_str(552) },
+        ],
     );
 
     my @cols = (
