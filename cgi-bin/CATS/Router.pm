@@ -48,7 +48,7 @@ sub main_routes() {
         problems_retest => \&CATS::UI::Problems::problems_retest_frame,
         problem_select_testsets => \&CATS::UI::Problems::problem_select_testsets_frame,
         problem_details => [ \&CATS::UI::ProblemDetails::problem_details_frame, pid => $int, ],
-        problem_history => \&CATS::UI::Problems::problem_history_frame,
+        problem_history => \&CATS::UI::ProblemDetails::problem_history_frame,
         users => \&CATS::UI::Users::users_frame,
         users_import => \&CATS::UI::Users::users_import_frame,
         user_stats => \&CATS::UI::Users::user_stats_frame,
