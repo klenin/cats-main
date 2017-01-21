@@ -252,11 +252,8 @@ sub problem_history_frame
         pid => $pid,
         remote_url => $remote_url,
         title_suffix => $title,
-        submenu => [
-            { href => url_f('problem_details', pid => $pid), item => res_str(602) },
-            { href => url_f('compare_tests', pid => $pid), item => res_str(552) },
-        ],
     );
+    problem_submenu('problem_history', $pid);
 
     my @cols = (
         { caption => res_str(650), width => '25%', order_by => 'author' },

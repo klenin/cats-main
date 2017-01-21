@@ -10,6 +10,8 @@ use CATS::DB;
 use CATS::Misc qw(init_template $t $is_jury $cid $contest url_f);
 use CATS::Web qw(param);
 
+use CATS::UI::ProblemDetails;
+
 sub greedy_cliques
 {
     my (@equiv_tests) = @_;
@@ -114,6 +116,7 @@ sub compare_tests_frame
         simple_tests => \@simple_tests,
         hard_tests => \@hard_tests,
     );
+    CATS::UI::ProblemDetails::problem_submenu('compare_tests', $pid);
 }
 
 
@@ -247,6 +250,7 @@ sub test_diff_frame
         $ok;
     } @$reqs ];
     $t->param(reqs => $fr, pid => $pid, test => $test_rank);
+    CATS::UI::ProblemDetails::problem_submenu('compare_tests', $pid);
 }
 
 1;
