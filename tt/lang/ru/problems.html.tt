@@ -11,7 +11,6 @@
     console => 'консоль',
     explanation => 'разбор',
     package => 'пакет',
-    git_package => 'git пакет',
     used_in => 'Использована в турнирах',
     solution_file => 'Файл с решением',
     dev_env => 'Среда разработки',

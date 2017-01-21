@@ -3,5 +3,6 @@
     title => 'Название',
     lang => 'Язык',
     original_contest => 'Исходный турнир',
+    git_package => 'git пакет',
   })
 %]

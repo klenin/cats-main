@@ -3,6 +3,9 @@ package CATS::UI::ProblemDetails;
 use strict;
 use warnings;
 
+use File::stat;
+
+use CATS::BinaryFile;
 use CATS::DB;
 use CATS::Misc qw(
     $t $is_jury $is_root $sid $cid
@@ -10,7 +13,7 @@ use CATS::Misc qw(
 use CATS::ListView qw(init_listview_template order_by sort_listview define_columns attach_listview);
 use CATS::Problem::Save;
 use CATS::Utils qw(url_function source_encodings);
-use CATS::Web qw(param url_param encoding_param redirect);
+use CATS::Web qw(param url_param encoding_param redirect content_type headers);
 
 my $problem_submenu = [
     { href => 'problem_details', item => 504 },
@@ -43,10 +46,34 @@ sub problem_details_frame {
         $p->{pid});
     $t->param(
         p => $pr,
-        title_suffix => $p->{title},
+        problem_title => $pr->{title},
+        title_suffix => $pr->{title},
         href_original_contest => url_function('problems', cid => $pr->{contest_id}, sid => $sid),
+        href_git_package => url_f('problem_git_package', pid => $p->{pid}),
     );
     problem_submenu('problem_details', $p->{pid});
+}
+
+sub problem_git_package
+{
+    my ($p) = @_;
+    my $pid = $p->{pid};
+    my $sha = $p->{sha};
+    $is_jury && $pid or return redirect url_f('contests');
+    my ($status) = $dbh->selectrow_array(qq~
+        SELECT status FROM contest_problems
+        WHERE contest_id = ? AND problem_id = ?~, undef,
+        $cid, $pid) or return;
+    undef $t;
+    my ($fname, $tree_id) = CATS::ProblemStorage::get_repo_archive($pid, $sha);
+    content_type('application/zip');
+    headers(
+        'Accept-Ranges' => 'bytes',
+        'Content-Length' => stat($fname)->size,
+        'Content-Disposition' => "attachment; filename=problem_$tree_id.zip",
+    );
+    CATS::BinaryFile::load($fname, \my $content) or die "open '$fname' failed: $!";
+    CATS::Web::print($content);
 }
 
 sub problem_commitdiff
@@ -57,7 +84,7 @@ sub problem_commitdiff
     my $submenu = [
         { href => url_f('problem_history', pid => $pid), item => res_str(568) },
         { href => url_f('problem_history', a => 'tree', hb => $sha, pid => $pid), item => res_str(570) },
-        { href => url_f('problems', git_download => $pid, sha => $sha), item => res_str(569) },
+        { href => url_f('problem_git_package', pid => $pid, sha => $sha), item => res_str(569) },
     ];
     $t->param(
         commit => CATS::ProblemStorage::show_commit($pid, $sha, $se),
@@ -91,7 +118,7 @@ sub set_submenu_for_tree_frame
     my $submenu = [
         { href => url_f('problem_history', pid => $pid), item => res_str(568) },
         { href => url_f('problem_history', a => 'commitdiff', pid => $pid, h => $hash), item => res_str(571) },
-        { href => url_f('problems', git_download => $pid, sha => $hash), item => res_str(569) },
+        { href => url_f('problems_git_package', pid => $pid, sha => $hash), item => res_str(569) },
         @items,
     ];
     $t->param(submenu => $submenu);
@@ -269,7 +296,7 @@ sub problem_history_frame
             %$log,
             href_commit => url_f('problem_history', a => 'commitdiff', pid => $pid, h => $log->{sha}),
             href_tree => url_f('problem_history', a => 'tree', pid => $pid, hb => $log->{sha}),
-            href_download => url_f('problems', git_download => $pid, sha => $log->{sha}),
+            href_git_package => url_f('problem_git_package', pid => $pid, sha => $log->{sha}),
         );
     };
     attach_listview(url_f('problem_history', pid => $pid), $fetch_record, sort_listview(CATS::ProblemStorage::get_log($pid)));

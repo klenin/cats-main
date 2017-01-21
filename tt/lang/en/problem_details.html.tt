@@ -3,5 +3,6 @@
     title => 'Name',
     lang => 'Language',
     original_contest => 'Original contest',
+    git_package => 'git package',
   })
 %]
