@@ -8,10 +8,9 @@ use CATS::Misc qw(
     $t $is_jury $is_root $sid $cid
     init_template res_str url_f auto_ext);
 use CATS::ListView qw(init_listview_template order_by sort_listview define_columns attach_listview);
-use CATS::Utils qw(url_function);
-use CATS::Web qw(param url_param);
-
-use CATS::UI::Problems; # TODO
+use CATS::Problem::Save;
+use CATS::Utils qw(url_function source_encodings);
+use CATS::Web qw(param url_param encoding_param redirect);
 
 my $problem_submenu = [
     { href => 'problem_details', item => 504 },
@@ -242,7 +241,7 @@ sub problem_history_frame
 
     my $repo = CATS::ProblemStorage::get_repo($pid, undef, 1, logger => CATS::ProblemStorage->new);
 
-    CATS::UI::Problems::problems_replace if defined param('replace');
+    CATS::Problem::Save::problems_replace if defined param('replace');
 
     my $remote_url = $repo->get_remote_url;
     if (defined param('pull') && $remote_url) {
