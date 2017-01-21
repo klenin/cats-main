@@ -703,7 +703,6 @@ sub problems_frame {
             href_replace  => url_f('problems', replace => $c->{cpid}),
             href_download => url_f('problems', download => $c->{pid}),
             href_git_download => $is_jury && url_f('problems', git_download => $c->{pid}),
-            href_compare_tests => $is_jury && url_f('compare_tests', pid => $c->{pid}),
             href_problem_history => $is_jury && url_f('problem_history', pid => $c->{pid}),
             href_problem_details => $is_jury && url_f('problem_details', pid => $c->{pid}),
             href_original_contest =>
