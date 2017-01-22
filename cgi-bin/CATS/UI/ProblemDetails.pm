@@ -21,6 +21,7 @@ my $problem_submenu = [
     { href => 'problem_details', item => 504 },
     { href => 'problem_history', item => 568 },
     { href => 'compare_tests', item => 552 },
+    { href => 'problem_select_testsets', item => 505 },
 ];
 
 sub problem_submenu
@@ -40,7 +41,8 @@ sub problem_details_frame {
     init_template('problem_details.html.tt');
     $is_jury && $p->{pid} or return;
     my $pr = $dbh->selectrow_hashref(q~
-        SELECT P.title, P.lang, P.contest_id, C.title AS contest_name, CP.id AS cpid
+        SELECT P.title, P.lang, P.contest_id, C.title AS contest_name, CP.id AS cpid,
+            CP.testsets, CP.points_testsets
         FROM problems P
         INNER JOIN contests C ON C.id = P.contest_id
         INNER JOIN contest_problems CP ON CP.problem_id = P.id AND CP.contest_id = ?
@@ -59,6 +61,7 @@ sub problem_details_frame {
         href_nomath_text => url_f(@text, nomath => 1),
         ($contest->{is_hidden} || $contest->{local_only} || $contest->{time_since_start} <= 0 ? () :
             (href_static_text => CATS::StaticPages::url_static(@text))),
+        href_testsets => url_f('problem_select_testsets', pid => $p->{pid}),
     );
     problem_submenu('problem_details', $p->{pid});
 }
@@ -110,6 +113,51 @@ sub problem_git_package
     );
     CATS::BinaryFile::load($fname, \my $content) or die "open '$fname' failed: $!";
     CATS::Web::print($content);
+}
+
+sub problem_select_testsets_frame
+{
+    my ($p) = @_;
+    init_template('problem_select_testsets.html.tt');
+    warn %$p;
+    $p->{pid} && $is_jury or return;
+    my $problem = $dbh->selectrow_hashref(q~
+        SELECT P.id, P.title, CP.id AS cpid, CP.testsets, CP.points_testsets
+        FROM problems P INNER JOIN contest_problems CP ON P.id = CP.problem_id
+        WHERE P.id = ? AND CP.contest_id = ?~, undef,
+        $p->{pid}, $cid) or return;
+
+    my $testsets = $dbh->selectall_arrayref(q~
+        SELECT * FROM testsets WHERE problem_id = ? ORDER BY name~, { Slice => {} },
+        $problem->{id});
+
+    my $param_to_list = sub {
+        my %sel;
+        @sel{param($_[0])} = undef;
+        join ',', map $_->{name}, grep exists $sel{$_->{id}}, @$testsets;
+    };
+    if ($p->{save}) {
+        $dbh->do(q~
+            UPDATE contest_problems SET testsets = ?, points_testsets = ?, max_points = NULL
+            WHERE id = ?~, undef,
+            map($param_to_list->("sel_$_"), qw(testsets points_testsets)), $problem->{cpid});
+        $dbh->commit;
+        return redirect url_f($p->{from_problems} ? ('problems') : ('problem_select_testsets', pid => $p->{pid}));
+    }
+
+    my $list_to_selected = sub {
+        my %sel;
+        @sel{split ',', $problem->{$_[0]} || ''} = undef;
+        $_->{"sel_$_[0]"} = exists $sel{$_->{name}} for @$testsets;
+    };
+    $list_to_selected->($_) for qw(testsets points_testsets);
+
+    $t->param("problem_$_" => $problem->{$_}) for keys %$problem;
+    $t->param(
+        testsets => $testsets,
+        href_action => url_f('problem_select_testsets', ($p->{from_problems} ? (from_problems => 1) : ())),
+    );
+    problem_submenu('problem_select_testsets', $p->{pid});
 }
 
 sub problem_commitdiff

@@ -11,5 +11,8 @@
     nospell_text => 'no spellchecking',
     nomath_text => 'simplified math',
     static_text => 'cached',
+    testsets => 'Tests to check',
+    points_testsets => 'Tests to assign points',
+    testsets_all => 'all',
   })
 %]

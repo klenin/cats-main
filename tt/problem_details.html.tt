@@ -16,6 +16,8 @@
 [% IF href_nomath_text %][<a href="[% href_nomath_text %]">[% capt.nomath_text %]</a>][% END %]
 [% IF href_static_text %][<a href="[% href_static_text %]">[% capt.static_text %]</a>][% END %]
 </td></tr>
+<tr><td>[% capt.testsets %]</td><td>[% href(href_testsets, p.testsets || capt.testsets_all) %]</td></tr>
+<tr><td>[% capt.points_testsets %]</td><td>[% href(href_testsets, p.points_testsets || capt.testsets_all) %]</td></tr>
 </table>
 </form>
 

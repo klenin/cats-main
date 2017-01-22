@@ -1,8 +1,8 @@
-[% PROCESS 'includes/menu_begin.tti' %]
+[% PROCESS includes/menu_begin.tti %]
 
 <h3>[% problem_title %]</h3>
 [% capt.select_testsets %]:
-<form action="[% href_problem_select_testsets %]" method="POST">
+<form action="[% href_action %]" method="POST">
 <table class="bordered">
 <tr><td>[% capt.check %]</td><td>[% capt.points %]</td><td>[% capt.name %]</td></tr>
 [% FOREACH ts IN testsets %]
@@ -14,7 +14,7 @@
 [% END %]
 </table>
 <br/>
-<input type="hidden" name="cpid" value="[% problem_cpid %]" />
+<input type="hidden" name="pid" value="[% problem_id %]" />
 <input type="submit" name="save" value="[% capt.save %]" class="button" />
 </form>
-[% PROCESS 'includes/menu_end.tti' %]
+[% PROCESS includes/menu_end.tti %]

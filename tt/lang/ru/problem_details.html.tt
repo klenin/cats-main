@@ -11,5 +11,8 @@
     nospell_text => 'без орфографии',
     nomath_text => 'упрощённые формулы',
     static_text => 'кешированный',
+    testsets => 'Тесты для проверки',
+    points_testsets => 'Тесты для разбалловки',
+    testsets_all => 'все',
   })
 %]

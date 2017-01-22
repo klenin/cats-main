@@ -426,47 +426,6 @@ sub problems_frame_jury_action
     CATS::ProblemStorage::delete($cpid) if $cpid;
 }
 
-sub problem_select_testsets_frame
-{
-    init_template('problem_select_testsets.html.tt');
-    my $cpid = param('cpid') or return;
-
-    my $problem = $dbh->selectrow_hashref(q~
-        SELECT P.id, P.title, CP.id AS cpid, CP.contest_id, CP.testsets, CP.points_testsets
-        FROM problems P INNER JOIN contest_problems CP ON P.id = CP.problem_id
-        WHERE CP.id = ?~, undef,
-        $cpid) or return;
-    is_jury_in_contest(contest_id => $problem->{contest_id}) or return;
-
-    my $testsets = $dbh->selectall_arrayref(q~
-        SELECT * FROM testsets WHERE problem_id = ? ORDER BY name~, { Slice => {} },
-        $problem->{id});
-
-    my $param_to_list = sub {
-        my %sel;
-        @sel{param($_[0])} = undef;
-        join ',', map $_->{name}, grep exists $sel{$_->{id}}, @$testsets;
-    };
-    if (param('save')) {
-        $dbh->do(q~
-            UPDATE contest_problems SET testsets = ?, points_testsets = ?, max_points = NULL
-            WHERE id = ?~, undef,
-            map($param_to_list->("sel_$_"), qw(testsets points_testsets)), $problem->{cpid});
-        $dbh->commit;
-        return redirect(url_f('problems'));
-    }
-
-    my $list_to_selected = sub {
-        my %sel;
-        @sel{split ',', $problem->{$_[0]} || ''} = undef;
-        $_->{"sel_$_[0]"} = exists $sel{$_->{name}} for @$testsets;
-    };
-    $list_to_selected->($_) for qw(testsets points_testsets);
-
-    $t->param("problem_$_" => $problem->{$_}) for keys %$problem;
-    $t->param(testsets => $testsets, href_select_testsets => url_f('problem_select_testsets'));
-}
-
 sub problems_retest_frame
 {
     $is_jury && !$contest->is_practice or return;
@@ -517,7 +476,7 @@ sub problems_retest_frame
             testsets => $c->{testsets} || '*',
             points_testsets => $c->{points_testsets},
             in_queue => $c->{in_queue},
-            href_select_testsets => url_f('problem_select_testsets', cpid => $c->{cpid}),
+            href_select_testsets => url_f('problem_select_testsets', pid => $c->{pid}, from_problems => 1),
         );
     };
     attach_listview(url_f('problems_retest'), $fetch_record, $sth);
@@ -679,7 +638,7 @@ sub problems_frame {
             testsets => $c->{testsets} || '*',
             points_testsets => $c->{points_testsets},
             test_count => $c->{test_count},
-            href_select_testsets => url_f('problem_select_testsets', cpid => $c->{cpid}),
+            href_select_testsets => url_f('problem_select_testsets', pid => $c->{pid}, from_problems => 1),
             lang => $c->{lang},
             memory_limit => $c->{memory_limit} * 1024 * 1024,
             time_limit => $c->{time_limit},
