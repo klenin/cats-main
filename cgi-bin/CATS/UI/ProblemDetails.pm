@@ -70,8 +70,12 @@ sub problem_download
 {
     my ($p) = @_;
     my $pid = $p->{pid} or return not_found;
-    $is_jury || $contest->{show_packages} && $contest->{time_since_start} > 0 && !$contest->{local_only}
-        or return not_found;
+    $is_jury ||
+        $contest->{show_packages} &&
+        $contest->{time_since_start} > 0 &&
+        !$contest->{local_only} &&
+        !$contest->{is_hidden}
+            or return not_found;
     # If hash is non-empty, redirect to existing file.
     # Package size is supposed to be large enough to warrant a separate query.
     my ($hash, $status) = $dbh->selectrow_array(q~
