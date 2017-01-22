@@ -6,5 +6,10 @@
     download => 'Download',
     package => 'package',
     git_package => 'git package',
+    text => 'Text',
+    full_text => 'full',
+    nospell_text => 'no spellchecking',
+    nomath_text => 'simplified math',
+    static_text => 'cached',
   })
 %]

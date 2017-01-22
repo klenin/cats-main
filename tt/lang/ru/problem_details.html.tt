@@ -6,5 +6,10 @@
     download => 'Скачать',
     package => 'пакет',
     git_package => 'пакет git',
+    text => 'Текст',
+    full_text => 'полный',
+    nospell_text => 'без орфографии',
+    nomath_text => 'упрощённые формулы',
+    static_text => 'кешированный',
   })
 %]

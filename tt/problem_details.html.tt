@@ -10,6 +10,12 @@
 [% IF href_download %][<a href="[% href_download %]">[% capt.package %]</a>][% END %]
 [% IF href_git_package %][<a href="[% href_git_package %]">[% capt.git_package %]</a>][% END %]
 </td></tr>
+<tr><td>[% capt.text %]</td><td>
+[% IF href_text %][<a href="[% href_text %]">[% capt.full_text %]</a>][% END %]
+[% IF href_nospell_text %][<a href="[% href_nospell_text %]">[% capt.nospell_text %]</a>][% END %]
+[% IF href_nomath_text %][<a href="[% href_nomath_text %]">[% capt.nomath_text %]</a>][% END %]
+[% IF href_static_text %][<a href="[% href_static_text %]">[% capt.static_text %]</a>][% END %]
+</td></tr>
 </table>
 </form>
 

@@ -38,14 +38,15 @@ sub problem_submenu
 sub problem_details_frame {
     my ($p) = @_;
     init_template('problem_details.html.tt');
-    $is_jury or return;
-    $p->{pid} or return;
+    $is_jury && $p->{pid} or return;
     my $pr = $dbh->selectrow_hashref(q~
-        SELECT P.title, P.lang, P.contest_id, C.title AS contest_name
+        SELECT P.title, P.lang, P.contest_id, C.title AS contest_name, CP.id AS cpid
         FROM problems P
         INNER JOIN contests C ON C.id = P.contest_id
+        INNER JOIN contest_problems CP ON CP.problem_id = P.id AND CP.contest_id = ?
         WHERE P.id = ?~, { Slice => {} },
-        $p->{pid});
+        $cid, $p->{pid}) or return;
+    my @text = ('problem_text', cpid => $pr->{cpid});
     $t->param(
         p => $pr,
         problem_title => $pr->{title},
@@ -53,6 +54,11 @@ sub problem_details_frame {
         href_original_contest => url_function('problems', cid => $pr->{contest_id}, sid => $sid),
         href_download => url_f('problem_download', pid => $p->{pid}),
         href_git_package => url_f('problem_git_package', pid => $p->{pid}),
+        href_text => url_f(@text),
+        href_nospell_text => url_f(@text, nospell => 1),
+        href_nomath_text => url_f(@text, nomath => 1),
+        ($contest->{is_hidden} || $contest->{local_only} || $contest->{time_since_start} <= 0 ? () :
+            (href_static_text => CATS::StaticPages::url_static(@text))),
     );
     problem_submenu('problem_details', $p->{pid});
 }
