@@ -3,6 +3,8 @@
     title => 'Name',
     lang => 'Language',
     original_contest => 'Original contest',
+    download => 'Download',
+    package => 'package',
     git_package => 'git package',
   })
 %]

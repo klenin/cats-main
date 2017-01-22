@@ -6,8 +6,11 @@
 <tr><td>[% capt.title %]</td><td>[% p.title | html %]</td></tr>
 <tr><td>[% capt.lang %]</td><td>[% p.lang | html %]</td></tr>
 <tr><td>[% capt.original_contest %]</td><td>[% maybe_href(href_original_contest, p.contest_name) %]</td></tr>
+<tr><td>[% capt.download %]</td><td>
+[% IF href_download %][<a href="[% href_download %]">[% capt.package %]</a>][% END %]
+[% IF href_git_package %][<a href="[% href_git_package %]">[% capt.git_package %]</a>][% END %]
+</td></tr>
 </table>
-[% IF href_git_package %] &nbsp;[<a href="[% href_git_package %]">[% capt.git_package %]</a>][% END %]
 </form>
 
 [% PROCESS includes/menu_end.tti %]

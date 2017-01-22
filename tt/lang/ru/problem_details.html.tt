@@ -3,6 +3,8 @@
     title => 'Название',
     lang => 'Язык',
     original_contest => 'Исходный турнир',
-    git_package => 'git пакет',
+    download => 'Скачать',
+    package => 'пакет',
+    git_package => 'пакет git',
   })
 %]
