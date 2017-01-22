@@ -5,15 +5,17 @@ use warnings;
 
 use File::stat;
 
+use CATS::Constants;
 use CATS::BinaryFile;
 use CATS::DB;
 use CATS::Misc qw(
-    $t $is_jury $is_root $sid $cid
+    $t $is_jury $is_root $sid $cid $contest
     init_template res_str url_f auto_ext);
 use CATS::ListView qw(init_listview_template order_by sort_listview define_columns attach_listview);
 use CATS::Problem::Save;
+use CATS::Problem::Text;
 use CATS::Utils qw(url_function source_encodings);
-use CATS::Web qw(param url_param encoding_param redirect content_type headers);
+use CATS::Web qw(content_type encoding_param headers not_found param redirect url_param);
 
 my $problem_submenu = [
     { href => 'problem_details', item => 504 },
@@ -52,6 +54,33 @@ sub problem_details_frame {
         href_git_package => url_f('problem_git_package', pid => $p->{pid}),
     );
     problem_submenu('problem_details', $p->{pid});
+}
+
+sub problem_download
+{
+    my ($p) = @_;
+    my $pid = $p->{pid} or return not_found;
+    $is_jury || $contest->{show_packages} && $contest->{time_since_start} > 0 && !$contest->{local_only}
+        or return not_found;
+    # If hash is non-empty, redirect to existing file.
+    # Package size is supposed to be large enough to warrant a separate query.
+    my ($hash, $status) = $dbh->selectrow_array(q~
+        SELECT P.hash, CP.status FROM problems P
+        INNER JOIN contest_problems CP ON cp.problem_id = P.id
+        WHERE CP.contest_id = ? AND P.id = ?~, undef,
+        $cid, $pid);
+    defined $status && ($is_jury || $status != $cats::problem_st_hidden)
+        or return not_found;
+    my $already_hashed = CATS::Problem::Text::ensure_problem_hash($pid, \$hash);
+    my $fname = "pr/problem_$hash.zip";
+    my $fpath = CATS::Misc::downloads_path . $fname;
+    unless($already_hashed && -f $fpath) {
+        my ($zip) = $dbh->selectrow_array(qq~
+            SELECT zip_archive FROM problems WHERE id = ?~, undef,
+            $pid);
+        CATS::BinaryFile::save($fpath, $zip);
+    }
+    redirect(CATS::Misc::downloads_url . $fname);
 }
 
 sub problem_git_package

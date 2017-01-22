@@ -18,7 +18,6 @@ use CATS::Web qw(param url_param redirect upload_source);
 use CATS::Judge;
 use CATS::StaticPages;
 use CATS::ProblemStorage;
-use CATS::Problem::Text;
 use CATS::Problem::Save;
 use CATS::Problem::Source::Zip;
 use CATS::Problem::Source::Git;
@@ -50,31 +49,6 @@ sub problems_change_code
         $new_code, $cid, $cpid);
     $dbh->commit;
     CATS::StaticPages::invalidate_problem_text(cid => $cid, cpid => $cpid);
-}
-
-sub download_problem
-{
-    my $pid = param('download');
-    # If hash is non-empty, redirect to existing file.
-    # Package size is supposed to be large enough to warrant a separate query.
-    my ($hash, $status) = $dbh->selectrow_array(qq~
-        SELECT P.hash, CP.status FROM problems P
-        INNER JOIN contest_problems CP ON cp.problem_id = P.id
-        WHERE CP.contest_id = ? AND P.id = ?~, undef,
-        $cid, $pid);
-    defined $status && ($is_jury || $status != $cats::problem_st_hidden)
-        or return;
-    undef $t;
-    my $already_hashed = ensure_problem_hash($pid, \$hash);
-    my $fname = "pr/problem_$hash.zip";
-    my $fpath = CATS::Misc::downloads_path . $fname;
-    unless($already_hashed && -f $fpath)
-    {
-        my ($zip) = $dbh->selectrow_array(qq~
-            SELECT zip_archive FROM problems WHERE id = ?~, undef, $pid);
-        CATS::BinaryFile::save($fpath, $zip);
-    }
-    redirect(CATS::Misc::downloads_url . $fname);
 }
 
 sub can_upsolve
@@ -353,7 +327,7 @@ sub problems_all_frame {
             href_view_problem => url_f('problem_text', pid => $pid),
             href_view_contest => url_function('problems', sid => $sid, cid => $contest_id),
             # Jury can download package for any problem after linking, but not before.
-            ($is_root ? (href_download => url_function('problems', sid => $sid, cid => $contest_id, download => $pid)) : ()),
+            ($is_root ? (href_download => url_function('problem_download', sid => $sid, cid => $contest_id, pid => $pid)) : ()),
             ($is_jury ? (href_problem_history => url_f('problem_history', pid => $pid)) : ()),
             linked => $linked || !$link,
             problem_id => $pid,
@@ -408,7 +382,7 @@ sub problems_udebug_frame {
             href_view_problem => CATS::StaticPages::url_static('problem_text', cpid => $r->{cpid}),
             href_explanation => $r->{has_explanation} ?
                 url_f('problem_text', cpid => $r->{cpid}, explain => 1) : '',
-            href_download => url_function('problems', download => $r->{pid}),
+            href_download => url_function('problem_download', pid => $r->{pid}),
             cpid => $r->{cpid},
             pid => $r->{pid},
             code => $r->{code},
@@ -591,7 +565,6 @@ sub problems_frame {
 
     init_listview_template('problems' . ($contest->is_practice ? '_practice' : ''),
         'problems', auto_ext('problems'));
-    defined param('download') && $show_packages and return download_problem;
     problems_frame_jury_action;
 
     problems_submit if defined param('submit');
@@ -674,7 +647,7 @@ sub problems_frame {
             href_change_status => url_f('problems', 'change_status' => $c->{cpid}),
             href_change_code => url_f('problems', 'change_code' => $c->{cpid}),
             href_replace  => url_f('problems', replace => $c->{cpid}),
-            href_download => url_f('problems', download => $c->{pid}),
+            href_download => url_f('problem_download', pid => $c->{pid}),
             href_problem_history => $is_jury && url_f('problem_history', pid => $c->{pid}),
             href_problem_details => $is_jury && url_f('problem_details', pid => $c->{pid}),
             href_original_contest =>

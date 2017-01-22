@@ -48,6 +48,7 @@ sub main_routes() {
         problems_udebug => [ \&CATS::UI::Problems::problems_udebug_frame, ],
         problems_retest => \&CATS::UI::Problems::problems_retest_frame,
         problem_select_testsets => \&CATS::UI::Problems::problem_select_testsets_frame,
+        problem_download => [ \&CATS::UI::ProblemDetails::problem_download, pid => $int ],
         problem_git_package => [ \&CATS::UI::ProblemDetails::problem_git_package, pid => $int, sha => $sha ],
         problem_details => [ \&CATS::UI::ProblemDetails::problem_details_frame, pid => $int, ],
         problem_history => \&CATS::UI::ProblemDetails::problem_history_frame,
