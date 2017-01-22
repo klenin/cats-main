@@ -251,7 +251,7 @@ sub problems_mass_retest()
         }
         $dbh->commit;
     }
-    return msg(128, $count);
+    return msg(1128, $count);
 }
 
 sub prepare_keyword {
