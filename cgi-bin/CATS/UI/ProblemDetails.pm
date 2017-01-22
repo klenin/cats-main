@@ -10,7 +10,7 @@ use CATS::BinaryFile;
 use CATS::DB;
 use CATS::Misc qw(
     $t $is_jury $is_root $sid $cid $contest
-    init_template res_str url_f auto_ext);
+    init_template msg res_str url_f auto_ext);
 use CATS::ListView qw(init_listview_template order_by sort_listview define_columns attach_listview);
 use CATS::Problem::Save;
 use CATS::Problem::Text;
@@ -136,17 +136,19 @@ sub problem_select_testsets_frame
         $problem->{id});
 
     my $param_to_list = sub {
+        my ($field) = @_;
         my %sel;
-        @sel{param($_[0])} = undef;
-        join ',', map $_->{name}, grep exists $sel{$_->{id}}, @$testsets;
+        @sel{param("sel_$field")} = undef;
+        $problem->{$field} = join ',', map $_->{name}, grep exists $sel{$_->{id}}, @$testsets;
     };
     if ($p->{save}) {
         $dbh->do(q~
             UPDATE contest_problems SET testsets = ?, points_testsets = ?, max_points = NULL
             WHERE id = ?~, undef,
-            map($param_to_list->("sel_$_"), qw(testsets points_testsets)), $problem->{cpid});
+            map($param_to_list->($_), qw(testsets points_testsets)), $problem->{cpid});
         $dbh->commit;
-        return redirect url_f($p->{from_problems} ? ('problems') : ('problem_select_testsets', pid => $p->{pid}));
+        return redirect url_f('problems') if $p->{from_problems};
+        msg(1141, $problem->{title});
     }
 
     my $list_to_selected = sub {
