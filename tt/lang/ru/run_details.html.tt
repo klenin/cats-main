@@ -6,6 +6,7 @@
     tests_passed => 'Пройдено тестов',
     points => 'Баллы',
     comment => 'Примечание',
+    depends_on => 'Зависит от',
     test_data => 'Входные данные',
     visualize => 'Визуализировать',
     show_test_data => 'Показывать входные данные',

@@ -6,6 +6,7 @@
     tests_passed => 'Tests passed',
     points => 'Points',
     comment => 'Comment',
+    depends_on => 'Depends on',
     test_data => 'Input data',
     visualize => 'Visualize',
     show_test_data => 'Show input data',

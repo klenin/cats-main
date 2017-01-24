@@ -34,13 +34,16 @@
   [% IF r.testsets.size %]
     <p>[% capt.testsets %]</p>
     <table class="bordered">
-    <th>[% capt.name %]</th><th>[% capt.tests_passed %]</th><th>[% capt.points %]</th><th>[% capt.comment %]</th></tr>
+    <tr><th>[% capt.name %]</th><th>[% capt.tests_passed %]</th><th>[% capt.points %]</th><th>[% capt.comment %]</th>
+    [%- IF r.has_depends_on %]<th>[% capt.depends_on %]</th>[% END -%]
+    </tr>
     [% FOREACH ts IN r.testsets %]
     <tr [% IF ts.earned_points %] class="run_details_OK"[% END %]>
       <td>[% ts.name %]</td>
       <td align="right">[% ts.accepted_count || 0 %] / [% ts.test_count %]</td>
       <td align="right">[% ts.earned_points || 0 %]</td>
       <td>[% ts.comment %]</td>
+      [% IF r.has_depends_on %]<td>[% ts.depends_on %]</td>[% END -%]
     </tr>
     [% END %]
     <tr><td colspan="2"/>[% capt.total %]<td align="right">[% r.total_points %]</td><td></td></tr>

@@ -165,6 +165,7 @@ sub get_run_info {
         total_points => $total_points,
         run_details => [ map $add_testdata->($run_row->($_)), 1..$last_test ],
         testsets => [ sort { $a->{list}[0] <=> $b->{list}[0] } values %used_testsets ],
+        has_depends_on => 0 < grep($_->{depends_on}, values %used_testsets),
         has_visualizer => @$visualizers > 0,
     };
 }
