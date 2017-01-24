@@ -159,6 +159,7 @@ sub get_run_info {
         my ($row) = @_ or return ();
         $contest->{show_test_data} or return $row;
         my $t = $contest->{tests}->[$row->{test_rank} - 1] or return $row;
+        $t->{param} //= '';
         $row->{test_data} =
             defined $t->{input} ? $t->{input} :
             $t->{gen_group} ? "$t->{gen_name} GROUP" :
