@@ -44,11 +44,9 @@ sub source_links {
     $t->param(source_encodings => source_encodings($se));
 }
 
-sub get_run_info {
-    my ($contest, $req) = @_;
-    my $points = $contest->{points};
+sub get_req_details {
+    my ($contest, $req, $accepted_tests) = @_;
 
-    my %run_details;
     my $rd_fields = join ', ', (
          qw(test_rank result),
          ($contest->{show_test_resources} ? qw(time_used memory_used disk_used) : ()),
@@ -58,14 +56,36 @@ sub get_run_info {
     my $c = $dbh->prepare(qq~
         SELECT $rd_fields FROM req_details WHERE req_id = ? ORDER BY test_rank~);
     $c->execute($req->{req_id});
+
+    my @result;
+    while (my $r = $c->fetchrow_hashref) {
+        $r->{accepted} = $r->{result} == $cats::st_accepted ? 1 : 0;
+        # When tests are run in random order, and the user looks at the run details
+        # while the testing is in progress, he may be able to see 'OK' result
+        # for the test ranked above the (unknown at the moment) first failing test.
+        # Prevent this by stopping output at the first failed OR not-run-yet test.
+        # Note: Tests after the gap in non-continuous testset will be hidden while running.
+        last if !$contest->{show_all_tests} && $_->{state} < $cats::request_processed &&
+            $r->{accepted} && @result && $result[-1]->{test_rank} != $r->{test_rank} - 1;
+        push @result, $r;
+        last if !$contest->{show_all_tests} && !$r->{accepted};
+    }
+    @result;
+}
+
+sub get_run_info {
+    my ($contest, $req) = @_;
+    my $points = $contest->{points};
+
     my $last_test = 0;
     my $total_points = 0;
     my %testset = CATS::Testset::get_testset($dbh, $req->{req_id});
     $contest->{show_points} ||= 0 < grep $_, values %testset;
-    my %used_testsets;
+    my (%run_details, %used_testsets);
 
     my $comment_enc = encoding_param('comment_enc');
-    while (my $row = $c->fetchrow_hashref()) {
+
+    for my $row (get_req_details($contest, $req)) {
         $_ and $_ = sprintf('%.3g', $_) for $row->{time_used};
         if ($contest->{show_checker_comment}) {
             my $d = $row->{checker_comment} || '';
@@ -74,14 +94,12 @@ sub get_run_info {
             $row->{checker_comment} .= '...' if $d ne '';
         }
 
-        my $prev_test = $last_test;
         $last_test = $row->{test_rank};
-        my $accepted = $row->{result} == $cats::st_accepted ? 1 : 0;
-        my $p = $accepted ? $points->[$row->{test_rank} - 1] || 0 : 0;
+        my $p = $row->{accepted} ? $points->[$row->{test_rank} - 1] || 0 : 0;
         if (my $ts = $testset{$last_test}) {
             $used_testsets{$ts->{name}} = $ts;
             push @{$ts->{list} ||= []}, $last_test;
-            $ts->{accepted_count} += $accepted;
+            $ts->{accepted_count} += $row->{accepted};
             if ($ts->{points}) {
                 $total_points += $ts->{earned_points} = $ts->{points}
                     if $ts->{accepted_count} == $ts->{test_count};
@@ -98,7 +116,7 @@ sub get_run_info {
             }
             $p .= " => $ts->{name}";
         }
-        elsif ($accepted && $req->{partial_checker}) {
+        elsif ($row->{accepted} && $req->{partial_checker}) {
             $total_points += $p = CATS::RankTable::get_partial_points($row, $p);
         }
         else {
@@ -107,14 +125,8 @@ sub get_run_info {
         $run_details{$last_test} = {
             state_to_display($row->{result}), %$row, points => $p,
         };
-        # When tests are run in random order, and the user looks at the run details
-        # while the testing is in progress, he may be able to see 'OK' result
-        # for the test ranked above the (unknown at the moment) first failing test.
-        # Prevent this by stopping output at the first failed OR not-run-yet test.
-        last if
-            !$contest->{show_all_tests} &&
-            (!$accepted || $prev_test != $last_test - 1);
     }
+
     # Output 'not processed' for tests we do not plan to run, but must still display.
     if ($contest->{show_all_tests} && !$contest->{run_all_tests}) {
         $last_test = @$points;
