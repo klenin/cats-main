@@ -427,9 +427,9 @@ sub insert_problem_content
 
     for my $ts (values %{$problem->{testsets}}) {
         $dbh->do(q~
-            INSERT INTO testsets (id, problem_id, name, tests, points, comment, hide_details)
-            VALUES (?, ?, ?, ?, ?, ?, ?)~, undef,
-            $ts->{id}, $problem->{id}, @{$ts}{qw(name tests points comment hideDetails)});
+            INSERT INTO testsets (id, problem_id, name, tests, points, comment, hide_details, depends_on)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)~, undef,
+            $ts->{id}, $problem->{id}, @{$ts}{qw(name tests points comment hideDetails depends_on)});
     }
 
     my $c = $dbh->prepare(qq~

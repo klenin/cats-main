@@ -215,6 +215,7 @@ CREATE TABLE testsets
     comment         VARCHAR(400),
     /* Do not display individual test results until defreeze_date. */
     hide_details    SMALLINT DEFAULT 0 NOT NULL CHECK (hide_details IN (0, 1)),
+    depends_on      VARCHAR(200),
     CONSTRAINT testsets_pk PRIMARY KEY (id),
     /*CONSTRAINT testsets_uniq UNIQUE (name, problem_id),*/
     FOREIGN KEY (problem_id) REFERENCES problems (id) ON DELETE CASCADE
