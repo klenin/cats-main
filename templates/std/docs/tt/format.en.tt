@@ -332,6 +332,8 @@ files with tests, solutions etc.
     <li>points[% s(opt, v18) %] -- number of points for the whole testset;</li>
     <li>hideDetails[% s(opt, v18) %] -- hide results of individual tests;</li>
     <li>comment[% s(opt, v18) %] -- comment.</li>
+    <li>depends_on[% s(opt, v19) %] --
+      <a href="#rankSpec">rank specification</a> for tests upon which this testset depends.</li>
   </ul></td>
   <td>Contains test set description. While adding the problem to the contest,
     one or more testsets to use for checking may be specified.
@@ -341,7 +343,7 @@ files with tests, solutions etc.
     It is allowed to mix testsets and stand-alone tests, as well as specify
     overlapping testsets.
     However, the test must not be included in a several concurrently used testsets
-    with points or hidden details.
+    with points, dependencies or hidden details.
   </td>
 </tr>
 <tr>
