@@ -68,6 +68,7 @@ sub get_req_details {
         last if !$contest->{show_all_tests} && $_->{state} < $cats::request_processed &&
             $r->{accepted} && @result && $result[-1]->{test_rank} != $r->{test_rank} - 1;
         push @result, $r;
+        $accepted_tests->{$r->{test_rank}} = 1 if $r->{accepted};
         last if !$contest->{show_all_tests} && !$r->{accepted};
     }
     @result;
@@ -79,13 +80,14 @@ sub get_run_info {
 
     my $last_test = 0;
     my $total_points = 0;
+    my $all_testsets = CATS::Testset::get_all_testsets($dbh, $req->{problem_id});
     my %testset = CATS::Testset::get_testset($dbh, $req->{req_id});
     $contest->{show_points} ||= 0 < grep $_, values %testset;
-    my (%run_details, %used_testsets);
+    my (%run_details, %used_testsets, %accepted_tests, %accepted_deps);
 
     my $comment_enc = encoding_param('comment_enc');
 
-    for my $row (get_req_details($contest, $req)) {
+    for my $row (get_req_details($contest, $req, \%accepted_tests)) {
         $_ and $_ = sprintf('%.3g', $_) for $row->{time_used};
         if ($contest->{show_checker_comment}) {
             my $d = $row->{checker_comment} || '';
@@ -99,14 +101,19 @@ sub get_run_info {
         if (my $ts = $testset{$last_test}) {
             $used_testsets{$ts->{name}} = $ts;
             push @{$ts->{list} ||= []}, $last_test;
-            $ts->{accepted_count} += $row->{accepted};
-            if ($ts->{points}) {
-                $total_points += $ts->{earned_points} = $ts->{points}
-                    if $ts->{accepted_count} == $ts->{test_count};
+            if (CATS::RankTable::dependencies_accepted($all_testsets, $ts, \%accepted_tests, \%accepted_deps)) {
+                $ts->{accepted_count} += $row->{accepted};
+                if ($ts->{points}) {
+                    $total_points += $ts->{earned_points} = $ts->{points}
+                        if $ts->{accepted_count} == $ts->{test_count};
+                }
+                else {
+                    $total_points += $p;
+                    $ts->{earned_points} += $p;
+                }
             }
             else {
-                $total_points += $p;
-                $ts->{earned_points} += $p;
+                $p = 'X';
             }
             if ($ts->{hide_details} && $contest->{hide_testset_details}) {
                 $row->{result} = $cats::st_ignore_submit;

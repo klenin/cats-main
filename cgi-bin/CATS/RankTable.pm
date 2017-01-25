@@ -196,6 +196,14 @@ sub get_partial_points
     my $p = ($req_row->{checker_comment} // '') =~ /^(\d+)/ ? min($1, $test_max_points || $1) : 0;
 }
 
+sub dependencies_accepted {
+    my ($all_testsets, $ts, $accepted_tests, $cache) = @_;
+    return 1 if !$ts->{depends_on} or $cache->{$ts->{name}};
+    my $tests = $ts->{parsed_depends_on} //=
+        CATS::Testset::parse_test_rank($all_testsets, $ts->{depends_on}, undef, include_deps => 1);
+    $accepted_tests->{$_} or return 0 for keys %$tests;
+    return $cache->{$ts->{name}} = 1;
+}
 
 sub cache_req_points
 {
@@ -210,10 +218,15 @@ sub cache_req_points
     );
 
     my $test_testsets = $req->{testsets} ? get_test_testsets($problem, $req->{testsets}) : {};
-    my %used_testsets;
+    my (%used_testsets, %accepted_tests, %accepted_deps);
+    for (@$test_points) {
+        $accepted_tests{$_->{rank}} = 1 if $_->{result} == $cats::st_accepted;
+    }
     my $total = sum map {
         my $t = $test_testsets->{$_->{rank}};
         $_->{result} != $cats::st_accepted ? 0 :
+        $t && $t->{depends_on} && !dependencies_accepted(
+            $problem->{all_testsets}, $t, \%accepted_tests, \%accepted_deps) ? 0 :
         # Scoring groups have priority over partial checkers,
         # although they should not be used together.
         $t && $t->{points} ? (++$used_testsets{$t->{name}} == $t->{test_count} ? $t->{points} : 0) :
