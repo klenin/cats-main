@@ -1,0 +1,11 @@
+[%- WRAPPER includes/jsonp.tti -%]
+[%- USE Javascript -%]
+{
+"login": "[% login | $Javascript %]",
+"name": "[% team_name | $Javascript %]",
+"capitan_name": "[% capitan_name | $Javascript %]",
+"email": "[% email | $Javascript %]",
+"country": "[% country | $Javascript %]",
+"lang": "[% lang %]"
+}
+[%- END -%]

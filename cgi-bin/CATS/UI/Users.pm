@@ -191,14 +191,14 @@ sub display_settings
 
 sub profile_frame
 {
-    init_template('user_profile.html.tt');
+    init_template(auto_ext('user_profile', param('json')));
+    $uid or return;
     if(defined param('clear') && $is_team) {
         $settings = {};
         msg(1029, $CATS::Misc::team_name);
     }
     profile_save if defined param('edit_save') && $is_team;
 
-    $uid or return;
     my $u = CATS::User->new->load($uid) or return;
     my ($is_some_jury) = $is_jury || $dbh->selectrow_array(q~
         SELECT CA.contest_id FROM contest_accounts CA WHERE CA.account_id = ? AND CA.is_jury = 1~, undef,
