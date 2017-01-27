@@ -28,17 +28,18 @@ use CATS::UI::RankTable;
 
 my $function;
 
+my $bool = qr/1/;
 my $int = qr/\d+/;
 my $int_list = qr/[\d,]+/;
-my $str = qr/.+/;
 my $sha = qr/[a-h0-9]+/;
+my $str = qr/.+/;
 
 sub main_routes() {
     {
         login => \&CATS::UI::LoginLogout::login_frame,
         logout => \&CATS::UI::LoginLogout::logout_frame,
         registration => \&CATS::UI::Users::registration_frame,
-        profile => \&CATS::UI::Users::profile_frame,
+        profile => [ \&CATS::UI::Users::profile_frame, json => $bool, clear => $str, edit_save => $str, ],
         contests => [ \&CATS::UI::Contests::contests_frame, has_problem => $int, ],
         console_content => \&CATS::Console::content_frame,
         console => \&CATS::Console::console_frame,
@@ -49,7 +50,7 @@ sub main_routes() {
         problems_retest => \&CATS::UI::Problems::problems_retest_frame,
         problem_select_testsets => [
             \&CATS::UI::ProblemDetails::problem_select_testsets_frame,
-            pid => $int, save => $str, from_problems => qr/1/ ],
+            pid => $int, save => $str, from_problems => $bool, ],
         problem_download => [ \&CATS::UI::ProblemDetails::problem_download, pid => $int, ],
         problem_git_package => [ \&CATS::UI::ProblemDetails::problem_git_package, pid => $int, sha => $sha, ],
         problem_details => [ \&CATS::UI::ProblemDetails::problem_details_frame, pid => $int, ],

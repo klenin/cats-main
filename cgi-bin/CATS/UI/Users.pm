@@ -191,13 +191,14 @@ sub display_settings
 
 sub profile_frame
 {
-    init_template(auto_ext('user_profile', param('json')));
+    my ($p) = @_;
+    init_template(auto_ext('user_profile', $p->{json}));
     $uid or return;
-    if(defined param('clear') && $is_team) {
+    if(defined $p->{clear} && $is_team) {
         $settings = {};
         msg(1029, $CATS::Misc::team_name);
     }
-    profile_save if defined param('edit_save') && $is_team;
+    profile_save if defined $p->{edit_save} && $is_team;
 
     my $u = CATS::User->new->load($uid) or return;
     my ($is_some_jury) = $is_jury || $dbh->selectrow_array(q~
