@@ -43,7 +43,7 @@ sub problem_details_frame {
     $is_jury && $p->{pid} or return;
     my $pr = $dbh->selectrow_hashref(q~
         SELECT P.title, P.lang, P.contest_id, C.title AS contest_name, CP.id AS cpid,
-            CP.testsets, CP.points_testsets
+            CP.testsets, CP.points_testsets, CP.tags
         FROM problems P
         INNER JOIN contests C ON C.id = P.contest_id
         INNER JOIN contest_problems CP ON CP.problem_id = P.id AND CP.contest_id = ?
@@ -63,6 +63,7 @@ sub problem_details_frame {
         ($contest->{is_hidden} || $contest->{local_only} || $contest->{time_since_start} <= 0 ? () :
             (href_static_text => CATS::StaticPages::url_static(@text))),
         href_testsets => url_f('problem_select_testsets', pid => $p->{pid}),
+        href_tags => url_f('problem_select_tags', pid => $p->{pid}),
     );
     problem_submenu('problem_details', $p->{pid});
 }

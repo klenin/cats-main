@@ -14,5 +14,7 @@
     testsets => 'Tests to check',
     points_testsets => 'Tests to assign points',
     testsets_all => 'all',
+    tags => 'Tags',
+    tags_all => 'all',
   })
 %]
