@@ -103,7 +103,7 @@ sub get_run_info {
             push @{$ts->{list} ||= []}, $last_test;
             if (CATS::RankTable::dependencies_accepted($all_testsets, $ts, \%accepted_tests, \%accepted_deps)) {
                 $ts->{accepted_count} += $row->{accepted};
-                if ($ts->{points}) {
+                if (defined $ts->{points}) {
                     $total_points += $ts->{earned_points} = $ts->{points}
                         if $ts->{accepted_count} == $ts->{test_count};
                 }
@@ -118,7 +118,7 @@ sub get_run_info {
             if ($ts->{hide_details} && $contest->{hide_testset_details}) {
                 $row->{result} = $cats::st_ignore_submit;
             }
-            if ($ts->{points} || $ts->{hide_details} && $contest->{hide_testset_details}) {
+            if (defined $ts->{points} || $ts->{hide_details} && $contest->{hide_testset_details}) {
                 $p = '';
             }
             $p .= " => $ts->{name}";
