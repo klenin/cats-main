@@ -340,6 +340,7 @@ sub problem_text_frame
             FROM samples WHERE problem_id = ? ORDER BY rank~, { Slice => {} },
             $problem->{problem_id});
 
+        $problem->{tags} = param('tags') if $is_jury && defined param('tags');
         $tags = CATS::Problem::Tags::parse_tag_condition($problem->{tags}, sub {});
         for my $field_name (qw(statement pconstraints input_format output_format explanation)) {
             for ($problem->{$field_name}) {
