@@ -59,17 +59,17 @@ sub get_req_details {
 
     my @result;
     while (my $r = $c->fetchrow_hashref) {
-        $r->{accepted} = $r->{result} == $cats::st_accepted ? 1 : 0;
+        $r->{is_accepted} = $r->{result} == $cats::st_accepted ? 1 : 0;
         # When tests are run in random order, and the user looks at the run details
         # while the testing is in progress, he may be able to see 'OK' result
         # for the test ranked above the (unknown at the moment) first failing test.
         # Prevent this by stopping output at the first failed OR not-run-yet test.
         # Note: Tests after the gap in non-continuous testset will be hidden while running.
         last if !$contest->{show_all_tests} && $_->{state} < $cats::request_processed &&
-            $r->{accepted} && @result && $result[-1]->{test_rank} != $r->{test_rank} - 1;
+            $r->{is_accepted} && @result && $result[-1]->{test_rank} != $r->{test_rank} - 1;
         push @result, $r;
-        $accepted_tests->{$r->{test_rank}} = 1 if $r->{accepted};
-        last if !$contest->{show_all_tests} && !$r->{accepted};
+        $accepted_tests->{$r->{test_rank}} = 1 if $r->{is_accepted};
+        last if !$contest->{show_all_tests} && !$r->{is_accepted};
     }
     @result;
 }
@@ -97,12 +97,12 @@ sub get_run_info {
         }
 
         $last_test = $row->{test_rank};
-        my $p = $row->{accepted} ? $points->[$row->{test_rank} - 1] || 0 : 0;
+        my $p = $row->{is_accepted} ? $points->[$row->{test_rank} - 1] || 0 : 0;
         if (my $ts = $testset{$last_test}) {
             $used_testsets{$ts->{name}} = $ts;
             push @{$ts->{list} ||= []}, $last_test;
             if (CATS::RankTable::dependencies_accepted($all_testsets, $ts, \%accepted_tests, \%accepted_deps)) {
-                $ts->{accepted_count} += $row->{accepted};
+                $ts->{accepted_count} += $row->{is_accepted};
                 if (defined $ts->{points}) {
                     $total_points += $ts->{earned_points} = $ts->{points}
                         if $ts->{accepted_count} == $ts->{test_count};
@@ -123,7 +123,7 @@ sub get_run_info {
             }
             $p .= " => $ts->{name}";
         }
-        elsif ($row->{accepted} && $req->{partial_checker}) {
+        elsif ($row->{is_accepted} && $req->{partial_checker}) {
             $total_points += $p = CATS::RankTable::get_partial_points($row, $p);
         }
         else {
