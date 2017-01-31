@@ -459,6 +459,14 @@ END -%]
   </td>
   <td>Вставка ссылки на вложенный файл.</td>
 </tr>
+<tr><td>[% tag_in('object'); v16 %]</td>
+  <td>
+    <ul>
+      <li>attachment -- идентификатор объекта [% tag_ref('Attachment') %];</li>
+    </ul>
+  </td>
+  <td>Вставка ссылки на вложенный файл.</td>
+</tr>
 <tr><td>[% tag_in('include'); v17 %]</td>
   <td>
     <ul>
@@ -483,6 +491,10 @@ END -%]
   <td>&nbsp;</td>
   <td>Перевод в подстрочный индекс.</td>
 </tr>
+<tr><td>[% tag_in('p') %]</td>
+  <td>&nbsp;</td>
+  <td>Параграф</td>
+</tr>
 <tr><td>&lt;table&gt;</td>
   <td>
     <ul>
@@ -500,6 +512,10 @@ END -%]
 <tr><td>[% tag_in('td', 'tr') %]</td>
   <td>&nbsp;</td>
   <td>Ячейка таблицы</td>
+</tr>
+<tr><td>[% tag_in('th', 'tr') %]</td>
+  <td>&nbsp;</td>
+  <td>Заголовок таблицы</td>
 </tr>
 </table>
 

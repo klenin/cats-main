@@ -440,6 +440,14 @@ files with tests, solutions etc.
   </td>
   <td>Insert a link to the attached file.</td>
 </tr>
+<tr><td>[% tag_in('object'); v16 %]</td>
+  <td>
+    <ul>
+      <li>attachment -- identifier of the [% tag_ref('Attachment') %] object;</li>
+    </ul>
+  </td>
+  <td>Insert a link to the attached file.</td>
+</tr>
 <tr><td>[% tag_in('include'); v17 %]</td>
   <td>
     <ul>
@@ -464,6 +472,10 @@ files with tests, solutions etc.
   <td>&nbsp;</td>
   <td>Lower subscript.</td>
 </tr>
+<tr><td>[% tag_in('p') %]</td>
+  <td>&nbsp;</td>
+  <td>Paragraph</td>
+</tr>
 <tr><td>&lt;table&gt;</td>
   <td>
     <ul>
@@ -481,6 +493,10 @@ files with tests, solutions etc.
 <tr><td>[% tag_in('td', 'tr') %]</td>
   <td>&nbsp;</td>
   <td>Table cell</td>
+</tr>
+<tr><td>[% tag_in('th', 'tr') %]</td>
+  <td>&nbsp;</td>
+  <td>Table header</td>
 </tr>
 </table>
 
