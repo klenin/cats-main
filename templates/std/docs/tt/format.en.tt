@@ -409,35 +409,6 @@ files with tests, solutions etc.
 </tr>
 </table>
 
-<a name="opt"></a><p><a href="" onclick="javascript:history.back(-1)"><sup>o</sup></a>
-  Attributes market with this sign are optional.</p>
-[%- MACRO since(n, v) BLOCK -%]
-<a name="[% n %]"></a><p><a href="" onclick="javascript:history.back(-1)"><sup>[% v %]</sup></a>
-  This feature is available since [% v %].</p>
-[%- END -%]
-[%
-  since('v11', '1.1'); since('v12', '1.2');
-  since('v13', '1.3'); since('v14', '1.4');
-  since('v15', '1.5'); since('v16', '1.6');
-  since('v17', '1.7'); since('v18', '1.8');
-%]
-<a name="dv14"></a><p><a href="" onclick="javascript:history.back(-1)"><sup>&minus;1.4</sup></a>
-  This feature is deprecated since version 1.4.</p>
-<a name="dv15"></a><p><a href="" onclick="javascript:history.back(-1)"><sup>&minus;1.5</sup></a>
-  This feature is deprecated since version 1.5.</p>
-
-<a name="rankSpec" />
-<h2>Test case ranks specifiction</h2>
-<p>
-  Specifier is a comma-separated list of elements.
-  Each element may be one of:
-  <ul>
-    <li>Test number,</li>
-    <li>Range of test numbers, separated by "-" character [% v15 %],</li>
-    <li>Testset name ([% tag_ref('Testset') %])[% v18 %].</li>
-  </ul>
-</p>
-
 <a name="contextVars" />
 <h2>Context variables</h2>
 
@@ -512,4 +483,34 @@ files with tests, solutions etc.
   <td>Table cell</td>
 </tr>
 </table>
+
+<a name="opt"></a><p><a href="" onclick="javascript:history.back(-1)"><sup>o</sup></a>
+  Attributes market with this sign are optional.</p>
+[%- MACRO since(n, v) BLOCK -%]
+<a name="[% n %]"></a><p><a href="" onclick="javascript:history.back(-1)"><sup>[% v %]</sup></a>
+  This feature is available since [% v %].</p>
+[%- END -%]
+[%
+  since('v11', '1.1'); since('v12', '1.2');
+  since('v13', '1.3'); since('v14', '1.4');
+  since('v15', '1.5'); since('v16', '1.6');
+  since('v17', '1.7'); since('v18', '1.8');
+%]
+<a name="dv14"></a><p><a href="" onclick="javascript:history.back(-1)"><sup>&minus;1.4</sup></a>
+  This feature is deprecated since version 1.4.</p>
+<a name="dv15"></a><p><a href="" onclick="javascript:history.back(-1)"><sup>&minus;1.5</sup></a>
+  This feature is deprecated since version 1.5.</p>
+
+<a name="rankSpec" />
+<h2>Test case ranks specifiction</h2>
+<p>
+  Specifier is a comma-separated list of elements.
+  Each element may be one of:
+  <ul>
+    <li>Test number,</li>
+    <li>Range of test numbers, separated by "-" character [% v15 %],</li>
+    <li>Testset name ([% tag_ref('Testset') %])[% v18 %].</li>
+  </ul>
+</p>
+
 [% PROCESS footer.tti %]
