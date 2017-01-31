@@ -484,6 +484,19 @@ files with tests, solutions etc.
 </tr>
 </table>
 
+<a name="cats-if"></a>
+<p>Any tag inside STML can have additional <tt>cats-if</tt> attribute.
+Its value is a condition on problem tags.
+</p>
+<p>Condition is a list of expressions separated by comma.
+Each expression is one of
+<tt>name</tt>,
+<tt>!name</tt>,
+<tt>name=value</tt> or
+<tt>!name=value</tt>, where <tt>!</tt> sign denotes
+logical not, name -- tag name, value -- tag value.
+</p>
+
 <a name="opt"></a><p><a href="" onclick="javascript:history.back(-1)"><sup>o</sup></a>
   Attributes market with this sign are optional.</p>
 [%- MACRO since(n, v) BLOCK -%]
