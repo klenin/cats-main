@@ -22,6 +22,7 @@ my $problem_submenu = [
     { href => 'problem_history', item => 568 },
     { href => 'compare_tests', item => 552 },
     { href => 'problem_select_testsets', item => 505 },
+    { href => 'problem_select_tags', item => 506 },
 ];
 
 sub problem_submenu
@@ -123,7 +124,6 @@ sub problem_select_testsets_frame
 {
     my ($p) = @_;
     init_template('problem_select_testsets.html.tt');
-    warn %$p;
     $p->{pid} && $is_jury or return;
     my $problem = $dbh->selectrow_hashref(q~
         SELECT P.id, P.title, CP.id AS cpid, CP.testsets, CP.points_testsets
@@ -164,6 +164,35 @@ sub problem_select_testsets_frame
         href_action => url_f('problem_select_testsets', ($p->{from_problems} ? (from_problems => 1) : ())),
     );
     problem_submenu('problem_select_testsets', $p->{pid});
+}
+
+sub problem_select_tags_frame
+{
+    my ($p) = @_;
+    init_template('problem_select_tags.html.tt');
+    $p->{pid} && $is_jury or return;
+
+    my $problem = $dbh->selectrow_hashref(q~
+        SELECT P.id, P.title, CP.id AS cpid, CP.tags
+        FROM problems P INNER JOIN contest_problems CP ON P.id = CP.problem_id
+        WHERE P.id = ? AND CP.contest_id = ?~, undef,
+        $p->{pid}, $cid) or return;
+
+    if ($p->{save}) {
+        $dbh->do(q~
+            UPDATE contest_problems SET tags = ? WHERE id = ?~, undef,
+            $p->{tags}, $problem->{cpid});
+        $dbh->commit;
+        return redirect url_f('problems') if $p->{from_problems};
+        $problem->{tags} = $p->{tags};
+        msg(1142, $problem->{title});
+    }
+
+    $t->param("problem_$_" => $problem->{$_}) for keys %$problem;
+    $t->param(
+        href_action => url_f('problem_select_tags', ($p->{from_problems} ? (from_problems => 1) : ())),
+    );
+    problem_submenu('problem_select_tags', $p->{pid});
 }
 
 sub problem_commitdiff

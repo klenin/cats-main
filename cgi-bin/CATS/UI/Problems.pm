@@ -529,20 +529,21 @@ sub problems_frame {
     problems_submit if defined param('submit');
 
     my @cols = (
-        { caption => res_str(602), order_by => ($contest->is_practice ? '4' : '3'), width => '30%' },
+        { caption => res_str(602), order_by => 'P.title', width => '30%' },
         ($is_jury ?
         (
-            { caption => res_str(622), order_by => '11', width => '10%' }, # status
-            { caption => res_str(605), order_by => '15', width => '10%' }, # tests set
-            { caption => res_str(635), order_by => '13', width => '5%' }, # modified by
-            { caption => res_str(634), order_by => 'P.upload_date', width => '10%' }, # modification date
+            { caption => res_str(622), order_by => 'CP.status', width => '8%' },
+            { caption => res_str(605), order_by => 'CP.testsets', width => '8%' },
+            { caption => res_str(629), order_by => 'CP.tags', width => '8%' },
+            { caption => res_str(635), order_by => '14', width => '5%' }, # modified by
+            { caption => res_str(634), order_by => 'P.upload_date', width => '10%' },
         )
         : ()
         ),
         ($contest->is_practice ?
-        { caption => res_str(603), order_by => '5', width => '20%' } : ()
+        { caption => res_str(603), order_by => '5', width => '20%' } : () # contest
         ),
-        { caption => res_str(604), order_by => '6', width => '10%' },
+        { caption => res_str(604), order_by => '6', width => '8%' }, # ok/wa/tl
     );
     define_columns(url_f('problems'), 0, 0, \@cols);
 
@@ -566,7 +567,8 @@ sub problems_frame {
             P.upload_date,
             (SELECT A.login FROM accounts A WHERE A.id = P.last_modified_by) AS last_modified_by,
             SUBSTRING(P.explanation FROM 1 FOR 1) AS has_explanation,
-            $test_count_sql CP.testsets, CP.points_testsets, P.lang, P.memory_limit, P.time_limit, CP.max_points, P.repo
+            $test_count_sql CP.testsets, CP.points_testsets, P.lang, P.memory_limit, P.time_limit,
+            CP.max_points, P.repo, CP.tags
         FROM problems P, contest_problems CP, contests OC
         WHERE CP.problem_id = P.id AND OC.id = P.contest_id AND CP.contest_id = ?$hidden_problems
         ~ . order_by
@@ -613,6 +615,9 @@ sub problems_frame {
                 url_function('problems', sid => $sid, cid => $c->{original_contest_id}, set_contest => 1),
             href_usage => url_f('contests', has_problem => $c->{pid}),
             href_problem_console => $is_jury && url_f('console', pf => $c->{pid}),
+            href_select_testsets => url_f('problem_select_testsets', pid => $c->{pid}, from_problems => 1),
+            href_select_tags => url_f('problem_select_tags', pid => $c->{pid}, from_problems => 1),
+
             show_packages => $show_packages,
             status => $c->{status},
             status_text => problem_status_names()->{$c->{status}},
@@ -638,11 +643,11 @@ sub problems_frame {
             testsets => $c->{testsets} || '*',
             points_testsets => $c->{points_testsets},
             test_count => $c->{test_count},
-            href_select_testsets => url_f('problem_select_testsets', pid => $c->{pid}, from_problems => 1),
             lang => $c->{lang},
             memory_limit => $c->{memory_limit} * 1024 * 1024,
             time_limit => $c->{time_limit},
             max_points => $c->{max_points},
+            tags => $c->{tags},
         );
     };
 

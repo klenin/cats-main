@@ -1,0 +1,6 @@
+[%
+  capt.import({
+    select_tags => 'Select tags',
+    save => 'Save',
+  })
+%]

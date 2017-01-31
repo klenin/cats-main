@@ -51,6 +51,9 @@ sub main_routes() {
         problem_select_testsets => [
             \&CATS::UI::ProblemDetails::problem_select_testsets_frame,
             pid => $int, save => $str, from_problems => $bool, ],
+        problem_select_tags => [
+            \&CATS::UI::ProblemDetails::problem_select_tags_frame,
+            pid => $int, tags => $str, save => $str, from_problems => $bool, ],
         problem_download => [ \&CATS::UI::ProblemDetails::problem_download, pid => $int, ],
         problem_git_package => [ \&CATS::UI::ProblemDetails::problem_git_package, pid => $int, sha => $sha, ],
         problem_details => [ \&CATS::UI::ProblemDetails::problem_details_frame, pid => $int, ],

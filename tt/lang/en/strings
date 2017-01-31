@@ -4,6 +4,7 @@
 503 "logout"
 504 "problem"
 505 "testsets"
+506 "tags"
 510 "console"
 511 "judges"
 512 "new judge"
@@ -204,3 +205,4 @@
 1139 "Unable to find an account with login '%s'."
 1140 "Judge '%s' changed successfully."
 1141 "Testsets changed for problem '%s'."
+1142 "Tags changed for problem '%s'."

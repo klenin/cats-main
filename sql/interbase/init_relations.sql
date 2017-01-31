@@ -18,7 +18,7 @@ CREATE TABLE accounts (
     login   VARCHAR(50) NOT NULL UNIQUE,
     passwd  VARCHAR(100) DEFAULT '',
     sid     VARCHAR(30),
-    srole   INTEGER NOT NULL, /* 0 - root, 1 - user, 2 - can create contests */
+    srole   INTEGER NOT NULL, /* 0 - root, 1 - user, 2 - can create contests, 4 - can delete messages */
     last_login  TIMESTAMP,
     last_ip     VARCHAR(100) DEFAULT '',
     locked      INTEGER DEFAULT 0 CHECK (locked IN (0, 1)),
@@ -140,6 +140,7 @@ CREATE TABLE contest_problems (
     testsets        VARCHAR(200),
     points_testsets VARCHAR(200),
     max_points      INTEGER,
+    tags            VARCHAR(200),
     UNIQUE (problem_id, contest_id)
 );
 ALTER TABLE contest_problems
