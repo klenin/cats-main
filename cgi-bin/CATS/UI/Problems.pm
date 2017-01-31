@@ -529,11 +529,11 @@ sub problems_frame {
     problems_submit if defined param('submit');
 
     my @cols = (
-        { caption => res_str(602), order_by => 'P.title', width => '30%' },
+        { caption => res_str(602), order_by => ($contest->is_practice ? 'P.title' : 3), width => '30%' },
         ($is_jury ?
         (
             { caption => res_str(622), order_by => 'CP.status', width => '8%' },
-            { caption => res_str(605), order_by => 'CP.testsets', width => '8%' },
+            { caption => res_str(605), order_by => 'CP.testsets', width => '12%' },
             { caption => res_str(629), order_by => 'CP.tags', width => '8%' },
             { caption => res_str(635), order_by => '14', width => '5%' }, # modified by
             { caption => res_str(634), order_by => 'P.upload_date', width => '10%' },
