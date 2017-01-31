@@ -17,12 +17,12 @@ use XML::Parser::Expat;
 use CATS::Config qw(cats_dir);
 use CATS::DB;
 use CATS::Misc qw($cid $contest $is_jury $t $uid auto_ext init_template res_str);
+use CATS::Problem::Tags;
 use CATS::StaticPages;
 use CATS::TeX::Lite;
 use CATS::Web qw(param url_param);
 
-my ($current_pid, $html_code, $spellchecker, $text_span);
-
+my ($current_pid, $html_code, $spellchecker, $text_span, $tags, $skip_depth);
 
 sub check_spelling
 {
@@ -85,6 +85,7 @@ sub end_element
 
 sub ch_1
 {
+    return if $skip_depth;
     my ($p, $text) = @_;
     # Join consecutive text elements.
     $text_span .= $text;
@@ -153,6 +154,18 @@ sub sh_1
 {
     my ($p, $el, %atts) = @_;
 
+    if ($skip_depth) {
+        $skip_depth++;
+        return;
+    }
+    if (my $cond = $atts{'cats-if'}) {
+        my $pc = CATS::Problem::Tags::parse_tag_condition($cond, sub {});
+        if (!CATS::Problem::Tags::check_tag_condition($tags, $pc, sub {})) {
+            $skip_depth = 1;
+            return;
+        }
+    }
+
     if ($el eq 'img' && $atts{picture}) {
         $atts{src} = download_image($atts{picture});
         delete $atts{picture};
@@ -172,6 +185,10 @@ sub sh_1
 sub eh_1
 {
     my ($p, $el) = @_;
+    if ($skip_depth) {
+        $skip_depth--;
+        return;
+    }
     end_element($el);
 }
 
@@ -189,6 +206,7 @@ sub parse
         'Char'  => \&ch_1);
 
     $parser->parse("<div>$xml_patch</div>");
+    $skip_depth and die;
     return $html_code;
 }
 
@@ -257,7 +275,7 @@ sub problem_text_frame
     elsif (my $cpid = url_param('cpid')) {
         my $p = $dbh->selectrow_hashref(qq~
             SELECT CP.id AS cpid, CP.problem_id, CP.code,
-            CP.testsets, CP.points_testsets, CP.max_points, C.rules
+            CP.testsets, CP.points_testsets, CP.max_points, CP.tags, C.rules
             FROM contests C INNER JOIN contest_problems CP ON CP.contest_id = C.id
             WHERE CP.id = ?~, undef,
             $cpid) or return;
@@ -269,7 +287,7 @@ sub problem_text_frame
         # Should either check for a static page or hide the problem even from jury.
         my $p = $dbh->selectall_arrayref(qq~
             SELECT id AS cpid, problem_id, code,
-            testsets, points_testsets, max_points FROM contest_problems
+            testsets, points_testsets, max_points, tags FROM contest_problems
             WHERE contest_id = ? AND status < $cats::problem_st_hidden
             ORDER BY code~, { Slice => {} },
             url_param('cid') || $cid);
@@ -322,6 +340,7 @@ sub problem_text_frame
             FROM samples WHERE problem_id = ? ORDER BY rank~, { Slice => {} },
             $problem->{problem_id});
 
+        $tags = CATS::Problem::Tags::parse_tag_condition($problem->{tags}, sub {});
         for my $field_name (qw(statement pconstraints input_format output_format explanation)) {
             for ($problem->{$field_name}) {
                 defined $_ or next;
