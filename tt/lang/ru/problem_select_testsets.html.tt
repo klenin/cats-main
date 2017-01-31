@@ -1,9 +1,13 @@
 [%
   capt.import({
     select_testsets => 'Выберите тестовые наборы',
-    check => 'Проверять',
-    points => 'Баллы',
+    for_check => 'Проверять',
+    for_points => 'Ставить баллы',
     name => 'Название',
+    tests => 'Тесты',
+    points => 'Баллы',
+    hide_details => 'Скрывать детали',
+    depends_on => 'Зависит от',
     save => 'Сохранить',
   })
 %]
