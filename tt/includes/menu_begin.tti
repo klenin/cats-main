@@ -9,6 +9,9 @@
       [% IF problem_title %]<span> / [% problem_title | html %]</span>[% END %]
     </td>
     <td class="elapsed">
+      <p>[% FOR l IN langs %]<a href="[% l.href %]"[% ' class="selected"' IF l.name == lang %]
+      onclick="document.location = document.location.pathname + '?lang=[% l.name %];' + document.location.search.replace(/lang=\w+;?/, '').replace('?', ''); return false;">
+      [% l.name; '</a> '; END %]</p>
       [% IF server_time ~%]
         <span>
         [% IF show_remaining_minutes ~%]

@@ -227,6 +227,8 @@ sub generate_output
         virtual_diff_time => $virtual_diff_time,
         dbi_profile => $dbh->{Profile}->{Data}->[0],
         #dbi_profile => Data::Dumper::Dumper($dbh->{Profile}->{Data}),
+        langs => [ map { href => url_f('contests', lang => $_), name => $_ }, @cats::langs ],
+        lang => lang(),
     );
 
     my $elapsed_minutes = int(($contest->{time_since_start} - $virtual_diff_time) * 1440);

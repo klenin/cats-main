@@ -34,6 +34,9 @@ table.header td.elapsed {
     text-align: right;
     vertical-align: bottom;
 }
+table.header td.elapsed p a { color: #333300; padding: 1px; }
+table.header td.elapsed p a.selected { font-weight: bold; border: 1px solid black; }
+table.header td.elapsed p a:hover { background-color: #ffcc55; }
 
 .main_menu {
     background-color: #7070ff;
