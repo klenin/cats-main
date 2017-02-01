@@ -23,16 +23,17 @@ sub send_question_to_jury
 
     $is_team && defined $question_text && $question_text ne ''
         or return;
+    length($question_text) <= 1000 or return msg(1063);
 
     my $cuid = get_registered_contestant(fields => 'id', contest_id => $cid);
 
-    my ($previous_question_text) = $dbh->selectrow_array(qq~
+    my ($previous_question_text) = $dbh->selectrow_array(q~
         SELECT question FROM questions WHERE account_id = ? ORDER BY submit_time DESC~, {},
         $cuid
     );
     ($previous_question_text || '') ne $question_text or return msg(1061);
 
-    my $s = $dbh->prepare(qq~
+    my $s = $dbh->prepare(q~
         INSERT INTO questions(id, account_id, submit_time, question, received, clarified)
         VALUES (?, ?, CURRENT_TIMESTAMP, ?, 0, 0)~
     );
