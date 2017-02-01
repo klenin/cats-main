@@ -162,7 +162,7 @@
 083 "Ваше сообщение превышает 1000 символов."
 1084 "Incorrect keyword parameters."
 1085 "Password has been changed for user '%s'."
-086 "Название не может быть изменено, поскольку команда участвовала в официальных соревнованиях '%s'"
+1086 "Unable to change name for participant of an official contest '%s'."
 1087 "The contest is over. Solution queued for upsolving."
 1088 "Solution queued for testing. Attempts left: %d"
 1089 "Tournament group '%s' created successfully."

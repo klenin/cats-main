@@ -141,7 +141,7 @@ sub validate_params
             (my ($official_contest) = any_official_contest_by_team($p{id})))
         {
             # If the team participated in the official contest, forbid it to rename itself.
-            return msg(86, $official_contest);
+            return msg(1086, $official_contest);
         }
     }
 
