@@ -89,7 +89,7 @@ a, a:link {
     color: #3030a0;
 }
 
-a.main_menu_selected, a.main_menu_selected:visited { color: yellow; }
+.main_menu a.main_menu_selected, .main_menu a.main_menu_selected:visited { color: yellow; }
 a.sub_menu_selected, a.sub_menu_selected:visited { color: white; }
 
 tr.footer, tr.footer td {

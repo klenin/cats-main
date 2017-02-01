@@ -13,3 +13,12 @@
 
 [%- MACRO href(url, text) BLOCK -%]<a href="[% url %]">[% text | html %]</a>[% END -%]
 [%- MACRO maybe_href(url, text) BLOCK; IF url; href(url, text); ELSE; text | html ; END; END -%]
+
+[%- MACRO menu(items, selected) BLOCK -%]
+    [%- FOREACH i IN items ~%]
+      <a
+        [%~ " class=\"$selected\"" IF i.selected %] href="[% i.href %]"
+        [%- " target=\"${i.target}\"" IF i.target %]>[% i.item %]</a>
+      [%- ' | ' UNLESS loop.last %]
+    [% END -%]
+[%- END -%]

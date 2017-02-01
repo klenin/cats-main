@@ -18,8 +18,7 @@ function show_ab(a, b)
 }
 //-->
 </script>
-[% capt.compare_submissions %]:
-[% PROCESS 'includes/sources_info.tti' %]
+[% PROCESS includes/sources_info.tti subcaption=capt.compare_submissions %]
 <p>
 [% capt.show %]:
 [ <a onclick="show_ab('', ''); return false" href="#">[% capt.diff %]</a>

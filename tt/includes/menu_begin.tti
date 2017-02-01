@@ -1,5 +1,6 @@
 [%- PROCESS includes/header.tti %]
 [%- PROCESS "lang/$lang/menu_begin.tti" -%]
+[%- PROCESS includes/html.tti -%]
 </head>
 <body>
 <table class="iface header">
@@ -29,14 +30,6 @@
     </td>
   </tr>
 </table>
-[%- MACRO menu(items, selected) BLOCK -%]
-    [%- FOREACH i IN items ~%]
-      <a
-        [%~ " class=\"$selected\"" IF i.selected %] href="[% i.href %]"
-        [%- " target=\"${i.target}\"" IF i.target %]>[% i.item %]</a>
-      [%- ' | ' UNLESS loop.last %]
-    [% END -%]
-[%- END -%]
 
 <table class="iface">
   <tr class="main_menu top">
