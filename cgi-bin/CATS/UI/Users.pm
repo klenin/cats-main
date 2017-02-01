@@ -208,7 +208,7 @@ sub profile_frame
         countries => \@CATS::Countries::countries,
         href_action => url_f('users'),
         title_suffix => res_str(518),
-        langs => [ map { href => url_f('profile', lang => $_), name => $_ }, @cats::langs ],
+        profile_langs => [ map { href => url_f('profile', lang => $_), name => $_ }, @cats::langs ],
         is_root => $is_root,
         is_some_jury => $is_some_jury,
         %$u);

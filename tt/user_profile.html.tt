@@ -10,7 +10,9 @@
 <input type="submit" name="clear" value="[% capt.clear %]" class="button"/>
 </form>
 
-[% IF langs; '<p>'; capt.change_language; ': '; FOR l IN langs; href(l.href, l.name.upper); ' '; END; '</p>'; END %]
+[% IF profile_langs -%]
+<p>[% capt.change_language; ': '; FOR l IN profile_langs; href(l.href, l.name.upper); ' '; END; %]</p>
+[%- END %]
 [% IF settings_dump %]<div><pre>[% settings_dump %]</pre></div>[% END %]
 
 [% PROCESS 'includes/menu_end.tti' %]
