@@ -30,7 +30,7 @@ sub send_question_to_jury
         SELECT question FROM questions WHERE account_id = ? ORDER BY submit_time DESC~, {},
         $cuid
     );
-    ($previous_question_text || '') ne $question_text or return;
+    ($previous_question_text || '') ne $question_text or return msg(1061);
 
     my $s = $dbh->prepare(qq~
         INSERT INTO questions(id, account_id, submit_time, question, received, clarified)
@@ -42,6 +42,7 @@ sub send_question_to_jury
     $s->execute;
     $s->finish;
     $dbh->commit;
+    msg(1062);
     1;
 }
 
@@ -62,7 +63,7 @@ sub time_interval_days
 {
     my ($s) = @_;
     my ($v, $u) = @$s{qw(i_value i_unit)};
-    my @text = split /\|/, res_str(121);
+    my @text = split /\|/, res_str(1121);
     my $units = [
         { value => 'hours', k => 1 / 24 },
         { value => 'days', k => 1 },
