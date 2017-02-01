@@ -11,7 +11,9 @@
 </form>
 
 [% IF profile_langs -%]
-<p>[% capt.change_language; ': '; FOR l IN profile_langs; href(l.href, l.name.upper); ' '; END; %]</p>
+<p>[% capt.change_language; ': ';
+FOR l IN profile_langs; IF l.name == lang; '<b>'; l.name.upper; '</b>'; ELSE; href(l.href, l.name.upper); END; ' ';
+END; %]</p>
 [%- END %]
 [% IF settings_dump %]<div><pre>[% settings_dump %]</pre></div>[% END %]
 
