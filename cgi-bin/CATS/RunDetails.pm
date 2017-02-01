@@ -332,7 +332,7 @@ sub get_sources_info {
         # During the official contest, viewing sources from other contests
         # is disallowed to prevent cheating.
         if ($official && $official->{id} != $r->{contest_id}) {
-            $r->{src} = res_str(138, $official->{title});
+            $r->{src} = res_str(1138, $official->{title});
         }
         elsif ($p{encode_source}) {
             if (encodings()->{$se} && $r->{file_name} !~ m/\.zip$/) {
