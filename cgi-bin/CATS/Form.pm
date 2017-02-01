@@ -5,7 +5,13 @@ use warnings;
 
 use CATS::DB;
 use CATS::Web qw(param url_param);
-use CATS::Misc qw($t init_template url_f);
+use CATS::Misc qw($t init_template url_f msg res_str);
+
+use Exporter qw(import);
+
+our @EXPORT = qw(
+    validate_string_length
+);
 
 sub new {
     my ($class, $self) = @_;
@@ -51,6 +57,14 @@ sub edit_save {
         $dbh->do(_u $sql->insert($self->{table}, $params));
     }
     $dbh->commit;
+}
+
+sub validate_string_length {
+    my ($str, $field_name_id, $min, $max) = @_;
+    $str //= '';
+    return 1 if $min <= length($str) && length($str) <= $max;
+    my $fn = res_str($field_name_id);
+    $min ? msg(1044, $fn, $min, $max) : msg(1043, $fn, $max);
 }
 
 1;
