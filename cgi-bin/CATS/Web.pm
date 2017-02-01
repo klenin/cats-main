@@ -28,6 +28,7 @@ our @EXPORT_OK = qw(
     save_uploaded_file
     upload_source
     url_param
+    user_agent
 );
 
 my $r;
@@ -123,5 +124,7 @@ sub restore_parameters {
         original_param(@_);
     }
 }
+
+sub user_agent { $r->headers_in->get('User-Agent') }
 
 1;
