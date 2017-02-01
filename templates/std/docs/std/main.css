@@ -163,7 +163,7 @@ td { font-size: 11pt }
 td.ts { font-size: 10pt; font-style: italic; }
 
 tr.run_details_OK { background-color: #A0FFA0 }
-tr.run_details_WA { background-color: #FFA0A0 }
+tr.run_details_WA, td.run_details_WA { background-color: #FFA0A0 }
 tr.run_details_PE { background-color: #FFFFA0 }
 tr.run_details_RE { background-color: #FFA0A0 }
 

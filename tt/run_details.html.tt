@@ -43,7 +43,9 @@
       <td align="right">[% ts.accepted_count || 0 %] / [% ts.test_count %]</td>
       <td align="right">[% ts.earned_points || 0 %]</td>
       <td>[% ts.comment %]</td>
-      [% IF r.has_depends_on %]<td>[% ts.depends_on %]</td>[% END -%]
+      [%- IF r.has_depends_on -%]
+      <td[% ' class="run_details_WA"' IF ts.depends_on && !r.accepted_deps.item(ts.name) %]>[%- ts.depends_on %]</td>
+      [%- END -%]
     </tr>
     [% END %]
     <tr><td colspan="2"/>[% capt.total %]<td align="right">[% r.total_points %]</td><td></td></tr>
