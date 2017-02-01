@@ -4,19 +4,15 @@
 <body>
 <table class="iface header">
   <tr>
-    <td width="1%">
-      <img src="./images/std/logo.gif" border="0" alt="CATS">
-    </td>
-    <td valign="bottom" width="98%" style="font-size: x-large;">
+    <td class="contest_title">
       [% contest_title ? contest_title : '&nbsp;' | html %]
-      [% IF problem_title %]<span style="font-size: large;"> / [% problem_title | html %]</span>[% END %]
+      [% IF problem_title %]<span> / [% problem_title | html %]</span>[% END %]
     </td>
-    <td>
-    <div class="elapsed">
+    <td class="elapsed">
       [% IF server_time ~%]
         <span>
         [% IF show_remaining_minutes ~%]
-          [% capt.until_start %]: [% remaining_minutes %] [% capt.minutes %].<br>
+          [% capt.until_start %]: [% remaining_minutes %] [% capt.minutes %]<br>
         [%~ END %]
         [% IF show_elapsed_minutes ~%]
           [% capt.since_start %]: <span id="elapsed_minutes">[% elapsed_minutes %]</span> [% capt.minutes %]<br/>
@@ -27,7 +23,6 @@
         [% capt.last_updated %]: <span id="server_time">[% server_time %]</span>
         </span>
       [%~ END %]
-    </div>
     </td>
   </tr>
 </table>
