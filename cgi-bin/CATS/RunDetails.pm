@@ -598,7 +598,7 @@ sub diff_runs_frame {
 
     my $SL = sub { $si->[$_[0]]->{lines}->[$_[1]] || '' };
 
-    my $match = sub { push @diff, { line => $SL->(0, $_[0]) }; };
+    my $match = sub { push @diff, { class => 'diff_both', line => $SL->(0, $_[0]) }; };
     my $only_a = sub { push @diff, { class => 'diff_only_a', line => $SL->(0, $_[0]) }; };
     my $only_b = sub { push @diff, { class => 'diff_only_b', line => $SL->(1, $_[1]) }; };
 

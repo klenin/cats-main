@@ -1,46 +1,58 @@
-[% PROCESS 'includes/header.tti' %]
+[% PROCESS includes/header.tti %]
+[%- USE Javascript -%]
 </head>
 <body>
 <script type="text/javascript">
 <!--
-function show_ab(a, b)
+function show_ab(selectors, a, b, ab)
 {
-    var css = document.styleSheets[0];
-    if (!css) return;
-    var rules = new Array();
-    if (css.cssRules) rules = css.cssRules
-    else if (css.rules) rules = css.rules
-    for (i = 0; rules.length > i; ++i)
-        if (rules[i].selectorText == ".diff_only_a")
-            rules[i].style.display = a;
-        else if (rules[i].selectorText == ".diff_only_b")
-            rules[i].style.display = b;
+    var line_numbers = document.getElementById('line_numbers');
+    var lines = document.getElementById('lines');
+    if (!line_numbers || !lines) return;
+
+    line_numbers.innerHTML = '';
+    lines.innerHTML = '';
+
+    for (var i = 0; diff_lines.length > i; ++i) {
+        var cls = diff_lines[i][0];
+        var display = selectors[cls];
+        if (display === 0) continue;
+        line_numbers.appendChild(document.createTextNode((i + 1) + '\n'));
+        var span = document.createElement('span');
+        span.className = cls;
+        var line = display === 1 ? '' : diff_lines[i][1];
+        span.appendChild(document.createTextNode(line + '\n'));
+        lines.appendChild(span);
+    }
 }
+var diff_lines = [
+    [% FOREACH dl IN diff_lines -%]
+    [ "[% dl.class | $Javascript %]", "[% dl.line | $Javascript %]" ][% ',' UNLESS loop.last %]
+    [% END -%]
+];
 //-->
 </script>
 [% PROCESS includes/sources_info.tti subcaption=capt.compare_submissions %]
 <p>
 [% capt.show %]:
-[ <a onclick="show_ab('', ''); return false" href="#">[% capt.diff %]</a>
-| <a onclick="show_ab('', 'none'); return false" href="#">[% capt.a_only %]</a>
-| <a onclick="show_ab('none', ''); return false" href="#">[% capt.b_only %]</a>
+[ <a onclick="show_ab({ diff_only_a: 2, diff_only_b: 2, diff_both: 2 }); return false" href="#">[% capt.both %]</a>
+| <a onclick="show_ab({ diff_only_a: 2, diff_only_b: 2, diff_both: 0 }); return false" href="#">[% capt.diff %]</a>
+| <a onclick="show_ab({ diff_only_a: 2, diff_only_b: 1, diff_both: 2 }); return false" href="#">[% capt.a_only %]</a>
+| <a onclick="show_ab({ diff_only_a: 1, diff_only_b: 2, diff_both: 2 }); return false" href="#">[% capt.b_only %]</a>
 ]
 </p>
 <code>
 <table class="internal_borders">
 <tr>
-<td width="1" align="right"><pre>[% FOREACH dl IN diff_lines; loop.count %]
+<td width="1" align="right"><pre id="line_numbers">[% FOREACH dl IN diff_lines; loop.count %]
 [% END %]</pre></td>
-<td style="vertical-align: top"><pre>
-[%- FOREACH dl IN diff_lines -%]
-  [%- IF dl.class %]<span class="[% dl.class %]">[% END -%]
-  [%- dl.line | html -%]
-  [%- '</span>' IF dl.class %]
+<td style="vertical-align: top"><pre id="lines">
+[%- FOREACH dl IN diff_lines; span(dl.line, dl.class) %]
 [% END -%]
 </pre></td></tr>
 </table>
 </code>
 
-[% PROCESS 'includes/timing.tti' %]
+[% PROCESS includes/timing.tti %]
 </body>
 </html>

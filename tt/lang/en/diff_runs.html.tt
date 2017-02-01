@@ -2,6 +2,7 @@
   capt.import({
     compare_submissions => 'Compare submissions',
     show => 'Show',
+    both => 'both',
     diff => 'diff',
     a_only => 'A only',
     b_only => 'B only',

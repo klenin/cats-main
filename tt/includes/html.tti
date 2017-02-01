@@ -22,3 +22,5 @@
       [%- ' | ' UNLESS loop.last %]
     [% END -%]
 [%- END -%]
+
+[%- MACRO span(text, class) BLOCK -%]<span[% " class=\"$class\"" IF class %]>[% text | html %]</span>[% END -%]
