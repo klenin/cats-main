@@ -3,6 +3,8 @@ package CATS::UI::Compilers;
 use strict;
 use warnings;
 
+use Encode;
+
 use CATS::DB;
 use CATS::Form;
 use CATS::ListView qw(init_listview_template order_by define_columns attach_listview);
@@ -25,23 +27,31 @@ sub edit_frame {
 }
 
 sub edit_save {
-    $form->edit_save(sub { $_[0]->{in_contests} = !param_on('locked') });
+    $form->edit_save(sub { $_[0]->{in_contests} = !param_on('locked') })
+        and msg(1065, Encode::decode_utf8(param('description')));
 }
 
 sub compilers_frame
 {
     if ($is_jury) {
-        if ($is_root && defined url_param('delete')) { # extra security
-            my $deid = url_param('delete');
-            $dbh->do(qq~DELETE FROM default_de WHERE id = ?~, {}, $deid);
-            $dbh->commit;
-        }
-
         defined url_param('new') || defined url_param('edit') and return edit_frame;
     }
 
     init_listview_template('compilers', 'compilers', 'compilers.html.tt');
 
+    if ($is_root && defined url_param('delete')) { # extra security
+        my $deid = url_param('delete');
+        if (my ($descr) = $dbh->selectrow_array(q~
+            SELECT description FROM default_de WHERE id = ?~, undef,
+            $deid)
+        ) {
+            $dbh->do(q~
+                DELETE FROM default_de WHERE id = ?~, undef,
+                $deid);
+            $dbh->commit;
+            msg(1064, $descr);
+        }
+    }
     $is_jury && defined param('edit_save') and edit_save;
 
     define_columns(url_f('compilers'), 0, 0, [

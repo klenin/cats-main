@@ -57,6 +57,7 @@ sub edit_save {
         $dbh->do(_u $sql->insert($self->{table}, $params));
     }
     $dbh->commit;
+    1;
 }
 
 sub validate_string_length {
