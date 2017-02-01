@@ -118,9 +118,7 @@ sub validate_params
 {
     my ($self, %p) = @_;
 
-    $self->{login} && length $self->{login} <= 50
-        or return msg(1102);
-
+    validate_string_length($self->{login}, 616, 1, 50) or return;
     validate_string_length($self->{team_name}, 800, 1, 100) or return;
     validate_string_length($self->{capitan_name}, 801, 0, 100) or return;
     validate_string_length($self->{motto}, 802, 0, 100) or return;
@@ -129,9 +127,7 @@ sub validate_params
     validate_string_length($self->{home_page}, 805, 0, 100) or return;
 
     if ($p{validate_password}) {
-        $self->{password1} ne '' && length $self->{password1} <= 72
-            or return msg(1032);
-
+        validate_string_length($self->{password1}, 806, 1, 72) or return;
         $self->{password1} eq $self->{password2}
             or return msg(1033);
     }
