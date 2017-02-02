@@ -143,14 +143,15 @@ sub console_content
             A.id AS team_id,
             A.team_name$city_sql AS team_name,
             A.country AS country,
-            A.last_ip AS last_ip,
+            COALESCE(E.ip, A.last_ip) AS last_ip,
             CA.id,
             R.contest_id
             FROM reqs R
             INNER JOIN problems P ON R.problem_id=P.id
             INNER JOIN accounts A ON R.account_id=A.id
             INNER JOIN contests C ON R.contest_id=C.id
-            INNER JOIN contest_accounts CA ON CA.account_id=A.id AND CA.contest_id=R.contest_id,
+            INNER JOIN contest_accounts CA ON CA.account_id=A.id AND CA.contest_id=R.contest_id
+            LEFT JOIN events E ON E.id = R.id,
             dummy_table D
         ~,
         question => qq~

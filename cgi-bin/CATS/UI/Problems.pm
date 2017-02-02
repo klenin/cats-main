@@ -6,6 +6,7 @@ use warnings;
 use CATS::Config qw(cats_dir);
 use CATS::Constants;
 use CATS::DB;
+use CATS::IP;
 use CATS::ListView qw(init_listview_template order_by sort_listview define_columns attach_listview);
 use CATS::Misc qw(
     $t $is_jury $is_root $is_team $sid $cid $uid $contest $is_virtual $virtual_diff_time
@@ -71,6 +72,33 @@ sub problem_submit_too_frequent
         $submit_uid);
     my $SECONDS_PER_DAY = 24 * 60 * 60;
     ($prev->[0] || 1) < 3/$SECONDS_PER_DAY || ($prev->[1] || 1) < 60/$SECONDS_PER_DAY;
+}
+
+sub insert_req {
+    my ($pid, $submit_uid, $state) = @_;
+
+    my $rid = new_id;
+    $dbh->do(q~
+        INSERT INTO reqs (
+            id, account_id, problem_id, contest_id,
+            submit_time, test_time, result_time, state, received
+        ) VALUES (
+            ?, ?, ?, ?,
+            CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, ?)~,
+        undef,
+        $rid, $submit_uid, $pid, $cid, $state, 0);
+    $dbh->do(q~
+        INSERT INTO events (id, event_type, ts, account_id, ip)
+        VALUES (?, ?, CURRENT_TIMESTAMP, ?, ?)~,
+        undef,
+        $rid, 1, $submit_uid, CATS::IP::get_ip);
+    $rid;
+}
+
+sub determine_state {
+    return $cats::st_ignore_submit if param('ignore');
+    !$is_jury && !param('np') && $CATS::Config::TB && CATS::Web::user_agent =~ /$CATS::Config::TB/ ?
+        $cats::st_ignore_submit : $cats::st_not_processed;
 }
 
 sub problems_submit
@@ -142,29 +170,19 @@ sub problems_submit
 
     # Forbid repeated submissions of the identical code with the same DE.
     my $source_hash = CATS::Utils::source_hash($source_text);
-    my ($same_source, $prev_submit_time) = $dbh->selectrow_array(qq~
+    my ($same_source, $prev_submit_time) = $dbh->selectrow_array(q~
         SELECT FIRST 1 S.req_id, R.submit_time
         FROM sources S INNER JOIN reqs R ON S.req_id = R.id
         WHERE
             R.account_id = ? AND R.problem_id = ? AND
-            R.contest_id = ? AND S.hash = ? AND S.de_id = ?~, {},
+            R.contest_id = ? AND S.hash = ? AND S.de_id = ?~, undef,
         $submit_uid, $pid, $cid, $source_hash, $did);
     $same_source and return msg(1132, $prev_submit_time);
 
-    my $rid = new_id;
+    my $rid = insert_req($pid, $submit_uid, determine_state);
 
-    my $state = $is_jury && param('ignore') ? $cats::st_ignore_submit : $cats::st_not_processed;
-    $dbh->do(qq~
-        INSERT INTO reqs (
-            id, account_id, problem_id, contest_id,
-            submit_time, test_time, result_time, state, received
-        ) VALUES (
-            ?,?,?,?,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP,?,?)~,
-        {},
-        $rid, $submit_uid, $pid, $cid, $state, 0);
-
-    my $s = $dbh->prepare(qq~
-        INSERT INTO sources(req_id, de_id, src, fname, hash) VALUES (?,?,?,?,?)~);
+    my $s = $dbh->prepare(q~
+        INSERT INTO sources(req_id, de_id, src, fname, hash) VALUES (?, ?, ?, ?, ?)~);
     $s->bind_param(1, $rid);
     $s->bind_param(2, $did);
     $s->bind_param(3, $source_text, { ora_type => 113 } ); # blob
@@ -191,26 +209,16 @@ sub problems_submit_std_solution {
 
     my $sol_count = 0;
 
-    my $c = $dbh->prepare(qq~
+    my $c = $dbh->prepare(q~
         SELECT src, de_id, fname
         FROM problem_sources
         WHERE problem_id = ? AND (stype = ? OR stype = ?)~);
     $c->execute($pid, $cats::solution, $cats::adv_solution);
 
     while (my ($src, $did, $fname) = $c->fetchrow_array) {
-        my $rid = new_id;
+        my $rid = insert_req($pid, $uid, $cats::st_not_processed);
 
-        $dbh->do(qq~
-            INSERT INTO reqs(
-                id, account_id, problem_id, contest_id,
-                submit_time, test_time, result_time, state, received
-            ) VALUES (
-                ?, ?, ?, ?,
-                CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, 0)~,
-            {}, $rid, $uid, $pid, $cid, $cats::st_not_processed
-        );
-
-        my $s = $dbh->prepare(qq~
+        my $s = $dbh->prepare(q~
             INSERT INTO sources(req_id, de_id, src, fname) VALUES (?, ?, ?, ?)~);
         $s->bind_param(1, $rid);
         $s->bind_param(2, $did);
