@@ -218,10 +218,11 @@ files with tests, solutions etc.
     By default the file name is equal to the value of <tt>inputFile</tt> attribute of the  [% tag_ref('Problem') %] tag.
     Special value of <tt>outputFile="*STDOUT"</tt> means that the generator should print the test to the standard output.
     <br/>
-    Since version 1.5, for group generators outputFile attribute may contain context variables which are expanded to the test number.
-    For example, to describe a generatr producing test files t01, t02, ..., t50:
+    For group generators outputFile attribute may contain context variables which are expanded to the test number [% v15 %],
+    or file pattern characters [% v19 %] '?' and '*'.
+    For example, to describe a generator producing test files t01, t02, ..., t50 in subdirectories subtask1, subtask2, ...:
     <pre>
-      &lt;Generatore name="gen" src="gen.pas" outputFile="t%0n" /&gt
+      &lt;Generatore name="gen" src="gen.pas" outputFile="subtask?/t%0n" /&gt
       &lt;Test rank="1-50" &gt; &lt;In use="gen" genAll="1"&gt; ...</pre>
   </td>
 </tr>
