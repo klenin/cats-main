@@ -120,7 +120,14 @@
     [% END %]
   </tr>
   [% END %]
-  [% IF r.show_points %]<tr><td colspan="2">[% capt.total %]</td><td>[% r.total_points %]</td></tr>[% END %]
+  [% IF r.show_points || r.show_test_resources -%]
+  <tr><td colspan="2">[% capt.total %]</td>
+    <td>[% r.total_points IF r.show_points %]</td>
+    <td>[% r.maximums.time_used IF r.show_test_resources %]</td>
+    <td align="right">[% r.maximums.memory_used IF r.show_test_resources %]</td>
+    <td align="right">[% r.maximums.disk_used IF r.show_test_resources %]</td>
+  </tr>
+  [%- END %]
   </table>
 [% END %]
 </td>

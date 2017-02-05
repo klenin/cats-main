@@ -4,6 +4,8 @@ use strict;
 use warnings;
 
 use Algorithm::Diff;
+use List::Util qw(max);
+
 use CATS::Web qw(param encoding_param url_param headers upload_source content_type);
 use CATS::DB;
 use CATS::Utils qw(state_to_display url_function encodings source_encodings);
@@ -44,12 +46,14 @@ sub source_links {
     $t->param(source_encodings => source_encodings($se));
 }
 
+my @resources = qw(time_used memory_used disk_used);
+
 sub get_req_details {
     my ($contest, $req, $accepted_tests) = @_;
 
     my $rd_fields = join ', ', (
          qw(test_rank result),
-         ($contest->{show_test_resources} ? qw(time_used memory_used disk_used) : ()),
+         ($contest->{show_test_resources} ? @resources : ()),
          ($contest->{show_checker_comment} || $req->{partial_checker} ? qw(checker_comment) : ()),
     );
 
@@ -162,6 +166,7 @@ sub get_run_info {
         WHERE R.id = ? AND PS.stype = ?~, { Slice => {} },
         $req->{req_id}, $cats::visualizer);
 
+    my $maximums = { map { $_ => 0 } @resources };
     my $add_testdata = sub {
         my ($row) = @_ or return ();
         $contest->{show_test_data} or return $row;
@@ -177,6 +182,7 @@ sub get_run_info {
                 href => url_f('visualize_test', rid => $req->{req_id}, test_rank => $row->{test_rank}, vid => $_->{id}),
                 name => $_->{name}
             }, @$visualizers ] : [];
+        $maximums->{$_} = max($maximums->{$_}, $row->{$_}) for @resources;
         $row;
     };
 
@@ -184,6 +190,7 @@ sub get_run_info {
         %$contest,
         total_points => $total_points,
         run_details => [ map $add_testdata->($run_row->($_)), 1..$last_test ],
+        maximums => $maximums,
         testsets => [ sort { $a->{list}[0] <=> $b->{list}[0] } values %used_testsets ],
         accepted_deps => \%accepted_deps,
         has_depends_on => 0 < grep($_->{depends_on}, values %used_testsets),
