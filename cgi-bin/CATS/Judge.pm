@@ -3,8 +3,8 @@ package CATS::Judge;
 use strict;
 use warnings;
 
-use CATS::DB;
 use CATS::Config;
+use CATS::DB;
 
 sub ping {
     my ($jid) = @_;

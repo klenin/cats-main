@@ -2,6 +2,7 @@ package CATS::Template;
 
 use strict;
 use warnings;
+
 use Template;
 use CATS::Template::Filter;
 

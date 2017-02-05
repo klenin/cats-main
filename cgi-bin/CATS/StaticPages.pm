@@ -3,9 +3,9 @@ package CATS::StaticPages;
 use strict;
 use warnings;
 
-use CATS::Web qw(url_param restore_parameters);
-use CATS::DB;
 use CATS::Config qw(cats_dir);
+use CATS::DB;
+use CATS::Web qw(url_param restore_parameters);
 
 sub allowed_pages
 {{

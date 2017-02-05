@@ -2,18 +2,18 @@ package CATS::RankTable;
 
 use strict;
 use warnings;
-use Encode;
 
-use CATS::Web qw(param url_param);
+use Encode;
 use List::Util qw(max min sum);
 
+use CATS::Config qw(cats_dir);
 use CATS::Constants;
+use CATS::Countries;
 use CATS::DB;
-use CATS::Testset;
 use CATS::Misc qw(
     $t $is_jury $is_team $virtual_diff_time $cid $uid url_f $is_virtual $contest);
-use CATS::Config qw(cats_dir);
-use CATS::Countries;
+use CATS::Testset;
+use CATS::Web qw(param url_param);
 
 use fields qw(
     contest_list hide_ooc hide_virtual show_points frozen

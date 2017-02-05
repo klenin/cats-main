@@ -5,8 +5,8 @@ use warnings;
 
 use fields qw(_de_list _dbh);
 
-use CATS::Utils;
 use CATS::DB;
+use CATS::Utils;
 
 sub new
 {

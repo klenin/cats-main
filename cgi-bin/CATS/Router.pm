@@ -3,8 +3,6 @@ package CATS::Router;
 use strict;
 use warnings;
 
-use CATS::Web qw(url_param param);
-
 use CATS::ApiJudge;
 use CATS::Console;
 use CATS::Contest::Results;
@@ -12,19 +10,21 @@ use CATS::Problem::Text;
 use CATS::RunDetails;
 
 use CATS::UI::About;
-use CATS::UI::Prizes;
-use CATS::UI::Messages;
-use CATS::UI::Stats;
-use CATS::UI::Judges;
 use CATS::UI::Compilers;
-use CATS::UI::Keywords;
-use CATS::UI::Problems;
-use CATS::UI::ProblemDetails;
 use CATS::UI::Contests;
-use CATS::UI::Users;
 use CATS::UI::ImportSources;
+use CATS::UI::Judges;
+use CATS::UI::Keywords;
 use CATS::UI::LoginLogout;
+use CATS::UI::Messages;
+use CATS::UI::Prizes;
+use CATS::UI::ProblemDetails;
+use CATS::UI::Problems;
+use CATS::UI::Stats;
 use CATS::UI::RankTable;
+use CATS::UI::Users;
+
+use CATS::Web qw(url_param param);
 
 my $function;
 
