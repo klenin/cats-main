@@ -9,6 +9,7 @@
   <th>[% capt.for_points %]</th>
   <th>[% capt.name %]</th>
   <th>[% capt.tests %]</th>
+  <th>[% capt.count %]</th>
   <th>[% capt.points %]</th>
   <th>[% capt.hide_details %]</th>
   <th>[% capt.depends_on %]</th>
@@ -22,10 +23,11 @@
     <input type="checkbox" name="sel_points_testsets" value="[% ts.id %]" [% IF ts.sel_points_testsets %]checked="checked"[% END %]/>
   </label></td>
   <td>[% ts.name %]</td>
-  <td>[% ts.tests %]</td>
-  <td>[% ts.points %]</td>
-  <td>[% ts.hide_details %]</td>
-  <td>[% ts.depends_on %]</td>
+  <td>[% ts.tests.replace(',', ',&#8203;') %]</td>
+  <td align="right">[% ts.count %]</td>
+  <td align="right">[% ts.points %]</td>
+  <td align="right">[% ts.hide_details %]</td>
+  <td>[% ts.depends_on.replace(',', ',&#8203;') %]</td>
 </tr>
 [% END %]
 </table>

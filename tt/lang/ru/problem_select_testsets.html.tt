@@ -5,6 +5,7 @@
     for_points => 'Ставить баллы',
     name => 'Название',
     tests => 'Тесты',
+    count => 'Кол-во',
     points => 'Баллы',
     hide_details => 'Скрывать детали',
     depends_on => 'Зависит от',

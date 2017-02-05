@@ -14,6 +14,7 @@ use CATS::Misc qw(
 use CATS::ListView qw(init_listview_template order_by sort_listview define_columns attach_listview);
 use CATS::Problem::Save;
 use CATS::Problem::Text;
+use CATS::Testset;
 use CATS::Utils qw(url_function source_encodings);
 use CATS::Web qw(content_type encoding_param headers not_found param redirect url_param);
 
@@ -158,6 +159,12 @@ sub problem_select_testsets_frame
         $_->{"sel_$_[0]"} = exists $sel{$_->{name}} for @$testsets;
     };
     $list_to_selected->($_) for qw(testsets points_testsets);
+
+    my $all_testsets = {};
+    $all_testsets->{$_->{name}} = $_ for @$testsets;
+    for (@$testsets) {
+        $_->{count} = scalar keys %{CATS::Testset::parse_test_rank($all_testsets, $_->{name}, sub {})};
+    }
 
     $t->param("problem_$_" => $problem->{$_}) for keys %$problem;
     $t->param(
