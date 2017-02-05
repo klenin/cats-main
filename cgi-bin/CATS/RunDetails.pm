@@ -182,7 +182,7 @@ sub get_run_info {
                 href => url_f('visualize_test', rid => $req->{req_id}, test_rank => $row->{test_rank}, vid => $_->{id}),
                 name => $_->{name}
             }, @$visualizers ] : [];
-        $maximums->{$_} = max($maximums->{$_}, $row->{$_}) for @resources;
+        $maximums->{$_} = max($maximums->{$_}, $row->{$_} // 0) for @resources;
         $row;
     };
 
