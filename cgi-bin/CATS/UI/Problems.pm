@@ -5,23 +5,22 @@ use warnings;
 
 use CATS::Config qw(cats_dir);
 use CATS::Constants;
+use CATS::Data qw(:all);
 use CATS::DB;
+use CATS::DevEnv;
 use CATS::IP;
+use CATS::Judge;
 use CATS::ListView qw(init_listview_template order_by sort_listview define_columns attach_listview);
 use CATS::Misc qw(
     $t $is_jury $is_root $is_team $sid $cid $uid $contest $is_virtual $virtual_diff_time
     init_template msg res_str url_f auto_ext problem_status_names);
-use CATS::Utils qw(url_function file_type date_to_iso);
-use CATS::Data qw(:all);
-use CATS::DevEnv;
-use CATS::Web qw(param url_param redirect upload_source);
-
-use CATS::Judge;
-use CATS::StaticPages;
-use CATS::ProblemStorage;
 use CATS::Problem::Save;
-use CATS::Problem::Source::Zip;
 use CATS::Problem::Source::Git;
+use CATS::Problem::Source::Zip;
+use CATS::ProblemStorage;
+use CATS::StaticPages;
+use CATS::Utils qw(url_function file_type date_to_iso);
+use CATS::Web qw(param url_param redirect upload_source);
 
 sub problems_change_status
 {

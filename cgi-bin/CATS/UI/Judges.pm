@@ -5,13 +5,12 @@ use warnings;
 
 use CATS::DB;
 use CATS::IP;
+use CATS::Judge;
 use CATS::ListView qw(init_listview_template order_by define_columns attach_listview);
 use CATS::Misc qw(
     $t $is_jury $is_root
     init_template msg res_str url_f references_menu);
 use CATS::Web qw(param param_on url_param redirect);
-
-use CATS::Judge;
 
 sub edit_frame
 {

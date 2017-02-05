@@ -5,13 +5,13 @@ use warnings;
 
 use File::stat;
 
-use CATS::Constants;
 use CATS::BinaryFile;
+use CATS::Constants;
 use CATS::DB;
+use CATS::ListView qw(init_listview_template order_by sort_listview define_columns attach_listview);
 use CATS::Misc qw(
     $t $is_jury $is_root $sid $cid $contest
     init_template msg res_str url_f auto_ext);
-use CATS::ListView qw(init_listview_template order_by sort_listview define_columns attach_listview);
 use CATS::Problem::Save;
 use CATS::Problem::Text;
 use CATS::Testset;

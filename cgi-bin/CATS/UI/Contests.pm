@@ -3,16 +3,17 @@ package CATS::UI::Contests;
 use strict;
 use warnings;
 
-use CATS::DB;
 use CATS::Constants;
+use CATS::Data qw(:all);
+use CATS::DB;
 use CATS::ListView qw(init_listview_template order_by define_columns attach_listview);
 use CATS::Misc qw(
     $t $is_jury $is_root $is_team $privs $sid $cid $uid $contest $is_virtual $settings
     init_template msg res_str url_f auto_ext);
-use CATS::Utils qw(url_function coalesce date_to_iso);
-use CATS::Data qw(:all);
-use CATS::StaticPages;
 use CATS::RankTable;
+use CATS::StaticPages;
+use CATS::UI::Prizes;
+use CATS::Utils qw(url_function coalesce date_to_iso);
 use CATS::Web qw(param param_on url_param redirect);
 
 sub contests_new_frame
