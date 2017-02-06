@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use CATS::Constants;
+use CATS::ContestParticipate;
 use CATS::Data qw(:all);
 use CATS::DB;
 use CATS::ListView qw(init_listview_template order_by define_columns attach_listview);
@@ -160,60 +161,6 @@ sub contests_edit_save
     # Change page title immediately if the current contest is renamed.
     $contest->{title} = $contest_name if $edit_cid == $cid;
     msg(1036, $contest_name);
-}
-
-sub contest_online_registration
-{
-    !get_registered_contestant(contest_id => $cid)
-        or return msg(1111, $contest->{title});
-
-    if ($is_root) {
-        $contest->register_account(account_id => $uid, is_jury => 1, is_pop => 1, is_hidden => 1);
-    }
-    else {
-        !$contest->{closed} or return msg(1105, $contest->{title});
-        $contest->{time_since_finish} <= 0 or return msg(1108, $contest->{title});
-        $contest->register_account(account_id => $uid);
-    }
-    $dbh->commit;
-    msg(1110, $contest->{title});
-}
-
-sub contest_virtual_registration
-{
-    my ($registered, $is_already_virtual, $is_remote) = get_registered_contestant(
-         fields => '1, is_virtual, is_remote', contest_id => $cid);
-
-    !$registered || $is_already_virtual
-        or return msg(1114, $contest->{title});
-
-    !$contest->{closed}
-        or return msg(1105, $contest->{title});
-
-    $contest->{time_since_start} >= 0
-        or return msg(1109);
-
-    # In official contests, virtual participation is allowed only after the finish.
-    $contest->{time_since_finish} >= 0 || !$contest->{is_official}
-        or return msg(1122);
-
-    my $removed_req_count = 0;
-    # Repeat virtual registration removes old results.
-    if ($registered) {
-        $removed_req_count = $dbh->do(qq~
-            DELETE FROM reqs WHERE account_id = ? AND contest_id = ?~, undef,
-            $uid, $cid);
-        $dbh->do(qq~
-            DELETE FROM contest_accounts WHERE account_id = ? AND contest_id = ?~, undef,
-            $uid, $cid);
-    }
-
-    $contest->register_account(
-        contest_id => $cid, account_id => $uid,
-        is_virtual => 1, is_remote => $is_remote,
-        diff_time => $contest->{time_since_start});
-    $dbh->commit;
-    msg($removed_req_count > 0 ? 1113 : 1112, $contest->{title}, $removed_req_count);
 }
 
 sub contests_select_current
@@ -394,10 +341,10 @@ sub contests_frame {
         if defined param('edit_save') &&
             get_registered_contestant(fields => 'is_jury', contest_id => param('id'));
 
-    contest_online_registration if defined param('online_registration');
+    CATS::ContestParticipate::online if defined param('online_registration');
 
     my $vr = param('virtual_registration');
-    contest_virtual_registration if defined $vr && $vr;
+    CATS::ContestParticipate::virtual if defined $vr && $vr;
 
     contests_select_current if defined url_param('set_contest');
 
