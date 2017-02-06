@@ -28,10 +28,10 @@ function delete_team(href, name)
 <a href="[% u.href_stats %]">[% u.team_name | html %][% IF u.city %] ([% u.city | html %])[% END %]</a></td>
 <td align="center">[% u.tag %]</td>
 [% IF editable %]
-<td align="center">[% checkbox("jury$u.id", u.jury) %]</td>
-<td align="center">[% checkbox("ooc$u.id", u.ooc) %]</td>
-<td align="center">[% checkbox("remote$u.id", u.remote) %]</td>
-<td align="center">[% checkbox("hidden$u.id", u.hidden) %]</td>
+<td class="user_checkbox"><label>[% checkbox("jury$u.id", u.jury) %]</label></td>
+<td class="user_checkbox"><label>[% checkbox("ooc$u.id", u.ooc) %]</label></td>
+<td class="user_checkbox"><label>[% checkbox("remote$u.id", u.remote) %]</label></td>
+<td class="user_checkbox"><label>[% checkbox("hidden$u.id", u.hidden) %]</label></td>
 [% END %]
 <td align="center">
 [% IF u.flag -%]
