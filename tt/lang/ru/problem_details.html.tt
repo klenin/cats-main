@@ -15,6 +15,6 @@
     points_testsets => 'Тесты для разбалловки',
     testsets_all => 'все',
     tags => 'Тэги',
-    tags_all => 'все',
+    tags_none => 'нет',
   })
 %]

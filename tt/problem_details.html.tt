@@ -18,7 +18,7 @@
 </td></tr>
 <tr><td>[% capt.testsets %]</td><td>[% href(href_testsets, p.testsets || capt.testsets_all) %]</td></tr>
 <tr><td>[% capt.points_testsets %]</td><td>[% href(href_testsets, p.points_testsets || capt.testsets_all) %]</td></tr>
-<tr><td>[% capt.tags %]</td><td>[% href(href_tags, p.tags || capt.tags_all) %]</td></tr>
+<tr><td>[% capt.tags %]</td><td>[% href(href_tags, p.tags || capt.tags_none) %]</td></tr>
 </table>
 </form>
 
