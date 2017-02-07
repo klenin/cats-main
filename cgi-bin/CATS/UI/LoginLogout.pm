@@ -27,7 +27,8 @@ sub login_frame
 {
     my $json = param('json');
     init_template(auto_ext('login', $json));
-    $t->param(href_login => url_function('login'));
+    my $redir = url_param('redir');
+    $t->param(href_login => url_function('login', redir => $redir));
     msg(1004) if param('logout');
 
     my $login = param('login');
@@ -63,7 +64,7 @@ sub login_frame
             return;
         }
         $t = undef;
-        my %params = unpack_redir_params;
+        my %params = unpack_redir_params($redir);
         my $f = $params{f} || 'contests';
         delete $params{f};
         $params{sid} = $sid;

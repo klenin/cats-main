@@ -332,7 +332,7 @@ sub init_user
     }
 }
 
-sub unpack_redir_params { url_param('redir') ? %{Storable::thaw(decode_base64(url_param('redir')))} : () }
+sub unpack_redir_params { $_[0] ? %{Storable::thaw(decode_base64($_[0]))} : () }
 
 sub extract_cid_from_cpid
 {
