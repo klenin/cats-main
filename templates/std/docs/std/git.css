@@ -73,7 +73,7 @@ td.mode {
 
 td.size {
     font-family: monospace;
-    text-align: center;
+    text-align: right;
 }
 
 td.list {
