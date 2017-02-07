@@ -43,18 +43,23 @@ sub problem_details_frame {
     init_template('problem_details.html.tt');
     $is_jury && $p->{pid} or return;
     my $pr = $dbh->selectrow_hashref(q~
-        SELECT P.title, P.lang, P.contest_id, C.title AS contest_name, CP.id AS cpid,
-            CP.testsets, CP.points_testsets, CP.tags
+        SELECT P.title, P.lang, P.contest_id, P.author, P.last_modified_by, P.upload_date,
+            C.title AS contest_name, A.team_name,
+            CP.id AS cpid, CP.testsets, CP.points_testsets, CP.tags
         FROM problems P
         INNER JOIN contests C ON C.id = P.contest_id
         INNER JOIN contest_problems CP ON CP.problem_id = P.id AND CP.contest_id = ?
+        INNER JOIN accounts A ON A.id = P.last_modified_by
         WHERE P.id = ?~, { Slice => {} },
         $cid, $p->{pid}) or return;
     my @text = ('problem_text', cpid => $pr->{cpid});
+    $pr->{commit_sha} = CATS::ProblemStorage::get_latest_master_sha($p->{pid});
     $t->param(
         p => $pr,
         problem_title => $pr->{title},
         title_suffix => $pr->{title},
+        href_modifier => url_f('users', edit => $pr->{last_modified_by}),
+        href_edit => url_f('problem_history', a => 'tree', pid => $p->{pid}, hb => $pr->{commit_sha}),
         href_original_contest => url_function('problems', cid => $pr->{contest_id}, sid => $sid),
         href_download => url_f('problem_download', pid => $p->{pid}),
         href_git_package => url_f('problem_git_package', pid => $p->{pid}),

@@ -1,6 +1,9 @@
 [%
   capt.import({
     title => 'Name',
+    last_change => 'Last change',
+    edit => 'edit',
+    author => 'Authors',
     lang => 'Language',
     original_contest => 'Original contest',
     download => 'Download',

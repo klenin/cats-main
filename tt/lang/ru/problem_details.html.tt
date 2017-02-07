@@ -1,6 +1,9 @@
 [%
   capt.import({
     title => 'Название',
+    last_change => 'Последнее изменение',
+    edit => 'редактировать',
+    author => 'Авторы',
     lang => 'Язык',
     original_contest => 'Исходный турнир',
     download => 'Скачать',

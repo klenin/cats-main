@@ -4,6 +4,11 @@
 <form method="post" enctype="multipart/form-data" action="[% href_action %]">
 <table class="bordered">
 <tr><td>[% capt.title %]</td><td>[% p.title | html %]</td></tr>
+<tr><td>[% capt.last_change %]</td><td>
+  [[% href(href_edit, capt.edit, p.commit_sha) %]]
+  [% href(href_modifier,p.team_name) %] [% p.upload_date %]
+</td></tr>
+<tr><td>[% capt.author %]</td><td>[% p.author | html %]</td></tr>
 <tr><td>[% capt.lang %]</td><td>[% p.lang | html %]</td></tr>
 <tr><td>[% capt.original_contest %]</td><td>[% maybe_href(href_original_contest, p.contest_name) %]</td></tr>
 <tr><td>[% capt.download %]</td><td>
