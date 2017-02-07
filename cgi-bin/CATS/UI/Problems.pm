@@ -5,6 +5,7 @@ use warnings;
 
 use CATS::Config qw(cats_dir);
 use CATS::Constants;
+use CATS::ContestParticipate;
 use CATS::Data qw(:all);
 use CATS::DB;
 use CATS::DevEnv;
@@ -495,9 +496,7 @@ sub problems_retest_frame
 
 sub problems_frame {
     my ($p) = @_;
-    my $my_is_team =
-        $is_jury || $contest->is_practice ||
-        $is_team && ($contest->{time_since_finish} - $virtual_diff_time < 0 || can_upsolve);
+
     my $show_packages = 1;
     unless ($is_jury)
     {
@@ -534,6 +533,8 @@ sub problems_frame {
     problems_frame_jury_action;
 
     problems_submit if defined param('submit');
+    CATS::ContestParticipate::online if param('participate_online');
+    CATS::ContestParticipate::virtual if param('participate_virtual');
 
     my @cols = (
         { caption => res_str(602), order_by => ($contest->is_practice ? 'P.title' : 3), width => '30%' },
@@ -687,10 +688,17 @@ sub problems_frame {
     $t->param(
         href_action => url_f('problems'),
         href_login => url_f('login', redir => pack_redir_params),
+        can_participate_online =>
+            !$is_team && !$contest->{closed} && $contest->{time_since_finish} < 0,
+        can_participate_virtual =>
+            !$is_team && !$contest->{closed} && $contest->{time_since_start} >= 0 &&
+            (!$contest->{is_official} || $contest->{time_since_finish} > 0),
         contest_descr => $contest->{short_descr},
         submenu => \@submenu, title_suffix => res_str(525),
         is_user => $uid,
-        is_participant => $my_is_team,
+        is_participant =>
+            $is_jury || $contest->is_practice ||
+            $is_team && ($contest->{time_since_finish} - $virtual_diff_time < 0 || can_upsolve),
         is_practice => $contest->is_practice,
         de_list => \@de, problem_codes => \@cats::problem_codes,
         contest_id => $cid, no_judges => !$jactive,

@@ -31,6 +31,8 @@
     message => 'Message',
     file_editing => 'Edit file',
     enc => 'Encoding',
+    participate => 'participate',
+    participate_virtually => 'participate virtually',
   });
   MACRO to_monitor(console) BLOCK; "Open ${console} to monitor testing process"; END;
 %]

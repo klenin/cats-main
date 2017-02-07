@@ -31,6 +31,8 @@
     message => 'Сообщение',
     file_editing => 'Редактирование файла',
     enc => 'Кодировка',
+    participate => 'участвовать',
+    participate_virtually => 'участвовать виртуально',
   });
   MACRO to_monitor(console) BLOCK; "Для наблюдения за ходом тестирования откройте ${console}"; END;
 %]

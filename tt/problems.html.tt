@@ -168,6 +168,16 @@ function chg_code(st_sel, pid)
 [% END %]
 <div style="clear: both;"></div>
 [% END %]
+[% IF can_participate_online || can_participate_virtual %]
+<div style="margin: 5px 0">
+[% IF can_participate_online -%]
+<button class="button" type="submit" name="participate_online" value="1">[% capt.participate %]</button>
+[%- END %]
+[% IF can_participate_virtual -%]
+<button class="button" type="submit" name="participate_virtual" value="1">[% capt.participate_virtually %]</button>
+[%- END %]
+</div>
+[% END %]
 </form>
 [% IF editable %]
 <script type="text/javascript" src="js/lib/jquery.min.js"></script>
