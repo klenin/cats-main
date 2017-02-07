@@ -22,6 +22,7 @@ our @EXPORT = qw(
     save_settings
     references_menu
     problem_status_names
+    pack_redir_params
     unpack_redir_params
     unpack_privs
 );
@@ -289,6 +290,13 @@ sub unpack_privs
     $p;
 }
 
+sub pack_redir_params {
+    encode_base64(Storable::nfreeze
+        { map { $_ ne 'sid' ? ($_ => url_param($_)) : () } url_param })
+}
+
+sub unpack_redir_params { $_[0] ? %{Storable::thaw(decode_base64($_[0]))} : () }
+
 # Authorize user, initialize permissions and settings.
 sub init_user
 {
@@ -325,14 +333,10 @@ sub init_user
     if ($bad_sid) {
         init_template(param('json') ? 'bad_sid.json.tt' : 'login.html.tt');
         $sid = '';
-        my $redir = encode_base64(Storable::nfreeze
-            { map { $_ ne 'sid' ? ($_ => url_param($_)) : () } url_param });
-        $t->param(href_login => CATS::Utils::url_function('login', redir => $redir));
+        $t->param(href_login => CATS::Utils::url_function('login', redir => pack_redir_params));
         msg(1002);
     }
 }
-
-sub unpack_redir_params { $_[0] ? %{Storable::thaw(decode_base64($_[0]))} : () }
 
 sub extract_cid_from_cpid
 {

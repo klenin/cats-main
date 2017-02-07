@@ -13,7 +13,7 @@ use CATS::Judge;
 use CATS::ListView qw(init_listview_template order_by sort_listview define_columns attach_listview);
 use CATS::Misc qw(
     $t $is_jury $is_root $is_team $sid $cid $uid $contest $is_virtual $virtual_diff_time
-    init_template msg res_str url_f auto_ext problem_status_names);
+    init_template msg res_str url_f auto_ext problem_status_names pack_redir_params);
 use CATS::Problem::Save;
 use CATS::Problem::Source::Git;
 use CATS::Problem::Source::Zip;
@@ -686,7 +686,7 @@ sub problems_frame {
         { href => url_f('contests', params => $cid), item => res_str(546) };
     $t->param(
         href_action => url_f('problems'),
-        href_login => url_f('login'),
+        href_login => url_f('login', redir => pack_redir_params),
         contest_descr => $contest->{short_descr},
         submenu => \@submenu, title_suffix => res_str(525),
         is_team => $my_is_team, is_practice => $contest->is_practice,
