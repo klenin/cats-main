@@ -73,7 +73,7 @@ function chg_code(st_sel, pid)
 <p><b>[% capt.no_judges %]</b></p>
 [% END %]
 
-[% IF !is_team %]
+[% IF !is_user %]
 <p>[% capt.login_to_participate.replace('\[\[(.*)\]\]', href(href_login, '$1')) %]</p>
 [% END %]
 
@@ -84,12 +84,12 @@ function chg_code(st_sel, pid)
 <form method="post" enctype="multipart/form-data" name="problems_form" accept-charset="UTF-8" style="margin: 0" action="[% href_action %]">
 [% PROCESS 'includes/listview_header.tti' %]
 <table width="100%" cellpadding="2" cellspacing="1" class="bordered highlight">
-[% IF is_team %]
+[% IF is_participant %]
 [% PROCESS 'includes/listview_col_defs.tti' sel_col = 1 %]
 [% END %]
 [% FOREACH p IN problems %]
 <tr class="[% loop.parity() %] problem_row" id="pr_[% p.cpid %]">
-[% IF is_team %]<td class="problem_radio">
+[% IF is_participant %]<td class="problem_radio">
   <label><div><input type="radio" name="problem_id" value="[% p.problem_id %]"
     [%- ' disabled="disabled"' IF p.disabled; ' checked="checked"' IF p.selected %] />
     [%~ IF p.href_problem_details %]<a href="[% p.href_problem_details %]" class="icon edit"></a>[% END %]</div></label>
@@ -124,7 +124,7 @@ function chg_code(st_sel, pid)
 <td align="right">[% p.upload_date %]</td>
 [% END %]
 [% IF is_practice %]<td>[% p.contest_name | html %]</td>[% END %]
-[% IF is_team %]
+[% IF is_participant %]
     <td class="problem_req_count"><div>
     [%- IF p.href_problem_console %]<a href="[% p.href_problem_console %]">[% END -%]
     [% p.accept_count %] / [% p.wa_count %]  / [% p.tle_count %]
@@ -135,7 +135,7 @@ function chg_code(st_sel, pid)
 [% END %]
 </table>
 [% PROCESS includes/pages.tti %]
-[% IF is_team %]
+[% IF is_participant %]
 <div class="problem_submit">
   <p><label for="source">[% capt.solution_file %]:</label><input type="file" id="source" name="source" class="file" size="25"/></p>
   <p><label for="de_id">[% capt.dev_env %]:</label><select name="de_id" id="de_id">

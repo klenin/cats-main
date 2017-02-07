@@ -689,7 +689,9 @@ sub problems_frame {
         href_login => url_f('login', redir => pack_redir_params),
         contest_descr => $contest->{short_descr},
         submenu => \@submenu, title_suffix => res_str(525),
-        is_team => $my_is_team, is_practice => $contest->is_practice,
+        is_user => $uid,
+        is_participant => $my_is_team,
+        is_practice => $contest->is_practice,
         de_list => \@de, problem_codes => \@cats::problem_codes,
         contest_id => $cid, no_judges => !$jactive,
      );
