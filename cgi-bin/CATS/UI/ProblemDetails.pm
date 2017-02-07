@@ -337,8 +337,8 @@ sub problem_history_edit_frame
         or return redirect url_f('problem_history', pid => $pid);
     init_template('problem_history_edit_file.html.tt');
 
-    my $se = param('src_enc') || 'WINDOWS-1251';
-    if (defined param('save')) {
+    my $se = param('src_enc');
+    if (defined param('save') && $se) {
         my $message = param('message');
         my $content = param('source');
         my CATS::ProblemStorage $p = CATS::ProblemStorage->new;
@@ -357,6 +357,7 @@ sub problem_history_edit_frame
         );
     }
 
+    $se ||= sub { $_[0] =~ /^\s*<\?xml.*encoding="(.*)"\s*\?>/ ? uc $1 : 'WINDOWS-1251' };
     my $blob = CATS::ProblemStorage::show_blob($pid, $hash_base, $file, $se);
 
     set_submenu_for_tree_frame($pid, $hash_base);
@@ -366,8 +367,8 @@ sub problem_history_edit_frame
         blob => $blob,
         problem_title => $title,
         title_suffix => "$file",
-        src_enc => $se,
-        source_encodings => source_encodings($se),
+        src_enc => $blob->{encoding},
+        source_encodings => source_encodings($blob->{encoding}),
     );
 }
 
