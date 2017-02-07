@@ -8,9 +8,9 @@ use List::Util qw(max);
 use CATS::Constants;
 use CATS::DB;
 use CATS::Misc qw(init_template $t $is_jury $cid $contest url_f);
-use CATS::Web qw(param);
-
 use CATS::UI::ProblemDetails;
+use CATS::Utils qw(state_to_display);
+use CATS::Web qw(param);
 
 sub greedy_cliques
 {
@@ -231,25 +231,35 @@ sub test_diff_frame
     init_template('test_diff.html.tt');
     $is_jury or return;
     my $pid = param('pid') or return;
+    my $problem = $dbh->selectrow_hashref(q~
+        SELECT P.id, P.title FROM problems P WHERE id = ?~, { Slice => {} },
+        $pid) or return;
     my $test_rank = param('test') or return;
     my $reqs = $dbh->selectall_arrayref(q~
-        SELECT r.id, r.account_id, r.state, r.failed_test FROM reqs r
-        WHERE r.contest_id = ? AND r.problem_id = ? AND
-            (r.state = ? OR r.state > ? AND r.failed_test >= ?)
-        ORDER BY r.account_id, r.id~, { Slice => {} },
+        SELECT R.id, R.account_id, R.problem_id, R.state, R.failed_test, A.team_name
+        FROM reqs r
+        INNER JOIN accounts A ON A.id = R.account_id
+        WHERE R.contest_id = ? AND R.problem_id = ? AND
+            (R.state = ? OR R.state > ? AND R.failed_test >= ?)
+        ORDER BY A.team_name, R.account_id, R.id~, { Slice => {} },
         $cid, $pid, $cats::st_accepted, $cats::st_accepted, $test_rank);
-    my $prev;
-    my $fr = [ grep {
-        undef $prev if $prev && $prev->{account_id} != $_->{account_id};
-        my $ok = $prev ?
-            $prev->{state} > $cats::st_accepted && $prev->{failed_test} <= $test_rank &&
-            ($_->{state} == $cats::st_accepted  || $_->{failed_test} > $test_rank) :
-            $_->{state} > $cats::st_accepted;
-        #$_->{ok} = "$ok~" . $prev->{state};
-        $prev = $_;
-        $ok;
-    } @$reqs ];
-    $t->param(reqs => $fr, pid => $pid, test => $test_rank);
+    my ($prev, @fr);
+    for my $r (@$reqs) {
+        my %st = state_to_display($r->{state});
+        $r->{$_} = $st{$_} for keys %st;
+        undef $prev if $prev && $prev->{account_id} != $r->{account_id};
+        $prev or next;
+        $prev->{state} > $cats::st_accepted && $prev->{failed_test} == $test_rank &&
+        ($r->{state} == $cats::st_accepted  || $r->{failed_test} > $test_rank)
+            or next;
+        push @fr, $r;
+        $r->{href_run_details} = url_f('run_details', rid => join ',', $r->{id}, $prev->{id});
+        $r->{href_diff_runs} = url_f('diff_runs', r1 => $r->{id}, r2 => $prev->{id});
+    } continue {
+        $r->{prev} = $prev;
+        $prev = $r;
+    }
+    $t->param(reqs => \@fr, problem => $problem, test => $test_rank);
     CATS::UI::ProblemDetails::problem_submenu('compare_tests', $pid);
 }
 
