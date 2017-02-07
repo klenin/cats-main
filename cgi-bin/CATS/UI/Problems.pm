@@ -688,9 +688,9 @@ sub problems_frame {
         href_action => url_f('problems'),
         href_login => url_f('login', redir => pack_redir_params),
         can_participate_online =>
-            !$is_team && !$contest->{closed} && $contest->{time_since_finish} < 0,
+            $uid && !$is_team && !$contest->{closed} && $contest->{time_since_finish} < 0,
         can_participate_virtual =>
-            !$is_team && !$contest->{closed} && $contest->{time_since_start} >= 0 &&
+            $uid && !$is_team && !$contest->{closed} && $contest->{time_since_start} >= 0 &&
             (!$contest->{is_official} || $contest->{time_since_finish} > 0),
         contest_descr => $contest->{short_descr},
         submenu => \@submenu, title_suffix => res_str(525),
