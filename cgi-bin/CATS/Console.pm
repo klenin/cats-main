@@ -240,7 +240,10 @@ sub console_content
     my $contest_dates = '';
     if ($s->{show_contests})
     {
-        my %extra_cond = (start => '', freeze => ' AND C.freeze_date < C.finish_date', finish => '');
+        my %extra_cond = (
+            start => '',
+            freeze => ' AND C.freeze_date < C.finish_date AND C.freeze_date > C.start_date',
+            finish => '');
         my $hidden_cond = $is_root ? '' : ' AND C.is_hidden = 0';
         $contest_dates = join '', map qq~
                 UNION
