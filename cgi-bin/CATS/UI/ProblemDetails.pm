@@ -214,6 +214,7 @@ sub problem_commitdiff
 
     init_template('problem_history_commit.html.tt');
     my $submenu = [
+        { href => url_f('problem_details', pid => $pid), item => res_str(504) },
         { href => url_f('problem_history', pid => $pid), item => res_str(568) },
         { href => url_f('problem_history', a => 'tree', hb => $sha, pid => $pid), item => res_str(570) },
         { href => url_f('problem_git_package', pid => $pid, sha => $sha), item => res_str(569) },
