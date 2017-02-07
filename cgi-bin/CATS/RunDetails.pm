@@ -104,6 +104,7 @@ sub get_run_info {
         my $p = $row->{is_accepted} ? $points->[$row->{test_rank} - 1] || 0 : 0;
         if (my $ts = $testset{$last_test}) {
             $used_testsets{$ts->{name}} = $ts;
+            $ts->{accepted_count} //= 0;
             push @{$ts->{list} ||= []}, $last_test;
             if (CATS::RankTable::dependencies_accepted($all_testsets, $ts, \%accepted_tests, \%accepted_deps)) {
                 $ts->{accepted_count} += $row->{is_accepted};
