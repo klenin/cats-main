@@ -10,6 +10,9 @@
 [%- IF u.city || u.country %]
 "affiliation": { "city" : "[% u.city | $Javascript %]", "country" : "[% u.country | $Javascript %]" },
 [%- END %]
+[%- IF u.virtual_diff_time_minutes %]
+"time_diff_minutes": [% u.virtual_diff_time_minutes %],
+[%- END %]
 "ooc": [% IF u.ooc %]1[% ELSE %]0[% END %],
 "remote": [% IF u.remote %]1[% ELSE %]0[% END %],
 "virtual": [% IF u.virtual %]1[% ELSE %]0[% END %],

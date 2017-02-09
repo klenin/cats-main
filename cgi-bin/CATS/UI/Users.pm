@@ -17,7 +17,7 @@ use CATS::Misc qw(
     init_template msg res_str url_f auto_ext);
 use CATS::RankTable;
 use CATS::User;
-use CATS::Utils qw(url_function);
+use CATS::Utils qw(url_function date_to_iso);
 use CATS::Web qw(param param_on redirect url_param);
 
 my $hash_password;
@@ -480,6 +480,7 @@ sub users_frame
             remote => $remote,
             virtual => $virtual,
             virtual_diff_time => $virtual_diff_time,
+            virtual_diff_time_minutes => int($virtual_diff_time * 24 * 60 | 0.5),
             virtual_diff_time_fmt => format_diff_time($virtual_diff_time),
          );
     };
