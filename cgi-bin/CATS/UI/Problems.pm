@@ -614,9 +614,8 @@ sub problems_frame {
 
         my %hrefs_view;
         for (qw(statement explanation)) {
-            my $h = $c->{"${_}_url"};
-            if (defined $h && $h =~ s/(^[a-z]+):\/\///) {
-                $hrefs_view{$_} = $1 eq 'file' ?
+            if (my $h = $c->{"${_}_url"}) {
+                $hrefs_view{$_} = $h =~ s|^file://|| ?
                     CATS::Problem::Text::save_attachment($h, 0, $c->{pid}) :
                     redirect_url_function($h, pid => $c->{pid}, sid => $sid, cid => $cid);
             }
