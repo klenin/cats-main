@@ -403,7 +403,7 @@ sub run_details_frame {
 sub save_visualizer {
     my ($data, $lfname, $pid, $hash) = @_;
 
-    ensure_problem_hash($pid, \$hash);
+    ensure_problem_hash($pid, \$hash, 1);
 
     my $fname = "vis/${hash}_$lfname";
     my $fpath = CATS::Misc::downloads_path . $fname;

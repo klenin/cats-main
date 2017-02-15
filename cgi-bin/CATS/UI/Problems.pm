@@ -20,7 +20,7 @@ use CATS::Problem::Source::Git;
 use CATS::Problem::Source::Zip;
 use CATS::ProblemStorage;
 use CATS::StaticPages;
-use CATS::Utils qw(url_function file_type date_to_iso);
+use CATS::Utils qw(url_function file_type date_to_iso redirect_url_function);
 use CATS::Web qw(param url_param redirect upload_source);
 
 sub problems_change_status
@@ -576,7 +576,7 @@ sub problems_frame {
             (SELECT A.login FROM accounts A WHERE A.id = P.last_modified_by) AS last_modified_by,
             SUBSTRING(P.explanation FROM 1 FOR 1) AS has_explanation,
             $test_count_sql CP.testsets, CP.points_testsets, P.lang, P.memory_limit, P.time_limit,
-            CP.max_points, P.repo, CP.tags
+            CP.max_points, P.repo, CP.tags, P.statement_url, P.explanation_url
         FROM problems P, contest_problems CP, contests OC
         WHERE CP.problem_id = P.id AND OC.id = P.contest_id AND CP.contest_id = ?$hidden_problems
         ~ . order_by
@@ -611,6 +611,18 @@ sub problems_frame {
         my $c = $_[0]->fetchrow_hashref or return ();
         $c->{status} ||= 0;
         my $remote_url = CATS::ProblemStorage::get_remote_url($c->{repo});
+
+        my %hrefs_view;
+        for (qw(statement explanation)) {
+            my $h = $c->{"${_}_url"};
+            if (defined $h && $h =~ s/(^[a-z]+):\/\///) {
+                $hrefs_view{$_} = $1 eq 'file' ?
+                    CATS::Problem::Text::save_attachment($h, 0, $c->{pid}) :
+                    redirect_url_function($h, pid => $c->{pid}, sid => $sid, cid => $cid);
+            }
+        }
+        $c->{has_explanation} ||= $hrefs_view{explanation};
+
         return (
             href_delete => url_f('problems', 'delete' => $c->{cpid}),
             href_change_status => url_f('problems', 'change_status' => $c->{cpid}),
@@ -629,9 +641,9 @@ sub problems_frame {
             status => $c->{status},
             status_text => problem_status_names()->{$c->{status}},
             disabled => !$is_jury && $c->{status} == $cats::problem_st_disabled,
-            href_view_problem => $text_link_f->('problem_text', cpid => $c->{cpid}),
+            href_view_problem => $hrefs_view{statement} || $text_link_f->('problem_text', cpid => $c->{cpid}),
             href_explanation => $show_packages && $c->{has_explanation} ?
-                url_f('problem_text', cpid => $c->{cpid}, explain => 1) : '',
+                $hrefs_view{explanation} || url_f('problem_text', cpid => $c->{cpid}, explain => 1) : '',
             problem_id => $c->{pid},
             cpid => $c->{cpid},
             selected => $c->{pid} == (param('problem_id') || 0),

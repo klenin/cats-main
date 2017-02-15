@@ -93,7 +93,7 @@ sub problem_download
         $cid, $pid);
     defined $status && ($is_jury || $status != $cats::problem_st_hidden)
         or return not_found;
-    my $already_hashed = CATS::Problem::Text::ensure_problem_hash($pid, \$hash);
+    my $already_hashed = CATS::Problem::Text::ensure_problem_hash($pid, \$hash, 1);
     my $fname = "pr/problem_$hash.zip";
     my $fpath = CATS::Misc::downloads_path . $fname;
     unless($already_hashed && -f $fpath) {

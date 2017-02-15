@@ -95,12 +95,12 @@ sub ch_1
 # If the problem was not downloaded yet, generate a hash for it.
 sub ensure_problem_hash
 {
-    my ($problem_id, $hash) = @_;
+    my ($problem_id, $hash, $need_commit) = @_;
     return 1 if $$hash;
     my @ch = ('a'..'z', 'A'..'Z', '0'..'9');
     $$hash = join '', map @ch[rand @ch], 1..32;
     $dbh->do(qq~UPDATE problems SET hash = ? WHERE id = ?~, undef, $$hash, $problem_id);
-    $dbh->commit;
+    $dbh->commit if $need_commit;
     return 0;
 }
 
@@ -115,7 +115,7 @@ sub download_image
         INNER JOIN problems p ON c.problem_id = p.id
         WHERE p.id = ? AND c.name = ?~, undef,
         $current_pid, $name);
-    ensure_problem_hash($current_pid, \$hash);
+    ensure_problem_hash($current_pid, \$hash, 1);
     return 'unknown' if !$name;
     $ext ||= '';
     # Security: this may lead to duplicate names, e.g. pic1 and pic-1.
@@ -130,15 +130,16 @@ sub download_image
 
 sub save_attachment
 {
-    my ($name) = @_;
+    my ($name, $need_commit, $pid) = @_;
+    $pid ||= $current_pid;
     # Assume the attachment is relatively small (few Kbytes),
     # so it is more efficient to fetch it with the same query as the problem hash.
     my ($data, $file, $hash) = $dbh->selectrow_array(qq~
         SELECT pa.data, pa.file_name, p.hash FROM problem_attachments pa
         INNER JOIN problems p ON pa.problem_id = p.id
         WHERE p.id = ? AND pa.name = ?~, undef,
-        $current_pid, $name);
-    ensure_problem_hash($current_pid, \$hash);
+        $pid, $name);
+    ensure_problem_hash($pid, \$hash, $need_commit);
     return 'unknown' if !$file;
     # Security
     $file =~ tr/a-zA-Z0-9_.//cd;
@@ -171,11 +172,11 @@ sub sh_1
         delete $atts{picture};
     }
     elsif ($el eq 'a' && $atts{attachment}) {
-        $atts{href} = save_attachment($atts{attachment});
+        $atts{href} = save_attachment($atts{attachment}, 1);
         delete $atts{attachment};
     }
     elsif ($el eq 'object' && $atts{attachment}) {
-        $atts{data} = save_attachment($atts{attachment});
+        $atts{data} = save_attachment($atts{attachment}, 1);
         delete $atts{attachment};
     }
     start_element($el, %atts);
