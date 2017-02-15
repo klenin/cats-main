@@ -265,6 +265,7 @@ sub console_content
 
     my $DEs = $is_team ? $dbh->selectall_hashref(q~
         SELECT id, description FROM default_de~, 'id') : {};
+    my $pf = param('pf') || '';
     my $c;
     if ($is_jury)
     {
@@ -272,7 +273,6 @@ sub console_content
         my $msg_filter = $is_root ? '' : ' AND CA.contest_id = ?';
         $msg_filter .= ' AND 1 = 0' unless $s->{show_messages};
         my @cid = $is_root ? () : ($cid);
-        my $pf = param('pf');
         my $problem_filter = $pf ? ' AND P.id = ?' : '';
         my @pf_params = $pf ? ($pf) : ();
         $c = $dbh->prepare(qq~
@@ -409,7 +409,7 @@ sub console_content
 
     attach_listview(
         url_f('console'), $fetch_console_record, $c,
-        { page_params => { uf => $user_filter, pf => param('pf') } });
+        { page_params => { uf => $user_filter, pf => $pf } });
 
     $c->finish;
 
