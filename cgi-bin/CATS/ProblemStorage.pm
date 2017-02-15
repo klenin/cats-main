@@ -8,7 +8,7 @@ use CATS::Constants;
 use CATS::DB;
 use CATS::DevEnv;
 use CATS::Misc qw($git_author_name $git_author_email msg);
-use CATS::Problem::ImportSource;
+use CATS::Problem::ImportSource::DB;
 use CATS::Problem::Parser;
 use CATS::Problem::Repository;
 use CATS::Problem::Source::PlainFiles;
