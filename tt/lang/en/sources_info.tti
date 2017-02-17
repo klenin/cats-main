@@ -10,6 +10,7 @@
     problem => 'Problem',
     testset => 'Testset',
     retest => 'Retest',
+    clone => 'Clone',
     status => 'Status',
     refs => 'Refs',
     source => 'source',

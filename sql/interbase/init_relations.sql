@@ -284,6 +284,13 @@ CREATE TABLE reqs (
 CREATE DESCENDING INDEX idx_reqs_submit_time ON reqs(submit_time);
 
 
+CREATE TABLE req_groups (
+	id		INTEGER NOT NULL PRIMARY KEY,
+	group_id	INTEGER NOT NULL REFERENCES reqs(id) ON DELETE CASCADE,
+	element_id	INTEGER NOT NULL REFERENCES reqs(id) ON DELETE CASCADE
+);
+
+
 CREATE TABLE req_details
 (
   req_id            INTEGER NOT NULL REFERENCES REQS(ID) ON DELETE CASCADE,
