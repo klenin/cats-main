@@ -20,52 +20,63 @@ function send_message(href)
   </tr>
 </table>
 
-[% UNLESS sources_info.size; capt.no_sources; RETURN; END %]
-[% subcaption %]
-<table class="internal_borders" cellpadding="3">
-<tr><th>ID</th>[% FOREACH si IN sources_info %]<td>[% si.req_id %]</td>[% END %]</tr>
-<tr><th>[% capt.team %]</th>[% FOREACH si IN sources_info %]<td><a href="[% si.href_stats %]">[% si.team_name %]</a>
+[% BLOCK sources_info_row %]
+<tr><th>ID</th>[% FOREACH si IN sources_info; IF si %]<td [% IF si.element_sources.size > 1 %] colspan="[% si.element_sources.size  %]" [% END %]>[% si.req_id %]</td>
+  [% ELSE %]<td rowspan="10"></td>[% END; END %]</tr>
+<tr><th>[% capt.team %]</th>[% FOREACH si IN sources_info; IF si %]<td  [% IF si.element_sources.size > 1 %] colspan="[% si.element_sources.size  %]" [% END %]>
+  <a href="[% si.href_stats %]">[% si.team_name %]</a>
 [% IF si.is_jury %]
   [<a href="[% si.href_whois %]" alt="[% si.last_ip %]" title="[% si.last_ip %]">[% si.last_ip_short %]</a>]
   [<a href="javascript:send_message('[% si.href_send_message %]')">[% capt.message %]</a>]
-[% END %]
+[% END; END %]
 </td>[% END %]</tr>
-<tr><th>[% capt.time %]</th>[% FOREACH si IN sources_info ~%]
-  <td>
+<tr><th>[% capt.time %]</th>[% FOREACH si IN sources_info; IF si ~%]
+  <td [% IF si.element_sources %] colspan="[% si.element_sources.size  %]" [% END %]>
   [% IF si.href_prev_attempt %] <a href="[% si.href_prev_attempt %]">[% si.prev_attempt_time %]&lt;&lt;</a>[% END %]
   [% si.submit_time %]
   [% IF si.href_next_attempt %] <a href="[% si.href_next_attempt %]">[% si.next_attempt_time %]&gt;&gt;</a>[% END %]
-</td>[% END %]</tr>
-<tr><th>[% capt.processing %]</th>[% FOREACH si IN sources_info %]<td>
+</td>[% END; END %]</tr>
+<tr><th>[% capt.processing %]</th>[% FOREACH si IN sources_info; IF si %]<td [% IF si.element_sources.size > 1 %] colspan="[% si.element_sources.size %]" [% END %]>
   [% IF si.is_jury; si.judge_name %]: [% END %]
-  [% si.test_time_short %] ... [% si.result_time_short %]</td>[% END %]</tr>
-<tr><th>[% capt.file %]</th>[% FOREACH si IN sources_info %]<td>[% si.file_name %] ([% si.de_name %])</td>[% END %]</tr>
+  [% si.test_time_short %] ... [% si.result_time_short %]</td>[% END; END %]</tr>
+<tr><th>[% capt.file %]</th>[% FOREACH si IN sources_info; IF si %]
+<td [% IF si.element_sources.size > 1 %] colspan="[% si.element_sources.size %]" [% END %]>[% si.file_name %] ([% si.de_name %])</td>[% END; END %]</tr>
 <tr><th>[% capt.contest %]</th>
-  [% FOREACH si IN sources_info %]<td>[% maybe_href(si.href_contest, si.contest_name) %]</td>
-  [% END %]</tr>
+  [% FOREACH si IN sources_info; IF si %]<td>[% maybe_href(si.href_contest, si.contest_name) %]</td>
+  [% END; END %]</tr>
 <tr><th>[% capt.problem %]</th>
-  [% FOREACH si IN sources_info %]<td>[% si.code; ': ' IF si.code; maybe_href(si.href_problem, si.problem_name) ~%]
+  [% FOREACH si IN sources_info; IF si %]<td [% IF si.element_sources.size > 1 %] colspan="[% si.element_sources.size %]" [% END %]>
+    [% si.code; ': ' IF si.code; maybe_href(si.href_problem, si.problem_name) ~%]
     [%~ IF si.is_jury %] ([% si.status_name %])[% END %]</td>
-  [% END %]</tr>
-<tr><th>[% capt.testset %]</th>[% FOREACH si IN sources_info %]
-<td>[% IF si.is_jury %]
+  [% END; END %]</tr>
+<tr><th>[% capt.testset %]</th>[% FOREACH si IN sources_info; IF si %]
+<td [% IF si.element_sources.size > 1 %] colspan="[% si.element_sources.size %]" [% END %]>[% IF si.is_jury %]
   <form action="[% si.href_run_details %]" method="POST" class="embedded">
   <input type="text" name="testsets" value="[% si.testsets %]" />
   <input type="checkbox" name="set_judge" value="1" />[% select('judge', si.judges) %]
   <input type="submit" name="retest" value="[% capt.retest %]" class="button" />
   </form>
 [% ELSE; si.testsets; END %]</td>
-[% END %]</tr>
+[% END; END %]</tr>
 <tr><th>[% capt.status %]<sup style="font-weight: normal;">&nbsp;[<a href="docs/run_results.html">?</a>]</span></th>
-[% FOREACH si IN sources_info %]<td>[% submit_result(si); " ($si.points)" IF si.points %]</td>[% END %]
+[% FOREACH si IN sources_info; IF si %]<td [% IF si.element_sources.size > 1 %] colspan="[% si.element_sources.size %]" [% END %]>
+  [% submit_result(si); " ($si.points)" IF si.points %]</td>[% END; END %]
 </tr>
 <tr><th>[% capt.refs %]</th>
-[% FOREACH si IN sources_info %]<td>
+[% FOREACH si IN sources_info; IF si %]<td [% IF si.element_sources.size > 1 %] colspan="[% si.element_sources.size %]" [% END %]>
 <a href="[% si.href_view_source %]" class="[% si.href_class_view_source %]">[% capt.source %]</a> |
 <a href="[% si.href_download_source %]" class="[% si.href_class_download_source %]">[% capt.download %]</a> |
 <a href="[% si.href_run_details %]" class="[% si.href_class_run_details %]">[% capt.run_details %]</a>
 [% IF si.href_diff_runs %] | <a href="[% si.href_diff_runs %]" class="[% si.href_class_diff_runs %]">[% capt.diff_runs %]</a>[% END %]
 [% IF si.is_jury %] | <a href="[% si.href_run_log %]" class="[% si.href_class_run_log %]">[% capt.log %]</a>[% END %]
-</td>[% END %]
+</td>[% END; END %]
 </tr>
+[% END %]
+
+[% UNLESS sources_info.size; capt.no_sources; RETURN; END %]
+[% subcaption %]
+
+<table class="internal_borders" cellpadding="3">
+[% PROCESS sources_info_row sources_info = sources_info %]
+[% IF element_sources_info; PROCESS sources_info_row sources_info = element_sources_info; END %]
 </table>

@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use Algorithm::Diff;
-use List::Util qw(max);
+use List::Util qw(max any);
 
 use CATS::DB;
 use CATS::Data qw(is_jury_in_contest enforce_request_state);
@@ -15,7 +15,8 @@ use CATS::Problem::Text qw(ensure_problem_hash);
 use CATS::RankTable;
 use CATS::Testset;
 use CATS::Utils qw(state_to_display url_function encodings source_encodings);
-use CATS::Web qw(param encoding_param url_param headers upload_source content_type);
+use CATS::Web qw(param encoding_param url_param headers upload_source content_type redirect);
+use CATS::UI::Problems qw(clone_req);
 
 sub get_judges {
     my ($si) = @_;
@@ -32,6 +33,8 @@ sub source_links {
     my ($si) = @_;
     my ($current_link) = url_param('f') || '';
 
+    return if $si->{href_contest};
+
     $si->{href_contest} =
         url_function('problems', cid => $si->{contest_id}, sid => $sid);
     $si->{href_problem} =
@@ -44,6 +47,8 @@ sub source_links {
     get_judges($si) if $si->{is_jury};
     my $se = param('src_enc') || param('comment_enc') || 'WINDOWS-1251';
     $t->param(source_encodings => source_encodings($se));
+
+    source_links($_) for @{$si->{element_sources}};
 }
 
 my @resources = qw(time_used memory_used disk_used);
@@ -268,6 +273,45 @@ sub get_nearby_attempt {
     $si->{href_diff_runs} = url_f('diff_runs', r1 => $na->{id}, r2 => $si->{req_id}) if $diff && $uid;
 }
 
+sub get_req_links {
+    my @req_ids = @_;
+
+    my $req_id_list = join ', ', @req_ids;
+
+    my $req_links = $dbh->selectall_arrayref(qq~
+        SELECT R.id, RG.element_id
+        FROM reqs R
+            LEFT JOIN req_groups RG ON RG.group_id = R.id
+        WHERE R.id in ($req_id_list)~, { Slice => {} });
+
+    my %res = ();
+
+    foreach my $r (@$req_links) {
+        if ($r->{element_id}) {
+            push (@{$res{$r->{id}}}, $r->{element_id});
+        } else {
+            $res{$r->{id}} = [];
+        }
+    }
+
+    \%res;
+}
+
+sub get_unique_reqs_ids_from_links {
+    my $req_links = $_[0];
+
+    my %req_ids;
+
+    while (my @r = each %$req_links) {
+        $req_ids{$r[0]} = 1;
+        for my $r_element (@{$r[1]}) {
+            $req_ids{$r_element} = 1;
+        }
+    }
+
+    keys %req_ids;
+}
+
 # Load information about one or several runs.
 # Parameters: request_id, may be either scalar or array ref.
 sub get_sources_info {
@@ -280,11 +324,16 @@ sub get_sources_info {
     my $src = $p{get_source} ? ' S.src, DE.syntax,' : '';
     my $req_id_list = join ', ', @req_ids;
     my $pc_sql = $p{partial_checker} ? CATS::RankTable::partial_checker_sql() . ',' : '';
+
+    my $req_links = get_req_links(@req_ids);
+    my @all_req_ids = get_unique_reqs_ids_from_links($req_links);
+    my $all_req_id_list = join ', ', @all_req_ids;
+
     # Source code can be in arbitary or broken encoding, we need to decode it explicitly.
     $dbh->{ib_enable_utf8} = 0;
     my $result = $dbh->selectall_arrayref(qq~
         SELECT
-            S.req_id,$src S.fname AS file_name, S.de_id,
+            R.id as req_id, $src S.fname AS file_name, S.de_id,
             R.account_id, R.contest_id, R.problem_id, R.judge_id,
             R.state, R.failed_test, R.points,
             R.submit_time,
@@ -299,16 +348,16 @@ sub get_sources_info {
             C.id AS contest_id, CP.id AS cp_id,
             CP.status, CP.code,
             CA.id AS ca_id
-        FROM sources S
-            INNER JOIN reqs R ON R.id = S.req_id
-            INNER JOIN default_de DE ON DE.id = S.de_id
+        FROM reqs R
+            LEFT JOIN sources S ON S.req_id = R.id
+            LEFT JOIN default_de DE ON DE.id = S.de_id
             INNER JOIN accounts A ON A.id = R.account_id
             INNER JOIN problems P ON P.id = R.problem_id
             INNER JOIN contests C ON C.id = R.contest_id
             INNER JOIN contest_problems CP ON CP.contest_id = C.id AND CP.problem_id = P.id
             INNER JOIN contest_accounts CA ON CA.contest_id = C.id AND CA.account_id = A.id
-        WHERE req_id IN ($req_id_list)~, { Slice => {} });
-    $dbh->{ib_enable_utf8} = 1; # Resume "normal" operation.
+        WHERE R.id IN ($all_req_id_list)~, { Slice => {} });
+    $dbh->{ib_enable_utf8} = 1;  # Resume "normal" operation.
 
     # User must be either jury or request owner to access a request.
     # Cache is_jury_in_contest since it requires a database request.
@@ -352,7 +401,29 @@ sub get_sources_info {
         $r->{status_name} = problem_status_names->{$r->{status}};
     }
 
-    return ref $rid ? $result : $result->[0];
+    my %result_hash = map { $_->{req_id} => $_ } @$result;
+
+    my $final_result = [];
+
+    foreach my $req_id (@req_ids) {
+        my $si = $result_hash{$req_id};
+        my $element_req_ids = $req_links->{$req_id};
+        if (@$element_req_ids == 1) {
+            my $element_si = $result_hash{$element_req_ids->[0]};
+
+            $si->{file_name} = $element_si->{file_name};
+            $si->{de_name} = $element_si->{de_name};
+
+            if ($p{get_source}) {
+                $si->{src} = $element_si->{src};
+                $si->{syntax} = $element_si->{syntax};
+            }
+        }
+        $si->{element_sources} = [map { $result_hash{$_} } @$element_req_ids];
+        push @$final_result, $si;
+    }
+
+    return ref $rid ? $final_result : $final_result->[0];
 }
 
 sub build_title_suffix {
@@ -367,6 +438,10 @@ sub sources_info_param {
         title_suffix => build_title_suffix($_[0]),
         sources_info => $_[0],
     );
+    my $element_sources_info = [map { @{$_->{element_sources}} > 0 ? @{$_->{element_sources}} : undef } @{$_[0]}];
+    if (any { $_ } @$element_sources_info) {
+        $t->param(element_sources_info => $element_sources_info);
+    }
 }
 
 sub run_details_frame {
@@ -375,18 +450,25 @@ sub run_details_frame {
     my $rid = url_param('rid') or return;
     my $rids = [ grep /^\d+$/, split /,/, $rid ];
     my $sources_info = get_sources_info(request_id => $rids, partial_checker => 1) or return;
-
     my @runs;
     my $contest = { id => 0 };
     for (@$sources_info) {
-        if ($_->{is_jury} && param('retest')) {
-            enforce_request_state(
+        if ($_->{is_jury}) {
+            my %params = (
                 request_id => $_->{req_id},
                 state => $cats::st_not_processed,
                 # Insert NULL into database to be replaced with contest-default testset.
                 testsets => param('testsets') || undef,
-                judge_id => (param('set_judge') && param('judge') ? param('judge') : undef));
-            $_ = get_sources_info(request_id => $_->{req_id}, partial_checker => 1) or next;
+                judge_id => (param('set_judge') && param('judge') ? param('judge') : undef)
+            );
+            if (param('retest')) {
+                enforce_request_state(%params);
+                $_ = get_sources_info(request_id => $_->{req_id}, partial_checker => 1) or next;
+            }
+            if (param('clone') && $is_root) {
+                my $group_req_id = clone_req($_->{req_id}, $uid);
+                return $group_req_id ? redirect(url_function('run_details', rid => $group_req_id, sid=>$sid)) : undef;
+            }
         }
 
         source_links($_);
