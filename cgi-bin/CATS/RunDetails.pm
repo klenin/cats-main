@@ -17,7 +17,6 @@ use CATS::Request;
 use CATS::Testset;
 use CATS::Utils qw(state_to_display url_function encodings source_encodings);
 use CATS::Web qw(param encoding_param url_param headers upload_source content_type redirect);
-use CATS::UI::Problems qw(clone_req);
 
 sub get_judges {
     my ($si) = @_;
@@ -468,7 +467,7 @@ sub run_details_frame {
                 $_ = get_sources_info(request_id => $_->{req_id}, partial_checker => 1) or next;
             }
             if (param('clone') && $is_root) {
-                my $group_req_id = clone_req($_->{req_id}, $uid);
+                my $group_req_id = CATS::Request::clone($_->{req_id}, $uid);
                 return $group_req_id ? redirect(url_function('run_details', rid => $group_req_id, sid=>$sid)) : undef;
             }
         }

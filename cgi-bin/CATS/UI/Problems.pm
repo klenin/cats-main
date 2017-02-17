@@ -8,7 +8,6 @@ use CATS::Constants;
 use CATS::ContestParticipate;
 use CATS::DB;
 use CATS::DevEnv;
-use CATS::IP;
 use CATS::Judge;
 use CATS::ListView qw(init_listview_template order_by sort_listview define_columns attach_listview);
 use CATS::Misc qw(
@@ -22,12 +21,6 @@ use CATS::Request;
 use CATS::StaticPages;
 use CATS::Utils qw(url_function file_type date_to_iso redirect_url_function);
 use CATS::Web qw(param url_param redirect upload_source);
-
-use Exporter qw(import);
-
-our @EXPORT = qw(
-    clone_req
-);
 
 sub problems_change_status
 {
@@ -78,57 +71,6 @@ sub problem_submit_too_frequent
         $submit_uid);
     my $SECONDS_PER_DAY = 24 * 60 * 60;
     ($prev->[0] || 1) < 3/$SECONDS_PER_DAY || ($prev->[1] || 1) < 60/$SECONDS_PER_DAY;
-}
-
-sub insert_req {
-    my ($pid, $submit_uid, $state, $contest_id) = @_;
-
-    $contest_id ||= $cid;
-
-    my $rid = new_id;
-    $dbh->do(q~
-        INSERT INTO reqs (
-            id, account_id, problem_id, contest_id,
-            submit_time, test_time, result_time, state, received
-        ) VALUES (
-            ?, ?, ?, ?,
-            CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, ?)~,
-        undef,
-        $rid, $submit_uid, $pid, $contest_id, $state, 0);
-    $dbh->do(q~
-        INSERT INTO events (id, event_type, ts, account_id, ip)
-        VALUES (?, ?, CURRENT_TIMESTAMP, ?, ?)~,
-        undef,
-        $rid, 1, $submit_uid, CATS::IP::get_ip);
-    $rid;
-}
-
-sub clone_req {
-    my ($element_req_id, $submit_uid) = @_;
-
-    $element_req_id = $dbh->selectrow_array(q~
-        SELECT RG.element_id FROM req_groups RG
-        WHERE RG.group_id = ?~, undef,
-        $element_req_id) || $element_req_id;
-
-    my $req = $dbh->selectrow_hashref(q~
-        SELECT R.problem_id, R.contest_id FROM reqs R
-        WHERE R.id = ?~, undef,
-        $element_req_id);
-
-    my $group_req_id = insert_req($req->{problem_id}, $submit_uid, $cats::st_not_processed, $req->{contest_id});
-
-    $dbh->do(q~
-        INSERT INTO req_groups (
-            element_id, group_id
-        ) VALUES (
-            ?, ?
-        )~, {},
-        $element_req_id, $group_req_id);
-
-    $dbh->commit;
-
-    $group_req_id;
 }
 
 sub determine_state {
@@ -215,7 +157,7 @@ sub problems_submit
         $submit_uid, $pid, $cid, $source_hash, $did);
     $same_source and return msg(1132, $prev_submit_time);
 
-    my $rid = insert_req($pid, $submit_uid, determine_state);
+    my $rid = CATS::Request::insert($pid, $submit_uid, determine_state);
 
     my $s = $dbh->prepare(q~
         INSERT INTO sources(req_id, de_id, src, fname, hash) VALUES (?, ?, ?, ?, ?)~);
@@ -252,7 +194,7 @@ sub problems_submit_std_solution {
     $c->execute($pid, $cats::solution, $cats::adv_solution);
 
     while (my ($src, $did, $fname) = $c->fetchrow_array) {
-        my $rid = insert_req($pid, $uid, $cats::st_not_processed);
+        my $rid = CATS::Request::insert($pid, $uid, $cats::st_not_processed);
 
         my $s = $dbh->prepare(q~
             INSERT INTO sources(req_id, de_id, src, fname) VALUES (?, ?, ?, ?)~);
