@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use Algorithm::Diff;
-use List::Util qw(max any);
+use List::Util qw(max);
 
 use CATS::DB;
 use CATS::Data qw(is_jury_in_contest enforce_request_state);
@@ -439,7 +439,7 @@ sub sources_info_param {
         sources_info => $_[0],
     );
     my $element_sources_info = [map { @{$_->{element_sources}} > 0 ? @{$_->{element_sources}} : undef } @{$_[0]}];
-    if (any { $_ } @$element_sources_info) {
+    if (0 < grep $_, @$element_sources_info) {
         $t->param(element_sources_info => $element_sources_info);
     }
 }
