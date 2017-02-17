@@ -1,4 +1,4 @@
-package CATS::RunDetails;
+package CATS::UI::RunDetails;
 
 use strict;
 use warnings;

@@ -7,7 +7,6 @@ use CATS::ApiJudge;
 use CATS::Console;
 use CATS::Contest::Results;
 use CATS::Problem::Text;
-use CATS::RunDetails;
 
 use CATS::UI::About;
 use CATS::UI::Compilers;
@@ -22,6 +21,7 @@ use CATS::UI::ProblemDetails;
 use CATS::UI::Problems;
 use CATS::UI::Stats;
 use CATS::UI::RankTable;
+use CATS::UI::RunDetails;
 use CATS::UI::Users;
 
 use CATS::Web qw(url_param param);
@@ -73,12 +73,12 @@ sub main_routes() {
         answer_box => \&CATS::UI::Messages::answer_box_frame,
         send_message_box => \&CATS::UI::Messages::send_message_box_frame,
 
-        run_log => \&CATS::RunDetails::run_log_frame,
-        view_source => \&CATS::RunDetails::view_source_frame,
-        download_source => \&CATS::RunDetails::download_source_frame,
-        run_details => \&CATS::RunDetails::run_details_frame,
-        visualize_test => \&CATS::RunDetails::visualize_test_frame,
-        diff_runs => [ \&CATS::RunDetails::diff_runs_frame, r1 => $int, r2 => $int, ],
+        run_log => \&CATS::UI::RunDetails::run_log_frame,
+        view_source => \&CATS::UI::RunDetails::view_source_frame,
+        download_source => \&CATS::UI::RunDetails::download_source_frame,
+        run_details => \&CATS::UI::RunDetails::run_details_frame,
+        visualize_test => \&CATS::UI::RunDetails::visualize_test_frame,
+        diff_runs => [ \&CATS::UI::RunDetails::diff_runs_frame, r1 => $int, r2 => $int, ],
 
         test_diff => \&CATS::UI::Stats::test_diff_frame,
         compare_tests => \&CATS::UI::Stats::compare_tests_frame,
