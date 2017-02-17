@@ -182,11 +182,12 @@ sub select_request {
                 SELECT 1 FROM
                 req_groups RG
                 WHERE RG.group_id = R.id AND RG.element_id = S.req_id)
-            )
-        AND DE.code NOT IN ($p->{supported_DEs}))
+            ) AND DE.code NOT IN ($p->{supported_DEs})
+        )
         AND R.state = $cats::st_not_processed
         AND (CP.status <= $cats::problem_st_ready OR CA.is_jury = 1)
-        AND (judge_id IS NULL OR judge_id = $jid) ROWS 1~, undef) or return print_json($response);
+        AND (judge_id IS NULL OR judge_id = ?) ROWS 1~, undef,
+        $jid) or return print_json($response);
 
     my $element_req_ids = $dbh->selectcol_arrayref(q~
         SELECT RG.element_id as id
@@ -205,7 +206,8 @@ sub select_request {
         LEFT JOIN sources S ON S.req_id = R.id
         LEFT JOIN default_de D ON D.id = S.de_id
         LEFT JOIN contest_problems CP ON CP.contest_id = R.contest_id AND CP.problem_id = R.problem_id
-        WHERE R.id IN ($req_id_list)~, { Slice => {} }) or return print_json({error => "can't find sources for any of requests'"});
+        WHERE R.id IN ($req_id_list)~, { Slice => {} }
+    ) or return print_json({ error => 'No requests' });
 
     my %sources_info_hash = map { $_->{id} => $_ } @$sources_info;
 
@@ -224,13 +226,13 @@ sub select_request {
         $req->{src} = $element_req->{src};
         $req->{de_id} = $element_req->{de_id};
     } elsif (@{$req->{element_reqs}} > 1) {
-        return print_json({error => "multiple request elements are not supported at this time"});
+        return print_json({ error => 'multiple request elements are not supported at this time' });
     }
 
     $response->{request} = $req;
 
     $dbh->do(q~
-        UPDATE reqs SET state = ?, judge_id = ? WHERE id = ?~, {},
+        UPDATE reqs SET state = ?, judge_id = ? WHERE id = ?~, undef,
         $cats::st_install_processing, $jid, $response->{request}->{id});
     $dbh->commit;
 
