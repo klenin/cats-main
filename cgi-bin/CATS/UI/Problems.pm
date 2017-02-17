@@ -120,11 +120,11 @@ sub clone_req {
 
     $dbh->do(q~
         INSERT INTO req_groups (
-            id, element_id, group_id
+            element_id, group_id
         ) VALUES (
-            ?, ?, ?
+            ?, ?
         )~, {},
-        new_id, $element_req_id, $group_req_id);
+        $element_req_id, $group_req_id);
 
     $dbh->commit;
 
