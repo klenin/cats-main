@@ -75,7 +75,9 @@ sub problem_submit_too_frequent
 }
 
 sub insert_req {
-    my ($pid, $submit_uid, $state) = @_;
+    my ($pid, $submit_uid, $state, $contest_id) = @_;
+
+    $contest_id ||= $cid;
 
     my $rid = new_id;
     $dbh->do(q~
@@ -86,7 +88,7 @@ sub insert_req {
             ?, ?, ?, ?,
             CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, ?)~,
         undef,
-        $rid, $submit_uid, $pid, $cid, $state, 0);
+        $rid, $submit_uid, $pid, $contest_id, $state, 0);
     $dbh->do(q~
         INSERT INTO events (id, event_type, ts, account_id, ip)
         VALUES (?, ?, CURRENT_TIMESTAMP, ?, ?)~,
