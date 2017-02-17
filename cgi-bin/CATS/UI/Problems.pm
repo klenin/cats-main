@@ -6,7 +6,6 @@ use warnings;
 use CATS::Config qw(cats_dir);
 use CATS::Constants;
 use CATS::ContestParticipate;
-use CATS::Data qw(:all);
 use CATS::DB;
 use CATS::DevEnv;
 use CATS::IP;
@@ -19,6 +18,7 @@ use CATS::Problem::Save;
 use CATS::Problem::Source::Git;
 use CATS::Problem::Source::Zip;
 use CATS::ProblemStorage;
+use CATS::Request;
 use CATS::StaticPages;
 use CATS::Utils qw(url_function file_type date_to_iso redirect_url_function);
 use CATS::Web qw(param url_param redirect upload_source);
@@ -290,7 +290,7 @@ sub problems_mass_retest()
             next if !$all_runs && $accounts{$_->{account_id}};
             $accounts{$_->{account_id}} = 1;
             ($_->{state} || 0) != $cats::st_ignore_submit &&
-                enforce_request_state(request_id => $_->{id}, state => $cats::st_not_processed)
+                CATS::Request::enforce_state(request_id => $_->{id}, state => $cats::st_not_processed)
                     and ++$count;
         }
         $dbh->commit;

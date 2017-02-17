@@ -14,6 +14,7 @@ use CATS::Misc qw(
     $t $cid $is_team $is_jury $is_root $privs $uid $settings $listview_name $contest $sid
     get_anonymous_uid init_template url_f auto_ext res_str msg
 );
+use CATS::Request;
 use CATS::Utils qw(coalesce url_function state_to_display date_to_iso);
 use CATS::Web qw(param url_param);
 
@@ -552,7 +553,7 @@ sub retest_submissions
     my @sanitized_runs = grep $_ ne '', split /\D+/, $selection;
     for (@sanitized_runs)
     {
-        enforce_request_state(request_id => $_, state => $cats::st_not_processed)
+        CATS::Request::enforce_state(request_id => $_, state => $cats::st_not_processed)
             and ++$count;
     }
     return $count;

@@ -7,12 +7,13 @@ use Algorithm::Diff;
 use List::Util qw(max);
 
 use CATS::DB;
-use CATS::Data qw(is_jury_in_contest enforce_request_state);
+use CATS::Data qw(is_jury_in_contest);
 use CATS::DevEnv;
 use CATS::IP;
 use CATS::Misc qw($is_jury $is_root $sid $t $uid $settings init_template msg res_str url_f problem_status_names);
 use CATS::Problem::Text qw(ensure_problem_hash);
 use CATS::RankTable;
+use CATS::Request;
 use CATS::Testset;
 use CATS::Utils qw(state_to_display url_function encodings source_encodings);
 use CATS::Web qw(param encoding_param url_param headers upload_source content_type redirect);
@@ -463,7 +464,7 @@ sub run_details_frame {
                 judge_id => (param('set_judge') && param('judge') ? param('judge') : undef)
             );
             if (param('retest')) {
-                enforce_request_state(%params);
+                CATS::Request::enforce_state(%params);
                 $_ = get_sources_info(request_id => $_->{req_id}, partial_checker => 1) or next;
             }
             if (param('clone') && $is_root) {
@@ -626,7 +627,7 @@ sub try_set_state {
 
     my $failed_test = sprintf '%d', param('failed_test') || '0';
     my $points = sprintf '%d', param('points') || '0';
-    enforce_request_state(
+    CATS::Request::enforce_state(
         request_id => $rid, failed_test => $failed_test, state => $state, points => $points);
     my %st = state_to_display($state);
     while (my ($k, $v) = each %st) {
