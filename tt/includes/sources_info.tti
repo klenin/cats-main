@@ -88,6 +88,7 @@ function send_message(href)
         <input type="text" name="testsets" value="[% si.testsets %]" />
         <input type="checkbox" name="set_judge" value="1" />[% select('judge', si.judges) %]
         <input type="submit" name="retest" value="[% capt.retest %]" class="button" />
+        <input type="submit" name="clone" value="[% capt.clone %]" class="button" />
         </form>
       [% ELSE; si.testsets; END %]
     </td>
