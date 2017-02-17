@@ -393,7 +393,7 @@ sub get_sources_info {
             $r->{src} = res_str(1138, $official->{title});
         }
         elsif ($p{encode_source}) {
-            if (encodings()->{$se} && $r->{file_name} !~ m/\.zip$/) {
+            if (encodings()->{$se} && $r->{file_name} && $r->{file_name} !~ m/\.zip$/) {
                 Encode::from_to($r->{src}, $se, 'utf-8');
                 $r->{src} = Encode::decode_utf8($r->{src});
             }
@@ -412,6 +412,7 @@ sub get_sources_info {
             my $element_si = $result_hash{$element_req_ids->[0]};
 
             $si->{file_name} = $element_si->{file_name};
+            $si->{de_id} = $element_si->{de_id};
             $si->{de_name} = $element_si->{de_name};
 
             if ($p{get_source}) {
