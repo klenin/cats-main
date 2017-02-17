@@ -169,23 +169,65 @@ sub select_request {
 
     return print_json($response) if $response->{lock_counter};
 
-    my $sth = $dbh->prepare(qq~
+    my $req_id = $dbh->selectrow_hashref(qq~
+        SELECT R.id
+        FROM reqs R
+        INNER JOIN contest_accounts CA ON CA.account_id = R.account_id AND CA.contest_id = R.contest_id
+        LEFT JOIN contest_problems CP ON CP.contest_id = R.contest_id AND CP.problem_id = R.problem_id
+        WHERE NOT EXISTS (
+            SELECT 1
+            FROM sources S
+            INNER JOIN default_de DE ON DE.id = S.de_id
+            WHERE (S.req_id = R.id OR EXISTS (
+                SELECT 1 FROM
+                req_groups RG
+                WHERE RG.group_id = R.id AND RG.element_id = S.req_id)
+            )
+        AND DE.code NOT IN ($p->{supported_DEs}))
+        AND R.state = $cats::st_not_processed
+        AND (CP.status <= $cats::problem_st_ready OR CA.is_jury = 1)
+        AND (judge_id IS NULL OR judge_id = $jid) ROWS 1~, undef) or return print_json($response);
+
+    my $element_req_ids = $dbh->selectcol_arrayref(q~
+        SELECT RG.element_id as id
+        FROM req_groups RG
+        WHERE RG.group_id = ?~, { Slice => {} }, $req_id->{id});
+
+    my $req_id_list = join ', ', ($req_id->{id}, @$element_req_ids);
+
+    my $sources_info = $dbh->selectall_arrayref(qq~
         SELECT
             R.id, R.problem_id, R.contest_id, R.state, CA.is_jury, C.run_all_tests,
             CP.status, S.fname, S.src, S.de_id
         FROM reqs R
         INNER JOIN contest_accounts CA ON CA.account_id = R.account_id AND CA.contest_id = R.contest_id
         INNER JOIN contests C ON C.id = R.contest_id
-        INNER JOIN sources S ON S.req_id = R.id
-        INNER JOIN default_de D ON D.id = S.de_id
+        LEFT JOIN sources S ON S.req_id = R.id
+        LEFT JOIN default_de D ON D.id = S.de_id
         LEFT JOIN contest_problems CP ON CP.contest_id = R.contest_id AND CP.problem_id = R.problem_id
-        WHERE R.state = ? AND
-            (CP.status <= ? OR CA.is_jury = 1) AND
-            D.code IN ($p->{supported_DEs}) AND (judge_id IS NULL OR judge_id = ?)
-        ROWS 1~);
-    $response->{request} = $dbh->selectrow_hashref(
-        $sth, { Slice => {} }, $cats::st_not_processed, $cats::problem_st_ready, $jid)
-        or return print_json($response);
+        WHERE R.id IN ($req_id_list)~, { Slice => {} }) or return print_json({error => "can't find sources for any of requests'"});
+
+    my %sources_info_hash = map { $_->{id} => $_ } @$sources_info;
+
+    my $req = $sources_info_hash{$req_id->{id}};
+
+    $req->{element_reqs} = [];
+
+    for my $element_req_id (@$element_req_ids) {
+        push @{$req->{element_reqs}}, $sources_info_hash{$element_req_id};
+    }
+
+    if (@{$req->{element_reqs}} == 1) {
+        my $element_req = $req->{element_reqs}->[0];
+        $req->{problem_id} = $element_req->{problem_id};
+        $req->{fname} = $element_req->{fname};
+        $req->{src} = $element_req->{src};
+        $req->{de_id} = $element_req->{de_id};
+    } elsif (@{$req->{element_reqs}} > 1) {
+        return print_json({error => "multiple request elements are not supported at this time"});
+    }
+
+    $response->{request} = $req;
 
     $dbh->do(q~
         UPDATE reqs SET state = ?, judge_id = ? WHERE id = ?~, {},
