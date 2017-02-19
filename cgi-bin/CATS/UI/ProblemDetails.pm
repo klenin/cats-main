@@ -49,7 +49,7 @@ sub problem_details_frame {
         FROM problems P
         INNER JOIN contests C ON C.id = P.contest_id
         INNER JOIN contest_problems CP ON CP.problem_id = P.id AND CP.contest_id = ?
-        INNER JOIN accounts A ON A.id = P.last_modified_by
+        LEFT JOIN accounts A ON A.id = P.last_modified_by
         WHERE P.id = ?~, { Slice => {} },
         $cid, $p->{pid}) or return;
     my @text = ('problem_text', cpid => $pr->{cpid});
