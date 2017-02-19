@@ -278,38 +278,17 @@ sub get_req_links {
 
     my $req_id_list = join ', ', @req_ids;
 
-    my $req_links = $dbh->selectall_arrayref(qq~
-        SELECT R.id, RG.element_id
-        FROM reqs R
-            LEFT JOIN req_groups RG ON RG.group_id = R.id
-        WHERE R.id in ($req_id_list)~, { Slice => {} });
+    my $groups = $dbh->selectall_arrayref(qq~
+        SELECT RG.group_id, RG.element_id
+        FROM req_groups RG
+        WHERE RG.group_id in ($req_id_list)~, { Slice => {} });
 
-    my %res = ();
-
-    foreach my $r (@$req_links) {
-        if ($r->{element_id}) {
-            push (@{$res{$r->{id}}}, $r->{element_id});
-        } else {
-            $res{$r->{id}} = [];
-        }
+    my %res = map { $_ => [] } @req_ids;
+    for (@$groups) {
+        push @{$res{$_->{group_id}}}, $_->{element_id};
+        $res{$_->{element_id}} //= [];
     }
-
     \%res;
-}
-
-sub get_unique_reqs_ids_from_links {
-    my $req_links = $_[0];
-
-    my %req_ids;
-
-    while (my @r = each %$req_links) {
-        $req_ids{$r[0]} = 1;
-        for my $r_element (@{$r[1]}) {
-            $req_ids{$r_element} = 1;
-        }
-    }
-
-    keys %req_ids;
 }
 
 # Load information about one or several runs.
@@ -322,12 +301,11 @@ sub get_sources_info {
     @req_ids = map +$_, grep $_ && /^\d+$/, @req_ids or return;
 
     my $src = $p{get_source} ? ' S.src, DE.syntax,' : '';
-    my $req_id_list = join ', ', @req_ids;
-    my $pc_sql = $p{partial_checker} ? CATS::RankTable::partial_checker_sql() . ',' : '';
 
     my $req_links = get_req_links(@req_ids);
-    my @all_req_ids = get_unique_reqs_ids_from_links($req_links);
-    my $all_req_id_list = join ', ', @all_req_ids;
+    my $all_req_id_list = join ', ', keys %$req_links;
+
+    my $pc_sql = $p{partial_checker} ? CATS::RankTable::partial_checker_sql() . ',' : '';
 
     # Source code can be in arbitary or broken encoding, we need to decode it explicitly.
     $dbh->{ib_enable_utf8} = 0;
@@ -406,7 +384,7 @@ sub get_sources_info {
     my $final_result = [];
 
     foreach my $req_id (@req_ids) {
-        my $si = $result_hash{$req_id};
+        my $si = $result_hash{$req_id} or next;
         my $element_req_ids = $req_links->{$req_id};
         if (@$element_req_ids == 1) {
             my $element_si = $result_hash{$element_req_ids->[0]};
