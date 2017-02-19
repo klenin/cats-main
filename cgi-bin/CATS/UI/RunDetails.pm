@@ -420,7 +420,7 @@ sub get_sources_info {
                 $si->{syntax} = $element_si->{syntax};
             }
         }
-        $si->{element_sources} = [map { $result_hash{$_} } @$element_req_ids];
+        $si->{element_sources} = [ map { $result_hash{$_} } @$element_req_ids ];
         push @$final_result, $si;
     }
 
@@ -439,7 +439,8 @@ sub sources_info_param {
         title_suffix => build_title_suffix($_[0]),
         sources_info => $_[0],
     );
-    my $element_sources_info = [map { @{$_->{element_sources}} > 0 ? @{$_->{element_sources}} : undef } @{$_[0]}];
+    my $element_sources_info = [
+        map { @{$_->{element_sources}} > 0 ? @{$_->{element_sources}} : undef } @{$_[0]} ];
     if (0 < grep $_, @$element_sources_info) {
         $t->param(element_sources_info => $element_sources_info);
     }
@@ -468,7 +469,7 @@ sub run_details_frame {
             }
             if (param('clone') && $is_root) {
                 my $group_req_id = CATS::Request::clone($_->{req_id}, $uid);
-                return $group_req_id ? redirect(url_function('run_details', rid => $group_req_id, sid=>$sid)) : undef;
+                return $group_req_id ? redirect(url_f('run_details', rid => $group_req_id)) : undef;
             }
         }
 
