@@ -83,12 +83,19 @@ files with tests, solutions etc.
 </tr>
 <tr>
   <td>[% tag_in('ProblemStatement', 'Problem') %]</td>
-  <td>&nbsp;</td>
-  <td>Problem statement text in STML format.</td>
+  <td>
+    <ul>
+      <li>attachment[% opt %] [% v19 %] -- identifier of the [% tag_ref('Attachment') %] object;</li>
+      <li>url[% opt %] [% v19 %] -- arbitrary URL;</li>
+    </ul>
+  </td>
+  <td>
+    Problem statement text in STML format.
+    If attachment or url attribute is present, statement text is replaced by a link.
+  </td>
 </tr>
 <tr>
   <td>[% tag_in('ProblemConstraints', 'Problem') %]</td>
-  <td>&nbsp;</td>
   <td>Problem input constraints in STML format.</td>
 </tr>
 <tr>
@@ -109,8 +116,16 @@ files with tests, solutions etc.
 </tr>
 <tr>
   <td>[% tag_in('Explanation', 'Problem', v15) %]</td>
-  <td>&nbsp;</td>
-  <td>Solution explanation in STML format.</td>
+  <td>
+    <ul>
+      <li>attachment[% opt %] [% v19 %] -- identifier of the [% tag_ref('Attachment') %] object;</li>
+      <li>url[% opt %] [% v19 %] -- arbitrary URL;</li>
+    </ul>
+  </td>
+  <td>
+    Solution explanation in STML format.
+    If attachment or url attribute is present, explanation text is replaced by a link.
+  </td>
 </tr>
 <tr>
   <td>[% tag_in('Checker', 'Problem') %]</td>

@@ -82,8 +82,16 @@ END -%]
 </tr>
 <tr>
   <td>[% tag_in('ProblemStatement', 'Problem') %]</td>
-  <td>&nbsp;</td>
-  <td>Описание условия задачи в формате STML.</td>
+  <td>
+    <ul>
+      <li>attachment[% opt %] [% v19 %] -- идентификатор объекта [% tag_ref('Attachment') %];</li>
+      <li>url[% opt %] [% v19 %] -- произвольный URL;</li>
+    </ul>
+  </td>
+  <td>
+    Описание условия задачи в формате STML.
+    Если указан атрибут attachment или url, текст задачи заменяется ссылкой.
+  </td>
 </tr>
 <tr>
   <td>[% tag_in('ProblemConstraints', 'Problem') %]</td>
@@ -108,8 +116,16 @@ END -%]
 </tr>
 <tr>
   <td>[% tag_in('Explanation', 'Problem', v15) %]</td>
-  <td>&nbsp;</td>
-  <td>Разбор задачи в формате STML.</td>
+  <td>
+    <ul>
+      <li>attachment[% opt %] [% v19 %] -- идентификатор объекта [% tag_ref('Attachment') %];</li>
+      <li>url[% opt %] [% v19 %] -- произвольный URL;</li>
+    </ul>
+  </td>
+  <td>
+    Разбор задачи в формате STML.
+    Если указан атрибут attachment или url, текст разбора заменяется ссылкой.
+  </td>
 </tr>
 <tr>
   <td>[% tag_in('Checker', 'Problem') %]</td>
