@@ -289,6 +289,10 @@ sub problem_history_tree_frame
     );
 }
 
+sub detect_encoding_by_xml_header {
+    $_[0] =~ /^\s*<\?xml.*encoding="(.*)"\s*\?>/ ? uc $1 : 'WINDOWS-1251'
+}
+
 sub problem_history_blob_frame
 {
     my ($pid, $title) = @_;
@@ -297,19 +301,19 @@ sub problem_history_blob_frame
 
     init_template('problem_history_blob.html.tt');
 
-    my $se = param('src_enc') || 'WINDOWS-1251';
-    my $blob = CATS::ProblemStorage::show_blob($pid, $hash_base, $file, $se);
+    my $blob = CATS::ProblemStorage::show_blob(
+        $pid, $hash_base, $file, param('src_enc') || \&detect_encoding_by_xml_header);
     set_history_paths_urls($pid, $blob->{paths});
-    my @items = is_allow_editing($blob, $hash_base)
-              ? { href => url_f('problem_history', a => 'edit', file => $file, hb => $hash_base, pid => $pid), item => res_str(572) }
-              : ();
+    my @items = is_allow_editing($blob, $hash_base) ?
+        { href => url_f('problem_history',
+            a => 'edit', file => $file, hb => $hash_base, pid => $pid), item => res_str(572) } : ();
     set_submenu_for_tree_frame($pid, $hash_base, @items);
 
     $t->param(
         blob => $blob,
         problem_title => $title,
         title_suffix => "$file",
-        source_encodings => source_encodings($se),
+        source_encodings => source_encodings($blob->{encoding}),
     );
 }
 
@@ -358,8 +362,8 @@ sub problem_history_edit_frame
         );
     }
 
-    $se ||= sub { $_[0] =~ /^\s*<\?xml.*encoding="(.*)"\s*\?>/ ? uc $1 : 'WINDOWS-1251' };
-    my $blob = CATS::ProblemStorage::show_blob($pid, $hash_base, $file, $se);
+    my $blob = CATS::ProblemStorage::show_blob(
+        $pid, $hash_base, $file, $se || \&detect_encoding_by_xml_header);
 
     set_submenu_for_tree_frame($pid, $hash_base);
     set_history_paths_urls($pid, $blob->{paths});
