@@ -16,7 +16,7 @@ use XML::Parser::Expat;
 
 use CATS::Config qw(cats_dir);
 use CATS::DB;
-use CATS::Misc qw($cid $contest $is_jury $t $uid auto_ext init_template res_str);
+use CATS::Misc qw($cid $contest $is_jury $is_root $t $uid auto_ext init_template res_str);
 use CATS::Problem::Tags;
 use CATS::StaticPages;
 use CATS::TeX::Lite;
@@ -347,7 +347,7 @@ sub problem_text_frame
             for ($problem->{$field_name}) {
                 defined $_ or next;
                 $text_span = '';
-                $_ = $_ eq '' ? undef : parse($_);
+                $_ = $_ eq '' ? undef : parse($_) unless $is_root && param('raw');
                 CATS::TeX::Lite::convert_all($_);
                 s/(\s|~)(:?-){2,3}(?!-)/($1 ? '&nbsp;' : '') . '&#151;'/ge; # em-dash
             }
