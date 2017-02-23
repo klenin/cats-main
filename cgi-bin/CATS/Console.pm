@@ -402,7 +402,7 @@ sub console_content
             message_text =>         decode_utf8($jury_message),
             team_id =>              $team_id,
             team_name =>            $team_name,
-            CATS::IP::linkify_ip(CATS::IP::filter_ip($last_ip)),
+            CATS::IP::linkify_ip($last_ip),
             id      =>              $id,
             contest_id =>           $contest_id,
         );

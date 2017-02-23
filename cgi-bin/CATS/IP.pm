@@ -25,11 +25,11 @@ sub local_ip { $_[0] =~ /(\d+)\.(\d+)\.(\d+)\.(\d+)/ ? $1 == 10 || $1 == 192 && 
 
 sub linkify_ip {
     my ($ip) = $_[0] || '';
-    my (@ips) = split /[,\s]+/, $ip;
+    my (@ips) = map filter_ip($_), split /[,\s]+/, $ip;
     my $short = (first { !local_ip($_) } @ips) || $ips[0] || '';
     (
         last_ip_short => $short,
-        last_ip => (@ips > 1 ? $ip : ''),
+        last_ip => (@ips > 1 ? join(', ', @ips) : ''),
         $short ? (href_whois => sprintf $CATS::Config::ip_info, $short) : (),
     )
 }

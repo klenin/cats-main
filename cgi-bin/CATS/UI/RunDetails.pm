@@ -356,7 +356,7 @@ sub get_sources_info {
         $_ = Encode::decode_utf8($_) for @$r{grep /_name$/, keys %$r};
         $r = {
             %$r, state_to_display($r->{state}),
-            CATS::IP::linkify_ip(CATS::IP::filter_ip $r->{last_ip}),
+            CATS::IP::linkify_ip($r->{last_ip}),
             href_stats => url_f('user_stats', uid => $r->{account_id}),
             href_send_message => url_f('send_message_box', caid => $r->{ca_id}),
         };

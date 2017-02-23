@@ -24,8 +24,12 @@ function delete_judge(href, name)
   [% j.judge_name | html -%]
 </td>
 [% IF editable %]<td>
-[%- IF j.account_name %]<a href="[% j.href_account %]">[% j.account_name | html %]</a>[% END -%]
-[%- IF j.last_ip %] [[% j.last_ip | html %]][% END -%]
+[%- IF j.account_name %]
+<a href="[% j.href_account %]">[% j.account_name | html %]</a>
+[%- END -%]
+[%- IF j.href_whois %]
+[<a href="[% j.href_whois %]" alt="[% j.last_ip %]" title="[% j.last_ip %]">[% j.last_ip_short %]</a>]
+[%- END -%]
 </td>
 [% END %]
 

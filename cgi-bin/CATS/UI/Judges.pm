@@ -111,7 +111,7 @@ sub judges_frame
             jid => $jid,
             judge_name => $judge_name,
             account_name => $account_name,
-            last_ip => CATS::IP::filter_ip($last_ip),
+            CATS::IP::linkify_ip($last_ip),
             locked => $lock_counter,
             is_alive => $is_alive,
             alive_date => $alive_date,

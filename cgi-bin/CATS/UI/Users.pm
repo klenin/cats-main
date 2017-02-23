@@ -536,7 +536,7 @@ sub user_stats_frame
     $t->param(
         user_submenu('user_stats', $uid),
         %$u, contests => $contests, is_root => $is_root,
-        CATS::IP::linkify_ip(CATS::IP::filter_ip $u->{last_ip}),
+        CATS::IP::linkify_ip($u->{last_ip}),
         ($is_jury ? (href_edit => url_f('users', edit => $uid)) : ()),
         href_all_problems => $pr->(''),
         href_solved_problems => $pr->('accepted=1'),
