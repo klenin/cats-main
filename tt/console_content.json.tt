@@ -27,7 +27,7 @@
 [% END -%]
 [% IF c.is_message -%]
 "type": "message",
-[% IF is_jury %]"ip": "[% c.last_ip_short %]",
+[% IF is_jury %]"ip": "[% c.last_ip || c.last_ip_short %]",
 [% END -%]
 "team_id": [% c.team_id %],
 "text": "[% c.message_text | $Javascript %]"
