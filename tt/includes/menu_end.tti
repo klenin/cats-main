@@ -11,7 +11,7 @@
     [%- END %]
   </td>
   <td align="right">
-    <a href="https://github.com/klenin/cats-main/issues">[% PROCESS includes/github_icon.tti %] [% capt.issues %]</a> |
+    <a href="https://github.com/klenin/cats-main">[% PROCESS includes/github_icon.tti %] [% capt.development %]</a> |
     <a href="docs/">[% capt.docs %]</a> |
     <a href="docs/authors.html">&copy; 2002-2017 [% capt.authors %]</a>&nbsp;
   </td>
