@@ -104,8 +104,8 @@
     [% IF r.show_points %]<td>[% rd.points %]</td>[% END %]
     [% IF r.show_test_resources %]
       <td>[% rd.time_used %]</td>
-      <td align="right">[% rd.memory_used %]</td>
-      <td align="right">[% rd.disk_used %]</td>
+      <td align="right">[% rd.memory_used | group_digits %]</td>
+      <td align="right">[% rd.disk_used | group_digits %]</td>
     [% END %]
     [% IF r.show_checker_comment %]<td><pre>[% rd.checker_comment | html %]</pre></td>[% END %]
     [% IF r.show_test_data %]
@@ -125,8 +125,8 @@
     [% IF r.show_points %]<td>[% r.total_points %]</td>[% END %]
     [% IF r.show_test_resources %]
       <td>[% r.maximums.time_used %]</td>
-      <td align="right">[% r.maximums.memory_used %]</td>
-      <td align="right">[% r.maximums.disk_used %]</td>
+      <td align="right">[% r.maximums.memory_used | group_digits %]</td>
+      <td align="right">[% r.maximums.disk_used | group_digits %]</td>
     [% END %]
   </tr>
   [%- END %]

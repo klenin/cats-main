@@ -84,4 +84,6 @@ sub linkify
     $s;
 }
 
+sub group_digits { scalar reverse join ' ', unpack '(A3)*', reverse $_[0] }
+
 1;
