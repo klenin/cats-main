@@ -9,7 +9,7 @@ use List::Util;
 use CATS::Countries;
 use CATS::Data qw(:all);
 use CATS::DB;
-use CATS::ListView qw(init_listview_template attach_listview);
+use CATS::ListView;
 use CATS::Misc qw(
     $t $cid $is_team $is_jury $is_root $privs $uid $settings $contest $sid
     get_anonymous_uid init_template url_f auto_ext res_str msg
@@ -410,7 +410,7 @@ sub console_content
         );
     };
 
-    attach_listview(
+    $lv->attach(
         url_f('console'), $fetch_console_record, $c,
         { page_params => { uf => $user_filter, pf => $pf } });
 

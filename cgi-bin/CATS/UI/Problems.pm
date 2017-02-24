@@ -9,7 +9,7 @@ use CATS::ContestParticipate;
 use CATS::DB;
 use CATS::DevEnv;
 use CATS::Judge;
-use CATS::ListView qw(init_listview_template order_by sort_listview define_columns attach_listview);
+use CATS::ListView qw(init_listview_template order_by define_columns attach_listview);
 use CATS::Misc qw(
     $t $is_jury $is_root $is_team $sid $cid $uid $contest $is_virtual $virtual_diff_time
     init_template msg res_str url_f auto_ext problem_status_names pack_redir_params);

@@ -18,7 +18,6 @@ our @EXPORT = qw(
     init_listview_template
     attach_listview
     order_by
-    sort_listview
     define_columns
     attach_listview
 );
@@ -151,6 +150,11 @@ sub attach_listview {
     defined $s->{$_} && $s->{$_} ne '' or delete $s->{$_} for keys %$s;
 }
 
+sub attach {
+    my $self = shift;
+    attach_listview(@_);
+}
+
 sub check_sortable_field {
     my ($s) = @_;
     return defined $s->{sort_by} && $s->{sort_by} =~ /^\d+$/ && $col_defs->[$s->{sort_by}]
@@ -163,8 +167,8 @@ sub order_by {
         $col_defs->[$s->{sort_by}]{order_by}, ($s->{sort_dir} ? 'DESC' : 'ASC');
 }
 
-sub sort_listview {
-    my $data = shift;
+sub sort_in_memory {
+    my ($self, $data) = @_;
     my $s = $settings->{$listview_name};
     check_sortable_field($s) or return $data;
     my $order_by = $col_defs->[$s->{sort_by}]{order_by};
@@ -175,6 +179,7 @@ sub sort_listview {
 }
 
 sub define_columns {
+    shift if ref $_[0] && $_[0]->isa(__PACKAGE__);
     (my $url, my $default_by, my $default_dir, $col_defs) = @_;
 
     my $s = $settings->{$listview_name};

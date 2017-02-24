@@ -8,7 +8,7 @@ use File::stat;
 use CATS::BinaryFile;
 use CATS::Constants;
 use CATS::DB;
-use CATS::ListView qw(init_listview_template order_by sort_listview define_columns attach_listview);
+use CATS::ListView;
 use CATS::Misc qw(
     $t $is_jury $is_root $sid $cid $contest
     init_template msg res_str url_f auto_ext);
@@ -402,7 +402,7 @@ sub problem_history_frame
         return $actions{$action}->($pid, $title, $repo_name);
     }
 
-    init_listview_template('problem_history', 'problem_history', auto_ext('problem_history'));
+    my $lv = CATS::ListView->new(name => 'problem_history', template => auto_ext('problem_history'));
     $t->param(problem_title => $title, pid => $pid);
 
     my $repo = CATS::ProblemStorage::get_repo($pid, undef, 1, logger => CATS::ProblemStorage->new);
@@ -428,7 +428,7 @@ sub problem_history_frame
         { caption => res_str(652), width => '15%', order_by => 'sha' },
         { caption => res_str(653), width => '40%', order_by => 'message' }
     );
-    define_columns(url_f('problem_history', pid => $pid), 1, 0, \@cols);
+    $lv->define_columns(url_f('problem_history', pid => $pid), 1, 0, \@cols);
     my $fetch_record = sub {
         my $log = shift @{$_[0]} or return ();
         return (
@@ -438,7 +438,9 @@ sub problem_history_frame
             href_git_package => url_f('problem_git_package', pid => $pid, sha => $log->{sha}),
         );
     };
-    attach_listview(url_f('problem_history', pid => $pid), $fetch_record, sort_listview(CATS::ProblemStorage::get_log($pid)));
+    $lv->attach(
+        url_f('problem_history', pid => $pid), $fetch_record,
+        $lv->sort_in_memory(CATS::ProblemStorage::get_log($pid)));
 }
 
 1;

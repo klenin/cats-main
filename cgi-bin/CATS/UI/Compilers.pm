@@ -7,7 +7,7 @@ use Encode;
 
 use CATS::DB;
 use CATS::Form;
-use CATS::ListView qw(init_listview_template order_by define_columns attach_listview);
+use CATS::ListView;
 use CATS::Misc qw(
     $t $is_jury $is_root
     init_template msg res_str url_f references_menu);
@@ -37,7 +37,7 @@ sub compilers_frame
         defined url_param('new') || defined url_param('edit') and return edit_frame;
     }
 
-    init_listview_template('compilers', 'compilers', 'compilers.html.tt');
+    my $lv = CATS::ListView->new(name => 'compilers', template => 'compilers.html.tt');
 
     if ($is_root && defined url_param('delete')) { # extra security
         my $deid = url_param('delete');
@@ -54,7 +54,7 @@ sub compilers_frame
     }
     $is_jury && defined param('edit_save') and edit_save;
 
-    define_columns(url_f('compilers'), 0, 0, [
+    $lv->define_columns(url_f('compilers'), 0, 0, [
         { caption => res_str(619), order_by => '2', width => '10%' },
         { caption => res_str(620), order_by => '3', width => '40%' },
         { caption => res_str(621), order_by => '4', width => '10%' },
@@ -65,7 +65,7 @@ sub compilers_frame
     ]);
 
     my ($q, @bind) = $sql->select('default_de', [ 'id as did', fields() ], $is_jury ? {} : { in_contests => 1 });
-    my $c = $dbh->prepare("$q " . order_by);
+    my $c = $dbh->prepare("$q " . $lv->order_by);
     $c->execute(@bind);
 
     my $fetch_record = sub {
@@ -76,7 +76,7 @@ sub compilers_frame
             href_edit => url_f('compilers', edit => $row->{did}),
             href_delete => url_f('compilers', 'delete' => $row->{did}));
     };
-    attach_listview(url_f('compilers'), $fetch_record, $c);
+    $lv->attach(url_f('compilers'), $fetch_record, $c);
 
     $t->param(submenu => [ references_menu('compilers') ], editable => $is_root)
         if $is_jury;
