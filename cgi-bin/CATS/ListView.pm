@@ -13,15 +13,6 @@ use CATS::Misc qw(
 );
 use CATS::Web qw(param url_param);
 
-use Exporter qw(import);
-our @EXPORT = qw(
-    init_listview_template
-    attach_listview
-    order_by
-    define_columns
-    attach_listview
-);
-
 my ($listview_name, $listview_array_name, $col_defs);
 
 # Optimization: limit datasets by both maximum row count and maximum visible pages.
@@ -34,7 +25,13 @@ sub new {
     my $self = {};
     $p{name} or die;
     $p{template} or die;
-    init_listview_template($p{name}, $p{array_name} || $p{name}, $p{template}, $p{extra});
+
+    $listview_name = $p{name};
+    $listview_array_name = $p{array_name} || $p{name};
+
+    init_listview_params();
+    init_template($p{template}, $p{extra});
+
     bless $self, $class;
 }
 
@@ -79,14 +76,8 @@ sub init_listview_params {
     }
 }
 
-sub init_listview_template {
-    ($listview_name, $listview_array_name, my $file_name, my $p) = @_;
-    init_listview_params;
-    init_template($file_name, $p);
-}
-
-sub attach_listview {
-    my ($url, $fetch_row, $sth, $p) = @_;
+sub attach {
+    my ($self, $url, $fetch_row, $sth, $p) = @_;
     $listview_name or die;
     my $s = $settings->{$listview_name} ||= {};
 
@@ -150,17 +141,13 @@ sub attach_listview {
     defined $s->{$_} && $s->{$_} ne '' or delete $s->{$_} for keys %$s;
 }
 
-sub attach {
-    my $self = shift;
-    attach_listview(@_);
-}
-
 sub check_sortable_field {
     my ($s) = @_;
     return defined $s->{sort_by} && $s->{sort_by} =~ /^\d+$/ && $col_defs->[$s->{sort_by}]
 }
 
 sub order_by {
+    my ($self) = @_;
     my $s = $settings->{$listview_name};
     check_sortable_field($s) or return '';
     sprintf 'ORDER BY %s %s',
@@ -179,8 +166,7 @@ sub sort_in_memory {
 }
 
 sub define_columns {
-    shift if ref $_[0] && $_[0]->isa(__PACKAGE__);
-    (my $url, my $default_by, my $default_dir, $col_defs) = @_;
+    (my $self, my $url, my $default_by, my $default_dir, $col_defs) = @_;
 
     my $s = $settings->{$listview_name};
     $s->{sort_by} = $default_by if !defined $s->{sort_by} || $s->{sort_by} eq '';
