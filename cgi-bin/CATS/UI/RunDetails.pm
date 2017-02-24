@@ -552,6 +552,8 @@ sub view_source_frame {
     source_links($sources_info);
     /^[a-z]+$/i and $sources_info->{syntax} = $_ for param('syntax');
     $sources_info->{src_lines} = [ map {}, split("\n", $sources_info->{src}) ];
+    $sources_info->{compiler_output} = get_log_dump($sources_info->{req_id}, 1)
+        if $sources_info->{state} == $cats::st_compilation_error;
     sources_info_param([ $sources_info ]);
 
     if ($sources_info->{is_jury}) {
