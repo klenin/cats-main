@@ -238,8 +238,11 @@ sub get_log_dump {
         SELECT dump FROM log_dumps WHERE req_id = ?~, undef,
         $rid) or return ();
     $dump = Encode::decode('CP1251', $dump);
-    $dump =~ s/(?:.|\n)+spawner\\sp\s((?:.|\n)+)compilation error\n/$1/m
-        if $compile_error;
+    ($dump) = $dump =~ m/
+        \Q$cats::log_section_start_prefix$cats::log_section_compile\E
+       (.*)
+        \Q$cats::log_section_end_prefix$cats::log_section_compile\E
+        /sx if $compile_error;
     return (judge_log_dump => $dump);
 }
 
