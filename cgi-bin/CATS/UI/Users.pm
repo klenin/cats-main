@@ -11,7 +11,7 @@ use CATS::Constants;
 use CATS::Countries;
 use CATS::Data qw(:all);
 use CATS::DB;
-use CATS::ListView qw(init_listview_template order_by define_columns attach_listview);
+use CATS::ListView;
 use CATS::Misc qw(
     $t $is_jury $is_root $is_team $sid $cid $uid $contest $is_virtual $settings
     init_template msg res_str url_f auto_ext);
@@ -371,9 +371,10 @@ sub users_frame
     }
     return users_impersonate if defined url_param('impersonate') && $is_root;
 
-    init_listview_template(
-        'users' . ($contest->is_practice ? '_practice' : ''),
-        'users', auto_ext('users'));
+    my $lv = CATS::ListView->new(
+        name => 'users' . ($contest->is_practice ? '_practice' : ''),
+        array_name => 'users',
+        template => auto_ext('users'));
     $t->param(messages => $is_jury, title_suffix => res_str(526));
 
     if ($is_jury) {
@@ -430,7 +431,7 @@ sub users_frame
         { caption => res_str(622), order_by => 'is_virtual', width => '5%' },
     );
 
-    define_columns(url_f('users'), $is_jury ? 3 : 2, 1, \@cols);
+    $lv->define_columns(url_f('users'), $is_jury ? 3 : 2, 1, \@cols);
 
     return if !$is_jury && param('json') && $contest->is_practice;
 
@@ -444,7 +445,7 @@ sub users_frame
             INNER JOIN contests C ON CA.contest_id = C.id
             LEFT JOIN reqs R ON
                 R.state = $cats::st_accepted AND R.account_id = A.id AND R.contest_id = C.id%s
-        WHERE C.id = ?%s GROUP BY $fields ~ . order_by,
+        WHERE C.id = ?%s GROUP BY $fields ~ . $lv->order_by,
         ($is_jury ? ('', '') : (
             ' AND (R.submit_time < C.freeze_date OR C.defreeze_date < CURRENT_TIMESTAMP)',
             ' AND CA.is_hidden = 0'));
@@ -485,7 +486,7 @@ sub users_frame
          );
     };
 
-    attach_listview(url_f('users'), $fetch_record, $c);
+    $lv->attach(url_f('users'), $fetch_record, $c);
 
     if ($is_jury)
     {

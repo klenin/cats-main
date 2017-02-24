@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use CATS::DB;
-use CATS::ListView qw(init_listview_template order_by define_columns attach_listview);
+use CATS::ListView;
 use CATS::Misc qw(
     $t $is_jury $is_root $is_team $sid $cid $uid $contest $is_virtual $settings
     init_template msg res_str url_f auto_ext references_menu);
@@ -94,20 +94,20 @@ sub prizes_frame
     }
 
     $is_root && defined url_param('edit') and return CATS::UI::Prizes::prizes_edit_frame;
-    init_listview_template('prizes', 'prizes', 'prizes.html.tt');
+    my $lv = CATS::ListView->new(name => 'prizes', template => 'prizes.html.tt');
 
     defined param('edit_save') and CATS::UI::Prizes::prizes_edit_save;
 
-    define_columns(url_f('prizes'), 0, 0, [
+    $lv->define_columns(url_f('prizes'), 0, 0, [
         { caption => res_str(601), order_by => '2', width => '30%' },
         { caption => res_str(645), order_by => '3', width => '30%' },
         { caption => res_str(646), order_by => '4', width => '40%' },
     ]);
 
-    my $c = $dbh->prepare(qq~
+    my $c = $dbh->prepare(q~
         SELECT cg.id, cg.name, cg.clist,
             (SELECT LIST(rank || ':' || name, ' ') FROM prizes p WHERE p.cg_id = cg.id) AS prizes
-            FROM contest_groups cg ~ . order_by);
+            FROM contest_groups cg ~ . $lv->order_by);
     $c->execute;
 
     my $fetch_record = sub {
@@ -120,14 +120,14 @@ sub prizes_frame
         );
     };
 
-    attach_listview(url_f('prizes'), $fetch_record, $c);
+    $lv->attach(url_f('prizes'), $fetch_record, $c);
 
     $t->param(submenu => [ references_menu('prizes') ]);
 }
 
 sub contests_prizes_frame
 {
-    init_listview_template('contests_prizes', 'contests_prizes', auto_ext('contests_prizes'));
+    my $lv = CATS::ListView->new(name => 'contests_prizes', template => auto_ext('contests_prizes'));
 
     my @clist = sanitize_clist param('clist');
     @clist && @clist < 100 or return;
@@ -138,13 +138,13 @@ sub contests_prizes_frame
         $clist) or return;
     $cg = $cg->[0] or return;
 
-    define_columns(url_f('contests_prizes', clist => $clist), 0, 0, [
+    $lv->define_columns(url_f('contests_prizes', clist => $clist), 0, 0, [
         { caption => res_str(647), order_by => '2', width => '30%' },
         { caption => res_str(648), order_by => '3', width => '70%' },
     ]);
 
     my $c = $dbh->prepare(q~
-        SELECT p.id, p.rank, p.name FROM prizes p WHERE p.cg_id = ? ~ . order_by);
+        SELECT p.id, p.rank, p.name FROM prizes p WHERE p.cg_id = ? ~ . $lv->order_by);
     $c->execute($cg->{id});
 
     my $fetch_record = sub {
@@ -154,7 +154,7 @@ sub contests_prizes_frame
         );
     };
 
-    attach_listview(url_f('contests_prizes'), $fetch_record, $c);
+    $lv->attach(url_f('contests_prizes'), $fetch_record, $c);
 
     $t->param(cg => $cg);
     #$t->param(submenu => [ references_menu('prizes') ]);
