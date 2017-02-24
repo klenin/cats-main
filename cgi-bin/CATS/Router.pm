@@ -4,12 +4,12 @@ use strict;
 use warnings;
 
 use CATS::ApiJudge;
-use CATS::Console;
 use CATS::Contest::Results;
 use CATS::Problem::Text;
 
 use CATS::UI::About;
 use CATS::UI::Compilers;
+use CATS::UI::Console;
 use CATS::UI::Contests;
 use CATS::UI::ImportSources;
 use CATS::UI::Judges;
@@ -41,10 +41,12 @@ sub main_routes() {
         registration => \&CATS::UI::Users::registration_frame,
         profile => [ \&CATS::UI::Users::profile_frame, json => $bool, clear => $str, edit_save => $str, ],
         contests => [ \&CATS::UI::Contests::contests_frame, has_problem => $int, ],
-        console_content => \&CATS::Console::content_frame,
-        console => \&CATS::Console::console_frame,
-        console_export => \&CATS::Console::export,
-        console_graphs => \&CATS::Console::graphs,
+
+        console_content => \&CATS::UI::Console::content_frame,
+        console => \&CATS::UI::Console::console_frame,
+        console_export => \&CATS::UI::Console::export,
+        console_graphs => \&CATS::UI::Console::graphs,
+
         problems => [ \&CATS::UI::Problems::problems_frame, kw => $int, ],
         problems_udebug => [ \&CATS::UI::Problems::problems_udebug_frame, ],
         problems_retest => \&CATS::UI::Problems::problems_retest_frame,

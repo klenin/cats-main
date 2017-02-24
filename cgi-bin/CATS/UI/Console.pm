@@ -1,4 +1,4 @@
-package CATS::Console;
+package CATS::UI::Console;
 
 use strict;
 use warnings;
