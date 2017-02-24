@@ -64,7 +64,10 @@ sub compilers_frame
         ($is_jury ? { caption => res_str(622), order_by => '5', width => '10%' } : ()),
     ]);
 
-    my ($q, @bind) = $sql->select('default_de', [ 'id as did', fields() ], $is_jury ? {} : { in_contests => 1 });
+    $lv->define_db_searches([ fields() ]);
+
+    my ($q, @bind) = $sql->select('default_de', [ 'id as did', fields() ],
+        $is_jury ? $lv->where : { %{$lv->where}, in_contests => 1 });
     my $c = $dbh->prepare("$q " . $lv->order_by);
     $c->execute(@bind);
 
