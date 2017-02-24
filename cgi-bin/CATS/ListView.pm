@@ -25,6 +25,8 @@ sub new {
         template => $p{template} || die,
         array_name => $p{array_name} || $p{name},
         col_defs => undef,
+        search => [],
+        db_searches => {},
     };
     bless $self, $class;
     $self->init_params;
@@ -43,13 +45,13 @@ sub init_params {
 
     $s->{page} = url_param('page') if defined url_param('page');
 
-    my $search = Encode::decode_utf8(param('search'));
-    if (defined $search) {
+    if (defined(my $search = Encode::decode_utf8 param('search'))) {
         if ($s->{search} ne $search) {
             $s->{search} = $search;
             $s->{page} = 0;
         }
     }
+    $self->{search} = [ map [ /^(.*)=(.*)$/ ? ($1, $2) : ('', $_) ], split ',', $s->{search} ];
 
     if (defined url_param('sort')) {
         $s->{sort_by} = int(url_param('sort'));
@@ -71,6 +73,7 @@ sub init_params {
 
 sub attach {
     my ($self, $url, $fetch_row, $sth, $p) = @_;
+
     my $s = $settings->{$self->{name}} ||= {};
 
     my ($row_count, $page_count, @data) = (0, 0);
@@ -83,9 +86,9 @@ sub attach {
     # Values without field name are searched in all fields.
     # Different fields are AND'ed, multiple values of the same field are OR'ed.
     my %mask;
-    for my $q (split ',', $s->{search}) {
-        my ($k, $v) = $q =~ /^(.*)=(.*)$/ ? ($1, $2) : ('', $q);
-        push @{$mask{$k} ||= []}, $v;
+    for my $q (@{$self->{search}}) {
+        my ($k, $v) = @$q;
+        $self->{db_searches}->{$k} or push @{$mask{$k} ||= []}, $v;
     }
     for (values %mask) {
         my $s = join '|', map "\Q$_\E", @$_;
@@ -146,6 +149,37 @@ sub order_by {
         $self->{col_defs}->[$s->{sort_by}]{order_by}, ($s->{sort_dir} ? 'DESC' : 'ASC');
 }
 
+sub where { $_[0]->{where} ||= $_[0]->make_where }
+
+sub make_where {
+    my ($self) = @_;
+    my %result;
+    for my $q (@{$self->{search}}) {
+        my ($k, $v) = @$q;
+        push @{$result{$k} //= []}, $v if $self->{db_searches}->{$k};
+    }
+    \%result;
+}
+
+sub where_cond {
+    my ($self) = @_;
+    my $w = $self->where;
+    join ' AND ', map @{$w->{$_}} > 1 ? "$_ IN (" . join(', ', '?' x @{$w->{$_}}) . ')' : "$_ = ?",
+        sort keys %$w;
+}
+
+sub maybe_where_cond {
+    my ($self) = @_;
+    my $w = $self->where;
+    %{$self->where} ? ' AND ' . $self->where_cond : '';
+}
+
+sub where_params {
+    my ($self) = @_;
+    my $w = $self->where;
+    map @{$w->{$_}}, sort keys %$w;
+}
+
 sub sort_in_memory {
     my ($self, $data) = @_;
     my $s = $self->settings;
@@ -155,6 +189,16 @@ sub sort_in_memory {
         sub { $a->{$order_by} cmp $b->{$order_by} } :
         sub { $b->{$order_by} cmp $a->{$order_by} };
     [ sort $cmp @$data ];
+}
+
+sub define_db_searches {
+    my ($self, $db_searches) = @_;
+    if (ref $db_searches eq 'ARRAY') {
+        $self->{db_searches}->{$_} = 1 for @$db_searches;
+    }
+    else {
+        die;
+    }
 }
 
 sub define_columns {
