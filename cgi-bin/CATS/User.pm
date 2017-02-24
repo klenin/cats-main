@@ -9,7 +9,7 @@ use Storable;
 use CATS::Config;
 use CATS::Constants;
 use CATS::Countries;
-use CATS::Data;
+use CATS::Data qw(get_registered_contestant);
 use CATS::DB;
 use CATS::Form qw(validate_string_length);
 use CATS::Misc qw(init_template msg url_f $is_root);

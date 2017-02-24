@@ -7,7 +7,7 @@ use Encode qw(decode_utf8);
 use List::Util;
 
 use CATS::Countries;
-use CATS::Data qw(:all);
+use CATS::Data qw(get_registered_contestant);
 use CATS::DB;
 use CATS::ListView;
 use CATS::Misc qw(

@@ -5,7 +5,6 @@ use warnings;
 
 use CATS::DB;
 use CATS::Misc qw($cid $is_jury $is_root $uid);
-use CATS::Utils qw(state_to_display);
 
 use Exporter qw(import);
 
@@ -13,8 +12,6 @@ our @EXPORT = qw(
     get_registered_contestant
     is_jury_in_contest
 );
-
-our %EXPORT_TAGS = (all => [ @EXPORT ]);
 
 # Params: fields, contest_id, account_id.
 sub get_registered_contestant

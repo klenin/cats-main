@@ -9,7 +9,6 @@ use Storable qw(freeze thaw);
 
 use CATS::Constants;
 use CATS::Countries;
-use CATS::Data qw(:all);
 use CATS::DB;
 use CATS::ListView;
 use CATS::Misc qw(

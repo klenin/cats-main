@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use CATS::Constants;
-use CATS::Data qw(:all);
+use CATS::Data qw(get_registered_contestant);
 use CATS::DB;
 use CATS::Misc qw($is_root $is_team $is_virtual $virtual_diff_time $cid $uid $contest msg);
 
