@@ -13,8 +13,6 @@ use CATS::Misc qw(
 );
 use CATS::Web qw(param url_param);
 
-my ($listview_name, $listview_array_name, $col_defs);
-
 # Optimization: limit datasets by both maximum row count and maximum visible pages.
 my $max_fetch_row_count = 1000;
 my $visible_pages = 5;
@@ -22,36 +20,31 @@ my @display_rows = (10, 20, 30, 40, 50, 100, 300);
 
 sub new {
     my ($class, %p) = @_;
-    my $self = {};
-    $p{name} or die;
-    $p{template} or die;
-
-    $listview_name = $p{name};
-    $listview_array_name = $p{array_name} || $p{name};
-
-    init_listview_params();
-    init_template($p{template}, $p{extra});
-
+    my $self = {
+        name => $p{name} || die,
+        template => $p{template} || die,
+        array_name => $p{array_name} || $p{name},
+        col_defs => undef,
+    };
     bless $self, $class;
+    $self->init_params;
+    init_template($self->{template}, $p{extra});
+    $self;
 }
 
-sub settings { $settings->{$listview_name}; }
+sub settings { $settings->{$_[0]->{name}} }
 
-sub init {
-    $listview_name = '';
-    $listview_array_name = '';
-    $col_defs = '';
-}
+sub init_params {
+    my ($self) = @_;
 
-sub init_listview_params {
-    $_ && ref $_ eq 'HASH' or $_ = {} for $settings->{$listview_name};
-    my $s = $settings->{$listview_name};
+    $_ && ref $_ eq 'HASH' or $_ = {} for $settings->{$self->{name}};
+    my $s = $self->settings;
     $s->{search} ||= '';
 
     $s->{page} = url_param('page') if defined url_param('page');
 
     my $search = Encode::decode_utf8(param('search'));
-    if (defined $search){
+    if (defined $search) {
         if ($s->{search} ne $search) {
             $s->{search} = $search;
             $s->{page} = 0;
@@ -78,8 +71,7 @@ sub init_listview_params {
 
 sub attach {
     my ($self, $url, $fetch_row, $sth, $p) = @_;
-    $listview_name or die;
-    my $s = $settings->{$listview_name} ||= {};
+    my $s = $settings->{$self->{name}} ||= {};
 
     my ($row_count, $page_count, @data) = (0, 0);
     my $page = \$s->{page};
@@ -134,7 +126,7 @@ sub attach {
         ($range_end < $page_count - 1 ? (href_next_pages => $href_page->($range_end + 1)) : ()),
         display_rows =>
             [ map { value => $_, text => $_, selected => $s->{rows} == $_ }, @display_rows ],
-        $listview_array_name => \@data,
+        $self->{array_name} => \@data,
     );
 
     # Suppose that attach_listview call comes last, so we modify settings in-place.
@@ -142,23 +134,23 @@ sub attach {
 }
 
 sub check_sortable_field {
-    my ($s) = @_;
-    return defined $s->{sort_by} && $s->{sort_by} =~ /^\d+$/ && $col_defs->[$s->{sort_by}]
+    my ($self, $s) = @_;
+    return defined $s->{sort_by} && $s->{sort_by} =~ /^\d+$/ && $self->{col_defs}->[$s->{sort_by}]
 }
 
 sub order_by {
     my ($self) = @_;
-    my $s = $settings->{$listview_name};
-    check_sortable_field($s) or return '';
+    my $s = $self->settings;
+    $self->check_sortable_field($s) or return '';
     sprintf 'ORDER BY %s %s',
-        $col_defs->[$s->{sort_by}]{order_by}, ($s->{sort_dir} ? 'DESC' : 'ASC');
+        $self->{col_defs}->[$s->{sort_by}]{order_by}, ($s->{sort_dir} ? 'DESC' : 'ASC');
 }
 
 sub sort_in_memory {
     my ($self, $data) = @_;
-    my $s = $settings->{$listview_name};
-    check_sortable_field($s) or return $data;
-    my $order_by = $col_defs->[$s->{sort_by}]{order_by};
+    my $s = $self->settings;
+    $self->check_sortable_field($s) or return $data;
+    my $order_by = $self->{col_defs}->[$s->{sort_by}]{order_by};
     my $cmp = $s->{sort_dir} ?
         sub { $a->{$order_by} cmp $b->{$order_by} } :
         sub { $b->{$order_by} cmp $a->{$order_by} };
@@ -166,13 +158,14 @@ sub sort_in_memory {
 }
 
 sub define_columns {
-    (my $self, my $url, my $default_by, my $default_dir, $col_defs) = @_;
+    my ($self, $url, $default_by, $default_dir, $col_defs) = @_;
 
-    my $s = $settings->{$listview_name};
+    my $s = $self->settings;
     $s->{sort_by} = $default_by if !defined $s->{sort_by} || $s->{sort_by} eq '';
     $s->{sort_dir} = $default_dir if !defined $s->{sort_dir} || $s->{sort_dir} eq '';
 
-    for (my $i = 0; $i < @$col_defs; ++$i) {
+    $self->{col_defs} = $col_defs;
+    for my $i (0 .. $#$col_defs) {
         my $def = $col_defs->[$i];
         my $dir = 0;
         if ($s->{sort_by} eq $i) {

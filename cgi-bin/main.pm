@@ -30,7 +30,6 @@ use CATS::BinaryFile;
 use CATS::DB;
 use CATS::Config;
 use CATS::Constants;
-use CATS::ListView;
 use CATS::Misc qw(
     $is_jury $uid $sid $contest $is_virtual $t
     res_str url_f get_anonymous_uid initialize save_settings generate_output attach_menu);
@@ -94,7 +93,6 @@ sub accept_request {
             or return;
     }
     initialize;
-    CATS::ListView::init;
     $CATS::Misc::init_time = Time::HiRes::tv_interval(
         $CATS::Misc::request_start_time, [ Time::HiRes::gettimeofday ]);
 
