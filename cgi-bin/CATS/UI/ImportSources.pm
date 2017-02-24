@@ -5,7 +5,7 @@ use warnings;
 
 use CATS::Constants;
 use CATS::DB;
-use CATS::ListView qw(init_listview_template order_by define_columns attach_listview);
+use CATS::ListView;
 use CATS::Misc qw(
     $t $is_jury $is_root $is_team $sid $cid $uid $contest $is_virtual $settings
     init_template msg res_str url_f auto_ext references_menu);
@@ -14,8 +14,8 @@ use CATS::Web qw(param redirect url_param);
 
 sub import_sources_frame
 {
-    init_listview_template('import_sources', 'import_sources', 'import_sources.html.tt');
-    define_columns(url_f('import_sources'), 0, 0, [
+    my $lv = CATS::ListView->new(name => 'import_sources', template => 'import_sources.html.tt');
+    $lv->define_columns(url_f('import_sources'), 0, 0, [
         { caption => res_str(625), order_by => '2', width => '30%' },
         { caption => res_str(642), order_by => '3', width => '30%' },
         { caption => res_str(641), order_by => '4', width => '30%' },
@@ -29,7 +29,7 @@ sub import_sources_frame
             (SELECT CA.is_jury FROM contest_accounts CA WHERE CA.account_id = ? AND CA.contest_id = p.contest_id)
             FROM problem_sources ps INNER JOIN default_de de ON de.id = ps.de_id
             INNER JOIN problems p ON p.id = ps.problem_id
-            WHERE ps.guid IS NOT NULL ~.order_by);
+            WHERE ps.guid IS NOT NULL ~ . $lv->order_by);
     $c->execute($uid // 0);
 
     my $fetch_record = sub {
@@ -42,7 +42,7 @@ sub import_sources_frame
         );
     };
 
-    attach_listview(url_f('import_sources'), $fetch_record, $c);
+    $lv->attach(url_f('import_sources'), $fetch_record, $c);
 
     $t->param(submenu => [ references_menu('import_sources') ], is_jury => 1) if $is_jury;
 }

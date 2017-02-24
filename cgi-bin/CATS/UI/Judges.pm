@@ -6,7 +6,7 @@ use warnings;
 use CATS::DB;
 use CATS::IP;
 use CATS::Judge;
-use CATS::ListView qw(init_listview_template order_by define_columns attach_listview);
+use CATS::ListView;
 use CATS::Misc qw(
     $t $is_jury $is_root
     init_template msg res_str url_f references_menu);
@@ -72,7 +72,7 @@ sub judges_frame
         defined url_param('new') || defined url_param('edit') and return edit_frame;
     }
 
-    init_listview_template('judges', 'judges', 'judges.html.tt');
+    my $lv = CATS::ListView->new(name => 'judges', template => 'judges.html.tt');
 
     if ($is_root) {
         defined param('edit_save') and edit_save;
@@ -90,7 +90,7 @@ sub judges_frame
         }
     }
 
-    define_columns(url_f('judges'), 0, 0, [
+    $lv->define_columns(url_f('judges'), 0, 0, [
         { caption => res_str(625), order_by => '2', width => '30%' },
         ($is_root ? ({ caption => res_str(616), order_by => '3', width => '30%' }) : ()),
         { caption => res_str(626), order_by => '4', width => '10%' },
@@ -100,7 +100,7 @@ sub judges_frame
 
     my $c = $dbh->prepare(q~
         SELECT J.id, J.nick, A.login, J.is_alive, J.alive_date, J.lock_counter, A.id, A.last_ip
-            FROM judges J LEFT JOIN accounts A ON A.id = J.account_id ~ . order_by);
+            FROM judges J LEFT JOIN accounts A ON A.id = J.account_id ~ . $lv->order_by);
     $c->execute;
 
     my $fetch_record = sub {
@@ -122,7 +122,7 @@ sub judges_frame
         );
     };
 
-    attach_listview(url_f('judges'), $fetch_record, $c);
+    $lv->attach(url_f('judges'), $fetch_record, $c);
 
     $t->param(submenu => [ references_menu('judges') ], editable => $is_root);
 

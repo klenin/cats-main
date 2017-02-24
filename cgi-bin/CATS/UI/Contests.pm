@@ -7,7 +7,7 @@ use CATS::Constants;
 use CATS::ContestParticipate;
 use CATS::Data qw(:all);
 use CATS::DB;
-use CATS::ListView qw(init_listview_template order_by define_columns attach_listview);
+use CATS::ListView;
 use CATS::Misc qw(
     $t $is_jury $is_root $is_team $privs $sid $cid $uid $contest $is_virtual $settings
     init_template msg res_str url_f auto_ext);
@@ -259,7 +259,7 @@ sub authenticated_contests_view {
             ($p->{has_problem} ? q~AND EXISTS (
                 SELECT 1 FROM contest_problems CP
                 WHERE CP.contest_id = C.id AND CP.problem_id = ?) ~ : contests_submenu_filter()) .
-            order_by);
+            $p->{listview}->order_by);
     $sth->execute($uid, $p->{has_problem} ? $p->{has_problem} : ());
 
     my $fetch_contest = sub {
@@ -280,10 +280,11 @@ sub authenticated_contests_view {
 }
 
 sub anonymous_contests_view {
+    my ($p) = @_;
     my $cf = contest_fields();
     my $sth = $dbh->prepare(qq~
         SELECT $cf FROM contests C WHERE COALESCE(C.is_hidden, 0) = 0 ~ .
-        contests_submenu_filter() . order_by
+        contests_submenu_filter() . $p->{listview}->order_by
     );
     $sth->execute;
 
@@ -328,8 +329,8 @@ sub contests_frame {
     my $ical = param('ical');
     my $json = param('json');
     return if $ical && $json;
-    init_listview_template('contests', 'contests',
-        'contests.' .  ($ical ? 'ics' : $json ? 'json' : 'html') . '.tt');
+    $p->{listview} = my $lv = CATS::ListView->new(name => 'contests',
+        template => 'contests.' .  ($ical ? 'ics' : $json ? 'json' : 'html') . '.tt');
 
     CATS::UI::Prizes::contest_group_auto_new if defined param('create_group') && $is_root;
 
@@ -348,7 +349,7 @@ sub contests_frame {
 
     contests_select_current if defined url_param('set_contest');
 
-    define_columns(url_f('contests', has_problem => $p->{has_problem}), 1, 1, [
+    $lv->define_columns(url_f('contests', has_problem => $p->{has_problem}), 1, 1, [
         { caption => res_str(601), order_by => '1 DESC, 2', width => '40%' },
         { caption => res_str(600), order_by => '1 DESC, 5', width => '15%' },
         { caption => res_str(631), order_by => '1 DESC, 6', width => '15%' },
@@ -356,7 +357,7 @@ sub contests_frame {
 
     $_ = coalesce(param('filter'), $_, 'unfinished') for $settings->{contests}->{filter};
 
-    attach_listview(url_f('contests'),
+    $lv->attach(url_f('contests'),
         defined $uid ? authenticated_contests_view($p) : anonymous_contests_view($p),
         ($uid ? () : { page_params => { filter => $settings->{contests}->{filter} } }));
 

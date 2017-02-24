@@ -5,7 +5,7 @@ use warnings;
 
 use CATS::DB;
 use CATS::Form;
-use CATS::ListView qw(init_listview_template order_by define_columns attach_listview);
+use CATS::ListView;
 use CATS::Misc qw(
     $t $is_jury $is_root
     init_template msg res_str url_f references_menu);
@@ -57,11 +57,11 @@ sub keywords_frame
 
         defined url_param('new') || defined url_param('edit') and return edit_frame;
     }
-    init_listview_template('keywords', 'keywords', 'keywords.html.tt');
+    my $lv = CATS::ListView->new(name => 'keywords', template => 'keywords.html.tt');
 
     $is_root && defined param('edit_save') and edit_save;
 
-    define_columns(url_f('keywords'), 0, 0, [
+    $lv->define_columns(url_f('keywords'), 0, 0, [
         { caption => res_str(625), order_by => '2', width => '30%' },
         { caption => res_str(636), order_by => '3', width => '30%' },
         { caption => res_str(637), order_by => '4', width => '30%' },
@@ -71,7 +71,7 @@ sub keywords_frame
     my $c = $dbh->prepare(q~
         SELECT k.id AS kwid, k.code, k.name_ru, k.name_en,
             (SELECT COUNT(*) FROM problem_keywords pk WHERE pk.keyword_id = k.id) AS ref_count
-        FROM keywords k ~ . order_by);
+        FROM keywords k ~ . $lv->order_by);
     $c->execute;
 
     my $fetch_record = sub {
@@ -84,7 +84,7 @@ sub keywords_frame
         );
     };
 
-    attach_listview(url_f('keywords'), $fetch_record, $c);
+    $lv->attach(url_f('keywords'), $fetch_record, $c);
 
     $t->param(submenu => [ references_menu('keywords') ], editable => $is_root) if $is_jury;
 }
