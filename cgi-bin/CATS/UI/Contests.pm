@@ -212,8 +212,10 @@ sub contest_fields ()
     # In the absense of a filter, select only the first page + 1 record.
     # my $s = $settings->{$listview_name};
     # (($s->{page} || 0) == 0 && !$s->{search} ? 'FIRST ' . ($s->{rows} + 1) : '') .
-    q~c.ctype, c.id, c.title, c.short_descr,
-    c.start_date, c.finish_date, c.freeze_date, c.defreeze_date, c.closed, c.is_official, c.rules~
+    qw(
+        ctype id title short_descr
+        start_date finish_date freeze_date defreeze_date closed is_official rules
+    )
 }
 
 sub contests_submenu_filter
@@ -233,7 +235,7 @@ sub contests_submenu_filter
 
 sub authenticated_contests_view {
     my ($p) = @_;
-    my $cf = contest_fields();
+    my $cf = join ', ', map "C.$_", contest_fields();
     my $original_contest = 0;
     if ($p->{has_problem}) {
         my ($has_problem_pid) = $dbh->selectrow_array(q~
@@ -281,7 +283,7 @@ sub authenticated_contests_view {
 
 sub anonymous_contests_view {
     my ($p) = @_;
-    my $cf = contest_fields();
+    my $cf = join ', ', map "C.$_", contest_fields();
     my $sth = $dbh->prepare(qq~
         SELECT $cf FROM contests C WHERE COALESCE(C.is_hidden, 0) = 0 ~ .
         contests_submenu_filter() . $p->{listview}->order_by
