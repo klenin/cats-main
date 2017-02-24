@@ -9,7 +9,6 @@ use List::Util qw(first min max);
 use CATS::Misc qw(
     $t
     $settings
-    $listview_name
     init_template
 );
 use CATS::Web qw(param url_param);
@@ -24,14 +23,26 @@ our @EXPORT = qw(
     attach_listview
 );
 
-my ($listview_array_name, $col_defs);
+my ($listview_name, $listview_array_name, $col_defs);
 
 # Optimization: limit datasets by both maximum row count and maximum visible pages.
 my $max_fetch_row_count = 1000;
 my $visible_pages = 5;
 my @display_rows = (10, 20, 30, 40, 50, 100, 300);
 
+sub new {
+    my ($class, %p) = @_;
+    my $self = {};
+    $p{name} or die;
+    $p{template} or die;
+    init_listview_template($p{name}, $p{array_name} || $p{name}, $p{template}, $p{extra});
+    bless $self, $class;
+}
+
+sub settings { $settings->{$listview_name}; }
+
 sub init {
+    $listview_name = '';
     $listview_array_name = '';
     $col_defs = '';
 }
@@ -78,7 +89,7 @@ sub init_listview_template {
 sub attach_listview {
     my ($url, $fetch_row, $sth, $p) = @_;
     $listview_name or die;
-    my $s = $settings->{$listview_name};
+    my $s = $settings->{$listview_name} ||= {};
 
     my ($row_count, $page_count, @data) = (0, 0);
     my $page = \$s->{page};
@@ -135,6 +146,9 @@ sub attach_listview {
             [ map { value => $_, text => $_, selected => $s->{rows} == $_ }, @display_rows ],
         $listview_array_name => \@data,
     );
+
+    # Suppose that attach_listview call comes last, so we modify settings in-place.
+    defined $s->{$_} && $s->{$_} ne '' or delete $s->{$_} for keys %$s;
 }
 
 sub check_sortable_field {

@@ -11,7 +11,7 @@ use CATS::Data qw(:all);
 use CATS::DB;
 use CATS::ListView qw(init_listview_template attach_listview);
 use CATS::Misc qw(
-    $t $cid $is_team $is_jury $is_root $privs $uid $settings $listview_name $contest $sid
+    $t $cid $is_team $is_jury $is_root $privs $uid $settings $contest $sid
     get_anonymous_uid init_template url_f auto_ext res_str msg
 );
 use CATS::Request;
@@ -51,7 +51,8 @@ sub send_question_to_jury
 
 sub get_settings
 {
-    my $s = $settings->{$listview_name};
+    my ($lv) = @_;
+    my $s = $lv->settings;
     $s->{i_value} = coalesce(param('i_value'), $s->{i_value}, 1);
     $s->{i_unit} = param('i_unit') || $s->{i_unit} || 'hours';
     $s->{show_results} = param('show_results') // $s->{show_results} // 1;
@@ -100,15 +101,16 @@ sub init_console_template
     my ($template_name) = @_;
     my $se = param('se') || '';
     $se = "_$se" if $se;
-    init_listview_template("console$se", 'console', $template_name);
+    CATS::ListView->new(
+        name => "console$se", array_name => 'console', template => $template_name);
 }
 
 
 sub console_content
 {
-    init_console_template(auto_ext('console_content'));
+    my $lv = init_console_template(auto_ext('console_content'));
 
-    my $s = get_settings;
+    my $s = get_settings($lv);
     $s->{show_results} = 1 unless defined $s->{show_results};
     $s->{show_messages} = 1 unless defined $s->{show_messages};
     $t->param($_ => $s->{$_}) for qw(show_contests show_messages show_results);
@@ -580,8 +582,8 @@ sub delete_message
 
 sub console_frame
 {
-    init_console_template('console.html.tt');
-    my $s = get_settings;
+    my $lv = init_console_template('console.html.tt');
+    my $s = get_settings($lv);
     if (grep defined param($_), qw(search filter visible)) {
         $s->{$_} = param($_) ? 1 : 0
             for qw(show_contests show_messages show_results);

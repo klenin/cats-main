@@ -30,7 +30,7 @@ our @EXPORT = qw(
 our @EXPORT_OK = qw(
     $contest $t $sid $cid $uid $git_author_name $git_author_email
     $is_root $is_team $is_jury $privs $is_virtual $virtual_diff_time
-    $listview_name $init_time $settings);
+    $init_time $settings);
 
 #use CGI::Fast( ':standard' );
 #use CGI::Util qw(rearrange unescape escape);
@@ -55,7 +55,7 @@ use CATS::Web qw(param url_param headers content_type cookie);
 our (
     $contest, $t, $sid, $cid, $uid, $team_name, $dbi_error, $git_author_name, $git_author_email,
     $is_root, $is_team, $is_jury, $privs, $is_virtual, $virtual_diff_time,
-    $listview_name, $request_start_time, $init_time, $settings
+    $request_start_time, $init_time, $settings
 );
 
 my ($messages, $http_mime_type, %extra_headers, $enc_settings);
@@ -385,12 +385,6 @@ sub init_contest
 
 sub save_settings
 {
-    if ($listview_name)
-    {
-        my $s = $settings->{$listview_name} ||= {};
-        $s->{search} ||= undef;
-        defined $s->{$_} or delete $s->{$_} for keys %$s;
-    }
     my $new_enc_settings = Storable::freeze($settings);
     $new_enc_settings ne ($enc_settings || '') or return;
     $enc_settings = $new_enc_settings;
@@ -411,7 +405,6 @@ sub initialize
     $t = undef;
     init_user;
     init_contest;
-    $listview_name = '';
 }
 
 
