@@ -31,6 +31,7 @@ my $function;
 my $bool = qr/1/;
 my $int = qr/\d+/;
 my $int_list = qr/[\d,]+/;
+my $fixed = qr/[+-]?([0-9]*[.])?[0-9]+/;
 my $sha = qr/[a-h0-9]+/;
 my $str = qr/.+/;
 
