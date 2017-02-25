@@ -12,7 +12,7 @@ use CATS::Countries;
 use CATS::Data qw(get_registered_contestant);
 use CATS::DB;
 use CATS::Form qw(validate_string_length);
-use CATS::Misc qw(init_template msg url_f $is_root);
+use CATS::Misc qw(init_template msg url_f $t $is_root);
 use CATS::Web qw(param);
 
 
@@ -85,7 +85,7 @@ sub generate_login
 
 sub new_frame
 {
-    my $t = init_template('users_new.html.tt');
+    init_template('users_new.html.tt');
     $t->param(
         login => generate_login,
         countries => \@CATS::Countries::countries,

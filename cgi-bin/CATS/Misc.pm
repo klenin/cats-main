@@ -139,8 +139,8 @@ sub init_template
     #$template_file = $file_name;
     $t = CATS::Template->new($file_name, cats_dir(), $p);
     my $json = param('json') || '';
-    $t->param(lang => lang, $json =~ /^[a-zA-Z][a-zA-Z0-9_]+$/ ? (jsonp => $json) : ());
     $extra_headers{'Access-Control-Allow-Origin'} = '*' if $json;
+    $t->param(lang => lang, $json =~ /^[a-zA-Z][a-zA-Z0-9_]+$/ ? (jsonp => $json) : ());
 }
 
 
