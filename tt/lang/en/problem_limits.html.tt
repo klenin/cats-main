@@ -1,0 +1,8 @@
+[%
+  capt.import({
+    original_limits => 'Original limits',
+    overridden_limits => 'Overridden limits',
+    override => 'Override',
+    clear_override => 'Clear override'
+  })
+%]

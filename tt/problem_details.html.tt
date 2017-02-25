@@ -1,5 +1,6 @@
 [% PROCESS includes/menu_begin.tti %]
 [% PROCESS includes/html.tti %]
+[% PROCESS includes/limits_string.tti %]
 
 <form method="post" enctype="multipart/form-data" action="[% href_action %]">
 <table class="bordered">
@@ -23,7 +24,10 @@
 </td></tr>
 <tr><td>[% capt.testsets %]</td><td>[% href(href_testsets, p.testsets || capt.testsets_all) %]</td></tr>
 <tr><td>[% capt.points_testsets %]</td><td>[% href(href_testsets, p.points_testsets || capt.testsets_all) %]</td></tr>
-<tr><td>[% capt.tags %]</td><td>[% href(href_tags, p.tags || capt.tags_none) %]</td></tr>
+<tr><td>[% capt.original_limits %]</td><td>[% href(href_problem_limits, limits_str(p.time_limit, p.memory_limit)) %]</td></tr>
+[% IF p.overridden_time_limit && p.overridden_memory_limit %]
+<tr><td>[% capt.overridden_limits %]</td><td>[% href(href_problem_limits, limits_str(p.overridden_time_limit, p.overridden_memory_limit)) %]</td></tr>
+[% END %]
 </table>
 </form>
 

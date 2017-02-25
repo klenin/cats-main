@@ -19,5 +19,7 @@
     testsets_all => 'все',
     tags => 'Тэги',
     tags_none => 'нет',
+    original_limits => 'Исходные ограничения',
+    overridden_limits => 'Переопределенные ограничения',
   })
 %]

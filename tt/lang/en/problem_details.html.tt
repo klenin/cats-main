@@ -19,5 +19,7 @@
     testsets_all => 'all',
     tags => 'Tags',
     tags_none => 'none',
+    original_limits => 'Original limits',
+    overridden_limits => 'Overridden limits',
   })
 %]

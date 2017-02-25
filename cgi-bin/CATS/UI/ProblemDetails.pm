@@ -23,6 +23,7 @@ my $problem_submenu = [
     { href => 'problem_history', item => 568 },
     { href => 'compare_tests', item => 552 },
     { href => 'problem_select_testsets', item => 505 },
+    { href => 'problem_limits', item => 507 },
     { href => 'problem_select_tags', item => 506 },
 ];
 
@@ -44,12 +45,14 @@ sub problem_details_frame {
     $is_jury && $p->{pid} or return;
     my $pr = $dbh->selectrow_hashref(q~
         SELECT P.title, P.lang, P.contest_id, P.author, P.last_modified_by, P.upload_date,
+            P.time_limit, P.memory_limit, L.time_limit AS overridden_time_limit, L.memory_limit AS overridden_memory_limit,
             C.title AS contest_name, A.team_name,
             CP.id AS cpid, CP.testsets, CP.points_testsets, CP.tags
         FROM problems P
         INNER JOIN contests C ON C.id = P.contest_id
         INNER JOIN contest_problems CP ON CP.problem_id = P.id AND CP.contest_id = ?
         LEFT JOIN accounts A ON A.id = P.last_modified_by
+        LEFT JOIN limits L ON L.id = CP.limits_id
         WHERE P.id = ?~, { Slice => {} },
         $cid, $p->{pid}) or return;
     my @text = ('problem_text', cpid => $pr->{cpid});
@@ -69,6 +72,7 @@ sub problem_details_frame {
         ($contest->{is_hidden} || $contest->{local_only} || $contest->{time_since_start} <= 0 ? () :
             (href_static_text => CATS::StaticPages::url_static(@text))),
         href_testsets => url_f('problem_select_testsets', pid => $p->{pid}),
+        href_problem_limits => url_f('problem_limits', pid => $p->{pid}),
         href_tags => url_f('problem_select_tags', pid => $p->{pid}),
     );
     problem_submenu('problem_details', $p->{pid});
@@ -177,6 +181,74 @@ sub problem_select_testsets_frame
         href_action => url_f('problem_select_testsets', ($p->{from_problems} ? (from_problems => 1) : ())),
     );
     problem_submenu('problem_select_testsets', $p->{pid});
+}
+
+sub problem_limits_frame
+{
+    my ($p) = @_;
+    init_template('problem_limits.html.tt');
+    $p->{pid} && $is_jury or return;
+
+    my $original_limits_str = join ', ', map { "P.$_" } @CATS::Request::limits_keys;
+    my $overridden_limits_str = join ', ', map { "L.$_ AS overridden_$_" } @CATS::Request::limits_keys;
+
+    my $problem = $dbh->selectrow_hashref(qq~
+        SELECT P.id, P.title, CP.id AS cpid, CP.tags, CP.limits_id,
+        $original_limits_str, $overridden_limits_str
+        FROM problems P
+            INNER JOIN contest_problems CP ON P.id = CP.problem_id
+            LEFT JOIN limits L ON L.id = CP.limits_id
+        WHERE P.id = ? AND CP.contest_id = ?~, undef,
+        $p->{pid}, $cid) or return;
+
+    $t->param(
+        p => $problem,
+        href_action => url_f('problem_limits', pid => $problem->{id}, cid => $cid)
+    );
+
+    problem_submenu('problem_limits', $p->{pid});
+
+    if (param('override')) {
+        my $new_limits = !defined $problem->{limits_id};
+
+        return msg(1144) if !$new_limits && grep !$p->{$_}, @CATS::Request::limits_keys;
+
+        my $limits = { map { $_ => $p->{$_} || $problem->{"overridden_$_"} || $problem->{$_} } @CATS::Request::limits_keys };
+
+        $problem->{limits_id} = CATS::Request::set_limits($problem->{limits_id}, $limits);
+
+        if ($new_limits) {
+            $dbh->do(q~
+                UPDATE contest_problems SET limits_id = ?
+                WHERE id = ?~, undef,
+            $problem->{limits_id}, $problem->{cpid});
+        }
+
+        for (@CATS::Request::limits_keys) {
+            $problem->{"overridden_$_"} = $limits->{$_};
+        }
+
+        $dbh->commit;
+
+        msg($new_limits ? 1145 : 1146, $problem->{title});
+    } elsif (param('clear_override')) {
+        if ($problem->{limits_id}) {
+            $dbh->do(q~
+                UPDATE contest_problems SET limits_id = NULL
+                WHERE id = ?~, undef,
+            $problem->{cpid});
+            CATS::Request::delete_limits($problem->{limits_id});
+        }
+
+        $dbh->commit;
+
+        delete $problem->{limits_id};
+        for (@CATS::Request::limits_keys) {
+            delete $problem->{"overridden_$_"};
+        }
+
+        msg(1147, $problem->{title});
+    }
 }
 
 sub problem_select_tags_frame
