@@ -276,8 +276,11 @@ sub problem_text_frame
     elsif (my $cpid = url_param('cpid')) {
         my $p = $dbh->selectrow_hashref(qq~
             SELECT CP.id AS cpid, CP.problem_id, CP.code,
-            CP.testsets, CP.points_testsets, CP.max_points, CP.tags, C.rules
-            FROM contests C INNER JOIN contest_problems CP ON CP.contest_id = C.id
+            CP.testsets, CP.points_testsets, CP.max_points, CP.tags, C.rules,
+            L.time_limit, L.memory_limit
+            FROM contests C
+                INNER JOIN contest_problems CP ON CP.contest_id = C.id
+                LEFT JOIN limits L ON L.id = CP.limits_id
             WHERE CP.id = ?~, undef,
             $cpid) or return;
         $show_points = $p->{rules};
@@ -288,7 +291,10 @@ sub problem_text_frame
         # Should either check for a static page or hide the problem even from jury.
         my $p = $dbh->selectall_arrayref(qq~
             SELECT id AS cpid, problem_id, code,
-            testsets, points_testsets, max_points, tags FROM contest_problems
+            testsets, points_testsets, max_points, tags,
+            L.time_limit, L.memory_limit
+            FROM contest_problems CP
+                LEFT JOIN limits L ON L.id = CP.limits_id
             WHERE contest_id = ? AND status < $cats::problem_st_hidden
             ORDER BY code~, { Slice => {} },
             url_param('cid') || $cid);
@@ -308,6 +314,9 @@ sub problem_text_frame
                 formal_input, json_data, max_points AS max_points_def
             FROM problems WHERE id = ?~, { Slice => {} },
             $problem->{problem_id}) or next;
+
+        for (@CATS::Request::limits_keys) { delete $p->{$_} if $problem->{$_} }
+
         $problem = { %$problem, %$p };
         my $lang = $problem->{lang};
 
