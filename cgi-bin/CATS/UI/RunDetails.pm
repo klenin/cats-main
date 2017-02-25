@@ -310,6 +310,8 @@ sub get_sources_info {
 
     my $pc_sql = $p{partial_checker} ? CATS::RankTable::partial_checker_sql() . ',' : '';
 
+    my $limits_str = join ', ', map { my $l = $_; join ', ', map { "$_.$l AS @{[$_]}_$l" } qw(lr lcp p) } @CATS::Request::limits_keys;
+
     # Source code can be in arbitary or broken encoding, we need to decode it explicitly.
     $dbh->{ib_enable_utf8} = 0;
     my $result = $dbh->selectall_arrayref(qq~
@@ -323,6 +325,8 @@ sub get_sources_info {
             DE.description AS de_name,
             A.team_name, A.last_ip,
             P.title AS problem_name, $pc_sql
+            $limits_str,
+            R.limits_id as limits_id,
             C.title AS contest_name,
             C.is_official,
             COALESCE(R.testsets, CP.testsets) AS testsets,
@@ -337,6 +341,8 @@ sub get_sources_info {
             INNER JOIN contests C ON C.id = R.contest_id
             INNER JOIN contest_problems CP ON CP.contest_id = C.id AND CP.problem_id = P.id
             INNER JOIN contest_accounts CA ON CA.contest_id = C.id AND CA.account_id = A.id
+            LEFT JOIN limits LCP ON LCP.id = CP.limits_id
+            LEFT JOIN limits LR ON LR.id = R.limits_id
         WHERE R.id IN ($all_req_id_list)~, { Slice => {} });
     $dbh->{ib_enable_utf8} = 1;  # Resume "normal" operation.
 
@@ -380,6 +386,8 @@ sub get_sources_info {
             }
         }
         $r->{status_name} = problem_status_names->{$r->{status}};
+
+        $r->{$_} = $r->{"lr_$_"} || $r->{"lcp_$_"} || $r->{"p_$_"} for @CATS::Request::limits_keys;
     }
 
     my %result_hash = map { $_->{req_id} => $_ } @$result;
@@ -416,6 +424,20 @@ sub build_title_suffix {
 }
 
 sub sources_info_param {
+    my $set_colspan = sub {
+        for (@{$_[0]}) {
+            my $r = $_;
+            $r->{colspan} = max(scalar @{$r->{element_sources}}, 1) + $is_jury * (@CATS::Request::limits_keys + 1);
+            $r->{colors} = {
+                map { $_ => $r->{"lr_$_"} ? "#5ad65a" : $r->{"lcp_$_"} ? "#ffeb0a" : undef }
+                @CATS::Request::limits_keys
+            };
+        }
+    };
+    $set_colspan->(@_);
+    for (@{$_[0]}) {
+        $set_colspan->($_->{element_sources});
+    }
     $t->param(
         title_suffix => build_title_suffix($_[0]),
         sources_info => $_[0],
@@ -435,6 +457,20 @@ sub run_details_frame {
     my $sources_info = get_sources_info(request_id => $rids, partial_checker => 1) or return;
     my @runs;
     my $contest = { id => 0 };
+
+    my $limits = { map { $_ => param($_) } grep param($_), @CATS::Request::limits_keys };
+    my $need_change_limits = param('set_limits');
+    my $need_clear_limits = $need_change_limits && !%$limits;
+    
+    if ($need_change_limits && !$need_clear_limits) {
+        my $filtered_limits = CATS::Request::filtrate_limits($limits);
+        my @invalid_limits_keys = grep !exists $filtered_limits->{$_}, keys %$limits;
+        if (@invalid_limits_keys) {
+            $need_change_limits = $need_clear_limits = 0;
+            msg(1144);
+        }
+    }
+
     for (@$sources_info) {
         if ($_->{is_jury}) {
             my $params = {
@@ -443,13 +479,27 @@ sub run_details_frame {
                 testsets => param('testsets') || undef,
                 judge_id => (param('set_judge') && param('judge') ? param('judge') : undef)
             };
+
             if (param('retest')) {
+                if ($need_clear_limits) {
+                    $params->{limits_id} = undef;
+                    msg(1150, $_->{req_id});
+                } elsif ($need_change_limits) {
+                    msg($_->{limits_id} ? 1149 : 1148, $_->{req_id});
+                    $params->{limits_id} = CATS::Request::set_limits($_->{limits_id}, $limits);
+                }
                 CATS::Request::enforce_state($_->{req_id}, $params);
+                CATS::Request::delete_limits($_->{limits_id}) if $need_clear_limits && $_->{limits_id};
                 $dbh->commit;
                 $_ = get_sources_info(request_id => $_->{req_id}, partial_checker => 1) or next;
             }
             if (param('clone') && $is_root) {
-                my $group_req_id = CATS::Request::clone($_->{req_id}, $cid, $uid);
+                if (!$need_clear_limits) {
+                    $params->{limits_id} = CATS::Request::clone_limits($_->{limits_id}, $limits);
+                } elsif ($need_change_limits) {
+                    $params->{limits_id} = CATS::Request::set_limits($_->{limits_id}, $limits);
+                }
+                my $group_req_id = CATS::Request::clone($_->{req_id}, $cid, $uid, $params);
                 return $group_req_id ? redirect(url_f('run_details', rid => $group_req_id, sid => $sid)) : undef;
                 $dbh->commit;
             }

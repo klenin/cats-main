@@ -1,0 +1,3 @@
+[% PROCESS "lang/$lang/limits_string.html.tti" %]
+
+[% MACRO limits_str(time_limit, memory_limit) BLOCK; "$capt.time: $time_limit $capt.s, $capt.memory: $memory_limit $capt.mb"; END %]

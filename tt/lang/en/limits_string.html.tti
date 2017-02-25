@@ -1,0 +1,8 @@
+[%
+  capt.import({
+    time => 'Time',
+    memory => 'Memory',
+    mb => 'Mb',
+    s => 's',
+  })
+%]

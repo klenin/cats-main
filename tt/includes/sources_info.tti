@@ -1,6 +1,8 @@
 [%- PROCESS "lang/$lang/sources_info.tti" -%]
 [%- PROCESS includes/submit_result.tti -%]
 [%- PROCESS includes/html.tti -%]
+[%- PROCESS includes/limits_string.tti -%]
+
 <script type="text/javascript">
 function send_message(href)
 {
@@ -20,19 +22,21 @@ function send_message(href)
   </tr>
 </table>
 
+[% IF message %]<i>[% message | html %]</i><br/>[% END %]
+
 [% BLOCK sources_info_row %]
 <tr>
   <th>ID</th>
   [% FOREACH si IN sources_info; IF si %]
-    <td [% IF si.element_sources.size > 1 %] colspan="[% si.element_sources.size  %]" [% END %]>[% si.req_id %]</td>
+    <td colspan="[% si.colspan %]">[% si.req_id %]</td>
   [% ELSE %]
-    <td rowspan="10"></td>
+    <td rowspan="11"></td>
   [% END; END %]
 </tr>
 <tr>
   <th>[% capt.team %]</th>
   [% FOREACH si IN sources_info; IF si %]
-    <td [% IF si.element_sources.size > 1 %] colspan="[% si.element_sources.size  %]" [% END %]><a href="[% si.href_stats %]">[% si.team_name %]</a>
+    <td colspan="[% si.colspan %]"><a href="[% si.href_stats %]">[% si.team_name %]</a>
     [% IF si.is_jury %]
       [<a href="[% si.href_whois %]" alt="[% si.last_ip %]" title="[% si.last_ip %]">[% si.last_ip_short %]</a>]
       [<a href="javascript:send_message('[% si.href_send_message %]')">[% capt.message %]</a>]
@@ -43,7 +47,7 @@ function send_message(href)
 <tr>
   <th>[% capt.time %]</th>
   [% FOREACH si IN sources_info; IF si %]
-    <td [% IF si.element_sources %] colspan="[% si.element_sources.size  %]" [% END %]>
+    <td colspan="[% si.colspan %]">
       [% IF si.href_prev_attempt %] <a href="[% si.href_prev_attempt %]">[% si.prev_attempt_time %]&lt;&lt;</a>[% END %]
       [% si.submit_time %]
       [% IF si.href_next_attempt %] <a href="[% si.href_next_attempt %]">[% si.next_attempt_time %]&gt;&gt;</a>[% END %]
@@ -53,7 +57,7 @@ function send_message(href)
 <tr>
   <th>[% capt.processing %]</th>
   [% FOREACH si IN sources_info; IF si %]
-    <td [% IF si.element_sources.size > 1 %] colspan="[% si.element_sources.size %]" [% END %]>
+    <td colspan="[% si.colspan %]">
       [% IF si.is_jury; si.judge_name %]: [% END %]
       [% si.test_time_short %] ... [% si.result_time_short %]
     </td>
@@ -62,48 +66,68 @@ function send_message(href)
 <tr>
   <th>[% capt.file %]</th>
   [% FOREACH si IN sources_info; IF si %]
-    <td [% IF si.element_sources.size > 1 %] colspan="[% si.element_sources.size %]" [% END %]>[% si.file_name %] ([% si.de_name %])</td>
+    <td colspan="[% si.colspan %]">[% si.file_name %] ([% si.de_name %])</td>
   [% END; END %]
 </tr>
 <tr>
   <th>[% capt.contest %]</th>
   [% FOREACH si IN sources_info; IF si %]
-    <td [% IF si.element_sources.size > 1 %] colspan="[% si.element_sources.size %]" [% END %]>[% maybe_href(si.href_contest, si.contest_name) %]</td>
+    <td colspan="[% si.colspan %]"[% maybe_href(si.href_contest, si.contest_name) %]</td>
   [% END; END %]
 </tr>
 <tr>
   <th>[% capt.problem %]</th>
   [% FOREACH si IN sources_info; IF si %]
-    <td [% IF si.element_sources.size > 1 %] colspan="[% si.element_sources.size %]" [% END %]>
+    <td colspan="[% si.colspan %]"
       [% si.code; ': ' IF si.code; maybe_href(si.href_problem, si.problem_name) %][% IF si.is_jury %] ([% si.status_name %])[% END %]
     </td>
   [% END; END %]
 </tr>
+[% IF si.is_jury %]<form action="[% si.href_run_details %]" method="POST" class="embedded">[% END %]
 <tr>
   <th>[% capt.testset %]</th>
   [% FOREACH si IN sources_info; IF si %]
-    <td [% IF si.element_sources.size > 1 %] colspan="[% si.element_sources.size  %]" [% END %]>
+    <td [% IF si.is_jury %] colspan="3" [% END %]>
       [% IF si.is_jury %]
-        <form action="[% si.href_run_details %]" method="POST" class="embedded">
         <input type="text" name="testsets" value="[% si.testsets %]" />
         <input type="checkbox" name="set_judge" value="1" />[% select('judge', si.judges) %]
-        <input type="submit" name="retest" value="[% capt.retest %]" class="button" />
-        <input type="submit" name="clone" value="[% capt.clone %]" class="button" />
-        </form>
+    </td><td rowspan="2">
+        <p><input type="submit" name="retest" value="[% capt.retest %]" class="button" /></p>
+        <p><input type="submit" name="clone" value="[% capt.clone %]" class="button" /></p>
       [% ELSE; si.testsets; END %]
+    </td>
+  [% END; END %]
+</tr>
+<tr>
+  <th>[% capt.limits %]</th>
+  [% FOREACH si IN sources_info; IF si %]
+      [% IF si.is_jury %]
+        <td [% IF si.colors.time_limit %] bgcolor="[% si.colors.time_limit %]" [% END %]>
+          [% capt.time %] <input type="text" name="time_limit" value="[% si.time_limit %]" size="3"/> [% capt.s %]
+        </td>
+        <td [% IF si.colors.memory_limit %] bgcolor="[% si.colors.memory_limit %]" [% END %]>
+          [% capt.memory %] <input type="text" name="memory_limit" value="[% si.memory_limit %]" size="3"/> [% capt.mb %]
+        </td>
+        <td>
+          <input type="checkbox" name="set_limits" value="1" />
+        </form>
+      [% ELSE %]
+        <td>
+          [% limits_str(si.time_limit, si.memory_limit) %]
+      [% END %]
     </td>
   [% END; END %]
 </tr>
 <tr>
   <th>[% capt.status %]<sup style="font-weight: normal;">&nbsp;[<a href="docs/run_results.html">?</a>]</span></th>
   [% FOREACH si IN sources_info; IF si %]
-    <td [% IF si.element_sources.size > 1 %] colspan="[% si.element_sources.size  %]" [% END %]>[% submit_result(si); " ($si.points)" IF si.points %]</td>
+    <td colspan="[% si.colspan %]">[% submit_result(si); " ($si.points)" IF si.points %]</td>
   [% END; END %]
 </tr>
 <tr>
   <th>[% capt.refs %]</th>
   [% FOREACH si IN sources_info; IF si %]
-    <td [% IF si.element_sources.size > 1 %] colspan="[% si.element_sources.size  %]" [% END %]>
+    <td colspan="[% si.colspan %]">
       <a href="[% si.href_view_source %]" class="[% si.href_class_view_source %]">[% capt.source %]</a> |
       <a href="[% si.href_download_source %]" class="[% si.href_class_download_source %]">[% capt.download %]</a> |
       <a href="[% si.href_run_details %]" class="[% si.href_class_run_details %]">[% capt.run_details %]</a>

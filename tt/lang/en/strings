@@ -207,3 +207,6 @@
 1145 "Limits overridden for problem '%s'."
 1146 "Overridden limits changed for problem '%s'."
 1147 "Overridden limits deleted for problem '%s'."
+1148 "Limits overridden for request: %d."
+1149 "Overridden limits changed for request: %d."
+1150 "Overridden limits deleted for request: %d."
