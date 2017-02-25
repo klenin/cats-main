@@ -7,6 +7,7 @@ use JSON::XS;
 
 use CATS::Constants;
 use CATS::DB;
+use CATS::JudgeDB;
 use CATS::Misc qw($sid);
 use CATS::Testset;
 use CATS::Web;
@@ -18,111 +19,54 @@ sub print_json {
 }
 
 sub bad_judge {
-    $sid && $dbh->selectrow_array(q~
-        SELECT J.id FROM judges J LEFT JOIN accounts A
-        ON A.id = J.account_id WHERE A.sid = ?~, undef,
-        $sid) ? 0 : print_json({ error => 'bad sid' });
+    $sid && CATS::JudgeDB::get_judge_id($sid) ? 0 : print_json({ error => 'bad sid' });
 }
 
 sub get_judge_id {
-    my $id = $sid && $dbh->selectrow_array(q~
-        SELECT J.id FROM judges J LEFT JOIN accounts A
-        ON A.id = J.account_id WHERE A.sid = ?~, undef,
-        $sid);
+    my $id = $sid && CATS::JudgeDB::get_judge_id($sid);
     print_json($id ? { id => $id } : { error => 'bad sid' });
 }
 
 sub get_DEs {
     bad_judge and return -1;
 
-    my $db_de = $dbh->selectall_arrayref(q~
-        SELECT id, code, description, memory_handicap FROM default_de~, { Slice => {} });
-
-    print_json({ db_de => $db_de });
+    print_json({ db_de => CATS::JudgeDB::get_DEs() });
 }
 
 sub get_problem {
     bad_judge and return -1;
     my ($p) = @_;
 
-    my $problem = $dbh->selectrow_hashref(q~
-        SELECT
-            id, title, upload_date, time_limit, memory_limit,
-            input_file, output_file, std_checker, contest_id, formal_input,
-            run_method
-        FROM problems WHERE id = ?~, { Slice => {}, ib_timestampformat => '%d-%m-%Y %H:%M:%S' }, $p->{pid});
-    $problem->{run_method} //= $cats::rm_default;
-
-    print_json({ problem => $problem });
+    print_json({ problem => CATS::JudgeDB::get_problem($p->{pid}) });
 }
 
 sub get_problem_sources {
     bad_judge and return -1;
     my ($p) = @_;
 
-    my $problem_sources = $dbh->selectall_arrayref(q~
-        SELECT ps.*, dd.code FROM problem_sources ps
-            INNER JOIN default_de dd ON dd.id = ps.de_id
-        WHERE ps.problem_id = ? ORDER BY ps.id~, { Slice => {} },
-        $p->{pid});
-
-    my $imported = $dbh->selectall_arrayref(q~
-        SELECT ps.*, dd.code FROM problem_sources ps
-            INNER JOIN default_de dd ON dd.id = ps.de_id
-            INNER JOIN problem_sources_import psi ON ps.guid = psi.guid
-        WHERE psi.problem_id = ? ORDER BY ps.id~, { Slice => {} },
-        $p->{pid});
-    $_->{is_imported} = 1 for @$imported;
-
-    print_json({ sources => [ @$problem_sources, @$imported ] });
+    print_json({ sources => CATS::JudgeDB::get_problem_sources($p->{pid}) });
 }
 
 sub get_problem_tests {
     bad_judge and return -1;
     my ($p) = @_;
 
-    my $tests = $dbh->selectall_arrayref(q~
-        SELECT generator_id, input_validator_id, rank, param, std_solution_id, in_file, out_file, gen_group
-        FROM tests WHERE problem_id = ? ORDER BY rank~, { Slice => {} },
-        $p->{pid});
-
-    print_json({ tests => $tests });
+    print_json({ tests => CATS::JudgeDB::get_problem_tests($p->{pid}) });
 }
 
 sub is_problem_uptodate {
     bad_judge and return -1;
     my ($p) = @_;
 
-    my $ok = scalar $dbh->selectrow_array(q~
-        SELECT 1 FROM problems
-        WHERE id = ? AND upload_date - 1.0000000000 / 24 / 60 / 60 <= ?~, undef,
-        $p->{pid}, $p->{date});
-
-    print_json({ uptodate => $ok });
+    print_json({ uptodate => CATS::JudgeDB::is_problem_uptodate($p->{pid}, $p->{date}) });
 }
 
 sub save_log_dump {
     bad_judge and return -1;
     my ($p) = @_;
-    $p->{req_id} or return print_json({ error => 'No req_id' });
 
-    my $log_id = $dbh->selectrow_array(q~
-        SELECT id FROM log_dumps WHERE req_id = ?~, undef,
-        $p->{req_id});
-    if (defined $log_id) {
-        my $c = $dbh->prepare(q~UPDATE log_dumps SET dump = ? WHERE id = ?~);
-        $c->bind_param(1, $p->{dump}, { ora_type => 113 });
-        $c->bind_param(2, $log_id);
-        $c->execute;
-    }
-    else {
-        my $c = $dbh->prepare(q~INSERT INTO log_dumps (id, dump, req_id) VALUES (?, ?, ?)~);
-        $c->bind_param(1, new_id);
-        $c->bind_param(2, $p->{dump}, { ora_type => 113 });
-        $c->bind_param(3, $p->{req_id});
-        $c->execute;
-    }
-    $dbh->commit;
+    $p->{req_id} or return print_json({ error => 'No req_id' });
+    CATS::JudgeDB::save_log_dump($p->{req_id}, $p->{dump});
 
     print_json({ ok => 1 });
 }
@@ -131,21 +75,14 @@ sub set_request_state {
     bad_judge and return -1;
     my ($p) = @_;
 
-    my ($jid) = $dbh->selectrow_array(q~
-        SELECT J.id FROM judges J INNER JOIN accounts A ON J.account_id = A.id WHERE A.sid = ?~, undef,
-        $sid);
-
-    $dbh->do(qq~
-        UPDATE reqs SET state = ?, failed_test = ?, result_time = CURRENT_TIMESTAMP
-        WHERE id = ? AND judge_id = ?~, {},
-        $p->{state}, $p->{failed_test}, $p->{req_id}, $jid);
-    if ($p->{state} == $cats::st_unhandled_error && defined $p->{problem_id} && defined $p->{contest_id}) {
-        $dbh->do(qq~
-            UPDATE contest_problems SET status = ?
-            WHERE problem_id = ? AND contest_id = ?~, {},
-            $cats::problem_st_suspended, $p->{problem_id}, $p->{contest_id});
-    }
-    $dbh->commit;
+    CATS::JudgeDB::set_request_state({
+        jid         => CATS::JudgeDB::get_judge_id($sid),
+        req_id      => $p->{req_id},
+        state       => $p->{state},
+        contest_id  => $p->{contest_id},
+        problem_id  => $p->{problem_id},
+        failed_test => $p->{failed_test},
+    });
 
     print_json({ ok => 1 });
 }
@@ -155,86 +92,19 @@ sub select_request {
     my ($p) = @_;
     $p->{supported_DEs} or return print_json({ error => 'bad request' });
 
-    my $response = { request => undef };
-
+    my $response = {};
     ($response->{was_pinged}, $response->{lock_counter}, my $jid, my $time_since_alive) = $dbh->selectrow_array(q~
         SELECT 1 - J.is_alive, J.lock_counter, J.id, CURRENT_TIMESTAMP - J.alive_date
         FROM judges J INNER JOIN accounts A ON J.account_id = A.id WHERE A.sid = ?~, undef,
         $sid);
 
-    $dbh->do(q~
-        UPDATE judges SET is_alive = 1, alive_date = CURRENT_TIMESTAMP WHERE id = ?~, undef,
-        $jid) if $response->{was_pinged} || $time_since_alive > $CATS::Config::judge_alive_interval / 24;
-    $dbh->commit;
-
-    return print_json($response) if $response->{lock_counter};
-
-    my $req_id = $dbh->selectrow_hashref(qq~
-        SELECT R.id
-        FROM reqs R
-        INNER JOIN contest_accounts CA ON CA.account_id = R.account_id AND CA.contest_id = R.contest_id
-        LEFT JOIN contest_problems CP ON CP.contest_id = R.contest_id AND CP.problem_id = R.problem_id
-        WHERE NOT EXISTS (
-            SELECT 1
-            FROM sources S
-            INNER JOIN default_de DE ON DE.id = S.de_id
-            WHERE (S.req_id = R.id OR EXISTS (
-                SELECT 1 FROM
-                req_groups RG
-                WHERE RG.group_id = R.id AND RG.element_id = S.req_id)
-            ) AND DE.code NOT IN ($p->{supported_DEs})
-        )
-        AND R.state = $cats::st_not_processed
-        AND (CP.status <= $cats::problem_st_ready OR CA.is_jury = 1)
-        AND (judge_id IS NULL OR judge_id = ?) ROWS 1~, undef,
-        $jid) or return print_json($response);
-
-    my $element_req_ids = $dbh->selectcol_arrayref(q~
-        SELECT RG.element_id as id
-        FROM req_groups RG
-        WHERE RG.group_id = ?~, { Slice => {} }, $req_id->{id});
-
-    my $req_id_list = join ', ', ($req_id->{id}, @$element_req_ids);
-
-    my $sources_info = $dbh->selectall_arrayref(qq~
-        SELECT
-            R.id, R.problem_id, R.contest_id, R.state, CA.is_jury, C.run_all_tests,
-            CP.status, S.fname, S.src, S.de_id
-        FROM reqs R
-        INNER JOIN contest_accounts CA ON CA.account_id = R.account_id AND CA.contest_id = R.contest_id
-        INNER JOIN contests C ON C.id = R.contest_id
-        LEFT JOIN sources S ON S.req_id = R.id
-        LEFT JOIN default_de D ON D.id = S.de_id
-        LEFT JOIN contest_problems CP ON CP.contest_id = R.contest_id AND CP.problem_id = R.problem_id
-        WHERE R.id IN ($req_id_list)~, { Slice => {} }
-    ) or return print_json({ error => 'No requests' });
-
-    my %sources_info_hash = map { $_->{id} => $_ } @$sources_info;
-
-    my $req = $sources_info_hash{$req_id->{id}};
-
-    $req->{element_reqs} = [];
-
-    for my $element_req_id (@$element_req_ids) {
-        push @{$req->{element_reqs}}, $sources_info_hash{$element_req_id};
-    }
-
-    if (@{$req->{element_reqs}} == 1) {
-        my $element_req = $req->{element_reqs}->[0];
-        $req->{problem_id} = $element_req->{problem_id};
-        $req->{fname} = $element_req->{fname};
-        $req->{src} = $element_req->{src};
-        $req->{de_id} = $element_req->{de_id};
-    } elsif (@{$req->{element_reqs}} > 1) {
-        return print_json({ error => 'multiple request elements are not supported at this time' });
-    }
-
-    $response->{request} = $req;
-
-    $dbh->do(q~
-        UPDATE reqs SET state = ?, judge_id = ? WHERE id = ?~, undef,
-        $cats::st_install_processing, $jid, $response->{request}->{id});
-    $dbh->commit;
+    $response->{request} = CATS::JudgeDB::select_request({
+        jid              => $jid,
+        was_pinged       => $response->{was_pinged},
+        lock_counter     => $response->{lock_counter},
+        time_since_alive => $time_since_alive,
+        supported_DEs    => $p->{supported_DEs},
+    });
 
     print_json($response);
 }
@@ -243,8 +113,7 @@ sub delete_req_details {
     bad_judge and return -1;
     my ($p) = @_;
 
-    $dbh->do(q~DELETE FROM req_details WHERE req_id = ?~, undef, $p->{req_id});
-    $dbh->commit;
+    CATS::JudgeDB::delete_req_details($p->{req_id});
 
     print_json({ ok => 1 });
 }
@@ -257,15 +126,7 @@ sub insert_req_details {
 
     my $params = decode_json($p->{params});
     my %filtered_params = map { exists $params->{$_} ? ($_ => $params->{$_}) : () } @req_details_fields;
-
-    $dbh->do(
-        sprintf(
-            q~INSERT INTO req_details (%s) VALUES (%s)~,
-            join(', ', keys %filtered_params), join(', ', ('?') x keys %filtered_params)
-        ),
-        undef, values %filtered_params
-    );
-    $dbh->commit;
+    CATS::JudgeDB::insert_req_details(%filtered_params);
 
     print_json({ ok => 1 });
 }
