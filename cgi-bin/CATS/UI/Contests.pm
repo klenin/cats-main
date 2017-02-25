@@ -251,6 +251,13 @@ sub authenticated_contests_view {
             $p->{has_problem} = undef;
         }
     }
+    $p->{listview}->define_db_searches({
+        (map { $_ => "C.$_" } contest_fields()),
+        is_virtual => 'CA.is_virtual',
+        is_jury => 'CA.is_jury',
+        is_hidden => 'C.is_hidden',
+        'CA.is_hidden' => 'CA.is_hidden',
+    });
     my $sth = $dbh->prepare(qq~
         SELECT
             $cf, CA.is_virtual, CA.is_jury, CA.id AS registered, C.is_hidden
@@ -261,8 +268,9 @@ sub authenticated_contests_view {
             ($p->{has_problem} ? q~AND EXISTS (
                 SELECT 1 FROM contest_problems CP
                 WHERE CP.contest_id = C.id AND CP.problem_id = ?) ~ : contests_submenu_filter()) .
+            $p->{listview}->maybe_where_cond .
             $p->{listview}->order_by);
-    $sth->execute($uid, $p->{has_problem} ? $p->{has_problem} : ());
+    $sth->execute($uid, $p->{has_problem} ? $p->{has_problem} : (), $p->{listview}->where_params);
 
     my $fetch_contest = sub {
         my $c = $_[0]->fetchrow_hashref or return;
@@ -284,6 +292,7 @@ sub authenticated_contests_view {
 sub anonymous_contests_view {
     my ($p) = @_;
     my $cf = join ', ', map "C.$_", contest_fields();
+    $p->{listview}->define_db_searches([ contest_fields() ]);
     my $sth = $dbh->prepare(qq~
         SELECT $cf FROM contests C WHERE COALESCE(C.is_hidden, 0) = 0 ~ .
         contests_submenu_filter() . $p->{listview}->order_by

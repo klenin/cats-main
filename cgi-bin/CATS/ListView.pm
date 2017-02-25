@@ -156,7 +156,8 @@ sub make_where {
     my %result;
     for my $q (@{$self->{search}}) {
         my ($k, $v) = @$q;
-        push @{$result{$k} //= []}, $v if $self->{db_searches}->{$k};
+        my $f = $self->{db_searches}->{$k} or next;
+        push @{$result{$f} //= []}, $v;
     }
     \%result;
 }
@@ -194,7 +195,15 @@ sub sort_in_memory {
 sub define_db_searches {
     my ($self, $db_searches) = @_;
     if (ref $db_searches eq 'ARRAY') {
-        $self->{db_searches}->{$_} = 1 for @$db_searches;
+        for (@$db_searches) {
+            $self->{db_searches}->{m/\.(.+)$/ ? $1 : $_} = $_;
+        }
+    }
+    elsif (ref $db_searches eq 'HASH') {
+        for (keys %$db_searches) {
+            $self->{db_searches}->{$_} and die;
+            $self->{db_searches}->{$_} = $db_searches->{$_};
+        }
     }
     else {
         die;
