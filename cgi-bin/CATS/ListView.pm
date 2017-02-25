@@ -7,6 +7,7 @@ use Encode ();
 use List::Util qw(first min max);
 
 use CATS::Misc qw(
+    $is_root
     $t
     $settings
     init_template
@@ -95,7 +96,9 @@ sub attach {
         $_ = qr/$s/i;
     }
 
+    my $row_keys;
     ROWS: while (my %row = $fetch_row->($sth)) {
+        $row_keys //= [ sort grep !$self->{db_searches}->{$_} && !/^href_/, keys %row ];
         last if $row_count > $max_fetch_row_count || $page_count > $$page + $visible_pages;
         for my $key (keys %mask) {
             defined first { Encode::decode_utf8($_ // '') =~ $mask{$key} }
@@ -131,6 +134,15 @@ sub attach {
             [ map { value => $_, text => $_, selected => $s->{rows} == $_ }, @display_rows ],
         $self->{array_name} => \@data,
     );
+    if ($is_root) {
+        my @s = (map([ $_, 0 ], sort keys %{$self->{db_searches}}), map [ $_, 1 ], @$row_keys);
+        my $col_count = 4;
+        my $row_count = int((@s + $col_count - 1) / $col_count);
+        my $rows;
+        my $i = 0;
+        push @{$rows->[$i++ % $row_count]}, $_ for @s;
+        $t->param(search_hints => $rows);
+    }
 
     # Suppose that attach_listview call comes last, so we modify settings in-place.
     defined $s->{$_} && $s->{$_} ne '' or delete $s->{$_} for keys %$s;

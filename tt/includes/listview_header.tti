@@ -1,10 +1,24 @@
 [%- PROCESS "lang/$lang/listview_header.tti" -%]
 [% PROCESS includes/html.tti %]
+[%- USE Javascript -%]
 <table class="listview_header" cellpadding="0">
 <tr>
 <td align="left">
   <input type="submit" value="[% capt.search %]" name="do_search" class="button" style="min-width: 50px; width: 15%;">
-  <input type="text" name="search" value="[% search %]" style="min-width: 50px; width: 80%;" maxlength="100" class="bordered">
+  <input type="text" name="search" id="search" value="[% search %]" style="min-width: 50px; width: 80%;" maxlength="100" class="bordered">
+  [% IF search_hints -%]
+  <a href="#" class="search_hint" onclick="toggle_search_hints();">?</a>
+  <div id="search_hint" class="bordered search_hint">
+    <table>
+    [% FOREACH row IN search_hints %]
+      <tr>
+      [% FOREACH col IN row %]
+        <td class="sh[% col.1 %]"><a href="#" onclick="activate_search_hint(this);">[% col.0 | html %]</a></td>
+      [% END %]
+    [% END %]
+    </table>
+  </div>
+  [%- END %]
 </td>
 <td align="center">
   [% content %]
@@ -15,3 +29,17 @@
 </td>
 </tr>
 </table>
+
+<script>
+function toggle_search_hints() {
+  var s = document.getElementById('search_hint');
+  s.style.display = s.style.display === 'block' ? 'none' : 'block';
+}
+function activate_search_hint(a) {
+  var i = document.getElementById('search');
+  if (i.value) i.value += ',';
+  i.value += a.text + '=';
+  var s = document.getElementById('search_hint');
+  s.style.display = 'none';
+}
+</script>
