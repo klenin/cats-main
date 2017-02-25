@@ -100,6 +100,15 @@ CREATE TABLE contest_accounts (
 );
 
 
+CREATE TABLE limits (
+    id              INTEGER NOT NULL PRIMARY KEY,
+    time_limit      FLOAT,
+    memory_limit    INTEGER,
+    process_limit   INTEGER,
+    write_limit     INTEGER
+);
+
+
 CREATE TABLE problems (
     id              INTEGER NOT NULL PRIMARY KEY,
     contest_id      INTEGER NOT NULL REFERENCES contests(id) ON DELETE CASCADE,
@@ -143,6 +152,7 @@ CREATE TABLE contest_problems (
     points_testsets VARCHAR(200),
     max_points      INTEGER,
     tags            VARCHAR(200),
+    limits_id       INTEGER REFERENCES limits(id),
     UNIQUE (problem_id, contest_id)
 );
 ALTER TABLE contest_problems
@@ -279,7 +289,8 @@ CREATE TABLE reqs (
     judge_id    INTEGER REFERENCES judges(id) ON DELETE SET NULL,
     received    INTEGER DEFAULT 0 CHECK (received IN (0, 1)),
     points      INTEGER,
-    testsets    VARCHAR(200)
+    testsets    VARCHAR(200),
+    limits_id   INTEGER REFERENCES limits(id)
 );
 CREATE DESCENDING INDEX idx_reqs_submit_time ON reqs(submit_time);
 
