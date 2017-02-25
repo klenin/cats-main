@@ -7,8 +7,65 @@ use CATS::Constants;
 use CATS::DB;
 use CATS::IP;
 
+our @limits_keys = qw(time_limit memory_limit);
+
+# Params: limits: { time_limit, memory_limit }
+sub filtrate_limits {
+    my ($limits) = @_;
+
+    my %validators = (
+        time_limit => sub { $_[0] =~ m/^\+?([0-9]*[.])?[0-9]+$/ },
+        memory_limit => sub { $_[0] =~ m/^\+?\d+$/ },
+    );
+
+    return { map { $_ => $limits->{$_} } grep
+        defined $limits->{$_} && (!defined $validators{$_} || $validators{$_}->($limits->{$_})), @limits_keys };
+}
+
+# Params: limits_id = new_id, limits: { time_limit, memory_limit }
+sub set_limits {
+    my ($limits_id, $limits) = @_;
+
+    %$limits or return;
+
+    my ($stmt, @bind) = $limits_id ?
+        $sql->update('limits', { map { $_ => $limits->{$_} } @limits_keys }, { id => $limits_id })
+    : $sql->insert('limits', { id => ($limits_id = new_id), %$limits });
+
+    $dbh->do($stmt, undef, @bind);
+
+    $limits_id;
+}
+
+sub clone_limits {
+    my ($limits_id) = @_;
+
+    $limits_id or die;
+
+    my $cloned_limits_id = new_id;
+    my $limits_keys_list = join ', ', @limits_keys;
+
+    $dbh->do(qq~
+        INSERT INTO LIMITS ( id, $limits_keys_list )
+        SELECT ?, $limits_keys_list FROM LIMITS WHERE id = ?~, undef,
+        $cloned_limits_id, $limits_id
+    );
+
+    $cloned_limits_id
+}
+
+sub delete_limits {
+    my ($limits_id) = @_;
+
+    $limits_id or die;
+
+    $dbh->do(q~
+        DELETE FROM limits WHERE id = ?~, undef,
+        $limits_id);
+}
+
 # Set request state manually. May be also used for retesting.
-# Params: request_id, fields: { state (required), failed_test, testsets, points, judge_id }
+# Params: request_id, fields: { state (required), failed_test, testsets, points, judge_id, limits_id }
 sub enforce_state {
     my ($request_id, $fields) = @_;
     $request_id && defined $fields->{state} or die;
@@ -27,7 +84,7 @@ sub enforce_state {
 }
 
 # Params: problem_id (required), contest_id (required), submit_uid (required)
-#         fields: { state = $cats::st_not_processed, failed_test, testsets, points, judge_id }
+#         fields: { state = $cats::st_not_processed, failed_test, testsets, points, judge_id, limits_id }
 sub insert {
     my ($problem_id, $contest_id, $submit_uid, $fields) = @_;
 
@@ -60,7 +117,7 @@ sub insert {
 }
 
 # Params: request_id (required), contest_id (required), submit_uid (required)
-#         fields: { state = $cats::st_not_processed, failed_test, testsets, points, judge_id }
+#         fields: { state = $cats::st_not_processed, failed_test, testsets, points, judge_id, limits_id }
 sub clone {
     my ($request_id, $contest_id, $submit_uid, $fields) = @_;
 
