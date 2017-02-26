@@ -270,6 +270,30 @@ sub console_content
         SELECT id, description FROM default_de~, 'id') : {};
     my $pf = param('pf') || '';
     my $c;
+
+    $lv->define_db_searches([qw(
+        R.submit_time
+        R.id
+        R.state
+        R.failed_test
+        R.contest_id
+        R.problem_id
+        R.account_id
+        R.points
+        P.title
+        A.team_name
+        A.city
+        CA.is_jury
+    )]);
+    my $de_select = q~
+        (SELECT %s FROM sources S INNER JOIN default_de DE ON DE.id = S.de_id WHERE S.req_id = R.id)~;
+    $lv->define_db_searches({
+        de_code => sprintf($de_select, 'DE.code'),
+        de_name => sprintf($de_select, 'DE.description'),
+    });
+
+    my $searches_filtger = $lv->maybe_where_cond;
+
     if ($is_jury)
     {
         my $jury_runs_filter = $is_root ? '' : ' AND C.id = ?';
@@ -282,7 +306,7 @@ sub console_content
             SELECT
                 $console_select{run}
                 WHERE R.submit_time > CURRENT_TIMESTAMP - $day_count
-                $problem_filter$jury_runs_filter$events_filter$runs_filter
+                $problem_filter$jury_runs_filter$events_filter$runs_filter$searches_filtger
             UNION
             SELECT
                 $console_select{question}
@@ -302,7 +326,7 @@ sub console_content
             ORDER BY 2 DESC~);
         $c->execute(
             @pf_params,
-            @cid, @events_filter_params,
+            @cid, @events_filter_params, $lv->where_params,
             @cid, @events_filter_params,
             @cid, @events_filter_params);
     }
@@ -314,7 +338,7 @@ sub console_content
                 WHERE (R.submit_time > CURRENT_TIMESTAMP - $day_count) AND
                     C.id=? AND CA.is_hidden=0 AND
                     (A.id=? OR $submit_time_filter)
-                $events_filter$runs_filter
+                $events_filter$runs_filter$searches_filtger
             UNION
             SELECT
                 $console_select{question}
@@ -331,7 +355,7 @@ sub console_content
             $contest_dates
             ORDER BY 2 DESC~);
         $c->execute(
-            $cid, $uid, @events_filter_params,
+            $cid, $uid, @events_filter_params, $lv->where_params,
             $cid, $uid,
             $cid, $uid,
         );
@@ -344,11 +368,11 @@ sub console_content
                 WHERE (R.submit_time > CURRENT_TIMESTAMP - $day_count) AND
                     R.contest_id=? AND CA.is_hidden=0 AND
                     ($submit_time_filter)
-                    $events_filter$runs_filter
+                    $events_filter$runs_filter$searches_filtger
             $broadcast
             $contest_dates
             ORDER BY 2 DESC~);
-        $c->execute($cid, @events_filter_params);
+        $c->execute($cid, @events_filter_params, $lv->where_params);
     }
 
     my $fetch_console_record = sub($)

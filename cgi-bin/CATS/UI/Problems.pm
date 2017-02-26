@@ -291,6 +291,8 @@ sub problems_all_frame {
         { caption => res_str(604), order_by => '4', width => '10%' },
         #{ caption => res_str(605), order_by => '5', width => '10%' },
     ]);
+    $lv->define_db_searches([ qw(P.id P.title P.contest_id) ]);
+    $lv->define_db_searches({ contest_title => 'C.title'});
 
     my $c = $dbh->prepare(qq~
         SELECT P.id, P.title, C.title, C.id,
@@ -302,19 +304,20 @@ sub problems_all_frame {
             ),
             (SELECT COUNT(*) FROM contest_problems CP WHERE CP.problem_id = P.id AND CP.contest_id = ?)
         FROM problems P INNER JOIN contests C ON C.id = P.contest_id
-        WHERE $where_cond ~ . $lv->order_by);
-    $c->execute($cid, @{$where->{params}});
+        WHERE $where_cond ~ . $lv->maybe_where_cond . $lv->order_by);
+    $c->execute($cid, @{$where->{params}}, $lv->where_params);
 
     my $fetch_record = sub($)
     {
         my ($pid, $problem_name, $contest_name, $contest_id, $counts, $linked) = $_[0]->fetchrow_array
             or return ();
+        my %pp = (sid => $sid, cid => $contest_id, pid => $pid);
         return (
             href_view_problem => url_f('problem_text', pid => $pid),
             href_view_contest => url_function('problems', sid => $sid, cid => $contest_id),
             # Jury can download package for any problem after linking, but not before.
-            ($is_root ? (href_download => url_function('problem_download', sid => $sid, cid => $contest_id, pid => $pid)) : ()),
-            ($is_jury ? (href_problem_history => url_f('problem_history', pid => $pid)) : ()),
+            ($is_root ? (href_download => url_function('problem_download', %pp)) : ()),
+            ($is_jury ? (href_problem_history => url_function('problem_history', %pp)) : ()),
             linked => $linked || !$link,
             problem_id => $pid,
             problem_name => $problem_name,
@@ -428,6 +431,8 @@ sub problems_retest_frame
         { caption => res_str(604), order_by => '8', width => '10%' }, # ok/wa/tl
     );
     $lv->define_columns(url_f('problems_retest'), 0, 0, [ @cols ]);
+    $lv->define_db_searches([ qw(P.id P.title CP.code CP.testsets CP.points_testsets CP.status) ]);
+
     my $reqs_count_sql = 'SELECT COUNT(*) FROM reqs D WHERE D.problem_id = P.id AND D.state =';
     my $sth = $dbh->prepare(qq~
         SELECT
@@ -440,8 +445,8 @@ sub problems_retest_frame
                 WHERE R.contest_id = CP.contest_id AND R.problem_id = CP.problem_id AND
                 R.state < $cats::request_processed) AS in_queue
         FROM problems P INNER JOIN contest_problems CP ON CP.problem_id = P.id
-        WHERE CP.contest_id = ?~ . $lv->order_by);
-    $sth->execute($cid);
+        WHERE CP.contest_id = ?~ . $lv->maybe_where_cond . $lv->order_by);
+    $sth->execute($cid, $lv->where_params);
 
     my $total_queue = 0;
     my $fetch_record = sub($)
@@ -534,6 +539,10 @@ sub problems_frame {
         { caption => res_str(604), order_by => '6', width => '8%' }, # ok/wa/tl
     );
     $lv->define_columns(url_f('problems'), 0, 0, \@cols);
+    $lv->define_db_searches([ qw(
+        P.id P.title P.upload_date P.lang P.memory_limit P.time_limit
+        CP.code CP.testsets CP.tags CP.points_testsets CP.status
+    ) ]);
 
     my $reqs_count_sql = 'SELECT COUNT(*) FROM reqs D WHERE D.problem_id = P.id AND D.state =';
     my $account_condition = $contest->is_practice ? '' : ' AND D.account_id = ?';
@@ -559,17 +568,16 @@ sub problems_frame {
             CP.max_points, P.repo, CP.tags, P.statement_url, P.explanation_url
         FROM problems P, contest_problems CP, contests OC
         WHERE CP.problem_id = P.id AND OC.id = P.contest_id AND CP.contest_id = ?$hidden_problems
-        ~ . $lv->order_by
+        ~ . $lv->maybe_where_cond . $lv->order_by
     );
     if ($contest->is_practice)
     {
-        $sth->execute($cid);
+        $sth->execute($cid, $lv->where_params);
     }
     else
     {
         my $aid = $uid || 0; # in a case of anonymous user
-        # 'ORDER BY subselect' requires re-specifying the parameter
-        $sth->execute($aid, $aid, $aid, $cid); #, (order_by =~ /^ORDER BY\s+(5|6|7)\s+/ ? ($aid) : ()));
+        $sth->execute($aid, $aid, $aid, $cid, $lv->where_params);
     }
 
     my @status_list;
