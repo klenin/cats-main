@@ -21,6 +21,7 @@ sub import_sources_frame
         { caption => res_str(641), order_by => '4', width => '30%' },
         { caption => res_str(643), order_by => '5', width => '10%' },
     ]);
+    $lv->define_db_searches([ qw(PS.id guid stype code fname problem_id title contest_id) ]);
 
     my $c = $dbh->prepare(q~
         SELECT ps.id, ps.guid, ps.stype, de.code,
@@ -29,8 +30,8 @@ sub import_sources_frame
             (SELECT CA.is_jury FROM contest_accounts CA WHERE CA.account_id = ? AND CA.contest_id = p.contest_id)
             FROM problem_sources ps INNER JOIN default_de de ON de.id = ps.de_id
             INNER JOIN problems p ON p.id = ps.problem_id
-            WHERE ps.guid IS NOT NULL ~ . $lv->order_by);
-    $c->execute($uid // 0);
+            WHERE ps.guid IS NOT NULL ~ . $lv->maybe_where_cond . $lv->order_by);
+    $c->execute($uid // 0, $lv->where_params);
 
     my $fetch_record = sub {
         my $f = $_[0]->fetchrow_hashref or return ();

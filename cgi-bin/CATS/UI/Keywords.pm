@@ -67,12 +67,13 @@ sub keywords_frame
         { caption => res_str(637), order_by => '4', width => '30%' },
         { caption => res_str(643), order_by => '5', width => '10%' },
     ]);
+    $lv->define_db_searches([ qw(K.id code name_ru name_en) ]);
 
     my $c = $dbh->prepare(q~
         SELECT k.id AS kwid, k.code, k.name_ru, k.name_en,
             (SELECT COUNT(*) FROM problem_keywords pk WHERE pk.keyword_id = k.id) AS ref_count
-        FROM keywords k ~ . $lv->order_by);
-    $c->execute;
+        FROM keywords k WHERE 1 = 1 ~ . $lv->maybe_where_cond . $lv->order_by);
+    $c->execute($lv->where_params);
 
     my $fetch_record = sub {
         my $row = $_[0]->fetchrow_hashref or return ();

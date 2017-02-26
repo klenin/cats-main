@@ -97,11 +97,13 @@ sub judges_frame
         { caption => res_str(633), order_by => '5', width => '15%' },
         { caption => res_str(622), order_by => '6', width => '10%' },
     ]);
+    $lv->define_db_searches([ qw(J.id nick login is_alive alive_date lock_counter account_id last_ip) ]);
 
     my $c = $dbh->prepare(q~
         SELECT J.id, J.nick, A.login, J.is_alive, J.alive_date, J.lock_counter, A.id, A.last_ip
-            FROM judges J LEFT JOIN accounts A ON A.id = J.account_id ~ . $lv->order_by);
-    $c->execute;
+            FROM judges J LEFT JOIN accounts A ON A.id = J.account_id WHERE 1 = 1 ~ .
+            $lv->maybe_where_cond . $lv->order_by);
+    $c->execute($lv->where_params);
 
     my $fetch_record = sub {
         my (

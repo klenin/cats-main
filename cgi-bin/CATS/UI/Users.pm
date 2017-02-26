@@ -434,9 +434,12 @@ sub users_frame
 
     return if !$is_jury && param('json') && $contest->is_practice;
 
-    my $fields =
-        'A.id, CA.id, A.country, A.motto, A.login, A.team_name, A.city, ' .
-        'CA.is_jury, CA.is_ooc, CA.is_remote, CA.is_hidden, CA.is_virtual, CA.diff_time, CA.tag';
+    my @fields = qw(
+        A.id CA.id A.country A.motto A.login A.team_name A.city
+        CA.is_jury CA.is_ooc CA.is_remote CA.is_hidden CA.is_virtual CA.diff_time CA.tag);
+    $lv->define_db_searches(\@fields);
+
+    my $fields = join ', ', @fields;
     my $sql = sprintf qq~
         SELECT $fields, COUNT(DISTINCT R.problem_id) as rating
         FROM accounts A
@@ -444,13 +447,14 @@ sub users_frame
             INNER JOIN contests C ON CA.contest_id = C.id
             LEFT JOIN reqs R ON
                 R.state = $cats::st_accepted AND R.account_id = A.id AND R.contest_id = C.id%s
-        WHERE C.id = ?%s GROUP BY $fields ~ . $lv->order_by,
+        WHERE C.id = ?%s %s GROUP BY $fields ~ . $lv->order_by,
         ($is_jury ? ('', '') : (
             ' AND (R.submit_time < C.freeze_date OR C.defreeze_date < CURRENT_TIMESTAMP)',
-            ' AND CA.is_hidden = 0'));
+            ' AND CA.is_hidden = 0')),
+        $lv->maybe_where_cond;
 
     my $c = $dbh->prepare($sql);
-    $c->execute($cid);
+    $c->execute($cid, $lv->where_params);
 
     my $fetch_record = sub($)
     {
