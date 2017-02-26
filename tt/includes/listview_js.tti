@@ -1,0 +1,13 @@
+<script>
+function toggle_search_hints() {
+  var s = document.getElementById('search_hint');
+  s.style.display = s.style.display === 'block' ? 'none' : 'block';
+}
+function activate_search_hint(a) {
+  var i = document.getElementById('search');
+  if (i.value) i.value += ',';
+  i.value += a.text + '=';
+  var s = document.getElementById('search_hint');
+  s.style.display = 'none';
+}
+</script>

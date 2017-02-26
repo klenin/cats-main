@@ -52,6 +52,7 @@ function fill_1(aid, arg)
     return true;
 }
 </script>
+[% PROCESS includes/listview_js.tti %]
 <span id="refreshable_content">
 <br/>[% capt.loading %]<br/>
 </span>
