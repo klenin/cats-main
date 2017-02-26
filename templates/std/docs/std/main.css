@@ -76,6 +76,7 @@ div.search_hint {
     background: #fffd9d;
 }
 div.search_hint table td { padding: 2px 5px; }
+div.search_hint table td a { display: block; }
 div.search_hint table td.sh1 a { color: #1010d0; }
 div.search_hint table td:hover { background-color: #ffcc55; }
 
