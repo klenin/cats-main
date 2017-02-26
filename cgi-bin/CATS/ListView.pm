@@ -8,7 +8,7 @@ use List::Util qw(first min max);
 
 use CATS::DB;
 use CATS::Misc qw(
-    $is_root
+    $is_jury
     $t
     $settings
     init_template
@@ -159,7 +159,7 @@ sub attach {
             [ map { value => $_, text => $_, selected => $s->{rows} == $_ }, @display_rows ],
         $self->{array_name} => \@data,
     );
-    if ($is_root) {
+    if ($is_jury) {
         my @s = (map([ $_, 0 ], sort keys %{$self->{db_searches}}), map [ $_, 1 ], @$row_keys);
         my $col_count = 4;
         my $row_count = int((@s + $col_count - 1) / $col_count);
