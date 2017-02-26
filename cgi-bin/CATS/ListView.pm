@@ -14,6 +14,7 @@ use CATS::Misc qw(
     init_template
     msg
 );
+use CATS::Utils;
 use CATS::Web qw(param url_param);
 
 # Optimization: limit datasets by both maximum row count and maximum visible pages.
@@ -143,7 +144,8 @@ sub attach {
     my $range_end = min($range_start + $visible_pages - 1, $page_count - 1);
 
     my $pp = $p->{page_params} || {};
-    my $page_extra_params = join '', map ";$_=$pp->{$_}", keys %$pp;
+    my $page_extra_params = join '', map ";$_=" . CATS::Utils::escape_url($pp->{$_}),
+        grep defined $pp->{$_}, sort keys %$pp;
     my $href_page = sub { "$url$page_extra_params;page=$_[0]" };
     my @pages = map {{
         page_number => $_ + 1,
