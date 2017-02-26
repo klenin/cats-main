@@ -1,6 +1,5 @@
 [%- PROCESS "lang/$lang/listview_header.tti" -%]
 [% PROCESS includes/html.tti %]
-[%- USE Javascript -%]
 <table class="listview_header" cellpadding="0">
 <tr>
 <td align="left">
@@ -10,10 +9,15 @@
   <a href="#" class="search_hint" onclick="toggle_search_hints();">?</a>
   <div id="search_hint" class="bordered search_hint">
     <table>
+      <tr>
+      [% FOREACH op IN capt.ops %]
+        <td><a href="#" onclick="activate_search_hint(this, 0);" title="[% op.1 %]">[% op.0 %]</a></td>
+      [% END %]
+      </tr>
     [% FOREACH row IN search_hints %]
       <tr>
       [% FOREACH col IN row %]
-        <td class="sh[% col.1 %]"><a href="#" onclick="activate_search_hint(this);">[% col.0 | html %]</a></td>
+        <td class="sh[% col.1 %]"><a href="#" onclick="activate_search_hint(this, 1);">[% col.0 | html %]</a></td>
       [% END %]
     [% END %]
     </table>
