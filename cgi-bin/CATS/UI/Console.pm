@@ -268,7 +268,6 @@ sub console_content
 
     my $DEs = $is_team ? $dbh->selectall_hashref(q~
         SELECT id, description FROM default_de~, 'id') : {};
-    my $pf = param('pf') || '';
     my $c;
 
     $lv->define_db_searches([qw(
@@ -300,13 +299,11 @@ sub console_content
         my $msg_filter = $is_root ? '' : ' AND CA.contest_id = ?';
         $msg_filter .= ' AND 1 = 0' unless $s->{show_messages};
         my @cid = $is_root ? () : ($cid);
-        my $problem_filter = $pf ? ' AND P.id = ?' : '';
-        my @pf_params = $pf ? ($pf) : ();
         $c = $dbh->prepare(qq~
             SELECT
                 $console_select{run}
                 WHERE R.submit_time > CURRENT_TIMESTAMP - $day_count
-                $problem_filter$jury_runs_filter$events_filter$runs_filter$searches_filtger
+                $jury_runs_filter$events_filter$runs_filter$searches_filtger
             UNION
             SELECT
                 $console_select{question}
@@ -325,7 +322,6 @@ sub console_content
             $contest_dates
             ORDER BY 2 DESC~);
         $c->execute(
-            @pf_params,
             @cid, @events_filter_params, $lv->where_params,
             @cid, @events_filter_params,
             @cid, @events_filter_params);
@@ -436,7 +432,7 @@ sub console_content
 
     $lv->attach(
         url_f('console'), $fetch_console_record, $c,
-        { page_params => { uf => $user_filter, pf => $pf } });
+        { page_params => { se => param('se') || undef, uf => $user_filter || undef } });
 
     $c->finish;
 
@@ -458,8 +454,8 @@ sub console_content
     }
 
     $t->param(
-        href_my_events_only => url_f('console', uf => ($uid || get_anonymous_uid())),
-        href_all_events => url_f('console', uf => 0),
+        href_my_events_only => url_f('console', uf => ($uid || get_anonymous_uid()), se => param('se') || undef),
+        href_all_events => url_f('console', uf => 0, se => param('se') || undef),
         user_filter => $user_filter,
         is_jury => $is_jury,
         DEs => $DEs,
@@ -561,7 +557,7 @@ sub graphs
       chs => '500x400',
       chd => 't:' . join('|', map $data->($_->{by_time}), @$ga),
       cht => 'lc',
-      chco => join(',', map $colors[$_ % @colors], 0..@$ga),
+     chco => join(',', map $colors[$_ % @colors], 0..@$ga),
       chdl => join('|', map $_->{code}, @$ga),
       chxt => 'x,y',
       chxl => '0:|' . join('|', map sprintf('%.1f', $_ / $steps_per_hour), 0..@$bt),
@@ -638,7 +634,7 @@ sub console_frame
     }
 
     $t->param(
-        href_console_content => url_f('console_content', map { $_ => (url_param($_) || '') } qw(uf pf se page)),
+        href_console_content => url_f('console_content', map { $_ => (url_param($_) || '') } qw(uf se page)),
         is_team => $is_team,
         is_jury => $is_jury,
         question_text => $question_text,
