@@ -12,6 +12,7 @@ use CATS::Misc qw(
     $t
     $settings
     init_template
+    msg
 );
 use CATS::Web qw(param url_param);
 
@@ -115,9 +116,14 @@ sub attach {
         $_ = qr/$s/i;
     }
 
-    my $row_keys;
+    my ($row_keys, @unknown_searches);
     ROWS: while (my %row = $fetch_row->($sth)) {
-        $row_keys //= [ sort grep !$self->{db_searches}->{$_} && !/^href_/, keys %row ];
+        if (!$row_keys) {
+            my @unknown_searches = grep $_ && !exists $row{$_}, sort keys %mask;
+            delete $mask{$_} for @unknown_searches;
+            msg(1143, join ', ', @unknown_searches) if @unknown_searches;
+            $row_keys = [ sort grep !$self->{db_searches}->{$_} && !/^href_/, keys %row ];
+        }
         last if $row_count > $max_fetch_row_count || $page_count > $$page + $visible_pages;
         for my $key (keys %mask) {
             defined first { Encode::decode_utf8($_ // '') =~ $mask{$key} }

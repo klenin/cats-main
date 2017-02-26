@@ -201,3 +201,4 @@
 1140 "Judge '%s' changed successfully."
 1141 "Testsets changed for problem '%s'."
 1142 "Tags changed for problem '%s'."
+1143 "Unknown search fields: '%s'."
