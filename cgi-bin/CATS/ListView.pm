@@ -6,6 +6,7 @@ use warnings;
 use Encode ();
 use List::Util qw(first min max);
 
+use CATS::DB;
 use CATS::Misc qw(
     $is_root
     $t
@@ -52,7 +53,8 @@ sub init_params {
             $s->{page} = 0;
         }
     }
-    $self->{search} = [ map [ /^(.*)=(.*)$/ ? ($1, $2) : ('', $_) ], split ',', $s->{search} ];
+    $self->{search} = [ map
+        [ /^([a-zA-Z0-9_]+)([!~^=]?=)(.*)$/ ? ($1, $3, $2) : ('', $_, '') ], split /,\s*/, $s->{search} ];
 
     if (defined url_param('sort')) {
         $s->{sort_by} = int(url_param('sort'));
@@ -72,6 +74,22 @@ sub init_params {
     }
 }
 
+sub regex_op {
+    my ($op, $v) = @_;
+    $op eq '=' || $op eq '==' ? "^\Q$v\E\$" :
+    $op eq '!=' ? "^(?!\Q$v\E)\$" :
+    $op eq '^=' ? "^\Q$v\E" :
+    $op eq '~=' || $op eq '' ? "\Q$v\E" : die "Unknown search op '$op'";
+}
+
+sub sql_op {
+    my ($op, $v) = @_;
+    $op eq '=' || $op eq '==' ? { '=', $v } :
+    $op eq '!=' ? { '!=', $v } :
+    $op eq '^=' ? { 'STARTS WITH', $v } :
+    $op eq '~=' ? { 'LIKE', '%' . "$v%" } : die "Unknown search op '$op'";
+}
+
 sub attach {
     my ($self, $url, $fetch_row, $sth, $p) = @_;
 
@@ -82,17 +100,18 @@ sub attach {
     $$page ||= 0;
     my $rows = $s->{rows} || 1;
 
-    # <search> = <condition> { ',' <condition> }
-    # <condition> = <value> | <field name> '=' <value>
+    # <search> ::= <condition> { ',' <condition> }
+    # <condition> ::= <value> | <field name> { '=' | '==' | '!=' | '^=' | '~=' } <value>
+    # Spaces are significant around values, but not around keys.
     # Values without field name are searched in all fields.
     # Different fields are AND'ed, multiple values of the same field are OR'ed.
     my %mask;
     for my $q (@{$self->{search}}) {
-        my ($k, $v) = @$q;
-        $self->{db_searches}->{$k} or push @{$mask{$k} ||= []}, $v;
+        my ($k, $v, $op) = @$q;
+        $self->{db_searches}->{$k} or push @{$mask{$k} ||= []}, regex_op($op, $v);
     }
     for (values %mask) {
-        my $s = join '|', map "\Q$_\E", @$_;
+        my $s = join '|', @$_;
         $_ = qr/$s/i;
     }
 
@@ -167,30 +186,29 @@ sub make_where {
     my ($self) = @_;
     my %result;
     for my $q (@{$self->{search}}) {
-        my ($k, $v) = @$q;
+        my ($k, $v, $op) = @$q;
         my $f = $self->{db_searches}->{$k} or next;
-        push @{$result{$f} //= []}, $v;
+        push @{$result{$f} //= []}, sql_op($op, $v);
     }
     \%result;
 }
 
 sub where_cond {
     my ($self) = @_;
-    my $w = $self->where;
-    join ' AND ', map @{$w->{$_}} > 1 ? "$_ IN (" . join(', ', '?' x @{$w->{$_}}) . ')' : "$_ = ?",
-        sort keys %$w;
+    my $where = $sql->where($self->where);
+    $where =~ s/^\s*WHERE\s*//;
+    $where;
 }
 
 sub maybe_where_cond {
     my ($self) = @_;
-    my $w = $self->where;
     %{$self->where} ? ' AND ' . $self->where_cond : '';
 }
 
 sub where_params {
     my ($self) = @_;
-    my $w = $self->where;
-    map @{$w->{$_}}, sort keys %$w;
+    my (undef, @params) = $sql->where($self->where);
+    @params;
 }
 
 sub sort_in_memory {
