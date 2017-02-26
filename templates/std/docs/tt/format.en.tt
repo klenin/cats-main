@@ -397,10 +397,18 @@ files with tests, solutions etc.
   <td>[% tag_in('Sample', 'Problem') %]</td>
   <td>
     <ul>
-      <li>rank -- sequential number of the sample (independent of similar attribute of [% tag_ref('Test') %]) tag.</li>
+      <li>rank -- sample rank specifier (independent of similar attribute of [% tag_ref('Test') %] tag).</li>
     </ul>
   </td>
-  <td>Sample test descrption</td>
+  <td>Sample test descrption.
+  Attributes of tags [% tag_ref('SampleIn') %] and [% tag_ref('SampleOut') %] nested inside of [% tag_ref('Sample') %]
+  can contain context variable referencing sample rank.[% v19 %].
+  For example:
+  <pre>&lt;Sample rank="1" to="3"&gt;
+  &lt;SampleIn src="%0n.in"/&gt;
+  &lt;SampleOut src="%0n.out"/&gt;
+&lt;/Sample&gt</pre>
+  </td>
 </tr>
 <tr>
   <td>[% tag_in('SampleIn', 'Sample') %]</td>
@@ -411,7 +419,7 @@ files with tests, solutions etc.
   </td>
   <td>
     If the src attribute is omitted, sample input text is nested inside the tag.
-    Whitespace is preserved exactly an in a text file.
+    Whitespace is preserved exactly as in a text file.
   </td>
 </tr>
 <tr>
@@ -421,7 +429,10 @@ files with tests, solutions etc.
       <li>src[% opt %] [% v16 %] -- path to the sample input file.</li>
     </ul>
   </td>
-  <td>If the src attribute is omitted, sample output text is nested inside the tag.</td>
+  <td>
+    If the src attribute is omitted, sample output text is nested inside the tag.
+    Whitespace is preserved exactly as in a text file.
+  </td>
 </tr>
 </table>
 
