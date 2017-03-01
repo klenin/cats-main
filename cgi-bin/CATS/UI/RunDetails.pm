@@ -10,7 +10,7 @@ use CATS::DB;
 use CATS::Data qw(is_jury_in_contest);
 use CATS::DevEnv;
 use CATS::IP;
-use CATS::Misc qw($is_jury $is_root $sid $t $uid $settings init_template msg res_str url_f problem_status_names);
+use CATS::Misc qw($is_jury $is_root $sid $cid $t $uid $settings init_template msg res_str url_f problem_status_names);
 use CATS::Problem::Text qw(ensure_problem_hash);
 use CATS::RankTable;
 use CATS::Request;
@@ -437,20 +437,19 @@ sub run_details_frame {
     my $contest = { id => 0 };
     for (@$sources_info) {
         if ($_->{is_jury}) {
-            my %params = (
-                request_id => $_->{req_id},
+            my $params = {
                 state => $cats::st_not_processed,
                 # Insert NULL into database to be replaced with contest-default testset.
                 testsets => param('testsets') || undef,
                 judge_id => (param('set_judge') && param('judge') ? param('judge') : undef)
-            );
+            };
             if (param('retest')) {
-                CATS::Request::enforce_state(%params);
+                CATS::Request::enforce_state($_->{req_id}, $params);
                 $_ = get_sources_info(request_id => $_->{req_id}, partial_checker => 1) or next;
             }
             if (param('clone') && $is_root) {
-                my $group_req_id = CATS::Request::clone($_->{req_id}, $uid);
-                return $group_req_id ? redirect(url_f('run_details', rid => $group_req_id)) : undef;
+                my $group_req_id = CATS::Request::clone($_->{req_id}, $cid, $uid);
+                return $group_req_id ? redirect(url_f('run_details', rid => $group_req_id, sid => $sid)) : undef;
             }
         }
 
@@ -610,8 +609,7 @@ sub try_set_state {
 
     my $failed_test = sprintf '%d', param('failed_test') || '0';
     my $points = sprintf '%d', param('points') || '0';
-    CATS::Request::enforce_state(
-        request_id => $rid, failed_test => $failed_test, state => $state, points => $points);
+    CATS::Request::enforce_state($rid, { failed_test => $failed_test, state => $state, points => $points });
     my %st = state_to_display($state);
     while (my ($k, $v) = each %st) {
         $si->{$k} = $v;

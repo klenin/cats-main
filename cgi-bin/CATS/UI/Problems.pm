@@ -157,7 +157,7 @@ sub problems_submit
         $submit_uid, $pid, $cid, $source_hash, $did);
     $same_source and return msg(1132, $prev_submit_time);
 
-    my $rid = CATS::Request::insert($pid, $submit_uid, determine_state);
+    my $rid = CATS::Request::insert($pid, $cid, $submit_uid, { state => determine_state });
 
     my $s = $dbh->prepare(q~
         INSERT INTO sources(req_id, de_id, src, fname, hash) VALUES (?, ?, ?, ?, ?)~);
@@ -194,7 +194,7 @@ sub problems_submit_std_solution {
     $c->execute($pid, $cats::solution, $cats::adv_solution);
 
     while (my ($src, $did, $fname) = $c->fetchrow_array) {
-        my $rid = CATS::Request::insert($pid, $uid, $cats::st_not_processed);
+        my $rid = CATS::Request::insert($pid, $cid, $uid);
 
         my $s = $dbh->prepare(q~
             INSERT INTO sources(req_id, de_id, src, fname) VALUES (?, ?, ?, ?)~);
@@ -232,7 +232,7 @@ sub problems_mass_retest()
             next if !$all_runs && $accounts{$_->{account_id}};
             $accounts{$_->{account_id}} = 1;
             ($_->{state} || 0) != $cats::st_ignore_submit &&
-                CATS::Request::enforce_state(request_id => $_->{id}, state => $cats::st_not_processed)
+                CATS::Request::enforce_state($_->{id}, { state => $cats::st_not_processed })
                     and ++$count;
         }
         $dbh->commit;
