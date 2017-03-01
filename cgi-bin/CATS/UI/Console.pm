@@ -236,7 +236,7 @@ sub console_content
 
     my $runs_filter = $s->{show_results} ? '' : ' AND 1 = 0';
     my $user_filter = url_param('uf') || '';
-    my @user_ids = grep $_, map sprintf('%d', $_), split ',', $user_filter;
+    my @user_ids = grep /^\d+$/, split ',', $user_filter;
     my $events_filter = @user_ids ? 'AND (' . join(' OR ', map 'A.id = ?', @user_ids) . ')' : '';
     my @events_filter_params = @user_ids;
 
