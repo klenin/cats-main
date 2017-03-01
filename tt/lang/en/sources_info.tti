@@ -9,6 +9,7 @@
     contest => 'Contest',
     problem => 'Problem',
     testset => 'Testset',
+    limits => 'Limits',
     retest => 'Retest',
     clone => 'Clone',
     status => 'Status',

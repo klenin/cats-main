@@ -31,6 +31,7 @@ my $function;
 my $bool = qr/1/;
 my $int = qr/\d+/;
 my $int_list = qr/[\d,]+/;
+my $fixed = qr/[+-]?([0-9]*[.])?[0-9]+/;
 my $sha = qr/[a-h0-9]+/;
 my $str = qr/.+/;
 
@@ -56,6 +57,9 @@ sub main_routes() {
         problem_select_tags => [
             \&CATS::UI::ProblemDetails::problem_select_tags_frame,
             pid => $int, tags => $str, save => $str, from_problems => $bool, ],
+        problem_limits => [
+            \&CATS::UI::ProblemDetails::problem_limits_frame,
+            pid => $int, cpid => $int, memory_limit => $int, time_limit => $fixed, ],
         problem_download => [ \&CATS::UI::ProblemDetails::problem_download, pid => $int, ],
         problem_git_package => [ \&CATS::UI::ProblemDetails::problem_git_package, pid => $int, sha => $sha, ],
         problem_details => [ \&CATS::UI::ProblemDetails::problem_details_frame, pid => $int, ],

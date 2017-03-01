@@ -1,0 +1,8 @@
+[%
+  capt.import({
+    original_limits => 'Исходные ограничения',
+    overridden_limits => 'Переопределенные ограничения',
+    override => 'Переопределить',
+    clear_override => 'Очистить переопределение'
+  })
+%]
