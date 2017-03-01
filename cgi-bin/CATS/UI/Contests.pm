@@ -366,11 +366,12 @@ sub contests_frame {
         { caption => res_str(631), order_by => '1 DESC, 6', width => '15%' },
         { caption => res_str(630), order_by => '1 DESC, 9', width => '30%' } ]);
 
-    $_ = coalesce(param('filter'), $_, 'unfinished') for $settings->{contests}->{filter};
+    $settings->{contests}->{filter} = my $filter =
+        param('filter') || $settings->{contests}->{filter} || 'unfinished';
 
     $lv->attach(url_f('contests'),
         defined $uid ? authenticated_contests_view($p) : anonymous_contests_view($p),
-        ($uid ? () : { page_params => { filter => $settings->{contests}->{filter} } }));
+        ($uid ? () : { page_params => { filter => $filter } }));
 
     my $submenu = [
         map({
@@ -381,7 +382,7 @@ sub contests_frame {
         ($privs->{create_contests} ?
             { href => url_f('contests', new => 1), item => res_str(537) } : ()),
         { href => url_f('contests',
-            ical => 1, rows => 50, filter => $settings->{contests}->{filter}), item => res_str(562) },
+            ical => 1, rows => 50, filter => $filter), item => res_str(562) },
     ];
     $t->param(
         submenu => $submenu,
