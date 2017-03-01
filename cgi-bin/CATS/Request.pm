@@ -23,7 +23,6 @@ sub enforce_state {
         ) or return;
     }
 
-    $dbh->commit;
     return 1;
 }
 
@@ -82,8 +81,6 @@ sub clone {
     $dbh->do(q~
         INSERT INTO req_groups (element_id, group_id) VALUES (?, ?)~, undef,
         $element_req_id, $group_req_id);
-
-    $dbh->commit;
 
     $group_req_id;
 }

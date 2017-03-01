@@ -445,11 +445,13 @@ sub run_details_frame {
             };
             if (param('retest')) {
                 CATS::Request::enforce_state($_->{req_id}, $params);
+                $dbh->commit;
                 $_ = get_sources_info(request_id => $_->{req_id}, partial_checker => 1) or next;
             }
             if (param('clone') && $is_root) {
                 my $group_req_id = CATS::Request::clone($_->{req_id}, $cid, $uid);
                 return $group_req_id ? redirect(url_f('run_details', rid => $group_req_id, sid => $sid)) : undef;
+                $dbh->commit;
             }
         }
 
@@ -610,6 +612,7 @@ sub try_set_state {
     my $failed_test = sprintf '%d', param('failed_test') || '0';
     my $points = sprintf '%d', param('points') || '0';
     CATS::Request::enforce_state($rid, { failed_test => $failed_test, state => $state, points => $points });
+    $dbh->commit;
     my %st = state_to_display($state);
     while (my ($k, $v) = each %st) {
         $si->{$k} = $v;

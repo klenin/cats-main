@@ -578,6 +578,7 @@ sub retest_submissions
         CATS::Request::enforce_state($_, { state => $cats::st_not_processed })
             and ++$count;
     }
+    $dbh->commit;
     return $count;
 }
 
