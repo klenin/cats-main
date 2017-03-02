@@ -72,13 +72,13 @@ function send_message(href)
 <tr>
   <th>[% capt.contest %]</th>
   [% FOREACH si IN sources_info; IF si %]
-    <td colspan="[% si.colspan %]"[% maybe_href(si.href_contest, si.contest_name) %]</td>
+    <td colspan="[% si.colspan %]">[% maybe_href(si.href_contest, si.contest_name) %]</td>
   [% END; END %]
 </tr>
 <tr>
   <th>[% capt.problem %]</th>
   [% FOREACH si IN sources_info; IF si %]
-    <td colspan="[% si.colspan %]"
+    <td colspan="[% si.colspan %]">
       [% si.code; ': ' IF si.code; maybe_href(si.href_problem, si.problem_name) %][% IF si.is_jury %] ([% si.status_name %])[% END %]
     </td>
   [% END; END %]
