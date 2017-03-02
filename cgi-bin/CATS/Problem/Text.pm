@@ -290,8 +290,8 @@ sub problem_text_frame
         ($show_points) = $contest->{rules};
         # Should either check for a static page or hide the problem even from jury.
         my $p = $dbh->selectall_arrayref(qq~
-            SELECT id AS cpid, problem_id, code,
-            testsets, points_testsets, max_points, tags,
+            SELECT CP.id AS cpid, CP.problem_id, CP.code,
+            CP.testsets, CP.points_testsets, CP.max_points, CP.tags,
             L.time_limit, L.memory_limit
             FROM contest_problems CP
                 LEFT JOIN limits L ON L.id = CP.limits_id
