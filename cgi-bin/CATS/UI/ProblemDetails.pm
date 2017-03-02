@@ -14,6 +14,7 @@ use CATS::Misc qw(
     init_template msg res_str url_f auto_ext);
 use CATS::Problem::Save;
 use CATS::Problem::Text;
+use CATS::StaticPages;
 use CATS::Testset;
 use CATS::Utils qw(url_function source_encodings);
 use CATS::Web qw(content_type encoding_param headers not_found param redirect url_param);
@@ -189,8 +190,8 @@ sub problem_limits_frame
     init_template('problem_limits.html.tt');
     $p->{pid} && $is_jury or return;
 
-    my $original_limits_str = join ', ', map { "P.$_" } @CATS::Request::limits_keys;
-    my $overridden_limits_str = join ', ', map { "L.$_ AS overridden_$_" } @CATS::Request::limits_keys;
+    my $original_limits_str = join ', ', map "P.$_", @CATS::Request::limits_keys;
+    my $overridden_limits_str = join ', ', map "L.$_ AS overridden_$_", @CATS::Request::limits_keys;
 
     my $problem = $dbh->selectrow_hashref(qq~
         SELECT P.id, P.title, CP.id AS cpid, CP.tags, CP.limits_id,
@@ -229,6 +230,7 @@ sub problem_limits_frame
         }
 
         $dbh->commit;
+        CATS::StaticPages::invalidate_problem_text(cid => $cid, cpid => $problem->{cpid});
 
         msg($new_limits ? 1145 : 1146, $problem->{title});
     } elsif (param('clear_override')) {
@@ -241,6 +243,7 @@ sub problem_limits_frame
         }
 
         $dbh->commit;
+        CATS::StaticPages::invalidate_problem_text(cid => $cid, cpid => $problem->{cpid});
 
         delete $problem->{limits_id};
         for (@CATS::Request::limits_keys) {
