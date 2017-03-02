@@ -67,6 +67,7 @@ sub save_log_dump {
 
     $p->{req_id} or return print_json({ error => 'No req_id' });
     CATS::JudgeDB::save_log_dump($p->{req_id}, $p->{dump});
+    $dbh->commit;
 
     print_json({ ok => 1 });
 }
