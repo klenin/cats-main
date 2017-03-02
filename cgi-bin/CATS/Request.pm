@@ -10,16 +10,15 @@ use CATS::IP;
 our @limits_keys = qw(time_limit memory_limit);
 
 # Params: limits: { time_limit, memory_limit }
-sub filtrate_limits {
+sub filter_valid_limits {
     my ($limits) = @_;
 
     my %validators = (
-        time_limit => sub { $_[0] =~ m/^\+?([0-9]*[.])?[0-9]+$/ },
-        memory_limit => sub { $_[0] =~ m/^\+?\d+$/ },
+        time_limit => sub { return 1; $_[0] =~ m/^\+?([0-9]*[.])?[0-9]+$/ },
+        memory_limit => sub { return 1; $_[0] =~ m/^\+?\d+$/ },
     );
 
-    return { map { $_ => $limits->{$_} } grep
-        defined $limits->{$_} && (!defined $validators{$_} || $validators{$_}->($limits->{$_})), @limits_keys };
+    return { map { $_ => $limits->{$_} } grep $validators{$_}->($limits->{$_} // ''), @limits_keys };
 }
 
 # Params: limits_id = new_id, limits: { time_limit, memory_limit }
@@ -29,8 +28,8 @@ sub set_limits {
     %$limits or return;
 
     my ($stmt, @bind) = $limits_id ?
-        $sql->update('limits', { map { $_ => $limits->{$_} } @limits_keys }, { id => $limits_id })
-    : $sql->insert('limits', { id => ($limits_id = new_id), %$limits });
+        $sql->update('limits', { map { $_ => $limits->{$_} } @limits_keys }, { id => $limits_id }) :
+        $sql->insert('limits', { id => ($limits_id = new_id), %$limits });
 
     $dbh->do($stmt, undef, @bind);
 
@@ -46,7 +45,7 @@ sub clone_limits {
     my $limits_keys_list = join ', ', @limits_keys;
 
     $dbh->do(qq~
-        INSERT INTO LIMITS ( id, $limits_keys_list )
+        INSERT INTO LIMITS (id, $limits_keys_list)
         SELECT ?, $limits_keys_list FROM LIMITS WHERE id = ?~, undef,
         $cloned_limits_id, $limits_id
     );
@@ -70,7 +69,8 @@ sub enforce_state {
     my ($request_id, $fields) = @_;
     $request_id && defined $fields->{state} or die;
 
-    my ($stmt, @bind) = $sql->update('reqs', { %$fields, received => 0, result_time => \'CURRENT_TIMESTAMP' }, { id => $request_id });
+    my ($stmt, @bind) = $sql->update('reqs',
+        { %$fields, received => 0, result_time => \'CURRENT_TIMESTAMP' }, { id => $request_id });
     $dbh->do($stmt, undef, @bind) or return;
     # Save log for ignored requests.
     if ($fields->{state} != $cats::st_ignore_submit) {

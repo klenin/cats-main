@@ -463,7 +463,7 @@ sub run_details_frame {
     my $need_clear_limits = $need_change_limits && !%$limits;
     
     if ($need_change_limits && !$need_clear_limits) {
-        my $filtered_limits = CATS::Request::filtrate_limits($limits);
+        my $filtered_limits = CATS::Request::filter_valid_limits($limits);
         my @invalid_limits_keys = grep !exists $filtered_limits->{$_}, keys %$limits;
         if (@invalid_limits_keys) {
             $need_change_limits = $need_clear_limits = 0;
