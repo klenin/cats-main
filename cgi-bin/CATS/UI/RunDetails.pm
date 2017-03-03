@@ -493,7 +493,7 @@ sub run_details_frame {
                 $_ = get_sources_info(request_id => $_->{req_id}, partial_checker => 1) or next;
             }
             if (param('clone') && $is_root) {
-                if (!$need_clear_limits) {
+                if (!$need_clear_limits && !$need_change_limits && $_->{limits_id}) {
                     $params->{limits_id} = CATS::Request::clone_limits($_->{limits_id}, $limits);
                 } elsif ($need_change_limits) {
                     $params->{limits_id} = CATS::Request::set_limits($_->{limits_id}, $limits);
