@@ -1,4 +1,7 @@
-[% PROCESS 'includes/menu_begin.tti' %]
+[% PROCESS includes/menu_begin.tti %]
+[% PROCESS "lang/$lang/judges_common.tti" %]
+
+[% pin_colors = [ 'red', '#cc7a00', '#cc7a00', 'green' ] %]
 
 <script>
 function delete_judge(href, name)
@@ -35,7 +38,7 @@ function delete_judge(href, name)
 
 <td>[% j.is_alive; IF editable && j.is_alive %] [<a href="[% j.href_ping %]">[% capt.ping %]</a>][% END %]</td>
 <td>[% j.alive_date %]</td>
-<td>[% IF j.locked %]<font color=red>[% capt.locked %]</font>[% ELSE; capt.unlocked; END %]</td>
+<td style="color: [% pin_colors.item(j.pin_mode) %];">[% capt.pin_mode_values.item(j.pin_mode) %]</td>
 </tr>
 [% END %]
 </table>

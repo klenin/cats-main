@@ -7,6 +7,13 @@
     [%- FOREACH opt IN options; option(opt.value, opt.text, opt.selected); END -%]
     </select>
 [%- END -%]
+
+[%- MACRO select_value(name, options, selected_value) BLOCK -%]
+    <select name="[% name %]">
+    [%- FOREACH opt IN options; option(opt.value, opt.text, opt.value == selected_value); END -%]
+    </select>
+[%- END -%]
+
 [%- MACRO checkbox(name, checked, enabled) BLOCK; SET enabled = 1 UNLESS enabled.defined ~%]
     <input type="checkbox" name="[% name %]"[% ' checked="checked"' IF checked; ' disabled="disabled"' UNLESS enabled %] />
 [%- END -%]

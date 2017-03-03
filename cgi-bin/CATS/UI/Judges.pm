@@ -17,11 +17,11 @@ sub edit_frame
     init_template('judges_edit.html.tt');
 
     if (my $jid = url_param('edit')) {
-        my ($judge_name, $account_name, $lock_counter) = $dbh->selectrow_array(q~
-            SELECT J.nick, A.login, J.lock_counter
+        my ($judge_name, $account_name, $pin_mode) = $dbh->selectrow_array(q~
+            SELECT J.nick, A.login, J.pin_mode
             FROM judges J LEFT JOIN accounts A ON A.id = J.account_id WHERE J.id = ?~, undef,
             $jid);
-        $t->param(id => $jid, judge_name => $judge_name, account_name => $account_name, locked => $lock_counter);
+        $t->param(id => $jid, judge_name => $judge_name, account_name => $account_name, pin_mode => $pin_mode);
     }
     $t->param(href_action => url_f('judges'));
 }
@@ -31,7 +31,7 @@ sub edit_save
     my $jid = param('id');
     my $judge_name = param('judge_name') // '';
     my $account_name = param('account_name') // '';
-    my $locked = param_on('locked') ? -1 : 0;
+    my $pin_mode = param('pin_mode') // 0;
 
     $judge_name ne '' && length $judge_name <= 20
         or return msg(1005);
@@ -45,16 +45,16 @@ sub edit_save
 
     if ($jid) {
         $dbh->do(q~
-            UPDATE judges SET nick = ?, account_id = ?, lock_counter = ? WHERE id = ?~, undef,
-            $judge_name, $account_id, $locked, $jid);
+            UPDATE judges SET nick = ?, account_id = ?, pin_mode = ? WHERE id = ?~, undef,
+            $judge_name, $account_id, $pin_mode, $jid);
         $dbh->commit;
         msg(1140, $judge_name);
     }
     else {
         $dbh->do(q~
-            INSERT INTO judges (id, nick, account_id, lock_counter, is_alive, alive_date)
+            INSERT INTO judges (id, nick, account_id, pin_mode, is_alive, alive_date)
             VALUES (?, ?, ?, ?, 0, CURRENT_TIMESTAMP)~, undef,
-            new_id, $judge_name, $account_id, $locked);
+            new_id, $judge_name, $account_id, $pin_mode);
         $dbh->commit;
         msg(1006, $judge_name);
     }
@@ -97,24 +97,24 @@ sub judges_frame
         { caption => res_str(633), order_by => '5', width => '15%' },
         { caption => res_str(622), order_by => '6', width => '10%' },
     ]);
-    $lv->define_db_searches([ qw(J.id nick login is_alive alive_date lock_counter account_id last_ip) ]);
+    $lv->define_db_searches([ qw(J.id nick login is_alive alive_date pin_mode account_id last_ip) ]);
 
     my $c = $dbh->prepare(q~
-        SELECT J.id, J.nick, A.login, J.is_alive, J.alive_date, J.lock_counter, A.id, A.last_ip
+        SELECT J.id, J.nick, A.login, J.is_alive, J.alive_date, J.pin_mode, A.id, A.last_ip
             FROM judges J LEFT JOIN accounts A ON A.id = J.account_id WHERE 1 = 1 ~ .
             $lv->maybe_where_cond . $lv->order_by);
     $c->execute($lv->where_params);
 
     my $fetch_record = sub {
         my (
-            $jid, $judge_name, $account_name, $is_alive, $alive_date, $lock_counter, $account_id, $last_ip
+            $jid, $judge_name, $account_name, $is_alive, $alive_date, $pin_mode, $account_id, $last_ip
         ) = $_[0]->fetchrow_array or return ();
         return (
             jid => $jid,
             judge_name => $judge_name,
             account_name => $account_name,
             CATS::IP::linkify_ip($last_ip),
-            locked => $lock_counter,
+            pin_mode => $pin_mode,
             is_alive => $is_alive,
             alive_date => $alive_date,
             href_ping => url_f('judges', ping => $jid),
