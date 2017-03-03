@@ -94,15 +94,15 @@ sub select_request {
     $p->{supported_DEs} or return print_json({ error => 'bad request' });
 
     my $response = {};
-    ($response->{was_pinged}, $response->{lock_counter}, my $jid, my $time_since_alive) = $dbh->selectrow_array(q~
-        SELECT 1 - J.is_alive, J.lock_counter, J.id, CURRENT_TIMESTAMP - J.alive_date
+    ($response->{was_pinged}, $response->{pin_mode}, my $jid, my $time_since_alive) = $dbh->selectrow_array(q~
+        SELECT 1 - J.is_alive, J.pin_mode, J.id, CURRENT_TIMESTAMP - J.alive_date
         FROM judges J INNER JOIN accounts A ON J.account_id = A.id WHERE A.sid = ?~, undef,
         $sid);
 
     $response->{request} = CATS::JudgeDB::select_request({
         jid              => $jid,
         was_pinged       => $response->{was_pinged},
-        lock_counter     => $response->{lock_counter},
+        pin_mode         => $response->{pin_mode},
         time_since_alive => $time_since_alive,
         supported_DEs    => $p->{supported_DEs},
     });
