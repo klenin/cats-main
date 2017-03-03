@@ -310,7 +310,7 @@ sub get_sources_info {
 
     my $pc_sql = $p{partial_checker} ? CATS::RankTable::partial_checker_sql() . ',' : '';
 
-    my $limits_str = join ', ', map { my $l = $_; join ', ', map { "$_.$l AS @{[$_]}_$l" } qw(lr lcp p) } @CATS::Request::limits_keys;
+    my $limits_str = join ', ', map { my $l = $_; join ', ', map { "$_.$l AS @{[$_]}_$l" } qw(lr lcp p) } @cats::limits_fields;
 
     # Source code can be in arbitary or broken encoding, we need to decode it explicitly.
     $dbh->{ib_enable_utf8} = 0;
@@ -387,7 +387,7 @@ sub get_sources_info {
         }
         $r->{status_name} = problem_status_names->{$r->{status}};
 
-        $r->{$_} = $r->{"lr_$_"} || $r->{"lcp_$_"} || $r->{"p_$_"} for @CATS::Request::limits_keys;
+        $r->{$_} = $r->{"lr_$_"} || $r->{"lcp_$_"} || $r->{"p_$_"} for @cats::limits_fields;
     }
 
     my %result_hash = map { $_->{req_id} => $_ } @$result;
@@ -427,9 +427,9 @@ sub sources_info_param {
     my $set_colspan = sub {
         for (@{$_[0]}) {
             my $r = $_;
-            $r->{colspan} = max(scalar @{$r->{element_sources}}, 1) + $is_jury * (@CATS::Request::limits_keys + 1);
+            $r->{colspan} = max(scalar @{$r->{element_sources}}, 1) + $is_jury * (@cats::limits_fields + 1);
             $r->{colors} = {
-                map { $_ => $r->{"lr_$_"} ? 'r' : $r->{"lcp_$_"} ? 'cp' : undef } @CATS::Request::limits_keys
+                map { $_ => $r->{"lr_$_"} ? 'r' : $r->{"lcp_$_"} ? 'cp' : undef } @cats::limits_fields
             };
         }
     };
@@ -457,7 +457,7 @@ sub run_details_frame {
     my @runs;
     my $contest = { id => 0 };
 
-    my $limits = { map { $_ => param($_) } grep param($_), @CATS::Request::limits_keys };
+    my $limits = { map { $_ => param($_) } grep param($_), @cats::limits_fields };
     my $need_change_limits = param('set_limits');
     my $need_clear_limits = $need_change_limits && !%$limits;
     
