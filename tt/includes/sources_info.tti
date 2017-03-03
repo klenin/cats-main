@@ -102,10 +102,11 @@ function send_message(href)
   <th>[% capt.limits %]</th>
   [% FOREACH si IN sources_info; IF si %]
       [% IF si.is_jury %]
-        <td [% IF si.colors.time_limit %] bgcolor="[% si.colors.time_limit %]" [% END %]>
+        [% colors = { r => '#60E760', cp => '#FEFBCA' } %]
+        <td [% IF si.colors.time_limit %] bgcolor="[% colors.${si.colors.time_limit} %]" [% END %]>
           [% capt.time %] <input type="text" name="time_limit" value="[% si.time_limit %]" size="3"/> [% capt.s %]
         </td>
-        <td [% IF si.colors.memory_limit %] bgcolor="[% si.colors.memory_limit %]" [% END %]>
+        <td [% IF si.colors.memory_limit %] bgcolor="[% colors.${si.colors.memory_limit} %]" [% END %]>
           [% capt.memory %] <input type="text" name="memory_limit" value="[% si.memory_limit %]" size="3"/> [% capt.mb %]
         </td>
         <td>

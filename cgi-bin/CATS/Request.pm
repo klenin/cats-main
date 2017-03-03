@@ -7,8 +7,6 @@ use CATS::Constants;
 use CATS::DB;
 use CATS::IP;
 
-our @limits_keys = qw(time_limit memory_limit);
-
 # Params: limits: { time_limit, memory_limit }
 sub filter_valid_limits {
     my ($limits) = @_;
@@ -18,7 +16,7 @@ sub filter_valid_limits {
         memory_limit => sub { return 1; $_[0] =~ m/^\+?\d+$/ },
     );
 
-    return { map { $_ => $limits->{$_} } grep $validators{$_}->($limits->{$_} // ''), @limits_keys };
+    return { map { $_ => $limits->{$_} } grep $validators{$_}->($limits->{$_} // ''), @cats::limits_fields };
 }
 
 # Params: limits_id = new_id, limits: { time_limit, memory_limit }
@@ -28,7 +26,7 @@ sub set_limits {
     %$limits or return;
 
     my ($stmt, @bind) = $limits_id ?
-        $sql->update('limits', { map { $_ => $limits->{$_} } @limits_keys }, { id => $limits_id }) :
+        $sql->update('limits', { map { $_ => $limits->{$_} } @cats::limits_fields }, { id => $limits_id }) :
         $sql->insert('limits', { id => ($limits_id = new_id), %$limits });
 
     $dbh->do($stmt, undef, @bind);
@@ -42,7 +40,7 @@ sub clone_limits {
     $limits_id or die;
 
     my $cloned_limits_id = new_id;
-    my $limits_keys_list = join ', ', @limits_keys;
+    my $limits_keys_list = join ', ', @cats::limits_fields;
 
     $dbh->do(qq~
         INSERT INTO LIMITS (id, $limits_keys_list)

@@ -190,8 +190,8 @@ sub problem_limits_frame
     init_template('problem_limits.html.tt');
     $p->{pid} && $is_jury or return;
 
-    my $original_limits_str = join ', ', map "P.$_", @CATS::Request::limits_keys;
-    my $overridden_limits_str = join ', ', map "L.$_ AS overridden_$_", @CATS::Request::limits_keys;
+    my $original_limits_str = join ', ', map "P.$_", @cats::limits_fields;
+    my $overridden_limits_str = join ', ', map "L.$_ AS overridden_$_", @cats::limits_fields;
 
     my $problem = $dbh->selectrow_hashref(qq~
         SELECT P.id, P.title, CP.id AS cpid, CP.tags, CP.limits_id,
@@ -212,9 +212,9 @@ sub problem_limits_frame
     if (param('override')) {
         my $new_limits = !defined $problem->{limits_id};
 
-        return msg(1144) if !$new_limits && grep !$p->{$_}, @CATS::Request::limits_keys;
+        return msg(1144) if !$new_limits && grep !$p->{$_}, @cats::limits_fields;
 
-        my $limits = { map { $_ => $p->{$_} || $problem->{"overridden_$_"} || $problem->{$_} } @CATS::Request::limits_keys };
+        my $limits = { map { $_ => $p->{$_} || $problem->{"overridden_$_"} || $problem->{$_} } @cats::limits_fields };
 
         $problem->{limits_id} = CATS::Request::set_limits($problem->{limits_id}, $limits);
 
@@ -225,7 +225,7 @@ sub problem_limits_frame
             $problem->{limits_id}, $problem->{cpid});
         }
 
-        for (@CATS::Request::limits_keys) {
+        for (@cats::limits_fields) {
             $problem->{"overridden_$_"} = $limits->{$_};
         }
 
@@ -246,7 +246,7 @@ sub problem_limits_frame
         CATS::StaticPages::invalidate_problem_text(cid => $cid, cpid => $problem->{cpid});
 
         delete $problem->{limits_id};
-        for (@CATS::Request::limits_keys) {
+        for (@cats::limits_fields) {
             delete $problem->{"overridden_$_"};
         }
 

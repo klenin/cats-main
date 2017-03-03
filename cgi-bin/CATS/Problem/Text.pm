@@ -315,7 +315,7 @@ sub problem_text_frame
             FROM problems WHERE id = ?~, { Slice => {} },
             $problem->{problem_id}) or next;
 
-        for (@CATS::Request::limits_keys) { delete $p->{$_} if $problem->{$_} }
+        for (@cats::limits_fields) { delete $p->{$_} if $problem->{$_} }
 
         $problem = { %$problem, %$p };
         my $lang = $problem->{lang};
