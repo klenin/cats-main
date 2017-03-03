@@ -429,8 +429,7 @@ sub sources_info_param {
             my $r = $_;
             $r->{colspan} = max(scalar @{$r->{element_sources}}, 1) + $is_jury * (@CATS::Request::limits_keys + 1);
             $r->{colors} = {
-                map { $_ => $r->{"lr_$_"} ? "#5ad65a" : $r->{"lcp_$_"} ? "#ffeb0a" : undef }
-                @CATS::Request::limits_keys
+                map { $_ => $r->{"lr_$_"} ? 'r' : $r->{"lcp_$_"} ? 'cp' : undef } @CATS::Request::limits_keys
             };
         }
     };
