@@ -499,8 +499,8 @@ sub run_details_frame {
                     $params->{limits_id} = CATS::Request::set_limits($_->{limits_id}, $limits);
                 }
                 my $group_req_id = CATS::Request::clone($_->{req_id}, $cid, $uid, $params);
-                return $group_req_id ? redirect(url_f('run_details', rid => $group_req_id, sid => $sid)) : undef;
                 $dbh->commit;
+                return $group_req_id ? redirect(url_f('run_details', rid => $group_req_id, sid => $sid)) : undef;
             }
         }
 
