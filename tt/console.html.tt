@@ -60,11 +60,10 @@ function fill_1(aid, arg)
 </span>
 [% IF is_team %]
 <br/>
-<table cellpadding="6" cellspacing="0" class="bordered">
 [% IF is_jury %]
-    <tr><td>
+<div>
     [% capt.selection %]:
-    <input type="text" id="selection" name="selection" value="[% selection %]" class="bordered" />
+    <input type="text" id="selection" name="selection" size="35" value="[% selection %]" class="bordered" />
     [ <a href="#" onclick="clear_selection(); return false;">[% capt.clear %]</a>
     | <a id="a_source" href="[% href_view_source %]" target="_blank"
       onclick="return fill_1('a_source', '[% href_view_source %];rid=');">[% capt.source %]</a>
@@ -75,16 +74,15 @@ function fill_1(aid, arg)
     | <a id="a_diff" href="[% href_diff %]" target="_blank"
       onclick="return fill_diff();">[% capt.compare %]</a>
     ] <input type="submit" value="[% capt.retest %]" name="retest" class="button"/>
-    </td></tr>
+</div>
 [% END %]
 </form>
 <form method="POST" enctype="multipart/form-data">
-    <tr bgcolor="#ccccff"><td>
+<div class="send_message">
     [% capt.question %]:
     <input size="100" maxlength="200" name="question_text" value="[% question_text | html %]" class="bordered" />
     <input type="submit" value="[% capt.send %]" name="send_question" class="button"/>
-    </td></tr>
-</table>
+</div>
 [% END %]
 </form>
 <script type="text/javascript">

@@ -57,12 +57,12 @@ function delete_team(href, name)
 <br/>
 [% END %]
 [% IF messages %]
-<table width=100% cellpadding=8 bgcolor=#ccccff class=bordered><tr><td>
+<div class="send_message">
 [% capt.message_to_teams %]:
-<input type="text" size="85" name="message_text" value="[% message_text | html %]" class="bordered">
+<input type="text" size="100" name="message_text" value="[% message_text | html %]" class="bordered">
 <input type="submit" value="[% capt.send %]" name="send_message" class="button">
 <label><input type="checkbox" name="send_message_all"> [% capt.send_to_all %]</label>
-</td></tr></table>
+</div>
 [% END %]
 </form>
 

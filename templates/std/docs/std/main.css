@@ -155,10 +155,10 @@ input.listview_checkbox {
     border: 1px solid #4040ff;
 }
 
-.bordered2 {
-    color: white;
-    border: 1px solid white;
+.send_message {
+    border: 1px solid #4040ff;
     background-color: #ccccff;
+    padding: 4px;
 }
 
 table.internal_borders { border-collapse: collapse; }
