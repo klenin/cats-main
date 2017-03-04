@@ -33,7 +33,7 @@
         [% IF is_jury ~%]
         <a href="[% c.href_source %]" title="[% DEs.item(c.de).description %]">[% c.problem_title | html %]</a>
         [% ELSE; c.problem_title | html; END %]:
-        <b>[% submit_result(c) %]</b>[% " ($c.points)" IF is_jury && c.points %]
+        <b>[% submit_result(c) %]</b>[% " ($c.points)" IF is_jury && c.points.defined %]
     </td>
 [% ELSIF c.is_question %]
     <td>[% c.time %]</td>
