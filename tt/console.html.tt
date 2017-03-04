@@ -123,6 +123,7 @@ function update_content(response) {
     var refreshable = document.getElementById('refreshable_content');
     refreshable.innerHTML = response;
     main_form.style.opacity = '1';
+    refresh();
 }
 
 function form_submit_handler(e) {
@@ -148,6 +149,12 @@ function console_update() {
     xhr_request(console_url, 'GET', undefined, update_content);
 }
 
-update_interval = setInterval(console_update, 30000);
+var refresh_timeout;
+function refresh() {
+    clearTimeout(refresh_timeout);
+    refresh_timeout = setTimeout(console_update, 30000);
+}
+refresh();
+
 </script>
 [% PROCESS includes/menu_end.tti %]
