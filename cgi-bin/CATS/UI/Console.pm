@@ -112,6 +112,12 @@ sub console_content
     my $lv = init_console_template(auto_ext('console_content'));
 
     my $s = get_settings($lv);
+
+    if (grep defined param($_), qw(search filter visible)) {
+        $s->{$_} = param($_) ? 1 : 0
+            for qw(show_contests show_messages show_results);
+    }
+
     $s->{show_results} = 1 unless defined $s->{show_results};
     $s->{show_messages} = 1 unless defined $s->{show_messages};
     $t->param($_ => $s->{$_}) for qw(show_contests show_messages show_results);
@@ -621,11 +627,6 @@ sub console_frame
     my $cc = $t->output;
 
     my $lv = init_console_template('console.html.tt');
-    my $s = get_settings($lv);
-    if (grep defined param($_), qw(search filter visible)) {
-        $s->{$_} = param($_) ? 1 : 0
-            for qw(show_contests show_messages show_results);
-    }
     $t->param(message => $question_msg) if $question_msg;
     $t->param(
         href_console_content => url_f('console_content', map { $_ => (url_param($_) || '') } qw(uf se page)),
