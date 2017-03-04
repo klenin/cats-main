@@ -1,5 +1,5 @@
-[% PROCESS 'includes/menu_begin.tti' %]
-<form id="console_form" method="post" enctype="multipart/form-data">
+[% PROCESS includes/menu_begin.tti %]
+<form id="console_form" method="POST" enctype="multipart/form-data">
 <p id="update_error"></p>
 <script type="text/javascript">
 function send_message(href)
@@ -56,11 +56,11 @@ function fill_1(aid, arg)
 [% PROCESS includes/listview_js.tti %]
 <span id="refreshable_content">
 [% UNLESS initial_content %]<br/>[% capt.loading %]<br/>
-[% ELSE ; initial_content ; END %]
+[% ELSE; initial_content; END %]
 </span>
 [% IF is_team %]
 <br/>
-    <table cellpadding="6" cellspacing="0" class="bordered">
+<table cellpadding="6" cellspacing="0" class="bordered">
 [% IF is_jury %]
     <tr><td>
     [% capt.selection %]:
@@ -77,20 +77,21 @@ function fill_1(aid, arg)
     ] <input type="submit" value="[% capt.retest %]" name="retest" class="button"/>
     </td></tr>
 [% END %]
-</form><form method="post" enctype="multipart/form-data">
+</form>
+<form method="POST" enctype="multipart/form-data">
     <tr bgcolor="#ccccff"><td>
     [% capt.question %]:
     <input size="100" maxlength="200" name="question_text" value="[% question_text | html %]" class="bordered" />
     <input type="submit" value="[% capt.send %]" name="send_question" class="button"/>
     </td></tr>
-    </table>
+</table>
 [% END %]
 </form>
 <script type="text/javascript">
 console_url = '[% href_console_content %]';
 main_form = document.getElementById('console_form');
 
-function error_message (error_code) {
+function error_message(error_code) {
     document.getElementById('update_error').innerHTML = '<b>Error while requesting console: ' + error_code + '</b>';
 }
 
@@ -101,7 +102,7 @@ function xhr_request(url, method, data, callback, error_callback) {
         main_form.style.opacity = '1';
         return false;
     }
-    main_form.style.opacity = '0.3';
+    //main_form.style.opacity = '0.3';
     xhr.onreadystatechange = function(){
         if (xhr.readyState === XMLHttpRequest.DONE) {
             if (xhr.status == 200) {
@@ -144,4 +145,4 @@ function console_update() {
 
 update_interval = setInterval(console_update, 30000);
 </script>
-[% PROCESS 'includes/menu_end.tti' %]
+[% PROCESS includes/menu_end.tti %]
