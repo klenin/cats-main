@@ -80,7 +80,7 @@ function fill_1(aid, arg)
 <form method="POST" enctype="multipart/form-data">
 <div class="send_message">
     [% capt.question %]:
-    <input size="100" maxlength="200" name="question_text" value="[% question_text | html %]" class="bordered" />
+    <input size="100" maxlength="200" name="question_text" class="bordered" />
     <input type="submit" value="[% capt.send %]" name="send_question" class="button"/>
 </div>
 [% END %]
