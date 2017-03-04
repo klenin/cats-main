@@ -24,13 +24,89 @@ function send_message(href)
 
 [% IF message %]<i>[% message | html %]</i><br/>[% END %]
 
+[% IF is_jury %]
+  <script type="text/javascript" src="js/lib/jquery.min.js"></script>
+
+  <style>
+    .limits {
+      height: 100%;
+      float: left;
+      margin: 1px;
+      padding: 4px;
+    }
+    .cp_overridden_limits {
+      background-color: #FEFBCA;
+    }
+    .req_overridden_limits {
+      background-color: #60E760;
+    }
+    .fill_width {
+      width: 100%;
+    }
+  </style>
+
+  <script>
+    function redirect_with_post(href, data) {
+      var form_str = '<form action="' + href + '" method="POST">';
+      $.each(data, function(param, value) {
+        form_str += '<input type="hidden" name="' + param + '" value="' + value + '" />';
+      });
+      form_str += '</form>';
+      var form = $(form_str);
+      $('body').append(form);
+      form.submit();
+    }
+
+    function get_input_name(name, req_id) {
+      return name + '_' + req_id;
+    }
+
+    [% MACRO get_input_name(name, req_id) BLOCK; "${name}_${req_id}"; END %]
+
+    function get_dom_object_by(att, using) {
+      var selectors = {
+        id: function(att) { return '#' + att },
+        name: function(att) { return 'select[name="' + att + '"]' }
+      };
+      return $(selectors[using](att));
+    }
+
+    function get_input_val(dom_object) {
+      if (dom_object.prop('tagName') == 'INPUT' || dom_object.prop('tagName') == 'SELECT') {
+        return dom_object.prop('type') == 'checkbox' ? +dom_object.prop('checked') : dom_object.val();
+      }
+    }
+
+    function submit_request_state(req_id, action, submit_name) {
+      var fields = {
+        testsets: { get_by: 'id' },
+        judge: { get_by: 'name' },
+        set_judge: { get_by: 'id' },
+        time_limit: { get_by: 'id' },
+        memory_limit: { get_by: 'id' },
+        set_limits: { get_by: 'id' },
+      };
+
+      var params = {};
+
+      $.each(fields, function(name, field) {
+        params[name] = get_input_val(get_dom_object_by(get_input_name(name, req_id), field.get_by));
+      });
+
+      params[submit_name] = 1;
+
+      redirect_with_post(action, params);
+    }
+  </script>
+[% END %]
+
 [% BLOCK sources_info_row %]
-<tr>
+<tr [% IF second_row %] style="border-top-style: solid" [% END %]>
   <th>ID</th>
   [% FOREACH si IN sources_info; IF si %]
     <td colspan="[% si.colspan %]">[% si.req_id %]</td>
   [% ELSE %]
-    <td rowspan="11"></td>
+    <td rowspan="11" colspan="2"></td>
   [% END; END %]
 </tr>
 <tr>
@@ -83,17 +159,17 @@ function send_message(href)
     </td>
   [% END; END %]
 </tr>
-[% IF si.is_jury %]<form action="[% si.href_run_details %]" method="POST" class="embedded">[% END %]
 <tr>
   <th>[% capt.testset %]</th>
   [% FOREACH si IN sources_info; IF si %]
-    <td [% IF si.is_jury %] colspan="3" [% END %]>
+    <td [% IF si.colspan > 1 %] colspan="[% si.colspan - 1 %]" [% END %]>
       [% IF si.is_jury %]
-        <input type="text" name="testsets" value="[% si.testsets %]" />
-        <input type="checkbox" name="set_judge" value="1" />[% select('judge', si.judges) %]
-    </td><td rowspan="2">
-        <p><input type="submit" name="retest" value="[% capt.retest %]" class="button" /></p>
-        <p><input type="submit" name="clone" value="[% capt.clone %]" class="button" /></p>
+        <input type="text" id="testsets_[% si.req_id %]" value="[% si.testsets %]" />
+        [% select('judge_' _ si.req_id, si.judges) %]
+        <input type="checkbox" id="set_judge_[% si.req_id %]" value="1" />
+        <td rowspan="2">
+        <p><input type="button" value="[% capt.retest %]" class="button fill_width" onclick="submit_request_state('[% si.req_id %]', '[% si.href_run_details %]', 'retest')"/></p>
+        <p><input type="button" value="[% capt.clone %]" class="button fill_width" onclick="submit_request_state('[% si.req_id %]', '[% si.href_run_details %]', 'clone')"/></p>
       [% ELSE; si.testsets; END %]
     </td>
   [% END; END %]
@@ -101,19 +177,16 @@ function send_message(href)
 <tr>
   <th>[% capt.limits %]</th>
   [% FOREACH si IN sources_info; IF si %]
+    <td [% IF si.colspan > 1 %] colspan="[% si.colspan - 1 %]" [% END %]>
       [% IF si.is_jury %]
-        [% colors = { r => '#60E760', cp => '#FEFBCA' } %]
-        <td [% IF si.colors.time_limit %] bgcolor="[% colors.${si.colors.time_limit} %]" [% END %]>
-          [% capt.time %] <input type="text" name="time_limit" value="[% si.time_limit %]" size="3"/> [% capt.s %]
-        </td>
-        <td [% IF si.colors.memory_limit %] bgcolor="[% colors.${si.colors.memory_limit} %]" [% END %]>
-          [% capt.memory %] <input type="text" name="memory_limit" value="[% si.memory_limit %]" size="3"/> [% capt.mb %]
-        </td>
-        <td>
-          <input type="checkbox" name="set_limits" value="1" />
-        </form>
+        <div class="limits [% si.style_classes.time_limit %]">
+          [% capt.time %], [% capt.s %]: <input type="text" id="[% get_input_name('time_limit', si.req_id) %]" value="[% si.time_limit %]" size="3"/>
+        </div>
+        <div class="limits [% si.style_classes.memory_limit%]">
+          [% capt.memory %], [% capt.mb %]: <input type="text" id="[% get_input_name('memory_limit', si.req_id) %]" value="[% si.memory_limit %]" size="3"/>
+        </div>
+        <input type="checkbox" id="set_limits_[% si.req_id %]" value="1" />
       [% ELSE %]
-        <td>
           [% limits_str(si.time_limit, si.memory_limit) %]
       [% END %]
     </td>
@@ -144,5 +217,5 @@ function send_message(href)
 
 <table class="internal_borders" cellpadding="3">
 [% PROCESS sources_info_row sources_info = sources_info %]
-[% IF element_sources_info; PROCESS sources_info_row sources_info = element_sources_info; END %]
+[% IF element_sources_info; PROCESS sources_info_row sources_info = element_sources_info second_row = 1; END %]
 </table>

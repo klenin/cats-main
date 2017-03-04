@@ -425,25 +425,24 @@ sub build_title_suffix {
 }
 
 sub sources_info_param {
+    my ($sources_info) = @_;
+
     my $set_colspan = sub {
-        for (@{$_[0]}) {
-            my $r = $_;
-            $r->{colspan} = max($r->{element_sources} ? scalar @{$r->{element_sources}} : 0, 1) + $is_jury * (@cats::limits_fields + 1);
-            $r->{colors} = {
-                map { $_ => $r->{"lr_$_"} ? 'r' : $r->{"lcp_$_"} ? 'cp' : undef } @cats::limits_fields
+        for my $si (@{$_[0]}) {
+            $si->{colspan} = max($si->{element_sources} ? scalar @{$si->{element_sources}} : 0, 1) * ($is_jury + 1);
+            $si->{style_classes} = {
+                map { $_ => $si->{"lr_$_"} ? 'req_overridden_limits' : $si->{"lcp_$_"} ? 'cp_overridden_limits' : undef } @cats::limits_fields
             };
         }
     };
-    $set_colspan->(@_);
-    for (@{$_[0]}) {
-        $set_colspan->($_->{element_sources});
-    }
+    $set_colspan->($sources_info);
+    $set_colspan->($_->{element_sources}) for (@$sources_info);
     $t->param(
-        title_suffix => build_title_suffix($_[0]),
-        sources_info => $_[0],
+        title_suffix => build_title_suffix($sources_info),
+        sources_info => $sources_info
     );
     my $element_sources_info = [
-        map { @{$_->{element_sources}} > 0 ? @{$_->{element_sources}} : undef } @{$_[0]} ];
+        map { @{$_->{element_sources}} > 0 ? @{$_->{element_sources}} : undef } @$sources_info ];
     if (0 < grep $_, @$element_sources_info) {
         $t->param(element_sources_info => $element_sources_info);
     }
