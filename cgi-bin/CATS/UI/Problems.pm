@@ -232,7 +232,7 @@ sub problems_mass_retest()
             next if !$all_runs && $accounts{$_->{account_id}};
             $accounts{$_->{account_id}} = 1;
             ($_->{state} || 0) != $cats::st_ignore_submit &&
-                CATS::Request::enforce_state($_->{id}, { state => $cats::st_not_processed })
+                CATS::Request::enforce_state($_->{id}, { state => $cats::st_not_processed, judge_id => undef })
                     and ++$count;
         }
         $dbh->commit;

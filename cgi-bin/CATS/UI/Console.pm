@@ -575,7 +575,7 @@ sub retest_submissions
     my @sanitized_runs = grep $_ ne '', split /\D+/, $selection;
     for (@sanitized_runs)
     {
-        CATS::Request::enforce_state($_, { state => $cats::st_not_processed })
+        CATS::Request::enforce_state($_, { state => $cats::st_not_processed, judge_id => undef })
             and ++$count;
     }
     $dbh->commit;
