@@ -1,7 +1,0 @@
-<body>
-<span id='refreshable_content'>
-[% console_content %]
-[% PROCESS 'includes/timing.tti' %]
-</span>
-[% PROCESS 'includes/iframe_autorefresh.tti' %]
-</body>
