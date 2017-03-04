@@ -1,6 +1,6 @@
 [% PROCESS 'includes/menu_begin.tti' %]
+<form id="console_form" method="post" enctype="multipart/form-data">
 <p id="update_error"></p>
-<form method="post" enctype="multipart/form-data">
 <script type="text/javascript">
 function send_message(href)
 {
@@ -77,6 +77,7 @@ function fill_1(aid, arg)
     ] <input type="submit" value="[% capt.retest %]" name="retest" class="button"/>
     </td></tr>
 [% END %]
+</form><form method="post" enctype="multipart/form-data">
     <tr bgcolor="#ccccff"><td>
     [% capt.question %]:
     <input size="100" maxlength="200" name="question_text" value="[% question_text | html %]" class="bordered" />
@@ -86,21 +87,27 @@ function fill_1(aid, arg)
 [% END %]
 </form>
 <script type="text/javascript">
+console_url = '[% href_console_content %]';
+main_form = document.getElementById('console_form');
+
 function error_message (error_code) {
     document.getElementById('update_error').innerHTML = '<b>Error while requesting console: ' + error_code + '</b>';
 }
 
-function xhr_request(url, method, callback, error_callback) {
+function xhr_request(url, method, data, callback, error_callback) {
     var xhr = new XMLHttpRequest();
     if (!xhr && method == 'GET') {
         error_callback(-1);
+        main_form.style.opacity = '1';
         return false;
     }
+    main_form.style.opacity = '0.3';
     xhr.onreadystatechange = function(){
         if (xhr.readyState === XMLHttpRequest.DONE) {
             if (xhr.status == 200) {
                 callback(xhr.response);
             } else {
+                main_form.style.opacity = '1';
                 if (error_callback) {
                     error_callback(xhr.status)
                 } else {
@@ -110,17 +117,29 @@ function xhr_request(url, method, callback, error_callback) {
         }
     };
     xhr.open(method, url);
-    xhr.send();
+    xhr.send(data);
 }
 
 function update_content(response) {
     var refreshable = document.getElementById('refreshable_content');
-    refreshable.innerHTML = response;    
+    refreshable.innerHTML = response;
+    main_form.style.opacity = '1';
+}
+
+function form_submit_handler(e) {
+    var fd = new FormData(e.target);
+    xhr_request(console_url, 'POST', fd, update_content);
+    e.preventDefault();
+}
+
+var msie = document.documentMode;
+
+if (!msie || msie >= 9) {
+    main_form.addEventListener('submit', form_submit_handler);
 }
 
 function console_update() {
-    var console_url = '[% href_console_content %]';
-    xhr_request(console_url, 'GET', update_content);
+    xhr_request(console_url, 'GET', undefined, update_content);
 }
 
 update_interval = setInterval(console_update, 30000);
