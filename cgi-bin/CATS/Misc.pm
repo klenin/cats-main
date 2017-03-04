@@ -296,7 +296,13 @@ sub pack_redir_params {
         { map { $_ ne 'sid' ? ($_ => url_param($_)) : () } url_param })
 }
 
-sub unpack_redir_params { $_[0] ? %{Storable::thaw(decode_base64($_[0]))} : () }
+sub unpack_redir_params {
+    my ($redir) = @_;
+    $redir or return ();
+    my $params = Storable::thaw(decode_base64($redir));
+    defined $params or return warn "Unable to decode redir '$redir'";
+    %$params;
+}
 
 # Authorize user, initialize permissions and settings.
 sub init_user
