@@ -614,21 +614,11 @@ sub console_frame
             for qw(show_contests show_messages show_results);
     }
 
-    my $selection = param('selection');
-
     if (my $qid = param('delete_question')) {
         delete_question($qid);
     }
     if (my $mid = param('delete_message')) {
         delete_message($mid);
-    }
-
-    if (defined param('retest'))
-    {
-        if (retest_submissions($selection))
-        {
-            $selection = '';
-        }
     }
 
     if (defined param('send_question'))
@@ -640,7 +630,7 @@ sub console_frame
         href_console_content => url_f('console_content', map { $_ => (url_param($_) || '') } qw(uf se page)),
         is_team => $is_team,
         is_jury => $is_jury,
-        selection => $selection,
+        selection => scalar(param('selection')),
         href_view_source => url_f('view_source'),
         href_run_details => url_f('run_details'),
         href_run_log => url_f('run_log'),
@@ -657,6 +647,8 @@ sub console_frame
 
 sub content_frame
 {
+    my $selection = param('selection');
+    retest_submissions($selection) if defined param('retest') and $selection;
     console_content;
     $t->param(is_team => $is_team);
 }
