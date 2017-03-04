@@ -1,4 +1,5 @@
 [% PROCESS 'includes/menu_begin.tti' %]
+<p id="update_error"></p>
 <form method="post" enctype="multipart/form-data">
 <script type="text/javascript">
 function send_message(href)
@@ -54,7 +55,8 @@ function fill_1(aid, arg)
 </script>
 [% PROCESS includes/listview_js.tti %]
 <span id="refreshable_content">
-<br/>[% capt.loading %]<br/>
+[% UNLESS initial_content %]<br/>[% capt.loading %]<br/>
+[% ELSE ; initial_content ; END %]
 </span>
 [% IF is_team %]
 <br/>
@@ -83,5 +85,44 @@ function fill_1(aid, arg)
     </table>
 [% END %]
 </form>
-<iframe width="0" height="0" style="display: none" src="[% href_console_content %]"></iframe>
+<script type="text/javascript">
+function error_message (error_code) {
+    document.getElementById('update_error').innerHTML = '<b>Error while requesting console: ' + error_code + '</b>';
+}
+
+function xhr_request(url, method, callback, error_callback) {
+    var xhr = new XMLHttpRequest();
+    if (!xhr && method == 'GET') {
+        error_callback(-1);
+        return false;
+    }   
+    xhr.onreadystatechange = function(){
+        if (xhr.readyState === XMLHttpRequest.DONE) {
+             if (xhr.status == 200) {
+		 callback(xhr.response);
+             } else {
+                 if (error_callback) {
+                     error_callback(xhr.status)
+                 } else {
+                     error_message(xhr.status);
+                 }
+             }
+        }
+    };
+    xhr.open(method, url);
+    xhr.send();
+}
+
+function update_content(response) {
+    var refreshable = document.getElementById('refreshable_content');
+    refreshable.innerHTML = response;    
+}
+
+function console_update() {
+    var console_url = '[% href_console_content %]';
+    xhr_request(console_url, 'GET', update_content);
+}
+
+update_interval = setInterval(console_update(), 30000);
+</script>
 [% PROCESS 'includes/menu_end.tti' %]
