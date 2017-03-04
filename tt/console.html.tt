@@ -95,18 +95,18 @@ function xhr_request(url, method, callback, error_callback) {
     if (!xhr && method == 'GET') {
         error_callback(-1);
         return false;
-    }   
+    }
     xhr.onreadystatechange = function(){
         if (xhr.readyState === XMLHttpRequest.DONE) {
-             if (xhr.status == 200) {
-		 callback(xhr.response);
-             } else {
-                 if (error_callback) {
-                     error_callback(xhr.status)
-                 } else {
-                     error_message(xhr.status);
-                 }
-             }
+            if (xhr.status == 200) {
+                callback(xhr.response);
+            } else {
+                if (error_callback) {
+                    error_callback(xhr.status)
+                } else {
+                    error_message(xhr.status);
+                }
+            }
         }
     };
     xhr.open(method, url);
@@ -123,6 +123,6 @@ function console_update() {
     xhr_request(console_url, 'GET', update_content);
 }
 
-update_interval = setInterval(console_update(), 30000);
+update_interval = setInterval(console_update, 30000);
 </script>
 [% PROCESS 'includes/menu_end.tti' %]
