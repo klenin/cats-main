@@ -40,10 +40,12 @@ CREATE TABLE judges (
     id               INTEGER NOT NULL PRIMARY KEY,
     account_id       INTEGER UNIQUE REFERENCES accounts(id) ON DELETE SET NULL,
     nick             VARCHAR(32) NOT NULL,
-    lock_counter     INTEGER,
+    pin_mode         INTEGER DEFAULT 0,
     is_alive         INTEGER DEFAULT 0 CHECK (is_alive IN (0, 1)),
     alive_date       TIMESTAMP
 );
+ALTER TABLE judges ADD CONSTRAINT chk_judge_pin_mode
+    CHECK (pin_mode IN (0, 1, 2, 3));
 
 CREATE TABLE contests (
     id            INTEGER NOT NULL PRIMARY KEY,

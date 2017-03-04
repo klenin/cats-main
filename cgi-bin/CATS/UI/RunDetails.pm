@@ -6,6 +6,7 @@ use warnings;
 use Algorithm::Diff;
 use List::Util qw(max);
 
+use CATS::Constants;
 use CATS::DB;
 use CATS::Data qw(is_jury_in_contest);
 use CATS::DevEnv;
@@ -21,10 +22,10 @@ use CATS::Web qw(param encoding_param url_param headers upload_source content_ty
 sub get_judges {
     my ($si) = @_;
     $t->param('judges') or $t->param(judges => $dbh->selectall_arrayref(q~
-        SELECT id, nick, lock_counter FROM judges ORDER BY nick~, { Slice => {} }));
+        SELECT id, nick, pin_mode FROM judges ORDER BY nick~, { Slice => {} }));
     $si->{judges} = [ {}, map {
         value => $_->{id},
-        text => $_->{nick} . ($_->{lock_counter} ? '' : ' *'),
+        text => $_->{nick} . ($_->{pin_mode} == $cats::judge_pin_locked ? '' : ' *'),
         selected => ($_->{id} == ($si->{judge_id} || 0) ? $si->{judge_name} = $_->{nick} : 0),
     }, @{$t->param('judges')} ];
 }
@@ -460,7 +461,7 @@ sub run_details_frame {
     my $limits = { map { $_ => param($_) } grep param($_), @cats::limits_fields };
     my $need_change_limits = param('set_limits');
     my $need_clear_limits = $need_change_limits && !%$limits;
-    
+
     if ($need_change_limits && !$need_clear_limits) {
         my $filtered_limits = CATS::Request::filter_valid_limits($limits);
         my @invalid_limits_keys = grep !exists $filtered_limits->{$_}, keys %$limits;
