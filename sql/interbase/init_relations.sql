@@ -398,6 +398,6 @@ INSERT INTO default_de (id, code, description, file_ext, in_contests) VALUES (GE
 INSERT INTO dummy_table VALUES (NULL, NULL, NULL);
 INSERT INTO contests(id, title, ctype, start_date) VALUES(1, 'Турнир', 1, CURRENT_DATE - 100);
 INSERT INTO accounts(id, login, passwd, srole) VALUES(2, 'root', 'root', 0);
-INSERT INTO accounts(id, login, passwd, srole) VALUES(5, 'fox', 'fox', 0);
+INSERT INTO accounts(id, login, passwd, srole) VALUES(5, 'fox', 'fox', 1);
 INSERT INTO contest_accounts(id, contest_id, account_id, is_jury) VALUES (3, 1, 2, 1);
 INSERT INTO judges(id, nick, lock_counter, account_id) VALUES (4, 'fox', 0, 5);
