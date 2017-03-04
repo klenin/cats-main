@@ -18,13 +18,15 @@ use CATS::Request;
 use CATS::Utils qw(coalesce url_function state_to_display date_to_iso);
 use CATS::Web qw(param url_param);
 
+# This is called before init_template to display submitted question immediately.
+# So we have to use res_str instead of msg.
 sub send_question_to_jury
 {
     my ($question_text) = @_;
 
     $is_team && defined $question_text && $question_text ne ''
         or return;
-    length($question_text) <= 1000 or return msg(1063);
+    length($question_text) <= 1000 or return res_str(1063);
 
     my $cuid = get_registered_contestant(fields => 'id', contest_id => $cid);
 
@@ -32,7 +34,7 @@ sub send_question_to_jury
         SELECT question FROM questions WHERE account_id = ? ORDER BY submit_time DESC~, {},
         $cuid
     );
-    ($previous_question_text || '') ne $question_text or return msg(1061);
+    ($previous_question_text || '') ne $question_text or return res_str(1061);
 
     my $s = $dbh->prepare(q~
         INSERT INTO questions(id, account_id, submit_time, question, received, clarified)
@@ -44,8 +46,7 @@ sub send_question_to_jury
     $s->execute;
     $s->finish;
     $dbh->commit;
-    msg(1062);
-    1;
+    res_str(1062);
 }
 
 
@@ -603,6 +604,18 @@ sub delete_message
 
 sub console_frame
 {
+    if (my $qid = param('delete_question')) {
+        delete_question($qid);
+    }
+    if (my $mid = param('delete_message')) {
+        delete_message($mid);
+    }
+    my $question_msg;
+    if (defined param('send_question')) {
+        $question_msg = send_question_to_jury(param('question_text'));
+    }
+
+
     console_content;
     $t->param(is_team => $is_team);
     my $cc = $t->output;
@@ -613,19 +626,7 @@ sub console_frame
         $s->{$_} = param($_) ? 1 : 0
             for qw(show_contests show_messages show_results);
     }
-
-    if (my $qid = param('delete_question')) {
-        delete_question($qid);
-    }
-    if (my $mid = param('delete_message')) {
-        delete_message($mid);
-    }
-
-    if (defined param('send_question'))
-    {
-        send_question_to_jury(param('question_text'));
-    }
-
+    $t->param(message => $question_msg) if $question_msg;
     $t->param(
         href_console_content => url_f('console_content', map { $_ => (url_param($_) || '') } qw(uf se page)),
         is_team => $is_team,
