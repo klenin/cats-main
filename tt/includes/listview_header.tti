@@ -6,8 +6,8 @@
   <input type="submit" value="[% capt.search %]" name="do_search" class="button" style="min-width: 50px; width: 15%;">
   <input type="text" name="search" id="search" value="[% search %]" style="min-width: 50px; width: 80%;" maxlength="100" class="bordered">
   [% IF search_hints -%]
-  <a href="#" class="search_hint" onclick="toggle_search_hints();">?</a>
-  <div id="search_hint" class="bordered search_hint">
+  <a href="#" class="search_hint" onclick="return toggle_search_hints()">?</a>
+  <div id="search_hint" class="bordered search_hint" style="display: none;">
     <table>
       <tr>
       [% FOREACH op IN capt.ops %]
