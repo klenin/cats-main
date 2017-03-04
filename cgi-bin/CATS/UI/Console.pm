@@ -603,6 +603,10 @@ sub delete_message
 
 sub console_frame
 {
+    console_content;
+    $t->param(is_team => $is_team);
+    my $cc = $t->output;
+
     my $lv = init_console_template('console.html.tt');
     my $s = get_settings($lv);
     if (grep defined param($_), qw(search filter visible)) {
@@ -645,6 +649,7 @@ sub console_frame
         href_run_log => url_f('run_log'),
         href_diff => url_f('diff_runs'),
         title_suffix => res_str(510),
+        initial_content => $cc,
     );
     $t->param(submenu => [
         { href => url_f('console_export'), item => res_str(561) },
@@ -656,10 +661,7 @@ sub console_frame
 sub content_frame
 {
     console_content;
-    return if param('json');
-    my $cc = $t->output;
-    init_template('console_iframe.html.tt');
-    $t->param(console_content => $cc, is_team => $is_team);
+    $t->param(is_team => $is_team);
 }
 
 
