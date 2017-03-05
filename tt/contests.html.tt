@@ -1,4 +1,4 @@
-[% PROCESS 'includes/menu_begin.tti' %]
+[% PROCESS includes/menu_begin.tti %]
 
 <script type="text/javascript">
 function delete_contest(href, name)
@@ -70,4 +70,4 @@ function confirm_registration()
 [% FOREACH vh IN capt.virt_help %]<li>[% vh %]</li>[% END %]
 </ul>
 [% END %]
-[% PROCESS 'includes/menu_end.tti' %]
+[% PROCESS includes/menu_end.tti %]

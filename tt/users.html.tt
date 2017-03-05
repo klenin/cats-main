@@ -1,5 +1,5 @@
-[% PROCESS 'includes/menu_begin.tti' %]
-[% PROCESS 'includes/html.tti' %]
+[% PROCESS includes/menu_begin.tti %]
+[% PROCESS includes/html.tti %]
 
 <script>
 function delete_team(href, name)

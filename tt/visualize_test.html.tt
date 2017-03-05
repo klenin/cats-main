@@ -1,5 +1,5 @@
 [%- USE Javascript -%]
-[% PROCESS 'includes/header.tti' %]
+[% PROCESS includes/header.tti %]
 
 <script>
   var input_file = "[% input_file | $Javascript %]";

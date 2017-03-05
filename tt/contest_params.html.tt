@@ -1,7 +1,7 @@
-[% PROCESS 'includes/menu_begin.tti' %]
+[% PROCESS includes/menu_begin.tti %]
 
 <form method=post enctype='multipart/form-data' action='[% href_action %]'>
-[% PROCESS 'includes/contest_params.tti' %]
+[% PROCESS includes/contest_params.tti %]
 [% IF can_edit %]
 <input type="hidden" name="id" value="[% id %]" />
 <input type="submit" name="edit_save" value="[% capt.ok %]" class="button" />
@@ -9,4 +9,4 @@
 <input type="submit" name="edit_cancel" value="[% capt.cancel %]" class="button" />
 </form>
 
-[% PROCESS 'includes/menu_end.tti' %]
+[% PROCESS includes/menu_end.tti %]

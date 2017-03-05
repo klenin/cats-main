@@ -1,10 +1,10 @@
-[% PROCESS 'includes/menu_begin.tti' %]
+[% PROCESS includes/menu_begin.tti %]
 
 <form method=post enctype='multipart/form-data'>
-[% PROCESS 'includes/listview_header.tti' %]
+[% PROCESS includes/listview_header.tti %]
 
 <table width=100% cellpadding=2 cellspacing=1 class="bordered highlight">
-[% PROCESS 'includes/listview_col_defs.tti' %]
+[% PROCESS includes/listview_col_defs.tti %]
 
 [% FOREACH cp IN contests_prizes %]
 <tr class="[% loop.parity() %]">
@@ -18,4 +18,4 @@
 [% PROCESS includes/pages.tti %]
 </form>
 
-[% PROCESS 'includes/menu_end.tti' %]
+[% PROCESS includes/menu_end.tti %]

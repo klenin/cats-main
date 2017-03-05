@@ -1,4 +1,4 @@
-[% PROCESS 'includes/menu_begin.tti' %]
+[% PROCESS includes/menu_begin.tti %]
 [%- PROCESS includes/html.tti -%]
 
 <p>[% capt.name %]: [% team_name %]</p>
@@ -10,4 +10,4 @@
 <input type="submit" name="clear" value="[% capt.clear %]" class="button"/>
 </form>
 
-[% PROCESS 'includes/menu_end.tti' %]
+[% PROCESS includes/menu_end.tti %]

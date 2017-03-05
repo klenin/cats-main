@@ -1,15 +1,15 @@
-[% PROCESS 'includes/header.tti' %]
+[% PROCESS includes/header.tti %]
 
-[% PROCESS 'includes/syntax_highlight.tti' %]
+[% PROCESS includes/syntax_highlight.tti %]
 </head>
 <body>
 [% IF message %]<i>[% message | html %]</i><br>[% END %]
-[% PROCESS 'includes/sources_info.tti' %]
+[% PROCESS includes/sources_info.tti %]
 
 <table>
 <tr>
 <td>
-[% PROCESS 'includes/encoding_form.html.tti' capt_enc = capt.encoding %]
+[% PROCESS includes/encoding_form.html.tti capt_enc = capt.encoding %]
 </td>
 <td>
 [% IF is_jury %]
@@ -40,6 +40,6 @@
 [% END %]
 </tr>
 </table>
-[% PROCESS 'includes/timing.tti' %]
+[% PROCESS includes/timing.tti %]
 </body>
 </html>

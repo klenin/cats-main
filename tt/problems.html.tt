@@ -82,10 +82,10 @@ function chg_code(st_sel, pid)
 [% END %]
 
 <form method="post" enctype="multipart/form-data" name="problems_form" accept-charset="UTF-8" style="margin: 0" action="[% href_action %]">
-[% PROCESS 'includes/listview_header.tti' %]
+[% PROCESS includes/listview_header.tti %]
 <table width="100%" cellpadding="2" cellspacing="1" class="bordered highlight">
 [% IF is_participant %]
-[% PROCESS 'includes/listview_col_defs.tti' sel_col = 1 %]
+[% PROCESS includes/listview_col_defs.tti sel_col = 1 %]
 [% END %]
 [% FOREACH p IN problems %]
 <tr class="[% loop.parity() %] problem_row" id="pr_[% p.cpid %]">

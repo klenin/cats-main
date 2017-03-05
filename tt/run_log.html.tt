@@ -1,8 +1,8 @@
-[% PROCESS 'includes/header.tti' %]
+[% PROCESS includes/header.tti %]
 </head>
 <body>
 
-[% PROCESS 'includes/sources_info.tti' %]
+[% PROCESS includes/sources_info.tti %]
 <br/>
 
 <form method="post">
@@ -49,6 +49,6 @@
 </form>
 [% END %]
 
-[% PROCESS 'includes/timing.tti' %]
+[% PROCESS includes/timing.tti %]
 </body>
 </html>

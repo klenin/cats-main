@@ -1,4 +1,4 @@
-[% PROCESS 'includes/menu_begin.tti' %]
+[% PROCESS includes/menu_begin.tti %]
 <h3>[% capt.problem %]: [% problem_title %]</h3>
 <table style="text-align: right" class="bordered compare_tests highlight">
 <tr><td>&nbsp;</td>[% FOREACH cm IN comparison_matrix %]<td width="20px">[% cm.test_rank | format('%03d') %]</td>[% END %]
@@ -25,4 +25,4 @@
 [% FOREACH ht IN hard_tests %][% ht.t %][% UNLESS loop.last %],[% END %][% END %]<br/>
 [% END %]
 
-[% PROCESS 'includes/menu_end.tti' %]
+[% PROCESS includes/menu_end.tti %]

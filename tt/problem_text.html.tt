@@ -1,4 +1,4 @@
-[% PROCESS 'includes/header.tti' %]
+[% PROCESS includes/header.tti %]
 [% tex_styles %]
 [% IF mathjax %]
 <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
@@ -46,6 +46,6 @@ window.$ && window.MathJax && $(document).ready(function() {
 [% END %]
 <script type="text/javascript" src="docs/std/whitespace.js"></script>
 <script type="text/javascript">ws_init('spaces', [[% FOREACH p IN problems; p.id; ',' UNLESS loop.last; END %]])</script>
-[% PROCESS 'includes/timing.tti' %]
+[% PROCESS includes/timing.tti %]
 </body>
 </html>

@@ -1,9 +1,9 @@
-[% IF printable %][% PROCESS 'includes/header.tti' %]</head>[% END %]
+[% IF printable %][% PROCESS includes/header.tti %]</head>[% END %]
 <body>
 <div id='refreshable_content'>
 [% rank_table_content %]
-[% PROCESS 'includes/timing.tti' %]
+[% PROCESS includes/timing.tti %]
 </div>
-[% PROCESS 'includes/iframe_autorefresh.tti' %]
+[% PROCESS includes/iframe_autorefresh.tti %]
 </body>
 [% IF printable %]</html>[% END %]

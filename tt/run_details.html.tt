@@ -1,10 +1,10 @@
-[% PROCESS 'includes/header.tti' %]
+[% PROCESS includes/header.tti %]
 </head>
 <body>
 
-[% PROCESS 'includes/sources_info.tti' %]
+[% PROCESS includes/sources_info.tti %]
 <br/>
-[% PROCESS 'includes/encoding_form.html.tti'
+[% PROCESS includes/encoding_form.html.tti
     capt_enc = capt.encoding
     select_name = 'comment_enc'
 %]
@@ -136,7 +136,7 @@
 [% END %]
 </tr></table>
 
-[% PROCESS 'includes/timing.tti' %]
+[% PROCESS includes/timing.tti %]
 [%- IF is_jury -%]
 <script type="text/javascript" src="js/lib/jquery.min.js"></script>
 <!--[if lte IE 8]><script language="javascript" type="text/javascript" src="js/lib/excanvas.min.js"></script><![endif]-->

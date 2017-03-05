@@ -18,7 +18,7 @@
 </tr>
 <tr class="footer2">
   <td class="footer_image">
-    &nbsp;[% PROCESS 'includes/timing.tti' %]
+    &nbsp;[% PROCESS includes/timing.tti %]
   </td>
   <td align="right">
     <a href="http://imcs.dvfu.ru/works"> [% capt.dept %] &nbsp;</a><br>

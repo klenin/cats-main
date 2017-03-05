@@ -1,10 +1,10 @@
-[% PROCESS 'includes/menu_begin.tti' %]
+[% PROCESS includes/menu_begin.tti %]
 <i>[% capt.in_queue %]: [% total_queue %]</i><br/>
 
 <form method="post" enctype="multipart/form-data" name="problems_form" style="margin: 0">
-[% PROCESS 'includes/listview_header.tti' %]
+[% PROCESS includes/listview_header.tti %]
 <table width="100%" cellpadding="2" cellspacing="1" class="bordered">
-[% PROCESS 'includes/listview_col_defs.tti' sel_col = 1 %]
+[% PROCESS includes/listview_col_defs.tti sel_col = 1 %]
 [% FOREACH p IN problems %]
 <tr class="[% loop.parity() %]">
 <td width="1%">
@@ -28,4 +28,4 @@
 <input type="submit" name="recalc_points" value="[% capt.recalc %]" class="button" />
 <input type="checkbox" name="all_runs" value="1"/> [% capt.all_runs %]
 </form>
-[% PROCESS 'includes/menu_end.tti' %]
+[% PROCESS includes/menu_end.tti %]

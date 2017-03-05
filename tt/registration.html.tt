@@ -1,5 +1,5 @@
-[% PROCESS 'includes/menu_begin.tti' %]
-[%- PROCESS 'includes/html.tti' -%]
+[% PROCESS includes/menu_begin.tti %]
+[%- PROCESS includes/html.tti -%]
 
 [% IF successfully_registred %]
 [% capt.successful %]<br/>
@@ -8,13 +8,13 @@
 <h3>[% capt.new_user %]</h3>
 <form method="post" enctype="multipart/form-data">
 <h4>[% capt.required_fields %]</h4>
-[% PROCESS 'includes/user_main.tti' %]
-[% PROCESS 'includes/password.tti' %]
+[% PROCESS includes/user_main.tti %]
+[% PROCESS includes/password.tti %]
 <h4>[% capt.aux_fields %]</h4>
-[% PROCESS 'includes/user_extra.tti' %]
+[% PROCESS includes/user_extra.tti %]
 <br/>
 <input type="submit" name="register" value="[% capt.do_register %]" class="button">
 </form>
 [% END %]
 
-[% PROCESS 'includes/menu_end.tti' %]
+[% PROCESS includes/menu_end.tti %]

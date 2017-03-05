@@ -1,4 +1,4 @@
-[% PROCESS 'includes/menu_begin.tti' %]
+[% PROCESS includes/menu_begin.tti %]
 
 <form method="post" enctype="multipart/form-data" action="[% href_graphs %]">
 [% FOREACH c IN codes -%]
@@ -15,4 +15,4 @@
 </table>
 [% END %]
 
-[% PROCESS 'includes/menu_end.tti' %]
+[% PROCESS includes/menu_end.tti %]

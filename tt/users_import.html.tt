@@ -1,4 +1,4 @@
-[% PROCESS 'includes/menu_begin.tti' %]
+[% PROCESS includes/menu_begin.tti %]
 
 <form method="post" action="[% href_action %]">
 <div>
@@ -8,4 +8,4 @@
 <input type="submit" class="btn" name="do" value="[% capt.do_import %]" />
 </form>
 
-[% PROCESS 'includes/menu_end.tti' %]
+[% PROCESS includes/menu_end.tti %]

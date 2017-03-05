@@ -1,4 +1,4 @@
-[% PROCESS 'includes/menu_begin.tti' %]
+[% PROCESS includes/menu_begin.tti %]
 [%- PROCESS includes/html.tti -%]
 
 <table cellpadding="0">
@@ -22,4 +22,4 @@
 [%- END %]
 </table>
 
-[% PROCESS 'includes/menu_end.tti' %]
+[% PROCESS includes/menu_end.tti %]

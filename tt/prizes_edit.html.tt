@@ -1,4 +1,4 @@
-[% PROCESS 'includes/menu_begin.tti' %]
+[% PROCESS includes/menu_begin.tti %]
 
 <form method="post" enctype="multipart/form-data" action="[% href_action %]">
 <table cellpadding="0">
@@ -22,4 +22,4 @@
 [% PROCESS includes/edit_save_cancel.tti %]
 </form>
 
-[% PROCESS 'includes/menu_end.tti' %]
+[% PROCESS includes/menu_end.tti %]
