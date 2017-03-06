@@ -11,6 +11,7 @@ use Exporter qw(import);
 
 our @EXPORT = qw(
     validate_string_length
+    validate_integer
 );
 
 sub new {
@@ -66,6 +67,19 @@ sub validate_string_length {
     return 1 if $min <= length($str) && length($str) <= $max;
     my $fn = res_str($field_name_id);
     $min ? msg(1044, $fn, $min, $max) : msg(1043, $fn, $max);
+}
+
+# Params: p { allow_empty, min, max }
+sub validate_integer {
+    my ($str, $field_name_id, %p) = @_;
+    defined $p{min} && defined $p{max} or die;
+    if ($str) {
+        return 1 if $str =~ /^\d+$/ && $p{min} <= $str && $str <= $p{max};
+    }
+    elsif ($p{allow_empty}) {
+        return 1;
+    }
+    msg(1045, res_str($field_name_id), $p{min}, $p{max});
 }
 
 1;
