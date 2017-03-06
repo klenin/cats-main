@@ -14,25 +14,27 @@ CREATE TABLE default_de (
 
 
 CREATE TABLE accounts (
-    id      INTEGER NOT NULL PRIMARY KEY,
-    login   VARCHAR(50) NOT NULL UNIQUE,
-    passwd  VARCHAR(100) DEFAULT '',
-    sid     VARCHAR(30),
-    srole   INTEGER NOT NULL, /* 0 - root, 1 - user, 2 - can create contests, 4 - can delete messages */
-    last_login  TIMESTAMP,
-    last_ip     VARCHAR(100) DEFAULT '',
-    locked      INTEGER DEFAULT 0 CHECK (locked IN (0, 1)),
-    team_name   VARCHAR(200),
-    capitan_name VARCHAR(200),
-    git_author_name VARCHAR(200) DEFAULT NULL,
-    country     VARCHAR(30),
-    motto       VARCHAR(200),
-    email       VARCHAR(200),
+    id               INTEGER NOT NULL PRIMARY KEY,
+    login            VARCHAR(50) NOT NULL UNIQUE,
+    passwd           VARCHAR(100) DEFAULT '',
+    sid              VARCHAR(30),
+    srole            INTEGER NOT NULL, /* 0 - root, 1 - user, 2 - can create contests, 4 - can delete messages */
+    last_login       TIMESTAMP,
+    last_ip          VARCHAR(100) DEFAULT '',
+    locked           INTEGER DEFAULT 0 CHECK (locked IN (0, 1)),
+    team_name        VARCHAR(200),
+    capitan_name     VARCHAR(200),
+    git_author_name  VARCHAR(200) DEFAULT NULL,
+    country          VARCHAR(30),
+    motto            VARCHAR(200),
+    email            VARCHAR(200),
     git_author_email VARCHAR(200) DEFAULT NULL,
-    home_page   VARCHAR(200),
-    icq_number  VARCHAR(200),
-    settings    BLOB SUB_TYPE 0,
-    city        VARCHAR(200)
+    home_page        VARCHAR(200),
+    icq_number       VARCHAR(200),
+    settings         BLOB SUB_TYPE 0,
+    city             VARCHAR(200),
+    affiliation      VARCHAR(200),
+    affiliation_year INTEGER
 );
 CREATE INDEX accounts_sid_idx ON accounts(sid);
 
