@@ -2,6 +2,7 @@
   capt.import({
     country => 'Страна',
     city => 'Город / регион',
+    affiliation => 'Учебное заведение',
     motto => 'Девиз команды',
     capitan_name => 'ФИО капитана команды',
     email => 'E-Mail',

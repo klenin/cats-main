@@ -2,6 +2,7 @@
   capt.import({
     country => 'Country',
     city => 'City / region',
+    affiliation => 'Educational institution',
     motto => 'Motto',
     capitan_name => "Team captain's name",
     email => 'E-Mail',

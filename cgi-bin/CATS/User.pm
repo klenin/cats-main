@@ -96,9 +96,11 @@ sub new_frame
 
 
 sub param_names ()
-{
-    qw(login team_name capitan_name email country motto home_page icq_number city git_author_name git_author_email)
-}
+{qw(
+    login team_name capitan_name email country motto home_page icq_number
+    city affiliation
+    git_author_name git_author_email
+)}
 
 
 sub any_official_contest_by_team
@@ -125,6 +127,7 @@ sub validate_params
     validate_string_length($self->{email}, 803, 0, 50) or return;
     validate_string_length($self->{icq_number}, 804, 0, 50) or return;
     validate_string_length($self->{home_page}, 805, 0, 100) or return;
+    validate_string_length($self->{affiliation}, 807, 0, 100) or return;
 
     if ($p{validate_password}) {
         validate_string_length($self->{password1}, 806, 1, 72) or return;
@@ -172,8 +175,8 @@ sub insert
     my $new_settings = $p{save_settings} ? Storable::freeze($CATS::Misc::settings) : '';
     $dbh->do(qq~
         INSERT INTO accounts (
-            id, srole, passwd, settings, ~ . join (', ', param_names()) . qq~
-        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)~, {},
+            id, srole, passwd, settings, ~ . join (', ', param_names()) . q~
+        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)~, {},
         $aid, $cats::srole_user, $self->{password1}, $new_settings, $self->values
     );
     add_to_contest(contest_id => $_->{id}, account_id => $aid, is_ooc => 1)
