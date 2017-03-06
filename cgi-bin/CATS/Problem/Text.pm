@@ -214,7 +214,7 @@ sub parse
 
 sub contest_visible
 {
-    return (1, 1) if $is_jury;
+    return (1, 1, 1) if $is_root;
 
     my $pid = url_param('pid');
     my $cpid = url_param('cpid');
@@ -240,29 +240,27 @@ sub contest_visible
     my $c = $dbh->selectrow_hashref(qq~
         SELECT
             CAST(CURRENT_TIMESTAMP - C.start_date AS DOUBLE PRECISION) AS since_start,
-            C.local_only, C.id AS orig_cid, C.show_packages, C.is_hidden
-            FROM contests C $s WHERE $t.id = ?~, undef,
-        $p);
+            C.local_only, C.id AS orig_cid, C.show_packages, C.is_hidden,
+            CA.is_jury, CA.is_remote, CA.is_ooc
+            FROM contests C $s
+            LEFT JOIN contest_accounts CA ON CA.contest_id = C.id AND CA.account_id = ?
+            WHERE $t.id = ?~, undef,
+        $uid, $p);
+    return (1, 1, 1) if $c->{is_jury};
     if (($c->{since_start} || 0) > 0 && !$c->{is_hidden}) {
-        $c->{local_only} or return (1, $c->{show_packages});
-        defined $uid or return (0, 0);
-        # Require local participation in the original contest of the problem,
-        # or, if all problems from some contest are requested, in that contest.
-        # More detailed check leads to complications in non-original contests.
-        my ($is_remote, $is_ooc) = $dbh->selectrow_array(q~
-            SELECT is_remote, is_ooc FROM contest_accounts
-            WHERE account_id = ? AND contest_id = ?~, undef,
-            $uid, $c->{orig_cid});
-        return (1, $c->{show_packages})
-            if defined $is_remote && $is_remote == 0 || defined $is_ooc && $is_ooc == 0;
+        $c->{local_only} or return (1, $c->{show_packages}, 0);
+        defined $uid or return (0, 0, 0);
+        # Require local participation.
+        return (1, $c->{show_packages}, 0)
+            if defined $c->{is_remote} && $c->{is_remote} == 0 || defined $c->{is_ooc} && $c->{is_ooc} == 0;
     }
-    return (0, 0);
+    return (0, 0, 0);
 }
 
 
 sub problem_text_frame
 {
-    my ($show, $explain) = contest_visible();
+    my ($show, $explain, $is_jury_in_contest) = contest_visible();
     $show or return CATS::Web::not_found;
     $explain = $explain && url_param('explain');
 
@@ -276,15 +274,15 @@ sub problem_text_frame
     elsif (my $cpid = url_param('cpid')) {
         my $p = $dbh->selectrow_hashref(qq~
             SELECT CP.id AS cpid, CP.problem_id, CP.code,
-            CP.testsets, CP.points_testsets, CP.max_points, CP.tags, C.rules,
-            L.time_limit, L.memory_limit
+            CP.testsets, CP.points_testsets, CP.max_points, CP.tags, CP.status,
+            C.rules, L.time_limit, L.memory_limit
             FROM contests C
                 INNER JOIN contest_problems CP ON CP.contest_id = C.id
                 LEFT JOIN limits L ON L.id = CP.limits_id
             WHERE CP.id = ?~, undef,
             $cpid) or return;
         $show_points = $p->{rules};
-        push @problems, $p;
+        push @problems, $p if $is_jury_in_contest || $p->{status} < $cats::problem_st_hidden;
     }
     else { # Show all problems from the contest.
         ($show_points) = $contest->{rules};
@@ -301,7 +299,7 @@ sub problem_text_frame
         push @problems, @$p;
     }
 
-    my $use_spellchecker = $is_jury && !param('nospell');
+    my $use_spellchecker = $is_jury_in_contest && !param('nospell');
 
     my $need_commit = 0;
     for my $problem (@problems) {
@@ -320,7 +318,7 @@ sub problem_text_frame
         $problem = { %$problem, %$p };
         my $lang = $problem->{lang};
 
-        if ($is_jury && !param('nokw')) {
+        if ($is_jury_in_contest && !param('nokw')) {
             my $lang_col = $lang eq 'ru' ? 'name_ru' : 'name_en';
             my $kw_list = $dbh->selectcol_arrayref(qq~
                 SELECT $lang_col FROM keywords K
@@ -350,7 +348,7 @@ sub problem_text_frame
             FROM samples WHERE problem_id = ? ORDER BY rank~, { Slice => {} },
             $problem->{problem_id});
 
-        $problem->{tags} = param('tags') if $is_jury && defined param('tags');
+        $problem->{tags} = param('tags') if $is_jury_in_contest && defined param('tags');
         $tags = CATS::Problem::Tags::parse_tag_condition($problem->{tags}, sub {});
         for my $field_name (qw(statement pconstraints input_format output_format explanation)) {
             for ($problem->{$field_name}) {
@@ -362,7 +360,7 @@ sub problem_text_frame
             }
         }
         $_ = Encode::decode_utf8($_) for $problem->{json_data};
-        $is_jury && !param('noformal') or undef $problem->{formal_input};
+        $is_jury_in_contest && !param('noformal') or undef $problem->{formal_input};
         $explain or undef $problem->{explanation};
         $problem = {
             %$problem,
