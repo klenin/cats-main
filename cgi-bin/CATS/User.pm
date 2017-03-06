@@ -11,7 +11,7 @@ use CATS::Constants;
 use CATS::Countries;
 use CATS::Data qw(get_registered_contestant);
 use CATS::DB;
-use CATS::Form qw(validate_string_length);
+use CATS::Form qw(validate_string_length validate_integer);
 use CATS::Misc qw(init_template msg url_f $t $is_root);
 use CATS::Web qw(param);
 
@@ -98,7 +98,7 @@ sub new_frame
 sub param_names ()
 {qw(
     login team_name capitan_name email country motto home_page icq_number
-    city affiliation
+    city affiliation affiliation_year
     git_author_name git_author_email
 )}
 
@@ -128,6 +128,8 @@ sub validate_params
     validate_string_length($self->{icq_number}, 804, 0, 50) or return;
     validate_string_length($self->{home_page}, 805, 0, 100) or return;
     validate_string_length($self->{affiliation}, 807, 0, 100) or return;
+    validate_integer($self->{affiliation_year}, 807, allow_empty => 1, min => 1900, max => 2100) or return;
+    $self->{affiliation_year} or $self->{affiliation_year} = undef;
 
     if ($p{validate_password}) {
         validate_string_length($self->{password1}, 806, 1, 72) or return;
@@ -176,7 +178,7 @@ sub insert
     $dbh->do(qq~
         INSERT INTO accounts (
             id, srole, passwd, settings, ~ . join (', ', param_names()) . q~
-        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)~, {},
+        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)~, {},
         $aid, $cats::srole_user, $self->{password1}, $new_settings, $self->values
     );
     add_to_contest(contest_id => $_->{id}, account_id => $aid, is_ooc => 1)

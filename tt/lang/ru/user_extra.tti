@@ -3,6 +3,7 @@
     country => 'Страна',
     city => 'Город / регион',
     affiliation => 'Учебное заведение',
+    affiliation_year => 'Год поступления',
     motto => 'Девиз команды',
     capitan_name => 'ФИО капитана команды',
     email => 'E-Mail',
