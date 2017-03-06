@@ -300,8 +300,9 @@ sub unpack_redir_params {
     my ($redir) = @_;
     $redir or return ();
     my $params = Storable::thaw(decode_base64($redir));
-    defined $params or return warn "Unable to decode redir '$redir'";
-    %$params;
+    defined $params and return %$params;
+    warn "Unable to decode redir '$redir'";
+    return ();
 }
 
 # Authorize user, initialize permissions and settings.
