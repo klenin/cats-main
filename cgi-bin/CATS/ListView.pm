@@ -127,7 +127,7 @@ sub attach {
         }
         last if $row_count > $max_fetch_row_count || $page_count > $$page + $visible_pages;
         for my $key (keys %mask) {
-            defined first { Encode::decode_utf8($_ // '') =~ $mask{$key} }
+            defined first { ($_ // '') =~ $mask{$key} }
                 ($key ? ($row{$key}) : values %row)
                 or next ROWS;
         }
