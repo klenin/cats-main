@@ -428,7 +428,7 @@ sub sources_info_param {
     my $set_colspan = sub {
         for (@{$_[0]}) {
             my $r = $_;
-            $r->{colspan} = max(scalar @{$r->{element_sources}}, 1) + $is_jury * (@cats::limits_fields + 1);
+            $r->{colspan} = max($r->{element_sources} ? scalar @{$r->{element_sources}} : 0, 1) + $is_jury * (@cats::limits_fields + 1);
             $r->{colors} = {
                 map { $_ => $r->{"lr_$_"} ? 'r' : $r->{"lcp_$_"} ? 'cp' : undef } @cats::limits_fields
             };
