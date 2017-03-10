@@ -95,7 +95,7 @@ sub set_or_delete {
     $v ? $h->{$k} = $v : delete $h->{$k};
 }
 
-my @editable_settings = qw(hide_envelopes display_input);
+my @editable_settings = qw(hide_envelopes display_input console.autoupdate);
 
 sub users_edit_save
 {

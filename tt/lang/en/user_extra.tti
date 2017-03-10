@@ -13,5 +13,6 @@
     git_author_email => "Git author's e-mail",
     hide_envelopes => 'Hide envelopes',
     display_input => 'Display input data',
+    'settings.console.autoupdate' => 'Console update interval, sec.',
   })
 %]
