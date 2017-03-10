@@ -79,12 +79,23 @@ sub prepare_password {
     delete @$u{qw(password1 password2)};
 }
 
-sub set_or_delete {
-    my ($h, $k, $v) = @_;
-    $v ? $h->{$k} = 1 : delete $_[0]->{$k};
+sub get_settings_reference {
+    my ($h, $k) = @_;
+    my @path = split(/\./, $k);
+    for my $n (0..$#path - 1) {
+        $h->{$path[$n]} = {} if !exists($h->{$path[$n]});
+        $h = $h->{$path[$n]};
+    }
+    return ($h, $path[-1]);
 }
 
-my @editable_settings = qw(hide_envelopes display_input);
+sub set_or_delete {
+    my ($h, $k, $v) = @_;
+    $v = 1 if ($v && $v eq 'on');
+    $v ? $h->{$k} = $v : delete $h->{$k};
+}
+
+my @editable_settings = qw(hide_envelopes display_input console.autoupdate);
 
 sub users_edit_save
 {
@@ -106,9 +117,10 @@ sub users_edit_save
 
     my $settings_changed;
     for my $n (@editable_settings) {
-        my $new_value = param_on("settings.$n") || 0;
-        $new_value != ($old_user->{settings}->{$n} || 0) or next;
-        set_or_delete($old_user->{settings}, $n, $new_value);
+        my $new_value = param("settings.$n") || 0;
+        my ($settings_root, $nn) = get_settings_reference($old_user->{settings}, $n);
+        $new_value != ($settings_root->{$nn} || 0) or next;
+        set_or_delete($settings_root, $nn, $new_value);
         $settings_changed = 1;
     }
     $u->{settings} = freeze($old_user->{settings}) if $settings_changed;
@@ -162,7 +174,7 @@ sub profile_save
 
     $u->validate_params(validate_password => $set_password, id => $uid) or return;
     prepare_password($u, $set_password);
-    set_or_delete($settings, $_, param_on("settings.$_")) for @editable_settings;
+    set_or_delete(get_settings_reference($settings, $_), param("settings.$_")) for @editable_settings;
     $dbh->do(_u $sql->update('accounts', { %$u }, { id => $uid }));
     $dbh->commit;
 }

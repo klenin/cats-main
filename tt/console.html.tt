@@ -73,7 +73,7 @@ function fill_1(aid, arg)
       onclick="return fill_1('a_run_log', '[% href_run_log %];rid=');">[% capt.log %]</a>
     | <a id="a_diff" href="[% href_diff %]" target="_blank"
       onclick="return fill_diff();">[% capt.compare %]</a>
-    ] <button class="button" onclick="retest(); return false;">[% capt.retest %]</button>
+    ] <button id="retest" name="retest" value="1" type="submit" class="button">[% capt.retest %]</button>
 </div>
 [% END %]
 </form>
@@ -86,6 +86,7 @@ function fill_1(aid, arg)
 [% END %]
 </form>
 <script type="text/javascript">
+autoupdate_interval = [% autoupdate %];
 console_url = '[% href_console_content %]';
 main_form = document.getElementById('console_form');
 
@@ -141,8 +142,12 @@ function retest() {
 
 var msie = document.documentMode;
 
-if (!msie || msie >= 9) {
+if (autoupdate_interval && (!msie || msie >= 9)) {
     main_form.addEventListener('submit', form_submit_handler);
+    document.getElementById('retest').addEventListener('click', function(e) {
+        retest();
+        e.preventDefault();
+    });
 }
 
 function console_update() {
@@ -152,9 +157,12 @@ function console_update() {
 var refresh_timeout;
 function refresh() {
     clearTimeout(refresh_timeout);
-    refresh_timeout = setTimeout(console_update, 30000);
+    refresh_timeout = setTimeout(console_update, 1000 * autoupdate_interval);
 }
-refresh();
+
+if (autoupdate_interval != 0 ) {
+    refresh();
+}
 
 </script>
 [% PROCESS includes/menu_end.tti %]
