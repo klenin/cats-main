@@ -109,6 +109,9 @@ sub init_console_template
 
 sub console_content
 {
+    my $selection = param('selection');
+    retest_submissions($selection) if defined param('retest') and $selection;
+
     my $lv = init_console_template(auto_ext('console_content'));
 
     my $s = get_settings($lv);
@@ -118,8 +121,6 @@ sub console_content
             for qw(show_contests show_messages show_results);
     }
 
-    $s->{show_results} = 1 unless defined $s->{show_results};
-    $s->{show_messages} = 1 unless defined $s->{show_messages};
     $t->param($_ => $s->{$_}) for qw(show_contests show_messages show_results);
 
     my $day_count = time_interval_days($s);
@@ -621,7 +622,6 @@ sub console_frame
         $question_msg = send_question_to_jury(param('question_text'));
     }
 
-
     console_content;
     $t->param(is_team => $is_team);
     my $cc = $t->output;
@@ -639,6 +639,7 @@ sub console_frame
         href_diff => url_f('diff_runs'),
         title_suffix => res_str(510),
         initial_content => $cc,
+        autoupdate => $lv->settings->{autoupdate} // 30,
     );
     $t->param(submenu => [
         { href => url_f('console_export'), item => res_str(561) },
@@ -649,8 +650,6 @@ sub console_frame
 
 sub content_frame
 {
-    my $selection = param('selection');
-    retest_submissions($selection) if defined param('retest') and $selection;
     console_content;
     $t->param(is_team => $is_team);
 }
