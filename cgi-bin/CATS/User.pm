@@ -43,7 +43,8 @@ sub load
         $id
     ) or return;
     $self->{country} ||= $CATS::Countries::countries[0]->{id};
-    $self->{settings} = Storable::thaw($self->{settings}) if $self->{settings};
+    $self->{settings} = Storable::thaw($self->{frozen_settings} = $self->{settings})
+        if $self->{settings};
     $_->{selected} = $_->{id} eq $self->{country} for @CATS::Countries::countries;
     $self;
 }

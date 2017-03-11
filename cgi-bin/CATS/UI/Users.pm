@@ -79,23 +79,31 @@ sub prepare_password {
     delete @$u{qw(password1 password2)};
 }
 
-sub get_settings_reference {
-    my ($h, $k) = @_;
-    my @path = split(/\./, $k);
-    for my $n (0..$#path - 1) {
-        $h->{$path[$n]} = {} if !exists($h->{$path[$n]});
-        $h = $h->{$path[$n]};
+sub update_settings_item {
+    my ($h, $item, $v) = @_;
+
+    my @path = split /\./, $item->{name};
+    my $k = pop @path;
+    $h = $h->{$_} //= {} for @path;
+
+    $v = 1 if $v && $v eq 'on';
+    defined $v && $v ne '' && (!defined($item->{default}) || $v != $item->{default}) ?
+        $h->{$k} = $v : delete $h->{$k};
+}
+
+my @editable_settings = (
+    { name => 'hide_envelopes', default => 0 },
+    { name => 'display_input', default => 0 },
+    { name => 'console.autoupdate', default => 30 },
+);
+
+sub update_settings {
+    my ($settings_root) = @_;
+    for (@editable_settings) {
+        my $value = param("settings.$_->{name}");
+        update_settings_item($settings_root, $_, $value);
     }
-    return ($h, $path[-1]);
 }
-
-sub set_or_delete {
-    my ($h, $k, $v) = @_;
-    $v = 1 if ($v && $v eq 'on');
-    $v ? $h->{$k} = $v : delete $h->{$k};
-}
-
-my @editable_settings = qw(hide_envelopes display_input console.autoupdate);
 
 sub users_edit_save
 {
@@ -115,15 +123,9 @@ sub users_edit_save
 
     $u->{locked} = param('locked') ? 1 : 0 if $is_root;
 
-    my $settings_changed;
-    for my $n (@editable_settings) {
-        my $new_value = param("settings.$n") || 0;
-        my ($settings_root, $nn) = get_settings_reference($old_user->{settings}, $n);
-        $new_value != ($settings_root->{$nn} || 0) or next;
-        set_or_delete($settings_root, $nn, $new_value);
-        $settings_changed = 1;
-    }
-    $u->{settings} = freeze($old_user->{settings}) if $settings_changed;
+    update_settings($old_user->{settings});
+    my $new_settings = freeze($old_user->{settings});
+    $u->{settings} = $new_settings if $new_settings ne $old_user->{frozen_settings};
 
     $dbh->do(_u $sql->update('accounts', { %$u }, { id => $id }));
     $dbh->commit;
@@ -174,7 +176,7 @@ sub profile_save
 
     $u->validate_params(validate_password => $set_password, id => $uid) or return;
     prepare_password($u, $set_password);
-    set_or_delete(get_settings_reference($settings, $_), param("settings.$_")) for @editable_settings;
+    update_settings($settings);
     $dbh->do(_u $sql->update('accounts', { %$u }, { id => $uid }));
     $dbh->commit;
 }
