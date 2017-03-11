@@ -629,7 +629,8 @@ sub console_frame
     my $lv = init_console_template('console.html.tt');
     $t->param(message => $question_msg) if $question_msg;
     $t->param(
-        href_console_content => url_f('console_content', map { $_ => (url_param($_) || '') } qw(uf se page)),
+        href_console_content =>
+            url_f('console_content', noredir => 1, map { $_ => (url_param($_) || '') } qw(uf se page)),
         is_team => $is_team,
         is_jury => $is_jury,
         selection => scalar(param('selection')),

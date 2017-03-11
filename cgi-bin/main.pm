@@ -37,7 +37,7 @@ use CATS::Proxy;
 use CATS::Router;
 use CATS::StaticPages;
 use CATS::Utils qw(url_function);
-use CATS::Web qw(param url_param redirect init_request get_return_code);
+use CATS::Web qw(param url_param redirect init_request get_return_code has_error);
 
 sub generate_menu {
     my $logged_on = $sid ne '';
@@ -93,6 +93,7 @@ sub accept_request {
             or return;
     }
     initialize;
+    return if has_error;
     $CATS::Misc::init_time = Time::HiRes::tv_interval(
         $CATS::Misc::request_start_time, [ Time::HiRes::gettimeofday ]);
 
@@ -126,7 +127,7 @@ sub handler {
     $dbh->{Profile} = DBI::Profile->new(Path => []); # '!Statement'
     $dbh->{Profile}->{Data} = undef;
 
-    accept_request();
+    accept_request;
     $dbh->rollback;
 
     return get_return_code();

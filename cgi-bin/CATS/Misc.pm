@@ -339,6 +339,7 @@ sub init_user
     $settings->{lang} = $lang if $lang && grep $_ eq $lang, @cats::langs;
 
     if ($bad_sid) {
+        return CATS::Web::forbidden if param('noredir');
         init_template(param('json') ? 'bad_sid.json.tt' : 'login.html.tt');
         $sid = '';
         $t->param(href_login => CATS::Utils::url_function('login', redir => pack_redir_params));
