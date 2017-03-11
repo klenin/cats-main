@@ -12,5 +12,15 @@
     retest => 'retest',
     question => 'Question to jury',
     send => 'Send',
+    filter => 'filter',
+    filter_all => 'all',
+    filter_my => 'my',
+    contests => 'contests',
+    contests_short => 'c',
+    messages => 'messages',
+    messages_short => 'm',
+    results => 'results',
+    results_short => 'r',
+    for => 'for',
   })
 %]

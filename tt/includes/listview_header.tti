@@ -29,7 +29,7 @@
 </td>
 <td align="right">
   <input type="submit" value="[% capt.show %]" name="visible" class="button"> [% select('rows', display_rows) %]
-  [% PROCESS includes/pages.tti is_header = 1 %]
+  [% PROCESS includes/pages.tti is_header = 1 id="pages_top" %]
 </td>
 </tr>
 </table>

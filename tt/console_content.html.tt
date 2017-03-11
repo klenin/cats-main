@@ -1,16 +1,5 @@
 [%- PROCESS includes/html.tti -%]
 [%- capt = {}; PROCESS "lang/$lang/${template.name}" -%]
-[% WRAPPER includes/listview_header.tti listview_nojs = 1 %]
-[% capt.filter %]:
-[% IF user_filter %]<a href="[% href_all_events %]">[% capt.filter_all %]</a>
-[% ELSE %]<a href="[% href_my_events_only %]">[% capt.filter_my %]</a>[% END %]
-<span class="nobr">
-<label title="[% capt.contests %]">[% checkbox('show_contests', show_contests) %] [% capt.contests_short %]</label>
-<label title="[% capt.messages %]">[% checkbox('show_messages', show_messages) %] [% capt.messages_short %]</label>
-<label title="[% capt.results %]">[% checkbox('show_results', show_results) %] [% capt.results_short %]</label>
-</span>
-<span class="nobr">[% capt.for %] [% select('i_value', i_values) %] [% select('i_unit', i_units) %]</spen>
-[% END %]
 [% PROCESS includes/submit_result.tti %]
 <table width="100%" cellspacing="3" cellpadding="3" class="bordered console highlight">
 [% FOREACH c IN console %]
@@ -86,7 +75,7 @@
 </tr>
 [% END %]
 </table>
-[% PROCESS includes/pages.tti %]
+[% PROCESS includes/pages.tti id="pages_bottom" %]
 [% PROCESS includes/timing.tti %]
 <script>
 [% FOREACH e IN envelopes %]

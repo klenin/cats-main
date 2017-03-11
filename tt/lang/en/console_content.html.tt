@@ -1,15 +1,5 @@
 [%
   capt.import({
-    filter => 'filter',
-    filter_all => 'all',
-    filter_my => 'my',
-    contests => 'contests',
-    contests_short => 'c',
-    messages => 'messages',
-    messages_short => 'm',
-    results => 'results',
-    results_short => 'r',
-    for => 'for',
     jury => 'jury',
     answer => 'answer',
     delete => 'delete',
@@ -21,5 +11,6 @@
     },
     official_contest => 'official contest',
     contest => 'contest',
+    pages => 'pages',
   })
 %]

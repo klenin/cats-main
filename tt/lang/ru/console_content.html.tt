@@ -1,15 +1,5 @@
 [%
   capt.import({
-    filter => 'выбирать',
-    filter_all => 'все',
-    filter_my => 'мои',
-    contests => 'турниры',
-    contests_short => 'т',
-    messages => 'сообщения',
-    messages_short => 'с',
-    results => 'результаты',
-    results_short => 'р',
-    for => 'за',
     jury => 'жюри',
     answer => 'ответить',
     delete => 'удалить',
@@ -21,5 +11,6 @@
     },
     official_contest => 'официальный турнир',
     contest => 'турнир',
+    pages => 'страницы',
   })
 %]
