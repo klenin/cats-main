@@ -1,0 +1,7 @@
+[%
+  capt.import({
+    name => 'Name',
+    ts => 'Date / time',
+    ip => 'IP Address',
+  })
+%]

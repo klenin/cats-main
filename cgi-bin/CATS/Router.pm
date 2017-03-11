@@ -64,10 +64,13 @@ sub main_routes() {
         problem_git_package => [ \&CATS::UI::ProblemDetails::problem_git_package, pid => $int, sha => $sha, ],
         problem_details => [ \&CATS::UI::ProblemDetails::problem_details_frame, pid => $int, ],
         problem_history => \&CATS::UI::ProblemDetails::problem_history_frame,
+
         users => \&CATS::UI::Users::users_frame,
         users_import => \&CATS::UI::Users::users_import_frame,
         user_stats => \&CATS::UI::Users::user_stats_frame,
         user_settings => \&CATS::UI::Users::user_settings_frame,
+        user_ip => [ \&CATS::UI::Users::user_ip_frame, uid => $int, ],
+
         compilers => \&CATS::UI::Compilers::compilers_frame,
         judges => \&CATS::UI::Judges::judges_frame,
         keywords => \&CATS::UI::Keywords::keywords_frame,

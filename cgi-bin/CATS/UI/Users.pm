@@ -10,6 +10,7 @@ use Storable qw(freeze thaw);
 use CATS::Constants;
 use CATS::Countries;
 use CATS::DB;
+use CATS::IP;
 use CATS::ListView;
 use CATS::Misc qw(
     $t $is_jury $is_root $is_team $sid $cid $uid $contest $is_virtual $settings
@@ -46,8 +47,10 @@ sub user_submenu
         (!$is_jury ? () :
             ({ href => url_f('users', edit => $user_id), item => res_str(573), selected => 'edit' })),
         { href => url_f('user_stats', uid => $user_id), item => res_str(574), selected => 'user_stats' },
-        (!$is_root ? () :
-            ({ href => url_f('user_settings', uid => $user_id), item => res_str(575), selected => 'user_settings' })),
+        (!$is_root ? () : (
+            { href => url_f('user_settings', uid => $user_id), item => res_str(575), selected => 'user_settings' },
+            { href => url_f('user_ip', uid => $user_id), item => res_str(576), selected => 'user_ip' },
+        )),
     );
     $_->{selected} = $_->{selected} eq $selected for @m;
     (submenu => \@m);
@@ -592,6 +595,32 @@ sub user_settings_frame
         user_submenu('user_settings', $user_id),
         team_name => $team_name,
         title_suffix => $team_name,
+    );
+}
+
+sub user_ip_frame
+{
+    my ($p) = @_;
+    $is_root or return;
+    init_template('user_ip.html.tt');
+    my $uid = $p->{uid} or return;
+    my $u = $dbh->selectrow_hashref(q~
+        SELECT A.* FROM accounts A WHERE A.id = ?~, { Slice => {} },
+        $uid) or return;
+    my $events = $dbh->selectall_arrayref(q~
+        SELECT MAX(E.ts) AS ts, E.ip FROM events E WHERE E.account_id = ?
+        GROUP BY E.ip ORDER BY 1 DESC~,
+        { Slice => {} }, $uid);
+    unshift @$events, { ts => $u->{last_login}, ip => $u->{last_ip } };
+    for my $e (@$events) {
+        my %linkified = CATS::IP::linkify_ip($e->{ip});
+        $e->{$_} = $linkified{$_} for keys %linkified;
+    }
+    $t->param(
+        user_submenu('user_ip', $uid),
+        %$u,
+        events => $events,
+        title_suffix => $u->{team_name},
     );
 }
 
