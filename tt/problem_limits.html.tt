@@ -4,7 +4,7 @@
 
 <h3>[% p.title | html %]</h3>
 <form method="post" enctype="multipart/form-data" action="[% href_action %]">
-<table class="bordered">
+<table class="internal_borders padded">
 <tr><td></td><td>[% capt.time %], [% capt.s %]</td><td>[% capt.memory %], [% capt.mb %]</td></tr>
 <tr><td>[% capt.original_limits %]</td><td>[% p.time_limit %]</td><td>[% p.memory_limit %]</td></tr>
 [% IF p.overridden_time_limit && p.overridden_memory_limit %]

@@ -215,7 +215,7 @@ function send_message(href)
 [% UNLESS sources_info.size; capt.no_sources; RETURN; END %]
 [% subcaption %]
 
-<table class="internal_borders" cellpadding="3">
+<table class="internal_borders padded">
 [% PROCESS sources_info_row sources_info = sources_info %]
 [% IF element_sources_info; PROCESS sources_info_row sources_info = element_sources_info second_row = 1; END %]
 </table>

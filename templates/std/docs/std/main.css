@@ -163,6 +163,7 @@ input.listview_checkbox {
 
 table.internal_borders { border-collapse: collapse; }
 table.internal_borders td, table.internal_borders th { border: 1px solid #4040ff; }
+table.padded td, table.padded th { padding: 3px; }
 table.sample { border-collapse: collapse; border: 2px; }
 table.sample td, table.sample th { border: 1px solid black; padding: 5px; }
 table.sample td { vertical-align: top; }

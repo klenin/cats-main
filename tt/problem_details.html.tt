@@ -3,7 +3,7 @@
 [% PROCESS includes/limits_string.tti %]
 
 <form method="post" enctype="multipart/form-data" action="[% href_action %]">
-<table class="bordered">
+<table class="internal_borders padded">
 <tr><td>[% capt.title %]</td><td>[% p.title | html %]</td></tr>
 <tr><td>[% capt.last_change %]</td><td>
   [[% href(href_edit, capt.edit, p.commit_sha) %]]

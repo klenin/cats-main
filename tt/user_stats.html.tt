@@ -14,7 +14,7 @@
 </table>
 
 <h3>[% capt.contests %]</h3>
-<table class="internal_borders" cellpadding="3">
+<table class="internal_borders padded">
 [% FOREACH c IN contests -%]
 <tr><td>[% c.start_date %]</td><td>[% href(c.href_problems, c.title); '* ' IF c.is_jury && is_root %]</td>
 [% IF c.href_send_message; '<td>'; href(c.href_send_message, capt.send_message); '</td>'; END %]

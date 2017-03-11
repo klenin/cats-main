@@ -3,7 +3,7 @@
 
 [% capt.name %]: [% team_name | html %]
 
-<table class="internal_borders">
+<table class="internal_borders padded">
 <tr><th>[% capt.ts %]</th><th>[% capt.ip %]</th></tr>
 [% FOREACH e IN events %]
 <tr><td>[% e.ts %]</td><td align="right"><a href="[% e.href_whois %]">[% e.last_ip %]</a></td></tr>
