@@ -641,6 +641,7 @@ sub console_frame
         title_suffix => res_str(510),
         initial_content => $cc,
         autoupdate => $lv->settings->{autoupdate} // 30,
+        ajax_error_msg => res_str(1151),
     );
     $t->param(submenu => [
         { href => url_f('console_export'), item => res_str(561) },

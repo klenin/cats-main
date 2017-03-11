@@ -1,6 +1,7 @@
 [% PROCESS includes/menu_begin.tti %]
+[%- USE Javascript -%]
 <form id="console_form" method="POST" enctype="multipart/form-data">
-<p id="update_error"></p>
+<p id="update_error" style="font-weight: bold;"></p>
 <script type="text/javascript">
 function send_message(href)
 {
@@ -88,10 +89,10 @@ function fill_1(aid, arg)
 <script type="text/javascript">
 autoupdate_interval = [% autoupdate %];
 console_url = '[% href_console_content %]';
-main_form = document.getElementById('console_form');
+main_form = get_element('console_form');
 
 function error_message(error_code) {
-    document.getElementById('update_error').innerHTML = '<b>Error while requesting console: ' + error_code + '</b>';
+    get_element('update_error').innerHTML = '[% ajax_error_msg | $Javascript %]' + error_code;
 }
 
 function xhr_request(url, method, data, callback, error_callback) {
@@ -121,7 +122,7 @@ function xhr_request(url, method, data, callback, error_callback) {
 }
 
 function update_content(response) {
-    var refreshable = document.getElementById('refreshable_content');
+    var refreshable = get_element('refreshable_content');
     refreshable.innerHTML = response;
     main_form.style.opacity = '1';
     refresh();
@@ -144,7 +145,7 @@ var msie = document.documentMode;
 
 if (autoupdate_interval && (!msie || msie >= 9)) {
     main_form.addEventListener('submit', form_submit_handler);
-    document.getElementById('retest').addEventListener('click', function(e) {
+    get_element('retest').addEventListener('click', function(e) {
         retest();
         e.preventDefault();
     });
