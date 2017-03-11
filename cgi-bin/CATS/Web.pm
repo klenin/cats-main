@@ -17,7 +17,9 @@ our @EXPORT_OK = qw(
     content_type
     cookie
     encoding_param
+    forbidden
     get_return_code
+    has_error
     headers
     init_request
     not_found
@@ -83,6 +85,13 @@ sub not_found {
     $return_code = Apache2::Const::NOT_FOUND;
     -1;
 }
+
+sub forbidden {
+    $return_code = Apache2::Const::FORBIDDEN;
+    -1;
+}
+
+sub has_error { $return_code != Apache2::Const::OK }
 
 sub headers {
     while (my ($header, $value) = splice @_, 0, 2) {
