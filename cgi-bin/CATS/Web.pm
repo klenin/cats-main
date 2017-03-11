@@ -3,7 +3,7 @@ package CATS::Web;
 use warnings;
 use strict;
 
-use Apache2::Const -compile => qw(OK REDIRECT NOT_FOUND);
+use Apache2::Const -compile => qw(OK REDIRECT NOT_FOUND FORBIDDEN);
 use Apache2::Cookie ();
 use Apache2::Request;
 use Apache2::Upload;
