@@ -94,15 +94,21 @@ sub update_settings_item {
 my @editable_settings = (
     { name => 'hide_envelopes', default => 0 },
     { name => 'display_input', default => 0 },
-    { name => 'console.autoupdate', default => 30 },
+    {
+        name => 'console.autoupdate', default => 30,
+        validate => sub { $_[0] eq '' || $_[0] =~ /^\d+$/ && $_[0] >= 20 ? 1 : msg(1046, res_str(809), 20) }
+    },
 );
 
 sub update_settings {
     my ($settings_root) = @_;
     for (@editable_settings) {
-        my $value = param("settings.$_->{name}");
-        update_settings_item($settings_root, $_, $value);
+        return if $_->{validate} && !$_->{validate}->(param("settings.$_->{name}"));
     }
+    for (@editable_settings) {
+        update_settings_item($settings_root, $_, param("settings.$_->{name}"));
+    }
+    1;
 }
 
 sub users_edit_save
@@ -119,11 +125,11 @@ sub users_edit_save
         # Need at least $is_jury in all official contests where $u participated.
         allow_official_rename => $is_root)
         or return;
+    update_settings($old_user->{settings}) or return;
     prepare_password($u, $set_password);
 
     $u->{locked} = param('locked') ? 1 : 0 if $is_root;
 
-    update_settings($old_user->{settings});
     my $new_settings = freeze($old_user->{settings});
     $u->{settings} = $new_settings if $new_settings ne $old_user->{frozen_settings};
 
@@ -175,8 +181,8 @@ sub profile_save
     my $set_password = param_on('set_password');
 
     $u->validate_params(validate_password => $set_password, id => $uid) or return;
+    update_settings($settings) or return;
     prepare_password($u, $set_password);
-    update_settings($settings);
     $dbh->do(_u $sql->update('accounts', { %$u }, { id => $uid }));
     $dbh->commit;
 }
