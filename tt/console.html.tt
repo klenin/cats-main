@@ -97,6 +97,7 @@ function fill_1(aid, arg)
 [% END %]
 </form>
 <script type="text/javascript">
+
 autoupdate_interval = [% autoupdate %];
 console_url = '[% href_console_content %]';
 main_form = get_element('console_form');
@@ -105,26 +106,20 @@ function error_message(error_code) {
     get_element('update_error').innerHTML = '[% ajax_error_msg | $Javascript %]' + error_code;
 }
 
-function xhr_request(url, method, data, callback, error_callback) {
+function xhr_request(url, method, data, callback) {
     var xhr = new XMLHttpRequest();
     if (!xhr && method == 'GET') {
-        error_callback(-1);
-        main_form.style.opacity = '1';
+        error_message('No XMLHttpRequest');
         return false;
     }
-    //main_form.style.opacity = '0.3';
     xhr.onreadystatechange = function(){
         if (xhr.readyState === XMLHttpRequest.DONE) {
             if (xhr.status == 200) {
+                get_element('update_error').innerHTML = '';
                 callback(xhr.response);
-            } else {
-                main_form.style.opacity = '1';
-                if (error_callback) {
-                    error_callback(xhr.status)
-                } else {
-                    error_message(xhr.status);
-                }
             }
+            else
+                error_message(xhr.status);
         }
     };
     xhr.open(method, url);
@@ -137,7 +132,6 @@ function update_content(response) {
     var pages_top = get_element('pages_top');
     var pages_bottom = get_element('pages_bottom');
     pages_top.innerHTML = pages_bottom.innerHTML;
-    main_form.style.opacity = '1';
     refresh();
 }
 
