@@ -1,5 +1,5 @@
   [% IF pages -%]
-  <div [% IF id %]id="[% id %]"[% END -%] class="pages">
+  <div [% 'id="$id"' IF id %] class="pages">
   [% capt.pages %]:
   <span class="bordered">[%# Must have spaces inside. ~%]
   [%~ href(href_prev_pages, '<<') IF href_prev_pages ~%]

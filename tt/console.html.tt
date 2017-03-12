@@ -54,8 +54,7 @@ function fill_1(aid, arg)
     return true;
 }
 </script>
-[% PROCESS includes/listview_js.tti %]
-[% WRAPPER includes/listview_header.tti listview_nojs = 1 %]
+[% WRAPPER includes/listview_header.tti %]
 [% capt.filter %]:
 [% IF user_filter %]<a href="[% href_all_events %]">[% capt.filter_all %]</a>
 [% ELSE %]<a href="[% href_my_events_only %]">[% capt.filter_my %]</a>[% END %]
