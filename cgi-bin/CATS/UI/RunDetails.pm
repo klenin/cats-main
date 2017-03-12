@@ -492,7 +492,7 @@ sub run_details_frame {
                 $dbh->commit;
                 $_ = get_sources_info(request_id => $_->{req_id}, partial_checker => 1) or next;
             }
-            if (param('clone') && $is_root) {
+            if (param('clone')) {
                 if (!$need_change_limits && $_->{limits_id}) {
                     $params->{limits_id} = CATS::Request::clone_limits($_->{limits_id}, $limits);
                 } elsif ($need_change_limits) {
