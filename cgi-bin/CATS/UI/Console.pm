@@ -630,7 +630,7 @@ sub console_frame
     $t->param($_ => $lvparams->{$_}) for qw(
         i_units i_unit i_values i_value display_rows rows
         page pages search show_contests show_messages show_results
-        href_next_pages href_prev_pages
+        href_next_pages href_prev_pages search_hints
     );
     $t->param(message => $question_msg) if $question_msg;
     $t->param(
