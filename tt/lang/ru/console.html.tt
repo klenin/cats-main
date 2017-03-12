@@ -12,5 +12,15 @@
     retest = 'перетестировать',
     question = 'Вопрос к жюри',
     send = 'Отправить',
+    filter => 'выбирать',
+    filter_all => 'все',
+    filter_my => 'мои',
+    contests => 'турниры',
+    contests_short => 'т',
+    messages => 'сообщения',
+    messages_short => 'с',
+    results => 'результаты',
+    results_short => 'р',
+    for => 'за',
   })
 %]

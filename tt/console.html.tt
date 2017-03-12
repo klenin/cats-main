@@ -55,6 +55,17 @@ function fill_1(aid, arg)
 }
 </script>
 [% PROCESS includes/listview_js.tti %]
+[% WRAPPER includes/listview_header.tti listview_nojs = 1 %]
+[% capt.filter %]:
+[% IF user_filter %]<a href="[% href_all_events %]">[% capt.filter_all %]</a>
+[% ELSE %]<a href="[% href_my_events_only %]">[% capt.filter_my %]</a>[% END %]
+<span class="nobr">
+<label title="[% capt.contests %]">[% checkbox('show_contests', show_contests) %] [% capt.contests_short %]</label>
+<label title="[% capt.messages %]">[% checkbox('show_messages', show_messages) %] [% capt.messages_short %]</label>
+<label title="[% capt.results %]">[% checkbox('show_results', show_results) %] [% capt.results_short %]</label>
+</span>
+<span class="nobr">[% capt.for %] [% select('i_value', i_values) %] [% select('i_unit', i_units) %]</spen>
+[% END %]
 <span id="refreshable_content">
 [% UNLESS initial_content %]<br/>[% capt.loading %]<br/>
 [% ELSE; initial_content; END %]
@@ -124,6 +135,9 @@ function xhr_request(url, method, data, callback, error_callback) {
 function update_content(response) {
     var refreshable = get_element('refreshable_content');
     refreshable.innerHTML = response;
+    var pages_top = get_element('pages_top');
+    var pages_bottom = get_element('pages_bottom');
+    pages_top.innerHTML = pages_bottom.innerHTML;
     main_form.style.opacity = '1';
     refresh();
 }

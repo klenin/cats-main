@@ -462,9 +462,6 @@ sub console_content
     }
 
     $t->param(
-        href_my_events_only => url_f('console', uf => ($uid || get_anonymous_uid()), se => param('se') || undef),
-        href_all_events => url_f('console', uf => 0, se => param('se') || undef),
-        user_filter => $user_filter,
         is_jury => $is_jury,
         DEs => $DEs,
     );
@@ -624,9 +621,16 @@ sub console_frame
 
     console_content;
     $t->param(is_team => $is_team);
+    my $lvparams = $t->{vars};
     my $cc = $t->output;
+    my $user_filter = url_param('uf') || '';
 
     my $lv = init_console_template('console.html.tt');
+
+    $t->param($_ => $lvparams->{$_}) for qw(
+        i_units i_unit i_values i_value display_rows rows
+        page pages search show_contests show_messages show_results
+    );
     $t->param(message => $question_msg) if $question_msg;
     $t->param(
         href_console_content =>
@@ -634,6 +638,8 @@ sub console_frame
         is_team => $is_team,
         is_jury => $is_jury,
         selection => scalar(param('selection')),
+        href_my_events_only => url_f('console', uf => ($uid || get_anonymous_uid()), se => param('se') || undef),
+        href_all_events => url_f('console', uf => 0, se => param('se') || undef),
         href_view_source => url_f('view_source'),
         href_run_details => url_f('run_details'),
         href_run_log => url_f('run_log'),
@@ -642,6 +648,7 @@ sub console_frame
         initial_content => $cc,
         autoupdate => $lv->settings->{autoupdate} // 30,
         ajax_error_msg => res_str(1151),
+        user_filter => $user_filter,
     );
     $t->param(submenu => [
         { href => url_f('console_export'), item => res_str(561) },
