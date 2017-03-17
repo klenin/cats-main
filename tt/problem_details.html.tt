@@ -11,6 +11,7 @@
 </td></tr>
 <tr><td>[% capt.author %]</td><td>[% p.author | html %]</td></tr>
 <tr><td>[% capt.lang %]</td><td>[% p.lang | html %]</td></tr>
+<tr><td>[% capt.run_method %]</td><td>[% capt.run_method_names.item(p.run_method) %]</td></tr>
 <tr><td>[% capt.original_contest %]</td><td>[% maybe_href(href_original_contest, p.contest_name) %]</td></tr>
 <tr><td>[% capt.download %]</td><td>
 [% IF href_download %][<a href="[% href_download %]">[% capt.package %]</a>][% END %]

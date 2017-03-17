@@ -45,8 +45,11 @@ sub problem_details_frame {
     init_template('problem_details.html.tt');
     $is_jury && $p->{pid} or return;
     my $pr = $dbh->selectrow_hashref(q~
-        SELECT P.title, P.lang, P.contest_id, P.author, P.last_modified_by, P.upload_date,
-            P.time_limit, P.memory_limit, L.time_limit AS overridden_time_limit, L.memory_limit AS overridden_memory_limit,
+        SELECT
+            P.title, P.lang, P.contest_id, P.author, P.last_modified_by, P.upload_date,
+            P.run_method,
+            P.time_limit, P.memory_limit,
+            L.time_limit AS overridden_time_limit, L.memory_limit AS overridden_memory_limit,
             C.title AS contest_name, A.team_name,
             CP.id AS cpid, CP.testsets, CP.points_testsets, CP.tags
         FROM problems P

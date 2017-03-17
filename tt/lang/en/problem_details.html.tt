@@ -5,6 +5,11 @@
     edit => 'edit',
     author => 'Authors',
     lang => 'Language',
+    run_method => 'Run method',
+    run_method_names => {
+        '0' => 'single',
+        '1' => 'interactive',
+    },
     original_contest => 'Original contest',
     download => 'Download',
     package => 'package',
