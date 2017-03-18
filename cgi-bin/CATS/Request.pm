@@ -6,6 +6,7 @@ use warnings;
 use CATS::Constants;
 use CATS::DB;
 use CATS::IP;
+use CATS::Misc qw(msg);
 
 # Params: limits: { time_limit, memory_limit }
 sub filter_valid_limits {
@@ -112,6 +113,39 @@ sub insert {
         undef,
         $rid, 1, $submit_uid, CATS::IP::get_ip);
     $rid;
+}
+
+# Params: request_ids (required), contest_id (required), submit_uid (required)
+#         fields: { state = $cats::st_not_processed, failed_test, testsets, points, judge_id, limits_id }
+sub create_group {
+    my ($request_ids, $contest_id, $submit_uid, $fields) = @_;
+
+    $request_ids && $submit_uid && $contest_id or die;
+
+    my $req_id_list = join ', ', @$request_ids;
+
+    my $elements_reqs = $dbh->selectcol_arrayref(qq~
+        SELECT DISTINCT RG.group_id FROM req_groups RG
+        WHERE RG.group_id IN ($req_id_list)~);
+    return msg(1152, join ', ', @$elements_reqs) if @$elements_reqs;
+
+    my $reqs = $dbh->selectall_arrayref(qq~
+        SELECT R.id, R.problem_id, R.contest_id FROM reqs R
+        WHERE R.id IN ($req_id_list)~, { Slice => {} }) or return;
+
+    my $problem_id = $reqs->[0]->{problem_id};
+
+    my @reqs_from_other_contests = grep $_->{contest_id} != $contest_id, @$reqs;
+    return msg(1153, join ', ', map $_->{id}, @reqs_from_other_contests) if @reqs_from_other_contests;
+    return msg(1154) if grep $_->{problem_id} != $problem_id, @$reqs;
+
+    my $group_req_id = insert($problem_id, $contest_id, $submit_uid, $fields) or die;
+
+    my $c = $dbh->prepare(q~
+        INSERT INTO req_groups (element_id, group_id) VALUES (?, ?)~);
+    $c->execute_array(undef, $request_ids, $group_req_id);
+
+    $group_req_id;
 }
 
 # Params: request_id (required), contest_id (required), submit_uid (required)
