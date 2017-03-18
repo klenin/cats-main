@@ -3,7 +3,6 @@
 [% PROCESS includes/syntax_highlight.tti %]
 </head>
 <body>
-[% IF message %]<i>[% message | html %]</i><br>[% END %]
 [% PROCESS includes/sources_info.tti %]
 
 <table>

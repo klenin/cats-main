@@ -579,6 +579,11 @@ sub view_source_frame {
     my $sources_info = get_sources_info(request_id => $rid, get_source => 1, encode_source => 1);
     $sources_info or return;
 
+    source_links($sources_info);
+    sources_info_param([ $sources_info ]);
+
+    @{$sources_info->{element_sources}} <= 1 or return msg(1155);
+
     my $replace_source = param('replace_source');
     my $de_id = param('de_id');
     my $set = join ', ', ($replace_source ? 'src = ?' : ()) , ($de_id ? 'de_id = ?' : ());
@@ -599,12 +604,10 @@ sub view_source_frame {
     if ($sources_info->{file_name} =~ m/\.zip$/) {
         $sources_info->{src} = sprintf 'ZIP, %d bytes', length ($sources_info->{src});
     }
-    source_links($sources_info);
     /^[a-z]+$/i and $sources_info->{syntax} = $_ for param('syntax');
     $sources_info->{src_lines} = [ map {}, split("\n", $sources_info->{src}) ];
     $sources_info->{compiler_output} = get_log_dump($sources_info->{req_id}, 1)
         if $sources_info->{state} == $cats::st_compilation_error;
-    sources_info_param([ $sources_info ]);
 
     if ($sources_info->{is_jury}) {
         my $de_list = CATS::DevEnv->new($dbh, active_only => 1);
@@ -713,6 +716,9 @@ sub diff_runs_frame {
     @$si == 2 or return;
 
     source_links($_) for @$si;
+    sources_info_param($si);
+
+    return msg(1155) if grep @{$_->{element_sources}} > 1, @$si;
 
     for my $info (@$si) {
         $info->{lines} = [ split "\n", $info->{src} ];
@@ -737,7 +743,6 @@ sub diff_runs_frame {
         }
     );
 
-    sources_info_param($si);
     $t->param(diff_lines => \@diff);
 }
 
