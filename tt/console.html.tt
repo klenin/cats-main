@@ -85,6 +85,7 @@ function fill_1(aid, arg)
     | <a id="a_diff" href="[% href_diff %]" target="_blank"
       onclick="return fill_diff();">[% capt.compare %]</a>
     ] <button id="retest" name="retest" value="1" type="submit" class="button">[% capt.retest %]</button>
+    [% IF is_root %] <button id="create_group" name="create_group" value="1" type="submit" class="button">[% capt.create_group %]</button> [% END %]
 </div>
 [% END %]
 </form>
@@ -149,12 +150,23 @@ function retest() {
     xhr_request(console_url, 'POST', fd, update_content);
 }
 
+function create_group() {
+    var fd = new FormData(main_form);
+    fd.set('create_group', 1);
+    get_element('selection').value = '';
+    xhr_request(console_url, 'POST', fd, update_content);
+}
+
 var msie = document.documentMode;
 
 if (autoupdate_interval && (!msie || msie >= 9)) {
     main_form.addEventListener('submit', form_submit_handler);
     get_element('retest').addEventListener('click', function(e) {
         retest();
+        e.preventDefault();
+    });
+    get_element('create_group').addEventListener('click', function(e) {
+        create_group();
         e.preventDefault();
     });
 }

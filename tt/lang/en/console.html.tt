@@ -10,6 +10,7 @@
     log => 'log',
     compare => 'compare',
     retest => 'retest',
+    create_group => 'create group',
     question => 'Question to jury',
     send => 'Send',
     filter => 'filter',

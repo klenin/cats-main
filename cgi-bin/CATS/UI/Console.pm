@@ -110,9 +110,11 @@ sub init_console_template
 sub console_content
 {
     my $selection = param('selection');
-    retest_submissions($selection) if defined param('retest') and $selection;
 
     my $lv = init_console_template(auto_ext('console_content'));
+
+    retest_submissions($selection) if defined param('retest') and $selection;
+    group_submissions($selection) if defined param('create_group') && $selection;
 
     my $s = get_settings($lv);
 
@@ -588,6 +590,17 @@ sub retest_submissions
 }
 
 
+sub group_submissions
+{
+    $is_root or return;
+    my ($selection) = @_;
+    my $count = 0;
+    my @sanitized_runs = grep $_ ne '', split /\D+/, $selection;
+    CATS::Request::create_group(\@sanitized_runs, $cid, $uid, { state => $cats::st_not_processed, judge_id => undef }) or return;
+    $dbh->commit;
+}
+
+
 sub delete_question
 {
     my ($qid) = @_;
@@ -638,6 +651,7 @@ sub console_frame
             url_f('console_content', noredir => 1, map { $_ => (url_param($_) || '') } qw(uf se page)),
         is_team => $is_team,
         is_jury => $is_jury,
+        is_root => $is_root,
         selection => scalar(param('selection')),
         href_my_events_only => url_f('console', uf => ($uid || get_anonymous_uid()), se => param('se') || undef),
         href_all_events => url_f('console', uf => 0, se => param('se') || undef),

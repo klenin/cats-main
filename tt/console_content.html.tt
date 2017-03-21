@@ -1,6 +1,9 @@
 [%- PROCESS includes/html.tti -%]
 [%- capt = {}; PROCESS "lang/$lang/${template.name}" -%]
 [% PROCESS includes/submit_result.tti %]
+
+[% IF message %]<i>[% message | html %]</i><br/>[% END %]
+
 <table width="100%" cellspacing="3" cellpadding="3" class="bordered console highlight">
 [% FOREACH c IN console %]
 <tr>

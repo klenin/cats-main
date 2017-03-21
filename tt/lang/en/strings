@@ -217,3 +217,7 @@
 1149 "Overridden limits changed for request: %d."
 1150 "Overridden limits deleted for request: %d."
 1151 "Error getting data from server: "
+1152 "These requests are already groups: %s."
+1153 "These requests are consists in contest that different from current: %s."
+1154 "Selected requests are relate for different problems."
+1155 "View sources for group requests are not supported at this time."
