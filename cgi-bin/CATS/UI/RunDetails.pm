@@ -192,6 +192,7 @@ sub get_run_info {
         $maximums->{$_} = max($maximums->{$_}, $row->{$_} // 0) for @resources;
         $row;
     };
+    $req->{points} //= $total_points;
 
     return {
         %$contest,
