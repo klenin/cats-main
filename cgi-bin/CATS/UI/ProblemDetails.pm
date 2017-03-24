@@ -429,6 +429,7 @@ sub problem_history_edit_frame
         my ($error, $latest_sha) = $p->change_file($cid, $pid, $file, $content, $message, param('is_amend') || 0);
 
         unless ($error) {
+            $dbh->commit;
             CATS::StaticPages::invalidate_problem_text(pid => $pid);
             return problem_commitdiff($pid, $title, $latest_sha, $se, $p->encoded_import_log());
         }
