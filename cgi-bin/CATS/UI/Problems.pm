@@ -291,7 +291,7 @@ sub problems_all_frame {
         { caption => res_str(604), order_by => '4', width => '10%' },
         #{ caption => res_str(605), order_by => '5', width => '10%' },
     ]);
-    $lv->define_db_searches([ qw(P.id P.title P.contest_id P.run_method) ]);
+    $lv->define_db_searches([ qw(P.id P.title P.contest_id P.run_method P.formal_input) ]);
     $lv->define_db_searches({ contest_title => 'C.title'});
 
     my $c = $dbh->prepare(qq~
@@ -432,7 +432,8 @@ sub problems_retest_frame
     );
     $lv->define_columns(url_f('problems_retest'), 0, 0, [ @cols ]);
     $lv->define_db_searches([ qw(
-        P.id P.title P.run_method CP.code CP.testsets CP.points_testsets CP.status
+        P.id P.title P.run_method P.formal_input
+        CP.code CP.testsets CP.points_testsets CP.status
     ) ]);
 
     my $reqs_count_sql = 'SELECT COUNT(*) FROM reqs D WHERE D.problem_id = P.id AND D.state =';
@@ -542,7 +543,7 @@ sub problems_frame {
     );
     $lv->define_columns(url_f('problems'), 0, 0, \@cols);
     $lv->define_db_searches([ qw(
-        P.id P.title P.upload_date P.lang P.memory_limit P.time_limit P.run_method
+        P.id P.title P.upload_date P.lang P.memory_limit P.time_limit P.run_method P.formal_input
         CP.code CP.testsets CP.tags CP.points_testsets CP.status
     ) ]);
 
