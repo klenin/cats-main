@@ -94,17 +94,15 @@ sub problems_replace
     my $fname = save_uploaded_file('zip');
 
     $p->{old_title} = $old_title unless param('allow_rename');
-    my ($error, $result_sha) = $p->load(CATS::Problem::Source::Zip->new($fname, $p), $cid, $pid, 1, $repo, param('message'), param('is_amend'));
+    my ($error, $result_sha) = $p->load(
+        CATS::Problem::Source::Zip->new($fname, $p), $cid, $pid, 1, $repo, param('message'), param('is_amend'));
     $t->param(problem_import_log => $p->encoded_import_log());
     #unlink $fname;
-    if (!$error) {
-        set_problem_import_diff($pid, $result_sha);
-    } else {
+    if ($error) {
         $dbh->rollback;
         return msg(1008);
     }
-    $dbh->do(q~
-        UPDATE contest_problems SET max_points = NULL WHERE problem_id = ?~, undef, $pid);
+    set_problem_import_diff($pid, $result_sha);
     $dbh->commit;
     CATS::StaticPages::invalidate_problem_text(pid => $pid);
     msg(1007);

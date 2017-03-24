@@ -317,6 +317,8 @@ sub save
     $c->execute;
 
     $self->insert_problem_content($problem);
+    $dbh->do(q~
+        UPDATE contest_problems SET max_points = NULL WHERE problem_id = ?~, undef, $problem->{id});
 }
 
 
