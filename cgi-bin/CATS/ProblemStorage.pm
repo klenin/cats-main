@@ -395,6 +395,12 @@ sub insert_problem_content
         );
     }
 
+    if (my $i = $problem->{interactor}) {
+        $self->insert_problem_source(
+            source_object => $i, type_name => 'Interactor', pid => $problem->{id}, source_type => $cats::interactor
+        );
+    }
+
     for (@{$problem->{validators}}) {
         $self->insert_problem_source(
             source_object => $_, type_name => 'Validator', pid => $problem->{id}, source_type => $cats::validator
