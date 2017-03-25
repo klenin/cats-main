@@ -390,9 +390,10 @@ sub problems_udebug_frame {
 sub problems_recalc_points()
 {
     my @pids = param('problem_id') or return msg(1012);
-    $dbh->do(q~
+    my $pids = join ',', grep /^\d+$/, @pids or return msg(1012);
+    $dbh->do(qq~
         UPDATE reqs SET points = NULL
-        WHERE contest_id = ? AND problem_id IN (~ . join(',', @pids) . q~)~, undef,
+        WHERE contest_id = ? AND problem_id IN ($pids)~, undef,
         $cid);
     $dbh->commit;
     CATS::RankTable::remove_cache($cid);
