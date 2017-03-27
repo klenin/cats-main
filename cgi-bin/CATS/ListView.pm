@@ -31,6 +31,7 @@ sub new {
         col_defs => undef,
         search => [],
         db_searches => {},
+        enums => {},
     };
     bless $self, $class;
     $self->init_params;
@@ -196,6 +197,7 @@ sub make_where {
     for my $q (@{$self->{search}}) {
         my ($k, $v, $op) = @$q;
         my $f = $self->{db_searches}->{$k} or next;
+        $v = $self->{enums}->{$k}->{$v} // $v;
         push @{$result{$f} //= []}, sql_op($op, $v);
     }
     \%result;
@@ -245,6 +247,14 @@ sub define_db_searches {
     }
     else {
         die;
+    }
+}
+
+sub define_enums {
+    my ($self, $enums) = @_;
+    for my $k (keys %$enums) {
+        die if $self->{enums}->{$k};
+        $self->{enums}->{$k} = $enums->{$k};
     }
 }
 
