@@ -402,4 +402,4 @@ INSERT INTO contests(id, title, ctype, start_date) VALUES(1, 'Турнир', 1, 
 INSERT INTO accounts(id, login, passwd, srole) VALUES(2, 'root', 'root', 0);
 INSERT INTO accounts(id, login, passwd, srole) VALUES(5, 'fox', 'fox', 1);
 INSERT INTO contest_accounts(id, contest_id, account_id, is_jury) VALUES (3, 1, 2, 1);
-INSERT INTO judges(id, nick, lock_counter, account_id) VALUES (4, 'fox', 0, 5);
+INSERT INTO judges(id, nick, pin_mode, account_id) VALUES (4, 'fox', 3, 5);
