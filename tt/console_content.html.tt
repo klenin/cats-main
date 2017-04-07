@@ -27,6 +27,7 @@
         [% ELSE; c.problem_title | html; END %]:
         <b>[% submit_result(c) %]</b>[% " ($c.points)" IF is_jury && c.points.defined %]
     </td>
+    <td>[% IF is_jury; i = DEs.item(c.de) %]<a href="#" title="[% i.code %]">[% i.description %]</a>[% END %]</td>
 [% ELSIF c.is_question %]
     <td>[% c.time %]</td>
     <td align=left nowrap>[
@@ -36,7 +37,7 @@
         [%~ ELSE; c.team_name | html; END %]
         &gt; [% capt.jury %]]
     </td>
-    <td>
+    <td colspan="2">
         <i>[% c.question_text | html %]</i> - 
         [% UNLESS c.clarified %]
         [% IF c.href_answer_box %]
@@ -52,7 +53,7 @@
     <td align=left>
         [[% capt.jury %] &gt; [% c.team_name | html %]]
     </td>
-    <td>
+    <td colspan="2">
         <span class="jury_message">[% c.message_text | html %]</span>
         [% IF c.href_delete_message %]<a href="[% c.href_delete_message %]">[[% capt.delete %]]</a>[% END %]
     </td>
@@ -61,7 +62,7 @@
     <td align=left>
         <b><span class="jury_message">[[% capt.jury %] &gt; [% capt.all_teams %]]</span></b>
     </td>
-    <td>
+    <td colspan="2">
         <b><span class="jury_message">[% c.message_text | html %]</span></b>
         [% IF c.href_delete_message %]<a href="[% c.href_delete_message %]">[[% capt.delete %]]</a>[% END %]
     </td>
@@ -71,7 +72,7 @@
         <b>[% capt.contest_dates.item(c.contest_date_type) %]
         [% c.is_official ? capt.official_contest : capt.contest %]</b>
     </td>
-    <td>
+    <td colspan="2">
         <b><a href="[% c.href_problems %]">[% c.problem_title | html %]</a></b>
     </td>
 [% END %]

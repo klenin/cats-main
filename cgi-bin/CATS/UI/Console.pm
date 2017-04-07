@@ -277,7 +277,7 @@ sub console_content
         '(R.submit_time BETWEEN C.start_date AND C.freeze_date OR CURRENT_TIMESTAMP > C.defreeze_date)';
 
     my $DEs = $is_team ? $dbh->selectall_hashref(q~
-        SELECT id, description FROM default_de~, 'id') : {};
+        SELECT id, code, description FROM default_de~, 'id') : {};
     my $c;
 
     $lv->define_db_searches([qw(
