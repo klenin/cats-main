@@ -238,7 +238,9 @@ sub define_db_searches {
     my ($self, $db_searches) = @_;
     if (ref $db_searches eq 'ARRAY') {
         for (@$db_searches) {
-            $self->{db_searches}->{m/\.(.+)$/ ? $1 : $_} = $_;
+            my $k = m/\.(.+)$/ ? $1 : $_;
+            $self->{db_searches}->{$k} and die;
+            $self->{db_searches}->{$k} = $_;
         }
     }
     elsif (ref $db_searches eq 'HASH') {
