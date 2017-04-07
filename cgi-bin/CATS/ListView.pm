@@ -57,7 +57,7 @@ sub init_params {
         }
     }
     $self->{search} = [ map
-        [ /^([a-zA-Z0-9_]+)([!~^=]?=)(.*)$/ ? ($1, $3, $2) : ('', $_, '') ], split /,\s*/, $s->{search} ];
+        [ /^([a-zA-Z0-9_]+)([!~^=><]?=|>|<)(.*)$/ ? ($1, $3, $2) : ('', $_, '') ], split /,\s*/, $s->{search} ];
 
     if (defined url_param('sort')) {
         $s->{sort_by} = int(url_param('sort'));
@@ -90,7 +90,9 @@ sub sql_op {
     $op eq '=' || $op eq '==' ? { '=', $v } :
     $op eq '!=' ? { '!=', $v } :
     $op eq '^=' ? { 'STARTS WITH', $v } :
-    $op eq '~=' ? { 'LIKE', '%' . "$v%" } : die "Unknown search op '$op'";
+    $op eq '~=' ? { 'LIKE', '%' . "$v%" } :
+    $op =~ /^>|>=|<|<=$/ ? { $op, $v } : # SQL-only for now.
+    die "Unknown search op '$op'";
 }
 
 sub attach {
