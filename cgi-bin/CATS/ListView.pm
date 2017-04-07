@@ -234,19 +234,22 @@ sub sort_in_memory {
     [ sort $cmp @$data ];
 }
 
+sub add_db_search {
+    my ($self, $k, $v) = @_;
+    $self->{db_searches}->{$k} and die "Duplicate search: $k";
+    $self->{db_searches}->{$k} = $v;
+}
+
 sub define_db_searches {
     my ($self, $db_searches) = @_;
     if (ref $db_searches eq 'ARRAY') {
         for (@$db_searches) {
-            my $k = m/\.(.+)$/ ? $1 : $_;
-            $self->{db_searches}->{$k} and die;
-            $self->{db_searches}->{$k} = $_;
+            $self->add_db_search((m/\.(.+)$/ ? $1 : $_), $_);
         }
     }
     elsif (ref $db_searches eq 'HASH') {
         for (keys %$db_searches) {
-            $self->{db_searches}->{$_} and die;
-            $self->{db_searches}->{$_} = $db_searches->{$_};
+            $self->add_db_search($_, $db_searches->{$_});
         }
     }
     else {
