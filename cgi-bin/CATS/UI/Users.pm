@@ -563,6 +563,8 @@ sub user_stats_frame
     for (@$contests) {
         $_->{href_send_message} = url_f('send_message_box', caid => $_->{caid}) if $is_root;
         $_->{href_problems} = url_function('problems', sid => $sid, cid => $_->{id});
+        $_->{href_submits} = url_function('console', sid => $sid, cid => $_->{id},
+            uf => $uid, i_value => -1, se => 'user_stats', show_results => 1, rows => 30, search => "contest_id=$_->{id}");
     }
     $t->param(
         user_submenu('user_stats', $uid),
@@ -570,7 +572,7 @@ sub user_stats_frame
         CATS::IP::linkify_ip($u->{last_ip}),
         ($is_jury ? (href_edit => url_f('users', edit => $uid)) : ()),
         href_all_problems => $pr->(''),
-        href_solved_problems => $pr->('accepted=1'),
+        href_solved_problems => $pr->('state=OK'),
         title_suffix => $u->{team_name},
     );
 }
