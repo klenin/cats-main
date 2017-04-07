@@ -190,8 +190,10 @@ sub common_contests_view ($)
         contest_name => $c->{title},
         short_descr => $c->{short_descr},
         start_date => $c->{start_date},
+        since_start => $c->{since_start},
         start_date_iso => date_to_iso($c->{start_date}),
         finish_date => $c->{finish_date},
+        since_finish => $c->{since_finish},
         finish_date_iso => date_to_iso($c->{finish_date}),
         freeze_date_iso => date_to_iso($c->{freeze_date}),
         unfreeze_date_iso => date_to_iso($c->{defreeze_date}),
@@ -218,6 +220,18 @@ sub contest_fields ()
     )
 }
 
+sub contest_fields_str {
+    join ', ', map("C.$_", contest_fields),
+        'CURRENT_TIMESTAMP - start_date AS since_start',
+        'CURRENT_TIMESTAMP - finish_date AS since_finish',
+}
+
+sub contest_searches { return {
+    (map { $_ => "C.$_" } contest_fields),
+    since_start => '(CURRENT_TIMESTAMP - start_date)',
+    since_finish => '(CURRENT_TIMESTAMP - finish_date)',
+}}
+
 sub contests_submenu_filter
 {
     my $f = $settings->{contests}->{filter} || '';
@@ -235,7 +249,7 @@ sub contests_submenu_filter
 
 sub authenticated_contests_view {
     my ($p) = @_;
-    my $cf = join ', ', map "C.$_", contest_fields();
+    my $cf = contest_fields_str;
     my $original_contest = 0;
     if ($p->{has_problem}) {
         my ($has_problem_pid) = $dbh->selectrow_array(q~
@@ -251,8 +265,8 @@ sub authenticated_contests_view {
             $p->{has_problem} = undef;
         }
     }
+    $p->{listview}->define_db_searches(contest_searches);
     $p->{listview}->define_db_searches({
-        (map { $_ => "C.$_" } contest_fields()),
         is_virtual => 'CA.is_virtual',
         is_jury => 'CA.is_jury',
         is_hidden => 'C.is_hidden',
@@ -291,8 +305,8 @@ sub authenticated_contests_view {
 
 sub anonymous_contests_view {
     my ($p) = @_;
-    my $cf = join ', ', map "C.$_", contest_fields();
-    $p->{listview}->define_db_searches([ contest_fields() ]);
+    my $cf = contest_fields_str;
+    $p->{listview}->define_db_searches(contest_searches);
     my $sth = $dbh->prepare(qq~
         SELECT $cf FROM contests C WHERE COALESCE(C.is_hidden, 0) = 0 ~ .
         contests_submenu_filter() . $p->{listview}->order_by
