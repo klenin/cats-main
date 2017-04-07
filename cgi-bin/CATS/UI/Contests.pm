@@ -123,6 +123,7 @@ sub try_contest_params_frame
     $t->param(
         id => $id, %$p,
         href_action => url_f('contests'),
+        privs => $privs,
         can_edit => (get_registered_contestant(fields => 'is_jury', contest_id => $id) ? 1 : 0),
     );
 

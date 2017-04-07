@@ -26,6 +26,7 @@
     show_checker_comment => "комментарии checker'а",
     show_packages => 'пакеты задач',
     ok => '     Ok     ',
+    create_copy => 'Создать копию',
     cancel => 'Отмена',
   })
 %]

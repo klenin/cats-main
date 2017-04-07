@@ -26,6 +26,7 @@
     show_checker_comment => 'checker comments',
     show_packages => 'problem packages',
     ok => '     Ok     ',
+    create_copy => 'Create a copy',
     cancel => 'Cancel',
   })
 %]
