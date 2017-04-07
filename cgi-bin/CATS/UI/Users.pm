@@ -458,19 +458,20 @@ sub users_frame
     return if !$is_jury && param('json') && $contest->is_practice;
 
     my @fields = qw(
-        A.id CA.id A.country A.motto A.login A.team_name A.city
+        A.id A.country A.motto A.login A.team_name A.city
         CA.is_jury CA.is_ooc CA.is_remote CA.is_hidden CA.is_virtual CA.diff_time CA.tag);
     $lv->define_db_searches(\@fields);
+    $lv->define_db_searches({ 'CA.id' => 'CA.id' });
 
     my $fields = join ', ', @fields;
     my $sql = sprintf qq~
-        SELECT $fields, COUNT(DISTINCT R.problem_id) as rating
+        SELECT CA.id, $fields, COUNT(DISTINCT R.problem_id) as rating
         FROM accounts A
             INNER JOIN contest_accounts CA ON CA.account_id = A.id
             INNER JOIN contests C ON CA.contest_id = C.id
             LEFT JOIN reqs R ON
                 R.state = $cats::st_accepted AND R.account_id = A.id AND R.contest_id = C.id%s
-        WHERE C.id = ?%s %s GROUP BY $fields ~ . $lv->order_by,
+        WHERE C.id = ?%s %s GROUP BY CA.id, $fields ~ . $lv->order_by,
         ($is_jury ? ('', '') : (
             ' AND (R.submit_time < C.freeze_date OR C.defreeze_date < CURRENT_TIMESTAMP)',
             ' AND CA.is_hidden = 0')),
@@ -482,7 +483,7 @@ sub users_frame
     my $fetch_record = sub($)
     {
         my (
-            $aid, $caid, $country_abbr, $motto, $login, $team_name, $city, $jury,
+            $caid, $aid, $country_abbr, $motto, $login, $team_name, $city, $jury,
             $ooc, $remote, $hidden, $virtual, $virtual_diff_time, $tag, $accepted
         ) = $_[0]->fetchrow_array
             or return ();
