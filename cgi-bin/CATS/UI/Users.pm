@@ -44,8 +44,10 @@ sub user_submenu
 {
     my ($selected, $user_id) = @_;
     my @m = (
-        (!$is_jury ? () :
-            ({ href => url_f('users', edit => $user_id), item => res_str(573), selected => 'edit' })),
+        ($is_jury ?
+            ({ href => url_f('users', edit => $user_id), item => res_str(573), selected => 'edit' }) :
+            ({ href => url_f('profile'), item => res_str(518), selected => 'profile' })
+        ),
         { href => url_f('user_stats', uid => $user_id), item => res_str(574), selected => 'user_stats' },
         (!$is_root ? () : (
             { href => url_f('user_settings', uid => $user_id), item => res_str(575), selected => 'user_settings' },
@@ -227,6 +229,7 @@ sub profile_frame
         SELECT CA.contest_id FROM contest_accounts CA WHERE CA.account_id = ? AND CA.is_jury = 1~, undef,
         $uid);
     $t->param(
+        user_submenu('profile', $uid),
         countries => \@CATS::Countries::countries,
         href_action => url_f('users'),
         title_suffix => res_str(518),
