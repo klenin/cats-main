@@ -330,7 +330,7 @@ sub set_submenu_for_tree_frame
         { href => url_f('problem_details', pid => $pid), item => res_str(504) },
         { href => url_f('problem_history', pid => $pid), item => res_str(568) },
         { href => url_f('problem_history', a => 'commitdiff', pid => $pid, h => $hash), item => res_str(571) },
-        { href => url_f('problems_git_package', pid => $pid, sha => $hash), item => res_str(569) },
+        { href => url_f('problem_git_package', pid => $pid, sha => $hash), item => res_str(569) },
         @items,
     ];
     $t->param(submenu => $submenu);
