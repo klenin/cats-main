@@ -410,6 +410,15 @@ sub problems_frame_jury_action
     CATS::ProblemStorage::delete($cpid) if $cpid;
 }
 
+sub problem_status_names_enum {
+    my ($lv) = @_;
+    my $psn = problem_status_names();
+    my $inverse_psn = {};
+    $inverse_psn->{$psn->{$_}} = $_ for keys %$psn;
+    $lv->define_enums({ status => $inverse_psn });
+    $psn;
+}
+
 sub problems_retest_frame
 {
     $is_jury && !$contest->is_practice or return;
@@ -432,6 +441,8 @@ sub problems_retest_frame
         CP.code CP.testsets CP.points_testsets CP.status
     ) ]);
 
+    my $psn = problem_status_names_enum($lv);
+
     my $reqs_count_sql = q~
         SELECT COUNT(*) FROM reqs D WHERE D.problem_id = P.id AND D.contest_id = CP.contest_id AND D.state =~;
     my $sth = $dbh->prepare(qq~
@@ -453,7 +464,6 @@ sub problems_retest_frame
     {
         my $c = $_[0]->fetchrow_hashref or return ();
         $c->{status} ||= 0;
-        my $psn = problem_status_names();
         $total_queue += $c->{in_queue};
         return (
             status => $psn->{$c->{status}},
@@ -543,6 +553,7 @@ sub problems_frame {
         P.id P.title P.upload_date P.lang P.memory_limit P.time_limit P.run_method P.formal_input
         CP.code CP.testsets CP.tags CP.points_testsets CP.status
     ) ]);
+    my $psn = problem_status_names_enum($lv);
 
     my $reqs_count_sql = 'SELECT COUNT(*) FROM reqs D WHERE D.problem_id = P.id AND D.state =';
     my $account_condition = $contest->is_practice ? '' : ' AND D.account_id = ?';
@@ -627,7 +638,7 @@ sub problems_frame {
 
             show_packages => $show_packages,
             status => $c->{status},
-            status_text => problem_status_names()->{$c->{status}},
+            status_text => $psn->{$c->{status}},
             disabled => !$is_jury && $c->{status} == $cats::problem_st_disabled,
             href_view_problem => $hrefs_view{statement} || $text_link_f->('problem_text', cpid => $c->{cpid}),
             href_explanation => $show_packages && $c->{has_explanation} ?

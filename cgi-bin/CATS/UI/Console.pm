@@ -302,9 +302,9 @@ sub console_content
     });
     $lv->define_enums({
         state => {
-	    NP => 0, UH => 1, P => 3, AW => 4,
-	    OK => 10, WA => 11, PE => 12, TL => 13, RE => 14, CE => 15, SV => 16, ML => 17, IS => 18, IL => 19, MR => 20,
-	},
+            NP => 0, UH => 1, P => 3, AW => 4,
+            OK => 10, WA => 11, PE => 12, TL => 13, RE => 14, CE => 15, SV => 16, ML => 17, IS => 18, IL => 19, MR => 20,
+        },
     });
 
     my $searches_filtger = $lv->maybe_where_cond;
