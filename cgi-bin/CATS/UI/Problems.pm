@@ -213,24 +213,20 @@ sub problems_submit_std_solution {
     msg(1107, $title, $sol_count);
 }
 
-sub problems_mass_retest()
-{
+sub problems_mass_retest {
     my @retest_pids = param('problem_id') or return msg(1012);
     my $all_runs = param('all_runs');
     my $count = 0;
-    for my $retest_pid (@retest_pids)
-    {
+    for my $retest_pid (@retest_pids) {
         my $runs = $dbh->selectall_arrayref(q~
             SELECT id, account_id, state FROM reqs
             WHERE contest_id = ? AND problem_id = ? ORDER BY id DESC~,
             { Slice => {} },
             $cid, $retest_pid
         );
-        my %accounts = ();
-        for (@$runs)
-        {
-            next if !$all_runs && $accounts{$_->{account_id}};
-            $accounts{$_->{account_id}} = 1;
+        my %accounts;
+        for (@$runs) {
+            next if !$all_runs && $accounts{$_->{account_id}}++;
             my $fields = { state => $cats::st_not_processed, judge_id => undef, points => undef };
             ($_->{state} || 0) != $cats::st_ignore_submit &&
                 CATS::Request::enforce_state($_->{id}, $fields) and ++$count;
@@ -410,7 +406,6 @@ sub problems_frame_jury_action
     defined param('add_new') and return CATS::Problem::Save::problems_add_new;
     defined param('add_remote') and return CATS::Problem::Save::problems_add_new_remote;
     defined param('std_solution') and return problems_submit_std_solution;
-    defined param('mass_retest') and return problems_mass_retest;
     my $cpid = url_param('delete');
     CATS::ProblemStorage::delete($cpid) if $cpid;
 }
