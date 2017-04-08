@@ -432,7 +432,8 @@ sub problems_retest_frame
         CP.code CP.testsets CP.points_testsets CP.status
     ) ]);
 
-    my $reqs_count_sql = 'SELECT COUNT(*) FROM reqs D WHERE D.problem_id = P.id AND D.state =';
+    my $reqs_count_sql = q~
+        SELECT COUNT(*) FROM reqs D WHERE D.problem_id = P.id AND D.contest_id = CP.contest_id AND D.state =~;
     my $sth = $dbh->prepare(qq~
         SELECT
             CP.id AS cpid, P.id AS pid,
