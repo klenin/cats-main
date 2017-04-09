@@ -86,7 +86,7 @@ sub main_routes() {
         view_source => \&CATS::UI::RunDetails::view_source_frame,
         download_source => \&CATS::UI::RunDetails::download_source_frame,
         run_details => \&CATS::UI::RunDetails::run_details_frame,
-        visualize_test => \&CATS::UI::RunDetails::visualize_test_frame,
+        visualize_test => [ \&CATS::UI::RunDetails::visualize_test_frame, rid => $int, vid => $int, test_rank => $int, ],
         diff_runs => [ \&CATS::UI::RunDetails::diff_runs_frame, r1 => $int, r2 => $int, ],
 
         test_diff => \&CATS::UI::Stats::test_diff_frame,

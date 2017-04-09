@@ -1,15 +1,30 @@
 [%- USE Javascript -%]
+[% PROCESS includes/html.tti %]
 [% PROCESS includes/header.tti %]
+
+</head>
+<body>
+
+[% PROCESS includes/sources_info.tti %]
+
+<div class="pages" style="float: none">
+[% capt.tests %]:
+<span class="bordered">[%# Must have spaces inside. ~%]
+[%~ href(href_prev_pages, '<<') IF href_prev_pages ~%]
+[%~ FOREACH p IN test_ranks ~%]
+<a href="[% p.href_page %]"[% ' class="current_link"' IF p.current_page %]>[% p.page_number %]</a>
+[%~ END ~%]
+[%~ href(href_next_pages, '>>') IF href_next_pages ~%]
+</span></div>
 
 <script>
   var input_file = "[% input_file | $Javascript %]";
 </script>
 
-</head>
-<body>
-
+<div>
 <canvas id="visualizer_canvas" width="800" height="800" style="border: 1px solid black;">
 </canvas>
+</div>
 
 [% FOREACH script IN vis_scripts %]
   <script type="text/javascript" src="[% script | url %]"></script>

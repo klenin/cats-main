@@ -529,20 +529,31 @@ sub save_visualizer {
 }
 
 sub visualize_test_frame {
+    my ($p) = @_;
     init_template('visualize_test.html.tt');
 
     $uid or return;
-    my $rid = url_param('rid') or return;
-    my $vid = url_param('vid') or return;
-    my $test_rank = url_param('test_rank') or return;
+    my $rid = $p->{rid} or return;
+    my $vid = $p->{vid} or return;
+    my $test_rank = $p->{test_rank} or return;
+
+    my $sources_info = get_sources_info(request_id => $rid);
+    source_links($sources_info);
+    sources_info_param([ $sources_info ]);
 
     $dbh->selectrow_array(q~
         SELECT CA.is_jury
         FROM reqs R
         INNER JOIN contest_accounts CA ON CA.contest_id = R.contest_id
-        INNER JOIN accounts A ON A.id = CA.account_id
-        WHERE R.id = ? AND A.id = ?~, undef,
+        WHERE R.id = ? AND CA.account_id = ?~, undef,
         $rid, $uid) or return;
+
+    my $test_ranks = $dbh->selectcol_arrayref(q~
+        SELECT rank FROM tests T
+        INNER JOIN reqs R ON R.problem_id = T.problem_id
+        WHERE R.id = ?
+        ORDER BY rank~, undef,
+        $rid);
 
     my $visualizer = $dbh->selectrow_hashref(q~
         SELECT PS.name, PS.src, PS.fname, P.id AS problem_id, P.hash
@@ -567,12 +578,19 @@ sub visualize_test_frame {
         WHERE R.id = ? AND T.rank = ?~, undef,
         $rid, $test_rank) or return;
 
+    my $vhref = sub { url_f('visualize_test', rid => $rid, test_rank => $_[0], vid => $vid) };
+
     $t->param(
         vis_scripts => [
             map save_visualizer($_->{src}, $_->{fname}, $_->{problem_id}, $_->{hash}), @imports_js
         ],
         input_file => $input_file,
         visualizer => $visualizer,
+        href_prev_pages => $test_rank > $test_ranks->[0] ? $vhref->($test_rank - 1) : undef,
+        href_next_pages => $test_rank < $test_ranks->[-1] ? $vhref->($test_rank + 1) : undef,
+        test_ranks => [
+            map +{ page_number => $_, href_page => $vhref->($_), current_page => $_ == $test_rank, }, @$test_ranks
+        ],
     );
 }
 
