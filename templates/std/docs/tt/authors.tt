@@ -1,4 +1,4 @@
-[% PROCESS header.tti title='Авторы' %]
+[% PROCESS header.tti title='Авторы' lang = 'ru' %]
 
 <b>В разработке системы принимали участие:</b>
 

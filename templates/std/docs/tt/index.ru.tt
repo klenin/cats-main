@@ -1,4 +1,4 @@
-[% PROCESS header.tti title = 'Содержание' %]
+[% PROCESS header.tti title = 'Содержание' lang = 'ru' %]
 <ul>
 
 <li>Руководство пользователя

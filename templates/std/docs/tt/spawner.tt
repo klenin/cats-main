@@ -1,4 +1,4 @@
-[% PROCESS header.tti title='Модуль spawner' %]
+[% PROCESS header.tti title='Модуль spawner' lang = 'ru' %]
 
 <h2>Описание</h2>
 <p>

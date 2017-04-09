@@ -1,4 +1,4 @@
-[% PROCESS header.tti title = 'Формат заданий' %]
+[% PROCESS header.tti title = 'Формат заданий' lang = 'ru' %]
 [%- MACRO s(m1, m2) BLOCK; m1; ' '; m2; END -%]
 [%- MACRO opt BLOCK %]<sup>&nbsp;<a href="#opt" title="Необязательный атрибут">o</a></sup>[% END -%]
 [%- MACRO v11 BLOCK %]<sup><a href="#v11" title="С версии 1.1">1.1</a></sup>[% END -%]

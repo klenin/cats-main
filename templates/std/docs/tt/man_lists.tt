@@ -1,4 +1,4 @@
-[% PROCESS header.tti title='Подробное описание колонок в списках' %]
+[% PROCESS header.tti title='Подробное описание колонок в списках' lang = 'ru' %]
 
 <a name="contests"><h2>Турниры</h2></a>
 <p>

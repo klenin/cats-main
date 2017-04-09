@@ -1,4 +1,4 @@
-[% PROCESS header.tti title = 'Problem description package format' %]
+[% PROCESS header.tti title = 'Problem description package format' lang = 'en' %]
 [%- MACRO s(m1, m2) BLOCK; m1; ' '; m2; END -%]
 [%- MACRO opt BLOCK %]<sup>&nbsp;<a href="#opt" title="Optional attribute">o</a></sup>[% END -%]
 [%- MACRO v11 BLOCK %]<sup><a href="#v11" title="Since version 1.1">1.1</a></sup>[% END -%]

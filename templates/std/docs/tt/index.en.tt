@@ -1,4 +1,4 @@
-[% PROCESS header.tti title = 'Contents' %]
+[% PROCESS header.tti title = 'Contents' lang = 'en' %]
 <ul>
 
 <li>User manual
