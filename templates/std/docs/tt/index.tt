@@ -1,0 +1,17 @@
+<html>
+  <head>
+    <meta http-equiv="refresh" content="5; url=index.en.html">
+  </head>
+  <body>
+[%-# Try to display docs based on browser language %]
+    <script>
+      var lang = navigator.languages ?
+        navigator.languages[0] :
+        (navigator.language || navigator.userLanguage);
+      if (lang.indexOf('ru') >= 0)
+        window.location = 'index.ru.html';
+      else
+        window.location = 'index.en.html';
+    </script>
+  </body>
+</html>
