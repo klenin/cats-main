@@ -539,7 +539,7 @@ sub visualize_test_frame {
     $dbh->selectrow_array(q~
         SELECT CA.is_jury
         FROM reqs R
-        INNER JOIN contest_accounts CA ON CA.contest_id = r.contest_id
+        INNER JOIN contest_accounts CA ON CA.contest_id = R.contest_id
         INNER JOIN accounts A ON A.id = CA.account_id
         WHERE R.id = ? AND A.id = ?~, undef,
         $rid, $uid) or return;
@@ -555,7 +555,7 @@ sub visualize_test_frame {
     my @imports_js = (@{$dbh->selectall_arrayref(q~
         SELECT PS.src, PS.fname, PS.problem_id, P.hash
         FROM problem_sources_import PSI
-        INNER JOIN problem_sources PS ON PS.guid = PSI.GUID
+        INNER JOIN problem_sources PS ON PS.guid = PSI.guid
         INNER JOIN problems P ON P.id = PS.problem_id
         WHERE PSI.problem_id = ? AND PS.stype = ?~, { Slice => {} },
         $visualizer->{problem_id}, $cats::visualizer_module)}, $visualizer);
@@ -568,7 +568,7 @@ sub visualize_test_frame {
         $rid, $test_rank) or return;
 
     $t->param(
-        import_scripts => [
+        vis_scripts => [
             map save_visualizer($_->{src}, $_->{fname}, $_->{problem_id}, $_->{hash}), @imports_js
         ],
         input_file => $input_file,

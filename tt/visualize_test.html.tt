@@ -8,10 +8,10 @@
 </head>
 <body>
 
-<canvas id="visualizer_canvas" width="800" height="800">
+<canvas id="visualizer_canvas" width="800" height="800" style="border: 1px solid black;">
 </canvas>
 
-[% FOREACH script IN import_scripts %]
+[% FOREACH script IN vis_scripts %]
   <script type="text/javascript" src="[% script | url %]"></script>
 [% END %]
 
