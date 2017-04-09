@@ -545,7 +545,7 @@ sub visualize_test_frame {
         $rid, $uid) or return;
 
     my $visualizer = $dbh->selectrow_hashref(q~
-        SELECT PS.src, PS.fname, P.id AS problem_id, P.hash
+        SELECT PS.name, PS.src, PS.fname, P.id AS problem_id, P.hash
         FROM problem_sources PS
         INNER JOIN problems P ON PS.problem_id = P.id
         INNER JOIN reqs R ON R.problem_id = P.id
@@ -572,6 +572,7 @@ sub visualize_test_frame {
             map save_visualizer($_->{src}, $_->{fname}, $_->{problem_id}, $_->{hash}), @imports_js
         ],
         input_file => $input_file,
+        visualizer => $visualizer,
     );
 }
 

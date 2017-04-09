@@ -13,6 +13,7 @@
 
 [% FOREACH script IN vis_scripts %]
   <script type="text/javascript" src="[% script | url %]"></script>
+  <script>[% visualizer.name %](document.getElementById('visualizer_canvas'), input_file)</script>
 [% END %]
 
 </body>
