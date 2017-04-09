@@ -22,7 +22,7 @@
 </ul>
 </li>
 
-<li>Техническая документация</li>
+<li>Техническая документация
 <ul>
 <li><a href="format.html">Формат заданий</a></li>
 <li><a href="spawner.html">Модуль spawner</a></li>

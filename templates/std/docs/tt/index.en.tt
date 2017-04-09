@@ -1,0 +1,36 @@
+[% PROCESS header.tti title = 'Contents' %]
+<ul>
+
+<li>User manual
+<ul>
+<li><a href="man_interface_intro.html">Interface overview</a></li>
+<li><a href="man_registration.html">Registration / profile</a></li>
+<li><a href="man_login.html">Logging in</a></li>
+<li><a href="man_contests.html">Contest selection</a></li>
+<li><a href="man_problems.html">Viewing problems and submitting solutions</a></li>
+<li><a href="man_console.html">Working with console</a></li>
+<li><a href="man_rank_table.html">Rank table</a></li>
+<li><a href="man_lists.html">List columns descritption</a></li>
+<li><a href="man_interface_lists.html">List view user interface</a></li>
+</ul>
+
+<li>Правила
+<ul>
+<li><a href="run_results.html">Request results</a></li>
+<li><a href="rules_acm.html">ACM contest rules</a></li>
+<li><a href="rules_school.html">School contest rules</a></li>
+</ul>
+</li>
+
+<li>Technical documentation
+<ul>
+<li><a href="format.en.html">Problem format</a></li>
+<li><a href="spawner.html">Spawner module</a></li>
+<li><a href="urls.html">URL format</a></li>
+<li><a href="keywords.html">Keywords</a></li>
+<li><a href="features.html">Main features</a></li>
+</ul>
+</li>
+
+</ul>
+[% PROCESS footer.tti %]
