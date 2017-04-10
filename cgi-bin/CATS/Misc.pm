@@ -22,6 +22,7 @@ our @EXPORT = qw(
     attach_menu
     save_settings
     references_menu
+    prepare_server_time
     problem_status_names
     pack_redir_params
     unpack_redir_params
@@ -217,6 +218,15 @@ sub url_f
     CATS::Utils::url_function(@_, sid => $sid, cid => $cid);
 }
 
+sub prepare_server_time {
+    my $dt = $contest->{time_since_start} - $virtual_diff_time;
+    $t->param(
+        server_time => $contest->{server_time},
+        elapsed_msg => res_str($dt < 0 ? 578 : 579),
+        elapsed_time => format_diff_time(abs($dt)),
+    );
+}
+
 sub generate_output
 {
     my ($output_file) = @_;
@@ -224,7 +234,6 @@ sub generate_output
     $contest->{time_since_start} or warn 'No contest from: ', $ENV{HTTP_REFERER} || '';
     $t->param(
         contest_title => $contest->{title},
-        server_time => $contest->{server_time},
         current_team_name => $team_name,
         is_virtual => $is_virtual,
         virtual_diff_time => $virtual_diff_time,
@@ -232,9 +241,7 @@ sub generate_output
         #dbi_profile => Data::Dumper::Dumper($dbh->{Profile}->{Data}),
         langs => [ map { href => url_f('contests', lang => $_), name => $_ }, @cats::langs ],
     );
-
-    my $dt = $contest->{time_since_start} - $virtual_diff_time;
-    $t->param(elapsed_msg => res_str($dt < 0 ? 578 : 579), elapsed_time => format_diff_time(abs($dt)));
+    prepare_server_time;
 
     if (defined $dbi_error)
     {

@@ -133,6 +133,8 @@ function update_content(response) {
     var pages_top = get_element('pages_top');
     var pages_bottom = get_element('pages_bottom');
     pages_top.innerHTML = pages_bottom.innerHTML;
+    get_element('server_time').innerHTML = get_element('server_time_update').innerHTML;
+    get_element('elapsed').innerHTML = get_element('elapsed_update').innerHTML;
     refresh();
 }
 

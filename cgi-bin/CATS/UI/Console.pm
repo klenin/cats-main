@@ -12,7 +12,7 @@ use CATS::DB;
 use CATS::ListView;
 use CATS::Misc qw(
     $t $cid $is_team $is_jury $is_root $privs $uid $settings $contest $sid
-    get_anonymous_uid init_template url_f auto_ext res_str msg
+    get_anonymous_uid init_template url_f auto_ext prepare_server_time res_str msg
 );
 use CATS::Request;
 use CATS::Utils qw(coalesce url_function state_to_display date_to_iso);
@@ -639,6 +639,7 @@ sub console_frame
     }
 
     console_content;
+    prepare_server_time;
     $t->param(is_team => $is_team);
     my $lvparams = $t->{vars};
     my $cc = $t->output;

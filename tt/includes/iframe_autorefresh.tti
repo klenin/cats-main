@@ -2,8 +2,7 @@
 <script>
     var a = top.document;
     a.getElementById('server_time').innerHTML = "[% server_time %]";
-    a.getElementById('elapsed_msg').innerHTML = "[% elapsed_msg %]";
-    a.getElementById('elapsed_time').innerHTML = "[% elapsed_time %]";
+    a.getElementById('elapsed').innerHTML = "[% elapsed_msg %]: [% elapsed_time %]";
     a.getElementById('refreshable_content').innerHTML =
         document.getElementById('refreshable_content').innerHTML;
     setTimeout('document.location.reload(1);', 30000);

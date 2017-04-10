@@ -86,3 +86,5 @@
 window.open("[% e.href_envelope %]", '', 'width=500,height=400,location=no,menubar=no,resizable=yes,scrollbars=no,status=no,toolbar=no');
 [% END %]
 </script>
+<div style="display: none" id="server_time_update">[% server_time %]</div>
+<div style="display: none" id="elapsed_update">[% elapsed_msg %]: [% elapsed_time %]</div>
