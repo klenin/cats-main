@@ -498,7 +498,7 @@ sub users_frame
             virtual => $virtual,
             virtual_diff_time => $virtual_diff_time,
             virtual_diff_time_minutes => int(($virtual_diff_time // 0) * 24 * 60 | 0.5),
-            virtual_diff_time_fmt => format_diff_time($virtual_diff_time),
+            virtual_diff_time_fmt => format_diff_time($virtual_diff_time, 1),
          );
     };
 

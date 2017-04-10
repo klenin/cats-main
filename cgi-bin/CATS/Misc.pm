@@ -455,9 +455,9 @@ sub problem_status_names()
 
 
 sub format_diff_time {
-    my ($dt) = @_;
+    my ($dt, $display_plus) = @_;
     $dt or return '';
-    my $sign = $dt < 0 ? '-' : '+';
+    my $sign = $dt < 0 ? '-' : $display_plus ? '+' : '';
     $dt = abs($dt);
     my $days = int($dt);
     $dt = ($dt - $days) * 24;
