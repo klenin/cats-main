@@ -14,7 +14,7 @@ use CATS::IP;
 use CATS::ListView;
 use CATS::Misc qw(
     $t $is_jury $is_root $is_team $sid $cid $uid $contest $is_virtual $settings
-    init_template msg res_str url_f auto_ext);
+    format_diff_time init_template msg res_str url_f auto_ext);
 use CATS::RankTable;
 use CATS::User;
 use CATS::Utils qw(url_function date_to_iso);
@@ -372,20 +372,6 @@ sub users_impersonate
         CATS::IP::get_ip, $new_sid, $new_user_id);
     $dbh->commit;
     redirect(url_function('contests', sid => $new_sid, cid => $cid));
-}
-
-sub format_diff_time {
-    my ($dt) = @_;
-    $dt or return '';
-    my $sign = $dt < 0 ? '-' : '+';
-    $dt = abs($dt);
-    my $days = int($dt);
-    $dt = ($dt - $days) * 24;
-    my $hours = int($dt);
-    $dt = ($dt - $hours) * 60;
-    my $minutes = int($dt + 0.5);
-    !$days && !$hours ? $minutes :
-        sprintf($days ? '%s%dd %02d:%02d' : '%s%3$d:%4$02d', $sign, $days, $hours, $minutes);
 }
 
 sub users_frame

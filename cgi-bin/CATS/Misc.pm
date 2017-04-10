@@ -9,6 +9,7 @@ our @EXPORT = qw(
     get_anonymous_uid
     initialize
     auto_ext
+    format_diff_time
     init_template
     generate_output
     http_header
@@ -456,5 +457,19 @@ sub problem_status_names()
     $cats::problem_st_hidden    => res_str(704),
 }}
 
+
+sub format_diff_time {
+    my ($dt) = @_;
+    $dt or return '';
+    my $sign = $dt < 0 ? '-' : '+';
+    $dt = abs($dt);
+    my $days = int($dt);
+    $dt = ($dt - $days) * 24;
+    my $hours = int($dt);
+    $dt = ($dt - $hours) * 60;
+    my $minutes = int($dt + 0.5);
+    !$days && !$hours ? $minutes :
+        sprintf($days ? '%s%d%s %02d:%02d' : '%s%4$d:%5$02d', $sign, $days, res_str(577), $hours, $minutes);
+}
 
 1;
