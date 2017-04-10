@@ -55,6 +55,8 @@
 575 "settings"
 576 "ip-addresses"
 577 " d."
+578 "time until start"
+579 "time since start"
 600 "Start time"
 601 "Name"
 602 "Problem"

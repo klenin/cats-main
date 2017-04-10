@@ -1,9 +1,5 @@
 [%
   capt.import({
-    until_start => 'until contest start',
-    minutes => 'min.',
-    since_start => 'since contest start',
-    days => 'days',
     last_updated => 'page last updated',
   })
 %]

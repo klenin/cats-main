@@ -15,15 +15,7 @@
       [% l.name; '</a> '; END %]</p>
       [% IF server_time ~%]
         <span>
-        [% IF show_remaining_minutes ~%]
-          [% capt.until_start %]: [% remaining_minutes %] [% capt.minutes %]<br>
-        [%~ END %]
-        [% IF show_elapsed_minutes ~%]
-          [% capt.since_start %]: <span id="elapsed_minutes">[% elapsed_minutes %]</span> [% capt.minutes %]<br/>
-        [%~ END %]
-        [% IF show_elapsed_days ~%]
-          [% capt.since_start %]: [% elapsed_days %] [% capt.days %]<br>
-        [%~ END %]
+        <span id="elapsed_msg">[% elapsed_msg %]</span>: <span id="elapsed_time">[% elapsed_time %]</span><br>
         [% capt.last_updated %]: <span id="server_time">[% server_time %]</span>
         </span>
       [%~ END %]

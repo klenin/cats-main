@@ -233,19 +233,8 @@ sub generate_output
         langs => [ map { href => url_f('contests', lang => $_), name => $_ }, @cats::langs ],
     );
 
-    my $elapsed_minutes = int(($contest->{time_since_start} - $virtual_diff_time) * 1440);
-    if ($elapsed_minutes < 0)
-    {
-        $t->param(show_remaining_minutes => 1, remaining_minutes => -$elapsed_minutes);
-    }
-    elsif ($elapsed_minutes < 2 * 1440)
-    {
-        $t->param(show_elapsed_minutes => 1, elapsed_minutes => $elapsed_minutes);
-    }
-    else
-    {
-        $t->param(show_elapsed_days => 1, elapsed_days => int($elapsed_minutes / 1440));
-    }
+    my $dt = $contest->{time_since_start} - $virtual_diff_time;
+    $t->param(elapsed_msg => res_str($dt < 0 ? 578 : 579), elapsed_time => format_diff_time(abs($dt)));
 
     if (defined $dbi_error)
     {
