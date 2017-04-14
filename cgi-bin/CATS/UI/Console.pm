@@ -299,12 +299,14 @@ sub console_content
     $lv->define_db_searches({
         de_code => sprintf($de_select, 'DE.code'),
         de_name => sprintf($de_select, 'DE.description'),
+        run_method => 'P.run_method',
     });
     $lv->define_enums({
         state => {
             NP => 0, UH => 1, P => 3, AW => 4,
             OK => 10, WA => 11, PE => 12, TL => 13, RE => 14, CE => 15, SV => 16, ML => 17, IS => 18, IL => 19, MR => 20,
         },
+        run_method => { default => 0, interactive => 1, },
     });
 
     my $searches_filtger = $lv->maybe_where_cond;
