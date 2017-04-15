@@ -38,8 +38,10 @@ sub source_links {
 
     $si->{href_contest} =
         url_function('problems', cid => $si->{contest_id}, sid => $sid);
-    $si->{href_problem} =
+    $si->{href_problem_text} =
         url_function('problem_text', cpid => $si->{cp_id}, cid => $si->{contest_id}, sid => $sid);
+    $si->{href_problem_details} =
+        url_function('problem_details', pid => $si->{problem_id}, cid => $si->{contest_id}, sid => $sid);
     for (qw/run_details view_source run_log download_source/) {
         $si->{"href_$_"} = url_f($_, rid => $si->{req_id});
         $si->{"href_class_$_"} = $_ eq $current_link ? 'current_link' : '';
