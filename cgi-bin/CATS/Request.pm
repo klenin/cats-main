@@ -139,6 +139,16 @@ sub create_group {
     return msg(1153) if grep $_->{contest_id} != $contest_id, @$reqs;
     return msg(1154) if grep $_->{problem_id} != $problem_id, @$reqs;
 
+    my $players_count_str = $dbh->selectrow_array(q~
+        SELECT P.players_count FROM problems P
+        WHERE P.id = ?~, undef,
+    $problem_id);
+
+    my $players_count = CATS::Testset::parse_simple_rank($players_count_str) if $players_count_str;
+    return if $players_count_str && !$players_count;
+
+    return msg(1156, $players_count_str) if $players_count && !grep @$request_ids == $_, @$players_count;
+
     my $group_req_id = insert($problem_id, $contest_id, $submit_uid, $fields) or die;
 
     my $c = $dbh->prepare(q~
