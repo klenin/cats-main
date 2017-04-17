@@ -604,7 +604,7 @@ sub group_submissions
     my ($selection) = @_;
     my $count = 0;
     my @sanitized_runs = grep $_ ne '', split /\D+/, $selection;
-    CATS::Request::create_group(\@sanitized_runs, $cid, $uid, { state => $cats::st_not_processed, judge_id => undef }) or return;
+    CATS::Request::create_group(\@sanitized_runs, $uid, { state => $cats::st_not_processed, judge_id => undef }) or return;
     $dbh->commit;
 }
 
