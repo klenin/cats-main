@@ -284,7 +284,7 @@ sub save
             input_file=?, output_file=?, statement_url=?, explanation_url=?,
             statement=?, pconstraints=?, input_format=?, output_format=?, formal_input=?, json_data=?, explanation=?, zip_archive=?,
             upload_date=CURRENT_TIMESTAMP, std_checker=?, last_modified_by=?,
-            max_points=?, run_method=?, repo=?, hash=NULL
+            max_points=?, run_method=?, players_count=?, repo=?, hash=NULL
         WHERE id = ?~
     : q~
         INSERT INTO problems (
@@ -293,9 +293,9 @@ sub save
             input_file, output_file, statement_url, explanation_url,
             statement, pconstraints, input_format, output_format, formal_input, json_data, explanation, zip_archive,
             upload_date, std_checker, last_modified_by,
-            max_points, run_method, repo, id
+            max_points, run_method, players_count, repo, id
         ) VALUES (
-            ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP,?,?,?,?,?,?
+            ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP,?,?,?,?,?,?,?
         )~;
 
     my $c = $dbh->prepare($sql);
@@ -312,6 +312,7 @@ sub save
     $c->bind_param($i++, $CATS::Misc::uid);
     $c->bind_param($i++, $problem->{description}{max_points});
     $c->bind_param($i++, $problem->{run_method});
+    $c->bind_param($i++, CATS::Testset::pack_rank_spec(@{$problem->{players_count}}));
     $c->bind_param($i++, $problem->{repo});
     $c->bind_param($i++, $problem->{id});
     $c->execute;

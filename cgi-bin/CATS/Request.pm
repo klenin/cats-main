@@ -115,12 +115,12 @@ sub insert {
     $rid;
 }
 
-# Params: request_ids (required), contest_id (required), submit_uid (required)
+# Params: request_ids (required), submit_uid (required)
 #         fields: { state = $cats::st_not_processed, failed_test, testsets, points, judge_id, limits_id }
 sub create_group {
-    my ($request_ids, $contest_id, $submit_uid, $fields) = @_;
+    my ($request_ids, $submit_uid, $fields) = @_;
 
-    $request_ids && $submit_uid && $contest_id or die;
+    $request_ids && $submit_uid or die;
 
     my $req_id_list = join ', ', @$request_ids;
 
@@ -134,10 +134,20 @@ sub create_group {
         WHERE R.id IN ($req_id_list)~, { Slice => {} }) or return;
 
     my $problem_id = $reqs->[0]->{problem_id};
+    my $contest_id = $reqs->[0]->{contest_id};
 
-    my @reqs_from_other_contests = grep $_->{contest_id} != $contest_id, @$reqs;
-    return msg(1153, join ', ', map $_->{id}, @reqs_from_other_contests) if @reqs_from_other_contests;
+    return msg(1153) if grep $_->{contest_id} != $contest_id, @$reqs;
     return msg(1154) if grep $_->{problem_id} != $problem_id, @$reqs;
+
+    my $players_count_str = $dbh->selectrow_array(q~
+        SELECT P.players_count FROM problems P
+        WHERE P.id = ?~, undef,
+    $problem_id);
+
+    my $players_count = CATS::Testset::parse_simple_rank($players_count_str) if $players_count_str;
+    return if $players_count_str && !$players_count;
+
+    return msg(1156, $players_count_str) if $players_count && !grep @$request_ids == $_, @$players_count;
 
     my $group_req_id = insert($problem_id, $contest_id, $submit_uid, $fields) or die;
 
