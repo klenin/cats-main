@@ -454,6 +454,13 @@ sub problem_status_names()
 }}
 
 
+sub run_method_enum()
+{+{
+    default => $cats::rm_default,
+    interactive => $cats::rm_interactive,
+}}
+
+
 sub format_diff_time {
     my ($dt, $display_plus) = @_;
     $dt or return '';
