@@ -2,7 +2,9 @@
   capt.import({
     time => 'Time',
     memory => 'Memory',
+    write => 'Write',
     mb => 'Mb',
+    b => 'B',
     s => 's',
   })
 %]
