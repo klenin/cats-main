@@ -288,6 +288,7 @@ sub problems_all_frame {
         #{ caption => res_str(605), order_by => '5', width => '10%' },
     ]);
     $lv->define_db_searches([ qw(P.id P.title P.contest_id P.run_method P.formal_input) ]);
+    $lv->define_enums({ run_method => CATS::Misc::run_method_enum() });
     $lv->define_db_searches({ contest_title => 'C.title'});
 
     my $c = $dbh->prepare(qq~
@@ -440,6 +441,7 @@ sub problems_retest_frame
         P.id P.title P.run_method P.formal_input
         CP.code CP.testsets CP.points_testsets CP.status
     ) ]);
+    $lv->define_enums({ run_method => CATS::Misc::run_method_enum() });
 
     my $psn = problem_status_names_enum($lv);
 
@@ -553,6 +555,7 @@ sub problems_frame {
         P.id P.title P.upload_date P.lang P.memory_limit P.time_limit P.run_method P.formal_input
         CP.code CP.testsets CP.tags CP.points_testsets CP.status
     ) ]);
+    $lv->define_enums({ run_method => CATS::Misc::run_method_enum() });
     my $psn = problem_status_names_enum($lv);
 
     my $reqs_count_sql = 'SELECT COUNT(*) FROM reqs D WHERE D.problem_id = P.id AND D.state =';
