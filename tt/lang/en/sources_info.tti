@@ -19,5 +19,6 @@
     run_details => 'results',
     diff_runs => 'diff',
     log => 'log',
+    view_test_details => 'output',
   })
 %]

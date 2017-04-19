@@ -42,7 +42,7 @@ sub source_links {
         url_function('problem_text', cpid => $si->{cp_id}, cid => $si->{contest_id}, sid => $sid);
     $si->{href_problem_details} =
         url_function('problem_details', pid => $si->{problem_id}, cid => $si->{contest_id}, sid => $sid);
-    for (qw/run_details view_source run_log download_source/) {
+    for (qw/run_details view_source run_log download_source view_test_details/) {
         $si->{"href_$_"} = url_f($_, rid => $si->{req_id});
         $si->{"href_class_$_"} = $_ eq $current_link ? 'current_link' : '';
     }
@@ -665,6 +665,57 @@ sub download_source_frame {
     content_type($ext eq 'zip' ? 'application/zip' : 'text/plain', 'UTF-8');
     headers('Content-Disposition' => "inline;filename=$si->{req_id}.$ext");
     CATS::Web::print(Encode::encode_utf8($si->{src}));
+}
+
+sub view_test_details_frame {
+    init_template('view_test_details.html.tt');
+
+    my ($p) = @_;
+    $p->{rid} or return;
+    $p->{test_rank} //= 1;
+
+    my $sources_info = get_sources_info(request_id => $p->{rid}) or return;
+    $sources_info->{is_jury} or return;
+
+    my $test_data;
+    if (param('delete_request_outputs') && $is_jury) {
+        $dbh->do(q~
+            DELETE FROM solution_output SO
+            WHERE SO.req_id = ?~, undef,
+            $p->{rid});
+        $dbh->commit();
+    } elsif(param('delete_test_output') && $is_jury) {
+        $dbh->do(q~
+            DELETE FROM solution_output SO
+            WHERE SO.req_id = ? AND SO.test_rank = ?~, undef,
+            $p->{rid}, $p->{test_rank});
+        $dbh->commit();
+    } else {
+        $test_data = $dbh->selectrow_hashref(q~
+            SELECT SO.output, SO.size FROM solution_output SO
+            WHERE SO.req_id = ? AND SO.test_rank = ?~, { Slice => {} },
+            $p->{rid}, $p->{test_rank});
+    }
+
+    my $tdhref = sub { url_f('view_test_details', rid => $p->{rid}, test_rank => $_[0]) };
+
+    my $test_ranks = $dbh->selectcol_arrayref(q~
+        SELECT rank FROM tests T
+        INNER JOIN reqs R ON R.problem_id = T.problem_id
+        WHERE R.id = ?
+        ORDER BY rank~, undef,
+        $p->{rid});
+
+    source_links($sources_info);
+    sources_info_param([ $sources_info ]);
+    $t->param(
+        test_data => $test_data,
+        href_prev_pages => $p->{test_rank} > $test_ranks->[0] ? $tdhref->($p->{test_rank} - 1) : undef,
+        href_next_pages => $p->{test_rank} < $test_ranks->[-1] ? $tdhref->($p->{test_rank} + 1) : undef,
+        test_ranks => [
+            map +{ page_number => $_, href_page => $tdhref->($_), current_page => $_ == $p->{test_rank}, }, @$test_ranks
+        ],
+    );
 }
 
 sub try_set_state {

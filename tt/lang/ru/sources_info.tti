@@ -19,5 +19,6 @@
     run_details => 'результаты',
     diff_runs => 'сравнить',
     log => 'лог',
+    view_test_details => 'вывод',
   })
 %]

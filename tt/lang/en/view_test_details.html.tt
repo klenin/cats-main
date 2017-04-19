@@ -1,0 +1,11 @@
+[%
+  capt.import({
+    solution_output => 'Solution output',
+    no_output => 'No output',
+    size => 'Size',
+    delete_request_outputs => 'Delete output for all tests',
+    delete_test_output => 'Delete output for this test',
+    confirm_delete_for_request => 'Delete output for all tests. Are you sure?',
+    confirm_delete_for_test => 'Delete output for this test. Are you sure?',
+  })
+%]

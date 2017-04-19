@@ -8,6 +8,13 @@
     capt_enc = capt.encoding
     select_name = 'comment_enc'
 %]
+
+<style>
+  .output_test_data a {
+    color: black;
+  };
+</style>
+
 [% IF is_jury %]
 <div id="filter_form" style="display: none;">
 <form action="" onsubmit="return filter()">
