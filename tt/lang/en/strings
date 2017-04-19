@@ -105,6 +105,7 @@
 702 "paused"
 703 "disabled"
 704 "hidden"
+705 "compile"
 800 "Team name / contestant name"
 801 "Team captain's name"
 802 "Motto"
