@@ -161,7 +161,7 @@ CREATE TABLE contest_problems (
     UNIQUE (problem_id, contest_id)
 );
 ALTER TABLE contest_problems
-  ADD CONSTRAINT chk_contest_problems_st CHECK (0 <= status AND status <= 4);
+  ADD CONSTRAINT chk_contest_problems_st CHECK (0 <= status AND status <= 5);
 
 
 CREATE TABLE problem_sources (
