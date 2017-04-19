@@ -7,7 +7,7 @@
 <table class="internal_borders padded">
 <tr><td></td><td>[% capt.time %], [% capt.s %]</td><td>[% capt.memory %], [% capt.mb %]</td><td>[% capt.write %], [% capt.b %]</td></tr>
 <tr><td>[% capt.original_limits %]</td><td>[% p.time_limit %]</td><td>[% p.memory_limit %]</td><td>[% p.write_limit %]</td></tr>
-[% IF p.overridden_time_limit && p.overridden_memory_limit && p.overridden_write_limit %]
+[% IF p.overridden_time_limit || p.overridden_memory_limit || p.overridden_write_limit %]
 <tr><td>[% capt.overridden_limits %]</td>
     <td>
         <input type="text" name="time_limit" value="[% p.overridden_time_limit %]" size="3" />
@@ -23,7 +23,7 @@
 <tr>
     <td colspan="4" align="center">
         <input type="submit" name="override" value="[% capt.override %]" class="button" />
-        [% IF p.overridden_time_limit && p.overridden_memory_limit && p.overridden_write_limit %]
+        [% IF p.overridden_time_limit || p.overridden_memory_limit || p.overridden_write_limit %]
             <input type="submit" name="clear_override" value="[% capt.clear_override %]" class="button" />
         [% END %]
     </td>
