@@ -339,7 +339,7 @@ sub prepare_ranks
     if ($self->{filter}) {
         my $negate = $self->{filter} =~ /^\!(.*)$/;
         my $filter = Encode::decode_utf8($negate ? $1 : $self->{filter});
-        my $filter_fields = sub { join '', map $_ || '', @{$_[0]}{qw(tag team_name city)} };
+        my $filter_fields = sub { join '', map $_ || '', @{$_[0]}{qw(tag team_name city affiliation_year)} };
         @rank = grep $negate == (index($filter_fields->($_), $filter) < 0), @rank;
     }
 
@@ -469,15 +469,16 @@ sub rank_table
     {
         my ($account_id) = @_;
         my $acc_cond = $account_id ? 'AND A.id = ?' : '';
+        my $account_fields = q~A.team_name, A.motto, A.country, A.city, A.affiliation_year~;
         my $res = $dbh->selectall_hashref(qq~
             SELECT
-                A.team_name, A.motto, A.country, A.city,
+                $account_fields,
                 MAX(CA.is_virtual) AS is_virtual, MAX(CA.is_ooc) AS is_ooc, MAX(CA.is_remote) AS is_remote,
                 CA.account_id, CA.tag
             FROM accounts A INNER JOIN contest_accounts CA ON A.id = CA.account_id
             WHERE CA.contest_id IN ($self->{contest_list}) AND CA.is_hidden = 0
                 $virtual_cond $ooc_cond $acc_cond
-            GROUP BY CA.account_id, CA.tag, A.team_name, A.motto, A.country, A.city~, 'account_id', { Slice => {} },
+            GROUP BY CA.account_id, CA.tag, $account_fields~, 'account_id', { Slice => {} },
             ($account_id || ())
         );
 
