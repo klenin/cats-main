@@ -255,9 +255,8 @@ sub define_common_searches {
     $lv->define_db_searches([ map "P.$_", qw(
         id title contest_id author upload_date lang run_method last_modified_by max_points
         statement explanation pconstraints input_format output_format formal_input json_data
-        memory_limit time_limit
         statement_url explanation_url
-    ) ]);
+    ), @cats::limits_fields ]);
 
     $lv->define_enums({ run_method => CATS::Misc::run_method_enum() });
 }
@@ -574,6 +573,7 @@ sub problems_frame {
     my $hidden_problems = $is_jury ? '' : " AND CP.status < $cats::problem_st_hidden";
     # TODO: take testsets into account
     my $test_count_sql = $is_jury ? '(SELECT COUNT(*) FROM tests T WHERE T.problem_id = P.id) AS test_count,' : '';
+    my $limits_str = join ', ', map "P.$_", @cats::limits_fields;
     my $sth = $dbh->prepare(qq~
         SELECT
             CP.id AS cpid, P.id AS pid,
@@ -588,7 +588,7 @@ sub problems_frame {
             P.upload_date,
             (SELECT A.login FROM accounts A WHERE A.id = P.last_modified_by) AS last_modified_by,
             SUBSTRING(P.explanation FROM 1 FOR 1) AS has_explanation,
-            $test_count_sql CP.testsets, CP.points_testsets, P.lang, P.memory_limit, P.time_limit,
+            $test_count_sql CP.testsets, CP.points_testsets, P.lang, $limits_str,
             CP.max_points, P.repo, CP.tags, P.statement_url, P.explanation_url
         FROM problems P, contest_problems CP, contests OC
         WHERE CP.problem_id = P.id AND OC.id = P.contest_id AND CP.contest_id = ?$hidden_problems
@@ -677,6 +677,7 @@ sub problems_frame {
             lang => $c->{lang},
             memory_limit => $c->{memory_limit} * 1024 * 1024,
             time_limit => $c->{time_limit},
+            write_limit => $c->{write_limit},
             max_points => $c->{max_points},
             tags => $c->{tags},
         );
