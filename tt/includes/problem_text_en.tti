@@ -9,8 +9,21 @@
   <td>Output file:</td><td>[% (output_file == '*STDOUT' ? 'Standard output' : output_file) | html %]</td>
   <td>&nbsp;</td>
   <td>Memory limit:</td><td>[% memory_limit %] Mb</td></tr>
-[% IF show_points %]<tr><td>Maximum points:</td><td>[% max_points %]</td>
-  <td colspan="3">&nbsp;</td></tr>[% END %]
+[% IF write_limit || show_points %]
+<tr>
+  [% IF show_points %]
+  <td>Maximum points:</td><td>[% max_points %]</td>
+  [% ELSE %]
+  <td></td><td></td>
+  [% END %]
+  <td>&nbsp;</td>
+  [% IF write_limit %]
+  <td>Write limit:</td><td>[% write_limit %] B</td>
+  [% ELSE %]
+  <td></td><td></td>
+  [% END %]
+</tr>
+[% END %]
 </table>
 [% IF keywords %]Keywords: [% keywords %]<br/><br/>[% END %]
 [% IF statement %]

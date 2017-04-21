@@ -9,8 +9,21 @@
   <td>Выходной файл:</td><td>[% (output_file == '*STDOUT' ? 'Стандартный выход' : output_file) | html %]</td>
   <td>&nbsp;</td>
   <td>Ограничение памяти на тест:</td><td>[% memory_limit %] Мб</td></tr>
-  [% IF show_points %]<tr><td>Максимальная оценка:</td><td>[% max_points %] баллов</td>
-  <td colspan="3">&nbsp;</td></tr>[% END %]
+[% IF write_limit || show_points %]
+<tr>
+  [% IF show_points %]
+  <td>Максимальная оценка:</td><td>[% max_points %] баллов</td>
+  [% ELSE %]
+  <td></td><td></td>
+  [% END %]
+  <td>&nbsp;</td>
+  [% IF write_limit %]
+  <td>Ограничение записи на тест:</td><td>[% write_limit %] Б</td>
+  [% ELSE %]
+  <td></td><td></td>
+  [% END %]
+</tr>
+[% END %]
 </table>
 [% IF keywords %]Ключевые слова: [% keywords %]<br/><br/>[% END %]
 [% IF statement %]
@@ -32,7 +45,7 @@
 [% IF output_format %]
   <h3>Формат выходного файла</h3>
   [% output_format %]
-[% END %]    
+[% END %]
 [% IF pconstraints %]
   <h3>Ограничения</h3>
   [% pconstraints %]
