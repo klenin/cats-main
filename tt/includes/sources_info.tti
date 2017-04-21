@@ -43,6 +43,22 @@ function send_message(href)
     .fill_width {
       width: 100%;
     }
+    table.limits_table {
+      border-collapse: collapse;
+    }
+    table.limits_table tr:first-child td {
+      border-top: 0;
+      border-bottom: 0;
+    }
+    table.limits_table tr:last-child td {
+      border-bottom: 0;
+    }
+    table.limits_table tr td:last-child {
+      border-right: 0;
+    }
+    table.limits_table tr td:first-child {
+      border-left: 0;
+    }
   </style>
 
   <script>
@@ -84,6 +100,7 @@ function send_message(href)
         set_judge: { get_by: 'id' },
         time_limit: { get_by: 'id' },
         memory_limit: { get_by: 'id' },
+        write_limit: { get_by: 'id' },
         set_limits: { get_by: 'id' },
       };
 
@@ -178,17 +195,24 @@ function send_message(href)
 <tr>
   <th>[% capt.limits %]</th>
   [% FOREACH si IN sources_info; IF si %]
-    <td [% IF si.colspan > 1 %] colspan="[% si.colspan - 1 %]" [% END %]>
+    <td [% IF si.colspan > 1 %] colspan="[% si.colspan - 1 %]" [% END %] style="padding:0px">
       [% IF si.is_jury %]
-        <div class="limits [% si.style_classes.time_limit %]">
-          [% capt.time %], [% capt.s %]: <input type="text" id="[% get_input_name('time_limit', si.req_id) %]" value="[% si.time_limit %]" size="3"/>
-        </div>
-        <div class="limits [% si.style_classes.memory_limit%]">
-          [% capt.memory %], [% capt.mb %]: <input type="text" id="[% get_input_name('memory_limit', si.req_id) %]" value="[% si.memory_limit %]" size="3"/>
-        </div>
-        <input type="checkbox" id="set_limits_[% si.req_id %]" value="1" />
+        <table class="limits_table">
+          <tr><td>[% capt.time %], [% capt.s %]</td><td>[% capt.memory %], [% capt.mb %]</td><td>[% capt.write %], [% capt.b %]</td>
+          <td rowspan="2"><input type="checkbox" id="set_limits_[% si.req_id %]" value="1" /></td></tr>
+          <tr><td>
+          <div class="limits [% si.style_classes.time_limit %]">
+          <input type="text" id="[% get_input_name('time_limit', si.req_id) %]" value="[% si.time_limit %]" size="3"/>
+          </div></td><td>
+          <div class="limits [% si.style_classes.memory_limit%]">
+          <input type="text" id="[% get_input_name('memory_limit', si.req_id) %]" value="[% si.memory_limit %]" size="3"/>
+          </div></td><td>
+          <div class="limits [% si.style_classes.write_limit%]">
+          <input type="text" id="[% get_input_name('write_limit', si.req_id) %]" value="[% si.write_limit %]" size="3"/>
+          </div></td></tr>
+        </table>
       [% ELSE %]
-          [% limits_str(si.time_limit, si.memory_limit) %]
+          [% limits_str(si.time_limit, si.memory_limit, si.write_limit) %]
       [% END %]
     </td>
   [% END; END %]
