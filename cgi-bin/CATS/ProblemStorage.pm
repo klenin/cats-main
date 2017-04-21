@@ -359,8 +359,8 @@ sub insert_problem_source
     my $c = $dbh->prepare(qq~
         INSERT INTO problem_sources (
             id, problem_id, de_id, src, fname, name, stype, input_file, output_file, guid,
-            time_limit, memory_limit
-        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)~);
+            time_limit, memory_limit, write_limit
+        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)~);
 
     $c->bind_param(1, $s->{id});
     $c->bind_param(2, $p{pid});
@@ -374,6 +374,7 @@ sub insert_problem_source
     $c->bind_param(10, $s->{guid});
     $c->bind_param(11, $s->{time_limit});
     $c->bind_param(12, $s->{memory_limit});
+    $c->bind_param(13, $s->{write_limit});
     $c->execute;
 
     my $g = $s->{guid} ? ", guid=$s->{guid}" : '';
