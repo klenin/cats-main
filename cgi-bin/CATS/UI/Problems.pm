@@ -252,11 +252,11 @@ sub prepare_keyword {
 sub define_common_searches {
     my ($lv) = @_;
 
-    $lv->define_db_searches([ qw(
-        P.id P.title P.contest_id P.author P.upload_date P.lang P.run_method P.last_modified_by P.max_points
-        P.formal_input
-        P.memory_limit P.time_limit
-        P.statement_url P.explanation_url
+    $lv->define_db_searches([ map "P.$_", qw(
+        id title contest_id author upload_date lang run_method last_modified_by max_points
+        statement explanation pconstraints input_format output_format formal_input json_data
+        memory_limit time_limit
+        statement_url explanation_url
     ) ]);
 
     $lv->define_enums({ run_method => CATS::Misc::run_method_enum() });
