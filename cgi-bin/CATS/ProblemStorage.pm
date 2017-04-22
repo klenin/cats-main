@@ -280,7 +280,7 @@ sub save
         UPDATE problems
         SET
             contest_id=?,
-            title=?, lang=?, time_limit=?, memory_limit=?, difficulty=?, author=?,
+            title=?, lang=?, time_limit=?, memory_limit=?, write_limit=?, difficulty=?, author=?,
             input_file=?, output_file=?, statement_url=?, explanation_url=?,
             statement=?, pconstraints=?, input_format=?, output_format=?, formal_input=?, json_data=?, explanation=?, zip_archive=?,
             upload_date=CURRENT_TIMESTAMP, std_checker=?, last_modified_by=?,
@@ -289,13 +289,13 @@ sub save
     : q~
         INSERT INTO problems (
             contest_id,
-            title, lang, time_limit, memory_limit, difficulty, author,
+            title, lang, time_limit, memory_limit, write_limit, difficulty, author,
             input_file, output_file, statement_url, explanation_url,
             statement, pconstraints, input_format, output_format, formal_input, json_data, explanation, zip_archive,
             upload_date, std_checker, last_modified_by,
             max_points, run_method, players_count, repo, id
         ) VALUES (
-            ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP,?,?,?,?,?,?,?
+            ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP,?,?,?,?,?,?,?
         )~;
 
     my $c = $dbh->prepare($sql);
@@ -303,7 +303,7 @@ sub save
     $c->bind_param($i++, $problem->{contest_id});
     $c->bind_param($i++, $problem->{description}->{$_})
         for qw(
-            title lang time_limit memory_limit difficulty author
+            title lang time_limit memory_limit write_limit difficulty author
             input_file output_file statement_url explanation_url);
     $c->bind_param($i++, $problem->{$_}, { ora_type => 113 })
         for qw(statement constraints input_format output_format formal_input json_data explanation);
@@ -359,8 +359,8 @@ sub insert_problem_source
     my $c = $dbh->prepare(qq~
         INSERT INTO problem_sources (
             id, problem_id, de_id, src, fname, name, stype, input_file, output_file, guid,
-            time_limit, memory_limit
-        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)~);
+            time_limit, memory_limit, write_limit
+        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)~);
 
     $c->bind_param(1, $s->{id});
     $c->bind_param(2, $p{pid});
@@ -374,6 +374,7 @@ sub insert_problem_source
     $c->bind_param(10, $s->{guid});
     $c->bind_param(11, $s->{time_limit});
     $c->bind_param(12, $s->{memory_limit});
+    $c->bind_param(13, $s->{write_limit});
     $c->execute;
 
     my $g = $s->{guid} ? ", guid=$s->{guid}" : '';

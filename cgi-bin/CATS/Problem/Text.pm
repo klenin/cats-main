@@ -268,6 +268,8 @@ sub problem_text_frame
 
     my (@problems, $show_points);
 
+    my $overridden_limits_str = join ', ', map "L.$_", @cats::limits_fields;
+
     if (my $pid = url_param('pid')) {
         push @problems, { problem_id => $pid };
     }
@@ -275,7 +277,7 @@ sub problem_text_frame
         my $p = $dbh->selectrow_hashref(qq~
             SELECT CP.id AS cpid, CP.problem_id, CP.code,
             CP.testsets, CP.points_testsets, CP.max_points, CP.tags, CP.status,
-            C.rules, L.time_limit, L.memory_limit
+            C.rules, $overridden_limits_str
             FROM contests C
                 INNER JOIN contest_problems CP ON CP.contest_id = C.id
                 LEFT JOIN limits L ON L.id = CP.limits_id
@@ -290,7 +292,7 @@ sub problem_text_frame
         my $p = $dbh->selectall_arrayref(qq~
             SELECT CP.id AS cpid, CP.problem_id, CP.code,
             CP.testsets, CP.points_testsets, CP.max_points, CP.tags,
-            L.time_limit, L.memory_limit
+            $overridden_limits_str
             FROM contest_problems CP
                 LEFT JOIN limits L ON L.id = CP.limits_id
             WHERE contest_id = ? AND status < $cats::problem_st_hidden
@@ -304,9 +306,10 @@ sub problem_text_frame
     my $need_commit = 0;
     for my $problem (@problems) {
         $current_pid = $problem->{problem_id};
+        my $limits_str = join ', ', @cats::limits_fields;
         my $p = $dbh->selectrow_hashref(qq~
             SELECT
-                id, contest_id, title, lang, time_limit, memory_limit,
+                id, contest_id, title, lang, $limits_str,
                 difficulty, author, input_file, output_file,
                 statement, pconstraints, input_format, output_format, explanation,
                 formal_input, json_data, max_points AS max_points_def
