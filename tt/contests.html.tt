@@ -38,7 +38,7 @@ function confirm_registration()
     [<a href="[% c.href_problems %]">[% capt.problems %]</a>]
 </td>
 <td align=center>[% c.start_date | html %]</td>
-<td align=center>[% c.finish_date | html %]</td>
+<td align=center[% ' style="color: #901010;"' IF c.since_finish > 0 %]>[% c.finish_date | html %]</td>
 <td>
     [% UNLESS c.registration_denied %]
       [% IF c.registered_online; capt.ct_participant; END ~%]
