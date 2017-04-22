@@ -249,6 +249,19 @@ sub prepare_keyword {
     push @{$where->{params}}, $p->{kw};
 }
 
+sub define_common_searches {
+    my ($lv) = @_;
+
+    $lv->define_db_searches([ qw(
+        P.id P.title P.contest_id P.author P.upload_date P.lang P.run_method P.last_modified_by P.max_points
+        P.formal_input
+        P.memory_limit P.time_limit
+        P.statement_url P.explanation_url
+    ) ]);
+
+    $lv->define_enums({ run_method => CATS::Misc::run_method_enum() });
+}
+
 sub problems_all_frame {
     my ($p) = @_;
     my $lv = CATS::ListView->new(name => 'link_problem', template => 'problems_link.html.tt');
@@ -287,8 +300,7 @@ sub problems_all_frame {
         { caption => res_str(604), order_by => '4', width => '10%' },
         #{ caption => res_str(605), order_by => '5', width => '10%' },
     ]);
-    $lv->define_db_searches([ qw(P.id P.title P.contest_id P.run_method P.formal_input) ]);
-    $lv->define_enums({ run_method => CATS::Misc::run_method_enum() });
+    define_common_searches($lv);
     $lv->define_db_searches({ contest_title => 'C.title'});
 
     my $c = $dbh->prepare(qq~
@@ -437,11 +449,10 @@ sub problems_retest_frame
         { caption => res_str(604), order_by => '8', width => '10%' }, # ok/wa/tl
     );
     $lv->define_columns(url_f('problems_retest'), 0, 0, [ @cols ]);
+    define_common_searches($lv);
     $lv->define_db_searches([ qw(
-        P.id P.title P.run_method P.formal_input
         CP.code CP.testsets CP.points_testsets CP.status
     ) ]);
-    $lv->define_enums({ run_method => CATS::Misc::run_method_enum() });
 
     my $psn = problem_status_names_enum($lv);
 
@@ -551,11 +562,10 @@ sub problems_frame {
         { caption => res_str(604), order_by => '6', width => '8%' }, # ok/wa/tl
     );
     $lv->define_columns(url_f('problems'), 0, 0, \@cols);
+    define_common_searches($lv);
     $lv->define_db_searches([ qw(
-        P.id P.title P.upload_date P.lang P.memory_limit P.time_limit P.run_method P.formal_input
         CP.code CP.testsets CP.tags CP.points_testsets CP.status
     ) ]);
-    $lv->define_enums({ run_method => CATS::Misc::run_method_enum() });
     my $psn = problem_status_names_enum($lv);
 
     my $reqs_count_sql = 'SELECT COUNT(*) FROM reqs D WHERE D.problem_id = P.id AND D.state =';
