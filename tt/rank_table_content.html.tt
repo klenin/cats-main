@@ -91,7 +91,7 @@ var rank_table = [
     td: [[% FOREACH c IN r.columns %]'[% c.td %]'[% UNLESS loop.last %],[% END %][% END %]],
     ts: [% r.total_solved %], ttm: [% r.total_time %][% END %], rc: [% r.row_color %],
     pl: [% r.place %], st: '[% IF r.is_ooc %]ooc[% END %][% IF r.is_remote %] remote[% END %][% IF r.is_virtual %] virtual[% END %] [% r.prize %]',
-    t: "[% r.city | html | $Javascript %]"
+    t: "[% r.city | html | $Javascript %][% " $r.affiliation_year" IF r.affiliation_year %]"
   }[% UNLESS loop.last %],[% END %][% END %]
 ];
 
