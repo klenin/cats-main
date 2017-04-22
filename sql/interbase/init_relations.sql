@@ -120,6 +120,7 @@ CREATE TABLE problems (
     lang            VARCHAR(200) DEFAULT '',
     time_limit      INTEGER DEFAULT 0,
     memory_limit    INTEGER,
+    write_limit     INTEGER,
     difficulty      INTEGER DEFAULT 100,
     author          VARCHAR(200) DEFAULT '',
     repo            VARCHAR(200) DEFAULT '', /* Default -- based on id. */
@@ -177,6 +178,7 @@ CREATE TABLE problem_sources (
     guid        VARCHAR(100), /* For cross-contest references. */
     time_limit  FLOAT, /* In seconds. */
     memory_limit INTEGER /* In mebibytes. */
+    write_limit INTEGER /* In bytes */
 );
 ALTER TABLE problem_sources
   ADD CONSTRAINT chk_problem_sources_1 CHECK (0 <= stype AND stype <= 14);
