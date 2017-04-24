@@ -368,7 +368,7 @@ sub problem_history_tree_frame
 }
 
 sub detect_encoding_by_xml_header {
-    $_[0] =~ /^\s*<\?xml.*encoding="(.*)"\s*\?>/ ? uc $1 : 'WINDOWS-1251'
+    $_[0] =~ /^(?:\xEF\xBB\xBF)?\s*<\?xml.*encoding="(.*)"\s*\?>/ ? uc $1 : 'WINDOWS-1251'
 }
 
 sub problem_history_blob_frame
