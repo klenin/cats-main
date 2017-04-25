@@ -119,7 +119,7 @@ sub delete_req_details {
     print_json({ ok => 1 });
 }
 
-my @req_details_fields = qw(req_id test_rank result time_used memory_used disk_used checker_comment);
+my @req_details_fields = qw(req_id test_rank result time_used memory_used disk_used checker_comment output size);
 
 sub insert_req_details {
     bad_judge and return -1;
