@@ -19,6 +19,7 @@
 
 <script>
   var input_file = "[% input_file | $Javascript %]";
+  var output_file = "[% output_file | $Javascript %]";
 </script>
 
 <div>
@@ -28,7 +29,7 @@
 
 [% FOREACH script IN vis_scripts %]
   <script type="text/javascript" src="[% script | url %]"></script>
-  <script>[% visualizer.name %](document.getElementById('visualizer_canvas'), input_file)</script>
+  <script>[% visualizer.name %](document.getElementById('visualizer_canvas'), input_file, output_file)</script>
 [% END %]
 
 </body>

@@ -592,6 +592,12 @@ sub visualize_test_frame {
         WHERE R.id = ? AND T.rank = ?~, undef,
         $rid, $test_rank) or return;
 
+    my $output_file = $dbh->selectrow_array(q~
+        SELECT SO.output
+        FROM solution_output SO
+        WHERE SO.req_id = ? AND SO.test_rank = ?~, undef,
+        $rid, $test_rank);
+
     my $vhref = sub { url_f('visualize_test', rid => $rid, test_rank => $_[0], vid => $vid) };
 
     $t->param(
@@ -599,6 +605,7 @@ sub visualize_test_frame {
             map save_visualizer($_->{src}, $_->{fname}, $_->{problem_id}, $_->{hash}), @imports_js
         ],
         input_file => $input_file,
+        output_file => $output_file,
         visualizer => $visualizer,
         href_prev_pages => $test_rank > $test_ranks->[0] ? $vhref->($test_rank - 1) : undef,
         href_next_pages => $test_rank < $test_ranks->[-1] ? $vhref->($test_rank + 1) : undef,
