@@ -503,26 +503,21 @@ sub problems_frame {
     my ($p) = @_;
 
     my $show_packages = 1;
-    unless ($is_jury)
-    {
+    unless ($is_jury) {
         $show_packages = $contest->{show_packages};
-        if ($contest->{time_since_start} < 0)
-        {
+        if (!$contest->has_started($virtual_diff_time)) {
             init_template(auto_ext('problems_inaccessible'));
             return msg(1130);
         }
         my $local_only = $contest->{local_only};
-        if ($local_only)
-        {
+        if ($local_only) {
             my ($is_remote, $is_ooc);
-            if ($uid)
-            {
+            if ($uid) {
                 ($is_remote, $is_ooc) = $dbh->selectrow_array(qq~
                     SELECT is_remote, is_ooc FROM contest_accounts WHERE contest_id = ? AND account_id = ?~,
                     {}, $cid, $uid);
             }
-            if ((!defined $is_remote || $is_remote) && (!defined $is_ooc || $is_ooc))
-            {
+            if ((!defined $is_remote || $is_remote) && (!defined $is_ooc || $is_ooc)) {
                 init_template(auto_ext('problems_inaccessible'));
                 $t->param(local_only => 1);
                 return;
