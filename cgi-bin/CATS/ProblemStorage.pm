@@ -280,7 +280,7 @@ sub save
         UPDATE problems
         SET
             contest_id=?,
-            title=?, lang=?, time_limit=?, memory_limit=?, write_limit=?, difficulty=?, author=?,
+            title=?, lang=?, time_limit=?, memory_limit=?, write_limit=?, save_output_prefix=?, difficulty=?, author=?,
             input_file=?, output_file=?, statement_url=?, explanation_url=?,
             statement=?, pconstraints=?, input_format=?, output_format=?, formal_input=?, json_data=?, explanation=?, zip_archive=?,
             upload_date=CURRENT_TIMESTAMP, std_checker=?, last_modified_by=?,
@@ -289,13 +289,13 @@ sub save
     : q~
         INSERT INTO problems (
             contest_id,
-            title, lang, time_limit, memory_limit, write_limit, difficulty, author,
+            title, lang, time_limit, memory_limit, write_limit, save_output_prefix, difficulty, author,
             input_file, output_file, statement_url, explanation_url,
             statement, pconstraints, input_format, output_format, formal_input, json_data, explanation, zip_archive,
             upload_date, std_checker, last_modified_by,
             max_points, run_method, players_count, repo, id
         ) VALUES (
-            ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP,?,?,?,?,?,?,?
+            ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP,?,?,?,?,?,?,?
         )~;
 
     my $c = $dbh->prepare($sql);
@@ -303,7 +303,7 @@ sub save
     $c->bind_param($i++, $problem->{contest_id});
     $c->bind_param($i++, $problem->{description}->{$_})
         for qw(
-            title lang time_limit memory_limit write_limit difficulty author
+            title lang time_limit memory_limit write_limit save_output_prefix difficulty author
             input_file output_file statement_url explanation_url);
     $c->bind_param($i++, $problem->{$_}, { ora_type => 113 })
         for qw(statement constraints input_format output_format formal_input json_data explanation);
