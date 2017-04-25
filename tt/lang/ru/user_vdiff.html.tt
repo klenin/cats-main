@@ -1,0 +1,11 @@
+[%
+  capt.import({
+    name => 'Имя',
+    diff_time => 'Сдвиг времени',
+    diff_time_days => 'Сдвиг времени в сутках',
+    new_diff_time => 'Новый сдвиг',
+    units => { min => 'м.', hour => 'ч.', day => 'сут.', week => 'нед.' },
+    is_virtual => 'Виртуальный',
+    save => 'Сохранить',
+  })
+%]

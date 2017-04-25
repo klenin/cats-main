@@ -57,6 +57,7 @@
 577 " d."
 578 "time until start"
 579 "time since start"
+580 "time offset"
 600 "Start time"
 601 "Name"
 602 "Problem"
@@ -226,3 +227,5 @@
 1154 "Unable to group requests for different problems."
 1155 "Viewing sources for group requests is not supported."
 1156 "Number of requests in group for this problem must be: '%s'."
+1157 "Changed time offset for contestant '%s'."
+1158 "Removed time offset for contestant '%s'."

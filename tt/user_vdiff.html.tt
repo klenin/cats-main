@@ -1,0 +1,26 @@
+[% PROCESS includes/menu_begin.tti %]
+[%- PROCESS includes/html.tti -%]
+
+<p>
+[% capt.name %]: [% u.team_name | html %]
+</p>
+
+<form method="post" enctype="multipart/form-data">
+<table class="internal_borders padded">
+<tr><td>[% capt.diff_time %]</td><td>[% formatted_diff_time %]</td></tr>
+<tr><td>[% capt.diff_time_days %]</td><td>[% u.diff_time %]</td></tr>
+<tr><td>[% capt.new_diff_time %]</td><td><input type="text" name="diff_time" value="[% u.diff_time %]" />
+  <select name="units">
+    <option value="min">[% capt.units.min %]</option>
+    <option value="hour">[% capt.units.hour %]</option>
+    <option value="day" selected="selected">[% capt.units.day %]</option>
+    <option value="week">[% capt.units.week %]</option>
+  </select>
+</td></tr>
+<tr><td>[% capt.is_virtual %]</td><td>[% checkbox('is_virtual', u.is_virtual) %]</td></tr>
+</table>
+<br/>
+<input type="submit" value="[% capt.save %]" name="save" class="button" />
+</form>
+
+[% PROCESS includes/menu_end.tti %]

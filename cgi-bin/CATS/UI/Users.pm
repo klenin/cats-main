@@ -53,6 +53,9 @@ sub user_submenu
             { href => url_f('user_settings', uid => $user_id), item => res_str(575), selected => 'user_settings' },
             { href => url_f('user_ip', uid => $user_id), item => res_str(576), selected => 'user_ip' },
         )),
+        (!$is_jury ? () : (
+            { href => url_f('user_vdiff', uid => $user_id), item => res_str(580), selected => 'user_vdiff' },
+        )),
     );
     $_->{selected} = $_->{selected} eq $selected for @m;
     (submenu => \@m);
@@ -612,6 +615,46 @@ sub user_ip_frame
         user_submenu('user_ip', $uid),
         %$u,
         events => $events,
+        title_suffix => $u->{team_name},
+    );
+}
+
+my $vdiff_units = { min => 1 / 24 / 60, hour => 1 / 24, day => 1, week => 7 };
+
+sub user_vdiff_save
+{
+    my ($p, $u) = @_;
+    $p->{save} or return;
+    my $k = $vdiff_units->{$p->{units} // ''} or return;
+    $u->{diff_time} = $p->{diff_time} ? $p->{diff_time} * $k : undef;
+    $u->{is_virtual} = $p->{is_virtual} ? 1 : 0;
+    $dbh->do(_u $sql->update('contest_accounts',
+        { diff_time => $u->{diff_time}, is_virtual => $u->{is_virtual} },
+        { account_id => $p->{uid}, contest_id => $cid }
+    ));
+    $dbh->commit;
+    msg($u->{diff_time} ? 1157 : 1158, $u->{team_name});
+}
+
+sub user_vdiff_frame
+{
+    my ($p) = @_;
+    $is_jury or return;
+    my $uid = $p->{uid} or return;
+
+    init_template('user_vdiff.html.tt');
+
+    my $u = $dbh->selectrow_hashref(q~
+        SELECT A.id, A.team_name, CA.diff_time, CA.is_virtual FROM accounts A
+        INNER JOIN contest_accounts CA ON CA.account_id = A.id
+        WHERE A.id = ? AND CA.contest_id = ?~, { Slice => {} },
+        $uid, $cid) or return;
+    user_vdiff_save($p, $u);
+
+    $t->param(
+        user_submenu('user_vdiff', $uid),
+        u => $u,
+        formatted_diff_time => format_diff_time($u->{diff_time}, 1),
         title_suffix => $u->{team_name},
     );
 }

@@ -34,6 +34,7 @@ my $int_list = qr/[\d,]+/;
 my $fixed = qr/[+-]?([0-9]*[.])?[0-9]+/;
 my $sha = qr/[a-h0-9]+/;
 my $str = qr/.+/;
+my $ident = qr/[a-zA-Z]+/;
 
 sub main_routes() {
     {
@@ -70,6 +71,8 @@ sub main_routes() {
         user_stats => \&CATS::UI::Users::user_stats_frame,
         user_settings => \&CATS::UI::Users::user_settings_frame,
         user_ip => [ \&CATS::UI::Users::user_ip_frame, uid => $int, ],
+        user_vdiff => [ \&CATS::UI::Users::user_vdiff_frame,
+            uid => $int, diff_time => $fixed, units => $ident, is_virtual => $ident, save => $str, ],
 
         compilers => \&CATS::UI::Compilers::compilers_frame,
         judges => \&CATS::UI::Judges::judges_frame,
