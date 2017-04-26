@@ -471,6 +471,18 @@ files with tests, solutions etc.
 </tr>
 </table>
 
+<a name="rankSpec" />
+<h2>Test case ranks specifiction</h2>
+<p>
+  Specifier is a comma-separated list of elements.
+  Each element may be one of:
+  <ul>
+    <li>Test number,</li>
+    <li>Range of test numbers, separated by "-" character [% v15 %],</li>
+    <li>Testset name ([% tag_ref('Testset') %])[% v18 %].</li>
+  </ul>
+</p>
+
 <a name="contextVars" />
 <h2>Context variables</h2>
 
@@ -592,17 +604,5 @@ logical not, name -- tag name, value -- tag value.
   This feature is deprecated since version 1.4.</p>
 <a name="dv15"></a><p><a href="" onclick="javascript:history.back(-1)"><sup>&minus;1.5</sup></a>
   This feature is deprecated since version 1.5.</p>
-
-<a name="rankSpec" />
-<h2>Test case ranks specifiction</h2>
-<p>
-  Specifier is a comma-separated list of elements.
-  Each element may be one of:
-  <ul>
-    <li>Test number,</li>
-    <li>Range of test numbers, separated by "-" character [% v15 %],</li>
-    <li>Testset name ([% tag_ref('Testset') %])[% v18 %].</li>
-  </ul>
-</p>
 
 [% PROCESS footer.tti %]
