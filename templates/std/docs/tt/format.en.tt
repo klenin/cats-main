@@ -274,6 +274,35 @@ files with tests, solutions etc.
   <td>Test data visualizer.</td>
 </tr>
 <tr>
+  <td>[% tag_in('Interactor', 'Problem', v19) %]</td>
+  <td>
+    <ul>
+      <li>name -- identifier of the [% tag_ref('Interactor') %] object;</li>
+      <li>src[% opt %] -- path to the source code file;</li>
+      <li>de_code[% opt %] -- development environment code;</li>
+      <li>export[% opt %] -- globally unique identifier.</li>
+      <li>timeLimit[% opt %] -- time limit in seconds.</li>
+      <li>memoryLimit[% opt %] -- memory limit in megabytes.</li>
+    </ul>
+  </td>
+  <td>Interactor (see [% tag_ref('Run') %]). Only one iterator per problem is allowed.</td>
+</tr>
+<tr>
+  <td>[% tag_in('Run', 'Problem', v19) %]</td>
+  <td>
+    <ul>
+      <li>method -- solution running method.</li>
+    </ul>
+  </td>
+  <td>Possible values of method attribute:
+    <ul>
+      <li>default -- run a single process of solution,</li>
+      <li>interactive -- run solution and interactor (see [% tag_ref('Interactor') %]) simultaneously,
+        exchanging data via standard input/output streams.</li>
+    </ul>
+  </td>
+</tr>
+<tr>
   <td>[% tag_in('Test', 'Problem') %]</td>
   <td><ul>
     <li>rank -- <a href="#rankSpec">test ranks specifier</a>.
