@@ -433,7 +433,7 @@ files with tests, solutions etc.
   Attributes of tags [% tag_ref('SampleIn') %] and [% tag_ref('SampleOut') %] nested inside of [% tag_ref('Sample') %]
   can contain context variable referencing sample rank.[% v19 %].
   For example:
-  <pre>&lt;Sample rank="1" to="3"&gt;
+  <pre>&lt;Sample rank="1-3"&gt;
   &lt;SampleIn src="%0n.in"/&gt;
   &lt;SampleOut src="%0n.out"/&gt;
 &lt;/Sample&gt</pre>
