@@ -47,6 +47,7 @@ files with tests, solutions etc.
       <li>lang[% opt %] - (natural) language of the problem text;</li>
       <li>tlimit - time limit for a single test (in seconds);</li>
       <li>mlimit[% v11 %] - memory limit for a single test (in megabytes);</li>
+      <li>wlimit[% opt %] [% v19 %] - write limit for a single test (in megabytes), default value is 30;</li>
       <li>author[% opt %] - author name;</li>
       <li>inputFile - input file name or <tt>*STDIN</tt>[% v18 %];</li>
       <li>outputFile - output file name or <tt>*STDOUT</tt>[% v18 %];</li>
@@ -146,6 +147,7 @@ files with tests, solutions etc.
       <li>export[% opt %] [% v14 %] - global identifier.</li>
       <li>timeLimit[% opt %] [% v17 %] -- time limit in seconds.</li>
       <li>memoryLimit[% opt %] [% v17 %] -- memory limit in megabytes.</li>
+      <li>writeLimit[% opt %] [% v19 %] -- write limit in megabytes.</li>
     </ul>
   </td>
   <td>
@@ -212,6 +214,7 @@ files with tests, solutions etc.
       <li>export[% opt %] [% v14 %] -- globally unique identifier.</li>
       <li>timeLimit[% opt %] [% v17 %] -- time limit in seconds. By default equal to the problem's limit.</li>
       <li>memoryLimit[% opt %] [% v17 %] -- memory limit in megabytes. By default equal to the problem's limit.</li>
+      <li>writeLimit[% opt %] [% v19 %] -- write limit in megabytes. By default equal to the problem's limit.</li>
     </ul>
   </td>
   <td>Description of the jury solution.</td>
@@ -227,6 +230,7 @@ files with tests, solutions etc.
       <li>export[% opt %] [% v14 %] -- globally unique identifier.</li>
       <li>timeLimit[% opt %] [% v17 %] -- time limit in seconds.</li>
       <li>memoryLimit[% opt %] [% v17 %] -- memory limit in megabytes.</li>
+      <li>writeLimit[% opt %] [% v19 %] -- write limit in megabytes. By default is 999.</li>
     </ul>
   </td>
   <td>Description of the test generator. Generator must produce a file named according to the <tt>outputFile</tt> attribute. That file is used as an input data by the [% tag_ref('In') %] tag.
@@ -254,6 +258,7 @@ files with tests, solutions etc.
       <li>export[% opt %] [% v14 %] -- globally unique identifier.</li>
       <li>timeLimit[% opt %] [% v17 %] -- time limit in seconds.</li>
       <li>memoryLimit[% opt %] [% v17 %] -- memory limit in megabytes.</li>
+      <li>writeLimit[% opt %] [% v19 %] -- write limit in megabytes. By default is 999.</li>
     </ul>
   </td>
   <td>Attributes name, src and export of [% tag_ref('GeneratorRange') %] tag may contain context variables which are expanded to the current generator number.
@@ -283,6 +288,7 @@ files with tests, solutions etc.
       <li>export[% opt %] -- globally unique identifier.</li>
       <li>timeLimit[% opt %] -- time limit in seconds.</li>
       <li>memoryLimit[% opt %] -- memory limit in megabytes.</li>
+      <li>writeLimit[% opt %] [% v19 %] -- write limit in megabytes.</li>
     </ul>
   </td>
   <td>Interactor (see [% tag_ref('Run') %]). Only one iterator per problem is allowed.</td>
