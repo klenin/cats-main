@@ -52,11 +52,11 @@ sub cache_max_points
         for (@$test_points) {
             my $r = $_->{rank};
             exists $test_testsets->{$r} or next;
-            my $t = $test_testsets->{$r};
+            my $ts = $test_testsets->{$r};
             $max_points +=
-                !$t || !defined($t->{points}) ? $_->{points} :
-                $used_testsets{$t->{name}}++ ? 0 :
-                $t->{points};
+                !$ts || !defined($ts->{points}) ? $_->{points} // 0 :
+                $used_testsets{$ts->{name}}++ ? 0 :
+                $ts->{points};
         }
     }
     else {
