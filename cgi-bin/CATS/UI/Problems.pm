@@ -227,7 +227,8 @@ sub problems_mass_retest {
         my %accounts;
         for (@$runs) {
             next if !$all_runs && $accounts{$_->{account_id}}++;
-            my $fields = { state => $cats::st_not_processed, judge_id => undef, points => undef };
+            my $fields = {
+                state => $cats::st_not_processed, judge_id => undef, points => undef, testsets => undef };
             ($_->{state} || 0) != $cats::st_ignore_submit &&
                 CATS::Request::enforce_state($_->{id}, $fields) and ++$count;
         }
