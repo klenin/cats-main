@@ -414,6 +414,9 @@ sub get_sources_info {
             }
         }
         $si->{element_sources} = [ map { $result_hash{$_} } @$element_req_ids ];
+        $si->{file_name} //= '';
+        $si->{src} //= '';
+        $si->{de_id} //= 0;
         push @$final_result, $si;
     }
 
