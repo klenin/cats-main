@@ -239,7 +239,7 @@ sub contest_visible
 
     my $c = $dbh->selectrow_hashref(qq~
         SELECT
-            CAST(CURRENT_TIMESTAMP - C.start_date AS DOUBLE PRECISION) AS since_start,
+            CAST(CURRENT_TIMESTAMP - C.start_date - COALESCE(CA.diff_time, 0) AS DOUBLE PRECISION) AS since_start,
             C.local_only, C.id AS orig_cid, C.show_packages, C.is_hidden,
             CA.is_jury, CA.is_remote, CA.is_ooc
             FROM contests C $s
