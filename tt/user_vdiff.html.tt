@@ -8,6 +8,8 @@
 <form method="post" enctype="multipart/form-data">
 <table class="internal_borders padded">
 <tr><td>[% capt.diff_time %]</td><td>[% formatted_diff_time %]</td></tr>
+<tr><td>[% capt.contest_start %]</td><td>[% u.contest_start %]</td></tr>
+<tr><td>[% capt.contest_start_offset %]</td><td>[% u.contest_start_offset %]</td></tr>
 <tr><td>[% capt.diff_time_days %]</td><td>[% u.diff_time %]</td></tr>
 <tr><td>[% capt.new_diff_time %]</td><td><input type="text" name="diff_time" value="[% u.diff_time %]" />
   <select name="units">

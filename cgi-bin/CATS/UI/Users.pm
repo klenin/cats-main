@@ -645,8 +645,12 @@ sub user_vdiff_frame
     init_template('user_vdiff.html.tt');
 
     my $u = $dbh->selectrow_hashref(q~
-        SELECT A.id, A.team_name, CA.diff_time, CA.is_virtual FROM accounts A
+        SELECT A.id, A.team_name, CA.diff_time, CA.is_virtual,
+            C.start_date AS contest_start,
+            C.start_date + CA.diff_time AS contest_start_offset
+        FROM accounts A
         INNER JOIN contest_accounts CA ON CA.account_id = A.id
+        INNER JOIN contests C ON C.id = CA.contest_id
         WHERE A.id = ? AND CA.contest_id = ?~, { Slice => {} },
         $uid, $cid) or return;
     user_vdiff_save($p, $u);
