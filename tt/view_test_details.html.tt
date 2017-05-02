@@ -25,7 +25,7 @@
 </form>
 [% IF test_data %]
 <h3>[% capt.solution_output %]</h3>
-[% capt.size %]: [% test_data.size | group_digits %]
+[% capt.size %]: [% test_data.output_size | group_digits %]
 <pre>[% test_data.output | html %]</pre>
 [% ELSE; capt.no_output %]
 [% END %]
