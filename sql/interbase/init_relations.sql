@@ -121,6 +121,7 @@ CREATE TABLE problems (
     time_limit      INTEGER DEFAULT 0,
     memory_limit    INTEGER,
     write_limit     INTEGER,
+    save_output_prefix INTEGER,
     difficulty      INTEGER DEFAULT 100,
     author          VARCHAR(200) DEFAULT '',
     repo            VARCHAR(200) DEFAULT '', /* Default -- based on id. */
@@ -320,6 +321,18 @@ CREATE TABLE req_details
   checker_comment   VARCHAR(400),
 
   UNIQUE(req_id, test_rank)
+);
+
+
+CREATE TABLE solution_output
+(
+    req_id          INTEGER NOT NULL,
+    test_rank       INTEGER NOT NULL,
+    output          BLOB NOT NULL,
+    size            INTEGER NOT NULL,
+    create_time     TIMESTAMP NOT NULL,
+
+    CONSTRAINT so_fk FOREIGN KEY (req_id, test_rank) REFERENCES req_details(req_id, test_rank) ON DELETE CASCADE
 );
 
 

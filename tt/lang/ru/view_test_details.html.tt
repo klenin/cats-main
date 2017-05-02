@@ -1,0 +1,11 @@
+[%
+  capt.import({
+    solution_output => 'Вывод решения',
+    no_output => 'Вывод недоступен',
+    size => 'Размер',
+    delete_request_outputs => 'Удалить вывод для всех тестов',
+    delete_test_output => 'Удалить вывод для этого теста',
+    confirm_delete_for_request => 'Удалить вывод этого решения для всех тестов. Вы уверены?',
+    confirm_delete_for_test => 'Удалить вывод этого решения для этого теста. Вы уверены?',
+  })
+%]

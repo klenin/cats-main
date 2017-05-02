@@ -8,6 +8,13 @@
     capt_enc = capt.encoding
     select_name = 'comment_enc'
 %]
+
+<style>
+  .output_test_data a {
+    color: black;
+  };
+</style>
+
 [% IF is_jury %]
 <div id="filter_form" style="display: none;">
 <form action="" onsubmit="return filter()">
@@ -17,8 +24,12 @@
 <input type="text" name="n_regexp" id="n_regexp" size="40" />
 <input type="submit" value="filter" class="button"/>
 <label>
-<input type="checkbox" id="show_test_data" onclick="toggle_show_test_data()" [% ' checked="checked"' IF display_input %]/>
-[% capt.show_test_data %]
+<input type="checkbox" id="show_input_data" onclick="toggle_show_input_data()" [% ' checked="checked"' IF display_input %]/>
+[% capt.show_input_data %]
+</label>
+<label>
+<input type="checkbox" id="show_output_data" onclick="toggle_show_output_data()" [% ' checked="checked"' IF display_output %]/>
+[% capt.show_output_data %]
 </label>
 </form>
 </div>
@@ -68,7 +79,10 @@
       <th class="data">[% capt.comment %]</th>
     [% END %]
     [% IF r.show_test_data %]
-      <th class="data test_data">[% capt.test_data %]</th>
+      <th class="data input_test_data">[% capt.input_data %]</th>
+      [% IF r.has_output %]
+        <th class="data output_test_data">[% capt.output_data %]</th>
+      [% END %]
       [% IF r.has_visualizer %]<th class="test_data">[% capt.visualize %]</th>[% END %]
     [% END %]
   </tr>
@@ -109,7 +123,10 @@
     [% END %]
     [% IF r.show_checker_comment %]<td><pre>[% rd.checker_comment | html %]</pre></td>[% END %]
     [% IF r.show_test_data %]
-      <td class="test_data"><tt>[% rd.test_data | html; '&hellip;' IF rd.test_data_cut %]</tt></td>
+      <td class="input_test_data"><tt>[% rd.test_data | html; '&hellip;' IF rd.test_data_cut %]</tt></td>
+      [% IF r.has_output %]
+        <td class="output_test_data"><tt><a href="[% rd.output_href %]">[% rd.output | html; '&hellip;' IF rd.output_cut %]</a></tt></td>
+      [% END %]
       [% IF r.has_visualizer %]
         <td class = "test_data">
           [% FOREACH a IN rd.visualize_test_hrefs %]
@@ -180,12 +197,16 @@ function filter() {
     $.plot($('#plot'), series, { series: { lines: { show: true }, points: { show: true } }, legend: { container: '#plot-legend' } });
     return false;
 }
-function toggle_show_test_data() {
-    $('.test_data').toggleClass('hidden', !($('#show_test_data')[0]).checked);
+function toggle_show_input_data() {
+    $('.input_test_data').toggleClass('hidden', !($('#show_input_data')[0]).checked);
+}
+function toggle_show_output_data() {
+    $('.output_test_data').toggleClass('hidden', !($('#show_output_data')[0]).checked);
 }
 $(document).ready(function() {
     $('#filter_form').show();
-    toggle_show_test_data();
+    toggle_show_input_data();
+    toggle_show_output_data();
 });
 </script>
 [% END -%]

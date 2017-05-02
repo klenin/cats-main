@@ -42,7 +42,7 @@ sub source_links {
         url_function('problem_text', cpid => $si->{cp_id}, cid => $si->{contest_id}, sid => $sid);
     $si->{href_problem_details} =
         url_function('problem_details', pid => $si->{problem_id}, cid => $si->{contest_id}, sid => $sid);
-    for (qw/run_details view_source run_log download_source/) {
+    for (qw/run_details view_source run_log download_source view_test_details/) {
         $si->{"href_$_"} = url_f($_, rid => $si->{req_id});
         $si->{"href_class_$_"} = $_ eq $current_link ? 'current_link' : '';
     }
@@ -175,6 +175,11 @@ sub get_run_info {
         WHERE R.id = ? AND PS.stype = ?~, { Slice => {} },
         $req->{req_id}, $cats::visualizer);
 
+    my %outputs = map { $_->{test_rank} => $_->{output} } @{$dbh->selectall_arrayref(qq~
+        SELECT SUBSTRING(SO.output FROM 1 FOR $cats::infile_cut + 1) as output, SO.test_rank
+        FROM solution_output SO WHERE SO.req_id = ? AND SO.test_rank <= ?~, { Slice => {} },
+        $req->{req_id}, $last_test)};
+
     my $maximums = { map { $_ => 0 } @resources };
     my $add_testdata = sub {
         my ($row) = @_ or return ();
@@ -192,6 +197,9 @@ sub get_run_info {
                 name => $_->{name}
             }, @$visualizers ] : [];
         $maximums->{$_} = max($maximums->{$_}, $row->{$_} // 0) for @resources;
+        $row->{output} = $outputs{$row->{test_rank}};
+        $row->{output_cut} = length($row->{output} || '') > $cats::infile_cut;
+        $row->{output_href} = url_f('view_test_details', rid => $req->{req_id}, test_rank => $row->{test_rank});
         $row;
     };
     $req->{points} //= $total_points;
@@ -205,6 +213,7 @@ sub get_run_info {
         accepted_deps => \%accepted_deps,
         has_depends_on => 0 < grep($_->{depends_on}, values %used_testsets),
         has_visualizer => @$visualizers > 0,
+        has_output => $req->{save_output_prefix},
     };
 }
 
@@ -328,7 +337,7 @@ sub get_sources_info {
             R.result_time,
             DE.description AS de_name,
             A.team_name, A.last_ip,
-            P.title AS problem_name, $pc_sql
+            P.title AS problem_name, P.save_output_prefix, $pc_sql
             $limits_str,
             R.limits_id as limits_id,
             C.title AS contest_name,
@@ -519,7 +528,7 @@ sub run_details_frame {
             { get_log_dump($_->{req_id}, 1) } : get_run_info($contest, $_);
     }
     sources_info_param($sources_info);
-    $t->param(runs => \@runs, display_input => $settings->{display_input});
+    $t->param(runs => \@runs, display_input => $settings->{display_input}, display_output => $settings->{display_input});
 }
 
 sub save_visualizer {
@@ -583,6 +592,12 @@ sub visualize_test_frame {
         WHERE R.id = ? AND T.rank = ?~, undef,
         $rid, $test_rank) or return;
 
+    my $output_file = $dbh->selectrow_array(q~
+        SELECT SO.output
+        FROM solution_output SO
+        WHERE SO.req_id = ? AND SO.test_rank = ?~, undef,
+        $rid, $test_rank);
+
     my $vhref = sub { url_f('visualize_test', rid => $rid, test_rank => $_[0], vid => $vid) };
 
     $t->param(
@@ -590,6 +605,7 @@ sub visualize_test_frame {
             map save_visualizer($_->{src}, $_->{fname}, $_->{problem_id}, $_->{hash}), @imports_js
         ],
         input_file => $input_file,
+        output_file => $output_file,
         visualizer => $visualizer,
         href_prev_pages => $test_rank > $test_ranks->[0] ? $vhref->($test_rank - 1) : undef,
         href_next_pages => $test_rank < $test_ranks->[-1] ? $vhref->($test_rank + 1) : undef,
@@ -665,6 +681,57 @@ sub download_source_frame {
     content_type($ext eq 'zip' ? 'application/zip' : 'text/plain', 'UTF-8');
     headers('Content-Disposition' => "inline;filename=$si->{req_id}.$ext");
     CATS::Web::print(Encode::encode_utf8($si->{src}));
+}
+
+sub view_test_details_frame {
+    init_template('view_test_details.html.tt');
+
+    my ($p) = @_;
+    $p->{rid} or return;
+    $p->{test_rank} //= 1;
+
+    my $sources_info = get_sources_info(request_id => $p->{rid}) or return;
+    $sources_info->{is_jury} or return;
+
+    my $test_data;
+    if (param('delete_request_outputs') && $is_jury) {
+        $dbh->do(q~
+            DELETE FROM solution_output SO
+            WHERE SO.req_id = ?~, undef,
+            $p->{rid});
+        $dbh->commit();
+    } elsif(param('delete_test_output') && $is_jury) {
+        $dbh->do(q~
+            DELETE FROM solution_output SO
+            WHERE SO.req_id = ? AND SO.test_rank = ?~, undef,
+            $p->{rid}, $p->{test_rank});
+        $dbh->commit();
+    } else {
+        $test_data = $dbh->selectrow_hashref(q~
+            SELECT SO.output, SO.size FROM solution_output SO
+            WHERE SO.req_id = ? AND SO.test_rank = ?~, { Slice => {} },
+            $p->{rid}, $p->{test_rank});
+    }
+
+    my $tdhref = sub { url_f('view_test_details', rid => $p->{rid}, test_rank => $_[0]) };
+
+    my $test_ranks = $dbh->selectcol_arrayref(q~
+        SELECT rank FROM tests T
+        INNER JOIN reqs R ON R.problem_id = T.problem_id
+        WHERE R.id = ?
+        ORDER BY rank~, undef,
+        $p->{rid});
+
+    source_links($sources_info);
+    sources_info_param([ $sources_info ]);
+    $t->param(
+        test_data => $test_data,
+        href_prev_pages => $p->{test_rank} > $test_ranks->[0] ? $tdhref->($p->{test_rank} - 1) : undef,
+        href_next_pages => $p->{test_rank} < $test_ranks->[-1] ? $tdhref->($p->{test_rank} + 1) : undef,
+        test_ranks => [
+            map +{ page_number => $_, href_page => $tdhref->($_), current_page => $_ == $p->{test_rank}, }, @$test_ranks
+        ],
+    );
 }
 
 sub try_set_state {
