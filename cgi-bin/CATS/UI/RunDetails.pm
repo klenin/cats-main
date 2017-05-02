@@ -708,7 +708,7 @@ sub view_test_details_frame {
         $dbh->commit();
     } else {
         $test_data = $dbh->selectrow_hashref(q~
-            SELECT SO.output, SO.size FROM solution_output SO
+            SELECT SO.output, SO.output_size FROM solution_output SO
             WHERE SO.req_id = ? AND SO.test_rank = ?~, { Slice => {} },
             $p->{rid}, $p->{test_rank});
     }
