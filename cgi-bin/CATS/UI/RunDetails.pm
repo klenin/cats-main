@@ -175,6 +175,11 @@ sub get_run_info {
         WHERE R.id = ? AND PS.stype = ?~, { Slice => {} },
         $req->{req_id}, $cats::visualizer);
 
+    my %outputs = map { $_->{test_rank} => $_->{output} } @{$dbh->selectall_arrayref(qq~
+        SELECT SUBSTRING(SO.output FROM 1 FOR $cats::infile_cut + 1) as output, SO.test_rank
+        FROM solution_output SO WHERE SO.req_id = ? AND SO.test_rank <= ?~, { Slice => {} },
+        $req->{req_id}, $last_test)};
+
     my $maximums = { map { $_ => 0 } @resources };
     my $add_testdata = sub {
         my ($row) = @_ or return ();
@@ -192,6 +197,9 @@ sub get_run_info {
                 name => $_->{name}
             }, @$visualizers ] : [];
         $maximums->{$_} = max($maximums->{$_}, $row->{$_} // 0) for @resources;
+        $row->{output} = $outputs{$row->{test_rank}};
+        $row->{output_cut} = length($row->{output} || '') > $cats::infile_cut;
+        $row->{output_href} = url_f('view_test_details', rid => $req->{req_id}, test_rank => $row->{test_rank});
         $row;
     };
     $req->{points} //= $total_points;
@@ -205,6 +213,7 @@ sub get_run_info {
         accepted_deps => \%accepted_deps,
         has_depends_on => 0 < grep($_->{depends_on}, values %used_testsets),
         has_visualizer => @$visualizers > 0,
+        has_output => $req->{save_output_prefix},
     };
 }
 
@@ -328,7 +337,7 @@ sub get_sources_info {
             R.result_time,
             DE.description AS de_name,
             A.team_name, A.last_ip,
-            P.title AS problem_name, $pc_sql
+            P.title AS problem_name, P.save_output_prefix, $pc_sql
             $limits_str,
             R.limits_id as limits_id,
             C.title AS contest_name,
@@ -519,7 +528,7 @@ sub run_details_frame {
             { get_log_dump($_->{req_id}, 1) } : get_run_info($contest, $_);
     }
     sources_info_param($sources_info);
-    $t->param(runs => \@runs, display_input => $settings->{display_input});
+    $t->param(runs => \@runs, display_input => $settings->{display_input}, display_output => $settings->{display_input});
 }
 
 sub save_visualizer {
