@@ -19,7 +19,7 @@
 
 <tr><td>OK</td><td>OK / Solution accepted</td><td>Тест пройдён / решение принято.</td><td>-</td></tr>
 
-<tr><td>-</td><td>Compilation error</td><td>Ошибка компиляции.</td>
+<tr><td>CE</td><td>Compilation error</td><td>Ошибка компиляции.</td>
   <td>Синтаксическая ошибка, сдан неверный файл, указан неверный язык программирования.</td></tr>
 
 <tr><td>RE</td><td>Run-time error</td><td>Ошибка времени исполнения, решение завершилось с ненулевым кодом возврата.</td>
@@ -42,16 +42,16 @@
 <tr><td>WL</td><td>Write limit exceeded</td><td>Превышен лимит записи на тест.</td>
   <td>Зацикливание при записи, многократная перезапись выходного файла.</td></tr>
 
-<tr><td>-</td><td>Security violation</td><td>Нарушение правил соревнований.</td>
+<tr><td>SV</td><td>Security violation</td><td>Нарушение правил соревнований.</td>
   <td>Выполнение запрещённых правилами действий, например доступ к сети. Списывание.</td></tr>
 
-<tr><td>-</td><td>Ignored submit</td><td>Попытка игнорируется.</td>
+<tr><td>IS</td><td>Ignored submit</td><td>Попытка игнорируется.</td>
   <td>Попытка была неверной по не зависящим от участника причинам.</td></tr>
 
-<tr><td>-</td><td>Awaiting manual verification</td><td>Ожидание ручной проверки.</td>
+<tr><td>AW</td><td>Awaiting manual verification</td><td>Ожидание ручной проверки.</td>
   <td>Решение прошло автоматическую проверку, ождидает ручной проверки.</td></tr>
 
-<tr><td>-</td><td>Rejected by manual verification</td><td>Отвергнуто вручную.</td>
+<tr><td>MR</td><td>Rejected by manual verification</td><td>Отвергнуто вручную.</td>
   <td>При ручной проверке решение было признано не отвечающим требованиям. Например, нарушен стиль кодирования.</td></tr>
 </table>
 </p>

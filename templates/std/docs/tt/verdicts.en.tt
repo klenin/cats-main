@@ -19,7 +19,7 @@ Submission judging can result in following verdicts:
 
 <tr><td>OK</td><td>OK / Solution accepted</td><td>Test passed / solution accepted.</td><td>-</td></tr>
 
-<tr><td>-</td><td>Compilation error</td><td>Compilation error.</td>
+<tr><td>CE</td><td>Compilation error</td><td>Compilation error.</td>
   <td>Syntax error, wrong file submitted, wrong programming language chosen.</td></tr>
 
 <tr><td>RE</td><td>Run-time error</td><td>Error during execution, submission finished with non-zero exit code.</td>
@@ -42,16 +42,16 @@ Submission judging can result in following verdicts:
 <tr><td>WL</td><td>Write limit exceeded</td><td>Write limit for a test is exceeded.</td>
   <td>Infinite loop during output, multiple rewrites of output file.</td></tr>
 
-<tr><td>-</td><td>Security violation</td><td>Contest rules violation.</td>
+<tr><td>SV</td><td>Security violation</td><td>Contest rules violation.</td>
   <td>Performing actions forbidden by rules, such as network access. Plagiarism.</td></tr>
 
-<tr><td>-</td><td>Ignored submit</td><td>Submission is ignored.</td>
+<tr><td>IS</td><td>Ignored submit</td><td>Submission is ignored.</td>
   <td>Submission failed for no fault of the contestant.</td></tr>
 
-<tr><td>-</td><td>Awaiting manual verification</td><td>Awaiting for verification by human judge.</td>
+<tr><td>AW</td><td>Awaiting manual verification</td><td>Awaiting for verification by human judge.</td>
   <td>Submission has passed automated checks, awaiting manual inspection.</td></tr>
 
-<tr><td>-</td><td>Rejected by manual verification</td><td>Rejected by human judge.</td>
+<tr><td>MR</td><td>Rejected by manual verification</td><td>Rejected by human judge.</td>
   <td>During the manual inspection submission was judged unacceptable. For example, bad coding style.</td></tr>
 </table>
 </p>
