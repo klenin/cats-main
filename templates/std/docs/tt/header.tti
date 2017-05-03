@@ -7,7 +7,8 @@
     {
       main => 'to main page',
       contents => 'contents',
-    }
+    };
+  langs = [ 'ru', 'en' ];
 -%]
 <html>
 <head>
@@ -17,18 +18,26 @@
   <title>[% title %] - CATS</title>
 </head>
 <body>
-<table width="100%" cellspacing="0" cellpadding="0">
-  <tr bgcolor="#ffcc55" height="69" valign="bottom">
-    <td class="top" rowspan="2"><img src="../images/std/logo.gif" border="0"></td>
-    <td valign="bottom" width="100%" align="left" class="page_title">[% title %]</td>
-    <td align="right" class="top" rowspan="2">
-      <table width="550" height="72" align="left" cellpadding="0" cellspacing="0" background="../images/std/bg.gif">
-      <tr><td>&nbsp;</td></tr>
-      </table>
+
+<table class="iface header">
+  <tr>
+    <td class="contest_title">
+      [% title | html %]
+    </td>
+    <td class="elapsed">
+      <p>[% IF lang; FOR l IN langs -%]
+        <a href="[% template.name.replace(lang, l).replace('tt', 'html') %]"[% ' class="selected"' IF l == lang %]>[% l %]</a>
+      [% END; END %]</p>
     </td>
   </tr>
-  <tr bgcolor="#ffcc55" height="3"><td></td></tr>
-  <tr class="menu_bar"><td colspan="3">
-    <a class="nav_href" href="..">[% capt.main %]</a> | <a class="nav_href" href="index.[% lang || ru %].html">[% capt.contents %]</a></td></tr>
 </table>
+
+<table class="iface">
+  <tr class="main_menu top">
+    <td align="left">
+    &nbsp;[ <a href="..">[% capt.main %]</a> | <a href="index.[% lang || ru %].html">[% capt.contents %]</a> ]&nbsp;</td></tr>
+    </td>
+  </tr>
+</table>
+
 <div style="margin: 5px">

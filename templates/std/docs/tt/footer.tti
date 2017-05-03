@@ -1,31 +1,36 @@
 [%-
-  capt = lang == 'ru' ?
+  PROCESS "lang/$lang/menu_end.tti";
+  capt.import(lang == 'ru' ?
     {
-      docs => 'Документация',
-      authors => 'Авторы',
-      dept => 'Кафедра информатики, математического и компьютерного моделирования',
-      university => 'Дальневосточный федеральный университет',
+      Docs => 'Документация',
     } :
     {
-      docs => 'Documentation',
-      authors => 'Authors',
-      dept => 'Department of informatics, mathematical and computer modelling',
-      university => 'Far Eastern Federal University',
-    }
+      Docs => 'Documentation',
+    });
 -%]
 </div>
-<table width="100%" cellspacing="0" cellpadding="0">
-<tr class="menu_bar">
-  <td><a href="." class="nav_href">&nbsp;[% capt.docs %] - CATS</a></td>
-  <td align="right"><a href="authors.html" class="nav_href">&copy; 2002-2017 [% capt.authors %]</a>&nbsp;<td>
-</tr>
-<tr height="40" class="down">
-  <td background="../images/std/bg2.gif">&nbsp;</td>
+
+<table class="iface">
+<tr class="footer top">
+  <td>
+    &nbsp;[% capt.Docs %] - CATS
+  </td>
   <td align="right">
-    <a href="http://imcs.dvfu.ru/works" class="nav_href">[% capt.dept %] &nbsp;<br>
-    [% capt.university %] &nbsp;</a>
+    <a href="https://github.com/klenin/cats-main">[% PROCESS includes/github_icon.tti %] [% capt.development %]</a> |
+    <a href="index.[% lang %].html">[% capt.docs %]</a> |
+    <a href="authors.html">&copy; 2002-2017 [% capt.authors %]</a>&nbsp;
+  </td>
+</tr>
+<tr class="footer2">
+  <td class="footer_image">
+    &nbsp;
+  </td>
+  <td align="right">
+    <a href="http://imcs.dvfu.ru/works"> [% capt.dept %] &nbsp;</a><br>
+    <a href="http://dvfu.ru"> [% capt.university %] &nbsp;</a>
   </td>
 </tr>
 </table>
+
 </body>
 </html>

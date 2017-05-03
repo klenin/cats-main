@@ -10,3 +10,4 @@ depend *=header.tti,footer.tti
 src = .
 dest = ..
 lib = .
+lib = ../../../../tt

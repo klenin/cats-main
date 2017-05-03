@@ -1,4 +1,4 @@
-[% PROCESS header.tti title='Submission judging verdicts' lang = 'ru' %]
+[% PROCESS header.tti title='Submission judging verdicts' lang = 'en' %]
 
 <p>
 Submission judging consists of the following steps:

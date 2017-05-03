@@ -1,34 +1,91 @@
 body {
-  margin: 0;
+    background-color: #ffffff;
+    color: #000000;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    margin: 0;
+    width: 100%;
 }
 
-.page_title {
-  font-family: Arial, sans-serif;
-  font-size: 20px;
-  font-style: bold;
-  color: #333300;
+table.iface { width: 100%; border-collapse : collapse; }
+table.iface tr td { padding: 0; }
+
+table.header {
+    background-color: #ffcc55;
+    background-image: url(../images/std/bg.gif);
+    background-repeat: no-repeat;
+    background-position: right;
+    color: #333300;
+}
+table.header td { }
+table.header td.contest_title {
+    background-image: url(../images/std/logo.gif);
+    background-repeat: no-repeat;
+    background-position: left center;
+    font-size: x-large;
+    height: 72px;
+    padding-left: 104px;
+    vertical-align: bottom;
+}
+table.header td.contest_title span { font-size: large; }
+table.header td.elapsed {
+    font-size: small;
+    padding-right: 4px;
+    text-align: right;
+    vertical-align: middle;
+}
+table.header td.elapsed p a { color: #333300; padding: 1px; }
+table.header td.elapsed p a.selected { font-weight: bold; border: 1px solid black; }
+table.header td.elapsed p a:hover { background-color: #ffcc55; }
+
+.main_menu {
+    background-color: #7070ff;
+    height: 30px;
 }
 
-.down * {
-  background-color: #FFCC55;
-  color: #333300;
-  background-repeat: no-repeat;
+.top {
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    color: white;
 }
 
-.nav_href {
-  font-family: Arial;
-  font-size: 12px;
-  text-decoration: none;
-  padding-left: 3px;
+a.top, a.top:link, a.top:visited, a.top:active,
+.top a, .top a:link, .top a:visited, .top a:active
+{
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    color: white;
+    text-decoration: none;
 }
 
-.menu_bar {
-  height: 30px;
-  color: white;
-  background-color: #7070FF;
+a, a:link {
+    color: #4040ff;
+    font-family: Arial;
+    text-decoration: none;
+    font-size: 14px
 }
 
-.menu_bar * { color: white; }
+.main_menu a.main_menu_selected, .main_menu a.main_menu_selected:visited { color: yellow; }
+
+tr.footer, tr.footer td {
+    background-color: #7070ff;
+    height: 30px;
+    color: white;
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+}
+
+tr.footer2, tr.footer2 td, tr.footer2 td a {
+    background-color: #ffcc55;
+    height: 40px;
+    color: #333300;
+    font-size: 12px;
+}
+
+td.footer_image {
+    background-image: url(../../images/std/bg2.gif);
+    background-repeat: no-repeat;
+}
 
 h2 {
   font-family: Arial;
