@@ -1,0 +1,59 @@
+[% PROCESS header.tti title='Submission judging verdicts' lang = 'ru' %]
+
+<p>
+Submission judging consists of the following steps:
+<ol>
+<li>Submission compiling;</li>
+<li>Input data preparation, submission running;</li>
+<li>Output checking;</li>
+<li>Manual verification.</li>
+</ol>
+Step 1 is performed once for each submission, steps 2 and 3 -- once for each test,
+step 4 is performed only on some problems specifically designed for manual verification.
+</p>
+
+<p>
+Submission judging can result in following verdicts:
+<table class="bordered">
+<tr><th>Abbreviation</th><th>Name</th><th>Description</th><th>Possibly caused by</th></tr>
+
+<tr><td>OK</td><td>OK / Solution accepted</td><td>Test passed / solution accepted.</td><td>-</td></tr>
+
+<tr><td>-</td><td>Compilation error</td><td>Compilation error.</td>
+  <td>Syntax error, wrong file submitted, wrong programming language chosen.</td></tr>
+
+<tr><td>RE</td><td>Run-time error</td><td>Error during execution, submission finished with non-zero exit code.</td>
+  <td>Wrong input file name, out of bounds array access, halt/exit/return statement with non-zero argument.</td></tr>
+
+<tr><td>PE</td><td>Presentation error</td><td>Checker was unable to parse output file.</td>
+  <td>Wrong output file name, wrong output file format, output to console instead of file, output file not closed.</td></tr>
+
+<tr><td>WA</td><td>Wrong answer</td><td>Output is incorrect.</td><td>Error in algorithm.</td></tr>
+
+<tr><td>TL</td><td>Time limit exceeded</td><td>Time for a test is limit exceeded.</td>
+  <td>Inefficient algorithm, infinite loop, slow programming language.</td></tr>
+
+<tr><td>IL</td><td>Idleness limit exceeded</td><td>Idleness limit for a test is exceeded.</td>
+  <td>Long waiting without loading the CPU, input from keyboard.</td></tr>
+
+<tr><td>ML</td><td>Memory limit exceeded</td><td>Memory limit for a test is exceeded.</td>
+  <td>Inefficient algorithm, using programming language with wasteful memory allocator.</td></tr>
+
+<tr><td>WL</td><td>Write limit exceeded</td><td>Write limit for a test is exceeded.</td>
+  <td>Infinite loop during output, multiple rewrites of output file.</td></tr>
+
+<tr><td>-</td><td>Security violation</td><td>Contest rules violation.</td>
+  <td>Performing actions forbidden by rules, such as network access. Plagiarism.</td></tr>
+
+<tr><td>-</td><td>Ignored submit</td><td>Submission is ignored.</td>
+  <td>Submission failed for no fault of the contestant.</td></tr>
+
+<tr><td>-</td><td>Awaiting manual verification</td><td>Awaiting for verification by human judge.</td>
+  <td>Submission has passed automated checks, awaiting manual inspection.</td></tr>
+
+<tr><td>-</td><td>Rejected by manual verification</td><td>Rejected by human judge.</td>
+  <td>During the manual inspection submission was judged unacceptable. For example, bad coding style.</td></tr>
+</table>
+</p>
+
+[% PROCESS footer.tti %]
