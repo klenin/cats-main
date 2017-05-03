@@ -745,6 +745,7 @@ sub try_set_state {
         presentation_error =>    $cats::st_presentation_error,
         time_limit_exceeded =>   $cats::st_time_limit_exceeded,
         memory_limit_exceeded => $cats::st_memory_limit_exceeded,
+        write_limit_exceeded  => $cats::st_write_limit_exceeded,
         runtime_error =>         $cats::st_runtime_error,
         compilation_error =>     $cats::st_compilation_error,
         security_violation =>    $cats::st_security_violation,

@@ -18,6 +18,7 @@
 <option value="time_limit_exceeded">Time limit exceeded</option>
 <option value="idleness_limit_exceeded">Idleness limit exceeded</option>
 <option value="memory_limit_exceeded">Memory limit exceeded</option>
+<option value="write_limit_exceeded">Write limit exceeded</option>
 <option value="runtime_error">Runtime error</option>
 <option value="compilation_error">Compilation error</option>
 <option value="security_violation">Security violation</option>
