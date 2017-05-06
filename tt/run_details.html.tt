@@ -28,6 +28,10 @@
 [% capt.show_input_data %]
 </label>
 <label>
+<input type="checkbox" id="show_answer_data" onclick="toggle_show_answer_data()" [% ' checked="checked"' IF display_answer %]/>
+[% capt.show_answer_data %]
+</label>
+<label>
 <input type="checkbox" id="show_output_data" onclick="toggle_show_output_data()" [% ' checked="checked"' IF display_output %]/>
 [% capt.show_output_data %]
 </label>
@@ -80,6 +84,7 @@
     [% END %]
     [% IF r.show_test_data %]
       <th class="data input_test_data">[% capt.input_data %]</th>
+      <th class="data answer_test_data">[% capt.answer_data %]</th>
       [% IF r.has_output %]
         <th class="data output_test_data">[% capt.output_data %]</th>
       [% END %]
@@ -125,9 +130,10 @@
     [% END %]
     [% IF r.show_checker_comment %]<td><pre>[% rd.checker_comment | html %]</pre></td>[% END %]
     [% IF r.show_test_data %]
-      <td class="input_test_data"><tt>[% rd.test_data | html; '&hellip;' IF rd.test_data_cut %]</tt></td>
+      <td class="input_test_data"><tt>[% rd.input_test_data | html; '&hellip;' IF rd.input_test_data_cut %]</tt></td>
+      <td class="answer_test_data"><tt>[% rd.answer_test_data | html; '&hellip;' IF rd.answer_test_data_cut %]</tt></td>
       [% IF r.has_output %]
-        <td class="output_test_data"><tt><a href="[% rd.output_href %]">[% rd.output | html; '&hellip;' IF rd.output_cut %]</a></tt></td>
+        <td class="output_test_data"><a href="[% rd.output_href %]"><tt>[% rd.output_test_data | html; '&hellip;' IF rd.output_test_data_cut %]</tt></a></td>
       [% END %]
       [% IF r.has_visualizer %]
         <td class = "test_data">
@@ -202,12 +208,16 @@ function filter() {
 function toggle_show_input_data() {
     $('.input_test_data').toggleClass('hidden', !($('#show_input_data')[0]).checked);
 }
+function toggle_show_answer_data() {
+    $('.answer_test_data').toggleClass('hidden', !($('#show_answer_data')[0]).checked);
+}
 function toggle_show_output_data() {
     $('.output_test_data').toggleClass('hidden', !($('#show_output_data')[0]).checked);
 }
 $(document).ready(function() {
     $('#filter_form').show();
     toggle_show_input_data();
+    toggle_show_answer_data();
     toggle_show_output_data();
 });
 </script>

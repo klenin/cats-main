@@ -186,19 +186,21 @@ sub get_run_info {
         $contest->{show_test_data} or return $row;
         my $t = $contest->{tests}->[$row->{test_rank} - 1] or return $row;
         $t->{param} //= '';
-        $row->{test_data} =
+        $row->{input_test_data} =
             defined $t->{input} ? $t->{input} :
             $t->{gen_group} ? "$t->{gen_name} GROUP" :
             $t->{gen_name} ? "$t->{gen_name} $t->{param}" : '';
-        $row->{test_data_cut} = length($t->{input} || '') > $cats::infile_cut;
+        $row->{input_test_data_cut} = length($t->{input} || '') > $cats::infile_cut;
+        $row->{answer_test_data} = $t->{answer};
+        $row->{answer_test_data_cut} = length($t->{answer} || '') > $cats::infile_cut;
         $row->{visualize_test_hrefs} =
             defined $t->{input} ? [ map +{
                 href => url_f('visualize_test', rid => $req->{req_id}, test_rank => $row->{test_rank}, vid => $_->{id}),
                 name => $_->{name}
             }, @$visualizers ] : [];
         $maximums->{$_} = max($maximums->{$_}, $row->{$_} // 0) for @resources;
-        $row->{output} = $outputs{$row->{test_rank}};
-        $row->{output_cut} = length($row->{output} || '') > $cats::infile_cut;
+        $row->{output_test_data} = $outputs{$row->{test_rank}};
+        $row->{output_test_data_cut} = length($row->{output_test_data} || '') > $cats::infile_cut;
         $row->{output_href} = url_f('view_test_details', rid => $req->{req_id}, test_rank => $row->{test_rank});
         $row;
     };
@@ -235,7 +237,9 @@ sub get_contest_info {
         ($contest->{show_all_tests} ? 't.points' : ()),
         ($contest->{show_test_data} ? qq~
             (SELECT ps.fname FROM problem_sources ps WHERE ps.id = t.generator_id) AS gen_name,
-            t.param, SUBSTRING(t.in_file FROM 1 FOR $cats::infile_cut + 1) AS input, t.gen_group~ : ());
+            t.param, t.gen_group,
+            SUBSTRING(t.in_file FROM 1 FOR $cats::infile_cut + 1) AS input,
+            SUBSTRING(t.out_file FROM 1 FOR $cats::infile_cut + 1) AS answer ~ : ());
     my $tests = $contest->{tests} = $fields ?
         $dbh->selectall_arrayref(qq~
             SELECT $fields FROM tests t WHERE t.problem_id = ? ORDER BY t.rank~, { Slice => {} },
@@ -529,7 +533,11 @@ sub run_details_frame {
             { get_log_dump($_->{req_id}, 1) } : get_run_info($contest, $_);
     }
     sources_info_param($sources_info);
-    $t->param(runs => \@runs, display_input => $settings->{display_input}, display_output => $settings->{display_input});
+    $t->param(runs => \@runs,
+        display_input => $settings->{display_input},
+        display_answer => $settings->{display_input},
+        display_output => $settings->{display_input}, #TODO: Add this params to settings
+    );
 }
 
 sub save_visualizer {
