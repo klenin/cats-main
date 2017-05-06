@@ -14,7 +14,7 @@ use CATS::IP;
 use CATS::ListView;
 use CATS::Misc qw(
     $t $is_jury $is_root $is_team $sid $cid $uid $contest $is_virtual $settings
-    format_diff_time init_template msg res_str url_f auto_ext);
+    format_diff_time init_template msg res_str url_f auto_ext unpack_privs);
 use CATS::RankTable;
 use CATS::User;
 use CATS::Utils qw(url_function date_to_iso);
@@ -130,7 +130,8 @@ sub users_edit_save
     # can add any team to his contest.
     my $set_password = param_on('set_password') && $is_root;
     my $id = param('id');
-    my $old_user = $id ? CATS::User->new->load($id, [ qw(settings) ]) : undef;
+    my $old_user = $id ? CATS::User->new->load($id, [ qw(settings srole) ]) : undef;
+    return if !$is_root && unpack_privs($old_user->{srole})->{is_root};
 
     $u->validate_params(
         validate_password => $set_password, id => $id,
