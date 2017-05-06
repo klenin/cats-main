@@ -21,6 +21,7 @@ CREATE TABLE accounts (
     srole            INTEGER NOT NULL, /* 0 - root, 1 - user, 2 - can create contests, 4 - can delete messages */
     last_login       TIMESTAMP,
     last_ip          VARCHAR(100) DEFAULT '',
+    restrict_ips     VARCHAR(200), /* NULL - unrestricted */
     locked           INTEGER DEFAULT 0 CHECK (locked IN (0, 1)),
     team_name        VARCHAR(200),
     capitan_name     VARCHAR(200),

@@ -6,7 +6,7 @@
 [% PROCESS includes/user_extra.tti %]
 [%- IF is_root -%]
 <table class="registration">
-<tr><td>[% capt.locked %]</td><td><input type="checkbox" name="locked" value="1" [% ' checked="checked"' IF locked %]</td></tr>
+<tr><td>[% capt.locked %]</td><td><input type="checkbox" name="locked" value="1" [% ' checked="checked"' IF locked %]/></td></tr>
 <tr><td>[% capt.roles.roles %]</td><td>
   [% IF privs.is_root %]
   [% capt.roles.root %]

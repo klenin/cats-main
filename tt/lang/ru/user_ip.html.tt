@@ -1,6 +1,7 @@
 [%
   capt.import({
     name => 'Имя',
+    restrict_ips => 'Ограничен по IP',
     ts => 'Дата / время',
     ip => 'IP-адрес',
   })
