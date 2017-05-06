@@ -132,6 +132,24 @@ sub insert_req_details {
     print_json({ ok => 1 });
 }
 
+sub save_input_test_data {
+    bad_judge and return -1;
+    my ($p) = @_;
+
+    CATS::JudgeDB::save_input_test_data($p->{problem_id}, $p->{test_rank}, $p->{input}, $p->{input_size});
+
+    print_json({ ok => 1 });
+}
+
+sub save_answer_test_data {
+    bad_judge and return -1;
+    my ($p) = @_;
+
+    CATS::JudgeDB::save_answer_test_data($p->{problem_id}, $p->{test_rank}, $p->{answer}, $p->{answer_size});
+
+    print_json({ ok => 1 });
+}
+
 sub get_testset {
     bad_judge and return -1;
     my ($p) = @_;
