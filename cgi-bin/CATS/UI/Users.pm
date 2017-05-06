@@ -123,6 +123,9 @@ sub update_settings {
 sub users_edit_save
 {
     my $u = CATS::User->new->parse_params;
+    if (!$is_root) {
+        delete $u->{restrict_ips};
+    }
     # Simple $is_jury check is insufficient since jury member
     # can add any team to his contest.
     my $set_password = param_on('set_password') && $is_root;
@@ -188,6 +191,9 @@ sub registration_frame
 sub profile_save
 {
     my $u = CATS::User->new->parse_params;
+    if (!$is_root) {
+        delete $u->{restrict_ips};
+    }
     my $set_password = param_on('set_password');
 
     $u->validate_params(validate_password => $set_password, id => $uid) or return;
