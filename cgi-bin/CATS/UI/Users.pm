@@ -223,11 +223,11 @@ sub profile_frame
     my ($p) = @_;
     init_template(auto_ext('user_profile', $p->{json}));
     $uid or return;
-    if (defined $p->{clear} && $is_team) {
+    if (defined $p->{clear}) {
         $settings = {};
         msg(1029, $CATS::Misc::team_name);
     }
-    profile_save if defined $p->{edit_save} && $is_team;
+    profile_save if defined $p->{edit_save};
 
     my $u = CATS::User->new->load($uid) or return;
     my ($is_some_jury) = $is_jury || $dbh->selectrow_array(q~
