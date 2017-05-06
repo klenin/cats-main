@@ -702,7 +702,7 @@ sub view_test_details_frame {
     my $sources_info = get_sources_info(request_id => $p->{rid}) or return;
     $sources_info->{is_jury} or return;
 
-    my $test_data;
+    my $output_test_data;
     if (param('delete_request_outputs') && $is_jury) {
         $dbh->do(q~
             DELETE FROM solution_output SO
@@ -716,11 +716,27 @@ sub view_test_details_frame {
             $p->{rid}, $p->{test_rank});
         $dbh->commit();
     } else {
-        $test_data = $dbh->selectrow_hashref(q~
+        $output_test_data = $dbh->selectrow_hashref(q~
             SELECT SO.output, SO.output_size FROM solution_output SO
             WHERE SO.req_id = ? AND SO.test_rank = ?~, { Slice => {} },
             $p->{rid}, $p->{test_rank});
     }
+
+    my $save_prefix_lengths = $dbh->selectrow_hashref(q~
+        SELECT p.save_input_prefix as input_prefix,
+        p.save_answer_prefix as answer_prefix, p.save_output_prefix as output_prefix
+        FROM problems P
+            INNER JOIN reqs R ON R.problem_id = P.id
+        WHERE R.id = ?~, { Slice => {} },
+        $p->{rid});
+
+    my $test_data = $dbh->selectrow_hashref(q~
+        SELECT T.in_file AS input, T.in_file_size AS input_size,
+        T.out_file AS answer, T.out_file_size AS answer_size
+        FROM tests T
+            INNER JOIN reqs R ON R.problem_id = T.problem_id
+        WHERE R.id = ? AND T.rank = ?~, { Slice => {} },
+        $p->{rid}, $p->{test_rank});
 
     my $tdhref = sub { url_f('view_test_details', rid => $p->{rid}, test_rank => $_[0]) };
 
@@ -734,7 +750,9 @@ sub view_test_details_frame {
     source_links($sources_info);
     sources_info_param([ $sources_info ]);
     $t->param(
+        output_test_data => $output_test_data,
         test_data => $test_data,
+        save_prefix_lengths => $save_prefix_lengths,
         href_prev_pages => $p->{test_rank} > $test_ranks->[0] ? $tdhref->($p->{test_rank} - 1) : undef,
         href_next_pages => $p->{test_rank} < $test_ranks->[-1] ? $tdhref->($p->{test_rank} + 1) : undef,
         test_ranks => [
