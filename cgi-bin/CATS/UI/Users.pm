@@ -89,6 +89,7 @@ sub prepare_password {
 
 sub update_settings_item {
     my ($h, $item, $v) = @_;
+    $h or die;
 
     my @path = split /\./, $item->{name};
     my $k = pop @path;
@@ -133,13 +134,14 @@ sub users_edit_save
         # Need at least $is_jury in all official contests where $u participated.
         allow_official_rename => $is_root)
         or return;
+    $old_user->{settings} ||= {};
     update_settings($old_user->{settings}) or return;
     prepare_password($u, $set_password);
 
     $u->{locked} = param('locked') ? 1 : 0 if $is_root;
 
     my $new_settings = freeze($old_user->{settings});
-    $u->{settings} = $new_settings if $new_settings ne $old_user->{frozen_settings};
+    $u->{settings} = $new_settings if $new_settings ne ($old_user->{frozen_settings} // '');
 
     $dbh->do(_u $sql->update('accounts', { %$u }, { id => $id }));
     $dbh->commit;
@@ -221,7 +223,7 @@ sub profile_frame
     my ($p) = @_;
     init_template(auto_ext('user_profile', $p->{json}));
     $uid or return;
-    if(defined $p->{clear} && $is_team) {
+    if (defined $p->{clear} && $is_team) {
         $settings = {};
         msg(1029, $CATS::Misc::team_name);
     }
@@ -585,7 +587,7 @@ sub user_settings_frame
         $user_id);
 
     msg(1029, $team_name) if $cleared;
-    display_settings(thaw($user_settings));
+    display_settings(thaw($user_settings)) if $user_settings;
     $t->param(
         user_submenu('user_settings', $user_id),
         team_name => $team_name,
