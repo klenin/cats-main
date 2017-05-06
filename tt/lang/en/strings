@@ -148,6 +148,7 @@
 1036 "Contest '%s' properties changed."
 1037 "Contest '%s' deleted."
 1038 "Unable to delete contest '%s', contains problems: %d."
+1039 "Access to this account has beed restricted."
 1040 "Incorrect login or password."
 1041 "Your account has beed locked."
 1042 "Please submit either only a solution file or only a solution text."

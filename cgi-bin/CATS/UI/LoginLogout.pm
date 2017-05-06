@@ -23,6 +23,8 @@ BEGIN {
         sub { $_[0] eq $_[1] }
 }
 
+sub split_ips { map { /(\S+)/ ? $1 : () } split ',', $_[0] }
+
 sub login_frame
 {
     my $json = param('json');
@@ -39,13 +41,18 @@ sub login_frame
     $t->param(login => Encode::decode_utf8($login));
     my $passwd = param('passwd');
 
-    my ($aid, $hash, $locked) = $dbh->selectrow_array(qq~
-        SELECT id, passwd, locked FROM accounts WHERE login = ?~, undef, $login);
+    my ($aid, $hash, $locked, $restrict_ips) = $dbh->selectrow_array(qq~
+        SELECT id, passwd, locked, restrict_ips FROM accounts WHERE login = ?~, undef, $login);
 
     $aid && $check_password->($passwd, $hash) or return msg(1040);
     !$locked or return msg(1041);
 
     my $last_ip = CATS::IP::get_ip();
+
+    if ($restrict_ips) {
+        my %allowed_ips = map { $_ => 1 } split_ips($restrict_ips);
+        0 < grep $allowed_ips{$_}, split_ips($last_ip) or return msg(1039);
+    }
 
     my $cid = url_param('cid');
     for (1..20) {
