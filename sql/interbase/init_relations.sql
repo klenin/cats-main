@@ -123,6 +123,8 @@ CREATE TABLE problems (
     memory_limit    INTEGER,
     write_limit     INTEGER,
     save_output_prefix INTEGER,
+    save_input_prefix INTEGER,
+    save_answer_prefix INTEGER,
     difficulty      INTEGER DEFAULT 100,
     author          VARCHAR(200) DEFAULT '',
     repo            VARCHAR(200) DEFAULT '', /* Default -- based on id. */
@@ -221,7 +223,9 @@ CREATE TABLE tests (
     param           VARCHAR(200) DEFAULT NULL,
     std_solution_id INTEGER DEFAULT NULL REFERENCES problem_sources(id) ON DELETE CASCADE,
     in_file         BLOB,
+    in_file_size    INTEGER,
     out_file        BLOB,
+    out_file_size   INTEGER,
     points          INTEGER,
     gen_group       INTEGER
 );
