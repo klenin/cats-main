@@ -186,10 +186,12 @@ sub get_run_info {
         $contest->{show_test_data} or return $row;
         my $t = $contest->{tests}->[$row->{test_rank} - 1] or return $row;
         $t->{param} //= '';
-        $row->{input_test_data} =
-            defined $t->{input} ? $t->{input} :
+        $row->{input_gen_params} =
             $t->{gen_group} ? "$t->{gen_name} GROUP" :
-            $t->{gen_name} ? "$t->{gen_name} $t->{param}" : '';
+            $t->{gen_name} ? "$t->{gen_name} $t->{param}" : ''
+            if !defined $t->{input} || defined $t->{input_file_size};
+        $row->{input_data} =
+            defined $t->{input} ? $t->{input} : $row->{input_gen_params};
         $row->{input_test_data_cut} = length($t->{input} || '') > $cats::infile_cut;
         $row->{answer_test_data} = $t->{answer};
         $row->{answer_test_data_cut} = length($t->{answer} || '') > $cats::infile_cut;
@@ -201,7 +203,7 @@ sub get_run_info {
         $maximums->{$_} = max($maximums->{$_}, $row->{$_} // 0) for @resources;
         $row->{output_test_data} = $outputs{$row->{test_rank}};
         $row->{output_test_data_cut} = length($row->{output_test_data} || '') > $cats::infile_cut;
-        $row->{output_href} = url_f('view_test_details', rid => $req->{req_id}, test_rank => $row->{test_rank});
+        $row->{view_test_details_href} = url_f('view_test_details', rid => $req->{req_id}, test_rank => $row->{test_rank});
         $row;
     };
     $req->{points} //= $total_points;
@@ -237,7 +239,7 @@ sub get_contest_info {
         ($contest->{show_all_tests} ? 't.points' : ()),
         ($contest->{show_test_data} ? qq~
             (SELECT ps.fname FROM problem_sources ps WHERE ps.id = t.generator_id) AS gen_name,
-            t.param, t.gen_group,
+            t.param, t.gen_group, t.in_file_size AS input_file_size, t.out_file_size AS answer_file_size,
             SUBSTRING(t.in_file FROM 1 FOR $cats::infile_cut + 1) AS input,
             SUBSTRING(t.out_file FROM 1 FOR $cats::infile_cut + 1) AS answer ~ : ());
     my $tests = $contest->{tests} = $fields ?

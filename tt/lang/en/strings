@@ -6,6 +6,7 @@
 505 "testsets"
 506 "tags"
 507 "limits"
+508 "tests"
 510 "console"
 511 "judges"
 512 "new judge"

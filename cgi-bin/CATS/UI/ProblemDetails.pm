@@ -24,6 +24,7 @@ my $problem_submenu = [
     { href => 'problem_history', item => 568 },
     { href => 'compare_tests', item => 552 },
     { href => 'problem_select_testsets', item => 505 },
+    { href => 'problem_test_data', item => 508 },
     { href => 'problem_limits', item => 507 },
     { href => 'problem_select_tags', item => 506 },
 ];
@@ -47,7 +48,7 @@ sub problem_details_frame {
     my $pr = $dbh->selectrow_hashref(q~
         SELECT
             P.title, P.lang, P.contest_id, P.author, P.last_modified_by, P.upload_date,
-            P.run_method,
+            P.run_method, P.save_input_prefix, P.save_answer_prefix, P.save_output_prefix,
             P.time_limit, P.memory_limit, P.write_limit,
             L.time_limit AS overridden_time_limit, L.memory_limit AS overridden_memory_limit, L.write_limit as overridden_write_limit,
             C.title AS contest_name, A.team_name,
@@ -76,6 +77,7 @@ sub problem_details_frame {
         ($contest->{is_hidden} || $contest->{local_only} || $contest->{time_since_start} <= 0 ? () :
             (href_static_text => CATS::StaticPages::url_static(@text))),
         href_testsets => url_f('problem_select_testsets', pid => $p->{pid}),
+        href_test_data => url_f('problem_test_data', pid => $p->{pid}),
         href_problem_limits => url_f('problem_limits', pid => $p->{pid}),
         href_tags => url_f('problem_select_tags', pid => $p->{pid}),
     );
@@ -255,6 +257,56 @@ sub problem_limits_frame
 
         msg(1147, $problem->{title});
     }
+}
+
+sub problem_test_data_frame
+{
+    my ($p) = @_;
+    init_template('problem_test_data.html.tt');
+    $p->{pid} && $is_jury or return;
+
+    if (param('clear_test_data')) {
+        $dbh->do(q~
+            UPDATE tests T SET T.in_file = NULL, T.in_file_size = NULL, T.out_file = NULL, T.out_file_size = NULL
+            WHERE (T.in_file_size IS NOT NULL OR T.out_file_size IS NOT NULL) AND T.problem_id = ?~, undef,
+            $p->{pid});
+        $dbh->commit;
+    }
+
+    my $problem = $dbh->selectrow_hashref(qq~
+        SELECT P.id, P.title, CP.id AS cpid, CP.tags
+        FROM problems P
+            INNER JOIN contest_problems CP ON P.id = CP.problem_id
+        WHERE P.id = ? AND CP.contest_id = ?~, undef,
+        $p->{pid}, $cid) or return;
+
+    my $tests = $dbh->selectall_arrayref(qq~
+        SELECT PS.fname AS gen_name, T.rank, T.gen_group, T.param,
+            SUBSTRING(T.in_file FROM 1 FOR $cats::infile_cut + 1) AS input, T.in_file_size AS input_size,
+            SUBSTRING(T.out_file FROM 1 FOR $cats::infile_cut + 1) AS answer, T.out_file_size AS answer_size
+        FROM tests T
+            LEFT JOIN problem_sources PS ON PS.id = generator_id
+        WHERE T.problem_id = ? ORDER BY T.rank~, { Slice => {} },
+        $p->{pid}) or return;
+
+    (
+        $_->{input_cut},
+        $_->{answer_cut},
+        $_->{generator_params},
+    ) = (
+        length($_->{input} || '') > $cats::infile_cut,
+        length($_->{answer} || '') > $cats::infile_cut,
+        !defined $t->{input} ?
+            ($_->{gen_group} ? "$_->{gen_name} GROUP" :
+            $_->{gen_name} ? "$_->{gen_name} $_->{param}" : '') : ''
+    ) for @$tests;
+
+    $t->param(
+        p => $problem,
+        tests => $tests,
+    );
+
+    problem_submenu('problem_test_data', $p->{pid});
 }
 
 sub problem_select_tags_frame

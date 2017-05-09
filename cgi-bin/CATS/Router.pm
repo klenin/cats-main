@@ -64,6 +64,7 @@ sub main_routes() {
         problem_download => [ \&CATS::UI::ProblemDetails::problem_download, pid => $int, ],
         problem_git_package => [ \&CATS::UI::ProblemDetails::problem_git_package, pid => $int, sha => $sha, ],
         problem_details => [ \&CATS::UI::ProblemDetails::problem_details_frame, pid => $int, ],
+        problem_test_data => [ \&CATS::UI::ProblemDetails::problem_test_data_frame, pid => $int, test_rank => $int ],
         problem_history => \&CATS::UI::ProblemDetails::problem_history_frame,
 
         users => \&CATS::UI::Users::users_frame,

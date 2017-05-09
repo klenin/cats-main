@@ -10,7 +10,7 @@
 %]
 
 <style>
-  .output_test_data a {
+  .test_data a {
     color: black;
   };
 </style>
@@ -130,10 +130,12 @@
     [% END %]
     [% IF r.show_checker_comment %]<td><pre>[% rd.checker_comment | html %]</pre></td>[% END %]
     [% IF r.show_test_data %]
-      <td class="input_test_data"><tt>[% rd.input_test_data | html; '&hellip;' IF rd.input_test_data_cut %]</tt></td>
-      <td class="answer_test_data"><tt>[% rd.answer_test_data | html; '&hellip;' IF rd.answer_test_data_cut %]</tt></td>
+      <td class="test_data input_test_data"><a href="[% rd.view_test_details_href %]" [% "title='$rd.input_gen_params'" IF rd.input_gen_params %]>
+        <tt>[% rd.input_test_data | html; '&hellip;' IF rd.input_test_data_cut %]</tt></a>
+      </td>
+      <td class="test_data answer_test_data"><a href="[% rd.view_test_details_href %]"><tt>[% rd.answer_test_data | html; '&hellip;' IF rd.answer_test_data_cut %]</tt></a></td>
       [% IF r.has_output %]
-        <td class="output_test_data"><a href="[% rd.output_href %]"><tt>[% rd.output_test_data | html; '&hellip;' IF rd.output_test_data_cut %]</tt></a></td>
+        <td class="test_data output_test_data"><a href="[% rd.view_test_details_href %]"><tt>[% rd.output_test_data | html; '&hellip;' IF rd.output_test_data_cut %]</tt></a></td>
       [% END %]
       [% IF r.has_visualizer %]
         <td class = "test_data">
