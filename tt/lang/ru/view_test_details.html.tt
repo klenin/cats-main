@@ -1,8 +1,8 @@
 [%
   capt.import({
-    output_test_data => 'Вывод решения',
-    input_test_data => 'Входные данные',
-    answer_test_data => 'Ответ',
+    output_data => 'Вывод решения',
+    input_data => 'Входные данные',
+    answer_data => 'Ответ',
     no_output => 'Вывод недоступен',
     size => 'Размер',
     delete_request_outputs => 'Удалить вывод для всех тестов',

@@ -192,17 +192,17 @@ sub get_run_info {
             if !defined $t->{input} || defined $t->{input_file_size};
         $row->{input_data} =
             defined $t->{input} ? $t->{input} : $row->{input_gen_params};
-        $row->{input_test_data_cut} = length($t->{input} || '') > $cats::test_file_cut;
-        $row->{answer_test_data} = $t->{answer};
-        $row->{answer_test_data_cut} = length($t->{answer} || '') > $cats::test_file_cut;
+        $row->{input_data_cut} = length($t->{input} || '') > $cats::test_file_cut;
+        $row->{answer_data} = $t->{answer};
+        $row->{answer_data_cut} = length($t->{answer} || '') > $cats::test_file_cut;
         $row->{visualize_test_hrefs} =
             defined $t->{input} ? [ map +{
                 href => url_f('visualize_test', rid => $req->{req_id}, test_rank => $row->{test_rank}, vid => $_->{id}),
                 name => $_->{name}
             }, @$visualizers ] : [];
         $maximums->{$_} = max($maximums->{$_}, $row->{$_} // 0) for @resources;
-        $row->{output_test_data} = $outputs{$row->{test_rank}};
-        $row->{output_test_data_cut} = length($row->{output_test_data} || '') > $cats::test_file_cut;
+        $row->{output_data} = $outputs{$row->{test_rank}};
+        $row->{output_data_cut} = length($row->{output_data} || '') > $cats::test_file_cut;
         $row->{view_test_details_href} = url_f('view_test_details', rid => $req->{req_id}, test_rank => $row->{test_rank});
         $row;
     };
@@ -704,7 +704,7 @@ sub view_test_details_frame {
     my $sources_info = get_sources_info(request_id => $p->{rid}) or return;
     $sources_info->{is_jury} or return;
 
-    my $output_test_data;
+    my $output_data;
     if (param('delete_request_outputs') && $is_jury) {
         $dbh->do(q~
             DELETE FROM solution_output SO
@@ -718,7 +718,7 @@ sub view_test_details_frame {
             $p->{rid}, $p->{test_rank});
         $dbh->commit();
     } else {
-        $output_test_data = $dbh->selectrow_hashref(q~
+        $output_data = $dbh->selectrow_hashref(q~
             SELECT SO.output, SO.output_size FROM solution_output SO
             WHERE SO.req_id = ? AND SO.test_rank = ?~, { Slice => {} },
             $p->{rid}, $p->{test_rank});
@@ -752,7 +752,7 @@ sub view_test_details_frame {
     source_links($sources_info);
     sources_info_param([ $sources_info ]);
     $t->param(
-        output_test_data => $output_test_data,
+        output_data => $output_data,
         test_data => $test_data,
         save_prefix_lengths => $save_prefix_lengths,
         href_prev_pages => $p->{test_rank} > $test_ranks->[0] ? $tdhref->($p->{test_rank} - 1) : undef,

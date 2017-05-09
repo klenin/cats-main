@@ -27,13 +27,13 @@
 
 <form method="post">
 <p><input type="submit" name="delete_request_outputs" class="button" value="[% capt.delete_request_outputs %]" onclick="return confirm('[% capt.confirm_delete_for_request %]')"/></p>
-[% IF output_test_data %]
+[% IF output_data %]
 <p><input type="submit" name="delete_test_output" class="button" value="[% capt.delete_test_output %]" onclick="return confirm('[% capt.confirm_delete_for_test %]')"/></p>
 [% END %]
 </form>
 
 <div>
-    <h3>[% capt.input_test_data %]</h3>
+    <h3>[% capt.input_data %]</h3>
     [% IF test_data.input_size %]
         [% capt.size %]: [% test_data.input_size | group_digits %]<br>
     [% END %]
@@ -41,7 +41,7 @@
 </div>
 
 <div>
-    <h3>[% capt.answer_test_data %]</h3>
+    <h3>[% capt.answer_data %]</h3>
     [% IF test_data.answer_size %]
         [% capt.size %]: [% test_data.answer_size | group_digits %]<br>
     [% END %]
@@ -49,11 +49,11 @@
 </div>
 
 <div>
-    <h3>[% capt.output_test_data %]</h3>
-    [% IF output_test_data.output_size %]
-        [% capt.size %]: [% output_test_data.output_size | group_digits %]<br>
+    <h3>[% capt.output_data %]</h3>
+    [% IF output_data.output_size %]
+        [% capt.size %]: [% output_data.output_size | group_digits %]<br>
     [% END %]
-    <textarea class="scrollable" wrap="off">[% output_test_data.output | html %]</textarea>
+    <textarea class="scrollable" wrap="off">[% output_data.output | html %]</textarea>
 </div>
 
 [% PROCESS includes/timing.tti %]
