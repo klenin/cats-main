@@ -176,7 +176,7 @@ sub get_run_info {
         $req->{req_id}, $cats::visualizer);
 
     my %outputs = map { $_->{test_rank} => $_->{output} } @{$dbh->selectall_arrayref(qq~
-        SELECT SUBSTRING(SO.output FROM 1 FOR $cats::infile_cut + 1) as output, SO.test_rank
+        SELECT SUBSTRING(SO.output FROM 1 FOR $cats::test_file_cut + 1) as output, SO.test_rank
         FROM solution_output SO WHERE SO.req_id = ? AND SO.test_rank <= ?~, { Slice => {} },
         $req->{req_id}, $last_test)};
 
@@ -192,9 +192,9 @@ sub get_run_info {
             if !defined $t->{input} || defined $t->{input_file_size};
         $row->{input_data} =
             defined $t->{input} ? $t->{input} : $row->{input_gen_params};
-        $row->{input_test_data_cut} = length($t->{input} || '') > $cats::infile_cut;
+        $row->{input_test_data_cut} = length($t->{input} || '') > $cats::test_file_cut;
         $row->{answer_test_data} = $t->{answer};
-        $row->{answer_test_data_cut} = length($t->{answer} || '') > $cats::infile_cut;
+        $row->{answer_test_data_cut} = length($t->{answer} || '') > $cats::test_file_cut;
         $row->{visualize_test_hrefs} =
             defined $t->{input} ? [ map +{
                 href => url_f('visualize_test', rid => $req->{req_id}, test_rank => $row->{test_rank}, vid => $_->{id}),
@@ -202,7 +202,7 @@ sub get_run_info {
             }, @$visualizers ] : [];
         $maximums->{$_} = max($maximums->{$_}, $row->{$_} // 0) for @resources;
         $row->{output_test_data} = $outputs{$row->{test_rank}};
-        $row->{output_test_data_cut} = length($row->{output_test_data} || '') > $cats::infile_cut;
+        $row->{output_test_data_cut} = length($row->{output_test_data} || '') > $cats::test_file_cut;
         $row->{view_test_details_href} = url_f('view_test_details', rid => $req->{req_id}, test_rank => $row->{test_rank});
         $row;
     };
@@ -240,8 +240,8 @@ sub get_contest_info {
         ($contest->{show_test_data} ? qq~
             (SELECT ps.fname FROM problem_sources ps WHERE ps.id = t.generator_id) AS gen_name,
             t.param, t.gen_group, t.in_file_size AS input_file_size, t.out_file_size AS answer_file_size,
-            SUBSTRING(t.in_file FROM 1 FOR $cats::infile_cut + 1) AS input,
-            SUBSTRING(t.out_file FROM 1 FOR $cats::infile_cut + 1) AS answer ~ : ());
+            SUBSTRING(t.in_file FROM 1 FOR $cats::test_file_cut + 1) AS input,
+            SUBSTRING(t.out_file FROM 1 FOR $cats::test_file_cut + 1) AS answer ~ : ());
     my $tests = $contest->{tests} = $fields ?
         $dbh->selectall_arrayref(qq~
             SELECT $fields FROM tests t WHERE t.problem_id = ? ORDER BY t.rank~, { Slice => {} },

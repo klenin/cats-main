@@ -282,8 +282,8 @@ sub problem_test_data_frame
 
     my $tests = $dbh->selectall_arrayref(qq~
         SELECT PS.fname AS gen_name, T.rank, T.gen_group, T.param,
-            SUBSTRING(T.in_file FROM 1 FOR $cats::infile_cut + 1) AS input, T.in_file_size AS input_size,
-            SUBSTRING(T.out_file FROM 1 FOR $cats::infile_cut + 1) AS answer, T.out_file_size AS answer_size
+            SUBSTRING(T.in_file FROM 1 FOR $cats::test_file_cut + 1) AS input, T.in_file_size AS input_size,
+            SUBSTRING(T.out_file FROM 1 FOR $cats::test_file_cut + 1) AS answer, T.out_file_size AS answer_size
         FROM tests T
             LEFT JOIN problem_sources PS ON PS.id = generator_id
         WHERE T.problem_id = ? ORDER BY T.rank~, { Slice => {} },
@@ -294,8 +294,8 @@ sub problem_test_data_frame
         $_->{answer_cut},
         $_->{generator_params},
     ) = (
-        length($_->{input} || '') > $cats::infile_cut,
-        length($_->{answer} || '') > $cats::infile_cut,
+        length($_->{input} || '') > $cats::test_file_cut,
+        length($_->{answer} || '') > $cats::test_file_cut,
         !defined $t->{input} ?
             ($_->{gen_group} ? "$_->{gen_name} GROUP" :
             $_->{gen_name} ? "$_->{gen_name} $_->{param}" : '') : ''
