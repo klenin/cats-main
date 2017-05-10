@@ -55,6 +55,13 @@ files with tests, solutions etc.
       <li>difficulty[% opt %] [% dv14 %] - author's estimate of the problem difficulty (1 to 100);</li>
       <li>stdChecker[% opt %] [% dv14 %] - standard checker name;</li>
       <li>maxPoints[% opt %] [% v13 %] - maximum number of points per problem, overrides the sum of points for each test</li>
+
+      <li>saveInputPrefix[% opt %] [% v19 %] -
+        store starting part of each generated test up to a given length [% mem_units %]</li>
+      <li>saveOutputPrefix[% opt %] [% v19 %] -
+        store starting part of submission output on each test up to a given length [% mem_units %]</li>
+      <li>saveAnswerPrefix[% opt %] [% v19 %] -
+        store starting part of solution output on each test up to a given length [% mem_units %]</li>
     </ul>
   </td>
   <td>Standard checker program compares output file with the answer file for a given test.
