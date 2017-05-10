@@ -35,7 +35,7 @@
 <div>
     <h3>[% capt.input_data %]</h3>
     [% IF test_data.input_size %]
-        [% capt.size %]: [% test_data.input_size | group_digits %]<br>
+        [% capt.size %]: [% test_data.input.length | group_digits %] / [% test_data.input_size | group_digits %]<br>
     [% END %]
     <textarea class="scrollable" wrap="off">[% test_data.input | html %]</textarea>
 </div>
@@ -43,7 +43,7 @@
 <div>
     <h3>[% capt.answer_data %]</h3>
     [% IF test_data.answer_size %]
-        [% capt.size %]: [% test_data.answer_size | group_digits %]<br>
+        [% capt.size %]: [% test_data.answer.length | group_digits %] / [% test_data.answer_size | group_digits %]<br>
     [% END %]
     <textarea class="scrollable" wrap="off">[% test_data.answer | html %]</textarea>
 </div>
@@ -51,7 +51,7 @@
 <div>
     <h3>[% capt.output_data %]</h3>
     [% IF output_data.output_size %]
-        [% capt.size %]: [% output_data.output_size | group_digits %]<br>
+        [% capt.size %]: [% output_data.output.length | group_digits %] / [% output_data.output_size | group_digits %]<br>
     [% END %]
     <textarea class="scrollable" wrap="off">[% output_data.output | html %]</textarea>
 </div>
