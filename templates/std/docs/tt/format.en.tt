@@ -479,7 +479,7 @@ files with tests, solutions etc.
 </tr>
 </table>
 
-<a name="rankSpec" />
+<a name="rankSpec"></a>
 <h2>Test case ranks specification</h2>
 <p>
   Specifier is a comma-separated list of elements.
@@ -491,7 +491,7 @@ files with tests, solutions etc.
   </ul>
 </p>
 
-<a name="contextVars" />
+<a name="contextVars"></a>
 <h2>Context variables</h2>
 
 <p>Have a form of <tt>%n</tt>, <tt>%0n</tt>, meaning test number and zero-padded test number correspondingly.</p>
