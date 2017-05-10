@@ -725,16 +725,19 @@ sub view_test_details_frame {
     }
 
     my $save_prefix_lengths = $dbh->selectrow_hashref(q~
-        SELECT p.save_input_prefix as input_prefix,
-        p.save_answer_prefix as answer_prefix, p.save_output_prefix as output_prefix
+        SELECT
+            p.save_input_prefix as input_prefix,
+            p.save_answer_prefix as answer_prefix,
+            p.save_output_prefix as output_prefix
         FROM problems P
             INNER JOIN reqs R ON R.problem_id = P.id
         WHERE R.id = ?~, { Slice => {} },
         $p->{rid});
 
     my $test_data = $dbh->selectrow_hashref(q~
-        SELECT T.in_file AS input, T.in_file_size AS input_size,
-        T.out_file AS answer, T.out_file_size AS answer_size
+        SELECT
+            T.in_file AS input, T.in_file_size AS input_size,
+            T.out_file AS answer, T.out_file_size AS answer_size
         FROM tests T
             INNER JOIN reqs R ON R.problem_id = T.problem_id
         WHERE R.id = ? AND T.rank = ?~, { Slice => {} },
