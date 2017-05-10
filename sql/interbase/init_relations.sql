@@ -115,38 +115,38 @@ CREATE TABLE limits (
 
 
 CREATE TABLE problems (
-    id              INTEGER NOT NULL PRIMARY KEY,
-    contest_id      INTEGER NOT NULL REFERENCES contests(id) ON DELETE CASCADE,
-    title           VARCHAR(200) NOT NULL,
-    lang            VARCHAR(200) DEFAULT '',
-    time_limit      INTEGER DEFAULT 0,
-    memory_limit    INTEGER,
-    write_limit     INTEGER,
+    id                 INTEGER NOT NULL PRIMARY KEY,
+    contest_id         INTEGER NOT NULL REFERENCES contests(id) ON DELETE CASCADE,
+    title              VARCHAR(200) NOT NULL,
+    lang               VARCHAR(200) DEFAULT '',
+    time_limit         INTEGER DEFAULT 0,
+    memory_limit       INTEGER,
+    write_limit        INTEGER,
     save_output_prefix INTEGER,
-    save_input_prefix INTEGER,
+    save_input_prefix  INTEGER,
     save_answer_prefix INTEGER,
-    difficulty      INTEGER DEFAULT 100,
-    author          VARCHAR(200) DEFAULT '',
-    repo            VARCHAR(200) DEFAULT '', /* Default -- based on id. */
-    commit_sha      CHAR(40),
-    input_file      VARCHAR(200) NOT NULL,
-    output_file     VARCHAR(200) NOT NULL,
-    upload_date     TIMESTAMP,
-    std_checker     VARCHAR(60),
-    statement       BLOB,
-    explanation     BLOB,
-    pconstraints    BLOB,
-    input_format    BLOB,
-    output_format   BLOB,
-    formal_input    BLOB,
-    json_data       BLOB,
-    zip_archive     BLOB,
-    last_modified_by INTEGER REFERENCES accounts(id) ON DELETE SET NULL ON UPDATE CASCADE,
-    max_points      INTEGER,
-    hash            VARCHAR(200),
-    run_method      SMALLINT DEFAULT 0,
-    statement_url   VARCHAR(200) DEFAULT '',
-    explanation_url VARCHAR(200) DEFAULT ''
+    difficulty         INTEGER DEFAULT 100,
+    author             VARCHAR(200) DEFAULT '',
+    repo               VARCHAR(200) DEFAULT '', /* Default -- based on id. */
+    commit_sha         CHAR(40),
+    input_file         VARCHAR(200) NOT NULL,
+    output_file        VARCHAR(200) NOT NULL,
+    upload_date        TIMESTAMP,
+    std_checker        VARCHAR(60),
+    statement          BLOB,
+    explanation        BLOB,
+    pconstraints       BLOB,
+    input_format       BLOB,
+    output_format      BLOB,
+    formal_input       BLOB,
+    json_data          BLOB,
+    zip_archive        BLOB,
+    last_modified_by   INTEGER REFERENCES accounts(id) ON DELETE SET NULL ON UPDATE CASCADE,
+    max_points         INTEGER,
+    hash               VARCHAR(200),
+    run_method         SMALLINT DEFAULT 0,
+    statement_url      VARCHAR(200) DEFAULT '',
+    explanation_url    VARCHAR(200) DEFAULT ''
 );
 ALTER TABLE problems ADD CONSTRAINT chk_run_method CHECK (run_method IN (0, 1, 2))
 
@@ -222,10 +222,10 @@ CREATE TABLE tests (
     generator_id    INTEGER DEFAULT NULL REFERENCES problem_sources(id) ON DELETE CASCADE,
     param           VARCHAR(200) DEFAULT NULL,
     std_solution_id INTEGER DEFAULT NULL REFERENCES problem_sources(id) ON DELETE CASCADE,
-    in_file         BLOB,
-    in_file_size    INTEGER,
-    out_file        BLOB,
-    out_file_size   INTEGER,
+    in_file         BLOB, /* For generated input, length = min(in_file_size, save_input_prefix). */
+    in_file_size    INTEGER, /* Size of generated input, else NULL. */
+    out_file        BLOB, /* For generated answer, length = min(out_file_size, save_answer_prefix). */
+    out_file_size   INTEGER, /* Size of generated answer, else NULL. */
     points          INTEGER,
     gen_group       INTEGER
 );
