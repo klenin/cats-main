@@ -64,6 +64,7 @@ sub main_routes() {
         problem_download => [ \&CATS::UI::ProblemDetails::problem_download, pid => $int, ],
         problem_git_package => [ \&CATS::UI::ProblemDetails::problem_git_package, pid => $int, sha => $sha, ],
         problem_details => [ \&CATS::UI::ProblemDetails::problem_details_frame, pid => $int, ],
+        problem_test_data => [ \&CATS::UI::ProblemDetails::problem_test_data_frame, pid => $int, test_rank => $int ],
         problem_history => \&CATS::UI::ProblemDetails::problem_history_frame,
 
         users => \&CATS::UI::Users::users_frame,
@@ -127,6 +128,20 @@ sub api_judge_routes() {
         ],
         api_judge_delete_req_details => [ \&CATS::ApiJudge::delete_req_details, req_id => $int, ],
         api_judge_insert_req_details => [ \&CATS::ApiJudge::insert_req_details, params => $str, ],
+        api_judge_save_input_test_data => [
+            \&CATS::ApiJudge::save_input_test_data,
+            problem_id => $int,
+            test_rank => $int,
+            input => undef,
+            input_size => $int,
+        ],
+        api_judge_save_answer_test_data => [
+            \&CATS::ApiJudge::save_answer_test_data,
+            problem_id => $int,
+            test_rank => $int,
+            answer => undef,
+            answer_size => $int,
+        ],
         api_judge_get_testset => [ \&CATS::ApiJudge::get_testset, req_id => $int, update => $int, ],
     }
 }

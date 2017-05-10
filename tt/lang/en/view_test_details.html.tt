@@ -1,6 +1,8 @@
 [%
   capt.import({
-    solution_output => 'Solution output',
+    output_data => 'Solution output',
+    input_data => 'Input test data',
+    answer_data => 'Answer test data',
     no_output => 'No output',
     size => 'Size',
     delete_request_outputs => 'Delete output for all tests',

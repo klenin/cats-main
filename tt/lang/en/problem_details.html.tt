@@ -20,6 +20,7 @@
     nospell_text => 'no spellchecking',
     nomath_text => 'simplified math',
     static_text => 'cached',
+    save_test_data => 'Save test data',
     testsets => 'Tests to check',
     points_testsets => 'Tests to assign points',
     testsets_all => 'all',

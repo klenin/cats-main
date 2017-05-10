@@ -10,7 +10,7 @@
 %]
 
 <style>
-  .output_test_data a {
+  .test_data a {
     color: black;
   };
 </style>
@@ -26,6 +26,10 @@
 <label>
 <input type="checkbox" id="show_input_data" onclick="toggle_show_input_data()" [% ' checked="checked"' IF display_input %]/>
 [% capt.show_input_data %]
+</label>
+<label>
+<input type="checkbox" id="show_answer_data" onclick="toggle_show_answer_data()" [% ' checked="checked"' IF display_answer %]/>
+[% capt.show_answer_data %]
 </label>
 <label>
 <input type="checkbox" id="show_output_data" onclick="toggle_show_output_data()" [% ' checked="checked"' IF display_output %]/>
@@ -79,9 +83,10 @@
       <th class="data">[% capt.comment %]</th>
     [% END %]
     [% IF r.show_test_data %]
-      <th class="data input_test_data">[% capt.input_data %]</th>
+      <th class="data input_data">[% capt.input_data %]</th>
+      <th class="data answer_data">[% capt.answer_data %]</th>
       [% IF r.has_output %]
-        <th class="data output_test_data">[% capt.output_data %]</th>
+        <th class="data output_data">[% capt.output_data %]</th>
       [% END %]
       [% IF r.has_visualizer %]<th class="test_data">[% capt.visualize %]</th>[% END %]
     [% END %]
@@ -125,9 +130,12 @@
     [% END %]
     [% IF r.show_checker_comment %]<td><pre>[% rd.checker_comment | html %]</pre></td>[% END %]
     [% IF r.show_test_data %]
-      <td class="input_test_data"><tt>[% rd.test_data | html; '&hellip;' IF rd.test_data_cut %]</tt></td>
+      <td class="test_data input_data"><a href="[% rd.view_test_details_href %]" [% "title='$rd.input_gen_params'" IF rd.input_gen_params %]>
+        <tt>[% rd.input_data | html; '&hellip;' IF rd.input_data_cut %]</tt></a>
+      </td>
+      <td class="test_data answer_data"><a href="[% rd.view_test_details_href %]"><tt>[% rd.answer_data | html; '&hellip;' IF rd.answer_data_cut %]</tt></a></td>
       [% IF r.has_output %]
-        <td class="output_test_data"><tt><a href="[% rd.output_href %]">[% rd.output | html; '&hellip;' IF rd.output_cut %]</a></tt></td>
+        <td class="test_data output_data"><a href="[% rd.view_test_details_href %]"><tt>[% rd.output_data | html; '&hellip;' IF rd.output_data_cut %]</tt></a></td>
       [% END %]
       [% IF r.has_visualizer %]
         <td class = "test_data">
@@ -200,14 +208,18 @@ function filter() {
     return false;
 }
 function toggle_show_input_data() {
-    $('.input_test_data').toggleClass('hidden', !($('#show_input_data')[0]).checked);
+    $('.input_data').toggleClass('hidden', !($('#show_input_data')[0]).checked);
+}
+function toggle_show_answer_data() {
+    $('.answer_data').toggleClass('hidden', !($('#show_answer_data')[0]).checked);
 }
 function toggle_show_output_data() {
-    $('.output_test_data').toggleClass('hidden', !($('#show_output_data')[0]).checked);
+    $('.output_data').toggleClass('hidden', !($('#show_output_data')[0]).checked);
 }
 $(document).ready(function() {
     $('#filter_form').show();
     toggle_show_input_data();
+    toggle_show_answer_data();
     toggle_show_output_data();
 });
 </script>

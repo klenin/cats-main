@@ -176,7 +176,7 @@ sub get_run_info {
         $req->{req_id}, $cats::visualizer);
 
     my %outputs = map { $_->{test_rank} => $_->{output} } @{$dbh->selectall_arrayref(qq~
-        SELECT SUBSTRING(SO.output FROM 1 FOR $cats::infile_cut + 1) as output, SO.test_rank
+        SELECT SUBSTRING(SO.output FROM 1 FOR $cats::test_file_cut + 1) as output, SO.test_rank
         FROM solution_output SO WHERE SO.req_id = ? AND SO.test_rank <= ?~, { Slice => {} },
         $req->{req_id}, $last_test)};
 
@@ -186,20 +186,24 @@ sub get_run_info {
         $contest->{show_test_data} or return $row;
         my $t = $contest->{tests}->[$row->{test_rank} - 1] or return $row;
         $t->{param} //= '';
-        $row->{test_data} =
-            defined $t->{input} ? $t->{input} :
+        $row->{input_gen_params} =
             $t->{gen_group} ? "$t->{gen_name} GROUP" :
-            $t->{gen_name} ? "$t->{gen_name} $t->{param}" : '';
-        $row->{test_data_cut} = length($t->{input} || '') > $cats::infile_cut;
+            $t->{gen_name} ? "$t->{gen_name} $t->{param}" : ''
+            if !defined $t->{input} || defined $t->{input_file_size};
+        $row->{input_data} =
+            defined $t->{input} ? $t->{input} : $row->{input_gen_params};
+        $row->{input_data_cut} = length($t->{input} || '') > $cats::test_file_cut;
+        $row->{answer_data} = $t->{answer};
+        $row->{answer_data_cut} = length($t->{answer} || '') > $cats::test_file_cut;
         $row->{visualize_test_hrefs} =
             defined $t->{input} ? [ map +{
                 href => url_f('visualize_test', rid => $req->{req_id}, test_rank => $row->{test_rank}, vid => $_->{id}),
                 name => $_->{name}
             }, @$visualizers ] : [];
         $maximums->{$_} = max($maximums->{$_}, $row->{$_} // 0) for @resources;
-        $row->{output} = $outputs{$row->{test_rank}};
-        $row->{output_cut} = length($row->{output} || '') > $cats::infile_cut;
-        $row->{output_href} = url_f('view_test_details', rid => $req->{req_id}, test_rank => $row->{test_rank});
+        $row->{output_data} = $outputs{$row->{test_rank}};
+        $row->{output_data_cut} = length($row->{output_data} || '') > $cats::test_file_cut;
+        $row->{view_test_details_href} = url_f('view_test_details', rid => $req->{req_id}, test_rank => $row->{test_rank});
         $row;
     };
     $req->{points} //= $total_points;
@@ -235,7 +239,9 @@ sub get_contest_info {
         ($contest->{show_all_tests} ? 't.points' : ()),
         ($contest->{show_test_data} ? qq~
             (SELECT ps.fname FROM problem_sources ps WHERE ps.id = t.generator_id) AS gen_name,
-            t.param, SUBSTRING(t.in_file FROM 1 FOR $cats::infile_cut + 1) AS input, t.gen_group~ : ());
+            t.param, t.gen_group, t.in_file_size AS input_file_size, t.out_file_size AS answer_file_size,
+            SUBSTRING(t.in_file FROM 1 FOR $cats::test_file_cut + 1) AS input,
+            SUBSTRING(t.out_file FROM 1 FOR $cats::test_file_cut + 1) AS answer ~ : ());
     my $tests = $contest->{tests} = $fields ?
         $dbh->selectall_arrayref(qq~
             SELECT $fields FROM tests t WHERE t.problem_id = ? ORDER BY t.rank~, { Slice => {} },
@@ -529,7 +535,11 @@ sub run_details_frame {
             { get_log_dump($_->{req_id}, 1) } : get_run_info($contest, $_);
     }
     sources_info_param($sources_info);
-    $t->param(runs => \@runs, display_input => $settings->{display_input}, display_output => $settings->{display_input});
+    $t->param(runs => \@runs,
+        display_input => $settings->{display_input},
+        display_answer => $settings->{display_input},
+        display_output => $settings->{display_input}, #TODO: Add this params to settings
+    );
 }
 
 sub save_visualizer {
@@ -694,7 +704,7 @@ sub view_test_details_frame {
     my $sources_info = get_sources_info(request_id => $p->{rid}) or return;
     $sources_info->{is_jury} or return;
 
-    my $test_data;
+    my $output_data;
     if (param('delete_request_outputs') && $is_jury) {
         $dbh->do(q~
             DELETE FROM solution_output SO
@@ -708,11 +718,27 @@ sub view_test_details_frame {
             $p->{rid}, $p->{test_rank});
         $dbh->commit();
     } else {
-        $test_data = $dbh->selectrow_hashref(q~
+        $output_data = $dbh->selectrow_hashref(q~
             SELECT SO.output, SO.output_size FROM solution_output SO
             WHERE SO.req_id = ? AND SO.test_rank = ?~, { Slice => {} },
             $p->{rid}, $p->{test_rank});
     }
+
+    my $save_prefix_lengths = $dbh->selectrow_hashref(q~
+        SELECT p.save_input_prefix as input_prefix,
+        p.save_answer_prefix as answer_prefix, p.save_output_prefix as output_prefix
+        FROM problems P
+            INNER JOIN reqs R ON R.problem_id = P.id
+        WHERE R.id = ?~, { Slice => {} },
+        $p->{rid});
+
+    my $test_data = $dbh->selectrow_hashref(q~
+        SELECT T.in_file AS input, T.in_file_size AS input_size,
+        T.out_file AS answer, T.out_file_size AS answer_size
+        FROM tests T
+            INNER JOIN reqs R ON R.problem_id = T.problem_id
+        WHERE R.id = ? AND T.rank = ?~, { Slice => {} },
+        $p->{rid}, $p->{test_rank});
 
     my $tdhref = sub { url_f('view_test_details', rid => $p->{rid}, test_rank => $_[0]) };
 
@@ -726,7 +752,9 @@ sub view_test_details_frame {
     source_links($sources_info);
     sources_info_param([ $sources_info ]);
     $t->param(
+        output_data => $output_data,
         test_data => $test_data,
+        save_prefix_lengths => $save_prefix_lengths,
         href_prev_pages => $p->{test_rank} > $test_ranks->[0] ? $tdhref->($p->{test_rank} - 1) : undef,
         href_next_pages => $p->{test_rank} < $test_ranks->[-1] ? $tdhref->($p->{test_rank} + 1) : undef,
         test_ranks => [
