@@ -44,9 +44,9 @@ sub user_submenu
 {
     my ($selected, $user_id) = @_;
     my @m = (
-        ($is_jury ?
-            ({ href => url_f('users', edit => $user_id), item => res_str(573), selected => 'edit' }) :
-            ({ href => url_f('profile'), item => res_str(518), selected => 'profile' })
+        (
+            $is_jury ? ({ href => url_f('users', edit => $user_id), item => res_str(573), selected => 'edit' }) :
+            $uid ? ({ href => url_f('profile'), item => res_str(518), selected => 'profile' }) : ()
         ),
         { href => url_f('user_stats', uid => $user_id), item => res_str(574), selected => 'user_stats' },
         (!$is_root ? () : (
