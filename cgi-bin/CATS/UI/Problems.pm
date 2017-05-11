@@ -259,6 +259,13 @@ sub define_common_searches {
         statement_url explanation_url
     ), @cats::limits_fields ]);
 
+    $lv->define_db_searches({
+        map {
+            join('_', split /\W+/, $cats::source_module_names{$_}) =>
+            "(SELECT COUNT (*) FROM problem_sources PS WHERE PS.problem_id = P.id AND PS.stype = $_)"
+        } keys %cats::source_modules
+    });
+
     $lv->define_enums({ run_method => CATS::Misc::run_method_enum() });
 }
 
