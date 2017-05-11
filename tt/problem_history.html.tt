@@ -41,7 +41,7 @@
   <p><label for="zip">[% capt.problem_file %]:</label><input type="file" id="zip" name="zip" class="file" size="25"/></p>
   <p>
     <label><input type="checkbox" name="allow_rename" value="1"/> [% capt.rename %]</label>
-    <label><input type="checkbox" name="is_amend" value="1"/> [% capt.amend %]</label>
+    <label><input type="checkbox" id="is_amend" name="is_amend" value="1" onclick="toggle_amend()"/> [% capt.amend %]</label>
   </p>
   <p>
     <label for="message">[% capt.message %]:</label><br/>
@@ -50,6 +50,7 @@
   <p>
     <input type="submit" name="replace" value="[% capt.replace %]" class="button" />
   </p>
+  [% PROCESS includes/amend.tti last_commit = problem_history.0 %]
 [% END %]
 </div>
 [% PROCESS includes/pages.tti %]

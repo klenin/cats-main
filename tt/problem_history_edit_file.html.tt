@@ -31,7 +31,9 @@
         </div>
         <div class="problem_submit">
           <input type="hidden" name="src_enc" value="[% src_enc %]" />
-          <p><label><input type="checkbox" name="is_amend" value="1"/> [% capt.amend %]</label></p>
+          <p><label>
+            <input type="checkbox" id="is_amend" name="is_amend" value="1" onclick="javascript:toggle_amend()"/> [% capt.amend %]
+            </label></p>
           <p>
             <label for="message">[% capt.message %]:</label><br/>
             <textarea id="message" name="message" cols="50" rows="5">[% IF message; message; END %]</textarea>
@@ -42,4 +44,5 @@
         </div>
     </form>
 </div>
+[% PROCESS includes/amend.tti %]
 [% PROCESS includes/menu_end.tti %]

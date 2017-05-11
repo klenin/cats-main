@@ -1,0 +1,14 @@
+[%- USE Javascript -%]
+<script>
+var last_commit_message = '[% last_commit.subject | $Javascript %]';
+function toggle_amend() {
+    var amend = document.getElementById('is_amend');
+    var msg = document.getElementById('message');
+    if (amend.checked) {
+        if (!msg.value) msg.value = last_commit_message;
+    }
+    else {
+        if (msg.value === last_commit_message) msg.value = '';
+    }
+}
+</script>
