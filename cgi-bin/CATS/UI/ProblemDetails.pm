@@ -489,7 +489,7 @@ sub problem_history_edit_frame
         $t->param(
             message => $message,
             content => Encode::decode(encoding_param('enc'), param('source')),
-            problem_import_log => $p->encoded_import_log()
+            problem_import_log => $p->encoded_import_log(),
         );
     }
 
@@ -505,6 +505,7 @@ sub problem_history_edit_frame
         title_suffix => "$file",
         src_enc => $blob->{encoding},
         source_encodings => source_encodings($blob->{encoding}),
+        last_commit => CATS::ProblemStorage::get_log($pid, $hash_base, 1)->[0],
     );
 }
 

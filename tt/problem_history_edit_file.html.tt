@@ -16,8 +16,8 @@
 <div class="page_path">
     [% FOREACH path IN blob.paths %]
         <a href="[% path.href %]">[% path.file_name %]</a>
-        /
-    [% END %]
+    [% ' / ' UNLESS loop.last; END %]
+    @ [% last_commit.subject | html %] ([% last_commit.author | html %], [% last_commit.sha %])
 </div>
 <div class="page_body">
     [% PROCESS includes/encoding_form.html.tti capt_enc = capt.enc %]
