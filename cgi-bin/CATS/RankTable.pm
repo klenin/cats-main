@@ -11,7 +11,7 @@ use CATS::Constants;
 use CATS::Countries;
 use CATS::DB;
 use CATS::Misc qw(
-    $t $is_jury $is_team $virtual_diff_time $cid $uid url_f $is_virtual $contest);
+    $t $is_root $is_jury $is_team $virtual_diff_time $cid $uid url_f $is_virtual $contest);
 use CATS::Testset;
 use CATS::Web qw(param url_param);
 
@@ -592,7 +592,11 @@ sub rank_table
         ],
         problem_stats_color => 1 - $row_color,
         rank => $self->{rank},
-        href_console => url_f('console'),
+        href_user_stats => url_f('user_stats'),
+        href_submits => url_f('console',
+            i_value => -1, se => 'user_stats', show_results => 1, rows => 30,
+            ($is_root ? (search => "contest_id=$cid") : ())
+        ),
     );
     $t->param(cache_since => $max_req_id) if $is_jury;
 }
