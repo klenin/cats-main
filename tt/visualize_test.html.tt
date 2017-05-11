@@ -1,4 +1,3 @@
-[%- USE Javascript -%]
 [% PROCESS includes/html.tti %]
 [% PROCESS includes/header.tti %]
 
@@ -18,8 +17,7 @@
 </span></div>
 
 <script>
-  var input_file = "[% input_file | $Javascript %]";
-  var output_file = "[% output_file | $Javascript %]";
+  var test_data = [% test_data_json %];
 </script>
 
 <div>
@@ -29,7 +27,7 @@
 
 [% FOREACH script IN vis_scripts %]
   <script type="text/javascript" src="[% script | url %]"></script>
-  <script>[% visualizer.name %](document.getElementById('visualizer_canvas'), input_file, output_file)</script>
+  <script>[% visualizer.name %](document.getElementById('visualizer_canvas'), test_data)</script>
 [% END %]
 
 </body>

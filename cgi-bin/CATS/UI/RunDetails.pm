@@ -5,6 +5,7 @@ use warnings;
 
 use Algorithm::Diff;
 use List::Util qw(max);
+use JSON::XS;
 
 use CATS::Constants;
 use CATS::DB;
@@ -596,15 +597,16 @@ sub visualize_test_frame {
         WHERE PSI.problem_id = ? AND PS.stype = ?~, { Slice => {} },
         $visualizer->{problem_id}, $cats::visualizer_module)}, $visualizer);
 
-    my $input_file = $dbh->selectrow_array(q~
-        SELECT T.in_file
+    my %test_data;
+    @test_data{qw(input input_size answer answer_size)} = $dbh->selectrow_array(q~
+        SELECT T.in_file, T.in_file_size, T.out_file, T.out_file_size
         FROM tests T
         INNER JOIN reqs R ON R.problem_id = T.problem_id
         WHERE R.id = ? AND T.rank = ?~, undef,
         $rid, $test_rank) or return;
 
-    my $output_file = $dbh->selectrow_array(q~
-        SELECT SO.output
+    @test_data{qw(output output_size)} = $dbh->selectrow_array(q~
+        SELECT SO.output, SO.output_size
         FROM solution_output SO
         WHERE SO.req_id = ? AND SO.test_rank = ?~, undef,
         $rid, $test_rank);
@@ -615,8 +617,7 @@ sub visualize_test_frame {
         vis_scripts => [
             map save_visualizer($_->{src}, $_->{fname}, $_->{problem_id}, $_->{hash}), @imports_js
         ],
-        input_file => $input_file,
-        output_file => $output_file,
+        test_data_json => JSON::XS->new->utf8->indent(2)->canonical->encode(\%test_data),
         visualizer => $visualizer,
         href_prev_pages => $test_rank > $test_ranks->[0] ? $vhref->($test_rank - 1) : undef,
         href_next_pages => $test_rank < $test_ranks->[-1] ? $vhref->($test_rank + 1) : undef,
