@@ -554,6 +554,18 @@ sub save_visualizer {
     return CATS::Misc::downloads_url . $fname;
 }
 
+sub get_test_data {
+    my ($p) = @_;
+    $dbh->selectrow_hashref(q~
+        SELECT
+            T.in_file AS input, T.in_file_size AS input_size,
+            T.out_file AS answer, T.out_file_size AS answer_size
+        FROM tests T
+            INNER JOIN reqs R ON R.problem_id = T.problem_id
+        WHERE R.id = ? AND T.rank = ?~, { Slice => {} },
+        $p->{rid}, $p->{test_rank});
+}
+
 sub visualize_test_frame {
     my ($p) = @_;
     init_template('visualize_test.html.tt');
@@ -597,15 +609,9 @@ sub visualize_test_frame {
         WHERE PSI.problem_id = ? AND PS.stype = ?~, { Slice => {} },
         $visualizer->{problem_id}, $cats::visualizer_module)}, $visualizer);
 
-    my %test_data;
-    @test_data{qw(input input_size answer answer_size)} = $dbh->selectrow_array(q~
-        SELECT T.in_file, T.in_file_size, T.out_file, T.out_file_size
-        FROM tests T
-        INNER JOIN reqs R ON R.problem_id = T.problem_id
-        WHERE R.id = ? AND T.rank = ?~, undef,
-        $rid, $test_rank) or return;
+    my $test_data = get_test_data($p) or return;
 
-    @test_data{qw(output output_size)} = $dbh->selectrow_array(q~
+    @{$test_data}{qw(output output_size)} = $dbh->selectrow_array(q~
         SELECT SO.output, SO.output_size
         FROM solution_output SO
         WHERE SO.req_id = ? AND SO.test_rank = ?~, undef,
@@ -617,7 +623,7 @@ sub visualize_test_frame {
         vis_scripts => [
             map save_visualizer($_->{src}, $_->{fname}, $_->{problem_id}, $_->{hash}), @imports_js
         ],
-        test_data_json => JSON::XS->new->utf8->indent(2)->canonical->encode(\%test_data),
+        test_data_json => JSON::XS->new->utf8->indent(2)->canonical->encode($test_data),
         visualizer => $visualizer,
         href_prev_pages => $test_rank > $test_ranks->[0] ? $vhref->($test_rank - 1) : undef,
         href_next_pages => $test_rank < $test_ranks->[-1] ? $vhref->($test_rank + 1) : undef,
@@ -735,14 +741,7 @@ sub view_test_details_frame {
         WHERE R.id = ?~, { Slice => {} },
         $p->{rid});
 
-    my $test_data = $dbh->selectrow_hashref(q~
-        SELECT
-            T.in_file AS input, T.in_file_size AS input_size,
-            T.out_file AS answer, T.out_file_size AS answer_size
-        FROM tests T
-            INNER JOIN reqs R ON R.problem_id = T.problem_id
-        WHERE R.id = ? AND T.rank = ?~, { Slice => {} },
-        $p->{rid}, $p->{test_rank});
+    my $test_data = get_test_data($p);
 
     my $tdhref = sub { url_f('view_test_details', rid => $p->{rid}, test_rank => $_[0]) };
 
