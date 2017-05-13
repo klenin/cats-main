@@ -367,8 +367,7 @@ sub problem_text_frame
         $explain or undef $problem->{explanation};
         $problem = {
             %$problem,
-            lang_ru => $lang eq 'ru',
-            lang_en => $lang eq 'en',
+            lang => $lang,
             show_points => $show_points,
         };
     }

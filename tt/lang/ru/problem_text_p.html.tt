@@ -1,0 +1,24 @@
+[%
+  capt.problem_text.ru = {
+    author => 'Автор',
+    input_file => 'Входной файл',
+    standard_input => 'Стандартный вход',
+    time_limit => 'Ограничение времени',
+    seconds => 'сек',
+    output_file => 'Выходной файл',
+    standard_output => 'Стандартный выход',
+    memory_limit => 'Ограничение памяти',
+    megabytes => 'Мб',
+    max_points => 'Максимальный балл',
+    write_limit => 'Ограничение записи',
+    bytes => 'Б',
+    keywords => 'Ключевые слова',
+    statement => 'Условие',
+    explanation => 'Разбор',
+    input_format => 'Формат входного файла',
+    formal_input => 'Формальный вход',
+    output_format => 'Формат выходного файла',
+    pconstraints => 'Ограничения',
+    sample_tests => 'Примеры тестов',
+  }
+%]
