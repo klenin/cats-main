@@ -27,6 +27,7 @@ our %binary =
  'ge' => 'ge',
  'geq' => 'ge',
  'ne' => 'ne',
+ neq => 'ne',
  'lt' => 'lt',
  'gt' => 'gt',
  ll => '#x226A',
