@@ -8,6 +8,7 @@ function $1(id) {
 var ws = false, ranks;
 
 function ws_replace(s) {
+    if (s == null) return;
     var ca = s.getElementsByTagName('code');
     for (var i = 0; i < ca.length; ++i) {
         var t = ca[i].firstChild.nodeValue;
