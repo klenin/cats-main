@@ -39,7 +39,7 @@ window.$ && window.MathJax && $(document).ready(function() {
 <div class="problem_text" [% UNLESS loop.first %]style="page-break-before: always"[% END %]>
   <a name="pr[% p.code %]"></a>
 
-  <h2>[% IF p.code %]Problem [% p.code %]. [% END %][% p.title | html %]</h2>
+  <h2>[% "${c.problem} ${p.code}. " IF p.code; p.title | html %]</h2>
   [% IF p.author; c.author %]: [% p.author | html %]<br/><br/>[% END %]
   <table class="nobr">
   <tr>

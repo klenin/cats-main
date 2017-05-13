@@ -1,5 +1,6 @@
 [%
   capt.problem_text.ru = {
+    problem => 'Задача',
     author => 'Автор',
     input_file => 'Входной файл',
     standard_input => 'Стандартный вход',
