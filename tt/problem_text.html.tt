@@ -67,45 +67,36 @@ window.$ && window.MathJax && $(document).ready(function() {
   [% END %]
   </table>
   [% IF p.keywords ; c.keywords %]: [% p.keywords %]<br/><br/>[% END %]
-  [% IF p.statement %]
-    <h3>[% c.statement %]</h3>
-    [% p.statement %]
-  [% END %]
+  [%- MACRO section(name) IF p.item(name) %]
+    <h3>[% c.item(name) %]</h3>
+    [% p.item(name) %]
+  [% END -%]
+  [% section('statement') %]
   [% IF p.explanation %]
-    <h3>[% c.explanation %]</h3>
-    [% p.explanation %]
+    [% section('explanation') %]
   [% ELSE %]
-  [% IF p.input_format %]
-    <h3>[% c.input_format %]</h3>
-    [% p.input_format %]
-  [% END %]
-  [% IF p.formal_input %]
-    <h3>[% c.formal_input %]</h3>
-    <pre>[% p.formal_input %]</pre>
-  [% END %]
-  [% IF p.output_format %]
-    <h3>[% c.output_format %]</h3>
-    [% p.output_format %]
-  [% END %]
-  [% IF p.pconstraints %]
-    <h3>[% c.pconstraints %]</h3>
-    [% p.pconstraints %]
-  [% END %]
-  [% IF p.samples.size %]
-  <h3>[% c.sample_tests %]</h3>
-  <table class="sample" id="sample[% p.id %]">
-  <tr><th>No.</th>
-  <th>[% IF p.input_file == '*STDIN'; c.standard_input; ELSE; c.input_file %] (<tt>[% p.input_file | html %]</tt>)[% END %]</th>
-  <th>[% IF p.output_file == '*STDOUT'; c.standard_output; ELSE; c.output_file %] (<tt>[% p.output_file | html %]</tt>)[% END %]</th></tr>
-  [% FOREACH s IN p.samples %]
-  <tr>
-    <td>[% s.rank %]</td>
-    <td><pre><code>[% s.in_file %]</code></pre></td>
-    <td><pre><code>[% s.out_file %]</code></pre></td>
-  </tr>
-  [% END %]
-  </table>
-  [% END %]
+    [% section('input_format') %]
+    [% IF p.formal_input %]
+      <h3>[% c.formal_input %]</h3>
+      <pre>[% p.formal_input %]</pre>
+    [% END %]
+    [% section('output_format') %]
+    [% section('pconstraints') %]
+    [% IF p.samples.size %]
+      <h3>[% c.sample_tests %]</h3>
+      <table class="sample" id="sample[% p.id %]">
+      <tr><th>No.</th>
+      <th>[% IF p.input_file == '*STDIN'; c.standard_input; ELSE; c.input_file %] (<tt>[% p.input_file | html %]</tt>)[% END %]</th>
+      <th>[% IF p.output_file == '*STDOUT'; c.standard_output; ELSE; c.output_file %] (<tt>[% p.output_file | html %]</tt>)[% END %]</th></tr>
+      [% FOREACH s IN p.samples %]
+      <tr>
+        <td>[% s.rank %]</td>
+        <td><pre><code>[% s.in_file %]</code></pre></td>
+        <td><pre><code>[% s.out_file %]</code></pre></td>
+      </tr>
+      [% END %]
+      </table>
+    [% END %]
   [% END %]
   <hr>
 </div>
