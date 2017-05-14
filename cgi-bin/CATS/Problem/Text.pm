@@ -24,8 +24,7 @@ use CATS::Web qw(param url_param);
 
 my ($current_pid, $html_code, $spellchecker, $text_span, $tags, $skip_depth);
 
-sub check_spelling
-{
+sub check_spelling {
     my ($word) = @_;
     # The '_' character causes SIGSEGV (!) inside of ASpell.
     return $word if $word =~ /(?:\d|_)/;
@@ -38,9 +37,7 @@ sub check_spelling
     return qq~<a class="spell" title="$suggestion">$word</a>~;
 }
 
-
-sub process_text
-{
+sub process_text {
     if ($spellchecker) {
         my @tex_parts = split /\$/, $text_span;
         my $i = 1;
@@ -60,9 +57,7 @@ sub process_text
     $text_span = '';
 }
 
-
-sub start_element
-{
+sub start_element {
     my ($el, %atts) = @_;
 
     process_text;
@@ -74,27 +69,21 @@ sub start_element
     $html_code .= '>';
 }
 
-
-sub end_element
-{
+sub end_element {
     my ($el) = @_;
     process_text;
     $html_code .= "</$el>";
 }
 
-
-sub ch_1
-{
+sub ch_1 {
     return if $skip_depth;
     my ($p, $text) = @_;
     # Join consecutive text elements.
     $text_span .= $text;
 }
 
-
 # If the problem was not downloaded yet, generate a hash for it.
-sub ensure_problem_hash
-{
+sub ensure_problem_hash {
     my ($problem_id, $hash, $need_commit) = @_;
     return 1 if $$hash;
     my @ch = ('a'..'z', 'A'..'Z', '0'..'9');
@@ -104,9 +93,7 @@ sub ensure_problem_hash
     return 0;
 }
 
-
-sub download_image
-{
+sub download_image {
     my ($name) = @_;
     # Assume the image is relatively small (few Kbytes),
     # so it is more efficient to fetch it with the same query as the problem hash.
@@ -127,9 +114,7 @@ sub download_image
     return CATS::Misc::downloads_url . $fname;
 }
 
-
-sub save_attachment
-{
+sub save_attachment {
     my ($name, $need_commit, $pid) = @_;
     $pid ||= $current_pid;
     # Assume the attachment is relatively small (few Kbytes),
@@ -150,9 +135,7 @@ sub save_attachment
     return CATS::Misc::downloads_url . $fname;
 }
 
-
-sub sh_1
-{
+sub sh_1 {
     my ($p, $el, %atts) = @_;
 
     if ($skip_depth) {
@@ -182,9 +165,7 @@ sub sh_1
     start_element($el, %atts);
 }
 
-
-sub eh_1
-{
+sub eh_1 {
     my ($p, $el) = @_;
     if ($skip_depth) {
         $skip_depth--;
@@ -193,9 +174,7 @@ sub eh_1
     end_element($el);
 }
 
-
-sub parse
-{
+sub parse {
     my $xml_patch = shift;
     my $parser = XML::Parser::Expat->new;
 
@@ -211,9 +190,7 @@ sub parse
     return $html_code;
 }
 
-
-sub contest_visible
-{
+sub contest_visible {
     return (1, 1, 1) if $is_root;
 
     my $pid = url_param('pid');
@@ -257,9 +234,7 @@ sub contest_visible
     return (0, 0, 0);
 }
 
-
-sub problem_text_frame
-{
+sub problem_text_frame {
     my ($show, $explain, $is_jury_in_contest) = contest_visible();
     $show or return CATS::Web::not_found;
     $explain = $explain && url_param('explain');
@@ -275,9 +250,10 @@ sub problem_text_frame
     }
     elsif (my $cpid = url_param('cpid')) {
         my $p = $dbh->selectrow_hashref(qq~
-            SELECT CP.id AS cpid, CP.problem_id, CP.code,
-            CP.testsets, CP.points_testsets, CP.max_points, CP.tags, CP.status,
-            C.rules, $overridden_limits_str
+            SELECT
+                CP.id AS cpid, CP.problem_id, CP.code,
+                CP.testsets, CP.points_testsets, CP.max_points, CP.tags, CP.status,
+                C.rules, $overridden_limits_str
             FROM contests C
                 INNER JOIN contest_problems CP ON CP.contest_id = C.id
                 LEFT JOIN limits L ON L.id = CP.limits_id
@@ -290,13 +266,14 @@ sub problem_text_frame
         ($show_points) = $contest->{rules};
         # Should either check for a static page or hide the problem even from jury.
         my $p = $dbh->selectall_arrayref(qq~
-            SELECT CP.id AS cpid, CP.problem_id, CP.code,
-            CP.testsets, CP.points_testsets, CP.max_points, CP.tags,
-            $overridden_limits_str
+            SELECT
+                CP.id AS cpid, CP.problem_id, CP.code,
+                CP.testsets, CP.points_testsets, CP.max_points, CP.tags,
+                $overridden_limits_str
             FROM contest_problems CP
                 LEFT JOIN limits L ON L.id = CP.limits_id
-            WHERE contest_id = ? AND status < $cats::problem_st_hidden
-            ORDER BY code~, { Slice => {} },
+            WHERE CP.contest_id = ? AND CP.status < $cats::problem_st_hidden
+            ORDER BY CP.code~, { Slice => {} },
             url_param('cid') || $cid);
         push @problems, @$p;
     }
@@ -326,8 +303,8 @@ sub problem_text_frame
             my $kw_list = $dbh->selectcol_arrayref(qq~
                 SELECT $lang_col FROM keywords K
                     INNER JOIN problem_keywords PK ON PK.keyword_id = K.id
-                    WHERE PK.problem_id = ?
-                    ORDER BY 1~, undef,
+                WHERE PK.problem_id = ?
+                ORDER BY 1~, undef,
                 $problem->{problem_id});
             $problem->{keywords} = join ', ', @$kw_list;
         }
@@ -365,22 +342,17 @@ sub problem_text_frame
         $_ = Encode::decode_utf8($_) for $problem->{json_data};
         $is_jury_in_contest && !param('noformal') or undef $problem->{formal_input};
         $explain or undef $problem->{explanation};
-        $problem = {
-            %$problem,
-            lang => $lang,
-            show_points => $show_points,
-        };
+        $problem->{show_points} = $show_points;
     }
     $dbh->commit if $need_commit;
 
-    $t->param(title_suffix => @problems == 1 ? $problems[0]->{title} : res_str(524));
     $t->param(
+        title_suffix => (@problems == 1 ? $problems[0]->{title} : res_str(524)),
         problems => \@problems,
         tex_styles => CATS::TeX::Lite::styles(),
         mathjax => !param('nomath'),
         #CATS::TeX::HTMLGen::gen_styles_html()
     );
 }
-
 
 1;
