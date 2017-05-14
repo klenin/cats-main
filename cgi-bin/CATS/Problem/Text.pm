@@ -283,23 +283,20 @@ sub problem_text_frame {
     my $need_commit = 0;
     for my $problem (@problems) {
         $current_pid = $problem->{problem_id};
-        my $limits_str = join ', ', @cats::limits_fields;
+        my $fields_str = join ', ', (qw(
+            id contest_id title lang difficulty author input_file output_file statement json_data),
+            'max_points AS max_points_def',
+            grep(!$problem->{$_}, @cats::limits_fields),
+            ($explain ? 'explanation' : qw(pconstraints input_format output_format)),
+            ($is_jury_in_contest && !param('noformal') ? 'formal_input' : ()),
+        );
         my $p = $dbh->selectrow_hashref(qq~
-            SELECT
-                id, contest_id, title, lang, $limits_str,
-                difficulty, author, input_file, output_file,
-                statement, pconstraints, input_format, output_format, explanation,
-                formal_input, json_data, max_points AS max_points_def
-            FROM problems WHERE id = ?~, { Slice => {} },
+            SELECT $fields_str FROM problems WHERE id = ?~, { Slice => {} },
             $problem->{problem_id}) or next;
-
-        for (@cats::limits_fields) { delete $p->{$_} if $problem->{$_} }
-
         $problem = { %$problem, %$p };
-        my $lang = $problem->{lang};
 
         if ($is_jury_in_contest && !param('nokw')) {
-            my $lang_col = $lang eq 'ru' ? 'name_ru' : 'name_en';
+            my $lang_col = $problem->{lang} eq 'ru' ? 'name_ru' : 'name_en';
             my $kw_list = $dbh->selectcol_arrayref(qq~
                 SELECT $lang_col FROM keywords K
                     INNER JOIN problem_keywords PK ON PK.keyword_id = K.id
@@ -308,16 +305,18 @@ sub problem_text_frame {
                 $problem->{problem_id});
             $problem->{keywords} = join ', ', @$kw_list;
         }
+
         if ($use_spellchecker) {
             # Per Text::Aspell docs, we cannot change options of the existing object,
             # so create a new one.
             $spellchecker = Text::Aspell->new;
-            $spellchecker->set_option('lang', $lang eq 'ru' ? 'ru_RU' : 'en_US');
+            $spellchecker->set_option('lang', $problem->{lang} eq 'ru' ? 'ru_RU' : 'en_US');
         }
         else {
             undef $spellchecker;
         }
 
+        $problem->{show_points} = $show_points;
         if ($show_points && !$problem->{max_points}) {
             $problem->{max_points} = CATS::RankTable::cache_max_points($problem);
             $need_commit = 1;
@@ -330,6 +329,7 @@ sub problem_text_frame {
 
         $problem->{tags} = param('tags') if $is_jury_in_contest && defined param('tags');
         $tags = CATS::Problem::Tags::parse_tag_condition($problem->{tags}, sub {});
+
         for my $field_name (qw(statement pconstraints input_format output_format explanation)) {
             for ($problem->{$field_name}) {
                 defined $_ or next;
@@ -340,9 +340,6 @@ sub problem_text_frame {
             }
         }
         $_ = Encode::decode_utf8($_) for $problem->{json_data};
-        $is_jury_in_contest && !param('noformal') or undef $problem->{formal_input};
-        $explain or undef $problem->{explanation};
-        $problem->{show_points} = $show_points;
     }
     $dbh->commit if $need_commit;
 
