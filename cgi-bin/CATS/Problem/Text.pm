@@ -284,10 +284,10 @@ sub problem_text_frame {
     for my $problem (@problems) {
         $current_pid = $problem->{problem_id};
         my $fields_str = join ', ', (qw(
-            id contest_id title lang difficulty author input_file output_file statement json_data),
+            id contest_id title lang difficulty author input_file output_file statement pconstraints json_data),
             'max_points AS max_points_def',
             grep(!$problem->{$_}, @cats::limits_fields),
-            ($explain ? 'explanation' : qw(pconstraints input_format output_format)),
+            ($explain ? 'explanation' : qw(input_format output_format)),
             ($is_jury_in_contest && !param('noformal') ? 'formal_input' : ()),
         );
         my $p = $dbh->selectrow_hashref(qq~

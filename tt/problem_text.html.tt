@@ -59,7 +59,7 @@ window.$ && window.MathJax && $(document).ready(function() {
     [% END %]
     <td>&nbsp;</td>
     [% IF p.write_limit %]
-    <td>[% c.write_limit %]:</td><td>[% p.write_limit %] [% bytes %]</td>
+    <td>[% c.write_limit %]:</td><td>[% p.write_limit %] [% c.bytes %]</td>
     [% ELSE %]
     <td></td><td></td>
     [% END %]
@@ -73,6 +73,7 @@ window.$ && window.MathJax && $(document).ready(function() {
   [% END -%]
   [% section('statement') %]
   [% IF p.explanation %]
+    [% section('pconstraints') %]
     [% section('explanation') %]
   [% ELSE %]
     [% section('input_format') %]
