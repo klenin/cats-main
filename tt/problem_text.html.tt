@@ -1,11 +1,8 @@
 [% PROCESS includes/header.tti %]
 [% tex_styles %]
 [% IF mathjax %]
-<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-<script type="text/javascript">window.MathJax || document.write('<script src="js/lib/MathJax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"><\/script>')</script>
-<script type="text/javascript" src="js/lib/jquery.min.js"></script>
 <script type="text/javascript">
-function setTex(tex) {
+function setTex() {
 [%#
     CATS::TeX::Lite preserves spaces between identifiers.
     Emulate that for compatibility by replacing such spaces with "\,".
@@ -13,6 +10,7 @@ function setTex(tex) {
     Since JavaScript RegExp does not support lookbehind, use magic
     to distinguish identifiers (abc) from TeX commands (\abc).
 -%]
+    var tex = $(this);
     var magic = '~!!!~';
     var t = tex.attr('title');
     t = t.replace(/(\\[a-zA-Z]+)/g, '$1' + magic);
@@ -20,24 +18,42 @@ function setTex(tex) {
     t = t.replace(new RegExp(magic, 'g'), '');
     tex.html("\\(" + t + '\\)');
 }
-
-window.$ && window.MathJax && $(document).ready(function() {
-    MathJax.Hub.Config({
-        TeX: { Macros: { deg: '^\\circ' } },
-        "HTML-CSS": { scale: 90 }
-    });
-    $('span.TeX').each(function () {
-        MathJax.Hub.Queue([ setTex, $(this) ], [ 'Typeset', MathJax.Hub, this ]);
-    });
-});
 </script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        TeX: {
+          Macros: { deg: '^\\circ' }
+        },
+        'HTML-CSS': { scale: 85 },
+        SVG: { scale: 85 },
+        CommonHTML: { scale: 85 },
+        tex2jax: { ignoreClass: 'problem_text', processClass: 'TeX' },
+        skipStartupTypeset: true
+    });
+[%#
+    MathJax.Hub.Startup.signal.Interest(function (message) { console.log("Startup: " + message); });
+    MathJax.Hub.signal.Interest(function (message) { console.log("Hub: " + message); });
+-%]
+    MathJax.Hub.Register.StartupHook('onLoad', function () {
+        $('div.problem_text').each(function() {
+            [%# Convert math one problem at a time as a compromise between speed and stability. -%]
+            var d = $(this);
+            MathJax.Hub.Queue(
+                function() { d.find('span.TeX').each(setTex); },
+                [ 'Typeset', MathJax.Hub, this ]);
+        });
+    });
+</script>
+<script type="text/javascript" src="https://cdn.rawgit.com/mathjax/MathJax/2.7.1/MathJax.js?config=TeX-AMS_CHTML"></script>
+<script type="text/javascript">window.MathJax || document.write('<script src="js/lib/MathJax/MathJax.js?config=TeX-AMS_CHTML"><\/script>')</script>
+<script type="text/javascript" src="js/lib/jquery.min.js"></script>
 [% END %]
 </head>
 <body>
 [% FOREACH p IN problems; PROCESS "lang/${p.lang}/problem_text_p.html.tt" UNLESS capt.problem_text.item(p.lang); END; %]
 [% FOREACH p IN problems; c = capt.problem_text.item(p.lang) %]
 <div class="problem_text" [% UNLESS loop.first %]style="page-break-before: always"[% END %]>
-  <a name="pr[% p.code %]"></a>
+  <a name="pr[% p.code || p.id %]"></a>
 
   <h2>[% "${c.problem} ${p.code}. " IF p.code; p.title | html %]</h2>
   [% IF p.author; c.author %]: [% p.author | html %]<br/><br/>[% END %]
