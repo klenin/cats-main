@@ -776,6 +776,15 @@ sub request_params_frame {
         $dbh->commit;
         return $group_req_id ? redirect(url_f('request_params', rid => $group_req_id, sid => $sid)) : undef;
     }
+    my $can_delete = !$si->{is_official} || $is_root;
+    $t->param(can_delete => $can_delete);
+    if (param('delete') && $can_delete) {
+        $dbh->do(q~
+            DELETE FROM reqs WHERE id = ?~, undef,
+            $si->{req_id});
+        $dbh->commit;
+        return;
+    }
 
     source_links($si);
     sources_info_param([ $si ]);
@@ -822,16 +831,6 @@ sub run_log_frame {
     my $si = get_sources_info(request_id => $rid)
         or return;
     $si->{is_jury} or return;
-
-    my $can_delete = !$si->{is_official} || $is_root;
-    $t->param(can_delete => $can_delete);
-    if (param('delete') && $can_delete) {
-        $dbh->do(q~
-            DELETE FROM reqs WHERE id = ?~, undef,
-            $rid);
-        $dbh->commit;
-        return;
-    }
 
     # Reload problem after the successful state change.
     $si = get_sources_info(request_id => $rid)

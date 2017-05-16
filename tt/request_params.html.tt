@@ -56,6 +56,9 @@
     <td colspan="2" align="center">
       <input type="submit" value="[% capt.retest %]" class="button" name="retest"/>
       <input type="submit" value="[% capt.clone %]" class="button" name="clone"/>
+      [% IF can_delete %]
+      <input type="submit" value="[% capt.delete %]" class="button" name="delete" onclick="return confirm('[% capt.confirm_delete %]')"/>
+      [% END %]
     </td>
   </tr>
 </table>

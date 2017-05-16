@@ -3,5 +3,7 @@
     retest => 'Retest',
     clone => 'Clone',
     judge => 'Judge',
+    delete => 'Delete run request',
+    confirm_delete => 'Delete this run request. Are you sure?',
   })
 %]
