@@ -754,9 +754,7 @@ sub request_params_frame {
     if (param('retest')) {
         if ($need_clear_limits) {
             $params->{limits_id} = undef;
-            msg(1150, $si->{req_id});
         } else {
-            msg($si->{limits_id} ? 1149 : 1148, $si->{req_id});
             $params->{limits_id} = CATS::Request::set_limits($si->{limits_id}, $limits);
         }
         CATS::Request::enforce_state($si->{req_id}, $params);
