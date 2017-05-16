@@ -785,9 +785,18 @@ sub request_params_frame {
         $dbh->commit;
         return;
     }
+    # Reload problem after the successful state change.
+    $si = get_sources_info(request_id => $si->{req_id})
+        if try_set_state($si, $si->{req_id});
+
+    my $tests = $dbh->selectcol_arrayref(qq~
+        SELECT rank FROM tests WHERE problem_id = ? ORDER BY rank~, undef,
+        $si->{problem_id});
 
     source_links($si);
     sources_info_param([ $si ]);
+
+    $t->param(tests => [ map { test_index => $_ }, @$tests ]);
 }
 
 sub try_set_state {
@@ -832,18 +841,10 @@ sub run_log_frame {
         or return;
     $si->{is_jury} or return;
 
-    # Reload problem after the successful state change.
-    $si = get_sources_info(request_id => $rid)
-        if try_set_state($si, $rid);
     sources_info_param([ $si ]);
 
     source_links($si);
     $t->param(get_log_dump($rid));
-
-    my $tests = $dbh->selectcol_arrayref(qq~
-        SELECT rank FROM tests WHERE problem_id = ? ORDER BY rank~, undef,
-        $si->{problem_id});
-    $t->param(tests => [ map {test_index => $_}, @$tests ]);
 }
 
 sub diff_runs_frame {

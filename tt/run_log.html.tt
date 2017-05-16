@@ -5,37 +5,6 @@
 [% PROCESS includes/sources_info.tti %]
 <br/>
 
-<form method="post">
-
-<input type="submit" name="set_state" value="[% capt.testing_result %]:" class="button">
-<select name="state">
-<option />
-<option value="not_processed">[% capt.retest %]</option>
-<option value="awaiting_verification">Awaiting verification</option>
-<option value="accepted">Solution accepted</option>
-<option value="wrong_answer">Wrong answer</option>
-<option value="presentation_error">Presentation error</option>
-<option value="time_limit_exceeded">Time limit exceeded</option>
-<option value="idleness_limit_exceeded">Idleness limit exceeded</option>
-<option value="memory_limit_exceeded">Memory limit exceeded</option>
-<option value="write_limit_exceeded">Write limit exceeded</option>
-<option value="runtime_error">Runtime error</option>
-<option value="compilation_error">Compilation error</option>
-<option value="security_violation">Security violation</option>
-<option value="ignore_submit">Ignore submit</option>
-<option value="manually_rejected">Reject by manual verification</option>
-</select> 
-[% capt.on_test %]
-<select name="failed_test">
-  <option />
-  [%- FOREACH t IN tests %]
-  <option value="[% t.test_index %]">[% t.test_index %]</option>
-  [%- END %]
-</select>
-[% capt.with_points %] <input name="points" size="3"/>
-
-</form>
-
 [% IF message %]<i>[% message | html %]</i><br>[% END %]
 
 [% IF judge_log_dump %]
