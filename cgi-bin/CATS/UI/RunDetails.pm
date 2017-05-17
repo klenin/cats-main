@@ -747,7 +747,7 @@ sub request_params_frame {
         state => $cats::st_not_processed,
         # Insert NULL into database to be replaced with contest-default testset.
         testsets => param('testsets') || undef,
-        judge_id => param('judge') ? param('judge') : undef,
+        judge_id => (param('set_judge') && param('judge') ? param('judge') : undef),
         points => undef,
     };
 
