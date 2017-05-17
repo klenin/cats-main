@@ -9,5 +9,6 @@
     retest => 'Retest',
     on_test => 'on test #',
     with_points => 'with points',
+    save_output_prefix => 'Save output prefix',
   })
 %]

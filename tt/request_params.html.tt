@@ -49,6 +49,15 @@
       </table>
     </td>
   <tr>
+    <th>[% capt.save_output_prefix %]</th>
+    <td>
+      <div class="limits [% si.style_classes.save_output_prefix %]">
+      <input type="text" name="save_output_prefix" value="[% si.save_output_prefix %]" />
+      </div>
+      <input type="checkbox" name="set_save_output_prefix" value="1" [% 'checked' IF si.req_overidden_limits.save_output_prefix %] />
+    </td>
+  </tr>
+  <tr>
     <th>[% capt.judge %]</th>
     <td>[% select('judge', si.judges) %] <input type="checkbox" name="set_judge" value="1" /></td>
   </tr>
