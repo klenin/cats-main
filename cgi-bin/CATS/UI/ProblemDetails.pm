@@ -217,9 +217,12 @@ sub problem_limits_frame
     if (param('override')) {
         my $new_limits = !defined $problem->{limits_id};
 
-        return msg(1144) if !$new_limits && grep !$p->{$_}, @cats::limits_fields;
+        my $limits = { map { $_ => param($_) } grep param($_) , @cats::limits_fields };
+        my $filtered_limits = CATS::Request::filter_valid_limits($limits);
 
-        my $limits = { map { $_ => $p->{$_} || $problem->{"overridden_$_"} || $problem->{$_} } @cats::limits_fields };
+        return msg(1144) if !$new_limits && grep !exists $filtered_limits->{$_}, keys %$limits;
+
+        $limits = { map { $_ => $limits->{$_} || $problem->{"overridden_$_"} || $problem->{$_} } @cats::limits_fields };
 
         $problem->{limits_id} = CATS::Request::set_limits($problem->{limits_id}, $limits);
 

@@ -67,13 +67,13 @@ function send_message(href)
 <tr [% IF second_row %] style="border-top-style: solid" [% END %]>
   <th>ID</th>
   [% FOREACH si IN sources_info; IF si %]
-    <td>[% si.req_id %]</td>
+    <td colspan="[% si.colspan %]"> [% si.req_id %]</td>
   [% END; END %]
 </tr>
 <tr>
   <th>[% capt.team %]</th>
   [% FOREACH si IN sources_info; IF si %]
-    <td><a href="[% si.href_stats %]">[% si.team_name %]</a>
+    <td colspan="[% si.colspan %]"><a href="[% si.href_stats %]">[% si.team_name %]</a>
     [% IF si.is_jury %]
       [<a href="[% si.href_whois %]" alt="[% si.last_ip %]" title="[% si.last_ip %]">[% si.last_ip_short %]</a>]
       [<a href="javascript:send_message('[% si.href_send_message %]')">[% capt.message %]</a>]
@@ -84,7 +84,7 @@ function send_message(href)
 <tr>
   <th>[% capt.time %]</th>
   [% FOREACH si IN sources_info; IF si %]
-    <td>
+    <td colspan="[% si.colspan %]">
       [% IF si.href_prev_attempt %] <a href="[% si.href_prev_attempt %]">[% si.prev_attempt_time %]&lt;&lt;</a>[% END %]
       [% si.submit_time %]
       [% IF si.href_next_attempt %] <a href="[% si.href_next_attempt %]">[% si.next_attempt_time %]&gt;&gt;</a>[% END %]
@@ -94,7 +94,7 @@ function send_message(href)
 <tr>
   <th>[% capt.processing %]</th>
   [% FOREACH si IN sources_info; IF si %]
-    <td>
+    <td colspan="[% si.colspan %]">
       [% IF si.is_jury; si.judge_name %]: [% END %]
       [% si.test_time_short %] ... [% si.result_time_short %]
     </td>
@@ -103,19 +103,19 @@ function send_message(href)
 <tr>
   <th>[% capt.file %]</th>
   [% FOREACH si IN sources_info; IF si %]
-    <td>[% si.file_name %] ([% si.de_name %])</td>
+    <td colspan="[% si.colspan %]">[% si.file_name %] ([% si.de_name %])</td>
   [% END; END %]
 </tr>
 <tr>
   <th>[% capt.contest %]</th>
   [% FOREACH si IN sources_info; IF si %]
-    <td>[% maybe_href(si.href_contest, si.contest_name) %]</td>
+    <td colspan="[% si.colspan %]">[% maybe_href(si.href_contest, si.contest_name) %]</td>
   [% END; END %]
 </tr>
 <tr>
   <th>[% capt.problem %]</th>
   [% FOREACH si IN sources_info; IF si %]
-    <td>
+    <td colspan="[% si.colspan %]">
       [% si.code; ': ' IF si.code; maybe_href(si.href_problem_text, si.problem_name) %]
       [%- IF si.is_jury %] ([% maybe_href(si.href_problem_details, si.status_name) %])[% END %]
     </td>
@@ -124,7 +124,7 @@ function send_message(href)
 <tr>
   <th>[% capt.testset %]</th>
   [% FOREACH si IN sources_info; IF si %]
-    <td>
+    <td colspan="[% si.colspan %]">
       [% si.testsets %]
     </td>
   [% END; END %]
@@ -132,7 +132,7 @@ function send_message(href)
 <tr>
   <th>[% capt.limits %]</th>
   [% FOREACH si IN sources_info; IF si %]
-    <td style="padding:0px">
+    <td style="padding:0px" colspan="[% si.colspan %]">
       [% IF si.is_jury %]
         <table class="inner_table">
           <tr><td>[% capt.time %], [% capt.s %]</td><td>[% capt.memory %], [% capt.mb %]</td><td>[% capt.write %], [% capt.b %]</td></tr>
@@ -156,13 +156,13 @@ function send_message(href)
 <tr>
   <th>[% capt.status %]<sup style="font-weight: normal;">&nbsp;[<a href="docs/run_results.html">?</a>]</span></th>
   [% FOREACH si IN sources_info; IF si %]
-    <td>[% submit_result(si); " ($si.points)" IF si.points %]</td>
+    <td colspan="[% si.colspan %]">[% submit_result(si); " ($si.points)" IF si.points %]</td>
   [% END; END %]
 </tr>
 <tr>
   <th>[% capt.refs %]</th>
   [% FOREACH si IN sources_info; IF si %]
-    <td>
+    <td colspan="[% si.colspan %]">
       <a href="[% si.href_view_source %]" class="[% si.href_class_view_source %]">[% capt.source %]</a> |
       <a href="[% si.href_download_source %]" class="[% si.href_class_download_source %]">[% capt.download %]</a> |
       <a href="[% si.href_run_details %]" class="[% si.href_class_run_details %]">[% capt.run_details %]</a>

@@ -3,6 +3,7 @@
     original_limits => 'Исходные ограничения',
     overridden_limits => 'Переопределенные ограничения',
     override => 'Переопределить',
-    clear_override => 'Очистить переопределение'
+    clear_override => 'Очистить переопределение',
+    save_output_prefix => 'Сохранение вывода',
   })
 %]
