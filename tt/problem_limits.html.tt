@@ -5,9 +5,9 @@
 <h3>[% p.title | html %]</h3>
 <form method="post" enctype="multipart/form-data" action="[% href_action %]">
 <table class="internal_borders padded">
-<tr><td></td><td>[% capt.time %], [% capt.s %]</td><td>[% capt.memory %], [% capt.mb %]</td><td>[% capt.write %], [% capt.b %]</td></tr>
-<tr><td>[% capt.original_limits %]</td><td>[% p.time_limit %]</td><td>[% p.memory_limit %]</td><td>[% p.write_limit %]</td></tr>
-[% IF p.overridden_time_limit || p.overridden_memory_limit || p.overridden_write_limit %]
+<tr><td></td><td>[% capt.time %], [% capt.s %]</td><td>[% capt.memory %], [% capt.mb %]</td><td>[% capt.write %], [% capt.b %]</td><td>[% capt.save_output_prefix %], [% capt.b %]</td></tr>
+<tr><td>[% capt.original_limits %]</td><td>[% p.time_limit %]</td><td>[% p.memory_limit %]</td><td>[% p.write_limit %]</td><td>[% p.save_output_prefix %]</td></tr>
+[% IF p.overridden_time_limit || p.overridden_memory_limit || p.overridden_write_limit || p.save_output_prefix %]
 <tr><td>[% capt.overridden_limits %]</td>
     <td>
         <input type="text" name="time_limit" value="[% p.overridden_time_limit %]" size="3" />
@@ -18,12 +18,15 @@
     <td>
         <input type="text" name="write_limit" value="[% p.overridden_write_limit %]" size="3" />
     </td>
+    <td>
+        <input type="text" name="save_output_prefix" value="[% p.overridden_save_output_prefix %]" size="3" />
+    </td>
 </tr>
 [% END %]
 <tr>
-    <td colspan="4" align="center">
+    <td colspan="5" align="center">
         <input type="submit" name="override" value="[% capt.override %]" class="button" />
-        [% IF p.overridden_time_limit || p.overridden_memory_limit || p.overridden_write_limit %]
+        [% IF p.overridden_time_limit || p.overridden_memory_limit || p.overridden_write_limit || p.overridden_save_output_prefix %]
             <input type="submit" name="clear_override" value="[% capt.clear_override %]" class="button" />
         [% END %]
     </td>
