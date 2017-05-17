@@ -458,6 +458,7 @@ sub sources_info_param {
             $si->{req_overidden_limits} = {
                 map { $_ => $si->{"lr_$_"} ? 1 : 0 } @cats::limits_fields
             };
+            $si->{colspan} = scalar @{$si->{element_sources}};
         }
     };
     $set_data->($sources_info);
