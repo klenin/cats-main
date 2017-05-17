@@ -43,7 +43,7 @@ sub source_links {
         url_function('problem_text', cpid => $si->{cp_id}, cid => $si->{contest_id}, sid => $sid);
     $si->{href_problem_details} =
         url_function('problem_details', pid => $si->{problem_id}, cid => $si->{contest_id}, sid => $sid);
-    for (qw/run_details view_source run_log download_source view_test_details/) {
+    for (qw/run_details view_source run_log download_source view_test_details request_params/) {
         $si->{"href_$_"} = url_f($_, rid => $si->{req_id});
         $si->{"href_class_$_"} = $_ eq $current_link ? 'current_link' : '';
     }
@@ -450,16 +450,18 @@ sub build_title_suffix {
 sub sources_info_param {
     my ($sources_info) = @_;
 
-    my $set_colspan = sub {
+    my $set_data = sub {
         for my $si (@{$_[0]}) {
-            $si->{colspan} = max($si->{element_sources} ? scalar @{$si->{element_sources}} : 0, 1) * ($is_jury + 1);
             $si->{style_classes} = {
                 map { $_ => $si->{"lr_$_"} ? 'req_overridden_limits' : $si->{"lcp_$_"} ? 'cp_overridden_limits' : undef } @cats::limits_fields
             };
+            $si->{req_overidden_limits} = {
+                map { $_ => $si->{"lr_$_"} ? 1 : 0 } @cats::limits_fields
+            };
         }
     };
-    $set_colspan->($sources_info);
-    $set_colspan->($_->{element_sources}) for (@$sources_info);
+    $set_data->($sources_info);
+    $set_data->($_->{element_sources}) for (@$sources_info);
     $t->param(
         title_suffix => build_title_suffix($sources_info),
         sources_info => $sources_info
@@ -480,54 +482,7 @@ sub run_details_frame {
     my @runs;
     my $contest = { id => 0 };
 
-    my $limits = { map { $_ => param($_) } grep param($_), @cats::limits_fields };
-    my $need_change_limits = param('set_limits');
-    my $need_clear_limits = $need_change_limits && !%$limits;
-
-    if ($need_change_limits && !$need_clear_limits) {
-        my $filtered_limits = CATS::Request::filter_valid_limits($limits);
-        my @invalid_limits_keys = grep !exists $filtered_limits->{$_}, keys %$limits;
-        if (@invalid_limits_keys) {
-            $need_change_limits = $need_clear_limits = 0;
-            msg(1144);
-        }
-    }
-
     for (@$sources_info) {
-        if ($_->{is_jury}) {
-            my $params = {
-                state => $cats::st_not_processed,
-                # Insert NULL into database to be replaced with contest-default testset.
-                testsets => param('testsets') || undef,
-                judge_id => (param('set_judge') && param('judge') ? param('judge') : undef),
-                points => undef,
-            };
-
-            if (param('retest')) {
-                if ($need_clear_limits) {
-                    $params->{limits_id} = undef;
-                    msg(1150, $_->{req_id});
-                } elsif ($need_change_limits) {
-                    msg($_->{limits_id} ? 1149 : 1148, $_->{req_id});
-                    $params->{limits_id} = CATS::Request::set_limits($_->{limits_id}, $limits);
-                }
-                CATS::Request::enforce_state($_->{req_id}, $params);
-                CATS::Request::delete_limits($_->{limits_id}) if $need_clear_limits && $_->{limits_id};
-                $dbh->commit;
-                $_ = get_sources_info(request_id => $_->{req_id}, partial_checker => 1) or next;
-            }
-            if (param('clone')) {
-                if (!$need_change_limits && $_->{limits_id}) {
-                    $params->{limits_id} = CATS::Request::clone_limits($_->{limits_id}, $limits);
-                } elsif ($need_change_limits) {
-                    $params->{limits_id} = CATS::Request::set_limits(undef, $limits);
-                }
-                my $group_req_id = CATS::Request::clone($_->{req_id}, $_->{contest_id}, $uid, $params);
-                $dbh->commit;
-                return $group_req_id ? redirect(url_f('run_details', rid => $group_req_id, sid => $sid)) : undef;
-            }
-        }
-
         source_links($_);
         $contest = get_contest_info($_, $_->{is_jury} && !url_param('as_user'))
             if $_->{contest_id} != $contest->{id};
@@ -766,6 +721,82 @@ sub view_test_details_frame {
     );
 }
 
+sub request_params_frame {
+    init_template('request_params.html.tt');
+
+    my ($p) = @_;
+    $p->{rid} or return;
+
+    my $si = get_sources_info(request_id => $p->{rid}) or return;
+    $si->{is_jury} or return;
+
+    my $limits = { map { $_ => param($_) } grep param($_) && param("set_$_"), @cats::limits_fields };
+
+    my $need_clear_limits = 0 == grep param("set_$_"), @cats::limits_fields;
+
+    if (!$need_clear_limits) {
+        my $filtered_limits = CATS::Request::filter_valid_limits($limits);
+        my @invalid_limits_keys = grep !exists $filtered_limits->{$_}, keys %$limits;
+        if (@invalid_limits_keys) {
+            $need_clear_limits = 0;
+            msg(1144);
+        }
+    }
+
+    my $params = {
+        state => $cats::st_not_processed,
+        # Insert NULL into database to be replaced with contest-default testset.
+        testsets => param('testsets') || undef,
+        judge_id => param('judge') ? param('judge') : undef,
+        points => undef,
+    };
+
+    if (param('retest')) {
+        if ($need_clear_limits) {
+            $params->{limits_id} = undef;
+        } else {
+            $params->{limits_id} = CATS::Request::set_limits($si->{limits_id}, $limits);
+        }
+        CATS::Request::enforce_state($si->{req_id}, $params);
+        CATS::Request::delete_limits($si->{limits_id}) if $need_clear_limits && $si->{limits_id};
+        $dbh->commit;
+        $si = get_sources_info(request_id => $si->{req_id});
+    }
+    if (param('clone')) {
+        if (!$need_clear_limits) {
+            if ($si->{limits_id}) {
+                $params->{limits_id} = CATS::Request::clone_limits($si->{limits_id}, $limits);
+            } else {
+                $params->{limits_id} = CATS::Request::set_limits(undef, $limits);
+            }
+        }
+        my $group_req_id = CATS::Request::clone($si->{req_id}, $si->{contest_id}, $uid, $params);
+        $dbh->commit;
+        return $group_req_id ? redirect(url_f('request_params', rid => $group_req_id, sid => $sid)) : undef;
+    }
+    my $can_delete = !$si->{is_official} || $is_root;
+    $t->param(can_delete => $can_delete);
+    if (param('delete') && $can_delete) {
+        $dbh->do(q~
+            DELETE FROM reqs WHERE id = ?~, undef,
+            $si->{req_id});
+        $dbh->commit;
+        return;
+    }
+    # Reload problem after the successful state change.
+    $si = get_sources_info(request_id => $si->{req_id})
+        if try_set_state($si, $si->{req_id});
+
+    my $tests = $dbh->selectcol_arrayref(qq~
+        SELECT rank FROM tests WHERE problem_id = ? ORDER BY rank~, undef,
+        $si->{problem_id});
+
+    source_links($si);
+    sources_info_param([ $si ]);
+
+    $t->param(tests => [ map { test_index => $_ }, @$tests ]);
+}
+
 sub try_set_state {
     my ($si, $rid) = @_;
     defined param('set_state') or return;
@@ -808,28 +839,10 @@ sub run_log_frame {
         or return;
     $si->{is_jury} or return;
 
-    my $can_delete = !$si->{is_official} || $is_root;
-    $t->param(can_delete => $can_delete);
-    if (param('delete') && $can_delete) {
-        $dbh->do(q~
-            DELETE FROM reqs WHERE id = ?~, undef,
-            $rid);
-        $dbh->commit;
-        return;
-    }
-
-    # Reload problem after the successful state change.
-    $si = get_sources_info(request_id => $rid)
-        if try_set_state($si, $rid);
     sources_info_param([ $si ]);
 
     source_links($si);
     $t->param(get_log_dump($rid));
-
-    my $tests = $dbh->selectcol_arrayref(qq~
-        SELECT rank FROM tests WHERE problem_id = ? ORDER BY rank~, undef,
-        $si->{problem_id});
-    $t->param(tests => [ map {test_index => $_}, @$tests ]);
 }
 
 sub diff_runs_frame {

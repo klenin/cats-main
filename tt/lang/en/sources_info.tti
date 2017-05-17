@@ -10,8 +10,6 @@
     problem => 'Problem',
     testset => 'Testset',
     limits => 'Limits',
-    retest => 'Retest',
-    clone => 'Clone',
     status => 'Status',
     refs => 'Refs',
     source => 'source',
@@ -20,5 +18,6 @@
     diff_runs => 'diff',
     log => 'log',
     view_test_details => 'output',
+    request_params => 'params',
   })
 %]

@@ -43,93 +43,37 @@ function send_message(href)
     .fill_width {
       width: 100%;
     }
-    table.limits_table {
+    table.inner_table {
       border-collapse: collapse;
+      width: 100%;
     }
-    table.limits_table tr:first-child td {
+    table.inner_table tr:first-child td {
       border-top: 0;
       border-bottom: 0;
     }
-    table.limits_table tr:last-child td {
+    table.inner_table tr:last-child td {
       border-bottom: 0;
     }
-    table.limits_table tr td:last-child {
+    table.inner_table tr td:last-child {
       border-right: 0;
     }
-    table.limits_table tr td:first-child {
+    table.inner_table tr td:first-child {
       border-left: 0;
     }
   </style>
-
-  <script>
-    function redirect_with_post(href, data) {
-      var form_str = '<form action="' + href + '" method="POST">';
-      $.each(data, function(param, value) {
-        form_str += '<input type="hidden" name="' + param + '" value="' + value + '" />';
-      });
-      form_str += '</form>';
-      var form = $(form_str);
-      $('body').append(form);
-      form.submit();
-    }
-
-    function get_input_name(name, req_id) {
-      return name + '_' + req_id;
-    }
-
-    [% MACRO get_input_name(name, req_id) BLOCK; "${name}_${req_id}"; END %]
-
-    function get_dom_object_by(att, using) {
-      var selectors = {
-        id: function(att) { return '#' + att },
-        name: function(att) { return 'select[name="' + att + '"]' }
-      };
-      return $(selectors[using](att));
-    }
-
-    function get_input_val(dom_object) {
-      if (dom_object.prop('tagName') == 'INPUT' || dom_object.prop('tagName') == 'SELECT') {
-        return dom_object.prop('type') == 'checkbox' ? +dom_object.prop('checked') : dom_object.val();
-      }
-    }
-
-    function submit_request_state(req_id, action, submit_name) {
-      var fields = {
-        testsets: { get_by: 'id' },
-        judge: { get_by: 'name' },
-        set_judge: { get_by: 'id' },
-        time_limit: { get_by: 'id' },
-        memory_limit: { get_by: 'id' },
-        write_limit: { get_by: 'id' },
-        set_limits: { get_by: 'id' },
-      };
-
-      var params = {};
-
-      $.each(fields, function(name, field) {
-        params[name] = get_input_val(get_dom_object_by(get_input_name(name, req_id), field.get_by));
-      });
-
-      params[submit_name] = 1;
-
-      redirect_with_post(action, params);
-    }
-  </script>
 [% END %]
 
 [% BLOCK sources_info_row %]
 <tr [% IF second_row %] style="border-top-style: solid" [% END %]>
   <th>ID</th>
   [% FOREACH si IN sources_info; IF si %]
-    <td colspan="[% si.colspan %]">[% si.req_id %]</td>
-  [% ELSE %]
-    <td rowspan="11" colspan="2"></td>
+    <td>[% si.req_id %]</td>
   [% END; END %]
 </tr>
 <tr>
   <th>[% capt.team %]</th>
   [% FOREACH si IN sources_info; IF si %]
-    <td colspan="[% si.colspan %]"><a href="[% si.href_stats %]">[% si.team_name %]</a>
+    <td><a href="[% si.href_stats %]">[% si.team_name %]</a>
     [% IF si.is_jury %]
       [<a href="[% si.href_whois %]" alt="[% si.last_ip %]" title="[% si.last_ip %]">[% si.last_ip_short %]</a>]
       [<a href="javascript:send_message('[% si.href_send_message %]')">[% capt.message %]</a>]
@@ -140,7 +84,7 @@ function send_message(href)
 <tr>
   <th>[% capt.time %]</th>
   [% FOREACH si IN sources_info; IF si %]
-    <td colspan="[% si.colspan %]">
+    <td>
       [% IF si.href_prev_attempt %] <a href="[% si.href_prev_attempt %]">[% si.prev_attempt_time %]&lt;&lt;</a>[% END %]
       [% si.submit_time %]
       [% IF si.href_next_attempt %] <a href="[% si.href_next_attempt %]">[% si.next_attempt_time %]&gt;&gt;</a>[% END %]
@@ -150,7 +94,7 @@ function send_message(href)
 <tr>
   <th>[% capt.processing %]</th>
   [% FOREACH si IN sources_info; IF si %]
-    <td colspan="[% si.colspan %]">
+    <td>
       [% IF si.is_jury; si.judge_name %]: [% END %]
       [% si.test_time_short %] ... [% si.result_time_short %]
     </td>
@@ -159,19 +103,19 @@ function send_message(href)
 <tr>
   <th>[% capt.file %]</th>
   [% FOREACH si IN sources_info; IF si %]
-    <td colspan="[% si.colspan %]">[% si.file_name %] ([% si.de_name %])</td>
+    <td>[% si.file_name %] ([% si.de_name %])</td>
   [% END; END %]
 </tr>
 <tr>
   <th>[% capt.contest %]</th>
   [% FOREACH si IN sources_info; IF si %]
-    <td colspan="[% si.colspan %]">[% maybe_href(si.href_contest, si.contest_name) %]</td>
+    <td>[% maybe_href(si.href_contest, si.contest_name) %]</td>
   [% END; END %]
 </tr>
 <tr>
   <th>[% capt.problem %]</th>
   [% FOREACH si IN sources_info; IF si %]
-    <td colspan="[% si.colspan %]">
+    <td>
       [% si.code; ': ' IF si.code; maybe_href(si.href_problem_text, si.problem_name) %]
       [%- IF si.is_jury %] ([% maybe_href(si.href_problem_details, si.status_name) %])[% END %]
     </td>
@@ -180,35 +124,27 @@ function send_message(href)
 <tr>
   <th>[% capt.testset %]</th>
   [% FOREACH si IN sources_info; IF si %]
-    <td [% IF si.colspan > 1 %] colspan="[% si.colspan - 1 %]" [% END %]>
-      [% IF si.is_jury %]
-        <input type="text" id="testsets_[% si.req_id %]" value="[% si.testsets %]" />
-        [% select('judge_' _ si.req_id, si.judges) %]
-        <input type="checkbox" id="set_judge_[% si.req_id %]" value="1" />
-        <td rowspan="2">
-        <p><input type="button" value="[% capt.retest %]" class="button fill_width" onclick="submit_request_state('[% si.req_id %]', '[% si.href_run_details %]', 'retest')"/></p>
-        <p><input type="button" value="[% capt.clone %]" class="button fill_width" onclick="submit_request_state('[% si.req_id %]', '[% si.href_run_details %]', 'clone')"/></p>
-      [% ELSE; si.testsets; END %]
+    <td>
+      [% si.testsets %]
     </td>
   [% END; END %]
 </tr>
 <tr>
   <th>[% capt.limits %]</th>
   [% FOREACH si IN sources_info; IF si %]
-    <td [% IF si.colspan > 1 %] colspan="[% si.colspan - 1 %]" [% END %] style="padding:0px">
+    <td style="padding:0px">
       [% IF si.is_jury %]
-        <table class="limits_table">
-          <tr><td>[% capt.time %], [% capt.s %]</td><td>[% capt.memory %], [% capt.mb %]</td><td>[% capt.write %], [% capt.b %]</td>
-          <td rowspan="2"><input type="checkbox" id="set_limits_[% si.req_id %]" value="1" /></td></tr>
+        <table class="inner_table">
+          <tr><td>[% capt.time %], [% capt.s %]</td><td>[% capt.memory %], [% capt.mb %]</td><td>[% capt.write %], [% capt.b %]</td></tr>
           <tr><td>
           <div class="limits [% si.style_classes.time_limit %]">
-          <input type="text" id="[% get_input_name('time_limit', si.req_id) %]" value="[% si.time_limit %]" size="3"/>
+          [% si.time_limit %]
           </div></td><td>
-          <div class="limits [% si.style_classes.memory_limit%]">
-          <input type="text" id="[% get_input_name('memory_limit', si.req_id) %]" value="[% si.memory_limit %]" size="3"/>
+          <div class="limits [% si.style_classes.memory_limit %]">
+          [% si.memory_limit %]
           </div></td><td>
-          <div class="limits [% si.style_classes.write_limit%]">
-          <input type="text" id="[% get_input_name('write_limit', si.req_id) %]" value="[% si.write_limit %]" size="3"/>
+          <div class="limits [% si.style_classes.write_limit %]">
+          [% si.write_limit %]
           </div></td></tr>
         </table>
       [% ELSE %]
@@ -220,19 +156,20 @@ function send_message(href)
 <tr>
   <th>[% capt.status %]<sup style="font-weight: normal;">&nbsp;[<a href="docs/run_results.html">?</a>]</span></th>
   [% FOREACH si IN sources_info; IF si %]
-    <td colspan="[% si.colspan %]">[% submit_result(si); " ($si.points)" IF si.points %]</td>
+    <td>[% submit_result(si); " ($si.points)" IF si.points %]</td>
   [% END; END %]
 </tr>
 <tr>
   <th>[% capt.refs %]</th>
   [% FOREACH si IN sources_info; IF si %]
-    <td colspan="[% si.colspan %]">
+    <td>
       <a href="[% si.href_view_source %]" class="[% si.href_class_view_source %]">[% capt.source %]</a> |
       <a href="[% si.href_download_source %]" class="[% si.href_class_download_source %]">[% capt.download %]</a> |
       <a href="[% si.href_run_details %]" class="[% si.href_class_run_details %]">[% capt.run_details %]</a>
       [% IF si.href_diff_runs %] | <a href="[% si.href_diff_runs %]" class="[% si.href_class_diff_runs %]">[% capt.diff_runs %]</a>[% END %]
       [% IF si.is_jury %] | <a href="[% si.href_run_log %]" class="[% si.href_class_run_log %]">[% capt.log %]</a>[% END %]
       [% IF si.is_jury %] | <a href="[% si.href_view_test_details %]" class="[% si.href_class_view_test_details %]">[% capt.view_test_details %]</a>[% END %]
+      [% IF si.is_jury %] | <a href="[% si.href_request_params %]" class="[% si.href_class_request_params %]">[% capt.request_params %]</a>[% END %]
     </td>
   [% END; END %]
 </tr>
@@ -242,6 +179,6 @@ function send_message(href)
 [% subcaption %]
 
 <table class="internal_borders padded">
-[% PROCESS sources_info_row sources_info = sources_info %]
-[% IF element_sources_info; PROCESS sources_info_row sources_info = element_sources_info second_row = 1; END %]
+[% INCLUDE sources_info_row sources_info = sources_info %]
+[% IF element_sources_info; INCLUDE sources_info_row sources_info = element_sources_info second_row = 1; END %]
 </table>
