@@ -110,7 +110,8 @@ CREATE TABLE limits (
     time_limit      FLOAT,
     memory_limit    INTEGER,
     process_limit   INTEGER,
-    write_limit     INTEGER
+    write_limit     INTEGER,
+    save_output_prefix INTEGER
 );
 
 

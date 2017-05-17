@@ -16,6 +16,7 @@ sub filter_valid_limits {
         time_limit => sub { $_[0] =~ m/^\+?([0-9]*[.])?[0-9]+$/ },
         memory_limit => sub { $_[0] =~ m/^\+?\d+$/ },
         write_limit => sub { $_[0] =~ m/^\+?\d+$/ },
+        save_output_prefix => sub { $_[0] =~ m/^\+?\d+$/ },
     );
 
     return { map { $_ => $limits->{$_} } grep $validators{$_}->($limits->{$_} // ''), @cats::limits_fields };

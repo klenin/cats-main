@@ -33,14 +33,14 @@
         </td>
 
         <td>
-        <div class="limits [% si.style_classes.memory_limit%]">
+        <div class="limits [% si.style_classes.memory_limit %]">
         <input type="text" name="memory_limit" value="[% si.memory_limit %]" size="5"/>
         </div>
         <input type="checkbox" name="set_memory_limit" value="1" [% 'checked' IF si.req_overidden_limits.memory_limit %] />
         </td>
 
         <td>
-        <div class="limits [% si.style_classes.write_limit%]">
+        <div class="limits [% si.style_classes.write_limit %]">
         <input type="text" name="write_limit" value="[% si.write_limit %]" size="5"/>
         </div>
         <input type="checkbox" name="set_write_limit" value="1" [% 'checked' IF si.req_overidden_limits.write_limit %] />
@@ -48,6 +48,15 @@
         </tr>
       </table>
     </td>
+  <tr>
+    <th>[% capt.save_output_prefix %]</th>
+    <td>
+      <div class="limits [% si.style_classes.save_output_prefix %]">
+      <input type="text" name="save_output_prefix" value="[% si.save_output_prefix %]" />
+      </div>
+      <input type="checkbox" name="set_save_output_prefix" value="1" [% 'checked' IF si.req_overidden_limits.save_output_prefix %] />
+    </td>
+  </tr>
   <tr>
     <th>[% capt.judge %]</th>
     <td>[% select('judge', si.judges) %] <input type="checkbox" name="set_judge" value="1" /></td>
