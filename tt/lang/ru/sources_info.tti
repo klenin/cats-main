@@ -10,8 +10,6 @@
     problem => 'Задача',
     testset => 'Набор тестов',
     limits => 'Ограничения',
-    retest => 'Перетестировать',
-    clone => 'Клонировать',
     status => 'Состояние',
     refs => 'Ссылки',
     source => 'код',
@@ -20,5 +18,6 @@
     diff_runs => 'сравнить',
     log => 'лог',
     view_test_details => 'вывод',
+    request_params => 'параметры',
   })
 %]

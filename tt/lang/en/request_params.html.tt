@@ -1,0 +1,7 @@
+[%
+  capt.import({
+    retest => 'Retest',
+    clone => 'Clone',
+    judge => 'Judge',
+  })
+%]

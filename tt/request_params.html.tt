@@ -1,0 +1,66 @@
+[% PROCESS includes/header.tti %]
+</head>
+<body>
+
+[% PROCESS includes/sources_info.tti %]
+<br/>
+
+<style>
+    .scrollable {
+        height: 200px;
+        width: 700px;
+        overflow: auto;
+    }
+</style>
+
+[% SET si = sources_info.first; IF si %]
+<form method="POST">
+<table class="internal_borders padded">
+  <tr>
+    <th>[% capt.testset %]</th>
+    <td><input type="text" name="testsets" value="[% si.testsets %]" /></td>
+  </tr>
+  <tr>
+    <th>[% capt.limits %]</th>
+    <td style="padding:0px">
+      <table class="inner_table">
+        <tr><td>[% capt.time %], [% capt.s %]</td><td>[% capt.memory %], [% capt.mb %]</td><td>[% capt.write %], [% capt.b %]</td>
+        <tr><td>
+        <div class="limits [% si.style_classes.time_limit %]">
+        <input type="text" name="time_limit" value="[% si.time_limit %]" size="5"/>
+        </div>
+        <input type="checkbox" name="set_time_limit" value="1" [% 'checked' IF si.req_overidden_limits.time_limit %] />
+        </td>
+
+        <td>
+        <div class="limits [% si.style_classes.memory_limit%]">
+        <input type="text" name="memory_limit" value="[% si.memory_limit %]" size="5"/>
+        </div>
+        <input type="checkbox" name="set_memory_limit" value="1" [% 'checked' IF si.req_overidden_limits.memory_limit %] />
+        </td>
+
+        <td>
+        <div class="limits [% si.style_classes.write_limit%]">
+        <input type="text" name="write_limit" value="[% si.write_limit %]" size="5"/>
+        </div>
+        <input type="checkbox" name="set_write_limit" value="1" [% 'checked' IF si.req_overidden_limits.write_limit %] />
+        </td>
+        </tr>
+      </table>
+    </td>
+  <tr>
+    <th>[% capt.judge %]</th>
+    <td>[% select('judge', si.judges) %]</td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center">
+      <input type="submit" value="[% capt.retest %]" class="button" name="retest"/>
+      <input type="submit" value="[% capt.clone %]" class="button" name="clone"/>
+    </td>
+  </tr>
+</table>
+</form>
+[% END %]
+[% PROCESS includes/timing.tti %]
+</body>
+</html>
