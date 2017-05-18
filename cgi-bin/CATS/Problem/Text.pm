@@ -332,7 +332,9 @@ sub problem_text_frame {
         $problem->{tags} = param('tags') if $is_jury_in_contest && defined param('tags');
         $tags = CATS::Problem::Tags::parse_tag_condition($problem->{tags}, sub {});
 
-        $problem->{href_problem_list} = url_function('problems', cid => $problem->{contest_id} || $problem->{orig_contest_id});
+        $problem->{href_problem_list} =
+            ($CATS::StaticPages::is_static_page ? '../' : '') .
+            url_function('problems', cid => $problem->{contest_id} || $problem->{orig_contest_id});
 
         for my $field_name (qw(statement pconstraints input_format output_format explanation)) {
             for ($problem->{$field_name}) {
