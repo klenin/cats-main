@@ -67,7 +67,7 @@ function setTex() {
 
   <h2>[% "${c.problem} ${p.code}. " IF p.code; p.title | html %] <a class="jsonly problem_menu_trigger" href="#">&#x2261;</a></h2>
   <div class="jsonly problem_menu"><ul>
-    <li><a href="[% p.href_problem_list %]">[% c.problem_list %]</a></li>
+    <li><a class="problem_list_link" href="[% p.href_problem_list %]">[% c.problem_list %]</a></li>
     <li><label><input type="checkbox" class="whitespace"><span></span> [% c.visible_spaces %]</label></li>
   </ul></div>
   [% IF p.author %]<div>[% c.author %]: [% p.author | html %]</div>[% END %]
@@ -134,6 +134,11 @@ function setTex() {
 [% END %]
 <script type="text/javascript">
 $('.problem_menu_trigger').click(function() { $(this).parent().next().toggle(); return false; });
+var sid = (new RegExp('sid=([a-zA-Z0-9]{30})')).exec(window.location.href);
+if (sid) {
+    sid = sid[1];
+    $('.problem_list_link').each(function() { this.href += ';sid=' + sid; });
+}
 function toggle_whitespace() {
     var p = $(this).parents('.problem_text');
     var ws = this.checked;
