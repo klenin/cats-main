@@ -6,7 +6,7 @@ use warnings;
 use CATS::Config qw(cats_dir);
 use CATS::DB;
 use CATS::Misc qw($sid);
-use CATS::Web qw(url_param restore_parameters);
+use CATS::Web qw(log_info url_param restore_parameters);
 
 sub allowed_pages
 {{
@@ -23,6 +23,7 @@ sub process_static
     my $url = $ENV{REDIRECT_URL};
     my ($f, $p) = $url =~ /^\/\w+\/static\/([a-z_]+)-([a-z_\-0-9]+)\.html/;
     $f && $p or die $url;
+    log_info "generating static page $url";
     my $ap = allowed_pages()->{$f} or die;
     my %params;
     $p =~ s/([a-z_]+)-(\d+)/$ap->{$1} ? $params{$1} = $2 : ''/eg;
