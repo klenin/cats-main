@@ -3,6 +3,7 @@
     problem => 'Problem',
     problem_list => 'problem list',
     visible_spaces => 'visible spaces',
+    basic_math => 'basic formulae',
     author => 'Author',
     input_file => 'Input file',
     standard_input => 'Standard input',

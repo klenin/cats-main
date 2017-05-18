@@ -2,7 +2,7 @@
 [% tex_styles %]
 [% IF mathjax %]
 <script type="text/javascript">
-function setTex() {
+function set_tex() {
 [%#
     CATS::TeX::Lite preserves spaces between identifiers.
     Emulate that for compatibility by replacing such spaces with "\,".
@@ -11,12 +11,26 @@ function setTex() {
     to distinguish identifiers (abc) from TeX commands (\abc).
 -%]
     var tex = $(this);
+    tex.data({ lite: tex.html() });
     var magic = '~!!!~';
     var t = tex.attr('title');
     t = t.replace(/(\\[a-zA-Z]+)/g, '$1' + magic);
     t = t.replace(/([a-zA-Z0-9},])\s+(?=[a-zA-Z])/g, '$1\\,');
     t = t.replace(new RegExp(magic, 'g'), '');
     tex.html("\\(" + t + '\\)');
+}
+
+function unset_tex() {
+    var tex = $(this);
+    var lite = tex.data().lite;
+    if (lite)
+        tex.html(lite);
+}
+
+function apply_mathjax(p) {
+    MathJax.Hub.Queue(
+        function() { p.find('span.TeX').each(set_tex); },
+        [ 'Typeset', MathJax.Hub, p[0] ]);
 }
 </script>
 <script type="text/x-mathjax-config">
@@ -35,12 +49,11 @@ function setTex() {
     MathJax.Hub.signal.Interest(function (message) { console.log("Hub: " + message); });
 -%]
     MathJax.Hub.Register.StartupHook('onLoad', function () {
+        [%# Convert math one problem at a time as a compromise between speed and stability. -%]
         $('div.problem_text').each(function() {
-            [%# Convert math one problem at a time as a compromise between speed and stability. -%]
-            var d = $(this);
-            MathJax.Hub.Queue(
-                function() { d.find('span.TeX').each(setTex); },
-                [ 'Typeset', MathJax.Hub, this ]);
+            var p = $(this);
+            if (!p.find('.basic_math')[0].checked)
+                apply_mathjax(p);
         });
     });
 </script>
@@ -69,6 +82,7 @@ function setTex() {
   <div class="jsonly problem_menu"><ul>
     <li><a class="problem_list_link" href="[% p.href_problem_list %]">[% c.problem_list %]</a></li>
     <li><label><input type="checkbox" class="whitespace"><span></span> [% c.visible_spaces %]</label></li>
+    <li><label><input type="checkbox" class="basic_math"><span></span> [% c.basic_math %]</label></li>
   </ul></div>
   [% IF p.author %]<div>[% c.author %]: [% p.author | html %]</div>[% END %]
   <table class="nobr">
@@ -134,11 +148,13 @@ function setTex() {
 [% END %]
 <script type="text/javascript">
 $('.problem_menu_trigger').click(function() { $(this).parent().next().toggle(); return false; });
+
 var sid = (new RegExp('sid=([a-zA-Z0-9]{30})')).exec(window.location.href);
 if (sid) {
     sid = sid[1];
     $('.problem_list_link').each(function() { this.href += ';sid=' + sid; });
 }
+
 function toggle_whitespace() {
     var p = $(this).parents('.problem_text');
     var ws = this.checked;
@@ -151,7 +167,15 @@ function toggle_whitespace() {
         $(this).text(t);
     });
 }
+
 $('.problem_text div.problem_menu input.whitespace').click(toggle_whitespace).each(toggle_whitespace);
+$('.basic_math').click(function() {
+    var p = $(this).parents('.problem_text');
+    if (this.checked)
+        p.find('span.TeX').each(unset_tex);
+    else
+        apply_mathjax(p);
+});
 </script>
 [% PROCESS includes/timing.tti %]
 </body>
