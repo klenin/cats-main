@@ -48,6 +48,13 @@ function setTex() {
 <script type="text/javascript">window.MathJax || document.write('<script src="js/lib/MathJax/MathJax.js?config=TeX-AMS_CHTML"><\/script>')</script>
 <script type="text/javascript" src="js/lib/jquery.min.js"></script>
 [% END %]
+<style>
+    a.problem_menu_trigger { font-size: small; color: inherit; padding: 1px 3px; background-color: #eeeeee; }
+    a.problem_menu_trigger:hover { font-size: medium; }
+    div.problem_menu { display: none; width: 100%; background-color: #eeeeee; }
+    div.problem_menu ul { list-style-type: none; padding: 0; }
+    div.problem_menu ul li { display: inline-block; padding: 3px 10px; border-right: 1px solid; }
+</style>
 </head>
 <body>
 [% FOREACH p IN problems; PROCESS "lang/${p.lang}/problem_text_p.html.tt" UNLESS capt.problem_text.item(p.lang); END; %]
@@ -55,8 +62,11 @@ function setTex() {
 <div class="problem_text" [% UNLESS loop.first %]style="page-break-before: always"[% END %]>
   <a name="pr[% p.code || p.id %]"></a>
 
-  <h2>[% "${c.problem} ${p.code}. " IF p.code; p.title | html %]</h2>
-  [% IF p.author; c.author %]: [% p.author | html %]<br/><br/>[% END %]
+  <h2 id="p[% p.id %]" >[% "${c.problem} ${p.code}. " IF p.code; p.title | html %] <a class="jsonly problem_menu_trigger" href="#">&#x2261;</a></h2>
+  <div class="jsonly problem_menu"><ul>
+    <li><a href="[% p.href_problem_list %]">[% c.problem_list %]</a></li>
+  </ul></div>
+  [% IF p.author %]<div>[% c.author %]: [% p.author | html %]</div>[% END %]
   <table class="nobr">
   <tr>
     <td width="1%">[% c.input_file %]:</td><td>[% (p.input_file == '*STDIN' ? c.standard_input : p.input_file) | html %]</td>
@@ -120,6 +130,9 @@ function setTex() {
 [% END %]
 <script type="text/javascript" src="docs/std/whitespace.js"></script>
 <script type="text/javascript">ws_init('spaces', [[% FOREACH p IN problems; p.id; ',' UNLESS loop.last; END %]])</script>
+<script type="text/javascript">
+$('.problem_menu_trigger').click(function() { $(this).parent().next().toggle(); return false; });
+</script>
 [% PROCESS includes/timing.tti %]
 </body>
 </html>

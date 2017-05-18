@@ -20,6 +20,7 @@ use CATS::Misc qw($cid $contest $is_jury $is_root $t $uid auto_ext init_template
 use CATS::Problem::Tags;
 use CATS::StaticPages;
 use CATS::TeX::Lite;
+use CATS::Utils qw(url_function);
 use CATS::Web qw(param url_param);
 
 my ($current_pid, $html_code, $spellchecker, $text_span, $tags, $skip_depth);
@@ -251,7 +252,7 @@ sub problem_text_frame {
     elsif (my $cpid = url_param('cpid')) {
         my $p = $dbh->selectrow_hashref(qq~
             SELECT
-                CP.id AS cpid, CP.problem_id, CP.code,
+                CP.id AS cpid, CP.contest_id, CP.problem_id, CP.code,
                 CP.testsets, CP.points_testsets, CP.max_points, CP.tags, CP.status,
                 C.rules, $overridden_limits_str
             FROM contests C
@@ -267,7 +268,7 @@ sub problem_text_frame {
         # Should either check for a static page or hide the problem even from jury.
         my $p = $dbh->selectall_arrayref(qq~
             SELECT
-                CP.id AS cpid, CP.problem_id, CP.code,
+                CP.id AS cpid, CP.contest_id, CP.problem_id, CP.code,
                 CP.testsets, CP.points_testsets, CP.max_points, CP.tags,
                 $overridden_limits_str
             FROM contest_problems CP
@@ -284,7 +285,8 @@ sub problem_text_frame {
     for my $problem (@problems) {
         $current_pid = $problem->{problem_id};
         my $fields_str = join ', ', (qw(
-            id contest_id title lang difficulty author input_file output_file statement pconstraints json_data),
+            id title lang difficulty author input_file output_file statement pconstraints json_data),
+            'contest_id AS orig_contest_id',
             'max_points AS max_points_def',
             grep(!$problem->{$_}, @cats::limits_fields),
             ($explain ? 'explanation' : qw(input_format output_format)),
@@ -329,6 +331,8 @@ sub problem_text_frame {
 
         $problem->{tags} = param('tags') if $is_jury_in_contest && defined param('tags');
         $tags = CATS::Problem::Tags::parse_tag_condition($problem->{tags}, sub {});
+
+        $problem->{href_problem_list} = url_function('problems', cid => $problem->{contest_id} || $problem->{orig_contest_id});
 
         for my $field_name (qw(statement pconstraints input_format output_format explanation)) {
             for ($problem->{$field_name}) {

@@ -1,6 +1,7 @@
 [%
   capt.problem_text.en = {
     problem => 'Problem',
+    problem_list => 'problem list',
     author => 'Author',
     input_file => 'Input file',
     standard_input => 'Standard input',
