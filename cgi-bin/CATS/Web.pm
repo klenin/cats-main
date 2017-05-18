@@ -22,6 +22,7 @@ our @EXPORT_OK = qw(
     has_error
     headers
     init_request
+    log_info
     not_found
     param
     param_on
@@ -135,5 +136,7 @@ sub restore_parameters {
 }
 
 sub user_agent { $r->headers_in->get('User-Agent') }
+
+sub log_info { $r->log->notice(@_) }
 
 1;
