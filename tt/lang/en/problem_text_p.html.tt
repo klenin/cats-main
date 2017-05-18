@@ -2,6 +2,7 @@
   capt.problem_text.en = {
     problem => 'Problem',
     problem_list => 'problem list',
+    visible_spaces => 'visible spaces',
     author => 'Author',
     input_file => 'Input file',
     standard_input => 'Standard input',

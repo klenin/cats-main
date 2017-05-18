@@ -54,17 +54,21 @@ function setTex() {
     div.problem_menu { display: none; width: 100%; background-color: #eeeeee; }
     div.problem_menu ul { list-style-type: none; padding: 0; }
     div.problem_menu ul li { display: inline-block; padding: 3px 10px; border-right: 1px solid; }
+    div.problem_menu input[type=checkbox] { display: none; }
+    div.problem_menu input[type=checkbox] + span:after { content: '\2610'; }
+    div.problem_menu input[type=checkbox]:checked + span:after { content: '\2611'; }
 </style>
 </head>
 <body>
 [% FOREACH p IN problems; PROCESS "lang/${p.lang}/problem_text_p.html.tt" UNLESS capt.problem_text.item(p.lang); END; %]
 [% FOREACH p IN problems; c = capt.problem_text.item(p.lang) %]
-<div class="problem_text" [% UNLESS loop.first %]style="page-break-before: always"[% END %]>
+<div class="problem_text" id="p[% p.id %]" [% UNLESS loop.first %]style="page-break-before: always"[% END %]>
   <a name="pr[% p.code || p.id %]"></a>
 
-  <h2 id="p[% p.id %]" >[% "${c.problem} ${p.code}. " IF p.code; p.title | html %] <a class="jsonly problem_menu_trigger" href="#">&#x2261;</a></h2>
+  <h2>[% "${c.problem} ${p.code}. " IF p.code; p.title | html %] <a class="jsonly problem_menu_trigger" href="#">&#x2261;</a></h2>
   <div class="jsonly problem_menu"><ul>
     <li><a href="[% p.href_problem_list %]">[% c.problem_list %]</a></li>
+    <li><label><input type="checkbox" class="whitespace"><span></span> [% c.visible_spaces %]</label></li>
   </ul></div>
   [% IF p.author %]<div>[% c.author %]: [% p.author | html %]</div>[% END %]
   <table class="nobr">
@@ -128,10 +132,21 @@ function setTex() {
   <hr>
 </div>
 [% END %]
-<script type="text/javascript" src="docs/std/whitespace.js"></script>
-<script type="text/javascript">ws_init('spaces', [[% FOREACH p IN problems; p.id; ',' UNLESS loop.last; END %]])</script>
 <script type="text/javascript">
 $('.problem_menu_trigger').click(function() { $(this).parent().next().toggle(); return false; });
+function toggle_whitespace() {
+    var p = $(this).parents('.problem_text');
+    var ws = this.checked;
+    p.find('.sample code').each(function() {
+        var t = $(this).text();
+        if (ws)
+            t = t.replace(/ /g, '\u2423');
+        else
+            t = t.replace(/\u2423/g, ' ');
+        $(this).text(t);
+    });
+}
+$('.problem_text div.problem_menu input.whitespace').click(toggle_whitespace).each(toggle_whitespace);
 </script>
 [% PROCESS includes/timing.tti %]
 </body>

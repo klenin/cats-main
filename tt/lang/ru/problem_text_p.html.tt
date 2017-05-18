@@ -2,6 +2,7 @@
   capt.problem_text.ru = {
     problem => 'Задача',
     problem_list => 'список задач',
+    visible_spaces => 'видимые пробелы',
     author => 'Автор',
     input_file => 'Входной файл',
     standard_input => 'Стандартный вход',
