@@ -302,11 +302,8 @@ sub console_content
         run_method => 'P.run_method',
     });
     $lv->define_enums({
-        state => {
-            NP => 0, UH => 1, P => 3, AW => 4,
-            OK => 10, WA => 11, PE => 12, TL => 13, RE => 14, CE => 15, SV => 16, ML => 17, IS => 18, IL => 19, MR => 20,
-        },
-        run_method => CATS::Misc::run_method_enum(),
+        state => CATS::Misc::request_state_names,
+        run_method => CATS::Misc::run_method_enum,
     });
 
     my $searches_filtger = $lv->maybe_where_cond;
