@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use File::stat;
+use List::Util qw(sum);
 
 use CATS::BinaryFile;
 use CATS::Constants;
@@ -41,6 +42,18 @@ sub problem_submenu
     );
 }
 
+sub get_request_count {
+    my ($this_contest_only, $pid) = @_;
+    my $contest_cond = $this_contest_only ? ' AND R.contest_id = ?' : '';
+    my $rc = { map { $_->[0] => $_->[1] } @{$dbh->selectall_arrayref(qq~
+        SELECT R.state, COUNT(*) AS cnt FROM reqs R
+        WHERE R.problem_id = ?$contest_cond GROUP BY R.state~, undef,
+        $pid, ($this_contest_only ? $cid : ())
+    )} };
+    $rc->{total} = sum 0, values %$rc;
+    $rc;
+}
+
 sub problem_details_frame {
     my ($p) = @_;
     init_template('problem_details.html.tt');
@@ -50,7 +63,9 @@ sub problem_details_frame {
             P.title, P.lang, P.contest_id, P.author, P.last_modified_by, P.upload_date,
             P.run_method, P.save_input_prefix, P.save_answer_prefix, P.save_output_prefix,
             P.time_limit, P.memory_limit, P.write_limit,
-            L.time_limit AS overridden_time_limit, L.memory_limit AS overridden_memory_limit, L.write_limit as overridden_write_limit,
+            L.time_limit AS overridden_time_limit,
+            L.memory_limit AS overridden_memory_limit,
+            L.write_limit as overridden_write_limit,
             C.title AS contest_name, A.team_name,
             CP.id AS cpid, CP.testsets, CP.points_testsets, CP.tags
         FROM problems P
@@ -60,6 +75,19 @@ sub problem_details_frame {
         LEFT JOIN limits L ON L.id = CP.limits_id
         WHERE P.id = ?~, { Slice => {} },
         $cid, $p->{pid}) or return;
+    my ($rc_all, $rc_contest);
+    $rc_all = get_request_count(0, $p->{pid}) if $is_root;
+    $rc_contest = get_request_count(1, $p->{pid});
+    my $sn = CATS::Misc::request_state_names();
+    $pr->{request_count} = [
+        (map {
+            my $st = $sn->{$_};
+            $rc_all->{$st} || $rc_contest->{$st} ?
+                { short => $_, name => $_, all => $rc_all->{$st}, contest => $rc_contest->{$st}, } : ();
+        } sort { $sn->{$a} <=> $sn->{$b} } keys %$sn),
+        { short => 'total', name => res_str(581), all => $rc_all->{total}, contest => $rc_contest->{total} },
+    ];
+
     my @text = ('problem_text', cpid => $pr->{cpid});
     $pr->{commit_sha} = CATS::ProblemStorage::get_latest_master_sha($p->{pid});
     $t->param(

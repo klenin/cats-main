@@ -28,5 +28,6 @@
     tags_none => 'нет',
     original_limits => 'Исходные ограничения',
     overridden_limits => 'Переопределенные ограничения',
+    request_count => 'Количество вердиктов',
   })
 %]

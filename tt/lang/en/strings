@@ -59,6 +59,7 @@
 578 "time until start"
 579 "time since start"
 580 "time offset"
+581 "total"
 600 "Start time"
 601 "Name"
 602 "Problem"

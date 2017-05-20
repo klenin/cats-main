@@ -28,5 +28,6 @@
     tags_none => 'none',
     original_limits => 'Original limits',
     overridden_limits => 'Overridden limits',
+    request_count => 'Verdict counts',
   })
 %]
