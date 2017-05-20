@@ -24,5 +24,6 @@
     output_format => 'Output file format',
     pconstraints => 'Constraints',
     sample_tests => 'Sample tests',
+    sample_number => 'No.',
   }
 %]

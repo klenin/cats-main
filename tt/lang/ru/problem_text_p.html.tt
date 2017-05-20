@@ -24,5 +24,6 @@
     output_format => 'Формат выходного файла',
     pconstraints => 'Ограничения',
     sample_tests => 'Примеры тестов',
+    sample_number => '&#8470;',
   }
 %]
