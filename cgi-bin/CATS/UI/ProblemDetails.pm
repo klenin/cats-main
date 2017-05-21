@@ -89,7 +89,8 @@ sub problem_details_frame {
     ];
 
     my @text = ('problem_text', cpid => $pr->{cpid});
-    $pr->{commit_sha} = CATS::ProblemStorage::get_latest_master_sha($p->{pid});
+    $pr->{commit_sha} = eval { CATS::ProblemStorage::get_latest_master_sha($p->{pid}); } || 'error';
+    warn $@ if $@;
     $t->param(
         p => $pr,
         problem_title => $pr->{title},
