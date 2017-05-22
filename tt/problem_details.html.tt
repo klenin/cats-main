@@ -39,7 +39,13 @@
 [% IF href_nomath_text %][<a href="[% href_nomath_text %]">[% capt.nomath_text %]</a>][% END %]
 [% IF href_static_text %][<a href="[% href_static_text %]">[% capt.static_text %]</a>][% END %]
 </td></tr>
-<tr><td>[% capt.save_test_data %]</td><td>Input: [% p.save_input_prefix || 'No' %], Answer: [% p.save_answer_prefix || 'No' %], Output: [% p.save_output_prefix || 'No' %]</td></tr>
+<tr><td>[% capt.save_test_data %]</td><td class="nested">
+  <table class="internal_borders"><tr>
+    <td>[% capt.save.input  %]: [% p.save_input_prefix || '--' %]</td>
+    <td>[% capt.save.answer %]: [% p.save_answer_prefix || '--'  %]</td>
+    <td>[% capt.save.output %]: [% p.save_output_prefix || '--'  %]</td>
+  </tr></table>
+</td></tr>
 <tr><td>[% capt.testsets %]</td><td>[% href(href_testsets, p.testsets || capt.testsets_all) %]</td></tr>
 <tr><td>[% capt.points_testsets %]</td><td>[% href(href_testsets, p.points_testsets || capt.testsets_all) %]</td></tr>
 <tr><td>[% capt.original_limits %]</td><td>[% href(href_problem_limits, limits_str(p.time_limit, p.memory_limit, p.write_limit)) %]</td></tr>
