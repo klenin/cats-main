@@ -20,8 +20,7 @@ use CATS::Web qw(param url_param);
 
 # This is called before init_template to display submitted question immediately.
 # So we have to use res_str instead of msg.
-sub send_question_to_jury
-{
+sub send_question_to_jury {
     my ($question_text) = @_;
 
     $is_team && defined $question_text && $question_text ne ''
@@ -49,9 +48,7 @@ sub send_question_to_jury
     res_str(1062);
 }
 
-
-sub get_settings
-{
+sub get_settings {
     my ($lv) = @_;
     my $s = $lv->settings;
     $s->{i_value} = coalesce(param('i_value'), $s->{i_value}, 1);
@@ -62,9 +59,7 @@ sub get_settings
     $s;
 }
 
-
-sub time_interval_days
-{
+sub time_interval_days {
     my ($s) = @_;
     my ($v, $u) = @$s{qw(i_value i_unit)};
     my @text = split /\|/, res_str(1121);
@@ -76,10 +71,8 @@ sub time_interval_days
     map { $units->[$_]->{text} = $text[$_] } 0..$#$units;
 
     my $selected_unit = $units->[0];
-    for (@$units)
-    {
-        if ($_->{value} eq $u)
-        {
+    for (@$units) {
+        if ($_->{value} eq $u) {
             $selected_unit = $_;
             last;
         }
@@ -97,8 +90,7 @@ sub time_interval_days
     return $v > 0 ? $v * $selected_unit->{k} : 100000;
 }
 
-sub init_console_template
-{
+sub init_console_template {
     my ($template_name) = @_;
     my $se = param('se') || '';
     $se = "_$se" if $se;
@@ -106,9 +98,7 @@ sub init_console_template
         name => "console$se", array_name => 'console', template => $template_name);
 }
 
-
-sub console_content
-{
+sub console_content {
     my $selection = param('selection');
 
     my $lv = init_console_template(auto_ext('console_content'));
@@ -251,8 +241,7 @@ sub console_content
     my @events_filter_params = @user_ids;
 
     my $contest_dates = '';
-    if ($s->{show_contests})
-    {
+    if ($s->{show_contests}) {
         my %extra_cond = (
             start => '',
             freeze => ' AND C.freeze_date < C.finish_date AND C.freeze_date > C.start_date',
@@ -309,8 +298,7 @@ sub console_content
 
     my $searches_filtger = $lv->maybe_where_cond;
 
-    if ($is_jury)
-    {
+    if ($is_jury) {
         my $jury_runs_filter = $is_root ? '' : ' AND C.id = ?';
         my $msg_filter = $is_root ? '' : ' AND CA.contest_id = ?';
         $msg_filter .= ' AND 1 = 0' unless $s->{show_messages};
@@ -342,8 +330,7 @@ sub console_content
             @cid, @events_filter_params,
             @cid, @events_filter_params);
     }
-    elsif ($is_team)
-    {
+    elsif ($is_team) {
         $c = $dbh->prepare(qq~
             SELECT
                 $console_select{run}
@@ -372,8 +359,7 @@ sub console_content
             $cid, $uid,
         );
     }
-    else
-    {
+    else {
         $c = $dbh->prepare(qq~
             SELECT
                 $console_select{run}
@@ -387,8 +373,7 @@ sub console_content
         $c->execute($cid, @events_filter_params, $lv->where_params);
     }
 
-    my $fetch_console_record = sub($)
-    {
+    my $fetch_console_record = sub {
         my ($rtype, $rank, $submit_time, $id, $request_state, $failed_test,
             $problem_id, $problem_title, $de, $clarified, $question, $answer, $jury_message,
             $team_id, $team_name, $country_abbr, $last_ip, $caid, $contest_id
@@ -475,9 +460,7 @@ sub console_content
     );
 }
 
-
-sub select_all_reqs
-{
+sub select_all_reqs {
     my ($extra_cond) = $_[0] || '';
     $dbh->selectall_arrayref(qq~
         SELECT
@@ -499,7 +482,6 @@ sub select_all_reqs
         $cid);
 }
 
-
 sub xml_quote {
     my ($s) = @_;
     $s =~ s/</&lt;/g;
@@ -508,17 +490,14 @@ sub xml_quote {
     $s;
 }
 
-sub export
-{
+sub export {
     $is_jury or return;
     init_template('console_export.xml.tt');
     my $reqs = select_all_reqs;
-    for my $req (@$reqs)
-    {
+    for my $req (@$reqs) {
         $req->{submit_time} =~ s/\s+$//;
         my %st = state_to_display($req->{state});
-        for (keys %st)
-        {
+        for (keys %st) {
             $st{$_} or next;
             $req->{state} = $_;
             last;
@@ -529,9 +508,7 @@ sub export
     $t->param(reqs => $reqs);
 }
 
-
-sub graphs
-{
+sub graphs {
     $is_jury or return;
     init_template('console_graphs.html.tt');
     my @codes = map { code => $_, selected => 1 }, @{$contest->used_problem_codes};
@@ -552,8 +529,7 @@ sub graphs
     @$reqs or return;
     my $init_graph = sub { (code => $_[0], by_time => []) };
     my $graphs = { all => { $init_graph->('all') } };
-    for my $req (@$reqs)
-    {
+    for my $req (@$reqs) {
         $req->{code} && $req->{time_since_start} >= 0 && $selected_codes{$req->{code}} or next;
         my $g = $graphs->{$req->{code}} ||= { $init_graph->($req->{code}) };
         my $step = int($req->{time_since_start} * 24 * $steps_per_hour);
@@ -579,15 +555,12 @@ sub graphs
     $t->param(graph => join '&amp;', map "$_=$gp{$_}", keys %gp);
 }
 
-
-sub retest_submissions
-{
+sub retest_submissions {
     $is_jury or return;
     my ($selection) = @_;
     my $count = 0;
     my @sanitized_runs = grep $_ ne '', split /\D+/, $selection;
-    for (@sanitized_runs)
-    {
+    for (@sanitized_runs) {
         CATS::Request::enforce_state($_, { state => $cats::st_not_processed, judge_id => undef })
             and ++$count;
     }
@@ -595,9 +568,7 @@ sub retest_submissions
     return $count;
 }
 
-
-sub group_submissions
-{
+sub group_submissions {
     $is_root or return;
     my ($selection) = @_;
     my $count = 0;
@@ -606,27 +577,23 @@ sub group_submissions
     $dbh->commit;
 }
 
-
-sub delete_question
-{
+sub delete_question {
     my ($qid) = @_;
     $is_jury && $privs->{moderate_messages} or return;
-    $dbh->do(q~DELETE FROM questions WHERE id = ?~, undef, $qid);
+    $dbh->do(q~
+        DELETE FROM questions WHERE id = ?~, undef, $qid);
     $dbh->commit;
 }
 
-
-sub delete_message
-{
+sub delete_message {
     my ($mid) = @_;
     $is_jury && $privs->{moderate_messages} or return;
-    $dbh->do(q~DELETE FROM messages WHERE id = ?~, undef, $mid);
+    $dbh->do(q~
+        DELETE FROM messages WHERE id = ?~, undef, $mid);
     $dbh->commit;
 }
 
-
-sub console_frame
-{
+sub console_frame {
     if (my $qid = param('delete_question')) {
         delete_question($qid);
     }
@@ -678,12 +645,9 @@ sub console_frame
     ]) if $is_jury;
 }
 
-
-sub content_frame
-{
+sub content_frame {
     console_content;
     $t->param(is_team => $is_team);
 }
-
 
 1;
