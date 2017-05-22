@@ -1,8 +1,10 @@
 [% extra_head = BLOCK %]
 <style>
   td.verdict_UH, td.verdict_P { background-color: #FFD0D0; }
-  table.request_count { border-style: hidden; text-align: right; width: 100%; }
+  table.request_count { text-align: right; }
   table.request_count td { width: 2em; }
+  table tr td.nested { padding: 0; }
+  td.nested table { border-style: hidden;  width: 100%; }
 </style>
 [% END %]
 [% PROCESS includes/menu_begin.tti %]
@@ -19,6 +21,13 @@
 <tr><td>[% capt.author %]</td><td>[% p.author | html %]</td></tr>
 <tr><td>[% capt.lang %]</td><td>[% p.lang | html %]</td></tr>
 <tr><td>[% capt.run_method %]</td><td>[% capt.run_method_names.item(p.run_method) %]</td></tr>
+[% IF p.keywords.size %]
+<tr><td>[% capt.keywords %]</td><td class="nested">
+  <table class="internal_borders">
+    [% FOREACH k IN p.keywords %]<tr><td>[% maybe_href(k.href, k.code) %]</td><td>[% k.name %]</td></tr>[% END %]
+  </table>
+</td></tr>
+[% END %]
 <tr><td>[% capt.original_contest %]</td><td>[% maybe_href(href_original_contest, p.contest_name) %]</td></tr>
 <tr><td>[% capt.download %]</td><td>
 [% IF href_download %][<a href="[% href_download %]">[% capt.package %]</a>][% END %]
@@ -37,7 +46,7 @@
 [% IF p.overridden_time_limit || p.overridden_memory_limit || p.overridden_write_limit %]
 <tr><td>[% capt.overridden_limits %]</td><td>[% href(href_problem_limits, limits_str(p.overridden_time_limit, p.overridden_memory_limit, p.overridden_write_limit)) %]</td></tr>
 [% END %]
-<tr><td>[% capt.request_count %]</td><td style="padding: 0;">
+<tr><td>[% capt.request_count %]</td><td class="nested">
   <table class="internal_borders request_count">
     <tr>[% FOREACH rc IN p.request_count %]<td class="verdict_[% rc.short %]">[% rc.name %]</td>[% END %]</tr>
     <tr>[% FOREACH rc IN p.request_count %]<td>[% href(rc.href_contest, rc.contest) %]</td>[% END %]</tr>

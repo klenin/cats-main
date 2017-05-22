@@ -11,6 +11,7 @@
         '1' => 'interactive',
         '2' => 'competitive',
     },
+    keywords => 'Keywords',
     original_contest => 'Original contest',
     download => 'Download',
     package => 'package',

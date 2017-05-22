@@ -76,6 +76,15 @@ sub problem_details_frame {
         WHERE P.id = ?~, { Slice => {} },
         $cid, $p->{pid}) or return;
 
+    my $kw_lang = "name_" . (CATS::Misc::lang eq 'ru' ? 'ru' : 'en');
+    $pr->{keywords} = $dbh->selectall_arrayref(qq~
+        SELECT K.id, K.code, K.$kw_lang AS name FROM keywords K INNER JOIN problem_keywords PK ON PK.keyword_id = K.id
+        WHERE PK.problem_id = ? ORDER BY K.code~, { Slice => {} },
+        $p->{pid});
+    if ($is_root) {
+        $_->{href} = url_f('keywords', edit => $_->{id}) for @{$pr->{keywords}};
+    }
+
     my ($rc_all, $rc_contest);
     $rc_all = get_request_count(0, $p->{pid}) if $is_root;
     $rc_contest = get_request_count(1, $p->{pid});
