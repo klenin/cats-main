@@ -4,7 +4,7 @@
     clone => 'Clone',
     judge => 'Judge',
     delete => 'Delete run request',
-    confirm_delete => 'Delete this run request. Are you sure?',
+    confirm_delete => 'Delete run request %d. Are you sure?',
     testing_result => 'testing result',
     retest => 'Retest',
     on_test => 'on test #',
