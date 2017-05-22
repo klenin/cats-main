@@ -4,8 +4,7 @@
 [%- PROCESS includes/limits_string.tti -%]
 
 <script type="text/javascript">
-function send_message(href)
-{
+function send_message(href) {
     window.open(href, '', 'width=500,height=400,location=no,menubar=no,resizable=yes,scrollbars=no,status=no,toolbar=no');
 }
 </script>
@@ -150,7 +149,7 @@ function send_message(href)
   [% END; END %]
 </tr>
 <tr>
-  <th>[% capt.status %]<sup style="font-weight: normal;">&nbsp;[<a href="docs/run_results.html">?</a>]</span></th>
+  <th>[% capt.status %]<sup style="font-weight: normal;">&nbsp;[<a href="docs/verdicts.[% lang %].html">?</a>]</span></th>
   [% FOREACH si IN sources_info; IF si %]
     <td colspan="[% si.colspan %]">[% submit_result(si); " ($si.points)" IF si.points %]</td>
   [% END; END %]
