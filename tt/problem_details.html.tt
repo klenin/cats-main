@@ -1,7 +1,7 @@
 [% extra_head = BLOCK %]
 <style>
   td.verdict_UH, td.verdict_P { background-color: #FFD0D0; }
-  table.request_count { border-style: hidden; text-align: right; }
+  table.request_count { border-style: hidden; text-align: right; width: 100%; }
   table.request_count td { width: 2em; }
 </style>
 [% END %]
@@ -40,8 +40,8 @@
 <tr><td>[% capt.request_count %]</td><td style="padding: 0;">
   <table class="internal_borders request_count">
     <tr>[% FOREACH rc IN p.request_count %]<td class="verdict_[% rc.short %]">[% rc.name %]</td>[% END %]</tr>
-    <tr>[% FOREACH rc IN p.request_count %]<td>[% rc.contest %]</td>[% END %]</tr>
-    [% IF p.request_count.item(-1).all # root %]<tr>[% FOREACH rc IN p.request_count %]<td>[% rc.all %]</td>[% END %]</tr>[% END %]
+    <tr>[% FOREACH rc IN p.request_count %]<td>[% href(rc.href_contest, rc.contest) %]</td>[% END %]</tr>
+    [% IF p.request_count.item(-1).all # root %]<tr>[% FOREACH rc IN p.request_count %]<td>[% href(rc.href_all, rc.all) %]</td>[% END %]</tr>[% END %]
   </table>
 </td></tr>
 </table>

@@ -75,17 +75,31 @@ sub problem_details_frame {
         LEFT JOIN limits L ON L.id = CP.limits_id
         WHERE P.id = ?~, { Slice => {} },
         $cid, $p->{pid}) or return;
+
     my ($rc_all, $rc_contest);
     $rc_all = get_request_count(0, $p->{pid}) if $is_root;
     $rc_contest = get_request_count(1, $p->{pid});
     my $sn = CATS::Misc::request_state_names();
+
+    my $make_rc = sub {
+        my ($short, $name, $st, $state_search) = @_;
+        my $search = "problem_id=$p->{pid}" . ($state_search ? ",state=$state_search" : '');
+        my %p = (se => 'problem', i_value => -1, show_results => 1);
+        {
+            short => $short,
+            name => $name,
+            all => $rc_all->{$st},
+            contest => $rc_contest->{$st},
+            href_all => url_f('console', search => $search, %p),
+            href_contest => url_f('console', search => "$search,contest_id=$cid", %p),
+        }
+    };
     $pr->{request_count} = [
         (map {
             my $st = $sn->{$_};
-            $rc_all->{$st} || $rc_contest->{$st} ?
-                { short => $_, name => $_, all => $rc_all->{$st}, contest => $rc_contest->{$st}, } : ();
+            $rc_all->{$st} || $rc_contest->{$st} ? $make_rc->($_, $_, $st, $_) : ();
         } sort { $sn->{$a} <=> $sn->{$b} } keys %$sn),
-        { short => 'total', name => res_str(581), all => $rc_all->{total}, contest => $rc_contest->{total} },
+        $make_rc->('total', res_str(581), 'total'),
     ];
 
     my @text = ('problem_text', cpid => $pr->{cpid});
