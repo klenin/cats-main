@@ -43,7 +43,7 @@
 <td>
 [% IF r.judge_log_dump %]
   <table class="bordered">
-  <tr><td><pre>[% r.judge_log_dump %]</pre></td></tr>
+  <tr><td><pre>[% r.judge_log_dump | html %]</pre></td></tr>
   </table>
 [% ELSE %]
   [% IF r.testsets.size %]

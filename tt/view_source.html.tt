@@ -28,13 +28,13 @@
 <table>
 <tr>
 [% FOREACH si IN sources_info %]
-  <td class="bordered">[% IF si.compiler_output %]<pre>[% si.compiler_output %]</pre>[% END %]</td>
+  <td class="bordered">[% IF si.compiler_output %]<pre>[% si.compiler_output | html %]</pre>[% END %]</td>
 [% END %]
 </tr>
 <tr>
 [% FOREACH si IN sources_info %]
   <td class="bordered" style="margin: 0 10 10 0; padding: 0;">
-  <script type="syntaxhighlighter" class="brush: [% si.syntax.lower || 'plain' %];"><![CDATA[[% si.src | replace(']]>', ']]&gt;') %]]]></script>
+  <script type="syntaxhighlighter" class="brush: [% si.syntax.lower || 'plain' %];"><![CDATA[[% si.src | html %]]]></script>
   </td>
 [% END %]
 </tr>
