@@ -34,7 +34,7 @@
 <tr>
 [% FOREACH si IN sources_info %]
   <td class="bordered" style="margin: 0 10 10 0; padding: 0;">
-  <script type="syntaxhighlighter" class="brush: [% si.syntax.lower || 'plain' %];"><![CDATA[[% si.src %]]]></script>
+  <script type="syntaxhighlighter" class="brush: [% si.syntax.lower || 'plain' %];"><![CDATA[[% si.src | replace(']]>', ']]&gt;') %]]]></script>
   </td>
 [% END %]
 </tr>
