@@ -300,6 +300,7 @@ sub console_content
         de_code => sprintf($de_select, 'DE.code'),
         de_name => sprintf($de_select, 'DE.description'),
         run_method => 'P.run_method',
+        code => '(SELECT CP.code FROM contest_problems CP WHERE CP.contest_id = C.id AND CP.problem_id = P.id)',
     });
     $lv->define_enums({
         state => CATS::Misc::request_state_names,
