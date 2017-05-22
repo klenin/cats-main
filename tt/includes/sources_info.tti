@@ -31,7 +31,7 @@ function send_message(href)
     .limits {
       height: 100%;
       float: left;
-      margin: 1px;
+      margin: 0;
       padding: 4px;
     }
     .cp_overridden_limits {
@@ -47,6 +47,7 @@ function send_message(href)
       border-collapse: collapse;
       width: 100%;
     }
+    table.inner_table tr:last-child td { padding: 0; }
     table.inner_table tr:first-child td {
       border-top: 0;
       border-bottom: 0;
@@ -132,20 +133,15 @@ function send_message(href)
 <tr>
   <th>[% capt.limits %]</th>
   [% FOREACH si IN sources_info; IF si %]
-    <td style="padding:0px" colspan="[% si.colspan %]">
+    <td style="padding: 0;" colspan="[% si.colspan %]">
       [% IF si.is_jury %]
         <table class="inner_table">
           <tr><td>[% capt.time %], [% capt.s %]</td><td>[% capt.memory %], [% capt.mb %]</td><td>[% capt.write %], [% capt.b %]</td></tr>
-          <tr><td>
-          <div class="limits [% si.style_classes.time_limit %]">
-          [% si.time_limit %]
-          </div></td><td>
-          <div class="limits [% si.style_classes.memory_limit %]">
-          [% si.memory_limit %]
-          </div></td><td>
-          <div class="limits [% si.style_classes.write_limit %]">
-          [% si.write_limit %]
-          </div></td></tr>
+          <tr>
+            <td><div class="limits [% si.style_classes.time_limit %]">[% si.time_limit %]</div></td>
+            <td><div class="limits [% si.style_classes.memory_limit %]">[% si.memory_limit %]</div></td>
+            <td><div class="limits [% si.style_classes.write_limit %]">[% si.write_limit %]</div></td>
+          </tr>
         </table>
       [% ELSE %]
           [% limits_str(si.time_limit, si.memory_limit, si.write_limit) %]

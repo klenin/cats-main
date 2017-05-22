@@ -5,24 +5,16 @@
 [% PROCESS includes/sources_info.tti %]
 <br/>
 
-<style>
-    .scrollable {
-        height: 200px;
-        width: 700px;
-        overflow: auto;
-    }
-</style>
-
 [% SET si = sources_info.first; IF si %]
 <form method="POST">
 <table class="internal_borders padded">
   <tr>
     <th>[% capt.testset %]</th>
-    <td><input type="text" name="testsets" value="[% si.testsets %]" /></td>
+    <td><input type="text" name="testsets" value="[% si.testsets %]" size="40" /></td>
   </tr>
   <tr>
     <th>[% capt.limits %]</th>
-    <td style="padding:0px">
+    <td style="padding: 0;">
       <table class="inner_table">
         <tr><td>[% capt.time %], [% capt.s %]</td><td>[% capt.memory %], [% capt.mb %]</td><td>[% capt.write %], [% capt.b %]</td>
         <tr><td>
@@ -50,7 +42,7 @@
     </td>
   <tr>
     <th>[% capt.save_output_prefix %]</th>
-    <td>
+    <td style="padding: 0;">
       <div class="limits [% si.style_classes.save_output_prefix %]">
       <input type="text" name="save_output_prefix" value="[% si.save_output_prefix %]" />
       </div>
