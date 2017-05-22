@@ -30,8 +30,7 @@ my $problem_submenu = [
     { href => 'problem_select_tags', item => 506 },
 ];
 
-sub problem_submenu
-{
+sub problem_submenu {
     my ($selected_href, $pid) = @_;
     $t->param(
         submenu => [ map +{
@@ -136,8 +135,7 @@ sub problem_details_frame {
     problem_submenu('problem_details', $p->{pid});
 }
 
-sub problem_download
-{
+sub problem_download {
     my ($p) = @_;
     my $pid = $p->{pid} or return not_found;
     $is_jury ||
@@ -167,8 +165,7 @@ sub problem_download
     redirect(CATS::Misc::downloads_url . $fname);
 }
 
-sub problem_git_package
-{
+sub problem_git_package {
     my ($p) = @_;
     my $pid = $p->{pid};
     my $sha = $p->{sha};
@@ -189,8 +186,7 @@ sub problem_git_package
     CATS::Web::print($content);
 }
 
-sub problem_select_testsets_frame
-{
+sub problem_select_testsets_frame {
     my ($p) = @_;
     init_template('problem_select_testsets.html.tt');
     $p->{pid} && $is_jury or return;
@@ -241,8 +237,7 @@ sub problem_select_testsets_frame
     problem_submenu('problem_select_testsets', $p->{pid});
 }
 
-sub problem_limits_frame
-{
+sub problem_limits_frame {
     my ($p) = @_;
     init_template('problem_limits.html.tt');
     $p->{pid} && $is_jury or return;
@@ -314,8 +309,7 @@ sub problem_limits_frame
     }
 }
 
-sub problem_test_data_frame
-{
+sub problem_test_data_frame {
     my ($p) = @_;
     init_template('problem_test_data.html.tt');
     $p->{pid} && $is_jury or return;
@@ -364,8 +358,7 @@ sub problem_test_data_frame
     problem_submenu('problem_test_data', $p->{pid});
 }
 
-sub problem_select_tags_frame
-{
+sub problem_select_tags_frame {
     my ($p) = @_;
     init_template('problem_select_tags.html.tt');
     $p->{pid} && $is_jury or return;
@@ -393,8 +386,7 @@ sub problem_select_tags_frame
     problem_submenu('problem_select_tags', $p->{pid});
 }
 
-sub problem_commitdiff
-{
+sub problem_commitdiff {
     my ($pid, $title, $sha, $se, $import_log) = @_;
 
     init_template('problem_history_commit.html.tt');
@@ -414,24 +406,21 @@ sub problem_commitdiff
     );
 }
 
-sub problem_history_commit_frame
-{
+sub problem_history_commit_frame {
     my ($pid, $title) = @_;
     my $sha = url_param('h') or return redirect url_f('problem_history', pid => $pid);
     my $se = param('src_enc') || 'WINDOWS-1251';
     problem_commitdiff($pid, $title, $sha, $se);
 }
 
-sub set_history_paths_urls
-{
+sub set_history_paths_urls {
     my ($pid, $paths) = @_;
     foreach (@$paths) {
         $_->{href} = url_f('problem_history', a => $_->{type}, file => $_->{name}, pid => $pid, hb => $_->{hash_base});
     }
 }
 
-sub set_submenu_for_tree_frame
-{
+sub set_submenu_for_tree_frame {
     my ($pid, $hash, @items) = @_;
     my $submenu = [
         { href => url_f('problem_details', pid => $pid), item => res_str(504) },
@@ -448,8 +437,7 @@ sub is_allow_editing {
     !$git_data->{is_remote} && !$git_data->{image} && $git_data->{latest_sha} eq $hb;
 }
 
-sub problem_history_tree_frame
-{
+sub problem_history_tree_frame {
     my ($pid, $title) = @_;
     my $hash_base = url_param('hb') or return redirect url_f('problem_history', pid => $pid);
 
@@ -478,8 +466,7 @@ sub detect_encoding_by_xml_header {
     $_[0] =~ /^(?:\xEF\xBB\xBF)?\s*<\?xml.*encoding="(.*)"\s*\?>/ ? uc $1 : 'WINDOWS-1251'
 }
 
-sub problem_history_blob_frame
-{
+sub problem_history_blob_frame {
     my ($pid, $title) = @_;
     my $hash_base = url_param('hb') or return redirect url_f('problem_history', pid => $pid);
     my $file = url_param('file') || undef;
@@ -502,8 +489,7 @@ sub problem_history_blob_frame
     );
 }
 
-sub problem_history_raw_frame
-{
+sub problem_history_raw_frame {
     my ($pid, $title) = @_;
     my $hash_base = url_param('hb') or return redirect url_f('problem_history', pid => $pid);
     my $file = url_param('file') || undef;
@@ -514,8 +500,7 @@ sub problem_history_raw_frame
     CATS::Web::print($blob->{content});
 }
 
-sub problem_history_edit_frame
-{
+sub problem_history_edit_frame {
     $is_root or return;
     my ($pid, $title, $repo_name) = @_;
     my $hash_base = url_param('hb');
@@ -564,8 +549,7 @@ sub problem_history_edit_frame
     );
 }
 
-sub problem_history_frame
-{
+sub problem_history_frame {
     my $pid = url_param('pid') || 0;
     $is_jury && $pid or return redirect url_f('contests');
 
