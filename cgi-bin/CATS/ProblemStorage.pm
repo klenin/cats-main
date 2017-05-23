@@ -53,7 +53,7 @@ sub get_repo_id
        $id);
     my $p = $CATS::Config::repos_dir;
     $db_id //= '';
-    warn 'Repository not found' unless ($db_id ne '' && -d "$p$db_id/") || -d "$p$id/";
+    warn "Repository not found for problem $id" unless ($db_id ne '' && -d "$p$db_id/") || -d "$p$id/";
     $db_id =~ /^\d+$/ ? ($db_id, $db_sha) : ($id, $sha // '');
 }
 
