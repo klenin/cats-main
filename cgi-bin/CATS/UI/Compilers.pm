@@ -31,8 +31,7 @@ sub edit_save {
         and msg(1065, Encode::decode_utf8(param('description')));
 }
 
-sub compilers_frame
-{
+sub compilers_frame {
     if ($is_jury) {
         defined url_param('new') || defined url_param('edit') and return edit_frame;
     }

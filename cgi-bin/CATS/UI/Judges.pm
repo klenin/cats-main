@@ -12,8 +12,7 @@ use CATS::Misc qw(
     init_template msg res_str url_f references_menu);
 use CATS::Web qw(param param_on url_param redirect);
 
-sub edit_frame
-{
+sub edit_frame {
     init_template('judges_edit.html.tt');
 
     if (my $jid = url_param('edit')) {
@@ -26,8 +25,7 @@ sub edit_frame
     $t->param(href_action => url_f('judges'));
 }
 
-sub edit_save
-{
+sub edit_save {
     my $jid = param('id');
     my $judge_name = param('judge_name') // '';
     my $account_name = param('account_name') // '';
@@ -60,8 +58,7 @@ sub edit_save
     }
 }
 
-sub judges_frame
-{
+sub judges_frame {
     $is_jury or return;
 
     if ($is_root) {

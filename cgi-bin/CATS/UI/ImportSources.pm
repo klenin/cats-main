@@ -12,8 +12,7 @@ use CATS::Misc qw(
 use CATS::Utils qw(url_function);
 use CATS::Web qw(param redirect url_param);
 
-sub import_sources_frame
-{
+sub import_sources_frame {
     my $lv = CATS::ListView->new(name => 'import_sources', template => 'import_sources.html.tt');
     $lv->define_columns(url_f('import_sources'), 0, 0, [
         { caption => res_str(625), order_by => '2', width => '30%' },
@@ -48,8 +47,7 @@ sub import_sources_frame
     $t->param(submenu => [ references_menu('import_sources') ], is_jury => 1) if $is_jury;
 }
 
-sub download_frame
-{
+sub download_frame {
     my $psid = param('psid') or return;
     local $dbh->{ib_enable_utf8} = 0;
     my ($fname, $src) = $dbh->selectrow_array(qq~
