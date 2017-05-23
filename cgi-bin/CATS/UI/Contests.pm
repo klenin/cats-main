@@ -17,8 +17,7 @@ use CATS::UI::Prizes;
 use CATS::Utils qw(url_function coalesce date_to_iso);
 use CATS::Web qw(param param_on url_param redirect);
 
-sub contests_new_frame
-{
+sub contests_new_frame {
     init_template('contests_new.html.tt');
 
     my $date = $dbh->selectrow_array(q~SELECT CURRENT_TIMESTAMP FROM RDB$DATABASE~);
@@ -33,20 +32,17 @@ sub contests_new_frame
     );
 }
 
-sub contest_checkbox_params()
-{qw(
+sub contest_checkbox_params() {qw(
     free_registration run_all_tests
     show_all_tests show_test_resources show_checker_comment show_all_results
     is_official show_packages local_only is_hidden show_test_data
 )}
 
-sub contest_string_params()
-{qw(
+sub contest_string_params() {qw(
     contest_name short_descr start_date freeze_date finish_date open_date rules req_selection max_reqs
 )}
 
-sub get_contest_html_params
-{
+sub get_contest_html_params {
     my $p = {};
 
     $p->{$_} = scalar param($_) for contest_string_params();
@@ -60,8 +56,7 @@ sub get_contest_html_params
     $p;
 }
 
-sub contests_new_save
-{
+sub contests_new_save {
     my $p = get_contest_html_params() or return;
 
     my $new_cid = new_id;
@@ -99,8 +94,7 @@ sub contests_new_save
     msg(1028, Encode::decode_utf8($p->{contest_name}));
 }
 
-sub try_contest_params_frame
-{
+sub try_contest_params_frame {
     my $id = url_param('params') or return;
 
     init_template('contest_params.html.tt');
@@ -130,8 +124,7 @@ sub try_contest_params_frame
     1;
 }
 
-sub contests_edit_save
-{
+sub contests_edit_save {
     my $edit_cid = param('id');
 
     my $p = get_contest_html_params() or return;
@@ -164,8 +157,7 @@ sub contests_edit_save
     msg(1036, $contest_name);
 }
 
-sub contests_select_current
-{
+sub contests_select_current {
     defined $uid or return;
 
     my ($registered, $is_virtual, $is_jury) = get_registered_contestant(
@@ -183,8 +175,7 @@ sub contests_select_current
     }
 }
 
-sub common_contests_view ($)
-{
+sub common_contests_view {
     my ($c) = @_;
     return (
         id => $c->{id},
@@ -209,8 +200,7 @@ sub common_contests_view ($)
     );
 }
 
-sub contest_fields ()
-{
+sub contest_fields () {
     # HACK: starting page is a contests list, displayed very frequently.
     # In the absense of a filter, select only the first page + 1 record.
     # my $s = $settings->{$listview_name};
@@ -233,8 +223,7 @@ sub contest_searches { return {
     since_finish => '(CURRENT_TIMESTAMP - finish_date)',
 }}
 
-sub contests_submenu_filter
-{
+sub contests_submenu_filter {
     my $f = $settings->{contests}->{filter} || '';
     {
         all => '',
@@ -314,8 +303,7 @@ sub anonymous_contests_view {
     );
     $sth->execute;
 
-    my $fetch_contest = sub($)
-    {
+    my $fetch_contest = sub {
         my $c = $_[0]->fetchrow_hashref or return;
         return common_contests_view($c);
     };
@@ -341,8 +329,7 @@ sub contest_delete {
 sub contests_frame {
     my ($p) = @_;
 
-    if (defined param('summary_rank'))
-    {
+    if (defined param('summary_rank')) {
         my @clist = param('contests_selection');
         return redirect(url_f('rank_table', clist => join ',', @clist));
     }

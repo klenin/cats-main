@@ -22,8 +22,7 @@ my $form = CATS::Form->new({
 
 sub edit_frame { $form->edit_frame }
 
-sub edit_save
-{
+sub edit_save {
     my $kwid = param('id');
     my %p = map { $_ => (param($_) || '') } fields();
 
@@ -46,8 +45,7 @@ sub edit_save
     }
 }
 
-sub keywords_frame
-{
+sub keywords_frame {
     if ($is_root) {
         if (defined url_param('delete')) {
             my $kwid = url_param('delete');

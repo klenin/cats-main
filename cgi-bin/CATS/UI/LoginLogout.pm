@@ -25,8 +25,7 @@ BEGIN {
 
 sub split_ips { map { /(\S+)/ ? $1 : () } split ',', $_[0] }
 
-sub login_frame
-{
+sub login_frame {
     my $json = param('json');
     init_template(auto_ext('login', $json));
     my $redir = url_param('redir');
@@ -81,8 +80,7 @@ sub login_frame
     die 'Can not generate sid';
 }
 
-sub logout_frame
-{
+sub logout_frame {
     $cid = '';
     $sid = '';
     if ($uid) {
