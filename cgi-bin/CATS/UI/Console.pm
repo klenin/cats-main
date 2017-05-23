@@ -302,6 +302,8 @@ sub console_content {
     $lv->define_enums({
         state => CATS::Misc::request_state_names,
         run_method => CATS::Misc::run_method_enum,
+        contest_id => { this => $cid },
+        account_id => { this => $uid },
     });
 
     my $searches_filtger = $lv->maybe_where_cond;
