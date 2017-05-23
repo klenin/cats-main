@@ -175,6 +175,7 @@ sub attach {
         my $i = 0;
         push @{$rows->[$i++ % $row_count]}, $_ for @s;
         $t->param(search_hints => $rows);
+        $t->param(search_enums => $self->{enums});
     }
 
     # Suppose that attach_listview call comes last, so we modify settings in-place.

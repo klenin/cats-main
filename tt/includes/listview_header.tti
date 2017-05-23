@@ -17,7 +17,11 @@
     [% FOREACH row IN search_hints %]
       <tr>
       [% FOREACH col IN row %]
-        <td class="sh[% col.1 %]"><a href="#" onclick="activate_search_hint(this, 1);">[% col.0 | html %]</a></td>
+        <td class="sh[% col.1 %]"><a href="#" onclick="activate_search_hint(this, 1);">[% col.0 | html %]</a>
+          [% enum = search_enums.item(col.0); IF enum.keys.size %]
+          <ul>[% FOREACH e IN enum %]<li><a href="#" onclick="click_enum(this)">[% e.key | html %]</a></li>[% END %]</ul>
+          [% END %]
+        </td>
       [% END %]
     [% END %]
     </table>
@@ -33,15 +37,37 @@
 </td>
 </tr>
 </table>
+
 <script>
+
 function toggle_search_hints() {
   var s = document.getElementById('search_hint');
   s.style.display = s.style.display === 'block' ? 'none' : 'block';
+  var ul = s.getElementsByTagName('ul');
+  for (var i = 0; i < ul.length; ++i)
+    ul[i].style.display = 'none';
   return false;
 }
+
 function activate_search_hint(a, comma) {
+  var ul = a.nextElementSibling;
+  if (ul) {
+    ul.style.display = ul.style.display === 'block' ? 'none' : 'block';
+    if (ul.style.display === 'none')
+      return;
+  }
   var i = document.getElementById('search');
   if (comma) if (i.value) i.value += ','; // Avoid ampersand.
   i.value += a.text;
 }
+
+function click_enum(a) {
+  var i = document.getElementById('search');
+  [#% Do not add a comparison twice. %]
+  if (i.value && '<>='.indexOf(i.value.charAt(i.value.length - 1)) < 0)
+    i.value += '==';
+  i.value += a.text;
+  toggle_search_hints();
+}
+
 </script>
