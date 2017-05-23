@@ -290,6 +290,14 @@ sub console_content {
         de_name => sprintf($de_select, 'DE.description'),
         run_method => 'P.run_method',
         code => '(SELECT CP.code FROM contest_problems CP WHERE CP.contest_id = C.id AND CP.problem_id = P.id)',
+        next => q~COALESCE((
+            SELECT R1.id FROM reqs R1
+            WHERE
+                R1.contest_id = R.contest_id AND
+                R1.problem_id = R.problem_id AND
+                R1.account_id = R.account_id AND
+                R1.id > R.id
+            ROWS 1), 0)~,
     });
     $lv->define_enums({
         state => CATS::Misc::request_state_names,
