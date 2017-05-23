@@ -253,8 +253,8 @@ sub test_diff_frame
         ($r->{state} == $cats::st_accepted  || $r->{failed_test} > $test_rank)
             or next;
         push @fr, $r;
-        $r->{href_run_details} = url_f('run_details', rid => join ',', $r->{id}, $prev->{id});
-        $r->{href_diff_runs} = url_f('diff_runs', r1 => $r->{id}, r2 => $prev->{id});
+        $r->{href_run_details} = url_f('run_details', rid => join ',', $prev->{id}, $r->{id});
+        $r->{href_diff_runs} = url_f('diff_runs', r1 => $prev->{id}, r2 => $r->{id});
     } continue {
         $r->{prev} = $prev;
         $prev = $r;
