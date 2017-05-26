@@ -535,7 +535,7 @@ sub problems_frame {
     my $de_list = CATS::DevEnv->new(CATS::JudgeDB::get_DEs({ active_only => 1 }));
     my @de = (
         { de_id => 'by_extension', de_name => res_str(536) },
-        map {{ de_id => $_->{id}, de_name => $_->{description} }} @{$de_list->{_de_list}} );
+        map {{ de_id => $_->{id}, de_name => $_->{description} }} @{$de_list->des} );
 
     my $pt_url = sub {{ href => $_[0], item => ($_[1] || res_str(538)), target => '_blank' }};
     my $pr = $contest->is_practice;

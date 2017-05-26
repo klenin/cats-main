@@ -6,6 +6,7 @@ use warnings;
 use CATS::Constants;
 use CATS::DB;
 use CATS::IP;
+use CATS::JudgeDB;
 use CATS::Misc qw(msg);
 
 # Params: limits: { time_limit, memory_limit }
@@ -207,7 +208,7 @@ sub clone {
         WHERE R.id = ?~, undef,
         $element_req_id);
 
-    my $de_bitmap = defined $req->{de_version} && $req->{de_version} == CATS::JudgeDB::current_de_version ?
+    my $de_bitmap = defined $req->{de_version} && $req->{de_version} == CATS::JudgeDB::current_de_version() ?
         [ CATS::JudgeDB::extract_de_bitmap($req) ] :
         CATS::JudgeDB::ensure_request_de_bitmap_cache($request_id)->{$request_id}->{bitmap};
 
