@@ -784,22 +784,20 @@ sub request_params_frame {
         return;
     }
     # Reload problem after the successful state change.
-    $si = get_sources_info(request_id => $si->{req_id})
-        if try_set_state($si, $si->{req_id});
+    $si = get_sources_info(request_id => $si->{req_id}) if try_set_state($si, $p);
 
-    my $tests = $dbh->selectcol_arrayref(qq~
+    my $tests = $dbh->selectcol_arrayref(q~
         SELECT rank FROM tests WHERE problem_id = ? ORDER BY rank~, undef,
         $si->{problem_id});
+    $t->param(tests => [ map { test_index => $_ }, @$tests ]);
 
     source_links($si);
     sources_info_param([ $si ]);
-
-    $t->param(tests => [ map { test_index => $_ }, @$tests ]);
 }
 
 sub try_set_state {
-    my ($si, $rid) = @_;
-    defined param('set_state') or return;
+    my ($si, $p) = @_;
+    $p->{set_state} or return;
     my $state = {
         not_processed =>         $cats::st_not_processed,
         awaiting_verification => $cats::st_awaiting_verification,
@@ -815,18 +813,18 @@ sub try_set_state {
         ignore_submit =>         $cats::st_ignore_submit,
         idleness_limit_exceeded=>$cats::st_idleness_limit_exceeded,
         manually_rejected =>     $cats::st_manually_rejected,
-    }->{param('state')};
+    }->{$p->{state}};
     defined $state or return;
 
-    my $failed_test = sprintf '%d', param('failed_test') || '0';
-    my $points = sprintf '%d', param('points') || '0';
-    CATS::Request::enforce_state($rid, { failed_test => $failed_test, state => $state, points => $points });
+    $si->{failed_test} = $p->{failed_test} || 0;
+    CATS::Request::enforce_state($p->{rid}, {
+        failed_test => $si->{failed_test}, state => $state, points => $p->{points} || 0
+    });
     $dbh->commit;
     my %st = state_to_display($state);
     while (my ($k, $v) = each %st) {
         $si->{$k} = $v;
     }
-    $si->{failed_test} = $failed_test;
     msg(1055);
     1;
 }

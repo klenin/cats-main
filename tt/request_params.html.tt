@@ -67,7 +67,7 @@
 
 <form method="post">
 
-<input type="submit" name="set_state" value="[% capt.testing_result %]:" class="button">
+<button type="submit" name="set_state" value="1" class="button">[% capt.testing_result %]:</button>
 <select name="state">
 <option />
 <option value="not_processed">[% capt.retest %]</option>
