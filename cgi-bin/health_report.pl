@@ -102,11 +102,21 @@ sub log_url {
 }
 
 {
-    my ($p) = $dbh->selectall_arrayref(qq~
+    my ($p) = $dbh->selectall_arrayref(q~
         SELECT id, title
             FROM problems P WHERE CURRENT_TIMESTAMP - P.upload_date <= 1~, { Slice => {} });
     if (@$p) {
         $r->{long}->{'Problems changed'} = join ', ', map '"' . Encode::decode_utf8($_->{title}) . '"', @$p;
+    }
+}
+
+{
+    my ($length) = $dbh->selectrow_array(q~
+        SELECT SUM(OCTET_LENGTH(LD.dump))
+            FROM log_dumps LD INNER JOIN reqs R ON R.id = LD.req_id
+            WHERE R.submit_time > CURRENT_TIMESTAMP - 1~);
+    if ($length) {
+        $r->{long}->{'Log dump size'} = $length;
     }
 }
 
