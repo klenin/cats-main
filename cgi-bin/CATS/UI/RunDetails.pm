@@ -12,6 +12,7 @@ use CATS::DB;
 use CATS::Data qw(is_jury_in_contest);
 use CATS::DevEnv;
 use CATS::IP;
+use CATS::JudgeDB;
 use CATS::Misc qw($is_jury $is_root $sid $cid $t $uid $settings init_template msg res_str url_f problem_status_names);
 use CATS::Problem::Text qw(ensure_problem_hash);
 use CATS::RankTable;
@@ -626,7 +627,7 @@ sub view_source_frame {
         if $sources_info->{state} == $cats::st_compilation_error;
 
     if ($sources_info->{is_jury}) {
-        my $de_list = CATS::DevEnv->new($dbh, active_only => 1);
+        my $de_list = CATS::DevEnv->new(CATS::JudgeDB::get_DEs({ active_only => 1 }));
         if ($de_id) {
             $sources_info->{de_id} = $de_id;
             $sources_info->{de_name} = $de_list->by_id($de_id)->{description};
@@ -636,7 +637,7 @@ sub view_source_frame {
                 de_id => $_->{id},
                 de_name => $_->{description},
                 selected => $_->{id} == $sources_info->{de_id},
-            }, @{$de_list->{_de_list}}
+            }, @{$de_list->des}
         ]);
     }
 }
@@ -778,9 +779,7 @@ sub request_params_frame {
     my $can_delete = !$si->{is_official} || $is_root;
     $t->param(can_delete => $can_delete);
     if (param('delete') && $can_delete) {
-        $dbh->do(q~
-            DELETE FROM reqs WHERE id = ?~, undef,
-            $si->{req_id});
+        CATS::Request::delete($si->{req_id});
         $dbh->commit;
         return;
     }

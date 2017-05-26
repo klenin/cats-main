@@ -331,7 +331,7 @@ sub get_de_id
     my CATS::ProblemStorage $self = shift;
     my ($code, $path) = @_;
 
-    $self->{de_list} ||= CATS::DevEnv->new($dbh);
+    $self->{de_list} ||= CATS::DevEnv->new(CATS::JudgeDB::get_DEs());
 
     my $de;
     if (defined $code) {

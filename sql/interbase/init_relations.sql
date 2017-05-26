@@ -152,6 +152,14 @@ CREATE TABLE problems (
 ALTER TABLE problems ADD CONSTRAINT chk_run_method CHECK (run_method IN (0, 1, 2))
 
 
+CREATE TABLE problem_de_bitmap_cache (
+    problem_id  INTEGER NOT NULL REFERENCES problems(id) ON DELETE CASCADE,
+    version     INTEGER NOT NULL,
+    de_bits1    BIGINT DEFAULT 0,
+    de_bits2    BIGINT DEFAULT 0
+);
+
+
 CREATE TABLE contest_problems (
     id              INTEGER NOT NULL PRIMARY KEY,
     problem_id      INTEGER NOT NULL REFERENCES problems(id) ON DELETE CASCADE,
@@ -304,9 +312,18 @@ CREATE TABLE reqs (
     received    INTEGER DEFAULT 0 CHECK (received IN (0, 1)),
     points      INTEGER,
     testsets    VARCHAR(200),
-    limits_id   INTEGER REFERENCES limits(id)
+    limits_id   INTEGER REFERENCES limits(id),
+    elements_count INTEGER DEFAULT 0
 );
 CREATE DESCENDING INDEX idx_reqs_submit_time ON reqs(submit_time);
+
+
+CREATE TABLE req_de_bitmap_cache (
+    req_id      INTEGER NOT NULL REFERENCES reqs(id) ON DELETE CASCADE,
+    version     INTEGER NOT NULL,
+    de_bits1    BIGINT DEFAULT 0,
+    de_bits2    BIGINT DEFAULT 0
+);
 
 
 CREATE TABLE req_groups (
@@ -407,6 +424,9 @@ CREATE GENERATOR key_seq;
 CREATE GENERATOR login_seq;
 
 SET GENERATOR key_seq TO 1000;
+
+CREATE SEQUENCE de_bitmap_cache_seq;
+ALTER SEQUENCE de_bitmap_cache_seq RESTART WITH 1000;
 
 
 INSERT INTO default_de (id, code, description, file_ext) VALUES (GEN_ID(key_seq, 1), 101, 'Cross-platform C/C++ compiler', 'cpp;c');

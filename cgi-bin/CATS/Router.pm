@@ -111,13 +111,17 @@ sub main_routes() {
 sub api_judge_routes() {
     {
         get_judge_id => \&CATS::ApiJudge::get_judge_id,
-        api_judge_get_des => \&CATS::ApiJudge::get_DEs,
+        api_judge_get_des => [ \&CATS::ApiJudge::get_DEs, active_only => $bool, id => $int, ],
         api_judge_get_problem => [ \&CATS::ApiJudge::get_problem, pid => $int, ],
         api_judge_get_problem_sources => [ \&CATS::ApiJudge::get_problem_sources, pid => $int, ],
         api_judge_get_problem_tests => [ \&CATS::ApiJudge::get_problem_tests, pid => $int, ],
         api_judge_is_problem_uptodate => [ \&CATS::ApiJudge::is_problem_uptodate, pid => $int, date => $str, ],
         api_judge_save_log_dump => [ \&CATS::ApiJudge::save_log_dump, req_id => $int, dump => undef, ],
-        api_judge_select_request => [ \&CATS::ApiJudge::select_request, supported_DEs => $int_list, ],
+        api_judge_select_request => [
+            \&CATS::ApiJudge::select_request,
+            de_version => $int,
+            map { +"de_bits$_" => $int } 1..$cats::de_req_bitfields_count,
+        ],
         api_judge_set_request_state => [
             \&CATS::ApiJudge::set_request_state,
             req_id => $int,
