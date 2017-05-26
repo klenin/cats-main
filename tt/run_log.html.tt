@@ -10,6 +10,7 @@
 [% IF judge_log_dump %]
 <h3>[% capt.judge_log %]</h3>
 <pre><code>[% judge_log_dump | html %]</code></pre>
+<p>[% capt.length %]: [% judge_log_length %]</p>
 [% ELSE; capt.no_log %]
 [% END %]
 

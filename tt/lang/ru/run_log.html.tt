@@ -1,6 +1,7 @@
 [%
   capt.import({
     judge_log => 'Лог судьи',
+    length => 'Длина',
     no_log => 'Лог отсутствует',
   })
 %]

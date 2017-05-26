@@ -254,8 +254,8 @@ sub get_contest_info {
 
 sub get_log_dump {
     my ($rid, $compile_error) = @_;
-    my ($dump) = $dbh->selectrow_array(qq~
-        SELECT dump FROM log_dumps WHERE req_id = ?~, undef,
+    my ($dump, $length) = $dbh->selectrow_array(qq~
+        SELECT SUBSTRING(dump FROM 1 FOR 500000), OCTET_LENGTH(dump) FROM log_dumps WHERE req_id = ?~, undef,
         $rid) or return ();
     $dump = Encode::decode('CP1251', $dump);
     ($dump) = $dump =~ m/
@@ -263,7 +263,7 @@ sub get_log_dump {
        (.*)
         \Q$cats::log_section_end_prefix$cats::log_section_compile\E
         /sx if $compile_error;
-    return (judge_log_dump => $dump);
+    return (judge_log_dump => $dump, judge_log_length => $length);
 }
 
 sub get_nearby_attempt {
