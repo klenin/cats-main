@@ -9,6 +9,7 @@ use CATS::ContestParticipate;
 use CATS::DB;
 use CATS::DevEnv;
 use CATS::Judge;
+use CATS::JudgeDB;
 use CATS::ListView;
 use CATS::Misc qw(
     $t $is_jury $is_root $is_team $sid $cid $uid $contest $virtual_diff_time
@@ -531,7 +532,7 @@ sub problems_frame {
 
     my ($jactive) = CATS::Judge::get_active_count;
 
-    my $de_list = CATS::DevEnv->new($dbh, active_only => 1);
+    my $de_list = CATS::DevEnv->new(CATS::JudgeDB::get_DEs({ active_only => 1 }));
     my @de = (
         { de_id => 'by_extension', de_name => res_str(536) },
         map {{ de_id => $_->{id}, de_name => $_->{description} }} @{$de_list->{_de_list}} );

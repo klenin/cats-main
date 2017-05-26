@@ -97,8 +97,7 @@ sub problems_submit {
     }
 
     if ($did eq 'by_extension') {
-        my $de_list = CATS::DevEnv->new($dbh, active_only => 1);
-        my $de = $de_list->by_file_extension($file)
+        my $de = CATS::DevEnv->new(CATS::JudgeDB::get_DEs({ active_only => 1 }))->by_file_extension($file)
             or return msg(1013);
         $did = $de->{id};
         $t->param(de_name => $de->{description});
@@ -115,7 +114,7 @@ sub problems_submit {
         $submit_uid, $pid, $cid, $source_hash, $did);
     $same_source and return msg(1132, $prev_submit_time);
 
-    my $rid = CATS::Request::insert($pid, $cid, $submit_uid, { state => determine_state });
+    my $rid = CATS::Request::insert($pid, $cid, $submit_uid, [ CATS::DevEnv->new(CATS::JudgeDB::get_DEs())->bitmap_by_ids($did) ], { state => determine_state });
 
     my $s = $dbh->prepare(q~
         INSERT INTO sources(req_id, de_id, src, fname, hash) VALUES (?, ?, ?, ?, ?)~);
@@ -123,7 +122,7 @@ sub problems_submit {
     $s->bind_param(2, $did);
     $s->bind_param(3, $source_text, { ora_type => 113 } ); # blob
     $s->bind_param(4, $file ? "$file" :
-        "$rid." . CATS::DevEnv->new($dbh, id => $did)->default_extension($did));
+        "$rid." . CATS::DevEnv->new(CATS::JudgeDB::get_DEs({ id => $did }))->default_extension($did));
     $s->bind_param(5, $source_hash);
     $s->execute;
     $dbh->commit;
@@ -151,8 +150,10 @@ sub problems_submit_std_solution {
         WHERE problem_id = ? AND (stype = ? OR stype = ?)~);
     $c->execute($pid, $cats::solution, $cats::adv_solution);
 
+    my $de_list = CATS::DevEnv->new(CATS::JudgeDB::get_DEs({ active_only => 1 }));
+
     while (my ($src, $did, $fname) = $c->fetchrow_array) {
-        my $rid = CATS::Request::insert($pid, $cid, $uid);
+        my $rid = CATS::Request::insert($pid, $cid, $uid, [ $de_list->bitmap_by_ids($did) ]);
 
         my $s = $dbh->prepare(q~
             INSERT INTO sources(req_id, de_id, src, fname) VALUES (?, ?, ?, ?)~);

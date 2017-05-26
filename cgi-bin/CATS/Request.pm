@@ -28,11 +28,9 @@ sub set_limits {
 
     %$limits or return;
 
-    my ($stmt, @bind) = $limits_id ?
+    $dbh->do(_u $limits_id ?
         $sql->update('limits', { map { $_ => $limits->{$_} } @cats::limits_fields }, { id => $limits_id }) :
-        $sql->insert('limits', { id => ($limits_id = new_id), %$limits });
-
-    $dbh->do($stmt, undef, @bind);
+        $sql->insert('limits', { id => ($limits_id = new_id), %$limits }));
 
     $limits_id;
 }
@@ -70,9 +68,14 @@ sub enforce_state {
     my ($request_id, $fields) = @_;
     $request_id && defined $fields->{state} or die;
 
-    my ($stmt, @bind) = $sql->update('reqs',
-        { %$fields, received => 0, result_time => \'CURRENT_TIMESTAMP' }, { id => $request_id });
-    $dbh->do($stmt, undef, @bind) or return;
+    $dbh->do(_u $sql->update('reqs', {
+        %$fields,
+        received => 0,
+        result_time => \'CURRENT_TIMESTAMP',
+    }, { id => $request_id })) or return;
+
+    CATS::JudgeDB::ensure_request_de_bitmap_cache($request_id);
+
     # Save log for ignored requests.
     if ($fields->{state} != $cats::st_ignore_submit) {
         $dbh->do(q~
@@ -84,18 +87,20 @@ sub enforce_state {
     return 1;
 }
 
-# Params: problem_id (required), contest_id (required), submit_uid (required)
-#         fields: { state = $cats::st_not_processed, failed_test, testsets, points, judge_id, limits_id }
+# Params: problem_id (required), contest_id (required), submit_uid (required), de_bitmap (required),
+#         fields: { state = $cats::st_not_processed, failed_test, testsets, points, judge_id, limits_id, elements_count }
 sub insert {
-    my ($problem_id, $contest_id, $submit_uid, $fields) = @_;
+    my ($problem_id, $contest_id, $submit_uid, $de_bitmap, $fields) = @_;
 
-    $problem_id && $submit_uid && $contest_id or die;
+    $problem_id && $submit_uid && $contest_id && $de_bitmap && @$de_bitmap or die;
+
+    die 'too many de codes to fit it in db' if @$de_bitmap > $cats::de_req_bitfields_count;
 
     $fields ||= {};
     $fields->{state} ||= $cats::st_not_processed;
 
     my $rid = new_id;
-    my ($stmt, @bind) = $sql->insert('reqs', {
+    $dbh->do(_u $sql->insert('reqs', {
         %$fields,
         id => $rid,
         problem_id => $problem_id,
@@ -105,9 +110,13 @@ sub insert {
         test_time => \'CURRENT_TIMESTAMP',
         result_time => \'CURRENT_TIMESTAMP',
         received => 0,
-    });
+    })) or return;
 
-    $dbh->do($stmt, undef, @bind) or return;
+    $dbh->do(_u $sql->insert('req_de_bitmap_cache', {
+        req_id => $rid,
+        version => CATS::JudgeDB::current_de_version,
+        CATS::JudgeDB::get_de_bitfields_hash(@$de_bitmap),
+    })) or return;
 
     $dbh->do(q~
         INSERT INTO events (id, event_type, ts, account_id, ip)
@@ -131,8 +140,13 @@ sub create_group {
         WHERE RG.group_id IN ($req_id_list)~);
     return msg(1152, join ', ', @$elements_reqs) if @$elements_reqs;
 
+    my $dev_env = CATS::DevEnv->new(CATS::JudgeDB::get_DEs);
+
+    my $de_bitfields_list = CATS::JudgeDB::de_bitmap_str('RDEBC');
     my $reqs = $dbh->selectall_arrayref(qq~
-        SELECT R.id, R.problem_id, R.contest_id FROM reqs R
+        SELECT R.id, R.problem_id, R.contest_id, $de_bitfields_list, RDEBC.version as de_version
+        FROM reqs R
+            LEFT JOIN req_de_bitmap_cache RDEBC ON RDEBC.req_id = R.id
         WHERE R.id IN ($req_id_list)~, { Slice => {} }) or return;
 
     my $problem_id = $reqs->[0]->{problem_id};
@@ -151,7 +165,20 @@ sub create_group {
 
     return msg(1156, $players_count_str) if $players_count && !grep @$request_ids == $_, @$players_count;
 
-    my $group_req_id = insert($problem_id, $contest_id, $submit_uid, $fields) or die;
+    my @update_req_ids = map $_->{id}, grep !$dev_env->is_good_version($_->{de_version}), @$reqs;
+    my $updated_reqs = CATS::JudgeDB::ensure_request_de_bitmap_cache(\@update_req_ids, $dev_env);
+    my %req_des =
+        (( map { $_->{id} => [ CATS::JudgeDB::extract_de_bitmap($_) ] } grep { $dev_env->is_good_version($_->{de_version}) } @$reqs ),
+        ( map { $_->{id} => $_->{bitmap} } values %$updated_reqs ));
+
+    my $req_de_bitmap = [ map 0, 1..$cats::de_req_bitfields_count ];
+    for my $req (@$reqs) {
+        $req_de_bitmap->[$_] |= $req_des{$req->{id}}->[$_] for 0..($cats::de_req_bitfields_count-1);
+    }
+
+    $fields->{elements_count} = @$request_ids;
+
+    my $group_req_id = insert($problem_id, $contest_id, $submit_uid, $req_de_bitmap, $fields) or die;
 
     my $c = $dbh->prepare(q~
         INSERT INTO req_groups (element_id, group_id) VALUES (?, ?)~);
@@ -172,18 +199,45 @@ sub clone {
         WHERE RG.group_id = ?~, undef,
         $request_id) || $request_id;
 
-    my $req = $dbh->selectrow_hashref(q~
-        SELECT R.problem_id, R.contest_id FROM reqs R
+    my $de_bitfields_list = CATS::JudgeDB::de_bitmap_str('RDEBC');
+    my $req = $dbh->selectrow_hashref(qq~
+        SELECT R.problem_id, R.contest_id, $de_bitfields_list, RDEBC.version AS de_version
+        FROM reqs R
+            LEFT JOIN req_de_bitmap_cache RDEBC ON RDEBC.req_id = R.id
         WHERE R.id = ?~, undef,
         $element_req_id);
 
-    my $group_req_id = insert($req->{problem_id}, $contest_id, $submit_uid, $fields) or die;
+    my $de_bitmap = defined $req->{de_version} && $req->{de_version} == CATS::JudgeDB::current_de_version ?
+        [ CATS::JudgeDB::extract_de_bitmap($req) ] :
+        CATS::JudgeDB::ensure_request_de_bitmap_cache($request_id)->{$request_id}->{bitmap};
+
+    $fields->{elements_count} = 1;
+
+    my $group_req_id = insert($req->{problem_id}, $contest_id, $submit_uid, $de_bitmap, $fields) or die;
 
     $dbh->do(q~
         INSERT INTO req_groups (element_id, group_id) VALUES (?, ?)~, undef,
         $element_req_id, $group_req_id);
 
     $group_req_id;
+}
+
+sub delete {
+    my ($req_id) = @_;
+
+    my $group_req_ids = $dbh->selectcol_arrayref(q~
+        SELECT RG.group_id FROM req_groups RG
+        WHERE RG.element_id = ?~, { Slice => {} },
+        $req_id);
+
+    my $group_req_id_list = join ', ', @$group_req_ids;
+    $dbh->do(qq~
+        UPDATE reqs R SET R.elements_count = R.elements_count - 1
+        WHERE R.id IN ($group_req_id_list)~) if @$group_req_ids;
+
+    $dbh->do(q~
+        DELETE FROM reqs WHERE id = ?~, undef,
+        $req_id);
 }
 
 1;

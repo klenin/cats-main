@@ -7,6 +7,7 @@ use Encode;
 
 use CATS::DB;
 use CATS::Form;
+use CATS::JudgeDB;
 use CATS::ListView;
 use CATS::Misc qw(
     $t $is_jury $is_root
@@ -27,6 +28,7 @@ sub edit_frame {
 }
 
 sub edit_save {
+    CATS::JudgeDB::invalidate_de_bitmap_cache;
     $form->edit_save(sub { $_[0]->{in_contests} = !param_on('locked') })
         and msg(1065, Encode::decode_utf8(param('description')));
 }
@@ -47,6 +49,7 @@ sub compilers_frame {
             $dbh->do(q~
                 DELETE FROM default_de WHERE id = ?~, undef,
                 $deid);
+            CATS::JudgeDB::invalidate_de_bitmap_cache;
             $dbh->commit;
             msg(1064, $descr);
         }

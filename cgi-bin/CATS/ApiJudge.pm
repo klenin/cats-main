@@ -30,7 +30,7 @@ sub get_judge_id {
 sub get_DEs {
     bad_judge and return -1;
 
-    print_json({ db_de => CATS::JudgeDB::get_DEs() });
+    print_json(CATS::JudgeDB::get_DEs(@_));
 }
 
 sub get_problem {
@@ -91,7 +91,8 @@ sub set_request_state {
 sub select_request {
     bad_judge and return -1;
     my ($p) = @_;
-    $p->{supported_DEs} or return print_json({ error => 'bad request' });
+
+    return print_json({ error => 'bad request' }) if !defined $p->{de_version} || grep !defined $p->{"de_bits$_"}, 1..$cats::de_req_bitfields_count;
 
     my $response = {};
     ($response->{was_pinged}, $response->{pin_mode}, my $jid, my $time_since_alive) = $dbh->selectrow_array(q~
@@ -104,10 +105,11 @@ sub select_request {
         was_pinged       => $response->{was_pinged},
         pin_mode         => $response->{pin_mode},
         time_since_alive => $time_since_alive,
-        supported_DEs    => $p->{supported_DEs},
+        de_version       => $p->{de_version},
+        ( map { +"de_bits$_" => $p->{"de_bits$_"} } 1..$cats::de_req_bitfields_count ),
     });
 
-    print_json($response);
+    print_json($response->{request} && $response->{request}->{error} ? { error => $response->{request}->{error} } : $response);
 }
 
 sub delete_req_details {
