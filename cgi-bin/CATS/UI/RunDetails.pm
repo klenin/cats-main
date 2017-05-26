@@ -462,7 +462,7 @@ sub sources_info_param {
         }
     };
     $set_data->($sources_info);
-    $set_data->($_->{element_sources}) for (@$sources_info);
+    $set_data->($_->{element_sources}) for @$sources_info;
     $t->param(
         title_suffix => build_title_suffix($sources_info),
         sources_info => $sources_info
@@ -840,9 +840,9 @@ sub run_log_frame {
         or return;
     $si->{is_jury} or return;
 
+    source_links($si);
     sources_info_param([ $si ]);
 
-    source_links($si);
     $t->param(get_log_dump($rid));
 }
 
