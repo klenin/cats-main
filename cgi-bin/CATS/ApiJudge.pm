@@ -92,7 +92,8 @@ sub select_request {
     bad_judge and return -1;
     my ($p) = @_;
 
-    return print_json({ error => 'bad request' }) if !defined $p->{de_version} || grep !defined $p->{"de_bits$_"}, 1..$cats::de_req_bitfields_count;
+    return print_json({ error => 'bad request' })
+        if !defined $p->{de_version} || grep !defined $p->{"de_bits$_"}, 1..$cats::de_req_bitfields_count;
 
     my $response = {};
     ($response->{was_pinged}, $response->{pin_mode}, my $jid, my $time_since_alive) = $dbh->selectrow_array(q~
@@ -109,7 +110,8 @@ sub select_request {
         ( map { +"de_bits$_" => $p->{"de_bits$_"} } 1..$cats::de_req_bitfields_count ),
     });
 
-    print_json($response->{request} && $response->{request}->{error} ? { error => $response->{request}->{error} } : $response);
+    print_json($response->{request} && $response->{request}->{error} ?
+        { error => $response->{request}->{error} } : $response);
 }
 
 sub delete_req_details {
