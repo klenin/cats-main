@@ -63,7 +63,7 @@ function activate_search_hint(a, comma) {
 
 function click_enum(a) {
   var i = document.getElementById('search');
-  [#% Do not add a comparison twice. %]
+  [%# Do not add a comparison twice. %]
   if (i.value && '<>='.indexOf(i.value.charAt(i.value.length - 1)) < 0)
     i.value += '==';
   i.value += a.text;
