@@ -616,6 +616,7 @@ sub console_frame {
     }
 
     console_content;
+    return if param('json');
     prepare_server_time;
     $t->param(is_team => $is_team);
     my $lvparams = $t->{vars};
