@@ -3,10 +3,10 @@
 <p>С целью обеспечения стабильности внешних ссылок система гарантирует поддержку
 в будущих версиях URL следующих форматов:
 <ul>
-  <li>таблица результатов: <pre>http://imcs.dvgu.ru/cats/main.pl?f=rank_table;cid=код_турнира</pre></li>
-  <li>официальная таблица результатов: <pre>http://imcs.dvgu.ru/cats/main.pl?f=rank_table;cid=код_турнира;hide_ooc=1</pre></li>
-  <li>список задач: <pre>http://imcs.dvgu.ru/cats/main.pl?f=problems;cid=код_турнира</pre></li>
-  <li>список турниров с фильтрацией: <pre>http://imcs.dvgu.ru/cats/main.pl?f=contests;search=фильтр</pre></li>
+  <li>таблица результатов: <pre>http://imcs.dvfu.ru/cats/main.pl?f=rank_table;cid=<i>код_турнира</i></pre></li>
+  <li>официальная таблица результатов: <pre>http://imcs.dvfu.ru/cats/main.pl?f=rank_table;cid=<i>код_турнира</i>;hide_ooc=1</pre></li>
+  <li>список задач: <pre>http://imcs.dvfu.ru/cats/main.pl?f=problems;cid=<i>код_турнира</i></pre></li>
+  <li>список турниров с фильтрацией: <pre>http://imcs.dvfu.ru/cats/main.pl?f=contests;search=<i>фильтр</i></pre></li>
 </ul>
 Кроме того, гарантируется неизменность существующих кодов турниров. Все остальные глубокие ссылки могут, потенциально,
 перестать функционировать в будущих версиях системы, поэтому указывать их на статических страницах не рекомендуется.
