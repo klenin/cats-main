@@ -136,27 +136,19 @@ sub create_group {
 
     $request_ids && $submit_uid or die;
 
-    my $req_id_list = join ', ', @$request_ids;
-
-    my $elements_reqs = $dbh->selectcol_arrayref(qq~
-        SELECT DISTINCT RG.group_id FROM req_groups RG
-        WHERE RG.group_id IN ($req_id_list)~);
-    return msg(1152, join ', ', @$elements_reqs) if @$elements_reqs;
-
     my $dev_env = CATS::DevEnv->new(CATS::JudgeDB::get_DEs);
+    my $req_tree = CATS::JudgeDB::ensure_request_de_bitmap_cache($request_ids, $dev_env, 1);
+    CATS::JudgeDB::add_info_to_req_tree({
+        fields => [
+            qw(R.problem_id R.contest_id)
+        ]
+    }, undef, $req_tree);
 
-    my $de_bitfields_list = CATS::JudgeDB::de_bitmap_str('RDEBC');
-    my $reqs = $dbh->selectall_arrayref(qq~
-        SELECT R.id, R.problem_id, R.contest_id, $de_bitfields_list, RDEBC.version as de_version
-        FROM reqs R
-            LEFT JOIN req_de_bitmap_cache RDEBC ON RDEBC.req_id = R.id
-        WHERE R.id IN ($req_id_list)~, { Slice => {} }) or return;
+    my $problem_id = $req_tree->{$request_ids->[0]}->{problem_id};
+    my $contest_id = $req_tree->{$request_ids->[0]}->{contest_id};
 
-    my $problem_id = $reqs->[0]->{problem_id};
-    my $contest_id = $reqs->[0]->{contest_id};
-
-    return msg(1153) if grep $_->{contest_id} != $contest_id, @$reqs;
-    return msg(1154) if grep $_->{problem_id} != $problem_id, @$reqs;
+    return msg(1153) if grep $req_tree->{$_}->{contest_id} != $contest_id, keys %$req_tree;
+    return msg(1154) if grep $req_tree->{$_}->{problem_id} != $problem_id, keys %$req_tree;
 
     my $players_count_str = $dbh->selectrow_array(q~
         SELECT P.players_count FROM problems P
@@ -168,24 +160,21 @@ sub create_group {
 
     return msg(1156, $players_count_str) if $players_count && !grep @$request_ids == $_, @$players_count;
 
-    my @update_req_ids = map $_->{id}, grep !$dev_env->is_good_version($_->{de_version}), @$reqs;
-    my $updated_reqs = CATS::JudgeDB::ensure_request_de_bitmap_cache(\@update_req_ids, $dev_env);
-    my %req_des =
-        (( map { $_->{id} => [ CATS::JudgeDB::extract_de_bitmap($_) ] } grep { $dev_env->is_good_version($_->{de_version}) } @$reqs ),
-        ( map { $_->{id} => $_->{bitmap} } values %$updated_reqs ));
+    my @element_request_ids = map $_->{id},
+        grep { $_->{elements_count} == 0 || $_->{elements_count} == 1 && $_->{elements}->[0]->{elements_count} == 0 } values %$req_tree;
 
-    my $req_de_bitmap = [ map 0, 1..$cats::de_req_bitfields_count ];
-    for my $req (@$reqs) {
-        $req_de_bitmap->[$_] |= $req_des{$req->{id}}->[$_] for 0..($cats::de_req_bitfields_count-1);
+    my @req_de_bitmap = (0) x $cats::de_req_bitfields_count;
+    for my $req_id (@element_request_ids) {
+        $req_de_bitmap[$_] |= $req_tree->{$req_id}->{bitmap}->[$_] for 0..$cats::de_req_bitfields_count-1;
     }
 
-    $fields->{elements_count} = @$request_ids;
+    $fields->{elements_count} = @element_request_ids;
 
-    my $group_req_id = insert($problem_id, $contest_id, $submit_uid, $req_de_bitmap, $fields) or die;
+    my $group_req_id = insert($problem_id, $contest_id, $submit_uid, \@req_de_bitmap, $fields) or die;
 
     my $c = $dbh->prepare(q~
         INSERT INTO req_groups (element_id, group_id) VALUES (?, ?)~);
-    $c->execute_array(undef, $request_ids, $group_req_id);
+    $c->execute_array(undef, \@element_request_ids, $group_req_id);
 
     $group_req_id;
 }
