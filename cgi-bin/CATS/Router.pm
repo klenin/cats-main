@@ -46,8 +46,8 @@ sub main_routes() {
 
         console_content => \&CATS::UI::Console::content_frame,
         console => \&CATS::UI::Console::console_frame,
-        console_export => \&CATS::UI::Console::export,
-        console_graphs => \&CATS::UI::Console::graphs,
+        console_export => \&CATS::UI::Console::export_frame,
+        console_graphs => \&CATS::UI::Console::graphs_frame,
 
         problems => [ \&CATS::UI::Problems::problems_frame, kw => $int, ],
         problems_udebug => [ \&CATS::UI::Problems::problems_udebug_frame, ],

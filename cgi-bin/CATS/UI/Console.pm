@@ -499,7 +499,7 @@ sub xml_quote {
     $s;
 }
 
-sub export {
+sub export_frame {
     $is_jury or return;
     init_template('console_export.xml.tt');
     my $reqs = select_all_reqs;
@@ -517,7 +517,7 @@ sub export {
     $t->param(reqs => $reqs);
 }
 
-sub graphs {
+sub graphs_frame {
     $is_jury or return;
     init_template('console_graphs.html.tt');
 
