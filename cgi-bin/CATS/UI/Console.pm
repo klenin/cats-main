@@ -471,7 +471,6 @@ sub console_content {
 }
 
 sub select_all_reqs {
-    my ($extra_cond) = $_[0] || '';
     $dbh->selectall_arrayref(qq~
         SELECT
             R.id AS id, R.submit_time, R.state, R.failed_test,
@@ -487,7 +486,7 @@ sub select_all_reqs {
             contest_problems CP ON R.contest_id = CP.contest_id AND CP.problem_id = R.problem_id INNER JOIN
             accounts A ON CA.account_id = A.id
         WHERE
-            R.contest_id = ? AND CA.is_hidden = 0 AND CA.diff_time = 0$extra_cond
+            R.contest_id = ? AND CA.is_hidden = 0 AND CA.diff_time = 0 AND R.submit_time > C.start_date
         ORDER BY R.submit_time ASC~, { Slice => {} },
         $cid);
 }
@@ -521,48 +520,19 @@ sub export {
 sub graphs {
     $is_jury or return;
     init_template('console_graphs.html.tt');
-    my @codes = map { code => $_, selected => 1 }, @{$contest->used_problem_codes};
-    my $steps_per_hour = (param('steps') || 1) + 0;
-    my $accepted_only = param('accepted_only') || 0;
-    $t->param(
-        submenu => [ { href => url_f('console'), item => res_str(510) } ],
-        codes => \@codes,
-        href_graphs => url_f('console_graphs'),
-        steps => $steps_per_hour,
-        accepted_only => $accepted_only);
-    param('do_graph') or return;
 
-    my %selected_codes = map { $_ => 1 } param('selected_codes');
-    $_->{selected} = $selected_codes{$_->{code}} || 0 for @codes;
+    my $reqs = select_all_reqs;
+    my %rev = map { CATS::Misc::request_state_names->{$_} => $_ } keys %{CATS::Misc::request_state_names()};
 
-    my $reqs = select_all_reqs($accepted_only ? " AND R.state = $cats::st_accepted" : '');
-    @$reqs or return;
-    my $init_graph = sub { (code => $_[0], by_time => []) };
-    my $graphs = { all => { $init_graph->('all') } };
-    for my $req (@$reqs) {
-        $req->{code} && $req->{time_since_start} >= 0 && $selected_codes{$req->{code}} or next;
-        my $g = $graphs->{$req->{code}} ||= { $init_graph->($req->{code}) };
-        my $step = int($req->{time_since_start} * 24 * $steps_per_hour);
-        $g->{by_time}->[$step]++;
-        $graphs->{all}->{by_time}->[$step]++;
+    for my $r (@$reqs) {
+        $r->{minutes} = int($r->{time_since_start} * 24 * 60 + 0.5);
+        $r->{verdict} = $rev{$r->{state}};
     }
-    my @colors = ('0000ff', '00ff00', 'ff0000', '000000', 'ff00ff', '00ffff', 'ffa040', 'a0ff40', '800000', 'a040ff');
-    my $ga = [ map $graphs->{$_}, sort keys %$graphs ];
-    my $bt = $graphs->{all}->{by_time};
-    $_ ||= 0 for @$bt;
-    my $m = List::Util::max(@$bt);
-    my $data = sub { join ',' => -1, map { ($_ || 0) / $m * 100 } @{$_[0]} };
-    my %gp = (
-      chs => '500x400',
-      chd => 't:' . join('|', map $data->($_->{by_time}), @$ga),
-      cht => 'lc',
-     chco => join(',', map $colors[$_ % @colors], 0..@$ga),
-      chdl => join('|', map $_->{code}, @$ga),
-      chxt => 'x,y',
-      chxl => '0:|' . join('|', map sprintf('%.1f', $_ / $steps_per_hour), 0..@$bt),
-      chxr => "1,0,$m",
+    $t->param(
+        reqs => $reqs,
+        codes => $contest->used_problem_codes,
+        submenu => [ { href => url_f('console'), item => res_str(510) } ],
     );
-    $t->param(graph => join '&amp;', map "$_=$gp{$_}", keys %gp);
 }
 
 sub retest_submissions {

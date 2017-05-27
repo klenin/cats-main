@@ -1,18 +1,64 @@
 [% PROCESS includes/menu_begin.tti %]
 
-<form method="post" enctype="multipart/form-data" action="[% href_graphs %]">
+<div>
 [% FOREACH c IN codes -%]
-<label><input type="checkbox" name="selected_codes" value="[% c.code %]"[% ' checked="checked"' IF c.selected %]/>[% c.code %]</label>
+<label id="codes"><input type="checkbox" value="1" checked="checked" onclick="graph()"/>[% c %]</label>
 [% END -%]
 <br/>
-[% capt.steps_per_hour %]: <input type="text" value="[% steps %]" name="steps" size="2" />
-<label><input type="checkbox" value="1" name="accepted_only"[% IF accepted_only %] checked="checked"[% END %]/>[% capt.accepted_only %]</label>
-<input type="submit" value="[% capt.show %]" name="do_graph" class="button"/><br/>
-</form>
-[% IF graph %]
-<table border="0" cellpadding="2" cellspacing="1" class="bordered">
-<tr><td><img src="http://chart.apis.google.com/chart?[% graph %]"></td></tr>
-</table>
+[% capt.steps_per_hour %]: <input type="text" value="1" id="steps" size="2"  onchange="graph()" />
+<label><input type="checkbox" value="1" id="accepted_only" onclick="graph()" />[% capt.accepted_only %]</label>
+</div>
+
+<div id="plot" style="width: 700px; height: 300px; display: none; float: left;"></div>
+<div id="plot-legend" style="float: left;"></div>
+<div style="clear: both;"></div>
+
+<script type="text/javascript" src="js/lib/jquery.min.js"></script>
+<!--[if lte IE 8]><script language="javascript" type="text/javascript" src="js/lib/excanvas.min.js"></script><![endif]-->
+<script type="text/javascript" src="js/lib/jquery.flot.min.js"></script>
+<script type="text/javascript">
+
+var reqs = [
+[% FOREACH r IN reqs -%]
+  { c:'[% r.code %]', v:'[% r.verdict %]', t:[% r.minutes %] }[% ',' UNLESS loop.last %]
 [% END %]
+];
+var codes = [ [% FOREACH c IN codes; "'$c'"; ', ' UNLESS loop.last; END %] ];
+
+function graph() {
+  var series = [];
+  var bins = [];
+  var checkboxes = $('#codes input');
+  var codes_idx = {};
+  var accepted_only = $('#accepted_only')[0].checked;
+  for (var i = 0; i < codes.length; ++i) {
+    if (!checkboxes[i].checked) continue;
+    codes_idx[codes[i]] = series.length;
+    series.push({ label: codes[i], idx: series.length, data: [] });
+    bins.push([]);
+  }
+  var steps_per_hour = ($('#steps').val() * 1) || 1;
+  for (var i = 0; i < reqs.length; ++i) {
+    if (accepted_only && reqs[i].v != 'OK') continue;
+    var idx = codes_idx[reqs[i].c];
+    if (idx === undefined) continue;
+    var b = bins[idx];
+    var t = Math.floor(steps_per_hour * reqs[i].t / 60 + 0.5);
+    b[t] = (b[t] || 0) + 1;
+  }
+  for (var i = 0; i < bins.length; ++i) {
+    for (var j = 0; j < bins[i].length; ++j) {
+      series[i].data.push([ j / steps_per_hour, bins[i][j] ]);
+    }
+  }
+  $('#plot').show();
+  $.plot($('#plot'), series, {
+    series: { lines: { show: true }, points: { show: true } },
+    legend: { container: '#plot-legend' }
+  });
+  return false;
+}
+graph();
+</script>
 
 [% PROCESS includes/menu_end.tti %]
