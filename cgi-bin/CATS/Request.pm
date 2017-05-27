@@ -69,6 +69,8 @@ sub enforce_state {
     my ($request_id, $fields) = @_;
     $request_id && defined $fields->{state} or die;
 
+    die if exists $fields->{elements_count} && !defined $fields->{elements_count};
+
     $dbh->do(_u $sql->update('reqs', {
         %$fields,
         received => 0,
