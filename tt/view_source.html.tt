@@ -28,7 +28,7 @@
 <table>
 <tr>
 [% FOREACH si IN sources_info %]
-  <td class="bordered">[% IF si.compiler_output %]<pre>[% si.compiler_output | html %]</pre>[% END %]</td>
+  <td class="bordered">[% IF si.compiler_output %]<pre>[% si.compiler_output.judge_log_dump | html %]</pre>[% END %]</td>
 [% END %]
 </tr>
 <tr>
