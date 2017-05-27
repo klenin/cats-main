@@ -67,13 +67,22 @@ function send_message(href) {
 <tr [% IF second_row %] style="border-top-style: solid" [% END %]>
   <th>ID</th>
   [% FOREACH si IN sources_info; IF si %]
-    <td colspan="[% si.colspan %]"> [% si.req_id %]</td>
+    <td colspan="[% si.colspan %]">
+      [% si.req_id %]
+      [% IF si.original_req_id %]
+      (<a href = "[% si.href_original_req_run_details %]">[% si.original_req_id %]</a>)
+      [% END %]
+    </td>
   [% END; END %]
 </tr>
 <tr>
   <th>[% capt.team %]</th>
   [% FOREACH si IN sources_info; IF si %]
-    <td colspan="[% si.colspan %]"><a href="[% si.href_stats %]">[% si.team_name %]</a>
+    <td colspan="[% si.colspan %]">
+      <a href="[% si.href_stats %]">[% si.team_name %]</a>
+    [% IF si.original_team_name %]
+      <a href="[% si.href_original_stats %]">([% si.original_team_name %])</a>
+    [% END %]
     [% IF si.is_jury %]
       [<a href="[% si.href_whois %]" alt="[% si.last_ip %]" title="[% si.last_ip %]">[% si.last_ip_short %]</a>]
       [<a href="javascript:send_message('[% si.href_send_message %]')">[% capt.message %]</a>]
@@ -175,5 +184,5 @@ function send_message(href) {
 
 <table class="internal_borders padded">
 [% INCLUDE sources_info_row sources_info = sources_info %]
-[% IF element_sources_info; INCLUDE sources_info_row sources_info = element_sources_info second_row = 1; END %]
+[% IF elements_info; INCLUDE sources_info_row sources_info = elements_info second_row = 1; END %]
 </table>

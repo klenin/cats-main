@@ -44,6 +44,13 @@ sub source_links {
         url_function('problem_text', cpid => $si->{cp_id}, cid => $si->{contest_id}, sid => $sid);
     $si->{href_problem_details} =
         url_function('problem_details', pid => $si->{problem_id}, cid => $si->{contest_id}, sid => $sid);
+    if ($si->{elements_count} == 1) {
+        my $original_req = $si->{elements}->[0];
+        $si->{href_original_req_run_details} =
+            url_f('run_details', rid => $original_req->{req_id});
+        $si->{href_original_stats} =
+            url_f('user_stats', uid => $original_req->{account_id});
+    }
     for (qw/run_details view_source run_log download_source view_test_details request_params/) {
         $si->{"href_$_"} = url_f($_, rid => $si->{req_id});
         $si->{"href_class_$_"} = $_ eq $current_link ? 'current_link' : '';
@@ -53,7 +60,7 @@ sub source_links {
     my $se = param('src_enc') || param('comment_enc') || 'WINDOWS-1251';
     $t->param(source_encodings => source_encodings($se));
 
-    source_links($_) for @{$si->{element_sources}};
+    source_links($_) for @{$si->{elements}};
 }
 
 my @resources = qw(time_used memory_used disk_used);
@@ -297,24 +304,6 @@ sub get_nearby_attempt {
     $si->{href_diff_runs} = url_f('diff_runs', r1 => $na->{id}, r2 => $si->{req_id}) if $diff && $uid;
 }
 
-sub get_req_links {
-    my @req_ids = @_;
-
-    my $req_id_list = join ', ', @req_ids;
-
-    my $groups = $dbh->selectall_arrayref(qq~
-        SELECT RG.group_id, RG.element_id
-        FROM req_groups RG
-        WHERE RG.group_id in ($req_id_list)~, { Slice => {} });
-
-    my %res = map { $_ => [] } @req_ids;
-    for (@$groups) {
-        push @{$res{$_->{group_id}}}, $_->{element_id};
-        $res{$_->{element_id}} //= [];
-    }
-    \%res;
-}
-
 # Load information about one or several runs.
 # Parameters: request_id, may be either scalar or array ref.
 sub get_sources_info {
@@ -324,48 +313,49 @@ sub get_sources_info {
     my @req_ids = ref $rid eq 'ARRAY' ? @$rid : ($rid);
     @req_ids = map +$_, grep $_ && /^\d+$/, @req_ids or return;
 
-    my $src = $p{get_source} ? ' S.src, DE.syntax,' : '';
+    my @src = $p{get_source} ? qw(S.src DE.syntax) : ();
+    my @pc_sql = $p{partial_checker} ? ( CATS::RankTable::partial_checker_sql() ) : ();
 
-    my $req_links = get_req_links(@req_ids);
-    my $all_req_id_list = join ', ', keys %$req_links;
-
-    my $pc_sql = $p{partial_checker} ? CATS::RankTable::partial_checker_sql() . ',' : '';
-
-    my $limits_str = join ', ', map { my $l = $_; join ', ', map { "$_.$l AS @{[$_]}_$l" } qw(lr lcp p) } @cats::limits_fields;
+    my @limits = map { my $l = $_; map "$_.$l AS @{[$_]}_$l", qw(lr lcp p) } @cats::limits_fields;
 
     # Source code can be in arbitary or broken encoding, we need to decode it explicitly.
     $dbh->{ib_enable_utf8} = 0;
-    my $result = $dbh->selectall_arrayref(qq~
-        SELECT
-            R.id as req_id, $src S.fname AS file_name, S.de_id,
-            R.account_id, R.contest_id, R.problem_id, R.judge_id,
-            R.state, R.failed_test, R.points,
-            R.submit_time,
-            R.test_time,
-            R.result_time,
-            DE.description AS de_name,
-            A.team_name, COALESCE(E.ip, A.last_ip) AS last_ip,
-            P.title AS problem_name, P.save_output_prefix, $pc_sql
-            $limits_str,
-            R.limits_id as limits_id,
-            C.title AS contest_name,
-            C.is_official,
-            COALESCE(R.testsets, CP.testsets) AS testsets,
-            C.id AS contest_id, CP.id AS cp_id,
-            CP.status, CP.code,
-            CA.id AS ca_id
-        FROM reqs R
-            LEFT JOIN sources S ON S.req_id = R.id
-            LEFT JOIN default_de DE ON DE.id = S.de_id
-            INNER JOIN accounts A ON A.id = R.account_id
-            INNER JOIN problems P ON P.id = R.problem_id
-            INNER JOIN contests C ON C.id = R.contest_id
-            INNER JOIN contest_problems CP ON CP.contest_id = C.id AND CP.problem_id = P.id
-            INNER JOIN contest_accounts CA ON CA.contest_id = C.id AND CA.account_id = A.id
-            LEFT JOIN events E ON E.id = R.id
-            LEFT JOIN limits LCP ON LCP.id = CP.limits_id
-            LEFT JOIN limits LR ON LR.id = R.limits_id
-        WHERE R.id IN ($all_req_id_list)~, { Slice => {} });
+
+    my $req_tree = CATS::JudgeDB::get_req_tree(\@req_ids, {
+        fields => [
+            'R.id as req_id', @src, 'S.fname AS file_name',
+            qw(
+            S.de_id R.account_id R.contest_id R.problem_id R.judge_id
+            R.state R.failed_test R.points
+            R.submit_time
+            R.test_time
+            R.result_time
+            ),
+            'DE.description AS de_name',
+            'A.team_name', 'COALESCE(E.ip, A.last_ip) AS last_ip',
+            'P.title AS problem_name', 'P.save_output_prefix', @pc_sql,
+            @limits, 'R.limits_id as limits_id',
+            'C.title AS contest_name',
+            'C.is_official',
+            'COALESCE(R.testsets, CP.testsets) AS testsets',
+            'C.id AS contest_id', 'CP.id AS cp_id',
+            'CP.status', 'CP.code',
+            'CA.id AS ca_id',
+        ],
+        tables => [
+            'LEFT JOIN sources S ON S.req_id = R.id',
+            'LEFT JOIN default_de DE ON DE.id = S.de_id',
+            'INNER JOIN accounts A ON A.id = R.account_id',
+            'INNER JOIN problems P ON P.id = R.problem_id',
+            'INNER JOIN contests C ON C.id = R.contest_id',
+            'INNER JOIN contest_problems CP ON CP.contest_id = C.id AND CP.problem_id = P.id',
+            'INNER JOIN contest_accounts CA ON CA.contest_id = C.id AND CA.account_id = A.id',
+            'LEFT JOIN events E ON E.id = R.id',
+            'LEFT JOIN limits LCP ON LCP.id = CP.limits_id',
+            'LEFT JOIN limits LR ON LR.id = R.limits_id',
+        ]
+    });
+    my $result = [ values %$req_tree ];
     $dbh->{ib_enable_utf8} = 1;  # Resume "normal" operation.
 
     # User must be either jury or request owner to access a request.
@@ -385,12 +375,16 @@ sub get_sources_info {
 
     for my $r (@$result) {
         $_ = Encode::decode_utf8($_) for @$r{grep /_name$/, keys %$r};
-        $r = {
-            %$r, state_to_display($r->{state}),
+
+        my %additional_info = ( state_to_display($r->{state}),
             CATS::IP::linkify_ip($r->{last_ip}),
             href_stats => url_f('user_stats', uid => $r->{account_id}),
             href_send_message => url_f('send_message_box', caid => $r->{ca_id}),
-        };
+        );
+
+        # We need to save original hash reference
+        $r->{$_} = $additional_info{$_} for keys %additional_info;
+
         # Just hour and minute from testing start and finish timestamps.
         ($r->{"${_}_short"} = $r->{$_}) =~ s/^(.*)\s+(\d\d:\d\d)\s*$/$2/
             for qw(test_time result_time);
@@ -409,36 +403,17 @@ sub get_sources_info {
         }
         $r->{status_name} = problem_status_names->{$r->{status}};
 
+        if ($r->{elements_count} == 1) {
+            $r->{$_} = $r->{elements}->[0]->{$_} for qw(file_name de_id de_name), $p{get_source} ? qw(src syntax) : ();
+        }
+
+        $r->{file_name} //= '';
+        $r->{src} //= '';
+        $r->{de_id} //= 0;
         $r->{$_} = $r->{"lr_$_"} || $r->{"lcp_$_"} || $r->{"p_$_"} for @cats::limits_fields;
     }
 
-    my %result_hash = map { $_->{req_id} => $_ } @$result;
-
-    my $final_result = [];
-
-    foreach my $req_id (@req_ids) {
-        my $si = $result_hash{$req_id} or next;
-        my $element_req_ids = $req_links->{$req_id};
-        if (@$element_req_ids == 1) {
-            my $element_si = $result_hash{$element_req_ids->[0]};
-
-            $si->{file_name} = $element_si->{file_name};
-            $si->{de_id} = $element_si->{de_id};
-            $si->{de_name} = $element_si->{de_name};
-
-            if ($p{get_source}) {
-                $si->{src} = $element_si->{src};
-                $si->{syntax} = $element_si->{syntax};
-            }
-        }
-        $si->{element_sources} = [ map { $result_hash{$_} } @$element_req_ids ];
-        $si->{file_name} //= '';
-        $si->{src} //= '';
-        $si->{de_id} //= 0;
-        push @$final_result, $si;
-    }
-
-    return ref $rid ? $final_result : $final_result->[0];
+    return ref $rid ? [ map $req_tree->{$_}, @req_ids ] : $req_tree->{$rid};
 }
 
 sub build_title_suffix {
@@ -451,7 +426,8 @@ sub build_title_suffix {
 sub sources_info_param {
     my ($sources_info) = @_;
 
-    my $set_data = sub {
+    my $set_data;
+    $set_data = sub {
         for my $si (@{$_[0]}) {
             $si->{style_classes} = {
                 map { $_ => $si->{"lr_$_"} ? 'req_overridden_limits' : $si->{"lcp_$_"} ? 'cp_overridden_limits' : undef } @cats::limits_fields
@@ -459,19 +435,23 @@ sub sources_info_param {
             $si->{req_overidden_limits} = {
                 map { $_ => $si->{"lr_$_"} ? 1 : 0 } @cats::limits_fields
             };
-            $si->{colspan} = scalar @{$si->{element_sources}};
+            $si->{colspan} = scalar @{$si->{elements}};
+            if ($si->{elements_count} == 1) {
+                $si->{original_req_id} = $si->{elements}->[0]->{req_id};
+                $si->{original_team_name} = $si->{elements}->[0]->{team_name};
+            }
+            $set_data->($si->{elements}) if $si->{elements_count};
         }
     };
     $set_data->($sources_info);
-    $set_data->($_->{element_sources}) for @$sources_info;
     $t->param(
         title_suffix => build_title_suffix($sources_info),
         sources_info => $sources_info
     );
-    my $element_sources_info = [
-        map { @{$_->{element_sources}} > 0 ? @{$_->{element_sources}} : undef } @$sources_info ];
-    if (0 < grep $_, @$element_sources_info) {
-        $t->param(element_sources_info => $element_sources_info);
+    my $elements_info = [
+        map { @{$_->{elements}} > 0 ? @{$_->{elements}} : undef } @$sources_info ];
+    if (0 < grep $_, @$elements_info) {
+        $t->param(elements_info => $elements_info);
     }
 }
 
@@ -599,7 +579,7 @@ sub view_source_frame {
     source_links($sources_info);
     sources_info_param([ $sources_info ]);
 
-    @{$sources_info->{element_sources}} <= 1 or return msg(1155);
+    @{$sources_info->{elements}} <= 1 or return msg(1155);
 
     my $replace_source = param('replace_source');
     my $de_id = param('de_id');
@@ -855,7 +835,7 @@ sub diff_runs_frame {
     source_links($_) for @$si;
     sources_info_param($si);
 
-    return msg(1155) if grep @{$_->{element_sources}} > 1, @$si;
+    return msg(1155) if grep @{$_->{elements}} > 1, @$si;
 
     for my $info (@$si) {
         $info->{lines} = [ split "\n", $info->{src} ];
