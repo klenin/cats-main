@@ -84,8 +84,12 @@ function fill_1(aid, arg)
       onclick="return fill_1('a_run_log', '[% href_run_log %];rid=');">[% capt.log %]</a>
     | <a id="a_diff" href="[% href_diff %]" target="_blank"
       onclick="return fill_diff();">[% capt.compare %]</a>
-    ] <button id="retest" name="retest" value="1" type="submit" class="button">[% capt.retest %]</button>
-    [% IF is_root %] <button id="create_group" name="create_group" value="1" type="submit" class="button">[% capt.create_group %]</button> [% END %]
+    ]
+    <label><input id="by_reference" name="by_reference" value="1" type="checkbox" />[% capt.by_reference %]</label>
+    <button id="retest" name="retest" value="1" type="submit" class="button">[% capt.retest %]</button>
+    [% IF is_root %]
+        <button id="create_group" name="create_group" value="1" type="submit" class="button">[% capt.create_group %]</button>
+    [% END %]
 </div>
 [% END %]
 </form>

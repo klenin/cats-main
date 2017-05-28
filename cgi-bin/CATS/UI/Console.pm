@@ -103,8 +103,8 @@ sub console_content {
 
     my $lv = init_console_template(auto_ext('console_content'));
 
-    retest_submissions($selection) if defined param('retest') and $selection;
-    group_submissions($selection) if defined param('create_group') && $selection;
+    retest_submissions($selection, param('by_reference')) if defined param('retest') and $selection;
+    group_submissions($selection, param('by_reference')) if defined param('create_group') && $selection;
 
     my $s = get_settings($lv);
 
@@ -541,9 +541,12 @@ sub graphs_frame {
 
 sub retest_submissions {
     $is_jury or return;
-    my ($selection) = @_;
+    my ($selection, $by_reference) = @_;
     my $count = 0;
     my @sanitized_runs = grep $_ ne '', split /\D+/, $selection;
+    if ($by_reference) {
+        $count = @{CATS::Request::clone(\@sanitized_runs, undef, $uid)};
+    }
     for (@sanitized_runs) {
         CATS::Request::enforce_state($_, { state => $cats::st_not_processed, judge_id => undef })
             and ++$count;
@@ -554,10 +557,11 @@ sub retest_submissions {
 
 sub group_submissions {
     $is_root or return;
-    my ($selection) = @_;
+    my ($selection, $by_reference) = @_;
     my $count = 0;
     my @sanitized_runs = grep $_ ne '', split /\D+/, $selection;
-    CATS::Request::create_group(\@sanitized_runs, $uid, { state => $cats::st_not_processed, judge_id => undef }) or return;
+    CATS::Request::create_group(($by_reference ? CATS::Request::clone(\@sanitized_runs, undef, $uid) : \@sanitized_runs),
+        $uid, { state => $cats::st_not_processed, judge_id => undef }) or return;
     $dbh->commit;
 }
 
