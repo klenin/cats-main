@@ -193,39 +193,47 @@ sub create_group {
     $group_req_id;
 }
 
-# Params: request_id (required), contest_id (required), submit_uid (required)
+# Params: request_ids (required), contest_id, submit_uid (required)
 #         fields: { state = $cats::st_not_processed, failed_test, testsets, points, judge_id, limits_id }
 sub clone {
-    my ($request_id, $contest_id, $submit_uid, $fields) = @_;
+    my ($request_ids, $contest_id, $submit_uid, $fields) = @_;
 
-    $request_id && $submit_uid && $contest_id or die;
+    $request_ids && $submit_uid or die;
 
-    my $element_req_id = $dbh->selectrow_array(q~
-        SELECT RG.element_id FROM req_groups RG
-        WHERE RG.group_id = ?~, undef,
-        $request_id) || $request_id;
+    my @request_ids = ref($request_ids) ? @$request_ids : ($request_ids);
 
-    my $de_bitfields_list = CATS::JudgeDB::de_bitmap_str('RDEBC');
-    my $req = $dbh->selectrow_hashref(qq~
-        SELECT R.problem_id, R.contest_id, $de_bitfields_list, RDEBC.version AS de_version
-        FROM reqs R
-            LEFT JOIN req_de_bitmap_cache RDEBC ON RDEBC.req_id = R.id
-        WHERE R.id = ?~, undef,
-        $element_req_id);
+    my $dev_env = CATS::DevEnv->new(CATS::JudgeDB::get_DEs);
+    my $req_tree = CATS::JudgeDB::ensure_request_de_bitmap_cache(\@request_ids, $dev_env, 1);
+    CATS::JudgeDB::add_info_to_req_tree({
+        fields => [
+            qw(R.problem_id R.contest_id)
+        ]
+    }, undef, $req_tree);
 
-    my $de_bitmap = defined $req->{de_version} && $req->{de_version} == CATS::JudgeDB::current_de_version() ?
-        [ CATS::JudgeDB::extract_de_bitmap($req) ] :
-        CATS::JudgeDB::ensure_request_de_bitmap_cache($request_id)->{$request_id}->{bitmap};
+    my @element_requests;
+    my $collect_requests;
+    $collect_requests = sub {
+        my ($req) = @_;
 
-    $fields->{elements_count} = 1;
+        if ($req->{elements_count} == 0) {
+            push @element_requests, $req;
+        } else {
+            $collect_requests->($_) for @{$req->{elements}};
+        }
+    };
+    $collect_requests->($req_tree->{$_}) for @request_ids;
 
-    my $group_req_id = insert($req->{problem_id}, $contest_id, $submit_uid, $de_bitmap, $fields) or die;
+    my @req_groups =
+        map [ $_->{id}, insert($_->{problem_id}, $_->{contest_id}, $submit_uid, $_->{bitmap}, { $fields ? %$fields : (), elements_count => 1 }) ],
+            @element_requests;
 
-    $dbh->do(q~
-        INSERT INTO req_groups (element_id, group_id) VALUES (?, ?)~, undef,
-        $element_req_id, $group_req_id);
+    warn join ', ', map "$_->[0] : $_->[1]", @req_groups;
 
-    $group_req_id;
+    my $c = $dbh->prepare(q~
+        INSERT INTO req_groups (element_id, group_id) VALUES (?, ?)~);
+    $c->execute_array(undef, [ map $_->[0], @req_groups ], [ map $_->[1], @req_groups ]);
+
+    @req_groups == 1 && !ref($request_ids) ? $req_groups[0]->[1] : [ map $_->[1], @req_groups ];
 }
 
 sub delete {
