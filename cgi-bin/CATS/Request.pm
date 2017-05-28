@@ -160,8 +160,22 @@ sub create_group {
 
     return msg(1156, $players_count_str) if $players_count && !grep @$request_ids == $_, @$players_count;
 
-    my @element_request_ids = map $_->{id},
-        grep { $_->{elements_count} == 0 || $_->{elements_count} == 1 && $_->{elements}->[0]->{elements_count} == 0 } values %$req_tree;
+    my @element_request_ids;
+    my $seened = {};
+    my $collect_requests;
+    $collect_requests = sub {
+        my ($req) = @_;
+
+        return if $seened->{$req->{id}};
+        $seened->{$req->{id}} = 1;
+
+        if ($req->{elements_count} == 0 || $req->{elements_count} == 1 && $req->{elements}->[0]->{elements_count} == 0) {
+            push @element_request_ids, $req->{id};
+        } else {
+            $collect_requests->($_) for @{$req->{elements}};
+        }
+    };
+    $collect_requests->($req_tree->{$_}) for @$request_ids;
 
     my @req_de_bitmap = (0) x $cats::de_req_bitfields_count;
     for my $req_id (@element_request_ids) {
