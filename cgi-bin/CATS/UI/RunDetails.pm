@@ -810,8 +810,9 @@ sub try_set_state {
 }
 
 sub run_log_frame {
+    my ($p) = @_;
     init_template('run_log.html.tt');
-    my $rid = url_param('rid') or return;
+    my $rid = $p->{rid} or return;
 
     my $si = get_sources_info(request_id => $rid)
         or return;
@@ -819,6 +820,14 @@ sub run_log_frame {
 
     source_links($si);
     sources_info_param([ $si ]);
+
+    if ($p->{delete_log}) {
+        $dbh->do(q~
+            DELETE FROM log_dumps WHERE req_id = ?~, undef,
+            $rid);
+        $dbh->commit;
+        msg(1159);
+    }
 
     $t->param(get_log_dump($rid));
 }

@@ -3,5 +3,6 @@
     judge_log => 'Judge log',
     length => 'Length',
     no_log => 'No log',
+    delete_log => 'Delete log',
   })
 %]

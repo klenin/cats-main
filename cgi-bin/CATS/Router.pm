@@ -85,7 +85,7 @@ sub main_routes() {
         answer_box => \&CATS::UI::Messages::answer_box_frame,
         send_message_box => \&CATS::UI::Messages::send_message_box_frame,
 
-        run_log => \&CATS::UI::RunDetails::run_log_frame,
+        run_log => [ \&CATS::UI::RunDetails::run_log_frame, rid => $int, delete_log => $bool, ],
         view_source => \&CATS::UI::RunDetails::view_source_frame,
         download_source => \&CATS::UI::RunDetails::download_source_frame,
         run_details => \&CATS::UI::RunDetails::run_details_frame,
@@ -95,7 +95,7 @@ sub main_routes() {
         request_params => [
             \&CATS::UI::RunDetails::request_params_frame,
             rid => $int,
-            set_state => $int,
+            set_state => $bool,
             failed_test => $int,
             points => $int,
             state => $ident,

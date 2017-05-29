@@ -15,6 +15,9 @@
 <h3>[% capt.judge_log %]</h3>
 <pre><code id="judge_log">[% judge_log_dump | html %]</code></pre>
 <p>[% capt.length %]: [% judge_log_length %]</p>
+<form method="post">
+  <button type="submit" name="delete_log" value="1" class="button">[% capt.delete_log %]</button>
+</form>
 [% ELSE; capt.no_log %]
 [% END %]
 

@@ -229,3 +229,4 @@
 1156 "Number of requests in group for this problem must be: '%s'."
 1157 "Changed time offset for contestant '%s'."
 1158 "Removed time offset for contestant '%s'."
+1159 "Log has been deleted."
