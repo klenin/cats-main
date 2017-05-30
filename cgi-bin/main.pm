@@ -62,7 +62,8 @@ sub generate_menu {
     else {
         push @left_menu, (
             { item => res_str(517), href => url_f('compilers') },
-            { item => res_str(549), href => url_f('keywords') } );
+            { item => res_str(549), href => url_f('keywords') }
+        );
     }
 
     unless ($contest->is_practice) {
@@ -75,7 +76,10 @@ sub generate_menu {
     my @right_menu = ();
 
     if ($uid && (url_param('f') ne 'logout')) {
-        @right_menu = ( { item => res_str(518), href => url_f('profile') } );
+        push @right_menu, (
+            { item => res_str(568), href => url_f('user_stats') },
+            { item => res_str(518), href => url_f('profile') }
+        );
     }
 
     push @right_menu, (
