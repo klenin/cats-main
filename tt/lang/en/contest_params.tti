@@ -18,6 +18,7 @@
     run_all_tests => 'Run all tests',
     local_only => 'Local teams only',
     is_hidden => 'Hidden contest',
+    pinned_judges_only => 'Use only pinned judges',
     show_to_teams => 'Show to teams',
     show_all_results => 'results of all teams',
     show_all_tests => 'results of all tests',

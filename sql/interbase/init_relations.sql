@@ -80,12 +80,15 @@ CREATE TABLE contests (
     show_test_data       SMALLINT DEFAULT 0 CHECK (show_test_data IN (0, 1)),
     /* 0 - last, 1 - best */
     req_selection        SMALLINT DEFAULT 0 NOT NULL CHECK (req_selection IN (0, 1)),
+    pinned_judges_only   SMALLINT DEFAULT 0 NOT NULL,
 
     CHECK (
         start_date <= finish_date AND freeze_date >= start_date
         AND freeze_date <= finish_date AND defreeze_date >= freeze_date
     )
 );
+ALTER TABLE contests ADD CONSTRAINT chk_pinned_judges_only
+    CHECK pinned_judges_only IN (0, 1);
 
 
 CREATE TABLE contest_accounts (
