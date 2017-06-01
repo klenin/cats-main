@@ -73,6 +73,8 @@ function send_message(href) {
       (<a href = "[% si.href_original_req_run_details %]">[% si.original_req_id %]</a>)
       [% END %]
     </td>
+  [% ELSE %]
+    <td rowspan="11" />
   [% END; END %]
 </tr>
 <tr>
