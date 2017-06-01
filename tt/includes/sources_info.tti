@@ -112,7 +112,7 @@ function send_message(href) {
 <tr>
   <th>[% capt.file %]</th>
   [% FOREACH si IN sources_info; IF si %]
-    <td colspan="[% si.colspan %]">[% si.file_name %] ([% si.de_name %])</td>
+    <td colspan="[% si.colspan %]">[% IF si.file_name; si.file_name %] ([% si.de_name %])[% ELSE; '-'; END %]</td>
   [% END; END %]
 </tr>
 <tr>
