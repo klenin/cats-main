@@ -3,55 +3,15 @@
 <form id="console_form" method="POST" enctype="multipart/form-data">
 <p id="update_error" style="font-weight: bold;"></p>
 <script type="text/javascript">
-function send_message(href)
-{
+function send_message(href) {
     window.open(href, '', 'width=500,height=400,location=no,menubar=no,resizable=yes,scrollbars=no,status=no,toolbar=no');
 }
-function get_element(name)
-{
+
+function get_element(name) {
   if (document.all)
       return document.all(name);
   else
       return document.getElementById(name);
-}
-function add_id(id)
-{
-    var e = get_element('selection');
-    if (e.value != '') e.value += ',';
-    e.value += id;
-}
-function clear_selection()
-{
-    var e = get_element('selection');
-    e.value = '';
-}
-function fill_diff()
-{
-    var a = get_element('a_diff');
-    var e = get_element('selection');
-    var re = /^(\d+),(\d+)$/;
-    var rs = re.exec(e.value);
-    if (rs == null || rs.length != 3 || 0 >= rs[1] || 0 >= rs[2])
-    {
-        alert('[% capt.two_reqs %]');
-        return false;
-    }
-    a.href = '[% href_diff %];r1=' + rs[1] + ';r2=' + rs[2];
-    e.value = '';
-    return true;
-}
-function fill_1(aid, arg)
-{
-    var a = get_element(aid);
-    var e = get_element('selection');
-    if (!e.value.match([% IF is_jury %]/^[0-9,]+$/[% ELSE %]/^\d+$/[% END %]))
-    {
-        alert('[% capt.no_req %]');
-        return false;
-    }
-    a.href = arg + e.value;
-    e.value = '';
-    return true;
 }
 </script>
 [% WRAPPER includes/listview_header.tti %]
@@ -102,6 +62,41 @@ function fill_1(aid, arg)
 [% END %]
 </form>
 <script type="text/javascript">
+
+var sel = get_element('selection');
+
+function add_id(id) {
+    if (sel.value != '') sel.value += ',';
+    sel.value += id;
+}
+
+function clear_selection() {
+    sel.value = '';
+}
+
+function fill_diff() {
+    var a = get_element('a_diff');
+    var re = /^(\d+),(\d+)$/;
+    var rs = re.exec(sel.value);
+    if (rs == null || rs.length != 3 || 0 >= rs[1] || 0 >= rs[2]) {
+        alert('[% capt.two_reqs %]');
+        return false;
+    }
+    a.href = '[% href_diff %];r1=' + rs[1] + ';r2=' + rs[2];
+    sel.value = '';
+    return true;
+}
+
+function fill_1(aid, arg) {
+    var a = get_element(aid);
+    if (!sel.value.match([% IF is_jury %]/^[0-9,]+$/[% ELSE %]/^\d+$/[% END %])) {
+        alert('[% capt.no_req %]');
+        return false;
+    }
+    a.href = arg + sel.value;
+    sel.value = '';
+    return true;
+}
 
 autoupdate_interval = [% autoupdate %];
 console_url = '[% href_console_content %]';

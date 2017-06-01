@@ -83,7 +83,7 @@
 [% PROCESS includes/timing.tti %]
 <script>
 [% FOREACH e IN envelopes %]
-window.open("[% e.href_envelope %]", '', 'width=500,height=400,location=no,menubar=no,resizable=yes,scrollbars=no,status=no,toolbar=no');
+send_message('[% e.href_envelope %]');
 [% END %]
 </script>
 <div style="display: none" id="server_time_update">[% server_time %]</div>
