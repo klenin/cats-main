@@ -186,7 +186,8 @@ table.sample td { vertical-align: top; }
 .button {
     background-color: #ffffff;
     border: 1px solid #4040ff;
-    color : #4040ff;
+    color: #4040ff;
+    height: 22px;
 }
 .button2 {
     border: 1px solid #ffffff;
