@@ -31,8 +31,7 @@ BEGIN {
 }
 
 # Admin adds new user to current contest
-sub users_new_save
-{
+sub users_new_save {
     $is_jury or return;
     my $u = CATS::User->new->parse_params;
     $u->validate_params(validate_password => 1) or return;
@@ -40,8 +39,7 @@ sub users_new_save
     $u->insert($cid) or return;
 }
 
-sub user_submenu
-{
+sub user_submenu {
     my ($selected, $user_id) = @_;
     my @m = (
         (
@@ -61,8 +59,7 @@ sub user_submenu
     (submenu => \@m);
 }
 
-sub users_edit_frame
-{
+sub users_edit_frame {
     init_template('users_edit.html.tt');
 
     my $id = url_param('edit') or return;
@@ -120,8 +117,7 @@ sub update_settings {
     1;
 }
 
-sub users_edit_save
-{
+sub users_edit_save {
     my $u = CATS::User->new->parse_params;
     if (!$is_root) {
         delete $u->{restrict_ips};
@@ -151,8 +147,7 @@ sub users_edit_save
     $dbh->commit;
 }
 
-sub users_import_frame
-{
+sub users_import_frame {
     init_template('users_import.html.tt');
     $is_root or return;
     $t->param(href_action => url_f('users_import'));
@@ -173,8 +168,7 @@ sub users_import_frame
     $t->param(report => join "\n", @report);
 }
 
-sub registration_frame
-{
+sub registration_frame {
     init_template('registration.html.tt');
 
     $t->param(countries => \@CATS::Countries::countries, href_login => url_f('login'));
@@ -189,8 +183,7 @@ sub registration_frame
     $t->param(successfully_registred => 1);
 }
 
-sub profile_save
-{
+sub profile_save {
     my $u = CATS::User->new->parse_params;
     if (!$is_root) {
         delete $u->{restrict_ips};
@@ -204,16 +197,14 @@ sub profile_save
     $dbh->commit;
 }
 
-sub apply_rec
-{
+sub apply_rec {
     my ($val, $sub) = @_;
     ref $val eq 'HASH' ?
         { map { $_ => apply_rec($val->{$_}, $sub) } keys %$val } :
         $sub->($val);
 }
 
-sub display_settings
-{
+sub display_settings {
     my ($s) = @_;
     $t->param(settings => $s);
     $is_root or return;
@@ -225,8 +216,7 @@ sub display_settings
     $t->param(settings_dump => Encode::decode_utf8($d->Dump));
 }
 
-sub profile_frame
-{
+sub profile_frame {
     my ($p) = @_;
     init_template(auto_ext('user_profile', $p->{json}));
     $uid or return;
@@ -252,8 +242,7 @@ sub profile_frame
     display_settings($settings);
 }
 
-sub users_send_message
-{
+sub users_send_message {
     my %p = @_;
     $p{'message'} ne '' or return;
     my $s = $dbh->prepare(qq~
@@ -261,8 +250,7 @@ sub users_send_message
             VALUES (?, CURRENT_TIMESTAMP, ?, ?, 0)~
     );
     my $count = 0;
-    for (split ':', $p{'user_set'})
-    {
+    for (split ':', $p{'user_set'}) {
         next unless param_on("msg$_");
         ++$count;
         $s->bind_param(1, new_id);
@@ -274,8 +262,7 @@ sub users_send_message
     $count;
 }
 
-sub users_set_tag
-{
+sub users_set_tag {
     my %p = @_;
     my $s = $dbh->prepare(q~
         UPDATE contest_accounts SET tag = ? WHERE id = ?~);
@@ -291,8 +278,7 @@ sub users_set_tag
     msg(1019, $set_count);
 }
 
-sub users_send_broadcast
-{
+sub users_send_broadcast {
     my %p = @_;
     $p{'message'} ne '' or return;
     my $s = $dbh->prepare(qq~
@@ -305,8 +291,7 @@ sub users_send_broadcast
     $s->finish;
 }
 
-sub users_delete
-{
+sub users_delete {
     my $caid = url_param('delete');
     my ($aid, $srole, $name) = $dbh->selectrow_array(q~
         SELECT A.id, A.srole, A.team_name FROM accounts A
@@ -335,8 +320,7 @@ sub users_delete
     $dbh->commit;
 }
 
-sub users_save_attributes
-{
+sub users_save_attributes {
     my $changed_count = 0;
     for my $user_id (split(':', param('user_set'))) {
         my $jury = param_on("jury$user_id");
@@ -370,11 +354,9 @@ sub users_save_attributes
         CATS::RankTable::remove_cache($cid);
     }
     msg(1018, $changed_count);
-
 }
 
-sub users_impersonate
-{
+sub users_impersonate {
     my $new_user_id = param('impersonate') or return;
     my $new_sid = CATS::User::make_sid;
     $dbh->selectrow_array(q~
@@ -386,8 +368,7 @@ sub users_impersonate
     redirect(url_function('contests', sid => $new_sid, cid => $cid));
 }
 
-sub users_frame
-{
+sub users_frame {
     if ($is_jury) {
         return CATS::User::new_frame if defined url_param('new');
         return users_edit_frame if defined url_param('edit');
@@ -411,15 +392,12 @@ sub users_frame
         CATS::User::register_by_login(param('login_to_register'), $cid)
             if defined param('register_new');
 
-        if (defined param('send_message'))
-        {
-            if (param_on('send_message_all'))
-            {
+        if (defined param('send_message')) {
+            if (param_on('send_message_all')) {
                 users_send_broadcast(message => param('message_text'));
                 msg(1058);
             }
-            else
-            {
+            else {
                 my $count = users_send_message(
                     user_set => param('user_set'), message => param('message_text'));
                 msg(1057, $count);
@@ -429,8 +407,7 @@ sub users_frame
     }
 
     my @cols;
-    if ($is_jury)
-    {
+    if ($is_jury) {
         @cols = ( { caption => res_str(616), order_by => 'login', width => '25%' } );
     }
 
@@ -438,8 +415,7 @@ sub users_frame
         { caption => res_str(608), order_by => 'team_name', width => '40%' },
         { caption => res_str(629), order_by => 'tag', width => '5%' };
 
-    if ($is_jury)
-    {
+    if ($is_jury) {
         push @cols, (
             { caption => res_str(611), order_by => 'is_jury', width => '5%' },
             { caption => res_str(612), order_by => 'is_ooc', width => '5%' },
@@ -481,8 +457,7 @@ sub users_frame
     my $c = $dbh->prepare($sql);
     $c->execute($cid, $lv->where_params);
 
-    my $fetch_record = sub($)
-    {
+    my $fetch_record = sub {
         my (
             $caid, $aid, $country_abbr, $motto, $login, $team_name, $city, $jury,
             $ooc, $remote, $hidden, $virtual, $virtual_diff_time, $tag, $accepted
@@ -516,8 +491,7 @@ sub users_frame
 
     $lv->attach(url_f('users'), $fetch_record, $c);
 
-    if ($is_jury)
-    {
+    if ($is_jury)  {
         $t->param(
             submenu => [
                 { href => url_f('users', new => 1), item => res_str(541) },
@@ -530,8 +504,7 @@ sub users_frame
     $c->finish;
 }
 
-sub user_stats_frame
-{
+sub user_stats_frame {
     init_template('user_stats.html.tt');
     my $uid = param('uid') or return;
     my $envelopes_sql = $is_root ?
@@ -575,8 +548,7 @@ sub user_stats_frame
     );
 }
 
-sub user_settings_frame
-{
+sub user_settings_frame {
     init_template('user_settings.html.tt');
     $is_root or return;
     my $user_id = param('uid') or return;
@@ -602,8 +574,7 @@ sub user_settings_frame
     );
 }
 
-sub user_ip_frame
-{
+sub user_ip_frame {
     my ($p) = @_;
     $is_root or return;
     init_template('user_ip.html.tt');
@@ -630,8 +601,7 @@ sub user_ip_frame
 
 my $vdiff_units = { min => 1 / 24 / 60, hour => 1 / 24, day => 1, week => 7 };
 
-sub user_vdiff_save
-{
+sub user_vdiff_save {
     my ($p, $u) = @_;
     $p->{save} or return;
     my $k = $vdiff_units->{$p->{units} // ''} or return;
@@ -645,8 +615,7 @@ sub user_vdiff_save
     msg($u->{diff_time} ? 1157 : 1158, $u->{team_name});
 }
 
-sub user_vdiff_frame
-{
+sub user_vdiff_frame {
     my ($p) = @_;
     $is_jury or return;
     my $uid = $p->{uid} or return;
