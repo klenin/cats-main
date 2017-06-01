@@ -162,14 +162,18 @@ var msie = document.documentMode;
 
 if (autoupdate_interval && (!msie || msie >= 9)) {
     main_form.addEventListener('submit', form_submit_handler);
+[% IF is_jury %]
     get_element('retest').addEventListener('click', function(e) {
         retest();
         e.preventDefault();
     });
+[% END %]
+[% IF is_root %]
     get_element('create_group').addEventListener('click', function(e) {
         create_group();
         e.preventDefault();
     });
+[% END %]
 }
 
 function console_update() {
