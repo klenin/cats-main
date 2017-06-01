@@ -438,7 +438,10 @@ sub users_frame {
         A.id A.country A.motto A.login A.team_name A.city
         CA.is_jury CA.is_ooc CA.is_remote CA.is_hidden CA.is_virtual CA.diff_time CA.tag);
     $lv->define_db_searches(\@fields);
-    $lv->define_db_searches({ 'CA.id' => 'CA.id' });
+    $lv->define_db_searches({
+        'CA.id' => 'CA.id',
+        is_judge => q~CASE WHEN EXISTS (SELECT * FROM judges J WHERE J.account_id = A.id) THEN 1 ELSE 0 END~,
+    });
 
     my $fields = join ', ', @fields;
     my $sql = sprintf qq~
