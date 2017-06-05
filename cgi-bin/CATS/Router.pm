@@ -106,7 +106,7 @@ sub main_routes() {
             state => $ident,
         ],
 
-        test_diff => \&CATS::UI::Stats::test_diff_frame,
+        test_diff => [ \&CATS::UI::Stats::test_diff_frame, pid => $int, test => $int, ],
         compare_tests => \&CATS::UI::Stats::compare_tests_frame,
         rank_table_content => \&CATS::UI::RankTable::rank_table_content_frame,
         rank_table => \&CATS::UI::RankTable::rank_table_frame,

@@ -215,13 +215,12 @@ sub similarity_frame {
 }
 
 sub test_diff_frame {
+    my ($p) = @_;
     init_template('test_diff.html.tt');
-    $is_jury or return;
-    my $pid = param('pid') or return;
+    $is_jury && $p->{pid} && $p->{test} or return;
     my $problem = $dbh->selectrow_hashref(q~
         SELECT P.id, P.title FROM problems P WHERE id = ?~, { Slice => {} },
-        $pid) or return;
-    my $test_rank = param('test') or return;
+        $p->{pid}) or return;
     my $reqs = $dbh->selectall_arrayref(q~
         SELECT R.id, R.account_id, R.problem_id, R.state, R.failed_test, A.team_name
         FROM reqs r
@@ -229,15 +228,15 @@ sub test_diff_frame {
         WHERE R.contest_id = ? AND R.problem_id = ? AND
             (R.state = ? OR R.state > ? AND R.failed_test >= ?)
         ORDER BY A.team_name, R.account_id, R.id~, { Slice => {} },
-        $cid, $pid, $cats::st_accepted, $cats::st_accepted, $test_rank);
+        $cid, $p->{pid}, $cats::st_accepted, $cats::st_accepted, $p->{test});
     my ($prev, @fr);
     for my $r (@$reqs) {
         my %st = state_to_display($r->{state});
         $r->{$_} = $st{$_} for keys %st;
         undef $prev if $prev && $prev->{account_id} != $r->{account_id};
         $prev or next;
-        $prev->{state} > $cats::st_accepted && $prev->{failed_test} == $test_rank &&
-        ($r->{state} == $cats::st_accepted  || $r->{failed_test} > $test_rank)
+        $prev->{state} > $cats::st_accepted && $prev->{failed_test} == $p->{test} &&
+        ($r->{state} == $cats::st_accepted  || $r->{failed_test} > $p->{test})
             or next;
         push @fr, $r;
         $r->{href_run_details} = url_f('run_details', rid => join ',', $prev->{id}, $r->{id});
@@ -246,8 +245,8 @@ sub test_diff_frame {
         $r->{prev} = $prev;
         $prev = $r;
     }
-    $t->param(reqs => \@fr, problem => $problem, test => $test_rank);
-    CATS::UI::ProblemDetails::problem_submenu('compare_tests', $pid);
+    $t->param(reqs => \@fr, problem => $problem, test => $p->{test});
+    CATS::UI::ProblemDetails::problem_submenu('compare_tests', $p->{pid});
 }
 
 1;
