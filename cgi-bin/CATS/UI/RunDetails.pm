@@ -323,7 +323,7 @@ sub get_sources_info {
 
     my $req_tree = CATS::JudgeDB::get_req_tree(\@req_ids, {
         fields => [
-            'R.id as req_id', @src, 'S.fname AS file_name',
+            'R.id AS req_id', @src, 'S.fname AS file_name',
             qw(
             S.de_id R.account_id R.contest_id R.problem_id R.judge_id
             R.state R.failed_test R.points
@@ -703,6 +703,15 @@ sub view_test_details_frame {
     );
 }
 
+sub maybe_reinstall {
+    my ($p, $si) = @_;
+    $p->{reinstall} or return;
+    # Advance problem modification date to mark judges' cache stale.
+    $dbh->do(q~
+        UPDATE problems SET upload_date = CURRENT_TIMESTAMP WHERE id = ?~, undef,
+        $si->{problem_id});
+}
+
 sub request_params_frame {
     init_template('request_params.html.tt');
 
@@ -741,6 +750,7 @@ sub request_params_frame {
         }
         CATS::Request::enforce_state($si->{req_id}, $params);
         CATS::Request::delete_limits($si->{limits_id}) if $need_clear_limits && $si->{limits_id};
+        maybe_reinstall($p, $si);
         $dbh->commit;
         $si = get_sources_info(request_id => $si->{req_id});
     }
@@ -753,6 +763,7 @@ sub request_params_frame {
             }
         }
         my $group_req_id = CATS::Request::clone($si->{req_id}, $si->{contest_id}, $uid, $params);
+        maybe_reinstall($p, $si);
         $dbh->commit;
         return $group_req_id ? redirect(url_f('request_params', rid => $group_req_id, sid => $sid)) : undef;
     }

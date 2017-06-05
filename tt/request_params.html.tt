@@ -55,15 +55,24 @@
     <td>[% select('judge', si.judges) %] <input type="checkbox" name="set_judge" value="1" /></td>
   </tr>
   <tr>
-    <td colspan="2" align="center">
-      <button type="submit" value="1" class="button" name="retest">[% capt.retest %]</button>
-      <button type="submit" value="1" class="button" name="clone"/>[% capt.clone %]</button>
-      [% IF can_delete %]
-      <button type="submit" value="1" class="button" name="delete_request"
-        onclick="return confirm('[% si.req_id FILTER format(capt.confirm_delete) %]')">[% capt.delete %]</button>
-      [% END %]
+    <td colspan="2">
+      <label><input type="checkbox" name="reinstall" value="1" /> [% capt.reinstall %]</label>
     </td>
   </tr>
+  <tr>
+    <td colspan="2">
+      <button type="submit" value="1" class="button" name="retest">[% capt.retest %]</button>
+      <button type="submit" value="1" class="button" name="clone"/>[% capt.clone %]</button>
+    </td>
+  </tr>
+  [% IF can_delete %]
+  <tr>
+    <td colspan="2">
+      <button type="submit" value="1" class="button" name="delete_request"
+        onclick="return confirm('[% si.req_id FILTER format(capt.confirm_delete) %]')">[% capt.delete %]</button>
+    </td>
+  </tr>
+  [% END %]
 </table>
 </form>
 

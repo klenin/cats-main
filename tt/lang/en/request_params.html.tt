@@ -1,12 +1,12 @@
 [%
   capt.import({
+    reinstall => 'Reinstall problem',
     retest => 'Retest',
     clone => 'Clone',
     judge => 'Judge',
     delete => 'Delete run request',
     confirm_delete => 'Delete run request %d. Are you sure?',
     testing_result => 'testing result',
-    retest => 'Retest',
     on_test => 'on test #',
     with_points => 'with points',
     save_output_prefix => 'Save output prefix',
