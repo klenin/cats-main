@@ -12,8 +12,7 @@ use CATS::UI::ProblemDetails;
 use CATS::Utils qw(state_to_display);
 use CATS::Web qw(param);
 
-sub greedy_cliques
-{
+sub greedy_cliques {
     my (@equiv_tests) = @_;
     my $eq_lists = [];
     while (@equiv_tests) {
@@ -38,12 +37,9 @@ sub greedy_cliques
     $eq_lists;
 }
 
-
 sub lists_to_strings { [ map { eq => join ',', @$_ }, @{$_[0]} ] }
 
-
-sub compare_tests_frame
-{
+sub compare_tests_frame {
     init_template('compare_tests.html.tt');
     $is_jury or return;
     my ($pid) = param('pid') or return;
@@ -119,13 +115,10 @@ sub compare_tests_frame
     CATS::UI::ProblemDetails::problem_submenu('compare_tests', $pid);
 }
 
-
-sub preprocess_source
-{
+sub preprocess_source {
     my $h = $_[0]->{hash} = {};
     my $collapse_indents = $_[1];
-    for (split /\n/, $_[0]->{src})
-    {
+    for (split /\n/, $_[0]->{src}) {
         $_ = Encode::encode('WINDOWS-1251', $_);
         use bytes; # MD5 works with bytes, prevent upgrade to utf8
         s/\s+//g;
@@ -141,9 +134,7 @@ sub preprocess_source
     return;
 }
 
-
-sub similarity_score
-{
+sub similarity_score {
     my ($i, $j) = @_;
     my $sim = 0;
     $sim++ for grep exists $j->{$_}, keys %$i;
@@ -151,9 +142,7 @@ sub similarity_score
     return $sim / (keys(%$i) + keys(%$j));
 }
 
-
-sub similarity_frame
-{
+sub similarity_frame {
     init_template('similarity.html.tt');
     $is_jury && !$contest->is_practice or return;
     my $p = $dbh->selectall_arrayref(q~
@@ -225,9 +214,7 @@ sub similarity_frame
     );
 }
 
-
-sub test_diff_frame
-{
+sub test_diff_frame {
     init_template('test_diff.html.tt');
     $is_jury or return;
     my $pid = param('pid') or return;
