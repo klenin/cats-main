@@ -733,7 +733,7 @@ sub request_params_frame {
         points => undef,
     };
 
-    if (param('retest')) {
+    if ($p->{retest}) {
         if ($need_clear_limits) {
             $params->{limits_id} = undef;
         } else {
@@ -744,7 +744,7 @@ sub request_params_frame {
         $dbh->commit;
         $si = get_sources_info(request_id => $si->{req_id});
     }
-    if (param('clone')) {
+    if ($p->{clone}) {
         if (!$need_clear_limits) {
             if ($si->{limits_id}) {
                 $params->{limits_id} = CATS::Request::clone_limits($si->{limits_id}, $limits);
@@ -758,7 +758,7 @@ sub request_params_frame {
     }
     my $can_delete = !$si->{is_official} || $is_root;
     $t->param(can_delete => $can_delete);
-    if (param('delete') && $can_delete) {
+    if ($p->{delete_request} && $can_delete) {
         CATS::Request::delete($si->{req_id});
         $dbh->commit;
         return;

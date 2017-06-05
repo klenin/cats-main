@@ -95,6 +95,9 @@ sub main_routes() {
         request_params => [
             \&CATS::UI::RunDetails::request_params_frame,
             rid => $int,
+            retest => $bool,
+            clone => $bool,
+            delete_request => $bool,
             set_state => $bool,
             failed_test => $int,
             points => $int,

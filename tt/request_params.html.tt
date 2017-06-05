@@ -46,7 +46,8 @@
       <div class="limits [% si.style_classes.save_output_prefix %]">
       <input type="text" name="save_output_prefix" value="[% si.save_output_prefix %]" />
       </div>
-      <input type="checkbox" name="set_save_output_prefix" value="1" [% 'checked' IF si.req_overidden_limits.save_output_prefix %] />
+      <input type="checkbox" name="set_save_output_prefix" value="1"
+        [%- 'checked="checked"' IF si.req_overidden_limits.save_output_prefix %] />
     </td>
   </tr>
   <tr>
@@ -55,10 +56,11 @@
   </tr>
   <tr>
     <td colspan="2" align="center">
-      <input type="submit" value="[% capt.retest %]" class="button" name="retest"/>
-      <input type="submit" value="[% capt.clone %]" class="button" name="clone"/>
+      <button type="submit" value="1" class="button" name="retest">[% capt.retest %]</button>
+      <button type="submit" value="1" class="button" name="clone"/>[% capt.clone %]</button>
       [% IF can_delete %]
-      <input type="submit" value="[% capt.delete %]" class="button" name="delete" onclick="return confirm('[% si.req_id FILTER format(capt.confirm_delete) %]')"/>
+      <button type="submit" value="1" class="button" name="delete_request"
+        onclick="return confirm('[% si.req_id FILTER format(capt.confirm_delete) %]')">[% capt.delete %]</button>
       [% END %]
     </td>
   </tr>
