@@ -56,7 +56,9 @@
   </tr>
   <tr>
     <td colspan="2">
+      [% IF si.can_reinstall %]
       <label><input type="checkbox" name="reinstall" value="1" /> [% capt.reinstall %]</label>
+      [% END %]
     </td>
   </tr>
   <tr>

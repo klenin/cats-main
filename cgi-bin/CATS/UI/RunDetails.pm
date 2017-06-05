@@ -333,12 +333,14 @@ sub get_sources_info {
             ),
             'DE.description AS de_name',
             'A.team_name', 'COALESCE(E.ip, A.last_ip) AS last_ip',
-            'P.title AS problem_name', 'P.save_output_prefix', @pc_sql,
+            'P.title AS problem_name', 'P.save_output_prefix',
+            'P.contest_id AS orig_contest_id',
+            @pc_sql,
             @limits, 'R.limits_id as limits_id',
             'C.title AS contest_name',
             'C.is_official',
             'COALESCE(R.testsets, CP.testsets) AS testsets',
-            'C.id AS contest_id', 'CP.id AS cp_id',
+            'CP.id AS cp_id',
             'CP.status', 'CP.code',
             'CA.id AS ca_id',
         ],
@@ -705,7 +707,7 @@ sub view_test_details_frame {
 
 sub maybe_reinstall {
     my ($p, $si) = @_;
-    $p->{reinstall} or return;
+    $p->{reinstall} && $si->{can_reinstall} or return;
     # Advance problem modification date to mark judges' cache stale.
     $dbh->do(q~
         UPDATE problems SET upload_date = CURRENT_TIMESTAMP WHERE id = ?~, undef,
@@ -742,6 +744,7 @@ sub request_params_frame {
         points => undef,
     };
 
+    $si->{can_reinstall} = $is_root || $si->{orig_contest_id} == $si->{contest_id};
     if ($p->{retest}) {
         if ($need_clear_limits) {
             $params->{limits_id} = undef;
