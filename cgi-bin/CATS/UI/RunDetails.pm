@@ -413,6 +413,8 @@ sub get_sources_info {
         $r->{src} //= '';
         $r->{de_id} //= 0;
         $r->{$_} = $r->{"lr_$_"} || $r->{"lcp_$_"} || $r->{"p_$_"} for @cats::limits_fields;
+
+        $r->{can_reinstall} = $is_root || $r->{orig_contest_id} == $r->{contest_id};
     }
 
     return ref $rid ? [ map $req_tree->{$_}, @req_ids ] : $req_tree->{$rid};
@@ -714,6 +716,15 @@ sub maybe_reinstall {
         $si->{problem_id});
 }
 
+sub maybe_status_ok {
+    my ($p, $si) = @_;
+    $p->{status_ok} or return;
+    $dbh->do(q~
+        UPDATE contest_problems SET status = ?
+        WHERE contest_id = ? AND problem_id = ? AND status <> ?~, undef,
+        $cats::problem_st_ready, $si->{contest_id}, $si->{problem_id}, $cats::problem_st_ready);
+}
+
 sub request_params_frame {
     init_template('request_params.html.tt');
 
@@ -744,7 +755,6 @@ sub request_params_frame {
         points => undef,
     };
 
-    $si->{can_reinstall} = $is_root || $si->{orig_contest_id} == $si->{contest_id};
     if ($p->{retest}) {
         if ($need_clear_limits) {
             $params->{limits_id} = undef;
@@ -754,6 +764,7 @@ sub request_params_frame {
         CATS::Request::enforce_state($si->{req_id}, $params);
         CATS::Request::delete_limits($si->{limits_id}) if $need_clear_limits && $si->{limits_id};
         maybe_reinstall($p, $si);
+        maybe_status_ok($p, $si);
         $dbh->commit;
         $si = get_sources_info(request_id => $si->{req_id});
     }
@@ -767,6 +778,7 @@ sub request_params_frame {
         }
         my $group_req_id = CATS::Request::clone($si->{req_id}, $si->{contest_id}, $uid, $params);
         maybe_reinstall($p, $si);
+        maybe_status_ok($p, $si);
         $dbh->commit;
         return $group_req_id ? redirect(url_f('request_params', rid => $group_req_id, sid => $sid)) : undef;
     }
