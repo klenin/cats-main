@@ -198,7 +198,7 @@ CREATE TABLE problem_sources (
     write_limit INTEGER /* In bytes */
 );
 ALTER TABLE problem_sources
-  ADD CONSTRAINT chk_problem_sources_1 CHECK (0 <= stype AND stype <= 14);
+  ADD CONSTRAINT chk_problem_sources_1 CHECK (0 <= stype AND stype <= 15);
 CREATE INDEX ps_guid_idx ON problem_sources(guid);
 
 CREATE TABLE problem_sources_import
@@ -342,6 +342,7 @@ CREATE TABLE req_details
   req_id            INTEGER NOT NULL REFERENCES REQS(ID) ON DELETE CASCADE,
   test_rank         INTEGER NOT NULL /*REFERENCES TESTS(RANK) ON DELETE CASCADE*/,
   result            INTEGER,
+  points            INTEGER,
   time_used         FLOAT,
   memory_used       INTEGER,
   disk_used         INTEGER,
