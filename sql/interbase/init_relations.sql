@@ -88,7 +88,7 @@ CREATE TABLE contests (
     )
 );
 ALTER TABLE contests ADD CONSTRAINT chk_pinned_judges_only
-    CHECK pinned_judges_only IN (0, 1);
+    CHECK (pinned_judges_only IN (0, 1));
 
 
 CREATE TABLE contest_accounts (
@@ -152,7 +152,7 @@ CREATE TABLE problems (
     statement_url      VARCHAR(200) DEFAULT '',
     explanation_url    VARCHAR(200) DEFAULT ''
 );
-ALTER TABLE problems ADD CONSTRAINT chk_run_method CHECK (run_method IN (0, 1, 2))
+ALTER TABLE problems ADD CONSTRAINT chk_run_method CHECK (run_method IN (0, 1, 2));
 
 
 CREATE TABLE problem_de_bitmap_cache (
@@ -193,7 +193,7 @@ CREATE TABLE problem_sources (
     output_file VARCHAR(200),
     guid        VARCHAR(100), /* For cross-contest references. */
     time_limit  FLOAT, /* In seconds. */
-    memory_limit INTEGER /* In mebibytes. */
+    memory_limit INTEGER, /* In mebibytes. */
     write_limit INTEGER /* In bytes */
 );
 ALTER TABLE problem_sources
