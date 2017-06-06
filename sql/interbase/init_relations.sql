@@ -149,6 +149,7 @@ CREATE TABLE problems (
     max_points         INTEGER,
     hash               VARCHAR(200),
     run_method         SMALLINT DEFAULT 0,
+    players_count      VARCHAR(200),
     statement_url      VARCHAR(200) DEFAULT '',
     explanation_url    VARCHAR(200) DEFAULT ''
 );
@@ -432,6 +433,7 @@ CREATE SEQUENCE de_bitmap_cache_seq;
 ALTER SEQUENCE de_bitmap_cache_seq RESTART WITH 1000;
 
 
+INSERT INTO default_de (id, code, description, file_ext) VALUES (GEN_ID(key_seq, 1), 1, 'Do not compile this file', 'h;inc');
 INSERT INTO default_de (id, code, description, file_ext) VALUES (GEN_ID(key_seq, 1), 101, 'Cross-platform C/C++ compiler', 'cpp;c');
 INSERT INTO default_de (id, code, description, file_ext) VALUES (GEN_ID(key_seq, 1), 102, 'GNU C++', 'cpp;c;cxx');
 INSERT INTO default_de (id, code, description, file_ext) VALUES (GEN_ID(key_seq, 1), 103, 'MS Visual C++', 'cpp;c');
