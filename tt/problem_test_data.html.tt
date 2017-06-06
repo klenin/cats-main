@@ -10,7 +10,7 @@
   <tr><th>[% capt.test %]</th><th>[% capt.input %]</th><th>[% capt.answer %]</th><th>[% capt.generator_params %]</th></tr>
 [% FOREACH t IN tests %]
   <tr>
-    <td>[% t.rank %]</td>
+    <td>[% href(t.href_test_diff, t.rank) %]</td>
     <td>[% t.input | html; '&hellip;' IF t.input_cut %]</td>
     <td>[% t.answer | html; '&hellip;' IF t.answer_cut %]</td>
     <td>[% t.generator_params %]</td>

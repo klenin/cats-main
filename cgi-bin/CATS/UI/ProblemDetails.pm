@@ -348,6 +348,7 @@ sub problem_test_data_frame {
         $_->{generator_params} = !defined $t->{input} ?
             ($_->{gen_group} ? "$_->{gen_name} GROUP" :
             $_->{gen_name} ? "$_->{gen_name} $_->{param}" : '') : '';
+        $_->{href_test_diff} = url_f('test_diff', pid => $p->{pid}, test => $_->{rank});
     };
 
     $t->param(p => $problem, tests => $tests);
