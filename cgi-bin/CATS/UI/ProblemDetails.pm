@@ -314,7 +314,7 @@ sub problem_test_data_frame {
     init_template('problem_test_data.html.tt');
     $p->{pid} && $is_jury or return;
 
-    if (param('clear_test_data')) {
+    if ($p->{clear_test_data}) {
         $dbh->do(q~
             UPDATE tests T SET T.in_file = NULL, T.in_file_size = NULL, T.out_file = NULL, T.out_file_size = NULL
             WHERE (T.in_file_size IS NOT NULL OR T.out_file_size IS NOT NULL) AND T.problem_id = ?~, undef,
@@ -338,22 +338,15 @@ sub problem_test_data_frame {
         WHERE T.problem_id = ? ORDER BY T.rank~, { Slice => {} },
         $p->{pid}) or return;
 
-    (
-        $_->{input_cut},
-        $_->{answer_cut},
-        $_->{generator_params},
-    ) = (
-        length($_->{input} || '') > $cats::test_file_cut,
-        length($_->{answer} || '') > $cats::test_file_cut,
-        !defined $t->{input} ?
+    for (@$tests) {
+        $_->{input_cut} = length($_->{input} || '') > $cats::test_file_cut;
+        $_->{answer_cut} = length($_->{answer} || '') > $cats::test_file_cut;
+        $_->{generator_params} = !defined $t->{input} ?
             ($_->{gen_group} ? "$_->{gen_name} GROUP" :
-            $_->{gen_name} ? "$_->{gen_name} $_->{param}" : '') : ''
-    ) for @$tests;
+            $_->{gen_name} ? "$_->{gen_name} $_->{param}" : '') : '';
+    };
 
-    $t->param(
-        p => $problem,
-        tests => $tests,
-    );
+    $t->param(p => $problem, tests => $tests);
 
     problem_submenu('problem_test_data', $p->{pid});
 }
