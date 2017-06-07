@@ -15,6 +15,7 @@ use CATS::IP;
 use CATS::JudgeDB;
 use CATS::Misc qw($is_jury $is_root $sid $cid $t $uid $settings init_template msg res_str url_f problem_status_names);
 use CATS::Problem::Text qw(ensure_problem_hash);
+use CATS::Problem::Utils;
 use CATS::RankTable;
 use CATS::Request;
 use CATS::Testset;
@@ -195,10 +196,7 @@ sub get_run_info {
         $contest->{show_test_data} or return $row;
         my $t = $contest->{tests}->[$row->{test_rank} - 1] or return $row;
         $t->{param} //= '';
-        $row->{input_gen_params} =
-            $t->{gen_group} ? "$t->{gen_name} GROUP" :
-            $t->{gen_name} ? "$t->{gen_name} $t->{param}" : ''
-            if !defined $t->{input} || defined $t->{input_file_size};
+        $row->{input_gen_params} = CATS::Problem::Utils::gen_group_text($t);
         $row->{input_data} =
             defined $t->{input} ? $t->{input} : $row->{input_gen_params};
         $row->{input_data_cut} = length($t->{input} || '') > $cats::test_file_cut;
@@ -378,7 +376,8 @@ sub get_sources_info {
     for my $r (@$result) {
         $_ = Encode::decode_utf8($_) for @$r{grep /_name$/, keys %$r};
 
-        my %additional_info = ( state_to_display($r->{state}),
+        my %additional_info = (
+            state_to_display($r->{state}),
             CATS::IP::linkify_ip($r->{last_ip}),
             href_stats => url_f('user_stats', uid => $r->{account_id}),
             href_send_message => url_f('send_message_box', caid => $r->{ca_id}),
@@ -406,7 +405,8 @@ sub get_sources_info {
         $r->{status_name} = problem_status_names->{$r->{status}};
 
         if ($r->{elements_count} == 1) {
-            $r->{$_} = $r->{elements}->[0]->{$_} for qw(file_name de_id de_name), $p{get_source} ? qw(src syntax) : ();
+            $r->{$_} = $r->{elements}->[0]->{$_}
+                for qw(file_name de_id de_name), $p{get_source} ? qw(src syntax) : ();
         }
 
         $r->{file_name} //= '';

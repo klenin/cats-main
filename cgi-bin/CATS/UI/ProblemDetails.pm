@@ -15,6 +15,7 @@ use CATS::Misc qw(
     init_template msg res_str url_f auto_ext);
 use CATS::Problem::Save;
 use CATS::Problem::Text;
+use CATS::Problem::Utils;
 use CATS::StaticPages;
 use CATS::Testset;
 use CATS::Utils qw(url_function source_encodings);
@@ -335,8 +336,10 @@ sub problem_test_data_frame {
 
     my $tests = $dbh->selectall_arrayref(qq~
         SELECT PS.fname AS gen_name, T.rank, T.gen_group, T.param,
-            SUBSTRING(T.in_file FROM 1 FOR $cats::test_file_cut + 1) AS input, T.in_file_size AS input_size,
-            SUBSTRING(T.out_file FROM 1 FOR $cats::test_file_cut + 1) AS answer, T.out_file_size AS answer_size
+            SUBSTRING(T.in_file FROM 1 FOR $cats::test_file_cut + 1) AS input,
+            T.in_file_size AS input_file_size,
+            SUBSTRING(T.out_file FROM 1 FOR $cats::test_file_cut + 1) AS answer,
+            T.out_file_size AS answer_file_size
         FROM tests T
             LEFT JOIN problem_sources PS ON PS.id = generator_id
         WHERE T.problem_id = ? ORDER BY T.rank~, { Slice => {} },
@@ -345,9 +348,7 @@ sub problem_test_data_frame {
     for (@$tests) {
         $_->{input_cut} = length($_->{input} || '') > $cats::test_file_cut;
         $_->{answer_cut} = length($_->{answer} || '') > $cats::test_file_cut;
-        $_->{generator_params} = !defined $t->{input} ?
-            ($_->{gen_group} ? "$_->{gen_name} GROUP" :
-            $_->{gen_name} ? "$_->{gen_name} $_->{param}" : '') : '';
+        $_->{generator_params} = CATS::Problem::Utils::gen_group_text($_);
         $_->{href_test_diff} = url_f('test_diff', pid => $p->{pid}, test => $_->{rank});
     };
 
