@@ -560,7 +560,8 @@ sub group_submissions {
     my ($selection, $by_reference) = @_;
     my $count = 0;
     my @sanitized_runs = grep $_ ne '', split /\D+/, $selection;
-    CATS::Request::create_group(($by_reference ? CATS::Request::clone(\@sanitized_runs, undef, $uid) : \@sanitized_runs),
+    CATS::Request::create_group(
+        ($by_reference ? CATS::Request::clone(\@sanitized_runs, undef, $uid, { state => $cats::st_ignore_submit }) : \@sanitized_runs),
         $uid, { state => $cats::st_not_processed, judge_id => undef }) or return;
     $dbh->commit;
 }
