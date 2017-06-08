@@ -278,6 +278,7 @@ sub console_content {
         R.problem_id
         R.account_id
         R.points
+        R.judge_id
         P.title
         A.team_name
         A.city
