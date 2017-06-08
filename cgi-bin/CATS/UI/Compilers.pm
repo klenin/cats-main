@@ -83,7 +83,7 @@ sub compilers_frame {
     };
     $lv->attach(url_f('compilers'), $fetch_record, $c);
 
-    $t->param(submenu => [ references_menu('compilers') ], editable => $is_root)
+    $t->param(submenu => [ references_menu('compilers') ], editable => $is_root, is_jury => $is_jury)
         if $is_jury;
 }
 

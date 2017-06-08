@@ -30,7 +30,7 @@ function delete_compiler(href, name)
 [% IF editable %]<td>[% c.default_file_ext | html %]</td>[% END %]
 <td>[% c.memory_handicap %]</td>
 <td>[% c.syntax %]</td>
-[% IF editable %]<td>[% IF c.locked %]<font color=red>[% capt.locked %]</font>[% ELSE; capt.unlocked; END %]</td>[% END %]
+[% IF is_jury %]<td>[% IF c.locked %]<font color=red>[% capt.locked %]</font>[% ELSE; capt.unlocked; END %]</td>[% END %]
 </tr>
 [% END %]
 </table>
