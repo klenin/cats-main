@@ -34,6 +34,8 @@ function delete_judge(href, name)
 [<a href="[% j.href_whois %]" alt="[% j.last_ip %]" title="[% j.last_ip %]">[% j.last_ip_short %]</a>]
 [%- END -%]
 </td>
+<td>[% maybe_href(j.href_console, j.processing_count) %] / [% j.processed_count %]
+</td>
 [% END %]
 
 <td>[% j.is_alive; IF editable && j.is_alive %] [<a href="[% j.href_ping %]">[% capt.ping %]</a>][% END %]</td>
