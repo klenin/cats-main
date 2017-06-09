@@ -178,10 +178,11 @@ sub get_results
             R.id, R.state, R.problem_id, R.account_id, R.points, R.testsets, CA.contest_id,
             MAXVALUE((R.submit_time - C.start_date - CA.diff_time) * 1440, 0) AS time_elapsed,
             CASE WHEN R.submit_time >= C.freeze_date THEN 1 ELSE 0 END AS is_frozen
-        FROM reqs R, contests C, contest_accounts CA, contest_problems CP
+        FROM reqs R
+            INNER JOIN contests C ON C.id = R.contest_id
+            INNER JOIN contest_accounts CA ON CA.account_id = R.account_id AND CA.contest_id = R.contest_id
+            INNER JOIN contest_problems CP ON CP.problem_id = R.problem_id AND CP.contest_id = R.contest_id
         WHERE
-            CA.contest_id = C.id AND CA.account_id = R.account_id AND R.contest_id = C.id AND
-            CP.problem_id = R.problem_id AND CP.contest_id = C.id AND
             CA.is_hidden = 0 AND CP.status < ? AND R.state >= ? AND R.id > ? AND
             C.id IN ($self->{contest_list})$cond_str
         ORDER BY R.id~, { Slice => {} },
