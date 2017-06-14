@@ -88,7 +88,7 @@ CREATE TABLE contests (
     )
 );
 ALTER TABLE contests ADD CONSTRAINT chk_pinned_judges_only
-    CHECK pinned_judges_only IN (0, 1);
+    CHECK (pinned_judges_only IN (0, 1));
 
 
 CREATE TABLE contest_accounts (
@@ -149,10 +149,11 @@ CREATE TABLE problems (
     max_points         INTEGER,
     hash               VARCHAR(200),
     run_method         SMALLINT DEFAULT 0,
+    players_count      VARCHAR(200),
     statement_url      VARCHAR(200) DEFAULT '',
     explanation_url    VARCHAR(200) DEFAULT ''
 );
-ALTER TABLE problems ADD CONSTRAINT chk_run_method CHECK (run_method IN (0, 1, 2))
+ALTER TABLE problems ADD CONSTRAINT chk_run_method CHECK (run_method IN (0, 1, 2));
 
 
 CREATE TABLE problem_de_bitmap_cache (
@@ -193,11 +194,11 @@ CREATE TABLE problem_sources (
     output_file VARCHAR(200),
     guid        VARCHAR(100), /* For cross-contest references. */
     time_limit  FLOAT, /* In seconds. */
-    memory_limit INTEGER /* In mebibytes. */
+    memory_limit INTEGER, /* In mebibytes. */
     write_limit INTEGER /* In bytes */
 );
 ALTER TABLE problem_sources
-  ADD CONSTRAINT chk_problem_sources_1 CHECK (0 <= stype AND stype <= 14);
+  ADD CONSTRAINT chk_problem_sources_1 CHECK (0 <= stype AND stype <= 15);
 CREATE INDEX ps_guid_idx ON problem_sources(guid);
 
 CREATE TABLE problem_sources_import
@@ -341,6 +342,7 @@ CREATE TABLE req_details
   req_id            INTEGER NOT NULL REFERENCES REQS(ID) ON DELETE CASCADE,
   test_rank         INTEGER NOT NULL /*REFERENCES TESTS(RANK) ON DELETE CASCADE*/,
   result            INTEGER,
+  points            INTEGER,
   time_used         FLOAT,
   memory_used       INTEGER,
   disk_used         INTEGER,
@@ -432,6 +434,7 @@ CREATE SEQUENCE de_bitmap_cache_seq;
 ALTER SEQUENCE de_bitmap_cache_seq RESTART WITH 1000;
 
 
+INSERT INTO default_de (id, code, description, file_ext) VALUES (GEN_ID(key_seq, 1), 1, 'Do not compile this file', 'h;inc');
 INSERT INTO default_de (id, code, description, file_ext) VALUES (GEN_ID(key_seq, 1), 101, 'Cross-platform C/C++ compiler', 'cpp;c');
 INSERT INTO default_de (id, code, description, file_ext) VALUES (GEN_ID(key_seq, 1), 102, 'GNU C++', 'cpp;c;cxx');
 INSERT INTO default_de (id, code, description, file_ext) VALUES (GEN_ID(key_seq, 1), 103, 'MS Visual C++', 'cpp;c');
