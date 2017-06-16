@@ -162,7 +162,7 @@ function send_message(href) {
 <tr>
   <th>[% capt.status %]<sup style="font-weight: normal;">&nbsp;[<a href="docs/verdicts.[% lang %].html">?</a>]</span></th>
   [% FOREACH si IN sources_info; IF si %]
-    <td colspan="[% si.colspan %]">[% submit_result(si); " ($si.points)" IF si.points %]</td>
+    <td colspan="[% si.colspan %]">[% submit_result(si); " ($si.points)" IF si.points.defined() %]</td>
   [% END; END %]
 </tr>
 <tr>
