@@ -70,7 +70,7 @@ sub get_req_details {
     my ($contest, $req, $accepted_tests) = @_;
 
     my $rd_fields = join ', ', (
-         qw(test_rank result),
+         qw(test_rank result points),
          ($contest->{show_test_resources} ? @resources : ()),
          ($contest->{show_checker_comment} || $req->{partial_checker} ? qw(checker_comment) : ()),
     );
@@ -119,7 +119,7 @@ sub get_run_info {
         }
 
         $last_test = $row->{test_rank};
-        my $p = $row->{is_accepted} ? $points->[$row->{test_rank} - 1] || 0 : 0;
+        my $p = $row->{is_accepted} ? $row->{points} || $points->[$row->{test_rank} - 1] || 0 : 0;
         if (my $ts = $testset{$last_test}) {
             $used_testsets{$ts->{name}} = $ts;
             $ts->{accepted_count} //= 0;
