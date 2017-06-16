@@ -547,10 +547,11 @@ sub retest_submissions {
     my @sanitized_runs = grep $_ ne '', split /\D+/, $selection;
     if ($by_reference) {
         $count = @{CATS::Request::clone(\@sanitized_runs, undef, $uid)};
-    }
-    for (@sanitized_runs) {
-        CATS::Request::enforce_state($_, { state => $cats::st_not_processed, judge_id => undef })
-            and ++$count;
+    } else {
+        for (@sanitized_runs) {
+            CATS::Request::enforce_state($_, { state => $cats::st_not_processed, judge_id => undef })
+                and ++$count;
+        }
     }
     $dbh->commit;
     return $count;

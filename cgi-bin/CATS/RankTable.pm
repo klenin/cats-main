@@ -18,7 +18,7 @@ use CATS::Web qw(param url_param);
 use fields qw(
     contest_list hide_ooc hide_virtual show_points frozen
     title has_practice not_started filter use_cache
-    rank problems problems_idx show_all_results show_prizes req_selection show_regions
+    rank problems problems_idx show_all_results show_prizes req_selection has_competitive show_regions
 );
 
 
@@ -97,7 +97,7 @@ sub get_problems
             CP.id, CP.problem_id, CP.code, CP.contest_id,
             CP.testsets, CP.points_testsets, C.start_date,
             CAST(CURRENT_TIMESTAMP - C.start_date AS DOUBLE PRECISION) AS since_start,
-            C.local_only, CP.max_points, P.title, P.max_points AS max_points_def,
+            C.local_only, CP.max_points, P.title, P.max_points AS max_points_def, P.run_method,
             @{[ partial_checker_sql ]}
         FROM
             contest_problems CP INNER JOIN contests C ON C.id = CP.contest_id
@@ -134,6 +134,7 @@ sub get_problems
             $need_commit = 1;
         }
         $max_total_points += $_->{max_points} || 0;
+        $self->{has_competitive} = 1 if $_->{run_method} == $cats::rm_competitive;
     }
     $dbh->commit if $need_commit;
 
@@ -173,20 +174,48 @@ sub get_results
 
     $cond_str .= join '', map " AND $_", @conditions;
 
+    my $select_fields = q~
+        R.state, R.problem_id, R.points, R.testsets, R.contest_id,
+        MAXVALUE((R.submit_time - C.start_date - CA.diff_time) * 1440, 0) AS time_elapsed,
+        CASE WHEN R.submit_time >= C.freeze_date THEN 1 ELSE 0 END AS is_frozen~;
+
+    my $joins = q~
+        INNER JOIN contests C ON C.id = R.contest_id
+        INNER JOIN contest_problems CP ON CP.problem_id = R.problem_id AND CP.contest_id = R.contest_id
+        INNER JOIN problems P ON P.id = R.problem_id~;
+
+    my $where = qq~
+        CA.is_hidden = 0 AND CP.status < ? AND R.state >= ? AND R.id > ? AND
+        C.id IN ($self->{contest_list})$cond_str~;
+
+    my $select_competitive_query = $self->{has_competitive} ? qq~
+        UNION
+            SELECT $select_fields, RO.id, R.id AS ref_id, RO.account_id, R.account_id AS ref_account_id
+            FROM reqs R
+                INNER JOIN req_groups RGE ON RGE.group_id = R.id
+                INNER JOIN reqs RO ON RO.id = RGE.element_id
+                INNER JOIN accounts AO ON AO.id = RO.account_id
+                INNER JOIN contest_accounts CA ON CA.account_id = RO.account_id AND CA.contest_id = R.contest_id
+                $joins
+            WHERE
+               EXISTS ( SELECT * FROM req_groups RGP WHERE RGP.element_id = R.id ) AND
+                P.run_method = $cats::rm_competitive AND
+                $where
+    ~ : '';
+
     $dbh->selectall_arrayref(qq~
-        SELECT
-            R.id, R.state, R.problem_id, R.account_id, R.points, R.testsets, CA.contest_id,
-            MAXVALUE((R.submit_time - C.start_date - CA.diff_time) * 1440, 0) AS time_elapsed,
-            CASE WHEN R.submit_time >= C.freeze_date THEN 1 ELSE 0 END AS is_frozen
-        FROM reqs R, contests C, contest_accounts CA, contest_problems CP
-        WHERE
-            CA.contest_id = C.id AND CA.account_id = R.account_id AND R.contest_id = C.id AND
-            CP.problem_id = R.problem_id AND CP.contest_id = C.id AND
-            CA.is_hidden = 0 AND CP.status < ? AND R.state >= ? AND R.id > ? AND
-            C.id IN ($self->{contest_list})$cond_str
-        ORDER BY R.id~, { Slice => {} },
-        $cats::problem_st_hidden, $cats::request_processed, $max_cached_req_id, @params
-    );
+        SELECT * FROM (
+            SELECT $select_fields, R.id, NULL AS ref_id, R.account_id, NULL as ref_account_id
+            FROM reqs R
+                INNER JOIN contest_accounts CA ON CA.account_id = R.account_id AND CA.contest_id = R.contest_id
+                $joins
+            WHERE
+                P.run_method <> $cats::rm_competitive AND
+                $where
+            $select_competitive_query
+        )
+        ORDER BY id~, { Slice => {} },
+        ($cats::problem_st_hidden, $cats::request_processed, $max_cached_req_id, @params) x ($self->{has_competitive} ? 2 : 1));
 }
 
 
@@ -209,12 +238,12 @@ sub cache_req_points
 {
     my ($req, $problem) = @_;
     my $test_points = $dbh->selectall_arrayref(qq~
-        SELECT RD.result, RD.checker_comment, T.points, T.rank
+        SELECT RD.result, RD.checker_comment, COALESCE(RD.points, T.points) AS points, T.rank
             FROM reqs R
             INNER JOIN req_details RD ON RD.req_id = R.id
             INNER JOIN tests T ON RD.test_rank = T.rank AND T.problem_id = R.problem_id
         WHERE R.id = ?~, { Slice => {} },
-        $req->{id}
+        $req->{ref_id} || $req->{id}
     );
 
     my $test_testsets = $req->{testsets} ? get_test_testsets($problem, $req->{testsets}) : {};
@@ -236,7 +265,7 @@ sub cache_req_points
 
     # To reduce chance of deadlock, commit every change separately, even if it is slower.
     $dbh->do(q~
-        UPDATE reqs SET points = ? WHERE id = ? AND points IS NULL~, undef, $total, $req->{id});
+        UPDATE reqs SET points = ? WHERE id = ? AND points IS NULL~, undef, $total, $req->{ref_id} || $req->{id});
     $dbh->commit;
     $total;
 }
@@ -520,16 +549,23 @@ sub rank_table
     my $max_req_id = 0;
     for (@$results)
     {
-        $max_req_id = $_->{id} if $_->{id} > $max_req_id;
+        my $id = $_->{ref_id} || $_->{id};
+        $max_req_id = $id if $id > $max_req_id;
         $_->{time_elapsed} ||= 0;
         next if $_->{state} == $cats::st_ignore_submit;
         my $t = $teams->{$_->{account_id}} || $select_teams->($_->{account_id});
         my $p = $t->{problems}->{$_->{problem_id}};
+        my $problem = $self->{problems_idx}->{$_->{problem_id}};
         if ($self->{show_points} && !defined $_->{points})
         {
-            $_->{points} = cache_req_points($_, $self->{problems_idx}->{$_->{problem_id}});
+            $_->{points} = cache_req_points($_, $problem);
         }
         next if $p->{solved} && !$self->{show_points};
+
+        if ($problem->{run_method} == $cats::rm_competitive && (!defined $p->{last_req_id} || $p->{last_req_id} < $_->{id})) {
+            $t->{total_points} = $p->{points} = 0;
+            $p->{last_req_id} = $_->{id};
+        }
 
         if ($_->{state} == $cats::st_accepted)
         {
@@ -545,11 +581,17 @@ sub rank_table
             $p->{runs}++;
             $t->{total_runs}++;
             $p->{points} ||= 0;
-            my $dp = ($_->{points} || 0) - $p->{points};
-            # If req_selection is set to 'best', ignore negative point changes.
-            if ($self->{req_selection}->{$_->{contest_id}} == 0 || $dp > 0) {
-                $t->{total_points} += $dp;
-                $p->{points} = $_->{points};
+
+            if ($problem->{run_method} == $cats::rm_competitive) {
+                $t->{total_points} += $_->{points};
+                $p->{points} += $_->{points};
+            } else {
+                my $dp = ($_->{points} || 0) - $p->{points};
+                # If req_selection is set to 'best', ignore negative point changes.
+                if ($self->{req_selection}->{$_->{contest_id}} == 0 || $dp > 0) {
+                    $t->{total_points} += $dp;
+                    $p->{points} = $_->{points};
+                }
             }
         }
     }
