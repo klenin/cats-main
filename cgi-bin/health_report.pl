@@ -88,8 +88,8 @@ sub log_url {
 }
 
 {
-    my ($jtotal, $jalive) = CATS::Judge::get_active_count;
-    $r->{long}->{'Judges active'} = $jtotal;
+    my ($jalive, $jtotal) = CATS::Judge::get_active_count;
+    $r->{long}->{'Judges total'} = $jtotal;
     $r->{long}->{'Judges alive'} = $jalive;
     $r->{short}->{J} = "$jalive/$jtotal" if $jalive < $jtotal || !$jtotal;
 }
