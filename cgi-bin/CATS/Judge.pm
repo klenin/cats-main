@@ -18,8 +18,8 @@ sub ping {
 sub get_active_count {
     $dbh->selectrow_array(qq~
         SELECT SUM(CASE WHEN CURRENT_TIMESTAMP - J.alive_date < ? THEN 1 ELSE 0 END), COUNT(*)
-            FROM judges J WHERE J.pin_mode <> ?~, undef,
-        3 * $CATS::Config::judge_alive_interval / 24, $cats::judge_pin_locked);
+            FROM judges J WHERE J.pin_mode > ?~, undef,
+        3 * $CATS::Config::judge_alive_interval / 24, $cats::judge_pin_req);
 }
 
 1;
