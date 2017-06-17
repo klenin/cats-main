@@ -370,6 +370,8 @@ files with tests, solutions etc.
   </td>
   <td>Test input description.
     If the "use" attribute is present, input file is produced by running the given test generator.
+    If neither "src" nor "use" attribute is present, input text is nested inside the tag[% v19 %].
+    Whitespace is preserved exactly.
   </td>
 </tr>
 <tr>
@@ -380,7 +382,10 @@ files with tests, solutions etc.
       <li>src[% opt %] -- path to the output file (if the use attribute is omitted).</li>
     </ul>
   </td>
-  <td>If the "use" attribute is present, output file is produced by running the given jury solution.
+  <td>
+    If the "use" attribute is present, output file is produced by running the given jury solution.
+    If neither "src" nor "use" attribute is present, output text is nested inside the tag[% v19 %].
+    Whitespace is preserved exactly.
   </td>
 </tr>
 <tr>
@@ -462,7 +467,7 @@ files with tests, solutions etc.
   </td>
   <td>
     If the src attribute is omitted, sample input text is nested inside the tag.
-    Whitespace is preserved exactly as in a text file.
+    Whitespace is preserved exactly.
   </td>
 </tr>
 <tr>
@@ -474,7 +479,7 @@ files with tests, solutions etc.
   </td>
   <td>
     If the src attribute is omitted, sample output text is nested inside the tag.
-    Whitespace is preserved exactly as in a text file.
+    Whitespace is preserved exactly.
   </td>
 </tr>
 </table>
