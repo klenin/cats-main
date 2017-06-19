@@ -18,15 +18,13 @@ use CATS::Config qw(cats_dir);
 use CATS::Constants;
 use CATS::DB;
 
-sub new
-{
+sub new {
     my $self = shift;
     $self = fields::new($self) unless ref $self;
     return $self;
 }
 
-sub load
-{
+sub load {
     my ($self, $cid, $fields) = @_;
     $fields //= [
         database_fields(),
@@ -40,27 +38,23 @@ sub load
     @$self{keys %$r} = values %$r;
 }
 
-sub is_practice
-{
+sub is_practice {
     my ($self) = @_;
     defined $self->{ctype} && $self->{ctype} == 1;
 }
 
-sub has_started
-{
+sub has_started {
     my ($self, $virtual_time_offset) = @_;
     $self->{time_since_start} >= ($virtual_time_offset || 0);
 }
 
-sub current_official
-{
+sub current_official {
     $dbh->selectrow_hashref(qq~
         SELECT id, title FROM contests
             WHERE CURRENT_TIMESTAMP BETWEEN start_date AND finish_date AND is_official = 1~);
 }
 
-sub used_problem_codes
-{
+sub used_problem_codes {
     my ($self) = @_;
     $dbh->selectcol_arrayref(qq~
         SELECT code FROM contest_problems WHERE contest_id = ? ORDER BY 1~, undef,
@@ -68,8 +62,7 @@ sub used_problem_codes
     );
 }
 
-sub unused_problem_codes
-{
+sub unused_problem_codes {
     my ($self) = @_;
     my %used_codes;
     @used_codes{@{$self->used_problem_codes}} = undef;
