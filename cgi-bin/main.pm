@@ -30,9 +30,10 @@ use CATS::BinaryFile;
 use CATS::DB;
 use CATS::Config;
 use CATS::Constants;
+use CATS::MainMenu;
 use CATS::Misc qw(
     $is_jury $uid $sid $contest $is_virtual $t
-    res_str url_f get_anonymous_uid initialize save_settings generate_output attach_menu);
+    res_str url_f get_anonymous_uid initialize save_settings generate_output);
 use CATS::Proxy;
 use CATS::Router;
 use CATS::StaticPages;
@@ -82,8 +83,8 @@ sub generate_menu {
         { item => res_str(544), href => url_f('about') },
         { item => res_str(501), href => url_f('registration') } );
 
-    attach_menu('left_menu', undef, \@left_menu);
-    attach_menu('right_menu', 'about', \@right_menu);
+    CATS::MainMenu::attach_menu('left_menu', undef, \@left_menu);
+    CATS::MainMenu::attach_menu('right_menu', 'about', \@right_menu);
 }
 
 sub accept_request {
