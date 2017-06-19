@@ -169,7 +169,9 @@ sub create_group {
         return if $seened->{$req->{id}};
         $seened->{$req->{id}} = 1;
 
-        if ($req->{elements_count} == 0 || $req->{elements_count} == 1 && $req->{elements}->[0]->{elements_count} == 0) {
+        if ($req->{elements_count} == 0 ||
+            $req->{elements_count} == 1 && $req->{elements}->[0]->{elements_count} == 0
+        ) {
             push @element_request_ids, $req->{id};
         } else {
             $collect_requests->($_) for @{$req->{elements}};
@@ -179,7 +181,8 @@ sub create_group {
 
     my @req_de_bitmap = (0) x $cats::de_req_bitfields_count;
     for my $req_id (@element_request_ids) {
-        $req_de_bitmap[$_] |= $req_tree->{$req_id}->{bitmap}->[$_] for 0..$cats::de_req_bitfields_count-1;
+        $req_de_bitmap[$_] |= $req_tree->{$req_id}->{bitmap}->[$_]
+            for 0 .. $cats::de_req_bitfields_count - 1;
     }
 
     $fields->{elements_count} = @element_request_ids;
@@ -211,7 +214,7 @@ sub clone {
     }, undef, $req_tree);
 
     my @element_requests;
-    my $collect_requests;
+    my $collect_requests; # Recursive.
     $collect_requests = sub {
         my ($req) = @_;
 
@@ -223,11 +226,12 @@ sub clone {
     };
     $collect_requests->($req_tree->{$_}) for @request_ids;
 
-    my @req_groups =
-        map [ $_->{id}, insert($_->{problem_id}, $_->{contest_id}, $submit_uid, $_->{bitmap}, { $fields ? %$fields : (), elements_count => 1 }) ],
-            @element_requests;
-
-    warn join ', ', map "$_->[0] : $_->[1]", @req_groups;
+    my @req_groups = map [
+        $_->{id},
+        insert(
+            $_->{problem_id}, $_->{contest_id}, $submit_uid, $_->{bitmap},
+            { $fields ? %$fields : (), elements_count => 1 })
+    ], @element_requests;
 
     my $c = $dbh->prepare(q~
         INSERT INTO req_groups (element_id, group_id) VALUES (?, ?)~);
