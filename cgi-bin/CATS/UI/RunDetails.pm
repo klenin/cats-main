@@ -8,8 +8,8 @@ use List::Util qw(max);
 use JSON::XS;
 
 use CATS::Constants;
+use CATS::ContestParticipate qw(is_jury_in_contest);
 use CATS::DB;
-use CATS::Data qw(is_jury_in_contest);
 use CATS::DevEnv;
 use CATS::IP;
 use CATS::JudgeDB;

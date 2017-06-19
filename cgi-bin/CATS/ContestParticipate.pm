@@ -4,9 +4,36 @@ use strict;
 use warnings;
 
 use CATS::Constants;
-use CATS::Data qw(get_registered_contestant);
 use CATS::DB;
-use CATS::Misc qw($is_root $is_team $is_virtual $virtual_diff_time $cid $uid $contest msg);
+use CATS::Misc qw($is_root $is_jury $is_team $is_virtual $virtual_diff_time $cid $uid $contest msg);
+
+use Exporter qw(import);
+
+our @EXPORT = qw(
+    get_registered_contestant
+    is_jury_in_contest
+);
+
+# Params: fields, contest_id, account_id.
+sub get_registered_contestant {
+    my %p = @_;
+    $p{fields} ||= 1;
+    $p{account_id} ||= $uid or return;
+    $p{contest_id} or die;
+
+    $dbh->selectrow_array(qq~
+        SELECT $p{fields} FROM contest_accounts WHERE contest_id = ? AND account_id = ?~, undef,
+        $p{contest_id}, $p{account_id});
+}
+
+sub is_jury_in_contest {
+    my %p = @_;
+    return 1 if $is_root;
+    # Optimization: if the request is about the current contest, return cached value.
+    return $is_jury if defined $cid && $p{contest_id} == $cid;
+    my ($j) = get_registered_contestant(fields => 'is_jury', @_);
+    return $j;
+}
 
 sub online {
     !get_registered_contestant(contest_id => $cid)

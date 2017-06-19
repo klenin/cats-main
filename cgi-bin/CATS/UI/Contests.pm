@@ -4,8 +4,7 @@ use strict;
 use warnings;
 
 use CATS::Constants;
-use CATS::ContestParticipate;
-use CATS::Data qw(get_registered_contestant);
+use CATS::ContestParticipate qw(get_registered_contestant);
 use CATS::DB;
 use CATS::ListView;
 use CATS::Misc qw(

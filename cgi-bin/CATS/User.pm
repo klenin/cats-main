@@ -8,8 +8,8 @@ use Storable;
 
 use CATS::Config;
 use CATS::Constants;
+use CATS::ContestParticipate qw(get_registered_contestant);
 use CATS::Countries;
-use CATS::Data qw(get_registered_contestant);
 use CATS::DB;
 use CATS::Form qw(validate_string_length validate_integer);
 use CATS::Misc qw(init_template msg url_f $t $is_root);

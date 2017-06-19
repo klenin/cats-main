@@ -6,8 +6,8 @@ use warnings;
 use Encode qw(decode_utf8);
 use List::Util;
 
+use CATS::ContestParticipate qw(get_registered_contestant);
 use CATS::Countries;
-use CATS::Data qw(get_registered_contestant);
 use CATS::DB;
 use CATS::ListView;
 use CATS::Misc qw(

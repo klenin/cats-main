@@ -49,14 +49,14 @@ sub has_started {
 }
 
 sub current_official {
-    $dbh->selectrow_hashref(qq~
+    $dbh->selectrow_hashref(q~
         SELECT id, title FROM contests
             WHERE CURRENT_TIMESTAMP BETWEEN start_date AND finish_date AND is_official = 1~);
 }
 
 sub used_problem_codes {
     my ($self) = @_;
-    $dbh->selectcol_arrayref(qq~
+    $dbh->selectcol_arrayref(q~
         SELECT code FROM contest_problems WHERE contest_id = ? ORDER BY 1~, undef,
         $self->{id}
     );
