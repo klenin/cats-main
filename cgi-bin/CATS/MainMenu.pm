@@ -3,7 +3,7 @@ package CATS::MainMenu;
 use strict;
 use warnings;
 
-use CATS::Misc qw($t $sid $contest $uid $is_virtual $is_jury res_str url_f);
+use CATS::Misc qw($t $sid $contest $uid $is_virtual $is_jury res_str url_f get_anonymous_uid);
 use CATS::Utils qw(url_function);
 use CATS::Web qw(url_param);
 
