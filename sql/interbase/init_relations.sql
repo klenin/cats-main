@@ -188,6 +188,7 @@ CREATE TABLE problem_sources (
     problem_id  INTEGER REFERENCES problems(id) ON DELETE CASCADE,
     de_id       INTEGER NOT NULL REFERENCES default_de(id) ON DELETE CASCADE,
     src         BLOB,
+    main        VARCHAR(200),
     fname       VARCHAR(200),
     name        VARCHAR(60),
     input_file  VARCHAR(200),
