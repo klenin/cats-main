@@ -193,13 +193,14 @@ sub insert
     1;
 }
 
+sub trim { s/^\s+|\s+$//; $_; }
 
 # (Mass-)register users by jury.
 sub register_by_login
 {
     my ($login, $contest_id) = @_;
     $login = Encode::decode_utf8($login);
-    my @logins = split(/\s*,\s*/, $login || '') or return msg(1101);
+    my @logins = map trim, split(/,/, $login || '') or return msg(1101);
     my %aids;
     for (@logins) {
         length $_ <= 50 or return msg(1101);
@@ -214,7 +215,7 @@ sub register_by_login
     add_to_contest(contest_id => $contest_id, account_id => $_, is_remote => 1, is_ooc => 1)
         for keys %aids;
     $dbh->commit;
-    msg(1119, $login);
+    msg(1119, join ',', @logins);
 }
 
 
