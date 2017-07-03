@@ -3,7 +3,7 @@
 <label for="pid">[% capt.problem %]:</label>
 <select name="pid"><option/>
   [% FOREACH p IN problems %]
-  <option value="[% p.id %]"[% ' selected="selected"' IF p.selected %]>[% p.code %] - [% p.title %]</option>
+  <option value="[% p.id %]"[% ' selected="selected"' IF p.selected %]>[% p.code %] - [% p.title | html %]</option>
   [% END %]
 </select>
 <label for="threshold">[% capt.threshold %], %:</label><input type="text" name="threshold" value="[% threshold %]"/>
