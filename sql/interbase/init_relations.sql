@@ -195,7 +195,8 @@ CREATE TABLE problem_sources (
     guid        VARCHAR(100), /* For cross-contest references. */
     time_limit  FLOAT, /* In seconds. */
     memory_limit INTEGER, /* In mebibytes. */
-    write_limit INTEGER /* In bytes */
+    write_limit INTEGER, /* In bytes */
+    main        VARCHAR(200),
 );
 ALTER TABLE problem_sources
   ADD CONSTRAINT chk_problem_sources_1 CHECK (0 <= stype AND stype <= 15);
