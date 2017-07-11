@@ -3,7 +3,7 @@
 <form method="post" enctype="multipart/form-data" action="[% href_login %]">
 <table>
 <tr><td>[% capt.login %]:</td>
-  <td><input type="text" size="30" name="login" maxlength="50" class="bordered" value="[% login | html %]" /></td></tr>
+  <td><input type="text" size="30" name="login" maxlength="50" class="bordered" value="[% login | html %]" autofocus="autofocus"/></td></tr>
 <tr><td>[% capt.password %]:</td>
   <td><input type="password" size="30" name="passwd" maxlength="100" class="bordered" /></td></tr>
 </table>
