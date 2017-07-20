@@ -7,7 +7,8 @@ use CATS::Constants;
 use CATS::DB;
 use CATS::Misc qw(
     $t $is_jury $is_root $is_team $sid $cid $uid $contest $is_virtual $settings
-    init_template msg res_str url_f auto_ext unpack_redir_params);
+    init_template msg res_str url_f auto_ext);
+use CATS::Redirect;
 use CATS::User;
 use CATS::Utils qw(url_function);
 use CATS::Web qw(param redirect url_param);
@@ -70,7 +71,7 @@ sub login_frame {
             return;
         }
         $t = undef;
-        my %params = unpack_redir_params($redir);
+        my %params = CATS::Redirect::unpack_params($redir);
         my $f = $params{f} || 'contests';
         delete $params{f};
         $params{sid} = $sid;

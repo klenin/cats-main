@@ -21,8 +21,6 @@ our @EXPORT = qw(
     save_settings
     prepare_server_time
     problem_status_names
-    pack_redir_params
-    unpack_redir_params
 );
 
 our @EXPORT_OK = qw(
@@ -46,6 +44,7 @@ use CATS::Contest;
 use CATS::DB;
 use CATS::IP;
 use CATS::Privileges;
+use CATS::Redirect;
 use CATS::Template;
 use CATS::Utils qw();
 use CATS::Web qw(param url_param headers content_type cookie);
@@ -202,20 +201,6 @@ sub generate_output
     }
 }
 
-sub pack_redir_params {
-    encode_base64(Storable::nfreeze
-        { map { $_ ne 'sid' ? ($_ => url_param($_)) : () } url_param })
-}
-
-sub unpack_redir_params {
-    my ($redir) = @_;
-    $redir or return ();
-    my $params = Storable::thaw(decode_base64($redir));
-    defined $params and return %$params;
-    warn "Unable to decode redir '$redir'";
-    return ();
-}
-
 # Authorize user, initialize permissions and settings.
 sub init_user
 {
@@ -253,7 +238,7 @@ sub init_user
         return CATS::Web::forbidden if param('noredir');
         init_template(param('json') ? 'bad_sid.json.tt' : 'login.html.tt');
         $sid = '';
-        $t->param(href_login => CATS::Utils::url_function('login', redir => pack_redir_params));
+        $t->param(href_login => CATS::Utils::url_function('login', redir => CATS::Redirect::pack_params));
         msg(1002);
     }
 }

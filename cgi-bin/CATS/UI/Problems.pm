@@ -13,12 +13,13 @@ use CATS::JudgeDB;
 use CATS::ListView;
 use CATS::Misc qw(
     $t $is_jury $is_root $is_team $sid $cid $uid $contest $virtual_diff_time
-    init_template msg res_str url_f auto_ext problem_status_names pack_redir_params);
+    init_template msg res_str url_f auto_ext problem_status_names);
 use CATS::Problem::Save;
 use CATS::Problem::Source::Git;
 use CATS::Problem::Source::Zip;
 use CATS::Problem::Submit;
 use CATS::ProblemStorage;
+use CATS::Redirect;
 use CATS::Request;
 use CATS::StaticPages;
 use CATS::Utils qw(url_function file_type date_to_iso redirect_url_function);
@@ -554,7 +555,7 @@ sub problems_frame {
         { href => url_f('contests', params => $cid), item => res_str(546) };
     $t->param(
         href_action => url_f('problems'),
-        href_login => url_f('login', redir => pack_redir_params),
+        href_login => url_f('login', redir => CATS::Redirect::pack_params),
         can_participate_online =>
             $uid && !$is_team && !$contest->{closed} && $contest->{time_since_finish} < 0,
         can_participate_virtual =>
