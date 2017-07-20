@@ -31,4 +31,12 @@ sub unpack_privs {
     $p;
 }
 
+sub pack_privs {
+    my ($p) = @_;
+    return $srole_root if $p->{is_root};
+    my $srole = $srole_user;
+    $p->{$_} and $srole |= $flags{$_} for keys %flags;
+    $srole;
+}
+
 1;
