@@ -8,8 +8,7 @@ use CATS::Template::Filter;
 
 my $tt;
 
-sub new
-{
+sub new {
     my ($class, $file_name, $cats_dir) = @_;
     my $templates_path = "${cats_dir}../tt";
 
@@ -35,8 +34,7 @@ sub new
     return $self;
 }
 
-sub param
-{
+sub param {
     my $self = shift;
     if (@_ == 1) {
         my $arg = shift;
@@ -54,8 +52,7 @@ sub param
     $self;
 }
 
-sub output
-{
+sub output {
     my $self = shift;
     $tt->process($self->{file_name}, $self->{vars}, \my $res)
         or die $tt->error();

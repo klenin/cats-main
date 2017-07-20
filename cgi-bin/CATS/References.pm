@@ -32,5 +32,4 @@ sub menu {
     @result;
 }
 
-
 1;
