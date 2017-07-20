@@ -7,7 +7,7 @@ use CATS::Config qw(cats_dir);
 use CATS::Constants;
 use CATS::DB;
 use CATS::DevEnv;
-use CATS::Misc qw($git_author_name $git_author_email msg);
+use CATS::Misc qw($git_author_name $git_author_email $privs msg);
 use CATS::Problem::ImportSource::DB;
 use CATS::Problem::Parser;
 use CATS::Problem::Repository;
@@ -218,6 +218,7 @@ sub delete {
             $origin_contest, $pid, $old_contest);
     }
     else {
+        $privs->{delete_problems} or return msg(1023, $title);
         # Cascades into contest_problems and reqs.
         $dbh->do(q~
             DELETE FROM problems WHERE id = ?~, undef,
