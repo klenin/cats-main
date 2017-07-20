@@ -8,7 +8,8 @@ use CATS::Form;
 use CATS::ListView;
 use CATS::Misc qw(
     $t $is_jury $is_root
-    init_template msg res_str url_f references_menu);
+    init_template msg res_str url_f);
+use CATS::References;
 use CATS::Web qw(param url_param);
 
 sub fields () { qw(name_ru name_en code) }
@@ -85,7 +86,7 @@ sub keywords_frame {
 
     $lv->attach(url_f('keywords'), $fetch_record, $c);
 
-    $t->param(submenu => [ references_menu('keywords') ], editable => $is_root) if $is_jury;
+    $t->param(submenu => [ CATS::References::menu('keywords') ], editable => $is_root) if $is_jury;
 }
 
 1;

@@ -9,7 +9,8 @@ use CATS::Judge;
 use CATS::ListView;
 use CATS::Misc qw(
     $t $is_jury $is_root
-    init_template msg res_str url_f references_menu);
+    init_template msg res_str url_f);
+use CATS::References;
 use CATS::Web qw(param param_on url_param redirect);
 
 sub edit_frame {
@@ -134,7 +135,7 @@ sub judges_frame {
 
     $lv->attach(url_f('judges'), $fetch_record, $c);
 
-    $t->param(submenu => [ references_menu('judges') ], editable => $is_root);
+    $t->param(submenu => [ CATS::References::menu('judges') ], editable => $is_root);
 
     my ($not_processed) = $dbh->selectrow_array(q~
         SELECT COUNT(*) FROM reqs WHERE state = ? AND judge_id IS NULL~, undef,

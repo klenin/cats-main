@@ -7,7 +7,8 @@ use CATS::DB;
 use CATS::ListView;
 use CATS::Misc qw(
     $t $is_jury $is_root $is_team $sid $cid $uid $contest $is_virtual $settings
-    init_template msg res_str url_f auto_ext references_menu);
+    init_template msg res_str url_f auto_ext);
+use CATS::References;
 use CATS::Web qw(param url_param);
 
 sub sanitize_clist { sort { $a <=> $b } grep /^\d+$/, @_ }
@@ -122,7 +123,7 @@ sub prizes_frame
 
     $lv->attach(url_f('prizes'), $fetch_record, $c);
 
-    $t->param(submenu => [ references_menu('prizes') ]);
+    $t->param(submenu => [ CATS::References::menu('prizes') ]);
 }
 
 sub contests_prizes_frame
@@ -157,7 +158,7 @@ sub contests_prizes_frame
     $lv->attach(url_f('contests_prizes'), $fetch_record, $c);
 
     $t->param(cg => $cg);
-    #$t->param(submenu => [ references_menu('prizes') ]);
+    #$t->param(submenu => [ CATS::References::menu('prizes') ]);
 }
 
 1;

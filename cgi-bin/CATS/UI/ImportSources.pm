@@ -8,7 +8,8 @@ use CATS::DB;
 use CATS::ListView;
 use CATS::Misc qw(
     $t $is_jury $is_root $is_team $sid $cid $uid $contest $is_virtual $settings
-    init_template msg res_str url_f auto_ext references_menu);
+    init_template msg res_str url_f auto_ext);
+use CATS::References;
 use CATS::Utils qw(url_function);
 use CATS::Web qw(param redirect url_param);
 
@@ -44,7 +45,7 @@ sub import_sources_frame {
 
     $lv->attach(url_f('import_sources'), $fetch_record, $c);
 
-    $t->param(submenu => [ references_menu('import_sources') ], is_jury => 1) if $is_jury;
+    $t->param(submenu => [ CATS::References::menu('import_sources') ], is_jury => 1) if $is_jury;
 }
 
 sub download_frame {
