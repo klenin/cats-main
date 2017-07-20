@@ -6,21 +6,21 @@ use warnings;
 use Exporter qw(import);
 
 our @EXPORT = qw(
-    get_anonymous_uid
-    initialize
     auto_ext
-    format_diff_time
-    init_template
-    generate_output
-    http_header
-    msg
-    url_f
     downloads_path
     downloads_url
-    res_str
-    save_settings
+    format_diff_time
+    generate_output
+    get_anonymous_uid
+    http_header
+    initialize
+    init_template
+    msg
     prepare_server_time
     problem_status_names
+    res_str
+    save_settings
+    url_f
 );
 
 our @EXPORT_OK = qw(
@@ -57,21 +57,17 @@ our (
 
 my ($messages, $http_mime_type, %extra_headers, $enc_settings);
 
-sub get_anonymous_uid
-{
-    scalar $dbh->selectrow_array(qq~
+sub get_anonymous_uid {
+    scalar $dbh->selectrow_array(q~
         SELECT id FROM accounts WHERE login = ?~, undef, $cats::anonymous_login);
 }
 
-
-sub http_header
-{
+sub http_header {
     my ($type, $encoding, $cookie) = @_;
 
     content_type($type, $encoding);
     headers(cookie => $cookie, %extra_headers);
 }
-
 
 sub downloads_path { cats_dir() . '../download/' }
 sub downloads_url { 'download/' }
@@ -94,17 +90,14 @@ sub init_messages_lang {
     $r;
 }
 
-sub auto_ext
-{
+sub auto_ext {
     my ($file_name, $json) = @_;
     my $ext = $json // param('json') ? 'json' : 'html';
     "$file_name.$ext.tt";
 }
 
-
 #my $template_file;
-sub init_template
-{
+sub init_template {
     my ($file_name, $p) = @_;
     #if (defined $t && $template_file eq $file_name) { $t->param(tf=>1); return; }
 
@@ -125,27 +118,19 @@ sub init_template
     $t->param(lang => lang, $json =~ /^[a-zA-Z][a-zA-Z0-9_]+$/ ? (jsonp => $json) : ());
 }
 
-
-sub res_str
-{
+sub res_str {
     my $id = shift;
-    my $t = $messages->{lang()}->[$id] or die "Unknown res_str id: $id";
-    sprintf($t, @_);
+    my $s = $messages->{lang()}->[$id] or die "Unknown res_str id: $id";
+    sprintf($s, @_);
 }
 
-
-sub msg
-{
+sub msg {
     defined $t or croak q~Call to 'msg' before 'init_template'~;
     $t->param(message => res_str(@_));
     undef;
 }
 
-
-sub url_f
-{
-    CATS::Utils::url_function(@_, sid => $sid, cid => $cid);
-}
+sub url_f { CATS::Utils::url_function(@_, sid => $sid, cid => $cid) }
 
 sub prepare_server_time {
     my $dt = $contest->{time_since_start} - $virtual_diff_time;
@@ -156,8 +141,7 @@ sub prepare_server_time {
     );
 }
 
-sub generate_output
-{
+sub generate_output {
     my ($output_file) = @_;
     defined $t or return; #? undef : ref $t eq 'SCALAR' ? return : die 'Template not defined';
     $contest->{time_since_start} or warn 'No contest from: ', $ENV{HTTP_REFERER} || '';
@@ -172,8 +156,7 @@ sub generate_output
     );
     prepare_server_time;
 
-    if (defined $dbi_error)
-    {
+    if (defined $dbi_error) {
         $t->param(dbi_error => $dbi_error);
     }
     my $cookie = $uid && lang eq 'ru' ? undef : cookie(
@@ -181,20 +164,17 @@ sub generate_output
         -value => encode_base64($uid ? Storable::freeze({ lang => lang }): $enc_settings),
         -expires => '+1h');
     my $out = '';
-    if (my $enc = param('enc'))
-    {
+    if (my $enc = param('enc')) {
         $t->param(encoding => $enc);
         http_header($http_mime_type, $enc, $cookie);
         CATS::Web::print($out = Encode::encode($enc, $t->output, Encode::FB_XMLCREF));
     }
-    else
-    {
+    else {
         $t->param(encoding => 'UTF-8');
         http_header($http_mime_type, 'utf-8', $cookie);
         CATS::Web::print($out = $t->output);
     }
-    if ($output_file)
-    {
+    if ($output_file) {
         open my $f, '>:utf8', $output_file
             or die "Error opening $output_file: $!";
         print $f $out;
@@ -202,8 +182,7 @@ sub generate_output
 }
 
 # Authorize user, initialize permissions and settings.
-sub init_user
-{
+sub init_user {
     $sid = url_param('sid') || '';
     $is_root = 0;
     $privs = {};
@@ -243,16 +222,14 @@ sub init_user
     }
 }
 
-sub extract_cid_from_cpid
-{
+sub extract_cid_from_cpid {
     my $cpid = url_param('cpid') or return;
     return $dbh->selectrow_array(qq~
         SELECT contest_id FROM contest_problems WHERE id = ?~, undef,
         $cpid);
 }
 
-sub init_contest
-{
+sub init_contest {
     $cid = url_param('cid') || param('clist') || extract_cid_from_cpid || $settings->{contest_id} || '';
     $cid =~ s/^(\d+).*$/$1/; # Get first contest if from clist.
     if ($contest && ref $contest ne 'CATS::Contest') {
@@ -268,16 +245,14 @@ sub init_contest
     $virtual_diff_time = 0;
     # Authorize user in the contest.
     $is_jury = $is_team = $is_virtual = 0;
-    if (defined $uid)
-    {
+    if (defined $uid) {
         ($is_team, $is_jury, $is_virtual, $virtual_diff_time) = $dbh->selectrow_array(qq~
             SELECT 1, is_jury, is_virtual, diff_time
             FROM contest_accounts WHERE contest_id = ? AND account_id = ?~, {}, $cid, $uid);
         $virtual_diff_time ||= 0;
         $is_jury ||= $is_root;
     }
-    if ($contest->{is_hidden} && !$is_team)
-    {
+    if ($contest->{is_hidden} && !$is_team) {
         # If user tries to look at a hidden contest, show training instead.
         $contest->load(0);
         $settings->{contest_id} = $cid = $contest->{id};
@@ -286,9 +261,7 @@ sub init_contest
     $is_team &&= $is_jury || $contest->has_started($virtual_diff_time);
 }
 
-
-sub save_settings
-{
+sub save_settings {
     my $new_enc_settings = Storable::freeze($settings);
     $new_enc_settings ne ($enc_settings || '') or return;
     $enc_settings = $new_enc_settings;
@@ -300,9 +273,7 @@ sub save_settings
     $dbh->commit;
 }
 
-
-sub initialize
-{
+sub initialize {
     $Storable::canonical = 1;
     $dbi_error = undef;
     $messages //= { map { $_ => init_messages_lang($_) } @cats::langs };
@@ -311,8 +282,7 @@ sub initialize
     init_contest;
 }
 
-sub problem_status_names()
-{+{
+sub problem_status_names() {+{
     $cats::problem_st_manual    => res_str(700),
     $cats::problem_st_ready     => res_str(701),
     $cats::problem_st_compile   => res_str(705),
@@ -327,13 +297,11 @@ sub request_state_names() {+{
     IS => 18, IL => 19, MR => 20,
 }}
 
-sub run_method_enum()
-{+{
+sub run_method_enum() {+{
     default => $cats::rm_default,
     interactive => $cats::rm_interactive,
     competitive => $cats::rm_competitive,
 }}
-
 
 sub format_diff_time {
     my ($dt, $display_plus) = @_;
