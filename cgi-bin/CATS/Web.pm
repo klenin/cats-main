@@ -20,6 +20,7 @@ our @EXPORT_OK = qw(
     forbidden
     get_return_code
     has_error
+    has_upload
     headers
     init_request
     log_info
@@ -70,6 +71,8 @@ sub param { _param(@_) }
 sub param_on { (param($_[0]) || '') eq 'on' }
 
 sub ensure_upload { $qq->upload($_[0]) // die "Bad upload for parameter '$_[0]'" }
+
+sub has_upload { $qq->upload($_[0]) ? 1 : 0 }
 
 sub save_uploaded_file { ensure_upload($_[0])->tempname }
 
