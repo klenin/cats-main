@@ -181,8 +181,7 @@ sub load
     $self->load_problem(@_);
 }
 
-sub change_file
-{
+sub change_file {
     my CATS::Problem $self = shift;
     my ($cid, $pid, $file, $content, $message, $is_amend) = @_;
 
@@ -191,18 +190,11 @@ sub change_file
 
     return $self->load_problem(
         CATS::Problem::Source::PlainFiles->new(dir => $repo->get_dir, logger => $self),
-        $cid,
-        $pid,
-        1,
-        undef,
-        $message,
-        $is_amend
+        $cid, $pid, 1, undef, $message, $is_amend
     );
 }
 
-
-sub delete
-{
+sub delete {
     my ($cpid) = @_;
     $cpid or die;
 
@@ -211,21 +203,25 @@ sub delete
         FROM contest_problems CP INNER JOIN problems P ON CP.problem_id = P.id WHERE CP.id = ?~, undef,
         $cpid) or return msg(1012);
 
-    my ($ref_count) = $dbh->selectrow_array(qq~
+    my ($ref_count) = $dbh->selectrow_array(q~
         SELECT COUNT(*) FROM contest_problems WHERE problem_id = ?~, undef, $pid);
     if ($ref_count > 1) {
-        # If at least one contest still references the problem, move all submissions
+        # If several contests reference the problem, move all submissions
         # to the "origin" contest. Problem can be removed from the origin only with zero links.
         # To work around this limitation, move the problem to a different contest before deleting.
         $old_contest != $origin_contest or return msg(1136, $title);
-        $dbh->do(q~DELETE FROM contest_problems WHERE id = ?~, undef, $cpid);
+        $dbh->do(q~
+            DELETE FROM contest_problems WHERE id = ?~, undef,
+            $cpid);
         $dbh->do(q~
             UPDATE reqs SET contest_id = ? WHERE problem_id = ? AND contest_id = ?~, undef,
             $origin_contest, $pid, $old_contest);
     }
     else {
-        # Cascade into contest_problems and reqs.
-        $dbh->do(q~DELETE FROM problems WHERE id = ?~, undef, $pid);
+        # Cascades into contest_problems and reqs.
+        $dbh->do(q~
+            DELETE FROM problems WHERE id = ?~, undef,
+            $pid);
         get_repo($pid, undef, 0)->delete;
     }
 
