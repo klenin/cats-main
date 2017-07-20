@@ -29,7 +29,7 @@ our @EXPORT = qw(
 our @EXPORT_OK = qw(
     $contest $t $sid $cid $uid $git_author_name $git_author_email
     $is_root $is_team $is_jury $privs $is_virtual $virtual_diff_time
-    $init_time $settings);
+    $settings);
 
 #use CGI::Fast( ':standard' );
 #use CGI::Util qw(rearrange unescape escape);
@@ -40,7 +40,6 @@ use Encode();
 use MIME::Base64;
 use SQL::Abstract;
 use Storable;
-use Time::HiRes;
 
 use CATS::Config qw(cats_dir);
 use CATS::Constants;
@@ -55,7 +54,7 @@ use CATS::Web qw(param url_param headers content_type cookie);
 our (
     $contest, $t, $sid, $cid, $uid, $team_name, $dbi_error, $git_author_name, $git_author_email,
     $is_root, $is_team, $is_jury, $privs, $is_virtual, $virtual_diff_time,
-    $request_start_time, $init_time, $settings
+    $settings
 );
 
 my ($messages, $http_mime_type, %extra_headers, $enc_settings);
@@ -178,12 +177,6 @@ sub generate_output
     if (defined $dbi_error)
     {
         $t->param(dbi_error => $dbi_error);
-    }
-    unless (param('notime'))
-    {
-        $t->param(request_process_time => sprintf '%.3fs',
-            Time::HiRes::tv_interval($request_start_time, [ Time::HiRes::gettimeofday ]));
-        $t->param(init_time => sprintf '%.3fs', $init_time || 0);
     }
     my $cookie = $uid && lang eq 'ru' ? undef : cookie(
         -name => 'settings',

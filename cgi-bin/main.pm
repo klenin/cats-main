@@ -34,6 +34,8 @@ use CATS::Router;
 use CATS::StaticPages;
 use CATS::Web qw(param url_param redirect init_request get_return_code has_error);
 
+my ($request_start_time, $init_time);
+
 sub accept_request {
     my $output_file = '';
     if (CATS::StaticPages::is_static_page) {
@@ -42,8 +44,7 @@ sub accept_request {
     }
     initialize;
     return if has_error;
-    $CATS::Misc::init_time = Time::HiRes::tv_interval(
-        $CATS::Misc::request_start_time, [ Time::HiRes::gettimeofday ]);
+    $init_time = Time::HiRes::tv_interval($request_start_time, [ Time::HiRes::gettimeofday ]);
 
     unless (defined $t) {
         my ($fn, $p) = CATS::Router::route;
@@ -52,7 +53,13 @@ sub accept_request {
     }
     save_settings;
 
-    CATS::MainMenu::generate_menu if defined $t;
+    defined $t or return;
+    CATS::MainMenu::generate_menu;
+    unless (param('notime')) {
+        $t->param(request_process_time => sprintf '%.3fs',
+            Time::HiRes::tv_interval($request_start_time, [ Time::HiRes::gettimeofday ]));
+        $t->param(init_time => sprintf '%.3fs', $init_time || 0);
+    }
     generate_output($output_file);
 }
 
@@ -64,7 +71,7 @@ sub handler {
         CATS::Proxy::proxy;
         return get_return_code();
     }
-    $CATS::Misc::request_start_time = [ Time::HiRes::gettimeofday ];
+    $request_start_time = [ Time::HiRes::gettimeofday ];
     CATS::DB::sql_connect({
         ib_timestampformat => '%d.%m.%Y %H:%M',
         ib_dateformat => '%d.%m.%Y',
