@@ -80,9 +80,7 @@ sub contests_new_save {
     ); 1; } or return msg(1026, $@);
 
     # Automatically register all admins as jury.
-    my $root_accounts = $dbh->selectcol_arrayref(q~
-        SELECT id FROM accounts WHERE srole = ?~, undef,
-        $cats::srole_root);
+    my $root_accounts = CATS::Privileges::get_root_account_ids;
     push @$root_accounts, $uid unless $is_root; # User with contests_creator role.
     for (@$root_accounts) {
         $contest->register_account(

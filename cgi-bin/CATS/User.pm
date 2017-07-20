@@ -13,6 +13,7 @@ use CATS::Countries;
 use CATS::DB;
 use CATS::Form qw(validate_string_length validate_integer);
 use CATS::Misc qw(init_template msg url_f $t $is_root);
+use CATS::Privileges;
 use CATS::Web qw(param);
 
 
@@ -181,7 +182,7 @@ sub insert
         INSERT INTO accounts (
             id, srole, passwd, settings, ~ . join (', ', param_names()) . q~
         ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)~, {},
-        $aid, $cats::srole_user, $self->{password1}, $new_settings, $self->values
+        $aid, $CATS::Privileges::srole_user, $self->{password1}, $new_settings, $self->values
     );
     add_to_contest(contest_id => $_->{id}, account_id => $aid, is_ooc => 1)
         for @$training_contests;

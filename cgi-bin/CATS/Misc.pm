@@ -25,7 +25,6 @@ our @EXPORT = qw(
     problem_status_names
     pack_redir_params
     unpack_redir_params
-    unpack_privs
 );
 
 our @EXPORT_OK = qw(
@@ -49,6 +48,7 @@ use CATS::Constants;
 use CATS::Contest;
 use CATS::DB;
 use CATS::IP;
+use CATS::Privileges;
 use CATS::Template;
 use CATS::Utils qw();
 use CATS::Web qw(param url_param headers content_type cookie);
@@ -226,16 +226,6 @@ sub generate_output
     }
 }
 
-sub unpack_privs
-{
-    my ($srole) = @_;
-    my $p = {};
-    my $r = $p->{is_root} = $srole == $cats::srole_root;
-    $p->{create_contests} = $r || ($srole & $cats::srole_contests_creator);
-    $p->{moderate_messages} = $r || ($srole & $cats::srole_messages_moderator);
-    $p;
-}
-
 sub pack_redir_params {
     encode_base64(Storable::nfreeze
         { map { $_ ne 'sid' ? ($_ => url_param($_)) : () } url_param })
@@ -269,7 +259,7 @@ sub init_user
                 $sid);
         $bad_sid = !defined($uid) || ($last_ip || '') ne CATS::IP::get_ip() || $locked;
         if (!$bad_sid) {
-            $privs = unpack_privs($srole);
+            $privs = CATS::Privileges::unpack_privs($srole);
             $is_root = $privs->{is_root};
         }
     }

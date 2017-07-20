@@ -14,7 +14,8 @@ use CATS::IP;
 use CATS::ListView;
 use CATS::Misc qw(
     $t $is_jury $is_root $is_team $sid $cid $uid $contest $is_virtual $settings
-    format_diff_time init_template msg res_str url_f auto_ext unpack_privs);
+    format_diff_time init_template msg res_str url_f auto_ext);
+use CATS::Privileges;
 use CATS::RankTable;
 use CATS::User;
 use CATS::Utils qw(url_function date_to_iso);
@@ -67,7 +68,7 @@ sub users_edit_frame {
     $t->param(
         user_submenu('edit', $id),
         title_suffix => $u->{team_name},
-        %$u, privs => CATS::Misc::unpack_privs($u->{srole}),
+        %$u, privs => CATS::Privileges::unpack_privs($u->{srole}),
         is_root => $is_root,
         id => $id,
         countries => \@CATS::Countries::countries,
@@ -127,7 +128,8 @@ sub users_edit_save {
     my $set_password = param_on('set_password') && $is_root;
     my $id = param('id');
     my $old_user = $id ? CATS::User->new->load($id, [ qw(settings srole) ]) : undef;
-    return if !$is_root && unpack_privs($old_user->{srole})->{is_root};
+    # Only admins may edit other admins.
+    return if !$is_root && CATS::Privileges::unpack_privs($old_user->{srole})->{is_root};
 
     $u->validate_params(
         validate_password => $set_password, id => $id,
@@ -300,7 +302,7 @@ sub users_delete {
         $caid);
     $aid or return;
     $name = Encode::decode_utf8($name);
-    $srole != $cats::srole_root or return msg(1095, $name);
+    CATS::Privileges::is_root($srole) and return msg(1095, $name);
 
     $dbh->do(q~
         DELETE FROM contest_accounts WHERE id = ?~, undef,
@@ -335,7 +337,7 @@ sub users_save_attributes {
                 WHERE CA.id = ?~, undef,
             $user_id
         );
-        $jury = 1 if $srole == $cats::srole_root;
+        $jury = 1 if CATS::Privileges::is_root($srole);
 
         # Security: Forbid changing of user parameters in other contests.
         my $changed = $dbh->do(q~
