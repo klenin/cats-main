@@ -15,7 +15,6 @@ our @EXPORT = qw(
     http_header
     msg
     url_f
-    templates_path
     downloads_path
     downloads_url
     res_str
@@ -76,21 +75,6 @@ sub http_header
     headers(cookie => $cookie, %extra_headers);
 }
 
-
-sub templates_path
-{
-    my $template = param('iface') || '';
-
-    for (@cats::templates)
-    {
-        if ($template eq $_->{id})
-        {
-            return $_->{path};
-        }
-    }
-
-    cats_dir() . $cats::templates[0]->{path};
-}
 
 sub downloads_path { cats_dir() . '../download/' }
 sub downloads_url { 'download/' }
