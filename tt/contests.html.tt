@@ -1,16 +1,12 @@
 [% PROCESS includes/menu_begin.tti %]
 
 <script type="text/javascript">
-function delete_contest(href, name)
-{
+function delete_contest(href, name) {
     if (confirm( "[% capt.want_to_delete %] '" + name + "'?" ))
-    {
         document.location=href;
-    }
 }
 
-function confirm_registration()
-{
+function confirm_registration() {
     return confirm("[% capt.virtual_warning %]");
 }
 </script>

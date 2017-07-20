@@ -4,8 +4,7 @@
 [% pin_colors = [ 'red', '#cc7a00', '#cc7a00', 'green' ] %]
 
 <script>
-function delete_judge(href, name)
-{
+function delete_judge(href, name) {
     if (confirm("[% capt.want_to_delete %] '" + name + "'?" ))
         document.location = href;
 }

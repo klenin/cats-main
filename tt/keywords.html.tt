@@ -1,12 +1,9 @@
 [% PROCESS includes/menu_begin.tti %]
 
 <script>
-function delete_kw(href, name)
-{
+function delete_kw(href, name) {
     if (confirm( "[% capt.want_to_delete %] '" + name + "'?" ))
-    {
         document.location=href;
-    }
 }
 </script>
 

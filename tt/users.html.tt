@@ -2,12 +2,9 @@
 [% PROCESS includes/html.tti %]
 
 <script>
-function delete_team(href, name)
-{
+function delete_team(href, name) {
     if (confirm("[% capt.want_to_delete %] '" + name + "'?"))
-    {
         document.location=href;
-    }
 }
 </script>
 
