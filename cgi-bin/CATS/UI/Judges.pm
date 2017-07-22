@@ -104,14 +104,16 @@ sub judges_frame {
 
     my $c = $dbh->prepare(qq~
         SELECT
-            J.id, J.nick, A.login, J.is_alive, J.alive_date, J.pin_mode, A.id, A.last_ip$req_counts
+            J.id, J.nick, A.login, J.is_alive, J.alive_date, J.pin_mode,
+            A.id, A.last_ip, A.restrict_ips$req_counts
         FROM judges J LEFT JOIN accounts A ON A.id = J.account_id WHERE 1 = 1 ~ .
         $lv->maybe_where_cond . $lv->order_by);
     $c->execute($lv->where_params);
 
     my $fetch_record = sub {
         my (
-            $jid, $judge_name, $account_name, $is_alive, $alive_date, $pin_mode, $account_id, $last_ip,
+            $jid, $judge_name, $account_name, $is_alive, $alive_date, $pin_mode,
+            $account_id, $last_ip, $restrict_ips,
             $processing_count, $processed_count
         ) = $_[0]->fetchrow_array or return ();
         return (
@@ -119,6 +121,7 @@ sub judges_frame {
             judge_name => $judge_name,
             account_name => $account_name,
             CATS::IP::linkify_ip($last_ip),
+            restrict_ips => $restrict_ips,
             pin_mode => $pin_mode,
             is_alive => $is_alive,
             alive_date => $alive_date,
@@ -129,7 +132,8 @@ sub judges_frame {
             href_edit => url_f('judges', edit => $jid),
             href_delete => url_f('judges', 'delete' => $jid),
             href_account => url_f('users', edit => $account_id),
-            href_console => url_f('console', search => "judge_id=$jid,state=P", se => 'judge', i_value => -1, show_results => 1),
+            href_console => url_f('console',
+                search => "judge_id=$jid,state=P", se => 'judge', i_value => -1, show_results => 1),
         );
     };
 
