@@ -68,7 +68,7 @@ function send_message(href) {
   <th>ID</th>
   [% FOREACH si IN sources_info; IF si %]
     <td colspan="[% si.colspan %]">
-      [% si.req_id %]
+      [% IF is_jury %]<a href="#" title="[% si.hash %]">[% si.req_id %]</a>[% ELSE; si.req_id; END %]
       [% IF si.original_req_id %]
       (<a href = "[% si.href_original_req_run_details %]">[% si.original_req_id %]</a>)
       [% END %]
