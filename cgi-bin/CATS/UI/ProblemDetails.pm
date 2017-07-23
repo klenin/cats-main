@@ -89,7 +89,7 @@ sub problem_details_frame {
     my ($rc_all, $rc_contest);
     $rc_all = get_request_count(0, $p->{pid}) if $is_root;
     $rc_contest = get_request_count(1, $p->{pid});
-    my $sn = CATS::Verdicts::request_state_names();
+    my $sn = $CATS::Verdicts::state_to_name;
 
     my $make_rc = sub {
         my ($short, $name, $st, $state_search) = @_;

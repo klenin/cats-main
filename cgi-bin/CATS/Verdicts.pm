@@ -5,7 +5,7 @@ use warnings;
 
 use CATS::Constants;
 
-sub request_state_names() {+{
+our $name_to_state = {
     NP => $cats::st_not_processed,
     UH => $cats::st_unhandled_error,
     P  => $cats::st_install_processing,
@@ -23,6 +23,8 @@ sub request_state_names() {+{
     IL => $cats::st_idleness_limit_exceeded,
     MR => $cats::st_manually_rejected,
     WL => $cats::st_write_limit_exceeded,
-}}
+};
+
+our $state_to_name = { map { $name_to_state->{$_} => $_ } keys %$name_to_state };
 
 1;

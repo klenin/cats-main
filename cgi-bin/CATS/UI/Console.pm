@@ -302,7 +302,7 @@ sub console_content {
             ROWS 1), 0)~,
     });
     $lv->define_enums({
-        state => CATS::Verdicts::request_state_names,
+        state => $CATS::Verdicts::name_to_state,
         run_method => CATS::Misc::run_method_enum,
         contest_id => { this => $cid },
         account_id => { this => $uid },
@@ -524,19 +524,18 @@ sub graphs_frame {
     init_template('console_graphs.html.tt');
 
     my $reqs = select_all_reqs;
-    my $rsn = CATS::Verdicts::request_state_names;
-    my %rev_rsn = map { $rsn->{$_} => $_ } keys %$rsn;
+    my $n2s = $CATS::Verdicts::name_to_state;
     my $used_verdicts = {};
 
     for my $r (@$reqs) {
         $r->{minutes} = int($r->{time_since_start} * 24 * 60 + 0.5);
-        $r->{verdict} = $rev_rsn{$r->{state}};
+        $r->{verdict} = $CATS::Verdicts::state_to_name->{$r->{state}};
         $used_verdicts->{$r->{verdict}} = 1;
     }
     $t->param(
         reqs => $reqs,
         codes => $contest->used_problem_codes,
-        verdicts => [ sort{ $rsn->{$a} <=> $rsn->{$b} } keys %$used_verdicts ],
+        verdicts => [ sort{ $n2s->{$a} <=> $n2s->{$b} } keys %$used_verdicts ],
         submenu => [ { href => url_f('console'), item => res_str(510) } ],
     );
 }
