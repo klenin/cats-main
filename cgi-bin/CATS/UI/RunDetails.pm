@@ -18,7 +18,13 @@ use CATS::Problem::Text qw(ensure_problem_hash);
 use CATS::Problem::Utils;
 use CATS::RankTable;
 use CATS::Request;
-use CATS::ReqDetails qw(get_contest_info get_sources_info get_test_data sources_info_param source_links);
+use CATS::ReqDetails qw(
+    get_contest_info
+    get_contest_tests
+    get_sources_info
+    get_test_data
+    sources_info_param
+    source_links);
 use CATS::Testset;
 use CATS::Utils qw(state_to_display);
 use CATS::Web qw(param encoding_param url_param headers upload_source content_type redirect);
@@ -212,9 +218,10 @@ sub run_details_frame {
 
     for (@$sources_info) {
         source_links($_);
+        my $c = get_contest_tests(get_contest_info($_, $contest_cache), $_->{problem_id});
         push @runs,
             $_->{state} == $cats::st_compilation_error ?
-            { get_log_dump($_->{req_id}, 1) } : get_run_info(get_contest_info($_, $contest_cache), $_);
+            { get_log_dump($_->{req_id}, 1) } : get_run_info($c, $_);
     }
     sources_info_param($sources_info);
     $t->param(runs => \@runs,

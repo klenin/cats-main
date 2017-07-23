@@ -15,6 +15,7 @@ use CATS::Web qw(encoding_param param url_param);
 use Exporter qw(import);
 our @EXPORT_OK = qw(
     get_contest_info
+    get_contest_tests
     get_sources_info
     get_test_data
     sources_info_param
@@ -38,6 +39,12 @@ sub get_contest_info {
     $c->{$_} ||= $jury_view for @show_fields;
     $c->{hide_testset_details} = !$jury_view && $c->{time_since_defreeze} < 0;
 
+    $c;
+}
+
+sub get_contest_tests {
+    my ($c, $problem_id) = @_;
+
     my $fields = join ', ',
         ($c->{show_all_tests} ? 't.points' : ()),
         ($c->{show_test_data} ? qq~
@@ -48,9 +55,10 @@ sub get_contest_info {
     my $tests = $c->{tests} = $fields ?
         $dbh->selectall_arrayref(qq~
             SELECT $fields FROM tests t WHERE t.problem_id = ? ORDER BY t.rank~, { Slice => {} },
-            $si->{problem_id}) : [];
+            $problem_id) : [];
     my $p = $c->{points} = $c->{show_all_tests} ? [ map $_->{points}, @$tests ] : [];
     $c->{show_points} = 0 != grep defined $_ && $_ > 0, @$p;
+
     $c;
 }
 
