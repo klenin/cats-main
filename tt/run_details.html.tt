@@ -10,9 +10,7 @@
 %]
 
 <style>
-  .test_data a {
-    color: black;
-  };
+  .details a { color: black; width: 100%; display: block; }
 </style>
 
 [% IF is_jury %]
@@ -67,7 +65,7 @@
     </table>
     <br/>
   [% END %]
-  <table id="details" class="bordered">
+  <table id="details" class="details bordered">
   <tr>
     <th>[% capt.test %]</th>
     <th>[% capt.result %]</th>
@@ -94,27 +92,16 @@
   [% FOREACH rd IN r.run_details %]
   <tr class="run_details_[% IF rd.not_in_testset; 'NT'; ELSE; rd.short_state; END %]">
     <td>[% rd.test_rank %]</td>
-    <td>[% IF rd.not_processed %]Not processed[% END ~%]
-   [% IF rd.not_in_testset %]Not in testset[% END ~%]
-   [% IF rd.install_processing %]Installing problem[% END ~%]
-   [% IF rd.unhandled_error %]Unhandled error[% END ~%]
-   [% IF rd.testing %]Now testing[% END ~%]
-   [% IF rd.accepted %]OK[% END ~%]
-   [% IF rd.wrong_answer %]WA[% END ~%]
-   [% IF rd.presentation_error %]PE[% END ~%]
-   [% IF rd.time_limit_exceeded %]Time[% END ~%]
-   [% IF rd.idleness_limit_exceeded %]Idle[% END ~%]
-   [% IF rd.memory_limit_exceeded %]Memory[% END ~%]
-   [% IF rd.write_limit_exceeded %]Write[% END ~%]
-   [% IF rd.runtime_error %]Runtime[% END ~%]
-   [% IF rd.compilation_error %]Compilation error[% END ~%]
-   [% IF rd.security_violation %]Security violation[% END ~%]
-   </td>
+    [% IF rd.not_in_testset %]
+    <td colspan="[% 1 + (r.show_points ? 1 : 0) + (r.show_test_resources ? 3 : 0) %]">[% capt.not_in_testset %]</td>
+    [% ELSE %]
+    <td>[% href('#', rd.short_state, capt.verdicts.item(rd.short_state)) %]</td>
     [% IF r.show_points %]<td>[% rd.points %]</td>[% END %]
     [% IF r.show_test_resources %]
       <td>[% rd.time_used %]</td>
       <td align="right">[% rd.memory_used | group_digits %]</td>
       <td align="right">[% rd.disk_used | group_digits %]</td>
+    [% END %]
     [% END %]
     [% IF r.show_checker_comment %]<td><pre>[% rd.checker_comment | html %]</pre></td>[% END %]
     [% IF r.show_test_data %]
