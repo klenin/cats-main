@@ -100,7 +100,7 @@ sub get_req_details {
 }
 
 sub get_nearby_attempt {
-    my ($si, $prevnext, $cmp, $ord, $diff) = @_;
+    my ($si, $prevnext, $cmp, $ord, $diff, $extra_params) = @_;
     # TODO: Сheck neighbour's contest to ensure correct access privileges.
     my $na = $dbh->selectrow_hashref(qq~
         SELECT id, submit_time FROM reqs
@@ -115,7 +115,7 @@ sub get_nearby_attempt {
         $si->{"${prevnext}_attempt_time"} = $si->{submit_time} =~ /^$n_date/ ? $n_time : $_;
     }
     my $f = url_param('f') || 'run_log';
-    my @p;
+    my @p = $extra_params ? @$extra_params : ();
     if ($f eq 'diff_runs') {
         for (1..2) {
             my $r = url_param("r$_") || 0;
@@ -123,7 +123,7 @@ sub get_nearby_attempt {
         }
     }
     else {
-        @p = (rid => $na->{id});
+        push @p, (rid => $na->{id});
     }
     $si->{"href_${prevnext}_attempt"} = url_f($f, @p);
     $si->{href_diff_runs} = url_f('diff_runs', r1 => $na->{id}, r2 => $si->{req_id}) if $diff && $uid;
@@ -216,8 +216,8 @@ sub get_sources_info {
         # Just hour and minute from testing start and finish timestamps.
         ($r->{"${_}_short"} = $r->{$_}) =~ s/^(.*)\s+(\d\d:\d\d)\s*$/$2/
             for qw(test_time result_time);
-        get_nearby_attempt($r, 'prev', '<', 'DESC', 1);
-        get_nearby_attempt($r, 'next', '>', 'ASC', 0);
+        get_nearby_attempt($r, 'prev', '<', 'DESC', 1, $p{extra_params});
+        get_nearby_attempt($r, 'next', '>', 'ASC' , 0, $p{extra_params});
         # During the official contest, viewing sources from other contests
         # is disallowed to prevent cheating.
         if ($official && $official->{id} != $r->{contest_id}) {

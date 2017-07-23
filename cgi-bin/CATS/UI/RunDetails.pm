@@ -227,7 +227,8 @@ sub visualize_test_frame {
     my $vid = $p->{vid} or return;
     my $test_rank = $p->{test_rank} or return;
 
-    my $sources_info = get_sources_info(request_id => $rid);
+    my $sources_info = get_sources_info(
+        request_id => $rid, extra_params => [ test_rank => $test_rank, vid => $p->{vid} ]);
     source_links($sources_info);
     sources_info_param([ $sources_info ]);
 
@@ -354,9 +355,10 @@ sub view_test_details_frame {
 
     my ($p) = @_;
     $p->{rid} or return;
-    $p->{test_rank} //= 1;
+    $p->{test_rank} or return;
 
-    my $sources_info = get_sources_info(request_id => $p->{rid}) or return;
+    my $sources_info = get_sources_info(
+        request_id => $p->{rid}, extra_params => [ test_rank => $p->{test_rank} ]) or return;
     $sources_info->{is_jury} or return;
 
     my $output_data;
