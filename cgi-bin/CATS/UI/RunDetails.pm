@@ -230,14 +230,12 @@ sub visualize_test_frame {
     my $sources_info = get_sources_info(request_id => $rid);
     source_links($sources_info);
     sources_info_param([ $sources_info ]);
-    $sources_info->{is_jury} || get_contest_info($sources_info, {})->{show_test_data} or return;
 
-    my $test_ranks = $dbh->selectcol_arrayref(q~
-        SELECT rank FROM tests T
-        INNER JOIN reqs R ON R.problem_id = T.problem_id
-        WHERE R.id = ?
-        ORDER BY rank~, undef,
-        $rid);
+    my $ci = get_contest_info($sources_info, {});
+    $ci->{show_test_data} or return;
+
+    my @tests = get_req_details($ci, $sources_info, 'test_rank, result', {});
+    grep $_->{test_rank} == $test_rank, @tests or return;
 
     my $visualizer = $dbh->selectrow_hashref(q~
         SELECT PS.name, PS.src, PS.fname, P.id AS problem_id, P.hash
@@ -271,10 +269,14 @@ sub visualize_test_frame {
         ],
         test_data_json => JSON::XS->new->utf8->indent(2)->canonical->encode($test_data),
         visualizer => $visualizer,
-        href_prev_pages => $test_rank > $test_ranks->[0] ? $vhref->($test_rank - 1) : undef,
-        href_next_pages => $test_rank < $test_ranks->[-1] ? $vhref->($test_rank + 1) : undef,
+        href_prev_pages => $test_rank > $tests[0]->{test_rank} ? $vhref->($test_rank - 1) : undef,
+        href_next_pages => $test_rank < $tests[-1]->{test_rank} ? $vhref->($test_rank + 1) : undef,
         test_ranks => [
-            map +{ page_number => $_, href_page => $vhref->($_), current_page => $_ == $test_rank, }, @$test_ranks
+            map +{
+                page_number => $_->{test_rank},
+                href_page => $vhref->($_->{test_rank}),
+                current_page => $_->{test_rank} == $test_rank,
+            }, @tests
         ],
     );
 }
