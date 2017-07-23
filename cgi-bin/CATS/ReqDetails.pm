@@ -7,7 +7,7 @@ use CATS::Constants;
 use CATS::Contest;
 use CATS::ContestParticipate qw(is_jury_in_contest);
 use CATS::DB;
-use CATS::Misc qw($is_jury $is_root $sid $t $uid url_f problem_status_names);
+use CATS::Misc qw($contest $is_jury $is_root $sid $t $uid url_f problem_status_names);
 use CATS::RankTable;
 use CATS::Utils qw(encodings source_encodings state_to_display url_function);
 use CATS::Web qw(encoding_param param url_param);
@@ -22,33 +22,36 @@ our @EXPORT_OK = qw(
 );
 
 sub get_contest_info {
-    my ($si, $jury_view) = @_;
+    my ($si, $cache) = @_;
 
-    my $contest = $dbh->selectrow_hashref(qq~
-        SELECT
-            id, run_all_tests, show_all_tests, show_test_resources, show_checker_comment, show_test_data,
-            CAST(CURRENT_TIMESTAMP - defreeze_date AS DOUBLE PRECISION) AS time_since_defreeze
-            FROM contests WHERE id = ?~, { Slice => {} },
-        $si->{contest_id});
+    $_ and return $_ for $cache->{$si->{contest_id}};
 
-    $contest->{$_} ||= $jury_view
-        for qw(show_all_tests show_test_resources show_checker_comment show_test_data);
-    $contest->{hide_testset_details} = !$jury_view && $contest->{time_since_defreeze} < 0;
+    my @show_fields = qw(show_all_tests show_test_resources show_checker_comment show_test_data);
+    my $c = $cache->{$si->{contest_id}} = $si->{contest_id} == $contest->{id} ?
+        { map { $_ => $contest->{$_} } 'id', 'run_all_tests', @show_fields, 'time_since_defreeze' } :
+        CATS::DB::select_row('contests', [
+            'id', 'run_all_tests', @show_fields,
+            'CAST(CURRENT_TIMESTAMP - defreeze_date AS DOUBLE PRECISION) AS time_since_defreeze' ],
+            { id => $si->{contest_id} });
+
+    my $jury_view = $si->{is_jury} && !param('as_user');
+    $c->{$_} ||= $jury_view for @show_fields;
+    $c->{hide_testset_details} = !$jury_view && $c->{time_since_defreeze} < 0;
 
     my $fields = join ', ',
-        ($contest->{show_all_tests} ? 't.points' : ()),
-        ($contest->{show_test_data} ? qq~
+        ($c->{show_all_tests} ? 't.points' : ()),
+        ($c->{show_test_data} ? qq~
             (SELECT ps.fname FROM problem_sources ps WHERE ps.id = t.generator_id) AS gen_name,
             t.param, t.gen_group, t.in_file_size AS input_file_size, t.out_file_size AS answer_file_size,
             SUBSTRING(t.in_file FROM 1 FOR $cats::test_file_cut + 1) AS input,
             SUBSTRING(t.out_file FROM 1 FOR $cats::test_file_cut + 1) AS answer ~ : ());
-    my $tests = $contest->{tests} = $fields ?
+    my $tests = $c->{tests} = $fields ?
         $dbh->selectall_arrayref(qq~
             SELECT $fields FROM tests t WHERE t.problem_id = ? ORDER BY t.rank~, { Slice => {} },
             $si->{problem_id}) : [];
-    my $p = $contest->{points} = $contest->{show_all_tests} ? [ map $_->{points}, @$tests ] : [];
-    $contest->{show_points} = 0 != grep defined $_ && $_ > 0, @$p;
-    $contest;
+    my $p = $c->{points} = $c->{show_all_tests} ? [ map $_->{points}, @$tests ] : [];
+    $c->{show_points} = 0 != grep defined $_ && $_ > 0, @$p;
+    $c;
 }
 
 sub get_test_data {

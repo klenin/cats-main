@@ -208,15 +208,13 @@ sub run_details_frame {
     my $rids = [ grep /^\d+$/, split /,/, $rid ];
     my $sources_info = get_sources_info(request_id => $rids, partial_checker => 1) or return;
     my @runs;
-    my $contest = { id => 0 };
+    my $contest_cache = {};
 
     for (@$sources_info) {
         source_links($_);
-        $contest = get_contest_info($_, $_->{is_jury} && !url_param('as_user'))
-            if $_->{contest_id} != $contest->{id};
         push @runs,
             $_->{state} == $cats::st_compilation_error ?
-            { get_log_dump($_->{req_id}, 1) } : get_run_info($contest, $_);
+            { get_log_dump($_->{req_id}, 1) } : get_run_info(get_contest_info($_, $contest_cache), $_);
     }
     sources_info_param($sources_info);
     $t->param(runs => \@runs,
