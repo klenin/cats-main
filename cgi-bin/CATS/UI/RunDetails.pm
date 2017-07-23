@@ -254,13 +254,7 @@ sub visualize_test_frame {
     my $sources_info = get_sources_info(request_id => $rid);
     source_links($sources_info);
     sources_info_param([ $sources_info ]);
-
-    $dbh->selectrow_array(q~
-        SELECT CA.is_jury
-        FROM reqs R
-        INNER JOIN contest_accounts CA ON CA.contest_id = R.contest_id
-        WHERE R.id = ? AND CA.account_id = ?~, undef,
-        $rid, $uid) or return;
+    $sources_info->{is_jury} || get_contest_info($sources_info, {})->{show_test_data} or return;
 
     my $test_ranks = $dbh->selectcol_arrayref(q~
         SELECT rank FROM tests T
