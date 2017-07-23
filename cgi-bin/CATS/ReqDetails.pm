@@ -16,6 +16,7 @@ use Exporter qw(import);
 our @EXPORT_OK = qw(
     get_contest_info
     get_contest_tests
+    get_req_details
     get_sources_info
     get_test_data
     sources_info_param
@@ -72,6 +73,30 @@ sub get_test_data {
             INNER JOIN reqs R ON R.problem_id = T.problem_id
         WHERE R.id = ? AND T.rank = ?~, { Slice => {} },
         $p->{rid}, $p->{test_rank});
+}
+
+sub get_req_details {
+    my ($c, $req, $fields, $accepted_tests) = @_;
+
+    my $sth = $dbh->prepare(qq~
+        SELECT $fields FROM req_details WHERE req_id = ? ORDER BY test_rank~);
+    $sth->execute($req->{req_id});
+
+    my @result;
+    while (my $rd = $sth->fetchrow_hashref) {
+        $rd->{is_accepted} = $rd->{result} == $cats::st_accepted ? 1 : 0;
+        # When tests are run in random order, and the user looks at the run details
+        # while the testing is in progress, he may be able to see 'OK' result
+        # for the test ranked above the (unknown at the moment) first failing test.
+        # Prevent this by stopping output at the first failed OR not-run-yet test.
+        # Note: Tests after the gap in non-continuous testset will be hidden while running.
+        last if !$c->{show_all_tests} && $req->{state} < $cats::request_processed &&
+            $rd->{is_accepted} && @result && $result[-1]->{test_rank} != $rd->{test_rank} - 1;
+        push @result, $rd;
+        $accepted_tests->{$rd->{test_rank}} = 1 if $rd->{is_accepted};
+        last if !$c->{show_all_tests} && !$rd->{is_accepted};
+    }
+    @result;
 }
 
 sub get_nearby_attempt {
