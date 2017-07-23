@@ -28,6 +28,7 @@ use CATS::ReqDetails qw(
     source_links);
 use CATS::Testset;
 use CATS::Utils qw(state_to_display);
+use CATS::Verdicts;
 use CATS::Web qw(param encoding_param url_param headers upload_source content_type redirect);
 
 sub get_run_info {
@@ -95,6 +96,7 @@ sub get_run_info {
         }
         $run_details{$last_test} = {
             state_to_display($row->{result}), %$row, points => $p,
+            short_state => $CATS::Verdicts::state_to_name->{$row->{result}},
         };
     }
 

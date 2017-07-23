@@ -199,14 +199,25 @@ th { font-size: 11pt; font-weight: bold; color:#000000; }
 td { font-size: 11pt }
 td.ts { font-size: 10pt; font-style: italic; }
 
-tr.run_details_OK { background-color: #A0FFA0 }
-tr.run_details_WA, td.run_details_WA { background-color: #FFA0A0 }
-tr.run_details_PE { background-color: #FFFFA0 }
-tr.run_details_RE { background-color: #FFA0A0 }
+.run_details_NT { color: #000080; font-style: italic; }
 
-tr.run_details_IN { color: #A0A000 }
-tr.run_details_NP { color: #008000 }
-tr.run_details_NT { color: #000080; font-style: italic; }
+.run_details_NP { color: #008000 }
+.run_details_UH { color: #FF0000; font-weight: bold; }
+.run_details_T  { color: #A0A000 }
+.run_details_P  { color: #A0A000 }
+.run_details_AW {}
+.run_details_OK { background-color: #A0FFA0 }
+.run_details_WA { background-color: #FFA0A0 }
+.run_details_PE { background-color: #FFFFA0 }
+.run_details_TL { background-color: #FFC080 }
+.run_details_RE { background-color: #FFA0FF; }
+.run_details_CE {}
+.run_details_SV { background-color: #FFA0A0 }
+.run_details_ML { background-color: #FFC080 }
+.run_details_IS {}
+.run_details_IL { background-color: #FFC080 }
+.run_details_MR {}
+.run_details_WL { background-color: #FFC080 }
 
 .hidden { display: none; }
 

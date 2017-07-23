@@ -92,19 +92,7 @@
     [% END %]
   </tr>
   [% FOREACH rd IN r.run_details %]
-  <tr [% IF rd.accepted %] class="run_details_OK"[% END ~%]
-   [% IF rd.wrong_answer %] class="run_details_WA"[% END ~%]
-   [% IF rd.presentation_error %] class="run_details_PE"[% END ~%]
-   [% IF rd.time_limit_exceeded %] class="run_details_TL"[% END ~%]
-   [% IF rd.idleness_limit_exceeded %] class="run_details_TL"[% END ~%]
-   [% IF rd.memory_limit_exceeded %] class="run_details_ML"[% END ~%]
-   [% IF rd.write_limit_exceeded %] class="run_details_WL"[% END ~%]
-   [% IF rd.runtime_error %] class="run_details_RE"[% END ~%]
-   [% IF rd.not_processed %] class="run_details_NP"[% END ~%]
-   [% IF rd.not_in_testset %] class="run_details_NT"[% END ~%]
-   [% IF rd.install_processing %] class="run_details_IN"[% END ~%]
-   [% IF rd.now_testing %] class="run_details_IN"[% END ~%]
-  >
+  <tr class="run_details_[% IF rd.not_in_testset; 'NT'; ELSE; rd.short_state; END %]">
     <td>[% rd.test_rank %]</td>
     <td>[% IF rd.not_processed %]Not processed[% END ~%]
    [% IF rd.not_in_testset %]Not in testset[% END ~%]
