@@ -19,6 +19,7 @@ use CATS::Problem::Utils;
 use CATS::StaticPages;
 use CATS::Testset;
 use CATS::Utils qw(url_function source_encodings);
+use CATS::Verdicts;
 use CATS::Web qw(content_type encoding_param headers not_found param redirect url_param);
 
 my $problem_submenu = [
@@ -88,7 +89,7 @@ sub problem_details_frame {
     my ($rc_all, $rc_contest);
     $rc_all = get_request_count(0, $p->{pid}) if $is_root;
     $rc_contest = get_request_count(1, $p->{pid});
-    my $sn = CATS::Misc::request_state_names();
+    my $sn = CATS::Verdicts::request_state_names();
 
     my $make_rc = sub {
         my ($short, $name, $st, $state_search) = @_;

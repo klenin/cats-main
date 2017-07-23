@@ -291,12 +291,6 @@ sub problem_status_names() {+{
     $cats::problem_st_hidden    => res_str(704),
 }}
 
-sub request_state_names() {+{
-    NP => 0, UH => 1, P => 3, AW => 4,
-    OK => 10, WA => 11, PE => 12, TL => 13, RE => 14, CE => 15, SV => 16, ML => 17,
-    IS => 18, IL => 19, MR => 20,
-}}
-
 sub run_method_enum() {+{
     default => $cats::rm_default,
     interactive => $cats::rm_interactive,

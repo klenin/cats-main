@@ -16,6 +16,7 @@ use CATS::Misc qw(
 );
 use CATS::Request;
 use CATS::Utils qw(coalesce url_function state_to_display date_to_iso);
+use CATS::Verdicts;
 use CATS::Web qw(param url_param);
 
 # This is called before init_template to display submitted question immediately.
@@ -301,7 +302,7 @@ sub console_content {
             ROWS 1), 0)~,
     });
     $lv->define_enums({
-        state => CATS::Misc::request_state_names,
+        state => CATS::Verdicts::request_state_names,
         run_method => CATS::Misc::run_method_enum,
         contest_id => { this => $cid },
         account_id => { this => $uid },
@@ -523,7 +524,7 @@ sub graphs_frame {
     init_template('console_graphs.html.tt');
 
     my $reqs = select_all_reqs;
-    my $rsn = CATS::Misc::request_state_names;
+    my $rsn = CATS::Verdicts::request_state_names;
     my %rev_rsn = map { $rsn->{$_} => $_ } keys %$rsn;
     my $used_verdicts = {};
 
