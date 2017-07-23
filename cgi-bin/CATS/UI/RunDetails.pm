@@ -279,6 +279,7 @@ sub visualize_test_frame {
                 page_number => $_->{test_rank},
                 href_page => $vhref->($_->{test_rank}),
                 current_page => $_->{test_rank} == $test_rank,
+                short_verdict => $CATS::Verdicts::state_to_name->{$_->{result}},
             }, @tests
         ],
     );
@@ -357,20 +358,22 @@ sub view_test_details_frame {
 
     my ($p) = @_;
     $p->{rid} or return;
-    $p->{test_rank} or return;
+    $p->{test_rank} //= 1;
 
     my $sources_info = get_sources_info(
         request_id => $p->{rid}, extra_params => [ test_rank => $p->{test_rank} ]) or return;
-    $sources_info->{is_jury} or return;
+
+    my $ci = get_contest_info($sources_info, {});
+    $ci->{show_test_data} or return;
 
     my $output_data;
-    if (param('delete_request_outputs') && $is_jury) {
+    if ($is_jury && param('delete_request_outputs')) {
         $dbh->do(q~
             DELETE FROM solution_output SO
             WHERE SO.req_id = ?~, undef,
             $p->{rid});
         $dbh->commit();
-    } elsif(param('delete_test_output') && $is_jury) {
+    } elsif($is_jury && param('delete_test_output')) {
         $dbh->do(q~
             DELETE FROM solution_output SO
             WHERE SO.req_id = ? AND SO.test_rank = ?~, undef,
@@ -397,12 +400,8 @@ sub view_test_details_frame {
 
     my $tdhref = sub { url_f('view_test_details', rid => $p->{rid}, test_rank => $_[0]) };
 
-    my $test_ranks = $dbh->selectcol_arrayref(q~
-        SELECT rank FROM tests T
-        INNER JOIN reqs R ON R.problem_id = T.problem_id
-        WHERE R.id = ?
-        ORDER BY rank~, undef,
-        $p->{rid});
+    my @tests = get_req_details($ci, $sources_info, 'test_rank, result', {});
+    grep $_->{test_rank} == $p->{test_rank}, @tests or return;
 
     source_links($sources_info);
     sources_info_param([ $sources_info ]);
@@ -410,10 +409,15 @@ sub view_test_details_frame {
         output_data => $output_data,
         test_data => $test_data,
         save_prefix_lengths => $save_prefix_lengths,
-        href_prev_pages => $p->{test_rank} > $test_ranks->[0] ? $tdhref->($p->{test_rank} - 1) : undef,
-        href_next_pages => $p->{test_rank} < $test_ranks->[-1] ? $tdhref->($p->{test_rank} + 1) : undef,
+        href_prev_pages => $p->{test_rank} > $tests[0]->{test_rank} ? $tdhref->($p->{test_rank} - 1) : undef,
+        href_next_pages => $p->{test_rank} < $tests[-1]->{test_rank} ? $tdhref->($p->{test_rank} + 1) : undef,
         test_ranks => [
-            map +{ page_number => $_, href_page => $tdhref->($_), current_page => $_ == $p->{test_rank}, }, @$test_ranks
+            map +{
+                page_number => $_->{test_rank},
+                href_page => $tdhref->($_->{test_rank}),
+                current_page => $_->{test_rank} == $p->{test_rank},
+                short_verdict => $CATS::Verdicts::state_to_name->{$_->{result}},
+            }, @tests
         ],
     );
 }

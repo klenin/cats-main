@@ -11,7 +11,7 @@
 <span class="bordered">[%# Must have spaces inside. ~%]
 [%~ href(href_prev_pages, '<<') IF href_prev_pages ~%]
 [%~ FOREACH p IN test_ranks ~%]
-<a href="[% p.href_page %]"[% ' class="current_link"' IF p.current_page %]>[% p.page_number %]</a>
+<a href="[% p.href_page %]" class="run_details_[% p.short_verdict; ' current_link' IF p.current_page %]">[% p.page_number %]</a>
 [%~ END ~%]
 [%~ href(href_next_pages, '>>') IF href_next_pages ~%]
 </span></div>
