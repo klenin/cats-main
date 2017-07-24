@@ -89,7 +89,6 @@ sub problem_details_frame {
     my ($rc_all, $rc_contest);
     $rc_all = get_request_count(0, $p->{pid}) if $is_root;
     $rc_contest = get_request_count(1, $p->{pid});
-    my $sn = $CATS::Verdicts::state_to_name;
 
     my $make_rc = sub {
         my ($short, $name, $st, $state_search) = @_;
@@ -106,9 +105,9 @@ sub problem_details_frame {
     };
     $pr->{request_count} = [
         (map {
-            my $st = $sn->{$_};
-            $rc_all->{$st} || $rc_contest->{$st} ? $make_rc->($_, $_, $st, $_) : ();
-        } sort { $sn->{$a} <=> $sn->{$b} } keys %$sn),
+            my ($n, $st) = @$_;
+            $rc_all->{$st} || $rc_contest->{$st} ? $make_rc->($n, $n, $st, $n) : ();
+        } @$CATS::Verdicts::name_to_state_sorted),
         $make_rc->('total', res_str(581), 'total'),
     ];
 
