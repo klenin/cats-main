@@ -176,6 +176,8 @@ input.listview_checkbox {
     padding: 4px;
 }
 
+table tr td.nested { height: 100%; padding: 0;  }
+td.nested table { border-style: hidden; height: 100%; width: 100%; }
 table.internal_borders { border-collapse: collapse; }
 table.internal_borders td, table.internal_borders th { border: 1px solid #4040ff; }
 table.padded td, table.padded th { padding: 3px; }

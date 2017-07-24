@@ -3,8 +3,6 @@
   td.verdict_UH, td.verdict_P { background-color: #FFD0D0; }
   table.request_count { text-align: right; }
   table.request_count td { width: 2em; }
-  table tr td.nested { padding: 0; }
-  td.nested table { border-style: hidden;  width: 100%; }
 </style>
 [% END %]
 [% PROCESS includes/menu_begin.tti %]
