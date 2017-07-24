@@ -266,7 +266,7 @@ sub sources_info_param {
             $si->{req_overidden_limits} = {
                 map { $_ => $si->{"lr_$_"} ? 1 : 0 } @cats::limits_fields
             };
-            $si->{colspan} = scalar @{$si->{elements}};
+            $si->{colspan} = scalar(@{$si->{elements}}) || 1;
             if ($si->{elements_count} == 1) {
                 $si->{original_req_id} = $si->{elements}->[0]->{req_id};
                 $si->{original_team_name} = $si->{elements}->[0]->{team_name};
