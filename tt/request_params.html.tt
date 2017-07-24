@@ -1,5 +1,4 @@
 [% PROCESS includes/header.tti %]
-[% PROCESS "lang/$lang/verdicts.tti" %]
 </head>
 <body>
 
