@@ -32,7 +32,7 @@ function send_message(href) {
       height: 100%;
       float: left;
       margin: 0;
-      padding: 4px;
+      padding: 3px;
     }
     .cp_overridden_limits {
       background-color: #FEFBCA;
@@ -42,24 +42,6 @@ function send_message(href) {
     }
     .fill_width {
       width: 100%;
-    }
-    table.inner_table {
-      border-collapse: collapse;
-      width: 100%;
-    }
-    table.inner_table tr:last-child td { padding: 0; }
-    table.inner_table tr:first-child td {
-      border-top: 0;
-      border-bottom: 0;
-    }
-    table.inner_table tr:last-child td {
-      border-bottom: 0;
-    }
-    table.inner_table tr td:last-child {
-      border-right: 0;
-    }
-    table.inner_table tr td:first-child {
-      border-left: 0;
     }
   </style>
 [% END %]
@@ -145,10 +127,12 @@ function send_message(href) {
 <tr>
   <th>[% capt.limits %]</th>
   [% FOREACH si IN sources_info; IF si %]
-    <td style="padding: 0;" colspan="[% si.colspan %]">
+    <td class="nested" colspan="[% si.colspan %]">
       [% IF si.is_jury %]
-        <table class="inner_table">
-          <tr><td>[% capt.time %], [% capt.s %]</td><td>[% capt.memory %], [% capt.mb %]</td><td>[% capt.write %], [% capt.b %]</td></tr>
+        <table class="internal_borders">
+          <tr class="padded">
+            <td>[% capt.time %], [% capt.s %]</td><td>[% capt.memory %], [% capt.mb %]</td><td>[% capt.write %], [% capt.b %]</td>
+          </tr>
           <tr>
             <td><div class="limits [% si.style_classes.time_limit %]">[% si.time_limit %]</div></td>
             <td><div class="limits [% si.style_classes.memory_limit %]">[% si.memory_limit %]</div></td>
@@ -165,7 +149,7 @@ function send_message(href) {
   <th>[% capt.status %]<span style="font-weight: normal;">&nbsp;[<a href="docs/verdicts.[% lang %].html">?</a>]</span></th>
   [% FOREACH si IN sources_info; IF si %]
     <td class="nested" colspan="[% si.colspan %]">
-      <table class="internal_borders"><tr>
+      <table class="internal_borders padded"><tr>
         <td style="width: 1px;" class="run_details_[% si.short_state %]">[% si.short_state %]</td>
         <td>[% capt.verdicts.item(si.short_state) %][% " $capt.on_test$si.failed_test" IF si.failed_test%]</td>
         [% IF si.points.defined() %]<td>[% capt.pts %]: [% si.points %]</td>[% END %]

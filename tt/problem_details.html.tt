@@ -21,7 +21,7 @@
 <tr><td>[% capt.run_method %]</td><td>[% capt.run_method_names.item(p.run_method) %]</td></tr>
 [% IF p.keywords.size %]
 <tr><td>[% capt.keywords %]</td><td class="nested">
-  <table class="internal_borders">
+  <table class="internal_borders padded">
     [% FOREACH k IN p.keywords %]<tr><td>[% maybe_href(k.href, k.code) %]</td><td>[% k.name %]</td></tr>[% END %]
   </table>
 </td></tr>
@@ -38,7 +38,7 @@
 [% IF href_static_text %][<a href="[% href_static_text %]">[% capt.static_text %]</a>][% END %]
 </td></tr>
 <tr><td>[% capt.save_test_data %]</td><td class="nested">
-  <table class="internal_borders"><tr>
+  <table class="internal_borders padded"><tr>
     <td>[% capt.save.input  %]: [% p.save_input_prefix || '--' %]</td>
     <td>[% capt.save.answer %]: [% p.save_answer_prefix || '--'  %]</td>
     <td>[% capt.save.output %]: [% p.save_output_prefix || '--'  %]</td>
@@ -51,7 +51,7 @@
 <tr><td>[% capt.overridden_limits %]</td><td>[% href(href_problem_limits, limits_str(p.overridden_time_limit, p.overridden_memory_limit, p.overridden_write_limit)) %]</td></tr>
 [% END %]
 <tr><td>[% capt.request_count %]</td><td class="nested">
-  <table class="internal_borders request_count">
+  <table class="internal_borders request_count padded">
     <tr>[% FOREACH rc IN p.request_count %]<td class="verdict_[% rc.short %]">[% rc.name %]</td>[% END %]</tr>
     <tr>[% FOREACH rc IN p.request_count %]<td>[% href(rc.href_contest, rc.contest) %]</td>[% END %]</tr>
     [% IF p.request_count.item(-1).all # root %]<tr>[% FOREACH rc IN p.request_count %]<td>[% href(rc.href_all, rc.all) %]</td>[% END %]</tr>[% END %]

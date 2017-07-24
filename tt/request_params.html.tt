@@ -14,9 +14,9 @@
   </tr>
   <tr>
     <th>[% capt.limits %]</th>
-    <td style="padding: 0;">
-      <table class="inner_table">
-        <tr><td>[% capt.time %], [% capt.s %]</td><td>[% capt.memory %], [% capt.mb %]</td><td>[% capt.write %], [% capt.b %]</td>
+    <td class="nested">
+      <table class="internal_borders">
+        <tr class="padded"><td>[% capt.time %], [% capt.s %]</td><td>[% capt.memory %], [% capt.mb %]</td><td>[% capt.write %], [% capt.b %]</td>
         <tr><td>
         <div class="limits [% si.style_classes.time_limit %]">
         <input type="text" name="time_limit" value="[% si.time_limit %]" size="5"/>
