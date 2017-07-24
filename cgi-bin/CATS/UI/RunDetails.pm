@@ -440,6 +440,8 @@ sub maybe_status_ok {
         $cats::problem_st_ready, $si->{contest_id}, $si->{problem_id}, $cats::problem_st_ready);
 }
 
+my $settable_verdicts = [ qw(NP AW OK WA PE TL ML WL RE CE SV IS IL MR) ];
+
 sub request_params_frame {
     init_template('request_params.html.tt');
 
@@ -514,28 +516,14 @@ sub request_params_frame {
 
     source_links($si);
     sources_info_param([ $si ]);
+    $t->param(settable_verdicts => $settable_verdicts);
 }
 
 sub try_set_state {
     my ($si, $p) = @_;
     $p->{set_state} or return;
-    my $state = {
-        not_processed =>         $cats::st_not_processed,
-        awaiting_verification => $cats::st_awaiting_verification,
-        accepted =>              $cats::st_accepted,
-        wrong_answer =>          $cats::st_wrong_answer,
-        presentation_error =>    $cats::st_presentation_error,
-        time_limit_exceeded =>   $cats::st_time_limit_exceeded,
-        memory_limit_exceeded => $cats::st_memory_limit_exceeded,
-        write_limit_exceeded  => $cats::st_write_limit_exceeded,
-        runtime_error =>         $cats::st_runtime_error,
-        compilation_error =>     $cats::st_compilation_error,
-        security_violation =>    $cats::st_security_violation,
-        ignore_submit =>         $cats::st_ignore_submit,
-        idleness_limit_exceeded=>$cats::st_idleness_limit_exceeded,
-        manually_rejected =>     $cats::st_manually_rejected,
-    }->{$p->{state}};
-    defined $state or return;
+    grep $_ eq $p->{state}, @$settable_verdicts or return;
+    my $state = $CATS::Verdicts::name_to_state->{$p->{state}};
 
     $si->{failed_test} = $p->{failed_test} || 0;
     CATS::Request::enforce_state($p->{rid}, {
