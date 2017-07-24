@@ -90,10 +90,10 @@
     [% END %]
   </tr>
   [% FOREACH rd IN r.run_details %]
-  <tr class="run_details_[% IF rd.not_in_testset; 'NT'; ELSE; rd.short_state; END %]">
+  <tr class="run_details_[% rd.short_state %]">
     <td>[% rd.test_rank %]</td>
-    [% IF rd.not_in_testset %]
-    <td colspan="[% 1 + (r.show_points ? 1 : 0) + (r.show_test_resources ? 3 : 0) %]">[% capt.not_in_testset %]</td>
+    [% IF rd.short_state == 'NT' %]
+    <td colspan="[% 1 + (r.show_points ? 1 : 0) + (r.show_test_resources ? 3 : 0) %]">[% capt.verdicts.NT %]</td>
     [% ELSE %]
     <td>[% href('#', rd.short_state, capt.verdicts.item(rd.short_state)) %]</td>
     [% IF r.show_points %]<td>[% rd.points %]</td>[% END %]

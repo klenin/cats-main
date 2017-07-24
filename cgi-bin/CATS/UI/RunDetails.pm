@@ -116,7 +116,7 @@ sub get_run_info {
         return $run_details{$rank} if exists $run_details{$rank};
         return () unless $contest->{show_all_tests};
         my %r = ( test_rank => $rank );
-        $r{exists $testset{$rank} ? 'not_processed' : 'not_in_testset'} = 1;
+        $r{short_state} = exists $testset{$rank} ? 'NP' : 'NT';
         return \%r;
     };
 
