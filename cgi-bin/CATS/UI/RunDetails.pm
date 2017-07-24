@@ -27,7 +27,6 @@ use CATS::ReqDetails qw(
     sources_info_param
     source_links);
 use CATS::Testset;
-use CATS::Utils qw(state_to_display);
 use CATS::Verdicts;
 use CATS::Web qw(param encoding_param url_param headers upload_source content_type redirect);
 
@@ -95,7 +94,7 @@ sub get_run_info {
             $total_points += $p;
         }
         $run_details{$last_test} = {
-            state_to_display($row->{result}), %$row, points => $p,
+            %$row, points => $p,
             short_state => $CATS::Verdicts::state_to_name->{$row->{result}},
         };
     }
@@ -527,13 +526,9 @@ sub try_set_state {
 
     $si->{failed_test} = $p->{failed_test} || 0;
     CATS::Request::enforce_state($p->{rid}, {
-        failed_test => $si->{failed_test}, state => $state, points => $p->{points} || 0
+        failed_test => $si->{failed_test}, state => $state, points => $p->{points}
     });
     $dbh->commit;
-    my %st = state_to_display($state);
-    while (my ($k, $v) = each %st) {
-        $si->{$k} = $v;
-    }
     msg(1055);
     1;
 }

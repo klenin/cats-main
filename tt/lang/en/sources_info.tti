@@ -11,6 +11,8 @@
     testset => 'Testset',
     limits => 'Limits',
     status => 'Status',
+    on_test => 'on test #',
+    pts => 'points',
     refs => 'Refs',
     source => 'source',
     download => 'download',

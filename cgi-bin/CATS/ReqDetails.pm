@@ -9,7 +9,7 @@ use CATS::ContestParticipate qw(is_jury_in_contest);
 use CATS::DB;
 use CATS::Misc qw($contest $is_jury $is_root $sid $t $uid url_f problem_status_names);
 use CATS::RankTable;
-use CATS::Utils qw(encodings source_encodings state_to_display url_function);
+use CATS::Utils qw(encodings source_encodings url_function);
 use CATS::Web qw(encoding_param param url_param);
 
 use Exporter qw(import);
@@ -204,7 +204,6 @@ sub get_sources_info {
         $_ = Encode::decode_utf8($_) for @$r{grep /_name$/, keys %$r};
 
         my %additional_info = (
-            state_to_display($r->{state}),
             CATS::IP::linkify_ip($r->{last_ip}),
             href_stats => url_f('user_stats', uid => $r->{account_id}),
             href_send_message => url_f('send_message_box', caid => $r->{ca_id}),
@@ -212,6 +211,7 @@ sub get_sources_info {
 
         # We need to save original hash reference
         $r->{$_} = $additional_info{$_} for keys %additional_info;
+        $r->{short_state} = $CATS::Verdicts::state_to_name->{$r->{state}};
 
         # Just hour and minute from testing start and finish timestamps.
         ($r->{"${_}_short"} = $r->{$_}) =~ s/^(.*)\s+(\d\d:\d\d)\s*$/$2/
