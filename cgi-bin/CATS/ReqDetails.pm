@@ -182,7 +182,6 @@ sub get_sources_info {
             'LEFT JOIN limits LR ON LR.id = R.limits_id',
         ]
     });
-    my $result = [ values %$req_tree ];
     $dbh->{ib_enable_utf8} = 1;  # Resume "normal" operation.
 
     # User must be either jury or request owner to access a request.
@@ -191,16 +190,18 @@ sub get_sources_info {
     my $is_jury_cached = sub {
         $jury_cache{$_[0]} //= is_jury_in_contest(contest_id => $_[0]) ? 1 : 0
     };
-    $result = [ grep {
-        ($_->{is_jury} = $is_jury_cached->($_->{contest_id})) ||
-        ($_->{account_id} == ($uid || 0)) } @$result
-    ];
+
+    for (keys %$req_tree) {
+        my $r = $req_tree->{$_};
+        ($r->{is_jury} = $is_jury_cached->($r->{contest_id})) || ($r->{account_id} == ($uid || 0))
+            or delete $req_tree->{$_};
+    }
 
     my $official = $p{get_source} && CATS::Contest::current_official;
     $official = 0 if $official && $is_jury_cached->($official->{id});
     my $se = encoding_param('src_enc', 'WINDOWS-1251');
 
-    for my $r (@$result) {
+    for my $r (values %$req_tree) {
         $_ = Encode::decode_utf8($_) for @$r{grep /_name$/, keys %$r};
 
         my %additional_info = (
@@ -244,7 +245,7 @@ sub get_sources_info {
         $r->{can_reinstall} = $is_root || $r->{orig_contest_id} == $r->{contest_id};
     }
 
-    return ref $rid ? [ map $req_tree->{$_}, @req_ids ] : $req_tree->{$rid};
+    return ref $rid ? [ map { $req_tree->{$_} // () } @req_ids ] : $req_tree->{$rid};
 }
 
 sub build_title_suffix {
