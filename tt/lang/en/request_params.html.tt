@@ -10,5 +10,6 @@
     set_verdict => 'set verdict',
     with_points => 'with points',
     save_output_prefix => 'Save output prefix',
+    not_supported_DE => 'This request uses development environments not supported by the selected judge',
   })
 %]

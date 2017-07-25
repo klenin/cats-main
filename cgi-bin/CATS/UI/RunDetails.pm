@@ -518,12 +518,27 @@ sub request_params_frame {
     $t->param(settable_verdicts => $settable_verdicts);
 
     if ($is_root) {
-        $t->param(
-            req_de_bitmap_cache => $dbh->selectrow_hashref(q~
-                SELECT * FROM req_de_bitmap_cache WHERE req_id = ?~, undef, $si->{req_id}),
-            problem_de_bitmap_cache => $dbh->selectrow_hashref(q~
-                SELECT * FROM problem_de_bitmap_cache WHERE problem_id = ?~, undef, $si->{problem_id}),
-        );
+        my $judge_de_bitmap = CATS::DB::select_row('judge_de_bitmap_cache', '*', { judge_id => $si->{judge_id} }) ||
+            { version => 0, de_bits1 => 0, de_bits2 => 0 };
+        my ($des_cond, @des_params) =
+            CATS::JudgeDB::dev_envs_condition($judge_de_bitmap, $judge_de_bitmap->{version});
+
+        my $rf = join ', ', map "RDEBC.de_bits$_ AS request_de_bits$_", 1 .. $cats::de_req_bitfields_count;
+        my $pf = join ', ', map "PDEBC.de_bits$_ AS problem_de_bits$_", 1 .. $cats::de_req_bitfields_count;
+
+        my $cache = $dbh->selectrow_hashref(qq~
+            SELECT
+                RDEBC.version AS request_version, $rf,
+                PDEBC.version AS problem_version, $pf,
+                (CASE WHEN $des_cond THEN 1 ELSE 0 END) AS is_supported
+            FROM reqs R
+                INNER JOIN problems P ON P.id = R.problem_id
+                LEFT JOIN req_de_bitmap_cache RDEBC ON RDEBC.req_id = R.id
+                LEFT JOIN problem_de_bitmap_cache PDEBC ON PDEBC.problem_id = P.id
+            WHERE
+                R.id = ?~, undef,
+            @des_params, $si->{req_id});
+        $t->param(de_cache => $cache);
     }
 }
 
