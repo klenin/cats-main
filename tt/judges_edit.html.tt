@@ -1,5 +1,6 @@
 [% PROCESS includes/menu_begin.tti %]
 [% PROCESS includes/html.tti %]
+[% PROCESS includes/de_bitmap.tti %]
 [% PROCESS "lang/$lang/judges_common.tti" %]
 
 
@@ -26,7 +27,7 @@
   <tr><td>[% de.code %]</td><td>[% de.description %]</td></tr>
   [% END ~%]
   </table>
-  <p>v=[% de_bitmap.version %] 1=[% de_bitmap.de_bits1 %] 2=[% de_bitmap.de_bits2 %]</p>
+  <p>[% show_de_bitmap(de_bitmap, '') %]</p>
 </td></tr>
 [% END %]
 </table>

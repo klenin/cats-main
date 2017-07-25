@@ -1,0 +1,8 @@
+[%- MACRO show_de_bitmap(bmp, prefix) BLOCK;
+  'v='; bmp.item(prefix _ 'version'); ' ';
+  FOREACH i IN [1..10];
+    f = prefix _ 'de_bits' _ i;
+    LAST UNLESS bmp.exists(f);
+    "$i=${bmp.$f} ";
+  END;
+END -%]
