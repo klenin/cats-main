@@ -50,6 +50,13 @@ CREATE TABLE judges (
 ALTER TABLE judges ADD CONSTRAINT chk_judge_pin_mode
     CHECK (pin_mode IN (0, 1, 2, 3));
 
+CREATE TABLE judge_de_bitmap_cache (
+    judge_id    INTEGER NOT NULL UNIQUE REFERENCES judges(id) ON DELETE CASCADE,
+    version     INTEGER NOT NULL,
+    de_bits1    BIGINT DEFAULT 0,
+    de_bits2    BIGINT DEFAULT 0
+);
+
 CREATE TABLE contests (
     id            INTEGER NOT NULL PRIMARY KEY,
     title         VARCHAR(200) NOT NULL,
