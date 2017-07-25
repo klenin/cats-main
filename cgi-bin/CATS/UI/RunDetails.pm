@@ -516,6 +516,15 @@ sub request_params_frame {
     source_links($si);
     sources_info_param([ $si ]);
     $t->param(settable_verdicts => $settable_verdicts);
+
+    if ($is_root) {
+        $t->param(
+            req_de_bitmap_cache => $dbh->selectrow_hashref(q~
+                SELECT * FROM req_de_bitmap_cache WHERE req_id = ?~, undef, $si->{req_id}),
+            problem_de_bitmap_cache => $dbh->selectrow_hashref(q~
+                SELECT * FROM problem_de_bitmap_cache WHERE problem_id = ?~, undef, $si->{problem_id}),
+        );
+    }
 }
 
 sub try_set_state {

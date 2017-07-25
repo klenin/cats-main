@@ -99,6 +99,13 @@
 
 </form>
 
+[% IF req_de_bitmap_cache %]
+<p>req_de_bitmap: 1=[% req_de_bitmap_cache.de_bits1 %] 2=[% req_de_bitmap_cache.de_bits2 %] v=[% req_de_bitmap_cache.version %]</p>
+[% END %]
+[% IF problem_de_bitmap_cache %]
+<p>problem_de_bitmap: 1=[% problem_de_bitmap_cache.de_bits1 %] 2=[% problem_de_bitmap_cache.de_bits2 %] v=[% problem_de_bitmap_cache.version %]</p>
+[% END %]
+
 [% END %]
 [% PROCESS includes/timing.tti %]
 </body>
