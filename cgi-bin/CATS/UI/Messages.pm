@@ -8,8 +8,7 @@ use CATS::Misc qw($t $is_jury $is_team $uid init_template res_str);
 use CATS::Utils qw(state_to_display);
 use CATS::Web qw(param url_param);
 
-sub send_message_box_frame
-{
+sub send_message_box_frame {
     init_template('send_message_box.html.tt');
     $is_jury or return;
 
@@ -25,7 +24,7 @@ sub send_message_box_frame
     defined param('send') or return;
     my $message_text = param('message_text') or return;
 
-    my $s = $dbh->prepare(qq~
+    my $s = $dbh->prepare(q~
         INSERT INTO messages (id, send_time, text, account_id, received)
             VALUES (?, CURRENT_TIMESTAMP, ?, ?, 0)~);
     $s->bind_param(1, new_id);
@@ -36,14 +35,13 @@ sub send_message_box_frame
     $t->param(sent => 1);
 }
 
-sub answer_box_frame
-{
+sub answer_box_frame {
     init_template('answer_box.html.tt');
     $is_jury or return;
 
     my $qid = url_param('qid');
 
-    my $r = $dbh->selectrow_hashref(qq~
+    my $r = $dbh->selectrow_hashref(q~
         SELECT
             Q.account_id AS caid, CA.account_id AS aid, A.login, A.team_name,
             Q.submit_time, Q.question, Q.clarified, Q.answer
@@ -56,12 +54,11 @@ sub answer_box_frame
 
     $t->param(team_name => $r->{team_name}, title_suffix => res_str(566));
 
-    if (defined param('clarify') && (my $a = Encode::decode_utf8(param('answer_text'))))
-    {
+    if (defined param('clarify') && (my $a = Encode::decode_utf8(param('answer_text')))) {
         $r->{answer} ||= '';
         $r->{answer} .= " $a";
 
-        my $s = $dbh->prepare(qq~
+        my $s = $dbh->prepare(q~
             UPDATE questions
                 SET clarification_time = CURRENT_TIMESTAMP, answer = ?, received = 0, clarified = 1
                 WHERE id = ?~);
@@ -71,8 +68,7 @@ sub answer_box_frame
         $dbh->commit;
         $t->param(clarified => 1);
     }
-    else
-    {
+    else {
         $t->param(
             submit_time => $r->{submit_time},
             question_text => $r->{question},
@@ -80,8 +76,7 @@ sub answer_box_frame
     }
 }
 
-sub envelope_frame
-{
+sub envelope_frame {
     init_template('envelope.html.tt');
 
     $is_team && (my $rid = url_param('rid')) or return;
