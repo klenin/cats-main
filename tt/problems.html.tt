@@ -1,5 +1,9 @@
 [% PROCESS includes/menu_begin.tti %]
 [%- PROCESS includes/html.tti -%]
+[%- PROCESS "lang/$lang/verdicts.tti" -%]
+<style>
+  .last_verdict { display: inline-block; width: 2em; padding: 2px; }
+</style>
 [% IF editable %]
 <script type="text/javascript">
 function getSelectedButton(button) {
@@ -36,13 +40,11 @@ function r() {
         document.location = a[v][2];
 }
 
-function chg_status(st_sel, pid)
-{
+function chg_status(st_sel, pid) {
     document.location = a[pid][3] + '&status=' + st_sel.value;
 }
 
-function chg_code(st_sel, pid)
-{
+function chg_code(st_sel, pid) {
     document.location = a[pid][4] + '&code=' + st_sel.value;
 }
 
@@ -123,10 +125,14 @@ function chg_code(st_sel, pid)
 <td align="right">[% p.upload_date %]</td>
 [% END %]
 [% IF is_practice %]<td>[% p.contest_name | html %]</td>[% END %]
-[% IF is_participant %]
-    <td class="problem_req_count"><div>
+[% IF is_user || is_practice %]
+    <td class="problem_req_count">
+    <div>
+    <div class="last_verdict [% 'run_details_' _ p.last_verdict IF p.last_verdict %]">
+      [%- maybe_href(p.href_last_request, p.last_verdict, capt.verdicts.item(p.last_verdict)) -%]
+    </div>
     [%- IF p.href_problem_console %]<a href="[% p.href_problem_console %]">[% END -%]
-    [% p.accept_count %] / [% p.wa_count %]  / [% p.tle_count %]
+    [% p.accept_count %] / [% p.wa_count %] / [% p.tle_count %]
     [%- IF p.href_problem_console %]</a>[% END -%]
     </div></td>
 [% END %]

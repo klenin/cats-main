@@ -23,6 +23,7 @@ use CATS::Redirect;
 use CATS::Request;
 use CATS::StaticPages;
 use CATS::Utils qw(url_function file_type date_to_iso redirect_url_function);
+use CATS::Verdicts;
 use CATS::Web qw(param url_param redirect);
 
 sub problems_change_status {
@@ -410,6 +411,7 @@ sub problems_frame {
     # TODO: take testsets into account
     my $test_count_sql = $is_jury ? '(SELECT COUNT(*) FROM tests T WHERE T.problem_id = P.id) AS test_count,' : '';
     my $limits_str = join ', ', map "P.$_", @cats::limits_fields;
+    # Concatenate last submission fields to work around absence of tuples.
     my $sth = $dbh->prepare(qq~
         SELECT
             CP.id AS cpid, P.id AS pid,
@@ -417,6 +419,9 @@ sub problems_frame {
             ($reqs_count_sql $cats::st_accepted$account_condition) AS accepted_count,
             ($reqs_count_sql $cats::st_wrong_answer$account_condition) AS wrong_answer_count,
             ($reqs_count_sql $cats::st_time_limit_exceeded$account_condition) AS time_limit_count,
+            (SELECT R.id || ' ' || R.state FROM reqs R
+                WHERE R.problem_id = P.id AND R.account_id = ? AND R.contest_id = CP.contest_id
+                ORDER BY R.submit_time DESC ROWS 1) AS last_submission,
             P.contest_id - CP.contest_id AS is_linked,
             (SELECT COUNT(*) FROM contest_problems CP1
                 WHERE CP1.contest_id <> CP.contest_id AND CP1.problem_id = P.id) AS usage_count,
@@ -426,16 +431,18 @@ sub problems_frame {
             SUBSTRING(P.explanation FROM 1 FOR 1) AS has_explanation,
             $test_count_sql CP.testsets, CP.points_testsets, P.lang, $limits_str,
             CP.max_points, P.repo, CP.tags, P.statement_url, P.explanation_url
-        FROM problems P, contest_problems CP, contests OC
-        WHERE CP.problem_id = P.id AND OC.id = P.contest_id AND CP.contest_id = ?$hidden_problems
+        FROM problems P
+        INNER JOIN contest_problems CP ON CP.problem_id = P.id
+        INNER JOIN contests OC ON OC.id = P.contest_id
+        WHERE CP.contest_id = ?$hidden_problems
         ~ . $lv->maybe_where_cond . $lv->order_by
     );
+    my $aid = $uid || 0; # in a case of anonymous user
     if ($contest->is_practice) {
-        $sth->execute($cid, $lv->where_params);
+        $sth->execute($aid, $cid, $lv->where_params);
     }
     else {
-        my $aid = $uid || 0; # in a case of anonymous user
-        $sth->execute($aid, $aid, $aid, $cid, $lv->where_params);
+        $sth->execute($aid, $aid, $aid, $aid, $cid, $lv->where_params);
     }
 
     my @status_list;
@@ -465,6 +472,8 @@ sub problems_frame {
         }
         $c->{has_explanation} ||= $hrefs_view{explanation};
 
+        my ($last_request, $last_verdict) = split ' ', $c->{last_submission} || '';
+
         return (
             href_delete => url_f('problems', 'delete' => $c->{cpid}),
             href_change_status => url_f('problems', 'change_status' => $c->{cpid}),
@@ -479,6 +488,7 @@ sub problems_frame {
                 url_f('console', search => "problem_id=$c->{pid}", se => 'problem', i_value => -1, show_results => 1),
             href_select_testsets => url_f('problem_select_testsets', pid => $c->{pid}, from_problems => 1),
             href_select_tags => url_f('problem_select_tags', pid => $c->{pid}, from_problems => 1),
+            href_last_request => ($last_request ? url_f('run_details', rid => $last_request) : ''),
 
             show_packages => $show_packages,
             status => $c->{status},
@@ -511,6 +521,7 @@ sub problems_frame {
             write_limit => $c->{write_limit},
             max_points => $c->{max_points},
             tags => $c->{tags},
+            last_verdict => $CATS::Verdicts::state_to_name->{$last_verdict || ''},
         );
     };
 

@@ -292,7 +292,7 @@ td.problem_radio label a { vertical-align: middle; }
 td.user_checkbox { }
 td.user_checkbox label { display: block; text-align: center; width: 100%; height: 100%; }
 
-td.problem_req_count { text-align: center; }
+td.problem_req_count { text-align: left; }
 td.problem_req_count > div { position: relative; }
 a.problem_req_count_udebug {
     position: absolute;
