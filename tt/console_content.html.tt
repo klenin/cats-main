@@ -11,6 +11,7 @@ table.console td.verdict table td { padding: 0 0 0 2px; }
 table.console td.verdict table td:first-child { width: 2em; }
 table.console td.verdict table td:first-child a { color: inherit; }
 table.console td.verdict table td:last-child { text-align: right; }
+td.team { text-align: left; white-space: nowrap; }
 </style>
 <table class="bordered console highlight">
 [% FOREACH c IN console %]
@@ -23,7 +24,7 @@ table.console td.verdict table td:last-child { text-align: right; }
             [% IF c.href_details %]<a href="[% c.href_details %]" title="[% DEs.item(c.de).description %]" target="_blank">[% c.time %]</a>[% ELSE; c.time; END %]
         [% END %]
     </td>
-    <td nowrap width="1%">
+    <td width="1%" class="team">
         [% IF is_jury %]
         <a href="javascript:send_message('[% c.href_send_message_box %]')">[% c.team_name | html %]</a>
         [<a href="[% c.href_whois %]" alt="[% c.last_ip %]" title="[% c.last_ip %]">[% c.last_ip_short %]</a>]
@@ -43,7 +44,7 @@ table.console td.verdict table td:last-child { text-align: right; }
     <td>[% IF is_jury; i = DEs.item(c.de) %]<a href="#" title="[% i.code %]">[% i.description %]</a>[% END %]</td>
 [% ELSIF c.is_question %]
     <td>[% c.time %]</td>
-    <td align=left nowrap>[
+    <td class="team">[
         [%~ IF is_jury ~%]
         <a href="javascript:send_message('[% c.href_send_message_box %]')">[% c.team_name | html %]</a>:
         [% IF c.last_ip %]<a href="[% c.href_whois %]" alt="[% c.last_ip %]" title="[% c.last_ip %]">[% c.last_ip_short %]</a>[% ELSE; c.last_ip_short; END ~%]
@@ -63,7 +64,7 @@ table.console td.verdict table td:last-child { text-align: right; }
     </td>
 [% ELSIF c.is_message %]
     <td>[% c.time %]</td>
-    <td align=left>
+    <td class="team">
         [[% capt.jury %] &gt; [% c.team_name | html %]]
     </td>
     <td colspan="3">
@@ -72,7 +73,7 @@ table.console td.verdict table td:last-child { text-align: right; }
     </td>
 [% ELSIF c.is_broadcast %]
     <td>[% c.time %]</td>
-    <td align=left>
+    <td class="team">
         <b><span class="jury_message">[[% capt.jury %] &gt; [% capt.all_teams %]]</span></b>
     </td>
     <td colspan="3">
@@ -81,7 +82,7 @@ table.console td.verdict table td:last-child { text-align: right; }
     </td>
 [% ELSIF c.is_contest %]
     <td>[% c.time %]</td>
-    <td align=left>
+    <td class="team">
         <b>[% capt.contest_dates.item(c.contest_date_type) %]
         [% c.is_official ? capt.official_contest : capt.contest %]</b>
     </td>
