@@ -1,5 +1,5 @@
-[% PROCESS includes/submit_result.tti %]
 [% PROCESS includes/header.tti %]
+[% PROCESS "lang/$lang/verdicts.tti" %]
 </head>
 <body>
 <table>
@@ -8,7 +8,10 @@
 <tr><td>[% capt.problem %]:</td><td>[% problem_name | html %]</td></tr>
 <tr><td>[% capt.submit_time %]:</td><td>[% submit_time | html %]</td></tr>
 <tr><td>[% capt.test_time %]:</td><td>[% test_time | html %]</td></tr>
-<tr><td>[% capt.submit_result %]:</td><td>[% submit_result %]</td></tr>
+<tr><td>[% capt.submit_result %]:</td><td>
+  <span class="run_details_[% verdict %]">[% verdict %]</span> [% capt.verdicts.$verdict %]
+  [% " $capt.on_test $failed_test" IF failed_test  %]
+</td></tr>
 </table>
 </body>
 </html>

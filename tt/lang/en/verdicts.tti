@@ -22,5 +22,6 @@
       MR => 'Manually rejected',
       WL => 'Write limit exceeded',
     },
+    on_test => 'on test #',
   })
 %]

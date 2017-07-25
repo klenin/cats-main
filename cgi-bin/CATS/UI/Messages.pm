@@ -5,7 +5,7 @@ use warnings;
 
 use CATS::DB;
 use CATS::Misc qw($t $is_jury $is_team $uid init_template res_str);
-use CATS::Utils qw(state_to_display);
+use CATS::Verdicts;
 use CATS::Web qw(param url_param);
 
 sub send_message_box_frame {
@@ -91,7 +91,7 @@ sub envelope_frame {
             INNER JOIN problems P ON P.id = R.problem_id
         WHERE R.id = ? AND R.account_id = ?~, { Slice => {} },
         $rid, $uid) or return;
-    $t->param(%$r, state_to_display($r->{state}));
+    $t->param(%$r, verdict => $CATS::Verdicts::state_to_name->{$r->{state}});
 }
 
 1;
