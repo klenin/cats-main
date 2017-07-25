@@ -19,6 +19,9 @@ Submission judging can result in following verdicts:
 
 <tr><td>OK</td><td>OK / Solution accepted</td><td>Test passed / solution accepted.</td><td>-</td></tr>
 
+<tr><td>RJ</td><td>Rejected</td><td>Solution is rejected.</td>
+  <td>Displayed when browsing other contestants' submissions during the contest.</td></tr>
+
 <tr><td>CE</td><td>Compilation error</td><td>Compilation error.</td>
   <td>Syntax error, wrong file submitted, wrong programming language chosen.</td></tr>
 
