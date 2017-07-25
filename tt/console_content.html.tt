@@ -1,7 +1,6 @@
 [%- PROCESS includes/html.tti -%]
 [%- capt = {}; PROCESS "lang/$lang/${template.name}" -%]
 [%- PROCESS "lang/$lang/verdicts.tti" -%]
-[% PROCESS includes/submit_result.tti %]
 
 [% IF message %]<i>[% message | html %]</i><br/>[% END %]
 <style>

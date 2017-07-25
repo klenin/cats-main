@@ -1,6 +1,5 @@
 [%- PROCESS "lang/$lang/sources_info.tti" -%]
 [%- PROCESS "lang/$lang/verdicts.tti" -%]
-[%- PROCESS includes/submit_result.tti -%]
 [%- PROCESS includes/html.tti -%]
 [%- PROCESS includes/limits_string.tti -%]
 
