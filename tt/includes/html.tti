@@ -19,7 +19,7 @@
 [%- END -%]
 
 [%- MACRO href(url, text, title) BLOCK -%]<a href="[% url %]"[% " title=\"$title\"" IF title %]>[% text | html %]</a>[% END -%]
-[%- MACRO maybe_href(url, text) BLOCK; IF url; href(url, text); ELSE; text | html ; END; END -%]
+[%- MACRO maybe_href(url, text, title) BLOCK; IF url; href(url, text, title); ELSE; text | html ; END; END -%]
 
 [%- MACRO menu(items, selected) BLOCK -%]
     [%- FOREACH i IN items ~%]
