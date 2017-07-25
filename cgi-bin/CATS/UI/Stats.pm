@@ -9,7 +9,7 @@ use CATS::Constants;
 use CATS::DB;
 use CATS::Misc qw(init_template $t $is_jury $cid $contest url_f);
 use CATS::UI::ProblemDetails;
-use CATS::Utils qw(state_to_display);
+use CATS::Verdicts;
 use CATS::Web qw(param);
 
 sub greedy_cliques {
@@ -231,8 +231,7 @@ sub test_diff_frame {
         $cid, $p->{pid}, $cats::st_accepted, $cats::st_accepted, $p->{test});
     my ($prev, @fr);
     for my $r (@$reqs) {
-        my %st = state_to_display($r->{state});
-        $r->{$_} = $st{$_} for keys %st;
+        $r->{verdict} = $CATS::Verdicts::state_to_name->{$r->{state}};
         undef $prev if $prev && $prev->{account_id} != $r->{account_id};
         $prev or next;
         $prev->{state} > $cats::st_accepted && $prev->{failed_test} == $p->{test} &&

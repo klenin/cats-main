@@ -1,17 +1,19 @@
 [% PROCESS includes/menu_begin.tti %]
-[%- PROCESS includes/submit_result.tti -%]
+[% PROCESS includes/html.tti %]
+[% PROCESS "lang/$lang/verdicts.tti" %]
 
 <p>Problem: [% problem.id %] [% problem.title | html %]</p>
 <p>Test: [% test %]</p>
 
-<table border="1" class="bordered highlight">
+<table class="bordered internal_borders highlight padded">
   <tr class="header">
-    <th>Team</th><th>Ids</th><th>Old result</th><th>New result</th><th></th>
+    <th>Team</th><th>Ids</th><th colspan="2">Old result</th><th colspan="2">New result</th><th></th>
   </tr>
 [% FOREACH r IN reqs %]
   <tr>
   <td>[% r.team_name %]</td><td>[% href(r.href_diff_runs, r.prev.id _ ', ' _ r.id) %]</td>
-  <td>[% submit_result(r.prev) %]</td><td>[% submit_result(r) %]</td>
+  <td class="run_details_[% r.prev.verdict %]">[% href('#', r.prev.verdict, capt.verdicts.item(r.prev.verdict)) %]</td><td>[% r.prev.failed_test %]</td>
+  <td class="run_details_[% r.verdict %]">[% href('#', r.verdict, , capt.verdicts.item(r.verdict)) %]</td><td>[% r.failed_test %]</td>
   <td>[% href(r.href_run_details, '[details]') %]</td>
   </tr>
 [% END %]
