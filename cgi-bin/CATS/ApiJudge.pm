@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use JSON::XS;
+use Math::BigInt;
 
 use CATS::Constants;
 use CATS::DB;
@@ -12,9 +13,12 @@ use CATS::Misc qw($sid);
 use CATS::Testset;
 use CATS::Web;
 
+# DE bitmap cache may return bigints.
+sub Math::BigInt::TO_JSON { $_[0]->bstr }
+
 sub print_json {
     CATS::Web::content_type('application/json');
-    CATS::Web::print(encode_json($_[0]));
+    CATS::Web::print(JSON::XS->new->utf8->convert_blessed(1)->encode($_[0])); 1;
     -1;
 }
 
