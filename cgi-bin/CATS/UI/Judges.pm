@@ -4,8 +4,10 @@ use strict;
 use warnings;
 
 use CATS::DB;
+use CATS::DevEnv;
 use CATS::IP;
 use CATS::Judge;
+use CATS::JudgeDB;
 use CATS::ListView;
 use CATS::Misc qw(
     $t $is_jury $is_root
@@ -21,7 +23,17 @@ sub edit_frame {
             SELECT J.nick, A.login, J.pin_mode
             FROM judges J LEFT JOIN accounts A ON A.id = J.account_id WHERE J.id = ?~, undef,
             $jid);
-        $t->param(id => $jid, judge_name => $judge_name, account_name => $account_name, pin_mode => $pin_mode);
+
+        my $de_bitmap = CATS::DB::select_row('judge_de_bitmap_cache', '*', { judge_id => $jid });
+        my $supported_DEs;
+        if ($de_bitmap) {
+            my $dev_env = CATS::DevEnv->new(CATS::JudgeDB::get_DEs);
+            $supported_DEs = [ $dev_env->by_bitmap([ CATS::JudgeDB::extract_de_bitmap($de_bitmap) ]) ],
+        }
+        $t->param(
+            id => $jid, judge_name => $judge_name, account_name => $account_name, pin_mode => $pin_mode,
+            de_bitmap => $de_bitmap, supported_DEs => $supported_DEs,
+        );
     }
     $t->param(href_action => url_f('judges'));
 }

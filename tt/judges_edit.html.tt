@@ -4,7 +4,7 @@
 
 
 <form method="post" enctype="multipart/form-data" action="[% href_action %]">
-<table cellpadding="0">
+<table class="padded">
 <tr><td>[% capt.judge_name %]</td><td><input type="text" name="judge_name" value="[% judge_name | html %]" class="bordered"></td></tr>
 <tr><td>[% capt.account_name %]</td><td><input type="text" name="account_name" value="[% account_name | html %]" class="bordered"></td></tr>
 <tr>
@@ -19,6 +19,16 @@
         %]
     </td>
 </tr>
+[% IF de_bitmap %]
+<tr><td>[% capt.dev_envs %]</td><td>
+  <table class="bordered internal_borders">
+  [% FOREACH de IN supported_DEs -%]
+  <tr><td>[% de.code %]</td><td>[% de.description %]</td></tr>
+  [% END ~%]
+  </table>
+  <p>v=[% de_bitmap.version %] 1=[% de_bitmap.de_bits1 %] 2=[% de_bitmap.de_bits2 %]</p>
+</td></tr>
+[% END %]
 </table>
 <br>
 [% PROCESS includes/edit_save_cancel.tti %]
