@@ -503,6 +503,7 @@ sub request_params_frame {
     if ($p->{delete_request} && $can_delete) {
         CATS::Request::delete($si->{req_id});
         $dbh->commit;
+        msg(1056, $si->{req_id});
         return;
     }
     # Reload problem after the successful state change.

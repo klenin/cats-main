@@ -162,6 +162,7 @@
 1046 "Field '%s' must be zero or integer no less than %d."
 1053 "Problem package file not selected."
 1055 "Testing result was changed."
+1056 "Submission '%d' was deleted."
 1057 "Message was sent, recipients: %d."
 1058 "Message was sent to all participants."
 1061 "This question is already sent to jury."
