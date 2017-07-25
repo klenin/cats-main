@@ -402,7 +402,7 @@ sub console_content {
             $contest->{time_since_defreeze} <= 0 && !$is_jury &&
             (!$is_team || !$team_id || $team_id != $uid);
         my %st = state_to_display($request_state, $hide_verdict);
-        my $true_short_state = $CATS::Verdicts::state_to_name->{$request_state};
+        my $true_short_state = $CATS::Verdicts::state_to_name->{$request_state} || '';
         my $short_state = $hide_verdict ? $CATS::Verdicts::hidden_verdicts->{$true_short_state} : $true_short_state;
 
         return (
