@@ -468,7 +468,7 @@ sub request_params_frame {
         # Insert NULL into database to be replaced with contest-default testset.
         testsets => param('testsets') || undef,
         judge_id => (param('set_judge') && param('judge') ? param('judge') : undef),
-        points => undef,
+        points => undef, failed_test => 0,
     };
 
     if ($p->{retest}) {
