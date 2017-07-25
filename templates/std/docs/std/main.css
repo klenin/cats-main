@@ -212,15 +212,15 @@ td.ts { font-size: 10pt; font-style: italic; }
 .run_details_OK { background-color: #A0FFA0; }
 .run_details_WA { background-color: #FFA0A0; }
 .run_details_PE { background-color: #FFFFA0; }
-.run_details_TL { background-color: #FFC080; }
+.run_details_TL { background-color: #E0E080; }
 .run_details_RE { background-color: #FFA0FF; }
 .run_details_CE { background-color: #A0FFFF; }
 .run_details_SV { background-color: #FFA0A0; font-weight: bold; }
-.run_details_ML { background-color: #FFC080; }
+.run_details_ML { background-color: #E0E080; }
 .run_details_IS {}
-.run_details_IL { background-color: #FFC080; }
+.run_details_IL { background-color: #E0E080; }
 .run_details_MR { background-color: #FFC0C0; }
-.run_details_WL { background-color: #FFC080; }
+.run_details_WL { background-color: #E0E080; }
 
 .hidden { display: none; }
 
@@ -228,9 +228,9 @@ tr.odd { background-color: #ffffff; }
 tr.even { background-color: #f0f0f0; }
 table.highlight tr:hover { background-color: #ffcc55; }
 table.highlight tr.col_defs:hover, tr.col_defs { background-color: #ccccff }
-table.console tr td { margin: 0; padding: 1px 10px 1px 1px; }
-table.console tr td, table.console tr td a { font-size: 10pt; }
-table.console tr td:first-child { width: 1%; white-space: nowrap; }
+table.console > tbody > tr > td { margin: 0; padding: 2px 4px 2px 2px; }
+table.console > tbody > tr > td:first-child { width: 1%; white-space: nowrap; }
+table.console td, table.console td a { font-size: 10pt; }
 
 a.icon {
     display: inline-block;

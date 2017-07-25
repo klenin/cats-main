@@ -2,6 +2,8 @@
   capt.import({
     verdicts => {
       NT => 'Not in testset',
+      RJ => 'Rejected',
+
       NP => 'Not processed',
       UH => 'Unhandled error',
       P  => 'Installing problem',

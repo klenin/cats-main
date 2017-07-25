@@ -1,10 +1,18 @@
 [%- PROCESS includes/html.tti -%]
 [%- capt = {}; PROCESS "lang/$lang/${template.name}" -%]
+[%- PROCESS "lang/$lang/verdicts.tti" -%]
 [% PROCESS includes/submit_result.tti %]
 
 [% IF message %]<i>[% message | html %]</i><br/>[% END %]
-
-<table width="100%" cellspacing="3" cellpadding="3" class="bordered console highlight">
+<style>
+table.console td.verdict { padding: 0; height: 100%; width: 4em; }
+table.console td.verdict table { border-collapse: collapse; width: 100%; height: 100%; }
+table.console td.verdict table td { padding: 0 0 0 2px; }
+table.console td.verdict table td:first-child { width: 2em; }
+table.console td.verdict table td:first-child a { color: inherit; }
+table.console td.verdict table td:last-child { text-align: right; }
+</style>
+<table class="bordered console highlight">
 [% FOREACH c IN console %]
 <tr>
 [% IF c.is_submit_result %]
@@ -21,11 +29,16 @@
         [<a href="[% c.href_whois %]" alt="[% c.last_ip %]" title="[% c.last_ip %]">[% c.last_ip_short %]</a>]
         [% ELSE; c.team_name | html; END %]
     </td>
+    <!--<td></td>-->
+    <td class="verdict"><table><tr>
+      <td class="run_details_[% c.short_state %]">[% href(c.href_state_details, c.short_state, capt.verdicts.item(c.short_state)) %]</td>
+      <td>[% c.failed_test %]</td>
+    </tr></table></td>
     <td>
         [% IF is_jury ~%]
-        <a href="[% c.href_source %]" title="[% DEs.item(c.de).description %]">[% c.problem_title | html %]</a>
-        [% ELSE; c.problem_title | html; END %]:
-        <b>[% submit_result(c) %]</b>[% " ($c.points)" IF is_jury && c.points.defined %]
+        [% href(c.href_source, c.problem_title) %]
+        [% ELSE; c.problem_title | html; END %]
+        [% " ($c.points)" IF is_jury && c.points.defined %]
     </td>
     <td>[% IF is_jury; i = DEs.item(c.de) %]<a href="#" title="[% i.code %]">[% i.description %]</a>[% END %]</td>
 [% ELSIF c.is_question %]
@@ -37,7 +50,7 @@
         [%~ ELSE; c.team_name | html; END %]
         &gt; [% capt.jury %]]
     </td>
-    <td colspan="2">
+    <td colspan="3">
         <i>[% c.question_text | html %]</i> - 
         [% UNLESS c.clarified %]
         [% IF c.href_answer_box %]
@@ -53,7 +66,7 @@
     <td align=left>
         [[% capt.jury %] &gt; [% c.team_name | html %]]
     </td>
-    <td colspan="2">
+    <td colspan="3">
         <span class="jury_message">[% c.message_text | html %]</span>
         [% IF c.href_delete_message %]<a href="[% c.href_delete_message %]">[[% capt.delete %]]</a>[% END %]
     </td>
@@ -62,7 +75,7 @@
     <td align=left>
         <b><span class="jury_message">[[% capt.jury %] &gt; [% capt.all_teams %]]</span></b>
     </td>
-    <td colspan="2">
+    <td colspan="3">
         <b><span class="jury_message">[% c.message_text | html %]</span></b>
         [% IF c.href_delete_message %]<a href="[% c.href_delete_message %]">[[% capt.delete %]]</a>[% END %]
     </td>
@@ -72,7 +85,7 @@
         <b>[% capt.contest_dates.item(c.contest_date_type) %]
         [% c.is_official ? capt.official_contest : capt.contest %]</b>
     </td>
-    <td colspan="2">
+    <td colspan="3">
         <b><a href="[% c.href_problems %]">[% c.problem_title | html %]</a></b>
     </td>
 [% END %]

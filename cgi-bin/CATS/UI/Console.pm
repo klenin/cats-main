@@ -395,11 +395,16 @@ sub console_content {
         $request_state = -1 unless defined $request_state;
 
         my ($country, $flag) = CATS::Countries::get_flag($country_abbr);
-        my %st = state_to_display($request_state,
-            # Security: During the contest, show teams only accepted/rejected
-            # instead of specific results of other teams.
+
+        # Security: During the contest, show teams only accepted/rejected
+        # instead of specific results of other teams.
+        my $hide_verdict =
             $contest->{time_since_defreeze} <= 0 && !$is_jury &&
-            (!$is_team || !$team_id || $team_id != $uid));
+            (!$is_team || !$team_id || $team_id != $uid);
+        my %st = state_to_display($request_state, $hide_verdict);
+        my $true_short_state = $CATS::Verdicts::state_to_name->{$request_state};
+        my $short_state = $hide_verdict ? $CATS::Verdicts::hidden_verdicts->{$true_short_state} : $true_short_state;
+
         return (
             country => $country,
             flag => $flag,
@@ -416,7 +421,8 @@ sub console_content {
             href_details => (
                 ($uid && $team_id && $uid == $team_id) ? url_f('run_details', rid => $id) : ''
             ),
-            href_source => url_f('view_source', rid => $id),
+            href_source =>          url_f('view_source', rid => $id),
+            href_state_details =>   ($is_jury ? url_f('run_details', rid => $id) : '#'),
             href_problems =>        url_function('problems', sid => $sid, cid => $id),
             ($is_jury && $privs->{moderate_messages} ? (
                 href_delete_question => url_f('console', delete_question => $id),
@@ -431,7 +437,8 @@ sub console_content {
             de =>                   $de,
             request_state =>        $request_state,
             request_state_text =>   scalar grep($st{$_}, keys %st), %st,
-            failed_test =>          $failed_test,
+            short_state =>          $short_state,
+            failed_test =>          ($hide_verdict ? '' : $failed_test),
             question_text =>        decode_utf8($question),
             answer_text =>          decode_utf8($answer),
             message_text =>         decode_utf8($jury_message),

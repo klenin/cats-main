@@ -29,4 +29,24 @@ our $name_to_state = { map @$_, @$name_to_state_sorted };
 
 our $state_to_name = { map { $_->[1] => $_->[0] } @$name_to_state_sorted };
 
+our $hidden_verdicts = {
+    NP => 'NP',
+    UH => 'NP',
+    P  => 'NP',
+    T =>  'NP',
+    AW => 'NP',
+    OK => 'OK',
+    WA => 'RJ',
+    PE => 'RJ',
+    TL => 'RJ',
+    RE => 'RJ',
+    CE => 'RJ',
+    SV => 'RJ',
+    ML => 'RJ',
+    IS => 'RJ',
+    IL => 'RJ',
+    MR => 'RJ',
+    WL => 'RJ',
+};
+
 1;
