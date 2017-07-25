@@ -75,7 +75,7 @@ function chg_code(st_sel, pid) {
 <p><b>[% capt.no_judges %]</b></p>
 [% END %]
 
-[% IF !is_user %]
+[% IF !is_user && !is_practice %]
 <p>[% capt.login_to_participate.replace('\[\[(.*)\]\]', href(href_login, '$1')) %]</p>
 [% END %]
 
