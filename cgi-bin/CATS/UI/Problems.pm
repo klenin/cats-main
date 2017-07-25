@@ -25,8 +25,7 @@ use CATS::StaticPages;
 use CATS::Utils qw(url_function file_type date_to_iso redirect_url_function);
 use CATS::Web qw(param url_param redirect);
 
-sub problems_change_status
-{
+sub problems_change_status {
     my $cpid = param('change_status')
         or return msg(1012);
 
@@ -41,8 +40,7 @@ sub problems_change_status
     CATS::StaticPages::invalidate_problem_text(cid => $cid, cpid => $cpid);
 }
 
-sub problems_change_code
-{
+sub problems_change_code {
     my $cpid = param('change_code')
         or return msg(1012);
     my $new_code = param('code') || '';
@@ -164,8 +162,7 @@ sub problems_all_frame {
         WHERE $where_cond ~ . $lv->maybe_where_cond . $lv->order_by);
     $c->execute($cid, @{$where->{params}}, $lv->where_params);
 
-    my $fetch_record = sub($)
-    {
+    my $fetch_record = sub {
         my ($pid, $problem_name, $contest_name, $contest_id, $counts, $linked) = $_[0]->fetchrow_array
             or return ();
         my %pp = (sid => $sid, cid => $contest_id, pid => $pid);
@@ -218,8 +215,7 @@ sub problems_udebug_frame {
         FROM problem_sources PS INNER JOIN default_de DE ON DE.id = PS.de_id
         WHERE PS.problem_id = ? AND PS.stype = $cats::solution~);
 
-    my $fetch_record = sub($)
-    {
+    my $fetch_record = sub {
         my $r = $_[0]->fetchrow_hashref or return ();
         $sol_sth->execute($r->{pid});
         my $sols = $sol_sth->fetchall_arrayref({});
@@ -244,8 +240,7 @@ sub problems_udebug_frame {
     $c->finish;
 }
 
-sub problems_recalc_points()
-{
+sub problems_recalc_points {
     my @pids = param('problem_id') or return msg(1012);
     my $pids = join ',', grep /^\d+$/, @pids or return msg(1012);
     $dbh->do(qq~
@@ -256,8 +251,7 @@ sub problems_recalc_points()
     CATS::RankTable::remove_cache($cid);
 }
 
-sub problems_frame_jury_action
-{
+sub problems_frame_jury_action {
     $is_jury or return;
 
     defined param('link_save') and return CATS::Problem::Save::problems_link_save;
@@ -280,8 +274,7 @@ sub problem_status_names_enum {
     $psn;
 }
 
-sub problems_retest_frame
-{
+sub problems_retest_frame {
     $is_jury && !$contest->is_practice or return;
     my $lv = CATS::ListView->new(
         name => 'problems_retest', array_name => 'problems', template => 'problems_retest.html.tt');
@@ -321,8 +314,7 @@ sub problems_retest_frame
     $sth->execute($cid, $lv->where_params);
 
     my $total_queue = 0;
-    my $fetch_record = sub($)
-    {
+    my $fetch_record = sub {
         my $c = $_[0]->fetchrow_hashref or return ();
         $c->{status} ||= 0;
         $total_queue += $c->{in_queue};
@@ -438,22 +430,18 @@ sub problems_frame {
         WHERE CP.problem_id = P.id AND OC.id = P.contest_id AND CP.contest_id = ?$hidden_problems
         ~ . $lv->maybe_where_cond . $lv->order_by
     );
-    if ($contest->is_practice)
-    {
+    if ($contest->is_practice) {
         $sth->execute($cid, $lv->where_params);
     }
-    else
-    {
+    else {
         my $aid = $uid || 0; # in a case of anonymous user
         $sth->execute($aid, $aid, $aid, $cid, $lv->where_params);
     }
 
     my @status_list;
-    if ($is_jury)
-    {
+    if ($is_jury) {
         my $n = problem_status_names();
-        for (sort keys %$n)
-        {
+        for (sort keys %$n) {
             push @status_list, { id => $_, name => $n->{$_} };
         }
         $t->param(status_list => \@status_list, editable => 1);
@@ -462,8 +450,7 @@ sub problems_frame {
     my $text_link_f = $is_jury || $contest->{is_hidden} || $contest->{local_only} ?
         \&url_f : \&CATS::StaticPages::url_static;
 
-    my $fetch_record = sub($)
-    {
+    my $fetch_record = sub {
         my $c = $_[0]->fetchrow_hashref or return ();
         $c->{status} ||= 0;
         my $remote_url = CATS::ProblemStorage::get_remote_url($c->{repo});
