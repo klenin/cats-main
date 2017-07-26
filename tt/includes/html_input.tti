@@ -1,0 +1,4 @@
+[%- MACRO input_tr(field, size) BLOCK -%]
+  <tr><td>[% capt.$field %]</td>
+  <td><input type="text" name="[% field %]" size="[% size || 50 %]" value="[% $field | html %]" class="bordered"></td></tr>
+[%- END -%]
