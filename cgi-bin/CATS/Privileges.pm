@@ -39,4 +39,6 @@ sub pack_privs {
     $srole;
 }
 
+sub all_names { sort 'is_root', keys %flags }
+
 1;

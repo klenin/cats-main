@@ -21,7 +21,9 @@ GetOptions(
 
 sub usage {
     print STDERR qq~CATS Priviledge management tool
-Usage: $0 [--help] [--id=<user id> --login=<user login>] [--add=<priv>...] [--remove=<priv>...]\n~;
+Usage: $0 [--help] [--id=<user id> --login=<user login>] [--add=<priv>...] [--remove=<priv>...]
+Privileges:\n~;
+    say "  $_" for CATS::Privileges::all_names;
     exit;
 }
 
