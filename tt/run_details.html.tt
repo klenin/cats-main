@@ -10,7 +10,7 @@
 %]
 
 <style>
-  .details a { color: black; width: 100%; display: block; }
+  .details a { color: inherit; width: 100%; display: block; }
 </style>
 
 [% IF is_jury %]
