@@ -4,4 +4,3 @@ CREATE TABLE judge_de_bitmap_cache (
     de_bits1    BIGINT DEFAULT 0,
     de_bits2    BIGINT DEFAULT 0
 );
-
