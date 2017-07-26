@@ -14,7 +14,7 @@
 "time": "[% c.time %]",
 "submit_time": "[% c.time_iso %]",
 "state": [% c.request_state %],
-"status": "[% c.request_state_text %]",
+"state_text": "[% c.short_state %]",
 [% IF c.failed_test %]"failed_test": [% c.failed_test %],
 [% END -%]
 [% IF c.points.defined %]"points": [% c.points %],

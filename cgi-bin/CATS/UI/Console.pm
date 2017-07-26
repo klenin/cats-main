@@ -15,7 +15,7 @@ use CATS::Misc qw(
     get_anonymous_uid init_template url_f auto_ext prepare_server_time res_str msg
 );
 use CATS::Request;
-use CATS::Utils qw(coalesce url_function state_to_display date_to_iso);
+use CATS::Utils qw(coalesce url_function date_to_iso);
 use CATS::Verdicts;
 use CATS::Web qw(param url_param);
 
@@ -402,7 +402,6 @@ sub console_content {
         my $hide_verdict =
             $contest->{time_since_defreeze} <= 0 && !$is_jury &&
             (!$is_team || !$team_id || $team_id != $uid);
-        my %st = state_to_display($request_state, $hide_verdict);
         my $true_short_state = $CATS::Verdicts::state_to_name->{$request_state} || '';
         my $short_state = $hide_verdict ? $CATS::Verdicts::hidden_verdicts->{$true_short_state} : $true_short_state;
 
@@ -437,7 +436,6 @@ sub console_content {
             problem_title =>        $problem_title,
             de =>                   $de,
             request_state =>        $request_state,
-            request_state_text =>   scalar grep($st{$_}, keys %st), %st,
             short_state =>          $short_state,
             failed_test =>          ($hide_verdict ? '' : $failed_test),
             question_text =>        decode_utf8($question),
@@ -511,18 +509,34 @@ sub xml_quote {
 
 sub export_frame {
     $is_jury or return;
+    # Legacy field, new consumers should use short_state.
+    my %state_to_display = (
+        $cats::st_wrong_answer => 'wrong_answer',
+        $cats::st_presentation_error => 'presentation_error',
+        $cats::st_time_limit_exceeded => 'time_limit_exceeded',
+        $cats::st_memory_limit_exceeded => 'memory_limit_exceeded',
+        $cats::st_memory_limit_exceeded => 'write_limit_exceeded',
+        $cats::st_runtime_error => 'runtime_error',
+        $cats::st_compilation_error => 'compilation_error',
+        $cats::st_idleness_limit_exceeded => 'idleness_limit_exceeded',
+        $cats::st_manually_rejected => 'manually_rejected',
+        $cats::st_not_processed => 'not_processed',
+        $cats::st_unhandled_error => 'unhandled_error',
+        $cats::st_install_processing => 'install_processing',
+        $cats::st_testing => 'testing',
+        $cats::st_awaiting_verification => 'awaiting_verification',
+        $cats::st_accepted => 'accepted',
+        $cats::st_security_violation => 'security_violation',
+        $cats::st_ignore_submit => 'ignore_submit',
+    );
     init_template('console_export.xml.tt');
     my $reqs = select_all_reqs;
     for my $req (@$reqs) {
         $req->{submit_time} =~ s/\s+$//;
-        my %st = state_to_display($req->{state});
-        for (keys %st) {
-            $st{$_} or next;
-            $req->{state} = $_;
-            last;
-        }
+        $req->{short_state} = $CATS::Verdicts::state_to_name->{$req->{state}};
+        $req->{state} = $state_to_display{$req->{state}};
         $req->{s} = join '', map "<$_>" . xml_quote($req->{$_}) . "</$_>",
-            grep defined $req->{$_}, keys %$req;
+            sort grep defined $req->{$_}, keys %$req;
     }
     $t->param(reqs => $reqs);
 }
