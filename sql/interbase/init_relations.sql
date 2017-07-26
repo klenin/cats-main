@@ -12,7 +12,6 @@ CREATE TABLE default_de (
     syntax      VARCHAR(200) /* For highilghter. */
 );
 
-
 CREATE TABLE accounts (
     id               INTEGER NOT NULL PRIMARY KEY,
     login            VARCHAR(50) NOT NULL UNIQUE,
@@ -97,7 +96,6 @@ CREATE TABLE contests (
 ALTER TABLE contests ADD CONSTRAINT chk_pinned_judges_only
     CHECK (pinned_judges_only IN (0, 1));
 
-
 CREATE TABLE contest_accounts (
     id          INTEGER NOT NULL PRIMARY KEY,
     contest_id  INTEGER NOT NULL REFERENCES contests(id) ON DELETE CASCADE,
@@ -114,7 +112,6 @@ CREATE TABLE contest_accounts (
     UNIQUE(contest_id, account_id)
 );
 
-
 CREATE TABLE limits (
     id              INTEGER NOT NULL PRIMARY KEY,
     time_limit      FLOAT,
@@ -123,7 +120,6 @@ CREATE TABLE limits (
     write_limit     INTEGER,
     save_output_prefix INTEGER
 );
-
 
 CREATE TABLE problems (
     id                 INTEGER NOT NULL PRIMARY KEY,
@@ -162,14 +158,12 @@ CREATE TABLE problems (
 );
 ALTER TABLE problems ADD CONSTRAINT chk_run_method CHECK (run_method IN (0, 1, 2));
 
-
 CREATE TABLE problem_de_bitmap_cache (
     problem_id  INTEGER NOT NULL REFERENCES problems(id) ON DELETE CASCADE,
     version     INTEGER NOT NULL,
     de_bits1    BIGINT DEFAULT 0,
     de_bits2    BIGINT DEFAULT 0
 );
-
 
 CREATE TABLE contest_problems (
     id              INTEGER NOT NULL PRIMARY KEY,
@@ -187,7 +181,6 @@ CREATE TABLE contest_problems (
 );
 ALTER TABLE contest_problems
   ADD CONSTRAINT chk_contest_problems_st CHECK (0 <= status AND status <= 5);
-
 
 CREATE TABLE problem_sources (
     id          INTEGER NOT NULL PRIMARY KEY,
@@ -209,14 +202,12 @@ ALTER TABLE problem_sources
   ADD CONSTRAINT chk_problem_sources_1 CHECK (0 <= stype AND stype <= 15);
 CREATE INDEX ps_guid_idx ON problem_sources(guid);
 
-CREATE TABLE problem_sources_import
-(
+CREATE TABLE problem_sources_import (
     problem_id  INTEGER NOT NULL REFERENCES problems(id) ON DELETE CASCADE,
     /* Reference to problem_sources.guid, no constraint to simplify update of the referenced problem. */
     guid        VARCHAR(100) NOT NULL,
     PRIMARY KEY (problem_id, guid)
 );
-
 
 CREATE TABLE problem_attachments (
     id          INTEGER NOT NULL PRIMARY KEY,
@@ -226,7 +217,6 @@ CREATE TABLE problem_attachments (
     data        BLOB
 );
 
-
 CREATE TABLE pictures (
     id          INTEGER NOT NULL PRIMARY KEY,
     problem_id  INTEGER REFERENCES problems(id) ON DELETE CASCADE,
@@ -234,7 +224,6 @@ CREATE TABLE pictures (
     extension   VARCHAR(20),
     pic         BLOB
 );
-
 
 CREATE TABLE tests (
     problem_id      INTEGER REFERENCES problems(id) ON DELETE CASCADE,
@@ -251,9 +240,7 @@ CREATE TABLE tests (
     gen_group       INTEGER
 );
 
-
-CREATE TABLE testsets
-(
+CREATE TABLE testsets (
     id              INTEGER NOT NULL,
     problem_id      INTEGER NOT NULL,
     name            VARCHAR(200) NOT NULL,
@@ -267,7 +254,6 @@ CREATE TABLE testsets
     /*CONSTRAINT testsets_uniq UNIQUE (name, problem_id),*/
     FOREIGN KEY (problem_id) REFERENCES problems (id) ON DELETE CASCADE
 );
-
 
 CREATE TABLE samples (
     problem_id      INTEGER REFERENCES problems(id) ON DELETE CASCADE,
@@ -298,7 +284,6 @@ CREATE TABLE questions (
 );
 CREATE DESCENDING INDEX idx_questions_submit_time ON questions(submit_time);
 
-
 CREATE TABLE messages (
     id          INTEGER NOT NULL PRIMARY KEY,
     send_time   TIMESTAMP,
@@ -308,7 +293,6 @@ CREATE TABLE messages (
     broadcast   INTEGER DEFAULT 0 CHECK (broadcast IN (0, 1))
 );
 CREATE DESCENDING INDEX idx_messages_send_time ON messages(send_time);
-
 
 CREATE TABLE reqs (
     id          INTEGER NOT NULL PRIMARY KEY,
@@ -329,7 +313,6 @@ CREATE TABLE reqs (
 );
 CREATE DESCENDING INDEX idx_reqs_submit_time ON reqs(submit_time);
 
-
 CREATE TABLE req_de_bitmap_cache (
     req_id      INTEGER NOT NULL REFERENCES reqs(id) ON DELETE CASCADE,
     version     INTEGER NOT NULL,
@@ -337,16 +320,13 @@ CREATE TABLE req_de_bitmap_cache (
     de_bits2    BIGINT DEFAULT 0
 );
 
-
 CREATE TABLE req_groups (
     group_id    INTEGER NOT NULL REFERENCES reqs(id) ON DELETE CASCADE,
     element_id  INTEGER NOT NULL REFERENCES reqs(id) ON DELETE CASCADE,
     CONSTRAINT req_groups_pk PRIMARY KEY (group_id, element_id)
 );
 
-
-CREATE TABLE req_details
-(
+CREATE TABLE req_details (
   req_id            INTEGER NOT NULL REFERENCES REQS(ID) ON DELETE CASCADE,
   test_rank         INTEGER NOT NULL /*REFERENCES TESTS(RANK) ON DELETE CASCADE*/,
   result            INTEGER,
@@ -359,9 +339,7 @@ CREATE TABLE req_details
   UNIQUE(req_id, test_rank)
 );
 
-
-CREATE TABLE solution_output
-(
+CREATE TABLE solution_output (
     req_id          INTEGER NOT NULL,
     test_rank       INTEGER NOT NULL,
     output          BLOB NOT NULL,
@@ -371,13 +349,11 @@ CREATE TABLE solution_output
     CONSTRAINT so_fk FOREIGN KEY (req_id, test_rank) REFERENCES req_details(req_id, test_rank) ON DELETE CASCADE
 );
 
-
 CREATE TABLE log_dumps (
     id      INTEGER NOT NULL PRIMARY KEY,
     dump    BLOB,
     req_id  INTEGER REFERENCES reqs(id) ON DELETE CASCADE
 );
-
 
 CREATE TABLE sources (
     req_id  INTEGER NOT NULL REFERENCES reqs(id) ON DELETE CASCADE,
@@ -387,7 +363,6 @@ CREATE TABLE sources (
     hash    CHAR(32) /* md5_hex */
 );
 
-
 CREATE TABLE keywords (
     id          INTEGER NOT NULL PRIMARY KEY,
     name_ru     VARCHAR(200),
@@ -395,13 +370,11 @@ CREATE TABLE keywords (
     code        VARCHAR(200)
 );
 
-
 CREATE TABLE problem_keywords (
     problem_id  INTEGER NOT NULL REFERENCES problems(id) ON DELETE CASCADE,
     keyword_id  INTEGER NOT NULL REFERENCES keywords(id) ON DELETE CASCADE,
     PRIMARY KEY (problem_id, keyword_id)
 );
-
 
 CREATE TABLE contest_groups (
     id     INTEGER NOT NULL PRIMARY KEY,
@@ -411,7 +384,6 @@ CREATE TABLE contest_groups (
 );
 CREATE INDEX idx_contest_groups_clist ON contest_groups(clist);
 
-
 CREATE TABLE prizes (
     id     INTEGER NOT NULL PRIMARY KEY,
     cg_id  INTEGER NOT NULL REFERENCES contest_groups(id) ON DELETE CASCADE,
@@ -419,19 +391,16 @@ CREATE TABLE prizes (
     rank   INTEGER NOT NULL
 );
 
-
 /*
     FIXME: Old Firebird versions are unable to CAST to a BLOB,
     so instead of casting empty strings we have to select fields from this dummy table.
     See Console.pm.
 */
-CREATE TABLE dummy_table
-(
+CREATE TABLE dummy_table (
     t_integer INTEGER,
     t_varchar200 VARCHAR(200),
     t_blob BLOB SUB_TYPE 0
 );
-
 
 CREATE GENERATOR key_seq;
 CREATE GENERATOR login_seq;
@@ -440,7 +409,6 @@ SET GENERATOR key_seq TO 1000;
 
 CREATE SEQUENCE de_bitmap_cache_seq;
 ALTER SEQUENCE de_bitmap_cache_seq RESTART WITH 1000;
-
 
 INSERT INTO default_de (id, code, description, file_ext) VALUES (GEN_ID(key_seq, 1), 1, 'Do not compile this file', 'h;inc');
 INSERT INTO default_de (id, code, description, file_ext) VALUES (GEN_ID(key_seq, 1), 101, 'Cross-platform C/C++ compiler', 'cpp;c');
