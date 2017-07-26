@@ -19,6 +19,7 @@ use CATS::UI::Messages;
 use CATS::UI::Prizes;
 use CATS::UI::ProblemDetails;
 use CATS::UI::Problems;
+use CATS::UI::Sites;
 use CATS::UI::Stats;
 use CATS::UI::RankTable;
 use CATS::UI::RunDetails;
@@ -83,6 +84,7 @@ sub main_routes() {
         download_import_source => \&CATS::UI::ImportSources::download_frame,
         prizes => \&CATS::UI::Prizes::prizes_frame,
         contests_prizes => \&CATS::UI::Prizes::contests_prizes_frame,
+        sites => \&CATS::UI::Sites::sites_frame,
 
         answer_box => \&CATS::UI::Messages::answer_box_frame,
         send_message_box => \&CATS::UI::Messages::send_message_box_frame,

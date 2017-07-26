@@ -12,6 +12,7 @@ sub reference_names() {
         { name => 'keywords', new => 550, item => 549 },
         { name => 'import_sources', item => 557 },
         ($is_root ? { name => 'prizes', item => 565 } : ()),
+        ($is_root ? { name => 'sites', new => 514, item => 513 } : ()),
     )
 }
 

@@ -1,0 +1,17 @@
+[% PROCESS includes/menu_begin.tti %]
+[% PROCESS includes/html.tti %]
+[% PROCESS includes/html_input.tti %]
+
+<form method="post" enctype="multipart/form-data" action="[% href_action %]">
+<table class="padded">
+[% input_tr('name') %]
+[% input_tr('region') %]
+[% input_tr('city') %]
+[% input_tr('org_name', 100) %]
+[% input_tr('address', 100) %]
+</table>
+<br>
+[% PROCESS includes/edit_save_cancel.tti %]
+</form>
+
+[% PROCESS includes/menu_end.tti %]

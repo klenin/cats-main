@@ -1,0 +1,35 @@
+[% PROCESS includes/menu_begin.tti %]
+
+<script>
+function delete_site(href, name) {
+    if (confirm("[% capt.want_to_delete %] '" + name + "'?" ))
+        document.location=href;
+}
+</script>
+
+<form method="post" enctype="multipart/form-data">
+[% PROCESS includes/listview_header.tti %]
+
+<table width=100% cellpadding=2 cellspacing=1 class="bordered highlight">
+[% PROCESS includes/listview_col_defs.tti %]
+
+[% FOREACH s IN sites %]
+<tr class="[% loop.parity() %]">
+<td>
+  [% IF editable %]
+  <a href="javascript:delete_site('[% s.href_delete %]', '[% s.name | html %]');" class="icon delete"></a>
+  <a href="[% s.href_edit %]" class="icon edit"></a>
+  [% END %]
+  [% s.name | html %]
+</td>
+<td>[% s.region | html %]</td>
+<td>[% s.city | html %]</td>
+<td>[% s.org_name %]</td>
+<td>[% s.address %]</td>
+</tr>
+[% END %]
+</table>
+[% PROCESS includes/pages.tti %]
+</form>
+
+[% PROCESS includes/menu_end.tti %]
