@@ -1,6 +1,6 @@
 [%
   capt.import({
-    team_name => 'Team name / contestant name',
+    team_name => 'Participant / team name',
     login => 'Login',
   })
 %]

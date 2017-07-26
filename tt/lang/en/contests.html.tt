@@ -17,7 +17,7 @@
     create_group => 'create group',
     virt_help => [
       'Virtual participation allows to solve problems with a time shift, even after the end of the contest.',
-      'Team can participate virtually only if it did not participate online.'
+      'A user can participate virtually only if he did not participate online.'
       'Multiple attempts at virtual participation are allowed.',
     ],
   })

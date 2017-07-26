@@ -1,7 +1,7 @@
 [%
   capt.import({
     no_sources => 'No requests found.',
-    team => 'Team',
+    team => 'User',
     message => 'message',
     time => 'Time',
     processing => 'Processing',

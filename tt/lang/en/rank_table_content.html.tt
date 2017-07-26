@@ -15,7 +15,7 @@
     actual => 'actual',
     cache => 'cache',
     country => 'Country',
-    team_name => 'Team name',
+    team_name => 'Participant',
     total => 'total',
     time => 'time',
     place => 'place'

@@ -1,7 +1,7 @@
 [%
   capt.import({
     contest => 'Турнир',
-    team => 'Команда',
+    team => 'Участник',
     problem => 'Задача',
     submit_time => 'Время отправки',
     test_time => 'Время тестирования',

@@ -1,7 +1,7 @@
 [%
   capt.import({
     no_sources => 'Попыток не найдено.',
-    team => 'Команда',
+    team => 'Пользователь',
     message => 'сообщение',
     time => 'Время',
     processing => 'Обработка',
