@@ -15,7 +15,7 @@ use CATS::Misc qw(
     get_anonymous_uid init_template url_f auto_ext prepare_server_time res_str msg
 );
 use CATS::Request;
-use CATS::Utils qw(coalesce url_function date_to_iso);
+use CATS::Utils qw(coalesce date_to_iso escape_xml url_function);
 use CATS::Verdicts;
 use CATS::Web qw(param url_param);
 
@@ -499,14 +499,6 @@ sub select_all_reqs {
         $cid);
 }
 
-sub xml_quote {
-    my ($s) = @_;
-    $s =~ s/</&lt;/g;
-    $s =~ s/"/&quot;/g;
-    $s =~ s/&/&amp;/g;
-    $s;
-}
-
 sub export_frame {
     $is_jury or return;
     # Legacy field, new consumers should use short_state.
@@ -535,7 +527,7 @@ sub export_frame {
         $req->{submit_time} =~ s/\s+$//;
         $req->{short_state} = $CATS::Verdicts::state_to_name->{$req->{state}};
         $req->{state} = $state_to_display{$req->{state}};
-        $req->{s} = join '', map "<$_>" . xml_quote($req->{$_}) . "</$_>",
+        $req->{s} = join '', map "<$_>" . escape_xml($req->{$_}) . "</$_>",
             sort grep defined $req->{$_}, keys %$req;
     }
     $t->param(reqs => $reqs);
