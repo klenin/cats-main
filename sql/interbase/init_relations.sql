@@ -400,6 +400,13 @@ CREATE TABLE sites (
     address  BLOB SUB_TYPE TEXT
 );
 
+CREATE TABLE contest_sites (
+    contest_id  INTEGER NOT NULL REFERENCES contests(id) ON DELETE CASCADE,
+    site_id  INTEGER NOT NULL REFERENCES sites(id)
+);
+ALTER TABLE contest_sites
+    ADD CONSTRAINT contest_sites_pk PRIMARY KEY (contest_id, site_id);
+
 /*
     FIXME: Old Firebird versions are unable to CAST to a BLOB,
     so instead of casting empty strings we have to select fields from this dummy table.
