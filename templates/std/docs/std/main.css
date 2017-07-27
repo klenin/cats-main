@@ -242,6 +242,7 @@ a.icon {
 a.edit { background-image: url(../../images/std/icons/edit.png); }
 a.view { background-image: url(../../images/std/icons/view.png); }
 a.delete { background-image: url(../../images/std/icons/delete.png); }
+a.checked { background-image: url(../../images/std/icons/checked.png); }
 
 a.contest_selected { color: black; background-color: #ccccff; }
 
