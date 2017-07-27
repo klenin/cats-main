@@ -44,6 +44,7 @@ sub main_routes() {
         registration => \&CATS::UI::Users::registration_frame,
         profile => [ \&CATS::UI::Users::profile_frame, json => $bool, clear => $str, edit_save => $str, ],
         contests => [ \&CATS::UI::Contests::contests_frame, has_problem => $int, ],
+        contest_sites => [ \&CATS::UI::Sites::contest_sites_frame, ],
 
         console_content => \&CATS::UI::Console::content_frame,
         console => \&CATS::UI::Console::console_frame,

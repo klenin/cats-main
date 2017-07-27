@@ -178,6 +178,7 @@
 1065 "Development environment '%s' saved."
 1066 "Site '%s' deleted."
 1067 "Site '%s' saved."
+1068 "Sites added: %d."
 1080 "Unable to submit a solution: the contest is not started yet."
 1081 "Unable to submit a solution: the contest is over."
 1084 "Incorrect keyword parameters."

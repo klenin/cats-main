@@ -1,0 +1,44 @@
+[% PROCESS includes/menu_begin.tti %]
+[% PROCESS includes/html.tti %]
+
+<script>
+function delete_contest_site(href, name) {
+    if (confirm("[% capt.want_to_delete %] '" + name + "'?" ))
+        document.location=href;
+}
+</script>
+
+<style>
+  td.nowrap { white-space: nowrap; }
+  tr.unused td { color: grey; }
+</style>
+
+<form method="post" enctype="multipart/form-data">
+[% PROCESS includes/listview_header.tti %]
+
+<table width=100% cellspacing=1 celpadding=2 class="bordered highlight">
+[% PROCESS includes/listview_col_defs.tti sel_col = is_jury %]
+
+[% FOREACH cs IN contest_sites %]
+<tr class="[% loop.parity(); ' unused' UNLESS cs.is_used %]">
+[% IF is_jury %]
+<td class="nowrap">
+  <input type="checkbox" name="check" value="[% cs.id %]" />
+  <a href="javascript:delete_contest_site('[% cs.href_delete %]', '[% cs.name | html %]');" class="icon delete"></a>
+  <!--<a href="[% cs.href_edit %]" class="icon edit"></a>-->
+  [% IF cs.is_used %]<a href="#" class="icon checked"></a>[% END %]
+</td>
+[% END %]
+<td>[% cs.name | html %]</td>
+<td>[% cs.region | html %]</td>
+<td>[% cs.city | html %]</td>
+<td>[% cs.org_name | html %]</td>
+</tr>
+[% END %]
+</table>
+<br/>
+<button name="add" value="1" class="button">[% capt.add_sites %]</button>
+[% PROCESS includes/pages.tti %]
+</form>
+
+[% PROCESS includes/menu_end.tti %]

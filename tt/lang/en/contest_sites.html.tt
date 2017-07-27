@@ -1,0 +1,6 @@
+[%
+  capt.import({
+    want_to_delete => 'Do you really want to exclude site',
+    add_sites => 'add sites',
+  })
+%]
