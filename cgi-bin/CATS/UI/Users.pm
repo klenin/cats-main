@@ -324,6 +324,8 @@ sub impersonate_frame {
 }
 
 sub users_frame {
+    my ($p) = @_;
+
     if ($is_jury) {
         return CATS::User::new_frame if defined url_param('new');
         return users_edit_frame if defined url_param('edit');
@@ -340,20 +342,19 @@ sub users_frame {
         users_new_save if defined param('new_save');
         users_edit_save if defined param('edit_save');
 
-        users_save_attributes if defined param('save_attributes');
-        CATS::User::set_tag(user_set => [ param('sel') ], tag => param('tag_to_set'))
-            if defined param('set_tag');
-        CATS::User::register_by_login(param('login_to_register'), $cid)
-            if defined param('register_new');
+        users_save_attributes if $p->{save_attributes};
+        CATS::User::set_tag(user_set => [ param('sel') ], tag => $p->{tag_to_set})
+            if $p->{set_tag};
+        CATS::User::register_by_login($p->{logins_to_add}, $cid) if $p->{add_participants};
 
-        if (defined param('send_message')) {
-            if (param_on('send_message_all')) {
-                CATS::User::send_broadcast(message => param('message_text'));
+        if ($p->{send_message}) {
+            if ($p->{send_message_all}) {
+                CATS::User::send_broadcast(message => $p->{message_text});
                 msg(1058);
             }
             else {
                 my $count = CATS::User::send_message(
-                    user_set => [ param('sel') ], message => param('message_text'));
+                    user_set => [ param('sel') ], message => $p->{message_text});
                 msg(1057, $count);
             }
             $dbh->commit;

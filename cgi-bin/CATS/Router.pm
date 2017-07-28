@@ -70,7 +70,13 @@ sub main_routes() {
             pid => $int, test_rank => $int, clear_test_data => $bool ],
         problem_history => \&CATS::UI::ProblemDetails::problem_history_frame,
 
-        users => \&CATS::UI::Users::users_frame,
+        users => [
+            \&CATS::UI::Users::users_frame,
+            save_attributes => $bool,
+            set_tag => $bool, tag_to_set => $str,
+            add_participants => $bool, logins_to_add => $str,
+            send_message => $bool, send_message_all => $bool, message_text => $str,
+        ],
         users_import => \&CATS::UI::Users::users_import_frame,
         user_stats => \&CATS::UI::Users::user_stats_frame,
         user_settings => \&CATS::UI::Users::user_settings_frame,

@@ -43,13 +43,13 @@ function delete_team(href, name) {
 </table>
 <br/>
 [% PROCESS includes/pages.tti %]
-<input type="hidden" name="user_set" VALUE="[% FOREACH u IN users; u.id; ':' UNLESS loop.last; END %]">
+<input type="hidden" name="user_set" value="[% FOREACH u IN users; u.id; ':' UNLESS loop.last; END %]">
 [% IF editable %]
-<input type="submit" value="[% capt.save_attributes %]" name="save_attributes" class="button" />
-<label>[% capt.login %]: <input type="text" name="login_to_register" class="bordered" /></label>
-<input type="submit" value="[% capt.add_team %]" name="register_new" class="button"/>
+<button type="submit" value="1" name="save_attributes" class="button">[% capt.save_attributes %]</button>
+<label>[% capt.login %]: <input type="text" name="logins_to_add" class="bordered" /></label>
+<button type="submit" value="1" name="add_participants" class="button">[% capt.add_participants %]</button>
 <label>[% capt.tag %]: <input type="text" name="tag_to_set" class="bordered" /></label>
-<input type="submit" value="[% capt.set %]" name="set_tag" class="button"/>
+<button type="submit" value="1" name="set_tag" class="button">[% capt.set %]</button>
 <br/>
 <br/>
 [% END %]
@@ -57,8 +57,8 @@ function delete_team(href, name) {
 <div class="send_message">
 [% capt.message_to_teams %]:
 <input type="text" size="100" name="message_text" value="[% message_text | html %]" class="bordered">
-<input type="submit" value="[% capt.send %]" name="send_message" class="button">
-<label><input type="checkbox" name="send_message_all"> [% capt.send_to_all %]</label>
+<button type="submit" value="1" name="send_message" class="button">[% capt.send %]</button>
+<label><input type="checkbox" name="send_message_all" value="1"> [% capt.send_to_all %]</label>
 </div>
 [% END %]
 </form>

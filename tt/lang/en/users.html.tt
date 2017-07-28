@@ -4,7 +4,7 @@
     save_attributes => 'Save attributes',
     login => 'Login',
     tag => 'Tag',
-    add_team => 'Add participant',
+    add_participants => 'Add participant',
     set => 'Set',
     message_to_teams => 'Message to participants',
     send => 'Send',
