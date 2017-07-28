@@ -153,6 +153,7 @@
 1023 "Unable to delete problem '%s'."
 1024 "Site set for contestants: %d."
 1026 "Unable to create contest: '%s'."
+1025 "Unable to exclude a site with participants."
 1027 "Contest name must be 1 to 100 characters long."
 1028 "Contest '%s' created."
 1029 "Settings cleared for participant '%s'."

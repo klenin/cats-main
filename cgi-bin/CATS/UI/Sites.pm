@@ -102,6 +102,9 @@ sub contest_sites_delete {
         SELECT name FROM sites WHERE id = ?~, undef,
         $site_id) or return;
 
+    $dbh->selectrow_array(q~
+        SELECT 1 FROM contest_accounts CA WHERE CA.contest_id = ? AND CA.site_id = ? ROWS 1~, undef,
+        $cid, $site_id) and return msg(1025);
     $dbh->do(q~
         DELETE FROM contest_sites WHERE contest_id = ? AND site_id = ?~, undef,
         $cid, $site_id);
