@@ -9,7 +9,7 @@ use CATS::DB;
 use CATS::Form qw(validate_string_length);
 use CATS::ListView;
 use CATS::Misc qw(
-    $cid $t $is_jury $is_root
+    $cid $t $is_jury $is_root $privs
     init_template msg res_str url_f);
 use CATS::References;
 use CATS::Web qw(param url_param);
@@ -34,7 +34,7 @@ sub edit_save {
 }
 
 sub sites_frame {
-    $is_root or return;
+    $privs->{edit_sites} or return;
     defined url_param('new') || defined url_param('edit') and return edit_frame;
 
     my $lv = CATS::ListView->new(name => 'sites', template => 'sites.html.tt');
@@ -143,7 +143,7 @@ sub contest_sites_frame {
         my $row = $_[0]->fetchrow_hashref or return ();
         return (
             %$row,
-            #href_edit => url_f('sites', edit => $row->{id}),
+            ($privs->{edit_sites} ? (href_edit => url_f('sites', edit => $row->{id})) : ()),
             href_delete => url_f('contest_sites', 'delete' => $row->{id}),
             href_users => url_f('users', search => "site_id=$row->{id}"),
         );

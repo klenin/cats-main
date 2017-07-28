@@ -16,10 +16,8 @@ function delete_site(href, name) {
 [% FOREACH s IN sites %]
 <tr class="[% loop.parity() %]">
 <td>
-  [% IF editable %]
   <a href="javascript:delete_site('[% s.href_delete %]', '[% s.name | html %]');" class="icon delete"></a>
   <a href="[% s.href_edit %]" class="icon edit"></a>
-  [% END %]
   [% s.name | html %]
 </td>
 <td>[% s.region | html %]</td>

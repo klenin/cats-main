@@ -13,7 +13,7 @@ use CATS::DB;
 use CATS::IP;
 use CATS::ListView;
 use CATS::Misc qw(
-    $t $is_jury $is_root $is_team $sid $cid $uid $contest $is_virtual $settings
+    $t $is_jury $is_root $is_team $sid $cid $uid $contest $is_virtual $privs $settings
     format_diff_time init_template msg res_str url_f auto_ext);
 use CATS::Privileges;
 use CATS::RankTable;
@@ -437,7 +437,7 @@ sub users_frame {
             href_delete => url_f('users', delete => $caid),
             href_edit => url_f('users', edit => $aid),
             href_stats => url_f('user_stats', uid => $aid),
-            ($is_root && $site_id ? (href_site => url_f('sites', edit => $site_id)) : ()),
+            ($privs->{edit_sites} && $site_id ? (href_site => url_f('sites', edit => $site_id)) : ()),
             motto => $motto,
             id => $caid,
             account_id => $aid,

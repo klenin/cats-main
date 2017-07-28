@@ -24,14 +24,13 @@ function delete_contest_site(href, name) {
 [% IF is_jury %]
 <td class="nowrap">
   <input type="checkbox" name="check" value="[% cs.id %]" />
-  <!--<a href="[% cs.href_edit %]" class="icon edit"></a>-->
   [% IF cs.is_used %]
   <a href="#" class="icon checked"></a>
   <a href="javascript:delete_contest_site('[% cs.href_delete %]', '[% cs.name | html %]');" class="icon delete"></a>
   [% END %]
 </td>
 [% END %]
-<td>[% cs.name | html %]</td>
+<td>[% maybe_href(cs.href_edit, cs.name) %]</td>
 <td>[% cs.region | html %]</td>
 <td>[% cs.city | html %]</td>
 <td>[% cs.org_name | html %]</td>

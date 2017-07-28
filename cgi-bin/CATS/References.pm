@@ -3,7 +3,7 @@ package CATS::References;
 use strict;
 use warnings;
 
-use CATS::Misc qw($is_root $t res_str url_f);
+use CATS::Misc qw($is_root $t $privs res_str url_f);
 
 sub reference_names() {
     (
@@ -12,7 +12,7 @@ sub reference_names() {
         { name => 'keywords', new => 550, item => 549 },
         { name => 'import_sources', item => 557 },
         ($is_root ? { name => 'prizes', item => 565 } : ()),
-        ($is_root ? { name => 'sites', new => 514, item => 513 } : ()),
+        ($privs->{edit_sites} ? { name => 'sites', new => 514, item => 513 } : ()),
     )
 }
 
@@ -24,7 +24,7 @@ sub menu {
         my $sel = $_->{name} eq $ref_name;
         push @result,
             { href => url_f($_->{name}), item => res_str($_->{item}), selected => $sel };
-        if ($sel && $is_root && $_->{new}) {
+        if ($sel && ($is_root || $_->{name} eq 'sites' && $privs->{edit_sites}) && $_->{new}) {
             unshift @result,
                 { href => url_f($_->{name}, new => 1), item => res_str($_->{new}) };
         }
