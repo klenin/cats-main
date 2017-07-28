@@ -10,7 +10,7 @@ function delete_team(href, name) {
 
 <form method="post">
 [% PROCESS includes/listview_header.tti %]
-<table border=0 width=100% cellpadding=2 cellspacing=1 class="bordered highlight">
+<table width=100% cellpadding=2 cellspacing=1 class="bordered highlight">
 [% PROCESS includes/listview_col_defs.tti %]
 [% FOREACH u IN users %]
 <tr class="[% loop.parity %]">
@@ -21,8 +21,8 @@ function delete_team(href, name) {
   [% u.login | html %]
 </td>
 [% END %]
-<td>[% IF messages %]<input type="checkbox" name="msg[% u.id %]">[% END -%]
-<a href="[% u.href_stats %]">[% u.team_name | html %][% IF u.city %] ([% u.city | html %])[% END %]</a></td>
+<td>[% IF messages %]<input type="checkbox" name="msg[% u.id %]"> [% END; href(u.href_stats, u.team_name) %]</td>
+<td>[% maybe_href(u.href_site, u.site_name || u.city) %]</td>
 <td align="center">[% u.tag %]</td>
 [% IF editable %]
 <td class="user_checkbox"><label>[% checkbox("jury$u.id", u.jury) %]</label></td>

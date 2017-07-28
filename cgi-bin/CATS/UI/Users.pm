@@ -410,19 +410,20 @@ sub users_frame {
 
     my @cols;
     if ($is_jury) {
-        @cols = ( { caption => res_str(616), order_by => 'login', width => '25%' } );
+        @cols = ( { caption => res_str(616), order_by => 'login', width => '20%' } );
     }
 
     push @cols,
-        { caption => res_str(608), order_by => 'team_name', width => '40%' },
+        { caption => res_str(608), order_by => 'team_name', width => '30%' },
+        { caption => res_str(627), order_by => 'COALESCE(S.name, A.city)', width => '20%' },
         { caption => res_str(629), order_by => 'tag', width => '5%' };
 
     if ($is_jury) {
         push @cols, (
-            { caption => res_str(611), order_by => 'is_jury', width => '5%' },
-            { caption => res_str(612), order_by => 'is_ooc', width => '5%' },
-            { caption => res_str(613), order_by => 'is_remote', width => '5%' },
-            { caption => res_str(614), order_by => 'is_hidden', width => '5%' },
+            { caption => res_str(611), order_by => 'is_jury', width => '1%' },
+            { caption => res_str(612), order_by => 'is_ooc', width => '1%' },
+            { caption => res_str(613), order_by => 'is_remote', width => '1%' },
+            { caption => res_str(614), order_by => 'is_hidden', width => '1%' },
         );
     }
 
@@ -438,22 +439,24 @@ sub users_frame {
 
     my @fields = qw(
         A.id A.country A.motto A.login A.team_name A.city
-        CA.is_jury CA.is_ooc CA.is_remote CA.is_hidden CA.is_virtual CA.diff_time CA.tag);
+        CA.is_jury CA.is_ooc CA.is_remote CA.is_hidden CA.is_virtual CA.diff_time CA.tag CA.site_id);
     $lv->define_db_searches(\@fields);
     $lv->define_db_searches({
         'CA.id' => 'CA.id',
         is_judge => q~CASE WHEN EXISTS (SELECT * FROM judges J WHERE J.account_id = A.id) THEN 1 ELSE 0 END~,
+        site_name => 'S.name',
     });
 
     my $fields = join ', ', @fields;
     my $sql = sprintf qq~
-        SELECT CA.id, $fields, COUNT(DISTINCT R.problem_id) as rating
+        SELECT CA.id, $fields, S.name AS site_name, COUNT(DISTINCT R.problem_id) as rating
         FROM accounts A
             INNER JOIN contest_accounts CA ON CA.account_id = A.id
             INNER JOIN contests C ON CA.contest_id = C.id
+            LEFT JOIN sites S ON S.id = CA.site_id
             LEFT JOIN reqs R ON
                 R.state = $cats::st_accepted AND R.account_id = A.id AND R.contest_id = C.id%s
-        WHERE C.id = ?%s %s GROUP BY CA.id, $fields ~ . $lv->order_by,
+        WHERE C.id = ?%s %s GROUP BY CA.id, $fields, S.name ~ . $lv->order_by,
         ($is_jury ? ('', '') : (
             ' AND (R.submit_time < C.freeze_date OR C.defreeze_date < CURRENT_TIMESTAMP)',
             ' AND CA.is_hidden = 0')),
@@ -465,7 +468,7 @@ sub users_frame {
     my $fetch_record = sub {
         my (
             $caid, $aid, $country_abbr, $motto, $login, $team_name, $city, $jury,
-            $ooc, $remote, $hidden, $virtual, $virtual_diff_time, $tag, $accepted
+            $ooc, $remote, $hidden, $virtual, $virtual_diff_time, $tag, $site_id, $site_name, $accepted
         ) = $_[0]->fetchrow_array
             or return ();
         my ($country, $flag) = CATS::Countries::get_flag($country_abbr);
@@ -473,6 +476,7 @@ sub users_frame {
             href_delete => url_f('users', delete => $caid),
             href_edit => url_f('users', edit => $aid),
             href_stats => url_f('user_stats', uid => $aid),
+            ($is_root && $site_id ? (href_site => url_f('sites', edit => $site_id)) : ()),
             motto => $motto,
             id => $caid,
             account_id => $aid,
@@ -480,6 +484,8 @@ sub users_frame {
             team_name => $team_name,
             city => $city,
             tag => $tag,
+            site_id => $site_id,
+            site_name => $site_name,
             country => $country,
             flag => $flag,
             accepted => $accepted,
