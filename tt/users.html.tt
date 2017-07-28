@@ -8,7 +8,7 @@ function delete_team(href, name) {
 }
 </script>
 
-<form method="post">
+<form method="post" enctype="multipart/form-data">
 [% PROCESS includes/listview_header.tti %]
 <table width=100% cellpadding=2 cellspacing=1 class="bordered highlight">
 [% PROCESS includes/listview_col_defs.tti %]
@@ -21,7 +21,7 @@ function delete_team(href, name) {
   [% u.login | html %]
 </td>
 [% END %]
-<td>[% IF messages %]<input type="checkbox" name="msg[% u.id %]"> [% END; href(u.href_stats, u.team_name) %]</td>
+<td>[% IF is_jury %]<input type="checkbox" name="sel" value="[% u.id %]"> [% END; href(u.href_stats, u.team_name) %]</td>
 <td>[% maybe_href(u.href_site, u.site_name || u.city) %]</td>
 <td align="center">[% u.tag %]</td>
 [% IF editable %]
@@ -53,7 +53,7 @@ function delete_team(href, name) {
 <br/>
 <br/>
 [% END %]
-[% IF messages %]
+[% IF is_jury %]
 <div class="send_message">
 [% capt.message_to_teams %]:
 <input type="text" size="100" name="message_text" value="[% message_text | html %]" class="bordered">

@@ -246,17 +246,16 @@ sub profile_frame {
 
 sub users_send_message {
     my %p = @_;
-    $p{'message'} ne '' or return;
+    $p{message} ne '' or return 0;
     my $s = $dbh->prepare(qq~
         INSERT INTO messages (id, send_time, text, account_id, received)
-            VALUES (?, CURRENT_TIMESTAMP, ?, ?, 0)~
+        VALUES (?, CURRENT_TIMESTAMP, ?, ?, 0)~
     );
     my $count = 0;
-    for (split ':', $p{'user_set'}) {
-        next unless param_on("msg$_");
+    for (@{$p{user_set}}) {
         ++$count;
         $s->bind_param(1, new_id);
-        $s->bind_param(2, $p{'message'}, { ora_type => 113 });
+        $s->bind_param(2, $p{message}, { ora_type => 113 });
         $s->bind_param(3, $_);
         $s->execute;
     }
@@ -269,8 +268,7 @@ sub users_set_tag {
     my $s = $dbh->prepare(q~
         UPDATE contest_accounts SET tag = ? WHERE id = ?~);
     my $set_count = 0;
-    for my $user_id (split ':', $p{user_set}) {
-        param_on("msg$user_id") or next;
+    for my $user_id (@{$p{user_set}}) {
         $s->bind_param(1, $p{tag}, { ora_type => 113 });
         $s->bind_param(2, $user_id);
         $set_count += $s->execute;
@@ -381,7 +379,7 @@ sub users_frame {
         name => 'users' . ($contest->is_practice ? '_practice' : ''),
         array_name => 'users',
         template => auto_ext('users'));
-    $t->param(messages => $is_jury, title_suffix => res_str(526));
+    $t->param(is_jury => $is_jury, title_suffix => res_str(526));
 
     if ($is_jury) {
         users_delete if defined url_param('delete');
@@ -389,7 +387,7 @@ sub users_frame {
         users_edit_save if defined param('edit_save');
 
         users_save_attributes if defined param('save_attributes');
-        users_set_tag(user_set => param('user_set'), tag => param('tag_to_set'))
+        users_set_tag(user_set => [ param('sel') ], tag => param('tag_to_set'))
             if defined param('set_tag');
         CATS::User::register_by_login(param('login_to_register'), $cid)
             if defined param('register_new');
@@ -401,7 +399,7 @@ sub users_frame {
             }
             else {
                 my $count = users_send_message(
-                    user_set => param('user_set'), message => param('message_text'));
+                    user_set => [ param('sel') ], message => param('message_text'));
                 msg(1057, $count);
             }
             $dbh->commit;
