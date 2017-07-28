@@ -13,6 +13,7 @@ my %flags = (
     create_contests => 2,
     moderate_messages => 4,
     delete_problems => 8,
+    edit_sites => 16,
 );
 
 sub get_root_account_ids {
