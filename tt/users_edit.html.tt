@@ -11,9 +11,9 @@
   [% IF privs.is_root %]
   [% capt.roles.root %]
   [% ELSE %]
-  <label class="nobr">[% checkbox('create_contests', privs.create_contests, 0); capt.roles.create_contests %]</label>
-  <label class="nobr">[% checkbox('moderate_messages', privs.moderate_messages, 0); capt.roles.moderate_messages %]</label>
-  <label class="nobr">[% checkbox('delete_problems', privs.delete_problems, 0); capt.roles.delete_problems %]</label>
+  [% FOREACH pn IN [ 'create_contests', 'moderate_messages', 'delete_problems' ] -%]
+    <label class="nobr">[% checkbox(pn, privs.$pn, 0); capt.roles.$pn %]</label>
+  [% END -%]
   [% END %]
 </td></tr>
 </table>
