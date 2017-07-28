@@ -16,9 +16,7 @@ use CATS::Misc qw(init_template msg url_f $t $is_root);
 use CATS::Privileges;
 use CATS::Web qw(param);
 
-
-sub new
-{
+sub new {
     my ($class) = @_;
     $class = ref $class if ref $class;
     my $self = {};
@@ -26,16 +24,12 @@ sub new
     $self;
 }
 
-
-sub parse_params
-{
+sub parse_params {
    $_[0]->{$_} = param($_) || '' for param_names(), qw(password1 password2);
    $_[0];
 }
 
-
-sub load
-{
+sub load {
     my ($self, $id, $extra_fields) = @_;
     my @fields = (param_names(), @{$extra_fields || []});
     @$self{@fields} = $dbh->selectrow_array(qq~
@@ -50,12 +44,9 @@ sub load
     $self;
 }
 
-
 sub values { @{$_[0]}{param_names()} }
 
-
-sub add_to_contest
-{
+sub add_to_contest {
     my %p = @_;
     $p{contest_id} && $p{account_id} or die;
     $dbh->do(qq~
@@ -68,9 +59,7 @@ sub add_to_contest
     );
 }
 
-
-sub generate_login
-{
+sub generate_login {
     my $login_num;
 
     if ($CATS::Config::db_dsn =~ /Firebird/) {
@@ -84,9 +73,7 @@ sub generate_login
     return "team$login_num";
 }
 
-
-sub new_frame
-{
+sub new_frame {
     init_template('users_new.html.tt');
     $t->param(
         login => generate_login,
@@ -96,18 +83,14 @@ sub new_frame
     );
 }
 
-
-sub param_names ()
-{qw(
+sub param_names () {qw(
     login team_name capitan_name email country motto home_page icq_number
     city affiliation affiliation_year
     git_author_name git_author_email
     restrict_ips
 )}
 
-
-sub any_official_contest_by_team
-{
+sub any_official_contest_by_team {
     my ($account_id) = @_;
     $dbh->selectrow_array(qq~
         SELECT FIRST 1 C.title FROM contests C
@@ -118,9 +101,7 @@ sub any_official_contest_by_team
         $account_id);
 }
 
-
-sub validate_params
-{
+sub validate_params {
     my ($self, %p) = @_;
 
     validate_string_length($self->{login}, 616, 1, 50) or return;
@@ -156,9 +137,7 @@ sub validate_params
     return $old_login eq $self->{login} || $self->validate_login($p{id});
 }
 
-
-sub validate_login
-{
+sub validate_login {
     my ($self, $id) = @_;
     my $dups = $dbh->selectcol_arrayref(qq~
         SELECT id FROM accounts WHERE login = ?~, {}, $self->{login}) or return 1;
@@ -167,9 +146,7 @@ sub validate_login
         @$dups > 1 || @$dups == 1 && (!$id || $id != $dups->[0]) ? msg(1103) : 1;
 }
 
-
-sub insert
-{
+sub insert {
     my ($self, $contest_id, %p) = @_;
     my $training_contests = $dbh->selectall_arrayref(qq~
         SELECT id, closed FROM contests WHERE ctype = 1 AND closed = 0~,
@@ -197,8 +174,7 @@ sub insert
 sub trim { s/^\s+|\s+$//; $_; }
 
 # (Mass-)register users by jury.
-sub register_by_login
-{
+sub register_by_login {
     my ($login, $contest_id) = @_;
     $login = Encode::decode_utf8($login);
     my @logins = map trim, split(/,/, $login || '') or return msg(1101);
