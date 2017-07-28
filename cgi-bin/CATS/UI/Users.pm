@@ -280,6 +280,7 @@ sub users_save_attributes {
         my $ooc = param_on("ooc$user_id");
         my $remote = param_on("remote$user_id");
         my $hidden = param_on("hidden$user_id");
+        my $site_org = param_on("site_org$user_id");
 
         # Forbid removing is_jury privilege from an admin.
         my ($srole) = $dbh->selectrow_array(q~
@@ -293,12 +294,12 @@ sub users_save_attributes {
         # Security: Forbid changing of user parameters in other contests.
         my $changed = $dbh->do(q~
             UPDATE contest_accounts
-                SET is_jury = ?, is_hidden = ?, is_remote = ?, is_ooc = ?
+                SET is_jury = ?, is_hidden = ?, is_remote = ?, is_ooc = ?, is_site_org = ?
                 WHERE id = ? AND contest_id = ? AND
-                    (is_jury <> ? OR is_hidden <> ? OR is_remote <> ? OR is_ooc <> ?)~, undef,
-            $jury, $hidden, $remote, $ooc,
+                    (is_jury <> ? OR is_hidden <> ? OR is_remote <> ? OR is_ooc <> ? OR is_site_org <> ?)~, undef,
+            $jury, $hidden, $remote, $ooc, $site_org,
             $user_id, $cid,
-            $jury, $hidden, $remote, $ooc,
+            $jury, $hidden, $remote, $ooc, $site_org
         );
         $changed_count += $changed;
     }
@@ -385,6 +386,7 @@ sub users_frame {
             { caption => res_str(612), order_by => 'is_ooc', width => '1%' },
             { caption => res_str(613), order_by => 'is_remote', width => '1%' },
             { caption => res_str(614), order_by => 'is_hidden', width => '1%' },
+            { caption => res_str(610), order_by => 'is_site_org', width => '1%' },
         );
     }
 
@@ -400,7 +402,8 @@ sub users_frame {
 
     my @fields = qw(
         A.id A.country A.motto A.login A.team_name A.city
-        CA.is_jury CA.is_ooc CA.is_remote CA.is_hidden CA.is_virtual CA.diff_time CA.tag CA.site_id);
+        CA.is_jury CA.is_ooc CA.is_remote CA.is_hidden CA.is_site_org CA.is_virtual CA.diff_time
+        CA.tag CA.site_id);
     $lv->define_db_searches(\@fields);
     $lv->define_db_searches({
         'CA.id' => 'CA.id',
@@ -428,8 +431,9 @@ sub users_frame {
 
     my $fetch_record = sub {
         my (
-            $caid, $aid, $country_abbr, $motto, $login, $team_name, $city, $jury,
-            $ooc, $remote, $hidden, $virtual, $virtual_diff_time, $tag, $site_id, $site_name, $accepted
+            $caid, $aid, $country_abbr, $motto, $login, $team_name, $city,
+            $jury, $ooc, $remote, $hidden, $site_org, $virtual, $virtual_diff_time,
+            $tag, $site_id, $site_name, $accepted
         ) = $_[0]->fetchrow_array
             or return ();
         my ($country, $flag) = CATS::Countries::get_flag($country_abbr);
@@ -454,6 +458,7 @@ sub users_frame {
             hidden => $hidden,
             ooc => $ooc,
             remote => $remote,
+            site_org => $site_org,
             virtual => $virtual,
             virtual_diff_time => $virtual_diff_time,
             virtual_diff_time_minutes => int(($virtual_diff_time // 0) * 24 * 60 | 0.5),

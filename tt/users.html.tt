@@ -29,6 +29,7 @@ function delete_team(href, name) {
 <td class="user_checkbox"><label>[% checkbox("ooc$u.id", u.ooc) %]</label></td>
 <td class="user_checkbox"><label>[% checkbox("remote$u.id", u.remote) %]</label></td>
 <td class="user_checkbox"><label>[% checkbox("hidden$u.id", u.hidden) %]</label></td>
+<td class="user_checkbox"><label>[% checkbox("site_org$u.id", u.site_org) %]</label></td>
 [% END %]
 <td align="center">
 [% IF u.flag -%]
