@@ -73,8 +73,9 @@ sub main_routes() {
         users => [
             \&CATS::UI::Users::users_frame,
             save_attributes => $bool,
-            set_tag => $bool, tag_to_set => $str,
             add_participants => $bool, logins_to_add => $str,
+            set_tag => $bool, tag_to_set => $str,
+            set_site => $bool, site_id => $int,
             send_message => $bool, send_message_all => $bool, message_text => $str,
         ],
         users_import => \&CATS::UI::Users::users_import_frame,

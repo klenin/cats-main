@@ -359,6 +359,14 @@ sub users_frame {
             }
             $dbh->commit;
         }
+
+        CATS::User::set_site(user_set => [ param('sel') ], site_id => $p->{site_id}) if $p->{set_site};
+        $t->param(sites => $dbh->selectall_arrayref(q~
+            SELECT S.id, S.name
+            FROM sites S INNER JOIN contest_sites CS ON CS.site_id = S.id
+            WHERE CS.contest_id = ?
+            ORDER BY S.name~, { Slice => {} },
+            $cid));
     }
 
     my @cols;

@@ -11,8 +11,8 @@ use CATS::Constants;
 use CATS::ContestParticipate qw(get_registered_contestant);
 use CATS::Countries;
 use CATS::DB;
-use CATS::Form qw(validate_string_length validate_integer);
-use CATS::Misc qw(init_template msg url_f $t $is_root);
+use CATS::Form qw(validate_integer validate_string_length);
+use CATS::Misc qw($cid $is_root $t init_template msg url_f);
 use CATS::Privileges;
 use CATS::Web qw(param);
 
@@ -237,15 +237,28 @@ sub set_tag {
 
 sub send_broadcast {
     my %p = @_;
-    $p{'message'} ne '' or return;
+    $p{message} ne '' or return;
     my $s = $dbh->prepare(qq~
         INSERT INTO messages (id, send_time, text, account_id, broadcast)
-            VALUES(?, CURRENT_TIMESTAMP, ?, NULL, 1)~
-    );
+        VALUES(?, CURRENT_TIMESTAMP, ?, NULL, 1)~);
     $s->bind_param(1, new_id);
-    $s->bind_param(2, $p{'message'}, { ora_type => 113 });
+    $s->bind_param(2, $p{message}, { ora_type => 113 });
     $s->execute;
     $s->finish;
+}
+
+sub set_site {
+    my %p = @_;
+    my $s = $dbh->prepare(qq~
+        UPDATE contest_accounts SET site_id = ?
+        WHERE site_id IS DISTINCT FROM ? AND id = ? AND contest_id = ?~);
+    my $count = 0;
+    for (@{$p{user_set}}) {
+        $count += $s->execute($p{site_id}, $p{site_id}, $_, $cid);
+    }
+    $s->finish;
+    $dbh->commit;
+    msg(1024, $count);
 }
 
 1;

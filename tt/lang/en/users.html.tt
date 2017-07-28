@@ -6,6 +6,7 @@
     tag => 'Tag',
     add_participants => 'Add participant',
     set => 'Set',
+    set_site => 'Set site',
     message_to_teams => 'Message to participants',
     send => 'Send',
     send_to_all => 'broadcast',
