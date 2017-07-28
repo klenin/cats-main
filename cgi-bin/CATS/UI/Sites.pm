@@ -81,7 +81,7 @@ sub sites_frame {
         if $is_jury;
 }
 
-sub add_sites_to_contest {
+sub contest_sites_add {
     my @checked = grep $_ && $_ > 0, param('check') or return;
     my $sth_add= $dbh->prepare(q~
         INSERT INTO contest_sites (contest_id, site_id) VALUES (?, ?)~);
@@ -94,6 +94,19 @@ sub add_sites_to_contest {
     }
     $dbh->commit;
     msg(1068, $count);
+}
+
+sub contest_sites_delete {
+    my $site_id = url_param('delete') or return;
+    my ($name) = $dbh->selectrow_array(q~
+        SELECT name FROM sites WHERE id = ?~, undef,
+        $site_id) or return;
+
+    $dbh->do(q~
+        DELETE FROM contest_sites WHERE contest_id = ? AND site_id = ?~, undef,
+        $cid, $site_id);
+    $dbh->commit;
+    msg(1066, $name);
 }
 
 sub contest_sites_frame {
@@ -110,20 +123,8 @@ sub contest_sites_frame {
     ]);
     $lv->define_db_searches([ fields ]);
 
-    if (my $site_id = url_param('delete')) {
-        if (my ($name) = $dbh->selectrow_array(q~
-            SELECT name FROM sites WHERE id = ?~, undef,
-            $site_id)
-        ) {
-            $dbh->do(q~
-            DELETE FROM contest_sites WHERE contest_id = ? AND site_id = ?~, undef,
-                $cid, $site_id);
-            $dbh->commit;
-            msg(1066, $name);
-        }
-    }
-
-    add_sites_to_contest if param('add');
+    contest_sites_delete;
+    contest_sites_add if param('add');
 
     my $sth = $dbh->prepare(q~
         SELECT
