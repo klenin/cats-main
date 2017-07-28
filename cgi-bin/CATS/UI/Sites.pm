@@ -106,6 +106,7 @@ sub contest_sites_frame {
         { caption => res_str(654), order_by => '4', width => '15%' },
         { caption => res_str(655), order_by => '5', width => '15%' },
         { caption => res_str(656), order_by => '6', width => '20%' },
+        { caption => res_str(658), order_by => '7', width => '10%' },
     ]);
     $lv->define_db_searches([ fields ]);
 
@@ -127,11 +128,12 @@ sub contest_sites_frame {
     my $sth = $dbh->prepare(q~
         SELECT
             S.id, (CASE WHEN CS.site_id IS NULL THEN 0 ELSE 1 END) AS is_used,
-            S.name, S.region, S.city, S.org_name
+            S.name, S.region, S.city, S.org_name,
+            (SELECT COUNT(*) FROM contest_accounts CA WHERE CA.contest_id = ? AND CA.site_id = S.id) AS users_count
         FROM sites S
         LEFT JOIN contest_sites CS ON CS.site_id = S.id AND CS.contest_id = ?
         WHERE 1 = 1 ~ . $lv->maybe_where_cond . $lv->order_by);
-    $sth->execute($cid, $lv->where_params);
+    $sth->execute($cid, $cid, $lv->where_params);
 
     my $fetch_record = sub {
         my $row = $_[0]->fetchrow_hashref or return ();
@@ -139,6 +141,7 @@ sub contest_sites_frame {
             %$row,
             #href_edit => url_f('sites', edit => $row->{id}),
             href_delete => url_f('contest_sites', 'delete' => $row->{id}),
+            href_users => url_f('users', search => "site_id=$row->{id}"),
         );
     };
     $lv->attach(url_f('contest_sites'), $fetch_record, $sth);

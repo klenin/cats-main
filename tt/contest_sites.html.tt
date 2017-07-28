@@ -33,6 +33,7 @@ function delete_contest_site(href, name) {
 <td>[% cs.region | html %]</td>
 <td>[% cs.city | html %]</td>
 <td>[% cs.org_name | html %]</td>
+<td>[% href(cs.href_users, cs.users_count) %]</td>
 </tr>
 [% END %]
 </table>
