@@ -201,4 +201,51 @@ sub make_sid {
     join '', map { $ch[rand @ch] } 1..30;
 }
 
+sub send_message {
+    my %p = @_;
+    $p{message} ne '' or return 0;
+    my $s = $dbh->prepare(qq~
+        INSERT INTO messages (id, send_time, text, account_id, received)
+        VALUES (?, CURRENT_TIMESTAMP, ?, ?, 0)~
+    );
+    my $count = 0;
+    for (@{$p{user_set}}) {
+        ++$count;
+        $s->bind_param(1, new_id);
+        $s->bind_param(2, $p{message}, { ora_type => 113 });
+        $s->bind_param(3, $_);
+        $s->execute;
+    }
+    $s->finish;
+    $count;
+}
+
+sub set_tag {
+    my %p = @_;
+    my $s = $dbh->prepare(q~
+        UPDATE contest_accounts SET tag = ? WHERE id = ?~);
+    my $set_count = 0;
+    for my $user_id (@{$p{user_set}}) {
+        $s->bind_param(1, $p{tag}, { ora_type => 113 });
+        $s->bind_param(2, $user_id);
+        $set_count += $s->execute;
+    }
+    $s->finish;
+    $dbh->commit;
+    msg(1019, $set_count);
+}
+
+sub send_broadcast {
+    my %p = @_;
+    $p{'message'} ne '' or return;
+    my $s = $dbh->prepare(qq~
+        INSERT INTO messages (id, send_time, text, account_id, broadcast)
+            VALUES(?, CURRENT_TIMESTAMP, ?, NULL, 1)~
+    );
+    $s->bind_param(1, new_id);
+    $s->bind_param(2, $p{'message'}, { ora_type => 113 });
+    $s->execute;
+    $s->finish;
+}
+
 1;

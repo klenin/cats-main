@@ -244,53 +244,6 @@ sub profile_frame {
     display_settings($settings);
 }
 
-sub users_send_message {
-    my %p = @_;
-    $p{message} ne '' or return 0;
-    my $s = $dbh->prepare(qq~
-        INSERT INTO messages (id, send_time, text, account_id, received)
-        VALUES (?, CURRENT_TIMESTAMP, ?, ?, 0)~
-    );
-    my $count = 0;
-    for (@{$p{user_set}}) {
-        ++$count;
-        $s->bind_param(1, new_id);
-        $s->bind_param(2, $p{message}, { ora_type => 113 });
-        $s->bind_param(3, $_);
-        $s->execute;
-    }
-    $s->finish;
-    $count;
-}
-
-sub users_set_tag {
-    my %p = @_;
-    my $s = $dbh->prepare(q~
-        UPDATE contest_accounts SET tag = ? WHERE id = ?~);
-    my $set_count = 0;
-    for my $user_id (@{$p{user_set}}) {
-        $s->bind_param(1, $p{tag}, { ora_type => 113 });
-        $s->bind_param(2, $user_id);
-        $set_count += $s->execute;
-    }
-    $s->finish;
-    $dbh->commit;
-    msg(1019, $set_count);
-}
-
-sub users_send_broadcast {
-    my %p = @_;
-    $p{'message'} ne '' or return;
-    my $s = $dbh->prepare(qq~
-        INSERT INTO messages (id, send_time, text, account_id, broadcast)
-            VALUES(?, CURRENT_TIMESTAMP, ?, NULL, 1)~
-    );
-    $s->bind_param(1, new_id);
-    $s->bind_param(2, $p{'message'}, { ora_type => 113 });
-    $s->execute;
-    $s->finish;
-}
-
 sub users_delete {
     my $caid = url_param('delete');
     my ($aid, $srole, $name) = $dbh->selectrow_array(q~
@@ -387,18 +340,18 @@ sub users_frame {
         users_edit_save if defined param('edit_save');
 
         users_save_attributes if defined param('save_attributes');
-        users_set_tag(user_set => [ param('sel') ], tag => param('tag_to_set'))
+        CATS::User::set_tag(user_set => [ param('sel') ], tag => param('tag_to_set'))
             if defined param('set_tag');
         CATS::User::register_by_login(param('login_to_register'), $cid)
             if defined param('register_new');
 
         if (defined param('send_message')) {
             if (param_on('send_message_all')) {
-                users_send_broadcast(message => param('message_text'));
+                CATS::User::send_broadcast(message => param('message_text'));
                 msg(1058);
             }
             else {
-                my $count = users_send_message(
+                my $count = CATS::User::send_message(
                     user_set => [ param('sel') ], message => param('message_text'));
                 msg(1057, $count);
             }
