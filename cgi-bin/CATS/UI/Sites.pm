@@ -146,6 +146,7 @@ sub contest_sites_frame {
             ($privs->{edit_sites} ? (href_edit => url_f('sites', edit => $row->{id})) : ()),
             href_delete => url_f('contest_sites', 'delete' => $row->{id}),
             href_users => url_f('users', search => "site_id=$row->{id}"),
+            href_rank_table => url_f('rank_table', sites => $row->{id}),
         );
     };
     $lv->attach(url_f('contest_sites'), $fetch_record, $sth);

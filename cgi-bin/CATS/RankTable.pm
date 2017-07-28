@@ -17,7 +17,7 @@ use CATS::Web qw(param url_param);
 
 use fields qw(
     contest_list hide_ooc hide_virtual show_points frozen
-    title has_practice not_started filter use_cache
+    title has_practice not_started filter sites use_cache
     rank problems problems_idx show_all_results show_prizes req_selection has_competitive show_regions
 );
 
@@ -333,9 +333,7 @@ sub get_contests_info
     $self->{contest_list} = join ',', @actual_contests;
 }
 
-
-sub parse_params
-{
+sub parse_params {
     (my CATS::RankTable $self) = @_;
 
     $self->{hide_ooc} = url_param('hide_ooc') || '0';
@@ -354,13 +352,12 @@ sub parse_params
     $self->{use_cache} = 1 if !defined $self->{use_cache} && !defined $uid;
     $self->{use_cache} = 0 unless $self->{show_all_results};
     $self->{filter} = param('filter');
+    $self->{sites} = param('sites');
     $self->{show_prizes} = url_param('show_prizes');
     $self->{show_regions} = url_param('show_regions');
 }
 
-
-sub prepare_ranks
-{
+sub prepare_ranks {
     (my CATS::RankTable $self, my $teams) = @_;
 
     my @rank = values %$teams;
@@ -370,6 +367,11 @@ sub prepare_ranks
         my $filter = Encode::decode_utf8($negate ? $1 : $self->{filter});
         my $filter_fields = sub { join '', map $_ || '', @{$_[0]}{qw(tag team_name city affiliation_year)} };
         @rank = grep $negate == (index($filter_fields->($_), $filter) < 0), @rank;
+    }
+
+    if (defined $self->{sites}) {
+        my %sites = map { $_ + 0 => 1 } grep $_ ne '', split ',', $self->{sites};
+        @rank = grep $sites{$_->{site_id} // 0}, @rank;
     }
 
     my $sort_criteria = $self->{show_points} ?
@@ -494,8 +496,7 @@ sub rank_table
     my $ooc_cond = $self->{hide_ooc} ? ' AND CA.is_ooc = 0' : '';
 
     my %init_problem = (runs => 0, time_consumed => 0, solved => 0, points => undef);
-    my $select_teams = sub
-    {
+    my $select_teams = sub {
         my ($account_id) = @_;
         my $acc_cond = $account_id ? 'AND A.id = ?' : '';
         my $account_fields = q~A.team_name, A.motto, A.country, A.city, A.affiliation_year~;
@@ -503,16 +504,15 @@ sub rank_table
             SELECT
                 $account_fields,
                 MAX(CA.is_virtual) AS is_virtual, MAX(CA.is_ooc) AS is_ooc, MAX(CA.is_remote) AS is_remote,
-                CA.account_id, CA.tag
+                CA.account_id, CA.tag, CA.site_id
             FROM accounts A INNER JOIN contest_accounts CA ON A.id = CA.account_id
             WHERE CA.contest_id IN ($self->{contest_list}) AND CA.is_hidden = 0
                 $virtual_cond $ooc_cond $acc_cond
-            GROUP BY CA.account_id, CA.tag, $account_fields~, 'account_id', { Slice => {} },
+            GROUP BY CA.account_id, CA.tag, CA.site_id, $account_fields~, 'account_id', { Slice => {} },
             ($account_id || ())
         );
 
-        for my $team (values %$res)
-        {
+        for my $team (values %$res) {
             # Since virtual team is always ooc, do not output extra string.
             $team->{is_ooc} = 0 if $team->{is_virtual};
             $team->{$_} = 0 for qw(total_solved total_runs total_time total_points);
