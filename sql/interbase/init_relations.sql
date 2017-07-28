@@ -96,6 +96,22 @@ CREATE TABLE contests (
 ALTER TABLE contests ADD CONSTRAINT chk_pinned_judges_only
     CHECK (pinned_judges_only IN (0, 1));
 
+CREATE TABLE sites (
+    id       INTEGER NOT NULL PRIMARY KEY,
+    name     VARCHAR(200) NOT NULL,
+    region   VARCHAR(200),
+    city     VARCHAR(200),
+    org_name VARCHAR(200),
+    address  BLOB SUB_TYPE TEXT
+);
+
+CREATE TABLE contest_sites (
+    contest_id  INTEGER NOT NULL REFERENCES contests(id) ON DELETE CASCADE,
+    site_id  INTEGER NOT NULL REFERENCES sites(id)
+);
+ALTER TABLE contest_sites
+    ADD CONSTRAINT contest_sites_pk PRIMARY KEY (contest_id, site_id);
+
 CREATE TABLE contest_accounts (
     id          INTEGER NOT NULL PRIMARY KEY,
     contest_id  INTEGER NOT NULL REFERENCES contests(id) ON DELETE CASCADE,
@@ -109,8 +125,12 @@ CREATE TABLE contest_accounts (
     tag         VARCHAR(200),
     is_virtual  INTEGER,
     diff_time   FLOAT,
+    site_id     INTEGER REFERENCES sites(id),
+    is_site_org SMALLINT DEFAULT 0 NOT NULL,
     UNIQUE(contest_id, account_id)
 );
+ALTER TABLE contest_accounts
+    ADD CONSTRAINT contest_account_site_org CHECK (is_site_org IN (0, 1));
 
 CREATE TABLE limits (
     id              INTEGER NOT NULL PRIMARY KEY,
@@ -390,22 +410,6 @@ CREATE TABLE prizes (
     name   VARCHAR(200) NOT NULL,
     rank   INTEGER NOT NULL
 );
-
-CREATE TABLE sites (
-    id       INTEGER NOT NULL PRIMARY KEY,
-    name     VARCHAR(200) NOT NULL,
-    region   VARCHAR(200),
-    city     VARCHAR(200),
-    org_name VARCHAR(200),
-    address  BLOB SUB_TYPE TEXT
-);
-
-CREATE TABLE contest_sites (
-    contest_id  INTEGER NOT NULL REFERENCES contests(id) ON DELETE CASCADE,
-    site_id  INTEGER NOT NULL REFERENCES sites(id)
-);
-ALTER TABLE contest_sites
-    ADD CONSTRAINT contest_sites_pk PRIMARY KEY (contest_id, site_id);
 
 /*
     FIXME: Old Firebird versions are unable to CAST to a BLOB,
