@@ -73,7 +73,7 @@ sub users_edit_frame {
         id => $id,
         countries => \@CATS::Countries::countries,
         href_action => url_f('users'),
-        href_impersonate => url_f('users', impersonate => $id));
+        href_impersonate => url_f('impersonate', uid => $id));
 }
 
 sub prepare_password {
@@ -309,8 +309,10 @@ sub users_save_attributes {
     msg(1018, $changed_count);
 }
 
-sub users_impersonate {
-    my $new_user_id = param('impersonate') or return;
+sub impersonate_frame {
+    my ($p) = @_;
+    $is_root or return;
+    my $new_user_id = $p->{uid} or return;
     my $new_sid = CATS::User::make_sid;
     $dbh->selectrow_array(q~
         SELECT 1 FROM accounts WHERE id = ?~, undef, $new_user_id) or return;
@@ -326,7 +328,6 @@ sub users_frame {
         return CATS::User::new_frame if defined url_param('new');
         return users_edit_frame if defined url_param('edit');
     }
-    return users_impersonate if defined url_param('impersonate') && $is_root;
 
     my $lv = CATS::ListView->new(
         name => 'users' . ($contest->is_practice ? '_practice' : ''),
