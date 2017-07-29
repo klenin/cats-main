@@ -117,6 +117,7 @@ sub main_routes() {
             failed_test => $int,
             points => $int,
             state => $ident,
+            set_tag => $bool, tag => $str,
         ],
 
         test_diff => [ \&CATS::UI::Stats::test_diff_frame, pid => $int, test => $int, ],

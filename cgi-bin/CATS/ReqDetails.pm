@@ -151,10 +151,8 @@ sub get_sources_info {
             'R.id AS req_id', @src, 'S.fname AS file_name',
             qw(
             S.de_id S.hash R.account_id R.contest_id R.problem_id R.judge_id
-            R.state R.failed_test R.points
-            R.submit_time
-            R.test_time
-            R.result_time
+            R.state R.failed_test R.points R.tag
+            R.submit_time R.test_time R.result_time
             ),
             'DE.description AS de_name',
             'A.team_name', 'COALESCE(E.ip, A.last_ip) AS last_ip',

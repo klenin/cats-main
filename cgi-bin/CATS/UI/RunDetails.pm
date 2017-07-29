@@ -506,8 +506,16 @@ sub request_params_frame {
         msg(1056, $si->{req_id});
         return;
     }
+
+    if ($p->{set_tag}) {
+        $dbh->do(q~
+            UPDATE reqs SET tag = ? WHERE id = ?~, undef,
+            $p->{tag}, $si->{req_id});
+        $dbh->commit;
+    }
+
     # Reload problem after the successful state change.
-    $si = get_sources_info(request_id => $si->{req_id}) if try_set_state($si, $p);
+    $si = get_sources_info(request_id => $si->{req_id}) if try_set_state($si, $p) || $p->{set_tag};
 
     my $tests = $dbh->selectcol_arrayref(q~
         SELECT rank FROM tests WHERE problem_id = ? ORDER BY rank~, undef,
@@ -519,7 +527,8 @@ sub request_params_frame {
     $t->param(settable_verdicts => $settable_verdicts);
 
     if ($is_root) {
-        my $judge_de_bitmap = CATS::DB::select_row('judge_de_bitmap_cache', '*', { judge_id => $si->{judge_id} }) ||
+        my $judge_de_bitmap =
+            CATS::DB::select_row('judge_de_bitmap_cache', '*', { judge_id => $si->{judge_id} }) ||
             { version => 0, de_bits1 => 0, de_bits2 => 0 };
         my ($des_cond, @des_params) =
             CATS::JudgeDB::dev_envs_condition($judge_de_bitmap, $judge_de_bitmap->{version});

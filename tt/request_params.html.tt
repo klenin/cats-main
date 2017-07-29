@@ -80,7 +80,6 @@
 </form>
 
 <form method="post">
-
 <button type="submit" name="set_state" value="1" class="button">[% capt.set_verdict %]:</button>
 <select name="state">
 <option />
@@ -96,7 +95,11 @@
   [%- END %]
 </select>
 [% capt.with_points %] <input name="points" size="3"/>
+</form>
 
+<form method="post">
+  <button type="submit" value="1" class="button" name="set_tag">[% capt.set_tag %]:</button>
+  <input type="text" name="tag" value="[% si.tag %]" size="40" />
 </form>
 
 [% IF de_cache %]
