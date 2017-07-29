@@ -57,7 +57,7 @@ sub init_params {
         }
     }
     $self->{search} = [ map
-        [ /^([a-zA-Z0-9_]+)([!~^=><]?=|>|<|\?)(.*)$/ ? ($1, $3, $2) : ('', $_, '') ], split /,\s*/, $s->{search} ];
+        [ /^([a-zA-Z0-9_]+)([!~^=><]?=|>|<|\?|!~)(.*)$/ ? ($1, $3, $2) : ('', $_, '') ], split /,\s*/, $s->{search} ];
 
     if (defined url_param('sort')) {
         $s->{sort_by} = int(url_param('sort'));
@@ -83,6 +83,7 @@ sub regex_op {
     $op eq '!=' ? "^(?!\Q$v\E)\$" :
     $op eq '^=' ? "^\Q$v\E" :
     $op eq '~=' || $op eq '' ? "\Q$v\E" :
+    $op eq '!~' ? "^(?!.*\Q$v\E)" :
     $op eq '?' ? "." :
     die "Unknown search op '$op'";
 }
@@ -93,6 +94,7 @@ sub sql_op {
     $op eq '!=' ? { '!=', $v } :
     $op eq '^=' ? { 'STARTS WITH', $v } :
     $op eq '~=' ? { 'LIKE', '%' . "$v%" } :
+    $op eq '!~' ? { 'NOT LIKE', '%' . "$v%" } :
     $op eq '?' ? { '!=', undef, '!=', \q~''~ } :
     $op =~ /^>|>=|<|<=$/ ? { $op, $v } : # SQL-only for now.
     die "Unknown search op '$op'";
@@ -109,7 +111,7 @@ sub attach {
     my $rows = $s->{rows} || 1;
 
     # <search> ::= <condition> { ',' <condition> }
-    # <condition> ::= <value> | <field name> { '=' | '==' | '!=' | '^=' | '~=' } <value>
+    # <condition> ::= <value> | <field name> { '=' | '==' | '!=' | '^=' | '~=' | '!~' } <value>
     # Spaces are significant around values, but not around keys.
     # Values without field name are searched in all fields.
     # Different fields are AND'ed, multiple values of the same field are OR'ed.
