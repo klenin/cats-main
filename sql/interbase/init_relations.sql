@@ -329,7 +329,8 @@ CREATE TABLE reqs (
     points      INTEGER,
     testsets    VARCHAR(200),
     limits_id   INTEGER REFERENCES limits(id),
-    elements_count INTEGER DEFAULT 0
+    elements_count INTEGER DEFAULT 0,
+    tag         VARCHAR(200),
 );
 CREATE DESCENDING INDEX idx_reqs_submit_time ON reqs(submit_time);
 
