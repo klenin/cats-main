@@ -200,7 +200,7 @@ sub get_sources_info {
     my $se = encoding_param('src_enc', 'WINDOWS-1251');
 
     for my $r (values %$req_tree) {
-        $_ = Encode::decode_utf8($_) for @$r{grep /_name$/, keys %$r};
+        $_ = Encode::decode_utf8($_) for @$r{'tag', grep /_name$/, keys %$r};
 
         my %additional_info = (
             CATS::IP::linkify_ip($r->{last_ip}),
