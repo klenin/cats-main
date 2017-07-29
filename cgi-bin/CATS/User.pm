@@ -12,7 +12,7 @@ use CATS::ContestParticipate qw(get_registered_contestant);
 use CATS::Countries;
 use CATS::DB;
 use CATS::Form qw(validate_integer validate_string_length);
-use CATS::Misc qw($cid $is_root $t init_template msg url_f);
+use CATS::Misc qw($cid $is_jury $is_root $t $user init_template msg url_f);
 use CATS::Privileges;
 use CATS::Web qw(param);
 
@@ -92,7 +92,7 @@ sub param_names () {qw(
 
 sub any_official_contest_by_team {
     my ($account_id) = @_;
-    $dbh->selectrow_array(qq~
+    $dbh->selectrow_array(q~
         SELECT FIRST 1 C.title FROM contests C
             INNER JOIN contest_accounts CA ON CA.contest_id = C.id
             INNER JOIN accounts A ON A.id = CA.account_id
@@ -123,7 +123,7 @@ sub validate_params {
 
     my $old_login = '';
     if ($p{id} && !$p{allow_official_rename}) {
-        ($old_login, my $old_team_name) = $dbh->selectrow_array(qq~
+        ($old_login, my $old_team_name) = $dbh->selectrow_array(q~
             SELECT login, team_name FROM accounts WHERE id = ?~, undef,
             $p{id});
         if (($old_team_name ne $self->{team_name}) &&
@@ -139,7 +139,7 @@ sub validate_params {
 
 sub validate_login {
     my ($self, $id) = @_;
-    my $dups = $dbh->selectcol_arrayref(qq~
+    my $dups = $dbh->selectcol_arrayref(q~
         SELECT id FROM accounts WHERE login = ?~, {}, $self->{login}) or return 1;
     # Several logins, or a single login with different id => error.
     return
@@ -148,14 +148,14 @@ sub validate_login {
 
 sub insert {
     my ($self, $contest_id, %p) = @_;
-    my $training_contests = $dbh->selectall_arrayref(qq~
+    my $training_contests = $dbh->selectall_arrayref(q~
         SELECT id, closed FROM contests WHERE ctype = 1 AND closed = 0~,
         { Slice => {} });
     @$training_contests or return msg(1092);
 
     my $aid = new_id;
     my $new_settings = $p{save_settings} ? Storable::freeze($CATS::Misc::settings) : '';
-    $dbh->do(qq~
+    $dbh->do(q~
         INSERT INTO accounts (
             id, srole, passwd, settings, ~ . join (', ', param_names()) . q~
         ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)~, {},
@@ -181,7 +181,7 @@ sub register_by_login {
     my %aids;
     for (@logins) {
         length $_ <= 50 or return msg(1101);
-        my ($aid) = $dbh->selectrow_array(qq~
+        my ($aid) = $dbh->selectrow_array(q~
             SELECT id FROM accounts WHERE login = ?~, undef, $_);
         $aid or return msg(1118, $_);
         !get_registered_contestant(contest_id => $contest_id, account_id => $aid)
@@ -204,7 +204,7 @@ sub make_sid {
 sub send_message {
     my %p = @_;
     $p{message} ne '' or return 0;
-    my $s = $dbh->prepare(qq~
+    my $s = $dbh->prepare(q~
         INSERT INTO messages (id, send_time, text, account_id, received)
         VALUES (?, CURRENT_TIMESTAMP, ?, ?, 0)~
     );
@@ -238,7 +238,7 @@ sub set_tag {
 sub send_broadcast {
     my %p = @_;
     $p{message} ne '' or return;
-    my $s = $dbh->prepare(qq~
+    my $s = $dbh->prepare(q~
         INSERT INTO messages (id, send_time, text, account_id, broadcast)
         VALUES(?, CURRENT_TIMESTAMP, ?, NULL, 1)~);
     $s->bind_param(1, new_id);
@@ -247,14 +247,30 @@ sub send_broadcast {
     $s->finish;
 }
 
+# Params: user_set, site_id.
 sub set_site {
     my %p = @_;
+    my ($cond, @param);
+    if ($is_jury || !$user->{site_id}) {
+        $cond = 'site_id IS DISTINCT FROM ?';
+        @param = ($p{site_id});
+    }
+    elsif ($p{site_id}) {
+        $cond = 'site_id IS NULL';
+    }
+    else {
+        $cond = 'site_id = ?';
+        @param = ($user->{site_id}); # Site org can only assign to his own site.
+    }
+
     my $s = $dbh->prepare(qq~
         UPDATE contest_accounts SET site_id = ?
-        WHERE site_id IS DISTINCT FROM ? AND id = ? AND contest_id = ?~);
+        WHERE id = ? AND contest_id = ? AND $cond~);
     my $count = 0;
     for (@{$p{user_set}}) {
-        $count += $s->execute($p{site_id}, $p{site_id}, $_, $cid);
+        # Only jury can modify his own site.
+        $is_jury || $_ != $user->{ca_id} or next;
+        $count += $s->execute($p{site_id}, $_, $cid, @param);
     }
     $s->finish;
     $dbh->commit;

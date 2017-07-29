@@ -13,7 +13,7 @@ use CATS::DB;
 use CATS::IP;
 use CATS::ListView;
 use CATS::Misc qw(
-    $t $is_jury $is_root $is_team $sid $cid $uid $contest $is_virtual $privs $settings
+    $t $is_jury $is_root $is_team $sid $cid $uid $contest $is_virtual $privs $settings $user
     format_diff_time init_template msg res_str url_f auto_ext);
 use CATS::Privileges;
 use CATS::RankTable;
@@ -360,14 +360,19 @@ sub users_frame {
             }
             $dbh->commit;
         }
+    }
 
+    if ($is_jury || $user->{is_site_org}) {
         CATS::User::set_site(user_set => [ param('sel') ], site_id => $p->{site_id}) if $p->{set_site};
-        $t->param(sites => $dbh->selectall_arrayref(q~
+        # Consider site_org without site_id as 'all sites organizer'.
+        my ($site_cond, @site_param) = $is_jury || !$user->{site_id} ? ('') : (' AND S.id = ?', $user->{site_id});
+        $t->param(is_site_org => 1);
+        $t->param(sites => $dbh->selectall_arrayref(qq~
             SELECT S.id, S.name
             FROM sites S INNER JOIN contest_sites CS ON CS.site_id = S.id
-            WHERE CS.contest_id = ?
+            WHERE CS.contest_id = ?$site_cond
             ORDER BY S.name~, { Slice => {} },
-            $cid));
+            $cid, @site_param));
     }
 
     my @cols;

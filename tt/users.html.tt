@@ -21,7 +21,7 @@ function delete_team(href, name) {
   [% u.login | html %]
 </td>
 [% END %]
-<td>[% IF is_jury %]<input type="checkbox" name="sel" value="[% u.id %]"> [% END; href(u.href_stats, u.team_name) %]</td>
+<td>[% IF is_jury || is_site_org %]<input type="checkbox" name="sel" value="[% u.id %]"> [% END; href(u.href_stats, u.team_name) %]</td>
 <td>[% maybe_href(u.href_site, u.site_name || u.city) %]</td>
 <td align="center">[% u.tag %]</td>
 [% IF editable %]
@@ -51,12 +51,14 @@ function delete_team(href, name) {
 <button type="submit" value="1" name="add_participants" class="button">[% capt.add_participants %]</button>
 <label>[% capt.tag %]: <input type="text" name="tag_to_set" class="bordered" /></label>
 <button type="submit" value="1" name="set_tag" class="button">[% capt.set %]</button>
+[% END %]
+[% IF is_site_org %]
 <select name="site_id"><option/>[% FOREACH s IN sites; option(s.id, s.name); END %]</select>
 <button type="submit" value="1" name="set_site" class="button">[% capt.set_site %]</button>
-<br/>
-<br/>
 [% END %]
 [% IF is_jury %]
+<br/>
+<br/>
 <div class="send_message">
 [% capt.message_to_teams %]:
 <input type="text" size="100" name="message_text" value="[% message_text | html %]" class="bordered">
