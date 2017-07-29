@@ -143,7 +143,7 @@ sub console_content {
             R.points AS clarified,
             NULL AS question,
             NULL AS answer,
-            NULL AS jury_message,
+            CAST(R.tag AS BLOB) AS jury_message,
             A.id AS team_id,
             A.team_name$city_sql AS team_name,
             A.country AS country,
@@ -300,6 +300,7 @@ sub console_content {
                 R1.account_id = R.account_id AND
                 R1.id > R.id
             ROWS 1), 0)~,
+        tag => q~COALESCE(R.tag, '')~,
     });
     $lv->define_enums({
         state => $CATS::Verdicts::name_to_state,

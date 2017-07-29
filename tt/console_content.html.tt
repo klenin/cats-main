@@ -36,7 +36,7 @@ td.team { text-align: left; white-space: nowrap; }
     </tr></table></td>
     <td>
         [% IF is_jury ~%]
-        [% href(c.href_source, c.problem_title) %]
+        [% href(c.href_source, c.problem_title); " [$c.message_text]" IF c.message_text %]
         [% ELSE; c.problem_title | html; END %]
         [% " ($c.points)" IF is_jury && c.points.defined %]
     </td>
