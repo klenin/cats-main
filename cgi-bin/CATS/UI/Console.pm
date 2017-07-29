@@ -151,10 +151,10 @@ sub console_content {
             CA.id,
             R.contest_id
             FROM reqs R
-            INNER JOIN problems P ON R.problem_id=P.id
-            INNER JOIN accounts A ON R.account_id=A.id
-            INNER JOIN contests C ON R.contest_id=C.id
-            INNER JOIN contest_accounts CA ON CA.account_id=A.id AND CA.contest_id=R.contest_id
+            INNER JOIN problems P ON R.problem_id = P.id
+            INNER JOIN accounts A ON R.account_id = A.id
+            INNER JOIN contests C ON R.contest_id = C.id
+            INNER JOIN contest_accounts CA ON CA.account_id = A.id AND CA.contest_id = R.contest_id
             LEFT JOIN events E ON E.id = R.id
         ~,
         question => qq~
@@ -251,8 +251,8 @@ sub console_content {
                 UNION
             SELECT
                 $console_select{"contest_$_"}
-                WHERE (C.${_}_date > CURRENT_TIMESTAMP - $day_count) AND
-                    (C.${_}_date < CURRENT_TIMESTAMP)$extra_cond{$_}$hidden_cond~,
+                WHERE C.${_}_date > CURRENT_TIMESTAMP - $day_count AND
+                    C.${_}_date < CURRENT_TIMESTAMP$extra_cond{$_}$hidden_cond~,
                     qw(start freeze finish);
     }
 
@@ -260,7 +260,7 @@ sub console_content {
             UNION
         SELECT
             $console_select{broadcast}
-            WHERE (M.send_time > CURRENT_TIMESTAMP - $day_count) AND M.broadcast = 1~
+            WHERE M.send_time > CURRENT_TIMESTAMP - $day_count AND M.broadcast = 1~
         : '';
     my $submit_time_filter =
         '(R.submit_time BETWEEN C.start_date AND C.freeze_date OR CURRENT_TIMESTAMP > C.defreeze_date)';
@@ -323,16 +323,20 @@ sub console_content {
             UNION
             SELECT
                 $console_select{question}
-                FROM questions Q, contest_accounts CA, accounts A
-                WHERE (Q.submit_time > CURRENT_TIMESTAMP - $day_count) AND
-                Q.account_id=CA.id AND A.id=CA.account_id$msg_filter
+                FROM questions Q
+                INNER JOIN contest_accounts CA ON Q.account_id = CA.id
+                INNER JOIN accounts A ON CA.account_id = A.id
+                WHERE Q.submit_time > CURRENT_TIMESTAMP - $day_count
+                $msg_filter
                 $events_filter
             UNION
             SELECT
                 $console_select{message}
-                FROM messages M, contest_accounts CA, accounts A
-                WHERE (M.send_time > CURRENT_TIMESTAMP - $day_count) AND
-                M.account_id = CA.id AND A.id = CA.account_id$msg_filter
+                FROM messages M
+                INNER JOIN contest_accounts CA ON M.account_id = CA.id
+                INNER JOIN accounts A ON CA.account_id = A.id
+                WHERE M.send_time > CURRENT_TIMESTAMP - $day_count
+                $msg_filter
                 $events_filter
             $broadcast
             $contest_dates
@@ -347,21 +351,25 @@ sub console_content {
             SELECT
                 $console_select{run}
                 WHERE (R.submit_time > CURRENT_TIMESTAMP - $day_count) AND
-                    C.id=? AND CA.is_hidden=0 AND
-                    (A.id=? OR $submit_time_filter)
+                    C.id = ? AND CA.is_hidden = 0 AND
+                    (A.id = ? OR $submit_time_filter)
                 $events_filter$runs_filter$searches_filtger
             UNION
             SELECT
                 $console_select{question}
-                FROM questions Q, contest_accounts CA, accounts A
-                WHERE (Q.submit_time > CURRENT_TIMESTAMP - $day_count) AND
-                    Q.account_id=CA.id AND CA.contest_id=? AND CA.account_id=A.id AND A.id=?
+                FROM questions Q
+                INNER JOIN contest_accounts CA ON Q.account_id = CA.id
+                INNER JOIN accounts A ON CA.account_id = A.id
+                WHERE Q.submit_time > CURRENT_TIMESTAMP - $day_count AND
+                    CA.contest_id = ? AND A.id = ?
             UNION
             SELECT
                 $console_select{message}
-                FROM messages M, contest_accounts CA, accounts A
-                WHERE (M.send_time > CURRENT_TIMESTAMP - $day_count) AND
-                    M.account_id=CA.id AND CA.contest_id=? AND CA.account_id=A.id AND A.id=?
+                FROM messages M
+                INNER JOIN contest_accounts CA ON M.account_id = CA.id
+                INNER JOIN accounts A ON CA.account_id = A.id
+                WHERE M.send_time > CURRENT_TIMESTAMP - $day_count AND
+                    CA.contest_id = ? AND A.id = ?
             $broadcast
             $contest_dates
             ORDER BY 2 DESC~);
@@ -375,8 +383,8 @@ sub console_content {
         $c = $dbh->prepare(qq~
             SELECT
                 $console_select{run}
-                WHERE (R.submit_time > CURRENT_TIMESTAMP - $day_count) AND
-                    R.contest_id=? AND CA.is_hidden=0 AND
+                WHERE R.submit_time > CURRENT_TIMESTAMP - $day_count AND
+                    R.contest_id = ? AND CA.is_hidden = 0 AND
                     ($submit_time_filter)
                     $events_filter$runs_filter$searches_filtger
             $broadcast
