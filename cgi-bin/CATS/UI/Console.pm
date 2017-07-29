@@ -141,9 +141,9 @@ sub console_content {
             P.title AS problem_title,
             (SELECT s.de_id FROM sources s WHERE s.req_id = R.id) AS de,
             R.points AS clarified,
-            D.t_blob AS question,
-            D.t_blob AS answer,
-            D.t_blob AS jury_message,
+            NULL AS question,
+            NULL AS answer,
+            NULL AS jury_message,
             A.id AS team_id,
             A.team_name$city_sql AS team_name,
             A.country AS country,
@@ -155,8 +155,7 @@ sub console_content {
             INNER JOIN accounts A ON R.account_id=A.id
             INNER JOIN contests C ON R.contest_id=C.id
             INNER JOIN contest_accounts CA ON CA.account_id=A.id AND CA.contest_id=R.contest_id
-            LEFT JOIN events E ON E.id = R.id,
-            dummy_table D
+            LEFT JOIN events E ON E.id = R.id
         ~,
         question => qq~
             2 AS rtype,
@@ -171,7 +170,7 @@ sub console_content {
             Q.clarified AS clarified,
             Q.question AS question,
             Q.answer AS answer,
-            D.t_blob AS jury_message,
+            NULL AS jury_message,
             A.id AS team_id,
             A.team_name AS team_name,
             A.country AS country,
@@ -189,8 +188,8 @@ sub console_content {
             CAST(NULL AS VARCHAR(200)) AS problem_title,
             $no_de,
             CAST(NULL AS INTEGER) AS clarified,
-            D.t_blob AS question,
-            D.t_blob AS answer,
+            NULL AS question,
+            NULL AS answer,
             M.text AS jury_message,
             A.id AS team_id,
             A.team_name AS team_name,
@@ -210,11 +209,11 @@ sub console_content {
             CAST(NULL AS VARCHAR(200)) AS problem_title,
             $no_de,
             CAST(NULL AS INTEGER) AS clarified,
-            D.t_blob AS question,
-            D.t_blob AS answer,
+            NULL AS question,
+            NULL AS answer,
             M.text AS jury_message,
             $dummy_account_block
-            FROM messages M, dummy_table D
+            FROM messages M
         ~,
         (map { +"contest_$contest_date_types[$_]" => qq~
             5 AS rtype,
@@ -227,11 +226,11 @@ sub console_content {
             C.title AS problem_title,
             $no_de,
             CAST(NULL AS INTEGER) AS clarified,
-            D.t_blob AS question,
-            D.t_blob AS answer,
-            D.t_blob AS jury_message,
+            NULL AS question,
+            NULL AS answer,
+            NULL AS jury_message,
             $dummy_account_block
-            FROM contests C, dummy_table D
+            FROM contests C
         ~ } 0 .. $#contest_date_types),
     );
 
@@ -324,14 +323,14 @@ sub console_content {
             UNION
             SELECT
                 $console_select{question}
-                FROM questions Q, contest_accounts CA, dummy_table D, accounts A
+                FROM questions Q, contest_accounts CA, accounts A
                 WHERE (Q.submit_time > CURRENT_TIMESTAMP - $day_count) AND
                 Q.account_id=CA.id AND A.id=CA.account_id$msg_filter
                 $events_filter
             UNION
             SELECT
                 $console_select{message}
-                FROM messages M, contest_accounts CA, dummy_table D, accounts A
+                FROM messages M, contest_accounts CA, accounts A
                 WHERE (M.send_time > CURRENT_TIMESTAMP - $day_count) AND
                 M.account_id = CA.id AND A.id = CA.account_id$msg_filter
                 $events_filter
@@ -354,13 +353,13 @@ sub console_content {
             UNION
             SELECT
                 $console_select{question}
-                FROM questions Q, contest_accounts CA, dummy_table D, accounts A
+                FROM questions Q, contest_accounts CA, accounts A
                 WHERE (Q.submit_time > CURRENT_TIMESTAMP - $day_count) AND
                     Q.account_id=CA.id AND CA.contest_id=? AND CA.account_id=A.id AND A.id=?
             UNION
             SELECT
                 $console_select{message}
-                FROM messages M, contest_accounts CA, dummy_table D, accounts A
+                FROM messages M, contest_accounts CA, accounts A
                 WHERE (M.send_time > CURRENT_TIMESTAMP - $day_count) AND
                     M.account_id=CA.id AND CA.contest_id=? AND CA.account_id=A.id AND A.id=?
             $broadcast
