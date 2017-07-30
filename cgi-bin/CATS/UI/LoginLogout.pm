@@ -6,7 +6,7 @@ use warnings;
 use CATS::Constants;
 use CATS::DB;
 use CATS::Misc qw(
-    $t $is_jury $is_root $is_team $sid $cid $uid $contest $is_virtual $settings
+    $t $is_jury $is_root $is_team $sid $cid $uid $contest $settings
     init_template msg res_str url_f auto_ext);
 use CATS::Redirect;
 use CATS::User;

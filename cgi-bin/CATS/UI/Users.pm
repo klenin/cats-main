@@ -13,7 +13,7 @@ use CATS::DB;
 use CATS::IP;
 use CATS::ListView;
 use CATS::Misc qw(
-    $t $is_jury $is_root $is_team $sid $cid $uid $contest $is_virtual $privs $settings $user
+    $t $is_jury $is_root $is_team $sid $cid $uid $contest $privs $settings $user
     format_diff_time init_template msg res_str url_f auto_ext);
 use CATS::Privileges;
 use CATS::RankTable;

@@ -8,7 +8,7 @@ use CATS::ContestParticipate qw(get_registered_contestant);
 use CATS::DB;
 use CATS::ListView;
 use CATS::Misc qw(
-    $t $is_jury $is_root $is_team $privs $sid $cid $uid $contest $is_virtual $settings
+    $t $is_jury $is_root $is_team $privs $sid $cid $uid $contest $settings
     init_template msg res_str url_f auto_ext);
 use CATS::RankTable;
 use CATS::StaticPages;
