@@ -14,6 +14,7 @@ use CATS::DB;
 use CATS::Form qw(validate_integer validate_string_length);
 use CATS::Misc qw($cid $is_jury $is_root $t $user init_template msg url_f);
 use CATS::Privileges;
+use CATS::RankTable;
 use CATS::Web qw(param);
 
 sub new {
@@ -273,7 +274,10 @@ sub set_site {
         $count += $s->execute($p{site_id}, $_, $cid, @param);
     }
     $s->finish;
-    $dbh->commit;
+    if ($count) {
+        $dbh->commit;
+        CATS::RankTable::remove_cache($cid);
+    }
     msg(1024, $count);
 }
 

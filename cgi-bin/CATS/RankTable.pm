@@ -446,20 +446,14 @@ sub prepare_ranks {
     ($row_num - 1, $row_color);
 }
 
-
-sub cache_file_name
-{
+sub cache_file_name {
     cats_dir() . './rank_cache/' . join ('#', @_, '');
 }
 
-
-sub remove_cache
-{
+sub remove_cache {
     my ($contest_id) = @_;
-    for my $virt (0, 1)
-    {
-        for my $ooc (0, 1)
-        {
+    for my $virt (0, 1) {
+        for my $ooc (0, 1) {
             unlink cache_file_name($contest_id, $virt, $ooc);
         }
     }
