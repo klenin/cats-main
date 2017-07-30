@@ -4,8 +4,8 @@
 <tr class="footer top">
   <td>
     &nbsp;[% capt.current_user %]:
-    [% IF current_team_name ~%]
-      [% current_team_name | html %]
+    [% IF user.name ~%]
+      [% user.name | html %]
     [% ELSE ~%]
       [% capt.anonymous %]
     [%- END %]

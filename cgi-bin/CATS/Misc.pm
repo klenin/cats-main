@@ -147,8 +147,7 @@ sub generate_output {
     $contest->{time_since_start} or warn 'No contest from: ', $ENV{HTTP_REFERER} || '';
     $t->param(
         contest_title => $contest->{title},
-        current_team_name => $user->{name},
-        is_virtual => $user->{is_virtual},
+        user => $user,
         dbi_profile => $dbh->{Profile}->{Data}->[0],
         #dbi_profile => Data::Dumper::Dumper($dbh->{Profile}->{Data}),
         langs => [ map { href => url_f('contests', lang => $_), name => $_ }, @cats::langs ],
