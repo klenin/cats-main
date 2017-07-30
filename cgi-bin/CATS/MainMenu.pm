@@ -3,7 +3,7 @@ package CATS::MainMenu;
 use strict;
 use warnings;
 
-use CATS::Misc qw($t $sid $contest $uid $is_virtual $is_jury res_str url_f get_anonymous_uid);
+use CATS::Misc qw($t $sid $contest $uid $is_jury $user res_str url_f get_anonymous_uid);
 use CATS::Utils qw(url_function);
 use CATS::Web qw(url_param);
 
@@ -78,7 +78,7 @@ sub generate_menu {
     unless ($contest->is_practice) {
         push @left_menu, ({
             item => res_str(529),
-            href => url_f('rank_table', $is_jury ? () : (cache => 1, hide_virtual => !$is_virtual))
+            href => url_f('rank_table', $is_jury ? () : (cache => 1, hide_virtual => !$user->{is_virtual}))
         });
     }
 

@@ -11,7 +11,7 @@ use CATS::Constants;
 use CATS::Countries;
 use CATS::DB;
 use CATS::Misc qw(
-    $t $is_root $is_jury $is_team $cid $uid url_f $is_virtual $contest $user);
+    $t $is_root $is_jury $is_team $cid $uid url_f $contest $user);
 use CATS::Testset;
 use CATS::Web qw(param url_param);
 
@@ -340,7 +340,7 @@ sub parse_params {
 
     $self->{hide_virtual} = url_param('hide_virtual') || '0';
     $self->{hide_virtual} =~ /^[01]$/
-        or $self->{hide_virtual} = (!$is_virtual && !$is_jury || !$is_team);
+        or $self->{hide_virtual} = (!$user->{is_virtual} && !$is_jury || !$is_team);
 
     $self->get_contest_list_param;
     $self->get_contests_info($uid);
@@ -525,7 +525,7 @@ sub rank_table
     my $cache_file = cache_file_name(@$self{qw(contest_list hide_ooc hide_virtual)});
 
     my ($teams, $problem_stats, $max_cached_req_id) = ({}, {}, 0);
-    if ($self->{use_cache} && !$is_virtual &&  -f $cache_file &&
+    if ($self->{use_cache} && !$user->{is_virtual} &&  -f $cache_file &&
         (my $cache = Storable::lock_retrieve($cache_file)))
     {
         ($teams, $problem_stats, $max_cached_req_id) = @{$cache}{qw(t p r)};
@@ -594,8 +594,7 @@ sub rank_table
         }
     }
 
-    if (!$self->{frozen} && !$is_virtual && @$results && $self->{show_all_results})
-    {
+    if (!$self->{frozen} && !$user->{is_virtual} && @$results && $self->{show_all_results}) {
         Storable::lock_store({ t => $teams, p => $problem_stats, r => $max_req_id }, $cache_file);
     }
 

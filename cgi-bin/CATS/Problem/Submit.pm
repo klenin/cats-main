@@ -7,7 +7,7 @@ use CATS::Constants;
 use CATS::DB;
 use CATS::DevEnv;
 use CATS::Misc qw(
-    $t $is_jury $is_team $cid $uid $contest $is_virtual $user
+    $t $is_jury $is_team $cid $uid $contest $user
     msg url_f);
 use CATS::Request;
 use CATS::Web qw(param upload_source);
@@ -70,13 +70,13 @@ sub problems_submit {
     unless ($is_jury) {
         $time_since_start >= 0
             or return msg(1080);
-        $time_since_finish <= 0 || $is_virtual || can_upsolve
+        $time_since_finish <= 0 || $user->{is_virtual} || can_upsolve
             or return msg(1081);
         !defined $status || $status < $cats::problem_st_disabled
             or return msg(1124, $title);
 
         # During the official contest, do not accept submissions for other contests.
-        if (!$is_official || $is_virtual) {
+        if (!$is_official || $user->{is_virtual}) {
             my ($current_official) = $contest->current_official;
             !$current_official
                 or return msg(1123, $current_official->{title});

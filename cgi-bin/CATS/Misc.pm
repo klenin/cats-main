@@ -25,7 +25,7 @@ our @EXPORT = qw(
 
 our @EXPORT_OK = qw(
     $contest $t $sid $cid $uid $git_author_name $git_author_email
-    $is_root $is_team $is_jury $privs $is_virtual $user
+    $is_root $is_team $is_jury $privs $user
     $settings);
 
 #use CGI::Fast( ':standard' );
@@ -51,7 +51,7 @@ use CATS::Web qw(param url_param headers content_type cookie);
 
 our (
     $contest, $t, $sid, $cid, $uid, $team_name, $dbi_error, $git_author_name, $git_author_email,
-    $is_root, $is_team, $is_jury, $privs, $is_virtual, $user,
+    $is_root, $is_team, $is_jury, $privs, $user,
     $settings
 );
 
@@ -148,7 +148,7 @@ sub generate_output {
     $t->param(
         contest_title => $contest->{title},
         current_team_name => $team_name,
-        is_virtual => $is_virtual,
+        is_virtual => $user->{is_virtual},
         dbi_profile => $dbh->{Profile}->{Data}->[0],
         #dbi_profile => Data::Dumper::Dumper($dbh->{Profile}->{Data}),
         langs => [ map { href => url_f('contests', lang => $_), name => $_ }, @cats::langs ],
@@ -244,11 +244,11 @@ sub init_contest {
 
     $user->{diff_time} = 0;
     # Authorize user in the contest.
-    $is_jury = $is_team = $is_virtual = 0;
+    $is_jury = $is_team = $user->{is_virtual} = 0;
     if (defined $uid) {
         (
             $user->{ca_id}, $is_team, $is_jury, $user->{site_id}, $user->{is_site_org},
-            $is_virtual, $user->{diff_time}
+            $user->{is_virtual}, $user->{diff_time}
         ) = $dbh->selectrow_array(q~
             SELECT id, 1, is_jury, site_id, is_site_org, is_virtual, diff_time
             FROM contest_accounts WHERE contest_id = ? AND account_id = ?~, undef,
