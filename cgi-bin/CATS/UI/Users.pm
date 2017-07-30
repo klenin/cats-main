@@ -224,7 +224,7 @@ sub profile_frame {
     $uid or return;
     if (defined $p->{clear}) {
         $settings = {};
-        msg(1029, $CATS::Misc::team_name);
+        msg(1029, $user->{name});
     }
     profile_save if defined $p->{edit_save};
 

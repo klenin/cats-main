@@ -50,7 +50,7 @@ use CATS::Utils qw();
 use CATS::Web qw(param url_param headers content_type cookie);
 
 our (
-    $contest, $t, $sid, $cid, $uid, $team_name, $dbi_error,
+    $contest, $t, $sid, $cid, $uid, $dbi_error,
     $is_root, $is_team, $is_jury, $privs, $user,
     $settings
 );
@@ -147,7 +147,7 @@ sub generate_output {
     $contest->{time_since_start} or warn 'No contest from: ', $ENV{HTTP_REFERER} || '';
     $t->param(
         contest_title => $contest->{title},
-        current_team_name => $team_name,
+        current_team_name => $user->{name},
         is_virtual => $user->{is_virtual},
         dbi_profile => $dbh->{Profile}->{Data}->[0],
         #dbi_profile => Data::Dumper::Dumper($dbh->{Profile}->{Data}),
@@ -187,11 +187,10 @@ sub init_user {
     $privs = {};
     $uid = undef;
     $user = {};
-    $team_name = undef;
     my $bad_sid = length $sid > 30;
     if ($sid ne '' && !$bad_sid) {
         (
-            $uid, $team_name, my $srole, my $last_ip, my $locked,
+            $uid, $user->{name}, my $srole, my $last_ip, my $locked,
             $user->{git_author_name}, $user->{git_author_email}, $enc_settings
         ) =
             $dbh->selectrow_array(q~
