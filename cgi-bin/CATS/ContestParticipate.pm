@@ -5,7 +5,7 @@ use warnings;
 
 use CATS::Constants;
 use CATS::DB;
-use CATS::Misc qw($is_root $is_jury $is_team $is_virtual $virtual_diff_time $cid $uid $contest msg);
+use CATS::Misc qw($is_root $is_jury $is_team $is_virtual $cid $uid $contest $user msg);
 
 use Exporter qw(import);
 
@@ -87,7 +87,7 @@ sub virtual {
     $dbh->commit;
     $is_team = 1;
     $is_virtual = 1;
-    $virtual_diff_time = $contest->{time_since_start};
+    $user->{diff_time} = $contest->{time_since_start};
     msg($removed_req_count > 0 ? 1113 : 1112, $contest->{title}, $removed_req_count);
 }
 

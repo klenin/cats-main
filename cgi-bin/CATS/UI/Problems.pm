@@ -12,7 +12,7 @@ use CATS::Judge;
 use CATS::JudgeDB;
 use CATS::ListView;
 use CATS::Misc qw(
-    $t $is_jury $is_root $is_team $sid $cid $uid $contest $virtual_diff_time
+    $t $is_jury $is_root $is_team $sid $cid $uid $contest $user
     init_template msg res_str url_f auto_ext problem_status_names);
 use CATS::Problem::Save;
 use CATS::Problem::Source::Git;
@@ -347,7 +347,7 @@ sub problems_frame {
     my $show_packages = 1;
     unless ($is_jury) {
         $show_packages = $contest->{show_packages};
-        if (!$contest->has_started($virtual_diff_time)) {
+        if (!$contest->has_started($user->{diff_time})) {
             init_template(auto_ext('problems_inaccessible'));
             return msg(1130);
         }
@@ -565,7 +565,7 @@ sub problems_frame {
         is_user => $uid,
         is_participant =>
             $is_jury || $contest->is_practice ||
-            $is_team && ($contest->{time_since_finish} - $virtual_diff_time < 0 || CATS::Problem::Submit::can_upsolve),
+            $is_team && ($contest->{time_since_finish} - $user->{diff_time} < 0 || CATS::Problem::Submit::can_upsolve),
         is_practice => $contest->is_practice,
         de_list => \@de, problem_codes => \@cats::problem_codes,
         contest_id => $cid, no_judges => !$jactive,

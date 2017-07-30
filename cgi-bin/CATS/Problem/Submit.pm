@@ -7,7 +7,7 @@ use CATS::Constants;
 use CATS::DB;
 use CATS::DevEnv;
 use CATS::Misc qw(
-    $t $is_jury $is_team $cid $uid $contest $is_virtual $virtual_diff_time
+    $t $is_jury $is_team $cid $uid $contest $is_virtual $user
     msg url_f);
 use CATS::Request;
 use CATS::Web qw(param upload_source);
@@ -58,8 +58,8 @@ sub problems_submit {
 
     my ($time_since_start, $time_since_finish, $is_official, $status, $title) = $dbh->selectrow_array(qq~
         SELECT
-            CAST(CURRENT_TIMESTAMP - $virtual_diff_time - C.start_date AS DOUBLE PRECISION),
-            CAST(CURRENT_TIMESTAMP- $virtual_diff_time - C.finish_date AS DOUBLE PRECISION),
+            CAST(CURRENT_TIMESTAMP - $user->{diff_time} - C.start_date AS DOUBLE PRECISION),
+            CAST(CURRENT_TIMESTAMP - $user->{diff_time} - C.finish_date AS DOUBLE PRECISION),
             C.is_official, CP.status, P.title
         FROM contests C
         INNER JOIN contest_problems CP ON CP.contest_id = C.id

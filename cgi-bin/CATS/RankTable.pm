@@ -11,7 +11,7 @@ use CATS::Constants;
 use CATS::Countries;
 use CATS::DB;
 use CATS::Misc qw(
-    $t $is_root $is_jury $is_team $virtual_diff_time $cid $uid url_f $is_virtual $contest);
+    $t $is_root $is_jury $is_team $cid $uid url_f $is_virtual $contest $user);
 use CATS::Testset;
 use CATS::Web qw(param url_param);
 
@@ -150,9 +150,7 @@ sub get_problems
     $idx->{$_->{problem_id}} = $_ for @$problems;
 }
 
-
-sub get_results
-{
+sub get_results {
     (my CATS::RankTable $self, my $cond_str, my $max_cached_req_id) = @_;
     my (@conditions, @params);
     unless ($is_jury) {
@@ -165,8 +163,8 @@ sub get_results
                 push @conditions, 'R.submit_time < C.freeze_date';
             }
         }
-        if ($is_team && $virtual_diff_time) {
-            push @conditions, "(R.submit_time - CA.diff_time < CURRENT_TIMESTAMP - $virtual_diff_time)";
+        if ($is_team && $user->{diff_time}) {
+            push @conditions, "(R.submit_time - CA.diff_time < CURRENT_TIMESTAMP - $user->{diff_time})";
         }
         push @conditions, '(C.show_all_results = 1 OR R.account_id = ?)';
         push @params, $uid || 0;

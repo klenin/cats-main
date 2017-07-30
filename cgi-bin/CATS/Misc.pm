@@ -25,7 +25,7 @@ our @EXPORT = qw(
 
 our @EXPORT_OK = qw(
     $contest $t $sid $cid $uid $git_author_name $git_author_email
-    $is_root $is_team $is_jury $privs $is_virtual $virtual_diff_time $user
+    $is_root $is_team $is_jury $privs $is_virtual $user
     $settings);
 
 #use CGI::Fast( ':standard' );
@@ -51,7 +51,7 @@ use CATS::Web qw(param url_param headers content_type cookie);
 
 our (
     $contest, $t, $sid, $cid, $uid, $team_name, $dbi_error, $git_author_name, $git_author_email,
-    $is_root, $is_team, $is_jury, $privs, $is_virtual, $virtual_diff_time, $user,
+    $is_root, $is_team, $is_jury, $privs, $is_virtual, $user,
     $settings
 );
 
@@ -133,7 +133,7 @@ sub msg {
 sub url_f { CATS::Utils::url_function(@_, sid => $sid, cid => $cid) }
 
 sub prepare_server_time {
-    my $dt = $contest->{time_since_start} - $virtual_diff_time;
+    my $dt = $contest->{time_since_start} - $user->{diff_time};
     $t->param(
         server_time => $contest->{server_time},
         elapsed_msg => res_str($dt < 0 ? 578 : 579),
@@ -149,7 +149,6 @@ sub generate_output {
         contest_title => $contest->{title},
         current_team_name => $team_name,
         is_virtual => $is_virtual,
-        virtual_diff_time => $virtual_diff_time,
         dbi_profile => $dbh->{Profile}->{Data}->[0],
         #dbi_profile => Data::Dumper::Dumper($dbh->{Profile}->{Data}),
         langs => [ map { href => url_f('contests', lang => $_), name => $_ }, @cats::langs ],
@@ -243,17 +242,18 @@ sub init_contest {
     $contest->load($cid);
     $settings->{contest_id} = $cid = $contest->{id};
 
-    $virtual_diff_time = 0;
+    $user->{diff_time} = 0;
     # Authorize user in the contest.
     $is_jury = $is_team = $is_virtual = 0;
     if (defined $uid) {
         (
             $user->{ca_id}, $is_team, $is_jury, $user->{site_id}, $user->{is_site_org},
-            $is_virtual, $virtual_diff_time
+            $is_virtual, $user->{diff_time}
         ) = $dbh->selectrow_array(q~
             SELECT id, 1, is_jury, site_id, is_site_org, is_virtual, diff_time
-            FROM contest_accounts WHERE contest_id = ? AND account_id = ?~, {}, $cid, $uid);
-        $virtual_diff_time ||= 0;
+            FROM contest_accounts WHERE contest_id = ? AND account_id = ?~, undef,
+            $cid, $uid);
+        $user->{diff_time} ||= 0;
         $is_jury ||= $is_root;
     }
     if ($contest->{is_hidden} && !$is_team) {
@@ -262,7 +262,7 @@ sub init_contest {
         $settings->{contest_id} = $cid = $contest->{id};
     }
     # Only guest access before the start of the contest.
-    $is_team &&= $is_jury || $contest->has_started($virtual_diff_time);
+    $is_team &&= $is_jury || $contest->has_started($user->{diff_time});
 }
 
 sub save_settings {
