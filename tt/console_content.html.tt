@@ -35,9 +35,10 @@ td.team { text-align: left; white-space: nowrap; }
       <td>[% c.failed_test %]</td>
     </tr></table></td>
     <td>
-        [% IF is_jury ~%]
-        [% href(c.href_source, c.problem_title); " [$c.message_text]" IF c.message_text %]
-        [% ELSE; c.problem_title | html; END %]
+        [%- pt = c.problem_title; SET pt = "$c.code: $pt" IF c.code -%]
+        [%- IF is_jury -%]
+        [%- href(c.href_source, pt); " [$c.message_text]" IF c.message_text -%]
+        [%- ELSE; pt | html; END -%]
         [% " ($c.points)" IF is_jury && c.points.defined %]
     </td>
     <td>[% IF is_jury; i = DEs.item(c.de) %]<a href="#" title="[% i.code %]">[% i.description %]</a>[% END %]</td>

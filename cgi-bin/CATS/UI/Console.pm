@@ -267,7 +267,10 @@ sub console_content {
 
     my $DEs = $is_team ? $dbh->selectall_hashref(q~
         SELECT id, code, description FROM default_de~, 'id') : {};
-    my $c;
+
+    # Optimization: Only display problem codes from the currect contest to avoid another JOIN.
+    my $problem_codes = $is_team && !$contest->is_practice ? $dbh->selectall_hashref(q~
+        SELECT problem_id, code FROM contest_problems WHERE contest_id = ?~, 'problem_id', undef, $cid) : {};
 
     $lv->define_db_searches([qw(
         R.submit_time
@@ -309,8 +312,9 @@ sub console_content {
         account_id => { this => $uid },
     });
 
-    my $searches_filtger = $lv->maybe_where_cond;
+    my $searches_filter = $lv->maybe_where_cond;
 
+    my $c;
     if ($is_jury) {
         my $jury_runs_filter = $is_root ? '' : ' AND C.id = ?';
         my $msg_filter = $is_root ? '' : ' AND CA.contest_id = ?';
@@ -320,7 +324,7 @@ sub console_content {
             SELECT
                 $console_select{run}
                 WHERE R.submit_time > CURRENT_TIMESTAMP - $day_count
-                $jury_runs_filter$events_filter$runs_filter$searches_filtger
+                $jury_runs_filter$events_filter$runs_filter$searches_filter
             UNION
             SELECT
                 $console_select{question}
@@ -354,7 +358,7 @@ sub console_content {
                 WHERE (R.submit_time > CURRENT_TIMESTAMP - $day_count) AND
                     C.id = ? AND CA.is_hidden = 0 AND
                     (A.id = ? OR $submit_time_filter)
-                $events_filter$runs_filter$searches_filtger
+                $events_filter$runs_filter$searches_filter
             UNION
             SELECT
                 $console_select{question}
@@ -387,7 +391,7 @@ sub console_content {
                 WHERE R.submit_time > CURRENT_TIMESTAMP - $day_count AND
                     R.contest_id = ? AND CA.is_hidden = 0 AND
                     ($submit_time_filter)
-                    $events_filter$runs_filter$searches_filtger
+                    $events_filter$runs_filter$searches_filter
             $broadcast
             $contest_dates
             ORDER BY 2 DESC~);
@@ -426,6 +430,7 @@ sub console_content {
             # Hack: re-use 'clarified' field since it is relevant for questions only.
             points =>               $clarified,
             clarified =>            $clarified,
+            ($contest_id == $cid ? (code => $problem_codes->{$problem_id}->{code}) : ()),
             href_details => (
                 ($uid && $team_id && $uid == $team_id) ? url_f('run_details', rid => $id) : ''
             ),
