@@ -24,7 +24,7 @@ our @EXPORT = qw(
 );
 
 our @EXPORT_OK = qw(
-    $contest $t $sid $cid $uid $git_author_name $git_author_email
+    $contest $t $sid $cid $uid
     $is_root $is_team $is_jury $privs $user
     $settings);
 
@@ -50,7 +50,7 @@ use CATS::Utils qw();
 use CATS::Web qw(param url_param headers content_type cookie);
 
 our (
-    $contest, $t, $sid, $cid, $uid, $team_name, $dbi_error, $git_author_name, $git_author_email,
+    $contest, $t, $sid, $cid, $uid, $team_name, $dbi_error,
     $is_root, $is_team, $is_jury, $privs, $user,
     $settings
 );
@@ -188,11 +188,12 @@ sub init_user {
     $uid = undef;
     $user = {};
     $team_name = undef;
-    $git_author_name = undef;
-    $git_author_email = undef;
     my $bad_sid = length $sid > 30;
     if ($sid ne '' && !$bad_sid) {
-        ($uid, $team_name, my $srole, my $last_ip, my $locked, $git_author_name, $git_author_email, $enc_settings) =
+        (
+            $uid, $team_name, my $srole, my $last_ip, my $locked,
+            $user->{git_author_name}, $user->{git_author_email}, $enc_settings
+        ) =
             $dbh->selectrow_array(q~
                 SELECT id, team_name, srole, last_ip, locked, git_author_name, git_author_email, settings
                 FROM accounts WHERE sid = ?~, undef,

@@ -7,7 +7,7 @@ use CATS::Config qw(cats_dir);
 use CATS::Constants;
 use CATS::DB;
 use CATS::DevEnv;
-use CATS::Misc qw($git_author_name $git_author_email $privs msg);
+use CATS::Misc qw($privs $user msg);
 use CATS::Problem::ImportSource::DB;
 use CATS::Problem::Parser;
 use CATS::Problem::Repository;
@@ -122,8 +122,8 @@ sub add_history
     my ($self, $source, $problem, $message, $is_amend) = @_;
     my $repo = get_repo(
         $problem->{id}, undef, 0, logger => $self,
-        author_name => $git_author_name,
-        author_email => $git_author_email);
+        author_name => $user->{git_author_name},
+        author_email => $user->{git_author_email});
     $source->finalize($dbh, $repo, $problem, $message, $is_amend, get_repo_id($problem->{id}));
 }
 
