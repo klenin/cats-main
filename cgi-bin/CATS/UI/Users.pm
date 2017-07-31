@@ -417,18 +417,19 @@ sub users_frame {
     });
 
     my $fields = join ', ', @fields;
+    my $rating_sql = !$lv->visible_cols->{Rt} ? 'NULL' : qq~
+            SELECT COUNT(DISTINCT R.problem_id) FROM reqs R
+                WHERE R.state = $cats::st_accepted AND R.account_id = A.id AND R.contest_id = C.id~ .
+            ($is_jury ? '' : ' AND R.submit_time < C.freeze_date OR C.defreeze_date < CURRENT_TIMESTAMP');
+
     my $sql = sprintf qq~
-        SELECT CA.id, $fields, S.name AS site_name, COUNT(DISTINCT R.problem_id) as rating
+        SELECT ($rating_sql) AS rating, CA.id, $fields, S.name AS site_name
         FROM accounts A
             INNER JOIN contest_accounts CA ON CA.account_id = A.id
             INNER JOIN contests C ON CA.contest_id = C.id
             LEFT JOIN sites S ON S.id = CA.site_id
-            LEFT JOIN reqs R ON
-                R.state = $cats::st_accepted AND R.account_id = A.id AND R.contest_id = C.id%s
-        WHERE C.id = ?%s %s GROUP BY CA.id, $fields, S.name ~ . $lv->order_by,
-        ($is_jury ? ('', '') : (
-            ' AND (R.submit_time < C.freeze_date OR C.defreeze_date < CURRENT_TIMESTAMP)',
-            ' AND CA.is_hidden = 0')),
+        WHERE C.id = ?%s %s ~ . $lv->order_by,
+        ($is_jury ? '' : ' AND CA.is_hidden = 0'),
         $lv->maybe_where_cond;
 
     my $c = $dbh->prepare($sql);
@@ -436,9 +437,9 @@ sub users_frame {
 
     my $fetch_record = sub {
         my (
-            $caid, $aid, $country_abbr, $motto, $login, $team_name, $city,
+            $accepted, $caid, $aid, $country_abbr, $motto, $login, $team_name, $city,
             $jury, $ooc, $remote, $hidden, $site_org, $virtual, $virtual_diff_time,
-            $tag, $site_id, $site_name, $accepted
+            $tag, $site_id, $site_name
         ) = $_[0]->fetchrow_array
             or return ();
         my ($country, $flag) = CATS::Countries::get_flag($country_abbr);
