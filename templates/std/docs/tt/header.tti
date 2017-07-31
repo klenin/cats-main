@@ -26,7 +26,7 @@
     </td>
     <td class="elapsed">
       <p>[% IF lang; FOR l IN langs -%]
-        <a href="[% template.name.replace(lang, l).replace('tt', 'html') %]"[% ' class="selected"' IF l == lang %]>[% l %]</a>
+        <a href="[% template.name.replace(".$lang", ".$l").replace('.tt', '.html') %]"[% ' class="selected"' IF l == lang %]>[% l %]</a>
       [% END; END %]</p>
     </td>
   </tr>
