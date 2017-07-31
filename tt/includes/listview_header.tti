@@ -6,7 +6,7 @@
   <input type="submit" value="[% capt.search %]" name="do_search" class="button" style="min-width: 50px; width: 15%;">
   <input type="text" name="search" id="search" value="[% search %]" style="min-width: 50px; width: 80%;" maxlength="100" class="bordered">
   [% IF search_hints -%]
-  <a href="#" class="search_hint" onclick="return toggle_search_hints()">?</a>
+  <a href="#" class="listview_dropper" onclick="return toggle_search_hints()">?</a>
   <div id="search_hint" class="bordered search_hint" style="display: none;">
     <table>
       <tr>
@@ -32,6 +32,19 @@
   [% content %]
 </td>
 <td align="right">
+  [% IF can_change_cols %]
+  <a href="#" class="listview_dropper" onclick="return toggle_select_cols()">?</a>
+  <div id="select_cols" class="bordered select_cols" style="display: none;">
+    <table>
+      [% FOREACH cd IN col_defs; NEXT UNLESS cd.col %]
+      <tr>
+        <td><input type="checkbox" name="cols" value="[% cd.col %]"[% ' checked="checked"' IF visible_cols.item(cd.col) %]></td>
+        <td>[% cd.caption %]</td>
+      </tr>
+      [% END %]
+    </table>
+  </div>
+  [% END %]
   <input type="submit" value="[% capt.show %]" name="visible" class="button"> [% select('rows', display_rows) %]
   [% PROCESS includes/pages.tti id = "pages_top" %]
 </td>
@@ -68,6 +81,11 @@ function click_enum(a) {
     i.value += '==';
   i.value += a.text;
   toggle_search_hints();
+}
+
+function toggle_select_cols() {
+  var s = document.getElementById('select_cols');
+  s.style.display = s.style.display === 'block' ? 'none' : 'block';
 }
 
 </script>

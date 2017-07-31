@@ -67,7 +67,7 @@ div.pages span { padding: 2px 0px; }
 div.pages a { padding: 2px; }
 div.pages a:hover { background-color: #bbbbff; }
 
-a.search_hint, a.search_hint:link { font-size: small; }
+a.listview_dropper, a.listview_dropper:link { font-size: small; }
 
 div.search_hint {
     position: absolute;
@@ -94,6 +94,13 @@ div.search_hint table td ul li {
     margin:  2px;
 }
 div.search_hint table td ul li:hover { background-color: #ffcc55; }
+
+div.select_cols {
+    position: absolute;
+    right: 10%;
+    display: none;
+    background: #fffd9d;
+}
 
 a.top, a.top:link, a.top:visited, a.top:active,
 .top a, .top a:link, .top a:visited, .top a:active

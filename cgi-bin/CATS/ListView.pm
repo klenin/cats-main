@@ -8,11 +8,8 @@ use List::Util qw(first min max);
 
 use CATS::DB;
 use CATS::Misc qw(
-    $is_jury
-    $t
-    $settings
-    init_template
-    msg
+    $is_jury $settings $t
+    init_template msg
 );
 use CATS::Utils;
 use CATS::Web qw(param url_param);
@@ -40,6 +37,7 @@ sub new {
 }
 
 sub settings { $settings->{$_[0]->{name}} }
+sub visible_cols { $_[0]->{visible_cols} }
 
 sub init_params {
     my ($self) = @_;
@@ -68,6 +66,13 @@ sub init_params {
         $s->{sort_dir} = int(url_param('sort_dir'));
         $s->{page} = 0;
     }
+
+    $self->{cols} =
+        # Has user just opened page or deselected all columns?
+        param('visible') || param('do_search') || param('cols') ? [ param('cols') ] :
+        !defined $s->{cols} ? undef :
+        $s->{cols} eq '-' ? [] :
+        [ split ',', $s->{cols} ];
 
     $s->{rows} ||= $display_rows[0];
     my $rows = param('rows') || 0;
@@ -279,8 +284,16 @@ sub define_columns {
     $s->{sort_dir} = $default_dir if !defined $s->{sort_dir} || $s->{sort_dir} eq '';
 
     $self->{col_defs} = $col_defs;
+
+    my $init = defined $self->{cols} ? 0 : 1;
+    $self->{visible_cols} = { map { $_->{col} => $init } grep $_->{col}, @$col_defs };
+    if (!$init) {
+        $self->{visible_cols}->{$_} = 1 for @{$self->{cols}};
+    }
+
     for my $i (0 .. $#$col_defs) {
         my $def = $col_defs->[$i];
+        $def->{visible} = !$def->{col} || $self->{visible_cols}->{$def->{col}} or next;
         my $dir = 0;
         if ($s->{sort_by} eq $i) {
             $def->{'sort_' . ($s->{sort_dir} ? 'down' : 'up')} = 1;
@@ -288,8 +301,17 @@ sub define_columns {
         }
         $def->{href_sort} = "$url;sort=$i;sort_dir=$dir";
     }
+    if (grep !$_->{visible}, @$col_defs) {
+        $s->{cols} = join(',', map { $_->{visible} && $_->{col} ? $_->{col} : () } @$col_defs) || '-';
+    }
+    else {
+        delete $s->{cols};
+    }
 
-    $t->param(col_defs => $col_defs);
+    $t->param(
+        col_defs => $col_defs,
+        can_change_cols => ($is_jury && scalar %{$self->{visible_cols}}),
+        visible_cols => $self->{visible_cols});
 }
 
 1;
