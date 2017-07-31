@@ -119,10 +119,10 @@ sub contest_sites_frame {
     my $lv = CATS::ListView->new(name => 'contest_sites', template => 'contest_sites.html.tt');
     $lv->define_columns(url_f('contest_sites'), 0, 0, [
         { caption => res_str(601), order_by => '3', width => '20%' },
-        { caption => res_str(654), order_by => '4', width => '15%' },
-        { caption => res_str(655), order_by => '5', width => '15%' },
-        { caption => res_str(656), order_by => '6', width => '20%' },
-        { caption => res_str(658), order_by => '7', width => '10%' },
+        { caption => res_str(654), order_by => '4', width => '15%', col => 'Rg' },
+        { caption => res_str(655), order_by => '5', width => '15%', col => 'Ci' },
+        { caption => res_str(656), order_by => '6', width => '20%', col => 'Oc' },
+        { caption => res_str(658), order_by => '7', width => '10%', col => 'Pt' },
     ]);
     $lv->define_db_searches([ fields ]);
 

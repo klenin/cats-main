@@ -31,10 +31,12 @@ function delete_contest_site(href, name) {
 </td>
 [% END %]
 <td>[% maybe_href(cs.href_edit, cs.name) %]</td>
-<td>[% cs.region | html %]</td>
-<td>[% cs.city | html %]</td>
-<td>[% cs.org_name | html %]</td>
+[% IF visible_cols.Rg %]<td>[% cs.region | html %]</td>[% END %]
+[% IF visible_cols.Ci %]<td>[% cs.city | html %]</td>[% END %]
+[% IF visible_cols.Oc %]<td>[% cs.org_name | html %]</td>[% END %]
+[% IF visible_cols.Pt %]
 <td align="right">[% href(cs.href_users, cs.users_count) %] [[% href(cs.href_rank_table, capt.rank_table) %]] </td>
+[% END %]
 </tr>
 [% END %]
 </table>
