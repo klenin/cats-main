@@ -382,8 +382,8 @@ sub users_frame {
 
     push @cols,
         { caption => res_str(608), order_by => 'team_name', width => '30%' },
-        { caption => res_str(627), order_by => 'COALESCE(S.name, A.city)', width => '20%' },
-        { caption => res_str(629), order_by => 'tag', width => '5%' };
+        { caption => res_str(627), order_by => 'COALESCE(S.name, A.city)', width => '20%', col => 'Si' },
+        { caption => res_str(629), order_by => 'tag', width => '5%', col => 'Tg' };
 
     if ($is_jury) {
         push @cols, (
@@ -396,9 +396,9 @@ sub users_frame {
     }
 
     push @cols, (
-        { caption => res_str(607), order_by => 'country', width => '5%' },
-        { caption => res_str(609), order_by => 'rating', width => '5%' },
-        { caption => res_str(632), order_by => 'diff_time', width => '5%' },
+        { caption => res_str(607), order_by => 'country', width => '5%', col => 'Fl' },
+        { caption => res_str(609), order_by => 'rating', width => '5%', col => 'Rt' },
+        { caption => res_str(632), order_by => 'diff_time', width => '5%', col => 'Dt' },
     );
 
     $lv->define_columns(url_f('users'), $is_jury ? 3 : 2, 1, \@cols);

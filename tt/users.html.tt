@@ -22,8 +22,8 @@ function delete_team(href, name) {
 </td>
 [% END %]
 <td>[% IF is_jury || is_site_org %]<input type="checkbox" name="sel" value="[% u.id %]"> [% END; href(u.href_stats, u.team_name) %]</td>
-<td>[% maybe_href(u.href_site, u.site_name || u.city) %]</td>
-<td align="center">[% u.tag %]</td>
+[% IF visible_cols.Si %]<td>[% maybe_href(u.href_site, u.site_name || u.city) %]</td>[% END %]
+[% IF visible_cols.Tg %]<td align="center">[% u.tag %]</td>[% END %]
 [% IF editable %]
 <td class="user_checkbox"><label>[% checkbox("jury$u.id", u.jury) %]</label></td>
 <td class="user_checkbox"><label>[% checkbox("ooc$u.id", u.ooc) %]</label></td>
@@ -31,14 +31,20 @@ function delete_team(href, name) {
 <td class="user_checkbox"><label>[% checkbox("hidden$u.id", u.hidden) %]</label></td>
 <td class="user_checkbox"><label>[% checkbox("site_org$u.id", u.site_org) %]</label></td>
 [% END %]
+[% IF visible_cols.Fl %]
 <td align="center">
 [% IF u.flag -%]
   <img src="[% u.flag %]" alt="[% u.country | html; " - ${u.motto}" | html IF u.motto %]">
 [%- ELSE; u.country | html; " - ${u.motto}" | html IF u.motto; END %]
 </td>
+[% END %]
+[% IF visible_cols.Rt %]
 <td align="center">[% u.accepted %]</td>
+[% END %]
+[% IF visible_cols.Dt %]
 <td align="center">[% capt.virtual IF u.virtual %]
 <span class="nobr">[% maybe_href(u.href_vdiff, u.virtual_diff_time_fmt || '-') %]</span></td>
+[% END %]
 </tr>
 [% END %]
 </table>
