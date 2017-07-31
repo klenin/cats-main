@@ -96,11 +96,21 @@ div.search_hint table td ul li {
 div.search_hint table td ul li:hover { background-color: #ffcc55; }
 
 div.select_cols {
+    background: #fffd9d;
+    display: none;
     position: absolute;
     right: 10%;
-    display: none;
-    background: #fffd9d;
 }
+div.select_cols > div {
+}
+div.select_cols > label {
+    display: block;
+    height: 100%;
+    padding: 0 5px;
+    text-align: left;
+    width: 100%;
+}
+
 
 a.top, a.top:link, a.top:visited, a.top:active,
 .top a, .top a:link, .top a:visited, .top a:active

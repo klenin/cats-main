@@ -35,14 +35,9 @@
   [% IF can_change_cols %]
   <a href="#" class="listview_dropper" onclick="return toggle_select_cols()">?</a>
   <div id="select_cols" class="bordered select_cols" style="display: none;">
-    <table>
-      [% FOREACH cd IN col_defs; NEXT UNLESS cd.col %]
-      <tr>
-        <td><input type="checkbox" name="cols" value="[% cd.col %]"[% ' checked="checked"' IF visible_cols.item(cd.col) %]></td>
-        <td>[% cd.caption %]</td>
-      </tr>
-      [% END %]
-    </table>
+    [% FOREACH cd IN col_defs; NEXT UNLESS cd.col %]
+    <label><input type="checkbox" name="cols" value="[% cd.col %]"[% ' checked="checked"' IF visible_cols.item(cd.col) %]> [% cd.caption %]</label>
+    [% END %]
   </div>
   [% END %]
   <input type="submit" value="[% capt.show %]" name="visible" class="button"> [% select('rows', display_rows) %]
