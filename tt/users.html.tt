@@ -38,7 +38,7 @@ function delete_team(href, name) {
 </td>
 <td align="center">[% u.accepted %]</td>
 <td align="center">[% capt.virtual IF u.virtual %]
-[% IF u.virtual_diff_time %]<span class="nobr">[% u.virtual_diff_time_fmt %]</span>[% END %]</td>
+<span class="nobr">[% maybe_href(u.href_vdiff, u.virtual_diff_time_fmt || '-') %]</span></td>
 </tr>
 [% END %]
 </table>
