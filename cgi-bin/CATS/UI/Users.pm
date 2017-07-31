@@ -398,7 +398,7 @@ sub users_frame {
     push @cols, (
         { caption => res_str(607), order_by => 'country', width => '5%' },
         { caption => res_str(609), order_by => 'rating', width => '5%' },
-        { caption => res_str(622), order_by => 'is_virtual', width => '5%' },
+        { caption => res_str(632), order_by => 'diff_time', width => '5%' },
     );
 
     $lv->define_columns(url_f('users'), $is_jury ? 3 : 2, 1, \@cols);

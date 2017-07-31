@@ -37,8 +37,8 @@ function delete_team(href, name) {
 [%- ELSE; u.country | html; " - ${u.motto}" | html IF u.motto; END %]
 </td>
 <td align="center">[% u.accepted %]</td>
-<td align="center">[% 'virtual' IF u.virtual %]
-[%- IF u.virtual_diff_time; ' <nobr>'; u.virtual_diff_time_fmt; '</nobr>'; END %]</td>
+<td align="center">[% capt.virtual IF u.virtual %]
+[% IF u.virtual_diff_time %]<span class="nobr">[% u.virtual_diff_time_fmt %]</span>[% END %]</td>
 </tr>
 [% END %]
 </table>

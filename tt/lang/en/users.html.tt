@@ -1,6 +1,7 @@
 [%
   capt.import({
     want_to_delete => 'Do you really want do disqualify participant',
+    virtual => 'virtual',
     save_attributes => 'Save attributes',
     login => 'Login',
     tag => 'Tag',
