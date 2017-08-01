@@ -23,6 +23,7 @@ sub print_json {
 }
 
 my $bad_sid = { error => 'bad sid' };
+my $stolen = { error => 'stolen' };
 
 sub bad_judge {
     $sid && CATS::JudgeDB::get_judge_id($sid) ? 0 : print_json($bad_sid);
@@ -68,22 +69,24 @@ sub is_problem_uptodate {
 }
 
 sub save_log_dump {
-    bad_judge and return -1;
     my ($p) = @_;
+    my $judge_id = $sid && CATS::JudgeDB::get_judge_id($sid)
+        or return print_json($bad_sid);
 
     $p->{req_id} or return print_json({ error => 'No req_id' });
-    CATS::JudgeDB::save_log_dump($p->{req_id}, $p->{dump});
+    CATS::JudgeDB::save_log_dump($p->{req_id}, $p->{dump}, $judge_id);
     $dbh->commit;
 
     print_json({ ok => 1 });
 }
 
 sub set_request_state {
-    bad_judge and return -1;
     my ($p) = @_;
+    my $judge_id = $sid && CATS::JudgeDB::get_judge_id($sid)
+        or return print_json($bad_sid);
 
     CATS::JudgeDB::set_request_state({
-        jid         => CATS::JudgeDB::get_judge_id($sid),
+        jid         => $judge_id,
         req_id      => $p->{req_id},
         state       => $p->{state},
         contest_id  => $p->{contest_id},
@@ -123,23 +126,32 @@ sub select_request {
 }
 
 sub delete_req_details {
-    bad_judge and return -1;
     my ($p) = @_;
 
-    CATS::JudgeDB::delete_req_details($p->{req_id});
+    my $judge_id = $sid && CATS::JudgeDB::get_judge_id($sid)
+        or return print_json($bad_sid);
+
+    CATS::JudgeDB::delete_req_details($p->{req_id}, $judge_id)
+        or return print_json($stolen);
 
     print_json({ ok => 1 });
 }
 
-my @req_details_fields = qw(req_id test_rank result time_used memory_used disk_used checker_comment output output_size);
+my @req_details_fields = qw(
+    req_id test_rank result time_used memory_used disk_used checker_comment
+    output output_size);
 
 sub insert_req_details {
-    bad_judge and return -1;
     my ($p) = @_;
 
+    my $judge_id = $sid && CATS::JudgeDB::get_judge_id($sid)
+        or return print_json($bad_sid);
+
     my $params = decode_json($p->{params});
-    my %filtered_params = map { exists $params->{$_} ? ($_ => $params->{$_}) : () } @req_details_fields;
-    CATS::JudgeDB::insert_req_details(%filtered_params);
+    my %filtered_params =
+        map { exists $params->{$_} ? ($_ => $params->{$_}) : () } @req_details_fields;
+    CATS::JudgeDB::insert_req_details(%filtered_params, judge_id => $judge_id)
+        or return print_json($stolen);
 
     print_json({ ok => 1 });
 }
@@ -148,7 +160,8 @@ sub save_input_test_data {
     bad_judge and return -1;
     my ($p) = @_;
 
-    CATS::JudgeDB::save_input_test_data($p->{problem_id}, $p->{test_rank}, $p->{input}, $p->{input_size});
+    CATS::JudgeDB::save_input_test_data(
+        $p->{problem_id}, $p->{test_rank}, $p->{input}, $p->{input_size});
 
     print_json({ ok => 1 });
 }
@@ -157,7 +170,8 @@ sub save_answer_test_data {
     bad_judge and return -1;
     my ($p) = @_;
 
-    CATS::JudgeDB::save_answer_test_data($p->{problem_id}, $p->{test_rank}, $p->{answer}, $p->{answer_size});
+    CATS::JudgeDB::save_answer_test_data(
+        $p->{problem_id}, $p->{test_rank}, $p->{answer}, $p->{answer_size});
 
     print_json({ ok => 1 });
 }
