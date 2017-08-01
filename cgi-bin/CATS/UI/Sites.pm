@@ -118,26 +118,36 @@ sub contest_sites_frame {
 
     my $lv = CATS::ListView->new(name => 'contest_sites', template => 'contest_sites.html.tt');
     $lv->define_columns(url_f('contest_sites'), 0, 0, [
-        { caption => res_str(601), order_by => '3', width => '20%' },
-        { caption => res_str(654), order_by => '4', width => '15%', col => 'Rg' },
-        { caption => res_str(655), order_by => '5', width => '15%', col => 'Ci' },
-        { caption => res_str(656), order_by => '6', width => '20%', col => 'Oc' },
-        { caption => res_str(658), order_by => '7', width => '10%', col => 'Pt' },
+        { caption => res_str(601), order_by => 'name'       , width => '20%' },
+        { caption => res_str(654), order_by => 'region'     , width => '15%', col => 'Rg' },
+        { caption => res_str(655), order_by => 'city'       , width => '15%', col => 'Ci' },
+        { caption => res_str(656), order_by => 'org_name'   , width => '20%', col => 'Oc' },
+        { caption => res_str(659), order_by => 'org_person' , width => '15%', col => 'Op' },
+        { caption => res_str(658), order_by => 'users_count', width => '10%', col => 'Pt' },
     ]);
     $lv->define_db_searches([ fields ]);
 
     contest_sites_delete;
     contest_sites_add if param('add');
 
-    my $sth = $dbh->prepare(q~
+    my $org_person_sql = $lv->visible_cols->{Op} ? q~
+        SELECT LIST(A.team_name, ', ') FROM contest_accounts CA
+        INNER JOIN accounts A ON A.id = CA.account_id
+        WHERE CA.contest_id = CS.contest_id AND CA.site_id = S.id AND CA.is_site_org = 1
+        ORDER BY 1~ : 'NULL';
+    my $users_count_sql = $lv->visible_cols->{Pt} ? q~
+        SELECT COUNT(*) FROM contest_accounts CA
+        WHERE CA.contest_id = CS.contest_id AND CA.site_id = S.id~ : 'NULL';
+    my $sth = $dbh->prepare(qq~
         SELECT
             S.id, (CASE WHEN CS.site_id IS NULL THEN 0 ELSE 1 END) AS is_used,
             S.name, S.region, S.city, S.org_name,
-            (SELECT COUNT(*) FROM contest_accounts CA WHERE CA.contest_id = ? AND CA.site_id = S.id) AS users_count
+            ($org_person_sql) AS org_person,
+            ($users_count_sql) AS users_count
         FROM sites S
         LEFT JOIN contest_sites CS ON CS.site_id = S.id AND CS.contest_id = ?
         WHERE 1 = 1 ~ . $lv->maybe_where_cond . $lv->order_by);
-    $sth->execute($cid, $cid, $lv->where_params);
+    $sth->execute($cid, $lv->where_params);
 
     my $fetch_record = sub {
         my $row = $_[0]->fetchrow_hashref or return ();
