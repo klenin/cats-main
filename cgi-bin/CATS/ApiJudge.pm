@@ -22,13 +22,15 @@ sub print_json {
     -1;
 }
 
+my $bad_sid = { error => 'bad sid' };
+
 sub bad_judge {
-    $sid && CATS::JudgeDB::get_judge_id($sid) ? 0 : print_json({ error => 'bad sid' });
+    $sid && CATS::JudgeDB::get_judge_id($sid) ? 0 : print_json($bad_sid);
 }
 
 sub get_judge_id {
     my $id = $sid && CATS::JudgeDB::get_judge_id($sid);
-    print_json($id ? { id => $id } : { error => 'bad sid' });
+    print_json($id ? { id => $id } : $bad_sid);
 }
 
 sub get_DEs {
@@ -93,25 +95,27 @@ sub set_request_state {
 }
 
 sub select_request {
-    bad_judge and return -1;
     my ($p) = @_;
 
-    return print_json({ error => 'bad request' })
-        if !defined $p->{de_version} || grep !defined $p->{"de_bits$_"}, 1..$cats::de_req_bitfields_count;
+    $sid or return print_json($bad_sid);
+
+    my @required_fields = ('de_version', map "de_bits$_", 1..$cats::de_req_bitfields_count);
+    return print_json({ error => 'bad request' }) if grep !defined $p->{$_}, @required_fields;
 
     my $response = {};
-    ($response->{was_pinged}, $response->{pin_mode}, my $jid, my $time_since_alive) = $dbh->selectrow_array(q~
+    (
+        $response->{was_pinged}, $response->{pin_mode}, my $jid, my $time_since_alive
+    ) = $dbh->selectrow_array(q~
         SELECT 1 - J.is_alive, J.pin_mode, J.id, CURRENT_TIMESTAMP - J.alive_date
         FROM judges J INNER JOIN accounts A ON J.account_id = A.id WHERE A.sid = ?~, undef,
-        $sid);
+        $sid) or return print_json($bad_sid);
 
     $response->{request} = CATS::JudgeDB::select_request({
         jid              => $jid,
         was_pinged       => $response->{was_pinged},
         pin_mode         => $response->{pin_mode},
         time_since_alive => $time_since_alive,
-        de_version       => $p->{de_version},
-        ( map { +"de_bits$_" => $p->{"de_bits$_"} } 1..$cats::de_req_bitfields_count ),
+        (map { $_ => $p->{$_} } @required_fields),
     });
 
     print_json($response->{request} && $response->{request}->{error} ?
