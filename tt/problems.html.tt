@@ -121,12 +121,12 @@ function chg_code(st_sel, pid) {
 </td>
 <td><a href="[% p.href_select_tags %]">[% p.tags.replace(',', ',&#8203;') || '*' %]</a>
 </td>
-<td>[% p.last_modified_by %]</td>
-<td align="right">[% p.upload_date %]</td>
+[% IF visible_cols.Mu %]<td>[% p.last_modified_by %]</td>[% END %]
+[% IF visible_cols.Mt %]<td align="right">[% p.upload_date %]</td>[% END %]
 [% END %]
 [% IF is_practice %]<td>[% p.contest_name | html %]</td>[% END %]
-[% IF is_user || is_practice %]
-    <td class="problem_req_count">
+[% IF (is_user || is_practice) && visible_cols.Vc %]
+  <td class="problem_req_count">
     <div>
     <div class="last_verdict [% 'run_details_' _ p.last_verdict IF p.last_verdict %]">
       [%- maybe_href(p.href_last_request, p.last_verdict, capt.verdicts.item(p.last_verdict)) -%]
@@ -134,7 +134,8 @@ function chg_code(st_sel, pid) {
     [%- IF p.href_problem_console %]<a href="[% p.href_problem_console %]">[% END -%]
     [% p.accept_count %] / [% p.wa_count %] / [% p.tle_count %]
     [%- IF p.href_problem_console %]</a>[% END -%]
-    </div></td>
+    </div>
+  </td>
 [% END %]
 </tr>
 [% END %]

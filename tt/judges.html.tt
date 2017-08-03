@@ -25,7 +25,9 @@ function delete_judge(href, name) {
   [% END %]
   [% j.judge_name | html -%]
 </td>
-[% IF editable %]<td>
+[% IF editable %]
+[% IF visible_cols.Lg %]
+<td>
 [%- IF j.account_name %]
 <a href="[% j.href_account %]">[% j.account_name | html %]</a>
 [%- END -%]
@@ -33,11 +35,15 @@ function delete_judge(href, name) {
 [<a href="[% j.href_whois %]" alt="[% j.last_ip %]" title="[% j.last_ip %]">[% j.last_ip_short %]</a>[% '*' IF j.restrict_ips %]]
 [%- END -%]
 </td>
-<td>[% maybe_href(j.href_console, j.processing_count) %] / [% j.processed_count %]
-</td>
+[% END %]
+[% IF visible_cols.Rq %]
+<td>[% maybe_href(j.href_console, j.processing_count) %] / [% j.processed_count %]</td>
+[% END %]
 [% END %]
 
+[% IF visible_cols.Re %]
 <td>[% j.is_alive; IF editable && j.is_alive %] [<a href="[% j.href_ping %]">[% capt.ping %]</a>][% END %]</td>
+[% END %]
 <td>[% j.alive_date %]</td>
 <td style="color: [% pin_colors.item(j.pin_mode) %];">[% capt.pin_mode_values.item(j.pin_mode) %]</td>
 </tr>

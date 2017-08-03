@@ -381,21 +381,21 @@ sub problems_frame {
     CATS::ContestParticipate::virtual if param('participate_virtual');
 
     my @cols = (
-        { caption => res_str(602), order_by => ($contest->is_practice ? 'P.title' : 3), width => '30%' },
+        { caption => res_str(602), order_by => ($contest->is_practice ? 'P.title' : 3), width => '25%' },
         ($is_jury ?
         (
             { caption => res_str(622), order_by => 'CP.status', width => '8%' },
             { caption => res_str(605), order_by => 'CP.testsets', width => '12%' },
             { caption => res_str(629), order_by => 'CP.tags', width => '8%' },
-            { caption => res_str(635), order_by => '14', width => '5%' }, # modified by
-            { caption => res_str(634), order_by => 'P.upload_date', width => '10%' },
+            { caption => res_str(635), order_by => 'last_modified_by', width => '5%', col => 'Mu' },
+            { caption => res_str(634), order_by => 'P.upload_date', width => '10%', col => 'Mt' },
         )
         : ()
         ),
         ($contest->is_practice ?
-        { caption => res_str(603), order_by => '5', width => '20%' } : () # contest
+        { caption => res_str(603), order_by => '5', width => '15%' } : () # contest
         ),
-        { caption => res_str(604), order_by => '6', width => '8%' }, # ok/wa/tl
+        { caption => res_str(604), order_by => '6', width => '12%', col => 'Vc' }, # ok/wa/tl
     );
     $lv->define_columns(url_f('problems'), 0, 0, \@cols);
     define_common_searches($lv);
@@ -411,17 +411,24 @@ sub problems_frame {
     # TODO: take testsets into account
     my $test_count_sql = $is_jury ? '(SELECT COUNT(*) FROM tests T WHERE T.problem_id = P.id) AS test_count,' : '';
     my $limits_str = join ', ', map "P.$_", @cats::limits_fields;
+    my $counts = $lv->visible_cols->{Vc} ? qq~
+        ($reqs_count_sql $cats::st_accepted$account_condition) AS accepted_count,
+        ($reqs_count_sql $cats::st_wrong_answer$account_condition) AS wrong_answer_count,
+        ($reqs_count_sql $cats::st_time_limit_exceeded$account_condition) AS time_limit_count,
+        (SELECT R.id || ' ' || R.state FROM reqs R
+            WHERE R.problem_id = P.id AND R.account_id = ? AND R.contest_id = CP.contest_id
+            ORDER BY R.submit_time DESC ROWS 1) AS last_submission~
+    : q~
+        NULL AS accepted_count,
+        NULL AS wrong_answer_count,
+        NULL AS time_limit_count,
+        NULL AS last_submission~;
     # Concatenate last submission fields to work around absence of tuples.
     my $sth = $dbh->prepare(qq~
         SELECT
             CP.id AS cpid, P.id AS pid,
-            ${select_code} AS code, P.title AS problem_name, OC.title AS contest_name,
-            ($reqs_count_sql $cats::st_accepted$account_condition) AS accepted_count,
-            ($reqs_count_sql $cats::st_wrong_answer$account_condition) AS wrong_answer_count,
-            ($reqs_count_sql $cats::st_time_limit_exceeded$account_condition) AS time_limit_count,
-            (SELECT R.id || ' ' || R.state FROM reqs R
-                WHERE R.problem_id = P.id AND R.account_id = ? AND R.contest_id = CP.contest_id
-                ORDER BY R.submit_time DESC ROWS 1) AS last_submission,
+            $select_code AS code, P.title AS problem_name, OC.title AS contest_name,
+            $counts,
             P.contest_id - CP.contest_id AS is_linked,
             (SELECT COUNT(*) FROM contest_problems CP1
                 WHERE CP1.contest_id <> CP.contest_id AND CP1.problem_id = P.id) AS usage_count,
@@ -438,12 +445,11 @@ sub problems_frame {
         ~ . $lv->maybe_where_cond . $lv->order_by
     );
     my $aid = $uid || 0; # in a case of anonymous user
-    if ($contest->is_practice) {
-        $sth->execute($aid, $cid, $lv->where_params);
-    }
-    else {
-        $sth->execute($aid, $aid, $aid, $aid, $cid, $lv->where_params);
-    }
+    my @params =
+        !$lv->visible_cols->{Vc} ? () :
+        $contest->is_practice ? ($aid) :
+        ($aid) x 4;
+    $sth->execute(@params, $cid, $lv->where_params);
 
     my @status_list;
     if ($is_jury) {
