@@ -102,17 +102,20 @@ sub judges_frame {
 
     $lv->define_columns(url_f('judges'), 0, 0, [
         { caption => res_str(625), order_by => '2', width => '25%' },
-        ($is_root ? ({ caption => res_str(616), order_by => '3', width => '25%' }) : ()),
-        ($is_root ? ({ caption => res_str(649), order_by => '10', width => '10%' }) : ()),
-        { caption => res_str(626), order_by => '4', width => '10%' },
+        ($is_root ? ({ caption => res_str(616), order_by =>  '3', width => '25%', col => 'Lg' }) : ()),
+        ($is_root ? ({ caption => res_str(649), order_by => '10', width => '10%', col => 'Rq' }) : ()),
+        { caption => res_str(626), order_by => '4', width => '10%', col => 'Re' },
         { caption => res_str(633), order_by => '5', width => '15%' },
         { caption => res_str(622), order_by => '6', width => '10%' },
     ]);
     $lv->define_db_searches([ qw(J.id nick login is_alive alive_date pin_mode account_id last_ip) ]);
 
-    my $req_counts = $is_root ? qq~,
+    my $req_counts =
+        !$is_root ? '' :
+        !$lv->visible_cols->{Rq} ? ', NULL, NULL' :
+        qq~,
         (SELECT COUNT(*) FROM reqs R WHERE R.judge_id = J.id AND R.state <= $cats::st_testing),
-        (SELECT COUNT(*) FROM reqs R WHERE R.judge_id = J.id)~ : '';
+        (SELECT COUNT(*) FROM reqs R WHERE R.judge_id = J.id)~;
 
     my $c = $dbh->prepare(qq~
         SELECT
