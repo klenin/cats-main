@@ -111,7 +111,7 @@ sub judges_frame {
     $lv->define_db_searches([ qw(J.id nick login is_alive alive_date pin_mode account_id last_ip) ]);
 
     my $req_counts = $is_root ? qq~,
-        (SELECT COUNT(*) FROM reqs R WHERE R.judge_id = J.id AND R.state = $cats::st_testing),
+        (SELECT COUNT(*) FROM reqs R WHERE R.judge_id = J.id AND R.state <= $cats::st_testing),
         (SELECT COUNT(*) FROM reqs R WHERE R.judge_id = J.id)~ : '';
 
     my $c = $dbh->prepare(qq~
@@ -145,7 +145,7 @@ sub judges_frame {
             href_delete => url_f('judges', 'delete' => $jid),
             href_account => url_f('users', edit => $account_id),
             href_console => url_f('console',
-                search => "judge_id=$jid,state=P", se => 'judge', i_value => -1, show_results => 1),
+                search => "judge_id=$jid,state<=T", se => 'judge', i_value => -1, show_results => 1),
         );
     };
 
