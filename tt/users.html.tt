@@ -14,7 +14,7 @@ function delete_team(href, name) {
 [% PROCESS includes/listview_col_defs.tti %]
 [% FOREACH u IN users %]
 <tr class="[% loop.parity %]">
-[% IF editable %]
+[% IF user.is_jury %]
 <td>
   <a href="javascript:delete_team('[% u.href_delete %]', '[% u.team_name | html %]');" class="icon delete"></a>
   <a href="[% u.href_edit %]" class="icon edit"></a>
@@ -24,7 +24,7 @@ function delete_team(href, name) {
 <td>[% IF is_jury || is_site_org %]<input type="checkbox" name="sel" value="[% u.id %]"> [% END; href(u.href_stats, u.team_name) %]</td>
 [% IF visible_cols.Si %]<td>[% maybe_href(u.href_site, u.site_name || u.city) %]</td>[% END %]
 [% IF visible_cols.Tg %]<td align="center">[% u.tag %]</td>[% END %]
-[% IF editable %]
+[% IF user.is_jury %]
 <td class="user_checkbox"><label>[% checkbox_1("jury$u.id", u.jury) %]</label></td>
 <td class="user_checkbox"><label>[% checkbox_1("ooc$u.id", u.ooc) %]</label></td>
 <td class="user_checkbox"><label>[% checkbox_1("remote$u.id", u.remote) %]</label></td>
@@ -51,7 +51,7 @@ function delete_team(href, name) {
 <br/>
 [% PROCESS includes/pages.tti %]
 <input type="hidden" name="user_set" value="[% FOREACH u IN users; u.id; ':' UNLESS loop.last; END %]">
-[% IF editable %]
+[% IF user.is_jury %]
 <button type="submit" value="1" name="save_attributes" class="button">[% capt.save_attributes %]</button>
 <label>[% capt.login %]: <input type="text" name="logins_to_add" class="bordered" /></label>
 <button type="submit" value="1" name="add_participants" class="button">[% capt.add_participants %]</button>

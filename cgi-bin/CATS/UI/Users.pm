@@ -437,7 +437,6 @@ sub users_frame {
                 { href => url_f('users', new => 1), item => res_str(541) },
                 { href => url_f('users_import'), item => res_str(564) },
             ],
-            editable => 1
         );
     }
 
