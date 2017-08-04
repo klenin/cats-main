@@ -420,7 +420,7 @@ sub users_frame {
     my $rating_sql = !$lv->visible_cols->{Rt} ? 'NULL' : qq~
             SELECT COUNT(DISTINCT R.problem_id) FROM reqs R
                 WHERE R.state = $cats::st_accepted AND R.account_id = A.id AND R.contest_id = C.id~ .
-            ($is_jury ? '' : ' AND R.submit_time < C.freeze_date OR C.defreeze_date < CURRENT_TIMESTAMP');
+            ($is_jury ? '' : ' AND (R.submit_time < C.freeze_date OR C.defreeze_date < CURRENT_TIMESTAMP)');
 
     my $sql = sprintf qq~
         SELECT ($rating_sql) AS rating, CA.id, $fields, S.name AS site_name
