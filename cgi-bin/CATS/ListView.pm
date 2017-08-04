@@ -68,6 +68,7 @@ sub init_params {
     }
 
     $self->{cols} =
+        !$is_jury ? undef :
         # Has user just opened page or deselected all columns?
         param('visible') || param('do_search') || param('cols') ? [ param('cols') ] :
         !defined $s->{cols} ? undef :
