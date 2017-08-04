@@ -16,7 +16,6 @@ use CATS::Misc qw(
     $t $is_jury $is_root $is_team $sid $cid $uid $contest $privs $settings $user
     format_diff_time init_template msg res_str url_f auto_ext);
 use CATS::Privileges;
-use CATS::RankTable;
 use CATS::User;
 use CATS::Utils qw(url_function date_to_iso);
 use CATS::Web qw(param param_on redirect url_param);
@@ -273,43 +272,6 @@ sub users_delete {
     $dbh->commit;
 }
 
-sub users_save_attributes {
-    my $changed_count = 0;
-    for my $user_id (split(':', param('user_set'))) {
-        my $jury = param_on("jury$user_id");
-        my $ooc = param_on("ooc$user_id");
-        my $remote = param_on("remote$user_id");
-        my $hidden = param_on("hidden$user_id");
-        my $site_org = param_on("site_org$user_id");
-
-        # Forbid removing is_jury privilege from an admin.
-        my ($srole) = $dbh->selectrow_array(q~
-            SELECT A.srole FROM accounts A
-                INNER JOIN contest_accounts CA ON A.id = CA.account_id
-                WHERE CA.id = ?~, undef,
-            $user_id
-        );
-        $jury = 1 if CATS::Privileges::is_root($srole);
-
-        # Security: Forbid changing of user parameters in other contests.
-        my $changed = $dbh->do(q~
-            UPDATE contest_accounts
-                SET is_jury = ?, is_hidden = ?, is_remote = ?, is_ooc = ?, is_site_org = ?
-                WHERE id = ? AND contest_id = ? AND
-                    (is_jury <> ? OR is_hidden <> ? OR is_remote <> ? OR is_ooc <> ? OR is_site_org <> ?)~, undef,
-            $jury, $hidden, $remote, $ooc, $site_org,
-            $user_id, $cid,
-            $jury, $hidden, $remote, $ooc, $site_org
-        );
-        $changed_count += $changed;
-    }
-    if ($changed_count) {
-        $dbh->commit;
-        CATS::RankTable::remove_cache($cid);
-    }
-    msg(1018, $changed_count);
-}
-
 sub impersonate_frame {
     my ($p) = @_;
     $is_root or return;
@@ -343,7 +305,7 @@ sub users_frame {
         users_new_save if defined param('new_save');
         users_edit_save if defined param('edit_save');
 
-        users_save_attributes if $p->{save_attributes};
+        CATS::User::save_attributes if $p->{save_attributes};
         CATS::User::set_tag(user_set => [ param('sel') ], tag => $p->{tag_to_set})
             if $p->{set_tag};
         CATS::User::register_by_login($p->{logins_to_add}, $cid) if $p->{add_participants};
