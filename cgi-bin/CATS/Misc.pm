@@ -185,7 +185,7 @@ sub init_user {
     $is_root = 0;
     $privs = {};
     $uid = undef;
-    $user = {};
+    $user = { privs => $privs };
     my $bad_sid = length $sid > 30;
     if ($sid ne '' && !$bad_sid) {
         (
@@ -242,8 +242,8 @@ sub init_contest {
     $settings->{contest_id} = $cid = $contest->{id};
 
     $user->{diff_time} = 0;
-    # Authorize user in the contest.
     $is_jury = $is_team = $user->{is_virtual} = 0;
+    # Authorize user in the contest.
     if (defined $uid) {
         (
             $user->{ca_id}, $is_team, $is_jury, $user->{site_id}, $user->{is_site_org},
@@ -255,6 +255,7 @@ sub init_contest {
         $user->{diff_time} ||= 0;
         $is_jury ||= $is_root;
     }
+    $user->{is_jury} = $is_jury;
     if ($contest->{is_hidden} && !$is_team) {
         # If user tries to look at a hidden contest, show training instead.
         $contest->load(0);
