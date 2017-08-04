@@ -512,10 +512,11 @@ sub request_params_frame {
             UPDATE reqs SET tag = ? WHERE id = ?~, undef,
             $p->{tag}, $si->{req_id});
         $dbh->commit;
+        $si->{tag} = $p->{tag};
     }
 
     # Reload problem after the successful state change.
-    $si = get_sources_info(request_id => $si->{req_id}) if try_set_state($si, $p) || $p->{set_tag};
+    $si = get_sources_info(request_id => $si->{req_id}) if try_set_state($si, $p);
 
     my $tests = $dbh->selectcol_arrayref(q~
         SELECT rank FROM tests WHERE problem_id = ? ORDER BY rank~, undef,
