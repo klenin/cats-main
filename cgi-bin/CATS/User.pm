@@ -15,7 +15,7 @@ use CATS::Form qw(validate_integer validate_string_length);
 use CATS::Misc qw($cid $is_jury $is_root $t $user init_template msg url_f);
 use CATS::Privileges;
 use CATS::RankTable;
-use CATS::Web qw(param param_on);
+use CATS::Web qw(param);
 
 sub new {
     my ($class) = @_;
@@ -284,11 +284,11 @@ sub set_site {
 sub save_attributes {
     my $changed_count = 0;
     for my $user_id (split(':', param('user_set'))) {
-        my $jury = param_on("jury$user_id");
-        my $ooc = param_on("ooc$user_id");
-        my $remote = param_on("remote$user_id");
-        my $hidden = param_on("hidden$user_id");
-        my $site_org = param_on("site_org$user_id");
+        my $jury = param("jury$user_id") ? 1 : 0;
+        my $ooc = param("ooc$user_id") ? 1 : 0;
+        my $remote = param("remote$user_id") ? 1 : 0;
+        my $hidden = param("hidden$user_id") ? 1 : 0;
+        my $site_org = param("site_org$user_id") ? 1 : 0;
 
         # Forbid removing is_jury privilege from an admin.
         my ($srole) = $dbh->selectrow_array(q~

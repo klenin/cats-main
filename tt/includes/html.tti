@@ -18,6 +18,10 @@
     <input type="checkbox" name="[% name %]"[% ' checked="checked"' IF checked; ' disabled="disabled"' UNLESS enabled %] />
 [%- END -%]
 
+[%- MACRO checkbox_1(name, checked, enabled) BLOCK; SET enabled = 1 UNLESS enabled.defined ~%]
+    <input type="checkbox" value="1" name="[% name %]"[% ' checked="checked"' IF checked; ' disabled="disabled"' UNLESS enabled %] />
+[%- END -%]
+
 [%- MACRO href(url, text, title) BLOCK -%]<a href="[% url %]"[% " title=\"$title\"" IF title %]>[% text | html %]</a>[% END -%]
 [%- MACRO maybe_href(url, text, title) BLOCK; IF url; href(url, text, title); ELSE; text | html ; END; END -%]
 

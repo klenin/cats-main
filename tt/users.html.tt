@@ -25,11 +25,11 @@ function delete_team(href, name) {
 [% IF visible_cols.Si %]<td>[% maybe_href(u.href_site, u.site_name || u.city) %]</td>[% END %]
 [% IF visible_cols.Tg %]<td align="center">[% u.tag %]</td>[% END %]
 [% IF editable %]
-<td class="user_checkbox"><label>[% checkbox("jury$u.id", u.jury) %]</label></td>
-<td class="user_checkbox"><label>[% checkbox("ooc$u.id", u.ooc) %]</label></td>
-<td class="user_checkbox"><label>[% checkbox("remote$u.id", u.remote) %]</label></td>
-<td class="user_checkbox"><label>[% checkbox("hidden$u.id", u.hidden) %]</label></td>
-<td class="user_checkbox"><label>[% checkbox("site_org$u.id", u.site_org) %]</label></td>
+<td class="user_checkbox"><label>[% checkbox_1("jury$u.id", u.jury) %]</label></td>
+<td class="user_checkbox"><label>[% checkbox_1("ooc$u.id", u.ooc) %]</label></td>
+<td class="user_checkbox"><label>[% checkbox_1("remote$u.id", u.remote) %]</label></td>
+<td class="user_checkbox"><label>[% checkbox_1("hidden$u.id", u.hidden) %]</label></td>
+<td class="user_checkbox"><label>[% checkbox_1("site_org$u.id", u.site_org) %]</label></td>
 [% END %]
 [% IF visible_cols.Fl %]
 <td align="center">
@@ -69,7 +69,7 @@ function delete_team(href, name) {
 [% capt.message_to_teams %]:
 <input type="text" size="100" name="message_text" value="[% message_text | html %]" class="bordered">
 <button type="submit" value="1" name="send_message" class="button">[% capt.send %]</button>
-<label><input type="checkbox" name="send_message_all" value="1"> [% capt.send_to_all %]</label>
+<label>[% checkbox_1('send_message_all') %] [% capt.send_to_all %]</label>
 </div>
 [% END %]
 </form>
