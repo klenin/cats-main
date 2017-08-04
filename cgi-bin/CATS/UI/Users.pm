@@ -375,27 +375,19 @@ sub users_frame {
             $cid, @site_param));
     }
 
-    my @cols;
-    if ($is_jury) {
-        @cols = ( { caption => res_str(616), order_by => 'login', width => '20%' } );
-    }
-
-    push @cols,
+    my @cols = (
+        ($is_jury ?
+            { caption => res_str(616), order_by => 'login', width => '20%' } : ()),
         { caption => res_str(608), order_by => 'team_name', width => '30%' },
         { caption => res_str(627), order_by => 'COALESCE(S.name, A.city)', width => '20%', col => 'Si' },
-        { caption => res_str(629), order_by => 'tag', width => '5%', col => 'Tg' };
-
-    if ($is_jury) {
-        push @cols, (
+        { caption => res_str(629), order_by => 'tag', width => '5%', col => 'Tg' },
+        ($is_jury ?  (
             { caption => res_str(611), order_by => 'is_jury', width => '1%' },
             { caption => res_str(612), order_by => 'is_ooc', width => '1%' },
             { caption => res_str(613), order_by => 'is_remote', width => '1%' },
             { caption => res_str(614), order_by => 'is_hidden', width => '1%' },
             { caption => res_str(610), order_by => 'is_site_org', width => '1%' },
-        );
-    }
-
-    push @cols, (
+        ) : ()),
         { caption => res_str(607), order_by => 'country', width => '5%', col => 'Fl' },
         { caption => res_str(609), order_by => 'rating', width => '5%', col => 'Rt' },
         { caption => res_str(632), order_by => 'diff_time', width => '5%', col => 'Dt' },
@@ -412,15 +404,16 @@ sub users_frame {
     $lv->define_db_searches(\@fields);
     $lv->define_db_searches({
         'CA.id' => 'CA.id',
-        is_judge => q~CASE WHEN EXISTS (SELECT * FROM judges J WHERE J.account_id = A.id) THEN 1 ELSE 0 END~,
+        is_judge => q~
+            CASE WHEN EXISTS (SELECT * FROM judges J WHERE J.account_id = A.id) THEN 1 ELSE 0 END~,
         site_name => 'S.name',
     });
 
     my $fields = join ', ', @fields;
     my $rating_sql = !$lv->visible_cols->{Rt} ? 'NULL' : qq~
-            SELECT COUNT(DISTINCT R.problem_id) FROM reqs R
-                WHERE R.state = $cats::st_accepted AND R.account_id = A.id AND R.contest_id = C.id~ .
-            ($is_jury ? '' : ' AND (R.submit_time < C.freeze_date OR C.defreeze_date < CURRENT_TIMESTAMP)');
+        SELECT COUNT(DISTINCT R.problem_id) FROM reqs R
+            WHERE R.state = $cats::st_accepted AND R.account_id = A.id AND R.contest_id = C.id~ .
+        ($is_jury ? '' : ' AND (R.submit_time < C.freeze_date OR C.defreeze_date < CURRENT_TIMESTAMP)');
 
     my $sql = sprintf qq~
         SELECT ($rating_sql) AS rating, CA.id, $fields, S.name AS site_name
