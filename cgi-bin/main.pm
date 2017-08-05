@@ -5,12 +5,9 @@ use strict;
 use warnings;
 use encoding 'utf8', STDIN => undef;
 
-use Encode;
-
 use Data::Dumper;
 use DBI::Profile;
 use Storable ();
-use Time::HiRes;
 
 our $cats_lib_dir;
 our $cats_problem_lib_dir;
@@ -28,14 +25,12 @@ use lib $cats_problem_lib_dir;
 use CATS::DB;
 use CATS::Config;
 use CATS::MainMenu;
-use CATS::Misc qw($t initialize save_settings generate_output);
+use CATS::Misc qw($t generate_output initialize save_settings);
 use CATS::Proxy;
 use CATS::Router;
 use CATS::StaticPages;
 use CATS::Time;
-use CATS::Web qw(param url_param redirect init_request get_return_code has_error);
-
-my ($request_start_time, $init_time);
+use CATS::Web qw(has_error get_return_code init_request param redirect url_param);
 
 sub accept_request {
     my $output_file = '';
@@ -45,7 +40,7 @@ sub accept_request {
     }
     initialize;
     return if has_error;
-    $init_time = Time::HiRes::tv_interval($request_start_time, [ Time::HiRes::gettimeofday ]);
+    CATS::Time::mark_init;
 
     unless (defined $t) {
         my ($fn, $p) = CATS::Router::route;
@@ -56,12 +51,7 @@ sub accept_request {
 
     defined $t or return;
     CATS::MainMenu::generate_menu;
-    unless (param('notime')) {
-        $t->param(request_process_time => sprintf '%.3fs',
-            Time::HiRes::tv_interval($request_start_time, [ Time::HiRes::gettimeofday ]));
-        $t->param(init_time => sprintf '%.3fs', $init_time || 0);
-    }
-    CATS::Time::prepare_server_time;
+    CATS::Time::mark_finish;
     generate_output($output_file);
 }
 
@@ -73,13 +63,13 @@ sub handler {
         CATS::Proxy::proxy;
         return get_return_code();
     }
-    $request_start_time = [ Time::HiRes::gettimeofday ];
+    CATS::Time::mark_start;
     CATS::DB::sql_connect({
         ib_timestampformat => '%d.%m.%Y %H:%M',
         ib_dateformat => '%d.%m.%Y',
         ib_timeformat => '%H:%M:%S',
     });
-    $dbh->rollback; # In a case of abandoned transaction
+    $dbh->rollback; # In a case of abandoned transaction.
     $DBI::Profile::ON_DESTROY_DUMP = undef;
     $dbh->{Profile} = DBI::Profile->new(Path => []); # '!Statement'
     $dbh->{Profile}->{Data} = undef;
