@@ -298,14 +298,14 @@ sub users_frame {
         name => 'users' . ($contest->is_practice ? '_practice' : ''),
         array_name => 'users',
         template => auto_ext('users'));
-    $t->param(is_jury => $is_jury, title_suffix => res_str(526));
+    $t->param(title_suffix => res_str(526));
 
     if ($is_jury) {
         users_delete if defined url_param('delete');
         users_new_save if defined param('new_save');
         users_edit_save if defined param('edit_save');
 
-        CATS::User::save_attributes if $p->{save_attributes};
+        CATS::User::save_attributes_jury if $p->{save_attributes};
         CATS::User::set_tag(user_set => [ param('sel') ], tag => $p->{tag_to_set})
             if $p->{set_tag};
         CATS::User::register_by_login($p->{logins_to_add}, $cid) if $p->{add_participants};
@@ -323,12 +323,14 @@ sub users_frame {
             $dbh->commit;
         }
     }
+    elsif ($user->{is_site_org}) {
+        CATS::User::save_attributes_org if $p->{save_attributes};
+    }
 
     if ($is_jury || $user->{is_site_org}) {
         CATS::User::set_site(user_set => [ param('sel') ], site_id => $p->{site_id}) if $p->{set_site};
         # Consider site_org without site_id as 'all sites organizer'.
         my ($site_cond, @site_param) = $is_jury || !$user->{site_id} ? ('') : (' AND S.id = ?', $user->{site_id});
-        $t->param(is_site_org => 1);
         $t->param(sites => $dbh->selectall_arrayref(qq~
             SELECT S.id, S.name
             FROM sites S INNER JOIN contest_sites CS ON CS.site_id = S.id
@@ -343,12 +345,14 @@ sub users_frame {
         { caption => res_str(608), order_by => 'team_name', width => '30%' },
         { caption => res_str(627), order_by => 'COALESCE(S.name, A.city)', width => '20%', col => 'Si' },
         { caption => res_str(629), order_by => 'tag', width => '5%', col => 'Tg' },
-        ($is_jury ?  (
-            { caption => res_str(611), order_by => 'is_jury', width => '1%' },
+        ($is_jury || $user->{is_site_org} ? (
             { caption => res_str(612), order_by => 'is_ooc', width => '1%' },
             { caption => res_str(613), order_by => 'is_remote', width => '1%' },
-            { caption => res_str(614), order_by => 'is_hidden', width => '1%' },
             { caption => res_str(610), order_by => 'is_site_org', width => '1%' },
+        ) : ()),
+        ($is_jury ? (
+            { caption => res_str(611), order_by => 'is_jury', width => '1%' },
+            { caption => res_str(614), order_by => 'is_hidden', width => '1%' },
         ) : ()),
         { caption => res_str(607), order_by => 'country', width => '5%', col => 'Fl' },
         { caption => res_str(609), order_by => 'rating', width => '5%', col => 'Rt' },

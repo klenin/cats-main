@@ -281,15 +281,37 @@ sub set_site {
     msg(1024, $count);
 }
 
-sub save_attributes {
+sub save_attributes_single {
+    my ($user_id, $attr_names, $force_jury) = @_;
+
+    my (%set, %where);
+    for (@$attr_names) {
+        my $v = $set{"is_$_"} = param($_ . $user_id) ? 1 : 0;
+        # Only perform update if it actually changes values.
+        $where{"is_$_"} = { '!=', $v };
+    }
+    $set{is_jury} = 1 if $force_jury;
+    # Security: Forbid changing of user parameters in other contests.
+    my ($s, @b) = $sql->update('contest_accounts',
+        \%set, { id => $user_id, contest_id => $cid, -or => \%where }
+    );
+    $dbh->do(_u $sql->update('contest_accounts',
+        \%set, { id => $user_id, contest_id => $cid, -or => \%where }
+    ));
+}
+
+sub save_attributes_finalize {
+    my ($changed_count) = @_;
+    if ($changed_count) {
+        $dbh->commit;
+        CATS::RankTable::remove_cache($cid);
+    }
+    msg(1018, $changed_count);
+}
+
+sub save_attributes_jury {
     my $changed_count = 0;
     for my $user_id (split(':', param('user_set'))) {
-        my $jury = param("jury$user_id") ? 1 : 0;
-        my $ooc = param("ooc$user_id") ? 1 : 0;
-        my $remote = param("remote$user_id") ? 1 : 0;
-        my $hidden = param("hidden$user_id") ? 1 : 0;
-        my $site_org = param("site_org$user_id") ? 1 : 0;
-
         # Forbid removing is_jury privilege from an admin.
         my ($srole) = $dbh->selectrow_array(q~
             SELECT A.srole FROM accounts A
@@ -297,25 +319,19 @@ sub save_attributes {
                 WHERE CA.id = ?~, undef,
             $user_id
         );
-        $jury = 1 if CATS::Privileges::is_root($srole);
+        $changed_count += save_attributes_single(
+            $user_id, [ qw(jury hidden remote ooc site_org) ],
+            CATS::Privileges::is_root($srole));
+    }
+    save_attributes_finalize($changed_count);
+}
 
-        # Security: Forbid changing of user parameters in other contests.
-        my $changed = $dbh->do(q~
-            UPDATE contest_accounts
-                SET is_jury = ?, is_hidden = ?, is_remote = ?, is_ooc = ?, is_site_org = ?
-                WHERE id = ? AND contest_id = ? AND
-                    (is_jury <> ? OR is_hidden <> ? OR is_remote <> ? OR is_ooc <> ? OR is_site_org <> ?)~, undef,
-            $jury, $hidden, $remote, $ooc, $site_org,
-            $user_id, $cid,
-            $jury, $hidden, $remote, $ooc, $site_org
-        );
-        $changed_count += $changed;
+sub save_attributes_org {
+    my $changed_count = 0;
+    for my $user_id (split(':', param('user_set'))) {
+        $changed_count += save_attributes_single($user_id, [ qw(remote ooc) ]);
     }
-    if ($changed_count) {
-        $dbh->commit;
-        CATS::RankTable::remove_cache($cid);
-    }
-    msg(1018, $changed_count);
+    save_attributes_finalize($changed_count);
 }
 
 1;
