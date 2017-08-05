@@ -438,7 +438,7 @@ sub users_frame {
             remote => $remote,
             site_org => $site_org,
             editable_attrs =>
-                ($is_jury || (!$user->{site_id} || $user->{site_id} == $site_id) && $aid != $uid),
+                ($is_jury || (!$user->{site_id} || $user->{site_id} == $site_id) && $uid && $aid != $uid),
             virtual => $virtual,
             virtual_diff_time => $virtual_diff_time,
             virtual_diff_time_minutes => int(($virtual_diff_time // 0) * 24 * 60 | 0.5),
