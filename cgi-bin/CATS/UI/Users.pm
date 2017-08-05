@@ -560,13 +560,10 @@ sub user_ip_frame {
     );
 }
 
-my $vdiff_units = { min => 1 / 24 / 60, hour => 1 / 24, day => 1, week => 7 };
-
 sub user_vdiff_save {
     my ($p, $u) = @_;
     $p->{save} or return;
-    my $k = $vdiff_units->{$p->{units} // ''} or return;
-    $u->{diff_time} = $p->{diff_time} ? $p->{diff_time} * $k : undef;
+    CATS::Time::set_diff_time($u, $p) or return;
     $u->{is_virtual} = $p->{is_virtual} ? 1 : 0;
     $dbh->do(_u $sql->update('contest_accounts',
         { diff_time => $u->{diff_time}, is_virtual => $u->{is_virtual} },

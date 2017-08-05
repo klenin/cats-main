@@ -47,4 +47,13 @@ sub mark_finish {
     prepare_server_time;
 }
 
+my $diff_units = { min => 1 / 24 / 60, hour => 1 / 24, day => 1, week => 7 };
+
+sub set_diff_time {
+    my ($obj, $p) = @_;
+    my $k = $diff_units->{$p->{units} // ''} or return;
+    $obj->{diff_time} = $p->{diff_time} ? $p->{diff_time} * $k : undef;
+    1;
+}
+
 1;
