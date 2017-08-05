@@ -107,7 +107,7 @@ CREATE TABLE sites (
 
 CREATE TABLE contest_sites (
     contest_id  INTEGER NOT NULL REFERENCES contests(id) ON DELETE CASCADE,
-    site_id  INTEGER NOT NULL REFERENCES sites(id)
+    site_id     INTEGER NOT NULL REFERENCES sites(id)
 );
 ALTER TABLE contest_sites
     ADD CONSTRAINT contest_sites_pk PRIMARY KEY (contest_id, site_id);
@@ -200,7 +200,7 @@ CREATE TABLE contest_problems (
     UNIQUE (problem_id, contest_id)
 );
 ALTER TABLE contest_problems
-  ADD CONSTRAINT chk_contest_problems_st CHECK (0 <= status AND status <= 5);
+    ADD CONSTRAINT chk_contest_problems_st CHECK (0 <= status AND status <= 5);
 
 CREATE TABLE problem_sources (
     id          INTEGER NOT NULL PRIMARY KEY,
@@ -219,7 +219,7 @@ CREATE TABLE problem_sources (
     main        VARCHAR(200)
 );
 ALTER TABLE problem_sources
-  ADD CONSTRAINT chk_problem_sources_1 CHECK (0 <= stype AND stype <= 15);
+    ADD CONSTRAINT chk_problem_sources_1 CHECK (0 <= stype AND stype <= 15);
 CREATE INDEX ps_guid_idx ON problem_sources(guid);
 
 CREATE TABLE problem_sources_import (
@@ -348,16 +348,16 @@ CREATE TABLE req_groups (
 );
 
 CREATE TABLE req_details (
-  req_id            INTEGER NOT NULL REFERENCES REQS(ID) ON DELETE CASCADE,
-  test_rank         INTEGER NOT NULL /*REFERENCES TESTS(RANK) ON DELETE CASCADE*/,
-  result            INTEGER,
-  points            INTEGER,
-  time_used         FLOAT,
-  memory_used       INTEGER,
-  disk_used         INTEGER,
-  checker_comment   VARCHAR(400),
+    req_id            INTEGER NOT NULL REFERENCES REQS(ID) ON DELETE CASCADE,
+    test_rank         INTEGER NOT NULL /*REFERENCES TESTS(RANK) ON DELETE CASCADE*/,
+    result            INTEGER,
+    points            INTEGER,
+    time_used         FLOAT,
+    memory_used       INTEGER,
+    disk_used         INTEGER,
+    checker_comment   VARCHAR(400),
 
-  UNIQUE(req_id, test_rank)
+    UNIQUE(req_id, test_rank)
 );
 
 CREATE TABLE solution_output (
