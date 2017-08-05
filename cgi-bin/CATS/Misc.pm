@@ -43,6 +43,7 @@ use CATS::Constants;
 use CATS::Contest;
 use CATS::DB;
 use CATS::IP;
+use CATS::Messages;
 use CATS::Privileges;
 use CATS::Redirect;
 use CATS::Template;
@@ -55,7 +56,7 @@ our (
     $settings
 );
 
-my ($messages, $http_mime_type, %extra_headers, $enc_settings);
+my ($http_mime_type, %extra_headers, $enc_settings);
 
 sub get_anonymous_uid {
     scalar $dbh->selectrow_array(q~
@@ -72,23 +73,7 @@ sub http_header {
 sub downloads_path { cats_dir() . '../download/' }
 sub downloads_url { 'download/' }
 
-sub lang { $settings->{lang} || 'ru' }
-
-sub init_messages_lang {
-    my ($lang) = @_;
-    my $msg_file = cats_dir() . "../tt/lang/$lang/strings";
-
-    my $r = [];
-    open my $f, '<', $msg_file or
-        die "Couldn't open message file: '$msg_file'.";
-    binmode($f, ':utf8');
-    while (my $line = <$f>) {
-        $line =~ m/^(\d+)\s+\"(.*)\"\s*$/ or next;
-        $r->[$1] and die "Duplicate message id: $1";
-        $r->[$1] = $2;
-    }
-    $r;
-}
+sub lang { goto &CATS::Messages::lang; }
 
 sub auto_ext {
     my ($file_name, $json) = @_;
@@ -118,11 +103,7 @@ sub init_template {
     $t->param(lang => lang, $json =~ /^[a-zA-Z][a-zA-Z0-9_]+$/ ? (jsonp => $json) : ());
 }
 
-sub res_str {
-    my $id = shift;
-    my $s = $messages->{lang()}->[$id] or die "Unknown res_str id: $id";
-    sprintf($s, @_);
-}
+*res_str = *CATS::Messages::res_str;
 
 sub msg {
     defined $t or croak q~Call to 'msg' before 'init_template'~;
@@ -159,7 +140,7 @@ sub generate_output {
     }
     my $cookie = $uid && lang eq 'ru' ? undef : cookie(
         -name => 'settings',
-        -value => encode_base64($uid ? Storable::freeze({ lang => lang }): $enc_settings),
+        -value => encode_base64($uid ? Storable::freeze({ lang => lang }) : $enc_settings),
         -expires => '+1h');
     my $out = '';
     if (my $enc = param('enc')) {
@@ -209,8 +190,7 @@ sub init_user {
     # If any problem happens during the thaw, clear settings.
     $settings = eval { $enc_settings && Storable::thaw($enc_settings) } || {};
 
-    my $lang = param('lang');
-    $settings->{lang} = $lang if $lang && grep $_ eq $lang, @cats::langs;
+    CATS::Messages::init_lang($settings);
 
     if ($bad_sid) {
         return CATS::Web::forbidden if param('noredir');
@@ -280,7 +260,7 @@ sub save_settings {
 sub initialize {
     $Storable::canonical = 1;
     $dbi_error = undef;
-    $messages //= { map { $_ => init_messages_lang($_) } @cats::langs };
+    CATS::Messages::init;
     $t = undef;
     init_user;
     init_contest;
