@@ -23,9 +23,9 @@ use CATS::ProblemStorage;
 use CATS::Redirect;
 use CATS::Request;
 use CATS::StaticPages;
-use CATS::Utils qw(url_function file_type date_to_iso redirect_url_function);
+use CATS::Utils qw(file_type date_to_iso redirect_url_function url_function);
 use CATS::Verdicts;
-use CATS::Web qw(param url_param redirect);
+use CATS::Web qw(param redirect url_param);
 
 sub problems_change_status {
     my $cpid = param('change_status')
@@ -47,8 +47,8 @@ sub problems_change_code {
         or return msg(1012);
     my $new_code = param('code') || '';
     cats::is_good_problem_code($new_code) or return msg(1134);
-    $dbh->do(qq~
-        UPDATE contest_problems SET code = ? WHERE contest_id = ? AND id = ?~, {},
+    $dbh->do(q~
+        UPDATE contest_problems SET code = ? WHERE contest_id = ? AND id = ?~, undef,
         $new_code, $cid, $cpid);
     $dbh->commit;
     CATS::StaticPages::invalidate_problem_text(cid => $cid, cpid => $cpid);
@@ -57,6 +57,11 @@ sub problems_change_code {
 sub problems_mass_retest {
     my @retest_pids = param('problem_id') or return msg(1012);
     my $all_runs = param('all_runs');
+    my %ignore_states;
+    for (param('ignore_states')) {
+        my $st = $CATS::Verdicts::name_to_state->{$_ // ''};
+        $ignore_states{$st} = 1 if defined $st;
+    }
     my $count = 0;
     for my $retest_pid (@retest_pids) {
         my $runs = $dbh->selectall_arrayref(q~
@@ -68,10 +73,10 @@ sub problems_mass_retest {
         my %accounts;
         for (@$runs) {
             next if !$all_runs && $accounts{$_->{account_id}}++;
+            next if $ignore_states{$_->{state} // 0};
             my $fields = {
                 state => $cats::st_not_processed, judge_id => undef, points => undef, testsets => undef };
-            ($_->{state} || 0) != $cats::st_ignore_submit &&
-                CATS::Request::enforce_state($_->{id}, $fields) and ++$count;
+            CATS::Request::enforce_state($_->{id}, $fields) and ++$count;
         }
         $dbh->commit;
     }
@@ -276,6 +281,8 @@ sub problem_status_names_enum {
     $psn;
 }
 
+my $retest_default_ignore = { IS => 1, SV => 1 };
+
 sub problems_retest_frame {
     $is_jury && !$contest->is_practice or return;
     my $lv = CATS::ListView->new(
@@ -339,7 +346,11 @@ sub problems_retest_frame {
 
     $sth->finish;
 
-    $t->param(total_queue => $total_queue);
+    $t->param(
+        total_queue => $total_queue,
+        verdicts => [ map +{ short => $_->[0], checked => $retest_default_ignore->{$_->[0]} },
+            @$CATS::Verdicts::name_to_state_sorted ],
+    );
 }
 
 sub problems_frame {

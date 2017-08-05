@@ -1,4 +1,5 @@
 [% PROCESS includes/menu_begin.tti %]
+[%- PROCESS "lang/$lang/verdicts.tti" -%]
 <i>[% capt.in_queue %]: [% total_queue %]</i><br/>
 
 [% PROCESS includes/listview_header.tti %]
@@ -23,8 +24,23 @@
 </table>
 [% PROCESS includes/pages.tti %]
 <br/>
-<input type="submit" name="mass_retest" value="[% capt.retest %]" class="button" />
-<input type="submit" name="recalc_points" value="[% capt.recalc %]" class="button" />
+<button type="submit" name="recalc_points" value="1" class="button">[% capt.recalc %]</button>
+<br/>
+<style>
+  .retest_verdicts label { display: inline_block; padding: 3px; }
+  .retest_verdicts a { color: inherit; }
+</style>
+<button type="submit" name="mass_retest" value="1" class="button">[% capt.retest %]</button>
 <input type="checkbox" name="all_runs" value="1"/> [% capt.all_runs %]
+<div class="retest_verdicts">
+[% capt.ignore_verdicts; capt.keys.join(' ') %]:<br/>
+[% FOREACH v IN verdicts %]
+<label class="run_details_[% v.short %]">
+  <a name="v[% v.short %]" title="[% capt.verdicts.item(v.short) %]">
+  <input type="checkbox" name="ignore_states" value="[% v.short %]" [% ' checked="checked"' IF v.checked %]/>
+  [% v.short %]</a>
+</label>
+[% END %]
+</div>
 </form>
 [% PROCESS includes/menu_end.tti %]
