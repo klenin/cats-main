@@ -9,14 +9,12 @@ our @EXPORT = qw(
     auto_ext
     downloads_path
     downloads_url
-    format_diff_time
     generate_output
     get_anonymous_uid
     http_header
     initialize
     init_template
     msg
-    prepare_server_time
     res_str
     save_settings
     url_f
@@ -34,7 +32,7 @@ our @EXPORT_OK = qw(
 use Carp qw(croak);
 use Encode();
 use MIME::Base64;
-use SQL::Abstract;
+use SQL::Abstract; # Actually used by CATS::DB, bit is optional there.
 use Storable;
 
 use CATS::Config qw(cats_dir);
@@ -112,15 +110,6 @@ sub msg {
 
 sub url_f { CATS::Utils::url_function(@_, sid => $sid, cid => $cid) }
 
-sub prepare_server_time {
-    my $dt = $contest->{time_since_start} - $user->{diff_time};
-    $t->param(
-        server_time => $contest->{server_time},
-        elapsed_msg => res_str($dt < 0 ? 578 : 579),
-        elapsed_time => format_diff_time(abs($dt)),
-    );
-}
-
 sub generate_output {
     my ($output_file) = @_;
     defined $t or return; #? undef : ref $t eq 'SCALAR' ? return : die 'Template not defined';
@@ -132,7 +121,6 @@ sub generate_output {
         #dbi_profile => Data::Dumper::Dumper($dbh->{Profile}->{Data}),
         langs => [ map { href => url_f('contests', lang => $_), name => $_ }, @cats::langs ],
     );
-    prepare_server_time;
 
     if (defined $dbi_error) {
         $t->param(dbi_error => $dbi_error);
@@ -270,19 +258,5 @@ sub run_method_enum() {+{
     interactive => $cats::rm_interactive,
     competitive => $cats::rm_competitive,
 }}
-
-sub format_diff_time {
-    my ($dt, $display_plus) = @_;
-    $dt or return '';
-    my $sign = $dt < 0 ? '-' : $display_plus ? '+' : '';
-    $dt = abs($dt);
-    my $days = int($dt);
-    $dt = ($dt - $days) * 24;
-    my $hours = int($dt);
-    $dt = ($dt - $hours) * 60;
-    my $minutes = int($dt + 0.5);
-    !$days && !$hours ? $minutes :
-        sprintf($days ? '%s%d%s %02d:%02d' : '%s%4$d:%5$02d', $sign, $days, res_str(577), $hours, $minutes);
-}
 
 1;

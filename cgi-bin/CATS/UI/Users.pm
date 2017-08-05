@@ -13,9 +13,10 @@ use CATS::DB;
 use CATS::IP;
 use CATS::ListView;
 use CATS::Misc qw(
-    $t $is_jury $is_root $is_team $sid $cid $uid $contest $privs $settings $user
-    format_diff_time init_template msg res_str url_f auto_ext);
+    $cid $contest $is_jury $is_root $is_team $sid $t $uid $privs $settings $user
+    auto_ext init_template msg res_str url_f);
 use CATS::Privileges;
+use CATS::Time;
 use CATS::User;
 use CATS::Utils qw(url_function date_to_iso);
 use CATS::Web qw(param param_on redirect url_param);
@@ -441,7 +442,7 @@ sub users_frame {
             virtual => $virtual,
             virtual_diff_time => $virtual_diff_time,
             virtual_diff_time_minutes => int(($virtual_diff_time // 0) * 24 * 60 | 0.5),
-            virtual_diff_time_fmt => format_diff_time($virtual_diff_time, 1),
+            virtual_diff_time_fmt => CATS::Time::format_diff($virtual_diff_time, 1),
          );
     };
 
@@ -596,7 +597,7 @@ sub user_vdiff_frame {
     $t->param(
         user_submenu('user_vdiff', $uid),
         u => $u,
-        formatted_diff_time => format_diff_time($u->{diff_time}, 1),
+        formatted_diff_time => CATS::Time::format_diff($u->{diff_time}, 1),
         title_suffix => $u->{team_name},
     );
 }

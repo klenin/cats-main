@@ -32,6 +32,7 @@ use CATS::Misc qw($t initialize save_settings generate_output);
 use CATS::Proxy;
 use CATS::Router;
 use CATS::StaticPages;
+use CATS::Time;
 use CATS::Web qw(param url_param redirect init_request get_return_code has_error);
 
 my ($request_start_time, $init_time);
@@ -60,6 +61,7 @@ sub accept_request {
             Time::HiRes::tv_interval($request_start_time, [ Time::HiRes::gettimeofday ]));
         $t->param(init_time => sprintf '%.3fs', $init_time || 0);
     }
+    CATS::Time::prepare_server_time;
     generate_output($output_file);
 }
 

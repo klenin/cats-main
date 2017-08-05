@@ -11,10 +11,11 @@ use CATS::Countries;
 use CATS::DB;
 use CATS::ListView;
 use CATS::Misc qw(
-    $t $cid $is_team $is_jury $is_root $privs $uid $settings $contest $sid
-    get_anonymous_uid init_template url_f auto_ext prepare_server_time res_str msg
+    $cid $contest $is_team $is_jury $is_root $privs $settings $sid $t $uid
+    auto_ext get_anonymous_uid init_template msg res_str url_f
 );
 use CATS::Request;
+use CATS::Time;
 use CATS::Utils qw(coalesce date_to_iso escape_xml url_function);
 use CATS::Verdicts;
 use CATS::Web qw(param url_param);
@@ -625,7 +626,7 @@ sub console_frame {
 
     console_content;
     return if param('json');
-    prepare_server_time;
+    CATS::Time::prepare_server_time;
     $t->param(is_team => $is_team);
     my $lvparams = $t->{vars};
     my $cc = $t->output;
