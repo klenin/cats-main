@@ -107,7 +107,8 @@ CREATE TABLE sites (
 
 CREATE TABLE contest_sites (
     contest_id  INTEGER NOT NULL REFERENCES contests(id) ON DELETE CASCADE,
-    site_id     INTEGER NOT NULL REFERENCES sites(id)
+    site_id     INTEGER NOT NULL REFERENCES sites(id),
+    diff_time   DOUBLE PRECISION,
 );
 ALTER TABLE contest_sites
     ADD CONSTRAINT contest_sites_pk PRIMARY KEY (contest_id, site_id);

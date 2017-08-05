@@ -251,3 +251,5 @@
 1157 "Changed time offset for contestant '%s'."
 1158 "Removed time offset for contestant '%s'."
 1159 "Log has been deleted."
+1160 "Changed time offset for site '%s'."
+1161 "Removed time offset for site '%s'."

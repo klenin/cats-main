@@ -1,0 +1,29 @@
+[% PROCESS includes/menu_begin.tti %]
+[%- PROCESS includes/html.tti -%]
+[%- PROCESS "lang/$lang/diff_time.tti" -%]
+
+<p>
+[% capt.contest_name %]: [% s.contest_name | html %]<br/>
+[% capt.site_name %]: [% s.site_name | html %]<br/>
+</p>
+
+<form method="post" enctype="multipart/form-data">
+<table class="internal_borders padded">
+<tr><td>[% capt.diff_time %]</td><td>[% formatted_diff_time %]</td></tr>
+<tr><td>[% capt.contest_start %]</td><td>[% s.contest_start %]</td></tr>
+<tr><td>[% capt.contest_start_offset %]</td><td>[% s.contest_start_offset %]</td></tr>
+<tr><td>[% capt.diff_time_days %]</td><td>[% s.diff_time %]</td></tr>
+<tr><td>[% capt.new_diff_time %]</td><td><input type="text" name="diff_time" value="[% s.diff_time %]" />
+  <select name="units">
+    <option value="min">[% capt.units.min %]</option>
+    <option value="hour">[% capt.units.hour %]</option>
+    <option value="day" selected="selected">[% capt.units.day %]</option>
+    <option value="week">[% capt.units.week %]</option>
+  </select>
+</td></tr>
+</table>
+<br/>
+<button type="submit" value="1" name="save" class="button">[% capt.save %]</button>
+</form>
+
+[% PROCESS includes/menu_end.tti %]

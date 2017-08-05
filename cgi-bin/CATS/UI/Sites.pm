@@ -12,6 +12,7 @@ use CATS::Misc qw(
     $cid $t $is_jury $is_root $privs $user
     init_template msg res_str url_f);
 use CATS::References;
+use CATS::Time;
 use CATS::Web qw(param url_param);
 
 sub fields() {qw(name region city org_name address)}
@@ -79,6 +80,51 @@ sub sites_frame {
 
     $t->param(submenu => [ CATS::References::menu('sites') ], editable => $is_root)
         if $is_jury;
+}
+
+sub contest_sites_edit_save {
+    my ($p, $s) = @_;
+    $p->{save} or return;
+    CATS::Time::set_diff_time($s, $p) or return;
+
+    $dbh->do(_u $sql->update('contest_sites',
+        { diff_time => $s->{diff_time} },
+        { site_id => $p->{site_id}, contest_id => $cid }
+    ));
+    ($s->{contest_start_offset}) = $dbh->selectrow_array(q~
+        SELECT C.start_date + CS.diff_time
+        FROM contest_sites CS
+        INNER JOIN contests C ON C.id = CS.contest_id
+        WHERE CS.site_id = ? AND CS.contest_id = ?~, undef,
+        $s->{id}, $cid) or return;
+    $dbh->commit;
+    msg($s->{diff_time} ? 1160 : 1161, $s->{site_name});
+}
+
+sub contest_sites_edit_frame {
+    my ($p) = @_;
+    $is_jury or return;
+    my $site_id = $p->{site_id} or return;
+
+    init_template('contest_sites_edit.html.tt');
+
+    my $s = $dbh->selectrow_hashref(q~
+        SELECT
+            S.id, S.name AS site_name, CS.diff_time,
+            C.title AS contest_name, C.start_date AS contest_start,
+            C.start_date + CS.diff_time AS contest_start_offset
+        FROM sites S
+        INNER JOIN contest_sites CS ON CS.site_id = S.id
+        INNER JOIN contests C ON C.id = CS.contest_id
+        WHERE CS.site_id = ? AND CS.contest_id = ?~, { Slice => {} },
+        $site_id, $cid) or return;
+    contest_sites_edit_save($p, $s);
+
+    $t->param(
+        s => $s,
+        formatted_diff_time => CATS::Time::format_diff($s->{diff_time}, 1),
+        title_suffix => $s->{name},
+    );
 }
 
 sub contest_sites_add {
@@ -157,6 +203,7 @@ sub contest_sites_frame {
             %$row,
             ($privs->{edit_sites} ? (href_edit => url_f('sites', edit => $row->{id})) : ()),
             ($is_jury ? (href_delete => url_f('contest_sites', 'delete' => $row->{id})) : ()),
+            href_edit => url_f('contest_sites_edit', site_id => $row->{id}),
             href_users => url_f('users', search => "site_id=$row->{id}"),
             href_rank_table => url_f('rank_table', sites => $row->{id}),
         );
