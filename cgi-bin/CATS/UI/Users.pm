@@ -43,8 +43,11 @@ sub user_submenu {
     my ($selected, $user_id) = @_;
     my @m = (
         (
-            $is_jury ? ({ href => url_f('users', edit => $user_id), item => res_str(573), selected => 'edit' }) :
-            $uid ? ({ href => url_f('profile'), item => res_str(518), selected => 'profile' }) : ()
+            $is_jury ?
+                ({ href => url_f('users', edit => $user_id), item => res_str(573), selected => 'edit' }) :
+            $uid ?
+                ({ href => url_f('profile'), item => res_str(518), selected => 'profile' }) :
+                ()
         ),
         { href => url_f('user_stats', uid => $user_id), item => res_str(574), selected => 'user_stats' },
         (!$is_root ? () : (
@@ -445,12 +448,17 @@ sub users_frame {
     $lv->attach(url_f('users'), $fetch_record, $c);
 
     if ($is_jury)  {
-        $t->param(
-            submenu => [
-                { href => url_f('users', new => 1), item => res_str(541) },
-                { href => url_f('users_import'), item => res_str(564) },
-            ],
-        );
+        $t->param(submenu => [
+            { href => url_f('users', new => 1), item => res_str(541) },
+            { href => url_f('users_import'), item => res_str(564) },
+        ]);
+    }
+    elsif ($user->{is_site_org}) {
+        $t->param(submenu => [
+            ($user->{site_id} ?
+                { href => url_f('users', search => 'site_id=my'), item => res_str(582) } : ()),
+            { href => url_f('users', search => 'site_id=0'), item => res_str(583) },
+        ]);
     }
 
     $c->finish;

@@ -62,6 +62,8 @@
 579 "time since start"
 580 "time offset"
 581 "total"
+582 "my site"
+583 "without site"
 600 "Start time"
 601 "Name"
 602 "Problem"
