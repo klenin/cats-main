@@ -9,7 +9,7 @@ use CATS::DB;
 use CATS::Form qw(validate_string_length);
 use CATS::ListView;
 use CATS::Misc qw(
-    $cid $t $is_jury $is_root $privs
+    $cid $t $is_jury $is_root $privs $user
     init_template msg res_str url_f);
 use CATS::References;
 use CATS::Web qw(param url_param);
@@ -114,7 +114,7 @@ sub contest_sites_delete {
 
 sub contest_sites_frame {
     my ($p) = @_;
-    $is_jury or return;
+    $is_jury || $user->{is_site_org} or return;
 
     my $lv = CATS::ListView->new(name => 'contest_sites', template => 'contest_sites.html.tt');
     $lv->define_columns(url_f('contest_sites'), 0, 0, [
@@ -127,8 +127,10 @@ sub contest_sites_frame {
     ]);
     $lv->define_db_searches([ fields ]);
 
-    contest_sites_delete;
-    contest_sites_add if param('add');
+    if ($is_jury) {
+        contest_sites_delete;
+        contest_sites_add if param('add');
+    }
 
     my $org_person_sql = $lv->visible_cols->{Op} ? q~
         SELECT LIST(A.team_name, ', ') FROM contest_accounts CA
@@ -154,13 +156,12 @@ sub contest_sites_frame {
         return (
             %$row,
             ($privs->{edit_sites} ? (href_edit => url_f('sites', edit => $row->{id})) : ()),
-            href_delete => url_f('contest_sites', 'delete' => $row->{id}),
+            ($is_jury ? (href_delete => url_f('contest_sites', 'delete' => $row->{id})) : ()),
             href_users => url_f('users', search => "site_id=$row->{id}"),
             href_rank_table => url_f('rank_table', sites => $row->{id}),
         );
     };
     $lv->attach(url_f('contest_sites'), $fetch_record, $sth);
-    $t->param(is_jury => $is_jury);
 }
 
 1;
