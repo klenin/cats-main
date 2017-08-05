@@ -13,7 +13,6 @@ function delete_contest_site(href, name) {
   tr.unused td { color: grey; }
 </style>
 
-<form method="post" enctype="multipart/form-data">
 [% PROCESS includes/listview_header.tti %]
 
 <table width=100% cellspacing=1 celpadding=2 class="bordered highlight">

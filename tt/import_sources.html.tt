@@ -1,6 +1,5 @@
 [% PROCESS includes/menu_begin.tti %]
 
-<form method=post enctype="multipart/form-data">
 [% PROCESS includes/listview_header.tti %]
 
 <table width=100% cellpadding=2 cellspacing=1 class="bordered highlight">

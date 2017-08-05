@@ -11,8 +11,7 @@ function confirm_registration() {
 }
 </script>
 
-<form method="post" enctype="multipart/form-data" action="[% href_contests %]" id="contest_form">
-[% PROCESS includes/listview_header.tti %]
+[% PROCESS includes/listview_header.tti form_id='contest_form' %]
 
 <table width="100%" cellpadding=2 cellspacing=1 class="bordered highlight">
 [% PROCESS includes/listview_col_defs.tti %]

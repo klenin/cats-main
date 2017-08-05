@@ -1,9 +1,8 @@
 [% PROCESS includes/menu_begin.tti %]
-<form method="post" enctype="multipart/form-data">
 [% PROCESS includes/listview_header.tti %]
 </form>
 <form method="post" enctype="multipart/form-data" action="[% href_action %]">
-<table border=0 width=100% cellpadding=2 cellspacing=1 class=bordered>
+<table border=0 width=100% cellpadding=2 cellspacing=1 class="bordered">
 [% PROCESS includes/listview_col_defs.tti %]
 [% FOREACH p IN link_problem %]
 <tr class="[% loop.parity() %]">

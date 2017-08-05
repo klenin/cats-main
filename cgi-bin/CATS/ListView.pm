@@ -169,6 +169,7 @@ sub attach {
 
     $t->param(
         page => $$page, pages => \@pages, search => $s->{search},
+        href_lv_action => "$url$page_extra_params",
         ($range_start > 0 ? (href_prev_pages => $href_page->($range_start - 1)) : ()),
         ($range_end < $page_count - 1 ? (href_next_pages => $href_page->($range_end + 1)) : ()),
         display_rows =>

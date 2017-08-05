@@ -83,8 +83,7 @@ function chg_code(st_sel, pid) {
 <p>[% contest_descr | html | linkify %]</p>
 [% END %]
 
-<form method="post" enctype="multipart/form-data" name="problems_form" accept-charset="UTF-8" style="margin: 0" action="[% href_action %]">
-[% PROCESS includes/listview_header.tti %]
+[% PROCESS includes/listview_header.tti form_name='problems_form' %]
 <table width="100%" cellpadding="2" cellspacing="1" class="bordered highlight">
 [% IF is_participant %]
 [% PROCESS includes/listview_col_defs.tti sel_col = 1 %]

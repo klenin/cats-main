@@ -9,7 +9,6 @@
 </textarea>
 [% END %]
 
-<form method="post" enctype="multipart/form-data" name="problem_history_form" accept-charset="UTF-8" style="margin: 0">
 [% PROCESS includes/listview_header.tti %]
 [% IF problem_history.size %]
 <table width="100%" cellpadding="2" cellspacing="1" class="bordered">

@@ -385,7 +385,6 @@ sub contests_frame {
     $t->param(
         submenu => $submenu,
         authorized => defined $uid,
-        href_contests => url_f('contests'),
         is_root => $is_root,
         is_registered => defined $uid && get_registered_contestant(contest_id => $cid) || 0,
     );

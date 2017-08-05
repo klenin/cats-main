@@ -560,7 +560,6 @@ sub problems_frame {
         )),
         { href => url_f('contests', params => $cid), item => res_str(546) };
     $t->param(
-        href_action => url_f('problems'),
         href_login => url_f('login', redir => CATS::Redirect::pack_params),
         can_participate_online =>
             $uid && !$is_team && !$contest->{closed} && $contest->{time_since_finish} < 0,
