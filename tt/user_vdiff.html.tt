@@ -22,7 +22,7 @@
 <tr><td>[% capt.is_virtual %]</td><td>[% checkbox('is_virtual', u.is_virtual) %]</td></tr>
 </table>
 <br/>
-<input type="submit" value="[% capt.save %]" name="save" class="button" />
+<button type="submit" value="1" name="save" class="button">[% capt.save %]</button>
 </form>
 
 [% PROCESS includes/menu_end.tti %]
