@@ -7,7 +7,7 @@
 [% FOREACH p IN link_problem %]
 <tr class="[% loop.parity() %]">
 <td>
-[% IF link %]<input type="radio" name="problem_id" value="[% p.problem_id %]" [% IF p.linked %]disabled[% END %] />[% END %]
+[% IF user.is_jury && link %]<input type="radio" name="problem_id" value="[% p.problem_id %]" [% IF p.linked %]disabled[% END %] />[% END %]
 <a href="[% p.href_view_problem %]" target="_blank">[% p.problem_name | html %]</a>
 [% IF p.href_problem_history %]&nbsp;[<a href="[% p.href_problem_history %]">[% capt.problem_history %]</a>][% END %]
 [% IF p.href_download %]&nbsp;[<a href="[% p.href_download %]">[% capt.package %]</a>][% END %]
@@ -19,17 +19,15 @@
 </table>
 [% PROCESS includes/pages.tti %]
 <br>
-[% IF is_jury %]
-[% IF link %]
+[% IF user.is_jury && link %]
 [% capt.problem_code %]:
 <select name="problem_code">
 [% FOREACH c IN unused_codes %]<option name="[% c %]">[% c %]</option>[% END %]
 </select>
 <br/><br/>
 [% IF move %]<input type="hidden" name="move" value="1" />[% END %]
-<input type="submit" name="link_save" value="[% move ? capt.move : capt.link %]" class="button" />
-<input type="submit" name="link_cancel" value="[% capt.cancel %]" class="button" />
+<button type="submit" name="link_save" value="1" class="button">[% move ? capt.move : capt.link %]</button>
+<button type="submit" name="link_cancel" value="1" class="button">[% capt.cancel %]</button>
 [% END %]
 </form>
-[% END %]
 [% PROCESS includes/menu_end.tti %]

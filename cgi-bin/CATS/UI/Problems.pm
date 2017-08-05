@@ -186,8 +186,8 @@ sub problems_all_frame {
     $c->finish;
 
     $t->param(
-        href_action => url_f($p->{kw} ? 'keywords' : 'problems'),
-        link => !$contest->is_practice && $link, move => $move, is_jury => $is_jury);
+        href_action => url_f('problems'),
+        link => !$contest->is_practice && $link, move => $move);
 }
 
 sub problems_udebug_frame {
