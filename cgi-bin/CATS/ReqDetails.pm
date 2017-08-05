@@ -7,7 +7,8 @@ use CATS::Constants;
 use CATS::Contest;
 use CATS::ContestParticipate qw(is_jury_in_contest);
 use CATS::DB;
-use CATS::Misc qw($contest $is_jury $is_root $sid $t $uid url_f problem_status_names);
+use CATS::Messages;
+use CATS::Misc qw($contest $is_jury $is_root $sid $t $uid url_f);
 use CATS::RankTable;
 use CATS::Utils qw(encodings source_encodings url_function);
 use CATS::Web qw(encoding_param param url_param);
@@ -228,7 +229,7 @@ sub get_sources_info {
                 $r->{src} = Encode::decode_utf8($r->{src});
             }
         }
-        $r->{status_name} = problem_status_names->{$r->{status}};
+        $r->{status_name} = CATS::Messages::problem_status_names->{$r->{status}};
 
         if ($r->{elements_count} == 1) {
             $r->{$_} = $r->{elements}->[0]->{$_}

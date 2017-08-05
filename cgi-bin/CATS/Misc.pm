@@ -17,7 +17,6 @@ our @EXPORT = qw(
     init_template
     msg
     prepare_server_time
-    problem_status_names
     res_str
     save_settings
     url_f
@@ -265,15 +264,6 @@ sub initialize {
     init_user;
     init_contest;
 }
-
-sub problem_status_names() {+{
-    $cats::problem_st_manual    => res_str(700),
-    $cats::problem_st_ready     => res_str(701),
-    $cats::problem_st_compile   => res_str(705),
-    $cats::problem_st_suspended => res_str(702),
-    $cats::problem_st_disabled  => res_str(703),
-    $cats::problem_st_hidden    => res_str(704),
-}}
 
 sub run_method_enum() {+{
     default => $cats::rm_default,

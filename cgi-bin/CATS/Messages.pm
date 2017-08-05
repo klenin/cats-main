@@ -44,4 +44,13 @@ sub res_str {
     sprintf($s, @params);
 }
 
+sub problem_status_names() {+{
+    $cats::problem_st_manual    => res_str(700),
+    $cats::problem_st_ready     => res_str(701),
+    $cats::problem_st_compile   => res_str(705),
+    $cats::problem_st_suspended => res_str(702),
+    $cats::problem_st_disabled  => res_str(703),
+    $cats::problem_st_hidden    => res_str(704),
+}}
+
 1;

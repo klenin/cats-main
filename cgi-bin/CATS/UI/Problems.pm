@@ -11,9 +11,10 @@ use CATS::DevEnv;
 use CATS::Judge;
 use CATS::JudgeDB;
 use CATS::ListView;
+use CATS::Messages;
 use CATS::Misc qw(
-    $t $is_jury $is_root $is_team $sid $cid $uid $contest $user
-    init_template msg res_str url_f auto_ext problem_status_names);
+    $cid $contest $is_jury $is_root $is_team $sid $t $uid $user
+    auto_ext init_template msg res_str url_f);
 use CATS::Problem::Save;
 use CATS::Problem::Source::Git;
 use CATS::Problem::Source::Zip;
@@ -31,7 +32,7 @@ sub problems_change_status {
         or return msg(1012);
 
     my $new_status = param('status');
-    exists problem_status_names()->{$new_status} or return;
+    exists CATS::Messages::problem_status_names()->{$new_status} or return;
 
     $dbh->do(qq~
         UPDATE contest_problems SET status = ? WHERE contest_id = ? AND id = ?~, {},
@@ -231,7 +232,7 @@ sub problems_udebug_frame {
             problem_name => $r->{problem_name},
             contest_name => $r->{contest_name},
             lang => $r->{lang},
-            status_text => problem_status_names()->{$r->{status}},
+            status_text => CATS::Messages::problem_status_names()->{$r->{status}},
             upload_date_iso => date_to_iso($r->{upload_date}),
             solutions => $sols,
         );
@@ -268,7 +269,7 @@ sub problems_frame_jury_action {
 
 sub problem_status_names_enum {
     my ($lv) = @_;
-    my $psn = problem_status_names();
+    my $psn = CATS::Messages::problem_status_names();
     my $inverse_psn = {};
     $inverse_psn->{$psn->{$_}} = $_ for keys %$psn;
     $lv->define_enums({ status => $inverse_psn });
@@ -453,7 +454,7 @@ sub problems_frame {
 
     my @status_list;
     if ($is_jury) {
-        my $n = problem_status_names();
+        my $n = CATS::Messages::problem_status_names();
         for (sort keys %$n) {
             push @status_list, { id => $_, name => $n->{$_} };
         }
