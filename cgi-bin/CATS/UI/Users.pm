@@ -366,14 +366,16 @@ sub users_frame {
     my @fields = qw(
         A.id A.country A.motto A.login A.team_name A.city
         CA.is_jury CA.is_ooc CA.is_remote CA.is_hidden CA.is_site_org CA.is_virtual CA.diff_time
-        CA.tag CA.site_id);
+        CA.tag);
     $lv->define_db_searches(\@fields);
     $lv->define_db_searches({
         'CA.id' => 'CA.id',
         is_judge => q~
             CASE WHEN EXISTS (SELECT * FROM judges J WHERE J.account_id = A.id) THEN 1 ELSE 0 END~,
         site_name => 'S.name',
+        site_id => 'COALESCE(CA.site_id, 0)',
     });
+    $lv->define_enums({ site_id => { 'my' => $user->{site_id} } }) if $user->{site_id};
 
     my $fields = join ', ', @fields;
     my $rating_sql = !$lv->visible_cols->{Rt} ? 'NULL' : qq~
@@ -382,7 +384,7 @@ sub users_frame {
         ($is_jury ? '' : ' AND (R.submit_time < C.freeze_date OR C.defreeze_date < CURRENT_TIMESTAMP)');
 
     my $sql = sprintf qq~
-        SELECT ($rating_sql) AS rating, CA.id, $fields, S.name AS site_name
+        SELECT ($rating_sql) AS rating, CA.id, $fields, CA.site_id, S.name AS site_name
         FROM accounts A
             INNER JOIN contest_accounts CA ON CA.account_id = A.id
             INNER JOIN contests C ON CA.contest_id = C.id
