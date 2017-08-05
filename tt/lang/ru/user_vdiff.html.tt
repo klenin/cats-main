@@ -1,6 +1,7 @@
 [%
   capt.import({
-    name => 'Имя',
+    participant => 'Участник',
+    site => 'Площадка',
     is_virtual => 'Виртуальный',
   })
 %]

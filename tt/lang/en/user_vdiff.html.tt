@@ -1,6 +1,7 @@
 [%
   capt.import({
-    name => 'Name',
+    participant => 'Participant',
+    site => 'Site',
     is_virtual => 'Virtual',
   })
 %]

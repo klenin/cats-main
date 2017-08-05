@@ -570,9 +570,10 @@ sub user_vdiff_save {
         { account_id => $p->{uid}, contest_id => $cid }
     ));
     ($u->{contest_start_offset}) = $dbh->selectrow_array(q~
-        SELECT C.start_date + CA.diff_time
+        SELECT C.start_date + COALESCE(CA.diff_time, 0) + COALESCE(CS.diff_time, 0)
         FROM contest_accounts CA
         INNER JOIN contests C ON C.id = CA.contest_id
+        LEFT JOIN contest_sites CS ON CS.site_id = CA.site_id AND CS.contest_id = CA.contest_id
         WHERE CA.account_id = ? AND CA.contest_id = ?~, undef,
         $u->{id}, $cid) or return;
     $dbh->commit;
@@ -587,21 +588,28 @@ sub user_vdiff_frame {
     init_template('user_vdiff.html.tt');
 
     my $u = $dbh->selectrow_hashref(q~
-        SELECT A.id, A.team_name, CA.diff_time, CA.is_virtual,
+        SELECT A.id, A.team_name, CA.diff_time, CA.is_virtual, CA.site_id,
             C.start_date AS contest_start,
-            C.start_date + CA.diff_time AS contest_start_offset
+            C.start_date + COALESCE(CA.diff_time, 0) + COALESCE(CS.diff_time, 0) AS contest_start_offset,
+            CS.diff_time AS site_diff_time,
+            C.start_date + CS.diff_time AS site_contest_start_offset,
+            S.name AS site_name
         FROM accounts A
         INNER JOIN contest_accounts CA ON CA.account_id = A.id
         INNER JOIN contests C ON C.id = CA.contest_id
+        LEFT JOIN contest_sites CS ON CS.site_id = CA.site_id AND CS.contest_id = CA.contest_id
+        LEFT JOIN sites S ON S.id = CA.site_id
         WHERE A.id = ? AND CA.contest_id = ?~, { Slice => {} },
         $p->{uid}, $cid) or return;
     user_vdiff_save($p, $u);
 
     $t->param(
-        user_submenu('user_vdiff', $uid),
+        user_submenu('user_vdiff', $p->{uid}),
         u => $u,
         formatted_diff_time => CATS::Time::format_diff($u->{diff_time}, 1),
+        formatted_site_diff_time => CATS::Time::format_diff($u->{site_diff_time}, 1),
         title_suffix => $u->{team_name},
+        href_site => url_f('contest_sites_edit', site_id => $u->{site_id}),
     );
 }
 
