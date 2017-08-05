@@ -9,7 +9,7 @@
 <tr><td>[% capt.default_file_ext %]</td><td><input type="text" name="default_file_ext" value="[% default_file_ext | html %]" class="bordered"></td></tr>
 <tr><td>[% capt.memory_handicap %]</td><td><input type="text" name="memory_handicap" value="[% memory_handicap %]" class="bordered"></td></tr>
 <tr><td>[% capt.syntax %]</td><td><input type="text" name="syntax" value="[% syntax %]" class="bordered"></td></tr>
-<tr><td>[% capt.locked %]</td><td>[% checkbox('locked', locked) %]</td>
+<tr><td>[% capt.locked %]</td><td>[% checkbox_1('locked', locked) %]</td>
 </table>
 <br>
 [% PROCESS includes/edit_save_cancel.tti %]

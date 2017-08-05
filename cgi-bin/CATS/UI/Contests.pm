@@ -14,7 +14,7 @@ use CATS::RankTable;
 use CATS::StaticPages;
 use CATS::UI::Prizes;
 use CATS::Utils qw(url_function coalesce date_to_iso);
-use CATS::Web qw(param param_on url_param redirect);
+use CATS::Web qw(param url_param redirect);
 
 sub contests_new_frame {
     init_template('contests_new.html.tt');
@@ -45,7 +45,7 @@ sub get_contest_html_params {
     my $p = {};
 
     $p->{$_} = scalar param($_) for contest_string_params();
-    $p->{$_} = param_on($_) for contest_checkbox_params();
+    $p->{$_} = param($_) ? 1 : 0 for contest_checkbox_params();
 
     for ($p->{contest_name}) {
         $_ //= '';

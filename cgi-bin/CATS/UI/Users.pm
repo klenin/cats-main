@@ -19,7 +19,7 @@ use CATS::Privileges;
 use CATS::Time;
 use CATS::User;
 use CATS::Utils qw(url_function date_to_iso);
-use CATS::Web qw(param param_on redirect url_param);
+use CATS::Web qw(param redirect url_param);
 
 my $hash_password;
 BEGIN {
@@ -128,7 +128,7 @@ sub users_edit_save {
     }
     # Simple $is_jury check is insufficient since jury member
     # can add any team to his contest.
-    my $set_password = param_on('set_password') && $is_root;
+    my $set_password = param('set_password') && $is_root;
     my $id = param('id');
     my $old_user = $id ? CATS::User->new->load($id, [ qw(settings srole) ]) : undef;
     # Only admins may edit other admins.
@@ -193,7 +193,7 @@ sub profile_save {
     if (!$is_root) {
         delete $u->{restrict_ips};
     }
-    my $set_password = param_on('set_password');
+    my $set_password = param('set_password');
 
     $u->validate_params(validate_password => $set_password, id => $uid) or return;
     update_settings($settings) or return;

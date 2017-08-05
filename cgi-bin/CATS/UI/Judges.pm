@@ -10,10 +10,10 @@ use CATS::Judge;
 use CATS::JudgeDB;
 use CATS::ListView;
 use CATS::Misc qw(
-    $t $is_jury $is_root
+    $is_jury $is_root $t
     init_template msg res_str url_f);
 use CATS::References;
-use CATS::Web qw(param param_on url_param redirect);
+use CATS::Web qw(param redirect url_param);
 
 sub edit_frame {
     init_template('judges_edit.html.tt');

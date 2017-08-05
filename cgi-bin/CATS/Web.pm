@@ -68,8 +68,6 @@ sub encoding_param {
 sub param { _param(@_) }
 *url_param = \&param;
 
-sub param_on { (param($_[0]) || '') eq 'on' }
-
 sub ensure_upload { $qq->upload($_[0]) // die "Bad upload for parameter '$_[0]'" }
 
 sub has_upload { $qq->upload($_[0]) ? 1 : 0 }

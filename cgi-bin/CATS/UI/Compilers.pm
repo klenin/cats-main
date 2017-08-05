@@ -13,7 +13,7 @@ use CATS::Misc qw(
     $t $is_jury $is_root
     init_template msg res_str url_f);
 use CATS::References;
-use CATS::Web qw(param param_on url_param);
+use CATS::Web qw(param url_param);
 
 sub fields() {qw(code description file_ext default_file_ext in_contests memory_handicap syntax)}
 
@@ -30,7 +30,7 @@ sub edit_frame {
 
 sub edit_save {
     CATS::JudgeDB::invalidate_de_bitmap_cache;
-    $form->edit_save(sub { $_[0]->{in_contests} = !param_on('locked') })
+    $form->edit_save(sub { $_[0]->{in_contests} = !param('locked') })
         and msg(1065, Encode::decode_utf8(param('description')));
 }
 
