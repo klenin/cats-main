@@ -572,6 +572,12 @@ sub user_vdiff_save {
         { diff_time => $u->{diff_time}, is_virtual => $u->{is_virtual} },
         { account_id => $p->{uid}, contest_id => $cid }
     ));
+    ($u->{contest_start_offset}) = $dbh->selectrow_array(q~
+        SELECT C.start_date + CA.diff_time
+        FROM contest_accounts CA
+        INNER JOIN contests C ON C.id = CA.contest_id
+        WHERE CA.account_id = ? AND CA.contest_id = ?~, undef,
+        $u->{id}, $cid) or return;
     $dbh->commit;
     msg($u->{diff_time} ? 1157 : 1158, $u->{team_name});
 }
@@ -579,7 +585,7 @@ sub user_vdiff_save {
 sub user_vdiff_frame {
     my ($p) = @_;
     $is_jury or return;
-    my $uid = $p->{uid} or return;
+    $p->{uid} or return;
 
     init_template('user_vdiff.html.tt');
 
@@ -591,7 +597,7 @@ sub user_vdiff_frame {
         INNER JOIN contest_accounts CA ON CA.account_id = A.id
         INNER JOIN contests C ON C.id = CA.contest_id
         WHERE A.id = ? AND CA.contest_id = ?~, { Slice => {} },
-        $uid, $cid) or return;
+        $p->{uid}, $cid) or return;
     user_vdiff_save($p, $u);
 
     $t->param(
