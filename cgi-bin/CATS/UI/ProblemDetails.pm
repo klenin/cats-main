@@ -10,9 +10,10 @@ use CATS::BinaryFile;
 use CATS::Constants;
 use CATS::DB;
 use CATS::ListView;
+use CATS::Messages;
 use CATS::Misc qw(
-    $t $is_jury $is_root $sid $cid $contest
-    init_template msg res_str url_f auto_ext);
+    $cid $contest $is_jury $is_root $sid $t
+    auto_ext init_template msg res_str url_f);
 use CATS::Problem::Save;
 use CATS::Problem::Text;
 use CATS::Problem::Utils;
@@ -77,7 +78,7 @@ sub problem_details_frame {
         WHERE P.id = ?~, { Slice => {} },
         $cid, $p->{pid}) or return;
 
-    my $kw_lang = "name_" . (CATS::Misc::lang eq 'ru' ? 'ru' : 'en');
+    my $kw_lang = "name_" . (CATS::Messages::lang eq 'ru' ? 'ru' : 'en');
     $pr->{keywords} = $dbh->selectall_arrayref(qq~
         SELECT K.id, K.code, K.$kw_lang AS name FROM keywords K INNER JOIN problem_keywords PK ON PK.keyword_id = K.id
         WHERE PK.problem_id = ? ORDER BY K.code~, { Slice => {} },

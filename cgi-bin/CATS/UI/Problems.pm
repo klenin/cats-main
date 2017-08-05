@@ -81,7 +81,7 @@ sub problems_mass_retest {
 sub prepare_keyword {
     my ($where, $p) = @_;
     $p->{kw} or return;
-    my $name_field = 'name_' . CATS::Misc::lang();
+    my $name_field = 'name_' . CATS::Messages::lang();
     my ($code, $name) = $dbh->selectrow_array(qq~
         SELECT code, $name_field FROM keywords WHERE id = ?~, undef,
         $p->{kw}) or do { $p->{kw} = undef; return; };
