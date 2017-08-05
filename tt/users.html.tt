@@ -25,8 +25,8 @@ function delete_team(href, name) {
 [% IF visible_cols.Si %]<td>[% maybe_href(u.href_site, u.site_name || u.city) %]</td>[% END %]
 [% IF visible_cols.Tg %]<td align="center">[% u.tag %]</td>[% END %]
 [% IF user.is_jury || user.is_site_org %]
-<td class="user_checkbox"><label>[% checkbox_1("ooc$u.id", u.ooc) %]</label></td>
-<td class="user_checkbox"><label>[% checkbox_1("remote$u.id", u.remote) %]</label></td>
+<td class="user_checkbox"><label>[% checkbox_1("ooc$u.id", u.ooc, u.editable_attrs) %]</label></td>
+<td class="user_checkbox"><label>[% checkbox_1("remote$u.id", u.remote, u.editable_attrs) %]</label></td>
 <td class="user_checkbox"><label>[% checkbox_1("site_org$u.id", u.site_org, user.is_jury) %]</label></td>
 [% END %]
 [% IF user.is_jury %]
@@ -62,7 +62,7 @@ function delete_team(href, name) {
 <label>[% capt.tag %]: <input type="text" name="tag_to_set" class="bordered" /></label>
 <button type="submit" value="1" name="set_tag" class="button">[% capt.set %]</button>
 [% END %]
-[% IF user.is_site_org %]
+[% IF user.is_jury || user.is_site_org %]
 <select name="site_id"><option/>[% FOREACH s IN sites; option(s.id, s.name); END %]</select>
 <button type="submit" value="1" name="set_site" class="button">[% capt.set_site %]</button>
 [% END %]

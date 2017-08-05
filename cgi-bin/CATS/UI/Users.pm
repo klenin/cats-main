@@ -390,11 +390,16 @@ sub users_frame {
             INNER JOIN contests C ON CA.contest_id = C.id
             LEFT JOIN sites S ON S.id = CA.site_id
         WHERE C.id = ?%s %s ~ . $lv->order_by,
-        ($is_jury ? '' : ' AND CA.is_hidden = 0'),
+        ($is_jury || $user->{is_site_org} && !$user->{site_id} ? '' :
+        $user->{is_site_org} ? ' AND (CA.is_hidden = 0 OR CA.site_id = ?)' :
+        ' AND CA.is_hidden = 0'),
         $lv->maybe_where_cond;
 
     my $c = $dbh->prepare($sql);
-    $c->execute($cid, $lv->where_params);
+    $c->execute(
+        $cid,
+        (!$is_jury && $user->{is_site_org} && $user->{site_id} ? $user->{site_id} : ()),
+        $lv->where_params);
 
     my $fetch_record = sub {
         my (
@@ -428,6 +433,8 @@ sub users_frame {
             ooc => $ooc,
             remote => $remote,
             site_org => $site_org,
+            editable_attrs =>
+                ($is_jury || (!$user->{site_id} || $user->{site_id} == $site_id) && $aid != $uid),
             virtual => $virtual,
             virtual_diff_time => $virtual_diff_time,
             virtual_diff_time_minutes => int(($virtual_diff_time // 0) * 24 * 60 | 0.5),

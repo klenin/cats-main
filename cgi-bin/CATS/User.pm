@@ -12,7 +12,7 @@ use CATS::ContestParticipate qw(get_registered_contestant);
 use CATS::Countries;
 use CATS::DB;
 use CATS::Form qw(validate_integer validate_string_length);
-use CATS::Misc qw($cid $is_jury $is_root $t $user init_template msg url_f);
+use CATS::Misc qw($cid $is_jury $is_root $t $uid $user init_template msg url_f);
 use CATS::Privileges;
 use CATS::RankTable;
 use CATS::Web qw(param);
@@ -315,8 +315,8 @@ sub save_attributes_jury {
         # Forbid removing is_jury privilege from an admin.
         my ($srole) = $dbh->selectrow_array(q~
             SELECT A.srole FROM accounts A
-                INNER JOIN contest_accounts CA ON A.id = CA.account_id
-                WHERE CA.id = ?~, undef,
+            INNER JOIN contest_accounts CA ON A.id = CA.account_id
+            WHERE CA.id = ?~, undef,
             $user_id
         );
         $changed_count += save_attributes_single(
@@ -329,6 +329,14 @@ sub save_attributes_jury {
 sub save_attributes_org {
     my $changed_count = 0;
     for my $user_id (split(':', param('user_set'))) {
+        if (!$is_jury) {
+            my ($aid, $site_id) = $dbh->selectrow_array(q~
+                SELECT account_id, site_id FROM contest_accounts CA
+                WHERE CA.id = ?~, undef,
+                $user_id
+            );
+            (!$user->{site_id} || $user->{site_id} == $site_id) && $aid != $uid or next;
+        }
         $changed_count += save_attributes_single($user_id, [ qw(remote ooc) ]);
     }
     save_attributes_finalize($changed_count);
