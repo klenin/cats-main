@@ -1,13 +1,6 @@
 [%
   capt.import({
     name => 'Name',
-    diff_time => 'Time offset',
-    contest_start => 'Contest start without offset',
-    contest_start_offset => 'Contest start with offset',
-    diff_time_days => 'Time offset in days',
-    new_diff_time => 'New offset',
-    units => { min => 'm.', hour => 'h.', day => 'd.', week => 'w.' },
     is_virtual => 'Virtual',
-    save => 'Save',
   })
 %]

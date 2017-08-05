@@ -1,5 +1,6 @@
 [% PROCESS includes/menu_begin.tti %]
 [%- PROCESS includes/html.tti -%]
+[%- PROCESS "lang/$lang/diff_time.tti" -%]
 
 <p>
 [% capt.name %]: [% u.team_name | html %]
