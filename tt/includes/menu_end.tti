@@ -5,7 +5,7 @@
   <td>
     &nbsp;[% capt.current_user %]:
     [% IF user.name ~%]
-      [% user.name | html %]
+      [% user.name | html %] [% IF user.site_name; '('; user.site_name | html; ')'; END %]
     [% ELSE ~%]
       [% capt.anonymous %]
     [%- END %]
