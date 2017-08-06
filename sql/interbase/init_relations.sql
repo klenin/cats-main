@@ -109,6 +109,7 @@ CREATE TABLE contest_sites (
     contest_id  INTEGER NOT NULL REFERENCES contests(id) ON DELETE CASCADE,
     site_id     INTEGER NOT NULL REFERENCES sites(id),
     diff_time   DOUBLE PRECISION,
+    ext_time    DOUBLE PRECISION
 );
 ALTER TABLE contest_sites
     ADD CONSTRAINT contest_sites_pk PRIMARY KEY (contest_id, site_id);
@@ -126,6 +127,7 @@ CREATE TABLE contest_accounts (
     tag         VARCHAR(200),
     is_virtual  INTEGER,
     diff_time   FLOAT,
+    ext_time    DOUBLE PRECISION,
     site_id     INTEGER REFERENCES sites(id),
     is_site_org SMALLINT DEFAULT 0 NOT NULL,
     UNIQUE(contest_id, account_id)
