@@ -4,19 +4,21 @@
 
 <form method="post" enctype="multipart/form-data">
 <table class="internal_borders padded">
-<tr><th colspan="2">[% capt.participant %]</td>[% IF u.site_id %]<th>[% capt.site %]</th>[% END %]</tr>
-<tr><td colspan="2">[% u.team_name | html %]</td>[% IF u.site_id %]<td>[% href(href_site, u.site_name) %]</td>[% END %]</tr>
+<tr><th></th><th>[% capt.participant %]</td>[% IF u.site_id %]<th>[% capt.site %]</th>[% END %]</tr>
+<tr><td></td><td>[% u.team_name | html %]</td>[% IF u.site_id %]<td>[% href(href_site, u.site_name) %]</td>[% END %]</tr>
 <tr><td>[% capt.diff_time %]</td><td>[% formatted_diff_time %]</td>[% IF u.site_id %]<td>[% formatted_site_diff_time %]</td>[% END %]</tr>
 <tr><td>[% capt.contest_start %]</td><td[% ' colspan="2"' IF u.site_id %]>[% u.contest_start %]</td></tr>
 <tr><td>[% capt.contest_start_offset %]</td><td>[% u.contest_start_offset %]</td>[% IF u.site_id %]<td>[% u.site_contest_start_offset %]</td>[% END %]</tr>
 <tr><td>[% capt.diff_time_days %]</td><td>[% u.diff_time %]</td>[% IF u.site_id %]<td>[% u.site_diff_time %]</td>[% END %]</tr>
 <tr><td>[% capt.new_diff_time %]</td><td><input type="text" name="diff_time" value="[% u.diff_time %]" />
-  <select name="units">
-    <option value="min">[% capt.units.min %]</option>
-    <option value="hour">[% capt.units.hour %]</option>
-    <option value="day" selected="selected">[% capt.units.day %]</option>
-    <option value="week">[% capt.units.week %]</option>
-  </select>
+  [% PROCESS includes/time_units.tti name = 'diff_units' %]
+</td>[% IF u.site_id %]<td></td>[% END %]</tr>
+<tr><td>[% capt.ext_time %]</td><td>[% formatted_ext_time %]</td>[% IF u.site_id %]<td>[% formatted_site_ext_time %]</td>[% END %]</tr>
+<tr><td>[% capt.contest_finish %]</td><td[% ' colspan="2"' IF u.site_id %]>[% u.contest_finish %]</td></tr>
+<tr><td>[% capt.contest_finish_offset %]</td><td>[% u.contest_finish_offset %]</td>[% IF u.site_id %]<td>[% u.site_contest_finish_offset %]</td>[% END %]</tr>
+<tr><td>[% capt.ext_time_days %]</td><td>[% u.ext_time %]</td>[% IF u.site_id %]<td>[% u.site_ext_time %]</td>[% END %]</tr>
+<tr><td>[% capt.new_ext_time %]</td><td><input type="text" name="ext_time" value="[% u.ext_time %]" />
+  [% PROCESS includes/time_units.tti name = 'ext_units' %]
 </td>[% IF u.site_id %]<td></td>[% END %]</tr>
 <tr><td>[% capt.is_virtual %]</td><td>[% checkbox('is_virtual', u.is_virtual) %]</td>[% IF u.site_id %]<td></td>[% END %]</tr>
 </table>

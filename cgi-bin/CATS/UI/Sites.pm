@@ -85,14 +85,15 @@ sub sites_frame {
 sub contest_sites_edit_save {
     my ($p, $s) = @_;
     $p->{save} or return;
-    CATS::Time::set_diff_time($s, $p) or return;
+    CATS::Time::set_diff_time($s, $p, 'diff') or return;
+    CATS::Time::set_diff_time($s, $p, 'ext') or return;
 
     $dbh->do(_u $sql->update('contest_sites',
-        { diff_time => $s->{diff_time} },
+        { diff_time => $s->{diff_time}, ext_time => $s->{ext_time} },
         { site_id => $p->{site_id}, contest_id => $cid }
     ));
-    ($s->{contest_start_offset}) = $dbh->selectrow_array(q~
-        SELECT C.start_date + CS.diff_time
+    ($s->{contest_start_offset}, $s->{contest_finish_offset}) = $dbh->selectrow_array(q~
+        SELECT C.start_date + CS.diff_time, C.start_date + CS.diff_time  + CS.ext_time
         FROM contest_sites CS
         INNER JOIN contests C ON C.id = CS.contest_id
         WHERE CS.site_id = ? AND CS.contest_id = ?~, undef,
@@ -110,9 +111,12 @@ sub contest_sites_edit_frame {
 
     my $s = $dbh->selectrow_hashref(q~
         SELECT
-            S.id, S.name AS site_name, CS.diff_time,
-            C.title AS contest_name, C.start_date AS contest_start,
-            C.start_date + CS.diff_time AS contest_start_offset
+            S.id, S.name AS site_name, CS.diff_time, CS.ext_time,
+            C.title AS contest_name,
+            C.start_date AS contest_start,
+            C.start_date + CS.diff_time AS contest_start_offset,
+            C.finish_date AS contest_finish,
+            C.finish_date + CS.diff_time + CS.ext_time AS contest_finish_offset
         FROM sites S
         INNER JOIN contest_sites CS ON CS.site_id = S.id
         INNER JOIN contests C ON C.id = CS.contest_id
@@ -123,6 +127,7 @@ sub contest_sites_edit_frame {
     $t->param(
         s => $s,
         formatted_diff_time => CATS::Time::format_diff($s->{diff_time}, 1),
+        formatted_ext_time => CATS::Time::format_diff($s->{ext_time}, 1),
         title_suffix => $s->{name},
     );
 }

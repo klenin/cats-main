@@ -566,14 +566,17 @@ sub user_ip_frame {
 sub user_vdiff_save {
     my ($p, $u) = @_;
     $p->{save} or return;
-    CATS::Time::set_diff_time($u, $p) or return;
+    CATS::Time::set_diff_time($u, $p, 'diff') or return;
+    CATS::Time::set_diff_time($u, $p, 'ext') or return;
     $u->{is_virtual} = $p->{is_virtual} ? 1 : 0;
     $dbh->do(_u $sql->update('contest_accounts',
-        { diff_time => $u->{diff_time}, is_virtual => $u->{is_virtual} },
+        { diff_time => $u->{diff_time}, ext_time => $u->{ext_time}, is_virtual => $u->{is_virtual} },
         { account_id => $p->{uid}, contest_id => $cid }
     ));
-    ($u->{contest_start_offset}) = $dbh->selectrow_array(qq~
-        SELECT $CATS::Time::contest_start_offset_sql
+    ($u->{contest_start_offset}, $u->{contest_finish_offset}) = $dbh->selectrow_array(qq~
+        SELECT
+            $CATS::Time::contest_start_offset_sql,
+            $CATS::Time::contest_finish_offset_sql
         FROM contest_accounts CA
         INNER JOIN contests C ON C.id = CA.contest_id
         LEFT JOIN contest_sites CS ON CS.site_id = CA.site_id AND CS.contest_id = CA.contest_id
@@ -591,11 +594,14 @@ sub user_vdiff_frame {
     init_template('user_vdiff.html.tt');
 
     my $u = $dbh->selectrow_hashref(qq~
-        SELECT A.id, A.team_name, CA.diff_time, CA.is_virtual, CA.site_id,
+        SELECT A.id, A.team_name, CA.diff_time, CA.ext_time, CA.is_virtual, CA.site_id,
             C.start_date AS contest_start,
             $CATS::Time::contest_start_offset_sql AS contest_start_offset,
-            CS.diff_time AS site_diff_time,
+            C.finish_date AS contest_finish,
+            $CATS::Time::contest_finish_offset_sql AS contest_finish_offset,
+            CS.diff_time AS site_diff_time, CS.ext_time AS site_ext_time,
             C.start_date + CS.diff_time AS site_contest_start_offset,
+            C.finish_date + CS.diff_time + CS.ext_time AS site_contest_finish_offset,
             S.name AS site_name
         FROM accounts A
         INNER JOIN contest_accounts CA ON CA.account_id = A.id
@@ -609,8 +615,8 @@ sub user_vdiff_frame {
     $t->param(
         user_submenu('user_vdiff', $p->{uid}),
         u => $u,
-        formatted_diff_time => CATS::Time::format_diff($u->{diff_time}, 1),
-        formatted_site_diff_time => CATS::Time::format_diff($u->{site_diff_time}, 1),
+        (map { +"formatted_$_" => CATS::Time::format_diff($u->{$_}, 1) }
+            qw(diff_time site_diff_time ext_time site_ext_time) ),
         title_suffix => $u->{team_name},
         href_site => url_f('contest_sites_edit', site_id => $u->{site_id}),
     );

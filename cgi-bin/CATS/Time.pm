@@ -50,13 +50,16 @@ sub mark_finish {
 my $diff_units = { min => 1 / 24 / 60, hour => 1 / 24, day => 1, week => 7 };
 
 sub set_diff_time {
-    my ($obj, $p) = @_;
-    my $k = $diff_units->{$p->{units} // ''} or return;
-    $obj->{diff_time} = $p->{diff_time} ? $p->{diff_time} * $k : undef;
+    my ($obj, $p, $prefix) = @_;
+    my $k = $diff_units->{$p->{$prefix . '_units'} // ''} or return;
+    my $n = $prefix . '_time';
+    $obj->{$n} = $p->{$n} ? $p->{$n} * $k : undef;
     1;
 }
 
 our $diff_time_sql = '(COALESCE(CA.diff_time, 0) + COALESCE(CS.diff_time, 0))';
+our $ext_time_sql = '(COALESCE(CA.ext_time, 0) + COALESCE(CS.ext_time, 0))';
 our $contest_start_offset_sql = "(C.start_date + $diff_time_sql)";
+our $contest_finish_offset_sql = "(C.finish_date + $diff_time_sql + $ext_time_sql)";
 
 1;

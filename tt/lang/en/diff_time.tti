@@ -6,6 +6,11 @@
     diff_time_days => 'Time offset in days',
     new_diff_time => 'New offset',
     units => { min => 'm.', hour => 'h.', day => 'd.', week => 'w.' },
+    ext_time => 'Extra time',
+    contest_finish => 'Contest finish without extra',
+    contest_finish_offset => 'Contest finish with extra',
+    ext_time_days => 'Extra time in days',
+    new_ext_time => 'New extra time',
     save => 'Save',
   })
 %]

@@ -9,18 +9,23 @@
 
 <form method="post" enctype="multipart/form-data">
 <table class="internal_borders padded">
+
 <tr><td>[% capt.diff_time %]</td><td>[% formatted_diff_time %]</td></tr>
 <tr><td>[% capt.contest_start %]</td><td>[% s.contest_start %]</td></tr>
 <tr><td>[% capt.contest_start_offset %]</td><td>[% s.contest_start_offset %]</td></tr>
 <tr><td>[% capt.diff_time_days %]</td><td>[% s.diff_time %]</td></tr>
 <tr><td>[% capt.new_diff_time %]</td><td><input type="text" name="diff_time" value="[% s.diff_time %]" />
-  <select name="units">
-    <option value="min">[% capt.units.min %]</option>
-    <option value="hour">[% capt.units.hour %]</option>
-    <option value="day" selected="selected">[% capt.units.day %]</option>
-    <option value="week">[% capt.units.week %]</option>
-  </select>
+  [% PROCESS includes/time_units.tti name = 'diff_units' %]
 </td></tr>
+
+<tr><td>[% capt.ext_time %]</td><td>[% formatted_ext_time %]</td></tr>
+<tr><td>[% capt.contest_finish %]</td><td>[% s.contest_finish %]</td></tr>
+<tr><td>[% capt.contest_finish_offset %]</td><td>[% s.contest_finish_offset %]</td></tr>
+<tr><td>[% capt.ext_time_days %]</td><td>[% s.ext_time %]</td></tr>
+<tr><td>[% capt.new_ext_time %]</td><td><input type="text" name="ext_time" value="[% s.ext_time %]" />
+  [% PROCESS includes/time_units.tti name = 'ext_units' %]
+</td></tr>
+
 </table>
 <br/>
 <button type="submit" value="1" name="save" class="button">[% capt.save %]</button>

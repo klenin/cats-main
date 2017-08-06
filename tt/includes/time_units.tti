@@ -1,0 +1,6 @@
+  <select name="[% name %]">
+    <option value="min">[% capt.units.min %]</option>
+    <option value="hour">[% capt.units.hour %]</option>
+    <option value="day" selected="selected">[% capt.units.day %]</option>
+    <option value="week">[% capt.units.week %]</option>
+  </select>

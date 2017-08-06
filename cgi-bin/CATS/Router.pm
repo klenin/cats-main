@@ -46,7 +46,10 @@ sub main_routes() {
         contests => [ \&CATS::UI::Contests::contests_frame, has_problem => $int, ],
         contest_sites => [ \&CATS::UI::Sites::contest_sites_frame, ],
         contest_sites_edit => [ \&CATS::UI::Sites::contest_sites_edit_frame,
-            site_id => $int, diff_time => $fixed, units => $ident, save => $bool, ],
+            site_id => $int,
+            diff_time => $fixed, diff_units => $ident,
+            ext_time => $fixed, ext_units => $ident,
+            save => $bool, ],
 
         console_content => \&CATS::UI::Console::content_frame,
         console => \&CATS::UI::Console::console_frame,
@@ -85,7 +88,10 @@ sub main_routes() {
         user_settings => \&CATS::UI::Users::user_settings_frame,
         user_ip => [ \&CATS::UI::Users::user_ip_frame, uid => $int, ],
         user_vdiff => [ \&CATS::UI::Users::user_vdiff_frame,
-            uid => $int, diff_time => $fixed, units => $ident, is_virtual => $ident, save => $bool, ],
+            uid => $int,
+            diff_time => $fixed, diff_units => $ident,
+            ext_time => $fixed, ext_units => $ident,
+            is_virtual => $ident, save => $bool, ],
         impersonate => [ \&CATS::UI::Users::impersonate_frame, uid => $int, ],
 
         compilers => \&CATS::UI::Compilers::compilers_frame,
