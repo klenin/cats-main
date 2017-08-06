@@ -298,6 +298,7 @@ sub problem_text_frame {
             SELECT $fields_str FROM problems WHERE id = ?~, { Slice => {} },
             $problem->{problem_id}) or next;
         $problem = { %$problem, %$p };
+        $problem->{lang} = param('problem_lang') if $is_root && param('problem_lang');
 
         if ($is_jury_in_contest && !param('nokw')) {
             my $lang_col = $problem->{lang} eq 'ru' ? 'name_ru' : 'name_en';
