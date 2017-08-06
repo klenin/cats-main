@@ -111,8 +111,8 @@ function apply_mathjax(p) {
   [% END %]
   </table>
   [% IF p.keywords ; c.keywords %]: [% p.keywords %]<br/><br/>[% END %]
-  [%- MACRO section(name) IF p.item(name) %]
-    <h3>[% c.item(name) %]</h3>
+  [%- MACRO section(name, caption) IF p.item(name) %]
+    <h3>[% c.item(caption || name) %]</h3>
     [% p.item(name) %]
   [% END -%]
   [% section('statement') %]
@@ -120,12 +120,12 @@ function apply_mathjax(p) {
     [% section('pconstraints') %]
     [% section('explanation') %]
   [% ELSE %]
-    [% section('input_format') %]
+    [% section('input_format', p.input_file == '*STDIN' ? 0 : 'input_file_format') %]
     [% IF p.formal_input %]
       <h3>[% c.formal_input %]</h3>
       <pre>[% p.formal_input %]</pre>
     [% END %]
-    [% section('output_format') %]
+    [% section('output_format', p.output_file == '*STDOUT' ? 0 : 'output_file_format') %]
     [% section('pconstraints') %]
     [% IF p.samples.size %]
       <h3>[% c.sample_tests %]</h3>
