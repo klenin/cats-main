@@ -27,7 +27,7 @@ sub format_diff {
     my $hours = int($dt);
     $dt = ($dt - $hours) * 60;
     my $minutes = int($dt + 0.5);
-    !$days && !$hours ? $minutes :
+    !$days && !$hours ? "$sign$minutes" :
         sprintf($days ? '%s%d%s %02d:%02d' : '%s%4$d:%5$02d', $sign, $days, res_str(577), $hours, $minutes);
 }
 
