@@ -56,4 +56,7 @@ sub set_diff_time {
     1;
 }
 
+our $diff_time_sql = '(COALESCE(CA.diff_time, 0) + COALESCE(CS.diff_time, 0))';
+our $contest_start_offset_sql = "(C.start_date + $diff_time_sql)";
+
 1;

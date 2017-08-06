@@ -496,19 +496,20 @@ sub select_all_reqs {
     $dbh->selectall_arrayref(qq~
         SELECT
             R.id AS id, R.submit_time, R.state, R.failed_test,
-            R.submit_time - C.start_date AS time_since_start,
+            R.submit_time - $CATS::Time::contest_start_offset_sql AS time_since_start,
             CP.code, P.title AS problem_title,
             A.id AS team_id, A.team_name, A.last_ip,
             CA.is_remote, CA.is_ooc
         FROM
-            reqs R INNER JOIN
-            problems P ON R.problem_id = P.id INNER JOIN
-            contest_accounts CA ON CA.contest_id = R.contest_id AND CA.account_id = R.account_id INNER JOIN
-            contests C ON R.contest_id = C.id INNER JOIN
-            contest_problems CP ON R.contest_id = CP.contest_id AND CP.problem_id = R.problem_id INNER JOIN
-            accounts A ON CA.account_id = A.id
+            reqs R
+            INNER JOIN problems P ON R.problem_id = P.id
+            INNER JOIN contest_accounts CA ON CA.contest_id = R.contest_id AND CA.account_id = R.account_id
+            INNER JOIN contests C ON R.contest_id = C.id
+            INNER JOIN contest_problems CP ON R.contest_id = CP.contest_id AND CP.problem_id = R.problem_id
+            INNER JOIN accounts A ON CA.account_id = A.id
+            LEFT JOIN contest_sites CS ON CS.contest_id = C.id AND CS.site_id = CA.site_id
         WHERE
-            R.contest_id = ? AND CA.is_hidden = 0 AND CA.diff_time = 0 AND R.submit_time > C.start_date
+            R.contest_id = ? AND CA.is_hidden = 0 AND CA.is_virtual = 0 AND R.submit_time > C.start_date
         ORDER BY R.submit_time ASC~, { Slice => {} },
         $cid);
 }

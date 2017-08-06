@@ -20,6 +20,7 @@ use CATS::Misc qw($cid $contest $is_jury $is_root $t $uid auto_ext init_template
 use CATS::Problem::Tags;
 use CATS::StaticPages;
 use CATS::TeX::Lite;
+use CATS::Time;
 use CATS::Utils qw(url_function);
 use CATS::Web qw(param url_param);
 
@@ -217,11 +218,12 @@ sub contest_visible {
 
     my $c = $dbh->selectrow_hashref(qq~
         SELECT
-            CAST(CURRENT_TIMESTAMP - C.start_date - COALESCE(CA.diff_time, 0) AS DOUBLE PRECISION) AS since_start,
+            CAST(CURRENT_TIMESTAMP - $CATS::Time::contest_start_offset_sql AS DOUBLE PRECISION) AS since_start,
             C.local_only, C.id AS orig_cid, C.show_packages, C.is_hidden,
             CA.is_jury, CA.is_remote, CA.is_ooc
             FROM contests C $s
             LEFT JOIN contest_accounts CA ON CA.contest_id = C.id AND CA.account_id = ?
+            LEFT JOIN contest_sites CS ON CS.contest_id = C.id AND CS.site_id = CA.site_id
             WHERE $t.id = ?~, undef,
         $uid, $p);
     return (1, 1, 1) if $c->{is_jury};

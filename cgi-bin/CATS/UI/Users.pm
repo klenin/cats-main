@@ -408,7 +408,7 @@ sub users_frame {
     my $fetch_record = sub {
         my (
             $accepted, $caid, $aid, $country_abbr, $motto, $login, $team_name, $city,
-            $jury, $ooc, $remote, $hidden, $site_org, $virtual, $virtual_diff_time,
+            $jury, $ooc, $remote, $hidden, $site_org, $virtual, $diff_time,
             $tag, $site_id, $site_name
         ) = $_[0]->fetchrow_array
             or return ();
@@ -440,9 +440,9 @@ sub users_frame {
             editable_attrs =>
                 ($is_jury || (!$user->{site_id} || $user->{site_id} == $site_id) && $uid && $aid != $uid),
             virtual => $virtual,
-            virtual_diff_time => $virtual_diff_time,
-            virtual_diff_time_minutes => int(($virtual_diff_time // 0) * 24 * 60 | 0.5),
-            virtual_diff_time_fmt => CATS::Time::format_diff($virtual_diff_time, 1),
+            virtual_diff_time => $diff_time,
+            virtual_diff_time_minutes => int(($diff_time // 0) * 24 * 60 | 0.5),
+            virtual_diff_time_fmt => CATS::Time::format_diff($diff_time, 1),
          );
     };
 
@@ -477,17 +477,20 @@ sub user_stats_frame {
     my $hidden_cond = $is_root ? '' :
         'AND C.is_hidden = 0 AND (CA.is_hidden = 0 OR CA.is_hidden IS NULL) AND C.defreeze_date < CURRENT_TIMESTAMP';
     my $contests = $dbh->selectall_arrayref(qq~
-        SELECT C.id, C.title, CA.id AS caid, CA.is_jury, C.start_date + CA.diff_time AS start_date,
+        SELECT C.id, C.title, CA.id AS caid, CA.is_jury,
+            $CATS::Time::contest_start_offset_sql AS start_date,
             (SELECT COUNT(DISTINCT R.problem_id) FROM reqs R
                 WHERE R.contest_id = C.id AND R.account_id = CA.account_id AND R.state = $cats::st_accepted
             ) AS accepted_count,
             (SELECT COUNT(*) FROM contest_problems CP
                 WHERE CP.contest_id = C.id AND CP.status < $cats::problem_st_hidden
             ) AS problem_count
-        FROM contests C INNER JOIN contest_accounts CA ON CA.contest_id = C.id
+        FROM contests C
+        INNER JOIN contest_accounts CA ON CA.contest_id = C.id
+        LEFT JOIN contest_sites CS ON CS.contest_id = C.id AND CS.site_id = CA.site_id
         WHERE
             CA.account_id = ? AND C.ctype = 0 $hidden_cond
-        ORDER BY C.start_date + CA.diff_time DESC~,
+        ORDER BY start_date DESC~,
         { Slice => {} }, $uid);
     my $pr = sub { url_f(
         'console', uf => $uid, i_value => -1, se => 'user_stats', show_results => 1, search => $_[0], rows => 30
@@ -569,8 +572,8 @@ sub user_vdiff_save {
         { diff_time => $u->{diff_time}, is_virtual => $u->{is_virtual} },
         { account_id => $p->{uid}, contest_id => $cid }
     ));
-    ($u->{contest_start_offset}) = $dbh->selectrow_array(q~
-        SELECT C.start_date + COALESCE(CA.diff_time, 0) + COALESCE(CS.diff_time, 0)
+    ($u->{contest_start_offset}) = $dbh->selectrow_array(qq~
+        SELECT $CATS::Time::contest_start_offset_sql
         FROM contest_accounts CA
         INNER JOIN contests C ON C.id = CA.contest_id
         LEFT JOIN contest_sites CS ON CS.site_id = CA.site_id AND CS.contest_id = CA.contest_id
@@ -587,10 +590,10 @@ sub user_vdiff_frame {
 
     init_template('user_vdiff.html.tt');
 
-    my $u = $dbh->selectrow_hashref(q~
+    my $u = $dbh->selectrow_hashref(qq~
         SELECT A.id, A.team_name, CA.diff_time, CA.is_virtual, CA.site_id,
             C.start_date AS contest_start,
-            C.start_date + COALESCE(CA.diff_time, 0) + COALESCE(CS.diff_time, 0) AS contest_start_offset,
+            $CATS::Time::contest_start_offset_sql AS contest_start_offset,
             CS.diff_time AS site_diff_time,
             C.start_date + CS.diff_time AS site_contest_start_offset,
             S.name AS site_name

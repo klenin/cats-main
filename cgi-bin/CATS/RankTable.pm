@@ -153,6 +153,7 @@ sub get_problems
 sub get_results {
     (my CATS::RankTable $self, my $cond_str, my $max_cached_req_id) = @_;
     my (@conditions, @params);
+
     unless ($is_jury) {
         if ($self->{frozen}) {
             if ($is_team) {
@@ -164,7 +165,7 @@ sub get_results {
             }
         }
         if ($is_team && $user->{diff_time}) {
-            push @conditions, "(R.submit_time - CA.diff_time < CURRENT_TIMESTAMP - $user->{diff_time})";
+            push @conditions, "(R.submit_time - $CATS::Time::diff_time_sql < CURRENT_TIMESTAMP - $user->{diff_time})";
         }
         push @conditions, '(C.show_all_results = 1 OR R.account_id = ?)';
         push @params, $uid || 0;
@@ -172,15 +173,17 @@ sub get_results {
 
     $cond_str .= join '', map " AND $_", @conditions;
 
-    my $select_fields = q~
+    my $select_fields = qq~
         R.state, R.problem_id, R.points, R.testsets, R.contest_id,
-        MAXVALUE((R.submit_time - C.start_date - CA.diff_time) * 1440, 0) AS time_elapsed,
+        MAXVALUE((R.submit_time - $CATS::Time::contest_start_offset_sql) * 1440, 0) AS time_elapsed,
         CASE WHEN R.submit_time >= C.freeze_date THEN 1 ELSE 0 END AS is_frozen~;
 
     my $joins = q~
         INNER JOIN contests C ON C.id = R.contest_id
         INNER JOIN contest_problems CP ON CP.problem_id = R.problem_id AND CP.contest_id = R.contest_id
-        INNER JOIN problems P ON P.id = R.problem_id~;
+        INNER JOIN problems P ON P.id = R.problem_id
+        LEFT JOIN contest_sites CS ON CS.contest_id = CA.contest_id AND CS.site_id = CA.site_id
+        ~;
 
     my $where = qq~
         CA.is_hidden = 0 AND CP.status < ? AND R.state >= ? AND R.id > ? AND
