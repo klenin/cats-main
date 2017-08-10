@@ -7,8 +7,7 @@ use CATS::Constants;
 use CATS::DB;
 use CATS::DevEnv;
 use CATS::Misc qw(
-    $t $is_jury $is_team $cid $uid $contest $user
-    msg url_f);
+    $t $is_jury $is_team $cid $uid $contest $user msg url_f);
 use CATS::Request;
 use CATS::Web qw(param upload_source);
 
@@ -84,7 +83,7 @@ sub problems_submit {
         }
     }
 
-    my $submit_uid = $uid // ($contest->is_practice ? get_anonymous_uid() : die);
+    my $submit_uid = $uid // ($contest->is_practice ? $user->{anonymous_id} : die);
 
     return msg(1131) if problem_submit_too_frequent($submit_uid);
 

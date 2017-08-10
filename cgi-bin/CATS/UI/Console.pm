@@ -11,8 +11,8 @@ use CATS::Countries;
 use CATS::DB;
 use CATS::ListView;
 use CATS::Misc qw(
-    $cid $contest $is_team $is_jury $is_root $privs $settings $sid $t $uid
-    auto_ext get_anonymous_uid init_template msg res_str url_f
+    $cid $contest $is_team $is_jury $is_root $privs $settings $sid $t $uid $user
+    auto_ext init_template msg res_str url_f
 );
 use CATS::Request;
 use CATS::Time;
@@ -649,7 +649,8 @@ sub console_frame {
         is_jury => $is_jury,
         is_root => $is_root,
         selection => scalar(param('selection')),
-        href_my_events_only => url_f('console', uf => ($uid || get_anonymous_uid()), se => param('se') || undef),
+        href_my_events_only =>
+            url_f('console', uf => ($uid || $user->{anonymous_id}), se => param('se') || undef),
         href_all_events => url_f('console', uf => 0, se => param('se') || undef),
         href_view_source => url_f('view_source'),
         href_run_details => url_f('run_details'),

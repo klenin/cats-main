@@ -10,8 +10,6 @@ our @EXPORT = qw(
     downloads_path
     downloads_url
     generate_output
-    get_anonymous_uid
-    http_header
     initialize
     init_template
     msg
@@ -54,11 +52,6 @@ our (
 );
 
 my ($http_mime_type, %extra_headers, $enc_settings);
-
-sub get_anonymous_uid {
-    scalar $dbh->selectrow_array(q~
-        SELECT id FROM accounts WHERE login = ?~, undef, $cats::anonymous_login);
-}
 
 sub http_header {
     my ($type, $encoding, $cookie) = @_;
@@ -233,6 +226,11 @@ sub init_contest {
         $user->{diff_time} ||= 0;
         $user->{is_participant} = $is_team;
         $is_jury ||= $is_root;
+    }
+    else {
+        $user->{anonymous_id} = $dbh->selectrow_array(q~
+            SELECT id FROM accounts WHERE login = ?~, undef,
+            $cats::anonymous_login);
     }
     $user->{is_jury} = $is_jury;
     if ($contest->{is_hidden} && !$is_team) {

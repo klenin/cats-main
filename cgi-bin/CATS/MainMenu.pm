@@ -3,7 +3,7 @@ package CATS::MainMenu;
 use strict;
 use warnings;
 
-use CATS::Misc qw($t $sid $contest $uid $is_jury $user res_str url_f get_anonymous_uid);
+use CATS::Misc qw($t $sid $contest $uid $is_jury $user res_str url_f);
 use CATS::Utils qw(url_function);
 use CATS::Web qw(url_param);
 
@@ -60,7 +60,7 @@ sub generate_menu {
         ($is_jury || $user->{is_site_org} ?
             { item => res_str(513), href => url_f('contest_sites') } : ()),
         { item => res_str(510),
-          href => url_f('console', $is_jury ? () : (uf => $uid || get_anonymous_uid())) },
+          href => url_f('console', $is_jury ? () : (uf => $uid || $user->{anonymous_id})) },
         ($is_jury ? () : { item => res_str(557), href => url_f('import_sources') }),
     );
 
