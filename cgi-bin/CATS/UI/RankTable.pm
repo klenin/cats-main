@@ -9,13 +9,13 @@ use CATS::Misc qw(
     $cid $contest $is_jury $is_root $is_team $sid $t $uid
     init_template url_f);
 use CATS::RankTable;
+use CATS::Settings;
 use CATS::Web qw(param url_param);
 
-sub rank_table
-{
+sub rank_table {
     my $template_name = shift;
     init_template('rank_table_content.html.tt');
-    $t->param(printable => url_param('printable'));
+    $t->param(printable => scalar url_param('printable'), lang => CATS::Settings::lang);
     my $rt = CATS::RankTable->new;
     $rt->parse_params;
     $rt->rank_table;

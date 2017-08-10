@@ -12,11 +12,10 @@ use Carp qw(croak);
 use CATS::Config qw(cats_dir);
 use CATS::Constants;
 use CATS::Misc qw($t);
+use CATS::Settings;
 use CATS::Web qw(param);
 
-my ($messages, $settings, $printed);
-
-sub lang { $settings->{lang} || 'ru' }
+my $messages;
 
 sub init_messages_lang {
     my ($lang) = @_;
@@ -36,17 +35,9 @@ sub init_messages_lang {
 # Preserve messages between http requests.
 sub init { $messages //= { map { $_ => init_messages_lang($_) } @cats::langs }; }
 
-sub init_lang {
-    my ($new_settings) = @_;
-    $settings = $new_settings;
-    my $lang = param('lang');
-    $settings->{lang} = $lang if $lang && grep $_ eq $lang, @cats::langs;
-    $printed = undef;
-}
-
 sub res_str {
     my ($id, @params) = @_;
-    my $s = $messages->{lang()}->[$id] or die "Unknown res_str id: $id";
+    my $s = $messages->{CATS::Settings::lang()}->[$id] or die "Unknown res_str id: $id";
     sprintf($s, @params);
 }
 

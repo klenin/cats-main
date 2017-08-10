@@ -12,9 +12,10 @@ use Encode qw();
 use MIME::Base64;
 use Storable qw();
 
+use CATS::Constants;
 use CATS::DB;
 use CATS::Misc qw($uid);
-use CATS::Web qw(cookie);
+use CATS::Web qw(param cookie);
 
 our $settings;
 
@@ -28,13 +29,17 @@ sub init {
     }
     # If any problem happens during the thaw, clear settings.
     $settings = eval { $enc_settings && Storable::thaw($enc_settings) } || {};
+
+    my $lang = param('lang');
+    $settings->{lang} = $lang if $lang && grep $_ eq $lang, @cats::langs;
 }
 
+sub lang { $settings->{lang} || 'ru' }
+
 sub as_cookie {
-    my ($lang) = @_;
-    $uid && $lang eq 'ru' ? undef : cookie(
+    $uid && lang() eq 'ru' ? undef : cookie(
         -name => 'settings',
-        -value => encode_base64($uid ? Storable::freeze({ lang => $lang }) : $enc_settings),
+        -value => encode_base64($uid ? Storable::freeze({ lang => lang() }) : $enc_settings),
         -expires => '+1h');
 }
 

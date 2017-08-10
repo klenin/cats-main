@@ -42,8 +42,7 @@ sub init_user {
         }
     }
 
-    CATS::Settings::init($uid, $enc_settings);
-    CATS::Messages::init_lang($settings);
+    CATS::Settings::init($enc_settings);
 
     if ($bad_sid) {
         return CATS::Web::forbidden if param('noredir');

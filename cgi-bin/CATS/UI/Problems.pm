@@ -24,6 +24,7 @@ use CATS::Problem::Submit;
 use CATS::ProblemStorage;
 use CATS::Redirect;
 use CATS::Request;
+use CATS::Settings;
 use CATS::StaticPages;
 use CATS::Utils qw(file_type date_to_iso redirect_url_function url_function);
 use CATS::Verdicts;
@@ -88,7 +89,7 @@ sub problems_mass_retest {
 sub prepare_keyword {
     my ($where, $p) = @_;
     $p->{kw} or return;
-    my $name_field = 'name_' . CATS::Messages::lang();
+    my $name_field = 'name_' . CATS::Settings::lang();
     my ($code, $name) = $dbh->selectrow_array(qq~
         SELECT code, $name_field FROM keywords WHERE id = ?~, undef,
         $p->{kw}) or do { $p->{kw} = undef; return; };

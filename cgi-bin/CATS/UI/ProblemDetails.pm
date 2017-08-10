@@ -17,6 +17,7 @@ use CATS::Misc qw(
 use CATS::Problem::Save;
 use CATS::Problem::Text;
 use CATS::Problem::Utils;
+use CATS::Settings;
 use CATS::StaticPages;
 use CATS::Testset;
 use CATS::Utils qw(url_function source_encodings);
@@ -78,7 +79,7 @@ sub problem_details_frame {
         WHERE P.id = ?~, { Slice => {} },
         $cid, $p->{pid}) or return;
 
-    my $kw_lang = "name_" . (CATS::Messages::lang eq 'ru' ? 'ru' : 'en');
+    my $kw_lang = "name_" . (CATS::Settings::lang eq 'ru' ? 'ru' : 'en');
     $pr->{keywords} = $dbh->selectall_arrayref(qq~
         SELECT K.id, K.code, K.$kw_lang AS name FROM keywords K INNER JOIN problem_keywords PK ON PK.keyword_id = K.id
         WHERE PK.problem_id = ? ORDER BY K.code~, { Slice => {} },
