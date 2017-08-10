@@ -44,7 +44,7 @@ use CATS::Utils qw();
 use CATS::Web qw(param url_param headers content_type);
 
 our (
-    $contest, $t, $sid, $cid, $uid, $dbi_error,
+    $contest, $t, $sid, $cid, $uid,
     $is_root, $is_team, $is_jury, $privs, $user,
 );
 
@@ -111,10 +111,6 @@ sub generate_output {
         #dbi_profile => Data::Dumper::Dumper($dbh->{Profile}->{Data}),
         langs => [ map { href => url_f('contests', lang => $_), name => $_ }, @cats::langs ],
     );
-
-    if (defined $dbi_error) {
-        $t->param(dbi_error => $dbi_error);
-    }
 
     my $cookie = CATS::Settings::as_cookie(lang);
     my $out = '';
@@ -235,7 +231,6 @@ sub init_contest {
 
 sub initialize {
     $Storable::canonical = 1;
-    $dbi_error = undef;
     CATS::Messages::init;
     $t = undef;
     init_user;
