@@ -10,8 +10,7 @@ use CATS::ProblemStorage;
 use CATS::StaticPages;
 use CATS::Web qw(param save_uploaded_file);
 
-sub add_problem_to_contest
-{
+sub add_problem_to_contest {
     my ($pid, $problem_code) = @_;
     CATS::StaticPages::invalidate_problem_text(cid => $cid);
     $dbh->selectrow_array(q~
@@ -26,8 +25,7 @@ sub add_problem_to_contest
             $cats::problem_st_hidden : $cats::problem_st_ready);
 }
 
-sub problems_link_save
-{
+sub problems_link_save {
     my $pid = param('problem_id')
         or return msg(1012);
 
@@ -64,8 +62,7 @@ sub problems_link_save
     $dbh->commit;
 }
 
-sub set_problem_import_diff
-{
+sub set_problem_import_diff {
     my ($pid, $sha) = @_;
     $t->param(problem_import_diff => {
         sha => $sha,
@@ -74,8 +71,7 @@ sub set_problem_import_diff
     });
 }
 
-sub problems_replace
-{
+sub problems_replace {
     my $pid = param('problem_id')
         or return msg(1012);
     my $file = param('zip') || '';
@@ -109,8 +105,7 @@ sub problems_replace
     msg(1007);
 }
 
-sub problems_add
-{
+sub problems_add {
     my ($source_name, $is_remote) = @_;
     my $problem_code;
     if (!$contest->is_practice) {
@@ -134,8 +129,7 @@ sub problems_add
     }
 }
 
-sub problems_add_new
-{
+sub problems_add_new {
     my $file = param('zip') || '';
     $file =~ /\.(zip|ZIP)$/
         or return msg(1053);
@@ -144,8 +138,7 @@ sub problems_add_new
     unlink $fname;
 }
 
-sub problems_add_new_remote
-{
+sub problems_add_new_remote {
     my $url = param('remote_url') || '';
     $url or return msg(1091);
     problems_add($url, 1);

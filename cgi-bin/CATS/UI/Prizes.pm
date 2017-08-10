@@ -14,15 +14,13 @@ use CATS::Web qw(param url_param);
 
 sub sanitize_clist { sort { $a <=> $b } grep /^\d+$/, @_ }
 
-sub contest_group_by_clist
-{
+sub contest_group_by_clist {
     $dbh->selectrow_array(q~
         SELECT id FROM contest_groups WHERE clist = ?~, undef,
         $_[0]);
 }
 
-sub contest_group_auto_new
-{
+sub contest_group_auto_new {
     my @clist = sanitize_clist param('contests_selection');
     @clist && @clist < 100 or return;
     my $clist = join ',', @clist;
@@ -43,8 +41,7 @@ sub contest_group_auto_new
 
 sub contest_groups_fields () { qw(name clist) }
 
-sub prizes_edit_frame
-{
+sub prizes_edit_frame {
     init_template('prizes_edit.html.tt');
 
     my $cgid = url_param('edit') or return;
@@ -57,8 +54,7 @@ sub prizes_edit_frame
 
 sub prize_params { map { $_ => param($_ . '_' . $_[0]) } qw(rank name) }
 
-sub prizes_edit_save
-{
+sub prizes_edit_save {
     my $cgid = param('id') or return;
     my %cg = map { $_ => (param($_) || '') } contest_groups_fields;
 
@@ -87,8 +83,7 @@ sub prizes_edit_save
     $dbh->commit;
 }
 
-sub prizes_frame
-{
+sub prizes_frame {
     if ($is_root && (my $cgid = url_param('delete'))) {
         $dbh->do(qq~
             DELETE FROM contest_groups WHERE id = ?~, undef, $cgid);
@@ -127,8 +122,7 @@ sub prizes_frame
     $t->param(submenu => [ CATS::References::menu('prizes') ]);
 }
 
-sub contests_prizes_frame
-{
+sub contests_prizes_frame {
     my $lv = CATS::ListView->new(name => 'contests_prizes', template => auto_ext('contests_prizes'));
 
     my @clist = sanitize_clist param('clist');
