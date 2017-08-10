@@ -3,13 +3,6 @@ package CATS::Problem::Text;
 use strict;
 use warnings;
 
-use Exporter qw(import);
-
-our @EXPORT = qw(
-    ensure_problem_hash
-    problem_text_frame
-);
-
 use Encode;
 use Text::Aspell;
 use XML::Parser::Expat;
@@ -20,6 +13,7 @@ use CATS::Globals qw($cid $contest $is_jury $is_root $t $uid);
 use CATS::Messages qw(res_str);
 use CATS::Output qw(auto_ext downloads_path downloads_url init_template);
 use CATS::Problem::Tags;
+use CATS::Problem::Utils;
 use CATS::StaticPages;
 use CATS::TeX::Lite;
 use CATS::Time;
@@ -86,17 +80,6 @@ sub ch_1 {
     $text_span .= $text;
 }
 
-# If the problem was not downloaded yet, generate a hash for it.
-sub ensure_problem_hash {
-    my ($problem_id, $hash, $need_commit) = @_;
-    return 1 if $$hash;
-    my @ch = ('a'..'z', 'A'..'Z', '0'..'9');
-    $$hash = join '', map @ch[rand @ch], 1..32;
-    $dbh->do(qq~UPDATE problems SET hash = ? WHERE id = ?~, undef, $$hash, $problem_id);
-    $dbh->commit if $need_commit;
-    return 0;
-}
-
 sub download_image {
     my ($name) = @_;
     # Assume the image is relatively small (few Kbytes),
@@ -106,7 +89,7 @@ sub download_image {
         INNER JOIN problems p ON c.problem_id = p.id
         WHERE p.id = ? AND c.name = ?~, undef,
         $current_pid, $name);
-    ensure_problem_hash($current_pid, \$hash, 1);
+    CATS::Problem::Utils::ensure_problem_hash($current_pid, \$hash, 1);
     return 'unknown' if !$name;
     $ext ||= '';
     # Security: this may lead to duplicate names, e.g. pic1 and pic-1.
@@ -128,7 +111,7 @@ sub save_attachment {
         INNER JOIN problems p ON pa.problem_id = p.id
         WHERE p.id = ? AND pa.name = ?~, undef,
         $pid, $name);
-    ensure_problem_hash($pid, \$hash, $need_commit);
+    CATS::Problem::Utils::ensure_problem_hash($pid, \$hash, $need_commit);
     return 'unknown' if !$file;
     # Security
     $file =~ tr/a-zA-Z0-9_.//cd;

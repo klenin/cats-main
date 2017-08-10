@@ -16,7 +16,6 @@ use CATS::IP;
 use CATS::JudgeDB;
 use CATS::Messages qw(msg res_str);
 use CATS::Output qw(init_template downloads_path downloads_url url_f);
-use CATS::Problem::Text qw(ensure_problem_hash);
 use CATS::Problem::Utils;
 use CATS::RankTable;
 use CATS::Request;
@@ -214,7 +213,7 @@ sub run_details_frame {
 sub save_visualizer {
     my ($data, $lfname, $pid, $hash) = @_;
 
-    ensure_problem_hash($pid, \$hash, 1);
+    CATS::Problem::Utils::ensure_problem_hash($pid, \$hash, 1);
 
     my $fname = "vis/${hash}_$lfname";
     my $fpath = downloads_path . $fname;

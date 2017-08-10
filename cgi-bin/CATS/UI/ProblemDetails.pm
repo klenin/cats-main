@@ -14,7 +14,6 @@ use CATS::ListView;
 use CATS::Messages qw(msg res_str);
 use CATS::Output qw(auto_ext downloads_path downloads_url init_template url_f);
 use CATS::Problem::Save;
-use CATS::Problem::Text;
 use CATS::Problem::Utils;
 use CATS::Settings;
 use CATS::StaticPages;
@@ -155,7 +154,7 @@ sub problem_download {
         $cid, $pid);
     defined $status && ($is_jury || $status != $cats::problem_st_hidden)
         or return not_found;
-    my $already_hashed = CATS::Problem::Text::ensure_problem_hash($pid, \$hash, 1);
+    my $already_hashed = CATS::Problem::Utils::ensure_problem_hash($pid, \$hash, 1);
     my $fname = "pr/problem_$hash.zip";
     my $fpath = downloads_path . $fname;
     unless($already_hashed && -f $fpath) {
