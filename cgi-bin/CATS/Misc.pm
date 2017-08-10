@@ -25,7 +25,6 @@ use CATS::Config qw(cats_dir);
 use CATS::Constants;
 use CATS::DB;
 use CATS::Messages;
-use CATS::Settings;
 use CATS::Template;
 use CATS::Utils qw();
 use CATS::Web qw(param url_param headers content_type);
@@ -46,8 +45,6 @@ sub http_header {
 
 sub downloads_path { cats_dir() . '../download/' }
 sub downloads_url { 'download/' }
-
-sub lang { goto &CATS::Messages::lang; }
 
 sub auto_ext {
     my ($file_name, $json) = @_;
@@ -74,7 +71,7 @@ sub init_template {
     $t = CATS::Template->new($file_name, cats_dir(), $p);
     my $json = param('json') || '';
     $extra_headers{'Access-Control-Allow-Origin'} = '*' if $json;
-    $t->param(lang => lang, $json =~ /^[a-zA-Z][a-zA-Z0-9_]+$/ ? (jsonp => $json) : ());
+    $t->param($json =~ /^[a-zA-Z][a-zA-Z0-9_]+$/ ? (jsonp => $json) : ());
 }
 
 *res_str = *CATS::Messages::res_str;
@@ -88,7 +85,7 @@ sub msg {
 sub url_f { CATS::Utils::url_function(@_, sid => $sid, cid => $cid) }
 
 sub generate_output {
-    my ($output_file) = @_;
+    my ($output_file, $cookie) = @_;
     defined $t or return; #? undef : ref $t eq 'SCALAR' ? return : die 'Template not defined';
     $contest->{time_since_start} or warn 'No contest from: ', $ENV{HTTP_REFERER} || '';
     $t->param(
@@ -99,7 +96,6 @@ sub generate_output {
         langs => [ map { href => url_f('contests', lang => $_), name => $_ }, @cats::langs ],
     );
 
-    my $cookie = CATS::Settings::as_cookie(lang);
     my $out = '';
     if (my $enc = param('enc')) {
         $t->param(encoding => $enc);

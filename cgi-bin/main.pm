@@ -26,6 +26,7 @@ use CATS::DB;
 use CATS::Config;
 use CATS::Init;
 use CATS::MainMenu;
+use CATS::Messages;
 use CATS::Misc qw($t generate_output);
 use CATS::Proxy;
 use CATS::Router;
@@ -54,7 +55,8 @@ sub accept_request {
     defined $t or return;
     CATS::MainMenu::generate_menu;
     CATS::Time::mark_finish;
-    generate_output($output_file);
+    $t->param(lang => CATS::Messages::lang);
+    generate_output($output_file, CATS::Settings::as_cookie(CATS::Messages::lang));
 }
 
 sub handler {
