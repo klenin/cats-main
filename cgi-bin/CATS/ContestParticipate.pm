@@ -52,16 +52,15 @@ sub flags_can_participate {
     my $contest_finished = all_sites_finished;
     return (
         can_participate_online =>
-            $uid && !$contest->{closed} && !$is_team && !$contest_finished,
+            $uid && !$contest->{closed} && !$user->{is_participant} && !$contest_finished,
         can_participate_virtual =>
-            $uid && !$contest->{closed} && (!$is_team || $user->{is_virtual}) &&
+            $uid && !$contest->{closed} && (!$user->{is_participant} || $user->{is_virtual}) &&
             $contest->{time_since_start} >= 0 &&
             (!$contest->{is_official} || $contest_finished));
 }
 
 sub online {
-    !get_registered_contestant(contest_id => $cid)
-        or return msg(1111, $contest->{title});
+    !$user->{is_participant} or return msg(1111, $contest->{title});
 
     if ($is_root) {
         $contest->register_account(account_id => $uid, is_jury => 1, is_pop => 1, is_hidden => 1);
@@ -77,10 +76,7 @@ sub online {
 }
 
 sub virtual {
-    my ($registered, $is_already_virtual, $is_remote) = get_registered_contestant(
-         fields => '1, is_virtual, is_remote', contest_id => $cid);
-
-    !$registered || $is_already_virtual
+    !$user->{is_participant} || $user->{is_virtual}
         or return msg(1114, $contest->{title});
 
     !$contest->{closed}
@@ -95,7 +91,7 @@ sub virtual {
 
     my $removed_req_count = 0;
     # Repeat virtual registration removes old results.
-    if ($registered) {
+    if ($user->{is_participant}) {
         $removed_req_count = $dbh->do(q~
             DELETE FROM reqs WHERE account_id = ? AND contest_id = ?~, undef,
             $uid, $cid);
@@ -106,7 +102,7 @@ sub virtual {
 
     $contest->register_account(
         contest_id => $cid, account_id => $uid,
-        is_virtual => 1, is_remote => $is_remote,
+        is_virtual => 1, is_remote => $user->{is_remote},
         diff_time => $contest->{time_since_start});
     $dbh->commit;
     $is_team = 1;
