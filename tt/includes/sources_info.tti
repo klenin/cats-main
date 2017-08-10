@@ -70,9 +70,9 @@ function send_message(href) {
     [% END %]
     [% IF si.is_jury %]
       [<a href="[% si.href_whois %]" alt="[% si.last_ip %]" title="[% si.last_ip %]">[% si.last_ip_short %]</a>]
-      [[% IF si.href_send_message -%]
+      [[% IF si.href_send_message ~%]
         <a href="javascript:send_message('[% si.href_send_message %]')">[% capt.message %]</a>
-        [%- ELSE; capt.disqualified; END %]]
+        [%~ ELSE; capt.disqualified; END %]]
     [% END %]
     </td>
   [% END; END %]
@@ -82,7 +82,7 @@ function send_message(href) {
   [% FOREACH si IN sources_info; IF si %]
     <td colspan="[% si.colspan %]">
       [% IF si.href_prev_attempt %] <a href="[% si.href_prev_attempt %]">[% si.prev_attempt_time %]&lt;&lt;</a>[% END %]
-      [% si.submit_time %]
+      [% si.submit_time; " ($si.formatted_time_since_start)" IF si.time_since_start %]
       [% IF si.href_next_attempt %] <a href="[% si.href_next_attempt %]">[% si.next_attempt_time %]&gt;&gt;</a>[% END %]
     </td>
   [% END; END %]

@@ -10,6 +10,7 @@ use CATS::DB;
 use CATS::Messages;
 use CATS::Misc qw($contest $is_jury $is_root $sid $t $uid url_f);
 use CATS::RankTable;
+use CATS::Time;
 use CATS::Utils qw(encodings source_encodings url_function);
 use CATS::Web qw(encoding_param param url_param);
 
@@ -155,6 +156,7 @@ sub get_sources_info {
             R.state R.failed_test R.points R.tag
             R.submit_time R.test_time R.result_time
             ),
+            "(R.submit_time - $CATS::Time::contest_start_offset_sql) AS time_since_start",
             'DE.description AS de_name',
             'A.team_name', 'COALESCE(E.ip, A.last_ip) AS last_ip',
             'P.title AS problem_name', 'P.save_output_prefix',
@@ -176,6 +178,7 @@ sub get_sources_info {
             'INNER JOIN contests C ON C.id = R.contest_id',
             'INNER JOIN contest_problems CP ON CP.contest_id = C.id AND CP.problem_id = P.id',
             'LEFT JOIN contest_accounts CA ON CA.contest_id = C.id AND CA.account_id = A.id',
+            'LEFT JOIN contest_sites CS ON CS.contest_id = C.id AND CS.site_id = CA.site_id',
             'LEFT JOIN events E ON E.id = R.id',
             'LEFT JOIN limits LCP ON LCP.id = CP.limits_id',
             'LEFT JOIN limits LR ON LR.id = R.limits_id',
@@ -211,11 +214,14 @@ sub get_sources_info {
 
         # We need to save original hash reference
         $r->{$_} = $additional_info{$_} for keys %additional_info;
+
         $r->{short_state} = $CATS::Verdicts::state_to_name->{$r->{state}};
 
         # Just hour and minute from testing start and finish timestamps.
         ($r->{"${_}_short"} = $r->{$_}) =~ s/^(.*)\s+(\d\d:\d\d)\s*$/$2/
             for qw(test_time result_time);
+        $r->{formatted_time_since_start} = CATS::Time::format_diff($r->{time_since_start});
+
         get_nearby_attempt($r, 'prev', '<', 'DESC', 1, $p{extra_params});
         get_nearby_attempt($r, 'next', '>', 'ASC' , 0, $p{extra_params});
         # During the official contest, viewing sources from other contests
