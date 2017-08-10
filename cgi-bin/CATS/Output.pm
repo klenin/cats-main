@@ -9,7 +9,6 @@ our @EXPORT_OK = qw(
     auto_ext
     downloads_path
     downloads_url
-    generate_output
     init_template
     url_f
 );
@@ -66,7 +65,7 @@ sub init_template {
 
 sub url_f { CATS::Utils::url_function(@_, sid => $sid, cid => $cid) }
 
-sub generate_output {
+sub generate {
     my ($output_file, $cookie) = @_;
     defined $t or return; #? undef : ref $t eq 'SCALAR' ? return : die 'Template not defined';
     $contest->{time_since_start} or warn 'No contest from: ', $ENV{HTTP_REFERER} || '';

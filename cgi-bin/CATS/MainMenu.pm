@@ -50,7 +50,7 @@ sub attach_menu {
    $t->param($menu_name => $menu);
 }
 
-sub generate_menu {
+sub generate {
     my $logged_on = $sid ne '';
 
     my @left_menu = (

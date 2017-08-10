@@ -29,7 +29,7 @@ use CATS::Globals qw($t);
 use CATS::Init;
 use CATS::MainMenu;
 use CATS::Messages;
-use CATS::Output qw(generate_output);
+use CATS::Output;
 use CATS::Proxy;
 use CATS::Router;
 use CATS::Settings;
@@ -55,10 +55,10 @@ sub accept_request {
     CATS::Settings::save;
 
     defined $t or return;
-    CATS::MainMenu::generate_menu;
+    CATS::MainMenu::generate;
     CATS::Time::mark_finish;
     $t->param(lang => CATS::Settings::lang);
-    generate_output($output_file, CATS::Settings::as_cookie);
+    CATS::Output::generate($output_file, CATS::Settings::as_cookie);
 }
 
 sub handler {
