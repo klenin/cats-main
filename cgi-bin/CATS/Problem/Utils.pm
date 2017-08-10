@@ -5,6 +5,9 @@ use warnings;
 
 use CATS::Constants;
 use CATS::DB;
+use CATS::Globals qw($t);
+use CATS::Messages qw(res_str);
+use CATS::Output qw(url_f);
 
 # If the problem was not downloaded yet, generate a hash for it.
 sub ensure_problem_hash {
@@ -31,5 +34,26 @@ sub run_method_enum() {+{
     interactive => $cats::rm_interactive,
     competitive => $cats::rm_competitive,
 }}
+
+my $problem_submenu = [
+    { href => 'problem_details', item => 504 },
+    { href => 'problem_history', item => 568 },
+    { href => 'compare_tests', item => 552 },
+    { href => 'problem_select_testsets', item => 505 },
+    { href => 'problem_test_data', item => 508 },
+    { href => 'problem_limits', item => 507 },
+    { href => 'problem_select_tags', item => 506 },
+];
+
+sub problem_submenu {
+    my ($selected_href, $pid) = @_;
+    $t->param(
+        submenu => [ map +{
+            href => url_f($_->{href}, pid => $pid),
+            item => res_str($_->{item}),
+            selected => $_->{href} eq $selected_href }, @$problem_submenu
+        ]
+    );
+}
 
 1;

@@ -22,27 +22,6 @@ use CATS::Utils qw(url_function source_encodings);
 use CATS::Verdicts;
 use CATS::Web qw(content_type encoding_param headers not_found param redirect url_param);
 
-my $problem_submenu = [
-    { href => 'problem_details', item => 504 },
-    { href => 'problem_history', item => 568 },
-    { href => 'compare_tests', item => 552 },
-    { href => 'problem_select_testsets', item => 505 },
-    { href => 'problem_test_data', item => 508 },
-    { href => 'problem_limits', item => 507 },
-    { href => 'problem_select_tags', item => 506 },
-];
-
-sub problem_submenu {
-    my ($selected_href, $pid) = @_;
-    $t->param(
-        submenu => [ map +{
-            href => url_f($_->{href}, pid => $pid),
-            item => res_str($_->{item}),
-            selected => $_->{href} eq $selected_href }, @$problem_submenu
-        ]
-    );
-}
-
 sub get_request_count {
     my ($this_contest_only, $pid) = @_;
     my $contest_cond = $this_contest_only ? ' AND R.contest_id = ?' : '';
@@ -133,7 +112,7 @@ sub problem_details_frame {
         href_problem_limits => url_f('problem_limits', pid => $p->{pid}),
         href_tags => url_f('problem_select_tags', pid => $p->{pid}),
     );
-    problem_submenu('problem_details', $p->{pid});
+    CATS::Problem::Utils::problem_submenu('problem_details', $p->{pid});
 }
 
 sub problem_download {
@@ -235,7 +214,7 @@ sub problem_select_testsets_frame {
         testsets => $testsets,
         href_action => url_f('problem_select_testsets', ($p->{from_problems} ? (from_problems => 1) : ())),
     );
-    problem_submenu('problem_select_testsets', $p->{pid});
+    CATS::Problem::Utils::problem_submenu('problem_select_testsets', $p->{pid});
 }
 
 sub problem_limits_frame {
@@ -260,7 +239,7 @@ sub problem_limits_frame {
         href_action => url_f('problem_limits', pid => $problem->{id}, cid => $cid)
     );
 
-    problem_submenu('problem_limits', $p->{pid});
+    CATS::Problem::Utils::problem_submenu('problem_limits', $p->{pid});
 
     if (param('override')) {
         my $new_limits = !defined $problem->{limits_id};
@@ -354,7 +333,7 @@ sub problem_test_data_frame {
 
     $t->param(p => $problem, tests => $tests);
 
-    problem_submenu('problem_test_data', $p->{pid});
+    CATS::Problem::Utils::problem_submenu('problem_test_data', $p->{pid});
 }
 
 sub problem_select_tags_frame {
@@ -382,7 +361,7 @@ sub problem_select_tags_frame {
     $t->param(
         href_action => url_f('problem_select_tags', ($p->{from_problems} ? (from_problems => 1) : ())),
     );
-    problem_submenu('problem_select_tags', $p->{pid});
+    CATS::Problem::Utils::problem_submenu('problem_select_tags', $p->{pid});
 }
 
 sub problem_commitdiff {
@@ -589,7 +568,7 @@ sub problem_history_frame {
         remote_url => $remote_url,
         title_suffix => $title,
     );
-    problem_submenu('problem_history', $pid);
+    CATS::Problem::Utils::problem_submenu('problem_history', $pid);
 
     my @cols = (
         { caption => res_str(650), width => '25%', order_by => 'author' },

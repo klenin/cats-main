@@ -9,7 +9,7 @@ use CATS::Constants;
 use CATS::DB;
 use CATS::Globals qw($contest $cid $is_jury $t);
 use CATS::Output qw(init_template url_f);
-use CATS::UI::ProblemDetails;
+use CATS::Problem::Utils;
 use CATS::Verdicts;
 use CATS::Web qw(param);
 
@@ -113,7 +113,7 @@ sub compare_tests_frame {
         simple_tests => \@simple_tests,
         hard_tests => \@hard_tests,
     );
-    CATS::UI::ProblemDetails::problem_submenu('compare_tests', $pid);
+    CATS::Problem::Utils::problem_submenu('compare_tests', $pid);
 }
 
 sub preprocess_source {
