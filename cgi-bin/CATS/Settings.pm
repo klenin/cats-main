@@ -7,6 +7,8 @@ use Exporter qw(import);
 
 our @EXPORT_OK = qw($settings);
 
+use Data::Dumper;
+use Encode qw();
 use MIME::Base64;
 use Storable qw();
 
@@ -46,6 +48,23 @@ sub save {
         UPDATE accounts SET settings = ? WHERE id = ?~, undef,
         $new_enc_settings, $user_id);
     $dbh->commit;
+}
+
+sub _apply_rec {
+    my ($val, $sub) = @_;
+    ref $val eq 'HASH' ?
+        { map { $_ => _apply_rec($val->{$_}, $sub) } keys %$val } :
+        $sub->($val);
+}
+
+sub as_dump {
+    my ($s) = @_;
+    # Data::Dumper escapes UTF-8 characters into \x{...} sequences.
+    # Work around by dumping encoded strings, then decoding the result.
+    my $d = Data::Dumper->new([ _apply_rec($s, \&Encode::encode_utf8) ]);
+    $d->Quotekeys(0);
+    $d->Sortkeys(1);
+    Encode::decode_utf8($d->Dump);
 }
 
 1;

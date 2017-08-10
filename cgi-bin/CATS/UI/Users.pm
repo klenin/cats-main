@@ -3,7 +3,6 @@ package CATS::UI::Users;
 use strict;
 use warnings;
 
-use Data::Dumper;
 use Encode;
 use Storable qw(freeze thaw);
 
@@ -203,23 +202,11 @@ sub profile_save {
     $dbh->commit;
 }
 
-sub apply_rec {
-    my ($val, $sub) = @_;
-    ref $val eq 'HASH' ?
-        { map { $_ => apply_rec($val->{$_}, $sub) } keys %$val } :
-        $sub->($val);
-}
-
 sub display_settings {
     my ($s) = @_;
     $t->param(settings => $s);
     $is_root or return;
-    # Data::Dumper escapes UTF-8 characters into \x{...} sequences.
-    # Work around by dumping encoded strings, then decoding the result.
-    my $d = Data::Dumper->new([ apply_rec($s, \&Encode::encode_utf8) ]);
-    $d->Quotekeys(0);
-    $d->Sortkeys(1);
-    $t->param(settings_dump => Encode::decode_utf8($d->Dump));
+    $t->param(settings_dump => CATS::Settings::as_dump($s));
 }
 
 sub profile_frame {
