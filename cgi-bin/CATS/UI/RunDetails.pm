@@ -13,8 +13,9 @@ use CATS::DB;
 use CATS::DevEnv;
 use CATS::IP;
 use CATS::JudgeDB;
+use CATS::Messages qw(msg res_str);
 use CATS::Misc qw(
-    $is_jury $is_root $sid $cid $t $uid init_template msg res_str url_f);
+    $is_jury $is_root $sid $cid $t $uid init_template url_f);
 use CATS::Problem::Text qw(ensure_problem_hash);
 use CATS::Problem::Utils;
 use CATS::RankTable;

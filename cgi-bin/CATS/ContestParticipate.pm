@@ -5,7 +5,8 @@ use warnings;
 
 use CATS::Constants;
 use CATS::DB;
-use CATS::Misc qw($cid $contest $is_jury $is_root $is_team $uid $user msg);
+use CATS::Messages qw(msg);
+use CATS::Misc qw($cid $contest $is_jury $is_root $is_team $uid $user);
 
 use Exporter qw(import);
 

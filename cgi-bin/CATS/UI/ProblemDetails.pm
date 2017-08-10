@@ -10,10 +10,10 @@ use CATS::BinaryFile;
 use CATS::Constants;
 use CATS::DB;
 use CATS::ListView;
-use CATS::Messages;
+use CATS::Messages qw(msg res_str);
 use CATS::Misc qw(
     $cid $contest $is_jury $is_root $sid $t
-    auto_ext init_template msg res_str url_f);
+    auto_ext init_template url_f);
 use CATS::Problem::Save;
 use CATS::Problem::Text;
 use CATS::Problem::Utils;

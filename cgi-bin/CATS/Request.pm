@@ -7,7 +7,7 @@ use CATS::Constants;
 use CATS::DB;
 use CATS::IP;
 use CATS::JudgeDB;
-use CATS::Misc qw(msg);
+use CATS::Messages qw(msg);
 
 # Params: limits: { time_limit, memory_limit }
 sub filter_valid_limits {

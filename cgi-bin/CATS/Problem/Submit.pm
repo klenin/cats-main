@@ -6,8 +6,9 @@ use warnings;
 use CATS::Constants;
 use CATS::DB;
 use CATS::DevEnv;
+use CATS::Messages qw(msg);
 use CATS::Misc qw(
-    $t $is_jury $is_team $cid $uid $contest $user msg url_f);
+    $cid $contest $is_jury $is_team $t $uid $user url_f);
 use CATS::Request;
 use CATS::Web qw(param upload_source);
 

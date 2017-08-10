@@ -4,9 +4,10 @@ use strict;
 use warnings;
 
 use CATS::DB;
+use CATS::Messages qw(msg res_str);
 use CATS::Misc qw(
     $cid $contest $is_jury $is_root $is_team $sid $t $uid
-    init_template msg res_str url_f);
+    init_template url_f);
 use CATS::RankTable;
 use CATS::Web qw(param url_param);
 

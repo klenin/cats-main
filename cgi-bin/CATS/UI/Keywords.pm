@@ -6,9 +6,9 @@ use warnings;
 use CATS::DB;
 use CATS::Form;
 use CATS::ListView;
+use CATS::Messages qw(msg res_str);
 use CATS::Misc qw(
-    $t $is_jury $is_root
-    init_template msg res_str url_f);
+    $t $is_jury $is_root init_template url_f);
 use CATS::References;
 use CATS::Web qw(param url_param);
 

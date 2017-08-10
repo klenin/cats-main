@@ -7,7 +7,7 @@ use CATS::Constants;
 use CATS::Contest;
 use CATS::ContestParticipate qw(is_jury_in_contest);
 use CATS::DB;
-use CATS::Messages;
+use CATS::Messages qw(res_str);
 use CATS::Misc qw($contest $is_jury $is_root $sid $t $uid url_f);
 use CATS::RankTable;
 use CATS::Time;

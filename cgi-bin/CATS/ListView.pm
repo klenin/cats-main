@@ -7,7 +7,8 @@ use Encode ();
 use List::Util qw(first min max);
 
 use CATS::DB;
-use CATS::Misc qw($is_jury $t init_template msg);
+use CATS::Messages qw(msg);
+use CATS::Misc qw($is_jury $t init_template);
 use CATS::Settings qw($settings);
 use CATS::Utils;
 use CATS::Web qw(param url_param);

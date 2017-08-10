@@ -6,9 +6,10 @@ use warnings;
 use CATS::Constants;
 use CATS::DB;
 use CATS::ListView;
+use CATS::Messages qw(res_str);
 use CATS::Misc qw(
     $cid $contest $is_jury $is_root $is_team $sid $t $uid
-    init_template msg res_str url_f);
+    init_template url_f);
 use CATS::References;
 use CATS::Utils qw(url_function);
 use CATS::Web qw(param redirect url_param);

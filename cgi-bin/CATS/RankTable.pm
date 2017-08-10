@@ -11,7 +11,7 @@ use CATS::Constants;
 use CATS::Countries;
 use CATS::DB;
 use CATS::Misc qw(
-    $t $is_root $is_jury $is_team $cid $uid url_f $contest $user);
+    $cid $contest $is_jury $is_root $is_team $t $uid $user url_f);
 use CATS::Testset;
 use CATS::Web qw(param url_param);
 

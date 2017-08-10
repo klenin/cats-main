@@ -13,10 +13,10 @@ use CATS::DevEnv;
 use CATS::Judge;
 use CATS::JudgeDB;
 use CATS::ListView;
-use CATS::Messages;
+use CATS::Messages qw(msg res_str);
 use CATS::Misc qw(
     $cid $contest $is_jury $is_root $is_team $sid $t $uid $user
-    auto_ext init_template msg res_str url_f);
+    auto_ext init_template url_f);
 use CATS::Problem::Save;
 use CATS::Problem::Source::Git;
 use CATS::Problem::Source::Zip;

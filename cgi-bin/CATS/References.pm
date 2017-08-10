@@ -3,7 +3,8 @@ package CATS::References;
 use strict;
 use warnings;
 
-use CATS::Misc qw($is_root $t $privs res_str url_f);
+use CATS::Messages qw(res_str);
+use CATS::Misc qw($is_root $privs $t url_f);
 
 sub reference_names() {
     (

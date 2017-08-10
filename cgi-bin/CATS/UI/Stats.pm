@@ -7,7 +7,7 @@ use List::Util qw(max);
 
 use CATS::Constants;
 use CATS::DB;
-use CATS::Misc qw(init_template $t $is_jury $cid $contest url_f);
+use CATS::Misc qw($contest $cid $is_jury $t init_template url_f);
 use CATS::UI::ProblemDetails;
 use CATS::Verdicts;
 use CATS::Web qw(param);

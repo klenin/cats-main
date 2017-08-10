@@ -16,7 +16,8 @@ use XML::Parser::Expat;
 
 use CATS::Config qw(cats_dir);
 use CATS::DB;
-use CATS::Misc qw($cid $contest $is_jury $is_root $t $uid auto_ext init_template res_str);
+use CATS::Messages qw(res_str);
+use CATS::Misc qw($cid $contest $is_jury $is_root $t $uid auto_ext init_template);
 use CATS::Problem::Tags;
 use CATS::StaticPages;
 use CATS::TeX::Lite;

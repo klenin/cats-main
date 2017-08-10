@@ -12,19 +12,15 @@ our @EXPORT_OK = qw(
     downloads_url
     generate_output
     init_template
-    msg
-    res_str
     url_f
 );
 
-use Carp qw(croak);
 use Encode();
 use SQL::Abstract; # Actually used by CATS::DB, bit is optional there.
 
 use CATS::Config qw(cats_dir);
 use CATS::Constants;
 use CATS::DB;
-use CATS::Messages;
 use CATS::Template;
 use CATS::Utils qw();
 use CATS::Web qw(param url_param headers content_type);
@@ -72,14 +68,6 @@ sub init_template {
     my $json = param('json') || '';
     $extra_headers{'Access-Control-Allow-Origin'} = '*' if $json;
     $t->param($json =~ /^[a-zA-Z][a-zA-Z0-9_]+$/ ? (jsonp => $json) : ());
-}
-
-*res_str = *CATS::Messages::res_str;
-
-sub msg {
-    defined $t or croak q~Call to 'msg' before 'init_template'~;
-    $t->param(message => res_str(@_));
-    undef;
 }
 
 sub url_f { CATS::Utils::url_function(@_, sid => $sid, cid => $cid) }

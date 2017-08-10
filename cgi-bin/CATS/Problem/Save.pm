@@ -4,7 +4,8 @@ use strict;
 use warnings;
 
 use CATS::DB;
-use CATS::Misc qw($t $cid $uid $contest msg url_f);
+use CATS::Messages qw(msg);
+use CATS::Misc qw($t $cid $uid $contest url_f);
 use CATS::ProblemStorage;
 use CATS::StaticPages;
 use CATS::Web qw(param save_uploaded_file);

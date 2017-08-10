@@ -5,11 +5,16 @@ use warnings;
 
 use Exporter qw(import);
 
+our @EXPORT_OK = qw(msg res_str);
+
+use Carp qw(croak);
+
 use CATS::Config qw(cats_dir);
 use CATS::Constants;
+use CATS::Misc qw($t);
 use CATS::Web qw(param);
 
-my ($messages, $settings);
+my ($messages, $settings, $printed);
 
 sub lang { $settings->{lang} || 'ru' }
 
@@ -36,12 +41,19 @@ sub init_lang {
     $settings = $new_settings;
     my $lang = param('lang');
     $settings->{lang} = $lang if $lang && grep $_ eq $lang, @cats::langs;
+    $printed = undef;
 }
 
 sub res_str {
     my ($id, @params) = @_;
     my $s = $messages->{lang()}->[$id] or die "Unknown res_str id: $id";
     sprintf($s, @params);
+}
+
+sub msg {
+    defined $t or croak q~Call to 'msg' before 'init_template'~;
+    $t->param(message => res_str(@_));
+    undef;
 }
 
 sub problem_status_names() {+{
