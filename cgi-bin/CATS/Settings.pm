@@ -13,16 +13,16 @@ use MIME::Base64;
 use Storable qw();
 
 use CATS::DB;
+use CATS::Misc qw($uid);
 use CATS::Web qw(cookie);
 
 our $settings;
 
-# CATS::Misc depends on CATS::Settings, so can not use global $uid here.
-my ($user_id, $enc_settings);
+my $enc_settings;
 
 sub init {
-    ($user_id, $enc_settings) = @_;
-    if (!$user_id) {
+    ($enc_settings) = @_;
+    if (!$uid) {
         $enc_settings = cookie('settings') || '';
         $enc_settings = decode_base64($enc_settings) if $enc_settings;
     }
@@ -32,9 +32,9 @@ sub init {
 
 sub as_cookie {
     my ($lang) = @_;
-    $user_id && $lang eq 'ru' ? undef : cookie(
+    $uid && $lang eq 'ru' ? undef : cookie(
         -name => 'settings',
-        -value => encode_base64($user_id ? Storable::freeze({ lang => $lang }) : $enc_settings),
+        -value => encode_base64($uid ? Storable::freeze({ lang => $lang }) : $enc_settings),
         -expires => '+1h');
 }
 
@@ -42,11 +42,11 @@ sub save {
     my $new_enc_settings = Storable::freeze($settings);
     $new_enc_settings ne ($enc_settings || '') or return;
     $enc_settings = $new_enc_settings;
-    $user_id or return; # Cookie only for anonymous users.
+    $uid or return; # Cookie only for anonymous users.
     $dbh->commit;
     $dbh->do(q~
         UPDATE accounts SET settings = ? WHERE id = ?~, undef,
-        $new_enc_settings, $user_id);
+        $new_enc_settings, $uid);
     $dbh->commit;
 }
 
