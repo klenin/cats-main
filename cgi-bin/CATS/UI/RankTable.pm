@@ -26,8 +26,7 @@ sub rank_table {
     $t->param(rank_table_content => $s, printable => (url_param('printable') || 0));
 }
 
-sub rank_table_frame
-{
+sub rank_table_frame {
     my $hide_ooc = url_param('hide_ooc') || 0;
     my $hide_virtual = url_param('hide_virtual') || 0;
     my $cache = url_param('cache');
@@ -53,8 +52,7 @@ sub rank_table_frame
     $t->param(href_rank_table_content => url_f('rank_table_content', @params));
     my $submenu =
         [ { href => url_f('rank_table_content', @params, printable => 1), item => res_str(538) } ];
-    if ($is_jury)
-    {
+    if ($is_jury) {
         push @$submenu,
             { href => url_f('rank_table', @params, cache => 1 - ($cache || 0)), item => res_str(553) },
             { href => url_f('rank_table', @params, points => 1 - ($show_points || 0)), item => res_str(554) };
@@ -62,13 +60,11 @@ sub rank_table_frame
     $t->param(submenu => $submenu, title_suffix => res_str(529));
 }
 
-sub rank_table_content_frame
-{
+sub rank_table_content_frame {
     rank_table('rank_table_iframe.html.tt');
 }
 
-sub rank_problem_details
-{
+sub rank_problem_details {
     init_template('rank_problem_details.html.tt');
     $is_jury or return;
 
@@ -81,8 +77,7 @@ sub rank_problem_details
         ORDER BY R.id~, { Slice => {} },
         $cid, $pid);
 
-    for (@$runs)
-    {
+    for (@$runs) {
         1;
     }
 }

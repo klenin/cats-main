@@ -21,24 +21,19 @@ use fields qw(
     rank problems problems_idx show_all_results show_prizes req_selection has_competitive show_regions
 );
 
-
-sub new
-{
+sub new {
     my $self = shift;
     $self = fields::new($self) unless ref $self;
     return $self;
 }
 
-
-sub get_test_testsets
-{
+sub get_test_testsets {
     my ($problem, $testset_spec) = @_;
     $problem->{all_testsets} ||= CATS::Testset::get_all_testsets($dbh, $problem->{problem_id});
     CATS::Testset::parse_test_rank($problem->{all_testsets}, $testset_spec);
 }
 
-sub cache_max_points
-{
+sub cache_max_points {
     my ($problem) = @_;
     my $pid = $problem->{problem_id};
     my $max_points = 0;
@@ -73,7 +68,6 @@ sub cache_max_points
     $max_points;
 }
 
-
 sub partial_checker_sql {
     my $checker_types = join ', ',
         grep $cats::source_modules{$_} == $cats::checker_module, keys %cats::source_modules;
@@ -88,9 +82,7 @@ sub partial_checker_sql {
         END AS partial_checker~;
 }
 
-
-sub get_problems
-{
+sub get_problems {
     (my CATS::RankTable $self) = @_;
     my $problems = $self->{problems} = $dbh->selectall_arrayref(qq~
         SELECT
@@ -116,8 +108,7 @@ sub get_problems
     my $prev_cid = -1;
     my $need_commit = 0;
     my $max_total_points = 0;
-    for (@$problems)
-    {
+    for (@$problems) {
         if ($_->{contest_id} != $prev_cid) {
             $_->{start_date} =~ /^(\S+)/;
             push @contests, { start_date => $1, count => 1 };
@@ -219,9 +210,7 @@ sub get_results {
         ($cats::problem_st_hidden, $cats::request_processed, $max_cached_req_id, @params) x ($self->{has_competitive} ? 2 : 1));
 }
 
-
-sub get_partial_points
-{
+sub get_partial_points {
     my ($req_row, $test_max_points) = @_;
     my $p = ($req_row->{checker_comment} // '') =~ /^(\d+)/ ? min($1, $test_max_points || $1) : 0;
 }
@@ -235,8 +224,7 @@ sub dependencies_accepted {
     return $cache->{$ts->{name}} = 1;
 }
 
-sub cache_req_points
-{
+sub cache_req_points {
     my ($req, $problem) = @_;
     my $test_points = $dbh->selectall_arrayref(qq~
         SELECT RD.result, RD.checker_comment, COALESCE(RD.points, T.points) AS points, T.rank
@@ -266,14 +254,13 @@ sub cache_req_points
 
     # To reduce chance of deadlock, commit every change separately, even if it is slower.
     $dbh->do(q~
-        UPDATE reqs SET points = ? WHERE id = ? AND points IS NULL~, undef, $total, $req->{ref_id} || $req->{id});
+        UPDATE reqs SET points = ? WHERE id = ? AND points IS NULL~, undef,
+        $total, $req->{ref_id} || $req->{id});
     $dbh->commit;
     $total;
 }
 
-
-sub get_contest_list_param
-{
+sub get_contest_list_param {
     (my CATS::RankTable $self) = @_;
     my $clist = url_param('clist') || $cid;
     # sanitize
@@ -282,18 +269,14 @@ sub get_contest_list_param
             map { sprintf '%d', $_ } split ',', $clist) || $cid;
 }
 
-
-sub common_prefix
-{
+sub common_prefix {
     my ($pa, $pb) = @_;
     my $i = 0;
     ++$i while $i < @$pa && $i < @$pb && $pa->[$i] eq $pb->[$i];
     [ @$pa[0 .. $i - 1] ];
 }
 
-
-sub get_contests_info
-{
+sub get_contests_info {
     (my CATS::RankTable $self, my $uid) = @_;
     $uid ||= 0;
     $self->{frozen} = $self->{not_started} = $self->{has_practice} = $self->{show_points} = 0;
@@ -315,8 +298,8 @@ sub get_contests_info
     while (my (
         $id, $title, $since_freeze, $since_defreeze, $since_start, $is_local_jury,
         $is_hidden, $rules, $ctype, $show_all_results, $req_selection) =
-            $sth->fetchrow_array)
-    {
+            $sth->fetchrow_array
+    ) {
         next if $is_hidden && !$is_local_jury;
         push @actual_contests, $id;
         $self->{frozen} ||= $since_freeze >= 0 && $since_defreeze < 0;
@@ -399,12 +382,10 @@ sub prepare_ranks {
     }
     my $ooc_count = 0;
 
-    for my $team (@rank)
-    {
+    for my $team (@rank) {
         my @columns = ();
 
-        for (@{$self->{problems}})
-        {
+        for (@{$self->{problems}}) {
             my $p = $team->{problems}->{$_->{problem_id}};
 
             my $c = $p->{solved} ? '+' . ($p->{runs} - 1 || '') : -$p->{runs} || '.';
@@ -417,14 +398,13 @@ sub prepare_ranks {
 
         $row_color = 1 - $row_color
             if $self->{show_points} ? $row_num % 5 == 1 : $prev{solved} > $team->{total_solved};
-        if ($self->{show_points} ?
-                $prev{points} > $team->{total_points} :
-                $prev{solved} > $team->{total_solved} || $prev{'time'} < $team->{total_time})
-        {
+        my $place_changed = $self->{show_points} ?
+            $prev{points} > $team->{total_points} :
+            $prev{solved} > $team->{total_solved} || $prev{'time'} < $team->{total_time};
+        if ($place_changed) {
             $same_place_count = 1;
         }
-        else
-        {
+        else {
             $same_place_count++;
         }
 
@@ -464,8 +444,7 @@ sub remove_cache {
 
 sub same_or_default { @_ > 1 ? -1 : $_[0]; }
 
-sub rank_table
-{
+sub rank_table {
     (my CATS::RankTable $self) = @_;
 
     my @p = ('rank_table', clist => $self->{contest_list}, cache => $self->{use_cache});
@@ -523,27 +502,24 @@ sub rank_table
 
     my ($teams, $problem_stats, $max_cached_req_id) = ({}, {}, 0);
     if ($self->{use_cache} && !$user->{is_virtual} &&  -f $cache_file &&
-        (my $cache = Storable::lock_retrieve($cache_file)))
-    {
+        (my $cache = Storable::lock_retrieve($cache_file))
+    ) {
         ($teams, $problem_stats, $max_cached_req_id) = @{$cache}{qw(t p r)};
         # A problem was added after last cache refresh -- initialize it.
-        for my $p (map $_->{problem_id}, @{$self->{problems}})
-        {
+        for my $p (map $_->{problem_id}, @{$self->{problems}}) {
             next if $problem_stats->{$p};
             $problem_stats->{$p} = {};
             $_->{problems}->{$p} = { %init_problem } for values %$teams;
         }
     }
-    else
-    {
+    else {
         $problem_stats->{$_} = {} for map $_->{problem_id}, @{$self->{problems}};
         $teams = $select_teams->($is_jury || $self->{show_all_results} ? undef : $uid || -1);
     }
 
     my $results = $self->get_results($virtual_cond . $ooc_cond, $max_cached_req_id);
     my $max_req_id = 0;
-    for (@$results)
-    {
+    for (@$results) {
         my $id = $_->{ref_id} || $_->{id};
         $max_req_id = $id if $id > $max_req_id;
         $_->{time_elapsed} ||= 0;
@@ -551,19 +527,20 @@ sub rank_table
         my $t = $teams->{$_->{account_id}} || $select_teams->($_->{account_id});
         my $p = $t->{problems}->{$_->{problem_id}};
         my $problem = $self->{problems_idx}->{$_->{problem_id}};
-        if ($self->{show_points} && !defined $_->{points})
-        {
+        if ($self->{show_points} && !defined $_->{points}) {
             $_->{points} = cache_req_points($_, $problem);
         }
         next if $p->{solved} && !$self->{show_points};
 
-        if ($problem->{run_method} == $cats::rm_competitive && (!defined $p->{last_req_id} || $p->{last_req_id} < $_->{id})) {
+        if (
+            $problem->{run_method} == $cats::rm_competitive &&
+            (!defined $p->{last_req_id} || $p->{last_req_id} < $_->{id})
+        ) {
             $t->{total_points} = $p->{points} = 0;
             $p->{last_req_id} = $_->{id};
         }
 
-        if ($_->{state} == $cats::st_accepted)
-        {
+        if ($_->{state} == $cats::st_accepted) {
             my $te = int($_->{time_elapsed} + 0.5);
             $p->{time_consumed} = $te + ($p->{runs} || 0) * $cats::penalty;
             $p->{time_hm} = sprintf('%d:%02d', int($te / 60), $te % 60);
@@ -571,8 +548,7 @@ sub rank_table
             $t->{total_time} += $p->{time_consumed};
             $t->{total_solved}++;
         }
-        if ($_->{state} != $cats::st_security_violation)
-        {
+        if ($_->{state} != $cats::st_security_violation) {
             $p->{runs}++;
             $t->{total_runs}++;
             $p->{points} ||= 0;
@@ -598,10 +574,8 @@ sub rank_table
     my ($row_num, $row_color) = $self->prepare_ranks($teams);
     # Calculate stats.
     @$_{qw(total_runs total_accepted total_points)} = (0, 0, 0) for values %$problem_stats;
-    for my $t (@{$self->{rank}})
-    {
-        for my $pid (keys %{$t->{problems}})
-        {
+    for my $t (@{$self->{rank}}) {
+        for my $pid (keys %{$t->{problems}}) {
             my $stat = $problem_stats->{$pid};
             my $tp = $t->{problems}->{$pid};
             $stat->{total_runs} += $tp->{runs};
@@ -636,6 +610,5 @@ sub rank_table
     );
     $t->param(cache_since => $max_req_id) if $is_jury;
 }
-
 
 1;
