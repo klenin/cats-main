@@ -431,7 +431,7 @@ sub console_content {
             # Hack: re-use 'clarified' field since it is relevant for questions only.
             points =>               $clarified,
             clarified =>            $clarified,
-            (($contest_id // 0) == $cid ? (code => $problem_codes->{$problem_id}->{code}) : ()),
+            (($contest_id // 0) == $cid && $problem_id ? (code => $problem_codes->{$problem_id}->{code}) : ()),
             href_details => (
                 ($uid && $team_id && $uid == $team_id) ? url_f('run_details', rid => $id) : ''
             ),
