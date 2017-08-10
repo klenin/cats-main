@@ -33,14 +33,15 @@ sub problem_submit_too_frequent {
 }
 
 sub determine_state {
-    return $cats::st_ignore_submit if param('ignore');
+    my ($p) = @_;
+    return $cats::st_ignore_submit if $p->{ignore};
     !$is_jury && !param('np') && $CATS::Config::TB && CATS::Web::user_agent =~ /$CATS::Config::TB/ ?
         $cats::st_ignore_submit : $cats::st_not_processed;
 }
 
 sub problems_submit {
-    my $pid = param('problem_id')
-        or return msg(1012);
+    my ($p) = @_;
+    my $pid = $p->{problem_id} or return msg(1012);
     $is_team or return msg(1116);
 
     # Use explicit empty string comparisons to avoid problems with solutions containing only '0'.
@@ -54,7 +55,7 @@ sub problems_submit {
         $source_text ne '' or return msg(1011);
     }
 
-    my $did = param('de_id') or return msg(1013);
+    my $did = $p->{de_id} or return msg(1013);
 
     my ($time_since_start, $time_since_finish, $is_official, $status, $title) = $dbh->selectrow_array(qq~
         SELECT
@@ -114,7 +115,9 @@ sub problems_submit {
         $submit_uid, $pid, $cid, $source_hash, $did);
     $same_source and return msg(1132, $prev_submit_time);
 
-    my $rid = CATS::Request::insert($pid, $cid, $submit_uid, [ CATS::DevEnv->new(CATS::JudgeDB::get_DEs())->bitmap_by_ids($did) ], { state => determine_state });
+    my $rid = CATS::Request::insert($pid, $cid, $submit_uid,
+        [ CATS::DevEnv->new(CATS::JudgeDB::get_DEs())->bitmap_by_ids($did) ],
+        { state => determine_state($p) });
 
     my $s = $dbh->prepare(q~
         INSERT INTO sources(req_id, de_id, src, fname, hash) VALUES (?, ?, ?, ?, ?)~);
@@ -134,7 +137,8 @@ sub problems_submit {
 }
 
 sub problems_submit_std_solution {
-    my $pid = param('problem_id');
+    my ($p) = @_;
+    my $pid = $p->{problem_id};
 
     defined $pid or return msg(1012);
 
@@ -153,7 +157,8 @@ sub problems_submit_std_solution {
     my $de_list = CATS::DevEnv->new(CATS::JudgeDB::get_DEs({ active_only => 1 }));
 
     while (my ($src, $did, $fname) = $c->fetchrow_array) {
-        my $rid = CATS::Request::insert($pid, $cid, $uid, [ $de_list->bitmap_by_ids($did) ]);
+        my $rid = CATS::Request::insert($pid, $cid, $uid,
+            [ $de_list->bitmap_by_ids($did) ], { state => determine_state($p) });
 
         my $s = $dbh->prepare(q~
             INSERT INTO sources(req_id, de_id, src, fname) VALUES (?, ?, ?, ?)~);

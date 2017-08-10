@@ -270,7 +270,7 @@ sub problems_frame_jury_action {
     $p->{replace} and return CATS::Problem::Save::problems_replace;
     $p->{add_new} and return CATS::Problem::Save::problems_add_new;
     $p->{add_remote} and return CATS::Problem::Save::problems_add_new_remote;
-    $p->{std_solution} and return CATS::Problem::Submit::problems_submit_std_solution;
+    $p->{std_solution} and return CATS::Problem::Submit::problems_submit_std_solution($p);
     CATS::ProblemStorage::delete($p->{delete_problem}) if $p->{delete_problem};
 }
 
@@ -390,7 +390,7 @@ sub problems_frame {
         template => auto_ext('problems'));
     problems_frame_jury_action($p);
 
-    CATS::Problem::Submit::problems_submit if $p->{submit};
+    CATS::Problem::Submit::problems_submit($p) if $p->{submit};
     CATS::ContestParticipate::online if $p->{participate_online};
     CATS::ContestParticipate::virtual if $p->{participate_virtual};
 
