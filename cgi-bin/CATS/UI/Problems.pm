@@ -261,17 +261,17 @@ sub problems_recalc_points {
 }
 
 sub problems_frame_jury_action {
+    my ($p) = @_;
     $is_jury or return;
 
     defined param('link_save') and return CATS::Problem::Save::problems_link_save;
     defined param('change_status') and return problems_change_status;
     defined param('change_code') and return problems_change_code;
-    defined param('replace') and return CATS::Problem::Save::problems_replace;
-    defined param('add_new') and return CATS::Problem::Save::problems_add_new;
-    defined param('add_remote') and return CATS::Problem::Save::problems_add_new_remote;
-    defined param('std_solution') and return CATS::Problem::Submit::problems_submit_std_solution;
-    my $cpid = url_param('delete');
-    CATS::ProblemStorage::delete($cpid) if $cpid;
+    $p->{replace} and return CATS::Problem::Save::problems_replace;
+    $p->{add_new} and return CATS::Problem::Save::problems_add_new;
+    $p->{add_remote} and return CATS::Problem::Save::problems_add_new_remote;
+    $p->{std_solution} and return CATS::Problem::Submit::problems_submit_std_solution;
+    CATS::ProblemStorage::delete($p->{delete_problem}) if $p->{delete_problem};
 }
 
 sub problem_status_names_enum {
@@ -388,11 +388,11 @@ sub problems_frame {
         name => 'problems' . ($contest->is_practice ? '_practice' : ''),
         array_name => 'problems',
         template => auto_ext('problems'));
-    problems_frame_jury_action;
+    problems_frame_jury_action($p);
 
-    CATS::Problem::Submit::problems_submit if defined param('submit');
-    CATS::ContestParticipate::online if param('participate_online');
-    CATS::ContestParticipate::virtual if param('participate_virtual');
+    CATS::Problem::Submit::problems_submit if $p->{submit};
+    CATS::ContestParticipate::online if $p->{participate_online};
+    CATS::ContestParticipate::virtual if $p->{participate_virtual};
 
     my @cols = (
         { caption => res_str(602), order_by => ($contest->is_practice ? 'P.title' : 3), width => '25%' },
@@ -495,9 +495,9 @@ sub problems_frame {
         my ($last_request, $last_verdict) = split ' ', $c->{last_submission} || '';
 
         return (
-            href_delete => url_f('problems', 'delete' => $c->{cpid}),
-            href_change_status => url_f('problems', 'change_status' => $c->{cpid}),
-            href_change_code => url_f('problems', 'change_code' => $c->{cpid}),
+            href_delete => url_f('problems', delete_problem => $c->{cpid}),
+            href_change_status => url_f('problems', change_status => $c->{cpid}),
+            href_change_code => url_f('problems', change_code => $c->{cpid}),
             href_replace  => url_f('problems', replace => $c->{cpid}),
             href_download => url_f('problem_download', pid => $c->{pid}),
             href_problem_details => $is_jury && url_f('problem_details', pid => $c->{pid}),
@@ -520,7 +520,7 @@ sub problems_frame {
                 $hrefs_view{explanation} || url_f('problem_text', cpid => $c->{cpid}, explain => 1) : '',
             problem_id => $c->{pid},
             cpid => $c->{cpid},
-            selected => $c->{pid} == (param('problem_id') || 0),
+            selected => $c->{pid} == ($p->{problem_id} || 0),
             code => $c->{code},
             problem_name => $c->{problem_name},
             is_linked => $c->{is_linked},

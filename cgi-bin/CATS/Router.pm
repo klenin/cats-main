@@ -56,7 +56,13 @@ sub main_routes() {
         console_export => \&CATS::UI::Console::export_frame,
         console_graphs => \&CATS::UI::Console::graphs_frame,
 
-        problems => [ \&CATS::UI::Problems::problems_frame, kw => $int, ],
+        problems => [
+            \&CATS::UI::Problems::problems_frame,
+            kw => $int, problem_id => $int,
+            participate_online => $bool, participate_virtual => $bool,
+            submit => $bool, replace => $bool, add_new => $bool,
+            add_remote => $bool, std_solution => $bool, delete_problem => $bool,
+        ],
         problems_udebug => [ \&CATS::UI::Problems::problems_udebug_frame, ],
         problems_retest => \&CATS::UI::Problems::problems_retest_frame,
         problem_select_testsets => [
