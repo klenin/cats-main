@@ -14,14 +14,12 @@ our @EXPORT = qw(
     init_template
     msg
     res_str
-    save_settings
     url_f
 );
 
 our @EXPORT_OK = qw(
     $contest $t $sid $cid $uid
-    $is_root $is_team $is_jury $privs $user
-    $settings);
+    $is_root $is_team $is_jury $privs $user);
 
 #use CGI::Fast( ':standard' );
 #use CGI::Util qw(rearrange unescape escape);
@@ -29,7 +27,6 @@ our @EXPORT_OK = qw(
 
 use Carp qw(croak);
 use Encode();
-use MIME::Base64;
 use SQL::Abstract; # Actually used by CATS::DB, bit is optional there.
 use Storable;
 
@@ -41,17 +38,17 @@ use CATS::IP;
 use CATS::Messages;
 use CATS::Privileges;
 use CATS::Redirect;
+use CATS::Settings qw($settings);
 use CATS::Template;
 use CATS::Utils qw();
-use CATS::Web qw(param url_param headers content_type cookie);
+use CATS::Web qw(param url_param headers content_type);
 
 our (
     $contest, $t, $sid, $cid, $uid, $dbi_error,
     $is_root, $is_team, $is_jury, $privs, $user,
-    $settings
 );
 
-my ($http_mime_type, %extra_headers, $enc_settings);
+my ($http_mime_type, %extra_headers);
 
 sub http_header {
     my ($type, $encoding, $cookie) = @_;
@@ -118,10 +115,8 @@ sub generate_output {
     if (defined $dbi_error) {
         $t->param(dbi_error => $dbi_error);
     }
-    my $cookie = $uid && lang eq 'ru' ? undef : cookie(
-        -name => 'settings',
-        -value => encode_base64($uid ? Storable::freeze({ lang => lang }) : $enc_settings),
-        -expires => '+1h');
+
+    my $cookie = CATS::Settings::as_cookie(lang);
     my $out = '';
     if (my $enc = param('enc')) {
         $t->param(encoding => $enc);
@@ -148,6 +143,7 @@ sub init_user {
     $uid = undef;
     $user = { privs => $privs };
     my $bad_sid = length $sid > 30;
+    my $enc_settings;
     if ($sid ne '' && !$bad_sid) {
         (
             $uid, $user->{name}, my $srole, my $last_ip, my $locked,
@@ -163,13 +159,8 @@ sub init_user {
             $is_root = $privs->{is_root};
         }
     }
-    if (!$uid) {
-        $enc_settings = cookie('settings') || '';
-        $enc_settings = decode_base64($enc_settings) if $enc_settings;
-    }
-    # If any problem happens during the thaw, clear settings.
-    $settings = eval { $enc_settings && Storable::thaw($enc_settings) } || {};
 
+    CATS::Settings::init($uid, $enc_settings);
     CATS::Messages::init_lang($settings);
 
     if ($bad_sid) {
@@ -240,18 +231,6 @@ sub init_contest {
     }
     # Only guest access before the start of the contest.
     $is_team &&= $is_jury || $contest->has_started($user->{diff_time});
-}
-
-sub save_settings {
-    my $new_enc_settings = Storable::freeze($settings);
-    $new_enc_settings ne ($enc_settings || '') or return;
-    $enc_settings = $new_enc_settings;
-    $uid or return;
-    $dbh->commit;
-    $dbh->do(q~
-        UPDATE accounts SET settings = ? WHERE id = ?~, undef,
-        $new_enc_settings, $uid);
-    $dbh->commit;
 }
 
 sub initialize {

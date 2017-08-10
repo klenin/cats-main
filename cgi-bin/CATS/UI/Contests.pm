@@ -8,9 +8,10 @@ use CATS::ContestParticipate qw(get_registered_contestant);
 use CATS::DB;
 use CATS::ListView;
 use CATS::Misc qw(
-    $t $is_jury $is_root $is_team $privs $sid $cid $uid $contest $settings
-    init_template msg res_str url_f auto_ext);
+    $cid $contest $is_jury $is_root $is_team $privs $sid $t $uid
+    auto_ext init_template msg res_str url_f);
 use CATS::RankTable;
+use CATS::Settings qw($settings);
 use CATS::StaticPages;
 use CATS::UI::Prizes;
 use CATS::Utils qw(url_function coalesce date_to_iso);

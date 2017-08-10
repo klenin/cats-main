@@ -13,9 +13,10 @@ use CATS::DB;
 use CATS::IP;
 use CATS::ListView;
 use CATS::Misc qw(
-    $cid $contest $is_jury $is_root $is_team $sid $t $uid $privs $settings $user
+    $cid $contest $is_jury $is_root $is_team $sid $t $uid $privs $user
     auto_ext init_template msg res_str url_f);
 use CATS::Privileges;
+use CATS::Settings qw($settings);
 use CATS::Time;
 use CATS::User;
 use CATS::Utils qw(url_function date_to_iso);

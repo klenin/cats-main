@@ -11,10 +11,11 @@ use CATS::Countries;
 use CATS::DB;
 use CATS::ListView;
 use CATS::Misc qw(
-    $cid $contest $is_team $is_jury $is_root $privs $settings $sid $t $uid $user
+    $cid $contest $is_team $is_jury $is_root $privs $sid $t $uid $user
     auto_ext init_template msg res_str url_f
 );
 use CATS::Request;
+use CATS::Settings qw($settings);
 use CATS::Time;
 use CATS::Utils qw(coalesce date_to_iso escape_xml url_function);
 use CATS::Verdicts;

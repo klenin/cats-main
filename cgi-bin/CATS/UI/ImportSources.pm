@@ -7,8 +7,8 @@ use CATS::Constants;
 use CATS::DB;
 use CATS::ListView;
 use CATS::Misc qw(
-    $t $is_jury $is_root $is_team $sid $cid $uid $contest $settings
-    init_template msg res_str url_f auto_ext);
+    $cid $contest $is_jury $is_root $is_team $sid $t $uid
+    init_template msg res_str url_f);
 use CATS::References;
 use CATS::Utils qw(url_function);
 use CATS::Web qw(param redirect url_param);

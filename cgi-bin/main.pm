@@ -25,9 +25,10 @@ use lib $cats_problem_lib_dir;
 use CATS::DB;
 use CATS::Config;
 use CATS::MainMenu;
-use CATS::Misc qw($t generate_output initialize save_settings);
+use CATS::Misc qw($t generate_output initialize);
 use CATS::Proxy;
 use CATS::Router;
+use CATS::Settings;
 use CATS::StaticPages;
 use CATS::Time;
 use CATS::Web qw(has_error get_return_code init_request param redirect url_param);
@@ -47,7 +48,7 @@ sub accept_request {
         # Function returns -1 if there is no need to generate output, e.g. a redirect was issued.
         ($fn->($p) || 0) == -1 and return;
     }
-    save_settings;
+    CATS::Settings::save;
 
     defined $t or return;
     CATS::MainMenu::generate_menu;

@@ -13,7 +13,8 @@ use CATS::DB;
 use CATS::DevEnv;
 use CATS::IP;
 use CATS::JudgeDB;
-use CATS::Misc qw($is_jury $is_root $sid $cid $t $uid $settings init_template msg res_str url_f);
+use CATS::Misc qw(
+    $is_jury $is_root $sid $cid $t $uid init_template msg res_str url_f);
 use CATS::Problem::Text qw(ensure_problem_hash);
 use CATS::Problem::Utils;
 use CATS::RankTable;
@@ -26,6 +27,7 @@ use CATS::ReqDetails qw(
     get_test_data
     sources_info_param
     source_links);
+use CATS::Settings qw($settings);
 use CATS::Testset;
 use CATS::Verdicts;
 use CATS::Web qw(param encoding_param url_param headers upload_source content_type redirect);
