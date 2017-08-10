@@ -42,7 +42,7 @@ sub determine_state {
 sub problems_submit {
     my ($p) = @_;
     my $pid = $p->{problem_id} or return msg(1012);
-    $is_team or return msg(1116);
+    $is_team || $contest->is_practice or return msg(1116);
 
     # Use explicit empty string comparisons to avoid problems with solutions containing only '0'.
     my $file = param('source') // '';
