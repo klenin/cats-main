@@ -16,7 +16,7 @@ sub add_problem_to_contest {
     $dbh->selectrow_array(q~
         SELECT 1 FROM contest_problems WHERE contest_id = ? and problem_id = ?~, undef,
         $cid, $pid) and return msg(1003);
-    $dbh->do(qq~
+    $dbh->do(q~
         INSERT INTO contest_problems(id, contest_id, problem_id, code, status)
             VALUES (?, ?, ?, ?, ?)~, {},
         new_id, $cid, $pid, $problem_code,

@@ -7,23 +7,19 @@ use utf8;
 use Encode ();
 use YAML::Syck ();
 
-use CATS::Web qw(param url_param);
 use CATS::DB;
-use CATS::Misc qw(init_template $t);
 use CATS::Config qw(cats_dir);
+use CATS::Misc qw(init_template $t);
 use CATS::RankTable;
+use CATS::Web qw(param url_param);
 
-
-sub get_names
-{
+sub get_names {
     'Районная олимпиада', 'Городская олимпиада', 'Краевая олимпиада',
     'ЛШ олимпиада', 'Заочная олимпиада', 'Школьники ACM', 'Весенний турнир',
     'Муниципальная олимпиада', 'Турнир юных программистов'
 }
 
-
-sub personal_official_results
-{
+sub personal_official_results {
     init_template('official_results.html.tt');
     my @names = get_names();
     my $contests = $dbh->selectall_arrayref(q~
@@ -81,6 +77,5 @@ sub personal_official_results
     $YAML::Syck::ImplicitUnicode = 1;
     $t->param(results => YAML::Syck::Dump($results));
 }
-
 
 1;

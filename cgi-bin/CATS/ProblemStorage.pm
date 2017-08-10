@@ -17,39 +17,29 @@ use CATS::StaticPages;
 
 use fields qw(old_title import_log debug parser de_list);
 
-
-sub new
-{
+sub new {
     my $self = shift;
     $self = fields::new($self) unless ref $self;
     return $self;
 }
 
-
-sub clear
-{
+sub clear {
     my CATS::ProblemStorage $self = shift;
     undef $self->{$_} for keys %CATS::Problem::FIELDS;
 }
 
-
-sub encoded_import_log
-{
+sub encoded_import_log {
     my CATS::ProblemStorage $self = shift;
     return $self->{import_log};
 }
 
-
-sub get_remote_url
-{
+sub get_remote_url {
     defined $_[0] && $_[0] !~ /^\d+$/ ? $_[0] : undef;
 }
 
-
-sub get_repo_id
-{
+sub get_repo_id {
     my ($id, $sha) = @_;
-    my ($db_id, $db_sha) = $dbh->selectrow_array(qq~
+    my ($db_id, $db_sha) = $dbh->selectrow_array(q~
        SELECT repo, commit_sha FROM problems WHERE id = ?~, undef,
        $id);
     my $p = $CATS::Config::repos_dir;
@@ -58,68 +48,50 @@ sub get_repo_id
     $db_id =~ /^\d+$/ ? ($db_id, $db_sha) : ($id, $sha // '');
 }
 
-
-sub get_repo
-{
+sub get_repo {
     my ($pid, $sha, $need_find, %opts) = @_;
     ($pid, $sha) = get_repo_id($pid, $sha) if $need_find;
     $opts{dir} = $CATS::Config::repos_dir . "$pid/";
     return CATS::Problem::Repository->new(%opts);
 }
 
-
-sub get_repo_archive
-{
+sub get_repo_archive {
     my ($pid, $sha) = @_;
     ($pid) = get_repo_id($pid);
     return CATS::Problem::Repository->new(dir => $CATS::Config::repos_dir . "$pid/")->archive($sha);
 }
 
-
-sub get_latest_master_sha
-{
+sub get_latest_master_sha {
     get_repo(@_)->get_latest_master_sha;
 }
 
-
-sub show_commit
-{
+sub show_commit {
     my ($pid, $sha, $enc) = @_;
     return get_repo($pid, $sha, 1)->commit_info($sha, $enc);
 }
 
-
-sub show_tree
-{
+sub show_tree {
     my ($pid, $hash_base, $file, $enc) = @_;
     return get_repo($pid, $hash_base, 1)->tree($hash_base, $file, $enc);
 }
 
-
-sub show_blob
-{
+sub show_blob {
     my ($pid, $hash_base, $file, $enc) = @_;
     return get_repo($pid, $hash_base, 1)->blob($hash_base, $file, $enc);
 }
 
-
-sub show_raw
-{
+sub show_raw {
     my ($pid, $hash_base, $file) = @_;
     return get_repo($pid, $hash_base, 1)->raw($hash_base, $file);
 }
 
-
-sub get_log
-{
+sub get_log {
     my ($pid, $sha, $max_count) = @_;
     ($pid, $sha) = get_repo_id(@_);
     return get_repo($pid, $sha, 0)->log(sha => $sha, max_count => $max_count);
 }
 
-
-sub add_history
-{
+sub add_history {
     my ($self, $source, $problem, $message, $is_amend) = @_;
     my $repo = get_repo(
         $problem->{id}, undef, 0, logger => $self,
@@ -128,9 +100,7 @@ sub add_history
     $source->finalize($dbh, $repo, $problem, $message, $is_amend, get_repo_id($problem->{id}));
 }
 
-
-sub fail_loading
-{
+sub fail_loading {
     my ($self, $repo, $problem, $replace, $err, $revision) = @_;
     eval { $replace ? $repo->reset($revision)->checkout : $repo->delete; };
     $self->note("Import failed: $err");
@@ -138,9 +108,7 @@ sub fail_loading
     return (-1, undef, $problem);
 }
 
-
-sub load_problem
-{
+sub load_problem {
     my CATS::ProblemStorage $self = shift;
     my ($source, $cid, $pid, $replace, $remote_url, $message, $is_amend) = @_;
 
@@ -176,8 +144,7 @@ sub load_problem
     return (0, $repo->get_latest_master_sha, $problem);
 }
 
-sub load
-{
+sub load {
     my CATS::Problem $self = shift;
     $self->load_problem(@_);
 }
@@ -232,29 +199,23 @@ sub delete {
     msg(1022, $title, $ref_count - 1);
 }
 
-sub note($)
-{
+sub note {
     my CATS::ProblemStorage $self = shift;
     $self->{import_log} .= "$_[0]\n";
 }
 
-
-sub warning($)
-{
+sub warning {
     my CATS::ProblemStorage $self = shift;
     $self->{import_log} .= "Warning: $_[0]\n";
 }
 
-
-sub error($)
-{
+sub error {
     my CATS::ProblemStorage $self = shift;
     $self->{import_log} .= "Error: $_[0]\n";
-    die "Unrecoverable error";
+    die 'Unrecoverable error';
 }
 
-sub delete_child_records($)
-{
+sub delete_child_records {
     my ($pid) = @_;
     $dbh->do(qq~
         DELETE FROM $_ WHERE problem_id = ?~, undef,
@@ -264,9 +225,7 @@ sub delete_child_records($)
             problem_sources_import problem_keywords problem_attachments);
 }
 
-
-sub save
-{
+sub save {
     (my CATS::ProblemStorage $self, my $problem) = @_;
 
     return if $self->{debug};
@@ -281,7 +240,8 @@ sub save
             title=?, lang=?, time_limit=?, memory_limit=?, write_limit=?,
             save_output_prefix=?, save_input_prefix=?, save_answer_prefix=?, difficulty=?, author=?,
             input_file=?, output_file=?, statement_url=?, explanation_url=?,
-            statement=?, pconstraints=?, input_format=?, output_format=?, formal_input=?, json_data=?, explanation=?, zip_archive=?,
+            statement=?, pconstraints=?, input_format=?, output_format=?,
+            formal_input=?, json_data=?, explanation=?, zip_archive=?,
             upload_date=CURRENT_TIMESTAMP, std_checker=?, last_modified_by=?,
             max_points=?, run_method=?, players_count=?, repo=?, hash=NULL
         WHERE id = ?~
@@ -291,7 +251,8 @@ sub save
             title, lang, time_limit, memory_limit, write_limit,
             save_output_prefix, save_input_prefix, save_answer_prefix, difficulty, author,
             input_file, output_file, statement_url, explanation_url,
-            statement, pconstraints, input_format, output_format, formal_input, json_data, explanation, zip_archive,
+            statement, pconstraints, input_format, output_format,
+            formal_input, json_data, explanation, zip_archive,
             upload_date, std_checker, last_modified_by,
             max_points, run_method, players_count, repo, id
         ) VALUES (
@@ -320,12 +281,11 @@ sub save
 
     $self->insert_problem_content($problem);
     $dbh->do(q~
-        UPDATE contest_problems SET max_points = NULL WHERE problem_id = ?~, undef, $problem->{id});
+        UPDATE contest_problems SET max_points = NULL WHERE problem_id = ?~, undef,
+        $problem->{id});
 }
 
-
-sub get_de_id
-{
+sub get_de_id {
     my CATS::ProblemStorage $self = shift;
     my ($code, $path) = @_;
 
@@ -344,20 +304,19 @@ sub get_de_id
     return $de->{id};
 }
 
-
-sub insert_problem_source
-{
+sub insert_problem_source {
     my CATS::ProblemStorage $self = shift;
     my %p = @_;
     use Carp;
     my $s = $p{source_object} or confess;
 
     if ($s->{guid}) {
-        my $dup_id = $dbh->selectrow_array(qq~
-            SELECT problem_id FROM problem_sources WHERE guid = ?~, undef, $s->{guid});
+        my $dup_id = $dbh->selectrow_array(q~
+            SELECT problem_id FROM problem_sources WHERE guid = ?~, undef,
+            $s->{guid});
         $self->warning("Duplicate guid with problem $dup_id") if $dup_id;
     }
-    my $c = $dbh->prepare(qq~
+    my $c = $dbh->prepare(q~
         INSERT INTO problem_sources (
             id, problem_id, de_id, src, fname, name, stype, input_file, output_file, guid,
             time_limit, memory_limit, write_limit, main
@@ -383,9 +342,7 @@ sub insert_problem_source
     $self->note("$p{type_name} '$s->{path}' added$g");
 }
 
-
-sub insert_problem_content
-{
+sub insert_problem_content {
     (my CATS::ProblemStorage $self, my $problem) = @_;
 
     $problem->{has_checker} or $self->error('No checker specified');
@@ -447,9 +404,9 @@ sub insert_problem_content
             $ts->{id}, $problem->{id}, @{$ts}{qw(name tests points comment hideDetails depends_on)});
     }
 
-    my $c = $dbh->prepare(qq~
+    my $c = $dbh->prepare(q~
         INSERT INTO pictures(id, problem_id, extension, name, pic)
-            VALUES (?,?,?,?,?)~);
+        VALUES (?, ?, ?, ?, ?)~);
     for (@{$problem->{pictures}}) {
 
         $c->bind_param(1, $_->{id});
@@ -464,9 +421,9 @@ sub insert_problem_content
             or $self->warning("No references to picture '$_->{path}'");
     }
 
-    $c = $dbh->prepare(qq~
+    $c = $dbh->prepare(q~
         INSERT INTO problem_attachments(id, problem_id, name, file_name, data)
-            VALUES (?,?,?,?,?)~);
+        VALUES (?, ?, ?, ?, ?)~);
     for (@{$problem->{attachments}}) {
 
         $c->bind_param(1, $_->{id});
@@ -481,11 +438,11 @@ sub insert_problem_content
             or $self->warning("No references to attachment '$_->{path}'");
     }
 
-    $c = $dbh->prepare(qq~
+    $c = $dbh->prepare(q~
         INSERT INTO tests (
             problem_id, rank, input_validator_id, generator_id, param, std_solution_id, in_file, out_file,
             points, gen_group
-        ) VALUES (?,?,?,?,?,?,?,?,?,?)~
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)~
     );
 
     for (sort { $a->{rank} <=> $b->{rank} } values %{$problem->{tests}}) {
@@ -504,9 +461,9 @@ sub insert_problem_content
         $self->note("Test $_->{rank} added");
     }
 
-    $c = $dbh->prepare(qq~
+    $c = $dbh->prepare(q~
         INSERT INTO samples (problem_id, rank, in_file, out_file)
-        VALUES (?,?,?,?)~
+        VALUES (?, ?, ?, ?)~
     );
     for (values %{$problem->{samples}}) {
         $c->bind_param(1, $problem->{id});
@@ -517,11 +474,12 @@ sub insert_problem_content
         $self->note("Sample test $_->{rank} added");
     }
 
-    $c = $dbh->prepare(qq~
+    $c = $dbh->prepare(q~
         INSERT INTO problem_keywords (problem_id, keyword_id) VALUES (?, ?)~);
     for (keys %{$problem->{keywords}}) {
         my ($keyword_id) = $dbh->selectrow_array(q~
-            SELECT id FROM keywords WHERE code = ?~, undef, $_);
+            SELECT id FROM keywords WHERE code = ?~, undef,
+            $_);
         if ($keyword_id) {
             $c->execute($problem->{id}, $keyword_id);
             $self->note("Keyword added: $_");
@@ -531,6 +489,5 @@ sub insert_problem_content
         }
     }
 }
-
 
 1;
