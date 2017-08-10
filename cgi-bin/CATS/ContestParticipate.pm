@@ -5,7 +5,7 @@ use warnings;
 
 use CATS::Constants;
 use CATS::DB;
-use CATS::Misc qw($is_root $is_jury $is_team $cid $uid $contest $user msg);
+use CATS::Misc qw($cid $contest $is_jury $is_root $is_team $uid $user msg);
 
 use Exporter qw(import);
 
@@ -33,6 +33,30 @@ sub is_jury_in_contest {
     return $is_jury if defined $cid && $p{contest_id} == $cid;
     my ($j) = get_registered_contestant(fields => 'is_jury', @_);
     return $j;
+}
+
+sub all_sites_finished {
+    return 0 if $contest->{time_since_finish} <= 0;
+    scalar $dbh->selectrow_array(qq~
+        SELECT CASE WHEN
+            EXISTS (
+                SELECT 1 FROM contest_sites CS
+                WHERE CS.contest_id = C.id AND
+                    CURRENT_TIMESTAMP < $CATS::Time::contest_site_finish_sql)
+            THEN 0 ELSE 1 END
+        FROM contests C WHERE C.id = ?~, undef,
+        $cid);
+}
+
+sub flags_can_participate {
+    my $contest_finished = all_sites_finished;
+    return (
+        can_participate_online =>
+            $uid && !$contest->{closed} && !$is_team && !$contest_finished,
+        can_participate_virtual =>
+            $uid && !$contest->{closed} && (!$is_team || $user->{is_virtual}) &&
+            $contest->{time_since_start} >= 0 &&
+            (!$contest->{is_official} || $contest_finished));
 }
 
 sub online {
@@ -66,7 +90,7 @@ sub virtual {
         or return msg(1109);
 
     # In official contests, virtual participation is allowed only after the finish.
-    $contest->{time_since_finish} >= 0 || !$contest->{is_official}
+    !$contest->{is_official} || all_sites_finished
         or return msg(1122);
 
     my $removed_req_count = 0;

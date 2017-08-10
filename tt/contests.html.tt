@@ -49,18 +49,21 @@ function confirm_registration() {
 [% END %]
 </table>
 <br>
-[% IF authorized %]
-[% UNLESS is_registered %]<input type="submit" value="[% capt.participate %]" name="online_registration" class="button" />
-[% END %]
-<input type="submit" name="virtual_registration"
-    value="[% capt.participate_virtually %]" class="button" onclick="return confirm_registration()" />
-<input type="hidden"  value="0" />
-[% END %]
-<input type="submit" name="summary_rank" value="[% capt.summary_rank %]" class="button" />
-[% IF is_root %]<input type="submit" name="create_group" value="[% capt.create_group %]" class="button" />[% END %]
+[% IF can_participate_online -%]
+<button type="submit" name="online_registration" value="1" class="button">[% capt.participate %]</button>
+[%- END %]
+[% IF can_participate_virtual -%]
+<button type="submit" name="virtual_registration" value="1" class="button" onclick="return confirm_registration()">
+[%- capt.participate_virtually -%]
+</button>
+[%- END %]
+<button type="submit" name="summary_rank" value="1" class="button">[% capt.summary_rank %]</button>
+[% IF user.privs.is_root -%]
+<buton type="submit" name="create_group" value="1" class="button">[% capt.create_group %]</button>
+[%- END %]
 [% PROCESS includes/pages.tti %]
 </form>
-[% IF authorized && !is_registered %]
+[% IF can_participate_virtual %]
 <ul>
 [% FOREACH vh IN capt.virt_help %]<li>[% vh %]</li>[% END %]
 </ul>

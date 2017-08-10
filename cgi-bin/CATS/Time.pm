@@ -61,5 +61,6 @@ our $diff_time_sql = '(COALESCE(CA.diff_time, 0) + COALESCE(CS.diff_time, 0))';
 our $ext_time_sql = '(COALESCE(CA.ext_time, 0) + COALESCE(CS.ext_time, 0))';
 our $contest_start_offset_sql = "(C.start_date + $diff_time_sql)";
 our $contest_finish_offset_sql = "(C.finish_date + $diff_time_sql + $ext_time_sql)";
+our $contest_site_finish_sql = "(C.finish_date + COALESCE(CS.diff_time, 0) + COALESCE(CS.ext_time, 0))";
 
 1;

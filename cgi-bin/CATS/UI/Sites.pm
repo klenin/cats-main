@@ -109,14 +109,14 @@ sub contest_sites_edit_frame {
 
     init_template('contest_sites_edit.html.tt');
 
-    my $s = $dbh->selectrow_hashref(q~
+    my $s = $dbh->selectrow_hashref(qq~
         SELECT
             S.id, S.name AS site_name, CS.diff_time, CS.ext_time,
             C.title AS contest_name,
             C.start_date AS contest_start,
-            C.start_date + CS.diff_time AS contest_start_offset,
+            C.start_date + COALESCE(CS.diff_time, 0) AS contest_start_offset,
             C.finish_date AS contest_finish,
-            C.finish_date + CS.diff_time + CS.ext_time AS contest_finish_offset
+            $CATS::Time::contest_site_finish_sql AS contest_finish_offset
         FROM sites S
         INNER JOIN contest_sites CS ON CS.site_id = S.id
         INNER JOIN contests C ON C.id = CS.contest_id

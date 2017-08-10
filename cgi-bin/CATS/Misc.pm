@@ -213,12 +213,16 @@ sub init_contest {
     # Authorize user in the contest.
     if (defined $uid) {
         (
-            $user->{ca_id}, $is_team, $is_jury, $user->{site_id}, $user->{is_site_org},
-            $user->{is_virtual}, $user->{personal_diff_time}, $user->{diff_time}, $user->{site_name}
+            $user->{ca_id}, $is_team, $is_jury, $user->{site_id}, $user->{is_site_org}, $user->{is_virtual},
+            $user->{personal_diff_time}, $user->{diff_time},
+            $user->{personal_ext_time}, $user->{ext_time},
+            $user->{site_name}
         ) = $dbh->selectrow_array(q~
             SELECT
-                CA.id, 1, CA.is_jury, CA.site_id, CA.is_site_org, CA.is_virtual, CA.diff_time,
-                COALESCE(CA.diff_time, 0) + COALESCE(CS.diff_time, 0), S.name
+                CA.id, 1, CA.is_jury, CA.site_id, CA.is_site_org, CA.is_virtual,
+                CA.diff_time, COALESCE(CA.diff_time, 0) + COALESCE(CS.diff_time, 0),
+                CA.ext_time, COALESCE(CA.ext_time, 0) + COALESCE(CS.ext_time, 0),
+                S.name
             FROM contest_accounts CA
             LEFT JOIN contest_sites CS ON CS.contest_id = CA.contest_id AND CS.site_id = CA.site_id
             LEFT JOIN sites S ON S.id = CA.site_id

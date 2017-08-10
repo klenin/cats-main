@@ -3,6 +3,8 @@ package CATS::UI::Problems;
 use strict;
 use warnings;
 
+use List::Util qw(max);
+
 use CATS::Config qw(cats_dir);
 use CATS::Constants;
 use CATS::ContestParticipate;
@@ -570,13 +572,10 @@ sub problems_frame {
             !$pr && $pt_url->($text_link_f->('problem_text', cid => $cid)),
         )),
         { href => url_f('contests', params => $cid), item => res_str(546) };
+
     $t->param(
         href_login => url_f('login', redir => CATS::Redirect::pack_params),
-        can_participate_online =>
-            $uid && !$is_team && !$contest->{closed} && $contest->{time_since_finish} < 0,
-        can_participate_virtual =>
-            $uid && !$is_team && !$contest->{closed} && $contest->{time_since_start} >= 0 &&
-            (!$contest->{is_official} || $contest->{time_since_finish} > 0),
+        CATS::ContestParticipate::flags_can_participate,
         contest_descr => $contest->{short_descr},
         submenu => \@submenu, title_suffix => res_str(525),
         is_user => $uid,

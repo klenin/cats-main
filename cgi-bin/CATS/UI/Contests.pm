@@ -351,10 +351,8 @@ sub contests_frame {
         if defined param('edit_save') &&
             get_registered_contestant(fields => 'is_jury', contest_id => param('id'));
 
-    CATS::ContestParticipate::online if defined param('online_registration');
-
-    my $vr = param('virtual_registration');
-    CATS::ContestParticipate::virtual if defined $vr && $vr;
+    CATS::ContestParticipate::online if param('online_registration');
+    CATS::ContestParticipate::virtual if param('virtual_registration');
 
     contests_select_current if defined url_param('set_contest');
 
@@ -384,9 +382,7 @@ sub contests_frame {
     ];
     $t->param(
         submenu => $submenu,
-        authorized => defined $uid,
-        is_root => $is_root,
-        is_registered => defined $uid && get_registered_contestant(contest_id => $cid) || 0,
+        CATS::ContestParticipate::flags_can_participate,
     );
 }
 
