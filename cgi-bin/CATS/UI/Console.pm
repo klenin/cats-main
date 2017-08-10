@@ -155,7 +155,7 @@ sub console_content {
             INNER JOIN problems P ON R.problem_id = P.id
             INNER JOIN accounts A ON R.account_id = A.id
             INNER JOIN contests C ON R.contest_id = C.id
-            INNER JOIN contest_accounts CA ON CA.account_id = A.id AND CA.contest_id = R.contest_id
+            LEFT JOIN contest_accounts CA ON CA.account_id = A.id AND CA.contest_id = R.contest_id
             LEFT JOIN events E ON E.id = R.id
         ~,
         question => qq~
@@ -443,7 +443,8 @@ sub console_content {
                 href_delete_message =>  url_f('console', delete_message => $id),
             ) : ()),
             href_answer_box =>      $is_jury ? url_f('answer_box', qid => $id) : undef,
-            href_send_message_box =>$is_jury ? url_f('send_message_box', caid => $caid) : undef,
+            href_send_message_box =>
+                ($is_jury && $caid ? url_f('send_message_box', caid => $caid) : undef),
             'time' =>               $submit_time,
             time_iso =>             date_to_iso($submit_time),
             problem_id =>           $problem_id,

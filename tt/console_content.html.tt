@@ -25,7 +25,7 @@ td.team { text-align: left; white-space: nowrap; }
     </td>
     <td width="1%" class="team">
         [% IF is_jury %]
-        <a href="javascript:send_message('[% c.href_send_message_box %]')">[% c.team_name | html %]</a>
+        [% h = c.href_send_message_box ? "javascript:send_message('$c.href_send_message_box')" : ''; maybe_href(h, c.team_name) %]
         [<a href="[% c.href_whois %]" alt="[% c.last_ip %]" title="[% c.last_ip %]">[% c.last_ip_short %]</a>]
         [% ELSE; c.team_name | html; END %]
     </td>
