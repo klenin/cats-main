@@ -175,7 +175,7 @@ sub get_sources_info {
             'INNER JOIN problems P ON P.id = R.problem_id',
             'INNER JOIN contests C ON C.id = R.contest_id',
             'INNER JOIN contest_problems CP ON CP.contest_id = C.id AND CP.problem_id = P.id',
-            'INNER JOIN contest_accounts CA ON CA.contest_id = C.id AND CA.account_id = A.id',
+            'LEFT JOIN contest_accounts CA ON CA.contest_id = C.id AND CA.account_id = A.id',
             'LEFT JOIN events E ON E.id = R.id',
             'LEFT JOIN limits LCP ON LCP.id = CP.limits_id',
             'LEFT JOIN limits LR ON LR.id = R.limits_id',
@@ -206,7 +206,7 @@ sub get_sources_info {
         my %additional_info = (
             CATS::IP::linkify_ip($r->{last_ip}),
             href_stats => url_f('user_stats', uid => $r->{account_id}),
-            href_send_message => url_f('send_message_box', caid => $r->{ca_id}),
+            (href_send_message => $r->{ca_id} ? url_f('send_message_box', caid => $r->{ca_id}) : undef),
         );
 
         # We need to save original hash reference

@@ -3,6 +3,7 @@
     no_sources => 'No requests found.',
     team => 'User',
     message => 'message',
+    disqualified => 'disqualified',
     time => 'Time',
     processing => 'Processing',
     file => 'File',

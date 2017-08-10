@@ -70,7 +70,9 @@ function send_message(href) {
     [% END %]
     [% IF si.is_jury %]
       [<a href="[% si.href_whois %]" alt="[% si.last_ip %]" title="[% si.last_ip %]">[% si.last_ip_short %]</a>]
-      [<a href="javascript:send_message('[% si.href_send_message %]')">[% capt.message %]</a>]
+      [[% IF si.href_send_message -%]
+        <a href="javascript:send_message('[% si.href_send_message %]')">[% capt.message %]</a>
+        [%- ELSE; capt.disqualified; END %]]
     [% END %]
     </td>
   [% END; END %]
