@@ -67,7 +67,7 @@ sub init_template {
 sub url_f { CATS::Utils::url_function(@_, sid => $sid, cid => $cid) }
 
 sub generate {
-    my ($output_file, $cookie) = @_;
+    my ($output_file) = @_;
     defined $t or return; #? undef : ref $t eq 'SCALAR' ? return : die 'Template not defined';
     $contest->{time_since_start} or warn 'No contest from: ', $ENV{HTTP_REFERER} || '';
     $t->param(
@@ -78,17 +78,19 @@ sub generate {
         langs => [ map { href => url_f('contests', lang => $_), name => $_ }, @cats::langs ],
     );
 
+    my $cookie = CATS::Settings::as_cookie;
     my $out = '';
     if (my $enc = param('enc')) {
         $t->param(encoding => $enc);
         _http_header($http_mime_type, $enc, $cookie);
-        CATS::Web::print($out = Encode::encode($enc, $t->output, Encode::FB_XMLCREF));
+        $out = Encode::encode($enc, $t->output, Encode::FB_XMLCREF);
     }
     else {
         $t->param(encoding => 'UTF-8');
         _http_header($http_mime_type, 'utf-8', $cookie);
-        CATS::Web::print($out = $t->output);
+        $out = $t->output;
     }
+    CATS::Web::print($out);
     if ($output_file) {
         open my $f, '>:utf8', $output_file
             or die "Error opening $output_file: $!";

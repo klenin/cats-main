@@ -57,8 +57,7 @@ sub accept_request {
     defined $t or return;
     CATS::MainMenu::generate;
     CATS::Time::mark_finish;
-    $t->param(lang => CATS::Settings::lang);
-    CATS::Output::generate($output_file, CATS::Settings::as_cookie);
+    CATS::Output::generate($output_file);
 }
 
 sub handler {
