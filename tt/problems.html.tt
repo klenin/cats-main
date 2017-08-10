@@ -47,7 +47,6 @@ function chg_status(st_sel, pid) {
 function chg_code(st_sel, pid) {
     document.location = a[pid][4] + '&code=' + st_sel.value;
 }
-
 </script>
 [% END %]
 
@@ -179,7 +178,10 @@ function chg_code(st_sel, pid) {
 <button class="button" type="submit" name="participate_online" value="1">[% capt.participate %]</button>
 [%- END %]
 [% IF can_participate_virtual -%]
-<button class="button" type="submit" name="participate_virtual" value="1">[% capt.participate_virtually %]</button>
+<button type="submit" name="participate_virtual" value="1" class="button"
+    [% IF user.is_virtual %]onclick="confirm('[% capt.virtual_warning %]')"[% END %]>
+[%- capt.participate_virtually -%]
+</button>
 [%- END %]
 </div>
 [% END %]

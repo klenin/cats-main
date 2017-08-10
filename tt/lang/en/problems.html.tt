@@ -32,6 +32,7 @@
     enc => 'Encoding',
     participate => 'participate',
     participate_virtually => 'participate virtually',
+    virtual_warning => 'Warning! Second virtual participation will remove all submits of the first one. Continue?',
   });
   MACRO to_monitor(console) BLOCK; "Open ${console} to monitor testing process"; END;
 %]
