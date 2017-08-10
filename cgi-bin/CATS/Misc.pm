@@ -5,7 +5,8 @@ use warnings;
 
 use Exporter qw(import);
 
-our @EXPORT = qw(
+our @EXPORT_OK = qw(
+    $cid $contest $is_jury $is_team $is_root $privs $sid $t $uid $user
     auto_ext
     downloads_path
     downloads_url
@@ -15,14 +16,6 @@ our @EXPORT = qw(
     res_str
     url_f
 );
-
-our @EXPORT_OK = qw(
-    $contest $t $sid $cid $uid
-    $is_root $is_team $is_jury $privs $user);
-
-#use CGI::Fast( ':standard' );
-#use CGI::Util qw(rearrange unescape escape);
-#use FCGI;
 
 use Carp qw(croak);
 use Encode();
