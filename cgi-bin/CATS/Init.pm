@@ -9,9 +9,9 @@ use Storable qw();
 use CATS::Contest;
 use CATS::DB;
 use CATS::IP;
-use CATS::Messages;
+use CATS::Messages qw(msg);
 use CATS::Misc qw(
-    $contest $t $sid $cid $uid $is_root $is_team $is_jury $privs $user);
+    $contest $t $sid $cid $uid $is_root $is_team $is_jury $privs $user init_template);
 use CATS::Privileges;
 use CATS::Redirect;
 use CATS::Settings qw($settings);
