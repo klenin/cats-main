@@ -21,6 +21,7 @@ use CATS::Problem::Save;
 use CATS::Problem::Source::Git;
 use CATS::Problem::Source::Zip;
 use CATS::Problem::Submit;
+use CATS::Problem::Utils;
 use CATS::ProblemStorage;
 use CATS::Redirect;
 use CATS::Request;
@@ -115,7 +116,7 @@ sub define_common_searches {
         } keys %cats::source_modules
     });
 
-    $lv->define_enums({ run_method => CATS::Misc::run_method_enum() });
+    $lv->define_enums({ run_method => CATS::Problem::Utils::run_method_enum() });
 }
 
 sub problems_all_frame {

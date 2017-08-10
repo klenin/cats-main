@@ -15,6 +15,7 @@ use CATS::Misc qw(
     $cid $contest $is_team $is_jury $is_root $privs $sid $t $uid $user
     auto_ext init_template url_f
 );
+use CATS::Problem::Utils;
 use CATS::Request;
 use CATS::Settings qw($settings);
 use CATS::Time;
@@ -312,7 +313,7 @@ sub console_content {
     });
     $lv->define_enums({
         state => $CATS::Verdicts::name_to_state,
-        run_method => CATS::Misc::run_method_enum,
+        run_method => CATS::Problem::Utils::run_method_enum,
         contest_id => { this => $cid },
         account_id => { this => $uid },
     });
