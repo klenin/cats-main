@@ -7,10 +7,10 @@ use Encode;
 
 use CATS::DB;
 use CATS::Form qw(validate_string_length);
+use CATS::Globals qw($cid $t $is_jury $is_root $privs $user);
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
-use CATS::Misc qw(
-    $cid $t $is_jury $is_root $privs $user init_template url_f);
+use CATS::Output qw(init_template url_f);
 use CATS::References;
 use CATS::Time;
 use CATS::Web qw(param url_param);

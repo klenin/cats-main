@@ -9,12 +9,10 @@ use List::Util;
 use CATS::ContestParticipate qw(get_registered_contestant);
 use CATS::Countries;
 use CATS::DB;
+use CATS::Globals qw($cid $contest $is_team $is_jury $is_root $privs $sid $t $uid $user);
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
-use CATS::Misc qw(
-    $cid $contest $is_team $is_jury $is_root $privs $sid $t $uid $user
-    auto_ext init_template url_f
-);
+use CATS::Output qw(auto_ext init_template url_f);
 use CATS::Problem::Utils;
 use CATS::Request;
 use CATS::Settings qw($settings);

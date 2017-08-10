@@ -3,8 +3,9 @@ package CATS::MainMenu;
 use strict;
 use warnings;
 
+use CATS::Globals qw($contest $is_jury $sid $t $uid $user);
 use CATS::Messages qw(res_str);
-use CATS::Misc qw($t $sid $contest $uid $is_jury $user url_f);
+use CATS::Output qw(url_f);
 use CATS::Utils qw(url_function);
 use CATS::Web qw(url_param);
 

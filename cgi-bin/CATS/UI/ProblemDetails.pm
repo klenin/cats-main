@@ -9,11 +9,10 @@ use List::Util qw(sum);
 use CATS::BinaryFile;
 use CATS::Constants;
 use CATS::DB;
+use CATS::Globals qw($cid $contest $is_jury $is_root $sid $t);
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
-use CATS::Misc qw(
-    $cid $contest $is_jury $is_root $sid $t
-    auto_ext init_template url_f);
+use CATS::Output qw(auto_ext downloads_path downloads_url init_template url_f);
 use CATS::Problem::Save;
 use CATS::Problem::Text;
 use CATS::Problem::Utils;
@@ -158,14 +157,14 @@ sub problem_download {
         or return not_found;
     my $already_hashed = CATS::Problem::Text::ensure_problem_hash($pid, \$hash, 1);
     my $fname = "pr/problem_$hash.zip";
-    my $fpath = CATS::Misc::downloads_path . $fname;
+    my $fpath = downloads_path . $fname;
     unless($already_hashed && -f $fpath) {
         my ($zip) = $dbh->selectrow_array(qq~
             SELECT zip_archive FROM problems WHERE id = ?~, undef,
             $pid);
         CATS::BinaryFile::save($fpath, $zip);
     }
-    redirect(CATS::Misc::downloads_url . $fname);
+    redirect(downloads_url . $fname);
 }
 
 sub problem_git_package {

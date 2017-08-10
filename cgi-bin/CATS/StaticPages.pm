@@ -5,7 +5,7 @@ use warnings;
 
 use CATS::Config qw(cats_dir);
 use CATS::DB;
-use CATS::Misc qw($sid);
+use CATS::Globals qw($sid);
 use CATS::Web qw(log_info url_param restore_parameters);
 
 sub allowed_pages {{

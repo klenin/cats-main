@@ -4,8 +4,9 @@ use strict;
 use warnings;
 
 use CATS::DB;
+use CATS::Globals qw($t $is_jury $is_team $uid);
 use CATS::Messages qw(res_str);
-use CATS::Misc qw($t $is_jury $is_team $uid init_template);
+use CATS::Output qw(init_template);
 use CATS::Verdicts;
 use CATS::Web qw(param url_param);
 

@@ -8,8 +8,8 @@ use Math::BigInt;
 
 use CATS::Constants;
 use CATS::DB;
+use CATS::Globals qw($sid);
 use CATS::JudgeDB;
-use CATS::Misc qw($sid);
 use CATS::Testset;
 use CATS::Web;
 

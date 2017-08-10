@@ -8,13 +8,14 @@ use Storable qw();
 
 use CATS::Contest;
 use CATS::DB;
+use CATS::Globals qw($contest $t $sid $cid $uid $is_root $is_team $is_jury $privs $user);
 use CATS::IP;
 use CATS::Messages qw(msg);
-use CATS::Misc qw(
-    $contest $t $sid $cid $uid $is_root $is_team $is_jury $privs $user init_template);
+use CATS::Output qw(init_template);
 use CATS::Privileges;
 use CATS::Redirect;
 use CATS::Settings qw($settings);
+use CATS::Utils;
 use CATS::Web qw(param url_param);
 
 # Authorize user, initialize permissions and settings.

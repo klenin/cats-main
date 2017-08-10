@@ -4,8 +4,9 @@ use strict;
 use warnings;
 
 use CATS::DB;
+use CATS::Globals qw($t);
 use CATS::Judge;
-use CATS::Misc qw(init_template $t);
+use CATS::Output qw(init_template);
 
 sub about_frame {
     init_template('about.html.tt');

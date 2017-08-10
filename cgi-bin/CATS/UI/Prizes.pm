@@ -4,11 +4,10 @@ use strict;
 use warnings;
 
 use CATS::DB;
+use CATS::Globals qw($cid $contest $is_jury $is_root $is_team $sid $t $uid);
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
-use CATS::Misc qw(
-    $cid $contest $is_jury $is_root $is_team $sid $t $uid
-    auto_ext init_template url_f);
+use CATS::Output qw(auto_ext init_template url_f);
 use CATS::References;
 use CATS::Web qw(param url_param);
 

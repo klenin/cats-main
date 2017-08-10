@@ -7,9 +7,10 @@ use utf8;
 use Encode ();
 use YAML::Syck ();
 
-use CATS::DB;
 use CATS::Config qw(cats_dir);
-use CATS::Misc qw(init_template $t);
+use CATS::DB;
+use CATS::Globals qw($t);
+use CATS::Output qw(init_template);
 use CATS::RankTable;
 use CATS::Web qw(param url_param);
 

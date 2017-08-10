@@ -4,8 +4,9 @@ use strict;
 use warnings;
 
 use CATS::DB;
+use CATS::Globals qw($t);
 use CATS::Messages qw(msg res_str);
-use CATS::Misc qw($t init_template url_f);
+use CATS::Output qw(init_template url_f);
 use CATS::Web qw(param url_param);
 
 use Exporter qw(import);

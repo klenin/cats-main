@@ -6,7 +6,7 @@ use warnings;
 use Time::HiRes;
 
 use CATS::Messages qw(res_str);
-use CATS::Misc qw($contest $t $user);
+use CATS::Globals qw($contest $t $user);
 use CATS::Web qw(param);
 
 sub prepare_server_time {

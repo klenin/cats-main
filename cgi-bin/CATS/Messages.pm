@@ -11,7 +11,7 @@ use Carp qw(croak);
 
 use CATS::Config qw(cats_dir);
 use CATS::Constants;
-use CATS::Misc qw($t);
+use CATS::Globals qw($t);
 use CATS::Settings;
 use CATS::Web qw(param);
 

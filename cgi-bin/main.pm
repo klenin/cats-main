@@ -7,6 +7,7 @@ use encoding 'utf8', STDIN => undef;
 
 use Data::Dumper;
 use DBI::Profile;
+use SQL::Abstract; # Actually used by CATS::DB, bit is optional there.
 use Storable ();
 
 our $cats_lib_dir;
@@ -24,10 +25,11 @@ use lib $cats_problem_lib_dir;
 
 use CATS::DB;
 use CATS::Config;
+use CATS::Globals qw($t);
 use CATS::Init;
 use CATS::MainMenu;
 use CATS::Messages;
-use CATS::Misc qw($t generate_output);
+use CATS::Output qw(generate_output);
 use CATS::Proxy;
 use CATS::Router;
 use CATS::Settings;

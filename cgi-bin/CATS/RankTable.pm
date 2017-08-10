@@ -10,8 +10,8 @@ use CATS::Config qw(cats_dir);
 use CATS::Constants;
 use CATS::Countries;
 use CATS::DB;
-use CATS::Misc qw(
-    $cid $contest $is_jury $is_root $is_team $t $uid $user url_f);
+use CATS::Globals qw($cid $contest $is_jury $is_root $is_team $t $uid $user);
+use CATS::Output qw(url_f);
 use CATS::Testset;
 use CATS::Web qw(param url_param);
 

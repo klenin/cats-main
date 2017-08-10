@@ -16,8 +16,9 @@ use XML::Parser::Expat;
 
 use CATS::Config qw(cats_dir);
 use CATS::DB;
+use CATS::Globals qw($cid $contest $is_jury $is_root $t $uid);
 use CATS::Messages qw(res_str);
-use CATS::Misc qw($cid $contest $is_jury $is_root $t $uid auto_ext init_template);
+use CATS::Output qw(auto_ext downloads_path downloads_url init_template);
 use CATS::Problem::Tags;
 use CATS::StaticPages;
 use CATS::TeX::Lite;
@@ -112,9 +113,9 @@ sub download_image {
     $name =~ tr/a-zA-Z0-9_//cd;
     $ext =~ tr/a-zA-Z0-9_//cd;
     my $fname = "img/img_${hash}_$name.$ext";
-    my $fpath = CATS::Misc::downloads_path . $fname;
+    my $fpath = downloads_path . $fname;
     -f $fpath or CATS::BinaryFile::save($fpath, $pic);
-    return CATS::Misc::downloads_url . $fname;
+    return downloads_url . $fname;
 }
 
 sub save_attachment {
@@ -133,9 +134,9 @@ sub save_attachment {
     $file =~ tr/a-zA-Z0-9_.//cd;
     $file =~ s/\.+/\./g;
     my $fname = "att/${hash}_$file";
-    my $fpath = CATS::Misc::downloads_path . $fname;
+    my $fpath = downloads_path . $fname;
     -f $fpath or CATS::BinaryFile::save($fpath, $data);
-    return CATS::Misc::downloads_url . $fname;
+    return downloads_url . $fname;
 }
 
 sub sh_1 {

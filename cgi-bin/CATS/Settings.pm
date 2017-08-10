@@ -14,7 +14,7 @@ use Storable qw();
 
 use CATS::Constants;
 use CATS::DB;
-use CATS::Misc qw($uid);
+use CATS::Globals qw($uid);
 use CATS::Web qw(param cookie);
 
 our $settings;
