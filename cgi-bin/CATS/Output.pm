@@ -14,11 +14,11 @@ our @EXPORT_OK = qw(
 );
 
 use Encode();
-use SQL::Abstract; # Actually used by CATS::DB, bit is optional there.
 
 use CATS::Config qw(cats_dir);
 use CATS::Globals qw($cid $contest $sid $t $user);
 use CATS::DB;
+use CATS::Settings;
 use CATS::Template;
 use CATS::Utils qw();
 use CATS::Web qw(param headers content_type);
@@ -41,10 +41,8 @@ sub auto_ext {
     "$file_name.$ext.tt";
 }
 
-#my $template_file;
 sub init_template {
     my ($file_name, $p) = @_;
-    #if (defined $t && $template_file eq $file_name) { $t->param(tf=>1); return; }
 
     my ($base_name, $ext) = $file_name =~ /^(\w+)\.(\w+)(:?\.tt)$/;
     $http_mime_type = {
@@ -60,7 +58,10 @@ sub init_template {
     $t = CATS::Template->new($file_name, cats_dir(), $p);
     my $json = param('json') || '';
     $extra_headers{'Access-Control-Allow-Origin'} = '*' if $json;
-    $t->param($json =~ /^[a-zA-Z][a-zA-Z0-9_]+$/ ? (jsonp => $json) : ());
+    $t->param(
+        lang => CATS::Settings::lang,
+        $json =~ /^[a-zA-Z][a-zA-Z0-9_]+$/ ? (jsonp => $json) : ()
+    );
 }
 
 sub url_f { CATS::Utils::url_function(@_, sid => $sid, cid => $cid) }

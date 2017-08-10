@@ -97,10 +97,8 @@ sub init_console_template {
     my ($template_name) = @_;
     my $se = param('se') || '';
     $se = "_$se" if $se;
-    my $lv = CATS::ListView->new(
+    CATS::ListView->new(
         name => "console$se", array_name => 'console', template => $template_name);
-    $t->param(lang => CATS::Settings::lang);
-    $lv;
 }
 
 sub console_content {
