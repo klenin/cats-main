@@ -10,7 +10,7 @@ use CATS::Messages qw(msg);
 
 use Exporter qw(import);
 
-our @EXPORT = qw(
+our @EXPORT_OK = qw(
     get_registered_contestant
     is_jury_in_contest
 );
