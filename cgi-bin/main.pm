@@ -24,8 +24,9 @@ use lib $cats_problem_lib_dir;
 
 use CATS::DB;
 use CATS::Config;
+use CATS::Init;
 use CATS::MainMenu;
-use CATS::Misc qw($t generate_output initialize);
+use CATS::Misc qw($t generate_output);
 use CATS::Proxy;
 use CATS::Router;
 use CATS::Settings;
@@ -39,7 +40,7 @@ sub accept_request {
         $output_file = CATS::StaticPages::process_static()
             or return;
     }
-    initialize;
+    CATS::Init::initialize;
     return if has_error;
     CATS::Time::mark_init;
 
