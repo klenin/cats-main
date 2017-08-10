@@ -24,16 +24,12 @@ my %generators = (
 
 my $source;
 
-
 sub sp { $_[0] eq '' ? '' : '&nbsp;' }
 
 sub is_binop { exists $CATS::TeX::TeXData::binary{$_[0]} }
 
-
-sub parse_token
-{
-    for ($source)
-    {
+sub parse_token {
+    for ($source) {
         # Translate spaces about operations to &nbsp;.
         s/^(\s*)-(\s*)// && return ['op', sp($1), '&minus;', sp($2)];
         s/^(\s*)([+*\/><=])(\s*)// && return ['op', sp($1), $2, sp($3)];
@@ -51,72 +47,56 @@ sub parse_token
     }
 }
 
-
-sub parse_block
-{
+sub parse_block {
     my @res = ();
     my $limits = '';
-    while ($source ne '')
-    {
+    while ($source ne '') {
         last if $source =~ s/^\s*}//;
-        if ($source =~ s/^\s*([_^])//)
-        {
+        if ($source =~ s/^\s*([_^])//) {
             @res or die '!';
             my $f = $1 eq '_' ? 'sub' : 'sup';
             
-            if ($limits)
-            {
+            if ($limits) {
                 $res[-1] = [$f . '1', $res[-1], parse_token()];
             }
-            else
-            {
+            else {
                 push @res, [$f, parse_token()];
             }
         }
-        elsif ($source =~ s/^\s*(?:\\(sqrt|overline))//)
-        {
+        elsif ($source =~ s/^\s*(?:\\(sqrt|overline))//) {
             my $f = $1;
             push @res, [$f, parse_token()];
         }
-        elsif ($source =~ s/^\s*(?:\\over)//)
-        {
+        elsif ($source =~ s/^\s*(?:\\over)//) {
             $res[-1] = ['frac', $res[-1], parse_token()];
         }
-        elsif ($source =~ s/^\s*(?:\\limits)//)
-        {
+        elsif ($source =~ s/^\s*(?:\\limits)//) {
             $limits = 1;
         }
-        elsif ($source =~ s/^\s*(?:\\(d?frac))//)
-        {
+        elsif ($source =~ s/^\s*(?:\\(d?frac))//) {
             my $f = $1;
             push @res, [$f, parse_token(), parse_token()];
         }
-        else
-        {
+        else {
             push @res, parse_token();
         }
     }
     return ['block', @res];
 }
 
-
-sub parse
-{
+sub parse {
     ($source) = @_;
     return parse_block();
 }
 
-
-sub asHTML
-{
+sub asHTML {
     my ($tree) = @_;
     ref $tree eq 'ARRAY' or return $tree;
     my $name = shift @$tree;
     $name or return '???';
     my $prev = 0;
     # Insert space between directly adjacent variables and numbers.
-    for (@$tree)
-    {
+    for (@$tree) {
         my $cur = ref $_ eq 'ARRAY' && $_->[0] =~ /^(var|num|sub|sup)$/;
         push @$_, ' ' if $prev && $cur;
         $prev = $cur;
@@ -142,15 +122,11 @@ sub convert_one {
     sprintf '<span class="TeX" title="%s">%s</span>', quote_attr($tex), asHTML(parse($tex))
 }
 
-
-sub convert_all
-{
+sub convert_all {
     $_[0] =~ s/(\$([^\$]*[^\$\\])\$)/convert_one($2)/eg;
 }
 
-
 sub styles() { '' }
-
 
 #print convert_one('a_1, a_2, \ldots , a_{n+1}');
 #print convert_one('a + b+c');
