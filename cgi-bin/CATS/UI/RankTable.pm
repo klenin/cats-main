@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use CATS::DB;
-use CATS::Globals qw($cid $contest $is_jury $is_root $is_team $sid $t $uid);
+use CATS::Globals qw($cid $contest $is_jury $t $uid);
 use CATS::Messages qw(msg res_str);
 use CATS::Output qw(init_template url_f);
 use CATS::RankTable;

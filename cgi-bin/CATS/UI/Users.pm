@@ -9,7 +9,7 @@ use Storable qw(freeze thaw);
 use CATS::Constants;
 use CATS::Countries;
 use CATS::DB;
-use CATS::Globals qw($cid $contest $is_jury $is_root $is_team $sid $t $uid $privs $user);
+use CATS::Globals qw($cid $contest $is_jury $is_root $sid $t $uid $privs $user);
 use CATS::IP;
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
