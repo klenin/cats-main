@@ -53,24 +53,23 @@ sub values { @{$_[0]}{param_names()} }
 sub add_to_contest {
     my %p = @_;
     $p{contest_id} && $p{account_id} or die;
-    $dbh->do(qq~
-        INSERT INTO contest_accounts (
-            id, contest_id, account_id, is_jury, is_pop, is_hidden, is_ooc, is_remote,
-            is_virtual, diff_time
-        ) VALUES(?,?,?,?,?,?,?,?,?,?)~, {},
-        new_id, $p{contest_id}, $p{account_id}, 0, 0, 0, $p{is_ooc}, $p{is_remote} || 0,
-        0, 0
-    );
+    $dbh->do(_u $sql->insert('contest_accounts', {
+        id => new_id, contest_id => $p{contest_id}, account_id => $p{account_id},
+        is_jury => 0, is_pop => 0, is_hidden => 0, is_ooc => $p{is_ooc},
+        is_remote => $p{is_remote} || 0, is_virtual => 0, diff_time => 0,
+    }));
 }
 
 sub generate_login {
     my $login_num;
 
     if ($CATS::Config::db_dsn =~ /Firebird/) {
-        $login_num = $dbh->selectrow_array('SELECT GEN_ID(login_seq, 1) FROM RDB$DATABASE');
+        $login_num = $dbh->selectrow_array(q~
+            SELECT GEN_ID(login_seq, 1) FROM RDB$DATABASE~);
     }
     elsif ($cats_db::db_dsn =~ /Oracle/) {
-        $login_num = $dbh->selectrow_array(qq~SELECT login_seq.nextval FROM DUAL~);
+        $login_num = $dbh->selectrow_array(q~
+            SELECT login_seq.nextval FROM DUAL~);
     }
     $login_num or die;
 
