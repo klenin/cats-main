@@ -7,7 +7,7 @@ use CATS::Config qw(cats_dir);
 use CATS::Constants;
 use CATS::DB;
 use CATS::DevEnv;
-use CATS::Globals qw($privs $user);
+use CATS::Globals qw($privs $uid $user);
 use CATS::Messages qw(msg);
 use CATS::Problem::ImportSource::DB;
 use CATS::Problem::Parser;
@@ -271,7 +271,7 @@ sub save {
         for qw(statement constraints input_format output_format formal_input json_data explanation);
     $c->bind_param($i++, $self->{parser}->get_zip);
     $c->bind_param($i++, $problem->{description}{std_checker});
-    $c->bind_param($i++, $CATS::Misc::uid);
+    $c->bind_param($i++, $uid);
     $c->bind_param($i++, $problem->{description}{max_points});
     $c->bind_param($i++, $problem->{run_method});
     $c->bind_param($i++, CATS::Testset::pack_rank_spec(@{$problem->{players_count}}));
