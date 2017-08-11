@@ -43,8 +43,10 @@ sub as_cookie {
         -expires => '+1h');
 }
 
+sub as_storable { Storable::freeze($settings) }
+
 sub save {
-    my $new_enc_settings = Storable::freeze($settings);
+    my $new_enc_settings = as_storable;
     $new_enc_settings ne ($enc_settings || '') or return;
     $enc_settings = $new_enc_settings;
     $uid or return; # Cookie only for anonymous users.

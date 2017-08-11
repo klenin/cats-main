@@ -16,6 +16,7 @@ use CATS::Globals qw($cid $is_jury $is_root $t $uid $user);
 use CATS::Messages qw(msg);
 use CATS::Output qw(init_template url_f);
 use CATS::Privileges;
+use CATS::Settings;
 use CATS::RankTable;
 use CATS::Web qw(param);
 
@@ -149,15 +150,15 @@ sub validate_login {
         @$dups > 1 || @$dups == 1 && (!$id || $id != $dups->[0]) ? msg(1103) : 1;
 }
 
+# p: save_settings, is_ooc, commit.
 sub insert {
     my ($self, $contest_id, %p) = @_;
     my $training_contests = $dbh->selectall_arrayref(q~
-        SELECT id, closed FROM contests WHERE ctype = 1 AND closed = 0~,
-        { Slice => {} });
+        SELECT id, closed FROM contests WHERE ctype = 1 AND closed = 0~, { Slice => {} });
     @$training_contests or return msg(1092);
 
     my $aid = new_id;
-    my $new_settings = $p{save_settings} ? Storable::freeze($CATS::Misc::settings) : '';
+    my $new_settings = $p{save_settings} ? CATS::Settings::as_storable : '';
     $dbh->do(q~
         INSERT INTO accounts (
             id, srole, passwd, settings, ~ . join (', ', param_names()) . q~
