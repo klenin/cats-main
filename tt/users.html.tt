@@ -44,7 +44,7 @@ function delete_team(href, name) {
 [% END %]
 [% IF visible_cols.Dt %]
 <td align="center">[% capt.virtual IF u.virtual %]
-<span class="nobr">[% maybe_href(u.href_vdiff, u.virtual_diff_time_fmt || '-') %]</span></td>
+<span class="nobr">[% maybe_href(u.href_vdiff, u.formatted_time || '-') %]</span></td>
 [% END %]
 </tr>
 [% END %]

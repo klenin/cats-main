@@ -357,8 +357,8 @@ sub users_frame {
 
     my @fields = qw(
         A.id A.country A.motto A.login A.team_name A.city
-        CA.is_jury CA.is_ooc CA.is_remote CA.is_hidden CA.is_site_org CA.is_virtual CA.diff_time
-        CA.tag);
+        CA.is_jury CA.is_ooc CA.is_remote CA.is_hidden CA.is_site_org
+        CA.is_virtual CA.diff_time CA.ext_time CA.tag);
     $lv->define_db_searches(\@fields);
     $lv->define_db_searches({
         'CA.id' => 'CA.id',
@@ -396,7 +396,7 @@ sub users_frame {
     my $fetch_record = sub {
         my (
             $accepted, $caid, $aid, $country_abbr, $motto, $login, $team_name, $city,
-            $jury, $ooc, $remote, $hidden, $site_org, $virtual, $diff_time,
+            $jury, $ooc, $remote, $hidden, $site_org, $virtual, $diff_time, $ext_time,
             $tag, $site_id, $site_name
         ) = $_[0]->fetchrow_array
             or return ();
@@ -428,9 +428,7 @@ sub users_frame {
             editable_attrs =>
                 ($is_jury || (!$user->{site_id} || $user->{site_id} == $site_id) && $uid && $aid != $uid),
             virtual => $virtual,
-            virtual_diff_time => $diff_time,
-            virtual_diff_time_minutes => int(($diff_time // 0) * 24 * 60 | 0.5),
-            virtual_diff_time_fmt => CATS::Time::format_diff($diff_time, 1),
+            formatted_time => CATS::Time::format_diff_ext($diff_time, $ext_time, 1),
          );
     };
 
