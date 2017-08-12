@@ -44,8 +44,13 @@ sub is_practice {
 }
 
 sub has_started {
-    my ($self, $virtual_time_offset) = @_;
-    $self->{time_since_start} >= ($virtual_time_offset || 0);
+    my ($self, $offset) = @_;
+    $self->{time_since_start} >= ($offset || 0);
+}
+
+sub has_finished {
+    my ($self, $offset) = @_;
+    $self->{time_since_finish} >= ($offset || 0);
 }
 
 sub current_official {

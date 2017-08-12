@@ -370,9 +370,10 @@ sub problems_frame {
         if ($local_only) {
             my ($is_remote, $is_ooc);
             if ($uid) {
-                ($is_remote, $is_ooc) = $dbh->selectrow_array(qq~
-                    SELECT is_remote, is_ooc FROM contest_accounts WHERE contest_id = ? AND account_id = ?~,
-                    {}, $cid, $uid);
+                ($is_remote, $is_ooc) = $dbh->selectrow_array(q~
+                    SELECT is_remote, is_ooc FROM contest_accounts
+                    WHERE contest_id = ? AND account_id = ?~, undef,
+                    $cid, $uid);
             }
             if ((!defined $is_remote || $is_remote) && (!defined $is_ooc || $is_ooc)) {
                 init_template(auto_ext('problems_inaccessible'));
@@ -580,9 +581,9 @@ sub problems_frame {
         contest_descr => $contest->{short_descr},
         submenu => \@submenu, title_suffix => res_str(525),
         is_user => $uid,
-        is_participant =>
-            $is_jury || $contest->is_practice ||
-            $is_team && ($contest->{time_since_finish} - $user->{diff_time} < 0 || CATS::Problem::Submit::can_upsolve),
+        can_submit => $is_jury ||
+            $user->{is_participant} &&
+            ($user->{is_virtual} || !$contest->has_finished($user->{diff_time} + $user->{ext_time})),
         is_practice => $contest->is_practice,
         de_list => \@de, problem_codes => \@cats::problem_codes,
         contest_id => $cid, no_judges => !$jactive,

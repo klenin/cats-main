@@ -6,21 +6,13 @@ use warnings;
 use CATS::Constants;
 use CATS::DB;
 use CATS::DevEnv;
-use CATS::Globals qw($cid $contest $is_jury $is_team $t $uid $user);
+use CATS::Globals qw($cid $contest $is_jury $t $uid $user);
 use CATS::Messages qw(msg);
 use CATS::Output qw(url_f);
 use CATS::Request;
 use CATS::Web qw(param upload_source);
 
-sub can_upsolve {
-    my ($tag) = $dbh->selectrow_array(q~
-         SELECT CA.tag FROM contest_accounts CA
-             WHERE CA.contest_id = ? AND CA.account_id = ?~, undef,
-         $cid, $uid || 0);
-    !!(($tag || '') =~ /upsolve/);
-}
-
-sub problem_submit_too_frequent {
+sub too_frequent {
     my ($submit_uid) = @_;
     # Protect from Denial of Service -- disable too frequent submissions.
     my $prev = $dbh->selectcol_arrayref(q~
@@ -42,7 +34,7 @@ sub determine_state {
 sub problems_submit {
     my ($p) = @_;
     my $pid = $p->{problem_id} or return msg(1012);
-    $is_team || $contest->is_practice or return msg(1116);
+    $user->{is_participant} or return msg(1116);
 
     # Use explicit empty string comparisons to avoid problems with solutions containing only '0'.
     my $file = param('source') // '';
@@ -57,27 +49,26 @@ sub problems_submit {
 
     my $did = $p->{de_id} or return msg(1013);
 
-    my ($time_since_start, $time_since_finish, $is_official, $status, $title) = $dbh->selectrow_array(qq~
-        SELECT
-            CAST(CURRENT_TIMESTAMP - $user->{diff_time} - C.start_date AS DOUBLE PRECISION),
-            CAST(CURRENT_TIMESTAMP - $user->{diff_time} - C.finish_date AS DOUBLE PRECISION),
-            C.is_official, CP.status, P.title
-        FROM contests C
-        INNER JOIN contest_problems CP ON CP.contest_id = C.id
+    my $contest_finished = $contest->has_finished($user->{diff_time} + $user->{ext_time});
+    my ($status, $title) = $dbh->selectrow_array(q~
+        SELECT CP.status, P.title
+        FROM contest_problems CP
         INNER JOIN problems P ON P.id = CP.problem_id
-        WHERE C.id = ? AND CP.problem_id = ?~, undef,
+        WHERE CP.contest_id = ? AND CP.problem_id = ?~, undef,
         $cid, $pid) or return msg(1012);
 
     unless ($is_jury) {
-        $time_since_start >= 0
+        $contest->has_started($user->{diff_time})
             or return msg(1080);
-        $time_since_finish <= 0 || $user->{is_virtual} || can_upsolve
+        !$contest_finished || $user->{is_virtual}
             or return msg(1081);
-        !defined $status || $status < $cats::problem_st_disabled
-            or return msg(1124, $title);
+        $status //= $cats::problem_st_ready;
+        return msg(1124, $title) if $status == $cats::problem_st_disabled;
+        # Do not leak the title of a hidden problem.
+        return msg(1124, '') if $status >= $cats::problem_st_hidden;
 
         # During the official contest, do not accept submissions for other contests.
-        if (!$is_official || $user->{is_virtual}) {
+        if (!$contest->{is_official} || $user->{is_virtual}) {
             my ($current_official) = $contest->current_official;
             !$current_official
                 or return msg(1123, $current_official->{title});
@@ -86,13 +77,13 @@ sub problems_submit {
 
     my $submit_uid = $uid // ($contest->is_practice ? $user->{anonymous_id} : die);
 
-    return msg(1131) if problem_submit_too_frequent($submit_uid);
+    return msg(1131) if too_frequent($submit_uid);
 
     my $prev_reqs_count;
-    if ($contest->{max_reqs} && !$is_jury) {
+    if ($contest->{max_reqs} && !$is_jury && !$user->{is_virtual}) {
         $prev_reqs_count = $dbh->selectrow_array(q~
             SELECT COUNT(*) FROM reqs R
-            WHERE R.account_id = ? AND R.problem_id = ? AND R.contest_id = ?~, {},
+            WHERE R.account_id = ? AND R.problem_id = ? AND R.contest_id = ?~, undef,
             $submit_uid, $pid, $cid);
         return msg(1137) if $prev_reqs_count >= $contest->{max_reqs};
     }
@@ -107,11 +98,12 @@ sub problems_submit {
     # Forbid repeated submissions of the identical code with the same DE.
     my $source_hash = CATS::Utils::source_hash($source_text);
     my ($same_source, $prev_submit_time) = $dbh->selectrow_array(q~
-        SELECT FIRST 1 S.req_id, R.submit_time
+        SELECT S.req_id, R.submit_time
         FROM sources S INNER JOIN reqs R ON S.req_id = R.id
         WHERE
             R.account_id = ? AND R.problem_id = ? AND
-            R.contest_id = ? AND S.hash = ? AND S.de_id = ?~, undef,
+            R.contest_id = ? AND S.hash = ? AND S.de_id = ?
+        ROWS 1~, undef,
         $submit_uid, $pid, $cid, $source_hash, $did);
     $same_source and return msg(1132, $prev_submit_time);
 
@@ -131,9 +123,9 @@ sub problems_submit {
     $dbh->commit;
 
     $t->param(solution_submitted => 1, href_console => url_f('console'));
-    $time_since_finish > 0 ? msg(1087) :
-    defined $prev_reqs_count ?
-        msg(1088, $contest->{max_reqs} - $prev_reqs_count - 1) : msg(1014);
+    $contest_finished ? msg(1087) :
+    defined $prev_reqs_count ? msg(1088, $contest->{max_reqs} - $prev_reqs_count - 1) :
+    msg(1014);
 }
 
 sub problems_submit_std_solution {
