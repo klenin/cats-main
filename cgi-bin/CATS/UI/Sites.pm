@@ -55,11 +55,11 @@ sub sites_frame {
     defined param('edit_save') and edit_save;
 
     $lv->define_columns(url_f('sites'), 0, 0, [
-        { caption => res_str(601), order_by => '2', width => '20%' },
-        { caption => res_str(654), order_by => '3', width => '15%' },
-        { caption => res_str(655), order_by => '4', width => '15%' },
-        { caption => res_str(656), order_by => '5', width => '20%' },
-        { caption => res_str(657), order_by => '6', width => '30%' },
+        { caption => res_str(601), order_by => 'name',     width => '20%' },
+        { caption => res_str(654), order_by => 'region',   width => '15%', col => 'Rg' },
+        { caption => res_str(655), order_by => 'city',     width => '15%', col => 'Ct' },
+        { caption => res_str(656), order_by => 'org_name', width => '20%', col => 'On' },
+        { caption => res_str(657), order_by => 'address',  width => '30%', col => 'Ad' },
     ]);
 
     $lv->define_db_searches([ fields ]);
