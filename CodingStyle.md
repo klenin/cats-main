@@ -39,8 +39,6 @@ Some historical code, mostly located in `unused` directory, does not conform to 
 * Code lines SHOULD be shorter than 100 characters.
 * When a statement is split into several lines, split position SHOULD be after the operator of the lowest possible priority. Exception: if a line is split at the position of low-priority logical operator (`and`, `or`), such operator MUST go on the new line.
 * Semicolon MUST NOT have space on the left and SHOULD be followed by either a comment or end of line.
-* Single-statement subroutines SHOULD omit trailing semicolon.
-* Subroutines SHOULD omit the `return` keyword in the final statement.
 
 ## Statements and blocks
 * There SHOULD be no more than one statement per line.
@@ -56,20 +54,22 @@ Some historical code, mostly located in `unused` directory, does not conform to 
 * `for` keyword MUST be used instead of `foreach`.
 * Parameter assignment MUST be the first line of subroutine and SHOULD be of the form `my ($p1, $p2, ...) = @_;`.
 * Subroutines MUST NOT use prototypes (exception: `()` for constants).
+* Single-statement subroutines SHOULD omit trailing semicolon.
+* Subroutines SHOULD omit the `return` keyword in the final statement.
 
 ## Comments
 * Comments MUST be worded as full English sentences, with capitalization and full stops.
 * Comment MUST have a single space between `#` character and text.
-* Comments SHOULD be on a separate line immediately preceding commented code.
+* Comments MUST be either on a separate line immediately preceding commented code or at the end of the commented line. First option SHOULD be preferred.
 * Commented-out code SHOULD NOT be committed.
 * Subroutines accepting named parameters SHOULD be preceded by a comment with a list of parameter names.
 
 ## Quoting
 * Strings without interpolation MUST use single quotes.
 * Regexps SHOULD use slash.
-* If alternative quoting is desired, tilde character MUST be used for both strings and regexps (i.e. use `q~`, `qq~`, `m~`, `s~`).
+* If alternative quoting is desired, tilde character MUST be used for both strings and regexps (`q~`, `qq~`, `m~`, `s~`).
 * Alternative quoting with tilde MUST be used for all embedded SQL.
-* Identifiers used as hash indexes MUST not be quoted (except where required by language).
+* Identifiers used as hash indexes MUST NOT be quoted (except where required by language).
 
 ## Identifiers and packages
 * Package/class identifiers MUST use `CamelCase` and reside in `CATS::` namespace (exception: `cats` package for global constants defined in `CATS::Constants`).
@@ -91,7 +91,7 @@ Some historical code, mostly located in `unused` directory, does not conform to 
 ## Strictness and warnings
 * All packages MUST start from `use strict` and `use warnings` statements.
 * `no strict` statement MUST be enclosed in a smallest possible block.
-* Code SHOULD NOT generate any warnings.
+* Code MUST NOT generate any warnings.
 
 ## Security
 * User-supplied values MUST be passed to SQL via parameters only.
