@@ -169,12 +169,13 @@ sub contest_sites_frame {
 
     my $lv = CATS::ListView->new(name => 'contest_sites', template => 'contest_sites.html.tt');
     $lv->define_columns(url_f('contest_sites'), 0, 0, [
-        { caption => res_str(601), order_by => 'name'       , width => '20%' },
+        { caption => res_str(601), order_by => 'name'       , width => '15%' },
         { caption => res_str(654), order_by => 'region'     , width => '15%', col => 'Rg' },
         { caption => res_str(655), order_by => 'city'       , width => '15%', col => 'Ci' },
-        { caption => res_str(656), order_by => 'org_name'   , width => '20%', col => 'Oc' },
+        { caption => res_str(656), order_by => 'org_name'   , width => '15%', col => 'Oc' },
         { caption => res_str(659), order_by => 'org_person' , width => '15%', col => 'Op' },
-        { caption => res_str(658), order_by => 'users_count', width => '10%', col => 'Pt' },
+        { caption => res_str(632), order_by => 'diff_time'  , width => '15%', col => 'Dt' },
+        { caption => res_str(658), order_by => 'users_count', width => '15%', col => 'Pt' },
     ]);
     $lv->define_db_searches([ fields ]);
 
@@ -194,7 +195,7 @@ sub contest_sites_frame {
     my $sth = $dbh->prepare(qq~
         SELECT
             S.id, (CASE WHEN CS.site_id IS NULL THEN 0 ELSE 1 END) AS is_used,
-            S.name, S.region, S.city, S.org_name,
+            S.name, S.region, S.city, S.org_name, CS.diff_time, CS.ext_time,
             ($org_person_sql) AS org_person,
             ($users_count_sql) AS users_count
         FROM sites S
@@ -206,6 +207,7 @@ sub contest_sites_frame {
         my $row = $_[0]->fetchrow_hashref or return ();
         return (
             %$row,
+            formatted_time => CATS::Time::format_diff_ext($row->{diff_time}, $row->{ext_time}, 1),
             ($privs->{edit_sites} ? (href_edit => url_f('sites', edit => $row->{id})) : ()),
             ($is_jury ? (href_delete => url_f('contest_sites', 'delete' => $row->{id})) : ()),
             href_edit => url_f('contest_sites_edit', site_id => $row->{id}),

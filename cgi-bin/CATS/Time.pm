@@ -32,6 +32,11 @@ sub format_diff {
         sprintf($days ? '%s%d%s %02d:%02d' : '%s%4$d:%5$02d', $sign, $days, res_str(577), $hours, $minutes);
 }
 
+sub format_diff_ext {
+    my ($diff, $ext, $display_plus) = @_;
+    format_diff($diff, $display_plus) . ($ext ? ' ... ' . format_diff($ext, $display_plus) : '');
+}
+
 my ($start_time, $init_time);
 
 sub mark_start { $start_time = [ Time::HiRes::gettimeofday ] }
