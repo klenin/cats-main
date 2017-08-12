@@ -59,12 +59,17 @@ sub sites_frame {
         { caption => res_str(654), order_by => 'region',   width => '15%', col => 'Rg' },
         { caption => res_str(655), order_by => 'city',     width => '15%', col => 'Ct' },
         { caption => res_str(656), order_by => 'org_name', width => '20%', col => 'On' },
-        { caption => res_str(657), order_by => 'address',  width => '30%', col => 'Ad' },
+        { caption => res_str(657), order_by => 'address',  width => '20%', col => 'Ad' },
+        { caption => res_str(645), order_by => 'contests', width => '10%', col => 'Cc' },
     ]);
 
     $lv->define_db_searches([ fields ]);
 
-    my ($q, @bind) = $sql->select('sites', [ 'id', fields ], $lv->where);
+    my $count_fld = !$lv->visible_cols->{Cc} ? 'NULL' : q~
+        (SELECT COUNT(*) FROM contest_sites CS WHERE CS.site_id = S.id)~;
+
+
+    my ($q, @bind) = $sql->select('sites S', [ 'id', fields, "$count_fld AS contests" ], $lv->where);
     my $c = $dbh->prepare("$q " . $lv->order_by);
     $c->execute(@bind);
 

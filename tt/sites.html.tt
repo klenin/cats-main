@@ -21,8 +21,9 @@ function delete_site(href, name) {
 </td>
 [% IF visible_cols.Rg %]<td>[% s.region | html %]</td>[% END %]
 [% IF visible_cols.Ct %]<td>[% s.city | html %]</td>[% END %]
-[% IF visible_cols.On %]<td>[% s.org_name %]</td>[% END %]
-[% IF visible_cols.Ad %]<td>[% s.address %]</td>[% END %]
+[% IF visible_cols.On %]<td>[% s.org_name | html %]</td>[% END %]
+[% IF visible_cols.Ad %]<td>[% s.address | html %]</td>[% END %]
+[% IF visible_cols.Cc %]<td>[% s.contests %]</td>[% END %]
 </tr>
 [% END %]
 </table>
