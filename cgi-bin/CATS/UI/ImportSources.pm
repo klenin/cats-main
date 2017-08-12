@@ -5,7 +5,7 @@ use warnings;
 
 use CATS::Constants;
 use CATS::DB;
-use CATS::Globals qw($cid $contest $is_jury $is_root $is_team $sid $t $uid);
+use CATS::Globals qw($cid $contest $is_jury $is_root $sid $t $uid);
 use CATS::ListView;
 use CATS::Messages qw(res_str);
 use CATS::Output qw(init_template url_f);

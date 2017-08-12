@@ -9,7 +9,7 @@ use CATS::Config qw(cats_dir);
 use CATS::Constants;
 use CATS::ContestParticipate;
 use CATS::DB;
-use CATS::Globals qw($cid $contest $is_jury $is_root $is_team $sid $t $uid $user);
+use CATS::Globals qw($cid $contest $is_jury $is_root $sid $t $uid $user);
 use CATS::DevEnv;
 use CATS::Judge;
 use CATS::JudgeDB;

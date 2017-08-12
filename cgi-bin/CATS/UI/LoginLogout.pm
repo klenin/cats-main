@@ -5,7 +5,7 @@ use warnings;
 
 use CATS::Constants;
 use CATS::DB;
-use CATS::Globals qw($cid $contest $is_jury $is_root $is_team $sid $t $uid);
+use CATS::Globals qw($cid $contest $is_jury $is_root $sid $t $uid);
 use CATS::Messages qw(msg res_str);
 use CATS::Output qw(auto_ext init_template url_f);
 use CATS::Redirect;
@@ -66,7 +66,7 @@ sub login_frame {
         $dbh->commit;
 
         if ($json) {
-            $contest->load($cid, ['id']);
+            $contest->load($cid, [ 'id' ]);
             $t->param(sid => $sid, cid => $contest->{id});
             return;
         }
