@@ -15,29 +15,29 @@ use CATS::Globals qw($t);
 use CATS::Settings;
 use CATS::Web qw(param);
 
-my $messages;
+my $resource_strings;
 
-sub init_messages_lang {
+sub _init_res_str_lang {
     my ($lang) = @_;
-    my $msg_file = cats_dir() . "../tt/lang/$lang/strings";
+    my $file = cats_dir() . "../tt/lang/$lang/strings";
 
     my $r = [];
-    open my $f, '<', $msg_file or die "Couldn't open message file: '$msg_file'.";
+    open my $f, '<', $file or die "Couldn't open resource strings file: '$file'.";
     binmode($f, ':utf8');
     while (my $line = <$f>) {
         $line =~ m/^(\d+)\s+\"(.*)\"\s*$/ or next;
-        $r->[$1] and die "Duplicate message id: $1";
+        $r->[$1] and die "Duplicate resource string id: $1";
         $r->[$1] = $2;
     }
     $r;
 }
 
-# Preserve messages between http requests.
-sub init { $messages //= { map { $_ => init_messages_lang($_) } @cats::langs }; }
+# Preserve resource strings between http requests.
+sub init { $resource_strings //= { map { $_ => _init_res_str_lang($_) } @cats::langs }; }
 
 sub res_str {
     my ($id, @params) = @_;
-    my $s = $messages->{CATS::Settings::lang()}->[$id] or die "Unknown res_str id: $id";
+    my $s = $resource_strings->{CATS::Settings::lang()}->[$id] or die "Unknown res_str id: $id";
     sprintf($s, @params);
 }
 
