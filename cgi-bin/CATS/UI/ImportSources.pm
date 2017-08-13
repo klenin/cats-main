@@ -45,7 +45,7 @@ sub import_sources_frame {
 
     $lv->attach(url_f('import_sources'), $fetch_record, $c);
 
-    $t->param(submenu => [ CATS::References::menu('import_sources') ], is_jury => 1) if $is_jury;
+    $t->param(submenu => [ CATS::References::menu('import_sources') ]) if $is_jury;
 }
 
 sub download_frame {
