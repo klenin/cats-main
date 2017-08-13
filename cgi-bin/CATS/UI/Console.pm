@@ -9,7 +9,7 @@ use List::Util;
 use CATS::ContestParticipate qw(get_registered_contestant);
 use CATS::Countries;
 use CATS::DB;
-use CATS::Globals qw($cid $contest $is_team $is_jury $is_root $privs $sid $t $uid $user);
+use CATS::Globals qw($cid $contest $is_jury $is_root $privs $sid $t $uid $user);
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
 use CATS::Output qw(auto_ext init_template url_f);
@@ -263,11 +263,11 @@ sub console_content {
     my $submit_time_filter =
         '(R.submit_time BETWEEN C.start_date AND C.freeze_date OR CURRENT_TIMESTAMP > C.defreeze_date)';
 
-    my $DEs = $is_team ? $dbh->selectall_hashref(q~
+    my $DEs = $uid ? $dbh->selectall_hashref(q~
         SELECT id, code, description FROM default_de~, 'id') : {};
 
     # Optimization: Only display problem codes from the currect contest to avoid another JOIN.
-    my $problem_codes = $is_team && !$contest->is_practice ? $dbh->selectall_hashref(q~
+    my $problem_codes = !$contest->is_practice ? $dbh->selectall_hashref(q~
         SELECT problem_id, code FROM contest_problems WHERE contest_id = ?~, 'problem_id', undef, $cid) : {};
 
     $lv->define_db_searches([qw(
@@ -349,7 +349,7 @@ sub console_content {
             @cid, @events_filter_params,
             @cid, @events_filter_params);
     }
-    elsif ($is_team) {
+    elsif ($user->{is_participant}) {
         $c = $dbh->prepare(qq~
             SELECT
                 $console_select{run}
@@ -411,7 +411,7 @@ sub console_content {
         # instead of specific results of other teams.
         my $hide_verdict =
             $contest->{time_since_defreeze} <= 0 && !$is_jury &&
-            (!$is_team || !$team_id || $team_id != $uid);
+            (!$user->{is_participant} || !$team_id || $team_id != $uid);
         my $true_short_state = $CATS::Verdicts::state_to_name->{$request_state} || '';
         my $short_state = $hide_verdict ? $CATS::Verdicts::hidden_verdicts->{$true_short_state} : $true_short_state;
 
@@ -467,7 +467,7 @@ sub console_content {
 
     $c->finish;
 
-    if ($is_team && !$settings->{hide_envelopes}) {
+    if ($user->{is_participant} && !$settings->{hide_envelopes}) {
         my $cond =
             "WHERE account_id = ? AND state >= $cats::request_processed " .
             'AND received = 0 AND contest_id = ?';
@@ -485,7 +485,6 @@ sub console_content {
     }
 
     $t->param(
-        is_jury => $is_jury,
         DEs => $DEs,
     );
 }
