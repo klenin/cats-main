@@ -24,9 +24,7 @@ my $form = CATS::Form->new({
     href_action => 'sites',
 });
 
-sub edit_frame {
-    $form->edit_frame;
-}
+sub edit_frame { $form->edit_frame }
 
 sub edit_save {
     validate_string_length(param('name'), 601, 1, 100) or return;
@@ -116,7 +114,7 @@ sub contest_sites_edit_frame {
 
     my $s = $dbh->selectrow_hashref(qq~
         SELECT
-            S.id, S.name AS site_name, CS.diff_time, CS.ext_time,
+            S.id, S.name AS site_name, CS.diff_time, CS.ext_time, CS.contest_id,
             C.title AS contest_name,
             C.start_date AS contest_start,
             C.start_date + COALESCE(CS.diff_time, 0) AS contest_start_offset,
@@ -130,6 +128,8 @@ sub contest_sites_edit_frame {
     contest_sites_edit_save($p, $s);
 
     $t->param(
+        href_contest => url_f('contests', params => $s->{contest_id}),
+        ($privs->{edit_sites} ? (href_site => url_f('sites', edit => $s->{id})) : ()),
         s => $s,
         formatted_diff_time => CATS::Time::format_diff($s->{diff_time}, 1),
         formatted_ext_time => CATS::Time::format_diff($s->{ext_time}, 1),
@@ -213,7 +213,7 @@ sub contest_sites_frame {
         return (
             %$row,
             formatted_time => CATS::Time::format_diff_ext($row->{diff_time}, $row->{ext_time}, 1),
-            ($privs->{edit_sites} ? (href_edit => url_f('sites', edit => $row->{id})) : ()),
+            ($privs->{edit_sites} ? (href_site => url_f('sites', edit => $row->{id})) : ()),
             ($is_jury ? (href_delete => url_f('contest_sites', 'delete' => $row->{id})) : ()),
             href_edit => url_f('contest_sites_edit', site_id => $row->{id}),
             href_users => url_f('users', search => "site_id=$row->{id}"),

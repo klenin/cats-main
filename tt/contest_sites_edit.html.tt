@@ -3,8 +3,8 @@
 [%- PROCESS "lang/$lang/diff_time.tti" -%]
 
 <p>
-[% capt.contest_name %]: [% s.contest_name | html %]<br/>
-[% capt.site_name %]: [% s.site_name | html %]<br/>
+[% capt.contest_name %]: [% maybe_href(href_contest, s.contest_name) %]<br/>
+[% capt.site_name %]: [% maybe_href(href_site, s.site_name) %]<br/>
 </p>
 
 <form method="post" enctype="multipart/form-data">

@@ -406,6 +406,8 @@ sub users_frame {
             href_edit => url_f('users', edit => $aid),
             href_stats => url_f('user_stats', uid => $aid),
             ($privs->{edit_sites} && $site_id ? (href_site => url_f('sites', edit => $site_id)) : ()),
+            ($is_jury && $site_id ?
+                (href_contest_site => url_f('contest_sites_edit', site_id => $site_id)) : ()),
             ($is_jury ? (href_vdiff => url_f('user_vdiff', uid => $aid)) : ()),
 
             motto => $motto,

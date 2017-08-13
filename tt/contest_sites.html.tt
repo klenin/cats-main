@@ -30,7 +30,7 @@ function delete_contest_site(href, name) {
   [% END %]
 </td>
 [% END %]
-<td>[% maybe_href(cs.href_edit, cs.name) %]</td>
+<td>[% maybe_href(cs.href_site, cs.name) %]</td>
 [% IF visible_cols.Rg %]<td>[% cs.region | html %]</td>[% END %]
 [% IF visible_cols.Ci %]<td>[% cs.city | html %]</td>[% END %]
 [% IF visible_cols.Oc %]<td>[% cs.org_name | html %]</td>[% END %]

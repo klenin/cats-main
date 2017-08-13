@@ -21,7 +21,9 @@ function delete_team(href, name) {
 </td>
 [% END %]
 <td>[% IF user.is_jury || user.is_site_org %]<input type="checkbox" name="sel" value="[% u.id %]"> [% END; href(u.href_stats, u.team_name) %]</td>
-[% IF visible_cols.Si %]<td>[% maybe_href(u.href_site, u.site_name || u.city) %]</td>[% END %]
+[% IF visible_cols.Si ~%]
+  <td>[% maybe_href(u.href_contest_site, u.site_name || u.city); IF u.href_site %] <a href="[% u.href_site %]" class="icon edit"></a>[% END %]</td>
+[%~ END %]
 [% IF visible_cols.Tg %]<td align="center">[% u.tag %]</td>[% END %]
 [% IF user.is_jury || user.is_site_org %]
 <td class="user_checkbox"><label>[% checkbox_1("ooc$u.id", u.ooc, u.editable_attrs) %]</label></td>
