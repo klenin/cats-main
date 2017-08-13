@@ -84,7 +84,7 @@ sub compilers_frame {
     };
     $lv->attach(url_f('compilers'), $fetch_record, $c);
 
-    $t->param(submenu => [ CATS::References::menu('compilers') ], editable => $is_root, is_jury => $is_jury)
+    $t->param(submenu => [ CATS::References::menu('compilers') ], editable => $is_root)
         if $is_jury;
 }
 
