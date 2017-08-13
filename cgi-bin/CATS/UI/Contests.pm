@@ -6,7 +6,7 @@ use warnings;
 use CATS::Constants;
 use CATS::ContestParticipate qw(get_registered_contestant);
 use CATS::DB;
-use CATS::Globals qw($cid $contest $is_jury $is_root $privs $sid $t $uid);
+use CATS::Globals qw($cid $contest $is_jury $is_root $sid $t $uid $user);
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
 use CATS::Output qw(auto_ext init_template url_f);
@@ -332,7 +332,7 @@ sub contests_frame {
     }
 
     return contests_new_frame
-        if defined url_param('new') && $privs->{create_contests};
+        if defined url_param('new') && $user->privs->{create_contests};
 
     try_contest_params_frame and return;
 
@@ -346,7 +346,7 @@ sub contests_frame {
 
     contest_delete if url_param('delete');
 
-    contests_new_save if defined param('new_save') && $privs->{create_contests};
+    contests_new_save if defined param('new_save') && $user->privs->{create_contests};
 
     contests_edit_save
         if defined param('edit_save') &&
@@ -376,7 +376,7 @@ sub contests_frame {
             item => res_str($_->{i}),
             selected => $settings->{contests}->{filter} eq $_->{n},
         }, { n => 'all', i => 558 }, { n => 'official', i => 559 }, { n => 'unfinished', i => 560 }),
-        ($privs->{create_contests} ?
+        ($user->privs->{create_contests} ?
             { href => url_f('contests', new => 1), item => res_str(537) } : ()),
         { href => url_f('contests',
             ical => 1, rows => 50, filter => $filter), item => res_str(562) },

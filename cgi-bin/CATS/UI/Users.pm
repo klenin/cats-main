@@ -9,7 +9,7 @@ use Storable qw(freeze thaw);
 use CATS::Constants;
 use CATS::Countries;
 use CATS::DB;
-use CATS::Globals qw($cid $contest $is_jury $is_root $sid $t $uid $privs $user);
+use CATS::Globals qw($cid $contest $is_jury $is_root $sid $t $uid $user);
 use CATS::IP;
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
@@ -403,7 +403,7 @@ sub users_frame {
             href_delete => url_f('users', delete => $caid),
             href_edit => url_f('users', edit => $aid),
             href_stats => url_f('user_stats', uid => $aid),
-            ($privs->{edit_sites} && $site_id ? (href_site => url_f('sites', edit => $site_id)) : ()),
+            ($user->privs->{edit_sites} && $site_id ? (href_site => url_f('sites', edit => $site_id)) : ()),
             ($is_jury && $site_id ?
                 (href_contest_site => url_f('contest_sites_edit', site_id => $site_id)) : ()),
             ($is_jury ? (href_vdiff => url_f('user_vdiff', uid => $aid)) : ()),

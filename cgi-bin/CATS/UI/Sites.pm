@@ -7,7 +7,7 @@ use Encode;
 
 use CATS::DB;
 use CATS::Form qw(validate_string_length);
-use CATS::Globals qw($cid $t $is_jury $is_root $privs $user);
+use CATS::Globals qw($cid $t $is_jury $is_root $user);
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
 use CATS::Output qw(init_template url_f);
@@ -33,7 +33,7 @@ sub edit_save {
 }
 
 sub sites_frame {
-    $privs->{edit_sites} or return;
+    $user->privs->{edit_sites} or return;
     defined url_param('new') || defined url_param('edit') and return edit_frame;
 
     my $lv = CATS::ListView->new(name => 'sites', template => 'sites.html.tt');
@@ -130,7 +130,7 @@ sub contest_sites_edit_frame {
 
     $t->param(
         href_contest => url_f('contests', params => $s->{contest_id}),
-        ($privs->{edit_sites} ? (href_site => url_f('sites', edit => $s->{id})) : ()),
+        ($user->privs->{edit_sites} ? (href_site => url_f('sites', edit => $s->{id})) : ()),
         s => $s,
         formatted_diff_time => CATS::Time::format_diff($s->{diff_time}, 1),
         formatted_ext_time => CATS::Time::format_diff($s->{ext_time}, 1),
@@ -214,7 +214,7 @@ sub contest_sites_frame {
         return (
             %$row,
             formatted_time => CATS::Time::format_diff_ext($row->{diff_time}, $row->{ext_time}, 1),
-            ($privs->{edit_sites} ? (href_site => url_f('sites', edit => $row->{id})) : ()),
+            ($user->privs->{edit_sites} ? (href_site => url_f('sites', edit => $row->{id})) : ()),
             ($is_jury ? (href_delete => url_f('contest_sites', 'delete' => $row->{id})) : ()),
             href_edit => url_f('contest_sites_edit', site_id => $row->{id}),
             href_users => url_f('users', search => "site_id=$row->{id}"),

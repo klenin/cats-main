@@ -7,7 +7,7 @@ use CATS::Config qw(cats_dir);
 use CATS::Constants;
 use CATS::DB;
 use CATS::DevEnv;
-use CATS::Globals qw($privs $uid $user);
+use CATS::Globals qw($user);
 use CATS::Messages qw(msg);
 use CATS::Problem::ImportSource::DB;
 use CATS::Problem::Parser;
@@ -186,7 +186,7 @@ sub delete {
             $origin_contest, $pid, $old_contest);
     }
     else {
-        $privs->{delete_problems} or return msg(1023, $title);
+        $user->privs->{delete_problems} or return msg(1023, $title);
         # Cascades into contest_problems and reqs.
         $dbh->do(q~
             DELETE FROM problems WHERE id = ?~, undef,
@@ -271,7 +271,7 @@ sub save {
         for qw(statement constraints input_format output_format formal_input json_data explanation);
     $c->bind_param($i++, $self->{parser}->get_zip);
     $c->bind_param($i++, $problem->{description}{std_checker});
-    $c->bind_param($i++, $uid);
+    $c->bind_param($i++, $user->id);
     $c->bind_param($i++, $problem->{description}{max_points});
     $c->bind_param($i++, $problem->{run_method});
     $c->bind_param($i++, CATS::Testset::pack_rank_spec(@{$problem->{players_count}}));

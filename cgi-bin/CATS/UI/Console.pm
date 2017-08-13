@@ -9,7 +9,7 @@ use List::Util;
 use CATS::ContestParticipate qw(get_registered_contestant);
 use CATS::Countries;
 use CATS::DB;
-use CATS::Globals qw($cid $contest $is_jury $is_root $privs $sid $t $uid $user);
+use CATS::Globals qw($cid $contest $is_jury $is_root $sid $t $uid $user);
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
 use CATS::Output qw(auto_ext init_template url_f);
@@ -435,7 +435,7 @@ sub console_content {
             href_source =>          url_f('view_source', rid => $id),
             href_state_details =>   ($is_jury ? url_f('run_details', rid => $id) : '#'),
             href_problems =>        url_function('problems', sid => $sid, cid => $id),
-            ($is_jury && $privs->{moderate_messages} ? (
+            ($is_jury && $user->privs->{moderate_messages} ? (
                 href_delete_question => url_f('console', delete_question => $id),
                 href_delete_message =>  url_f('console', delete_message => $id),
             ) : ()),
@@ -596,7 +596,7 @@ sub group_submissions {
 
 sub delete_question {
     my ($qid) = @_;
-    $is_jury && $privs->{moderate_messages} or return;
+    $is_jury && $user->privs->{moderate_messages} or return;
     $dbh->do(q~
         DELETE FROM questions WHERE id = ?~, undef,
         $qid);
@@ -605,7 +605,7 @@ sub delete_question {
 
 sub delete_message {
     my ($mid) = @_;
-    $is_jury && $privs->{moderate_messages} or return;
+    $is_jury && $user->privs->{moderate_messages} or return;
     $dbh->do(q~
         DELETE FROM messages WHERE id = ?~, undef,
         $mid);

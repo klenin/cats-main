@@ -1,14 +1,23 @@
-package CATS::Init;
-
 use strict;
 use warnings;
+
+package CATS::CurrentUser;
+
+sub new { bless $_[1], $_[0] }
+sub id { $_[0]->{id} }
+sub is_root { $_[0]->{privs}->{is_root} }
+sub privs { $_[0]->{privs} }
+
+1;
+
+package CATS::Init;
 
 use Data::Dumper;
 use Storable qw();
 
 use CATS::Contest;
 use CATS::DB;
-use CATS::Globals qw($contest $t $sid $cid $uid $is_root $is_jury $privs $user);
+use CATS::Globals qw($contest $t $sid $cid $uid $is_root $is_jury $user);
 use CATS::IP;
 use CATS::Messages qw(msg);
 use CATS::Output qw(init_template);
@@ -22,9 +31,8 @@ use CATS::Web qw(param url_param);
 sub init_user {
     $sid = url_param('sid') || '';
     $is_root = 0;
-    $privs = {};
     $uid = undef;
-    $user = { privs => $privs };
+    $user = CATS::CurrentUser->new({ privs => {}, id => undef });
     my $bad_sid = length $sid > 30;
     my $enc_settings;
     if ($sid ne '' && !$bad_sid) {
@@ -38,8 +46,9 @@ sub init_user {
                 $sid);
         $bad_sid = !defined($uid) || ($last_ip || '') ne CATS::IP::get_ip() || $locked;
         if (!$bad_sid) {
-            $user->{privs} = $privs = CATS::Privileges::unpack_privs($srole);
-            $is_root = $privs->{is_root};
+            $user->{privs} = CATS::Privileges::unpack_privs($srole);
+            $is_root = $user->is_root;
+            $user->{id} = $uid;
         }
     }
 
