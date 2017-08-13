@@ -622,7 +622,6 @@ sub console_frame {
     console_content;
     return if param('json');
     CATS::Time::prepare_server_time;
-    $t->param(is_team => $is_team);
     my $lvparams = $t->{vars};
     my $cc = $t->output;
     my $user_filter = url_param('uf') || '';
@@ -637,9 +636,6 @@ sub console_frame {
     $t->param(
         href_console_content =>
             url_f('console_content', noredir => 1, map { $_ => (url_param($_) || '') } qw(uf se page)),
-        is_team => $is_team,
-        is_jury => $is_jury,
-        is_root => $is_root,
         selection => scalar(param('selection')),
         href_my_events_only =>
             url_f('console', uf => ($uid || $user->{anonymous_id}), se => param('se') || undef),
@@ -660,9 +656,6 @@ sub console_frame {
     ]) if $is_jury;
 }
 
-sub content_frame {
-    console_content;
-    $t->param(is_team => $is_team);
-}
+sub content_frame { console_content }
 
 1;

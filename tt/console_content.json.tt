@@ -6,7 +6,7 @@
 [% IF c.is_submit_result -%]
 "type": "submit",
 "id": [% c.id %],
-[% IF is_jury %]"ip": "[% c.last_ip_short %]",
+[% IF user.is_jury %]"ip": "[% c.last_ip_short %]",
 [% END -%]
 "contest_id": [% c.contest_id %],
 "problem_id": [% c.problem_id %],
@@ -27,7 +27,7 @@
 [% END -%]
 [% IF c.is_message -%]
 "type": "message",
-[% IF is_jury %]"ip": "[% c.last_ip || c.last_ip_short %]",
+[% IF user.is_jury %]"ip": "[% c.last_ip || c.last_ip_short %]",
 [% END -%]
 "team_id": [% c.team_id %],
 "text": "[% c.message_text | $Javascript %]"

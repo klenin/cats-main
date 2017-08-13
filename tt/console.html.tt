@@ -28,9 +28,9 @@ function get_element(name) {
 [% UNLESS initial_content %]<br/>[% capt.loading %]<br/>
 [% ELSE; initial_content; END %]
 </span>
-[% IF is_team %]
+[% IF user.is_participant %]
 <br/>
-[% IF is_jury %]
+[% IF user.is_jury %]
 <div>
     [% capt.selection %]:
     <input type="text" id="selection" name="selection" size="35" value="[% selection %]" class="bordered" />
@@ -46,7 +46,7 @@ function get_element(name) {
     ]
     <label><input id="by_reference" name="by_reference" value="1" type="checkbox" />[% capt.by_reference %]</label>
     <button id="retest" name="retest" value="1" type="submit" class="button">[% capt.retest %]</button>
-    [% IF is_root %]
+    [% IF user.privs.is_root %]
         <button id="create_group" name="create_group" value="1" type="submit" class="button">[% capt.create_group %]</button>
     [% END %]
 </div>
@@ -88,7 +88,7 @@ function fill_diff() {
 
 function fill_1(aid, arg) {
     var a = get_element(aid);
-    if (!sel.value.match([% IF is_jury %]/^[0-9,]+$/[% ELSE %]/^\d+$/[% END %])) {
+    if (!sel.value.match([% IF user.is_jury %]/^[0-9,]+$/[% ELSE %]/^\d+$/[% END %])) {
         alert('[% capt.no_req %]');
         return false;
     }
@@ -161,13 +161,13 @@ var msie = document.documentMode;
 
 if (autoupdate_interval && (!msie || msie >= 9)) {
     main_form.addEventListener('submit', form_submit_handler);
-[% IF is_jury %]
+[% IF user.is_jury %]
     get_element('retest').addEventListener('click', function(e) {
         retest();
         e.preventDefault();
     });
 [% END %]
-[% IF is_root %]
+[% IF user.privs.is_root %]
     get_element('create_group').addEventListener('click', function(e) {
         create_group();
         e.preventDefault();
