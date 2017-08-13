@@ -38,7 +38,7 @@ sub init_user {
                 $sid);
         $bad_sid = !defined($uid) || ($last_ip || '') ne CATS::IP::get_ip() || $locked;
         if (!$bad_sid) {
-            $privs = CATS::Privileges::unpack_privs($srole);
+            $user->{privs} = $privs = CATS::Privileges::unpack_privs($srole);
             $is_root = $privs->{is_root};
         }
     }

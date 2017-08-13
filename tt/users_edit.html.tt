@@ -4,7 +4,7 @@
 <form method=post enctype='multipart/form-data' action='[% href_action %]'>
 [% PROCESS includes/user_main.tti %]
 [% PROCESS includes/user_extra.tti %]
-[%- IF is_root -%]
+[%- IF user.privs.is_root -%]
 <table class="registration">
 <tr><td>[% capt.locked %]</td><td><input type="checkbox" name="locked" value="1" [% ' checked="checked"' IF locked %]/></td></tr>
 <tr><td>[% capt.roles.roles %]</td><td>
@@ -22,7 +22,7 @@
 <br/>
 [% PROCESS includes/edit_save_cancel.tti %]
 </form>
-[% IF is_root %]
+[% IF user.privs.is_root %]
 <p>[ <a href="[% href_impersonate %]">[% capt.impersonate %]</a> ]</p>
 [% END %]
 [% PROCESS includes/menu_end.tti %]

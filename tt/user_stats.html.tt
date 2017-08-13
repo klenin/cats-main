@@ -3,7 +3,7 @@
 
 <table cellpadding="0">
 <tr><td>[% capt.name %]:</td><td>[% maybe_href(href_edit, team_name) %]</td></tr>
-[% IF is_root %]
+[% IF user.privs.is_root %]
 <tr><td>[% capt.last_login %]:</td><td>[% last_login_date %]</td></tr>
 <tr><td>[% capt.last_ip %]:</td><td>
   [<a href="[% href_whois %]" alt="[% last_ip %]" title="[% last_ip %]">[% last_ip_short %]</a>]
@@ -16,7 +16,7 @@
 <h3>[% capt.contests %]</h3>
 <table class="internal_borders padded">
 [% FOREACH c IN contests -%]
-<tr><td>[% c.start_date %]</td><td>[% href(c.href_problems, c.title); '* ' IF c.is_jury && is_root %]</td>
+<tr><td>[% c.start_date %]</td><td>[% href(c.href_problems, c.title); '* ' IF c.is_jury && user.privs.is_root %]</td>
 [% IF c.href_send_message; '<td>'; href(c.href_send_message, capt.send_message); '</td>'; END %]
 <td>[% href(c.href_submits, c.accepted_count _ ' / ' _ c.problem_count) %]</td></tr>
 [%- END %]

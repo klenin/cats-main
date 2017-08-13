@@ -82,7 +82,6 @@ sub new_frame {
         login => generate_login,
         countries => \@CATS::Countries::countries,
         href_action => url_f('users'),
-        is_root => $is_root
     );
 }
 

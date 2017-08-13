@@ -72,7 +72,6 @@ sub users_edit_frame {
         user_submenu('edit', $id),
         title_suffix => $u->{team_name},
         %$u, privs => CATS::Privileges::unpack_privs($u->{srole}),
-        is_root => $is_root,
         id => $id,
         countries => \@CATS::Countries::countries,
         href_action => url_f('users'),
@@ -229,7 +228,6 @@ sub profile_frame {
         href_action => url_f('users'),
         title_suffix => res_str(518),
         profile_langs => [ map { href => url_f('profile', lang => $_), name => $_ }, @cats::langs ],
-        is_root => $is_root,
         is_some_jury => $is_some_jury,
         %$u);
     display_settings($settings);
@@ -491,7 +489,7 @@ sub user_stats_frame {
     }
     $t->param(
         user_submenu('user_stats', $uid),
-        %$u, contests => $contests, is_root => $is_root,
+        %$u, contests => $contests,
         CATS::IP::linkify_ip($u->{last_ip}),
         ($is_jury ? (href_edit => url_f('users', edit => $uid)) : ()),
         href_all_problems => $pr->(''),
