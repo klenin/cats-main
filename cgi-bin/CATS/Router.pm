@@ -52,7 +52,9 @@ sub main_routes() {
             save => $bool, ],
 
         console_content => \&CATS::UI::Console::content_frame,
-        console => \&CATS::UI::Console::console_frame,
+        console => [ \&CATS::UI::Console::console_frame,
+            delete_question => $int, delete_message => $int, send_question => $bool, question_text => $str,
+        ],
         console_export => \&CATS::UI::Console::export_frame,
         console_graphs => \&CATS::UI::Console::graphs_frame,
 

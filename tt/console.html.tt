@@ -56,7 +56,7 @@ function get_element(name) {
 <div class="send_message">
     [% capt.question %]:
     <input size="100" maxlength="200" name="question_text" class="bordered" />
-    <input type="submit" value="[% capt.send %]" name="send_question" class="button"/>
+    <button type="submit" value="1" name="send_question" class="button"/>[% capt.send %]</button>
 </div>
 [% END %]
 </form>

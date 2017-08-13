@@ -599,7 +599,8 @@ sub delete_question {
     my ($qid) = @_;
     $is_jury && $privs->{moderate_messages} or return;
     $dbh->do(q~
-        DELETE FROM questions WHERE id = ?~, undef, $qid);
+        DELETE FROM questions WHERE id = ?~, undef,
+        $qid);
     $dbh->commit;
 }
 
@@ -607,20 +608,16 @@ sub delete_message {
     my ($mid) = @_;
     $is_jury && $privs->{moderate_messages} or return;
     $dbh->do(q~
-        DELETE FROM messages WHERE id = ?~, undef, $mid);
+        DELETE FROM messages WHERE id = ?~, undef,
+        $mid);
     $dbh->commit;
 }
 
 sub console_frame {
-    if (my $qid = param('delete_question')) {
-        delete_question($qid);
-    }
-    if (my $mid = param('delete_message')) {
-        delete_message($mid);
-    }
-    if (defined param('send_question')) {
-        send_question_to_jury(param('question_text'));
-    }
+    my ($p) = @_;
+    delete_question($p->{delete_question}) if $p->{delete_question};
+    delete_message($p->{delete_message}) if $p->{delete_message};
+    send_question_to_jury($p->{question_text}) if $p->{send_question};
 
     console_content;
     return if param('json');
