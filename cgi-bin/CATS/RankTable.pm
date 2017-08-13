@@ -10,7 +10,7 @@ use CATS::Config qw(cats_dir);
 use CATS::Constants;
 use CATS::Countries;
 use CATS::DB;
-use CATS::Globals qw($cid $contest $is_jury $is_root $is_team $t $uid $user);
+use CATS::Globals qw($cid $contest $is_jury $is_root $t $uid $user);
 use CATS::Output qw(url_f);
 use CATS::Testset;
 use CATS::Web qw(param url_param);
@@ -147,7 +147,7 @@ sub get_results {
 
     unless ($is_jury) {
         if ($self->{frozen}) {
-            if ($is_team) {
+            if ($user->{is_participant}) {
                 push @conditions, '(R.submit_time < C.freeze_date OR R.account_id = ?)';
                 push @params, $uid;
             }
@@ -155,7 +155,7 @@ sub get_results {
                 push @conditions, 'R.submit_time < C.freeze_date';
             }
         }
-        if ($is_team && $user->{diff_time}) {
+        if ($user->{is_participant} && $user->{diff_time}) {
             push @conditions, "(R.submit_time - $CATS::Time::diff_time_sql < CURRENT_TIMESTAMP - $user->{diff_time})";
         }
         push @conditions, '(C.show_all_results = 1 OR R.account_id = ?)';
@@ -326,7 +326,7 @@ sub parse_params {
 
     $self->{hide_virtual} = url_param('hide_virtual') || '0';
     $self->{hide_virtual} =~ /^[01]$/
-        or $self->{hide_virtual} = (!$user->{is_virtual} && !$is_jury || !$is_team);
+        or $self->{hide_virtual} = (!$user->{is_virtual} && !$is_jury || !$user->{is_participant});
 
     $self->get_contest_list_param;
     $self->get_contests_info($uid);
