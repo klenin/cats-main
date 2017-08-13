@@ -1,7 +1,7 @@
 [%- WRAPPER includes/jsonp.tti -%]
 [%- USE Javascript -%]
 {
-[% IF message %]"message": "[% message | $Javascript %]"[% ELSE %]
+[% IF messages.size %]"message": "[% messages.join(',') | $Javascript %]"[% ELSE %]
 "contests": [
 [% FOREACH c IN contests %]
 {

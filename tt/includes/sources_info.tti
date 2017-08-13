@@ -21,7 +21,7 @@ function send_message(href) {
   </tr>
 </table>
 
-[% IF message %]<i>[% message | html %]</i><br/>[% END %]
+[% FOREACH m IN messages %]<i>[% m | html %]</i><br/>[% END %]
 
 [% IF is_jury %]
   <script type="text/javascript" src="js/lib/jquery.min.js"></script>

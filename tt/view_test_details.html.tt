@@ -13,8 +13,6 @@
     }
 </style>
 
-[% IF message %]<i>[% message | html %]</i><br>[% END %]
-
 <div class="pages" style="float: none">
 [% capt.tests %]
 <span class="bordered">[%# Must have spaces inside. ~%]

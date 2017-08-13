@@ -2,7 +2,7 @@
 [%- USE Javascript -%]
 {
 [% IF local_only %]"message": "local contestants only",
-[% ELSIF message %]"message": "[% message | $Javascript %]",
+[% ELSIF messages.size %]"message": "[% messages.join(',') | $Javascript %]",
 [% END %]
 "problems": [
 ]

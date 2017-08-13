@@ -38,4 +38,4 @@
   [%- END %]
 </table>
 <div style="width: 99%; padding: 4px">
-[% IF message %]<i>[% message | html %]</i><br>[% END %]
+[% FOREACH m IN messages %]<i>[% m | html %]</i><br>[% END %]

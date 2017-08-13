@@ -11,11 +11,10 @@ use Carp qw(croak);
 
 use CATS::Config qw(cats_dir);
 use CATS::Constants;
-use CATS::Globals qw($t);
 use CATS::Settings;
 use CATS::Web qw(param);
 
-my $resource_strings;
+my ($resource_strings, $messages);
 
 sub _init_res_str_lang {
     my ($lang) = @_;
@@ -32,8 +31,11 @@ sub _init_res_str_lang {
     $r;
 }
 
-# Preserve resource strings between http requests.
-sub init { $resource_strings //= { map { $_ => _init_res_str_lang($_) } @cats::langs }; }
+sub init {
+    # Preserve resource strings between http requests.
+    $resource_strings //= { map { $_ => _init_res_str_lang($_) } @cats::langs };
+    $messages = [];
+}
 
 sub res_str {
     my ($id, @params) = @_;
@@ -42,10 +44,12 @@ sub res_str {
 }
 
 sub msg {
-    defined $t or croak q~Call to 'msg' before 'init_template'~;
-    $t->param(message => res_str(@_));
+    push @$messages, res_str(@_);
+    # Support 'return msg' pattern.
     undef;
 }
+
+sub get { $messages }
 
 sub problem_status_names() {+{
     $cats::problem_st_manual    => res_str(700),

@@ -9,8 +9,6 @@
 [% PROCESS includes/sources_info.tti %]
 <br/>
 
-[% IF message %]<i>[% message | html %]</i><br>[% END %]
-
 [% IF judge_log_dump %]
 <h3>[% capt.judge_log %]</h3>
 <pre><code id="judge_log">[% judge_log_dump | html %]</code></pre>

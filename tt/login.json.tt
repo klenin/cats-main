@@ -1,9 +1,9 @@
 [%- WRAPPER includes/jsonp.tti -%]
 [%- USE Javascript -%]
 {
-[% IF message %]
+[% IF messages.size %]
     "status": "error",
-    "message": "[% message | $Javascript %]"
+    "message": "[% messages.join(',') | $Javascript %]"
 [% ELSE %]
     "status": "ok",
     "sid": "[% sid %]",

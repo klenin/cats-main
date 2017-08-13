@@ -18,6 +18,7 @@ use Encode();
 use CATS::Config qw(cats_dir);
 use CATS::Globals qw($cid $contest $sid $t $user);
 use CATS::DB;
+use CATS::Messages;
 use CATS::Settings;
 use CATS::Template;
 use CATS::Utils qw();
@@ -60,7 +61,8 @@ sub init_template {
     $extra_headers{'Access-Control-Allow-Origin'} = '*' if $json;
     $t->param(
         lang => CATS::Settings::lang,
-        $json =~ /^[a-zA-Z][a-zA-Z0-9_]+$/ ? (jsonp => $json) : ()
+        ($json =~ /^[a-zA-Z][a-zA-Z0-9_]+$/ ? (jsonp => $json) : ()),
+        messages => CATS::Messages::get,
     );
 }
 
