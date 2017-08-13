@@ -5,7 +5,7 @@ use warnings;
 
 use CATS::Constants;
 use CATS::DB;
-use CATS::Globals qw($cid $contest $is_jury $is_root $is_team $uid $user);
+use CATS::Globals qw($cid $contest $is_jury $is_root $uid $user);
 use CATS::Messages qw(msg);
 
 use Exporter qw(import);
@@ -72,7 +72,7 @@ sub online {
         $contest->register_account(account_id => $uid);
     }
     $dbh->commit;
-    $is_team = 1;
+    $user->{is_participant} = 1;
     msg(1110, $contest->{title});
 }
 
@@ -106,7 +106,7 @@ sub virtual {
         is_virtual => 1, is_remote => $user->{is_remote},
         diff_time => $contest->{time_since_start});
     $dbh->commit;
-    $is_team = 1;
+    $user->{is_participant} = 1;
     $user->{is_virtual} = 1;
     $user->{diff_time} = $contest->{time_since_start};
     msg($removed_req_count > 0 ? 1113 : 1112, $contest->{title}, $removed_req_count);

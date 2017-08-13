@@ -8,7 +8,7 @@ use Storable qw();
 
 use CATS::Contest;
 use CATS::DB;
-use CATS::Globals qw($contest $t $sid $cid $uid $is_root $is_team $is_jury $privs $user);
+use CATS::Globals qw($contest $t $sid $cid $uid $is_root $is_jury $privs $user);
 use CATS::IP;
 use CATS::Messages qw(msg);
 use CATS::Output qw(init_template);
@@ -74,11 +74,11 @@ sub init_contest {
     $settings->{contest_id} = $cid = $contest->{id};
 
     $user->{diff_time} = 0;
-    $is_jury = $is_team = $user->{is_virtual} = $user->{is_participant} = 0;
+    $is_jury = $user->{is_virtual} = $user->{is_participant} = 0;
     # Authorize user in the contest.
     if (defined $uid) {
         (
-            $user->{ca_id}, $is_team, $is_jury, $user->{site_id}, $user->{is_site_org},
+            $user->{ca_id}, $user->{is_participant}, $is_jury, $user->{site_id}, $user->{is_site_org},
             $user->{is_virtual}, $user->{is_remote},
             $user->{personal_diff_time}, $user->{diff_time},
             $user->{personal_ext_time}, $user->{ext_time},
@@ -96,7 +96,6 @@ sub init_contest {
             WHERE CA.contest_id = ? AND CA.account_id = ?~, undef,
             $cid, $uid);
         $user->{diff_time} ||= 0;
-        $user->{is_participant} = $is_team;
         $is_jury ||= $is_root;
     }
     else {
@@ -105,13 +104,11 @@ sub init_contest {
             $cats::anonymous_login);
     }
     $user->{is_jury} = $is_jury;
-    if ($contest->{is_hidden} && !$is_team) {
+    if ($contest->{is_hidden} && !$user->{is_participant}) {
         # If user tries to look at a hidden contest, show training instead.
         $contest->load(0);
         $settings->{contest_id} = $cid = $contest->{id};
     }
-    # Only guest access before the start of the contest.
-    $is_team &&= $is_jury || $contest->has_started($user->{diff_time});
 }
 
 sub initialize {
