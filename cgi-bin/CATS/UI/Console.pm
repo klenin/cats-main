@@ -22,33 +22,29 @@ use CATS::Verdicts;
 use CATS::Web qw(param url_param);
 
 # This is called before init_template to display submitted question immediately.
-# So we have to use res_str instead of msg.
 sub send_question_to_jury {
     my ($question_text) = @_;
 
-    $is_team && defined $question_text && $question_text ne ''
+    $user->{is_participant} && defined $question_text && $question_text ne ''
         or return;
     length($question_text) <= 1000 or return res_str(1063);
 
-    my $cuid = get_registered_contestant(fields => 'id', contest_id => $cid);
-
     my ($previous_question_text) = $dbh->selectrow_array(q~
-        SELECT question FROM questions WHERE account_id = ? ORDER BY submit_time DESC~, {},
-        $cuid
-    );
-    ($previous_question_text || '') ne $question_text or return res_str(1061);
+        SELECT question FROM questions
+        WHERE account_id = ? ORDER BY submit_time DESC ROWS 1~, undef,
+        $user->{ca_id});
+    ($previous_question_text || '') ne $question_text or return msg(1061);
 
     my $s = $dbh->prepare(q~
         INSERT INTO questions(id, account_id, submit_time, question, received, clarified)
-        VALUES (?, ?, CURRENT_TIMESTAMP, ?, 0, 0)~
-    );
+        VALUES (?, ?, CURRENT_TIMESTAMP, ?, 0, 0)~);
     $s->bind_param(1, new_id);
-    $s->bind_param(2, $cuid);
+    $s->bind_param(2, $user->{ca_id});
     $s->bind_param(3, $question_text, { ora_type => 113 } );
     $s->execute;
     $s->finish;
     $dbh->commit;
-    res_str(1062);
+    msg(1062);
 }
 
 sub get_settings {
@@ -622,9 +618,8 @@ sub console_frame {
     if (my $mid = param('delete_message')) {
         delete_message($mid);
     }
-    my $question_msg;
     if (defined param('send_question')) {
-        $question_msg = send_question_to_jury(param('question_text'));
+        send_question_to_jury(param('question_text'));
     }
 
     console_content;
@@ -642,7 +637,6 @@ sub console_frame {
         page pages search show_contests show_messages show_results
         href_lv_action href_next_pages href_prev_pages search_hints search_enums
     );
-    $t->param(message => $question_msg) if $question_msg;
     $t->param(
         href_console_content =>
             url_f('console_content', noredir => 1, map { $_ => (url_param($_) || '') } qw(uf se page)),

@@ -181,7 +181,7 @@
 1057 "Message was sent, recipients: %d."
 1058 "Message was sent to all participants."
 1061 "This question is already sent to jury."
-1062 "Question successfully sent to jury."
+1062 "Question sent to jury."
 1063 "Question must be no longer than 1000 characters."
 1064 "Development environment '%s' deleted."
 1065 "Development environment '%s' saved."
