@@ -55,7 +55,6 @@ sub init_template {
     }->{$ext} or die 'Unknown template extension';
     %extra_headers = $ext eq 'ics' ?
         ('Content-Disposition' => "inline;filename=$base_name.ics") : ();
-    #$template_file = $file_name;
     $t = CATS::Template->new($file_name, cats_dir(), $p);
     my $json = param('json') || '';
     $extra_headers{'Access-Control-Allow-Origin'} = '*' if $json;
@@ -63,6 +62,7 @@ sub init_template {
         lang => CATS::Settings::lang,
         ($json =~ /^[a-zA-Z][a-zA-Z0-9_]+$/ ? (jsonp => $json) : ()),
         messages => CATS::Messages::get,
+        user => $user,
     );
 }
 
@@ -74,7 +74,6 @@ sub generate {
     $contest->{time_since_start} or warn 'No contest from: ', $ENV{HTTP_REFERER} || '';
     $t->param(
         contest_title => $contest->{title},
-        user => $user,
         dbi_profile => $dbh->{Profile}->{Data}->[0],
         #dbi_profile => Data::Dumper::Dumper($dbh->{Profile}->{Data}),
         langs => [ map { href => url_f('contests', lang => $_), name => $_ }, @cats::langs ],

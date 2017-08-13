@@ -23,7 +23,7 @@ function send_message(href) {
 
 [% FOREACH m IN messages %]<i>[% m | html %]</i><br/>[% END %]
 
-[% IF is_jury %]
+[% IF is_any_jury %]
   <script type="text/javascript" src="js/lib/jquery.min.js"></script>
 
   <style>

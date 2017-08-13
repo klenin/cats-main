@@ -327,7 +327,7 @@ sub source_links {
         $si->{"href_$_"} = url_f($_, rid => $si->{req_id});
         $si->{"href_class_$_"} = $_ eq $current_link ? 'current_link' : '';
     }
-    $t->param(is_jury => $si->{is_jury});
+    $t->param(is_any_jury => 1) if $si->{is_jury};
     get_judges($si) if $si->{is_jury};
     my $se = param('src_enc') || param('comment_enc') || 'WINDOWS-1251';
     $t->param(source_encodings => source_encodings($se));

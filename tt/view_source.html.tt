@@ -11,7 +11,7 @@
 [% PROCESS includes/encoding_form.html.tti capt_enc = capt.encoding %]
 </td>
 <td>
-[% IF is_jury %]
+[% IF is_any_jury %]
 <form enctype="multipart/form-data" method="post">
   <input name="replace_source" type="file" class="file" size="25" />
   <select name="de_id">
