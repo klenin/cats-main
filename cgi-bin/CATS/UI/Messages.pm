@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use CATS::DB;
-use CATS::Globals qw($t $is_jury $is_team $uid);
+use CATS::Globals qw($t $is_jury $uid $user);
 use CATS::Messages qw(res_str);
 use CATS::Output qw(init_template);
 use CATS::Verdicts;
@@ -79,9 +79,10 @@ sub answer_box_frame {
 }
 
 sub envelope_frame {
+    my ($p) = @_;
     init_template('envelope.html.tt');
 
-    $is_team && (my $rid = url_param('rid')) or return;
+    $user->{is_participant} && $p->{rid} or return;
 
     my $r = $dbh->selectrow_hashref(q~
         SELECT
@@ -92,7 +93,7 @@ sub envelope_frame {
             INNER JOIN accounts A ON A.id = R.account_id
             INNER JOIN problems P ON P.id = R.problem_id
         WHERE R.id = ? AND R.account_id = ?~, { Slice => {} },
-        $rid, $uid) or return;
+        $p->{rid}, $uid) or return;
     $t->param(%$r, verdict => $CATS::Verdicts::state_to_name->{$r->{state}});
 }
 

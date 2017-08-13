@@ -141,7 +141,7 @@ sub main_routes() {
         rank_table => \&CATS::UI::RankTable::rank_table_frame,
         rank_problem_details => \&CATS::UI::RankTable::rank_problem_details,
         problem_text => \&CATS::Problem::Text::problem_text_frame,
-        envelope => \&CATS::UI::Messages::envelope_frame,
+        envelope => [ \&CATS::UI::Messages::envelope_frame, rid => $int, ],
         about => \&CATS::UI::About::about_frame,
 
         similarity => \&CATS::UI::Stats::similarity_frame,
