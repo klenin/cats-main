@@ -572,6 +572,7 @@ sub user_vdiff_save {
         $u->{id}, $cid) or return;
     $dbh->commit;
     msg($u->{diff_time} ? 1157 : 1158, $u->{team_name});
+    msg($u->{ext_time} ? 1162 : 1163, $u->{team_name});
 }
 
 sub user_vdiff_frame {

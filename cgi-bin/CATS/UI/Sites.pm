@@ -103,6 +103,7 @@ sub contest_sites_edit_save {
         $s->{id}, $cid) or return;
     $dbh->commit;
     msg($s->{diff_time} ? 1160 : 1161, $s->{site_name});
+    msg($s->{ext_time} ? 1164 : 1165, $s->{site_name});
 }
 
 sub contest_sites_edit_frame {

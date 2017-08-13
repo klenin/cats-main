@@ -253,3 +253,7 @@
 1159 "Log has been deleted."
 1160 "Changed time offset for site '%s'."
 1161 "Removed time offset for site '%s'."
+1162 "Changed extended time for contestant '%s'."
+1163 "Removed extended time offset for contestant '%s'."
+1164 "Changed extended time for site '%s'."
+1165 "Removed extended time offset for site '%s'."
