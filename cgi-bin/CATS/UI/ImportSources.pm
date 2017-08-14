@@ -5,13 +5,13 @@ use warnings;
 
 use CATS::Constants;
 use CATS::DB;
-use CATS::Globals qw($cid $contest $is_jury $is_root $sid $t $uid);
+use CATS::Globals qw($is_jury $sid $t $uid);
 use CATS::ListView;
 use CATS::Messages qw(res_str);
 use CATS::Output qw(init_template url_f);
 use CATS::References;
 use CATS::Utils qw(url_function);
-use CATS::Web qw(param redirect url_param);
+use CATS::Web qw(param);
 
 sub import_sources_frame {
     my $lv = CATS::ListView->new(name => 'import_sources', template => 'import_sources.html.tt');
@@ -49,10 +49,13 @@ sub import_sources_frame {
 }
 
 sub download_frame {
-    my $psid = param('psid') or return;
+    my ($p) = @_;
+    $p->{psid} or return;
+    # Source encoding may be arbitrary.
     local $dbh->{ib_enable_utf8} = 0;
-    my ($fname, $src) = $dbh->selectrow_array(qq~
-        SELECT fname, src FROM problem_sources WHERE id = ? AND guid IS NOT NULL~, undef, $psid) or return;
+    my ($fname, $src) = $dbh->selectrow_array(q~
+        SELECT fname, src FROM problem_sources WHERE id = ? AND guid IS NOT NULL~, undef,
+        $p->{psid}) or return;
     CATS::Web::content_type('text/plain');
     CATS::Web::headers('Content-Disposition' => "inline;filename=$fname");
     CATS::Web::print($src);

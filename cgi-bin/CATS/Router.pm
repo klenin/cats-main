@@ -109,7 +109,7 @@ sub main_routes() {
         judges => \&CATS::UI::Judges::judges_frame,
         keywords => \&CATS::UI::Keywords::keywords_frame,
         import_sources => \&CATS::UI::ImportSources::import_sources_frame,
-        download_import_source => \&CATS::UI::ImportSources::download_frame,
+        download_import_source => [ \&CATS::UI::ImportSources::download_frame, psid => $int, ],
         prizes => \&CATS::UI::Prizes::prizes_frame,
         contests_prizes => \&CATS::UI::Prizes::contests_prizes_frame,
         sites => \&CATS::UI::Sites::sites_frame,
