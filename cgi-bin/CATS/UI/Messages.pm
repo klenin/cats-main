@@ -38,10 +38,9 @@ sub send_message_box_frame {
 }
 
 sub answer_box_frame {
+    my ($p) = @_;
     init_template('answer_box.html.tt');
-    $is_jury or return;
-
-    my $qid = url_param('qid');
+    $is_jury && $p->{qid} or return;
 
     my $r = $dbh->selectrow_hashref(q~
         SELECT
@@ -51,21 +50,22 @@ sub answer_box_frame {
             INNER JOIN contest_accounts CA ON CA.id = Q.account_id
             INNER JOIN accounts A ON A.id = CA.account_id
         WHERE Q.id = ?~, { Slice => {} },
-        $qid);
+        $p->{qid});
+    # BLOBs are not auto-decoded.
     $_ = Encode::decode_utf8($_) for @$r{qw(question answer)};
 
     $t->param(team_name => $r->{team_name}, title_suffix => res_str(566));
 
-    if (defined param('clarify') && (my $a = Encode::decode_utf8(param('answer_text')))) {
+    if ($p->{clarify} && (my $ans = Encode::decode_utf8($p->{answer_text}))) {
         $r->{answer} ||= '';
-        $r->{answer} .= " $a";
+        $r->{answer} .= " $ans";
 
         my $s = $dbh->prepare(q~
             UPDATE questions
-                SET clarification_time = CURRENT_TIMESTAMP, answer = ?, received = 0, clarified = 1
-                WHERE id = ?~);
-        $s->bind_param(1, $r->{answer}, { ora_type => 113 } );
-        $s->bind_param(2, $qid);
+            SET clarification_time = CURRENT_TIMESTAMP, answer = ?, received = 0, clarified = 1
+            WHERE id = ?~);
+        $s->bind_param(1, $r->{answer}, { ora_type => 113 });
+        $s->bind_param(2, $p->{qid});
         $s->execute;
         $dbh->commit;
         $t->param(clarified => 1);

@@ -11,8 +11,8 @@
   <input type="text" size="70" value="[% capt.no_comments %]" name="answer_text" class="bordered" />
   <br/>
   <br/>
-  <input type="submit" value="[% capt.clarify %]" name="clarify" class="button"/>
-  <input type="button" value="[% capt.close %]" onClick="javascript:window.close();" class="button" />
+  <button type="submit" value="1" name="clarify" class="button">[% capt.clarify %]</button>
+  <button type="button" onclick="javascript:window.close();" class="button">[% capt.close %]</button>
 </form>
 [% ELSE %]
 <script>window.close();</script>

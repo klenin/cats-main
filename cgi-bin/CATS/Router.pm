@@ -114,7 +114,7 @@ sub main_routes() {
         contests_prizes => \&CATS::UI::Prizes::contests_prizes_frame,
         sites => \&CATS::UI::Sites::sites_frame,
 
-        answer_box => \&CATS::UI::Messages::answer_box_frame,
+        answer_box => [ \&CATS::UI::Messages::answer_box_frame, qid => $int, clarify => 1, answer_text => $str, ],
         send_message_box => \&CATS::UI::Messages::send_message_box_frame,
 
         run_log => [ \&CATS::UI::RunDetails::run_log_frame, rid => $int, delete_log => $bool, ],
