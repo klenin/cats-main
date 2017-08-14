@@ -225,13 +225,17 @@ sub make_where {
         $v = $self->{enums}->{$k}->{$v} // $v;
         push @{$result{$f} //= []}, sql_op($op, $v);
     }
-    my @sq_list;
-    for my $sq (@{$self->{search_subqueries}}) {
-        my ($k, $v) = @$sq;
-        my $sql = $self->{subqueries}->{$k} or next;
+    my (@sq_list, @sq_unknown);
+    for my $d (@{$self->{search_subqueries}}) {
+        my ($name, $value) = @$d;
+        my $sq = $self->{subqueries}->{$name}
+            or push @sq_unknown, $name and next;
+        my $msg_arg = $sq->{t} ? $dbh->selectrow_array($sq->{t}, undef, $value) : undef;
+        msg($sq->{m}, $msg_arg) if $sq->{m};
         # SQL::Abstract uses double reference do designate subquery.
-        push @sq_list, \[ $sql => $v ];
+        push @sq_list, \[ $sq->{sq} => $value ];
     }
+    msg(1143, join ',', @sq_unknown) if @sq_unknown;
     @sq_list ? { -and => [ \%result, @sq_list ] } : \%result;
 }
 
@@ -291,7 +295,8 @@ sub define_subqueries {
     my ($self, $subqueries) = @_;
     for my $k (keys %$subqueries) {
         $self->{subqueries}->{$k} and die "Duplicate subquery: $k";
-        $self->{subqueries}->{$k} = $subqueries->{$k};
+        $self->{subqueries}->{$k} =
+            ref $subqueries->{$k} ? $subqueries->{$k} : { sq => $subqueries->{$k} };
     }
 }
 
