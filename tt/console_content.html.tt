@@ -8,7 +8,7 @@ table.console td.verdict table { border-collapse: collapse; width: 100%; height:
 table.console td.verdict table td { padding: 0 0 0 2px; }
 table.console td.verdict table td:first-child { width: 2em; }
 table.console td.verdict table td:first-child a { color: inherit; }
-table.console td.verdict table td:last-child { text-align: right; }
+table.console td.verdict table td:last-child div { text-align: right; background: white; margin: 2px; }
 td.team { text-align: left; white-space: nowrap; }
 </style>
 <table class="bordered console highlight">
@@ -29,9 +29,9 @@ td.team { text-align: left; white-space: nowrap; }
         [% ELSE; c.team_name | html; END %]
     </td>
     <!--<td></td>-->
-    <td class="verdict"><table><tr>
-      <td class="run_details_[% c.short_state %]">[% href(c.href_state_details, c.short_state, capt.verdicts.item(c.short_state)) %]</td>
-      <td>[% c.failed_test %]</td>
+    <td class="verdict run_details_[% c.short_state %]"><table><tr>
+      <td>[% href(c.href_state_details, c.short_state, capt.verdicts.item(c.short_state)) %]</td>
+      <td><div>[% c.failed_test %]</div></td>
     </tr></table></td>
     <td>
         [%- pt = c.problem_title; SET pt = "$c.code: $pt" IF c.code -%]
