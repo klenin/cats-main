@@ -334,7 +334,7 @@ sub contest_delete {
 sub contests_frame {
     my ($p) = @_;
 
-    if (defined param('summary_rank')) {
+    if ($p->{summary_rank}) {
         my @clist = param('contests_selection');
         return redirect(url_f('rank_table', clist => join ',', @clist));
     }
@@ -350,7 +350,7 @@ sub contests_frame {
     $p->{listview} = my $lv = CATS::ListView->new(name => 'contests',
         template => 'contests.' .  ($ical ? 'ics' : $json ? 'json' : 'html') . '.tt');
 
-    CATS::UI::Prizes::contest_group_auto_new if defined param('create_group') && $is_root;
+    CATS::UI::Prizes::contest_group_auto_new if $p->{create_group} && $is_root;
 
     contest_delete if url_param('delete');
 
@@ -360,8 +360,8 @@ sub contests_frame {
         if defined param('edit_save') &&
             get_registered_contestant(fields => 'is_jury', contest_id => param('id'));
 
-    CATS::ContestParticipate::online if param('online_registration');
-    CATS::ContestParticipate::virtual if param('virtual_registration');
+    CATS::ContestParticipate::online if $p->{online_registration};
+    CATS::ContestParticipate::virtual if $p->{virtual_registration};
 
     contests_select_current if defined url_param('set_contest');
 
