@@ -259,11 +259,30 @@ sub authenticated_contests_view {
         is_hidden => 'C.is_hidden',
         'CA.is_hidden' => 'CA.is_hidden',
     });
+    my $cp_hidden = $is_root ? '' : " AND CP1.status < $cats::problem_st_hidden";
+    my $ca_hidden = $is_root ? '' : " AND CA1.is_hidden = 0";
+    $p->{listview}->define_subqueries({
+        has_problem => { sq => qq~EXISTS (
+            SELECT 1 FROM contest_problems CP1 WHERE CP1.contest_id = C.id AND CP1.problem_id = ?$cp_hidden)~,
+            m => 1015, t => q~
+            SELECT P.title FROM problems P WHERE P.id = ?~
+        },
+        has_site => { sq => q~EXISTS (
+            SELECT 1 FROM contest_sites CS WHERE CS.contest_id = C.id AND CS.site_id = ?)~,
+            m => 1030, t => q~
+            SELECT S.name FROM sites S WHERE S.id = ?~
+        },
+        has_user => { sq => qq~EXISTS (
+            SELECT 1 FROM contest_accounts CA1 WHERE CA1.contest_id = C.id AND CA1.account_id = ?$ca_hidden)~,
+            m => 1031, t => q~
+            SELECT A.team_name FROM accounts A WHERE A.id = ?~
+        },
+    });
     my $sth = $dbh->prepare(qq~
         SELECT
             $cf, CA.is_virtual, CA.is_jury, CA.id AS registered, C.is_hidden
-        FROM contests C LEFT JOIN
-            contest_accounts CA ON CA.contest_id = C.id AND CA.account_id = ?
+        FROM contests C
+        LEFT JOIN contest_accounts CA ON CA.contest_id = C.id AND CA.account_id = ?
         WHERE
             (CA.account_id IS NOT NULL OR COALESCE(C.is_hidden, 0) = 0) ~ .
             ($p->{has_problem} ? q~AND EXISTS (

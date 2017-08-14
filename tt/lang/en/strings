@@ -162,6 +162,8 @@
 1027 "Contest name must be 1 to 100 characters long."
 1028 "Contest '%s' created."
 1029 "Settings cleared for participant '%s'."
+1030 "Contests including site '%s'."
+1031 "Contests including participant '%s'."
 1033 "Entered passwords are different."
 1035 "Failed to change contest properties: %s."
 1036 "Contest '%s' properties changed."
