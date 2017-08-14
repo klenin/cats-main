@@ -76,7 +76,8 @@ sub sites_frame {
         return (
             %$row,
             href_edit => url_f('sites', edit => $row->{id}),
-            href_delete => url_f('sites', 'delete' => $row->{id})
+            href_delete => url_f('sites', 'delete' => $row->{id}),
+            href_contests => url_f('contests', search => "has_site($row->{id})", filter => 'all'),
         );
     };
     $lv->attach(url_f('sites'), $fetch_record, $c);
