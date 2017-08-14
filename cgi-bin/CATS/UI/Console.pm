@@ -414,6 +414,7 @@ sub console_content {
             (!$user->{is_participant} || !$team_id || $team_id != $uid);
         my $true_short_state = $CATS::Verdicts::state_to_name->{$request_state} || '';
         my $short_state = $hide_verdict ? $CATS::Verdicts::hidden_verdicts->{$true_short_state} : $true_short_state;
+        my $show_details = $is_jury || $uid && $team_id && $uid == $team_id;
 
         return (
             country => $country,
@@ -429,9 +430,8 @@ sub console_content {
             points =>               $clarified,
             clarified =>            $clarified,
             (($contest_id // 0) == $cid && $problem_id ? (code => $problem_codes->{$problem_id}->{code}) : ()),
-            href_details => (
-                $uid && $team_id && $uid == $team_id || $is_jury ? url_f('run_details', rid => $id) : undef),
-            href_source =>          url_f('view_source', rid => $id),
+            href_details =>         ($show_details ? url_f('run_details', rid => $id) : undef),
+            href_source =>          ($show_details ? url_f('view_source', rid => $id) : undef),
             href_problems =>        url_function('problems', sid => $sid, cid => $id),
             ($is_jury && $user->privs->{moderate_messages} ? (
                 href_delete_question => url_f('console', delete_question => $id),

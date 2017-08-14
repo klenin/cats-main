@@ -34,10 +34,8 @@ td.name { text-align: left; white-space: nowrap; width: 1px; }
     </tr></table></td>
     <td class="pts">[% c.points IF user.is_jury %]</td>
     <td>
-        [%- pt = c.problem_title; SET pt = "$c.code: $pt" IF c.code -%]
-        [%- IF user.is_jury -%]
-        [%- href(c.href_source, pt); " [$c.message_text]" IF c.message_text -%]
-        [%- ELSE; pt | html; END -%]
+        [%- "$c.code: " IF c.code -%]
+        [%- maybe_href(c.href_source, c.problem_title); " [$c.message_text]" IF user.is_jury && c.message_text -%]
     </td>
     <td>[% IF user.is_jury; i = DEs.item(c.de) %]<a href="#" title="[% i.code %]">[% i.description %]</a>[% END %]</td>
 [% ELSIF c.is_question %]
