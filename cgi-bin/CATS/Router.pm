@@ -65,7 +65,7 @@ sub main_routes() {
             kw => $int, problem_id => $int,
             participate_online => $bool, participate_virtual => $bool,
             submit => $bool, replace => $bool, add_new => $bool,
-            add_remote => $bool, std_solution => $bool, delete_problem => $bool,
+            add_remote => $bool, std_solution => $bool, delete_problem => $int,
             de_id => $int, ignore => $bool,
         ],
         problems_udebug => [ \&CATS::UI::Problems::problems_udebug_frame, ],
