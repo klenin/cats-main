@@ -346,4 +346,10 @@ sub define_columns {
         visible_cols => $self->{visible_cols});
 }
 
+sub search_subquery_value {
+    my ($self, $name) = @_;
+    $_->[0] eq $name and return $_->[1] for @{$self->{search_subqueries}};
+    undef;
+}
+
 1;
