@@ -22,7 +22,7 @@
     <input type="checkbox" value="1" name="[% name %]"[% ' checked="checked"' IF checked; ' disabled="disabled"' UNLESS enabled %] />
 [%- END -%]
 
-[%- MACRO href(url, text, title) BLOCK -%]<a href="[% url %]"[% " title=\"$title\"" IF title %]>[% text | html %]</a>[% END -%]
+[%- MACRO href(url, text, title) BLOCK -%]<a [% IF url %]href="[% url %]"[% END %][% " title=\"$title\"" IF title %]>[% text | html %]</a>[% END -%]
 [%- MACRO maybe_href(url, text, title) BLOCK; IF url; href(url, text, title); ELSE; text | html ; END; END -%]
 
 [%- MACRO menu(items, selected) BLOCK -%]

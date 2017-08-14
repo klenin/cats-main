@@ -19,8 +19,7 @@ td.name { text-align: left; white-space: nowrap; width: 1px; }
     <td>
         [% IF user.is_jury %]
             <a href="#" onclick="add_id([% c.id %]); return false;" title="[% c.id %]">[% c.time %]</a>
-        [% ELSE %]
-            [% IF c.href_details %]<a href="[% c.href_details %]" title="[% DEs.item(c.de).description %]" target="_blank">[% c.time %]</a>[% ELSE; c.time; END %]
+        [% ELSE; maybe_href(c.href_details, c.time, DEs.item(c.de).description) %]
         [% END %]
     </td>
     <td class="name">
@@ -30,7 +29,7 @@ td.name { text-align: left; white-space: nowrap; width: 1px; }
         [% ELSE; c.team_name | html; END %]
     </td>
     <td class="verdict run_details_[% c.short_state %]"><table><tr>
-      <td>[% href(c.href_state_details, c.short_state, capt.verdicts.item(c.short_state)) %]</td>
+      <td>[% href(c.href_details, c.short_state, capt.verdicts.item(c.short_state)) %]</td>
       <td><div>[% c.failed_test %]</div></td>
     </tr></table></td>
     <td class="pts">[% c.points IF user.is_jury %]</td>

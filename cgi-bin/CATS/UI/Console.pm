@@ -430,10 +430,8 @@ sub console_content {
             clarified =>            $clarified,
             (($contest_id // 0) == $cid && $problem_id ? (code => $problem_codes->{$problem_id}->{code}) : ()),
             href_details => (
-                ($uid && $team_id && $uid == $team_id) ? url_f('run_details', rid => $id) : ''
-            ),
+                $uid && $team_id && $uid == $team_id || $is_jury ? url_f('run_details', rid => $id) : undef),
             href_source =>          url_f('view_source', rid => $id),
-            href_state_details =>   ($is_jury ? url_f('run_details', rid => $id) : '#'),
             href_problems =>        url_function('problems', sid => $sid, cid => $id),
             ($is_jury && $user->privs->{moderate_messages} ? (
                 href_delete_question => url_f('console', delete_question => $id),
