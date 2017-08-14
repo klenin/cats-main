@@ -33,7 +33,7 @@
 <button type="submit" name="mass_retest" value="1" class="button">[% capt.retest %]</button>
 <input type="checkbox" name="all_runs" value="1"/> [% capt.all_runs %]
 <div class="retest_verdicts">
-[% capt.ignore_verdicts; capt.keys.join(' ') %]:<br/>
+[% capt.ignore_verdicts %]:<br/>
 [% FOREACH v IN verdicts %]
 <label class="run_details_[% v.short %]">
   <a name="v[% v.short %]" title="[% capt.verdicts.item(v.short) %]">
