@@ -78,6 +78,7 @@ div.search_hint {
 div.search_hint table td { padding: 2px 5px; position1: relative; }
 div.search_hint table td a { display: block; }
 div.search_hint table td.sh1 a { color: #1010d0; }
+div.search_hint table td.sh2 a { color: #107010; }
 div.search_hint table td:hover { background-color: #ffcc55; }
 div.search_hint table td ul {
     background-color: white;

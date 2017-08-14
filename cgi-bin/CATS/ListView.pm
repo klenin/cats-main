@@ -27,7 +27,9 @@ sub new {
         array_name => $p{array_name} || $p{name},
         col_defs => undef,
         search => [],
+        search_subqueries => [],
         db_searches => {},
+        subqueries => {},
         enums => {},
     };
     bless $self, $class;
@@ -54,8 +56,12 @@ sub init_params {
             $s->{page} = 0;
         }
     }
-    $self->{search} = [ map
-        [ /^([a-zA-Z0-9_]+)([!~^=><]?=|>|<|\?|!~)(.*)$/ ? ($1, $3, $2) : ('', $_, '') ], split /,\s*/, $s->{search} ];
+    my $ident = '[a-zA-Z][a-zA-Z0-9_]*';
+    for (split /,\s*/, $s->{search}) {
+        /^($ident)([!~^=><]?=|>|<|\?|!~)(.*)$/ ? push @{$self->{search}}, [ $1, $3, $2 ] :
+        /^($ident)\((\d+)\)$/ ? push @{$self->{search_subqueries}}, [ $1, $2 ] :
+        push @{$self->{search}}, [ '', $_, '' ];
+    }
 
     if (defined url_param('sort')) {
         $s->{sort_by} = int(url_param('sort'));
@@ -117,7 +123,7 @@ sub attach {
     my $rows = $s->{rows} || 1;
 
     # <search> ::= <condition> { ',' <condition> }
-    # <condition> ::= <value> | <field name> { '=' | '==' | '!=' | '^=' | '~=' | '!~' } <value>
+    # <condition> ::= <value> | <field name> { '=' | '==' | '!=' | '^=' | '~=' | '!~' } <value> | <func>(<integer>)
     # Spaces are significant around values, but not around keys.
     # Values without field name are searched in all fields.
     # Different fields are AND'ed, multiple values of the same field are OR'ed.
@@ -177,7 +183,11 @@ sub attach {
         $self->{array_name} => \@data,
     );
     if ($is_jury) {
-        my @s = (map([ $_, 0 ], sort keys %{$self->{db_searches}}), map [ $_, 1 ], @$row_keys);
+        my @s = (
+            map([ $_, 0 ], sort keys %{$self->{db_searches}}),
+            map([ $_, 1 ], @$row_keys),
+            map([ $_, 2 ], sort keys %{$self->{subqueries}}),
+        );
         my $col_count = 4;
         my $row_count = int((@s + $col_count - 1) / $col_count);
         my $rows;
@@ -215,7 +225,14 @@ sub make_where {
         $v = $self->{enums}->{$k}->{$v} // $v;
         push @{$result{$f} //= []}, sql_op($op, $v);
     }
-    \%result;
+    my @sq_list;
+    for my $sq (@{$self->{search_subqueries}}) {
+        my ($k, $v) = @$sq;
+        my $sql = $self->{subqueries}->{$k} or next;
+        # SQL::Abstract uses double reference do designate subquery.
+        push @sq_list, \[ $sql => $v ];
+    }
+    @sq_list ? { -and => [ \%result, @sq_list ] } : \%result;
 }
 
 sub where_cond {
@@ -267,6 +284,14 @@ sub define_db_searches {
     }
     else {
         die;
+    }
+}
+
+sub define_subqueries {
+    my ($self, $subqueries) = @_;
+    for my $k (keys %$subqueries) {
+        $self->{subqueries}->{$k} and die "Duplicate subquery: $k";
+        $self->{subqueries}->{$k} = $subqueries->{$k};
     }
 }
 

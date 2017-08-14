@@ -20,7 +20,7 @@
     [% FOREACH row IN search_hints %]
       <tr>
       [% FOREACH col IN row %]
-        <td class="sh[% col.1 %]"><a href="#" onclick="activate_search_hint(this, 1);">[% col.0 | html %]</a>
+        <td class="sh[% col.1 %]"><a href="#" onclick="activate_search_hint(this, 1, [% col.1 %]);">[% col.0 | html %]</a>
           [% enum = search_enums.item(col.0); IF enum.keys.size %]
           <ul>[% FOREACH e IN enum %]<li><a href="#" onclick="click_enum(this)">[% e.key | html %]</a></li>[% END %]</ul>
           [% END %]
@@ -60,7 +60,7 @@ function toggle_search_hints() {
   return false;
 }
 
-function activate_search_hint(a, comma) {
+function activate_search_hint(a, comma, type) {
   var ul = a.nextElementSibling;
   if (ul) {
     ul.style.display = ul.style.display === 'block' ? 'none' : 'block';
@@ -70,6 +70,7 @@ function activate_search_hint(a, comma) {
   var i = document.getElementById('search');
   if (comma) if (i.value) i.value += ','; // Avoid ampersand.
   i.value += a.text;
+  if (type == 2) i.value += '()';
 }
 
 function click_enum(a) {
