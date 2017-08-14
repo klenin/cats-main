@@ -237,21 +237,6 @@ sub contests_submenu_filter {
 sub authenticated_contests_view {
     my ($p) = @_;
     my $cf = contest_fields_str;
-    my $original_contest = 0;
-    if ($p->{has_problem}) {
-        my ($has_problem_pid) = $dbh->selectrow_array(q~
-            SELECT CP.problem_id FROM contest_problems CP WHERE CP.id = ?~, undef,
-            $p->{has_problem});
-        $p->{has_problem} = $has_problem_pid if $has_problem_pid;
-        ($original_contest, my $title) = $dbh->selectrow_array(q~
-            SELECT P.contest_id, P.title FROM problems P WHERE P.id = ?~, undef, $p->{has_problem});
-        if ($original_contest) {
-            msg(1015, $title);
-        }
-        else {
-            $p->{has_problem} = undef;
-        }
-    }
     $p->{listview}->define_db_searches(contest_searches);
     $p->{listview}->define_db_searches({
         is_virtual => 'CA.is_virtual',
@@ -285,13 +270,17 @@ sub authenticated_contests_view {
         LEFT JOIN contest_accounts CA ON CA.contest_id = C.id AND CA.account_id = ?
         WHERE
             (CA.account_id IS NOT NULL OR COALESCE(C.is_hidden, 0) = 0) ~ .
-            ($p->{has_problem} ? q~AND EXISTS (
-                SELECT 1 FROM contest_problems CP
-                WHERE CP.contest_id = C.id AND CP.problem_id = ?) ~ : contests_submenu_filter()) .
+            contests_submenu_filter .
             $p->{listview}->maybe_where_cond .
             $p->{listview}->order_by);
-    $sth->execute($uid, $p->{has_problem} ? $p->{has_problem} : (), $p->{listview}->where_params);
+    $sth->execute($uid, $p->{listview}->where_params);
 
+    my $original_contest = 0;
+    if (my $pid = $p->{listview}->search_subquery_value('has_problem')) {
+        $original_contest = $dbh->selectrow_array(q~
+            SELECT P.contest_id FROM problems P WHERE P.id = ?~, undef,
+            $pid) // 0;
+    }
     my $fetch_contest = sub {
         my $c = $_[0]->fetchrow_hashref or return;
         return (
@@ -376,7 +365,7 @@ sub contests_frame {
 
     contests_select_current if defined url_param('set_contest');
 
-    $lv->define_columns(url_f('contests', has_problem => $p->{has_problem}), 1, 1, [
+    $lv->define_columns(url_f('contests'), 1, 1, [
         { caption => res_str(601), order_by => '1 DESC, 2', width => '40%' },
         { caption => res_str(600), order_by => '1 DESC, 5', width => '15%' },
         { caption => res_str(631), order_by => '1 DESC, 6', width => '15%' },

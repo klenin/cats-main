@@ -43,7 +43,7 @@ sub main_routes() {
         logout => \&CATS::UI::LoginLogout::logout_frame,
         registration => \&CATS::UI::Users::registration_frame,
         profile => [ \&CATS::UI::Users::profile_frame, json => $bool, clear => $str, edit_save => $str, ],
-        contests => [ \&CATS::UI::Contests::contests_frame, has_problem => $int, ],
+        contests => [ \&CATS::UI::Contests::contests_frame, ],
         contest_sites => [ \&CATS::UI::Sites::contest_sites_frame, ],
         contest_sites_edit => [ \&CATS::UI::Sites::contest_sites_edit_frame,
             site_id => $int,

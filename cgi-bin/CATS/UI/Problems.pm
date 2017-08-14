@@ -505,7 +505,7 @@ sub problems_frame {
             href_problem_details => $is_jury && url_f('problem_details', pid => $c->{pid}),
             href_original_contest =>
                 url_function('problems', sid => $sid, cid => $c->{original_contest_id}, set_contest => 1),
-            href_usage => url_f('contests', has_problem => $c->{pid}),
+            href_usage => url_f('contests', search => "has_problem($c->{pid})", filter => 'all'),
             href_problem_console => $uid &&
                 url_f('console', search => "problem_id=$c->{pid}", uf => ($is_jury ? undef : $uid),
                     se => 'problem', i_value => -1, show_results => 1),
