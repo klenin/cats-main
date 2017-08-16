@@ -276,6 +276,13 @@ sub impersonate_frame {
     redirect(url_function('contests', sid => $new_sid, cid => $cid));
 }
 
+sub users_add_participants_frame {
+    my ($p) = @_;
+    $is_jury or return;
+    init_template('users_add_participants.html.tt');
+    CATS::User::register_by_login($p->{logins_to_add}, $cid) if $p->{by_login};
+}
+
 sub users_frame {
     my ($p) = @_;
 
@@ -298,7 +305,6 @@ sub users_frame {
         CATS::User::save_attributes_jury if $p->{save_attributes};
         CATS::User::set_tag(user_set => [ param('sel') ], tag => $p->{tag_to_set})
             if $p->{set_tag};
-        CATS::User::register_by_login($p->{logins_to_add}, $cid) if $p->{add_participants};
 
         if ($p->{send_message}) {
             if ($p->{send_message_all}) {
@@ -438,6 +444,7 @@ sub users_frame {
         $t->param(submenu => [
             { href => url_f('users', new => 1), item => res_str(541) },
             { href => url_f('users_import'), item => res_str(564) },
+            { href => url_f('users_add_participants'), item => res_str(584) },
         ]);
     }
     elsif ($user->{is_site_org}) {

@@ -1,0 +1,13 @@
+[% PROCESS includes/menu_begin.tti %]
+
+<h3>[% capt.add_participants %]</h3>
+
+<form method="post" action="[% href_action %]">
+<div>
+<p>[% capt.logins_to_add %]:</p>
+<textarea name="logins_to_add" style="width: 80%" rows="2" cols="80"></textarea>
+</div>
+<button type="submit" class="button" name="by_login" value="1">[% capt.by_login %]</button>
+</form>
+
+[% PROCESS includes/menu_end.tti %]

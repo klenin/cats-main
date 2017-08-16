@@ -58,8 +58,6 @@ function delete_team(href, name) {
 <button type="submit" value="1" name="save_attributes" class="button">[% capt.save_attributes %]</button>
 [% END %]
 [% IF user.is_jury %]
-<label>[% capt.login %]: <input type="text" name="logins_to_add" class="bordered" /></label>
-<button type="submit" value="1" name="add_participants" class="button">[% capt.add_participants %]</button>
 <label>[% capt.tag %]: <input type="text" name="tag_to_set" class="bordered" /></label>
 <button type="submit" value="1" name="set_tag" class="button">[% capt.set %]</button>
 [% END %]
