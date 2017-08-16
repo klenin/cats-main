@@ -55,7 +55,7 @@ sub add_to_contest {
     $p{contest_id} && $p{account_id} or die;
     $dbh->do(_u $sql->insert('contest_accounts', {
         id => new_id, contest_id => $p{contest_id}, account_id => $p{account_id}, site_id => $p{site_id},
-        is_jury => 0, is_pop => 0, is_hidden => 0, is_ooc => $p{is_ooc},
+        is_jury => $p{is_jury} || 0, is_pop => 0, is_hidden => $p{is_hidden} || 0, is_ooc => $p{is_ooc},
         is_remote => $p{is_remote} || 0, is_site_org => $p{is_site_org} || 0,
         is_virtual => 0, diff_time => 0,
     }));
@@ -178,7 +178,8 @@ sub trim { s/^\s+|\s+$//; $_; }
 
 # (Mass-)register users by jury.
 sub register_by_login {
-    my ($login, $contest_id) = @_;
+    my ($login, $contest_id, $make_jury) = @_;
+    $is_jury or return;
     $login = Encode::decode_utf8($login);
     my @logins = map trim, split(/,/, $login || '') or return msg(1101);
     my %aids;
@@ -192,10 +193,11 @@ sub register_by_login {
         $aids{$aid} = 1;
     }
     %aids or return msg(1118);
-    add_to_contest(contest_id => $contest_id, account_id => $_, is_remote => 1, is_ooc => 1)
+    my %jury_flags = $make_jury ? (is_jury => 1, is_hidden => 1) : ();
+    add_to_contest(contest_id => $contest_id, account_id => $_, is_remote => 1, is_ooc => 1, %jury_flags)
         for keys %aids;
     $dbh->commit;
-    msg(1119, join ',', @logins);
+    msg($make_jury ? 1125 : 1119, join ',', @logins);
 }
 
 

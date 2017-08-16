@@ -6,19 +6,20 @@
 <form method="post" action="[% href_action %]">
 <div>
 <p>[% capt.logins_to_add %]:</p>
-<textarea name="logins_to_add" style="width: 80%" rows="2" cols="80"></textarea>
+<input name="logins_to_add" size="100"/>
 </div>
 <button type="submit" class="button" name="by_login" value="1">[% capt.by_login %]</button>
+<label>[% checkbox_1('make_jury'); capt.make_jury %]</label>
 </form>
 
 <hr/>
 <form method="post" action="[% href_action %]">
 <div>
-<button type="submit" class="button" name="from_contest" value="1">[% capt.from_contest %]</button>
 <select name="source_cid"><option/>
 [% FOREACH c IN contests; option(c.id, c.title); END %]
 </select>
-<label>[% checkbox_1('include_ooc'); capt.include_ooc %]</label>
 </div>
+<button type="submit" class="button" name="from_contest" value="1">[% capt.from_contest %]</button>
+<label>[% checkbox_1('include_ooc'); capt.include_ooc %]</label>
 </form>
 [% PROCESS includes/menu_end.tti %]
