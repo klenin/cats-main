@@ -3,7 +3,7 @@
 <body style="margin: 10px">
 [% UNLESS clarified %]
 <form method="post" enctype="multipart/form-data">
-  [% team_name | html %], [% submit_time %]<br/>
+  [% participant_name | html %], [% submit_time %]<br/>
   [% IF answer %]<br/>[% capt.answered %]:[% answer %]<br/><br/>[% END %]
   <br/>
   <div class="bordered">[% question_text | html %]</div>

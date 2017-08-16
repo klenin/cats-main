@@ -49,14 +49,13 @@ td.name { text-align: left; white-space: nowrap; width: 1px; }
     </td>
     <td colspan="4">
         <i>[% c.question_text | html %]</i> - 
-        [% UNLESS c.clarified %]
+        [% IF c.clarified %]<span class="jury_message">[% c.answer_text | html %]</span>[% END %]
         [% IF c.href_answer_box %]
-        <a href="[% c.href_answer_box %]" target="_blank">[[% capt.answer %]]</a>
+          <a href="[% c.href_answer_box %]" target="_blank">[[% capt.answer %]]</a>
         [% END %]
-        [% ELSE %]
-        <span class="jury_message">[% c.answer_text | html %]</span>
+        [% IF c.href_delete_question %]
+          <a href="[% c.href_delete_question %]">[[% capt.delete %]]</a>
         [% END %]
-        [% IF c.href_delete_question %]<a href="[% c.href_delete_question %]">[[% capt.delete %]]</a>[% END %]
     </td>
 [% ELSIF c.is_message %]
     <td>[% c.time %]</td>

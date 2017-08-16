@@ -437,7 +437,9 @@ sub console_content {
                 href_delete_question => url_f('console', delete_question => $id),
                 href_delete_message =>  url_f('console', delete_message => $id),
             ) : ()),
-            href_answer_box =>      $is_jury ? url_f('answer_box', qid => $id) : undef,
+            href_answer_box =>
+                $is_jury && (!$clarified || $user->privs->{moderate_messages}) ?
+                url_f('answer_box', qid => $id) : undef,
             href_send_message_box =>
                 ($is_jury && $caid ? url_f('send_message_box', caid => $caid) : undef),
             'time' =>               $submit_time,

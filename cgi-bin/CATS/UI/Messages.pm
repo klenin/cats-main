@@ -54,12 +54,10 @@ sub answer_box_frame {
     # BLOBs are not auto-decoded.
     $_ = Encode::decode_utf8($_) for @$r{qw(question answer)};
 
-    $t->param(team_name => $r->{team_name}, title_suffix => res_str(566));
+    $t->param(participant_name => $r->{team_name}, title_suffix => res_str(566));
 
     if ($p->{clarify} && (my $ans = Encode::decode_utf8($p->{answer_text}))) {
-        $r->{answer} ||= '';
-        $r->{answer} .= " $ans";
-
+        $r->{answer} = $user->privs->{moderate_messages} ? $ans : ($r->{answer} // '') . " $ans";
         my $s = $dbh->prepare(q~
             UPDATE questions
             SET clarification_time = CURRENT_TIMESTAMP, answer = ?, received = 0, clarified = 1
