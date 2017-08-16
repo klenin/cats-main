@@ -39,7 +39,7 @@ my $ident = qr/[a-zA-Z_]+/;
 
 sub main_routes() {
     {
-        login => \&CATS::UI::LoginLogout::login_frame,
+        login => [ \&CATS::UI::LoginLogout::login_frame, logout => $bool, login => $str, passwd => $str, redir => $str, ],
         logout => \&CATS::UI::LoginLogout::logout_frame,
         registration => \&CATS::UI::Users::registration_frame,
         profile => [ \&CATS::UI::Users::profile_frame, json => $bool, clear => $str, edit_save => $str, ],

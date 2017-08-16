@@ -7,7 +7,7 @@
 <tr><td>[% capt.password %]:</td>
   <td><input type="password" size="30" name="passwd" maxlength="100" class="bordered" /></td></tr>
 </table>
-<input type="submit" name="submit" value="[% capt.button %]" class="button" />
+<button type="submit" name="submit" value="1" class="button">[% capt.button %]</button>
 </form>
 
 [% PROCESS includes/menu_end.tti %]

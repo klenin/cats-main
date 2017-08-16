@@ -27,24 +27,23 @@ BEGIN {
 sub split_ips { map { /(\S+)/ ? $1 : () } split ',', $_[0] }
 
 sub login_frame {
+    my ($p) = @_;
     my $json = param('json');
     init_template(auto_ext('login', $json));
-    my $redir = url_param('redir');
-    $t->param(href_login => url_function('login', redir => $redir));
-    msg(1004) if param('logout');
+    $t->param(href_login => url_function('login', redir => $p->{redir}));
+    msg(1004) if $p->{logout};
 
-    my $login = param('login');
+    my $login = $p->{login};
     if (!$login) {
         $t->param(message => 'No login') if $json;
         return;
     }
     $t->param(login => Encode::decode_utf8($login));
-    my $passwd = param('passwd');
 
     my ($aid, $hash, $locked, $restrict_ips) = $dbh->selectrow_array(qq~
         SELECT id, passwd, locked, restrict_ips FROM accounts WHERE login = ?~, undef, $login);
 
-    $aid && $check_password->($passwd, $hash) or return msg(1040);
+    $aid && $check_password->($p->{passwd}, $hash) or return msg(1040);
     !$locked or return msg(1041);
 
     my $last_ip = CATS::IP::get_ip();
@@ -58,10 +57,10 @@ sub login_frame {
     for (1..20) {
         $sid = CATS::User::make_sid;
 
-        $dbh->do(qq~
+        $dbh->do(q~
             UPDATE accounts SET sid = ?, last_login = CURRENT_TIMESTAMP, last_ip = ?
-                WHERE id = ?~,
-            {}, $sid, $last_ip, $aid
+            WHERE id = ?~, undef,
+            $sid, $last_ip, $aid
         ) or next;
         $dbh->commit;
 
@@ -71,7 +70,7 @@ sub login_frame {
             return;
         }
         $t = undef;
-        my %params = CATS::Redirect::unpack_params($redir);
+        my %params = CATS::Redirect::unpack_params($p->{redir});
         my $f = $params{f} || 'contests';
         delete $params{f};
         $params{sid} = $sid;
@@ -85,7 +84,9 @@ sub logout_frame {
     $cid = '';
     $sid = '';
     if ($uid) {
-        $dbh->do(qq~UPDATE accounts SET sid = NULL WHERE id = ?~, {}, $uid);
+        $dbh->do(q~
+            UPDATE accounts SET sid = NULL WHERE id = ?~, undef,
+            $uid);
         $dbh->commit;
     }
     if (param('json')) {
