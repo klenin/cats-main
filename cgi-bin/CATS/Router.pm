@@ -96,6 +96,7 @@ sub main_routes() {
         users_import => \&CATS::UI::Users::users_import_frame,
         users_add_participants => [ \&CATS::UI::Users::users_add_participants_frame,
             logins_to_add => $str, by_login => $bool,
+            source_cid => $int, from_contest => $bool, include_ooc => $bool,
         ],
         user_stats => \&CATS::UI::Users::user_stats_frame,
         user_settings => \&CATS::UI::Users::user_settings_frame,

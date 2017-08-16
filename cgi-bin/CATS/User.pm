@@ -8,7 +8,7 @@ use Storable;
 
 use CATS::Config;
 use CATS::Constants;
-use CATS::ContestParticipate qw(get_registered_contestant);
+use CATS::ContestParticipate qw(get_registered_contestant is_jury_in_contest);
 use CATS::Countries;
 use CATS::DB;
 use CATS::Form qw(validate_integer validate_string_length);
@@ -54,9 +54,10 @@ sub add_to_contest {
     my %p = @_;
     $p{contest_id} && $p{account_id} or die;
     $dbh->do(_u $sql->insert('contest_accounts', {
-        id => new_id, contest_id => $p{contest_id}, account_id => $p{account_id},
+        id => new_id, contest_id => $p{contest_id}, account_id => $p{account_id}, site_id => $p{site_id},
         is_jury => 0, is_pop => 0, is_hidden => 0, is_ooc => $p{is_ooc},
-        is_remote => $p{is_remote} || 0, is_virtual => 0, diff_time => 0,
+        is_remote => $p{is_remote} || 0, is_site_org => $p{is_site_org} || 0,
+        is_virtual => 0, diff_time => 0,
     }));
 }
 
@@ -341,6 +342,41 @@ sub save_attributes_org {
         $changed_count += save_attributes_single($user_id, [ qw(remote ooc) ]);
     }
     save_attributes_finalize($changed_count);
+}
+
+
+sub copy_from_contest {
+    my ($source_cid, $include_ooc) = @_;
+    $source_cid && $source_cid != $cid && $is_jury or return;
+    is_jury_in_contest(contest_id => $source_cid) or return;
+    my $sites = $dbh->selectall_hashref(q~
+        SELECT site_id FROM contest_sites WHERE contest_id = ?~, 'site_id', undef,
+        $cid);
+    my $ooc_cond = $include_ooc ? '' : ' AND is_ooc = 0';
+    my $source_users = $dbh->selectall_arrayref(qq~
+        SELECT account_id, site_id, is_ooc, is_remote, is_site_org
+        FROM contest_accounts
+        WHERE is_jury = 0 AND is_hidden = 0 AND is_virtual = 0$ooc_cond AND
+            contest_id = ?~, { Slice => {} },
+        $source_cid);
+    my $dest_sth = $dbh->prepare(q~
+        SELECT 1 FROM contest_accounts WHERE contest_id = ? AND account_id = ?~);
+    my ($count, $already) = (0, 0);
+    for (@$source_users) {
+        $dest_sth->execute($cid, $_->{account_id});
+        if ($dest_sth->fetch) {
+            $already++;
+        }
+        else {
+            $_->{site_id} && $sites->{$_->{site_id}} or $_->{site_id} = undef;
+            add_to_contest(%$_, contest_id => $cid);
+            $count++;
+        }
+        $dest_sth->finish;
+    }
+    $dbh->commit if $count;
+    msg(1096, $count);
+    msg(1097, $already) if $already;
 }
 
 1;

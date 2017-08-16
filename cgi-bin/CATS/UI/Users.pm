@@ -281,6 +281,19 @@ sub users_add_participants_frame {
     $is_jury or return;
     init_template('users_add_participants.html.tt');
     CATS::User::register_by_login($p->{logins_to_add}, $cid) if $p->{by_login};
+    CATS::User::copy_from_contest($p->{source_cid}, $p->{include_ooc}) if $p->{from_contest};
+    my $contests = $dbh->selectall_arrayref(q~
+        SELECT C.id, C.title FROM contests C
+        WHERE C.id <> ? AND EXISTS (
+            SELECT 1 FROM contest_accounts CA
+            WHERE CA.contest_id = C.id AND CA.account_id = ? AND CA.is_jury = 1)
+            ORDER BY C.start_date DESC~, { Slice => {} },
+        $cid, $uid);
+    $t->param(
+        href_action => url_f('users_add_participants'),
+        title_suffix => res_str(584),
+        contests => $contests,
+    );
 }
 
 sub users_frame {

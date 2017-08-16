@@ -205,6 +205,8 @@
 1093 "Participant '%s' has been disqualified. Contests remaining: %d."
 1094 "Participant '%s' has been deleted."
 1095 "Unable to disqualify participant '%s'."
+1096 "Participants copied: %d."
+1097 "Participants already present: %d."
 1101 "Enter comma-separated logins no longer than 50 characters each."
 1103 "Sorry, user with this login is already registered."
 1105 "Contest '%s' is currently closed for self-registration."
