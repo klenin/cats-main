@@ -22,7 +22,7 @@ function get_element(name) {
 <label title="[% capt.messages %]">[% checkbox('show_messages', show_messages) %] [% capt.messages_short %]</label>
 <label title="[% capt.results %]">[% checkbox('show_results', show_results) %] [% capt.results_short %]</label>
 </span>
-<span class="nobr">[% capt.for %] [% select('i_value', i_values) %] [% select('i_unit', i_units) %]</spen>
+<span class="nobr">[% capt.for %] [% select_value('i_value', i_values, i_value) %] [% select('i_unit', i_units) %]</spen>
 [% END %]
 <span id="refreshable_content">
 [% UNLESS initial_content %]<br/>[% capt.loading %]<br/>

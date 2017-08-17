@@ -50,7 +50,7 @@ sub send_question_to_jury {
 sub get_settings {
     my ($lv) = @_;
     my $s = $lv->settings;
-    $s->{i_value} = coalesce(param('i_value'), $s->{i_value}, 1);
+    $s->{i_value} = param('i_value') // $s->{i_value} // 1;
     $s->{i_unit} = param('i_unit') || $s->{i_unit} || 'hours';
     $s->{show_results} = param('show_results') // $s->{show_results} // 1;
     $s->{show_messages} = param('show_messages') // $s->{show_messages} // 0;
@@ -79,11 +79,11 @@ sub time_interval_days {
     $selected_unit->{selected} = 1;
 
     $t->param(
-        'i_values' => [
-            map { { value => $_, text => ($_ > 0 ? $_ : 'all'), selected => $v eq $_ } }
-                (1..5, 10, -1)
+        i_values => [
+            map { { value => $_, text => ($_ > 0 ? $_ : res_str(558)) } }
+                (1..5, 10, 20, -1)
         ],
-        'i_units' => $units
+        i_units => $units
     );
 
     return $v > 0 ? $v * $selected_unit->{k} : 100000;
@@ -112,7 +112,7 @@ sub console_content {
             for qw(show_contests show_messages show_results);
     }
 
-    $t->param($_ => $s->{$_}) for qw(show_contests show_messages show_results);
+    $t->param($_ => $s->{$_}) for qw(show_contests show_messages show_results i_value);
 
     my $day_count = time_interval_days($s);
     my $dummy_account_block = q~
@@ -243,22 +243,6 @@ sub console_content {
     my $events_filter = @user_ids ? 'AND (' . join(' OR ', map 'A.id = ?', @user_ids) . ')' : '';
     my @events_filter_params = @user_ids;
 
-    my $contest_dates = '';
-    if ($s->{show_contests}) {
-        my %extra_cond = (
-            start => '',
-            freeze => ' AND C.freeze_date < C.finish_date AND C.freeze_date > C.start_date',
-            finish => '');
-        my $hidden_cond = $is_root ? '' : ' AND C.is_hidden = 0';
-        $contest_dates = join '', map qq~
-                UNION
-            SELECT
-                $console_select{"contest_$_"}
-                WHERE C.${_}_date > CURRENT_TIMESTAMP - $day_count AND
-                    C.${_}_date < CURRENT_TIMESTAMP$extra_cond{$_}$hidden_cond~,
-                    qw(start freeze finish);
-    }
-
     my $submit_time_filter =
         '(R.submit_time BETWEEN C.start_date AND C.freeze_date OR CURRENT_TIMESTAMP > C.defreeze_date)';
 
@@ -323,6 +307,24 @@ sub console_content {
         : '';
     my @broadcast_param = !$s->{show_messages} ? () : !$is_root ? ($cid) : $search_cid ? ($search_cid) : () ;
 
+    my $contest_dates = '';
+    my @contest_params;
+    if ($s->{show_contests}) {
+        my %avoid_dups_cond = (
+            start => '',
+            freeze => ' AND C.freeze_date < C.finish_date AND C.freeze_date > C.start_date',
+            finish => '');
+        my $id_cond = $is_root && !$search_cid ? '' : ' AND C.id = ?';
+        $contest_dates = join '', map qq~
+                UNION
+            SELECT
+                $console_select{"contest_$_"}
+                WHERE C.${_}_date > CURRENT_TIMESTAMP - $day_count AND
+                    C.${_}_date < CURRENT_TIMESTAMP$avoid_dups_cond{$_}$id_cond~,
+                    qw(start freeze finish);
+        @contest_params = !$is_root ? ($cid) x 3 : $search_cid ? ($search_cid) x 3 : ();
+    }
+
     my $searches_filter = $lv->maybe_where_cond;
 
     my $c;
@@ -334,6 +336,10 @@ sub console_content {
         if ($lv->searches_subset_of({ account_id => 1, team_name => 1, city => 1, contest_id => 1 })) {
             $msg_filter .= $searches_filter;
             @msg_params = $lv->where_params;
+        }
+        elsif ($search_cid) {
+            $msg_filter .= ' AND C.id = ?';
+            @msg_params = $search_cid;
         }
         my @cid = $is_root ? () : ($cid);
         $c = $dbh->prepare(qq~
@@ -365,6 +371,7 @@ sub console_content {
             @cid, @msg_params, @events_filter_params,
             @cid, @msg_params, @events_filter_params,
             @broadcast_param,
+            @contest_params,
         );
     }
     elsif ($user->{is_participant}) {
@@ -396,6 +403,7 @@ sub console_content {
             $cid, $uid,
             $cid, $uid,
             @broadcast_param,
+            @contest_params,
         );
     }
     else {
@@ -409,7 +417,8 @@ sub console_content {
             $broadcast
             $contest_dates
             ORDER BY 2 DESC~);
-        $c->execute($cid, @events_filter_params, $lv->where_params, @broadcast_param);
+        $c->execute(
+            $cid, @events_filter_params, $lv->where_params, @broadcast_param, @contest_params);
     }
 
     my $fetch_console_record = sub {
@@ -665,9 +674,16 @@ sub console_frame {
         ajax_error_msg => res_str(1151),
         user_filter => $user_filter,
     );
+    my %all_types = (show_contests => 1, show_messages => 1, show_results => 1);
     $t->param(submenu => [
         { href => url_f('console_export'), item => res_str(561) },
         { href => url_f('console_graphs'), item => res_str(563) },
+        { href => url_f('console', search => '',
+            ($is_root ? (i_value => 1) : ()), %all_types), item => res_str(558) },
+        ($is_root ? (
+            { href => url_f('console', search => 'contest_id=this',
+                i_value=> -1, %all_types), item => res_str(585) },
+        ) : ()),
     ]) if $is_jury;
 }
 
