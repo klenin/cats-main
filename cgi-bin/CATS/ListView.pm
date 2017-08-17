@@ -352,4 +352,12 @@ sub search_subquery_value {
     undef;
 }
 
+sub searches_subset_of {
+    my ($self, $set) = @_;
+    for (@{$self->{search}}, @{$self->{search_subqueries}}) {
+        $set->{$_->[0]} or return 0;
+    }
+    1;
+}
+
 1;

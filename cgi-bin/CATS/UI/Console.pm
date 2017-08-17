@@ -270,14 +270,13 @@ sub console_content {
     my $problem_codes = !$contest->is_practice ? $dbh->selectall_hashref(q~
         SELECT problem_id, code FROM contest_problems WHERE contest_id = ?~, 'problem_id', undef, $cid) : {};
 
-    $lv->define_db_searches([qw(
+    $lv->define_db_searches([ qw(
         R.submit_time
         R.id
         R.state
         R.failed_test
         R.contest_id
         R.problem_id
-        R.account_id
         R.points
         R.judge_id
         R.elements_count
@@ -285,9 +284,11 @@ sub console_content {
         A.team_name
         A.city
         CA.is_jury
-    )]);
+    ) ]);
+
     my $de_select = q~
         (SELECT %s FROM sources S INNER JOIN default_de DE ON DE.id = S.de_id WHERE S.req_id = R.id)~;
+
     $lv->define_db_searches({
         de_code => sprintf($de_select, 'DE.code'),
         de_name => sprintf($de_select, 'DE.description'),
@@ -302,7 +303,9 @@ sub console_content {
                 R1.id > R.id
             ROWS 1), 0)~,
         tag => q~COALESCE(R.tag, '')~,
+        account_id => 'A.id',
     });
+
     $lv->define_enums({
         state => $CATS::Verdicts::name_to_state,
         run_method => CATS::Problem::Utils::run_method_enum,
@@ -317,6 +320,12 @@ sub console_content {
         my $jury_runs_filter = $is_root ? '' : ' AND C.id = ?';
         my $msg_filter = $is_root ? '' : ' AND CA.contest_id = ?';
         $msg_filter .= ' AND 1 = 0' unless $s->{show_messages};
+        my @msg_params;
+        if ($lv->searches_subset_of({ account_id => 1, team_name => 1, city => 1 })) {
+            warn $searches_filter;
+            $msg_filter .= $searches_filter;
+            @msg_params = $lv->where_params;
+        }
         my @cid = $is_root ? () : ($cid);
         $c = $dbh->prepare(qq~
             SELECT
@@ -346,8 +355,9 @@ sub console_content {
             ORDER BY 2 DESC~);
         $c->execute(
             @cid, @events_filter_params, $lv->where_params,
-            @cid, @events_filter_params,
-            @cid, @events_filter_params);
+            @cid, @msg_params, @events_filter_params,
+            @cid, @msg_params, @events_filter_params,
+        );
     }
     elsif ($user->{is_participant}) {
         $c = $dbh->prepare(qq~
