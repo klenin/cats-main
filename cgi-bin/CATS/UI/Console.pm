@@ -120,8 +120,7 @@ sub console_content {
         CAST(NULL AS VARCHAR(200)) AS team_name,
         CAST(NULL AS VARCHAR(30)) AS country,
         CAST(NULL AS VARCHAR(100)) AS last_ip,
-        CAST(NULL AS INTEGER) AS caid,
-        CAST(NULL AS INTEGER) AS contest_id
+        CAST(NULL AS INTEGER) AS caid
     ~;
     my $dummy_req_block = q~
         CAST(NULL AS INTEGER) AS request_state,
@@ -180,8 +179,8 @@ sub console_content {
             CA.contest_id~,
         message => qq~
             3 AS rtype,
-            M.send_time AS rank,
-            M.send_time AS submit_time,
+            E.ts AS rank,
+            E.ts AS submit_time,
             M.id AS id,
             $dummy_req_block,
             $no_de,
@@ -194,12 +193,17 @@ sub console_content {
             A.country AS country,
             A.last_ip AS last_ip,
             CA.id,
-            CA.contest_id
+            M.contest_id
+            FROM messages M
+            INNER JOIN events E ON E.id = M.id
+            INNER JOIN accounts A ON E.account_id = A.id
+            INNER JOIN contests C ON C.id = M.contest_id
+            LEFT JOIN contest_accounts CA ON M.contest_id = CA.contest_id AND E.account_id = CA.account_id
         ~,
         broadcast => qq~
             4 AS rtype,
-            M.send_time AS rank,
-            M.send_time AS submit_time,
+            E.ts AS rank,
+            E.ts AS submit_time,
             M.id AS id,
             $dummy_req_block,
             $no_de,
@@ -207,8 +211,11 @@ sub console_content {
             NULL AS question,
             NULL AS answer,
             M.text AS jury_message,
-            $dummy_account_block
+            $dummy_account_block,
+            M.contest_id
             FROM messages M
+            INNER JOIN events E ON E.id = M.id
+            LEFT JOIN contests C ON C.id = M.contest_id
         ~,
         (map { +"contest_$contest_date_types[$_]" => qq~
             5 AS rtype,
@@ -224,7 +231,8 @@ sub console_content {
             NULL AS question,
             NULL AS answer,
             NULL AS jury_message,
-            $dummy_account_block
+            $dummy_account_block,
+            C.id AS contest_id
             FROM contests C
         ~ } 0 .. $#contest_date_types),
     );
@@ -251,12 +259,6 @@ sub console_content {
                     qw(start freeze finish);
     }
 
-    my $broadcast = $s->{show_messages} ? qq~
-            UNION
-        SELECT
-            $console_select{broadcast}
-            WHERE M.send_time > CURRENT_TIMESTAMP - $day_count AND M.broadcast = 1~
-        : '';
     my $submit_time_filter =
         '(R.submit_time BETWEEN C.start_date AND C.freeze_date OR CURRENT_TIMESTAMP > C.defreeze_date)';
 
@@ -272,7 +274,6 @@ sub console_content {
         R.id
         R.state
         R.failed_test
-        R.contest_id
         R.problem_id
         R.points
         R.judge_id
@@ -301,6 +302,7 @@ sub console_content {
             ROWS 1), 0)~,
         tag => q~COALESCE(R.tag, '')~,
         account_id => 'A.id',
+        contest_id => 'C.id',
     });
 
     $lv->define_enums({
@@ -310,6 +312,17 @@ sub console_content {
         account_id => { this => $uid },
     });
 
+    my $search_cid = $lv->search_value('contest_id');
+    my $broadcast = $s->{show_messages} ? qq~
+            UNION
+        SELECT
+            $console_select{broadcast}
+            WHERE E.ts > CURRENT_TIMESTAMP - $day_count AND M.broadcast = 1~ .
+            ($is_root && !$search_cid ?
+                '' : ' AND (M.contest_id IS NULL OR M.contest_id = ?)')
+        : '';
+    my @broadcast_param = !$s->{show_messages} ? () : !$is_root ? ($cid) : $search_cid ? ($search_cid) : () ;
+
     my $searches_filter = $lv->maybe_where_cond;
 
     my $c;
@@ -318,8 +331,7 @@ sub console_content {
         my $msg_filter = $is_root ? '' : ' AND CA.contest_id = ?';
         $msg_filter .= ' AND 1 = 0' unless $s->{show_messages};
         my @msg_params;
-        if ($lv->searches_subset_of({ account_id => 1, team_name => 1, city => 1 })) {
-            warn $searches_filter;
+        if ($lv->searches_subset_of({ account_id => 1, team_name => 1, city => 1, contest_id => 1 })) {
             $msg_filter .= $searches_filter;
             @msg_params = $lv->where_params;
         }
@@ -335,16 +347,14 @@ sub console_content {
                 FROM questions Q
                 INNER JOIN contest_accounts CA ON Q.account_id = CA.id
                 INNER JOIN accounts A ON CA.account_id = A.id
+                INNER JOIN contests C ON C.id = CA.contest_id
                 WHERE Q.submit_time > CURRENT_TIMESTAMP - $day_count
                 $msg_filter
                 $events_filter
             UNION
             SELECT
                 $console_select{message}
-                FROM messages M
-                INNER JOIN contest_accounts CA ON M.account_id = CA.id
-                INNER JOIN accounts A ON CA.account_id = A.id
-                WHERE M.send_time > CURRENT_TIMESTAMP - $day_count
+                WHERE E.ts > CURRENT_TIMESTAMP - $day_count
                 $msg_filter
                 $events_filter
             $broadcast
@@ -354,6 +364,7 @@ sub console_content {
             @cid, @events_filter_params, $lv->where_params,
             @cid, @msg_params, @events_filter_params,
             @cid, @msg_params, @events_filter_params,
+            @broadcast_param,
         );
     }
     elsif ($user->{is_participant}) {
@@ -370,16 +381,13 @@ sub console_content {
                 FROM questions Q
                 INNER JOIN contest_accounts CA ON Q.account_id = CA.id
                 INNER JOIN accounts A ON CA.account_id = A.id
+                INNER JOIN contests C ON C.id = CA.contest_id
                 WHERE Q.submit_time > CURRENT_TIMESTAMP - $day_count AND
                     CA.contest_id = ? AND A.id = ?
             UNION
             SELECT
                 $console_select{message}
-                FROM messages M
-                INNER JOIN contest_accounts CA ON M.account_id = CA.id
-                INNER JOIN accounts A ON CA.account_id = A.id
-                WHERE M.send_time > CURRENT_TIMESTAMP - $day_count AND
-                    CA.contest_id = ? AND A.id = ?
+                WHERE E.ts > CURRENT_TIMESTAMP - $day_count AND M.contest_id = ? AND E.account_id = ?
             $broadcast
             $contest_dates
             ORDER BY 2 DESC~);
@@ -387,6 +395,7 @@ sub console_content {
             $cid, $uid, @events_filter_params, $lv->where_params,
             $cid, $uid,
             $cid, $uid,
+            @broadcast_param,
         );
     }
     else {
@@ -400,7 +409,7 @@ sub console_content {
             $broadcast
             $contest_dates
             ORDER BY 2 DESC~);
-        $c->execute($cid, @events_filter_params, $lv->where_params);
+        $c->execute($cid, @events_filter_params, $lv->where_params, @broadcast_param);
     }
 
     my $fetch_console_record = sub {

@@ -346,6 +346,12 @@ sub define_columns {
         visible_cols => $self->{visible_cols});
 }
 
+sub search_value {
+    my ($self, $name) = @_;
+    $_->[0] eq $name and return $self->{enums}->{$_->[0]}->{$_->[1]} // $_->[1] for @{$self->{search}};
+    undef;
+}
+
 sub search_subquery_value {
     my ($self, $name) = @_;
     $_->[0] eq $name and return $_->[1] for @{$self->{search_subqueries}};
