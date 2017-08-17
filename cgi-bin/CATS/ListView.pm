@@ -346,9 +346,14 @@ sub define_columns {
         visible_cols => $self->{visible_cols});
 }
 
-sub search_value {
+sub extract_search_value {
     my ($self, $name) = @_;
-    $_->[0] eq $name and return $self->{enums}->{$_->[0]}->{$_->[1]} // $_->[1] for @{$self->{search}};
+    for (my $i = 0; $i < @{$self->{search}}; ++$i) {
+        my ($k, $v) = @{$self->{search}->[$i]};
+        $k eq $name or next;
+        splice @{$self->{search}}, $i, 1;
+        return $self->{enums}->{$k}->{$v} // $v;
+    }
     undef;
 }
 
