@@ -10,5 +10,6 @@
     message_to_teams => 'Message to participants',
     send => 'Send',
     send_to_all => 'broadcast',
+    send_to_all_contests => 'to all contests',
   })
 %]

@@ -320,13 +320,14 @@ sub users_frame {
             if $p->{set_tag};
 
         if ($p->{send_message} && ($p->{message_text} // '') ne '') {
-            if ($p->{send_message_all}) {
-                CATS::User::send_broadcast(message => $p->{message_text}, contest_id => $cid);
+            my $contest_id = $is_root && $p->{send_all_contests} ? undef : $cid;
+            if ($p->{send_all}) {
+                CATS::User::send_broadcast(message => $p->{message_text}, contest_id => $contest_id);
                 msg(1058);
             }
             else {
                 my $count = CATS::User::send_message(
-                    user_set => [ param('sel') ], message => $p->{message_text}, contest_id => $cid);
+                    user_set => [ param('sel') ], message => $p->{message_text}, contest_id => $contest_id);
                 msg(1057, $count);
             }
             $dbh->commit;

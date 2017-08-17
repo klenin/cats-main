@@ -91,7 +91,7 @@ sub main_routes() {
             save_attributes => $bool,
             set_tag => $bool, tag_to_set => $str,
             set_site => $bool, site_id => $int,
-            send_message => $bool, send_message_all => $bool, message_text => $str,
+            send_message => $bool, message_text => $str, send_all => $bool, send_all_contests => $bool,
         ],
         users_import => \&CATS::UI::Users::users_import_frame,
         users_add_participants => [ \&CATS::UI::Users::users_add_participants_frame,

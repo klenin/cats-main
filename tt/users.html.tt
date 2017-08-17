@@ -72,7 +72,8 @@ function delete_team(href, name) {
 [% capt.message_to_teams %]:
 <input type="text" size="100" name="message_text" value="[% message_text | html %]" class="bordered">
 <button type="submit" value="1" name="send_message" class="button">[% capt.send %]</button>
-<label>[% checkbox_1('send_message_all') %] [% capt.send_to_all %]</label>
+<label>[% checkbox_1('send_all') %] [% capt.send_to_all %]</label>
+[% IF user.privs.is_root %]<label>[% checkbox_1('send_all_contests') %] [% capt.send_to_all_contests %]</label>[% END %]
 </div>
 [% END %]
 </form>

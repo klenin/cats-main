@@ -10,5 +10,6 @@
     message_to_teams => 'Сообщение участникам',
     send => 'Отправить',
     send_to_all => 'отправить всем',
+    send_to_all_contests => 'во все турниры',
   })
 %]
