@@ -123,6 +123,12 @@ sub console_content {
         CAST(NULL AS INTEGER) AS caid,
         CAST(NULL AS INTEGER) AS contest_id
     ~;
+    my $dummy_req_block = q~
+        CAST(NULL AS INTEGER) AS request_state,
+        CAST(NULL AS INTEGER) AS failed_test,
+        CAST(NULL AS INTEGER) AS problem_id,
+        CAST(NULL AS VARCHAR(200)) AS problem_title
+    ~;
     my $no_de = 'CAST(NULL AS VARCHAR(200)) AS de';
     my $city_sql = $is_jury ?
         q~ || (CASE WHEN A.city IS NULL OR A.city = '' THEN '' ELSE ' (' || A.city || ')' END)~ : '';
@@ -160,10 +166,7 @@ sub console_content {
             Q.submit_time AS rank,
             Q.submit_time,
             Q.id AS id,
-            CAST(NULL AS INTEGER) AS request_state,
-            CAST(NULL AS INTEGER) AS failed_test,
-            CAST(NULL AS INTEGER) AS problem_id,
-            CAST(NULL AS VARCHAR(200)) AS problem_title,
+            $dummy_req_block,
             $no_de,
             Q.clarified AS clarified,
             Q.question AS question,
@@ -180,10 +183,7 @@ sub console_content {
             M.send_time AS rank,
             M.send_time AS submit_time,
             M.id AS id,
-            CAST(NULL AS INTEGER) AS request_state,
-            CAST(NULL AS INTEGER) AS failed_test,
-            CAST(NULL AS INTEGER) AS problem_id,
-            CAST(NULL AS VARCHAR(200)) AS problem_title,
+            $dummy_req_block,
             $no_de,
             CAST(NULL AS INTEGER) AS clarified,
             NULL AS question,
@@ -201,10 +201,7 @@ sub console_content {
             M.send_time AS rank,
             M.send_time AS submit_time,
             M.id AS id,
-            CAST(NULL AS INTEGER) AS request_state,
-            CAST(NULL AS INTEGER) AS failed_test,
-            CAST(NULL AS INTEGER) AS problem_id,
-            CAST(NULL AS VARCHAR(200)) AS problem_title,
+            $dummy_req_block,
             $no_de,
             CAST(NULL AS INTEGER) AS clarified,
             NULL AS question,
