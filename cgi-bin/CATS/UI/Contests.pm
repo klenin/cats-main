@@ -14,7 +14,7 @@ use CATS::RankTable;
 use CATS::Settings qw($settings);
 use CATS::StaticPages;
 use CATS::UI::Prizes;
-use CATS::Utils qw(url_function coalesce date_to_iso);
+use CATS::Utils qw(url_function date_to_iso);
 use CATS::Web qw(param url_param redirect);
 
 sub contests_new_frame {

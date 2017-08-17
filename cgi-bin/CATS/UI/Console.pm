@@ -18,7 +18,7 @@ use CATS::Problem::Utils;
 use CATS::Request;
 use CATS::Settings qw($settings);
 use CATS::Time;
-use CATS::Utils qw(coalesce date_to_iso escape_xml url_function);
+use CATS::Utils qw(date_to_iso escape_xml url_function);
 use CATS::Verdicts;
 use CATS::Web qw(param url_param);
 
