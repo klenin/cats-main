@@ -4,7 +4,7 @@
 
 <style>
 table.console td.verdict { padding: 0; height: 100%; width: 4em; }
-table.console td.verdict table { border-collapse: collapse; width: 100%; height: 100%; }
+table.console td.verdict table { border-collapse: collapse; width: 100%; height: 100%; color: inherit; font-weight: inherit; }
 table.console td.verdict table td { padding: 0 0 0 2px; }
 table.console td.verdict table td:first-child { width: 2em; }
 table.console td.verdict table td:first-child a { color: inherit; }
