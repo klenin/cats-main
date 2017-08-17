@@ -319,14 +319,14 @@ sub users_frame {
         CATS::User::set_tag(user_set => [ param('sel') ], tag => $p->{tag_to_set})
             if $p->{set_tag};
 
-        if ($p->{send_message}) {
+        if ($p->{send_message} && ($p->{message_text} // '') ne '') {
             if ($p->{send_message_all}) {
-                CATS::User::send_broadcast(message => $p->{message_text});
+                CATS::User::send_broadcast(message => $p->{message_text}, contest_id => $cid);
                 msg(1058);
             }
             else {
                 my $count = CATS::User::send_message(
-                    user_set => [ param('sel') ], message => $p->{message_text});
+                    user_set => [ param('sel') ], message => $p->{message_text}, contest_id => $cid);
                 msg(1057, $count);
             }
             $dbh->commit;

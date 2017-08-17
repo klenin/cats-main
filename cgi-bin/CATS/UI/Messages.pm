@@ -4,10 +4,11 @@ use strict;
 use warnings;
 
 use CATS::DB;
-use CATS::Globals qw($t $is_jury $uid $user);
+use CATS::Globals qw($cid $t $is_jury $uid $user);
 use CATS::Messages qw(res_str);
 use CATS::Output qw(init_template);
 use CATS::Verdicts;
+use CATS::User;
 use CATS::Web qw(param url_param);
 
 sub send_message_box_frame {
@@ -25,14 +26,7 @@ sub send_message_box_frame {
 
     defined param('send') or return;
     my $message_text = param('message_text') or return;
-
-    my $s = $dbh->prepare(q~
-        INSERT INTO messages (id, send_time, text, account_id, received)
-            VALUES (?, CURRENT_TIMESTAMP, ?, ?, 0)~);
-    $s->bind_param(1, new_id);
-    $s->bind_param(2, $message_text, { ora_type => 113 });
-    $s->bind_param(3, $caid);
-    $s->execute;
+    CATS::User::send_message(user_set => [ $caid ], message => $message_text, contest_id => $cid);
     $dbh->commit;
     $t->param(sent => 1);
 }

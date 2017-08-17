@@ -288,6 +288,7 @@ CREATE TABLE samples (
 /* id is the same as reqs, questions or messages */
 CREATE TABLE events (
     id         INTEGER NOT NULL PRIMARY KEY,
+    /* 1 - req, 3 - message */
     event_type SMALLINT DEFAULT 0 NOT NULL,
     ts         TIMESTAMP NOT NULL,
     account_id INTEGER REFERENCES accounts(id) ON DELETE CASCADE,
@@ -313,7 +314,9 @@ CREATE TABLE messages (
     text        BLOB,
     account_id  INTEGER REFERENCES contest_accounts(id) ON DELETE CASCADE,
     received    INTEGER DEFAULT 0 CHECK (received IN (0, 1)),
-    broadcast   INTEGER DEFAULT 0 CHECK (broadcast IN (0, 1))
+    broadcast   INTEGER DEFAULT 0 CHECK (broadcast IN (0, 1)),
+    contest_id  INTEGER REFERENCES contests(id) ON DELETE CASCADE,
+    problem_id  INTEGER REFERENCES problems(id) ON DELETE CASCADE
 );
 CREATE DESCENDING INDEX idx_messages_send_time ON messages(send_time);
 

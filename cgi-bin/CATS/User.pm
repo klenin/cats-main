@@ -206,23 +206,47 @@ sub make_sid {
     join '', map { $ch[rand @ch] } 1..30;
 }
 
+sub _prepare_msg_inserts {
+    return map $dbh->prepare($_), (
+    q~
+        INSERT INTO messages (
+            id, send_time, text, account_id, received, broadcast, contest_id, problem_id)
+        VALUES (
+            ?, CURRENT_TIMESTAMP, ?, ?, 0, ?, ?, ?)~,
+    q~
+        INSERT INTO events (id, ts, account_id)
+        VALUES (?, CURRENT_TIMESTAMP, ?)~);
+}
+
+# Params: user_set, message, contest_id, problem_id.
 sub send_message {
     my %p = @_;
     $p{message} ne '' or return 0;
-    my $s = $dbh->prepare(q~
-        INSERT INTO messages (id, send_time, text, account_id, received)
-        VALUES (?, CURRENT_TIMESTAMP, ?, ?, 0)~
-    );
+    my $get_aid_sth = $dbh->prepare(q~
+        SELECT account_id FROM contest_accounts WHERE id = ?~);
+    my ($insert_msg_sth, $insert_ev_sth) = _prepare_msg_inserts;
     my $count = 0;
     for (@{$p{user_set}}) {
+        $get_aid_sth->execute($_);
+        my ($aid) = $get_aid_sth->fetchrow_array;
+        $get_aid_sth->finish;
+        $aid or next;
+        my $msg_id = new_id;
+        $insert_msg_sth->execute($msg_id, $p{message}, $_, 0, $p{contest_id}, $p{problem_id});
+        $insert_ev_sth->execute($msg_id, $aid);
         ++$count;
-        $s->bind_param(1, new_id);
-        $s->bind_param(2, $p{message}, { ora_type => 113 });
-        $s->bind_param(3, $_);
-        $s->execute;
     }
-    $s->finish;
     $count;
+}
+
+# Params: message, contest_id, problem_id.
+sub send_broadcast {
+    my %p = @_;
+    $p{message} ne '' or return;
+    my ($insert_msg_sth, $insert_ev_sth) = _prepare_msg_inserts;
+    my $msg_id = new_id;
+    $insert_msg_sth->execute($msg_id, $p{message}, undef, 1, $p{contest_id}, $p{problem_id});
+    $insert_ev_sth->execute($msg_id, undef);
 }
 
 sub set_tag {
@@ -238,18 +262,6 @@ sub set_tag {
     $s->finish;
     $dbh->commit;
     msg(1019, $set_count);
-}
-
-sub send_broadcast {
-    my %p = @_;
-    $p{message} ne '' or return;
-    my $s = $dbh->prepare(q~
-        INSERT INTO messages (id, send_time, text, account_id, broadcast)
-        VALUES(?, CURRENT_TIMESTAMP, ?, NULL, 1)~);
-    $s->bind_param(1, new_id);
-    $s->bind_param(2, $p{message}, { ora_type => 113 });
-    $s->execute;
-    $s->finish;
 }
 
 # Params: user_set, site_id.
