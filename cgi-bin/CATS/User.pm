@@ -209,13 +209,10 @@ sub make_sid {
 sub _prepare_msg_inserts {
     return map $dbh->prepare($_), (
     q~
-        INSERT INTO messages (
-            id, send_time, text, account_id, received, broadcast, contest_id, problem_id)
-        VALUES (
-            ?, CURRENT_TIMESTAMP, ?, ?, 0, ?, ?, ?)~,
+        INSERT INTO messages (id, text, received, broadcast, contest_id, problem_id)
+        VALUES (?, ?, 0, ?, ?, ?)~,
     q~
-        INSERT INTO events (id, ts, account_id)
-        VALUES (?, CURRENT_TIMESTAMP, ?)~);
+        INSERT INTO events (id, ts, account_id) VALUES (?, CURRENT_TIMESTAMP, ?)~);
 }
 
 # Params: user_set, message, contest_id, problem_id.
@@ -232,7 +229,7 @@ sub send_message {
         $get_aid_sth->finish;
         $aid or next;
         my $msg_id = new_id;
-        $insert_msg_sth->execute($msg_id, $p{message}, $_, 0, $p{contest_id}, $p{problem_id});
+        $insert_msg_sth->execute($msg_id, $p{message}, 0, $p{contest_id}, $p{problem_id});
         $insert_ev_sth->execute($msg_id, $aid);
         ++$count;
     }
@@ -245,7 +242,7 @@ sub send_broadcast {
     $p{message} ne '' or return;
     my ($insert_msg_sth, $insert_ev_sth) = _prepare_msg_inserts;
     my $msg_id = new_id;
-    $insert_msg_sth->execute($msg_id, $p{message}, undef, 1, $p{contest_id}, $p{problem_id});
+    $insert_msg_sth->execute($msg_id, $p{message}, 1, $p{contest_id}, $p{problem_id});
     $insert_ev_sth->execute($msg_id, undef);
 }
 
