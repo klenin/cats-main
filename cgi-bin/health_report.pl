@@ -26,7 +26,6 @@ package main;
 use Encode;
 use File::Spec;
 use Getopt::Long;
-use Net::SMTP::SSL;
 
 use lib File::Spec->catdir((File::Spec->splitpath(File::Spec->rel2abs($0)))[0, 1], 'cats-problem');
 use lib File::Spec->catdir((File::Spec->splitpath(File::Spec->rel2abs($0)))[0, 1]);
@@ -34,6 +33,7 @@ use lib File::Spec->catdir((File::Spec->splitpath(File::Spec->rel2abs($0)))[0, 1
 use CATS::Constants;
 use CATS::Config;
 use CATS::DB;
+use CATS::Mail;
 use CATS::Utils;
 
 use CATS::Judge;
@@ -125,20 +125,7 @@ $dbh->disconnect;
 my $text = sprintf "Subject: CATS Health Report (%s)\n\n%s\n", $r->construct_short, $r->construct_long;
 
 if ($output eq 'mail') {
-    my $s = $CATS::Config::smtp;
-    my $mailer = Net::SMTP::SSL->new(
-        $s->{server},
-        Hello => $s->{server},
-        Port => $s->{port},
-    );
-
-    $mailer->auth($s->{login}, $s->{password}) or die $mailer->message;
-    $mailer->mail($s->{email}) or die $mailer->message;
-    $mailer->to($CATS::Config::health_report_email) or die $mailer->message;
-    $mailer->data or die $mailer->message;
-    $mailer->datasend($text) or die $mailer->message;
-    $mailer->dataend or die $mailer->message;
-    $mailer->quit or die $mailer->message;
+    CATS::Mail::send($CATS::Config::health_report_email, $text);
 }
 else {
     print Encode::encode_utf8($text);
