@@ -3,5 +3,7 @@ SET names UTF8;
 CREATE DATABASE 'localhost:<path-to-your-database>' USER '<your-username>' PASSWORD '<your-password>';
 
 INPUT init_relations.sql;
+COMMIT;
 
+INPUT init_roles.sql;
 COMMIT;
