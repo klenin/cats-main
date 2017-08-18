@@ -5,6 +5,7 @@ package CATS::Console::Part;
 
 use CATS::DB;
 use CATS::Globals qw($cid $is_root);
+use CATS::ListView;
 
 sub new {
     my ($class, $sql, $globals) = @_;
@@ -49,7 +50,11 @@ sub contest {
 
 sub sql {
     my ($self) = @_;
-    "SELECT $self->{sql}" . ($self->{cond} ? " WHERE $self->{cond}" : '');
+    my $where = $self->{cond} ? " WHERE $self->{cond}" : '';
+    $is_root && !defined $self->{day_count} ?
+        # Prevent server overload by limiting each subquery separately.
+        "SELECT * FROM (SELECT $self->{sql}$where ORDER BY 2 DESC ROWS $CATS::ListView::max_fetch_row_count)" :
+        "SELECT $self->{sql}$where";
 }
 
 package CATS::Console;
@@ -129,7 +134,7 @@ sub build_query {
             A.team_name$city_sql AS team_name,
             A.country AS country,
             COALESCE(E.ip, A.last_ip) AS last_ip,
-            CA.id,
+            CA.id AS caid,
             R.contest_id
             FROM reqs R
             INNER JOIN problems P ON R.problem_id = P.id
@@ -153,7 +158,7 @@ sub build_query {
             A.team_name AS team_name,
             A.country AS country,
             A.last_ip AS last_ip,
-            CA.id,
+            CA.id AS caid,
             CA.contest_id
             FROM questions Q
             INNER JOIN contest_accounts CA ON Q.account_id = CA.id
@@ -175,7 +180,7 @@ sub build_query {
             A.team_name AS team_name,
             A.country AS country,
             A.last_ip AS last_ip,
-            CA.id,
+            CA.id AS caid,
             M.contest_id
             FROM messages M
             INNER JOIN events E ON E.id = M.id

@@ -15,7 +15,7 @@ use CATS::Utils;
 use CATS::Web qw(param url_param);
 
 # Optimization: limit datasets by both maximum row count and maximum visible pages.
-my $max_fetch_row_count = 1000;
+our $max_fetch_row_count = 1000;
 my $visible_pages = 5;
 my @display_rows = (10, 20, 30, 40, 50, 100, 300);
 
