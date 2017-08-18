@@ -264,3 +264,4 @@
 1163 "Removed extended time offset for contestant '%s'."
 1164 "Changed extended time for site '%s'."
 1165 "Removed extended time offset for site '%s'."
+1166 "Some results were omitted, try more specific query."

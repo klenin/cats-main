@@ -117,7 +117,7 @@ sub attach {
 
     my $s = $settings->{$self->{name}} ||= {};
 
-    my ($row_count, $page_count, @data) = (0, 0);
+    my ($row_count, $fetch_count, $page_count, @data) = (0, 0, 0);
     my $page = \$s->{page};
     $$page ||= 0;
     my $rows = $s->{rows} || 1;
@@ -145,7 +145,8 @@ sub attach {
             msg(1143, join ', ', @unknown_searches) if @unknown_searches;
             $row_keys = [ sort grep !$self->{db_searches}->{$_} && !/^href_/, keys %row ];
         }
-        last if $row_count > $max_fetch_row_count || $page_count > $$page + $visible_pages;
+        msg(1166), last if ++$fetch_count > $max_fetch_row_count;
+        last if $page_count > $$page + $visible_pages;
         for my $key (keys %mask) {
             defined first { ($_ // '') =~ $mask{$key} }
                 ($key ? ($row{$key}) : values %row)

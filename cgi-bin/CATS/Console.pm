@@ -283,7 +283,7 @@ sub build_query {
     @selected_parts or return;
     my $sql = join ' UNION ', map $parts{$_}->sql, @selected_parts;
     #warn $sql;
-    my $sth = $dbh->prepare("$sql ORDER BY 2 DESC ");
+    my $sth = $dbh->prepare("$sql ORDER BY 2 DESC");
     #warn join ',', map @{$console_params{$_}}, @selected_parts;
     $sth->execute(map @{$parts{$_}->{params}}, @selected_parts);
     $sth;
