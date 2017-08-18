@@ -311,7 +311,7 @@ CREATE DESCENDING INDEX idx_questions_submit_time ON questions(submit_time);
 CREATE TABLE messages (
     id          INTEGER NOT NULL PRIMARY KEY,
     send_time   TIMESTAMP,
-    text        BLOB,
+    text        BLOB SUB_TYPE TEXT,
     account_id  INTEGER REFERENCES contest_accounts(id) ON DELETE CASCADE,
     received    INTEGER DEFAULT 0 CHECK (received IN (0, 1)),
     broadcast   INTEGER DEFAULT 0 CHECK (broadcast IN (0, 1)),

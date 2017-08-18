@@ -124,7 +124,7 @@ sub build_query {
             R.points AS clarified,
             NULL AS question,
             NULL AS answer,
-            CAST(R.tag AS BLOB) AS jury_message,
+            CAST(R.tag AS BLOB SUB_TYPE TEXT) AS jury_message,
             A.id AS team_id,
             A.team_name$city_sql AS team_name,
             A.country AS country,
