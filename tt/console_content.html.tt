@@ -12,6 +12,7 @@ table.console td.verdict table td:last-child div { text-align: right; background
 table.console td.pts { text-align: right; width: 0; }
 td.name { text-align: left; white-space: nowrap; width: 1px; }
 </style>
+<span id="messages_update" style="display: none">[% FOREACH m IN messages %][% m | html %]<br>[% END %]</span>
 <table class="bordered console highlight">
 [% FOREACH c IN console %]
 <tr>
