@@ -415,17 +415,6 @@ CREATE TABLE prizes (
     rank   INTEGER NOT NULL
 );
 
-/*
-    FIXME: Old Firebird versions are unable to CAST to a BLOB,
-    so instead of casting empty strings we have to select fields from this dummy table.
-    See Console.pm.
-*/
-CREATE TABLE dummy_table (
-    t_integer INTEGER,
-    t_varchar200 VARCHAR(200),
-    t_blob BLOB SUB_TYPE 0
-);
-
 CREATE GENERATOR key_seq;
 CREATE GENERATOR login_seq;
 
@@ -445,7 +434,6 @@ INSERT INTO default_de (id, code, description, file_ext) VALUES (GEN_ID(key_seq,
 INSERT INTO default_de (id, code, description, file_ext) VALUES (GEN_ID(key_seq, 1), 301, 'Quick Basic 4.5', 'bas');
 INSERT INTO default_de (id, code, description, file_ext, in_contests) VALUES (GEN_ID(key_seq, 1), 401, 'JavaScript', 'js', 0);
 
-INSERT INTO dummy_table VALUES (NULL, NULL, NULL);
 INSERT INTO contests(id, title, ctype, start_date) VALUES(1, 'Турнир', 1, CURRENT_DATE - 100);
 INSERT INTO accounts(id, login, passwd, srole) VALUES(2, 'root', 'root', 0);
 INSERT INTO accounts(id, login, passwd, srole) VALUES(5, 'fox', 'fox', 1);
