@@ -10,4 +10,3 @@ templates/std/docs/*.html
 *.ttc
 # Created from template
 sql/interbase/create_db.sql
-ib_data/*
