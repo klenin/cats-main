@@ -89,13 +89,13 @@ Some historical code, mostly located in `unused` directory, does not conform to 
 * Package names SHOULD correspond to file names according to standard Perl convention.
 
 ## Strictness and warnings
-* All packages MUST start from `use strict` and `use warnings` statements.
-* `no strict` statement MUST be enclosed in a smallest possible block.
+* All modules MUST start from `use strict` and `use warnings` statements.
+* `no strict` / `no warnings` statement MUST be enclosed in a smallest possible block.
 * Code MUST NOT generate any warnings.
 
 ## Security
 * User-supplied values MUST be passed to SQL via parameters only.
-* User-supplied data MUST be quoted with either `html` or `$Javascript` filter in templates.
+* User-supplied strings MUST be quoted with either `html` or `$Javascript` filter in templates.
 * HTTP parameters SHOULD be verified using `CATS::Router`.
 
 ## Templates
@@ -105,7 +105,24 @@ Some historical code, mostly located in `unused` directory, does not conform to 
 * Templates SHOULD try to avoid extra whitespace in HTML by using `[%- -%]` and `[%~ ~%]` constructs.
 * Templates MUST use loop variable in `FOREACH` loops.
 
+## HTML
+* Html SHOULD be valid HTML5 (currently except for 'obsolete attribute' errors).
+* Attributes SHOULD be quoted.
+* Void elements MUST be closed XML-style (`<br/>`).
+* Non-void elements MUST have explicit closing tag (`<td></td>`).
+* Forms MUST be submitted with `button`, NOT `input`.
+* Elements SHOULD be styled with CSS, embedded `style` tags MAY be used for local styles.
+* Checkboxes and submit buttons MUST have `value="1"`.
+
 ## Compatibility
 * Code from `cats-main` and `cats-problem` repositories MUST be compatible with Perl v5.10.
 * Code from `cats-judge` repository MUST be compatible with Perl v5.14.
 * Contributions SHOULD NOT add dependency on new non-standard modules without prior discussion.
+
+## Git commits
+* Each commit MUST result in working code (and pass tests, where applicable). Temporary breakage in PRs is not allowed, use feature checks when needed.
+* Commit message SHOULD start from affected subsystem name, followed by a colon, a space and a subject text.
+* Subsystem name MAY be a module name, page name, directory name or several names separated by comma plus space.
+* Commit message subject SHOULD be a single English statement.
+* Single-statement commit message MUST NOT end with a period.
+* Commit message MUST NOT be longer than 80 characters.
