@@ -14,6 +14,7 @@ use lib File::Spec->catdir((File::Spec->splitpath(File::Spec->rel2abs($0)))[0, 1
 use CATS::Config;
 use CATS::DB;
 use CATS::Mail;
+use CATS::Utils qw(group_digits);
 
 sub usage {
     print STDERR "CATS Backup tool
@@ -99,7 +100,7 @@ sub work {
         ($ok, $err, $full) = IPC::Cmd::run command => $cmd;
     }
     $ok or die join "\n", $err, @$full;
-    my $uncompressed_size = -s $file;
+    my $uncompressed_size = group_digits(-s $file, '_');
     my $result = "File: $file\nSize: $uncompressed_size\n";
     my $backup_ts = [ gettimeofday ];
     my $result_time = sprintf "Backup time: %s\n", fmt_interval($start_ts, $backup_ts);
@@ -107,7 +108,7 @@ sub work {
     if ($zip) {
         ($ok, $err, $full) = IPC::Cmd::run command => [ 'gzip', '-q', $file ];
         $ok or die join "\n", $err, @$full;
-        my $compressed_size = -s "$file.gz";
+        my $compressed_size = group_digits(-s "$file.gz", '_');
         $result .= "Zipped: $compressed_size\n";
         my $zip_ts = [ gettimeofday ];
         $result_time .= sprintf "Zip time: %s\n", fmt_interval($backup_ts, $zip_ts);

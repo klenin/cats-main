@@ -34,7 +34,7 @@ use CATS::Constants;
 use CATS::Config;
 use CATS::DB;
 use CATS::Mail;
-use CATS::Utils;
+use CATS::Utils qw(group_digits);
 
 use CATS::Judge;
 
@@ -116,7 +116,7 @@ sub log_url {
             FROM log_dumps LD INNER JOIN reqs R ON R.id = LD.req_id
             WHERE R.submit_time > CURRENT_TIMESTAMP - 1~);
     if ($length) {
-        $r->{long}->{'Log dump size'} = $length;
+        $r->{long}->{'Log dump size'} = group_digits($length, '_');
     }
 }
 
