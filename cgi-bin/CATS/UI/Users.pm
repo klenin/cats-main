@@ -488,6 +488,7 @@ sub user_stats_frame {
     my $contests = $dbh->selectall_arrayref(qq~
         SELECT C.id, C.title, CA.id AS caid, CA.is_jury,
             $CATS::Time::contest_start_offset_sql AS start_date,
+            S.name AS site_name,
             (SELECT COUNT(DISTINCT R.problem_id) FROM reqs R
                 WHERE R.contest_id = C.id AND R.account_id = CA.account_id AND R.state = $cats::st_accepted
             ) AS accepted_count,
@@ -497,6 +498,7 @@ sub user_stats_frame {
         FROM contests C
         INNER JOIN contest_accounts CA ON CA.contest_id = C.id
         LEFT JOIN contest_sites CS ON CS.contest_id = C.id AND CS.site_id = CA.site_id
+        LEFT JOIN sites S ON S.id = CA.site_id
         WHERE
             CA.account_id = ? AND C.ctype = 0 $hidden_cond
         ORDER BY start_date DESC~,
