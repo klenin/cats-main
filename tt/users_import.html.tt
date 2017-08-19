@@ -4,8 +4,8 @@
 <div>
 <textarea name="user_list" style="width: 80%">[% report %]</textarea>
 </div>
-<input type="checkbox" name="do_import" />
-<input type="submit" class="btn" name="do" value="[% capt.do_import %]" />
+<input type="checkbox" name="do_import" value="1" />
+<button type="submit" name="go" value="1" class="button">[% capt.do_import %]</button>
 </form>
 
 [% PROCESS includes/menu_end.tti %]

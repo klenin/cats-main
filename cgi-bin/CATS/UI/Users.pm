@@ -152,23 +152,23 @@ sub users_edit_save {
 }
 
 sub users_import_frame {
+    my ($p) = @_;
     init_template('users_import.html.tt');
     $is_root or return;
     $t->param(href_action => url_f('users_import'));
-    param('do') or return;
-    my $do_import = param('do_import');
+    $p->{go} or return;
     my @report;
-    for my $line (split "\r\n", Encode::decode_utf8(param('user_list'))) {
+    for my $line (split "\r\n", Encode::decode_utf8($p->{user_list})) {
         my $u = CATS::User->new;
         @$u{qw(team_name login password1 city)} = split "\t", $line;
         my $r = eval {
             $u->{password1} = $hash_password->($u->{password1});
             $u->insert($contest->{id}, is_ooc => 0, commit => 0); 'ok'
         } || $@;
-        push @report, $u->{team_name} . "-- $r";
+        push @report, "$u->{team_name} -- $r";
     }
-    $do_import ? $dbh->commit : $dbh->rollback;
-    push @report, ($do_import ? 'Import' : 'Test') . ' complete';
+    $p->{do_import} ? $dbh->commit : $dbh->rollback;
+    push @report, ($p->{do_import} ? 'Import' : 'Test') . ' complete';
     $t->param(report => join "\n", @report);
 }
 
