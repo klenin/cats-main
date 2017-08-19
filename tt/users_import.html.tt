@@ -1,5 +1,7 @@
 [% PROCESS includes/menu_begin.tti %]
 
+<h3>[% capt.create_and_add %]</h3>
+[% capt.parts.join(' <tt>&lt;tab&gt;</tt> ') %]
 <form method="post" action="[% href_action %]">
 <div>
 <textarea name="user_list" style="width: 80%">[% report %]</textarea>
