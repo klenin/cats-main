@@ -19,6 +19,7 @@ our $max_fetch_row_count = 1000;
 my $visible_pages = 5;
 my @display_rows = (10, 20, 30, 40, 50, 100, 300);
 
+# Params: name, template, array_name, extra, extra_settings.
 sub new {
     my ($class, %p) = @_;
     my $self = {
@@ -31,6 +32,7 @@ sub new {
         db_searches => {},
         subqueries => {},
         enums => {},
+        extra_settings => $p{extra_settings} || {},
     };
     bless $self, $class;
     $self->init_params;
@@ -73,13 +75,20 @@ sub init_params {
         $s->{page} = 0;
     }
 
+    $self->{submitted} = param('visible') || param('do_search') ? 1 : 0;
+
     $self->{cols} =
         !$is_jury ? undef :
         # Has user just opened page or deselected all columns?
-        param('visible') || param('do_search') || param('cols') ? [ param('cols') ] :
+        $self->{submitted} || param('cols') ? [ param('cols') ] :
         !defined $s->{cols} ? undef :
         $s->{cols} eq '-' ? [] :
         [ split ',', $s->{cols} ];
+
+    for (keys %{$self->{extra_settings}}) {
+        my $v = param($_);
+        $s->{$_} = $v if defined $v;
+    }
 
     $s->{rows} ||= $display_rows[0];
     my $rows = param('rows') || 0;
@@ -182,6 +191,7 @@ sub attach {
         display_rows =>
             [ map { value => $_, text => $_, selected => $s->{rows} == $_ }, @display_rows ],
         $self->{array_name} => \@data,
+        lv_settings => $self->settings,
     );
     if ($is_jury) {
         my @s = (
@@ -316,7 +326,7 @@ sub define_columns {
     $s->{sort_by} = $default_by if !defined $s->{sort_by} || $s->{sort_by} eq '';
     $s->{sort_dir} = $default_dir if !defined $s->{sort_dir} || $s->{sort_dir} eq '';
 
-    $self->{col_defs} = $col_defs;
+    $self->{col_defs} = $col_defs or die;
 
     my $init = defined $self->{cols} ? 0 : 1;
     $self->{visible_cols} = { map { $_->{col} => $init } grep $_->{col}, @$col_defs };
