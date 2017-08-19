@@ -65,12 +65,14 @@ sub _apply_rec {
 }
 
 sub as_dump {
-    my ($s) = @_;
+    my ($s, $indent) = @_;
+    defined $s or return 'undef';
     # Data::Dumper escapes UTF-8 characters into \x{...} sequences.
     # Work around by dumping encoded strings, then decoding the result.
     my $d = Data::Dumper->new([ _apply_rec($s, \&Encode::encode_utf8) ]);
     $d->Quotekeys(0);
     $d->Sortkeys(1);
+    $d->Indent($indent) if defined $indent;
     Encode::decode_utf8($d->Dump);
 }
 

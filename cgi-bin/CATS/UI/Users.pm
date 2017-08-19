@@ -459,6 +459,8 @@ sub users_frame {
             { href => url_f('users', new => 1), item => res_str(541) },
             { href => url_f('users_import'), item => res_str(564) },
             { href => url_f('users_add_participants'), item => res_str(584) },
+            ($is_root ?
+                { href => url_f('users_all_settings'), item => res_str(575) } : ()),
         ]);
     }
     elsif ($user->{is_site_org}) {
@@ -517,6 +519,53 @@ sub user_stats_frame {
         href_solved_problems => $pr->('state=OK'),
         title_suffix => $u->{team_name},
     );
+}
+
+sub users_all_settings_frame {
+    my ($p) = @_;
+
+    init_template('users_settings.html.tt');
+    $is_root or return;
+
+    my $lv = CATS::ListView->new(
+        name => 'users_all_settings', template => 'users_all_settings.html.tt',
+        extra_settings => { selector => '' });
+
+    $lv->define_columns(url_f('users_all_settings'), 0, 0, [
+        { caption => res_str(616), order_by => 'login', width => '15%' },
+        { caption => res_str(608), order_by => 'team_name', width => '15%' },
+        { caption => res_str(660), order_by => 'last_login', width => '15%' },
+        { caption => res_str(661), order_by => 'team_name', width => '55%' },
+    ]);
+    $lv->define_db_searches([ qw(id login team_name last_login settings) ]);
+    my $sth = $dbh->prepare(q~
+        SELECT A.id, A.login, A.team_name, A.last_login, A.settings
+        FROM accounts A
+        INNER JOIN contest_accounts CA ON A.id = CA.account_id
+        WHERE CA.contest_id = ?~ . $lv->maybe_where_cond . $lv->order_by);
+    $sth->execute($cid, $lv->where_params);
+
+    my $selector = $lv->settings->{selector};
+    my $fetch_record = sub {
+        my $row = $_[0]->fetchrow_hashref or return ();
+        my $all_settings = thaw($row->{settings});
+        if ($selector) {
+            for (split /\./, $selector) {
+                $all_settings = $all_settings->{$_} or last;
+            }
+        }
+        my $full = CATS::Settings::as_dump($all_settings, 0);
+        my $short = length($full) < 120 ? $full : substr($full, 0, 120) . '...';
+        (
+            href_edit => url_f('users', edit => $row->{id}),
+            href_settings => url_f('user_settings', uid => $row->{id}),
+            %$row,
+            settings_short => $short,
+            settings_full => $full,
+        );
+    };
+    $lv->attach(url_f('users_all_settings'), $fetch_record, $sth);
+    $t->param(title_suffix => res_str(575));
 }
 
 sub user_settings_frame {

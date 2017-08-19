@@ -93,6 +93,7 @@ sub main_routes() {
             set_site => $bool, site_id => $int,
             send_message => $bool, message_text => $str, send_all => $bool, send_all_contests => $bool,
         ],
+        users_all_settings => [ \&CATS::UI::Users::users_all_settings_frame, ],
         users_import => \&CATS::UI::Users::users_import_frame,
         users_add_participants => [ \&CATS::UI::Users::users_add_participants_frame,
             logins_to_add => $str, make_jury => $bool, by_login => $bool,

@@ -1,0 +1,25 @@
+[% PROCESS includes/menu_begin.tti %]
+[% PROCESS includes/html.tti %]
+
+[% WRAPPER includes/listview_header.tti %]
+<label>[% capt.path %] <input type="text" name="selector" value="[% lv_settings.selector | html %]" size="40" class="bordered" /></label>
+[% END %]
+<table width=100% cellpadding=2 cellspacing=1 class="bordered highlight">
+[% PROCESS includes/listview_col_defs.tti %]
+[% FOREACH u IN users_all_settings %]
+<tr class="[% loop.parity %]">
+<td>
+  <a href="[% u.href_edit %]" class="icon edit"></a>
+  [% u.login | html %]
+</td>
+<td><input type="checkbox" name="sel" value="[% u.id %]"> [% href(u.href_settings, u.team_name) %]</td>
+<td>[% u.last_login %]</td>
+<td><a name="n" title="[% u.settings_full | html %]">[% u.settings_short | html %]</a></td>
+</tr>
+[% END %]
+</table>
+<br/>
+[% PROCESS includes/pages.tti %]
+</form>
+
+[% PROCESS includes/menu_end.tti %]
