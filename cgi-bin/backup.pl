@@ -1,8 +1,10 @@
+use v5.10;
 use strict;
 use warnings;
 
 use Encode;
 use File::Spec;
+use File::stat;
 use Getopt::Long;
 use IPC::Cmd;
 use POSIX qw(strftime);
@@ -26,6 +28,7 @@ Options:
   [--dest=<path>]\tStore backups in a given folder, default is '../ib_data'.
   [--zip]\t\tCompress backup.
   [--chown=<user>]\tChange backup file ownership.
+  [--max=<number>]\tRemove oldest backup when maximum count is reached.
   [--imitate]\t\tCreate dummy backup file for testing.
 ";
     exit;
@@ -38,6 +41,7 @@ GetOptions(
     'dest=s' => \(my $dest),
     zip => \(my $zip = 0),
     'chown=s' => \(my $chown = 0),
+    'max=i' => \(my $max),
     imitate => \(my $imitate = 0),
 ) or usage;
 
@@ -58,6 +62,24 @@ sub fmt_interval {
     sprintf '%02d:%02d.%03d', $m, $s, $ms;
 }
 
+my $prefix = 'cats-';
+
+sub remove_old_backup {
+    my @all_backups = glob(File::Spec->catfile($dest, "$prefix*.*"));
+    print "Backups total: " . @all_backups . ", max = $max\n" if !$quiet;
+    return if $max >=  @all_backups;
+    my ($oldest_mtime, $oldest);
+    for (@all_backups) {
+        my $mtime = stat($_)->mtime;
+        next if $oldest_mtime && $mtime > $oldest_mtime;
+        $oldest = $_;
+        $oldest_mtime = $mtime;
+    }
+    $oldest or return;
+    unlink $oldest or die "Remove error: $!";
+    return "Removed: $oldest\n";
+}
+
 sub work {
     IPC::Cmd::can_run('gbak') or die 'Error: gbak not found';
 
@@ -75,7 +97,8 @@ sub work {
 
     my $file;
     for (my $i = 0; $i < 10; ++$i) {
-        my $n = File::Spec->catfile($dest, strftime('cats-%Y-%m-%d', localtime) . ($i ? "-$i" : '') . '.fbk');
+        my $n = File::Spec->catfile($dest,
+            $prefix . strftime('%Y-%m-%d', localtime) . ($i ? "-$i" : '') . '.fbk');
         next if -f $n;
         next if -f "$n.gz" && $zip;
         $file = $n;
@@ -119,6 +142,8 @@ sub work {
         my (undef, undef, $uid, $gid) = getpwnam($chown) or die "User nod found: $chown";
         chown $uid, $gid, $file or die "Error: chown: $!";
     }
+    $result .= remove_old_backup() // '' if $max;
+    print "\n" if !$quiet;
     $result . $result_time;
 }
 
