@@ -119,7 +119,8 @@ sub main_routes() {
         sites => \&CATS::UI::Sites::sites_frame,
 
         answer_box => [ \&CATS::UI::Messages::answer_box_frame, qid => $int, clarify => 1, answer_text => $str, ],
-        send_message_box => \&CATS::UI::Messages::send_message_box_frame,
+        send_message_box => [ \&CATS::UI::Messages::send_message_box_frame,
+            caid => $int, send => $bool, message_text => $str, ],
 
         run_log => [ \&CATS::UI::RunDetails::run_log_frame, rid => $int, delete_log => $bool, ],
         view_source => \&CATS::UI::RunDetails::view_source_frame,

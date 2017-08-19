@@ -4,9 +4,10 @@
 [% UNLESS sent %]
 <form method="post" enctype="multipart/form-data">
   [% capt.message_for_team %] [% team | html %]<br/>
-  <input type="text" size="70" name="message_text" />
-  <input type="submit" value="[% capt.send %]" name="send" />
-  <input type="button" value="[% capt.close %]" onclick="javascript:window.close();">
+  <input type="text" size="70" name="message_text" class="bordered" />
+  <br/><br/>
+  <button type="submit" value="1" name="send" class="button">[% capt.send %]</button>
+  <button type="button" onclick="javascript:window.close();" class="button">[% capt.close %]</button>
 </form>
 [% ELSE %]
 <script>window.close();</script>

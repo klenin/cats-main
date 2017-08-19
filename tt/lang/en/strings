@@ -47,7 +47,7 @@
 564 "import"
 565 "prizes"
 566 "question from"
-567 "message for"
+567 "message for %s"
 568 "history"
 569 "download this version"
 570 "files"

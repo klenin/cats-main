@@ -9,23 +9,24 @@ use CATS::Messages qw(res_str);
 use CATS::Output qw(init_template);
 use CATS::Verdicts;
 use CATS::User;
-use CATS::Web qw(param url_param);
 
 sub send_message_box_frame {
+    my ($p) = @_;
     init_template('send_message_box.html.tt');
     $is_jury or return;
 
-    my $caid = url_param('caid') or return;
+    my $caid = $p->{caid} or return;
 
     my $team_name = $dbh->selectrow_array(q~
         SELECT A.team_name
-        FROM accounts A INNER JOIN contest_accounts CA ON CA.account_id = A.id WHERE CA.id = ?~, undef,
+        FROM accounts A INNER JOIN contest_accounts CA ON CA.account_id = A.id
+        WHERE CA.id = ?~, undef,
         $caid) or return;
 
-    $t->param(team => $team_name, title_suffix => res_str(567));
+    $t->param(team => $team_name, title_suffix => res_str(567, $team_name));
 
-    defined param('send') or return;
-    my $message_text = param('message_text') or return;
+    $p->{send} or return;
+    my $message_text = $p->{message_text} or return;
     CATS::User::send_message(user_set => [ $caid ], message => $message_text, contest_id => $cid);
     $dbh->commit;
     $t->param(sent => 1);
