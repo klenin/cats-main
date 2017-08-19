@@ -11,6 +11,7 @@
 <tr><td>[% capt.problems %]:</td><td>[<a href="[% href_all_problems %]">[% capt.all %]</a>] [<a href="[% href_solved_problems %]">[% capt.solved %]</a>]</td></tr>
 <tr><td>[% capt.envelopes %]:</td><td>[% envelopes %]</td></tr>
 [% END %]
+<tr><td>[% capt.sites %]:</td><td>[% maybe_href(href_sites, sites_count) %] / [% maybe_href(href_sites_org, sites_org_count) %]</td></tr>
 </table>
 
 <h3>[% capt.contests %]</h3>

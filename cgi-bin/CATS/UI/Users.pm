@@ -504,6 +504,14 @@ sub user_stats_frame {
     my $pr = sub { url_f(
         'console', uf => $uid, i_value => -1, se => 'user_stats', show_results => 1, search => $_[0], rows => 30
     ) };
+    $u->{sites_count} = $dbh->selectrow_array(q~
+        SELECT COUNT(DISTINCT site_id) FROM contest_accounts
+        WHERE account_id = ?~, undef,
+        $uid);
+    $u->{sites_org_count} = $dbh->selectrow_array(q~
+        SELECT COUNT(DISTINCT site_id) FROM contest_accounts
+        WHERE account_id = ? AND is_site_org = 1~, undef,
+        $uid);
     for (@$contests) {
         $_->{href_send_message} = url_f('send_message_box', caid => $_->{caid}) if $is_root;
         $_->{href_problems} = url_function('problems', sid => $sid, cid => $_->{id});
@@ -515,6 +523,10 @@ sub user_stats_frame {
         %$u, contests => $contests,
         CATS::IP::linkify_ip($u->{last_ip}),
         ($is_jury ? (href_edit => url_f('users', edit => $uid)) : ()),
+        ($user->privs->{edit_sites} ? (
+            href_sites => url_f('sites', search => "has_user($uid)"),
+            href_sites_org => url_f('sites', search => "has_org($uid)"),
+        ) : ()),
         href_all_problems => $pr->(''),
         href_solved_problems => $pr->('state=OK'),
         title_suffix => $u->{team_name},
