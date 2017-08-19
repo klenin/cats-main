@@ -63,6 +63,21 @@ sub sites_frame {
 
     $lv->define_db_searches([ fields ]);
 
+    my $name_sql = q~
+        SELECT A.team_name FROM accounts A WHERE A.id = ?~;
+    $lv->define_subqueries({
+        has_user => { sq => qq~EXISTS (
+            SELECT 1 FROM contest_accounts CA
+            WHERE CA.site_id = S.id AND CA.account_id = ?)~,
+            m => 1032, t => $name_sql
+        },
+        has_org => { sq => qq~EXISTS (
+            SELECT 1 FROM contest_accounts CA
+            WHERE CA.site_id = S.id AND CA.account_id = ? AND CA.is_site_org = 1)~,
+            m => 1034, t => $name_sql
+        },
+    });
+
     my $count_fld = !$lv->visible_cols->{Cc} ? 'NULL' : q~
         (SELECT COUNT(*) FROM contest_sites CS WHERE CS.site_id = S.id)~;
 
