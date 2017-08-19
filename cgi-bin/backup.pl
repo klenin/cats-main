@@ -26,7 +26,15 @@ GetOptions(
 
 sub usage {
     print STDERR "CATS Backup tool
-Usage: $0 [--help] --report={std|mail} [--quiet] [--dest=<backup path>] [--zip]\n";
+Usage: $0 <options>
+Options:
+  [--help]\t\tDisplay this help.
+  --report={std|mail}\tPrint report to stdout or send it by email.
+  [--quiet]\t\tDo not print progress info.
+  [--dest=<path>]\tStore backups in a given folder, default is '../ib_data'.
+  [--zip]\t\tCompress backup.
+  [--imitate]\t\tCreate dummy backup file for testing.
+";
     exit;
 }
 
