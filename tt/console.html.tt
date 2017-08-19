@@ -22,12 +22,12 @@ function get_element(name) {
 <label title="[% capt.messages %]">[% checkbox('show_messages', show_messages) %] [% capt.messages_short %]</label>
 <label title="[% capt.results %]">[% checkbox('show_results', show_results) %] [% capt.results_short %]</label>
 </span>
-<span class="nobr">[% capt.for %] [% select_value('i_value', i_values, i_value) %] [% select('i_unit', i_units) %]</spen>
+<span class="nobr">[% capt.for %] [% select_value('i_value', i_values, i_value) %] [% select('i_unit', i_units) %]</span>
 [% END %]
-<span id="refreshable_content">
+<div id="refreshable_content">
 [% UNLESS initial_content %]<br/>[% capt.loading %]<br/>
 [% ELSE; initial_content; END %]
-</span>
+</div>
 [% IF user.is_participant %]
 <br/>
 [% IF user.is_jury %]
@@ -56,7 +56,7 @@ function get_element(name) {
 <div class="send_message">
     [% capt.question %]:
     <input size="100" maxlength="200" name="question_text" class="bordered" />
-    <button type="submit" value="1" name="send_question" class="button"/>[% capt.send %]</button>
+    <button type="submit" value="1" name="send_question" class="button">[% capt.send %]</button>
 </div>
 [% END %]
 </form>

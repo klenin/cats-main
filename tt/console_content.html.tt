@@ -26,7 +26,7 @@ td.name { text-align: left; white-space: nowrap; width: 1px; }
     <td class="name">
         [% IF user.is_jury %]
         [% h = c.href_send_message_box ? "javascript:send_message('$c.href_send_message_box')" : ''; maybe_href(h, c.team_name) %]
-        [<a href="[% c.href_whois %]" alt="[% c.last_ip %]" title="[% c.last_ip %]">[% c.last_ip_short %]</a>]
+        [<a href="[% c.href_whois %]" title="[% c.last_ip %]">[% c.last_ip_short %]</a>]
         [% ELSE; c.team_name | html; END %]
     </td>
     <td class="verdict run_details_[% c.short_state %]"><table><tr>
@@ -44,7 +44,7 @@ td.name { text-align: left; white-space: nowrap; width: 1px; }
     <td class="name">[
         [%~ IF user.is_jury ~%]
         <a href="javascript:send_message('[% c.href_send_message_box %]')">[% c.team_name | html %]</a>:
-        [% IF c.last_ip %]<a href="[% c.href_whois %]" alt="[% c.last_ip %]" title="[% c.last_ip %]">[% c.last_ip_short %]</a>[% ELSE; c.last_ip_short; END ~%]
+        [% IF c.last_ip %]<a href="[% c.href_whois %]" title="[% c.last_ip %]">[% c.last_ip_short %]</a>[% ELSE; c.last_ip_short; END ~%]
         [%~ ELSE; c.team_name | html; END %]
         &gt; [% capt.jury %]]
     </td>
