@@ -202,8 +202,11 @@ sub attach {
         my $col_count = 4;
         my $row_count = int((@s + $col_count - 1) / $col_count);
         my $rows;
-        my $i = 0;
-        push @{$rows->[$i++ % $row_count]}, $_ for @s;
+        for my $i (0 .. $row_count - 1) {
+            for my $j (0 .. $col_count - 1) {
+                push @{$rows->[$i]}, $s[$j * $row_count + $i];
+            }
+        }
         $t->param(search_hints => $rows);
         $t->param(search_enums => $self->{enums});
     }

@@ -20,6 +20,7 @@
     [% FOREACH row IN search_hints %]
       <tr>
       [% FOREACH col IN row %]
+        [% UNLESS col; '<td></td>'; NEXT; END %]
         <td class="sh[% col.1 %]"><a href="#" onclick="activate_search_hint(this, 1, [% col.1 %]);">[% col.0 | html %]</a>
           [% enum = search_enums.item(col.0); IF enum.keys.size %]
           <ul>[% FOREACH e IN enum %]<li><a href="#" onclick="click_enum(this)">[% e.key | html %]</a></li>[% END %]</ul>
@@ -44,7 +45,7 @@
   </div>
   [% END %]
   <input type="submit" value="[% capt.show %]" name="visible" class="button"> [% select('rows', display_rows) %]
-  [% PROCESS includes/pages.tti id = "pages_top" %]
+  [% INCLUDE includes/pages.tti id = "pages_top" %]
 </td>
 </tr>
 </table>
