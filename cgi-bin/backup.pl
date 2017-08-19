@@ -15,15 +15,6 @@ use CATS::Config;
 use CATS::DB;
 use CATS::Mail;
 
-GetOptions(
-    help => \(my $help = 0),
-    'report=s' => \(my $report = ''),
-    quiet => \(my $quiet = 0),
-    'dest=s' => \(my $dest),
-    zip => \(my $zip = 0),
-    imitate => \(my $imitate = 0),
-);
-
 sub usage {
     print STDERR "CATS Backup tool
 Usage: $0 <options>
@@ -33,10 +24,21 @@ Options:
   [--quiet]\t\tDo not print progress info.
   [--dest=<path>]\tStore backups in a given folder, default is '../ib_data'.
   [--zip]\t\tCompress backup.
+  [--chown=<user>]\tChange backup file ownership.
   [--imitate]\t\tCreate dummy backup file for testing.
 ";
     exit;
 }
+
+GetOptions(
+    help => \(my $help = 0),
+    'report=s' => \(my $report = ''),
+    quiet => \(my $quiet = 0),
+    'dest=s' => \(my $dest),
+    zip => \(my $zip = 0),
+    'chown=s' => \(my $chown = 0),
+    imitate => \(my $imitate = 0),
+) or usage;
 
 usage if $help;
 
@@ -109,6 +111,12 @@ sub work {
         $result .= "Zipped: $compressed_size\n";
         my $zip_ts = [ gettimeofday ];
         $result_time .= sprintf "Zip time: %s\n", fmt_interval($backup_ts, $zip_ts);
+        $file .= '.gz';
+    }
+    if ($chown) {
+        print "chown $chown:$chown $file\n" if !$quiet;
+        my (undef, undef, $uid, $gid) = getpwnam($chown) or die "User nod found: $chown";
+        chown $uid, $gid, $file or die "Error: chown: $!";
     }
     $result . $result_time;
 }
