@@ -7,3 +7,6 @@ COMMIT;
 
 INPUT init_roles.sql;
 COMMIT;
+
+INPUT init_data.sql;
+COMMIT;
