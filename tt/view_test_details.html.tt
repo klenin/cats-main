@@ -24,9 +24,13 @@
 </span></div>
 
 <form method="post">
-<p><input type="submit" name="delete_request_outputs" class="button" value="[% capt.delete_request_outputs %]" onclick="return confirm('[% capt.confirm_delete_for_request %]')"/></p>
+<p><button type="submit" name="delete_request_outputs" class="button" value="1" onclick="return confirm('[% capt.confirm_delete_for_request %]')">
+[%- capt.delete_request_outputs -%]
+</button></p>
 [% IF output_data %]
-<p><input type="submit" name="delete_test_output" class="button" value="[% capt.delete_test_output %]" onclick="return confirm('[% capt.confirm_delete_for_test %]')"/></p>
+<p><button type="submit" name="delete_test_output" class="button" value="1" onclick="return confirm('[% capt.confirm_delete_for_test %]')">
+[%- capt.delete_test_output -%]
+</button></p>
 [% END %]
 </form>
 

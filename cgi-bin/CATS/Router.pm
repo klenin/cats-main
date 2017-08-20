@@ -39,12 +39,14 @@ my $ident = qr/[a-zA-Z_]+/;
 
 sub main_routes() {
     {
-        login => [ \&CATS::UI::LoginLogout::login_frame, logout => $bool, login => $str, passwd => $str, redir => $str, ],
+        login => [ \&CATS::UI::LoginLogout::login_frame,
+            logout => $bool, login => $str, passwd => $str, redir => $str, ],
         logout => \&CATS::UI::LoginLogout::logout_frame,
         registration => \&CATS::UI::Users::registration_frame,
         profile => [ \&CATS::UI::Users::profile_frame, json => $bool, clear => $str, edit_save => $str, ],
         contests => [ \&CATS::UI::Contests::contests_frame,
-            summary_rank => $bool, create_group => $bool, online_registration => $bool, virtual_registration => $bool,
+            summary_rank => $bool, create_group => $bool,
+            online_registration => $bool, virtual_registration => $bool,
             edit_save => $bool, new_save => $bool, id => $int,
         ],
         contest_sites => [ \&CATS::UI::Sites::contest_sites_frame, ],
@@ -120,7 +122,8 @@ sub main_routes() {
         contests_prizes => \&CATS::UI::Prizes::contests_prizes_frame,
         sites => \&CATS::UI::Sites::sites_frame,
 
-        answer_box => [ \&CATS::UI::Messages::answer_box_frame, qid => $int, clarify => 1, answer_text => $str, ],
+        answer_box => [ \&CATS::UI::Messages::answer_box_frame,
+            qid => $int, clarify => 1, answer_text => $str, ],
         send_message_box => [ \&CATS::UI::Messages::send_message_box_frame,
             caid => $int, send => $bool, message_text => $str, ],
 
@@ -128,9 +131,12 @@ sub main_routes() {
         view_source => \&CATS::UI::RunDetails::view_source_frame,
         download_source => \&CATS::UI::RunDetails::download_source_frame,
         run_details => \&CATS::UI::RunDetails::run_details_frame,
-        visualize_test => [ \&CATS::UI::RunDetails::visualize_test_frame, rid => $int, vid => $int, test_rank => $int, ],
+        visualize_test => [ \&CATS::UI::RunDetails::visualize_test_frame,
+            rid => $int, vid => $int, test_rank => $int, ],
         diff_runs => [ \&CATS::UI::RunDetails::diff_runs_frame, r1 => $int, r2 => $int, ],
-        view_test_details => [ \&CATS::UI::RunDetails::view_test_details_frame, rid => $int, test_rank => $int, ],
+        view_test_details => [
+            \&CATS::UI::RunDetails::view_test_details_frame,
+            rid => $int, test_rank => $int, delete_request_outputs => $bool, delete_test_output => $bool, ],
         request_params => [
             \&CATS::UI::RunDetails::request_params_frame,
             rid => $int,

@@ -355,9 +355,9 @@ sub download_source_frame {
 }
 
 sub view_test_details_frame {
+    my ($p) = @_;
     init_template('view_test_details.html.tt');
 
-    my ($p) = @_;
     $p->{rid} or return;
     $p->{test_rank} //= 1;
 
@@ -368,18 +368,16 @@ sub view_test_details_frame {
     $ci->{show_test_data} or return;
 
     my $output_data;
-    if ($is_jury && param('delete_request_outputs')) {
+    if ($is_jury && $p->{delete_request_outputs}) {
         $dbh->do(q~
-            DELETE FROM solution_output SO
-            WHERE SO.req_id = ?~, undef,
+            DELETE FROM solution_output SO WHERE SO.req_id = ?~, undef,
             $p->{rid});
-        $dbh->commit();
-    } elsif($is_jury && param('delete_test_output')) {
+        $dbh->commit;
+    } elsif($is_jury && $p->{delete_test_output}) {
         $dbh->do(q~
-            DELETE FROM solution_output SO
-            WHERE SO.req_id = ? AND SO.test_rank = ?~, undef,
+            DELETE FROM solution_output SO WHERE SO.req_id = ? AND SO.test_rank = ?~, undef,
             $p->{rid}, $p->{test_rank});
-        $dbh->commit();
+        $dbh->commit;
     } else {
         $output_data = $dbh->selectrow_hashref(q~
             SELECT SO.output, SO.output_size FROM solution_output SO
