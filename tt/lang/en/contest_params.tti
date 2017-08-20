@@ -1,11 +1,11 @@
 [%
   capt.import({
-    contest_name => 'Contest name',
+    title => 'Contest name',
     short_descr => 'Short description',
     start_date => 'Start date/time',
     freeze_date => 'Rank table freeze date/time',
     finish_date => 'Finish date/time',
-    unfreeze_date => 'Rank table unfreeze date/time',
+    defreeze_date => 'Rank table defreeze date/time',
     rules => 'Rules',
     req_selection => 'Assign points for request',
     req_selection_last => 'last',

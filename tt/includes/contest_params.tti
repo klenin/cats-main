@@ -1,12 +1,12 @@
 [%- PROCESS includes/html.tti -%]
 [%- PROCESS "lang/$lang/contest_params.tti" -%]
 <table cellpadding="0">
-  <tr><td>[% capt.contest_name %]:</td><td><input type="text" size="50" name="contest_name" value="[% contest_name | html %]" class="bordered" [% UNLESS can_edit %]readonly="readonly"[% END %]/></td></tr>
+  <tr><td>[% capt.title %]:</td><td><input type="text" size="50" name="title" value="[% title | html %]" class="bordered" [% UNLESS can_edit %]readonly="readonly"[% END %]/></td></tr>
   <tr><td>[% capt.short_descr %]:</td><td><textarea rows"2" cols="50" name="short_descr" class="bordered" [% UNLESS can_edit %]readonly="readonly"[% END %]/>[% short_descr | html %]</textarea></td></tr>
   <tr><td>[% capt.start_date %]:</td><td><input type="text" name="start_date" value="[% start_date | html %]" class="bordered" [% UNLESS can_edit %]readonly="readonly"[% END %]/></td></tr>
   <tr><td>[% capt.freeze_date %]:</td><td><input type="text" name="freeze_date" value="[% freeze_date | html %]" class="bordered" [% UNLESS can_edit %]readonly="readonly"[% END %]/></td></tr>
   <tr><td>[% capt.finish_date %]:</td><td><input type="text" name="finish_date" value="[% finish_date | html %]" class="bordered" [% UNLESS can_edit %]readonly="readonly"[% END %]/></td></tr>
-  <tr><td>[% capt.unfreeze_date %]:</td><td><input type="text" name="open_date" value="[% open_date | html %]" class="bordered" [% UNLESS can_edit %]readonly="readonly"[% END %]/></td></tr>
+  <tr><td>[% capt.defreeze_date %]:</td><td><input type="text" name="defreeze_date" value="[% defreeze_date | html %]" class="bordered" [% UNLESS can_edit %]readonly="readonly"[% END %]/></td></tr>
   <tr><td>[% capt.rules %]:</td><td>[% IF can_edit %]
     <select name="rules" class="bordered">
       <option value="0"[% UNLESS rules %] selected="selected"[% END %]>[% capt.ACM %]</option>

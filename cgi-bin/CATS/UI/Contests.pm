@@ -20,11 +20,12 @@ use CATS::Web qw(param url_param redirect);
 sub contests_new_frame {
     init_template('contests_new.html.tt');
 
-    my $date = $dbh->selectrow_array(q~SELECT CURRENT_TIMESTAMP FROM RDB$DATABASE~);
+    my $date = $dbh->selectrow_array(q~
+        SELECT CURRENT_TIMESTAMP FROM RDB$DATABASE~);
     $date =~ s/\s*$//;
     $t->param(
         start_date => $date, freeze_date => $date,
-        finish_date => $date, open_date => $date,
+        finish_date => $date, defreeze_date => $date,
         can_edit => 1,
         is_hidden => !$is_root,
         show_all_results => 1,
@@ -39,7 +40,7 @@ sub contest_checkbox_params() {qw(
 )}
 
 sub contest_string_params() {qw(
-    contest_name short_descr start_date freeze_date finish_date open_date rules req_selection max_reqs
+    title short_descr start_date freeze_date finish_date defreeze_date rules req_selection max_reqs
 )}
 
 sub get_contest_html_params {
@@ -48,47 +49,33 @@ sub get_contest_html_params {
     $p->{$_} = scalar param($_) for contest_string_params();
     $p->{$_} = param($_) ? 1 : 0 for contest_checkbox_params();
 
-    for ($p->{contest_name}) {
+    for ($p->{title}) {
         $_ //= '';
         s/^\s+|\s+$//g;
         $_ ne '' && length $_ < 100  or return msg(1027);
     }
+    $p->{closed} = $p->{free_registration} ? 0 : 1;
+    delete $p->{free_registration};
+    $p->{show_frozen_reqs} = 0;
     $p;
 }
 
 sub contests_new_save {
-    my $p = get_contest_html_params() or return;
+    my $c = get_contest_html_params() or return;
 
-    my $new_cid = new_id;
-    # free_registration => closed
-    $p->{free_registration} = !$p->{free_registration};
-    eval { $dbh->do(q~
-        INSERT INTO contests (
-            id, title, short_descr, start_date, freeze_date, finish_date, defreeze_date, rules, req_selection, max_reqs,
-            ctype,
-            closed, run_all_tests, show_all_tests,
-            show_test_resources, show_checker_comment, show_all_results,
-            is_official, show_packages, local_only, is_hidden, show_frozen_reqs, show_test_data, pinned_judges_only
-        ) VALUES(
-            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-            0,
-            ?, ?, ?,
-            ?, ?, ?,
-            ?, ?, ?, ?, 0, ?, ?)~,
-        {},
-        $new_cid, @$p{contest_string_params()},
-        @$p{contest_checkbox_params()}
-    ); 1; } or return msg(1026, $@);
+    $c->{ctype} = 0;
+    $c->{id} = new_id;
+    eval { $dbh->do(_u $sql->insert('contests', $c)); 1 } or return msg(1026, $@);
 
     # Automatically register all admins as jury.
     my $root_accounts = CATS::Privileges::get_root_account_ids;
     push @$root_accounts, $uid unless $is_root; # User with contests_creator role.
     for (@$root_accounts) {
         $contest->register_account(
-            contest_id => $new_cid, account_id => $_, is_jury => 1, is_pop => 1, is_hidden => 1);
+            contest_id => $c->{id}, account_id => $_, is_jury => 1, is_pop => 1, is_hidden => 1);
     }
     $dbh->commit;
-    msg(1028, Encode::decode_utf8($p->{contest_name}));
+    msg(1028, Encode::decode_utf8($c->{title}));
 }
 
 sub try_contest_params_frame {
@@ -96,25 +83,14 @@ sub try_contest_params_frame {
 
     init_template('contest_params.html.tt');
 
-    my $p = $dbh->selectrow_hashref(qq~
-        SELECT
-            title AS contest_name,
-            short_descr,
-            start_date,
-            freeze_date,
-            finish_date,
-            defreeze_date AS open_date,
-            1 - closed AS free_registration,
-            run_all_tests, show_all_tests, show_test_resources, show_checker_comment, show_test_data,
-            show_all_results, is_official, show_packages, local_only, rules, req_selection,
-            is_hidden, max_reqs, pinned_judges_only
-        FROM contests WHERE id = ?~, { Slice => {} },
-        $id
-    ) or return;
+    my $c = $dbh->selectrow_hashref(q~
+        SELECT * FROM contests WHERE id = ?~, { Slice => {} },
+        $id) or return;
+    $c->{free_registration} = !$c->{closed};
     $t->param(
-        id => $id, %$p,
+        id => $id, %$c,
         href_action => url_f('contests'),
-        can_edit => (get_registered_contestant(fields => 'is_jury', contest_id => $id) ? 1 : 0),
+        can_edit => is_jury_in_contest(contest_id => $id),
     );
 
     1;
@@ -123,31 +99,15 @@ sub try_contest_params_frame {
 sub contests_edit_save {
     my ($edit_cid) = @_;
 
-    my $p = get_contest_html_params() or return;
-
-    # free_registration => closed
-    $p->{free_registration} = !$p->{free_registration};
+    my $c = get_contest_html_params() or return;
     eval {
-        $dbh->do(qq~
-            UPDATE contests SET
-                title=?, short_descr=?, start_date=?, freeze_date=?,
-                finish_date=?, defreeze_date=?, rules=?, req_selection=?, max_reqs=?,
-                closed=?, run_all_tests=?, show_all_tests=?,
-                show_test_resources=?, show_checker_comment=?, show_all_results=?,
-                is_official=?, show_packages=?,
-                local_only=?, is_hidden=?, show_frozen_reqs=0, show_test_data=?, pinned_judges_only=?
-            WHERE id=?~,
-            {},
-            @$p{contest_string_params()},
-            @$p{contest_checkbox_params()},
-            $edit_cid
-        );
+        $dbh->do(_u $sql->update(contests => $c, { id => $edit_cid }));
         $dbh->commit;
         1;
     } or return msg(1035, $@);
     CATS::StaticPages::invalidate_problem_text(cid => $edit_cid, all => 1);
     CATS::RankTable::remove_cache($edit_cid);
-    my $contest_name = Encode::decode_utf8($p->{contest_name});
+    my $contest_name = Encode::decode_utf8($c->{title});
     # Change page title immediately if the current contest is renamed.
     $contest->{title} = $contest_name if $edit_cid == $cid;
     msg(1036, $contest_name);
