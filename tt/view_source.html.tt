@@ -4,7 +4,38 @@
 </head>
 <body>
 [% PROCESS includes/sources_info.tti %]
-
+<script>
+  function highlight_errors(rid) {
+    var co = document.getElementById('co' + rid);
+    if (!co) return;
+    var co_text = co.innerHTML;
+    if (!co_text) return;
+    var co_lines = co_text.split('\n');
+    var re = [
+      /^[a-zA-Z0-9_\.]+\((\d+),\d+\)/,
+      /^[a-zA-Z0-9_\.]+\((\d+)\)\s:/,
+      /^[a-zA-Z0-9_\.]+:(\d+):\d+\:/,
+      /at\s[a-zA-Z0-9_\.]+\sline\s(\d+)/,
+      /^\s*File\s"[a-zA-Z0-9_\.]+",\sline\s(\d+)/,
+      /in\s[a-zA-Z0-9_\.]+\son\sline\s(\d+)/,
+      /^\[(\d+),\d+\]\s[a-zA-Z0-9_\.]+:/
+    ];
+    var errors = {};
+    for (var i = 0; i < co_lines.length; ++i) {
+      for (var j = 0; j < re.length; ++j) {
+        var m = co_lines[i].match(re[j]);
+        if (m) errors[m[1]] = 1;
+      }
+    }
+    [%# Avoid duplicate styles in case of multiple errors per line. %]
+    for (var e in errors) {
+        var sheet = document.createElement('style');
+        [%# Syntaxhighlighter uses !important, so we also need to. %]
+        sheet.innerHTML = '.syntaxhighlighter .code div.line.number' + e + ' { background-color: #FFC0C0 !important; }';
+        document.body.appendChild(sheet);
+    }
+  }
+</script>
 <table>
 <tr>
 <td>
@@ -27,15 +58,18 @@
 </table>
 <table>
 <tr>
-[% FOREACH si IN sources_info %]
-  <td class="bordered">[% IF si.compiler_output %]<pre>[% si.compiler_output.judge_log_dump | html %]</pre>[% END %]</td>
+[% FOREACH si IN sources_info;  %]
+  [% IF si.compiler_output %]<td class="bordered"><pre id="co[% si.req_id %]">[% si.compiler_output.judge_log_dump | html %]</pre></td>
+  [% ELSE %]<td></td>
+  [% END %]
 [% END %]
 </tr>
 <tr>
 [% FOREACH si IN sources_info %]
-  <td class="bordered" style="margin: 0 10 10 0; padding: 0;">
+  <td id="co[% si.req_id %]" class="bordered" style="margin: 0 10 10 0; padding: 0;">
   <script type="syntaxhighlighter" class="brush: [% si.syntax.lower || 'plain' %];"><![CDATA[[% si.src | html %]]]></script>
   </td>
+  <script>highlight_errors([% si.req_id %])</script>
 [% END %]
 </tr>
 </table>
