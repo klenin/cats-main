@@ -15,7 +15,7 @@ use CATS::Output qw(init_template url_f);
 use CATS::References;
 use CATS::Web qw(param url_param);
 
-sub fields() {qw(code description file_ext default_file_ext in_contests memory_handicap syntax)}
+sub fields() {qw(code description file_ext default_file_ext err_regexp in_contests memory_handicap syntax)}
 
 my $form = CATS::Form->new({
     table => 'default_de',
@@ -61,9 +61,11 @@ sub compilers_frame {
         { caption => res_str(619), order_by => 'code', width => '10%' },
         { caption => res_str(620), order_by => 'description', width => '40%' },
         { caption => res_str(621), order_by => 'file_ext', width => '10%' },
-        ($is_root ?
-            { caption => res_str(624), order_by => 'default_file_ext', width => '10%', col => 'De' } : ()),
-        { caption => res_str(640), order_by => 'memory_handicap', width => '10%', col => 'Mh' },
+        ($is_root ? (
+            { caption => res_str(624), order_by => 'default_file_ext', width => '5%', col => 'De' },
+            { caption => res_str(662), order_by => 'err_regexp', width => '10%', col => 'Er' },
+        ) : ()),
+        { caption => res_str(640), order_by => 'memory_handicap', width => '5%', col => 'Mh' },
         { caption => res_str(623), order_by => 'syntax', width => '10%', col => 'Sy' },
         ($is_jury ? { caption => res_str(622), order_by => 'in_contests', width => '10%' } : ()),
     ]);

@@ -26,6 +26,7 @@ function delete_compiler(href, name) {
 <td>[% c.description | html %]</td>
 <td>[% c.file_ext | html %]</td>
 [% IF visible_cols.De %]<td>[% c.default_file_ext | html %]</td>[% END %]
+[% IF visible_cols.Er %]<td><pre>[% c.err_regexp | html %]<pre></td>[% END %]
 [% IF visible_cols.Mh %]<td>[% c.memory_handicap %]</td>[% END %]
 [% IF visible_cols.Sy %]<td>[% c.syntax %]</td>[% END %]
 [% IF user.is_jury %]<td>[% IF c.locked %]<font color=red>[% capt.locked %]</font>[% ELSE; capt.unlocked; END %]</td>[% END %]
