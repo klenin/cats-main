@@ -58,13 +58,14 @@ sub compilers_frame {
     $is_jury && defined param('edit_save') and edit_save;
 
     $lv->define_columns(url_f('compilers'), 0, 0, [
-        { caption => res_str(619), order_by => '2', width => '10%' },
-        { caption => res_str(620), order_by => '3', width => '40%' },
-        { caption => res_str(621), order_by => '4', width => '10%' },
-        ($is_root ? { caption => res_str(624), order_by => '5', width => '10%' } : ()),
-        { caption => res_str(640), order_by => '7', width => '10%' },
-        { caption => res_str(623), order_by => '8', width => '10%' },
-        ($is_jury ? { caption => res_str(622), order_by => '5', width => '10%' } : ()),
+        { caption => res_str(619), order_by => 'code', width => '10%' },
+        { caption => res_str(620), order_by => 'description', width => '40%' },
+        { caption => res_str(621), order_by => 'file_ext', width => '10%' },
+        ($is_root ?
+            { caption => res_str(624), order_by => 'default_file_ext', width => '10%', col => 'De' } : ()),
+        { caption => res_str(640), order_by => 'memory_handicap', width => '10%', col => 'Mh' },
+        { caption => res_str(623), order_by => 'syntax', width => '10%', col => 'Sy' },
+        ($is_jury ? { caption => res_str(622), order_by => 'in_contests', width => '10%' } : ()),
     ]);
 
     $lv->define_db_searches([ fields() ]);
