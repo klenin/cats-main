@@ -293,22 +293,22 @@ sub view_source_frame {
     my $sources_info = get_sources_info(request_id => $p->{rid}, get_source => 1, encode_source => 1);
     $sources_info or return;
 
-    source_links($sources_info);
-    sources_info_param([ $sources_info ]);
-
-    @{$sources_info->{elements}} <= 1 or return msg(1155);
-
     if ($sources_info->{is_jury} && $p->{replace}) {
         my $u;
         if (param('replace_file')) {
-            $sources_info->{src} = $u->{src} = upload_source('replace_file') or die;
+            $u->{src} = upload_source('replace_file') or die;
         }
         $u->{de_id} = $p->{de_id} if $p->{de_id};
         if (%$u) {
             $dbh->do(_u $sql->update(sources => $u, { req_id => $sources_info->{req_id} }));
             $dbh->commit;
+            $sources_info = get_sources_info(request_id => $p->{rid}, get_source => 1, encode_source => 1);
         }
     }
+    source_links($sources_info);
+    sources_info_param([ $sources_info ]);
+    @{$sources_info->{elements}} <= 1 or return msg(1155);
+
     if ($sources_info->{file_name} =~ m/\.zip$/) {
         $sources_info->{src} = sprintf 'ZIP, %d bytes', length ($sources_info->{src});
     }
