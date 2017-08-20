@@ -128,7 +128,8 @@ sub main_routes() {
             caid => $int, send => $bool, message_text => $str, ],
 
         run_log => [ \&CATS::UI::RunDetails::run_log_frame, rid => $int, delete_log => $bool, ],
-        view_source => \&CATS::UI::RunDetails::view_source_frame,
+        view_source => [ \&CATS::UI::RunDetails::view_source_frame,
+            rid => $int, replace => $bool, de_id => $int, syntax => $ident, ],
         download_source => \&CATS::UI::RunDetails::download_source_frame,
         run_details => \&CATS::UI::RunDetails::run_details_frame,
         visualize_test => [ \&CATS::UI::RunDetails::visualize_test_frame,

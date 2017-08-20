@@ -287,9 +287,10 @@ sub visualize_test_frame {
 }
 
 sub view_source_frame {
+    my ($p) = @_;
     init_template('view_source.html.tt');
-    my $rid = url_param('rid') or return;
-    my $sources_info = get_sources_info(request_id => $rid, get_source => 1, encode_source => 1);
+    $p->{rid} or return;
+    my $sources_info = get_sources_info(request_id => $p->{rid}, get_source => 1, encode_source => 1);
     $sources_info or return;
 
     source_links($sources_info);
@@ -297,36 +298,30 @@ sub view_source_frame {
 
     @{$sources_info->{elements}} <= 1 or return msg(1155);
 
-    my $replace_source = param('replace_source');
-    my $de_id = param('de_id');
-    my $set = join ', ', ($replace_source ? 'src = ?' : ()) , ($de_id ? 'de_id = ?' : ());
-    if ($sources_info->{is_jury} && $set) {
-        my $s = $dbh->prepare(qq~
-            UPDATE sources SET $set WHERE req_id = ?~);
-        my $i = 0;
-        if ($replace_source) {
-            my $src = upload_source('replace_source') or return;
-            $s->bind_param(++$i, $src, { ora_type => 113 } ); # blob
-            $sources_info->{src} = $src;
+    if ($sources_info->{is_jury} && $p->{replace}) {
+        my $u;
+        if (param('replace_file')) {
+            $sources_info->{src} = $u->{src} = upload_source('replace_file') or die;
         }
-        $s->bind_param(++$i, $de_id) if $de_id;
-        $s->bind_param(++$i, $sources_info->{req_id});
-        $s->execute;
-        $dbh->commit;
+        $u->{de_id} = $p->{de_id} if $p->{de_id};
+        if (%$u) {
+            $dbh->do(_u $sql->update(sources => $u, { req_id => $sources_info->{req_id} }));
+            $dbh->commit;
+        }
     }
     if ($sources_info->{file_name} =~ m/\.zip$/) {
         $sources_info->{src} = sprintf 'ZIP, %d bytes', length ($sources_info->{src});
     }
-    /^[a-z]+$/i and $sources_info->{syntax} = $_ for param('syntax');
+    $sources_info->{syntax} = $p->{syntax} if $p->{syntax};
     $sources_info->{src_lines} = [ map {}, split("\n", $sources_info->{src}) ];
     $sources_info->{compiler_output} = { get_log_dump($sources_info->{req_id}, 1) }
         if $sources_info->{state} == $cats::st_compilation_error;
 
     if ($sources_info->{is_jury}) {
         my $de_list = CATS::DevEnv->new(CATS::JudgeDB::get_DEs({ active_only => 1 }));
-        if ($de_id) {
-            $sources_info->{de_id} = $de_id;
-            $sources_info->{de_name} = $de_list->by_id($de_id)->{description};
+        if ($p->{de_id}) {
+            $sources_info->{de_id} = $p->{de_id};
+            $sources_info->{de_name} = $de_list->by_id($p->{de_id})->{description};
         }
         $t->param(de_list => [
             map {

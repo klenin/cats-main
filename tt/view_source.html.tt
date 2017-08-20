@@ -13,13 +13,13 @@
 <td>
 [% IF is_any_jury %]
 <form enctype="multipart/form-data" method="post">
-  <input name="replace_source" type="file" class="file" size="25" />
+  <input name="replace_file" type="file" class="file" size="25" />
   <select name="de_id">
     [%- FOREACH de IN de_list %]
     <option value="[% de.de_id %]"[% ' selected="selected"' IF de.selected %]>[% de.de_name | html %]</option>
     [%~ END %]
   </select>
-  <input type="submit" class="button" value="[% capt.replace %]" /> 
+  <button type="submit" name="replace" value="1" class="button">[% capt.replace %]</button>
 </form>
 [% END %]
 </td>
