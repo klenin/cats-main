@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use CATS::Constants;
-use CATS::ContestParticipate qw(get_registered_contestant);
+use CATS::ContestParticipate qw(get_registered_contestant is_jury_in_contest);
 use CATS::DB;
 use CATS::Globals qw($cid $contest $is_jury $is_root $sid $t $uid $user);
 use CATS::ListView;
@@ -85,8 +85,7 @@ sub contests_new_save {
     push @$root_accounts, $uid unless $is_root; # User with contests_creator role.
     for (@$root_accounts) {
         $contest->register_account(
-            contest_id => $new_cid, account_id => $_,
-            is_jury => 1, is_pop => 1, is_hidden => 1);
+            contest_id => $new_cid, account_id => $_, is_jury => 1, is_pop => 1, is_hidden => 1);
     }
     $dbh->commit;
     msg(1028, Encode::decode_utf8($p->{contest_name}));
@@ -122,7 +121,7 @@ sub try_contest_params_frame {
 }
 
 sub contests_edit_save {
-    my $edit_cid = param('id');
+    my ($edit_cid) = @_;
 
     my $p = get_contest_html_params() or return;
 
@@ -354,11 +353,9 @@ sub contests_frame {
 
     contest_delete if url_param('delete');
 
-    contests_new_save if defined param('new_save') && $user->privs->{create_contests};
-
-    contests_edit_save
-        if defined param('edit_save') &&
-            get_registered_contestant(fields => 'is_jury', contest_id => param('id'));
+    contests_new_save if $p->{new_save} && $user->privs->{create_contests};
+    contests_edit_save($p->{id})
+        if $p->{edit_save} && $p->{id} && is_jury_in_contest(contest_id => $p->{id});
 
     CATS::ContestParticipate::online if $p->{online_registration};
     CATS::ContestParticipate::virtual if $p->{virtual_registration};

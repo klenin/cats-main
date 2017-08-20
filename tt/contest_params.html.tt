@@ -4,13 +4,13 @@
 [% PROCESS includes/contest_params.tti %]
 [% IF can_edit %]
 <input type="hidden" name="id" value="[% id %]" />
-<input type="submit" name="edit_save" value="[% capt.ok %]" class="button" />
+<button type="submit" name="edit_save" value="1" class="button">[% capt.ok %]</button>
 [% END %]
 [% IF user.privs.create_contests %]
-<input type="submit" name="new_save" value="[% capt.create_copy %]" class="button">
+<button type="submit" name="new_save" value="1" class="button">[% capt.create_copy %]</button>
 [% END %]
 
-<input type="submit" name="edit_cancel" value="[% capt.cancel %]" class="button" />
+<button type="submit" name="edit_cancel" value="1" class="button">[% capt.cancel %]</button>
 </form>
 
 [% PROCESS includes/menu_end.tti %]

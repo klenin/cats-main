@@ -45,6 +45,7 @@ sub main_routes() {
         profile => [ \&CATS::UI::Users::profile_frame, json => $bool, clear => $str, edit_save => $str, ],
         contests => [ \&CATS::UI::Contests::contests_frame,
             summary_rank => $bool, create_group => $bool, online_registration => $bool, virtual_registration => $bool,
+            edit_save => $bool, new_save => $bool, id => $int,
         ],
         contest_sites => [ \&CATS::UI::Sites::contest_sites_frame, ],
         contest_sites_edit => [ \&CATS::UI::Sites::contest_sites_edit_frame,

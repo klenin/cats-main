@@ -2,8 +2,8 @@
 
 <form method="post" enctype="multipart/form-data" action="[% href_action %]">
 [% PROCESS includes/contest_params.tti %]
-<input type="submit" name="new_save" value="[% capt.ok %]" class="button">
-<input type="submit" name="new_cancel" value="[% capt.cancel %]" class="button">
+<button type="submit" name="new_save" value="1" class="button">[% capt.ok %]</button>
+<button type="submit" name="new_cancel" value="1" class="button">[% capt.cancel %]</button>
 </form>
 
 [% PROCESS includes/menu_end.tti %]
