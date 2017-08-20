@@ -5,21 +5,12 @@
 <body>
 [% PROCESS includes/sources_info.tti %]
 <script>
-  function highlight_errors(rid) {
+  function highlight_errors(rid, re) {
     var co = document.getElementById('co' + rid);
     if (!co) return;
     var co_text = co.innerHTML;
     if (!co_text) return;
     var co_lines = co_text.split('\n');
-    var re = [
-      /^[a-zA-Z0-9_\.]+\((\d+),\d+\)/,
-      /^[a-zA-Z0-9_\.]+\((\d+)\)\s:/,
-      /^[a-zA-Z0-9_\.]+:(\d+):\d+\:/,
-      /at\s[a-zA-Z0-9_\.]+\sline\s(\d+)/,
-      /^\s*File\s"[a-zA-Z0-9_\.]+",\sline\s(\d+)/,
-      /in\s[a-zA-Z0-9_\.]+\son\sline\s(\d+)/,
-      /^\[(\d+),\d+\]\s[a-zA-Z0-9_\.]+:/
-    ];
     var errors = {};
     for (var i = 0; i < co_lines.length; ++i) {
       for (var j = 0; j < re.length; ++j) {
@@ -69,7 +60,7 @@
   <td id="co[% si.req_id %]" class="bordered" style="margin: 0 10 10 0; padding: 0;">
   <script type="syntaxhighlighter" class="brush: [% si.syntax.lower || 'plain' %];"><![CDATA[[% si.src | html %]]]></script>
   </td>
-  <script>highlight_errors([% si.req_id %])</script>
+  <script>highlight_errors([% si.req_id %], [ [% si.err_regexp_js.join(', ') %] ])</script>
 [% END %]
 </tr>
 </table>

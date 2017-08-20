@@ -312,6 +312,16 @@ sub view_source_frame {
     if ($sources_info->{file_name} =~ m/\.zip$/) {
         $sources_info->{src} = sprintf 'ZIP, %d bytes', length ($sources_info->{src});
     }
+    if (my $r = $sources_info->{err_regexp}) {
+        CATS::Utils::sanitize_file_name(my $sf = $sources_info->{file_name});
+        $sf =~ s/([^a-zA-Z0-9_])/\\$1/g;
+        for (split ' ', $r) {
+            s/~FILE~/$sf/;
+            s/~LINE~/(\\d+)/;
+            s/~POS~/\\d+/;
+            push @{$sources_info->{err_regexp_js}}, "/$_/";
+        }
+    }
     $sources_info->{syntax} = $p->{syntax} if $p->{syntax};
     $sources_info->{src_lines} = [ map {}, split("\n", $sources_info->{src}) ];
     $sources_info->{compiler_output} = { get_log_dump($sources_info->{req_id}, 1) }
