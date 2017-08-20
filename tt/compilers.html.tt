@@ -15,15 +15,17 @@ function delete_compiler(href, name) {
 [% FOREACH c IN compilers %]
 <tr class="[% loop.parity() %]">
 <td>
-  [% IF editable %]
+  [% IF c.href_delete ~%]
   <a href="javascript:delete_compiler('[% c.href_delete %]', '[% c.description | html %]');" class="icon delete"></a>
+  [%~ END %]
+  [% IF c.href_edit ~%]
   <a href="[% c.href_edit %]" class="icon edit"></a>
-  [% END %]
+  [%~ END %]
   [% c.code | html %]
 </td>
 <td>[% c.description | html %]</td>
 <td>[% c.file_ext | html %]</td>
-[% IF editable && visible_cols.De %]<td>[% c.default_file_ext | html %]</td>[% END %]
+[% IF visible_cols.De %]<td>[% c.default_file_ext | html %]</td>[% END %]
 [% IF visible_cols.Mh %]<td>[% c.memory_handicap %]</td>[% END %]
 [% IF visible_cols.Sy %]<td>[% c.syntax %]</td>[% END %]
 [% IF user.is_jury %]<td>[% IF c.locked %]<font color=red>[% capt.locked %]</font>[% ELSE; capt.unlocked; END %]</td>[% END %]

@@ -35,13 +35,13 @@ sub edit_save {
 }
 
 sub compilers_frame {
-    if ($is_jury) {
+    if ($is_root) {
         defined url_param('new') || defined url_param('edit') and return edit_frame;
     }
 
     my $lv = CATS::ListView->new(name => 'compilers', template => 'compilers.html.tt');
 
-    if ($is_root && defined url_param('delete')) { # extra security
+    if ($is_root && defined url_param('delete')) {
         my $deid = url_param('delete');
         if (my ($descr) = $dbh->selectrow_array(q~
             SELECT description FROM default_de WHERE id = ?~, undef,
@@ -55,7 +55,7 @@ sub compilers_frame {
             msg(1064, $descr);
         }
     }
-    $is_jury && defined param('edit_save') and edit_save;
+    $is_root && defined param('edit_save') and edit_save;
 
     $lv->define_columns(url_f('compilers'), 0, 0, [
         { caption => res_str(619), order_by => 'code', width => '10%' },
@@ -80,12 +80,14 @@ sub compilers_frame {
         return (
             %$row,
             locked => !$row->{in_contests},
-            href_edit => url_f('compilers', edit => $row->{did}),
-            href_delete => url_f('compilers', 'delete' => $row->{did}));
+            ($is_root ? (
+                href_edit => url_f('compilers', edit => $row->{did}),
+                href_delete => url_f('compilers', 'delete' => $row->{did})) : ()),
+        );
     };
     $lv->attach(url_f('compilers'), $fetch_record, $c);
 
-    $t->param(submenu => [ CATS::References::menu('compilers') ], editable => $is_root)
+    $t->param(submenu => [ CATS::References::menu('compilers') ])
         if $is_jury;
 }
 
