@@ -63,7 +63,7 @@ sub get_run_info {
 
         $last_test = $row->{test_rank};
         my $p = $row->{is_accepted} ? $row->{points} || $points->[$row->{test_rank} - 1] || 0 : 0;
-        if (my $ts = $testset{$last_test}) {
+        if (my $ts = $row->{ts} = $testset{$last_test}) {
             $used_testsets{$ts->{name}} = $ts;
             $ts->{accepted_count} //= 0;
             push @{$ts->{list} ||= []}, $last_test;
@@ -116,7 +116,7 @@ sub get_run_info {
         my ($rank) = @_;
         return $run_details{$rank} if exists $run_details{$rank};
         return () unless $contest->{show_all_tests};
-        my %r = ( test_rank => $rank );
+        my %r = (test_rank => $rank, ts => $testset{$rank});
         $r{short_state} = exists $testset{$rank} ? 'NP' : 'NT';
         return \%r;
     };
@@ -161,6 +161,7 @@ sub get_run_info {
 
     return {
         %$contest,
+        id => $req->{req_id},
         total_points => $total_points,
         run_details => [ map $add_testdata->($run_row->($_)), 1..$last_test ],
         maximums => $maximums,

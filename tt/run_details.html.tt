@@ -15,7 +15,7 @@
 
 [% IF is_any_jury %]
 <div id="filter_form" style="display: none;">
-<form action="" onsubmit="return filter()">
+<form action="" onsubmit="return filter([% runs.0.id %])">
 <div id="plot" style="width: 600px; height: 150px; display: none; float: left;"></div>
 <div id="plot-legend" style="float: left;"></div>
 <div style="clear: both;"></div>
@@ -47,12 +47,14 @@
   [% IF r.testsets.size %]
     <p>[% capt.testsets %]</p>
     <table class="bordered">
-    <tr><th>[% capt.name %]</th><th>[% capt.tests_passed %]</th><th>[% capt.points %]</th><th>[% capt.comment %]</th>
-    [%- IF r.has_depends_on %]<th>[% capt.depends_on %]</th>[% END -%]
+    <tr>
+      <th>[% capt.name %]</th>
+      <th>[% capt.tests_passed %]</th><th>[% capt.points %]</th><th>[% capt.comment %]</th>
+      [%- IF r.has_depends_on %]<th>[% capt.depends_on %]</th>[% END -%]
     </tr>
     [% FOREACH ts IN r.testsets %]
     <tr [% IF ts.earned_points %] class="run_details_OK"[% END %]>
-      <td>[% ts.name %]</td>
+      <td><a href="#" onclick="filter_testset([% r.id %], '[% ts.name %]')">[% ts.name %]</a></td>
       <td align="right">[% ts.accepted_count || 0 %] / [% ts.test_count %]</td>
       <td align="right">[% ts.earned_points || 0 %]</td>
       <td>[% ts.comment %]</td>
@@ -61,11 +63,16 @@
       [%- END -%]
     </tr>
     [% END %]
-    <tr><td colspan="2"/>[% capt.total %]<td align="right">[% r.total_points %]</td><td></td></tr>
+    <tr>
+      <td colspan="2"><a href="#" onclick="filter_testset([% r.id %], '')">[% capt.total %]</a></td>
+      <td align="right">[% r.total_points %]</td>
+      <td></td>
+      [%- IF r.has_depends_on %]<td></td>[% END %]
+    </tr>
     </table>
-    <br/>
   [% END %]
-  <table id="details" class="details bordered">
+  <h3 id="tf[% r.id %]"></h3>
+  <table id="details[% r.id %]" class="details bordered">
   <tr>
     <th>[% capt.test %]</th>
     <th>[% capt.result %]</th>
@@ -90,7 +97,7 @@
     [% END %]
   </tr>
   [% FOREACH rd IN r.run_details %]
-  <tr class="run_details_[% rd.short_state %]">
+  <tr class="run_details_[% rd.short_state %]" ts="[% rd.ts.name %]">
     <td>[% rd.test_rank %]</td>
     [% IF rd.short_state == 'NT' %]
     <td colspan="[% 1 + (r.show_points ? 1 : 0) + (r.show_test_resources ? 3 : 0) %]">[% capt.verdicts.NT %]</td>
@@ -144,10 +151,11 @@
 <script type="text/javascript" src="js/lib/jquery.flot.min.js"></script>
 
 <script type="text/javascript">
-function filter() {
+function filter(rid) {
     var series = [];
     var dataIndexes = [];
-    $('#details tr th').each(function (i, h) {
+    var details_id = '#details' + rid;
+    $(details_id + ' tr th').each(function (i, h) {
         var qh = $(h);
         if (qh.hasClass('resource'))
             series.push({ label: qh.text(), idx: i, data: [], yaxis: series.length + 1 });
@@ -156,7 +164,7 @@ function filter() {
     });
     if (!dataIndexes.length) return false;
     var re = new RegExp($('#n_regexp').val());
-    $('#details tr').each(function (i, v) {
+    $(details_id + ' tr').each(function (i, v) {
         var row = $(v).children('td');
         var dataStr = '';
         for (var j = 0; j < dataIndexes.length; ++j) {
@@ -182,6 +190,7 @@ function filter() {
     $.plot($('#plot'), series, { series: { lines: { show: true }, points: { show: true } }, legend: { container: '#plot-legend' } });
     return false;
 }
+
 function toggle_show_input_data() {
     $('.input_data').toggleClass('hidden', !($('#show_input_data')[0]).checked);
 }
@@ -191,6 +200,19 @@ function toggle_show_answer_data() {
 function toggle_show_output_data() {
     $('.output_data').toggleClass('hidden', !($('#show_output_data')[0]).checked);
 }
+
+function filter_testset(rid, ts) {
+  $('#details' + rid + ' tr').each(function (i, v) {
+    var r = $(v).attr('ts');
+    if (r === undefined) return;
+    if (!ts || r == ts)
+      $(v).removeClass('hidden');
+    else
+      $(v).addClass('hidden');
+  });
+  $('#tf' + rid).text(ts);
+}
+
 $(document).ready(function() {
     $('#filter_form').show();
     toggle_show_input_data();
