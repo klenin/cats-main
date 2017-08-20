@@ -177,7 +177,7 @@ sub get_log_dump {
     my ($dump, $length) = $dbh->selectrow_array(qq~
         SELECT SUBSTRING(dump FROM 1 FOR 500000), OCTET_LENGTH(dump) FROM log_dumps WHERE req_id = ?~, undef,
         $rid) or return ();
-    $dump = Encode::decode('CP1251', $dump);
+    $dump = Encode::decode_utf8($dump);
     ($dump) = $dump =~ m/
         \Q$cats::log_section_start_prefix$cats::log_section_compile\E
        (.*)
