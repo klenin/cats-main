@@ -144,35 +144,37 @@ sub similarity_score {
 }
 
 sub similarity_frame {
+    my ($p) = @_;
     init_template('similarity.html.tt');
     $is_jury && !$contest->is_practice or return;
-    my $p = $dbh->selectall_arrayref(q~
+    my $problems = $dbh->selectall_arrayref(q~
         SELECT P.id, P.title, CP.code
-            FROM problems P INNER JOIN contest_problems CP ON P.id = CP.problem_id
-            WHERE CP.contest_id = ? ORDER BY CP.code~, { Slice => {} }, $cid);
+        FROM problems P INNER JOIN contest_problems CP ON P.id = CP.problem_id
+        WHERE CP.contest_id = ? ORDER BY CP.code~, { Slice => {} },
+        $cid);
     $t->param(
-        virtual => (my $virtual = param('virtual') ? 1 : 0),
-        group => (my $group = param('group') ? 1 : 0),
-        self_diff => (my $self_diff = param('self_diff') ? 1 : 0),
-        collapse_idents => (my $collapse_idents = param('collapse_idents') ? 1 : 0),
-        threshold => my $threshold = param('threshold') || 50,
-        problems => $p,
+        virtual => (my $virtual = $p->{virtual} ? 1 : 0),
+        group => (my $group = $p->{group} ? 1 : 0),
+        self_diff => (my $self_diff = $p->{self_diff} ? 1 : 0),
+        collapse_idents => (my $collapse_idents = $p->{collapse_idents} ? 1 : 0),
+        threshold => my $threshold = $p->{threshold} || 50,
+        problems => $problems,
     );
-    my ($pid) = param('pid') or return;
-    $pid =~ /^\d+$/ or return;
-    $_->{selected} = $_->{id} == $pid for @$p;
+    $p->{pid} or return;
+    $_->{selected} = $_->{id} == $p->{pid} for @$problems;
     # Manual join is faster.
     my $acc = $dbh->selectall_hashref(q~
         SELECT CA.account_id, CA.is_jury, CA.is_virtual, A.team_name, A.city
-            FROM contest_accounts CA INNER JOIN accounts A ON CA.account_id = A.id
-            WHERE contest_id = ?~,
+        FROM contest_accounts CA INNER JOIN accounts A ON CA.account_id = A.id
+        WHERE contest_id = ?~,
         'account_id', { Slice => {} }, $cid);
+    my $first_code = 100; # Ignore non-code DEs.
     my $reqs = $dbh->selectall_arrayref(q~
         SELECT R.id, R.account_id, S.src
-            FROM reqs R INNER JOIN sources S ON S.req_id = R.id
-            INNER JOIN default_de D ON D.id = S.de_id
-            WHERE R.contest_id = ? AND R.problem_id = ? AND D.code >= 100~, # Ignore non-code DEs
-            { Slice => {} }, $cid, $pid);
+        FROM reqs R INNER JOIN sources S ON S.req_id = R.id
+        INNER JOIN default_de D ON D.id = S.de_id
+        WHERE R.contest_id = ? AND R.problem_id = ? AND D.code >= ?~, { Slice => {} },
+        $cid, $p->{pid}, $first_code);
 
     preprocess_source($_, $collapse_idents) for @$reqs;
 
