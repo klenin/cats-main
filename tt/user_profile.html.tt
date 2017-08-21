@@ -7,7 +7,7 @@
 [% PROCESS includes/password.tti change_password = 1 %]
 <br>
 [% PROCESS includes/edit_save_cancel.tti %]
-<input type="submit" name="clear" value="[% capt.clear %]" class="button"/>
+<button type="submit" name="clear" value="1" class="button">[% capt.clear %]</button>
 </form>
 
 [% IF profile_langs -%]

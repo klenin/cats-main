@@ -212,7 +212,7 @@ sub profile_frame {
     my ($p) = @_;
     init_template(auto_ext('user_profile', $p->{json}));
     $uid or return;
-    if (defined $p->{clear}) {
+    if ($p->{clear}) {
         $settings = {};
         msg(1029, $user->{name});
     }
@@ -583,26 +583,26 @@ sub users_all_settings_frame {
 }
 
 sub user_settings_frame {
+    my ($p) = @_;
     init_template('user_settings.html.tt');
-    $is_root or return;
-    my $user_id = param('uid') or return;
+    $is_root && $p->{uid} or return;
 
     my $cleared;
-    if (param('clear')) {
+    if ($p->{clear}) {
         $cleared = $dbh->do(q~
             UPDATE accounts SET settings = NULL WHERE id = ?~, undef,
-            $user_id
-        ) && $dbh->commit;
+            $p->{uid}
+        ) and $dbh->commit;
     }
 
     my ($team_name, $user_settings) = $dbh->selectrow_array(q~
         SELECT team_name, settings FROM accounts WHERE id = ?~, undef,
-        $user_id);
+        $p->{uid});
 
     msg(1029, $team_name) if $cleared;
     display_settings(thaw($user_settings)) if $user_settings;
     $t->param(
-        user_submenu('user_settings', $user_id),
+        user_submenu('user_settings', $p->{uid}),
         team_name => $team_name,
         title_suffix => $team_name,
     );

@@ -7,7 +7,7 @@
 </p>
 
 <form method="post" enctype="multipart/form-data">
-<input type="submit" name="clear" value="[% capt.clear %]" class="button"/>
+<button type="submit" name="clear" value="1" class="button">[% capt.clear %]</button>
 </form>
 
 [% PROCESS includes/menu_end.tti %]
