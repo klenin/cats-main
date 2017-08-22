@@ -155,7 +155,7 @@ sub _get_reqs {
 
     # Manually join with accounts since it is faster.
     $dbh->selectall_arrayref(q~
-        SELECT R.id, R.account_id, S.src
+        SELECT R.id, R.account_id, R.problem_id, S.src
         FROM reqs R
         INNER JOIN contest_accounts CA ON CA.contest_id = R.contest_id AND CA.account_id = R.account_id
         INNER JOIN sources S ON S.req_id = R.id
@@ -208,10 +208,15 @@ sub similarity_frame {
             next if $i->{id} >= $j->{id} || (($ai == $aj) ^ $p->{self_diff});
             my $score = similarity_score($i->{hash}, $j->{hash});
             ($score * 100 > $p->{threshold}) ^ $p->{self_diff} or next;
+            my $search =
+                "account_id=$ai" . ($ai == $aj ? '' : ",account_id=$aj") .
+                ",problem_id=$i->{problem_id}" .
+                ($i->{problem_id} == $j->{problem_id} ? '' : ",problem_id=$j->{problem_id}");
             my $pair = {
                 score => sprintf('%.1f%%', $score * 100), s => $score,
                 href_diff => url_f('diff_runs', r1 => $i->{id}, r2 => $j->{id}),
-                href_console => url_f('console', uf => $ai . ',' . $aj),
+                href_console => url_f('console',
+                    se => 'user_stats', search => $search, i_value => -1, show_results => 1),
                 t1 => $ai, t2 => $aj,
             };
             exists $users_idx->{$_} or $missing_users{$_} = 1 for $ai, $aj;
