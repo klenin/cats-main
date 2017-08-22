@@ -12,5 +12,8 @@
     all_contests => 'All contests',
     console => 'console',
     equivalency_groups => 'Equivalency groups',
+    total => 'Total submissions',
+    similar => 'Similar pairs',
+    missing => 'From other contests',
   })
 %]

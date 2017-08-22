@@ -37,4 +37,5 @@
 [% capt.equivalency_groups %]:<br/>
 [% FOREACH el IN equiv_lists %] ([% FOREACH u IN el; users_idx.item(u).team_name | html; ', ' UNLESS loop.last; END %]) <br/>[% END %]
 [% END %]
+[% FOREACH s IN [ 'total', 'similar', 'missing' ]; NEXT UNLESS stats.$s; capt.$s; ': '; stats.$s; '. '; END %]
 [% PROCESS includes/menu_end.tti %]

@@ -235,6 +235,11 @@ sub similarity_frame {
     $t->param(
         similar => [ sort $cmp @similar ],
         equiv_lists => [ grep @$_ > 2, @{greedy_cliques @similar} ],
+        stats => {
+            total => scalar @$reqs,
+            similar => scalar @similar,
+            missing => scalar keys %missing_users,
+        },
     );
 }
 
