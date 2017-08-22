@@ -1,6 +1,7 @@
 [%
   capt.import({
     compare_submissions => 'Compare submissions',
+    encoding => 'encoding',
     show => 'Show',
     both => 'both',
     diff => 'diff',

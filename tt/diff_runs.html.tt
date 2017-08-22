@@ -34,6 +34,7 @@ var diff_lines = [
 </script>
 [% PROCESS includes/sources_info.tti subcaption=capt.compare_submissions %]
 <p>
+[% PROCESS includes/encoding_form.html.tti capt_enc = capt.encoding %]
 [% capt.show %]:
 [ <a onclick="show_ab({ diff_only_a: 2, diff_only_b: 2, diff_both: 2 }); return false" href="#">[% capt.both %]</a>
 | <a onclick="show_ab({ diff_only_a: 2, diff_only_b: 2, diff_both: 0 }); return false" href="#">[% capt.diff %]</a>

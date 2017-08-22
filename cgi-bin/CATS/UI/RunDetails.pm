@@ -603,7 +603,7 @@ sub diff_runs_frame {
     $p->{r1} && $p->{r2} or return;
 
     my $si = get_sources_info(
-        request_id => [ $p->{r1}, $p->{r2} ], get_source => 1) or return;
+        request_id => [ $p->{r1}, $p->{r2} ], get_source => 1, encode_source => 1) or return;
     @$si == 2 or return;
 
     source_links($_) for @$si;

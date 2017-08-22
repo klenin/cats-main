@@ -5,5 +5,5 @@
     <option value="[% se.enc %]"[% ' selected="selected"' IF se.selected %]>[% se.enc %]</option>
     [%- END %]
   </select>
-  <input type="submit" class="button" value="[% capt_enc %]" />
+  <button type="submit" value="1" class="button">[% capt_enc %]</button>
 </form>

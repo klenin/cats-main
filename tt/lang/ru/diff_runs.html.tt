@@ -1,6 +1,7 @@
 [%
   capt.import({
     compare_submissions => 'Сравнение отправленных файлов',
+    encoding => 'кодировка',
     show => 'Показывать',
     both => 'сравнение',
     diff => 'отличия',
