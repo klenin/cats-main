@@ -14,6 +14,7 @@
 <label>[% checkbox_1('group', params.group) %] [% capt.group_by_team %]</label>
 <label>[% checkbox_1('self_diff', params.self_diff) %] [% capt.sudden_changes %]</label>
 <label>[% checkbox_1('collapse_idents', params.collapse_idents) %] [% capt.collapse_idents %]</label>
+[% IF user.privs.is_root %]<label>[% checkbox_1('all_contests', params.all_contests) %] [% capt.all_contests %]</label>[% END %]
 </form>
 <table class="bordered highlight">
 [% FOREACH s IN similar %]

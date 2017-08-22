@@ -7,7 +7,7 @@ use List::Util qw(max);
 
 use CATS::Constants;
 use CATS::DB;
-use CATS::Globals qw($contest $cid $is_jury $t);
+use CATS::Globals qw($cid $contest $is_jury $is_root $t);
 use CATS::Messages qw(res_str);
 use CATS::Output qw(init_template url_f);
 use CATS::Problem::Utils;
@@ -155,24 +155,29 @@ sub similarity_frame {
         $cid);
     $p->{threshold} //= 50;
     $p->{self_diff} //= 0;
+    $p->{all_contests} = 0 if !$is_root;
     $t->param(params => $p, problems => $problems, title_fuffix => res_str(545), );
     $p->{pid} or return;
+    my $cond = {
+        ($p->{all_contests} ? () : (contest_id => $cid)),
+        ($p->{virtual} ? () : (is_virtual => 0)),
+        ($p->{jury} ? () : (is_jury => 0)),
+    };
+    my ($where, @bind) = %$cond ? $sql->where($cond) : ('');
     # Manual join is faster.
     my $acc = $dbh->selectall_hashref(q~
         SELECT CA.account_id, CA.is_jury, CA.is_virtual, A.team_name, A.city
-        FROM contest_accounts CA INNER JOIN accounts A ON CA.account_id = A.id
-        WHERE contest_id = ?~ .
-        ($p->{virtual} ? '' : ' AND CA.is_virtual = 0') .
-        ($p->{jury} ? '' : ' AND CA.is_jury = 0'),
+        FROM contest_accounts CA INNER JOIN accounts A ON CA.account_id = A.id~ . $where,
         'account_id', { Slice => {} },
-        $cid);
+        @bind);
     my $first_code = 100; # Ignore non-code DEs.
     my $reqs = $dbh->selectall_arrayref(q~
         SELECT R.id, R.account_id, S.src
         FROM reqs R INNER JOIN sources S ON S.req_id = R.id
         INNER JOIN default_de D ON D.id = S.de_id
-        WHERE R.contest_id = ? AND R.problem_id = ? AND D.code >= ?~, { Slice => {} },
-        $cid, $p->{pid}, $first_code);
+        WHERE R.problem_id = ? AND D.code >= ?~ .
+        ($p->{all_contests} ? '' : ' AND R.contest_id = ?'), { Slice => {} },
+        $p->{pid}, $first_code, $p->{all_contests} ? () : ($cid));
 
     preprocess_source($_, $p->{collapse_idents}) for @$reqs;
 
