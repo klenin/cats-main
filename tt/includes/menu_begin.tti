@@ -25,10 +25,8 @@
 
 <table class="iface">
   <tr class="main_menu top">
-    <td align="left">
-    &nbsp;[% IF left_menu %][ [% menu(left_menu, 'main_menu_selected') %]][% END %]
-    </td>
-    <td align="right">[ [% menu(right_menu, 'main_menu_selected') %]]&nbsp;</td>
+    <td>&nbsp;[% IF left_menu %][ [% menu(left_menu, 'main_menu_selected') %]][% END %]</td>
+    <td>[ [% menu(right_menu, 'main_menu_selected') %]]&nbsp;</td>
   </tr>
   [%- IF submenu && submenu.size %]
   <tr class="sub_menu">
