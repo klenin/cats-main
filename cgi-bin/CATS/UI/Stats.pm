@@ -155,7 +155,7 @@ sub _get_reqs {
 
     # Manually join with accounts since it is faster.
     $dbh->selectall_arrayref(q~
-        SELECT R.id, R.account_id, R.problem_id, S.src
+        SELECT R.id, R.account_id, R.problem_id, R.contest_id, S.src
         FROM reqs R
         INNER JOIN contest_accounts CA ON CA.contest_id = R.contest_id AND CA.account_id = R.account_id
         INNER JOIN sources S ON S.req_id = R.id
@@ -205,7 +205,8 @@ sub similarity_frame {
         my $ai = $i->{account_id};
         for my $j (@$reqs) {
             my $aj = $j->{account_id};
-            next if $i->{id} >= $j->{id} || (($ai == $aj) ^ $p->{self_diff});
+            next if $i->{id} >= $j->{id};
+            next if $p->{self_diff} ? $ai != $aj : $ai == $aj && $i->{contest_id} == $j->{contest_id};
             my $score = similarity_score($i->{hash}, $j->{hash});
             ($score * 100 > $p->{threshold}) ^ $p->{self_diff} or next;
             my $search =
