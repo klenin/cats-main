@@ -152,16 +152,9 @@ sub similarity_frame {
         FROM problems P INNER JOIN contest_problems CP ON P.id = CP.problem_id
         WHERE CP.contest_id = ? ORDER BY CP.code~, { Slice => {} },
         $cid);
-    $t->param(
-        virtual => (my $virtual = $p->{virtual} ? 1 : 0),
-        group => (my $group = $p->{group} ? 1 : 0),
-        self_diff => (my $self_diff = $p->{self_diff} ? 1 : 0),
-        collapse_idents => (my $collapse_idents = $p->{collapse_idents} ? 1 : 0),
-        threshold => my $threshold = $p->{threshold} || 50,
-        problems => $problems,
-    );
+    $p->{threshold} //= 50;
+    $t->param(params => $p, problems => $problems);
     $p->{pid} or return;
-    $_->{selected} = $_->{id} == $p->{pid} for @$problems;
     # Manual join is faster.
     my $acc = $dbh->selectall_hashref(q~
         SELECT CA.account_id, CA.is_jury, CA.is_virtual, A.team_name, A.city
@@ -176,7 +169,7 @@ sub similarity_frame {
         WHERE R.contest_id = ? AND R.problem_id = ? AND D.code >= ?~, { Slice => {} },
         $cid, $p->{pid}, $first_code);
 
-    preprocess_source($_, $collapse_idents) for @$reqs;
+    preprocess_source($_, $p->{collapse_idents}) for @$reqs;
 
     my @similar;
     my $by_account = {};
@@ -186,21 +179,21 @@ sub similarity_frame {
             my $aj = $acc->{$j->{account_id}};
             next if
                 $i->{id} >= $j->{id} ||
-                (($i->{account_id} == $j->{account_id}) ^ $self_diff) ||
+                (($i->{account_id} == $j->{account_id}) ^ $p->{self_diff}) ||
                 $ai->{is_jury} || $aj->{is_jury} ||
-                !$virtual && ($ai->{is_virtual} || $aj->{is_virtual});
+                !$p->{virtual} && ($ai->{is_virtual} || $aj->{is_virtual});
             my $score = similarity_score($i->{hash}, $j->{hash});
-            ($score * 100 > $threshold) ^ $self_diff or next;
+            ($score * 100 > $p->{threshold}) ^ $p->{self_diff} or next;
             my $pair = {
                 score => sprintf('%.1f%%', $score * 100), s => $score,
-                n1 => [$ai], ($self_diff ? () : (n2 => [$aj])),
+                n1 => [$ai], ($p->{self_diff} ? () : (n2 => [$aj])),
                 href_diff => url_f('diff_runs', r1 => $i->{id}, r2 => $j->{id}),
                 href_console => url_f('console', uf => $i->{account_id} . ',' . $j->{account_id}),
                 t1 => $i->{account_id}, t2 => $j->{account_id},
             };
-            if ($group) {
+            if ($p->{group}) {
                 for ($by_account->{$i->{account_id} . '#' . $j->{account_id}}) {
-                    $_ = $pair if !defined $_ || (($_->{s} < $pair->{s}) ^ $self_diff);
+                    $_ = $pair if !defined $_ || (($_->{s} < $pair->{s}) ^ $p->{self_diff});
                 }
             }
             else {
@@ -208,10 +201,10 @@ sub similarity_frame {
             }
         }
     }
-    @similar = values %$by_account if $group;
+    @similar = values %$by_account if $p->{group};
     my $ids_to_teams = sub { [ map $acc->{$_}->{team_name}, @{$_[0]} ] };
     $t->param(
-        similar => [ sort { ($b->{s} <=> $a->{s}) * ($self_diff ? -1 : 1) } @similar ],
+        similar => [ sort { ($b->{s} <=> $a->{s}) * ($p->{self_diff} ? -1 : 1) } @similar ],
         equiv_lists =>
             lists_to_strings [ map $ids_to_teams->($_), grep @$_ > 2, @{greedy_cliques @similar} ]
     );

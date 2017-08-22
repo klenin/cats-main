@@ -3,16 +3,16 @@
 <label for="pid">[% capt.problem %]:</label>
 <select name="pid"><option/>
   [% FOREACH p IN problems %]
-  <option value="[% p.id %]"[% ' selected="selected"' IF p.selected %]>[% p.code %] - [% p.title | html %]</option>
+  <option value="[% p.id %]"[% ' selected="selected"' IF p.id == params.pid %]>[% p.code %] - [% p.title | html %]</option>
   [% END %]
 </select>
-<label for="threshold">[% capt.threshold %], %:</label><input type="text" name="threshold" value="[% threshold %]"/>
+<label>[% capt.threshold %], %: <input type="text" name="threshold" value="[% params.threshold %]"/></label>
 <button type="submit" value="1" class="button">[% capt.compare %]</button>
 <br/>
-<label>[% checkbox_1('virtual', virtual) %] [% capt.include_virtual %]</label>
-<label>[% checkbox_1('group', group) %] [% capt.group_by_team %]</label>
-<label>[% checkbox_1('self_diff', self_diff) %] [% capt.sudden_changes %]</label>
-<label>[% checkbox_1('collapse_idents', collapse_idents) %] [% capt.collapse_idents %]</label>
+<label>[% checkbox_1('virtual', params.virtual) %] [% capt.include_virtual %]</label>
+<label>[% checkbox_1('group', params.group) %] [% capt.group_by_team %]</label>
+<label>[% checkbox_1('self_diff', params.self_diff) %] [% capt.sudden_changes %]</label>
+<label>[% checkbox_1('collapse_idents', params.collapse_idents) %] [% capt.collapse_idents %]</label>
 </form>
 <table class="bordered highlight">
 [% FOREACH s IN similar %]
