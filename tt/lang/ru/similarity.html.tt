@@ -1,6 +1,7 @@
 [%
   capt.import({
     problem => 'Задача',
+    participant => 'Участник',
     threshold => 'Порог',
     compare => 'Сравнить',
     include_virtual => 'Учитывать виртуальных',

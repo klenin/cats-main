@@ -1,11 +1,19 @@
 [% PROCESS includes/menu_begin.tti %]
 <form method="post" enctype="multipart/form-data">
-<label for="pid">[% capt.problem %]:</label>
+<label>[% capt.problem %]:
 <select name="pid"><option/>
   [% FOREACH p IN problems %]
   <option value="[% p.id %]"[% ' selected="selected"' IF p.id == params.pid %]>[% p.code %] - [% p.title | html %]</option>
   [% END %]
 </select>
+</label>
+<label>[% capt.participant %]:
+<select name="account_id"><option/>
+  [% FOREACH u IN users %]
+  <option value="[% u.account_id %]"[% ' selected="selected"' IF u.account_id == params.account_id %]>[% u.team_name | html %]</option>
+  [% END %]
+</select>
+</label>
 <label>[% capt.threshold %], %: <input type="text" name="threshold" value="[% params.threshold %]"/></label>
 <button type="submit" value="1" class="button">[% capt.compare %]</button>
 <br/>
@@ -19,14 +27,14 @@
 <table class="bordered highlight">
 [% FOREACH s IN similar %]
   <tr><td align="right"><a href="[% s.href_diff %]" target="_blank">[% s.score %]</td>
-  <td>[% FOREACH t1 IN s.n1; t1.team_name | html; " ($t1.city)" IF t1.city; END %]</td>
-  [% IF s.n2 %]<td>[% FOREACH t2 IN s.n2; t2.team_name | html; " ($t2.city)" IF t2.city; END %]</td>[% END %]
+  <td>[% u1 = users_idx.item(s.t1); u1.team_name | html; " ($u1.city)" IF u1.city %]</td>
+  [% IF s.t2 != s.t1 %]<td>[% u2 = users_idx.item(s.t2); u2.team_name | html; " ($u2.city)" IF u2.city %]</td>[% END %]
   <td><a href="[% s.href_console %]" target="_blank">[% capt.console %]</td>
   </tr>
 [% END %]
 </table>
 [% IF equiv_lists %]
 [% capt.equivalency_groups %]:<br/>
-[% FOREACH el IN equiv_lists %] ([% el.eq %]) <br/>[% END %]
+[% FOREACH el IN equiv_lists %] ([% FOREACH u IN el; users_idx.item(u).team_name | html; ', ' UNLESS loop.last; END %]) <br/>[% END %]
 [% END %]
 [% PROCESS includes/menu_end.tti %]

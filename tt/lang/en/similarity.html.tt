@@ -1,6 +1,7 @@
 [%
   capt.import({
     problem => 'Problem',
+    participant => 'Participant',
     threshold => 'Threshold',
     compare => 'Compare',
     include_virtual => 'Include virtual',

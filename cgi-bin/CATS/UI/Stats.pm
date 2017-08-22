@@ -39,8 +39,6 @@ sub greedy_cliques {
     $eq_lists;
 }
 
-sub lists_to_strings { [ map { eq => join ',', @$_ }, @{$_[0]} ] }
-
 sub compare_tests_frame {
     init_template('compare_tests.html.tt');
     $is_jury or return;
@@ -144,63 +142,81 @@ sub similarity_score {
     return $sim / (keys(%$i) + keys(%$j));
 }
 
+sub _get_reqs {
+    my ($p) = @_;
+    my $cond = {
+        code => { '>=', 100 }, # Ignore non-code DEs.
+        ($p->{all_contests} ? () : ('R.contest_id' => $cid)),
+        ($p->{pid} ? (problem_id => $p->{pid}) : ()),
+        ($p->{virtual} ? () : (is_virtual => 0)),
+        ($p->{jury} ? () : (is_jury => 0)),
+    };
+    my ($where, @bind) = %$cond ? $sql->where($cond) : ('');
+
+    # Manually join with accounts since it is faster.
+    $dbh->selectall_arrayref(q~
+        SELECT R.id, R.account_id, S.src
+        FROM reqs R
+        INNER JOIN contest_accounts CA ON CA.contest_id = R.contest_id AND CA.account_id = R.account_id
+        INNER JOIN sources S ON S.req_id = R.id
+        INNER JOIN default_de D ON D.id = S.de_id~ .
+        $where, { Slice => {} },
+        @bind);
+}
+
 sub similarity_frame {
     my ($p) = @_;
     init_template('similarity.html.tt');
     $is_jury && !$contest->is_practice or return;
+    $p->{threshold} //= 50;
+    $p->{self_diff} //= 0;
+    $p->{all_contests} = 0 if !$is_root;
+
     my $problems = $dbh->selectall_arrayref(q~
         SELECT P.id, P.title, CP.code
         FROM problems P INNER JOIN contest_problems CP ON P.id = CP.problem_id
         WHERE CP.contest_id = ? ORDER BY CP.code~, { Slice => {} },
         $cid);
-    $p->{threshold} //= 50;
-    $p->{self_diff} //= 0;
-    $p->{all_contests} = 0 if !$is_root;
-    $t->param(params => $p, problems => $problems, title_fuffix => res_str(545), );
-    $p->{pid} or return;
-    my $cond = {
-        ($p->{all_contests} ? () : (contest_id => $cid)),
-        ($p->{virtual} ? () : (is_virtual => 0)),
-        ($p->{jury} ? () : (is_jury => 0)),
-    };
-    my ($where, @bind) = %$cond ? $sql->where($cond) : ('');
-    # Manual join is faster.
-    my $acc = $dbh->selectall_hashref(q~
-        SELECT CA.account_id, CA.is_jury, CA.is_virtual, A.team_name, A.city
-        FROM contest_accounts CA INNER JOIN accounts A ON CA.account_id = A.id~ . $where,
-        'account_id', { Slice => {} },
-        @bind);
-    my $first_code = 100; # Ignore non-code DEs.
-    my $reqs = $dbh->selectall_arrayref(q~
-        SELECT R.id, R.account_id, S.src
-        FROM reqs R INNER JOIN sources S ON S.req_id = R.id
-        INNER JOIN default_de D ON D.id = S.de_id
-        WHERE R.problem_id = ? AND D.code >= ?~ .
-        ($p->{all_contests} ? '' : ' AND R.contest_id = ?'), { Slice => {} },
-        $p->{pid}, $first_code, $p->{all_contests} ? () : ($cid));
 
+    my $users_sql = q~
+        SELECT CA.account_id, CA.is_jury, CA.is_virtual, A.team_name, A.city
+        FROM contest_accounts CA INNER JOIN accounts A ON CA.account_id = A.id ~;
+    my $users = $dbh->selectall_arrayref(qq~
+        $users_sql WHERE CA.contest_id = ? ORDER BY A.team_name~, { Slice => {} },
+        $cid);
+
+    my $users_idx = {};
+    $users_idx->{$_->{account_id}} = $_ for @$users;
+
+    $t->param(
+        params => $p, problems => $problems, users => $users, users_idx => $users_idx,
+        title_suffix => res_str(545),
+    );
+    $p->{pid} || $p->{account_id} && !$p->{all_contests} or return;
+
+    my $reqs = _get_reqs($p);
     preprocess_source($_, $p->{collapse_idents}) for @$reqs;
 
+    my %missing_users;
     my @similar;
     my $by_account = {};
     for my $i (@$reqs) {
-        my $ai = $acc->{$i->{account_id}} or next;
+        !$p->{account_id} || $i->{account_id} == $p->{account_id} or next;
+        my $ai = $i->{account_id};
         for my $j (@$reqs) {
-            my $aj = $acc->{$j->{account_id}} or next;
-            next if
-                $i->{id} >= $j->{id} ||
-                (($i->{account_id} == $j->{account_id}) ^ $p->{self_diff});
+            my $aj = $j->{account_id};
+            next if $i->{id} >= $j->{id} || (($ai == $aj) ^ $p->{self_diff});
             my $score = similarity_score($i->{hash}, $j->{hash});
             ($score * 100 > $p->{threshold}) ^ $p->{self_diff} or next;
             my $pair = {
                 score => sprintf('%.1f%%', $score * 100), s => $score,
-                n1 => [$ai], ($p->{self_diff} ? () : (n2 => [$aj])),
                 href_diff => url_f('diff_runs', r1 => $i->{id}, r2 => $j->{id}),
-                href_console => url_f('console', uf => $i->{account_id} . ',' . $j->{account_id}),
-                t1 => $i->{account_id}, t2 => $j->{account_id},
+                href_console => url_f('console', uf => $ai . ',' . $aj),
+                t1 => $ai, t2 => $aj,
             };
+            exists $users_idx->{$_} or $missing_users{$_} = 1 for $ai, $aj;
             if ($p->{group}) {
-                for ($by_account->{$i->{account_id} . '#' . $j->{account_id}}) {
+                for ($by_account->{"$ai#$aj"}) {
                     $_ = $pair if !defined $_ || (($_->{s} < $pair->{s}) ^ $p->{self_diff});
                 }
             }
@@ -209,12 +225,16 @@ sub similarity_frame {
             }
         }
     }
+    if (%missing_users) {
+        my ($cond, @bind) = $sql->where({ 'CA.account_id' => { -in => [ keys %missing_users ] } });
+        my $more_users = $dbh->selectall_arrayref(_u "$users_sql$cond", @bind);
+        $users_idx->{$_->{account_id}} = $_ for @$more_users;
+    }
     @similar = values %$by_account if $p->{group};
-    my $ids_to_teams = sub { [ map $acc->{$_}->{team_name}, @{$_[0]} ] };
+    my $cmp = $p->{self_diff} ? sub { $a->{s} <=> $b->{s} } : sub { $b->{s} <=> $a->{s} };
     $t->param(
-        similar => [ sort { ($b->{s} <=> $a->{s}) * ($p->{self_diff} ? -1 : 1) } @similar ],
-        equiv_lists =>
-            lists_to_strings [ map $ids_to_teams->($_), grep @$_ > 2, @{greedy_cliques @similar} ]
+        similar => [ sort $cmp @similar ],
+        equiv_lists => [ grep @$_ > 2, @{greedy_cliques @similar} ],
     );
 }
 
