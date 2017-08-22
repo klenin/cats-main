@@ -163,7 +163,7 @@ sub main_routes() {
         about => \&CATS::UI::About::about_frame,
 
         similarity => [ \&CATS::UI::Stats::similarity_frame,
-            virtual => $bool, group => $bool, self_diff => $bool, threshold => $int,
+            virtual => $bool, jury => $bool, group => $bool, self_diff => $bool, threshold => $int,
             collapse_idents => $bool, pid => $int,
         ],
         personal_official_results => \&CATS::Contest::personal_official_results,

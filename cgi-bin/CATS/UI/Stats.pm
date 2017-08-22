@@ -8,6 +8,7 @@ use List::Util qw(max);
 use CATS::Constants;
 use CATS::DB;
 use CATS::Globals qw($contest $cid $is_jury $t);
+use CATS::Messages qw(res_str);
 use CATS::Output qw(init_template url_f);
 use CATS::Problem::Utils;
 use CATS::Verdicts;
@@ -153,14 +154,18 @@ sub similarity_frame {
         WHERE CP.contest_id = ? ORDER BY CP.code~, { Slice => {} },
         $cid);
     $p->{threshold} //= 50;
-    $t->param(params => $p, problems => $problems);
+    $p->{self_diff} //= 0;
+    $t->param(params => $p, problems => $problems, title_fuffix => res_str(545), );
     $p->{pid} or return;
     # Manual join is faster.
     my $acc = $dbh->selectall_hashref(q~
         SELECT CA.account_id, CA.is_jury, CA.is_virtual, A.team_name, A.city
         FROM contest_accounts CA INNER JOIN accounts A ON CA.account_id = A.id
-        WHERE contest_id = ?~,
-        'account_id', { Slice => {} }, $cid);
+        WHERE contest_id = ?~ .
+        ($p->{virtual} ? '' : ' AND CA.is_virtual = 0') .
+        ($p->{jury} ? '' : ' AND CA.is_jury = 0'),
+        'account_id', { Slice => {} },
+        $cid);
     my $first_code = 100; # Ignore non-code DEs.
     my $reqs = $dbh->selectall_arrayref(q~
         SELECT R.id, R.account_id, S.src
@@ -174,14 +179,12 @@ sub similarity_frame {
     my @similar;
     my $by_account = {};
     for my $i (@$reqs) {
-        my $ai = $acc->{$i->{account_id}};
+        my $ai = $acc->{$i->{account_id}} or next;
         for my $j (@$reqs) {
-            my $aj = $acc->{$j->{account_id}};
+            my $aj = $acc->{$j->{account_id}} or next;
             next if
                 $i->{id} >= $j->{id} ||
-                (($i->{account_id} == $j->{account_id}) ^ $p->{self_diff}) ||
-                $ai->{is_jury} || $aj->{is_jury} ||
-                !$p->{virtual} && ($ai->{is_virtual} || $aj->{is_virtual});
+                (($i->{account_id} == $j->{account_id}) ^ $p->{self_diff});
             my $score = similarity_score($i->{hash}, $j->{hash});
             ($score * 100 > $p->{threshold}) ^ $p->{self_diff} or next;
             my $pair = {

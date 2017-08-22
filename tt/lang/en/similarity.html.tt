@@ -4,6 +4,7 @@
     threshold => 'Threshold',
     compare => 'Compare',
     include_virtual => 'Include virtual',
+    include_jury => 'Include jury',
     group_by_team => 'Group by team',
     sudden_changes => 'Sudden changes',
     collapse_idents => 'Collapse identifiers',

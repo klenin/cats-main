@@ -4,6 +4,7 @@
     threshold => 'Порог',
     compare => 'Сравнить',
     include_virtual => 'Учитывать виртуальных',
+    include_jury => 'Учитывать жюри',
     group_by_team => 'Группировать по участникам',
     sudden_changes => 'Резкие изменения',
     collapse_idents => 'Игнорировать идентификаторы',
