@@ -229,8 +229,8 @@ sub problem_limits_frame {
         SELECT P.id, P.title, CP.id AS cpid, CP.tags, CP.limits_id,
         $original_limits_str, $overridden_limits_str
         FROM problems P
-            INNER JOIN contest_problems CP ON P.id = CP.problem_id
-            LEFT JOIN limits L ON L.id = CP.limits_id
+        INNER JOIN contest_problems CP ON P.id = CP.problem_id
+        LEFT JOIN limits L ON L.id = CP.limits_id
         WHERE P.id = ? AND CP.contest_id = ?~, undef,
         $p->{pid}, $cid) or return;
 
@@ -241,7 +241,7 @@ sub problem_limits_frame {
 
     CATS::Problem::Utils::problem_submenu('problem_limits', $p->{pid});
 
-    if (param('override')) {
+    if ($p->{override}) {
         my $new_limits = !defined $problem->{limits_id};
 
         my $limits = { map { $_ => param($_) } grep param($_) , @cats::limits_fields };
@@ -268,7 +268,7 @@ sub problem_limits_frame {
         CATS::StaticPages::invalidate_problem_text(cid => $cid, cpid => $problem->{cpid});
 
         msg($new_limits ? 1145 : 1146, $problem->{title});
-    } elsif (param('clear_override')) {
+    } elsif ($p->{clear_override}) {
         if ($problem->{limits_id}) {
             $dbh->do(q~
                 UPDATE contest_problems SET limits_id = NULL

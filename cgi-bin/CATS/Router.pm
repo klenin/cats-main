@@ -79,8 +79,8 @@ sub main_routes() {
         problem_select_tags => [
             \&CATS::UI::ProblemDetails::problem_select_tags_frame,
             pid => $int, tags => $str, save => $bool, from_problems => $bool, ],
-        problem_limits => [
-            \&CATS::UI::ProblemDetails::problem_limits_frame, pid => $int, cpid => $int, ],
+        problem_limits => [ \&CATS::UI::ProblemDetails::problem_limits_frame,
+            pid => $int, cpid => $int, override => $bool, clear_override => $bool, ],
         problem_download => [ \&CATS::UI::ProblemDetails::problem_download, pid => $int, ],
         problem_git_package => [ \&CATS::UI::ProblemDetails::problem_git_package, pid => $int, sha => $sha, ],
         problem_details => [ \&CATS::UI::ProblemDetails::problem_details_frame, pid => $int, ],
