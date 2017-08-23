@@ -68,7 +68,7 @@ function chg_code(st_sel, pid) {
 
 [% IF solution_submitted %]
 [% IF de_name; capt.dev_env_detected; ": '"; de_name | html %]'.<br/>[% END %]
-[% to_monitor(href(href_console, capt.console)) %].
+[% href(href_run_details, capt.view_results) %].
 <hr/>
 [% END %]
 

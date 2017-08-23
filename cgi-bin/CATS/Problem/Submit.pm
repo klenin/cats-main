@@ -122,7 +122,7 @@ sub problems_submit {
     $s->execute;
     $dbh->commit;
 
-    $t->param(solution_submitted => 1, href_console => url_f('console'));
+    $t->param(solution_submitted => 1, href_run_details => url_f('run_details', rid => $rid));
     $contest_finished ? msg(1087) :
     defined $prev_reqs_count ? msg(1088, $contest->{max_reqs} - $prev_reqs_count - 1) :
     msg(1014);
