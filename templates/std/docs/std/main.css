@@ -183,7 +183,8 @@ select, option {
 }
 
 input {
-    height: 22px;
+    height: 20px;
+    padding: 0 1px;
     vertical-align: middle;
 }
 
