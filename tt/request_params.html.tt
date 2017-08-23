@@ -11,7 +11,7 @@
 <table class="internal_borders padded">
   <tr>
     <th>[% capt.testset %]</th>
-    <td><input type="text" name="testsets" value="[% si.testsets %]" size="40" /></td>
+    <td><input type="text" name="testsets" value="[% si.testsets %]" size="40" class="bordered"/></td>
   </tr>
   <tr>
     <th>[% capt.limits %]</th>
@@ -20,21 +20,21 @@
         <tr class="padded"><td>[% capt.time %], [% capt.s %]</td><td>[% capt.memory %], [% capt.mb %]</td><td>[% capt.write %], [% capt.b %]</td>
         <tr><td>
         <div class="limits [% si.style_classes.time_limit %]">
-        <input type="text" name="time_limit" value="[% si.time_limit %]" size="5"/>
+        <input type="text" name="time_limit" value="[% si.time_limit %]" size="5" class="bordered"/>
         </div>
         <input type="checkbox" name="set_time_limit" value="1" [% 'checked' IF si.req_overidden_limits.time_limit %] />
         </td>
 
         <td>
         <div class="limits [% si.style_classes.memory_limit %]">
-        <input type="text" name="memory_limit" value="[% si.memory_limit %]" size="5"/>
+        <input type="text" name="memory_limit" value="[% si.memory_limit %]" size="5" class="bordered"/>
         </div>
         <input type="checkbox" name="set_memory_limit" value="1" [% 'checked' IF si.req_overidden_limits.memory_limit %] />
         </td>
 
         <td>
         <div class="limits [% si.style_classes.write_limit %]">
-        <input type="text" name="write_limit" value="[% si.write_limit %]" size="5"/>
+        <input type="text" name="write_limit" value="[% si.write_limit %]" size="5" class="bordered"/>
         </div>
         <input type="checkbox" name="set_write_limit" value="1" [% 'checked' IF si.req_overidden_limits.write_limit %] />
         </td>
@@ -45,7 +45,7 @@
     <th>[% capt.save_output_prefix %]</th>
     <td style="padding: 0;">
       <div class="limits [% si.style_classes.save_output_prefix %]">
-      <input type="text" name="save_output_prefix" value="[% si.save_output_prefix %]" />
+      <input type="text" name="save_output_prefix" value="[% si.save_output_prefix %]" class="bordered"/>
       </div>
       <input type="checkbox" name="set_save_output_prefix" value="1"
         [%- 'checked="checked"' IF si.req_overidden_limits.save_output_prefix %] />
@@ -80,7 +80,7 @@
 </table>
 </form>
 
-<form method="post">
+<form method="post"><p>
 <button type="submit" name="set_state" value="1" class="button">[% capt.set_verdict %]:</button>
 <select name="state">
 <option>&nbsp;</option>
@@ -95,13 +95,13 @@
   <option value="[% t.test_index %]">[% t.test_index %]</option>
   [%- END %]
 </select>
-[% capt.with_points %] <input name="points" size="3"/>
-</form>
+[% capt.with_points %] <input name="points" size="3" class="bordered"/>
+</p></form>
 
-<form method="post">
+<form method="post"><p>
   <button type="submit" value="1" class="button" name="set_tag">[% capt.set_tag %]:</button>
-  <input type="text" name="tag" value="[% si.tag %]" size="40" />
-</form>
+  <input type="text" name="tag" value="[% si.tag %]" size="40" class="bordered"/>
+</p></form>
 
 [% IF de_cache %]
 [% capt.not_supported_DE UNLESS de_cache.is_supported %]

@@ -14,7 +14,7 @@
   [% END %]
 </select>
 </label>
-<label>[% capt.threshold %], %: <input type="text" name="threshold" value="[% params.threshold %]"/></label>
+<label>[% capt.threshold %], %: <input type="text" name="threshold" value="[% params.threshold %]" class="bordered"/></label>
 <button type="submit" value="1" class="button">[% capt.compare %]</button>
 <br/>
 <label>[% checkbox_1('virtual', params.virtual) %] [% capt.include_virtual %]</label>

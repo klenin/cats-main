@@ -20,7 +20,7 @@
 <div id="plot" style="width: 600px; height: 150px; display: none; float: left;"></div>
 <div id="plot-legend" style="float: left;"></div>
 <div style="clear: both;"></div>
-<input type="text" name="n_regexp" id="n_regexp" size="40" />
+<input type="text" name="n_regexp" id="n_regexp" size="40" class="bordered"/>
 <button type="submit" class="button">filter</button>
 <label>
 <input type="checkbox" id="show_input_data" onclick="toggle_show_input_data()" [% ' checked="checked"' IF display_input %]/>
