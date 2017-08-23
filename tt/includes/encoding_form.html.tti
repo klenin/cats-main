@@ -1,5 +1,5 @@
 [% DEFAULT select_name = 'src_enc'%]
-<form action="[% enc_from_link %]" method="post">
+<form method="post">
   <select name="[% select_name %]">
     [%- FOREACH se IN source_encodings %]
     <option value="[% se.enc %]"[% ' selected="selected"' IF se.selected %]>[% se.enc %]</option>

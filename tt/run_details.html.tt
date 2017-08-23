@@ -17,12 +17,12 @@
 
 [% IF is_any_jury %]
 <div id="filter_form" style="display: none;">
-<form action="" onsubmit="return filter([% runs.0.id %])">
+<form onsubmit="return filter([% runs.0.id %])">
 <div id="plot" style="width: 600px; height: 150px; display: none; float: left;"></div>
 <div id="plot-legend" style="float: left;"></div>
 <div style="clear: both;"></div>
 <input type="text" name="n_regexp" id="n_regexp" size="40" />
-<input type="submit" value="filter" class="button"/>
+<button type="submit" class="button">filter</button>
 <label>
 <input type="checkbox" id="show_input_data" onclick="toggle_show_input_data()" [% ' checked="checked"' IF display_input %]/>
 [% capt.show_input_data %]
@@ -99,7 +99,7 @@
     [% END %]
   </tr>
   [% FOREACH rd IN r.run_details %]
-  <tr class="run_details_[% rd.short_state %]" ts="[% rd.ts.name %]">
+  <tr class="run_details_[% rd.short_state %]" data-ts="[% rd.ts.name %]">
     <td>[% rd.test_rank %]</td>
     [% IF rd.short_state == 'NT' %]
     <td colspan="[% 1 + (r.show_points ? 1 : 0) + (r.show_test_resources ? 3 : 0) %]">[% capt.verdicts.NT %]</td>
@@ -205,7 +205,7 @@ function toggle_show_output_data() {
 
 function filter_testset(rid, ts) {
   $('#details' + rid + ' tr').each(function (i, v) {
-    var r = $(v).attr('ts');
+    var r = $(v).attr('data-ts');
     if (r === undefined) return;
     if (!ts || r == ts)
       $(v).removeClass('hidden');
