@@ -62,7 +62,7 @@ function delete_team(href, name) {
 <button type="submit" value="1" name="set_tag" class="button">[% capt.set %]</button>
 [% END %]
 [% IF user.is_jury || user.is_site_org %]
-<select name="site_id"><option/>[% FOREACH s IN sites; option(s.id, s.name); END %]</select>
+<select name="site_id"><option>&nbsp;</option>[% FOREACH s IN sites; option(s.id, s.name); END %]</select>
 <button type="submit" value="1" name="set_site" class="button">[% capt.set_site %]</button>
 [% END %]
 [% IF user.is_jury %]

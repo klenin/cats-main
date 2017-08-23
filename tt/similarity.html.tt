@@ -1,14 +1,14 @@
 [% PROCESS includes/menu_begin.tti %]
 <form method="post" enctype="multipart/form-data">
 <label>[% capt.problem %]:
-<select name="pid"><option/>
+<select name="pid"><option>&nbsp;</option>
   [% FOREACH p IN problems %]
   <option value="[% p.id %]"[% ' selected="selected"' IF p.id == params.pid %]>[% p.code %] - [% p.title | html %]</option>
   [% END %]
 </select>
 </label>
 <label>[% capt.participant %]:
-<select name="account_id"><option/>
+<select name="account_id"><option>&nbsp;</option>
   [% FOREACH u IN users %]
   <option value="[% u.account_id %]"[% ' selected="selected"' IF u.account_id == params.account_id %]>[% u.team_name | html %]</option>
   [% END %]

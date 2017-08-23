@@ -15,7 +15,7 @@
 <hr/>
 <form method="post" action="[% href_action %]">
 <div>
-<select name="source_cid"><option/>
+<select name="source_cid"><option>&nbsp;</option>
 [% FOREACH c IN contests; option(c.id, c.title); END %]
 </select>
 </div>

@@ -1,5 +1,5 @@
 [%- MACRO option(value, text, selected) BLOCK ~%]
-    <option value="[% value %]"[% ' selected="selected"' IF selected %]>[% text | html %]</option>
+    <option value="[% value %]"[% ' selected="selected"' IF selected %]>[% IF text; text | html; ELSE; '&nbsp;'; END %]</option>
 [%~ END -%]
 
 [%- MACRO select(name, options) BLOCK -%]
