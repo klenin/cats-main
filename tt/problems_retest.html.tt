@@ -1,7 +1,6 @@
 [% extra_head = BLOCK %]
 <style>
   .retest_verdicts label { display: inline_block; padding: 3px; }
-  .retest_verdicts a { color: inherit; }
 </style>
 [%- END %]
 [% PROCESS includes/menu_begin.tti %]
@@ -37,10 +36,9 @@
 <div class="retest_verdicts">
 [% capt.ignore_verdicts %]:<br/>
 [% FOREACH v IN verdicts %]
-<label class="run_details_[% v.short %]">
-  <a name="v[% v.short %]" title="[% capt.verdicts.item(v.short) %]">
+<label class="run_details_[% v.short %]" title="[% capt.verdicts.item(v.short) %]">
   <input type="checkbox" name="ignore_states" value="[% v.short %]" [% ' checked="checked"' IF v.checked %]/>
-  [% v.short %]</a>
+  [% v.short %]
 </label>
 [% END %]
 </div>
