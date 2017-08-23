@@ -43,6 +43,9 @@ table.header td.elapsed p a:hover { background-color: #ffcc55; }
     height: 30px;
 }
 
+.main_menu > td:first-child { text-align: left; }
+.main_menu > td:last-child { text-align: right; }
+
 .top {
     font-family: Arial, sans-serif;
     font-size: 13px;
@@ -74,6 +77,9 @@ tr.footer, tr.footer td {
     font-family: Arial, sans-serif;
     font-size: 12px;
 }
+
+tr.footer > td:last-child { text-align: right }
+tr.footer2 > td:last-child { text-align: right }
 
 tr.footer2, tr.footer2 td, tr.footer2 td a {
     background-color: #ffcc55;

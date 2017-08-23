@@ -15,7 +15,7 @@
   <td>
     &nbsp;[% capt.Docs %] - CATS
   </td>
-  <td align="right">
+  <td>
     <a href="https://github.com/klenin/cats-main">[% PROCESS includes/github_icon.tti %] [% capt.development %]</a> |
     <a href="index.[% lang %].html">[% capt.docs %]</a> |
     <a href="authors.html">&copy; 2002-2017 [% capt.authors %]</a>&nbsp;
@@ -25,7 +25,7 @@
   <td class="footer_image">
     &nbsp;
   </td>
-  <td align="right">
+  <td>
     <a href="http://imcs.dvfu.ru/works"> [% capt.dept %] &nbsp;</a><br>
     <a href="http://dvfu.ru"> [% capt.university %] &nbsp;</a>
   </td>

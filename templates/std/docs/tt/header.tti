@@ -34,9 +34,8 @@
 
 <table class="iface">
   <tr class="main_menu top">
-    <td align="left">
-    &nbsp;[ <a href="..">[% capt.main %]</a> | <a href="index.[% lang || ru %].html">[% capt.contents %]</a> ]&nbsp;</td></tr>
-    </td>
+    <td>&nbsp;[ <a href="..">[% capt.main %]</a> | <a href="index.[% lang || ru %].html">[% capt.contents %]</a> ]&nbsp;</td>
+    <td></td>
   </tr>
 </table>
 
