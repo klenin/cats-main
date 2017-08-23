@@ -5,10 +5,10 @@
 
 <table class="iface" style="margin-bottom: 3px;">
   <tr class="main_menu top">
-    <td align="left">
+    <td>
     &nbsp;[% IF left_menu %][ [% menu(left_menu, 'main_menu_selected') %]][% END %]
     </td>
-    <td align="right">[
+    <td>[
       [% FOR l IN langs %]<a href="[% l.href %]"[% ' class="main_menu_selected"' IF l.name == lang %]
       onclick="document.location = document.location.pathname + '?lang=[% l.name %];' + document.location.search.replace(/lang=\w+;?/, '').replace('?', ''); return false;">
       [% l.name; '</a> '; ' | ' UNLESS loop.last; END %] ]&nbsp;</td>
@@ -51,7 +51,7 @@ function send_message(href) {
       <a href="[% si.href_original_stats %]">([% si.original_team_name %])</a>
     [% END %]
     [% IF si.is_jury %]
-      [<a href="[% si.href_whois %]" alt="[% si.last_ip %]" title="[% si.last_ip %]">[% si.last_ip_short %]</a>]
+      [<a href="[% si.href_whois %]" title="[% si.last_ip %]">[% si.last_ip_short %]</a>]
       [[% IF si.href_send_message ~%]
         <a href="javascript:send_message('[% si.href_send_message %]')">[% capt.message %]</a>
         [%~ ELSE; capt.disqualified; END %]]
