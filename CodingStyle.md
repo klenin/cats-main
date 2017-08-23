@@ -119,6 +119,11 @@ Some historical code, mostly located in `unused` directory, does not conform to 
 * Code from `cats-judge` repository MUST be compatible with Perl v5.14.
 * Contributions SHOULD NOT add dependency on new non-standard modules without prior discussion.
 
+## Architecture
+* Templates MUST NOT change any state of the model.
+* Controllers (`xxx_frame`) MUST be called only by `Router`.
+* Controllers SHOULD be defined only in `CATS::UI::`namespace. `CATS::UI` modules MUST be used only by `Router`.
+
 ## Git commits
 * Each commit MUST result in working code (and pass tests, where applicable). Temporary breakage in PRs is not allowed, use feature checks when needed.
 * Commit message SHOULD start from affected subsystem name, followed by a colon, a space and a subject text.
