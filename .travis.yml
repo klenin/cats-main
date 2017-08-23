@@ -1,0 +1,10 @@
+sudo: required
+before_install:
+- sudo apt-get update -q
+- sudo apt-get install -q firebird2.5-classic firebird2.5-dev
+- sudo rm -r /tmp/firebird
+- perl install_test.pl
+language: perl
+perl:
+- "5.22"
+script: prove -r cgi-bin/t

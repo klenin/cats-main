@@ -30,7 +30,9 @@ chdir File::Spec->catdir($FindBin::Bin, 'sql', 'interbase') or die "Unable to ch
         print $create_fh $_;
     }
 }
-($ok, $err, $full) = IPC::Cmd::run command => [ 'isql-fb', '-i', $create_sql ];
+
+print "Database: $db\n";
+($ok, $err, $full) = IPC::Cmd::run command => [ 'isql-fb', '-q', '-i', $create_sql ];
 $ok or die "isql create: $err @$full";
 
 chdir File::Spec->catdir($FindBin::Bin, 'cgi-bin', 'cats-problem', 'CATS')
