@@ -2,6 +2,8 @@
 [% PROCESS includes/header.tti %]
 <style>
   .details a { color: inherit; width: 100%; display: block; }
+  .details .num { text-align: right; }
+  .details .test_data a { font-family: "Courier New", Courier, monospace; }
 </style>
 </head>
 <body>
@@ -36,7 +38,7 @@
 </form>
 </div>
 [% END %]
-<table><tr valign="top">
+<table><tr>
 [% FOREACH r IN runs %]
 <td>
 [% IF r.judge_log_dump %]
@@ -55,8 +57,8 @@
     [% FOREACH ts IN r.testsets %]
     <tr [% IF ts.earned_points %] class="run_details_OK"[% END %]>
       <td><a href="#" onclick="filter_testset([% r.id %], '[% ts.name %]')">[% ts.name %]</a></td>
-      <td align="right">[% ts.accepted_count || 0 %] / [% ts.test_count %]</td>
-      <td align="right">[% ts.earned_points || 0 %]</td>
+      <td class="num">[% ts.accepted_count || 0 %] / [% ts.test_count %]</td>
+      <td class="num">[% ts.earned_points || 0 %]</td>
       <td>[% ts.comment %]</td>
       [%- IF r.has_depends_on -%]
       <td[% ' class="run_details_WA"' IF ts.depends_on && !r.accepted_deps.item(ts.name) %]>[%- ts.depends_on %]</td>
@@ -65,7 +67,7 @@
     [% END %]
     <tr>
       <td colspan="2"><a href="#" onclick="filter_testset([% r.id %], '')">[% capt.total %]</a></td>
-      <td align="right">[% r.total_points %]</td>
+      <td class="num">[% r.total_points %]</td>
       <td></td>
       [%- IF r.has_depends_on %]<td></td>[% END %]
     </tr>
@@ -93,7 +95,7 @@
       [% IF r.has_output %]
         <th class="data output_data">[% capt.output_data %]</th>
       [% END %]
-      [% IF r.has_visualizer %]<th class="test_data">[% capt.visualize %]</th>[% END %]
+      [% IF r.has_visualizer %]<th>[% capt.visualize %]</th>[% END %]
     [% END %]
   </tr>
   [% FOREACH rd IN r.run_details %]
@@ -106,21 +108,21 @@
     [% IF r.show_points %]<td>[% rd.points %]</td>[% END %]
     [% IF r.show_test_resources %]
       <td>[% rd.time_used %]</td>
-      <td align="right">[% rd.memory_used | group_digits %]</td>
-      <td align="right">[% rd.disk_used | group_digits %]</td>
+      <td class="num">[% rd.memory_used | group_digits %]</td>
+      <td class="num">[% rd.disk_used | group_digits %]</td>
     [% END %]
     [% END %]
     [% IF r.show_checker_comment %]<td><pre>[% rd.checker_comment | html %]</pre></td>[% END %]
     [% IF r.show_test_data %]
       <td class="test_data input_data"><a href="[% rd.view_test_details_href %]" [% "title='$rd.input_gen_params'" IF rd.input_gen_params %]>
-        <tt>[% rd.input_data | html; '&hellip;' IF rd.input_data_cut %]</tt></a>
+        [% rd.input_data | html; '&hellip;' IF rd.input_data_cut %]</a>
       </td>
-      <td class="test_data answer_data"><a href="[% rd.view_test_details_href %]"><tt>[% rd.answer_data | html; '&hellip;' IF rd.answer_data_cut %]</tt></a></td>
+      <td class="test_data answer_data"><a href="[% rd.view_test_details_href %]">[% rd.answer_data | html; '&hellip;' IF rd.answer_data_cut %]</a></td>
       [% IF r.has_output %]
-        <td class="test_data output_data"><a href="[% rd.view_test_details_href %]"><tt>[% rd.output_data | html; '&hellip;' IF rd.output_data_cut %]</tt></a></td>
+        <td class="test_data output_data"><a href="[% rd.view_test_details_href %]">[% rd.output_data | html; '&hellip;' IF rd.output_data_cut %]</a></td>
       [% END %]
       [% IF r.has_visualizer %]
-        <td class = "test_data">
+        <td>
           [% FOREACH a IN rd.visualize_test_hrefs %]
             <a href="[% a.href %]">[% a.name %]</a>
           [% END %]
@@ -134,8 +136,8 @@
     [% IF r.show_points %]<td>[% r.total_points %]</td>[% END %]
     [% IF r.show_test_resources %]
       <td>[% r.maximums.time_used %]</td>
-      <td align="right">[% r.maximums.memory_used | group_digits %]</td>
-      <td align="right">[% r.maximums.disk_used | group_digits %]</td>
+      <td class="num">[% r.maximums.memory_used | group_digits %]</td>
+      <td class="num">[% r.maximums.disk_used | group_digits %]</td>
     [% END %]
   </tr>
   [%- END %]
