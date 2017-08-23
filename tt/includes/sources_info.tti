@@ -3,12 +3,6 @@
 [%- PROCESS includes/html.tti -%]
 [%- PROCESS includes/limits_string.tti -%]
 
-<script type="text/javascript">
-function send_message(href) {
-    window.open(href, '', 'width=500,height=400,location=no,menubar=no,resizable=yes,scrollbars=no,status=no,toolbar=no');
-}
-</script>
-
 <table class="iface" style="margin-bottom: 3px;">
   <tr class="main_menu top">
     <td align="left">
@@ -24,24 +18,12 @@ function send_message(href) {
 [% FOREACH m IN messages %]<i>[% m | html %]</i><br/>[% END %]
 
 [% IF is_any_jury %]
-  <script type="text/javascript" src="js/lib/jquery.min.js"></script>
-
-  <style>
-    .limits {
-      float: left;
-      margin: 0;
-      padding: 3px;
-    }
-    .cp_overridden_limits {
-      background-color: #FEFBCA;
-    }
-    .req_overridden_limits {
-      background-color: #60E760;
-    }
-    .fill_width {
-      width: 100%;
-    }
-  </style>
+<script type="text/javascript">
+function send_message(href) {
+  window.open(href, '', 'width=500,height=400,location=no,menubar=no,resizable=yes,scrollbars=no,status=no,toolbar=no');
+}
+</script>
+<script type="text/javascript" src="js/lib/jquery.min.js"></script>
 [% END %]
 
 [% BLOCK sources_info_row %]

@@ -1,3 +1,4 @@
+[%- PROCESS includes/sources_styles.tti -%]
 [% PROCESS includes/header.tti %]
 <style>
   .scrollable { height: 200px; width: 700px; overflow: auto; }

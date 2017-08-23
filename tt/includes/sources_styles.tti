@@ -1,0 +1,18 @@
+[% IF is_any_jury; extra_head = BLOCK %]
+  <style>
+    .limits {
+      float: left;
+      margin: 0;
+      padding: 3px;
+    }
+    .cp_overridden_limits {
+      background-color: #FEFBCA;
+    }
+    .req_overridden_limits {
+      background-color: #60E760;
+    }
+    .fill_width {
+      width: 100%;
+    }
+  </style>
+[%- END; END %]

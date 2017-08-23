@@ -1,4 +1,4 @@
-[% PROCESS includes/html.tti %]
+[%- PROCESS includes/sources_styles.tti -%]
 [% PROCESS includes/header.tti %]
 
 </head>

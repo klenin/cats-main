@@ -1,3 +1,4 @@
+[%- PROCESS includes/sources_styles.tti -%]
 [% PROCESS includes/header.tti %]
 [%- USE Javascript -%]
 </head>

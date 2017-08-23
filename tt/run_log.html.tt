@@ -1,3 +1,4 @@
+[%- PROCESS includes/sources_styles.tti -%]
 [% PROCESS includes/header.tti %]
 <style>
   code#judge_log b { color: #ff7070; }
