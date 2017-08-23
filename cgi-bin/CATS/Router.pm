@@ -87,7 +87,9 @@ sub main_routes() {
         problem_test_data => [
             \&CATS::UI::ProblemDetails::problem_test_data_frame,
             pid => $int, test_rank => $int, clear_test_data => $bool ],
-        problem_history => \&CATS::UI::ProblemDetails::problem_history_frame,
+        problem_history => [ \&CATS::UI::ProblemDetails::problem_history_frame,
+            a => $ident, pid => $int, pull => $bool, replace => $bool,
+            is_amend => $bool, allow_rename => $bool, ],
 
         users => [
             \&CATS::UI::Users::users_frame,

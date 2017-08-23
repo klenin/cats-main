@@ -528,8 +528,8 @@ sub problem_history_edit_frame {
 }
 
 sub problem_history_frame {
-    my $pid = url_param('pid') || 0;
-    $is_jury && $pid or return redirect url_f('contests');
+    my ($p) = @_;
+    $is_jury && $p->{pid} or return redirect url_f('contests');
 
     my %actions = (
         edit => \&problem_history_edit_frame,
@@ -543,53 +543,52 @@ sub problem_history_frame {
         SELECT CP.status, P.title, P.repo FROM contest_problems CP
             INNER JOIN problems P ON CP.problem_id = P.id
             WHERE CP.contest_id = ? AND P.id = ?~, undef,
-        $cid, $pid);
+        $cid, $p->{pid});
     defined $status or return redirect url_f('contests');
 
-    my $action = url_param('a');
-    if ($action && exists $actions{$action}) {
-        return $actions{$action}->($pid, $title, $repo_name);
+    if ($p->{a} && exists $actions{$p->{a}}) {
+        return $actions{$p->{a}}->($p->{pid}, $title, $repo_name);
     }
 
     my $lv = CATS::ListView->new(name => 'problem_history', template => auto_ext('problem_history'));
-    $t->param(problem_title => $title, pid => $pid);
 
-    my $repo = CATS::ProblemStorage::get_repo($pid, undef, 1, logger => CATS::ProblemStorage->new);
+    my $repo = CATS::ProblemStorage::get_repo($p->{pid}, undef, 1, logger => CATS::ProblemStorage->new);
 
-    CATS::Problem::Save::problems_replace if defined param('replace');
+    CATS::Problem::Save::problems_replace if $p->{replace};
 
     my $remote_url = $repo->get_remote_url;
-    if (defined param('pull') && $remote_url) {
+    if ($p->{pull} && $remote_url) {
         $repo->pull($remote_url);
         $t->param(problem_import_log => $repo->{logger}->encoded_import_log);
     }
     $t->param(
-        pid => $pid,
+        problem_title => $title,
+        pid => $p->{pid},
         remote_url => $remote_url,
         title_suffix => $title,
     );
-    CATS::Problem::Utils::problem_submenu('problem_history', $pid);
+    CATS::Problem::Utils::problem_submenu('problem_history', $p->{pid});
 
     my @cols = (
         { caption => res_str(650), width => '25%', order_by => 'author' },
         { caption => res_str(634), width => '10%', order_by => 'author_date' },
         { caption => res_str(651), width => '10%', order_by => 'committer_date' },
         { caption => res_str(652), width => '15%', order_by => 'sha' },
-        { caption => res_str(653), width => '40%', order_by => 'message' }
+        { caption => res_str(653), width => '40%', order_by => 'message' },
     );
-    $lv->define_columns(url_f('problem_history', pid => $pid), 1, 0, \@cols);
+    $lv->define_columns(url_f('problem_history', pid => $p->{pid}), 1, 0, \@cols);
     my $fetch_record = sub {
         my $log = shift @{$_[0]} or return ();
         return (
             %$log,
-            href_commit => url_f('problem_history', a => 'commitdiff', pid => $pid, h => $log->{sha}),
-            href_tree => url_f('problem_history', a => 'tree', pid => $pid, hb => $log->{sha}),
-            href_git_package => url_f('problem_git_package', pid => $pid, sha => $log->{sha}),
+            href_commit => url_f('problem_history', a => 'commitdiff', pid => $p->{pid}, h => $log->{sha}),
+            href_tree => url_f('problem_history', a => 'tree', pid => $p->{pid}, hb => $log->{sha}),
+            href_git_package => url_f('problem_git_package', pid => $p->{pid}, sha => $log->{sha}),
         );
     };
     $lv->attach(
-        url_f('problem_history', pid => $pid), $fetch_record,
-        $lv->sort_in_memory(CATS::ProblemStorage::get_log($pid)));
+        url_f('problem_history', pid => $p->{pid}), $fetch_record,
+        $lv->sort_in_memory(CATS::ProblemStorage::get_log($p->{pid})));
 }
 
 1;

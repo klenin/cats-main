@@ -34,7 +34,7 @@
   <input type="hidden" name="problem_id" value="[% pid %]" />
 [% IF remote_url %]
   <p>
-    <input type="submit" name="pull" value="[% capt.pull %]" class="button" title="[% remote_url %]"/>
+    <button type="submit" name="pull" value="1" class="button" title="[% remote_url %]">[% capt.pull %]</button>
   </p>
 [% ELSE %]
   <p><label for="zip">[% capt.problem_file %]:</label><input type="file" id="zip" name="zip" class="file" size="25"/></p>
@@ -47,7 +47,7 @@
     <textarea id="message" name="message" cols="50" rows="5"></textarea>
   </p>
   <p>
-    <input type="submit" name="replace" value="[% capt.replace %]" class="button" />
+    <button type="submit" name="replace" value="1" class="button">[% capt.replace %]</button>
   </p>
   [% PROCESS includes/amend.tti last_commit = problem_history.0 %]
 [% END %]
