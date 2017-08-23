@@ -105,6 +105,7 @@ files with tests, solutions etc.
 </tr>
 <tr>
   <td>[% tag_in('ProblemConstraints', 'Problem') %]</td>
+  <td>&nbsp;</td>
   <td>Problem input constraints in STML format.</td>
 </tr>
 <tr>
@@ -249,7 +250,7 @@ files with tests, solutions etc.
     or file pattern characters [% v19 %] '?' and '*'.
     For example, to describe a generator producing test files t01, t02, ..., t50 in subdirectories subtask1, subtask2, ...:
     <pre>
-      &lt;Generatore name="gen" src="gen.pas" outputFile="subtask?/t%0n" /&gt
+      &lt;Generatore name="gen" src="gen.pas" outputFile="subtask?/t%0n" /&gt;
       &lt;Test rank="1-50" &gt; &lt;In use="gen" genAll="1"&gt; ...</pre>
   </td>
 </tr>
@@ -271,7 +272,7 @@ files with tests, solutions etc.
   </td>
   <td>Attributes name, src and export of [% tag_ref('GeneratorRange') %] tag may contain context variables which are expanded to the current generator number.
     For example:<br/>
-    <code>&lt;GeneratorRange from="1" to="10" name="g%0n" src="gen%0n.pas"/&gt</code>
+    <code>&lt;GeneratorRange from="1" to="10" name="g%0n" src="gen%0n.pas"/&gt;</code>
   </td>
 </tr>
 <tr>
@@ -331,7 +332,7 @@ files with tests, solutions etc.
   may contain context variables which are expanded to the current test number.
   For example:<pre>&lt;Test rank="1-10"&gt;
   &lt;In src="%0n.in"/&gt;&lt;Out use="solution"/&gt;
-&lt;/Test&gt</pre>
+&lt;/Test&gt;</pre>
   To avoid duplication, test description may be split between several tags, for example:
   <pre>&lt;Test rank="1-5" points="1" /&gt;
 &lt;Test rank="6-10" points="2" /&gt;
@@ -455,7 +456,7 @@ files with tests, solutions etc.
   <pre>&lt;Sample rank="1-3"&gt;
   &lt;SampleIn src="%0n.in"/&gt;
   &lt;SampleOut src="%0n.out"/&gt;
-&lt;/Sample&gt</pre>
+&lt;/Sample&gt;</pre>
   </td>
 </tr>
 <tr>

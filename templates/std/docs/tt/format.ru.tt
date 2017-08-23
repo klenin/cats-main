@@ -252,7 +252,7 @@ END -%]
     контекстные переменные[% v15 %], обозначающие номер теста,  а также шаблоны поиска файлов [% v19 %] '?' и '*'.
     Например, для генератора, создающего файлы t01, t02, ..., t50 в подкаталогах subtask1, subtask2, ...:
     <pre>
-      &lt;Generatore name="gen" src="gen.pas" outputFile="subtask?/t%0n" /&gt
+      &lt;Generatore name="gen" src="gen.pas" outputFile="subtask?/t%0n" /&gt;
       &lt;Test rank="1-50" &gt; &lt;In use="gen" genAll="1"&gt; ...</pre>
 </tr>
 <tr>
@@ -274,7 +274,7 @@ END -%]
   <td>В атрибутах name, src и export тега [% tag_ref('GeneratorRange') %] допускается
     использование контекстных переменных, обозначающих номер текущего генератора.
     Например:<br/>
-    <code>&lt;GeneratorRange from="1" to="10" name="g%0n" src="gen%0n.pas"/&gt</code>
+    <code>&lt;GeneratorRange from="1" to="10" name="g%0n" src="gen%0n.pas"/&gt;</code>
   </td>
 </tr>
 <tr>
@@ -335,7 +335,7 @@ END -%]
   можно использовать контекстные переменные, обозначающие номер теста.
   Например:<pre>&lt;Test rank="1-10"&gt;
   &lt;In src="%0n.in"/&gt;&lt;Out use="solution"/&gt;
-&lt;/Test&gt</pre>
+&lt;/Test&gt;</pre>
   Для более экономного описания можно распределять описание теста на несколько тегов, например:
   <pre>&lt;Test rank="1-5" points="1" /&gt;
 &lt;Test rank="6-10" points="2" /&gt;
@@ -460,7 +460,7 @@ END -%]
   <pre>&lt;Sample rank="1-3"&gt;
   &lt;SampleIn src="%0n.in"/&gt;
   &lt;SampleOut src="%0n.out"/&gt;
-&lt;/Sample&gt</pre>
+&lt;/Sample&gt;</pre>
   </td>
 </tr>
 <tr>
