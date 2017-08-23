@@ -1,4 +1,4 @@
 [%- PROCESS "lang/$lang/edit_save_cancel.tti" -%]
 [% IF id %]<input type="hidden" name="id" value="[% id %]">[% END %]
-<input type="submit" name="edit_save" value="[% capt.edit_save %]" class="button">
-<input type="submit" name="edit_cancel" value="[% capt.edit_cancel %]" class="button">
+<button type="submit" name="edit_save" value="1" class="button">[% capt.edit_save %]</button>
+<button type="submit" name="edit_cancel" value="1" class="button">[% capt.edit_cancel %]</button>

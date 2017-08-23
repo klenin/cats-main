@@ -41,7 +41,7 @@
             <textarea id="message" name="message" cols="50" rows="5">[% IF message; message; END %]</textarea>
           </p>
           <p>
-            <input type="submit" name="save" value="[% capt.save %]" class="button" />
+            <button type="submit" name="save" value="1" class="button">[% capt.save %]</button>
           </p>
         </div>
     </form>

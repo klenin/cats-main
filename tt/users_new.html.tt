@@ -1,12 +1,12 @@
 [% PROCESS includes/menu_begin.tti %]
 
-<form method=post enctype='multipart/form-data' action='[% href_action %]'>
+<form method="post" enctype="multipart/form-data" action="[% href_action %]">
 [% PROCESS includes/user_main.tti %]
 [% PROCESS includes/password.tti %]
 [% PROCESS includes/user_extra.tti %]
 <br/>
-<input type="submit" name="new_save" value="[% capt.new_save %]" class="button">
-<input type="submit" name="new_cancel" value="[% capt.new_cancel %]" class="button">
+<button type="submit" name="new_save" value="1" class="button">[% capt.new_save %]</button>
+<button type="submit" name="new_cancel" value="1" class="button">[% capt.new_cancel %]</button>
 </form>
 
 [% PROCESS includes/menu_end.tti %]
