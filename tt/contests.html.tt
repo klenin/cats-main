@@ -1,3 +1,13 @@
+[% extra_head = BLOCK %]
+<style>
+  .ct_official { color: blue; }
+  .ct_denied { color: red; }
+  .ct_school { color: green; }
+  .ct_hidden { color: gray; }
+  .date { text-align: center; }
+  .finished { color: #901010; }
+</style>
+[%- END %]
 [% PROCESS includes/menu_begin.tti %]
 
 <script type="text/javascript">
@@ -28,18 +38,17 @@ function delete_contest(href, name) {
         [%- c.contest_name | html %]</a>
     [<a href="[% c.href_problems %]">[% capt.problems %]</a>]
 </td>
-<td align=center>[% c.start_date | html %]</td>
-<td align=center[% ' style="color: #901010;"' IF c.since_finish > 0 %]>[% c.finish_date | html %]</td>
+<td class="date">[% c.start_date | html %]</td>
+<td class="date[% ' finished' IF c.since_finish > 0 %]">[% c.finish_date | html %]</td>
+[%- MACRO flag(name) BLOCK %]<span class="[% name %]">[% capt.$name %]</span>[% END %]
 <td>
-    [% UNLESS c.registration_denied %]
-      [% IF c.registered_online; capt.ct_participant; END ~%]
-      [% IF c.registered_virtual; capt.ct_virtual; END =%]
-    [% END =%]
-    [% IF c.is_official %]<font color="blue">[% capt.ct_official %]</font>[% END =%]
-    [% IF c.registration_denied %]<font color="red">[% capt.ct_denied %]</font>[% END =%]
-    [% IF c.show_points %]<font color="green">[% capt.ct_school %]</font>[% END =%]
-    [% IF c.is_hidden %]<font color="gray">[% capt.ct_hidden %]</font>[% END %]
-    [% IF c.has_orig; capt.ct_original; END %]
+    [% IF c.registered_online && !user.privs.is_root; capt.ct_participant; END =%]
+    [% IF c.registered_virtual; capt.ct_virtual; END =%]
+    [% IF c.is_official; flag('ct_official'); END =%]
+    [% IF c.registration_denied; flag('ct_denied'); END =%]
+    [% IF c.show_points; flag('ct_school'); END =%]
+    [% IF c.is_hidden; flag('ct_hidden'); END =%]
+    [% IF c.has_orig; ct_original; END %]
 </td>
 </tr>
 [% END %]
