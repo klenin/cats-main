@@ -1,17 +1,12 @@
 [% PROCESS includes/header.tti %]
+<style>
+  .scrollable { height: 200px; width: 700px; overflow: auto; }
+</style>
 </head>
 <body>
 
 [% PROCESS includes/sources_info.tti %]
 <br/>
-
-<style>
-    .scrollable {
-        height: 200px;
-        width: 700px;
-        overflow: auto;
-    }
-</style>
 
 <div class="pages" style="float: none">
 [% capt.tests %]

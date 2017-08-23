@@ -1,9 +1,11 @@
-[% PROCESS includes/menu_begin.tti %]
-[%- PROCESS includes/html.tti -%]
-[%- PROCESS "lang/$lang/verdicts.tti" -%]
+[% extra_head = BLOCK %]
 <style>
   .last_verdict { display: inline-block; width: 2em; padding: 2px; }
 </style>
+[%- END %]
+[% PROCESS includes/menu_begin.tti %]
+[%- PROCESS includes/html.tti -%]
+[%- PROCESS "lang/$lang/verdicts.tti" -%]
 [% IF editable %]
 <script type="text/javascript">
 function getSelectedButton(button) {

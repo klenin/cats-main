@@ -1,4 +1,7 @@
 [% PROCESS includes/header.tti %]
+<style>
+  .details a { color: inherit; width: 100%; display: block; }
+</style>
 </head>
 <body>
 
@@ -8,10 +11,6 @@
     capt_enc = capt.encoding
     select_name = 'comment_enc'
 %]
-
-<style>
-  .details a { color: inherit; width: 100%; display: block; }
-</style>
 
 [% IF is_any_jury %]
 <div id="filter_form" style="display: none;">

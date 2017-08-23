@@ -1,3 +1,9 @@
+[% extra_head = BLOCK %]
+<style>
+  .retest_verdicts label { display: inline_block; padding: 3px; }
+  .retest_verdicts a { color: inherit; }
+</style>
+[%- END %]
 [% PROCESS includes/menu_begin.tti %]
 [%- PROCESS "lang/$lang/verdicts.tti" -%]
 <i>[% capt.in_queue %]: [% total_queue %]</i><br/>
@@ -26,10 +32,6 @@
 <br/>
 <button type="submit" name="recalc_points" value="1" class="button">[% capt.recalc %]</button>
 <br/>
-<style>
-  .retest_verdicts label { display: inline_block; padding: 3px; }
-  .retest_verdicts a { color: inherit; }
-</style>
 <button type="submit" name="mass_retest" value="1" class="button">[% capt.retest %]</button>
 <input type="checkbox" name="all_runs" value="1"/> [% capt.all_runs %]
 <div class="retest_verdicts">

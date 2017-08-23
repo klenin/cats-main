@@ -1,9 +1,11 @@
+[% extra_head = BLOCK %]
+<style>
+  @import 'docs/std/git.css';
+</style>
+[%- END %]
 [% PROCESS includes/menu_begin.tti %]
 [%- PROCESS "lang/$lang/problems.html.tt" -%]
 [%- PROCESS includes/html.tti -%]
-<style>
-    @import 'docs/std/git.css';
-</style>
 
 [% IF problem_import_log %]
 [% capt.problem_import_log %]:<br/>

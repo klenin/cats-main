@@ -1,9 +1,12 @@
-[% PROCESS includes/menu_begin.tti %]
-[%- PROCESS "lang/$lang/problems.html.tt" -%]
-[%- PROCESS includes/html.tti -%]
+[% extra_head = BLOCK %]
 <style>
   @import 'docs/std/git.css';
 </style>
+[%- END %]
+[% PROCESS includes/menu_begin.tti %]
+[%- PROCESS "lang/$lang/problems.html.tt" -%]
+[%- PROCESS includes/html.tti -%]
+
 [% IF problem_import_log %]
 [% capt.problem_import_log %]:<br/>
 <textarea cols="100" rows="10" readonly="readonly">

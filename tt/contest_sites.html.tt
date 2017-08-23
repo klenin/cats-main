@@ -1,3 +1,9 @@
+[% extra_head = BLOCK %]
+<style>
+  td.nowrap { white-space: nowrap; }
+  tr.unused td { color: grey; }
+</style>
+[%- END %]
 [% PROCESS includes/menu_begin.tti %]
 [% PROCESS includes/html.tti %]
 
@@ -7,11 +13,6 @@ function delete_contest_site(href, name) {
         document.location=href;
 }
 </script>
-
-<style>
-  td.nowrap { white-space: nowrap; }
-  tr.unused td { color: grey; }
-</style>
 
 [% PROCESS includes/listview_header.tti %]
 
