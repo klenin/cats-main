@@ -13,11 +13,11 @@
 [%- MACRO v18 BLOCK %]<sup><a href="#v18" title="Since version 1.8">1.8</a></sup>[% END -%]
 [%- MACRO v19 BLOCK %]<sup><a href="#v19" title="Since version 1.9">1.9</a></sup>[% END -%]
 [%- MACRO tag_in(t1, t2, m1, m2) BLOCK
-%]<tt>&lt;<a name="[% t1 %]">[% t1 %]</a>&gt;[% IF t2 != '';
-  IF m1 != '' %]</tt>[% m1 %]<br/><tt>[% ELSE %]<br/>[% END
-%]&lt;<a href="#[% t2 %]">[% t2 %]</a>&gt;[% END %]</tt>[% m2;
+%]<code>&lt;<a name="[% t1 %]">[% t1 %]</a>&gt;[% IF t2 != '';
+  IF m1 != '' %]</code>[% m1 %]<br/><code>[% ELSE %]<br/>[% END
+%]&lt;<a href="#[% t2 %]">[% t2 %]</a>&gt;[% END %]</code>[% m2;
 END -%]
-[%- MACRO tag_ref(t) BLOCK %]<tt>&lt;<a href="#[% t %]">[% t %]</a>&gt;</tt>[% END -%]
+[%- MACRO tag_ref(t) BLOCK %]<code>&lt;<a href="#[% t %]">[% t %]</a>&gt;</code>[% END -%]
 [%- MACRO mem_units BLOCK %](in <a href="#memoryUnits">megabytes or other units</a>)[% END -%]
 <h2>Version 1.9</h2>
 
@@ -50,8 +50,8 @@ files with tests, solutions etc.
       <li>mlimit[% v11 %] - memory limit for a single test [% mem_units %];</li>
       <li>wlimit[% opt %] [% v19 %] - write limit for a single test [% mem_units %], default value is 30;</li>
       <li>author[% opt %] - author name;</li>
-      <li>inputFile - input file name or <tt>*STDIN</tt>[% v18 %];</li>
-      <li>outputFile - output file name or <tt>*STDOUT</tt>[% v18 %];</li>
+      <li>inputFile - input file name or <code>*STDIN</code>[% v18 %];</li>
+      <li>outputFile - output file name or <code>*STDOUT</code>[% v18 %];</li>
       <li>difficulty[% opt %] [% dv14 %] - author's estimate of the problem difficulty (1 to 100);</li>
       <li>stdChecker[% opt %] [% dv14 %] - standard checker name;</li>
       <li>maxPoints[% opt %] [% v13 %] - maximum number of points per problem, overrides the sum of points for each test</li>
@@ -145,8 +145,8 @@ files with tests, solutions etc.
       <li>de_code[% opt %] - development environment code;</li>
       <li>style[% opt %] [% v12 %] -- checker arguments format, can be one of:
         <ul>
-          <li>"legacy" -- arguments are <tt>input answer output</tt>, used by default for backwards compatibility</li>
-          <li>"testlib" -- arguments are <tt>input output answer</tt>, compatible with the testlib library.
+          <li>"legacy" -- arguments are <code>input answer output</code>, used by default for backwards compatibility</li>
+          <li>"testlib" -- arguments are <code>input output answer</code>, compatible with the testlib library.
           Recommended for new problems.</li>
           <li>"partial" -- arguments are similar to testlib.
             Points for test are read from the checker's standard output.</li>
@@ -234,16 +234,16 @@ files with tests, solutions etc.
       <li>name -- identifier of the [% tag_ref('Generator') %] object;</li>
       <li>src[% opt %] -- path to the source code file;</li>
       <li>de_code[% opt %] -- development environment code;</li>
-      <li>outputFile[% opt %] [% v12 %] -- input file name or <tt>*STDOUT</tt>;</li>
+      <li>outputFile[% opt %] [% v12 %] -- input file name or <code>*STDOUT</code>;</li>
       <li>export[% opt %] [% v14 %] -- globally unique identifier.</li>
       <li>timeLimit[% opt %] [% v17 %] -- time limit in seconds.</li>
       <li>memoryLimit[% opt %] [% v17 %] -- memory limit [% mem_units %].</li>
       <li>writeLimit[% opt %] [% v19 %] -- write limit [% mem_units %]. By default is 999.</li>
     </ul>
   </td>
-  <td>Description of the test generator. Generator must produce a file named according to the <tt>outputFile</tt> attribute. That file is used as an input data by the [% tag_ref('In') %] tag.
-    By default the file name is equal to the value of <tt>inputFile</tt> attribute of the  [% tag_ref('Problem') %] tag.
-    Special value of <tt>outputFile="*STDOUT"</tt> means that the generator should print the test to the standard output.
+  <td>Description of the test generator. Generator must produce a file named according to the <code>outputFile</code> attribute. That file is used as an input data by the [% tag_ref('In') %] tag.
+    By default the file name is equal to the value of <code>inputFile</code> attribute of the  [% tag_ref('Problem') %] tag.
+    Special value of <code>outputFile="*STDOUT"</code> means that the generator should print the test to the standard output.
     <br/>
     For group generators outputFile attribute may contain context variables which are expanded to the test number [% v15 %],
     or file pattern characters [% v19 %] '?' and '*'.
@@ -271,7 +271,7 @@ files with tests, solutions etc.
   </td>
   <td>Attributes name, src and export of [% tag_ref('GeneratorRange') %] tag may contain context variables which are expanded to the current generator number.
     For example:<br/>
-    <tt>&lt;GeneratorRange from="1" to="10" name="g%0n" src="gen%0n.pas"/&gt</tt>
+    <code>&lt;GeneratorRange from="1" to="10" name="g%0n" src="gen%0n.pas"/&gt</code>
   </td>
 </tr>
 <tr>
@@ -355,7 +355,7 @@ files with tests, solutions etc.
   may contain context variables which are expanded to the current test number.
   For example:<pre>&lt;TestRange from="1" to="10"&gt;
   &lt;In src="%0n.in"/&gt;&lt;Out use="solution"/&gt;
-&lt;/TestRange&gt</pre>
+&lt;/TestRange&gt;</pre>
 </td>
 </tr>
 <tr>
@@ -431,7 +431,7 @@ files with tests, solutions etc.
   <td>
     <ul>
       <li>guid -- globally unique identifier of the imported object.
-        Can contain <tt>*</tt> character, designating an arbitrary substring.[% v15 %]</li>
+        Can contain <code>*</code> character, designating an arbitrary substring.[% v15 %]</li>
       <li>type[% opt %] -- type of the imported object (generator, checker, solution).</li>
       <li>name[% opt %] [% v15 %] -- problem-local identifier of the imported object</li>
     </ul>
@@ -489,24 +489,24 @@ files with tests, solutions etc.
 <p>
   Specifier is a comma-separated list of elements.
   Each element may be one of:
-  <ul>
-    <li>Test number,</li>
-    <li>Range of test numbers, separated by "-" character [% v15 %],</li>
-    <li>Testset name ([% tag_ref('Testset') %])[% v18 %].</li>
-  </ul>
 </p>
+<ul>
+  <li>Test number,</li>
+  <li>Range of test numbers, separated by "-" character [% v15 %],</li>
+  <li>Testset name ([% tag_ref('Testset') %])[% v18 %].</li>
+</ul>
 
 <a name="contextVars"></a>
 <h2>Context variables</h2>
 
-<p>Have a form of <tt>%n</tt>, <tt>%0n</tt>, meaning test number and zero-padded test number correspondingly.</p>
+<p>Have a form of <code>%n</code>, <code>%0n</code>, meaning test number and zero-padded test number correspondingly.</p>
 
 <h2>STML (Simple Text Markup Language)</h2>
 
 <p>STML is a radically simplified subset of HTML with a few additional tags. The following tags are defined in STML:</p>
 
 <table class="ft">
-<tr><th>Tag name</br>Parent tag</th><th>Attributes</th><th>Comments</th></tr>
+<tr><th>Tag name<br/>Parent tag</th><th>Attributes</th><th>Comments</th></tr>
 <tr><td>[% tag_in('img') %]</td>
   <td>
     <ul>
@@ -589,15 +589,15 @@ files with tests, solutions etc.
 
 <a name="cats-if"></a>
 <h2>STML conditionals</h2>
-<p>Any tag inside STML can have additional <tt>cats-if</tt> attribute.
+<p>Any tag inside STML can have additional <code>cats-if</code> attribute.
 Its value is a condition on problem tags.
 </p>
 <p>Condition is a list of expressions separated by comma.
 Each expression is one of
-<tt>name</tt>,
-<tt>!name</tt>,
-<tt>name=value</tt> or
-<tt>!name=value</tt>, where <tt>!</tt> sign denotes
+<code>name</code>,
+<code>!name</code>,
+<code>name=value</code> or
+<code>!name=value</code>, where <code>!</code> sign denotes
 logical not, name -- tag name, value -- tag value.
 </p>
 

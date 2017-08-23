@@ -118,3 +118,5 @@ table.ft tr td ul {
   padding-left: 25px;
   margin-bottom: 0px;
 }
+
+code a, code a:link { font-family: inherit; }
