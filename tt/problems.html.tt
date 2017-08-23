@@ -122,7 +122,7 @@ function chg_code(st_sel, pid) {
 <td><a href="[% p.href_select_tags %]">[% p.tags.replace(',', ',&#8203;') || '*' %]</a>
 </td>
 [% IF visible_cols.Mu %]<td>[% p.last_modified_by %]</td>[% END %]
-[% IF visible_cols.Mt %]<td align="right">[% p.upload_date %]</td>[% END %]
+[% IF visible_cols.Mt %]<td class="num">[% p.upload_date %]</td>[% END %]
 [% END %]
 [% IF is_practice %]<td>[% p.contest_name | html %]</td>[% END %]
 [% IF (is_user || is_practice) && visible_cols.Vc %]

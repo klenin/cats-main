@@ -1,5 +1,4 @@
 [% PROCESS includes/menu_begin.tti %]
-[%- PROCESS includes/html.tti -%]
 
 <p>[% capt.name %]: [% team_name | html %]</p>
 <p>[% capt.restrict_ips %]: [% restrict_ips %]</p>
@@ -7,7 +6,7 @@
 <table class="internal_borders padded">
 <tr><th>[% capt.ts %]</th><th>[% capt.ip %]</th></tr>
 [% FOREACH e IN events %]
-<tr><td>[% e.ts %]</td><td align="right"><a href="[% e.href_whois %]">[% e.last_ip %]</a></td></tr>
+<tr><td>[% e.ts %]</td><td class="num">[% href(e.href_whois, e.last_ip) %]</td></tr>
 [% END %]
 </table>
 [% PROCESS includes/menu_end.tti %]

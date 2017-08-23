@@ -56,7 +56,7 @@
 [% IF printable %]
 [% FOREACH r IN rank %]
 <tr align="center"[% UNLESS r.row_color %] class="even"[% END %]>
-<td align="right">[% r.contestant_number %]&nbsp;</td>
+<td class="num">[% r.contestant_number %]&nbsp;</td>
 [%- IF 0 %]
 <td nowrap align=center bgcolor=#ffffff>
 [% IF r.flag %]
@@ -101,7 +101,7 @@ function href(url, text, attr) { return '<a href="' + url + '"' + (attr == null 
 for(var i = 0; i < rank_table.length; ++i) {
     var r = rank_table[i];
     document.write('<tr align="center"' + (r.rc ? '' : ' class="even"') + '>');
-    td(href('[% href_submits %];uf=' + r.id, (i + 1) + '&nbsp;'), 'align="right"');
+    td(href('[% href_submits %];uf=' + r.id, (i + 1) + '&nbsp;'), 'class="num"');
     td(
         href(
             '[% href_user_stats %];uid=' + r.id,

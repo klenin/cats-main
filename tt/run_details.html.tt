@@ -2,7 +2,6 @@
 [% PROCESS includes/header.tti %]
 <style>
   .details a { color: inherit; width: 100%; display: block; }
-  .details .num { text-align: right; }
   .details .test_data a { font-family: "Courier New", Courier, monospace; }
 </style>
 </head>
@@ -100,7 +99,7 @@
   </tr>
   [% FOREACH rd IN r.run_details %]
   <tr class="run_details_[% rd.short_state %]" data-ts="[% rd.ts.name %]">
-    <td>[% rd.test_rank %]</td>
+    <td class="num">[% rd.test_rank %]</td>
     [% IF rd.short_state == 'NT' %]
     <td colspan="[% 1 + (r.show_points ? 1 : 0) + (r.show_test_resources ? 3 : 0) %]">[% capt.verdicts.NT %]</td>
     [% ELSE %]

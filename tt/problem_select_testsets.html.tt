@@ -24,9 +24,9 @@
   </label></td>
   <td>[% ts.name %]</td>
   <td>[% ts.tests.replace(',', ',&#8203;') %]</td>
-  <td align="right">[% ts.count %]</td>
-  <td align="right">[% ts.points %]</td>
-  <td align="right">[% ts.hide_details %]</td>
+  <td class="num">[% ts.count %]</td>
+  <td class="num">[% ts.points %]</td>
+  <td class="num">[% ts.hide_details %]</td>
   <td>[% ts.depends_on.replace(',', ',&#8203;') %]</td>
 </tr>
 [% END %]
