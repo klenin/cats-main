@@ -6,6 +6,6 @@
 <input type="text" size="50" maxlength="200" name="tags" value="[% problem_tags %]" />
 <br/>
 <input type="hidden" name="pid" value="[% problem_id %]" />
-<input type="submit" name="save" value="[% capt.save %]" class="button" />
+<button type="submit" name="save" value="1" class="button">[% capt.save %]</button>
 </form>
 [% PROCESS includes/menu_end.tti %]

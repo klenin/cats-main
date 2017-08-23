@@ -75,10 +75,10 @@ sub main_routes() {
         problems_retest => \&CATS::UI::Problems::problems_retest_frame,
         problem_select_testsets => [
             \&CATS::UI::ProblemDetails::problem_select_testsets_frame,
-            pid => $int, save => $str, from_problems => $bool, ],
+            pid => $int, save => $bool, from_problems => $bool, ],
         problem_select_tags => [
             \&CATS::UI::ProblemDetails::problem_select_tags_frame,
-            pid => $int, tags => $str, save => $str, from_problems => $bool, ],
+            pid => $int, tags => $str, save => $bool, from_problems => $bool, ],
         problem_limits => [
             \&CATS::UI::ProblemDetails::problem_limits_frame, pid => $int, cpid => $int, ],
         problem_download => [ \&CATS::UI::ProblemDetails::problem_download, pid => $int, ],
