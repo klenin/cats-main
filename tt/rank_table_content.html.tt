@@ -24,7 +24,7 @@
 [% ELSE %]<a href="./docs/rules_acm.html">[% capt.ACM %]</a>
 [% END %]
 [% capt.status %]:
-[% IF frozen %]<font color=#0000a0>[% capt.frozen %]</font>[% ELSE %]<font color=#00a040>[% capt.actual %]</font>[% END %]
+[% IF frozen %]<span style="color: #0000a0;">[% capt.frozen %]</span>[% ELSE %]<span style="color: #00a040;">[% capt.actual %]</span>[% END %]
 [% IF cache_since; capt.cache %]: [% cache_since %][% END %]
 </td>
 </tr>

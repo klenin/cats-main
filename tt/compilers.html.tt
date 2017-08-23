@@ -29,7 +29,7 @@ function delete_compiler(href, name) {
 [% IF visible_cols.Er %]<td><pre>[% c.err_regexp | html %]<pre></td>[% END %]
 [% IF visible_cols.Mh %]<td>[% c.memory_handicap %]</td>[% END %]
 [% IF visible_cols.Sy %]<td>[% c.syntax %]</td>[% END %]
-[% IF user.is_jury %]<td>[% IF c.locked %]<font color=red>[% capt.locked %]</font>[% ELSE; capt.unlocked; END %]</td>[% END %]
+[% IF user.is_jury %]<td>[% IF c.locked %]<span style="color: red">[% capt.locked %]</span>[% ELSE; capt.unlocked; END %]</td>[% END %]
 </tr>
 [% END %]
 </table>
