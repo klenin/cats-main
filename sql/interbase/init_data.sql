@@ -48,9 +48,6 @@ INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
     VALUES (GEN_ID(key_seq, 1), 507, 'NodeJS', 'js', 'jScript', '[\\\/]~FILE~:~LINE~');
 
-INSERT INTO default_de (id, code, description, file_ext, in_contests)
-    VALUES (GEN_ID(key_seq, 1), 401, 'JavaScript', 'js', 0);
-
 INSERT INTO contests(id, title, ctype, start_date) VALUES(1, 'Турнир', 1, CURRENT_DATE - 100);
 INSERT INTO accounts(id, login, passwd, srole) VALUES(2, 'root', 'root', 0);
 INSERT INTO accounts(id, login, passwd, srole) VALUES(5, 'fox', 'fox', 1);
