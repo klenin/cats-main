@@ -26,10 +26,10 @@
 </form>
 <table class="bordered highlight">
 [% FOREACH s IN similar %]
-  <tr><td align="right"><a href="[% s.href_diff %]" target="_blank">[% s.score %]</td>
+  <tr><td align="right">[% href(s.href_diff, s.score) %]</td>
   <td[%' colspan="2"' IF s.t2 == s.t1 %]>[% u1 = users_idx.item(s.t1); u1.team_name | html; " ($u1.city)" IF u1.city %]</td>
   [% IF s.t2 != s.t1 %]<td>[% u2 = users_idx.item(s.t2); u2.team_name | html; " ($u2.city)" IF u2.city %]</td>[% END %]
-  <td><a href="[% s.href_console %]" target="_blank">[% capt.console %]</td>
+  <td>[% href(s.href_console, capt.console) %]</td>
   </tr>
 [% END %]
 </table>
