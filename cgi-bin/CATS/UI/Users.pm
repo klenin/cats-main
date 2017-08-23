@@ -173,12 +173,12 @@ sub users_import_frame {
 }
 
 sub registration_frame {
+    my ($p) = @_;
     init_template('registration.html.tt');
 
     $t->param(countries => \@CATS::Countries::countries, href_login => url_f('login'));
 
-    defined param('register')
-        or return;
+    $p->{register} or return;
 
     my $u = CATS::User->new->parse_params;
     $u->validate_params(validate_password => 1) or return;

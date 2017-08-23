@@ -42,7 +42,7 @@ sub main_routes() {
         login => [ \&CATS::UI::LoginLogout::login_frame,
             logout => $bool, login => $str, passwd => $str, redir => $str, ],
         logout => \&CATS::UI::LoginLogout::logout_frame,
-        registration => \&CATS::UI::Users::registration_frame,
+        registration => [ \&CATS::UI::Users::registration_frame, register => $bool, ],
         profile => [ \&CATS::UI::Users::profile_frame, json => $bool, clear => $bool, edit_save => $str, ],
         contests => [ \&CATS::UI::Contests::contests_frame,
             summary_rank => $bool, create_group => $bool,

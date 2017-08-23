@@ -13,7 +13,7 @@
 <h4>[% capt.aux_fields %]</h4>
 [% PROCESS includes/user_extra.tti %]
 <br/>
-<input type="submit" name="register" value="[% capt.do_register %]" class="button">
+<button type="submit" name="register" value="1" class="button">[% capt.do_register %]</button>
 </form>
 [% END %]
 
