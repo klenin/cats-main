@@ -26,15 +26,17 @@ Some historical code, mostly located in `unused` directory, does not conform to 
 * Perl code MUST be indented by 4 (four) spaces.
 * Template and Javascript code SHOULD be indented by 2 (two) spaces.
 * Code MUST NOT contain trailing spaces. In particular, spaces to the right of operators demanded by conventions below MUST NOT be present if the line is split after the operator.
+* Code MUST NOT contain tab characters.
 * Operators, including fat comma (`=>`) and conditional (`?:`) MUST be surrounded by a single space from each side.
 * Comma MUST be have a single space on the right and MUST NOT have a space on the left.
+* Multiple assignments or array/hash constructors MAY be presented in tabular form by aligning items vertically with spaces. Otherwise, whenever space is used between tokens, it MUST be a single space.
 * Functions and `use` statement categories MUST be separated by a single empty line.
 * Single empty lines MAY be used to separate logical blocks of code.
-* Code MUST not have two or more consecutive empty lines,
+* Code MUST not have two or more consecutive empty lines.
 * Parentheses MUST NOT have spaces inside.
 * Parentheses MUST have spaces outside except between subroutine name and parameter list, where space MUST NOT be present.
-* Square brackets MUST NOT have spaces inside when they designate array index and MUST have spaces inside otherwise.
-* Curly brackets MUST NOT have spaces inside when they designate hash index and MUST have spaces inside otherwise.
+* Square brackets MUST NOT have spaces inside when they designate array access and MUST have spaces inside otherwise.
+* Curly brackets MUST NOT have spaces inside when they designate hash access and MUST have spaces inside otherwise.
 * Code lines MUST be shorter than 120 characters.
 * Code lines SHOULD be shorter than 100 characters.
 * When a statement is split into several lines, split position SHOULD be after the operator of the lowest possible priority. Exception: if a line is split at the position of low-priority logical operator (`and`, `or`), such operator MUST go on the new line.
@@ -43,6 +45,7 @@ Some historical code, mostly located in `unused` directory, does not conform to 
 ## Statements and blocks
 * There SHOULD be no more than one statement per line.
 * For compound statements and subroutines, opening braces of body code blocks MUST be at the end of the line, not on a separate line.
+* When splitting long condition of the prefix compund statement into several lines, closing parentheses together with opening brace SHOULD be split into a separate line with the same identation as the compound statement.
 * Prefix and suffix compound statements as well as low-priority logical operators MAY be used interchangeably.
 * Suffix compound statements MUST NOT have parentheses around the condition.
 * Low-priority logical operators MUST NOT be used inside of statements (`if ($x and $y)` is wrong).
@@ -58,7 +61,7 @@ Some historical code, mostly located in `unused` directory, does not conform to 
 * Subroutines SHOULD omit the `return` keyword in the final statement.
 
 ## Comments
-* Comments MUST be worded as full English sentences, with capitalization and full stops.
+* Comments MUST be worded as full English sentences, with capitalization and periods.
 * Comment MUST have a single space between `#` character and text.
 * Comments MUST be either on a separate line immediately preceding commented code or at the end of the commented line. First option SHOULD be preferred.
 * Commented-out code SHOULD NOT be committed.
@@ -69,7 +72,7 @@ Some historical code, mostly located in `unused` directory, does not conform to 
 * Regexps SHOULD use slash.
 * If alternative quoting is desired, tilde character MUST be used for both strings and regexps (`q~`, `qq~`, `m~`, `s~`).
 * Alternative quoting with tilde MUST be used for all embedded SQL.
-* Identifiers used as hash indexes MUST NOT be quoted (except where required by language).
+* Identifiers used as hash keys MUST NOT be quoted (except where required by language).
 
 ## Identifiers and packages
 * Package/class identifiers MUST use `CamelCase` and reside in `CATS::` namespace (exception: `cats` package for global constants defined in `CATS::Constants`).
@@ -90,7 +93,7 @@ Some historical code, mostly located in `unused` directory, does not conform to 
 
 ## Strictness and warnings
 * All modules MUST start from `use strict` and `use warnings` statements.
-* `no strict` / `no warnings` statement MUST be enclosed in a smallest possible block.
+* `no strict` / `no warnings` statement MUST be enclosed in the smallest possible block.
 * Code MUST NOT generate any warnings.
 
 ## Security
@@ -107,11 +110,11 @@ Some historical code, mostly located in `unused` directory, does not conform to 
 
 ## HTML
 * Html SHOULD be valid HTML5 (currently except for 'obsolete attribute' errors).
-* Attributes SHOULD be quoted.
+* Attributes SHOULD be quoted, even if HTML allows otherwise.
 * Void elements MUST be closed XML-style (`<br/>`).
-* Non-void elements MUST have explicit closing tag (`<td></td>`).
+* Non-void elements MUST have explicit closing tag, even if empty (`<td></td>`).
 * Forms MUST be submitted with `button`, NOT `input`.
-* Elements SHOULD be styled with CSS, embedded `style` tags MAY be used for local styles.
+* Elements SHOULD be styled with CSS, embedded `style` tags MAY be used for local styles (using `extra_head` block).
 * Checkboxes and submit buttons MUST have `value="1"`.
 
 ## Compatibility
@@ -121,7 +124,7 @@ Some historical code, mostly located in `unused` directory, does not conform to 
 
 ## Architecture
 * Templates MUST NOT change any state of the model.
-* Controllers (`xxx_frame`) MUST be called only by `Router`.
+* Controllers (`xxx_frame`) SHOULD be called only by `Router`.
 * Controllers SHOULD be defined only in `CATS::UI::`namespace. `CATS::UI` modules MUST be used only by `Router`.
 
 ## Git commits
