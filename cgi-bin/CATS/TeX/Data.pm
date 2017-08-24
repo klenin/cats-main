@@ -1,11 +1,8 @@
-# MathRender v1.2 by Matviyenko Victor
-# все символы, которые умеют отображать html и mathml генераторы
-package CATS::TeX::TeXData;
-# команда ТеХ без бэкслеша => html/mathml entity без &и;
-# при добавлении новых символов могут возникнуть проблемы при отображении html
-# (только в случае отсутствия у клиента обоих используемых генератором шрифтов)
-our %binary =
-(
+package CATS::TeX::Data;
+
+# TeX command without backslash => html/mathml entity without '&' and ';'.
+# Check font availability when adding new symbols.
+our %binary = (
  pm => '#xB1',
  mp => '#x2213',
  circ => '#x2218',
@@ -50,8 +47,7 @@ our %binary =
  cdots => '#x22ef',
 );
 
-my %arrows =
-(
+my %arrows = (
  Rightarrow => 'rArr',
  Leftarrow => 'lArr',
  Leftrightarrow => 'hArr',
@@ -63,8 +59,7 @@ my %arrows =
  downarrow => 'darr',
 );
 
-my %special =
-(
+my %special = (
  deg => 'deg',
  'int' => 'int',
  sum => 'sum',
@@ -93,16 +88,14 @@ my %special =
  rfloor => '#x230B',
 );
 
-my %spaces =
-(
- #соответствие неточное
+# Rough approximation.
+my %spaces = (
  ';' => 'nbsp',
  ':' => 'nbsp',
  ',' => 'nbsp',
 );
 
-my %greek =
-(
+my %greek = (
  Alpha => 'Alpha',
  Beta => 'Beta',
  Chi => 'Chi',
@@ -154,8 +147,7 @@ my %greek =
  zeta => 'zeta',
 );
 
-my %old =
-(
+my %old = (
  alef => '#x5D0',
  ayin => '#x5E2',
  bet => '#x5D1',
@@ -185,7 +177,6 @@ my %old =
  zayin => '#x5D6',
 );
 
-# используемый генераторами хеш
 our %symbols = (%binary, %arrows, %special, %spaces, %greek, %old);
 %symbols = map { $_ => "\&$symbols{$_};" } keys %symbols;
 $symbols{' '} = '&nbsp;';

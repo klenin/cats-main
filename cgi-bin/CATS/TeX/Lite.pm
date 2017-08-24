@@ -3,7 +3,7 @@ package CATS::TeX::Lite;
 use strict;
 use warnings;
 
-use CATS::TeX::TeXData;
+use CATS::TeX::Data;
 
 my %generators = (
     var    => sub { ($_[1] || '') . "<i>$_[0]</i>" },
