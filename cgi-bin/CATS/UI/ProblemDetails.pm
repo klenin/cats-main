@@ -366,9 +366,10 @@ sub problem_select_tags_frame {
         $problem->{tags} = $p->{tags};
     }
 
-    $t->param("problem_$_" => $problem->{$_}) for keys %$problem;
     $t->param(
-        href_action => url_f('problem_select_tags', ($p->{from_problems} ? (from_problems => 1) : ())),
+        problem => $problem,
+        href_action => url_f('problem_select_tags',
+            from_problems => $p->{from_problems}, pid => $p->{pid}),
     );
     CATS::Problem::Utils::problem_submenu('problem_select_tags', $p->{pid});
 }
