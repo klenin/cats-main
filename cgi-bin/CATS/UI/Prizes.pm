@@ -12,31 +12,6 @@ use CATS::Output qw(auto_ext init_template url_f);
 use CATS::References;
 use CATS::Web qw(param url_param);
 
-sub sanitize_clist { sort { $a <=> $b } grep /^\d+$/, @_ }
-
-sub contest_group_by_clist {
-    $dbh->selectrow_array(q~
-        SELECT id FROM contest_groups WHERE clist = ?~, undef,
-        $_[0]);
-}
-
-sub contest_group_auto_new {
-    my @clist = sanitize_clist param('contests_selection');
-    @clist && @clist < 100 or return;
-    my $clist = join ',', @clist;
-    return msg(1090) if contest_group_by_clist($clist);
-    my $names = $dbh->selectcol_arrayref(_u
-        $sql->select('contests', 'title', { id => \@clist })) or return;
-    my $id = new_id;
-    my $name = CATS::Contest::Utils::common_prefix(@$names) || "Group $id";
-    $dbh->do(q~
-        INSERT INTO contest_groups (id, name, clist)
-        VALUES (?, ?, ?)~, undef,
-        $id, $name, $clist);
-    $dbh->commit;
-    msg(1089, $name);
-}
-
 sub contest_groups_fields () { qw(name clist) }
 
 sub prizes_edit_frame {
@@ -58,10 +33,10 @@ sub prizes_edit_save {
     my $cgid = param('id') or return;
     my %cg = map { $_ => (param($_) || '') } contest_groups_fields;
 
-    my @clist = sanitize_clist split ',', $cg{clist};
+    my @clist = CATS::Contest::Utils::sanitize_clist split ',', $cg{clist};
     @clist && @clist < 100 or return;
     $cg{clist} = join ',', @clist;
-    return msg(1090) if $cgid != (contest_group_by_clist($cg{clist}) // 0);
+    return msg(1090) if $cgid != (CATS::Contest::Utils::contest_group_by_clist($cg{clist}) // 0);
 
     $dbh->do(_u $sql->update('contest_groups', \%cg, { id => $cgid }));
     my $prizes = $dbh->selectall_arrayref(q~
@@ -92,10 +67,10 @@ sub prizes_frame {
         $dbh->commit;
     }
 
-    $is_root && defined url_param('edit') and return CATS::UI::Prizes::prizes_edit_frame;
+    $is_root && defined url_param('edit') and return prizes_edit_frame;
     my $lv = CATS::ListView->new(name => 'prizes', template => 'prizes.html.tt');
 
-    defined param('edit_save') and CATS::UI::Prizes::prizes_edit_save;
+    defined param('edit_save') and prizes_edit_save;
 
     $lv->define_columns(url_f('prizes'), 0, 0, [
         { caption => res_str(601), order_by => '2', width => '30%' },
@@ -127,7 +102,7 @@ sub prizes_frame {
 sub contests_prizes_frame {
     my $lv = CATS::ListView->new(name => 'contests_prizes', template => auto_ext('contests_prizes'));
 
-    my @clist = sanitize_clist param('clist');
+    my @clist = CATS::Contest::Utils::sanitize_clist param('clist');
     @clist && @clist < 100 or return;
     my $clist = join ',', @clist;
 

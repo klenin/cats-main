@@ -16,6 +16,7 @@ use fields (database_fields(), qw(server_time time_since_start time_since_finish
 
 use CATS::Config qw(cats_dir);
 use CATS::Constants;
+use CATS::Contest::Utils;
 use CATS::DB;
 
 sub new {
@@ -87,6 +88,23 @@ sub register_account {
         values %p);
     my $p = cats_dir() . "./rank_cache/$p{contest_id}#";
     unlink <$p*>;
+}
+
+sub contest_group_auto_new {
+    my @clist = CATS::Contest::Utils::sanitize_clist param('contests_selection');
+    @clist && @clist < 100 or return;
+    my $clist = join ',', @clist;
+    return msg(1090) if Contest::Utils::contest_group_by_clist($clist);
+    my $names = $dbh->selectcol_arrayref(_u
+        $sql->select('contests', 'title', { id => \@clist })) or return;
+    my $id = new_id;
+    my $name = CATS::Contest::Utils::common_prefix(@$names) || "Group $id";
+    $dbh->do(q~
+        INSERT INTO contest_groups (id, name, clist)
+        VALUES (?, ?, ?)~, undef,
+        $id, $name, $clist);
+    $dbh->commit;
+    msg(1089, $name);
 }
 
 1;

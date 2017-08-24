@@ -5,6 +5,7 @@ use warnings;
 
 use CATS::Constants;
 use CATS::ContestParticipate qw(get_registered_contestant is_jury_in_contest);
+use CATS::Contest;
 use CATS::DB;
 use CATS::Globals qw($cid $contest $is_jury $is_root $sid $t $uid $user);
 use CATS::ListView;
@@ -13,7 +14,6 @@ use CATS::Output qw(auto_ext init_template url_f);
 use CATS::RankTable;
 use CATS::Settings qw($settings);
 use CATS::StaticPages;
-use CATS::UI::Prizes;
 use CATS::Utils qw(url_function date_to_iso);
 use CATS::Web qw(param url_param redirect);
 
@@ -309,7 +309,7 @@ sub contests_frame {
     $p->{listview} = my $lv = CATS::ListView->new(name => 'contests',
         template => 'contests.' .  ($ical ? 'ics' : $json ? 'json' : 'html') . '.tt');
 
-    CATS::UI::Prizes::contest_group_auto_new if $p->{create_group} && $is_root;
+    CATS::Contest::contest_group_auto_new if $p->{create_group} && $is_root;
 
     contest_delete if url_param('delete');
 
