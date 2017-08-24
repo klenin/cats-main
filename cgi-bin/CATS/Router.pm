@@ -145,7 +145,7 @@ sub main_routes() {
         rank_problem_details => \&CATS::UI::RankTable::rank_problem_details,
         problem_text => [ \&CATS::UI::Problems::problem_text_frame,
             pid => $int, cpid => $int, cid => $int,
-            explain => $bool, nospell => $bool, noformal => $bool, problem_lang => $str, nokw => $bool,
+            explain => $bool, nospell => $bool, noformal => $bool, pl => $ident, nokw => $bool,
             tags => $str, raw => $bool, nomath => $bool,
         ],
         envelope => [ \&CATS::UI::Messages::envelope_frame, rid => $int, ],

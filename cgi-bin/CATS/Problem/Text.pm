@@ -222,6 +222,19 @@ sub contest_visible {
     return (0, 0, 0);
 }
 
+sub choose_lang {
+    my ($problem, $p, $is_jury_in_contest) = @_;
+
+    my @langs = split ',', $problem->{lang};
+    my $lang_tag = $problem->{parsed_tags}->{lang}->[1];
+    if ($p->{pl}) {
+        return $p->{pl} if
+            $is_jury_in_contest && !$CATS::StaticPages::is_static_page ||
+            !$lang_tag && grep $_ eq $p->{pl}, @langs;
+    }
+    $lang_tag || $langs[0];
+}
+
 sub problem_text {
     my ($p) = @_;
     my ($show, $explain, $is_jury_in_contest) = contest_visible($p);
@@ -287,7 +300,10 @@ sub problem_text {
             $problem = { %$problem, %$p_orig };
         }
 
-        $problem->{lang} = $p->{problem_lang} if $is_root && $p->{problem_lang};
+        $problem->{tags} = $p->{tags} if $is_jury_in_contest && defined $p->{tags};
+        $problem->{parsed_tags} = $tags = CATS::Problem::Tags::parse_tag_condition($problem->{tags}, sub {});
+        $problem->{lang} = choose_lang($problem, $p, $is_jury_in_contest);
+        $tags->{lang} = [ 0, $problem->{lang} ];
 
         if ($is_jury_in_contest && !$p->{nokw}) {
             my $lang_col = $problem->{lang} eq 'ru' ? 'name_ru' : 'name_en';
@@ -320,9 +336,6 @@ sub problem_text {
             SELECT rank, in_file, out_file
             FROM samples WHERE problem_id = ? ORDER BY rank~, { Slice => {} },
             $problem->{problem_id});
-
-        $problem->{tags} = $p->{tags} if $is_jury_in_contest && defined $p->{tags};
-        $tags = CATS::Problem::Tags::parse_tag_condition($problem->{tags}, sub {});
 
         $problem->{href_problem_list} =
             ($CATS::StaticPages::is_static_page ? '../' : '') .
