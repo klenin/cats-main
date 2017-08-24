@@ -20,6 +20,7 @@ use CATS::Problem::Save;
 use CATS::Problem::Source::Git;
 use CATS::Problem::Source::Zip;
 use CATS::Problem::Submit;
+use CATS::Problem::Tags;
 use CATS::Problem::Text;
 use CATS::Problem::Utils;
 use CATS::Problem::Storage;
@@ -357,6 +358,13 @@ sub problems_retest_frame {
     );
 }
 
+sub has_lang_tag {
+    my ($problem) = @_;
+    $problem->{tags} or return;
+    my $parsed_tags = eval { CATS::Problem::Tags::parse_tag_condition($problem->{tags}); } or return;
+    $parsed_tags->{lang};
+}
+
 sub problems_frame {
     my ($p) = @_;
 
@@ -494,6 +502,14 @@ sub problems_frame {
             }
         }
         $c->{has_explanation} ||= $hrefs_view{explanation};
+        my $problem_langs = [];
+        if (!$hrefs_view{statement} && ($is_jury || !has_lang_tag($c))) {
+            my @langs = split ',', $c->{lang};
+            $problem_langs = [ map
+                +{ name => $_, href => $text_link_f->('problem_text', cpid => $c->{cpid}, pl => $_) },
+                @langs[1 .. $#langs]
+            ];
+        }
 
         my ($last_request, $last_verdict) = split ' ', $c->{last_submission} || '';
 
@@ -519,6 +535,7 @@ sub problems_frame {
             status_text => $psn->{$c->{status}},
             disabled => !$is_jury && $c->{status} == $cats::problem_st_disabled,
             href_view_problem => $hrefs_view{statement} || $text_link_f->('problem_text', cpid => $c->{cpid}),
+            problem_langs => $problem_langs,
             href_explanation => $show_packages && $c->{has_explanation} ?
                 $hrefs_view{explanation} || url_f('problem_text', cpid => $c->{cpid}, explain => 1) : '',
             problem_id => $c->{pid},
@@ -539,7 +556,6 @@ sub problems_frame {
             testsets => $c->{testsets} || '*',
             points_testsets => $c->{points_testsets},
             test_count => $c->{test_count},
-            lang => $c->{lang},
             memory_limit => $c->{memory_limit} * 1024 * 1024,
             time_limit => $c->{time_limit},
             write_limit => $c->{write_limit},
