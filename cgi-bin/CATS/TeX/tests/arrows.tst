@@ -1,1 +1,0 @@
-\Downarrow $ \Downarrow $ \Leftarrow $ \Leftarrow $ \Leftrightarrow $ \Leftrightarrow $ \Rightarrow $ \Rightarrow $ \Uparrow $ \Uparrow $ \to $ \to $ 
