@@ -18,7 +18,6 @@ use CATS::StaticPages;
 use CATS::TeX::Lite;
 use CATS::Time;
 use CATS::Utils qw(url_function);
-use CATS::Web qw(param url_param);
 
 my ($current_pid, $html_code, $spellchecker, $text_span, $tags, $skip_depth);
 
@@ -178,27 +177,28 @@ sub parse {
 }
 
 sub contest_visible {
+    my ($p) = @_;
     return (1, 1, 1) if $is_root;
 
-    my $pid = url_param('pid');
-    my $cpid = url_param('cpid');
-    my $contest_id = url_param('cid') || $cid;
+    my $pid = $p->{pid};
+    my $cpid = $p->{cpid};
+    my $contest_id = $p->{cid} || $cid;
 
-    my ($s, $t, $p) = ('', '', '');
+    my ($s, $t, $q) = ('', '', '');
     if (defined $pid) {
         $s = 'INNER JOIN problems P ON C.id = P.contest_id';
         $t = 'P';
-        $p = $pid;
+        $q = $pid;
     }
     elsif (defined $cpid) {
         $s = 'INNER JOIN contest_problems CP ON C.id = CP.contest_id';
         $t = 'CP';
-        $p = $cpid;
+        $q = $cpid;
     }
     elsif (defined $contest_id) { # Show all problems from the contest.
         $s = '';
         $t = 'C';
-        $p = $contest_id;
+        $q = $contest_id;
     }
 
     my $c = $dbh->selectrow_hashref(qq~
@@ -210,7 +210,7 @@ sub contest_visible {
             LEFT JOIN contest_accounts CA ON CA.contest_id = C.id AND CA.account_id = ?
             LEFT JOIN contest_sites CS ON CS.contest_id = C.id AND CS.site_id = CA.site_id
             WHERE $t.id = ?~, undef,
-        $uid, $p);
+        $uid, $q);
     return (1, 1, 1) if $c->{is_jury};
     if (($c->{since_start} || 0) > 0 && !$c->{is_hidden}) {
         $c->{local_only} or return (1, $c->{show_packages}, 0);
@@ -223,9 +223,10 @@ sub contest_visible {
 }
 
 sub problem_text {
-    my ($show, $explain, $is_jury_in_contest) = contest_visible();
+    my ($p) = @_;
+    my ($show, $explain, $is_jury_in_contest) = contest_visible($p);
     $show or return CATS::Web::not_found;
-    $explain = $explain && url_param('explain');
+    $explain = $explain && $p->{explain};
 
     init_template(auto_ext('problem_text'));
 
@@ -233,10 +234,10 @@ sub problem_text {
 
     my $overridden_limits_str = join ', ', map "L.$_", @cats::limits_fields;
 
-    if (my $pid = url_param('pid')) {
+    if (my $pid = $p->{pid}) {
         push @problems, { problem_id => $pid };
     }
-    elsif (my $cpid = url_param('cpid')) {
+    elsif (my $cpid = $p->{cpid}) {
         my $p = $dbh->selectrow_hashref(qq~
             SELECT
                 CP.id AS cpid, CP.contest_id, CP.problem_id, CP.code,
@@ -262,30 +263,33 @@ sub problem_text {
                 LEFT JOIN limits L ON L.id = CP.limits_id
             WHERE CP.contest_id = ? AND CP.status < $cats::problem_st_hidden
             ORDER BY CP.code~, { Slice => {} },
-            url_param('cid') || $cid);
+            $p->{cid} || $cid);
         push @problems, @$p;
     }
 
-    my $use_spellchecker = $is_jury_in_contest && !param('nospell');
+    my $use_spellchecker = $is_jury_in_contest && !$p->{nospell};
 
     my $need_commit = 0;
     for my $problem (@problems) {
         $current_pid = $problem->{problem_id};
-        my $fields_str = join ', ', (qw(
-            id title lang difficulty author input_file output_file statement pconstraints json_data),
-            'contest_id AS orig_contest_id',
-            'max_points AS max_points_def',
-            grep(!$problem->{$_}, @cats::limits_fields),
-            ($explain ? 'explanation' : qw(input_format output_format)),
-            ($is_jury_in_contest && !param('noformal') ? 'formal_input' : ()),
-        );
-        my $p = $dbh->selectrow_hashref(qq~
-            SELECT $fields_str FROM problems WHERE id = ?~, { Slice => {} },
-            $problem->{problem_id}) or next;
-        $problem = { %$problem, %$p };
-        $problem->{lang} = param('problem_lang') if $is_root && param('problem_lang');
+        {
+            my $fields_str = join ', ', (qw(
+                id title lang difficulty author input_file output_file statement pconstraints json_data),
+                'contest_id AS orig_contest_id',
+                'max_points AS max_points_def',
+                grep(!$problem->{$_}, @cats::limits_fields),
+                ($explain ? 'explanation' : qw(input_format output_format)),
+                ($is_jury_in_contest && !$p->{noformal} ? 'formal_input' : ()),
+            );
+            my $p_orig = $dbh->selectrow_hashref(qq~
+                SELECT $fields_str FROM problems WHERE id = ?~, { Slice => {} },
+                $problem->{problem_id}) or next;
+            $problem = { %$problem, %$p_orig };
+        }
 
-        if ($is_jury_in_contest && !param('nokw')) {
+        $problem->{lang} = $p->{problem_lang} if $is_root && $p->{problem_lang};
+
+        if ($is_jury_in_contest && !$p->{nokw}) {
             my $lang_col = $problem->{lang} eq 'ru' ? 'name_ru' : 'name_en';
             my $kw_list = $dbh->selectcol_arrayref(qq~
                 SELECT $lang_col FROM keywords K
@@ -317,7 +321,7 @@ sub problem_text {
             FROM samples WHERE problem_id = ? ORDER BY rank~, { Slice => {} },
             $problem->{problem_id});
 
-        $problem->{tags} = param('tags') if $is_jury_in_contest && defined param('tags');
+        $problem->{tags} = $p->{tags} if $is_jury_in_contest && defined $p->{tags};
         $tags = CATS::Problem::Tags::parse_tag_condition($problem->{tags}, sub {});
 
         $problem->{href_problem_list} =
@@ -328,7 +332,7 @@ sub problem_text {
             for ($problem->{$field_name}) {
                 defined $_ or next;
                 $text_span = '';
-                $_ = $_ eq '' ? undef : parse($_) unless $is_root && param('raw');
+                $_ = $_ eq '' ? undef : parse($_) unless $is_root && $p->{raw};
                 CATS::TeX::Lite::convert_all($_);
                 s/(\s|~)(:?-){2,3}(?!-)/($1 ? '&nbsp;' : '') . '&#8212;'/ge; # em-dash
             }
@@ -341,8 +345,7 @@ sub problem_text {
         title_suffix => (@problems == 1 ? $problems[0]->{title} : res_str(524)),
         problems => \@problems,
         tex_styles => CATS::TeX::Lite::styles(),
-        mathjax => !param('nomath'),
-        #CATS::TeX::HTMLGen::gen_styles_html()
+        mathjax => !$p->{nomath},
     );
 }
 
