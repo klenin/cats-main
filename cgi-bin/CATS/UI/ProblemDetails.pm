@@ -93,6 +93,18 @@ sub problem_details_frame {
     ];
 
     my @text = ('problem_text', cpid => $pr->{cpid});
+
+    my $text_hrefs = sub {{
+        name => $_[0],
+        href => {
+            full_text => url_f(@text, pl => $_[0]),
+            nospell_text => url_f(@text, nospell => 1, pl => $_[0]),
+            nomath_text => url_f(@text, nomath => 1, pl => $_[0]),
+            ($contest->{is_hidden} || $contest->{local_only} || $contest->{time_since_start} <= 0 ? () :
+                (static_text => CATS::StaticPages::url_static(@text, pl => $_[0]))
+            ),
+        },
+    }};
     $pr->{commit_sha} = eval { CATS::Problem::Storage::get_latest_master_sha($p->{pid}); } || 'error';
     warn $@ if $@;
     $t->param(
@@ -104,6 +116,7 @@ sub problem_details_frame {
         href_original_contest => url_function('problems', cid => $pr->{contest_id}, sid => $sid),
         href_download => url_f('problem_download', pid => $p->{pid}),
         href_git_package => url_f('problem_git_package', pid => $p->{pid}),
+        problem_langs => [ map $text_hrefs->($_), undef, split ',', $pr->{lang} ],
         href_text => url_f(@text),
         href_nospell_text => url_f(@text, nospell => 1),
         href_nomath_text => url_f(@text, nomath => 1),
