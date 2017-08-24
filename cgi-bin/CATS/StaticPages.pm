@@ -8,9 +8,13 @@ use CATS::DB;
 use CATS::Globals qw($sid);
 use CATS::Web qw(log_info url_param restore_parameters);
 
+my $int = qr/^[0-9]+$/;
+my $bool = qr/^0|1$/;
+my $letters = qr/^[a-z]+$/;
+
 sub allowed_pages {{
-    problem_text => { cid => 1, cpid => 1, pid => 1 },
-    rank_table_content => { cid => 1, hide_ooc => 1, printable => 1 },
+    problem_text => { cid => $int, cpid => $int, pid => $int, pl => qr/^[a-z]{2}$/ },
+    rank_table_content => { cid => $int, hide_ooc => $bool, printable => $bool },
 }}
 
 our $is_static_page;
@@ -22,10 +26,13 @@ sub process_static {
     my ($f, $p) = $url =~ /^\/\w+\/static\/([a-z_]+)-([a-z_\-0-9]+)\.html/;
     $f && $p or die $url;
     log_info "generating static page $url";
-    my $ap = allowed_pages()->{$f} or die;
+    my $ap = allowed_pages()->{$f} or die "Unknown static: $f";
     my %params;
-    $p =~ s/([a-z_]+)-(\d+)/$ap->{$1} ? $params{$1} = $2 : ''/eg;
+    $p =~ s/([a-z_]+)-([^\-]+)/$ap->{$1} ? $params{$1} = $2 : die "Unknown static param: $1"/eg;
     %params or die;
+    for (keys %params) {
+        $params{$_} =~ $ap->{$_} or die "Bad static param: $_";
+    }
     my $output_file = path() . name($f, %params) . '.html';
     $params{f} = $f;
     restore_parameters(\%params);
