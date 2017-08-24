@@ -7,7 +7,7 @@ use CATS::DB;
 use CATS::Globals qw($t $cid $uid $contest);
 use CATS::Messages qw(msg);
 use CATS::Output qw(url_f);
-use CATS::ProblemStorage;
+use CATS::Problem::Storage;
 use CATS::StaticPages;
 use CATS::Web qw(param save_uploaded_file);
 
@@ -86,8 +86,8 @@ sub problems_replace {
     $contest_id == $cid
         or return msg(1117, $old_title);
 
-    my CATS::ProblemStorage $p = CATS::ProblemStorage->new;
-    return if CATS::ProblemStorage::get_repo($pid, undef, 1, logger => CATS::ProblemStorage->new)->is_remote;
+    my CATS::Problem::Storage $p = CATS::Problem::Storage->new;
+    return if CATS::Problem::Storage::get_repo($pid, undef, 1, logger => CATS::Problem::Storage->new)->is_remote;
 
     my $fname = save_uploaded_file('zip');
 
@@ -114,7 +114,7 @@ sub problems_add {
             or return msg(1017);
     }
 
-    my CATS::ProblemStorage $p = CATS::ProblemStorage->new;
+    my CATS::Problem::Storage $p = CATS::Problem::Storage->new;
     my ($error, $result_sha, $problem) = $is_remote
               ? $p->load(CATS::Problem::Source::Git->new($source_name, $p), $cid, new_id, 0, $source_name)
               : $p->load(CATS::Problem::Source::Zip->new($source_name, $p), $cid, new_id, 0, undef);

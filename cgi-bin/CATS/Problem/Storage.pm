@@ -1,4 +1,4 @@
-package CATS::ProblemStorage;
+package CATS::Problem::Storage;
 
 use strict;
 use warnings;

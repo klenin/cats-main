@@ -22,7 +22,7 @@ use CATS::Problem::Source::Zip;
 use CATS::Problem::Submit;
 use CATS::Problem::Text;
 use CATS::Problem::Utils;
-use CATS::ProblemStorage;
+use CATS::Problem::Storage;
 use CATS::Redirect;
 use CATS::Request;
 use CATS::Settings;
@@ -273,7 +273,7 @@ sub problems_frame_jury_action {
     $p->{add_new} and return CATS::Problem::Save::problems_add_new;
     $p->{add_remote} and return CATS::Problem::Save::problems_add_new_remote;
     $p->{std_solution} and return CATS::Problem::Submit::problems_submit_std_solution($p);
-    CATS::ProblemStorage::delete($p->{delete_problem}) if $p->{delete_problem};
+    CATS::Problem::Storage::delete($p->{delete_problem}) if $p->{delete_problem};
 }
 
 sub problem_status_names_enum {
@@ -483,7 +483,7 @@ sub problems_frame {
     my $fetch_record = sub {
         my $c = $_[0]->fetchrow_hashref or return ();
         $c->{status} ||= 0;
-        my $remote_url = CATS::ProblemStorage::get_remote_url($c->{repo});
+        my $remote_url = CATS::Problem::Storage::get_remote_url($c->{repo});
 
         my %hrefs_view;
         for (qw(statement explanation)) {
