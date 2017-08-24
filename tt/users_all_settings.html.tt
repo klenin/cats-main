@@ -4,7 +4,7 @@
 [% WRAPPER includes/listview_header.tti %]
 <label>[% capt.path %] <input type="text" name="selector" value="[% lv_settings.selector | html %]" size="40" class="bordered" /></label>
 [% END %]
-<table width=100% cellpadding=2 cellspacing=1 class="bordered highlight">
+<table class="listview bordered highlight">
 [% PROCESS includes/listview_col_defs.tti %]
 [% FOREACH u IN users_all_settings %]
 <tr class="[% loop.parity %]">

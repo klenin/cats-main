@@ -19,7 +19,7 @@ function delete_contest(href, name) {
 
 [% PROCESS includes/listview_header.tti form_id='contest_form' %]
 
-<table width="100%" cellpadding=2 cellspacing=1 class="bordered highlight">
+<table class="listview bordered highlight">
 [% PROCESS includes/listview_col_defs.tti %]
 
 [% FOREACH c IN contests %]

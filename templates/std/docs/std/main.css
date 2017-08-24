@@ -78,6 +78,9 @@ div.pages a:hover { background-color: #bbbbff; }
 
 a.listview_dropper, a.listview_dropper:link { font-size: small; }
 
+table.listview { width: 100%; border-spacing: 1px; }
+table.listview > tbody > tr > td { padding: 2px; }
+
 div.search_hint {
     position: absolute;
     left: 8%;

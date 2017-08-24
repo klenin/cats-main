@@ -11,7 +11,7 @@
 
 [% PROCESS includes/listview_header.tti %]
 [% IF problem_history.size %]
-<table width="100%" cellpadding="2" cellspacing="1" class="bordered">
+<table class="listview highlight bordered">
 [% PROCESS includes/listview_col_defs.tti sel_col = 0 %]
 [% FOREACH h IN problem_history %]
 <tr class="[% loop.parity() %]">

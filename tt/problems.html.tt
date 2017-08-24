@@ -89,7 +89,7 @@ function chg_code(st_sel, pid) {
 [% END %]
 
 [% PROCESS includes/listview_header.tti form_name='problems_form' %]
-<table width="100%" cellpadding="2" cellspacing="1" class="bordered highlight">
+<table class="listview bordered highlight">
 [% IF can_submit %]
 [% PROCESS includes/listview_col_defs.tti sel_col = 1 %]
 [% END %]
