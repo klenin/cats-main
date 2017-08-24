@@ -441,7 +441,7 @@ sub problems_frame {
         ($reqs_count_sql $cats::st_wrong_answer$account_condition) AS wrong_answer_count,
         ($reqs_count_sql $cats::st_time_limit_exceeded$account_condition) AS time_limit_count,
         (SELECT R.id || ' ' || R.state FROM reqs R
-            WHERE R.problem_id = P.id AND R.account_id = ? AND R.contest_id = CP.contest_id
+            WHERE R.problem_id = P.id AND R.account_id = ? AND R.contest_id = ?
             ORDER BY R.submit_time DESC ROWS 1) AS last_submission~
     : q~
         NULL AS accepted_count,
@@ -472,8 +472,8 @@ sub problems_frame {
     my $aid = $uid || 0; # in a case of anonymous user
     my @params =
         !$lv->visible_cols->{Vc} ? () :
-        $contest->is_practice ? ($aid) :
-        ($aid) x 4;
+        $contest->is_practice ? ($aid, $cid) :
+        (($aid) x 4, $cid);
     $sth->execute(@params, $cid, $lv->where_params);
 
     my @status_list;
