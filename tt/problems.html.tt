@@ -1,6 +1,10 @@
 [% extra_head = BLOCK %]
 <style>
   .last_verdict { display: inline-block; width: 2em; padding: 2px; }
+
+  td.problem_radio { width: 3%; height: 100%; padding: 0; margin: 0; }
+  td.problem_radio label { display: block; width: 100%; height: 100%; vertical-align: middle; }
+  td.problem_radio label a { vertical-align: middle; }
 </style>
 [%- END %]
 [% PROCESS includes/menu_begin.tti %]
@@ -92,9 +96,9 @@ function chg_code(st_sel, pid) {
 [% FOREACH p IN problems %]
 <tr class="[% loop.parity() %] problem_row" id="pr_[% p.cpid %]">
 [% IF can_submit %]<td class="problem_radio">
-  <label><div><input type="radio" name="problem_id" value="[% p.problem_id %]"
+  <label><input type="radio" name="problem_id" value="[% p.problem_id %]"
     [%- ' disabled="disabled"' IF p.disabled; ' checked="checked"' IF p.selected %] />
-    [%~ IF p.href_problem_details %]<a href="[% p.href_problem_details %]" class="icon edit"></a>[% END %]</div></label>
+    [%~ IF p.href_problem_details %]<a href="[% p.href_problem_details %]" class="icon edit"></a>[% END %]</label>
 </td>[% END %]
 <td>
     [% IF editable %]
