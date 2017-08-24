@@ -3,29 +3,16 @@ package CATS::Router;
 use strict;
 use warnings;
 
+use File::Spec;
+
 use CATS::ApiJudge;
 use CATS::Contest::Results;
 use CATS::Problem::Text;
-
-use CATS::UI::About;
-use CATS::UI::Compilers;
-use CATS::UI::Console;
-use CATS::UI::Contests;
-use CATS::UI::ImportSources;
-use CATS::UI::Judges;
-use CATS::UI::Keywords;
-use CATS::UI::LoginLogout;
-use CATS::UI::Messages;
-use CATS::UI::Prizes;
-use CATS::UI::ProblemDetails;
-use CATS::UI::Problems;
-use CATS::UI::Sites;
-use CATS::UI::Stats;
-use CATS::UI::RankTable;
-use CATS::UI::RunDetails;
-use CATS::UI::Users;
-
 use CATS::Web qw(url_param param);
+
+BEGIN {
+    require $_ for glob File::Spec->catfile($ENV{CATS_DIR} || '.', 'CATS', 'UI', '*.pm');
+}
 
 my $function;
 
