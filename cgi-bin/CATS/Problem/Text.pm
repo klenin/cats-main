@@ -222,7 +222,7 @@ sub contest_visible {
     return (0, 0, 0);
 }
 
-sub problem_text_frame {
+sub problem_text {
     my ($show, $explain, $is_jury_in_contest) = contest_visible();
     $show or return CATS::Web::not_found;
     $explain = $explain && url_param('explain');

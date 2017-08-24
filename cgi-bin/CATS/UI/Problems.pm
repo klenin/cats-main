@@ -20,6 +20,7 @@ use CATS::Problem::Save;
 use CATS::Problem::Source::Git;
 use CATS::Problem::Source::Zip;
 use CATS::Problem::Submit;
+use CATS::Problem::Text;
 use CATS::Problem::Utils;
 use CATS::ProblemStorage;
 use CATS::Redirect;
@@ -589,5 +590,7 @@ sub problems_frame {
         contest_id => $cid, no_judges => !$jactive,
      );
 }
+
+sub problem_text_frame { goto \&CATS::Problem::Text::problem_text }
 
 1;
