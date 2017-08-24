@@ -35,8 +35,8 @@ Some historical code, mostly located in `unused` directory, does not conform to 
 * Code MUST not have two or more consecutive empty lines.
 * Parentheses MUST NOT have spaces inside.
 * Parentheses MUST have spaces outside except between subroutine name and parameter list, where space MUST NOT be present.
-* Square brackets MUST NOT have spaces inside when they designate array access and MUST have spaces inside otherwise.
-* Curly brackets MUST NOT have spaces inside when they designate hash access and MUST have spaces inside otherwise.
+* Square brackets MUST NOT have spaces inside when they designate array access and MUST have spaces inside otherwise (`$v[1]` but `[ 1, 2, 3 ]`).
+* Curly brackets MUST NOT have spaces inside when they designate defererence or hash access and MUST have spaces inside otherwise (`$h{$k}` and `@{f()}` but `{ x => 1 }`).
 * Code lines MUST be shorter than 120 characters.
 * Code lines SHOULD be shorter than 100 characters.
 * When a statement is split into several lines, split position SHOULD be after the operator of the lowest possible priority. Exception: if a line is split at the position of low-priority logical operator (`and`, `or`), such operator MUST go on the new line.
