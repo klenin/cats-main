@@ -3,6 +3,8 @@ package CATS::ProblemStorage;
 use strict;
 use warnings;
 
+use Carp;
+
 use CATS::Config qw(cats_dir);
 use CATS::Constants;
 use CATS::DB;
@@ -18,18 +20,18 @@ use CATS::StaticPages;
 use fields qw(old_title import_log debug parser de_list);
 
 sub new {
-    my $self = shift;
+    my ($self) = @_;
     $self = fields::new($self) unless ref $self;
     return $self;
 }
 
 sub clear {
-    my CATS::ProblemStorage $self = shift;
+    my ($self) = @_;
     undef $self->{$_} for keys %CATS::Problem::FIELDS;
 }
 
 sub encoded_import_log {
-    my CATS::ProblemStorage $self = shift;
+    my ($self) = @_;
     return $self->{import_log};
 }
 
@@ -109,8 +111,7 @@ sub fail_loading {
 }
 
 sub load_problem {
-    my CATS::ProblemStorage $self = shift;
-    my ($source, $cid, $pid, $replace, $remote_url, $message, $is_amend) = @_;
+    my ($self, $source, $cid, $pid, $replace, $remote_url, $message, $is_amend) = @_;
 
     $self->{parser} = CATS::Problem::Parser->new(
         source => $source,
@@ -145,13 +146,12 @@ sub load_problem {
 }
 
 sub load {
-    my CATS::Problem $self = shift;
-    $self->load_problem(@_);
+    my ($self, @rest) = @_;
+    $self->load_problem(@rest);
 }
 
 sub change_file {
-    my CATS::Problem $self = shift;
-    my ($cid, $pid, $file, $content, $message, $is_amend) = @_;
+    my ($self, $cid, $pid, $file, $content, $message, $is_amend) = @_;
 
     my $repo = get_repo($pid);
     $repo->replace_file_content($file, $content);
@@ -200,18 +200,18 @@ sub delete {
 }
 
 sub note {
-    my CATS::ProblemStorage $self = shift;
-    $self->{import_log} .= "$_[0]\n";
+    my ($self, $msg) = @_;
+    $self->{import_log} .= "$msg\n";
 }
 
 sub warning {
-    my CATS::ProblemStorage $self = shift;
-    $self->{import_log} .= "Warning: $_[0]\n";
+    my ($self, $msg) = @_;
+    $self->{import_log} .= "Warning: $msg\n";
 }
 
 sub error {
-    my CATS::ProblemStorage $self = shift;
-    $self->{import_log} .= "Error: $_[0]\n";
+    my ($self, $msg) = @_;
+    $self->{import_log} .= "Error: $msg\n";
     die 'Unrecoverable error';
 }
 
@@ -226,7 +226,7 @@ sub delete_child_records {
 }
 
 sub save {
-    (my CATS::ProblemStorage $self, my $problem) = @_;
+    my ($self, $problem) = @_;
 
     return if $self->{debug};
 
@@ -286,8 +286,7 @@ sub save {
 }
 
 sub get_de_id {
-    my CATS::ProblemStorage $self = shift;
-    my ($code, $path) = @_;
+    my ($self, $code, $path) = @_;
 
     $self->{de_list} ||= CATS::DevEnv->new(CATS::JudgeDB::get_DEs());
 
@@ -305,9 +304,7 @@ sub get_de_id {
 }
 
 sub insert_problem_source {
-    my CATS::ProblemStorage $self = shift;
-    my %p = @_;
-    use Carp;
+    my ($self, %p) = @_;
     my $s = $p{source_object} or confess;
 
     if ($s->{guid}) {
@@ -343,7 +340,7 @@ sub insert_problem_source {
 }
 
 sub insert_problem_content {
-    (my CATS::ProblemStorage $self, my $problem) = @_;
+    my ($self, $problem) = @_;
 
     $problem->{has_checker} or $self->error('No checker specified');
 
