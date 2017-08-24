@@ -108,7 +108,7 @@ sub compare_tests_frame {
 
     $t->param(
         comparison_matrix => $cm,
-        equiv_lists => lists_to_strings(greedy_cliques(@equiv_tests)),
+        equiv_lists => greedy_cliques(@equiv_tests),
         simple_tests => \@simple_tests,
         hard_tests => \@hard_tests,
     );

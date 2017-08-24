@@ -14,7 +14,7 @@
 <br/>
 [% IF equiv_lists.size %]
 [% capt.equiv %]:
-[% FOREACH equiv IN equiv_lists %] ([% equiv.eq %]) [% END %]<br/>
+[% FOREACH el IN equiv_lists %] ([% el.join(',') %]) [% END %]<br/>
 [% END %]
 [% IF simple_tests.size %]
 [% capt.simple %]:
