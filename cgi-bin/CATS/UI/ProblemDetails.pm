@@ -15,6 +15,7 @@ use CATS::Messages qw(msg res_str);
 use CATS::Output qw(auto_ext downloads_path downloads_url init_template url_f);
 use CATS::Problem::Save;
 use CATS::Problem::Storage;
+use CATS::Problem::Tags;
 use CATS::Problem::Utils;
 use CATS::Settings;
 use CATS::StaticPages;
@@ -349,13 +350,20 @@ sub problem_select_tags_frame {
         $p->{pid}, $cid) or return;
 
     if ($p->{save}) {
-        $dbh->do(q~
-            UPDATE contest_problems SET tags = ? WHERE id = ?~, undef,
-            $p->{tags}, $problem->{cpid});
-        $dbh->commit;
-        return redirect url_f('problems') if $p->{from_problems};
+        my $tags = eval { CATS::Problem::Tags::parse_tag_condition($p->{tags}) };
+        if (my $err = $@) {
+            $err =~ s/\sat\s.+\d+\.$//;
+            msg(1148, $err);
+        }
+        else {
+            $dbh->do(q~
+                UPDATE contest_problems SET tags = ? WHERE id = ?~, undef,
+                $p->{tags}, $problem->{cpid});
+            $dbh->commit;
+            return redirect url_f('problems') if $p->{from_problems};
+            msg(1142, $problem->{title});
+        }
         $problem->{tags} = $p->{tags};
-        msg(1142, $problem->{title});
     }
 
     $t->param("problem_$_" => $problem->{$_}) for keys %$problem;

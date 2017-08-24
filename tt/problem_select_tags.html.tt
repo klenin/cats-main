@@ -3,8 +3,8 @@
 <h3>[% problem_title %]</h3>
 [% capt.select_tags %]:
 <form action="[% href_action %]" method="POST">
-<input type="text" size="50" maxlength="200" name="tags" value="[% problem_tags %]" />
-<br/>
+<input type="text" size="60" maxlength="200" name="tags" value="[% problem_tags %]" class="bordered"/>
+<br/><br/>
 <input type="hidden" name="pid" value="[% problem_id %]" />
 <button type="submit" name="save" value="1" class="button">[% capt.save %]</button>
 </form>
