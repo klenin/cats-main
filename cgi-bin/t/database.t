@@ -19,4 +19,3 @@ ok my $anon = $dbh->selectrow_hashref(q~
     SELECT * FROM accounts WHERE login = ?~, { Slice => {} },
     $cats::anonymous_login), 'anonymous exists';
 is $anon->{locked}, 1, 'anonymous locked';
-

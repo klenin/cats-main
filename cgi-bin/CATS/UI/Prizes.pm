@@ -3,6 +3,7 @@ package CATS::UI::Prizes;
 use strict;
 use warnings;
 
+use CATS::Contest::Utils;
 use CATS::DB;
 use CATS::Globals qw($cid $contest $is_jury $is_root $sid $t $uid);
 use CATS::ListView;
@@ -27,7 +28,7 @@ sub contest_group_auto_new {
     my $names = $dbh->selectcol_arrayref(_u
         $sql->select('contests', 'title', { id => \@clist })) or return;
     my $name = join ' ', @{(
-        List::Util::reduce { CATS::RankTable::common_prefix($a, $b) }
+        List::Util::reduce { CATS::Contest::Utils::common_seq_prefix($a, $b) }
         map [ split /\s+|_/, $_ ], @$names
     )};
     $dbh->do(q~

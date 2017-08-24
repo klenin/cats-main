@@ -8,6 +8,7 @@ use List::Util qw(max min sum);
 
 use CATS::Config qw(cats_dir);
 use CATS::Constants;
+use CATS::Contest::Utils;
 use CATS::Countries;
 use CATS::DB;
 use CATS::Globals qw($cid $contest $is_jury $is_root $t $uid $user);
@@ -269,13 +270,6 @@ sub get_contest_list_param {
             map { sprintf '%d', $_ } split ',', $clist) || $cid;
 }
 
-sub common_prefix {
-    my ($pa, $pb) = @_;
-    my $i = 0;
-    ++$i while $i < @$pa && $i < @$pb && $pa->[$i] eq $pb->[$i];
-    [ @$pa[0 .. $i - 1] ];
-}
-
 sub get_contests_info {
     (my CATS::RankTable $self, my $uid) = @_;
     $uid ||= 0;
@@ -309,7 +303,8 @@ sub get_contests_info {
         $self->{show_all_results} &&= $show_all_results;
         $self->{req_selection}->{$id} = $req_selection;
         my @title_words = grep $_, split /\s+|_/, Encode::decode_utf8($title);
-        $common_title = $common_title ? common_prefix($common_title, \@title_words) : \@title_words;
+        $common_title = $common_title ?
+            CATS::Contest::Utils::common_seq_prefix($common_title, \@title_words) : \@title_words;
     }
     $self->{title} =
          (join(' ', @{$common_title || []}) || 'Contests') .
