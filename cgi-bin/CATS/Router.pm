@@ -6,7 +6,6 @@ use warnings;
 use File::Spec;
 
 use CATS::ApiJudge;
-use CATS::Contest::Results;
 use CATS::Problem::Text;
 use CATS::Web qw(url_param param);
 
@@ -155,7 +154,7 @@ sub main_routes() {
             virtual => $bool, jury => $bool, group => $bool, self_diff => $bool, threshold => $int,
             collapse_idents => $bool, all_contests=> $bool, pid => $int, account_id => $int,
         ],
-        personal_official_results => \&CATS::Contest::personal_official_results,
+        personal_official_results => \&CATS::UI::ContestResults::personal_official_results,
     }
 }
 

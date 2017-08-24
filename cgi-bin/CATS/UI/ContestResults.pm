@@ -1,4 +1,4 @@
-package CATS::Contest;
+package CATS::UI::ContestResults;
 
 use strict;
 use warnings;
