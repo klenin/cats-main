@@ -5,7 +5,7 @@ use warnings;
 
 use CATS::Constants;
 use CATS::Contest;
-use CATS::ContestParticipate qw(is_jury_in_contest);
+use CATS::Contest::Participate qw(is_jury_in_contest);
 use CATS::DB;
 use CATS::Globals qw($contest $is_jury $is_root $sid $t $uid);
 use CATS::Messages qw(res_str);

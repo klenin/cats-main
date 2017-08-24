@@ -1,4 +1,4 @@
-package CATS::ContestParticipate;
+package CATS::Contest::Participate;
 
 use strict;
 use warnings;

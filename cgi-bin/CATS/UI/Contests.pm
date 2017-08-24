@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use CATS::Constants;
-use CATS::ContestParticipate qw(get_registered_contestant is_jury_in_contest);
+use CATS::Contest::Participate qw(get_registered_contestant is_jury_in_contest);
 use CATS::Contest;
 use CATS::DB;
 use CATS::Globals qw($cid $contest $is_jury $is_root $sid $t $uid $user);
@@ -317,8 +317,8 @@ sub contests_frame {
     contests_edit_save($p->{id})
         if $p->{edit_save} && $p->{id} && is_jury_in_contest(contest_id => $p->{id});
 
-    CATS::ContestParticipate::online if $p->{online_registration};
-    CATS::ContestParticipate::virtual if $p->{virtual_registration};
+    CATS::Contest::Participate::online if $p->{online_registration};
+    CATS::Contest::Participate::virtual if $p->{virtual_registration};
 
     contests_select_current if defined url_param('set_contest');
 
@@ -348,7 +348,7 @@ sub contests_frame {
     ];
     $t->param(
         submenu => $submenu,
-        CATS::ContestParticipate::flags_can_participate,
+        CATS::Contest::Participate::flags_can_participate,
     );
 }
 

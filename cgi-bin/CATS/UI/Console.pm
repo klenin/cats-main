@@ -7,7 +7,7 @@ use Encode qw(decode_utf8);
 use List::Util;
 
 use CATS::Console;
-use CATS::ContestParticipate qw(get_registered_contestant);
+use CATS::Contest::Participate qw(get_registered_contestant);
 use CATS::Countries;
 use CATS::DB;
 use CATS::Globals qw($cid $contest $is_jury $is_root $sid $t $uid $user);

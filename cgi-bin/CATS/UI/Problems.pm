@@ -7,7 +7,7 @@ use List::Util qw(max);
 
 use CATS::Config qw(cats_dir);
 use CATS::Constants;
-use CATS::ContestParticipate;
+use CATS::Contest::Participate;
 use CATS::DB;
 use CATS::Globals qw($cid $contest $is_jury $is_root $sid $t $uid $user);
 use CATS::DevEnv;
@@ -394,8 +394,8 @@ sub problems_frame {
     problems_frame_jury_action($p);
 
     CATS::Problem::Submit::problems_submit($p) if $p->{submit};
-    CATS::ContestParticipate::online if $p->{participate_online};
-    CATS::ContestParticipate::virtual if $p->{participate_virtual};
+    CATS::Contest::Participate::online if $p->{participate_online};
+    CATS::Contest::Participate::virtual if $p->{participate_virtual};
 
     my @cols = (
         { caption => res_str(602), order_by => ($contest->is_practice ? 'P.title' : 3), width => '25%' },
@@ -578,7 +578,7 @@ sub problems_frame {
 
     $t->param(
         href_login => url_f('login', redir => CATS::Redirect::pack_params),
-        CATS::ContestParticipate::flags_can_participate,
+        CATS::Contest::Participate::flags_can_participate,
         contest_descr => $contest->{short_descr},
         submenu => \@submenu, title_suffix => res_str(525),
         is_user => $uid,

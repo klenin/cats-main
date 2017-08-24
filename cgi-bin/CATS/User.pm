@@ -8,7 +8,7 @@ use Storable;
 
 use CATS::Config;
 use CATS::Constants;
-use CATS::ContestParticipate qw(get_registered_contestant is_jury_in_contest);
+use CATS::Contest::Participate qw(get_registered_contestant is_jury_in_contest);
 use CATS::Countries;
 use CATS::DB;
 use CATS::Form qw(validate_integer validate_string_length);
