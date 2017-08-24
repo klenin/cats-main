@@ -286,8 +286,7 @@ sub get_contests_info {
     );
     $sth->execute($uid);
 
-    my $common_title;
-    my @actual_contests;
+    my (@actual_contests, @names);
     $self->{show_all_results} = 1;
     while (my (
         $id, $title, $since_freeze, $since_defreeze, $since_start, $is_local_jury,
@@ -302,12 +301,10 @@ sub get_contests_info {
         $self->{show_points} ||= $rules;
         $self->{show_all_results} &&= $show_all_results;
         $self->{req_selection}->{$id} = $req_selection;
-        my @title_words = grep $_, split /\s+|_/, Encode::decode_utf8($title);
-        $common_title = $common_title ?
-            CATS::Contest::Utils::common_seq_prefix($common_title, \@title_words) : \@title_words;
+        push @names, Encode::decode_utf8($title);
     }
     $self->{title} =
-         (join(' ', @{$common_title || []}) || 'Contests') .
+         (CATS::Contest::Utils::common_prefix(@names) || 'Contests') .
          (@actual_contests > 1 ? ' (' . @actual_contests . ')' : '');
     $self->{contest_list} = join ',', @actual_contests;
 }

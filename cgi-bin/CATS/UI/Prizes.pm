@@ -27,14 +27,12 @@ sub contest_group_auto_new {
     return msg(1090) if contest_group_by_clist($clist);
     my $names = $dbh->selectcol_arrayref(_u
         $sql->select('contests', 'title', { id => \@clist })) or return;
-    my $name = join ' ', @{(
-        List::Util::reduce { CATS::Contest::Utils::common_seq_prefix($a, $b) }
-        map [ split /\s+|_/, $_ ], @$names
-    )};
+    my $id = new_id;
+    my $name = CATS::Contest::Utils::common_prefix(@$names) || "Group $id";
     $dbh->do(q~
         INSERT INTO contest_groups (id, name, clist)
-        VALUES (gen_id(key_seq, 1), ?, ?)~, undef,
-        $name, $clist);
+        VALUES (?, ?, ?)~, undef,
+        $id, $name, $clist);
     $dbh->commit;
     msg(1089, $name);
 }
@@ -45,10 +43,12 @@ sub prizes_edit_frame {
     init_template('prizes_edit.html.tt');
 
     my $cgid = url_param('edit') or return;
-    my $cg = $dbh->selectrow_hashref(qq~
-        SELECT * FROM contest_groups WHERE id = ?~, undef, $cgid);
-    my $prizes = $dbh->selectall_arrayref(qq~
-        SELECT * FROM prizes WHERE cg_id = ?~, { Slice => {} }, $cgid);
+    my $cg = $dbh->selectrow_hashref(q~
+        SELECT * FROM contest_groups WHERE id = ?~, undef,
+        $cgid);
+    my $prizes = $dbh->selectall_arrayref(q~
+        SELECT * FROM prizes WHERE cg_id = ?~, { Slice => {} },
+        $cgid);
     $t->param(%$cg, prizes => $prizes, href_action => url_f('prizes'));
 }
 
@@ -64,8 +64,9 @@ sub prizes_edit_save {
     return msg(1090) if $cgid != (contest_group_by_clist($cg{clist}) // 0);
 
     $dbh->do(_u $sql->update('contest_groups', \%cg, { id => $cgid }));
-    my $prizes = $dbh->selectall_arrayref(qq~
-        SELECT * FROM prizes WHERE cg_id = ?~, { Slice => {} }, $cgid);
+    my $prizes = $dbh->selectall_arrayref(q~
+        SELECT * FROM prizes WHERE cg_id = ?~, { Slice => {} },
+        $cgid);
     for my $p (@$prizes) {
         my %new = prize_params($p->{id});
         if (!$new{rank} || !$new{name}) {
@@ -85,8 +86,9 @@ sub prizes_edit_save {
 
 sub prizes_frame {
     if ($is_root && (my $cgid = url_param('delete'))) {
-        $dbh->do(qq~
-            DELETE FROM contest_groups WHERE id = ?~, undef, $cgid);
+        $dbh->do(q~
+            DELETE FROM contest_groups WHERE id = ?~, undef,
+            $cgid);
         $dbh->commit;
     }
 
