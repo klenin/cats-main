@@ -246,7 +246,7 @@ sub build_query {
             $run->add('CA.is_hidden = 0');
             my $submit_time =
                 '(R.submit_time BETWEEN C.start_date AND C.freeze_date OR CURRENT_TIMESTAMP > C.defreeze_date)';
-            $run->add($user->{is_participant} ? ("(R.account_id = ? OR $submit_time)", $uid) : ($submit_time));
+            $run->add($uid ? ("(R.account_id = ? OR $submit_time)", $uid) : ($submit_time));
         }
     }
 

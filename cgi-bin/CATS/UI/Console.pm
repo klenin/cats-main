@@ -208,7 +208,7 @@ sub console_content {
 
     $sth->finish if $sth;
 
-    if ($user->{is_participant} && !$settings->{hide_envelopes}) {
+    if ($uid && $user->{is_participant} && !$settings->{hide_envelopes}) {
         my $cond =
             "WHERE account_id = ? AND state >= $cats::request_processed " .
             'AND received = 0 AND contest_id = ?';

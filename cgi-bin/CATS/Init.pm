@@ -111,6 +111,7 @@ sub init_contest {
         $user->{anonymous_id} = $dbh->selectrow_array(q~
             SELECT id FROM accounts WHERE login = ?~, undef,
             $cats::anonymous_login);
+        $user->{is_participant} = $contest->is_practice;
     }
     $user->{is_jury} = $is_jury;
     if ($contest->{is_hidden} && !$user->{is_participant}) {
