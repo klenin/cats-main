@@ -1,5 +1,13 @@
+[% extra_head = BLOCK %]
+<style>
+  td.flag { text-align: center; }
+  td.flag img { vertical-align: middle; }
+  td.user_checkbox label { display: block; width: 100%; height: 100%; }
+  td.user_checkbox input { margin: 0; padding: 0; }
+  td.center { text-align: center; }
+</style>
+[%- END %]
 [% PROCESS includes/menu_begin.tti %]
-[% PROCESS includes/html.tti %]
 
 <script>
 function delete_team(href, name) {
@@ -20,32 +28,32 @@ function delete_team(href, name) {
   [% u.login | html %]
 </td>
 [% END %]
-<td>[% IF user.is_jury || user.is_site_org %]<input type="checkbox" name="sel" value="[% u.id %]"> [% END; href(u.href_stats, u.team_name) %]</td>
+<td class="user_checkbox">[% IF user.is_jury || user.is_site_org %]<label><input type="checkbox" name="sel" value="[% u.id %]"> [% END; href(u.href_stats, u.team_name); '</label>' IF user.is_jury || user.is_site_org %]</td>
 [% IF visible_cols.Si ~%]
   <td>[% maybe_href(u.href_contest_site, u.site_name || u.city); IF u.href_site %] <a href="[% u.href_site %]" class="icon edit"></a>[% END %]</td>
 [%~ END %]
-[% IF visible_cols.Tg %]<td align="center">[% u.tag %]</td>[% END %]
+[% IF visible_cols.Tg %]<td>[% u.tag %]</td>[% END %]
 [% IF user.is_jury || user.is_site_org %]
-<td class="user_checkbox"><label>[% checkbox_1("ooc$u.id", u.ooc, u.editable_attrs) %]</label></td>
-<td class="user_checkbox"><label>[% checkbox_1("remote$u.id", u.remote, u.editable_attrs) %]</label></td>
-<td class="user_checkbox"><label>[% checkbox_1("site_org$u.id", u.site_org, user.is_jury) %]</label></td>
+<td class="user_checkbox center"><label>[% checkbox_1("ooc$u.id", u.ooc, u.editable_attrs) %]</label></td>
+<td class="user_checkbox center"><label>[% checkbox_1("remote$u.id", u.remote, u.editable_attrs) %]</label></td>
+<td class="user_checkbox center"><label>[% checkbox_1("site_org$u.id", u.site_org, user.is_jury) %]</label></td>
 [% END %]
 [% IF user.is_jury %]
-<td class="user_checkbox"><label>[% checkbox_1("jury$u.id", u.jury) %]</label></td>
-<td class="user_checkbox"><label>[% checkbox_1("hidden$u.id", u.hidden) %]</label></td>
+<td class="user_checkbox center"><label>[% checkbox_1("jury$u.id", u.jury) %]</label></td>
+<td class="user_checkbox center"><label>[% checkbox_1("hidden$u.id", u.hidden) %]</label></td>
 [% END %]
 [% IF visible_cols.Fl %]
-<td align="center">
+<td class="flag">
 [% IF u.flag -%]
   <img src="[% u.flag %]" alt="[% u.country | html; " - ${u.motto}" | html IF u.motto %]">
 [%- ELSE; u.country | html; " - ${u.motto}" | html IF u.motto; END %]
 </td>
 [% END %]
 [% IF visible_cols.Rt %]
-<td align="center">[% u.accepted %]</td>
+<td class="center">[% u.accepted %]</td>
 [% END %]
 [% IF visible_cols.Dt %]
-<td align="center">[% capt.virtual IF u.virtual %]
+<td class="center">[% capt.virtual IF u.virtual %]
 <span class="nobr">[% maybe_href(u.href_vdiff, u.formatted_time || '-') %]</span></td>
 [% END %]
 </tr>
