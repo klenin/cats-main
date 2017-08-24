@@ -9,7 +9,8 @@ my %generators = (
     var    => sub { ($_[1] || '') . "<i>$_[0]</i>" },
     num    => sub { ($_[1] || '') . qq~<span class="num">$_[0]</span>~ },
     op     => sub { join '', @_ },
-    spec   => sub { join '', map { $CATS::TeX::TeXData::symbols{$_} || $_ && "<b>$_</b>" || $_ } @_ },
+    spec   => sub {
+        join '', map { $CATS::TeX::Data::symbols{$_} || $_ && $_ ne '&nbsp;' && "<b>$_</b>" || $_ } @_ },
     sup    => sub { qq~<sup>$_[0]</sup>~ },
     'sub'  => sub { qq~<sub>$_[0]</sub>~ },
     sub1   => sub { qq~<table class="limits"><tr><td>$_[0]</td></tr><tr><td class="sub">$_[1]</td></tr></table>~ },
@@ -26,7 +27,7 @@ my $source;
 
 sub sp { $_[0] eq '' ? '' : '&nbsp;' }
 
-sub is_binop { exists $CATS::TeX::TeXData::binary{$_[0]} }
+sub is_binop { exists $CATS::TeX::Data::binary{$_[0]} }
 
 sub parse_token {
     for ($source) {
