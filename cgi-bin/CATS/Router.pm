@@ -12,8 +12,6 @@ BEGIN {
     require $_ for glob File::Spec->catfile($ENV{CATS_DIR} || '.', 'CATS', 'UI', '*.pm');
 }
 
-my $function;
-
 my $bool = qr/1/;
 my $int = qr/\d+/;
 my $int_list = qr/[\d,]+/;
@@ -204,7 +202,7 @@ sub parse_uri {
 }
 
 sub route {
-    $function = url_param('f') || '';
+    my $function = url_param('f') || '';
     my $route =
         main_routes->{$function} ||
         api_judge_routes->{$function} ||
