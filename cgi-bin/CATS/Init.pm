@@ -82,7 +82,7 @@ sub init_contest {
     $contest->load($cid);
     $settings->{contest_id} = $cid = $contest->{id};
 
-    $user->{diff_time} = 0;
+    $user->{diff_time} = $user->{ext_time} = 0;
     $is_jury = $user->{is_virtual} = $user->{is_participant} = 0;
     # Authorize user in the contest.
     if (defined $uid) {
