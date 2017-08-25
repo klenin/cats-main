@@ -41,7 +41,7 @@ sub process_static {
 
 sub name {
     my ($f, %p) = @_;
-    "$f-" . join('-', map "$_-$p{$_}", sort keys %p);
+    "$f-" . join('-', map "$_-$p{$_}", grep $p{$_}, sort keys %p);
 }
 
 sub url_static { './static/' . name(@_) . '.html' . ($sid ? "?sid=$sid" : ''); }
