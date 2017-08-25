@@ -320,6 +320,7 @@ span.TeX .MathJax { font-weight: 200; }
 
 table.nobr tr td, span.nobr, label.nobr, td.nobr { white-space: nowrap; }
 td.center { text-align: center; }
+th.narrow, td.narrow { width: 1px; }
 
 a.spell { text-decoration: underline; color: red; }
 
@@ -335,7 +336,13 @@ a.problem_req_count_udebug {
     background-image: url(../../images/std/udebug3.png);
     background-repeat: no-repeat;
 }
+
+table.rank_table { width: 100%; border-spacing: 1px; }
 table.rank_table tr td p { padding: 0; margin: 0; font-size: 10px; }
+table.rank_table .col_defs a { display: block; width: 100%; height: 100%; }
+table.rank_table .rank_row td { text-align: center; }
+table.rank_table .rank_row td:first-child { text-align: right; }
+table.rank_table .rank_row td:first-child + td { text-align: left; }
 
 div.problem_text { margin-left: 10px; margin-right: 10px; }
 div.problem_text h3, div.problem_text h4 {

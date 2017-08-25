@@ -1,4 +1,4 @@
-[% IF printable %][% PROCESS includes/header.tti %]</head>[% END %]
+[% PROCESS includes/header.tti %]</head>
 <body>
 <div id='refreshable_content'>
 [% rank_table_content %]
