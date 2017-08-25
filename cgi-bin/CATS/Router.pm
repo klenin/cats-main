@@ -53,6 +53,8 @@ sub main_routes() {
             submit => $bool, replace => $bool, add_new => $bool,
             add_remote => $bool, std_solution => $bool, delete_problem => $int,
             de_id => qr/\d+|by_extension/, ignore => $bool,
+            change_status => $int, status => $int,
+            change_code => $int, code => qr/[A-Z1-9]/,
         ],
         problems_udebug => [ \&CATS::UI::Problems::problems_udebug_frame, ],
         problems_retest => \&CATS::UI::Problems::problems_retest_frame,

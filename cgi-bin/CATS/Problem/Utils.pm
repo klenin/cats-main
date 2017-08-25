@@ -5,7 +5,7 @@ use warnings;
 
 use CATS::Constants;
 use CATS::DB;
-use CATS::Globals qw($t);
+use CATS::Globals qw($cid $t);
 use CATS::Messages qw(res_str);
 use CATS::Output qw(url_f);
 
@@ -54,6 +54,32 @@ sub problem_submenu {
             selected => $_->{href} eq $selected_href }, @$problem_submenu
         ]
     );
+}
+
+sub problems_change_status {
+    my ($p) = @_;
+    my $cpid = $p->{change_status} or return msg(1012);
+
+    my $new_status = $p->{status};
+    exists CATS::Messages::problem_status_names()->{$p->{status}} or return;
+
+    $dbh->do(qq~
+        UPDATE contest_problems SET status = ? WHERE contest_id = ? AND id = ?~, {},
+        $p->{status}, $cid, $cpid);
+    $dbh->commit;
+    # Perhaps a 'hidden' status changed.
+    CATS::StaticPages::invalidate_problem_text(cid => $cid, cpid => $cpid);
+}
+
+sub problems_change_code {
+    my ($p) = @_;
+    my $cpid = $p->{change_code} or return msg(1012);
+    cats::is_good_problem_code($p->{code}) or return msg(1134);
+    $dbh->do(q~
+        UPDATE contest_problems SET code = ? WHERE contest_id = ? AND id = ?~, undef,
+        $p->{code}, $cid, $cpid);
+    $dbh->commit;
+    CATS::StaticPages::invalidate_problem_text(cid => $cid, cpid => $cpid);
 }
 
 1;

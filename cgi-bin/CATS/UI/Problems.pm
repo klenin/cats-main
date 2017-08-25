@@ -32,33 +32,6 @@ use CATS::Utils qw(file_type date_to_iso redirect_url_function url_function);
 use CATS::Verdicts;
 use CATS::Web qw(param redirect url_param);
 
-sub problems_change_status {
-    my $cpid = param('change_status')
-        or return msg(1012);
-
-    my $new_status = param('status');
-    exists CATS::Messages::problem_status_names()->{$new_status} or return;
-
-    $dbh->do(qq~
-        UPDATE contest_problems SET status = ? WHERE contest_id = ? AND id = ?~, {},
-        $new_status, $cid, $cpid);
-    $dbh->commit;
-    # Perhaps a 'hidden' status changed.
-    CATS::StaticPages::invalidate_problem_text(cid => $cid, cpid => $cpid);
-}
-
-sub problems_change_code {
-    my $cpid = param('change_code')
-        or return msg(1012);
-    my $new_code = param('code') || '';
-    cats::is_good_problem_code($new_code) or return msg(1134);
-    $dbh->do(q~
-        UPDATE contest_problems SET code = ? WHERE contest_id = ? AND id = ?~, undef,
-        $new_code, $cid, $cpid);
-    $dbh->commit;
-    CATS::StaticPages::invalidate_problem_text(cid => $cid, cpid => $cpid);
-}
-
 sub problems_mass_retest {
     my @retest_pids = param('problem_id') or return msg(1012);
     my $all_runs = param('all_runs');
@@ -268,8 +241,8 @@ sub problems_frame_jury_action {
     $is_jury or return;
 
     defined param('link_save') and return CATS::Problem::Save::problems_link_save;
-    defined param('change_status') and return problems_change_status;
-    defined param('change_code') and return problems_change_code;
+    $p->{change_status} and return CATS::Problem::Utils::problems_change_status($p);
+    $p->{change_code} and return CATS::Problem::Utils::problems_change_code($p);
     $p->{replace} and return CATS::Problem::Save::problems_replace;
     $p->{add_new} and return CATS::Problem::Save::problems_add_new;
     $p->{add_remote} and return CATS::Problem::Save::problems_add_new_remote;
