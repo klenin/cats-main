@@ -1,0 +1,9 @@
+[%
+  capt.import({
+    choose_contest => 'Choose destination contest',
+    link_to => 'Link to contest',
+    move_to => 'Move to contest',
+    original_contest => 'Problem in now in contest',
+    move_from => 'Move to current contest',
+  });
+%]

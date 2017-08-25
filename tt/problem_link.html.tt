@@ -1,0 +1,39 @@
+[% extra_head = BLOCK %]
+<style>
+  .date { text-align: center; }
+  .finished { color: #901010; }
+</style>
+[%- END %]
+[% PROCESS includes/menu_begin.tti %]
+
+[% IF problem.is_original %]
+[% capt.choose_contest %]:
+
+[% PROCESS includes/listview_header.tti %]
+<table class="listview bordered highlight">
+[% PROCESS includes/listview_col_defs.tti %]
+[% FOREACH c IN contests %]
+<tr class="[% loop.parity() %]">
+  <td>
+    <input type="radio" name="contest" value="[% c.id %]"[% ' disabled="disabled"' IF c.id == problem.contest_id %]/>
+    <a href="[% c.href_params %]" class="icon edit"></a>
+    <a href="[% c.href_contest %]" title="[% c.short_descr | html %]">[% c.contest_name | html %]</a>
+  </td>
+  <td class="num">[% href(c.href_problems, c.problems_count); ' *' IF c.has_this_problem %]</td>
+  <td class="date">[% c.start_date | html %]</td>
+  <td class="date[% ' finished' IF c.since_finish > 0 %]">[% c.finish_date | html %]</td>
+</tr>
+[% END %]
+</table>
+<br>
+<button type="submit" name="link_to" value="1" class="button">[% capt.link_to %]</button>
+<button type="submit" name="move_to" value="1" class="button">[% capt.move_to %]</button>
+[% PROCESS includes/pages.tti %]
+</form>
+[% ELSE %]
+<form>
+<p>[% capt.original_contest %]: [% href(href_original_contest, problem.original_contest_title) %].</p>
+<button type="submit" name="move_from" value="1" class="button">[% capt.move_from %]</button>
+</form>
+[% END %]
+[% PROCESS includes/menu_end.tti %]

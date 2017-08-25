@@ -54,7 +54,7 @@ sub contest_searches { return {
 sub common_contests_view {
     my ($c) = @_;
     return (
-        id => $c->{id},
+        %$c,
         contest_name => $c->{title},
         short_descr => $c->{short_descr},
         start_date => $c->{start_date},
@@ -105,9 +105,10 @@ sub authenticated_contests_view {
             SELECT A.team_name FROM accounts A WHERE A.id = ?~
         },
     });
+    my $extra_fields = $p->{extra_fields} ? join ',', '', @{$p->{extra_fields}} : '';
     my $sth = $dbh->prepare(qq~
         SELECT
-            $cf, CA.is_virtual, CA.is_jury, CA.id AS registered, C.is_hidden
+            $cf, CA.is_virtual, CA.is_jury, CA.id AS registered, C.is_hidden$extra_fields
         FROM contests C
         LEFT JOIN contest_accounts CA ON CA.contest_id = C.id AND CA.account_id = ?
         WHERE

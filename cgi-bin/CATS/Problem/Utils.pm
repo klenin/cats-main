@@ -43,6 +43,7 @@ my $problem_submenu = [
     { href => 'problem_test_data', item => 508 },
     { href => 'problem_limits', item => 507 },
     { href => 'problem_select_tags', item => 506 },
+    { href => 'problem_link', item => 540 },
 ];
 
 sub problem_submenu {

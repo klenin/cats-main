@@ -387,4 +387,49 @@ sub problem_select_tags_frame {
     CATS::Problem::Utils::problem_submenu('problem_select_tags', $p->{pid});
 }
 
+sub problem_link_frame {
+    my ($p) = @_;
+    $p->{pid} && $is_jury or return;
+
+    my $problem = $dbh->selectrow_hashref(q~
+        SELECT P.id, P.title, CP.id AS cpid, CP.tags, P.contest_id, C.title AS original_contest_title
+        FROM problems P
+        INNER JOIN contest_problems CP ON P.id = CP.problem_id
+        INNER JOIN contests C ON C.id = P.contest_id
+        WHERE P.id = ? AND CP.contest_id = ?~, undef,
+        $p->{pid}, $cid) or return;
+
+    $p->{listview} = my $lv = CATS::ListView->new(
+        name => 'problem_link', template => 'problem_link.html.tt', array_name => 'contests');
+
+    $t->param(
+        problem_title => $problem->{title},
+        title_suffix => $problem->{title},
+        problem => $problem,
+        href_original_contest => url_function('problems', cid => $problem->{contest_id}, sid => $sid),
+    );
+
+    CATS::Problem::Utils::problem_submenu('problem_link', $p->{pid});
+    $problem->{is_original} = $problem->{contest_id} == $cid or return;
+
+    $lv->define_columns(url_f('problem_link', pid => $p->{pid}), 2, 1, [
+        { caption => res_str(601), order_by => 'ctype DESC, title', width => '50%' },
+        { caption => res_str(663), order_by => 'ctype DESC, problems_count', width => '10%' },
+        { caption => res_str(600), order_by => 'ctype DESC, start_date', width => '15%' },
+        { caption => res_str(631), order_by => 'ctype DESC, finish_date', width => '15%' },
+    ]);
+
+    $p->{extra_fields} = [ q~(
+        SELECT COUNT(*) FROM contest_problems CP WHERE CP.contest_id = C.id) AS problems_count~,
+        qq~(
+        SELECT CP.id FROM contest_problems CP
+        WHERE CP.contest_id = C.id AND CP.problem_id = $problem->{id}) AS has_this_problem~,
+    ];
+    $p->{filter} = $is_root ? '' : ' AND CA.is_jury = 1';
+
+    $lv->attach(url_f('problem_link', pid => $p->{pid}),
+        CATS::Contest::Utils::authenticated_contests_view($p));
+
+}
+
 1;
