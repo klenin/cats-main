@@ -12,7 +12,7 @@
 [% PROCESS includes/listview_col_defs.tti sel_col = 1 %]
 [% FOREACH p IN problems %]
 <tr class="[% loop.parity() %]">
-<td width="1%">
+<td class="narrow">
   <input type="checkbox" name="problem_id" value="[% p.problem_id %]" />
 </td>
 <td>

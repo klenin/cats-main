@@ -1,7 +1,12 @@
+[% extra_head = BLOCK %]
+  <style>
+    td.cmp { width: 20px; }
+  </style>
+[% END %]
 [% PROCESS includes/menu_begin.tti %]
 <h3>[% capt.problem %]: [% problem_title %]</h3>
 <table style="text-align: right" class="bordered compare_tests highlight">
-<tr><td>&nbsp;</td>[% FOREACH cm IN comparison_matrix %]<td width="20px">[% cm.test_rank | format('%03d') %]</td>[% END %]
+<tr><td>&nbsp;</td>[% FOREACH cm IN comparison_matrix %]<td class="cmp">[% cm.test_rank | format('%03d') %]</td>[% END %]
 <td>[% capt.passed %]</td><td>[% capt.failed %]</td>
 </tr>
 [% FOREACH cm IN comparison_matrix %]

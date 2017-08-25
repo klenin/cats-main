@@ -44,7 +44,7 @@ var diff_lines = [
 ]
 <table class="internal_borders">
 <tr>
-<td width="1" class="num"><pre id="line_numbers"><code>[% FOREACH dl IN diff_lines; loop.count %]
+<td class="narrow num"><pre id="line_numbers"><code>[% FOREACH dl IN diff_lines; loop.count %]
 [% END %]</code></pre></td>
 <td style="vertical-align: top"><pre id="lines"><code>
 [%- FOREACH dl IN diff_lines; span(dl.line, dl.class) %]
