@@ -14,7 +14,6 @@ use CATS::Output qw(auto_ext init_template url_f);
 use CATS::RankTable;
 use CATS::Settings qw($settings);
 use CATS::StaticPages;
-use CATS::Utils qw(url_function date_to_iso);
 use CATS::Web qw(param url_param redirect);
 
 sub contests_new_frame {
@@ -131,149 +130,6 @@ sub contests_select_current {
     }
 }
 
-sub common_contests_view {
-    my ($c) = @_;
-    return (
-        id => $c->{id},
-        contest_name => $c->{title},
-        short_descr => $c->{short_descr},
-        start_date => $c->{start_date},
-        since_start => $c->{since_start},
-        start_date_iso => date_to_iso($c->{start_date}),
-        finish_date => $c->{finish_date},
-        since_finish => $c->{since_finish},
-        finish_date_iso => date_to_iso($c->{finish_date}),
-        freeze_date_iso => date_to_iso($c->{freeze_date}),
-        unfreeze_date_iso => date_to_iso($c->{defreeze_date}),
-        registration_denied => $c->{closed},
-        selected => $c->{id} == $cid,
-        is_official => $c->{is_official},
-        show_points => $c->{rules},
-        href_contest => url_function('contests', sid => $sid, set_contest => 1, cid => $c->{id}),
-        href_params => url_f('contests', params => $c->{id}),
-        href_problems => url_function('problems', sid => $sid, cid => $c->{id}),
-        href_problems_text => CATS::StaticPages::url_static('problem_text', cid => $c->{id}),
-    );
-}
-
-sub contest_fields () {
-    # HACK: starting page is a contests list, displayed very frequently.
-    # In the absense of a filter, select only the first page + 1 record.
-    # my $s = $settings->{$listview_name};
-    # (($s->{page} || 0) == 0 && !$s->{search} ? 'FIRST ' . ($s->{rows} + 1) : '') .
-    qw(
-        ctype id title short_descr
-        start_date finish_date freeze_date defreeze_date closed is_official rules
-    )
-}
-
-sub contest_fields_str {
-    join ', ', map("C.$_", contest_fields),
-        'CURRENT_TIMESTAMP - start_date AS since_start',
-        'CURRENT_TIMESTAMP - finish_date AS since_finish',
-}
-
-sub contest_searches { return {
-    (map { $_ => "C.$_" } contest_fields),
-    since_start => '(CURRENT_TIMESTAMP - start_date)',
-    since_finish => '(CURRENT_TIMESTAMP - finish_date)',
-}}
-
-sub contests_submenu_filter {
-    my $f = $settings->{contests}->{filter} || '';
-    {
-        all => '',
-        official => 'AND C.is_official = 1 ',
-        unfinished => 'AND CURRENT_TIMESTAMP <= finish_date ',
-        current => 'AND CURRENT_TIMESTAMP BETWEEN start_date AND finish_date ',
-        json => q~
-            AND EXISTS (
-                SELECT 1 FROM problems P INNER JOIN contest_problems CP ON P.id = CP.problem_id
-                WHERE CP.contest_id = C.id AND P.json_data IS NOT NULL)~,
-    }->{$f} || '';
-}
-
-sub authenticated_contests_view {
-    my ($p) = @_;
-    my $cf = contest_fields_str;
-    $p->{listview}->define_db_searches(contest_searches);
-    $p->{listview}->define_db_searches({
-        is_virtual => 'CA.is_virtual',
-        is_jury => 'CA.is_jury',
-        is_hidden => 'C.is_hidden',
-        'CA.is_hidden' => 'CA.is_hidden',
-    });
-    my $cp_hidden = $is_root ? '' : " AND CP1.status < $cats::problem_st_hidden";
-    my $ca_hidden = $is_root ? '' : " AND CA1.is_hidden = 0";
-    $p->{listview}->define_subqueries({
-        has_problem => { sq => qq~EXISTS (
-            SELECT 1 FROM contest_problems CP1 WHERE CP1.contest_id = C.id AND CP1.problem_id = ?$cp_hidden)~,
-            m => 1015, t => q~
-            SELECT P.title FROM problems P WHERE P.id = ?~
-        },
-        has_site => { sq => q~EXISTS (
-            SELECT 1 FROM contest_sites CS WHERE CS.contest_id = C.id AND CS.site_id = ?)~,
-            m => 1030, t => q~
-            SELECT S.name FROM sites S WHERE S.id = ?~
-        },
-        has_user => { sq => qq~EXISTS (
-            SELECT 1 FROM contest_accounts CA1 WHERE CA1.contest_id = C.id AND CA1.account_id = ?$ca_hidden)~,
-            m => 1031, t => q~
-            SELECT A.team_name FROM accounts A WHERE A.id = ?~
-        },
-    });
-    my $sth = $dbh->prepare(qq~
-        SELECT
-            $cf, CA.is_virtual, CA.is_jury, CA.id AS registered, C.is_hidden
-        FROM contests C
-        LEFT JOIN contest_accounts CA ON CA.contest_id = C.id AND CA.account_id = ?
-        WHERE
-            (CA.account_id IS NOT NULL OR COALESCE(C.is_hidden, 0) = 0) ~ .
-            contests_submenu_filter .
-            $p->{listview}->maybe_where_cond .
-            $p->{listview}->order_by);
-    $sth->execute($uid, $p->{listview}->where_params);
-
-    my $original_contest = 0;
-    if (my $pid = $p->{listview}->search_subquery_value('has_problem')) {
-        $original_contest = $dbh->selectrow_array(q~
-            SELECT P.contest_id FROM problems P WHERE P.id = ?~, undef,
-            $pid) // 0;
-    }
-    my $fetch_contest = sub {
-        my $c = $_[0]->fetchrow_hashref or return;
-        return (
-            common_contests_view($c),
-            is_hidden => $c->{is_hidden},
-            authorized => 1,
-            editable => $c->{is_jury},
-            deletable => $is_root,
-            registered_online => $c->{registered} && !$c->{is_virtual},
-            registered_virtual => $c->{registered} && $c->{is_virtual},
-            href_delete => url_f('contests', delete => $c->{id}),
-            has_orig => $c->{id} == $original_contest,
-        );
-    };
-    return ($fetch_contest, $sth);
-}
-
-sub anonymous_contests_view {
-    my ($p) = @_;
-    my $cf = contest_fields_str;
-    $p->{listview}->define_db_searches(contest_searches);
-    my $sth = $dbh->prepare(qq~
-        SELECT $cf FROM contests C WHERE COALESCE(C.is_hidden, 0) = 0 ~ .
-        contests_submenu_filter() . $p->{listview}->order_by
-    );
-    $sth->execute;
-
-    my $fetch_contest = sub {
-        my $c = $_[0]->fetchrow_hashref or return;
-        return common_contests_view($c);
-    };
-    return ($fetch_contest, $sth);
-}
-
 sub contest_delete {
     my $delete_cid = url_param('delete');
     $is_root or return;
@@ -288,6 +144,20 @@ sub contest_delete {
         $delete_cid);
     $dbh->commit;
     msg(1037, $cname);
+}
+
+sub contests_submenu_filter {
+    my $f = $settings->{contests}->{filter} || '';
+    {
+        all => '',
+        official => 'AND C.is_official = 1 ',
+        unfinished => 'AND CURRENT_TIMESTAMP <= finish_date ',
+        current => 'AND CURRENT_TIMESTAMP BETWEEN start_date AND finish_date ',
+        json => q~
+            AND EXISTS (
+                SELECT 1 FROM problems P INNER JOIN contest_problems CP ON P.id = CP.problem_id
+                WHERE CP.contest_id = C.id AND P.json_data IS NOT NULL)~,
+    }->{$f} || '';
 }
 
 sub contests_frame {
@@ -331,8 +201,11 @@ sub contests_frame {
     $settings->{contests}->{filter} = my $filter =
         param('filter') || $settings->{contests}->{filter} || 'unfinished';
 
+    $p->{filter} = contests_submenu_filter;
     $lv->attach(url_f('contests'),
-        defined $uid ? authenticated_contests_view($p) : anonymous_contests_view($p),
+        defined $uid ?
+            CATS::Contest::Utils::authenticated_contests_view($p) :
+            CATS::Contest::Utils::anonymous_contests_view($p),
         ($uid ? () : { page_params => { filter => $filter } }));
 
     my $submenu = [
