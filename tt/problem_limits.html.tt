@@ -23,7 +23,7 @@
 </tr>
 [% END %]
 <tr>
-    <td colspan="5" align="center">
+    <td colspan="5">
         <button type="submit" name="override" value="1" class="button">[% capt.override %]</button>
         [% IF p.overridden_time_limit || p.overridden_memory_limit || p.overridden_write_limit || p.overridden_save_output_prefix %]
             <button type="submit" name="clear_override" value="1" class="button">[% capt.clear_override %]</button>

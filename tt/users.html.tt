@@ -4,7 +4,6 @@
   td.flag img { vertical-align: middle; }
   td.user_checkbox label { display: block; width: 100%; height: 100%; }
   td.user_checkbox input { margin: 0; padding: 0; }
-  td.center { text-align: center; }
 </style>
 [%- END %]
 [% PROCESS includes/menu_begin.tti %]

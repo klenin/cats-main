@@ -15,7 +15,7 @@ function delete_kw(href, name) {
 [% FOREACH k IN keywords %]
 <tr class="[% loop.parity() %]">
 [% IF editable %]
-<td nowrap>
+<td class="nobr">
   <a href="javascript:delete_kw('[% k.href_delete %]', '[% k.code | html %]');" class="icon delete"></a>
   <a href="[% k.href_edit %]" class="icon edit"></a>
 </td>

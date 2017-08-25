@@ -318,7 +318,8 @@ span.TeX table.limits tr { vertical-align: middle; padding: 0; margin: 0; }
 span.TeX table.limits tr td.sub { vertical-align: top; padding: 0; margin: 0; font-size: small; }
 span.TeX .MathJax { font-weight: 200; }
 
-table.nobr tr td, span.nobr, label.nobr { white-space: nowrap; }
+table.nobr tr td, span.nobr, label.nobr, td.nobr { white-space: nowrap; }
+td.center { text-align: center; }
 
 a.spell { text-decoration: underline; color: red; }
 

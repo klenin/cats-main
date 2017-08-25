@@ -1,6 +1,5 @@
 [% extra_head = BLOCK %]
 <style>
-  td.nowrap { white-space: nowrap; }
   tr.unused td { color: grey; }
 </style>
 [%- END %]
@@ -22,7 +21,7 @@ function delete_contest_site(href, name) {
 [% FOREACH cs IN contest_sites %]
 <tr class="[% loop.parity(); ' unused' UNLESS cs.is_used %]">
 [% IF user.is_jury %]
-<td class="nowrap">
+<td class="nobr">
   <input type="checkbox" name="check" value="[% cs.id %]" />
   [% IF cs.is_used %]
   <a href="[% cs.href_edit %]" class="icon edit"></a>

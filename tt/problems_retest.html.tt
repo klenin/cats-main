@@ -16,14 +16,14 @@
   <input type="checkbox" name="problem_id" value="[% p.problem_id %]" />
 </td>
 <td>
-    <a href="[% p.href_view_problem %]" target="_blank">[% p.code %] - [% p.problem_name | html %]</a>
+  <a href="[% p.href_view_problem %]" target="_blank">[% p.code %] - [% p.problem_name | html %]</a>
 </td>
 <td>[% p.in_queue %]</td>
 <td>[% p.status %]</td>
 <td><a href="[% p.href_select_testsets %]">[% p.testsets %]</a>
   [%- IF p.points_testsets %] / <a href="[% p.href_select_testsets %]">[% p.points_testsets %]</a>[% END -%]
 </td>
-<td align="center">[% p.accept_count %] / [% p.wa_count %]  / [% p.tle_count %]</td>
+<td class="center">[% p.accept_count %] / [% p.wa_count %]  / [% p.tle_count %]</td>
 </tr>
 [% END %]
 </table>

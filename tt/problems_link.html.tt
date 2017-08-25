@@ -13,7 +13,7 @@
 [% IF p.href_download %]&nbsp;[<a href="[% p.href_download %]">[% capt.package %]</a>][% END %]
 </td>
 <td><a href="[% p.href_view_contest %]">[% p.contest_name | html %]</a></td>
-<td align="center">[% p.counts %]</td>
+<td class="center">[% p.counts %]</td>
 </tr>
 [% END %]
 </table>
