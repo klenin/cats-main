@@ -240,7 +240,7 @@ sub problems_frame_jury_action {
     my ($p) = @_;
     $is_jury or return;
 
-    defined param('link_save') and return CATS::Problem::Save::problems_link_save;
+    $p->{link_save} and return CATS::Problem::Save::problems_link_save($p);
     $p->{change_status} and return CATS::Problem::Utils::problems_change_status($p);
     $p->{change_code} and return CATS::Problem::Utils::problems_change_code($p);
     $p->{replace} and return CATS::Problem::Save::problems_replace;
@@ -372,6 +372,7 @@ sub problems_frame {
         name => 'problems' . ($contest->is_practice ? '_practice' : ''),
         array_name => 'problems',
         template => auto_ext('problems'));
+
     problems_frame_jury_action($p);
 
     CATS::Problem::Submit::problems_submit($p) if $p->{submit};

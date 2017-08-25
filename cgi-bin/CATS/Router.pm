@@ -55,6 +55,7 @@ sub main_routes() {
             de_id => qr/\d+|by_extension/, ignore => $bool,
             change_status => $int, status => $int,
             change_code => $int, code => qr/[A-Z1-9]/,
+            link_save => $bool, move => $bool,
         ],
         problems_udebug => [ \&CATS::UI::Problems::problems_udebug_frame, ],
         problems_retest => \&CATS::UI::Problems::problems_retest_frame,

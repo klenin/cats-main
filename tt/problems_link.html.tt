@@ -21,7 +21,7 @@
 <br>
 [% IF user.is_jury && link %]
 [% capt.problem_code %]:
-<select name="problem_code">
+<select name="code">
 [% FOREACH c IN unused_codes %]<option name="[% c %]">[% c %]</option>[% END %]
 </select>
 <br/><br/>

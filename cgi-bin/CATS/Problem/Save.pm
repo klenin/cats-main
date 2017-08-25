@@ -3,6 +3,7 @@ package CATS::Problem::Save;
 use strict;
 use warnings;
 
+use CATS::Constants;
 use CATS::DB;
 use CATS::Globals qw($t $cid $uid $contest);
 use CATS::Messages qw(msg);
@@ -27,19 +28,18 @@ sub add_problem_to_contest {
 }
 
 sub problems_link_save {
-    my $pid = param('problem_id')
-        or return msg(1012);
+    my ($p) = @_;
+    my $pid = $p->{problem_id} or return msg(1012);
 
     my $problem_code;
     if (!$contest->is_practice) {
-        $problem_code = param('problem_code');
+        $problem_code = $p->{code};
         cats::is_good_problem_code($problem_code) or return msg(1134);
     }
     my $title = $dbh->selectrow_array(q~
         SELECT title FROM problems WHERE id = ?~, undef,
         $pid) or return msg(1012);
-    my $move_problem = param('move');
-    if ($move_problem) {
+    if ($p->{move}) {
         # Jury account in the problem's origin contest is required.
         # Check beforehand to avoid need for rollback.
         my ($j) = $dbh->selectrow_array(q~
@@ -51,7 +51,7 @@ sub problems_link_save {
         $j or return msg(1135, $title);
     }
     add_problem_to_contest($pid, $problem_code) or return;
-    if ($move_problem) {
+    if ($p->{move}) {
         $dbh->do(q~
             UPDATE problems SET contest_id = ? WHERE id = ?~, undef,
             $cid, $pid);
