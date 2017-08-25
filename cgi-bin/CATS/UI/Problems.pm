@@ -95,7 +95,7 @@ sub define_common_searches {
 
 sub problems_all_frame {
     my ($p) = @_;
-    my $lv = CATS::ListView->new(name => 'link_problem', template => 'problems_link.html.tt');
+    my $lv = CATS::ListView->new(name => 'link_problem', template => 'problems_all.html.tt');
 
     my $link = url_param('link');
     my $move = url_param('move') || 0;
