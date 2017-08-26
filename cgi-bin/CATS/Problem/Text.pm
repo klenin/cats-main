@@ -251,7 +251,7 @@ sub problem_text {
         push @problems, { problem_id => $pid };
     }
     elsif (my $cpid = $p->{cpid}) {
-        my $p = $dbh->selectrow_hashref(qq~
+        my $pr = $dbh->selectrow_hashref(qq~
             SELECT
                 CP.id AS cpid, CP.contest_id, CP.problem_id, CP.code,
                 CP.testsets, CP.points_testsets, CP.max_points, CP.tags, CP.status,
@@ -261,13 +261,13 @@ sub problem_text {
                 LEFT JOIN limits L ON L.id = CP.limits_id
             WHERE CP.id = ?~, undef,
             $cpid) or return;
-        $show_points = $p->{rules};
-        push @problems, $p if $is_jury_in_contest || $p->{status} < $cats::problem_st_hidden;
+        $show_points = $pr->{rules};
+        push @problems, $pr if $is_jury_in_contest || $pr->{status} < $cats::problem_st_hidden;
     }
     else { # Show all problems from the contest.
         ($show_points) = $contest->{rules};
         # Should either check for a static page or hide the problem even from jury.
-        my $p = $dbh->selectall_arrayref(qq~
+        my $prs = $dbh->selectall_arrayref(qq~
             SELECT
                 CP.id AS cpid, CP.contest_id, CP.problem_id, CP.code,
                 CP.testsets, CP.points_testsets, CP.max_points, CP.tags,
@@ -277,7 +277,7 @@ sub problem_text {
             WHERE CP.contest_id = ? AND CP.status < $cats::problem_st_hidden
             ORDER BY CP.code~, { Slice => {} },
             $p->{cid} || $cid);
-        push @problems, @$p;
+        push @problems, @$prs;
     }
 
     my $use_spellchecker = $is_jury_in_contest && !$p->{nospell};
