@@ -4,73 +4,73 @@
 <script type="text/javascript">
 function set_tex() {
 [%#
-    CATS::TeX::Lite preserves spaces between identifiers.
-    Emulate that for compatibility by replacing such spaces with "\,".
-    Future problems should use "\," or "\ " explicitly.
-    Since JavaScript RegExp does not support lookbehind, use magic
-    to distinguish identifiers (abc) from TeX commands (\abc).
+  CATS::TeX::Lite preserves spaces between identifiers.
+  Emulate that for compatibility by replacing such spaces with "\,".
+  Future problems should use "\," or "\ " explicitly.
+  Since JavaScript RegExp does not support lookbehind, use magic
+  to distinguish identifiers (abc) from TeX commands (\abc).
 -%]
-    var tex = $(this);
-    tex.data({ lite: tex.html() });
-    var magic = '~!!!~';
-    var t = tex.attr('title');
-    t = t.replace(/(\\[a-zA-Z]+)/g, '$1' + magic);
-    t = t.replace(/([a-zA-Z0-9},])\s+(?=[a-zA-Z])/g, '$1\\,');
-    t = t.replace(new RegExp(magic, 'g'), '');
-    tex.html("\\(" + t + '\\)');
+  var tex = $(this);
+  tex.data({ lite: tex.html() });
+  var magic = '~!!!~';
+  var t = tex.attr('title');
+  t = t.replace(/(\\[a-zA-Z]+)/g, '$1' + magic);
+  t = t.replace(/([a-zA-Z0-9},])\s+(?=[a-zA-Z])/g, '$1\\,');
+  t = t.replace(new RegExp(magic, 'g'), '');
+  tex.html("\\(" + t + '\\)');
 }
 
 function unset_tex() {
-    var tex = $(this);
-    var lite = tex.data().lite;
-    if (lite)
-        tex.html(lite);
+  var tex = $(this);
+  var lite = tex.data().lite;
+  if (lite)
+    tex.html(lite);
 }
 
 function apply_mathjax(p) {
-    MathJax.Hub.Queue(
-        function() { p.find('span.TeX').each(set_tex); },
-        [ 'Typeset', MathJax.Hub, p[0] ]);
+  MathJax.Hub.Queue(
+    function() { p.find('span.TeX').each(set_tex); },
+    [ 'Typeset', MathJax.Hub, p[0] ]);
 }
 </script>
 <script type="text/x-mathjax-config">
-    MathJax.Hub.Config({
-        TeX: {
-          Macros: { deg: '^\\circ' }
-        },
-        'HTML-CSS': { scale: 85 },
-        SVG: { scale: 85 },
-        CommonHTML: { scale: 85 },
-        tex2jax: { ignoreClass: 'problem_text', processClass: 'TeX' },
-        skipStartupTypeset: true
-    });
+MathJax.Hub.Config({
+  TeX: {
+    Macros: { deg: '^\\circ' }
+  },
+  'HTML-CSS': { scale: 85 },
+  SVG: { scale: 85 },
+  CommonHTML: { scale: 85 },
+  tex2jax: { ignoreClass: 'problem_text', processClass: 'TeX' },
+  skipStartupTypeset: true
+});
 [%#
-    MathJax.Hub.Startup.signal.Interest(function (message) { console.log("Startup: " + message); });
-    MathJax.Hub.signal.Interest(function (message) { console.log("Hub: " + message); });
+MathJax.Hub.Startup.signal.Interest(function (message) { console.log("Startup: " + message); });
+MathJax.Hub.signal.Interest(function (message) { console.log("Hub: " + message); });
 -%]
-    MathJax.Hub.Register.StartupHook('onLoad', function () {
-        [%# Convert math one problem at a time as a compromise between speed and stability. -%]
-        $('div.problem_text').each(function() {
-            var p = $(this);
-            if (!p.find('.basic_math')[0].checked)
-                apply_mathjax(p);
-        });
-    });
+MathJax.Hub.Register.StartupHook('onLoad', function () {
+  [%# Convert math one problem at a time as a compromise between speed and stability. -%]
+  $('div.problem_text').each(function() {
+    var p = $(this);
+    if (!p.find('.basic_math')[0].checked)
+      apply_mathjax(p);
+  });
+});
 </script>
 <script type="text/javascript" src="https://cdn.rawgit.com/mathjax/MathJax/2.7.1/MathJax.js?config=TeX-AMS_CHTML"></script>
 <script type="text/javascript">window.MathJax || document.write('<script src="js/lib/MathJax/MathJax.js?config=TeX-AMS_CHTML"><\/script>')</script>
 <script type="text/javascript" src="js/lib/jquery.min.js"></script>
 [% END %]
 <style>
-    a.problem_menu_trigger { font-size: small; color: inherit; padding: 1px 3px; background-color: #eeeeee; }
-    a.problem_menu_trigger:hover { font-size: medium; }
-    div.problem_menu { display: none; width: 100%; background-color: #eeeeee; }
-    div.problem_menu ul { list-style-type: none; padding: 0; }
-    div.problem_menu ul li { display: inline-block; padding: 3px 10px; border-right: 1px solid; }
-    div.problem_menu input[type=checkbox] { display: none; }
-    div.problem_menu input[type=checkbox] + span:after { content: '\2610'; }
-    div.problem_menu input[type=checkbox]:checked + span:after { content: '\2611'; }
-    div.problem_text table.problem_header { width: 100%; }
+  a.problem_menu_trigger { font-size: small; color: inherit; padding: 1px 3px; background-color: #eeeeee; }
+  a.problem_menu_trigger:hover { font-size: medium; }
+  div.problem_menu { display: none; width: 100%; background-color: #eeeeee; }
+  div.problem_menu ul { list-style-type: none; padding: 0; }
+  div.problem_menu ul li { display: inline-block; padding: 3px 10px; border-right: 1px solid; }
+  div.problem_menu input[type=checkbox] { display: none; }
+  div.problem_menu input[type=checkbox] + span:after { content: '\2610'; }
+  div.problem_menu input[type=checkbox]:checked + span:after { content: '\2611'; }
+  div.problem_text table.problem_header { width: 100%; }
 </style>
 </head>
 <body>
@@ -152,30 +152,30 @@ $('.problem_menu_trigger').click(function() { $(this).parent().next().toggle(); 
 
 var sid = (new RegExp('sid=([a-zA-Z0-9]{30})')).exec(window.location.href);
 if (sid) {
-    sid = sid[1];
-    $('.problem_list_link').each(function() { this.href += ';sid=' + sid; });
+  sid = sid[1];
+  $('.problem_list_link').each(function() { this.href += ';sid=' + sid; });
 }
 
 function toggle_whitespace() {
-    var p = $(this).parents('.problem_text');
-    var ws = this.checked;
-    p.find('.sample code').each(function() {
-        var t = $(this).text();
-        if (ws)
-            t = t.replace(/ /g, '\u2423');
-        else
-            t = t.replace(/\u2423/g, ' ');
-        $(this).text(t);
-    });
+  var p = $(this).parents('.problem_text');
+  var ws = this.checked;
+  p.find('.sample code').each(function() {
+    var t = $(this).text();
+    if (ws)
+      t = t.replace(/ /g, '\u2423');
+    else
+      t = t.replace(/\u2423/g, ' ');
+    $(this).text(t);
+  });
 }
 
 $('.problem_text div.problem_menu input.whitespace').click(toggle_whitespace).each(toggle_whitespace);
 $('.basic_math').click(function() {
-    var p = $(this).parents('.problem_text');
-    if (this.checked)
-        p.find('span.TeX').each(unset_tex);
-    else
-        apply_mathjax(p);
+  var p = $(this).parents('.problem_text');
+  if (this.checked)
+    p.find('span.TeX').each(unset_tex);
+  else
+    apply_mathjax(p);
 });
 </script>
 [% PROCESS includes/timing.tti %]
