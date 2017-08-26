@@ -37,20 +37,24 @@ sub is_jury_in_contest {
 }
 
 sub all_sites_finished {
-    return 0 if $contest->{time_since_finish} <= 0;
-    scalar $dbh->selectrow_array(qq~
-        SELECT CASE WHEN
-            EXISTS (
+    my ($contest_id) = @_;
+    return 0 if $contest_id == $cid && $contest->{time_since_finish} <= 0;
+
+    my ($main_time_since_finish, $all_sites) = $dbh->selectrow_array(qq~
+        SELECT
+            CAST(CURRENT_TIMESTAMP - finish_date AS DOUBLE PRECISION),
+            CASE WHEN EXISTS (
                 SELECT 1 FROM contest_sites CS
                 WHERE CS.contest_id = C.id AND
                     CURRENT_TIMESTAMP < $CATS::Time::contest_site_finish_sql)
             THEN 0 ELSE 1 END
         FROM contests C WHERE C.id = ?~, undef,
-        $cid);
+        $contest_id);
+   $main_time_since_finish > 0 && $all_sites;
 }
 
 sub flags_can_participate {
-    my $contest_finished = all_sites_finished;
+    my $contest_finished = all_sites_finished($cid);
     return (
         can_participate_online =>
             $uid && !$contest->{closed} && !$user->{is_participant} && !$contest_finished,
@@ -87,7 +91,7 @@ sub virtual {
         or return msg(1109);
 
     # In official contests, virtual participation is allowed only after the finish.
-    !$contest->{is_official} || all_sites_finished
+    !$contest->{is_official} || all_sites_finished($cid)
         or return msg(1122);
 
     my $removed_req_count = 0;

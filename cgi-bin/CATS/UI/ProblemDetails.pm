@@ -392,36 +392,59 @@ sub problem_link_frame {
     $p->{pid} && $is_jury or return;
 
     my $problem = $dbh->selectrow_hashref(q~
-        SELECT P.id, P.title, CP.id AS cpid, CP.tags, P.contest_id, C.title AS original_contest_title
+        SELECT P.id, P.title, CP.id AS cpid, P.contest_id
         FROM problems P
         INNER JOIN contest_problems CP ON P.id = CP.problem_id
-        INNER JOIN contests C ON C.id = P.contest_id
         WHERE P.id = ? AND CP.contest_id = ?~, undef,
         $p->{pid}, $cid) or return;
 
     $p->{listview} = my $lv = CATS::ListView->new(
         name => 'problem_link', template => 'problem_link.html.tt', array_name => 'contests');
 
+    CATS::Problem::Utils::problem_submenu('problem_link', $p->{pid});
+    my $href_action = url_f('problem_link', pid => $p->{pid});
     $t->param(
         problem_title => $problem->{title},
         title_suffix => $problem->{title},
         problem => $problem,
         href_original_contest => url_function('problems', cid => $problem->{contest_id}, sid => $sid),
+        problem_codes => \@cats::problem_codes,
+        href_action => $href_action,
     );
 
-    CATS::Problem::Utils::problem_submenu('problem_link', $p->{pid});
-    $problem->{is_original} = $problem->{contest_id} == $cid or return;
+    if ($problem->{contest_id} != $cid) {
+        if ($p->{move_from} && CATS::Problem::Save::move_problem($p->{pid}, undef, $cid)) {
+            $problem->{contest_id} = $cid;
+        }
+    }
+    elsif ($p->{contest_id}) {
+        if ($p->{move_to} && CATS::Problem::Save::move_problem($p->{pid}, $p->{code}, $p->{contest_id})) {
+            $problem->{contest_id} = $p->{contest_id};
+        }
+        elsif ($p->{link_to}) {
+            CATS::Problem::Save::link_problem($problem->{id}, $p->{code}, $p->{contest_id});
+        }
+    }
 
-    $lv->define_columns(url_f('problem_link', pid => $p->{pid}), 2, 1, [
+    $problem->{is_original} = $problem->{contest_id} == $cid;
+    if (!$problem->{is_original}) {
+        $problem->{original_contest_title} = $dbh->selectrow_array(q~
+            SELECT title FROM contests WHERE id = ?~, undef,
+            $problem->{contest_id});
+        return;
+    }
+
+    $lv->define_columns($href_action, 2, 1, [
         { caption => res_str(601), order_by => 'ctype DESC, title', width => '50%' },
         { caption => res_str(663), order_by => 'ctype DESC, problems_count', width => '10%' },
         { caption => res_str(600), order_by => 'ctype DESC, start_date', width => '15%' },
         { caption => res_str(631), order_by => 'ctype DESC, finish_date', width => '15%' },
     ]);
 
-    $p->{extra_fields} = [ q~(
+    $p->{extra_fields} = [
+    q~(
         SELECT COUNT(*) FROM contest_problems CP WHERE CP.contest_id = C.id) AS problems_count~,
-        qq~(
+    qq~(
         SELECT CP.id FROM contest_problems CP
         WHERE CP.contest_id = C.id AND CP.problem_id = $problem->{id}) AS has_this_problem~,
     ];

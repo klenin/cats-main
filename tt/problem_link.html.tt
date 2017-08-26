@@ -15,7 +15,7 @@
 [% FOREACH c IN contests %]
 <tr class="[% loop.parity() %]">
   <td>
-    <input type="radio" name="contest" value="[% c.id %]"[% ' disabled="disabled"' IF c.id == problem.contest_id %]/>
+    <input type="radio" name="contest_id" value="[% c.id %]"[% ' disabled="disabled"' IF c.id == problem.contest_id %]/>
     <a href="[% c.href_params %]" class="icon edit"></a>
     <a href="[% c.href_contest %]" title="[% c.short_descr | html %]">[% c.contest_name | html %]</a>
   </td>
@@ -28,10 +28,14 @@
 <br>
 <button type="submit" name="link_to" value="1" class="button">[% capt.link_to %]</button>
 <button type="submit" name="move_to" value="1" class="button">[% capt.move_to %]</button>
+[% capt.problem_code %]:
+<select name="code"><option>&nbsp;</option>
+[% FOREACH c IN problem_codes %]<option name="[% c %]">[% c %]</option>[% END %]
+</select>
 [% PROCESS includes/pages.tti %]
 </form>
 [% ELSE %]
-<form>
+<form method="post" action="[% href_action %]">
 <p>[% capt.original_contest %]: [% href(href_original_contest, problem.original_contest_title) %].</p>
 <button type="submit" name="move_from" value="1" class="button">[% capt.move_from %]</button>
 </form>
