@@ -12,7 +12,14 @@ use CATS::TeX::Lite;
 
 sub tex { CATS::TeX::Lite::as_html(CATS::TeX::Lite::parse($_[0])) }
 
-sub is_ { is tex($_[0]), $_[1], "tex $_[0]" }
+sub is_ {
+    if (($ARGV[0] // '') eq 'gen') {
+        print "<p>Text \$$_[0]\$ text></p>\n";
+    }
+    else {
+        is tex($_[0]), $_[1], "tex $_[0]";
+    }
+}
 
 is_ '1', '<span class="num">1</span>';
 is_ 'a', '<i>a</i>';
