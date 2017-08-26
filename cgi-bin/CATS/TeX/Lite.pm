@@ -32,19 +32,19 @@ sub is_binop { exists $CATS::TeX::Data::binary{$_[0]} }
 sub parse_token {
     for ($source) {
         # Translate spaces about operations to &nbsp;.
-        s/^(\s*)-(\s*)// && return ['op', sp($1), '&minus;', sp($2)];
-        s/^(\s*)([+*\/><=])(\s*)// && return ['op', sp($1), $2, sp($3)];
+        s/^(\s*)-(\s*)// && return [ op => sp($1), '&minus;', sp($2) ];
+        s/^(\s*)([+*\/><=])(\s*)// && return [ op => sp($1), $2, sp($3) ];
         s/^(\s*)\\([a-zA-Z]+|\{|\})(\s*)// &&
-            return ['spec', (is_binop($2) ? (sp($1), $2, sp($3)) : ('', $2,  ($3 eq '' ? '' : ' ')))];
+            return [ spec => (is_binop($2) ? (sp($1), $2, sp($3)) : ('', $2,  ($3 eq '' ? '' : ' '))) ];
         s/^\s*//;
-        s/^\\(,|;|\s+)// && return ['space', $1];
-        s/^([()\[\]])// && return ['op', $1];
-        s/^([a-zA-Z]+)// && return ['var', $1];
-        s/^([0-9]+(:?\.[0-9]+)?)// && return ['num', $1];
+        s/^\\(,|;|\s+)// && return [ space => $1 ];
+        s/^([()\[\]])// && return [ op => $1 ];
+        s/^([a-zA-Z]+)// && return [ var => $1 ];
+        s/^([0-9]+(:?\.[0-9]+)?)// && return [ num => $1 ];
         # Single space after punctuation.
-        s/^([.,:;])(\s*)// && return ['op', $1, ($2 eq '' ? '' : ' ')];
+        s/^([.,:;])(\s*)// && return [ op => $1, ($2 eq '' ? '' : ' ') ];
         s/^{// && return parse_block();
-        s/^(\S)// && return ['op', $1];
+        s/^(\S)// && return [ op => $1 ];
     }
 }
 
@@ -58,31 +58,31 @@ sub parse_block {
             my $f = $1 eq '_' ? 'sub' : 'sup';
             
             if ($limits) {
-                $res[-1] = [$f . '1', $res[-1], parse_token()];
+                $res[-1] = [ $f . '1', $res[-1], parse_token() ];
             }
             else {
-                push @res, [$f, parse_token()];
+                push @res, [ $f, parse_token() ];
             }
         }
         elsif ($source =~ s/^\s*(?:\\(sqrt|overline))//) {
             my $f = $1;
-            push @res, [$f, parse_token()];
+            push @res, [ $f, parse_token() ];
         }
         elsif ($source =~ s/^\s*(?:\\over)//) {
-            $res[-1] = ['frac', $res[-1], parse_token()];
+            $res[-1] = [ frac => $res[-1], parse_token() ];
         }
         elsif ($source =~ s/^\s*(?:\\limits)//) {
             $limits = 1;
         }
         elsif ($source =~ s/^\s*(?:\\(d?frac))//) {
             my $f = $1;
-            push @res, [$f, parse_token(), parse_token()];
+            push @res, [ $f, parse_token(), parse_token() ];
         }
         else {
             push @res, parse_token();
         }
     }
-    return ['block', @res];
+    return [ block => @res ];
 }
 
 sub parse {
@@ -90,7 +90,7 @@ sub parse {
     return parse_block();
 }
 
-sub asHTML {
+sub as_html {
     my ($tree) = @_;
     ref $tree eq 'ARRAY' or return $tree;
     my $name = shift @$tree;
@@ -102,7 +102,7 @@ sub asHTML {
         push @$_, ' ' if $prev && $cur;
         $prev = $cur;
     }
-    my @html_params = map { asHTML($_) } @$tree;
+    my @html_params = map { as_html($_) } @$tree;
     $generators{$name}->(@html_params);
 }
 
@@ -120,7 +120,7 @@ sub convert_one {
         s/\xA0/ /g; # Non-breaking space.
         s/[\x{2013}\x{2212}]/-/g; # En-dash, minus sign.
     }
-    sprintf '<span class="TeX" title="%s">%s</span>', quote_attr($tex), asHTML(parse($tex))
+    sprintf '<span class="TeX" title="%s">%s</span>', quote_attr($tex), as_html(parse($tex))
 }
 
 sub convert_all {
@@ -128,8 +128,4 @@ sub convert_all {
 }
 
 sub styles() { '' }
-
-#print convert_one('a_1, a_2, \ldots , a_{n+1}');
-#print convert_one('a + b+c');
-
 1;

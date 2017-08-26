@@ -10,7 +10,7 @@ use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
 
 use CATS::TeX::Lite;
 
-sub tex { CATS::TeX::Lite::asHTML(CATS::TeX::Lite::parse($_[0])) }
+sub tex { CATS::TeX::Lite::as_html(CATS::TeX::Lite::parse($_[0])) }
 
 sub is_ { is tex($_[0]), $_[1], "tex $_[0]" }
 
