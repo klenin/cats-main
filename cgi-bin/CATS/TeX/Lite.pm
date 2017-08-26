@@ -36,7 +36,7 @@ sub parse_token {
         s/^(\s*)([+*\/><=])(\s*)// && return [ op => sp($1), $2, sp($3) ];
         s/^(\s*)\\([a-zA-Z]+|\{|\})(\s*)// &&
             return [ spec => (is_binop($2) ? (sp($1), $2, sp($3)) : ('', $2,  ($3 eq '' ? '' : ' '))) ];
-        s/^\s*//;
+        s/^\s//;
         s/^\\(,|;|\s+)// && return [ space => $1 ];
         s/^([()\[\]])// && return [ op => $1 ];
         s/^([a-zA-Z]+)// && return [ var => $1 ];
@@ -54,11 +54,11 @@ sub parse_block {
     while ($source ne '') {
         last if $source =~ s/^\s*}//;
         if ($source =~ s/^\s*([_^])//) {
-            @res or die '!';
             my $f = $1 eq '_' ? 'sub' : 'sup';
             
             if ($limits) {
-                $res[-1] = [ $f . '1', $res[-1], parse_token() ];
+                my $d = [ $f . '1', $res[-1] // '', parse_token() ];
+                @res ? ($res[-1] = $d) : push @res, $d;
             }
             else {
                 push @res, [ $f, parse_token() ];
@@ -69,7 +69,8 @@ sub parse_block {
             push @res, [ $f, parse_token() ];
         }
         elsif ($source =~ s/^\s*(?:\\over)//) {
-            $res[-1] = [ frac => $res[-1], parse_token() ];
+            my $d = [ frac => $res[-1] // '', parse_token() ];
+            @res ? ($res[-1] = $d) : push @res, $d;
         }
         elsif ($source =~ s/^\s*(?:\\limits)//) {
             $limits = 1;
@@ -97,10 +98,12 @@ sub as_html {
     $name or return '???';
     my $prev = 0;
     # Insert space between directly adjacent variables and numbers.
-    for (@$tree) {
-        my $cur = ref $_ eq 'ARRAY' && $_->[0] =~ /^(var|num|sub|sup)$/;
-        push @$_, ' ' if $prev && $cur;
-        $prev = $cur;
+    if ($name eq 'block') {
+        for (@$tree) {
+            my $cur = ref $_ eq 'ARRAY' && $_->[0] =~ /^(var|num|sub|sup)$/;
+            push @$_, ' ' if $prev && $cur;
+            $prev = $cur;
+        }
     }
     my @html_params = map { as_html($_) } @$tree;
     $generators{$name}->(@html_params);
