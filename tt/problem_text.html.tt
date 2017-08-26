@@ -38,9 +38,9 @@ MathJax.Hub.Config({
   TeX: {
     Macros: { deg: '^\\circ' }
   },
-  'HTML-CSS': { scale: 85 },
-  SVG: { scale: 85 },
-  CommonHTML: { scale: 85 },
+  'HTML-CSS': { scale: 100 },
+  SVG: { scale: 100 },
+  CommonHTML: { scale: 100 },
   tex2jax: { ignoreClass: 'problem_text', processClass: 'TeX' },
   skipStartupTypeset: true
 });

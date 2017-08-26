@@ -32,24 +32,24 @@ is_ 'a^{22}', '<i>a</i><sup><span class="num">22</span></sup>';
 is_ 'a_{b+c}', '<i>a</i><sub><i>b</i>+<i>c</i></sub>';
 is_ '\overline S', '<span class="over"><i>S</i></span>';
 is_ '\frac 1 a',
-    '<table class="frac sfrac">' .
-    '<tr class="nom"><td><span class="num">1</span></td></tr>' .
-    '<tr><td><i>a</i></td></tr>' .
-    '</table>';
+    '<span class="frac sfrac">' .
+    '<span class="nom"><span><span class="num">1</span></span></span>' .
+    '<span><span><i>a</i></span></span>' .
+    '</span>';
 is_ '1 \over a',
-    '<table class="frac sfrac">' .
-    '<tr class="nom"><td><span class="num">1</span></td></tr>' .
-    '<tr><td><i>a</i></td></tr>' .
-    '</table>';
+    '<span class="frac sfrac">' .
+    '<span class="nom"><span><span class="num">1</span></span></span>' .
+    '<span><span><i>a</i></span></span>' .
+    '</span>';
 is_ '\dfrac{1}{a}',
-    '<table class="frac dfrac">' .
-    '<tr class="nom"><td><span class="num">1</span></td></tr>' .
-    '<tr><td><i>a</i></td></tr>' .
-    '</table>';
+    '<span class="frac dfrac">' .
+    '<span class="nom"><span><span class="num">1</span></span></span>' .
+    '<span><span><i>a</i></span></span>' .
+    '</span>';
 
 is_ '_5', '<sub><span class="num">5</span></sub>';
 is_ '\over x',
-    '<table class="frac sfrac">' .
-    '<tr class="nom"><td></td></tr>' .
-    '<tr><td><i>x</i></td></tr>' .
-    '</table>';
+    '<span class="frac sfrac">' .
+    '<span class="nom"><span></span></span>' .
+    '<span><span><i>x</i></span></span>' .
+    '</span>';

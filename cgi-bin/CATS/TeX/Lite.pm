@@ -18,8 +18,8 @@ my %generators = (
     block  => sub { join '', @_ },
     'sqrt' => sub { qq~<span class="sqrt_sym">\&#x221A;</span><span class="sqrt">@_</span>~ },
     overline => sub { qq~<span class="over">@_</span>~ },
-    frac   => sub { qq~<table class="frac sfrac"><tr class="nom"><td>$_[0]</td></tr><tr><td>$_[1]</td></tr></table>~ },
-    dfrac  => sub { qq~<table class="frac dfrac"><tr class="nom"><td>$_[0]</td></tr><tr><td>$_[1]</td></tr></table>~ },
+    frac   => sub { qq~<span class="frac sfrac"><span class="nom"><span>$_[0]</span></span><span><span>$_[1]</span></span></span>~ },
+    dfrac  => sub { qq~<span class="frac dfrac"><span class="nom"><span>$_[0]</span></span><span><span>$_[1]</span></span></span>~ },
     space  => sub { '&nbsp;' }
 );
 
