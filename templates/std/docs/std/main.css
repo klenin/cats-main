@@ -307,17 +307,18 @@ span.TeX sup { white-space: nowrap; position: relative; left: 1px; }
 span.TeX sub { white-space: nowrap; position: relative; top: 2px; }
 span.TeX span.over { border-top: 1px solid black; padding: 0 2px 0 1px; margin: 0; }
 span.TeX span.num { font-family: Times New Roman, serif; }
-span.TeX span.sqrt { border-top: 1px solid black; padding: 3px 2px 0 0; margin: 0; }
-span.TeX span.sqrt_sym { font-size: 19px; margin: 0; padding: 0; }
+span.TeX span.sqrt { border-top: 1px solid black; padding: 3px 2px 0 0; }
+span.TeX span.sqrt_sym { font-size: 19px; }
 span.TeX span.frac { display: inline-table; vertical-align: 1.1ex; }
 span.TeX span.frac > span { display: table-row; font-size: 80%; }
 span.TeX span.frac > span > span { display: table-cell; text-align: center; }
 span.TeX span.frac > span.nom > span { border-bottom: 1px solid black; }
-span.TeX span.frac tr td { font-size: small; }
-span.TeX table.limits { border: 0; border-collapse: collapse; display: inline; text-align: center; vertical-align: middle; }
-span.TeX table.limits tr { vertical-align: middle; padding: 0; margin: 0; }
-span.TeX table.limits tr td.sub { vertical-align: top; padding: 0; margin: 0; font-size: small; }
-span.Tex .MathJax { font-weight: 200; }
+span.TeX span.limits { display: inline-table; text-align: center; margin-right: 3px; }
+span.TeX span.limits.hh { vertical-align: middle; }
+span.TeX span.limits > span { display: table-row; }
+span.TeX span.limits > .hi { font-size: 80%; line-height: 80%; }
+span.TeX span.limits > .lo { font-size: 80%; line-height: 80%; }
+span.Tex .MathJax { font-weight: 100; }
 
 table.nobr tr td, span.nobr, label.nobr, td.nobr { white-space: nowrap; }
 td.center { text-align: center; }

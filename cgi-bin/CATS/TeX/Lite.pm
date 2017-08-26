@@ -5,21 +5,27 @@ use warnings;
 
 use CATS::TeX::Data;
 
+sub ss { "<span>@_</span>" }
+sub sc { my $class = shift; qq~<span class="$class">@_</span>~ }
+
 my %generators = (
     var    => sub { ($_[1] || '') . "<i>$_[0]</i>" },
-    num    => sub { ($_[1] || '') . qq~<span class="num">$_[0]</span>~ },
+    num    => sub { ($_[1] || '') . sc(num => $_[0]) },
     op     => sub { join '', @_ },
     spec   => sub {
         join '', map { $CATS::TeX::Data::symbols{$_} || $_ && $_ ne '&nbsp;' && "<b>$_</b>" || $_ } @_ },
     sup    => sub { qq~<sup>$_[0]</sup>~ },
     'sub'  => sub { qq~<sub>$_[0]</sub>~ },
-    sub1   => sub { qq~<table class="limits"><tr><td>$_[0]</td></tr><tr><td class="sub">$_[1]</td></tr></table>~ },
-    sup1   => sub { qq~<table class="limits"><tr><td class="sup">$_[1]</td></tr><tr><td>$_[0]</td></tr></table>~ },
+    # We wish to align to baselibe of the middle row, but CSS calculates baseline only from first row.
+    # So use baseline when there is no upper limit and middle otherwise.
+    limits => sub { sc('limits' . ($_[1] ? ' hh' : '') =>
+        ($_[1] ? sc(hi => ss($_[1])) : '') . sc(mid => ss($_[0])) . ($_[2] ? sc(lo => ss($_[2])) : '')
+    ) },
     block  => sub { join '', @_ },
-    'sqrt' => sub { qq~<span class="sqrt_sym">\&#x221A;</span><span class="sqrt">@_</span>~ },
-    overline => sub { qq~<span class="over">@_</span>~ },
-    frac   => sub { qq~<span class="frac sfrac"><span class="nom"><span>$_[0]</span></span><span><span>$_[1]</span></span></span>~ },
-    dfrac  => sub { qq~<span class="frac dfrac"><span class="nom"><span>$_[0]</span></span><span><span>$_[1]</span></span></span>~ },
+    'sqrt' => sub { sc(sqrt_sym => '&#x221A;') . sc(sqrt => @_) },
+    overline => sub { sc(over => @_) },
+    frac   => sub { sc('frac sfrac', sc(nom => ss($_[0]))  . ss(ss($_[1]))) },
+    dfrac  => sub { sc('frac dfrac', sc(nom => ss($_[0]))  . ss(ss($_[1]))) },
     space  => sub { '&nbsp;' }
 );
 
@@ -36,7 +42,7 @@ sub parse_token {
         s/^(\s*)([+*\/><=])(\s*)// && return [ op => sp($1), $2, sp($3) ];
         s/^(\s*)\\([a-zA-Z]+|\{|\})(\s*)// &&
             return [ spec => (is_binop($2) ? (sp($1), $2, sp($3)) : ('', $2,  ($3 eq '' ? '' : ' '))) ];
-        s/^\s//;
+        s/^\s*//;
         s/^\\(,|;|\s+)// && return [ space => $1 ];
         s/^([()\[\]])// && return [ op => $1 ];
         s/^([a-zA-Z]+)// && return [ var => $1 ];
@@ -55,27 +61,25 @@ sub parse_block {
         last if $source =~ s/^\s*}//;
         if ($source =~ s/^\s*([_^])//) {
             my $f = $1 eq '_' ? 'sub' : 'sup';
-            
-            if ($limits) {
-                my $d = [ $f . '1', $res[-1] // '', parse_token() ];
-                @res ? ($res[-1] = $d) : push @res, $d;
+            if (@res && $res[-1]->[0] eq 'limits') {
+                $res[-1]->[$f eq 'sup' ? 2 : 3] = parse_token;
             }
             else {
                 push @res, [ $f, parse_token() ];
             }
         }
-        elsif ($source =~ s/^\s*(?:\\(sqrt|overline))//) {
+        elsif ($source =~ s/^\s*\\(sqrt|overline)//) {
             my $f = $1;
             push @res, [ $f, parse_token() ];
         }
-        elsif ($source =~ s/^\s*(?:\\over)//) {
+        elsif ($source =~ s/^\s*\\over//) {
             my $d = [ frac => $res[-1] // '', parse_token() ];
             @res ? ($res[-1] = $d) : push @res, $d;
         }
-        elsif ($source =~ s/^\s*(?:\\limits)//) {
-            $limits = 1;
+        elsif ($source =~ s/^\s*\\limits//) {
+            $res[-1] ? $res[-1] = [ limits => $res[-1] ] : push @res, [ limits => '' ];
         }
-        elsif ($source =~ s/^\s*(?:\\(d?frac))//) {
+        elsif ($source =~ s/^\s*\\(d?frac)//) {
             my $f = $1;
             push @res, [ $f, parse_token(), parse_token() ];
         }
@@ -88,6 +92,7 @@ sub parse_block {
 
 sub parse {
     ($source) = @_;
+    $source =~ s/\n|\r/ /g;
     return parse_block();
 }
 

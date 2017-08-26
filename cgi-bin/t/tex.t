@@ -3,7 +3,7 @@ use warnings;
 
 use File::Spec;
 use FindBin;
-use Test::More tests => 20;
+use Test::More tests => 25;
 
 use lib File::Spec->catdir($FindBin::Bin, '..');
 use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
@@ -43,6 +43,11 @@ is_ '\frac 1 a',
     '<span class="nom"><span><span class="num">1</span></span></span>' .
     '<span><span><i>a</i></span></span>' .
     '</span>';
+is_ '\frac {x}  {y+z}',
+    '<span class="frac sfrac">' .
+    '<span class="nom"><span><i>x</i></span></span>' .
+    '<span><span><i>y</i>+<i>z</i></span></span>' .
+    '</span>';
 is_ '1 \over a',
     '<span class="frac sfrac">' .
     '<span class="nom"><span><span class="num">1</span></span></span>' .
@@ -60,3 +65,18 @@ is_ '\over x',
     '<span class="nom"><span></span></span>' .
     '<span><span><i>x</i></span></span>' .
     '</span>';
+
+is_ 'x_a_b', '<i>x</i><sub><i>a</i></sub><sub><i>b</i></sub>';
+is_ 'x_{a_b}', '<i>x</i><sub><i>a</i><sub><i>b</i></sub></sub>';
+
+is_ '\max\limits_a^b',
+    '<span class="limits hh">' .
+    '<span class="hi"><span><i>b</i></span></span>' .
+    '<span class="mid"><span><b>max</b></span></span>' .
+    '<span class="lo"><span><i>a</i></span></span>' .
+    '</span>';
+is_ 'S\limits_{i+1} + 1',
+    '<span class="limits">' .
+    '<span class="mid"><span><i>S</i></span></span>' .
+    '<span class="lo"><span><i>i</i>+<span class="num">1</span></span></span>' .
+    '</span>&nbsp;+&nbsp;<span class="num">1</span>';
