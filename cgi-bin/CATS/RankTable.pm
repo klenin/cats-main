@@ -279,24 +279,25 @@ sub get_contests_info {
           CAST(CURRENT_TIMESTAMP - C.freeze_date AS DOUBLE PRECISION),
           CAST(CURRENT_TIMESTAMP - C.defreeze_date AS DOUBLE PRECISION),
           CAST(CURRENT_TIMESTAMP - C.start_date AS DOUBLE PRECISION),
-          (SELECT CA.is_jury FROM contest_accounts CA WHERE CA.contest_id = C.id AND CA.account_id = ?),
+          CA.is_jury, CA.id,
           C.is_hidden, C.rules, C.ctype, C.show_all_results, C.req_selection
         FROM contests C
-        WHERE C.id IN ($self->{contest_list}) ORDER BY C.id~
+        LEFT JOIN contest_accounts CA ON CA.contest_id = C.id AND CA.account_id = ?
+        WHERE C.id IN ($self->{contest_list}) AND (C.is_hidden = 0 OR CA.id IS NOT NULL)
+        ORDER BY C.id~
     );
     $sth->execute($uid);
 
     my (@actual_contests, @names);
     $self->{show_all_results} = 1;
     while (my (
-        $id, $title, $since_freeze, $since_defreeze, $since_start, $is_local_jury,
+        $id, $title, $since_freeze, $since_defreeze, $since_start, $is_local_jury, $caid,
         $is_hidden, $rules, $ctype, $show_all_results, $req_selection) =
             $sth->fetchrow_array
     ) {
-        next if $is_hidden && !$is_local_jury;
         push @actual_contests, $id;
         $self->{frozen} ||= $since_freeze >= 0 && $since_defreeze < 0;
-        $self->{not_started} ||= $since_start < 0 && !$is_jury;
+        $self->{not_started} ||= $since_start < 0 && !$is_local_jury;
         $self->{has_practice} ||= ($ctype || 0);
         $self->{show_points} ||= $rules;
         $self->{show_all_results} &&= $show_all_results;
