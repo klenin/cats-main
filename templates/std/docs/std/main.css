@@ -319,8 +319,17 @@ span.TeX span.limits > span { display: table-row; }
 span.TeX span.limits > .hi { font-size: 80%; line-height: 80%; }
 span.TeX span.limits > .lo { font-size: 80%; line-height: 80%; }
 span.TeX span.large { font-size: 150%; }
+
+span.TeX span.tbl { display: inline-table; }
+span.TeX span.tbl > span { display: table-row; }
+span.TeX span.tbl > span > span { display: table-cell; }
+span.TeX span.tbl.hilo { font-size: 80%; vertical-align: middle; }
+
+span.TeX span.limits > .hi { font-size: 80%; line-height: 80%; }
+span.TeX span.limits > .lo { font-size: 80%; line-height: 80%; line-height: 80%; }
+
 span.TeX span.large_sym { font-size: 120%; }
-span.TeX span.int { font-size: 150%; }
+span.TeX span.int { font-size: 150%; vertical-align: middle; }
 span.TeX span.mathcal { font-family: MJXc-TeX-cal-R,MJXc-TeX-cal-Rw, serif; }
 span.Tex .MathJax { font-weight: 100; }
 

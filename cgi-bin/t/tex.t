@@ -3,7 +3,7 @@ use warnings;
 
 use File::Spec;
 use FindBin;
-use Test::More tests => 30;
+use Test::More tests => 32;
 
 use lib File::Spec->catdir($FindBin::Bin, '..');
 use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
@@ -72,6 +72,16 @@ is_ '\over x',
 is_ 'x_a_b', '<i>x</i><sub><i>a</i></sub><sub><i>b</i></sub>';
 
 is_ 'x_{a_b}', '<i>x</i><sub><i>a</i><sub><i>b</i></sub></sub>';
+
+{
+my $hilo = '<i>x</i>' .
+    '<span class="tbl hilo">' .
+    '<span><span><i>a</i></span></span>' .
+    '<span><span><i>b</i></span></span>' .
+    '</span>';
+is_ 'x^a_b', $hilo;
+is_ 'x_b^a', $hilo;
+}
 
 is_ '\max\limits_a^b',
     '<span class="limits hh">' .

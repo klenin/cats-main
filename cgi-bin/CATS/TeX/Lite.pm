@@ -23,6 +23,7 @@ my %generators = (
     limits => sub { sc('limits' . ($_[1] ? ' hh' : '') =>
         ($_[1] ? sc(hi => ss($_[1])) : '') . sc(mid => ss($_[0])) . ($_[2] ? sc(lo => ss($_[2])) : '')
     ) },
+    subsup => sub { sc('tbl hilo', ss(ss($_[0])) . ss(ss($_[1]))) },
     block  => sub { join '', @_ },
     'sqrt' => sub { sc(sqrt_sym => '&#x221A;') . sc(sqrt => @_) },
     overline => sub { sc(over => @_) },
@@ -88,6 +89,11 @@ sub parse_block {
             my $f = $1 eq '_' ? 'sub' : 'sup';
             if (@res && $res[-1]->[0] eq 'limits') {
                 $res[-1]->[$f eq 'sup' ? 2 : 3] = parse_token;
+            }
+            elsif (@res && $res[-1]->[0] eq ($f eq 'sub' ? 'sup' : 'sub')) {
+                $res[-1] = [ subsup => ($f eq 'sub' ?
+                    ($res[-1]->[1], parse_token()) :
+                    (parse_token(), $res[-1]->[1])) ];
             }
             else {
                 push @res, [ $f, parse_token() ];
