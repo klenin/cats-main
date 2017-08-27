@@ -320,6 +320,7 @@ span.TeX span.limits > span { display: table-row; }
 span.TeX span.limits > .hi { font-size: 80%; line-height: 80%; }
 span.TeX span.limits > .lo { font-size: 80%; line-height: 80%; }
 span.TeX span.large { font-size: 150%; }
+span.TeX span.mathcal { font-family: MJXc-TeX-cal-R,MJXc-TeX-cal-Rw, serif; }
 span.Tex .MathJax { font-weight: 100; }
 
 table.nobr tr td, span.nobr, label.nobr, td.nobr { white-space: nowrap; }

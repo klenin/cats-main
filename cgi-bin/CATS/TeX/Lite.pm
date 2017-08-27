@@ -29,6 +29,7 @@ my %generators = (
     space  => sub { '&nbsp;' },
     left   => sub { sc(large => @_) },
     right  => sub { sc(large => @_) },
+    mathcal=> sub { sc(mathcal => @_) },
 );
 
 my $source;
@@ -64,6 +65,7 @@ my %simple_commands = (
     dfrac => 2,
     frac => 2,
     left => 1,
+    mathcal => 1,
     overline => 1,
     right => 1,
     'sqrt' => 1,
