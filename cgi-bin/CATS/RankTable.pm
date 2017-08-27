@@ -14,6 +14,7 @@ use CATS::DB;
 use CATS::Globals qw($cid $contest $is_jury $is_root $t $uid $user);
 use CATS::Output qw(url_f);
 use CATS::Testset;
+use CATS::Time;
 use CATS::Web qw(param url_param);
 
 use fields qw(
@@ -278,11 +279,12 @@ sub get_contests_info {
         SELECT C.id, C.title,
           CAST(CURRENT_TIMESTAMP - C.freeze_date AS DOUBLE PRECISION),
           CAST(CURRENT_TIMESTAMP - C.defreeze_date AS DOUBLE PRECISION),
-          CAST(CURRENT_TIMESTAMP - C.start_date AS DOUBLE PRECISION),
+          CAST(CURRENT_TIMESTAMP - $CATS::Time::contest_start_offset_sql AS DOUBLE PRECISION),
           CA.is_jury, CA.id,
           C.is_hidden, C.rules, C.ctype, C.show_all_results, C.req_selection
         FROM contests C
         LEFT JOIN contest_accounts CA ON CA.contest_id = C.id AND CA.account_id = ?
+        LEFT JOIN contest_sites CS ON CS.contest_id = C.id AND CS.site_id = CA.site_id
         WHERE C.id IN ($self->{contest_list}) AND (C.is_hidden = 0 OR CA.id IS NOT NULL)
         ORDER BY C.id~
     );
