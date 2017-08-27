@@ -8,8 +8,11 @@ use List::Util qw(reduce);
 use CATS::Constants;
 use CATS::DB;
 use CATS::Globals qw($cid $is_root $sid $uid);
-use CATS::Output qw(url_f);
+#use CATS::Output qw(url_f);
 use CATS::Utils qw(url_function date_to_iso);
+
+# Avoid CATS::Output to work on Travis.
+sub url_f { CATS::Utils::url_function(@_, sid => $sid, cid => $cid) }
 
 sub common_seq_prefix {
     my ($pa, $pb) = @_;
