@@ -3,7 +3,7 @@ use warnings;
 
 use File::Spec;
 use FindBin;
-use Test::More tests => 28;
+use Test::More tests => 29;
 
 use lib File::Spec->catdir($FindBin::Bin, '..');
 use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
@@ -34,7 +34,9 @@ is_ 'a,b,  c, d', '<i>a</i>,<i>b</i>, <i>c</i>, <i>d</i>';
 
 is_ 'a_i', '<i>a</i><sub><i>i</i></sub>';
 is_ 'a^2', '<i>a</i><sup><span class="num">2</span></sup>';
-is_ 'a^22', '<i>a</i><sup><span class="num">22</span></sup>'; # Non-compliant.
+# Non-compliant, TeX gives a^{2}2.
+is_ 'a^22', '<i>a</i><sup><span class="num">22</span></sup>';
+
 is_ 'a^{22}', '<i>a</i><sup><span class="num">22</span></sup>';
 is_ 'a_{b+c}', '<i>a</i><sub><i>b</i>+<i>c</i></sub>';
 is_ '\overline S', '<span class="over"><i>S</i></span>';
@@ -66,7 +68,9 @@ is_ '\over x',
     '<span><span><i>x</i></span></span>' .
     '</span>';
 
+# Non-compliant, TeX gives error.
 is_ 'x_a_b', '<i>x</i><sub><i>a</i></sub><sub><i>b</i></sub>';
+
 is_ 'x_{a_b}', '<i>x</i><sub><i>a</i><sub><i>b</i></sub></sub>';
 
 is_ '\max\limits_a^b',
@@ -87,3 +91,5 @@ is_ '\sqrt{\overline Q} + \sqrt \alpha',
 
 is_ 'a\leftarrow b\rightarrow c', '<i>a</i>&larr;&nbsp;<i>b</i>&rarr;&nbsp;<i>c</i>';
 is_ '\left((a)\right)', '<span class="large">(</span>(<i>a</i>)<span class="large">)</span>';
+
+is_ 'a \mod b \bmod c', '<i>a</i>&nbsp;<b>mod</b>&nbsp;<i>b</i>&nbsp;<b>mod</b>&nbsp;<i>c</i>';

@@ -99,6 +99,9 @@ sub parse_block {
             }
             elsif ($f eq 'displaystyle') { # Ignore.
             }
+            elsif ($f eq 'bmod' || $f eq 'mod') {
+                push @res, [ spec => sp($lsp), 'mod', sp($rsp) ];
+            }
             else {
                 push @res, make_token($lsp, $f, $rsp);
             }
