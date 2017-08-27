@@ -26,7 +26,9 @@ my %generators = (
     overline => sub { sc(over => @_) },
     frac   => sub { sc('frac sfrac', sc(nom => ss($_[0]))  . ss(ss($_[1]))) },
     dfrac  => sub { sc('frac dfrac', sc(nom => ss($_[0]))  . ss(ss($_[1]))) },
-    space  => sub { '&nbsp;' }
+    space  => sub { '&nbsp;' },
+    left   => sub { sc(large => @_) },
+    right  => sub { sc(large => @_) },
 );
 
 my $source;
@@ -61,7 +63,9 @@ sub parse_token {
 my %simple_commands = (
     dfrac => 2,
     frac => 2,
+    left => 1,
     overline => 1,
+    right => 1,
     'sqrt' => 1,
 );
 
@@ -90,6 +94,8 @@ sub parse_block {
             }
             elsif ($f eq 'limits') {
                 $res[-1] ? $res[-1] = [ limits => $res[-1] ] : push @res, [ limits => '' ];
+            }
+            elsif ($f eq 'displaystyle') { # Ignore.
             }
             else {
                 push @res, make_token($lsp, $f, $rsp);
