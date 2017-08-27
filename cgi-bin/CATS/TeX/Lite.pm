@@ -35,13 +35,17 @@ sub sp { $_[0] eq '' ? '' : '&nbsp;' }
 
 sub is_binop { exists $CATS::TeX::Data::binary{$_[0]} }
 
+sub make_token { [ spec => (is_binop($_[1]) ?
+    (sp($_[0]), $_[1], sp($_[2])) :
+    ('', $_[1],  ($_[2] eq '' ? '' : ' '))
+)] }
+
 sub parse_token {
     for ($source) {
         # Translate spaces about operations to &nbsp;.
         s/^(\s*)-(\s*)// && return [ op => sp($1), '&minus;', sp($2) ];
         s/^(\s*)([+*\/><=])(\s*)// && return [ op => sp($1), $2, sp($3) ];
-        s/^(\s*)\\([a-zA-Z]+|\{|\})(\s*)// &&
-            return [ spec => (is_binop($2) ? (sp($1), $2, sp($3)) : ('', $2,  ($3 eq '' ? '' : ' '))) ];
+        s/^(\s*)\\([a-zA-Z]+|\{|\})(\s*)// && return make_token($1, $2, $3);
         s/^\s*//;
         s/^\\(,|;|\s+)// && return [ space => $1 ];
         s/^([()\[\]])// && return [ op => $1 ];
@@ -53,6 +57,13 @@ sub parse_token {
         s/^(\S)// && return [ op => $1 ];
     }
 }
+
+my %simple_commands = (
+    dfrac => 2,
+    frac => 2,
+    overline => 1,
+    'sqrt' => 1,
+);
 
 sub parse_block {
     my @res = ();
@@ -68,20 +79,21 @@ sub parse_block {
                 push @res, [ $f, parse_token() ];
             }
         }
-        elsif ($source =~ s/^\s*\\(sqrt|overline)//) {
-            my $f = $1;
-            push @res, [ $f, parse_token() ];
-        }
-        elsif ($source =~ s/^\s*\\over//) {
-            my $d = [ frac => $res[-1] // '', parse_token() ];
-            @res ? ($res[-1] = $d) : push @res, $d;
-        }
-        elsif ($source =~ s/^\s*\\limits//) {
-            $res[-1] ? $res[-1] = [ limits => $res[-1] ] : push @res, [ limits => '' ];
-        }
-        elsif ($source =~ s/^\s*\\(d?frac)//) {
-            my $f = $1;
-            push @res, [ $f, parse_token(), parse_token() ];
+        elsif ($source =~ s/^(\s*)\\([a-zA-Z]+)(\s*)//) {
+            my ($lsp, $f, $rsp) = ($1, $2, $3);
+            if (my $args_count = $simple_commands{$f}) {
+                push @res, [ $f, map parse_token, 1 .. $args_count ]
+            }
+            elsif ($f eq 'over') {
+                my $d = [ frac => $res[-1] // '', parse_token() ];
+                @res ? ($res[-1] = $d) : push @res, $d;
+            }
+            elsif ($f eq 'limits') {
+                $res[-1] ? $res[-1] = [ limits => $res[-1] ] : push @res, [ limits => '' ];
+            }
+            else {
+                push @res, make_token($lsp, $f, $rsp);
+            }
         }
         else {
             push @res, parse_token();

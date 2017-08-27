@@ -3,7 +3,7 @@ use warnings;
 
 use File::Spec;
 use FindBin;
-use Test::More tests => 25;
+use Test::More tests => 26;
 
 use lib File::Spec->catdir($FindBin::Bin, '..');
 use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
@@ -80,3 +80,7 @@ is_ 'S\limits_{i+1} + 1',
     '<span class="mid"><span><i>S</i></span></span>' .
     '<span class="lo"><span><i>i</i>+<span class="num">1</span></span></span>' .
     '</span>&nbsp;+&nbsp;<span class="num">1</span>';
+
+is_ '\sqrt{\overline Q} + \sqrt \alpha',
+    '<span class="sqrt_sym">&#x221A;</span><span class="sqrt"><span class="over"><i>Q</i></span></span>' .
+    '&nbsp;+&nbsp;<span class="sqrt_sym">&#x221A;</span><span class="sqrt">&alpha;</span>';
