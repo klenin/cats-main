@@ -8,6 +8,8 @@ use CATS::TeX::Data;
 sub ss { "<span>@_</span>" }
 sub sc { my $class = shift; qq~<span class="$class">@_</span>~ }
 
+my $large_sym = sub { my $f = sc(($_[1] // 'large_sym'), $CATS::TeX::Data::symbols{$_[0]}); sub { $f }; };
+
 my %generators = (
     var    => sub { ($_[1] || '') . "<i>$_[0]</i>" },
     num    => sub { ($_[1] || '') . sc(num => $_[0]) },
@@ -30,6 +32,9 @@ my %generators = (
     left   => sub { sc(large => @_) },
     right  => sub { sc(large => @_) },
     mathcal=> sub { sc(mathcal => @_) },
+    sum    => $large_sym->('sum'),
+    prod   => $large_sym->('prod'),
+    int    => $large_sym->('int', 'int'),
 );
 
 my $source;
@@ -64,11 +69,14 @@ sub parse_token {
 my %simple_commands = (
     dfrac => 2,
     frac => 2,
+    int => 0,
     left => 1,
     mathcal => 1,
     overline => 1,
+    prod => 0,
     right => 1,
     'sqrt' => 1,
+    sum => 0,
 );
 
 sub parse_block {
@@ -87,7 +95,7 @@ sub parse_block {
         }
         elsif ($source =~ s/^(\s*)\\([a-zA-Z]+)(\s*)//) {
             my ($lsp, $f, $rsp) = ($1, $2, $3);
-            if (my $args_count = $simple_commands{$f}) {
+            if (defined(my $args_count = $simple_commands{$f})) {
                 push @res, [ $f, map parse_token, 1 .. $args_count ]
             }
             elsif ($f eq 'over') {

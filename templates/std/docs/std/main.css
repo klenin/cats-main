@@ -299,8 +299,7 @@ pre { margin-top: 0; margin-bottom: 0 }
 form.embedded { margin: 0 }
 a.current_link { font-weight: bold; }
 
-span.TeX { font-family: Times New Roman, serif; }
-span.TeX { display: inline-block; }
+span.TeX { display: inline-block; font-family: Times New Roman, serif; }
 span.TeX i { }
 span.TeX b { font-weight: normal; }
 span.TeX sup { white-space: nowrap; position: relative; left: 1px; }
@@ -320,6 +319,8 @@ span.TeX span.limits > span { display: table-row; }
 span.TeX span.limits > .hi { font-size: 80%; line-height: 80%; }
 span.TeX span.limits > .lo { font-size: 80%; line-height: 80%; }
 span.TeX span.large { font-size: 150%; }
+span.TeX span.large_sym { font-size: 120%; }
+span.TeX span.int { font-size: 150%; }
 span.TeX span.mathcal { font-family: MJXc-TeX-cal-R,MJXc-TeX-cal-Rw, serif; }
 span.Tex .MathJax { font-weight: 100; }
 
