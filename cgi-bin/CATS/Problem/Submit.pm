@@ -141,16 +141,16 @@ sub problems_submit_std_solution {
     my $sol_count = 0;
 
     my $c = $dbh->prepare(q~
-        SELECT src, de_id, fname
+        SELECT name, src, de_id, fname
         FROM problem_sources
         WHERE problem_id = ? AND (stype = ? OR stype = ?)~);
     $c->execute($pid, $cats::solution, $cats::adv_solution);
 
     my $de_list = CATS::DevEnv->new(CATS::JudgeDB::get_DEs({ active_only => 1 }));
 
-    while (my ($src, $did, $fname) = $c->fetchrow_array) {
+    while (my ($name, $src, $did, $fname) = $c->fetchrow_array) {
         my $rid = CATS::Request::insert($pid, $cid, $uid,
-            [ $de_list->bitmap_by_ids($did) ], { state => determine_state($p) });
+            [ $de_list->bitmap_by_ids($did) ], { state => determine_state($p), tag => $name });
 
         my $s = $dbh->prepare(q~
             INSERT INTO sources(req_id, de_id, src, fname) VALUES (?, ?, ?, ?)~);

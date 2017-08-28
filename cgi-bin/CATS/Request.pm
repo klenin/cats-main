@@ -91,7 +91,7 @@ sub enforce_state {
 }
 
 # Params: problem_id (required), contest_id (required), submit_uid (required), de_bitmap (required),
-#         fields: { state = $cats::st_not_processed, failed_test, testsets, points, judge_id, limits_id, elements_count }
+#   fields: { state = $cats::st_not_processed, failed_test, testsets, points, judge_id, limits_id, elements_count, tag }
 sub insert {
     my ($problem_id, $contest_id, $submit_uid, $de_bitmap, $fields) = @_;
 
