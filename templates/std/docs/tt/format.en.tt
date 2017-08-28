@@ -152,6 +152,10 @@ files with tests, solutions etc.
           Recommended for new problems.</li>
           <li>"partial" -- arguments are similar to testlib.
             Points for test are read from the checker's standard output.</li>
+          <li>"multiple"[% v110 %] -- arguments are similar to testlib. Used for competitive problems.
+            Output file is expected to contain controller log.
+            Standard output is expected to contain a line for each agent.
+          </li>
         </ul>
       </li>
       <li>export[% opt %] [% v14 %] - global identifier.</li>
@@ -301,7 +305,7 @@ files with tests, solutions etc.
       <li>writeLimit[% opt %] [% v19 %] -- write limit [% mem_units %].</li>
     </ul>
   </td>
-  <td>Interactor (see [% tag_ref('Run') %]). Only one iterator per problem is allowed.</td>
+  <td>Interactor or controller (see [% tag_ref('Run') %]). Only one iterator per problem is allowed.</td>
 </tr>
 <tr>
   <td>[% tag_in('Run', 'Problem', v19) %]</td>
@@ -314,6 +318,8 @@ files with tests, solutions etc.
     <ul>
       <li>default -- run a single process of solution,</li>
       <li>interactive -- run solution and interactor (see [% tag_ref('Interactor') %]) simultaneously,
+        exchanging data via standard input/output streams.</li>
+      <li>competitive[% v110 %] -- run controller (see [% tag_ref('Interactor') %]) and several solutions (agents) simultaneously,
         exchanging data via standard input/output streams.</li>
     </ul>
   </td>
