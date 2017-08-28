@@ -12,6 +12,7 @@
 [%- MACRO v17 BLOCK %]<sup><a href="#v17" title="Since version 1.7">1.7</a></sup>[% END -%]
 [%- MACRO v18 BLOCK %]<sup><a href="#v18" title="Since version 1.8">1.8</a></sup>[% END -%]
 [%- MACRO v19 BLOCK %]<sup><a href="#v19" title="Since version 1.9">1.9</a></sup>[% END -%]
+[%- MACRO v110 BLOCK %]<sup><a href="#v110" title="Since version 1.10">1.10</a></sup>[% END -%]
 [%- MACRO tag_in(t1, t2, m1, m2) BLOCK
 %]<code>&lt;<a name="[% t1 %]">[% t1 %]</a>&gt;[% IF t2 != '';
   IF m1 != '' %]</code>[% m1 %]<br/><code>[% ELSE %]<br/>[% END
@@ -19,7 +20,7 @@
 END -%]
 [%- MACRO tag_ref(t) BLOCK %]<code>&lt;<a href="#[% t %]">[% t %]</a>&gt;</code>[% END -%]
 [%- MACRO mem_units BLOCK %](in <a href="#memoryUnits">megabytes or other units</a>)[% END -%]
-<h2>Version 1.9</h2>
+<h2>Version 1.10</h2>
 
 <p><a href="sample.zip">download sample problem package</a></p>
 
@@ -44,8 +45,8 @@ files with tests, solutions etc.
   <td>[% tag_in('Problem', 'CATS') %]</td>
   <td>
     <ul>
-      <li>title - problem title;</li>
-      <li>lang[% opt %] - (natural) language of the problem text;</li>
+      <li>title - problem title in the first language of the <code>lang</code> list;</li>
+      <li>lang[% opt %] - comma-separated list[% v110 %] of (natural) languages of the problem text;</li>
       <li>tlimit - time limit for a single test (in seconds);</li>
       <li>mlimit[% v11 %] - memory limit for a single test [% mem_units %];</li>
       <li>wlimit[% opt %] [% v19 %] - write limit for a single test [% mem_units %], default value is 30;</li>
@@ -622,7 +623,7 @@ logical not, name -- tag name, value -- tag value.
   since('v13', '1.3'); since('v14', '1.4');
   since('v15', '1.5'); since('v16', '1.6');
   since('v17', '1.7'); since('v18', '1.8');
-  since('v19', '1.9');
+  since('v19', '1.9'); since('v110', '1.10');
 %]
 <a name="dv14"></a><p><a href="" onclick="javascript:history.back(-1)"><sup>&minus;1.4</sup></a>
   This feature is deprecated since version 1.4.</p>

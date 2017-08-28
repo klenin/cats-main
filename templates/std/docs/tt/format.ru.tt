@@ -12,6 +12,7 @@
 [%- MACRO v17 BLOCK %]<sup><a href="#v17" title="С версии 1.7">1.7</a></sup>[% END -%]
 [%- MACRO v18 BLOCK %]<sup><a href="#v18" title="С версии 1.8">1.8</a></sup>[% END -%]
 [%- MACRO v19 BLOCK %]<sup><a href="#v19" title="С версии 1.9">1.9</a></sup>[% END -%]
+[%- MACRO v110 BLOCK %]<sup><a href="#v110" title="С версии 1.10">1.10</a></sup>[% END -%]
 [%- MACRO tag_in(t1, t2, m1, m2) BLOCK
 %]<code>&lt;<a name="[% t1 %]">[% t1 %]</a>&gt;[% IF t2 != '';
   IF m1 != '' %]</code>[% m1 %]<br/><code>[% ELSE %]<br/>[% END
@@ -19,7 +20,7 @@
 END -%]
 [%- MACRO tag_ref(t) BLOCK %]<code>&lt;<a href="#[% t %]">[% t %]</a>&gt;</code>[% END -%]
 [%- MACRO mem_units BLOCK %](в <a href="#memoryUnits">мегабайтах или других единицах</a>)[% END -%]
-<h2>Версия 1.9</h2>
+<h2>Версия 1.10</h2>
 
 <p><a href="sample.zip">скачать пример пакета с заданием</a></p>
 <p>Для хранения задачи используется ZIP-файл, в корне которого обязательно
@@ -43,8 +44,8 @@ END -%]
   <td>[% tag_in('Problem', 'CATS') %]</td>
   <td>
     <ul>
-      <li>title - заголовок задачи;</li>
-      <li>lang[% opt %] - язык описания задачи;</li>
+      <li>title - заголовок задачи первом языке в списке <code>lang</code>;</li>
+      <li>lang[% opt %] - спичок разделённых запятыми[% v110 %] (естественных) языков описания задачи;</li>
       <li>tlimit - лимит времени на прохождения одного теста (в секундах);</li>
       <li>mlimit[% v11 %] - лимит памяти на прохождение одного теста [% mem_units %];</li>
       <li>wlimit[% opt %] [% v19 %] - лимит записи на прохождение одного теста [% mem_units %], по умолчанию 30;</li>
