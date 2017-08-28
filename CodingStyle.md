@@ -135,6 +135,7 @@ Some historical code, mostly located in `unused` directory, does not conform to 
 * Subsystem name MAY be a module name, page name, directory name or several names separated by comma plus space.
 * Commit message subject SHOULD be a single English statement.
 * Single-statement commit message MUST NOT end with period.
+* Commit message MUST NOT contain double quotes. Single quotes MAY be used around indentifiers in the message.
 * Commit message MUST NOT be longer than 80 characters.
 * Commit message referencing a GitHub issue SHOULD do it by adding `See #issue` at the end of the subject. Multiple issues MAY be referenced from message body.
 * Commit message auto-closing a GitHub issue MUST do it by adding `Fixes #issue` at the end of the subject.
