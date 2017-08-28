@@ -82,7 +82,7 @@ sub get_run_info {
                 $p = 'X';
             }
             if ($ts->{hide_details} && $contest->{hide_testset_details}) {
-                $row->{result} = $cats::st_ignore_submit;
+                $row->{is_hidden} = 1;
             }
             if (defined $ts->{points} || $ts->{hide_details} && $contest->{hide_testset_details}) {
                 $p = '';
@@ -97,7 +97,7 @@ sub get_run_info {
         }
         $run_details{$last_test} = {
             %$row, points => $p,
-            short_state => $CATS::Verdicts::state_to_name->{$row->{result}},
+            short_state => $row->{is_hidden} ? '' : $CATS::Verdicts::state_to_name->{$row->{result}},
         };
     }
 

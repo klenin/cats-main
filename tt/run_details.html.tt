@@ -98,12 +98,12 @@
     [% END %]
   </tr>
   [% FOREACH rd IN r.run_details %]
-  <tr class="run_details_[% rd.short_state %]" data-ts="[% rd.ts.name %]">
+  <tr class="[% 'run_details_' _ rd.short_state UNLESS rd.is_hidden %]" data-ts="[% rd.ts.name %]">
     <td class="num">[% rd.test_rank %]</td>
     [% IF rd.short_state == 'NT' %]
     <td colspan="[% 1 + (r.show_points ? 1 : 0) + (r.show_test_resources ? 3 : 0) %]">[% capt.verdicts.NT %]</td>
     [% ELSE %]
-    <td>[% href('#', rd.short_state, capt.verdicts.item(rd.short_state)) %]</td>
+    <td title="[% rd.is_hidden ? capt.hidden : capt.verdicts.item(rd.short_state) %]">[% rd.is_hidden ? '?' : rd.short_state %]</td>
     [% IF r.show_points %]<td>[% rd.points %]</td>[% END %]
     [% IF r.show_test_resources %]
       <td>[% rd.time_used %]</td>

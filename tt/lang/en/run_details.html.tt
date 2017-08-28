@@ -19,6 +19,7 @@
     time => 'Time, sec',
     memory => 'Memory',
     disk => 'Disk',
+    hidden => 'Hidden',
     total => 'Total',
   })
 %]
