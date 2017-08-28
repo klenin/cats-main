@@ -266,19 +266,20 @@ sub problem_status_names_enum {
 my $retest_default_ignore = { IS => 1, SV => 1 };
 
 sub problems_retest_frame {
+    my ($p) = @_;
     $is_jury && !$contest->is_practice or return;
     my $lv = CATS::ListView->new(
         name => 'problems_retest', array_name => 'problems', template => 'problems_retest.html.tt');
 
-    defined param('mass_retest') and problems_mass_retest;
-    defined param('recalc_points') and problems_recalc_points;
+    problems_mass_retest($p) if $p->{mass_retest};
+    problems_recalc_points($p) if $p->{recalc_points};
 
     my @cols = (
-        { caption => res_str(602), order_by => '3', width => '30%' }, # name
-        { caption => res_str(639), order_by => '7', width => '10%' }, # in queue
-        { caption => res_str(622), order_by => '6', width => '10%' }, # status
-        { caption => res_str(605), order_by => '5', width => '10%' }, # testset
-        { caption => res_str(604), order_by => '8', width => '10%' }, # ok/wa/tl
+        { caption => res_str(602), order_by => 'code', width => '30%' },
+        { caption => res_str(639), order_by => 'in_queue', width => '10%' },
+        { caption => res_str(622), order_by => 'status', width => '10%' },
+        { caption => res_str(605), order_by => 'testsets', width => '10%' },
+        { caption => res_str(604), order_by => 'accepted_count', width => '10%' },
     );
     $lv->define_columns(url_f('problems_retest'), 0, 0, [ @cols ]);
     define_common_searches($lv);
