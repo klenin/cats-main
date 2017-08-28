@@ -58,7 +58,7 @@ sub main_routes() {
             link_save => $bool, move => $bool,
         ],
         problems_udebug => [ \&CATS::UI::Problems::problems_udebug_frame, ],
-        problems_retest => [ \&CATS::UI::Problems::problems_retest_frame,
+        problems_retest => [ \&CATS::UI::ProblemsRetest::problems_retest_frame,
             mass_retest => $bool, recalc_points => $bool,
         ],
         problem_select_testsets => [

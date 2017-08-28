@@ -83,4 +83,32 @@ sub problems_change_code {
     CATS::StaticPages::invalidate_problem_text(cid => $cid, cpid => $cpid);
 }
 
+sub problem_status_names_enum {
+    my ($lv) = @_;
+    my $psn = CATS::Messages::problem_status_names();
+    my $inverse_psn = {};
+    $inverse_psn->{$psn->{$_}} = $_ for keys %$psn;
+    $lv->define_enums({ status => $inverse_psn });
+    $psn;
+}
+
+sub define_common_searches {
+    my ($lv) = @_;
+
+    $lv->define_db_searches([ map "P.$_", qw(
+        id title contest_id author upload_date lang run_method last_modified_by max_points
+        statement explanation pconstraints input_format output_format formal_input json_data
+        statement_url explanation_url
+    ), @cats::limits_fields ]);
+
+    $lv->define_db_searches({
+        map {
+            join('_', split /\W+/, $cats::source_module_names{$_}) =>
+            "(SELECT COUNT (*) FROM problem_sources PS WHERE PS.problem_id = P.id AND PS.stype = $_)"
+        } keys %cats::source_modules
+    });
+
+    $lv->define_enums({ run_method => CATS::Problem::Utils::run_method_enum() });
+}
+
 1;
