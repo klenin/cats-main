@@ -221,16 +221,14 @@ sub route {
         main_routes->{$function} ||
         api_judge_routes->{$function} ||
         \&CATS::UI::About::about_frame;
-    my $fn = $route;
+    ref $route eq 'ARRAY' or return ($route, {});
+    my $fn = $route->[0];
     my $p = {};
-    if (ref $route eq 'ARRAY') {
-        $fn = shift @$route;
-        while (@$route) {
-            my $name = shift @$route;
-            my $type = shift @$route;
-            my $value = param($name);
-            $p->{$name} = $value if defined $value && (!defined($type) || $value =~ /^$type$/);
-        }
+    for (my $i = 1; $i < @$route; $i += 2) {
+        my $name = $route->[$i];
+        my $type = $route->[$i + 1];
+        my $value = param($name);
+        $p->{$name} = $value if defined $value && (!defined($type) || $value =~ /^$type$/);
     }
 
     ($fn, $p);
