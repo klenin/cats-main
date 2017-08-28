@@ -15,7 +15,7 @@
     show_answer_data => 'Показывать ответ',
     show_output_data => 'Показывать выход',
     test => 'Тест',
-    result => 'Результат',
+    verdict => 'Вердикт',
     time => 'Время, сек',
     memory => 'Память',
     disk => 'Диск',

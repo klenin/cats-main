@@ -76,7 +76,7 @@
   <table id="details[% r.id %]" class="details bordered">
   <tr>
     <th>[% capt.test %]</th>
-    <th>[% capt.result %]</th>
+    <th>[% capt.verdict %]</th>
     [% IF r.show_points %]
       <th>[% capt.points %]</th>
     [% END %]
