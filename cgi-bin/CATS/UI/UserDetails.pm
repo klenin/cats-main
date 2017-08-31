@@ -71,14 +71,15 @@ sub users_edit_frame {
 }
 
 sub user_stats_frame {
+    my ($p) = @_;
     init_template('user_stats.html.tt');
-    my $uid = param('uid') or return;
+    $p->{uid} or return;
     my $envelopes_sql = $is_root ?
         ', (SELECT COUNT(*) FROM reqs R WHERE R.account_id = A.id AND R.received = 0) AS envelopes' : '';
     my $u = $dbh->selectrow_hashref(qq~
         SELECT A.*, last_login AS last_login_date$envelopes_sql
         FROM accounts A WHERE A.id = ?~, { Slice => {} },
-        $uid) or return;
+        $p->{uid}) or return;
     my $hidden_cond = $is_root ? '' :
         'AND C.is_hidden = 0 AND (CA.is_hidden = 0 OR CA.is_hidden IS NULL) AND C.defreeze_date < CURRENT_TIMESTAMP';
     my $contests = $dbh->selectall_arrayref(qq~
@@ -98,32 +99,33 @@ sub user_stats_frame {
         WHERE
             CA.account_id = ? AND C.ctype = 0 $hidden_cond
         ORDER BY start_date DESC~,
-        { Slice => {} }, $uid);
+        { Slice => {} }, $p->{uid});
     my $pr = sub { url_f(
-        'console', uf => $uid, i_value => -1, se => 'user_stats', show_results => 1, search => $_[0], rows => 30
+        'console', uf => $p->{uid}, i_value => -1, se => 'user_stats', show_results => 1, search => $_[0], rows => 30
     ) };
     $u->{sites_count} = $dbh->selectrow_array(q~
         SELECT COUNT(DISTINCT site_id) FROM contest_accounts
         WHERE account_id = ?~, undef,
-        $uid);
+        $p->{uid});
     $u->{sites_org_count} = $dbh->selectrow_array(q~
         SELECT COUNT(DISTINCT site_id) FROM contest_accounts
         WHERE account_id = ? AND is_site_org = 1~, undef,
-        $uid);
+        $p->{uid});
     for (@$contests) {
         $_->{href_send_message} = url_f('send_message_box', caid => $_->{caid}) if $is_root;
         $_->{href_problems} = url_function('problems', sid => $sid, cid => $_->{id});
         $_->{href_submits} = url_function('console', sid => $sid, cid => $_->{id},
-            uf => $uid, i_value => -1, se => 'user_stats', show_results => 1, rows => 30, search => "contest_id=$_->{id}");
+            uf => $p->{uid}, i_value => -1, se => 'user_stats',
+            show_results => 1, rows => 30, search => "contest_id=$_->{id}");
     }
     $t->param(
-        user_submenu('user_stats', $uid),
+        user_submenu('user_stats', $p->{uid}),
         %$u, contests => $contests,
         CATS::IP::linkify_ip($u->{last_ip}),
-        ($is_jury ? (href_edit => url_f('users_edit', uid => $uid)) : ()),
+        ($is_jury ? (href_edit => url_f('users_edit', uid => $p->{uid})) : ()),
         ($user->privs->{edit_sites} ? (
-            href_sites => url_f('sites', search => "has_user($uid)"),
-            href_sites_org => url_f('sites', search => "has_org($uid)"),
+            href_sites => url_f('sites', search => "has_user($p->{uid})"),
+            href_sites_org => url_f('sites', search => "has_org($p->{uid})"),
         ) : ()),
         href_all_problems => $pr->(''),
         href_solved_problems => $pr->('state=OK'),
