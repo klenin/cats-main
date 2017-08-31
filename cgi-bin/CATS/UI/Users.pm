@@ -103,7 +103,7 @@ sub users_frame {
         CATS::User::new_save if $p->{new_save};
         CATS::User::edit_save if $p->{edit_save};
 
-        CATS::User::save_attributes_jury if $p->{save_attributes};
+        CATS::User::save_attributes_jury($p) if $p->{save_attributes};
         CATS::User::set_tag(user_set => [ param('sel') ], tag => $p->{tag_to_set})
             if $p->{set_tag};
 
@@ -122,7 +122,7 @@ sub users_frame {
         }
     }
     elsif ($user->{is_site_org}) {
-        CATS::User::save_attributes_org if $p->{save_attributes};
+        CATS::User::save_attributes_org($p) if $p->{save_attributes};
     }
 
     if ($is_jury || $user->{is_site_org}) {

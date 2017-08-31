@@ -346,6 +346,7 @@ sub send_broadcast {
     $insert_ev_sth->execute($msg_id, undef);
 }
 
+# Params: user_set, tag.
 sub set_tag {
     my %p = @_;
     my $s = $dbh->prepare(q~
@@ -423,8 +424,9 @@ sub save_attributes_finalize {
 }
 
 sub save_attributes_jury {
+    my ($p) = @_;
     my $changed_count = 0;
-    for my $user_id (split(':', param('user_set'))) {
+    for my $user_id (split(':', $p->{user_set})) {
         # Forbid removing is_jury privilege from an admin.
         my ($srole) = $dbh->selectrow_array(q~
             SELECT A.srole FROM accounts A
@@ -440,8 +442,9 @@ sub save_attributes_jury {
 }
 
 sub save_attributes_org {
+    my ($p) = @_;
     my $changed_count = 0;
-    for my $user_id (split(':', param('user_set'))) {
+    for my $user_id (split(':', $p->{user_set})) {
         if (!$is_jury) {
             my ($aid, $site_id) = $dbh->selectrow_array(q~
                 SELECT account_id, site_id FROM contest_accounts CA

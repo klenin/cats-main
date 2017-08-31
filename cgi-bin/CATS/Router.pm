@@ -91,6 +91,7 @@ sub main_routes() {
             set_site => bool, site_id => integer,
             send_message => bool, message_text => str, send_all => bool, send_all_contests => bool,
             delete_user => integer, new_save => bool, edit_save => bool,
+            user_set => qr/^[0-9:]+$/,
         ],
         users_all_settings => [ \&CATS::UI::Users::users_all_settings_frame, ],
         users_import => [ \&CATS::UI::Users::users_import_frame,
