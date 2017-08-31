@@ -104,7 +104,7 @@ sub main_routes() {
             uid => integer,
             diff_time => fixed, diff_units => ident,
             ext_time => fixed, ext_units => ident,
-            is_virtual => ident, save => bool, ],
+            is_virtual => ident, save => bool, finish_now => bool ],
         impersonate => [ \&CATS::UI::Users::impersonate_frame, uid => integer, ],
 
         compilers => \&CATS::UI::Compilers::compilers_frame,

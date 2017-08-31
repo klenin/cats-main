@@ -633,43 +633,16 @@ sub user_ip_frame {
     );
 }
 
-sub user_vdiff_save {
-    my ($p, $u) = @_;
-    $p->{save} or return;
-    CATS::Time::set_diff_time($u, $p, 'diff') or return;
-    CATS::Time::set_diff_time($u, $p, 'ext') or return;
-    $u->{is_virtual} = $p->{is_virtual} ? 1 : 0;
-    $dbh->do(_u $sql->update('contest_accounts',
-        { diff_time => $u->{diff_time}, ext_time => $u->{ext_time}, is_virtual => $u->{is_virtual} },
-        { account_id => $p->{uid}, contest_id => $cid }
-    ));
-    ($u->{contest_start_offset}, $u->{contest_finish_offset}) = $dbh->selectrow_array(qq~
-        SELECT
-            $CATS::Time::contest_start_offset_sql,
-            $CATS::Time::contest_finish_offset_sql
-        FROM contest_accounts CA
-        INNER JOIN contests C ON C.id = CA.contest_id
-        LEFT JOIN contest_sites CS ON CS.site_id = CA.site_id AND CS.contest_id = CA.contest_id
-        WHERE CA.account_id = ? AND CA.contest_id = ?~, undef,
-        $u->{id}, $cid) or return;
-    $dbh->commit;
-    msg($u->{diff_time} ? 1157 : 1158, $u->{team_name});
-    msg($u->{ext_time} ? 1162 : 1163, $u->{team_name});
-}
-
-sub user_vdiff_frame {
+sub user_vdiff_load {
     my ($p) = @_;
-    $is_jury or return;
-    $p->{uid} or return;
-
-    init_template('user_vdiff.html.tt');
-
-    my $u = $dbh->selectrow_hashref(qq~
+    $dbh->selectrow_hashref(qq~
         SELECT A.id, A.team_name, CA.diff_time, CA.ext_time, CA.is_virtual, CA.site_id,
             C.start_date AS contest_start,
             $CATS::Time::contest_start_offset_sql AS contest_start_offset,
+            CAST(CURRENT_TIMESTAMP - $CATS::Time::contest_start_offset_sql AS DOUBLE PRECISION) AS since_start,
             C.finish_date AS contest_finish,
             $CATS::Time::contest_finish_offset_sql AS contest_finish_offset,
+            CAST(CURRENT_TIMESTAMP - $CATS::Time::contest_finish_offset_sql AS DOUBLE PRECISION) AS since_finish,
             CS.diff_time AS site_diff_time, CS.ext_time AS site_ext_time,
             C.start_date + CS.diff_time AS site_contest_start_offset,
             C.finish_date + CS.diff_time + CS.ext_time AS site_contest_finish_offset,
@@ -680,14 +653,55 @@ sub user_vdiff_frame {
         LEFT JOIN contest_sites CS ON CS.site_id = CA.site_id AND CS.contest_id = CA.contest_id
         LEFT JOIN sites S ON S.id = CA.site_id
         WHERE A.id = ? AND CA.contest_id = ?~, { Slice => {} },
-        $p->{uid}, $cid) or return;
-    user_vdiff_save($p, $u);
+        $p->{uid}, $cid);
+}
+
+sub user_vdiff_save {
+    my ($p, $u) = @_;
+    $p->{save} or return;
+    CATS::Time::set_diff_time($u, $p, 'diff') or return;
+    CATS::Time::set_diff_time($u, $p, 'ext') or return;
+    $u->{is_virtual} = $p->{is_virtual} ? 1 : 0;
+    $dbh->do(_u $sql->update('contest_accounts',
+        { diff_time => $u->{diff_time}, ext_time => $u->{ext_time}, is_virtual => $u->{is_virtual} },
+        { account_id => $p->{uid}, contest_id => $cid }
+    ));
+    msg($u->{diff_time} ? 1157 : 1158, $u->{team_name});
+    msg($u->{ext_time} ? 1162 : 1163, $u->{team_name});
+    1;
+}
+
+sub user_vdiff_finish_now {
+    my ($p, $u) = @_;
+    $p->{finish_now} && $u->{since_start} > 0 && $u->{since_finish} < 0 or return;
+    $dbh->do(qq~
+        UPDATE contest_accounts CA
+        SET CA.ext_time = COALESCE(CA.ext_time, 0) + ?
+        WHERE CA.account_id = ? AND CA.contest_id = ?~, undef,
+        $u->{since_finish}, $u->{id}, $cid);
+    msg(1162, $u->{team_name});
+    1;
+}
+
+sub user_vdiff_frame {
+    my ($p) = @_;
+    $is_jury or return;
+    $p->{uid} or return;
+
+    init_template('user_vdiff.html.tt');
+
+    my $u = user_vdiff_load($p) or return;
+    if (user_vdiff_save($p, $u) || user_vdiff_finish_now($p, $u)) {
+        $dbh->commit;
+        $u = user_vdiff_load($p) or return;
+    }
 
     $t->param(
         user_submenu('user_vdiff', $p->{uid}),
         u => $u,
         (map { +"formatted_$_" => CATS::Time::format_diff($u->{$_}, 1) }
-            qw(diff_time site_diff_time ext_time site_ext_time) ),
+            qw(diff_time site_diff_time ext_time site_ext_time since_start since_finish) ),
+        can_finish_now => ($u->{since_start} > 0 && $u->{since_finish} < 0),
         title_suffix => $u->{team_name},
         href_site => url_f('contest_sites_edit', site_id => $u->{site_id}),
     );

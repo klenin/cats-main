@@ -8,14 +8,16 @@
 <tr><td></td><td>[% u.team_name | html %]</td>[% IF u.site_id %]<td>[% href(href_site, u.site_name) %]</td>[% END %]</tr>
 <tr><td>[% capt.diff_time %]</td><td>[% formatted_diff_time %]</td>[% IF u.site_id %]<td>[% formatted_site_diff_time %]</td>[% END %]</tr>
 <tr><td>[% capt.contest_start %]</td><td[% ' colspan="2"' IF u.site_id %]>[% u.contest_start %]</td></tr>
-<tr><td>[% capt.contest_start_offset %]</td><td>[% u.contest_start_offset %]</td>[% IF u.site_id %]<td>[% u.site_contest_start_offset %]</td>[% END %]</tr>
+<tr><td>[% capt.contest_start_offset %]</td><td>[% u.contest_start_offset %] ([% formatted_since_start %])</td>
+  [%- IF u.site_id %]<td>[% u.site_contest_start_offset %]</td>[% END %]</tr>
 <tr><td>[% capt.diff_time_days %]</td><td>[% u.diff_time %]</td>[% IF u.site_id %]<td>[% u.site_diff_time %]</td>[% END %]</tr>
 <tr><td>[% capt.new_diff_time %]</td><td><input type="text" name="diff_time" value="[% u.diff_time %]" />
   [% PROCESS includes/time_units.tti name = 'diff_units' %]
 </td>[% IF u.site_id %]<td></td>[% END %]</tr>
 <tr><td>[% capt.ext_time %]</td><td>[% formatted_ext_time %]</td>[% IF u.site_id %]<td>[% formatted_site_ext_time %]</td>[% END %]</tr>
 <tr><td>[% capt.contest_finish %]</td><td[% ' colspan="2"' IF u.site_id %]>[% u.contest_finish %]</td></tr>
-<tr><td>[% capt.contest_finish_offset %]</td><td>[% u.contest_finish_offset %]</td>[% IF u.site_id %]<td>[% u.site_contest_finish_offset %]</td>[% END %]</tr>
+<tr><td>[% capt.contest_finish_offset %]</td><td>[% u.contest_finish_offset %] ([% formatted_since_finish %])</td>
+  [%- IF u.site_id %]<td>[% u.site_contest_finish_offset %]</td>[% END %]</tr>
 <tr><td>[% capt.ext_time_days %]</td><td>[% u.ext_time %]</td>[% IF u.site_id %]<td>[% u.site_ext_time %]</td>[% END %]</tr>
 <tr><td>[% capt.new_ext_time %]</td><td><input type="text" name="ext_time" value="[% u.ext_time %]" />
   [% PROCESS includes/time_units.tti name = 'ext_units' %]
@@ -24,6 +26,7 @@
 </table>
 <br/>
 <button type="submit" value="1" name="save" class="button">[% capt.save %]</button>
+[% IF can_finish_now %]<button type="submit" value="1" name="finish_now" class="button">[% capt.finish_now %]</button>[% END %]
 </form>
 
 [% PROCESS includes/menu_end.tti %]
