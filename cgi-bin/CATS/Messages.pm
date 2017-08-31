@@ -8,6 +8,7 @@ use Exporter qw(import);
 our @EXPORT_OK = qw(msg res_str);
 
 use Carp qw(croak);
+use File::Spec;
 
 use CATS::Config qw(cats_dir);
 use CATS::Constants;
@@ -18,7 +19,7 @@ my ($resource_strings, $messages);
 
 sub _init_res_str_lang {
     my ($lang) = @_;
-    my $file = cats_dir() . "../tt/lang/$lang/strings";
+    my $file = File::Spec->catfile(cats_dir(), '..', 'tt', 'lang', $lang, 'strings');
 
     my $r = [];
     open my $f, '<', $file or die "Couldn't open resource strings file: '$file'.";
