@@ -176,7 +176,6 @@ sub users_frame {
     my ($p) = @_;
 
     if ($is_jury) {
-        return CATS::User::new_frame if defined url_param('new');
         return CATS::UI::UserDetails::users_edit_frame if defined url_param('edit');
     }
 
@@ -332,7 +331,7 @@ sub users_frame {
 
     if ($is_jury)  {
         $t->param(submenu => [
-            { href => url_f('users', new => 1), item => res_str(541) },
+            { href => url_f('users_new'), item => res_str(541) },
             { href => url_f('users_import'), item => res_str(564) },
             { href => url_f('users_add_participants'), item => res_str(584) },
             ($is_root ?

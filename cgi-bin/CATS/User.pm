@@ -14,7 +14,7 @@ use CATS::DB;
 use CATS::Form qw(validate_integer validate_string_length);
 use CATS::Globals qw($cid $is_jury $is_root $t $uid $user);
 use CATS::Messages qw(msg);
-use CATS::Output qw(init_template url_f);
+use CATS::Output qw(url_f);
 use CATS::Privileges;
 use CATS::Settings;
 use CATS::RankTable;
@@ -87,15 +87,6 @@ sub generate_login {
     $login_num or die;
 
     return "team$login_num";
-}
-
-sub new_frame {
-    init_template('users_new.html.tt');
-    $t->param(
-        login => generate_login,
-        countries => \@CATS::Countries::countries,
-        href_action => url_f('users'),
-    );
 }
 
 sub param_names () {qw(

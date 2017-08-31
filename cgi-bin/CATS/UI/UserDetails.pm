@@ -42,6 +42,16 @@ sub user_submenu {
     (submenu => \@m);
 }
 
+sub users_new_frame {
+    init_template('users_new.html.tt');
+    $is_jury or return;
+    $t->param(
+        login => CATS::User::generate_login,
+        countries => \@CATS::Countries::countries,
+        href_action => url_f('users'),
+    );
+}
+
 sub users_edit_frame {
     init_template('users_edit.html.tt');
 

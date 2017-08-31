@@ -97,6 +97,7 @@ sub main_routes() {
             logins_to_add => str, make_jury => bool, by_login => bool,
             source_cid => integer, from_contest => bool, include_ooc => bool,
         ],
+        users_new => \&CATS::UI::UserDetails::users_new_frame,
         user_stats => \&CATS::UI::UserDetails::user_stats_frame,
         user_settings => [ \&CATS::UI::UserDetails::user_settings_frame, uid => integer, clear => bool, ],
         user_ip => [ \&CATS::UI::UserDetails::user_ip_frame, uid => integer, ],
