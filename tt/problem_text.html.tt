@@ -1,4 +1,5 @@
 [% PROCESS includes/header.tti %]
+[% PROCESS includes/html.tti %]
 [% tex_styles %]
 [% IF mathjax %]
 <script type="text/javascript">
@@ -70,6 +71,8 @@ MathJax.Hub.Register.StartupHook('onLoad', function () {
   div.problem_menu input[type=checkbox] { display: none; }
   div.problem_menu input[type=checkbox] + span:after { content: '\2610'; }
   div.problem_menu input[type=checkbox]:checked + span:after { content: '\2611'; }
+  div.problem_menu li.langs { font-weight: bold; }
+  div.problem_menu li.langs a { font-weight: normal; }
   div.problem_text table.problem_header { width: 100%; }
 </style>
 </head>
@@ -84,6 +87,9 @@ MathJax.Hub.Register.StartupHook('onLoad', function () {
     <li><a class="problem_list_link" href="[% p.href_problem_list %]">[% c.problem_list %]</a></li>
     <li><label><input type="checkbox" class="whitespace"><span></span> [% c.visible_spaces %]</label></li>
     <li><label><input type="checkbox" class="basic_math"><span></span> [% c.basic_math %]</label></li>
+    [% IF problems.size == 1 && p.langs && p.langs.size > 1 -%]
+    <li class="langs">[% FOREACH lang IN p.langs; maybe_href(lang == p.lang ? '' : '#', lang); ' '; END %]</li>
+    [%- END %]
   </ul></div>
   <table class="problem_header">
   [% IF p.author %]<tr><td class="narrow nobr">[% c.author %]:</td><td colspan="4">[% p.author | html %]</td></tr>[% END %]
@@ -177,6 +183,22 @@ $('.basic_math').click(function() {
   else
     apply_mathjax(p);
 });
+
+$('.problem_text div.problem_menu li.langs a').click(function() {
+  var p = document.location.pathname;
+  if (p.substring(p.length - 5) === '.html') {
+    [%# Static page. %]
+    var n = '-pl-' + this.innerText;
+    document.location.pathname =
+      p.indexOf('-pl-') < 0 ? p.replace('.html', n + '.html') : p.replace(/-pl-[a-z]+/, n);
+  }
+  else {
+    var s = document.location.search;
+    document.location.search =
+      s.indexOf('pl=') < 0  ? s + ';pl=' + this.innerText : s.replace(/pl=[a-z]+/, 'pl=' + this.innerText);
+  }
+});
+
 </script>
 [% PROCESS includes/timing.tti %]
 </body>

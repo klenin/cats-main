@@ -227,6 +227,7 @@ sub choose_lang {
 
     my @langs = split ',', $problem->{lang};
     my $lang_tag = $problem->{parsed_tags}->{lang}->[1];
+    $problem->{langs} = $lang_tag ? [] : \@langs;
     if ($p->{pl}) {
         return $p->{pl} if
             $is_jury_in_contest && !$CATS::StaticPages::is_static_page ||
