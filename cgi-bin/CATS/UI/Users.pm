@@ -55,7 +55,7 @@ sub user_submenu {
             { href => url_f('user_settings', uid => $user_id), item => res_str(575), selected => 'user_settings' },
             { href => url_f('user_ip', uid => $user_id), item => res_str(576), selected => 'user_ip' },
         )),
-        (!$is_jury ? () : (
+        (!$is_jury && !$user->{is_site_org} ? () : (
             { href => url_f('user_vdiff', uid => $user_id), item => res_str(580), selected => 'user_vdiff' },
         )),
     );
@@ -426,7 +426,7 @@ sub users_frame {
             ($user->privs->{edit_sites} && $site_id ? (href_site => url_f('sites', edit => $site_id)) : ()),
             ($is_jury && $site_id ?
                 (href_contest_site => url_f('contest_sites_edit', site_id => $site_id)) : ()),
-            ($is_jury ? (href_vdiff => url_f('user_vdiff', uid => $aid)) : ()),
+            ($is_jury || $user->{is_site_org} ? (href_vdiff => url_f('user_vdiff', uid => $aid)) : ()),
 
             motto => $motto,
             id => $caid,
@@ -658,7 +658,7 @@ sub user_vdiff_load {
 
 sub user_vdiff_save {
     my ($p, $u) = @_;
-    $p->{save} or return;
+    $is_jury && $p->{save} or return;
     CATS::Time::set_diff_time($u, $p, 'diff') or return;
     CATS::Time::set_diff_time($u, $p, 'ext') or return;
     $u->{is_virtual} = $p->{is_virtual} ? 1 : 0;
@@ -671,9 +671,15 @@ sub user_vdiff_save {
     1;
 }
 
+sub can_finish_now {
+    my ($u) = @_;
+    $u->{since_start} > 0 && $u->{since_finish} < 0 &&
+        ($is_jury || !$user->{site_id} || $u->{site_id} == $user->{site_id});
+}
+
 sub user_vdiff_finish_now {
     my ($p, $u) = @_;
-    $p->{finish_now} && $u->{since_start} > 0 && $u->{since_finish} < 0 or return;
+    ($is_jury || $user->{is_site_org}) && $p->{finish_now} && can_finish_now($u) or return;
     $dbh->do(qq~
         UPDATE contest_accounts CA
         SET CA.ext_time = COALESCE(CA.ext_time, 0) + ?
@@ -685,7 +691,7 @@ sub user_vdiff_finish_now {
 
 sub user_vdiff_frame {
     my ($p) = @_;
-    $is_jury or return;
+    $is_jury || $user->{is_site_org} or return;
     $p->{uid} or return;
 
     init_template('user_vdiff.html.tt');
@@ -701,7 +707,7 @@ sub user_vdiff_frame {
         u => $u,
         (map { +"formatted_$_" => CATS::Time::format_diff($u->{$_}, 1) }
             qw(diff_time site_diff_time ext_time site_ext_time since_start since_finish) ),
-        can_finish_now => ($u->{since_start} > 0 && $u->{since_finish} < 0),
+        can_finish_now => can_finish_now($u),
         title_suffix => $u->{team_name},
         href_site => url_f('contest_sites_edit', site_id => $u->{site_id}),
     );
