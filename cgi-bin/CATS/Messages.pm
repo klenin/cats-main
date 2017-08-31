@@ -49,6 +49,11 @@ sub msg {
     undef;
 }
 
+sub msg_debug {
+    push @$messages, sprintf(@_);
+    undef;
+}
+
 sub get { $messages }
 
 sub problem_status_names() {+{
