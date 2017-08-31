@@ -7,13 +7,14 @@ use encoding 'utf8', STDIN => undef;
 
 use Data::Dumper;
 use DBI::Profile;
+use FindBin;
 use SQL::Abstract; # Actually used by CATS::DB, bit is optional there.
 use Storable ();
 
-our $cats_lib_dir;
-our $cats_problem_lib_dir;
+my $cats_lib_dir;
+my $cats_problem_lib_dir;
 BEGIN {
-    $cats_lib_dir = $ENV{CATS_DIR} || '.';
+    $cats_lib_dir = $ENV{CATS_DIR} || $FindBin::Bin;
     $cats_lib_dir =~ s/\/$//;
     $cats_problem_lib_dir = "$cats_lib_dir/cats-problem";
     $Data::Dumper::Terse = 1;
