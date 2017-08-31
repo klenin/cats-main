@@ -1,6 +1,6 @@
 [%- PROCESS includes/html.tti -%]
 [%- PROCESS "lang/$lang/contest_params.tti" -%]
-<table cellpadding="0">
+<table>
   <tr><td>[% capt.title %]:</td><td><input type="text" size="50" name="title" value="[% title | html %]" class="bordered" [% UNLESS can_edit %]readonly="readonly"[% END %]/></td></tr>
   <tr><td>[% capt.short_descr %]:</td><td><textarea rows"2" cols="50" name="short_descr" class="bordered" [% UNLESS can_edit %]readonly="readonly"[% END %]/>[% short_descr | html %]</textarea></td></tr>
   <tr><td>[% capt.start_date %]:</td><td><input type="text" name="start_date" value="[% start_date | html %]" class="bordered" [% UNLESS can_edit %]readonly="readonly"[% END %]/></td></tr>

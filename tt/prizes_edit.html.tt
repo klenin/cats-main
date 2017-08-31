@@ -1,11 +1,11 @@
 [% PROCESS includes/menu_begin.tti %]
 
 <form method="post" enctype="multipart/form-data" action="[% href_action %]">
-<table cellpadding="0">
+<table>
 <tr><td>[% capt.name %]</td><td><input type="text" name="name" value="[% name %]" class="bordered" size="60"/></td></tr>
 <tr><td>[% capt.contests %]</td><td><input type="text" name="clist" value="[% clist %]" class="bordered" size="60" /></td></tr>
 </table>
-<table cellpadding="0" class="bordered">
+<table class="bordered">
 <tr><th>[% capt.place %]</th><th>[% capt.prize %]</th></tr>
 [% FOREACH p IN prizes %]
 <tr>

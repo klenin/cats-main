@@ -2,7 +2,7 @@
 [% PROCESS includes/html.tti %]
 
 <form method="post" enctype="multipart/form-data" action="[% href_action %]">
-<table cellpadding="0">
+<table>
 <tr><td>[% capt.code %]</td><td><input type="text" name="code" value="[% code | html %]" class="bordered"></td></tr>
 <tr><td>[% capt.description %]</td><td><input type="text" name="description" value="[% description | html %]" size="50" class="bordered"></td></tr>
 <tr><td>[% capt.file_ext %]</td><td><input type="text" name="file_ext" value="[% file_ext | html %]" class="bordered"></td></tr>
