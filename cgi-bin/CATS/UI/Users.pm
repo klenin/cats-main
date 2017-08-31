@@ -21,22 +21,12 @@ use CATS::User;
 use CATS::Utils qw(url_function date_to_iso);
 use CATS::Web qw(param redirect url_param);
 
-my $hash_password;
-BEGIN {
-    $hash_password = eval { require Authen::Passphrase::BlowfishCrypt; } ?
-        sub {
-            Authen::Passphrase::BlowfishCrypt->new(
-                cost => 8, salt_random => 1, passphrase => $_[0])->as_rfc2307;
-        } :
-        sub { $_[0] }
-}
-
 # Admin adds new user to current contest
 sub users_new_save {
     $is_jury or return;
     my $u = CATS::User->new->parse_params;
     $u->validate_params(validate_password => 1) or return;
-    $u->{password1} = $hash_password->($u->{password1});
+    $u->{password1} = CATS::User::hash_password($u->{password1});
     $u->insert($cid) or return;
 }
 
@@ -81,7 +71,7 @@ sub users_edit_frame {
 sub prepare_password {
     my ($u, $set_password) = @_;
     if ($set_password) {
-        $u->{passwd} = $hash_password->($u->{password1});
+        $u->{passwd} = CATS::User::hash_password($u->{password1});
         msg(1085, $u->{team_name});
     }
     delete @$u{qw(password1 password2)};
@@ -162,7 +152,7 @@ sub users_import_frame {
         my $u = CATS::User->new;
         @$u{qw(team_name login password1 city)} = split "\t", $line;
         my $r = eval {
-            $u->{password1} = $hash_password->($u->{password1});
+            $u->{password1} = CATS::User::hash_password($u->{password1});
             $u->insert($contest->{id}, is_ooc => 0, commit => 0); 'ok'
         } || $@;
         push @report, "$u->{team_name} -- $r";

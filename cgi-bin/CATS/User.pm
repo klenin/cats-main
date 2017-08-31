@@ -20,6 +20,18 @@ use CATS::Settings;
 use CATS::RankTable;
 use CATS::Web qw(param);
 
+my $hash_password;
+BEGIN {
+    $hash_password = eval { require Authen::Passphrase::BlowfishCrypt; } ?
+        sub {
+            Authen::Passphrase::BlowfishCrypt->new(
+                cost => 8, salt_random => 1, passphrase => $_[0])->as_rfc2307;
+        } :
+        sub { $_[0] }
+}
+
+sub hash_password { $hash_password->(@_); }
+
 sub new {
     my ($class) = @_;
     $class = ref $class if ref $class;
@@ -354,7 +366,6 @@ sub save_attributes_org {
     }
     save_attributes_finalize($changed_count);
 }
-
 
 sub copy_from_contest {
     my ($source_cid, $include_ooc) = @_;
