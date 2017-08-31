@@ -163,21 +163,21 @@ sub user_ip_frame {
     my ($p) = @_;
     $is_root or return;
     init_template('user_ip.html.tt');
-    my $uid = $p->{uid} or return;
+    $p->{uid} or return;
     my $u = $dbh->selectrow_hashref(q~
         SELECT A.* FROM accounts A WHERE A.id = ?~, { Slice => {} },
-        $uid) or return;
+        $p->{uid}) or return;
     my $events = $dbh->selectall_arrayref(q~
         SELECT MAX(E.ts) AS ts, E.ip FROM events E WHERE E.account_id = ?
         GROUP BY E.ip ORDER BY 1 DESC~,
-        { Slice => {} }, $uid);
+        { Slice => {} }, $p->{uid});
     unshift @$events, { ts => $u->{last_login}, ip => $u->{last_ip } };
     for my $e (@$events) {
         my %linkified = CATS::IP::linkify_ip($e->{ip});
         $e->{$_} = $linkified{$_} for keys %linkified;
     }
     $t->param(
-        user_submenu('user_ip', $uid),
+        user_submenu('user_ip', $p->{uid}),
         %$u,
         events => $events,
         title_suffix => $u->{team_name},
