@@ -16,7 +16,7 @@ use CATS::Globals qw($cid $is_jury $is_root $t $uid $user);
 use CATS::Messages qw(msg);
 use CATS::Output qw(url_f);
 use CATS::Privileges;
-use CATS::Settings;
+use CATS::Settings qw($settings);
 use CATS::RankTable;
 use CATS::Web qw(param);
 
@@ -175,6 +175,102 @@ sub insert {
 
     $dbh->commit if $p{commit} // 1;
     1;
+}
+
+sub prepare_password {
+    my ($u, $set_password) = @_;
+    if ($set_password) {
+        $u->{passwd} = hash_password($u->{password1});
+        msg(1085, $u->{team_name});
+    }
+    delete @$u{qw(password1 password2)};
+}
+
+sub update_settings_item {
+    my ($h, $item, $v) = @_;
+    $h or die;
+
+    my @path = split /\./, $item->{name};
+    my $k = pop @path;
+    $h = $h->{$_} //= {} for @path;
+
+    $v = 1 if $v && $v eq 'on';
+    defined $v && $v ne '' && (!defined($item->{default}) || $v != $item->{default}) ?
+        $h->{$k} = $v : delete $h->{$k};
+}
+
+my @editable_settings = (
+    { name => 'hide_envelopes', default => 0 },
+    { name => 'display_input', default => 0 },
+    {
+        name => 'console.autoupdate', default => 30,
+        validate => sub { $_[0] eq '' || $_[0] =~ /^\d+$/ && $_[0] >= 20 ? 1 : msg(1046, res_str(809), 20) }
+    },
+);
+
+sub update_settings {
+    my ($settings_root) = @_;
+    for (@editable_settings) {
+        return if $_->{validate} && !$_->{validate}->(param("settings.$_->{name}"));
+    }
+    for (@editable_settings) {
+        update_settings_item($settings_root, $_, param("settings.$_->{name}"));
+    }
+    1;
+}
+
+# Admin adds new user to current contest
+sub new_save {
+    $is_jury or return;
+    my $u = CATS::User->new->parse_params;
+    $u->validate_params(validate_password => 1) or return;
+    $u->{password1} = hash_password($u->{password1});
+    $u->insert($cid) or return;
+}
+
+sub edit_save {
+    my $u = CATS::User->new->parse_params;
+    if (!$is_root) {
+        delete $u->{restrict_ips};
+    }
+    # Simple $is_jury check is insufficient since jury member
+    # can add any team to his contest.
+    my $set_password = param('set_password') && $is_root;
+    my $id = param('id');
+    my $old_user = $id ? CATS::User->new->load($id, [ qw(settings srole) ]) : undef;
+    # Only admins may edit other admins.
+    return if !$is_root && CATS::Privileges::unpack_privs($old_user->{srole})->{is_root};
+
+    $u->validate_params(
+        validate_password => $set_password, id => $id,
+        # Need at least $is_jury in all official contests where $u participated.
+        allow_official_rename => $is_root)
+        or return;
+    $old_user->{settings} ||= {};
+    update_settings($old_user->{settings}) or return;
+    prepare_password($u, $set_password);
+
+    $u->{locked} = param('locked') ? 1 : 0 if $is_root;
+
+    my $new_settings = Storable::freeze($old_user->{settings});
+    $u->{settings} = $new_settings if $new_settings ne ($old_user->{frozen_settings} // '');
+
+    $dbh->do(_u $sql->update('accounts', { %$u }, { id => $id }));
+    $dbh->commit;
+}
+
+sub profile_save {
+    my ($p) = @_;
+    my $u = CATS::User->new->parse_params;
+    if (!$is_root) {
+        delete $u->{restrict_ips};
+    }
+
+    $u->validate_params(validate_password => $p->{set_password}, id => $uid) or return;
+    update_settings($settings) or return;
+    prepare_password($u, $p->{set_password});
+    $dbh->do(_u $sql->update('accounts', { %$u }, { id => $uid }));
+    $dbh->commit;
 }
 
 sub trim { s/^\s+|\s+$//; $_; }

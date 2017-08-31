@@ -17,7 +17,7 @@ use CATS::Settings qw($settings);
 use CATS::Time;
 use CATS::User;
 use CATS::Utils qw(url_function);
-use CATS::Web qw(param redirect url_param);
+use CATS::Web qw(redirect);
 
 sub user_submenu {
     my ($selected, $user_id) = @_;
@@ -131,6 +131,13 @@ sub user_stats_frame {
         href_solved_problems => $pr->('state=OK'),
         title_suffix => $u->{team_name},
     );
+}
+
+sub display_settings {
+    my ($s) = @_;
+    $t->param(settings => $s);
+    $is_root or return;
+    $t->param(settings_dump => CATS::Settings::as_dump($s));
 }
 
 sub user_settings_frame {
@@ -279,27 +286,6 @@ sub registration_frame {
     $t->param(successfully_registred => 1);
 }
 
-sub profile_save {
-    my $u = CATS::User->new->parse_params;
-    if (!$is_root) {
-        delete $u->{restrict_ips};
-    }
-    my $set_password = param('set_password');
-
-    $u->validate_params(validate_password => $set_password, id => $uid) or return;
-    update_settings($settings) or return;
-    prepare_password($u, $set_password);
-    $dbh->do(_u $sql->update('accounts', { %$u }, { id => $uid }));
-    $dbh->commit;
-}
-
-sub display_settings {
-    my ($s) = @_;
-    $t->param(settings => $s);
-    $is_root or return;
-    $t->param(settings_dump => CATS::Settings::as_dump($s));
-}
-
 sub profile_frame {
     my ($p) = @_;
     init_template(auto_ext('user_profile', $p->{json}));
@@ -308,7 +294,7 @@ sub profile_frame {
         $settings = {};
         msg(1029, $user->{name});
     }
-    profile_save if defined $p->{edit_save};
+    CATS::User::profile_save($p) if $p->{edit_save};
 
     my $u = CATS::User->new->load($uid) or return;
     my ($is_some_jury) = $is_jury || $dbh->selectrow_array(q~
