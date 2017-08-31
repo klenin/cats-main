@@ -90,6 +90,7 @@ Some historical code, mostly located in `unused` directory, does not conform to 
 * Packages MUST be less than 1000 lines long.
 * File MAY contain several packages.
 * Package names SHOULD correspond to file names according to standard Perl convention.
+* Inner scope identifiers MUST NOT shadow outer scope ones.
 
 ## Strictness and warnings
 * All modules MUST start from `use strict` and `use warnings` statements.
