@@ -2,9 +2,8 @@
 [%- PROCESS includes/html.tti -%]
 
 <p>[% capt.name %]: [% team_name %]</p>
-<p>[% capt.settings %]
-[% IF settings_dump %]<div><pre>[% settings_dump %]</pre></div>[% END %]
-</p>
+<p>[% capt.settings %]</p>
+[% IF settings_dump %]<div><pre>[% settings_dump | html %]</pre></div>[% END %]
 
 <form method="post" enctype="multipart/form-data">
 <button type="submit" name="clear" value="1" class="button">[% capt.clear %]</button>

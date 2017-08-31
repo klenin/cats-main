@@ -4,7 +4,7 @@
 
 <form method="post" enctype="multipart/form-data">
 <table class="internal_borders padded">
-<tr><th></th><th>[% capt.participant %]</td>[% IF u.site_id %]<th>[% capt.site %]</th>[% END %]</tr>
+<tr><th></th><th>[% capt.participant %]</th>[% IF u.site_id %]<th>[% capt.site %]</th>[% END %]</tr>
 <tr><td></td><td>[% u.team_name | html %]</td>[% IF u.site_id %]<td>[% href(href_site, u.site_name) %]</td>[% END %]</tr>
 <tr><td>[% capt.diff_time %]</td><td>[% formatted_diff_time %]</td>[% IF u.site_id %]<td>[% formatted_site_diff_time %]</td>[% END %]</tr>
 <tr><td>[% capt.contest_start %]</td><td[% ' colspan="2"' IF u.site_id %]>[% u.contest_start %]</td></tr>

@@ -1,12 +1,12 @@
 [% PROCESS includes/menu_begin.tti %]
 [%- PROCESS includes/html.tti -%]
 
-<table cellpadding="0">
+<table>
 <tr><td>[% capt.name %]:</td><td>[% maybe_href(href_edit, team_name) %]</td></tr>
 [% IF user.privs.is_root %]
 <tr><td>[% capt.last_login %]:</td><td>[% last_login_date %]</td></tr>
 <tr><td>[% capt.last_ip %]:</td><td>
-  [<a href="[% href_whois %]" alt="[% last_ip %]" title="[% last_ip %]">[% last_ip_short %]</a>]
+  [<a href="[% href_whois %]" title="[% last_ip %]">[% last_ip_short %]</a>]
 </td></tr>
 <tr><td>[% capt.problems %]:</td><td>[<a href="[% href_all_problems %]">[% capt.all %]</a>] [<a href="[% href_solved_problems %]">[% capt.solved %]</a>]</td></tr>
 <tr><td>[% capt.envelopes %]:</td><td>[% envelopes %]</td></tr>
