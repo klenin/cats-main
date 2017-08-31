@@ -24,7 +24,7 @@ sub user_submenu {
     my @m = (
         (
             $is_jury ?
-                ({ href => url_f('users', edit => $user_id), item => res_str(573), selected => 'edit' }) :
+                ({ href => url_f('users_edit', uid => $user_id), item => res_str(573), selected => 'edit' }) :
             $uid ?
                 ({ href => url_f('profile'), item => res_str(518), selected => 'profile' }) :
                 ()
@@ -53,18 +53,21 @@ sub users_new_frame {
 }
 
 sub users_edit_frame {
-    init_template('users_edit.html.tt');
+    my ($p) = @_;
 
-    my $id = url_param('edit') or return;
-    my $u = CATS::User->new->load($id, [ qw(locked settings srole) ]) or return;
+    init_template('users_edit.html.tt');
+    $is_jury or return;
+
+    $p->{uid} or return;
+    my $u = CATS::User->new->load($p->{uid}, [ qw(locked settings srole) ]) or return;
     $t->param(
-        user_submenu('edit', $id),
+        user_submenu('edit', $p->{uid}),
         title_suffix => $u->{team_name},
         %$u, privs => CATS::Privileges::unpack_privs($u->{srole}),
-        id => $id,
+        id => $p->{uid},
         countries => \@CATS::Countries::countries,
         href_action => url_f('users'),
-        href_impersonate => url_f('impersonate', uid => $id));
+        href_impersonate => url_f('impersonate', uid => $p->{uid}));
 }
 
 sub user_stats_frame {
@@ -117,7 +120,7 @@ sub user_stats_frame {
         user_submenu('user_stats', $uid),
         %$u, contests => $contests,
         CATS::IP::linkify_ip($u->{last_ip}),
-        ($is_jury ? (href_edit => url_f('users', edit => $uid)) : ()),
+        ($is_jury ? (href_edit => url_f('users_edit', uid => $uid)) : ()),
         ($user->privs->{edit_sites} ? (
             href_sites => url_f('sites', search => "has_user($uid)"),
             href_sites_org => url_f('sites', search => "has_org($uid)"),

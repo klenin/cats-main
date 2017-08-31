@@ -16,7 +16,6 @@ use CATS::Output qw(auto_ext init_template url_f);
 use CATS::Privileges;
 use CATS::Time;
 use CATS::User;
-use CATS::UI::UserDetails;
 use CATS::Utils qw(url_function date_to_iso);
 use CATS::Web qw(param redirect url_param);
 
@@ -175,10 +174,6 @@ sub users_add_participants_frame {
 sub users_frame {
     my ($p) = @_;
 
-    if ($is_jury) {
-        return CATS::UI::UserDetails::users_edit_frame if defined url_param('edit');
-    }
-
     my $lv = CATS::ListView->new(
         name => 'users' . ($contest->is_practice ? '_practice' : ''),
         array_name => 'users',
@@ -296,7 +291,7 @@ sub users_frame {
         my ($country, $flag) = CATS::Countries::get_flag($country_abbr);
         return (
             href_delete => url_f('users', delete => $caid),
-            href_edit => url_f('users', edit => $aid),
+            href_edit => url_f('users_edit', uid => $aid),
             href_stats => url_f('user_stats', uid => $aid),
             ($user->privs->{edit_sites} && $site_id ? (href_site => url_f('sites', edit => $site_id)) : ()),
             ($is_jury && $site_id ?
@@ -385,7 +380,7 @@ sub users_all_settings_frame {
         my $full = CATS::Settings::as_dump($all_settings, 0);
         my $short = length($full) < 120 ? $full : substr($full, 0, 120) . '...';
         (
-            href_edit => url_f('users', edit => $row->{id}),
+            href_edit => url_f('users_edit', uid => $row->{id}),
             href_settings => url_f('user_settings', uid => $row->{id}),
             %$row,
             settings_short => $short,
