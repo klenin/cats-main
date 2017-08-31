@@ -3,19 +3,21 @@ package CATS::Template;
 use strict;
 use warnings;
 
+use File::Spec;
 use Template;
+
 use CATS::Template::Filter;
 
 my $tt;
 
 sub new {
     my ($class, $file_name, $cats_dir) = @_;
-    my $templates_path = "${cats_dir}../tt";
+    my $templates_path = File::Spec->catdir($cats_dir, '..', 'tt');
 
     $tt ||= Template->new({
         INCLUDE_PATH => $templates_path,
         COMPILE_EXT => '.ttc',
-        COMPILE_DIR => "$templates_path/cache/",
+        COMPILE_DIR => File::Spec->catdir($templates_path, 'cache'),
         ENCODING => 'utf8',
         PLUGINS => {
             Javascript => 'CATS::Template::Plugin::Javascript'
