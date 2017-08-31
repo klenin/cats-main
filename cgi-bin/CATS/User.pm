@@ -257,6 +257,7 @@ sub edit_save {
 
     $dbh->do(_u $sql->update('accounts', { %$u }, { id => $id }));
     $dbh->commit;
+    msg(1059, Encode::decode_utf8($u->{team_name}));
 }
 
 sub profile_save {
