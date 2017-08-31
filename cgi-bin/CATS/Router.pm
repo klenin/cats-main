@@ -90,6 +90,7 @@ sub main_routes() {
             set_tag => bool, tag_to_set => str,
             set_site => bool, site_id => integer,
             send_message => bool, message_text => str, send_all => bool, send_all_contests => bool,
+            delete_user => integer,
         ],
         users_all_settings => [ \&CATS::UI::Users::users_all_settings_frame, ],
         users_import => [ \&CATS::UI::Users::users_import_frame,

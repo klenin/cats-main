@@ -40,7 +40,8 @@ sub users_import_frame {
 }
 
 sub users_delete {
-    my $caid = url_param('delete');
+    my ($p) = @_;
+    my $caid = $p->{delete_user} or return;
     my ($aid, $srole, $name) = $dbh->selectrow_array(q~
         SELECT A.id, A.srole, A.team_name FROM accounts A
             INNER JOIN contest_accounts CA ON A.id = CA.account_id
@@ -98,7 +99,7 @@ sub users_frame {
     $t->param(title_suffix => res_str(526));
 
     if ($is_jury) {
-        users_delete if defined url_param('delete');
+        users_delete($p);
         CATS::User::new_save if defined param('new_save');
         CATS::User::edit_save if defined param('edit_save');
 
@@ -207,7 +208,7 @@ sub users_frame {
             or return ();
         my ($country, $flag) = CATS::Countries::get_flag($country_abbr);
         return (
-            href_delete => url_f('users', delete => $caid),
+            href_delete => url_f('users', delete_user => $caid),
             href_edit => url_f('users_edit', uid => $aid),
             href_stats => url_f('user_stats', uid => $aid),
             ($user->privs->{edit_sites} && $site_id ? (href_site => url_f('sites', edit => $site_id)) : ()),
