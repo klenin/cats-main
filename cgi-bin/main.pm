@@ -9,7 +9,6 @@ use Data::Dumper;
 use DBI::Profile;
 use FindBin;
 use SQL::Abstract; # Actually used by CATS::DB, bit is optional there.
-use Storable ();
 
 my $cats_lib_dir;
 my $cats_problem_lib_dir;
@@ -25,18 +24,16 @@ use lib $cats_lib_dir;
 use lib $cats_problem_lib_dir;
 
 use CATS::DB;
-use CATS::Config;
 use CATS::Globals qw($t);
 use CATS::Init;
 use CATS::MainMenu;
-use CATS::Messages;
 use CATS::Output;
 use CATS::Proxy;
 use CATS::Router;
 use CATS::Settings;
 use CATS::StaticPages;
 use CATS::Time;
-use CATS::Web qw(has_error get_return_code init_request param redirect url_param);
+use CATS::Web qw(has_error get_return_code init_request param redirect);
 
 sub accept_request {
     my $output_file = '';
