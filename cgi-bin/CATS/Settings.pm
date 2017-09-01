@@ -34,6 +34,8 @@ sub init {
     $settings->{lang} = $lang if $lang && grep $_ eq $lang, @cats::langs;
 }
 
+sub init_test { $settings = { lang => 'en' } };
+
 sub lang { $settings->{lang} || 'ru' }
 
 sub as_cookie {
