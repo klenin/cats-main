@@ -25,7 +25,7 @@ sub user_submenu {
         (
             $is_jury ?
                 ({ href => url_f('users_edit', uid => $user_id), item => res_str(573), selected => 'edit' }) :
-            $uid ?
+            $uid && $uid == $user_id ?
                 ({ href => url_f('profile'), item => res_str(518), selected => 'profile' }) :
                 ()
         ),
