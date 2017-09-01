@@ -13,7 +13,6 @@ use File::Spec;
 use CATS::Config qw(cats_dir);
 use CATS::Constants;
 use CATS::Settings;
-use CATS::Web qw(param);
 
 my ($resource_strings, $messages);
 

@@ -15,7 +15,7 @@ use Storable qw();
 use CATS::Constants;
 use CATS::DB;
 use CATS::Globals qw($uid);
-use CATS::Web qw(param cookie);
+use if !$ENV{TRAVIS}, 'CATS::Web' => qw(param cookie);
 
 our $settings;
 
