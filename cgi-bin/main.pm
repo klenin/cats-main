@@ -54,7 +54,7 @@ sub accept_request {
 
     defined $t or return;
     CATS::MainMenu::generate;
-    CATS::Time::mark_finish;
+    CATS::Time::mark_finish unless param('notime');
     CATS::Output::generate($output_file);
 }
 
