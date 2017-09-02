@@ -22,7 +22,7 @@ sub ident() { qr/^[a-zA-Z_]+$/ }
 my ($main_routes, $api_judge_routes);
 
 BEGIN {
-    for my $name (qw(array_of required)) {
+    for my $name (qw(array_of clist_of required)) {
         no strict 'refs';
         # Prototype to allow acting as a unary function.
         *$name = sub($) {
@@ -233,6 +233,8 @@ my @default_route = (\&CATS::UI::About::about_frame, {});
 
 sub parse_uri { CATS::Web::get_uri =~ m~/cats/(|main.pl)$~ }
 
+sub check_type { !defined $_[1] || $_[0] =~ $_[1] }
+
 sub route {
     my $function = url_param('f') || '';
     my $route =
@@ -248,23 +250,31 @@ sub route {
 
         if (ref $type ne 'HASH') {
             my $value = param($name);
-            $p->{$name} = $value if defined $value && (!defined($type) || $value =~ $type);
+            $p->{$name} = $value if defined $value && check_type($value, $type);
             next;
         }
 
         if ($type->{array_of}) {
-            my @values = defined $type->{type} ? grep /$type->{type}/, param($name) : param($name);
+            my @values = grep check_type($_, $type->{type}), param($name);
             return @default_route if !@values && $type->{required};
             $p->{$name} = \@values;
             next;
         }
 
         my $value = param($name);
+        if ($type->{clist_of}) {
+            my @values = grep check_type($_, $type->{type}), split ',', $value // '';
+            return @default_route if !@values && $type->{required};
+            $p->{$name} = \@values;
+            next;
+        }
+
         if (!defined $value) {
             return @default_route if $type->{required};
             next;
         }
-        if (!defined $type->{type} || $value =~ $type->{type}) {
+
+        if (check_type($value, $type->{type})) {
             $p->{$name} = $value;
         }
         elsif ($type->{required}) {
