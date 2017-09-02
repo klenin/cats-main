@@ -16,7 +16,7 @@ use CATS::Output qw(auto_ext init_template url_f);
 use CATS::Privileges;
 use CATS::Time;
 use CATS::User;
-use CATS::Web qw(param redirect url_param);
+use CATS::Web qw(param redirect);
 
 sub users_import_frame {
     my ($p) = @_;
@@ -104,8 +104,7 @@ sub users_frame {
         CATS::User::edit_save if $p->{edit_save};
 
         CATS::User::save_attributes_jury($p) if $p->{save_attributes};
-        CATS::User::set_tag(user_set => [ param('sel') ], tag => $p->{tag_to_set})
-            if $p->{set_tag};
+        CATS::User::set_tag(user_set => $p->{sel}, tag => $p->{tag_to_set}) if $p->{set_tag};
 
         if ($p->{send_message} && ($p->{message_text} // '') ne '') {
             my $contest_id = $is_root && $p->{send_all_contests} ? undef : $cid;
@@ -115,7 +114,7 @@ sub users_frame {
             }
             else {
                 my $count = CATS::User::send_message(
-                    user_set => [ param('sel') ], message => $p->{message_text}, contest_id => $contest_id);
+                    user_set => $p->{sel}, message => $p->{message_text}, contest_id => $contest_id);
                 msg(1057, $count);
             }
             $dbh->commit;
@@ -126,7 +125,7 @@ sub users_frame {
     }
 
     if ($is_jury || $user->{is_site_org}) {
-        CATS::User::set_site(user_set => [ param('sel') ], site_id => $p->{site_id}) if $p->{set_site};
+        CATS::User::set_site(user_set => $p->{sel}, site_id => $p->{site_id}) if $p->{set_site};
         # Consider site_org without site_id as 'all sites organizer'.
         my ($site_cond, @site_param) = $is_jury || !$user->{site_id} ? ('') : (' AND S.id = ?', $user->{site_id});
         $t->param(sites => $dbh->selectall_arrayref(qq~
