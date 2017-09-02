@@ -4,6 +4,7 @@
 
 <span id="messages_update" style="display: none">[% FOREACH m IN messages %][% m | html %]<br>[% END %]</span>
 <table class="bordered console highlight">
+[%- colspan = user.is_jury ? 5 : 3 -%]
 [% FOREACH c IN console %]
 <tr>
 [% IF c.is_submit_result %]
@@ -16,7 +17,6 @@
     <td class="name">
         [% IF user.is_jury %]
         [% h = c.href_send_message_box ? "javascript:send_message('$c.href_send_message_box')" : ''; maybe_href(h, c.team_name) %]
-        [<a href="[% c.href_whois %]" title="[% c.last_ip %]">[% c.last_ip_short %]</a>]
         [% ELSE; c.team_name | html; END %]
     </td>
     <td class="verdict run_details_[% c.short_state %]"><table><tr>
@@ -28,7 +28,10 @@
         [%- "$c.code: " IF c.code -%]
         [%- maybe_href(c.href_source, c.problem_title); " [$c.message_text]" IF user.is_jury && c.message_text -%]
     </td>
-    <td>[% IF user.is_jury; i = DEs.item(c.de) %]<a href="#" title="[% i.code %]">[% i.description %]</a>[% END %]</td>
+    [% IF user.is_jury %]
+    <td>[% i = DEs.item(c.de) %]<a href="#" title="[% i.code %]">[% i.description %]</a></td>
+    <td>[<a href="[% c.href_whois %]" title="[% c.last_ip %]">[% c.last_ip_short %]</a>]</td>
+    [% END %]
 [% ELSIF c.is_question %]
     <td>[% c.time %]</td>
     <td class="name">[
@@ -38,7 +41,7 @@
         [%~ ELSE; c.team_name | html; END %]
         &gt; [% capt.jury %]]
     </td>
-    <td colspan="4">
+    <td colspan="[% colspan %]">
         <i>[% c.question_text | html %]</i> - 
         [% IF c.clarified %]<span class="jury_message">[% c.answer_text | html %]</span>[% END %]
         [% IF c.href_answer_box %]
@@ -53,7 +56,7 @@
     <td class="name">
         [[% capt.jury %] &gt; [% c.team_name | html %]]
     </td>
-    <td colspan="4">
+    <td colspan="[% colspan %]">
         <span class="jury_message">[% c.message_text | html %]</span>
         [% IF c.href_delete_message %]<a href="[% c.href_delete_message %]">[[% capt.delete %]]</a>[% END %]
     </td>
@@ -72,7 +75,7 @@
         <b>[% capt.contest_dates.item(c.contest_date_type) %]
         [% c.is_official ? capt.official_contest : capt.contest %]</b>
     </td>
-    <td colspan="4">
+    <td colspan="[% colspan %]">
         <b><a href="[% c.href_problems %]">[% c.problem_title | html %]</a></b>
     </td>
 [% END %]
@@ -81,6 +84,7 @@
 </table>
 [% PROCESS includes/pages.tti id="pages_bottom" %]
 [% PROCESS includes/timing.tti %]
+<br/>
 <script>
 [% FOREACH e IN envelopes %]
 send_message('[% e.href_envelope %]');
