@@ -19,6 +19,7 @@ use Exporter qw(import);
 our @EXPORT_OK = qw(
     get_contest_info
     get_contest_tests
+    get_log_dump
     get_req_details
     get_sources_info
     get_test_data
@@ -267,9 +268,10 @@ sub sources_info_param {
     my $set_data;
     $set_data = sub {
         for my $si (@{$_[0]}) {
-            $si->{style_classes} = {
-                map { $_ => $si->{"lr_$_"} ? 'req_overridden_limits' : $si->{"lcp_$_"} ? 'cp_overridden_limits' : undef } @cats::limits_fields
-            };
+            $si->{style_classes} = { map {
+                $_ => $si->{"lr_$_"} ? 'req_overridden_limits' :
+                $si->{"lcp_$_"} ? 'cp_overridden_limits' : undef
+            } @cats::limits_fields };
             $si->{req_overidden_limits} = {
                 map { $_ => $si->{"lr_$_"} ? 1 : 0 } @cats::limits_fields
             };
@@ -333,6 +335,21 @@ sub source_links {
     $t->param(source_encodings => source_encodings($se));
 
     source_links($_) for @{$si->{elements}};
+}
+
+sub get_log_dump {
+    my ($rid, $compile_error) = @_;
+    my ($dump, $length) = $dbh->selectrow_array(qq~
+        SELECT SUBSTRING(dump FROM 1 FOR 500000), OCTET_LENGTH(dump)
+        FROM log_dumps WHERE req_id = ?~, undef,
+        $rid) or return ();
+    $dump = Encode::decode_utf8($dump);
+    ($dump) = $dump =~ m/
+        \Q$cats::log_section_start_prefix$cats::log_section_compile\E
+       (.*)
+        \Q$cats::log_section_end_prefix$cats::log_section_compile\E
+        /sx if $compile_error;
+    return (judge_log_dump => $dump, judge_log_length => $length);
 }
 
 1;

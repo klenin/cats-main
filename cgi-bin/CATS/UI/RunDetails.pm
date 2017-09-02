@@ -22,6 +22,7 @@ use CATS::Request;
 use CATS::ReqDetails qw(
     get_contest_info
     get_contest_tests
+    get_log_dump
     get_req_details
     get_sources_info
     get_test_data
@@ -171,20 +172,6 @@ sub get_run_info {
         has_visualizer => @$visualizers > 0,
         has_output => $req->{save_output_prefix},
     };
-}
-
-sub get_log_dump {
-    my ($rid, $compile_error) = @_;
-    my ($dump, $length) = $dbh->selectrow_array(qq~
-        SELECT SUBSTRING(dump FROM 1 FOR 500000), OCTET_LENGTH(dump) FROM log_dumps WHERE req_id = ?~, undef,
-        $rid) or return ();
-    $dump = Encode::decode_utf8($dump);
-    ($dump) = $dump =~ m/
-        \Q$cats::log_section_start_prefix$cats::log_section_compile\E
-       (.*)
-        \Q$cats::log_section_end_prefix$cats::log_section_compile\E
-        /sx if $compile_error;
-    return (judge_log_dump => $dump, judge_log_length => $length);
 }
 
 sub run_details_frame {
