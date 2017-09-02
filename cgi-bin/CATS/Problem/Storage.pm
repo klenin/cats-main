@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use Carp;
+use Encode qw();
 
 use CATS::Config qw(cats_dir);
 use CATS::Constants;
@@ -102,8 +103,9 @@ sub add_history {
 sub fail_loading {
     my ($self, $repo, $problem, $replace, $err, $revision) = @_;
     eval { $replace ? $repo->reset($revision)->checkout : $repo->delete; };
-    $self->note("Import failed: $err");
-    $self->note("Cleaning of repository failed: $@") if $@;
+    my $clear_err = $@;
+    $self->note(Encode::decode_utf8("Import failed: $err"));
+    $self->note(Encode::decode_utf8("Cleaning of repository failed: $clear_err")) if $clear_err;
     return (-1, undef, $problem);
 }
 
