@@ -274,3 +274,4 @@
 1164 "Changed extended time for site '%s'."
 1165 "Removed extended time offset for site '%s'."
 1166 "Some results were omitted, try more specific query."
+1167 "Profile fields git author's name and git author's e-mail are required."

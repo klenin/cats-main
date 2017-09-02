@@ -113,6 +113,8 @@ sub fail_loading {
 sub load_problem {
     my ($self, $source, $cid, $pid, $replace, $remote_url, $message, $is_amend) = @_;
 
+    $user->{git_author_name} && $user->{git_author_email} or return (-1, msg(1167));
+
     $self->{parser} = CATS::Problem::Parser->new(
         source => $source,
         import_source => CATS::Problem::ImportSource::DB->new,
@@ -371,12 +373,12 @@ sub insert_problem_content {
         )
     }
 
-    for(@{$problem->{generators}}) {
+    for (@{$problem->{generators}}) {
         $self->insert_problem_source(
             source_object => $_, source_type => $cats::generator, pid => $problem->{id}, type_name => 'Generator');
     }
 
-    for(@{$problem->{solutions}}) {
+    for (@{$problem->{solutions}}) {
         $self->insert_problem_source(
             source_object => $_, type_name => 'Solution', pid => $problem->{id},
             source_type => $_->{checkup} ? $cats::adv_solution : $cats::solution);
