@@ -3,13 +3,14 @@ package CATS::Router;
 use strict;
 use warnings;
 
+use FindBin;
 use File::Spec;
 
 use CATS::ApiJudge;
 use CATS::Web qw(url_param param);
 
 BEGIN {
-    require $_ for glob File::Spec->catfile($ENV{CATS_DIR} || '.', 'CATS', 'UI', '*.pm');
+    require $_ for glob File::Spec->catfile($ENV{CATS_DIR} || $FindBin::Bin, 'CATS', 'UI', '*.pm');
 }
 
 sub bool() { qr/^1$/ }
