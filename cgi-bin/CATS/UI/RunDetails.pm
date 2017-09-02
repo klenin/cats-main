@@ -159,6 +159,11 @@ sub get_run_info {
         $row;
     };
     $req->{points} //= $total_points;
+    if ($contest->{show_points} && $contest->{points}) {
+        $req->{needs_commit} = $dbh->do(q~
+            UPDATE reqs SET points = ? WHERE id = ? AND points IS DISTINCT FROM ?~, undef,
+            $req->{points}, $req->{req_id}, $req->{points});
+    }
 
     return {
         %$contest,
@@ -182,13 +187,18 @@ sub run_details_frame {
     my @runs;
     my $contest_cache = {};
 
+    my $needs_commit;
     for (@$sources_info) {
         source_links($_);
+        if ($_->{state} == $cats::st_compilation_error) {
+            push @runs, { get_log_dump($_->{req_id}, 1) };
+            next;
+        }
         my $c = get_contest_tests(get_contest_info($_, $contest_cache), $_->{problem_id});
-        push @runs,
-            $_->{state} == $cats::st_compilation_error ?
-            { get_log_dump($_->{req_id}, 1) } : get_run_info($c, $_);
+        push @runs, get_run_info($c, $_);
+        $needs_commit ||= $_->{needs_commit};
     }
+    $dbh->commit if $needs_commit;
     sources_info_param($sources_info);
     $t->param(runs => \@runs,
         display_input => $settings->{display_input},
