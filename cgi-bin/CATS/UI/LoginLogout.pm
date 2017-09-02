@@ -11,7 +11,7 @@ use CATS::Output qw(auto_ext init_template url_f);
 use CATS::Redirect;
 use CATS::User;
 use CATS::Utils qw(url_function);
-use CATS::Web qw(param redirect url_param);
+use CATS::Web qw(redirect);
 
 my $check_password;
 BEGIN {
@@ -28,14 +28,13 @@ sub split_ips { map { /(\S+)/ ? $1 : () } split ',', $_[0] }
 
 sub login_frame {
     my ($p) = @_;
-    my $json = param('json');
-    init_template(auto_ext('login', $json));
+    init_template(auto_ext('login', $p->{json}));
     $t->param(href_login => url_function('login', redir => $p->{redir}));
     msg(1004) if $p->{logout};
 
     my $login = $p->{login};
     if (!$login) {
-        $t->param(message => 'No login') if $json;
+        $t->param(message => 'No login') if $p->{json};
         return;
     }
     $t->param(login => Encode::decode_utf8($login));
@@ -53,7 +52,6 @@ sub login_frame {
         0 < grep $allowed_ips{$_}, split_ips($last_ip) or return msg(1039);
     }
 
-    my $cid = url_param('cid');
     for (1..20) {
         $sid = CATS::User::make_sid;
 
@@ -64,8 +62,8 @@ sub login_frame {
         ) or next;
         $dbh->commit;
 
-        if ($json) {
-            $contest->load($cid, [ 'id' ]);
+        if ($p->{json}) {
+            $contest->load($p->{cid}, [ 'id' ]);
             $t->param(sid => $sid, cid => $contest->{id});
             return;
         }
@@ -74,13 +72,14 @@ sub login_frame {
         my $f = $params{f} || 'contests';
         delete $params{f};
         $params{sid} = $sid;
-        $params{cid} ||= $cid;
+        $params{cid} ||= $p->{cid};
         return redirect(url_function($f, %params));
     }
     die 'Can not generate sid';
 }
 
 sub logout_frame {
+    my ($p) = @_;
     $cid = '';
     $sid = '';
     if ($uid) {
@@ -89,7 +88,7 @@ sub logout_frame {
             $uid);
         $dbh->commit;
     }
-    if (param('json')) {
+    if ($p->{json}) {
         init_template(auto_ext('logout'));
         0;
     }

@@ -37,7 +37,7 @@ BEGIN {
 BEGIN {
 $main_routes = {
     login => [ \&CATS::UI::LoginLogout::login_frame,
-        logout => bool, login => str, passwd => str, redir => str, ],
+        logout => bool, login => str, passwd => str, redir => str, cid => integer, ],
     logout => \&CATS::UI::LoginLogout::logout_frame,
     registration => [ \&CATS::UI::UserDetails::registration_frame, register => bool, ],
     profile => [ \&CATS::UI::UserDetails::profile_frame,
