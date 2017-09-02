@@ -16,7 +16,6 @@ use CATS::Output qw(auto_ext init_template url_f);
 use CATS::Privileges;
 use CATS::Time;
 use CATS::User;
-use CATS::Web qw(param);
 
 sub users_import_frame {
     my ($p) = @_;
@@ -158,7 +157,7 @@ sub users_frame {
 
     $lv->define_columns(url_f('users'), $is_jury ? 3 : 2, 1, \@cols);
 
-    return if !$is_jury && param('json') && $contest->is_practice;
+    return if !$is_jury && $p->{json} && $contest->is_practice;
 
     my @fields = qw(
         A.id A.country A.motto A.login A.team_name A.city
