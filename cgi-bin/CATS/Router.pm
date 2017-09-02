@@ -22,7 +22,7 @@ sub ident() { qr/^[a-zA-Z_]+$/ }
 my ($main_routes, $api_judge_routes);
 
 BEGIN {
-    for my $name (qw(required)) {
+    for my $name (qw(array_of required)) {
         no strict 'refs';
         # Prototype to allow acting as a unary function.
         *$name = sub($) {
@@ -245,21 +245,30 @@ sub route {
     for (my $i = 1; $i < @$route; $i += 2) {
         my $name = $route->[$i];
         my $type = $route->[$i + 1];
-        my $value = param($name);
-        if (ref $type eq 'HASH') {
-            if (!defined $value) {
-                return @default_route if $type->{required};
-                next;
-            }
-            if (!defined $type->{type} || $value =~ $type->{type}) {
-                $p->{$name} = $value;
-            }
-            elsif ($type->{required}) {
-                return @default_route;
-            }
-        }
-        else {
+
+        if (ref $type ne 'HASH') {
+            my $value = param($name);
             $p->{$name} = $value if defined $value && (!defined($type) || $value =~ $type);
+            next;
+        }
+
+        if ($type->{array_of}) {
+            my @values = defined $type->{type} ? grep /$type->{type}/, param($name) : param($name);
+            return @default_route if !@values && $type->{required};
+            $p->{$name} = \@values;
+            next;
+        }
+
+        my $value = param($name);
+        if (!defined $value) {
+            return @default_route if $type->{required};
+            next;
+        }
+        if (!defined $type->{type} || $value =~ $type->{type}) {
+            $p->{$name} = $value;
+        }
+        elsif ($type->{required}) {
+            return @default_route;
         }
     }
 
