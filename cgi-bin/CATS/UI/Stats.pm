@@ -12,7 +12,6 @@ use CATS::Messages qw(res_str);
 use CATS::Output qw(init_template url_f);
 use CATS::Problem::Utils;
 use CATS::Verdicts;
-use CATS::Web qw(param);
 
 sub greedy_cliques {
     my (@equiv_tests) = @_;
@@ -40,12 +39,12 @@ sub greedy_cliques {
 }
 
 sub compare_tests_frame {
+    my ($p) = @_;
     init_template('compare_tests.html.tt');
     $is_jury or return;
-    my ($pid) = param('pid') or return;
     my ($pt) = $dbh->selectrow_array(q~
         SELECT title FROM problems WHERE id = ?~, undef,
-        $pid);
+        $p->{pid});
     $pt or return;
     $t->param(problem_title => $pt);
 
@@ -61,7 +60,7 @@ sub compare_tests_frame {
         WHERE
             r.problem_id = ? AND r.contest_id = ? AND ca.is_jury = 0
         GROUP BY rd.test_rank~, 'test_rank', { Slice => {} },
-        $pid, $cid) or return;
+        $p->{pid}, $cid) or return;
 
     my $c = $dbh->selectall_arrayref(qq~
         SELECT COUNT(*) AS cnt, rd1.test_rank AS r1, rd2.test_rank AS r2
@@ -76,7 +75,7 @@ sub compare_tests_frame {
                 rd2.result <> $cats::st_accepted AND
                 r.problem_id = ? AND r.contest_id = ? AND ca.is_jury = 0
             GROUP BY rd1.test_rank, rd2.test_rank~, { Slice => {} },
-        $pid, $cid);
+        $p->{pid}, $cid);
 
     my $h = {};
     $h->{$_->{r1}}->{$_->{r2}} = $_->{cnt} for @$c;
@@ -87,7 +86,7 @@ sub compare_tests_frame {
             {
                 data => [ map {{ n => ($hr->{$_} || 0) }} 1..$size ],
                 %{$totals->{$_} || {}},
-                href_test_diff => url_f('test_diff', pid => $pid, test => $_),
+                href_test_diff => url_f('test_diff', pid => $p->{pid}, test => $_),
             },
         } 1..$size
     ];
@@ -112,7 +111,7 @@ sub compare_tests_frame {
         simple_tests => \@simple_tests,
         hard_tests => \@hard_tests,
     );
-    CATS::Problem::Utils::problem_submenu('compare_tests', $pid);
+    CATS::Problem::Utils::problem_submenu('compare_tests', $p->{pid});
 }
 
 sub preprocess_source {

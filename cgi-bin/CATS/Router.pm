@@ -168,7 +168,7 @@ $main_routes = {
     ],
 
     test_diff => [ \&CATS::UI::Stats::test_diff_frame, pid => integer, test => integer, ],
-    compare_tests => \&CATS::UI::Stats::compare_tests_frame,
+    compare_tests => [ \&CATS::UI::Stats::compare_tests_frame, pid => required integer, ],
     rank_table_content => \&CATS::UI::RankTable::rank_table_content_frame,
     rank_table => \&CATS::UI::RankTable::rank_table_frame,
     rank_problem_details => \&CATS::UI::RankTable::rank_problem_details,
