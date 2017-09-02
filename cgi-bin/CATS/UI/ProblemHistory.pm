@@ -132,8 +132,7 @@ sub problem_history_raw_frame {
 sub problem_history_edit_frame {
     my ($p) = @_;
     $is_root or return;
-    my $hash_base = url_param('hb');
-    my $file = url_param('file');
+    my $hash_base = $p->{hb};
 
     my ($status, $title, $repo_name) = $dbh->selectrow_array(q~
         SELECT CP.status, P.title, P.repo FROM contest_problems CP
@@ -142,44 +141,42 @@ sub problem_history_edit_frame {
         $cid, $p->{pid});
     defined $status or return redirect url_f('contests');
 
-    $hash_base && $file &&
-        !CATS::Problem::Storage::get_remote_url($repo_name) &&
+    !CATS::Problem::Storage::get_remote_url($repo_name) &&
         $hash_base eq CATS::Problem::Storage::get_latest_master_sha($p->{pid})
         or return redirect url_f('problem_history', pid => $p->{pid});
     init_template('problem_history_edit.html.tt');
 
-    my $se = param('src_enc');
-    if (defined param('save') && $se) {
-        my $message = param('message');
-        my $content = param('source');
+    if ($p->{save} && $p->{src_enc}) {
+        my $content = $p->{source};
+        my $enc = encoding_param('enc');
         my CATS::Problem::Storage $ps = CATS::Problem::Storage->new;
-        Encode::from_to($content, encoding_param('enc'), $se);
+        Encode::from_to($content, $enc, $p->{src_enc});
         my ($error, $latest_sha) = $ps->change_file(
-            $cid, $p->{pid}, $file, $content, $message, $p->{is_amend} || 0);
+            $cid, $p->{pid}, $p->{file}, $content, $p->{message}, $p->{is_amend} || 0);
 
         unless ($error) {
             $dbh->commit;
             CATS::StaticPages::invalidate_problem_text(pid => $p->{pid});
-            return problem_commitdiff($p->{pid}, $title, $latest_sha, $se, $ps->encoded_import_log());
+            return problem_commitdiff($p->{pid}, $title, $latest_sha, $p->{src_enc}, $ps->encoded_import_log);
         }
 
         $t->param(
-            message => $message,
-            content => Encode::decode(encoding_param('enc'), param('source')),
+            message => $p->{message},
+            content => Encode::decode($enc, $p->{source}),
             problem_import_log => $ps->encoded_import_log,
         );
     }
 
     my $blob = CATS::Problem::Storage::show_blob(
-        $p->{pid}, $hash_base, $file, $se || \&detect_encoding_by_xml_header);
+        $p->{pid}, $hash_base, $p->{file}, $p->{src_enc} || \&detect_encoding_by_xml_header);
 
     set_submenu_for_tree_frame($p->{pid}, $hash_base);
     set_history_paths_urls($p->{pid}, $blob->{paths});
     $t->param(
-        file => $file,
+        file => $p->{file},
         blob => $blob,
         problem_title => $title,
-        title_suffix => "$file",
+        title_suffix => $p->{file},
         src_enc => $blob->{encoding},
         source_encodings => source_encodings($blob->{encoding}),
         last_commit => CATS::Problem::Storage::get_log($p->{pid}, $hash_base, 1)->[0],

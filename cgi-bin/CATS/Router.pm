@@ -96,12 +96,15 @@ $main_routes = {
         link_to => bool, move_to => bool, move_from => bool,
         code => qr/[A-Z1-9]/,
     ],
+
     problem_history => [ \&CATS::UI::ProblemHistory::problem_history_frame,
         a => ident, pid => integer, pull => bool, replace => bool,
         is_amend => bool, allow_rename => bool, ],
-
     problem_history_edit => [ \&CATS::UI::ProblemHistory::problem_history_edit_frame,
-        pid => required integer, is_amend => bool ],
+        pid => required integer, hb => required sha, file => required str,
+        save => bool, src_enc => str, message => str, source => undef,
+        is_amend => bool,
+    ],
 
     users => [
         \&CATS::UI::Users::users_frame,
