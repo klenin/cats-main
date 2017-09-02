@@ -3,6 +3,8 @@ package CATS::UI::ProblemHistory;
 use strict;
 use warnings;
 
+use Encode qw();
+
 use CATS::DB;
 use CATS::Globals qw($cid $is_jury $is_root $t);
 use CATS::ListView;

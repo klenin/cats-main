@@ -30,10 +30,7 @@ sub clear {
     undef $self->{$_} for keys %CATS::Problem::FIELDS;
 }
 
-sub encoded_import_log {
-    my ($self) = @_;
-    return $self->{import_log};
-}
+sub encoded_import_log { $_[0]->{import_log} }
 
 sub get_remote_url {
     defined $_[0] && $_[0] !~ /^\d+$/ ? $_[0] : undef;
