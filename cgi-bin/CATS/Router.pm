@@ -100,6 +100,9 @@ $main_routes = {
         a => ident, pid => integer, pull => bool, replace => bool,
         is_amend => bool, allow_rename => bool, ],
 
+    problem_history_edit => [ \&CATS::UI::ProblemHistory::problem_history_edit_frame,
+        pid => required integer, is_amend => bool ],
+
     users => [
         \&CATS::UI::Users::users_frame,
         save_attributes => bool,

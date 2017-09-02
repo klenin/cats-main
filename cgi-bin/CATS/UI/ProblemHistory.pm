@@ -78,7 +78,7 @@ sub problem_history_tree_frame {
             if $_->{type} eq 'blob' || $_->{type} eq 'tree';
         if ($_->{type} eq 'blob') {
             $_->{href_raw} = url_f('problem_history', a => 'raw', file => $_->{name}, pid => $pid, hb => $hash_base);
-            $_->{href_edit} = url_f('problem_history', a => 'edit', file => $_->{name}, pid => $pid, hb => $hash_base)
+            $_->{href_edit} = url_f('problem_history_edit', file => $_->{name}, pid => $pid, hb => $hash_base)
                 if is_allow_editing($tree, $hash_base)
         }
     }
@@ -106,8 +106,8 @@ sub problem_history_blob_frame {
         $pid, $hash_base, $file, param('src_enc') || \&detect_encoding_by_xml_header);
     set_history_paths_urls($pid, $blob->{paths});
     my @items = is_allow_editing($blob, $hash_base) ?
-        { href => url_f('problem_history',
-            a => 'edit', file => $file, hb => $hash_base, pid => $pid), item => res_str(572) } : ();
+        { href => url_f('problem_history_edit',
+            file => $file, hb => $hash_base, pid => $pid), item => res_str(572) } : ();
     set_submenu_for_tree_frame($pid, $hash_base, @items);
 
     $t->param(
@@ -130,43 +130,51 @@ sub problem_history_raw_frame {
 }
 
 sub problem_history_edit_frame {
+    my ($p) = @_;
     $is_root or return;
-    my ($pid, $title, $repo_name) = @_;
     my $hash_base = url_param('hb');
     my $file = url_param('file');
 
+    my ($status, $title, $repo_name) = $dbh->selectrow_array(q~
+        SELECT CP.status, P.title, P.repo FROM contest_problems CP
+        INNER JOIN problems P ON CP.problem_id = P.id
+        WHERE CP.contest_id = ? AND P.id = ?~, undef,
+        $cid, $p->{pid});
+    defined $status or return redirect url_f('contests');
+
     $hash_base && $file &&
         !CATS::Problem::Storage::get_remote_url($repo_name) &&
-        $hash_base eq CATS::Problem::Storage::get_latest_master_sha($pid)
-        or return redirect url_f('problem_history', pid => $pid);
+        $hash_base eq CATS::Problem::Storage::get_latest_master_sha($p->{pid})
+        or return redirect url_f('problem_history', pid => $p->{pid});
     init_template('problem_history_edit.html.tt');
 
     my $se = param('src_enc');
     if (defined param('save') && $se) {
         my $message = param('message');
         my $content = param('source');
-        my CATS::Problem::Storage $p = CATS::Problem::Storage->new;
+        my CATS::Problem::Storage $ps = CATS::Problem::Storage->new;
         Encode::from_to($content, encoding_param('enc'), $se);
-        my ($error, $latest_sha) = $p->change_file($cid, $pid, $file, $content, $message, param('is_amend') || 0);
+        my ($error, $latest_sha) = $ps->change_file(
+            $cid, $p->{pid}, $file, $content, $message, $p->{is_amend} || 0);
 
         unless ($error) {
             $dbh->commit;
-            CATS::StaticPages::invalidate_problem_text(pid => $pid);
-            return problem_commitdiff($pid, $title, $latest_sha, $se, $p->encoded_import_log());
+            CATS::StaticPages::invalidate_problem_text(pid => $p->{pid});
+            return problem_commitdiff($p->{pid}, $title, $latest_sha, $se, $ps->encoded_import_log());
         }
 
         $t->param(
             message => $message,
             content => Encode::decode(encoding_param('enc'), param('source')),
-            problem_import_log => $p->encoded_import_log(),
+            problem_import_log => $ps->encoded_import_log,
         );
     }
 
     my $blob = CATS::Problem::Storage::show_blob(
-        $pid, $hash_base, $file, $se || \&detect_encoding_by_xml_header);
+        $p->{pid}, $hash_base, $file, $se || \&detect_encoding_by_xml_header);
 
-    set_submenu_for_tree_frame($pid, $hash_base);
-    set_history_paths_urls($pid, $blob->{paths});
+    set_submenu_for_tree_frame($p->{pid}, $hash_base);
+    set_history_paths_urls($p->{pid}, $blob->{paths});
     $t->param(
         file => $file,
         blob => $blob,
@@ -174,16 +182,15 @@ sub problem_history_edit_frame {
         title_suffix => "$file",
         src_enc => $blob->{encoding},
         source_encodings => source_encodings($blob->{encoding}),
-        last_commit => CATS::Problem::Storage::get_log($pid, $hash_base, 1)->[0],
+        last_commit => CATS::Problem::Storage::get_log($p->{pid}, $hash_base, 1)->[0],
     );
 }
 
 sub problem_history_frame {
     my ($p) = @_;
-    $is_jury && $p->{pid} or return redirect url_f('contests');
+    $is_jury or return redirect url_f('contests');
 
     my %actions = (
-        edit => \&problem_history_edit_frame,
         blob => \&problem_history_blob_frame,
         raw => \&problem_history_raw_frame,
         tree => \&problem_history_tree_frame,
@@ -192,10 +199,9 @@ sub problem_history_frame {
 
     my ($status, $title, $repo_name) = $dbh->selectrow_array(q~
         SELECT CP.status, P.title, P.repo FROM contest_problems CP
-            INNER JOIN problems P ON CP.problem_id = P.id
-            WHERE CP.contest_id = ? AND P.id = ?~, undef,
-        $cid, $p->{pid});
-    defined $status or return redirect url_f('contests');
+        INNER JOIN problems P ON CP.problem_id = P.id
+        WHERE CP.contest_id = ? AND P.id = ?~, undef,
+        $cid, $p->{pid}) or return redirect url_f('contests');
 
     if ($p->{a} && exists $actions{$p->{a}}) {
         return $actions{$p->{a}}->($p->{pid}, $title, $repo_name);
