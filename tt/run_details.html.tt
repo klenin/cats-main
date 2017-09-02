@@ -3,6 +3,7 @@
 <style>
   .details a { color: inherit; width: 100%; display: block; }
   .details .test_data a { font-family: "Courier New", Courier, monospace; }
+  .req > tbody > tr > td { vertical-align: top; }
 </style>
 </head>
 <body>
@@ -37,7 +38,7 @@
 </form>
 </div>
 [% END %]
-<table><tr>
+<table class="req"><tr>
 [% FOREACH r IN runs %]
 <td>
 [% IF r.judge_log_dump %]
