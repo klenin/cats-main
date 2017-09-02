@@ -36,12 +36,11 @@
   <td>[% c.time %]</td>
   <td class="name">[
     [%~ IF user.is_jury ~%]
-    <a href="javascript:send_message('[% c.href_send_message_box %]')">[% c.team_name | html %]</a>:
-    [% IF c.last_ip %]<a href="[% c.href_whois %]" title="[% c.last_ip %]">[% c.last_ip_short %]</a>[% ELSE; c.last_ip_short; END ~%]
+    <a href="javascript:send_message('[% c.href_send_message_box %]')">[% c.team_name | html %]</a>
     [%~ ELSE; c.team_name | html; END %]
     &gt; [% capt.jury %]]
   </td>
-  <td colspan="[% colspan %]">
+  <td colspan="[% user.is_jury ? colspan - 1 : colspan %]">
     <i>[% c.question_text | html %]</i> - 
     [% IF c.clarified %]<span class="jury_message">[% c.answer_text | html %]</span>[% END %]
     [% IF c.href_answer_box %]
@@ -51,6 +50,9 @@
       <a href="[% c.href_delete_question %]">[[% capt.delete %]]</a>
     [% END %]
   </td>
+  [% IF user.is_jury %]
+  <td>[[% IF c.last_ip %]<a href="[% c.href_whois %]" title="[% c.last_ip %]">[% c.last_ip_short %]</a>[% ELSE; c.last_ip_short; END ~%]]</td>
+  [% END %]
 [% ELSIF c.is_message %]
   <td>[% c.time %]</td>
   <td class="name">
