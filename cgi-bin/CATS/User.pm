@@ -13,7 +13,7 @@ use CATS::Countries;
 use CATS::DB;
 use CATS::Form qw(validate_integer validate_string_length);
 use CATS::Globals qw($cid $is_jury $is_root $t $uid $user);
-use CATS::Messages qw(msg);
+use CATS::Messages qw(msg res_str);
 use CATS::Output qw(url_f);
 use CATS::Privileges;
 use CATS::Settings qw($settings);
@@ -426,7 +426,7 @@ sub save_attributes_finalize {
 sub save_attributes_jury {
     my ($p) = @_;
     my $changed_count = 0;
-    for my $user_id (split(':', $p->{user_set})) {
+    for my $user_id (@{$p->{user_set}}) {
         # Forbid removing is_jury privilege from an admin.
         my ($srole) = $dbh->selectrow_array(q~
             SELECT A.srole FROM accounts A
@@ -444,7 +444,7 @@ sub save_attributes_jury {
 sub save_attributes_org {
     my ($p) = @_;
     my $changed_count = 0;
-    for my $user_id (split(':', $p->{user_set})) {
+    for my $user_id (@{$p->{user_set}}) {
         if (!$is_jury) {
             my ($aid, $site_id) = $dbh->selectrow_array(q~
                 SELECT account_id, site_id FROM contest_accounts CA
