@@ -175,11 +175,10 @@ sub get_run_info {
 }
 
 sub run_details_frame {
+    my ($p) = @_;
     init_template('run_details.html.tt');
 
-    my $rid = url_param('rid') or return;
-    my $rids = [ grep /^\d+$/, split /,/, $rid ];
-    my $sources_info = get_sources_info(request_id => $rids, partial_checker => 1) or return;
+    my $sources_info = get_sources_info(request_id => $p->{rid}, partial_checker => 1) or return;
     my @runs;
     my $contest_cache = {};
 

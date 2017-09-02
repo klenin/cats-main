@@ -145,7 +145,7 @@ $main_routes = {
     view_source => [ \&CATS::UI::RunDetails::view_source_frame,
         rid => integer, replace => bool, de_id => integer, syntax => ident, ],
     download_source => \&CATS::UI::RunDetails::download_source_frame,
-    run_details => \&CATS::UI::RunDetails::run_details_frame,
+    run_details => [ \&CATS::UI::RunDetails::run_details_frame, rid => required clist_of integer, ],
     visualize_test => [ \&CATS::UI::RunDetails::visualize_test_frame,
         rid => integer, vid => integer, test_rank => integer, ],
     diff_runs => [ \&CATS::UI::RunDetails::diff_runs_frame, r1 => integer, r2 => integer, ],
