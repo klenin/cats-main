@@ -77,7 +77,7 @@ sub save_uploaded_file { ensure_upload($_[0])->tempname }
 sub get_return_code { $return_code }
 
 sub redirect {
-    my ($location,) = @_;
+    my ($location) = @_;
     headers(Location => $location);
     $return_code = Apache2::Const::REDIRECT;
     -1;

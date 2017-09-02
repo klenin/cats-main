@@ -16,7 +16,7 @@ use CATS::Output qw(auto_ext init_template url_f);
 use CATS::Privileges;
 use CATS::Time;
 use CATS::User;
-use CATS::Web qw(param redirect);
+use CATS::Web qw(param);
 
 sub users_import_frame {
     my ($p) = @_;
