@@ -229,21 +229,23 @@ $api_judge_routes = {
 
 }
 
-my @default_route = (\&CATS::UI::About::about_frame, {});
-
 sub parse_uri { CATS::Web::get_uri =~ m~/cats/(|main.pl)$~ }
 
 sub check_type { !defined $_[1] || $_[0] =~ $_[1] }
 
 sub route {
+    my $p = {};
+    my @default_route = (\&CATS::UI::About::about_frame, $p);
+    $p->{json} = 1 if param('json');
+
     my $function = url_param('f') || '';
     my $route =
         $main_routes->{$function} ||
         $api_judge_routes->{$function}
         or return @default_route;
-    ref $route eq 'ARRAY' or return ($route, {});
+    ref $route eq 'ARRAY' or return ($route, $p);
     my $fn = $route->[0];
-    my $p = {};
+
     for (my $i = 1; $i < @$route; $i += 2) {
         my $name = $route->[$i];
         my $type = $route->[$i + 1];
