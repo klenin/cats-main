@@ -134,8 +134,8 @@ sub problem_history_edit_frame {
     $is_root or return;
     my $hash_base = $p->{hb};
 
-    my ($status, $title, $repo_name) = $dbh->selectrow_array(q~
-        SELECT CP.status, P.title, P.repo FROM contest_problems CP
+    my ($status, $title, $repo_name, $contest_id) = $dbh->selectrow_array(q~
+        SELECT CP.status, P.title, P.repo, P.contest_id FROM contest_problems CP
         INNER JOIN problems P ON CP.problem_id = P.id
         WHERE CP.contest_id = ? AND P.id = ?~, undef,
         $cid, $p->{pid});
@@ -152,7 +152,7 @@ sub problem_history_edit_frame {
         my CATS::Problem::Storage $ps = CATS::Problem::Storage->new;
         Encode::from_to($content, $enc, $p->{src_enc});
         my ($error, $latest_sha) = $ps->change_file(
-            $cid, $p->{pid}, $p->{file}, $content, $p->{message}, $p->{is_amend} || 0);
+            $contest_id, $p->{pid}, $p->{file}, $content, $p->{message}, $p->{is_amend} || 0);
 
         unless ($error) {
             $dbh->commit;
