@@ -22,7 +22,19 @@ sub ident() { qr/^[a-zA-Z_]+$/ }
 my ($main_routes, $api_judge_routes);
 
 BEGIN {
+    for my $name (qw(required)) {
+        no strict 'refs';
+        # Prototype to allow acting as a unary function.
+        *$name = sub($) {
+            ref $_[0] eq 'HASH' or return { $name => 1, type => $_[0] };
+            $_[0]->{$name} = 1;
+            $_[0];
+        };
+    }
+}
 
+# Separate BEGIN block to allow prototypes to have effect.
+BEGIN {
 $main_routes = {
     login => [ \&CATS::UI::LoginLogout::login_frame,
         logout => bool, login => str, passwd => str, redir => str, ],
@@ -217,14 +229,16 @@ $api_judge_routes = {
 
 }
 
+my @default_route = (\&CATS::UI::About::about_frame, {});
+
 sub parse_uri { CATS::Web::get_uri =~ m~/cats/(|main.pl)$~ }
 
 sub route {
     my $function = url_param('f') || '';
     my $route =
         $main_routes->{$function} ||
-        $api_judge_routes->{$function} ||
-        \&CATS::UI::About::about_frame;
+        $api_judge_routes->{$function}
+        or return @default_route;
     ref $route eq 'ARRAY' or return ($route, {});
     my $fn = $route->[0];
     my $p = {};
@@ -232,7 +246,21 @@ sub route {
         my $name = $route->[$i];
         my $type = $route->[$i + 1];
         my $value = param($name);
-        $p->{$name} = $value if defined $value && (!defined($type) || $value =~ $type);
+        if (ref $type eq 'HASH') {
+            if (!defined $value) {
+                return @default_route if $type->{required};
+                next;
+            }
+            if (!defined $type->{type} || $value =~ $type->{type}) {
+                $p->{$name} = $value;
+            }
+            elsif ($type->{required}) {
+                return @default_route;
+            }
+        }
+        else {
+            $p->{$name} = $value if defined $value && (!defined($type) || $value =~ $type);
+        }
     }
 
     ($fn, $p);
