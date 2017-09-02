@@ -445,7 +445,7 @@ sub problem_link_frame {
     q~(
         SELECT COUNT(*) FROM contest_problems CP WHERE CP.contest_id = C.id) AS problems_count~,
     qq~(
-        SELECT CP.id FROM contest_problems CP
+        SELECT 1 FROM contest_problems CP
         WHERE CP.contest_id = C.id AND CP.problem_id = $problem->{id}) AS has_this_problem~,
     ];
     $p->{filter} = $is_root ? '' : ' AND CA.is_jury = 1';
