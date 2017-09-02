@@ -3,7 +3,7 @@ package main;
 
 use strict;
 use warnings;
-use encoding 'utf8', STDIN => undef;
+#use encoding 'utf8', STDIN => undef;
 
 use Data::Dumper;
 use DBI::Profile;
