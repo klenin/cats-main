@@ -165,7 +165,6 @@ sub problems_submit_std_solution {
 
     $sol_count or return msg(1106, $title);
     $dbh->commit;
-    $t->param(solution_submitted => 1, href_console => url_f('console'));
     msg(1107, $title, $sol_count);
 }
 
