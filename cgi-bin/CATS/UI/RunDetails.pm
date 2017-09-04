@@ -158,8 +158,8 @@ sub get_run_info {
         $row->{view_test_details_href} = url_f('view_test_details', rid => $req->{req_id}, test_rank => $row->{test_rank});
         $row;
     };
-    $req->{points} //= $total_points;
-    if ($contest->{show_points} && $contest->{points}) {
+    if ($contest->{show_points} && $contest->{points} && (!defined $req->{points} || $req->{points} != $total_points)) {
+        $req->{points} = $total_points;
         $req->{needs_commit} = $dbh->do(q~
             UPDATE reqs SET points = ? WHERE id = ? AND points IS DISTINCT FROM ?~, undef,
             $req->{points}, $req->{req_id}, $req->{points});
