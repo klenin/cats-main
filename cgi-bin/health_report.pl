@@ -34,7 +34,7 @@ use CATS::Constants;
 use CATS::Config;
 use CATS::DB;
 use CATS::Mail;
-use CATS::Utils qw(group_digits);
+use CATS::Utils qw(group_digits url_function);
 
 use CATS::Judge;
 
