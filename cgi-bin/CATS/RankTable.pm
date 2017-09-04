@@ -256,8 +256,8 @@ sub cache_req_points {
 
     # To reduce chance of deadlock, commit every change separately, even if it is slower.
     $dbh->do(q~
-        UPDATE reqs SET points = ? WHERE id = ? AND points IS NULL~, undef,
-        $total, $req->{ref_id} || $req->{id});
+        UPDATE reqs SET points = ? WHERE id = ? AND points IS DISTINCT FROM ?~, undef,
+        $total, $req->{ref_id} || $req->{id}, $total);
     $dbh->commit;
     $total;
 }
