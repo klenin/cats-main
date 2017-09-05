@@ -183,6 +183,7 @@ sub attach {
         current_page => $_ == $$page
     }} $range_start..$range_end;
 
+    $self->{visible_data} = \@data;
     $t->param(
         page => $$page, pages => \@pages, search => $s->{search},
         href_lv_action => "$url$page_extra_params",
@@ -214,6 +215,8 @@ sub attach {
     # Suppose that attach_listview call comes last, so we modify settings in-place.
     defined $s->{$_} && $s->{$_} ne '' or delete $s->{$_} for keys %$s;
 }
+
+sub visible_data { $_[0]->{visible_data} }
 
 sub check_sortable_field {
     my ($self, $s) = @_;
