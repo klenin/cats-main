@@ -30,7 +30,7 @@
     " [$c.message_text]" IF user.is_jury && c.message_text;
   %]</td>
   [% IF user.is_jury %]
-  <td>[% i = DEs.item(c.de) %]<a href="#" title="[% i.code %]">[% i.description %]</a></td>
+  <td title="[% c.de.code %]">[% c.de.description %]</td>
   <td>[<a href="[% c.href_whois %]" title="[% c.last_ip %]">[% c.last_ip_short %]</a>]</td>
   [% END %]
 [% ELSIF c.is_question %]

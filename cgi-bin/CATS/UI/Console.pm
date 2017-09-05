@@ -72,6 +72,9 @@ sub _decorate_rows {
     my $contest_titles_sth;
     my $contest_titles = { $cid => $contest->{title} };
 
+    my $DEs = $uid ? $dbh->selectall_hashref(q~
+        SELECT id, code, description FROM default_de~, 'id') : {};
+
     for (@$data) {
         if (!exists $contest_titles->{$_->{contest_id}}) {
            $contest_titles_sth //= $dbh->prepare(q~
@@ -81,6 +84,7 @@ sub _decorate_rows {
            $contest_titles_sth->finish;
         }
         $_->{contest_title} = $contest_titles->{$_->{contest_id}};
+        $_->{de} = $DEs->{$_->{de_id}} if $_->{de_id};
     }
 }
 
@@ -100,9 +104,6 @@ sub console_content {
     }
 
     $t->param($_ => $s->{$_}) for qw(show_contests show_messages show_results i_value);
-
-    my $DEs = $uid ? $dbh->selectall_hashref(q~
-        SELECT id, code, description FROM default_de~, 'id') : {};
 
     # Optimization: Only display problem codes from the currect contest to avoid another JOIN.
     my $problem_codes = !$contest->is_practice ? $dbh->selectall_hashref(q~
@@ -157,7 +158,7 @@ sub console_content {
 
     my $fetch_console_record = sub {
         my ($rtype, $rank, $submit_time, $id, $request_state, $failed_test,
-            $problem_id, $problem_title, $de, $clarified, $question, $answer, $jury_message,
+            $problem_id, $problem_title, $de_id, $clarified, $question, $answer, $jury_message,
             $team_id, $team_name, $country_abbr, $last_ip, $caid, $contest_id
         ) = $_[0]->fetchrow_array
             or return ();
@@ -205,7 +206,7 @@ sub console_content {
             time_iso =>             date_to_iso($submit_time),
             problem_id =>           $problem_id,
             problem_title =>        $problem_title,
-            de =>                   $de,
+            de_id =>                $de_id,
             request_state =>        $request_state,
             short_state =>          $short_state,
             failed_test =>          ($hide_verdict ? '' : $failed_test),
@@ -244,10 +245,6 @@ sub console_content {
             $uid, $cid);
         $dbh->commit;
     }
-
-    $t->param(
-        DEs => $DEs,
-    );
 }
 
 sub select_all_reqs {
