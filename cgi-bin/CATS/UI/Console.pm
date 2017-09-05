@@ -67,6 +67,23 @@ sub init_console_template {
         name => "console$se", array_name => 'console', template => $template_name);
 }
 
+sub _decorate_rows {
+    my ($data) = @_;
+    my $contest_titles_sth;
+    my $contest_titles = { $cid => $contest->{title} };
+
+    for (@$data) {
+        if (!exists $contest_titles->{$_->{contest_id}}) {
+           $contest_titles_sth //= $dbh->prepare(q~
+                SELECT title FROM contests WHERE id = ?~);
+           $contest_titles_sth->execute($_->{contest_id});
+           ($contest_titles->{$_->{contest_id}}) = $contest_titles_sth->fetchrow_array;
+           $contest_titles_sth->finish;
+        }
+        $_->{contest_title} = $contest_titles->{$_->{contest_id}};
+    }
+}
+
 sub console_content {
     my $selection = param('selection');
 
@@ -123,6 +140,7 @@ sub console_content {
                 R1.id > R.id
             ROWS 1), 0)~,
         tag => q~COALESCE(R.tag, '')~,
+        contest_title => 'C.title',
         account_id => 'A.id',
         contest_id => 1, # Handled manually.
     });
@@ -207,6 +225,8 @@ sub console_content {
         { page_params => { se => param('se') || undef, uf => $user_filter || undef } });
 
     $sth->finish if $sth;
+
+    _decorate_rows($lv->visible_data);
 
     if ($uid && $user->{is_participant} && !$settings->{hide_envelopes}) {
         my $cond =

@@ -24,10 +24,11 @@
     <td><div>[% c.failed_test %]</div></td>
   </tr></table></td>
   <td class="pts">[% c.points IF user.is_jury %]</td>
-  <td>
-    [%- "$c.code: " IF c.code -%]
-    [%- maybe_href(c.href_source, c.problem_title); " [$c.message_text]" IF user.is_jury && c.message_text -%]
-  </td>
+  <td>[%
+    "$c.code: " IF c.code;
+    maybe_href(c.href_source, c.problem_title, user.privs.is_root ? c.contest_title : '');
+    " [$c.message_text]" IF user.is_jury && c.message_text;
+  %]</td>
   [% IF user.is_jury %]
   <td>[% i = DEs.item(c.de) %]<a href="#" title="[% i.code %]">[% i.description %]</a></td>
   <td>[<a href="[% c.href_whois %]" title="[% c.last_ip %]">[% c.last_ip_short %]</a>]</td>
