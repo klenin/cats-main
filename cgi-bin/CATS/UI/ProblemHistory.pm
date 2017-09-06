@@ -87,7 +87,7 @@ sub problem_history_tree_frame {
     for (@{$tree->{entries}}) {
         if ($_->{type} eq 'blob') {
             $_->{href} = url_f('problem_history_blob', file => $_->{name}, pid => $pid, hb => $hash_base);
-            $_->{href_raw} = url_f('problem_history', a => 'raw', file => $_->{name}, pid => $pid, hb => $hash_base);
+            $_->{href_raw} = url_f('problem_history_raw', file => $_->{name}, pid => $pid, hb => $hash_base);
             $_->{href_edit} = url_f('problem_history_edit', file => $_->{name}, pid => $pid, hb => $hash_base)
                 if is_allow_editing($tree, $hash_base)
         }
@@ -133,13 +133,13 @@ sub problem_history_blob_frame {
 }
 
 sub problem_history_raw_frame {
-    my ($pid, $title) = @_;
-    my $hash_base = url_param('hb') or return redirect url_f('problem_history', pid => $pid);
-    my $file = url_param('file') || undef;
+    my ($p) = @_;
+    $is_jury or return;
+    _get_problem_info($p) or return redirect url_f('contests');
 
-    my $blob = CATS::Problem::Storage::show_raw($pid, $hash_base, $file);
+    my $blob = CATS::Problem::Storage::show_raw($p->{pid}, $p->{hb}, $p->{file});
     content_type($blob->{type});
-    headers('Content-Disposition', "inline; filename=$file");
+    headers('Content-Disposition', "inline; filename=$p->{file}");
     CATS::Web::print($blob->{content});
 }
 
@@ -198,7 +198,6 @@ sub problem_history_frame {
     $is_jury or return redirect url_f('contests');
 
     my %actions = (
-        raw => \&problem_history_raw_frame,
         tree => \&problem_history_tree_frame,
         commitdiff => \&problem_history_commit_frame,
     );

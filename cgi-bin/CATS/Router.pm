@@ -108,6 +108,9 @@ $main_routes = {
     problem_history_blob => [ \&CATS::UI::ProblemHistory::problem_history_blob_frame,
         pid => required integer, hb => required sha, file => required str, src_enc => str,
     ],
+    problem_history_raw => [ \&CATS::UI::ProblemHistory::problem_history_raw_frame,
+        pid => required integer, hb => required sha, file => required str,
+    ],
 
     users => [
         \&CATS::UI::Users::users_frame,
