@@ -85,12 +85,14 @@ sub problem_history_tree_frame {
 
     my $tree = CATS::Problem::Storage::show_tree($pid, $hash_base, url_param('file') || undef, encoding_param('repo_enc'));
     for (@{$tree->{entries}}) {
-        $_->{href} = url_f('problem_history', a => $_->{type}, file => $_->{name}, pid => $pid, h => $_->{hash}, hb => $hash_base)
-            if $_->{type} eq 'blob' || $_->{type} eq 'tree';
         if ($_->{type} eq 'blob') {
+            $_->{href} = url_f('problem_history_blob', file => $_->{name}, pid => $pid, hb => $hash_base);
             $_->{href_raw} = url_f('problem_history', a => 'raw', file => $_->{name}, pid => $pid, hb => $hash_base);
             $_->{href_edit} = url_f('problem_history_edit', file => $_->{name}, pid => $pid, hb => $hash_base)
                 if is_allow_editing($tree, $hash_base)
+        }
+        elsif ($_->{type} eq 'tree') {
+            $_->{href} = url_f('problem_history', a => 'tree', file => $_->{name}, pid => $pid, hb => $hash_base)
         }
     }
     set_history_paths_urls($pid, $tree->{paths});
@@ -107,24 +109,25 @@ sub detect_encoding_by_xml_header {
 }
 
 sub problem_history_blob_frame {
-    my ($pid, $title) = @_;
-    my $hash_base = url_param('hb') or return redirect url_f('problem_history', pid => $pid);
-    my $file = url_param('file') || undef;
+    my ($p) = @_;
+    $is_jury or return;
 
     init_template('problem_history_blob.html.tt');
 
+    my ($status, $title) = _get_problem_info($p) or return redirect url_f('contests');
+
     my $blob = CATS::Problem::Storage::show_blob(
-        $pid, $hash_base, $file, param('src_enc') || \&detect_encoding_by_xml_header);
-    set_history_paths_urls($pid, $blob->{paths});
-    my @items = is_allow_editing($blob, $hash_base) ?
+        $p->{pid}, $p->{hb}, $p->{file}, $p->{src_enc} || \&detect_encoding_by_xml_header);
+    set_history_paths_urls($p->{pid}, $blob->{paths});
+    my @items = is_allow_editing($blob, $p->{hb}) ?
         { href => url_f('problem_history_edit',
-            file => $file, hb => $hash_base, pid => $pid), item => res_str(572) } : ();
-    set_submenu_for_tree_frame($pid, $hash_base, @items);
+            file => $p->{file}, hb => $p->{hb}, pid => $p->{pid}), item => res_str(572) } : ();
+    set_submenu_for_tree_frame($p->{pid}, $p->{hb}, @items);
 
     $t->param(
         blob => $blob,
         problem_title => $title,
-        title_suffix => "$file",
+        title_suffix => $p->{file},
         source_encodings => source_encodings($blob->{encoding}),
     );
 }
@@ -195,7 +198,6 @@ sub problem_history_frame {
     $is_jury or return redirect url_f('contests');
 
     my %actions = (
-        blob => \&problem_history_blob_frame,
         raw => \&problem_history_raw_frame,
         tree => \&problem_history_tree_frame,
         commitdiff => \&problem_history_commit_frame,

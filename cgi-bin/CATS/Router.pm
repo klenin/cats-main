@@ -105,6 +105,9 @@ $main_routes = {
         save => bool, src_enc => str, message => str, source => undef,
         is_amend => bool,
     ],
+    problem_history_blob => [ \&CATS::UI::ProblemHistory::problem_history_blob_frame,
+        pid => required integer, hb => required sha, file => required str, src_enc => str,
+    ],
 
     users => [
         \&CATS::UI::Users::users_frame,
