@@ -90,7 +90,7 @@ $main_routes = {
     problem_details => [ \&CATS::UI::ProblemDetails::problem_details_frame, pid => integer, ],
     problem_test_data => [
         \&CATS::UI::ProblemDetails::problem_test_data_frame,
-        pid => integer, test_rank => integer, clear_test_data => bool ],
+        pid => integer, test_rank => integer, clear_test_data => bool, ],
     problem_link => [ \&CATS::UI::ProblemDetails::problem_link_frame,
         pid => integer, contest_id => integer,
         link_to => bool, move_to => bool, move_from => bool,
@@ -110,6 +110,9 @@ $main_routes = {
     ],
     problem_history_raw => [ \&CATS::UI::ProblemHistory::problem_history_raw_frame,
         pid => required integer, hb => required sha, file => required str,
+    ],
+    problem_history_commit => [ \&CATS::UI::ProblemHistory::problem_history_commit_frame,
+        pid => required integer, h => required sha, src_enc => str,
     ],
 
     users => [

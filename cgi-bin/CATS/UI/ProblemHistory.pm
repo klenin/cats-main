@@ -47,15 +47,15 @@ sub problem_commitdiff {
 }
 
 sub problem_history_commit_frame {
-    my ($pid, $title) = @_;
-    my $sha = url_param('h') or return redirect url_f('problem_history', pid => $pid);
-    my $se = param('src_enc') || 'WINDOWS-1251';
-    problem_commitdiff($pid, $title, $sha, $se);
+    my ($p) = @_;
+    $is_jury or return;
+    my ($status, $title) = _get_problem_info($p) or return redirect url_f('contests');
+    problem_commitdiff($p->{pid}, $title, $p->{h}, $p->{src_enc} || 'WINDOWS-1251');
 }
 
 sub set_history_paths_urls {
     my ($pid, $paths) = @_;
-    foreach (@$paths) {
+    for (@$paths) {
         $_->{href} = url_f('problem_history', a => $_->{type}, file => $_->{name}, pid => $pid, hb => $_->{hash_base});
     }
 }
@@ -65,7 +65,7 @@ sub set_submenu_for_tree_frame {
     my $submenu = [
         { href => url_f('problem_details', pid => $pid), item => res_str(504) },
         { href => url_f('problem_history', pid => $pid), item => res_str(568) },
-        { href => url_f('problem_history', a => 'commitdiff', pid => $pid, h => $hash), item => res_str(571) },
+        { href => url_f('problem_history_commit', pid => $pid, h => $hash), item => res_str(571) },
         { href => url_f('problem_git_package', pid => $pid, sha => $hash), item => res_str(569) },
         @items,
     ];
@@ -199,7 +199,6 @@ sub problem_history_frame {
 
     my %actions = (
         tree => \&problem_history_tree_frame,
-        commitdiff => \&problem_history_commit_frame,
     );
 
     my ($status, $title, $repo_name) = _get_problem_info($p) or return redirect url_f('contests');
@@ -239,7 +238,7 @@ sub problem_history_frame {
         my $log = shift @{$_[0]} or return ();
         return (
             %$log,
-            href_commit => url_f('problem_history', a => 'commitdiff', pid => $p->{pid}, h => $log->{sha}),
+            href_commit => url_f('problem_history_commit', pid => $p->{pid}, h => $log->{sha}),
             href_tree => url_f('problem_history', a => 'tree', pid => $p->{pid}, hb => $log->{sha}),
             href_git_package => url_f('problem_git_package', pid => $p->{pid}, sha => $log->{sha}),
         );

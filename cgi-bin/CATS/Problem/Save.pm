@@ -97,7 +97,7 @@ sub set_problem_import_diff {
     $t->param(problem_import_diff => {
         sha => $sha,
         abbreviated_sha => substr($sha, 0, 8),
-        href_commit => url_f('problem_history', pid => $pid, h => $sha, a => 'commitdiff'),
+        href_commit => url_f('problem_history_commit', pid => $pid, h => $sha),
     });
 }
 
