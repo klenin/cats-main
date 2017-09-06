@@ -17,6 +17,15 @@ use CATS::StaticPages;
 use CATS::Utils qw(source_encodings);
 use CATS::Web qw(content_type encoding_param headers param redirect url_param);
 
+sub _get_problem_info {
+    my ($p) = @_;
+    $dbh->selectrow_array(q~
+        SELECT CP.status, P.title, P.repo, P.contest_id FROM contest_problems CP
+        INNER JOIN problems P ON CP.problem_id = P.id
+        WHERE CP.contest_id = ? AND P.id = ?~, undef,
+        $cid, $p->{pid});
+}
+
 sub problem_commitdiff {
     my ($pid, $title, $sha, $se, $import_log) = @_;
 
@@ -136,12 +145,8 @@ sub problem_history_edit_frame {
     $is_root or return;
     my $hash_base = $p->{hb};
 
-    my ($status, $title, $repo_name, $contest_id) = $dbh->selectrow_array(q~
-        SELECT CP.status, P.title, P.repo, P.contest_id FROM contest_problems CP
-        INNER JOIN problems P ON CP.problem_id = P.id
-        WHERE CP.contest_id = ? AND P.id = ?~, undef,
-        $cid, $p->{pid});
-    defined $status or return redirect url_f('contests');
+    my ($status, $title, $repo_name, $contest_id) = _get_problem_info($p)
+        or return redirect url_f('contests');
 
     !CATS::Problem::Storage::get_remote_url($repo_name) &&
         $hash_base eq CATS::Problem::Storage::get_latest_master_sha($p->{pid})
@@ -196,11 +201,7 @@ sub problem_history_frame {
         commitdiff => \&problem_history_commit_frame,
     );
 
-    my ($status, $title, $repo_name) = $dbh->selectrow_array(q~
-        SELECT CP.status, P.title, P.repo FROM contest_problems CP
-        INNER JOIN problems P ON CP.problem_id = P.id
-        WHERE CP.contest_id = ? AND P.id = ?~, undef,
-        $cid, $p->{pid}) or return redirect url_f('contests');
+    my ($status, $title, $repo_name) = _get_problem_info($p) or return redirect url_f('contests');
 
     if ($p->{a} && exists $actions{$p->{a}}) {
         return $actions{$p->{a}}->($p->{pid}, $title, $repo_name);
