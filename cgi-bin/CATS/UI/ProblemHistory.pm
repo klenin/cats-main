@@ -15,7 +15,7 @@ use CATS::Problem::Storage;
 use CATS::Problem::Utils;
 use CATS::StaticPages;
 use CATS::Utils qw(source_encodings);
-use CATS::Web qw(content_type encoding_param headers param redirect url_param);
+use CATS::Web qw(content_type encoding_param headers redirect);
 
 sub _get_problem_info {
     my ($p) = @_;
@@ -33,7 +33,7 @@ sub problem_commitdiff {
     my $submenu = [
         { href => url_f('problem_details', pid => $pid), item => res_str(504) },
         { href => url_f('problem_history', pid => $pid), item => res_str(568) },
-        { href => url_f('problem_history', a => 'tree', hb => $sha, pid => $pid), item => res_str(570) },
+        { href => url_f('problem_history_tree', hb => $sha, pid => $pid), item => res_str(570) },
         { href => url_f('problem_git_package', pid => $pid, sha => $sha), item => res_str(569) },
     ];
     $t->param(
@@ -56,7 +56,7 @@ sub problem_history_commit_frame {
 sub set_history_paths_urls {
     my ($pid, $paths) = @_;
     for (@$paths) {
-        $_->{href} = url_f('problem_history', a => $_->{type}, file => $_->{name}, pid => $pid, hb => $_->{hash_base});
+        $_->{href} = url_f("problem_history_$_->{type}", file => $_->{name}, pid => $pid, hb => $_->{hash_base});
     }
 }
 
@@ -78,25 +78,27 @@ sub is_allow_editing {
 }
 
 sub problem_history_tree_frame {
-    my ($pid, $title) = @_;
-    my $hash_base = url_param('hb') or return redirect url_f('problem_history', pid => $pid);
+    my ($p) = @_;
+    $is_jury or return;
+    my ($status, $title) = _get_problem_info($p) or return redirect url_f('contests');
 
     init_template('problem_history_tree.html.tt');
 
-    my $tree = CATS::Problem::Storage::show_tree($pid, $hash_base, url_param('file') || undef, encoding_param('repo_enc'));
+    my $tree = CATS::Problem::Storage::show_tree(
+        $p->{pid}, $p->{hb}, $p->{file} || undef, encoding_param('repo_enc'));
     for (@{$tree->{entries}}) {
+        my %url_params = (file => $_->{name}, pid => $p->{pid}, hb => $p->{hb});
         if ($_->{type} eq 'blob') {
-            $_->{href} = url_f('problem_history_blob', file => $_->{name}, pid => $pid, hb => $hash_base);
-            $_->{href_raw} = url_f('problem_history_raw', file => $_->{name}, pid => $pid, hb => $hash_base);
-            $_->{href_edit} = url_f('problem_history_edit', file => $_->{name}, pid => $pid, hb => $hash_base)
-                if is_allow_editing($tree, $hash_base)
+            $_->{href} = url_f('problem_history_blob', %url_params);
+            $_->{href_raw} = url_f('problem_history_raw', %url_params);
+            $_->{href_edit} = url_f('problem_history_edit', %url_params) if is_allow_editing($tree, $p->{hb});
         }
         elsif ($_->{type} eq 'tree') {
-            $_->{href} = url_f('problem_history', a => 'tree', file => $_->{name}, pid => $pid, hb => $hash_base)
+            $_->{href} = url_f('problem_history_tree', %url_params)
         }
     }
-    set_history_paths_urls($pid, $tree->{paths});
-    set_submenu_for_tree_frame($pid, $hash_base);
+    set_history_paths_urls($p->{pid}, $tree->{paths});
+    set_submenu_for_tree_frame($p->{pid}, $p->{hb});
     $t->param(
         tree => $tree,
         problem_title => $title,
@@ -197,15 +199,7 @@ sub problem_history_frame {
     my ($p) = @_;
     $is_jury or return redirect url_f('contests');
 
-    my %actions = (
-        tree => \&problem_history_tree_frame,
-    );
-
     my ($status, $title, $repo_name) = _get_problem_info($p) or return redirect url_f('contests');
-
-    if ($p->{a} && exists $actions{$p->{a}}) {
-        return $actions{$p->{a}}->($p->{pid}, $title, $repo_name);
-    }
 
     my $lv = CATS::ListView->new(name => 'problem_history', template => auto_ext('problem_history'));
 
@@ -239,7 +233,7 @@ sub problem_history_frame {
         return (
             %$log,
             href_commit => url_f('problem_history_commit', pid => $p->{pid}, h => $log->{sha}),
-            href_tree => url_f('problem_history', a => 'tree', pid => $p->{pid}, hb => $log->{sha}),
+            href_tree => url_f('problem_history_tree', pid => $p->{pid}, hb => $log->{sha}),
             href_git_package => url_f('problem_git_package', pid => $p->{pid}, sha => $log->{sha}),
         );
     };

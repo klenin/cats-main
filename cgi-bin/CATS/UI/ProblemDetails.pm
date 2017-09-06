@@ -112,7 +112,7 @@ sub problem_details_frame {
         problem_title => $pr->{title},
         title_suffix => $pr->{title},
         href_modifier => url_f('users_edit', uid => $pr->{last_modified_by}),
-        href_edit => url_f('problem_history', a => 'tree', pid => $p->{pid}, hb => $pr->{commit_sha}),
+        href_edit => url_f('problem_history_tree', pid => $p->{pid}, hb => $pr->{commit_sha}),
         href_original_contest => url_function('problems', cid => $pr->{contest_id}, sid => $sid),
         href_download => url_f('problem_download', pid => $p->{pid}),
         href_git_package => url_f('problem_git_package', pid => $p->{pid}),

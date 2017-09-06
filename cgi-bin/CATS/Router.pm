@@ -114,6 +114,9 @@ $main_routes = {
     problem_history_commit => [ \&CATS::UI::ProblemHistory::problem_history_commit_frame,
         pid => required integer, h => required sha, src_enc => str,
     ],
+    problem_history_tree => [ \&CATS::UI::ProblemHistory::problem_history_tree_frame,
+        pid => required integer, hb => required sha, file => str,
+    ],
 
     users => [
         \&CATS::UI::Users::users_frame,
