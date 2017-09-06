@@ -205,14 +205,14 @@ sub contest_visible {
         SELECT
             CAST(CURRENT_TIMESTAMP - $CATS::Time::contest_start_offset_sql AS DOUBLE PRECISION) AS since_start,
             C.local_only, C.id AS orig_cid, C.show_packages, C.is_hidden,
-            CA.is_jury, CA.is_remote, CA.is_ooc
+            CA.id AS caid, CA.is_jury, CA.is_remote, CA.is_ooc
             FROM contests C $s
             LEFT JOIN contest_accounts CA ON CA.contest_id = C.id AND CA.account_id = ?
             LEFT JOIN contest_sites CS ON CS.contest_id = C.id AND CS.site_id = CA.site_id
             WHERE $t.id = ?~, undef,
         $uid, $q);
     return (1, 1, 1) if $c->{is_jury};
-    if (($c->{since_start} || 0) > 0 && !$c->{is_hidden}) {
+    if (($c->{since_start} || 0) > 0 && (!$c->{is_hidden} || $c->{caid})) {
         $c->{local_only} or return (1, $c->{show_packages}, 0);
         defined $uid or return (0, 0, 0);
         # Require local participation.
