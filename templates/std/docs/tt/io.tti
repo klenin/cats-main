@@ -102,7 +102,29 @@ int main() {
   std::cout.flush();
   return 0;
 }',
-  }
+  },
+
+  {
+    id => 'python',
+    name => 'Python',
+    infile => 'with open(\'input.txt\', \'r\') as fin:
+  a, b = map(int, fin.read().split()) # numbers
+  p, q = fin.readlines() # strings',
+    stdin => 'import sys
+a, b = map(int, sys.stdin.read().split()) # numbers
+p, q = sys.stdin.readlines() # strings',
+    outfile => 'a = b = 1
+p = q = \'zzz\'
+with open(\'output.txt\', \'w\') as fout:
+  print(a, b, file=fout)
+  print(p, file=fout)
+  print(q, file=fout)',
+    stdout => 'a = b = 1
+p = q = \'zzz\'
+print(a, b)
+print(p)
+print(q)',
+  },
 ];
 
 extra_head = BLOCK %]
