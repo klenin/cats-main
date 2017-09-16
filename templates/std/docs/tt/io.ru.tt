@@ -30,6 +30,11 @@
 <pre><code>[% s.stdout | html %]</code></pre>
 [% END %]
 
+[% IF s.interactive %]
+<h4>Чтение интерактивного запроса и запись ответа</h4>
+<pre><code>[% s.interactive | html %]</code></pre>
+[% END %]
+
 [% END %]
 
 [% PROCESS footer.tti %]

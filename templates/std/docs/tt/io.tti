@@ -41,7 +41,15 @@ begin
   Writeln(p);
   Writeln(q);
 end;',
+    interactive => 'var
+  p, q: String;
+begin
+  Readln(p);
+  Writeln(q);
+  Flush(output);
+end;',
   },
+
   {
     id => 'cpp',
     name => 'C++',
@@ -83,6 +91,15 @@ int main() {
   std::string p, q;
   std::cout << a << " " << b;
   std::cout << p << std::endl << q << std::endl;
+  return 0;
+}',
+    interactive => '#include <iostream>
+#include <string>
+int main() {
+  std::string p, q;
+  std::cin >> p;
+  std::cout << q << "\n";
+  std::cout.flush();
   return 0;
 }',
   }
