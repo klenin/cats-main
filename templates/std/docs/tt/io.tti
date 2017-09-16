@@ -1,0 +1,96 @@
+[%
+snippets = [
+  {
+    id => 'fpc',
+    name => 'Free Pascal',
+    infile => '{$mode objfpc}
+var
+  fin: TextFile;
+  a, b: Integer;
+  p, q: String;
+begin
+  AssignFile(fin, \'input.txt\'); Reset(fin);
+  Read(fin, a, b);
+  Readln(fin, p);
+  Readln(fin, q);
+end.',
+      stdin => '{$mode objfpc}
+var
+  a, b: Integer;
+  p, q: String;
+begin
+  Read(a, b);
+  Readln(p);
+  Readln(q);
+end.',
+    outfile => 'var
+  fout: TextFile;
+  a, b: Integer;
+  p, q: String;
+begin
+  AssignFile(fin, \'output.txt\'); Rewrite(fout);
+  Write(fout, a, \' \', b);
+  Writeln(fout, p);
+  Writeln(fout, q);
+end;',
+    stdout => 'var
+  a, b: Integer;
+  p, q: String;
+begin
+  Write(a, \' \', b);
+  Writeln(p);
+  Writeln(q);
+end;',
+  },
+  {
+    id => 'cpp',
+    name => 'C++',
+    infile => '#include <fstream>
+#include <string>
+int main() {
+  std::ifstream fin("input.txt");
+  int a, b;
+  std::string p, q;
+  fin >> a >> b;
+  std::getline(fin, p);
+  std::getline(fin, q);
+  return 0;
+}',
+    stdin => '#include <iostream>
+#include <string>
+int main() {
+  int a, b;
+  std::string p, q;
+  std::cin >> a >> b;
+  std::getline(std::cin, p);
+  std::getline(std::cin, q);
+  return 0;
+}',
+    outfile => '#include <fstream>
+#include <string>
+int main() {
+  std::ofstream fout("output.txt");
+  int a, b;
+  std::string p, q;
+  fout << a << " " << b;
+  fout << p << std::endl << q << std::endl;
+  return 0;
+}',
+    stdout => '#include <iostream>
+#include <string>
+int main() {
+  int a, b;
+  std::string p, q;
+  std::cout << a << " " << b;
+  std::cout << p << std::endl << q << std::endl;
+  return 0;
+}',
+  }
+];
+
+extra_head = BLOCK %]
+<style>
+  h4 { margin-bottom: 0; }
+  pre { background-color: lightgray; border: 1px solid gray; margin-top: 3px; }
+</style>
+[% END -%]

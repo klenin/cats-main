@@ -1,0 +1,35 @@
+[%- PROCESS io.tti -%]
+[% PROCESS header.tti title='How to perform input and output' lang = 'en' %]
+
+<ul>
+[% FOREACH s IN snippets %]
+  <li><a href="#[% s.id %]">[% s.name %]</a></li>
+[% END %]
+</ul>
+
+[% FOREACH s IN snippets %]
+<h3 id="[% s.id %]">[% s.name %]</h3>
+
+[% IF s.infile %]
+<h4>Read from file <code>input.txt</code></h4>
+<pre><code>[% s.infile | html %]</code></pre>
+[% END %]
+
+[% IF s.stdin %]
+<h4>Read from standard input</h4>
+<pre><code>[% s.stdin | html %]</code></pre>
+[% END %]
+
+[% IF s.outfile %]
+<h4>Write to file <code>output.txt</code></h4>
+<pre><code>[% s.outfile | html %]</code></pre>
+[% END %]
+
+[% IF s.stdout %]
+<h4>Write to standard output</h4>
+<pre><code>[% s.stdout | html %]</code></pre>
+[% END %]
+
+[% END %]
+
+[% PROCESS footer.tti %]

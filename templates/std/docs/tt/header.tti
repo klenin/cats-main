@@ -17,6 +17,7 @@
   <link rel="shortcut icon" href="../images/std/favicon.ico" type="image/x-icon" />
   <link rel="stylesheet" type="text/css" href="docs.css" />
   <title>[% title %] - CATS</title>
+  [%- extra_head -%]
 </head>
 <body>
 

@@ -12,9 +12,10 @@
 <li><a href="man_rank_table.html">Rank table</a></li>
 <li><a href="man_lists.html">List columns descritption</a></li>
 <li><a href="man_interface_lists.html">List view user interface</a></li>
+<li><a href="io.en.html">How to perform input and output</a></li>
 </ul>
 
-<li>Правила
+<li>Rules
 <ul>
 <li><a href="verdicts.en.html">Request results</a></li>
 <li><a href="rules_acm.html">ACM contest rules</a></li>

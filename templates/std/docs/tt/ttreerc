@@ -3,10 +3,12 @@ recurse
 accept = \.tt$
 accept = \.en\.tt$
 accept = \.ru\.tt$
-suffix tt=html
-suffix en.tt=en.html
-suffix ru.tt=ru.html
-depend *=header.tti,footer.tti
+suffix tt = html
+suffix en.tt = en.html
+suffix ru.tt = ru.html
+depend * = header.tti,footer.tti
+depend io.en.tt = io.tti
+depend io.ru.tt = io.tti
 src = .
 dest = ..
 lib = .
