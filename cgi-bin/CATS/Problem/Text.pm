@@ -7,6 +7,7 @@ use Encode;
 use Text::Aspell;
 use XML::Parser::Expat;
 
+use CATS::Constants;
 use CATS::Config qw(cats_dir);
 use CATS::DB;
 use CATS::Globals qw($cid $contest $is_jury $is_root $t $uid);
@@ -288,7 +289,7 @@ sub problem_text {
         $current_pid = $problem->{problem_id};
         {
             my $fields_str = join ', ', (qw(
-                id title lang difficulty author input_file output_file statement pconstraints json_data),
+                id title lang difficulty author input_file output_file statement pconstraints json_data run_method),
                 'contest_id AS orig_contest_id',
                 'max_points AS max_points_def',
                 grep(!$problem->{$_}, @cats::limits_fields),
@@ -305,6 +306,7 @@ sub problem_text {
         $problem->{parsed_tags} = $tags = CATS::Problem::Tags::parse_tag_condition($problem->{tags}, sub {});
         $problem->{lang} = choose_lang($problem, $p, $is_jury_in_contest);
         $tags->{lang} = [ 0, $problem->{lang} ];
+        $problem->{interactive_io} = $problem->{run_method} != $cats::rm_default;
 
         if ($is_jury_in_contest && !$p->{nokw}) {
             my $lang_col = $problem->{lang} eq 'ru' ? 'name_ru' : 'name_en';

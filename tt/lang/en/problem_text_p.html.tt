@@ -5,6 +5,8 @@
     visible_spaces => 'visible spaces',
     basic_math => 'basic formulae',
     author => 'Author',
+    input_output => 'Input / output',
+    interactive => 'interactive',
     input_file => 'Input file',
     standard_input => 'Standard input',
     time_limit => 'Time limit',

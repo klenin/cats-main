@@ -5,6 +5,8 @@
     visible_spaces => 'видимые пробелы',
     basic_math => 'простые формулы',
     author => 'Автор',
+    input_output => 'Ввод / вывод',
+    interactive => 'интерактивный',
     input_file => 'Входной файл',
     standard_input => 'Стандартный вход',
     time_limit => 'Ограничение времени',

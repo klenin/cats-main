@@ -94,11 +94,13 @@ MathJax.Hub.Register.StartupHook('onLoad', function () {
   <table class="problem_header">
   [% IF p.author %]<tr><td class="narrow nobr">[% c.author %]:</td><td colspan="4">[% p.author | html %]</td></tr>[% END %]
   <tr>
-    <td class="narrow nobr">[% c.input_file %]:</td><td>[% (p.input_file == '*STDIN' ? c.standard_input : p.input_file) | html %]</td>
+    <td class="narrow nobr">[% p.interactive_io ? c.input_output : c.input_file %]:</td>
+    <td>[% p.interactive_io ? c.interactive : (p.input_file == '*STDIN' ? c.standard_input : p.input_file) | html %]</td>
     <td>&nbsp;</td>
     <td class="narrow nobr">[% c.time_limit %]:</td><td>[% p.time_limit %] [% c.seconds %]</td></tr>
   <tr>
-    <td class="narrow nobr">[% c.output_file %]:</td><td>[% (p.output_file == '*STDOUT' ? c.standard_output : p.output_file) | html %]</td>
+    <td class="narrow nobr">[% p.interactive_io ? '' : c.output_file _ ':' %]</td>
+    <td>[% p.interactive_io ? '' : (p.output_file == '*STDOUT' ? c.standard_output : p.output_file) | html %]</td>
     <td>&nbsp;</td>
     <td class="narrow nobr">[% c.memory_limit %]:</td><td>[% p.memory_limit %] [% c.megabytes %]</td></tr>
   [% IF p.write_limit || p.show_points %]
