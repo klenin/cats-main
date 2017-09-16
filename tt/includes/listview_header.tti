@@ -6,10 +6,15 @@
 <table class="listview_header">
 <tr>
 <td>
-  <button type="submit" name="do_search" value="1" style="min-width: 50px; width: 15%;" class="button">[% capt.search %]</button>
-  <input type="text" name="search" id="search" value="[% search %]" style="min-width: 50px; width: 80%;" maxlength="100" class="bordered" />
-  [% IF search_hints -%]
+  <button type="submit" name="do_search" id="do_search" value="1" style="min-width: 50px; width: 15%;" class="button">[% capt.search %]</button>
+  <span class="nobr">
+  <input type="text" name="search" id="search" value="[% search %]" style="min-width: 100px; width: 70%;" maxlength="100" class="bordered" />
+  <a href="#" class="listview_dropper" onclick="clear_search()" title="[% capt.clear_search %]">&#xD7;</a>
+  [% IF search_hints ~%]
   <a href="#" class="listview_dropper" onclick="return toggle_search_hints()">?</a>
+  [% END -%]
+  </span>
+  [% IF search_hints -%]
   <div id="search_hint" class="bordered search_hint" style="display: none;">
     <table>
       <tr>
@@ -86,6 +91,14 @@ function click_enum(a) {
 function toggle_select_cols() {
   var s = document.getElementById('select_cols');
   s.style.display = s.style.display === 'block' ? 'none' : 'block';
+}
+
+function clear_search() {
+  var s = document.getElementById('search');
+  if (s.value === '') return;
+  s.value = '';
+  document.getElementById('do_search').click();
+  return false;
 }
 
 </script>

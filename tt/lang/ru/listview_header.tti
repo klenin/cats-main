@@ -1,6 +1,7 @@
 [%
   capt.import({
     search => 'найти',
+    clear_search => 'очистить поиск',
     pages => 'страницы',
     show => 'показать',
     ops => [
