@@ -214,6 +214,7 @@ sub contest_sites_frame {
     my $users_count_sql = $lv->visible_cols->{Pt} ? q~
         SELECT COUNT(*) FROM contest_accounts CA
         WHERE CA.contest_id = CS.contest_id AND CA.site_id = S.id~ : 'NULL';
+    my $is_used_cond = $is_jury ? '1 = 1' : 'CS.site_id IS NOT NULL';
     my $sth = $dbh->prepare(qq~
         SELECT
             S.id, (CASE WHEN CS.site_id IS NULL THEN 0 ELSE 1 END) AS is_used,
@@ -222,7 +223,7 @@ sub contest_sites_frame {
             ($users_count_sql) AS users_count
         FROM sites S
         LEFT JOIN contest_sites CS ON CS.site_id = S.id AND CS.contest_id = ?
-        WHERE 1 = 1 ~ . $lv->maybe_where_cond . $lv->order_by);
+        WHERE $is_used_cond ~ . $lv->maybe_where_cond . $lv->order_by);
     $sth->execute($cid, $lv->where_params);
 
     my $fetch_record = sub {
