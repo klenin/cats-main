@@ -155,7 +155,8 @@ sub contest_sites_edit_frame {
 }
 
 sub contest_sites_add {
-    my @checked = grep $_ && $_ > 0, param('check') or return;
+    my ($p) = @_;
+    my @checked = grep $_ && $_ > 0, @{$p->{check}} or return;
     my $sth_add= $dbh->prepare(q~
         INSERT INTO contest_sites (contest_id, site_id) VALUES (?, ?)~);
     my $count = 0;
@@ -170,7 +171,8 @@ sub contest_sites_add {
 }
 
 sub contest_sites_delete {
-    my $site_id = url_param('delete') or return;
+    my ($p) = @_;
+    my $site_id = $p->{delete} or return;
     my ($name) = $dbh->selectrow_array(q~
         SELECT name FROM sites WHERE id = ?~, undef,
         $site_id) or return;
@@ -202,8 +204,8 @@ sub contest_sites_frame {
     $lv->define_db_searches([ fields ]);
 
     if ($is_jury) {
-        contest_sites_delete;
-        contest_sites_add if param('add');
+        contest_sites_delete($p);
+        contest_sites_add($p) if $p->{add};
     }
 
     my $org_person_sql = $lv->visible_cols->{Op} ? q~

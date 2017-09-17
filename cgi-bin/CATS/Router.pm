@@ -48,7 +48,7 @@ $main_routes = {
         online_registration => bool, virtual_registration => bool,
         edit_save => bool, new_save => bool, id => integer,
     ],
-    contest_sites => [ \&CATS::UI::Sites::contest_sites_frame, ],
+    contest_sites => [ \&CATS::UI::Sites::contest_sites_frame, add => bool, delete => integer, check => array_of integer, ],
     contest_sites_edit => [ \&CATS::UI::Sites::contest_sites_edit_frame,
         site_id => integer,
         diff_time => fixed, diff_units => ident,
