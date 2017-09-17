@@ -177,6 +177,37 @@ end;',
   },
 
   {
+    id => 'perl',
+    name => 'Perl',
+    infile => 'use strict;
+use warnings;
+
+open my $fin, \'<input.txt\';
+my ($a, $b) = map 0 + $_, do { local $/ = undef; split /\s+/, <$fin>; }; # numbers
+my ($p, $q) = <$fin>; # strings',
+    stdin => 'use strict;
+use warnings;
+
+my ($a, $b) = map 0 + $_, do { local $/ = undef; split /\s+/, <>; }; # numbers
+my ($p, $q) = <>; # strings',
+    outfile => 'use strict;
+use warnings;
+
+my ($a, $b) = (1, 1);
+my ($p, $q) = (\'zzz\') x 2;
+open my $fout, \'>output.txt\';
+print $fout "$a $b";
+print $fout "$p\n$q\n";',
+    stdout => 'use strict;
+use warnings;
+
+my ($a, $b) = (1, 1);
+my ($p, $q) = (\'zzz\') x 2;
+print "$a $b";
+print "$p\n$q\n";',
+  },
+
+  {
     id => 'python',
     name => 'Python',
     infile => 'with open(\'input.txt\', \'r\') as fin:
