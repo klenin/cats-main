@@ -51,6 +51,51 @@ end;',
   },
 
   {
+    id => 'c',
+    name => 'C',
+    infile => '#include <stdio.h>
+
+int main() {
+  int a, b;
+  char p[100], q[100];
+  FILE *fin = fopen("input.txt", "rt");
+  fscanf(fin, "%d%d", &a, &b);
+  fgets(p, 100, fin);
+  fgets(q, 100, fin);
+  return 0;
+}',
+    stdin => '#include <stdio.h>
+
+int main() {
+  int a, b;
+  char p[100], q[100];
+  scanf("%d%d", &a, &b);
+  fgets(p, 100, stdin);
+  fgets(q, 100, stdin);
+  return 0;
+}',
+    outfile => '#include <stdio.h>
+
+int main() {
+  int a, b;
+  char p[100], q[100];
+  FILE *fout = fopen("output.txt", "wt");
+  fprintf(fout, "%d %d", a, b);
+  fprintf(fout, "%s\n%s\n", p, q);
+  return 0;
+}',
+    stdout => '#include <stdio.h>
+
+int main() {
+  int a, b;
+  char p[100], q[100];
+  printf("%d %d", a, b);
+  printf("%s\n%s\n", p, q);
+  return 0;
+}',
+  },
+
+  {
     id => 'cpp',
     name => 'C++',
     infile => '#include <fstream>

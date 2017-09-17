@@ -1,7 +1,7 @@
 [%- PROCESS io.tti -%]
 [% PROCESS header.tti title='How to perform input and output' lang = 'en' %]
 
-<p>Programming languages:</p>
+<p id="contents">Programming languages:</p>
 <ul>
 [% FOREACH s IN snippets %]
   <li><a href="#[% s.id %]">[% s.name %]</a></li>
@@ -9,7 +9,7 @@
 </ul>
 
 [% FOREACH s IN snippets %]
-<h3 id="[% s.id %]">[% s.name %]</h3>
+<h3 id="[% s.id %]">[% s.name %] <a href="#contents">^</a></h3>
 
 [% IF s.infile %]
 <h4>Read from file <code>input.txt</code></h4>
