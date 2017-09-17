@@ -176,6 +176,64 @@ begin
 end;',
   },
 
+
+  {
+    id => 'java',
+    name => 'Java',
+    infile => 'import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.Scanner;
+
+public class test {
+  public static void main(String args[]) throws FileNotFoundException {
+    int a, b;
+    String p, q;
+    Scanner scanner = new Scanner(new File("input.txt"));
+    a = scanner.nextInt();
+    b = scanner.nextInt();
+    p = scanner.nextLine();
+    q = scanner.nextLine();
+  }
+}',
+    stdin => 'import java.io.FileNotFoundException;
+import java.util.Scanner;
+
+public class test {
+  public static void main(String args[]) throws FileNotFoundException {
+    int a, b;
+    String p, q;
+    Scanner scanner = new Scanner(System.in);
+    a = scanner.nextInt();
+    b = scanner.nextInt();
+    p = scanner.nextLine();
+    q = scanner.nextLine();
+  }
+}',
+    outfile => 'import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+
+public class test {
+  public static void main(String args[]) throws FileNotFoundException {
+    int a = 1, b = 1;
+    String p = "zzz", q = "zzz";
+    PrintWriter writer = new PrintWriter("output.txt");
+    writer.printf("%d %d", a, b);
+    writer.println(p);
+    writer.println(q);
+    writer.flush();
+  }
+}',
+    stdout => 'public class test {
+  public static void main(String args[]) {
+    int a = 1, b = 1;
+    String p = "zzz", q = "zzz";
+    System.out.printf("%d %d", a, b);
+    System.out.println(p);
+    System.out.println(q);
+  }
+}',
+  },
+
   {
     id => 'perl',
     name => 'Perl',
