@@ -1,6 +1,7 @@
 [%- PROCESS io.tti -%]
 [% PROCESS header.tti title='Инструкция по организации ввода / вывода' lang = 'ru' %]
 
+<p>Языки программирования:</p>
 <ul>
 [% FOREACH s IN snippets %]
   <li><a href="#[% s.id %]">[% s.name %]</a></li>

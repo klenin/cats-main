@@ -1,6 +1,7 @@
 [%- PROCESS io.tti -%]
 [% PROCESS header.tti title='How to perform input and output' lang = 'en' %]
 
+<p>Programming languages:</p>
 <ul>
 [% FOREACH s IN snippets %]
   <li><a href="#[% s.id %]">[% s.name %]</a></li>

@@ -125,6 +125,33 @@ print(a, b)
 print(p)
 print(q)',
   },
+
+  {
+    id => 'basic',
+    name => 'Free Basic',
+    infile => 'dim a as integer, b as integer
+dim p as string, q as string
+open "input.txt" for input as #1
+input #1, a, b
+line input #1, p
+line input #1, q',
+    stdin => 'dim a as integer, b as integer
+dim p as string, q as string
+input a, b
+line input p
+line input q',
+    outfile => 'dim a as integer, b as integer
+dim p as string, q as string
+open "output.txt" for output as #2
+print #2, a; b
+print #2, p
+print #2, q',
+    stdout => 'dim a as integer, b as integer
+dim p as string, q as string
+print a; b
+print p
+print q',
+  },
 ];
 
 extra_head = BLOCK %]
