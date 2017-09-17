@@ -153,7 +153,9 @@ $main_routes = {
     download_import_source => [ \&CATS::UI::ImportSources::download_frame, psid => integer, ],
     prizes => \&CATS::UI::Prizes::prizes_frame,
     contests_prizes => \&CATS::UI::Prizes::contests_prizes_frame,
-    sites => \&CATS::UI::Sites::sites_frame,
+    sites => [ \&CATS::UI::Sites::sites_frame,
+        new => bool, edit => integer, edit_save => bool, delete => integer, name => str,
+    ],
 
     answer_box => [ \&CATS::UI::Messages::answer_box_frame,
         qid => integer, clarify => 1, answer_text => str, ],

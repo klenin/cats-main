@@ -13,7 +13,6 @@ use CATS::Messages qw(msg res_str);
 use CATS::Output qw(init_template url_f);
 use CATS::References;
 use CATS::Time;
-use CATS::Web qw(param url_param);
 
 sub fields() {qw(name region city org_name address)}
 
@@ -27,18 +26,19 @@ my $form = CATS::Form->new({
 sub edit_frame { $form->edit_frame }
 
 sub edit_save {
-    validate_string_length(param('name'), 601, 1, 100) or return;
-    $form->edit_save()
-        and msg(1067, Encode::decode_utf8(param('name')));
+    my ($p) = @_;
+    validate_string_length($p->{name}, 601, 1, 100) or return;
+    $form->edit_save() and msg(1067, Encode::decode_utf8($p->{name}));
 }
 
 sub sites_frame {
+    my ($p) = @_;
     $user->privs->{edit_sites} or return;
-    defined url_param('new') || defined url_param('edit') and return edit_frame;
+    $p->{new} || $p->{edit} and return edit_frame;
 
     my $lv = CATS::ListView->new(name => 'sites', template => 'sites.html.tt');
 
-    if (my $site_id = url_param('delete')) {
+    if (my $site_id = $p->{delete}) {
         if (my ($name) = $dbh->selectrow_array(q~
             SELECT name FROM sites WHERE id = ?~, undef,
             $site_id)
@@ -50,7 +50,7 @@ sub sites_frame {
             msg(1066, $name);
         }
     }
-    defined param('edit_save') and edit_save;
+    $p->{edit_save} and edit_save($p);
 
     $lv->define_columns(url_f('sites'), 0, 0, [
         { caption => res_str(601), order_by => 'name',     width => '20%' },
