@@ -1,56 +1,6 @@
 [%
 snippets = [
   {
-    id => 'fpc',
-    name => 'Free Pascal',
-    infile => '{$mode objfpc}
-var
-  fin: TextFile;
-  a, b: Integer;
-  p, q: String;
-begin
-  AssignFile(fin, \'input.txt\'); Reset(fin);
-  Read(fin, a, b);
-  Readln(fin, p);
-  Readln(fin, q);
-end.',
-      stdin => '{$mode objfpc}
-var
-  a, b: Integer;
-  p, q: String;
-begin
-  Read(a, b);
-  Readln(p);
-  Readln(q);
-end.',
-    outfile => 'var
-  fout: TextFile;
-  a, b: Integer;
-  p, q: String;
-begin
-  AssignFile(fin, \'output.txt\'); Rewrite(fout);
-  Write(fout, a, \' \', b);
-  Writeln(fout, p);
-  Writeln(fout, q);
-end;',
-    stdout => 'var
-  a, b: Integer;
-  p, q: String;
-begin
-  Write(a, \' \', b);
-  Writeln(p);
-  Writeln(q);
-end;',
-    interactive => 'var
-  p, q: String;
-begin
-  Readln(p);
-  Writeln(q);
-  Flush(output);
-end;',
-  },
-
-  {
     id => 'c',
     name => 'C',
     infile => '#include <stdio.h>
@@ -150,28 +100,6 @@ int main() {
   },
 
   {
-    id => 'python',
-    name => 'Python',
-    infile => 'with open(\'input.txt\', \'r\') as fin:
-  a, b = map(int, fin.read().split()) # numbers
-  p, q = fin.readlines() # strings',
-    stdin => 'import sys
-a, b = map(int, sys.stdin.read().split()) # numbers
-p, q = sys.stdin.readlines() # strings',
-    outfile => 'a = b = 1
-p = q = \'zzz\'
-with open(\'output.txt\', \'w\') as fout:
-  print(a, b, file=fout)
-  print(p, file=fout)
-  print(q, file=fout)',
-    stdout => 'a = b = 1
-p = q = \'zzz\'
-print(a, b)
-print(p)
-print(q)',
-  },
-
-  {
     id => 'basic',
     name => 'Free Basic',
     infile => 'dim a as integer, b as integer
@@ -196,6 +124,78 @@ dim p as string, q as string
 print a; b
 print p
 print q',
+  },
+
+  {
+    id => 'fpc',
+    name => 'Free Pascal',
+    infile => '{$mode objfpc}
+var
+  fin: TextFile;
+  a, b: Integer;
+  p, q: String;
+begin
+  AssignFile(fin, \'input.txt\'); Reset(fin);
+  Read(fin, a, b);
+  Readln(fin, p);
+  Readln(fin, q);
+end.',
+      stdin => '{$mode objfpc}
+var
+  a, b: Integer;
+  p, q: String;
+begin
+  Read(a, b);
+  Readln(p);
+  Readln(q);
+end.',
+    outfile => 'var
+  fout: TextFile;
+  a, b: Integer;
+  p, q: String;
+begin
+  AssignFile(fin, \'output.txt\'); Rewrite(fout);
+  Write(fout, a, \' \', b);
+  Writeln(fout, p);
+  Writeln(fout, q);
+end;',
+    stdout => 'var
+  a, b: Integer;
+  p, q: String;
+begin
+  Write(a, \' \', b);
+  Writeln(p);
+  Writeln(q);
+end;',
+    interactive => 'var
+  p, q: String;
+begin
+  Readln(p);
+  Writeln(q);
+  Flush(output);
+end;',
+  },
+
+  {
+    id => 'python',
+    name => 'Python',
+    infile => 'with open(\'input.txt\', \'r\') as fin:
+  a, b = map(int, fin.read().split()) # numbers
+  p, q = fin.readlines() # strings',
+    stdin => 'import sys
+a, b = map(int, sys.stdin.read().split()) # numbers
+p, q = sys.stdin.readlines() # strings',
+    outfile => 'a = b = 1
+p = q = \'zzz\'
+with open(\'output.txt\', \'w\') as fout:
+  print(a, b, file=fout)
+  print(p, file=fout)
+  print(q, file=fout)',
+    stdout => 'a = b = 1
+p = q = \'zzz\'
+print(a, b)
+print(p)
+print(q)',
   },
 ];
 
