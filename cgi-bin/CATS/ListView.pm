@@ -10,6 +10,7 @@ use CATS::DB;
 use CATS::Globals qw($is_jury $t);
 use CATS::Messages qw(msg);
 use CATS::Output qw(init_template);
+use CATS::QueryBuilder;
 use CATS::Settings qw($settings);
 use CATS::Utils;
 use CATS::Web qw(param url_param);
@@ -27,12 +28,8 @@ sub new {
         template => $p{template} || die,
         array_name => $p{array_name} || $p{name},
         col_defs => undef,
-        search => [],
-        search_subqueries => [],
-        db_searches => {},
-        subqueries => {},
-        enums => {},
         extra_settings => $p{extra_settings} || {},
+        qb => CATS::QueryBuilder->new,
     };
     bless $self, $class;
     $self->init_params;
@@ -42,6 +39,7 @@ sub new {
 
 sub settings { $settings->{$_[0]->{name}} }
 sub visible_cols { $_[0]->{visible_cols} }
+sub qb { $_[0]->{qb} }
 
 sub init_params {
     my ($self) = @_;
@@ -58,12 +56,7 @@ sub init_params {
             $s->{page} = 0;
         }
     }
-    my $ident = '[a-zA-Z][a-zA-Z0-9_]*';
-    for (split /,\s*/, $s->{search}) {
-        /^($ident)([!~^=><]?=|>|<|\?|!~)(.*)$/ ? push @{$self->{search}}, [ $1, $3, $2 ] :
-        /^($ident)\((\d+)\)$/ ? push @{$self->{search_subqueries}}, [ $1, $2 ] :
-        push @{$self->{search}}, [ '', $_, '' ];
-    }
+    $self->qb->parse_search($s->{search});
 
     if (defined url_param('sort')) {
         $s->{sort_by} = int(url_param('sort'));
@@ -98,29 +91,6 @@ sub init_params {
     }
 }
 
-sub regex_op {
-    my ($op, $v) = @_;
-    $op eq '=' || $op eq '==' ? "^\Q$v\E\$" :
-    $op eq '!=' ? "^(?!\Q$v\E)\$" :
-    $op eq '^=' ? "^\Q$v\E" :
-    $op eq '~=' || $op eq '' ? "\Q$v\E" :
-    $op eq '!~' ? "^(?!.*\Q$v\E)" :
-    $op eq '?' ? "." :
-    die "Unknown search op '$op'";
-}
-
-sub sql_op {
-    my ($op, $v) = @_;
-    $op eq '=' || $op eq '==' ? { '=', $v } :
-    $op eq '!=' ? { '!=', $v } :
-    $op eq '^=' ? { 'STARTS WITH', $v } :
-    $op eq '~=' ? { 'LIKE', '%' . "$v%" } :
-    $op eq '!~' ? { 'NOT LIKE', '%' . "$v%" } :
-    $op eq '?' ? { '!=', undef, '!=', \q~''~ } :
-    $op =~ /^>|>=|<|<=$/ ? { $op, $v } : # SQL-only for now.
-    die "Unknown search op '$op'";
-}
-
 sub attach {
     my ($self, $url, $fetch_row, $sth, $p) = @_;
 
@@ -131,20 +101,7 @@ sub attach {
     $$page ||= 0;
     my $rows = $s->{rows} || 1;
 
-    # <search> ::= <condition> { ',' <condition> }
-    # <condition> ::= <value> | <field name> { '=' | '==' | '!=' | '^=' | '~=' | '!~' } <value> | <func>(<integer>)
-    # Spaces are significant around values, but not around keys.
-    # Values without field name are searched in all fields.
-    # Different fields are AND'ed, multiple values of the same field are OR'ed.
-    my %mask;
-    for my $q (@{$self->{search}}) {
-        my ($k, $v, $op) = @$q;
-        $self->{db_searches}->{$k} or push @{$mask{$k} ||= []}, regex_op($op, $v);
-    }
-    for (values %mask) {
-        my $s = join '|', @$_;
-        $_ = qr/$s/i;
-    }
+    my %mask = $self->qb->get_mask;
 
     my ($row_keys, @unknown_searches);
     ROWS: while (my %row = $fetch_row->($sth)) {
@@ -152,7 +109,7 @@ sub attach {
             my @unknown_searches = grep $_ && !exists $row{$_}, sort keys %mask;
             delete $mask{$_} for @unknown_searches;
             msg(1143, join ', ', @unknown_searches) if @unknown_searches;
-            $row_keys = [ sort grep !$self->{db_searches}->{$_} && !/^href_/, keys %row ];
+            $row_keys = [ sort grep !$self->qb->{db_searches}->{$_} && !/^href_/, keys %row ];
         }
         msg(1166), last if ++$fetch_count > $max_fetch_row_count;
         last if $page_count > $$page + $visible_pages;
@@ -196,9 +153,9 @@ sub attach {
     );
     if ($is_jury) {
         my @s = (
-            map([ $_, 0 ], sort keys %{$self->{db_searches}}),
+            map([ $_, 0 ], sort keys %{$self->qb->{db_searches}}),
             map([ $_, 1 ], @$row_keys),
-            map([ $_, 2 ], sort keys %{$self->{subqueries}}),
+            map([ $_, 2 ], sort keys %{$self->qb->{subqueries}}),
         );
         my $col_count = 4;
         my $row_count = int((@s + $col_count - 1) / $col_count);
@@ -209,7 +166,7 @@ sub attach {
             }
         }
         $t->param(search_hints => $rows);
-        $t->param(search_enums => $self->{enums});
+        $t->param(search_enums => $self->qb->{enums});
     }
 
     # Suppose that attach_listview call comes last, so we modify settings in-place.
@@ -233,28 +190,7 @@ sub order_by {
 
 sub where { $_[0]->{where} ||= $_[0]->make_where }
 
-sub make_where {
-    my ($self) = @_;
-    my %result;
-    for my $q (@{$self->{search}}) {
-        my ($k, $v, $op) = @$q;
-        my $f = $self->{db_searches}->{$k} or next;
-        $v = $self->{enums}->{$k}->{$v} // $v;
-        push @{$result{$f} //= []}, sql_op($op, $v);
-    }
-    my (@sq_list, @sq_unknown);
-    for my $d (@{$self->{search_subqueries}}) {
-        my ($name, $value) = @$d;
-        my $sq = $self->{subqueries}->{$name}
-            or push @sq_unknown, $name and next;
-        my $msg_arg = $sq->{t} ? $dbh->selectrow_array($sq->{t}, undef, $value) : undef;
-        msg($sq->{m}, $msg_arg) if $sq->{m};
-        # SQL::Abstract uses double reference do designate subquery.
-        push @sq_list, \[ $sq->{sq} => $value ];
-    }
-    msg(1143, join ',', @sq_unknown) if @sq_unknown;
-    @sq_list ? { -and => [ \%result, @sq_list ] } : \%result;
-}
+sub make_where { $_[0]->qb->make_where }
 
 sub where_cond {
     my ($self) = @_;
@@ -285,45 +221,9 @@ sub sort_in_memory {
     [ sort $cmp @$data ];
 }
 
-sub add_db_search {
-    my ($self, $k, $v) = @_;
-    $self->{db_searches}->{$k} and die "Duplicate search: $k";
-    $self->{db_searches}->{$k} = $v;
-}
-
-sub define_db_searches {
-    my ($self, $db_searches) = @_;
-    if (ref $db_searches eq 'ARRAY') {
-        for (@$db_searches) {
-            $self->add_db_search((m/\.(.+)$/ ? $1 : $_), $_);
-        }
-    }
-    elsif (ref $db_searches eq 'HASH') {
-        for (keys %$db_searches) {
-            $self->add_db_search($_, $db_searches->{$_});
-        }
-    }
-    else {
-        die;
-    }
-}
-
-sub define_subqueries {
-    my ($self, $subqueries) = @_;
-    for my $k (keys %$subqueries) {
-        $self->{subqueries}->{$k} and die "Duplicate subquery: $k";
-        $self->{subqueries}->{$k} =
-            ref $subqueries->{$k} ? $subqueries->{$k} : { sq => $subqueries->{$k} };
-    }
-}
-
-sub define_enums {
-    my ($self, $enums) = @_;
-    for my $k (keys %$enums) {
-        die if $self->{enums}->{$k};
-        $self->{enums}->{$k} = $enums->{$k};
-    }
-}
+sub define_db_searches { $_[0]->qb->define_db_searches($_[1]) }
+sub define_subqueries { $_[0]->qb->define_subqueries($_[1]) }
+sub define_enums { $_[0]->qb->define_enums($_[1]) }
 
 sub define_columns {
     my ($self, $url, $default_by, $default_dir, $col_defs) = @_;
@@ -361,31 +261,6 @@ sub define_columns {
         col_defs => $col_defs,
         can_change_cols => ($is_jury && scalar %{$self->{visible_cols}}),
         visible_cols => $self->{visible_cols});
-}
-
-sub extract_search_value {
-    my ($self, $name) = @_;
-    for (my $i = 0; $i < @{$self->{search}}; ++$i) {
-        my ($k, $v) = @{$self->{search}->[$i]};
-        $k eq $name or next;
-        splice @{$self->{search}}, $i, 1;
-        return $self->{enums}->{$k}->{$v} // $v;
-    }
-    undef;
-}
-
-sub search_subquery_value {
-    my ($self, $name) = @_;
-    $_->[0] eq $name and return $_->[1] for @{$self->{search_subqueries}};
-    undef;
-}
-
-sub searches_subset_of {
-    my ($self, $set) = @_;
-    for (@{$self->{search}}, @{$self->{search_subqueries}}) {
-        $set->{$_->[0]} or return 0;
-    }
-    1;
 }
 
 1;

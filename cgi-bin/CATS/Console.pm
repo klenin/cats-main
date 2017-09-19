@@ -227,7 +227,7 @@ sub build_query {
 
     my $globals = {
         day_count => _time_interval_days($s),
-        search_cid => $lv->extract_search_value('contest_id'),
+        search_cid => $lv->qb->extract_search_value('contest_id'),
         lv => $lv,
     };
     my %parts = map { $_ => CATS::Console::Part->new($parts_sql{$_}, $globals) } keys %parts_sql;
@@ -257,7 +257,7 @@ sub build_query {
                 ->contest('(M.contest_id IS NULL OR M.contest_id = ?)');
 
             my $msg_subset = { account_id => 1, team_name => 1, city => 1, contest_id => 1 };
-            if ($lv->searches_subset_of($msg_subset)) {
+            if ($lv->qb->searches_subset_of($msg_subset)) {
                 $question->search;
                 $message->search;
             }

@@ -1,0 +1,161 @@
+package CATS::QueryBuilder;
+
+use strict;
+use warnings;
+
+use CATS::DB;
+use CATS::Messages qw(msg);
+
+sub new {
+    my ($class, %p) = @_;
+    my $self = {
+        search => [],
+        search_subqueries => [],
+        db_searches => {},
+        subqueries => {},
+        enums => {},
+    };
+    bless $self, $class;
+}
+
+sub parse_search {
+    my ($self, $search) = @_;
+    my $ident = '[a-zA-Z][a-zA-Z0-9_]*';
+    for (split /,\s*/, $search) {
+        /^($ident)([!~^=><]?=|>|<|\?|!~)(.*)$/ ? push @{$self->{search}}, [ $1, $3, $2 ] :
+        /^($ident)\((\d+)\)$/ ? push @{$self->{search_subqueries}}, [ $1, $2 ] :
+        push @{$self->{search}}, [ '', $_, '' ];
+    }
+}
+
+sub regex_op {
+    my ($op, $v) = @_;
+    $op eq '=' || $op eq '==' ? "^\Q$v\E\$" :
+    $op eq '!=' ? "^(?!\Q$v\E)\$" :
+    $op eq '^=' ? "^\Q$v\E" :
+    $op eq '~=' || $op eq '' ? "\Q$v\E" :
+    $op eq '!~' ? "^(?!.*\Q$v\E)" :
+    $op eq '?' ? "." :
+    die "Unknown search op '$op'";
+}
+
+sub sql_op {
+    my ($op, $v) = @_;
+    $op eq '=' || $op eq '==' ? { '=', $v } :
+    $op eq '!=' ? { '!=', $v } :
+    $op eq '^=' ? { 'STARTS WITH', $v } :
+    $op eq '~=' ? { 'LIKE', '%' . "$v%" } :
+    $op eq '!~' ? { 'NOT LIKE', '%' . "$v%" } :
+    $op eq '?' ? { '!=', undef, '!=', \q~''~ } :
+    $op =~ /^>|>=|<|<=$/ ? { $op, $v } : # SQL-only for now.
+    die "Unknown search op '$op'";
+}
+
+# <search> ::= <condition> { ',' <condition> }
+# <condition> ::= <value> | <field name> { '=' | '==' | '!=' | '^=' | '~=' | '!~' } <value> | <func>(<integer>)
+# Spaces are significant around values, but not around keys.
+# Values without field name are searched in all fields.
+# Different fields are AND'ed, multiple values of the same field are OR'ed.
+sub get_mask {
+    my ($self) = @_;
+    my %mask;
+    for my $q (@{$self->{search}}) {
+        my ($k, $v, $op) = @$q;
+        $self->{db_searches}->{$k} or push @{$mask{$k} ||= []}, regex_op($op, $v);
+    }
+    for (values %mask) {
+        my $s = join '|', @$_;
+        $_ = qr/$s/i;
+    }
+    %mask;
+}
+
+sub make_where {
+    my ($self) = @_;
+    my %result;
+    for my $q (@{$self->{search}}) {
+        my ($k, $v, $op) = @$q;
+        my $f = $self->{db_searches}->{$k} or next;
+        $v = $self->{enums}->{$k}->{$v} // $v;
+        push @{$result{$f} //= []}, sql_op($op, $v);
+    }
+    my (@sq_list, @sq_unknown);
+    for my $d (@{$self->{search_subqueries}}) {
+        my ($name, $value) = @$d;
+        my $sq = $self->{subqueries}->{$name}
+            or push @sq_unknown, $name and next;
+        my $msg_arg = $sq->{t} ? $dbh->selectrow_array($sq->{t}, undef, $value) : undef;
+        msg($sq->{m}, $msg_arg) if $sq->{m};
+        # SQL::Abstract uses double reference to designate subquery.
+        push @sq_list, \[ $sq->{sq} => $value ];
+    }
+    msg(1143, join ',', @sq_unknown) if @sq_unknown;
+    @sq_list ? { -and => [ \%result, @sq_list ] } : \%result;
+}
+
+sub add_db_search {
+    my ($self, $k, $v) = @_;
+    $self->{db_searches}->{$k} and die "Duplicate search: $k";
+    $self->{db_searches}->{$k} = $v;
+}
+
+sub define_db_searches {
+    my ($self, $db_searches) = @_;
+    if (ref $db_searches eq 'ARRAY') {
+        for (@$db_searches) {
+            $self->add_db_search((m/\.(.+)$/ ? $1 : $_), $_);
+        }
+    }
+    elsif (ref $db_searches eq 'HASH') {
+        for (keys %$db_searches) {
+            $self->add_db_search($_, $db_searches->{$_});
+        }
+    }
+    else {
+        die;
+    }
+}
+
+sub define_subqueries {
+    my ($self, $subqueries) = @_;
+    for my $k (keys %$subqueries) {
+        $self->{subqueries}->{$k} and die "Duplicate subquery: $k";
+        $self->{subqueries}->{$k} =
+            ref $subqueries->{$k} ? $subqueries->{$k} : { sq => $subqueries->{$k} };
+    }
+}
+
+sub define_enums {
+    my ($self, $enums) = @_;
+    for my $k (keys %$enums) {
+        die if $self->{enums}->{$k};
+        $self->{enums}->{$k} = $enums->{$k};
+    }
+}
+
+sub extract_search_value {
+    my ($self, $name) = @_;
+    for (my $i = 0; $i < @{$self->{search}}; ++$i) {
+        my ($k, $v) = @{$self->{search}->[$i]};
+        $k eq $name or next;
+        splice @{$self->{search}}, $i, 1;
+        return $self->{enums}->{$k}->{$v} // $v;
+    }
+    undef;
+}
+
+sub search_subquery_value {
+    my ($self, $name) = @_;
+    $_->[0] eq $name and return $_->[1] for @{$self->{search_subqueries}};
+    undef;
+}
+
+sub searches_subset_of {
+    my ($self, $set) = @_;
+    for (@{$self->{search}}, @{$self->{search_subqueries}}) {
+        $set->{$_->[0]} or return 0;
+    }
+    1;
+}
+
+1;

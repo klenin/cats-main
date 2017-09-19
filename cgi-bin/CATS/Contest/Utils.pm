@@ -122,7 +122,7 @@ sub authenticated_contests_view {
     $sth->execute($uid, $p->{listview}->where_params);
 
     my $original_contest = 0;
-    if (my $pid = $p->{listview}->search_subquery_value('has_problem')) {
+    if (my $pid = $p->{listview}->qb->search_subquery_value('has_problem')) {
         $original_contest = $dbh->selectrow_array(q~
             SELECT P.contest_id FROM problems P WHERE P.id = ?~, undef,
             $pid) // 0;
