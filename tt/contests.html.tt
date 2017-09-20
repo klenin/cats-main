@@ -48,7 +48,7 @@ function delete_contest(href, name) {
     [% IF c.registration_denied; flag('ct_denied'); END =%]
     [% IF c.show_points; flag('ct_school'); END =%]
     [% IF c.is_hidden; flag('ct_hidden'); END =%]
-    [% IF c.has_orig; ct_original; END %]
+    [% IF c.has_orig; capt.ct_original; END %]
 </td>
 </tr>
 [% END %]
