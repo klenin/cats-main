@@ -21,11 +21,14 @@ sub new {
 sub parse_search {
     my ($self, $search) = @_;
     my $ident = '[a-zA-Z][a-zA-Z0-9_]*';
+    $self->{search} = [];
+    $self->{search_subqueries} = [];
     for (split /,\s*/, $search) {
         /^($ident)([!~^=><]?=|>|<|\?|!~)(.*)$/ ? push @{$self->{search}}, [ $1, $3, $2 ] :
         /^($ident)\((\d+)\)$/ ? push @{$self->{search_subqueries}}, [ $1, $2 ] :
         push @{$self->{search}}, [ '', $_, '' ];
     }
+    $self;
 }
 
 sub regex_op {
@@ -67,7 +70,7 @@ sub get_mask {
         my $s = join '|', @$_;
         $_ = qr/$s/i;
     }
-    %mask;
+    \%mask;
 }
 
 sub make_where {
@@ -84,13 +87,15 @@ sub make_where {
         my ($name, $value) = @$d;
         my $sq = $self->{subqueries}->{$name}
             or push @sq_unknown, $name and next;
-        my $msg_arg = $sq->{t} ? $dbh->selectrow_array($sq->{t}, undef, $value) : undef;
-        msg($sq->{m}, $msg_arg) if $sq->{m};
+        if ($sq->{m}) {
+            my $msg_arg = $sq->{t} ? $dbh->selectrow_array($sq->{t}, undef, $value) : undef;
+            msg($sq->{m}, $msg_arg);
+        }
         # SQL::Abstract uses double reference to designate subquery.
         push @sq_list, \[ $sq->{sq} => $value ];
     }
     msg(1143, join ',', @sq_unknown) if @sq_unknown;
-    @sq_list ? { -and => [ \%result, @sq_list ] } : \%result;
+    @sq_list ? { -and => [ (%result ? \%result : ()), @sq_list ] } : \%result;
 }
 
 sub add_db_search {
@@ -128,7 +133,7 @@ sub define_subqueries {
 sub define_enums {
     my ($self, $enums) = @_;
     for my $k (keys %$enums) {
-        die if $self->{enums}->{$k};
+        die "Duplicate enum: $k" if $self->{enums}->{$k};
         $self->{enums}->{$k} = $enums->{$k};
     }
 }

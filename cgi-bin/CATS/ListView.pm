@@ -101,7 +101,7 @@ sub attach {
     $$page ||= 0;
     my $rows = $s->{rows} || 1;
 
-    my %mask = $self->qb->get_mask;
+    my %mask = %{$self->qb->get_mask};
 
     my ($row_keys, @unknown_searches);
     ROWS: while (my %row = $fetch_row->($sth)) {
