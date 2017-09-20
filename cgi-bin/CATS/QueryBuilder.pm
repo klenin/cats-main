@@ -138,15 +138,14 @@ sub define_enums {
     }
 }
 
-sub extract_search_value {
+sub extract_search_values {
     my ($self, $name) = @_;
-    for (my $i = 0; $i < @{$self->{search}}; ++$i) {
-        my ($k, $v) = @{$self->{search}->[$i]};
-        $k eq $name or next;
-        splice @{$self->{search}}, $i, 1;
-        return $self->{enums}->{$k}->{$v} // $v;
-    }
-    undef;
+    my @result = map {
+        my ($k, $v) = @$_;
+        $self->{enums}->{$k}->{$v} // $v;
+    } grep $_->[0] eq $name, @{$self->{search}};
+    $self->{search} = [ grep $_->[0] ne $name, @{$self->{search}} ];
+    \@result;
 }
 
 sub search_subquery_value {

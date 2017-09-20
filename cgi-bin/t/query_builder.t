@@ -4,7 +4,7 @@ use warnings;
 use File::Spec;
 use FindBin;
 use Test::Exception;
-use Test::More tests => 14;
+use Test::More tests => 16;
 
 use lib File::Spec->catdir($FindBin::Bin, '..');
 use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
@@ -36,6 +36,10 @@ is_deeply qb_mask('not_eq!=a,starts^=b,contains~=c,not_contains!~d'),
     $qb->parse_search('a!=1,id=2,b=3');
     is_deeply $qb->get_mask, { b => qr/^3$/i }, 'mask db';
     is_deeply $qb->make_where, { a => [ { '!=', 1 } ], 't.id' => [ { '=', 2 } ] }, 'db where';
+
+    $qb->parse_search('a=1,b=x,a=2,b=y');
+    is_deeply $qb->extract_search_values('b'), [ 'x', 'y' ], 'extract_search_values';
+    is_deeply $qb->make_where, { a => [ { '=', 1 }, { '=', 2 } ] }, 'db where or';
 
     $qb->parse_search('a=x');
     is_deeply $qb->make_where, { a => [ { '=', 22 } ] }, 'enums';
