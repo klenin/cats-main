@@ -439,6 +439,11 @@ sub remove_cache {
 
 sub same_or_default { @_ > 1 ? -1 : $_[0]; }
 
+sub search_clist {
+    my ($self) = @_;
+    join ',', map "contest_id=$_", split ',', $self->{contest_list};
+}
+
 sub rank_table {
     (my CATS::RankTable $self) = @_;
 
@@ -600,7 +605,7 @@ sub rank_table {
         href_user_stats => url_f('user_stats'),
         href_submits => url_f('console',
             i_value => -1, se => 'user_stats', show_results => 1, rows => 30,
-            ($is_root ? (search => "contest_id=$cid") : ())
+            ($is_root ? (search => $self->search_clist) : ())
         ),
     );
     $t->param(cache_since => $max_req_id) if $is_jury;
