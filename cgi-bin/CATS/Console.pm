@@ -44,8 +44,14 @@ sub search {
 
 sub contest {
     my ($self, $cond) = @_;
-    $self->add($cond, $is_root ? $self->{search_cid} : $cid) if !$is_root || $self->{search_cid};
-    $self;
+    return $self->add($cond, $cid) if !$is_root;
+    my $scid = $self->{search_cid};
+    ref $scid eq 'ARRAY' && @$scid  or return $self;
+    if (@$scid > 1) {
+        my $m = join ', ', ('?') x @$scid;
+        $cond =~ s/= \?/IN ($m)/;
+    }
+    $self->add($cond, @$scid);
 }
 
 sub sql {
@@ -227,7 +233,7 @@ sub build_query {
 
     my $globals = {
         day_count => _time_interval_days($s),
-        search_cid => $lv->qb->extract_search_value('contest_id'),
+        search_cid => $lv->qb->extract_search_values('contest_id'),
         lv => $lv,
     };
     my %parts = map { $_ => CATS::Console::Part->new($parts_sql{$_}, $globals) } keys %parts_sql;
