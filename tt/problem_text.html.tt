@@ -145,8 +145,8 @@ MathJax.Hub.Register.StartupHook('onLoad', function () {
       [% FOREACH s IN p.samples %]
       <tr>
         <td>[% s.rank %]</td>
-        <td><pre><code>[% s.in_file %]</code></pre></td>
-        <td><pre><code>[% s.out_file %]</code></pre></td>
+        <td><pre><code>[% s.in_file | html %]</code></pre></td>
+        <td><pre><code>[% s.out_file | html %]</code></pre></td>
       </tr>
       [% END %]
       </table>
