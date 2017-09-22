@@ -1,14 +1,14 @@
 [%
   capt.import({
-    search => 'search',
-    clear_search => 'clear search',
-    pages => 'pages',
-    show => 'show',
+    search => '搜索',
+    clear_search => '清除搜索',
+    pages => '网页',
+    show => '显示',
     ops => [
-      [ '==', 'equals' ],
-      [ '^=', 'starts with' ],
-      [ '~=', 'contains' ],
-      [ '!=', 'not equals' ],
+      [ '==', '等于' ],
+      [ '^=', '以...开始' ],
+      [ '~=', '包含' ],
+      [ '!=', '不等于' ],
     ],
   })
 %]
