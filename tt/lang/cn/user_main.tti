@@ -1,0 +1,6 @@
+[%
+  capt.import({
+    team_name => 'Participant / team name',
+    login => 'Login',
+  })
+%]

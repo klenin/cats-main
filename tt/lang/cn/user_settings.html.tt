@@ -1,0 +1,7 @@
+[%
+  capt.import({
+    name => 'Name',
+    settings => 'Settings',
+    clear => 'Clear',
+  })
+%]

@@ -1,0 +1,10 @@
+[%
+  capt.import({
+    contest => 'Contest',
+    team => 'Participant',
+    problem => 'Problem',
+    submit_time => 'Submitted at',
+    test_time => 'Testing started at',
+    submit_result => 'Result',
+  })
+%]

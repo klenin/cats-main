@@ -1,0 +1,10 @@
+[%
+  capt.import({
+    problem => 'Problem',
+    passed => 'Passed',
+    failed => 'Failed',
+    equiv => 'Equivalent tests',
+    simple => 'Simple tests',
+    complex => 'Complex tests',
+  })
+%]

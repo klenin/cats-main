@@ -1,0 +1,5 @@
+[%
+  capt.import({
+    last_updated => 'page last updated',
+  })
+%]

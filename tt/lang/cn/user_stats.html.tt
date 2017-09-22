@@ -1,0 +1,14 @@
+[%
+  capt.import({
+    name => 'Name',
+    last_login => 'Last login',
+    last_ip => 'Last IP',
+    problems => 'Problems',
+    sites => 'Sites',
+    envelopes => 'Envelopes not received',
+    all => 'all',
+    solved => 'solved',
+    contests => 'Contests',
+    send_message => 'message',
+  })
+%]

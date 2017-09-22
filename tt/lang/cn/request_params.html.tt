@@ -1,0 +1,16 @@
+[%
+  capt.import({
+    status_ok => 'Continue automated judging',
+    reinstall => 'Reinstall problem',
+    retest => 'Retest',
+    clone => 'Clone',
+    judge => 'Judge',
+    delete => 'Delete run request',
+    confirm_delete => 'Delete run request %d. Are you sure?',
+    set_verdict => 'Set verdict',
+    with_points => 'with points',
+    save_output_prefix => 'Save output prefix',
+    set_tag => 'Set tag',
+    not_supported_DE => 'This request uses development environments not supported by the selected judge',
+  })
+%]

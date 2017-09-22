@@ -1,0 +1,8 @@
+[%
+  capt.import({
+    judge_name => 'Judge name',
+    account_name => 'Account login',
+    pin_mode => 'Pin mode',
+    dev_envs => 'Development enviromnents',
+  })
+%]

@@ -1,0 +1,27 @@
+[%
+  capt.import({
+    welcome => 'Welcome to the automated program testing system with a problem archive',
+    description => [
+      'This system is used for Far Eastern Subregional ACM ICPC, other student competitions and training.',
+    ],
+    judges_active => 'Active judging computers',
+    queue_length => 'Submissions queued for evaluation',
+    problem_count => 'Total number of problems',
+    need_register => 'To access all available features, you need to',
+    register => 'create an account',
+    account_you_can => 'After loggin in, you will be able to',
+    features => [
+      'Participate in contests, including past ones — via virtual participation',
+      'Solve archived problems under your name',
+      'Monitor your progress in a common rating table',
+    ],
+    documentation => 'Documentation',
+    format => 'problem format',
+    spawner => 'spawner module',
+    suggestions => 'You can report errors or suggestions using',
+    issues => 'issue tracker',
+    or_by_email => 'or by email',
+    maintainer_email => "Maintainer's email",
+  });
+  MACRO avail(docs, format, spawner) BLOCK; "${docs} is available, including ${format} and ${spawner}."; END;
+%]

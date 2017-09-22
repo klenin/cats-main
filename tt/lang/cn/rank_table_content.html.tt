@@ -1,0 +1,26 @@
+[%
+  capt.import({
+    not_started => 'Contest has not started yet',
+    hide_ooc => 'hide ooc',
+    show_ooc => 'show ooc',
+    hide_virtual => 'hide virtual',
+    show_virtual => 'show virtual',
+    rules => 'rules',
+    school => 'school',
+    req_selection_last => 'last',
+    req_selection_best => 'best',
+    acm => 'ACM',
+    status => 'status',
+    frozen => 'frozen',
+    actual => 'actual',
+    cache => 'cache',
+    country => 'Country',
+    team_name => 'Participant',
+    total => 'total',
+    time => 'time',
+    place => 'place'
+    status => 'status',
+    average_points => 'Average points',
+    successful_submits => 'Successful submits',
+  })
+%]

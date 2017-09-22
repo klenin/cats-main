@@ -1,0 +1,7 @@
+[%
+  capt.import({
+    code => 'Identifier',
+    name_ru => 'Name (ru)',
+    name_en => 'Name (en)',
+  })
+%]

@@ -1,0 +1,7 @@
+[%
+  capt.import({
+    login => 'login',
+    password => 'password',
+    button => 'log in',
+  })
+%]

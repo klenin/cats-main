@@ -1,0 +1,14 @@
+[%
+  capt.import({
+    search => 'search',
+    clear_search => 'clear search',
+    pages => 'pages',
+    show => 'show',
+    ops => [
+      [ '==', 'equals' ],
+      [ '^=', 'starts with' ],
+      [ '~=', 'contains' ],
+      [ '!=', 'not equals' ],
+    ],
+  })
+%]

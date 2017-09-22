@@ -1,0 +1,25 @@
+[%
+  capt.import({
+    encoding => 'encoding',
+    testsets => 'Testsets',
+    name => 'Name',
+    tests_passed => 'Tests passed',
+    points => 'Points',
+    comment => 'Comment',
+    depends_on => 'Depends on',
+    input_data => 'Input data',
+    answer_data => 'Answer data',
+    output_data => 'Output data',
+    visualize => 'Visualize',
+    show_input_data => 'Show input',
+    show_answer_data => 'Show answer',
+    show_output_data => 'Show output',
+    test => 'Test',
+    verdict => 'Verdict',
+    time => 'Time, sec',
+    memory => 'Memory',
+    disk => 'Disk',
+    hidden => 'Hidden',
+    total => 'Total',
+  })
+%]

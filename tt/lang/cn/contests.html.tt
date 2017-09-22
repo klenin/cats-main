@@ -1,0 +1,24 @@
+[%
+  capt.import({
+    want_to_delete => 'Do you really want to delete contest',
+    virtual_warning => 'Warning! Second virtual participation will remove all submits of the first one. Continue?',
+    alt_params => 'Parameters',
+    problems => 'problems',
+    ct_participant => 'participant',
+    ct_virtual => 'virtual participant',
+    ct_official => 'official',
+    ct_denied => 'closed',
+    ct_school => 'school rules',
+    ct_hidden => 'hidden',
+    ct_original => 'original',
+    participate => 'participate',
+    participate_virtually => 'participate virtually',
+    summary_rank => 'summary rank',
+    create_group => 'create group',
+    virt_help => [
+      'Virtual participation allows to solve problems with a time shift, even after the end of the contest.',
+      'A user can participate virtually only if he did not participate online.'
+      'Multiple attempts at virtual participation are allowed.',
+    ],
+  })
+%]

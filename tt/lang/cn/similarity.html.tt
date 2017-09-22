@@ -1,0 +1,19 @@
+[%
+  capt.import({
+    problem => 'Problem',
+    participant => 'Participant',
+    threshold => 'Threshold',
+    compare => 'Compare',
+    include_virtual => 'Include virtual',
+    include_jury => 'Include jury',
+    group_by_team => 'Group by team',
+    sudden_changes => 'Sudden changes',
+    collapse_idents => 'Collapse identifiers',
+    all_contests => 'All contests',
+    console => 'console',
+    equivalency_groups => 'Equivalency groups',
+    total => 'Total submissions',
+    similar => 'Similar pairs',
+    missing => 'From other contests',
+  })
+%]

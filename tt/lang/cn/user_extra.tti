@@ -1,0 +1,19 @@
+[%
+  capt.import({
+    country => 'Country',
+    city => 'City / region',
+    affiliation => 'Educational institution',
+    affiliation_year => 'Year of enrollment',
+    motto => 'Motto',
+    capitan_name => "Team captain's name",
+    email => 'E-Mail',
+    icq_number => 'ICQ',
+    home_page => 'Home page',
+    git_author_name => "Git author's name",
+    git_author_email => "Git author's e-mail",
+    restrict_ips => 'Restricted to IP',
+    hide_envelopes => 'Hide envelopes',
+    display_input => 'Display input data',
+    'settings.console.autoupdate' => 'Console update interval, sec.',
+  })
+%]

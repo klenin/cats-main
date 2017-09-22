@@ -1,0 +1,14 @@
+[%
+  capt.import({
+    select_testsets => 'Select testsets',
+    for_check => 'Check',
+    for_points => 'Assign points',
+    name => 'Name',
+    tests => 'Tests',
+    count => 'Count',
+    points => 'Points',
+    hide_details => 'Hide details',
+    depends_on => 'Depends on',
+    save => 'Save',
+  })
+%]

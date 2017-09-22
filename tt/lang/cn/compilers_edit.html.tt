@@ -1,0 +1,12 @@
+[%
+  capt.import({
+    code => 'Dev. env. code',
+    description => 'Description',
+    file_ext => 'Supported file extensions',
+    default_file_ext => 'Default file extension',
+    err_regexp => 'Error message pattern',
+    memory_handicap => 'Memory handicap, Mb',
+    syntax => 'Syntax',
+    locked => 'Locked',
+  })
+%]

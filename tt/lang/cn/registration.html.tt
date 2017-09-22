@@ -1,0 +1,11 @@
+[%
+  capt.import({
+    successful => 'Account created successfully.',
+    login => 'log in',
+    new_user => 'New user registration',
+    required_fields => 'Required fileds',
+    aux_fields => 'Auxiliary fields',
+    do_register => 'register',
+  });
+  MACRO you_now_can(enter) BLOCK; "Now you can ${enter} into the system and participate in contests."; END;
+%]

@@ -1,0 +1,15 @@
+[%
+  capt.import({
+    want_to_delete => 'Do you really want do disqualify participant',
+    virtual => 'virtual',
+    save_attributes => 'Save attributes',
+    login => 'Login',
+    tag => 'Tag',
+    set => 'Set',
+    set_site => 'Set site',
+    message_to_teams => 'Message to participants',
+    send => 'Send',
+    send_to_all => 'broadcast',
+    send_to_all_contests => 'to all contests',
+  })
+%]

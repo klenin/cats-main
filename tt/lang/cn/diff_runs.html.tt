@@ -1,0 +1,11 @@
+[%
+  capt.import({
+    compare_submissions => 'Compare submissions',
+    encoding => 'encoding',
+    show => 'Show',
+    both => 'both',
+    diff => 'diff',
+    a_only => 'A only',
+    b_only => 'B only',
+  })
+%]

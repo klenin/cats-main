@@ -1,0 +1,10 @@
+[%
+  capt.import({
+    problem_code => 'Problem code',
+    package => 'package',
+    problem_history => 'history',
+    move => 'Move',
+    link => 'Link',
+    cancel => 'Cancel',
+  })
+%]

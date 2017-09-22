@@ -1,0 +1,8 @@
+[%
+  capt.import({
+    participant => 'Participant',
+    site => 'Site',
+    is_virtual => 'Virtual',
+    finish_now => 'Finish participation now',
+  })
+%]
