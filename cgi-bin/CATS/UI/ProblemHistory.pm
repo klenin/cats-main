@@ -182,16 +182,18 @@ sub problem_history_edit_frame {
     my @blob_params = ($p->{pid}, $hash_base, $p->{file});
     my $blob = CATS::Problem::Storage::show_blob(
         @blob_params, $p->{src_enc} || \&detect_encoding_by_xml_header);
+    $blob->{content} = CATS::Problem::Storage::show_raw(@blob_params)->{content} if $blob->{image};
 
     set_submenu_for_tree_frame($p->{pid}, $hash_base);
     set_history_paths_urls($p->{pid}, $blob->{paths});
+    my $enc = ref $blob->{encoding} ? 'UTF-8' : $blob->{encoding};
     $t->param(
         file => $p->{file},
         blob => $blob,
         problem_title => $title,
         title_suffix => $p->{file},
-        (src_enc => ref $blob->{encoding} ? undef : $blob->{encoding}),
-        source_encodings => source_encodings($blob->{encoding}),
+        src_enc => $enc,
+        source_encodings => source_encodings($enc),
         last_commit => CATS::Problem::Storage::get_log($p->{pid}, $hash_base, 1)->[0],
     );
 }
