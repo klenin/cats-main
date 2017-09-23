@@ -84,8 +84,8 @@ function chg_code(st_sel, pid) {
 <p>[% capt.login_to_participate.replace('\[\[(.*)\]\]', href(href_login, '$1')) %]</p>
 [% END %]
 
-[% IF contest_descr %]
-<p>[% contest_descr | html | linkify %]</p>
+[% IF contest.short_descr %]
+<p>[% contest.short_descr | html | linkify %]</p>
 [% END %]
 
 [% PROCESS includes/listview_header.tti form_name='problems_form' %]
