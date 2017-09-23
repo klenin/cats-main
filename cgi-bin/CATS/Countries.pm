@@ -4,7 +4,8 @@ my $flags_path = './images/std/countries/';
 
 our @countries = (
 
-{ id => 'xx', name => 'I\'m an alien intellect', flag => 'al.gif' },
+{ id => 'xx', name => 'I\'m an alien intellect', flag => 'fam.gif' },
+{ id => 'AD', name => 'Andorra',        flag => 'ad.gif' },
 { id => 'AI', name => 'ANGUILLA',       flag => 'ai.gif' },
 { id => 'AQ', name => 'ANTARCTICA',     flag => undef },
 { id => 'AR', name => 'ARGENTINA',      flag => 'ar.gif' },
@@ -38,6 +39,7 @@ our @countries = (
 { id => 'EE', name => 'ESTONIA',        flag => 'ee.gif' },
 { id => 'FI', name => 'FINLAND',        flag => 'fi.gif' },
 { id => 'FR', name => 'FRANCE', flag => 'fr.gif' },
+{ id => 'GB', name => 'United Kingdom', flag => 'gb.gif' },
 { id => 'GE', name => 'GEORGIA',        flag => 'ge.gif' },
 { id => 'DE', name => 'GERMANY',        flag => 'de.gif' },
 { id => 'GR', name => 'GREECE', flag => 'gr.gif' },
@@ -102,14 +104,13 @@ our @countries = (
 { id => 'TM', name => 'TURKMENISTAN',   flag => undef },
 { id => 'UA', name => 'UKRAINE',        flag => 'ua.gif' },
 { id => 'AE', name => 'UNITED ARAB EMIRATES',   flag => 'ae.gif' },
-{ id => 'UK', name => 'UNITED KINGDOM', flag => 'uk.gif' },
+{ id => 'UK', name => 'United Kingdom', flag => 'gb.gif' },
 { id => 'US', name => 'UNITED STATES',  flag => 'us.gif' },
 { id => 'UY', name => 'URUGUAY',        flag => 'uy.gif' },
 { id => 'UZ', name => 'UZBEKISTAN',     flag => 'uz.gif' },
 { id => 'VE', name => 'VENEZUELA',      flag => 've.gif' },
 { id => 'VN', name => 'VIET NAM',       flag => 'vn.gif' },
 { id => 'EH', name => 'WESTERN SAHARA', flag => 'eh.gif' },
-{ id => 'YU', name => 'YUGOSLAVIA',     flag => 'yu.gif' },
 { id => 'ZW', name => 'ZIMBABWE',       flag => 'zw.gif' }
 
 );
