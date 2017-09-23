@@ -438,7 +438,6 @@ sub problems_frame {
         can_submit => $is_jury ||
             $user->{is_participant} &&
             ($user->{is_virtual} || !$contest->has_finished($user->{diff_time} + $user->{ext_time})),
-        is_practice => $contest->is_practice,
         de_list => \@de, problem_codes => \@cats::problem_codes,
         contest_id => $cid, no_judges => !$jactive,
      );

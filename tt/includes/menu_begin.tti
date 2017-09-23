@@ -6,7 +6,7 @@
 <table class="iface header">
   <tr>
     <td class="contest_title">
-      [% contest_title ? contest_title : '&nbsp;' | html %]
+      [% contest.title ? contest.title : '&nbsp;' | html %]
       [% IF problem_title %]<span> / [% problem_title | html %]</span>[% END %]
     </td>
     <td class="elapsed">

@@ -80,7 +80,7 @@ function chg_code(st_sel, pid) {
 <p><b>[% capt.no_judges %]</b></p>
 [% END %]
 
-[% IF !is_user && !is_practice %]
+[% IF !is_user && !contest.is_practice %]
 <p>[% capt.login_to_participate.replace('\[\[(.*)\]\]', href(href_login, '$1')) %]</p>
 [% END %]
 
@@ -129,8 +129,8 @@ function chg_code(st_sel, pid) {
 [% IF visible_cols.Mu %]<td>[% p.last_modified_by %]</td>[% END %]
 [% IF visible_cols.Mt %]<td class="num">[% p.upload_date %]</td>[% END %]
 [% END %]
-[% IF is_practice %]<td>[% p.contest_name | html %]</td>[% END %]
-[% IF (is_user || is_practice) && visible_cols.Vc %]
+[% IF contest.is_practice %]<td>[% p.contest_name | html %]</td>[% END %]
+[% IF (is_user || contest.is_practice) && visible_cols.Vc %]
   <td class="problem_req_count">
     <div>
     <div class="last_verdict [% 'run_details_' _ p.last_verdict IF p.last_verdict %]">
