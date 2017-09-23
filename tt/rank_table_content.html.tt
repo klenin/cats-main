@@ -21,7 +21,7 @@
 [%- " / ${capt.req_selection_last}" IF req_selection == 0 -%]
 [%- " / ${capt.req_selection_best}" IF req_selection == 1 -%]
 </a>
-[% ELSE %]<a href="./docs/rules_acm.html">[% capt.ACM %]</a>
+[% ELSE %]<a href="./docs/rules_acm.html">[% capt.acm %]</a>
 [% END %]
 [% capt.status %]:
 [% IF frozen %]<span style="color: #0000a0;">[% capt.frozen %]</span>[% ELSE %]<span style="color: #00a040;">[% capt.actual %]</span>[% END %]
@@ -40,7 +40,6 @@
 [% END -%]
 <tr class="col_defs">
 <th class="narrow"></th>
-[%- IF 0 %]<th class="narrow">[% capt.country %]</th>[% END -%]
 <th>[% capt.team_name %]</th>
 [% FOREACH p IN problems %]
 <th style="width: [% problem_column_width %]%;">
@@ -57,15 +56,8 @@
 [% FOREACH r IN rank %]
 <tr class="rank_row[% ' even' UNLESS r.row_color %]">
 <td>[% r.contestant_number %]&nbsp;</td>
-[%- IF 0 %]
-<td class="nobr">
-[% IF r.flag %]
-    <img src="[% r.flag %]" alt="[% r.country | html %][% IF r.motto %] - [% r.motto | html %][% END %]">
-[% ELSE %]
-    [% r.country | html %][% IF r.motto %] - [% r.motto | html %][% END %]
-[% END %]
-[% END -%]
 <td>
+  [%- IF show_flags && r.flag %]<img src="[% r.flag %]" alt="[% r.country | html %]"> [% END %]
   [%- IF 0 %]<a href="[% href_user_stats %];uid=[% r.id %]" title="[% r.city %]"></a>[% END -%]
   [%- r.team_name | html; IF show_regions && r.city; ' ('; r.city; ')'; END -%]
 </td>
@@ -85,7 +77,7 @@
 [% IF rank %]<script type="text/javascript"><!--
 var rank_table = [
 [% FOREACH r IN rank %]
-  { id: [% r.account_id %], n: "[% r.team_name | html | $Javascript %]",[% IF show_points %]
+  { id: [% r.account_id %], n: "[% r.team_name | html | $Javascript %]", fl: "[% r.flag %]",[% IF show_points %]
     pt: [[% FOREACH c IN r.columns %]'[% c.points %]'[% UNLESS loop.last %],[% END %][% END %]], tp: [% r.total_points %][% ELSE %]
     tm: [[% FOREACH c IN r.columns %]'[% c.time %]'[% UNLESS loop.last %],[% END %][% END %]],
     td: [[% FOREACH c IN r.columns %]'[% c.td %]'[% UNLESS loop.last %],[% END %][% END %]],
@@ -103,6 +95,7 @@ for(var i = 0; i < rank_table.length; ++i) {
     document.write('<tr class="rank_row' + (r.rc ? '' : ' even') + '">');
     td(href('[% href_submits %];uf=' + r.id, (i + 1) + '&nbsp;'));
     td(
+        [% IF show_flags %]'<img src="' + r.fl + '"/> ' +[% END %]
         href(
             '[% href_user_stats %];uid=' + r.id,
             r.n[% IF show_regions %] + (r.t ? ' (' + r.t + ')' : '')[% END %],

@@ -20,7 +20,8 @@ use CATS::Web qw(param url_param);
 use fields qw(
     contest_list hide_ooc hide_virtual show_points frozen
     title has_practice not_started filter sites use_cache
-    rank problems problems_idx show_all_results show_prizes req_selection has_competitive show_regions
+    rank problems problems_idx show_all_results show_prizes req_selection has_competitive
+    show_regions show_flags
 );
 
 sub new {
@@ -334,6 +335,7 @@ sub parse_params {
     $self->{sites} = param('sites');
     $self->{show_prizes} = url_param('show_prizes');
     $self->{show_regions} = url_param('show_regions');
+    $self->{show_flags} = url_param('show_flags');
 }
 
 sub prepare_ranks {
@@ -459,6 +461,7 @@ sub rank_table {
         href_show_virtual => url_f(@p, hide_virtual => 0, hide_ooc => $self->{hide_ooc}),
         show_points => $self->{show_points},
         show_regions => $self->{show_regions},
+        show_flags => $self->{show_flags},
         req_selection => same_or_default(values %{$self->{req_selection}}),
     );
     # Results must not include practice contest.
