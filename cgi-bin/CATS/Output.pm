@@ -63,6 +63,7 @@ sub init_template {
         ($json =~ /^[a-zA-Z][a-zA-Z0-9_]+$/ ? (jsonp => $json) : ()),
         messages => CATS::Messages::get,
         user => $user,
+        contest => $contest,
     );
 }
 
