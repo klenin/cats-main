@@ -34,7 +34,7 @@ sub contests_new_frame {
 
 sub contest_checkbox_params() {qw(
     free_registration run_all_tests
-    show_all_tests show_test_resources show_checker_comment show_all_results
+    show_all_tests show_test_resources show_checker_comment show_all_results show_flags
     is_official show_packages local_only is_hidden show_test_data pinned_judges_only
 )}
 

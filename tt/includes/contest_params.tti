@@ -41,5 +41,6 @@
   <tr><td>[% capt.show_test_data %]:</td><td>[% checkbox_1('show_test_data', show_test_data, can_edit) %]</td></tr>
   <tr><td>[% capt.show_checker_comment %]:</td><td>[% checkbox_1('show_checker_comment', show_checker_comment, can_edit) %]</td></tr>
   <tr><td>[% capt.show_packages %]:</td><td>[% checkbox_1('show_packages', show_packages, can_edit) %]</td></tr>
+  <tr><td>[% capt.show_flags %]:</td><td>[% checkbox_1('show_flags', show_flags, can_edit) %]</td></tr>
 </table>
 <br/>

@@ -26,6 +26,7 @@
     show_test_data => 'test data',
     show_checker_comment => 'checker comments',
     show_packages => 'problem packages',
+    show_flags => 'flags',
     ok => '     Ok     ',
     create_copy => 'Create a copy',
     cancel => 'Cancel',

@@ -80,6 +80,7 @@ CREATE TABLE contests (
     show_all_results     SMALLINT DEFAULT 1 NOT NULL CHECK (show_all_results IN (0, 1)),
     rules                INTEGER DEFAULT 0, /* 0 - ACM, 1 - school */
     local_only           SMALLINT DEFAULT 0 CHECK (local_only IN (0, 1)),
+    show_flags           SMALLINT DEFAULT 0 CHECK (show_flags IN (0, 1)),
     /* Maximum requests per participant per problem. */
     max_reqs             INTEGER DEFAULT 0,
     /* TODO: output runs in a frozen table. */

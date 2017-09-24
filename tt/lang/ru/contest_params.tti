@@ -26,6 +26,7 @@
     show_test_data => 'содержимое тестов',
     show_checker_comment => "комментарии checker'а",
     show_packages => 'пакеты задач',
+    show_flags => 'флаги',
     ok => '     Ok     ',
     create_copy => 'Создать копию',
     cancel => 'Отмена',
