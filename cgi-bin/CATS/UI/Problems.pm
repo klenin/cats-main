@@ -325,6 +325,7 @@ sub problems_frame {
 
     my $text_link_f = $is_jury || $contest->{is_hidden} || $contest->{local_only} ?
         \&url_f : \&CATS::StaticPages::url_static;
+    my %any_langs;
 
     my $fetch_record = sub {
         my $c = $_[0]->fetchrow_hashref or return ();
@@ -341,13 +342,16 @@ sub problems_frame {
         }
         $c->{has_explanation} ||= $hrefs_view{explanation};
         my $problem_langs = [];
-        if (!$hrefs_view{statement} && ($is_jury || !has_lang_tag($c))) {
+        my $lang_tag = has_lang_tag($c);
+        if (!$hrefs_view{statement} && ($is_jury || !$lang_tag)) {
             my @langs = split ',', $c->{lang};
             $problem_langs = [ map
                 +{ name => $_, href => $text_link_f->('problem_text', cpid => $c->{cpid}, pl => $_) },
                 @langs[1 .. $#langs]
             ];
+            @any_langs{@langs} = undef;
         }
+        $any_langs{$lang_tag->[1] // $c->{lang}} = undef if !@$problem_langs && !$hrefs_view{statement};
 
         my ($last_request, $last_verdict) = split ' ', $c->{last_submission} || '';
 
@@ -414,19 +418,27 @@ sub problems_frame {
         { de_id => 'by_extension', de_name => res_str(536) },
         map {{ de_id => $_->{id}, de_name => $_->{description} }} @{$de_list->des} );
 
-    my $pt_url = sub {{ href => $_[0], item => ($_[1] || res_str(538)), target => '_blank' }};
+    my $pt_url = sub {
+        my ($href, $item) = @_;
+        $item //= res_str(538);
+        {
+            href => $text_link_f->(@$href), item => $item,
+            keys %any_langs < 2 ? () : (sub_items => [
+                map +{ href => $text_link_f->(@$href, pl => $_), item => $_ }, sort keys %any_langs ])
+        }
+    };
     my $pr = $contest->is_practice;
     my @submenu = grep $_,
         ($is_jury ? (
-            !$pr && $pt_url->(url_f('problem_text', nospell => 1, nokw => 1, notime => 1, noformal => 1)),
-            !$pr && $pt_url->(url_f('problem_text'), res_str(555)),
+            !$pr && $pt_url->([ 'problem_text', nospell => 1, nokw => 1, notime => 1, noformal => 1 ]),
+            !$pr && $pt_url->([ 'problem_text' ], res_str(555)),
             { href => url_f('problems', link => 1), item => res_str(540) },
             { href => url_f('problems', link => 1, move => 1), item => res_str(551) },
             !$pr && ({ href => url_f('problems_retest'), item => res_str(556) }),
             { href => url_f('contests_prizes', clist => $cid), item => res_str(565) },
         )
         : (
-            !$pr && $pt_url->($text_link_f->('problem_text', cid => $cid)),
+            !$pr && $pt_url->([ 'problem_text', cid => $cid ]),
         )),
         { href => url_f('contests', params => $cid), item => res_str(546) };
 

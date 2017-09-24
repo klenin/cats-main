@@ -141,11 +141,12 @@ a, a:link {
     font-size: 14px
 }
 
-.sub_menu a {
+.sub_menu td, .sub_menu a {
     font-family: Arial, sans-serif;
     font-size: 12px;
-    color: #3030a0;
 }
+
+.sub_menu a { color: #3030a0; }
 
 .main_menu a.main_menu_selected, .main_menu a.main_menu_selected:visited { color: yellow; }
 a.sub_menu_selected, a.sub_menu_selected:visited { color: white; }

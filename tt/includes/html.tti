@@ -26,12 +26,17 @@
 [%- MACRO maybe_href(url, text, title) BLOCK; IF url; href(url, text, title); ELSE; text | html ; END; END -%]
 
 [%- MACRO menu(items, selected) BLOCK -%]
-    [%- FOREACH i IN items ~%]
+  [%- FOREACH i IN items ~%]
+    [%- IF i.href -%]
       <a
         [%~ " class=\"$selected\"" IF i.selected %] href="[% i.href %]"
         [%- " target=\"${i.target}\"" IF i.target %]>[% i.item %]</a>
-      [%- ' | ' UNLESS loop.last %]
-    [% END -%]
+    [%- ELSE ~%]
+      [%- i.item -%]
+    [%- END -%]
+    [%- IF i.sub_items %]: [%- FOREACH si IN i.sub_items %]<a href="[% si.href %]">[% si.item %]</a> [% END; END ~%]
+    [%- loop.last ? ' ' : ' | ' %]
+  [%- END -%]
 [%- END -%]
 
 [%- MACRO span(text, class) BLOCK -%]<span[% " class=\"$class\"" IF class %]>[% text | html %]</span>[% END -%]
