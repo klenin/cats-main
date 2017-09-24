@@ -21,7 +21,7 @@
 [%- " / ${capt.req_selection_last}" IF req_selection == 0 -%]
 [%- " / ${capt.req_selection_best}" IF req_selection == 1 -%]
 </a>
-[% ELSE %]<a href="./docs/rules_acm.html">[% capt.acm %]</a>
+[% ELSE %]<a href="./docs/rules_acm.[% lang == 'ru' ? 'ru' : 'en' %].html">[% capt.acm %]</a>
 [% END %]
 [% capt.status %]:
 [% IF frozen %]<span style="color: #0000a0;">[% capt.frozen %]</span>[% ELSE %]<span style="color: #00a040;">[% capt.actual %]</span>[% END %]

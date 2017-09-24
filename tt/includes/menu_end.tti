@@ -12,7 +12,7 @@
   </td>
   <td>
     <a href="https://github.com/klenin/cats-main">[% PROCESS includes/github_icon.tti %] [% capt.development %]</a> |
-    <a href="docs/index.[% lang %].html">[% capt.docs %]</a> |
+    <a href="docs/index.[% lang  == 'ru' ? 'ru' : 'en' %].html">[% capt.docs %]</a> |
     <a href="docs/authors.html">&copy; 2002-2017 [% capt.authors %]</a>&nbsp;
   </td>
 </tr>

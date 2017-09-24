@@ -1,0 +1,39 @@
+[% PROCESS header.tti title = 'ACM competition rules' lang = 'en' %]
+<h2>Submission evaluation</h2>
+<p>
+Submissions are automatically evaluated immediately aftes sending.
+When the testing system is under high load, submissions are queued for evaluation,
+and with a waiting time up to a few minutes.
+</p>
+<p>Submissions are checked on a set of tests common for all participants.
+Tests are run sequentially until either all tests pass
+(in which case a submission is accepted as correct), or a first failing test is found.
+Participant receives the <a href="verdicts.en.html">verdict</a>,
+as well as the number of the first failing test if submission failed.
+</p>
+
+<h2>Scoring</h2>
+<p>
+Problem is deemed solved if it has a submission accepted by the testing system and not rejected by jury.
+</p><p>
+Time spent on solving a problem is a time (in minutes) passed since the start of the contest
+until the moment of first accepted submission,
+plus 20 minutes of penalty time for each failed submission before that.
+Time spent on non-accepted problem is zero.
+Total time is a sum of time spent on all problems.
+</p><p>
+Participants are sorted in descending order of solved problems count.
+Participants with equal number of solved problems are sorted in ascending order of total time.
+Participants with equal number of solved problems and equal total time share the same place.
+</p><p>
+Rank table uses the following notation:
+</p>
+<table class="bordered">
+<tr><td><code>+</code></td><td>problem is solved from the first submission</td></tr>
+<tr><td><code>+j</code></td><td>problem is solved after j failed submissions</td></tr>
+<tr><td><code>-j</code></td><td>problem is not solved (with j failed submissions)</td></tr>
+</table>
+<p>
+For solved problems, time spent is displayed, including penalty time.
+</p>
+[% PROCESS footer.tti %]
