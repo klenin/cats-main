@@ -282,7 +282,7 @@ sub get_contests_info {
           CAST(CURRENT_TIMESTAMP - C.defreeze_date AS DOUBLE PRECISION),
           CAST(CURRENT_TIMESTAMP - $CATS::Time::contest_start_offset_sql AS DOUBLE PRECISION),
           CA.is_jury, CA.id,
-          C.is_hidden, C.rules, C.ctype, C.show_all_results, C.req_selection
+          C.is_hidden, C.rules, C.ctype, C.show_all_results, C.show_flags, C.req_selection
         FROM contests C
         LEFT JOIN contest_accounts CA ON CA.contest_id = C.id AND CA.account_id = ?
         LEFT JOIN contest_sites CS ON CS.contest_id = C.id AND CS.site_id = CA.site_id
@@ -295,7 +295,7 @@ sub get_contests_info {
     $self->{show_all_results} = 1;
     while (my (
         $id, $title, $since_freeze, $since_defreeze, $since_start, $is_local_jury, $caid,
-        $is_hidden, $rules, $ctype, $show_all_results, $req_selection) =
+        $is_hidden, $rules, $ctype, $show_all_results, $show_flags, $req_selection) =
             $sth->fetchrow_array
     ) {
         push @actual_contests, $id;
@@ -304,6 +304,7 @@ sub get_contests_info {
         $self->{has_practice} ||= ($ctype || 0);
         $self->{show_points} ||= $rules;
         $self->{show_all_results} &&= $show_all_results;
+        $self->{show_flags} ||= $show_flags;
         $self->{req_selection}->{$id} = $req_selection;
         push @names, Encode::decode_utf8($title);
     }
@@ -335,7 +336,7 @@ sub parse_params {
     $self->{sites} = param('sites');
     $self->{show_prizes} = url_param('show_prizes');
     $self->{show_regions} = url_param('show_regions');
-    $self->{show_flags} = url_param('show_flags');
+    $self->{show_flags} = url_param('show_flags') if defined url_param('show_flags');
 }
 
 sub prepare_ranks {

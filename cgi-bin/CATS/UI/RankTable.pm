@@ -46,7 +46,7 @@ sub rank_table_frame {
         sites => (url_param('sites') // undef),
         show_prizes => (url_param('show_prizes') || 0),
         show_regions => (url_param('show_regions') || 0),
-        show_flags => (url_param('show_flags') || 0),
+        (defined url_param('show_flags') ? (show_flags => url_param('show_flags')) : ()),
     );
     $t->param(href_rank_table_content => url_f('rank_table_content', @params));
     my $submenu =
