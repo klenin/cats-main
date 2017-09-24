@@ -118,7 +118,7 @@ our @countries = (
 sub get_flag {
     my ($country_id) = @_ or return;
     my ($country) = grep $_->{id} eq $country_id, @countries or return;
-    my $flag = defined $country->{flag} ? "$flags_path/$country->{flag}" : undef;
+    my $flag = defined $country->{flag} ? "$flags_path$country->{flag}" : undef;
     return ($country->{name}, $flag);
 }
 
