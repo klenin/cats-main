@@ -64,6 +64,7 @@ sub init_template {
         messages => CATS::Messages::get,
         user => $user,
         contest => $contest,
+        noiface => param('noiface') // 0,
     );
 }
 
