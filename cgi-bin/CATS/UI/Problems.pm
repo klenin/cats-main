@@ -323,7 +323,8 @@ sub problems_frame {
         $t->param(status_list => \@status_list, editable => 1);
     }
 
-    my $text_link_f = $is_jury || $contest->{is_hidden} || $contest->{local_only} ?
+    my $text_link_f =
+        $is_jury || $contest->{is_hidden} || $contest->{local_only} || $contest->{time_since_start} < 0 ?
         \&url_f : \&CATS::StaticPages::url_static;
     my %any_langs;
 
