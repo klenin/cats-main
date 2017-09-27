@@ -1,0 +1,45 @@
+[% PROCESS header.tti title='Working with the console' lang = 'en' %]
+<h2>General description</h2>
+<p>
+Console (accessible trough “console” main menu entry)
+is designed for viewing history of submitted solutions and their status,
+and for communicating with jury.</p>
+<p>Console’s interface consists of chronologically ordered list of event records.
+There are four kinds of events:
+submitting of a solution, question to the jury, a message from the jury
+and a notification of a contest start/finish.
+</p><p>
+Console contents is automatically refreshed every 30 seconds.
+Refresh interval is configurable in a profile settings.
+</p>
+
+<h2>Submissions</h2>
+<p>For already tested submissions submission time, name of participant, name of problem and
+a <a href="verdicts.en.html">verdict</a> are displayed. For submissions still in queue,
+"NP" (not processed) is displayed instead of a verdict, and for submissions currently in testing "T" (testing) is displayed.
+</p><p>
+During the contest, verdicts of other participants are displayed as either "OK" (solution accepted)
+or "RJ" (solution rejected). When final contest results are published, detailed verdicts of all participants
+become available.
+</p><p>
+Clicking on problem name field allows to view source code of the submission.
+Clicking on verdict field allows to view detailed test results of the submission.
+</p>
+
+<h2>Questions to jury</h2>
+<p>To ask jury a question, enter question text in "Question to jury:" field in the lower part of the page
+and press "Send" button.
+</p><p>
+Questions asked by the participant, jury answers and messages from jury to all participants
+are displayed in the console.
+</p>
+
+<h2>Filtering</h2>
+<p>To simplify and optimize interface, by default the console displays only the recent events
+related to the current user.
+</p><p>
+To display events for a longer period, select period length and measurement unit
+form the drop-down list above the console and press "Search" button.
+To display events related to all participants, click "all" link to the left of the period drop-down.
+</p>
+[% PROCESS footer.tti %]
