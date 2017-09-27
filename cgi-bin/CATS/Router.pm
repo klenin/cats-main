@@ -154,7 +154,7 @@ $main_routes = {
     prizes => \&CATS::UI::Prizes::prizes_frame,
     contests_prizes => \&CATS::UI::Prizes::contests_prizes_frame,
     sites => [ \&CATS::UI::Sites::sites_frame,
-        new => bool, edit => integer, edit_save => bool, delete => integer, name => str,
+        new => bool, edit => integer, edit_save => bool, delete => integer, name => str, org_name => str,
     ],
 
     answer_box => [ \&CATS::UI::Messages::answer_box_frame,

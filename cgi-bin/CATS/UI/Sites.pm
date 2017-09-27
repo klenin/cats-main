@@ -27,7 +27,8 @@ sub edit_frame { $form->edit_frame }
 
 sub edit_save {
     my ($p) = @_;
-    validate_string_length($p->{name}, 601, 1, 100) or return;
+    validate_string_length($p->{name}, 601, 1, 200) or return;
+    validate_string_length($p->{org_name}, 656, 1, 200) or return;
     $form->edit_save() and msg(1067, Encode::decode_utf8($p->{name}));
 }
 
