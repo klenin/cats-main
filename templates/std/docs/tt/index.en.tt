@@ -7,7 +7,7 @@
 <li><a href="man_registration.html">Registration / profile</a></li>
 <li><a href="man_login.html">Logging in</a></li>
 <li><a href="man_contests.html">Contest selection</a></li>
-<li><a href="man_problems.html">Viewing problems and submitting solutions</a></li>
+<li><a href="man_problems.en.html">Viewing problems and submitting solutions</a></li>
 <li><a href="man_console.html">Working with console</a></li>
 <li><a href="man_rank_table.html">Rank table</a></li>
 <li><a href="man_lists.html">List columns descritption</a></li>
