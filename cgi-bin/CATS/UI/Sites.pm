@@ -216,7 +216,7 @@ sub contest_sites_frame {
         ORDER BY 1~ : 'NULL';
     my $users_count_sql = $lv->visible_cols->{Pt} ? q~
         SELECT COUNT(*) FROM contest_accounts CA
-        WHERE CA.contest_id = CS.contest_id AND CA.site_id = S.id~ : 'NULL';
+        WHERE CA.contest_id = CS.contest_id AND CA.site_id = S.id AND CA.is_hidden = 0~ : 'NULL';
     my $is_used_cond = $is_jury ? '1 = 1' : 'CS.site_id IS NOT NULL';
     my $sth = $dbh->prepare(qq~
         SELECT
