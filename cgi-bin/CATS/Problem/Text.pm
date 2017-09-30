@@ -305,6 +305,7 @@ sub problem_text {
         $problem->{tags} = $p->{tags} if $is_jury_in_contest && defined $p->{tags};
         $problem->{parsed_tags} = $tags = CATS::Problem::Tags::parse_tag_condition($problem->{tags}, sub {});
         $problem->{lang} = choose_lang($problem, $p, $is_jury_in_contest);
+        $problem->{iface_lang} = (grep $_ eq $problem->{lang}, @cats::langs) ? $problem->{lang} : 'en';
         $tags->{lang} = [ 0, $problem->{lang} ];
         $problem->{interactive_io} = $problem->{run_method} != $cats::rm_default;
 

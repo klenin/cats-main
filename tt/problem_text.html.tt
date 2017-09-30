@@ -77,8 +77,8 @@ MathJax.Hub.Register.StartupHook('onLoad', function () {
 </style>
 </head>
 <body>
-[% FOREACH p IN problems; PROCESS "lang/${p.lang}/problem_text_p.html.tt" UNLESS capt.problem_text.item(p.lang); END; %]
-[% FOREACH p IN problems; c = capt.problem_text.item(p.lang) %]
+[% FOREACH p IN problems; il = p.iface_lang; PROCESS "lang/$il/problem_text_p.html.tt" UNLESS capt.problem_text.item(il); END; %]
+[% FOREACH p IN problems; c = capt.problem_text.item(p.iface_lang) %]
 <div class="problem_text" id="p[% p.id %]" [% UNLESS loop.first %]style="page-break-before: always"[% END %]>
   <a name="pr[% p.code || p.id %]"></a>
 
