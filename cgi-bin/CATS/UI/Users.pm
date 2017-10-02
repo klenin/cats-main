@@ -234,7 +234,7 @@ sub users_frame {
             remote => $remote,
             site_org => $site_org,
             editable_attrs =>
-                ($is_jury || (!$user->{site_id} || $user->{site_id} == $site_id) && $uid && $aid != $uid),
+                ($is_jury || (!$user->{site_id} || $user->{site_id} == ($site_id // 0)) && $uid && $aid != $uid),
             virtual => $virtual,
             formatted_time => CATS::Time::format_diff_ext($diff_time, $ext_time, 1),
          );
