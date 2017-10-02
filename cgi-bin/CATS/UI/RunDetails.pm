@@ -523,7 +523,7 @@ sub request_params_frame {
     }
 
     # Reload problem after the successful state change.
-    $si = get_sources_info(request_id => $si->{req_id}) if try_set_state($si, $p);
+    $si = get_sources_info(request_id => $si->{req_id}) if try_set_state($p);
 
     my $tests = $dbh->selectcol_arrayref(q~
         SELECT rank FROM tests WHERE problem_id = ? ORDER BY rank~, undef,
@@ -561,14 +561,13 @@ sub request_params_frame {
 }
 
 sub try_set_state {
-    my ($si, $p) = @_;
+    my ($p) = @_;
     $p->{set_state} or return;
     grep $_ eq $p->{state}, @$settable_verdicts or return;
     my $state = $CATS::Verdicts::name_to_state->{$p->{state}};
 
-    $si->{failed_test} = $p->{failed_test} || 0;
     CATS::Request::enforce_state($p->{rid}, {
-        failed_test => $si->{failed_test}, state => $state, points => $p->{points}
+        failed_test => $p->{failed_test}, state => $state, points => $p->{points}
     });
     $dbh->commit;
     msg(1055);
