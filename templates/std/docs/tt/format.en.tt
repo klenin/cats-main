@@ -281,6 +281,23 @@ files with tests, solutions etc.
   </td>
 </tr>
 <tr>
+  <td>[% tag_in('Validator', 'Problem', v110) %]</td>
+  <td>
+    <ul>
+      <li>name -- identifier of the [% tag_ref('Validator') %] object.</li>
+      <li>src[% opt %] -- path to the source code file.</li>
+      <li>de_code[% opt %] -- development environment code.</li>
+      <li>export[% opt %] -- globally unique identifier.</li>
+      <li>timeLimit[% opt %] -- time limit in seconds.</li>
+      <li>memoryLimit[% opt %] -- memory limit [% mem_units %].</li>
+      <li>writeLimit[% opt %] -- write limit [% mem_units %]. By default is 999.</li>
+    </ul>
+  </td>
+  <td>Test data validator. Reads data from standard input and/or input file.
+    Exits with code 0 if the data is valid, 0 otherwise.
+  </td>
+</tr>
+<tr>
   <td>[% tag_in('Visualizer', 'Problem', v19) %]</td>
   <td>
     <ul>
@@ -374,6 +391,7 @@ files with tests, solutions etc.
       <li>param[% opt %] -- command-line parameters passed to the generator;</li>
       <li>src[% opt %] -- path to the input file (if the use attribute is omitted).</li>
       <li>genAll[% s(opt, v15) %] -- generate a group of tests with a single generator.</li>
+      <li>validate[% s(opt, v110) %] -- identifier of the [% tag_ref('Validator') %] object.</li>
     </ul>
   </td>
   <td>Test input description.
