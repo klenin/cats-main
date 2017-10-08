@@ -13,6 +13,7 @@ use CATS::Output qw(url_f);
 use CATS::RankTable;
 use CATS::Time;
 use CATS::Utils qw(encodings source_encodings url_function);
+use CATS::Verdicts;
 use CATS::Web qw(encoding_param param url_param);
 
 use Exporter qw(import);
@@ -217,7 +218,9 @@ sub get_sources_info {
         # We need to save original hash reference
         $r->{$_} = $additional_info{$_} for keys %additional_info;
 
-        $r->{short_state} = $CATS::Verdicts::state_to_name->{$r->{state}};
+        my $ss = $CATS::Verdicts::state_to_name->{$r->{state}};
+        $r->{short_state} = $r->{is_jury} ? $ss :
+            $CATS::Verdicts::hidden_verdicts_self->{$ss} // $ss;
 
         # Just hour and minute from testing start and finish timestamps.
         ($r->{"${_}_short"} = $r->{$_}) =~ s/^(.*)\s+(\d\d:\d\d)\s*$/$2/

@@ -29,7 +29,8 @@ our $name_to_state = { map @$_, @$name_to_state_sorted };
 
 our $state_to_name = { map { $_->[1] => $_->[0] } @$name_to_state_sorted };
 
-our $hidden_verdicts = {
+# What other paricipants see during official contest.
+our $hidden_verdicts_others = {
     NP => 'NP',
     UH => 'NP',
     P  => 'NP',
@@ -47,6 +48,12 @@ our $hidden_verdicts = {
     IL => 'RJ',
     MR => 'RJ',
     WL => 'RJ',
+};
+
+# What non-jury see during official contest.
+our $hidden_verdicts_self = {
+    UH => 'NP',
+    P  => 'NP',
 };
 
 1;
