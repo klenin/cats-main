@@ -77,6 +77,8 @@ sub generate {
     $t->param(
         dbi_profile => $dbh->{Profile}->{Data}->[0],
         #dbi_profile => Data::Dumper::Dumper($dbh->{Profile}->{Data}),
+    ) unless param('notime');
+    $t->param(
         langs => [ map { href => url_f('contests', lang => $_), name => $_ }, @cats::langs ],
     );
 
