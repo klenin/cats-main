@@ -13,7 +13,9 @@
   fields.push('git_author_name', 'git_author_email') IF is_some_jury || user.privs.is_root || git_author_name || git_author_email;
   FOREACH f IN fields; input_tr(f); END
 %]
-[% input_tr('restrict_ips') IF user.privs.is_root %]
+[% IF user.privs.is_root -%]
+[% input_tr('restrict_ips'); input_tr('phone') %]
+[%- END %]
   <tr><td>[% capt.hide_envelopes %]</td>
   <td>[% checkbox('settings.hide_envelopes', settings.hide_envelopes) %]</td></tr>
   [% IF is_some_jury || user.privs.is_root %]

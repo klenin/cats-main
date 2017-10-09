@@ -11,6 +11,7 @@
     home_page => 'Адрес домашней страницы',
     git_author_name => 'Имя git автора',
     git_author_email => 'E-mail git автора',
+    phone => 'Телефон',
     restrict_ips => 'Ограничен по IP',
     hide_envelopes => 'Скрывать оповещения',
     display_input => 'Показывать входные данные',

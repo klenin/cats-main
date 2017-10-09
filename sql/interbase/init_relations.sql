@@ -32,6 +32,7 @@ CREATE TABLE accounts (
     git_author_email VARCHAR(200) DEFAULT NULL,
     home_page        VARCHAR(200),
     icq_number       VARCHAR(200),
+    phone            VARCHAR(200),
     settings         BLOB SUB_TYPE 0,
     city             VARCHAR(200),
     affiliation      VARCHAR(200),

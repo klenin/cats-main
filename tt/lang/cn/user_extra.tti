@@ -11,6 +11,7 @@
     home_page => 'Home page',
     git_author_name => "Git author's name",
     git_author_email => "Git author's e-mail",
+    phone => '電話號碼',
     restrict_ips => 'Restricted to IP',
     hide_envelopes => 'Hide envelopes',
     display_input => 'Display input data',
