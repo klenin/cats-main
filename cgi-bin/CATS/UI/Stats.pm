@@ -204,7 +204,7 @@ sub similarity_frame {
         my $ai = $i->{account_id};
         for my $j (@$reqs) {
             my $aj = $j->{account_id};
-            next if $i->{id} >= $j->{id};
+            next if $i->{id} >= $j->{id} && !$p->{account_id};
             next if $p->{self_diff} ? $ai != $aj : $ai == $aj && $i->{contest_id} == $j->{contest_id};
             my $score = similarity_score($i->{hash}, $j->{hash});
             ($score * 100 > $p->{threshold}) ^ $p->{self_diff} or next;
