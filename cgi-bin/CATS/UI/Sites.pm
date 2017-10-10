@@ -209,8 +209,10 @@ sub contest_sites_frame {
         contest_sites_add($p) if $p->{add};
     }
 
-    my $org_person_sql = $lv->visible_cols->{Op} ? q~
-        SELECT LIST(A.team_name, ', ') FROM contest_accounts CA
+    my $org_person_phone = $user->privs->{is_root} ?
+        q~ || CASE WHEN A.phone IS NOT NULL AND A.phone <> '' THEN ' ' || A.phone ELSE '' END~ : '';
+    my $org_person_sql = $lv->visible_cols->{Op} ? qq~
+        SELECT LIST(A.team_name$org_person_phone, ', ') FROM contest_accounts CA
         INNER JOIN accounts A ON A.id = CA.account_id
         WHERE CA.contest_id = CS.contest_id AND CA.site_id = S.id AND CA.is_site_org = 1
         ORDER BY 1~ : 'NULL';
