@@ -219,13 +219,17 @@ sub contest_sites_frame {
     my $users_count_sql = $lv->visible_cols->{Pt} ? q~
         SELECT COUNT(*) FROM contest_accounts CA
         WHERE CA.contest_id = CS.contest_id AND CA.site_id = S.id AND CA.is_hidden = 0~ : 'NULL';
+    my $users_count_ooc_sql = $lv->visible_cols->{Pt} ? q~
+        SELECT COUNT(*) FROM contest_accounts CA
+        WHERE CA.contest_id = CS.contest_id AND CA.site_id = S.id AND CA.is_hidden = 0 AND is_ooc = 1~ : 'NULL';
     my $is_used_cond = $is_jury ? '1 = 1' : 'CS.site_id IS NOT NULL';
     my $sth = $dbh->prepare(qq~
         SELECT
             S.id, (CASE WHEN CS.site_id IS NULL THEN 0 ELSE 1 END) AS is_used,
             S.name, S.region, S.city, S.org_name, CS.diff_time, CS.ext_time,
             ($org_person_sql) AS org_person,
-            ($users_count_sql) AS users_count
+            ($users_count_sql) AS users_count,
+            ($users_count_ooc_sql) AS users_count_ooc
         FROM sites S
         LEFT JOIN contest_sites CS ON CS.site_id = S.id AND CS.contest_id = ?
         WHERE $is_used_cond ~ . $lv->maybe_where_cond . $lv->order_by);
