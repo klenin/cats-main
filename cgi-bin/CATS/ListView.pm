@@ -214,10 +214,16 @@ sub sort_in_memory {
     my ($self, $data) = @_;
     my $s = $self->settings;
     $self->check_sortable_field($s) or return $data;
-    my $order_by = $self->{col_defs}->[$s->{sort_by}]{order_by};
-    my $cmp = $s->{sort_dir} ?
-        sub { $a->{$order_by} cmp $b->{$order_by} } :
-        sub { $b->{$order_by} cmp $a->{$order_by} };
+    my $col_def = $self->{col_defs}->[$s->{sort_by}];
+    my $order_by = $col_def->{order_by};
+    my $cmp =
+        $col_def->{numeric} ?
+            ($s->{sort_dir} ?
+                sub { $a->{$order_by} <=> $b->{$order_by} } :
+                sub { $b->{$order_by} <=> $a->{$order_by} }) :
+            ($s->{sort_dir} ?
+                sub { $a->{$order_by} cmp $b->{$order_by} } :
+                sub { $b->{$order_by} cmp $a->{$order_by} });
     [ sort $cmp @$data ];
 }
 
