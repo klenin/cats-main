@@ -64,6 +64,7 @@ sub contests_new_save {
 
     $c->{ctype} = 0;
     $c->{id} = new_id;
+    $is_root or $c->{is_official} = 0;
     eval { $dbh->do(_u $sql->insert('contests', $c)); 1 } or return msg(1026, $@);
 
     # Automatically register all admins as jury.
@@ -99,6 +100,7 @@ sub contests_edit_save {
     my ($edit_cid) = @_;
 
     my $c = get_contest_html_params() or return;
+    $is_root or delete $c->{is_official};
     eval {
         $dbh->do(_u $sql->update(contests => $c, { id => $edit_cid }));
         $dbh->commit;

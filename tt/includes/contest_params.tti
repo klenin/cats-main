@@ -26,7 +26,7 @@
 <br/>
 <table class="bordered">
   <tr><td>[% capt.open_registration %]:</td><td>[% checkbox_1('free_registration', free_registration, can_edit) %]</td></tr>
-  <tr><td>[% capt.is_official %]:</td><td>[% checkbox_1('is_official', is_official, can_edit) %]</td></tr>
+  <tr><td>[% capt.is_official %]:</td><td>[% checkbox_1('is_official', is_official, user.privs.is_root) %]</td></tr>
   <tr><td>[% capt.run_all_tests %]:</td><td>[% checkbox_1('run_all_tests', run_all_tests, can_edit) %]</td></tr>
   <tr><td>[% capt.local_only %]:</td><td>[% checkbox_1('local_only', local_only, can_edit) %]</td></tr>
   <tr><td>[% capt.is_hidden %]:</td><td>[% checkbox_1('is_hidden', is_hidden, can_edit) %]</td></tr>
