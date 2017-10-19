@@ -59,7 +59,7 @@ function delete_contest(href, name) {
 [%- END %]
 [% IF can_participate_virtual -%]
 <button type="submit" name="virtual_registration" value="1" class="button"
-    [% IF user.is_virtual %]onclick="confirm('[% capt.virtual_warning %]')"[% END %]>
+    [% IF user.is_virtual %]onclick="return confirm('[% capt.virtual_warning %]')"[% END %]>
 [%- capt.participate_virtually -%]
 </button>
 [%- END %]
