@@ -6,7 +6,7 @@ INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
     VALUES (GEN_ID(key_seq, 1), 102, 'GNU C++', 'cc;cxx', 'cpp', '^~FILE~:~LINE~:~POS~:');
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
-    VALUES (GEN_ID(key_seq, 1), 103, 'MS Visual C++', 'cpp', 'cpp', '^~FILE~\(~LINE~\)\s:');
+    VALUES (GEN_ID(key_seq, 1), 103, 'MS Visual C++', 'cpp', 'cpp', '^~FILE~\(~LINE~\)\s?:');
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
     VALUES (GEN_ID(key_seq, 1), 104, 'Borland C++ 3.1', '', 'cpp', 'Error\s~FILE~\s~LINE~:');
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
