@@ -122,6 +122,7 @@ sub console_content {
         A.team_name
         A.city
         CA.is_jury
+        CA.site_id
     ) ]);
 
     my $de_select = q~
