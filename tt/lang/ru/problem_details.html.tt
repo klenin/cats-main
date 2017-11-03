@@ -26,10 +26,10 @@
     testsets => 'Тесты для проверки',
     points_testsets => 'Тесты для разбалловки',
     testsets_all => 'все',
-    tags => 'Тэги',
+    tags => 'Теги',
     tags_none => 'нет',
     original_limits => 'Исходные ограничения',
-    overridden_limits => 'Переопределенные ограничения',
+    overridden_limits => 'Переопределённые ограничения',
     request_count => 'Количество вердиктов',
   })
 %]
