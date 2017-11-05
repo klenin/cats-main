@@ -51,7 +51,7 @@ sub answer_box_frame {
 
     $t->param(participant_name => $r->{team_name}, title_suffix => res_str(566));
 
-    if ($p->{clarify} && (my $ans = Encode::decode_utf8($p->{answer_text}))) {
+    if ($p->{clarify} && (my $ans = Encode::decode_utf8($p->{answer_text}) // '') ne '') {
         $r->{answer} = $user->privs->{moderate_messages} ? $ans : ($r->{answer} // '') . " $ans";
         my $s = $dbh->prepare(q~
             UPDATE questions
