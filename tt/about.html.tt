@@ -1,5 +1,5 @@
+[%- contest.title = '' -%]
 [% PROCESS includes/menu_begin.tti %]
-[% PROCESS includes/html.tti %]
 
 <b>[% capt.welcome %]</b><br/><br/>
 

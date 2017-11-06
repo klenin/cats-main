@@ -6,6 +6,7 @@ use warnings;
 use CATS::DB;
 use CATS::Globals qw($t);
 use CATS::Judge;
+use CATS::Messages qw(res_str);
 use CATS::Output qw(init_template);
 
 sub about_frame {
@@ -22,6 +23,7 @@ sub about_frame {
         queue_length => $queue_length,
         judges_active => $jactive,
         judges_total => $jtotal,
+        title_suffix => res_str(1000),
     );
 }
 

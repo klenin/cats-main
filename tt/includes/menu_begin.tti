@@ -9,7 +9,7 @@
 <table class="iface header">
   <tr>
     <td class="contest_title">
-      [% contest.title ? contest.title : '&nbsp;' | html %]
+      [% IF contest.title; contest.title | html; ELSE; title_suffix || '&nbsp;'; END %]
       [% IF problem_title %]<span> / [% problem_title | html %]</span>[% END %]
     </td>
     <td class="elapsed">
