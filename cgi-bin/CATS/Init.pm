@@ -25,7 +25,7 @@ use CATS::Privileges;
 use CATS::Redirect;
 use CATS::Settings qw($settings);
 use CATS::Utils;
-use CATS::Web qw(param url_param);
+use CATS::Web qw(cookie param url_param);
 
 # Authorize user, initialize permissions and settings.
 sub init_user {
@@ -52,7 +52,7 @@ sub init_user {
         }
     }
 
-    CATS::Settings::init($enc_settings);
+    CATS::Settings::init($enc_settings, param('lang'), cookie('settings'));
 
     if ($bad_sid) {
         return CATS::Web::forbidden if param('noredir');

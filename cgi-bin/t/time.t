@@ -15,7 +15,7 @@ use CATS::Time;
 
 $CATS::Config::cats_dir = File::Spec->catdir($FindBin::Bin, '..');
 
-CATS::Settings::init_test;
+CATS::Settings::init('', 'en');
 CATS::Messages::init;
 
 is res_str(500), 'login', 'messages loaded';

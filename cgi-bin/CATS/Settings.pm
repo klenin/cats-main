@@ -15,31 +15,27 @@ use Storable qw();
 use CATS::Constants;
 use CATS::DB;
 use CATS::Globals qw($uid);
-use if !$ENV{TRAVIS}, 'CATS::Web' => qw(param cookie);
 
 our $settings;
 
 my $enc_settings;
 
 sub init {
-    ($enc_settings) = @_;
+    ($enc_settings, my $lang, my $cookie) = @_;
     if (!$uid) {
-        $enc_settings = cookie('settings') || '';
+        $enc_settings = $cookie || '';
         $enc_settings = decode_base64($enc_settings) if $enc_settings;
     }
     # If any problem happens during the thaw, clear settings.
     $settings = eval { $enc_settings && Storable::thaw($enc_settings) } || {};
 
-    my $lang = param('lang');
     $settings->{lang} = $lang if $lang && grep $_ eq $lang, @cats::langs;
 }
-
-sub init_test { $settings = { lang => 'en' } };
 
 sub lang { $settings->{lang} || 'ru' }
 
 sub as_cookie {
-    $uid && lang() eq 'ru' ? undef : cookie(
+    $uid && lang() eq 'ru' ? undef : (
         -name => 'settings',
         -value => encode_base64($uid ? Storable::freeze({ lang => lang() }) : $enc_settings),
         -expires => '+1h');
