@@ -30,8 +30,8 @@ Rank table uses the following notation:
 </p>
 <table class="bordered">
 <tr><td><code>+</code></td><td>problem is solved from the first submission</td></tr>
-<tr><td><code>+j</code></td><td>problem is solved after j failed submissions</td></tr>
-<tr><td><code>-j</code></td><td>problem is not solved (with j failed submissions)</td></tr>
+<tr><td><code>+X</code></td><td>problem is solved after X failed submissions</td></tr>
+<tr><td><code>-X</code></td><td>problem is not solved (with X failed submissions)</td></tr>
 </table>
 <p>
 For solved problems, time spent is displayed, including penalty time.
