@@ -8,7 +8,7 @@ Submission judging consists of the following steps:
 <li>Output checking;</li>
 <li>Manual verification.</li>
 </ol>
-Step 1 is performed once for each submission, steps 2 and 3 -- once for each test,
+Step 1 is performed once for each submission, steps 2 and 3 — once for each test,
 step 4 is performed only on some problems specifically designed for manual verification.
 </p>
 
