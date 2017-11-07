@@ -25,7 +25,7 @@ my ($main_routes, $api_judge_routes);
 BEGIN {
     for my $name (qw(array_of clist_of required)) {
         no strict 'refs';
-        # Prototype to allow acting as a unary function.
+        # Prototype to allow acting as a unary operator.
         *$name = sub($) {
             ref $_[0] eq 'HASH' or return { $name => 1, type => $_[0] };
             $_[0]->{$name} = 1;
@@ -47,6 +47,7 @@ $main_routes = {
         summary_rank => bool, create_group => bool,
         online_registration => bool, virtual_registration => bool,
         edit_save => bool, new_save => bool, id => integer,
+        contests_selection => array_of integer,
     ],
     contest_sites => [ \&CATS::UI::Sites::contest_sites_frame, add => bool, delete => integer, check => array_of integer, ],
     contest_sites_edit => [ \&CATS::UI::Sites::contest_sites_edit_frame,

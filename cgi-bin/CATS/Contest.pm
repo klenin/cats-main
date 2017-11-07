@@ -18,6 +18,7 @@ use CATS::Config qw(cats_dir);
 use CATS::Constants;
 use CATS::Contest::Utils;
 use CATS::DB;
+use CATS::Messages qw(msg);
 
 sub new {
     my $self = shift;
@@ -91,10 +92,11 @@ sub register_account {
 }
 
 sub contest_group_auto_new {
-    my @clist = CATS::Contest::Utils::sanitize_clist param('contests_selection');
+    my ($clist) = @_;
+    my @clist = sort { $a <=> $b } @$clist;
     @clist && @clist < 100 or return;
-    my $clist = join ',', @clist;
-    return msg(1090) if Contest::Utils::contest_group_by_clist($clist);
+    $clist = join ',', @clist;
+    return msg(1090) if CATS::Contest::Utils::contest_group_by_clist($clist);
     my $names = $dbh->selectcol_arrayref(_u
         $sql->select('contests', 'title', { id => \@clist })) or return;
     my $id = new_id;

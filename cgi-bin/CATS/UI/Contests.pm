@@ -181,7 +181,8 @@ sub contests_frame {
     $p->{listview} = my $lv = CATS::ListView->new(name => 'contests',
         template => 'contests.' .  ($ical ? 'ics' : $json ? 'json' : 'html') . '.tt');
 
-    CATS::Contest::contest_group_auto_new if $p->{create_group} && $is_root;
+    CATS::Contest::contest_group_auto_new($p->{contests_selection})
+        if $p->{create_group} && $is_root;
 
     contest_delete if url_param('delete');
 
