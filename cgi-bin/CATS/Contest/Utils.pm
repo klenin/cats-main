@@ -23,8 +23,6 @@ sub common_seq_prefix {
 
 sub common_prefix { join ' ', @{(reduce { common_seq_prefix($a, $b) } map [ split /\s+|_+/ ], @_) || []} }
 
-sub sanitize_clist { sort { $a <=> $b } grep /^\d+$/, @_ }
-
 sub contest_group_by_clist {
     $dbh->selectrow_array(q~
         SELECT id FROM contest_groups WHERE clist = ?~, undef,

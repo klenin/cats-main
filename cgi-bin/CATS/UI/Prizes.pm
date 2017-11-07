@@ -14,6 +14,8 @@ use CATS::Web qw(param url_param);
 
 sub contest_groups_fields () { qw(name clist) }
 
+sub sanitize_clist { sort { $a <=> $b } grep /^\d+$/, @_ }
+
 sub prizes_edit_frame {
     init_template('prizes_edit.html.tt');
 
@@ -33,7 +35,7 @@ sub prizes_edit_save {
     my $cgid = param('id') or return;
     my %cg = map { $_ => (param($_) || '') } contest_groups_fields;
 
-    my @clist = CATS::Contest::Utils::sanitize_clist split ',', $cg{clist};
+    my @clist = sanitize_clist split ',', $cg{clist};
     @clist && @clist < 100 or return;
     $cg{clist} = join ',', @clist;
     return msg(1090) if $cgid != (CATS::Contest::Utils::contest_group_by_clist($cg{clist}) // 0);
@@ -102,7 +104,7 @@ sub prizes_frame {
 sub contests_prizes_frame {
     my $lv = CATS::ListView->new(name => 'contests_prizes', template => auto_ext('contests_prizes'));
 
-    my @clist = CATS::Contest::Utils::sanitize_clist param('clist');
+    my @clist = sanitize_clist param('clist');
     @clist && @clist < 100 or return;
     my $clist = join ',', @clist;
 
