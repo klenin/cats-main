@@ -395,6 +395,33 @@ sub set_site {
     msg(1024, $count);
 }
 
+my @password_chars = ('a'..'z', 'A'..'Z', '0'..'9', '_');
+
+# Params: user_set, len.
+sub gen_passwords {
+    my %p = @_;
+    $is_root or return;
+    $p{len} && $p{len} <= 30 or return;
+    my $get_login_sth = $dbh->prepare(q~
+        SELECT A.id, A.login FROM accounts A
+        INNER JOIN contest_accounts CA ON CA.account_id = A.id
+        WHERE CA.id = ? AND CA.contest_id = ?~);
+    my $set_password_sth = $dbh->prepare(q~
+        UPDATE accounts SET passwd = ? WHERE id = ?~);
+    my @res;
+    for (@{$p{user_set}}) {
+        $get_login_sth->execute($_, $cid);
+        my ($id, $login) = $get_login_sth->fetchrow_array;
+        $get_login_sth->finish;
+        $id && $login or next;
+        my $password = join '', map $password_chars[rand(@password_chars)], 1..$p{len};
+        $set_password_sth->execute(hash_password($password), $id);
+        push @res, [ $id, $login, $password ];
+    }
+    $dbh->commit if @res;
+    $t->param(new_passwords => \@res);
+}
+
 sub save_attributes_single {
     my ($user_id, $attr_names, $force_jury) = @_;
 

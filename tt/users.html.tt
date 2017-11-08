@@ -17,6 +17,11 @@ function delete_team(href, name) {
 }
 </script>
 
+[%- IF new_passwords %]<textarea rows="[% new_passwords.size > 20 ? 20 : new_passwords.size %]" cols="50">
+[%- FOREACH p IN new_passwords; p.1 | html; ' '; p.2; %]
+[% END -%]
+</textarea>[% END %]
+
 [% PROCESS includes/listview_header.tti %]
 <table class="listview bordered highlight">
 [% PROCESS includes/listview_col_defs.tti %]
@@ -76,6 +81,12 @@ function delete_team(href, name) {
 <div class="action send_message">
 <select name="site_id"><option>&nbsp;</option>[% FOREACH s IN sites; option(s.id, s.name); END %]</select>
 <button type="submit" value="1" name="set_site" class="button">[% capt.set_site %]</button>
+</div>
+[% END %]
+[% IF user.privs.is_root %]
+<div class="action send_message">
+<label><input type="text" name="password_len" class="bordered" value="20" /></label>
+<button type="submit" value="1" name="gen_passwords" class="button">[% capt.gen_passwords %]</button>
 </div>
 [% END %]
 [% IF user.is_jury %]

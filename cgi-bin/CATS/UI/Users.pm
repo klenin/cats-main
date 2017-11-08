@@ -104,6 +104,7 @@ sub users_frame {
 
         CATS::User::save_attributes_jury($p) if $p->{save_attributes};
         CATS::User::set_tag(user_set => $p->{sel}, tag => $p->{tag_to_set}) if $p->{set_tag};
+        CATS::User::gen_passwords(user_set => $p->{sel}, len => $p->{password_len}) if $p->{gen_passwords};
 
         if ($p->{send_message} && ($p->{message_text} // '') ne '') {
             my $contest_id = $is_root && $p->{send_all_contests} ? undef : $cid;

@@ -124,6 +124,7 @@ $main_routes = {
         save_attributes => bool,
         set_tag => bool, tag_to_set => str,
         set_site => bool, site_id => integer,
+        gen_passwords => bool, password_len => integer,
         send_message => bool, message_text => str, send_all => bool, send_all_contests => bool,
         delete_user => integer, new_save => bool, edit_save => bool,
         user_set => clist_of integer, sel => array_of integer,
