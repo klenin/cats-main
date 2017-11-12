@@ -18,7 +18,7 @@ use CATS::Problem::Utils;
 use CATS::Request;
 use CATS::Settings qw($settings);
 use CATS::Time;
-use CATS::Utils qw(date_to_iso escape_xml url_function);
+use CATS::Utils qw(date_to_iso url_function);
 use CATS::Verdicts;
 use CATS::Web qw(param url_param);
 
@@ -252,67 +252,17 @@ sub console_content {
     }
 }
 
-sub select_all_reqs {
-    $dbh->selectall_arrayref(qq~
-        SELECT
-            R.id AS id, R.submit_time, R.state, R.failed_test,
-            R.submit_time - $CATS::Time::contest_start_offset_sql AS time_since_start,
-            CP.code, P.title AS problem_title,
-            A.id AS team_id, A.team_name, A.last_ip,
-            CA.is_remote, CA.is_ooc
-        FROM
-            reqs R
-            INNER JOIN problems P ON R.problem_id = P.id
-            INNER JOIN contest_accounts CA ON CA.contest_id = R.contest_id AND CA.account_id = R.account_id
-            INNER JOIN contests C ON R.contest_id = C.id
-            INNER JOIN contest_problems CP ON R.contest_id = CP.contest_id AND CP.problem_id = R.problem_id
-            INNER JOIN accounts A ON CA.account_id = A.id
-            LEFT JOIN contest_sites CS ON CS.contest_id = C.id AND CS.site_id = CA.site_id
-        WHERE
-            R.contest_id = ? AND CA.is_hidden = 0 AND CA.is_virtual = 0 AND R.submit_time > C.start_date
-        ORDER BY R.submit_time ASC~, { Slice => {} },
-        $cid);
-}
-
 sub export_frame {
     $is_jury or return;
-    # Legacy field, new consumers should use short_state.
-    my %state_to_display = (
-        $cats::st_wrong_answer => 'wrong_answer',
-        $cats::st_presentation_error => 'presentation_error',
-        $cats::st_time_limit_exceeded => 'time_limit_exceeded',
-        $cats::st_memory_limit_exceeded => 'memory_limit_exceeded',
-        $cats::st_memory_limit_exceeded => 'write_limit_exceeded',
-        $cats::st_runtime_error => 'runtime_error',
-        $cats::st_compilation_error => 'compilation_error',
-        $cats::st_idleness_limit_exceeded => 'idleness_limit_exceeded',
-        $cats::st_manually_rejected => 'manually_rejected',
-        $cats::st_not_processed => 'not_processed',
-        $cats::st_unhandled_error => 'unhandled_error',
-        $cats::st_install_processing => 'install_processing',
-        $cats::st_testing => 'testing',
-        $cats::st_awaiting_verification => 'awaiting_verification',
-        $cats::st_accepted => 'accepted',
-        $cats::st_security_violation => 'security_violation',
-        $cats::st_ignore_submit => 'ignore_submit',
-    );
     init_template('console_export.xml.tt');
-    my $reqs = select_all_reqs;
-    for my $req (@$reqs) {
-        $req->{submit_time} =~ s/\s+$//;
-        $req->{short_state} = $CATS::Verdicts::state_to_name->{$req->{state}};
-        $req->{state} = $state_to_display{$req->{state}};
-        $req->{s} = join '', map "<$_>" . escape_xml($req->{$_}) . "</$_>",
-            sort grep defined $req->{$_}, keys %$req;
-    }
-    $t->param(reqs => $reqs);
+    $t->param(reqs => CATS::Console::export);
 }
 
 sub graphs_frame {
     $is_jury or return;
     init_template('console_graphs.html.tt');
 
-    my $reqs = select_all_reqs;
+    my $reqs = CATS::Console::select_all_reqs;
     my $n2s = $CATS::Verdicts::name_to_state;
     my $used_verdicts = {};
 
