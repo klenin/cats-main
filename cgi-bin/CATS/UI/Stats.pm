@@ -8,6 +8,7 @@ use List::Util qw(max);
 use CATS::Constants;
 use CATS::DB;
 use CATS::Globals qw($cid $contest $is_jury $is_root $t);
+use CATS::ListView;
 use CATS::Messages qw(res_str);
 use CATS::Output qw(init_template url_f);
 use CATS::Problem::Utils;
@@ -165,11 +166,16 @@ sub _get_reqs {
 
 sub similarity_frame {
     my ($p) = @_;
-    init_template('similarity.html.tt');
+    my $lv = CATS::ListView->new(name => 'similarity', template => 'similarity.html.tt');
     $is_jury && !$contest->is_practice or return;
-    $p->{threshold} //= 50;
-    $p->{self_diff} //= 0;
-    $p->{all_contests} = 0 if !$is_root;
+
+    my $s = $lv->settings;
+    if ($lv->submitted) {
+        $s->{$_} = $p->{$_} for qw(threshold self_diff all_contests pid accound_id collapse_idents group);
+    }
+    $s->{threshold} //= 50;
+    $s->{self_diff} //= 0;
+    delete $s->{all_contests} if !$is_root;
 
     my $problems = $dbh->selectall_arrayref(q~
         SELECT P.id, P.title, CP.code
@@ -188,41 +194,42 @@ sub similarity_frame {
     $users_idx->{$_->{account_id}} = $_ for @$users;
 
     $t->param(
-        params => $p, problems => $problems, users => $users, users_idx => $users_idx,
+        params => $s, problems => $problems, users => $users, users_idx => $users_idx,
         title_suffix => res_str(545),
     );
-    $p->{pid} || $p->{account_id} && !$p->{all_contests} or return;
+    $lv->submitted || $p->{cont} or return;
+    $s->{pid} || $s->{account_id} && !$s->{all_contests} or return;
 
-    my $reqs = _get_reqs($p);
-    preprocess_source($_, $p->{collapse_idents}) for @$reqs;
+    my $reqs = _get_reqs($s);
+    preprocess_source($_, $s->{collapse_idents}) for @$reqs;
 
     my %missing_users;
     my @similar;
     my $by_account = {};
     for my $i (@$reqs) {
-        !$p->{account_id} || $i->{account_id} == $p->{account_id} or next;
+        !$s->{account_id} || $i->{account_id} == $s->{account_id} or next;
         my $ai = $i->{account_id};
         for my $j (@$reqs) {
             my $aj = $j->{account_id};
-            next if $i->{id} >= $j->{id} && !$p->{account_id};
-            next if $p->{self_diff} ? $ai != $aj : $ai == $aj && $i->{contest_id} == $j->{contest_id};
+            next if $i->{id} >= $j->{id} && !$s->{account_id};
+            next if $s->{self_diff} ? $ai != $aj : $ai == $aj && $i->{contest_id} == $j->{contest_id};
             my $score = similarity_score($i->{hash}, $j->{hash});
-            ($score * 100 > $p->{threshold}) ^ $p->{self_diff} or next;
+            ($score * 100 > $s->{threshold}) ^ $s->{self_diff} or next;
             my $search =
                 "account_id=$ai" . ($ai == $aj ? '' : ",account_id=$aj") .
                 ",problem_id=$i->{problem_id}" .
                 ($i->{problem_id} == $j->{problem_id} ? '' : ",problem_id=$j->{problem_id}");
             my $pair = {
-                score => sprintf('%.1f%%', $score * 100), s => $score,
+                score => sprintf('%.1f', $score * 100), s => $score,
                 href_diff => url_f('diff_runs', r1 => $i->{id}, r2 => $j->{id}),
                 href_console => url_f('console',
                     se => 'user_stats', search => $search, i_value => -1, show_results => 1),
                 t1 => $ai, t2 => $aj,
             };
             exists $users_idx->{$_} or $missing_users{$_} = 1 for $ai, $aj;
-            if ($p->{group}) {
+            if ($s->{group}) {
                 for ($by_account->{"$ai#$aj"}) {
-                    $_ = $pair if !defined $_ || (($_->{s} < $pair->{s}) ^ $p->{self_diff});
+                    $_ = $pair if !defined $_ || (($_->{s} < $pair->{s}) ^ $s->{self_diff});
                 }
             }
             else {
@@ -235,10 +242,29 @@ sub similarity_frame {
         my $more_users = $dbh->selectall_arrayref(_u "$users_sql$cond", @bind);
         $users_idx->{$_->{account_id}} = $_ for @$more_users;
     }
-    @similar = values %$by_account if $p->{group};
-    my $cmp = $p->{self_diff} ? sub { $a->{s} <=> $b->{s} } : sub { $b->{s} <=> $a->{s} };
+    @similar = values %$by_account if $s->{group};
+    for (@similar) {
+        $_->{name1} = $users_idx->{$_->{t1}}->{team_name};
+        $_->{name2} = $users_idx->{$_->{t2}}->{team_name};
+    }
+
+    $lv->define_columns(url_f('similarity'), 0, 0, [
+        { caption => res_str(664), width => '5%', order_by => 'score', numeric => 1 },
+        { caption => res_str(608) . ' 1', width => '30%', order_by => 'name1' },
+        { caption => res_str(608) . ' 2', width => '30%', order_by => 'name2' },
+        { caption => res_str(665), width => '5%', order_by => 'link' },
+    ]);
+
+    my $fetch_record = sub {
+        my $pair = shift @{$_[0]} or return ();
+        %$pair;
+    };
+
+    $lv->attach(
+        url_f('similarity'), $fetch_record,
+        $lv->sort_in_memory(\@similar), { page_params => { cont => 1 } });
+
     $t->param(
-        similar => [ sort $cmp @similar ],
         equiv_lists => [ grep @$_ > 2, @{greedy_cliques @similar} ],
         stats => {
             total => scalar @$reqs,

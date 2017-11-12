@@ -3,7 +3,6 @@
     problem => 'Problem',
     participant => 'Participant',
     threshold => 'Threshold',
-    compare => 'Compare',
     include_virtual => 'Include virtual',
     include_jury => 'Include jury',
     group_by_team => 'Group by team',

@@ -3,7 +3,6 @@
     problem => 'Задача',
     participant => 'Участник',
     threshold => 'Порог',
-    compare => 'Сравнить',
     include_virtual => 'Учитывать виртуальных',
     include_jury => 'Учитывать жюри',
     group_by_team => 'Группировать по участникам',

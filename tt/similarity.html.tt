@@ -1,5 +1,6 @@
 [% PROCESS includes/menu_begin.tti %]
-<form method="post" enctype="multipart/form-data">
+
+[% PROCESS includes/listview_header.tti %]
 <label>[% capt.problem %]:
 <select name="pid"><option>&nbsp;</option>
   [% FOREACH p IN problems %]
@@ -15,7 +16,6 @@
 </select>
 </label>
 <label>[% capt.threshold %], %: <input type="text" name="threshold" value="[% params.threshold %]" class="bordered"/></label>
-<button type="submit" value="1" class="button">[% capt.compare %]</button>
 <br/>
 <label>[% checkbox_1('virtual', params.virtual) %] [% capt.include_virtual %]</label>
 <label>[% checkbox_1('jury', params.jury) %] [% capt.include_jury %]</label>
@@ -24,9 +24,11 @@
 <label>[% checkbox_1('collapse_idents', params.collapse_idents) %] [% capt.collapse_idents %]</label>
 [% IF user.privs.is_root %]<label>[% checkbox_1('all_contests', params.all_contests) %] [% capt.all_contests %]</label>[% END %]
 </form>
-<table class="bordered highlight">
-[% FOREACH s IN similar %]
-  <tr><td class="num">[% href(s.href_diff, s.score) %]</td>
+
+<table class="listview highlight bordered">
+[% PROCESS includes/listview_col_defs.tti sel_col = 0 %]
+[% FOREACH s IN similarity %]
+  <tr><td class="num">[% href(s.href_diff, s.score _ '%') %]</td>
   <td[%' colspan="2"' IF s.t2 == s.t1 %]>[% u1 = users_idx.item(s.t1); u1.team_name | html; " ($u1.city)" IF u1.city %]</td>
   [% IF s.t2 != s.t1 %]<td>[% u2 = users_idx.item(s.t2); u2.team_name | html; " ($u2.city)" IF u2.city %]</td>[% END %]
   <td>[% href(s.href_console, capt.console) %]</td>

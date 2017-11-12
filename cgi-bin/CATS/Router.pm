@@ -205,7 +205,7 @@ $main_routes = {
 
     similarity => [ \&CATS::UI::Stats::similarity_frame,
         virtual => bool, jury => bool, group => bool, self_diff => bool, threshold => integer,
-        collapse_idents => bool, all_contests=> bool, pid => integer, account_id => integer,
+        collapse_idents => bool, all_contests=> bool, pid => integer, account_id => integer, cont => bool,
     ],
     personal_official_results => \&CATS::UI::ContestResults::personal_official_results,
 };
