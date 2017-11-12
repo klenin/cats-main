@@ -1,4 +1,10 @@
+[% extra_head = BLOCK %]
+<style>
+[% PROCESS includes/verdicts.css.tti class='similarity' %]
+</style>
+[%- END %]
 [% PROCESS includes/menu_begin.tti %]
+[%- PROCESS "lang/$lang/verdicts.tti" -%]
 
 [% PROCESS includes/listview_header.tti %]
 <label>[% capt.problem %]:
@@ -25,12 +31,22 @@
 [% IF user.privs.is_root %]<label>[% checkbox_1('all_contests', params.all_contests) %] [% capt.all_contests %]</label>[% END %]
 </form>
 
-<table class="listview highlight bordered">
+<table class="listview highlight bordered similarity">
 [% PROCESS includes/listview_col_defs.tti sel_col = 0 %]
 [% FOREACH s IN similarity %]
   <tr><td class="num">[% href(s.href_diff, s.score _ '%') %]</td>
-  <td[%' colspan="2"' IF s.t2 == s.t1 %]>[% u1 = users_idx.item(s.t1); u1.team_name | html; " ($u1.city)" IF u1.city %]</td>
-  [% IF s.t2 != s.t1 %]<td>[% u2 = users_idx.item(s.t2); u2.team_name | html; " ($u2.city)" IF u2.city %]</td>[% END %]
+  <td[%' colspan="3"' IF s.t2 == s.t1 %]>[% u1 = users_idx.item(s.t1); u1.team_name | html; " ($u1.city)" IF u1.city %]</td>
+  <td class="verdict run_details_[% s.verdict1 %]"><table><tr>
+    <td>[% href('', s.verdict1, capt.verdicts.item(s.verdict1)) %]</td>
+    <td><div>[% s.req1.failed_test %]</div></td>
+  </tr></table></td>
+  [% IF s.t2 != s.t1 -%]
+  <td>[% u2 = users_idx.item(s.t2); u2.team_name | html; " ($u2.city)" IF u2.city %]</td>
+  <td class="verdict run_details_[% s.verdict2 %]"><table><tr>
+    <td>[% href('', s.verdict2, capt.verdicts.item(s.verdict2)) %]</td>
+    <td><div>[% s.req2.failed_test %]</div></td>
+  </tr></table></td>
+  [%= END %]
   <td>[% href(s.href_console, capt.console) %]</td>
   </tr>
 [% END %]

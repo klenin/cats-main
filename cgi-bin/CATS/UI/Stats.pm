@@ -155,7 +155,7 @@ sub _get_reqs {
 
     # Manually join with accounts since it is faster.
     $dbh->selectall_arrayref(q~
-        SELECT R.id, R.account_id, R.problem_id, R.contest_id, S.src
+        SELECT R.id, R.account_id, R.problem_id, R.contest_id, R.state, R.failed_test, S.src
         FROM reqs R
         INNER JOIN contest_accounts CA ON CA.contest_id = R.contest_id AND CA.account_id = R.account_id
         INNER JOIN sources S ON S.req_id = R.id
@@ -224,7 +224,7 @@ sub similarity_frame {
                 href_diff => url_f('diff_runs', r1 => $i->{id}, r2 => $j->{id}),
                 href_console => url_f('console',
                     se => 'user_stats', search => $search, i_value => -1, show_results => 1),
-                t1 => $ai, t2 => $aj,
+                t1 => $ai, t2 => $aj, req1 => $i, req2 => $j,
             };
             exists $users_idx->{$_} or $missing_users{$_} = 1 for $ai, $aj;
             if ($s->{group}) {
@@ -243,15 +243,19 @@ sub similarity_frame {
         $users_idx->{$_->{account_id}} = $_ for @$more_users;
     }
     @similar = values %$by_account if $s->{group};
-    for (@similar) {
-        $_->{name1} = $users_idx->{$_->{t1}}->{team_name};
-        $_->{name2} = $users_idx->{$_->{t2}}->{team_name};
+    for my $r (@similar) {
+        for (1, 2) {
+            $r->{"name$_"} = $users_idx->{$r->{"t$_"}}->{team_name};
+            $r->{"verdict$_"} = $CATS::Verdicts::state_to_name->{$r->{"req$_"}->{state}};
+        }
     }
 
     $lv->define_columns(url_f('similarity'), 0, 0, [
         { caption => res_str(664), width => '5%', order_by => 'score', numeric => 1 },
         { caption => res_str(608) . ' 1', width => '30%', order_by => 'name1' },
+        { caption => res_str(666) . ' 1', width => '3%', order_by => 'verdict1' },
         { caption => res_str(608) . ' 2', width => '30%', order_by => 'name2' },
+        { caption => res_str(666) . ' 2', width => '3%', order_by => 'verdict2' },
         { caption => res_str(665), width => '5%', order_by => 'link' },
     ]);
 
