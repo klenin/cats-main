@@ -38,6 +38,7 @@ sub new {
 sub settings { $settings->{$_[0]->{name}} }
 sub visible_cols { $_[0]->{visible_cols} }
 sub qb { $_[0]->{qb} }
+sub submitted { $_[0]->{submitted} }
 
 sub init_params {
     my ($self) = @_;
@@ -137,6 +138,9 @@ sub attach {
         href_page => $href_page->($_),
         current_page => $_ == $$page
     }} $range_start..$range_end;
+    if ($page_extra_params) {
+        $_->{href_sort} .= $page_extra_params for @{$self->{col_defs}};
+    }
 
     $self->{visible_data} = \@data;
     $t->param(
