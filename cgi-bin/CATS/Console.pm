@@ -5,7 +5,6 @@ package CATS::Console::Part;
 
 use CATS::DB;
 use CATS::Globals qw($cid $is_root);
-use CATS::ListView;
 
 sub new {
     my ($class, $sql, $globals) = @_;
@@ -57,10 +56,11 @@ sub contest {
 sub sql {
     my ($self) = @_;
     my $where = $self->{cond} ? " WHERE $self->{cond}" : '';
-    $is_root && !defined $self->{day_count} ?
+    my $q = $is_root && !defined $self->{day_count} ?
         # Prevent server overload by limiting each subquery separately.
-        "SELECT * FROM (SELECT $self->{sql}$where ORDER BY 2 DESC ROWS $CATS::ListView::max_fetch_row_count)" :
-        "SELECT $self->{sql}$where";
+        'SELECT * FROM (SELECT %s%s ORDER BY 2 DESC ROWS %d)' :
+        'SELECT %s%s';
+    sprintf($q, $self->{sql}, $where, CATS::Globals::max_fetch_row_count);
 }
 
 package CATS::Console;

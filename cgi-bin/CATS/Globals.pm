@@ -17,4 +17,7 @@ our (
     $cid, $contest, $is_jury, $is_root, $t, $sid, $uid, $user
 );
 
+# Optimization: limit datasets by both maximum row count and maximum visible pages.
+sub max_fetch_row_count() { 1000 }
+
 1;

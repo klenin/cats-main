@@ -15,8 +15,6 @@ use CATS::Settings qw($settings);
 use CATS::Utils;
 use CATS::Web qw(param url_param);
 
-# Optimization: limit datasets by both maximum row count and maximum visible pages.
-our $max_fetch_row_count = 1000;
 my $visible_pages = 5;
 my @display_rows = (10, 20, 30, 40, 50, 100, 300);
 
@@ -111,7 +109,7 @@ sub attach {
             msg(1143, join ', ', @unknown_searches) if @unknown_searches;
             $row_keys = [ sort grep !$self->qb->{db_searches}->{$_} && !/^href_/, keys %row ];
         }
-        msg(1166), last if ++$fetch_count > $max_fetch_row_count;
+        msg(1166), last if ++$fetch_count > CATS::Globals::max_fetch_row_count;
         last if $page_count > $$page + $visible_pages;
         for my $key (keys %mask) {
             defined first { ($_ // '') =~ $mask{$key} }
