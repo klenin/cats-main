@@ -66,8 +66,9 @@ sub sql {
 package CATS::Console;
 
 use CATS::DB;
-use CATS::Globals qw($cid $is_jury $t $uid $user);
+use CATS::Globals qw($is_jury $t $uid $user);
 use CATS::Messages qw(res_str);
+use CATS::Time;
 use CATS::Utils qw(escape_xml);
 use CATS::Verdicts;
 
@@ -297,8 +298,8 @@ sub build_query {
     $sth;
 }
 
-
 sub select_all_reqs {
+    my ($contest_id) = @_;
     $dbh->selectall_arrayref(qq~
         SELECT
             R.id AS id, R.submit_time, R.state, R.failed_test,
@@ -317,10 +318,11 @@ sub select_all_reqs {
         WHERE
             R.contest_id = ? AND CA.is_hidden = 0 AND CA.is_virtual = 0 AND R.submit_time > C.start_date
         ORDER BY R.submit_time ASC~, { Slice => {} },
-        $cid);
+        $contest_id);
 }
 
 sub export {
+    my ($contest_id) = @_;
     # Legacy field, new consumers should use short_state.
     my %state_to_display = (
         $cats::st_wrong_answer => 'wrong_answer',
@@ -341,7 +343,7 @@ sub export {
         $cats::st_security_violation => 'security_violation',
         $cats::st_ignore_submit => 'ignore_submit',
     );
-    my $reqs = select_all_reqs;
+    my $reqs = select_all_reqs($contest_id);
     for my $req (@$reqs) {
         $req->{submit_time} =~ s/\s+$//;
         $req->{short_state} = $CATS::Verdicts::state_to_name->{$req->{state}};
