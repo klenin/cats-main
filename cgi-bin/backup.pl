@@ -5,13 +5,14 @@ use warnings;
 use Encode;
 use File::Spec;
 use File::stat;
+use FindBin;
 use Getopt::Long;
 use IPC::Cmd;
 use POSIX qw(strftime);
 use Time::HiRes qw(gettimeofday);
 
-use lib File::Spec->catdir((File::Spec->splitpath(File::Spec->rel2abs($0)))[0, 1], 'cats-problem');
-use lib File::Spec->catdir((File::Spec->splitpath(File::Spec->rel2abs($0)))[0, 1]);
+use lib File::Spec->catdir($FindBin::Bin, 'cats-problem');
+use lib $FindBin::Bin;
 
 use CATS::Config;
 use CATS::DB;
@@ -52,7 +53,7 @@ if (!$report || $report !~ /^(std|mail)$/) {
     usage;
 }
 
-$dest ||= File::Spec->catdir((File::Spec->splitpath(File::Spec->rel2abs($0)))[0, 1], '..', 'ib_data');
+$dest ||= File::Spec->catdir($FindBin::Bin, '..', 'ib_data');
 
 sub fmt_interval {
     my $s = Time::HiRes::tv_interval(@_);

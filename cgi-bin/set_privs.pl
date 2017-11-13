@@ -3,10 +3,11 @@ use strict;
 use warnings;
 
 use File::Spec;
+use FindBin;
 use Getopt::Long;
 
-use lib File::Spec->catdir((File::Spec->splitpath(File::Spec->rel2abs($0)))[0, 1], 'cats-problem');
-use lib File::Spec->catdir((File::Spec->splitpath(File::Spec->rel2abs($0)))[0, 1]);
+use lib File::Spec->catdir($FindBin::Bin, 'cats-problem');
+use lib $FindBin::Bin;
 
 use CATS::DB;
 use CATS::Privileges;
