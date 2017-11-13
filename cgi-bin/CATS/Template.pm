@@ -11,13 +11,13 @@ use CATS::Template::Filter;
 my $tt;
 
 sub new {
-    my ($class, $file_name, $cats_dir) = @_;
+    my ($class, $file_name, $cats_dir, $opts) = @_;
+    $opts //= {};
     my $templates_path = File::Spec->catdir($cats_dir, '..', 'tt');
-
+    my $compile_dir = $opts->{compile_dir} // File::Spec->rel2abs(File::Spec->catdir($templates_path, 'cache'));
     $tt ||= Template->new({
         INCLUDE_PATH => $templates_path,
-        COMPILE_EXT => '.ttc',
-        COMPILE_DIR => File::Spec->catdir($templates_path, 'cache'),
+        ($compile_dir ? (COMPILE_EXT => '.ttc', COMPILE_DIR => $compile_dir) : ()),
         ENCODING => 'utf8',
         PLUGINS => {
             Javascript => 'CATS::Template::Plugin::Javascript'
