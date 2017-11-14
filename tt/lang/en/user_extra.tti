@@ -5,7 +5,7 @@
     affiliation => 'Educational institution',
     affiliation_year => 'Year of enrollment',
     motto => 'Motto',
-    capitan_name => "Team captain's name",
+    capitan_name => "Team captain's full name",
     email => 'E-Mail',
     icq_number => 'ICQ',
     home_page => 'Home page',
