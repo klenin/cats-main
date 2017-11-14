@@ -5,7 +5,7 @@
     affiliation => 'Учебное заведение',
     affiliation_year => 'Год поступления',
     motto => 'Девиз команды',
-    capitan_name => 'ФИО капитана команды',
+    capitan_name => 'Ф.И.О. капитана команды',
     email => 'E-Mail',
     icq_number => 'ICQ',
     home_page => 'Адрес домашней страницы',
