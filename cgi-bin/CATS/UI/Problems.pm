@@ -78,29 +78,35 @@ sub problems_all_frame {
     my $where_cond = join(' AND ', @{$where->{cond}}) || '1=1';
 
     $lv->define_columns(url_f('problems', link => $link, kw => $p->{kw}), 0, 0, [
-        { caption => res_str(602), order_by => '2', width => '30%' },
-        { caption => res_str(603), order_by => '3', width => '30%' },
-        { caption => res_str(604), order_by => '4', width => '10%' },
-        #{ caption => res_str(605), order_by => '5', width => '10%' },
+        { caption => res_str(602), order_by => 'P.title', width => '30%' },
+        { caption => res_str(603), order_by => 'C.title', width => '30%' },
+        { caption => res_str(604), order_by => 'ok_wa_tl', width => '10%', col => 'Ok' },
+        { caption => res_str(667), order_by => 'keywords', width => '20%', col => 'Kw' },
     ]);
     CATS::Problem::Utils::define_common_searches($lv);
     $lv->define_db_searches({ contest_title => 'C.title'});
 
+    my $ok_wa_tl = $lv->visible_cols->{Ok} ? qq~
+        SELECT
+            SUM(CASE R.state WHEN $cats::st_accepted THEN 1 ELSE 0 END) || ' / ' ||
+            SUM(CASE R.state WHEN $cats::st_wrong_answer THEN 1 ELSE 0 END) || ' / ' ||
+            SUM(CASE R.state WHEN $cats::st_time_limit_exceeded THEN 1 ELSE 0 END)
+            FROM reqs R WHERE R.problem_id = P.id~ : 'NULL';
+    my $keywords = $lv->visible_cols->{Kw} ? q~
+        SELECT LIST(DISTINCT K.code, ' ') FROM keywords K
+        INNER JOIN problem_keywords PK ON PK.keyword_id = K.id AND PK.problem_id = P.id~ : 'NULL';
     my $c = $dbh->prepare(qq~
-        SELECT P.id, P.title, C.title, C.id,
-            (SELECT
-                SUM(CASE R.state WHEN $cats::st_accepted THEN 1 ELSE 0 END) || ' / ' ||
-                SUM(CASE R.state WHEN $cats::st_wrong_answer THEN 1 ELSE 0 END) || ' / ' ||
-                SUM(CASE R.state WHEN $cats::st_time_limit_exceeded THEN 1 ELSE 0 END)
-                FROM reqs R WHERE R.problem_id = P.id
-            ),
+        SELECT
+            P.id, P.title, C.title, C.id,
+            ($ok_wa_tl) AS ok_wa_tl,
+            ($keywords) AS keywords,
             (SELECT COUNT(*) FROM contest_problems CP WHERE CP.problem_id = P.id AND CP.contest_id = ?)
         FROM problems P INNER JOIN contests C ON C.id = P.contest_id
         WHERE $where_cond ~ . $lv->maybe_where_cond . $lv->order_by);
     $c->execute($cid, @{$where->{params}}, $lv->where_params);
 
     my $fetch_record = sub {
-        my ($pid, $problem_name, $contest_name, $contest_id, $counts, $linked) = $_[0]->fetchrow_array
+        my ($pid, $problem_name, $contest_name, $contest_id, $counts, $keywords, $linked) = $_[0]->fetchrow_array
             or return ();
         my %pp = (sid => $sid, cid => $contest_id, pid => $pid);
         return (
@@ -109,6 +115,7 @@ sub problems_all_frame {
             # Jury can download package for any problem after linking, but not before.
             ($is_root ? (href_download => url_function('problem_download', %pp)) : ()),
             ($is_jury ? (href_problem_history => url_function('problem_history', %pp)) : ()),
+            keywords => $keywords,
             linked => $linked || !$link,
             problem_id => $pid,
             problem_name => $problem_name,
