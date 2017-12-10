@@ -121,11 +121,15 @@ function chg_code(st_sel, pid) {
     [%- IF p.usage_count %] [<a href="[% p.href_usage %]" title="[% capt.used_in %]">[% p.usage_count %]</a>][% END %]
     [% IF p.remote_url %] [<a href="[% p.remote_url %]" title="[% p.remote_url %]">R</a>][% END %]
 </td>
+[% IF visible_cols.Ts -%]
 <td><a href="[% p.href_select_testsets %]">[% p.testsets %]</a> ([% p.test_count %])
   [%- IF p.points_testsets %] / <a href="[% p.href_select_testsets %]">[% p.points_testsets.replace(',', ',&#8203;') %]</a>[% END -%]
 </td>
+[%- END %]
+[% IF visible_cols.Tg -%]
 <td><a href="[% p.href_select_tags %]">[% p.tags.replace(',', ',&#8203;') || '*' %]</a>
 </td>
+[%- END %]
 [% IF visible_cols.Mu %]<td>[% p.last_modified_by %]</td>[% END %]
 [% IF visible_cols.Mt %]<td class="num">[% p.upload_date %]</td>[% END %]
 [% END %]

@@ -248,8 +248,8 @@ sub problems_frame {
         ($is_jury ?
         (
             { caption => res_str(622), order_by => 'CP.status', width => '8%' },
-            { caption => res_str(605), order_by => 'CP.testsets', width => '12%' },
-            { caption => res_str(629), order_by => 'CP.tags', width => '8%' },
+            { caption => res_str(605), order_by => 'CP.testsets', width => '12%', col => 'Ts' },
+            { caption => res_str(629), order_by => 'CP.tags', width => '8%', col => 'Tg' },
             { caption => res_str(635), order_by => 'last_modified_by', width => '5%', col => 'Mu' },
             { caption => res_str(634), order_by => 'P.upload_date', width => '10%', col => 'Mt' },
         )
