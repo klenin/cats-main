@@ -250,6 +250,7 @@ sub problems_frame {
             { caption => res_str(622), order_by => 'CP.status', width => '8%' },
             { caption => res_str(605), order_by => 'CP.testsets', width => '12%', col => 'Ts' },
             { caption => res_str(629), order_by => 'CP.tags', width => '8%', col => 'Tg' },
+            { caption => res_str(667), order_by => 'keywords', width => '10%', col => 'Kw' },
             { caption => res_str(635), order_by => 'last_modified_by', width => '5%', col => 'Mu' },
             { caption => res_str(634), order_by => 'P.upload_date', width => '10%', col => 'Mt' },
         )
@@ -286,12 +287,18 @@ sub problems_frame {
         NULL AS wrong_answer_count,
         NULL AS time_limit_count,
         NULL AS last_submission~;
+    my $keywords = $lv->visible_cols->{Kw} ? q~(
+        SELECT LIST(DISTINCT K.code, ' ') FROM keywords K
+        INNER JOIN problem_keywords PK ON PK.keyword_id = K.id AND PK.problem_id = P.id
+        ) AS keywords,~ : '';
+
     # Concatenate last submission fields to work around absence of tuples.
     my $sth = $dbh->prepare(qq~
         SELECT
             CP.id AS cpid, P.id AS pid,
             $select_code AS code, P.title AS problem_name, OC.title AS contest_name,
             $counts,
+            $keywords
             P.contest_id - CP.contest_id AS is_linked,
             (SELECT COUNT(*) FROM contest_problems CP1
                 WHERE CP1.contest_id <> CP.contest_id AND CP1.problem_id = P.id) AS usage_count,
@@ -405,6 +412,7 @@ sub problems_frame {
             max_points => $c->{max_points},
             tags => $c->{tags},
             last_verdict => $CATS::Verdicts::state_to_name->{$last_verdict || ''},
+            keywords => $c->{keywords},
         );
     };
 
