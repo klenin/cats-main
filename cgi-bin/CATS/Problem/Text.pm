@@ -4,7 +4,6 @@ use strict;
 use warnings;
 
 use Encode;
-use Text::Aspell;
 use XML::Parser::Expat;
 
 use CATS::Constants;
@@ -13,6 +12,7 @@ use CATS::DB;
 use CATS::Globals qw($cid $contest $is_jury $is_root $t $uid);
 use CATS::Messages qw(res_str);
 use CATS::Output qw(auto_ext downloads_path downloads_url init_template);
+use CATS::Problem::Spell;
 use CATS::Problem::Tags;
 use CATS::Problem::Utils;
 use CATS::StaticPages;
@@ -22,28 +22,12 @@ use CATS::Utils qw(url_function);
 
 my ($current_pid, $html_code, $spellchecker, $text_span, $tags, $skip_depth);
 
-sub check_spelling {
-    my ($word) = @_;
-    # The '_' character causes SIGSEGV (!) inside of ASpell.
-    return $word if $word =~ /(?:\d|_)/;
-    $word =~ s/\x{AD}//g; # Ignore soft hypens.
-    # Aspell currently supports only KOI8-R russian encoding.
-    my $koi = Encode::encode('KOI8-R', $word);
-    return $word if $spellchecker->check($koi);
-    my $suggestion =
-        Encode::decode('KOI8-R', join ' | ', grep $_, ($spellchecker->suggest($koi))[0..9]);
-    return qq~<a class="spell" title="$suggestion">$word</a>~;
-}
-
 sub process_text {
     if ($spellchecker) {
         my @tex_parts = split /\$/, $text_span;
-        my $i = 1;
+        my $i = 0;
         for (@tex_parts) {
-            $i = !$i;
-            next if $i;
-            # Ignore entities, count apostrophe as part of word except in the beginning of word.
-            s/(?<!(?:\w|&))(\w(?:\w|\'|\x{AD})*)/check_spelling($1)/eg;
+            $spellchecker->check_topicalizer if $i ^= 1;
         }
         $html_code .= join '$', @tex_parts;
         # split ignores separator at EOL, m// ignores \n at EOL, hence \z
@@ -282,7 +266,7 @@ sub problem_text {
         push @problems, @$prs;
     }
 
-    my $use_spellchecker = $is_jury_in_contest && !$p->{nospell};
+    $spellchecker = $is_jury_in_contest && !$p->{nospell} ? CATS::Problem::Spell->new : undef;
 
     my $need_commit = 0;
     for my $problem (@problems) {
@@ -320,16 +304,6 @@ sub problem_text {
             $problem->{keywords} = join ', ', @$kw_list;
         }
 
-        if ($use_spellchecker) {
-            # Per Text::Aspell docs, we cannot change options of the existing object,
-            # so create a new one.
-            $spellchecker = Text::Aspell->new;
-            $spellchecker->set_option('lang', $problem->{lang} eq 'ru' ? 'ru_RU' : 'en_US');
-        }
-        else {
-            undef $spellchecker;
-        }
-
         $problem->{show_points} = $show_points;
         if ($show_points && !$problem->{max_points}) {
             $problem->{max_points} = CATS::RankTable::cache_max_points($problem);
@@ -345,6 +319,7 @@ sub problem_text {
             ($CATS::StaticPages::is_static_page ? '../' : '') .
             url_function('problems', cid => $problem->{contest_id} || $problem->{orig_contest_id});
 
+        $spellchecker->push_lang($problem->{lang}) if $spellchecker;
         for my $field_name (qw(statement pconstraints input_format output_format explanation)) {
             for ($problem->{$field_name}) {
                 defined $_ or next;
@@ -354,6 +329,7 @@ sub problem_text {
                 s/(\s|~)(:?-){2,3}(?!-)/($1 ? '&nbsp;' : '') . '&#8212;'/ge; # em-dash
             }
         }
+        $spellchecker->pop_lang if $spellchecker;
         $_ = Encode::decode_utf8($_) for $problem->{json_data};
     }
     $dbh->commit if $need_commit;
