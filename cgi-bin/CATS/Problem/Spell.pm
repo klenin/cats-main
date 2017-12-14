@@ -14,7 +14,7 @@ sub new {
     }, $class;
 }
 
-sub push_lang { push @{$_[0]->{langs}}, $_[1] }
+sub push_lang { push @{$_[0]->{langs}}, $_[1] // $_[0]->{langs}->[-1] // die }
 sub pop_lang { pop @{$_[0]->{langs}} }
 
 my $known_langs = { ru => 'ru_RU', en => 'en_US' };
