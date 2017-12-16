@@ -1,0 +1,33 @@
+[% PROCESS includes/menu_begin.tti %]
+
+<script>
+function delete_contact_type(href, name) {
+    if (confirm("[% capt.want_to_delete %] '" + name + "'?" ))
+        document.location=href;
+}
+</script>
+
+[% PROCESS includes/listview_header.tti %]
+
+<table class="listview bordered highlight">
+[% PROCESS includes/listview_col_defs.tti %]
+
+[% FOREACH ct IN contact_types %]
+<tr class="[% loop.parity() %]">
+<td>
+  [% IF ct.href_delete ~%]
+  <a href="javascript:delete_contact_type('[% ct.href_delete %]', '[% ct.name | html %]');" class="icon delete"></a>
+  [%~ END %]
+  [% IF ct.href_edit ~%]
+  <a href="[% ct.href_edit %]" class="icon edit"></a>
+  [%~ END %]
+  [% ct.name | html %]
+</td>
+<td>[% ct.url | html %]</td>
+</tr>
+[% END %]
+</table>
+[% PROCESS includes/pages.tti %]
+</form>
+
+[% PROCESS includes/menu_end.tti %]
