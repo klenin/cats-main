@@ -129,6 +129,18 @@ sub insert {
     $rid;
 }
 
+# source_p: src, de_id
+sub update_source {
+    my ($request_id, $source_p, $de_bitmap) = @_;
+    $dbh->do(_u $sql->update(sources => $source_p, { req_id => $request_id }));
+
+    $dbh->do(_u $sql->update('req_de_bitmap_cache', {
+        req_id => $request_id,
+        version => CATS::JudgeDB::current_de_version,
+        CATS::JudgeDB::get_de_bitfields_hash(@$de_bitmap),
+    })) if $de_bitmap;
+}
+
 # Params: request_ids (required), submit_uid (required)
 #         fields: { state = $cats::st_not_processed, failed_test, testsets, points, judge_id, limits_id }
 sub create_group {

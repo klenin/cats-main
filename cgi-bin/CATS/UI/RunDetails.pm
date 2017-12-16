@@ -30,6 +30,7 @@ use CATS::ReqDetails qw(
     source_links);
 use CATS::Settings qw($settings);
 use CATS::Testset;
+use CATS::Utils;
 use CATS::Verdicts;
 use CATS::Web qw(param encoding_param url_param headers upload_source content_type redirect);
 
@@ -299,10 +300,15 @@ sub view_source_frame {
         my $u;
         if (param('replace_file')) {
             $u->{src} = upload_source('replace_file') or die;
+            $u->{hash} = CATS::Utils::source_hash($u->{src});
         }
-        $u->{de_id} = $p->{de_id} if $p->{de_id};
-        if (%$u) {
-            $dbh->do(_u $sql->update(sources => $u, { req_id => $sources_info->{req_id} }));
+        my $de_bitmap;
+        if ($p->{de_id} && $p->{de_id} != $sources_info->{de_id}) {
+            $u->{de_id} = $p->{de_id};
+            $de_bitmap = [ CATS::DevEnv->new(CATS::JudgeDB::get_DEs())->bitmap_by_ids($p->{de_id}) ];
+        }
+        if ($u) {
+            CATS::Request::update_source($sources_info->{req_id}, $u, $de_bitmap);
             $dbh->commit;
             $sources_info = get_sources_info(request_id => $p->{rid}, get_source => 1, encode_source => 1);
         }
