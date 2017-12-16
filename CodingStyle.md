@@ -119,6 +119,14 @@ Some historical code, mostly located in `unused` directory, does not conform to 
 * Elements SHOULD be styled with CSS, embedded `style` tags MAY be used for local styles (using `extra_head` block).
 * Checkboxes and submit buttons MUST have `value="1"`.
 
+## SQL
+* SQL keywords and table aliases MUST use `UPPER CASE`.
+* Table and field names MUST use `snake_case`.
+* Comments SHOULD use `/* ... */` style.
+* Joins MUST use `JOIN` keyword, not comma.
+* `CHECK` constraints SHOULD be named.
+* Each foreign key MUST contain `ON DELETE` clause.
+
 ## Compatibility
 * Code from `cats-main` and `cats-problem` repositories MUST be compatible with Perl v5.10.
 * Code from `cats-judge` repository MUST be compatible with Perl v5.14.
