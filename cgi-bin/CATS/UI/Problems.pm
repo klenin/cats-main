@@ -298,6 +298,10 @@ sub problems_frame {
         SELECT LIST(DISTINCT K.code, ' ') FROM keywords K
         INNER JOIN problem_keywords PK ON PK.keyword_id = K.id AND PK.problem_id = P.id
         ) AS keywords,~ : '';
+    my $judges_installed_sql = $lv->visible_cols->{Vc} ? qq~
+        (SELECT COUNT(DISTINCT R.judge_id) FROM reqs R
+        WHERE R.problem_id = P.id AND R.state > $cats::request_processed AND R.submit_time > P.upload_date)~ :
+        'NULL';
 
     # Concatenate last submission fields to work around absence of tuples.
     my $sth = $dbh->prepare(qq~
@@ -310,7 +314,7 @@ sub problems_frame {
             (SELECT COUNT(*) FROM contest_problems CP1
                 WHERE CP1.contest_id <> CP.contest_id AND CP1.problem_id = P.id) AS usage_count,
             OC.id AS original_contest_id, CP.status,
-            P.upload_date,
+            P.upload_date, $judges_installed_sql AS judges_installed,
             (SELECT A.login FROM accounts A WHERE A.id = P.last_modified_by) AS last_modified_by,
             SUBSTRING(P.explanation FROM 1 FOR 1) AS has_explanation,
             $test_count_sql CP.testsets, CP.points_testsets, P.lang, $limits_str,
@@ -409,6 +413,7 @@ sub problems_frame {
             tle_count => $c->{time_limit_count},
             upload_date => $c->{upload_date},
             upload_date_iso => date_to_iso($c->{upload_date}),
+            judges_installed => $c->{judges_installed},
             last_modified_by => $c->{last_modified_by},
             testsets => $c->{testsets} || '*',
             points_testsets => $c->{points_testsets},
