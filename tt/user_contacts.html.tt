@@ -1,0 +1,24 @@
+[% PROCESS includes/menu_begin.tti %]
+[% PROCESS includes/html.tti %]
+
+[% PROCESS includes/listview_header.tti %]
+
+<table class="listview bordered highlight">
+[% PROCESS includes/listview_col_defs.tti %]
+[% FOREACH uc IN user_contacts %]
+<tr class="[% loop.parity %]">
+<td>
+  <a href="[% u.href_edit %]" class="icon edit"></a>
+  [% uc.type_name | html %]
+</td>
+<td>[% uc.handle %]</td>
+<td><label style="display: block;"><input type="checkbox" name="is_public" value="[% uc.id %]"[% ' checked="checked"' IF uc.is_public %]></label></td>
+<td><label style="display: block;"><input type="checkbox" name="is_actual" value="[% uc.id %]"[% ' checked="checked"' IF uc.is_actual %]></label></td>
+</tr>
+[% END %]
+</table>
+<br/>
+[% PROCESS includes/pages.tti %]
+</form>
+
+[% PROCESS includes/menu_end.tti %]

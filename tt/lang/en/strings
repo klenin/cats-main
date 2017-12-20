@@ -130,6 +130,8 @@
 666 "Verdict"
 667 "Keywords"
 668 "Url"
+669 "Public"
+670 "Actual"
 700 "manual"
 701 "ok"
 702 "paused"

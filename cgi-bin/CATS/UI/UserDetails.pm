@@ -33,6 +33,7 @@ sub user_submenu {
         (!$is_root ? () : (
             { href => url_f('user_settings', uid => $user_id), item => res_str(575), selected => 'user_settings' },
             { href => url_f('user_ip', uid => $user_id), item => res_str(576), selected => 'user_ip' },
+            { href => url_f('user_contacts', uid => $user_id), item => res_str(586), selected => 'user_contacts' },
         )),
         (!$is_jury && !$user->{is_site_org} ? () : (
             { href => url_f('user_vdiff', uid => $user_id), item => res_str(580), selected => 'user_vdiff' },
@@ -268,6 +269,44 @@ sub user_vdiff_frame {
         can_finish_now => can_finish_now($u),
         title_suffix => $u->{team_name},
         href_site => url_f('contest_sites_edit', site_id => $u->{site_id}),
+    );
+}
+
+sub user_contacts_frame {
+    my ($p) = @_;
+
+    init_template('user_contacts.html.tt');
+    $is_root or return;
+    $p->{uid} or return;
+
+    my $lv = CATS::ListView->new(
+        name => 'user_contacts', template => 'user_contacts.html.tt');
+
+    $lv->define_columns(url_f('user_contacts'), 0, 0, [
+        { caption => res_str(642), order_by => 'type_name', width => '20%' },
+        { caption => res_str(657), order_by => 'handle', width => '30%' },
+        { caption => res_str(669), order_by => 'is_public', width => '15%' },
+        { caption => res_str(670), order_by => 'is_actual', width => '15%' },
+    ]);
+    $lv->define_db_searches([ qw(id contact_type_id type_name handle is_public is_actual) ]);
+    my $sth = $dbh->prepare(q~
+        SELECT C.id, C.contact_type_id, C.handle, C.is_public, C.is_actual, CT.name AS type_name
+        FROM contacts C
+        INNER JOIN contact_types CT ON CT.id = C.contact_type_id
+        WHERE C.account_id = ?~ . $lv->maybe_where_cond . $lv->order_by);
+    $sth->execute($p->{uid}, $lv->where_params);
+
+    my $fetch_record = sub {
+        my $row = $_[0]->fetchrow_hashref or return ();
+        (
+            href_edit => url_f('user_contact_edit', ucid => $row->{id}),
+            %$row,
+        );
+    };
+    $lv->attach(url_f('user_contacts'), $fetch_record, $sth, { page_params => { uid => $p->{uid} } });
+    $t->param(
+        user_submenu('user_contacts', $p->{uid}),
+        title_suffix => res_str(586),
     );
 }
 
