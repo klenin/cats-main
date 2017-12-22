@@ -17,11 +17,33 @@ use CATS::Privileges;
 use CATS::Time;
 use CATS::User;
 
+sub users_submenu {
+    if ($is_jury)  {
+        submenu => [
+            { href => url_f('users_new'), item => res_str(541) },
+            { href => url_f('users_import'), item => res_str(564) },
+            { href => url_f('users_add_participants'), item => res_str(584) },
+            ($is_root ?
+                { href => url_f('users_all_settings'), item => res_str(575) } : ()),
+        ];
+    }
+    elsif ($user->{is_site_org}) {
+        submenu => [
+            ($user->{site_id} ?
+                { href => url_f('users', search => 'site_id=my'), item => res_str(582) } : ()),
+            { href => url_f('users', search => 'site_id=0'), item => res_str(583) },
+        ];
+    }
+    else {
+        ();
+    }
+}
+
 sub users_import_frame {
     my ($p) = @_;
     init_template('users_import.html.tt');
     $is_root or return;
-    $t->param(href_action => url_f('users_import'));
+    $t->param(href_action => url_f('users_import'), title_suffix => res_str(564), users_submenu);
     $p->{go} or return;
     my @report;
     for my $line (split "\r\n", Encode::decode_utf8($p->{user_list})) {
@@ -84,6 +106,7 @@ sub users_add_participants_frame {
     $t->param(
         href_action => url_f('users_add_participants'),
         title_suffix => res_str(584),
+        users_submenu,
         contests => $contests,
     );
 }
@@ -95,7 +118,7 @@ sub users_frame {
         name => 'users' . ($contest->is_practice ? '_practice' : ''),
         array_name => 'users',
         template => auto_ext('users'));
-    $t->param(title_suffix => res_str(526));
+    $t->param(title_suffix => res_str(526), users_submenu);
 
     if ($is_jury) {
         users_delete($p);
@@ -242,24 +265,6 @@ sub users_frame {
     };
 
     $lv->attach(url_f('users'), $fetch_record, $c);
-
-    if ($is_jury)  {
-        $t->param(submenu => [
-            { href => url_f('users_new'), item => res_str(541) },
-            { href => url_f('users_import'), item => res_str(564) },
-            { href => url_f('users_add_participants'), item => res_str(584) },
-            ($is_root ?
-                { href => url_f('users_all_settings'), item => res_str(575) } : ()),
-        ]);
-    }
-    elsif ($user->{is_site_org}) {
-        $t->param(submenu => [
-            ($user->{site_id} ?
-                { href => url_f('users', search => 'site_id=my'), item => res_str(582) } : ()),
-            { href => url_f('users', search => 'site_id=0'), item => res_str(583) },
-        ]);
-    }
-
     $c->finish;
 }
 
@@ -307,7 +312,7 @@ sub users_all_settings_frame {
         );
     };
     $lv->attach(url_f('users_all_settings'), $fetch_record, $sth);
-    $t->param(title_suffix => res_str(575));
+    $t->param(title_suffix => res_str(575), users_submenu);
 }
 
 1;
