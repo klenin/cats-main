@@ -211,6 +211,8 @@
 1068 "Sites added: %d."
 1069 "Contact type '%s' deleted."
 1070 "Contact type '%s' saved."
+1071 "Contact '%s' deleted."
+1072 "Contact '%s' saved."
 1080 "无法提交解决方案：比赛还没有开始。"
 1081 "无法提交解决方案：比赛结束了。"
 1084 "Incorrect keyword parameters."

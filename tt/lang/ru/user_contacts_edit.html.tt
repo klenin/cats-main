@@ -1,0 +1,8 @@
+[%
+  capt.import({
+    contact_type => 'Тип контакта',
+    handle => 'Адрес',
+    is_public => 'Публичный',
+    is_actual => 'Актуальный',
+  })
+%]

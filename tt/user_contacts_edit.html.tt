@@ -1,0 +1,15 @@
+[% PROCESS includes/menu_begin.tti %]
+[% PROCESS includes/html.tti %]
+
+<form method="post" enctype="multipart/form-data" action="[% href_action %]">
+<table>
+<tr><td>[% capt.contact_type %]</td><td>[% select_value('contact_type_id', contact_types, contact_type_id) %]</td></tr>
+<tr><td>[% capt.handle %]</td><td><input type="text" name="handle" value="[% handle | html %]" size="50" class="bordered"></td></tr>
+<tr><td>[% capt.is_public %]</td><td>[% checkbox_1('is_public', is_public) %]</td>
+<tr><td>[% capt.is_actual %]</td><td>[% checkbox_1('is_actual', is_actual) %]</td>
+</table>
+<br>
+[% PROCESS includes/edit_save_cancel.tti %]
+</form>
+
+[% PROCESS includes/menu_end.tti %]

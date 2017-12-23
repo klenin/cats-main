@@ -146,7 +146,9 @@ $main_routes = {
         diff_time => fixed, diff_units => ident,
         ext_time => fixed, ext_units => ident,
         is_virtual => ident, save => bool, finish_now => bool ],
-    user_contacts => [ \&CATS::UI::UserDetails::user_contacts_frame, uid => integer, ],
+    user_contacts => [ \&CATS::UI::UserDetails::user_contacts_frame,
+        uid => integer, new => bool, edit => integer, delete => integer, handle => str, edit_save => bool,
+    ],
     impersonate => [ \&CATS::UI::UserDetails::impersonate_frame, uid => integer, ],
     contact_types => \&CATS::UI::ContactTypes::contact_types_frame,
 

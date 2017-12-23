@@ -8,6 +8,7 @@ use Storable qw(thaw);
 use CATS::Constants;
 use CATS::Countries;
 use CATS::DB;
+use CATS::Form;
 use CATS::Globals qw ($cid $is_jury $is_root $t $sid $uid $user);
 use CATS::IP;
 use CATS::Messages qw(msg res_str);
@@ -22,6 +23,9 @@ use CATS::Web qw(redirect);
 sub user_submenu {
     my ($selected, $user_id) = @_;
     my @m = (
+        ($is_root && $selected eq 'user_contacts' ? (
+            { href => url_f('user_contacts', uid => $user_id, new => 1), item => res_str(587), selected => '' }
+        ) : ()),
         (
             $is_jury ?
                 ({ href => url_f('users_edit', uid => $user_id), item => res_str(573), selected => 'edit' }) :
@@ -272,12 +276,31 @@ sub user_vdiff_frame {
     );
 }
 
+sub user_contact_fields() {qw(account_id contact_type_id handle is_public is_actual)}
+
+my $user_contact_form = CATS::Form->new({
+    table => 'contacts',
+    fields => [ map +{ name => $_ }, user_contact_fields ],
+    templates => { edit_frame => 'user_contacts_edit.html.tt' },
+    href_action => 'user_contacts',
+});
+
 sub user_contacts_frame {
     my ($p) = @_;
 
     init_template('user_contacts.html.tt');
     $is_root or return;
     $p->{uid} or return;
+
+    $p->{new} || $p->{edit} and return $user_contact_form->edit_frame(sub {
+        $_[0]->{contact_types} = $dbh->selectall_arrayref(q~
+            SELECT id AS "value", name AS "text" FROM contact_types ORDER BY name~, { Slice => {} });
+        unshift @{$_[0]->{contact_types}}, {};
+    }, href_action_params => [ uid => $p->{uid} ]);
+    $user_contact_form->edit_delete(id => $p->{delete}, descr => 'handle', msg => 1071);
+    $p->{edit_save} and $user_contact_form->edit_save(sub {
+        $_[0]->{account_id} = $p->{uid};
+    }) and msg(1072, Encode::decode_utf8($p->{handle}));
 
     my $lv = CATS::ListView->new(
         name => 'user_contacts', template => 'user_contacts.html.tt');
@@ -288,7 +311,7 @@ sub user_contacts_frame {
         { caption => res_str(669), order_by => 'is_public', width => '15%' },
         { caption => res_str(670), order_by => 'is_actual', width => '15%' },
     ]);
-    $lv->define_db_searches([ qw(id contact_type_id type_name handle is_public is_actual) ]);
+    $lv->define_db_searches([ user_contact_fields ]);
     my $sth = $dbh->prepare(q~
         SELECT C.id, C.contact_type_id, C.handle, C.is_public, C.is_actual, CT.name AS type_name
         FROM contacts C
@@ -299,7 +322,8 @@ sub user_contacts_frame {
     my $fetch_record = sub {
         my $row = $_[0]->fetchrow_hashref or return ();
         (
-            href_edit => url_f('user_contact_edit', ucid => $row->{id}),
+            href_edit => url_f('user_contacts', edit => $row->{id}, uid => $p->{uid}),
+            href_delete => url_f('user_contacts', 'delete' => $row->{id}, uid => $p->{uid}),
             %$row,
         );
     };

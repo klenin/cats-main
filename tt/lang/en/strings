@@ -211,6 +211,8 @@
 1068 "Sites added: %d."
 1069 "Contact type '%s' deleted."
 1070 "Contact type '%s' saved."
+1071 "Contact '%s' deleted."
+1072 "Contact '%s' saved."
 1080 "Unable to submit a solution: the contest is not started yet."
 1081 "Unable to submit a solution: the contest is over."
 1084 "Incorrect keyword parameters."
