@@ -134,6 +134,16 @@ sub get_nearby_attempt {
     $si->{href_diff_runs} = url_f('diff_runs', r1 => $na->{id}, r2 => $si->{req_id}) if $diff && $uid;
 }
 
+sub _get_user_details {
+    my ($uid) = @_;
+    my $contacts = $dbh->selectall_arrayref(q~
+        SELECT C.id, C.handle, CT.name, CT.url
+        FROM contacts C INNER JOIN contact_types CT ON CT.id = C.contact_type_id
+        WHERE C.account_id = ? AND C.is_actual = 1~, { Slice => {} }, $uid);
+    $_->{href} = sprintf $_->{url}, CATS::Utils::escape_url($_->{handle}) for @$contacts;
+    { contacts => $contacts };
+}
+
 # Load information about one or several runs.
 # Parameters: request_id, may be either scalar or array ref.
 sub get_sources_info {
@@ -202,6 +212,9 @@ sub get_sources_info {
             or delete $req_tree->{$_};
     }
 
+    my %user_cache;
+    my $user_cached = sub { $user_cache{$_[0]} //= _get_user_details($_[0]) };
+
     my $official = $p{get_source} && CATS::Contest::current_official;
     $official = 0 if $official && $is_jury_cached->($official->{id});
     my $se = encoding_param('src_enc', 'WINDOWS-1251');
@@ -253,6 +266,8 @@ sub get_sources_info {
         $r->{$_} = $r->{"lr_$_"} || $r->{"lcp_$_"} || $r->{"p_$_"} for @cats::limits_fields;
 
         $r->{can_reinstall} = $is_root || $r->{orig_contest_id} == $r->{contest_id};
+
+        $r->{contacts} = $user_cached->($r->{account_id})->{contacts} if $r->{is_jury};
     }
 
     return ref $rid ? [ map { $req_tree->{$_} // () } @req_ids ] : $req_tree->{$rid};
