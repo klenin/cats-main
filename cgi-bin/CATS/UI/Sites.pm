@@ -7,7 +7,7 @@ use Encode;
 
 use CATS::DB;
 use CATS::Form qw(validate_string_length);
-use CATS::Globals qw($cid $t $is_jury $is_root $user);
+use CATS::Globals qw($cid $contest $t $is_jury $is_root $user);
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
 use CATS::Output qw(init_template url_f);
@@ -179,16 +179,19 @@ sub contest_sites_delete {
 
 sub contest_sites_frame {
     my ($p) = @_;
-    $is_jury || $user->{is_site_org} or return;
 
     my $lv = CATS::ListView->new(name => 'contest_sites', template => 'contest_sites.html.tt');
+    $is_jury || $user->{is_site_org} || $contest->{show_sites} or return;
+
     $lv->define_columns(url_f('contest_sites'), 0, 0, [
         { caption => res_str(601), order_by => 'name'       , width => '15%' },
         { caption => res_str(654), order_by => 'region'     , width => '15%', col => 'Rg' },
         { caption => res_str(655), order_by => 'city'       , width => '15%', col => 'Ci' },
         { caption => res_str(656), order_by => 'org_name'   , width => '15%', col => 'Oc' },
+        ($is_jury || $user->{is_site_org} ? (
         { caption => res_str(659), order_by => 'org_person' , width => '15%', col => 'Op' },
         { caption => res_str(632), order_by => 'diff_time'  , width => '15%', col => 'Dt' },
+        ): ()),
         { caption => res_str(658), order_by => 'users_count', width => '15%', col => 'Pt' },
     ]);
     $lv->define_db_searches([ fields ]);

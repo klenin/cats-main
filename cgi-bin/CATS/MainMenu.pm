@@ -59,7 +59,7 @@ sub generate {
         { item => res_str(502), href => url_f('contests') },
         { item => res_str(525), href => url_f('problems') },
         ($is_jury || !$contest->is_practice ? { item => res_str(526), href => url_f('users') } : ()),
-        ($is_jury || $user->{is_site_org} ?
+        ($is_jury || $user->{is_site_org} || $contest->{show_sites} ?
             { item => res_str(513), href => url_f('contest_sites') } : ()),
         { item => res_str(510),
           href => url_f('console', $is_jury ? () : (uf => $uid || $user->{anonymous_id})) },
