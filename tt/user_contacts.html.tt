@@ -22,8 +22,8 @@ function delete_user_contact(href, name) {
   [% uc.type_name | html %]
 </td>
 <td>[% uc.handle %]</td>
-<td><label style="display: block;"><input type="checkbox" name="is_public" value="[% uc.id %]"[% ' checked="checked"' IF uc.is_public %]></label></td>
-<td><label style="display: block;"><input type="checkbox" name="is_actual" value="[% uc.id %]"[% ' checked="checked"' IF uc.is_actual %]></label></td>
+<td class="center">[% IF uc.is_public %]<a href="#" class="icon checked"></a>[% END %]</td>
+<td class="center">[% IF uc.is_actual %]<a href="#" class="icon checked"></a>[% END %]</td>
 </tr>
 [% END %]
 </table>
