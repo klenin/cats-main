@@ -106,6 +106,7 @@ CREATE TABLE contests (
     /* 0 - last, 1 - best */
     req_selection        SMALLINT DEFAULT 0 NOT NULL CHECK (req_selection IN (0, 1)),
     pinned_judges_only   SMALLINT DEFAULT 0 NOT NULL,
+    show_sites           SMALLINT DEFAULT 0 NOT NULL,
 
     CHECK (
         start_date <= finish_date AND freeze_date >= start_date

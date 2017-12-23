@@ -27,6 +27,7 @@
     show_checker_comment => "комментарии checker'а",
     show_packages => 'пакеты задач',
     show_flags => 'флаги',
+    show_sites => 'площадки',
     ok => '     Ok     ',
     create_copy => 'Создать копию',
     cancel => 'Отмена',
