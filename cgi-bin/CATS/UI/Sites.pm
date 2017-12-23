@@ -39,18 +39,7 @@ sub sites_frame {
 
     my $lv = CATS::ListView->new(name => 'sites', template => 'sites.html.tt');
 
-    if (my $site_id = $p->{delete}) {
-        if (my ($name) = $dbh->selectrow_array(q~
-            SELECT name FROM sites WHERE id = ?~, undef,
-            $site_id)
-        ) {
-            $dbh->do(q~
-                DELETE FROM sites WHERE id = ?~, undef,
-                $site_id);
-            $dbh->commit;
-            msg(1066, $name);
-        }
-    }
+    $form->edit_delete(id => $p->{delete}, descr => 'name', msg => 1066);
     $p->{edit_save} and edit_save($p);
 
     $lv->define_columns(url_f('sites'), 0, 0, [

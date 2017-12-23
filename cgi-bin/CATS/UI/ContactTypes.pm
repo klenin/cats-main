@@ -37,19 +37,7 @@ sub contact_types_frame {
 
     my $lv = CATS::ListView->new(name => 'contact_types', template => 'contact_types.html.tt');
 
-    if ($is_root && defined url_param('delete')) {
-        my $ct_id = url_param('delete');
-        if (my ($name) = $dbh->selectrow_array(q~
-            SELECT name FROM contact_types WHERE id = ?~, undef,
-            $ct_id)
-        ) {
-            $dbh->do(q~
-                DELETE FROM contact_types WHERE id = ?~, undef,
-                $ct_id);
-            $dbh->commit;
-            msg(1069, $name);
-        }
-    }
+    $is_root and $form->edit_delete(id => url_param('delete') // 1, descr => 'name', msg => 1069);
     $is_root && defined param('edit_save') and edit_save;
 
     $lv->define_columns(url_f('contact_types'), 0, 0, [

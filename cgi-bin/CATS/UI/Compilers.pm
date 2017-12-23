@@ -41,20 +41,9 @@ sub compilers_frame {
 
     my $lv = CATS::ListView->new(name => 'compilers', template => 'compilers.html.tt');
 
-    if ($is_root && defined url_param('delete')) {
-        my $deid = url_param('delete');
-        if (my ($descr) = $dbh->selectrow_array(q~
-            SELECT description FROM default_de WHERE id = ?~, undef,
-            $deid)
-        ) {
-            $dbh->do(q~
-                DELETE FROM default_de WHERE id = ?~, undef,
-                $deid);
-            CATS::JudgeDB::invalidate_de_bitmap_cache;
-            $dbh->commit;
-            msg(1064, $descr);
-        }
-    }
+    $is_root and $form->edit_delete(
+        id => url_param('delete') // 0, descr => 'description', msg => 1064,
+        before_commit => \&CATS::JudgeDB::invalidate_de_bitmap_cache);
     $is_root && defined param('edit_save') and edit_save;
 
     $lv->define_columns(url_f('compilers'), 0, 0, [

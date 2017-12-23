@@ -48,12 +48,7 @@ sub edit_save {
 
 sub keywords_frame {
     if ($is_root) {
-        if (defined url_param('delete')) {
-            my $kwid = url_param('delete');
-            $dbh->do(q~DELETE FROM keywords WHERE id = ?~, {}, $kwid);
-            $dbh->commit;
-        }
-
+        $form->edit_delete(id => url_param('delete') // 1);
         defined url_param('new') || defined url_param('edit') and return edit_frame;
     }
     my $lv = CATS::ListView->new(name => 'keywords', template => 'keywords.html.tt');

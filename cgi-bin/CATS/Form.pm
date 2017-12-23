@@ -63,6 +63,21 @@ sub edit_save {
     1;
 }
 
+# Params: id, descr, msg, before_commit
+sub edit_delete {
+    my ($self, %p) = @_;
+    $p{id} or return;
+    $p{descr} //= 1;
+    if (my ($descr) = $dbh->selectrow_array(_u $sql->select(
+        $self->{table}, [ $p{descr} // 1 ], { id => $p{id} }))
+    ) {
+        $dbh->do(_u $sql->delete($self->{table}, { id => $p{id} }));
+        $p{before_commit}->() if $p{before_commit};
+        $dbh->commit;
+        msg($p{msg}, $descr) if $p{msg};
+    }
+}
+
 sub validate_string_length {
     my ($str, $field_name_id, $min, $max) = @_;
     $str //= '';
