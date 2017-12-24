@@ -74,12 +74,14 @@ MathJax.Hub.Register.StartupHook('onLoad', function () {
   div.problem_menu li.langs { font-weight: bold; }
   div.problem_menu li.langs a { font-weight: normal; }
   div.problem_text table.problem_header { width: 100%; }
+  div.problem_text p { hyphens: auto; max-width: 1000px; text-align: justify; text-indent1: 3em; }
+  div.problem_text p span { text-indent: 0; }
 </style>
 </head>
 <body>
 [% FOREACH p IN problems; il = p.iface_lang; PROCESS "lang/$il/problem_text_p.html.tt" UNLESS capt.problem_text.item(il); END; %]
 [% FOREACH p IN problems; c = capt.problem_text.item(p.iface_lang) %]
-<div class="problem_text" id="p[% p.id %]" [% UNLESS loop.first %]style="page-break-before: always"[% END %]>
+<div class="problem_text" id="p[% p.id %]" [% UNLESS loop.first %]style="page-break-before: always"[% END %] lang="[% p.lang %]">
   <a name="pr[% p.code || p.id %]"></a>
 
   <h2>[% "${c.problem} ${p.code}. " IF p.code; p.title | html %] <a class="jsonly problem_menu_trigger" href="#">&#x2261;</a></h2>
