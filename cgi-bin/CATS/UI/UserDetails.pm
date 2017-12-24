@@ -309,6 +309,9 @@ sub user_contacts_frame {
 
     my $lv = CATS::ListView->new(
         name => 'user_contacts', template => 'user_contacts.html.tt');
+    my $user_name = $is_profile ? $user->{name} : $dbh->selectrow_array(q~
+        SELECT team_name FROM accounts WHERE id = ?~, undef,
+        $p->{uid}) or return;
 
     $lv->define_columns(url_f('user_contacts'), 0, 0, [
         { caption => res_str(642), order_by => 'type_name', width => '20%' },
@@ -340,6 +343,7 @@ sub user_contacts_frame {
     $t->param(
         user_submenu('user_contacts', $p->{uid}),
         title_suffix => res_str(586),
+        problem_title => $user_name,
     );
 }
 
