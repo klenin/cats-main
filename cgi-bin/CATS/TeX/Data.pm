@@ -86,6 +86,8 @@ my %special = (
     rceil => '#x2309',
     lfloor => '#x230A',
     rfloor => '#x230B',
+    langle => '#x2329',
+    rangle => '#x232A',
 );
 
 # Rough approximation.
