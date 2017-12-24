@@ -43,7 +43,12 @@ sub start_element {
     my ($el, %atts) = @_;
 
     process_text;
-    $spellchecker->push_lang($atts{lang}) if $spellchecker;
+    if ($spellchecker) {
+        my $lang = $atts{lang};
+        # Do not spellcheck code unless explicitly requested.
+        $lang //= 'code' if lc($el) eq 'code';
+        $spellchecker->push_lang($lang);
+    }
     $html_code .= "<$el";
     for my $name (keys %atts) {
         my $attrib = $atts{$name};
