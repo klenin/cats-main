@@ -20,4 +20,7 @@ our (
 # Optimization: limit datasets by both maximum row count and maximum visible pages.
 sub max_fetch_row_count() { 1000 }
 
+our $contact_phone = 901;
+our $contact_email = 902;
+
 1;

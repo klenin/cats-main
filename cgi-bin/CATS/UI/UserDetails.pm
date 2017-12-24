@@ -371,6 +371,10 @@ sub profile_frame {
     my ($is_some_jury) = $is_jury || $dbh->selectrow_array(q~
         SELECT CA.contest_id FROM contest_accounts CA WHERE CA.account_id = ? AND CA.is_jury = 1~, undef,
         $uid);
+    my ($email) = $dbh->selectrow_array(q~
+        SELECT LIST(C.handle) FROM contacts C
+        WHERE C.account_id = ? AND C.contact_type_id = ? AND C.is_public = 1~, undef,
+        $uid, $CATS::Globals::contact_email);
     $t->param(
         user_submenu('profile', $uid),
         countries => \@CATS::Countries::countries,
@@ -378,7 +382,9 @@ sub profile_frame {
         title_suffix => res_str(518),
         profile_langs => [ map { href => url_f('profile', lang => $_), name => $_ }, @cats::langs ],
         is_some_jury => $is_some_jury,
-        %$u);
+        %$u,
+        email => $email,
+    );
     display_settings($settings);
 }
 

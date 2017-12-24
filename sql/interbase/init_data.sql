@@ -55,3 +55,10 @@ INSERT INTO accounts(id, login, passwd, srole) VALUES(5, 'fox', 'fox', 1);
 INSERT INTO accounts(id, login, passwd, srole, locked) VALUES(6, 'anonymous', '', 0, 1);
 INSERT INTO contest_accounts(id, contest_id, account_id, is_jury) VALUES (3, 1, 2, 1);
 INSERT INTO judges(id, nick, pin_mode, account_id) VALUES (4, 'fox', 3, 5);
+
+/* See CATS::Globals::contact_* constants. */
+INSERT INTO contact_types(id, name, url) VALUES(901, 'Phone', '');
+INSERT INTO contact_types(id, name, url) VALUES(902, 'Email', 'mailto:%s');
+INSERT INTO contact_types(id, name, url) VALUES(903, 'ICQ', '');
+INSERT INTO contact_types(id, name, url) VALUES(904, 'Home page', 'http://%s');
+INSERT INTO contact_types(id, name, url) VALUES(905, 'Telegram', 'https://t.me/%s');

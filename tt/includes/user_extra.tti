@@ -9,12 +9,12 @@
     </select>
 </td></tr>
 [%
-  fields = [ 'city', 'affiliation', 'affiliation_year', 'motto', 'capitan_name', 'email', 'icq_number', 'home_page', 'settings.console.autoupdate' ];
+  fields = [ 'city', 'affiliation', 'affiliation_year', 'motto', 'capitan_name', 'settings.console.autoupdate' ];
   fields.push('git_author_name', 'git_author_email') IF is_some_jury || user.privs.is_root || git_author_name || git_author_email;
   FOREACH f IN fields; input_tr(f); END
 %]
 [% IF user.privs.is_root -%]
-[% input_tr('restrict_ips'); input_tr('phone') %]
+[% input_tr('restrict_ips'); #input_tr('phone'); input_tr('email'); input_tr('icq_number'); input_tr('home_page'); %]
 [%- END %]
   <tr><td>[% capt.hide_envelopes %]</td>
   <td>[% checkbox('settings.hide_envelopes', settings.hide_envelopes) %]</td></tr>

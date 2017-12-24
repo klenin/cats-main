@@ -202,7 +202,8 @@ sub contest_sites_frame {
     }
 
     my $org_person_phone = $user->privs->{is_root} ?
-        q~ || CASE WHEN A.phone IS NOT NULL AND A.phone <> '' THEN ' ' || A.phone ELSE '' END~ : '';
+        qq~ || (SELECT LIST(' ' || C.handle) FROM contacts C
+            WHERE C.account_id = A.id AND C.contact_type_id = $CATS::Globals::contact_phone AND C.is_actual = 1)~ : '';
     my $org_person_sql = $lv->visible_cols->{Op} ? qq~
         SELECT LIST(A.team_name$org_person_phone, ', ') FROM contest_accounts CA
         INNER JOIN accounts A ON A.id = CA.account_id
