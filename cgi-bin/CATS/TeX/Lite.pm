@@ -36,6 +36,9 @@ my %generators = (
     sum    => $large_sym->('sum'),
     prod   => $large_sym->('prod'),
     int    => $large_sym->('int', 'int'),
+    array  => sub { sc(tbl => ss(ss($_[1]))) },
+    cell   => sub { '</span><span>' },
+    row    => sub { '</span></span><span><span>' },
 );
 
 my $source;
@@ -84,7 +87,7 @@ sub parse_block {
     my @res = ();
     my $limits = '';
     while ($source ne '') {
-        last if $source =~ s/^\s*}//;
+        last if $source =~ s/^\s*(?:\\end\{[a-zA-Z]+)?}//;
         if ($source =~ s/^\s*([_^])//) {
             my $f = $1 eq '_' ? 'sub' : 'sup';
             if (@res && $res[-1]->[0] eq 'limits') {
@@ -116,9 +119,28 @@ sub parse_block {
             elsif ($f eq 'bmod' || $f eq 'mod') {
                 push @res, [ spec => sp($lsp), 'mod', sp($rsp) ];
             }
+            elsif ($f eq 'begin') {
+                if ($source =~ s/^\{([a-zA-Z]+)\}\s*//) {
+                    my $env= $1;
+                    if ($env eq 'array') {
+                        my ($cols) = $source =~ s/^\{([a-zA-Z]+)\}\s*//;
+                        push @res, [ array => $cols // '', parse_block() ];
+                    }
+                    else {
+                        # Unknown environment, ignore.
+                        push @res, parse_block();
+                    }
+                }
+            }
             else {
                 push @res, make_token($lsp, $f, $rsp);
             }
+        }
+        elsif ($source =~ s/^(\s*)\&(\s*)//) {
+            push @res, [ 'cell' ],
+        }
+        elsif ($source =~ s/^(\s*)\\\\(\s*)//) {
+            push @res, [ 'row' ],
         }
         else {
             push @res, parse_token();
@@ -173,4 +195,5 @@ sub convert_all {
 }
 
 sub styles() { '' }
+
 1;
