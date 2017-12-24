@@ -22,14 +22,15 @@ use CATS::Web qw(redirect);
 
 sub user_submenu {
     my ($selected, $user_id) = @_;
+    my $is_profile = $uid && $uid == $user_id;
     my @m = (
-        ($is_root && $selected eq 'user_contacts' ? (
+        (($is_root || $is_profile) && $selected eq 'user_contacts' ? (
             { href => url_f('user_contacts', uid => $user_id, new => 1), item => res_str(587), selected => '' }
         ) : ()),
         (
             $is_jury ?
                 ({ href => url_f('users_edit', uid => $user_id), item => res_str(573), selected => 'edit' }) :
-            $uid && $uid == $user_id ?
+            $is_profile ?
                 ({ href => url_f('profile'), item => res_str(518), selected => 'profile' }) :
                 ()
         ),
@@ -37,8 +38,10 @@ sub user_submenu {
         (!$is_root ? () : (
             { href => url_f('user_settings', uid => $user_id), item => res_str(575), selected => 'user_settings' },
             { href => url_f('user_ip', uid => $user_id), item => res_str(576), selected => 'user_ip' },
-            { href => url_f('user_contacts', uid => $user_id), item => res_str(586), selected => 'user_contacts' },
         )),
+        #($is_root || $is_profile ? (
+            { href => url_f('user_contacts', uid => $user_id), item => res_str(586), selected => 'user_contacts' },
+        #) : ()),
         (!$is_jury && !$user->{is_site_org} ? () : (
             { href => url_f('user_vdiff', uid => $user_id), item => res_str(580), selected => 'user_vdiff' },
         )),
@@ -289,18 +292,20 @@ sub user_contacts_frame {
     my ($p) = @_;
 
     init_template('user_contacts.html.tt');
-    $is_root or return;
     $p->{uid} or return;
 
-    $p->{new} || $p->{edit} and return $user_contact_form->edit_frame(sub {
-        $_[0]->{contact_types} = $dbh->selectall_arrayref(q~
-            SELECT id AS "value", name AS "text" FROM contact_types ORDER BY name~, { Slice => {} });
-        unshift @{$_[0]->{contact_types}}, {};
-    }, href_action_params => [ uid => $p->{uid} ]);
-    $user_contact_form->edit_delete(id => $p->{delete}, descr => 'handle', msg => 1071);
-    $p->{edit_save} and $user_contact_form->edit_save(sub {
-        $_[0]->{account_id} = $p->{uid};
-    }) and msg(1072, Encode::decode_utf8($p->{handle}));
+    my $is_profile = $uid && $uid == $p->{uid};
+    if ($is_root || $is_profile) {
+        $p->{new} || $p->{edit} and return $user_contact_form->edit_frame(sub {
+            $_[0]->{contact_types} = $dbh->selectall_arrayref(q~
+                SELECT id AS "value", name AS "text" FROM contact_types ORDER BY name~, { Slice => {} });
+            unshift @{$_[0]->{contact_types}}, {};
+        }, href_action_params => [ uid => $p->{uid} ]);
+        $user_contact_form->edit_delete(id => $p->{delete}, descr => 'handle', msg => 1071);
+        $p->{edit_save} and $user_contact_form->edit_save(sub {
+            $_[0]->{account_id} = $p->{uid};
+        }) and msg(1072, Encode::decode_utf8($p->{handle}));
+    }
 
     my $lv = CATS::ListView->new(
         name => 'user_contacts', template => 'user_contacts.html.tt');
@@ -308,22 +313,25 @@ sub user_contacts_frame {
     $lv->define_columns(url_f('user_contacts'), 0, 0, [
         { caption => res_str(642), order_by => 'type_name', width => '20%' },
         { caption => res_str(657), order_by => 'handle', width => '30%' },
-        { caption => res_str(669), order_by => 'is_public', width => '15%' },
-        { caption => res_str(670), order_by => 'is_actual', width => '15%' },
+        ($is_root || $is_profile ?
+            ({ caption => res_str(669), order_by => 'is_public', width => '15%', col => 'Ip' }) : ()),
+        { caption => res_str(670), order_by => 'is_actual', width => '15%', col => 'Ia' },
     ]);
     $lv->define_db_searches([ user_contact_fields ]);
-    my $sth = $dbh->prepare(q~
+    my $public_cond = $is_root || $is_profile ? '' : ' AND C.is_public = 1';
+    my $sth = $dbh->prepare(qq~
         SELECT C.id, C.contact_type_id, C.handle, C.is_public, C.is_actual, CT.name AS type_name
         FROM contacts C
         INNER JOIN contact_types CT ON CT.id = C.contact_type_id
-        WHERE C.account_id = ?~ . $lv->maybe_where_cond . $lv->order_by);
+        WHERE C.account_id = ?$public_cond~ . $lv->maybe_where_cond . $lv->order_by);
     $sth->execute($p->{uid}, $lv->where_params);
 
     my $fetch_record = sub {
         my $row = $_[0]->fetchrow_hashref or return ();
         (
-            href_edit => url_f('user_contacts', edit => $row->{id}, uid => $p->{uid}),
-            href_delete => url_f('user_contacts', 'delete' => $row->{id}, uid => $p->{uid}),
+            ($is_root || $is_profile ? (
+                href_edit => url_f('user_contacts', edit => $row->{id}, uid => $p->{uid}),
+                href_delete => url_f('user_contacts', 'delete' => $row->{id}, uid => $p->{uid})) : ()),
             %$row,
         );
     };
