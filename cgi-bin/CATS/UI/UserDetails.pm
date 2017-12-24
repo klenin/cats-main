@@ -320,7 +320,7 @@ sub user_contacts_frame {
     $lv->define_db_searches([ user_contact_fields ]);
     my $public_cond = $is_root || $is_profile ? '' : ' AND C.is_public = 1';
     my $sth = $dbh->prepare(qq~
-        SELECT C.id, C.contact_type_id, C.handle, C.is_public, C.is_actual, CT.name AS type_name
+        SELECT C.id, C.contact_type_id, C.handle, C.is_public, C.is_actual, CT.name AS type_name, CT.url
         FROM contacts C
         INNER JOIN contact_types CT ON CT.id = C.contact_type_id
         WHERE C.account_id = ?$public_cond~ . $lv->maybe_where_cond . $lv->order_by);
@@ -333,6 +333,7 @@ sub user_contacts_frame {
                 href_edit => url_f('user_contacts', edit => $row->{id}, uid => $p->{uid}),
                 href_delete => url_f('user_contacts', 'delete' => $row->{id}, uid => $p->{uid})) : ()),
             %$row,
+            ($row->{url} ? (href_contact => sprintf $row->{url}, CATS::Utils::escape_url($row->{handle})) : ()),
         );
     };
     $lv->attach(url_f('user_contacts'), $fetch_record, $sth, { page_params => { uid => $p->{uid} } });

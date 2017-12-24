@@ -23,7 +23,7 @@ function delete_user_contact(href, name) {
   [%~ END %]
   [% uc.type_name | html %]
 </td>
-<td>[% uc.handle %]</td>
+<td>[% maybe_href(uc.href_contact, uc.handle) %]</td>
 [% IF visible_cols.Ip %]<td class="center">[% IF uc.is_public %]<a href="#" class="icon checked"></a>[% END %]</td>[% END %]
 [% IF visible_cols.Ia %]<td class="center">[% IF uc.is_actual %]<a href="#" class="icon checked"></a>[% END %]</td>[% END %]
 </tr>
