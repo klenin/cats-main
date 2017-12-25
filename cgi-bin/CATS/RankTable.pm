@@ -552,7 +552,7 @@ sub rank_table {
             $t->{total_time} += $p->{time_consumed};
             $t->{total_solved}++;
         }
-        if ($_->{state} != $cats::st_security_violation) {
+        if ($_->{state} != $cats::st_security_violation && $_->{state} != $cats::st_manually_rejected) {
             $p->{runs}++;
             $t->{total_runs}++;
             $p->{points} ||= 0;
