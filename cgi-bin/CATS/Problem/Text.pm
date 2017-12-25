@@ -21,6 +21,7 @@ use CATS::Time;
 use CATS::Utils qw(url_function);
 
 my ($current_pid, $html_code, $spellchecker, $text_span, $tags, $skip_depth);
+my $wrapper = 'cats-wrapper';
 
 sub process_text {
     if ($spellchecker) {
@@ -60,6 +61,7 @@ sub start_element {
 sub end_element {
     my ($el) = @_;
     process_text;
+    return if $el eq $wrapper;
     $spellchecker->pop_lang if $spellchecker;
     $html_code .= "</$el>";
 }
@@ -115,6 +117,7 @@ sub save_attachment {
 
 sub sh_1 {
     my ($p, $el, %atts) = @_;
+    return if $el eq $wrapper;
 
     if ($skip_depth) {
         $skip_depth++;
@@ -159,11 +162,12 @@ sub parse {
     $html_code = '';
 
     $parser->setHandlers(
-        'Start' => \&sh_1,
-        'End'   => \&eh_1,
-        'Char'  => \&ch_1);
+        Start => \&sh_1,
+        End   => \&eh_1,
+        Char  => \&ch_1);
 
-    $parser->parse("<div>$xml_patch</div>");
+    # XML parser requires all text to be inside of top-level tag.
+    $parser->parse("<$wrapper>$xml_patch</$wrapper>");
     $skip_depth and die;
     return $html_code;
 }

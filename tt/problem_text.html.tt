@@ -122,10 +122,12 @@ MathJax.Hub.Register.StartupHook('onLoad', function () {
   [% END %]
   [% IF p.keywords %]<tr><td class="narrow nobr">[% c.keywords %]:</td><td colspan="4">[% p.keywords %]</td></tr>[% END %]
   </table>
-  [%- MACRO section(name, caption) IF p.item(name) %]
+
+  [%- MACRO section(name, caption) IF p.item(name).trim() %]
     <h3>[% c.item(caption || name) %]</h3>
     [% p.item(name) %]
   [% END -%]
+
   [% section('statement') %]
   [% IF p.explanation %]
     [% section('pconstraints') %]
