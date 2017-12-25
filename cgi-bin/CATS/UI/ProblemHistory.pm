@@ -6,7 +6,7 @@ use warnings;
 use Encode qw();
 
 use CATS::DB;
-use CATS::Globals qw($cid $is_jury $is_root $t);
+use CATS::Globals qw($cid $is_jury $is_root $t $uid);
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
 use CATS::Output qw(auto_ext init_template url_f);
@@ -20,10 +20,12 @@ use CATS::Web qw(content_type encoding_param headers redirect);
 sub _get_problem_info {
     my ($p) = @_;
     $dbh->selectrow_array(q~
-        SELECT CP.status, P.title, P.repo, P.contest_id FROM contest_problems CP
+        SELECT CP.status, P.title, P.repo, P.contest_id, CA.is_jury
+        FROM contest_problems CP
         INNER JOIN problems P ON CP.problem_id = P.id
+        LEFT JOIN contest_accounts CA ON CA.contest_id = P.contest_id AND CA.account_id = ?
         WHERE CP.contest_id = ? AND P.id = ?~, undef,
-        $cid, $p->{pid});
+        $uid // 0, $cid, $p->{pid});
 }
 
 sub problem_commitdiff {
@@ -80,7 +82,8 @@ sub is_allow_editing {
 sub problem_history_tree_frame {
     my ($p) = @_;
     $is_jury or return;
-    my ($status, $title) = _get_problem_info($p) or return redirect url_f('contests');
+    my ($status, $title, undef, undef, $is_jury_in_orig) = _get_problem_info($p)
+        or return redirect url_f('contests');
 
     init_template('problem_history_tree.html.tt');
 
@@ -91,7 +94,8 @@ sub problem_history_tree_frame {
         if ($_->{type} eq 'blob') {
             $_->{href} = url_f('problem_history_blob', %url_params);
             $_->{href_raw} = url_f('problem_history_raw', %url_params);
-            $_->{href_edit} = url_f('problem_history_edit', %url_params) if is_allow_editing($tree, $p->{hb});
+            $_->{href_edit} = url_f('problem_history_edit', %url_params)
+                if $is_jury_in_orig && is_allow_editing($tree, $p->{hb});
         }
         elsif ($_->{type} eq 'tree') {
             $_->{href} = url_f('problem_history_tree', %url_params)
@@ -113,15 +117,14 @@ sub detect_encoding_by_xml_header {
 sub problem_history_blob_frame {
     my ($p) = @_;
     $is_jury or return;
-
     init_template('problem_history_blob.html.tt');
-
-    my ($status, $title) = _get_problem_info($p) or return redirect url_f('contests');
+    my ($status, $title, undef, undef, $is_jury_in_orig) = _get_problem_info($p)
+        or return redirect url_f('contests');
 
     my $blob = CATS::Problem::Storage::show_blob(
         $p->{pid}, $p->{hb}, $p->{file}, $p->{src_enc} || \&detect_encoding_by_xml_header);
     set_history_paths_urls($p->{pid}, $blob->{paths});
-    my @items = is_allow_editing($blob, $p->{hb}) ?
+    my @items = $is_jury_in_orig && is_allow_editing($blob, $p->{hb}) ?
         { href => url_f('problem_history_edit',
             file => $p->{file}, hb => $p->{hb}, pid => $p->{pid}), item => res_str(572) } : ();
     set_submenu_for_tree_frame($p->{pid}, $p->{hb}, @items);
@@ -147,11 +150,12 @@ sub problem_history_raw_frame {
 
 sub problem_history_edit_frame {
     my ($p) = @_;
-    $is_root or return;
+    $is_jury or return;
     my $hash_base = $p->{hb};
 
-    my ($status, $title, $repo_name, $contest_id) = _get_problem_info($p)
+    my ($status, $title, $repo_name, $contest_id, $is_jury_in_orig) = _get_problem_info($p)
         or return redirect url_f('contests');
+    $is_jury_in_orig or return;
 
     !CATS::Problem::Storage::get_remote_url($repo_name) &&
         $hash_base eq CATS::Problem::Storage::get_latest_master_sha($p->{pid})
