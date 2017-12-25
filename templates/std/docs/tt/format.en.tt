@@ -627,12 +627,16 @@ logical not, name — tag name, value — tag value.
 </p>
 
 <a name="attr-lang"></a>
-<h2><code>lang</code> attribute</h2>
+<h2><code>lang</code> attribute [% v110 %]</h2>
 <p>By default, problem text is enclosed in a <code>div</code> tag with <code>lang</code> attribute
 corresponding to the chosen language tag. However, if the text uses several languages
 simultaneously (e.g. English terms in Russian text), spans of non-default language should
 have explicit <code>lang</code> attribute.
 </p>
+
+<a name="cats-dict"></a>
+<h2><code>cats-dict</code> attribute [% v110 %]</h2>
+<p>Words inside of tag with attribute <code>cats-dict="1"</code> are added to the dictionary of the current language.</p>
 
 <a name="memoryUnits"></a>
 <h2>Memory units [% v19 %]</h2>

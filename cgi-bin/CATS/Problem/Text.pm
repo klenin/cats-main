@@ -47,7 +47,7 @@ sub start_element {
         my $lang = $atts{lang};
         # Do not spellcheck code unless explicitly requested.
         $lang //= 'code' if lc($el) eq 'code';
-        $spellchecker->push_lang($lang);
+        $spellchecker->push_lang($lang, $atts{'cats-dict'});
     }
     $html_code .= "<$el";
     for my $name (keys %atts) {
