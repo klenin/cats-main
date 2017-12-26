@@ -100,7 +100,7 @@ sub get_problems {
         WHERE
             CP.contest_id IN ($self->{contest_list}) AND CP.status < ?
         ORDER BY C.start_date, CP.code~, { Slice => {} },
-        $cats::problem_st_hidden
+        $cats::problem_st_disabled
     );
 
     my $w = int(50 / (@$problems + 1));
