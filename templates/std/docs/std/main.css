@@ -205,6 +205,11 @@ input.listview_checkbox {
     border: 1px solid #4040ff;
 }
 
+.weak_border {
+    border: 1px dotted #4040ff;
+    padding: 2px;
+}
+
 .send_message {
     border: 1px solid #4040ff;
     background-color: #ccccff;
