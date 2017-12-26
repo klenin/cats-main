@@ -40,6 +40,8 @@ sub process_text {
     $text_span = '';
 }
 
+my $no_spellcheck_tags = { code => 1, script => 1, svg => 1, style => 1 };
+
 sub start_element {
     my ($el, %atts) = @_;
 
@@ -47,7 +49,7 @@ sub start_element {
     if ($spellchecker) {
         my $lang = $atts{lang};
         # Do not spellcheck code unless explicitly requested.
-        $lang //= 'code' if lc($el) eq 'code';
+        $lang //= 'code' if $no_spellcheck_tags->{lc($el)};
         $spellchecker->push_lang($lang, $atts{'cats-dict'});
     }
     $html_code .= "<$el";
