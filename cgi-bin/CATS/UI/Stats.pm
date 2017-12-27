@@ -309,7 +309,7 @@ sub test_diff_frame {
         $prev = $r;
     }
     $t->param(reqs => \@fr, problem => $problem, test => $p->{test});
-    CATS::UI::ProblemDetails::problem_submenu('compare_tests', $p->{pid});
+    CATS::Problem::Utils::problem_submenu('compare_tests', $p->{pid});
 }
 
 1;
