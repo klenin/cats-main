@@ -294,13 +294,16 @@ sub problems_frame {
         NULL AS wrong_answer_count,
         NULL AS time_limit_count,
         NULL AS last_submission~;
-    my $keywords = $lv->visible_cols->{Kw} ? q~(
+    my $keywords = $is_jury && $lv->visible_cols->{Kw} ? q~(
         SELECT LIST(DISTINCT K.code, ' ') FROM keywords K
         INNER JOIN problem_keywords PK ON PK.keyword_id = K.id AND PK.problem_id = P.id
         ) AS keywords,~ : '';
-    my $judges_installed_sql = $lv->visible_cols->{Vc} ? qq~
+    # Use result_time to account for re-testing standard solutions,
+    # but also limit by sumbit_time to speed up since there is no index on result_time.
+    my $judges_installed_sql = $is_jury && $lv->visible_cols->{Vc} ? qq~
         (SELECT COUNT(DISTINCT R.judge_id) FROM reqs R
-        WHERE R.problem_id = P.id AND R.state > $cats::request_processed AND R.submit_time > P.upload_date)~ :
+        WHERE R.problem_id = P.id AND R.state > $cats::request_processed AND
+            R.result_time > P.upload_date AND R.submit_time > P.upload_date - 30)~ :
         'NULL';
 
     # Concatenate last submission fields to work around absence of tuples.

@@ -146,7 +146,7 @@ function chg_code(st_sel, pid) {
     [%- IF p.href_problem_console %]<a href="[% p.href_problem_console %]">[% END -%]
     [% p.accept_count %] / [% p.wa_count %] / [% p.tle_count %]
     [%- IF p.href_problem_console %]</a>[% END -%]
-    [[% p.judges_installed %]]
+    [% IF p.judges_installed %][[% p.judges_installed %]][% END -%]
     </div>
   </td>
 [% END %]
