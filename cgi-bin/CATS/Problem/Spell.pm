@@ -54,9 +54,9 @@ sub check_word {
     $word =~ s/\x{AD}//g; # Ignore soft hypens.
     my $lang = $self->lang;
 
-    return $word if $self->{$lang}->{dicts}->{$word};
+    return $word if $self->{$lang}->{dicts}->{lc $word};
     if ($self->{dict_depth}) {
-        $self->{$lang}->{dicts}->{$word} = 1;
+        $self->{$lang}->{dicts}->{lc $word} = 1;
         return $word;
     }
 
