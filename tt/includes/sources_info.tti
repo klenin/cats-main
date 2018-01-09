@@ -54,7 +54,7 @@ function send_message(href) {
       [<a href="[% si.href_whois %]" title="[% si.last_ip %]">[% si.last_ip_short %]</a>]
       [[% IF si.href_send_message ~%]
         <a href="javascript:send_message('[% si.href_send_message %]')">[% capt.message %]</a>
-        [%~ FOREACH c IN si.contacts; ' '; href(c.href, c.name); END %]
+        [%~ FOREACH c IN si.contacts; ' '; href(c.href, c.name, c.handle); END %]
         [%~ ELSE; capt.disqualified; END %]]
     [% END %]
     </td>

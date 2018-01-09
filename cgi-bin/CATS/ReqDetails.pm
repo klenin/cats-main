@@ -139,7 +139,8 @@ sub _get_user_details {
     my $contacts = $dbh->selectall_arrayref(q~
         SELECT C.id, C.handle, CT.name, CT.url
         FROM contacts C INNER JOIN contact_types CT ON CT.id = C.contact_type_id
-        WHERE C.account_id = ? AND C.is_actual = 1~, { Slice => {} }, $uid);
+        WHERE C.account_id = ? AND C.is_actual = 1~, { Slice => {} },
+        $uid);
     $_->{href} = sprintf $_->{url}, CATS::Utils::escape_url($_->{handle}) for @$contacts;
     { contacts => $contacts };
 }
