@@ -145,6 +145,9 @@ sub console_content {
         contest_title => 'C.title',
         account_id => 'A.id',
         contest_id => 1, # Handled manually.
+        submit_year => 'EXTRACT(YEAR FROM R.submit_time)',
+        submit_month => 'EXTRACT(MONTH FROM R.submit_time)',
+        submit_day => 'EXTRACT(DAY FROM R.submit_time)',
     });
 
     $lv->define_enums({
