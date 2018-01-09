@@ -19,13 +19,15 @@ use CATS::Web qw(content_type encoding_param headers redirect);
 
 sub _get_problem_info {
     my ($p) = @_;
-    $dbh->selectrow_array(q~
+    my @row = $dbh->selectrow_array(q~
         SELECT CP.status, P.title, P.repo, P.contest_id, CA.is_jury
         FROM contest_problems CP
         INNER JOIN problems P ON CP.problem_id = P.id
         LEFT JOIN contest_accounts CA ON CA.contest_id = P.contest_id AND CA.account_id = ?
         WHERE CP.contest_id = ? AND P.id = ?~, undef,
         $uid // 0, $cid, $p->{pid});
+   $row[4] //= $is_root; # is_jury
+   @row;
 }
 
 sub problem_commitdiff {
