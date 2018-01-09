@@ -375,7 +375,9 @@ sub problems_frame {
         }
         $any_langs{$lang_tag->[1] // $c->{lang}} = undef if !@$problem_langs && !$hrefs_view{statement};
 
-        my ($last_request, $last_verdict) = split ' ', $c->{last_submission} || '';
+        my ($last_request, $last_state) = split ' ', $c->{last_submission} || '';
+        my $last_verdict = $CATS::Verdicts::state_to_name->{$last_state || ''};
+        $last_verdict = $CATS::Verdicts::hidden_verdicts_self->{$last_verdict} // $last_verdict if !$is_jury;
 
         return (
             href_delete => url_f('problems', delete_problem => $c->{cpid}),
@@ -426,7 +428,7 @@ sub problems_frame {
             write_limit => $c->{write_limit},
             max_points => $c->{max_points},
             tags => $c->{tags},
-            last_verdict => $CATS::Verdicts::state_to_name->{$last_verdict || ''},
+            last_verdict => $last_verdict,
             keywords => $c->{keywords},
         );
     };
