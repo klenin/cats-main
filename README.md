@@ -1,6 +1,7 @@
 # CATS: Programming contest control system
 
 [![Build Status](https://travis-ci.org/klenin/cats-main.svg?branch=master)](https://travis-ci.org/klenin/cats-main)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fklenin%2Fcats-main.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fklenin%2Fcats-main?ref=badge_shield)
 
 ## Overview
 
@@ -38,3 +39,7 @@ Clone this repo:
 Run deploy script:
 
 `> deploy.bat`
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fklenin%2Fcats-main.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fklenin%2Fcats-main?ref=badge_large)
