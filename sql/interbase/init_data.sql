@@ -15,6 +15,9 @@ INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
     VALUES (GEN_ID(key_seq, 1), 106, 'LLVM/CLang', '', 'cpp', '^~FILE~:~LINE~:~POS~:');
 
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
+    VALUES (GEN_ID(key_seq, 1), 120, 'Rust', 'rs', '', '^\s+-->\s~FILE~:~LINE~:~POS~');
+
+INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
     VALUES (GEN_ID(key_seq, 1), 201, 'Borland Pascal', '', 'delphi', '\(~LINE~\):\sError');
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
     VALUES (GEN_ID(key_seq, 1), 202, 'Free Pascal', 'lpr;pp', 'delphi', '^~FILE~\(~LINE~,~POS~\)\s');
@@ -32,6 +35,8 @@ INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
     VALUES (GEN_ID(key_seq, 1), 401, 'Java', 'java', 'java', '^~FILE~:~LINE~:\s');
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
     VALUES (GEN_ID(key_seq, 1), 402, 'Microsoft Visual C#', 'cs', 'cSharp', '^~FILE~\(~LINE~,~POS~\):');
+INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
+    VALUES (GEN_ID(key_seq, 1), 404, 'Go', 'go', '', '^~FILE~:~LINE~:~POS~:');
 
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
     VALUES (GEN_ID(key_seq, 1), 501, 'Perl', 'pl', 'perl', 'at\s~FILE~\sline\s~LINE~');
