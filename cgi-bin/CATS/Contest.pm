@@ -26,18 +26,20 @@ sub new {
     return $self;
 }
 
+sub time_since_sql { "CAST(CURRENT_TIMESTAMP - $_[0]_date AS DOUBLE PRECISION) AS time_since_$_[0]" }
+
 sub load {
-    my ($self, $cid, $fields) = @_;
+    my ($self, $contest_id, $fields) = @_;
     $fields //= [
         database_fields(),
         'CURRENT_TIMESTAMP AS server_time',
-        map "CAST(CURRENT_TIMESTAMP - ${_}_date AS DOUBLE PRECISION) AS time_since_$_",
-            qw(start finish defreeze)
+        map time_since_sql($_), qw(start finish defreeze)
     ];
-    my $r = $cid ? CATS::DB::select_row('contests', $fields, { id => $cid }) : undef;
+    my $r = $contest_id ? CATS::DB::select_row('contests', $fields, { id => $contest_id }) : undef;
     # Choose training contest by default.
     $r or $r = CATS::DB::select_row('contests', $fields, { ctype => 1 }) or die 'No contest';
     @$self{keys %$r} = values %$r;
+    $self;
 }
 
 sub is_practice {

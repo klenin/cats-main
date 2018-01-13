@@ -3,6 +3,7 @@ package CATS::Problem::Save;
 use strict;
 use warnings;
 
+use CATS::Contest;
 use CATS::Contest::Participate qw(is_jury_in_contest);
 use CATS::Constants;
 use CATS::DB;
@@ -31,15 +32,19 @@ sub _contest_is_practice {
 
 sub _add_problem_to_contest {
     my ($contest_id, $pid, $code) = @_;
-    _contest_is_practice($contest_id) || cats::is_good_problem_code($code) or return msg(1134);
+    my $target_contest = $contest_id == $cid ? $contest :
+        CATS::Contest->new->load($contest_id, [ 'ctype', CATS::Contest::time_since_sql('start') ]);
+
+    $target_contest->is_practice || cats::is_good_problem_code($code) or return msg(1134);
     CATS::StaticPages::invalidate_problem_text(cid => $contest_id);
     $dbh->do(q~
         INSERT INTO contest_problems(id, contest_id, problem_id, code, status)
         VALUES (?, ?, ?, ?, ?)~, undef,
         new_id, $contest_id, $pid, $code,
         # If non-archive contest is in progress, hide newly added problem immediately.
-        $contest->{time_since_start} > 0 && $contest->{ctype} == 0 ?
-            $cats::problem_st_hidden : $cats::problem_st_ready) or msg(1129);
+        $target_contest->has_started && !$target_contest->is_practice ?
+            $cats::problem_st_hidden : $cats::problem_st_ready
+    ) or msg(1129);
 }
 
 sub _prepare_move {
