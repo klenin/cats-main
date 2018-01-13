@@ -37,14 +37,12 @@ sub _add_problem_to_contest {
 
     $target_contest->is_practice || cats::is_good_problem_code($code) or return msg(1134);
     CATS::StaticPages::invalidate_problem_text(cid => $contest_id);
-    $dbh->do(q~
-        INSERT INTO contest_problems(id, contest_id, problem_id, code, status)
-        VALUES (?, ?, ?, ?, ?)~, undef,
-        new_id, $contest_id, $pid, $code,
+    $dbh->do(_u $sql->insert(contest_problems => {
+        id => new_id, contest_id => $contest_id, problem_id => $pid, code => $code,
         # If non-archive contest is in progress, hide newly added problem immediately.
-        $target_contest->has_started && !$target_contest->is_practice ?
-            $cats::problem_st_hidden : $cats::problem_st_ready
-    ) or msg(1129);
+        status => ($target_contest->has_started && !$target_contest->is_practice ?
+            $cats::problem_st_hidden : $cats::problem_st_ready)
+    })) or msg(1129);
 }
 
 sub _prepare_move {
@@ -89,9 +87,7 @@ sub move_problem {
     if (!_get_cpid($to_contest, $pid)) {
         _add_problem_to_contest($to_contest, $pid, $code) or return;
     }
-    $dbh->do(q~
-        UPDATE problems SET contest_id = ? WHERE id = ?~, undef,
-        $to_contest, $pid);
+    $dbh->do(_u $sql->update(problems => { contest_id => $to_contest }, { id => $pid }));
     $dbh->commit;
     msg(1021, $problem->{title});
     1;
