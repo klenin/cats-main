@@ -407,7 +407,6 @@ sub problem_link_frame {
         problem_title => $problem->{title},
         title_suffix => $problem->{title},
         problem => $problem,
-        href_original_contest => url_function('problems', cid => $problem->{contest_id}, sid => $sid),
         problem_codes => \@cats::problem_codes,
         href_action => $href_action,
     );
@@ -427,6 +426,8 @@ sub problem_link_frame {
     }
 
     $problem->{is_original} = $problem->{contest_id} == $cid;
+    $t->param(href_original_contest =>
+        url_function('problems', cid => $problem->{contest_id}, sid => $sid));
     if (!$problem->{is_original}) {
         $problem->{original_contest_title} = $dbh->selectrow_array(q~
             SELECT title FROM contests WHERE id = ?~, undef,
