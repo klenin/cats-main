@@ -376,8 +376,10 @@ sub problems_frame {
         $any_langs{$lang_tag->[1] // $c->{lang}} = undef if !@$problem_langs && !$hrefs_view{statement};
 
         my ($last_request, $last_state) = split ' ', $c->{last_submission} || '';
-        my $last_verdict = $CATS::Verdicts::state_to_name->{$last_state || ''};
-        $last_verdict = $CATS::Verdicts::hidden_verdicts_self->{$last_verdict} // $last_verdict if !$is_jury;
+        my $last_verdict = do {
+            my $lv = $last_state ? $CATS::Verdicts::state_to_name->{$last_state} : '';
+            $is_jury ? $lv : $CATS::Verdicts::hidden_verdicts_self->{$lv} // $lv;
+        };
 
         return (
             href_delete => url_f('problems', delete_problem => $c->{cpid}),
