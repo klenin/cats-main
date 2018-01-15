@@ -189,9 +189,11 @@ sub problems_frame_jury_action {
     $is_jury or return;
 
     if ($p->{link_save}) {
-        return $p->{move} ?
-            CATS::Problem::Save::move_problem($p->{problem_id}, $p->{code}, $cid) :
-            CATS::Problem::Save::link_problem($p->{problem_id}, $p->{code}, $cid);
+        foreach (@{$p->{problems_selection}}) {
+            $p->{move} ? CATS::Problem::Save::move_problem($_, $p->{code}, $cid) :
+            CATS::Problem::Save::link_problem($_, $p->{code}, $cid);
+        }
+        return;
     }
     $p->{change_status} and return CATS::Problem::Utils::problems_change_status($p);
     $p->{change_code} and return CATS::Problem::Utils::problems_change_code($p);

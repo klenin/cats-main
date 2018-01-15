@@ -66,6 +66,7 @@ $main_routes = {
     problems => [
         \&CATS::UI::Problems::problems_frame,
         kw => integer, problem_id => integer,
+        problems_selection => array_of integer,
         participate_online => bool, participate_virtual => bool,
         submit => bool, replace => bool, add_new => bool,
         add_remote => bool, std_solution => bool, delete_problem => integer,
