@@ -7,7 +7,7 @@
 [% FOREACH p IN link_problem %]
 <tr class="[% loop.parity() %]">
 <td>
-[% IF user.is_jury && link %]<input type="radio" name="problem_id" value="[% p.problem_id %]" [% IF p.linked %]disabled[% END %] />[% END %]
+[% IF user.is_jury && link %]<input type="checkbox" name="problems_selection" value="[% p.problem_id %]" [% IF p.linked %]disabled[% END %] />[% END %]
 <a href="[% p.href_view_problem %]" target="_blank">[% p.problem_name | html %]</a>
 [% IF p.href_problem_history %]&nbsp;[<a href="[% p.href_problem_history %]">[% capt.problem_history %]</a>][% END %]
 [% IF p.href_download %]&nbsp;[<a href="[% p.href_download %]">[% capt.package %]</a>][% END %]
