@@ -31,5 +31,6 @@
     ok => '     Ok     ',
     create_copy => 'Создать копию',
     cancel => 'Отмена',
+    exclude_verdicts => 'Исключить вердикты',
   })
 %]

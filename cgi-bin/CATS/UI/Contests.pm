@@ -14,6 +14,7 @@ use CATS::Output qw(auto_ext init_template url_f);
 use CATS::RankTable;
 use CATS::Settings qw($settings);
 use CATS::StaticPages;
+use CATS::Verdicts;
 use CATS::Web qw(param url_param redirect);
 
 sub contests_new_frame {
@@ -28,8 +29,11 @@ sub contests_new_frame {
         can_edit => 1,
         is_hidden => !$is_root,
         show_all_results => 1,
-        href_action => url_f('contests')
+        href_action => url_f('contests'),
+        verdicts => [ map +{ short => $_->[0], checked => 0 },
+            @$CATS::Verdicts::name_to_state_sorted ],
     );
+
 }
 
 sub contest_checkbox_params() {qw(
@@ -56,6 +60,9 @@ sub get_contest_html_params {
     $p->{closed} = $p->{free_registration} ? 0 : 1;
     delete $p->{free_registration};
     $p->{show_frozen_reqs} = 0;
+
+    $p->{max_reqs_except} = join ',',
+        sort { $a<=> $b } grep $_, map $CATS::Verdicts::name_to_state->{$_}, param('exclude_verdict');
     $p;
 }
 
@@ -87,10 +94,15 @@ sub try_contest_params_frame {
         SELECT * FROM contests WHERE id = ?~, { Slice => {} },
         $id) or return;
     $c->{free_registration} = !$c->{closed};
+
+    my %verdicts_excluded = map { $CATS::Verdicts::state_to_name->{$_} => 1 } split /,/, $c->{max_reqs_except};
+
     $t->param(
         id => $id, %$c,
         href_action => url_f('contests'),
         can_edit => is_jury_in_contest(contest_id => $id),
+        verdicts => [ map +{ short => $_->[0], checked => %verdicts_excluded->{$_->[0]} },
+            @$CATS::Verdicts::name_to_state_sorted ],
     );
 
     1;

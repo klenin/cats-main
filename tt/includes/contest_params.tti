@@ -21,7 +21,17 @@
     </select>[% ELSE %][% IF req_selection; capt.req_selection_best; ELSE; capt.req_selection_last; END %]
     [% END %]
   </td></tr>
+</table>
+<br/>
+<table class="bordered">
   <tr><td>[% capt.max_reqs %]:</td><td><input type="text" name="max_reqs" value="[% max_reqs | html %]" class="bordered" [% UNLESS can_edit %]readonly="readonly"[% END %]/></td></tr>
+  <tr><td>[% capt.exclude_verdicts %]:</td>
+  <td>[% FOREACH v IN verdicts %]
+  <label class="run_details_[% v.short %]" title="[% capt.verdicts.item(v.short) %]">
+    <input type="checkbox" name="exclude_verdict" value="[% v.short %]" [% ' checked="checked"' IF v.checked %]/>
+    [% v.short %]
+  </label>
+  [% END %]</td></tr>
 </table>
 <br/>
 <table class="bordered">
