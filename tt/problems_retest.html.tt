@@ -1,8 +1,3 @@
-[% extra_head = BLOCK %]
-<style>
-  .retest_verdicts label { display: inline_block; padding: 3px; }
-</style>
-[%- END %]
 [% PROCESS includes/menu_begin.tti %]
 [%- PROCESS "lang/$lang/verdicts.tti" -%]
 <i>[% capt.in_queue %]: [% total_queue %]</i><br/>
@@ -33,14 +28,14 @@
 <br/>
 <button type="submit" name="mass_retest" value="1" class="button">[% capt.retest %]</button>
 <input type="checkbox" name="all_runs" value="1"/> [% capt.all_runs %]
-<div class="retest_verdicts">
+<div class="verdict_list">
 [% capt.ignore_verdicts %]:<br/>
-[% FOREACH v IN verdicts %]
+[% FOREACH v IN verdicts ~%]
 <label class="run_details_[% v.short %]" title="[% capt.verdicts.item(v.short) %]">
   <input type="checkbox" name="ignore_states" value="[% v.short %]" [% ' checked="checked"' IF v.checked %]/>
   [% v.short %]
 </label>
-[% END %]
+[%~ END %]
 </div>
 </form>
 [% PROCESS includes/menu_end.tti %]
