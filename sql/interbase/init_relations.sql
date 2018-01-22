@@ -100,6 +100,7 @@ CREATE TABLE contests (
     show_flags           SMALLINT DEFAULT 0 CHECK (show_flags IN (0, 1)),
     /* Maximum requests per participant per problem. */
     max_reqs             INTEGER DEFAULT 0,
+    max_reqs_except      VARCHAR(100),
     /* TODO: output runs in a frozen table. */
     show_frozen_reqs     SMALLINT DEFAULT 0 CHECK (show_frozen_reqs IN (0, 1)),
     show_test_data       SMALLINT DEFAULT 0 CHECK (show_test_data IN (0, 1)),

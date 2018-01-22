@@ -31,5 +31,6 @@
     ok => '     Ok     ',
     create_copy => 'Create a copy',
     cancel => 'Cancel',
+    exclude_verdicts => 'Exclude verdicts',
   })
 %]
