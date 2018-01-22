@@ -62,7 +62,7 @@ sub get_contest_html_params {
     $p->{show_frozen_reqs} = 0;
 
     $p->{max_reqs_except} = join ',',
-        sort { $a<=> $b } grep $_, map $CATS::Verdicts::name_to_state->{$_}, param('exclude_verdict');
+        sort { $a <=> $b } grep $_, map $CATS::Verdicts::name_to_state->{$_}, param('exclude_verdict');
     $p;
 }
 
@@ -95,7 +95,8 @@ sub try_contest_params_frame {
         $id) or return;
     $c->{free_registration} = !$c->{closed};
 
-    my %verdicts_excluded = map { $CATS::Verdicts::state_to_name->{$_} => 1 } split /,/, $c->{max_reqs_except};
+    my %verdicts_excluded =
+        map { $CATS::Verdicts::state_to_name->{$_} => 1 } split /,/, $c->{max_reqs_except};
 
     $t->param(
         id => $id, %$c,

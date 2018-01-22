@@ -13,6 +13,7 @@
     ACM => 'ACM',
     school => 'школьные',
     max_reqs => 'Максимальное число попыток',
+    exclude_verdicts => 'Исключить вердикты',
     open_registration => 'Свободная регистрация',
     is_official => 'Официальный турнир',
     run_all_tests => 'Запускать все тесты',
@@ -31,6 +32,5 @@
     ok => '     Ok     ',
     create_copy => 'Создать копию',
     cancel => 'Отмена',
-    exclude_verdicts => 'Исключить вердикты',
   })
 %]

@@ -13,6 +13,7 @@
     ACM => 'ACM',
     school => 'school',
     max_reqs => 'Submissions limit',
+    exclude_verdicts => 'Exclude verdicts',
     open_registration => 'Open registration',
     is_official => 'Official contest',
     run_all_tests => 'Run all tests',
@@ -31,6 +32,5 @@
     ok => '     Ok     ',
     create_copy => 'Create a copy',
     cancel => 'Cancel',
-    exclude_verdicts => 'Exclude verdicts',
   })
 %]
