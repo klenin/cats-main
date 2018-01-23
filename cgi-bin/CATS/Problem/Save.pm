@@ -130,6 +130,9 @@ sub problems_replace {
         $dbh->rollback;
         return msg(1008);
     }
+    $dbh->do(q~
+        DELETE FROM problem_de_bitmap_cache WHERE problem_id = ?~, undef,
+        $pid);
     set_problem_import_diff($pid, $result_sha);
     $dbh->commit;
     CATS::StaticPages::invalidate_problem_text(pid => $pid);
