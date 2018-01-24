@@ -42,4 +42,14 @@ sub pack_privs {
 
 sub all_names { sort 'is_root', keys %flags }
 
+sub is_good_name { $_[0] eq 'is_root' || exists $flags{$_[0]} }
+
+sub where_cond {
+    my ($name) = @_;
+    my $packed = pack_privs({ $name => 1 });
+    $packed eq $srole_root ?
+        ('srole = ?', $srole_root) :
+        ('BIN_AND(srole, ?) = ?', $packed, $packed);
+}
+
 1;

@@ -14,6 +14,7 @@ use CATS::Privileges;
 
 GetOptions(
     help => \(my $help = 0),
+    'find=s' => \(my $find = 0),
     'id=i' => \(my $user_id = 0),
     'login=s' => \(my $user_login = ''),
     'add=s@' => (my $add = []),
@@ -22,17 +23,33 @@ GetOptions(
 
 sub usage {
     print STDERR qq~CATS Priviledge management tool
-Usage: $0 [--help] [--id=<user id> --login=<user login>] [--add=<priv>...] [--remove=<priv>...]
+Usage: $0
+  --help
+  --id=<user id> --login=<user login> [--add=<priv>...] [--remove=<priv>...]
+  --find=<priv>
 Privileges:\n~;
     say "  $_" for CATS::Privileges::all_names;
     exit;
 }
 
-usage if $help || !$user_id && !$user_login;
+usage if $help || !$user_id && !$user_login && !$find;
 
-$user_id && $user_login or die 'Must use BOTH id and login';
+$find || $user_id && $user_login or die 'Must use BOTH id and login';
 
 CATS::DB::sql_connect({});
+
+if ($find) {
+    CATS::Privileges::is_good_name($find) or die "Unknown priviledge: $_";
+    my ($cond, @params) = CATS::Privileges::where_cond($find);
+    #$find eq 'is_root' ?
+    my $users = $dbh->selectall_arrayref(qq~
+        SELECT A.id, A.login FROM accounts A
+        WHERE $cond~, undef,
+        @params);
+    say "Found: " . scalar(@$users);
+    printf "  %10d %s\n", @$_ for @$users;
+    exit;
+}
 
 my $users = $dbh->selectall_arrayref(q~
     SELECT id, login, srole FROM accounts
