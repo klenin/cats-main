@@ -207,6 +207,7 @@ sub problem_select_testsets_frame {
             WHERE id = ?~, undef,
             map($param_to_list->($_), qw(testsets points_testsets)), $problem->{cpid});
         $dbh->commit;
+        CATS::StaticPages::invalidate_problem_text(cid => $cid, cpid => $problem->{cpid});
         return redirect url_f('problems') if $p->{from_problems};
         msg(1141, $problem->{title});
     }
