@@ -284,6 +284,9 @@ sub save {
     $dbh->do(q~
         UPDATE contest_problems SET max_points = NULL WHERE problem_id = ?~, undef,
         $problem->{id});
+    $dbh->do(q~
+        DELETE FROM problem_de_bitmap_cache WHERE problem_id = ?~, undef,
+        $problem->{id}) if $problem->{replace};
 }
 
 sub get_de_id {
