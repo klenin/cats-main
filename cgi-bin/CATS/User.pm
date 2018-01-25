@@ -400,10 +400,10 @@ my @password_chars = ('a'..'z', 'A'..'Z', '0'..'9', '_');
 # Params: user_set, len.
 sub gen_passwords {
     my %p = @_;
-    $is_root or return;
+    $is_jury or return;
     $p{len} && $p{len} <= 30 or return;
     my $get_login_sth = $dbh->prepare(q~
-        SELECT A.id, A.login FROM accounts A
+        SELECT A.id, A.login, CA.is_jury FROM accounts A
         INNER JOIN contest_accounts CA ON CA.account_id = A.id
         WHERE CA.id = ? AND CA.contest_id = ?~);
     my $set_password_sth = $dbh->prepare(q~
@@ -411,9 +411,9 @@ sub gen_passwords {
     my @res;
     for (@{$p{user_set}}) {
         $get_login_sth->execute($_, $cid);
-        my ($id, $login) = $get_login_sth->fetchrow_array;
+        my ($id, $login, $user_is_jury) = $get_login_sth->fetchrow_array;
         $get_login_sth->finish;
-        $id && $login or next;
+        $id && $login && !$user_is_jury or next;
         my $password = join '', map $password_chars[rand(@password_chars)], 1..$p{len};
         $set_password_sth->execute(hash_password($password), $id);
         push @res, [ $id, $login, $password ];
