@@ -166,6 +166,7 @@ sub users_frame {
         { caption => res_str(627), order_by => 'COALESCE(S.name, A.city)', width => '20%', col => 'Si' },
         { caption => res_str(629), order_by => 'tag', width => '5%', col => 'Tg' },
         ($is_jury || $user->{is_site_org} ? (
+            { caption => res_str(671), order_by => 'ip', width => '5%', col => 'Ip' },
             { caption => res_str(612), order_by => 'is_ooc', width => '1%' },
             { caption => res_str(613), order_by => 'is_remote', width => '1%' },
             { caption => res_str(610), order_by => 'is_site_org', width => '1%' },
@@ -202,11 +203,20 @@ sub users_frame {
     my $fields = join ', ', @fields;
     my $rating_sql = !$lv->visible_cols->{Rt} ? 'NULL' : qq~
         SELECT COUNT(DISTINCT R.problem_id) FROM reqs R
-            WHERE R.state = $cats::st_accepted AND R.account_id = A.id AND R.contest_id = C.id~ .
+        WHERE R.state = $cats::st_accepted AND R.account_id = A.id AND R.contest_id = C.id~ .
         ($is_jury ? '' : ' AND (R.submit_time < C.freeze_date OR C.defreeze_date < CURRENT_TIMESTAMP)');
 
+    my $check_site_id = !$is_jury && $user->{is_site_org} && $user->{site_id};
+    my $ip_sql = do {
+        my $s = $is_jury  && $lv->visible_cols->{Ip} || $user->{is_site_org} ? q~
+            SELECT E.ip FROM reqs R INNER JOIN events E ON E.id = R.id
+            WHERE R.account_id = A.id AND R.contest_id = C.id
+            ORDER BY R.submit_time DESC ROWS 1~ : 'NULL';
+        $check_site_id ? qq~CASE WHEN CA.site_id = ? THEN ($s) ELSE '' END~ : $s;
+    };
+
     my $sql = sprintf qq~
-        SELECT ($rating_sql) AS rating, CA.id, $fields, CA.site_id, S.name AS site_name
+        SELECT ($rating_sql) AS rating, ($ip_sql) AS ip, CA.id, $fields, CA.site_id, S.name AS site_name
         FROM accounts A
             INNER JOIN contest_accounts CA ON CA.account_id = A.id
             INNER JOIN contests C ON CA.contest_id = C.id
@@ -218,14 +228,12 @@ sub users_frame {
         $lv->maybe_where_cond;
 
     my $c = $dbh->prepare($sql);
-    $c->execute(
-        $cid,
-        (!$is_jury && $user->{is_site_org} && $user->{site_id} ? $user->{site_id} : ()),
-        $lv->where_params);
+    my @maybe_site_id = ($check_site_id ? $user->{site_id} : ());
+    $c->execute(@maybe_site_id, $cid, @maybe_site_id, $lv->where_params);
 
     my $fetch_record = sub {
         my (
-            $accepted, $caid, $aid, $country_abbr, $motto, $login, $team_name, $city,
+            $accepted, $ip, $caid, $aid, $country_abbr, $motto, $login, $team_name, $city,
             $jury, $ooc, $remote, $hidden, $site_org, $virtual, $diff_time, $ext_time,
             $tag, $site_id, $site_name
         ) = $_[0]->fetchrow_array
@@ -252,6 +260,7 @@ sub users_frame {
             country => $country,
             flag => $flag,
             accepted => $accepted,
+            CATS::IP::linkify_ip($ip),
             jury => $jury,
             hidden => $hidden,
             ooc => $ooc,
