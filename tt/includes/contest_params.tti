@@ -23,17 +23,6 @@
   </td></tr>
 </table>
 <br/>
-<table class="bordered verdict_list">
-  <tr><td>[% capt.max_reqs %]:</td><td><input type="text" name="max_reqs" value="[% max_reqs | html %]" class="bordered" [% UNLESS can_edit %]readonly="readonly"[% END %]/></td></tr>
-  <tr><td>[% capt.exclude_verdicts %]:</td>
-  <td>[% FOREACH v IN verdicts ~%]
-  <label class="run_details_[% v.short %]" title="[% capt.verdicts.item(v.short) %]">
-    <input type="checkbox" name="exclude_verdict" value="[% v.short %]" [% ' checked="checked"' IF v.checked; ' disabled="disabled"' UNLESS can_edit %]/>
-    [% v.short %]
-  </label>
-  [%~ END %]</td></tr>
-</table>
-<br/>
 <table class="bordered">
   <tr><td>[% capt.open_registration %]:</td><td>[% checkbox_1('free_registration', free_registration, can_edit) %]</td></tr>
   <tr><td>[% capt.is_official %]:</td><td>[% checkbox_1('is_official', is_official, user.privs.is_root) %]</td></tr>
@@ -53,5 +42,16 @@
   <tr><td>[% capt.show_packages %]:</td><td>[% checkbox_1('show_packages', show_packages, can_edit) %]</td></tr>
   <tr><td>[% capt.show_flags %]:</td><td>[% checkbox_1('show_flags', show_flags, can_edit) %]</td></tr>
   <tr><td>[% capt.show_sites %]:</td><td>[% checkbox_1('show_sites', show_sites, can_edit) %]</td></tr>
+</table>
+<br/>
+<table class="bordered verdict_list">
+  <tr><td>[% capt.max_reqs %]:</td><td><input type="text" name="max_reqs" value="[% max_reqs | html %]" class="bordered" [% UNLESS can_edit %]readonly="readonly"[% END %]/></td></tr>
+  <tr><td>[% capt.exclude_verdicts %]:</td>
+  <td>[% FOREACH v IN verdicts ~%]
+  <label class="run_details_[% v.short %]" title="[% capt.verdicts.item(v.short) %]">
+    <input type="checkbox" name="exclude_verdict" value="[% v.short %]" [% ' checked="checked"' IF v.checked; ' disabled="disabled"' UNLESS can_edit %]/>
+    [% v.short %]
+  </label>
+  [%~ END %]</td></tr>
 </table>
 <br/>

@@ -102,7 +102,7 @@ sub try_contest_params_frame {
         id => $id, %$c,
         href_action => url_f('contests'),
         can_edit => is_jury_in_contest(contest_id => $id),
-        verdicts => [ map +{ short => $_->[0], checked => %verdicts_excluded->{$_->[0]} },
+        verdicts => [ map +{ short => $_->[0], checked => $verdicts_excluded{$_->[0]} },
             @$CATS::Verdicts::name_to_state_sorted ],
     );
 
