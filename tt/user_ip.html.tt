@@ -1,7 +1,7 @@
 [% PROCESS includes/menu_begin.tti %]
 
 <p>[% capt.name %]: [% team_name | html %]</p>
-<p>[% capt.restrict_ips %]: [% restrict_ips %]</p>
+[% IF restrict_ips %]<p>[% capt.restrict_ips %]: [% restrict_ips %]</p>[% END %]
 
 <table class="internal_borders padded">
 <tr><th>[% capt.ts %]</th><th>[% capt.ip %]</th></tr>
