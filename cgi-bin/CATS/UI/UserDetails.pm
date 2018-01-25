@@ -21,7 +21,8 @@ use CATS::Utils qw(url_function);
 use CATS::Web qw(redirect);
 
 sub user_submenu {
-    my ($selected, $user_id) = @_;
+    my ($selected, $user_id, $site_id) = @_;
+    $site_id //= 0;
     my $is_profile = $uid && $uid == $user_id;
     my @m = (
         (($is_root || $is_profile) && $selected eq 'user_contacts' ? (
@@ -37,14 +38,12 @@ sub user_submenu {
         { href => url_f('user_stats', uid => $user_id), item => res_str(574), selected => 'user_stats' },
         (!$is_root ? () : (
             { href => url_f('user_settings', uid => $user_id), item => res_str(575), selected => 'user_settings' },
-            { href => url_f('user_ip', uid => $user_id), item => res_str(576), selected => 'user_ip' },
         )),
-        #($is_root || $is_profile ? (
-            { href => url_f('user_contacts', uid => $user_id), item => res_str(586), selected => 'user_contacts' },
-        #) : ()),
-        (!$is_jury && !$user->{is_site_org} ? () : (
+        { href => url_f('user_contacts', uid => $user_id), item => res_str(586), selected => 'user_contacts' },
+        ($is_jury || $user->{is_site_org} && (!$user->{site_id} || $user->{site_id} == $site_id) ? (
             { href => url_f('user_vdiff', uid => $user_id), item => res_str(580), selected => 'user_vdiff' },
-        )),
+            { href => url_f('user_ip', uid => $user_id), item => res_str(576), selected => 'user_ip' },
+        ) : ()),
     );
     $_->{selected} = $_->{selected} eq $selected for @m;
     (submenu => \@m);
@@ -67,9 +66,10 @@ sub users_edit_frame {
     $is_jury or return;
 
     $p->{uid} or return;
-    my $u = CATS::User->new->load($p->{uid}, [ qw(locked settings srole) ]) or return;
+    my $u = CATS::User->new->contest_fields([ 'site_id' ])->load($p->{uid}, [ qw(locked settings srole) ])
+        or return;
     $t->param(
-        user_submenu('edit', $p->{uid}),
+        user_submenu('edit', $p->{uid}, $u->{site_id}),
         title_suffix => $u->{team_name},
         %$u, privs => CATS::Privileges::unpack_privs($u->{srole}),
         id => $p->{uid},
@@ -85,11 +85,15 @@ sub user_stats_frame {
     my $envelopes_sql = $is_root ?
         ', (SELECT COUNT(*) FROM reqs R WHERE R.account_id = A.id AND R.received = 0) AS envelopes' : '';
     my $u = $dbh->selectrow_hashref(qq~
-        SELECT A.*, last_login AS last_login_date$envelopes_sql
+        SELECT A.*, last_login AS last_login_date,
+            (SELECT CA.site_id FROM contest_accounts CA
+                WHERE CA.account_id = A.id AND CA.contest_id = ?) AS site_id
+            $envelopes_sql
         FROM accounts A WHERE A.id = ?~, { Slice => {} },
-        $p->{uid}) or return;
+        $cid, $p->{uid}) or return;
     my $hidden_cond = $is_root ? '' :
-        'AND C.is_hidden = 0 AND (CA.is_hidden = 0 OR CA.is_hidden IS NULL) AND C.defreeze_date < CURRENT_TIMESTAMP';
+        'AND C.is_hidden = 0 AND (CA.is_hidden = 0 OR CA.is_hidden IS NULL) ' .
+        'AND C.defreeze_date < CURRENT_TIMESTAMP';
     my $contests = $dbh->selectall_arrayref(qq~
         SELECT C.id, C.title, CA.id AS caid, CA.is_jury,
             $CATS::Time::contest_start_offset_sql AS start_date,
@@ -127,7 +131,7 @@ sub user_stats_frame {
             show_results => 1, rows => 30, search => "contest_id=$_->{id}");
     }
     $t->param(
-        user_submenu('user_stats', $p->{uid}),
+        user_submenu('user_stats', $p->{uid}, $u->{site_id}),
         %$u, contests => $contests,
         CATS::IP::linkify_ip($u->{last_ip}),
         ($is_jury ? (href_edit => url_f('users_edit', uid => $p->{uid})) : ()),
@@ -167,8 +171,12 @@ sub user_settings_frame {
 
     msg(1029, $team_name) if $cleared;
     display_settings(thaw($user_settings)) if $user_settings;
+    my $site_id = $is_jury ? 0 : $dbh->selectrow_array(q~
+        SELECT CA.site_id FROM contest_accounts CA
+        WHERE CA.account_id = ? AND CA.contest_id = ?~, undef,
+        $p->{uid}, $cid);
     $t->param(
-        user_submenu('user_settings', $p->{uid}),
+        user_submenu('user_settings', $p->{uid}, $site_id),
         team_name => $team_name,
         title_suffix => $team_name,
     );
@@ -176,23 +184,25 @@ sub user_settings_frame {
 
 sub user_ip_frame {
     my ($p) = @_;
-    $is_root or return;
     init_template('user_ip.html.tt');
+    $is_jury || $user->{is_site_org} or return;
     $p->{uid} or return;
-    my $u = $dbh->selectrow_hashref(q~
-        SELECT A.* FROM accounts A WHERE A.id = ?~, { Slice => {} },
-        $p->{uid}) or return;
-    my $events = $dbh->selectall_arrayref(q~
-        SELECT MAX(E.ts) AS ts, E.ip FROM events E WHERE E.account_id = ?
+    my $u = CATS::User->new->contest_fields([ 'site_id' ])->load($p->{uid}) or return;
+    my $cond = $is_root ? '' : ' AND CA.contest_id = ?';
+    my $events = $dbh->selectall_arrayref(qq~
+        SELECT MAX(E.ts) AS ts, E.ip FROM events E
+        LEFT JOIN reqs R ON R.id = E.id
+        LEFT JOIN contest_accounts CA ON CA.account_id = E.account_id AND CA.contest_id = R.contest_id
+        WHERE E.account_id = ?$cond
         GROUP BY E.ip ORDER BY 1 DESC~,
-        { Slice => {} }, $p->{uid});
-    unshift @$events, { ts => $u->{last_login}, ip => $u->{last_ip } };
+        { Slice => {} }, $p->{uid}, ($is_root ? () : $cid));
+    unshift @$events, { ts => $u->{last_login}, ip => $u->{last_ip } } if $is_root;
     for my $e (@$events) {
         my %linkified = CATS::IP::linkify_ip($e->{ip});
         $e->{$_} = $linkified{$_} for keys %linkified;
     }
     $t->param(
-        user_submenu('user_ip', $p->{uid}),
+        user_submenu('user_ip', $p->{uid}, $u->{site_id}),
         %$u,
         events => $events,
         title_suffix => $u->{team_name},
@@ -269,7 +279,7 @@ sub user_vdiff_frame {
     }
 
     $t->param(
-        user_submenu('user_vdiff', $p->{uid}),
+        user_submenu('user_vdiff', $p->{uid}, $u->{site_id}),
         u => $u,
         (map { +"formatted_$_" => CATS::Time::format_diff($u->{$_}, 1) }
             qw(diff_time site_diff_time ext_time site_ext_time since_start since_finish) ),
@@ -309,9 +319,9 @@ sub user_contacts_frame {
 
     my $lv = CATS::ListView->new(
         name => 'user_contacts', template => 'user_contacts.html.tt');
-    my $user_name = $is_profile ? $user->{name} : $dbh->selectrow_array(q~
-        SELECT team_name FROM accounts WHERE id = ?~, undef,
-        $p->{uid}) or return;
+    my ($user_name, $user_site) = $is_profile ? ($user->{name}, $user->{site_id}) :
+        @{CATS::User->new->contest_fields([ 'site_id' ])->load($p->{uid}) // {}}{qw(team_name site_id)};
+    $user_name or return;
 
     $lv->define_columns(url_f('user_contacts'), 0, 0, [
         { caption => res_str(642), order_by => 'type_name', width => '20%' },
@@ -341,7 +351,7 @@ sub user_contacts_frame {
     };
     $lv->attach(url_f('user_contacts'), $fetch_record, $sth, { page_params => { uid => $p->{uid} } });
     $t->param(
-        user_submenu('user_contacts', $p->{uid}),
+        user_submenu('user_contacts', $p->{uid}, $user_site),
         title_suffix => res_str(586),
         problem_title => $user_name,
     );
@@ -381,7 +391,7 @@ sub profile_frame {
         WHERE C.account_id = ? AND C.contact_type_id = ? AND C.is_public = 1~, undef,
         $uid, $CATS::Globals::contact_email);
     $t->param(
-        user_submenu('profile', $uid),
+        user_submenu('profile', $uid, $user->{site_id}),
         countries => \@CATS::Countries::countries,
         href_action => url_f('users'),
         title_suffix => res_str(518),

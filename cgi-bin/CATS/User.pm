@@ -45,13 +45,25 @@ sub parse_params {
    $_[0];
 }
 
+sub contest_fields {
+    my ($self, $fields, $contest_id) = @_;
+    $self->{contest_fields} = $fields or die;
+    $self->{contest_id} = $contest_id // $cid;
+    $self;
+}
+
 sub load {
     my ($self, $id, $extra_fields) = @_;
-    my @fields = (param_names(), @{$extra_fields || []});
+    my @fields = (param_names(), @{$extra_fields || []}, @{$self->{contest_fields} || []});
+    my $fields_sql = join(', ' => @fields);
+    my $contest_accounts_join = $self->{contest_id} ?
+        'LEFT JOIN contest_accounts CA ON CA.account_id = A.id AND CA.contest_id = ?' : '';
     @$self{@fields} = $dbh->selectrow_array(qq~
-        SELECT ~ . join(', ' => @fields) . q~
-            FROM accounts WHERE id = ?~, { Slice => {} },
-        $id
+        SELECT $fields_sql
+        FROM accounts A
+        $contest_accounts_join
+        WHERE A.id = ?~, { Slice => {} },
+        ($self->{contest_id} // ()), $id
     ) or return;
     $self->{country} ||= $CATS::Countries::countries[0]->{id};
     $self->{settings} = Storable::thaw($self->{frozen_settings} = $self->{settings})
