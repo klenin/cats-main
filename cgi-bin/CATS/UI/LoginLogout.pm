@@ -42,7 +42,7 @@ sub login_frame {
     my ($aid, $hash, $locked, $restrict_ips) = $dbh->selectrow_array(qq~
         SELECT id, passwd, locked, restrict_ips FROM accounts WHERE login = ?~, undef, $login);
 
-    $aid && $check_password->($p->{passwd}, $hash) or return msg(1040);
+    $aid && $check_password->($p->{passwd} // '', $hash) or return msg(1040);
     !$locked or return msg(1041);
 
     my $last_ip = CATS::IP::get_ip();

@@ -81,7 +81,7 @@ sub problems_submit {
 
     my $prev_reqs_count;
     if ($contest->{max_reqs} && !$is_jury && !$user->{is_virtual}) {
-        my @excluded_verdicts = split /,/, $contest->{max_reqs_except};
+        my @excluded_verdicts = split /,/, $contest->{max_reqs_except} // '';
         $prev_reqs_count = $dbh->selectrow_array(_u $sql->select('reqs', 'count(*)', {
                 account_id => $submit_uid,
                 problem_id => $pid,

@@ -175,7 +175,7 @@ sub console_content {
         # instead of specific results of other teams.
         my $hide_verdict =
             $contest->{time_since_defreeze} <= 0 && !$is_jury &&
-            (!$user->{is_participant} || !$team_id || $team_id != $uid);
+            (!$user->{is_participant} || !$team_id || $team_id != ($uid // 0));
         my $true_short_state = $CATS::Verdicts::state_to_name->{$request_state} || '';
         my $short_state =
             $hide_verdict ? $CATS::Verdicts::hidden_verdicts_others->{$true_short_state} :

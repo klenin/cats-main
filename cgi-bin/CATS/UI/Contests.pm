@@ -96,7 +96,7 @@ sub try_contest_params_frame {
     $c->{free_registration} = !$c->{closed};
 
     my %verdicts_excluded =
-        map { $CATS::Verdicts::state_to_name->{$_} => 1 } split /,/, $c->{max_reqs_except};
+        map { $CATS::Verdicts::state_to_name->{$_} => 1 } split /,/, $c->{max_reqs_except} // '';
 
     $t->param(
         id => $id, %$c,
