@@ -2,5 +2,6 @@
   capt.import({
     contest_name => 'Турнир',
     site_name => 'Площадка',
+    users_count => 'Пользователи',
   })
 %]

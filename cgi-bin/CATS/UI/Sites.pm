@@ -126,7 +126,9 @@ sub contest_sites_edit_frame {
             C.start_date AS contest_start,
             C.start_date + COALESCE(CS.diff_time, 0) AS contest_start_offset,
             C.finish_date AS contest_finish,
-            $CATS::Time::contest_site_finish_sql AS contest_finish_offset
+            $CATS::Time::contest_site_finish_sql AS contest_finish_offset,
+            (SELECT COUNT(*) FROM contest_accounts CA
+                WHERE CA.site_id = S.id AND CA.contest_id = C.id) AS users_count
         FROM sites S
         INNER JOIN contest_sites CS ON CS.site_id = S.id
         INNER JOIN contests C ON C.id = CS.contest_id
@@ -136,6 +138,7 @@ sub contest_sites_edit_frame {
 
     $t->param(
         href_contest => url_f('contests', params => $s->{contest_id}),
+        href_users => url_f('users', search => "site_id=$s->{id}"),
         ($user->privs->{edit_sites} ? (href_site => url_f('sites', edit => $s->{id})) : ()),
         s => $s,
         formatted_diff_time => CATS::Time::format_diff($s->{diff_time}, 1),

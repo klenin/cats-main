@@ -2,10 +2,11 @@
 [%- PROCESS includes/html.tti -%]
 [%- PROCESS "lang/$lang/diff_time.tti" -%]
 
-<p>
-[% capt.contest_name %]: [% maybe_href(href_contest, s.contest_name) %]<br/>
-[% capt.site_name %]: [% maybe_href(href_site, s.site_name) %]<br/>
-</p>
+<table>
+<tr><td>[% capt.contest_name %]:</td><td>[% maybe_href(href_contest, s.contest_name) %]</td></tr>
+<tr><td>[% capt.site_name %]:</td><td>[% maybe_href(href_site, s.site_name) %]</td></tr>
+<tr><td>[% capt.users_count %]:</td><td>[% maybe_href(href_users, s.users_count) %]</td></tr>
+</table>
 
 <form method="post" enctype="multipart/form-data">
 <table class="internal_borders padded">
