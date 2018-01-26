@@ -212,7 +212,7 @@ sub users_frame {
             SELECT E.ip FROM reqs R INNER JOIN events E ON E.id = R.id
             WHERE R.account_id = A.id AND R.contest_id = C.id
             ORDER BY R.submit_time DESC ROWS 1~ : 'NULL';
-        $check_site_id ? qq~CASE WHEN CA.site_id = ? THEN ($s) ELSE '' END~ : $s;
+        $check_site_id ? qq~CASE WHEN CA.site_id = ? THEN ($s) ELSE NULL END~ : $s;
     };
 
     my $sql = sprintf qq~
