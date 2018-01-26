@@ -32,6 +32,30 @@ sub edit_save {
     $form->edit_save() and msg(1067, Encode::decode_utf8($p->{name}));
 }
 
+sub common_searches {
+    my ($lv) = @_;
+    $lv->define_db_searches([ fields ]);
+    my $name_sql = q~
+        SELECT A.team_name FROM accounts A WHERE A.id = ?~;
+    $lv->define_subqueries({
+        has_contest => { sq => q~EXISTS (
+            SELECT 1 FROM contest_sites CS WHERE CS.contest_id = ? AND CS.site_id = S.id)~,
+            m => 1047, t => q~
+            SELECT C.title FROM contests C WHERE C.id = ?~
+        },
+        has_user => { sq => qq~EXISTS (
+            SELECT 1 FROM contest_accounts CA
+            WHERE CA.site_id = S.id AND CA.account_id = ?)~,
+            m => 1032, t => $name_sql
+        },
+        has_org => { sq => qq~EXISTS (
+            SELECT 1 FROM contest_accounts CA
+            WHERE CA.site_id = S.id AND CA.account_id = ? AND CA.is_site_org = 1)~,
+            m => 1034, t => $name_sql
+        },
+    });
+}
+
 sub sites_frame {
     my ($p) = @_;
     $user->privs->{edit_sites} or return;
@@ -50,27 +74,10 @@ sub sites_frame {
         { caption => res_str(657), order_by => 'address',  width => '20%', col => 'Ad' },
         { caption => res_str(645), order_by => 'contests', width => '10%', col => 'Cc' },
     ]);
-
-    $lv->define_db_searches([ fields ]);
-
-    my $name_sql = q~
-        SELECT A.team_name FROM accounts A WHERE A.id = ?~;
-    $lv->define_subqueries({
-        has_user => { sq => qq~EXISTS (
-            SELECT 1 FROM contest_accounts CA
-            WHERE CA.site_id = S.id AND CA.account_id = ?)~,
-            m => 1032, t => $name_sql
-        },
-        has_org => { sq => qq~EXISTS (
-            SELECT 1 FROM contest_accounts CA
-            WHERE CA.site_id = S.id AND CA.account_id = ? AND CA.is_site_org = 1)~,
-            m => 1034, t => $name_sql
-        },
-    });
+    common_searches($lv);
 
     my $count_fld = !$lv->visible_cols->{Cc} ? 'NULL' : q~
         (SELECT COUNT(*) FROM contest_sites CS WHERE CS.site_id = S.id)~;
-
 
     my ($q, @bind) = $sql->select('sites S', [ 'id', fields, "$count_fld AS contests" ], $lv->where);
     my $c = $dbh->prepare("$q " . $lv->order_by);
@@ -197,7 +204,7 @@ sub contest_sites_frame {
         ): ()),
         { caption => res_str(658), order_by => 'users_count', width => '15%', col => 'Pt' },
     ]);
-    $lv->define_db_searches([ fields ]);
+    common_searches($lv);
 
     if ($is_jury) {
         contest_sites_delete($p);
