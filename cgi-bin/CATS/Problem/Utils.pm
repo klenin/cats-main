@@ -97,6 +97,7 @@ sub define_common_searches {
 
     $lv->define_db_searches([ map "P.$_", qw(
         id title contest_id author upload_date lang run_method last_modified_by max_points
+        input_file output_file
         statement explanation pconstraints input_format output_format formal_input json_data
         statement_url explanation_url
     ), @cats::limits_fields ]);
