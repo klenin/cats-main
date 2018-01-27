@@ -150,7 +150,7 @@ sub get_results {
 
     unless ($is_jury) {
         if ($self->{frozen}) {
-            if ($user->{is_participant}) {
+            if ($uid) {
                 push @conditions, '(R.submit_time < C.freeze_date OR R.account_id = ?)';
                 push @params, $uid;
             }
@@ -210,7 +210,8 @@ sub get_results {
             $select_competitive_query
         )
         ORDER BY id~, { Slice => {} },
-        ($cats::problem_st_hidden, $cats::request_processed, $max_cached_req_id, @params) x ($self->{has_competitive} ? 2 : 1));
+        ($cats::problem_st_hidden, $cats::request_processed, $max_cached_req_id, @params) x
+            ($self->{has_competitive} ? 2 : 1));
 }
 
 sub get_partial_points {
