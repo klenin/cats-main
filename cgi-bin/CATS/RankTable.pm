@@ -255,11 +255,16 @@ sub cache_req_points {
         max($_->{points} || 0, 0)
     } @$test_points;
 
-    # To reduce chance of deadlock, commit every change separately, even if it is slower.
-    $dbh->do(q~
-        UPDATE reqs SET points = ? WHERE id = ? AND points IS DISTINCT FROM ?~, undef,
-        $total, $req->{ref_id} || $req->{id}, $total);
-    $dbh->commit;
+    eval {
+        warn sprintf 'Zero points: req=%d old=%s', $req->{ref_id} || $req->{id}, $req->{points} // 'NULL'
+            if $req->{state} == $cats::st_accepted && $total == 0;
+        # To reduce chance of deadlock, commit every change separately, even if it is slower.
+        $dbh->do(q~
+            UPDATE reqs SET points = ? WHERE id = ? AND points IS DISTINCT FROM ?~, undef,
+            $total, $req->{ref_id} || $req->{id}, $total);
+        $dbh->commit;
+        1;
+    } or return CATS::DB::catch_deadlock_error("cache_req_points $req->{id}");
     $total;
 }
 
