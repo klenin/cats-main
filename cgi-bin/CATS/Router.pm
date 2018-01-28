@@ -46,7 +46,7 @@ $main_routes = {
     contests => [ \&CATS::UI::Contests::contests_frame,
         summary_rank => bool, create_group => bool,
         online_registration => bool, virtual_registration => bool,
-        edit_save => bool, new_save => bool, id => integer,
+        edit_save => bool, new_save => bool, id => integer, original_id => integer,
         contests_selection => array_of integer,
     ],
     contest_sites => [ \&CATS::UI::Sites::contest_sites_frame, add => bool, delete => integer, check => array_of integer, ],

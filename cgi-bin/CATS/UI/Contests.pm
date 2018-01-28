@@ -67,11 +67,22 @@ sub get_contest_html_params {
 }
 
 sub contests_new_save {
+    my ($p) = @_;
     my $c = get_contest_html_params() or return;
 
     $c->{ctype} = 0;
     $c->{id} = new_id;
     $is_root or $c->{is_official} = 0;
+
+    if ($p->{original_id}) {
+        # Make sure the title of copied contest differs from the original.
+        my ($original_title) = $dbh->selectrow_array(q~
+            SELECT title FROM contests WHERE id = ?~, undef,
+            $p->{original_id});
+        if ($original_title && $original_title eq Encode::decode_utf8($c->{title})) {
+            $c->{title} =~ s/\((\d+)\)$/(@{[ $1 + 1 ]})/ or $c->{title} .= ' (1)';
+        }
+    }
     eval { $dbh->do(_u $sql->insert('contests', $c)); 1 } or return msg(1026, $@);
 
     # Automatically register all admins as jury.
@@ -199,7 +210,7 @@ sub contests_frame {
 
     contest_delete if url_param('delete');
 
-    contests_new_save if $p->{new_save} && $user->privs->{create_contests};
+    contests_new_save($p) if $p->{new_save} && $user->privs->{create_contests};
     contests_edit_save($p->{id})
         if $p->{edit_save} && $p->{id} && is_jury_in_contest(contest_id => $p->{id});
 
