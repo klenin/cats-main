@@ -157,14 +157,14 @@ sub contests_select_current {
 }
 
 sub contest_delete {
-    my $delete_cid = url_param('delete');
+    my ($delete_cid) = @_;
     $is_root or return;
     my ($cname, $problem_count) = $dbh->selectrow_array(q~
         SELECT title, (SELECT COUNT(*) FROM contest_problems CP WHERE CP.contest_id = C.id) AS pc
         FROM contests C WHERE C.id = ?~, undef,
         $delete_cid);
     $cname or return;
-    return  msg(1038, $cname, $problem_count) if $problem_count;
+    return msg(1038, $cname, $problem_count) if $problem_count;
     $dbh->do(q~
         DELETE FROM contests WHERE id = ?~, undef,
         $delete_cid);
@@ -190,8 +190,7 @@ sub contests_frame {
     my ($p) = @_;
 
     if ($p->{summary_rank}) {
-        my @clist = param('contests_selection');
-        return redirect(url_f('rank_table', clist => join ',', @clist));
+        return redirect(url_f('rank_table', clist => join ',', @{$p->{contests_selection}}));
     }
 
     return contests_new_frame
@@ -208,7 +207,7 @@ sub contests_frame {
     CATS::Contest::contest_group_auto_new($p->{contests_selection})
         if $p->{create_group} && $is_root;
 
-    contest_delete if url_param('delete');
+    contest_delete($p->{'delete'}) if $p->{'delete'};
 
     contests_new_save($p) if $p->{new_save} && $user->privs->{create_contests};
     contests_edit_save($p->{id})

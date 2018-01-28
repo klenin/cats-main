@@ -44,7 +44,7 @@ $main_routes = {
     profile => [ \&CATS::UI::UserDetails::profile_frame,
         json => bool, clear => bool, edit_save => str, set_password => bool, ],
     contests => [ \&CATS::UI::Contests::contests_frame,
-        summary_rank => bool, create_group => bool,
+        summary_rank => bool, create_group => bool, delete => integer,
         online_registration => bool, virtual_registration => bool,
         edit_save => bool, new_save => bool, id => integer, original_id => integer,
         contests_selection => array_of integer,
