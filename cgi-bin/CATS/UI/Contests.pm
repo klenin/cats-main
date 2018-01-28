@@ -220,10 +220,11 @@ sub contests_frame {
     contests_select_current if defined url_param('set_contest');
 
     $lv->define_columns(url_f('contests'), 1, 1, [
-        { caption => res_str(601), order_by => '1 DESC, 2', width => '40%' },
-        { caption => res_str(600), order_by => '1 DESC, 5', width => '15%' },
-        { caption => res_str(631), order_by => '1 DESC, 6', width => '15%' },
-        { caption => res_str(630), order_by => '1 DESC, 9', width => '30%' } ]);
+        { caption => res_str(601), order_by => 'ctype DESC, title', width => '40%' },
+        ($is_root ? { caption => res_str(663), order_by => 'ctype DESC, problems_count', width => '5%' } : ()),
+        { caption => res_str(600), order_by => 'ctype DESC, start_date', width => '15%' },
+        { caption => res_str(631), order_by => 'ctype DESC, finish_date', width => '15%' },
+        { caption => res_str(630), order_by => 'ctype DESC, closed', width => '30%' } ]);
 
     $settings->{contests}->{filter} = my $filter =
         param('filter') || $settings->{contests}->{filter} || 'unfinished';

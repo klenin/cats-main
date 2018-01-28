@@ -107,9 +107,14 @@ sub authenticated_contests_view {
         },
     });
     my $extra_fields = $p->{extra_fields} ? join ',', '', @{$p->{extra_fields}} : '';
+    my $problems_count_sql = $is_root ? q~
+        SELECT COUNT(*) FROM contest_problems CP WHERE CP.contest_id = C.id~ : 'NULL';
+    $p->{listview}->define_db_searches({ problems_count => "($problems_count_sql)" }) if $is_root;
     my $sth = $dbh->prepare(qq~
         SELECT
-            $cf, CA.is_virtual, CA.is_jury, CA.id AS registered, C.is_hidden$extra_fields
+            $cf, CA.is_virtual, CA.is_jury, CA.id AS registered, C.is_hidden,
+            ($problems_count_sql) AS problems_count
+            $extra_fields
         FROM contests C
         LEFT JOIN contest_accounts CA ON CA.contest_id = C.id AND CA.account_id = ?
         WHERE
