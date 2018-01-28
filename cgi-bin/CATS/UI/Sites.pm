@@ -23,7 +23,24 @@ my $form = CATS::Form->new({
     href_action => 'sites',
 });
 
-sub edit_frame { $form->edit_frame }
+my $person_phone_sql =
+    qq~COALESCE((SELECT LIST(' ' || C.handle) FROM contacts C
+        WHERE C.account_id = A.id AND C.contact_type_id = $CATS::Globals::contact_phone AND C.is_actual = 1), '')~;
+
+sub edit_frame {
+    my ($p) = @_;
+    $form->edit_frame;
+    my $contests = $is_root && $p->{edit} ? $dbh->selectall_arrayref(qq~
+        SELECT C.title, C.start_date,
+            (SELECT LIST(A.team_name || $person_phone_sql, ', ') FROM contest_accounts CA
+            INNER JOIN accounts A ON A.id = CA.account_id
+            WHERE CA.contest_id = C.id AND CA.site_id = CS.site_id AND CA.is_site_org = 1) AS orgs
+        FROM contests C
+        INNER JOIN contest_sites CS ON CS.contest_id = C.id AND CS.site_id = ?
+        ORDER BY C.start_date DESC ROWS 50~, { Slice => {} },
+        $p->{edit}) : [];
+    $t->param(contests => $contests);
+}
 
 sub edit_save {
     my ($p) = @_;
@@ -59,7 +76,7 @@ sub common_searches {
 sub sites_frame {
     my ($p) = @_;
     $user->privs->{edit_sites} or return;
-    $p->{new} || $p->{edit} and return edit_frame;
+    $p->{new} || $p->{edit} and return edit_frame($p);
 
     my $lv = CATS::ListView->new(name => 'sites', template => 'sites.html.tt');
 
@@ -211,14 +228,13 @@ sub contest_sites_frame {
         contest_sites_add($p) if $p->{add};
     }
 
-    my $org_person_phone = $user->privs->{is_root} ?
-        qq~ || (SELECT LIST(' ' || C.handle) FROM contacts C
-            WHERE C.account_id = A.id AND C.contact_type_id = $CATS::Globals::contact_phone AND C.is_actual = 1)~ : '';
+    my $org_person_phone = $user->privs->{is_root} ? qq~ || $person_phone_sql~ : '';
     my $org_person_sql = $lv->visible_cols->{Op} ? qq~
         SELECT LIST(A.team_name$org_person_phone, ', ') FROM contest_accounts CA
         INNER JOIN accounts A ON A.id = CA.account_id
         WHERE CA.contest_id = CS.contest_id AND CA.site_id = S.id AND CA.is_site_org = 1
         ORDER BY 1~ : 'NULL';
+
     my $users_count_sql = $lv->visible_cols->{Pt} ? q~
         SELECT COUNT(*) FROM contest_accounts CA
         WHERE CA.contest_id = CS.contest_id AND CA.site_id = S.id AND CA.is_hidden = 0~ : 'NULL';

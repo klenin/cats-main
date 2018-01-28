@@ -12,6 +12,15 @@
 </table>
 <br>
 [% PROCESS includes/edit_save_cancel.tti %]
+[% IF contests.size > 0 %]
+<br><br>
+<table class="bordered internal_borders">
+<tr><th>[% capt.contest %]</th><th>[% capt.start_date %]</th><th>[% capt.orgs %]</th></tr>
+[% FOREACH c IN contests %]
+<tr><td>[% c.title %]</td><td>[% c.start_date %]</td><td>[% c.orgs %]</td></tr>
+[% END %]
+</table>
+[% END %]
 </form>
 
 [% PROCESS includes/menu_end.tti %]

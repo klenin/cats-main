@@ -5,5 +5,8 @@
     city => 'City / municipality',
     org_name => 'Full organization name',
     address => 'Full postal address',
+    contest => 'Contest',
+    start_date => 'Start date',
+    orgs => 'Organizers',
   })
 %]
