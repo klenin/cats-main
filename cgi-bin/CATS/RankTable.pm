@@ -358,7 +358,7 @@ sub prepare_ranks {
     }
 
     if (defined $self->{sites}) {
-        my %sites = map { $_ + 0 => 1 } grep $_ ne '', split ',', $self->{sites};
+        my %sites = map { $_ => 1 } grep $_ ne '', split ',', $self->{sites};
         @rank = grep $sites{$_->{site_id} // 0}, @rank;
     }
 

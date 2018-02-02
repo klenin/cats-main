@@ -200,6 +200,7 @@ $main_routes = {
     rank_table_content => \&CATS::UI::RankTable::rank_table_content_frame,
     rank_table => [ \&CATS::UI::RankTable::rank_table_frame,
         (map { $_ => bool } @CATS::UI::RankTable::router_bool_params),
+        sites => clist_of integer,
     ],
     rank_problem_details => \&CATS::UI::RankTable::rank_problem_details,
     problem_text => [ \&CATS::UI::Problems::problem_text_frame,

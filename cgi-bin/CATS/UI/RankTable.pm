@@ -46,11 +46,15 @@ sub rank_table_frame {
     $rt->get_contests_info($uid);
     $contest->{title} = $rt->{title};
 
+    my $sites = @{$p->{sites}} ? $dbh->selectall_arrayref(_u $sql->select(
+        'sites', 'id, name', { id => $p->{sites} }, 'name')) : [];
+    $t->param(problem_title => join '; ', map $_->{name}, @$sites);
+
     my @params = (
         (map { $_ => $p->{$_} } @router_bool_params),
         clist => $rt->{contest_list},
         filter => Encode::decode_utf8(url_param('filter') || undef),
-        sites => (url_param('sites') // undef),
+        sites => join(',', map $_->{id}, @$sites) || undef,
     );
     $t->param(href_rank_table_content => url_f('rank_table_content', @params));
     my $submenu =
