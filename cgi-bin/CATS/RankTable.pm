@@ -596,7 +596,7 @@ sub rank_table {
 
     my $pcount = @{$self->{problems}};
     $t->param(
-        problem_colunm_width => (
+        problem_column_width => (
             $pcount <= 6 ? 6 :
             $pcount <= 8 ? 5 :
             $pcount <= 10 ? 4 :
