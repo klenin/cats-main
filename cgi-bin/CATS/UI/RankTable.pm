@@ -10,6 +10,16 @@ use CATS::Output qw(init_template url_f);
 use CATS::RankTable;
 use CATS::Web qw(param url_param);
 
+our @router_bool_params = qw(
+    cache
+    hide_ooc
+    hide_virtual
+    points
+    show_flags
+    show_prizes
+    show_regions
+);
+
 sub rank_table {
     my $template_name = shift;
     init_template('rank_table_content.html.tt');
@@ -25,13 +35,10 @@ sub rank_table {
 }
 
 sub rank_table_frame {
-    my $hide_ooc = url_param('hide_ooc') || 0;
-    my $hide_virtual = url_param('hide_virtual') || 0;
-    my $cache = url_param('cache');
-    my $show_points = url_param('points');
+    my ($p) = @_;
 
-    #rank_table('main_rank_table.htm');
-    #init_template('main_rank_table_content.htm');
+    #rank_table('rank_table.htm');
+    #init_template('rank_table_content.htm');
     init_template('rank_table.html.tt');
 
     my $rt = CATS::RankTable->new;
@@ -40,21 +47,18 @@ sub rank_table_frame {
     $contest->{title} = $rt->{title};
 
     my @params = (
-        hide_ooc => $hide_ooc, hide_virtual => $hide_virtual, cache => $cache,
-        clist => $rt->{contest_list}, points => $show_points,
+        (map { $_ => $p->{$_} } @router_bool_params),
+        clist => $rt->{contest_list},
         filter => Encode::decode_utf8(url_param('filter') || undef),
         sites => (url_param('sites') // undef),
-        show_prizes => (url_param('show_prizes') || 0),
-        show_regions => (url_param('show_regions') || 0),
-        (defined url_param('show_flags') ? (show_flags => url_param('show_flags')) : ()),
     );
     $t->param(href_rank_table_content => url_f('rank_table_content', @params));
     my $submenu =
         [ { href => url_f('rank_table_content', @params, printable => 1), item => res_str(538) } ];
     if ($is_jury) {
         push @$submenu,
-            { href => url_f('rank_table', @params, cache => 1 - ($cache || 0)), item => res_str(553) },
-            { href => url_f('rank_table', @params, points => 1 - ($show_points || 0)), item => res_str(554) };
+            { href => url_f('rank_table', @params, cache => ($p->{cache} ? 0 : 1)), item => res_str(553) },
+            { href => url_f('rank_table', @params, points => ($p->{points} ? 0 : 1)), item => res_str(554) };
     }
     $t->param(submenu => $submenu, title_suffix => res_str(529));
 }
