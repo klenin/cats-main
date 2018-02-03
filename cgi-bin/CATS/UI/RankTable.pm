@@ -21,10 +21,10 @@ our @router_bool_params = qw(
 );
 
 sub rank_table {
-    my $template_name = shift;
+    my ($p, $template_name) = @_;
     init_template('rank_table_content.html.tt');
     $t->param(printable => scalar url_param('printable'));
-    my $rt = CATS::RankTable->new;
+    my $rt = CATS::RankTable->new($p);
     $rt->parse_params;
     $rt->rank_table;
     $contest->{title} = $rt->{title};
@@ -41,8 +41,7 @@ sub rank_table_frame {
     #init_template('rank_table_content.htm');
     init_template('rank_table.html.tt');
 
-    my $rt = CATS::RankTable->new;
-    $rt->get_contest_list_param;
+    my $rt = CATS::RankTable->new($p);
     $rt->get_contests_info($uid);
     $contest->{title} = $rt->{title};
 
@@ -68,10 +67,12 @@ sub rank_table_frame {
 }
 
 sub rank_table_content_frame {
-    rank_table('rank_table_iframe.html.tt');
+    my ($p) = @_;
+    rank_table($p, 'rank_table_iframe.html.tt');
 }
 
 sub rank_problem_details {
+    my ($p) = @_;
     init_template('rank_problem_details.html.tt');
     $is_jury or return;
 

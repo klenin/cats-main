@@ -18,15 +18,17 @@ use CATS::Time;
 use CATS::Web qw(param url_param);
 
 use fields qw(
-    contest_list hide_ooc hide_virtual show_points frozen
+    clist contest_list hide_ooc hide_virtual show_points frozen
     title has_practice not_started filter sites use_cache
     rank problems problems_idx show_all_results show_prizes req_selection has_competitive
     show_regions show_flags
 );
 
 sub new {
-    my $self = shift;
+    my ($self, $p) = @_;
     $self = fields::new($self) unless ref $self;
+    $self->{clist} = [ @{$p->{clist}}  ? sort { $a <=> $b } @{$p->{clist}} : $cid ];
+    $self->{contest_list} = join ',', @{$self->{clist}};
     return $self;
 }
 
@@ -269,15 +271,6 @@ sub cache_req_points {
     $total;
 }
 
-sub get_contest_list_param {
-    (my CATS::RankTable $self) = @_;
-    my $clist = url_param('clist') || $cid;
-    # sanitize
-    $self->{contest_list} =
-        join(',', sort { $a <=> $b } grep { $_ > 0 }
-            map { sprintf '%d', $_ } split ',', $clist) || $cid;
-}
-
 sub get_contests_info {
     (my CATS::RankTable $self, my $uid) = @_;
     $uid ||= 0;
@@ -331,7 +324,6 @@ sub parse_params {
     $self->{hide_virtual} =~ /^[01]$/
         or $self->{hide_virtual} = (!$user->{is_virtual} && !$is_jury || !$user->{is_participant});
 
-    $self->get_contest_list_param;
     $self->get_contests_info($uid);
     $self->{show_points} = url_param('points') if defined url_param('points');
     $self->{use_cache} = url_param('cache');
