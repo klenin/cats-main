@@ -8,13 +8,13 @@ use CATS::Globals qw($cid $contest $is_jury $t $uid);
 use CATS::Messages qw(msg res_str);
 use CATS::Output qw(init_template url_f);
 use CATS::RankTable;
-use CATS::Web qw(param url_param);
 
 our @router_bool_params = qw(
     cache
     hide_ooc
     hide_virtual
     points
+    printable
     show_flags
     show_prizes
     show_regions
@@ -23,7 +23,7 @@ our @router_bool_params = qw(
 sub rank_table {
     my ($p, $template_name) = @_;
     init_template('rank_table_content.html.tt');
-    $t->param(printable => scalar url_param('printable'));
+    $t->param(printable => $p->{printable});
     my $rt = CATS::RankTable->new($p);
     $rt->parse_params;
     $rt->rank_table;
@@ -31,7 +31,7 @@ sub rank_table {
     my $s = $t->output;
 
     init_template($template_name);
-    $t->param(rank_table_content => $s, printable => (url_param('printable') || 0));
+    $t->param(rank_table_content => $s, printable => $p->{printable});
 }
 
 sub rank_table_frame {
@@ -52,7 +52,7 @@ sub rank_table_frame {
     my @params = (
         (map { $_ => $p->{$_} } @router_bool_params),
         clist => $rt->{contest_list},
-        filter => Encode::decode_utf8(url_param('filter') || undef),
+        filter => Encode::decode_utf8($p->{filter}),
         sites => join(',', map $_->{id}, @$sites) || undef,
     );
     $t->param(href_rank_table_content => url_f('rank_table_content', @params));
@@ -76,14 +76,14 @@ sub rank_problem_details {
     init_template('rank_problem_details.html.tt');
     $is_jury or return;
 
-    my ($pid) = url_param('pid') or return;
+    $p->{pid} or return;
 
     my $runs = $dbh->selectall_arrayref(q~
         SELECT
             R.id, R.state, R.account_id, R.points
         FROM reqs R WHERE R.contest_id = ? AND R.problem_id = ?
         ORDER BY R.id~, { Slice => {} },
-        $cid, $pid);
+        $cid, $p->{pid});
 
     for (@$runs) {
         1;
