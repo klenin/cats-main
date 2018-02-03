@@ -542,6 +542,7 @@ sub rank_table {
         }
         next if $p->{solved} && !$self->{show_points};
 
+        $problem->{run_method} //= $cats::rm_default;
         if (
             $problem->{run_method} == $cats::rm_competitive &&
             (!defined $p->{last_req_id} || $p->{last_req_id} < $_->{id})
