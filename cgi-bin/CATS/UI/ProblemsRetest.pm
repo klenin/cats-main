@@ -13,13 +13,12 @@ use CATS::Problem::Utils;
 use CATS::RankTable;
 use CATS::Request;
 use CATS::Verdicts;
-use CATS::Web qw(param);
 
 sub problems_mass_retest {
-    my @retest_pids = param('problem_id') or return msg(1012);
-    my $all_runs = param('all_runs');
+    my ($p) = @_;
+    my @retest_pids = @{$p->{problem_id}} or return msg(1012);
     my %ignore_states;
-    for (param('ignore_states')) {
+    for (@{$p->{ignore_states}}) {
         my $st = $CATS::Verdicts::name_to_state->{$_ // ''};
         $ignore_states{$st} = 1 if defined $st;
     }
@@ -33,7 +32,7 @@ sub problems_mass_retest {
         );
         my %accounts;
         for (@$runs) {
-            next if !$all_runs && $accounts{$_->{account_id}}++;
+            next if !$p->{all_runs} && $accounts{$_->{account_id}}++;
             next if $ignore_states{$_->{state} // 0};
             my $fields = {
                 state => $cats::st_not_processed, judge_id => undef, points => undef, testsets => undef };
@@ -41,16 +40,15 @@ sub problems_mass_retest {
         }
         $dbh->commit;
     }
-    return msg(1128, $count);
+    msg(1128, $count);
 }
 
 sub problems_recalc_points {
-    my @pids = param('problem_id') or return msg(1012);
-    my $pids = join ',', grep /^\d+$/, @pids or return msg(1012);
-    $dbh->do(qq~
-        UPDATE reqs SET points = NULL
-        WHERE contest_id = ? AND problem_id IN ($pids)~, undef,
-        $cid);
+    my ($p) = @_;
+    @{$p->{problem_id}} or return msg(1012);
+    $dbh->do(_u $sql->update(
+        reqs => { points => undef }, { contest_id => $cid, problem_id => $p->{problem_id} }
+    ));
     $dbh->commit;
     CATS::RankTable::remove_cache($cid);
 }
