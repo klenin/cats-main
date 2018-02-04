@@ -65,7 +65,7 @@ $main_routes = {
 
     problems => [
         \&CATS::UI::Problems::problems_frame,
-        kw => integer, problem_id => integer,
+        problem_id => integer,
         problems_selection => array_of integer,
         participate_online => bool, participate_virtual => bool,
         submit => bool, replace => bool, add_new => bool,
@@ -74,6 +74,10 @@ $main_routes = {
         change_status => integer, status => integer,
         change_code => integer, code => qr/[A-Z1-9]/,
         link_save => bool, move => bool,
+    ],
+    problems_all => [
+        \&CATS::UI::Problems::problems_all_frame,
+        kw => integer, link => bool, move => bool,
     ],
     problems_udebug => [ \&CATS::UI::Problems::problems_udebug_frame, ],
     problems_retest => [ \&CATS::UI::ProblemsRetest::problems_retest_frame,

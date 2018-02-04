@@ -75,7 +75,7 @@ sub keywords_frame {
             %$row,
             href_edit=> url_f('keywords', edit => $row->{kwid}),
             href_delete => url_f('keywords', 'delete' => $row->{kwid}),
-            href_view_problems => url_f('problems', kw => $row->{kwid}, ($is_jury ? (link => 1) : ())),
+            href_view_problems => url_f('problems_all', kw => $row->{kwid}, ($is_jury ? (link => 1) : ())),
         );
     };
 

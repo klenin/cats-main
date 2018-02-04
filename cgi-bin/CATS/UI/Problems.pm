@@ -30,7 +30,6 @@ use CATS::Settings;
 use CATS::StaticPages;
 use CATS::Utils qw(file_type date_to_iso redirect_url_function url_function);
 use CATS::Verdicts;
-use CATS::Web qw(param redirect url_param);
 
 sub prepare_keyword {
     my ($where, $p) = @_;
@@ -49,10 +48,9 @@ sub problems_all_frame {
     my ($p) = @_;
     my $lv = CATS::ListView->new(name => 'link_problem', template => 'problems_all.html.tt');
 
-    my $link = url_param('link');
-    my $move = url_param('move') || 0;
+    $is_jury && $p->{link} || $p->{kw} or return;
 
-    if ($link) {
+    if ($p->{link}) {
         my @u = $contest->unused_problem_codes
             or return msg(1017);
         $t->param(unused_codes => [ @u ]);
@@ -61,7 +59,7 @@ sub problems_all_frame {
     my $where =
         $is_root ? {
             cond => [], params => [] }
-        : !$link ? {
+        : !$p->{link} ? {
             cond => [ 'CURRENT_TIMESTAMP > C.finish_date AND (C.is_hidden = 0 OR C.is_hidden IS NULL)' ],
             params => [] }
         : {
@@ -77,7 +75,7 @@ sub problems_all_frame {
     prepare_keyword($where, $p);
     my $where_cond = join(' AND ', @{$where->{cond}}) || '1=1';
 
-    $lv->define_columns(url_f('problems', link => $link, kw => $p->{kw}), 0, 0, [
+    $lv->define_columns(url_f('problems_all', link => $p->{link}, kw => $p->{kw}), 0, 0, [
         { caption => res_str(602), order_by => 'P.title', width => '30%' },
         { caption => res_str(603), order_by => 'C.title', width => '30%' },
         { caption => res_str(604), order_by => 'ok_wa_tl', width => '10%', col => 'Ok' },
@@ -116,7 +114,7 @@ sub problems_all_frame {
             ($is_root ? (href_download => url_function('problem_download', %pp)) : ()),
             ($is_jury ? (href_problem_history => url_function('problem_history', %pp)) : ()),
             keywords => $keywords,
-            linked => $linked || !$link,
+            linked => $linked || !$p->{link},
             problem_id => $pid,
             problem_name => $problem_name,
             contest_name => $contest_name,
@@ -124,12 +122,12 @@ sub problems_all_frame {
         );
     };
 
-    $lv->attach(url_f('problems', link => $link, kw => $p->{kw}, move => $move), $fetch_record, $c);
+    $lv->attach(url_f('problems_all', link => $p->{link}, kw => $p->{kw}, move => $p->{move}), $fetch_record, $c);
     $c->finish;
 
     $t->param(
         href_action => url_f('problems'),
-        link => !$contest->is_practice && $link, move => $move);
+        link => !$contest->is_practice && $p->{link}, move => $p->{move});
 }
 
 sub problems_udebug_frame {
@@ -238,9 +236,6 @@ sub problems_frame {
             }
         }
     }
-
-    $is_jury && defined url_param('link') and return problems_all_frame($p);
-    $p->{kw} and return problems_all_frame($p);
 
     my $lv = CATS::ListView->new(
         name => 'problems' . ($contest->is_practice ? '_practice' : ''),
@@ -463,8 +458,8 @@ sub problems_frame {
         ($is_jury ? (
             !$pr && $pt_url->([ 'problem_text', nospell => 1, nokw => 1, notime => 1, noformal => 1 ]),
             !$pr && $pt_url->([ 'problem_text' ], res_str(555)),
-            { href => url_f('problems', link => 1), item => res_str(540) },
-            { href => url_f('problems', link => 1, move => 1), item => res_str(551) },
+            { href => url_f('problems_all', link => 1), item => res_str(540) },
+            { href => url_f('problems_all', link => 1, move => 1), item => res_str(551) },
             !$pr && ({ href => url_f('problems_retest'), item => res_str(556) }),
             { href => url_f('contests_prizes', clist => $cid), item => res_str(565) },
         )
