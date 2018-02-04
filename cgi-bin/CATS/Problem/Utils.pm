@@ -5,7 +5,7 @@ use warnings;
 
 use CATS::Constants;
 use CATS::DB;
-use CATS::Globals qw($cid $t);
+use CATS::Globals qw($cid $contest $is_jury $t $user);
 use CATS::Messages qw(res_str);
 use CATS::Output qw(url_f);
 
@@ -110,6 +110,14 @@ sub define_common_searches {
     });
 
     $lv->define_enums({ run_method => CATS::Problem::Utils::run_method_enum() });
+}
+
+sub can_download_package {
+    $is_jury ||
+        $contest->{show_packages} &&
+        $contest->{time_since_start} > 0 &&
+        (!$contest->{local_only} || $user->{is_local}) &&
+        (!$contest->{is_hidden} || $user->{is_participant});
 }
 
 1;

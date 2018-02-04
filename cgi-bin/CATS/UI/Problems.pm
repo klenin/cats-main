@@ -369,12 +369,14 @@ sub problems_frame {
             $is_jury ? $lv : $CATS::Verdicts::hidden_verdicts_self->{$lv} // $lv;
         };
 
+        my $can_download = CATS::Problem::Utils::can_download_package;
+
         return (
             href_delete => url_f('problems', delete_problem => $c->{cpid}),
             href_change_status => url_f('problems', change_status => $c->{cpid}),
             href_change_code => url_f('problems', change_code => $c->{cpid}),
             href_replace  => url_f('problems', replace => $c->{cpid}),
-            href_download => url_f('problem_download', pid => $c->{pid}),
+            href_download => $can_download && url_f('problem_download', pid => $c->{pid}),
             href_problem_details => $is_jury && url_f('problem_details', pid => $c->{pid}),
             href_original_contest =>
                 url_function('problems', sid => $sid, cid => $c->{original_contest_id}, set_contest => 1),
