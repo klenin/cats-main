@@ -62,6 +62,7 @@ MathJax.Hub.Register.StartupHook('onLoad', function () {
 <script type="text/javascript">window.MathJax || document.write('<script src="js/lib/MathJax/MathJax.js?config=TeX-AMS_CHTML"><\/script>')</script>
 <script type="text/javascript" src="js/lib/jquery.min.js"></script>
 [% END %]
+[%- text_width = '1000px' -%]
 <style>
   a.problem_menu_trigger { font-size: small; color: inherit; padding: 1px 3px; background-color: #eeeeee; }
   a.problem_menu_trigger:hover { font-size: medium; }
@@ -74,7 +75,7 @@ MathJax.Hub.Register.StartupHook('onLoad', function () {
   div.problem_menu li.langs { font-weight: bold; }
   div.problem_menu li.langs a { font-weight: normal; }
   div.problem_text table.problem_header { width: 100%; }
-  div.problem_text p, div.problem_text ul, div.problem_text ol { hyphens: auto; max-width: 1000px; text-align: justify; text-indent1: 3em; }
+  div.problem_text p, div.problem_text ul, div.problem_text ol { hyphens: auto; max-width: [% text_width %]; text-align: justify; text-indent1: 3em; }
   div.problem_text p span { text-indent: 0; }
   div.problem_text table.thin_border { border-collapse: collapse; border: 1px; }
   div.problem_text table.thin_border td, div.problem_text table.thin_border th { border: 1px solid black; padding: 2px; }
@@ -91,6 +92,7 @@ MathJax.Hub.Register.StartupHook('onLoad', function () {
     <li><a class="problem_list_link" href="[% p.href_problem_list %]">[% c.problem_list %]</a></li>
     <li><label><input type="checkbox" class="whitespace"><span></span> [% c.visible_spaces %]</label></li>
     <li><label><input type="checkbox" class="basic_math"><span></span> [% c.basic_math %]</label></li>
+    <li><label><input type="checkbox" class="wide_text"><span></span> [% c.wide_text %]</label></li>
     [% IF problems.size == 1 && p.langs && p.langs.size > 1 -%]
     <li class="langs">[% FOREACH lang IN p.langs; maybe_href(lang == p.lang ? '' : '#', lang); ' '; END %]</li>
     [%- END %]
@@ -182,8 +184,8 @@ function toggle_whitespace() {
     $(this).text(t);
   });
 }
-
 $('.problem_text div.problem_menu input.whitespace').click(toggle_whitespace).each(toggle_whitespace);
+
 $('.basic_math').click(function() {
   var p = $(this).parents('.problem_text');
   if (this.checked)
@@ -191,6 +193,12 @@ $('.basic_math').click(function() {
   else
     apply_mathjax(p);
 });
+
+function toggle_wide_text() {
+  var p = $(this).parents('.problem_text');
+  p.children('p, ul, ol').css({ 'max-width': this.checked ? 'none' : '[% text_width %]' });
+}
+$('.wide_text').click(toggle_wide_text).each(toggle_wide_text);
 
 $('.problem_text div.problem_menu li.langs a').click(function() {
   var p = document.location.pathname;

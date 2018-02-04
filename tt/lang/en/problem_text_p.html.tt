@@ -4,6 +4,7 @@
     problem_list => 'problem list',
     visible_spaces => 'visible spaces',
     basic_math => 'basic formulae',
+    wide_text => 'wide text',
     author => 'Author',
     input_output => 'Input / output',
     interactive => 'interactive',

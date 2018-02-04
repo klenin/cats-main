@@ -4,6 +4,7 @@
     problem_list => 'список задач',
     visible_spaces => 'видимые пробелы',
     basic_math => 'простые формулы',
+    wide_text => 'широкий тест',
     author => 'Автор',
     input_output => 'Ввод / вывод',
     interactive => 'интерактивный',
