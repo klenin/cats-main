@@ -22,7 +22,7 @@ use CATS::StaticPages;
 use CATS::Testset;
 use CATS::Utils qw(url_function);
 use CATS::Verdicts;
-use CATS::Web qw(content_type headers not_found param redirect url_param);
+use CATS::Web qw(content_type headers not_found redirect);
 
 sub get_request_count {
     my ($this_contest_only, $pid) = @_;
@@ -60,7 +60,8 @@ sub problem_details_frame {
 
     my $kw_lang = "name_" . (CATS::Settings::lang eq 'ru' ? 'ru' : 'en');
     $pr->{keywords} = $dbh->selectall_arrayref(qq~
-        SELECT K.id, K.code, K.$kw_lang AS name FROM keywords K INNER JOIN problem_keywords PK ON PK.keyword_id = K.id
+        SELECT K.id, K.code, K.$kw_lang AS name
+        FROM keywords K INNER JOIN problem_keywords PK ON PK.keyword_id = K.id
         WHERE PK.problem_id = ? ORDER BY K.code~, { Slice => {} },
         $p->{pid});
     if ($is_root) {
@@ -198,7 +199,7 @@ sub problem_select_testsets_frame {
     my $param_to_list = sub {
         my ($field) = @_;
         my %sel;
-        @sel{param("sel_$field")} = undef;
+        @sel{@{$p->{"sel_$field"}}} = undef;
         $problem->{$field} = join ',', map $_->{name}, grep exists $sel{$_->{id}}, @$testsets;
     };
     if ($p->{save}) {
@@ -260,12 +261,14 @@ sub problem_limits_frame {
     if ($p->{override}) {
         my $new_limits = !defined $problem->{limits_id};
 
-        my $limits = { map { $_ => param($_) } grep param($_) , @cats::limits_fields };
+        my $limits = { map { $_ => $p->{$_} } grep $p->{$_}, @cats::limits_fields };
         my $filtered_limits = CATS::Request::filter_valid_limits($limits);
 
         return msg(1144) if !$new_limits && grep !exists $filtered_limits->{$_}, keys %$limits;
 
-        $limits = { map { $_ => $limits->{$_} || $problem->{"overridden_$_"} || $problem->{$_} } @cats::limits_fields };
+        $limits = {
+            map { $_ => $limits->{$_} || $problem->{"overridden_$_"} || $problem->{$_} } @cats::limits_fields
+        };
 
         $problem->{limits_id} = CATS::Request::set_limits($problem->{limits_id}, $limits);
 
@@ -454,7 +457,6 @@ sub problem_link_frame {
 
     $lv->attach(url_f('problem_link', pid => $p->{pid}),
         CATS::Contest::Utils::authenticated_contests_view($p));
-
 }
 
 1;
