@@ -83,19 +83,19 @@ sub init_contest {
     $settings->{contest_id} = $cid = $contest->{id};
 
     $user->{diff_time} = $user->{ext_time} = 0;
-    $is_jury = $user->{is_virtual} = $user->{is_participant} = 0;
+    $is_jury = $user->{is_virtual} = $user->{is_participant} = $user->{is_remote} = $user->{is_ooc} = 0;
     # Authorize user in the contest.
     if (defined $uid) {
         (
             $user->{ca_id}, $user->{is_participant}, $is_jury, $user->{site_id}, $user->{is_site_org},
-            $user->{is_virtual}, $user->{is_remote},
+            $user->{is_virtual}, $user->{is_remote}, $user->{is_ooc},
             $user->{personal_diff_time}, $user->{diff_time},
             $user->{personal_ext_time}, $user->{ext_time},
             $user->{site_name}
         ) = $dbh->selectrow_array(q~
             SELECT
                 CA.id, 1, CA.is_jury, CA.site_id, CA.is_site_org,
-                CA.is_virtual, CA.is_remote,
+                CA.is_virtual, CA.is_remote, CA.is_ooc,
                 CA.diff_time, COALESCE(CA.diff_time, 0) + COALESCE(CS.diff_time, 0),
                 CA.ext_time, COALESCE(CA.ext_time, 0) + COALESCE(CS.ext_time, 0),
                 S.name
@@ -114,6 +114,7 @@ sub init_contest {
         $user->{is_participant} = $contest->is_practice;
     }
     $user->{is_jury} = $is_jury;
+    $user->{is_local} = $user->{is_participant} && !$user->{is_remote} && !$user->{is_ooc};
     if ($contest->{is_hidden} && !$user->{is_participant}) {
         # If user tries to look at a hidden contest, show training instead.
         $contest->load(0);

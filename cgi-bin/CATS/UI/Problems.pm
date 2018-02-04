@@ -220,20 +220,10 @@ sub problems_frame {
             init_template(auto_ext('problems_inaccessible'));
             return msg(1130);
         }
-        my $local_only = $contest->{local_only};
-        if ($local_only) {
-            my ($is_remote, $is_ooc);
-            if ($uid) {
-                ($is_remote, $is_ooc) = $dbh->selectrow_array(q~
-                    SELECT is_remote, is_ooc FROM contest_accounts
-                    WHERE contest_id = ? AND account_id = ?~, undef,
-                    $cid, $uid);
-            }
-            if ((!defined $is_remote || $is_remote) && (!defined $is_ooc || $is_ooc)) {
-                init_template(auto_ext('problems_inaccessible'));
-                $t->param(local_only => 1);
-                return;
-            }
+        if ($contest->{local_only} && !$user->{is_local}) {
+            init_template(auto_ext('problems_inaccessible'));
+            $t->param(local_only => 1);
+            return;
         }
     }
 
