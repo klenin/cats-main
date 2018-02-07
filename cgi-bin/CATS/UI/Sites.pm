@@ -267,6 +267,9 @@ sub contest_sites_frame {
         );
     };
     $lv->attach(url_f('contest_sites'), $fetch_record, $sth);
+    $t->param(submenu => [
+        ($is_jury ? { item => res_str(588), href => url_f('contest_sites', search => 'is_used=1') } : ()),
+    ]);
 }
 
 1;
