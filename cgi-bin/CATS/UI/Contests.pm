@@ -47,28 +47,27 @@ sub contest_string_params() {qw(
 )}
 
 sub get_contest_html_params {
-    my $p = {};
+    my ($p) = @_;
+    my $c = { map { $_ => $p->{$_} } contest_string_params() };
+    $c->{$_} = $p->{$_} ? 1 : 0 for contest_checkbox_params();
 
-    $p->{$_} = scalar param($_) for contest_string_params();
-    $p->{$_} = param($_) ? 1 : 0 for contest_checkbox_params();
-
-    for ($p->{title}) {
+    for ($c->{title}) {
         $_ //= '';
         s/^\s+|\s+$//g;
         $_ ne '' && length $_ < 100  or return msg(1027);
     }
-    $p->{closed} = $p->{free_registration} ? 0 : 1;
-    delete $p->{free_registration};
-    $p->{show_frozen_reqs} = 0;
+    $c->{closed} = $c->{free_registration} ? 0 : 1;
+    delete $c->{free_registration};
+    $c->{show_frozen_reqs} = 0;
 
-    $p->{max_reqs_except} = join ',',
-        sort { $a <=> $b } grep $_, map $CATS::Verdicts::name_to_state->{$_}, param('exclude_verdict');
-    $p;
+    $c->{max_reqs_except} = join ',', sort { $a <=> $b }
+        grep $_, map $CATS::Verdicts::name_to_state->{$_}, @{$p->{exclude_verdict}};
+    $c;
 }
 
 sub contests_new_save {
     my ($p) = @_;
-    my $c = get_contest_html_params() or return;
+    my $c = get_contest_html_params($p) or return;
 
     $c->{ctype} = 0;
     $c->{id} = new_id;
@@ -121,20 +120,20 @@ sub try_contest_params_frame {
 }
 
 sub contests_edit_save {
-    my ($edit_cid) = @_;
+    my ($p) = @_;
 
-    my $c = get_contest_html_params() or return;
+    my $c = get_contest_html_params($p) or return;
     $is_root or delete $c->{is_official};
     eval {
-        $dbh->do(_u $sql->update(contests => $c, { id => $edit_cid }));
+        $dbh->do(_u $sql->update(contests => $c, { id => $p->{id} }));
         $dbh->commit;
         1;
     } or return msg(1035, $@);
-    CATS::StaticPages::invalidate_problem_text(cid => $edit_cid, all => 1);
-    CATS::RankTable::remove_cache($edit_cid);
+    CATS::StaticPages::invalidate_problem_text(cid => $p->{id}, all => 1);
+    CATS::RankTable::remove_cache($p->{id});
     my $contest_name = Encode::decode_utf8($c->{title});
     # Change page title immediately if the current contest is renamed.
-    $contest->{title} = $contest_name if $edit_cid == $cid;
+    $contest->{title} = $contest_name if $p->{id} == $cid;
     msg(1036, $contest_name);
 }
 
@@ -210,7 +209,7 @@ sub contests_frame {
     contest_delete($p->{'delete'}) if $p->{'delete'};
 
     contests_new_save($p) if $p->{new_save} && $user->privs->{create_contests};
-    contests_edit_save($p->{id})
+    contests_edit_save($p)
         if $p->{edit_save} && $p->{id} && is_jury_in_contest(contest_id => $p->{id});
 
     CATS::Contest::Participate::online if $p->{online_registration};
