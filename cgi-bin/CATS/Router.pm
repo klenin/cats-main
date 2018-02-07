@@ -52,6 +52,7 @@ $main_routes = {
         (map { $_ => str } CATS::UI::Contests::contest_string_params),
         exclude_verdict => array_of ident,
     ],
+    contest_params => [ \&CATS::UI::Contests::contest_params_frame, id => integer, ],
     contest_sites => [ \&CATS::UI::Sites::contest_sites_frame, add => bool, delete => integer, check => array_of integer, ],
     contest_sites_edit => [ \&CATS::UI::Sites::contest_sites_edit_frame,
         site_id => integer,

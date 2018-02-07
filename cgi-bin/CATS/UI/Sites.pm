@@ -161,7 +161,7 @@ sub contest_sites_edit_frame {
     contest_sites_edit_save($p, $s);
 
     $t->param(
-        href_contest => url_f('contests', params => $s->{contest_id}),
+        href_contest => url_f('contest_params', id => $s->{contest_id}),
         href_users => url_f('users', search => "site_id=$s->{id}"),
         ($user->privs->{edit_sites} ? (href_site => url_f('sites', edit => $s->{id})) : ()),
         s => $s,

@@ -95,23 +95,24 @@ sub contests_new_save {
     msg(1028, Encode::decode_utf8($c->{title}));
 }
 
-sub try_contest_params_frame {
-    my $id = url_param('params') or return;
+sub contest_params_frame {
+    my ($p) = @_;
 
     init_template('contest_params.html.tt');
+    $p->{id} or return;
 
     my $c = $dbh->selectrow_hashref(q~
         SELECT * FROM contests WHERE id = ?~, { Slice => {} },
-        $id) or return;
+        $p->{id}) or return;
     $c->{free_registration} = !$c->{closed};
 
     my %verdicts_excluded =
         map { $CATS::Verdicts::state_to_name->{$_} => 1 } split /,/, $c->{max_reqs_except} // '';
 
     $t->param(
-        id => $id, %$c,
+        %$c,
         href_action => url_f('contests'),
-        can_edit => is_jury_in_contest(contest_id => $id),
+        can_edit => is_jury_in_contest(contest_id => $p->{id}),
         verdicts => [ map +{ short => $_->[0], checked => $verdicts_excluded{$_->[0]} },
             @$CATS::Verdicts::name_to_state_sorted ],
     );
@@ -194,8 +195,6 @@ sub contests_frame {
 
     return contests_new_frame
         if defined url_param('new') && $user->privs->{create_contests};
-
-    try_contest_params_frame and return;
 
     my $ical = param('ical');
     my $json = param('json');
