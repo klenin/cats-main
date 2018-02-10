@@ -62,7 +62,7 @@ $main_routes = {
         ext_time => fixed, ext_units => ident,
         save => bool, ],
 
-    console_content => \&CATS::UI::Console::content_frame,
+    console_content => \&CATS::UI::Console::console_content_frame,
     console => [ \&CATS::UI::Console::console_frame,
         delete_question => integer, delete_message => integer, send_question => bool, question_text => str,
     ],

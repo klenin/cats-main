@@ -88,7 +88,7 @@ sub _decorate_rows {
     }
 }
 
-sub console_content {
+sub _console_content {
     my $selection = param('selection');
 
     my $lv = init_console_template(auto_ext('console_content'));
@@ -336,7 +336,7 @@ sub console_frame {
     delete_message($p->{delete_message}) if $p->{delete_message};
     send_question_to_jury($p->{question_text}) if $p->{send_question};
 
-    console_content;
+    _console_content;
     return if param('json');
     CATS::Time::prepare_server_time;
     my $lvparams = $t->{vars};
@@ -380,6 +380,6 @@ sub console_frame {
     ]) if $is_jury;
 }
 
-sub content_frame { console_content }
+sub console_content_frame { _console_content }
 
 1;
