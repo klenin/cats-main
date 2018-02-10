@@ -36,6 +36,7 @@ use CATS::Time;
 use CATS::Web qw(has_error get_return_code init_request param redirect);
 
 sub accept_request {
+    my ($f) = @_;
     my $output_file = '';
     if (CATS::StaticPages::is_static_page) {
         $output_file = CATS::StaticPages::process_static()
@@ -53,7 +54,7 @@ sub accept_request {
     CATS::Settings::save;
 
     defined $t or return;
-    CATS::MainMenu::generate;
+    CATS::MainMenu->new({ f => $f })->generate;
     CATS::Time::mark_finish unless param('notime');
     CATS::Output::generate($output_file);
 }
@@ -62,7 +63,8 @@ sub handler {
     my $r = shift;
     init_request($r);
     return CATS::Web::not_found unless CATS::Router::parse_uri;
-    if ((param('f') || '') eq 'proxy') {
+    my $f = param('f');
+    if (($f || '') eq 'proxy') {
         CATS::Proxy::proxy;
         return get_return_code();
     }
@@ -77,7 +79,7 @@ sub handler {
     $dbh->{Profile} = DBI::Profile->new(Path => []); # '!Statement'
     $dbh->{Profile}->{Data} = undef;
 
-    accept_request;
+    accept_request($f);
     $dbh->rollback;
 
     return get_return_code();

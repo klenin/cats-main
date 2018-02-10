@@ -7,35 +7,35 @@ use CATS::Globals qw($contest $is_jury $sid $t $uid $user);
 use CATS::Messages qw(res_str);
 use CATS::Output qw(url_f);
 use CATS::Utils qw(url_function);
-use CATS::Web qw(url_param);
 
-sub selected_menu_item {
-    my $default = shift || '';
-    my $href = shift;
+sub new {
+    my ($class, $data) = @_;
+    bless $data, $class;
+}
+
+sub _selected_menu_item {
+    my ($self, $default, $href) = @_;
+    $default //= '';
 
     my ($pf) = ($href =~ /[?;]f=([a-z_]+)/);
     $pf ||= '';
-    #my $q = new CGI((split('\?', $href))[1]);
 
-    my $page = url_param('f');
-    #my $pf = $q->param('f') || '';
-
-    (defined $page && $pf eq $page) ||
-    (!defined $page && $pf eq $default);
+    (defined $self->{f} && $pf eq $self->{f}) ||
+    (!defined $self->{f} && $pf eq $default);
 }
 
-sub mark_selected {
-    my ($default, $menu) = @_;
+sub _mark_selected {
+    my ($self, $default, $menu) = @_;
 
     for my $i (@$menu) {
-        if (selected_menu_item($default, $i->{href})) {
+        if ($self->_selected_menu_item($default, $i->{href})) {
             $i->{selected} = 1;
             $i->{dropped} = 1;
         }
 
         my $submenu = $i->{submenu};
         for my $j (@$submenu) {
-            if (selected_menu_item($default, $j->{href})) {
+            if ($self->_selected_menu_item($default, $j->{href})) {
                 $j->{selected} = 1;
                 $i->{dropped} = 1;
             }
@@ -43,14 +43,15 @@ sub mark_selected {
     }
 }
 
-sub attach_menu {
-   my ($menu_name, $default, $menu) = @_;
-   mark_selected($default, $menu);
+sub _attach_menu {
+   my ($self, $menu_name, $default, $menu) = @_;
+   $self->_mark_selected($default, $menu);
 
    $t->param($menu_name => $menu);
 }
 
 sub generate {
+    my ($self) = @_;
     my $logged_on = $sid ne '';
 
     my @left_menu = (
@@ -87,7 +88,7 @@ sub generate {
 
     my @right_menu = ();
 
-    if ($uid && (url_param('f') ne 'logout')) {
+    if ($uid && ($self->{f} // '') ne 'logout') {
         @right_menu = ( { item => res_str(518), href => url_f('profile') } );
     }
 
@@ -95,8 +96,8 @@ sub generate {
         { item => res_str(544), href => url_f('about') },
         { item => res_str(501), href => url_f('registration') } );
 
-    attach_menu('left_menu', undef, \@left_menu);
-    attach_menu('right_menu', 'about', \@right_menu);
+    $self->_attach_menu('left_menu', undef, \@left_menu);
+    $self->_attach_menu('right_menu', 'about', \@right_menu);
 }
 
 1;
