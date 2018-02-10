@@ -18,6 +18,7 @@ use CATS::Verdicts;
 use CATS::Web qw(param url_param redirect);
 
 sub contests_new_frame {
+    $user->privs->{create_contests} or return;
     init_template('contests_new.html.tt');
 
     my $date = $dbh->selectrow_array(q~
@@ -193,9 +194,6 @@ sub contests_frame {
         return redirect(url_f('rank_table', clist => join ',', @{$p->{contests_selection}}));
     }
 
-    return contests_new_frame
-        if defined url_param('new') && $user->privs->{create_contests};
-
     my $ical = param('ical');
     my $json = param('json');
     return if $ical && $json;
@@ -240,7 +238,7 @@ sub contests_frame {
             selected => $settings->{contests}->{filter} eq $_->{n},
         }, { n => 'all', i => 558 }, { n => 'official', i => 559 }, { n => 'unfinished', i => 560 }),
         ($user->privs->{create_contests} ?
-            { href => url_f('contests', new => 1), item => res_str(537) } : ()),
+            { href => url_f('contests_new'), item => res_str(537) } : ()),
         { href => url_f('contests',
             ical => 1, rows => 50, filter => $filter), item => res_str(562) },
     ];
