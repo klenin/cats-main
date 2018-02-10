@@ -15,7 +15,7 @@ use CATS::RankTable;
 use CATS::Settings qw($settings);
 use CATS::StaticPages;
 use CATS::Verdicts;
-use CATS::Web qw(param url_param redirect);
+use CATS::Web qw(redirect);
 
 sub contests_new_frame {
     $user->privs->{create_contests} or return;
@@ -194,11 +194,9 @@ sub contests_frame {
         return redirect(url_f('rank_table', clist => join ',', @{$p->{contests_selection}}));
     }
 
-    my $ical = param('ical');
-    my $json = param('json');
-    return if $ical && $json;
+    return if $p->{ical} && $p->{json};
     $p->{listview} = my $lv = CATS::ListView->new(name => 'contests',
-        template => 'contests.' .  ($ical ? 'ics' : $json ? 'json' : 'html') . '.tt');
+        template => 'contests.' .  ($p->{ical} ? 'ics' : $p->{json} ? 'json' : 'html') . '.tt');
 
     CATS::Contest::contest_group_auto_new($p->{contests_selection})
         if $p->{create_group} && $is_root;
@@ -212,7 +210,7 @@ sub contests_frame {
     CATS::Contest::Participate::online if $p->{online_registration};
     CATS::Contest::Participate::virtual if $p->{virtual_registration};
 
-    contests_select_current if defined url_param('set_contest');
+    contests_select_current if $p->{set_contest};
 
     $lv->define_columns(url_f('contests'), 1, 1, [
         { caption => res_str(601), order_by => 'ctype DESC, title', width => '40%' },
@@ -222,7 +220,7 @@ sub contests_frame {
         { caption => res_str(630), order_by => 'ctype DESC, closed', width => '30%' } ]);
 
     $settings->{contests}->{filter} = my $filter =
-        param('filter') || $settings->{contests}->{filter} || 'unfinished';
+        $p->{filter} || $settings->{contests}->{filter} || 'unfinished';
 
     $p->{filter} = contests_submenu_filter;
     $lv->attach(url_f('contests'),

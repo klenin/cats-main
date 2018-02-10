@@ -51,6 +51,7 @@ $main_routes = {
         (map { $_ => bool } CATS::UI::Contests::contest_checkbox_params),
         (map { $_ => str } CATS::UI::Contests::contest_string_params),
         exclude_verdict => array_of ident,
+        ical => bool, set_contest => bool, filter => ident,
     ],
     contests_new => [ \&CATS::UI::Contests::contests_new_frame, ],
     contest_params => [ \&CATS::UI::Contests::contest_params_frame, id => integer, ],
