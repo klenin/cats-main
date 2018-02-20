@@ -62,9 +62,12 @@ $main_routes = {
         ext_time => fixed, ext_units => ident,
         save => bool, ],
 
-    console_content => \&CATS::UI::Console::console_content_frame,
+    console_content => [ \&CATS::UI::Console::console_content_frame,
+        selection => clist_of integer,
+    ],
     console => [ \&CATS::UI::Console::console_frame,
         delete_question => integer, delete_message => integer, send_question => bool, question_text => str,
+        selection => clist_of integer,
     ],
     console_export => \&CATS::UI::Console::export_frame,
     console_graphs => \&CATS::UI::Console::graphs_frame,

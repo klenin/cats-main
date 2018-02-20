@@ -48,7 +48,7 @@ sub send_question_to_jury {
     msg(1062);
 }
 
-sub get_settings {
+sub _get_settings {
     my ($lv) = @_;
     my $s = $lv->settings;
     $s->{i_value} = param('i_value') // $s->{i_value} // 1;
@@ -89,14 +89,16 @@ sub _decorate_rows {
 }
 
 sub _console_content {
-    my $selection = param('selection');
+    my ($p) = @_;
 
     my $lv = init_console_template(auto_ext('console_content'));
 
-    retest_submissions($selection, param('by_reference')) if defined param('retest') and $selection;
-    group_submissions($selection, param('by_reference')) if defined param('create_group') && $selection;
+    if (@{$p->{selection}}) {
+        retest_submissions($p->{selection}, param('by_reference')) if defined param('retest');
+        group_submissions($p->{selection}, param('by_reference')) if defined param('create_group');
+    }
 
-    my $s = get_settings($lv);
+    my $s = _get_settings($lv);
 
     if (grep defined param($_), qw(search filter visible)) {
         $s->{$_} = param($_) ? 1 : 0
@@ -286,11 +288,10 @@ sub retest_submissions {
     $is_jury or return;
     my ($selection, $by_reference) = @_;
     my $count = 0;
-    my @sanitized_runs = grep $_ ne '', split /\D+/, $selection;
     if ($by_reference) {
-        $count = @{CATS::Request::clone(\@sanitized_runs, undef, $uid)};
+        $count = @{CATS::Request::clone($selection, undef, $uid)};
     } else {
-        for (@sanitized_runs) {
+        for (@$selection) {
             CATS::Request::enforce_state($_, { state => $cats::st_not_processed, judge_id => undef })
                 and ++$count;
         }
@@ -303,11 +304,10 @@ sub group_submissions {
     $is_root or return;
     my ($selection, $by_reference) = @_;
     my $count = 0;
-    my @sanitized_runs = grep $_ ne '', split /\D+/, $selection;
     CATS::Request::create_group(
         ($by_reference ?
-            CATS::Request::clone(\@sanitized_runs, undef, $uid, { state => $cats::st_ignore_submit }) :
-            \@sanitized_runs),
+            CATS::Request::clone($selection, undef, $uid, { state => $cats::st_ignore_submit }) :
+            $selection),
         $uid, { state => $cats::st_not_processed, judge_id => undef }) or return;
     $dbh->commit;
 }
@@ -332,12 +332,13 @@ sub delete_message {
 
 sub console_frame {
     my ($p) = @_;
+
     delete_question($p->{delete_question}) if $p->{delete_question};
     delete_message($p->{delete_message}) if $p->{delete_message};
     send_question_to_jury($p->{question_text}) if $p->{send_question};
 
-    _console_content;
-    return if param('json');
+    _console_content($p);
+    return if $p->{json};
     CATS::Time::prepare_server_time;
     my $lvparams = $t->{vars};
     my $cc = $t->output;
@@ -380,6 +381,6 @@ sub console_frame {
     ]) if $is_jury;
 }
 
-sub console_content_frame { _console_content }
+sub console_content_frame { _console_content(@_) }
 
 1;
