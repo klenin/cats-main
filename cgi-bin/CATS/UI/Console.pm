@@ -101,7 +101,7 @@ sub _console_content {
     my $s = _get_settings($lv);
 
     if (grep defined param($_), qw(search filter visible)) {
-        $s->{$_} = param($_) ? 1 : 0
+        $s->{$_} = param($_) ? 1 : !$is_jury
             for qw(show_contests show_messages show_results);
     }
 
