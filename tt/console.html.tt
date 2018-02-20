@@ -9,6 +9,10 @@ td.name { text-align: left; white-space: nowrap; width: 1px; }
 [%- USE Javascript -%]
 <p id="update_error" style="font-weight: bold;"></p>
 <script type="text/javascript">
+
+if (performance.navigation.type == PerformanceNavigation.TYPE_BACK_FORWARD)
+   location.reload(true);
+
 function send_message(href) {
     window.open(href, '', 'width=500,height=400,location=no,menubar=no,resizable=yes,scrollbars=no,status=no,toolbar=no');
 }
