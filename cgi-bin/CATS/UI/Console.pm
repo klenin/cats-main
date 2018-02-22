@@ -76,14 +76,16 @@ sub _decorate_rows {
         SELECT id, code, description FROM default_de~, 'id') : {};
 
     for (@$data) {
-        if (!exists $contest_titles->{$_->{contest_id}}) {
-           $contest_titles_sth //= $dbh->prepare(q~
-                SELECT title FROM contests WHERE id = ?~);
-           $contest_titles_sth->execute($_->{contest_id});
-           ($contest_titles->{$_->{contest_id}}) = $contest_titles_sth->fetchrow_array;
-           $contest_titles_sth->finish;
+        if (my $c = $_->{contest_id}) {
+            if (!exists $contest_titles->{$c}) {
+               $contest_titles_sth //= $dbh->prepare(q~
+                    SELECT title FROM contests WHERE id = ?~);
+               $contest_titles_sth->execute($c);
+               ($contest_titles->{$c}) = $contest_titles_sth->fetchrow_array;
+               $contest_titles_sth->finish;
+            }
+            $_->{contest_title} = $contest_titles->{$c};
         }
-        $_->{contest_title} = $contest_titles->{$_->{contest_id}};
         $_->{de} = $DEs->{$_->{de_id}} if $_->{de_id};
     }
 }
