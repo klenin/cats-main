@@ -60,7 +60,7 @@
     [[% capt.jury %] &gt; [% c.team_name | html %]]
   </td>
   <td colspan="[% colspan %]">
-    <span class="jury_message">[% c.message_text | html %]</span>
+    <a title="[% c.contest_title %]"><span class="jury_message">[% c.message_text | html %]</span></a>
     [% IF c.href_delete_message %]<a href="[% c.href_delete_message %]">[[% capt.delete %]]</a>[% END %]
   </td>
 [% ELSIF c.is_broadcast %]
@@ -68,8 +68,8 @@
   <td class="name">
     <b><span class="jury_message">[[% capt.jury %] &gt; [% capt.all_teams %]]</span></b>
   </td>
-  <td colspan="4">
-    <b><span class="jury_message">[% c.message_text | html %]</span></b>
+  <td colspan="[% colspan %]">
+    <a title="[% c.contest_title %]"><b><span class="jury_message">[% c.message_text | html %]</span></b></a>
     [% IF c.href_delete_message %]<a href="[% c.href_delete_message %]">[[% capt.delete %]]</a>[% END %]
   </td>
 [% ELSIF c.is_contest %]
