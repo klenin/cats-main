@@ -249,7 +249,7 @@ sub build_query {
         $parts{$_}->add($events_filter, @user_ids) for qw(run question message);
     }
 
-    if ($s->{show_results}) {
+    if (!$is_jury || $s->{show_results}) {
         my $run = $select_part->('run')->days('R.submit_time')->contest('C.id = ?')->search;
         if (!$is_jury) {
             $run->add('CA.is_hidden = 0');
@@ -259,7 +259,7 @@ sub build_query {
         }
     }
 
-    if ($s->{show_messages}) {
+    if (!$is_jury || $s->{show_messages}) {
         if ($uid) {
             my $question = $select_part->('question')->days('Q.submit_time')->contest('CA.contest_id = ?');
             my $message = $select_part->('message')->days('E.ts')
@@ -280,7 +280,7 @@ sub build_query {
             ->contest('(M.contest_id IS NULL OR M.contest_id = ?)');
     }
 
-    if ($s->{show_contests}) {
+    if (!$is_jury || $s->{show_contests}) {
         for (@contest_date_types) {
             $select_part->("contest_$_")->days("C.${_}_date")->contest('C.id = ?')
                 ->add("C.${_}_date < CURRENT_TIMESTAMP");
