@@ -48,18 +48,18 @@ CATS::DB::sql_connect({});
 
 my ($contest_title) = $dbh->selectrow_array(q~
     SELECT title FROM contests WHERE id = ?~, undef, $contest_id) or usage('Error: Unknown contest');
-say 'Contest: ', Encode::encode_utf8($contest_title);
+say STDERR 'Contest: ', Encode::encode_utf8($contest_title);
 
 if ($mode eq 'log') {
     my $t = CATS::Template->new('console_export.xml.tt', cats_dir, { compile_dir => '' });
     $t->param(encoding => $encoding, reqs => CATS::Console::export($contest_id));
-    print $t->output;
+    print Encode::encode($encoding, $t->output);
 }
 elsif ($mode eq 'runs') {
     my $reqs = CATS::Console::select_all_reqs($contest_id);
     my $count = 0;
     my $src_sth = $dbh->prepare(q~
-        SELECT src, fname FROM sources WHERE req_id= ?~);
+        SELECT src, fname FROM sources WHERE req_id = ?~);
     for my $r (@$reqs) {
         $src_sth->execute($r->{id});
         while (my ($src, $fname) = $src_sth->fetchrow_array) {
