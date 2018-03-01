@@ -49,13 +49,14 @@ sub send_question_to_jury {
 }
 
 sub _get_settings {
-    my ($lv) = @_;
+    my ($p, $lv) = @_;
     my $s = $lv->settings;
     $s->{i_value} = param('i_value') // $s->{i_value} // 1;
     $s->{i_unit} = param('i_unit') || $s->{i_unit} || 'hours';
-    $s->{show_results} = param('show_results') // $s->{show_results} // 1;
-    $s->{show_messages} = param('show_messages') // $s->{show_messages} // 0;
-    $s->{show_contests} = param('show_contests') // $s->{show_contests} // 0;
+    if ($is_jury) {
+        $s->{$_} = $lv->submitted ? ($p->{$_} ? 1 : 0) : ($p->{$_} // $s->{$_} // 1)
+            for qw(show_contests show_messages show_results);
+    }
     $s;
 }
 
@@ -100,12 +101,7 @@ sub _console_content {
         group_submissions($p->{selection}, param('by_reference')) if defined param('create_group');
     }
 
-    my $s = _get_settings($lv);
-
-    if (grep defined param($_), qw(search filter visible)) {
-        $s->{$_} = param($_) ? 1 : !$is_jury
-            for qw(show_contests show_messages show_results);
-    }
+    my $s = _get_settings($p, $lv);
 
     $t->param($_ => $s->{$_}) for qw(show_contests show_messages show_results i_value);
 

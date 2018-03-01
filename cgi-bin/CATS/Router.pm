@@ -14,6 +14,7 @@ BEGIN {
 }
 
 sub bool() { qr/^1$/ }
+sub bool0() { qr/^[01]$/ }
 sub integer() { qr/^[0-9]+$/ } # 'int' is reserved.
 sub fixed() { qr/^[+-]?([0-9]*[.])?[0-9]+$/ }
 sub sha() { qr/^[a-h0-9]+$/ }
@@ -36,6 +37,11 @@ BEGIN {
 
 # Separate BEGIN block to allow prototypes to have effect.
 BEGIN {
+my %console_params = (
+    selection => clist_of integer,
+    show_contests => bool0, show_messages => bool0, show_results => bool0,
+);
+
 $main_routes = {
     login => [ \&CATS::UI::LoginLogout::login_frame,
         logout => bool, login => str, passwd => str, redir => str, cid => integer, ],
@@ -63,11 +69,11 @@ $main_routes = {
         save => bool, ],
 
     console_content => [ \&CATS::UI::Console::console_content_frame,
-        selection => clist_of integer,
+        %console_params,
     ],
     console => [ \&CATS::UI::Console::console_frame,
         delete_question => integer, delete_message => integer, send_question => bool, question_text => str,
-        selection => clist_of integer,
+        %console_params,
     ],
     console_export => \&CATS::UI::Console::export_frame,
     console_graphs => \&CATS::UI::Console::graphs_frame,

@@ -30,9 +30,9 @@ function get_element(name) {
 [% ELSE %]<a href="[% href_my_events_only %]">[% capt.filter_my %]</a>[% END %]
 [% IF user.is_jury %]
 <span class="nobr">
-    <label title="[% capt.contests %]">[% checkbox('show_contests', show_contests) %] [% capt.contests_short %]</label>
-    <label title="[% capt.messages %]">[% checkbox('show_messages', show_messages) %] [% capt.messages_short %]</label>
-    <label title="[% capt.results %]">[% checkbox('show_results', show_results) %] [% capt.results_short %]</label>
+    <label title="[% capt.contests %]">[% checkbox_1('show_contests', show_contests) %] [% capt.contests_short %]</label>
+    <label title="[% capt.messages %]">[% checkbox_1('show_messages', show_messages) %] [% capt.messages_short %]</label>
+    <label title="[% capt.results %]">[% checkbox_1('show_results', show_results) %] [% capt.results_short %]</label>
 </span>
 [% END %]
 <span class="nobr">[% capt.for %] [% select_value('i_value', i_values, i_value) %] [% select('i_unit', i_units) %]</span>
