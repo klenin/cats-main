@@ -67,7 +67,7 @@ sub init_params {
         $s->{page} = 0;
     }
 
-    $self->{submitted} = param('visible') || param('do_search') ? 1 : 0;
+    $self->{submitted} = param('submitted') ? 1 : 0;
 
     $self->{cols} =
         !$is_jury ? undef :
