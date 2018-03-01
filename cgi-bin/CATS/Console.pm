@@ -305,7 +305,8 @@ sub select_all_reqs {
             R.id AS id, R.submit_time, R.state, R.failed_test,
             R.submit_time - $CATS::Time::contest_start_offset_sql AS time_since_start,
             CP.code, P.title AS problem_title,
-            A.id AS team_id, A.team_name, A.last_ip,
+            A.id AS team_id, A.team_name,
+            COALESCE(E.ip, A.last_ip) AS last_ip,
             CA.is_remote, CA.is_ooc
         FROM
             reqs R
@@ -315,6 +316,7 @@ sub select_all_reqs {
             INNER JOIN contest_problems CP ON R.contest_id = CP.contest_id AND CP.problem_id = R.problem_id
             INNER JOIN accounts A ON CA.account_id = A.id
             LEFT JOIN contest_sites CS ON CS.contest_id = C.id AND CS.site_id = CA.site_id
+            LEFT JOIN events E ON E.id = R.id
         WHERE
             R.contest_id = ? AND CA.is_hidden = 0 AND CA.is_virtual = 0 AND R.submit_time > C.start_date
         ORDER BY R.submit_time ASC~, { Slice => {} },
