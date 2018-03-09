@@ -53,13 +53,21 @@ INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
     VALUES (GEN_ID(key_seq, 1), 507, 'NodeJS', 'js', 'jScript', '[\\\/]~FILE~:~LINE~');
 
-INSERT INTO contests(id, title, ctype, start_date) VALUES(1, 'Турнир', 1, CURRENT_DATE - 100);
+/* All users are participants here. */
+INSERT INTO contests(id, title, ctype, start_date, finish_date) VALUES(101, 'Archive', 1, CURRENT_DATE - 100, CURRENT_DATE + 1000000);
+/* Default modules are exported from problems here. */
+INSERT INTO contests(id, title, ctype, start_date, finish_date) VALUES(102, 'Default', 0, CURRENT_DATE - 100, CURRENT_DATE + 1000000);
+
 INSERT INTO accounts(id, login, passwd, srole) VALUES(2, 'root', 'root', 0);
+INSERT INTO contest_accounts(id, contest_id, account_id, is_jury) VALUES (3, 101, 2, 1);
+INSERT INTO contest_accounts(id, contest_id, account_id, is_jury) VALUES (3, 102, 2, 1);
+
+/* Default judge. */
 INSERT INTO accounts(id, login, passwd, srole) VALUES(5, 'fox', 'fox', 1);
+INSERT INTO judges(id, nick, pin_mode, account_id) VALUES (4, 'fox', 3, 5);
+
 /* See $cats::anonymous_login */
 INSERT INTO accounts(id, login, passwd, srole, locked) VALUES(6, 'anonymous', '', 0, 1);
-INSERT INTO contest_accounts(id, contest_id, account_id, is_jury) VALUES (3, 1, 2, 1);
-INSERT INTO judges(id, nick, pin_mode, account_id) VALUES (4, 'fox', 3, 5);
 
 /* See CATS::Globals::contact_* constants. */
 INSERT INTO contact_types(id, name, url) VALUES(901, 'Phone', '');
