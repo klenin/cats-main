@@ -171,7 +171,7 @@ $main_routes = {
         uid => integer,
         diff_time => fixed, diff_units => ident,
         ext_time => fixed, ext_units => ident,
-        is_virtual => ident, save => bool, finish_now => bool ],
+        is_virtual => bool, save => bool, finish_now => bool ],
     user_contacts => [ \&CATS::UI::UserDetails::user_contacts_frame,
         uid => integer, new => bool, edit => integer, delete => integer, handle => str, edit_save => bool,
     ],
