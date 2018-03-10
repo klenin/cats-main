@@ -514,7 +514,7 @@ sub request_params_frame {
         $dbh->commit;
         return $group_req_id ? redirect(url_f('request_params', rid => $group_req_id, sid => $sid)) : undef;
     }
-    my $can_delete = !$si->{is_official} || $is_root;
+    my $can_delete = !$si->{is_official} || $is_root || ($si->{account_id} // 0) == $uid;
     $t->param(can_delete => $can_delete);
     if ($p->{delete_request} && $can_delete) {
         CATS::Request::delete($si->{req_id});
