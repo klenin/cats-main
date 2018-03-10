@@ -60,7 +60,7 @@ INSERT INTO contests(id, title, ctype, start_date, finish_date) VALUES(102, 'Def
 
 INSERT INTO accounts(id, login, passwd, srole) VALUES(2, 'root', 'root', 0);
 INSERT INTO contest_accounts(id, contest_id, account_id, is_jury) VALUES (3, 101, 2, 1);
-INSERT INTO contest_accounts(id, contest_id, account_id, is_jury) VALUES (3, 102, 2, 1);
+INSERT INTO contest_accounts(id, contest_id, account_id, is_jury) VALUES (4, 102, 2, 1);
 
 /* Default judge. */
 INSERT INTO accounts(id, login, passwd, srole) VALUES(5, 'fox', 'fox', 1);
