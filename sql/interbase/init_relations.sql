@@ -278,6 +278,7 @@ CREATE TABLE tests (
     std_solution_id INTEGER DEFAULT NULL REFERENCES problem_sources(id) ON DELETE CASCADE,
     in_file         BLOB, /* For generated input, length = min(in_file_size, save_input_prefix). */
     in_file_size    INTEGER, /* Size of generated input, else NULL. */
+    in_file_hash    VARCHAR(100) DEFAULT NULL,
     out_file        BLOB, /* For generated answer, length = min(out_file_size, save_answer_prefix). */
     out_file_size   INTEGER, /* Size of generated answer, else NULL. */
     points          INTEGER,

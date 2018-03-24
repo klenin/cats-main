@@ -442,8 +442,8 @@ sub insert_problem_content {
     $c = $dbh->prepare(q~
         INSERT INTO tests (
             problem_id, rank, input_validator_id, generator_id, param, std_solution_id, in_file, out_file,
-            points, gen_group
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)~
+            points, gen_group, in_file_hash
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)~
     );
 
     for (sort { $a->{rank} <=> $b->{rank} } values %{$problem->{tests}}) {
@@ -457,6 +457,7 @@ sub insert_problem_content {
         $c->bind_param(8, $_->{out_file}, { ora_type => 113 });
         $c->bind_param(9, $_->{points});
         $c->bind_param(10, $_->{gen_group});
+        $c->bind_param(11, $_->{hash});
         $c->execute
             or $self->error("Can not add test $_->{rank}: $dbh->errstr");
         $self->note("Test $_->{rank} added");
