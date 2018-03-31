@@ -17,9 +17,9 @@
 [% input_tr('restrict_ips'); #input_tr('phone'); input_tr('email'); input_tr('icq_number'); input_tr('home_page'); %]
 [%- END %]
   <tr><td>[% capt.hide_envelopes %]</td>
-  <td>[% checkbox('settings.hide_envelopes', settings.hide_envelopes) %]</td></tr>
+  <td>[% checkbox_1('settings.hide_envelopes', settings.hide_envelopes) %]</td></tr>
   [% IF is_some_jury || user.privs.is_root %]
   <tr><td>[% capt.display_input %]</td>
-  <td>[% checkbox('settings.display_input', settings.display_input) %]</td></tr>
+  <td>[% checkbox_1('settings.display_input', settings.display_input) %]</td></tr>
   [% END %]
 </table>
