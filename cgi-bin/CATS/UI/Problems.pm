@@ -463,7 +463,8 @@ sub problems_frame {
     $t->param(
         href_login => url_f('login', redir => CATS::Redirect::pack_params),
         CATS::Contest::Participate::flags_can_participate,
-        submenu => \@submenu, title_suffix => res_str(525),
+        submenu => \@submenu,
+	title_suffix => res_str(525),
         is_user => $uid,
         can_submit => $is_jury ||
             $user->{is_participant} &&

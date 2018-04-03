@@ -38,7 +38,7 @@ function delete_contest(href, name) {
         [%- c.contest_name | html %]</a>
     [<a href="[% c.href_problems %]">[% capt.problems %]</a>]
 </td>
-[% IF user.privs.is_root %]<td>[% c.problems_count %]</td>[% END %]
+[% IF user.privs.is_root %][% IF visible_cols.Pc %]<td>[% c.problems_count %]</td>[% END %][% END %]
 <td class="date">[% c.start_date | html %]</td>
 <td class="date[% ' finished' IF c.since_finish > 0 %]">[% c.finish_date | html %]</td>
 [%- MACRO flag(name) BLOCK %]<span class="[% name %]">[% capt.$name %]</span>[% END %]
