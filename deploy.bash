@@ -219,7 +219,10 @@ if [[ ($step =~ (^|,)7(,|$) || $step == "*") && $FB_DEV_VERSION ]]; then
 	CONFIG_ROOT="${CATS_ROOT}/cgi-bin/cats-problem/CATS"
 	CREATE_DB_NAME="create_db.sql"
 	CREATE_DB_ROOT="${CATS_ROOT}/sql/interbase"
-	FB_ALIASES="/etc/firebird/${FB_DEV_VERSION}/aliases.conf"
+	FB_ALIASES="/etc/firebird/${FB_DEV_VERSION}/"
+	# aliases.conf is replaced by databases.conf in firebird 3.x
+	FB_ALIASES=$FB_ALIASES$([ `echo "$FB_DEV_VERSION < 3.0" | bc` -eq 1 ] && 
+						       echo "aliases.conf" || echo "databases.conf")
 
 	CONFIG="$CONFIG_ROOT/$CONFIG_NAME"
 	cp "$CONFIG_ROOT/${CONFIG_NAME}.template" $CONFIG
@@ -252,7 +255,7 @@ if [[ ($step =~ (^|,)7(,|$) || $step == "*") && $FB_DEV_VERSION ]]; then
 	read -e -p "Username: " db_user
 	read -e -p "Password: " db_pass
 
-	sudo sh -c "echo 'cats=$path_to_db' > $FB_ALIASES"
+	sudo sh -c "echo 'cats = $path_to_db' >> $FB_ALIASES"
 
 	if [[ "$path_to_db" = "$def_path_to_db" ]]; then
 		mkdir "$HOME/.cats"
