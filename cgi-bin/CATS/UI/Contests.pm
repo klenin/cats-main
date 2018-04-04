@@ -214,10 +214,13 @@ sub contests_frame {
 
     $lv->define_columns(url_f('contests'), 1, 1, [
         { caption => res_str(601), order_by => 'ctype DESC, title', width => '40%' },
-        ($is_root ? { caption => res_str(663), order_by => 'ctype DESC, problems_count', width => '5%' } : ()),
+        ($is_root ? { caption => res_str(663), order_by => 'ctype DESC, problems_count', width => '5%', col => 'Pc' } : ()),
         { caption => res_str(600), order_by => 'ctype DESC, start_date', width => '15%' },
         { caption => res_str(631), order_by => 'ctype DESC, finish_date', width => '15%' },
         { caption => res_str(630), order_by => 'ctype DESC, closed', width => '30%' } ]);
+    $lv->define_db_searches({
+        original => 'SELECT COUNT(*) FROM problems P WHERE P.contest_id = C.id'
+    });
 
     $settings->{contests}->{filter} = my $filter =
         $p->{filter} || $settings->{contests}->{filter} || 'unfinished';
