@@ -109,7 +109,14 @@ sub authenticated_contests_view {
     my $extra_fields = $p->{extra_fields} ? join ',', '', @{$p->{extra_fields}} : '';
     my $problems_count_sql = ($is_root && $p->{listview}->visible_cols->{Pc}) ? q~
         SELECT COUNT(*) FROM contest_problems CP WHERE CP.contest_id = C.id~ : 'NULL';
-    $p->{listview}->define_db_searches({ problems_count => "($problems_count_sql)" }) if $is_root;
+    if ($is_root) {
+        $p->{listview}->define_db_searches({
+            problems_count => "($problems_count_sql)",
+            original_count => q~
+                (SELECT COUNT(*) FROM problems P WHERE P.contest_id = C.id)~,
+        });
+    }
+
     my $sth = $dbh->prepare(qq~
         SELECT
             $cf, CA.is_virtual, CA.is_jury, CA.id AS registered, C.is_hidden,
