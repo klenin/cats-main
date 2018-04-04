@@ -218,6 +218,9 @@ sub contests_frame {
         { caption => res_str(600), order_by => 'ctype DESC, start_date', width => '15%' },
         { caption => res_str(631), order_by => 'ctype DESC, finish_date', width => '15%' },
         { caption => res_str(630), order_by => 'ctype DESC, closed', width => '30%' } ]);
+    $lv->define_db_searches({
+        original => 'SELECT COUNT(*) FROM problems P WHERE P.contest_id = C.id'
+    });
 
     $settings->{contests}->{filter} = my $filter =
         $p->{filter} || $settings->{contests}->{filter} || 'unfinished';
