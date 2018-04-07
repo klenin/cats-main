@@ -50,7 +50,7 @@ sub users_import_frame {
         my $u = CATS::User->new;
         @$u{qw(team_name login password1 city)} = split "\t", $line;
         my $r = eval {
-            $u->{password1} = CATS::User::hash_password($u->{password1});
+            $u->{password1} = CATS::User::hash_password(Encode::encode_utf8($u->{password1}));
             $u->insert($contest->{id}, is_ooc => 0, commit => 0); 'ok'
         } || $@;
         push @report, "$u->{team_name} -- $r";
