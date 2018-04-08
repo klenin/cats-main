@@ -3,6 +3,7 @@
     test => 'Test',
     input => 'Input',
     answer => 'Answer',
+    input_hash => 'Input hash',
     generator_params => 'Generator parameters',
     clear_test_data => 'Clear generated test data',
     confirm_clear_test_data => 'Delete generated data for all tests. Are you sure?',

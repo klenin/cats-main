@@ -331,6 +331,7 @@ sub problem_test_data_frame {
         SELECT PS.fname AS gen_name, T.rank, T.gen_group, T.param,
             SUBSTRING(T.in_file FROM 1 FOR $cats::test_file_cut + 1) AS input,
             T.in_file_size AS input_file_size,
+            T.in_file_hash AS input_hash,
             SUBSTRING(T.out_file FROM 1 FOR $cats::test_file_cut + 1) AS answer,
             T.out_file_size AS answer_file_size
         FROM tests T
