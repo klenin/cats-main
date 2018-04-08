@@ -163,7 +163,7 @@ sub save_input_test_data {
     my ($p) = @_;
 
     CATS::JudgeDB::save_input_test_data(
-        $p->{problem_id}, $p->{test_rank}, $p->{input}, $p->{input_size});
+        $p->{problem_id}, $p->{test_rank}, $p->{input}, $p->{input_size}, $p->{hash});
 
     print_json({ ok => 1 });
 }

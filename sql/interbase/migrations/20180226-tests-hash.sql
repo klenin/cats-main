@@ -1,0 +1,2 @@
+ALTER TABLE tests
+    ADD in_file_hash VARCHAR(100) DEFAULT NULL;
