@@ -37,7 +37,7 @@ GRANT DELETE, INSERT, UPDATE
 GRANT UPDATE(status)
     ON TABLE contest_problems TO judge;
 
-GRANT UPDATE(in_file, in_file_size, out_file, out_file_size)
+GRANT UPDATE(in_file, in_file_size, in_file_hash, out_file, out_file_size)
     ON TABLE tests TO judge;
 
 GRANT UPDATE(state, failed_test, result_time, judge_id, testsets)
