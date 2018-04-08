@@ -319,6 +319,12 @@ sub problem_test_data_frame {
             $p->{pid});
         $dbh->commit;
     }
+    if ($p->{clear_input_hashes}) {
+        $dbh->do(q~
+            UPDATE tests T SET T.in_file_hash = NULL WHERE T.problem_id = ?~, undef,
+            $p->{pid});
+        $dbh->commit;
+    }
 
     my $problem = $dbh->selectrow_hashref(qq~
         SELECT P.id, P.title, CP.id AS cpid, CP.tags

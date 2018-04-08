@@ -117,7 +117,7 @@ $main_routes = {
     problem_details => [ \&CATS::UI::ProblemDetails::problem_details_frame, pid => integer, ],
     problem_test_data => [
         \&CATS::UI::ProblemDetails::problem_test_data_frame,
-        pid => integer, test_rank => integer, clear_test_data => bool, ],
+        pid => integer, test_rank => integer, clear_test_data => bool, clear_input_hashes => bool, ],
     problem_link => [ \&CATS::UI::ProblemDetails::problem_link_frame,
         pid => integer, contest_id => integer,
         link_to => bool, move_to => bool, move_from => bool,

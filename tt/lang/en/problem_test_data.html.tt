@@ -7,5 +7,7 @@
     input_hash => 'Input hash',
     clear_test_data => 'Clear generated test data',
     confirm_clear_test_data => 'Delete generated data for all tests. Are you sure?',
+    clear_input_hashes => 'Clear input hashes',
+    confirm_clear_input_hashes => 'Delete input hashes for all tests. Are you sure?',
   })
 %]

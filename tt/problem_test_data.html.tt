@@ -3,8 +3,12 @@
 
 <h3>[% p.title | html %]</h3>
 <form method="post">
-<p><button type="submit" name="clear_test_data" class="button" value="1"
-  onclick="return confirm('[% capt.confirm_clear_test_data %]')">[% capt.clear_test_data %]</button></p>
+<p>
+  <button type="submit" name="clear_test_data" class="button" value="1"
+    onclick="return confirm('[% capt.confirm_clear_test_data %]')">[% capt.clear_test_data %]</button>
+  <button type="submit" name="clear_input_hashes" class="button" value="1"
+    onclick="return confirm('[% capt.confirm_clear_input_hashes %]')">[% capt.clear_input_hashes %]</button>
+</p>
 </form>
 <table class="internal_borders">
   <tr>
