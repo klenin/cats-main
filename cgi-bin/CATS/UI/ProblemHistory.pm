@@ -164,8 +164,9 @@ sub problem_history_edit_frame {
         or return redirect url_f('problem_history', pid => $p->{pid});
     init_template('problem_history_edit.html.tt');
 
+    my $content;
     if ($p->{save} && $p->{src_enc}) {
-        my $content = $p->{source};
+        $content = $p->{source};
         my $enc = encoding_param('enc');
         my CATS::Problem::Storage $ps = CATS::Problem::Storage->new;
         Encode::from_to($content, $enc, $p->{src_enc});
@@ -183,12 +184,15 @@ sub problem_history_edit_frame {
             content => Encode::decode($enc, $p->{source}),
             problem_import_log => $ps->encoded_import_log,
         );
+
+        $content = Encode::decode($enc, $p->{source});
     }
 
     my @blob_params = ($p->{pid}, $hash_base, $p->{file});
     my $blob = CATS::Problem::Storage::show_blob(
         @blob_params, $p->{src_enc} || \&detect_encoding_by_xml_header);
-    $blob->{content} = CATS::Problem::Storage::show_raw(@blob_params)->{content} if $blob->{image};
+    $blob->{content} = $blob->{image} ?
+        CATS::Problem::Storage::show_raw(@blob_params)->{content} : $content;
 
     set_submenu_for_tree_frame($p->{pid}, $hash_base);
     set_history_paths_urls($p->{pid}, $blob->{paths});
