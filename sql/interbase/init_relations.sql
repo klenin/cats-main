@@ -373,8 +373,8 @@ CREATE TABLE req_groups (
 );
 
 CREATE TABLE req_details (
-    req_id            INTEGER NOT NULL REFERENCES REQS(ID) ON DELETE CASCADE,
-    test_rank         INTEGER NOT NULL /*REFERENCES TESTS(RANK) ON DELETE CASCADE*/,
+    req_id            INTEGER NOT NULL REFERENCES reqs(id) ON DELETE CASCADE,
+    test_rank         INTEGER NOT NULL /* REFERENCES tests(rank) ON DELETE CASCADE */,
     result            INTEGER,
     points            INTEGER,
     time_used         FLOAT,
@@ -435,6 +435,24 @@ CREATE TABLE prizes (
     cg_id  INTEGER NOT NULL REFERENCES contest_groups(id) ON DELETE CASCADE,
     name   VARCHAR(200) NOT NULL,
     rank   INTEGER NOT NULL
+);
+
+CREATE TABLE wiki_pages (
+    id         INTEGER NOT NULL PRIMARY KEY,
+    name       VARCHAR(200) NOT NULL,
+    contest_id INTEGER REFERENCES contests(id) ON DELETE SET NULL,
+    problem_id INTEGER REFERENCES problems(id) ON DELETE CASCADE,
+    is_public  SMALLINT DEFAULT 0 NOT NULL
+);
+
+CREATE TABLE wiki_texts (
+    id            INTEGER NOT NULL PRIMARY KEY,
+    wiki_id       INTEGER NOT NULL REFERENCES contests(id) ON DELETE CASCADE,
+    lang          VARCHAR(20) NOT NULL,
+    author_id     INTEGER REFERENCES accounts(id) ON DELETE SET NULL,
+    last_modified TIMESTAMP,
+    title         BLOB SUB_TYPE TEXT,
+    text          BLOB SUB_TYPE TEXT
 );
 
 CREATE GENERATOR key_seq;
