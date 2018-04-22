@@ -24,6 +24,7 @@ GetOptions(
     'contest=i' => \(my $contest_id = 0),
     'mode=s' => \(my $mode = ''),
     'dest=s' => \(my $dest),
+    'dry-run' => \(my $dry_run),
     'encoding=s' => \(my $encoding = 'UTF-8'),
     'file-pattern=s' => \(my $file_pattern = $file_pattern_default),
 );
@@ -33,6 +34,7 @@ sub usage {
     print STDERR qq~CATS Contest data export tool
 Usage: $0 [--help] --contest=<contest id> --mode={log|runs}
     [--dest=<destination dir>]
+    [--dry-run]
     [--encoding=<encoding>]
     [--file-pattern=<file name pattern>, default is $file_pattern_default]
 ~;
@@ -72,12 +74,18 @@ elsif ($mode eq 'runs') {
             ($r->{orig_fname}, my $ext) = $orig_fname =~ /^(.*)(\.[a-zA-Z0-9]+)$/;
             $r->{verdict} = $CATS::Verdicts::state_to_name->{$r->{state}};
             (my $fn = $file_pattern) =~ s~%([a-z_]+)%~$r->{$1} // ''~ge;
-            open my $f, '>', File::Spec->catfile($dest, "$fn$ext");
-            print $f $src;
+            if ($dry_run) {
+                print $fn, (8 < length $fn ? "\t\t" : "\t");
+            }
+            else {
+                open my $f, '>', File::Spec->catfile($dest, "$fn$ext");
+                print $f $src;
+            }
             ++$count;
         }
         $src_sth->finish;
     }
+    say '' if $dry_run;
     say "Runs exported: $count";
 }
 
