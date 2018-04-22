@@ -15,6 +15,7 @@ sub reference_names() {
         { name => 'import_sources', item => 557 },
         ($user->is_root ? { name => 'prizes', item => 565 } : ()),
         ($user->is_root ? { name => 'contact_types', new => 587, item => 586 } : ()),
+        ($user->is_root ? { name => 'wiki_pages', new => 590, item => 589 } : ()),
         ($user->privs->{edit_sites} ? { name => 'sites', new => 514, item => 513 } : ()),
     )
 }
@@ -29,7 +30,7 @@ sub menu {
             { href => url_f($_->{name}), item => res_str($_->{item}), selected => $sel };
         if ($sel && ($user->is_root || $_->{name} eq 'sites' && $user->privs->{edit_sites}) && $_->{new}) {
             unshift @result,
-                { href => url_f($_->{name}, new => 1), item => res_str($_->{new}) };
+                { href => url_f($_->{name}, new => 1, edit => 0), item => res_str($_->{new}) };
         }
         $t->param(title_suffix => res_str($_->{item})) if $sel;
     }

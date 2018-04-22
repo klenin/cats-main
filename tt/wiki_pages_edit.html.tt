@@ -1,0 +1,13 @@
+[% PROCESS includes/menu_begin.tti %]
+[% PROCESS includes/html.tti %]
+
+<form method="post" enctype="multipart/form-data" action="[% href_action %]">
+<table>
+<tr><td>[% capt.name %]</td><td><input type="text" name="name" value="[% name | html %]" size="50" class="bordered"></td></tr>
+<tr><td>[% capt.is_public %]</td><td>[% checkbox_1('is_public', is_public) %]</td>
+</table>
+<br>
+[% PROCESS includes/edit_save_cancel.tti %]
+</form>
+
+[% PROCESS includes/menu_end.tti %]
