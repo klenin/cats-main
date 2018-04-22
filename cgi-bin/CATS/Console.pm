@@ -302,7 +302,7 @@ sub select_all_reqs {
     my ($contest_id) = @_;
     $dbh->selectall_arrayref(qq~
         SELECT
-            R.id AS id, R.submit_time, R.state, R.failed_test,
+            R.id AS id, R.submit_time, R.state, R.failed_test, R.points,
             R.submit_time - $CATS::Time::contest_start_offset_sql AS time_since_start,
             CP.code, P.title AS problem_title,
             A.id AS team_id, A.team_name,
