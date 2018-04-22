@@ -17,18 +17,24 @@ use CATS::DB;
 use CATS::Template;
 use CATS::Verdicts;
 
+my $file_pattern_default = '%code%_%id%_%verdict%';
+
 GetOptions(
     help => \(my $help = 0),
     'contest=i' => \(my $contest_id = 0),
     'mode=s' => \(my $mode = ''),
     'dest=s' => \(my $dest),
     'encoding=s' => \(my $encoding = 'UTF-8'),
+    'file-pattern=s' => \(my $file_pattern = $file_pattern_default),
 );
 
 sub usage {
     print STDERR @_, "\n" if @_;
     print STDERR qq~CATS Contest data export tool
-Usage: $0 [--help] --contest=<contest id> --mode={log|runs} [--dest=<destination dir>] [--encoding=<encoding>]
+Usage: $0 [--help] --contest=<contest id> --mode={log|runs}
+    [--dest=<destination dir>]
+    [--encoding=<encoding>]
+    [--file-pattern=<file name pattern>, default is $file_pattern_default]
 ~;
     exit;
 }
@@ -62,10 +68,11 @@ elsif ($mode eq 'runs') {
         SELECT src, fname FROM sources WHERE req_id = ?~);
     for my $r (@$reqs) {
         $src_sth->execute($r->{id});
-        while (my ($src, $fname) = $src_sth->fetchrow_array) {
-            my ($ext) = $fname =~ /(\.[a-zA-Z0-9]+)$/;
-            my $verdict = $CATS::Verdicts::state_to_name->{$r->{state}};
-            open my $f, '>', File::Spec->catfile($dest, "$r->{code}_$r->{id}_$verdict$ext");
+        while (my ($src, $orig_fname) = $src_sth->fetchrow_array) {
+            ($r->{orig_fname}, my $ext) = $orig_fname =~ /^(.*)(\.[a-zA-Z0-9]+)$/;
+            $r->{verdict} = $CATS::Verdicts::state_to_name->{$r->{state}};
+            (my $fn = $file_pattern) =~ s~%([a-z_]+)%~$r->{$1} // ''~ge;
+            open my $f, '>', File::Spec->catfile($dest, "$fn$ext");
             print $f $src;
             ++$count;
         }
