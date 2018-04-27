@@ -54,13 +54,11 @@ sub edit_save {
     $template_to_fields->($params) if $template_to_fields;
     my $id = param('id');
 
-    if ($id) {
-        $dbh->do(_u $sql->update($self->{table}, $params, { id => $id }));
-    }
-    else {
-        $params->{id} = new_id;
-        $dbh->do(_u $sql->insert($self->{table}, $params));
-    }
+    my ($stmt, @bind) = $id ?
+        $sql->update($self->{table}, $params, { id => $id }) :
+        $sql->insert($self->{table}, { %$params, id => new_id });
+    warn "$stmt\n@bind" if $self->{debug};
+    $dbh->do($stmt, undef, @bind);
     $dbh->commit;
     1;
 }
