@@ -7,6 +7,7 @@ use CATS::Constants;
 use CATS::DB;
 use CATS::IP;
 use CATS::JudgeDB;
+use CATS::Job;
 use CATS::Messages qw(msg);
 
 # Params: limits: { time_limit, memory_limit }
@@ -126,6 +127,10 @@ sub insert {
         VALUES (?, ?, CURRENT_TIMESTAMP, ?, ?)~,
         undef,
         $rid, 1, $submit_uid, CATS::IP::get_ip);
+
+    CATS::Job::create($rid, $cats::job_st_waiting, $cats::job_type_submission, {})
+        if $fields->{state} == $cats::st_not_processed;
+
     $rid;
 }
 

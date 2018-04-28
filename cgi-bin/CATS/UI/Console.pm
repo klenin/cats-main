@@ -290,8 +290,10 @@ sub retest_submissions {
         $count = @{CATS::Request::clone($selection, undef, $uid)};
     } else {
         for (@$selection) {
-            CATS::Request::enforce_state($_, { state => $cats::st_not_processed, judge_id => undef })
-                and ++$count;
+            if (CATS::Request::enforce_state($_, { state => $cats::st_not_processed, judge_id => undef })) {
+                CATS::Job::create($_, $cats::job_st_waiting, $cats::job_type_submission, {});
+                ++$count;
+            }
         }
     }
     $dbh->commit;
