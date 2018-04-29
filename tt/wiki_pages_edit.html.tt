@@ -9,5 +9,17 @@
 <br>
 [% PROCESS includes/edit_save_cancel.tti %]
 </form>
+<br>
+<table class="bordered">
+[% FOREACH lng IN langs %]
+<tr>
+<td>[% lng.name %]</td>
+<td>
+  [%- t = texts.item(lng.name) -%]
+  [%- IF t; href(t.href_edit, t.title || '*'); ELSE; '['; href(href_add_text _ ';wiki_lang=' _ lng.name, '+'); ']'; END %]
+</td>
+</tr>
+[% END %]
+</table>
 
 [% PROCESS includes/menu_end.tti %]

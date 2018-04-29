@@ -37,6 +37,7 @@ sub edit_frame {
 
     my $field_values = $id ? CATS::DB::select_row(
         $self->{table}, [ $self->field_names ], { id => $id }) : {};
+    $field_values->{id} //= $id;
     $fields_to_template->($field_values) if $fields_to_template;
 
     $self->{href_action} or die 'No href_action';

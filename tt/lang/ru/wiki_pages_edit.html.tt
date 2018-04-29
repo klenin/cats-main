@@ -1,6 +1,6 @@
 [%
   capt.import({
     name => 'Название',
-    is_public => 'Публична',
+    is_public => 'Публиковать',
   })
 %]

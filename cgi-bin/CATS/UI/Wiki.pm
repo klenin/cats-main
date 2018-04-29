@@ -8,13 +8,11 @@ use Encode;
 use CATS::Constants;
 use CATS::DB;
 use CATS::Form;
-use CATS::Globals qw($is_jury $is_root $t);
-use CATS::JudgeDB;
+use CATS::Globals qw($is_jury $is_root $t $uid);
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
-use CATS::Output qw(init_template url_f);
+use CATS::Output qw(url_f);
 use CATS::References;
-use CATS::Web qw(param url_param);
 
 sub page_fields() {qw(name is_public)}
 
@@ -28,9 +26,12 @@ my $page_form = CATS::Form->new({
 sub page_edit_frame {
     $page_form->edit_frame(sub {
         my ($w) = @_;
-        $w->{texts} = $dbh->selectall_hashref(q~
-            SELECT * FROM wiki_texts WHERE wiki_id = ?~, 'lang', undef,
-            $w->{id}) if $w->{id};
+        my $ts = $w->{texts} = $w->{id} ? $dbh->selectall_hashref(q~
+            SELECT id, lang, title FROM wiki_texts WHERE wiki_id = ?~, 'lang', undef,
+            $w->{id}) : {};
+        my @url = ('wiki_edit', wiki_id => $w->{id});
+        $_->{href_edit} = url_f(@url, wiki_lang => $_->{lang}, id => $_->{id}) for values %$ts;
+        $w->{href_add_text} = url_f(@url);
     });
 }
 
@@ -74,6 +75,52 @@ sub wiki_pages_frame {
     $lv->attach(url_f('wiki_pages'), $fetch_record, $c);
 
     $t->param(submenu => [ CATS::References::menu('wiki_pages') ]);
+}
+
+sub text_fields() {qw(wiki_id lang title text author_id last_modified)}
+
+my $text_form = CATS::Form->new({
+    table => 'wiki_texts',
+    fields => [ map +{ name => $_ }, text_fields() ],
+    templates => { edit_frame => 'wiki_edit.html.tt' },
+    href_action => 'wiki_edit',
+    edit_param => 'id',
+});
+
+sub text_edit_save {
+    my ($p) = @_;
+    $text_form->edit_save(sub {
+        my ($t) = @_;
+        $t->{lang} = $p->{wiki_lang};
+        $t->{author_id} = $uid;
+        $t->{last_modified} = \'CURRENT_TIMESTAMP';
+    });
+}
+
+sub wiki_edit_frame {
+    my ($p) = @_;
+    $is_root or return;
+
+    $p->{edit_save} and text_edit_save($p) and $p->{just_saved} = 1;
+
+    $text_form->edit_frame(sub {
+        my ($wt) = @_;
+        $wt->{wiki_lang} //= $p->{wiki_lang};
+        $wt->{wiki_id} //= $p->{wiki_id};
+        delete $wt->{lang};
+        $wt->{author} = $wt->{author_id} && $dbh->selectrow_array(q~
+            SELECT team_name FROM accounts WHERE id = ?~, undef,
+            $wt->{author_id});
+        $wt->{page_name} = Encode::decode_utf8($dbh->selectrow_array(q~
+            SELECT name FROM wiki_pages WHERE id = ?~, undef,
+            $wt->{wiki_id}));
+        $t->param(
+            title_suffix => $wt->{page_name},
+            problem_title => $wt->{page_name},
+            submenu => [ CATS::References::menu('wiki_pages') ],
+        );
+        msg(1074, $wt->{page_name}) if $p->{just_saved};
+    });
 }
 
 1;

@@ -249,6 +249,10 @@ $main_routes = {
     wiki_pages => [ \&CATS::UI::Wiki::wiki_pages_frame,
         edit => integer, delete => integer, edit_save => bool, name => str,
     ],
+    wiki_edit => [ \&CATS::UI::Wiki::wiki_edit_frame,
+        delete => integer, edit_save => bool, name => str,
+        wiki_lang => ident, wiki_id => integer, id => integer, title => str, text=> str,
+    ],
 };
 
 $api_judge_routes = {
