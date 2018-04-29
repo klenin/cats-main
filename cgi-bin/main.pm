@@ -33,7 +33,7 @@ use CATS::Router;
 use CATS::Settings;
 use CATS::StaticPages;
 use CATS::Time;
-use CATS::Web qw(has_error get_return_code init_request param redirect);
+use CATS::Web qw(has_error get_return_code init_request param);
 
 sub accept_request {
     my ($f) = @_;

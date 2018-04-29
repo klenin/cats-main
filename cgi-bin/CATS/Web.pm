@@ -27,7 +27,6 @@ our @EXPORT_OK = qw(
     not_found
     param
     param_on
-    redirect
     restore_parameters
     save_uploaded_file
     upload_source
@@ -82,8 +81,7 @@ sub save_uploaded_file { ensure_upload($_[0])->tempname }
 sub get_return_code { $return_code }
 
 sub redirect {
-    shift if ref $_[0];
-    my ($location) = @_;
+    my ($self, $location) = @_;
     headers(Location => $location);
     $return_code = Apache2::Const::REDIRECT;
     -1;
