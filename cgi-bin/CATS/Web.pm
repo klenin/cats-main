@@ -40,6 +40,11 @@ my $jar;
 my $qq;
 my $return_code;
 
+sub new {
+    my ($class, $self) = @_;
+    bless $self, $class;
+}
+
 sub init_request {
     $r = $_[0];
     $jar = Apache2::Cookie::Jar->new($r);
@@ -77,6 +82,7 @@ sub save_uploaded_file { ensure_upload($_[0])->tempname }
 sub get_return_code { $return_code }
 
 sub redirect {
+    shift if ref $_[0];
     my ($location) = @_;
     headers(Location => $location);
     $return_code = Apache2::Const::REDIRECT;

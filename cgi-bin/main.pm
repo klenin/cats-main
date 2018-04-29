@@ -48,6 +48,7 @@ sub accept_request {
 
     unless (defined $t) {
         my ($fn, $p) = CATS::Router::route;
+        $p = CATS::Web->new($p);
         # Function returns -1 if there is no need to generate output, e.g. a redirect was issued.
         ($fn->($p) || 0) == -1 and return;
     }
