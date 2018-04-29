@@ -248,6 +248,7 @@ $main_routes = {
         collapse_idents => bool, all_contests=> bool, pid => integer, account_id => integer, cont => bool,
     ],
     personal_official_results => \&CATS::UI::ContestResults::personal_official_results,
+    wiki => [ \&CATS::UI::Wiki::wiki_frame, name => str, ],
     wiki_pages => [ \&CATS::UI::Wiki::wiki_pages_frame,
         edit => integer, delete => integer, edit_save => bool, name => str,
     ],

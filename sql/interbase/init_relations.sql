@@ -444,6 +444,7 @@ CREATE TABLE wiki_pages (
     problem_id INTEGER,
     is_public  SMALLINT DEFAULT 0 NOT NULL,
 
+    CONSTRAINT wiki_pages_name_uniq UNIQUE (name),
     CONSTRAINT wiki_pages_contests_fk
         FOREIGN KEY (contest_id) REFERENCES contests(id) ON DELETE SET NULL,
     CONSTRAINT wiki_pages_problem_fk

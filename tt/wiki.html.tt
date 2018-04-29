@@ -1,0 +1,11 @@
+[% PROCESS includes/menu_begin.tti %]
+
+<h3>[% page.title | html %]</h3>
+
+<div>
+[% page.text %]
+</div>
+
+<p><small>[% page.name | html %]</small></p>
+
+[% PROCESS includes/menu_end.tti %]

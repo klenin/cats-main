@@ -11,8 +11,9 @@ use CATS::Form;
 use CATS::Globals qw($is_jury $is_root $t $uid);
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
-use CATS::Output qw(url_f);
+use CATS::Output qw(init_template url_f);
 use CATS::References;
+use CATS::Settings;
 
 sub page_fields() {qw(name is_public)}
 
@@ -68,6 +69,7 @@ sub wiki_pages_frame {
         return (
             %$row,
             ($is_root ? (
+                href_text => url_f('wiki', name => $row->{name}),
                 href_edit => url_f('wiki_pages', edit => $row->{id}),
                 href_delete => url_f('wiki_pages', 'delete' => $row->{id})) : ()),
         );
@@ -122,6 +124,41 @@ sub wiki_edit_frame {
         );
         msg(1074, $wt->{page_name}) if $p->{just_saved};
     });
+}
+
+sub _choose_lang {
+    my ($langs) = @_;
+    for my $lng (CATS::Settings::lang, @cats::langs) {
+        my @found = grep $lng eq $_->{lang}, @$langs;
+        return $found[0]->{id} if @found;
+
+    }
+    $langs->[0]->{id};
+}
+
+sub wiki_frame {
+    my ($p) = @_;
+    init_template('wiki.html.tt');
+
+    $p->{name} or return;
+    my ($id, $is_public) = $dbh->selectrow_array(q~
+        SELECT id, is_public FROM wiki_pages WHERE name = ?~, undef,
+        $p->{name});
+    $id && ($is_public || $is_root) or return;
+    my $langs = $dbh->selectall_arrayref(q~
+        SELECT id, lang FROM wiki_texts WHERE wiki_id = ?~, { Slice => {} },
+        $id);
+    @$langs or return;
+    my $text_id = _choose_lang($langs);
+    my $page = $dbh->selectrow_hashref(q~
+        SELECT title, text FROM wiki_texts WHERE id = ?~, undef,
+        $text_id);
+    $page->{name} = $p->{name};
+    $t->param(
+        page => $page,
+        title_suffix => $page->{title},
+        problem_suffix => $page->{title},
+    );
 }
 
 1;

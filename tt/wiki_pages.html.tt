@@ -21,7 +21,7 @@ function delete_wiki_page(href, name) {
   [% IF w.href_edit ~%]
   <a href="[% w.href_edit %]" class="icon edit"></a>
   [%~ END %]
-  [% w.name | html %]
+  [% href(w.href_text, w.name) %]
 </td>
 <td>[% checkbox_1('is_public', w.is_public, 0) %]</td>
 </tr>
