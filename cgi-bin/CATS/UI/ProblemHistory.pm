@@ -15,7 +15,7 @@ use CATS::Problem::Storage;
 use CATS::Problem::Utils;
 use CATS::StaticPages;
 use CATS::Utils qw(source_encodings);
-use CATS::Web qw(content_type encoding_param headers redirect);
+use CATS::Web qw(content_type encoding_param headers);
 
 sub _get_problem_info {
     my ($p) = @_;
@@ -53,7 +53,7 @@ sub problem_commitdiff {
 sub problem_history_commit_frame {
     my ($p) = @_;
     $is_jury or return;
-    my ($status, $title) = _get_problem_info($p) or return redirect url_f('contests');
+    my ($status, $title) = _get_problem_info($p) or return $p->redirect(url_f 'contests');
     problem_commitdiff($p->{pid}, $title, $p->{h}, $p->{src_enc} || 'WINDOWS-1251');
 }
 
@@ -85,7 +85,7 @@ sub problem_history_tree_frame {
     my ($p) = @_;
     $is_jury or return;
     my ($status, $title, undef, undef, $is_jury_in_orig) = _get_problem_info($p)
-        or return redirect url_f('contests');
+        or return $p->redirect(url_f 'contests');
 
     init_template('problem_history_tree.html.tt');
 
@@ -121,7 +121,7 @@ sub problem_history_blob_frame {
     $is_jury or return;
     init_template('problem_history_blob.html.tt');
     my ($status, $title, undef, undef, $is_jury_in_orig) = _get_problem_info($p)
-        or return redirect url_f('contests');
+        or return $p->redirect(url_f 'contests');
 
     my $blob = CATS::Problem::Storage::show_blob(
         $p->{pid}, $p->{hb}, $p->{file}, $p->{src_enc} || \&detect_encoding_by_xml_header);
@@ -142,7 +142,7 @@ sub problem_history_blob_frame {
 sub problem_history_raw_frame {
     my ($p) = @_;
     $is_jury or return;
-    _get_problem_info($p) or return redirect url_f('contests');
+    _get_problem_info($p) or return $p->redirect(url_f 'contests');
 
     my $blob = CATS::Problem::Storage::show_raw($p->{pid}, $p->{hb}, $p->{file});
     content_type($blob->{type});
@@ -156,12 +156,12 @@ sub problem_history_edit_frame {
     my $hash_base = $p->{hb};
 
     my ($status, $title, $repo_name, $contest_id, $is_jury_in_orig) = _get_problem_info($p)
-        or return redirect url_f('contests');
+        or return $p->redirect(url_f 'contests');
     $is_jury_in_orig or return;
 
     !CATS::Problem::Storage::get_remote_url($repo_name) &&
         $hash_base eq CATS::Problem::Storage::get_latest_master_sha($p->{pid})
-        or return redirect url_f('problem_history', pid => $p->{pid});
+        or return $p->redirect(url_f 'problem_history', pid => $p->{pid});
     init_template('problem_history_edit.html.tt');
 
     if ($p->{save} && $p->{src_enc}) {
@@ -206,9 +206,9 @@ sub problem_history_edit_frame {
 
 sub problem_history_frame {
     my ($p) = @_;
-    $is_jury or return redirect url_f('contests');
+    $is_jury or return $p->redirect(url_f 'contests');
 
-    my ($status, $title, $repo_name) = _get_problem_info($p) or return redirect url_f('contests');
+    my ($status, $title, $repo_name) = _get_problem_info($p) or return $p->redirect(url_f 'contests');
 
     my $lv = CATS::ListView->new(name => 'problem_history', template => auto_ext('problem_history'));
 

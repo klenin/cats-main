@@ -18,7 +18,6 @@ use CATS::Settings qw($settings);
 use CATS::Time;
 use CATS::User;
 use CATS::Utils qw(url_function);
-use CATS::Web qw(redirect);
 
 sub user_submenu {
     my ($selected, $user_id, $site_id) = @_;
@@ -414,7 +413,7 @@ sub impersonate_frame {
         UPDATE accounts SET last_ip = ?, sid = ? WHERE id = ?~, undef,
         CATS::IP::get_ip, $new_sid, $new_user_id);
     $dbh->commit;
-    redirect(url_function('contests', sid => $new_sid, cid => $cid));
+    $p->redirect(url_function 'contests', sid => $new_sid, cid => $cid);
 }
 
 1;

@@ -32,7 +32,7 @@ use CATS::Settings qw($settings);
 use CATS::Testset;
 use CATS::Utils;
 use CATS::Verdicts;
-use CATS::Web qw(param encoding_param url_param headers upload_source content_type redirect);
+use CATS::Web qw(param encoding_param url_param headers upload_source content_type);
 
 sub get_run_info {
     my ($contest, $req) = @_;
@@ -458,9 +458,9 @@ sub maybe_status_ok {
 my $settable_verdicts = [ qw(NP AW OK WA PE TL ML WL RE CE SV IS IL MR) ];
 
 sub request_params_frame {
-    init_template('request_params.html.tt');
-
     my ($p) = @_;
+
+    init_template('request_params.html.tt');
     $p->{rid} or return;
 
     my $si = get_sources_info(request_id => $p->{rid}) or return;
@@ -512,7 +512,7 @@ sub request_params_frame {
         maybe_reinstall($p, $si);
         maybe_status_ok($p, $si);
         $dbh->commit;
-        return $group_req_id ? redirect(url_f('request_params', rid => $group_req_id, sid => $sid)) : undef;
+        return $group_req_id ? $p->redirect(url_f 'request_params', rid => $group_req_id, sid => $sid) : undef;
     }
     my $can_delete = !$si->{is_official} || $is_root || ($si->{account_id} // 0) == $uid;
     $t->param(can_delete => $can_delete);

@@ -15,7 +15,6 @@ use CATS::RankTable;
 use CATS::Settings qw($settings);
 use CATS::StaticPages;
 use CATS::Verdicts;
-use CATS::Web qw(redirect);
 
 sub contests_new_frame {
     $user->privs->{create_contests} or return;
@@ -191,7 +190,7 @@ sub contests_frame {
     my ($p) = @_;
 
     if ($p->{summary_rank}) {
-        return redirect(url_f('rank_table', clist => join ',', @{$p->{contests_selection}}));
+        return $p->redirect(url_f 'rank_table', clist => join ',', @{$p->{contests_selection}});
     }
 
     return if $p->{ical} && $p->{json};

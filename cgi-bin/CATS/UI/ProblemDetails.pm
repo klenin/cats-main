@@ -22,7 +22,7 @@ use CATS::StaticPages;
 use CATS::Testset;
 use CATS::Utils qw(url_function);
 use CATS::Verdicts;
-use CATS::Web qw(content_type headers not_found redirect);
+use CATS::Web qw(content_type headers not_found);
 
 sub get_request_count {
     my ($this_contest_only, $pid) = @_;
@@ -153,14 +153,14 @@ sub problem_download {
             $pid);
         CATS::BinaryFile::save($fpath, $zip);
     }
-    redirect(downloads_url . $fname);
+    $p->redirect(downloads_url . $fname);
 }
 
 sub problem_git_package {
     my ($p) = @_;
     my $pid = $p->{pid};
     my $sha = $p->{sha};
-    $is_jury && $pid or return redirect url_f('contests');
+    $is_jury && $pid or return $p->redirect(url_f 'contests');
     my ($status) = $dbh->selectrow_array(qq~
         SELECT status FROM contest_problems
         WHERE contest_id = ? AND problem_id = ?~, undef,
@@ -204,7 +204,7 @@ sub problem_select_testsets_frame {
             map($param_to_list->($_), qw(testsets points_testsets)), $problem->{cpid});
         $dbh->commit;
         CATS::StaticPages::invalidate_problem_text(cid => $cid, cpid => $problem->{cpid});
-        return redirect url_f('problems') if $p->{from_problems};
+        return $p->redirect(url_f 'problems') if $p->{from_problems};
         msg(1141, $problem->{title});
     }
 
@@ -379,7 +379,7 @@ sub problem_select_tags_frame {
                 UPDATE contest_problems SET tags = ? WHERE id = ?~, undef,
                 $p->{tags}, $problem->{cpid});
             $dbh->commit;
-            return redirect url_f('problems') if $p->{from_problems};
+            return $p->redirect(url_f 'problems') if $p->{from_problems};
             msg(1142, $problem->{title});
         }
         $problem->{tags} = $p->{tags};

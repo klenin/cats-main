@@ -11,7 +11,6 @@ use CATS::Output qw(auto_ext init_template url_f);
 use CATS::Redirect;
 use CATS::User;
 use CATS::Utils qw(url_function);
-use CATS::Web qw(redirect);
 
 my $check_password;
 BEGIN {
@@ -73,7 +72,7 @@ sub login_frame {
         delete $params{f};
         $params{sid} = $sid;
         $params{cid} ||= $p->{cid};
-        return redirect(url_function($f, %params));
+        return $p->redirect(url_function $f, %params);
     }
     die 'Can not generate sid';
 }
@@ -93,7 +92,7 @@ sub logout_frame {
         0;
     }
     else {
-       redirect(url_function('login', logout => 1));
+       $p->redirect(url_function 'login', logout => 1);
     }
 }
 
