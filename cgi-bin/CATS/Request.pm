@@ -128,7 +128,7 @@ sub insert {
         undef,
         $rid, 1, $submit_uid, CATS::IP::get_ip);
 
-    CATS::Job::create($rid, $cats::job_st_waiting, $cats::job_type_submission, {})
+    CATS::Job::create($rid, $cats::job_type_submission, $cats::job_st_waiting)
         if $fields->{state} == $cats::st_not_processed;
 
     $rid;

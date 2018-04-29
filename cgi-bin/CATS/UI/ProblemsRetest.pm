@@ -38,7 +38,7 @@ sub problems_mass_retest {
             my $fields = {
                 state => $cats::st_not_processed, judge_id => undef, points => undef, testsets => undef };
             if (CATS::Request::enforce_state($_->{id}, $fields)) {
-                CATS::Job::create($_->{id}, $cats::job_st_waiting, $cats::job_type_submission, {});
+                CATS::Job::create($_->{id}, $cats::job_type_submission, $cats::job_st_waiting);
                 ++$count;
             }
         }
