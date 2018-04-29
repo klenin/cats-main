@@ -125,7 +125,7 @@ Some historical code, mostly located in `unused` directory, does not conform to 
 * Table and field names MUST use `snake_case`.
 * Comments SHOULD use `/* ... */` style.
 * Joins MUST use `JOIN` keyword, not comma.
-* `CHECK` constraints SHOULD be named.
+* `CHECK`, `FOREIGN KEY` and `UNIQUE` constraints SHOULD be named.
 * Each foreign key MUST contain `ON DELETE` clause.
 
 ## Compatibility
