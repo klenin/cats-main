@@ -179,7 +179,9 @@ $main_routes = {
     contact_types => \&CATS::UI::ContactTypes::contact_types_frame,
 
     compilers => \&CATS::UI::Compilers::compilers_frame,
-    judges => \&CATS::UI::Judges::judges_frame,
+    judges => [ \&CATS::UI::Judges::judges_frame,
+        ping => integer,
+        new => bool, edit => integer, edit_save => bool, delete => integer, ],
     keywords => \&CATS::UI::Keywords::keywords_frame,
     import_sources => \&CATS::UI::ImportSources::import_sources_frame,
     download_import_source => [ \&CATS::UI::ImportSources::download_frame, psid => integer, ],

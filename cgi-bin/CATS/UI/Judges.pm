@@ -13,12 +13,13 @@ use CATS::ListView;
 use CATS::Messages qw(msg res_str);
 use CATS::Output qw(init_template url_f);
 use CATS::References;
-use CATS::Web qw(param redirect url_param);
+use CATS::Web qw(param);
 
 sub edit_frame {
+    my ($p) = @_;
     init_template('judges_edit.html.tt');
 
-    if (my $jid = url_param('edit')) {
+    if (my $jid = $p->{edit}) {
         my ($judge_name, $account_name, $pin_mode) = $dbh->selectrow_array(q~
             SELECT J.nick, A.login, J.pin_mode
             FROM judges J LEFT JOIN accounts A ON A.id = J.account_id WHERE J.id = ?~, undef,
@@ -72,21 +73,22 @@ sub edit_save {
 }
 
 sub judges_frame {
+    my ($p) = @_;
     $is_jury or return;
 
     if ($is_root) {
-        if (my $jid = param('ping')) {
-            CATS::Judge::ping($jid);
-            return redirect(url_f('judges'));
+        if ($p->{ping}) {
+            CATS::Judge::ping($p->{ping});
+            return $p->redirect(url_f 'judges');
         }
-        defined url_param('new') || defined url_param('edit') and return edit_frame;
+        $p->{new} || $p->{edit} and return edit_frame($p);
     }
 
     my $lv = CATS::ListView->new(name => 'judges', template => 'judges.html.tt');
 
     if ($is_root) {
-        defined param('edit_save') and edit_save;
-        if (my $jid = url_param('delete')) {
+        $p->{edit_save} and edit_save;
+        if (my $jid = $p->{delete}) {
             my $judge_name = $dbh->selectrow_array(q~
                 SELECT nick FROM judges WHERE id = ?~, undef,
                 $jid);
