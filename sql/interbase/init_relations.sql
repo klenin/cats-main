@@ -372,16 +372,19 @@ CREATE TABLE jobs (
     judge_id    INTEGER, /* several(?) */
     testsets    VARCHAR(200),
 
-    CONSTRAINT jobs_requests_id
+    CONSTRAINT jobs_req_id_fk
         FOREIGN KEY (req_id) REFERENCES reqs(id) ON DELETE CASCADE,
-    CONSTRAINT parent_job_id
+    CONSTRAINT jobs_parent_id_fk
         FOREIGN KEY (parent_id) REFERENCES jobs(id) ON DELETE CASCADE,
-    CONSTRAINT job_judge_id
+    CONSTRAINT jobs_judge_id_fk
         FOREIGN KEY (judge_id) REFERENCES judges(id) ON DELETE SET NULL
 );
 
 CREATE TABLE jobs_queue (
-    id INTEGER NOT NULL PRIMARY KEY
+    id INTEGER NOT NULL PRIMARY KEY,
+
+    CONSTRAINT jobs_queue_id
+        FOREIGN KEY (id) REFERENCES jobs(id) ON DELETE CASCADE
 );
 
 CREATE TABLE req_de_bitmap_cache (

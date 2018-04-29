@@ -21,6 +21,8 @@ GRANT SELECT ON TABLE req_details TO judge;
 GRANT SELECT ON TABLE solution_output TO judge;
 GRANT SELECT ON TABLE log_dumps TO judge;
 GRANT SELECT ON TABLE sources TO judge;
+GRANT SELECT ON TABLE jobs TO judge;
+GRANT SELECT ON TABLE jobs_queue TO judge;
 
 GRANT UPDATE(sid, last_login, last_ip)
     ON TABLE accounts TO judge;
@@ -54,3 +56,9 @@ GRANT INSERT
 
 GRANT INSERT, UPDATE
     ON TABLE log_dumps TO judge;
+
+GRANT UPDATE(state, start_time, finish_time, judge_id)
+    ON TABLE jobs TO judge;
+
+GRANT DELETE
+    ON TABLE jobs_queue TO judge;
