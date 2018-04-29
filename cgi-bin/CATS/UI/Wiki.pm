@@ -8,12 +8,19 @@ use Encode;
 use CATS::Constants;
 use CATS::DB;
 use CATS::Form;
-use CATS::Globals qw($is_jury $is_root $t $uid);
+use CATS::Globals qw($contest $is_jury $is_root $t $uid);
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
 use CATS::Output qw(init_template url_f);
 use CATS::References;
 use CATS::Settings;
+
+my $markdown;
+BEGIN {
+    $markdown = eval { require Text::MultiMarkdown; } ?
+        sub { Text::MultiMarkdown::markdown($_[0]) } :
+        sub { $_[0] }
+}
 
 sub page_fields() {qw(name is_public)}
 
@@ -154,10 +161,11 @@ sub wiki_frame {
         SELECT title, text FROM wiki_texts WHERE id = ?~, undef,
         $text_id);
     $page->{name} = $p->{name};
+    $page->{markdown} = $markdown->($page->{text});
+    delete $contest->{title};
     $t->param(
         page => $page,
         title_suffix => $page->{title},
-        problem_suffix => $page->{title},
     );
 }
 

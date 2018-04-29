@@ -3,7 +3,7 @@
 <h3>[% page.title | html %]</h3>
 
 <div>
-[% page.text %]
+[% page.markdown %]
 </div>
 
 <p><small>[% page.name | html %]</small></p>

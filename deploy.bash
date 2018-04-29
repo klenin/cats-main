@@ -86,7 +86,7 @@ fi
 echo "2. Install cpan packages... "
 if [[ $step =~ (^|,)2(,|$) || $step == "*" ]]; then
 	cpan_packages=(DBI DBD::Firebird Algorithm::Diff Text::Aspell SQL::Abstract Archive::Zip
-	    JSON::XS YAML::Syck Apache2::Request XML::Parser::Expat Template Authen::Passphrase)
+	    JSON::XS YAML::Syck Apache2::Request XML::Parser::Expat Template Authen::Passphrase Text::MultiMarkdown)
 	sudo cpanm -S ${cpan_packages[@]}
 	echo "ok"
 else
