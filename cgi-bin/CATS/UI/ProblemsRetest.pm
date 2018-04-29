@@ -13,6 +13,7 @@ use CATS::Problem::Utils;
 use CATS::RankTable;
 use CATS::Request;
 use CATS::Verdicts;
+use CATS::Job;
 
 sub problems_mass_retest {
     my ($p) = @_;
@@ -36,7 +37,10 @@ sub problems_mass_retest {
             next if $ignore_states{$_->{state} // 0};
             my $fields = {
                 state => $cats::st_not_processed, judge_id => undef, points => undef, testsets => undef };
-            CATS::Request::enforce_state($_->{id}, $fields) and ++$count;
+            if (CATS::Request::enforce_state($_->{id}, $fields)) {
+                CATS::Job::create($_->{id}, $cats::job_st_waiting, $cats::job_type_submission, {});
+                ++$count;
+            }
         }
         $dbh->commit;
     }

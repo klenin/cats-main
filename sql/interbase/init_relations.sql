@@ -359,6 +359,31 @@ CREATE TABLE reqs (
 );
 CREATE DESCENDING INDEX idx_reqs_submit_time ON reqs(submit_time);
 
+CREATE TABLE jobs (
+    id          INTEGER NOT NULL PRIMARY KEY,
+    req_id      INTEGER NOT NULL,
+    parent_id   INTEGER,
+    type        INTEGER NOT NULL,
+    state       INTEGER NOT NULL, /* 0 - waiting, 1 - in progress, 2 - finished(?) */
+    create_time TIMESTAMP,
+    start_time  TIMESTAMP,
+    finish_time TIMESTAMP,
+
+    judge_id    INTEGER, /* several(?) */
+    testsets    VARCHAR(200),
+
+    CONSTRAINT jobs_requests_id
+        FOREIGN KEY (req_id) REFERENCES reqs(id) ON DELETE CASCADE,
+    CONSTRAINT parent_job_id
+        FOREIGN KEY (parent_id) REFERENCES jobs(id) ON DELETE CASCADE,
+    CONSTRAINT job_judge_id
+        FOREIGN KEY (judge_id) REFERENCES judges(id) ON DELETE SET NULL
+);
+
+CREATE TABLE jobs_queue (
+    id INTEGER NOT NULL PRIMARY KEY
+);
+
 CREATE TABLE req_de_bitmap_cache (
     req_id      INTEGER NOT NULL REFERENCES reqs(id) ON DELETE CASCADE,
     version     INTEGER NOT NULL,

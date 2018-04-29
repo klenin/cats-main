@@ -99,6 +99,16 @@ sub set_request_state {
     print_json({ ok => 1 });
 }
 
+sub finish_job {
+    my ($p) = @_;
+
+    CATS::JudgeDB::finish_job({
+        job_id => $p->{job_id},
+    });
+
+    print_json({ ok => 1 });
+}
+
 sub select_request {
     my ($p) = @_;
 

@@ -279,6 +279,10 @@ $api_judge_routes = {
         contest_id => integer,
         failed_test => integer,
     ],
+    api_judge_finish_job => [
+        \&CATS::ApiJudge::finish_job,
+        job_id => integer,
+    ],
     api_judge_delete_req_details => [ \&CATS::ApiJudge::delete_req_details, req_id => integer, ],
     api_judge_insert_req_details => [ \&CATS::ApiJudge::insert_req_details, params => str, ],
     api_judge_save_input_test_data => [
