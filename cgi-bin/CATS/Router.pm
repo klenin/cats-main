@@ -250,7 +250,7 @@ $main_routes = {
         edit => integer, delete => integer, edit_save => bool, name => str,
     ],
     wiki_edit => [ \&CATS::UI::Wiki::wiki_edit_frame,
-        delete => integer, edit_save => bool, name => str,
+        delete => integer, edit_cancel => bool, edit_save => bool, name => str,
         wiki_lang => ident, wiki_id => integer, id => integer, title => str, text=> str,
     ],
 };

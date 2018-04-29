@@ -101,6 +101,7 @@ sub wiki_edit_frame {
     my ($p) = @_;
     $is_root or return;
 
+    $p->{edit_cancel} and $p->redirect(url_f('wiki_pages', edit => $p->{wiki_id}));
     $p->{edit_save} and text_edit_save($p) and $p->{just_saved} = 1;
 
     $text_form->edit_frame(sub {
