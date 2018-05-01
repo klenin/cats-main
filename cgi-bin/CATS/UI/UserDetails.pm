@@ -305,7 +305,7 @@ sub user_contacts_frame {
 
     my $is_profile = $uid && $uid == $p->{uid};
     if ($is_root || $is_profile) {
-        $p->{new} || $p->{edit} and return $user_contact_form->edit_frame(sub {
+        $p->{new} || $p->{edit} and return $user_contact_form->edit_frame(after => sub {
             $_[0]->{contact_types} = $dbh->selectall_arrayref(q~
                 SELECT id AS "value", name AS "text" FROM contact_types ORDER BY name~, { Slice => {} });
             unshift @{$_[0]->{contact_types}}, {};

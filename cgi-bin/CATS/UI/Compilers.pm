@@ -25,7 +25,7 @@ my $form = CATS::Form->new({
 });
 
 sub edit_frame {
-    $form->edit_frame(sub { $_[0]->{locked} = !$_[0]->{in_contests} });
+    $form->edit_frame(after => sub { $_[0]->{locked} = !$_[0]->{in_contests} });
 }
 
 sub edit_save {

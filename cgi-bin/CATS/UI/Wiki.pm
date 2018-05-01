@@ -32,7 +32,7 @@ my $page_form = CATS::Form->new({
 });
 
 sub page_edit_frame {
-    $page_form->edit_frame(sub {
+    $page_form->edit_frame(after => sub {
         my ($w) = @_;
         my $ts = $w->{texts} = $w->{id} ? $dbh->selectall_hashref(q~
             SELECT id, lang, title FROM wiki_texts WHERE wiki_id = ?~, 'lang', undef,
@@ -108,12 +108,12 @@ sub text_edit_save {
 
 sub wiki_edit_frame {
     my ($p) = @_;
-    $is_root or return;
+    $is_root && $p->{wiki_id} or return;
 
     $p->{edit_cancel} and $p->redirect(url_f('wiki_pages', edit => $p->{wiki_id}));
     $p->{edit_save} and text_edit_save($p) and $p->{just_saved} = 1;
 
-    $text_form->edit_frame(sub {
+    $text_form->edit_frame(after => sub {
         my ($wt) = @_;
         $wt->{wiki_lang} //= $p->{wiki_lang};
         $wt->{wiki_id} //= $p->{wiki_id};

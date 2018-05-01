@@ -29,8 +29,9 @@ sub new {
 
 sub field_names { sort map $_->{name}, @{$_[0]->{fields}} }
 
+# Params: opts { after, href_action_params }
 sub edit_frame {
-    my ($self, $fields_to_template, %p) = @_;
+    my ($self, %opts) = @_;
     init_template($self->{templates}->{edit_frame} or die 'No edit frame template');
 
     my $id = url_param($self->{edit_param});
@@ -38,13 +39,13 @@ sub edit_frame {
     my $field_values = $id ? CATS::DB::select_row(
         $self->{table}, [ $self->field_names ], { id => $id }) : {};
     $field_values->{id} //= $id;
-    $fields_to_template->($field_values) if $fields_to_template;
+    $opts{after}->($field_values) if $opts{after};
 
     $self->{href_action} or die 'No href_action';
     $t->param(
         id => $id,
         %$field_values,
-        href_action => url_f($self->{href_action}, @{$p{href_action_params} || []}),
+        href_action => url_f($self->{href_action}, @{$opts{href_action_params} || []}),
     );
 }
 
