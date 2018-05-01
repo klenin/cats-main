@@ -305,13 +305,13 @@ sub user_contacts_frame {
 
     my $is_profile = $uid && $uid == $p->{uid};
     if ($is_root || $is_profile) {
-        $p->{new} || $p->{edit} and return $user_contact_form->edit_frame(after => sub {
+        $p->{new} || $p->{edit} and return $user_contact_form->edit_frame($p, after => sub {
             $_[0]->{contact_types} = $dbh->selectall_arrayref(q~
                 SELECT id AS "value", name AS "text" FROM contact_types ORDER BY name~, { Slice => {} });
             unshift @{$_[0]->{contact_types}}, {};
         }, href_action_params => [ uid => $p->{uid} ]);
         $user_contact_form->edit_delete(id => $p->{delete}, descr => 'handle', msg => 1071);
-        $p->{edit_save} and $user_contact_form->edit_save(before => sub {
+        $p->{edit_save} and $user_contact_form->edit_save($p, before => sub {
             $_[0]->{account_id} = $p->{uid};
         }) and msg(1072, Encode::decode_utf8($p->{handle}));
     }

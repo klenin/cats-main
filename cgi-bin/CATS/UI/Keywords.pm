@@ -21,7 +21,7 @@ my $form = CATS::Form->new({
     href_action => 'keywords',
 });
 
-sub edit_frame { $form->edit_frame }
+sub edit_frame { $form->edit_frame({}) }
 
 sub edit_save {
     my $kwid = param('id');

@@ -24,10 +24,10 @@ my $form = CATS::Form->new({
     href_action => 'contact_types',
 });
 
-sub edit_frame { $form->edit_frame; }
+sub edit_frame { $form->edit_frame({}); }
 
 sub edit_save {
-    $form->edit_save and msg(1070, Encode::decode_utf8(param('name')));
+    $form->edit_save({}) and msg(1070, Encode::decode_utf8(param('name')));
 }
 
 sub contact_types_frame {

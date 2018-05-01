@@ -31,10 +31,11 @@ sub field_names { sort map $_->{name}, @{$_[0]->{fields}} }
 
 # Params: opts { after, href_action_params }
 sub edit_frame {
-    my ($self, %opts) = @_;
+    my ($self, $p, %opts) = @_;
+    $p or die 'No params';
     init_template($self->{templates}->{edit_frame} or die 'No edit frame template');
 
-    my $id = url_param($self->{edit_param});
+    my $id = $p->{$self->{edit_param}} // url_param($self->{edit_param});
 
     my $field_values = $id ? CATS::DB::select_row(
         $self->{table}, [ $self->field_names ], { id => $id }) : {};
@@ -51,15 +52,16 @@ sub edit_frame {
 
 # Params: opts { before }
 sub edit_save {
-    my ($self, %opts) = @_;
+    my ($self, $p, %opts) = @_;
+    $p or die 'No params';
     my $params;
-    $params->{$_} = param($_) for $self->field_names;
+    $params->{$_} = $p->{$_} // param($_) for $self->field_names;
     $opts{before}->($params) if $opts{before};
-    my $id = param('id');
+    $p->{id} //= param('id');
 
-    my ($stmt, @bind) = $id ?
-        $sql->update($self->{table}, $params, { id => $id }) :
-        $sql->insert($self->{table}, { %$params, id => new_id });
+    my ($stmt, @bind) = $p->{id} ?
+        $sql->update($self->{table}, $params, { id => $p->{id} }) :
+        $sql->insert($self->{table}, { %$params, id => ($p->{id} = new_id) });
     warn "$stmt\n@bind" if $self->{debug};
     $dbh->do($stmt, undef, @bind);
     $dbh->commit;
