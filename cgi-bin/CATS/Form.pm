@@ -49,11 +49,12 @@ sub edit_frame {
     );
 }
 
+# Params: opts { before }
 sub edit_save {
-    my ($self, $template_to_fields) = @_;
+    my ($self, %opts) = @_;
     my $params;
     $params->{$_} = param($_) for $self->field_names;
-    $template_to_fields->($params) if $template_to_fields;
+    $opts{before}->($params) if $opts{before};
     my $id = param('id');
 
     my ($stmt, @bind) = $id ?
@@ -65,18 +66,18 @@ sub edit_save {
     1;
 }
 
-# Params: id, descr, msg, before_commit
+# Params: opts { id, descr, msg, before_commit }
 sub edit_delete {
-    my ($self, %p) = @_;
-    $p{id} or return;
-    $p{descr} //= 1;
+    my ($self, %opts) = @_;
+    $opts{id} or return;
+    $opts{descr} //= 1;
     if (my ($descr) = $dbh->selectrow_array(_u $sql->select(
-        $self->{table}, [ $p{descr} // 1 ], { id => $p{id} }))
+        $self->{table}, [ $opts{descr} // 1 ], { id => $opts{id} }))
     ) {
-        $dbh->do(_u $sql->delete($self->{table}, { id => $p{id} }));
-        $p{before_commit}->() if $p{before_commit};
+        $dbh->do(_u $sql->delete($self->{table}, { id => $opts{id} }));
+        $opts{before_commit}->() if $opts{before_commit};
         $dbh->commit;
-        msg($p{msg}, $descr) if $p{msg};
+        msg($opts{msg}, $descr) if $opts{msg};
     }
 }
 

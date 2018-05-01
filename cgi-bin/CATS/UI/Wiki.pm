@@ -45,7 +45,7 @@ sub page_edit_frame {
 
 sub page_edit_save {
     my ($p) = @_;
-    $page_form->edit_save(sub {
+    $page_form->edit_save(before => sub {
         $_[0]->{is_public} //= 0;
     }) and msg(1074, Encode::decode_utf8($p->{name}))
 }
@@ -98,7 +98,7 @@ my $text_form = CATS::Form->new({
 
 sub text_edit_save {
     my ($p) = @_;
-    $text_form->edit_save(sub {
+    $text_form->edit_save(before => sub {
         my ($t) = @_;
         $t->{lang} = $p->{wiki_lang};
         $t->{author_id} = $uid;

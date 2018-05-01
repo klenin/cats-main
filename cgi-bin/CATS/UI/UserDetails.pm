@@ -311,7 +311,7 @@ sub user_contacts_frame {
             unshift @{$_[0]->{contact_types}}, {};
         }, href_action_params => [ uid => $p->{uid} ]);
         $user_contact_form->edit_delete(id => $p->{delete}, descr => 'handle', msg => 1071);
-        $p->{edit_save} and $user_contact_form->edit_save(sub {
+        $p->{edit_save} and $user_contact_form->edit_save(before => sub {
             $_[0]->{account_id} = $p->{uid};
         }) and msg(1072, Encode::decode_utf8($p->{handle}));
     }
