@@ -8,6 +8,7 @@
 <br>
 [% PROCESS includes/edit_save_cancel.tti %]
 </form>
+[% IF name %]
 <br>
 <table class="bordered">
 [% FOREACH lng IN langs %]
@@ -20,5 +21,5 @@
 </tr>
 [% END %]
 </table>
-
+[% END %]
 [% PROCESS includes/menu_end.tti %]
