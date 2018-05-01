@@ -37,10 +37,13 @@ BEGIN {
 
 # Separate BEGIN block to allow prototypes to have effect.
 BEGIN {
+
 my %console_params = (
     selection => clist_of integer,
     show_contests => bool0, show_messages => bool0, show_results => bool0,
 );
+
+my %form_params = (new => bool, edit => integer, delete => integer, edit_save => bool);
 
 $main_routes = {
     login => [ \&CATS::UI::LoginLogout::login_frame,
@@ -173,22 +176,20 @@ $main_routes = {
         ext_time => fixed, ext_units => ident,
         is_virtual => bool, save => bool, finish_now => bool ],
     user_contacts => [ \&CATS::UI::UserDetails::user_contacts_frame,
-        uid => integer, new => bool, edit => integer, delete => integer, handle => str, edit_save => bool,
+        uid => integer, %form_params, handle => str,
     ],
     impersonate => [ \&CATS::UI::UserDetails::impersonate_frame, uid => integer, ],
     contact_types => \&CATS::UI::ContactTypes::contact_types_frame,
 
     compilers => \&CATS::UI::Compilers::compilers_frame,
-    judges => [ \&CATS::UI::Judges::judges_frame,
-        ping => integer,
-        new => bool, edit => integer, edit_save => bool, delete => integer, ],
+    judges => [ \&CATS::UI::Judges::judges_frame, ping => integer, %form_params, ],
     keywords => \&CATS::UI::Keywords::keywords_frame,
     import_sources => \&CATS::UI::ImportSources::import_sources_frame,
     download_import_source => [ \&CATS::UI::ImportSources::download_frame, psid => integer, ],
     prizes => \&CATS::UI::Prizes::prizes_frame,
     contests_prizes => \&CATS::UI::Prizes::contests_prizes_frame,
     sites => [ \&CATS::UI::Sites::sites_frame,
-        new => bool, edit => integer, edit_save => bool, delete => integer, name => str, org_name => str,
+        %form_params, name => str, org_name => str,
     ],
 
     answer_box => [ \&CATS::UI::Messages::answer_box_frame,
@@ -249,9 +250,7 @@ $main_routes = {
     ],
     personal_official_results => \&CATS::UI::ContestResults::personal_official_results,
     wiki => [ \&CATS::UI::Wiki::wiki_frame, name => str, ],
-    wiki_pages => [ \&CATS::UI::Wiki::wiki_pages_frame,
-        edit => integer, delete => integer, edit_save => bool, name => str,
-    ],
+    wiki_pages => [ \&CATS::UI::Wiki::wiki_pages_frame, %form_params, name => str, ],
     wiki_edit => [ \&CATS::UI::Wiki::wiki_edit_frame,
         delete => integer, edit_cancel => bool, edit_save => bool, name => str,
         wiki_lang => ident, wiki_id => integer, id => integer, title => str, text=> str,
