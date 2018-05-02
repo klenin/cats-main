@@ -5,6 +5,7 @@ use warnings;
 
 use CATS::DB;
 use CATS::DevEnv;
+use CATS::Form;
 use CATS::Globals qw($is_jury $is_root $t);
 use CATS::IP;
 use CATS::Judge;
@@ -71,6 +72,8 @@ sub edit_save {
     }
 }
 
+my $form = CATS::Form->new({ table => 'judges', fields => [], });
+
 sub judges_frame {
     my ($p) = @_;
     $is_jury or return;
@@ -87,18 +90,7 @@ sub judges_frame {
 
     if ($is_root) {
         $p->{edit_save} and edit_save($p);
-        if (my $jid = $p->{delete}) {
-            my $judge_name = $dbh->selectrow_array(q~
-                SELECT nick FROM judges WHERE id = ?~, undef,
-                $jid);
-            if ($judge_name) {
-                $dbh->do(q~
-                    DELETE FROM judges WHERE id = ?~, undef,
-                    $jid);
-                $dbh->commit;
-                msg(1020, $judge_name);
-            }
-        }
+        $form->edit_delete(id => $p->{delete}, descr => 'nick', msg => 1020);
     }
 
     $lv->define_columns(url_f('judges'), 0, 0, [
