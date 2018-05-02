@@ -355,8 +355,9 @@ sub view_source_frame {
 }
 
 sub download_source_frame {
-    my $rid = url_param('rid') or return;
-    my $si = get_sources_info(request_id => $rid, get_source => 1, encode_source => 1);
+    my ($p) = @_;
+    $p->{rid} or return;
+    my $si = get_sources_info(request_id => $p->{rid}, get_source => 1, encode_source => 1);
 
     unless ($si) {
         init_template('view_source.html.tt');
