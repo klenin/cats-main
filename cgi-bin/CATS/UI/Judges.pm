@@ -13,7 +13,6 @@ use CATS::ListView;
 use CATS::Messages qw(msg res_str);
 use CATS::Output qw(init_template url_f);
 use CATS::References;
-use CATS::Web qw(param);
 
 sub edit_frame {
     my ($p) = @_;
@@ -40,10 +39,10 @@ sub edit_frame {
 }
 
 sub edit_save {
-    my $jid = param('id');
-    my $judge_name = param('judge_name') // '';
-    my $account_name = param('account_name') // '';
-    my $pin_mode = param('pin_mode') // 0;
+    my ($p) = @_;
+    my $judge_name = $p->{judge_name} // '';
+    my $account_name = $p->{account_name} // '';
+    my $pin_mode = $p->{pin_mode} // 0;
 
     $judge_name ne '' && length $judge_name <= 20
         or return msg(1005);
@@ -55,10 +54,10 @@ sub edit_save {
             $account_name) or return msg(1139, $account_name);
     }
 
-    if ($jid) {
+    if ($p->{id}) {
         $dbh->do(q~
             UPDATE judges SET nick = ?, account_id = ?, pin_mode = ? WHERE id = ?~, undef,
-            $judge_name, $account_id, $pin_mode, $jid);
+            $judge_name, $account_id, $pin_mode, $p->{id});
         $dbh->commit;
         msg(1140, $judge_name);
     }
@@ -87,7 +86,7 @@ sub judges_frame {
     my $lv = CATS::ListView->new(name => 'judges', template => 'judges.html.tt');
 
     if ($is_root) {
-        $p->{edit_save} and edit_save;
+        $p->{edit_save} and edit_save($p);
         if (my $jid = $p->{delete}) {
             my $judge_name = $dbh->selectrow_array(q~
                 SELECT nick FROM judges WHERE id = ?~, undef,
