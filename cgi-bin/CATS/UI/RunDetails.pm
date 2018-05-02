@@ -467,9 +467,9 @@ sub request_params_frame {
     my $si = get_sources_info(request_id => $p->{rid}) or return;
     $si->{is_jury} or return;
 
-    my $limits = { map { $_ => param($_) } grep param($_) && param("set_$_"), @cats::limits_fields };
+    my $limits = { map { $_ => $p->{$_} } grep $p->{$_} && $p->{"set_$_"}, @cats::limits_fields };
 
-    my $need_clear_limits = 0 == grep param("set_$_"), @cats::limits_fields;
+    my $need_clear_limits = 0 == grep $p->{"set_$_"}, @cats::limits_fields;
 
     if (!$need_clear_limits) {
         my $filtered_limits = CATS::Request::filter_valid_limits($limits);
@@ -483,8 +483,8 @@ sub request_params_frame {
     my $params = {
         state => $cats::st_not_processed,
         # Insert NULL into database to be replaced with contest-default testset.
-        testsets => param('testsets') || undef,
-        judge_id => (param('set_judge') && param('judge') ? param('judge') : undef),
+        testsets => $p->{testsets} || undef,
+        judge_id => ($p->{set_judge} && $p->{judge} ? $p->{judge} : undef),
         points => undef, failed_test => 0,
     };
 

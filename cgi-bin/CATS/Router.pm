@@ -234,6 +234,9 @@ $main_routes = {
         points => integer,
         state => ident,
         set_tag => bool, tag => str,
+        (map { $_ => str, "set_$_" => bool } @cats::limits_fields),
+        testsets => str,
+        judge => str, set_judge => bool,
     ],
 
     test_diff => [ \&CATS::UI::Stats::test_diff_frame, pid => integer, test => integer, ],
