@@ -179,8 +179,11 @@ $main_routes = {
         uid => integer, %form_params, handle => str,
     ],
     impersonate => [ \&CATS::UI::UserDetails::impersonate_frame, uid => integer, ],
-    contact_types => \&CATS::UI::ContactTypes::contact_types_frame,
-
+    contact_types => [
+        \&CATS::UI::ContactTypes::contact_types_frame,
+        %form_params,
+        map { $_ => str } CATS::UI::ContactTypes::fields,
+    ],
     compilers => \&CATS::UI::Compilers::compilers_frame,
     judges => [ \&CATS::UI::Judges::judges_frame, ping => integer, %form_params, ],
     keywords => \&CATS::UI::Keywords::keywords_frame,

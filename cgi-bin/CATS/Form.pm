@@ -74,7 +74,7 @@ sub edit_delete {
     $opts{id} or return;
     $opts{descr} //= 1;
     if (my ($descr) = $dbh->selectrow_array(_u $sql->select(
-        $self->{table}, [ $opts{descr} // 1 ], { id => $opts{id} }))
+        $self->{table}, [ $opts{descr} ], { id => $opts{id} }))
     ) {
         $dbh->do(_u $sql->delete($self->{table}, { id => $opts{id} }));
         $opts{before_commit}->() if $opts{before_commit};
