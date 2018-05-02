@@ -27,7 +27,7 @@ use fields qw(
 sub new {
     my ($self, $p) = @_;
     $self = fields::new($self) unless ref $self;
-    $self->{clist} = [ @{$p->{clist}}  ? sort { $a <=> $b } @{$p->{clist}} : $cid ];
+    $self->{clist} = [ @{$p->{clist}} ? sort { $a <=> $b } @{$p->{clist}} : $cid ];
     $self->{contest_list} = join ',', @{$self->{clist}};
     return $self;
 }

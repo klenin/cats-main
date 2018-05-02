@@ -53,11 +53,10 @@ sub personal_official_results {
                 my $clist = join ',', @$j;
                 my $cache_file = cats_dir() . "./rank_cache/r/$clist";
                 unless (-f $cache_file) {
-                    my $rt = CATS::RankTable->new;
+                    my $rt = CATS::RankTable->new({ clist => $j });
                     $rt->{hide_ooc} = 1;
                     $rt->{hide_virtual} = 1;
                     $rt->{use_cache} = 0;
-                    $rt->{contest_list} = $clist;
                     $rt->get_contests_info;
                     $rt->rank_table;
                     my $short_rank = [
