@@ -13,7 +13,6 @@ use CATS::ListView;
 use CATS::Messages qw(msg res_str);
 use CATS::Output qw(init_template url_f);
 use CATS::References;
-use CATS::Web qw(param url_param);
 
 sub fields() {qw(code description file_ext default_file_ext err_regexp in_contests memory_handicap syntax)}
 
@@ -24,27 +23,26 @@ my $form = CATS::Form->new({
     href_action => 'compilers',
 });
 
-sub edit_frame {
-    $form->edit_frame({}, after => sub { $_[0]->{locked} = !$_[0]->{in_contests} });
-}
-
 sub edit_save {
+    my ($p) = @_;
     CATS::JudgeDB::invalidate_de_bitmap_cache;
-    $form->edit_save({}, before => sub { $_[0]->{in_contests} = !param('locked') })
-        and msg(1065, Encode::decode_utf8(param('description')));
+    $form->edit_save($p, before => sub { $_[0]->{in_contests} = !$p->{locked} })
+        and msg(1065, Encode::decode_utf8($p->{description}));
 }
 
 sub compilers_frame {
-    if ($is_root) {
-        defined url_param('new') || defined url_param('edit') and return edit_frame;
-    }
+    my ($p) = @_;
+
+    $is_root && ($p->{new} || $p->{edit})
+        and return $form->edit_frame($p, after =>
+            sub { $_[0]->{locked} = !$_[0]->{in_contests} });
 
     my $lv = CATS::ListView->new(name => 'compilers', template => 'compilers.html.tt');
 
     $is_root and $form->edit_delete(
-        id => url_param('delete') // 0, descr => 'description', msg => 1064,
+        id => $p->{delete}, descr => 'description', msg => 1064,
         before_commit => \&CATS::JudgeDB::invalidate_de_bitmap_cache);
-    $is_root && defined param('edit_save') and edit_save;
+    $is_root && $p->{edit_save} and edit_save($p);
 
     $lv->define_columns(url_f('compilers'), 0, 0, [
         { caption => res_str(619), order_by => 'code', width => '10%' },
