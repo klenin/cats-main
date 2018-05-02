@@ -12,7 +12,6 @@ use CATS::DB;
 use CATS::Globals qw($t);
 use CATS::Output qw(init_template);
 use CATS::RankTable;
-use CATS::Web qw(param url_param);
 
 sub get_names {
     'Районная олимпиада', 'Городская олимпиада', 'Краевая олимпиада',
@@ -21,6 +20,7 @@ sub get_names {
 }
 
 sub personal_official_results {
+    my ($p) = @_;
     init_template('official_results.html.tt');
     my @names = get_names();
     my $contests = $dbh->selectall_arrayref(q~
@@ -31,9 +31,9 @@ sub personal_official_results {
             join(' OR ' => map 'title LIKE ?' => @names) . q~) ORDER BY start_date DESC~,
         { Slice => {} }, map "$_ %", @names);
 
-    my $search = Encode::decode_utf8(param('search'));
+    my $search = Encode::decode_utf8($p->{search});
     my $results;
-    my $group_by_type = (url_param('group') || '') eq 'type';
+    my $group_by_type = ($p->{group} || '') eq 'type';
     for (@$contests) {
         my ($name, $year, $rest) = $_->{title} =~ m/^(.*)\s(\d{4})(.*)/
             or die $_->{title};
