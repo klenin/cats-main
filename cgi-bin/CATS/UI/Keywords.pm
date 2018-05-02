@@ -10,7 +10,6 @@ use CATS::ListView;
 use CATS::Messages qw(msg res_str);
 use CATS::Output qw(init_template url_f);
 use CATS::References;
-use CATS::Web qw(param url_param);
 
 sub fields () { qw(name_ru name_en code) }
 
@@ -21,39 +20,23 @@ my $form = CATS::Form->new({
     href_action => 'keywords',
 });
 
-sub edit_frame { $form->edit_frame({}) }
-
 sub edit_save {
-    my $kwid = param('id');
-    my %p = map { $_ => (param($_) || '') } fields();
-
-    $p{name_en} ne '' && 0 == grep(length $p{$_} > 200, fields())
+    my ($p) = @_;
+    ($p->{name_en} // '') ne '' && 0 == grep(length $p->{$_} > 200, fields())
         or return msg(1084);
-
-    if ($kwid) {
-        my $set = join ', ', map "$_ = ?", fields();
-        $dbh->do(qq~
-            UPDATE keywords SET $set WHERE id = ?~, undef,
-            @p{fields()}, $kwid);
-        $dbh->commit;
-    }
-    else {
-        my $field_names = join ', ', fields();
-        $dbh->do(qq~
-            INSERT INTO keywords (id, $field_names) VALUES (?, ?, ?, ?)~, undef,
-            new_id, @p{fields()});
-        $dbh->commit;
-    }
+    $form->edit_save($p);
 }
 
 sub keywords_frame {
+    my ($p) = @_;
+
     if ($is_root) {
-        $form->edit_delete(id => url_param('delete') // 1);
-        defined url_param('new') || defined url_param('edit') and return edit_frame;
+        $form->edit_delete(id => $p->{delete});
+        $p->{new} || $p->{edit} and return $form->edit_frame($p);
     }
     my $lv = CATS::ListView->new(name => 'keywords', template => 'keywords.html.tt');
 
-    $is_root && defined param('edit_save') and edit_save;
+    $is_root && $p->{edit_save} and edit_save($p);
 
     $lv->define_columns(url_f('keywords'), 0, 0, [
         { caption => res_str(625), order_by => '2', width => '30%' },
