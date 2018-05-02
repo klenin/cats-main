@@ -11,7 +11,7 @@ use CATS::Messages qw(res_str);
 use CATS::Output qw(init_template url_f);
 use CATS::References;
 use CATS::Utils qw(url_function);
-use CATS::Web qw(param);
+use CATS::Web;
 
 sub import_sources_frame {
     my $lv = CATS::ListView->new(name => 'import_sources', template => 'import_sources.html.tt');
