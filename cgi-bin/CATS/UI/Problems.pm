@@ -34,7 +34,9 @@ use CATS::Verdicts;
 sub prepare_keyword {
     my ($where, $p) = @_;
     $p->{kw} or return;
-    my $name_field = 'name_' . CATS::Settings::lang();
+    # Keywords are only in English and Russian for now.
+    my $lang = CATS::Settings::lang;
+    my $name_field = 'name_' . ($lang =~ /^(en|ru)$/ ? $lang : 'en');
     my ($code, $name) = $dbh->selectrow_array(qq~
         SELECT code, $name_field FROM keywords WHERE id = ?~, undef,
         $p->{kw}) or do { $p->{kw} = undef; return; };
