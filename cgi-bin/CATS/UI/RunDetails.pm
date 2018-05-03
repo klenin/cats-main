@@ -192,7 +192,7 @@ sub run_details_frame {
     my ($p) = @_;
     init_template('run_details.html.tt');
 
-    my $sources_info = get_sources_info(request_id => $p->{rid}, partial_checker => 1) or return;
+    my $sources_info = get_sources_info($p, request_id => $p->{rid}, partial_checker => 1) or return;
     my @runs;
     my $contest_cache = {};
 
@@ -236,7 +236,7 @@ sub visualize_test_frame {
     my $vid = $p->{vid} or return;
     my $test_rank = $p->{test_rank} or return;
 
-    my $sources_info = get_sources_info(
+    my $sources_info = get_sources_info($p,
         request_id => $rid, extra_params => [ test_rank => $test_rank, vid => $p->{vid} ]);
     source_links($sources_info);
     sources_info_param([ $sources_info ]);
@@ -296,7 +296,7 @@ sub view_source_frame {
     my ($p) = @_;
     init_template('view_source.html.tt');
     $p->{rid} or return;
-    my $sources_info = get_sources_info(request_id => $p->{rid}, get_source => 1, encode_source => 1);
+    my $sources_info = get_sources_info($p, request_id => $p->{rid}, get_source => 1, encode_source => 1);
     $sources_info or return;
 
     if ($sources_info->{is_jury} && $p->{replace}) {
@@ -313,7 +313,8 @@ sub view_source_frame {
         if ($u) {
             CATS::Request::update_source($sources_info->{req_id}, $u, $de_bitmap);
             $dbh->commit;
-            $sources_info = get_sources_info(request_id => $p->{rid}, get_source => 1, encode_source => 1);
+            $sources_info = get_sources_info($p,
+                request_id => $p->{rid}, get_source => 1, encode_source => 1);
         }
     }
     source_links($sources_info);
@@ -357,7 +358,7 @@ sub view_source_frame {
 sub download_source_frame {
     my ($p) = @_;
     $p->{rid} or return;
-    my $si = get_sources_info(request_id => $p->{rid}, get_source => 1, encode_source => 1);
+    my $si = get_sources_info($p, request_id => $p->{rid}, get_source => 1, encode_source => 1);
 
     unless ($si) {
         init_template('view_source.html.tt');
@@ -378,7 +379,7 @@ sub view_test_details_frame {
     $p->{rid} or return;
     $p->{test_rank} //= 1;
 
-    my $sources_info = get_sources_info(
+    my $sources_info = get_sources_info($p,
         request_id => $p->{rid}, extra_params => [ test_rank => $p->{test_rank} ]) or return;
 
     my $ci = get_contest_info($sources_info, {});
@@ -464,7 +465,7 @@ sub request_params_frame {
     init_template('request_params.html.tt');
     $p->{rid} or return;
 
-    my $si = get_sources_info(request_id => $p->{rid}) or return;
+    my $si = get_sources_info($p, request_id => $p->{rid}) or return;
     $si->{is_jury} or return;
 
     my $limits = { map { $_ => $p->{$_} } grep $p->{$_} && $p->{"set_$_"}, @cats::limits_fields };
@@ -500,7 +501,7 @@ sub request_params_frame {
         maybe_reinstall($p, $si);
         maybe_status_ok($p, $si);
         $dbh->commit;
-        $si = get_sources_info(request_id => $si->{req_id});
+        $si = get_sources_info($p, request_id => $si->{req_id});
     }
     if ($p->{clone}) {
         if (!$need_clear_limits) {
@@ -534,7 +535,7 @@ sub request_params_frame {
     }
 
     # Reload problem after the successful state change.
-    $si = get_sources_info(request_id => $si->{req_id}) if try_set_state($p);
+    $si = get_sources_info($p, request_id => $si->{req_id}) if try_set_state($p);
 
     my $tests = $dbh->selectcol_arrayref(q~
         SELECT rank FROM tests WHERE problem_id = ? ORDER BY rank~, undef,
@@ -590,7 +591,7 @@ sub run_log_frame {
     init_template('run_log.html.tt');
     my $rid = $p->{rid} or return;
 
-    my $si = get_sources_info(request_id => $rid)
+    my $si = get_sources_info($p, request_id => $rid)
         or return;
     $si->{is_jury} or return;
 
@@ -613,7 +614,7 @@ sub diff_runs_frame {
     init_template('diff_runs.html.tt');
     $p->{r1} && $p->{r2} or return;
 
-    my $si = get_sources_info(
+    my $si = get_sources_info($p,
         request_id => [ $p->{r1}, $p->{r2} ], get_source => 1, encode_source => 1) or return;
     @$si == 2 or return;
 

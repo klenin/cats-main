@@ -14,7 +14,7 @@ use CATS::RankTable;
 use CATS::Time;
 use CATS::Utils qw(encodings source_encodings url_function);
 use CATS::Verdicts;
-use CATS::Web qw(encoding_param param url_param);
+use CATS::Web qw(param url_param);
 
 use Exporter qw(import);
 our @EXPORT_OK = qw(
@@ -148,7 +148,7 @@ sub _get_user_details {
 # Load information about one or several runs.
 # Parameters: request_id, may be either scalar or array ref.
 sub get_sources_info {
-    my %opts = @_;
+    my ($p, %opts) = @_;
     my $rid = $opts{request_id} or return;
 
     my @req_ids = ref $rid eq 'ARRAY' ? @$rid : ($rid);
@@ -218,7 +218,7 @@ sub get_sources_info {
 
     my $official = $opts{get_source} && CATS::Contest::current_official;
     $official = 0 if $official && $is_jury_cached->($official->{id});
-    my $se = encoding_param('src_enc', 'WINDOWS-1251');
+    my $se = $p->{src_enc};
 
     for my $r (values %$req_tree) {
         $_ = Encode::decode_utf8($_) for @$r{'tag', grep /_name$/, keys %$r};
