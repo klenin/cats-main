@@ -148,14 +148,14 @@ sub _get_user_details {
 # Load information about one or several runs.
 # Parameters: request_id, may be either scalar or array ref.
 sub get_sources_info {
-    my %p = @_;
-    my $rid = $p{request_id} or return;
+    my %opts = @_;
+    my $rid = $opts{request_id} or return;
 
     my @req_ids = ref $rid eq 'ARRAY' ? @$rid : ($rid);
     @req_ids = map +$_, grep $_ && /^\d+$/, @req_ids or return;
 
-    my @src = $p{get_source} ? qw(S.src DE.syntax DE.err_regexp) : ();
-    my @pc_sql = $p{partial_checker} ? ( CATS::RankTable::partial_checker_sql() ) : ();
+    my @src = $opts{get_source} ? qw(S.src DE.syntax DE.err_regexp) : ();
+    my @pc_sql = $opts{partial_checker} ? ( CATS::RankTable::partial_checker_sql() ) : ();
 
     my @limits = map { my $l = $_; map "$_.$l AS @{[$_]}_$l", qw(lr lcp p) } @cats::limits_fields;
 
@@ -216,7 +216,7 @@ sub get_sources_info {
     my %user_cache;
     my $user_cached = sub { $user_cache{$_[0]} //= _get_user_details($_[0]) };
 
-    my $official = $p{get_source} && CATS::Contest::current_official;
+    my $official = $opts{get_source} && CATS::Contest::current_official;
     $official = 0 if $official && $is_jury_cached->($official->{id});
     my $se = encoding_param('src_enc', 'WINDOWS-1251');
 
@@ -241,14 +241,14 @@ sub get_sources_info {
             for qw(test_time result_time);
         $r->{formatted_time_since_start} = CATS::Time::format_diff($r->{time_since_start});
 
-        get_nearby_attempt($r, 'prev', '<', 'DESC', 1, $p{extra_params});
-        get_nearby_attempt($r, 'next', '>', 'ASC' , 0, $p{extra_params});
+        get_nearby_attempt($r, 'prev', '<', 'DESC', 1, $opts{extra_params});
+        get_nearby_attempt($r, 'next', '>', 'ASC' , 0, $opts{extra_params});
         # During the official contest, viewing sources from other contests
         # is disallowed to prevent cheating.
         if ($official && $official->{id} != $r->{contest_id}) {
             $r->{src} = res_str(1138, $official->{title});
         }
-        elsif ($p{encode_source}) {
+        elsif ($opts{encode_source}) {
             if (encodings()->{$se} && $r->{file_name} && $r->{file_name} !~ m/\.zip$/) {
                 Encode::from_to($r->{src}, $se, 'utf-8');
                 $r->{src} = Encode::decode_utf8($r->{src});
@@ -258,7 +258,7 @@ sub get_sources_info {
 
         if ($r->{elements_count} == 1) {
             $r->{$_} = $r->{elements}->[0]->{$_}
-                for qw(file_name de_id de_name), $p{get_source} ? qw(src syntax) : ();
+                for qw(file_name de_id de_name), $opts{get_source} ? qw(src syntax) : ();
         }
 
         $r->{file_name} //= '';
