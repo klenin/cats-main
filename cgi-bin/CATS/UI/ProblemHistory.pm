@@ -15,7 +15,7 @@ use CATS::Problem::Storage;
 use CATS::Problem::Utils;
 use CATS::StaticPages;
 use CATS::Utils qw(source_encodings);
-use CATS::Web qw(content_type encoding_param headers);
+use CATS::Web qw(content_type headers);
 
 sub _get_problem_info {
     my ($p) = @_;
@@ -90,7 +90,7 @@ sub problem_history_tree_frame {
     init_template('problem_history_tree.html.tt');
 
     my $tree = CATS::Problem::Storage::show_tree(
-        $p->{pid}, $p->{hb}, $p->{file} || undef, encoding_param('repo_enc'));
+        $p->{pid}, $p->{hb}, $p->{file} || undef, $p->{repo_enc});
     for (@{$tree->{entries}}) {
         my %url_params = (file => $_->{name}, pid => $p->{pid}, hb => $p->{hb});
         if ($_->{type} eq 'blob') {
@@ -166,9 +166,8 @@ sub problem_history_edit_frame {
 
     if ($p->{save} && $p->{src_enc}) {
         my $content = $p->{source};
-        my $enc = encoding_param('enc');
         my CATS::Problem::Storage $ps = CATS::Problem::Storage->new;
-        Encode::from_to($content, $enc, $p->{src_enc});
+        Encode::from_to($content, $p->{enc}, $p->{src_enc});
         my ($error, $latest_sha) = $ps->change_file(
             $contest_id, $p->{pid}, $p->{file}, $content, $p->{message}, $p->{is_amend} || 0);
 
@@ -180,7 +179,7 @@ sub problem_history_edit_frame {
 
         $t->param(
             message => Encode::decode_utf8($p->{message}),
-            content => Encode::decode($enc, $p->{source}),
+            content => Encode::decode($p->{enc}, $p->{source}),
             problem_import_log => $ps->encoded_import_log,
         );
     }

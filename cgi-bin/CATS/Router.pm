@@ -153,7 +153,7 @@ $main_routes = {
         pid => required integer, h => required sha, src_enc => str,
     ],
     problem_history_tree => [ \&CATS::UI::ProblemHistory::problem_history_tree_frame,
-        pid => required integer, hb => required sha, file => str,
+        pid => required integer, hb => required sha, file => str, repo_enc => encoding,
     ],
 
     users => [
@@ -222,7 +222,10 @@ $main_routes = {
     view_source => [ \&CATS::UI::RunDetails::view_source_frame,
         rid => integer, replace => bool, de_id => integer, syntax => ident, ],
     download_source => [ \&CATS::UI::RunDetails::download_source_frame, rid => integer, ],
-    run_details => [ \&CATS::UI::RunDetails::run_details_frame, rid => required clist_of integer, ],
+    run_details => [ \&CATS::UI::RunDetails::run_details_frame,
+        rid => required clist_of integer,
+        comment_enc => encoding,
+    ],
     visualize_test => [ \&CATS::UI::RunDetails::visualize_test_frame,
         rid => integer, vid => integer, test_rank => integer, ],
     diff_runs => [ \&CATS::UI::RunDetails::diff_runs_frame, r1 => integer, r2 => integer, ],

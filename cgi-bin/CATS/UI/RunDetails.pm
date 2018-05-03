@@ -32,10 +32,10 @@ use CATS::Settings qw($settings);
 use CATS::Testset;
 use CATS::Utils;
 use CATS::Verdicts;
-use CATS::Web qw(param encoding_param url_param headers upload_source content_type);
+use CATS::Web qw(param url_param headers upload_source content_type);
 
 sub get_run_info {
-    my ($contest, $req) = @_;
+    my ($p, $contest, $req) = @_;
     my $points = $contest->{points};
 
     my $last_test = 0;
@@ -45,7 +45,7 @@ sub get_run_info {
     $contest->{show_points} ||= 0 < grep $_, values %testset;
     my (%run_details, %used_testsets, %accepted_tests, %accepted_deps);
 
-    my $comment_enc = encoding_param('comment_enc');
+    my $comment_enc = $p->{comment_enc};
 
     my @resources = qw(time_used memory_used disk_used);
     my $rd_fields = join ', ', (
@@ -204,7 +204,7 @@ sub run_details_frame {
             next;
         }
         my $c = get_contest_tests(get_contest_info($_, $contest_cache), $_->{problem_id});
-        push @runs, get_run_info($c, $_);
+        push @runs, get_run_info($p, $c, $_);
         $needs_commit ||= $_->{needs_commit};
     }
     $dbh->commit if $needs_commit;
