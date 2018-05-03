@@ -104,8 +104,8 @@ sub get_req_details {
     @result;
 }
 
-sub get_nearby_attempt {
-    my ($si, $prevnext, $cmp, $ord, $diff, $extra_params) = @_;
+sub _get_nearby_attempt {
+    my ($p, $si, $prevnext, $cmp, $ord, $diff, $extra_params) = @_;
     # TODO: Сheck neighbour's contest to ensure correct access privileges.
     my $na = $dbh->selectrow_hashref(qq~
         SELECT id, submit_time FROM reqs
@@ -119,18 +119,17 @@ sub get_nearby_attempt {
         my ($n_date, $n_time) = /^(\d+\.\d+\.\d+\s+)(.*)$/;
         $si->{"${prevnext}_attempt_time"} = $si->{submit_time} =~ /^$n_date/ ? $n_time : $_;
     }
-    my $f = url_param('f') || 'run_log';
-    my @p = $extra_params ? @$extra_params : ();
-    if ($f eq 'diff_runs') {
+    my @ep = $extra_params ? @$extra_params : ();
+    if ($p->{f} eq 'diff_runs') {
         for (1..2) {
-            my $r = url_param("r$_") || 0;
-            push @p, "r$_" => ($r == $si->{req_id} ? $na->{id} : $r);
+            my $r = $p->{"r$_"} // 0;
+            push @ep, "r$_" => ($r == $si->{req_id} ? $na->{id} : $r);
         }
     }
     else {
-        push @p, (rid => $na->{id});
+        push @ep, (rid => $na->{id});
     }
-    $si->{"href_${prevnext}_attempt"} = url_f($f, @p);
+    $si->{"href_${prevnext}_attempt"} = url_f($p->{f}, @ep);
     $si->{href_diff_runs} = url_f('diff_runs', r1 => $na->{id}, r2 => $si->{req_id}) if $diff && $uid;
 }
 
@@ -241,8 +240,8 @@ sub get_sources_info {
             for qw(test_time result_time);
         $r->{formatted_time_since_start} = CATS::Time::format_diff($r->{time_since_start});
 
-        get_nearby_attempt($r, 'prev', '<', 'DESC', 1, $opts{extra_params});
-        get_nearby_attempt($r, 'next', '>', 'ASC' , 0, $opts{extra_params});
+        _get_nearby_attempt($p, $r, 'prev', '<', 'DESC', 1, $opts{extra_params});
+        _get_nearby_attempt($p, $r, 'next', '>', 'ASC' , 0, $opts{extra_params});
         # During the official contest, viewing sources from other contests
         # is disallowed to prevent cheating.
         if ($official && $official->{id} != $r->{contest_id}) {

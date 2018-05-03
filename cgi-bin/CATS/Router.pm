@@ -351,10 +351,10 @@ sub route {
     $p->{json} = 1 if param('json');
     default_encoding($p->{enc} = param('enc'));
 
-    my $function = url_param('f') || '';
+    $p->{f} = url_param('f') || '';
     my $route =
-        $main_routes->{$function} ||
-        $api_judge_routes->{$function}
+        $main_routes->{$p->{f}} ||
+        $api_judge_routes->{$p->{f}}
         or return @default_route;
     ref $route eq 'ARRAY' or return ($route, $p);
     my $fn = $route->[0];
