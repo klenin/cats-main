@@ -8,15 +8,12 @@ use Apache2::Cookie ();
 use Apache2::Request;
 use Apache2::Upload;
 
-use CATS::Utils qw(encodings);
-
 use 5.010;
 
 use Exporter qw(import);
 our @EXPORT_OK = qw(
     content_type
     cookie
-    encoding_param
     forbidden
     get_return_code
     has_error
@@ -26,7 +23,6 @@ our @EXPORT_OK = qw(
     log_info
     not_found
     param
-    param_on
     restore_parameters
     save_uploaded_file
     upload_source
@@ -62,11 +58,6 @@ sub get_uri { $r->uri }
 sub original_param { $qq->param(@_) }
 
 *_param = \&original_param;
-
-sub encoding_param {
-    my $enc = param($_[0]) || '';
-    encodings->{$enc} ? $enc : ($_[1] || 'UTF-8');
-}
 
 # Trick to change param implementation at runtime.
 sub param { _param(@_) }
