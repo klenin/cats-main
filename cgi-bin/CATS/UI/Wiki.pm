@@ -124,9 +124,12 @@ sub wiki_edit_frame {
         $wt->{page_name} = Encode::decode_utf8($dbh->selectrow_array(q~
             SELECT name FROM wiki_pages WHERE id = ?~, undef,
             $wt->{wiki_id}));
+        $wt->{markdown} = $markdown->($wt->{text});
         $t->param(
             title_suffix => $wt->{page_name},
             problem_title => $wt->{page_name},
+            href_view => url_f('wiki', name => $wt->{page_name}),
+            href_page => url_f('wiki_pages', edit => $wt->{wiki_id}),
             submenu => [ CATS::References::menu('wiki_pages') ],
         );
         msg(1074, $wt->{page_name}) if $p->{just_saved};
