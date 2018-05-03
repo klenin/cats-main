@@ -71,7 +71,7 @@ sub init_template {
 sub url_f { CATS::Utils::url_function(@_, sid => $sid, cid => $cid) }
 
 sub generate {
-    my ($output_file) = @_;
+    my ($p, $output_file) = @_;
     defined $t or return; #? undef : ref $t eq 'SCALAR' ? return : die 'Template not defined';
     $contest->{time_since_start} or warn 'No contest from: ', $ENV{HTTP_REFERER} || '';
     $t->param(
@@ -84,7 +84,7 @@ sub generate {
 
     my $cookie = cookie(CATS::Settings::as_cookie);
     my $out = '';
-    if (my $enc = param('enc')) {
+    if (my $enc = $p->{enc} // param('enc')) {
         $t->param(encoding => $enc);
         _http_header($http_mime_type, $enc, $cookie);
         $out = Encode::encode($enc, $t->output, Encode::FB_XMLCREF);

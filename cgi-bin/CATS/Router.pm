@@ -7,6 +7,7 @@ use FindBin;
 use File::Spec;
 
 use CATS::ApiJudge;
+use CATS::Utils;
 use CATS::Web qw(url_param param);
 
 BEGIN {
@@ -20,6 +21,13 @@ sub fixed() { qr/^[+-]?([0-9]*[.])?[0-9]+$/ }
 sub sha() { qr/^[a-h0-9]+$/ }
 sub str() { qr/./ }
 sub ident() { qr/^[a-zA-Z_]+$/ }
+
+sub default_encoding { $_[0] && CATS::Utils::encodings->{$_[0]} or $_[0] = 'UTF-8' }
+sub encoding(;$) {
+    my ($default) = @_;
+    $default or return \&default_encoding;
+    sub { $_[0] && CATS::Utils::encodings->{$_[0]} or $_[0] = $default };
+}
 
 my ($main_routes, $api_judge_routes);
 
@@ -132,7 +140,7 @@ $main_routes = {
         is_amend => bool, allow_rename => bool, ],
     problem_history_edit => [ \&CATS::UI::ProblemHistory::problem_history_edit_frame,
         pid => required integer, hb => required sha, file => required str,
-        save => bool, src_enc => str, message => str, source => undef,
+        save => bool, src_enc => encoding, message => str, source => undef,
         is_amend => bool,
     ],
     problem_history_blob => [ \&CATS::UI::ProblemHistory::problem_history_blob_frame,
@@ -328,7 +336,9 @@ sub check_type { !defined $_[1] || $_[0] =~ $_[1] }
 sub route {
     my $p = {};
     my @default_route = (\&CATS::UI::About::about_frame, $p);
+
     $p->{json} = 1 if param('json');
+    default_encoding($p->{enc} = param('enc'));
 
     my $function = url_param('f') || '';
     my $route =
@@ -342,6 +352,11 @@ sub route {
         my $name = $route->[$i];
         my $type = $route->[$i + 1];
 
+        if (ref $type eq 'CODE') {
+            my $value = param($name);
+            $p->{$name} = $value if $type->($value);
+            next;
+        }
         if (ref $type ne 'HASH') {
             my $value = param($name);
             $p->{$name} = $value if defined $value && check_type($value, $type);

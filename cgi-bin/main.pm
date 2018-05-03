@@ -46,9 +46,13 @@ sub accept_request {
     return if has_error;
     CATS::Time::mark_init;
 
-    unless (defined $t) {
-        my ($fn, $p) = CATS::Router::route;
-        $p = CATS::Web->new($p);
+    my $p;
+    if (defined $t) {
+        $p = CATS::Web->new({});
+    }
+    else {
+        my ($fn, $pp) = CATS::Router::route;
+        $p = CATS::Web->new($pp);
         # Function returns -1 if there is no need to generate output, e.g. a redirect was issued.
         ($fn->($p) || 0) == -1 and return;
     }
@@ -57,7 +61,7 @@ sub accept_request {
     defined $t or return;
     CATS::MainMenu->new({ f => $f })->generate;
     CATS::Time::mark_finish unless param('notime');
-    CATS::Output::generate($output_file);
+    CATS::Output::generate($p, $output_file);
 }
 
 sub handler {
