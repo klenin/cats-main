@@ -6,6 +6,4 @@
 [% page.markdown %]
 </div>
 
-<p><small>[% page.name | html %]</small></p>
-
 [% PROCESS includes/menu_end.tti %]

@@ -140,10 +140,10 @@ sub _choose_lang {
     my ($langs) = @_;
     for my $lng (CATS::Settings::lang, @cats::langs) {
         my @found = grep $lng eq $_->{lang}, @$langs;
-        return $found[0]->{id} if @found;
+        return $found[0] if @found;
 
     }
-    $langs->[0]->{id};
+    $langs->[0];
 }
 
 sub wiki_frame {
@@ -159,16 +159,22 @@ sub wiki_frame {
         SELECT id, lang FROM wiki_texts WHERE wiki_id = ?~, { Slice => {} },
         $id);
     @$langs or return;
-    my $text_id = _choose_lang($langs);
+    my $chosen_lang = _choose_lang($langs);
     my $page = $dbh->selectrow_hashref(q~
         SELECT title, text FROM wiki_texts WHERE id = ?~, undef,
-        $text_id);
+        $chosen_lang->{id});
     $page->{name} = $p->{name};
     $page->{markdown} = $markdown->($page->{text});
     delete $contest->{title};
     $t->param(
         page => $page,
         title_suffix => $page->{title},
+        submenu => [
+            ($is_root ? {
+                href => url_f('wiki_edit',
+                    wiki_id => $id, id => $chosen_lang->{id}, wiki_lang => $chosen_lang->{lang}),
+                item => res_str(509,  $p->{name}) } : ()),
+        ],
     );
 }
 
