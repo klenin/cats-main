@@ -1,0 +1,33 @@
+[% PROCESS includes/menu_begin.tti %]
+[% PROCESS includes/html.tti %]
+
+
+<form method="post" enctype="multipart/form-data" action="[% href_action %]">
+<table class="padded">
+
+<tr>
+  <td>[% capt.problem_name %]</td>
+  <td>[% select_value('problem_id', problems, problem_id); %]</td>
+</tr>
+
+<tr>
+  <td>[% capt.account_login %]</td>
+  <td>[% select_value('account_id', accounts, account_id); %]</td>
+</tr>
+
+<tr>
+  <td>[% capt.name %]</td>
+  <td><input type="text" name="name" class="bordered" value="[% name | html %]"></td>
+</tr>
+
+<tr>
+  <td>[% capt.text %]</td>
+  <td><textarea name="text" class="bordered" cols="70" rows="5">[% text | html %]</textarea></td>
+</tr>
+
+</table>
+<br>
+[% PROCESS includes/edit_save_cancel.tti %]
+</form>
+
+[% PROCESS includes/menu_end.tti %]

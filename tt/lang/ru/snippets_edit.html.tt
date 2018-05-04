@@ -1,0 +1,8 @@
+[%
+  capt.import({
+    problem_name => 'Задача',
+    account_login => 'Участник',
+    name => 'Название',
+    text => 'Текст',
+  })
+%]

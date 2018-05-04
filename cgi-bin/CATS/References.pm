@@ -16,6 +16,7 @@ sub reference_names() {
         ($user->is_root ? { name => 'prizes', item => 565 } : ()),
         ($user->is_root ? { name => 'contact_types', new => 587, item => 586 } : ()),
         ($user->is_root ? { name => 'wiki_pages', new => 590, item => 589 } : ()),
+        ($user->is_root ? { name => 'snippets', new => 592, item => 591 } : ()),
         ($user->privs->{edit_sites} ? { name => 'sites', new => 514, item => 513 } : ()),
     )
 }
