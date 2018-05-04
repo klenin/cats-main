@@ -1,0 +1,36 @@
+[% PROCESS includes/menu_begin.tti %]
+
+<form method=post enctype='multipart/form-data'>
+
+<script type="text/javascript">
+function delete_snippet(href) {
+  if (confirm( "?" )) {
+    document.location=href;
+  }
+}
+</script>
+
+[% PROCESS includes/listview_header.tti %]
+
+<table class="listview bordered highlight">
+[% PROCESS includes/listview_col_defs.tti%]
+
+[% FOREACH s IN snippets %]
+<tr class="[% loop.parity() %]">
+  <td>
+    <a href="javascript:delete_snippet('[% s.href_delete %]');" class="icon delete"></a>
+    <a href="[% s.href_edit %]" class="icon edit"></a>
+      [% s.problem_name %]
+  </td>
+  <td>[% s.account_login %]</td>
+  <td>[% s.name %]</td>
+  <td>[% s.text %]</td>
+</tr>
+[% END %]
+</table>
+
+[% PROCESS includes/pages.tti %]
+</form>
+
+[% PROCESS includes/menu_end.tti %]
+

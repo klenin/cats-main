@@ -212,7 +212,9 @@ $main_routes = {
     sites => [ \&CATS::UI::Sites::sites_frame,
         %form_params, name => str, org_name => str,
     ],
-
+    snippets => [ \&CATS::UI::Snippets::snippet_frame,
+        %form_params, map { $_ => str } CATS::UI::Snippets::fields,
+    ],
     answer_box => [ \&CATS::UI::Messages::answer_box_frame,
         qid => integer, clarify => 1, answer_text => str, ],
     send_message_box => [ \&CATS::UI::Messages::send_message_box_frame,
