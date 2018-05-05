@@ -3,10 +3,9 @@
 <form method=post enctype='multipart/form-data'>
 
 <script type="text/javascript">
-function delete_snippet(href) {
-  if (confirm( "?" )) {
-    document.location=href;
-  }
+function delete_snippet(href, name) {
+  if (confirm("[% capt.want_to_delete %] '" + name + "'?" ))
+    document.location = href;
 }
 </script>
 
@@ -18,9 +17,9 @@ function delete_snippet(href) {
 [% FOREACH s IN snippets %]
 <tr class="[% loop.parity() %]">
   <td>
-    <a href="javascript:delete_snippet('[% s.href_delete %]');" class="icon delete"></a>
+    <a href="javascript:delete_snippet('[% s.href_delete %]', '[% s.name | html %]');" class="icon delete"></a>
     <a href="[% s.href_edit %]" class="icon edit"></a>
-      [% s.problem_name | html %]
+    [% s.problem_name | html %]
   </td>
   <td>[% s.team_name | html %]</td>
   <td>[% s.name | html %]</td>
