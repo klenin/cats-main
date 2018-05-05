@@ -23,15 +23,17 @@ sub edit_frame {
     my ($p) = @_;
     $form->edit_frame($p, after => sub {
         $_[0]->{problems} = $dbh->selectall_arrayref(q~
-            SELECT P.id AS "value", P.title AS text FROM problems P
-            INNER JOIN contest_problems CP ON P.id = CP.problem_id
-            WHERE CP.contest_id = ?~, { Slice => {} },
+            SELECT P.id AS "value", CP.code || ': ' || P.title AS text
+            FROM problems P INNER JOIN contest_problems CP ON P.id = CP.problem_id
+            WHERE CP.contest_id = ?
+            ORDER BY CP.code~, { Slice => {} },
             $cid);
 
         $_[0]->{accounts} = $dbh->selectall_arrayref(q~
-            SELECT A.id AS "value", A.login AS text FROM accounts A
-            INNER JOIN contest_accounts CA ON A.id = CA.account_id
-            WHERE CA.contest_id = ?~, { Slice => {} },
+            SELECT A.id AS "value", A.team_name AS text
+            FROM accounts A INNER JOIN contest_accounts CA ON A.id = CA.account_id
+            WHERE CA.contest_id = ?
+            ORDER BY A.team_name~, { Slice => {} },
             $cid);
     });
 }
@@ -65,7 +67,7 @@ sub snippet_frame {
 
     my @cols = (
         { caption => res_str(602), order_by => 'problem_name', width => '20%' },
-        { caption => res_str(608), order_by => 'login', width => '20%' },
+        { caption => res_str(608), order_by => 'team_name', width => '20%' },
         { caption => res_str(601), order_by => 'name', width => '20%' },
         { caption => res_str(672), order_by => 'text', width => '40%' },
     );
@@ -76,8 +78,9 @@ sub snippet_frame {
     my $sth = $dbh->prepare(q~
         SELECT
             S.id, S.name, S.problem_id, S.account_id,
+            SUBSTRING(S.text FROM 1 FOR 100) AS text,
             P.title AS problem_name,
-            A.login, S.text
+            A.team_name
         FROM snippets S
         INNER JOIN contests C ON C.id = S.contest_id
         INNER JOIN problems P ON P.id = S.problem_id
@@ -105,7 +108,6 @@ sub snippet_frame {
         submenu => [ CATS::References::menu('snippets') ],
         editable => $is_root,
      );
-
 }
 
 1;
