@@ -84,8 +84,9 @@ sub generate {
 
     my $cookie = cookie(CATS::Settings::as_cookie);
     my $out = '';
-    if (my $enc = $p->{enc} // param('enc')) {
-        $t->param(encoding => $enc);
+    my $enc = $p->{enc} // param('enc') // 'UTF-8';
+    $t->param(encoding => $enc);
+    if ($enc ne 'UTF-8') {
         _http_header($http_mime_type, $enc, $cookie);
         $out = Encode::encode($enc, $t->output, Encode::FB_XMLCREF);
     }
