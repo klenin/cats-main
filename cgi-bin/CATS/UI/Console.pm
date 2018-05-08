@@ -148,6 +148,11 @@ sub _console_content {
         submit_year => 'EXTRACT(YEAR FROM R.submit_time)',
         submit_month => 'EXTRACT(MONTH FROM R.submit_time)',
         submit_day => 'EXTRACT(DAY FROM R.submit_time)',
+        jobs => '(SELECT COUNT(*) FROM jobs J WHERE J.req_id = R.id)',
+        jobs_queue => q~
+            (SELECT COUNT(*)
+            FROM jobs J INNER JOIN jobs_queue JQ ON J.id = JQ.id
+            WHERE J.req_id = R.id)~,
     });
 
     $lv->define_enums({
