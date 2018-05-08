@@ -22,11 +22,11 @@ sub sha() { qr/^[a-h0-9]+$/ }
 sub str() { qr/./ }
 sub ident() { qr/^[a-zA-Z_]+$/ }
 
-sub default_encoding { $_[0] && CATS::Utils::encodings->{$_[0]} or $_[0] = 'UTF-8' }
-sub encoding(;$) {
+sub check_encoding { $_[0] && CATS::Utils::encodings->{$_[0]} }
+sub encoding() { \&check_encoding }
+sub encoding_default($) {
     my ($default) = @_;
-    $default or return \&default_encoding;
-    sub { $_[0] && CATS::Utils::encodings->{$_[0]} or $_[0] = $default };
+    sub { check_encoding($_[0]) ? $_[0] : $_[0] = $default };
 }
 
 my ($main_routes, $api_judge_routes);
@@ -223,21 +223,21 @@ $main_routes = {
     run_log => [ \&CATS::UI::RunDetails::run_log_frame, rid => integer, delete_log => bool, ],
     view_source => [ \&CATS::UI::RunDetails::view_source_frame,
         rid => integer, replace => bool, de_id => integer, syntax => ident,
-        src_enc => encoding('WINDOWS-1251'),
+        src_enc => encoding_default('WINDOWS-1251'),
     ],
     download_source => [ \&CATS::UI::RunDetails::download_source_frame,
         rid => integer,
-        src_enc => encoding('WINDOWS-1251'),
+        src_enc => encoding_default('WINDOWS-1251'),
     ],
     run_details => [ \&CATS::UI::RunDetails::run_details_frame,
         rid => required clist_of integer,
-        comment_enc => encoding,
+        comment_enc => encoding_default('UTF-8'),
     ],
     visualize_test => [ \&CATS::UI::RunDetails::visualize_test_frame,
         rid => integer, vid => integer, test_rank => integer, ],
     diff_runs => [ \&CATS::UI::RunDetails::diff_runs_frame,
         r1 => integer, r2 => integer,
-        src_enc => encoding('WINDOWS-1251'),
+        src_enc => encoding_default('WINDOWS-1251'),
     ],
     view_test_details => [
         \&CATS::UI::RunDetails::view_test_details_frame,
@@ -351,7 +351,7 @@ sub route {
     my @default_route = (\&CATS::UI::About::about_frame, $p);
 
     $p->{json} = 1 if param('json');
-    default_encoding($p->{enc} = param('enc'));
+    $p->{enc} = param('enc') if check_encoding(param('enc'));
 
     $p->{f} = url_param('f') || '';
     my $route =
