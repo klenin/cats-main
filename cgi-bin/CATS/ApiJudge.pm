@@ -11,16 +11,10 @@ use CATS::DB;
 use CATS::Globals qw($sid);
 use CATS::JudgeDB;
 use CATS::Testset;
-use CATS::Web;
+use CATS::Web qw(print_json);
 
 # DE bitmap cache may return bigints.
 sub Math::BigInt::TO_JSON { $_[0]->bstr }
-
-sub print_json {
-    CATS::Web::content_type('application/json');
-    CATS::Web::print(JSON::XS->new->utf8->convert_blessed(1)->encode($_[0])); 1;
-    -1;
-}
 
 my $bad_sid = { error => 'bad sid' };
 my $stolen = { error => 'stolen' };

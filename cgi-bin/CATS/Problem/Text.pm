@@ -298,7 +298,6 @@ sub problem_text {
                 $problem->{problem_id}) or next;
             $problem = { %$problem, %$p_orig };
         }
-
         $problem->{tags} = $p->{tags} if $is_jury_in_contest && defined $p->{tags};
         $problem->{parsed_tags} = $tags = CATS::Problem::Tags::parse_tag_condition($problem->{tags}, sub {});
         $problem->{lang} = choose_lang($problem, $p, $is_jury_in_contest);
@@ -331,6 +330,10 @@ sub problem_text {
         $problem->{href_problem_list} =
             ($CATS::StaticPages::is_static_page ? '../' : '') .
             url_function('problems', cid => $problem->{contest_id} || $problem->{orig_contest_id});
+
+        $problem->{href_get_snippets} =
+            ($CATS::StaticPages::is_static_page ? '../' : '') .
+            url_function('get_snippets', cpid => $problem->{cpid});
 
         $spellchecker->push_lang($problem->{lang}) if $spellchecker;
         for my $field_name (qw(statement pconstraints input_format output_format explanation)) {

@@ -23,6 +23,7 @@ our @EXPORT_OK = qw(
     log_info
     not_found
     param
+    print_json
     restore_parameters
     save_uploaded_file
     upload_source
@@ -52,6 +53,12 @@ sub init_request {
 }
 
 sub print { $r->print($_[0]) }
+
+sub print_json {
+    content_type('application/json');
+    CATS::Web::print(JSON::XS->new->utf8->convert_blessed(1)->encode($_[0]));
+    -1;
+}
 
 sub get_uri { $r->uri }
 
