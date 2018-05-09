@@ -25,7 +25,7 @@ function getSelectedButton(button) {
 var a = [];
 [% FOREACH p IN problems %]
 a[[% p.problem_id %]] = [
-  "[% p.problem_name | html %]", "[% p.href_delete %]", "[% p.href_replace %]",
+  "[% p.title | html %]", "[% p.href_delete %]", "[% p.href_replace %]",
   "[% p.href_change_status %]", "[% p.href_change_code %]"];
 [% END %]
 
@@ -108,7 +108,7 @@ function chg_code(st_sel, pid) {
       [%~ FOREACH pc IN problem_codes; option(pc, pc, pc == p.code); END ~%]
       </select> [% END %]<a href="[% p.href_view_problem %]" target="_blank">
     [% ELSE ~%]
-      <a href="[% p.href_view_problem %]" target="_blank">[% IF p.code; p.code %] - [% END %][% END %][% p.problem_name | html %]</a>
+      <a href="[% p.href_view_problem %]" target="_blank">[% IF p.code; p.code %] - [% END %][% END %][% p.title | html %]</a>
     [% IF p.problem_langs.size %][[% FOREACH pl IN p.problem_langs; href(pl.href, pl.name); ' ' UNLESS loop.last; END %]][% END %]
     [% IF p.href_explanation %]&nbsp;[<a href="[% p.href_explanation %]" target="_blank">[% capt.explanation %]</a>][% END %]
     [% IF p.show_packages %]&nbsp;[<a href="[% p.href_download %]">[% capt.package %]</a>][% END %]
@@ -118,7 +118,7 @@ function chg_code(st_sel, pid) {
     <select onchange="chg_status(this, [% p.problem_id %])">
     [%~ FOREACH sl IN status_list; option(sl.id, sl.name, sl.id == p.status); END ~%]
     </select>
-    [%- IF p.is_linked %] [<a href="[% p.href_original_contest %]" title="[% p.contest_name %]">L</a>][% END %]
+    [%- IF p.is_linked %] [<a href="[% p.href_original_contest %]" title="[% p.contest_title %]">L</a>][% END %]
     [%- IF p.usage_count %] [<a href="[% p.href_usage %]" title="[% capt.used_in %]">[% p.usage_count %]</a>][% END %]
     [% IF p.remote_url %] [<a href="[% p.remote_url %]" title="[% p.remote_url %]">R</a>][% END %]
 </td>
@@ -137,7 +137,7 @@ function chg_code(st_sel, pid) {
 [% IF visible_cols.Mu %]<td>[% p.last_modified_by %]</td>[% END %]
 [% IF visible_cols.Mt %]<td class="num">[% p.upload_date %]</td>[% END %]
 [% END %]
-[% IF contest.is_practice %]<td>[% p.contest_name | html %]</td>[% END %]
+[% IF contest.is_practice %]<td>[% p.contest_title | html %]</td>[% END %]
 [% IF (is_user || contest.is_practice) && visible_cols.Vc %]
   <td class="problem_req_count">
     <div>

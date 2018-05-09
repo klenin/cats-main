@@ -106,7 +106,7 @@ sub problems_all_frame {
     $c->execute($cid, @{$where->{params}}, $lv->where_params);
 
     my $fetch_record = sub {
-        my ($pid, $problem_name, $contest_name, $contest_id, $counts, $keywords, $linked) = $_[0]->fetchrow_array
+        my ($pid, $title, $contest_title, $contest_id, $counts, $keywords, $linked) = $_[0]->fetchrow_array
             or return ();
         my %pp = (sid => $sid, cid => $contest_id, pid => $pid);
         return (
@@ -118,8 +118,8 @@ sub problems_all_frame {
             keywords => $keywords,
             linked => $linked || !$p->{link},
             problem_id => $pid,
-            problem_name => $problem_name,
-            contest_name => $contest_name,
+            title => $title,
+            contest_title => $contest_title,
             counts => $counts,
         );
     };
@@ -142,7 +142,7 @@ sub problems_udebug_frame {
 
     my $c = $dbh->prepare(q~
         SELECT
-            CP.id AS cpid, P.id AS pid, CP.code, P.title AS problem_name, P.lang, C.title AS contest_name,
+            CP.id AS cpid, P.id AS pid, CP.code, P.title, P.lang, C.title AS contest_title,
             SUBSTRING(P.explanation FROM 1 FOR 1) AS has_explanation,
             CP.status, P.upload_date
         FROM contest_problems CP
@@ -171,8 +171,8 @@ sub problems_udebug_frame {
             cpid => $r->{cpid},
             pid => $r->{pid},
             code => $r->{code},
-            problem_name => $r->{problem_name},
-            contest_name => $r->{contest_name},
+            title => $r->{title},
+            contest_title => $r->{contest_title},
             lang => $r->{lang},
             status_text => CATS::Messages::problem_status_names()->{$r->{status}},
             upload_date_iso => date_to_iso($r->{upload_date}),
@@ -263,6 +263,7 @@ sub problems_frame {
     $lv->define_db_searches([ qw(
         CP.code CP.testsets CP.tags CP.points_testsets CP.status
     ) ]);
+    $lv->define_db_searches({ contest_title => 'OC.title' });
     my $psn = CATS::Problem::Utils::problem_status_names_enum($lv);
 
     my $reqs_count_sql = 'SELECT COUNT(*) FROM reqs D WHERE D.problem_id = P.id AND D.state =';
@@ -300,7 +301,7 @@ sub problems_frame {
     my $sth = $dbh->prepare(qq~
         SELECT
             CP.id AS cpid, P.id AS pid,
-            $select_code AS code, P.title AS problem_name, OC.title AS contest_name,
+            $select_code AS code, P.title, OC.title AS contest_title,
             $counts,
             $keywords
             P.contest_id - CP.contest_id AS is_linked,
@@ -402,11 +403,11 @@ sub problems_frame {
             cpid => $c->{cpid},
             selected => $c->{pid} == ($p->{problem_id} || 0),
             code => $c->{code},
-            problem_name => $c->{problem_name},
+            title => $c->{title},
             is_linked => $c->{is_linked},
             remote_url => $remote_url,
             usage_count => $c->{usage_count},
-            contest_name => $c->{contest_name},
+            contest_title => $c->{contest_title},
             accept_count => $c->{accepted_count},
             wa_count => $c->{wrong_answer_count},
             tle_count => $c->{time_limit_count},

@@ -88,7 +88,7 @@ sub problems_retest_frame {
     my $sth = $dbh->prepare(qq~
         SELECT
             CP.id AS cpid, P.id AS pid,
-            CP.code, P.title AS problem_name, CP.testsets, CP.points_testsets, CP.status,
+            CP.code, P.title, CP.testsets, CP.points_testsets, CP.status,
             ($reqs_count_sql $cats::st_accepted) AS accepted_count,
             ($reqs_count_sql $cats::st_wrong_answer) AS wrong_answer_count,
             ($reqs_count_sql $cats::st_time_limit_exceeded) AS time_limit_count,
@@ -109,7 +109,7 @@ sub problems_retest_frame {
             href_view_problem => url_f('problem_text', cpid => $c->{cpid}),
             problem_id => $c->{pid},
             code => $c->{code},
-            problem_name => $c->{problem_name},
+            title => $c->{title},
             accept_count => $c->{accepted_count},
             wa_count => $c->{wrong_answer_count},
             tle_count => $c->{time_limit_count},
