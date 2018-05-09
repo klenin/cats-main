@@ -218,9 +218,8 @@ $('.problem_text div.problem_menu li.langs a').click(function() {
 function fill_snippets(data, snippet_list) {
   for (var i = 0; i < snippet_list.length; ++i) {
     var snippet_data = data[snippet_list[i].getAttribute('cats-snippet')];
-    if (snippet_data === undefined)
-      snippet_data = '';
-    snippet_list[i].innerHTML = snippet_data;
+    if (snippet_data !== undefined)
+        snippet_list[i].innerHTML = snippet_data;
   }
 }
 
