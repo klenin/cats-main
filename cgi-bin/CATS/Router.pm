@@ -20,7 +20,7 @@ sub integer() { qr/^[0-9]+$/ } # 'int' is reserved.
 sub fixed() { qr/^[+-]?([0-9]*[.])?[0-9]+$/ }
 sub sha() { qr/^[a-h0-9]+$/ }
 sub str() { qr/./ }
-sub ident() { qr/^[a-zA-Z_]+$/ }
+sub ident() { qr/^[a-zA-Z][a-zA-Z_0-9]*$/ }
 
 sub check_encoding { $_[0] && CATS::Utils::encodings->{$_[0]} }
 sub encoding() { \&check_encoding }
