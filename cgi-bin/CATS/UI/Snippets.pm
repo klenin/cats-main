@@ -3,12 +3,12 @@ package CATS::UI::Snippets;
 use strict;
 use warnings;
 
-use CATS::Globals qw($cid $is_jury $is_root $sid $t);
+use CATS::Globals qw($cid $is_jury $is_root $sid $t $uid);
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
 use CATS::Output qw(url_f);
 use CATS::DB;
-use CATS::Web qw(param);
+use CATS::Web qw(param print_json);
 
 sub fields() {qw(id account_id problem_id contest_id text name)}
 
@@ -50,6 +50,53 @@ sub edit_save {
     return msg(1077, $p->{name}) if $snippet_id && $snippet_id != ($p->{id} // 0);
 
     $form->edit_save($p) and msg(1075, $p->{name});
+}
+
+sub problem_visible {
+    my ($cpid) = @_;
+    return 1 if $is_root;
+
+    my $c = $dbh->selectrow_hashref(qq~
+        SELECT
+            CAST(CURRENT_TIMESTAMP - $CATS::Time::contest_start_offset_sql AS DOUBLE PRECISION) AS since_start,
+            C.local_only, C.is_hidden, CA.id AS caid, CA.is_jury, CA.is_remote, CA.is_ooc, CP.status
+        FROM contest_problems CP INNER JOIN contests C ON CP.contest_id = C.id
+        LEFT JOIN contest_accounts CA ON CA.contest_id = C.id AND CA.account_id = ?
+        LEFT JOIN contest_sites CS ON CS.contest_id = C.id AND CS.site_id = CA.site_id
+        WHERE CP.id = ?~, undef,
+    $uid, $cpid) or return 0;
+
+    return 1 if $c->{is_jury};
+
+    $c->{status} < $cats::problem_st_hidden or return 0;
+
+    if (($c->{since_start} || 0) > 0 && (!$c->{is_hidden} || $c->{caid})) {
+        $c->{local_only} or return 1;
+        defined $uid or return 0;
+        return 1 if defined $c->{is_remote} && $c->{is_remote} == 0 || defined $c->{is_ooc} && $c->{is_ooc} == 0;
+    }
+
+    0;
+}
+
+sub get_snippets {
+    my ($p) = @_;
+
+    problem_visible($p->{cpid}) or return;
+
+    my ($problem_id, $contest_id) = $dbh->selectrow_array(qq~
+        SELECT problem_id, contest_id FROM contest_problems WHERE id = ?~, undef,
+        $p->{cpid});
+
+    my $snippets = $dbh->selectall_arrayref(_u $sql->select(
+        'snippets', 'name, text',
+        { name => $p->{snippet_names}, problem_id => $problem_id,
+        contest_id => $contest_id, account_id => $uid }));
+
+    my $res;
+    $res->{$_->{name}} = $_->{text} for @$snippets;
+
+    print_json($res);
 }
 
 sub snippet_frame {

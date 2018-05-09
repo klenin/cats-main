@@ -215,6 +215,37 @@ $('.problem_text div.problem_menu li.langs a').click(function() {
   }
 });
 
+function fill_snippets(data, snippet_list) {
+  for (var i = 0; i < snippet_list.length; ++i) {
+    var snippet_data = data[snippet_list[i].getAttribute('cats-snippet')];
+    if (snippet_data === undefined)
+      snippet_data = '';
+    snippet_list[i].innerHTML = snippet_data;
+  }
+}
+
+function get_snippets_data(problem_id, request_url) {
+  var snippets = $('#p' + problem_id + ' [cats-snippet]');
+
+  if (sid)
+      request_url += ';sid=' + sid;
+
+  $.ajax({
+    method: 'GET',
+    url: request_url,
+    data: { snippet_names: $.map(snippets, function(s) { return s.getAttribute('cats-snippet'); }) },
+    [%# Prevent jQuery from suffixing names of array parameters with '[]' %]
+    traditional: true,
+    success: function(result) { fill_snippets(result, snippets); }
+  });
+}
+
+$(document).ready(function() {
+  [% FOREACH p IN problems %]
+    get_snippets_data([% p.problem_id %], '[% p.href_get_snippets %]');
+  [% END %]
+});
+
 </script>
 [% PROCESS includes/timing.tti %]
 </body>

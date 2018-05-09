@@ -278,6 +278,9 @@ $main_routes = {
         explain => bool, nospell => bool, noformal => bool, pl => ident, nokw => bool,
         tags => str, raw => bool, nomath => bool,
     ],
+    get_snippets => [ \&CATS::UI::Snippets::get_snippets,
+        cpid => integer, snippet_names => array_of ident,
+    ],
     envelope => [ \&CATS::UI::Messages::envelope_frame, rid => integer, ],
     about => \&CATS::UI::About::about_frame,
 
