@@ -167,7 +167,7 @@ sub problem_history_edit_frame {
     if ($p->{save} && $p->{src_enc}) {
         my $content = $p->{source};
         my CATS::Problem::Storage $ps = CATS::Problem::Storage->new;
-        Encode::from_to($content, $p->{enc}, $p->{src_enc});
+        Encode::from_to($content, $p->{enc} // 'UTF-8', $p->{src_enc});
         my ($error, $latest_sha) = $ps->change_file(
             $contest_id, $p->{pid}, $p->{file}, $content, $p->{message}, $p->{is_amend} || 0);
 
