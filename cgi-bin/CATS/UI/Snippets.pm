@@ -52,7 +52,7 @@ sub edit_save {
     $form->edit_save($p) and msg(1075, $p->{name});
 }
 
-sub problem_visible {
+sub _problem_visible {
     my ($cpid) = @_;
     return 1 if $is_root;
 
@@ -82,18 +82,14 @@ sub problem_visible {
 sub get_snippets {
     my ($p) = @_;
 
-    problem_visible($p->{cpid}) or return;
+    $uid && _problem_visible($p->{cpid}) or return print_json({});
 
-    my ($problem_id, $contest_id) = $dbh->selectrow_array(qq~
-        SELECT problem_id, contest_id FROM contest_problems WHERE id = ?~, undef,
-        $p->{cpid});
-
-    my $snippets = $dbh->selectall_arrayref(_u $sql->select(
-        'snippets', 'name, text',
-        { name => $p->{snippet_names}, problem_id => $problem_id,
-        contest_id => $contest_id, account_id => $uid }));
-
-    my $res;
+    my $snippets = $dbh->selectall_arrayref(my @d = _u $sql->select(q~
+        snippets S
+        INNER JOIN contest_problems CP ON S.contest_id = CP.contest_id AND S.problem_id = CP.problem_id~,
+        'name, text',
+        { name => $p->{snippet_names}, 'CP.id' => $p->{cpid}, account_id => $uid }));
+    my $res = {};
     $res->{$_->{name}} = $_->{text} for @$snippets;
 
     print_json($res);
