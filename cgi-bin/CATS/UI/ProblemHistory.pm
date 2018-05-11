@@ -179,7 +179,7 @@ sub problem_history_edit_frame {
 
         $t->param(
             message => Encode::decode_utf8($p->{message}),
-            content => Encode::decode($p->{enc}, $p->{source}),
+            content => Encode::decode($p->{enc} // 'UTF-8', $p->{source}),
             problem_import_log => $ps->encoded_import_log,
         );
     }
