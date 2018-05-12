@@ -361,7 +361,7 @@ CREATE DESCENDING INDEX idx_reqs_submit_time ON reqs(submit_time);
 
 CREATE TABLE jobs (
     id          INTEGER NOT NULL PRIMARY KEY,
-    req_id      INTEGER NOT NULL,
+    req_id      INTEGER,
     parent_id   INTEGER,
     type        INTEGER NOT NULL,
     state       INTEGER NOT NULL, /* 0 - waiting, 1 - in progress, 2 - finished(?) */
@@ -372,12 +372,24 @@ CREATE TABLE jobs (
     judge_id    INTEGER, /* several(?) */
     testsets    VARCHAR(200),
 
+    account_id  INTEGER,
+    contest_id  INTEGER,
+    problem_id  INTEGER,
+
     CONSTRAINT jobs_req_id_fk
         FOREIGN KEY (req_id) REFERENCES reqs(id) ON DELETE CASCADE,
     CONSTRAINT jobs_parent_id_fk
         FOREIGN KEY (parent_id) REFERENCES jobs(id) ON DELETE CASCADE,
     CONSTRAINT jobs_judge_id_fk
-        FOREIGN KEY (judge_id) REFERENCES judges(id) ON DELETE SET NULL
+        FOREIGN KEY (judge_id) REFERENCES judges(id) ON DELETE SET NULL,
+
+    CONSTRAINT jobs_account_id_fk
+        FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE,
+    CONSTRAINT jobs_contest_id_fk
+        FOREIGN KEY (contest_id) REFERENCES contests(id) ON DELETE CASCADE,
+    CONSTRAINT jobs_problem_id_fk
+        FOREIGN KEY (problem_id) REFERENCES problems(id) ON DELETE CASCADE
+
 );
 
 CREATE TABLE jobs_queue (
@@ -510,6 +522,20 @@ CREATE TABLE snippets (
         FOREIGN KEY (contest_id) REFERENCES contests(id) ON DELETE CASCADE,
 
     CONSTRAINT snippets_uniq UNIQUE (account_id, problem_id, contest_id, name)
+);
+
+CREATE TABLE problem_snippets (
+    problem_id      INTEGER NOT NULL,
+    snippet_name    VARCHAR(200) NOT NULL,
+    generator_id    INTEGER,
+    in_file         BLOB SUB_TYPE TEXT,
+
+    CONSTRAINT problem_snippets_problem_id_fk
+        FOREIGN KEY (problem_id) REFERENCES problems(id) ON DELETE CASCADE,
+    CONSTRAINT pr_snippets_generator_id_fk
+        FOREIGN KEY (generator_id) REFERENCES problem_sources(id) ON DELETE CASCADE,
+
+    CONSTRAINT problem_snippets_uniq UNIQUE (problem_id, snippet_name)
 );
 
 CREATE GENERATOR key_seq;

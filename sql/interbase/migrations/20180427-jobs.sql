@@ -1,6 +1,6 @@
 CREATE TABLE jobs (
     id          INTEGER NOT NULL PRIMARY KEY,
-    req_id      INTEGER NOT NULL,
+    req_id      INTEGER,
     parent_id   INTEGER,
     type        INTEGER NOT NULL,
     state       INTEGER NOT NULL,
