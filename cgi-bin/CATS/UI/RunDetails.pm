@@ -496,7 +496,8 @@ sub request_params_frame {
             $params->{limits_id} = CATS::Request::set_limits($si->{limits_id}, $limits);
         }
         CATS::Request::enforce_state($si->{req_id}, $params);
-        CATS::Job::create($si->{req_id}, $cats::job_type_submission, $cats::job_st_waiting);
+        CATS::Job::create($cats::job_type_submission, { req_id => $si->{req_id} });
+
         CATS::Request::delete_limits($si->{limits_id}) if $need_clear_limits && $si->{limits_id};
         maybe_reinstall($p, $si);
         maybe_status_ok($p, $si);

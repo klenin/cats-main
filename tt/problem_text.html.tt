@@ -239,11 +239,12 @@ function get_snippets_data(problem_id, request_url) {
   });
 }
 
-$(document).ready(function() {
+function update_snippets() {
   [% FOREACH p IN problems %]
     get_snippets_data([% p.problem_id %], '[% p.href_get_snippets %]');
   [% END %]
-});
+}
+$(document).ready(update_snippets);
 
 </script>
 [% PROCESS includes/timing.tti %]
