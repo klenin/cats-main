@@ -9,6 +9,7 @@ use CATS::Messages qw(msg res_str);
 use CATS::Output qw(url_f);
 use CATS::DB;
 use CATS::Web qw(param print_json);
+use CATS::Job;
 
 sub fields() {qw(id account_id problem_id contest_id text name)}
 
@@ -89,8 +90,29 @@ sub get_snippets {
         INNER JOIN contest_problems CP ON S.contest_id = CP.contest_id AND S.problem_id = CP.problem_id~,
         'name, text',
         { name => $p->{snippet_names}, 'CP.id' => $p->{cpid}, account_id => $uid }));
+
     my $res = {};
-    $res->{$_->{name}} = $_->{text} for @$snippets;
+    $res->{$_->{name}} = $_->{text} //= '' for @$snippets;
+
+    my ($contest_id, $problem_id) = $dbh->selectrow_array(q~
+        SELECT contest_id, problem_id FROM contest_problems WHERE id = ?~, undef,
+        $p->{cpid});
+
+    my $snippet_names = $dbh->selectcol_arrayref(q~
+        SELECT snippet_name FROM problem_snippets WHERE problem_id = ?~, undef,
+        $problem_id);
+
+    my @gen_snippets = grep !exists $res->{$_}, @$snippet_names;
+    if (@gen_snippets) {
+        for (@gen_snippets) {
+            $dbh->do(q~
+                INSERT INTO snippets (id, name, contest_id, problem_id, account_id) VALUES (?, ?, ?, ?, ?)~, undef,
+                new_id, $_, $contest_id, $problem_id, $uid);
+        }
+        CATS::Job::create($cats::job_type_generate_snippets,
+            { account_id => $uid, contest_id => $contest_id, problem_id => $problem_id });
+        $dbh->commit;
+    }
 
     print_json($res);
 }

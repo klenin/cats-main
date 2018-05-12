@@ -223,12 +223,11 @@ sub delete_child_records {
         $pid)
         for qw(
             pictures samples tests testsets problem_sources
-            problem_sources_import problem_keywords problem_attachments);
+            problem_sources_import problem_keywords problem_attachments problem_snippets);
 }
 
 sub save {
     my ($self, $problem) = @_;
-
     return if $self->{debug};
 
     delete_child_records($problem->{id}) if $problem->{replace};
@@ -437,6 +436,21 @@ sub insert_problem_content {
         $self->note("Attachment '$_->{path}' added");
         $_->{refcount}
             or $self->warning("No references to attachment '$_->{path}'");
+    }
+
+    $c = $dbh->prepare(q~
+        INSERT INTO problem_snippets (problem_id, snippet_name, generator_id)
+        VALUES (?, ?, ?)~
+    );
+
+    for (@{$problem->{snippets}}) {
+        $c->bind_param(1, $problem->{id});
+        $c->bind_param(2, $_->{name});
+        $c->bind_param(3, $_->{generator_id});
+
+        $c->execute
+            or $self->error("Can not add Snippet '$_->{name}': $dbh->errstr");
+        $self->note("Snippet '$_->{name}' added");
     }
 
     $c = $dbh->prepare(q~

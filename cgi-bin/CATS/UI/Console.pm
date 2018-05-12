@@ -298,7 +298,7 @@ sub retest_submissions {
     } else {
         for (@$selection) {
             if (CATS::Request::enforce_state($_, { state => $cats::st_not_processed, judge_id => undef })) {
-                CATS::Job::create($_, $cats::job_type_submission, $cats::job_st_waiting);
+                CATS::Job::create($cats::job_type_submission, { req_id => $_ });
                 ++$count;
             }
         }
