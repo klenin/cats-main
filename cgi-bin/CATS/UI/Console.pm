@@ -167,7 +167,8 @@ sub _console_content {
 
     my $fetch_console_record = sub {
         my ($rtype, $rank, $submit_time, $id, $request_state, $failed_test,
-            $problem_id, $problem_title, $de_id, $clarified, $question, $answer, $jury_message,
+            $problem_id, $elements_count, $problem_title,
+            $de_id, $clarified, $question, $answer, $jury_message,
             $team_id, $team_name, $country_abbr, $last_ip, $caid, $contest_id
         ) = $_[0]->fetchrow_array
             or return ();
@@ -218,6 +219,7 @@ sub _console_content {
             'time' =>               $submit_time,
             time_iso =>             date_to_iso($submit_time),
             problem_id =>           $problem_id,
+            elements_count =>       $elements_count,
             problem_title =>        $problem_title,
             de_id =>                $de_id,
             request_state =>        $request_state,

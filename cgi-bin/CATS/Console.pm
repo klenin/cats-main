@@ -119,6 +119,7 @@ sub build_query {
         CAST(NULL AS INTEGER) AS request_state,
         CAST(NULL AS INTEGER) AS failed_test,
         CAST(NULL AS INTEGER) AS problem_id,
+        CAST(NULL AS INTEGER) AS elements_count,
         CAST(NULL AS VARCHAR(200)) AS problem_title
     ~;
     my $no_de = 'CAST(NULL AS VARCHAR(200)) AS de';
@@ -133,6 +134,7 @@ sub build_query {
             R.state AS request_state,
             R.failed_test AS failed_test,
             R.problem_id AS problem_id,
+            R.elements_count,
             P.title AS problem_title,
             (SELECT s.de_id FROM sources s WHERE s.req_id = R.id) AS de,
             R.points AS clarified,
@@ -222,6 +224,7 @@ sub build_query {
             C.is_official AS request_state,
             $_ AS failed_test,
             CAST(NULL AS INTEGER) AS problem_id,
+            CAST(NULL AS INTEGER) AS elements_count,
             C.title AS problem_title,
             $no_de,
             CAST(NULL AS INTEGER) AS clarified,
