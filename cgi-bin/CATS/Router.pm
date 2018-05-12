@@ -26,7 +26,7 @@ sub check_encoding { $_[0] && CATS::Utils::encodings->{$_[0]} }
 sub encoding() { \&check_encoding }
 sub encoding_default($) {
     my ($default) = @_;
-    sub { check_encoding($_[0]) ? $_[0] : $_[0] = $default };
+    sub { check_encoding($_[0]) ? $_[0] : ($_[0] = $default) };
 }
 
 my ($main_routes, $api_judge_routes);
