@@ -184,14 +184,19 @@ sub similarity_frame {
         $cid);
 
     my $users_sql = q~
-        SELECT CA.account_id, CA.is_jury, CA.is_virtual, A.team_name, A.city
-        FROM contest_accounts CA INNER JOIN accounts A ON CA.account_id = A.id ~;
+        SELECT CA.account_id, CA.is_jury, CA.is_virtual, A.team_name AS name, A.city,
+            CA.site_id, S.name AS site
+        FROM contest_accounts CA INNER JOIN accounts A ON CA.account_id = A.id
+        LEFT JOIN sites S ON CA.site_id = S.id ~;
     my $users = $dbh->selectall_arrayref(qq~
         $users_sql WHERE CA.contest_id = ? ORDER BY A.team_name~, { Slice => {} },
         $cid);
 
     my $users_idx = {};
-    $users_idx->{$_->{account_id}} = $_ for @$users;
+    for my $u (@$users) {
+        $users_idx->{$u->{account_id}} = $u;
+        $u->{href_site} = $is_root ? url_f('sites', edit => $u->{site_id}) : '#';
+    }
 
     $t->param(
         params => $s, problems => $problems, users => $users, users_idx => $users_idx,
@@ -244,17 +249,19 @@ sub similarity_frame {
     }
     @similar = values %$by_account if $s->{group};
     for my $r (@similar) {
-        for (1, 2) {
-            $r->{"name$_"} = $users_idx->{$r->{"t$_"}}->{team_name};
-            $r->{"verdict$_"} = $CATS::Verdicts::state_to_name->{$r->{"req$_"}->{state}};
+        for my $i (1, 2) {
+            $r->{"$_$i"} = $users_idx->{$r->{"t$i"}}->{$_} for qw(name city site);
+            $r->{"verdict$i"} = $CATS::Verdicts::state_to_name->{$r->{"req$i"}->{state}};
         }
     }
 
     $lv->define_columns(url_f('similarity'), 0, 0, [
         { caption => res_str(664), width => '5%', order_by => 'score', numeric => 1 },
-        { caption => res_str(608) . ' 1', width => '30%', order_by => 'name1' },
+        { caption => res_str(608) . ' 1', width => '20%', order_by => 'name1' },
+        { caption => res_str(627) . ' 1', width => '20%', order_by => 'site1' },
         { caption => res_str(666) . ' 1', width => '3%', order_by => 'verdict1' },
-        { caption => res_str(608) . ' 2', width => '30%', order_by => 'name2' },
+        { caption => res_str(608) . ' 2', width => '20%', order_by => 'name2' },
+        { caption => res_str(627) . ' 2', width => '20%', order_by => 'site2' },
         { caption => res_str(666) . ' 2', width => '3%', order_by => 'verdict2' },
         { caption => res_str(665), width => '5%', order_by => 'link' },
     ]);
