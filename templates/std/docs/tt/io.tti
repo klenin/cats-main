@@ -294,6 +294,20 @@ public class test {
   },
 
   {
+    id => 'nodejs',
+    name => 'NodeJS',
+    infile => 'var file = require(\'fs\');
+var input = file.readFileSync(\'input.txt\', \'utf8\');
+var ints = input.split(/\\s+/).map(x => 1 * x); # numbers
+var a = ints[0], b = ints[1];
+var strs = input.split(\'\\n\'); # strings
+var p = strs[0], q = strs[1]',
+    outfile => 'var file = require(\'fs\');
+file.writeFileSync(\'output.txt\', a + \' \' + b);
+file.writeFileSync(\'output.txt\', p + \'\\n\' + q);',
+  },
+
+  {
     id => 'perl',
     name => 'Perl',
     infile => 'use strict;
