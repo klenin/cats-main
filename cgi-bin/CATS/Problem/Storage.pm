@@ -456,8 +456,8 @@ sub insert_problem_content {
     $c = $dbh->prepare(q~
         INSERT INTO tests (
             problem_id, rank, input_validator_id, generator_id, param, std_solution_id, in_file, out_file,
-            points, gen_group, in_file_hash
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)~
+            points, gen_group, in_file_hash, snippet_name
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)~
     );
 
     for (sort { $a->{rank} <=> $b->{rank} } values %{$problem->{tests}}) {
@@ -472,6 +472,7 @@ sub insert_problem_content {
         $c->bind_param(9, $_->{points});
         $c->bind_param(10, $_->{gen_group});
         $c->bind_param(11, $_->{hash});
+        $c->bind_param(12, $_->{snippet_name});
         $c->execute
             or $self->error("Can not add test $_->{rank}: $dbh->errstr");
         $self->note("Test $_->{rank} added");

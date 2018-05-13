@@ -99,8 +99,11 @@ sub get_snippets {
         $p->{cpid});
 
     my $snippet_names = $dbh->selectcol_arrayref(q~
-        SELECT snippet_name FROM problem_snippets WHERE problem_id = ?~, undef,
-        $problem_id);
+        SELECT snippet_name FROM problem_snippets
+        WHERE problem_id = ? AND snippet_name NOT IN
+            (SELECT name FROM snippets WHERE contest_id = ? AND
+                problem_id = ? AND account_id = ?) ~, undef,
+        $problem_id, $contest_id, $problem_id, $uid);
 
     my @gen_snippets = grep !exists $res->{$_}, @$snippet_names;
     if (@gen_snippets) {
