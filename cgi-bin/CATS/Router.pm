@@ -21,6 +21,7 @@ sub fixed() { qr/^[+-]?([0-9]*[.])?[0-9]+$/ }
 sub sha() { qr/^[a-h0-9]+$/ }
 sub str() { qr/./ }
 sub ident() { qr/^[a-zA-Z][a-zA-Z_0-9]*$/ }
+sub problem_code { qr/^[A-Za-z0-9]{1,3}$/ }
 
 sub check_encoding { $_[0] && CATS::Utils::encodings->{$_[0]} }
 sub encoding() { \&check_encoding }
@@ -98,7 +99,7 @@ $main_routes = {
         add_remote => bool, std_solution => bool, delete_problem => integer,
         de_id => qr/\d+|by_extension/, ignore => bool,
         change_status => integer, status => integer,
-        change_code => integer, code => qr/[A-Z1-9]/,
+        change_code => integer, code => problem_code,
         link_save => bool, move => bool,
     ],
     problems_all => [
@@ -132,7 +133,7 @@ $main_routes = {
     problem_link => [ \&CATS::UI::ProblemDetails::problem_link_frame,
         pid => integer, contest_id => integer,
         link_to => bool, move_to => bool, move_from => bool,
-        code => qr/[A-Z1-9]/,
+        code => problem_code,
     ],
 
     problem_history => [ \&CATS::UI::ProblemHistory::problem_history_frame,
