@@ -213,7 +213,7 @@ CREATE TABLE contest_problems (
     id              INTEGER NOT NULL PRIMARY KEY,
     problem_id      INTEGER NOT NULL REFERENCES problems(id) ON DELETE CASCADE,
     contest_id      INTEGER NOT NULL REFERENCES contests(id) ON DELETE CASCADE,
-    code            CHAR,
+    code            VARCHAR(50),
     /* See $cats::problem_st constants */
     status          INTEGER DEFAULT 1 NOT NULL,
     testsets        VARCHAR(200),
