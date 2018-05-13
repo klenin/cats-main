@@ -120,7 +120,7 @@ sub get_snippets {
 sub snippet_frame {
     my ($p) = @_;
 
-    $is_root or return;
+    $is_jury or return;
 
     $form->edit_delete(id => $p->{delete}, descr => 'name', msg => 1076);
     $p->{edit_save} and edit_save($p);
@@ -171,7 +171,6 @@ sub snippet_frame {
 
     $t->param(
         submenu => [ CATS::References::menu('snippets') ],
-        editable => $is_root,
      );
 }
 
