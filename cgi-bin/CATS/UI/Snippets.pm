@@ -142,7 +142,8 @@ sub snippet_frame {
         { caption => res_str(602), order_by => 'title', width => '20%' },
         { caption => res_str(608), order_by => 'team_name', width => '20%' },
         { caption => res_str(601), order_by => 'name', width => '20%' },
-        { caption => res_str(672), order_by => 'text', width => '40%' },
+        { caption => res_str(672), order_by => 'text', width => '30%' },
+        { caption => res_str(632), order_by => 'finish_time', width => '10%', col => 'Ft' },
     );
 
     $lv->define_columns(url_f('snippets'), 0, 0, \@cols);
@@ -154,13 +155,21 @@ sub snippet_frame {
         text_len => 'COALESCE(CHARACTER_LENGTH(text), 0)',
     });
 
-    my $sth = $dbh->prepare(q~
+    my $finish_time = $lv->visible_cols->{Ft} ? qq~
+        SELECT J.finish_time FROM jobs J
+        WHERE J.contest_id = S.contest_id AND J.problem_id = S.problem_id AND
+            J.account_id = S.account_id
+        ORDER BY J.finish_time DESC ROWS 1~ : 'NULL';
+
+    my $sth = $dbh->prepare(qq~
         SELECT
             S.id, S.name, S.problem_id, S.account_id,
             SUBSTRING(S.text FROM 1 FOR 100) AS text,
             P.title,
             CP.code,
-            A.team_name
+            CP.id AS cpid,
+            A.team_name,
+            ($finish_time) AS finish_time
         FROM snippets S
         INNER JOIN contests C ON C.id = S.contest_id
         INNER JOIN problems P ON P.id = S.problem_id
@@ -177,6 +186,7 @@ sub snippet_frame {
             %$c,
             href_delete => url_f('snippets', delete => $c->{id}),
             href_edit => url_f('snippets', edit => $c->{id}),
+            href_view => url_f('problem_text', uid => $c->{account_id}, cpid => $c->{cpid}),
         );
     };
 
