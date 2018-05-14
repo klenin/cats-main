@@ -92,7 +92,7 @@ sub get_snippets {
         { name => $p->{snippet_names}, 'CP.id' => $p->{cpid}, account_id => $uid }));
 
     my $res = {};
-    $res->{$_->{name}} = $_->{text} //= '' for @$snippets;
+    $res->{$_->{name}} = $_->{text} for @$snippets;
 
     my ($contest_id, $problem_id) = $dbh->selectrow_array(q~
         SELECT contest_id, problem_id FROM contest_problems WHERE id = ?~, undef,
