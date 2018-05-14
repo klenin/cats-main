@@ -85,14 +85,18 @@ sub get_snippets {
 
     $uid && _problem_visible($p->{cpid}) or return print_json({});
 
+    my $account_id = $p->{uid} && $is_jury ? $p->{uid} : $uid;
+
     my $snippets = $dbh->selectall_arrayref(my @d = _u $sql->select(q~
         snippets S
         INNER JOIN contest_problems CP ON S.contest_id = CP.contest_id AND S.problem_id = CP.problem_id~,
         'name, text',
-        { name => $p->{snippet_names}, 'CP.id' => $p->{cpid}, account_id => $uid }));
+        { name => $p->{snippet_names}, 'CP.id' => $p->{cpid}, account_id => $account_id }));
 
     my $res = {};
     $res->{$_->{name}} = $_->{text} for @$snippets;
+
+    return print_json($res) if $p->{uid} && $is_jury;
 
     my ($contest_id, $problem_id) = $dbh->selectrow_array(q~
         SELECT contest_id, problem_id FROM contest_problems WHERE id = ?~, undef,
