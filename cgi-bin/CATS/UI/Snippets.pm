@@ -101,16 +101,17 @@ sub get_snippets {
     my $snippet_names = $dbh->selectcol_arrayref(q~
         SELECT snippet_name FROM problem_snippets
         WHERE problem_id = ? AND snippet_name NOT IN
-            (SELECT name FROM snippets WHERE contest_id = ? AND
-                problem_id = ? AND account_id = ?) ~, undef,
+            (SELECT name FROM snippets
+            WHERE contest_id = ? AND problem_id = ? AND account_id = ?) ~, undef,
         $problem_id, $contest_id, $problem_id, $uid);
 
     my @gen_snippets = grep !exists $res->{$_}, @$snippet_names;
     if (@gen_snippets) {
         for (@gen_snippets) {
-            $dbh->do(q~
+            eval { $dbh->do(q~
                 INSERT INTO snippets (id, name, contest_id, problem_id, account_id) VALUES (?, ?, ?, ?, ?)~, undef,
                 new_id, $_, $contest_id, $problem_id, $uid);
+            };
         }
         CATS::Job::create($cats::job_type_generate_snippets,
             { account_id => $uid, contest_id => $contest_id, problem_id => $problem_id });
