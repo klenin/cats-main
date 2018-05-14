@@ -135,29 +135,36 @@ sub snippet_frame {
         template => 'snippets.html.tt');
 
     my @cols = (
-        { caption => res_str(602), order_by => 'problem_name', width => '20%' },
+        { caption => res_str(602), order_by => 'title', width => '20%' },
         { caption => res_str(608), order_by => 'team_name', width => '20%' },
         { caption => res_str(601), order_by => 'name', width => '20%' },
         { caption => res_str(672), order_by => 'text', width => '40%' },
     );
 
     $lv->define_columns(url_f('snippets'), 0, 0, \@cols);
-    $lv->define_db_searches([ fields() ]);
+
+    $lv->define_db_searches([ 'code', grep $_ !~ /^(?:problem_id|text)$/, fields() ]);
+    $lv->define_db_searches({
+        # Disambiguate problem_id between snippets and contest_problems.
+        problem_id => 'S.problem_id',
+        text_len => 'COALESCE(CHARACTER_LENGTH(text), 0)',
+    });
 
     my $sth = $dbh->prepare(q~
         SELECT
             S.id, S.name, S.problem_id, S.account_id,
             SUBSTRING(S.text FROM 1 FOR 100) AS text,
-            P.title AS problem_name,
+            P.title,
+            CP.code,
             A.team_name
         FROM snippets S
         INNER JOIN contests C ON C.id = S.contest_id
         INNER JOIN problems P ON P.id = S.problem_id
+        LEFT JOIN contest_problems CP ON CP.problem_id = S.problem_id AND CP.contest_id = S.contest_id
         INNER JOIN accounts A ON A.id = S.account_id
-        WHERE S.contest_id = ?
-        ~ . $lv->order_by
+        WHERE S.contest_id = ?~ . $lv->maybe_where_cond . $lv->order_by
     );
-    $sth->execute($cid);
+    $sth->execute($cid, $lv->where_params);
 
 
     my $fetch_record = sub {

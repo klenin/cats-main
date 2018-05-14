@@ -19,7 +19,7 @@ function delete_snippet(href, name) {
   <td>
     <a href="javascript:delete_snippet('[% s.href_delete %]', '[% s.name | html %]');" class="icon delete"></a>
     <a href="[% s.href_edit %]" class="icon edit"></a>
-    [% s.problem_name | html %]
+    [% s.code; ': '; s.title | html %]
   </td>
   <td>[% s.team_name | html %]</td>
   <td>[% s.name | html %]</td>
