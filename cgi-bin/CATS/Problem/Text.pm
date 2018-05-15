@@ -169,7 +169,7 @@ sub parse {
         Char  => \&ch_1);
 
     # XML parser requires all text to be inside of top-level tag.
-    $parser->parse("<$wrapper>$xml_patch</$wrapper>");
+    eval { $parser->parse("<$wrapper>$xml_patch</$wrapper>"); 1; } or return $@;
     $skip_depth and die;
     return $html_code;
 }
