@@ -15,7 +15,6 @@ sub database_fields {qw(
 use fields (database_fields(), qw(server_time time_since_start time_since_finish time_since_defreeze));
 
 use CATS::Config qw(cats_dir);
-use CATS::Constants;
 use CATS::Contest::Utils;
 use CATS::DB;
 use CATS::Messages qw(msg);
@@ -69,13 +68,6 @@ sub used_problem_codes {
         SELECT code FROM contest_problems WHERE contest_id = ? ORDER BY 1~, undef,
         $self->{id}
     );
-}
-
-sub unused_problem_codes {
-    my ($self) = @_;
-    my %used_codes;
-    @used_codes{@{$self->used_problem_codes}} = undef;
-    grep !exists($used_codes{$_}), @cats::problem_codes;
 }
 
 sub register_account {

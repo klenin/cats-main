@@ -136,12 +136,21 @@ sub problems_replace {
     msg(1007);
 }
 
+sub unused_problem_code {
+    my ($self) = @_;
+    my %used_codes;
+    @used_codes{@{$contest->used_problem_codes}} = undef;
+    for ('A'..'Z', '1'..'9') {
+        return $_ if !exists $used_codes{$_};
+    }
+    undef;
+}
+
 sub problems_add {
     my ($source_name, $is_remote) = @_;
     my $problem_code;
     if (!$contest->is_practice) {
-        ($problem_code) = $contest->unused_problem_codes
-            or return msg(1017);
+        ($problem_code) = unused_problem_code or return msg(1017);
     }
 
     my CATS::Problem::Storage $p = CATS::Problem::Storage->new;
