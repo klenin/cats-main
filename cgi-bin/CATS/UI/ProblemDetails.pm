@@ -413,7 +413,6 @@ sub problem_link_frame {
         problem_title => $problem->{title},
         title_suffix => $problem->{title},
         problem => $problem,
-        problem_codes => \@cats::problem_codes,
         href_action => $href_action,
     );
 
