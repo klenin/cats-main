@@ -332,23 +332,28 @@ sub source_links {
 
     $si->{href_contest} =
         url_function('problems', cid => $si->{contest_id}, sid => $sid);
-    $si->{href_problem_text} =
-        url_function('problem_text', cpid => $si->{cp_id}, cid => $si->{contest_id}, sid => $sid);
     $si->{href_problem_details} =
         url_function('problem_details', pid => $si->{problem_id}, cid => $si->{contest_id}, sid => $sid);
+    my $problem_text_uid = $si->{account_id};
     if ($si->{elements_count} == 1) {
         my $original_req = $si->{elements}->[0];
         $si->{href_original_req_run_details} =
             url_f('run_details', rid => $original_req->{req_id});
         $si->{href_original_stats} =
             url_f('user_stats', uid => $original_req->{account_id});
+        $problem_text_uid = $original_req->{account_id};
     }
+    $si->{href_problem_text} = url_function('problem_text',
+        cpid => $si->{cp_id}, cid => $si->{contest_id}, sid => $sid,
+        ($si->{is_jury} ? (uid => $problem_text_uid) : ()));
     for (qw/run_details view_source run_log download_source view_test_details request_params/) {
         $si->{"href_$_"} = url_f($_, rid => $si->{req_id});
         $si->{"href_class_$_"} = $_ eq $current_link ? 'current_link' : '';
     }
-    $t->param(is_any_jury => 1) if $si->{is_jury};
-    get_judges($si) if $si->{is_jury};
+    if ($si->{is_jury}) {
+        $t->param(is_any_jury => 1);
+        get_judges($si);
+    }
     my $se = param('src_enc') || param('comment_enc') || 'WINDOWS-1251';
     $t->param(source_encodings => source_encodings($se));
 
