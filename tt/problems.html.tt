@@ -6,6 +6,7 @@
   td.problem_radio { width: 3%; height: 100%; padding: 0; margin: 0; }
   td.problem_radio label { display: block; width: 100%; height: 100%; vertical-align: middle; }
   td.problem_radio label a { vertical-align: middle; }
+  span.pcode input { width: 2em; }
 </style>
 [%- END %]
 [% PROCESS includes/menu_begin.tti %]
@@ -102,16 +103,20 @@ function chg_code(st_sel, pid) {
     [%~ IF p.href_problem_details %]<a href="[% p.href_problem_details %]" class="icon edit"></a>[% END %]</label>
 </td>[% END %]
 <td>
-    [% IF editable %]
-    [% IF p.code ~%]
-      <select onchange="chg_code(this, [% p.problem_id %])">
-      [%~ FOREACH pc IN problem_codes; option(pc, pc, pc == p.code); END ~%]
-      </select> [% END %]<a href="[% p.href_view_problem %]" target="_blank">
-    [% ELSE ~%]
-      <a href="[% p.href_view_problem %]" target="_blank">[% IF p.code; p.code %] - [% END %][% END %][% p.title | html %]</a>
-    [% IF p.problem_langs.size %][[% FOREACH pl IN p.problem_langs; href(pl.href, pl.name); ' ' UNLESS loop.last; END %]][% END %]
-    [% IF p.href_explanation %]&nbsp;[<a href="[% p.href_explanation %]" target="_blank">[% capt.explanation %]</a>][% END %]
-    [% IF p.show_packages %]&nbsp;[<a href="[% p.href_download %]">[% capt.package %]</a>][% END %]
+  [% IF editable %]
+    [% IF p.code.defined ~%]
+    <span class="pcode">
+      <input type="text" maxlength="3" class="bordered" value="[% p.code %]"
+        onchange="chg_code(this, [% p.problem_id %])" onfocus="choose_code(this)"/>
+    </span>
+    [% END %]
+    <a href="[% p.href_view_problem %]" target="_blank">
+  [% ELSE ~%]
+    <a href="[% p.href_view_problem %]" target="_blank">[% IF p.code; p.code %] - [% END %]
+  [% END %][% p.title | html %]</a>
+  [% IF p.problem_langs.size %][[% FOREACH pl IN p.problem_langs; href(pl.href, pl.name); ' ' UNLESS loop.last; END %]][% END %]
+  [% IF p.href_explanation %]&nbsp;[<a href="[% p.href_explanation %]" target="_blank">[% capt.explanation %]</a>][% END %]
+  [% IF p.show_packages %]&nbsp;[<a href="[% p.href_download %]">[% capt.package %]</a>][% END %]
 </td>
 [% IF editable %]
 <td>
@@ -222,6 +227,10 @@ function chg_code(st_sel, pid) {
     }
   });
 })();
+
+var used_codes = { [% FOREACH p IN problems %]"[%p.code %]": 1[% ', ' UNLESS loop.last; END %] };
+[% PROCESS includes/select_problem_code.tti %]
+
 </script>
 [% END %]
 [% PROCESS includes/menu_end.tti %]
