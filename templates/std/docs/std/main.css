@@ -89,7 +89,8 @@ div.search_hint {
 }
 div.search_hint table td { padding: 2px 5px; }
 div.search_hint table td a { display: block; }
-div.search_hint table td.sh1 a { color: #1010d0; }
+div.search_hint table td.sh0 a { color: #101010; }
+div.search_hint table td.sh1 a { color: #4040f0; }
 div.search_hint table td.sh2 a { color: #107010; }
 div.search_hint table td:hover { background-color: #ffcc55; }
 div.search_hint table td ul {
@@ -269,7 +270,7 @@ td.ts { font-size: 10pt; font-style: italic; }
 
 tr.odd { background-color: #ffffff; }
 tr.even { background-color: #f0f0f0; }
-table.highlight tr:hover { background-color: #ffcc55; }
+table.highlight > tr:hover { background-color: #ffcc55; }
 table.highlight tr.col_defs:hover, tr.col_defs { background-color: #ccccff; }
 tr.col_defs th a { color: black; }
 
