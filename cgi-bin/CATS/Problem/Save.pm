@@ -35,7 +35,7 @@ sub _add_problem_to_contest {
     my $target_contest = $contest_id == $cid ? $contest :
         CATS::Contest->new->load($contest_id, [ 'ctype', CATS::Contest::time_since_sql('start') ]);
 
-    $target_contest->is_practice || $code or return msg(1134);
+    $target_contest->is_practice || defined $code or return msg(1134);
     CATS::StaticPages::invalidate_problem_text(cid => $contest_id);
     $dbh->do(_u $sql->insert(contest_problems => {
         id => new_id, contest_id => $contest_id, problem_id => $pid, code => $code,

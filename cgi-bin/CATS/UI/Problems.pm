@@ -52,11 +52,7 @@ sub problems_all_frame {
 
     $is_jury && $p->{link} || $p->{kw} or return;
 
-    if ($p->{link}) {
-        my @u = $contest->unused_problem_codes
-            or return msg(1017);
-        $t->param(unused_codes => [ @u ]);
-    }
+    $t->param(used_codes => $contest->used_problem_codes) if $p->{link};
 
     my $where =
         $is_root ? {

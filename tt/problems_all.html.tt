@@ -22,13 +22,20 @@
 <br>
 [% IF user.is_jury && link %]
 [% capt.problem_code %]:
-<select name="code">
-[% FOREACH c IN unused_codes %]<option name="[% c %]">[% c %]</option>[% END %]
-</select>
+<span class="pcode">
+<input name="code" size="3" maxlength="3" onfocus="choose_code(this)" />
+</span>
 <br/><br/>
 [% IF move %]<input type="hidden" name="move" value="1" />[% END %]
 <button type="submit" name="link_save" value="1" class="button">[% move ? capt.move : capt.link %]</button>
 <button type="submit" name="link_cancel" value="1" class="button">[% capt.cancel %]</button>
+
+<script type="text/javascript" src="js/lib/jquery.min.js"></script>
+<script type="text/javascript">
+var used_codes = { [% FOREACH u IN used_codes %]"[% u %]": 1[% ', ' UNLESS loop.last; END %] };
+[% PROCESS includes/select_problem_code.tti %]
+</script>
+
 [% END %]
 </form>
 [% PROCESS includes/menu_end.tti %]
