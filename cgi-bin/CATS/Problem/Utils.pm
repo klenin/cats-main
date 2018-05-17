@@ -75,7 +75,7 @@ sub problems_change_status {
 sub problems_change_code {
     my ($p) = @_;
     my $cpid = $p->{change_code} or return msg(1012);
-    $p->{code} or return msg(1134);
+    defined $p->{code} or return msg(1134);
 
     $dbh->do(q~
         UPDATE contest_problems SET code = ? WHERE contest_id = ? AND id = ?~, undef,
