@@ -20,7 +20,7 @@ use CATS::TeX::Lite;
 use CATS::Time;
 use CATS::Utils qw(url_function);
 
-my ($current_pid, $html_code, $spellchecker, $text_span, $tags, $skip_depth);
+my ($current_pid, $html_code, $spellchecker, $text_span, $tags, $skip_depth, $has_snippets);
 my $wrapper = 'cats-wrapper';
 
 sub process_text {
@@ -132,6 +132,7 @@ sub sh_1 {
             return;
         }
     }
+    $has_snippets = 1 if $atts{'cats-snippet'};
 
     if ($el eq 'img' && $atts{picture}) {
         $atts{src} = download_image($atts{picture});
@@ -171,7 +172,7 @@ sub parse {
     # XML parser requires all text to be inside of top-level tag.
     eval { $parser->parse("<$wrapper>$xml_patch</$wrapper>"); 1; } or return $@;
     $skip_depth and die;
-    return $html_code;
+    $html_code;
 }
 
 sub contest_visible {
@@ -281,6 +282,7 @@ sub problem_text {
 
     $spellchecker = $is_jury_in_contest && !$p->{nospell} ? CATS::Problem::Spell->new : undef;
 
+    $has_snippets = 0;
     my $need_commit = 0;
     for my $problem (@problems) {
         $current_pid = $problem->{problem_id};
@@ -327,12 +329,11 @@ sub problem_text {
             FROM samples WHERE problem_id = ? ORDER BY rank~, { Slice => {} },
             $problem->{problem_id});
 
-        $problem->{href_problem_list} =
-            ($CATS::StaticPages::is_static_page ? '../' : '') .
-            url_function('problems', cid => $problem->{contest_id} || $problem->{orig_contest_id});
+        my $static_path = $CATS::StaticPages::is_static_page ? '../' : '';
 
-        $problem->{href_get_snippets} =
-            ($CATS::StaticPages::is_static_page ? '../' : '') .
+        $problem->{href_problem_list} = $static_path .
+            url_function('problems', cid => $problem->{contest_id} || $problem->{orig_contest_id});
+        $problem->{href_get_snippets} = $static_path .
             url_function('get_snippets', cpid => $problem->{cpid});
 
         $spellchecker->push_lang($problem->{lang}) if $spellchecker;
@@ -355,6 +356,7 @@ sub problem_text {
         problems => \@problems,
         tex_styles => CATS::TeX::Lite::styles(),
         mathjax => !$p->{nomath},
+        has_snippets => $has_snippets,
     );
 }
 

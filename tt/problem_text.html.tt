@@ -216,6 +216,47 @@ $('.problem_text div.problem_menu li.langs a').click(function() {
   }
 });
 
+[% IF has_snippets %]
+[%# Assigning to innerHTML forcibly comments out CDATA sections. https://stackoverflow.com/a/7068088 %]
+function htmlWithCDATASectionsToHtmlWithout(html) {
+  var ATTRS = '(?:[^>\"\']|\"[^\"]*\"|\'[^\']*\')*',
+    [%# names of tags with RCDATA or CDATA content. %]
+    SCRIPT = '[sS][cC][rR][iI][pP][tT]',
+    STYLE = '[sS][tT][yY][lL][eE]',
+    TEXTAREA = '[tT][eE][xX][tT][aA][rR][eE][aA]',
+    TITLE = '[tT][iI][tT][lL][eE]',
+    XMP = '[xX][mM][pP]',
+    SPECIAL_TAG_NAME = [SCRIPT, STYLE, TEXTAREA, TITLE, XMP].join('|'),
+    ANY = '[\\s\\S]*?',
+    AMP = /&/g,
+    LT = /</g,
+    GT = />/g;
+  return html.replace(new RegExp(
+    [%# Entities and text. %]
+    '^<]+' +
+    [%# Comment. %]
+    '|<!--' + ANY + '-->' +
+    [%# Regular tag. %]
+    '|<\/?(?!' + SPECIAL_TAG_NAME + ')[a-zA-Z]' + ATTRS + '>' +
+    [%# Special tags. %]
+    '|<\/?' + SCRIPT   + '\\b' + ATTRS + '>' + ANY + '<\/' + SCRIPT   + '\\s*>' +
+    '|<\/?' + STYLE    + '\\b' + ATTRS + '>' + ANY + '<\/' + STYLE    + '\\s*>' +
+    '|<\/?' + TEXTAREA + '\\b' + ATTRS + '>' + ANY + '<\/' + TEXTAREA + '\\s*>' +
+    '|<\/?' + TITLE    + '\\b' + ATTRS + '>' + ANY + '<\/' + TITLE    + '\\s*>' +
+    '|<\/?' + XMP      + '\\b' + ATTRS + '>' + ANY + '<\/' + XMP      + '\\s*>' +
+    [%# CDATA section. Content in capturing group 1. %]
+    '|<!\\[CDATA\\[(' + ANY + ')\\]\\]>' +
+    [%# A loose less-than. %]
+    '|<', 'g'),
+
+    function (token, cdataContent) {
+      return 'string' === typeof cdataContent ?
+        cdataContent.replace(AMP, '&amp;').replace(LT, '&lt;').replace(GT, '&gt;') :
+        token === '<' ? '&lt;' [%# Normalize loose less-thans. %] :
+        token;
+    });
+}
+
 var timeout_interval = 1000;
 var all_snippets_received = 0;
 
@@ -224,7 +265,7 @@ function fill_snippets(data, snippet_list) {
   for (var i = 0; i < snippet_list.length; ++i) {
     var snippet_data = data[snippet_list[i].getAttribute('cats-snippet')];
     if (snippet_data !== undefined && snippet_data !== null)
-        snippet_list[i].innerHTML = snippet_data;
+      snippet_list[i].innerHTML = htmlWithCDATASectionsToHtmlWithout(snippet_data);
     else
       all_snippets_received = 0;
   }
@@ -258,6 +299,7 @@ function update_snippets() {
   [% END %]
 }
 $(document).ready(update_snippets);
+[% END %]
 
 </script>
 [% PROCESS includes/timing.tti %]
