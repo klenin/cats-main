@@ -71,14 +71,14 @@ elsif ($mode eq 'runs') {
     for my $r (@$reqs) {
         $src_sth->execute($r->{id});
         while (my ($src, $orig_fname) = $src_sth->fetchrow_array) {
-            ($r->{orig_fname}, my $ext) = $orig_fname =~ /^(.*)(\.[a-zA-Z0-9]+)$/;
+            ($r->{orig_fname}, my $ext) = $orig_fname =~ /^(.*?)(\.[a-zA-Z0-9]+)?$/;
             $r->{verdict} = $CATS::Verdicts::state_to_name->{$r->{state}};
             (my $fn = $file_pattern) =~ s~%([a-z_]+)%~$r->{$1} // ''~ge;
             if ($dry_run) {
                 print $fn, (8 < length $fn ? "\t\t" : "\t");
             }
             else {
-                open my $f, '>', File::Spec->catfile($dest, "$fn$ext");
+                open my $f, '>', File::Spec->catfile($dest, $fn . ($ext // ''));
                 print $f $src;
             }
             ++$count;
