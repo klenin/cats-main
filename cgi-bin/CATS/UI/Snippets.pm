@@ -177,9 +177,10 @@ sub snippet_frame {
         INNER JOIN problems P ON P.id = S.problem_id
         LEFT JOIN contest_problems CP ON CP.problem_id = S.problem_id AND CP.contest_id = S.contest_id
         INNER JOIN accounts A ON A.id = S.account_id
-        WHERE S.contest_id = ?~ . $lv->maybe_where_cond . $lv->order_by
+        WHERE ~ . ($is_root ? '1 = 1 ' : 'S.contest_id = ? ') .
+        $lv->maybe_where_cond . $lv->order_by
     );
-    $sth->execute($cid, $lv->where_params);
+    $sth->execute(($is_root ? () : $cid), $lv->where_params);
 
 
     my $fetch_record = sub {
