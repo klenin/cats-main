@@ -31,6 +31,21 @@ sub jobs_frame {
         problem_id problem_title contest_id contest_title account_id team_name req_id
     ) ]);
 
+    my $job_name_to_type = {
+        submission => $cats::job_type_submission,
+        snippets => $cats::job_type_generate_snippets,
+    };
+    my $job_name_to_state = {
+        waiting => $cats::job_st_waiting,
+        running => $cats::job_st_in_progress,
+        finished => $cats::job_st_finished,
+    };
+    $lv->define_enums({ type => $job_name_to_type, state => $job_name_to_state, });
+    $t->param(
+        job_type_to_name => { map { $job_name_to_type->{$_} => $_ } keys %$job_name_to_type },
+        job_state_to_name => { map { $job_name_to_state->{$_} => $_ } keys %$job_name_to_state },
+    );
+
     my $maybe_field = sub {
         ($lv->visible_cols->{$_[0]} ? "COALESCE(J.$_[1], R.$_[1])" : 'NULL') . " AS $_[1]"
     };

@@ -18,10 +18,10 @@ function delete_job(href, name) {
   [% IF j.href_delete ~%]
   <a href="javascript:delete_job('[% j.href_delete %]', '[% j.id | html %]');" class="icon delete"></a>
   [%~ END %]
-  [% j.type %]
+  [% capt.types.item(job_type_to_name.item(j.type)) %]
 </td>
 <td>[% href(j.href_details, j.id) %]</td>
-<td>[% j.state %]</td>
+<td>[% capt.states.item(job_state_to_name.item(j.state)) %]</td>
 <td>[% j.start_time %]</td>
 [% IF visible_cols.Jn %]<td>[% j.judge_name %]</td>[% END %]
 [% IF visible_cols.Pr %]<td>[% href(j.href_problem_text, j.problem_title) %]</td>[% END %]

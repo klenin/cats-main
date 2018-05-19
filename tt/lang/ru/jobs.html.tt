@@ -1,0 +1,13 @@
+[%
+  capt.import({
+    types => {
+      submission => 'попытка',
+      snippets => 'фрагменты',
+    },
+    states => {
+      waiting => 'ожидает',
+      running => 'выполняется',
+      finished => 'завершена',
+    },
+  })
+%]
