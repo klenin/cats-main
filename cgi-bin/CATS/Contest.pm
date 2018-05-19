@@ -20,9 +20,12 @@ use CATS::DB;
 use CATS::Messages qw(msg);
 
 sub new {
-    my $self = shift;
+    my ($self, $init) = @_;
     $self = fields::new($self) unless ref $self;
-    return $self;
+    if ($init) {
+        $self->{$_} = $init->{$_} for keys %$init;
+    }
+    $self;
 }
 
 sub time_since_sql { "CAST(CURRENT_TIMESTAMP - $_[0]_date AS DOUBLE PRECISION) AS time_since_$_[0]" }
