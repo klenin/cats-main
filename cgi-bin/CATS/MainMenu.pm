@@ -64,6 +64,7 @@ sub generate {
             { item => res_str(513), href => url_f('contest_sites') } : ()),
         { item => res_str(510),
           href => url_f('console', $is_jury ? () : (uf => $uid || $user->{anonymous_id})) },
+        ($is_jury ? { item => res_str(593), href => url_f('jobs') } : ()),
         ($is_jury ? () : { item => res_str(557), href => url_f('import_sources') }),
     );
 

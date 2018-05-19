@@ -298,6 +298,7 @@ $main_routes = {
         delete => integer, edit_cancel => bool, edit_save => bool, name => str,
         wiki_lang => ident, wiki_id => integer, id => integer, title => str, text=> str,
     ],
+    jobs => [ \&CATS::UI::Jobs::jobs_frame, delete => integer, ],
 };
 
 $api_judge_routes = {

@@ -1,0 +1,36 @@
+[% PROCESS includes/menu_begin.tti %]
+
+<script>
+function delete_job(href, name) {
+    if (confirm("[% capt.want_to_delete %] '" + name + "'?" ))
+        document.location = href;
+}
+</script>
+
+[% PROCESS includes/listview_header.tti %]
+
+<table class="listview bordered highlight">
+[% PROCESS includes/listview_col_defs.tti %]
+
+[% FOREACH j IN jobs %]
+<tr class="[% loop.parity() %]">
+<td>
+  [% IF j.href_delete ~%]
+  <a href="javascript:delete_job('[% j.href_delete %]', '[% j.id | html %]');" class="icon delete"></a>
+  [%~ END %]
+  [% j.type %]
+</td>
+<td>[% href(j.href_details, j.id) %]</td>
+<td>[% j.state %]</td>
+<td>[% j.start_time %]</td>
+[% IF visible_cols.Jn %]<td>[% j.judge_name %]</td>[% END %]
+[% IF visible_cols.Pr %]<td>[% href(j.href_problem_text, j.problem_title) %]</td>[% END %]
+[% IF visible_cols.Ct %]<td>[% href(j.href_contest, j.contest_title) %]</td>[% END %]
+[% IF visible_cols.Ac %]<td>[% href(j.href_user, j.team_name) %]</td>[% END %]
+</tr>
+[% END %]
+</table>
+[% PROCESS includes/pages.tti %]
+</form>
+
+[% PROCESS includes/menu_end.tti %]
