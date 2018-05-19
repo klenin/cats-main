@@ -148,10 +148,12 @@ sub snippet_frame {
 
     $lv->define_columns(url_f('snippets'), 0, 0, \@cols);
 
-    $lv->define_db_searches([ 'code', grep $_ !~ /^(?:problem_id|text)$/, fields() ]);
+    $lv->define_db_searches([ 'code', 'name' ]);
     $lv->define_db_searches({
-        # Disambiguate problem_id between snippets and contest_problems.
+        # Disambiguate between snippets and contest_problems.
         problem_id => 'S.problem_id',
+        contest_id => 'S.contest_id',
+        account_id => 'S.account_id',
         text_len => 'COALESCE(CHARACTER_LENGTH(text), 0)',
     });
 
