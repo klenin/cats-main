@@ -30,12 +30,24 @@ sub _contest_is_practice {
         $contest_id) ? 1 : 0;
 }
 
+sub _unused_problem_code {
+    my ($c) = @_;
+    my %used_codes;
+    @used_codes{@{$c->used_problem_codes}} = undef;
+    for ('A'..'Z', '1'..'9') {
+        return $_ if !exists $used_codes{$_};
+    }
+    msg(1017);
+}
+
 sub _add_problem_to_contest {
     my ($contest_id, $pid, $code) = @_;
     my $target_contest = $contest_id == $cid ? $contest :
         CATS::Contest->new->load($contest_id, [ 'ctype', CATS::Contest::time_since_sql('start') ]);
 
-    $target_contest->is_practice || defined $code or return msg(1134);
+    if (!$target_contest->is_practice) {
+        $code //= _unused_problem_code($target_contest) or return;
+    }
     CATS::StaticPages::invalidate_problem_text(cid => $contest_id);
     $dbh->do(_u $sql->insert(contest_problems => {
         id => new_id, contest_id => $contest_id, problem_id => $pid, code => $code,
@@ -136,21 +148,11 @@ sub problems_replace {
     msg(1007);
 }
 
-sub unused_problem_code {
-    my ($self) = @_;
-    my %used_codes;
-    @used_codes{@{$contest->used_problem_codes}} = undef;
-    for ('A'..'Z', '1'..'9') {
-        return $_ if !exists $used_codes{$_};
-    }
-    undef;
-}
-
 sub problems_add {
     my ($source_name, $is_remote) = @_;
     my $problem_code;
     if (!$contest->is_practice) {
-        ($problem_code) = unused_problem_code or return msg(1017);
+        $problem_code = _unused_problem_code($contest) or return;
     }
 
     my CATS::Problem::Storage $p = CATS::Problem::Storage->new;
