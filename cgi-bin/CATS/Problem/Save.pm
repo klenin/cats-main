@@ -22,14 +22,6 @@ sub _get_cpid {
         $contest_id, $problem_id);
 }
 
-sub _contest_is_practice {
-    my ($contest_id) = @_;
-    return $contest->is_practice if $contest_id == $cid;
-    $dbh->selectrow_array(q~
-        SELECT ctype FROM contests WHERE id = ?~, undef,
-        $contest_id) ? 1 : 0;
-}
-
 sub _unused_problem_code {
     my ($c) = @_;
     my %used_codes;
