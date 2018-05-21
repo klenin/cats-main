@@ -10,6 +10,23 @@ use CATS::Messages qw(res_str);
 use CATS::Output qw(url_f);
 use CATS::Utils qw(url_function);
 
+sub job_details_frame {
+    my ($p) = @_;
+    my $lv = CATS::ListView->new(
+        name => 'job_details',
+        template => 'job_details.html.tt'
+    );
+
+    my $log = $dbh->selectrow_array(qq~
+        SELECT SUBSTRING(dump FROM 1 FOR 500000)
+        FROM logs WHERE job_id = ?~, undef,
+    $p->{jid});
+
+    $t->param(
+        judge_log_dump => $log,
+    );
+}
+
 sub jobs_frame {
     my ($p) = @_;
     $is_jury or return;
@@ -87,8 +104,7 @@ sub jobs_frame {
             %$row,
             href_details => url_f(
                 $row->{type} == $cats::job_type_submission ? ('run_details', rid => $row->{req_id}) :
-                $row->{type} == $cats::job_type_generate_snippets ? ('snippets', search =>
-                    join(',', map "$_=$row->{$_}", qw(contest_id problem_id account_id)), ) :
+                $row->{type} == $cats::job_type_generate_snippets ? ('job_details', jid => $row->{id}) :
                 die
             ),
             href_problem_text => url_function('problem_text',

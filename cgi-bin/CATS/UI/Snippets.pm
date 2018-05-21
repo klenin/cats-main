@@ -199,7 +199,7 @@ sub snippet_frame {
 
     $t->param(
         submenu => [ CATS::References::menu('snippets') ],
-     );
+    );
 }
 
 1;
