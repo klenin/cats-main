@@ -445,12 +445,6 @@ CREATE TABLE solution_output (
     CONSTRAINT so_fk FOREIGN KEY (req_id, test_rank) REFERENCES req_details(req_id, test_rank) ON DELETE CASCADE
 );
 
-CREATE TABLE log_dumps (
-    id      INTEGER NOT NULL PRIMARY KEY,
-    dump    BLOB,
-    req_id  INTEGER REFERENCES reqs(id) ON DELETE CASCADE
-);
-
 CREATE TABLE sources (
     req_id  INTEGER NOT NULL REFERENCES reqs(id) ON DELETE CASCADE,
     de_id   INTEGER NOT NULL REFERENCES default_de(id) ON DELETE CASCADE,

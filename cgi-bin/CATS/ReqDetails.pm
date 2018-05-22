@@ -361,18 +361,16 @@ sub source_links {
 }
 
 sub get_log_dump {
-    my ($rid, $compile_error) = @_;
-    my ($dump, $length) = $dbh->selectrow_array(qq~
-        SELECT SUBSTRING(dump FROM 1 FOR 500000), OCTET_LENGTH(dump)
-        FROM log_dumps WHERE req_id = ?~, undef,
-        $rid) or return ();
-    $dump = Encode::decode_utf8($dump);
-    ($dump) = $dump =~ m/
-        \Q$cats::log_section_start_prefix$cats::log_section_compile\E
-       (.*)
-        \Q$cats::log_section_end_prefix$cats::log_section_compile\E
-        /sx if $compile_error;
-    return (judge_log_dump => $dump, judge_log_length => $length);
+    my ($rid) = @_;
+    my $logs = $dbh->selectall_arrayref(q~
+        SELECT SUBSTRING(dump FROM 1 FOR 500000) AS dump, OCTET_LENGTH(dump) AS length,
+            J.id as job_id
+        FROM logs L INNER JOIN jobs J on L.job_id = J.id
+        WHERE J.req_id = ? ORDER BY J.create_time DESC~, { Slice => {} },
+        $rid) or return [];
+
+    $_->{dump} = Encode::decode_utf8($_->{dump}) for @$logs;
+    $logs;
 }
 
 1;

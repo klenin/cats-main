@@ -62,15 +62,13 @@ sub is_problem_uptodate {
     print_json({ uptodate => CATS::JudgeDB::is_problem_uptodate($p->{pid}, $p->{date}) });
 }
 
-sub save_log_dump {
+sub save_logs {
     my ($p) = @_;
-    my $judge_id = $sid && CATS::JudgeDB::get_judge_id($sid)
-        or return print_json($bad_sid);
 
-    $p->{req_id} or return print_json({ error => 'No req_id' });
+    $p->{job_id} or return print_json({ error => 'No job_id' });
 
     my $dump = CATS::Web::has_upload('dump') ? CATS::Web::upload_source('dump') : $p->{dump};
-    CATS::JudgeDB::save_log_dump($p->{req_id}, $dump, $judge_id);
+    CATS::JudgeDB::save_logs($p->{job_id}, $dump);
     $dbh->commit;
 
     print_json({ ok => 1 });

@@ -6,7 +6,7 @@ use warnings;
 use CATS::DB;
 use CATS::Globals qw($cid $is_jury $is_root $sid $t);
 use CATS::ListView;
-use CATS::Messages qw(res_str);
+use CATS::Messages qw(msg res_str);
 use CATS::Output qw(url_f);
 use CATS::Utils qw(url_function);
 
@@ -14,16 +14,24 @@ sub job_details_frame {
     my ($p) = @_;
     my $lv = CATS::ListView->new(
         name => 'job_details',
-        template => 'job_details.html.tt'
+        template => 'run_log.html.tt'
     );
 
-    my $log = $dbh->selectrow_array(qq~
-        SELECT SUBSTRING(dump FROM 1 FOR 500000)
-        FROM logs WHERE job_id = ?~, undef,
-    $p->{jid});
+    if ($p->{delete_log}) {
+        $dbh->do(q~
+            DELETE FROM logs WHERE job_id = ?~, undef,
+            $p->{jid});
+        $dbh->commit;
+        msg(1159);
+    }
+
+    my $logs = $dbh->selectall_arrayref(qq~
+        SELECT SUBSTRING(dump FROM 1 FOR 500000) AS dump, OCTET_LENGTH(dump) AS length
+        FROM logs WHERE job_id = ?~, { Slice => {} },
+        $p->{jid});
 
     $t->param(
-        judge_log_dump => $log,
+        logs => $logs
     );
 }
 

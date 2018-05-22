@@ -64,6 +64,17 @@ sub delete_limits {
         $limits_id);
 }
 
+sub delete_logs {
+    my ($request_id) = @_;
+    $dbh->do(q~
+        DELETE FROM logs L
+        WHERE EXISTS (
+            SELECT * FROM jobs J
+            WHERE J.id = L.job_id AND J.req_id = ?)~, undef,
+        $request_id
+    );
+}
+
 # Set request state manually. May be also used for retesting.
 # Params: request_id, fields: { state (required), failed_test, testsets, points, judge_id, limits_id }
 sub enforce_state {
@@ -82,10 +93,7 @@ sub enforce_state {
 
     # Save log for ignored requests.
     if ($fields->{state} != $cats::st_ignore_submit) {
-        $dbh->do(q~
-            DELETE FROM log_dumps WHERE req_id = ?~, undef,
-            $fields->{request_id}
-        ) or return;
+        delete_logs($fields->{request_id}) or return;
     }
 
     return 1;
