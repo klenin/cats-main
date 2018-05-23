@@ -3,6 +3,7 @@ package CATS::UI::Jobs;
 use strict;
 use warnings;
 
+use CATS::Constants;
 use CATS::DB;
 use CATS::Globals qw($cid $is_jury $is_root $sid $t);
 use CATS::ListView;
@@ -45,7 +46,7 @@ sub jobs_frame {
     ]);
     $lv->define_db_searches([ qw(
         id type state start_time judge_id judge_name
-        problem_id problem_title contest_id contest_title account_id team_name req_id
+        problem_id problem_title J1.contest_id contest_title account_id team_name req_id
     ) ]);
 
     my $job_name_to_type = {
@@ -57,7 +58,15 @@ sub jobs_frame {
         running => $cats::job_st_in_progress,
         finished => $cats::job_st_finished,
     };
-    $lv->define_enums({ type => $job_name_to_type, state => $job_name_to_state, });
+    my $judges = $dbh->selectall_arrayref(q~
+        SELECT nick, id FROM judges WHERE pin_mode > ?~, undef,
+        $cats::judge_pin_locked);
+    $lv->define_enums({
+        type => $job_name_to_type,
+        state => $job_name_to_state,
+        contest_id => { this => $cid },
+        judge_id => { map @$_, @$judges },
+    });
     $t->param(
         job_type_to_name => { map { $job_name_to_type->{$_} => $_ } keys %$job_name_to_type },
         job_state_to_name => { map { $job_name_to_state->{$_} => $_ } keys %$job_name_to_state },
@@ -74,7 +83,7 @@ sub jobs_frame {
         ($lv->visible_cols->{Jn} ? ' LEFT JOIN judges JD ON J.judge_id = JD.id' : '') .
         ($lv->visible_cols->{Pr} || $lv->visible_cols->{Ct} || $lv->visible_cols->{Ac} ?
             ' LEFT JOIN reqs R ON J.req_id = R.id' : ''),
-        [ 'J.id', 'J.type', 'J.state', 'J.start_time', 'J.req_id',
+        [ qw(J.id J.type J.state J.start_time J.req_id J.judge_id),
           ($lv->visible_cols->{Jn} ?  'JD.nick' : 'NULL') . ' AS judge_name',
           $maybe_field->('Pr', 'problem_id'),
           $maybe_field->('Ct', 'contest_id'),
