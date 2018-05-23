@@ -41,6 +41,27 @@ sub get_problem {
     print_json({ problem => CATS::JudgeDB::get_problem($p->{pid}) });
 }
 
+sub get_problem_snippets {
+    bad_judge and return -1;
+    my ($p) = @_;
+
+    print_json({ snippets => CATS::JudgeDB::get_problem_snippets($p->{pid}) });
+}
+
+sub get_problem_tags {
+    bad_judge and return -1;
+    my ($p) = @_;
+
+    print_json({ tags => CATS::JudgeDB::get_problem_tags($p->{pid}, $p->{cid}) });
+}
+
+sub get_snippet_text {
+    bad_judge and return -1;
+    my ($p) = @_;
+
+    print_json({ text => CATS::JudgeDB::get_snippet_text($p->{pid}, $p->{cid}, $p->{uid}, $p->{name}) });
+}
+
 sub get_problem_sources {
     bad_judge and return -1;
     my ($p) = @_;
@@ -176,6 +197,16 @@ sub save_answer_test_data {
 
     CATS::JudgeDB::save_answer_test_data(
         $p->{problem_id}, $p->{test_rank}, $p->{answer}, $p->{answer_size});
+
+    print_json({ ok => 1 });
+}
+
+sub save_problem_snippet {
+    bad_judge and return -1;
+    my ($p) = @_;
+
+    CATS::JudgeDB::save_problem_snippet(
+        $p->{problem_id}, $p->{contest_id}, $p->{account_id}, $p->{snippet_name}, $p->{text});
 
     print_json({ ok => 1 });
 }

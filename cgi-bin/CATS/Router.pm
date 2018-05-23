@@ -310,6 +310,10 @@ $api_judge_routes = {
     api_judge_get_problem => [ \&CATS::ApiJudge::get_problem, pid => integer, ],
     api_judge_get_problem_sources => [ \&CATS::ApiJudge::get_problem_sources, pid => integer, ],
     api_judge_get_problem_tests => [ \&CATS::ApiJudge::get_problem_tests, pid => integer, ],
+    api_judge_get_snippet_text => [ \&CATS::ApiJudge::get_snippet_text, pid => integer, cid => integer,
+        uid => integer, name => ident, ],
+    api_judge_get_problem_tags => [ \&CATS::ApiJudge::get_problem_tags, pid => integer, cid => integer, ],
+    api_judge_get_problem_snippets => [ \&CATS::ApiJudge::get_problem_snippets, pid => integer, ],
     api_judge_is_problem_uptodate => [ \&CATS::ApiJudge::is_problem_uptodate, pid => integer, date => str, ],
     api_judge_save_logs => [ \&CATS::ApiJudge::save_logs, job_id => integer, dump => undef, ],
     api_judge_select_request => [
@@ -344,6 +348,14 @@ $api_judge_routes = {
         test_rank => integer,
         answer => undef,
         answer_size => integer,
+    ],
+    api_judge_save_problem_snippet => [
+        \&CATS::ApiJudge::save_problem_snippet,
+        problem_id => integer,
+        contest_id => integer,
+        account_id => integer,
+        snippet_name => ident,
+        text => undef,
     ],
     api_judge_get_testset => [ \&CATS::ApiJudge::get_testset, req_id => integer, update => integer, ],
 };
