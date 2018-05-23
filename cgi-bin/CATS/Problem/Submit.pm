@@ -49,6 +49,14 @@ sub problems_submit {
 
     my $did = $p->{de_id} or return msg(1013);
 
+    $dbh->selectrow_array(q~
+        SELECT COUNT(*) FROM tests T
+        WHERE T.problem_id = ? AND T.snippet_name IS NOT NULL AND NOT EXISTS (
+            SELECT 1 FROM snippets S
+            WHERE S.name = T.snippet_name AND S.problem_id = T.problem_id AND
+                S.account_id = ? AND S.contest_id = ?)~, undef,
+        $pid, $uid, $cid) and return msg(1168);
+
     my $contest_finished = $contest->has_finished($user->{diff_time} + $user->{ext_time});
     my ($status, $title) = $dbh->selectrow_array(q~
         SELECT CP.status, P.title
