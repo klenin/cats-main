@@ -19,7 +19,7 @@ GRANT SELECT ON TABLE req_de_bitmap_cache TO judge;
 GRANT SELECT ON TABLE req_groups TO judge;
 GRANT SELECT ON TABLE req_details TO judge;
 GRANT SELECT ON TABLE solution_output TO judge;
-GRANT SELECT ON TABLE log_dumps TO judge;
+GRANT SELECT ON TABLE logs TO judge;
 GRANT SELECT ON TABLE sources TO judge;
 GRANT SELECT ON TABLE jobs TO judge;
 GRANT SELECT ON TABLE jobs_queue TO judge;
@@ -54,8 +54,8 @@ GRANT DELETE, INSERT
 GRANT INSERT
     ON TABLE solution_output TO judge;
 
-GRANT INSERT, UPDATE
-    ON TABLE log_dumps TO judge;
+GRANT INSERT
+    ON TABLE logs TO judge;
 
 GRANT UPDATE(state, start_time, finish_time, judge_id)
     ON TABLE jobs TO judge;

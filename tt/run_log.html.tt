@@ -7,13 +7,19 @@
 </head>
 <body>
 
+[% IF sources_info %]
 [% PROCESS includes/sources_info.tti %]
 <br/>
+[% END %]
 
-[% IF judge_log_dump %]
+[% IF logs.size %]
 <h3>[% capt.judge_log %]</h3>
-<pre><code id="judge_log">[% judge_log_dump | html %]</code></pre>
-<p>[% capt.length %]: [% judge_log_length %]</p>
+
+[% FOREACH log IN logs %]
+  <pre><code id="judge_log">[% log.dump | html %]</code></pre>
+  <p>[% capt.length %]: [% log.length %]</p>
+  <hr>
+[% END %]
 <form method="post">
   <button type="submit" name="delete_log" value="1" class="button">[% capt.delete_log %]</button>
 </form>

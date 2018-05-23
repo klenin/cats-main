@@ -58,7 +58,7 @@ function highlight_errors(rid, re) {
 <table>
 <tr>
 [% FOREACH si IN sources_info;  %]
-  [% IF si.compiler_output %]<td class="bordered"><pre id="co[% si.req_id %]">[% si.compiler_output.judge_log_dump | html %]</pre></td>
+  [% IF si.compiler_output %]<td class="bordered"><pre id="co[% si.req_id %]">[% si.compiler_output | html %]</pre></td>
   [% ELSE %]<td></td>
   [% END %]
 [% END %]

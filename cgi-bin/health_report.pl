@@ -113,9 +113,9 @@ sub log_url {
 
 {
     my ($length) = $dbh->selectrow_array(q~
-        SELECT SUM(OCTET_LENGTH(LD.dump))
-            FROM log_dumps LD INNER JOIN reqs R ON R.id = LD.req_id
-            WHERE R.submit_time > CURRENT_TIMESTAMP - 1~);
+        SELECT SUM(OCTET_LENGTH(L.dump))
+        FROM logs L INNER JOIN jobs J ON J.id = L.job_id
+        WHERE J.create_time > CURRENT_TIMESTAMP - 1~);
     if ($length) {
         $r->{long}->{'Log dump size'} = group_digits($length, '_');
     }

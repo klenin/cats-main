@@ -235,7 +235,7 @@ $main_routes = {
         comment_enc => encoding_default('UTF-8'),
     ],
     job_details => [ \&CATS::UI::Jobs::job_details_frame,
-        jid => integer,
+        jid => integer, delete_log => bool,
     ],
     visualize_test => [ \&CATS::UI::RunDetails::visualize_test_frame,
         rid => integer, vid => integer, test_rank => integer, ],
@@ -311,7 +311,7 @@ $api_judge_routes = {
     api_judge_get_problem_sources => [ \&CATS::ApiJudge::get_problem_sources, pid => integer, ],
     api_judge_get_problem_tests => [ \&CATS::ApiJudge::get_problem_tests, pid => integer, ],
     api_judge_is_problem_uptodate => [ \&CATS::ApiJudge::is_problem_uptodate, pid => integer, date => str, ],
-    api_judge_save_log_dump => [ \&CATS::ApiJudge::save_log_dump, req_id => integer, dump => undef, ],
+    api_judge_save_logs => [ \&CATS::ApiJudge::save_logs, job_id => integer, dump => undef, ],
     api_judge_select_request => [
         \&CATS::ApiJudge::select_request,
         de_version => integer,
