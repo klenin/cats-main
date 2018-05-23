@@ -47,6 +47,7 @@ sub jobs_frame {
     $lv->define_db_searches([ qw(
         id type state start_time judge_id judge_name
         problem_id problem_title J1.contest_id contest_title account_id team_name req_id
+        in_queue
     ) ]);
 
     my $job_name_to_type = {
@@ -79,11 +80,12 @@ sub jobs_frame {
     $is_root or $where->{'J1.contest_id'} = $cid;
 
     my ($q) = $sql->select(
-        'jobs J' .
+        'jobs J LEFT JOIN jobs_queue JQ ON JQ.id = J.id' .
         ($lv->visible_cols->{Jn} ? ' LEFT JOIN judges JD ON J.judge_id = JD.id' : '') .
         ($lv->visible_cols->{Pr} || $lv->visible_cols->{Ct} || $lv->visible_cols->{Ac} ?
             ' LEFT JOIN reqs R ON J.req_id = R.id' : ''),
         [ qw(J.id J.type J.state J.start_time J.req_id J.judge_id),
+          'CASE WHEN JQ.id IS NULL THEN 0 ELSE 1 END AS in_queue',
           ($lv->visible_cols->{Jn} ?  'JD.nick' : 'NULL') . ' AS judge_name',
           $maybe_field->('Pr', 'problem_id'),
           $maybe_field->('Ct', 'contest_id'),

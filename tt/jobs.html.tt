@@ -1,3 +1,8 @@
+[% extra_head = BLOCK %]
+<style>
+  td.in_queue { background: #fffd9d; }
+</style>
+[% END %]
 [% PROCESS includes/menu_begin.tti %]
 
 <script>
@@ -21,7 +26,7 @@ function delete_job(href, name) {
   [% capt.types.item(job_type_to_name.item(j.type)) %]
 </td>
 <td>[% href(j.href_details, j.id) %]</td>
-<td>[% capt.states.item(job_state_to_name.item(j.state)) %]</td>
+<td[% ' class="in_queue"' IF j.in_queue %]>[% capt.states.item(job_state_to_name.item(j.state)) %]</td>
 <td>[% j.start_time %]</td>
 [% IF visible_cols.Jn %]<td>[% j.judge_name %]</td>[% END %]
 [% IF visible_cols.Pr %]<td>[% href(j.href_problem_text, j.problem_title) %]</td>[% END %]
