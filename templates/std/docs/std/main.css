@@ -270,7 +270,7 @@ td.ts { font-size: 10pt; font-style: italic; }
 
 tr.odd { background-color: #ffffff; }
 tr.even { background-color: #f0f0f0; }
-table.highlight > tr:hover { background-color: #ffcc55; }
+table.highlight > tbody > tr:hover { background-color: #ffcc55; }
 table.highlight tr.col_defs:hover, tr.col_defs { background-color: #ccccff; }
 tr.col_defs th a { color: black; }
 
