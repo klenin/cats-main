@@ -8,7 +8,7 @@ use CATS::ListView;
 use CATS::Messages qw(msg res_str);
 use CATS::Output qw(url_f);
 use CATS::DB;
-use CATS::Web qw(param print_json);
+use CATS::Web qw(print_json);
 use CATS::Job;
 
 sub fields() {qw(id account_id problem_id contest_id text name)}

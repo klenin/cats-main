@@ -53,6 +53,12 @@
 [% IF p.overridden_time_limit || p.overridden_memory_limit || p.overridden_write_limit %]
 <tr><td>[% capt.overridden_limits %]</td><td>[% href(href_problem_limits, limits_str(p.overridden_time_limit, p.overridden_memory_limit, p.overridden_write_limit)) %]</td></tr>
 [% END %]
+[% IF p.snippets_declared || p.snippets_generated -%]
+<tr><td>[% capt.snippets %]</td><td class="nested"><table class="internal_borders padded"><tr>
+  <td>[% capt.snippets_declared %]: [% p.snippets_declared %]</td>
+  <td>[% capt.snippets_generated %]: [% href(href_snippets, p.snippets_generated) %]</td>
+</tr></table></td></tr>
+[% END -%]
 <tr><td>[% capt.request_count %]</td><td class="nested">
   <table class="internal_borders request_count padded">
     <tr>[% FOREACH rc IN p.request_count %]<td class="run_details_[% rc.short %]">[% rc.name %]</td>[% END %]</tr>

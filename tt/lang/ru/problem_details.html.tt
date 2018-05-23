@@ -30,6 +30,9 @@
     tags_none => 'нет',
     original_limits => 'Исходные ограничения',
     overridden_limits => 'Переопределённые ограничения',
+    snippets => 'Фрагменты',
+    snippets_declared => 'Определено',
+    snippets_generated => 'Сгенерировано',
     request_count => 'Количество вердиктов',
   })
 %]

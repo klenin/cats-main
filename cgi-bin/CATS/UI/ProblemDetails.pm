@@ -49,7 +49,11 @@ sub problem_details_frame {
             L.memory_limit AS overridden_memory_limit,
             L.write_limit as overridden_write_limit,
             C.title AS contest_name, A.team_name,
-            CP.id AS cpid, CP.testsets, CP.points_testsets, CP.tags
+            CP.id AS cpid, CP.testsets, CP.points_testsets, CP.tags,
+            (SELECT COUNT(*) FROM problem_snippets PS
+                WHERE PS.problem_id = P.id) AS snippets_declared,
+            (SELECT COUNT(*) FROM snippets S
+                WHERE S.problem_id = P.id AND S.contest_id = CP.contest_id) AS snippets_generated
         FROM problems P
         INNER JOIN contests C ON C.id = P.contest_id
         INNER JOIN contest_problems CP ON CP.problem_id = P.id AND CP.contest_id = ?
@@ -127,6 +131,7 @@ sub problem_details_frame {
         href_test_data => url_f('problem_test_data', pid => $p->{pid}),
         href_problem_limits => url_f('problem_limits', pid => $p->{pid}),
         href_tags => url_f('problem_select_tags', pid => $p->{pid}),
+        href_snippets => url_f('snippets', search => "problem_id=$p->{pid},contest_id=$cid"),
     );
     CATS::Problem::Utils::problem_submenu('problem_details', $p->{pid});
 }
