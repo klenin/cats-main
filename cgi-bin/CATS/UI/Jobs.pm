@@ -27,7 +27,7 @@ sub job_details_frame {
     }
 
     my $logs = $dbh->selectall_arrayref(qq~
-        SELECT SUBSTRING(dump FROM 1 FOR 500000) AS dump, OCTET_LENGTH(dump) AS length
+        SELECT SUBSTRING(dump FROM 1 FOR 500000) AS dump, OCTET_LENGTH(dump) AS "length"
         FROM logs WHERE job_id = ?~, { Slice => {} },
         $p->{jid});
 

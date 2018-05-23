@@ -363,7 +363,7 @@ sub source_links {
 sub get_log_dump {
     my ($rid) = @_;
     my $logs = $dbh->selectall_arrayref(q~
-        SELECT SUBSTRING(dump FROM 1 FOR 500000) AS dump, OCTET_LENGTH(dump) AS length,
+        SELECT SUBSTRING(dump FROM 1 FOR 500000) AS dump, OCTET_LENGTH(dump) AS "length",
             J.id as job_id
         FROM logs L INNER JOIN jobs J on L.job_id = J.id
         WHERE J.req_id = ? ORDER BY J.create_time DESC~, { Slice => {} },
