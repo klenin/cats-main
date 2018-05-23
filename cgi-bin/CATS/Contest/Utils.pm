@@ -46,8 +46,23 @@ sub contest_fields_str {
         'CURRENT_TIMESTAMP - finish_date AS since_finish',
 }
 
+sub _contest_search_fields() {qw(
+    show_all_tests
+    show_test_resources
+    show_checker_comment
+    show_packages
+    show_all_results
+    local_only
+    show_flags
+    max_reqs
+    show_test_data
+    req_selection
+    pinned_judges_only
+    show_sites
+)}
+
 sub contest_searches { return {
-    (map { $_ => "C.$_" } contest_fields),
+    (map { $_ => "C.$_" } contest_fields, _contest_search_fields),
     since_start => '(CURRENT_TIMESTAMP - start_date)',
     since_finish => '(CURRENT_TIMESTAMP - finish_date)',
 }}

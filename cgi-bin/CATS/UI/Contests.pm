@@ -6,6 +6,7 @@ use warnings;
 use CATS::Constants;
 use CATS::Contest::Participate qw(get_registered_contestant is_jury_in_contest);
 use CATS::Contest;
+use CATS::Contest::Utils;
 use CATS::DB;
 use CATS::Globals qw($cid $contest $is_jury $is_root $sid $t $uid $user);
 use CATS::ListView;
