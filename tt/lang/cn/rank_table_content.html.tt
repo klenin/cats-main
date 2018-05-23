@@ -20,6 +20,9 @@
     time => 'time',
     place => 'place'
     status => 'status',
+    ooc => '脱离比赛',
+    remote => '远程',
+    virtual => 'virtual',
     average_points => 'Average points',
     successful_submits => 'Successful submits',
   })

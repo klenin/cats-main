@@ -20,6 +20,9 @@
     time => 'время',
     place => 'место'
     status => 'статус',
+    ooc => 'внек.',
+    remote => 'дист.',
+    virtual => 'вирт.',
     average_points => 'Средний балл',
     successful_submits => 'Успешных попыток',
   })
