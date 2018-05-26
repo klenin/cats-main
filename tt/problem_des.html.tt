@@ -1,0 +1,21 @@
+[% PROCESS includes/menu_begin.tti %]
+
+[% capt.sources %]:
+
+[% PROCESS includes/listview_header.tti %]
+</form>
+<form method="post" enctype="multipart/form-data" action="[% href_action %]">
+<table class="listview highlight bordered">
+[% PROCESS includes/listview_col_defs.tti %]
+[% FOREACH ps IN problem_sources %]
+<tr class="[% loop.parity() %]">
+<td>[% ps.type_name %]</td>
+<td>[% ps.name %]</td>
+<td>[% href(ps.href_edit, ps.fname) %]</td>
+<td>[% ps.code %]</td>
+<td>[% ps.description %]</td>
+</tr>
+[% END %]
+</table>
+
+[% PROCESS includes/menu_end.tti %]

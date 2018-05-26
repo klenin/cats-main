@@ -398,6 +398,57 @@ sub problem_select_tags_frame {
     CATS::Problem::Utils::problem_submenu('problem_select_tags', $p->{pid});
 }
 
+sub problem_des_frame {
+    my ($p) = @_;
+
+    my $lv = CATS::ListView->new(
+        name => 'problem_des', template => 'problem_des.html.tt', array_name => 'problem_sources');
+
+    $p->{pid} && $is_jury or return;
+
+    my $problem = $dbh->selectrow_hashref(q~
+        SELECT P.id, P.title, P.commit_sha, CP.id AS cpid, CP.tags
+        FROM problems P INNER JOIN contest_problems CP ON P.id = CP.problem_id
+        WHERE P.id = ? AND CP.contest_id = ?~, undef,
+        $p->{pid}, $cid) or return;
+    $problem->{commit_sha} = eval { CATS::Problem::Storage::get_latest_master_sha($p->{pid}); } || 'error';
+
+    $lv->define_columns(url_f('problem_des', pid => $p->{pid}), 0, 0, [
+        { caption => res_str(642), order_by => 'stype', width => '10%' },
+        { caption => res_str(601), order_by => 'name', width => '20%' },
+        { caption => res_str(674), order_by => 'fname', width => '20%' },
+        { caption => res_str(619), order_by => 'code', width => '20%' },
+        { caption => res_str(641), order_by => 'description', width => '20%' },
+    ]);
+    $lv->define_db_searches([qw(stype name fname D.id code description)]);
+
+    my $c = $dbh->prepare(q~
+        SELECT PS.stype, PS.name, PS.fname, D.id, D.code, D.description
+        FROM problem_sources PS INNER JOIN default_de D ON PS.de_id = D.id
+        WHERE PS.problem_id = ? ~ . $lv->maybe_where_cond . $lv->order_by);
+    $c->execute($p->{pid}, $lv->where_params);
+
+    my $fetch_record = sub {
+        my $c = $_[0]->fetchrow_hashref or return ();
+        return (
+            %$c,
+            type_name => $cats::source_module_names{$c->{stype}},
+            href_edit => url_f('problem_history_edit',
+                pid => $p->{pid}, file => $c->{fname}, hb => $problem->{commit_sha}),
+        );
+    };
+
+    $lv->attach(url_f('problem_des', pid => $p->{pid}), $fetch_record, $c);
+    $c->finish;
+
+    $t->param(
+        problem => $problem,
+        problem_title => $problem->{title},
+        title_suffix => $problem->{title},
+    );
+    CATS::Problem::Utils::problem_submenu('problem_des', $p->{pid});
+}
+
 sub problem_link_frame {
     my ($p) = @_;
     $p->{pid} && $is_jury or return;

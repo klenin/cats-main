@@ -120,6 +120,9 @@ $main_routes = {
     problem_select_tags => [
         \&CATS::UI::ProblemDetails::problem_select_tags_frame,
         pid => integer, tags => str, save => bool, from_problems => bool, ],
+    problem_des => [
+        \&CATS::UI::ProblemDetails::problem_des_frame,
+        pid => integer, ],
     problem_limits => [ \&CATS::UI::ProblemDetails::problem_limits_frame,
         pid => integer, cpid => integer, override => bool, clear_override => bool,
         (map { $_ => str } @cats::limits_fields),
