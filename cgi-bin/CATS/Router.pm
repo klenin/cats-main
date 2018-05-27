@@ -122,7 +122,7 @@ $main_routes = {
         pid => integer, tags => str, save => bool, from_problems => bool, ],
     problem_des => [
         \&CATS::UI::ProblemDetails::problem_des_frame,
-        pid => integer, ],
+        pid => integer, allow => array_of integer, save => bool, ],
     problem_limits => [ \&CATS::UI::ProblemDetails::problem_limits_frame,
         pid => integer, cpid => integer, override => bool, clear_override => bool,
         (map { $_ => str } @cats::limits_fields),

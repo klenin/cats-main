@@ -307,3 +307,4 @@
 1166 "Some results were omitted, try more specific query."
 1167 "Profile fields git author's name and git author's e-mail are required."
 1168 "Your problem variant is not ready. View problem text before submitting."
+1169 "Allowed development environments: removed %d, added %d."

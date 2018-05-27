@@ -1,5 +1,7 @@
 [%
   capt.import({
     sources => 'Sources',
+    allow_des => 'Allow only development environments',
+    save => '更换',
   })
 %]
