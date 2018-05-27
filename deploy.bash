@@ -70,7 +70,7 @@ if [[ $step =~ (^|,)1(,|$)  || $step == "*" ]]; then
 	else
 		echo "Can't find a proper firebird-dev package"
 	fi
-	
+
 	packages+=(git unzip wget build-essential libaspell-dev
 		aspell-en aspell-ru apache2 libapache2-mod-perl2 libapreq2-3 libapreq2-dev
 		libapache2-mod-perl2-dev libexpat1 libexpat1-dev libapache2-request-perl cpanminus)
@@ -211,8 +211,27 @@ else
 	echo "skip"
 fi
 
-echo "7. Configure and init cats database... "
-if [[ ($step =~ (^|,)7(,|$) || $step == "*") && $FB_DEV_VERSION ]]; then
+echo "7. Download JS... "
+if [[ $step =~ (^|,)7(,|$) || $step == "*" ]]; then
+	mkdir tmp_js
+	cd tmp_js/
+	wget https://code.jquery.com/jquery-1.12.4.min.js
+	mv jquery-1.12.4.min.js ../js/lib/jquery.min.js
+	wget http://www.flotcharts.org/downloads/flot-0.8.3.zip
+	unzip flot-0.8.3.zip
+	mv flot/jquery.flot.min.js ../js/lib/
+	wget https://github.com/mathjax/MathJax/archive/2.7.1.zip
+	unzip 2.7.1.zip
+	mv MathJax-2.7.1 ../js/lib/MathJax
+	cd $CATS_ROOT
+	rm -rf tmp_js/
+	echo "ok"
+else
+	echo "skip"
+fi
+
+echo "8. Configure and init cats database... "
+if [[ ($step =~ (^|,)8(,|$) || $step == "*") && $FB_DEV_VERSION ]]; then
 	CONFIG_NAME="Config.pm"
 	CONFIG_ROOT="${CATS_ROOT}/cgi-bin/cats-problem/CATS"
 	CREATE_DB_NAME="create_db.sql"
@@ -272,25 +291,6 @@ if [[ ($step =~ (^|,)7(,|$) || $step == "*") && $FB_DEV_VERSION ]]; then
 	cd "$CREATE_DB_ROOT"
 	sudo isql-fb -i "$CREATE_DB_NAME"
 	cd "$CATS_ROOT"
-	echo "ok"
-else
-	echo "skip"
-fi
-
-echo "8. Download JS... "
-if [[ $step =~ (^|,)6(,|$) || $step == "*" ]]; then
-	mkdir tmp_js
-	cd tmp_js/
-	wget https://code.jquery.com/jquery-1.12.4.min.js
-	mv jquery-1.12.4.min.js ../js/lib/jquery.min.js
-	wget http://www.flotcharts.org/downloads/flot-0.8.3.zip
-	unzip flot-0.8.3.zip
-	mv flot/jquery.flot.min.js ../js/lib/
-	wget https://github.com/mathjax/MathJax/archive/2.7.1.zip
-	unzip 2.7.1.zip
-	mv MathJax-2.7.1 ../js/lib/MathJax
-	cd $CATS_ROOT
-	rm -rf tmp_js/
 	echo "ok"
 else
 	echo "skip"
