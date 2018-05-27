@@ -15,12 +15,12 @@
 [% IF editable %]
 <script type="text/javascript">
 function getSelectedButton(button) {
-    if (button == null) return -1;
-    if (button.checked) return button.value;
-    for (var i = 0; i < button.length; i++)
-        if (button[i].checked)
-            return button[i].value;
-    return -1; //no button selected
+  if (button == null) return -1;
+  if (button.checked) return button.value;
+  for (var i = 0; i < button.length; i++)
+    if (button[i].checked)
+      return button[i].value;
+  return -1; //no button selected
 }
 
 var a = [];
@@ -31,29 +31,29 @@ a[[% p.problem_id %]] = [
 [% END %]
 
 function d() {
-    var v = getSelectedButton(document.problems_form.problem_id);
-    if (v < 0) {
-        alert('[% capt.no_problem_delete %]');
-        return;
-    }
-    if (confirm("[% capt.want_to_delete %] '" + a[v][0] + "'?"))
-        document.location = a[v][1];
+  var v = getSelectedButton(document.problems_form.problem_id);
+  if (v < 0) {
+    alert('[% capt.no_problem_delete %]');
+    return;
+  }
+  if (confirm("[% capt.want_to_delete %] '" + a[v][0] + "'?"))
+    document.location = a[v][1];
 }
 
 function r() {
-    var v = getSelectedButton(document.problems_form.problem_id);
-    if (v < 0)
-        alert('[% capt.no_problem_replace %]');
-    else
-        document.location = a[v][2];
+  var v = getSelectedButton(document.problems_form.problem_id);
+  if (v < 0)
+    alert('[% capt.no_problem_replace %]');
+  else
+    document.location = a[v][2];
 }
 
 function chg_status(st_sel, pid) {
-    document.location = a[pid][3] + '&status=' + st_sel.value;
+  document.location = a[pid][3] + '&status=' + st_sel.value;
 }
 
 function chg_code(st_sel, pid) {
-    document.location = a[pid][4] + '&code=' + st_sel.value;
+  document.location = a[pid][4] + '&code=' + st_sel.value;
 }
 </script>
 [% END %]
@@ -120,12 +120,12 @@ function chg_code(st_sel, pid) {
 </td>
 [% IF editable %]
 <td>
-    <select onchange="chg_status(this, [% p.problem_id %])">
-    [%~ FOREACH sl IN status_list; option(sl.id, sl.name, sl.id == p.status); END ~%]
-    </select>
-    [%- IF p.is_linked %] [<a href="[% p.href_original_contest %]" title="[% p.contest_title %]">L</a>][% END %]
-    [%- IF p.usage_count %] [<a href="[% p.href_usage %]" title="[% capt.used_in %]">[% p.usage_count %]</a>][% END %]
-    [% IF p.remote_url %] [<a href="[% p.remote_url %]" title="[% p.remote_url %]">R</a>][% END %]
+  <select onchange="chg_status(this, [% p.problem_id %])">
+  [%~ FOREACH sl IN status_list; option(sl.id, sl.name, sl.id == p.status); END ~%]
+  </select>
+  [%- IF p.is_linked %] [<a href="[% p.href_original_contest %]" title="[% p.contest_title %]">L</a>][% END %]
+  [%- IF p.usage_count %] [<a href="[% p.href_usage %]" title="[% capt.used_in %]">[% p.usage_count %]</a>][% END %]
+  [% IF p.remote_url %] [<a href="[% p.remote_url %]" title="[% p.remote_url %]">R</a>][% END %]
 </td>
 [% IF visible_cols.Ts -%]
 <td><a href="[% p.href_select_testsets %]">[% p.testsets %]</a> ([% p.test_count %])
@@ -145,17 +145,17 @@ function chg_code(st_sel, pid) {
 [% END %]
 [% IF contest.is_practice %]<td>[% p.contest_title | html %]</td>[% END %]
 [% IF (is_user || contest.is_practice) && visible_cols.Vc %]
-  <td class="problem_req_count">
-    <div>
-    <div class="last_verdict [% 'run_details_' _ p.last_verdict IF p.last_verdict %]">
-      [%- maybe_href(p.href_last_request, p.last_verdict, capt.verdicts.item(p.last_verdict)) -%]
-    </div>
-    [%- IF p.href_problem_console %]<a href="[% p.href_problem_console %]">[% END -%]
-    [% p.accept_count %] / [% p.wa_count %] / [% p.tle_count %]
-    [%- IF p.href_problem_console %]</a>[% END -%]
-    [% IF p.judges_installed %][[% p.judges_installed %]][% END -%]
-    </div>
-  </td>
+<td class="problem_req_count">
+  <div>
+  <div class="last_verdict [% 'run_details_' _ p.last_verdict IF p.last_verdict %]">
+    [%- maybe_href(p.href_last_request, p.last_verdict, capt.verdicts.item(p.last_verdict)) -%]
+  </div>
+  [%- IF p.href_problem_console %]<a href="[% p.href_problem_console %]">[% END -%]
+  [% p.accept_count %] / [% p.wa_count %] / [% p.tle_count %]
+  [%- IF p.href_problem_console %]</a>[% END -%]
+  [% IF p.judges_installed %][[% p.judges_installed %]][% END -%]
+  </div>
+</td>
 [% END %]
 </tr>
 [% END %]
@@ -203,7 +203,7 @@ function chg_code(st_sel, pid) {
 [%- END %]
 [% IF can_participate_virtual -%]
 <button type="submit" name="participate_virtual" value="1" class="button"
-    [% IF user.is_virtual %]onclick="return confirm('[% capt.virtual_warning %]')"[% END %]>
+  [% IF user.is_virtual %]onclick="return confirm('[% capt.virtual_warning %]')"[% END %]>
 [%- capt.participate_virtually -%]
 </button>
 [%- END %]
