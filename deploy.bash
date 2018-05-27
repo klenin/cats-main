@@ -44,6 +44,9 @@ http_group=www-data
 
 
 FB_DEV_VERSION=`sudo apt-cache pkgnames | grep firebird-dev`
+FB_DEV_VERSION=`sudo apt-cache show firebird-dev | grep Version`
+[[ $FB_DEV_VERSION =~ ([0-9]+\.[0-9]+) ]]
+FB_DEV_VERSION=${BASH_REMATCH[1]}
 FB_DEF_OP_MODE='superclassic'
 packages=(firebird-dev)
 
@@ -55,24 +58,19 @@ packages=(firebird-dev)
 
 echo "1. Install apt packages... "
 if [[ $step =~ (^|,)1(,|$)  || $step == "*" ]]; then
-	
-	if [[ $FB_DEV_VERSION ]]; then
-		FB_DEV_VERSION=`sudo apt-cache show firebird-dev | grep Version`
-
-		if [[ $FB_DEV_VERSION =~ ([0-9]+\.[0-9]+) ]]
-		then
-			FB_DEV_VERSION=${BASH_REMATCH[1]}
-			if [[ `echo "$FB_DEV_VERSION < 3.0" | bc` -eq 1 ]]; then
-				read -e -p "Firebird Operation Mode (classic, super, superclassic): " -i $FB_DEF_OP_MODE $FB_DEF_OP_MODE
-				FB_PACKAGE=firebird${FB_DEV_VERSION}-${FB_DEF_OP_MODE}
-			else
-				FB_PACKAGE=firebird${FB_DEV_VERSION}-server
-			fi
-			packages+=($FB_PACKAGE)
+	if [[ FB_DEV_VERSION ]]
+	then
+		if [[ `echo "$FB_DEV_VERSION < 3.0" | bc` -eq 1 ]]; then
+			read -e -p "Firebird Operation Mode (classic, super, superclassic): " -i $FB_DEF_OP_MODE $FB_DEF_OP_MODE
+			FB_PACKAGE=firebird${FB_DEV_VERSION}-${FB_DEF_OP_MODE}
 		else
-			echo "Can't find a proper firebird-dev package"
+			FB_PACKAGE=firebird${FB_DEV_VERSION}-server
 		fi
-	fi 
+		packages+=($FB_PACKAGE)
+	else
+		echo "Can't find a proper firebird-dev package"
+	fi
+	
 	packages+=(git unzip wget build-essential libaspell-dev
 		aspell-en aspell-ru apache2 libapache2-mod-perl2 libapreq2-3 libapreq2-dev
 		libapache2-mod-perl2-dev libexpat1 libexpat1-dev libapache2-request-perl cpanminus)
