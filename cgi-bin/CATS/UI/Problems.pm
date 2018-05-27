@@ -246,6 +246,7 @@ sub problems_frame {
             { caption => res_str(667), order_by => 'keywords', width => '10%', col => 'Kw' },
             { caption => res_str(635), order_by => 'last_modified_by', width => '5%', col => 'Mu' },
             { caption => res_str(634), order_by => 'P.upload_date', width => '10%', col => 'Mt' },
+            { caption => res_str(641), order_by => 'allow_des', width => '5%', col => 'Ad' },
         )
         : ()
         ),
@@ -285,6 +286,10 @@ sub problems_frame {
         SELECT LIST(DISTINCT K.code, ' ') FROM keywords K
         INNER JOIN problem_keywords PK ON PK.keyword_id = K.id AND PK.problem_id = P.id
         ) AS keywords,~ : '';
+    my $allow_des = $is_jury && $lv->visible_cols->{Ad} ? q~(
+        SELECT LIST(DISTINCT D.code, ' ') FROM default_de D
+        INNER JOIN contest_problem_des CPD ON CPD.cp_id = CP.id AND CPD.de_id = D.id
+        ) AS allow_des,~ : '';
     # Use result_time to account for re-testing standard solutions,
     # but also limit by sumbit_time to speed up since there is no index on result_time.
     my $judges_installed_sql = $is_jury && $lv->visible_cols->{Vc} ? qq~
@@ -300,6 +305,7 @@ sub problems_frame {
             $select_code AS code, P.title, OC.title AS contest_title,
             $counts,
             $keywords
+            $allow_des
             P.contest_id - CP.contest_id AS is_linked,
             (SELECT COUNT(*) FROM contest_problems CP1
                 WHERE CP1.contest_id <> CP.contest_id AND CP1.problem_id = P.id) AS usage_count,
@@ -386,6 +392,7 @@ sub problems_frame {
             href_select_testsets => url_f('problem_select_testsets', pid => $c->{pid}, from_problems => 1),
             href_select_tags => url_f('problem_select_tags', pid => $c->{pid}, from_problems => 1),
             href_last_request => ($last_request ? url_f('run_details', rid => $last_request) : ''),
+            href_allow_des => url_f('problem_des', pid => $c->{pid}),
 
             show_packages => $show_packages,
             status => $c->{status},
@@ -421,6 +428,7 @@ sub problems_frame {
             tags => $c->{tags},
             last_verdict => $last_verdict,
             keywords => $c->{keywords},
+            allow_des => $c->{allow_des} // '*',
         );
     };
 
