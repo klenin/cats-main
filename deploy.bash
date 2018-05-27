@@ -203,7 +203,7 @@ EOF
 	# now adjust permissions
 	sudo chgrp -R ${http_group} cgi-bin download static templates tt
 	chmod -R g+r cgi-bin
-	chmod g+rw static tt download/{,att,img,pr,vis} cgi-bin/rank_cache{,/r}
+	chmod g+rw static tt download/{,att,img,pr,vis} cgi-bin/rank_cache{,/r} cgi-bin/repos
 	sudo service apache2 reload
 	sudo service apache2 restart
 	echo "ok"
