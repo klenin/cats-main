@@ -66,13 +66,10 @@ sub delete_limits {
 
 sub delete_logs {
     my ($request_id) = @_;
-    $dbh->do(q~
-        DELETE FROM logs L
-        WHERE EXISTS (
-            SELECT * FROM jobs J
-            WHERE J.id = L.job_id AND J.req_id = ?)~, undef,
-        $request_id
-    );
+    my $jobs = $dbh->selectcol_arrayref(q~
+        SELECT id FROM jobs WHERE req_id = ?~, undef,
+        $request_id) or return;
+    $dbh->do(_u $sql->delete('logs', { job_id => $jobs })) if @$jobs;
 }
 
 # Set request state manually. May be also used for retesting.
@@ -91,12 +88,7 @@ sub enforce_state {
 
     CATS::JudgeDB::ensure_request_de_bitmap_cache($request_id);
 
-    # Save log for ignored requests.
-    if ($fields->{state} != $cats::st_ignore_submit) {
-        delete_logs($fields->{request_id}) or return;
-    }
-
-    return 1;
+    1;
 }
 
 # Params: problem_id (required), contest_id (required), submit_uid (required), de_bitmap (required),
