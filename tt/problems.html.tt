@@ -165,7 +165,7 @@ function chg_code(st_sel, pid) {
 <div class="problem_submit">
   <p><label for="source">[% capt.solution_file %]:</label><input type="file" id="source" name="source" class="file" size="25"/></p>
   <p><label for="de_id">[% capt.dev_env %]:</label><select name="de_id" id="de_id">
-    [% FOREACH de IN de_list; option(de.de_id, de.de_name); END %]
+    [% FOREACH de IN de_list; option(de.de_id, de.de_name, de_selected); END %]
     </select>
   </p>
   <p><label for="source_text">[% capt.solution_text %]:</label><br/>
