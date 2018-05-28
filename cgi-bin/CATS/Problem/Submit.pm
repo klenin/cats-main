@@ -31,6 +31,29 @@ sub determine_state {
         $cats::st_ignore_submit : $cats::st_not_processed;
 }
 
+sub _prepare_de {
+    my ($p, $file, $cpid) = @_;
+
+    my $did = $p->{de_id} or return msg(1013);
+    if ($did eq 'by_extension') {
+        my $de = CATS::DevEnv->new(CATS::JudgeDB::get_DEs({ active_only => 1 }))->by_file_extension($file)
+            or return msg(1013);
+        $did = $de->{id};
+        $t->param(de_name => $de->{description});
+    }
+    my $allowed_des = $dbh->selectall_arrayref(q~
+        SELECT CPD.de_id, D.description
+        FROM contest_problem_des CPD
+        INNER JOIN default_de D ON D.id = CPD.de_id
+        WHERE cp_id = ? ORDER BY D.code~, { Slice => {} },
+        $cpid);
+    if ($allowed_des && @$allowed_des && 0 == grep $_->{de_id} == $did, @$allowed_des) {
+        $t->param(de_not_allowed => $allowed_des);
+        return;
+    }
+    $did;
+}
+
 sub problems_submit {
     my ($p) = @_;
     my $pid = $p->{problem_id} or return msg(1012);
@@ -47,8 +70,6 @@ sub problems_submit {
         $source_text ne '' or return msg(1011);
     }
 
-    my $did = $p->{de_id} or return msg(1013);
-
     $dbh->selectrow_array(q~
         SELECT COUNT(*) FROM tests T
         WHERE T.problem_id = ? AND T.snippet_name IS NOT NULL AND NOT EXISTS (
@@ -58,8 +79,8 @@ sub problems_submit {
         $pid, $uid, $cid) and return msg(1168);
 
     my $contest_finished = $contest->has_finished($user->{diff_time} + $user->{ext_time});
-    my ($status, $title) = $dbh->selectrow_array(q~
-        SELECT CP.status, P.title
+    my ($cpid, $status, $title) = $dbh->selectrow_array(q~
+        SELECT CP.id, CP.status, P.title
         FROM contest_problems CP
         INNER JOIN problems P ON P.id = CP.problem_id
         WHERE CP.contest_id = ? AND CP.problem_id = ?~, undef,
@@ -101,12 +122,7 @@ sub problems_submit {
         return msg(1137) if $prev_reqs_count >= $contest->{max_reqs};
     }
 
-    if ($did eq 'by_extension') {
-        my $de = CATS::DevEnv->new(CATS::JudgeDB::get_DEs({ active_only => 1 }))->by_file_extension($file)
-            or return msg(1013);
-        $did = $de->{id};
-        $t->param(de_name => $de->{description});
-    }
+    my $did = _prepare_de($p, $file, $cpid) or return;
 
     # Forbid repeated submissions of the identical code with the same DE.
     my $source_hash = CATS::Utils::source_hash($source_text);

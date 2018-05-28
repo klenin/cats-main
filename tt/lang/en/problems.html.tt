@@ -8,6 +8,7 @@
     no_judges => 'There are currently no active judging computers. Solution evaluation will be posponed.',
     login_to_participate => 'You must [[log in]] to participate in this contest.',
     dev_env_detected => 'Development environment detected',
+    de_not_allowed => 'This development environment is forbidden. Allowed development environments:'
     view_results => 'View submission results',
     explanation => 'analysis',
     package => 'package',

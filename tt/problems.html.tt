@@ -72,8 +72,13 @@ function chg_code(st_sel, pid) {
 </textarea>
 [% END %]
 
-[% IF solution_submitted %]
 [% IF de_name; capt.dev_env_detected; ": '"; de_name | html %]'.<br/>[% END %]
+[% IF de_not_allowed; capt.de_not_allowed %]
+<ul>
+  [% FOREACH de IN de_not_allowed; "<li>$de.description</li>"; END %]
+</ul>
+[% END %]
+[% IF solution_submitted %]
 [% href(href_run_details, capt.view_results) %].
 <hr/>
 [% END %]

@@ -8,6 +8,7 @@
     no_judges => '目前没有主动判断电脑。 解决方案检查将推迟。',
     login_to_participate => '您必须[[登录]]参与此次比赛',
     dev_env_detected => '开发环境被发现',
+    de_not_allowed => 'This development environment is forbidden. Allowed development environments:'
     view_results => '查看提交结果',
     console => '控制台',
     explanation => '分析',
