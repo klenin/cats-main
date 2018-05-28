@@ -13,11 +13,14 @@
 [% END %]
 
 [% IF logs.size %]
-<h3>[% capt.judge_log %]</h3>
-
+<a name="log_top"></a><h3>[% capt.judge_log %]</h3>
+<ul>
+  [% FOREACH log IN logs %]<li>[% href('#job' _ log.job_id, log.job_id) %]</li>[% END %]
+</ul>
+<hr>
 [% FOREACH log IN logs %]
-  <pre><code id="judge_log">[% log.dump | html %]</code></pre>
-  <p>[% capt.length %]: [% log.length %]</p>
+  <a name="job[% log.job_id %]"></a><b><a href="#log_top">^</a> [% log.job_id %]</b> ([% capt.length %]: [% log.length %])
+  <pre><code class="judge_log">[% log.dump | html %]</code></pre>
   <hr>
 [% END %]
 <form method="post">
