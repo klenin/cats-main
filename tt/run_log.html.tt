@@ -1,8 +1,8 @@
 [%- PROCESS includes/sources_styles.tti -%]
 [% PROCESS includes/header.tti %]
 <style>
-  code#judge_log b { color: #ff7070; }
-  code#judge_log i { color: #108010; font-style: normal; }
+  code.judge_log b { color: #ff7070; }
+  code.judge_log i { color: #108010; font-style: normal; }
 </style>
 </head>
 <body>
@@ -27,12 +27,11 @@
 [% END %]
 
 <script type="text/javascript">
-var log = $('#judge_log');
-var t = log.html();
-log.html(t.
-  replace(/(?:^(\[.+\])$)/mg, '<b>$1</b>').
-  replace(/(\s+(?:[0-9_]+|[0-9]+\.[0-9]+)\s+)/g, '<i>$1</i>')
-);
+$('.judge_log').each(function (i, log) {
+  log.innerHTML = log.innerHTML.
+    replace(/(?:^(\[.+\])$)/mg, '<b>$1</b>').
+    replace(/(\s+(?:[0-9_]+|[0-9]+\.[0-9]+)\s+)/g, '<i>$1</i>');
+});
 </script>
 
 [% PROCESS includes/timing.tti %]
