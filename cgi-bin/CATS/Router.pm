@@ -105,6 +105,7 @@ $main_routes = {
         link_save => bool, move => bool,
         zip => upload, allow_rename => bool,
         remote_url => str,
+        source => upload, source_text => str, np => integer,
     ],
     problems_all => [
         \&CATS::UI::Problems::problems_all_frame,
