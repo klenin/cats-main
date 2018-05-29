@@ -23,7 +23,7 @@ use CATS::StaticPages;
 use CATS::Testset;
 use CATS::Utils qw(url_function);
 use CATS::Verdicts;
-use CATS::Web qw(content_type headers not_found);
+use CATS::Web qw(not_found);
 
 sub get_request_count {
     my ($this_contest_only, $pid) = @_;
@@ -173,14 +173,12 @@ sub problem_git_package {
         $cid, $pid) or return;
     undef $t;
     my ($fname, $tree_id) = CATS::Problem::Storage::get_repo_archive($pid, $sha);
-    content_type('application/zip');
-    headers(
-        'Accept-Ranges' => 'bytes',
-        'Content-Length' => stat($fname)->size,
-        'Content-Disposition' => "attachment; filename=problem_$tree_id.zip",
-    );
     CATS::BinaryFile::load($fname, \my $content) or die "open '$fname' failed: $!";
-    CATS::Web::print($content);
+    $p->print_file(
+        content_type => 'application/zip',
+        file_name => "problem_$tree_id.zip",
+        len => stat($fname)->size,
+        content => $content);
 }
 
 sub problem_select_testsets_frame {

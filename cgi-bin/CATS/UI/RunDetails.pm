@@ -32,7 +32,7 @@ use CATS::Settings qw($settings);
 use CATS::Testset;
 use CATS::Utils;
 use CATS::Verdicts;
-use CATS::Web qw(param url_param headers upload_source content_type);
+use CATS::Web qw(param upload_source url_param);
 
 sub get_run_info {
     my ($p, $contest, $req) = @_;
@@ -378,9 +378,12 @@ sub download_source_frame {
 
     $si->{file_name} =~ m/\.([^.]+)$/;
     my $ext = $1 || 'unknown';
-    content_type($ext eq 'zip' ? 'application/zip' : 'text/plain', 'UTF-8');
-    headers('Content-Disposition' => "inline;filename=$si->{req_id}.$ext");
-    CATS::Web::print(Encode::encode_utf8($si->{src}));
+    $p->print_file(
+        ($ext eq 'zip' ?
+            (content_type => 'application/zip') :
+            (content_type => 'text/plain', charset => 'UTF-8')),
+        file_name => "$si->{req_id}.$ext",
+        content => Encode::encode_utf8($si->{src}));
 }
 
 sub view_test_details_frame {

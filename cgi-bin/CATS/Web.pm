@@ -142,4 +142,16 @@ sub user_agent { $r->headers_in->get('User-Agent') }
 
 sub log_info { $r->log->notice(@_) }
 
+# Params: { content_type, charset (opt), file_name, len (opt), content (must be encoded) }
+sub print_file {
+    my ($self, %p) = @_;
+    content_type($p{content_type}, $p{charset});
+    headers(
+        'Accept-Ranges' => 'bytes',
+        'Content-Length' => $p{len} // length($p{content}),
+        'Content-Disposition' => "attachment; filename=$p{file_name}",
+    );
+    CATS::Web::print($p{content});
+}
+
 1;

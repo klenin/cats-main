@@ -15,7 +15,6 @@ use CATS::Problem::Storage;
 use CATS::Problem::Utils;
 use CATS::StaticPages;
 use CATS::Utils qw(source_encodings);
-use CATS::Web qw(content_type headers);
 
 sub _get_problem_info {
     my ($p) = @_;
@@ -145,9 +144,10 @@ sub problem_history_raw_frame {
     _get_problem_info($p) or return $p->redirect(url_f 'contests');
 
     my $blob = CATS::Problem::Storage::show_raw($p->{pid}, $p->{hb}, $p->{file});
-    content_type($blob->{type});
-    headers('Content-Disposition', "inline; filename=$p->{file}");
-    CATS::Web::print($blob->{content});
+    $p->print_file(
+        content_type => $blob->{type},
+        file_name => $p->{file},
+        content => $blob->{content});
 }
 
 sub problem_history_edit_frame {
