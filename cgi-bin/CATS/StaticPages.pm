@@ -6,7 +6,7 @@ use warnings;
 use CATS::Config qw(cats_dir);
 use CATS::DB;
 use CATS::Globals qw($sid);
-use CATS::Web qw(log_info url_param);
+use CATS::Web qw(url_param);
 
 my $int = qr/^[0-9]+$/;
 my $bool = qr/^0|1$/;
@@ -26,7 +26,7 @@ sub process_static {
     my $url = $ENV{REDIRECT_URL};
     my ($f, $param_str) = $url =~ /^\/\w+\/static\/([a-z_]+)-([a-z_\-0-9]+)\.html/;
     $f && $param_str or die $url;
-    log_info "generating static page $url";
+    $p->log_info("generating static page $url");
     my $ap = allowed_pages()->{$f} or die "Unknown static: $f";
     my %params;
     $param_str =~ s/([a-z_]+)-([^\-]+)/

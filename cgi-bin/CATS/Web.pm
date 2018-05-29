@@ -15,12 +15,10 @@ our @EXPORT_OK = qw(
     cookie
     forbidden
     has_upload
-    log_info
     param
     save_uploaded_file
     upload_source
     url_param
-    user_agent
 );
 
 my $r;
@@ -122,7 +120,10 @@ sub upload_source {
 
 sub user_agent { $r->headers_in->get('User-Agent') }
 
-sub log_info { $r->log->notice(@_) }
+sub log_info {
+    my ($self, @rest) = @_;
+    $r->log->notice(@rest);
+}
 
 # Params: { content_type, charset (opt), file_name, len (opt), content (must be encoded) }
 sub print_file {

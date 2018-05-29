@@ -27,7 +27,7 @@ sub too_frequent {
 sub determine_state {
     my ($p) = @_;
     return $cats::st_ignore_submit if $p->{ignore};
-    !$is_jury && !param('np') && $CATS::Config::TB && CATS::Web::user_agent =~ /$CATS::Config::TB/ ?
+    !$is_jury && !param('np') && $CATS::Config::TB && $p->user_agent =~ /$CATS::Config::TB/ ?
         $cats::st_ignore_submit : $cats::st_not_processed;
 }
 
