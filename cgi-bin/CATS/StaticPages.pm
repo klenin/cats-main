@@ -6,7 +6,7 @@ use warnings;
 use CATS::Config qw(cats_dir);
 use CATS::DB;
 use CATS::Globals qw($sid);
-use CATS::Web qw(log_info url_param restore_parameters);
+use CATS::Web qw(log_info url_param);
 
 my $int = qr/^[0-9]+$/;
 my $bool = qr/^0|1$/;
@@ -22,31 +22,33 @@ our $is_static_page;
 sub is_static_page { $is_static_page = (url_param('f') || '') eq 'static' }
 
 sub process_static {
+    my ($p) = @_;
     my $url = $ENV{REDIRECT_URL};
-    my ($f, $p) = $url =~ /^\/\w+\/static\/([a-z_]+)-([a-z_\-0-9]+)\.html/;
-    $f && $p or die $url;
+    my ($f, $param_str) = $url =~ /^\/\w+\/static\/([a-z_]+)-([a-z_\-0-9]+)\.html/;
+    $f && $param_str or die $url;
     log_info "generating static page $url";
     my $ap = allowed_pages()->{$f} or die "Unknown static: $f";
     my %params;
-    $p =~ s/([a-z_]+)-([^\-]+)/$ap->{$1} ? $params{$1} = $2 : die "Unknown static param: $1"/eg;
+    $param_str =~ s/([a-z_]+)-([^\-]+)/
+        $ap->{$1} ? $params{$1} = $2 : die "Unknown static param: $1"/eg;
     %params or die;
     for (keys %params) {
         $params{$_} =~ $ap->{$_} or die "Bad static param: $_";
     }
-    my $output_file = path() . name($f, %params) . '.html';
-    $params{f} = $f;
-    restore_parameters(\%params);
-    return $output_file;
+    my $output_file = path() . _name($f, %params) . '.html';
+    $p->{f} = $f;
+    $p->{$_} = $params{$_} for keys %params;
+    $output_file;
 }
 
-sub name {
+sub _name {
     my ($f, %p) = @_;
     "$f-" . join('-', map "$_-$p{$_}", grep $p{$_}, sort keys %p);
 }
 
-sub url_static { './static/' . name(@_) . '.html' . ($sid ? "?sid=$sid" : ''); }
+sub url_static { './static/' . _name(@_) . '.html' . ($sid ? "?sid=$sid" : ''); }
 sub path { cats_dir() . '../static/' }
-sub full_name { path() . name(@_) . '.html' }
+sub full_name { path() . _name(@_) . '.html' }
 
 sub invalidate_problem_text {
     my (%p) = @_;

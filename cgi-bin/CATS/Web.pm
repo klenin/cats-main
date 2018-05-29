@@ -17,7 +17,6 @@ our @EXPORT_OK = qw(
     has_upload
     log_info
     param
-    restore_parameters
     save_uploaded_file
     upload_source
     url_param
@@ -42,8 +41,6 @@ sub init_request {
     $qq = Apache2::Request->new($r,
         POST_MAX => 10 * 1024 * 1024, # Actual limit is defined by Apache config.
         DISABLE_UPLOADS => 0);
-    no warnings 'redefine';
-    *_param = \&original_param;
 }
 
 sub print {
@@ -62,10 +59,7 @@ sub get_uri { $r->uri }
 
 sub original_param { $qq->param(@_) }
 
-*_param = \&original_param;
-
-# Trick to change param implementation at runtime.
-sub param { _param(@_) }
+sub param { $qq->param(@_) }
 *url_param = \&param;
 
 sub ensure_upload { $qq->upload($_[0]) // die "Bad upload for parameter '$_[0]'" }
@@ -124,17 +118,6 @@ sub upload_source {
     my $src = '';
     ensure_upload($_[0])->slurp($src);
     $src;
-}
-
-sub restore_parameters {
-    my $params = $_[0];
-    no warnings 'redefine';
-    *_param = sub {
-        if (@_ == 1) {
-            return $params->{$_[0]} || original_param(@_);
-        }
-        original_param(@_);
-    }
 }
 
 sub user_agent { $r->headers_in->get('User-Agent') }

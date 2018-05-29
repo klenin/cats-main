@@ -39,7 +39,7 @@ sub accept_request {
     my ($p) = @_;
     my $output_file = '';
     if (CATS::StaticPages::is_static_page) {
-        $output_file = CATS::StaticPages::process_static()
+        $output_file = CATS::StaticPages::process_static($p)
             or return;
     }
     CATS::Init::initialize($p);
