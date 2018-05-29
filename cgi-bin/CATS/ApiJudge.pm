@@ -87,6 +87,7 @@ sub is_problem_uptodate {
 
 sub save_logs {
     my ($p) = @_;
+    bad_judge($p) and return -1;
 
     $p->{job_id} or return $p->print_json({ error => 'No job_id' });
 
