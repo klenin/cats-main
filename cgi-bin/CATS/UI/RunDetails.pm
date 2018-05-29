@@ -32,7 +32,6 @@ use CATS::Settings qw($settings);
 use CATS::Testset;
 use CATS::Utils;
 use CATS::Verdicts;
-use CATS::Web qw(param upload_source url_param);
 
 sub get_run_info {
     my ($p, $contest, $req) = @_;
@@ -312,8 +311,8 @@ sub view_source_frame {
 
     if ($sources_info->{is_jury} && $p->{replace}) {
         my $u;
-        if (param('replace_file')) {
-            $u->{src} = upload_source('replace_file') or die;
+        if ($p->{replace_file}) {
+            $u->{src} = $p->{replace_file}->content or die;
             $u->{hash} = CATS::Utils::source_hash($u->{src});
         }
         my $de_bitmap;
