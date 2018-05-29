@@ -11,7 +11,6 @@ use CATS::DB;
 use CATS::Globals qw($sid);
 use CATS::JudgeDB;
 use CATS::Testset;
-use CATS::Web;
 
 # DE bitmap cache may return bigints.
 sub Math::BigInt::TO_JSON { $_[0]->bstr }
@@ -91,7 +90,8 @@ sub save_logs {
 
     $p->{job_id} or return $p->print_json({ error => 'No job_id' });
 
-    my $dump = CATS::Web::has_upload('dump') ? CATS::Web::upload_source('dump') : $p->{dump};
+    my $upload = $p->make_upload('dump');
+    my $dump = $upload ? $upload->content : $p->{dump};
     CATS::JudgeDB::save_logs($p->{job_id}, $dump);
     $dbh->commit;
 
