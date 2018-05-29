@@ -7,7 +7,7 @@ use CATS::Constants;
 use CATS::DB;
 use CATS::Globals qw($cid $contest $is_jury $is_root $sid $t $uid);
 use CATS::Messages qw(msg res_str);
-use CATS::Output qw(auto_ext init_template url_f);
+use CATS::Output qw(init_template url_f);
 use CATS::Redirect;
 use CATS::User;
 use CATS::Utils qw(url_function);
@@ -27,7 +27,7 @@ sub split_ips { map { /(\S+)/ ? $1 : () } split ',', $_[0] }
 
 sub login_frame {
     my ($p) = @_;
-    init_template($p, auto_ext('login', $p->{json}));
+    init_template($p, 'login');
     $t->param(href_login => url_function('login', redir => $p->{redir}));
     msg(1004) if $p->{logout};
 
@@ -88,7 +88,7 @@ sub logout_frame {
         $dbh->commit;
     }
     if ($p->{json}) {
-        init_template($p, auto_ext('logout'));
+        init_template($p, 'logout');
         0;
     }
     else {

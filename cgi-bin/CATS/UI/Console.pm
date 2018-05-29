@@ -13,7 +13,7 @@ use CATS::DB;
 use CATS::Globals qw($cid $contest $is_jury $is_root $sid $t $uid $user);
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
-use CATS::Output qw(auto_ext init_template url_f);
+use CATS::Output qw(init_template url_f);
 use CATS::Problem::Utils;
 use CATS::Request;
 use CATS::Settings qw($settings);
@@ -94,7 +94,7 @@ sub _decorate_rows {
 sub _console_content {
     my ($p) = @_;
 
-    my $lv = _init_console_template($p, auto_ext('console_content'));
+    my $lv = _init_console_template($p, 'console_content');
 
     if (@{$p->{selection}}) {
         retest_submissions($p->{selection}, param('by_reference')) if defined param('retest');

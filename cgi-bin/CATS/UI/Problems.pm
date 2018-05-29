@@ -15,7 +15,7 @@ use CATS::Judge;
 use CATS::JudgeDB;
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
-use CATS::Output qw(auto_ext init_template url_f);
+use CATS::Output qw(init_template url_f);
 use CATS::Problem::Save;
 use CATS::Problem::Source::Git;
 use CATS::Problem::Source::Zip;
@@ -131,7 +131,7 @@ sub problems_all_frame {
 
 sub problems_udebug_frame {
     my ($p) = @_;
-    init_template($p, auto_ext('problems_udebug'));
+    init_template($p, 'problems_udebug');
     my $lv = CATS::ListView->new(name => 'problems_udebug');
 
     $lv->define_columns(url_f('problems'), 0, 0, [
@@ -245,17 +245,17 @@ sub problems_frame {
     unless ($is_jury) {
         $show_packages = $contest->{show_packages};
         if (!$contest->has_started($user->{diff_time})) {
-            init_template($p, auto_ext('problems_inaccessible'));
+            init_template($p, 'problems_inaccessible');
             return msg(1130);
         }
         if ($contest->{local_only} && !$user->{is_local}) {
-            init_template($p, auto_ext('problems_inaccessible'));
+            init_template($p, 'problems_inaccessible');
             $t->param(local_only => 1);
             return;
         }
     }
 
-    init_template($p, auto_ext('problems'));
+    init_template($p, 'problems');
     my $lv = CATS::ListView->new(
         name => 'problems' . ($contest->is_practice ? '_practice' : ''),
         array_name => 'problems');

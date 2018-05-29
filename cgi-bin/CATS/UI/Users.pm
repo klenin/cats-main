@@ -12,7 +12,7 @@ use CATS::DB;
 use CATS::Globals qw($cid $contest $is_jury $is_root $sid $t $uid $user);
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
-use CATS::Output qw(auto_ext init_template url_f);
+use CATS::Output qw(init_template url_f);
 use CATS::Privileges;
 use CATS::Time;
 use CATS::User;
@@ -114,7 +114,7 @@ sub users_add_participants_frame {
 sub users_frame {
     my ($p) = @_;
 
-    init_template($p, auto_ext('users'));
+    init_template($p, 'users');
     my $lv = CATS::ListView->new(
         name => 'users' . ($contest->is_practice ? '_practice' : ''),
         array_name => 'users');

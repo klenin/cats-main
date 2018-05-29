@@ -11,7 +11,7 @@ use CATS::Config qw(cats_dir);
 use CATS::DB;
 use CATS::Globals qw($cid $contest $is_jury $is_root $t $uid);
 use CATS::Messages qw(res_str);
-use CATS::Output qw(auto_ext downloads_path downloads_url init_template);
+use CATS::Output qw(downloads_path downloads_url init_template);
 use CATS::Problem::Spell;
 use CATS::Problem::Tags;
 use CATS::Problem::Utils;
@@ -241,7 +241,7 @@ sub problem_text {
     $show or return $p->not_found;
     $explain = $explain && $p->{explain};
 
-    init_template($p, auto_ext('problem_text'));
+    init_template($p, 'problem_text');
 
     my (@problems, $show_points);
 

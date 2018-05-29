@@ -8,7 +8,7 @@ use CATS::DB;
 use CATS::Globals qw($cid $contest $is_jury $is_root $sid $t $uid);
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
-use CATS::Output qw(auto_ext init_template url_f);
+use CATS::Output qw(init_template url_f);
 use CATS::References;
 use CATS::Web qw(param url_param);
 
@@ -106,7 +106,7 @@ sub prizes_frame {
 
 sub contests_prizes_frame {
     my ($p) = @_;
-    init_template($p, auto_ext('contests_prizes'));
+    init_template($p, 'contests_prizes');
     my $lv = CATS::ListView->new(name => 'contests_prizes');
 
     my @clist = sanitize_clist param('clist');

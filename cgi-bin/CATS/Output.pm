@@ -6,7 +6,6 @@ use warnings;
 use Exporter qw(import);
 
 our @EXPORT_OK = qw(
-    auto_ext
     downloads_path
     downloads_url
     init_template
@@ -36,19 +35,14 @@ sub _http_header {
 sub downloads_path { cats_dir() . '../download/' }
 sub downloads_url { 'download/' }
 
-sub auto_ext {
-    my ($file_name, $json) = @_;
-    my $ext = $json // param('json') ? 'json' : 'html';
-    "$file_name.$ext.tt";
-}
-
 sub init_template {
     my ($p, $file_name, $extra) = @_;
     ref $p eq 'CATS::Web' or die;
 
-    my ($base_name, $ext) = $file_name =~ /^(\w+)\.(\w+)(:?\.tt)$/;
+    my ($base_name, $ext) = $file_name =~ /^(\w+)(?:\.(\w+)(:?\.tt))?$/ or die;
+    $ext //= $p->{json} ? 'json' : 'html';
+
     $http_mime_type = {
-        htm => 'text/html',
         html => 'text/html',
         xml => 'application/xml',
         ics => 'text/calendar',
@@ -56,7 +50,7 @@ sub init_template {
     }->{$ext} or die 'Unknown template extension';
     %extra_headers = $ext eq 'ics' ?
         ('Content-Disposition' => "inline;filename=$base_name.ics") : ();
-    $t = CATS::Template->new($file_name, cats_dir(), $extra);
+    $t = CATS::Template->new("$base_name.$ext.tt", cats_dir(), $extra);
     $extra_headers{'Access-Control-Allow-Origin'} = '*' if $p->{json};
     $t->param(
         lang => CATS::Settings::lang,

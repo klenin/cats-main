@@ -9,7 +9,7 @@ use CATS::DB;
 use CATS::Globals qw($cid $is_jury $is_root $t $uid);
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
-use CATS::Output qw(auto_ext init_template url_f);
+use CATS::Output qw(init_template url_f);
 use CATS::Problem::Save;
 use CATS::Problem::Storage;
 use CATS::Problem::Utils;
@@ -210,7 +210,7 @@ sub problem_history_frame {
 
     my ($status, $title, $repo_name) = _get_problem_info($p) or return $p->redirect(url_f 'contests');
 
-    init_template($p, auto_ext('problem_history'));
+    init_template($p, 'problem_history');
     my $lv = CATS::ListView->new(name => 'problem_history');
 
     my $repo = CATS::Problem::Storage::get_repo(

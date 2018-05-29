@@ -12,7 +12,7 @@ use CATS::Form;
 use CATS::Globals qw ($cid $is_jury $is_root $t $sid $uid $user);
 use CATS::IP;
 use CATS::Messages qw(msg res_str);
-use CATS::Output qw(auto_ext init_template url_f);
+use CATS::Output qw(init_template url_f);
 use CATS::Privileges;
 use CATS::Settings qw($settings);
 use CATS::Time;
@@ -375,7 +375,7 @@ sub registration_frame {
 
 sub profile_frame {
     my ($p) = @_;
-    init_template($p, auto_ext('user_profile', $p->{json}));
+    init_template($p, 'user_profile');
     $uid or return;
     if ($p->{clear}) {
         $settings = {};

@@ -13,7 +13,7 @@ use CATS::DB;
 use CATS::Globals qw($cid $contest $is_jury $is_root $sid $t);
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
-use CATS::Output qw(auto_ext downloads_path downloads_url init_template url_f);
+use CATS::Output qw(downloads_path downloads_url init_template url_f);
 use CATS::Problem::Save;
 use CATS::Problem::Storage;
 use CATS::Problem::Tags;
