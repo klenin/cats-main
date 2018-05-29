@@ -22,14 +22,14 @@ use CATS::Messages;
 use CATS::Settings;
 use CATS::Template;
 use CATS::Utils qw();
-use CATS::Web qw(cookie param content_type);
+use CATS::Web qw(cookie param);
 
 my ($http_mime_type, %extra_headers);
 
 sub _http_header {
     my ($p, $type, $encoding, $cookie) = @_;
 
-    content_type($type, $encoding);
+    $p->content_type($type, $encoding);
     $p->headers(cookie => $cookie, %extra_headers);
 }
 

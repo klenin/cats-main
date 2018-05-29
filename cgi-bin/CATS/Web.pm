@@ -12,7 +12,6 @@ use 5.010;
 
 use Exporter qw(import);
 our @EXPORT_OK = qw(
-    content_type
     cookie
     forbidden
     get_return_code
@@ -56,7 +55,7 @@ sub print {
 
 sub print_json {
     my ($self, $data) = @_;
-    content_type('application/json');
+    $self->content_type('application/json');
     $self->print(JSON::XS->new->utf8->convert_blessed(1)->encode($data));
     -1;
 }
@@ -110,7 +109,7 @@ sub headers {
 }
 
 sub content_type {
-    my ($mime, $enc) = @_;
+    my ($self, $mime, $enc) = @_;
     $r->content_type("${mime}" . ($enc ? "; charset=${enc}" : ''));
 }
 
@@ -147,7 +146,7 @@ sub log_info { $r->log->notice(@_) }
 # Params: { content_type, charset (opt), file_name, len (opt), content (must be encoded) }
 sub print_file {
     my ($self, %p) = @_;
-    content_type($p{content_type}, $p{charset});
+    $self->content_type($p{content_type}, $p{charset});
     $self->headers(
         'Accept-Ranges' => 'bytes',
         'Content-Length' => $p{len} // length($p{content}),

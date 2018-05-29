@@ -4,7 +4,6 @@ use JSON::XS;
 use LWP::UserAgent;
 
 use CATS::Config;
-use CATS::Web qw(param);
 
 my @whitelist = qw(
     www.codechef.com
@@ -30,12 +29,12 @@ sub proxy {
     $res->is_success or die sprintf 'proxy http error: url=%s result=%s', $url, $res->status_line;
 
     if ($p->{jsonp}) {
-        CATS::Web::content_type('application/json');
-        print $p->{jsonp}, '(', encode_json({ result => $res->content }), ')';
+        $p->content_type('application/json');
+        $p->print("$p->{jsonp}(" . encode_json({ result => $res->content }) . ')');
     }
     else {
-        CATS::Web::content_type('text/plain');
-        print $res->content;
+        $p->content_type('text/plain');
+        $p->print($res->content);
     }
 }
 
