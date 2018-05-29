@@ -137,4 +137,31 @@ sub print_file {
     $self->print($p{content});
 }
 
+sub make_upload {
+    my ($self, $name) = @_;
+    my $u = $qq->upload($name) or return;
+    CATS::Web::Upload->new({
+        _name => $name, _upload => $u, _remote_file_name => $qq->param($name) });
+}
+
+package CATS::Web::Upload;
+
+use warnings;
+use strict;
+
+sub new {
+    my ($class, $self) = @_;
+    bless $self, $class;
+}
+
+sub _ensure { $_[0]->{_upload} // die "Bad upload for parameter '$_[0]->{_name}'" }
+
+sub remote_file_name { $_[0]->{_remote_file_name} }
+sub local_file_name { $_[0]->_ensure->tempname }
+
+sub content {
+    $_[0]->_ensure->slurp(my $src = '');
+    $src;
+}
+
 1;

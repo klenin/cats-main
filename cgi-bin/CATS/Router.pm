@@ -30,6 +30,8 @@ sub encoding_default($) {
     sub { check_encoding($_[0]) ? $_[0] : ($_[0] = $default) };
 }
 
+sub upload() {{ upload => 1 }}
+
 my ($main_routes, $api_judge_routes);
 
 BEGIN {
@@ -228,6 +230,7 @@ $main_routes = {
     view_source => [ \&CATS::UI::RunDetails::view_source_frame,
         rid => integer, replace => bool, de_id => integer, syntax => ident,
         src_enc => encoding_default('WINDOWS-1251'),
+        replace_file => upload,
     ],
     download_source => [ \&CATS::UI::RunDetails::download_source_frame,
         rid => integer,
@@ -404,6 +407,10 @@ sub route {
             next;
         }
 
+        if ($type->{upload}) {
+            $p->{$name} = $p->make_upload($name);
+            next;
+        }
         if ($type->{array_of}) {
             my @values = grep check_type($_, $type->{type}), param($name);
             return $default_route if !@values && $type->{required};
