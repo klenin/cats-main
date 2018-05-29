@@ -209,7 +209,7 @@ sub run_details_frame {
 
     my $needs_commit;
     for (@$sources_info) {
-        source_links($_);
+        source_links($p, $_);
         if ($_->{state} == $cats::st_compilation_error) {
             push @runs, { compiler_output => _get_compilation_error(get_log_dump($_->{req_id})) };
             next;
@@ -249,7 +249,7 @@ sub visualize_test_frame {
 
     my $sources_info = get_sources_info($p,
         request_id => $rid, extra_params => [ test_rank => $test_rank, vid => $p->{vid} ]);
-    source_links($sources_info);
+    source_links($p, $sources_info);
     sources_info_param([ $sources_info ]);
 
     my $ci = get_contest_info($sources_info, {});
@@ -328,7 +328,7 @@ sub view_source_frame {
                 request_id => $p->{rid}, get_source => 1, encode_source => 1);
         }
     }
-    source_links($sources_info);
+    source_links($p, $sources_info);
     sources_info_param([ $sources_info ]);
     @{$sources_info->{elements}} <= 1 or return msg(1155);
 
@@ -434,7 +434,7 @@ sub view_test_details_frame {
     my @tests = get_req_details($ci, $sources_info, 'test_rank, result', {});
     grep $_->{test_rank} == $p->{test_rank}, @tests or return;
 
-    source_links($sources_info);
+    source_links($p, $sources_info);
     sources_info_param([ $sources_info ]);
     $t->param(
         output_data => $output_data,
@@ -557,7 +557,7 @@ sub request_params_frame {
         $si->{problem_id});
     $t->param(tests => [ map { test_index => $_ }, @$tests ]);
 
-    source_links($si);
+    source_links($p, $si);
     sources_info_param([ $si ]);
     $t->param(settable_verdicts => $settable_verdicts);
 
@@ -612,7 +612,7 @@ sub run_log_frame {
         or return;
     $si->{is_jury} or return;
 
-    source_links($si);
+    source_links($p, $si);
     sources_info_param([ $si ]);
 
     if ($p->{delete_log}) {
@@ -635,7 +635,7 @@ sub diff_runs_frame {
         request_id => [ $p->{r1}, $p->{r2} ], get_source => 1, encode_source => 1) or return;
     @$si == 2 or return;
 
-    source_links($_) for @$si;
+    source_links($p, $_) for @$si;
     sources_info_param($si);
 
     return msg(1155) if grep @{$_->{elements}} > 1, @$si;

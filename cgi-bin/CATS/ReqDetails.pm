@@ -14,7 +14,7 @@ use CATS::RankTable;
 use CATS::Time;
 use CATS::Utils qw(encodings source_encodings url_function);
 use CATS::Verdicts;
-use CATS::Web qw(param url_param);
+use CATS::Web qw(param);
 
 use Exporter qw(import);
 our @EXPORT_OK = qw(
@@ -325,8 +325,8 @@ sub get_judges {
 }
 
 sub source_links {
-    my ($si) = @_;
-    my ($current_link) = url_param('f') || '';
+    my ($p, $si) = @_;
+    my ($current_link) = $p->{f};
 
     return if $si->{href_contest};
 
@@ -357,7 +357,7 @@ sub source_links {
     my $se = param('src_enc') || param('comment_enc') || 'WINDOWS-1251';
     $t->param(source_encodings => source_encodings($se));
 
-    source_links($_) for @{$si->{elements}};
+    source_links($p, $_) for @{$si->{elements}};
 }
 
 sub get_log_dump {
