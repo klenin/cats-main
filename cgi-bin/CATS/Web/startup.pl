@@ -20,5 +20,7 @@ BEGIN {
 use lib $cats_lib_dir;
 use lib $cats_problem_lib_dir;
 
+# use Carp;
+# $SIG{__WARN__} = \&confess;
 
 1;
