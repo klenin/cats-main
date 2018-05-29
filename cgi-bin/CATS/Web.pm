@@ -50,12 +50,15 @@ sub init_request {
     *_param = \&original_param;
 }
 
-sub print { $r->print($_[0]) }
+sub print {
+    my ($self, $data) = @_;
+    $r->print($data);
+}
 
 sub print_json {
     my ($self, $data) = @_;
     content_type('application/json');
-    CATS::Web::print(JSON::XS->new->utf8->convert_blessed(1)->encode($data));
+    $self->print(JSON::XS->new->utf8->convert_blessed(1)->encode($data));
     -1;
 }
 
@@ -151,7 +154,7 @@ sub print_file {
         'Content-Length' => $p{len} // length($p{content}),
         'Content-Disposition' => "attachment; filename=$p{file_name}",
     );
-    CATS::Web::print($p{content});
+    $self->print($p{content});
 }
 
 1;

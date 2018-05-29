@@ -95,7 +95,7 @@ sub generate {
         _http_header($p, $http_mime_type, 'utf-8', $cookie);
         $out = $t->output;
     }
-    CATS::Web::print($out);
+    $p->print($out);
     if ($output_file) {
         open my $f, '>:utf8', $output_file
             or die "Error opening $output_file: $!";
