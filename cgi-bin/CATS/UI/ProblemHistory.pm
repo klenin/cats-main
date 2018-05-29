@@ -210,9 +210,11 @@ sub problem_history_frame {
 
     my ($status, $title, $repo_name) = _get_problem_info($p) or return $p->redirect(url_f 'contests');
 
-    my $lv = CATS::ListView->new(name => 'problem_history', template => auto_ext('problem_history'));
+    init_template($p, auto_ext('problem_history'));
+    my $lv = CATS::ListView->new(name => 'problem_history');
 
-    my $repo = CATS::Problem::Storage::get_repo($p->{pid}, undef, 1, logger => CATS::Problem::Storage->new);
+    my $repo = CATS::Problem::Storage::get_repo(
+        $p->{pid}, undef, 1, logger => CATS::Problem::Storage->new);
 
     CATS::Problem::Save::problems_replace if $p->{replace};
 

@@ -8,15 +8,13 @@ use CATS::DB;
 use CATS::Globals qw($cid $is_jury $is_root $sid $t);
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
-use CATS::Output qw(url_f);
+use CATS::Output qw(init_template url_f);
 use CATS::Utils qw(url_function);
 
 sub job_details_frame {
     my ($p) = @_;
-    my $lv = CATS::ListView->new(
-        name => 'job_details',
-        template => 'run_log.html.tt'
-    );
+    init_template($p, 'run_log.html.tt');
+    my $lv = CATS::ListView->new(name => 'job_details');
 
     if ($p->{delete_log}) {
         $dbh->do(q~
@@ -40,7 +38,8 @@ sub jobs_frame {
     my ($p) = @_;
     $is_jury or return;
 
-    my $lv = CATS::ListView->new(name => 'jobs', template => 'jobs.html.tt');
+    init_template($p, 'jobs.html.tt');
+    my $lv = CATS::ListView->new(name => 'jobs');
 
     $lv->define_columns(url_f('jobs'), 0, 0, [
         { caption => res_str(642), order_by => 'type', width => '5%' },

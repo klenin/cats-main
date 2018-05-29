@@ -114,10 +114,10 @@ sub users_add_participants_frame {
 sub users_frame {
     my ($p) = @_;
 
+    init_template($p, auto_ext('users'));
     my $lv = CATS::ListView->new(
         name => 'users' . ($contest->is_practice ? '_practice' : ''),
-        array_name => 'users',
-        template => auto_ext('users'));
+        array_name => 'users');
     $t->param(title_suffix => res_str(526), users_submenu);
 
     if ($is_jury) {
@@ -284,7 +284,7 @@ sub users_all_settings_frame {
     $is_root or return;
 
     my $lv = CATS::ListView->new(
-        name => 'users_all_settings', template => 'users_all_settings.html.tt',
+        name => 'users_all_settings',
         extra_settings => { selector => '' });
 
     $lv->define_columns(url_f('users_all_settings'), 0, 0, [

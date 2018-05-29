@@ -44,6 +44,7 @@ sub auto_ext {
 
 sub init_template {
     my ($p, $file_name, $extra) = @_;
+    ref $p eq 'CATS::Web' or die;
 
     my ($base_name, $ext) = $file_name =~ /^(\w+)\.(\w+)(:?\.tt)$/;
     $http_mime_type = {

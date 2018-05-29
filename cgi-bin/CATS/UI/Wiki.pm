@@ -56,7 +56,8 @@ sub wiki_pages_frame {
 
     defined $p->{edit} and return page_edit_frame;
 
-    my $lv = CATS::ListView->new(name => 'wiki_pages', template => 'wiki_pages.html.tt');
+    init_template($p, 'wiki_pages.html.tt');
+    my $lv = CATS::ListView->new(name => 'wiki_pages');
 
     $is_root and $page_form->edit_delete(id => $p->{'delete'} // 0, descr => 'name', msg => 1073);
     $is_root && $p->{edit_save} and page_edit_save($p);

@@ -9,7 +9,6 @@ use List::Util qw(first min max);
 use CATS::DB;
 use CATS::Globals qw($is_jury $t);
 use CATS::Messages qw(msg);
-use CATS::Output qw(init_template);
 use CATS::QueryBuilder;
 use CATS::Settings qw($settings);
 use CATS::Utils;
@@ -23,7 +22,6 @@ sub new {
     my ($class, %p) = @_;
     my $self = {
         name => $p{name} || die,
-        template => $p{template} || die,
         array_name => $p{array_name} || $p{name},
         col_defs => undef,
         extra_settings => $p{extra_settings} || {},
@@ -31,7 +29,6 @@ sub new {
     };
     bless $self, $class;
     $self->init_params;
-    init_template($p{p} // {}, $self->{template}, $p{extra});
     $self;
 }
 

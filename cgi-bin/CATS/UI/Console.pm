@@ -60,12 +60,12 @@ sub _get_settings {
     $s;
 }
 
-sub init_console_template {
-    my ($template_name) = @_;
+sub _init_console_template {
+    my ($p, $template_name) = @_;
     my $se = param('se') || '';
     $se = "_$se" if $se;
-    CATS::ListView->new(
-        name => "console$se", array_name => 'console', template => $template_name);
+    init_template($p, $template_name);
+    CATS::ListView->new(name => "console$se", array_name => 'console');
 }
 
 sub _decorate_rows {
@@ -94,7 +94,7 @@ sub _decorate_rows {
 sub _console_content {
     my ($p) = @_;
 
-    my $lv = init_console_template(auto_ext('console_content'));
+    my $lv = _init_console_template($p, auto_ext('console_content'));
 
     if (@{$p->{selection}}) {
         retest_submissions($p->{selection}, param('by_reference')) if defined param('retest');
@@ -353,7 +353,7 @@ sub console_frame {
     my $cc = $t->output;
     my $user_filter = url_param('uf') || '';
 
-    my $lv = init_console_template('console.html.tt');
+    my $lv = _init_console_template($p, 'console.html.tt');
 
     $t->param($_ => $lvparams->{$_}) for qw(
         i_units i_unit i_values i_value display_rows rows

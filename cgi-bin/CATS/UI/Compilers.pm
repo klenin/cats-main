@@ -37,7 +37,8 @@ sub compilers_frame {
         and return $form->edit_frame($p, after =>
             sub { $_[0]->{locked} = !$_[0]->{in_contests} });
 
-    my $lv = CATS::ListView->new(name => 'compilers', template => 'compilers.html.tt');
+    init_template($p, 'compilers.html.tt');
+    my $lv = CATS::ListView->new(name => 'compilers');
 
     $is_root and $form->edit_delete(
         id => $p->{delete}, descr => 'description', msg => 1064,

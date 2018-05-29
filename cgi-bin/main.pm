@@ -42,7 +42,7 @@ sub accept_request {
         $output_file = CATS::StaticPages::process_static()
             or return;
     }
-    CATS::Init::initialize;
+    CATS::Init::initialize($p);
     return if $p->has_error;
     CATS::Time::mark_init;
 

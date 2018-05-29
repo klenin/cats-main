@@ -78,7 +78,8 @@ sub sites_frame {
     $user->privs->{edit_sites} or return;
     $p->{new} || $p->{edit} and return edit_frame($p);
 
-    my $lv = CATS::ListView->new(name => 'sites', template => 'sites.html.tt');
+    init_template($p, 'sites.html.tt');
+    my $lv = CATS::ListView->new(name => 'sites');
 
     $form->edit_delete(id => $p->{delete}, descr => 'name', msg => 1066);
     $p->{edit_save} and edit_save($p);
@@ -207,7 +208,8 @@ sub contest_sites_delete {
 sub contest_sites_frame {
     my ($p) = @_;
 
-    my $lv = CATS::ListView->new(name => 'contest_sites', template => 'contest_sites.html.tt');
+    init_template($p, 'contest_sites.html.tt');
+    my $lv = CATS::ListView->new(name => 'contest_sites');
     $is_jury || $user->{is_site_org} || $contest->{show_sites} or return;
 
     $lv->define_columns(url_f('contest_sites'), 0, 0, [

@@ -196,8 +196,8 @@ sub contests_frame {
     }
 
     return if $p->{ical} && $p->{json};
-    $p->{listview} = my $lv = CATS::ListView->new(name => 'contests',
-        template => 'contests.' .  ($p->{ical} ? 'ics' : $p->{json} ? 'json' : 'html') . '.tt');
+    init_template($p, 'contests.' . ($p->{ical} ? 'ics' : $p->{json} ? 'json' : 'html') . '.tt');
+    $p->{listview} = my $lv = CATS::ListView->new(name => 'contests');
 
     CATS::Contest::contest_group_auto_new($p->{contests_selection})
         if $p->{create_group} && $is_root;

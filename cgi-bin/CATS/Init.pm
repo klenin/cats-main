@@ -29,6 +29,7 @@ use CATS::Web qw(cookie param url_param);
 
 # Authorize user, initialize permissions and settings.
 sub init_user {
+    my ($p) = @_;
     $sid = url_param('sid') || '';
     $is_root = 0;
     $uid = undef;
@@ -56,7 +57,7 @@ sub init_user {
 
     if ($bad_sid) {
         return CATS::Web::forbidden if param('noredir');
-        init_template({}, param('json') ? 'bad_sid.json.tt' : 'login.html.tt');
+        init_template($p, $p->{json} ? 'bad_sid.json.tt' : 'login.html.tt');
         $sid = '';
         $t->param(href_login => CATS::Utils::url_function('login', redir => CATS::Redirect::pack_params));
         msg(1002);
@@ -123,10 +124,11 @@ sub init_contest {
 }
 
 sub initialize {
+    my ($p) = @_;
     $Storable::canonical = 1;
     CATS::Messages::init;
     $t = undef;
-    init_user;
+    init_user($p);
     init_contest;
 }
 

@@ -28,7 +28,8 @@ sub contact_types_frame {
 
     $is_root && ($p->{new} || $p->{edit}) and return $form->edit_frame($p);
 
-    my $lv = CATS::ListView->new(name => 'contact_types', template => 'contact_types.html.tt');
+    init_template($p, 'contact_types.html.tt');
+    my $lv = CATS::ListView->new(name => 'contact_types');
 
     $is_root and $form->edit_delete(id => $p->{delete}, descr => 'name', msg => 1069);
     $is_root && $p->{edit_save} and
