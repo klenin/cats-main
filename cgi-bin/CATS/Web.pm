@@ -18,7 +18,6 @@ our @EXPORT_OK = qw(
     get_return_code
     has_error
     has_upload
-    headers
     init_request
     log_info
     not_found
@@ -80,7 +79,7 @@ sub get_return_code { $return_code }
 
 sub redirect {
     my ($self, $location) = @_;
-    headers(Location => $location);
+    $self->headers(Location => $location);
     $return_code = Apache2::Const::REDIRECT;
     -1;
 }
@@ -98,7 +97,8 @@ sub forbidden {
 sub has_error { $return_code != Apache2::Const::OK }
 
 sub headers {
-    while (my ($header, $value) = splice @_, 0, 2) {
+    my ($self, @args) = @_;
+    while (my ($header, $value) = splice @args, 0, 2) {
         if ($header eq 'cookie') {
             $r->err_headers_out->add('Set-Cookie' => $value->as_string) if $value;
         } else {
@@ -146,7 +146,7 @@ sub log_info { $r->log->notice(@_) }
 sub print_file {
     my ($self, %p) = @_;
     content_type($p{content_type}, $p{charset});
-    headers(
+    $self->headers(
         'Accept-Ranges' => 'bytes',
         'Content-Length' => $p{len} // length($p{content}),
         'Content-Disposition' => "attachment; filename=$p{file_name}",

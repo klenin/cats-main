@@ -22,15 +22,15 @@ use CATS::Messages;
 use CATS::Settings;
 use CATS::Template;
 use CATS::Utils qw();
-use CATS::Web qw(cookie param headers content_type);
+use CATS::Web qw(cookie param content_type);
 
 my ($http_mime_type, %extra_headers);
 
 sub _http_header {
-    my ($type, $encoding, $cookie) = @_;
+    my ($p, $type, $encoding, $cookie) = @_;
 
     content_type($type, $encoding);
-    headers(cookie => $cookie, %extra_headers);
+    $p->headers(cookie => $cookie, %extra_headers);
 }
 
 sub downloads_path { cats_dir() . '../download/' }
@@ -87,12 +87,12 @@ sub generate {
     my $enc = $p->{enc} // param('enc') // 'UTF-8';
     $t->param(encoding => $enc);
     if ($enc ne 'UTF-8') {
-        _http_header($http_mime_type, $enc, $cookie);
+        _http_header($p, $http_mime_type, $enc, $cookie);
         $out = Encode::encode($enc, $t->output, Encode::FB_XMLCREF);
     }
     else {
         $t->param(encoding => 'UTF-8');
-        _http_header($http_mime_type, 'utf-8', $cookie);
+        _http_header($p, $http_mime_type, 'utf-8', $cookie);
         $out = $t->output;
     }
     CATS::Web::print($out);
