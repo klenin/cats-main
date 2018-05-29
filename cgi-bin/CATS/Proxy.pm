@@ -36,6 +36,7 @@ sub proxy {
         $p->content_type('text/plain');
         $p->print($res->content);
     }
+    $p->get_return_code;
 }
 
 1;

@@ -14,8 +14,6 @@ use Exporter qw(import);
 our @EXPORT_OK = qw(
     cookie
     forbidden
-    get_return_code
-    has_error
     has_upload
     log_info
     param

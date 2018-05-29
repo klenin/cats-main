@@ -33,7 +33,7 @@ use CATS::Router;
 use CATS::Settings;
 use CATS::StaticPages;
 use CATS::Time;
-use CATS::Web qw(has_error get_return_code param);
+use CATS::Web qw(param);
 
 sub accept_request {
     my ($p) = @_;
@@ -43,7 +43,7 @@ sub accept_request {
             or return;
     }
     CATS::Init::initialize;
-    return if has_error;
+    return if $p->has_error;
     CATS::Time::mark_init;
 
     if (!defined $t) {
@@ -69,8 +69,7 @@ sub handler {
     CATS::Router::common_params($p);
 
     if (($p->{f} || '') eq 'proxy') {
-        CATS::Proxy::proxy($p, param('u'));
-        return get_return_code();
+        return CATS::Proxy::proxy($p, param('u'));
     }
     CATS::Time::mark_start;
     CATS::DB::sql_connect({
@@ -86,7 +85,7 @@ sub handler {
     accept_request($p);
     $dbh->rollback;
 
-    return get_return_code();
+    $p->get_return_code;
 }
 
 1;
