@@ -21,7 +21,7 @@ use CATS::Messages;
 use CATS::Settings;
 use CATS::Template;
 use CATS::Utils qw();
-use CATS::Web qw(cookie param);
+use CATS::Web qw(param);
 
 my ($http_mime_type, %extra_headers);
 
@@ -73,7 +73,7 @@ sub generate {
         langs => [ map { href => url_f('contests', lang => $_), name => $_ }, @cats::langs ],
     );
 
-    my $cookie = cookie(CATS::Settings::as_cookie);
+    my $cookie = $p->make_cookie(CATS::Settings::as_cookie);
     my $enc = $p->{enc} // 'UTF-8';
     $t->param(encoding => $enc);
 

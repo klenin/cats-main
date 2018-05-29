@@ -25,7 +25,7 @@ use CATS::Privileges;
 use CATS::Redirect;
 use CATS::Settings qw($settings);
 use CATS::Utils;
-use CATS::Web qw(cookie param url_param);
+use CATS::Web qw(param url_param);
 
 # Authorize user, initialize permissions and settings.
 sub init_user {
@@ -53,10 +53,10 @@ sub init_user {
         }
     }
 
-    CATS::Settings::init($enc_settings, param('lang'), cookie('settings'));
+    CATS::Settings::init($enc_settings, param('lang'), $p->get_cookie('settings'));
 
     if ($bad_sid) {
-        return CATS::Web::forbidden if param('noredir');
+        return $p->forbidden if param('noredir');
         init_template($p, $p->{json} ? 'bad_sid.json.tt' : 'login.html.tt');
         $sid = '';
         $t->param(href_login => CATS::Utils::url_function('login', redir => CATS::Redirect::pack_params));

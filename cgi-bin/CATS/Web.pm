@@ -12,8 +12,6 @@ use 5.010;
 
 use Exporter qw(import);
 our @EXPORT_OK = qw(
-    cookie
-    forbidden
     has_upload
     param
     save_uploaded_file
@@ -103,13 +101,15 @@ sub content_type {
     $r->content_type("${mime}" . ($enc ? "; charset=${enc}" : ''));
 }
 
-sub cookie {
-    if (@_ == 1) {
-        my $cookie = $jar->cookies(@_);
-        return $cookie ? $cookie->value() : '';
-    } else {
-        return Apache2::Cookie->new($r, @_);
-    }
+sub get_cookie {
+    my ($self, $name) = @_;
+    my $cookie = $jar->cookies(@_);
+    $cookie ? $cookie->value : '';
+}
+
+sub make_cookie {
+    my ($self, @rest);
+    Apache2::Cookie->new($r, @rest);
 }
 
 sub upload_source {
