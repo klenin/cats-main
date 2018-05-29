@@ -8,7 +8,6 @@ use CATS::ListView;
 use CATS::Messages qw(msg res_str);
 use CATS::Output qw(url_f);
 use CATS::DB;
-use CATS::Web qw(print_json);
 use CATS::Job;
 
 sub fields() {qw(id account_id problem_id contest_id text name)}
@@ -83,7 +82,7 @@ sub _problem_visible {
 sub get_snippets {
     my ($p) = @_;
 
-    $uid && _problem_visible($p->{cpid}) or return print_json({});
+    $uid && _problem_visible($p->{cpid}) or return $p->print_json({});
 
     my $account_id = $p->{uid} && $is_jury ? $p->{uid} : $uid;
 
@@ -96,7 +95,7 @@ sub get_snippets {
     my $res = {};
     $res->{$_->{name}} = $_->{text} for @$snippets;
 
-    return print_json($res) if $p->{uid} && $is_jury;
+    return $p->print_json($res) if $p->{uid} && $is_jury;
 
     my ($contest_id, $problem_id) = $dbh->selectrow_array(q~
         SELECT contest_id, problem_id FROM contest_problems WHERE id = ?~, undef,
@@ -122,7 +121,7 @@ sub get_snippets {
         $dbh->commit;
     }
 
-    print_json($res);
+    $p->print_json($res);
 }
 
 sub snippet_frame {
