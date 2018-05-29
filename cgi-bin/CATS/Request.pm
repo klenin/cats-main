@@ -64,12 +64,32 @@ sub delete_limits {
         $limits_id);
 }
 
+sub get_job_tree_ids {
+    my ($cond) = @_;
+    my ($where, @bind) = $sql->where($cond);
+
+    $dbh->selectcol_arrayref(qq~
+        WITH recursive cte AS (
+            SELECT id FROM jobs
+            $where
+
+            UNION ALL
+
+            SELECT J.id FROM jobs J
+            INNER JOIN cte ON J.parent_id = cte.id
+        )
+        SELECT id FROM cte~, undef,
+        @bind);
+}
+
 sub delete_logs {
-    my ($request_id) = @_;
-    my $jobs = $dbh->selectcol_arrayref(q~
-        SELECT id FROM jobs WHERE req_id = ?~, undef,
-        $request_id) or return;
-    $dbh->do(_u $sql->delete('logs', { job_id => $jobs })) if @$jobs;
+    my ($cond) = @_;
+    my $job_ids = get_job_tree_ids($cond);
+    if (@$job_ids) {
+        $dbh->do(_u $sql->delete('logs', { job_id => $job_ids }));
+        $dbh->commit;
+        msg(1159);
+    }
 }
 
 # Set request state manually. May be also used for retesting.

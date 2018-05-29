@@ -3,6 +3,7 @@
     types => {
       submission => 'попытка',
       snippets => 'фрагменты',
+      install => 'установка',
     },
     states => {
       waiting => 'ожидает',

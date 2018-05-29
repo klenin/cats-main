@@ -11,6 +11,7 @@ use CATS::DB;
 use CATS::Globals qw($sid);
 use CATS::JudgeDB;
 use CATS::Testset;
+use CATS::Job;
 
 # DE bitmap cache may return bigints.
 sub Math::BigInt::TO_JSON { $_[0]->bstr }
@@ -114,6 +115,22 @@ sub set_request_state {
     });
 
     $p->print_json({ ok => 1 });
+}
+
+our @create_job_params = qw(problem_id state parent_id);
+
+sub create_job {
+    my ($p) = @_;
+
+    my $judge_id = $sid && CATS::JudgeDB::get_judge_id($sid)
+        or return $p->print_json($bad_sid);
+
+    my $job_id = CATS::Job::create($p->{job_type}, {
+        judge_id => $judge_id,
+        map { $_ => $p->{$_} } @create_job_params
+    });
+
+    $p->print_json({ job_id => $job_id });
 }
 
 sub finish_job {

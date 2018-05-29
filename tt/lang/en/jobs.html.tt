@@ -3,6 +3,7 @@
     types => {
       submission => 'submission',
       snippets => 'snippets',
+      install => 'install',
     },
     states => {
       waiting => 'waiting',
