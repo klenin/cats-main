@@ -16,9 +16,9 @@ my @whitelist = qw(
 );
 
 sub proxy {
-    my $url = param('u') or die;
+    my ($p, $url) = @_;
     my $r = join '|', map "\Q$_\E", @whitelist;
-    $url =~ m[^http(s?)://($r)/] or die;
+    ($url // '') =~ m[^http(s?)://($r)/] or die;
     my $is_https = $1;
 
     my $ua = LWP::UserAgent->new;
@@ -29,9 +29,9 @@ sub proxy {
     my $res = $ua->request(HTTP::Request->new(GET => $url, [ 'Accept', '*/*' ]));
     $res->is_success or die sprintf 'proxy http error: url=%s result=%s', $url, $res->status_line;
 
-    if ((my $json = param('json')) =~ /^[a-zA-Z_][a-zA-Z0-9_]*$/) {
+    if ($p->{jsonp}) {
         CATS::Web::content_type('application/json');
-        print $json, '(', encode_json({ result => $res->content }), ')';
+        print $p->{jsonp}, '(', encode_json({ result => $res->content }), ')';
     }
     else {
         CATS::Web::content_type('text/plain');

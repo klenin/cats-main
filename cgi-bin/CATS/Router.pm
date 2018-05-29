@@ -371,7 +371,9 @@ sub check_type { !defined $_[1] || $_[0] =~ $_[1] }
 
 sub common_params {
     my ($p) = @_;
-    $p->{json} = 1 if param('json');
+    my $json = param('json');
+    $p->{json} = 1 if $json;
+    $p->{jsonp} = $json if $json =~ /^[a-zA-Z_][a-zA-Z0-9_]*$/;
     $p->{enc} = param('enc') if check_encoding(param('enc'));
     $p->{f} = url_param('f') || '';
 }

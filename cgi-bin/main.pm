@@ -69,7 +69,7 @@ sub handler {
     CATS::Router::common_params($p);
 
     if (($p->{f} || '') eq 'proxy') {
-        CATS::Proxy::proxy;
+        CATS::Proxy::proxy($p, param('u'));
         return get_return_code();
     }
     CATS::Time::mark_start;

@@ -56,11 +56,10 @@ sub init_template {
     %extra_headers = $ext eq 'ics' ?
         ('Content-Disposition' => "inline;filename=$base_name.ics") : ();
     $t = CATS::Template->new($file_name, cats_dir(), $p);
-    my $json = param('json') || '';
-    $extra_headers{'Access-Control-Allow-Origin'} = '*' if $json;
+    $extra_headers{'Access-Control-Allow-Origin'} = '*' if $p->{json};
     $t->param(
         lang => CATS::Settings::lang,
-        ($json =~ /^[a-zA-Z][a-zA-Z0-9_]+$/ ? (jsonp => $json) : ()),
+        ($p->{jsonp} ? (jsonp => $p->{jsonp}) : ()),
         messages => CATS::Messages::get,
         user => $user,
         contest => $contest,
