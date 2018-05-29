@@ -33,10 +33,10 @@ use CATS::Router;
 use CATS::Settings;
 use CATS::StaticPages;
 use CATS::Time;
-use CATS::Web qw(has_error get_return_code init_request param);
+use CATS::Web qw(has_error get_return_code param);
 
 sub accept_request {
-    my ($f) = @_;
+    my ($p) = @_;
     my $output_file = '';
     if (CATS::StaticPages::is_static_page) {
         $output_file = CATS::StaticPages::process_static()
@@ -46,7 +46,6 @@ sub accept_request {
     return if has_error;
     CATS::Time::mark_init;
 
-    my $p = CATS::Web->new({});
     if (!defined $t) {
         my $fn = CATS::Router::route($p);
         # Function returns -1 if there is no need to generate output, e.g. a redirect was issued.
@@ -55,17 +54,21 @@ sub accept_request {
     CATS::Settings::save;
 
     defined $t or return;
-    CATS::MainMenu->new({ f => $f })->generate;
+    CATS::MainMenu->new({ f => $p->{f} })->generate;
     CATS::Time::mark_finish unless param('notime');
     CATS::Output::generate($p, $output_file);
 }
 
 sub handler {
-    my $r = shift;
-    init_request($r);
+    my ($r) = @_;
+
+    my $p = CATS::Web->new;
+    $p->init_request($r);
     return CATS::Web::not_found unless CATS::Router::parse_uri;
-    my $f = param('f');
-    if (($f || '') eq 'proxy') {
+
+    CATS::Router::common_params($p);
+
+    if (($p->{f} || '') eq 'proxy') {
         CATS::Proxy::proxy;
         return get_return_code();
     }
@@ -80,7 +83,7 @@ sub handler {
     $dbh->{Profile} = DBI::Profile->new(Path => []); # '!Statement'
     $dbh->{Profile}->{Data} = undef;
 
-    accept_request($f);
+    accept_request($p);
     $dbh->rollback;
 
     return get_return_code();

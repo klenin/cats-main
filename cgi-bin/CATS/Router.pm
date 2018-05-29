@@ -369,14 +369,17 @@ sub parse_uri { CATS::Web::get_uri =~ m~/cats/(|main.pl)$~ }
 
 sub check_type { !defined $_[1] || $_[0] =~ $_[1] }
 
+sub common_params {
+    my ($p) = @_;
+    $p->{json} = 1 if param('json');
+    $p->{enc} = param('enc') if check_encoding(param('enc'));
+    $p->{f} = url_param('f') || '';
+}
+
 sub route {
     my ($p) = @_;
     my $default_route = \&CATS::UI::About::about_frame;
 
-    $p->{json} = 1 if param('json');
-    $p->{enc} = param('enc') if check_encoding(param('enc'));
-
-    $p->{f} = url_param('f') || '';
     my $route =
         $main_routes->{$p->{f}} ||
         $api_judge_routes->{$p->{f}}

@@ -18,7 +18,6 @@ our @EXPORT_OK = qw(
     get_return_code
     has_error
     has_upload
-    init_request
     log_info
     not_found
     param
@@ -36,11 +35,12 @@ my $return_code;
 
 sub new {
     my ($class, $self) = @_;
-    bless $self, $class;
+    bless $self // {}, $class;
 }
 
 sub init_request {
-    $r = $_[0];
+    my ($self, $apache_request) = @_;
+    $r = $apache_request;
     $jar = Apache2::Cookie::Jar->new($r);
     $return_code = Apache2::Const::OK;
     $qq = Apache2::Request->new($r,
