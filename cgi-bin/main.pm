@@ -38,7 +38,7 @@ use CATS::Web qw(param);
 sub accept_request {
     my ($p) = @_;
     my $output_file = '';
-    if (CATS::StaticPages::is_static_page) {
+    if (CATS::StaticPages::is_static_page($p)) {
         $output_file = CATS::StaticPages::process_static($p)
             or return;
     }
@@ -68,7 +68,7 @@ sub handler {
 
     CATS::Router::common_params($p);
 
-    if (($p->{f} || '') eq 'proxy') {
+    if ($p->{f} eq 'proxy') {
         return CATS::Proxy::proxy($p, param('u'));
     }
     CATS::Time::mark_start;

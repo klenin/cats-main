@@ -6,7 +6,6 @@ use warnings;
 use CATS::Config qw(cats_dir);
 use CATS::DB;
 use CATS::Globals qw($sid);
-use CATS::Web qw(url_param);
 
 my $int = qr/^[0-9]+$/;
 my $bool = qr/^0|1$/;
@@ -19,7 +18,7 @@ sub allowed_pages {{
 
 our $is_static_page;
 
-sub is_static_page { $is_static_page = (url_param('f') || '') eq 'static' }
+sub is_static_page { $is_static_page = $_[0]->{f} eq 'static' }
 
 sub process_static {
     my ($p) = @_;
