@@ -365,7 +365,7 @@ $api_judge_routes = {
 
 }
 
-sub parse_uri { CATS::Web::get_uri =~ m~/cats/(|main.pl)$~ }
+sub parse_uri { $_[0]->get_uri =~ m~/cats/(|main.pl)$~ }
 
 sub check_type { !defined $_[1] || $_[0] =~ $_[1] }
 

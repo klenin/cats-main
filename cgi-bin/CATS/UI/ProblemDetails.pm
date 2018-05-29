@@ -23,7 +23,6 @@ use CATS::StaticPages;
 use CATS::Testset;
 use CATS::Utils qw(url_function);
 use CATS::Verdicts;
-use CATS::Web qw(not_found);
 
 sub get_request_count {
     my ($this_contest_only, $pid) = @_;
@@ -139,8 +138,8 @@ sub problem_details_frame {
 
 sub problem_download {
     my ($p) = @_;
-    my $pid = $p->{pid} or return not_found;
-    CATS::Problem::Utils::can_download_package or return not_found;
+    my $pid = $p->{pid} or return $p->not_found;
+    CATS::Problem::Utils::can_download_package or return $p->not_found;
     # If hash is non-empty, redirect to existing file.
     # Package size is supposed to be large enough to warrant a separate query.
     my ($hash, $status) = $dbh->selectrow_array(q~
@@ -149,7 +148,7 @@ sub problem_download {
         WHERE CP.contest_id = ? AND P.id = ?~, undef,
         $cid, $pid);
     defined $status && ($is_jury || $status != $cats::problem_st_hidden)
-        or return not_found;
+        or return $p->not_found;
     my $already_hashed = CATS::Problem::Utils::ensure_problem_hash($pid, \$hash, 1);
     my $fname = "pr/problem_$hash.zip";
     my $fpath = downloads_path . $fname;

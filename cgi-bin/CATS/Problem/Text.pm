@@ -238,7 +238,7 @@ sub choose_lang {
 sub problem_text {
     my ($p) = @_;
     my ($show, $explain, $is_jury_in_contest) = contest_visible($p);
-    $show or return CATS::Web::not_found;
+    $show or return $p->not_found;
     $explain = $explain && $p->{explain};
 
     init_template(auto_ext('problem_text'));

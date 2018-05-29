@@ -19,7 +19,6 @@ our @EXPORT_OK = qw(
     has_error
     has_upload
     log_info
-    not_found
     param
     restore_parameters
     save_uploaded_file
