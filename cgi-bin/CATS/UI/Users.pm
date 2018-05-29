@@ -41,7 +41,7 @@ sub users_submenu {
 
 sub users_import_frame {
     my ($p) = @_;
-    init_template('users_import.html.tt');
+    init_template($p, 'users_import.html.tt');
     $is_root or return;
     $t->param(href_action => url_f('users_import'), title_suffix => res_str(564), users_submenu);
     $p->{go} or return;
@@ -93,7 +93,7 @@ sub users_delete {
 sub users_add_participants_frame {
     my ($p) = @_;
     $is_jury or return;
-    init_template('users_add_participants.html.tt');
+    init_template($p, 'users_add_participants.html.tt');
     CATS::User::register_by_login($p->{logins_to_add}, $cid, $p->{make_jury}) if $p->{by_login};
     CATS::User::copy_from_contest($p->{source_cid}, $p->{include_ooc}) if $p->{from_contest};
     my $contests = $dbh->selectall_arrayref(q~
@@ -280,7 +280,7 @@ sub users_frame {
 sub users_all_settings_frame {
     my ($p) = @_;
 
-    init_template('users_settings.html.tt');
+    init_template($p, 'users_settings.html.tt');
     $is_root or return;
 
     my $lv = CATS::ListView->new(

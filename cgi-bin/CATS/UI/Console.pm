@@ -263,14 +263,16 @@ sub _console_content {
 }
 
 sub export_frame {
+    my ($p) = @_;
     $is_jury or return;
-    init_template('console_export.xml.tt');
+    init_template($p, 'console_export.xml.tt');
     $t->param(reqs => CATS::Console::export($cid));
 }
 
 sub graphs_frame {
+    my ($p) = @_;
     $is_jury or return;
-    init_template('console_graphs.html.tt');
+    init_template($p, 'console_graphs.html.tt');
 
     my $reqs = CATS::Console::select_all_reqs($cid);
     my $n2s = $CATS::Verdicts::name_to_state;

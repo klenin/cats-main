@@ -148,7 +148,7 @@ sub _choose_lang {
 
 sub wiki_frame {
     my ($p) = @_;
-    init_template('wiki.html.tt');
+    init_template($p, 'wiki.html.tt');
 
     $p->{name} or return;
     my ($id, $is_public) = $dbh->selectrow_array(q~

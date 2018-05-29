@@ -56,7 +56,7 @@ sub init_user {
 
     if ($bad_sid) {
         return CATS::Web::forbidden if param('noredir');
-        init_template(param('json') ? 'bad_sid.json.tt' : 'login.html.tt');
+        init_template({}, param('json') ? 'bad_sid.json.tt' : 'login.html.tt');
         $sid = '';
         $t->param(href_login => CATS::Utils::url_function('login', redir => CATS::Redirect::pack_params));
         msg(1002);

@@ -31,7 +31,7 @@ sub new {
     };
     bless $self, $class;
     $self->init_params;
-    init_template($self->{template}, $p{extra});
+    init_template($p{p} // {}, $self->{template}, $p{extra});
     $self;
 }
 

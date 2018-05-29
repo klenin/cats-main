@@ -17,7 +17,8 @@ sub contest_groups_fields () { qw(name clist) }
 sub sanitize_clist { sort { $a <=> $b } grep /^\d+$/, @_ }
 
 sub prizes_edit_frame {
-    init_template('prizes_edit.html.tt');
+    my ($p) = @_;
+    init_template($p, 'prizes_edit.html.tt');
 
     my $cgid = url_param('edit') or return;
     my $cg = $dbh->selectrow_hashref(q~

@@ -17,7 +17,7 @@ use CATS::References;
 
 sub edit_frame {
     my ($p) = @_;
-    init_template('judges_edit.html.tt');
+    init_template($p, 'judges_edit.html.tt');
 
     if (my $jid = $p->{edit}) {
         my ($judge_name, $account_name, $pin_mode) = $dbh->selectrow_array(q~

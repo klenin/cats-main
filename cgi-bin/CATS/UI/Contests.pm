@@ -18,8 +18,9 @@ use CATS::StaticPages;
 use CATS::Verdicts;
 
 sub contests_new_frame {
+    my ($p) = @_;
     $user->privs->{create_contests} or return;
-    init_template('contests_new.html.tt');
+    init_template($p, 'contests_new.html.tt');
 
     my $date = $dbh->selectrow_array(q~
         SELECT CURRENT_TIMESTAMP FROM RDB$DATABASE~);
@@ -99,7 +100,7 @@ sub contests_new_save {
 sub contest_params_frame {
     my ($p) = @_;
 
-    init_template('contest_params.html.tt');
+    init_template($p, 'contest_params.html.tt');
     $p->{id} or return;
 
     my $c = $dbh->selectrow_hashref(q~

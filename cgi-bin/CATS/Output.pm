@@ -43,7 +43,7 @@ sub auto_ext {
 }
 
 sub init_template {
-    my ($file_name, $p) = @_;
+    my ($p, $file_name, $extra) = @_;
 
     my ($base_name, $ext) = $file_name =~ /^(\w+)\.(\w+)(:?\.tt)$/;
     $http_mime_type = {
@@ -55,7 +55,7 @@ sub init_template {
     }->{$ext} or die 'Unknown template extension';
     %extra_headers = $ext eq 'ics' ?
         ('Content-Disposition' => "inline;filename=$base_name.ics") : ();
-    $t = CATS::Template->new($file_name, cats_dir(), $p);
+    $t = CATS::Template->new($file_name, cats_dir(), $extra);
     $extra_headers{'Access-Control-Allow-Origin'} = '*' if $p->{json};
     $t->param(
         lang => CATS::Settings::lang,

@@ -141,7 +141,7 @@ sub contest_sites_edit_frame {
     $is_jury or return;
     my $site_id = $p->{site_id} or return;
 
-    init_template('contest_sites_edit.html.tt');
+    init_template($p, 'contest_sites_edit.html.tt');
 
     my $s = $dbh->selectrow_hashref(qq~
         SELECT

@@ -243,11 +243,11 @@ sub problems_frame {
     unless ($is_jury) {
         $show_packages = $contest->{show_packages};
         if (!$contest->has_started($user->{diff_time})) {
-            init_template(auto_ext('problems_inaccessible'));
+            init_template($p, auto_ext('problems_inaccessible'));
             return msg(1130);
         }
         if ($contest->{local_only} && !$user->{is_local}) {
-            init_template(auto_ext('problems_inaccessible'));
+            init_template($p, auto_ext('problems_inaccessible'));
             $t->param(local_only => 1);
             return;
         }

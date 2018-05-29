@@ -49,7 +49,9 @@ sub user_submenu {
 }
 
 sub users_new_frame {
-    init_template('users_new.html.tt');
+    my ($p) = @_;
+
+    init_template($p, 'users_new.html.tt');
     $is_jury or return;
     $t->param(
         login => CATS::User::generate_login,
@@ -61,7 +63,7 @@ sub users_new_frame {
 sub users_edit_frame {
     my ($p) = @_;
 
-    init_template('users_edit.html.tt');
+    init_template($p, 'users_edit.html.tt');
     $is_jury or return;
 
     $p->{uid} or return;
@@ -79,7 +81,7 @@ sub users_edit_frame {
 
 sub user_stats_frame {
     my ($p) = @_;
-    init_template('user_stats.html.tt');
+    init_template($p, 'user_stats.html.tt');
     $p->{uid} or return;
     my $envelopes_sql = $is_root ?
         ', (SELECT COUNT(*) FROM reqs R WHERE R.account_id = A.id AND R.received = 0) AS envelopes' : '';
@@ -153,7 +155,7 @@ sub display_settings {
 
 sub user_settings_frame {
     my ($p) = @_;
-    init_template('user_settings.html.tt');
+    init_template($p, 'user_settings.html.tt');
     $is_root && $p->{uid} or return;
 
     my $cleared;
@@ -183,7 +185,7 @@ sub user_settings_frame {
 
 sub user_ip_frame {
     my ($p) = @_;
-    init_template('user_ip.html.tt');
+    init_template($p, 'user_ip.html.tt');
     $is_jury || $user->{is_site_org} or return;
     $p->{uid} or return;
     my $u = CATS::User->new->contest_fields([ 'site_id' ])->load($p->{uid}) or return;
@@ -269,7 +271,7 @@ sub user_vdiff_frame {
     $is_jury || $user->{is_site_org} or return;
     $p->{uid} or return;
 
-    init_template('user_vdiff.html.tt');
+    init_template($p, 'user_vdiff.html.tt');
 
     my $u = user_vdiff_load($p) or return;
     if (user_vdiff_save($p, $u) || user_vdiff_finish_now($p, $u)) {
@@ -300,7 +302,7 @@ my $user_contact_form = CATS::Form->new({
 sub user_contacts_frame {
     my ($p) = @_;
 
-    init_template('user_contacts.html.tt');
+    init_template($p, 'user_contacts.html.tt');
     $p->{uid} or return;
 
     my $is_profile = $uid && $uid == $p->{uid};
@@ -358,7 +360,7 @@ sub user_contacts_frame {
 
 sub registration_frame {
     my ($p) = @_;
-    init_template('registration.html.tt');
+    init_template($p, 'registration.html.tt');
 
     $t->param(countries => \@CATS::Countries::countries, href_login => url_f('login'));
 
@@ -373,7 +375,7 @@ sub registration_frame {
 
 sub profile_frame {
     my ($p) = @_;
-    init_template(auto_ext('user_profile', $p->{json}));
+    init_template($p, auto_ext('user_profile', $p->{json}));
     $uid or return;
     if ($p->{clear}) {
         $settings = {};

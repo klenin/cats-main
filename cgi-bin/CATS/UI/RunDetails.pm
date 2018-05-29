@@ -201,7 +201,7 @@ sub _get_compilation_error {
 
 sub run_details_frame {
     my ($p) = @_;
-    init_template('run_details.html.tt');
+    init_template($p, 'run_details.html.tt');
 
     my $sources_info = get_sources_info($p, request_id => $p->{rid}, partial_checker => 1) or return;
     my @runs;
@@ -240,7 +240,7 @@ sub save_visualizer {
 
 sub visualize_test_frame {
     my ($p) = @_;
-    init_template('visualize_test.html.tt');
+    init_template($p, 'visualize_test.html.tt');
 
     $uid or return;
     my $rid = $p->{rid} or return;
@@ -305,7 +305,7 @@ sub visualize_test_frame {
 
 sub view_source_frame {
     my ($p) = @_;
-    init_template('view_source.html.tt');
+    init_template($p, 'view_source.html.tt');
     $p->{rid} or return;
     my $sources_info = get_sources_info($p, request_id => $p->{rid}, get_source => 1, encode_source => 1);
     $sources_info or return;
@@ -372,7 +372,7 @@ sub download_source_frame {
     my $si = get_sources_info($p, request_id => $p->{rid}, get_source => 1, encode_source => 1);
 
     unless ($si) {
-        init_template('view_source.html.tt');
+        init_template($p, 'view_source.html.tt');
         return;
     }
 
@@ -388,7 +388,7 @@ sub download_source_frame {
 
 sub view_test_details_frame {
     my ($p) = @_;
-    init_template('view_test_details.html.tt');
+    init_template($p, 'view_test_details.html.tt');
 
     $p->{rid} or return;
     $p->{test_rank} //= 1;
@@ -476,7 +476,7 @@ my $settable_verdicts = [ qw(NP AW OK WA PE TL ML WL RE CE SV IS IL MR) ];
 sub request_params_frame {
     my ($p) = @_;
 
-    init_template('request_params.html.tt');
+    init_template($p, 'request_params.html.tt');
     $p->{rid} or return;
 
     my $si = get_sources_info($p, request_id => $p->{rid}) or return;
@@ -605,7 +605,7 @@ sub try_set_state {
 
 sub run_log_frame {
     my ($p) = @_;
-    init_template('run_log.html.tt');
+    init_template($p, 'run_log.html.tt');
     my $rid = $p->{rid} or return;
 
     my $si = get_sources_info($p, request_id => $rid)
@@ -628,7 +628,7 @@ sub run_log_frame {
 
 sub diff_runs_frame {
     my ($p) = @_;
-    init_template('diff_runs.html.tt');
+    init_template($p, 'diff_runs.html.tt');
     $p->{r1} && $p->{r2} or return;
 
     my $si = get_sources_info($p,

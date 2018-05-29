@@ -27,7 +27,7 @@ sub split_ips { map { /(\S+)/ ? $1 : () } split ',', $_[0] }
 
 sub login_frame {
     my ($p) = @_;
-    init_template(auto_ext('login', $p->{json}));
+    init_template($p, auto_ext('login', $p->{json}));
     $t->param(href_login => url_function('login', redir => $p->{redir}));
     msg(1004) if $p->{logout};
 
@@ -88,7 +88,7 @@ sub logout_frame {
         $dbh->commit;
     }
     if ($p->{json}) {
-        init_template(auto_ext('logout'));
+        init_template($p, auto_ext('logout'));
         0;
     }
     else {

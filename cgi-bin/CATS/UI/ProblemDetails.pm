@@ -38,7 +38,7 @@ sub get_request_count {
 
 sub problem_details_frame {
     my ($p) = @_;
-    init_template('problem_details.html.tt');
+    init_template($p, 'problem_details.html.tt');
     $is_jury && $p->{pid} or return;
     my $pr = $dbh->selectrow_hashref(q~
         SELECT
@@ -182,7 +182,7 @@ sub problem_git_package {
 
 sub problem_select_testsets_frame {
     my ($p) = @_;
-    init_template('problem_select_testsets.html.tt');
+    init_template($p, 'problem_select_testsets.html.tt');
     $p->{pid} && $is_jury or return;
     my $problem = $dbh->selectrow_hashref(q~
         SELECT P.id, P.title, CP.id AS cpid, CP.testsets, CP.points_testsets
@@ -234,7 +234,7 @@ sub problem_select_testsets_frame {
 
 sub problem_limits_frame {
     my ($p) = @_;
-    init_template('problem_limits.html.tt');
+    init_template($p, 'problem_limits.html.tt');
     $p->{pid} && $is_jury or return;
 
     my $original_limits_str = join ', ', map "P.$_", @cats::limits_fields;
@@ -308,7 +308,7 @@ sub problem_limits_frame {
 
 sub problem_test_data_frame {
     my ($p) = @_;
-    init_template('problem_test_data.html.tt');
+    init_template($p, 'problem_test_data.html.tt');
     $p->{pid} && $is_jury or return;
 
     if ($p->{clear_test_data}) {
@@ -362,7 +362,7 @@ sub problem_test_data_frame {
 
 sub problem_select_tags_frame {
     my ($p) = @_;
-    init_template('problem_select_tags.html.tt');
+    init_template($p, 'problem_select_tags.html.tt');
     $p->{pid} && $is_jury or return;
 
     my $problem = $dbh->selectrow_hashref(q~

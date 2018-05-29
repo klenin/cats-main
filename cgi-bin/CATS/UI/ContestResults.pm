@@ -21,7 +21,7 @@ sub get_names {
 
 sub personal_official_results {
     my ($p) = @_;
-    init_template('official_results.html.tt');
+    init_template($p, 'official_results.html.tt');
     my @names = get_names();
     my $contests = $dbh->selectall_arrayref(q~
         SELECT id, title FROM contests
@@ -73,7 +73,6 @@ sub personal_official_results {
         }
     }
 
-    init_template('official_results.html.tt');
     $YAML::Syck::ImplicitUnicode = 1;
     $t->param(results => YAML::Syck::Dump($results));
 }

@@ -29,10 +29,11 @@ sub _get_problem_info {
    @row;
 }
 
-sub problem_commitdiff {
-    my ($pid, $title, $sha, $se, $import_log) = @_;
+sub _problem_commitdiff {
+    my ($p, $title, $sha, $se, $import_log) = @_;
 
-    init_template('problem_history_commit.html.tt');
+    my $pid = $p->{pid};
+    init_template($p, 'problem_history_commit.html.tt');
     my $submenu = [
         { href => url_f('problem_details', pid => $pid), item => res_str(504) },
         { href => url_f('problem_history', pid => $pid), item => res_str(568) },
@@ -53,7 +54,7 @@ sub problem_history_commit_frame {
     my ($p) = @_;
     $is_jury or return;
     my ($status, $title) = _get_problem_info($p) or return $p->redirect(url_f 'contests');
-    problem_commitdiff($p->{pid}, $title, $p->{h}, $p->{src_enc} || 'WINDOWS-1251');
+    _problem_commitdiff($p, $title, $p->{h}, $p->{src_enc} || 'WINDOWS-1251');
 }
 
 sub set_history_paths_urls {
@@ -86,7 +87,7 @@ sub problem_history_tree_frame {
     my ($status, $title, undef, undef, $is_jury_in_orig) = _get_problem_info($p)
         or return $p->redirect(url_f 'contests');
 
-    init_template('problem_history_tree.html.tt');
+    init_template($p, 'problem_history_tree.html.tt');
 
     my $tree = CATS::Problem::Storage::show_tree(
         $p->{pid}, $p->{hb}, $p->{file} || undef, $p->{repo_enc});
@@ -118,7 +119,7 @@ sub detect_encoding_by_xml_header {
 sub problem_history_blob_frame {
     my ($p) = @_;
     $is_jury or return;
-    init_template('problem_history_blob.html.tt');
+    init_template($p, 'problem_history_blob.html.tt');
     my ($status, $title, undef, undef, $is_jury_in_orig) = _get_problem_info($p)
         or return $p->redirect(url_f 'contests');
 
@@ -162,7 +163,7 @@ sub problem_history_edit_frame {
     !CATS::Problem::Storage::get_remote_url($repo_name) &&
         $hash_base eq CATS::Problem::Storage::get_latest_master_sha($p->{pid})
         or return $p->redirect(url_f 'problem_history', pid => $p->{pid});
-    init_template('problem_history_edit.html.tt');
+    init_template($p, 'problem_history_edit.html.tt');
 
     if ($p->{save} && $p->{src_enc}) {
         my $content = $p->{source};
@@ -174,7 +175,7 @@ sub problem_history_edit_frame {
         unless ($error) {
             $dbh->commit;
             CATS::StaticPages::invalidate_problem_text(pid => $p->{pid});
-            return problem_commitdiff($p->{pid}, $title, $latest_sha, $p->{src_enc}, $ps->encoded_import_log);
+            return _problem_commitdiff($p, $title, $latest_sha, $p->{src_enc}, $ps->encoded_import_log);
         }
 
         $t->param(

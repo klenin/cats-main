@@ -241,7 +241,7 @@ sub problem_text {
     $show or return $p->not_found;
     $explain = $explain && $p->{explain};
 
-    init_template(auto_ext('problem_text'));
+    init_template($p, auto_ext('problem_text'));
 
     my (@problems, $show_points);
 

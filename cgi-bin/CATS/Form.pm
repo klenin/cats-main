@@ -33,7 +33,7 @@ sub field_names { sort map $_->{name}, @{$_[0]->{fields}} }
 sub edit_frame {
     my ($self, $p, %opts) = @_;
     $p or die 'No params';
-    init_template($self->{templates}->{edit_frame} or die 'No edit frame template');
+    init_template($p, $self->{templates}->{edit_frame} || die 'No edit frame template');
 
     my $id = $p->{$self->{edit_param}} // url_param($self->{edit_param});
 

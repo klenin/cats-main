@@ -41,7 +41,7 @@ sub greedy_cliques {
 
 sub compare_tests_frame {
     my ($p) = @_;
-    init_template('compare_tests.html.tt');
+    init_template($p, 'compare_tests.html.tt');
     $is_jury or return;
     my ($pt) = $dbh->selectrow_array(q~
         SELECT title FROM problems WHERE id = ?~, undef,
@@ -287,7 +287,7 @@ sub similarity_frame {
 
 sub test_diff_frame {
     my ($p) = @_;
-    init_template('test_diff.html.tt');
+    init_template($p, 'test_diff.html.tt');
     $is_jury && $p->{pid} && $p->{test} or return;
     my $problem = $dbh->selectrow_hashref(q~
         SELECT P.id, P.title FROM problems P WHERE id = ?~, { Slice => {} },
