@@ -12,7 +12,6 @@ use 5.010;
 
 use Exporter qw(import);
 our @EXPORT_OK = qw(
-    has_upload
     param
     url_param
 );
@@ -54,7 +53,7 @@ sub get_uri { $r->uri }
 sub param { $qq->param(@_) }
 *url_param = \&param;
 
-sub has_upload { $qq->upload($_[0]) ? 1 : 0 }
+sub has_upload { $qq->upload($_[1]) ? 1 : 0 }
 
 sub get_return_code { $return_code }
 

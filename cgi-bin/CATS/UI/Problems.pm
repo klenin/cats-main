@@ -493,7 +493,7 @@ sub problems_frame {
         { href => url_f('contest_params', id => $cid), item => res_str(546) };
 
     $t->param(
-        href_login => url_f('login', redir => CATS::Redirect::pack_params),
+        href_login => url_f('login', redir => CATS::Redirect::pack_params($p)),
         CATS::Contest::Participate::flags_can_participate,
         submenu => \@submenu, title_suffix => res_str(525),
         is_user => $uid,
