@@ -14,8 +14,6 @@ use Exporter qw(import);
 our @EXPORT_OK = qw(
     has_upload
     param
-    save_uploaded_file
-    upload_source
     url_param
 );
 
@@ -53,16 +51,10 @@ sub print_json {
 
 sub get_uri { $r->uri }
 
-sub original_param { $qq->param(@_) }
-
 sub param { $qq->param(@_) }
 *url_param = \&param;
 
-sub ensure_upload { $qq->upload($_[0]) // die "Bad upload for parameter '$_[0]'" }
-
 sub has_upload { $qq->upload($_[0]) ? 1 : 0 }
-
-sub save_uploaded_file { ensure_upload($_[0])->tempname }
 
 sub get_return_code { $return_code }
 
@@ -110,12 +102,6 @@ sub get_cookie {
 sub make_cookie {
     my ($self, @rest);
     Apache2::Cookie->new($r, @rest);
-}
-
-sub upload_source {
-    my $src = '';
-    ensure_upload($_[0])->slurp($src);
-    $src;
 }
 
 sub user_agent { $r->headers_in->get('User-Agent') }
