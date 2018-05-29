@@ -370,8 +370,8 @@ sub parse_uri { CATS::Web::get_uri =~ m~/cats/(|main.pl)$~ }
 sub check_type { !defined $_[1] || $_[0] =~ $_[1] }
 
 sub route {
-    my $p = {};
-    my @default_route = (\&CATS::UI::About::about_frame, $p);
+    my ($p) = @_;
+    my $default_route = \&CATS::UI::About::about_frame;
 
     $p->{json} = 1 if param('json');
     $p->{enc} = param('enc') if check_encoding(param('enc'));
@@ -380,8 +380,8 @@ sub route {
     my $route =
         $main_routes->{$p->{f}} ||
         $api_judge_routes->{$p->{f}}
-        or return @default_route;
-    ref $route eq 'ARRAY' or return ($route, $p);
+        or return $default_route;
+    ref $route eq 'ARRAY' or return $route;
     my $fn = $route->[0];
 
     for (my $i = 1; $i < @$route; $i += 2) {
@@ -401,7 +401,7 @@ sub route {
 
         if ($type->{array_of}) {
             my @values = grep check_type($_, $type->{type}), param($name);
-            return @default_route if !@values && $type->{required};
+            return $default_route if !@values && $type->{required};
             $p->{$name} = \@values;
             next;
         }
@@ -409,13 +409,13 @@ sub route {
         my $value = param($name);
         if ($type->{clist_of}) {
             my @values = grep check_type($_, $type->{type}), split ',', $value // '';
-            return @default_route if !@values && $type->{required};
+            return $default_route if !@values && $type->{required};
             $p->{$name} = \@values;
             next;
         }
 
         if (!defined $value) {
-            return @default_route if $type->{required};
+            return $default_route if $type->{required};
             next;
         }
 
@@ -423,11 +423,11 @@ sub route {
             $p->{$name} = $value;
         }
         elsif ($type->{required}) {
-            return @default_route;
+            return $default_route;
         }
     }
 
-    ($fn, $p);
+    $fn;
 }
 
 1;
