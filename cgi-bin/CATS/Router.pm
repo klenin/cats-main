@@ -103,6 +103,8 @@ $main_routes = {
         change_status => integer, status => integer,
         change_code => integer, code => problem_code,
         link_save => bool, move => bool,
+        zip => upload, allow_rename => bool,
+        remote_url => str,
     ],
     problems_all => [
         \&CATS::UI::Problems::problems_all_frame,
@@ -143,7 +145,7 @@ $main_routes = {
 
     problem_history => [ \&CATS::UI::ProblemHistory::problem_history_frame,
         a => ident, pid => integer, pull => bool, replace => bool,
-        is_amend => bool, allow_rename => bool, ],
+        message => str, is_amend => bool, allow_rename => bool, zip => upload, ],
     problem_history_edit => [ \&CATS::UI::ProblemHistory::problem_history_edit_frame,
         pid => required integer, hb => required sha, file => required str,
         save => bool, src_enc => encoding, message => str, source => undef,

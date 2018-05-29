@@ -216,7 +216,7 @@ sub problem_history_frame {
     my $repo = CATS::Problem::Storage::get_repo(
         $p->{pid}, undef, 1, logger => CATS::Problem::Storage->new);
 
-    CATS::Problem::Save::problems_replace if $p->{replace};
+    CATS::Problem::Save::problems_replace($p, $p->{pid}) if $p->{replace};
 
     my $remote_url = $repo->get_remote_url;
     if ($p->{pull} && $remote_url) {

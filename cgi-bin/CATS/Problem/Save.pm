@@ -12,8 +12,6 @@ use CATS::Messages qw(msg);
 use CATS::Output qw(url_f);
 use CATS::Problem::Storage;
 use CATS::StaticPages;
-use CATS::Web qw(param save_uploaded_file);
-
 
 sub _get_cpid {
     my ($contest_id, $problem_id) = @_;
@@ -107,11 +105,11 @@ sub set_problem_import_diff {
 }
 
 sub problems_replace {
-    my $pid = param('problem_id')
-        or return msg(1012);
-    my $file = param('zip') || '';
-    $file =~ /\.(zip|ZIP)$/
-        or return msg(1053);
+    my ($p, $pid) = @_;
+    $pid or return msg(1012);
+    my $zip = $p->{zip} or return msg(1053);
+    $zip->remote_file_name =~ /\.(zip|ZIP)$/ or return msg(1053);
+
     my ($contest_id, $old_title, $repo) = $dbh->selectrow_array(q~
         SELECT contest_id, title, repo FROM problems WHERE id = ?~, undef,
         $pid);
@@ -120,15 +118,16 @@ sub problems_replace {
     $contest_id == $cid
         or return msg(1117, $old_title);
 
-    my CATS::Problem::Storage $p = CATS::Problem::Storage->new;
-    return if CATS::Problem::Storage::get_repo($pid, undef, 1, logger => CATS::Problem::Storage->new)->is_remote;
+    my CATS::Problem::Storage $pr = CATS::Problem::Storage->new;
+    return if CATS::Problem::Storage::get_repo(
+        $pid, undef, 1, logger => CATS::Problem::Storage->new)->is_remote;
 
-    my $fname = save_uploaded_file('zip');
+    my $fname = $zip->local_file_name;
 
-    $p->{old_title} = $old_title unless param('allow_rename');
-    my ($error, $result_sha) = $p->load(
-        CATS::Problem::Source::Zip->new($fname, $p), $cid, $pid, 1, $repo, param('message'), param('is_amend'));
-    $t->param(problem_import_log => $p->encoded_import_log());
+    $pr->{old_title} = $old_title unless $p->{allow_rename};
+    my ($error, $result_sha) = $pr->load(
+        CATS::Problem::Source::Zip->new($fname, $pr), $cid, $pid, 1, $repo, $p->{message}, $p->{is_amend});
+    $t->param(problem_import_log => $pr->encoded_import_log());
     #unlink $fname;
     if ($error) {
         $dbh->rollback;
@@ -148,9 +147,9 @@ sub problems_add {
     }
 
     my CATS::Problem::Storage $p = CATS::Problem::Storage->new;
-    my ($error, $result_sha, $problem) = $is_remote
-              ? $p->load(CATS::Problem::Source::Git->new($source_name, $p), $cid, new_id, 0, $source_name)
-              : $p->load(CATS::Problem::Source::Zip->new($source_name, $p), $cid, new_id, 0, undef);
+    my ($error, $result_sha, $problem) = $is_remote ?
+        $p->load(CATS::Problem::Source::Git->new($source_name, $p), $cid, new_id, 0, $source_name) :
+        $p->load(CATS::Problem::Source::Zip->new($source_name, $p), $cid, new_id, 0, undef);
     $t->param(problem_import_log => $p->encoded_import_log());
     $error ||= !_add_problem_to_contest($cid, $problem->{id}, $problem_code);
 
@@ -164,18 +163,19 @@ sub problems_add {
 }
 
 sub problems_add_new {
-    my $file = param('zip') || '';
-    $file =~ /\.(zip|ZIP)$/
+    my ($p) = @_;
+    my $zip = $p->{zip} or return msg(1053);
+    $zip->remote_file_name =~ /\.(zip|ZIP)$/
         or return msg(1053);
-    my $fname = save_uploaded_file('zip');
+    my $fname = $zip->local_file_name;
     problems_add($fname, 0);
     unlink $fname;
 }
 
 sub problems_add_new_remote {
-    my $url = param('remote_url') || '';
-    $url or return msg(1091);
-    problems_add($url, 1);
+    my ($p) = @_;
+    $p->{remote_url} or return msg(1091);
+    problems_add($p->{remote_url}, 1);
 }
 
 1;
