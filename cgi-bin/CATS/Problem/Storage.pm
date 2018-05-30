@@ -75,9 +75,18 @@ sub show_tree {
     return get_repo($pid, $hash_base, 1)->tree($hash_base, $file, $enc);
 }
 
+sub find_xml {
+    my ($pid, $hash_base) = @_;
+    my $tree = get_repo($pid, $hash_base, 1)->tree($hash_base);
+    for (@{$tree->{entries}}) {
+        return $_->{file_name} if $_->{type} eq 'blob' && $_->{file_name} =~ /\.xml$/;
+    }
+    undef;
+}
+
 sub show_blob {
     my ($pid, $hash_base, $file, $enc) = @_;
-    return get_repo($pid, $hash_base, 1)->blob($hash_base, $file, $enc);
+    get_repo($pid, $hash_base, 1)->blob($hash_base, $file, $enc);
 }
 
 sub show_raw {

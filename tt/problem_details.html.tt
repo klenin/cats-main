@@ -11,9 +11,11 @@
 <form method="post" enctype="multipart/form-data" action="[% href_action %]">
 <table class="internal_borders padded">
 <tr><td>[% capt.title %]</td><td>[% p.title | html %]</td></tr>
-<tr><td>[% capt.last_change %]</td><td>
-  [[% href(href_edit, capt.edit, p.commit_sha) %]]
-  [% href(href_modifier,p.team_name) %] [% p.upload_date %]
+<tr><td>[% capt.last_change %]</td><td class="nested">
+  <table class="internal_borders padded"><tr>
+   <td>[% href(href_edit, p.upload_date, p.commit_sha) %] [[% href(href_edit_xml, capt.edit _ ' xml') %]]</td>
+   <td>[% href(href_modifier, p.team_name) %]</td>
+  </tr></table>
 </td></tr>
 <tr><td>[% capt.author %]</td><td>[% p.author | html %]</td></tr>
 <tr><td>[% capt.lang %]</td><td>[% p.lang | html %]</td></tr>

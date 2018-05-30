@@ -165,6 +165,10 @@ sub problem_history_edit_frame {
         or return $p->redirect(url_f 'problem_history', pid => $p->{pid});
     init_template($p, 'problem_history_edit.html.tt');
 
+    if ($p->{file} eq '*') {
+        $p->{file} = CATS::Problem::Storage::find_xml($p->{pid}, $hash_base) or return;
+    }
+
     if ($p->{save} && $p->{src_enc}) {
         my $content = $p->{source};
         my CATS::Problem::Storage $ps = CATS::Problem::Storage->new;
