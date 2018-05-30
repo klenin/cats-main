@@ -40,35 +40,7 @@ sub process_text {
     $text_span = '';
 }
 
-my $no_spellcheck_tags = { code => 1, script => 1, svg => 1, style => 1 };
-
-sub start_element {
-    my ($el, %atts) = @_;
-
-    process_text;
-    if ($spellchecker) {
-        my $lang = $atts{lang};
-        # Do not spellcheck code unless explicitly requested.
-        $lang //= 'code' if $no_spellcheck_tags->{lc($el)};
-        $spellchecker->push_lang($lang, $atts{'cats-dict'});
-    }
-    $html_code .= "<$el";
-    for my $name (keys %atts) {
-        my $attrib = $atts{$name};
-        $html_code .= qq~ $name="$attrib"~;
-    }
-    $html_code .= '>';
-}
-
-sub end_element {
-    my ($el) = @_;
-    process_text;
-    return if $el eq $wrapper;
-    $spellchecker->pop_lang if $spellchecker;
-    $html_code .= "</$el>";
-}
-
-sub ch_1 {
+sub _on_char {
     return if $skip_depth;
     my ($p, $text) = @_;
     # Join consecutive text elements.
@@ -117,7 +89,9 @@ sub save_attachment {
     return downloads_url . $fname;
 }
 
-sub sh_1 {
+my $no_spellcheck_tags = { code => 1, script => 1, svg => 1, style => 1 };
+
+sub _on_start {
     my ($p, $el, %atts) = @_;
     return if $el eq $wrapper;
 
@@ -146,28 +120,41 @@ sub sh_1 {
         $atts{data} = save_attachment($atts{attachment}, 1);
         delete $atts{attachment};
     }
-    start_element($el, %atts);
+
+    process_text;
+    if ($spellchecker) {
+        my $lang = $atts{lang};
+        # Do not spellcheck code unless explicitly requested.
+        $lang //= 'code' if $no_spellcheck_tags->{lc($el)};
+        $spellchecker->push_lang($lang, $atts{'cats-dict'});
+    }
+    $html_code .= "<$el";
+    for my $name (keys %atts) {
+        my $attrib = $atts{$name};
+        $html_code .= qq~ $name="$attrib"~;
+    }
+    $html_code .= '>';
 }
 
-sub eh_1 {
+sub _on_end {
     my ($p, $el) = @_;
     if ($skip_depth) {
         $skip_depth--;
         return;
     }
-    end_element($el);
+    process_text;
+    return if $el eq $wrapper;
+    $spellchecker->pop_lang if $spellchecker;
+    $html_code .= "</$el>";
 }
 
-sub parse {
-    my $xml_patch = shift;
+sub _parse {
+    my ($xml_patch) = @_;
     my $parser = XML::Parser::Expat->new;
 
     $html_code = '';
 
-    $parser->setHandlers(
-        Start => \&sh_1,
-        End   => \&eh_1,
-        Char  => \&ch_1);
+    $parser->setHandlers(Start => \&_on_start, End => \&_on_end, Char => \&_on_char);
 
     # XML parser requires all text to be inside of top-level tag.
     eval { $parser->parse("<$wrapper>$xml_patch</$wrapper>"); 1; } or return $@;
@@ -341,7 +328,7 @@ sub problem_text {
             for ($problem->{$field_name}) {
                 defined $_ or next;
                 $text_span = '';
-                $_ = $_ eq '' ? undef : parse($_) unless $is_root && $p->{raw};
+                $_ = $_ eq '' ? undef : _parse($_) unless $is_root && $p->{raw};
                 CATS::TeX::Lite::convert_all($_);
                 s/(\s|~)(:?-){2,3}(?!-)/($1 ? '&nbsp;' : '') . '&#8212;'/ge; # em-dash
             }
