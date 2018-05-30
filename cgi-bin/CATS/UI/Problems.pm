@@ -81,8 +81,12 @@ sub problems_all_frame {
         { caption => res_str(667), order_by => 'keywords', width => '20%', col => 'Kw' },
     ]);
     CATS::Problem::Utils::define_common_searches($lv);
-    $lv->define_db_searches({ contest_title => 'C.title'});
-
+    $lv->define_db_searches({
+        contest_title => 'C.title',
+        ($is_root ? (tags => q~
+            (SELECT LIST(DISTINCT CP1.tags) FROM contest_problems CP1
+                WHERE CP1.problem_id = P.id AND CP1.tags IS NOT NULL)~) : ()),
+    });
     my $ok_wa_tl = $lv->visible_cols->{Ok} ? qq~
         SELECT
             SUM(CASE R.state WHEN $cats::st_accepted THEN 1 ELSE 0 END) || ' / ' ||
