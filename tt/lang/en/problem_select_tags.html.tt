@@ -1,5 +1,6 @@
 [%
   capt.import({
+    available_tags => 'Available tags',
     select_tags => 'Select tags',
     save => 'Save',
   })

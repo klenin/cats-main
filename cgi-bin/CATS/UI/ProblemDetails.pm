@@ -17,6 +17,7 @@ use CATS::Output qw(downloads_path downloads_url init_template url_f);
 use CATS::Problem::Save;
 use CATS::Problem::Storage;
 use CATS::Problem::Tags;
+use CATS::Problem::Text;
 use CATS::Problem::Utils;
 use CATS::Settings;
 use CATS::StaticPages;
@@ -393,6 +394,7 @@ sub problem_select_tags_frame {
         problem => $problem,
         href_action => url_f('problem_select_tags',
             from_problems => $p->{from_problems}, pid => $p->{pid}),
+        available_tags => CATS::Problem::Text::get_tags($p->{pid}),
     );
     CATS::Problem::Utils::problem_submenu('problem_select_tags', $p->{pid});
 }

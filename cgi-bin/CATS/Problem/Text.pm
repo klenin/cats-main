@@ -22,6 +22,7 @@ use CATS::Utils qw(url_function);
 
 my ($current_pid, $html_code, $spellchecker, $text_span, $tags, $skip_depth, $has_snippets);
 my $wrapper = 'cats-wrapper';
+my @parsed_fields = qw(statement pconstraints input_format output_format explanation);
 
 sub process_text {
     if ($spellchecker) {
@@ -160,6 +161,28 @@ sub _parse {
     eval { $parser->parse("<$wrapper>$xml_patch</$wrapper>"); 1; } or return $@;
     $skip_depth and die;
     $html_code;
+}
+
+sub get_tags {
+    my ($pid) = @_;
+    $pid && $is_root or return [];
+
+    my $parser = XML::Parser::Expat->new;
+
+    my $problem = $dbh->selectrow_hashref(
+        _u $sql->select('problems', \@parsed_fields, { id => $pid })) or return;
+
+    my %tags;
+    $parser->setHandlers(Start => sub {
+        my ($p, $el, %attrs) = @_;
+        my $cond = $attrs{'cats-if'} or return;
+        my $pc = CATS::Problem::Tags::parse_tag_condition($cond, sub {});
+        $tags{$_} = 1 for keys %$pc;
+    });
+
+    eval { $parser->parse("<$wrapper>$problem->{$_}</$wrapper>"); } for @parsed_fields;
+
+    [ sort keys %tags ];
 }
 
 sub contest_visible {
@@ -324,7 +347,7 @@ sub problem_text {
             url_function('get_snippets', cpid => $problem->{cpid});
 
         $spellchecker->push_lang($problem->{lang}) if $spellchecker;
-        for my $field_name (qw(statement pconstraints input_format output_format explanation)) {
+        for my $field_name (@parsed_fields) {
             for ($problem->{$field_name}) {
                 defined $_ or next;
                 $text_span = '';
