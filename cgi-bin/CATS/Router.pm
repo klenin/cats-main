@@ -193,7 +193,8 @@ $main_routes = {
         ext_time => fixed, ext_units => ident,
         is_virtual => bool, save => bool, finish_now => bool ],
     user_contacts => [ \&CATS::UI::UserDetails::user_contacts_frame,
-        uid => integer, %form_params, handle => str,
+        uid => integer, %form_params,
+        map { $_ => str } CATS::UI::UserDetails::user_contact_fields,
     ],
     impersonate => [ \&CATS::UI::UserDetails::impersonate_frame, uid => integer, ],
     contact_types => [
@@ -219,7 +220,7 @@ $main_routes = {
     prizes => \&CATS::UI::Prizes::prizes_frame,
     contests_prizes => \&CATS::UI::Prizes::contests_prizes_frame,
     sites => [ \&CATS::UI::Sites::sites_frame,
-        %form_params, name => str, org_name => str,
+        %form_params, map { $_ => str } CATS::UI::Sites::fields,
     ],
     snippets => [ \&CATS::UI::Snippets::snippet_frame,
         %form_params, map { $_ => str } CATS::UI::Snippets::fields,
