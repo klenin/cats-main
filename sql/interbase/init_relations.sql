@@ -198,7 +198,8 @@ CREATE TABLE problems (
     run_method         SMALLINT DEFAULT 0,
     players_count      VARCHAR(200),
     statement_url      VARCHAR(200) DEFAULT '',
-    explanation_url    VARCHAR(200) DEFAULT ''
+    explanation_url    VARCHAR(200) DEFAULT '',
+    repo_path          VARCHAR(200) DEFAULT ''
 );
 ALTER TABLE problems ADD CONSTRAINT chk_run_method CHECK (run_method IN (0, 1, 2));
 
