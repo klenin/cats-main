@@ -281,6 +281,7 @@ sub problems_frame {
             { caption => res_str(635), order_by => 'last_modified_by', width => '5%', col => 'Mu' },
             { caption => res_str(634), order_by => 'P.upload_date', width => '10%', col => 'Mt' },
             { caption => res_str(641), order_by => 'allow_des', width => '5%', col => 'Ad' },
+            { caption => res_str(675), col => 'Cl' },
         )
         : ()
         ),
@@ -348,7 +349,7 @@ sub problems_frame {
             (SELECT A.login FROM accounts A WHERE A.id = P.last_modified_by) AS last_modified_by,
             SUBSTRING(P.explanation FROM 1 FOR 1) AS has_explanation,
             $test_count_sql CP.testsets, CP.points_testsets, P.lang, $limits_str,
-            CP.max_points, P.repo, CP.tags, P.statement_url, P.explanation_url
+            CP.max_points, P.repo, CP.tags, P.statement_url, P.explanation_url, CP.color
         FROM problems P
         INNER JOIN contest_problems CP ON CP.problem_id = P.id
         INNER JOIN contests OC ON OC.id = P.contest_id
@@ -463,6 +464,7 @@ sub problems_frame {
             last_verdict => $last_verdict,
             keywords => $c->{keywords},
             allow_des => $c->{allow_des} // '*',
+            color => $c->{color},
         );
     };
 
@@ -498,6 +500,7 @@ sub problems_frame {
 
     $t->param(
         href_login => url_f('login', redir => CATS::Redirect::pack_params($p)),
+        href_set_problem_color => url_f('set_problem_color'),
         CATS::Contest::Participate::flags_can_participate,
         submenu => \@submenu, title_suffix => res_str(525),
         is_user => $uid,
@@ -510,5 +513,26 @@ sub problems_frame {
 }
 
 sub problem_text_frame { goto \&CATS::Problem::Text::problem_text }
+
+sub set_problem_color {
+    my ($p) = @_;
+    $p->{pid} && $p->{color} && $is_jury
+        or return $p->print_json({ result => 'error' });
+
+    if ($p->{color} eq '#000000') {
+        $dbh->do(q~
+            DELETE FROM contest_problems
+            WHERE contest_id = ? AND problem_id = ?~, undef,
+            $cid, $p->{pid});
+    }
+    else {
+        $dbh->do(q~
+            UPDATE contest_problems SET color = ?
+            WHERE contest_id = ? AND problem_id = ?~, undef,
+            $p->{color}, $cid, $p->{pid});
+    }
+    $dbh->commit;
+    $p->print_json({ result => 'ok' });
+}
 
 1;

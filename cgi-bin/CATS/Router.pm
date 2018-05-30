@@ -164,6 +164,9 @@ $main_routes = {
     problem_history_tree => [ \&CATS::UI::ProblemHistory::problem_history_tree_frame,
         pid => required integer, hb => required sha, file => str, repo_enc => encoding,
     ],
+    set_problem_color => [ \&CATS::UI::Problems::set_problem_color,
+        pid => integer, color => qr/^#[0-9A-Fa-f]{6}$/,
+    ],
 
     users => [
         \&CATS::UI::Users::users_frame,

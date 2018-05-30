@@ -221,6 +221,7 @@ CREATE TABLE contest_problems (
     max_points      INTEGER,
     tags            VARCHAR(200),
     limits_id       INTEGER REFERENCES limits(id),
+    color           VARCHAR(50),
     UNIQUE (problem_id, contest_id)
 );
 ALTER TABLE contest_problems
