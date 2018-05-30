@@ -210,7 +210,7 @@ sub run_details_frame {
     for (@$sources_info) {
         source_links($p, $_);
         if ($_->{state} == $cats::st_compilation_error) {
-            push @runs, { compiler_output => _get_compilation_error(get_log_dump($_->{req_id})) };
+            push @runs, { compiler_output => _get_compilation_error(get_log_dump({ req_id => $_->{req_id} })) };
             next;
         }
         my $c = get_contest_tests(get_contest_info($_, $contest_cache), $_->{problem_id});
@@ -346,7 +346,7 @@ sub view_source_frame {
     }
     $sources_info->{syntax} = $p->{syntax} if $p->{syntax};
     $sources_info->{src_lines} = [ map {}, split("\n", $sources_info->{src}) ];
-    $sources_info->{compiler_output} = _get_compilation_error(get_log_dump($sources_info->{req_id}))
+    $sources_info->{compiler_output} = _get_compilation_error(get_log_dump({ req_id => $sources_info->{req_id} }))
         if $sources_info->{state} == $cats::st_compilation_error;
 
     if ($sources_info->{is_jury}) {
@@ -614,14 +614,10 @@ sub run_log_frame {
     source_links($p, $si);
     sources_info_param([ $si ]);
 
-    if ($p->{delete_log}) {
-        CATS::Request::delete_logs($rid);
-        $dbh->commit;
-        msg(1159);
-    }
+    CATS::Request::delete_logs({ req_id => $rid }) if $p->{delete_log};
 
     $t->param(
-        logs => get_log_dump($rid)
+        logs => get_log_dump({ req_id => $rid })
     );
 }
 

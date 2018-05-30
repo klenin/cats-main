@@ -10,27 +10,18 @@ use CATS::ListView;
 use CATS::Messages qw(msg res_str);
 use CATS::Output qw(init_template url_f);
 use CATS::Utils qw(url_function);
+use CATS::Request;
+use CATS::ReqDetails;
 
 sub job_details_frame {
     my ($p) = @_;
     init_template($p, 'run_log.html.tt');
     my $lv = CATS::ListView->new(name => 'job_details');
 
-    if ($p->{delete_log}) {
-        $dbh->do(q~
-            DELETE FROM logs WHERE job_id = ?~, undef,
-            $p->{jid});
-        $dbh->commit;
-        msg(1159);
-    }
-
-    my $logs = $dbh->selectall_arrayref(qq~
-        SELECT SUBSTRING(dump FROM 1 FOR 500000) AS dump, OCTET_LENGTH(dump) AS "length"
-        FROM logs WHERE job_id = ?~, { Slice => {} },
-        $p->{jid});
+    CATS::Request::delete_logs({ id => $p->{jid} }) if $p->{delete_log};
 
     $t->param(
-        logs => $logs
+        logs => CATS::ReqDetails::get_log_dump({ id => $p->{jid} })
     );
 }
 
@@ -60,6 +51,7 @@ sub jobs_frame {
     my $job_name_to_type = {
         submission => $cats::job_type_submission,
         snippets => $cats::job_type_generate_snippets,
+        install => $cats::job_type_initialize_problem,
     };
     my $job_name_to_state = {
         waiting => $cats::job_st_waiting,
@@ -122,8 +114,7 @@ sub jobs_frame {
             %$row,
             href_details => url_f(
                 $row->{type} == $cats::job_type_submission ? ('run_details', rid => $row->{req_id}) :
-                $row->{type} == $cats::job_type_generate_snippets ? ('job_details', jid => $row->{id}) :
-                die
+                ('job_details', jid => $row->{id})
             ),
             href_problem_text => url_function('problem_text',
                 pid => $row->{problem}, cpid => $row->{cpid}, sid => $sid,

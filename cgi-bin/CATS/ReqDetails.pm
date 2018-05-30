@@ -15,6 +15,7 @@ use CATS::Time;
 use CATS::Utils qw(encodings source_encodings url_function);
 use CATS::Verdicts;
 use CATS::Web qw(param);
+use CATS::Request;
 
 use Exporter qw(import);
 our @EXPORT_OK = qw(
@@ -361,13 +362,12 @@ sub source_links {
 }
 
 sub get_log_dump {
-    my ($rid) = @_;
-    my $logs = $dbh->selectall_arrayref(q~
-        SELECT SUBSTRING(dump FROM 1 FOR 500000) AS dump, OCTET_LENGTH(dump) AS "length",
-            J.id as job_id
-        FROM logs L INNER JOIN jobs J on L.job_id = J.id
-        WHERE J.req_id = ? ORDER BY J.create_time DESC~, { Slice => {} },
-        $rid) or return [];
+    my ($cond) = @_;
+    my $job_ids = CATS::Request::get_job_tree_ids($cond);
+    my $logs = $dbh->selectall_arrayref(_u $sql->select('logs',
+        'SUBSTRING(dump FROM 1 FOR 500000) AS dump, OCTET_LENGTH(dump) AS "length", job_id',
+        { job_id => $job_ids })
+    ) or return [];
 
     $_->{dump} = Encode::decode_utf8($_->{dump}) for @$logs;
     $logs;

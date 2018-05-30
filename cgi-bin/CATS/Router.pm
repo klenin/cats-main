@@ -342,6 +342,11 @@ $api_judge_routes = {
         contest_id => integer,
         failed_test => integer,
     ],
+    api_judge_create_job => [
+        \&CATS::ApiJudge::create_job,
+        job_type => integer,
+        (map { $_ => integer } @CATS::ApiJudge::create_job_params),
+    ],
     api_judge_finish_job => [
         \&CATS::ApiJudge::finish_job,
         job_id => integer,
