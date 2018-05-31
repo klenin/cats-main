@@ -519,18 +519,11 @@ sub set_problem_color {
     $p->{pid} && $p->{color} && $is_jury
         or return $p->print_json({ result => 'error' });
 
-    if ($p->{color} eq '#000000') {
-        $dbh->do(q~
-            DELETE FROM contest_problems
-            WHERE contest_id = ? AND problem_id = ?~, undef,
-            $cid, $p->{pid});
-    }
-    else {
-        $dbh->do(q~
-            UPDATE contest_problems SET color = ?
-            WHERE contest_id = ? AND problem_id = ?~, undef,
-            $p->{color}, $cid, $p->{pid});
-    }
+    $p->{color} = undef if $p->{color} eq '#000000';
+    $dbh->do(q~
+        UPDATE contest_problems SET color = ?
+        WHERE contest_id = ? AND problem_id = ?~, undef,
+        $p->{color}, $cid, $p->{pid});
     $dbh->commit;
     $p->print_json({ result => 'ok' });
 }
