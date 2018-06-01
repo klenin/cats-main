@@ -430,7 +430,7 @@ sub cache_file_name {
 }
 
 sub remove_cache {
-    my ($contest_id) = @_;
+    my ($contest_id) = @_ or die;
     for my $virt (0, 1) {
         for my $ooc (0, 1) {
             unlink cache_file_name($contest_id, $virt, $ooc);

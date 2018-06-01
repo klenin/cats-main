@@ -514,6 +514,7 @@ sub request_params_frame {
         CATS::Request::delete_limits($si->{limits_id}) if $need_clear_limits && $si->{limits_id};
         maybe_reinstall($p, $si);
         maybe_status_ok($p, $si);
+        CATS::RankTable::remove_cache($si->{contest_id});
         $dbh->commit;
         $si = get_sources_info($p, request_id => $si->{req_id});
     }
@@ -535,6 +536,7 @@ sub request_params_frame {
     $t->param(can_delete => $can_delete);
     if ($p->{delete_request} && $can_delete) {
         CATS::Request::delete($si->{req_id});
+        CATS::RankTable::remove_cache($si->{contest_id});
         $dbh->commit;
         msg(1056, $si->{req_id});
         return;
