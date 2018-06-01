@@ -43,7 +43,9 @@
 <th>[% capt.team_name %]</th>
 [% FOREACH p IN problems %]
 <th style="width: [% problem_column_width %]%;">
-  <a href="[% p.problem_text %]" title="[% p.title | html %]">[% p.code %]</a>
+  <a href="[% p.problem_text %]" title="[% p.title | html %]">
+  [% IF p.color %]<span class="problem_color" style="background-color: [% p.color | html %];"></span>[% END %]
+  [% p.code %]</a>
   [%- " ($p.max_points)" IF show_points -%]
 </th>
 [% END %]

@@ -27,7 +27,7 @@ function getSelectedButton(button) {
 var a = [];
 [% FOREACH p IN problems %]
 a[[% p.problem_id %]] = [
-  "[% p.title | html %]", "[% p.href_delete %]", "[% p.href_replace %]",
+   "[% p.title | html %]", "[% p.href_delete %]", "[% p.href_replace %]",
   "[% p.href_change_status %]", "[% p.href_change_code %]"];
 [% END %]
 
@@ -119,7 +119,9 @@ function chg_code(st_sel, pid) {
     [% END %]
     <a href="[% p.href_view_problem %]" target="_blank">
   [% ELSE ~%]
-    <a href="[% p.href_view_problem %]" target="_blank">[% IF p.code; p.code %] - [% END %]
+    <a href="[% p.href_view_problem %]" target="_blank">
+    [% IF p.color %]<span class="problem_color" style="background-color: [% p.color | html %];"></span>[% END %]
+    [% IF p.code; p.code %] - [% END %]
   [% END %][% p.title | html %]</a>
   [% IF p.problem_langs.size %][[% FOREACH pl IN p.problem_langs; href(pl.href, pl.name); ' ' UNLESS loop.last; END %]][% END %]
   [% IF p.href_explanation %]&nbsp;[<a href="[% p.href_explanation %]" target="_blank">[% capt.explanation %]</a>][% END %]

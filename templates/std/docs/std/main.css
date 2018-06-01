@@ -390,3 +390,10 @@ span.jury_message { color: red; }
 table.compare_tests td.z { background-color: #ffc0c0; }
 
 td.num { text-align: right; }
+
+span.problem_color {
+    display: inline-block;
+    width: 1em;
+    height: 1.3ex;
+    border: 1px solid black;
+}

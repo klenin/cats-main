@@ -92,7 +92,7 @@ sub get_problems {
     my $problems = $self->{problems} = $dbh->selectall_arrayref(qq~
         SELECT
             CP.id, CP.problem_id, CP.code, CP.contest_id,
-            CP.testsets, CP.points_testsets, C.start_date,
+            CP.testsets, CP.points_testsets, CP.color, C.start_date,
             CAST(CURRENT_TIMESTAMP - C.start_date AS DOUBLE PRECISION) AS since_start,
             C.local_only, CP.max_points, P.title, P.max_points AS max_points_def, P.run_method,
             @{[ partial_checker_sql ]}
