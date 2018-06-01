@@ -129,6 +129,7 @@ sub create_job {
         judge_id => $judge_id,
         map { $_ => $p->{$_} } @create_job_params
     });
+    $dbh->commit;
 
     $p->print_json({ job_id => $job_id });
 }
