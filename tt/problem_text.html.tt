@@ -87,7 +87,11 @@ MathJax.Hub.Register.StartupHook('onLoad', function () {
 <div class="problem_text" id="p[% p.id %]" [% UNLESS loop.first %]style="page-break-before: always"[% END %] lang="[% p.lang %]">
   <a name="pr[% p.code || p.id %]"></a>
 
-  <h2>[% "${c.problem} ${p.code}. " IF p.code; p.title | html %] <a class="jsonly problem_menu_trigger" href="#">&#x2261;</a></h2>
+  <h2>
+  [% IF p.color %]<span class="problem_color" style="background-color: [% p.color | html %];"></span>[% END %]
+  [% "${c.problem} ${p.code}. " IF p.code; p.title | html %]
+  <a class="jsonly problem_menu_trigger" href="#">&#x2261;</a>
+  </h2>
   <div class="jsonly problem_menu"><ul>
     <li><a class="problem_list_link" href="[% p.href_problem_list %]">[% c.problem_list %]</a></li>
     <li><label><input type="checkbox" class="whitespace"><span></span> [% c.visible_spaces %]</label></li>

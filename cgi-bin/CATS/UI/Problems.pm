@@ -516,15 +516,16 @@ sub problem_text_frame { goto \&CATS::Problem::Text::problem_text }
 
 sub set_problem_color {
     my ($p) = @_;
-    $p->{pid} && $p->{color} && $is_jury
+    $p->{cpid} && $p->{color} && $is_jury
         or return $p->print_json({ result => 'error' });
 
     $p->{color} = undef if $p->{color} eq '#000000';
     $dbh->do(q~
         UPDATE contest_problems SET color = ?
-        WHERE contest_id = ? AND problem_id = ?~, undef,
-        $p->{color}, $cid, $p->{pid});
+        WHERE contest_id = ? AND id = ?~, undef,
+        $p->{color}, $cid, $p->{cpid});
     $dbh->commit;
+    CATS::StaticPages::invalidate_problem_text(cid => $cid, cpid => $p->{cpid});
     $p->print_json({ result => 'ok' });
 }
 

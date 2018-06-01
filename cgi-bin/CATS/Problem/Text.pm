@@ -263,7 +263,7 @@ sub problem_text {
     elsif (my $cpid = $p->{cpid}) {
         my $pr = $dbh->selectrow_hashref(qq~
             SELECT
-                CP.id AS cpid, CP.contest_id, CP.problem_id, CP.code,
+                CP.id AS cpid, CP.contest_id, CP.problem_id, CP.code, CP.color,
                 CP.testsets, CP.points_testsets, CP.max_points, CP.tags, CP.status,
                 C.rules, $overridden_limits_str
             FROM contests C

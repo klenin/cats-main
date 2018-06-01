@@ -165,7 +165,7 @@ $main_routes = {
         pid => required integer, hb => required sha, file => str, repo_enc => encoding,
     ],
     set_problem_color => [ \&CATS::UI::Problems::set_problem_color,
-        pid => integer, color => qr/^#[0-9A-Fa-f]{6}$/,
+        cpid => integer, color => qr/^#[0-9A-Fa-f]{6}$/,
     ],
 
     users => [

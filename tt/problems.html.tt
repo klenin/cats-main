@@ -110,7 +110,7 @@ function chg_code(st_sel, pid) {
 </td>[% END %]
 <td>
   [% IF editable %]
-    [% IF visible_cols.Cl %]<input type="color" value="[% p.color %]" onchange="chg_color(this, [% p.problem_id %])"/>[% END %]
+    [% IF visible_cols.Cl %]<input type="color" value="[% p.color %]" onchange="chg_color(this, [% p.cpid %])"/>[% END %]
     [% IF p.code.defined ~%]
     <span class="pcode">
       <input type="text" maxlength="3" class="bordered" value="[% p.code %]"
@@ -241,8 +241,8 @@ function chg_code(st_sel, pid) {
 var used_codes = { [% FOREACH p IN problems %]"[%p.code %]": 1[% ', ' UNLESS loop.last; END %] };
 [% PROCESS includes/select_problem_code.tti %]
 
-function chg_color(input, problem_id) {
-    $.post('[% href_set_problem_color %]', { pid: problem_id, color: input.value });
+function chg_color(input, cpid) {
+    $.post('[% href_set_problem_color %]', { cpid: cpid, color: input.value });
 }
 
 </script>
