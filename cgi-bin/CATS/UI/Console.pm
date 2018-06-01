@@ -15,6 +15,7 @@ use CATS::ListView;
 use CATS::Messages qw(msg res_str);
 use CATS::Output qw(init_template url_f);
 use CATS::Problem::Utils;
+use CATS::RankTable;
 use CATS::Request;
 use CATS::Settings qw($settings);
 use CATS::Time;
@@ -298,13 +299,21 @@ sub retest_submissions {
     if ($by_reference) {
         $count = @{CATS::Request::clone($selection, undef, $uid)};
     } else {
+        my %affected_contests;
+        my $contest_sth = $dbh->prepare(q~
+            SELECT contest_id FROM reqs WHERE id = ?~);
         for (@$selection) {
             if (CATS::Request::enforce_state($_, { state => $cats::st_not_processed, judge_id => undef })) {
                 CATS::Job::create($cats::job_type_submission, { req_id => $_ });
+                $contest_sth->execute($_);
+                my ($contest_id) = $contest_sth->fetchrow_array;
+                $affected_contests{$contest_id} = 1;
                 ++$count;
             }
         }
+        CATS::RankTable::remove_cache($_) for keys %affected_contests;
     }
+
     $dbh->commit;
     return $count;
 }

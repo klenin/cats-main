@@ -23,6 +23,8 @@ sub problems_mass_retest {
         my $st = $CATS::Verdicts::name_to_state->{$_ // ''};
         $ignore_states{$st} = 1 if defined $st;
     }
+    # Since we perform multiple commits, clear cache ahead of time.
+    CATS::RankTable::remove_cache($cid);
     my $count = 0;
     for my $retest_pid (@retest_pids) {
         my $runs = $dbh->selectall_arrayref(q~
@@ -53,8 +55,8 @@ sub problems_recalc_points {
     $dbh->do(_u $sql->update(
         reqs => { points => undef }, { contest_id => $cid, problem_id => $p->{problem_id} }
     ));
-    $dbh->commit;
     CATS::RankTable::remove_cache($cid);
+    $dbh->commit;
 }
 
 my $retest_default_ignore = { IS => 1, SV => 1 };
