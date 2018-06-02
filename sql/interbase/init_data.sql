@@ -52,6 +52,8 @@ INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
     VALUES (GEN_ID(key_seq, 1), 506, 'Erlang', 'erl', 'erlang', '\/~FILE~:~LINE~:');
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
     VALUES (GEN_ID(key_seq, 1), 507, 'NodeJS', 'js', 'jScript', '[\\\/]~FILE~:~LINE~');
+INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
+    VALUES (GEN_ID(key_seq, 1), 509, 'SWI Prolog', 'pro', '', '^ERROR:\s.+~FILE~:~LINE~:~POS~:');
 
 /* All users are participants here. */
 INSERT INTO contests(id, title, ctype, start_date, finish_date) VALUES(101, 'Archive', 1, CURRENT_DATE - 100, CURRENT_DATE + 1000000);
