@@ -9,6 +9,7 @@
       waiting => 'waiting',
       running => 'running',
       finished => 'finished',
+      failed => 'failed',
     },
   })
 %]
