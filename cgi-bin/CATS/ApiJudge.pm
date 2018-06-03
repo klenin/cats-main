@@ -138,7 +138,7 @@ sub finish_job {
     my ($p) = @_;
     bad_judge($p) and return -1;
 
-    CATS::JudgeDB::finish_job($p->{job_id});
+    CATS::JudgeDB::finish_job($p->{job_id}, $p->{job_state});
 
     $p->print_json({ ok => 1 });
 }

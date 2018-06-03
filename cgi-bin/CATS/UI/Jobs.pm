@@ -57,6 +57,7 @@ sub jobs_frame {
         waiting => $cats::job_st_waiting,
         running => $cats::job_st_in_progress,
         finished => $cats::job_st_finished,
+        failed => $cats::job_st_failed,
     };
     my $judges = $dbh->selectall_arrayref(q~
         SELECT nick, id FROM judges WHERE pin_mode > ?~, undef,
