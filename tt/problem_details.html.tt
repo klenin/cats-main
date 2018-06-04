@@ -28,6 +28,7 @@
 </td></tr>
 [% END %]
 <tr><td>[% capt.original_contest %]</td><td>[% maybe_href(href_original_contest, p.contest_name) %]</td></tr>
+[% IF p.repo_path %]<tr><td>[% capt.repo_path %]</td><td>[% p.repo_path %]</td></tr>[% END %]
 <tr><td>[% capt.download %]</td><td>
 [% IF href_download %][<a href="[% href_download %]">[% capt.package %]</a>][% END %]
 [% IF href_git_package %][<a href="[% href_git_package %]">[% capt.git_package %]</a>][% END %]

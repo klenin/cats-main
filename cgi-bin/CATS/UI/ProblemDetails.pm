@@ -45,7 +45,7 @@ sub problem_details_frame {
         SELECT
             P.title, P.lang, P.contest_id, P.author, P.last_modified_by, P.upload_date,
             P.run_method, P.save_input_prefix, P.save_answer_prefix, P.save_output_prefix,
-            P.time_limit, P.memory_limit, P.write_limit,
+            P.time_limit, P.memory_limit, P.write_limit, P.repo_path,
             L.time_limit AS overridden_time_limit,
             L.memory_limit AS overridden_memory_limit,
             L.write_limit as overridden_write_limit,
