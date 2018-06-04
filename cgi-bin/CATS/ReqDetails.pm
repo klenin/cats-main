@@ -363,11 +363,19 @@ sub source_links {
 
 sub get_log_dump {
     my ($cond) = @_;
-    my $job_ids = CATS::Request::get_job_tree_ids($cond);
-    my $logs = $dbh->selectall_arrayref(_u $sql->select('logs',
-        'SUBSTRING(dump FROM 1 FOR 500000) AS dump, OCTET_LENGTH(dump) AS "length", job_id',
-        { job_id => $job_ids })
-    ) or return [];
+    my ($job_tree_sql, @bind) = CATS::Request::get_job_tree_sql($cond);
+
+    my $logs = $dbh->selectall_arrayref(qq~
+        $job_tree_sql
+        SELECT
+            J.id AS job_id,
+            SUBSTRING(L.dump FROM 1 FOR 500000) AS dump,
+            OCTET_LENGTH(L.dump) AS "length"
+        FROM jobs_tree JT
+        INNER JOIN jobs J ON J.id = JT.id
+        LEFT JOIN logs L ON L.job_id = J.id
+        ORDER BY J.id DESC~, { Slice => {} },
+        @bind) or return [];
 
     $_->{dump} = Encode::decode_utf8($_->{dump}) for @$logs;
     $logs;

@@ -64,27 +64,31 @@ sub delete_limits {
         $limits_id);
 }
 
-sub get_job_tree_ids {
+sub get_job_tree_sql {
     my ($cond) = @_;
     my ($where, @bind) = $sql->where($cond);
 
-    $dbh->selectcol_arrayref(qq~
-        WITH recursive cte AS (
+    (qq~
+        WITH RECURSIVE jobs_tree AS (
             SELECT id FROM jobs
             $where
 
             UNION ALL
 
             SELECT J.id FROM jobs J
-            INNER JOIN cte ON J.parent_id = cte.id
-        )
-        SELECT id FROM cte~, undef,
-        @bind);
+            INNER JOIN jobs_tree JT ON J.parent_id = JT.id
+        )~,
+    @bind);
 }
 
 sub delete_logs {
     my ($cond) = @_;
-    my $job_ids = get_job_tree_ids($cond);
+
+    my ($jobs_tree_sql, @bind) = get_job_tree_sql($cond);
+    my $job_ids = $dbh->selectcol_arrayref(qq~
+        $jobs_tree_sql
+        SELECT id FROM jobs_tree~, undef,
+        @bind);
     if (@$job_ids) {
         $dbh->do(_u $sql->delete('logs', { job_id => $job_ids }));
         $dbh->commit;
