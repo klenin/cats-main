@@ -48,29 +48,20 @@ sub jobs_frame {
         in_queue
     ) ]);
 
-    my $job_name_to_type = {
-        submission => $cats::job_type_submission,
-        snippets => $cats::job_type_generate_snippets,
-        install => $cats::job_type_initialize_problem,
-    };
-    my $job_name_to_state = {
-        waiting => $cats::job_st_waiting,
-        running => $cats::job_st_in_progress,
-        finished => $cats::job_st_finished,
-        failed => $cats::job_st_failed,
-    };
     my $judges = $dbh->selectall_arrayref(q~
         SELECT nick, id FROM judges WHERE pin_mode > ?~, undef,
         $cats::judge_pin_locked);
+
+    my $jc = $CATS::Globals::jobs;
     $lv->define_enums({
-        type => $job_name_to_type,
-        state => $job_name_to_state,
+        type => $jc->{name_to_type},
+        state => $jc->{name_to_state},
         contest_id => { this => $cid },
         judge_id => { map @$_, @$judges },
     });
     $t->param(
-        job_type_to_name => { map { $job_name_to_type->{$_} => $_ } keys %$job_name_to_type },
-        job_state_to_name => { map { $job_name_to_state->{$_} => $_ } keys %$job_name_to_state },
+        job_type_to_name => $jc->{type_to_name},
+        job_state_to_name => $jc->{state_to_name},
     );
 
     my $maybe_field = sub {
