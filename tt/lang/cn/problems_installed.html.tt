@@ -1,0 +1,6 @@
+[%
+  capt.import({
+    install_missing => 'install missing',
+    install_selected => 'install selected',
+  })
+%]

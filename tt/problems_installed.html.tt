@@ -1,0 +1,33 @@
+[% extra_head = BLOCK %]
+  <style>
+    table.judges_problems td { text-align: right }
+  </style>
+[% END %]
+
+[% PROCESS includes/menu_begin.tti %]
+
+<form method="post" enctype="multipart/form-data" action="[% href_action %]">
+
+<table class="judges_problems internal_borders highlight">
+  <tr class="[% loop.parity %]">
+    <th>[% FOREACH p IN problems %]<td>[% p.code %]. [% p.title %]</td>[% END %]
+  </tr>
+  [% FOREACH line IN problems_installed %]
+    <tr class="[% loop.parity %]">
+      <td>[% line.judge_name %]</td>
+      [% FOREACH d IN line.row %]
+        <td>
+          [% d.value %]
+          <input type="checkbox" name="selected_problems" value="[% d.judge_problem %]"/>
+        </td>
+      [% END %]
+    </tr>
+  [% END %]
+</table>
+
+</br>
+<button type="submit" name="install_missing" value="1" class="button">[% capt.install_missing %]</button>
+<button type="submit" name="install_selected" value="1" class="button">[% capt.install_selected %]</button>
+</form>
+
+[% PROCESS includes/menu_end.tti %]
