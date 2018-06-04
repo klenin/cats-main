@@ -8,7 +8,7 @@ use CATS::DB;
 use CATS::Globals qw($cid $contest $is_jury $t);
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
-use CATS::Output qw(url_f);
+use CATS::Output qw(init_template url_f);
 use CATS::Problem::Utils;
 use CATS::RankTable;
 use CATS::Request;
