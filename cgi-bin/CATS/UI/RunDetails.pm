@@ -619,7 +619,8 @@ sub run_log_frame {
     CATS::Request::delete_logs({ req_id => $rid }) if $p->{delete_log};
 
     $t->param(
-        logs => get_log_dump({ req_id => $rid })
+        logs => get_log_dump({ req_id => $rid }),
+        job_enums => $CATS::Globals::jobs,
     );
 }
 

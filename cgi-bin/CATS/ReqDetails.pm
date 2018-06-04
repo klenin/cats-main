@@ -368,12 +368,14 @@ sub get_log_dump {
     my $logs = $dbh->selectall_arrayref(qq~
         $job_tree_sql
         SELECT
-            J.id AS job_id,
+            J.id AS job_id, J.type, JD.nick AS judge_name,
+            J.state, J.create_time, J.start_time, J.finish_time,
             SUBSTRING(L.dump FROM 1 FOR 500000) AS dump,
             OCTET_LENGTH(L.dump) AS "length"
         FROM jobs_tree JT
         INNER JOIN jobs J ON J.id = JT.id
         LEFT JOIN logs L ON L.job_id = J.id
+        LEFT JOIN judges JD ON JD.id = J.judge_id
         ORDER BY J.id DESC~, { Slice => {} },
         @bind) or return [];
 
