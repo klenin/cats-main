@@ -58,7 +58,7 @@ sub get_repo {
 sub get_repo_archive {
     my ($pid, $sha) = @_;
     ($pid) = get_repo_id($pid);
-    return CATS::Problem::Repository->new(dir => $CATS::Config::repos_dir . "$pid/")->archive($sha);
+    return CATS::Problem::Repository->new(dir => $CATS::Config::repos_dir . "$pid/")->archive($sha, 1);
 }
 
 sub get_latest_master_sha {
