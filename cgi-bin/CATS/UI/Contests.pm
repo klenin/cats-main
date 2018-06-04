@@ -97,11 +97,109 @@ sub contests_new_save {
     msg(1028, Encode::decode_utf8($c->{title}));
 }
 
+sub install_problems {
+    my ($problems_to_install) = @_;
+    my $jobs_created = 0;
+    for my $judge_id (keys %$problems_to_install) {
+        for (@{$problems_to_install->{$judge_id}}) {
+            ++$jobs_created;
+            CATS::Job::create($cats::job_type_initialize_problem, {
+                judge_id => $judge_id,
+                problem_id => $_,
+                contest_id => $cid,
+            })
+        }
+    }
+
+    $dbh->commit;
+    msg(1170, $jobs_created);
+}
+
+sub problems_installed_frame {
+    my ($p) = @_;
+
+    $is_jury or return;
+
+    init_template($p, 'problems_installed.html.tt');
+
+    my $pinned_judges_only = $dbh->selectrow_array(q~
+        SELECT pinned_judges_only FROM contests WHERE id = ?~, undef,
+    $cid);
+
+    my $pin_any_cond = $pinned_judges_only ? '' : "J.pin_mode = $cats::judge_pin_any OR";
+
+    my $judges = $dbh->selectall_arrayref(qq~
+        SELECT id, nick FROM judges J
+        WHERE is_alive = 1 AND
+            ($pin_any_cond
+                J.pin_mode = $cats::judge_pin_contest AND EXISTS (
+                    SELECT 1 FROM contest_accounts CA
+                    WHERE CA.account_id = J.account_id AND CA.contest_id = ?
+                )
+            )~, { Slice => {} },
+    $cid);
+
+    my $problems = $dbh->selectall_arrayref(q~
+        SELECT P.id, P.title, CP.code FROM problems P
+        INNER JOIN contest_problems CP ON P.id = CP.problem_id
+        WHERE CP.contest_id = ?
+        ORDER BY CP.code~, { Slice => {} },
+    $cid);
+
+    my $already_installed = $dbh->selectall_arrayref(qq~
+        SELECT J.id as judge_id , P.id as problem_id, JB.finish_time FROM jobs JB
+        INNER JOIN judges J on J.id = JB.judge_id
+        INNER JOIN problems P on P.id = JB.problem_id
+        INNER JOIN contest_problems CP on CP.problem_id = P.id
+        WHERE JB.type = $cats::job_type_initialize_problem AND
+            JB.state = $cats::job_st_finished AND
+            P.upload_date < JB.finish_time AND CP.contest_id = ?~, { Slice => {} },
+    $cid);
+
+    my $judge_problems = {};
+    $judge_problems->{$_->{judge_id}}->{$_->{problem_id}} = $_->{finish_time} for @$already_installed;
+
+    my $problems_to_install = { map { $_->{judge_id} => [] } @$judges };
+
+    my $problems_installed = [ map {
+        my $judge_id = $_->{id};
+        my $hr = $judge_problems->{$judge_id} || {};
+        {
+            judge_name => $_->{nick},
+            row => [ map {
+                push @{$problems_to_install->{$judge_id}}, $_->{id} if !$hr->{$_->{id}} && $p->{install_missing};
+                {
+                    judge_problem => $judge_id . '_' . $_->{id},
+                    value => $hr->{$_->{id}} || '-'
+                }
+            } @$problems ]
+        }
+    } @$judges ];
+
+
+    if ($p->{install_selected}) {
+        for (@{$p->{selected_problems}}) {
+            my ($judge_id, $problem_id) = split /_/, $_;
+            push @{$problems_to_install->{$judge_id}}, $problem_id;
+        }
+    }
+
+    install_problems($problems_to_install) if $p->{install_missing} || $p->{install_selected};
+
+    $t->param(
+        problems_installed => $problems_installed,
+        problems => $problems,
+        href_action => url_f('contest_problems_installed', id => $cid)
+    );
+
+    CATS::Contest::Utils::contest_submenu('contest_problems_installed', $cid);
+}
+
 sub contest_params_frame {
     my ($p) = @_;
 
     init_template($p, 'contest_params.html.tt');
-    $p->{id} or return;
+    $p->{id} //= $cid;
 
     my $c = $dbh->selectrow_hashref(q~
         SELECT * FROM contests WHERE id = ?~, { Slice => {} },
@@ -111,13 +209,15 @@ sub contest_params_frame {
     my %verdicts_excluded =
         map { $CATS::Verdicts::state_to_name->{$_} => 1 } split /,/, $c->{max_reqs_except} // '';
 
+    my $is_jury_in_contest = is_jury_in_contest(contest_id => $p->{id});
     $t->param(
         %$c,
         href_action => url_f('contests'),
-        can_edit => is_jury_in_contest(contest_id => $p->{id}),
+        can_edit => $is_jury_in_contest,
         verdicts => [ map +{ short => $_->[0], checked => $verdicts_excluded{$_->[0]} },
             @$CATS::Verdicts::name_to_state_sorted ],
     );
+    CATS::Contest::Utils::contest_submenu('contest_params', $p->{id}) if $is_jury_in_contest;
 
     1;
 }

@@ -7,7 +7,8 @@ use List::Util qw(reduce);
 
 use CATS::Constants;
 use CATS::DB;
-use CATS::Globals qw($cid $is_root $sid $uid);
+use CATS::Globals qw($cid $is_root $sid $t $uid);
+use CATS::Messages qw(res_str);
 #use CATS::Output qw(url_f);
 use CATS::Utils qw(url_function date_to_iso);
 
@@ -184,6 +185,22 @@ sub anonymous_contests_view {
         common_contests_view($c);
     };
     ($fetch_contest, $sth);
+}
+
+my $contest_submenu = [
+    { href => 'contest_params', item => 594 },
+    { href => 'contest_problems_installed', item => 595 },
+];
+
+sub contest_submenu {
+    my ($selected_href, $contest_id) = @_;
+    $t->param(
+        submenu => [ map +{
+            href => CATS::Utils::url_function($_->{href}, sid => $sid, cid => $contest_id),
+            item => res_str($_->{item}),
+            selected => $_->{href} eq $selected_href }, @$contest_submenu
+        ]
+    );
 }
 
 1;

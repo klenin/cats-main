@@ -81,7 +81,12 @@ $main_routes = {
         diff_time => fixed, diff_units => ident,
         ext_time => fixed, ext_units => ident,
         save => bool, ],
-
+    contest_problems_installed => [
+        \&CATS::UI::Contests::problems_installed_frame,
+        install_missing => bool,
+        install_selected => bool,
+        selected_problems => array_of qr/^\d+_\d+$/,
+    ],
     console_content => [ \&CATS::UI::Console::console_content_frame,
         %console_params,
     ],

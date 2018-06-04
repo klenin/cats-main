@@ -75,6 +75,8 @@
 591 "snippets"
 592 "new snippet"
 593 "jobs"
+594 "contest details"
+595 "installed problems"
 600 "开始时间"
 601 "名称"
 602 "问题"
@@ -309,3 +311,4 @@
 1167 "Profile fields git author's name and git author's e-mail are required."
 1168 "Your problem variant is not ready. View problem text before submitting."
 1169 "Allowed development environments: removed %d, added %d."
+1170 "Created problem installation jobs: %d."
