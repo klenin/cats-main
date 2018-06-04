@@ -1,15 +1,17 @@
 [%
   capt.import({
-    types => {
-      submission => 'submission',
-      snippets => 'snippets',
-      install => 'install',
-    },
-    states => {
-      waiting => 'waiting',
-      running => 'running',
-      finished => 'finished',
-      failed => 'failed',
+    jobs => {
+      types => {
+        submission => 'submission',
+        snippets => 'snippets',
+        install => 'install',
+      },
+      states => {
+        waiting => 'waiting',
+        running => 'running',
+        finished => 'finished',
+        failed => 'failed',
+      },
     },
   })
 %]

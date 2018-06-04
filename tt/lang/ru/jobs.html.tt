@@ -1,15 +1,17 @@
 [%
   capt.import({
-    types => {
-      submission => 'попытка',
-      snippets => 'фрагменты',
-      install => 'установка',
-    },
-    states => {
-      waiting => 'ожидает',
-      running => 'выполняется',
-      finished => 'завершена',
-      failed => 'ошибка',
+    jobs => {
+      types => {
+        submission => 'попытка',
+        snippets => 'фрагменты',
+        install => 'установка',
+      },
+      states => {
+        waiting => 'ожидает',
+        running => 'выполняется',
+        finished => 'завершена',
+        failed => 'ошибка',
+      },
     },
   })
 %]
