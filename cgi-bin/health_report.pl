@@ -69,9 +69,21 @@ CATS::DB::sql_connect({
 }
 
 {
+    $r->{long}->{'Job queue'} = my $jql = $dbh->selectrow_array(q~
+        SELECT COUNT(*) FROM jobs_queue~);
+    $r->{short}->{JQ} = $jql if $jql > 1;
+}
+
+{
     $r->{long}->{'Requests today'} = $dbh->selectrow_array(q~
         SELECT COUNT(*) FROM reqs R
             WHERE R.submit_time > CURRENT_TIMESTAMP - 1~);
+}
+
+{
+    $r->{long}->{'Jobs today'} = $dbh->selectrow_array(q~
+        SELECT COUNT(*) FROM jobs J
+            WHERE J.create_time > CURRENT_TIMESTAMP - 1~);
 }
 
 sub log_url {
