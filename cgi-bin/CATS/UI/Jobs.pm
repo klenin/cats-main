@@ -105,9 +105,9 @@ sub jobs_frame {
         my $row = $_[0]->fetchrow_hashref or return ();
         return (
             %$row,
-            href_details => url_f(
-                $row->{type} == $cats::job_type_submission ? ('run_details', rid => $row->{req_id}) :
-                ('job_details', jid => $row->{id})
+            href_details => ($row->{type} == $cats::job_type_submission ?
+                url_f('run_log', rid => $row->{req_id}) . "#job$row->{id}" :
+                url_f('job_details', jid => $row->{id})
             ),
             href_problem_text => url_function('problem_text',
                 pid => $row->{problem}, cpid => $row->{cpid}, sid => $sid,
