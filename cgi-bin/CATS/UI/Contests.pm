@@ -97,7 +97,7 @@ sub contests_new_save {
     msg(1028, Encode::decode_utf8($c->{title}));
 }
 
-sub install_problems {
+sub _install_problems {
     my ($problems_to_install) = @_;
     my $jobs_created = 0;
     for my $judge_id (keys %$problems_to_install) {
@@ -115,12 +115,12 @@ sub install_problems {
     msg(1170, $jobs_created);
 }
 
-sub problems_installed_frame {
+sub contest_problems_installed_frame {
     my ($p) = @_;
 
     $is_jury or return;
 
-    init_template($p, 'problems_installed.html.tt');
+    init_template($p, 'contest_problems_installed.html.tt');
 
     my $pinned_judges_only = $dbh->selectrow_array(q~
         SELECT pinned_judges_only FROM contests WHERE id = ?~, undef,
@@ -186,7 +186,7 @@ sub problems_installed_frame {
         }
     }
 
-    install_problems($problems_to_install) if $p->{install_missing} || $p->{install_selected};
+    _install_problems($problems_to_install) if $p->{install_missing} || $p->{install_selected};
 
     $t->param(
         problems_installed => $problems_installed,
