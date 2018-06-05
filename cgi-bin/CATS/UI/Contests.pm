@@ -124,27 +124,28 @@ sub problems_installed_frame {
 
     my $pinned_judges_only = $dbh->selectrow_array(q~
         SELECT pinned_judges_only FROM contests WHERE id = ?~, undef,
-    $cid);
+        $cid);
 
     my $pin_any_cond = $pinned_judges_only ? '' : "J.pin_mode = $cats::judge_pin_any OR";
 
     my $judges = $dbh->selectall_arrayref(qq~
-        SELECT id, nick FROM judges J
-        WHERE is_alive = 1 AND
+        SELECT J.id, J.nick FROM judges J
+        WHERE J.is_alive = 1 AND
             ($pin_any_cond
                 J.pin_mode = $cats::judge_pin_contest AND EXISTS (
                     SELECT 1 FROM contest_accounts CA
                     WHERE CA.account_id = J.account_id AND CA.contest_id = ?
                 )
-            )~, { Slice => {} },
-    $cid);
+            )
+        ORDER BY J.nick~, { Slice => {} },
+        $cid);
 
     my $problems = $dbh->selectall_arrayref(q~
         SELECT P.id, P.title, CP.code FROM problems P
         INNER JOIN contest_problems CP ON P.id = CP.problem_id
         WHERE CP.contest_id = ?
         ORDER BY CP.code~, { Slice => {} },
-    $cid);
+        $cid);
 
     my $already_installed = $dbh->selectall_arrayref(qq~
         SELECT J.id as judge_id , P.id as problem_id, JB.finish_time FROM jobs JB
@@ -154,7 +155,7 @@ sub problems_installed_frame {
         WHERE JB.type = $cats::job_type_initialize_problem AND
             JB.state = $cats::job_st_finished AND
             P.upload_date < JB.finish_time AND CP.contest_id = ?~, { Slice => {} },
-    $cid);
+        $cid);
 
     my $judge_problems = {};
     $judge_problems->{$_->{judge_id}}->{$_->{problem_id}} = $_->{finish_time} for @$already_installed;
@@ -167,7 +168,8 @@ sub problems_installed_frame {
         {
             judge_name => $_->{nick},
             row => [ map {
-                push @{$problems_to_install->{$judge_id}}, $_->{id} if !$hr->{$_->{id}} && $p->{install_missing};
+                push @{$problems_to_install->{$judge_id}}, $_->{id}
+                    if !$hr->{$_->{id}} && $p->{install_missing};
                 {
                     judge_problem => $judge_id . '_' . $_->{id},
                     value => $hr->{$_->{id}} || '-'

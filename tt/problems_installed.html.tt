@@ -10,7 +10,7 @@
 
 <table class="judges_problems internal_borders highlight">
   <tr class="[% loop.parity %]">
-    <th>[% FOREACH p IN problems %]<td>[% p.code %]. [% p.title %]</td>[% END %]
+    <th>[% FOREACH p IN problems %]<th>[% p.code %]. [% p.title %]</th>[% END %]
   </tr>
   [% FOREACH line IN problems_installed %]
     <tr class="[% loop.parity %]">
