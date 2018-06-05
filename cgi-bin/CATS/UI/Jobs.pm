@@ -21,7 +21,8 @@ sub job_details_frame {
     CATS::Request::delete_logs({ id => $p->{jid} }) if $p->{delete_log};
 
     $t->param(
-        logs => CATS::ReqDetails::get_log_dump({ id => $p->{jid} })
+        logs => CATS::ReqDetails::get_log_dump({ id => $p->{jid} }),
+        job_enums => $CATS::Globals::jobs,
     );
 }
 

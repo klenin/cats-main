@@ -1,6 +1,5 @@
 [%- PROCESS includes/sources_styles.tti -%]
 [% PROCESS includes/header.tti %]
-[% PROCESS "lang/$lang/jobs.html.tt" %]
 <style>
   code.judge_log b { color: #ff7070; }
   code.judge_log i { color: #108010; font-style: normal; }
@@ -11,7 +10,10 @@
 [% IF sources_info %]
 [% PROCESS includes/sources_info.tti %]
 <br/>
+[% ELSE %]
+[% PROCESS includes/menu_begin.tti %]
 [% END %]
+[% PROCESS "lang/$lang/jobs.html.tt" %]
 
 [% IF logs.size %]
 <a name="log_top"></a><h3>[% capt.judge_log %]</h3>
