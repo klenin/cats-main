@@ -1,6 +1,7 @@
 [% extra_head = BLOCK %]
   <style>
-    table.judges_problems td { text-align: right }
+    table.judges_problems td { text-align: right; }
+    table.judges_problems th { max-width: 20em; vertical-align: top; }
   </style>
 [% END %]
 
@@ -9,12 +10,15 @@
 <form method="post" enctype="multipart/form-data" action="[% href_action %]">
 
 <table class="judges_problems internal_borders highlight">
+<thead>
   <tr class="[% loop.parity %]">
-    <th>[% FOREACH p IN problems %]<th>[% p.code %]. [% p.title %]</th>[% END %]
+    <th>[% FOREACH p IN problems %]<th>[% p.code %]. <small>[% p.title %]</small></th>[% END %]
   </tr>
+</thead>
+<tbody>
   [% FOREACH line IN problems_installed %]
     <tr class="[% loop.parity %]">
-      <td>[% line.judge_name %]</td>
+      <td>[% maybe_href(line.href_judge, line.judge_name) %]</td>
       [% FOREACH d IN line.row %]
         <td>
           [% d.value %]
@@ -23,6 +27,7 @@
       [% END %]
     </tr>
   [% END %]
+</tbody>
 </table>
 
 </br>

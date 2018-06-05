@@ -167,6 +167,7 @@ sub contest_problems_installed_frame {
         my $hr = $judge_problems->{$judge_id} || {};
         {
             judge_name => $_->{nick},
+            ($is_root ? (href_judge => url_f('judges', edit => $judge_id)) : ()),
             row => [ map {
                 push @{$problems_to_install->{$judge_id}}, $_->{id}
                     if !$hr->{$_->{id}} && $p->{install_missing};
@@ -174,7 +175,7 @@ sub contest_problems_installed_frame {
                     judge_problem => $judge_id . '_' . $_->{id},
                     value => $hr->{$_->{id}} || '-'
                 }
-            } @$problems ]
+            } @$problems ],
         }
     } @$judges ];
 
