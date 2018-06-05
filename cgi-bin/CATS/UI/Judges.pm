@@ -20,8 +20,8 @@ sub edit_frame {
     init_template($p, 'judges_edit.html.tt');
 
     if (my $jid = $p->{edit}) {
-        my ($judge_name, $account_name, $pin_mode) = $dbh->selectrow_array(q~
-            SELECT J.nick, A.login, J.pin_mode
+        my ($judge_name, $account_name, $pin_mode, $account_id) = $dbh->selectrow_array(q~
+            SELECT J.nick, A.login, J.pin_mode, J.account_id
             FROM judges J LEFT JOIN accounts A ON A.id = J.account_id WHERE J.id = ?~, undef,
             $jid);
 
@@ -32,6 +32,7 @@ sub edit_frame {
             $supported_DEs = [ $dev_env->by_bitmap([ CATS::JudgeDB::extract_de_bitmap($de_bitmap) ]) ],
         }
         $t->param(
+            href_contests => url_f('contests', search => "has_user($account_id)"),
             id => $jid, judge_name => $judge_name, account_name => $account_name, pin_mode => $pin_mode,
             de_bitmap => $de_bitmap, supported_DEs => $supported_DEs,
         );

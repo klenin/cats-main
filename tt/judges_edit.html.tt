@@ -7,7 +7,9 @@
 <form method="post" enctype="multipart/form-data" action="[% href_action %]">
 <table class="padded">
 <tr><td>[% capt.judge_name %]</td><td><input type="text" name="judge_name" value="[% judge_name | html %]" class="bordered"></td></tr>
-<tr><td>[% capt.account_name %]</td><td><input type="text" name="account_name" value="[% account_name | html %]" class="bordered"></td></tr>
+<tr><td>[% capt.account_name %]</td>
+  <td><input type="text" name="account_name" value="[% account_name | html %]" class="bordered"> [% href(href_contests, capt.contests) %]</td>
+</tr>
 <tr>
     <td>[% capt.pin_mode %]</td>
     <td>
