@@ -230,6 +230,7 @@ sub problem_history_frame {
         pid => $p->{pid},
         remote_url => $remote_url,
         title_suffix => $pr->{title},
+        p => $pr,
     );
     CATS::Problem::Utils::problem_submenu('problem_history', $p->{pid});
 
@@ -248,6 +249,7 @@ sub problem_history_frame {
             href_commit => url_f('problem_history_commit', pid => $p->{pid}, h => $log->{sha}),
             href_tree => url_f('problem_history_tree', pid => $p->{pid}, hb => $log->{sha}),
             href_git_package => url_f('problem_git_package', pid => $p->{pid}, sha => $log->{sha}),
+            href_problem_tree => url_f('problem_history_tree', pid => $p->{pid}, hb => $log->{sha}, file => $pr->{repo_path})
         );
     };
     $lv->attach(
