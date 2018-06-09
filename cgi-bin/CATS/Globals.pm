@@ -32,12 +32,15 @@ BEGIN {
         submission => $cats::job_type_submission,
         snippets => $cats::job_type_generate_snippets,
         install => $cats::job_type_initialize_problem,
+        submission_part => $cats::job_type_submission_part,
     };
     my $name_to_state = {
         waiting => $cats::job_st_waiting,
         running => $cats::job_st_in_progress,
         finished => $cats::job_st_finished,
         failed => $cats::job_st_failed,
+        waiting_for_verdict => $cats::job_st_waiting_for_verdict,
+
     };
 
     $jobs = {

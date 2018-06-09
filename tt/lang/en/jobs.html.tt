@@ -5,12 +5,14 @@
         submission => 'submission',
         snippets => 'snippets',
         install => 'install',
+        submission_part => 'part',
       },
       states => {
         waiting => 'waiting',
         running => 'running',
         finished => 'finished',
         failed => 'failed',
+        waiting_for_verdict => 'verdict',
       },
     },
   })
