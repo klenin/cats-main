@@ -140,7 +140,7 @@ sub problems_replace {
 }
 
 sub problems_add {
-    my ($source_name, $is_remote) = @_;
+    my ($source_name, $is_remote, $repo_path) = @_;
     my $problem_code;
     if (!$contest->is_practice) {
         $problem_code = _unused_problem_code($contest) or return;
@@ -148,7 +148,7 @@ sub problems_add {
 
     my CATS::Problem::Storage $p = CATS::Problem::Storage->new;
     my ($error, $result_sha, $problem) = $is_remote ?
-        $p->load(CATS::Problem::Source::Git->new($source_name, $p), $cid, new_id, 0, $source_name) :
+        $p->load(CATS::Problem::Source::Git->new($source_name, $p, $repo_path), $cid, new_id, 0, $source_name) :
         $p->load(CATS::Problem::Source::Zip->new($source_name, $p), $cid, new_id, 0, undef);
     $t->param(problem_import_log => $p->encoded_import_log());
     $error ||= !_add_problem_to_contest($cid, $problem->{id}, $problem_code);
@@ -175,7 +175,7 @@ sub problems_add_new {
 sub problems_add_new_remote {
     my ($p) = @_;
     $p->{remote_url} or return msg(1091);
-    problems_add($p->{remote_url}, 1);
+    problems_add($p->{remote_url}, 1, $p->{repo_path});
 }
 
 1;

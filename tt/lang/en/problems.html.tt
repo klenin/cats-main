@@ -21,6 +21,7 @@
     ignore_submit => 'do not test',
     problem_file => 'Problem file',
     problem_url => 'Problem repository url',
+    repo_path => 'Path in repository',
     rename => 'rename',
     delete => 'delete',
     pull => 'pull',

@@ -58,7 +58,7 @@ sub get_repo {
 sub get_repo_archive {
     my ($pid, $sha) = @_;
     ($pid) = get_repo_id($pid);
-    return CATS::Problem::Repository->new(dir => $CATS::Config::repos_dir . "$pid/")->archive($sha);
+    return CATS::Problem::Repository->new(dir => $CATS::Config::repos_dir . "$pid/")->archive($sha, 1);
 }
 
 sub get_latest_master_sha {
@@ -136,7 +136,6 @@ sub load_problem {
             replace => $replace,
         }
     );
-
     my $problem;
     eval {
         $problem = $self->{parser}->parse;
@@ -252,7 +251,7 @@ sub save {
             statement=?, pconstraints=?, input_format=?, output_format=?,
             formal_input=?, json_data=?, explanation=?, zip_archive=?,
             upload_date=CURRENT_TIMESTAMP, std_checker=?, last_modified_by=?,
-            max_points=?, run_method=?, players_count=?, repo=?, hash=NULL
+            max_points=?, run_method=?, players_count=?, repo=?, hash=NULL, repo_path=?
         WHERE id = ?~
     : q~
         INSERT INTO problems (
@@ -263,9 +262,9 @@ sub save {
             statement, pconstraints, input_format, output_format,
             formal_input, json_data, explanation, zip_archive,
             upload_date, std_checker, last_modified_by,
-            max_points, run_method, players_count, repo, id
+            max_points, run_method, players_count, repo, repo_path, id
         ) VALUES (
-            ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP,?,?,?,?,?,?,?
+            ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP,?,?,?,?,?,?,?,?
         )~;
 
     my $c = $dbh->prepare($sql);
@@ -285,6 +284,7 @@ sub save {
     $c->bind_param($i++, $problem->{run_method});
     $c->bind_param($i++, CATS::Testset::pack_rank_spec(@{$problem->{players_count}}));
     $c->bind_param($i++, $problem->{repo});
+    $c->bind_param($i++, $self->{parser}->{source}->{repo_path});
     $c->bind_param($i++, $problem->{id});
     $c->execute;
 
