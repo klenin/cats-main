@@ -14,6 +14,11 @@ sub _snake_to_camel_case {
     $key;
 }
 
+my %problem_key_to_tag = (map { $_ => _snake_to_camel_case($_) } qw(
+    id tags code color status testsets contest_id problem_id max_points 
+    time_limit write_limit memory_limit process_limit points_testsets
+));
+
 my %key_to_tag = ( ctype => 'ContestType', map { $_ => _snake_to_camel_case($_) } qw(
     id rules title closed penalty max_reqs is_hidden local_only show_sites show_flags
     start_date short_descr is_official finish_date run_all_tests req_selection show_packages
@@ -48,9 +53,17 @@ sub _serialize {
     $xml;
 }
 
+sub serialize_problem {
+    my ($self, $problem) = @_;
+    "<Problem>\n" .
+    $self->_serialize($problem, \%problem_key_to_tag) .
+    "<Problem>\n";
+}
+
 sub serialize {
     my ($self, $contest, $problems) = @_;
-    "<?xml version=\"1.0\"?>\n<CATS-Contest>\n" .
-    $self->_serialize($contest, \%key_to_tag) .
-    "</CATS-Contest>\n";
+    my $xml = "<?xml version=\"1.0\"?>\n<CATS-Contest>\n" .
+    $self->_serialize($contest, \%key_to_tag);
+    $xml .= $self->serialize_problem($_) for @{$problems}; 
+    $xml . "</CATS-Contest>\n";
 }

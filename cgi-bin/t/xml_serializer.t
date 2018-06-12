@@ -3,7 +3,7 @@ use warnings;
 
 use File::Spec;
 use FindBin;
-use Test::More tests => 2;
+use Test::More tests => 4;
 
 use lib File::Spec->catdir($FindBin::Bin, '..');
 use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
@@ -43,6 +43,21 @@ my $c = CATS::Contest->new({
     title => 'sdf',
 });
 
+my $problem = {
+    id => 777,
+    tags => 'tag1,tag2',
+    code => 'A',
+    status => 5,
+    testsets => undef,
+    contest_id => 1488,
+    problem_id => 322,
+    max_points => undef,
+    time_limit => 1,
+    write_limit => undef,
+    memory_limit => 64,
+    points_testsets => undef
+};
+
 my $expected = 
 q~<?xml version="1.0"?>
 <CATS-Contest>
@@ -71,5 +86,21 @@ q~<?xml version="1.0"?>
 </CATS-Contest>
 ~;
 
-is $s->serialize($c), $s->serialize($c), "purity check";
-is $s->serialize($c), $s->serialize($c), "correctness 1";
+my $problem_expected =
+q~<Problem>
+<Code>A</Code>
+<ContestId>1488</ContestId>
+<Id>777</Id>
+<MemoryLimit>64</MemoryLimit>
+<ProblemId>322</ProblemId>
+<Status>hidden</Status>
+<Tags>tag1,tag2</Tags>
+<TimeLimit>1</TimeLimit>
+<Problem>
+~;
+
+is $s->serialize($c), $s->serialize($c), 'purity check';
+is $s->serialize($c), $expected, 'correctness 1';
+
+is $s->serialize_problem($problem), $s->serialize_problem($problem), 'problem purity check';
+is $s->serialize_problem($problem), $problem_expected, 'problem check 1';
