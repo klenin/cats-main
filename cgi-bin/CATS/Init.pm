@@ -66,14 +66,16 @@ sub init_user {
 }
 
 sub extract_cid_from_cpid {
-    my $cpid = url_param('cpid') or return;
+    my ($p) = @_;
+    $p->{cpid} or return;
     return $dbh->selectrow_array(qq~
         SELECT contest_id FROM contest_problems WHERE id = ?~, undef,
-        $cpid);
+        $p->{cpid});
 }
 
 sub init_contest {
-    $cid = url_param('cid') || param('clist') || extract_cid_from_cpid || $settings->{contest_id} || '';
+    my ($p) = @_;
+    $cid = $p->{cid} || param('clist') || extract_cid_from_cpid($p) || $settings->{contest_id} || '';
     $cid =~ s/^(\d+).*$/$1/; # Get first contest if from clist.
     if ($contest && ref $contest ne 'CATS::Contest') {
         warn "Strange contest: $contest from ", $ENV{HTTP_REFERER} || '';
@@ -130,7 +132,7 @@ sub initialize {
     CATS::Messages::init;
     $t = undef;
     init_user($p);
-    init_contest;
+    init_contest($p);
 }
 
 1;

@@ -411,6 +411,10 @@ sub common_params {
     $p->{json} = 1 if $json;
     $p->{jsonp} = $json if $json && $json =~ /^[a-zA-Z_][a-zA-Z0-9_]*$/;
     $p->{enc} = param('enc') if check_encoding(param('enc'));
+    for (qw(cid cpid)) {
+        my $val = param($_);
+        $p->{$_} = $val if $val && $val =~ integer;
+    }
     $p->{f} = url_param('f') || '';
 }
 
