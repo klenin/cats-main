@@ -334,6 +334,11 @@ $api_judge_routes = {
     api_judge_get_problem_snippets => [ \&CATS::ApiJudge::get_problem_snippets, pid => integer, ],
     api_judge_is_problem_uptodate => [ \&CATS::ApiJudge::is_problem_uptodate, pid => integer, date => str, ],
     api_judge_save_logs => [ \&CATS::ApiJudge::save_logs, job_id => integer, dump => undef, ],
+    api_judge_is_set_req_state_allowed => [
+        \&CATS::ApiJudge::is_set_req_state_allowed,
+        job_id => integer,
+        force => bool,
+    ],
     api_judge_select_request => [
         \&CATS::ApiJudge::select_request,
         de_version => integer,
@@ -352,11 +357,18 @@ $api_judge_routes = {
         job_type => integer,
         (map { $_ => integer } @CATS::ApiJudge::create_job_params),
     ],
+    api_judge_create_splitted_jobs => [
+        \&CATS::ApiJudge::create_splitted_jobs,
+        job_type => integer,
+        (map { $_ => integer } @CATS::ApiJudge::create_job_params),
+        testsets => array_of str,
+    ],
     api_judge_finish_job => [
         \&CATS::ApiJudge::finish_job,
         job_id => integer,
         job_state => integer,
     ],
+    api_judge_get_tests_req_details => [ \&CATS::ApiJudge::get_tests_req_details, req_id => integer, ],
     api_judge_delete_req_details => [ \&CATS::ApiJudge::delete_req_details, req_id => integer, ],
     api_judge_insert_req_details => [ \&CATS::ApiJudge::insert_req_details, params => str, ],
     api_judge_save_input_test_data => [
@@ -381,7 +393,10 @@ $api_judge_routes = {
         snippet_name => ident,
         text => undef,
     ],
-    api_judge_get_testset => [ \&CATS::ApiJudge::get_testset, req_id => integer, update => integer, ],
+    api_judge_get_testset => [
+        \&CATS::ApiJudge::get_testset,
+        table => qr/^(reqs|jobs)$/, id => integer, update => integer,
+    ],
 };
 
 }

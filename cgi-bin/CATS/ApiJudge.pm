@@ -117,7 +117,27 @@ sub set_request_state {
     $p->print_json({ ok => 1 });
 }
 
-our @create_job_params = qw(problem_id state parent_id);
+our @create_job_params = qw(problem_id state parent_id req_id contest_id);
+
+sub is_set_req_state_allowed {
+    my ($p) = @_;
+    bad_judge($p) and return -1;
+
+    my ($parent_id, $allow_set_req_state) = CATS::JudgeDB::is_set_req_state_allowed($p->{job_id}, $p->{force});
+    $p->print_json({ parent_id => $parent_id, allow_set_req_state => $allow_set_req_state });
+}
+
+sub create_splitted_jobs {
+    my ($p) = @_;
+    bad_judge($p) and return -1;
+
+    CATS::Job::create_splitted_jobs($p->{job_type}, $p->{testsets}, {
+        map { $_ => $p->{$_} } @create_job_params
+    });
+    $dbh->commit;
+
+    $p->print_json({ ok => 1 });
+}
 
 sub create_job {
     my ($p) = @_;
@@ -183,6 +203,13 @@ sub delete_req_details {
     $p->print_json({ ok => 1 });
 }
 
+sub get_tests_req_details {
+    my ($p) = @_;
+    bad_judge($p) and return -1;
+
+    $p->print_json({ req_details => CATS::JudgeDB::get_tests_req_details($p->{req_id}) });
+}
+
 my @req_details_fields = qw(
     req_id test_rank result time_used memory_used disk_used checker_comment
     output output_size);
@@ -236,7 +263,7 @@ sub get_testset {
     my ($p) = @_;
     bad_judge($p) and return -1;
 
-    my %testset = CATS::Testset::get_testset($dbh, $p->{req_id}, $p->{update});
+    my %testset = CATS::Testset::get_testset($dbh, $p->{table}, $p->{id}, $p->{update});
 
     $p->print_json({ testset => \%testset });
 }

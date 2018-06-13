@@ -40,7 +40,7 @@ sub get_run_info {
     my $last_test = 0;
     my $total_points = 0;
     my $all_testsets = CATS::Testset::get_all_testsets($dbh, $req->{problem_id});
-    my %testset = CATS::Testset::get_testset($dbh, $req->{req_id});
+    my %testset = CATS::Testset::get_testset($dbh, 'reqs', $req->{req_id});
     $contest->{show_points} ||= 0 < grep $_, values %testset;
     my (%run_details, %used_testsets, %accepted_tests, %accepted_deps);
 
@@ -619,7 +619,7 @@ sub run_log_frame {
     CATS::Request::delete_logs({ req_id => $rid }) if $p->{delete_log};
 
     $t->param(
-        logs => get_log_dump({ req_id => $rid }),
+        logs => get_log_dump({ req_id => $rid, parent_id => undef }),
         job_enums => $CATS::Globals::jobs,
     );
 }
