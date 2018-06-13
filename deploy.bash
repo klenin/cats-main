@@ -190,6 +190,7 @@ PerlSetEnv CATS_DIR ${CATS_ROOT}/cgi-bin/
 	Alias /cats/synh/ "${CATS_ROOT}/synhighlight/"
 	Alias /cats/images/ "${CATS_ROOT}/images/"
 	Alias /cats/js/ "${CATS_ROOT}/js/"
+	Alias /cats/css/ "${CATS_ROOT}/css/"
 	Alias /cats/ "${CATS_ROOT}/cgi-bin/"
 </VirtualHost>
 EOF
