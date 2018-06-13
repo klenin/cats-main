@@ -60,5 +60,5 @@ GRANT INSERT
 GRANT UPDATE(state, start_time, finish_time, judge_id)
     ON TABLE jobs TO judge;
 
-GRANT DELETE
+GRANT DELETE, INSERT
     ON TABLE jobs_queue TO judge;
