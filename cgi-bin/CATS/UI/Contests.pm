@@ -7,6 +7,7 @@ use CATS::Constants;
 use CATS::Contest::Participate qw(get_registered_contestant is_jury_in_contest);
 use CATS::Contest;
 use CATS::Contest::Utils;
+use CATS::Contest::XmlSerializer;
 use CATS::DB;
 use CATS::Globals qw($cid $contest $is_jury $is_root $sid $t $uid $user);
 use CATS::ListView;
@@ -348,6 +349,26 @@ sub contests_frame {
         submenu => $submenu,
         CATS::Contest::Participate::flags_can_participate,
     );
+}
+
+sub contest_xml_frame {
+    my ($p) = @_;
+
+    init_template($p, 'contest_xml.html.tt');
+    $p->{id} //= $cid;
+
+    my $c = $dbh->selectrow_hashref(q~
+        SELECT * FROM contests WHERE id = ?~, { Slice => {} },
+        $p->{id}) or return;
+    
+    my $problems = $dbh->selectall_arrayref(
+      "SELECT * FROM contest_problems CP WHERE CP.contest_id = $c->{id} ORDER BY CP.code",
+      { Slice => {} }
+    );
+    $t->param(
+        contest_xml => CATS::Contest::XmlSerializer->new()->serialize($c, $problems),
+    );
+    CATS::Contest::Utils::contest_submenu('contest_xml', $p->{id});
 }
 
 1;
