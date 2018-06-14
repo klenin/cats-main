@@ -11,7 +11,7 @@ use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
 use CATS::Contest::XmlSerializer;
 use CATS::Contest;
 
-my $s = CATS::Contest::XmlSerializer->new();
+my $s = CATS::Contest::XmlSerializer->new;
 my $c = CATS::Contest->new({
     closed => 0,
     ctype => 0,
@@ -55,7 +55,7 @@ my $problem = {
     time_limit => 1,
     write_limit => undef,
     memory_limit => 64,
-    points_testsets => undef
+    points_testsets => undef,
 };
 
 my $expected = 
@@ -83,8 +83,7 @@ q~<?xml version="1.0"?>
 <ShowTestResources>1</ShowTestResources>
 <StartDate>12.06.2018 12:58</StartDate>
 <Title>sdf</Title>
-</CATS-Contest>
-~;
+</CATS-Contest>~;
 
 my $problem_expected =
 q~<Problem>
@@ -96,8 +95,7 @@ q~<Problem>
 <Status>hidden</Status>
 <Tags>tag1,tag2</Tags>
 <TimeLimit>1</TimeLimit>
-<Problem>
-~;
+<Problem>~;
 
 is $s->serialize($c), $s->serialize($c), 'purity check';
 is $s->serialize($c), $expected, 'correctness 1';
