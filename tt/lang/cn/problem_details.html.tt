@@ -12,6 +12,7 @@
         '2' => 'competitive',
     },
     keywords => 'Keywords',
+    repo_path => 'Path in repository',
     original_contest => 'Original contest',
     download => 'Download',
     package => 'package',
@@ -30,6 +31,9 @@
     tags_none => 'none',
     original_limits => 'Original limits',
     overridden_limits => 'Overridden limits',
+    snippets => 'Snippets',
+    snippets_declared => 'Declared',
+    snippets_generated => 'Generated',
     request_count => 'Verdict counts',
   })
 %]

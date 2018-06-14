@@ -1,0 +1,19 @@
+[%
+  capt.import({
+    jobs => {
+      types => {
+        submission => 'попытка',
+        snippets => 'фрагменты',
+        install => 'установка',
+        submission_part => 'часть',
+      },
+      states => {
+        waiting => 'ожидает',
+        running => 'выполняется',
+        finished => 'завершена',
+        failed => 'ошибка',
+        waiting_for_verdict => 'вердикт',
+      },
+    },
+  })
+%]

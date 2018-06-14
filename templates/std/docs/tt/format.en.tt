@@ -143,7 +143,7 @@ files with tests, solutions etc.
   <td>
     <ul>
       <li>name — object identifier [% tag_ref('Checker') %] (arbitrary string).</li>
-      <li>src[% opt %] — path to the source.</li>
+      <li>src — path to the source.</li>
       <li>de_code[% opt %] — development environment code.</li>
       <li>style[% opt %] [% v12 %] — checker arguments format, can be one of:
         <ul>
@@ -202,7 +202,7 @@ files with tests, solutions etc.
   <td>
     <ul>
       <li>name — identifier of the [% tag_ref('Picture') %] object (arbitrary string).</li>
-      <li>src[% opt %] — path to the image file.</li>
+      <li>src — path to the image file.</li>
     </ul>
   </td>
   <td>Describes a picture to be inserted into a problem text.</td>
@@ -222,7 +222,7 @@ files with tests, solutions etc.
   <td>
     <ul>
       <li>name — identifier of the [% tag_ref('Solution') %] object.</li>
-      <li>src[% opt %] — path to the source code file.</li>
+      <li>src — path to the source code file.</li>
       <li>de_code[% opt %] — development environment code.</li>
       <li>export[% opt %] [% v14 %] — globally unique identifier.</li>
       <li>timeLimit[% opt %] [% v17 %] — time limit in seconds. By default equal to the problem's limit.</li>
@@ -237,7 +237,7 @@ files with tests, solutions etc.
   <td>
     <ul>
       <li>name — identifier of the [% tag_ref('Generator') %] object.</li>
-      <li>src[% opt %] — path to the source code file.</li>
+      <li>src — path to the source code file.</li>
       <li>de_code[% opt %] — development environment code.</li>
       <li>outputFile[% opt %] [% v12 %] — input file name or <code>*STDOUT</code>.</li>
       <li>export[% opt %] [% v14 %] — globally unique identifier.</li>
@@ -265,7 +265,7 @@ files with tests, solutions etc.
       <li>from — sequential number of the first generator.</li>
       <li>to — sequential number of the first generator.</li>
       <li>name — identifier of the [% tag_ref('Generator') %] object.</li>
-      <li>src[% opt %] — path to the source code file.</li>
+      <li>src — path to the source code file.</li>
       <li>de_code[% opt %] — development environment code.</li>
       <li>outputFile[% opt %] [% v12 %] — input file name or "*STDOUT".</li>
       <li>export[% opt %] [% v14 %] — globally unique identifier.</li>
@@ -284,7 +284,7 @@ files with tests, solutions etc.
   <td>
     <ul>
       <li>name — identifier of the [% tag_ref('Validator') %] object.</li>
-      <li>src[% opt %] — path to the source code file.</li>
+      <li>src — path to the source code file.</li>
       <li>de_code[% opt %] — development environment code.</li>
       <li>export[% opt %] — globally unique identifier.</li>
       <li>timeLimit[% opt %] — time limit in seconds.</li>
@@ -301,7 +301,7 @@ files with tests, solutions etc.
   <td>
     <ul>
       <li>name — identifier of the [% tag_ref('Visualizer') %] object.</li>
-      <li>src[% opt %] — path to the source code file.</li>
+      <li>src — path to the source code file.</li>
       <li>de_code[% opt %] — development environment code, it is recommended to use code 1.</li>
       <li>export[% opt %] — globally unique identifier.</li>
     </ul>
@@ -313,7 +313,7 @@ files with tests, solutions etc.
   <td>
     <ul>
       <li>name — identifier of the [% tag_ref('Interactor') %] object.</li>
-      <li>src[% opt %] — path to the source code file.</li>
+      <li>src — path to the source code file.</li>
       <li>de_code[% opt %] — development environment code.</li>
       <li>export[% opt %] — globally unique identifier.</li>
       <li>timeLimit[% opt %] — time limit in seconds.</li>
@@ -391,6 +391,9 @@ files with tests, solutions etc.
       <li>src[% opt %] — path to the input file (if the use attribute is omitted).</li>
       <li>genAll[% s(opt, v15) %] — generate a group of tests with a single generator.</li>
       <li>validate[% s(opt, v110) %] — identifier of the [% tag_ref('Validator') %] object.</li>
+      <li>hash[% s(opt, v110) %] — input file hash in the format <code>$alg$hex</code>,
+        where 'alg' is one of 'sha' or 'md5',
+        and 'hex' is a sequence of lowcase hexadecimal digits representing hash value.</li>
     </ul>
   </td>
   <td>Test input description.

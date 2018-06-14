@@ -12,7 +12,7 @@ use CATS::User;
 
 sub send_message_box_frame {
     my ($p) = @_;
-    init_template('send_message_box.html.tt');
+    init_template($p, 'send_message_box.html.tt');
     $is_jury or return;
 
     my $caid = $p->{caid} or return;
@@ -34,7 +34,7 @@ sub send_message_box_frame {
 
 sub answer_box_frame {
     my ($p) = @_;
-    init_template('answer_box.html.tt');
+    init_template($p, 'answer_box.html.tt');
     $is_jury && $p->{qid} or return;
 
     my $r = $dbh->selectrow_hashref(q~
@@ -73,7 +73,7 @@ sub answer_box_frame {
 
 sub envelope_frame {
     my ($p) = @_;
-    init_template('envelope.html.tt');
+    init_template($p, 'envelope.html.tt');
 
     $user->{is_participant} && $p->{rid} or return;
 

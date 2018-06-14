@@ -25,10 +25,11 @@ use CATS::Privileges;
 use CATS::Redirect;
 use CATS::Settings qw($settings);
 use CATS::Utils;
-use CATS::Web qw(cookie param url_param);
+use CATS::Web qw(param url_param);
 
 # Authorize user, initialize permissions and settings.
 sub init_user {
+    my ($p) = @_;
     $sid = url_param('sid') || '';
     $is_root = 0;
     $uid = undef;
@@ -52,26 +53,29 @@ sub init_user {
         }
     }
 
-    CATS::Settings::init($enc_settings, param('lang'), cookie('settings'));
+    CATS::Settings::init($enc_settings, param('lang'), $p->get_cookie('settings'));
 
     if ($bad_sid) {
-        return CATS::Web::forbidden if param('noredir');
-        init_template(param('json') ? 'bad_sid.json.tt' : 'login.html.tt');
+        return $p->forbidden if param('noredir');
+        init_template($p, $p->{json} ? 'bad_sid.json.tt' : 'login.html.tt');
         $sid = '';
-        $t->param(href_login => CATS::Utils::url_function('login', redir => CATS::Redirect::pack_params));
+        my $redir = CATS::Redirect::pack_params($p);
+        $t->param(href_login => CATS::Utils::url_function('login', redir => $redir));
         msg(1002);
     }
 }
 
 sub extract_cid_from_cpid {
-    my $cpid = url_param('cpid') or return;
+    my ($p) = @_;
+    $p->{cpid} or return;
     return $dbh->selectrow_array(qq~
         SELECT contest_id FROM contest_problems WHERE id = ?~, undef,
-        $cpid);
+        $p->{cpid});
 }
 
 sub init_contest {
-    $cid = url_param('cid') || param('clist') || extract_cid_from_cpid || $settings->{contest_id} || '';
+    my ($p) = @_;
+    $cid = $p->{cid} || param('clist') || extract_cid_from_cpid($p) || $settings->{contest_id} || '';
     $cid =~ s/^(\d+).*$/$1/; # Get first contest if from clist.
     if ($contest && ref $contest ne 'CATS::Contest') {
         warn "Strange contest: $contest from ", $ENV{HTTP_REFERER} || '';
@@ -123,11 +127,12 @@ sub init_contest {
 }
 
 sub initialize {
+    my ($p) = @_;
     $Storable::canonical = 1;
     CATS::Messages::init;
     $t = undef;
-    init_user;
-    init_contest;
+    init_user($p);
+    init_contest($p);
 }
 
 1;

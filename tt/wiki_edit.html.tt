@@ -1,0 +1,29 @@
+[%- extra_head = BLOCK %]
+<style>
+  table.wiki_edit tr td { vertical-align: top; padding-right: 1em; }
+</style>
+[% END -%]
+[% PROCESS includes/menu_begin.tti %]
+[% PROCESS includes/html.tti %]
+
+<table class="wiki_edit"><tr>
+<td>
+  <form method="post" enctype="multipart/form-data" action="[% href_action %]">
+  <input type="hidden" name="wiki_lang" value="[% wiki_lang %]"/>
+  <input type="hidden" name="wiki_id" value="[% wiki_id %]"/>
+  [% capt.title %]:<br>
+  <input type="text" name="title" value="[% title | html %]" size="80" class="bordered"/><br>
+  <textarea name="text" cols="80" rows="30">[% text | html %]</textarea>
+  <br>
+  [% PROCESS includes/edit_save_cancel.tti %]
+  </form>
+</td>
+<td>
+  <p>[% href(href_view, capt.view) %] | [% href(href_page, capt.page) %]</p>
+  [% markdown %]
+</td>
+</tr></table>
+[% capt.author %]: [% author %]<br>
+[% capt.last_modified %]: [% last_modified %]
+
+[% PROCESS includes/menu_end.tti %]

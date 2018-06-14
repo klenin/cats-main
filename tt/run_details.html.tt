@@ -41,9 +41,9 @@
 <table class="req"><tr>
 [% FOREACH r IN runs %]
 <td>
-[% IF r.judge_log_dump %]
+[% IF r.compiler_output %]
   <table class="bordered">
-  <tr><td><pre>[% r.judge_log_dump | html %]</pre></td></tr>
+  <tr><td><pre>[% r.compiler_output | html %]</pre></td></tr>
   </table>
 [% ELSE %]
   [% IF r.testsets.size %]

@@ -23,7 +23,7 @@
 [%- END -%]
 
 [%- MACRO href(url, text, title) BLOCK ~%]
-  <a[% IF url %] href="[% url | url %]"[% END; IF title %] title="[% title | html %]"[% END %]>[% text | html %]</a>
+  <a[% IF url %] href="[% url %]"[% END; IF title %] title="[% title | html %]"[% END %]>[% text | html %]</a>
 [%- END -%]
 [%- MACRO maybe_href(url, text, title) BLOCK; IF url; href(url, text, title); ELSE; text | html ; END; END -%]
 

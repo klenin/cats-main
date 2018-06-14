@@ -1,0 +1,33 @@
+[% PROCESS includes/menu_begin.tti %]
+
+<script>
+function delete_wiki_page(href, name) {
+    if (confirm("[% capt.want_to_delete %] '" + name + "'?" ))
+        document.location = href;
+}
+</script>
+
+[% PROCESS includes/listview_header.tti %]
+
+<table class="listview bordered highlight">
+[% PROCESS includes/listview_col_defs.tti %]
+
+[% FOREACH w IN wiki_pages %]
+<tr class="[% loop.parity() %]">
+<td>
+  [% IF w.href_delete ~%]
+  <a href="javascript:delete_wiki_page('[% w.href_delete %]', '[% w.name | html %]');" class="icon delete"></a>
+  [%~ END %]
+  [% IF w.href_edit ~%]
+  <a href="[% w.href_edit %]" class="icon edit"></a>
+  [%~ END %]
+  [% href(w.href_text, w.name) %]
+</td>
+<td>[% checkbox_1('is_public', w.is_public, 0) %]</td>
+</tr>
+[% END %]
+</table>
+[% PROCESS includes/pages.tti %]
+</form>
+
+[% PROCESS includes/menu_end.tti %]

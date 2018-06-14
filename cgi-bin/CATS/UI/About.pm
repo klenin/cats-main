@@ -10,7 +10,8 @@ use CATS::Messages qw(res_str);
 use CATS::Output qw(init_template);
 
 sub about_frame {
-    init_template('about.html.tt');
+    my ($p) = @_;
+    init_template($p, 'about.html.tt');
     my $problem_count = $dbh->selectrow_array(q~
         SELECT COUNT(*) FROM problems P INNER JOIN contests C ON C.id = P.contest_id
             WHERE C.is_hidden = 0 OR C.is_hidden IS NULL~);

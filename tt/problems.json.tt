@@ -7,7 +7,7 @@
 [% FOREACH p IN problems %]
 {
 "id": [% p.problem_id %],
-"name": "[% p.problem_name | $Javascript %]",
+"name": "[% p.title | $Javascript %]",
 "code": "[% p.code %]",
 "contest_id": "[% contest_id %]",
 "language": "[% p.lang %]",

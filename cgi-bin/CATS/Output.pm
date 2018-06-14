@@ -6,7 +6,6 @@ use warnings;
 use Exporter qw(import);
 
 our @EXPORT_OK = qw(
-    auto_ext
     downloads_path
     downloads_url
     init_template
@@ -22,45 +21,37 @@ use CATS::Messages;
 use CATS::Settings;
 use CATS::Template;
 use CATS::Utils qw();
-use CATS::Web qw(cookie param headers content_type);
+use CATS::Web qw(param);
 
 my ($http_mime_type, %extra_headers);
-
-sub _http_header {
-    my ($type, $encoding, $cookie) = @_;
-
-    content_type($type, $encoding);
-    headers(cookie => $cookie, %extra_headers);
-}
 
 sub downloads_path { cats_dir() . '../download/' }
 sub downloads_url { 'download/' }
 
-sub auto_ext {
-    my ($file_name, $json) = @_;
-    my $ext = $json // param('json') ? 'json' : 'html';
-    "$file_name.$ext.tt";
-}
-
 sub init_template {
-    my ($file_name, $p) = @_;
+    my ($p, $file_name, $extra) = @_;
+    ref $p eq 'CATS::Web' or die;
 
-    my ($base_name, $ext) = $file_name =~ /^(\w+)\.(\w+)(:?\.tt)$/;
+    my ($base_name, $ext) = $file_name =~ /^(\w+)(?:\.(\w+)(:?\.tt))?$/ or die;
+    $ext //= $p->{json} ? 'json' : 'html';
+
     $http_mime_type = {
-        htm => 'text/html',
         html => 'text/html',
         xml => 'application/xml',
         ics => 'text/calendar',
         json => 'application/json',
     }->{$ext} or die 'Unknown template extension';
-    %extra_headers = $ext eq 'ics' ?
-        ('Content-Disposition' => "inline;filename=$base_name.ics") : ();
-    $t = CATS::Template->new($file_name, cats_dir(), $p);
-    my $json = param('json') || '';
-    $extra_headers{'Access-Control-Allow-Origin'} = '*' if $json;
+    $t = CATS::Template->new("$base_name.$ext.tt", cats_dir(), $extra);
+
+    %extra_headers = (
+        ($ext eq 'ics' ?
+            ('Content-Disposition' => "inline;filename=$base_name.ics") : ()),
+        ($p->{json} ?
+            ('Access-Control-Allow-Origin' => '*') : ()),
+    );
     $t->param(
         lang => CATS::Settings::lang,
-        ($json =~ /^[a-zA-Z][a-zA-Z0-9_]+$/ ? (jsonp => $json) : ()),
+        ($p->{jsonp} ? (jsonp => $p->{jsonp}) : ()),
         messages => CATS::Messages::get,
         user => $user,
         contest => $contest,
@@ -71,7 +62,7 @@ sub init_template {
 sub url_f { CATS::Utils::url_function(@_, sid => $sid, cid => $cid) }
 
 sub generate {
-    my ($output_file) = @_;
+    my ($p, $output_file) = @_;
     defined $t or return; #? undef : ref $t eq 'SCALAR' ? return : die 'Template not defined';
     $contest->{time_since_start} or warn 'No contest from: ', $ENV{HTTP_REFERER} || '';
     $t->param(
@@ -82,19 +73,16 @@ sub generate {
         langs => [ map { href => url_f('contests', lang => $_), name => $_ }, @cats::langs ],
     );
 
-    my $cookie = cookie(CATS::Settings::as_cookie);
-    my $out = '';
-    if (my $enc = param('enc')) {
-        $t->param(encoding => $enc);
-        _http_header($http_mime_type, $enc, $cookie);
-        $out = Encode::encode($enc, $t->output, Encode::FB_XMLCREF);
-    }
-    else {
-        $t->param(encoding => 'UTF-8');
-        _http_header($http_mime_type, 'utf-8', $cookie);
-        $out = $t->output;
-    }
-    CATS::Web::print($out);
+    my $cookie = $p->make_cookie(CATS::Settings::as_cookie);
+    my $enc = $p->{enc} // 'UTF-8';
+    $t->param(encoding => $enc);
+
+    $p->content_type($http_mime_type, $enc);
+    $p->headers(cookie => $cookie, %extra_headers);
+
+    my $out = $enc eq 'UTF-8' ?
+        $t->output : Encode::encode($enc, $t->output, Encode::FB_XMLCREF);
+    $p->print($out);
     if ($output_file) {
         open my $f, '>:utf8', $output_file
             or die "Error opening $output_file: $!";

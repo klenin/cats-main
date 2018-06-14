@@ -11,10 +11,11 @@ use CATS::Messages qw(res_str);
 use CATS::Output qw(init_template url_f);
 use CATS::References;
 use CATS::Utils qw(url_function);
-use CATS::Web qw(param);
 
 sub import_sources_frame {
-    my $lv = CATS::ListView->new(name => 'import_sources', template => 'import_sources.html.tt');
+    my ($p) = @_;
+    init_template($p, 'import_sources.html.tt');
+    my $lv = CATS::ListView->new(name => 'import_sources');
     $lv->define_columns(url_f('import_sources'), 0, 0, [
         { caption => res_str(625), order_by => '2', width => '30%' },
         { caption => res_str(642), order_by => '3', width => '30%' },
@@ -56,9 +57,10 @@ sub download_frame {
     my ($fname, $src) = $dbh->selectrow_array(q~
         SELECT fname, src FROM problem_sources WHERE id = ? AND guid IS NOT NULL~, undef,
         $p->{psid}) or return;
-    CATS::Web::content_type('text/plain');
-    CATS::Web::headers('Content-Disposition' => "inline;filename=$fname");
-    CATS::Web::print($src);
+    $p->print_file(
+        content_type => 'text/plain',
+        file_name => $fname,
+        content => Encode::encode_utf8($src));
 }
 
 1;

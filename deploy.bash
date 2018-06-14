@@ -44,6 +44,9 @@ http_group=www-data
 
 
 FB_DEV_VERSION=`sudo apt-cache pkgnames | grep firebird-dev`
+FB_DEV_VERSION=`sudo apt-cache show firebird-dev | grep Version`
+[[ $FB_DEV_VERSION =~ ([0-9]+\.[0-9]+) ]]
+FB_DEV_VERSION=${BASH_REMATCH[1]}
 FB_DEF_OP_MODE='superclassic'
 packages=(firebird-dev)
 
@@ -55,25 +58,20 @@ packages=(firebird-dev)
 
 echo "1. Install apt packages... "
 if [[ $step =~ (^|,)1(,|$)  || $step == "*" ]]; then
-	
-	if [[ $FB_DEV_VERSION ]]; then
-		FB_DEV_VERSION=`sudo apt-cache show firebird-dev | grep Version`
-
-		if [[ $FB_DEV_VERSION =~ ([0-9]+\.[0-9]+) ]]
-		then
-			FB_DEV_VERSION=${BASH_REMATCH[1]}
-			if [[ `echo "$FB_DEV_VERSION < 3.0" | bc` -eq 1 ]]; then
-				read -e -p "Firebird Operation Mode (classic, super, superclassic): " -i $FB_DEF_OP_MODE $FB_DEF_OP_MODE
-				FB_PACKAGE=firebird${FB_DEV_VERSION}-${FB_DEF_OP_MODE}
-			else
-				FB_PACKAGE=firebird${FB_DEV_VERSION}-server
-			fi
-			packages+=($FB_PACKAGE)
+	if [[ FB_DEV_VERSION ]]
+	then
+		if [[ `echo "$FB_DEV_VERSION < 3.0" | bc` -eq 1 ]]; then
+			read -e -p "Firebird Operation Mode (classic, super, superclassic): " -i $FB_DEF_OP_MODE $FB_DEF_OP_MODE
+			FB_PACKAGE=firebird${FB_DEV_VERSION}-${FB_DEF_OP_MODE}
 		else
-			echo "Can't find a proper firebird-dev package"
+			FB_PACKAGE=firebird${FB_DEV_VERSION}-server
 		fi
-	fi 
-	packages+=(git build-essential libaspell-dev
+		packages+=($FB_PACKAGE)
+	else
+		echo "Can't find a proper firebird-dev package"
+	fi
+
+	packages+=(git unzip wget build-essential libaspell-dev
 		aspell-en aspell-ru apache2 libapache2-mod-perl2 libapreq2-3 libapreq2-dev
 		libapache2-mod-perl2-dev libexpat1 libexpat1-dev libapache2-request-perl cpanminus)
 	sudo apt-get -y install ${packages[@]}
@@ -85,8 +83,8 @@ fi
 
 echo "2. Install cpan packages... "
 if [[ $step =~ (^|,)2(,|$) || $step == "*" ]]; then
-	cpan_packages=(DBI DBD::Firebird Algorithm::Diff Text::Aspell SQL::Abstract Archive::Zip
-	    JSON::XS YAML::Syck Apache2::Request XML::Parser::Expat Template Authen::Passphrase)
+	cpan_packages=(Module::Install DBI DBD::Firebird Algorithm::Diff Text::Aspell SQL::Abstract Archive::Zip
+	    JSON::XS YAML::Syck Apache2::Request XML::Parser::Expat Template Authen::Passphrase Text::MultiMarkdown)
 	sudo cpanm -S ${cpan_packages[@]}
 	echo "ok"
 else
@@ -192,6 +190,7 @@ PerlSetEnv CATS_DIR ${CATS_ROOT}/cgi-bin/
 	Alias /cats/synh/ "${CATS_ROOT}/synhighlight/"
 	Alias /cats/images/ "${CATS_ROOT}/images/"
 	Alias /cats/js/ "${CATS_ROOT}/js/"
+	Alias /cats/css/ "${CATS_ROOT}/css/"
 	Alias /cats/ "${CATS_ROOT}/cgi-bin/"
 </VirtualHost>
 EOF
@@ -205,7 +204,7 @@ EOF
 	# now adjust permissions
 	sudo chgrp -R ${http_group} cgi-bin download static templates tt
 	chmod -R g+r cgi-bin
-	chmod g+rw static tt download/{,att,img,pr,vis} cgi-bin/rank_cache{,/r}
+	chmod g+rw static tt download/{,att,img,pr,vis} cgi-bin/rank_cache{,/r} cgi-bin/repos
 	sudo service apache2 reload
 	sudo service apache2 restart
 	echo "ok"
@@ -213,8 +212,27 @@ else
 	echo "skip"
 fi
 
-echo "7. Configure and init cats database... "
-if [[ ($step =~ (^|,)7(,|$) || $step == "*") && $FB_DEV_VERSION ]]; then
+echo "7. Download JS... "
+if [[ $step =~ (^|,)7(,|$) || $step == "*" ]]; then
+	mkdir tmp_js
+	cd tmp_js/
+	wget https://code.jquery.com/jquery-1.12.4.min.js
+	mv jquery-1.12.4.min.js ../js/lib/jquery.min.js
+	wget http://www.flotcharts.org/downloads/flot-0.8.3.zip
+	unzip flot-0.8.3.zip
+	mv flot/jquery.flot.min.js ../js/lib/
+	wget https://github.com/mathjax/MathJax/archive/2.7.1.zip
+	unzip 2.7.1.zip
+	mv MathJax-2.7.1 ../js/lib/MathJax
+	cd $CATS_ROOT
+	rm -rf tmp_js/
+	echo "ok"
+else
+	echo "skip"
+fi
+
+echo "8. Configure and init cats database... "
+if [[ ($step =~ (^|,)8(,|$) || $step == "*") && $FB_DEV_VERSION ]]; then
 	CONFIG_NAME="Config.pm"
 	CONFIG_ROOT="${CATS_ROOT}/cgi-bin/cats-problem/CATS"
 	CREATE_DB_NAME="create_db.sql"

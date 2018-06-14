@@ -12,7 +12,6 @@ use CATS::DB;
 use CATS::Globals qw($t);
 use CATS::Output qw(init_template);
 use CATS::RankTable;
-use CATS::Web qw(param url_param);
 
 sub get_names {
     'Районная олимпиада', 'Городская олимпиада', 'Краевая олимпиада',
@@ -21,7 +20,8 @@ sub get_names {
 }
 
 sub personal_official_results {
-    init_template('official_results.html.tt');
+    my ($p) = @_;
+    init_template($p, 'official_results.html.tt');
     my @names = get_names();
     my $contests = $dbh->selectall_arrayref(q~
         SELECT id, title FROM contests
@@ -31,9 +31,9 @@ sub personal_official_results {
             join(' OR ' => map 'title LIKE ?' => @names) . q~) ORDER BY start_date DESC~,
         { Slice => {} }, map "$_ %", @names);
 
-    my $search = Encode::decode_utf8(param('search'));
+    my $search = Encode::decode_utf8($p->{search});
     my $results;
-    my $group_by_type = (url_param('group') || '') eq 'type';
+    my $group_by_type = ($p->{group} || '') eq 'type';
     for (@$contests) {
         my ($name, $year, $rest) = $_->{title} =~ m/^(.*)\s(\d{4})(.*)/
             or die $_->{title};
@@ -53,11 +53,10 @@ sub personal_official_results {
                 my $clist = join ',', @$j;
                 my $cache_file = cats_dir() . "./rank_cache/r/$clist";
                 unless (-f $cache_file) {
-                    my $rt = CATS::RankTable->new;
+                    my $rt = CATS::RankTable->new({ clist => $j });
                     $rt->{hide_ooc} = 1;
                     $rt->{hide_virtual} = 1;
                     $rt->{use_cache} = 0;
-                    $rt->{contest_list} = $clist;
                     $rt->get_contests_info;
                     $rt->rank_table;
                     my $short_rank = [
@@ -74,7 +73,6 @@ sub personal_official_results {
         }
     }
 
-    init_template('official_results.html.tt');
     $YAML::Syck::ImplicitUnicode = 1;
     $t->param(results => YAML::Syck::Dump($results));
 }

@@ -7,7 +7,8 @@ use List::Util qw(reduce);
 
 use CATS::Constants;
 use CATS::DB;
-use CATS::Globals qw($cid $is_root $sid $uid);
+use CATS::Globals qw($cid $is_root $sid $t $uid);
+use CATS::Messages qw(res_str);
 #use CATS::Output qw(url_f);
 use CATS::Utils qw(url_function date_to_iso);
 
@@ -46,8 +47,23 @@ sub contest_fields_str {
         'CURRENT_TIMESTAMP - finish_date AS since_finish',
 }
 
+sub _contest_search_fields() {qw(
+    show_all_tests
+    show_test_resources
+    show_checker_comment
+    show_packages
+    show_all_results
+    local_only
+    show_flags
+    max_reqs
+    show_test_data
+    req_selection
+    pinned_judges_only
+    show_sites
+)}
+
 sub contest_searches { return {
-    (map { $_ => "C.$_" } contest_fields),
+    (map { $_ => "C.$_" } contest_fields, _contest_search_fields),
     since_start => '(CURRENT_TIMESTAMP - start_date)',
     since_finish => '(CURRENT_TIMESTAMP - finish_date)',
 }}
@@ -169,6 +185,22 @@ sub anonymous_contests_view {
         common_contests_view($c);
     };
     ($fetch_contest, $sth);
+}
+
+my $contest_submenu = [
+    { href => 'contest_params', item => 594 },
+    { href => 'contest_problems_installed', item => 595 },
+];
+
+sub contest_submenu {
+    my ($selected_href, $contest_id) = @_;
+    $t->param(
+        submenu => [ map +{
+            href => CATS::Utils::url_function($_->{href}, sid => $sid, cid => $contest_id),
+            item => res_str($_->{item}),
+            selected => $_->{href} eq $selected_href }, @$contest_submenu
+        ]
+    );
 }
 
 1;

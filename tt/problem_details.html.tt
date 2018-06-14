@@ -11,9 +11,11 @@
 <form method="post" enctype="multipart/form-data" action="[% href_action %]">
 <table class="internal_borders padded">
 <tr><td>[% capt.title %]</td><td>[% p.title | html %]</td></tr>
-<tr><td>[% capt.last_change %]</td><td>
-  [[% href(href_edit, capt.edit, p.commit_sha) %]]
-  [% href(href_modifier,p.team_name) %] [% p.upload_date %]
+<tr><td>[% capt.last_change %]</td><td class="nested">
+  <table class="internal_borders padded"><tr>
+   <td>[% href(href_edit, p.upload_date, p.commit_sha) %] [[% href(href_edit_xml, capt.edit _ ' xml') %]]</td>
+   <td>[% href(href_modifier, p.team_name) %]</td>
+  </tr></table>
 </td></tr>
 <tr><td>[% capt.author %]</td><td>[% p.author | html %]</td></tr>
 <tr><td>[% capt.lang %]</td><td>[% p.lang | html %]</td></tr>
@@ -26,6 +28,7 @@
 </td></tr>
 [% END %]
 <tr><td>[% capt.original_contest %]</td><td>[% maybe_href(href_original_contest, p.contest_name) %]</td></tr>
+[% IF p.repo_path %]<tr><td>[% capt.repo_path %]</td><td>[% p.repo_path %]</td></tr>[% END %]
 <tr><td>[% capt.download %]</td><td>
 [% IF href_download %][<a href="[% href_download %]">[% capt.package %]</a>][% END %]
 [% IF href_git_package %][<a href="[% href_git_package %]">[% capt.git_package %]</a>][% END %]
@@ -53,6 +56,12 @@
 [% IF p.overridden_time_limit || p.overridden_memory_limit || p.overridden_write_limit %]
 <tr><td>[% capt.overridden_limits %]</td><td>[% href(href_problem_limits, limits_str(p.overridden_time_limit, p.overridden_memory_limit, p.overridden_write_limit)) %]</td></tr>
 [% END %]
+[% IF p.snippets_declared || p.snippets_generated -%]
+<tr><td>[% capt.snippets %]</td><td class="nested"><table class="internal_borders padded"><tr>
+  <td>[% capt.snippets_declared %]: [% p.snippets_declared %]</td>
+  <td>[% capt.snippets_generated %]: [% href(href_snippets, p.snippets_generated) %]</td>
+</tr></table></td></tr>
+[% END -%]
 <tr><td>[% capt.request_count %]</td><td class="nested">
   <table class="internal_borders request_count padded">
     <tr>[% FOREACH rc IN p.request_count %]<td class="run_details_[% rc.short %]">[% rc.name %]</td>[% END %]</tr>

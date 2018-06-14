@@ -43,7 +43,9 @@
 <th>[% capt.team_name %]</th>
 [% FOREACH p IN problems %]
 <th style="width: [% problem_column_width %]%;">
-  <a href="[% p.problem_text %]" title="[% p.title | html %]">[% p.code %]</a>
+  <a href="[% p.problem_text %]" title="[% p.title | html %]">
+  [% IF p.color %]<span class="problem_color" style="background-color: [% p.color | html %];"></span>[% END %]
+  [% p.code %]</a>
   [%- " ($p.max_points)" IF show_points -%]
 </th>
 [% END %]
@@ -70,8 +72,9 @@
 [% END -%]
 <td>[% IF show_points %][% r.total_points ~%]
   [% ELSE %][% r.total_solved %]<td>[% r.total_time %][% END -%]
-</td><td>[% r.place %]</td><td class="ts">[% IF r.is_ooc ~%]
-  ooc[% END %][% IF r.is_remote %] remote[% END %][% IF r.is_virtual %] virtual[% END %] [% r.prize %]</td></tr>
+</td><td>[% r.place %]</td><td class="ts">
+  [%~ capt.ooc IF r.is_ooc %] [% capt.remote IF r.is_remote %] [% capt.is_virtual IF r.is_virtual %] [% r.prize ~%]
+</td></tr>
 [% END %]
 [% ELSE %]
 [% IF rank %]<script type="text/javascript"><!--
@@ -82,7 +85,7 @@ var rank_table = [
     tm: [[% FOREACH c IN r.columns %]'[% c.time %]'[% UNLESS loop.last %],[% END %][% END %]],
     td: [[% FOREACH c IN r.columns %]'[% c.td %]'[% UNLESS loop.last %],[% END %][% END %]],
     ts: [% r.total_solved %], ttm: [% r.total_time %][% END %], rc: [% r.row_color %],
-    pl: [% r.place %], st: '[% IF r.is_ooc %]ooc[% END %][% IF r.is_remote %] remote[% END %][% IF r.is_virtual %] virtual[% END %] [% r.prize %]',
+    pl: [% r.place %], st: '[% capt.ooc IF r.is_ooc %] [% capt.remote IF r.is_remote %] [% capt.is_virtual IF r.is_virtual %] [% r.prize %]',
     t: "[% r.city | html | $Javascript %][% " $r.affiliation_year" IF r.affiliation_year %]"
   }[% UNLESS loop.last %],[% END %][% END %]
 ];

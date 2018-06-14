@@ -8,7 +8,7 @@ use CATS::DB;
 use CATS::Globals qw($cid $contest $is_jury $is_root $sid $t $uid);
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
-use CATS::Output qw(auto_ext init_template url_f);
+use CATS::Output qw(init_template url_f);
 use CATS::References;
 use CATS::Web qw(param url_param);
 
@@ -17,7 +17,8 @@ sub contest_groups_fields () { qw(name clist) }
 sub sanitize_clist { sort { $a <=> $b } grep /^\d+$/, @_ }
 
 sub prizes_edit_frame {
-    init_template('prizes_edit.html.tt');
+    my ($p) = @_;
+    init_template($p, 'prizes_edit.html.tt');
 
     my $cgid = url_param('edit') or return;
     my $cg = $dbh->selectrow_hashref(q~
@@ -62,6 +63,7 @@ sub prizes_edit_save {
 }
 
 sub prizes_frame {
+    my ($p) = @_;
     if ($is_root && (my $cgid = url_param('delete'))) {
         $dbh->do(q~
             DELETE FROM contest_groups WHERE id = ?~, undef,
@@ -70,7 +72,8 @@ sub prizes_frame {
     }
 
     $is_root && defined url_param('edit') and return prizes_edit_frame;
-    my $lv = CATS::ListView->new(name => 'prizes', template => 'prizes.html.tt');
+    init_template($p, 'prizes.html.tt');
+    my $lv = CATS::ListView->new(name => 'prizes');
 
     defined param('edit_save') and prizes_edit_save;
 
@@ -102,7 +105,9 @@ sub prizes_frame {
 }
 
 sub contests_prizes_frame {
-    my $lv = CATS::ListView->new(name => 'contests_prizes', template => auto_ext('contests_prizes'));
+    my ($p) = @_;
+    init_template($p, 'contests_prizes');
+    my $lv = CATS::ListView->new(name => 'contests_prizes');
 
     my @clist = sanitize_clist param('clist');
     @clist && @clist < 100 or return;

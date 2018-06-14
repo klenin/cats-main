@@ -7,9 +7,9 @@
 [%- FOREACH p IN problems_udebug %]
 {
 "id": [% p.cpid %],
-"name": "[% p.problem_name | $Javascript %]",
+"name": "[% p.title | $Javascript %]",
 "code": "[% p.code %]",
-"contest": "[% p.contest_name | $Javascript %]",
+"contest": "[% p.contest_title | $Javascript %]",
 "language": "[% p.lang %]",
 "text_url": "[% p.href_view_problem %]",
 "package_url": "[% p.href_download %]",

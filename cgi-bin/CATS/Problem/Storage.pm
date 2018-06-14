@@ -58,7 +58,7 @@ sub get_repo {
 sub get_repo_archive {
     my ($pid, $sha) = @_;
     ($pid) = get_repo_id($pid);
-    return CATS::Problem::Repository->new(dir => $CATS::Config::repos_dir . "$pid/")->archive($sha);
+    return CATS::Problem::Repository->new(dir => $CATS::Config::repos_dir . "$pid/")->archive($sha, 1);
 }
 
 sub get_latest_master_sha {
@@ -75,9 +75,18 @@ sub show_tree {
     return get_repo($pid, $hash_base, 1)->tree($hash_base, $file, $enc);
 }
 
+sub find_xml {
+    my ($pid, $hash_base) = @_;
+    my $tree = get_repo($pid, $hash_base, 1)->tree($hash_base);
+    for (@{$tree->{entries}}) {
+        return $_->{file_name} if $_->{type} eq 'blob' && $_->{file_name} =~ /\.xml$/;
+    }
+    undef;
+}
+
 sub show_blob {
     my ($pid, $hash_base, $file, $enc) = @_;
-    return get_repo($pid, $hash_base, 1)->blob($hash_base, $file, $enc);
+    get_repo($pid, $hash_base, 1)->blob($hash_base, $file, $enc);
 }
 
 sub show_raw {
@@ -127,7 +136,6 @@ sub load_problem {
             replace => $replace,
         }
     );
-
     my $problem;
     eval {
         $problem = $self->{parser}->parse;
@@ -223,12 +231,11 @@ sub delete_child_records {
         $pid)
         for qw(
             pictures samples tests testsets problem_sources
-            problem_sources_import problem_keywords problem_attachments);
+            problem_sources_import problem_keywords problem_attachments problem_snippets);
 }
 
 sub save {
     my ($self, $problem) = @_;
-
     return if $self->{debug};
 
     delete_child_records($problem->{id}) if $problem->{replace};
@@ -244,7 +251,7 @@ sub save {
             statement=?, pconstraints=?, input_format=?, output_format=?,
             formal_input=?, json_data=?, explanation=?, zip_archive=?,
             upload_date=CURRENT_TIMESTAMP, std_checker=?, last_modified_by=?,
-            max_points=?, run_method=?, players_count=?, repo=?, hash=NULL
+            max_points=?, run_method=?, players_count=?, repo=?, hash=NULL, repo_path=?
         WHERE id = ?~
     : q~
         INSERT INTO problems (
@@ -255,9 +262,9 @@ sub save {
             statement, pconstraints, input_format, output_format,
             formal_input, json_data, explanation, zip_archive,
             upload_date, std_checker, last_modified_by,
-            max_points, run_method, players_count, repo, id
+            max_points, run_method, players_count, repo, repo_path, id
         ) VALUES (
-            ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP,?,?,?,?,?,?,?
+            ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP,?,?,?,?,?,?,?,?
         )~;
 
     my $c = $dbh->prepare($sql);
@@ -277,6 +284,7 @@ sub save {
     $c->bind_param($i++, $problem->{run_method});
     $c->bind_param($i++, CATS::Testset::pack_rank_spec(@{$problem->{players_count}}));
     $c->bind_param($i++, $problem->{repo});
+    $c->bind_param($i++, $self->{parser}->{source}->{repo_path});
     $c->bind_param($i++, $problem->{id});
     $c->execute;
 
@@ -440,10 +448,25 @@ sub insert_problem_content {
     }
 
     $c = $dbh->prepare(q~
+        INSERT INTO problem_snippets (problem_id, snippet_name, generator_id)
+        VALUES (?, ?, ?)~
+    );
+
+    for (@{$problem->{snippets}}) {
+        $c->bind_param(1, $problem->{id});
+        $c->bind_param(2, $_->{name});
+        $c->bind_param(3, $_->{generator_id});
+
+        $c->execute
+            or $self->error("Can not add Snippet '$_->{name}': $dbh->errstr");
+        $self->note("Snippet '$_->{name}' added");
+    }
+
+    $c = $dbh->prepare(q~
         INSERT INTO tests (
             problem_id, rank, input_validator_id, generator_id, param, std_solution_id, in_file, out_file,
-            points, gen_group, in_file_hash
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)~
+            points, gen_group, in_file_hash, snippet_name
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)~
     );
 
     for (sort { $a->{rank} <=> $b->{rank} } values %{$problem->{tests}}) {
@@ -458,6 +481,7 @@ sub insert_problem_content {
         $c->bind_param(9, $_->{points});
         $c->bind_param(10, $_->{gen_group});
         $c->bind_param(11, $_->{hash});
+        $c->bind_param(12, $_->{snippet_name});
         $c->execute
             or $self->error("Can not add test $_->{rank}: $dbh->errstr");
         $self->note("Test $_->{rank} added");

@@ -32,20 +32,19 @@ use CATS::Settings qw($settings);
 use CATS::Testset;
 use CATS::Utils;
 use CATS::Verdicts;
-use CATS::Web qw(param encoding_param url_param headers upload_source content_type redirect);
 
 sub get_run_info {
-    my ($contest, $req) = @_;
+    my ($p, $contest, $req) = @_;
     my $points = $contest->{points};
 
     my $last_test = 0;
     my $total_points = 0;
     my $all_testsets = CATS::Testset::get_all_testsets($dbh, $req->{problem_id});
-    my %testset = CATS::Testset::get_testset($dbh, $req->{req_id});
+    my %testset = CATS::Testset::get_testset($dbh, 'reqs', $req->{req_id});
     $contest->{show_points} ||= 0 < grep $_, values %testset;
     my (%run_details, %used_testsets, %accepted_tests, %accepted_deps);
 
-    my $comment_enc = encoding_param('comment_enc');
+    my $comment_enc = $p->{comment_enc};
 
     my @resources = qw(time_used memory_used disk_used);
     my $rd_fields = join ', ', (
@@ -188,23 +187,34 @@ sub get_run_info {
     };
 }
 
+sub _get_compilation_error {
+    my ($logs) = @_;
+    my ($log) = @$logs or return ();
+    my ($error) = $log->{dump} =~ m/
+        \Q$cats::log_section_start_prefix$cats::log_section_compile\E
+       (.*)
+        \Q$cats::log_section_end_prefix$cats::log_section_compile\E
+        /sx;
+    $error;
+}
+
 sub run_details_frame {
     my ($p) = @_;
-    init_template('run_details.html.tt');
+    init_template($p, 'run_details.html.tt');
 
-    my $sources_info = get_sources_info(request_id => $p->{rid}, partial_checker => 1) or return;
+    my $sources_info = get_sources_info($p, request_id => $p->{rid}, partial_checker => 1) or return;
     my @runs;
     my $contest_cache = {};
 
     my $needs_commit;
     for (@$sources_info) {
-        source_links($_);
+        source_links($p, $_);
         if ($_->{state} == $cats::st_compilation_error) {
-            push @runs, { get_log_dump($_->{req_id}, 1) };
+            push @runs, { compiler_output => _get_compilation_error(get_log_dump({ req_id => $_->{req_id} })) };
             next;
         }
         my $c = get_contest_tests(get_contest_info($_, $contest_cache), $_->{problem_id});
-        push @runs, get_run_info($c, $_);
+        push @runs, get_run_info($p, $c, $_);
         $needs_commit ||= $_->{needs_commit};
     }
     $dbh->commit if $needs_commit;
@@ -229,16 +239,16 @@ sub save_visualizer {
 
 sub visualize_test_frame {
     my ($p) = @_;
-    init_template('visualize_test.html.tt');
+    init_template($p, 'visualize_test.html.tt');
 
     $uid or return;
     my $rid = $p->{rid} or return;
     my $vid = $p->{vid} or return;
     my $test_rank = $p->{test_rank} or return;
 
-    my $sources_info = get_sources_info(
+    my $sources_info = get_sources_info($p,
         request_id => $rid, extra_params => [ test_rank => $test_rank, vid => $p->{vid} ]);
-    source_links($sources_info);
+    source_links($p, $sources_info);
     sources_info_param([ $sources_info ]);
 
     my $ci = get_contest_info($sources_info, {});
@@ -294,15 +304,15 @@ sub visualize_test_frame {
 
 sub view_source_frame {
     my ($p) = @_;
-    init_template('view_source.html.tt');
+    init_template($p, 'view_source.html.tt');
     $p->{rid} or return;
-    my $sources_info = get_sources_info(request_id => $p->{rid}, get_source => 1, encode_source => 1);
+    my $sources_info = get_sources_info($p, request_id => $p->{rid}, get_source => 1, encode_source => 1);
     $sources_info or return;
 
     if ($sources_info->{is_jury} && $p->{replace}) {
         my $u;
-        if (param('replace_file')) {
-            $u->{src} = upload_source('replace_file') or die;
+        if ($p->{replace_file}) {
+            $u->{src} = $p->{replace_file}->content or die;
             $u->{hash} = CATS::Utils::source_hash($u->{src});
         }
         my $de_bitmap;
@@ -313,10 +323,11 @@ sub view_source_frame {
         if ($u) {
             CATS::Request::update_source($sources_info->{req_id}, $u, $de_bitmap);
             $dbh->commit;
-            $sources_info = get_sources_info(request_id => $p->{rid}, get_source => 1, encode_source => 1);
+            $sources_info = get_sources_info($p,
+                request_id => $p->{rid}, get_source => 1, encode_source => 1);
         }
     }
-    source_links($sources_info);
+    source_links($p, $sources_info);
     sources_info_param([ $sources_info ]);
     @{$sources_info->{elements}} <= 1 or return msg(1155);
 
@@ -335,7 +346,7 @@ sub view_source_frame {
     }
     $sources_info->{syntax} = $p->{syntax} if $p->{syntax};
     $sources_info->{src_lines} = [ map {}, split("\n", $sources_info->{src}) ];
-    $sources_info->{compiler_output} = { get_log_dump($sources_info->{req_id}, 1) }
+    $sources_info->{compiler_output} = _get_compilation_error(get_log_dump({ req_id => $sources_info->{req_id} }))
         if $sources_info->{state} == $cats::st_compilation_error;
 
     if ($sources_info->{is_jury}) {
@@ -355,29 +366,33 @@ sub view_source_frame {
 }
 
 sub download_source_frame {
-    my $rid = url_param('rid') or return;
-    my $si = get_sources_info(request_id => $rid, get_source => 1, encode_source => 1);
+    my ($p) = @_;
+    $p->{rid} or return;
+    my $si = get_sources_info($p, request_id => $p->{rid}, get_source => 1, encode_source => 1);
 
     unless ($si) {
-        init_template('view_source.html.tt');
+        init_template($p, 'view_source.html.tt');
         return;
     }
 
     $si->{file_name} =~ m/\.([^.]+)$/;
     my $ext = $1 || 'unknown';
-    content_type($ext eq 'zip' ? 'application/zip' : 'text/plain', 'UTF-8');
-    headers('Content-Disposition' => "inline;filename=$si->{req_id}.$ext");
-    CATS::Web::print(Encode::encode_utf8($si->{src}));
+    $p->print_file(
+        ($ext eq 'zip' ?
+            (content_type => 'application/zip') :
+            (content_type => 'text/plain', charset => 'UTF-8')),
+        file_name => "$si->{req_id}.$ext",
+        content => Encode::encode_utf8($si->{src}));
 }
 
 sub view_test_details_frame {
     my ($p) = @_;
-    init_template('view_test_details.html.tt');
+    init_template($p, 'view_test_details.html.tt');
 
     $p->{rid} or return;
     $p->{test_rank} //= 1;
 
-    my $sources_info = get_sources_info(
+    my $sources_info = get_sources_info($p,
         request_id => $p->{rid}, extra_params => [ test_rank => $p->{test_rank} ]) or return;
 
     my $ci = get_contest_info($sources_info, {});
@@ -418,7 +433,7 @@ sub view_test_details_frame {
     my @tests = get_req_details($ci, $sources_info, 'test_rank, result', {});
     grep $_->{test_rank} == $p->{test_rank}, @tests or return;
 
-    source_links($sources_info);
+    source_links($p, $sources_info);
     sources_info_param([ $sources_info ]);
     $t->param(
         output_data => $output_data,
@@ -458,17 +473,17 @@ sub maybe_status_ok {
 my $settable_verdicts = [ qw(NP AW OK WA PE TL ML WL RE CE SV IS IL MR) ];
 
 sub request_params_frame {
-    init_template('request_params.html.tt');
-
     my ($p) = @_;
+
+    init_template($p, 'request_params.html.tt');
     $p->{rid} or return;
 
-    my $si = get_sources_info(request_id => $p->{rid}) or return;
+    my $si = get_sources_info($p, request_id => $p->{rid}) or return;
     $si->{is_jury} or return;
 
-    my $limits = { map { $_ => param($_) } grep param($_) && param("set_$_"), @cats::limits_fields };
+    my $limits = { map { $_ => $p->{$_} } grep $p->{$_} && $p->{"set_$_"}, @cats::limits_fields };
 
-    my $need_clear_limits = 0 == grep param("set_$_"), @cats::limits_fields;
+    my $need_clear_limits = 0 == grep $p->{"set_$_"}, @cats::limits_fields;
 
     if (!$need_clear_limits) {
         my $filtered_limits = CATS::Request::filter_valid_limits($limits);
@@ -482,8 +497,8 @@ sub request_params_frame {
     my $params = {
         state => $cats::st_not_processed,
         # Insert NULL into database to be replaced with contest-default testset.
-        testsets => param('testsets') || undef,
-        judge_id => (param('set_judge') && param('judge') ? param('judge') : undef),
+        testsets => $p->{testsets} || undef,
+        judge_id => ($p->{set_judge} && $p->{judge} ? $p->{judge} : undef),
         points => undef, failed_test => 0,
     };
 
@@ -494,11 +509,14 @@ sub request_params_frame {
             $params->{limits_id} = CATS::Request::set_limits($si->{limits_id}, $limits);
         }
         CATS::Request::enforce_state($si->{req_id}, $params);
+        CATS::Job::create($cats::job_type_submission, { req_id => $si->{req_id} });
+
         CATS::Request::delete_limits($si->{limits_id}) if $need_clear_limits && $si->{limits_id};
         maybe_reinstall($p, $si);
         maybe_status_ok($p, $si);
+        CATS::RankTable::remove_cache($si->{contest_id});
         $dbh->commit;
-        $si = get_sources_info(request_id => $si->{req_id});
+        $si = get_sources_info($p, request_id => $si->{req_id});
     }
     if ($p->{clone}) {
         if (!$need_clear_limits) {
@@ -512,12 +530,13 @@ sub request_params_frame {
         maybe_reinstall($p, $si);
         maybe_status_ok($p, $si);
         $dbh->commit;
-        return $group_req_id ? redirect(url_f('request_params', rid => $group_req_id, sid => $sid)) : undef;
+        return $group_req_id ? $p->redirect(url_f 'request_params', rid => $group_req_id, sid => $sid) : undef;
     }
     my $can_delete = !$si->{is_official} || $is_root || ($si->{account_id} // 0) == $uid;
     $t->param(can_delete => $can_delete);
     if ($p->{delete_request} && $can_delete) {
         CATS::Request::delete($si->{req_id});
+        CATS::RankTable::remove_cache($si->{contest_id});
         $dbh->commit;
         msg(1056, $si->{req_id});
         return;
@@ -532,14 +551,14 @@ sub request_params_frame {
     }
 
     # Reload problem after the successful state change.
-    $si = get_sources_info(request_id => $si->{req_id}) if try_set_state($p);
+    $si = get_sources_info($p, request_id => $si->{req_id}) if try_set_state($p);
 
     my $tests = $dbh->selectcol_arrayref(q~
         SELECT rank FROM tests WHERE problem_id = ? ORDER BY rank~, undef,
         $si->{problem_id});
     $t->param(tests => [ map { test_index => $_ }, @$tests ]);
 
-    source_links($si);
+    source_links($p, $si);
     sources_info_param([ $si ]);
     $t->param(settable_verdicts => $settable_verdicts);
 
@@ -547,8 +566,10 @@ sub request_params_frame {
         my $judge_de_bitmap =
             CATS::DB::select_row('judge_de_bitmap_cache', '*', { judge_id => $si->{judge_id} }) ||
             { version => 0, de_bits1 => 0, de_bits2 => 0 };
-        my ($des_cond, @des_params) =
-            CATS::JudgeDB::dev_envs_condition($judge_de_bitmap, $judge_de_bitmap->{version});
+        my ($req_cond, @req_params) =
+            CATS::JudgeDB::dev_envs_condition($judge_de_bitmap, $judge_de_bitmap->{version}, 'RDEBC');
+        my ($pr_cond, @pr_params) =
+            CATS::JudgeDB::dev_envs_condition($judge_de_bitmap, $judge_de_bitmap->{version}, 'PDEBC');
 
         my $rf = join ', ', map "RDEBC.de_bits$_ AS request_de_bits$_", 1 .. $cats::de_req_bitfields_count;
         my $pf = join ', ', map "PDEBC.de_bits$_ AS problem_de_bits$_", 1 .. $cats::de_req_bitfields_count;
@@ -557,14 +578,14 @@ sub request_params_frame {
             SELECT
                 RDEBC.version AS request_version, $rf,
                 PDEBC.version AS problem_version, $pf,
-                (CASE WHEN $des_cond THEN 1 ELSE 0 END) AS is_supported
+                (CASE WHEN $req_cond AND $pr_cond THEN 1 ELSE 0 END) AS is_supported
             FROM reqs R
                 INNER JOIN problems P ON P.id = R.problem_id
                 LEFT JOIN req_de_bitmap_cache RDEBC ON RDEBC.req_id = R.id
                 LEFT JOIN problem_de_bitmap_cache PDEBC ON PDEBC.problem_id = P.id
             WHERE
                 R.id = ?~, undef,
-            @des_params, $si->{req_id});
+            @req_params, @pr_params, $si->{req_id});
         $t->param(de_cache => $cache);
     }
 }
@@ -585,37 +606,34 @@ sub try_set_state {
 
 sub run_log_frame {
     my ($p) = @_;
-    init_template('run_log.html.tt');
+    init_template($p, 'run_log.html.tt');
     my $rid = $p->{rid} or return;
 
-    my $si = get_sources_info(request_id => $rid)
+    my $si = get_sources_info($p, request_id => $rid)
         or return;
     $si->{is_jury} or return;
 
-    source_links($si);
+    source_links($p, $si);
     sources_info_param([ $si ]);
 
-    if ($p->{delete_log}) {
-        $dbh->do(q~
-            DELETE FROM log_dumps WHERE req_id = ?~, undef,
-            $rid);
-        $dbh->commit;
-        msg(1159);
-    }
+    CATS::Request::delete_logs({ req_id => $rid }) if $p->{delete_log};
 
-    $t->param(get_log_dump($rid));
+    $t->param(
+        logs => get_log_dump({ req_id => $rid, parent_id => undef }),
+        job_enums => $CATS::Globals::jobs,
+    );
 }
 
 sub diff_runs_frame {
     my ($p) = @_;
-    init_template('diff_runs.html.tt');
+    init_template($p, 'diff_runs.html.tt');
     $p->{r1} && $p->{r2} or return;
 
-    my $si = get_sources_info(
+    my $si = get_sources_info($p,
         request_id => [ $p->{r1}, $p->{r2} ], get_source => 1, encode_source => 1) or return;
     @$si == 2 or return;
 
-    source_links($_) for @$si;
+    source_links($p, $_) for @$si;
     sources_info_param($si);
 
     return msg(1155) if grep @{$_->{elements}} > 1, @$si;

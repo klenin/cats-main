@@ -12,6 +12,7 @@
         '2' => 'состязательный',
     },
     keywords => 'Ключевые слова',
+    repo_path => 'Путь в репозитории',
     original_contest => 'Исходный турнир',
     download => 'Скачать',
     package => 'пакет',
@@ -30,6 +31,9 @@
     tags_none => 'нет',
     original_limits => 'Исходные ограничения',
     overridden_limits => 'Переопределённые ограничения',
+    snippets => 'Фрагменты',
+    snippets_declared => 'Определено',
+    snippets_generated => 'Сгенерировано',
     request_count => 'Количество вердиктов',
   })
 %]

@@ -33,40 +33,43 @@ use CATS::Router;
 use CATS::Settings;
 use CATS::StaticPages;
 use CATS::Time;
-use CATS::Web qw(has_error get_return_code init_request param redirect);
+use CATS::Web qw(param);
 
 sub accept_request {
-    my ($f) = @_;
+    my ($p) = @_;
     my $output_file = '';
-    if (CATS::StaticPages::is_static_page) {
-        $output_file = CATS::StaticPages::process_static()
+    if (CATS::StaticPages::is_static_page($p)) {
+        $output_file = CATS::StaticPages::process_static($p)
             or return;
     }
-    CATS::Init::initialize;
-    return if has_error;
+    CATS::Init::initialize($p);
+    return if $p->has_error;
     CATS::Time::mark_init;
 
-    unless (defined $t) {
-        my ($fn, $p) = CATS::Router::route;
+    if (!defined $t) {
+        my $fn = CATS::Router::route($p);
         # Function returns -1 if there is no need to generate output, e.g. a redirect was issued.
         ($fn->($p) || 0) == -1 and return;
     }
     CATS::Settings::save;
 
     defined $t or return;
-    CATS::MainMenu->new({ f => $f })->generate;
+    CATS::MainMenu->new({ f => $p->{f} })->generate;
     CATS::Time::mark_finish unless param('notime');
-    CATS::Output::generate($output_file);
+    CATS::Output::generate($p, $output_file);
 }
 
 sub handler {
-    my $r = shift;
-    init_request($r);
-    return CATS::Web::not_found unless CATS::Router::parse_uri;
-    my $f = param('f');
-    if (($f || '') eq 'proxy') {
-        CATS::Proxy::proxy;
-        return get_return_code();
+    my ($r) = @_;
+
+    my $p = CATS::Web->new;
+    $p->init_request($r);
+    return $p->not_found unless CATS::Router::parse_uri($p);
+
+    CATS::Router::common_params($p);
+
+    if ($p->{f} eq 'proxy') {
+        return CATS::Proxy::proxy($p, param('u'));
     }
     CATS::Time::mark_start;
     CATS::DB::sql_connect({
@@ -79,10 +82,10 @@ sub handler {
     $dbh->{Profile} = DBI::Profile->new(Path => []); # '!Statement'
     $dbh->{Profile}->{Data} = undef;
 
-    accept_request($f);
+    accept_request($p);
     $dbh->rollback;
 
-    return get_return_code();
+    $p->get_return_code;
 }
 
 1;

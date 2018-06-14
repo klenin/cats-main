@@ -27,7 +27,7 @@ use fields qw(
 sub new {
     my ($self, $p) = @_;
     $self = fields::new($self) unless ref $self;
-    $self->{clist} = [ @{$p->{clist}}  ? sort { $a <=> $b } @{$p->{clist}} : $cid ];
+    $self->{clist} = [ @{$p->{clist}} ? sort { $a <=> $b } @{$p->{clist}} : $cid ];
     $self->{contest_list} = join ',', @{$self->{clist}};
     return $self;
 }
@@ -92,7 +92,7 @@ sub get_problems {
     my $problems = $self->{problems} = $dbh->selectall_arrayref(qq~
         SELECT
             CP.id, CP.problem_id, CP.code, CP.contest_id,
-            CP.testsets, CP.points_testsets, C.start_date,
+            CP.testsets, CP.points_testsets, CP.color, C.start_date,
             CAST(CURRENT_TIMESTAMP - C.start_date AS DOUBLE PRECISION) AS since_start,
             C.local_only, CP.max_points, P.title, P.max_points AS max_points_def, P.run_method,
             @{[ partial_checker_sql ]}
@@ -430,7 +430,7 @@ sub cache_file_name {
 }
 
 sub remove_cache {
-    my ($contest_id) = @_;
+    my ($contest_id) = @_ or die;
     for my $virt (0, 1) {
         for my $ooc (0, 1) {
             unlink cache_file_name($contest_id, $virt, $ooc);

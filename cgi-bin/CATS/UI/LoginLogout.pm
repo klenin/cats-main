@@ -7,11 +7,10 @@ use CATS::Constants;
 use CATS::DB;
 use CATS::Globals qw($cid $contest $is_jury $is_root $sid $t $uid);
 use CATS::Messages qw(msg res_str);
-use CATS::Output qw(auto_ext init_template url_f);
+use CATS::Output qw(init_template url_f);
 use CATS::Redirect;
 use CATS::User;
 use CATS::Utils qw(url_function);
-use CATS::Web qw(redirect);
 
 my $check_password;
 BEGIN {
@@ -28,7 +27,7 @@ sub split_ips { map { /(\S+)/ ? $1 : () } split ',', $_[0] }
 
 sub login_frame {
     my ($p) = @_;
-    init_template(auto_ext('login', $p->{json}));
+    init_template($p, 'login');
     $t->param(href_login => url_function('login', redir => $p->{redir}));
     msg(1004) if $p->{logout};
 
@@ -73,7 +72,7 @@ sub login_frame {
         delete $params{f};
         $params{sid} = $sid;
         $params{cid} ||= $p->{cid};
-        return redirect(url_function($f, %params));
+        return $p->redirect(url_function $f, %params);
     }
     die 'Can not generate sid';
 }
@@ -89,11 +88,11 @@ sub logout_frame {
         $dbh->commit;
     }
     if ($p->{json}) {
-        init_template(auto_ext('logout'));
+        init_template($p, 'logout');
         0;
     }
     else {
-       redirect(url_function('login', logout => 1));
+       $p->redirect(url_function 'login', logout => 1);
     }
 }
 

@@ -1,0 +1,36 @@
+[% PROCESS includes/menu_begin.tti %]
+
+<form method=post enctype='multipart/form-data'>
+
+<script type="text/javascript">
+function delete_snippet(href, name) {
+  if (confirm("[% capt.want_to_delete %] '" + name + "'?" ))
+    document.location = href;
+}
+</script>
+
+[% PROCESS includes/listview_header.tti %]
+
+<table class="listview bordered highlight">
+[% PROCESS includes/listview_col_defs.tti%]
+
+[% FOREACH s IN snippets %]
+<tr class="[% loop.parity() %]">
+  <td>
+    <a href="javascript:delete_snippet('[% s.href_delete %]', '[% s.name | html %]');" class="icon delete"></a>
+    <a href="[% s.href_edit %]" class="icon edit"></a>
+    [% href(s.href_view, s.code _ ': ' _ s.title) %]
+  </td>
+  <td>[% s.team_name | html %]</td>
+  <td>[% s.name | html %]</td>
+  <td>[% s.text | html ; '...' IF s.text.length >= 100 %]</td>
+  [% IF visible_cols.Ft %]<td>[% s.finish_time | html %]</td>[% END %]
+</tr>
+[% END %]
+</table>
+
+[% PROCESS includes/pages.tti %]
+</form>
+
+[% PROCESS includes/menu_end.tti %]
+

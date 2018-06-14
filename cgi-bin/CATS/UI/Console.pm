@@ -13,8 +13,9 @@ use CATS::DB;
 use CATS::Globals qw($cid $contest $is_jury $is_root $sid $t $uid $user);
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
-use CATS::Output qw(auto_ext init_template url_f);
+use CATS::Output qw(init_template url_f);
 use CATS::Problem::Utils;
+use CATS::RankTable;
 use CATS::Request;
 use CATS::Settings qw($settings);
 use CATS::Time;
@@ -60,12 +61,12 @@ sub _get_settings {
     $s;
 }
 
-sub init_console_template {
-    my ($template_name) = @_;
+sub _init_console_template {
+    my ($p, $template_name) = @_;
     my $se = param('se') || '';
     $se = "_$se" if $se;
-    CATS::ListView->new(
-        name => "console$se", array_name => 'console', template => $template_name);
+    init_template($p, $template_name);
+    CATS::ListView->new(name => "console$se", array_name => 'console');
 }
 
 sub _decorate_rows {
@@ -94,7 +95,7 @@ sub _decorate_rows {
 sub _console_content {
     my ($p) = @_;
 
-    my $lv = init_console_template(auto_ext('console_content'));
+    my $lv = _init_console_template($p, 'console_content');
 
     if (@{$p->{selection}}) {
         retest_submissions($p->{selection}, param('by_reference')) if defined param('retest');
@@ -148,6 +149,11 @@ sub _console_content {
         submit_year => 'EXTRACT(YEAR FROM R.submit_time)',
         submit_month => 'EXTRACT(MONTH FROM R.submit_time)',
         submit_day => 'EXTRACT(DAY FROM R.submit_time)',
+        jobs => '(SELECT COUNT(*) FROM jobs J WHERE J.req_id = R.id)',
+        jobs_queue => q~
+            (SELECT COUNT(*)
+            FROM jobs J INNER JOIN jobs_queue JQ ON J.id = JQ.id
+            WHERE J.req_id = R.id)~,
     });
 
     $lv->define_enums({
@@ -162,7 +168,8 @@ sub _console_content {
 
     my $fetch_console_record = sub {
         my ($rtype, $rank, $submit_time, $id, $request_state, $failed_test,
-            $problem_id, $problem_title, $de_id, $clarified, $question, $answer, $jury_message,
+            $problem_id, $elements_count, $problem_title,
+            $de_id, $clarified, $question, $answer, $jury_message,
             $team_id, $team_name, $country_abbr, $last_ip, $caid, $contest_id
         ) = $_[0]->fetchrow_array
             or return ();
@@ -213,6 +220,7 @@ sub _console_content {
             'time' =>               $submit_time,
             time_iso =>             date_to_iso($submit_time),
             problem_id =>           $problem_id,
+            elements_count =>       $elements_count,
             problem_title =>        $problem_title,
             de_id =>                $de_id,
             request_state =>        $request_state,
@@ -256,14 +264,16 @@ sub _console_content {
 }
 
 sub export_frame {
+    my ($p) = @_;
     $is_jury or return;
-    init_template('console_export.xml.tt');
+    init_template($p, 'console_export.xml.tt');
     $t->param(reqs => CATS::Console::export($cid));
 }
 
 sub graphs_frame {
+    my ($p) = @_;
     $is_jury or return;
-    init_template('console_graphs.html.tt');
+    init_template($p, 'console_graphs.html.tt');
 
     my $reqs = CATS::Console::select_all_reqs($cid);
     my $n2s = $CATS::Verdicts::name_to_state;
@@ -289,11 +299,21 @@ sub retest_submissions {
     if ($by_reference) {
         $count = @{CATS::Request::clone($selection, undef, $uid)};
     } else {
+        my %affected_contests;
+        my $contest_sth = $dbh->prepare(q~
+            SELECT contest_id FROM reqs WHERE id = ?~);
         for (@$selection) {
-            CATS::Request::enforce_state($_, { state => $cats::st_not_processed, judge_id => undef })
-                and ++$count;
+            if (CATS::Request::enforce_state($_, { state => $cats::st_not_processed, judge_id => undef })) {
+                CATS::Job::create($cats::job_type_submission, { req_id => $_ });
+                $contest_sth->execute($_);
+                my ($contest_id) = $contest_sth->fetchrow_array;
+                $affected_contests{$contest_id} = 1;
+                ++$count;
+            }
         }
+        CATS::RankTable::remove_cache($_) for keys %affected_contests;
     }
+
     $dbh->commit;
     return $count;
 }
@@ -342,7 +362,7 @@ sub console_frame {
     my $cc = $t->output;
     my $user_filter = url_param('uf') || '';
 
-    my $lv = init_console_template('console.html.tt');
+    my $lv = _init_console_template($p, 'console.html.tt');
 
     $t->param($_ => $lvparams->{$_}) for qw(
         i_units i_unit i_values i_value display_rows rows

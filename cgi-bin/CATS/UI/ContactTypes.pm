@@ -13,7 +13,6 @@ use CATS::ListView;
 use CATS::Messages qw(msg res_str);
 use CATS::Output qw(init_template url_f);
 use CATS::References;
-use CATS::Web qw(param url_param);
 
 sub fields() {qw(name url)}
 
@@ -24,21 +23,17 @@ my $form = CATS::Form->new({
     href_action => 'contact_types',
 });
 
-sub edit_frame { $form->edit_frame; }
-
-sub edit_save {
-    $form->edit_save and msg(1070, Encode::decode_utf8(param('name')));
-}
-
 sub contact_types_frame {
-    if ($is_root) {
-        defined url_param('new') || defined url_param('edit') and return edit_frame;
-    }
+    my ($p) = @_;
 
-    my $lv = CATS::ListView->new(name => 'contact_types', template => 'contact_types.html.tt');
+    $is_root && ($p->{new} || $p->{edit}) and return $form->edit_frame($p);
 
-    $is_root and $form->edit_delete(id => url_param('delete') // 1, descr => 'name', msg => 1069);
-    $is_root && defined param('edit_save') and edit_save;
+    init_template($p, 'contact_types.html.tt');
+    my $lv = CATS::ListView->new(name => 'contact_types');
+
+    $is_root and $form->edit_delete(id => $p->{delete}, descr => 'name', msg => 1069);
+    $is_root && $p->{edit_save} and
+        $form->edit_save($p) and msg(1070, Encode::decode_utf8($p->{name}));
 
     $lv->define_columns(url_f('contact_types'), 0, 0, [
         { caption => res_str(601), order_by => 'name', width => '40%' },

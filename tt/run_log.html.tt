@@ -1,19 +1,43 @@
 [%- PROCESS includes/sources_styles.tti -%]
 [% PROCESS includes/header.tti %]
 <style>
-  code#judge_log b { color: #ff7070; }
-  code#judge_log i { color: #108010; font-style: normal; }
+  code.judge_log b { color: #ff7070; }
+  code.judge_log i { color: #108010; font-style: normal; }
 </style>
 </head>
 <body>
 
+[% IF sources_info %]
 [% PROCESS includes/sources_info.tti %]
 <br/>
+[% ELSE %]
+[% PROCESS includes/menu_begin.tti %]
+[% END %]
+[% PROCESS "lang/$lang/jobs.html.tt" %]
 
-[% IF judge_log_dump %]
-<h3>[% capt.judge_log %]</h3>
-<pre><code id="judge_log">[% judge_log_dump | html %]</code></pre>
-<p>[% capt.length %]: [% judge_log_length %]</p>
+[% IF logs.size %]
+<a name="log_top"></a><h3>[% capt.judge_log %]</h3>
+<table class="internal_borders highlight" style="margin-left: 5px;">
+  [% FOREACH log IN logs %]
+  <tr>
+    <td>[% href('#job' _ log.job_id, log.job_id) %]</td>
+    <td>[% capt.jobs.types.item(job_enums.type_to_name.item(log.type)) %]</td>
+    <td>[% log.judge_name %]</td>
+    <td>[% capt.jobs.states.item(job_enums.state_to_name.item(log.state)) %]</td>
+    <td>[% log.start_time %]</td>
+    <td>[% log.finish_time %]</td>
+  </tr>
+  [% END %]
+</table>
+<hr>
+[% FOREACH log IN logs %]
+  <a name="job[% log.job_id %]"></a><b><a href="#log_top">^</a> [% log.job_id %]</b>
+  [% capt.jobs.types.item(job_enums.type_to_name.item(log.type)) %] [% "@ $log.judge_name" IF log.judge_name %] =>
+  [% capt.jobs.states.item(job_enums.state_to_name.item(log.state)) %]
+  [[% log.start_time %] ... [% log.finish_time %]] [% IF log.length; capt.length %]: [% log.length; END %]
+  <pre><code class="judge_log">[% log.dump | html %]</code></pre>
+  <hr>
+[% END %]
 <form method="post">
   <button type="submit" name="delete_log" value="1" class="button">[% capt.delete_log %]</button>
 </form>
@@ -21,12 +45,11 @@
 [% END %]
 
 <script type="text/javascript">
-var log = $('#judge_log');
-var t = log.html();
-log.html(t.
-  replace(/(?:^(\[.+\])$)/mg, '<b>$1</b>').
-  replace(/(\s+(?:[0-9_]+|[0-9]+\.[0-9]+)\s+)/g, '<i>$1</i>')
-);
+$('.judge_log').each(function (i, log) {
+  log.innerHTML = log.innerHTML.
+    replace(/(?:^(\[.+\])$)/mg, '<b>$1</b>').
+    replace(/(\s+(?:[0-9_]+|[0-9]+\.[0-9]+)\s+)/g, '<i>$1</i>');
+});
 </script>
 
 [% PROCESS includes/timing.tti %]

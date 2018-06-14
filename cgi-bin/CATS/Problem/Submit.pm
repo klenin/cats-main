@@ -10,7 +10,6 @@ use CATS::Globals qw($cid $contest $is_jury $t $uid $user);
 use CATS::Messages qw(msg);
 use CATS::Output qw(url_f);
 use CATS::Request;
-use CATS::Web qw(param upload_source);
 
 sub too_frequent {
     my ($submit_uid) = @_;
@@ -24,11 +23,34 @@ sub too_frequent {
     ($prev->[0] || 1) < 3/$SECONDS_PER_DAY || ($prev->[1] || 1) < 60/$SECONDS_PER_DAY;
 }
 
-sub determine_state {
+sub _determine_state {
     my ($p) = @_;
     return $cats::st_ignore_submit if $p->{ignore};
-    !$is_jury && !param('np') && $CATS::Config::TB && CATS::Web::user_agent =~ /$CATS::Config::TB/ ?
+    !$is_jury && !$p->{np} && $CATS::Config::TB && $p->user_agent =~ /$CATS::Config::TB/ ?
         $cats::st_ignore_submit : $cats::st_not_processed;
+}
+
+sub _prepare_de {
+    my ($p, $file, $cpid) = @_;
+
+    my $did = $p->{de_id} or return msg(1013);
+    if ($did eq 'by_extension') {
+        my $de = CATS::DevEnv->new(CATS::JudgeDB::get_DEs({ active_only => 1 }))->by_file_extension($file)
+            or return msg(1013);
+        $did = $de->{id};
+        $t->param(de_name => $de->{description});
+    }
+    my $allowed_des = $dbh->selectall_arrayref(q~
+        SELECT CPD.de_id, D.description
+        FROM contest_problem_des CPD
+        INNER JOIN default_de D ON D.id = CPD.de_id
+        WHERE cp_id = ? ORDER BY D.code~, { Slice => {} },
+        $cpid);
+    if ($allowed_des && @$allowed_des && 0 == grep $_->{de_id} == $did, @$allowed_des) {
+        $t->param(de_not_allowed => $allowed_des);
+        return;
+    }
+    $did;
 }
 
 sub problems_submit {
@@ -37,21 +59,27 @@ sub problems_submit {
     $user->{is_participant} or return msg(1116);
 
     # Use explicit empty string comparisons to avoid problems with solutions containing only '0'.
-    my $file = param('source') // '';
-    my $source_text = param('source_text') // '';
-    $file ne '' || $source_text ne '' or return msg(1009);
-    $file eq '' || $source_text eq '' or return msg(1042);
-    length($file) <= 200 or return msg(1010);
+    my $file = $p->{source};
+    my $source_text = $p->{source_text} // '';
+    $file || $source_text ne '' or return msg(1009);
+    !$file || $source_text eq '' or return msg(1042);
+    !$file || length($file->remote_file_name) <= 200 or return msg(1010);
     if ($source_text eq '') {
-        $source_text = upload_source('source');
+        $source_text = $file->content;
         $source_text ne '' or return msg(1011);
     }
 
-    my $did = $p->{de_id} or return msg(1013);
+    $dbh->selectrow_array(q~
+        SELECT COUNT(*) FROM tests T
+        WHERE T.problem_id = ? AND T.snippet_name IS NOT NULL AND NOT EXISTS (
+            SELECT 1 FROM snippets S
+            WHERE S.name = T.snippet_name AND S.problem_id = T.problem_id AND
+                S.account_id = ? AND S.contest_id = ?)~, undef,
+        $pid, $uid, $cid) and return msg(1168);
 
     my $contest_finished = $contest->has_finished($user->{diff_time} + $user->{ext_time});
-    my ($status, $title) = $dbh->selectrow_array(q~
-        SELECT CP.status, P.title
+    my ($cpid, $status, $title) = $dbh->selectrow_array(q~
+        SELECT CP.id, CP.status, P.title
         FROM contest_problems CP
         INNER JOIN problems P ON P.id = CP.problem_id
         WHERE CP.contest_id = ? AND CP.problem_id = ?~, undef,
@@ -93,12 +121,7 @@ sub problems_submit {
         return msg(1137) if $prev_reqs_count >= $contest->{max_reqs};
     }
 
-    if ($did eq 'by_extension') {
-        my $de = CATS::DevEnv->new(CATS::JudgeDB::get_DEs({ active_only => 1 }))->by_file_extension($file)
-            or return msg(1013);
-        $did = $de->{id};
-        $t->param(de_name => $de->{description});
-    }
+    my $did = _prepare_de($p, $file ? $file->remote_file_name : '', $cpid) or return;
 
     # Forbid repeated submissions of the identical code with the same DE.
     my $source_hash = CATS::Utils::source_hash($source_text);
@@ -114,14 +137,14 @@ sub problems_submit {
 
     my $rid = CATS::Request::insert($pid, $cid, $submit_uid,
         [ CATS::DevEnv->new(CATS::JudgeDB::get_DEs())->bitmap_by_ids($did) ],
-        { state => determine_state($p) });
+        { state => _determine_state($p) });
 
     my $s = $dbh->prepare(q~
         INSERT INTO sources(req_id, de_id, src, fname, hash) VALUES (?, ?, ?, ?, ?)~);
     $s->bind_param(1, $rid);
     $s->bind_param(2, $did);
     $s->bind_param(3, $source_text, { ora_type => 113 } ); # blob
-    $s->bind_param(4, $file ? "$file" :
+    $s->bind_param(4, $file ? $file->remote_file_name :
         "$rid." . CATS::DevEnv->new(CATS::JudgeDB::get_DEs({ id => $did }))->default_extension($did));
     $s->bind_param(5, $source_hash);
     $s->execute;
@@ -155,7 +178,7 @@ sub problems_submit_std_solution {
 
     while (my ($name, $src, $did, $fname) = $c->fetchrow_array) {
         my $rid = CATS::Request::insert($pid, $cid, $uid,
-            [ $de_list->bitmap_by_ids($did) ], { state => determine_state($p), tag => $name });
+            [ $de_list->bitmap_by_ids($did) ], { state => _determine_state($p), tag => $name });
 
         my $s = $dbh->prepare(q~
             INSERT INTO sources(req_id, de_id, src, fname) VALUES (?, ?, ?, ?)~);

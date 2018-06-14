@@ -1,19 +1,18 @@
 [%- PROCESS includes/header.tti %]
 </head>
-<body style="margin: 10px">
+<body>
 [% UNLESS clarified %]
-<form method="post" enctype="multipart/form-data">
-  [% participant_name | html %], [% submit_time %]<br/>
-  [% IF answer %]<br/>[% capt.answered %]:[% answer %]<br/><br/>[% END %]
-  <br/>
-  <div class="bordered">[% question_text | html %]</div>
-  <br/>
-  <input type="text" size="70" value="[% capt.no_comments %]" name="answer_text" class="bordered" />
-  <br/>
-  <br/>
-  <button type="submit" value="1" name="clarify" class="button">[% capt.clarify %]</button>
-  <button type="button" onclick="javascript:window.close();" class="button">[% capt.close %]</button>
-</form>
+<div style="padding: 10px">
+  [% participant_name | html %], [% submit_time %]<br/><br/>
+  <div class="bordered" style="width: 100%">[% question_text | html %]</div>
+  [% IF answer %]<br/>[% capt.answered %]: [% answer | html %]<br/><br/>[% END %]
+  <form method="post" enctype="multipart/form-data">
+    <input type="text" size="70" value="[% capt.no_comments %]" name="answer_text" class="bordered" />
+    <br/><br/>
+    <button type="submit" value="1" name="clarify" class="button">[% capt.clarify %]</button>
+    <button type="button" onclick="javascript:window.close();" class="button">[% capt.close %]</button>
+  </form>
+</div>
 [% ELSE %]
 <script>window.close();</script>
 [% END %]

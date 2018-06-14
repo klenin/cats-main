@@ -1,5 +1,6 @@
 [%
   capt.import({
+    available_tags => 'Доступные теги',
     select_tags => 'Выберите теги',
     save => 'Сохранить',
   })

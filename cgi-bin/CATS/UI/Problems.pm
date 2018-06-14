@@ -15,7 +15,7 @@ use CATS::Judge;
 use CATS::JudgeDB;
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
-use CATS::Output qw(auto_ext init_template url_f);
+use CATS::Output qw(init_template url_f);
 use CATS::Problem::Save;
 use CATS::Problem::Source::Git;
 use CATS::Problem::Source::Zip;
@@ -34,7 +34,9 @@ use CATS::Verdicts;
 sub prepare_keyword {
     my ($where, $p) = @_;
     $p->{kw} or return;
-    my $name_field = 'name_' . CATS::Settings::lang();
+    # Keywords are only in English and Russian for now.
+    my $lang = CATS::Settings::lang;
+    my $name_field = 'name_' . ($lang =~ /^(en|ru)$/ ? $lang : 'en');
     my ($code, $name) = $dbh->selectrow_array(qq~
         SELECT code, $name_field FROM keywords WHERE id = ?~, undef,
         $p->{kw}) or do { $p->{kw} = undef; return; };
@@ -46,15 +48,12 @@ sub prepare_keyword {
 
 sub problems_all_frame {
     my ($p) = @_;
-    my $lv = CATS::ListView->new(name => 'link_problem', template => 'problems_all.html.tt');
+    init_template($p, 'problems_all.html.tt');
+    my $lv = CATS::ListView->new(name => 'link_problem');
 
     $is_jury && $p->{link} || $p->{kw} or return;
 
-    if ($p->{link}) {
-        my @u = $contest->unused_problem_codes
-            or return msg(1017);
-        $t->param(unused_codes => [ @u ]);
-    }
+    $t->param(used_codes => $contest->used_problem_codes) if $p->{link};
 
     my $where =
         $is_root ? {
@@ -82,8 +81,12 @@ sub problems_all_frame {
         { caption => res_str(667), order_by => 'keywords', width => '20%', col => 'Kw' },
     ]);
     CATS::Problem::Utils::define_common_searches($lv);
-    $lv->define_db_searches({ contest_title => 'C.title'});
-
+    $lv->define_db_searches({
+        contest_title => 'C.title',
+        ($is_root ? (tags => q~
+            (SELECT LIST(DISTINCT CP1.tags) FROM contest_problems CP1
+                WHERE CP1.problem_id = P.id AND CP1.tags IS NOT NULL)~) : ()),
+    });
     my $ok_wa_tl = $lv->visible_cols->{Ok} ? qq~
         SELECT
             SUM(CASE R.state WHEN $cats::st_accepted THEN 1 ELSE 0 END) || ' / ' ||
@@ -104,7 +107,7 @@ sub problems_all_frame {
     $c->execute($cid, @{$where->{params}}, $lv->where_params);
 
     my $fetch_record = sub {
-        my ($pid, $problem_name, $contest_name, $contest_id, $counts, $keywords, $linked) = $_[0]->fetchrow_array
+        my ($pid, $title, $contest_title, $contest_id, $counts, $keywords, $linked) = $_[0]->fetchrow_array
             or return ();
         my %pp = (sid => $sid, cid => $contest_id, pid => $pid);
         return (
@@ -116,8 +119,8 @@ sub problems_all_frame {
             keywords => $keywords,
             linked => $linked || !$p->{link},
             problem_id => $pid,
-            problem_name => $problem_name,
-            contest_name => $contest_name,
+            title => $title,
+            contest_title => $contest_title,
             counts => $counts,
         );
     };
@@ -132,7 +135,8 @@ sub problems_all_frame {
 
 sub problems_udebug_frame {
     my ($p) = @_;
-    my $lv = CATS::ListView->new(name => 'problems_udebug', template => auto_ext('problems_udebug'));
+    init_template($p, 'problems_udebug');
+    my $lv = CATS::ListView->new(name => 'problems_udebug');
 
     $lv->define_columns(url_f('problems'), 0, 0, [
         { caption => res_str(602), order_by => 'P.id', width => '30%' },
@@ -140,7 +144,7 @@ sub problems_udebug_frame {
 
     my $c = $dbh->prepare(q~
         SELECT
-            CP.id AS cpid, P.id AS pid, CP.code, P.title AS problem_name, P.lang, C.title AS contest_name,
+            CP.id AS cpid, P.id AS pid, CP.code, P.title, P.lang, C.title AS contest_title,
             SUBSTRING(P.explanation FROM 1 FOR 1) AS has_explanation,
             CP.status, P.upload_date
         FROM contest_problems CP
@@ -169,8 +173,8 @@ sub problems_udebug_frame {
             cpid => $r->{cpid},
             pid => $r->{pid},
             code => $r->{code},
-            problem_name => $r->{problem_name},
-            contest_name => $r->{contest_name},
+            title => $r->{title},
+            contest_title => $r->{contest_title},
             lang => $r->{lang},
             status_text => CATS::Messages::problem_status_names()->{$r->{status}},
             upload_date_iso => date_to_iso($r->{upload_date}),
@@ -196,9 +200,9 @@ sub problems_frame_jury_action {
     }
     $p->{change_status} and return CATS::Problem::Utils::problems_change_status($p);
     $p->{change_code} and return CATS::Problem::Utils::problems_change_code($p);
-    $p->{replace} and return CATS::Problem::Save::problems_replace;
-    $p->{add_new} and return CATS::Problem::Save::problems_add_new;
-    $p->{add_remote} and return CATS::Problem::Save::problems_add_new_remote;
+    $p->{replace} and return CATS::Problem::Save::problems_replace($p, $p->{problem_id});
+    $p->{add_new} and return CATS::Problem::Save::problems_add_new($p);
+    $p->{add_remote} and return CATS::Problem::Save::problems_add_new_remote($p);
     $p->{std_solution} and return CATS::Problem::Submit::problems_submit_std_solution($p);
     CATS::Problem::Storage::delete($p->{delete_problem}) if $p->{delete_problem};
 }
@@ -210,6 +214,34 @@ sub has_lang_tag {
     $parsed_tags->{lang};
 }
 
+sub _prepare_de_list {
+    my $de_list = CATS::DevEnv->new(CATS::JudgeDB::get_DEs({ active_only => 1 }));
+
+    my ($allowed_des) = $dbh->selectall_arrayref(q~
+        SELECT CP.id, CPD.de_id FROM contest_problems CP
+        LEFT JOIN contest_problem_des CPD ON CP.id = CPD.cp_id
+        WHERE CP.contest_id = ?~, { Slice => {} },
+        $cid);
+
+    my $allow_all = 0;
+    my %allowed;
+    for (@$allowed_des) {
+        if($_->{de_id}) {
+            $allowed{$_->{de_id}} = 1;
+        }
+        else {
+            $allow_all = 1;
+            last;
+        }
+    }
+
+    my @all_des = $allow_all ? @{$de_list->des} : grep $allowed{$_->{id}}, @{$de_list->des};
+    my @de = (
+        { de_id => 'by_extension', de_name => res_str(536) },
+         map {{ de_id => $_->{id}, de_name => $_->{description} }} @all_des );
+    (de_list => \@de, (@all_des == 1 ? (de_selected => $all_des[0]->{id}) : ()));
+}
+
 sub problems_frame {
     my ($p) = @_;
 
@@ -217,20 +249,20 @@ sub problems_frame {
     unless ($is_jury) {
         $show_packages = $contest->{show_packages};
         if (!$contest->has_started($user->{diff_time})) {
-            init_template(auto_ext('problems_inaccessible'));
+            init_template($p, 'problems_inaccessible');
             return msg(1130);
         }
         if ($contest->{local_only} && !$user->{is_local}) {
-            init_template(auto_ext('problems_inaccessible'));
+            init_template($p, 'problems_inaccessible');
             $t->param(local_only => 1);
             return;
         }
     }
 
+    init_template($p, 'problems');
     my $lv = CATS::ListView->new(
         name => 'problems' . ($contest->is_practice ? '_practice' : ''),
-        array_name => 'problems',
-        template => auto_ext('problems'));
+        array_name => 'problems');
 
     problems_frame_jury_action($p);
 
@@ -248,6 +280,8 @@ sub problems_frame {
             { caption => res_str(667), order_by => 'keywords', width => '10%', col => 'Kw' },
             { caption => res_str(635), order_by => 'last_modified_by', width => '5%', col => 'Mu' },
             { caption => res_str(634), order_by => 'P.upload_date', width => '10%', col => 'Mt' },
+            { caption => res_str(641), order_by => 'allow_des', width => '5%', col => 'Ad' },
+            { caption => res_str(675), col => 'Cl' },
         )
         : ()
         ),
@@ -261,6 +295,7 @@ sub problems_frame {
     $lv->define_db_searches([ qw(
         CP.code CP.testsets CP.tags CP.points_testsets CP.status
     ) ]);
+    $lv->define_db_searches({ contest_title => 'OC.title' });
     my $psn = CATS::Problem::Utils::problem_status_names_enum($lv);
 
     my $reqs_count_sql = 'SELECT COUNT(*) FROM reqs D WHERE D.problem_id = P.id AND D.state =';
@@ -286,6 +321,10 @@ sub problems_frame {
         SELECT LIST(DISTINCT K.code, ' ') FROM keywords K
         INNER JOIN problem_keywords PK ON PK.keyword_id = K.id AND PK.problem_id = P.id
         ) AS keywords,~ : '';
+    my $allow_des = $is_jury && $lv->visible_cols->{Ad} ? q~(
+        SELECT LIST(DISTINCT D.code, ' ') FROM default_de D
+        INNER JOIN contest_problem_des CPD ON CPD.cp_id = CP.id AND CPD.de_id = D.id
+        ) AS allow_des,~ : '';
     # Use result_time to account for re-testing standard solutions,
     # but also limit by sumbit_time to speed up since there is no index on result_time.
     my $judges_installed_sql = $is_jury && $lv->visible_cols->{Vc} ? qq~
@@ -298,9 +337,10 @@ sub problems_frame {
     my $sth = $dbh->prepare(qq~
         SELECT
             CP.id AS cpid, P.id AS pid,
-            $select_code AS code, P.title AS problem_name, OC.title AS contest_name,
+            $select_code AS code, P.title, OC.title AS contest_title,
             $counts,
             $keywords
+            $allow_des
             P.contest_id - CP.contest_id AS is_linked,
             (SELECT COUNT(*) FROM contest_problems CP1
                 WHERE CP1.contest_id <> CP.contest_id AND CP1.problem_id = P.id) AS usage_count,
@@ -309,7 +349,7 @@ sub problems_frame {
             (SELECT A.login FROM accounts A WHERE A.id = P.last_modified_by) AS last_modified_by,
             SUBSTRING(P.explanation FROM 1 FOR 1) AS has_explanation,
             $test_count_sql CP.testsets, CP.points_testsets, P.lang, $limits_str,
-            CP.max_points, P.repo, CP.tags, P.statement_url, P.explanation_url
+            CP.max_points, P.repo, CP.tags, P.statement_url, P.explanation_url, CP.color
         FROM problems P
         INNER JOIN contest_problems CP ON CP.problem_id = P.id
         INNER JOIN contests OC ON OC.id = P.contest_id
@@ -387,6 +427,7 @@ sub problems_frame {
             href_select_testsets => url_f('problem_select_testsets', pid => $c->{pid}, from_problems => 1),
             href_select_tags => url_f('problem_select_tags', pid => $c->{pid}, from_problems => 1),
             href_last_request => ($last_request ? url_f('run_details', rid => $last_request) : ''),
+            href_allow_des => url_f('problem_des', pid => $c->{pid}),
 
             show_packages => $show_packages,
             status => $c->{status},
@@ -400,11 +441,11 @@ sub problems_frame {
             cpid => $c->{cpid},
             selected => $c->{pid} == ($p->{problem_id} || 0),
             code => $c->{code},
-            problem_name => $c->{problem_name},
+            title => $c->{title},
             is_linked => $c->{is_linked},
             remote_url => $remote_url,
             usage_count => $c->{usage_count},
-            contest_name => $c->{contest_name},
+            contest_title => $c->{contest_title},
             accept_count => $c->{accepted_count},
             wa_count => $c->{wrong_answer_count},
             tle_count => $c->{time_limit_count},
@@ -422,6 +463,8 @@ sub problems_frame {
             tags => $c->{tags},
             last_verdict => $last_verdict,
             keywords => $c->{keywords},
+            allow_des => $c->{allow_des} // '*',
+            color => $c->{color},
         );
     };
 
@@ -430,11 +473,6 @@ sub problems_frame {
     $sth->finish;
 
     my ($jactive) = CATS::Judge::get_active_count;
-
-    my $de_list = CATS::DevEnv->new(CATS::JudgeDB::get_DEs({ active_only => 1 }));
-    my @de = (
-        { de_id => 'by_extension', de_name => res_str(536) },
-        map {{ de_id => $_->{id}, de_name => $_->{description} }} @{$de_list->des} );
 
     my $pt_url = sub {
         my ($href, $item) = @_;
@@ -461,18 +499,34 @@ sub problems_frame {
         { href => url_f('contest_params', id => $cid), item => res_str(546) };
 
     $t->param(
-        href_login => url_f('login', redir => CATS::Redirect::pack_params),
+        href_login => url_f('login', redir => CATS::Redirect::pack_params($p)),
+        href_set_problem_color => url_f('set_problem_color'),
         CATS::Contest::Participate::flags_can_participate,
         submenu => \@submenu, title_suffix => res_str(525),
         is_user => $uid,
         can_submit => $is_jury ||
             $user->{is_participant} &&
             ($user->{is_virtual} || !$contest->has_finished($user->{diff_time} + $user->{ext_time})),
-        de_list => \@de, problem_codes => \@cats::problem_codes,
+        _prepare_de_list(),
         contest_id => $cid, no_judges => !$jactive,
      );
 }
 
 sub problem_text_frame { goto \&CATS::Problem::Text::problem_text }
+
+sub set_problem_color {
+    my ($p) = @_;
+    $p->{cpid} && $p->{color} && $is_jury
+        or return $p->print_json({ result => 'error' });
+
+    $p->{color} = undef if $p->{color} eq '#000000';
+    $dbh->do(q~
+        UPDATE contest_problems SET color = ?
+        WHERE contest_id = ? AND id = ?~, undef,
+        $p->{color}, $cid, $p->{cpid});
+    $dbh->commit;
+    CATS::StaticPages::invalidate_problem_text(cid => $cid, cpid => $p->{cpid});
+    $p->print_json({ result => 'ok' });
+}
 
 1;

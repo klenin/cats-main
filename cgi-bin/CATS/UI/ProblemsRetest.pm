@@ -8,11 +8,12 @@ use CATS::DB;
 use CATS::Globals qw($cid $contest $is_jury $t);
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
-use CATS::Output qw(url_f);
+use CATS::Output qw(init_template url_f);
 use CATS::Problem::Utils;
 use CATS::RankTable;
 use CATS::Request;
 use CATS::Verdicts;
+use CATS::Job;
 
 sub problems_mass_retest {
     my ($p) = @_;
@@ -22,6 +23,8 @@ sub problems_mass_retest {
         my $st = $CATS::Verdicts::name_to_state->{$_ // ''};
         $ignore_states{$st} = 1 if defined $st;
     }
+    # Since we perform multiple commits, clear cache ahead of time.
+    CATS::RankTable::remove_cache($cid);
     my $count = 0;
     for my $retest_pid (@retest_pids) {
         my $runs = $dbh->selectall_arrayref(q~
@@ -36,7 +39,10 @@ sub problems_mass_retest {
             next if $ignore_states{$_->{state} // 0};
             my $fields = {
                 state => $cats::st_not_processed, judge_id => undef, points => undef, testsets => undef };
-            CATS::Request::enforce_state($_->{id}, $fields) and ++$count;
+            if (CATS::Request::enforce_state($_->{id}, $fields)) {
+                CATS::Job::create($cats::job_type_submission, { req_id => $_->{id} });
+                ++$count;
+            }
         }
         $dbh->commit;
     }
@@ -49,8 +55,8 @@ sub problems_recalc_points {
     $dbh->do(_u $sql->update(
         reqs => { points => undef }, { contest_id => $cid, problem_id => $p->{problem_id} }
     ));
-    $dbh->commit;
     CATS::RankTable::remove_cache($cid);
+    $dbh->commit;
 }
 
 my $retest_default_ignore = { IS => 1, SV => 1 };
@@ -58,8 +64,8 @@ my $retest_default_ignore = { IS => 1, SV => 1 };
 sub problems_retest_frame {
     my ($p) = @_;
     $is_jury && !$contest->is_practice or return;
-    my $lv = CATS::ListView->new(
-        name => 'problems_retest', array_name => 'problems', template => 'problems_retest.html.tt');
+    init_template($p, 'problems_retest.html.tt');
+    my $lv = CATS::ListView->new(name => 'problems_retest', array_name => 'problems');
 
     problems_mass_retest($p) if $p->{mass_retest};
     problems_recalc_points($p) if $p->{recalc_points};
@@ -84,7 +90,7 @@ sub problems_retest_frame {
     my $sth = $dbh->prepare(qq~
         SELECT
             CP.id AS cpid, P.id AS pid,
-            CP.code, P.title AS problem_name, CP.testsets, CP.points_testsets, CP.status,
+            CP.code, P.title, CP.testsets, CP.points_testsets, CP.status,
             ($reqs_count_sql $cats::st_accepted) AS accepted_count,
             ($reqs_count_sql $cats::st_wrong_answer) AS wrong_answer_count,
             ($reqs_count_sql $cats::st_time_limit_exceeded) AS time_limit_count,
@@ -105,7 +111,7 @@ sub problems_retest_frame {
             href_view_problem => url_f('problem_text', cpid => $c->{cpid}),
             problem_id => $c->{pid},
             code => $c->{code},
-            problem_name => $c->{problem_name},
+            title => $c->{title},
             accept_count => $c->{accepted_count},
             wa_count => $c->{wrong_answer_count},
             tle_count => $c->{time_limit_count},

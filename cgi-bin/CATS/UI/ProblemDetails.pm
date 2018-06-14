@@ -5,6 +5,7 @@ use warnings;
 
 use File::stat;
 use List::Util qw(sum);
+use POSIX qw(ceil);
 
 use CATS::BinaryFile;
 use CATS::Constants;
@@ -12,17 +13,17 @@ use CATS::DB;
 use CATS::Globals qw($cid $contest $is_jury $is_root $sid $t);
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
-use CATS::Output qw(auto_ext downloads_path downloads_url init_template url_f);
+use CATS::Output qw(downloads_path downloads_url init_template url_f);
 use CATS::Problem::Save;
 use CATS::Problem::Storage;
 use CATS::Problem::Tags;
+use CATS::Problem::Text;
 use CATS::Problem::Utils;
 use CATS::Settings;
 use CATS::StaticPages;
 use CATS::Testset;
 use CATS::Utils qw(url_function);
 use CATS::Verdicts;
-use CATS::Web qw(content_type headers not_found redirect);
 
 sub get_request_count {
     my ($this_contest_only, $pid) = @_;
@@ -38,18 +39,22 @@ sub get_request_count {
 
 sub problem_details_frame {
     my ($p) = @_;
-    init_template('problem_details.html.tt');
+    init_template($p, 'problem_details.html.tt');
     $is_jury && $p->{pid} or return;
     my $pr = $dbh->selectrow_hashref(q~
         SELECT
             P.title, P.lang, P.contest_id, P.author, P.last_modified_by, P.upload_date,
             P.run_method, P.save_input_prefix, P.save_answer_prefix, P.save_output_prefix,
-            P.time_limit, P.memory_limit, P.write_limit,
+            P.time_limit, P.memory_limit, P.write_limit, P.repo_path,
             L.time_limit AS overridden_time_limit,
             L.memory_limit AS overridden_memory_limit,
             L.write_limit as overridden_write_limit,
             C.title AS contest_name, A.team_name,
-            CP.id AS cpid, CP.testsets, CP.points_testsets, CP.tags
+            CP.id AS cpid, CP.testsets, CP.points_testsets, CP.tags,
+            (SELECT COUNT(*) FROM problem_snippets PS
+                WHERE PS.problem_id = P.id) AS snippets_declared,
+            (SELECT COUNT(*) FROM snippets S
+                WHERE S.problem_id = P.id AND S.contest_id = CP.contest_id) AS snippets_generated
         FROM problems P
         INNER JOIN contests C ON C.id = P.contest_id
         INNER JOIN contest_problems CP ON CP.problem_id = P.id AND CP.contest_id = ?
@@ -114,6 +119,7 @@ sub problem_details_frame {
         title_suffix => $pr->{title},
         href_modifier => url_f('users_edit', uid => $pr->{last_modified_by}),
         href_edit => url_f('problem_history_tree', pid => $p->{pid}, hb => $pr->{commit_sha}),
+        href_edit_xml => url_f('problem_history_edit', pid => $p->{pid}, hb => $pr->{commit_sha}, file => '*'),
         href_original_contest => url_function('problems', cid => $pr->{contest_id}, sid => $sid),
         href_download => url_f('problem_download', pid => $p->{pid}),
         href_git_package => url_f('problem_git_package', pid => $p->{pid}),
@@ -127,14 +133,15 @@ sub problem_details_frame {
         href_test_data => url_f('problem_test_data', pid => $p->{pid}),
         href_problem_limits => url_f('problem_limits', pid => $p->{pid}),
         href_tags => url_f('problem_select_tags', pid => $p->{pid}),
+        href_snippets => url_f('snippets', search => "problem_id=$p->{pid},contest_id=$cid"),
     );
     CATS::Problem::Utils::problem_submenu('problem_details', $p->{pid});
 }
 
 sub problem_download {
     my ($p) = @_;
-    my $pid = $p->{pid} or return not_found;
-    CATS::Problem::Utils::can_download_package or return not_found;
+    my $pid = $p->{pid} or return $p->not_found;
+    CATS::Problem::Utils::can_download_package or return $p->not_found;
     # If hash is non-empty, redirect to existing file.
     # Package size is supposed to be large enough to warrant a separate query.
     my ($hash, $status) = $dbh->selectrow_array(q~
@@ -143,7 +150,7 @@ sub problem_download {
         WHERE CP.contest_id = ? AND P.id = ?~, undef,
         $cid, $pid);
     defined $status && ($is_jury || $status != $cats::problem_st_hidden)
-        or return not_found;
+        or return $p->not_found;
     my $already_hashed = CATS::Problem::Utils::ensure_problem_hash($pid, \$hash, 1);
     my $fname = "pr/problem_$hash.zip";
     my $fpath = downloads_path . $fname;
@@ -153,33 +160,31 @@ sub problem_download {
             $pid);
         CATS::BinaryFile::save($fpath, $zip);
     }
-    redirect(downloads_url . $fname);
+    $p->redirect(downloads_url . $fname);
 }
 
 sub problem_git_package {
     my ($p) = @_;
     my $pid = $p->{pid};
     my $sha = $p->{sha};
-    $is_jury && $pid or return redirect url_f('contests');
+    $is_jury && $pid or return $p->redirect(url_f 'contests');
     my ($status) = $dbh->selectrow_array(qq~
         SELECT status FROM contest_problems
         WHERE contest_id = ? AND problem_id = ?~, undef,
         $cid, $pid) or return;
     undef $t;
     my ($fname, $tree_id) = CATS::Problem::Storage::get_repo_archive($pid, $sha);
-    content_type('application/zip');
-    headers(
-        'Accept-Ranges' => 'bytes',
-        'Content-Length' => stat($fname)->size,
-        'Content-Disposition' => "attachment; filename=problem_$tree_id.zip",
-    );
     CATS::BinaryFile::load($fname, \my $content) or die "open '$fname' failed: $!";
-    CATS::Web::print($content);
+    $p->print_file(
+        content_type => 'application/zip',
+        file_name => "problem_$tree_id.zip",
+        len => stat($fname)->size,
+        content => $content);
 }
 
 sub problem_select_testsets_frame {
     my ($p) = @_;
-    init_template('problem_select_testsets.html.tt');
+    init_template($p, 'problem_select_testsets.html.tt');
     $p->{pid} && $is_jury or return;
     my $problem = $dbh->selectrow_hashref(q~
         SELECT P.id, P.title, CP.id AS cpid, CP.testsets, CP.points_testsets
@@ -204,7 +209,7 @@ sub problem_select_testsets_frame {
             map($param_to_list->($_), qw(testsets points_testsets)), $problem->{cpid});
         $dbh->commit;
         CATS::StaticPages::invalidate_problem_text(cid => $cid, cpid => $problem->{cpid});
-        return redirect url_f('problems') if $p->{from_problems};
+        return $p->redirect(url_f 'problems') if $p->{from_problems};
         msg(1141, $problem->{title});
     }
 
@@ -231,7 +236,7 @@ sub problem_select_testsets_frame {
 
 sub problem_limits_frame {
     my ($p) = @_;
-    init_template('problem_limits.html.tt');
+    init_template($p, 'problem_limits.html.tt');
     $p->{pid} && $is_jury or return;
 
     my $original_limits_str = join ', ', map "P.$_", @cats::limits_fields;
@@ -305,7 +310,7 @@ sub problem_limits_frame {
 
 sub problem_test_data_frame {
     my ($p) = @_;
-    init_template('problem_test_data.html.tt');
+    init_template($p, 'problem_test_data.html.tt');
     $p->{pid} && $is_jury or return;
 
     if ($p->{clear_test_data}) {
@@ -316,6 +321,12 @@ sub problem_test_data_frame {
         $dbh->do(q~
             UPDATE tests T SET T.out_file = NULL, T.out_file_size = NULL
             WHERE T.out_file_size IS NOT NULL AND T.problem_id = ?~, undef,
+            $p->{pid});
+        $dbh->commit;
+    }
+    if ($p->{clear_input_hashes}) {
+        $dbh->do(q~
+            UPDATE tests T SET T.in_file_hash = NULL WHERE T.problem_id = ?~, undef,
             $p->{pid});
         $dbh->commit;
     }
@@ -353,7 +364,7 @@ sub problem_test_data_frame {
 
 sub problem_select_tags_frame {
     my ($p) = @_;
-    init_template('problem_select_tags.html.tt');
+    init_template($p, 'problem_select_tags.html.tt');
     $p->{pid} && $is_jury or return;
 
     my $problem = $dbh->selectrow_hashref(q~
@@ -373,7 +384,7 @@ sub problem_select_tags_frame {
                 UPDATE contest_problems SET tags = ? WHERE id = ?~, undef,
                 $p->{tags}, $problem->{cpid});
             $dbh->commit;
-            return redirect url_f('problems') if $p->{from_problems};
+            return $p->redirect(url_f 'problems') if $p->{from_problems};
             msg(1142, $problem->{title});
         }
         $problem->{tags} = $p->{tags};
@@ -383,8 +394,105 @@ sub problem_select_tags_frame {
         problem => $problem,
         href_action => url_f('problem_select_tags',
             from_problems => $p->{from_problems}, pid => $p->{pid}),
+        available_tags => CATS::Problem::Text::get_tags($p->{pid}),
     );
     CATS::Problem::Utils::problem_submenu('problem_select_tags', $p->{pid});
+}
+
+sub _matrix {
+    my ($data, $col_count) = @_;
+    my $matrix = [];
+    my $height = ceil(@$data / $col_count);
+    my $i = 0;
+    push @{$matrix->[$i++ % $height]}, $_ for @$data;
+    $matrix;
+}
+
+sub _save_contest_problem_des {
+    my ($p, $problem, $des) = @_;
+    $p->{save} or return;
+    my %allow_index;
+    @allow_index{@{$p->{allow}}} = undef;
+    my (@delete_des, @insert_des);
+    for (@$des) {
+        my $new_allow = exists $allow_index{$_->{id}};
+        push @delete_des, $_->{id} if $_->{allow} && !$new_allow;
+        push @insert_des, $_->{id} if !$_->{allow} && $new_allow;
+        $_->{allow} = $new_allow;
+    }
+    @delete_des || @insert_des or return;
+    if (@delete_des) {
+        $dbh->do(_u $sql->delete('contest_problem_des',
+            { cp_id => $problem->{cpid}, de_id => \@delete_des }));
+    }
+    if (@insert_des) {
+        my $sth = $dbh->prepare(q~
+            INSERT INTO contest_problem_des(cp_id, de_id) VALUES (?, ?)~);
+        $sth->execute($problem->{cpid}, $_) for @insert_des;
+    }
+    $dbh->commit;
+    msg(1169, scalar @delete_des, scalar @insert_des);
+}
+
+sub problem_des_frame {
+    my ($p) = @_;
+
+    init_template($p, 'problem_des.html.tt');
+    my $lv = CATS::ListView->new(name => 'problem_des', array_name => 'problem_sources');
+
+    $p->{pid} && $is_jury or return;
+
+    my $problem = $dbh->selectrow_hashref(q~
+        SELECT P.id, P.title, P.commit_sha, CP.id AS cpid, CP.tags
+        FROM problems P INNER JOIN contest_problems CP ON P.id = CP.problem_id
+        WHERE P.id = ? AND CP.contest_id = ?~, undef,
+        $p->{pid}, $cid) or return;
+    $problem->{commit_sha} = eval { CATS::Problem::Storage::get_latest_master_sha($p->{pid}); } || 'error';
+
+    my $des = $dbh->selectall_arrayref(q~
+        SELECT D.id, D.code, D.description, D.in_contests,
+            (SELECT 1 FROM contest_problem_des CPD WHERE CPD.cp_id = ? AND CPD.de_id = D.id) AS allow
+        FROM default_de D
+        ORDER BY D.code~, { Slice => {} },
+        $problem->{cpid}) or return;
+    _save_contest_problem_des($p, $problem, $des);
+
+    $lv->define_columns(url_f('problem_des', pid => $p->{pid}), 0, 0, [
+        { caption => res_str(642), order_by => 'stype', width => '10%' },
+        { caption => res_str(601), order_by => 'name', width => '20%' },
+        { caption => res_str(674), order_by => 'fname', width => '20%' },
+        { caption => res_str(619), order_by => 'code', width => '20%' },
+        { caption => res_str(641), order_by => 'description', width => '20%' },
+    ]);
+    $lv->define_db_searches([qw(stype name fname D.id code description)]);
+
+    my $c = $dbh->prepare(q~
+        SELECT PS.stype, PS.name, PS.fname, D.id, D.code, D.description
+        FROM problem_sources PS INNER JOIN default_de D ON PS.de_id = D.id
+        WHERE PS.problem_id = ? ~ . $lv->maybe_where_cond . $lv->order_by);
+    $c->execute($p->{pid}, $lv->where_params);
+
+    my $fetch_record = sub {
+        my $c = $_[0]->fetchrow_hashref or return ();
+        return (
+            %$c,
+            type_name => $cats::source_module_names{$c->{stype}},
+            href_edit => url_f('problem_history_edit',
+                pid => $p->{pid}, file => $c->{fname}, hb => $problem->{commit_sha}),
+        );
+    };
+
+    $lv->attach(url_f('problem_des', pid => $p->{pid}), $fetch_record, $c);
+    $c->finish;
+
+    $t->param(
+        problem_title => $problem->{title},
+        title_suffix => $problem->{title},
+        problem => $problem,
+        des => $des,
+        de_matrix => _matrix($des, 3),
+    );
+    CATS::Problem::Utils::problem_submenu('problem_des', $p->{pid});
 }
 
 sub problem_link_frame {
@@ -398,8 +506,9 @@ sub problem_link_frame {
         WHERE P.id = ? AND CP.contest_id = ?~, undef,
         $p->{pid}, $cid) or return;
 
+    init_template($p, 'problem_link.html.tt');
     $p->{listview} = my $lv = CATS::ListView->new(
-        name => 'problem_link', template => 'problem_link.html.tt', array_name => 'contests');
+        name => 'problem_link', array_name => 'contests');
 
     CATS::Problem::Utils::problem_submenu('problem_link', $p->{pid});
     my $href_action = url_f('problem_link', pid => $p->{pid});
@@ -407,7 +516,6 @@ sub problem_link_frame {
         problem_title => $problem->{title},
         title_suffix => $problem->{title},
         problem => $problem,
-        problem_codes => \@cats::problem_codes,
         href_action => $href_action,
     );
 

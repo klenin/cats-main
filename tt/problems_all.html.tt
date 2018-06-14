@@ -8,11 +8,11 @@
 <tr class="[% loop.parity() %]">
 <td>
 [% IF user.is_jury && link %]<input type="checkbox" name="problems_selection" value="[% p.problem_id %]" [% IF p.linked %]disabled[% END %] />[% END %]
-<a href="[% p.href_view_problem %]" target="_blank">[% p.problem_name | html %]</a>
+<a href="[% p.href_view_problem %]" target="_blank">[% p.title | html %]</a>
 [% IF p.href_problem_history %]&nbsp;[<a href="[% p.href_problem_history %]">[% capt.problem_history %]</a>][% END %]
 [% IF p.href_download %]&nbsp;[<a href="[% p.href_download %]">[% capt.package %]</a>][% END %]
 </td>
-<td><a href="[% p.href_view_contest %]">[% p.contest_name | html %]</a></td>
+<td><a href="[% p.href_view_contest %]">[% p.contest_title | html %]</a></td>
 [% IF visible_cols.Ok %]<td class="center">[% p.counts %]</td>[% END %]
 [% IF visible_cols.Kw %]<td>[% p.keywords %]</td>[% END %]
 </tr>
@@ -22,13 +22,20 @@
 <br>
 [% IF user.is_jury && link %]
 [% capt.problem_code %]:
-<select name="code">
-[% FOREACH c IN unused_codes %]<option name="[% c %]">[% c %]</option>[% END %]
-</select>
+<span class="pcode">
+<input name="code" size="3" maxlength="3" onfocus="choose_code(this)" />
+</span>
 <br/><br/>
 [% IF move %]<input type="hidden" name="move" value="1" />[% END %]
 <button type="submit" name="link_save" value="1" class="button">[% move ? capt.move : capt.link %]</button>
 <button type="submit" name="link_cancel" value="1" class="button">[% capt.cancel %]</button>
+
+<script type="text/javascript" src="js/lib/jquery.min.js"></script>
+<script type="text/javascript">
+var used_codes = { [% FOREACH u IN used_codes %]"[% u %]": 1[% ', ' UNLESS loop.last; END %] };
+[% PROCESS includes/select_problem_code.tti %]
+</script>
+
 [% END %]
 </form>
 [% PROCESS includes/menu_end.tti %]

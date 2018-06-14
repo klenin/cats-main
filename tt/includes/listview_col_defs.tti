@@ -1,6 +1,6 @@
 <tr class="col_defs">
 [% IF sel_col %]<th style="width: 1%;">&nbsp;</th>[% END %]
-[% FOREACH col_def IN col_defs; NEXT UNLESS col_def.visible %]
+[% FOREACH col_def IN col_defs; NEXT IF !col_def.visible || !col_def.order_by %]
 <th[% IF col_def.width %] style="width: [% col_def.width %];"[% END %]>
   <a href="[% col_def.href_sort %]">[% col_def.caption -%]
 [% IF col_def.sort_up %]&nbsp;&#x25B2;[% END -%]

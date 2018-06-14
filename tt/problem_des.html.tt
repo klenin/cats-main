@@ -1,0 +1,38 @@
+[% PROCESS includes/menu_begin.tti %]
+
+[% capt.sources %]:
+
+[% PROCESS includes/listview_header.tti %]
+</form>
+<table class="listview highlight bordered">
+[% PROCESS includes/listview_col_defs.tti %]
+[% FOREACH ps IN problem_sources %]
+  <tr class="[% loop.parity() %]">
+    <td>[% ps.type_name %]</td>
+    <td>[% ps.name %]</td>
+    <td>[% href(ps.href_edit, ps.fname) %]</td>
+    <td>[% ps.code %]</td>
+    <td>[% ps.description %]</td>
+  </tr>
+[% END %]
+</table>
+<br/>
+[% capt.allow_des %]:
+<form method="post" enctype="multipart/form-data" action="[% href_action %]">
+<table class="highlight bordered">
+[% FOREACH row IN de_matrix %]
+<tr>
+  [% FOREACH de IN row %]
+  <td><label>
+    <input type="checkbox" value="[% de.id %]" name="allow"[% ' checked="checked"' IF de.allow %] />
+    [% de.code %] [% de.description %]
+  </label></td>
+  [% END %]
+</tr>
+[% END %]
+</table>
+<br/>
+<button type="submit" value="1" name="save" class="button">[% capt.save %]</button>
+</form>
+
+[% PROCESS includes/menu_end.tti %]

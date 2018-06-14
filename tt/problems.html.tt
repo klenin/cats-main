@@ -6,6 +6,8 @@
   td.problem_radio { width: 3%; height: 100%; padding: 0; margin: 0; }
   td.problem_radio label { display: block; width: 100%; height: 100%; vertical-align: middle; }
   td.problem_radio label a { vertical-align: middle; }
+  span.pcode input { width: 2em; }
+  input[type=color] { width: 1.5em; padding: 0; margin: 0; border: 0; background-color: inherit; }
 </style>
 [%- END %]
 [% PROCESS includes/menu_begin.tti %]
@@ -14,45 +16,45 @@
 [% IF editable %]
 <script type="text/javascript">
 function getSelectedButton(button) {
-    if (button == null) return -1;
-    if (button.checked) return button.value;
-    for (var i = 0; i < button.length; i++)
-        if (button[i].checked)
-            return button[i].value;
-    return -1; //no button selected
+  if (button == null) return -1;
+  if (button.checked) return button.value;
+  for (var i = 0; i < button.length; i++)
+    if (button[i].checked)
+      return button[i].value;
+  return -1; //no button selected
 }
 
 var a = [];
 [% FOREACH p IN problems %]
 a[[% p.problem_id %]] = [
-  "[% p.problem_name | html %]", "[% p.href_delete %]", "[% p.href_replace %]",
+   "[% p.title | html %]", "[% p.href_delete %]", "[% p.href_replace %]",
   "[% p.href_change_status %]", "[% p.href_change_code %]"];
 [% END %]
 
 function d() {
-    var v = getSelectedButton(document.problems_form.problem_id);
-    if (v < 0) {
-        alert('[% capt.no_problem_delete %]');
-        return;
-    }
-    if (confirm("[% capt.want_to_delete %] '" + a[v][0] + "'?"))
-        document.location = a[v][1];
+  var v = getSelectedButton(document.problems_form.problem_id);
+  if (v < 0) {
+    alert('[% capt.no_problem_delete %]');
+    return;
+  }
+  if (confirm("[% capt.want_to_delete %] '" + a[v][0] + "'?"))
+    document.location = a[v][1];
 }
 
 function r() {
-    var v = getSelectedButton(document.problems_form.problem_id);
-    if (v < 0)
-        alert('[% capt.no_problem_replace %]');
-    else
-        document.location = a[v][2];
+  var v = getSelectedButton(document.problems_form.problem_id);
+  if (v < 0)
+    alert('[% capt.no_problem_replace %]');
+  else
+    document.location = a[v][2];
 }
 
 function chg_status(st_sel, pid) {
-    document.location = a[pid][3] + '&status=' + st_sel.value;
+  document.location = a[pid][3] + '&status=' + st_sel.value;
 }
 
 function chg_code(st_sel, pid) {
-    document.location = a[pid][4] + '&code=' + st_sel.value;
+  document.location = a[pid][4] + '&code=' + st_sel.value;
 }
 </script>
 [% END %]
@@ -71,8 +73,13 @@ function chg_code(st_sel, pid) {
 </textarea>
 [% END %]
 
-[% IF solution_submitted %]
 [% IF de_name; capt.dev_env_detected; ": '"; de_name | html %]'.<br/>[% END %]
+[% IF de_not_allowed; capt.de_not_allowed %]
+<ul>
+  [% FOREACH de IN de_not_allowed; "<li>$de.description</li>"; END %]
+</ul>
+[% END %]
+[% IF solution_submitted %]
 [% href(href_run_details, capt.view_results) %].
 <hr/>
 [% END %]
@@ -102,25 +109,32 @@ function chg_code(st_sel, pid) {
     [%~ IF p.href_problem_details %]<a href="[% p.href_problem_details %]" class="icon edit"></a>[% END %]</label>
 </td>[% END %]
 <td>
-    [% IF editable %]
-    [% IF p.code ~%]
-      <select onchange="chg_code(this, [% p.problem_id %])">
-      [%~ FOREACH pc IN problem_codes; option(pc, pc, pc == p.code); END ~%]
-      </select> [% END %]<a href="[% p.href_view_problem %]" target="_blank">
-    [% ELSE ~%]
-      <a href="[% p.href_view_problem %]" target="_blank">[% IF p.code; p.code %] - [% END %][% END %][% p.problem_name | html %]</a>
-    [% IF p.problem_langs.size %][[% FOREACH pl IN p.problem_langs; href(pl.href, pl.name); ' ' UNLESS loop.last; END %]][% END %]
-    [% IF p.href_explanation %]&nbsp;[<a href="[% p.href_explanation %]" target="_blank">[% capt.explanation %]</a>][% END %]
-    [% IF p.show_packages %]&nbsp;[<a href="[% p.href_download %]">[% capt.package %]</a>][% END %]
+  [% IF editable %]
+    [% IF visible_cols.Cl %]<input type="color" value="[% p.color %]" onchange="chg_color(this, [% p.cpid %])"/>[% END %]
+    [% IF p.code.defined ~%]
+    <span class="pcode">
+      <input type="text" maxlength="3" class="bordered" value="[% p.code %]"
+        onchange="chg_code(this, [% p.problem_id %])" onfocus="choose_code(this)"/>
+    </span>
+    [% END %]
+    <a href="[% p.href_view_problem %]" target="_blank">
+  [% ELSE ~%]
+    <a href="[% p.href_view_problem %]" target="_blank">
+    [% IF p.color %]<span class="problem_color" style="background-color: [% p.color | html %];"></span>[% END %]
+    [% IF p.code; p.code %] - [% END %]
+  [% END %][% p.title | html %]</a>
+  [% IF p.problem_langs.size %][[% FOREACH pl IN p.problem_langs; href(pl.href, pl.name); ' ' UNLESS loop.last; END %]][% END %]
+  [% IF p.href_explanation %]&nbsp;[<a href="[% p.href_explanation %]" target="_blank">[% capt.explanation %]</a>][% END %]
+  [% IF p.show_packages %]&nbsp;[<a href="[% p.href_download %]">[% capt.package %]</a>][% END %]
 </td>
 [% IF editable %]
 <td>
-    <select onchange="chg_status(this, [% p.problem_id %])">
-    [%~ FOREACH sl IN status_list; option(sl.id, sl.name, sl.id == p.status); END ~%]
-    </select>
-    [%- IF p.is_linked %] [<a href="[% p.href_original_contest %]" title="[% p.contest_name %]">L</a>][% END %]
-    [%- IF p.usage_count %] [<a href="[% p.href_usage %]" title="[% capt.used_in %]">[% p.usage_count %]</a>][% END %]
-    [% IF p.remote_url %] [<a href="[% p.remote_url %]" title="[% p.remote_url %]">R</a>][% END %]
+  <select onchange="chg_status(this, [% p.problem_id %])">
+  [%~ FOREACH sl IN status_list; option(sl.id, sl.name, sl.id == p.status); END ~%]
+  </select>
+  [%- IF p.is_linked %] [<a href="[% p.href_original_contest %]" title="[% p.contest_title %]">L</a>][% END %]
+  [%- IF p.usage_count %] [<a href="[% p.href_usage %]" title="[% capt.used_in %]">[% p.usage_count %]</a>][% END %]
+  [% IF p.remote_url %] [<a href="[% p.remote_url %]" title="[% p.remote_url %]">R</a>][% END %]
 </td>
 [% IF visible_cols.Ts -%]
 <td><a href="[% p.href_select_testsets %]">[% p.testsets %]</a> ([% p.test_count %])
@@ -136,20 +150,21 @@ function chg_code(st_sel, pid) {
 [%- END %]
 [% IF visible_cols.Mu %]<td>[% p.last_modified_by %]</td>[% END %]
 [% IF visible_cols.Mt %]<td class="num">[% p.upload_date %]</td>[% END %]
+[% IF visible_cols.Ad %]<td>[% href(p.href_allow_des, p.allow_des) %]</td>[% END %]
 [% END %]
-[% IF contest.is_practice %]<td>[% p.contest_name | html %]</td>[% END %]
+[% IF contest.is_practice %]<td>[% p.contest_title | html %]</td>[% END %]
 [% IF (is_user || contest.is_practice) && visible_cols.Vc %]
-  <td class="problem_req_count">
-    <div>
-    <div class="last_verdict [% 'run_details_' _ p.last_verdict IF p.last_verdict %]">
-      [%- maybe_href(p.href_last_request, p.last_verdict, capt.verdicts.item(p.last_verdict)) -%]
-    </div>
-    [%- IF p.href_problem_console %]<a href="[% p.href_problem_console %]">[% END -%]
-    [% p.accept_count %] / [% p.wa_count %] / [% p.tle_count %]
-    [%- IF p.href_problem_console %]</a>[% END -%]
-    [% IF p.judges_installed %][[% p.judges_installed %]][% END -%]
-    </div>
-  </td>
+<td class="problem_req_count">
+  <div>
+  <div class="last_verdict [% 'run_details_' _ p.last_verdict IF p.last_verdict %]">
+    [%- maybe_href(p.href_last_request, p.last_verdict, capt.verdicts.item(p.last_verdict)) -%]
+  </div>
+  [%- IF p.href_problem_console %]<a href="[% p.href_problem_console %]">[% END -%]
+  [% p.accept_count %] / [% p.wa_count %] / [% p.tle_count %]
+  [%- IF p.href_problem_console %]</a>[% END -%]
+  [% IF p.judges_installed %][[% p.judges_installed %]][% END -%]
+  </div>
+</td>
 [% END %]
 </tr>
 [% END %]
@@ -159,7 +174,7 @@ function chg_code(st_sel, pid) {
 <div class="problem_submit">
   <p><label for="source">[% capt.solution_file %]:</label><input type="file" id="source" name="source" class="file" size="25"/></p>
   <p><label for="de_id">[% capt.dev_env %]:</label><select name="de_id" id="de_id">
-    [% FOREACH de IN de_list; option(de.de_id, de.de_name); END %]
+    [% FOREACH de IN de_list; option(de.de_id, de.de_name, de_selected); END %]
     </select>
   </p>
   <p><label for="source_text">[% capt.solution_text %]:</label><br/>
@@ -185,6 +200,7 @@ function chg_code(st_sel, pid) {
 </div>
 <div class="problem_submit">
   <p><label for="remote_url">[% capt.problem_url %]:</label><input type="text" id="remote_url" name="remote_url" size="30"/></p>
+  <p><label for="repo_path">[% capt.repo_path %]:</label><input type="text" id="repo_path" name="repo_path" size="30"/></p>
   <p><button type="submit" name="add_remote" value="1" class="button">[% capt.add_new %]</button></p>
 </div>
 [% END %]
@@ -197,7 +213,7 @@ function chg_code(st_sel, pid) {
 [%- END %]
 [% IF can_participate_virtual -%]
 <button type="submit" name="participate_virtual" value="1" class="button"
-    [% IF user.is_virtual %]onclick="return confirm('[% capt.virtual_warning %]')"[% END %]>
+  [% IF user.is_virtual %]onclick="return confirm('[% capt.virtual_warning %]')"[% END %]>
 [%- capt.participate_virtually -%]
 </button>
 [%- END %]
@@ -222,6 +238,14 @@ function chg_code(st_sel, pid) {
     }
   });
 })();
+
+var used_codes = { [% FOREACH p IN problems %]"[%p.code %]": 1[% ', ' UNLESS loop.last; END %] };
+[% PROCESS includes/select_problem_code.tti %]
+
+function chg_color(input, cpid) {
+    $.post('[% href_set_problem_color %]', { cpid: cpid, color: input.value });
+}
+
 </script>
 [% END %]
 [% PROCESS includes/menu_end.tti %]

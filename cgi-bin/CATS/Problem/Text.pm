@@ -11,7 +11,7 @@ use CATS::Config qw(cats_dir);
 use CATS::DB;
 use CATS::Globals qw($cid $contest $is_jury $is_root $t $uid);
 use CATS::Messages qw(res_str);
-use CATS::Output qw(auto_ext downloads_path downloads_url init_template);
+use CATS::Output qw(downloads_path downloads_url init_template);
 use CATS::Problem::Spell;
 use CATS::Problem::Tags;
 use CATS::Problem::Utils;
@@ -20,8 +20,9 @@ use CATS::TeX::Lite;
 use CATS::Time;
 use CATS::Utils qw(url_function);
 
-my ($current_pid, $html_code, $spellchecker, $text_span, $tags, $skip_depth);
+my ($current_pid, $html_code, $spellchecker, $text_span, $tags, $skip_depth, $has_snippets);
 my $wrapper = 'cats-wrapper';
+my @parsed_fields = qw(statement pconstraints input_format output_format explanation);
 
 sub process_text {
     if ($spellchecker) {
@@ -40,35 +41,7 @@ sub process_text {
     $text_span = '';
 }
 
-my $no_spellcheck_tags = { code => 1, script => 1, svg => 1, style => 1 };
-
-sub start_element {
-    my ($el, %atts) = @_;
-
-    process_text;
-    if ($spellchecker) {
-        my $lang = $atts{lang};
-        # Do not spellcheck code unless explicitly requested.
-        $lang //= 'code' if $no_spellcheck_tags->{lc($el)};
-        $spellchecker->push_lang($lang, $atts{'cats-dict'});
-    }
-    $html_code .= "<$el";
-    for my $name (keys %atts) {
-        my $attrib = $atts{$name};
-        $html_code .= qq~ $name="$attrib"~;
-    }
-    $html_code .= '>';
-}
-
-sub end_element {
-    my ($el) = @_;
-    process_text;
-    return if $el eq $wrapper;
-    $spellchecker->pop_lang if $spellchecker;
-    $html_code .= "</$el>";
-}
-
-sub ch_1 {
+sub _on_char {
     return if $skip_depth;
     my ($p, $text) = @_;
     # Join consecutive text elements.
@@ -117,7 +90,9 @@ sub save_attachment {
     return downloads_url . $fname;
 }
 
-sub sh_1 {
+my $no_spellcheck_tags = { code => 1, script => 1, svg => 1, style => 1 };
+
+sub _on_start {
     my ($p, $el, %atts) = @_;
     return if $el eq $wrapper;
 
@@ -132,6 +107,7 @@ sub sh_1 {
             return;
         }
     }
+    $has_snippets = 1 if $atts{'cats-snippet'};
 
     if ($el eq 'img' && $atts{picture}) {
         $atts{src} = download_image($atts{picture});
@@ -145,33 +121,68 @@ sub sh_1 {
         $atts{data} = save_attachment($atts{attachment}, 1);
         delete $atts{attachment};
     }
-    start_element($el, %atts);
+
+    process_text;
+    if ($spellchecker) {
+        my $lang = $atts{lang};
+        # Do not spellcheck code unless explicitly requested.
+        $lang //= 'code' if $no_spellcheck_tags->{lc($el)};
+        $spellchecker->push_lang($lang, $atts{'cats-dict'});
+    }
+    $html_code .= "<$el";
+    for my $name (keys %atts) {
+        my $attrib = $atts{$name};
+        $html_code .= qq~ $name="$attrib"~;
+    }
+    $html_code .= '>';
 }
 
-sub eh_1 {
+sub _on_end {
     my ($p, $el) = @_;
     if ($skip_depth) {
         $skip_depth--;
         return;
     }
-    end_element($el);
+    process_text;
+    return if $el eq $wrapper;
+    $spellchecker->pop_lang if $spellchecker;
+    $html_code .= "</$el>";
 }
 
-sub parse {
-    my $xml_patch = shift;
+sub _parse {
+    my ($xml_patch) = @_;
     my $parser = XML::Parser::Expat->new;
 
     $html_code = '';
 
-    $parser->setHandlers(
-        Start => \&sh_1,
-        End   => \&eh_1,
-        Char  => \&ch_1);
+    $parser->setHandlers(Start => \&_on_start, End => \&_on_end, Char => \&_on_char);
 
     # XML parser requires all text to be inside of top-level tag.
-    $parser->parse("<$wrapper>$xml_patch</$wrapper>");
+    eval { $parser->parse("<$wrapper>$xml_patch</$wrapper>"); 1; } or return $@;
     $skip_depth and die;
-    return $html_code;
+    $html_code;
+}
+
+sub get_tags {
+    my ($pid) = @_;
+    $pid && $is_root or return [];
+
+    my $parser = XML::Parser::Expat->new;
+
+    my $problem = $dbh->selectrow_hashref(
+        _u $sql->select('problems', \@parsed_fields, { id => $pid })) or return;
+
+    my %tags;
+    $parser->setHandlers(Start => sub {
+        my ($p, $el, %attrs) = @_;
+        my $cond = $attrs{'cats-if'} or return;
+        my $pc = CATS::Problem::Tags::parse_tag_condition($cond, sub {});
+        $tags{$_} = 1 for keys %$pc;
+    });
+
+    eval { $parser->parse("<$wrapper>$problem->{$_}</$wrapper>"); } for @parsed_fields;
+
+    [ sort keys %tags ];
 }
 
 sub contest_visible {
@@ -237,10 +248,10 @@ sub choose_lang {
 sub problem_text {
     my ($p) = @_;
     my ($show, $explain, $is_jury_in_contest) = contest_visible($p);
-    $show or return CATS::Web::not_found;
+    $show or return $p->not_found;
     $explain = $explain && $p->{explain};
 
-    init_template(auto_ext('problem_text'));
+    init_template($p, 'problem_text');
 
     my (@problems, $show_points);
 
@@ -252,7 +263,7 @@ sub problem_text {
     elsif (my $cpid = $p->{cpid}) {
         my $pr = $dbh->selectrow_hashref(qq~
             SELECT
-                CP.id AS cpid, CP.contest_id, CP.problem_id, CP.code,
+                CP.id AS cpid, CP.contest_id, CP.problem_id, CP.code, CP.color,
                 CP.testsets, CP.points_testsets, CP.max_points, CP.tags, CP.status,
                 C.rules, $overridden_limits_str
             FROM contests C
@@ -281,6 +292,7 @@ sub problem_text {
 
     $spellchecker = $is_jury_in_contest && !$p->{nospell} ? CATS::Problem::Spell->new : undef;
 
+    $has_snippets = 0;
     my $need_commit = 0;
     for my $problem (@problems) {
         $current_pid = $problem->{problem_id};
@@ -298,7 +310,6 @@ sub problem_text {
                 $problem->{problem_id}) or next;
             $problem = { %$problem, %$p_orig };
         }
-
         $problem->{tags} = $p->{tags} if $is_jury_in_contest && defined $p->{tags};
         $problem->{parsed_tags} = $tags = CATS::Problem::Tags::parse_tag_condition($problem->{tags}, sub {});
         $problem->{lang} = choose_lang($problem, $p, $is_jury_in_contest);
@@ -328,16 +339,19 @@ sub problem_text {
             FROM samples WHERE problem_id = ? ORDER BY rank~, { Slice => {} },
             $problem->{problem_id});
 
-        $problem->{href_problem_list} =
-            ($CATS::StaticPages::is_static_page ? '../' : '') .
+        my $static_path = $CATS::StaticPages::is_static_page ? '../' : '';
+
+        $problem->{href_problem_list} = $static_path .
             url_function('problems', cid => $problem->{contest_id} || $problem->{orig_contest_id});
+        $problem->{href_get_snippets} = $static_path .
+            url_function('get_snippets', cpid => $problem->{cpid});
 
         $spellchecker->push_lang($problem->{lang}) if $spellchecker;
-        for my $field_name (qw(statement pconstraints input_format output_format explanation)) {
+        for my $field_name (@parsed_fields) {
             for ($problem->{$field_name}) {
                 defined $_ or next;
                 $text_span = '';
-                $_ = $_ eq '' ? undef : parse($_) unless $is_root && $p->{raw};
+                $_ = $_ eq '' ? undef : _parse($_) unless $is_root && $p->{raw};
                 CATS::TeX::Lite::convert_all($_);
                 s/(\s|~)(:?-){2,3}(?!-)/($1 ? '&nbsp;' : '') . '&#8212;'/ge; # em-dash
             }
@@ -352,6 +366,7 @@ sub problem_text {
         problems => \@problems,
         tex_styles => CATS::TeX::Lite::styles(),
         mathjax => !$p->{nomath},
+        has_snippets => $has_snippets,
     );
 }
 

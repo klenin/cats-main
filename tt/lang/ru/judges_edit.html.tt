@@ -2,6 +2,7 @@
   capt.import({
     judge_name => 'Идентификатор судьи',
     account_name => 'Логин пользователя',
+    contests => 'турниры',
     pin_mode => 'Режим привязки',
     dev_envs => 'Среды разработки',
   })

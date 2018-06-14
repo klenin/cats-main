@@ -12,10 +12,10 @@
   <meta http-equiv="Refresh" content="[% refresh %]">
 [%~ END %]
 [% IF printable -%]
-<style type="text/css">[% INSERT 'docs/std/main.css' %]</style>
-<!--[if IE]><style type="text/css">[% INSERT 'docs/std/ie.css' %]</style><![endif]-->
+<style type="text/css">[% INSERT 'css/main.css' %]</style>
+<!--[if IE]><style type="text/css">[% INSERT 'css/ie.css' %]</style><![endif]-->
 [%- ELSE -%]
-<link rel="stylesheet" type="text/css" href="docs/std/main.css">
-<!--[if IE]><link rel="stylesheet" type="text/css" href="docs/std/ie.css"><![endif]-->
+<link rel="stylesheet" type="text/css" href="css/main.css">
+<!--[if IE]><link rel="stylesheet" type="text/css" href="css/ie.css"><![endif]-->
 [%- END %]
 [%- extra_head -%]

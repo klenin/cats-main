@@ -14,7 +14,8 @@ use CATS::RankTable;
 use CATS::Time;
 use CATS::Utils qw(encodings source_encodings url_function);
 use CATS::Verdicts;
-use CATS::Web qw(encoding_param param url_param);
+use CATS::Web qw(param);
+use CATS::Request;
 
 use Exporter qw(import);
 our @EXPORT_OK = qw(
@@ -104,8 +105,8 @@ sub get_req_details {
     @result;
 }
 
-sub get_nearby_attempt {
-    my ($si, $prevnext, $cmp, $ord, $diff, $extra_params) = @_;
+sub _get_nearby_attempt {
+    my ($p, $si, $prevnext, $cmp, $ord, $diff, $extra_params) = @_;
     # TODO: Сheck neighbour's contest to ensure correct access privileges.
     my $na = $dbh->selectrow_hashref(qq~
         SELECT id, submit_time FROM reqs
@@ -119,18 +120,17 @@ sub get_nearby_attempt {
         my ($n_date, $n_time) = /^(\d+\.\d+\.\d+\s+)(.*)$/;
         $si->{"${prevnext}_attempt_time"} = $si->{submit_time} =~ /^$n_date/ ? $n_time : $_;
     }
-    my $f = url_param('f') || 'run_log';
-    my @p = $extra_params ? @$extra_params : ();
-    if ($f eq 'diff_runs') {
+    my @ep = $extra_params ? @$extra_params : ();
+    if ($p->{f} eq 'diff_runs') {
         for (1..2) {
-            my $r = url_param("r$_") || 0;
-            push @p, "r$_" => ($r == $si->{req_id} ? $na->{id} : $r);
+            my $r = $p->{"r$_"} // 0;
+            push @ep, "r$_" => ($r == $si->{req_id} ? $na->{id} : $r);
         }
     }
     else {
-        push @p, (rid => $na->{id});
+        push @ep, (rid => $na->{id});
     }
-    $si->{"href_${prevnext}_attempt"} = url_f($f, @p);
+    $si->{"href_${prevnext}_attempt"} = url_f($p->{f}, @ep);
     $si->{href_diff_runs} = url_f('diff_runs', r1 => $na->{id}, r2 => $si->{req_id}) if $diff && $uid;
 }
 
@@ -148,14 +148,14 @@ sub _get_user_details {
 # Load information about one or several runs.
 # Parameters: request_id, may be either scalar or array ref.
 sub get_sources_info {
-    my %p = @_;
-    my $rid = $p{request_id} or return;
+    my ($p, %opts) = @_;
+    my $rid = $opts{request_id} or return;
 
     my @req_ids = ref $rid eq 'ARRAY' ? @$rid : ($rid);
     @req_ids = map +$_, grep $_ && /^\d+$/, @req_ids or return;
 
-    my @src = $p{get_source} ? qw(S.src DE.syntax DE.err_regexp) : ();
-    my @pc_sql = $p{partial_checker} ? ( CATS::RankTable::partial_checker_sql() ) : ();
+    my @src = $opts{get_source} ? qw(S.src DE.syntax DE.err_regexp) : ();
+    my @pc_sql = $opts{partial_checker} ? ( CATS::RankTable::partial_checker_sql() ) : ();
 
     my @limits = map { my $l = $_; map "$_.$l AS @{[$_]}_$l", qw(lr lcp p) } @cats::limits_fields;
 
@@ -216,9 +216,9 @@ sub get_sources_info {
     my %user_cache;
     my $user_cached = sub { $user_cache{$_[0]} //= _get_user_details($_[0]) };
 
-    my $official = $p{get_source} && CATS::Contest::current_official;
+    my $official = $opts{get_source} && CATS::Contest::current_official;
     $official = 0 if $official && $is_jury_cached->($official->{id});
-    my $se = encoding_param('src_enc', 'WINDOWS-1251');
+    my $se = $p->{src_enc};
 
     for my $r (values %$req_tree) {
         $_ = Encode::decode_utf8($_) for @$r{'tag', grep /_name$/, keys %$r};
@@ -241,14 +241,14 @@ sub get_sources_info {
             for qw(test_time result_time);
         $r->{formatted_time_since_start} = CATS::Time::format_diff($r->{time_since_start});
 
-        get_nearby_attempt($r, 'prev', '<', 'DESC', 1, $p{extra_params});
-        get_nearby_attempt($r, 'next', '>', 'ASC' , 0, $p{extra_params});
+        _get_nearby_attempt($p, $r, 'prev', '<', 'DESC', 1, $opts{extra_params});
+        _get_nearby_attempt($p, $r, 'next', '>', 'ASC' , 0, $opts{extra_params});
         # During the official contest, viewing sources from other contests
         # is disallowed to prevent cheating.
         if ($official && $official->{id} != $r->{contest_id}) {
             $r->{src} = res_str(1138, $official->{title});
         }
-        elsif ($p{encode_source}) {
+        elsif ($opts{encode_source}) {
             if (encodings()->{$se} && $r->{file_name} && $r->{file_name} !~ m/\.zip$/) {
                 Encode::from_to($r->{src}, $se, 'utf-8');
                 $r->{src} = Encode::decode_utf8($r->{src});
@@ -258,7 +258,7 @@ sub get_sources_info {
 
         if ($r->{elements_count} == 1) {
             $r->{$_} = $r->{elements}->[0]->{$_}
-                for qw(file_name de_id de_name), $p{get_source} ? qw(src syntax) : ();
+                for qw(file_name de_id de_name), $opts{get_source} ? qw(src syntax) : ();
         }
 
         $r->{file_name} //= '';
@@ -326,49 +326,61 @@ sub get_judges {
 }
 
 sub source_links {
-    my ($si) = @_;
-    my ($current_link) = url_param('f') || '';
+    my ($p, $si) = @_;
+    my ($current_link) = $p->{f};
 
     return if $si->{href_contest};
 
     $si->{href_contest} =
         url_function('problems', cid => $si->{contest_id}, sid => $sid);
-    $si->{href_problem_text} =
-        url_function('problem_text', cpid => $si->{cp_id}, cid => $si->{contest_id}, sid => $sid);
     $si->{href_problem_details} =
         url_function('problem_details', pid => $si->{problem_id}, cid => $si->{contest_id}, sid => $sid);
+    my $problem_text_uid = $si->{account_id};
     if ($si->{elements_count} == 1) {
         my $original_req = $si->{elements}->[0];
         $si->{href_original_req_run_details} =
             url_f('run_details', rid => $original_req->{req_id});
         $si->{href_original_stats} =
             url_f('user_stats', uid => $original_req->{account_id});
+        $problem_text_uid = $original_req->{account_id};
     }
+    $si->{href_problem_text} = url_function('problem_text',
+        cpid => $si->{cp_id}, cid => $si->{contest_id}, sid => $sid,
+        ($si->{is_jury} ? (uid => $problem_text_uid) : ()));
     for (qw/run_details view_source run_log download_source view_test_details request_params/) {
         $si->{"href_$_"} = url_f($_, rid => $si->{req_id});
         $si->{"href_class_$_"} = $_ eq $current_link ? 'current_link' : '';
     }
-    $t->param(is_any_jury => 1) if $si->{is_jury};
-    get_judges($si) if $si->{is_jury};
+    if ($si->{is_jury}) {
+        $t->param(is_any_jury => 1);
+        get_judges($si);
+    }
     my $se = param('src_enc') || param('comment_enc') || 'WINDOWS-1251';
     $t->param(source_encodings => source_encodings($se));
 
-    source_links($_) for @{$si->{elements}};
+    source_links($p, $_) for @{$si->{elements}};
 }
 
 sub get_log_dump {
-    my ($rid, $compile_error) = @_;
-    my ($dump, $length) = $dbh->selectrow_array(qq~
-        SELECT SUBSTRING(dump FROM 1 FOR 500000), OCTET_LENGTH(dump)
-        FROM log_dumps WHERE req_id = ?~, undef,
-        $rid) or return ();
-    $dump = Encode::decode_utf8($dump);
-    ($dump) = $dump =~ m/
-        \Q$cats::log_section_start_prefix$cats::log_section_compile\E
-       (.*)
-        \Q$cats::log_section_end_prefix$cats::log_section_compile\E
-        /sx if $compile_error;
-    return (judge_log_dump => $dump, judge_log_length => $length);
+    my ($cond) = @_;
+    my ($job_tree_sql, @bind) = CATS::Request::get_job_tree_sql($cond);
+
+    my $logs = $dbh->selectall_arrayref(qq~
+        $job_tree_sql
+        SELECT
+            J.id AS job_id, J.type, JD.nick AS judge_name,
+            J.state, J.create_time, J.start_time, J.finish_time,
+            SUBSTRING(L.dump FROM 1 FOR 500000) AS dump,
+            OCTET_LENGTH(L.dump) AS "length"
+        FROM jobs_tree JT
+        INNER JOIN jobs J ON J.id = JT.id
+        LEFT JOIN logs L ON L.job_id = J.id
+        LEFT JOIN judges JD ON JD.id = J.judge_id
+        ORDER BY J.id DESC~, { Slice => {} },
+        @bind) or return [];
+
+    $_->{dump} = Encode::decode_utf8($_->{dump}) for @$logs;
+    $logs;
 }
 
 1;

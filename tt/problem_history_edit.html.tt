@@ -1,6 +1,6 @@
 [% extra_head = BLOCK %]
 <style>
-  @import 'docs/std/git.css';
+  @import 'css/git.css';
 </style>
 [%- END %]
 [% PROCESS includes/menu_begin.tti %]

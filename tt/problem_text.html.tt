@@ -87,7 +87,11 @@ MathJax.Hub.Register.StartupHook('onLoad', function () {
 <div class="problem_text" id="p[% p.id %]" [% UNLESS loop.first %]style="page-break-before: always"[% END %] lang="[% p.lang %]">
   <a name="pr[% p.code || p.id %]"></a>
 
-  <h2>[% "${c.problem} ${p.code}. " IF p.code; p.title | html %] <a class="jsonly problem_menu_trigger" href="#">&#x2261;</a></h2>
+  <h2>
+  [% IF p.color %]<span class="problem_color" style="background-color: [% p.color | html %];"></span>[% END %]
+  [% "${c.problem} ${p.code}. " IF p.code; p.title | html %]
+  <a class="jsonly problem_menu_trigger" href="#">&#x2261;</a>
+  </h2>
   <div class="jsonly problem_menu"><ul>
     <li><a class="problem_list_link" href="[% p.href_problem_list %]">[% c.problem_list %]</a></li>
     <li><label><input type="checkbox" class="whitespace"><span></span> [% c.visible_spaces %]</label></li>
@@ -167,6 +171,7 @@ MathJax.Hub.Register.StartupHook('onLoad', function () {
 $('.problem_menu_trigger').click(function() { $(this).parent().next().toggle(); return false; });
 
 var sid = (new RegExp('sid=([a-zA-Z0-9]{30})')).exec(window.location.href);
+var uid = (new RegExp('uid=([0-9]+)')).exec(window.location.href);
 if (sid) {
   sid = sid[1];
   $('.problem_list_link').each(function() { this.href += ';sid=' + sid; });
@@ -214,6 +219,91 @@ $('.problem_text div.problem_menu li.langs a').click(function() {
       s.indexOf('pl=') < 0  ? s + ';pl=' + this.innerText : s.replace(/pl=[a-z]+/, 'pl=' + this.innerText);
   }
 });
+
+[% IF has_snippets %]
+[%# Assigning to innerHTML forcibly comments out CDATA sections. https://stackoverflow.com/a/7068088 %]
+function htmlWithCDATASectionsToHtmlWithout(html) {
+  var ATTRS = '(?:[^>\"\']|\"[^\"]*\"|\'[^\']*\')*',
+    [%# names of tags with RCDATA or CDATA content. %]
+    SCRIPT = '[sS][cC][rR][iI][pP][tT]',
+    STYLE = '[sS][tT][yY][lL][eE]',
+    TEXTAREA = '[tT][eE][xX][tT][aA][rR][eE][aA]',
+    TITLE = '[tT][iI][tT][lL][eE]',
+    XMP = '[xX][mM][pP]',
+    SPECIAL_TAG_NAME = [SCRIPT, STYLE, TEXTAREA, TITLE, XMP].join('|'),
+    ANY = '[\\s\\S]*?',
+    AMP = /&/g,
+    LT = /</g,
+    GT = />/g;
+  return html.replace(new RegExp(
+    [%# Entities and text. %]
+    '^<]+' +
+    [%# Comment. %]
+    '|<!--' + ANY + '-->' +
+    [%# Regular tag. %]
+    '|<\/?(?!' + SPECIAL_TAG_NAME + ')[a-zA-Z]' + ATTRS + '>' +
+    [%# Special tags. %]
+    '|<\/?' + SCRIPT   + '\\b' + ATTRS + '>' + ANY + '<\/' + SCRIPT   + '\\s*>' +
+    '|<\/?' + STYLE    + '\\b' + ATTRS + '>' + ANY + '<\/' + STYLE    + '\\s*>' +
+    '|<\/?' + TEXTAREA + '\\b' + ATTRS + '>' + ANY + '<\/' + TEXTAREA + '\\s*>' +
+    '|<\/?' + TITLE    + '\\b' + ATTRS + '>' + ANY + '<\/' + TITLE    + '\\s*>' +
+    '|<\/?' + XMP      + '\\b' + ATTRS + '>' + ANY + '<\/' + XMP      + '\\s*>' +
+    [%# CDATA section. Content in capturing group 1. %]
+    '|<!\\[CDATA\\[(' + ANY + ')\\]\\]>' +
+    [%# A loose less-than. %]
+    '|<', 'g'),
+
+    function (token, cdataContent) {
+      return 'string' === typeof cdataContent ?
+        cdataContent.replace(AMP, '&amp;').replace(LT, '&lt;').replace(GT, '&gt;') :
+        token === '<' ? '&lt;' [%# Normalize loose less-thans. %] :
+        token;
+    });
+}
+
+var timeout_interval = 1000;
+var all_snippets_received = 0;
+
+function fill_snippets(data, snippet_list) {
+  all_snippets_received = 1;
+  for (var i = 0; i < snippet_list.length; ++i) {
+    var snippet_data = data[snippet_list[i].getAttribute('cats-snippet')];
+    if (snippet_data !== undefined && snippet_data !== null)
+      snippet_list[i].innerHTML = htmlWithCDATASectionsToHtmlWithout(snippet_data);
+    else
+      all_snippets_received = 0;
+  }
+}
+
+function get_snippets_data(problem_id, request_url) {
+  var snippets = $('#p' + problem_id + ' [cats-snippet]');
+  if (sid)
+    request_url += ';sid=' + sid;
+  if (uid)
+    request_url += ';uid=' + uid[1];
+
+  $.ajax({
+    method: 'GET',
+    url: request_url,
+    data: { snippet_names: $.map(snippets, function(s) { return s.getAttribute('cats-snippet'); }) },
+    [%# Prevent jQuery from suffixing names of array parameters with '[]' %]
+    traditional: true,
+    success: function(result) { fill_snippets(result, snippets); }
+  }).then(function() {
+    if (!all_snippets_received) {
+      setTimeout(update_snippets, timeout_interval);
+      timeout_interval *= 2;
+    }
+  });
+}
+
+function update_snippets() {
+  [% FOREACH p IN problems %]
+    get_snippets_data([% p.problem_id %], '[% p.href_get_snippets %]');
+  [% END %]
+}
+$(document).ready(update_snippets);
+[% END %]
 
 </script>
 [% PROCESS includes/timing.tti %]

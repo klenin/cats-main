@@ -198,7 +198,8 @@ CREATE TABLE problems (
     run_method         SMALLINT DEFAULT 0,
     players_count      VARCHAR(200),
     statement_url      VARCHAR(200) DEFAULT '',
-    explanation_url    VARCHAR(200) DEFAULT ''
+    explanation_url    VARCHAR(200) DEFAULT '',
+    repo_path          VARCHAR(200) DEFAULT ''
 );
 ALTER TABLE problems ADD CONSTRAINT chk_run_method CHECK (run_method IN (0, 1, 2));
 
@@ -213,7 +214,7 @@ CREATE TABLE contest_problems (
     id              INTEGER NOT NULL PRIMARY KEY,
     problem_id      INTEGER NOT NULL REFERENCES problems(id) ON DELETE CASCADE,
     contest_id      INTEGER NOT NULL REFERENCES contests(id) ON DELETE CASCADE,
-    code            CHAR,
+    code            VARCHAR(50),
     /* See $cats::problem_st constants */
     status          INTEGER DEFAULT 1 NOT NULL,
     testsets        VARCHAR(200),
@@ -221,10 +222,23 @@ CREATE TABLE contest_problems (
     max_points      INTEGER,
     tags            VARCHAR(200),
     limits_id       INTEGER REFERENCES limits(id),
+    color           VARCHAR(50),
     UNIQUE (problem_id, contest_id)
 );
 ALTER TABLE contest_problems
     ADD CONSTRAINT chk_contest_problems_st CHECK (0 <= status AND status <= 5);
+
+CREATE TABLE contest_problem_des (
+    cp_id  INTEGER NOT NULL,
+    de_id  INTEGER NOT NULL,
+
+    CONSTRAINT contest_problem_de_pk
+        PRIMARY KEY (cp_id, de_id),
+    CONSTRAINT contest_problem_de_cp_fk
+        FOREIGN KEY (cp_id) REFERENCES contest_problems(id) ON DELETE CASCADE,
+    CONSTRAINT contest_problem_de_de_fk
+        FOREIGN KEY (de_id) REFERENCES default_de(id) ON DELETE CASCADE
+);
 
 CREATE TABLE problem_sources (
     id          INTEGER NOT NULL PRIMARY KEY,
@@ -282,7 +296,8 @@ CREATE TABLE tests (
     out_file        BLOB, /* For generated answer, length = min(out_file_size, save_answer_prefix). */
     out_file_size   INTEGER, /* Size of generated answer, else NULL. */
     points          INTEGER,
-    gen_group       INTEGER
+    gen_group       INTEGER,
+    snippet_name    VARCHAR(100) DEFAULT NULL
 );
 
 CREATE TABLE testsets (
@@ -359,6 +374,55 @@ CREATE TABLE reqs (
 );
 CREATE DESCENDING INDEX idx_reqs_submit_time ON reqs(submit_time);
 
+CREATE TABLE jobs (
+    id          INTEGER NOT NULL PRIMARY KEY,
+    req_id      INTEGER,
+    parent_id   INTEGER,
+    type        INTEGER NOT NULL,
+    state       INTEGER NOT NULL, /* 0 - waiting, 1 - in progress, 2 - finished(?) */
+    create_time TIMESTAMP,
+    start_time  TIMESTAMP,
+    finish_time TIMESTAMP,
+
+    judge_id    INTEGER, /* several(?) */
+    testsets    VARCHAR(200),
+
+    account_id  INTEGER,
+    contest_id  INTEGER,
+    problem_id  INTEGER,
+
+    CONSTRAINT jobs_req_id_fk
+        FOREIGN KEY (req_id) REFERENCES reqs(id) ON DELETE CASCADE,
+    CONSTRAINT jobs_parent_id_fk
+        FOREIGN KEY (parent_id) REFERENCES jobs(id) ON DELETE CASCADE,
+    CONSTRAINT jobs_judge_id_fk
+        FOREIGN KEY (judge_id) REFERENCES judges(id) ON DELETE SET NULL,
+
+    CONSTRAINT jobs_account_id_fk
+        FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE,
+    CONSTRAINT jobs_contest_id_fk
+        FOREIGN KEY (contest_id) REFERENCES contests(id) ON DELETE CASCADE,
+    CONSTRAINT jobs_problem_id_fk
+        FOREIGN KEY (problem_id) REFERENCES problems(id) ON DELETE CASCADE
+
+);
+
+CREATE TABLE logs (
+    id      INTEGER NOT NULL PRIMARY KEY,
+    dump    BLOB,
+    job_id  INTEGER,
+
+    CONSTRAINT logs_job_id_fk FOREIGN KEY (job_id)
+        REFERENCES jobs(id) ON DELETE CASCADE
+);
+
+CREATE TABLE jobs_queue (
+    id INTEGER NOT NULL PRIMARY KEY,
+
+    CONSTRAINT jobs_queue_id
+        FOREIGN KEY (id) REFERENCES jobs(id) ON DELETE CASCADE
+);
+
 CREATE TABLE req_de_bitmap_cache (
     req_id      INTEGER NOT NULL REFERENCES reqs(id) ON DELETE CASCADE,
     version     INTEGER NOT NULL,
@@ -373,8 +437,8 @@ CREATE TABLE req_groups (
 );
 
 CREATE TABLE req_details (
-    req_id            INTEGER NOT NULL REFERENCES REQS(ID) ON DELETE CASCADE,
-    test_rank         INTEGER NOT NULL /*REFERENCES TESTS(RANK) ON DELETE CASCADE*/,
+    req_id            INTEGER NOT NULL REFERENCES reqs(id) ON DELETE CASCADE,
+    test_rank         INTEGER NOT NULL /* REFERENCES tests(rank) ON DELETE CASCADE */,
     result            INTEGER,
     points            INTEGER,
     time_used         FLOAT,
@@ -393,12 +457,6 @@ CREATE TABLE solution_output (
     create_time     TIMESTAMP NOT NULL,
 
     CONSTRAINT so_fk FOREIGN KEY (req_id, test_rank) REFERENCES req_details(req_id, test_rank) ON DELETE CASCADE
-);
-
-CREATE TABLE log_dumps (
-    id      INTEGER NOT NULL PRIMARY KEY,
-    dump    BLOB,
-    req_id  INTEGER REFERENCES reqs(id) ON DELETE CASCADE
 );
 
 CREATE TABLE sources (
@@ -435,6 +493,67 @@ CREATE TABLE prizes (
     cg_id  INTEGER NOT NULL REFERENCES contest_groups(id) ON DELETE CASCADE,
     name   VARCHAR(200) NOT NULL,
     rank   INTEGER NOT NULL
+);
+
+CREATE TABLE wiki_pages (
+    id         INTEGER NOT NULL PRIMARY KEY,
+    name       VARCHAR(200) NOT NULL,
+    contest_id INTEGER,
+    problem_id INTEGER,
+    is_public  SMALLINT DEFAULT 0 NOT NULL,
+
+    CONSTRAINT wiki_pages_name_uniq UNIQUE (name),
+    CONSTRAINT wiki_pages_contests_fk
+        FOREIGN KEY (contest_id) REFERENCES contests(id) ON DELETE SET NULL,
+    CONSTRAINT wiki_pages_problem_fk
+        FOREIGN KEY (problem_id) REFERENCES problems(id) ON DELETE CASCADE
+);
+
+CREATE TABLE wiki_texts (
+    id            INTEGER NOT NULL PRIMARY KEY,
+    wiki_id       INTEGER NOT NULL,
+    lang          VARCHAR(20) NOT NULL,
+    author_id     INTEGER,
+    last_modified TIMESTAMP,
+    title         BLOB SUB_TYPE TEXT,
+    text          BLOB SUB_TYPE TEXT,
+
+    CONSTRAINT wiki_texts_wiki_fk
+        FOREIGN KEY (wiki_id) REFERENCES wiki_pages(id) ON DELETE CASCADE,
+    CONSTRAINT wiki_texts_author_fk
+        FOREIGN KEY (author_id) REFERENCES accounts(id) ON DELETE SET NULL
+);
+
+CREATE TABLE snippets (
+    id              INTEGER NOT NULL PRIMARY KEY,
+    account_id      INTEGER NOT NULL,
+    problem_id      INTEGER NOT NULL,
+    contest_id      INTEGER NOT NULL,
+    name            VARCHAR(200) NOT NULL,
+    text            BLOB SUB_TYPE TEXT,
+
+    CONSTRAINT snippets_account_id_fk
+        FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE,
+    CONSTRAINT snippets_problem_id_fk
+        FOREIGN KEY (problem_id) REFERENCES problems(id) ON DELETE CASCADE,
+    CONSTRAINT snippets_contest_id_fk
+        FOREIGN KEY (contest_id) REFERENCES contests(id) ON DELETE CASCADE,
+
+    CONSTRAINT snippets_uniq UNIQUE (account_id, problem_id, contest_id, name)
+);
+
+CREATE TABLE problem_snippets (
+    problem_id      INTEGER NOT NULL,
+    snippet_name    VARCHAR(200) NOT NULL,
+    generator_id    INTEGER,
+    in_file         BLOB SUB_TYPE TEXT,
+
+    CONSTRAINT problem_snippets_problem_id_fk
+        FOREIGN KEY (problem_id) REFERENCES problems(id) ON DELETE CASCADE,
+    CONSTRAINT pr_snippets_generator_id_fk
+        FOREIGN KEY (generator_id) REFERENCES problem_sources(id) ON DELETE CASCADE,
+
+    CONSTRAINT problem_snippets_uniq UNIQUE (problem_id, snippet_name)
 );
 
 CREATE GENERATOR key_seq;

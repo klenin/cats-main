@@ -1,0 +1,2 @@
+ALTER TABLE tests
+    ADD snippet_name VARCHAR(100) DEFAULT NULL;

@@ -29,7 +29,7 @@ my $person_phone_sql =
 
 sub edit_frame {
     my ($p) = @_;
-    $form->edit_frame;
+    $form->edit_frame($p);
     my $contests = $is_root && $p->{edit} ? $dbh->selectall_arrayref(qq~
         SELECT C.title, C.start_date,
             (SELECT LIST(A.team_name || $person_phone_sql, ', ') FROM contest_accounts CA
@@ -46,7 +46,7 @@ sub edit_save {
     my ($p) = @_;
     validate_string_length($p->{name}, 601, 1, 200) or return;
     validate_string_length($p->{org_name}, 656, 1, 200) or return;
-    $form->edit_save() and msg(1067, Encode::decode_utf8($p->{name}));
+    $form->edit_save($p) and msg(1067, Encode::decode_utf8($p->{name}));
 }
 
 sub common_searches {
@@ -78,7 +78,8 @@ sub sites_frame {
     $user->privs->{edit_sites} or return;
     $p->{new} || $p->{edit} and return edit_frame($p);
 
-    my $lv = CATS::ListView->new(name => 'sites', template => 'sites.html.tt');
+    init_template($p, 'sites.html.tt');
+    my $lv = CATS::ListView->new(name => 'sites');
 
     $form->edit_delete(id => $p->{delete}, descr => 'name', msg => 1066);
     $p->{edit_save} and edit_save($p);
@@ -141,7 +142,7 @@ sub contest_sites_edit_frame {
     $is_jury or return;
     my $site_id = $p->{site_id} or return;
 
-    init_template('contest_sites_edit.html.tt');
+    init_template($p, 'contest_sites_edit.html.tt');
 
     my $s = $dbh->selectrow_hashref(qq~
         SELECT
@@ -207,7 +208,8 @@ sub contest_sites_delete {
 sub contest_sites_frame {
     my ($p) = @_;
 
-    my $lv = CATS::ListView->new(name => 'contest_sites', template => 'contest_sites.html.tt');
+    init_template($p, 'contest_sites.html.tt');
+    my $lv = CATS::ListView->new(name => 'contest_sites');
     $is_jury || $user->{is_site_org} || $contest->{show_sites} or return;
 
     $lv->define_columns(url_f('contest_sites'), 0, 0, [

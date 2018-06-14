@@ -20,6 +20,9 @@
     time => 'time',
     place => 'place'
     status => 'status',
+    ooc => 'ooc',
+    remote => 'remote',
+    virtual => 'virtual',
     average_points => 'Average points',
     successful_submits => 'Successful submits',
   })

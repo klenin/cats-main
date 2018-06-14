@@ -29,9 +29,16 @@
 <button type="submit" name="link_to" value="1" class="button">[% capt.link_to %]</button>
 <button type="submit" name="move_to" value="1" class="button">[% capt.move_to %]</button>
 [% capt.problem_code %]:
-<select name="code"><option>&nbsp;</option>
-[% FOREACH c IN problem_codes %]<option name="[% c %]">[% c %]</option>[% END %]
-</select>
+<span class="pcode">
+<input name="code" size="3" maxlength="3" onfocus="choose_code(this)" />
+</span>
+
+<script type="text/javascript" src="js/lib/jquery.min.js"></script>
+<script type="text/javascript">
+var used_codes = {};
+[% PROCESS includes/select_problem_code.tti %]
+</script>
+
 [% PROCESS includes/pages.tti %]
 </form>
 [% ELSE %]

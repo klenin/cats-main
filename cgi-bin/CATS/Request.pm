@@ -7,6 +7,7 @@ use CATS::Constants;
 use CATS::DB;
 use CATS::IP;
 use CATS::JudgeDB;
+use CATS::Job;
 use CATS::Messages qw(msg);
 
 # Params: limits: { time_limit, memory_limit }
@@ -63,6 +64,38 @@ sub delete_limits {
         $limits_id);
 }
 
+sub get_job_tree_sql {
+    my ($cond) = @_;
+    my ($where, @bind) = $sql->where($cond);
+
+    (qq~
+        WITH RECURSIVE jobs_tree AS (
+            SELECT id FROM jobs
+            $where
+
+            UNION ALL
+
+            SELECT J.id FROM jobs J
+            INNER JOIN jobs_tree JT ON J.parent_id = JT.id
+        )~,
+    @bind);
+}
+
+sub delete_logs {
+    my ($cond) = @_;
+
+    my ($jobs_tree_sql, @bind) = get_job_tree_sql($cond);
+    my $job_ids = $dbh->selectcol_arrayref(qq~
+        $jobs_tree_sql
+        SELECT id FROM jobs_tree~, undef,
+        @bind);
+    if (@$job_ids) {
+        $dbh->do(_u $sql->delete('logs', { job_id => $job_ids }));
+        $dbh->commit;
+        msg(1159);
+    }
+}
+
 # Set request state manually. May be also used for retesting.
 # Params: request_id, fields: { state (required), failed_test, testsets, points, judge_id, limits_id }
 sub enforce_state {
@@ -79,15 +112,7 @@ sub enforce_state {
 
     CATS::JudgeDB::ensure_request_de_bitmap_cache($request_id);
 
-    # Save log for ignored requests.
-    if ($fields->{state} != $cats::st_ignore_submit) {
-        $dbh->do(q~
-            DELETE FROM log_dumps WHERE req_id = ?~, undef,
-            $fields->{request_id}
-        ) or return;
-    }
-
-    return 1;
+    1;
 }
 
 # Params: problem_id (required), contest_id (required), submit_uid (required), de_bitmap (required),
@@ -126,6 +151,10 @@ sub insert {
         VALUES (?, ?, CURRENT_TIMESTAMP, ?, ?)~,
         undef,
         $rid, 1, $submit_uid, CATS::IP::get_ip);
+
+    CATS::Job::create($cats::job_type_submission, { req_id => $rid })
+        if $fields->{state} == $cats::st_not_processed;
+
     $rid;
 }
 

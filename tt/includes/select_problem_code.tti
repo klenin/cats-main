@@ -1,0 +1,28 @@
+function set_code() {
+  var a = $(this);
+  a.parents('span').children('input').val(a.text()).trigger('change');
+}
+
+function make_code_tr(start_char, count) {
+  var tr = $('<tr>');
+  for (var i = 0; i < count; ++i) {
+    var t = String.fromCharCode(start_char + i);
+    [%# Use onmousedown because onclick happens after onblur. %]
+    $('<a></a>', { href: '#' }).text(t).mousedown(set_code).
+      appendTo($('<td>', { class: used_codes[t] ? 'sh1' : 'sh0' }).appendTo(tr));
+  }
+  return tr;
+}
+
+function choose_code(input) {
+  var parent = $(input).parent();
+  var hint = parent.children('div.search_hint');
+  if (!hint.length) {
+    hint = $('<div>', { class: 'search_hint bordered' }).appendTo(parent);
+    input.addEventListener('blur', function() { hint.hide(); });
+    var table = $('<table>').appendTo(hint);
+    make_code_tr(65, 26).appendTo(table); [%# Letters. %]
+    make_code_tr(48, 10).appendTo(table); [%# Digits. %]
+  }
+  hint.show();
+}

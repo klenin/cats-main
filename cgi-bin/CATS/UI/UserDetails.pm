@@ -12,13 +12,12 @@ use CATS::Form;
 use CATS::Globals qw ($cid $is_jury $is_root $t $sid $uid $user);
 use CATS::IP;
 use CATS::Messages qw(msg res_str);
-use CATS::Output qw(auto_ext init_template url_f);
+use CATS::Output qw(init_template url_f);
 use CATS::Privileges;
 use CATS::Settings qw($settings);
 use CATS::Time;
 use CATS::User;
 use CATS::Utils qw(url_function);
-use CATS::Web qw(redirect);
 
 sub user_submenu {
     my ($selected, $user_id, $site_id) = @_;
@@ -50,7 +49,9 @@ sub user_submenu {
 }
 
 sub users_new_frame {
-    init_template('users_new.html.tt');
+    my ($p) = @_;
+
+    init_template($p, 'users_new.html.tt');
     $is_jury or return;
     $t->param(
         login => CATS::User::generate_login,
@@ -62,7 +63,7 @@ sub users_new_frame {
 sub users_edit_frame {
     my ($p) = @_;
 
-    init_template('users_edit.html.tt');
+    init_template($p, 'users_edit.html.tt');
     $is_jury or return;
 
     $p->{uid} or return;
@@ -80,7 +81,7 @@ sub users_edit_frame {
 
 sub user_stats_frame {
     my ($p) = @_;
-    init_template('user_stats.html.tt');
+    init_template($p, 'user_stats.html.tt');
     $p->{uid} or return;
     my $envelopes_sql = $is_root ?
         ', (SELECT COUNT(*) FROM reqs R WHERE R.account_id = A.id AND R.received = 0) AS envelopes' : '';
@@ -154,7 +155,7 @@ sub display_settings {
 
 sub user_settings_frame {
     my ($p) = @_;
-    init_template('user_settings.html.tt');
+    init_template($p, 'user_settings.html.tt');
     $is_root && $p->{uid} or return;
 
     my $cleared;
@@ -184,7 +185,7 @@ sub user_settings_frame {
 
 sub user_ip_frame {
     my ($p) = @_;
-    init_template('user_ip.html.tt');
+    init_template($p, 'user_ip.html.tt');
     $is_jury || $user->{is_site_org} or return;
     $p->{uid} or return;
     my $u = CATS::User->new->contest_fields([ 'site_id' ])->load($p->{uid}) or return;
@@ -270,7 +271,7 @@ sub user_vdiff_frame {
     $is_jury || $user->{is_site_org} or return;
     $p->{uid} or return;
 
-    init_template('user_vdiff.html.tt');
+    init_template($p, 'user_vdiff.html.tt');
 
     my $u = user_vdiff_load($p) or return;
     if (user_vdiff_save($p, $u) || user_vdiff_finish_now($p, $u)) {
@@ -301,24 +302,24 @@ my $user_contact_form = CATS::Form->new({
 sub user_contacts_frame {
     my ($p) = @_;
 
-    init_template('user_contacts.html.tt');
+    init_template($p, 'user_contacts.html.tt');
     $p->{uid} or return;
 
     my $is_profile = $uid && $uid == $p->{uid};
     if ($is_root || $is_profile) {
-        $p->{new} || $p->{edit} and return $user_contact_form->edit_frame(sub {
+        $p->{new} || $p->{edit} and return $user_contact_form->edit_frame($p, after => sub {
             $_[0]->{contact_types} = $dbh->selectall_arrayref(q~
                 SELECT id AS "value", name AS "text" FROM contact_types ORDER BY name~, { Slice => {} });
             unshift @{$_[0]->{contact_types}}, {};
         }, href_action_params => [ uid => $p->{uid} ]);
         $user_contact_form->edit_delete(id => $p->{delete}, descr => 'handle', msg => 1071);
-        $p->{edit_save} and $user_contact_form->edit_save(sub {
+        $p->{edit_save} and $user_contact_form->edit_save($p, before => sub {
             $_[0]->{account_id} = $p->{uid};
         }) and msg(1072, Encode::decode_utf8($p->{handle}));
     }
 
-    my $lv = CATS::ListView->new(
-        name => 'user_contacts', template => 'user_contacts.html.tt');
+    init_template($p, 'user_contacts.html.tt');
+    my $lv = CATS::ListView->new(name => 'user_contacts');
     my ($user_name, $user_site) = $is_profile ? ($user->{name}, $user->{site_id}) :
         @{CATS::User->new->contest_fields([ 'site_id' ])->load($p->{uid}) // {}}{qw(team_name site_id)};
     $user_name or return;
@@ -359,7 +360,7 @@ sub user_contacts_frame {
 
 sub registration_frame {
     my ($p) = @_;
-    init_template('registration.html.tt');
+    init_template($p, 'registration.html.tt');
 
     $t->param(countries => \@CATS::Countries::countries, href_login => url_f('login'));
 
@@ -374,7 +375,7 @@ sub registration_frame {
 
 sub profile_frame {
     my ($p) = @_;
-    init_template(auto_ext('user_profile', $p->{json}));
+    init_template($p, 'user_profile');
     $uid or return;
     if ($p->{clear}) {
         $settings = {};
@@ -414,7 +415,7 @@ sub impersonate_frame {
         UPDATE accounts SET last_ip = ?, sid = ? WHERE id = ?~, undef,
         CATS::IP::get_ip, $new_sid, $new_user_id);
     $dbh->commit;
-    redirect(url_function('contests', sid => $new_sid, cid => $cid));
+    $p->redirect(url_function 'contests', sid => $new_sid, cid => $cid);
 }
 
 1;

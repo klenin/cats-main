@@ -101,6 +101,9 @@ sub virtual {
             DELETE FROM reqs WHERE account_id = ? AND contest_id = ?~, undef,
             $uid, $cid);
         $dbh->do(q~
+            DELETE FROM snippets WHERE account_id = ? AND contest_id = ?~, undef,
+            $uid, $cid);
+        $dbh->do(q~
             DELETE FROM contest_accounts WHERE account_id = ? AND contest_id = ?~, undef,
             $uid, $cid);
     }

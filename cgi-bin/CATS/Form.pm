@@ -29,54 +29,57 @@ sub new {
 
 sub field_names { sort map $_->{name}, @{$_[0]->{fields}} }
 
+# Params: opts { after, href_action_params }
 sub edit_frame {
-    my ($self, $fields_to_template, %p) = @_;
-    init_template($self->{templates}->{edit_frame} or die 'No edit frame template');
+    my ($self, $p, %opts) = @_;
+    $p or die 'No params';
+    init_template($p, $self->{templates}->{edit_frame} || die 'No edit frame template');
 
-    my $id = url_param($self->{edit_param});
+    my $id = $p->{$self->{edit_param}} // url_param($self->{edit_param});
 
     my $field_values = $id ? CATS::DB::select_row(
         $self->{table}, [ $self->field_names ], { id => $id }) : {};
-    $fields_to_template->($field_values) if $fields_to_template;
+    $field_values->{id} //= $id;
+    $opts{after}->($field_values) if $opts{after};
 
     $self->{href_action} or die 'No href_action';
     $t->param(
         id => $id,
         %$field_values,
-        href_action => url_f($self->{href_action}, @{$p{href_action_params} || []}),
+        href_action => url_f($self->{href_action}, @{$opts{href_action_params} || []}),
     );
 }
 
+# Params: opts { before }
 sub edit_save {
-    my ($self, $template_to_fields) = @_;
+    my ($self, $p, %opts) = @_;
+    $p or die 'No params';
     my $params;
-    $params->{$_} = param($_) for $self->field_names;
-    $template_to_fields->($params) if $template_to_fields;
-    my $id = param('id');
+    $params->{$_} = $p->{$_} // param($_) for $self->field_names;
+    $opts{before}->($params) if $opts{before};
+    $p->{id} //= param('id');
 
-    if ($id) {
-        $dbh->do(_u $sql->update($self->{table}, $params, { id => $id }));
-    }
-    else {
-        $params->{id} = new_id;
-        $dbh->do(_u $sql->insert($self->{table}, $params));
-    }
+    my ($stmt, @bind) = $p->{id} ?
+        $sql->update($self->{table}, $params, { id => $p->{id} }) :
+        $sql->insert($self->{table}, { %$params, id => ($p->{id} = new_id) });
+    warn "$stmt\n@bind" if $self->{debug};
+    $dbh->do($stmt, undef, @bind);
     $dbh->commit;
     1;
 }
 
-# Params: id, descr, msg, before_commit
+# Params: opts { id, descr, msg, before_commit }
 sub edit_delete {
-    my ($self, %p) = @_;
-    $p{id} or return;
-    $p{descr} //= 1;
+    my ($self, %opts) = @_;
+    $opts{id} or return;
+    $opts{descr} //= 1;
     if (my ($descr) = $dbh->selectrow_array(_u $sql->select(
-        $self->{table}, [ $p{descr} // 1 ], { id => $p{id} }))
+        $self->{table}, [ $opts{descr} ], { id => $opts{id} }))
     ) {
-        $dbh->do(_u $sql->delete($self->{table}, { id => $p{id} }));
-        $p{before_commit}->() if $p{before_commit};
+        $dbh->do(_u $sql->delete($self->{table}, { id => $opts{id} }));
+        $opts{before_commit}->() if $opts{before_commit};
         $dbh->commit;
-        msg($p{msg}, $descr) if $p{msg};
+        msg($opts{msg}, $descr) if $opts{msg};
     }
 }
 

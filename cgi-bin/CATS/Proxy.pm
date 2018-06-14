@@ -4,7 +4,6 @@ use JSON::XS;
 use LWP::UserAgent;
 
 use CATS::Config;
-use CATS::Web qw(param);
 
 my @whitelist = qw(
     www.codechef.com
@@ -16,9 +15,9 @@ my @whitelist = qw(
 );
 
 sub proxy {
-    my $url = param('u') or die;
+    my ($p, $url) = @_;
     my $r = join '|', map "\Q$_\E", @whitelist;
-    $url =~ m[^http(s?)://($r)/] or die;
+    ($url // '') =~ m[^http(s?)://($r)/] or die;
     my $is_https = $1;
 
     my $ua = LWP::UserAgent->new;
@@ -29,14 +28,15 @@ sub proxy {
     my $res = $ua->request(HTTP::Request->new(GET => $url, [ 'Accept', '*/*' ]));
     $res->is_success or die sprintf 'proxy http error: url=%s result=%s', $url, $res->status_line;
 
-    if ((my $json = param('json')) =~ /^[a-zA-Z_][a-zA-Z0-9_]*$/) {
-        CATS::Web::content_type('application/json');
-        print $json, '(', encode_json({ result => $res->content }), ')';
+    if ($p->{jsonp}) {
+        $p->content_type('application/json');
+        $p->print("$p->{jsonp}(" . encode_json({ result => $res->content }) . ')');
     }
     else {
-        CATS::Web::content_type('text/plain');
-        print $res->content;
+        $p->content_type('text/plain');
+        $p->print($res->content);
     }
+    $p->get_return_code;
 }
 
 1;

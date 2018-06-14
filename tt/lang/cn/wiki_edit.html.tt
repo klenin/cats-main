@@ -1,0 +1,9 @@
+[%
+  capt.import({
+    title => 'Title',
+    view => 'view',
+    page => 'page',
+    author => 'Author',
+    last_modified => 'Last modified',
+  })
+%]
