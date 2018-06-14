@@ -1,6 +1,6 @@
 package CATS::Countries;
 
-my $flags_path = './images/std/countries/';
+my $flags_path = './images/countries/';
 
 our @countries = (
 

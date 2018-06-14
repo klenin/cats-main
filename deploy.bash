@@ -182,7 +182,7 @@ PerlSetEnv CATS_DIR ${CATS_ROOT}/cgi-bin/
 		Require all granted
 	</Directory>
 
-	<Directory "${CATS_ROOT}/images/std/">
+	<Directory "${CATS_ROOT}/images/">
 		AllowOverride Options=Indexes,MultiViews,ExecCGI FileInfo
 		Require all granted
 	</Directory>

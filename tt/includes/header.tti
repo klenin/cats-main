@@ -2,7 +2,7 @@
 <html><head>
 <meta http-equiv="Content-type" content="text/html; charset=[% encoding %]">
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<link rel="shortcut icon" href="images/std/favicon.ico" type="image/x-icon">
+<link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon">
 [%- capt = {}; TRY; PROCESS "lang/$lang/${template.name}"; CATCH; ''; END -%]
 <title>
   [%- IF contest.title; contest.title | html; ELSE; 'CATS'; END -%]
