@@ -370,7 +370,7 @@ sub get_log_dump {
         SELECT
             J.id AS job_id, J.type, JD.nick AS judge_name,
             J.state, J.create_time, J.start_time, J.finish_time,
-            J.testsets,
+            J.testsets, J.parent_id,
             SUBSTRING(L.dump FROM 1 FOR 500000) AS dump,
             OCTET_LENGTH(L.dump) AS "length"
         FROM jobs_tree JT

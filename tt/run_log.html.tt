@@ -3,6 +3,7 @@
 <style>
   code.judge_log b { color: #ff7070; }
   code.judge_log i { color: #108010; font-style: normal; }
+  tr.job_id.parent td { padding-bottom: 5px; }
 </style>
 </head>
 <body>
@@ -19,7 +20,7 @@
 <a name="log_top"></a><h3>[% capt.judge_log %]</h3>
 <table class="internal_borders highlight" style="margin-left: 5px;">
   [% FOREACH log IN logs %]
-  <tr>
+  <tr class="job_id [% log.parent_id ? 'child' : 'parent' %]">
     <td>[% href('#job' _ log.job_id, log.job_id) %]</td>
     <td>[% capt.jobs.types.item(job_enums.type_to_name.item(log.type)) %]</td>
     <td>[% log.judge_name %]</td>
