@@ -40,6 +40,7 @@ BEGIN {
         finished => $cats::job_st_finished,
         failed => $cats::job_st_failed,
         waiting_for_verdict => $cats::job_st_waiting_for_verdict,
+        canceled => $cats::job_st_canceled,
 
     };
 

@@ -304,11 +304,12 @@ sub retest_submissions {
             SELECT contest_id FROM reqs WHERE id = ?~);
         for (@$selection) {
             if (CATS::Request::enforce_state($_, { state => $cats::st_not_processed, judge_id => undef })) {
-                CATS::Job::create($cats::job_type_submission, { req_id => $_ });
-                $contest_sth->execute($_);
-                my ($contest_id) = $contest_sth->fetchrow_array;
-                $affected_contests{$contest_id} = 1;
-                ++$count;
+                if (CATS::Job::create_or_replace($cats::job_type_submission, { req_id => $_ })) {
+                    $contest_sth->execute($_);
+                    my ($contest_id) = $contest_sth->fetchrow_array;
+                    $affected_contests{$contest_id} = 1;
+                    ++$count;
+                }
             }
         }
         CATS::RankTable::remove_cache($_) for keys %affected_contests;

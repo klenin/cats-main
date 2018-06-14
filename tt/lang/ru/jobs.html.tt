@@ -13,6 +13,7 @@
         finished => 'завершена',
         failed => 'ошибка',
         waiting_for_verdict => 'вердикт',
+        canceled => 'отменена',
       },
     },
   })

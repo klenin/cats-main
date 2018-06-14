@@ -40,8 +40,7 @@ sub problems_mass_retest {
             my $fields = {
                 state => $cats::st_not_processed, judge_id => undef, points => undef, testsets => undef };
             if (CATS::Request::enforce_state($_->{id}, $fields)) {
-                CATS::Job::create($cats::job_type_submission, { req_id => $_->{id} });
-                ++$count;
+                ++$count if CATS::Job::create_or_replace($cats::job_type_submission, { req_id => $_->{id} });
             }
         }
         $dbh->commit;
