@@ -201,8 +201,8 @@ EOF
 	sudo a2dissite 000-default
 	sudo a2enmod expires
 	sudo a2enmod apreq2
-	# now adjust permissions
-	sudo chgrp -R ${http_group} cgi-bin download static templates tt
+	# Adjust permissions.
+	sudo chgrp -R ${http_group} cgi-bin download static tt
 	chmod -R g+r cgi-bin
 	chmod g+rw static tt download/{,att,img,pr,vis} cgi-bin/rank_cache{,/r} cgi-bin/repos
 	sudo service apache2 reload
