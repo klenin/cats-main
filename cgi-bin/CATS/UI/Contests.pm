@@ -355,20 +355,21 @@ sub contest_xml_frame {
     my ($p) = @_;
 
     init_template($p, 'contest_xml.html.tt');
-    $p->{id} //= $cid;
+    $is_jury or return;
 
     my $c = $dbh->selectrow_hashref(q~
         SELECT * FROM contests WHERE id = ?~, { Slice => {} },
-        $p->{id}) or return;
+        $cid) or return;
     
-    my $problems = $dbh->selectall_arrayref(
-      "SELECT * FROM contest_problems CP WHERE CP.contest_id = $c->{id} ORDER BY CP.code",
-      { Slice => {} }
+    my $problems = $dbh->selectall_arrayref(q~
+      SELECT * FROM contest_problems CP
+      WHERE CP.contest_id = ? ORDER BY CP.code~, { Slice => {} },
+      $cid
     );
     $t->param(
-        contest_xml => CATS::Contest::XmlSerializer->new()->serialize($c, $problems),
+        contest_xml => CATS::Contest::XmlSerializer->new->serialize($c, $problems),
     );
-    CATS::Contest::Utils::contest_submenu('contest_xml', $p->{id});
+    CATS::Contest::Utils::contest_submenu('contest_xml', $cid);
 }
 
 1;

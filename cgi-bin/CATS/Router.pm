@@ -75,7 +75,7 @@ $main_routes = {
     ],
     contests_new => [ \&CATS::UI::Contests::contests_new_frame, ],
     contest_params => [ \&CATS::UI::Contests::contest_params_frame, id => integer, ],
-    contest_xml => [ \&CATS::UI::Contests::contest_xml_frame, id => integer, ],
+    contest_xml => [ \&CATS::UI::Contests::contest_xml_frame, ],
     contest_sites => [ \&CATS::UI::Sites::contest_sites_frame, add => bool, delete => integer, check => array_of integer, ],
     contest_sites_edit => [ \&CATS::UI::Sites::contest_sites_edit_frame,
         site_id => integer,
