@@ -157,12 +157,13 @@ ALTER TABLE contest_accounts
     ADD CONSTRAINT contest_account_site_org CHECK (is_site_org IN (0, 1));
 
 CREATE TABLE limits (
-    id              INTEGER NOT NULL PRIMARY KEY,
-    time_limit      FLOAT,
-    memory_limit    INTEGER,
-    process_limit   INTEGER,
-    write_limit     INTEGER,
-    save_output_prefix INTEGER
+    id                 INTEGER NOT NULL PRIMARY KEY,
+    time_limit         FLOAT,
+    memory_limit       INTEGER,
+    process_limit      INTEGER,
+    write_limit        INTEGER,
+    save_output_prefix INTEGER,
+    job_split_strategy VARCHAR(200)
 );
 
 CREATE TABLE problems (
