@@ -13,6 +13,7 @@
         finished => 'finished',
         failed => 'failed',
         waiting_for_verdict => 'verdict',
+        canceled => 'canceled',
       },
     },
   })

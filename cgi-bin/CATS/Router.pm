@@ -349,6 +349,7 @@ $api_judge_routes = {
         \&CATS::ApiJudge::set_request_state,
         req_id => integer,
         state => integer,
+        job_id => integer,
         problem_id => integer,
         contest_id => integer,
         failed_test => integer,
@@ -370,8 +371,8 @@ $api_judge_routes = {
         job_state => integer,
     ],
     api_judge_get_tests_req_details => [ \&CATS::ApiJudge::get_tests_req_details, req_id => integer, ],
-    api_judge_delete_req_details => [ \&CATS::ApiJudge::delete_req_details, req_id => integer, ],
-    api_judge_insert_req_details => [ \&CATS::ApiJudge::insert_req_details, params => str, ],
+    api_judge_delete_req_details => [ \&CATS::ApiJudge::delete_req_details, req_id => integer, job_id => integer, ],
+    api_judge_insert_req_details => [ \&CATS::ApiJudge::insert_req_details, job_id => integer, params => str, ],
     api_judge_save_input_test_data => [
         \&CATS::ApiJudge::save_input_test_data,
         problem_id => integer,

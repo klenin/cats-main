@@ -105,16 +105,17 @@ sub set_request_state {
     my $judge_id = $sid && CATS::JudgeDB::get_judge_id($sid)
         or return $p->print_json($bad_sid);
 
-    CATS::JudgeDB::set_request_state({
+    my $result = CATS::JudgeDB::set_request_state({
         jid         => $judge_id,
         req_id      => $p->{req_id},
         state       => $p->{state},
+        job_id      => $p->{job_id},
         contest_id  => $p->{contest_id},
         problem_id  => $p->{problem_id},
         failed_test => $p->{failed_test},
     });
 
-    $p->print_json({ ok => 1 });
+    $p->print_json({ result => $result });
 }
 
 our @create_job_params = qw(problem_id state parent_id req_id contest_id);
@@ -158,9 +159,7 @@ sub finish_job {
     my ($p) = @_;
     bad_judge($p) and return -1;
 
-    CATS::JudgeDB::finish_job($p->{job_id}, $p->{job_state});
-
-    $p->print_json({ ok => 1 });
+    $p->print_json({ result => CATS::Job::finish($p->{job_id}, $p->{job_state}) // 0 });
 }
 
 sub select_request {
@@ -197,10 +196,7 @@ sub delete_req_details {
     my $judge_id = $sid && CATS::JudgeDB::get_judge_id($sid)
         or return $p->print_json($bad_sid);
 
-    CATS::JudgeDB::delete_req_details($p->{req_id}, $judge_id)
-        or return $p->print_json($stolen);
-
-    $p->print_json({ ok => 1 });
+    $p->print_json({ result => CATS::JudgeDB::delete_req_details($p->{req_id}, $judge_id, $p->{job_id}) });
 }
 
 sub get_tests_req_details {
@@ -223,10 +219,9 @@ sub insert_req_details {
     my $params = decode_json($p->{params});
     my %filtered_params =
         map { exists $params->{$_} ? ($_ => $params->{$_}) : () } @req_details_fields;
-    CATS::JudgeDB::insert_req_details(%filtered_params, judge_id => $judge_id)
-        or return $p->print_json($stolen);
 
-    $p->print_json({ ok => 1 });
+    $p->print_json({ result =>
+        CATS::JudgeDB::insert_req_details($p->{job_id}, %filtered_params, judge_id => $judge_id) });
 }
 
 sub save_input_test_data {
