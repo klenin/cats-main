@@ -3,15 +3,19 @@ use warnings;
 
 use File::Spec;
 use FindBin;
-use Test::More tests => 4;
+use Test::More tests => 34;
+use Test::Exception;
 
+use lib $FindBin::Bin;
 use lib File::Spec->catdir($FindBin::Bin, '..');
 use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
 
 use CATS::Contest::XmlSerializer;
 use CATS::Contest;
 
-my $s = CATS::Contest::XmlSerializer->new;
+use TestLogger;
+
+my $s = CATS::Contest::XmlSerializer->new(logger => TestLogger->new);
 my $c = CATS::Contest->new({
     closed => 0,
     ctype => 0,
@@ -95,10 +99,30 @@ q~<Problem>
 <Status>hidden</Status>
 <Tags>tag1,tag2</Tags>
 <TimeLimit>1</TimeLimit>
-<Problem>~;
+</Problem>~;
+
+sub cats_contest {
+    join "\n",
+        q~<?xml version="1.0"?>~,
+        '<CATS-Contest>',
+        @_,
+        '</CATS-Contest>';
+}
 
 is $s->serialize($c), $s->serialize($c), 'purity check';
 is $s->serialize($c), $expected, 'correctness 1';
 
 is $s->serialize_problem($problem), $s->serialize_problem($problem), 'problem purity check';
 is $s->serialize_problem($problem), $problem_expected, 'problem check 1';
+
+my $contest = $s->parse_xml($expected);
+is($contest->{$_}, $c->{$_}, "$_ check") for keys %$contest;
+
+throws_ok { $s->parse_xml(cats_contest('<UnknownTag>123</Closed>')) } qr/Unknown tag/, 'unknown tag at the start';
+throws_ok { $s->parse_xml(cats_contest('<Closed>123</UnknownTag>')) } qr/mismatched tag/, 'unknown tag at the end';
+throws_ok { $s->parse_xml(cats_contest('<UnknownTag/>')) } qr/Unknown tag/, 'unknown void tag';
+throws_ok { $s->parse_xml(cats_contest('<Closed>3</Closed>')) } qr/not bool/, 'not bool';
+throws_ok { $s->parse_xml(cats_contest('<Id>Iamnotid</Id>')) } qr/not int/, 'not int';
+throws_ok { $s->parse_xml(cats_contest('<Rules>advanced</Rules>')) } qr/not enum/, 'not enum or wrong enum value';
+throws_ok { $s->parse_xml(cats_contest('<Closed>1<Rules>normal</Rules></Closed>')) } qr/must be inside/, 'wrong parent tag';
+throws_ok { $s->parse_xml(q~<?xml version="1.0"?><CATS-Contest>~) } qr/no element found/, 'bad xml';
