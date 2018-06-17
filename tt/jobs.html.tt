@@ -27,7 +27,10 @@ function delete_job(href, name) {
 </td>
 <td>[% href(j.href_details, j.id) %]</td>
 <td[% ' class="in_queue"' IF j.in_queue %]>[% capt.jobs.states.item(job_state_to_name.item(j.state)) %]</td>
-<td>[% j.start_time %]</td>
+[% IF visible_cols.Tc %]<td>[% j.create_time %]</td>[% END %]
+[% IF visible_cols.Ts %]<td>[% j.start_time %]</td>[% END %]
+[% IF visible_cols.Tf %]<td>[% j.finish_time %]</td>[% END %]
+[% IF visible_cols.Tt %]<td>[% j.time_len_fmt %]</td>[% END %]
 [% IF visible_cols.Jn %]<td>[% j.judge_name %]</td>[% END %]
 [% IF visible_cols.Pr %]<td>[% href(j.href_problem_text, j.problem_title) %]</td>[% END %]
 [% IF visible_cols.Ct %]<td>[% href(j.href_contest, j.contest_title) %]</td>[% END %]

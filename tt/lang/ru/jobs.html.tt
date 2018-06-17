@@ -1,5 +1,11 @@
 [%
   capt.import({
+    listview_captions => {
+        create_time => 'Создана',
+        start_time => 'Начата',
+        finish_time => 'Закончена',
+        time_len => 'Время',
+    },
     jobs => {
       types => {
         submission => 'попытка',
