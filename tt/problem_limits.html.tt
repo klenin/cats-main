@@ -19,30 +19,30 @@
 </tr>
 [% IF p.limits_id %]
 <tr><td>[% capt.overridden_limits %]</td>
-    <td>
-        <input type="text" name="time_limit" value="[% p.overridden_time_limit %]" size="3" class="bordered"/>
-    </td>
-    <td>
-        <input type="text" name="memory_limit" value="[% p.overridden_memory_limit %]" size="3" class="bordered"/>
-    </td>
-    <td>
-        <input type="text" name="write_limit" value="[% p.overridden_write_limit %]" size="3" class="bordered"/>
-    </td>
-    <td>
-        <input type="text" name="save_output_prefix" value="[% p.overridden_save_output_prefix %]" size="3" class="bordered"/>
-    </td>
-    <td>
-        <textarea name="job_split_strategy" cols="20" rows="3" class="bordered">[% p.overridden_job_split_strategy %]</textarea>
-    </td>
+  <td>
+    <input type="text" name="time_limit" value="[% p.overridden_time_limit %]" size="3" class="bordered"/>
+  </td>
+  <td>
+    <input type="text" name="memory_limit" value="[% p.overridden_memory_limit %]" size="3" class="bordered"/>
+  </td>
+  <td>
+    <input type="text" name="write_limit" value="[% p.overridden_write_limit %]" size="3" class="bordered"/>
+  </td>
+  <td>
+    <input type="text" name="save_output_prefix" value="[% p.overridden_save_output_prefix %]" size="3" class="bordered"/>
+  </td>
+  <td>
+     <textarea name="job_split_strategy" cols="20" rows="3" class="bordered">[% p.overridden_job_split_strategy %]</textarea>
+  </td>
 </tr>
 [% END %]
 <tr>
-    <td colspan="6">
-        <button type="submit" name="override" value="1" class="button">[% capt.override %]</button>
-        [% IF p.limits_id %]
-            <button type="submit" name="clear_override" value="1" class="button">[% capt.clear_override %]</button>
-        [% END %]
-    </td>
+  <td colspan="6">
+    <button type="submit" name="override" value="1" class="button">[% capt.override %]</button>
+    [% IF p.limits_id %]
+      <button type="submit" name="clear_override" value="1" class="button">[% capt.clear_override %]</button>
+    [% END %]
+  </td>
 </tr>
 </table>
 </form>

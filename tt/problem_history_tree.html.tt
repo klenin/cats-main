@@ -7,26 +7,26 @@
 [%- PROCESS includes/html.tti -%]
 <div class="commit_header">[% tree.commit.title | html %]</div>
 <div class="page_path">
-    [% FOREACH path IN tree.paths %]
-        <a href="[% path.href %]">[% path.file_name %]</a>
-        /
-    [% END %]
+  [% FOREACH path IN tree.paths %]
+    <a href="[% path.href %]">[% path.file_name %]</a>
+    /
+  [% END %]
 </div>
 
 <div class="page_body">
-    <table class="tree">
-        [% FOREACH entry IN tree.entries %]
-            <tr class="light">
-                <td class="mode">[% entry.mode %]</td>
-                <td class="size">[% entry.size %]</td>
-                <td class="list"><a class="list" href="[% entry.href %]">[% entry.file_name %]</a></td>
-                <td class="link">
-                    [%- IF entry.href_edit %]<a href="[% entry.href_edit %]" target="_blank">edit</a> | [% END %]
-                    <a href="[% entry.href %]">[% entry.type %]</a>
-                    [%- IF entry.href_raw %] | <a href="[% entry.href_raw %]" target="_blank">raw</a>[% END %]
-                </td>
-            </tr>
-        [% END %]
-    </table>
+  <table class="tree">
+    [% FOREACH entry IN tree.entries %]
+      <tr class="light">
+        <td class="mode">[% entry.mode %]</td>
+        <td class="size">[% entry.size %]</td>
+        <td class="list"><a class="list" href="[% entry.href %]">[% entry.file_name %]</a></td>
+        <td class="link">
+          [%- IF entry.href_edit %]<a href="[% entry.href_edit %]" target="_blank">edit</a> | [% END %]
+          <a href="[% entry.href %]">[% entry.type %]</a>
+          [%- IF entry.href_raw %] | <a href="[% entry.href_raw %]" target="_blank">raw</a>[% END %]
+        </td>
+      </tr>
+    [% END %]
+  </table>
 </div>
 [% PROCESS includes/menu_end.tti %]
