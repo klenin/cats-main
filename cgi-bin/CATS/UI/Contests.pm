@@ -161,7 +161,7 @@ sub contest_problems_installed_frame {
     my $judge_problems = {};
     $judge_problems->{$_->{judge_id}}->{$_->{problem_id}} = $_->{finish_time} for @$already_installed;
 
-    my $problems_to_install = { map { $_->{judge_id} => [] } @$judges };
+    my $problems_to_install = { map { $_->{id} => [] } @$judges };
 
     my $problems_installed = [ map {
         my $judge_id = $_->{id};
