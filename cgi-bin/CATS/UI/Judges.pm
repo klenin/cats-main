@@ -161,6 +161,8 @@ sub judges_frame {
             href_account => url_f('users_edit', uid => $row->{account_id}),
             href_console => url_f('console',
                 search => "judge_id=$jid,state<=T", se => 'judge', i_value => -1, show_results => 1),
+            href_update_jobs => url_f('jobs',
+                search => "judge_id=$jid,type=$cats::job_type_update_self"),
         );
     };
 
