@@ -4,5 +4,6 @@
     ping => 'ping',
     pin_mode => [ 'locked', 'request', 'contest', 'any' ],
     queue => 'Queue',
+    update => 'update to last version',
   })
 %]

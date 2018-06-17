@@ -314,3 +314,4 @@
 1168 "Your problem variant is not ready. View problem text before submitting."
 1169 "Allowed development environments: removed %d, added %d."
 1170 "Created problem installation jobs: %d."
+1171 "Created judge update jobs: %d."

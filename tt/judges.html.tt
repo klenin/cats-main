@@ -21,6 +21,7 @@ function delete_judge(href, name) {
   [% IF editable %]
   <a href="javascript:delete_judge('[% j.href_delete %]', '[% j.judge_name | html %]');" class="icon delete"></a>
   <a href="[% j.href_edit %]" class="icon edit"></a>
+  <input type="checkbox" class="listview_checkbox" name="selected" value="[% j.jid %]"/>
   [% END %]
   [% j.judge_name | html -%]
 </td>
@@ -51,6 +52,9 @@ function delete_judge(href, name) {
 </table>
 <div style="float: left;">[% capt.queue %]: [% not_processed %]</div>
 [% PROCESS includes/pages.tti %]
+[% IF editable %]
+<div style="clear: both;"><button type="submit" name="update" class="button" value="1">[% capt.update %]</button></div>
+[% END %]
 </form>
 
 [% PROCESS includes/menu_end.tti %]

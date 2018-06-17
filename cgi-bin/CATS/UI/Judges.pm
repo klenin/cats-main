@@ -8,6 +8,7 @@ use CATS::DevEnv;
 use CATS::Form;
 use CATS::Globals qw($is_jury $is_root $t);
 use CATS::IP;
+use CATS::Job;
 use CATS::Judge;
 use CATS::JudgeDB;
 use CATS::ListView;
@@ -75,6 +76,18 @@ sub edit_save {
 
 my $form = CATS::Form->new({ table => 'judges', fields => [], });
 
+sub update_judges {
+    my ($p) = @_;
+
+    my $count = 0;
+    for my $judge_id (@{$p->{selected}}) {
+        CATS::Job::create($cats::job_type_update_self, { judge_id => $judge_id }) and ++$count;
+    }
+    $count or return;
+    $dbh->commit;
+    msg(1171, $count);
+}
+
 sub judges_frame {
     my ($p) = @_;
     $is_jury or return;
@@ -85,6 +98,7 @@ sub judges_frame {
             return $p->redirect(url_f 'judges');
         }
         $p->{new} || $p->{edit} and return edit_frame($p);
+        $p->{update} and update_judges($p);
     }
 
     init_template($p, 'judges.html.tt');
@@ -104,7 +118,7 @@ sub judges_frame {
         { caption => res_str(622), order_by => '6', width => '15%' },
         { caption => res_str(676), order_by => 'version', width => '10%', col => 'Vr' },
     ]);
-    $lv->define_db_searches([ qw(J.id nick login is_alive alive_date pin_mode account_id last_ip) ]);
+    $lv->define_db_searches([ qw(J.id nick login version is_alive alive_date pin_mode account_id last_ip) ]);
 
     my $req_counts =
         !$is_root ? '' :
