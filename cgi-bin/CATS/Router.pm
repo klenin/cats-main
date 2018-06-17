@@ -136,7 +136,7 @@ $main_routes = {
         pid => integer, allow => array_of integer, save => bool, ],
     problem_limits => [ \&CATS::UI::ProblemDetails::problem_limits_frame,
         pid => integer, cpid => integer, override => bool, clear_override => bool,
-        (map { $_ => str } @cats::limits_fields),
+        (map { $_ => str } @cats::limits_fields), job_split_strategy => str,
     ],
     problem_download => [ \&CATS::UI::ProblemDetails::problem_download, pid => integer, ],
     problem_git_package => [ \&CATS::UI::ProblemDetails::problem_git_package, pid => integer, sha => sha, ],

@@ -4,9 +4,20 @@
 <h3>[% p.title | html %]</h3>
 <form method="post" enctype="multipart/form-data" action="[% href_action %]">
 <table class="internal_borders padded">
-<tr><td></td><td>[% capt.time %], [% capt.s %]</td><td>[% capt.memory %], [% capt.mb %]</td><td>[% capt.write %], [% capt.b %]</td><td>[% capt.save_output_prefix %], [% capt.b %]</td></tr>
-<tr><td>[% capt.original_limits %]</td><td>[% p.time_limit %]</td><td>[% p.memory_limit %]</td><td>[% p.write_limit %]</td><td>[% p.save_output_prefix %]</td></tr>
-[% IF p.overridden_time_limit || p.overridden_memory_limit || p.overridden_write_limit || p.save_output_prefix %]
+[% fields =
+  [ 'time_limit', 'memory_limit', 'write_limit', 'save_output_prefix', 'job_split_strategy' ] %]
+<tr><td></td>
+  <td>[% capt.time %], [% capt.s %]</td>
+  <td>[% capt.memory %], [% capt.mb %]</td>
+  <td>[% capt.write %], [% capt.b %]</td>
+  <td>[% capt.save_output_prefix %], [% capt.b %]</td>
+  <td>[% capt.job_split_strategy %]</td>
+</tr>
+<tr>
+  <td>[% capt.original_limits %]</td>
+  [% FOREACH f IN fields %]<td>[% p.item(f) %]</td>[% END %]
+</tr>
+[% IF p.limits_id %]
 <tr><td>[% capt.overridden_limits %]</td>
     <td>
         <input type="text" name="time_limit" value="[% p.overridden_time_limit %]" size="3" class="bordered"/>
@@ -20,12 +31,15 @@
     <td>
         <input type="text" name="save_output_prefix" value="[% p.overridden_save_output_prefix %]" size="3" class="bordered"/>
     </td>
+    <td>
+        <textarea name="job_split_strategy" cols="20" rows="3" class="bordered">[% p.overridden_job_split_strategy %]</textarea>
+    </td>
 </tr>
 [% END %]
 <tr>
-    <td colspan="5">
+    <td colspan="6">
         <button type="submit" name="override" value="1" class="button">[% capt.override %]</button>
-        [% IF p.overridden_time_limit || p.overridden_memory_limit || p.overridden_write_limit || p.overridden_save_output_prefix %]
+        [% IF p.limits_id %]
             <button type="submit" name="clear_override" value="1" class="button">[% capt.clear_override %]</button>
         [% END %]
     </td>

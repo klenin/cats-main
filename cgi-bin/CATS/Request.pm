@@ -10,7 +10,6 @@ use CATS::JudgeDB;
 use CATS::Job;
 use CATS::Messages qw(msg);
 
-# Params: limits: { time_limit, memory_limit }
 sub filter_valid_limits {
     my ($limits) = @_;
 
@@ -19,19 +18,19 @@ sub filter_valid_limits {
         memory_limit => sub { $_[0] =~ m/^\+?\d+$/ },
         write_limit => sub { $_[0] =~ m/^\+?\d+$/ },
         save_output_prefix => sub { $_[0] =~ m/^\+?\d+$/ },
+        job_split_strategy => sub { 1 },
     );
 
-    return { map { $_ => $limits->{$_} } grep $validators{$_}->($limits->{$_} // ''), @cats::limits_fields };
+    +{ map { $_ => $limits->{$_} } grep $validators{$_}->($limits->{$_} // ''), keys %$limits };
 }
 
-# Params: limits_id = new_id, limits: { time_limit, memory_limit }
 sub set_limits {
     my ($limits_id, $limits) = @_;
 
     %$limits or return;
 
     $dbh->do(_u $limits_id ?
-        $sql->update('limits', { map { $_ => $limits->{$_} } @cats::limits_fields }, { id => $limits_id }) :
+        $sql->update('limits', $limits, { id => $limits_id }) :
         $sql->insert('limits', { id => ($limits_id = new_id), %$limits }));
 
     $limits_id;
@@ -43,11 +42,11 @@ sub clone_limits {
     $limits_id or die;
 
     my $cloned_limits_id = new_id;
-    my $limits_keys_list = join ', ', @cats::limits_fields;
+    my $limits_keys_list = join ', ', @cats::limits_fields, 'job_split_strategy';
 
     $dbh->do(qq~
-        INSERT INTO LIMITS (id, $limits_keys_list)
-        SELECT ?, $limits_keys_list FROM LIMITS WHERE id = ?~, undef,
+        INSERT INTO limits (id, $limits_keys_list)
+        SELECT ?, $limits_keys_list FROM limits WHERE id = ?~, undef,
         $cloned_limits_id, $limits_id
     );
 
