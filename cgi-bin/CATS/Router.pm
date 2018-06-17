@@ -324,7 +324,7 @@ $main_routes = {
 };
 
 $api_judge_routes = {
-    get_judge_id => \&CATS::ApiJudge::get_judge_id,
+    get_judge_id => [ \&CATS::ApiJudge::get_judge_id, version => str ],
     api_judge_get_des => [ \&CATS::ApiJudge::get_DEs, active_only => bool, id => integer, ],
     api_judge_get_problem => [ \&CATS::ApiJudge::get_problem, pid => integer, ],
     api_judge_get_problem_sources => [ \&CATS::ApiJudge::get_problem_sources, pid => integer, ],
