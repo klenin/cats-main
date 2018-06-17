@@ -20,9 +20,9 @@ sub prepare_server_time {
 my $half_minute = 0.5 / 24 / 60;
 
 sub format_diff {
-    my ($dt, $display_plus) = @_;
+    my ($dt, %opts) = @_;
     $dt or return '';
-    my $sign = $dt < 0 ? '-' : $display_plus ? '+' : '';
+    my $sign = $dt < 0 ? '-' : $opts{display_plus} ? '+' : '';
     $dt = abs($dt) + $half_minute;
     my $days = int($dt);
     $dt = ($dt - $days) * 24;
@@ -34,8 +34,8 @@ sub format_diff {
 }
 
 sub format_diff_ext {
-    my ($diff, $ext, $display_plus) = @_;
-    format_diff($diff, $display_plus) . ($ext ? ' ... ' . format_diff($ext, $display_plus) : '');
+    my ($diff, $ext, %opts) = @_;
+    format_diff($diff, %opts) . ($ext ? ' ... ' . format_diff($ext, %opts) : '');
 }
 
 my ($start_time, $init_time);

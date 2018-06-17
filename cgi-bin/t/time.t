@@ -30,7 +30,7 @@ is fd(1/24/60), '0:01', '1 minute';
 is fd(23/24 + 15/24/60), '23:15', '23:15';
 
 is fd(-1.5), '-1 d. 12:00', 'minus day';
-is fd(1/3, 1), '+8:00', 'force plus';
+is fd(1/3, display_plus => 1), '+8:00', 'force plus';
 
 is fd(1.9999999), '2 d. 00:00', 'rounding';
 is fd(-1.9999999), '-2 d. 00:00', 'negative rounding';

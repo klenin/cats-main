@@ -269,7 +269,7 @@ sub users_frame {
             editable_attrs =>
                 ($is_jury || (!$user->{site_id} || $user->{site_id} == ($site_id // 0)) && $uid && $aid != $uid),
             virtual => $virtual,
-            formatted_time => CATS::Time::format_diff_ext($diff_time, $ext_time, 1),
+            formatted_time => CATS::Time::format_diff_ext($diff_time, $ext_time, display_plus => 1),
          );
     };
 
