@@ -96,12 +96,13 @@ sub judges_frame {
     }
 
     $lv->define_columns(url_f('judges'), 0, 0, [
-        { caption => res_str(625), order_by => '2', width => '25%' },
+        { caption => res_str(625), order_by => '2', width => '15%' },
         ($is_root ? ({ caption => res_str(616), order_by =>  '3', width => '25%', col => 'Lg' }) : ()),
         ($is_root ? ({ caption => res_str(649), order_by => '10', width => '10%', col => 'Rq' }) : ()),
         { caption => res_str(626), order_by => '4', width => '10%', col => 'Re' },
         { caption => res_str(633), order_by => '5', width => '15%' },
-        { caption => res_str(622), order_by => '6', width => '10%' },
+        { caption => res_str(622), order_by => '6', width => '15%' },
+        { caption => res_str(676), order_by => 'version', width => '10%', col => 'Vr' },
     ]);
     $lv->define_db_searches([ qw(J.id nick login is_alive alive_date pin_mode account_id last_ip) ]);
 
@@ -114,7 +115,7 @@ sub judges_frame {
 
     my $c = $dbh->prepare(qq~
         SELECT
-            J.id, J.nick, A.login, J.is_alive, J.alive_date, J.pin_mode,
+            J.id, J.nick, A.login, J.version, J.is_alive, J.alive_date, J.pin_mode,
             A.id, A.last_ip, A.restrict_ips$req_counts
         FROM judges J LEFT JOIN accounts A ON A.id = J.account_id WHERE 1 = 1 ~ .
         $lv->maybe_where_cond . $lv->order_by);
@@ -122,7 +123,7 @@ sub judges_frame {
 
     my $fetch_record = sub {
         my (
-            $jid, $judge_name, $account_name, $is_alive, $alive_date, $pin_mode,
+            $jid, $judge_name, $account_name, $version, $is_alive, $alive_date, $pin_mode,
             $account_id, $last_ip, $restrict_ips,
             $processing_count, $processed_count
         ) = $_[0]->fetchrow_array or return ();
@@ -130,6 +131,7 @@ sub judges_frame {
             jid => $jid,
             judge_name => $judge_name,
             account_name => $account_name,
+            version => $version,
             CATS::IP::linkify_ip($last_ip),
             restrict_ips => $restrict_ips,
             pin_mode => $pin_mode,
