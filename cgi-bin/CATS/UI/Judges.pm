@@ -134,43 +134,31 @@ sub judges_frame {
     $lv->define_db_searches([ qw(J.id nick login version is_alive alive_date pin_mode account_id last_ip) ]);
 
     my $req_counts =
-        !$is_root ? '' :
-        !$lv->visible_cols->{Rq} ? ', NULL AS processing_count, NULL' :
+        !$is_root || !$lv->visible_cols->{Rq} ? ', NULL AS processing_count, NULL AS processed_count' :
         qq~,
         (SELECT COUNT(*) FROM reqs R WHERE R.judge_id = J.id AND R.state <= $cats::st_testing) AS processing_count,
-        (SELECT COUNT(*) FROM reqs R WHERE R.judge_id = J.id)~;
+        (SELECT COUNT(*) FROM reqs R WHERE R.judge_id = J.id) AS processed_count~;
 
     my $c = $dbh->prepare(qq~
         SELECT
-            J.id, J.nick, A.login, J.version, J.is_alive, J.alive_date, J.pin_mode,
-            A.id, A.last_ip, A.restrict_ips$req_counts
+            J.id AS jid, J.nick AS judge_name, A.login AS account_name,
+            J.version, J.is_alive, J.alive_date, J.pin_mode,
+            A.id AS account_id, A.last_ip, A.restrict_ips$req_counts
         FROM judges J LEFT JOIN accounts A ON A.id = J.account_id WHERE 1 = 1 ~ .
         $lv->maybe_where_cond . $lv->order_by);
     $c->execute($lv->where_params);
 
     my $fetch_record = sub {
-        my (
-            $jid, $judge_name, $account_name, $version, $is_alive, $alive_date, $pin_mode,
-            $account_id, $last_ip, $restrict_ips,
-            $processing_count, $processed_count
-        ) = $_[0]->fetchrow_array or return ();
+        my $row = $_[0]->fetchrow_hashref or return ();
+        my $jid = $row->{jid};
         return (
-            jid => $jid,
-            judge_name => $judge_name,
-            account_name => $account_name,
-            version => $version,
-            CATS::IP::linkify_ip($last_ip),
-            restrict_ips => $restrict_ips,
-            pin_mode => $pin_mode,
-            is_alive => $is_alive,
-            alive_date => $alive_date,
-            processing_count => $processing_count,
-            processed_count => $processed_count,
+            %$row,
+            CATS::IP::linkify_ip($row->{last_ip}),
 
             href_ping => url_f('judges', ping => $jid),
             href_edit => url_f('judges', edit => $jid),
             href_delete => url_f('judges', 'delete' => $jid),
-            href_account => url_f('users_edit', uid => $account_id),
+            href_account => url_f('users_edit', uid => $row->{account_id}),
             href_console => url_f('console',
                 search => "judge_id=$jid,state<=T", se => 'judge', i_value => -1, show_results => 1),
         );
