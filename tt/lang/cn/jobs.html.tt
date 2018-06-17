@@ -6,6 +6,7 @@
         snippets => 'snippets',
         install => 'install',
         submission_part => 'part',
+        update_self => 'update self',
       },
       states => {
         waiting => 'waiting',

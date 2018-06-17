@@ -33,6 +33,7 @@ BEGIN {
         snippets => $cats::job_type_generate_snippets,
         install => $cats::job_type_initialize_problem,
         submission_part => $cats::job_type_submission_part,
+        update_self => $cats::job_type_update_self,
     };
     my $name_to_state = {
         waiting => $cats::job_st_waiting,

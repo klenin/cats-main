@@ -6,6 +6,7 @@
         snippets => 'фрагменты',
         install => 'установка',
         submission_part => 'часть',
+        update_self => 'обновиться',
       },
       states => {
         waiting => 'ожидает',
