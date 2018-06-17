@@ -44,7 +44,7 @@ function delete_judge(href, name) {
 [% IF visible_cols.Re %]
 <td>[% j.is_alive; IF editable && j.is_alive %] [<a href="[% j.href_ping %]">[% capt.ping %]</a>][% END %]</td>
 [% END %]
-<td>[% j.alive_date %]</td>
+[% IF visible_cols.Ad %]<td>[% j.alive_date %]</td>[% END %]
 <td style="color: [% pin_colors.item(j.pin_mode) %];">[% capt.pin_mode_values.item(j.pin_mode) %]</td>
 [% IF visible_cols.Vr %]<td>[% j.version %]</td>[% END %]
 </tr>

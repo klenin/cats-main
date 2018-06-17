@@ -123,21 +123,21 @@ sub judges_frame {
     }
 
     $lv->define_columns(url_f('judges'), 0, 0, [
-        { caption => res_str(625), order_by => '2', width => '15%' },
-        ($is_root ? ({ caption => res_str(616), order_by =>  '3', width => '25%', col => 'Lg' }) : ()),
-        ($is_root ? ({ caption => res_str(649), order_by => '10', width => '10%', col => 'Rq' }) : ()),
-        { caption => res_str(626), order_by => '4', width => '10%', col => 'Re' },
-        { caption => res_str(633), order_by => '5', width => '15%' },
-        { caption => res_str(622), order_by => '6', width => '15%' },
-        { caption => res_str(676), order_by => 'version', width => '10%', col => 'Vr' },
+        { caption => res_str(625), order_by => 'nick', width => '15%' },
+        ($is_root ? ({ caption => res_str(616), order_by =>  'login', width => '25%', col => 'Lg' }) : ()),
+        ($is_root ? ({ caption => res_str(649), order_by => 'processing_count', width => '10%', col => 'Rq' }) : ()),
+        { caption => res_str(626), order_by => 'is_alive', width => '10%', col => 'Re' },
+        { caption => res_str(633), order_by => 'alive_date', width => '10%', col => 'Ad' },
+        { caption => res_str(622), order_by => 'pin_mode', width => '10%' },
+        { caption => res_str(676), order_by => 'version', width => '15%', col => 'Vr' },
     ]);
     $lv->define_db_searches([ qw(J.id nick login version is_alive alive_date pin_mode account_id last_ip) ]);
 
     my $req_counts =
         !$is_root ? '' :
-        !$lv->visible_cols->{Rq} ? ', NULL, NULL' :
+        !$lv->visible_cols->{Rq} ? ', NULL AS processing_count, NULL' :
         qq~,
-        (SELECT COUNT(*) FROM reqs R WHERE R.judge_id = J.id AND R.state <= $cats::st_testing),
+        (SELECT COUNT(*) FROM reqs R WHERE R.judge_id = J.id AND R.state <= $cats::st_testing) AS processing_count,
         (SELECT COUNT(*) FROM reqs R WHERE R.judge_id = J.id)~;
 
     my $c = $dbh->prepare(qq~
