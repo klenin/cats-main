@@ -315,3 +315,4 @@
 1169 "Allowed development environments: removed %d, added %d."
 1170 "Created problem installation jobs: %d."
 1171 "Created judge update jobs: %d."
+1172 "Pin modes changed: %d."

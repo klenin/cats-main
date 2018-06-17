@@ -53,7 +53,18 @@ function delete_judge(href, name) {
 <div style="float: left;">[% capt.queue %]: [% not_processed %]</div>
 [% PROCESS includes/pages.tti %]
 [% IF editable %]
-<div style="clear: both;"><button type="submit" name="update" class="button" value="1">[% capt.update %]</button></div>
+<div style="clear: both;">
+  <button type="submit" name="set_pin_mode" class="button" value="1">[% capt.pin_mode %]:</button>
+  [%
+    pin_modes = [];
+    FOR pin_mode_value IN capt.pin_mode_values;
+      pin_modes.push({ value => loop.index , text => pin_mode_value });
+    END;
+    select_value('pin_mode', pin_modes, pin_mode);
+  %]
+  <button type="submit" name="update" class="button" value="1">[% capt.update %]</button>
+
+</div>
 [% END %]
 </form>
 

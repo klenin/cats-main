@@ -2,7 +2,6 @@
   capt.import({
     want_to_delete => 'Do you really want to delete judge',
     ping => 'ping',
-    pin_mode => [ 'locked', 'request', 'contest', 'any' ],
     queue => 'Queue',
     update => 'update to last version',
   })

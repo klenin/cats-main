@@ -219,7 +219,7 @@ $main_routes = {
     judges => [ \&CATS::UI::Judges::judges_frame,
         ping => integer, %form_params,
         id => integer, judge_name => str, account_name => str, pin_mode => integer,
-        selected => array_of integer, update => bool,
+        selected => array_of integer, update => bool, set_pin_mode => bool,
     ],
     keywords => [ \&CATS::UI::Keywords::keywords_frame,
         %form_params,

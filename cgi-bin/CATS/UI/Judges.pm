@@ -88,6 +88,18 @@ sub update_judges {
     msg(1171, $count);
 }
 
+sub set_pin_mode {
+    my ($p) = @_;
+
+    my $count = 0;
+    my $sth = $dbh->prepare(q~
+        UPDATE judges SET pin_mode = ? WHERE pin_mode <> ? AND id = ?~);
+    $count += $sth->execute($p->{pin_mode}, $p->{pin_mode}, $_) for @{$p->{selected}};
+    $count or return;
+    $dbh->commit;
+    msg(1172, $count);
+}
+
 sub judges_frame {
     my ($p) = @_;
     $is_jury or return;
@@ -99,6 +111,7 @@ sub judges_frame {
         }
         $p->{new} || $p->{edit} and return edit_frame($p);
         $p->{update} and update_judges($p);
+        $p->{set_pin_mode} && defined $p->{pin_mode} and set_pin_mode($p);
     }
 
     init_template($p, 'judges.html.tt');

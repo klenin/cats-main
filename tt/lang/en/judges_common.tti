@@ -1,5 +1,6 @@
 [%
   capt.import({
+    pin_mode => 'Pin mode',
     pin_mode_values => [ 'locked', 'request', 'contest', 'any' ]
   })
 %]
