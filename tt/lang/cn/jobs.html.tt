@@ -1,11 +1,18 @@
 [%
   capt.import({
+    listview_captions => {
+        create_time => 'Created',
+        start_time => 'Started',
+        finish_time => 'Finished',
+        time_len => '时间',
+    },
     jobs => {
       types => {
         submission => 'submission',
         snippets => 'snippets',
         install => 'install',
         submission_part => 'part',
+        update_self => 'update self',
       },
       states => {
         waiting => 'waiting',
@@ -13,6 +20,7 @@
         finished => 'finished',
         failed => 'failed',
         waiting_for_verdict => 'verdict',
+        canceled => 'canceled',
       },
     },
   })

@@ -282,7 +282,7 @@ sub user_vdiff_frame {
     $t->param(
         user_submenu('user_vdiff', $p->{uid}, $u->{site_id}),
         u => $u,
-        (map { +"formatted_$_" => CATS::Time::format_diff($u->{$_}, 1) }
+        (map { +"formatted_$_" => CATS::Time::format_diff($u->{$_}, display_plus => 1) }
             qw(diff_time site_diff_time ext_time site_ext_time since_start since_finish) ),
         can_finish_now => can_finish_now($u),
         title_suffix => $u->{team_name},

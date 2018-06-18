@@ -27,7 +27,7 @@ GRANT SELECT ON TABLE jobs_queue TO judge;
 GRANT UPDATE(sid, last_login, last_ip)
     ON TABLE accounts TO judge;
 
-GRANT UPDATE(is_alive, alive_date)
+GRANT UPDATE(version, is_alive, alive_date)
     ON TABLE judges TO judge;
 
 GRANT INSERT, UPDATE
@@ -60,5 +60,5 @@ GRANT INSERT
 GRANT UPDATE(state, start_time, finish_time, judge_id)
     ON TABLE jobs TO judge;
 
-GRANT DELETE
+GRANT DELETE, INSERT
     ON TABLE jobs_queue TO judge;

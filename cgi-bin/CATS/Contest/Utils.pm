@@ -190,6 +190,7 @@ sub anonymous_contests_view {
 my $contest_submenu = [
     { href => 'contest_params', item => 594 },
     { href => 'contest_problems_installed', item => 595 },
+    { href => 'contest_xml', item => 596 },
 ];
 
 sub contest_submenu {

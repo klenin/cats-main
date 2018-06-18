@@ -12,14 +12,14 @@ table.iface tr td { padding: 0; }
 
 table.header {
     background-color: #ffcc55;
-    background-image: url(../images/std/bg.gif);
+    background-image: url(../images/bg.gif);
     background-repeat: no-repeat;
     background-position: right;
     color: #333300;
 }
 table.header td { }
 table.header td.contest_title {
-    background-image: url(../images/std/logo.gif);
+    background-image: url(../images/logo.gif);
     background-repeat: no-repeat;
     background-position: left center;
     font-size: x-large;
@@ -89,7 +89,7 @@ tr.footer2, tr.footer2 td, tr.footer2 td a {
 }
 
 td.footer_image {
-    background-image: url(../../images/std/bg2.gif);
+    background-image: url(../images/bg2.gif);
     background-repeat: no-repeat;
 }
 

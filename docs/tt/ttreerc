@@ -12,4 +12,4 @@ depend io.ru.tt = io.tti
 src = .
 dest = ..
 lib = .
-lib = ../../../../tt
+lib = ../../tt

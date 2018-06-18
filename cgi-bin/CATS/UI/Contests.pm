@@ -7,6 +7,7 @@ use CATS::Constants;
 use CATS::Contest::Participate qw(get_registered_contestant is_jury_in_contest);
 use CATS::Contest;
 use CATS::Contest::Utils;
+use CATS::Contest::XmlSerializer;
 use CATS::DB;
 use CATS::Globals qw($cid $contest $is_jury $is_root $sid $t $uid $user);
 use CATS::ListView;
@@ -160,7 +161,7 @@ sub contest_problems_installed_frame {
     my $judge_problems = {};
     $judge_problems->{$_->{judge_id}}->{$_->{problem_id}} = $_->{finish_time} for @$already_installed;
 
-    my $problems_to_install = { map { $_->{judge_id} => [] } @$judges };
+    my $problems_to_install = { map { $_->{id} => [] } @$judges };
 
     my $problems_installed = [ map {
         my $judge_id = $_->{id};
@@ -348,6 +349,27 @@ sub contests_frame {
         submenu => $submenu,
         CATS::Contest::Participate::flags_can_participate,
     );
+}
+
+sub contest_xml_frame {
+    my ($p) = @_;
+
+    init_template($p, 'contest_xml.html.tt');
+    $is_jury or return;
+
+    my $c = $dbh->selectrow_hashref(q~
+        SELECT * FROM contests WHERE id = ?~, { Slice => {} },
+        $cid) or return;
+    
+    my $problems = $dbh->selectall_arrayref(q~
+      SELECT * FROM contest_problems CP
+      WHERE CP.contest_id = ? ORDER BY CP.code~, { Slice => {} },
+      $cid
+    );
+    $t->param(
+        contest_xml => CATS::Contest::XmlSerializer->new->serialize($c, $problems),
+    );
+    CATS::Contest::Utils::contest_submenu('contest_xml', $cid);
 }
 
 1;

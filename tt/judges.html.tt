@@ -21,6 +21,7 @@ function delete_judge(href, name) {
   [% IF editable %]
   <a href="javascript:delete_judge('[% j.href_delete %]', '[% j.judge_name | html %]');" class="icon delete"></a>
   <a href="[% j.href_edit %]" class="icon edit"></a>
+  <input type="checkbox" class="listview_checkbox" name="selected" value="[% j.jid %]"/>
   [% END %]
   [% j.judge_name | html -%]
 </td>
@@ -43,13 +44,28 @@ function delete_judge(href, name) {
 [% IF visible_cols.Re %]
 <td>[% j.is_alive; IF editable && j.is_alive %] [<a href="[% j.href_ping %]">[% capt.ping %]</a>][% END %]</td>
 [% END %]
-<td>[% j.alive_date %]</td>
+[% IF visible_cols.Ad %]<td>[% j.alive_date %]</td>[% END %]
 <td style="color: [% pin_colors.item(j.pin_mode) %];">[% capt.pin_mode_values.item(j.pin_mode) %]</td>
+[% IF visible_cols.Vr %]<td>[% href(j.href_update_jobs, j.version) %]</td>[% END %]
 </tr>
 [% END %]
 </table>
 <div style="float: left;">[% capt.queue %]: [% not_processed %]</div>
 [% PROCESS includes/pages.tti %]
+[% IF editable %]
+<div style="clear: both;">
+  <button type="submit" name="set_pin_mode" class="button" value="1">[% capt.pin_mode %]:</button>
+  [%
+    pin_modes = [];
+    FOR pin_mode_value IN capt.pin_mode_values;
+      pin_modes.push({ value => loop.index , text => pin_mode_value });
+    END;
+    select_value('pin_mode', pin_modes, pin_mode);
+  %]
+  <button type="submit" name="update" class="button" value="1">[% capt.update %]</button>
+
+</div>
+[% END %]
 </form>
 
 [% PROCESS includes/menu_end.tti %]

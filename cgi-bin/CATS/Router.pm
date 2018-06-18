@@ -75,6 +75,7 @@ $main_routes = {
     ],
     contests_new => [ \&CATS::UI::Contests::contests_new_frame, ],
     contest_params => [ \&CATS::UI::Contests::contest_params_frame, id => integer, ],
+    contest_xml => [ \&CATS::UI::Contests::contest_xml_frame, ],
     contest_sites => [ \&CATS::UI::Sites::contest_sites_frame, add => bool, delete => integer, check => array_of integer, ],
     contest_sites_edit => [ \&CATS::UI::Sites::contest_sites_edit_frame,
         site_id => integer,
@@ -135,7 +136,7 @@ $main_routes = {
         pid => integer, allow => array_of integer, save => bool, ],
     problem_limits => [ \&CATS::UI::ProblemDetails::problem_limits_frame,
         pid => integer, cpid => integer, override => bool, clear_override => bool,
-        (map { $_ => str } @cats::limits_fields),
+        (map { $_ => str } @cats::limits_fields), job_split_strategy => str,
     ],
     problem_download => [ \&CATS::UI::ProblemDetails::problem_download, pid => integer, ],
     problem_git_package => [ \&CATS::UI::ProblemDetails::problem_git_package, pid => integer, sha => sha, ],
@@ -218,6 +219,7 @@ $main_routes = {
     judges => [ \&CATS::UI::Judges::judges_frame,
         ping => integer, %form_params,
         id => integer, judge_name => str, account_name => str, pin_mode => integer,
+        selected => array_of integer, update => bool, set_pin_mode => bool,
     ],
     keywords => [ \&CATS::UI::Keywords::keywords_frame,
         %form_params,
@@ -323,7 +325,7 @@ $main_routes = {
 };
 
 $api_judge_routes = {
-    get_judge_id => \&CATS::ApiJudge::get_judge_id,
+    get_judge_id => [ \&CATS::ApiJudge::get_judge_id, version => str ],
     api_judge_get_des => [ \&CATS::ApiJudge::get_DEs, active_only => bool, id => integer, ],
     api_judge_get_problem => [ \&CATS::ApiJudge::get_problem, pid => integer, ],
     api_judge_get_problem_sources => [ \&CATS::ApiJudge::get_problem_sources, pid => integer, ],
@@ -348,6 +350,7 @@ $api_judge_routes = {
         \&CATS::ApiJudge::set_request_state,
         req_id => integer,
         state => integer,
+        job_id => integer,
         problem_id => integer,
         contest_id => integer,
         failed_test => integer,
@@ -369,8 +372,8 @@ $api_judge_routes = {
         job_state => integer,
     ],
     api_judge_get_tests_req_details => [ \&CATS::ApiJudge::get_tests_req_details, req_id => integer, ],
-    api_judge_delete_req_details => [ \&CATS::ApiJudge::delete_req_details, req_id => integer, ],
-    api_judge_insert_req_details => [ \&CATS::ApiJudge::insert_req_details, params => str, ],
+    api_judge_delete_req_details => [ \&CATS::ApiJudge::delete_req_details, req_id => integer, job_id => integer, ],
+    api_judge_insert_req_details => [ \&CATS::ApiJudge::insert_req_details, job_id => integer, params => str, ],
     api_judge_save_input_test_data => [
         \&CATS::ApiJudge::save_input_test_data,
         problem_id => integer,

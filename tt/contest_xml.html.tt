@@ -1,0 +1,5 @@
+[% PROCESS includes/menu_begin.tti %]
+
+<textarea rows="40" cols="60">[% contest_xml | html %]</textarea>
+
+[% PROCESS includes/menu_end.tti %]

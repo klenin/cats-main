@@ -60,6 +60,7 @@ CREATE TABLE judges (
     id               INTEGER NOT NULL PRIMARY KEY,
     account_id       INTEGER UNIQUE REFERENCES accounts(id) ON DELETE SET NULL,
     nick             VARCHAR(32) NOT NULL,
+    version          VARCHAR(100),
     pin_mode         INTEGER DEFAULT 0,
     is_alive         INTEGER DEFAULT 0 CHECK (is_alive IN (0, 1)),
     alive_date       TIMESTAMP
@@ -157,12 +158,13 @@ ALTER TABLE contest_accounts
     ADD CONSTRAINT contest_account_site_org CHECK (is_site_org IN (0, 1));
 
 CREATE TABLE limits (
-    id              INTEGER NOT NULL PRIMARY KEY,
-    time_limit      FLOAT,
-    memory_limit    INTEGER,
-    process_limit   INTEGER,
-    write_limit     INTEGER,
-    save_output_prefix INTEGER
+    id                 INTEGER NOT NULL PRIMARY KEY,
+    time_limit         FLOAT,
+    memory_limit       INTEGER,
+    process_limit      INTEGER,
+    write_limit        INTEGER,
+    save_output_prefix INTEGER,
+    job_split_strategy VARCHAR(200)
 );
 
 CREATE TABLE problems (

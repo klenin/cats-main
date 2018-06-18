@@ -1,11 +1,18 @@
 [%
   capt.import({
+    listview_captions => {
+        create_time => 'Создана',
+        start_time => 'Начата',
+        finish_time => 'Закончена',
+        time_len => 'Время',
+    },
     jobs => {
       types => {
         submission => 'попытка',
         snippets => 'фрагменты',
         install => 'установка',
         submission_part => 'часть',
+        update_self => 'обновиться',
       },
       states => {
         waiting => 'ожидает',
@@ -13,6 +20,7 @@
         finished => 'завершена',
         failed => 'ошибка',
         waiting_for_verdict => 'вердикт',
+        canceled => 'отменена',
       },
     },
   })

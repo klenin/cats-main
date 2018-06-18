@@ -182,7 +182,13 @@ PerlSetEnv CATS_DIR ${CATS_ROOT}/cgi-bin/
 		Require all granted
 	</Directory>
 
-	<Directory "${CATS_ROOT}/images/std/">
+	<Directory "${CATS_ROOT}/images/">
+		AllowOverride Options=Indexes,MultiViews,ExecCGI FileInfo
+		Require all granted
+	</Directory>
+
+	Alias /cats/css/ "${CATS_ROOT}/css/"
+	<Directory "${CATS_ROOT}/css/">
 		AllowOverride Options=Indexes,MultiViews,ExecCGI FileInfo
 		Require all granted
 	</Directory>
@@ -190,7 +196,6 @@ PerlSetEnv CATS_DIR ${CATS_ROOT}/cgi-bin/
 	Alias /cats/synh/ "${CATS_ROOT}/synhighlight/"
 	Alias /cats/images/ "${CATS_ROOT}/images/"
 	Alias /cats/js/ "${CATS_ROOT}/js/"
-	Alias /cats/css/ "${CATS_ROOT}/css/"
 	Alias /cats/ "${CATS_ROOT}/cgi-bin/"
 </VirtualHost>
 EOF
@@ -201,8 +206,8 @@ EOF
 	sudo a2dissite 000-default
 	sudo a2enmod expires
 	sudo a2enmod apreq2
-	# now adjust permissions
-	sudo chgrp -R ${http_group} cgi-bin download static templates tt
+	# Adjust permissions.
+	sudo chgrp -R ${http_group} cgi-bin css download static tt
 	chmod -R g+r cgi-bin
 	chmod g+rw static tt download/{,att,img,pr,vis} cgi-bin/rank_cache{,/r} cgi-bin/repos
 	sudo service apache2 reload

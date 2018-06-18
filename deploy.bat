@@ -280,10 +280,6 @@ __END__
 :create_symbolic_links
 @setlocal
 	@echo Creating symbolic links to directories...
-	@del /Q images > nul
-	@del /Q docs > nul
-	@mklink /D images template\std\images
-	@mklink /D docs templates\std\docs
 @endlocal
 @goto :eof
 

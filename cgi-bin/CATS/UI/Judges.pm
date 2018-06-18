@@ -8,6 +8,7 @@ use CATS::DevEnv;
 use CATS::Form;
 use CATS::Globals qw($is_jury $is_root $t);
 use CATS::IP;
+use CATS::Job;
 use CATS::Judge;
 use CATS::JudgeDB;
 use CATS::ListView;
@@ -75,6 +76,30 @@ sub edit_save {
 
 my $form = CATS::Form->new({ table => 'judges', fields => [], });
 
+sub update_judges {
+    my ($p) = @_;
+
+    my $count = 0;
+    for my $judge_id (@{$p->{selected}}) {
+        CATS::Job::create($cats::job_type_update_self, { judge_id => $judge_id }) and ++$count;
+    }
+    $count or return;
+    $dbh->commit;
+    msg(1171, $count);
+}
+
+sub set_pin_mode {
+    my ($p) = @_;
+
+    my $count = 0;
+    my $sth = $dbh->prepare(q~
+        UPDATE judges SET pin_mode = ? WHERE pin_mode <> ? AND id = ?~);
+    $count += $sth->execute($p->{pin_mode}, $p->{pin_mode}, $_) for @{$p->{selected}};
+    $count or return;
+    $dbh->commit;
+    msg(1172, $count);
+}
+
 sub judges_frame {
     my ($p) = @_;
     $is_jury or return;
@@ -85,6 +110,8 @@ sub judges_frame {
             return $p->redirect(url_f 'judges');
         }
         $p->{new} || $p->{edit} and return edit_frame($p);
+        $p->{update} and update_judges($p);
+        $p->{set_pin_mode} && defined $p->{pin_mode} and set_pin_mode($p);
     }
 
     init_template($p, 'judges.html.tt');
@@ -96,54 +123,46 @@ sub judges_frame {
     }
 
     $lv->define_columns(url_f('judges'), 0, 0, [
-        { caption => res_str(625), order_by => '2', width => '25%' },
-        ($is_root ? ({ caption => res_str(616), order_by =>  '3', width => '25%', col => 'Lg' }) : ()),
-        ($is_root ? ({ caption => res_str(649), order_by => '10', width => '10%', col => 'Rq' }) : ()),
-        { caption => res_str(626), order_by => '4', width => '10%', col => 'Re' },
-        { caption => res_str(633), order_by => '5', width => '15%' },
-        { caption => res_str(622), order_by => '6', width => '10%' },
+        { caption => res_str(625), order_by => 'nick', width => '15%' },
+        ($is_root ? ({ caption => res_str(616), order_by =>  'login', width => '25%', col => 'Lg' }) : ()),
+        ($is_root ? ({ caption => res_str(649), order_by => 'processing_count', width => '10%', col => 'Rq' }) : ()),
+        { caption => res_str(626), order_by => 'is_alive', width => '10%', col => 'Re' },
+        { caption => res_str(633), order_by => 'alive_date', width => '10%', col => 'Ad' },
+        { caption => res_str(622), order_by => 'pin_mode', width => '10%' },
+        { caption => res_str(676), order_by => 'version', width => '15%', col => 'Vr' },
     ]);
-    $lv->define_db_searches([ qw(J.id nick login is_alive alive_date pin_mode account_id last_ip) ]);
+    $lv->define_db_searches([ qw(J.id nick login version is_alive alive_date pin_mode account_id last_ip) ]);
 
     my $req_counts =
-        !$is_root ? '' :
-        !$lv->visible_cols->{Rq} ? ', NULL, NULL' :
+        !$is_root || !$lv->visible_cols->{Rq} ? ', NULL AS processing_count, NULL AS processed_count' :
         qq~,
-        (SELECT COUNT(*) FROM reqs R WHERE R.judge_id = J.id AND R.state <= $cats::st_testing),
-        (SELECT COUNT(*) FROM reqs R WHERE R.judge_id = J.id)~;
+        (SELECT COUNT(*) FROM reqs R WHERE R.judge_id = J.id AND R.state <= $cats::st_testing) AS processing_count,
+        (SELECT COUNT(*) FROM reqs R WHERE R.judge_id = J.id) AS processed_count~;
 
     my $c = $dbh->prepare(qq~
         SELECT
-            J.id, J.nick, A.login, J.is_alive, J.alive_date, J.pin_mode,
-            A.id, A.last_ip, A.restrict_ips$req_counts
+            J.id AS jid, J.nick AS judge_name, A.login AS account_name,
+            J.version, J.is_alive, J.alive_date, J.pin_mode,
+            A.id AS account_id, A.last_ip, A.restrict_ips$req_counts
         FROM judges J LEFT JOIN accounts A ON A.id = J.account_id WHERE 1 = 1 ~ .
         $lv->maybe_where_cond . $lv->order_by);
     $c->execute($lv->where_params);
 
     my $fetch_record = sub {
-        my (
-            $jid, $judge_name, $account_name, $is_alive, $alive_date, $pin_mode,
-            $account_id, $last_ip, $restrict_ips,
-            $processing_count, $processed_count
-        ) = $_[0]->fetchrow_array or return ();
+        my $row = $_[0]->fetchrow_hashref or return ();
+        my $jid = $row->{jid};
         return (
-            jid => $jid,
-            judge_name => $judge_name,
-            account_name => $account_name,
-            CATS::IP::linkify_ip($last_ip),
-            restrict_ips => $restrict_ips,
-            pin_mode => $pin_mode,
-            is_alive => $is_alive,
-            alive_date => $alive_date,
-            processing_count => $processing_count,
-            processed_count => $processed_count,
+            %$row,
+            CATS::IP::linkify_ip($row->{last_ip}),
 
             href_ping => url_f('judges', ping => $jid),
             href_edit => url_f('judges', edit => $jid),
             href_delete => url_f('judges', 'delete' => $jid),
-            href_account => url_f('users_edit', uid => $account_id),
+            href_account => url_f('users_edit', uid => $row->{account_id}),
             href_console => url_f('console',
                 search => "judge_id=$jid,state<=T", se => 'judge', i_value => -1, show_results => 1),
+            href_update_jobs => url_f('jobs',
+                search => "judge_id=$jid,type=$cats::job_type_update_self"),
         );
     };
 
