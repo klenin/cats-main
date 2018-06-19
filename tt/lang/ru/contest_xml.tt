@@ -1,0 +1,5 @@
+[%
+  capt.import({
+    edit_save_xml => 'Ok',
+  })
+%]
