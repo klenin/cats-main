@@ -226,9 +226,22 @@ sub contest_params_frame {
     1;
 }
 
-sub contests_edit_save {
+sub contests_edit_save_xml {
     my ($p) = @_;
 
+    use CATS::Contest::XmlSerializer;
+    use CATS::Problem::Storage;
+    my $s;
+    eval {
+        $s = CATS::Contest::XmlSerializer->new(logger => CATS::Problem::Storage->new);
+        $s->parse_xml($p->{contest_xml});
+    };
+    $s->{logger}->{import_log} .= $@;
+    $t->param(log => $s->{logger}->{import_log});
+}
+
+sub contests_edit_save {
+    my ($p) = @_;
     my $c = get_contest_html_params($p) or return;
     $is_root or delete $c->{is_official};
     eval {
@@ -357,6 +370,8 @@ sub contest_xml_frame {
     init_template($p, 'contest_xml.html.tt');
     $is_jury or return;
 
+    contests_edit_save_xml($p) if $p->{edit_save_xml};
+
     my $c = $dbh->selectrow_hashref(q~
         SELECT * FROM contests WHERE id = ?~, { Slice => {} },
         $cid) or return;
@@ -366,8 +381,10 @@ sub contest_xml_frame {
       WHERE CP.contest_id = ? ORDER BY CP.code~, { Slice => {} },
       $cid
     );
+
     $t->param(
         contest_xml => CATS::Contest::XmlSerializer->new->serialize($c, $problems),
+        form_action => url_f('contest_xml', cid => $cid, sid => $sid),
     );
     CATS::Contest::Utils::contest_submenu('contest_xml', $cid);
 }
