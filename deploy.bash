@@ -229,6 +229,10 @@ if [[ $step =~ (^|,)7(,|$) || $step == "*" ]]; then
 	wget https://github.com/mathjax/MathJax/archive/2.7.1.zip
 	unzip 2.7.1.zip
 	mv MathJax-2.7.1 ../js/lib/MathJax
+	wget https://github.com/ajaxorg/ace-builds/archive/v1.3.3.zip
+	unzip ace-builds-1.3.3.zip
+	cd ace-builds-1.3.3/
+	mv src-min-noconflict/* ../../js/lib
 	cd $CATS_ROOT
 	rm -rf tmp_js/
 	echo "ok"
