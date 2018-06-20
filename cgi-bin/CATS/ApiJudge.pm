@@ -124,7 +124,7 @@ sub set_request_state {
         failed_test => $p->{failed_test},
     });
 
-    $p->print_json({ result => $result });
+    $p->print_json({ result => $result // 0 });
 }
 
 our @create_job_params = qw(problem_id state parent_id req_id contest_id);
@@ -146,6 +146,14 @@ sub create_splitted_jobs {
     });
     $dbh->commit;
 
+    $p->print_json({ ok => 1 });
+}
+
+sub cancel_all {
+    my ($p) = @_;
+    bad_judge($p) and return -1;
+
+    CATS::Job::cancel_all($p->{req_id});
     $p->print_json({ ok => 1 });
 }
 
@@ -205,7 +213,7 @@ sub delete_req_details {
     my $judge_id = $sid && CATS::JudgeDB::get_judge_id($sid)
         or return $p->print_json($bad_sid);
 
-    $p->print_json({ result => CATS::JudgeDB::delete_req_details($p->{req_id}, $judge_id, $p->{job_id}) });
+    $p->print_json({ result => CATS::JudgeDB::delete_req_details($p->{req_id}, $judge_id, $p->{job_id}) // 0 });
 }
 
 sub get_tests_req_details {
@@ -230,7 +238,7 @@ sub insert_req_details {
         map { exists $params->{$_} ? ($_ => $params->{$_}) : () } @req_details_fields;
 
     $p->print_json({ result =>
-        CATS::JudgeDB::insert_req_details($p->{job_id}, %filtered_params, judge_id => $judge_id) });
+        CATS::JudgeDB::insert_req_details($p->{job_id}, %filtered_params, judge_id => $judge_id) // 0 });
 }
 
 sub save_input_test_data {
