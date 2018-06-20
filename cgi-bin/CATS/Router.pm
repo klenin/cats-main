@@ -371,6 +371,10 @@ $api_judge_routes = {
         job_id => integer,
         job_state => integer,
     ],
+    api_judge_cancel_all => [
+        \&CATS::ApiJudge::cancel_all,
+        req_id => integer,
+    ],
     api_judge_get_tests_req_details => [ \&CATS::ApiJudge::get_tests_req_details, req_id => integer, ],
     api_judge_delete_req_details => [ \&CATS::ApiJudge::delete_req_details, req_id => integer, job_id => integer, ],
     api_judge_insert_req_details => [ \&CATS::ApiJudge::insert_req_details, job_id => integer, params => str, ],

@@ -149,6 +149,14 @@ sub create_splitted_jobs {
     $p->print_json({ ok => 1 });
 }
 
+sub cancel_all {
+    my ($p) = @_;
+    bad_judge($p) and return -1;
+
+    CATS::Job::cancel_all($p->{req_id});
+    $p->print_json({ ok => 1 });
+}
+
 sub create_job {
     my ($p) = @_;
 
