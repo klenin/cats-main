@@ -20,8 +20,8 @@ sub _snake_to_camel_case {
 }
 
 my %problem_key_to_tag = (map { $_ => _snake_to_camel_case($_) } qw(
-    id tags code color status testsets contest_id problem_id max_points
-    time_limit write_limit memory_limit process_limit points_testsets
+    tags code color status testsets contest_id problem_id max_points remote_url
+    time_limit write_limit memory_limit process_limit points_testsets repo_path
 ));
 
 my %key_to_tag = ( ctype => 'ContestType', map { $_ => _snake_to_camel_case($_) } qw(
@@ -31,7 +31,7 @@ my %key_to_tag = ( ctype => 'ContestType', map { $_ => _snake_to_camel_case($_) 
     pinned_judge_only show_test_resources show_checker_comment
 ));
 
-my %tag_to_key = reverse %key_to_tag;
+my %tag_to_key = (Problem => '', reverse(( %key_to_tag, %problem_key_to_tag )));
 
 my %enums = (
     ctype => [ qw(normal training) ],
@@ -85,19 +85,19 @@ sub to_int {
     (my CATS::Contest::XmlSerializer $self, my $el) = @_;
     my $value = $self->{tag_stack}->[-1]->{text};
     $value =~ s/^\s*(\d+)\s*$/$1/ or $self->error("Value of $el is not int");
-    $self->{contest}->{$tag_to_key{$el}} = $value + 0;
+    $value + 0;
 }
 
 sub to_bool {
     (my CATS::Contest::XmlSerializer $self, my $el) = @_;
     my $value = $self->{tag_stack}->[-1]->{text};
     $value =~ s/^\s*(0|1)\s*$/$1/ or $self->error("Value of $el is not bool");
-    $self->{contest}->{$tag_to_key{$el}} = $value + 0;
+    $value + 0;
 }
 
 sub to_string {
     (my CATS::Contest::XmlSerializer $self, my $el) = @_;
-    $self->{contest}->{$tag_to_key{$el}} = $self->{tag_stack}->[-1]->{text} || '';
+    $self->{tag_stack}->[-1]->{text} || '';
 }
 
 sub to_enum {
@@ -107,43 +107,73 @@ sub to_enum {
     my $values = $enums{$key};
     my $index = first { $values->[$_] eq $value } 0..$#$values;
     $self->error("Value of $el is not enum") if !defined $index;
-    $self->{contest}->{$key} = $index;
+    $index;
 }
 
 sub to_date {
     to_string(@_);
 }
 
+sub assign_contest_prop {
+    (my CATS::Contest::XmlSerializer $self, my $el, my $fn) = @_;
+    my $key = $tag_to_key{$el};
+    $self->{contest}->{$key} = $fn->($self, $el);
+}
+
+sub assign_problem_prop {
+    (my CATS::Contest::XmlSerializer $self, my $el, my $fn) = @_;
+    my $key = $tag_to_key{$el};
+    $self->{problems}->[-1]->{$key} = $fn->($self, $el);
+}
+
 # s - start, e - end, r - required attrs, in - allowed to be in tags
 sub tag_handlers() {{
+    # contest
     'CATS-Contest' => { in => [] },
-    Id => { e => \&to_int },
-    Rules => { e => \&to_enum },
-    Title => { e => \&to_string },
-    Closed => { e => \&to_bool },
-    Penalty => { e => \&to_int },
-    MaxReqs => { e => \&to_int },
-    IsHidden => { e => \&to_bool },
-    LocalOnly => { e => \&to_bool },
-    ShowSites => { e => \&to_bool },
-    ShowFlags => { e => \&to_bool },
-    StartDate => { e => \&to_date },
-    ShortDescr => { e => \&to_string },
-    IsOfficial => { e => \&to_bool },
-    FinishDate => { e => \&to_date },
-    RunAllTests => { e => \&to_bool },
-    ContestType => { e => \&to_enum },
-    ReqSelection => { e => \&to_enum },
-    ShowPackages => { e => \&to_bool },
-    ShowAllTests => { e => \&to_bool },
-    DefreezeDate => { e => \&to_date },
-    ShowTestData => { e => \&to_bool },
-    MaxReqsExcept => { e => \&to_string },
-    ShowFrozenReqs => { e => \&to_bool },
-    ShowAllResults => { e => \&to_bool },
-    PinnedJudgeOnly => { e => \&to_bool },
-    ShowTestResources => { e => \&to_bool },
-    ShowCheckerComment => { e => \&to_bool },
+    Id => { e => sub { assign_contest_prop(@_, \&to_int) } },
+    Rules => { e => sub { assign_contest_prop(@_, \&to_enum) } },
+    Title => { e => sub { assign_contest_prop(@_, \&to_string) } },
+    Closed => { e => sub { assign_contest_prop(@_, \&to_bool) } },
+    Penalty => { e => sub { assign_contest_prop(@_, \&to_int) } },
+    MaxReqs => { e => sub { assign_contest_prop(@_, \&to_int) } },
+    IsHidden => { e => sub { assign_contest_prop(@_, \&to_bool) } },
+    LocalOnly => { e => sub { assign_contest_prop(@_, \&to_bool) } },
+    ShowSites => { e => sub { assign_contest_prop(@_, \&to_bool) } },
+    ShowFlags => { e => sub { assign_contest_prop(@_, \&to_bool) } },
+    StartDate => { e => sub { assign_contest_prop(@_, \&to_date) } },
+    ShortDescr => { e => sub { assign_contest_prop(@_, \&to_string) } },
+    IsOfficial => { e => sub { assign_contest_prop(@_, \&to_bool) } },
+    FinishDate => { e => sub { assign_contest_prop(@_, \&to_date) } },
+    RunAllTests => { e => sub { assign_contest_prop(@_, \&to_bool) } },
+    ContestType => { e => sub { assign_contest_prop(@_, \&to_enum) } },
+    ReqSelection => { e => sub { assign_contest_prop(@_, \&to_enum) } },
+    ShowPackages => { e => sub { assign_contest_prop(@_, \&to_bool) } },
+    ShowAllTests => { e => sub { assign_contest_prop(@_, \&to_bool) } },
+    DefreezeDate => { e => sub { assign_contest_prop(@_, \&to_date) } },
+    ShowTestData => { e => sub { assign_contest_prop(@_, \&to_bool) } },
+    MaxReqsExcept => { e => sub { assign_contest_prop(@_, \&to_string) } },
+    ShowFrozenReqs => { e => sub { assign_contest_prop(@_, \&to_bool) } },
+    ShowAllResults => { e => sub { assign_contest_prop(@_, \&to_bool) } },
+    PinnedJudgeOnly => { e => sub { assign_contest_prop(@_, \&to_bool) } },
+    ShowTestResources => { e => sub { assign_contest_prop(@_, \&to_bool) } },
+    ShowCheckerComment => { e => sub { assign_contest_prop(@_, \&to_bool) } },
+    # problem
+    Code => { e => sub { assign_problem_prop(@_, \&to_string) }, in => [ 'Problem' ] },
+    Tags => { e => sub { assign_problem_prop(@_, \&to_string) }, in => [ 'Problem' ] },
+    Color => { e => sub { assign_problem_prop(@_, \&to_string) }, in => [ 'Problem' ] },
+    Status => { e => sub { assign_problem_prop(@_, \&to_enum) }, in => [ 'Problem' ] },
+    Problem => { s => sub { push @{$_[0]->{problems}}, { } } },
+    Testsets => { e => sub { assign_problem_prop(@_, \&to_string) }, in => [ 'Problem' ] },
+    RepoPath => { e => sub { assign_problem_prop(@_, \&to_string) }, in => [ 'Problem' ] },
+    RemoteUrl => { e => sub { assign_problem_prop(@_, \&to_string) }, in => [ 'Problem' ] },
+    MaxPoints => { e => sub { assign_problem_prop(@_, \&to_int) }, in => [ 'Problem' ] },
+    ContestId => { e => sub { assign_problem_prop(@_, \&to_int) }, in => [ 'Problem' ] },
+    TimeLimit => { e => sub { assign_problem_prop(@_, \&to_int) }, in => [ 'Problem' ] },
+    ProblemId => { e => sub { assign_problem_prop(@_, \&to_int) }, in => [ 'Problem' ] },
+    WriteLimit => { e => sub { assign_problem_prop(@_, \&to_int) }, in => [ 'Problem' ] },
+    MemoryLimit => { e => sub { assign_problem_prop(@_, \&to_int) }, in => [ 'Problem' ] },
+    ProcessLimit => { e => sub { assign_problem_prop(@_, \&to_int) }, in => [ 'Problem' ] },
+    PointsTestsets => { e => sub { assign_problem_prop(@_, \&to_string) }, in => [ 'Problem' ] },
 }}
 
 sub check_top_tag {
@@ -151,15 +181,6 @@ sub check_top_tag {
     my $top_tag;
     $top_tag = @$_ ? $_->[$#$_]->{tag} : '' for $self->{tag_stack};
     grep $top_tag eq $_, @$allowed_tags;
-}
-
-sub check_required_attrs {
-    my CATS::Contest::XmlSerializer $self = shift;
-    my ($el, $attrs, $names) = @_;
-    for (@$names) {
-        defined $attrs->{$_}
-            or $self->error("$el.$_ not specified");
-    }
 }
 
 sub on_start_tag {
@@ -170,7 +191,6 @@ sub on_start_tag {
 
     my $in = $h->{in} // [ 'CATS-Contest' ];
     !@$in || $self->check_top_tag($in) or $self->error("$el must be inside " . join ' or ', @$in);
-    $self->check_required_attrs($el, \%attrs, $h->{r});
 
     push @{$self->{tag_stack}}, { tag => $el };
     $h->{s}->($self, \%attrs, $el) if defined $h->{s};
@@ -195,6 +215,7 @@ sub parse_xml {
 
     $self->{tag_stack} = [];
     $self->{contest} = {};
+    $self->{problems} = [];
 
     my $xml_parser = XML::Parser::Expat->new;
 
@@ -205,7 +226,8 @@ sub parse_xml {
     );
 
     $xml_parser->parse($xml);
-    $self->{contest};
+
+    ($self->{contest}, $self->{problems});
 }
 
 1;
