@@ -197,7 +197,12 @@ PerlSetEnv CATS_DIR ${CATS_ROOT}/cgi-bin/
 	<Directory "${CATS_ROOT}/images/">
 		AllowOverride Options=Indexes,MultiViews,ExecCGI FileInfo
 		Require all granted
-	</Directory>   
+	</Directory> 
+
+	<Directory "${CATS_ROOT}/js/">
+		AllowOverride Options=Indexes,MultiViews,ExecCGI FileInfo
+		Require all granted
+	</Directory>  
 
 	Alias /cats/synh/ "${CATS_ROOT}/synhighlight/"
 	Alias /cats/js/ "${CATS_ROOT}/js/"
