@@ -114,14 +114,15 @@ is $s->serialize($c), $expected, 'correctness 1';
 is $s->serialize_problem($problem), $s->serialize_problem($problem), 'problem purity check';
 is $s->serialize_problem($problem), $problem_expected, 'problem check 1';
 
-my ($contest) = $s->parse_xml($expected);
-is($contest->{$_}, $c->{$_}, "$_ check") for keys %$contest;
+my $contest = $s->parse_xml($expected);
+$_ eq 'problems' ? undef : is($contest->{$_}, $c->{$_}, "$_ check") for keys %$contest;
 
-my (undef, $p) = $s->parse_xml(cats_contest("$problem_expected<Problem><Code>B</Code></Problem>"));
+$contest = $s->parse_xml(cats_contest("$problem_expected<Problem><Code>B</Code></Problem>"));
+my $ps = $contest->{problems};
 
-is scalar @$p, 2, 'length check';
-is $p->[1]->{code}, 'B', 'code check 2';
-is $p->[0]->{$_}, $problem->{$_} for keys %{$p->[0]};
+is scalar @$ps, 2, 'length check';
+is $ps->[1]->{code}, 'B', 'code check 2';
+is $ps->[0]->{$_}, $problem->{$_} for keys %{$ps->[0]};
 
 throws_ok { $s->parse_xml(cats_contest('<UnknownTag>123</Closed>')) } qr/Unknown tag/, 'unknown tag at the start';
 throws_ok { $s->parse_xml(cats_contest('<Closed>123</UnknownTag>')) } qr/mismatched tag/, 'unknown tag at the end';

@@ -226,8 +226,8 @@ sub parse_xml {
     );
 
     $xml_parser->parse($xml);
-
-    ($self->{contest}, $self->{problems});
+    $self->{contest}->{problems} = $self->{problems};
+    $self->{contest};
 }
 
 1;
