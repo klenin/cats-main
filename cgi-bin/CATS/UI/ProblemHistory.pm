@@ -167,30 +167,17 @@ sub problem_history_edit_frame {
         $p->{file} = CATS::Problem::Storage::find_xml($p->{pid}, $hash_base) or return;
     }
 
+    my ($content, $log);
     if ($p->{save} && $p->{src_enc}) {
-        my $content = $p->{source};
-        my CATS::Problem::Storage $ps = CATS::Problem::Storage->new;
-        Encode::from_to($content, $p->{enc} // 'UTF-8', $p->{src_enc});
-        my ($error, $latest_sha) = $ps->change_file(
-            $pr->{contest_id}, $p->{pid}, $p->{file}, $content, $p->{message}, $p->{is_amend} || 0);
-
-        unless ($error) {
-            $dbh->commit;
-            CATS::StaticPages::invalidate_problem_text(pid => $p->{pid});
-            return _problem_commitdiff($p, $pr->{title}, $latest_sha, $p->{src_enc}, $ps->encoded_import_log);
-        }
-
-        $t->param(
-            message => Encode::decode_utf8($p->{message}),
-            content => Encode::decode($p->{enc} // 'UTF-8', $p->{source}),
-            problem_import_log => $ps->encoded_import_log,
-        );
-    }
+        ($content, $log) = problem_history_edit_save($p, $pr);
+        $log or return;
+    } 
 
     my @blob_params = ($p->{pid}, $hash_base, $p->{file});
     my $blob = CATS::Problem::Storage::show_blob(
         @blob_params, $p->{src_enc} || \&detect_encoding_by_xml_header);
-    $blob->{content} = CATS::Problem::Storage::show_raw(@blob_params)->{content} if $blob->{image};
+    $blob->{content} = $blob->{image} ?
+        CATS::Problem::Storage::show_raw(@blob_params)->{content} : $content;
 
     set_submenu_for_tree_frame($p->{pid}, $hash_base);
     set_history_paths_urls($p->{pid}, $blob->{paths});
@@ -203,7 +190,30 @@ sub problem_history_edit_frame {
         src_enc => $enc,
         source_encodings => source_encodings($enc),
         last_commit => CATS::Problem::Storage::get_log($p->{pid}, $hash_base, 1)->[0],
-    );
+        message => Encode::decode_utf8($p->{message}),
+        problem_import_log => $log,
+    ); 
+}
+
+sub problem_history_edit_save {
+    my ($p, $pr) = @_;
+    my $hash_base = $p->{hb};
+
+    my $content = $p->{source};
+
+    my CATS::Problem::Storage $ps = CATS::Problem::Storage->new;
+    Encode::from_to($content, $p->{enc} // 'UTF-8', $p->{src_enc});
+    my ($error, $latest_sha) = $ps->change_file(
+        $pr->{contest_id}, $p->{pid}, $p->{file}, $content, $p->{message}, $p->{is_amend} || 0);
+
+    unless ($error) {
+        $dbh->commit;
+        CATS::StaticPages::invalidate_problem_text(pid => $p->{pid});
+        return _problem_commitdiff($p, $pr->{title}, $latest_sha, $p->{src_enc}, $ps->encoded_import_log);
+    }
+
+    $content = Encode::decode($p->{enc} // 'UTF-8', $p->{source});
+    return ($content, $ps->encoded_import_log);
 }
 
 sub problem_history_frame {
