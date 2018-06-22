@@ -13,6 +13,8 @@ use CATS::Globals qw($cid $contest $is_jury $is_root $sid $t $uid $user);
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
 use CATS::Output qw(init_template url_f);
+use CATS::Problem::Save;
+use CATS::Problem::Storage;
 use CATS::RankTable;
 use CATS::Settings qw($settings);
 use CATS::StaticPages;
@@ -228,15 +230,31 @@ sub contest_params_frame {
 
 sub contests_edit_save_xml {
     my ($p) = @_;
+    $is_root or return;
 
-    use CATS::Contest::XmlSerializer;
-    use CATS::Problem::Storage;
-    my $s;
+    my $s = CATS::Contest::XmlSerializer->new(logger => CATS::Problem::Storage->new);;
+    my $c;
     eval {
-        $s = CATS::Contest::XmlSerializer->new(logger => CATS::Problem::Storage->new);
-        $s->parse_xml($p->{contest_xml});
+        $c = $s->parse_xml($p->{contest_xml});
+        $c->{id} = $cid;
     };
     $s->{logger}->{import_log} .= $@;
+
+    for my $problem (@{$c->{problems}}) {
+        if ($problem->{problem_id}) {
+            my %cp_update_values = %$problem;
+            delete $cp_update_values{repo_path};
+            delete $cp_update_values{repo_url};
+            $dbh->do(_u $sql->update('contest_problems', \%cp_update_values,
+                { contest_id => $cid, problem_id => $problem->{problem_id} }));
+            $dbh->commit;
+        }
+        else {
+            $s->{logger}->{import_log} .= "No remote url specified for problem $problem->{code}\n"
+                and next if !$problem->{remote_url};
+            $s->{logger}->{import_log} .= CATS::Problem::Save::problems_add_new_remote($problem);
+        }
+    }
     $t->param(log => $s->{logger}->{import_log});
 }
 

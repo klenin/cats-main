@@ -160,6 +160,7 @@ sub problems_add {
         $dbh->rollback;
         msg(1008);
     }
+    $p->encoded_import_log();
 }
 
 sub problems_add_new {
