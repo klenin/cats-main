@@ -115,14 +115,14 @@ is $s->serialize_problem($problem), $s->serialize_problem($problem), 'problem pu
 is $s->serialize_problem($problem), $problem_expected, 'problem check 1';
 
 my $contest = $s->parse_xml($expected);
-$_ eq 'problems' ? undef : is($contest->{$_}, $c->{$_}, "$_ check") for keys %$contest;
+$_ eq 'problems' ? undef : is $contest->{$_}, $c->{$_}, "$_ check" for keys %$contest;
 
 $contest = $s->parse_xml(cats_contest("$problem_expected<Problem><Code>B</Code></Problem>"));
 my $ps = $contest->{problems};
 
 is scalar @$ps, 2, 'length check';
 is $ps->[1]->{code}, 'B', 'code check 2';
-is $ps->[0]->{$_}, $problem->{$_} for keys %{$ps->[0]};
+is $ps->[0]->{$_}, $problem->{$_}, "$_ check" for keys %{$ps->[0]};
 
 throws_ok { $s->parse_xml(cats_contest('<UnknownTag>123</Closed>')) } qr/Unknown tag/, 'unknown tag at the start';
 throws_ok { $s->parse_xml(cats_contest('<Closed>123</UnknownTag>')) } qr/mismatched tag/, 'unknown tag at the end';
