@@ -1,40 +1,12 @@
 [%- PROCESS includes/sources_styles.tti -%]
 [% PROCESS includes/header.tti %]
 
-[% PROCESS includes/syntax_highlight.tti %]
 </head>
 <body>
 [% PROCESS includes/sources_info.tti %]
-<script>
-function highlight_errors(rid, re) {
-  var co = document.getElementById('co' + rid);
-  if (!co) return;
-  var co_text = co.textContent;
-  if (!co_text) return;
-  var co_lines = co_text.split('\n');
-  var errors = {};
-  for (var i = 0; co_lines.length > i; ++i) {
-    for (var j = 0; re.length > j; ++j) {
-      var m = co_lines[i].match(re[j]);
-      if (!m) continue;
-      if (errors[m[1]])
-        errors[m[1]] += "\n" + co_lines[i];
-      else
-        errors[m[1]] = co_lines[i];
-    }
-  }
-  var src = document.getElementById('src' + rid);
-  var code = src.getElementsByClassName('container')[0];
-  if (!code || code.tagName != 'DIV') return;
-  for (var e in errors) {
-    var line = code.getElementsByClassName('line number' + e)[0];
-    if (!line) continue;
-    [%# Syntaxhighlighter uses !important, so we also need to. %]
-    line.setAttribute('style', 'background-color: #FFC0C0 !important;');
-    line.title = errors[e];
-  }
-}
-</script>
+<script src="js/lib/ace/src-min-noconflict/ace.js"></script>
+<script src="js/lib/jquery.min.js"></script>
+<script src="js/editor.js"></script>
 <table>
 <tr>
 <td>
@@ -65,12 +37,9 @@ function highlight_errors(rid, re) {
 </tr>
 <tr>
 [% FOREACH si IN sources_info %]
-  <td id="src[% si.req_id %]" class="bordered" style="margin: 0 10 10 0; padding: 0;">
-  <script type="syntaxhighlighter" class="brush: [% si.syntax.lower || 'plain' %];"><![CDATA[[% si.src | html %]]]></script>
-  </td>
-  <script>window.addEventListener('load', function () {
-    highlight_errors([% si.req_id %], [ [% si.err_regexp_js.join(', ') %] ]);
-  })</script>
+<textarea name="source_text" hidden="hidden" data-editor="perl" data-gutter="1">
+  [%- si.src | html %]
+</textarea>
 [% END %]
 </tr>
 </table>
