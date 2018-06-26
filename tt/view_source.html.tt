@@ -25,6 +25,9 @@
 </form>
 [% END %]
 </td>
+<td>
+<button type="submit" name="submit" value="1" class="button submit">отправить</button>
+</td>
 </tr>
 </table>
 <table>
@@ -37,9 +40,14 @@
 </tr>
 <tr>
 [% FOREACH si IN sources_info %]
-<textarea name="source_text" hidden="hidden" data-editor="perl" data-gutter="1">
-  [%- si.src | html %]
-</textarea>
+  <td id="src[% si.req_id %]" class="bordered" style="margin: 0 10 10 0; padding: 0;">
+  <form enctype="multipart/form-data" method="post">
+    <textarea name="source_text" hidden="hidden" data-editor="perl" data-gutter="1">
+     [%- si.src | html %]
+    </textarea>
+    <button hidden="hidden" name="submit" value="1" class="button submit_hidden">Ð¾Ñ‚Ð¿Ñ€Ð°Ð²Ð¸Ñ‚ÑŒ</button>
+    <input type="hidden" name="np" value="0"/>
+  </form>
 [% END %]
 </tr>
 </table>
