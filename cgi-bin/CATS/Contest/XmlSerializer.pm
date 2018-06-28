@@ -42,28 +42,39 @@ my %enums = (
 
 sub maybe_enum { exists $enums{$_[0]} ? $enums{$_[0]}->[$_[1]] : $_[1] }
 
-sub enclose_in_tag { "<$_[0]>$_[1]</$_[0]>" }
+# [ tag, content ]
+
+sub struct_to_string {
+    my ($struct, $depth) = @_;
+    $depth //= '';
+    my ($tag, $content) = @$struct;
+    my $content_str = ref $content ?
+        join("\n", '', (map struct_to_string($_, "  $depth"), @$content), '') . $depth :
+        $content;
+    "$depth<$tag>$content_str</$tag>"
+}
 
 sub _serialize {
     my ($self, $entity, $tags) = @_;
-    map enclose_in_tag($tags->{$_}, maybe_enum($_, $entity->{$_})),
+    map [ $tags->{$_}, maybe_enum($_, $entity->{$_}) ],
     grep defined $entity->{$_} && exists $tags->{$_},
     sort keys %$entity;
 }
 
-sub serialize_problem {
+sub _serialize_problem {
     my ($self, $problem) = @_;
-    join "\n", '<Problem>', $self->_serialize($problem, \%problem_key_to_tag), '</Problem>';
+    [ 'Problem', [ $self->_serialize($problem, \%problem_key_to_tag) ] ];
 }
+
+sub serialize_problem { struct_to_string(_serialize_problem(@_)) }
 
 sub serialize {
     my ($self, $contest, $problems) = @_;
-    join "\n",
-        q~<?xml version="1.0"?>~,
-        '<CATS-Contest>',
+    qq~<?xml version="1.0"?>\n~ .
+    struct_to_string([ 'CATS-Contest', [
         $self->_serialize($contest, \%key_to_tag),
-        (map $self->serialize_problem($_), @$problems),
-        '</CATS-Contest>';
+        (map $self->_serialize_problem($_), @$problems)
+    ]]);
 }
 
 sub error {

@@ -65,39 +65,39 @@ my $problem = {
 my $expected = 
 q~<?xml version="1.0"?>
 <CATS-Contest>
-<Closed>0</Closed>
-<ContestType>normal</ContestType>
-<DefreezeDate>12.06.2018 12:58</DefreezeDate>
-<FinishDate>12.06.2018 12:58</FinishDate>
-<Id>1774</Id>
-<IsHidden>1</IsHidden>
-<IsOfficial>1</IsOfficial>
-<LocalOnly>1</LocalOnly>
-<MaxReqs>123</MaxReqs>
-<MaxReqsExcept></MaxReqsExcept>
-<Rules>school</Rules>
-<RunAllTests>1</RunAllTests>
-<ShortDescr>df</ShortDescr>
-<ShowAllTests>1</ShowAllTests>
-<ShowCheckerComment>1</ShowCheckerComment>
-<ShowFlags>1</ShowFlags>
-<ShowPackages>1</ShowPackages>
-<ShowSites>1</ShowSites>
-<ShowTestData>1</ShowTestData>
-<ShowTestResources>1</ShowTestResources>
-<StartDate>12.06.2018 12:58</StartDate>
-<Title>sdf</Title>
+  <Closed>0</Closed>
+  <ContestType>normal</ContestType>
+  <DefreezeDate>12.06.2018 12:58</DefreezeDate>
+  <FinishDate>12.06.2018 12:58</FinishDate>
+  <Id>1774</Id>
+  <IsHidden>1</IsHidden>
+  <IsOfficial>1</IsOfficial>
+  <LocalOnly>1</LocalOnly>
+  <MaxReqs>123</MaxReqs>
+  <MaxReqsExcept></MaxReqsExcept>
+  <Rules>school</Rules>
+  <RunAllTests>1</RunAllTests>
+  <ShortDescr>df</ShortDescr>
+  <ShowAllTests>1</ShowAllTests>
+  <ShowCheckerComment>1</ShowCheckerComment>
+  <ShowFlags>1</ShowFlags>
+  <ShowPackages>1</ShowPackages>
+  <ShowSites>1</ShowSites>
+  <ShowTestData>1</ShowTestData>
+  <ShowTestResources>1</ShowTestResources>
+  <StartDate>12.06.2018 12:58</StartDate>
+  <Title>sdf</Title>
 </CATS-Contest>~;
 
 my $problem_expected =
 q~<Problem>
-<Code>A</Code>
-<ContestId>1488</ContestId>
-<MemoryLimit>64</MemoryLimit>
-<ProblemId>322</ProblemId>
-<Status>hidden</Status>
-<Tags>tag1,tag2</Tags>
-<TimeLimit>1</TimeLimit>
+  <Code>A</Code>
+  <ContestId>1488</ContestId>
+  <MemoryLimit>64</MemoryLimit>
+  <ProblemId>322</ProblemId>
+  <Status>hidden</Status>
+  <Tags>tag1,tag2</Tags>
+  <TimeLimit>1</TimeLimit>
 </Problem>~;
 
 sub cats_contest {
