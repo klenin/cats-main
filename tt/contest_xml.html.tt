@@ -1,10 +1,10 @@
 [% PROCESS includes/menu_begin.tti %]
 [%- PROCESS "lang/$lang/contest_xml.tt" -%]
-[% IF log %]
-  <textarea rows="10" cols="30" readonly>[% log %]</textarea>
+[% IF logger %]
+  <textarea rows="10" cols="80" readonly>[% logger.encoded_import_log %]</textarea>
 [% END %]
 <form method="post" enctype="multipart/form-data" name="contest_xml_form" action="[% form_action %]" accept-charset="UTF-8">
-  <textarea rows="40" cols="60" name="contest_xml">[% contest_xml | html %]</textarea>
+  <textarea rows="40" cols="80" name="contest_xml">[% contest_xml | html %]</textarea>
   <p><button type="submit" name="edit_save_xml" value="1" class="button">[% capt.edit_save_xml %]</button></p>
 </form>
 [% PROCESS includes/menu_end.tti %]

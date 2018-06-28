@@ -239,13 +239,15 @@ sub contests_edit_save_xml {
     my ($p) = @_;
     $is_root or return;
 
-    my $s = CATS::Contest::XmlSerializer->new(logger => CATS::Problem::Storage->new);;
+    my $logger = CATS::Problem::Storage->new;
+    $t->param(logger => $logger);
+    my $s = CATS::Contest::XmlSerializer->new(logger => $logger);
     my $c;
     eval {
         $c = $s->parse_xml($p->{contest_xml});
         $c->{id} = $cid;
         1;
-    } or return;
+    } or return $logger->note($@);
 
     contests_edit_save($c, { map { $_ => $c->{$_} } contest_params });
 
@@ -259,12 +261,11 @@ sub contests_edit_save_xml {
             $dbh->commit;
         }
         else {
-            $s->{logger}->note("No remote url specified for problem $problem->{code}")
-                and next if !$problem->{remote_url};
-            $s->{logger}->note(CATS::Problem::Save::problems_add_new_remote($problem));
+            $problem->{remote_url}
+                or $logger->note("No remote url specified for problem $problem->{code}") and next;
+            $logger->note(CATS::Problem::Save::problems_add_new_remote($problem));
         }
     }
-    $t->param(log => $s->{logger}->encoded_import_log());
 }
 
 sub contests_edit_save {
@@ -409,8 +410,8 @@ sub contest_xml_frame {
     );
 
     $t->param(
-        contest_xml => CATS::Contest::XmlSerializer->new->serialize($c, $problems),
-        form_action => url_f('contest_xml', cid => $cid, sid => $sid),
+        contest_xml => $p->{contest_xml} // CATS::Contest::XmlSerializer->new->serialize($c, $problems),
+        form_action => url_f('contest_xml'),
     );
     CATS::Contest::Utils::contest_submenu('contest_xml', $cid);
 }
