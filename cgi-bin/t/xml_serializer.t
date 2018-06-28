@@ -129,6 +129,6 @@ throws_ok { $s->parse_xml(cats_contest('<Closed>123</UnknownTag>')) } qr/mismatc
 throws_ok { $s->parse_xml(cats_contest('<UnknownTag/>')) } qr/Unknown tag/, 'unknown void tag';
 throws_ok { $s->parse_xml(cats_contest('<Closed>3</Closed>')) } qr/not bool/, 'not bool';
 throws_ok { $s->parse_xml(cats_contest('<Id>Iamnotid</Id>')) } qr/not int/, 'not int';
-throws_ok { $s->parse_xml(cats_contest('<Rules>advanced</Rules>')) } qr/not enum/, 'not enum or wrong enum value';
+throws_ok { $s->parse_xml(cats_contest('<Rules>advanced</Rules>')) } qr/Rules.*ACM/, 'not enum or wrong enum value';
 throws_ok { $s->parse_xml(cats_contest('<Closed>1<Rules>normal</Rules></Closed>')) } qr/must be inside/, 'wrong parent tag';
 throws_ok { $s->parse_xml(q~<?xml version="1.0"?><CATS-Contest>~) } qr/no element found/, 'bad xml';

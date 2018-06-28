@@ -79,7 +79,10 @@ sub serialize {
 
 sub error {
     my ($self, $msg) = @_;
-    $self->{logger}->error($msg) if $self->{logger};
+    $self->{logger}->error(sprintf
+        "%s at line %d col %d",
+        $msg, $self->{parser}->current_line, $self->{parser}->current_column,
+    ) if $self->{logger};
 }
 
 sub note {
@@ -117,7 +120,7 @@ sub to_enum {
     my $key = $tag_to_key{$el};
     my $values = $enums{$key};
     my $index = first { $values->[$_] eq $value } 0..$#$values;
-    $self->error("Value of $el is not enum") if !defined $index;
+    $self->error("Value of $el must be one of: " . join ', ', @$values) if !defined $index;
     $index;
 }
 
@@ -228,15 +231,15 @@ sub parse_xml {
     $self->{contest} = {};
     $self->{problems} = [];
 
-    my $xml_parser = XML::Parser::Expat->new;
+    $self->{parser} = XML::Parser::Expat->new;
 
-    $xml_parser->setHandlers(
+    $self->{parser}->setHandlers(
         Start => sub { $self->on_start_tag(@_) },
         End => sub { $self->on_end_tag(@_) },
         Char => sub { $self->on_char(@_) },
     );
 
-    $xml_parser->parse($xml);
+    $self->{parser}->parse($xml);
     $self->{contest}->{problems} = $self->{problems};
     $self->{contest};
 }
