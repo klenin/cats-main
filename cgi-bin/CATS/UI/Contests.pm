@@ -41,6 +41,13 @@ sub contests_new_frame {
 
 }
 
+sub contest_params() {qw(
+    rules title closed penalty max_reqs is_hidden local_only show_sites show_flags
+    start_date short_descr is_official finish_date run_all_tests req_selection show_packages
+    show_all_tests defreeze_date show_test_data max_reqs_except show_frozen_reqs show_all_results
+    pinned_judges_only show_test_resources show_checker_comment
+)}
+
 sub contest_checkbox_params() {qw(
     free_registration run_all_tests
     show_all_tests show_test_resources show_checker_comment show_all_results show_flags
@@ -237,8 +244,10 @@ sub contests_edit_save_xml {
     eval {
         $c = $s->parse_xml($p->{contest_xml});
         $c->{id} = $cid;
-    };
-    $s->{logger}->{import_log} .= $@;
+        1;
+    } or return;
+
+    contests_edit_save($c, { map { $_ => $c->{$_} } contest_params });
 
     for my $problem (@{$c->{problems}}) {
         if ($problem->{problem_id}) {
@@ -250,17 +259,16 @@ sub contests_edit_save_xml {
             $dbh->commit;
         }
         else {
-            $s->{logger}->{import_log} .= "No remote url specified for problem $problem->{code}\n"
+            $s->{logger}->note("No remote url specified for problem $problem->{code}")
                 and next if !$problem->{remote_url};
-            $s->{logger}->{import_log} .= CATS::Problem::Save::problems_add_new_remote($problem);
+            $s->{logger}->note(CATS::Problem::Save::problems_add_new_remote($problem));
         }
     }
-    $t->param(log => $s->{logger}->{import_log});
+    $t->param(log => $s->{logger}->encoded_import_log());
 }
 
 sub contests_edit_save {
-    my ($p) = @_;
-    my $c = get_contest_html_params($p) or return;
+    my ($p, $c) = @_;
     $is_root or delete $c->{is_official};
     eval {
         $dbh->do(_u $sql->update(contests => $c, { id => $p->{id} }));
@@ -340,7 +348,7 @@ sub contests_frame {
     contest_delete($p->{'delete'}) if $p->{'delete'};
 
     contests_new_save($p) if $p->{new_save} && $user->privs->{create_contests};
-    contests_edit_save($p)
+    contests_edit_save($p, get_contest_html_params($p))
         if $p->{edit_save} && $p->{id} && is_jury_in_contest(contest_id => $p->{id});
 
     CATS::Contest::Participate::online if $p->{online_registration};

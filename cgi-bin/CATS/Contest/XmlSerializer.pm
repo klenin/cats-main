@@ -28,7 +28,7 @@ my %key_to_tag = ( ctype => 'ContestType', map { $_ => _snake_to_camel_case($_) 
     id rules title closed penalty max_reqs is_hidden local_only show_sites show_flags
     start_date short_descr is_official finish_date run_all_tests req_selection show_packages
     show_all_tests defreeze_date show_test_data max_reqs_except show_frozen_reqs show_all_results
-    pinned_judge_only show_test_resources show_checker_comment
+    pinned_judges_only show_test_resources show_checker_comment
 ));
 
 my %tag_to_key = (Problem => '', reverse(( %key_to_tag, %problem_key_to_tag )));
@@ -154,7 +154,7 @@ sub tag_handlers() {{
     MaxReqsExcept => { e => sub { assign_contest_prop(@_, \&to_string) } },
     ShowFrozenReqs => { e => sub { assign_contest_prop(@_, \&to_bool) } },
     ShowAllResults => { e => sub { assign_contest_prop(@_, \&to_bool) } },
-    PinnedJudgeOnly => { e => sub { assign_contest_prop(@_, \&to_bool) } },
+    PinnedJudgesOnly => { e => sub { assign_contest_prop(@_, \&to_bool) } },
     ShowTestResources => { e => sub { assign_contest_prop(@_, \&to_bool) } },
     ShowCheckerComment => { e => sub { assign_contest_prop(@_, \&to_bool) } },
     # problem
