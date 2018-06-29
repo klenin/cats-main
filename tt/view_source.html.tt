@@ -31,10 +31,18 @@ function highlight_errors(rid, re) {
   }
   var editDiv = document.getElementsByClassName('editor')[0];
   var editor = ace.edit(editDiv);
+  var annotations = [];
   for (var e in errors) {
     var Range = ace.require('ace/range').Range;
     editor.getSession().addMarker(new Range(e - 1, 0, e - 1, 1), 'ace_highlight_errors', 'fullLine');
+    annotations.push({ 
+      row: e - 1,
+      column: 0,
+      text: errors[e],
+      type: 'error',
+    });
   }
+  editor.getSession().setAnnotations(annotations);
 }
 </script>
 <table>
