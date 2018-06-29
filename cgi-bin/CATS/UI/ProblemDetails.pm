@@ -412,27 +412,11 @@ sub _matrix {
 sub _save_contest_problem_des {
     my ($p, $problem, $des) = @_;
     $p->{save} or return;
-    my %allow_index;
-    @allow_index{@{$p->{allow}}} = undef;
-    my (@delete_des, @insert_des);
-    for (@$des) {
-        my $new_allow = exists $allow_index{$_->{id}};
-        push @delete_des, $_->{id} if $_->{allow} && !$new_allow;
-        push @insert_des, $_->{id} if !$_->{allow} && $new_allow;
-        $_->{allow} = $new_allow;
+    my @to_be_allowed;
+    for my $id (@{$p->{allow}}) {
+        push @to_be_allowed, grep( { $id == $_->{id} } @$des);
     }
-    @delete_des || @insert_des or return;
-    if (@delete_des) {
-        $dbh->do(_u $sql->delete('contest_problem_des',
-            { cp_id => $problem->{cpid}, de_id => \@delete_des }));
-    }
-    if (@insert_des) {
-        my $sth = $dbh->prepare(q~
-            INSERT INTO contest_problem_des(cp_id, de_id) VALUES (?, ?)~);
-        $sth->execute($problem->{cpid}, $_) for @insert_des;
-    }
-    $dbh->commit;
-    msg(1169, scalar @delete_des, scalar @insert_des);
+    @$des = @{CATS::Problem::Save::set_contest_problem_des([ map { $_->{code} } @to_be_allowed ], $problem->{cpid})};
 }
 
 sub problem_des_frame {
@@ -450,12 +434,7 @@ sub problem_des_frame {
         $p->{pid}, $cid) or return;
     $problem->{commit_sha} = eval { CATS::Problem::Storage::get_latest_master_sha($p->{pid}); } || 'error';
 
-    my $des = $dbh->selectall_arrayref(q~
-        SELECT D.id, D.code, D.description, D.in_contests,
-            (SELECT 1 FROM contest_problem_des CPD WHERE CPD.cp_id = ? AND CPD.de_id = D.id) AS allow
-        FROM default_de D
-        ORDER BY D.code~, { Slice => {} },
-        $problem->{cpid}) or return;
+    my $des = CATS::Problem::Save::get_all_des($problem->{cpid}) or return;
     _save_contest_problem_des($p, $problem, $des);
 
     $lv->define_columns(url_f('problem_des', pid => $p->{pid}), 0, 0, [

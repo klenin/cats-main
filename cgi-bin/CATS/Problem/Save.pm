@@ -173,10 +173,50 @@ sub problems_add_new {
     unlink $fname;
 }
 
+sub get_all_des {
+    $dbh->selectall_arrayref(q~
+        SELECT D.id, D.code, D.description, D.in_contests,
+            (SELECT 1 FROM contest_problem_des CPD WHERE CPD.cp_id = ? AND CPD.de_id = D.id) AS allow
+        FROM default_de D
+        ORDER BY D.code~, { Slice => {} }, $_[0]
+    );
+}
+
 sub problems_add_new_remote {
     my ($p) = @_;
     $p->{remote_url} or return msg(1091);
     problems_add($p->{remote_url}, 1, $p->{repo_path});
+}
+
+sub set_contest_problem_des {
+    my ($des, $cpid) = @_;
+
+    my $all_des = get_all_des($cpid);
+    my (@delete_des, @insert_des);
+    my %indexed_des = map { $_ => 1 } @$des;
+
+    for (@$all_des) {
+        my $new = exists $indexed_des{$_->{code}};
+        push @delete_des, $_->{id} if $_->{allow} && !$new;
+        push @insert_des, $_->{id} if !$_->{allow} && $new;
+        $_->{allow} = $new;
+    }
+
+    @delete_des || @insert_des or return;
+
+    if (@delete_des) {
+        $dbh->do(_u $sql->delete('contest_problem_des',
+            { cp_id => $cpid, de_id => \@delete_des }));
+    }
+    if (@insert_des) {
+        my $sth = $dbh->prepare(q~
+            INSERT INTO contest_problem_des(cp_id, de_id) VALUES (?, ?)~);
+        $sth->execute($cpid, $_) for @insert_des;
+    }
+    $dbh->commit;
+
+    msg(1169, scalar @delete_des, scalar @insert_des);
+    $all_des;
 }
 
 1;
