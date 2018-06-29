@@ -189,13 +189,18 @@ sub get_run_info {
 
 sub _get_compilation_error {
     my ($logs) = @_;
-    my ($log) = @$logs or return ();
-    my ($error) = $log->{dump} =~ m/
+
+    my $compilation_error_re = qr/
         \Q$cats::log_section_start_prefix$cats::log_section_compile\E
-       (.*)
+        (.*)
         \Q$cats::log_section_end_prefix$cats::log_section_compile\E
         /sx;
-    $error;
+    for (reverse @$logs) {
+        $_->{dump} or next;
+        my ($error) = $_->{dump} =~ $compilation_error_re;
+        return $error if $error;
+    }
+    undef;
 }
 
 sub run_details_frame {
