@@ -23,15 +23,7 @@ function highlight_errors(rid, re) {
         errors[m[1]] = co_lines[i];
     }
   }
-  var src = document.getElementById('src' + rid);
-  var code = src.getElementsByClassName('container')[0];
-  if (!code || code.tagName != 'DIV') return;
   for (var e in errors) {
-    var line = code.getElementsByClassName('line number' + e)[0];
-    if (!line) continue;
-    [%# Syntaxhighlighter uses !important, so we also need to. %]
-    line.setAttribute('style', 'background-color: #FFC0C0 !important;');
-    line.title = errors[e];
   }
 }
 </script>
@@ -65,8 +57,8 @@ function highlight_errors(rid, re) {
 </tr>
 <tr>
 [% FOREACH si IN sources_info %]
-  <td id="src[% si.req_id %]" class="bordered" style="margin: 0 10 10 0; padding: 0;">
-  <script type="syntaxhighlighter" class="brush: [% si.syntax.lower || 'plain' %];"><![CDATA[[% si.src | html %]]]></script>
+  <td>
+    [% si.src | html %]
   </td>
   <script>window.addEventListener('load', function () {
     highlight_errors([% si.req_id %], [ [% si.err_regexp_js.join(', ') %] ]);

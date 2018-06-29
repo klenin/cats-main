@@ -1,6 +1,3 @@
-[submodule "synhighlight"]
-	path = synhighlight
-	url = https://github.com/alexgorbatchev/SyntaxHighlighter.git
 [submodule "cgi-bin/cats-problem"]
 	path = cgi-bin/cats-problem
 	url = https://github.com/klenin/cats-problem.git

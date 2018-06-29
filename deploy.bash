@@ -195,7 +195,6 @@ PerlSetEnv CATS_DIR ${CATS_ROOT}/cgi-bin/
 		Require all granted
 	</Directory>
 
-	Alias /cats/synh/ "${CATS_ROOT}/synhighlight/"
 	Alias /cats/ "${CATS_ROOT}/cgi-bin/"
 </VirtualHost>
 EOF
