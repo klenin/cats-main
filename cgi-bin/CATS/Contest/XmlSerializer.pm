@@ -19,7 +19,7 @@ sub _snake_to_camel_case {
     $key;
 }
 
-my %problem_key_to_tag = (map { $_ => _snake_to_camel_case($_) } qw(
+my %problem_key_to_tag = (allow_des => 'AllowDEs', map { $_ => _snake_to_camel_case($_) } qw(
     tags code color status testsets contest_id problem_id max_points remote_url
     time_limit write_limit memory_limit process_limit points_testsets repo_path
 ));
@@ -128,6 +128,11 @@ sub to_date {
     to_string(@_);
 }
 
+sub to_array {
+    (my CATS::Contest::XmlSerializer $self, my $el) = @_;
+    [ map /(\d+)/ ? $1 : (), split /,/, to_string($self, $el) ]
+}
+
 sub assign_contest_prop {
     (my CATS::Contest::XmlSerializer $self, my $el, my $fn) = @_;
     my $key = $tag_to_key{$el};
@@ -177,6 +182,7 @@ sub tag_handlers() {{
     Color => { e => sub { assign_problem_prop(@_, \&to_string) }, in => [ 'Problem' ] },
     Status => { e => sub { assign_problem_prop(@_, \&to_enum) }, in => [ 'Problem' ] },
     Problem => { s => sub { push @{$_[0]->{problems}}, { } } },
+    AllowDEs => { e => sub { assign_problem_prop(@_, \&to_array) }, in => [ 'Problem' ] },
     Testsets => { e => sub { assign_problem_prop(@_, \&to_string) }, in => [ 'Problem' ] },
     RepoPath => { e => sub { assign_problem_prop(@_, \&to_string) }, in => [ 'Problem' ] },
     RemoteUrl => { e => sub { assign_problem_prop(@_, \&to_string) }, in => [ 'Problem' ] },
