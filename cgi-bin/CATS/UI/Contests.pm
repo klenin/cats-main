@@ -254,10 +254,11 @@ sub contests_edit_save_xml {
     for my $problem (@{$c->{problems}}) {
         if ($problem->{problem_id}) {
             my %cp_update_values = %$problem;
-            delete $cp_update_values{repo_path};
-            delete $cp_update_values{repo_url};
+            delete $cp_update_values{$_} for qw(repo_path repo_url allow_des);
             $dbh->do(_u $sql->update('contest_problems', \%cp_update_values,
                 { contest_id => $cid, problem_id => $problem->{problem_id} }));
+                CATS::Problem::Save::set_contest_problem_des(
+                    $problem->{allow_des}, $cid, $problem->{problem_id}) if $problem->{allow_des};
             $dbh->commit;
         }
         else {
@@ -404,11 +405,17 @@ sub contest_xml_frame {
         $cid) or return;
     
     my $problems = $dbh->selectall_arrayref(q~
-      SELECT * FROM contest_problems CP
-      WHERE CP.contest_id = ? ORDER BY CP.code~, { Slice => {} },
-      $cid
+        SELECT (
+            SELECT LIST(DD.code, ',')
+            FROM contest_problem_des CPD  
+            INNER JOIN default_de DD ON DD.id = CPD.de_id
+            WHERE CPD.cp_id = CP.id
+            ) as allow_des, CP.* 
+        FROM contest_problems CP
+        WHERE CP.contest_id = ?
+        ORDER BY CP.code~, { Slice => {} },
+        $cid
     );
-
     $t->param(
         contest_xml => $p->{contest_xml} // CATS::Contest::XmlSerializer->new->serialize($c, $problems),
         form_action => url_f('contest_xml'),
