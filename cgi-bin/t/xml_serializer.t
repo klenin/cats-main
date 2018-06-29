@@ -3,7 +3,7 @@ use warnings;
 
 use File::Spec;
 use FindBin;
-use Test::More tests => 43;
+use Test::More tests => 45;
 use Test::Exception;
 
 use lib $FindBin::Bin;
@@ -114,15 +114,26 @@ is $s->serialize($c), $expected, 'correctness 1';
 is $s->serialize_problem($problem), $s->serialize_problem($problem), 'problem purity check';
 is $s->serialize_problem($problem), $problem_expected, 'problem check 1';
 
-my $contest = $s->parse_xml($expected);
-$_ eq 'problems' ? undef : is $contest->{$_}, $c->{$_}, "$_ check" for keys %$contest;
+{
+    my $contest = $s->parse_xml($expected);
+    $_ eq 'problems' ? undef : is $contest->{$_}, $c->{$_}, "$_ check" for keys %$contest;
+}
 
-$contest = $s->parse_xml(cats_contest("$problem_expected<Problem><Code>B</Code></Problem>"));
-my $ps = $contest->{problems};
+{
+    my $contest = $s->parse_xml(cats_contest("$problem_expected<Problem><Code>B</Code></Problem>"));
+    my $ps = $contest->{problems};
 
-is scalar @$ps, 2, 'length check';
-is $ps->[1]->{code}, 'B', 'code check 2';
-is $ps->[0]->{$_}, $problem->{$_}, "$_ check" for keys %{$ps->[0]};
+    is scalar @$ps, 2, 'length check';
+    is $ps->[1]->{code}, 'B', 'code check 2';
+    is $ps->[0]->{$_}, $problem->{$_}, "$_ check" for keys %{$ps->[0]};
+}
+
+{
+    my $contest = $s->parse_xml(cats_contest("<Problem><AllowDEs>101,102</AllowDEs></Problem>"));
+    is $contest->{problems}->[-1]->{allow_des}->[0], 101, 'allow DEs check 1';
+    is $contest->{problems}->[-1]->{allow_des}->[1], 102, 'allow DEs check 2';
+}
+
 
 throws_ok { $s->parse_xml(cats_contest('<UnknownTag>123</Closed>')) } qr/Unknown tag/, 'unknown tag at the start';
 throws_ok { $s->parse_xml(cats_contest('<Closed>123</UnknownTag>')) } qr/mismatched tag/, 'unknown tag at the end';
