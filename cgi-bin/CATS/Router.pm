@@ -245,6 +245,7 @@ $main_routes = {
         rid => integer, replace => bool, de_id => integer, syntax => ident,
         src_enc => encoding_default('WINDOWS-1251'),
         replace_file => upload,
+        submit => bool, source_text => str, np => integer, problem_id => integer,
     ],
     download_source => [ \&CATS::UI::RunDetails::download_source_frame,
         rid => integer,
