@@ -1,8 +1,14 @@
 [%- PROCESS includes/sources_styles.tti -%]
 [% PROCESS includes/header.tti %]
 
-[% PROCESS includes/syntax_highlight.tti %]
+[% PROCESS includes/ace.tti %]
 </head>
+<style type="text/css">
+.ace_highlight_errors {
+  position: absolute;
+  background: #FFC0C0;
+}
+</style>
 <body>
 [% PROCESS includes/sources_info.tti %]
 <script>
@@ -23,7 +29,11 @@ function highlight_errors(rid, re) {
         errors[m[1]] = co_lines[i];
     }
   }
+  var editDiv = document.getElementsByClassName('editor')[0];
+  var editor = ace.edit(editDiv);
   for (var e in errors) {
+    var Range = ace.require('ace/range').Range;
+    editor.getSession().addMarker(new Range(e - 1, 0, e - 1, 1), 'ace_highlight_errors', 'fullLine');
   }
 }
 </script>
@@ -57,8 +67,10 @@ function highlight_errors(rid, re) {
 </tr>
 <tr>
 [% FOREACH si IN sources_info %]
-  <td>
-    [% si.src | html %]
+  <td >
+    <textarea name="source_text" cols="80" rows="40" data-editor="[% si.syntax.lower %]" data-gutter="1">
+      [%- si.src | html %]
+    </textarea>
   </td>
   <script>window.addEventListener('load', function () {
     highlight_errors([% si.req_id %], [ [% si.err_regexp_js.join(', ') %] ]);
