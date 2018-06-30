@@ -520,7 +520,8 @@ files with tests, solutions etc.
 </p>
 <ul>
   <li>Test number,</li>
-  <li>Range of test numbers, separated by "-" character [% v15 %],</li>
+  <li>Range of test numbers, separated by "<code>-</code>" character [% v15 %],</li>
+  <li>Range of test numbers and step, separated by "<code>-</code>" character [% v110 %],</li>
   <li>Testset name ([% tag_ref('Testset') %])[% v18 %].</li>
 </ul>
 
