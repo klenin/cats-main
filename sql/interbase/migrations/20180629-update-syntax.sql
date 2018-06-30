@@ -1,4 +1,4 @@
-UPDATE default_de SET syntax = 'c_cpp' WHERE syntax = 'cpp'
+UPDATE default_de SET syntax = 'c_cpp' WHERE syntax = 'cpp';
 
 UPDATE default_de SET syntax = 'rust' WHERE code = 120;
 
