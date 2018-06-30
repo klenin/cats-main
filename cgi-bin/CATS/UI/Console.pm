@@ -154,6 +154,7 @@ sub _console_content {
             (SELECT COUNT(*)
             FROM jobs J INNER JOIN jobs_queue JQ ON J.id = JQ.id
             WHERE J.req_id = R.id)~,
+        judge_name => '(SELECT JD.nick FROM judges JD WHERE JD.id = R.judge_id)',
     });
 
     $lv->define_enums({
