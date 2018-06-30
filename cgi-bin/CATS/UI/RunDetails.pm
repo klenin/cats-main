@@ -195,7 +195,7 @@ sub _get_compilation_error {
         (.*)
         \Q$cats::log_section_end_prefix$cats::log_section_compile\E
         /sx;
-    for (reverse @$logs) {
+    for (@$logs) {
         $_->{dump} or next;
         my ($error) = $_->{dump} =~ $compilation_error_re;
         return $error if $error;
