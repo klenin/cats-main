@@ -19,7 +19,7 @@ $(document).ready(function () {
     editor.setTheme('ace/theme/chrome');
 
     editor.setOptions({
-        fontSize: '12pt',
+        fontSize: '14px',
     });
 
   });

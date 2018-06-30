@@ -2,13 +2,13 @@
 [% PROCESS includes/header.tti %]
 
 [% PROCESS includes/ace.tti %]
-</head>
 <style type="text/css">
 .ace_highlight_errors {
   position: absolute;
   background: #FFC0C0;
 }
 </style>
+</head>
 <body>
 [% PROCESS includes/sources_info.tti %]
 <script>
@@ -68,7 +68,7 @@ function highlight_errors(rid, re) {
 <tr>
 [% FOREACH si IN sources_info %]
   <td >
-    <textarea name="source_text" cols="80" rows="40" data-editor="[% si.syntax.lower %]" data-gutter="1">
+    <textarea name="source_text" cols="90" rows="40" data-editor="[% si.syntax.lower %]" data-gutter="1">
       [%- si.src | html %]
     </textarea>
   </td>
