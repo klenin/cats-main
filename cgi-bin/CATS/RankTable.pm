@@ -388,7 +388,7 @@ sub prepare_ranks {
 
             push @columns, {
                 td => $c, 'time' => ($p->{time_hm} || ''),
-                points => (defined $p->{points} ? $p->{points} : '.')
+                points => (defined $p->{points} ? $p->{points} : '.'),
             };
         }
 

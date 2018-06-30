@@ -53,7 +53,7 @@
 [% UNLESS show_points %]<th>[% capt.time %]</th>[% END %]
 <th>[% capt.place %]</th>
 <th>[% capt.status %]</th>
-
+</tr>
 [% IF printable %]
 [% FOREACH r IN rank %]
 <tr class="rank_row[% ' even' UNLESS r.row_color %]">
@@ -90,28 +90,32 @@ var rank_table = [
   }[% UNLESS loop.last %],[% END %][% END %]
 ];
 
-function td(text, attr) { document.write('<td' + (attr == null ? '' : ' ' + attr) + '>' + text + '</td>'); }
+var html = '';
+
+function td(text, attr) { html += '<td' + (attr == null ? '' : ' ' + attr) + '>' + text + '</td>'; }
 function href(url, text, attr) { return '<a href="' + url + '"' + (attr == null ? '' : ' ' + attr) + '>' + text + '</a>'; }
 
 for(var i = 0; i < rank_table.length; ++i) {
-    var r = rank_table[i];
-    document.write('<tr class="rank_row' + (r.rc ? '' : ' even') + '">');
-    td(href('[% href_submits %];uf=' + r.id, (i + 1) + '&nbsp;'));
-    td(
-        [% IF show_flags %]'<img src="' + r.fl + '"/> ' +[% END %]
-        href(
-            '[% href_user_stats %];uid=' + r.id,
-            r.n[% IF show_regions %] + (r.t ? ' (' + r.t + ')' : '')[% END %],
-            'title="' + r.t + '"'));
-    [% IF show_points %]
-    for (var j = 0; j < r.pt.length; ++j) td(r.pt[j]);
-    td(r.tp);
-    [% ELSE %]
-    for (var j = 0; j < r.tm.length; ++j) td('<p>' + r.tm[j] + '</p>' + r.td[j]);
-    td(r.ts); td(r.ttm);
-    [% END %]
-    td(r.pl); td(r.st, 'class="ts"'); document.write('</tr>');
+  var r = rank_table[i];
+  html += '<tr class="rank_row' + (r.rc ? '' : ' even') + '">';
+  td(href('[% href_submits %];uf=' + r.id, (i + 1) + '&nbsp;'));
+  td(
+    [% IF show_flags %]'<img src="' + r.fl + '"/> ' +[% END %]
+    href(
+      '[% href_user_stats %];uid=' + r.id,
+      r.n[% IF show_regions %] + (r.t ? ' (' + r.t + ')' : '')[% END %],
+      'title="' + r.t + '"'));
+  [% IF show_points %]
+  for (var j = 0; j < r.pt.length; ++j) td(r.pt[j]);
+  td(r.tp);
+  [% ELSE %]
+  for (var j = 0; j < r.tm.length; ++j) td('<p>' + r.tm[j] + '</p>' + r.td[j]);
+  td(r.ts); td(r.ttm);
+  [% END %]
+  td(r.pl); td(r.st, 'class="ts"'); html += '</tr>';
 }
+document.write(html);
+
 --></script>[% END %]
 [% END %]
 <tr [% UNLESS problem_stats_color %]class="even"[% END %]>
