@@ -6,10 +6,10 @@
       padding: 3px;
     }
     .cp_overridden_limits {
-      background-color: #FEFBCA;
+      background-color: #A0FFFF;
     }
     .req_overridden_limits {
-      background-color: #60E760;
+      background-color: #A0FFA0;
     }
     .fill_width {
       width: 100%;
