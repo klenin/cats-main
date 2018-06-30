@@ -458,8 +458,6 @@ __END__
 
 ^
 
-	Alias /cats/synh/ "%CATS_ROOT%/synhighlight/"^
-
 	Alias /cats/images/ "%CATS_ROOT%/images/"^
 
 	Alias /cats/js/ "%CATS_ROOT%/js/"^

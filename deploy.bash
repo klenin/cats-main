@@ -230,7 +230,7 @@ if [[ $step =~ (^|,)7(,|$) || $step == "*" ]]; then
 	mv MathJax-2.7.1 ../js/lib/MathJax
 	wget https://github.com/ajaxorg/ace-builds/archive/v1.3.3.zip
 	unzip v1.3.3.zip
-	mv ace-builds-1.3.3/src-min-noconflict/ ../js/lib/ace
+	mv ace-builds-1.3.3/src-min-noconflict ../js/lib/ace
 	cd $CATS_ROOT
 	rm -rf tmp_js/
 	echo "ok"
