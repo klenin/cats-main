@@ -315,7 +315,7 @@ sub contest_delete {
         DELETE FROM contests WHERE id = ?~, undef,
         $delete_cid);
     $dbh->commit;
-    msg(1037, $cname);
+    $delete_cid == $cid || msg(1037, $cname);
 }
 
 sub contests_submenu_filter {
@@ -346,7 +346,7 @@ sub contests_frame {
     CATS::Contest::contest_group_auto_new($p->{contests_selection})
         if $p->{create_group} && $is_root;
 
-    contest_delete($p->{'delete'}) if $p->{'delete'};
+    contest_delete($p->{'delete'}) and return $p->redirect(url_f 'contests') if $p->{'delete'};
 
     contests_new_save($p) if $p->{new_save} && $user->privs->{create_contests};
     contests_edit_save($p, get_contest_html_params($p))
