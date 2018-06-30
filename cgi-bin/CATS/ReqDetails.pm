@@ -176,7 +176,10 @@ sub get_sources_info {
             'P.title AS problem_name', 'P.save_output_prefix',
             'P.contest_id AS orig_contest_id',
             @pc_sql,
-            @limits, 'R.limits_id as limits_id',
+            @limits,
+            'LR.job_split_strategy AS lr_job_split_strategy',
+            'LCP.job_split_strategy AS lcp_job_split_strategy',
+            'R.limits_id AS limits_id',
             'C.title AS contest_name',
             'C.is_official',
             'COALESCE(R.testsets, CP.testsets) AS testsets',
@@ -264,7 +267,7 @@ sub get_sources_info {
         $r->{file_name} //= '';
         $r->{src} //= '';
         $r->{de_id} //= 0;
-        $r->{$_} = $r->{"lr_$_"} || $r->{"lcp_$_"} || $r->{"p_$_"} for @cats::limits_fields;
+        $r->{$_} = $r->{"lr_$_"} || $r->{"lcp_$_"} || $r->{"p_$_"} for @cats::limits_fields, 'job_split_strategy';
 
         $r->{can_reinstall} = $is_root || $r->{orig_contest_id} == $r->{contest_id};
 
@@ -290,9 +293,9 @@ sub sources_info_param {
             $si->{style_classes} = { map {
                 $_ => $si->{"lr_$_"} ? 'req_overridden_limits' :
                 $si->{"lcp_$_"} ? 'cp_overridden_limits' : undef
-            } @cats::limits_fields };
+            } @cats::limits_fields, 'job_split_strategy' };
             $si->{req_overidden_limits} = {
-                map { $_ => $si->{"lr_$_"} ? 1 : 0 } @cats::limits_fields
+                map { $_ => $si->{"lr_$_"} ? 1 : 0 } @cats::limits_fields, 'job_split_strategy'
             };
             $si->{colspan} = scalar(@{$si->{elements}}) || 1;
             if ($si->{elements_count} == 1) {
