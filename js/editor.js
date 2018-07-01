@@ -1,17 +1,17 @@
 $(document).ready(function () {
   $('textarea[data-editor]').each(function() {
-   
     if (!ace) return;
+
     var textarea = $(this);
     var mode = textarea.data('editor');
     var editDiv = $('<div>', {
-      position: 'relative',
+      id: textarea.data('id'),
       width: textarea.width(),
       height: textarea.height(),
-      'class': 'editor',
-    }).insertBefore(textarea);
+      'class': 'bordered',
+    }).css({ position: 'relative' }).insertBefore(textarea);
 
-    textarea.css('display', 'none');
+    textarea.hide();
     var editor = ace.edit(editDiv[0]);
     editor.renderer.setShowGutter(textarea.data('gutter'));
     editor.getSession().setValue(textarea.val());

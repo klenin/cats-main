@@ -29,20 +29,15 @@ function highlight_errors(rid, re) {
         errors[m[1]] = co_lines[i];
     }
   }
-  var editDiv = document.getElementsByClassName('editor')[0];
-  var editor = ace.edit(editDiv);
+  var editor = ace.edit(document.getElementById('ed' + rid));
+  var session = editor.getSession();
   var annotations = [];
   for (var e in errors) {
     var Range = ace.require('ace/range').Range;
-    editor.getSession().addMarker(new Range(e - 1, 0, e - 1, 1), 'ace_highlight_errors', 'fullLine');
-    annotations.push({ 
-      row: e - 1,
-      column: 0,
-      text: errors[e],
-      type: 'error',
-    });
+    session.addMarker(new Range(e - 1, 0, e - 1, 1), 'ace_highlight_errors', 'fullLine');
+    annotations.push({ row: e - 1, column: 0, text: errors[e], type: 'error' });
   }
-  editor.getSession().setAnnotations(annotations);
+  session.setAnnotations(annotations);
 }
 </script>
 <table>
@@ -75,8 +70,9 @@ function highlight_errors(rid, re) {
 </tr>
 <tr>
 [% FOREACH si IN sources_info %]
-  <td >
-    <textarea name="source_text" cols="90" rows="40" data-editor="[% si.syntax.lower %]" data-gutter="1">
+  <td>
+    <textarea name="source_text" cols="90" rows="40"
+      data-editor="[% si.syntax.lower %]" data-gutter="1" data-id="ed[% si.req_id %]">
       [%- si.src | html %]
     </textarea>
   </td>
