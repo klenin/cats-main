@@ -89,11 +89,13 @@ var rank_table = [
     t: "[% r.city | html | $Javascript %][% " $r.affiliation_year" IF r.affiliation_year %]"
   }[% UNLESS loop.last %],[% END %][% END %]
 ];
+var problem_ids = [[% FOREACH p IN problems; p.problem_id; ', ' UNLESS loop.last; END %]];
 
 var html = '';
 
 function td(text, attr) { html += '<td' + (attr == null ? '' : ' ' + attr) + '>' + text + '</td>'; }
 function href(url, text, attr) { return '<a href="' + url + '"' + (attr == null ? '' : ' ' + attr) + '>' + text + '</a>'; }
+function url_problem(j) { return '[% href_submits_problem %]'.replace('problem_id%3D0', 'problem_id%3D' + problem_ids[j]); }
 
 for(var i = 0; i < rank_table.length; ++i) {
   var r = rank_table[i];
@@ -106,17 +108,20 @@ for(var i = 0; i < rank_table.length; ++i) {
       r.n[% IF show_regions %] + (r.t ? ' (' + r.t + ')' : '')[% END %],
       'title="' + r.t + '"'));
   [% IF show_points %]
-  for (var j = 0; j < r.pt.length; ++j) td(r.pt[j]);
+  for (var j = 0; j < r.pt.length; ++j)
+    td(href(url_problem(j) + ';uf=' + r.id, r.pt[j]));
   td(r.tp);
   [% ELSE %]
-  for (var j = 0; j < r.tm.length; ++j) td('<p>' + r.tm[j] + '</p>' + r.td[j]);
+  for (var j = 0; j < r.tm.length; ++j)
+    td(href(url_problem(j) + ';uf=' + r.id, '<p>' + r.tm[j] + '</p>' + r.td[j]));
   td(r.ts); td(r.ttm);
   [% END %]
   td(r.pl); td(r.st, 'class="ts"'); html += '</tr>';
 }
 document.write(html);
 
---></script>[% END %]
+--></script>
+[% END %]
 [% END %]
 <tr [% UNLESS problem_stats_color %]class="even"[% END %]>
   <td>&nbsp;</td>
