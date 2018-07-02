@@ -589,6 +589,7 @@ sub rank_table {
 
     my $pcount = @{$self->{problems}};
     my @href_submits_params = (i_value => -1, se => 'user_stats', show_results => 1, rows => 30);
+    my $search_contest = $is_root ? $self->search_clist : '';
     $t->param(
         problems => $self->{problems},
         problem_column_width => (
@@ -608,11 +609,9 @@ sub rank_table {
         problem_stats_color => 1 - $row_color,
         rank => $self->{rank},
         href_user_stats => url_f('user_stats'),
-        href_submits => url_f('console', @href_submits_params,
-            ($is_root ? (search => $self->search_clist) : ()),
-        ),
+        href_submits => url_f('console', @href_submits_params, search => $search_contest),
         href_submits_problem => url_f('console', @href_submits_params,
-            search => 'problem_id=0' . ($is_root ? ',' . $self->search_clist : ''),
+            search => join(',', 'problem_id=0', $search_contest || ()),
         ),
     );
     $t->param(cache_since => $max_req_id) if $is_jury;
