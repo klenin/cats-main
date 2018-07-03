@@ -362,12 +362,14 @@ a.problem_req_count_udebug {
 }
 
 table.rank_table { width: 100%; border-spacing: 1px; }
-table.rank_table tr td p { padding: 0; margin: 0; font-size: 10px; }
+table.rank_table tr td p { padding: 0; margin: 0; font-size: 9px; font-weight: normal; color: black; }
 table.rank_table .col_defs a { display: block; width: 100%; height: 100%; }
-table.rank_table .rank_row td { text-align: center; }
+table.rank_table .rank_row td { text-align: center; vertical-align: bottom; }
+table.rank_table .rank_row td.ok { font-weight: bold; color: green; }
+table.rank_table .rank_row td.fail { color: red; }
 table.rank_table .rank_row td:first-child { text-align: right; }
 table.rank_table .rank_row td:first-child + td { text-align: left; }
-table.rank_table .rank_row td a { color: black; }
+table.rank_table .rank_row td a, table.rank_table .stats a { color: inherit; }
 
 div.problem_text { margin-left: 10px; margin-right: 10px; }
 div.problem_text h3, div.problem_text h4 {

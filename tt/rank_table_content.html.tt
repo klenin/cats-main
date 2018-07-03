@@ -67,7 +67,7 @@
   [% FOREACH c IN r.columns %]<td>[% c.points %]</td>[% END -%]
 [% ELSE ~%]
   [% FOREACH c IN r.columns ~%]
-    <td><p>[% c.time | html %]</p>[% c.td | html %]</td>
+    <td class="[% c.td.substr(0, 1) == '+' ? 'ok' : 'fail' %]"><p>[% c.time | html %]</p>[% c.td | html %]</td>
   [% END -%]
 [% END -%]
 <td>[% IF show_points %][% r.total_points ~%]
@@ -112,8 +112,10 @@ for(var i = 0; i < rank_table.length; ++i) {
     td(href(url_problem(j) + ';uf=' + r.id, r.pt[j]));
   td(r.tp);
   [% ELSE %]
-  for (var j = 0; j < r.tm.length; ++j)
-    td(href(url_problem(j) + ';uf=' + r.id, '<p>' + r.tm[j] + '</p>' + r.td[j]));
+  for (var j = 0; j < r.tm.length; ++j) {
+    var cls = r.td[j].substr(0, 1) === '+' ? 'ok' : 'fail';
+    td(href(url_problem(j) + ';uf=' + r.id, '<p>' + r.tm[j] + '</p>' + r.td[j]), 'class="' + cls + '"');
+  }
   td(r.ts); td(r.ttm);
   [% END %]
   td(r.pl); td(r.st, 'class="ts"'); html += '</tr>';
@@ -126,12 +128,17 @@ document.write(html);
 <tr [% UNLESS problem_stats_color %]class="even"[% END %]>
   <td>&nbsp;</td>
   [% IF show_points %]
-  <td>[% capt.average_points %]</td>[% FOREACH ps IN problem_stats %]<td class="center">[% ps.average_points %]</td>[% END %]
+  <td>[% capt.average_points %]</td>
+  [% FOREACH ps IN problem_stats %]
+    <td class="center stats"><a href="[% ps.href_submits %]">[% ps.average_points %]</a></td>
+  [% END %]
   <td colspan="3">&nbsp;</td>
   [% ELSE %]
   <td>[% capt.successful_submits %]</td>
   [% FOREACH ps IN problem_stats %]
-    <td class="center"><p>[% ps.total_accepted %] / [% ps.total_runs %]</p>[% ps.percent_accepted %]%</td>
+    <td class="center stats">
+      <a href="[% ps.href_submits %]"><p>[% ps.total_accepted %] / [% ps.total_runs %]</p>[% ps.percent_accepted %]%</a>
+    </td>
   [% END %]
   <td colspan="4">&nbsp;</td>
   [% END %]

@@ -587,25 +587,21 @@ sub rank_table {
         }
     }
 
-    my $pcount = @{$self->{problems}};
-    my @href_submits_params = (i_value => -1, se => 'user_stats', show_results => 1, rows => 30);
     my $search_contest = $is_root ? $self->search_clist : '';
+    my @href_submits_params = (i_value => -1, se => 'user_stats', show_results => 1, rows => 30);
+
+    for my $pr (@{$self->{problems}}) {
+        my $ps = $problem_stats->{$pr->{problem_id}};
+        $ps->{percent_accepted} = int($ps->{total_accepted} / ($ps->{total_runs} || 1) * 100 + 0.5);
+        $ps->{average_points} = sprintf '%.1f', $ps->{total_points} / max($row_num, 1);
+        $ps->{href_submits} = url_f 'console', @href_submits_params,
+            search => join(',', "problem_id=$pr->{problem_id}", $search_contest || ());
+    }
+
     $t->param(
         problems => $self->{problems},
-        problem_column_width => (
-            $pcount <= 6 ? 6 :
-            $pcount <= 8 ? 5 :
-            $pcount <= 10 ? 4 :
-            $pcount <= 20 ? 3 : 2 ),
-        problem_stats => [
-            map {{
-                %$_,
-                percent_accepted => int(
-                    $_->{total_accepted} /
-                    ($_->{total_runs} || 1) * 100 + 0.5),
-                average_points => sprintf('%.1f', $_->{total_points} / max($row_num, 1))
-            }} map $problem_stats->{$_->{problem_id}}, @{$self->{problems}}
-        ],
+        problem_column_width => min(max(int(60 / @{$self->{problems}}), 2), 7),
+        problem_stats => [ map $problem_stats->{$_->{problem_id}}, @{$self->{problems}} ],
         problem_stats_color => 1 - $row_color,
         rank => $self->{rank},
         href_user_stats => url_f('user_stats'),
