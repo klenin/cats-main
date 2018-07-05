@@ -50,6 +50,8 @@ sub print_json {
 
 sub get_uri { $r->uri }
 
+sub web_param { $qq->param($_[1]) }
+
 sub param { $qq->param(@_) }
 *url_param = \&param;
 
