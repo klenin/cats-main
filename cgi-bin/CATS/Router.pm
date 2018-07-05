@@ -7,15 +7,11 @@ use FindBin;
 use File::Spec;
 
 use CATS::ApiJudge;
-use CATS::Utils;
 use CATS::RouteParser;
-use CATS::Web qw(url_param param);
 
 BEGIN {
     require $_ for glob File::Spec->catfile($ENV{CATS_DIR} || $FindBin::Bin, 'CATS', 'UI', '*.pm');
 }
-
-my ($main_routes, $api_judge_routes);
 
 my %console_params = (
     selection => clist_of integer,
@@ -24,7 +20,7 @@ my %console_params = (
 
 my %form_params = (new => bool, edit => integer, delete => integer, edit_save => bool);
 
-$main_routes = {
+my $main_routes = {
     login => [ \&CATS::UI::LoginLogout::login_frame,
         logout => bool, login => str, passwd => str, redir => str, cid => integer, ],
     logout => \&CATS::UI::LoginLogout::logout_frame,
@@ -292,7 +288,7 @@ $main_routes = {
     jobs => [ \&CATS::UI::Jobs::jobs_frame, delete => integer, ],
 };
 
-$api_judge_routes = {
+my $api_judge_routes = {
     get_judge_id => [ \&CATS::ApiJudge::get_judge_id, version => str ],
     api_judge_get_des => [ \&CATS::ApiJudge::get_DEs, active_only => bool, id => integer, ],
     api_judge_get_problem => [ \&CATS::ApiJudge::get_problem, pid => integer, ],
@@ -376,17 +372,16 @@ $api_judge_routes = {
 
 sub parse_uri { $_[0]->get_uri =~ m~/cats/(|main.pl)$~ }
 
+my $common_params = [ 1,
+    f => ident, enc => encoding, cid => integer, cpid => integer, json => qr/^[a-zA-Z0-9_]+$/ ];
+
 sub common_params {
     my ($p) = @_;
-    my $json = param('json');
-    $p->{json} = 1 if $json;
-    $p->{jsonp} = $json if $json && $json =~ /^[a-zA-Z_][a-zA-Z0-9_]*$/;
-    $p->{enc} = param('enc') if check_encoding(param('enc'));
-    for (qw(cid cpid)) {
-        my $val = param($_);
-        $p->{$_} = $val if $val && $val =~ integer;
-    }
-    $p->{f} = url_param('f') || '';
+    CATS::RouteParser::parse_route($p, $common_params);
+
+    $p->{jsonp} = $p->{json} if $p->{json} && $p->{json} =~ /^[a-zA-Z_][a-zA-Z0-9_]*$/;
+    $p->{json} &&= 1;
+    $p->{f} //= '';
 }
 
 sub route {

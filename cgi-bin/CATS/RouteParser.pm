@@ -11,7 +11,6 @@ our @EXPORT = qw(
     array_of
     bool
     bool0
-    check_encoding
     clist_of
     encoding
     encoding_default
