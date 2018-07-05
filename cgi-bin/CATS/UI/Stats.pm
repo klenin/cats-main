@@ -168,7 +168,7 @@ sub similarity_frame {
     my ($p) = @_;
 
     init_template($p, 'similarity.html.tt');
-    my $lv = CATS::ListView->new(name => 'similarity');
+    my $lv = CATS::ListView->new(web => $p, name => 'similarity');
     $is_jury && !$contest->is_practice or return;
 
     my $s = $lv->settings;

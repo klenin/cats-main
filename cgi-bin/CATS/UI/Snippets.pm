@@ -134,7 +134,7 @@ sub snippet_frame {
     $p->{new} || $p->{edit} and return edit_frame($p);
 
     init_template($p, 'snippets.html.tt');
-    my $lv = CATS::ListView->new(name => 'snippets');
+    my $lv = CATS::ListView->new(web => $p, name => 'snippets');
 
     my @cols = (
         { caption => res_str(602), order_by => 'title', width => '20%' },

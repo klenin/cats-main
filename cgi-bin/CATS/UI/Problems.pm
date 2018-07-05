@@ -49,7 +49,7 @@ sub prepare_keyword {
 sub problems_all_frame {
     my ($p) = @_;
     init_template($p, 'problems_all.html.tt');
-    my $lv = CATS::ListView->new(name => 'link_problem');
+    my $lv = CATS::ListView->new(web => $p, name => 'link_problem');
 
     $is_jury && $p->{link} || $p->{kw} or return;
 
@@ -136,7 +136,7 @@ sub problems_all_frame {
 sub problems_udebug_frame {
     my ($p) = @_;
     init_template($p, 'problems_udebug');
-    my $lv = CATS::ListView->new(name => 'problems_udebug');
+    my $lv = CATS::ListView->new(web => $p, name => 'problems_udebug');
 
     $lv->define_columns(url_f('problems'), 0, 0, [
         { caption => res_str(602), order_by => 'P.id', width => '30%' },
@@ -261,7 +261,7 @@ sub problems_frame {
 
     init_template($p, 'problems');
     my $lv = CATS::ListView->new(
-        name => 'problems' . ($contest->is_practice ? '_practice' : ''),
+        web => $p, name => 'problems' . ($contest->is_practice ? '_practice' : ''),
         array_name => 'problems');
 
     problems_frame_jury_action($p);

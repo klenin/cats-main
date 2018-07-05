@@ -439,7 +439,7 @@ sub problem_des_frame {
     my ($p) = @_;
 
     init_template($p, 'problem_des.html.tt');
-    my $lv = CATS::ListView->new(name => 'problem_des', array_name => 'problem_sources');
+    my $lv = CATS::ListView->new(web => $p, name => 'problem_des', array_name => 'problem_sources');
 
     $p->{pid} && $is_jury or return;
 
@@ -509,7 +509,7 @@ sub problem_link_frame {
 
     init_template($p, 'problem_link.html.tt');
     $p->{listview} = my $lv = CATS::ListView->new(
-        name => 'problem_link', array_name => 'contests');
+        web => $p, name => 'problem_link', array_name => 'contests');
 
     CATS::Problem::Utils::problem_submenu('problem_link', $p->{pid});
     my $href_action = url_f('problem_link', pid => $p->{pid});

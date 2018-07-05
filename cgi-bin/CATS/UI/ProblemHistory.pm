@@ -223,7 +223,7 @@ sub problem_history_frame {
     my $pr = _get_problem_info($p) or return $p->redirect(url_f 'contests');
 
     init_template($p, 'problem_history');
-    my $lv = CATS::ListView->new(name => 'problem_history');
+    my $lv = CATS::ListView->new(web => $p, name => 'problem_history');
 
     my $repo = CATS::Problem::Storage::get_repo(
         $p->{pid}, undef, 1, logger => CATS::Problem::Storage->new);

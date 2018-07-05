@@ -17,7 +17,7 @@ use CATS::Time;
 sub job_details_frame {
     my ($p) = @_;
     init_template($p, 'run_log.html.tt');
-    my $lv = CATS::ListView->new(name => 'job_details');
+    my $lv = CATS::ListView->new(web => $p, name => 'job_details');
 
     CATS::Request::delete_logs({ id => $p->{jid} }) if $p->{delete_log};
 
@@ -32,7 +32,7 @@ sub jobs_frame {
     $is_jury or return;
 
     init_template($p, 'jobs.html.tt');
-    my $lv = CATS::ListView->new(name => 'jobs');
+    my $lv = CATS::ListView->new(web => $p, name => 'jobs');
 
     $lv->define_columns(url_f('jobs'), 0, 0, [
         { caption => res_str(642), order_by => 'type', width => '5%' },

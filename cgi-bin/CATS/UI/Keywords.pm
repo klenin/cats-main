@@ -35,7 +35,7 @@ sub keywords_frame {
         $p->{new} || $p->{edit} and return $form->edit_frame($p);
     }
     init_template($p, 'keywords.html.tt');
-    my $lv = CATS::ListView->new(name => 'keywords');
+    my $lv = CATS::ListView->new(web => $p, name => 'keywords');
 
     $is_root && $p->{edit_save} and edit_save($p);
 

@@ -115,7 +115,7 @@ sub judges_frame {
     }
 
     init_template($p, 'judges.html.tt');
-    my $lv = CATS::ListView->new(name => 'judges');
+    my $lv = CATS::ListView->new(web => $p, name => 'judges');
 
     if ($is_root) {
         $p->{edit_save} and edit_save($p);

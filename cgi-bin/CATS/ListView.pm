@@ -21,6 +21,7 @@ my @display_rows = (10, 20, 30, 40, 50, 100, 200, 300);
 sub new {
     my ($class, %p) = @_;
     my $self = {
+        web => $p{web} || die,
         name => $p{name} || die,
         array_name => $p{array_name} || $p{name},
         col_defs => undef,

@@ -116,6 +116,7 @@ sub users_frame {
 
     init_template($p, 'users');
     my $lv = CATS::ListView->new(
+        web => $p,
         name => 'users' . ($contest->is_practice ? '_practice' : ''),
         array_name => 'users');
     $t->param(title_suffix => res_str(526), users_submenu);
@@ -284,6 +285,7 @@ sub users_all_settings_frame {
     $is_root or return;
 
     my $lv = CATS::ListView->new(
+        web => $p,
         name => 'users_all_settings',
         extra_settings => { selector => '' });
 

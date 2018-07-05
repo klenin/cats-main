@@ -73,7 +73,7 @@ sub prizes_frame {
 
     $is_root && defined url_param('edit') and return prizes_edit_frame;
     init_template($p, 'prizes.html.tt');
-    my $lv = CATS::ListView->new(name => 'prizes');
+    my $lv = CATS::ListView->new(web => $p, name => 'prizes');
 
     defined param('edit_save') and prizes_edit_save;
 
@@ -107,7 +107,7 @@ sub prizes_frame {
 sub contests_prizes_frame {
     my ($p) = @_;
     init_template($p, 'contests_prizes');
-    my $lv = CATS::ListView->new(name => 'contests_prizes');
+    my $lv = CATS::ListView->new(web => $p, name => 'contests_prizes');
 
     my @clist = sanitize_clist param('clist');
     @clist && @clist < 100 or return;

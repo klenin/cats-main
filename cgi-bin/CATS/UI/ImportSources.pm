@@ -15,7 +15,7 @@ use CATS::Utils qw(url_function);
 sub import_sources_frame {
     my ($p) = @_;
     init_template($p, 'import_sources.html.tt');
-    my $lv = CATS::ListView->new(name => 'import_sources');
+    my $lv = CATS::ListView->new(web => $p, name => 'import_sources');
     $lv->define_columns(url_f('import_sources'), 0, 0, [
         { caption => res_str(625), order_by => '2', width => '30%' },
         { caption => res_str(642), order_by => '3', width => '30%' },

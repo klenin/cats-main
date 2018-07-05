@@ -319,7 +319,7 @@ sub user_contacts_frame {
     }
 
     init_template($p, 'user_contacts.html.tt');
-    my $lv = CATS::ListView->new(name => 'user_contacts');
+    my $lv = CATS::ListView->new(web => $p, name => 'user_contacts');
     my ($user_name, $user_site) = $is_profile ? ($user->{name}, $user->{site_id}) :
         @{CATS::User->new->contest_fields([ 'site_id' ])->load($p->{uid}) // {}}{qw(team_name site_id)};
     $user_name or return;

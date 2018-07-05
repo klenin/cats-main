@@ -66,7 +66,7 @@ sub _init_console_template {
     my $se = param('se') || '';
     $se = "_$se" if $se;
     init_template($p, $template_name);
-    CATS::ListView->new(name => "console$se", array_name => 'console');
+    CATS::ListView->new(web => $p, name => "console$se", array_name => 'console');
 }
 
 sub _decorate_rows {
