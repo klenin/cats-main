@@ -15,7 +15,7 @@ use CATS::Utils;
 use CATS::Web qw(param url_param);
 
 my $visible_pages = 5;
-my @display_rows = (10, 20, 30, 40, 50, 100, 300);
+my @display_rows = (10, 20, 30, 40, 50, 100, 200, 300);
 
 # Params: name, template, array_name, extra, extra_settings.
 sub new {
@@ -79,7 +79,7 @@ sub init_params {
         $s->{$_} = $v if defined $v;
     }
 
-    $s->{rows} ||= $display_rows[0];
+    $s->{rows} ||= $display_rows[1];
     my $rows = param('rows') || 0;
     if ($rows > 0) {
         $s->{page} = 0 if $s->{rows} != $rows;
