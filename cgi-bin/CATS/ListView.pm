@@ -9,10 +9,10 @@ use List::Util qw(first min max);
 use CATS::DB;
 use CATS::Globals qw($is_jury $t);
 use CATS::Messages qw(msg);
+use CATS::RouteParser;
 use CATS::QueryBuilder;
 use CATS::Settings qw($settings);
 use CATS::Utils;
-use CATS::Web qw(param url_param);
 
 my $visible_pages = 5;
 my @display_rows = (10, 20, 30, 40, 50, 100, 200, 300);
@@ -38,6 +38,10 @@ sub visible_cols { $_[0]->{visible_cols} }
 sub qb { $_[0]->{qb} }
 sub submitted { $_[0]->{submitted} }
 
+my $route = [ 1,
+    page => integer, search => undef, sort => integer, sort_dir => integer, submitted => bool,
+    rows => integer, cols => array_of ident, ];
+
 sub init_params {
     my ($self) = @_;
 
@@ -45,9 +49,12 @@ sub init_params {
     my $s = $self->settings;
     $s->{search} ||= '';
 
-    $s->{page} = url_param('page') if defined url_param('page');
+    my $w = $self->{web};
+    CATS::RouteParser::parse_route($w, $route);
 
-    if (defined(my $search = Encode::decode_utf8 param('search'))) {
+    $s->{page} = $w->{page} if defined $w->{page};
+
+    if (defined(my $search = Encode::decode_utf8 $w->{search})) {
         if ($s->{search} ne $search) {
             $s->{search} = $search;
             $s->{page} = 0;
@@ -55,33 +62,33 @@ sub init_params {
     }
     $self->qb->parse_search($s->{search});
 
-    if (defined url_param('sort')) {
-        $s->{sort_by} = int(url_param('sort'));
+    if (defined $w->{sort}) {
+        $s->{sort_by} = int($w->{sort});
         $s->{page} = 0;
     }
 
-    if (defined url_param('sort_dir')) {
-        $s->{sort_dir} = int(url_param('sort_dir'));
+    if (defined $w->{sort_dir}) {
+        $s->{sort_dir} = int($w->{sort_dir});
         $s->{page} = 0;
     }
 
-    $self->{submitted} = param('submitted') ? 1 : 0;
+    $self->{submitted} = $w->{submitted} ? 1 : 0;
 
     $self->{cols} =
         !$is_jury ? undef :
         # Has user just opened page or deselected all columns?
-        $self->{submitted} || param('cols') ? [ param('cols') ] :
+        $self->{submitted} || @{$w->{cols}} ? $w->{cols} :
         !defined $s->{cols} ? undef :
         $s->{cols} eq '-' ? [] :
         [ split ',', $s->{cols} ];
 
-    for (keys %{$self->{extra_settings}}) {
-        my $v = param($_);
-        $s->{$_} = $v if defined $v;
+    if (my %es = %{$self->{extra_settings}}) {
+        CATS::RouteParser::parse_route($w, [ 1, %es ]);
+        $s->{$_} = $w->{$_} for grep defined $w->{$_}, keys %es;
     }
 
     $s->{rows} ||= $display_rows[1];
-    my $rows = param('rows') || 0;
+    my $rows = $w->{rows} || 0;
     if ($rows > 0) {
         $s->{page} = 0 if $s->{rows} != $rows;
         $s->{rows} = $rows;

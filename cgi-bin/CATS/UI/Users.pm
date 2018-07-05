@@ -281,13 +281,13 @@ sub users_frame {
 sub users_all_settings_frame {
     my ($p) = @_;
 
-    init_template($p, 'users_settings.html.tt');
+    init_template($p, 'users_all_settings.html.tt');
     $is_root or return;
 
     my $lv = CATS::ListView->new(
         web => $p,
         name => 'users_all_settings',
-        extra_settings => { selector => '' });
+        extra_settings => { selector => undef });
 
     $lv->define_columns(url_f('users_all_settings'), 0, 0, [
         { caption => res_str(616), order_by => 'login', width => '15%' },
