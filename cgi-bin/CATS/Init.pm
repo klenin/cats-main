@@ -68,7 +68,7 @@ sub init_user {
 sub extract_cid_from_cpid {
     my ($p) = @_;
     $p->{cpid} or return;
-    return $dbh->selectrow_array(qq~
+    return $dbh->selectrow_array(q~
         SELECT contest_id FROM contest_problems WHERE id = ?~, undef,
         $p->{cpid});
 }
@@ -109,6 +109,7 @@ sub init_contest {
             WHERE CA.contest_id = ? AND CA.account_id = ?~, undef,
             $cid, $uid);
         $user->{diff_time} ||= 0;
+        $user->{ext_time} ||= 0;
         $is_jury ||= $is_root;
     }
     else {
