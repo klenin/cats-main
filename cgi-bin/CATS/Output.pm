@@ -21,7 +21,6 @@ use CATS::Messages;
 use CATS::Settings;
 use CATS::Template;
 use CATS::Utils qw();
-use CATS::Web qw(param);
 
 my ($http_mime_type, %extra_headers);
 
@@ -30,7 +29,6 @@ sub downloads_url { 'download/' }
 
 sub init_template {
     my ($p, $file_name, $extra) = @_;
-    ref $p eq 'CATS::Web' or die;
 
     my ($base_name, $ext) = $file_name =~ /^(\w+)(?:\.(\w+)(:?\.tt))?$/ or die;
     $ext //= $p->{json} ? 'json' : 'html';
@@ -55,7 +53,7 @@ sub init_template {
         messages => CATS::Messages::get,
         user => $user,
         contest => $contest,
-        noiface => param('noiface') // 0,
+        noiface => $p->{noiface},
     );
 }
 
@@ -68,7 +66,7 @@ sub generate {
     $t->param(
         dbi_profile => $dbh->{Profile}->{Data}->[0],
         #dbi_profile => Data::Dumper::Dumper($dbh->{Profile}->{Data}),
-    ) unless param('notime');
+    ) unless $p->{notime};
     $t->param(
         langs => [ map { href => url_f('contests', lang => $_), name => $_ }, @cats::langs ],
     );
