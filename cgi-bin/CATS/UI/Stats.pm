@@ -173,7 +173,7 @@ sub similarity_frame {
 
     my $s = $lv->settings;
     if ($lv->submitted) {
-        $s->{$_} = $p->{$_} for qw(threshold self_diff all_contests pid account_id collapse_idents group);
+        $s->{$_} = $p->{$_} for qw(threshold self_diff all_contests pid account_id collapse_idents group jury virtual);
     }
     $s->{threshold} //= 50;
     $s->{self_diff} //= 0;
