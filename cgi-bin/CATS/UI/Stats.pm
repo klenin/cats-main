@@ -260,10 +260,10 @@ sub similarity_frame {
     $lv->define_columns(url_f('similarity'), 0, 0, [
         { caption => res_str(664), width => '5%', order_by => 'score', numeric => 1 },
         { caption => res_str(608) . ' 1', width => '20%', order_by => 'name1' },
-        { caption => res_str(627) . ' 1', width => '20%', order_by => 'site1' },
+        { caption => res_str(627) . ' 1', width => '20%', order_by => 'site1', col => 'S1' },
         { caption => res_str(666) . ' 1', width => '3%', order_by => 'verdict1' },
         { caption => res_str(608) . ' 2', width => '20%', order_by => 'name2' },
-        { caption => res_str(627) . ' 2', width => '20%', order_by => 'site2' },
+        { caption => res_str(627) . ' 2', width => '20%', order_by => 'site2', col => 'S2' },
         { caption => res_str(666) . ' 2', width => '3%', order_by => 'verdict2' },
         { caption => res_str(665), width => '5%', order_by => 'link' },
     ]);

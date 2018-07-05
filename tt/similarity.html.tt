@@ -36,13 +36,13 @@
 [% FOREACH s IN similarity; u1 = users_idx.item(s.t1); u2 = users_idx.item(s.t2) %]
   <tr><td class="num">[% href(s.href_diff, s.score _ '%') %]</td>
   <td>[% u1.name %]</td>
-  <td>[% IF u1.site; href(u1.href_site, u1.site, u1.city); ELSE; u1.city; END %]</td>
+  [% IF visible_cols.S1 %]<td>[% IF u1.site; href(u1.href_site, u1.site, u1.city); ELSE; u1.city; END %]</td>[% END %]
   <td class="verdict run_details_[% s.verdict1 %]"><table><tr>
     <td>[% href('', s.verdict1, capt.verdicts.item(s.verdict1)) %]</td>
     <td><div>[% s.req1.failed_test %]</div></td>
   </tr></table></td>
   <td>[% IF s.t1 != s.t2; u2.name; END %]</td>
-  <td>[% IF s.t1 != s.t2; IF u2.site; href(u2.href_site, u2.site, u2.city); ELSE; u2.city; END; END %]</td>
+  [% IF visible_cols.S1 %]<td>[% IF s.t1 != s.t2; IF u2.site; href(u2.href_site, u2.site, u2.city); ELSE; u2.city; END; END %]</td>[% END %]
   <td class="verdict run_details_[% s.verdict2 %]"><table><tr>
     <td>[% href('', s.verdict2, capt.verdicts.item(s.verdict2)) %]</td>
     <td><div>[% s.req2.failed_test %]</div></td>
