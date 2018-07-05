@@ -252,12 +252,10 @@ my $main_routes = {
     compare_tests => [ \&CATS::UI::Stats::compare_tests_frame, pid => required integer, ],
     rank_table_content => [ \&CATS::UI::RankTable::rank_table_content_frame,
         (map { $_ => bool } @CATS::UI::RankTable::router_bool_params),
-        clist => clist_of integer,
     ],
     rank_table => [ \&CATS::UI::RankTable::rank_table_frame,
         (map { $_ => bool } @CATS::UI::RankTable::router_bool_params),
         filter => str,
-        clist => clist_of integer,
         sites => clist_of integer,
     ],
     rank_problem_details => \&CATS::UI::RankTable::rank_problem_details,
@@ -373,7 +371,8 @@ my $api_judge_routes = {
 sub parse_uri { $_[0]->get_uri =~ m~/cats/(|main.pl)$~ }
 
 my $common_params = [ 1,
-    f => ident, enc => encoding, cid => integer, cpid => integer, json => qr/^[a-zA-Z0-9_]+$/ ];
+    f => ident, enc => encoding, cid => integer, cpid => integer, json => qr/^[a-zA-Z0-9_]+$/,
+    lang => ident, clist => clist_of integer ];
 
 sub common_params {
     my ($p) = @_;

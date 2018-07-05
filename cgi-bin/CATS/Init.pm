@@ -25,12 +25,11 @@ use CATS::Privileges;
 use CATS::Redirect;
 use CATS::Settings qw($settings);
 use CATS::Utils;
-use CATS::Web qw(param url_param);
 
 # Authorize user, initialize permissions and settings.
 sub init_user {
     my ($p) = @_;
-    $sid = url_param('sid') || '';
+    $sid = $p->web_param('sid') || '';
     $is_root = 0;
     $uid = undef;
     $user = CATS::CurrentUser->new({ privs => {}, id => undef });
@@ -53,10 +52,10 @@ sub init_user {
         }
     }
 
-    CATS::Settings::init($enc_settings, param('lang'), $p->get_cookie('settings'));
+    CATS::Settings::init($enc_settings, $p->{lang}, $p->get_cookie('settings'));
 
     if ($bad_sid) {
-        return $p->forbidden if param('noredir');
+        return $p->forbidden if $p->web_param('noredir');
         init_template($p, $p->{json} ? 'bad_sid.json.tt' : 'login.html.tt');
         $sid = '';
         my $redir = CATS::Redirect::pack_params($p);
@@ -75,8 +74,7 @@ sub extract_cid_from_cpid {
 
 sub init_contest {
     my ($p) = @_;
-    $cid = $p->{cid} || param('clist') || extract_cid_from_cpid($p) || $settings->{contest_id} || '';
-    $cid =~ s/^(\d+).*$/$1/; # Get first contest if from clist.
+    $cid = $p->{cid} || $p->{clist}->[0] || extract_cid_from_cpid($p) || $settings->{contest_id} || '';
     if ($contest && ref $contest ne 'CATS::Contest') {
         warn "Strange contest: $contest from ", $ENV{HTTP_REFERER} || '';
         warn Dumper($contest);
