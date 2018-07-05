@@ -33,7 +33,7 @@ use CATS::Router;
 use CATS::Settings;
 use CATS::StaticPages;
 use CATS::Time;
-use CATS::Web qw(param);
+use CATS::Web;
 
 sub accept_request {
     my ($p) = @_;
@@ -55,7 +55,7 @@ sub accept_request {
 
     defined $t or return;
     CATS::MainMenu->new({ f => $p->{f} })->generate;
-    CATS::Time::mark_finish unless param('notime');
+    CATS::Time::mark_finish unless $p->{notime};
     CATS::Output::generate($p, $output_file);
 }
 
@@ -69,7 +69,7 @@ sub handler {
     CATS::Router::common_params($p);
 
     if ($p->{f} eq 'proxy') {
-        return CATS::Proxy::proxy($p, param('u'));
+        return CATS::Proxy::proxy($p, $p->web_param('u'));
     }
     CATS::Time::mark_start;
     CATS::DB::sql_connect({
