@@ -21,6 +21,7 @@
       IL => 'Idleness limit exceeded',
       MR => 'Manually rejected',
       WL => 'Write limit exceeded',
+      LI => 'Source check error',
     },
     on_test => 'on test #',
   })

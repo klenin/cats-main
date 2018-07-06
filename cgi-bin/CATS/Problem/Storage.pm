@@ -383,6 +383,16 @@ sub insert_problem_content {
         )
     }
 
+    my $stages = { before => $cats::linter_before, after => $cats::linter_after };
+    for (@{$problem->{linters}}) {
+        $self->insert_problem_source(
+            source_object => $_,
+            type_name => "Linter $_->{stage}",
+            pid => $problem->{id},
+            source_type => $stages->{$_->{stage}} // die,
+        )
+    }
+
     for (@{$problem->{generators}}) {
         $self->insert_problem_source(
             source_object => $_, source_type => $cats::generator, pid => $problem->{id}, type_name => 'Generator');

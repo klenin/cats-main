@@ -263,6 +263,7 @@ td.ts { font-size: 10pt; font-style: italic; }
 .run_details_IL { background-color: #E0E080; }
 .run_details_MR { background-color: #FFC0C0; }
 .run_details_WL { background-color: #E0E080; }
+.run_details_LI { background-color: #A0FFFF; }
 
 .verdict_list label { display: inline-block; padding: 0 3px; }
 
