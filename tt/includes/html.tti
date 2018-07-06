@@ -14,13 +14,11 @@
     </select>
 [%- END -%]
 
-[%- MACRO checkbox(name, checked, enabled) BLOCK; SET enabled = 1 UNLESS enabled.defined ~%]
-    <input type="checkbox" name="[% name %]"[% ' checked="checked"' IF checked; ' disabled="disabled"' UNLESS enabled %] />
+[%- MACRO checkbox(name, value, checked, enabled) BLOCK; SET enabled = 1 UNLESS enabled.defined ~%]
+    <input type="checkbox" name="[% name %]" value="[% value | html %]"[% ' checked="checked"' IF checked; ' disabled="disabled"' UNLESS enabled %] />
 [%- END -%]
 
-[%- MACRO checkbox_1(name, checked, enabled) BLOCK; SET enabled = 1 UNLESS enabled.defined ~%]
-    <input type="checkbox" value="1" name="[% name %]"[% ' checked="checked"' IF checked; ' disabled="disabled"' UNLESS enabled %] />
-[%- END -%]
+[%- MACRO checkbox_1(name, checked, enabled) BLOCK; SET enabled = 1 UNLESS enabled.defined; checkbox(name, 1, checked, enabled); END %]
 
 [%- MACRO href(url, text, title) BLOCK ~%]
   <a[% IF url %] href="[% url %]"[% END; IF title %] title="[% title | html %]"[% END %]>[% text | html %]</a>
