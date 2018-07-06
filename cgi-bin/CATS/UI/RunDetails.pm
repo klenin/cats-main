@@ -188,12 +188,13 @@ sub get_run_info {
 }
 
 sub _get_compilation_error {
-    my ($logs) = @_;
+    my ($logs, $st) = @_;
 
+    my $section = $st == $cats::st_compilation_error ? $cats::log_section_compile : $cats::log_section_lint;
     my $compilation_error_re = qr/
-        \Q$cats::log_section_start_prefix$cats::log_section_compile\E
+        \Q$cats::log_section_start_prefix$section\E
         (.*)
-        \Q$cats::log_section_end_prefix$cats::log_section_compile\E
+        \Q$cats::log_section_end_prefix$section\E
         /sx;
     for (@$logs) {
         $_->{dump} or next;
@@ -214,8 +215,10 @@ sub run_details_frame {
     my $needs_commit;
     for (@$sources_info) {
         source_links($p, $_);
-        if ($_->{state} == $cats::st_compilation_error) {
-            push @runs, { compiler_output => _get_compilation_error(get_log_dump({ req_id => $_->{req_id} })) };
+        my $st = $_->{state};
+        if ($st == $cats::st_compilation_error || $st == $cats::st_lint_error) {
+            my $logs = get_log_dump({ req_id => $_->{req_id} });
+            push @runs, { compiler_output => _get_compilation_error($logs, $st) };
             next;
         }
         my $c = get_contest_tests(get_contest_info($_, $contest_cache), $_->{problem_id});
@@ -351,8 +354,11 @@ sub view_source_frame {
     }
     $sources_info->{syntax} = $p->{syntax} if $p->{syntax};
     $sources_info->{src_lines} = [ map {}, split("\n", $sources_info->{src}) ];
-    $sources_info->{compiler_output} = _get_compilation_error(get_log_dump({ req_id => $sources_info->{req_id} }))
-        if $sources_info->{state} == $cats::st_compilation_error;
+    my $st = $sources_info->{state};
+    if ($st == $cats::st_compilation_error || $st == $cats::st_lint_error) {
+        my $logs = get_log_dump({ req_id => $sources_info->{req_id} });
+        $sources_info->{compiler_output} = _get_compilation_error($logs, $st)
+    }
 
     if ($sources_info->{is_jury}) {
         my $de_list = CATS::DevEnv->new(CATS::JudgeDB::get_DEs({ active_only => 1 }));
