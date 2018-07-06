@@ -318,10 +318,28 @@ files with tests, solutions etc.
       <li>export[% opt %] — globally unique identifier.</li>
       <li>timeLimit[% opt %] — time limit in seconds.</li>
       <li>memoryLimit[% opt %] — memory limit [% mem_units %].</li>
-      <li>writeLimit[% opt %] [% v19 %] — write limit [% mem_units %].</li>
+      <li>writeLimit[% opt %] — write limit [% mem_units %].</li>
     </ul>
   </td>
   <td>Interactor or controller (see [% tag_ref('Run') %]). Only one iterator per problem is allowed.</td>
+</tr>
+<tr>
+  <td>[% tag_in('Linter', 'Problem', v110) %]</td>
+  <td>
+    <ul>
+      <li>name — identifier of the [% tag_ref('Linter') %] object.</li>
+      <li>src — path to the source code file.</li>
+      <li>stage — either 'before' or 'after'.</li>
+      <li>de_code[% opt %] — development environment code.</li>
+      <li>export[% opt %] — globally unique identifier.</li>
+      <li>timeLimit[% opt %] — time limit in seconds.</li>
+      <li>memoryLimit[% opt %] — memory limit [% mem_units %].</li>
+      <li>writeLimit[% opt %] — write limit [% mem_units %].</li>
+    </ul>
+  </td>
+  <td>Linter runs either before or after compilation, depending on 'stage' attribute.
+    Linter accepts source file names on command line and exits with non-zero code
+    if the source does not pass the check.</td>
 </tr>
 <tr>
   <td>[% tag_in('Run', 'Problem', v19) %]</td>
