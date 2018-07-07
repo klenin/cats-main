@@ -4,6 +4,7 @@ UPDATE default_de SET syntax = 'rust' WHERE code = 120;
 
 UPDATE default_de SET syntax = 'pascal' WHERE code = 201;
 UPDATE default_de SET syntax = 'pascal' WHERE code = 202;
+UPDATE default_de SET syntax = 'pascal' WHERE code = 203;
 UPDATE default_de SET syntax = 'pascal' WHERE code = 204;
 UPDATE default_de SET syntax = 'pascal' WHERE code = 205;
 

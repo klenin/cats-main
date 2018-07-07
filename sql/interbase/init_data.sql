@@ -22,6 +22,8 @@ INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
     VALUES (GEN_ID(key_seq, 1), 202, 'Free Pascal', 'lpr;pp', 'pascal', '^~FILE~\(~LINE~,~POS~\)\s');
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
+    VALUES (GEN_ID(key_seq, 1), 203, 'Borland Delphi', '', 'pascal', '^~FILE~\(~LINE~\)\sE');
+INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
     VALUES (GEN_ID(key_seq, 1), 204, 'Free Pascal in Delphi mode', 'dpr', 'pascal', '^~FILE~\(~LINE~,~POS~\)\s');
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
     VALUES (GEN_ID(key_seq, 1), 205, 'PascalABC', '', 'pascal', '^\[~LINE~,~POS~\]\s~FILE~:');
