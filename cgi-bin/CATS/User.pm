@@ -32,6 +32,12 @@ BEGIN {
 
 sub hash_password { $hash_password->(@_); }
 
+sub param_names () {qw(
+    login team_name capitan_name country motto restrict_ips
+    city affiliation affiliation_year
+    git_author_name git_author_email
+)}
+
 sub new {
     my ($class) = @_;
     $class = ref $class if ref $class;
@@ -101,13 +107,6 @@ sub generate_login {
     return "team$login_num";
 }
 
-sub param_names () {qw(
-    login team_name capitan_name email country motto home_page icq_number
-    city affiliation affiliation_year
-    git_author_name git_author_email
-    restrict_ips phone
-)}
-
 sub any_official_contest_by_team {
     my ($account_id) = @_;
     $dbh->selectrow_array(q~
@@ -126,9 +125,6 @@ sub validate_params {
     validate_string_length($self->{team_name}, 800, 1, 100) or return;
     validate_string_length($self->{capitan_name}, 801, 0, 100) or return;
     validate_string_length($self->{motto}, 802, 0, 100) or return;
-    validate_string_length($self->{email}, 803, 0, 50) or return;
-    validate_string_length($self->{icq_number}, 804, 0, 50) or return;
-    validate_string_length($self->{home_page}, 805, 0, 100) or return;
     validate_string_length($self->{affiliation}, 807, 0, 100) or return;
     validate_integer($self->{affiliation_year}, 807, allow_empty => 1, min => 1900, max => 2100) or return;
     $self->{affiliation_year} or $self->{affiliation_year} = undef;
