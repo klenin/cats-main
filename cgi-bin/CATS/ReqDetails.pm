@@ -14,7 +14,6 @@ use CATS::RankTable;
 use CATS::Time;
 use CATS::Utils qw(encodings source_encodings url_function);
 use CATS::Verdicts;
-use CATS::Web qw(param);
 use CATS::Request;
 
 use Exporter qw(import);
@@ -30,7 +29,7 @@ our @EXPORT_OK = qw(
 );
 
 sub get_contest_info {
-    my ($si, $cache) = @_;
+    my ($p, $si, $cache) = @_;
 
     $_ and return $_ for $cache->{$si->{contest_id}};
 
@@ -42,7 +41,7 @@ sub get_contest_info {
             'CAST(CURRENT_TIMESTAMP - defreeze_date AS DOUBLE PRECISION) AS time_since_defreeze' ],
             { id => $si->{contest_id} });
 
-    my $jury_view = $si->{is_jury} && !param('as_user');
+    my $jury_view = $si->{is_jury} && !$p->{as_user};
     $c->{$_} ||= $jury_view for @show_fields;
     $c->{hide_testset_details} = !$jury_view && $c->{time_since_defreeze} < 0;
 
@@ -358,7 +357,7 @@ sub source_links {
         $t->param(is_any_jury => 1);
         get_judges($si);
     }
-    my $se = param('src_enc') || param('comment_enc') || 'WINDOWS-1251';
+    my $se = $p->{src_enc} || $p->{comment_enc} || 'WINDOWS-1251';
     $t->param(source_encodings => source_encodings($se));
 
     source_links($p, $_) for @{$si->{elements}};

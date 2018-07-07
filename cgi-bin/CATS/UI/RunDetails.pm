@@ -221,7 +221,7 @@ sub run_details_frame {
             push @runs, { compiler_output => _get_compilation_error($logs, $st) };
             next;
         }
-        my $c = get_contest_tests(get_contest_info($_, $contest_cache), $_->{problem_id});
+        my $c = get_contest_tests(get_contest_info($p, $_, $contest_cache), $_->{problem_id});
         push @runs, get_run_info($p, $c, $_);
         $needs_commit ||= $_->{needs_commit};
     }
@@ -259,7 +259,7 @@ sub visualize_test_frame {
     source_links($p, $sources_info);
     sources_info_param([ $sources_info ]);
 
-    my $ci = get_contest_info($sources_info, {});
+    my $ci = get_contest_info($p, $sources_info, {});
     $ci->{show_test_data} or return;
 
     my @tests = get_req_details($ci, $sources_info, 'test_rank, result', {});
@@ -407,7 +407,7 @@ sub view_test_details_frame {
     my $sources_info = get_sources_info($p,
         request_id => $p->{rid}, extra_params => [ test_rank => $p->{test_rank} ]) or return;
 
-    my $ci = get_contest_info($sources_info, {});
+    my $ci = get_contest_info($p, $sources_info, {});
     $ci->{show_test_data} or return;
 
     my $output_data;
