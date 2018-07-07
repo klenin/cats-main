@@ -38,7 +38,7 @@ function delete_contest_site(href, name) {
 [% IF visible_cols.Dt %]<td>[% cs.formatted_time | html %]</td>[% END %]
 [% IF visible_cols.Pt %]
 <td class="num">[% href(cs.href_users, cs.users_count); " ($cs.users_count_ooc)" IF cs.users_count_ooc %]
-[[% href(cs.href_rank_table, capt.rank_table) %]] </td>
+[[% href(cs.href_console, capt.console) %]] [[% href(cs.href_rank_table, capt.rank_table) %]] </td>
 [% END %]
 </tr>
 [% END %]

@@ -265,6 +265,9 @@ sub contest_sites_frame {
             ($is_jury ? (href_delete => url_f('contest_sites', 'delete' => $row->{id})) : ()),
             href_edit => url_f('contest_sites_edit', site_id => $row->{id}),
             href_users => url_f('users', search => "site_id=$row->{id}"),
+            href_console => url_f('console',
+                i_value => -1, se => 'sites', show_results => 1,
+                search => "site_id=$row->{id}" . ($is_root ? ',contest_id=this' : '')),
             href_rank_table => url_f('rank_table', sites => $row->{id}),
         );
     };

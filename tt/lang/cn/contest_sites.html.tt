@@ -2,6 +2,7 @@
   capt.import({
     want_to_delete => 'Do you really want to exclude site',
     add_sites => 'add sites',
-    rank_table => 'rank table',
+    console => '控制台',
+    rank_table => '排名表',
   })
 %]
