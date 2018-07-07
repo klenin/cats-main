@@ -6,14 +6,11 @@ use warnings;
 use CATS::Config qw(cats_dir);
 use CATS::DB;
 use CATS::Globals qw($sid);
-
-my $int = qr/^[0-9]+$/;
-my $bool = qr/^0|1$/;
-my $letters = qr/^[a-z]+$/;
+use CATS::RouteParser;
 
 sub allowed_pages {{
-    problem_text => { cid => $int, cpid => $int, pid => $int, pl => qr/^[a-z]{2}$/ },
-    rank_table_content => { cid => $int, hide_ooc => $bool, printable => $bool },
+    problem_text => { cid => integer, cpid => integer, pid => integer, pl => qr/^[a-z]{2}$/ },
+    rank_table_content => { cid => integer, hide_ooc => bool0, printable => bool0 },
 }}
 
 our $is_static_page;
