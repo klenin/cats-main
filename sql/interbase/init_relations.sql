@@ -81,11 +81,12 @@ CREATE TABLE contests (
     defreeze_date TIMESTAMP,
     closed        INTEGER DEFAULT 0 CHECK (closed IN (0, 1)),
     is_hidden     SMALLINT DEFAULT 0 CHECK (is_hidden IN (0, 1)),
-    penalty       INTEGER,
-    ctype         INTEGER, /* 0 -- normal, 1 -- training session */
+    penalty              INTEGER,
+    penalty_except       VARCHAR(100),
+    ctype                INTEGER, /* 0 -- normal, 1 -- training session */
 
-    is_official   INTEGER DEFAULT 0 CHECK (is_official IN (0, 1)),
-    run_all_tests INTEGER DEFAULT 0 CHECK (run_all_tests IN (0, 1)),
+    is_official          INTEGER DEFAULT 0 CHECK (is_official IN (0, 1)),
+    run_all_tests        INTEGER DEFAULT 0 CHECK (run_all_tests IN (0, 1)),
 
     show_all_tests       INTEGER DEFAULT 0 CHECK (show_all_tests IN (0, 1)),
     show_test_resources  INTEGER DEFAULT 0 CHECK (show_test_resources IN (0, 1)),

@@ -60,7 +60,7 @@ sub contest_string_params() {qw(
 
 sub get_contest_html_params {
     my ($p) = @_;
-    my $c = { map { $_ => $p->{$_} } contest_string_params() };
+    my $c = { map { $_ => $p->{$_} } contest_string_params(), 'penalty' };
     $c->{$_} = $p->{$_} ? 1 : 0 for contest_checkbox_params();
 
     for ($c->{title}) {
@@ -72,8 +72,11 @@ sub get_contest_html_params {
     delete $c->{free_registration};
     $c->{show_frozen_reqs} = 0;
 
-    $c->{max_reqs_except} = join ',', sort { $a <=> $b }
-        grep $_, map $CATS::Verdicts::name_to_state->{$_}, @{$p->{exclude_verdict}};
+    for my $e (qw(max_reqs penalty)) {
+        my $val = join ',', sort { $a <=> $b }
+            grep $_, map $CATS::Verdicts::name_to_state->{$_}, @{$p->{"exclude_verdict_$e"}};
+        $c->{$e . '_except'} = $val || undef;
+    }
     $c;
 }
 
@@ -219,15 +222,19 @@ sub contest_params_frame {
         $p->{id}) or return;
     $c->{free_registration} = !$c->{closed};
 
-    my %verdicts_excluded =
+    my %verdicts_excluded_max_reqs =
         map { $CATS::Verdicts::state_to_name->{$_} => 1 } split /,/, $c->{max_reqs_except} // '';
+    my %verdicts_excluded_penalty =
+        map { $CATS::Verdicts::state_to_name->{$_} => 1 } split /,/, $c->{penalty_except} // '';
 
     my $is_jury_in_contest = is_jury_in_contest(contest_id => $p->{id});
     $t->param(
         %$c,
         href_action => url_f('contests'),
         can_edit => $is_jury_in_contest,
-        verdicts => [ map +{ short => $_->[0], checked => $verdicts_excluded{$_->[0]} },
+        verdicts_max_reqs => [ map +{ short => $_->[0], checked => $verdicts_excluded_max_reqs{$_->[0]} },
+            @$CATS::Verdicts::name_to_state_sorted ],
+        verdicts_penalty => [ map +{ short => $_->[0], checked => $verdicts_excluded_penalty{$_->[0]} },
             @$CATS::Verdicts::name_to_state_sorted ],
     );
     CATS::Contest::Utils::contest_submenu('contest_params', $p->{id}) if $is_jury_in_contest;
