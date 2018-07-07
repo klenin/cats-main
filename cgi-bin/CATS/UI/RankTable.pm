@@ -25,7 +25,7 @@ sub rank_table {
     init_template($p, 'rank_table_content.html.tt');
     $t->param(printable => $p->{printable});
     my $rt = CATS::RankTable->new($p);
-    $rt->parse_params;
+    $rt->parse_params($p);
     $rt->rank_table;
     $contest->{title} = $rt->{title};
     my $s = $t->output;

@@ -15,7 +15,6 @@ use CATS::Globals qw($cid $contest $is_jury $is_root $t $uid $user);
 use CATS::Output qw(url_f);
 use CATS::Testset;
 use CATS::Time;
-use CATS::Web qw(param url_param);
 
 use fields qw(
     clist contest_list hide_ooc hide_virtual show_points frozen
@@ -314,27 +313,24 @@ sub get_contests_info {
 }
 
 sub parse_params {
-    (my CATS::RankTable $self) = @_;
+    (my CATS::RankTable $self, my $p) = @_;
 
-    $self->{hide_ooc} = url_param('hide_ooc') || '0';
-    $self->{hide_ooc} =~ /^[01]$/
-        or $self->{hide_ooc} = 0;
+    $self->{hide_ooc} = $p->{hide_ooc} || 0;
 
-    $self->{hide_virtual} = url_param('hide_virtual') || '0';
-    $self->{hide_virtual} =~ /^[01]$/
-        or $self->{hide_virtual} = (!$user->{is_virtual} && !$is_jury || !$user->{is_participant});
+    $self->{hide_virtual} = $p->{hide_virtual} //
+        (!$user->{is_virtual} && !$is_jury || !$user->{is_participant});
 
     $self->get_contests_info($uid);
-    $self->{show_points} = url_param('points') if defined url_param('points');
-    $self->{use_cache} = url_param('cache');
+    $self->{show_points} = $p->{points} if defined $p->{points};
+    $self->{use_cache} = $p->{cache};
     # Cache external links by default.
     $self->{use_cache} = 1 if !defined $self->{use_cache} && !defined $uid;
     $self->{use_cache} = 0 unless $self->{show_all_results};
-    $self->{filter} = param('filter');
-    $self->{sites} = param('sites');
-    $self->{show_prizes} = url_param('show_prizes');
-    $self->{show_regions} = url_param('show_regions');
-    $self->{show_flags} = url_param('show_flags') if defined url_param('show_flags');
+    $self->{filter} = $p->{filter};
+    $self->{sites} = $p->{sites};
+    $self->{show_prizes} = $p->{show_prizes};
+    $self->{show_regions} = $p->{show_regions};
+    $self->{show_flags} = $p->{show_flags} if defined $p->{show_flags};
 }
 
 sub prepare_ranks {
@@ -349,8 +345,8 @@ sub prepare_ranks {
         @rank = grep $negate == (index($filter_fields->($_), $filter) < 0), @rank;
     }
 
-    if (defined $self->{sites}) {
-        my %sites = map { $_ => 1 } grep $_ ne '', split ',', $self->{sites};
+    if (@{$self->{sites}}) {
+        my %sites = map { $_ => 1 } @{$self->{sites}};
         @rank = grep $sites{$_->{site_id} // 0}, @rank;
     }
 
