@@ -88,11 +88,26 @@ sub delete_logs {
         $jobs_tree_sql
         SELECT id FROM jobs_tree~, undef,
         @bind);
-    if (@$job_ids) {
-        $dbh->do(_u $sql->delete('logs', { job_id => $job_ids }));
-        $dbh->commit;
-        msg(1159);
-    }
+    @$job_ids or return;
+
+    $dbh->do(_u $sql->delete('logs', { job_id => $job_ids }));
+    $dbh->commit;
+    msg(1159);
+}
+
+sub delete_jobs {
+    my ($cond) = @_;
+
+    my ($jobs_tree_sql, @bind) = get_job_tree_sql($cond);
+    my $job_ids = $dbh->selectcol_arrayref(qq~
+        $jobs_tree_sql
+        SELECT id FROM jobs_tree~, undef,
+        @bind);
+    @$job_ids or return;
+
+    my $count = $dbh->do(_u $sql->delete('jobs', { id => $job_ids }));
+    $dbh->commit;
+    msg(1173, $count) if $count > 0;
 }
 
 # Set request state manually. May be also used for retesting.

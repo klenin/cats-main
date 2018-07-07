@@ -44,6 +44,7 @@
 [% END %]
 <form method="post">
   <button type="submit" name="delete_log" value="1" class="button">[% capt.delete_log %]</button>
+  <button type="submit" name="delete_jobs" value="1" class="button">[% capt.delete_jobs %]</button>
 </form>
 [% ELSE; capt.no_log %]
 [% END %]

@@ -204,7 +204,8 @@ my $main_routes = {
     send_message_box => [ \&CATS::UI::Messages::send_message_box_frame,
         caid => integer, send => bool, message_text => str, ],
 
-    run_log => [ \&CATS::UI::RunDetails::run_log_frame, rid => integer, delete_log => bool, ],
+    run_log => [ \&CATS::UI::RunDetails::run_log_frame,
+        rid => integer, delete_log => bool, delete_jobs => bool, ],
     view_source => [ \&CATS::UI::RunDetails::view_source_frame,
         rid => integer, replace => bool, de_id => integer, syntax => ident,
         src_enc => encoding_default('WINDOWS-1251'),

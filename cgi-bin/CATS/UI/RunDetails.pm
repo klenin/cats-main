@@ -631,6 +631,7 @@ sub run_log_frame {
     sources_info_param([ $si ]);
 
     CATS::Request::delete_logs({ req_id => $rid }) if $p->{delete_log};
+    CATS::Request::delete_jobs({ req_id => $rid }) if $p->{delete_jobs};
 
     $t->param(
         logs => get_log_dump({ req_id => $rid, parent_id => undef }),

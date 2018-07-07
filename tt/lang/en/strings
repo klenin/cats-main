@@ -317,3 +317,4 @@
 1170 "Created problem installation jobs: %d."
 1171 "Created judge update jobs: %d."
 1172 "Pin modes changed: %d."
+1173 "Jobs deleted: %d."
