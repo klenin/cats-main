@@ -25,6 +25,20 @@ BEGIN {
 
 sub split_ips { map { /(\S+)/ ? $1 : () } split ',', $_[0] }
 
+sub _ensure_good_sid {
+    my ($current_ip, $aid) = @_;
+    for (1..20) {
+        $dbh->do(q~
+            UPDATE accounts A SET A.sid = ?, A.last_login = CURRENT_TIMESTAMP, A.last_ip = ?
+            WHERE A.id = ? AND
+                NOT EXISTS (SELECT 1 FROM accounts A1 WHERE A1.sid = ? AND A1.id <> ?)~, undef,
+            $sid, $current_ip, $aid, $sid, $aid
+        ) and return $dbh->commit;
+        $sid = CATS::User::make_sid;
+    }
+    die 'Can not generate sid';
+}
+
 sub login_frame {
     my ($p) = @_;
     init_template($p, 'login');
@@ -38,43 +52,36 @@ sub login_frame {
     }
     $t->param(login => Encode::decode_utf8($login));
 
-    my ($aid, $hash, $locked, $restrict_ips) = $dbh->selectrow_array(qq~
-        SELECT id, passwd, locked, restrict_ips FROM accounts WHERE login = ?~, undef, $login);
+    my ($aid, $hash, $locked, $restrict_ips, $last_ip, $last_sid) = $dbh->selectrow_array(q~
+        SELECT id, passwd, locked, restrict_ips, last_ip, sid
+        FROM accounts WHERE login = ?~, undef,
+        $login);
 
     $aid && $check_password->($p->{passwd} // '', $hash) or return msg(1040);
     !$locked or return msg(1041);
 
-    my $last_ip = CATS::IP::get_ip();
+    my $current_ip = CATS::IP::get_ip();
 
     if ($restrict_ips) {
         my %allowed_ips = map { $_ => 1 } split_ips($restrict_ips);
-        0 < grep $allowed_ips{$_}, split_ips($last_ip) or return msg(1039);
+        0 < grep $allowed_ips{$_}, split_ips($current_ip) or return msg(1039);
     }
 
-    for (1..20) {
-        $sid = CATS::User::make_sid;
+    $sid = $last_ip eq $current_ip ? $last_sid : CATS::User::make_sid;
+    _ensure_good_sid($current_ip, $aid);
 
-        $dbh->do(q~
-            UPDATE accounts SET sid = ?, last_login = CURRENT_TIMESTAMP, last_ip = ?
-            WHERE id = ?~, undef,
-            $sid, $last_ip, $aid
-        ) or next;
-        $dbh->commit;
-
-        if ($p->{json}) {
-            $contest->load($p->{cid}, [ 'id' ]);
-            $t->param(sid => $sid, cid => $contest->{id});
-            return;
-        }
-        $t = undef;
-        my %params = CATS::Redirect::unpack_params($p->{redir});
-        my $f = $params{f} || 'contests';
-        delete $params{f};
-        $params{sid} = $sid;
-        $params{cid} ||= $p->{cid};
-        return $p->redirect(url_function $f, %params);
+    if ($p->{json}) {
+        $contest->load($p->{cid}, [ 'id' ]);
+        $t->param(sid => $sid, cid => $contest->{id});
+        return;
     }
-    die 'Can not generate sid';
+    $t = undef;
+    my %params = CATS::Redirect::unpack_params($p->{redir});
+    my $f = $params{f} || 'contests';
+    delete $params{f};
+    $params{sid} = $sid;
+    $params{cid} ||= $p->{cid};
+    $p->redirect(url_function $f, %params);
 }
 
 sub logout_frame {
