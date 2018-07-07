@@ -214,6 +214,10 @@ my @editable_settings = (
         name => 'console.autoupdate', default => 30,
         validate => sub { $_[0] eq '' || $_[0] =~ /^\d+$/ && $_[0] >= 20 ? 1 : msg(1046, res_str(809), 20) }
     },
+    {
+        name => 'source_width', default => 90,
+        validate => sub { $_[0] eq '' || $_[0] =~ /^\d+$/ && $_[0] <= 200 ? 1 : msg(1045, res_str(810), 0, 200) }
+    },
 );
 
 sub update_settings {

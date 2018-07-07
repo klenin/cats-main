@@ -374,6 +374,7 @@ sub view_source_frame {
             }, @{$de_list->des}
         ]);
     }
+    $t->param(source_width => $settings->{source_width} // 90);
 }
 
 sub download_source_frame {

@@ -1,15 +1,15 @@
 [%- PROCESS includes/html_input.tti -%]
 [%- PROCESS "lang/$lang/user_extra.tti" -%]
 <table class="registration">
-<tr><td>[% capt.country %]</td><td>
+  <tr><td>[% capt.country %]</td><td>
     <select name="country">
     [% FOREACH c IN countries %]
     <option value="[% c.id %]" [% IF c.id == country %]selected="selected"[% END %]>[% c.name | html %]</option>
     [% END %]
     </select>
-</td></tr>
+  </td></tr>
 [%
-  fields = [ 'city', 'affiliation', 'affiliation_year', 'motto', 'capitan_name', 'settings.console.autoupdate' ];
+  fields = [ 'city', 'affiliation', 'affiliation_year', 'motto', 'capitan_name', 'settings.console.autoupdate', 'settings.source_width' ];
   fields.push('git_author_name', 'git_author_email') IF is_some_jury || user.privs.is_root || git_author_name || git_author_email;
   FOREACH f IN fields; input_tr(f); END
 %]

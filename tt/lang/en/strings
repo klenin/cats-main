@@ -164,6 +164,7 @@
 807 "Educational institution"
 808 "Year of enrollment"
 809 "Console update interval, sec."
+810 "Source editor width, characters"
 1000 "Programming contest control system"
 1001 "Problem '%s' was successfully linked."
 1002 "Session code is wrong or expired. Please login again."

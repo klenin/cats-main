@@ -16,5 +16,6 @@
     hide_envelopes => 'Hide envelopes',
     display_input => 'Display input data',
     'settings.console.autoupdate' => 'Console update interval, sec.',
+    'settings.source_width' => 'Source editor width, characters',
   })
 %]
