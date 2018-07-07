@@ -10,41 +10,41 @@
 [% IF problem_import_log %]
 [% capt.problem_import_log %]:<br/>
 <textarea cols="100" rows="10" readonly="readonly">
-[% problem_import_log | html %]
+  [%- problem_import_log | html %]
 </textarea>
 [% END %]
 
 <div class="commit_header">[% capt.file_editing %] [% file %]</div>
 <div class="page_path">
-    [% FOREACH path IN blob.paths %]
-        <a href="[% path.href %]">[% path.file_name %]</a>
-    [% ' / ' UNLESS loop.last; END %]
-    @ [% last_commit.subject | html %] ([% last_commit.author | html %], [% last_commit.sha %])
+  [% FOREACH path IN blob.paths %]
+    <a href="[% path.href %]">[% path.file_name %]</a>
+  [% ' / ' UNLESS loop.last; END %]
+  @ [% last_commit.subject | html %] ([% last_commit.author | html %], [% last_commit.sha %])
 </div>
 <div class="page_body">
-    [% PROCESS includes/encoding_form.html.tti capt_enc = capt.enc %]
-    <form method="post" accept-charset="UTF-8" style="margin: 0">
-        <div>
+  [% PROCESS includes/encoding_form.html.tti capt_enc = capt.enc %]
+  <form method="post" accept-charset="UTF-8" style="margin: 0">
+    <div>
 <textarea rows="40" cols="100" name="source">
 [%- IF blob.content; blob.content | html; ELSE; FOREACH line IN blob.lines %]
 [% line.text | html %]
 [%- END; END -%]
 </textarea>
-        </div>
-        <div class="problem_submit">
-          <input type="hidden" name="src_enc" value="[% src_enc %]" />
-          <p><label>
-            <input type="checkbox" id="is_amend" name="is_amend" value="1" onclick="javascript:toggle_amend()"/> [% capt.amend %]
-            </label></p>
-          <p>
-            <label for="message">[% capt.message %]:</label><br/>
-            <textarea id="message" name="message" cols="50" rows="5">[% IF message; message; END %]</textarea>
-          </p>
-          <p>
-            <button type="submit" name="save" value="1" class="button">[% capt.save %]</button>
-          </p>
-        </div>
-    </form>
+    </div>
+    <div class="problem_submit">
+      <input type="hidden" name="src_enc" value="[% src_enc %]" />
+      <p><label>
+        <input type="checkbox" id="is_amend" name="is_amend" value="1" onclick="javascript:toggle_amend()"/> [% capt.amend %]
+        </label></p>
+      <p>
+        <label for="message">[% capt.message %]:</label><br/>
+        <textarea id="message" name="message" cols="50" rows="5">[% IF message; message; END %]</textarea>
+      </p>
+      <p>
+        <button type="submit" name="save" value="1" class="button">[% capt.save %]</button>
+      </p>
+    </div>
+  </form>
 </div>
 [% PROCESS includes/amend.tti %]
 [% PROCESS includes/menu_end.tti %]
