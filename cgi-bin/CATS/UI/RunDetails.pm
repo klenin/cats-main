@@ -481,7 +481,7 @@ sub maybe_status_ok {
         $cats::problem_st_ready, $si->{contest_id}, $si->{problem_id}, $cats::problem_st_ready);
 }
 
-my $settable_verdicts = [ qw(NP AW OK WA PE TL ML WL RE CE SV IS IL MR) ];
+my $settable_verdicts = [ qw(NP AW OK WA PE TL ML WL RE CE SV IS IL MR LI) ];
 
 sub request_params_frame {
     my ($p) = @_;
