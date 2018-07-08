@@ -93,7 +93,8 @@ sub get_problems {
             CP.id, CP.problem_id, CP.code, CP.contest_id,
             CP.testsets, CP.points_testsets, CP.color, C.start_date,
             CAST(CURRENT_TIMESTAMP - C.start_date AS DOUBLE PRECISION) AS since_start,
-            C.local_only, CP.max_points, P.title, P.max_points AS max_points_def, P.run_method,
+            CP.max_points, P.title, P.max_points AS max_points_def, P.run_method,
+            C.local_only, C.penalty, C.penalty_except,
             @{[ partial_checker_sql ]}
         FROM
             contest_problems CP INNER JOIN contests C ON C.id = CP.contest_id
@@ -128,6 +129,8 @@ sub get_problems {
             $_->{max_points} = cache_max_points($_);
             $need_commit = 1;
         }
+        $_->{exclude_penalty} = {
+            $cats::st_accepted => 1, map { $_ => 1 } split ',', $_->{penalty_except} // '' };
         $max_total_points += $_->{max_points} || 0;
         $self->{has_competitive} = 1 if $_->{run_method} == $cats::rm_competitive;
     }
@@ -467,7 +470,7 @@ sub rank_table {
     my $virtual_cond = $self->{hide_virtual} ? ' AND (CA.is_virtual = 0 OR CA.is_virtual IS NULL)' : '';
     my $ooc_cond = $self->{hide_ooc} ? ' AND CA.is_ooc = 0' : '';
 
-    my %init_problem = (runs => 0, time_consumed => 0, solved => 0, points => undef);
+    my %init_problem = (runs => 0, penalty_runs => 0, time_consumed => 0, solved => 0, points => undef);
     my $select_teams = sub {
         my ($account_id) = @_;
         my $acc_cond = $account_id ? 'AND A.id = ?' : '';
@@ -541,15 +544,16 @@ sub rank_table {
 
         if ($_->{state} == $cats::st_accepted) {
             my $te = int($_->{time_elapsed} + 0.5);
-            $p->{time_consumed} = $te + ($p->{runs} || 0) * $cats::penalty;
+            $p->{time_consumed} = $te + ($p->{penalty_runs} || 0) * ($problem->{penalty} || $cats::penalty);
             $p->{time_hm} = sprintf('%d:%02d', int($te / 60), $te % 60);
             $p->{solved} = 1;
             $t->{total_time} += $p->{time_consumed};
             $t->{total_solved}++;
         }
+        $p->{penalty_runs}++ unless $problem->{exclude_penalty}->{$_->{state}};
+        $p->{runs}++;
+        $t->{total_runs}++;
         if ($_->{state} != $cats::st_security_violation && $_->{state} != $cats::st_manually_rejected) {
-            $p->{runs}++;
-            $t->{total_runs}++;
             $p->{points} ||= 0;
 
             if ($problem->{run_method} == $cats::rm_competitive) {
