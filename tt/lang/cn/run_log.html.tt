@@ -1,6 +1,6 @@
 [%
   capt.import({
-    judge_log => 'Judge log',
+    jobs_link => 'jobs',
     length => 'Length',
     no_log => 'No log',
     delete_log => 'delete log',

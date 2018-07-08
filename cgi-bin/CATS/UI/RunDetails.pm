@@ -634,6 +634,7 @@ sub run_log_frame {
     CATS::Request::delete_jobs({ req_id => $rid }) if $p->{delete_jobs};
 
     $t->param(
+        href_jobs => url_f('jobs', search => "req_id=$rid"),
         logs => get_log_dump({ req_id => $rid, parent_id => undef }),
         job_enums => $CATS::Globals::jobs,
     );
