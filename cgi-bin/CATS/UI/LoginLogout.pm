@@ -67,7 +67,7 @@ sub login_frame {
         0 < grep $allowed_ips{$_}, split_ips($current_ip) or return msg(1039);
     }
 
-    $sid = $last_ip eq $current_ip ? $last_sid : CATS::User::make_sid;
+    $sid = ($last_ip eq $current_ip ? $last_sid : undef) // CATS::User::make_sid;
     _ensure_good_sid($current_ip, $aid);
 
     if ($p->{json}) {
