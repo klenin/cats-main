@@ -43,7 +43,7 @@ INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
     VALUES (GEN_ID(key_seq, 1), 501, 'Perl', 'pl', 'perl', 'at\s~FILE~\sline\s~LINE~');
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
-    VALUES (GEN_ID(key_seq, 1), 502, 'Python', 'py', 'python', '^\s+File\s"~FILE~",\sline\s~LINE~');
+    VALUES (GEN_ID(key_seq, 1), 502, 'Python', 'py', 'python', '^(?:\s+File\s\"\S+\",|Sorry:.+)\sline\s~LINE~');
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
     VALUES (GEN_ID(key_seq, 1), 503, 'Haskell', 'hs', 'haskell', '^~FILE~:~LINE~:~POS~:');
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
