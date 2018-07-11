@@ -39,7 +39,7 @@ $find || $user_id && $user_login or die 'Must use BOTH id and login';
 CATS::DB::sql_connect({});
 
 if ($find) {
-    CATS::Privileges::is_good_name($find) or die "Unknown priviledge: $_";
+    CATS::Privileges::is_good_name($find) or die "Unknown priviledge: $find";
     my ($cond, @params) = CATS::Privileges::where_cond($find);
     #$find eq 'is_root' ?
     my $users = $dbh->selectall_arrayref(qq~
