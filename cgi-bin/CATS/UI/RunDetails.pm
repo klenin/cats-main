@@ -343,10 +343,11 @@ sub view_source_frame {
         $sources_info->{src} = sprintf 'ZIP, %d bytes', length ($sources_info->{src});
     }
     if (my $r = $sources_info->{err_regexp}) {
-        CATS::Utils::sanitize_file_name(my $sf = $sources_info->{file_name});
-        $sf =~ s/([^a-zA-Z0-9_])/\\$1/g;
+        my (undef, undef, $file_name) = CATS::Utils::split_fname($sources_info->{file_name});
+        CATS::Utils::sanitize_file_name($file_name);
+        $file_name =~ s/([^a-zA-Z0-9_])/\\$1/g;
         for (split ' ', $r) {
-            s/~FILE~/$sf/;
+            s/~FILE~/$file_name/;
             s/~LINE~/(\\d+)/;
             s/~POS~/\\d+/;
             push @{$sources_info->{err_regexp_js}}, "/$_/";
