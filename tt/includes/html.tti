@@ -8,8 +8,8 @@
     </select>
 [%- END -%]
 
-[%- MACRO select_value(name, options, selected_value) BLOCK -%]
-    <select name="[% name %]">
+[%- MACRO select_value(name, options, selected_value, enabled) BLOCK; SET enabled = 1 UNLESS enabled.defined -%]
+    <select name="[% name %]"[% ' disabled="disabled"' UNLESS enabled %]>
     [%- FOREACH opt IN options; option(opt.value, opt.text, opt.value == selected_value); END -%]
     </select>
 [%- END -%]

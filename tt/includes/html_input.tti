@@ -13,10 +13,29 @@
 </tr>
 [%- END -%]
 
+[%- MACRO tr_textarea(f, fd) BLOCK -%]
+<tr>
+  <td>[% f.caption || capt.item(f.field.name) %]</td>
+  <td><textarea name="[% f.field.name %]" cols="[% f.field.editor.cols || 50 %]" rows="[% f.field.editor.rows || 10 %]"
+    [%- ' readonly="readonly"' IF fd.readonly %] class="bordered" />[% f.value | html %]</textarea>
+    [%- IF f.error %] <p>[% f.error %]</p>[% END %]
+  </td>
+</tr>
+[%- END -%]
+
 [%- MACRO tr_checkbox1(f, fd) BLOCK -%]
 <tr>
   <td>[% f.caption || capt.item(f.field.name) %]</td>
   <td>[% checkbox_1(f.field.name, f.value, !fd.readonly) %]
+    [%- IF f.error %] <p>[% f.error %]</p>[% END %]
+  </td>
+</tr>
+[%- END -%]
+
+[%- MACRO tr_select_value(f, fd, select_items) BLOCK -%]
+<tr>
+  <td>[% f.caption || capt.item(f.field.name) %]</td>
+  <td>[% select_value(f.field.name, select_items, f.value, !fd.readonly) %]
     [%- IF f.error %] <p>[% f.error %]</p>[% END %]
   </td>
 </tr>
