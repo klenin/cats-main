@@ -14,36 +14,47 @@ use CATS::Messages qw(msg res_str);
 use CATS::Output qw(init_template url_f);
 use CATS::References;
 
-sub fields() {qw(code description file_ext default_file_ext err_regexp in_contests memory_handicap syntax)}
+sub invert { !$_[0] }
 
-my $form = CATS::Form->new({
+my $str1_200 = CATS::Field::str_length(1, 200);
+my $str0_200 = CATS::Field::str_length(0, 200);
+
+our $form = CATS::Form1->new(
     table => 'default_de',
-    fields => [ map +{ name => $_ }, fields() ],
-    templates => { edit_frame => 'compilers_edit.html.tt' },
-    href_action => 'compilers',
-});
+    fields => [
+      [ name => 'code', validators => [ $str1_200 ], caption => 619, ],
+      [ name => 'description', validators => [ $str1_200 ], caption => 620, editor => { size => 80 } ],
+      [ name => 'file_ext', validators => [ $str0_200 ], caption => 621, ],
+      [ name => 'default_file_ext', validators => [ $str0_200 ], caption => 624, ],
+      [ name => 'err_regexp', validators => [ $str0_200 ], caption => 662, ],
+      [ name => 'locked', validators => [ qr/^1?$/ ],
+        db_name => 'in_contests', after_load => \&invert, before_save => \&invert, caption => 622, ],
+      [ name => 'memory_handicap',
+        validators => [ CATS::Field::int_range(min => 0, max => 10000, allow_empty => 1) ], caption => 640, ],
+      [ name => 'syntax', validators => [ $str0_200 ], caption => 623, ],
+    ],
+    href_action => 'compilers_edit',
+    descr_field => 'description',
+    before_commit => \&CATS::JudgeDB::invalidate_de_bitmap_cache,
+    template_var => 'cp',
+    msg_deleted => 1064,
+    msg_saved => 1065,
+);
 
-sub edit_save {
+sub compilers_edit_frame {
     my ($p) = @_;
-    CATS::JudgeDB::invalidate_de_bitmap_cache;
-    $form->edit_save($p, before => sub { $_[0]->{in_contests} = !$p->{locked} })
-        and msg(1065, Encode::decode_utf8($p->{description}));
+    init_template($p, 'compilers_edit.html.tt');
+    $form->edit_frame($p, readonly => !$is_root, redirect => [ 'compilers' ]);
 }
 
 sub compilers_frame {
     my ($p) = @_;
 
-    $is_root && ($p->{new} || $p->{edit})
-        and return $form->edit_frame($p, after =>
-            sub { $_[0]->{locked} = !$_[0]->{in_contests} });
-
     init_template($p, 'compilers.html.tt');
     my $lv = CATS::ListView->new(web => $p, name => 'compilers');
 
-    $is_root and $form->edit_delete(
-        id => $p->{delete}, descr => 'description', msg => 1064,
+    $is_root and $form->delete_or_saved($p,
         before_commit => \&CATS::JudgeDB::invalidate_de_bitmap_cache);
-    $is_root && $p->{edit_save} and edit_save($p);
 
     $lv->define_columns(url_f('compilers'), 0, 0, [
         { caption => res_str(619), order_by => 'code', width => '10%' },
@@ -58,9 +69,9 @@ sub compilers_frame {
         ($is_jury ? { caption => res_str(622), order_by => 'in_contests', width => '10%' } : ()),
     ]);
 
-    $lv->define_db_searches([ fields() ]);
+    $lv->define_db_searches($form->{sql_fields});
 
-    my ($q, @bind) = $sql->select('default_de', [ 'id as did', fields() ],
+    my ($q, @bind) = $sql->select('default_de', [ 'id as did', @{$form->{sql_fields}} ],
         $is_jury ? $lv->where : { %{$lv->where}, in_contests => 1 });
     my $c = $dbh->prepare("$q " . $lv->order_by);
     $c->execute(@bind);
@@ -71,7 +82,7 @@ sub compilers_frame {
             %$row,
             locked => !$row->{in_contests},
             ($is_root ? (
-                href_edit => url_f('compilers', edit => $row->{did}),
+                href_edit => url_f('compilers_edit', id => $row->{did}),
                 href_delete => url_f('compilers', 'delete' => $row->{did})) : ()),
         );
     };

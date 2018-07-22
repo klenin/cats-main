@@ -1,16 +1,17 @@
 [% PROCESS includes/menu_begin.tti %]
-[% PROCESS includes/html.tti %]
+[% PROCESS includes/html_input.tti %]
 
-<form method="post" enctype="multipart/form-data" action="[% href_action %]">
-<table>
-<tr><td>[% capt.code %]</td><td><input type="text" name="code" value="[% code | html %]" class="bordered"></td></tr>
-<tr><td>[% capt.description %]</td><td><input type="text" name="description" value="[% description | html %]" size="50" class="bordered"></td></tr>
-<tr><td>[% capt.file_ext %]</td><td><input type="text" name="file_ext" value="[% file_ext | html %]" class="bordered"></td></tr>
-<tr><td>[% capt.default_file_ext %]</td><td><input type="text" name="default_file_ext" value="[% default_file_ext | html %]" class="bordered"></td></tr>
-<tr><td>[% capt.err_regexp %]</td><td><input type="text" name="err_regexp" value="[% err_regexp | html %]" size="50" class="bordered"></td></tr>
-<tr><td>[% capt.memory_handicap %]</td><td><input type="text" name="memory_handicap" value="[% memory_handicap | html %]" class="bordered"></td></tr>
-<tr><td>[% capt.syntax %]</td><td><input type="text" name="syntax" value="[% syntax | html %]" class="bordered"></td></tr>
-<tr><td>[% capt.locked %]</td><td>[% checkbox_1('locked', locked) %]</td>
+[% idx = cp.indexed %]
+<form method="post" enctype="multipart/form-data" action="[% cp.href_action %]">
+<table class="edit_form">
+[% idx.code.caption = ''; tr_text(idx.code, cp) %]
+[% tr_text(idx.description, cp) %]
+[% idx.file_ext.caption = ''; tr_text(idx.file_ext, cp) %]
+[% idx.default_file_ext.caption = ''; tr_text(idx.default_file_ext, cp) %]
+[% idx.err_regexp.caption = ''; tr_text(idx.err_regexp, cp) %]
+[% idx.memory_handicap.caption = ''; tr_text(idx.memory_handicap, cp) %]
+[% tr_text(idx.syntax, cp) %]
+[% idx.locked.caption = ''; tr_checkbox1(idx.locked, cp) %]
 </table>
 <br>
 [% PROCESS includes/edit_save_cancel.tti %]
