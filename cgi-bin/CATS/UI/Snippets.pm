@@ -10,46 +10,57 @@ use CATS::Output qw(init_template url_f);
 use CATS::DB;
 use CATS::Job;
 
-sub fields() {qw(id account_id problem_id contest_id text name)}
+my $str1_200 = CATS::Field::str_length(1, 200);
+my $str0_200 = CATS::Field::str_length(0, 200);
+my $int = CATS::Field::int_range(min => 1, max => 1000000000);
 
-my $form = CATS::Form->new({
+sub _validate_unique_snippet {
+    my ($d, %opts) = @_;
+    my $p = $d->{indexed};
+    my ($snippet_id) = $dbh->selectrow_array(q~
+        SELECT id FROM snippets
+        WHERE problem_id = ? AND account_id = ? AND contest_id = ? AND name = ?~, undef,
+        map $p->{$_}->{value}, qw(problem_id account_id contest_id name)
+    );
+    !$snippet_id || $snippet_id == ($opts{id} // 0) or msg(1077, $p->{name}->{value});
+}
+
+our $form = CATS::Form1->new(
     table => 'snippets',
-    fields => [ map +{ name => $_ }, fields() ],
-    templates => { edit_frame => 'snippets_edit.html.tt' },
-    href_action => 'snippets',
-});
+    fields => [
+      [ name => 'account_id', validators => [ $int ], caption => 608, ],
+      [ name => 'problem_id', validators => [ $int ], caption => 602 ],
+      [ name => 'contest_id', before_save => sub { $cid }, ],
+      [ name => 'name', validators => [ $str1_200 ], caption => 601, ],
+      [ name => 'text', validators => [ $str0_200 ], caption => 672, editor => { cols => 100, rows => 5 }, ],
+    ],
+    href_action => 'snippets_edit',
+    descr_field => 'name',
+    template_var => 'sn',
+    msg_deleted => 1076,
+    msg_saved => 1075,
+    validators => [ \&_validate_unique_snippet ],
+);
 
-sub edit_frame {
+sub snippets_edit_frame {
     my ($p) = @_;
-    $form->edit_frame($p, after => sub {
-        $_[0]->{problems} = $dbh->selectall_arrayref(q~
+    init_template($p, 'snippets_edit.html.tt');
+    $is_jury or return;
+    $t->param(
+        problems => $dbh->selectall_arrayref(q~
             SELECT P.id AS "value", CP.code || ': ' || P.title AS text
             FROM problems P INNER JOIN contest_problems CP ON P.id = CP.problem_id
             WHERE CP.contest_id = ?
             ORDER BY CP.code~, { Slice => {} },
-            $cid);
-
-        $_[0]->{accounts} = $dbh->selectall_arrayref(q~
+            $cid),
+        accounts => $dbh->selectall_arrayref(q~
             SELECT A.id AS "value", A.team_name AS text
             FROM accounts A INNER JOIN contest_accounts CA ON A.id = CA.account_id
             WHERE CA.contest_id = ?
             ORDER BY A.team_name~, { Slice => {} },
-            $cid);
-    });
-}
-
-sub edit_save {
-    my ($p) = @_;
-    $p->{contest_id} = $cid;
-
-    my ($snippet_id) = $dbh->selectrow_array(q~
-        SELECT id FROM snippets
-        WHERE problem_id = ? AND account_id = ? AND contest_id = ? AND name = ?~, undef,
-        @$p{qw(problem_id account_id contest_id name)}
+            $cid),
     );
-    return msg(1077, $p->{name}) if $snippet_id && $snippet_id != ($p->{id} // 0);
-
-    $form->edit_save($p) and msg(1075, $p->{name});
+    $form->edit_frame($p, redirect => [ 'snippets' ]);
 }
 
 sub _problem_visible {
@@ -124,16 +135,13 @@ sub get_snippets {
     $p->print_json($res);
 }
 
-sub snippet_frame {
+sub snippets_frame {
     my ($p) = @_;
 
     $is_jury or return;
 
-    $form->edit_delete(id => $p->{delete}, descr => 'name', msg => 1076);
-    $p->{edit_save} and edit_save($p);
-    $p->{new} || $p->{edit} and return edit_frame($p);
-
     init_template($p, 'snippets.html.tt');
+    $form->delete_or_saved($p);
     my $lv = CATS::ListView->new(web => $p, name => 'snippets');
 
     my @cols = (
@@ -185,8 +193,8 @@ sub snippet_frame {
         my $c = $_[0]->fetchrow_hashref or return ();
         return (
             %$c,
+            href_edit => url_f('snippets_edit', id => $c->{id}),
             href_delete => url_f('snippets', delete => $c->{id}),
-            href_edit => url_f('snippets', edit => $c->{id}),
             href_view => url_f('problem_text', uid => $c->{account_id}, cpid => $c->{cpid}),
         );
     };

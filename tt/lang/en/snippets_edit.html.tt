@@ -1,8 +1,0 @@
-[%
-  capt.import({
-    problem_name => 'Problem name',
-    account_login => 'Account login',
-    name => 'Name',
-    text => 'Text',
-  })
-%]
