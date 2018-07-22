@@ -11,39 +11,40 @@ use CATS::Messages qw(msg res_str);
 use CATS::Output qw(init_template url_f);
 use CATS::References;
 
-sub fields () { qw(name_ru name_en code) }
+my @field_common = (validators => [ CATS::Field::str_length(1, 200) ], editor => { size => 50 });
 
-my $form = CATS::Form->new({
+our $form = CATS::Form1->new(
     table => 'keywords',
-    fields => [ map +{ name => $_ }, fields() ],
-    templates => { edit_frame => 'keywords_edit.html.tt' },
-    href_action => 'keywords',
-});
+    fields => [
+      [ name => 'code', @field_common, caption => 625 ],
+      [ name => 'name_ru', @field_common, caption => 636, ],
+      [ name => 'name_en', @field_common, caption => 637, ],
+    ],
+    href_action => 'keywords_edit',
+    descr_field => 'code',
+    template_var => 'kw',
+    msg_saved => 1174,
+    msg_deleted => 1175,
+);
 
-sub edit_save {
+sub keywords_edit_frame {
     my ($p) = @_;
-    ($p->{name_en} // '') ne '' && 0 == grep(length $p->{$_} > 200, fields())
-        or return msg(1084);
-    $form->edit_save($p);
+    init_template($p, 'keywords_edit.html.tt');
+    $form->edit_frame($p, readonly => !$is_root, redirect => [ 'keywords' ]);
 }
 
 sub keywords_frame {
     my ($p) = @_;
 
-    if ($is_root) {
-        $form->edit_delete(id => $p->{delete});
-        $p->{new} || $p->{edit} and return $form->edit_frame($p);
-    }
+    $form->delete_or_saved($p) if $is_root;
     init_template($p, 'keywords.html.tt');
     my $lv = CATS::ListView->new(web => $p, name => 'keywords');
 
-    $is_root && $p->{edit_save} and edit_save($p);
-
     $lv->define_columns(url_f('keywords'), 0, 0, [
-        { caption => res_str(625), order_by => '2', width => '30%' },
-        { caption => res_str(636), order_by => '3', width => '30%' },
-        { caption => res_str(637), order_by => '4', width => '30%' },
-        { caption => res_str(643), order_by => '5', width => '10%' },
+        { caption => res_str(625), order_by => 'code', width => '30%' },
+        { caption => res_str(636), order_by => 'name_ru', width => '30%' },
+        { caption => res_str(637), order_by => 'name_en', width => '30%' },
+        { caption => res_str(643), order_by => 'ref_count', width => '10%' },
     ]);
     $lv->define_db_searches([ qw(K.id code name_ru name_en) ]);
 
@@ -57,7 +58,7 @@ sub keywords_frame {
         my $row = $_[0]->fetchrow_hashref or return ();
         return (
             %$row,
-            href_edit=> url_f('keywords', edit => $row->{kwid}),
+            href_edit=> url_f('keywords_edit', id => $row->{kwid}),
             href_delete => url_f('keywords', 'delete' => $row->{kwid}),
             href_view_problems => url_f('problems_all', kw => $row->{kwid}, ($is_jury ? (link => 1) : ())),
         );

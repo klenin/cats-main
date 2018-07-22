@@ -1,10 +1,9 @@
 [% PROCESS includes/menu_begin.tti %]
+[% PROCESS includes/html_input.tti %]
 
-<form method="post" enctype="multipart/form-data" action="[% href_action %]">
-<table>
-<tr><td>[% capt.code %]</td><td><input type="text" name="code" value="[% code | html %]" size="50" class="bordered /"></td></tr>
-<tr><td>[% capt.name_ru %]</td><td><input type="text" name="name_ru" value="[% name_ru | html %]" size="50" class="bordered" /></td></tr>
-<tr><td>[% capt.name_en %]</td><td><input type="text" name="name_en" value="[% name_en | html %]" size="50" class="bordered" /></td></tr>
+<form method="post" enctype="multipart/form-data" action="[% kw.href_action %]">
+<table class="edit_form">
+[% FOREACH f IN kw.ordered; tr_text(f, kw); END %]
 </table>
 <br/>
 [% PROCESS includes/edit_save_cancel.tti %]

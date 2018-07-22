@@ -318,3 +318,5 @@
 1171 "Created judge update jobs: %d."
 1172 "Pin modes changed: %d."
 1173 "Jobs deleted: %d."
+1174 "Keyword '%s' saved."
+1175 "Keyword '%s' deleted."
