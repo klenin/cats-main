@@ -14,23 +14,35 @@ use CATS::Output qw(init_template url_f);
 use CATS::References;
 use CATS::Time;
 
-sub fields() {qw(name region city org_name address)}
+my $str1_200 = CATS::Field::str_length(1, 200);
+my $str0_200 = CATS::Field::str_length(0, 200);
 
-my $form = CATS::Form->new({
+our $form = CATS::Form1->new(
     table => 'sites',
-    fields => [ map +{ name => $_ }, fields ],
-    templates => { edit_frame => 'sites_edit.html.tt' },
-    href_action => 'sites',
-});
+    fields => [
+      [ name => 'name', validators => [ $str1_200 ], caption => 601, ],
+      [ name => 'region', validators => [ $str0_200 ], caption => 654 ],
+      [ name => 'city', validators => [ $str0_200 ], caption => 655, ],
+      [ name => 'org_name', validators => [ $str1_200 ], caption => 656, editor => { size => 100 }, ],
+      [ name => 'address', validators => [ $str0_200 ], caption => 657, editor => { size => 100 }, ],
+    ],
+    href_action => 'sites_edit',
+    descr_field => 'name',
+    template_var => 'site',
+    msg_deleted => 1066,
+    msg_saved => 1067,
+);
 
 my $person_phone_sql =
     qq~COALESCE((SELECT LIST(' ' || C.handle) FROM contacts C
         WHERE C.account_id = A.id AND C.contact_type_id = $CATS::Globals::contact_phone AND C.is_actual = 1), '')~;
 
-sub edit_frame {
+sub sites_edit_frame {
     my ($p) = @_;
-    $form->edit_frame($p);
-    my $contests = $is_root && $p->{edit} ? $dbh->selectall_arrayref(qq~
+    init_template($p, 'sites_edit.html.tt');
+    $user->privs->{edit_sites} or return;
+    $form->edit_frame($p, redirect => [ 'sites' ]);
+    my $contests = $is_root && $p->{id} ? $dbh->selectall_arrayref(qq~
         SELECT C.title, C.start_date,
             (SELECT LIST(A.team_name || $person_phone_sql, ', ') FROM contest_accounts CA
             INNER JOIN accounts A ON A.id = CA.account_id
@@ -38,20 +50,13 @@ sub edit_frame {
         FROM contests C
         INNER JOIN contest_sites CS ON CS.contest_id = C.id AND CS.site_id = ?
         ORDER BY C.start_date DESC ROWS 50~, { Slice => {} },
-        $p->{edit}) : [];
+        $p->{id}) : [];
     $t->param(contests => $contests);
-}
-
-sub edit_save {
-    my ($p) = @_;
-    validate_string_length($p->{name}, 601, 1, 200) or return;
-    validate_string_length($p->{org_name}, 656, 1, 200) or return;
-    $form->edit_save($p) and msg(1067, Encode::decode_utf8($p->{name}));
 }
 
 sub common_searches {
     my ($lv) = @_;
-    $lv->define_db_searches([ fields ]);
+    $lv->define_db_searches($form->{sql_fields});
     my $name_sql = q~
         SELECT A.team_name FROM accounts A WHERE A.id = ?~;
     $lv->define_subqueries({
@@ -76,13 +81,11 @@ sub common_searches {
 sub sites_frame {
     my ($p) = @_;
     $user->privs->{edit_sites} or return;
-    $p->{new} || $p->{edit} and return edit_frame($p);
 
     init_template($p, 'sites.html.tt');
     my $lv = CATS::ListView->new(web => $p, name => 'sites');
 
-    $form->edit_delete(id => $p->{delete}, descr => 'name', msg => 1066);
-    $p->{edit_save} and edit_save($p);
+    $form->delete_or_saved($p);
 
     $lv->define_columns(url_f('sites'), 0, 0, [
         { caption => res_str(601), order_by => 'name',     width => '20%' },
@@ -97,7 +100,8 @@ sub sites_frame {
     my $count_fld = !$lv->visible_cols->{Cc} ? 'NULL' : q~
         (SELECT COUNT(*) FROM contest_sites CS WHERE CS.site_id = S.id)~;
 
-    my ($q, @bind) = $sql->select('sites S', [ 'id', fields, "$count_fld AS contests" ], $lv->where);
+    my ($q, @bind) = $sql->select('sites S',
+        [ 'id', @{$form->{sql_fields}}, "$count_fld AS contests" ], $lv->where);
     my $c = $dbh->prepare("$q " . $lv->order_by);
     $c->execute(@bind);
 
@@ -105,7 +109,7 @@ sub sites_frame {
         my $row = $_[0]->fetchrow_hashref or return ();
         return (
             %$row,
-            href_edit => url_f('sites', edit => $row->{id}),
+            href_edit => url_f('sites_edit', id => $row->{id}),
             href_delete => url_f('sites', 'delete' => $row->{id}),
             href_contests => url_f('contests', search => "has_site($row->{id})", filter => 'all'),
         );
