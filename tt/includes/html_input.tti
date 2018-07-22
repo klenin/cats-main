@@ -2,3 +2,22 @@
   <tr><td>[% capt.$field %]</td>
   <td><input type="text" name="[% field %]" size="[% size || 50 %]" value="[% $field | html %]" class="bordered"></td></tr>
 [%- END -%]
+
+[%- MACRO tr_text(f, fd) BLOCK -%]
+<tr>
+  <td>[% f.caption || capt.item(f.field.name) %]</td>
+  <td><input type="text" name="[% f.field.name %]" value="[% f.value | html %]" size="[% f.field.editor.size || 50 %]"
+    [%- ' readonly="readonly"' IF fd.readonly %] class="bordered" />
+    [%- IF f.error %] <p>[% f.error %]</p>[% END %]
+  </td>
+</tr>
+[%- END -%]
+
+[%- MACRO tr_checkbox1(f, fd) BLOCK -%]
+<tr>
+  <td>[% f.caption || capt.item(f.field.name) %]</td>
+  <td>[% checkbox_1(f.field.name, f.value, !fd.readonly) %]
+    [%- IF f.error %] <p>[% f.error %]</p>[% END %]
+  </td>
+</tr>
+[%- END -%]

@@ -401,3 +401,6 @@ span.problem_color {
     height: 1.3ex;
     border: 1px solid black;
 }
+
+table.edit_form td { vertical-align: top; }
+table.edit_form td p { color: red; font-size: small; }
