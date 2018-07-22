@@ -1,6 +1,0 @@
-[%
-  capt.import({
-    name => 'Name',
-    url => 'Url template',
-  })
-%]

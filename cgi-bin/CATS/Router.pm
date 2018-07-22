@@ -174,8 +174,11 @@ my $main_routes = {
     impersonate => [ \&CATS::UI::UserDetails::impersonate_frame, uid => integer, ],
     contact_types => [
         \&CATS::UI::ContactTypes::contact_types_frame,
-        %form_params,
-        map { $_ => str } CATS::UI::ContactTypes::fields,
+        delete => integer, saved => integer,
+    ],
+    contact_types_edit => [
+        \&CATS::UI::ContactTypes::contact_types_edit_frame,
+        $CATS::UI::ContactTypes::form->route,
     ],
     compilers => [ \&CATS::UI::Compilers::compilers_frame, delete => integer, saved => integer, ],
     compilers_edit => [ \&CATS::UI::Compilers::compilers_edit_frame, $CATS::UI::Compilers::form->route, ],
