@@ -208,7 +208,8 @@ sub new {
     $self->{id_param} = $r{id_param} // 'id';
     $self->{template_var} = $r{template_var} // 'form_data';
     $self->{descr_field} = $r{descr_field} // 'id';
-    $self->{$_} = $r{$_} for qw(after_load before_commit before_save debug msg_deleted msg_saved readonly);
+    $self->{validators} = $r{validators} // [];
+    $self->{$_} = $r{$_} for qw(after_load before_commit before_save debug msg_deleted msg_saved);
     $self;
 }
 
@@ -268,6 +269,14 @@ sub _redirect {
     $p->redirect(url_f @$redirect, @params) if $redirect;
 }
 
+sub validate {
+    my ($self, $form_data, $id) = @_;
+    for (@{$self->{validators}}) {
+        $_->($form_data, id => $id, form => $self) or return;
+    }
+    1;
+}
+
 # Params: opts { href_action_params, readonly, redirect }
 sub edit_frame {
     my ($self, $p, %opts) = @_;
@@ -286,6 +295,7 @@ sub edit_frame {
     if ($p->{edit_save} && !$opts{readonly}) {
         _set_form_data($form_data, my $data = $self->parse_params($p));
         return if grep $_->{error}, @$data;
+        $self->validate($form_data, $id) or return;
         $id = $self->save($id, [ map $_->{value}, @$data ], commit => 1);
         my $descr = $form_data->{indexed}->{$self->{descr_field}}->{value};
         _redirect($p, $opts{redirect}, saved => $id);
