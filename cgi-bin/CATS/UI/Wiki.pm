@@ -22,53 +22,49 @@ BEGIN {
         sub { $_[0] }
 }
 
-sub page_fields() {qw(name is_public)}
-
-my $page_form = CATS::Form->new({
+my $str1_200 = CATS::Field::str_length(1, 200);
+our $page_form = CATS::Form1->new(
     table => 'wiki_pages',
-    fields => [ map +{ name => $_ }, page_fields() ],
-    templates => { edit_frame => 'wiki_pages_edit.html.tt' },
-    href_action => 'wiki_pages',
-});
+    fields => [
+      [ name => 'name', validators => [ $str1_200 ], caption => 601, ],
+      [ name => 'is_public', validators => [ qr/^1?$/ ], caption => 669, before_save => sub { $_[0] // 0 } ],
+    ],
+    href_action => 'wiki_pages_edit',
+    descr_field => 'name',
+    template_var => 'wp',
+    msg_deleted => 1073,
+    msg_saved => 1074,
+);
 
-sub page_edit_frame {
-    $page_form->edit_frame({}, after => sub {
-        my ($w) = @_;
-        my $ts = $w->{texts} = $w->{id} ? $dbh->selectall_hashref(q~
-            SELECT id, lang, title FROM wiki_texts WHERE wiki_id = ?~, 'lang', undef,
-            $w->{id}) : {};
-        my @url = ('wiki_edit', wiki_id => $w->{id});
-        $_->{href_edit} = url_f(@url, wiki_lang => $_->{lang}, id => $_->{id}) for values %$ts;
-        $w->{href_add_text} = url_f(@url);
-    });
-}
-
-sub page_edit_save {
+sub wiki_pages_edit_frame {
     my ($p) = @_;
-    $page_form->edit_save($p, before => sub {
-        $_[0]->{is_public} //= 0;
-    }) and msg(1074, Encode::decode_utf8($p->{name}))
+    $is_root or return;
+    init_template($p, 'wiki_pages_edit.html.tt');
+    my $ts = $p->{id} ? $dbh->selectall_hashref(q~
+        SELECT id, lang, title FROM wiki_texts WHERE wiki_id = ?~, 'lang', undef,
+        $p->{id}) : {};
+    my @url = ('wiki_edit', wiki_id => $p->{id});
+    $_->{href_edit} = url_f(@url, wiki_lang => $_->{lang}, id => $_->{id}) for values %$ts;
+    $t->param(texts => $ts, href_add_text => url_f(@url));
+    $page_form->edit_frame($p, redirect => [ 'wiki_pages' ]);
 }
 
 sub wiki_pages_frame {
     my ($p) = @_;
     $is_root or return;
 
-    defined $p->{edit} and return page_edit_frame;
-
     init_template($p, 'wiki_pages.html.tt');
     my $lv = CATS::ListView->new(web => $p, name => 'wiki_pages');
 
-    $is_root and $page_form->edit_delete(id => $p->{'delete'} // 0, descr => 'name', msg => 1073);
-    $is_root && $p->{edit_save} and page_edit_save($p);
+    $is_root and $page_form->delete_or_saved($p);
 
     $lv->define_columns(url_f('wiki_pages'), 0, 0, [
         { caption => res_str(601), order_by => 'name', width => '30%' },
         { caption => res_str(669), order_by => 'is_public', width => '5%' },
     ]);
-    $lv->define_db_searches([ page_fields() ]);
+    $lv->define_db_searches($page_form->{sql_fields});
 
-    my ($q, @bind) = $sql->select('wiki_pages', [ 'id', page_fields() ], $lv->where);
+    my ($q, @bind) = $sql->select('wiki_pages', [ 'id', @{$page_form->{sql_fields}} ], $lv->where);
     my $c = $dbh->prepare("$q " . $lv->order_by);
     $c->execute(@bind);
 
@@ -78,7 +74,7 @@ sub wiki_pages_frame {
             %$row,
             ($is_root ? (
                 href_text => url_f('wiki', name => $row->{name}),
-                href_edit => url_f('wiki_pages', edit => $row->{id}),
+                href_edit => url_f('wiki_pages_edit', id => $row->{id}),
                 href_delete => url_f('wiki_pages', 'delete' => $row->{id})) : ()),
         );
     };

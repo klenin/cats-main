@@ -1,14 +1,15 @@
 [% PROCESS includes/menu_begin.tti %]
+[% PROCESS includes/html_input.tti %]
 
-<form method="post" enctype="multipart/form-data" action="[% href_action %]">
-<table>
-<tr><td>[% capt.name %]</td><td><input type="text" name="name" value="[% name | html %]" size="50" class="bordered"></td></tr>
-<tr><td>[% capt.is_public %]</td><td>[% checkbox_1('is_public', is_public) %]</td>
+<form method="post" enctype="multipart/form-data" action="[% wp.href_action %]">
+<table class="edit_form">
+[% tr_text(wp.indexed.name, wp) %]
+[% tr_checkbox1(wp.indexed.is_public, wp) %]
 </table>
 <br>
 [% PROCESS includes/edit_save_cancel.tti %]
 </form>
-[% IF name %]
+[% IF wp.indexed.name.value %]
 <br>
 <table class="bordered">
 [% FOREACH lng IN langs %]
