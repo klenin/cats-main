@@ -25,6 +25,10 @@ Submission judging can result in following verdicts:
 <tr><td>CE</td><td>Compilation error</td><td>Compilation error.</td>
   <td>Syntax error, wrong file submitted, wrong programming language chosen.</td></tr>
 
+<tr><td>LI</td><td>Linter error</td><td>Source code check failed.</td>
+  <td>Usage of library function forbidden by problem statement,
+    source formatting violates specification, wrong programming language chosen.</td></tr>
+
 <tr><td>RE</td><td>Run-time error</td><td>Error during execution, submission finished with non-zero exit code.</td>
   <td>Wrong input file name, out of bounds array access, halt/exit/return statement with non-zero argument.</td></tr>
 
