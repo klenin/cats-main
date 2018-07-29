@@ -81,6 +81,17 @@ sub remove_old_backup {
     return "Removed: $oldest\n";
 }
 
+sub find_file {
+    for (my $i = 0; $i < 10; ++$i) {
+        my $n = File::Spec->catfile($dest,
+            $prefix . strftime('%Y-%m-%d', localtime) . ($i ? "-$i" : '') . '.fbk');
+        next if -f $n;
+        next if -f "$n.gz" && $zip;
+        return $n;
+    }
+    die "Too many backups at $dest";
+}
+
 sub work {
     IPC::Cmd::can_run('gbak') or die 'Error: gbak not found';
 
@@ -88,7 +99,7 @@ sub work {
     # Given -Z, gbak exits with 1 instead of 0.
     $ok || $err =~ /value 1/ or die "Error running gbak: $err";
 
-    $full && $full->[0] =~ /gbak:gbak version/ or die "Error: gbak not correct: $full->[0]";
+    $full && $full->[0] =~ /gbak:gbak version/ or die "Error: gbak not correct: @$full";
 
     my ($db, $host) = $CATS::Config::db_dsn =~ /dbname=(\S+?);host=(\S+?);/
         or die "Bad config DSN: $CATS::Config::db_dsn";
@@ -96,16 +107,7 @@ sub work {
 
     -d $dest or die "Bad destination: $dest";
 
-    my $file;
-    for (my $i = 0; $i < 10; ++$i) {
-        my $n = File::Spec->catfile($dest,
-            $prefix . strftime('%Y-%m-%d', localtime) . ($i ? "-$i" : '') . '.fbk');
-        next if -f $n;
-        next if -f "$n.gz" && $zip;
-        $file = $n;
-        last;
-    }
-    $file or die "Too many backups at $dest";
+    my $file = find_file;
 
     print "Destination: $file\n" if !$quiet;
     my $cmd = [ 'gbak', '-B', "$host:$db", $file,
@@ -140,7 +142,7 @@ sub work {
     }
     if ($chown) {
         print "chown $chown:$chown $file\n" if !$quiet;
-        my (undef, undef, $uid, $gid) = getpwnam($chown) or die "User nod found: $chown";
+        my (undef, undef, $uid, $gid) = getpwnam($chown) or die "User not found: $chown";
         chown $uid, $gid, $file or die "Error: chown: $!";
     }
     $result .= remove_old_backup() // '' if $max;
