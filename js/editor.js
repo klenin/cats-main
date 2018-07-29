@@ -30,7 +30,6 @@ $(document).ready(function () {
       fontSize: '14px',
     });
 
-    var canResize = false;
     var resizableContainer = $('.container');
     var top_offset = editorContainer.offset().top;
     var doc = $(document);
@@ -50,7 +49,7 @@ $(document).ready(function () {
         doc.unbind('mouseup');
         $('body').css({cursor: ''});
         var value = widthOrHeight == 'width' ? e.pageX : e.pageY - top_offset;
-        editorContainer.css(idthOrHeight, value);
+        editorContainer.css(widthOrHeight, value);
         editor.resize();
       });
     };
