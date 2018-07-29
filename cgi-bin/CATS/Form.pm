@@ -210,7 +210,8 @@ sub new {
     $self->{template_var} = $r{template_var} // 'form_data';
     $self->{descr_field} = $r{descr_field} // 'id';
     $self->{validators} = $r{validators} // [];
-    $self->{$_} = $r{$_} for qw(after_load before_commit before_save debug msg_deleted msg_saved);
+    $self->{$_} = $r{$_} for qw(
+        after_load after_make before_commit before_display before_save debug msg_deleted msg_saved);
     $self;
 }
 
@@ -222,13 +223,11 @@ sub load {
         $self->{table}, $self->{sql_fields}, { id => $id }));
     my $i = 0;
     my $data = [ map +$_->load($db_data[$i++]), $self->fields ];
-    $self->{after_load}->($data) if $self->{after_load};
     $data;
 }
 
 sub save {
     my ($self, $id, $data, %opts) = @_;
-    $self->{before_save}->($data) if $self->{before_save};
     my $i = 0;
     my %db_data = map { $_->{db_name} => $_->save($data->[$i++]) } $self->fields;
     my ($stmt, @bind) = $id ?
@@ -278,11 +277,12 @@ sub validate {
     1;
 }
 
-# Params: opts { href_action_params, readonly, redirect }
+# Params: opts { href_action_params, readonly, redirect, redirect_cancel, redirect_save }
 sub edit_frame {
     my ($self, $p, %opts) = @_;
 
-    return _redirect($p, $opts{redirect}) if $p->{edit_cancel};
+    my %redir = map { $_ => $opts{"redirect_$_"} // $opts{redirect} } qw(cancel save);
+    return _redirect($p, $redir{cancel}) if $p->{edit_cancel};
 
     my $id = $p->{$self->{id_param}};
     my $form_data = {
@@ -297,15 +297,26 @@ sub edit_frame {
         _set_form_data($form_data, my $data = $self->parse_params($p));
         return if grep $_->{error}, @$data;
         $self->validate($form_data, $id) or return;
-        $id = $self->save($id, [ map $_->{value}, @$data ], commit => 1);
-        my $descr = $form_data->{indexed}->{$self->{descr_field}}->{value};
-        _redirect($p, $opts{redirect}, saved => $id);
+        $self->{before_save}->($form_data, $p) if $self->{before_save};
+        $form_data->{$self->{id_param}} = $id =
+            $self->save($id, [ map $_->{value}, @$data ], commit => 1);
+        if ($redir{save}) {
+            return _redirect($p, $redir{save}, saved => $id);
+        }
+        if ($self->{descr_field} && $self->{msg_saved}) {
+            my $descr = $form_data->{indexed}->{$self->{descr_field}}->{value};
+            msg($self->{msg_saved}, $descr);
+        }
     }
     else {
         my $data = $id ? $self->load($id) : $self->make;
         my $i = 0;
         _set_form_data($form_data, [ map $_->web_data($data->[$i++]), $self->fields ]);
+        $self->{after_load}->($form_data, $p) if $self->{after_load} && $id;
+        $self->{after_make}->($form_data, $p) if $self->{after_make} && !$id;
     }
+    $self->{before_display}->($form_data, $p) if $self->{before_display};
+    undef;
 }
 
 # Params: opts { before_commit }
