@@ -128,6 +128,7 @@ sub web_data {
 }
 
 sub caption_res { $_[0]->{caption} =~ /^\d+$/ ? res_str($_[0]->{caption}) : '' }
+sub caption_msg { $_[0]->caption_res || $_->{name} }
 
 sub parse_web_param {
     my ($self, $p) = @_;
@@ -143,7 +144,7 @@ sub validate {
             return $error if $error;
         }
         elsif ($value !~ $v) {
-            return 'Wrong format';
+            return 'Wrong format of ' . $self->caption_msg;
         }
     }
 }
@@ -164,7 +165,7 @@ sub str_length {
         my ($value, $field) = @_;
         $value //= '';
         return if $min <= length($value) && length($value) <= $max;
-        my $fn = $field->caption_res;
+        my $fn = $field->caption_msg;
         $min ? res_str(1044, $fn, $min, $max) : res_str(1043, $fn, $max);
     };
 }
@@ -181,7 +182,7 @@ sub int_range {
         elsif ($opts{allow_empty}) {
             return;
         }
-        res_str(1045, $field->caption_res, $opts{min}, $opts{max});
+        res_str(1045, $field->caption_msg, $opts{min}, $opts{max});
     };
 }
 
