@@ -1,6 +1,13 @@
 [% PROCESS includes/menu_begin.tti %]
 [% PROCESS includes/html_input.tti %]
 
+<script>
+function delete_wiki_text(href, name) {
+  if (confirm("[% capt.want_to_delete %] '" + name + "'?" ))
+    document.location = href;
+}
+</script>
+
 <form method="post" enctype="multipart/form-data" action="[% wp.href_action %]">
 <table class="edit_form">
 [% tr_text(wp.indexed.name, wp) %]
@@ -18,6 +25,9 @@
 <td>
   [%- t = wp.texts.item(lng.name) -%]
   <a href="[% t.href_edit %]" class="icon edit"></a>
+  [% IF t.href_delete -%]
+    <a href="#" class="icon delete" onclick="delete_wiki_text('[% t.href_delete %]', '[% t.title %] ([% t.lang %])')"></a>
+  [%- END %]
   [% maybe_href(t.href_view, t.title || '-') %]
 </td>
 </tr>

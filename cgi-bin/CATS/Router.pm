@@ -284,10 +284,9 @@ my $main_routes = {
     ],
     wiki => [ \&CATS::UI::Wiki::wiki_frame, name => str, ],
     wiki_pages => [ \&CATS::UI::Wiki::wiki_pages_frame, delete => integer, saved => integer, ],
-    wiki_pages_edit => [ \&CATS::UI::Wiki::wiki_pages_edit_frame, $CATS::UI::Wiki::page_form->route, ],
-    wiki_edit => [ \&CATS::UI::Wiki::wiki_edit_frame,
-        delete => integer, $CATS::UI::Wiki::text_form->route,
-    ],
+    wiki_pages_edit => [ \&CATS::UI::Wiki::wiki_pages_edit_frame,
+        delete => integer, $CATS::UI::Wiki::page_form->route, ],
+    wiki_edit => [ \&CATS::UI::Wiki::wiki_edit_frame, $CATS::UI::Wiki::text_form->route, ],
     jobs => [ \&CATS::UI::Jobs::jobs_frame, delete => integer, ],
 };
 

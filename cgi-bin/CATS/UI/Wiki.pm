@@ -39,21 +39,16 @@ our $page_form = CATS::Form1->new(
         my $ts = $fd->{texts} = $fd->{id} ? $dbh->selectall_hashref(q~
             SELECT id, lang, title FROM wiki_texts WHERE wiki_id = ?~, 'lang', undef,
             $fd->{id}) : {};
-        my @url = ('wiki_edit', wiki_id => $p->{id});
         for (@cats::langs) {
             my $r = $ts->{$_} //= {};
-            $r->{href_edit} = url_f(@url, wiki_lang => $_, id => $r->{id});
-            $r->{href_view} = url_f('wiki', name => $fd->{indexed}->{name}->{value}, lang => $_) if $r->{id};
+            $r->{href_edit} = url_f('wiki_edit', wiki_id => $fd->{id}, wiki_lang => $_, id => $r->{id});
+            $r->{id} or next;
+            $r->{href_delete} = url_f('wiki_pages_edit', id => $fd->{id}, delete => $r->{id});
+            $r->{href_view} = url_f('wiki', name => $fd->{indexed}->{name}->{value}, lang => $_);
         }
+        $t->param(submenu => [ CATS::References::menu('wiki_pages') ]);
     },
 );
-
-sub wiki_pages_edit_frame {
-    my ($p) = @_;
-    $is_root or return;
-    init_template($p, 'wiki_pages_edit.html.tt');
-    $page_form->edit_frame($p, redirect => [ 'wiki_pages' ]);
-}
 
 sub wiki_pages_frame {
     my ($p) = @_;
@@ -104,7 +99,7 @@ our $text_form = CATS::Form1->new(
     href_action => 'wiki_edit',
     descr_field => 'title',
     template_var => 'wt',
-    #msg_deleted => 1073,
+    msg_deleted => 1073,
     msg_saved => 1074,
     after_make => sub {
         my ($form_data, $p) = @_;
@@ -137,6 +132,14 @@ our $text_form = CATS::Form1->new(
         );
     },
 );
+
+sub wiki_pages_edit_frame {
+    my ($p) = @_;
+    $is_root or return;
+    init_template($p, 'wiki_pages_edit.html.tt');
+    $text_form->delete_or_saved($p);
+    $page_form->edit_frame($p, redirect => [ 'wiki_pages' ]);
+}
 
 sub wiki_edit_frame {
     my ($p) = @_;
