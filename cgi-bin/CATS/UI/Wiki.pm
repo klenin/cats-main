@@ -83,54 +83,60 @@ sub wiki_pages_frame {
     $t->param(submenu => [ CATS::References::menu('wiki_pages') ]);
 }
 
-sub text_fields() {qw(wiki_id lang title text author_id last_modified)}
+my $int = CATS::Field::int_range(min => 0, max => 1000000000);
 
-my $text_form = CATS::Form->new({
+our $text_form = CATS::Form1->new(
     table => 'wiki_texts',
-    fields => [ map +{ name => $_ }, text_fields() ],
-    templates => { edit_frame => 'wiki_edit.html.tt' },
+    fields => [
+      [ name => 'wiki_id', validators => [ $int ], ],
+      [ name => 'wiki_lang', db_name => 'lang', validators => [ qr/^([a-z]{2})?$/ ], ],
+      [ name => 'title', validators => [ $str1_200 ], caption => 601 ],
+      [ name => 'text', caption => 677 ],
+      [ name => 'author_id' ],
+      [ name => 'last_modified', before_save => sub { \'CURRENT_TIMESTAMP' } ],
+    ],
     href_action => 'wiki_edit',
-    edit_param => 'id',
-});
-
-sub text_edit_save {
-    my ($p) = @_;
-    $text_form->edit_save($p, before => sub {
-        my ($t) = @_;
-        $t->{lang} = $p->{wiki_lang};
-        $t->{author_id} = $uid;
-        $t->{last_modified} = \'CURRENT_TIMESTAMP';
-    });
-}
+    descr_field => 'title',
+    template_var => 'wt',
+    #msg_deleted => 1073,
+    msg_saved => 1074,
+    after_make => sub {
+        my ($form_data, $p) = @_;
+        $form_data->{indexed}->{$_}->{value} = $p->{$_} for qw(wiki_id wiki_lang);
+    },
+    before_save => sub {
+        my ($form_data, $p) = @_;
+        my $wt = $form_data->{indexed};
+        $wt->{author_id}->{value} = $uid;
+    },
+    before_display => sub {
+        my ($form_data, $p) = @_;
+        my $wt = $form_data->{indexed};
+        $form_data->{author} = $wt->{author_id} && $dbh->selectrow_array(q~
+            SELECT team_name FROM accounts WHERE id = ?~, undef,
+            $wt->{author_id}->{value});
+        my $pn = $form_data->{page_name} = Encode::decode_utf8($dbh->selectrow_array(q~
+            SELECT name FROM wiki_pages WHERE id = ?~, undef,
+            $wt->{wiki_id}->{value}));
+        $wt->{last_modified}->{value} ||= $form_data->{id} && $dbh->selectrow_array(q~
+            SELECT last_modified FROM wiki_texts WHERE id = ?~, undef,
+            $form_data->{id});
+        $form_data->{markdown} = $markdown->($wt->{text}->{value});
+        $t->param(
+            title_suffix => $pn,
+            problem_title => $pn,
+            href_view => url_f('wiki', name => $pn),
+            href_page => url_f('wiki_pages_edit', id => $wt->{wiki_id}->{value}),
+            submenu => [ CATS::References::menu('wiki_pages') ],
+        );
+    },
+);
 
 sub wiki_edit_frame {
     my ($p) = @_;
-    $is_root && $p->{wiki_id} or return;
-
-    $p->{edit_cancel} and $p->redirect(url_f('wiki_pages', edit => $p->{wiki_id}));
-    $p->{edit_save} and text_edit_save($p) and $p->{just_saved} = 1;
-
-    $text_form->edit_frame($p, after => sub {
-        my ($wt) = @_;
-        $wt->{wiki_lang} //= $p->{wiki_lang};
-        $wt->{wiki_id} //= $p->{wiki_id};
-        delete $wt->{lang};
-        $wt->{author} = $wt->{author_id} && $dbh->selectrow_array(q~
-            SELECT team_name FROM accounts WHERE id = ?~, undef,
-            $wt->{author_id});
-        $wt->{page_name} = Encode::decode_utf8($dbh->selectrow_array(q~
-            SELECT name FROM wiki_pages WHERE id = ?~, undef,
-            $wt->{wiki_id}));
-        $wt->{markdown} = $markdown->($wt->{text});
-        $t->param(
-            title_suffix => $wt->{page_name},
-            problem_title => $wt->{page_name},
-            href_view => url_f('wiki', name => $wt->{page_name}),
-            href_page => url_f('wiki_pages', edit => $wt->{wiki_id}),
-            submenu => [ CATS::References::menu('wiki_pages') ],
-        );
-        msg(1074, $wt->{page_name}) if $p->{just_saved};
-    });
+    $is_root && $p->{wiki_id} or return $p->redirect(url_f 'contests');
+    init_template($p, 'wiki_edit.html.tt');
+    $text_form->edit_frame($p, redirect_cancel => [ 'wiki_pages_edit', id => $p->{wiki_id} ]);
 }
 
 sub _choose_lang {
@@ -170,7 +176,7 @@ sub wiki_frame {
             ($is_root ? {
                 href => url_f('wiki_edit',
                     wiki_id => $id, id => $chosen_lang->{id}, wiki_lang => $chosen_lang->{lang}),
-                item => res_str(509,  $p->{name}) } : ()),
+                item => res_str(509, $p->{name}) } : ()),
         ],
     );
 }
