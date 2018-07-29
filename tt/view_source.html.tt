@@ -14,14 +14,10 @@
   position: relative;
   background-color: #cccccc;
   margin-bottom: 20px;
-  opacity: 1;
-  transition: all 0.25s;
-  cursor: move;
 }
 .resizable-line {
   position: absolute;
   z-index: 10;
-  transition: all 0.25s;
 }
 .resizable .resizable-bottom-line {
   bottom: 0;
