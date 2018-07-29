@@ -34,18 +34,24 @@ our $page_form = CATS::Form1->new(
     template_var => 'wp',
     msg_deleted => 1073,
     msg_saved => 1074,
+    before_display => sub {
+        my ($fd, $p) = @_;
+        my $ts = $fd->{texts} = $fd->{id} ? $dbh->selectall_hashref(q~
+            SELECT id, lang, title FROM wiki_texts WHERE wiki_id = ?~, 'lang', undef,
+            $fd->{id}) : {};
+        my @url = ('wiki_edit', wiki_id => $p->{id});
+        for (@cats::langs) {
+            my $r = $ts->{$_} //= {};
+            $r->{href_edit} = url_f(@url, wiki_lang => $_, id => $r->{id});
+            $r->{href_view} = url_f('wiki', name => $fd->{indexed}->{name}->{value}, lang => $_) if $r->{id};
+        }
+    },
 );
 
 sub wiki_pages_edit_frame {
     my ($p) = @_;
     $is_root or return;
     init_template($p, 'wiki_pages_edit.html.tt');
-    my $ts = $p->{id} ? $dbh->selectall_hashref(q~
-        SELECT id, lang, title FROM wiki_texts WHERE wiki_id = ?~, 'lang', undef,
-        $p->{id}) : {};
-    my @url = ('wiki_edit', wiki_id => $p->{id});
-    $_->{href_edit} = url_f(@url, wiki_lang => $_->{lang}, id => $_->{id}) for values %$ts;
-    $t->param(texts => $ts, href_add_text => url_f(@url));
     $page_form->edit_frame($p, redirect => [ 'wiki_pages' ]);
 }
 
