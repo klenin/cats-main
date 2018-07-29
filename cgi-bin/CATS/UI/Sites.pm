@@ -17,6 +17,10 @@ use CATS::Time;
 my $str1_200 = CATS::Field::str_length(1, 200);
 my $str0_200 = CATS::Field::str_length(0, 200);
 
+my $person_phone_sql = qq~
+    COALESCE((SELECT LIST(' ' || C.handle) FROM contacts C
+        WHERE C.account_id = A.id AND C.contact_type_id = $CATS::Globals::contact_phone AND C.is_actual = 1), '')~;
+
 our $form = CATS::Form1->new(
     table => 'sites',
     fields => [
@@ -31,27 +35,26 @@ our $form = CATS::Form1->new(
     template_var => 'site',
     msg_deleted => 1066,
     msg_saved => 1067,
+    before_display => sub {
+        my ($fd, $p) = @_;
+        $fd->{contests} = $is_root && $fd->{id} ? $dbh->selectall_arrayref(qq~
+            SELECT C.title, C.start_date,
+                (SELECT LIST(A.team_name || $person_phone_sql, ', ') FROM contest_accounts CA
+                INNER JOIN accounts A ON A.id = CA.account_id
+                WHERE CA.contest_id = C.id AND CA.site_id = CS.site_id AND CA.is_site_org = 1) AS orgs
+            FROM contests C
+            INNER JOIN contest_sites CS ON CS.contest_id = C.id AND CS.site_id = ?
+            ORDER BY C.start_date DESC ROWS 50~, { Slice => {} },
+            $fd->{id}) : [];
+        warn @{$fd->{contests}};
+    },
 );
-
-my $person_phone_sql =
-    qq~COALESCE((SELECT LIST(' ' || C.handle) FROM contacts C
-        WHERE C.account_id = A.id AND C.contact_type_id = $CATS::Globals::contact_phone AND C.is_actual = 1), '')~;
 
 sub sites_edit_frame {
     my ($p) = @_;
     init_template($p, 'sites_edit.html.tt');
     $user->privs->{edit_sites} or return;
     $form->edit_frame($p, redirect => [ 'sites' ]);
-    my $contests = $is_root && $p->{id} ? $dbh->selectall_arrayref(qq~
-        SELECT C.title, C.start_date,
-            (SELECT LIST(A.team_name || $person_phone_sql, ', ') FROM contest_accounts CA
-            INNER JOIN accounts A ON A.id = CA.account_id
-            WHERE CA.contest_id = C.id AND CA.site_id = CS.site_id AND CA.is_site_org = 1) AS orgs
-        FROM contests C
-        INNER JOIN contest_sites CS ON CS.contest_id = C.id AND CS.site_id = ?
-        ORDER BY C.start_date DESC ROWS 50~, { Slice => {} },
-        $p->{id}) : [];
-    $t->param(contests => $contests);
 }
 
 sub common_searches {
