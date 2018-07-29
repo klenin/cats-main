@@ -3,8 +3,8 @@
 
 <form method="post" enctype="multipart/form-data" action="[% sn.href_action %]">
 <table class="edit_form padded">
-[% tr_select_value(sn.indexed.problem_id, sn, problems) %]
-[% tr_select_value(sn.indexed.account_id, sn, accounts) %]
+[% tr_select_value(sn.indexed.problem_id, sn, sn.problems) %]
+[% tr_select_value(sn.indexed.account_id, sn, sn.accounts) %]
 [% tr_text(sn.indexed.name, sn) %]
 [% tr_textarea(sn.indexed.text, sn) %]
 </table>

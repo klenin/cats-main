@@ -40,26 +40,27 @@ our $form = CATS::Form1->new(
     msg_deleted => 1076,
     msg_saved => 1075,
     validators => [ \&_validate_unique_snippet ],
+    before_display => sub {
+        my ($fd, $p) = @_;
+        $fd->{problems} = $dbh->selectall_arrayref(q~
+            SELECT P.id AS "value", CP.code || ': ' || P.title AS text
+            FROM problems P INNER JOIN contest_problems CP ON P.id = CP.problem_id
+            WHERE CP.contest_id = ?
+            ORDER BY CP.code~, { Slice => {} },
+            $cid);
+        $fd->{accounts} = $dbh->selectall_arrayref(q~
+            SELECT A.id AS "value", A.team_name AS text
+            FROM accounts A INNER JOIN contest_accounts CA ON A.id = CA.account_id
+            WHERE CA.contest_id = ?
+            ORDER BY A.team_name~, { Slice => {} },
+            $cid);
+    },
 );
 
 sub snippets_edit_frame {
     my ($p) = @_;
     init_template($p, 'snippets_edit.html.tt');
     $is_jury or return;
-    $t->param(
-        problems => $dbh->selectall_arrayref(q~
-            SELECT P.id AS "value", CP.code || ': ' || P.title AS text
-            FROM problems P INNER JOIN contest_problems CP ON P.id = CP.problem_id
-            WHERE CP.contest_id = ?
-            ORDER BY CP.code~, { Slice => {} },
-            $cid),
-        accounts => $dbh->selectall_arrayref(q~
-            SELECT A.id AS "value", A.team_name AS text
-            FROM accounts A INNER JOIN contest_accounts CA ON A.id = CA.account_id
-            WHERE CA.contest_id = ?
-            ORDER BY A.team_name~, { Slice => {} },
-            $cid),
-    );
     $form->edit_frame($p, redirect => [ 'snippets' ]);
 }
 
