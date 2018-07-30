@@ -16,65 +16,58 @@ use CATS::Messages qw(msg res_str);
 use CATS::Output qw(init_template url_f);
 use CATS::References;
 
-sub edit_frame {
+our $form = CATS::Form1->new(
+    table => 'judges J',
+    fields => [
+        [ name => 'name', db_name => 'nick', validators => [ CATS::Field::str_length(1, 20) ], caption => 625 ],
+        [ name => 'pin_mode', validators => [ CATS::Field::int_range(min => 0, max => 10) ], caption => 678 ],
+        [ name => 'account_id', ],
+    ],
+    joins => [ { sql => 'LEFT JOIN accounts A ON A.id = J.account_id', fields => 'A.login AS account_name' } ],
+    href_action => 'judges_edit',
+    descr_field => 'nick',
+    template_var => 'j',
+    msg_saved => 1140,
+    msg_deleted => 1020,
+    before_save_db => sub {
+        my ($data, $id) = @_;
+        $id and return;
+        $data->{is_alive} = 0;
+        $data->{alive_date} = \'CURRENT_TIMESTAMP';
+    },
+    before_display => sub {
+        my ($fd, $p) = @_;
+        $fd->{de_bitmap} = $fd->{id} &&
+            CATS::DB::select_row('judge_de_bitmap_cache', '*', { judge_id => $fd->{id} });
+        if ($fd->{de_bitmap}) {
+            my $dev_env = CATS::DevEnv->new(CATS::JudgeDB::get_DEs);
+            $fd->{supported_DEs} = [
+                $dev_env->by_bitmap([ CATS::JudgeDB::extract_de_bitmap($fd->{de_bitmap}) ]) ],
+        }
+        if (my $aid = $fd->{indexed}->{account_id}->{value}) {
+            $fd->{href_contests} = url_f('contests', search => "has_user($aid)");
+        }
+        $fd->{extra_fields}->{account_name} = $p->{account_name} if $p->{account_name};
+        $t->param(submenu => [ CATS::References::menu('judges') ]);
+    },
+    validators => [ sub {
+        my ($fd, $p) = @_;
+        $fd->{indexed}->{account_id}->{value} = undef;
+        $p->{account_name} or return 1;
+        $fd->{indexed}->{account_id}->{value} = $dbh->selectrow_array(q~
+            SELECT id FROM accounts WHERE login = ?~, undef,
+            $p->{account_name}) and return 1;
+        $fd->{account}->{error} = res_str(1139, $p->{account_name});
+        undef;
+    } ],
+);
+
+sub judges_edit_frame {
     my ($p) = @_;
     init_template($p, 'judges_edit.html.tt');
-
-    if (my $jid = $p->{edit}) {
-        my ($judge_name, $account_name, $pin_mode, $account_id) = $dbh->selectrow_array(q~
-            SELECT J.nick, A.login, J.pin_mode, J.account_id
-            FROM judges J LEFT JOIN accounts A ON A.id = J.account_id WHERE J.id = ?~, undef,
-            $jid);
-
-        my $de_bitmap = CATS::DB::select_row('judge_de_bitmap_cache', '*', { judge_id => $jid });
-        my $supported_DEs;
-        if ($de_bitmap) {
-            my $dev_env = CATS::DevEnv->new(CATS::JudgeDB::get_DEs);
-            $supported_DEs = [ $dev_env->by_bitmap([ CATS::JudgeDB::extract_de_bitmap($de_bitmap) ]) ],
-        }
-        $t->param(
-            href_contests => url_f('contests', search => "has_user($account_id)"),
-            id => $jid, judge_name => $judge_name, account_name => $account_name, pin_mode => $pin_mode,
-            de_bitmap => $de_bitmap, supported_DEs => $supported_DEs,
-        );
-    }
-    $t->param(href_action => url_f('judges'));
+    $is_root or return;
+    $form->edit_frame($p, redirect => [ 'judges' ]);
 }
-
-sub edit_save {
-    my ($p) = @_;
-    my $judge_name = $p->{judge_name} // '';
-    my $account_name = $p->{account_name} // '';
-    my $pin_mode = $p->{pin_mode} // 0;
-
-    $judge_name ne '' && length $judge_name <= 20
-        or return msg(1005);
-
-    my $account_id;
-    if ($account_name) {
-        $account_id = $dbh->selectrow_array(q~
-            SELECT id FROM accounts WHERE login = ?~, undef,
-            $account_name) or return msg(1139, $account_name);
-    }
-
-    if ($p->{id}) {
-        $dbh->do(q~
-            UPDATE judges SET nick = ?, account_id = ?, pin_mode = ? WHERE id = ?~, undef,
-            $judge_name, $account_id, $pin_mode, $p->{id});
-        $dbh->commit;
-        msg(1140, $judge_name);
-    }
-    else {
-        $dbh->do(q~
-            INSERT INTO judges (id, nick, account_id, pin_mode, is_alive, alive_date)
-            VALUES (?, ?, ?, ?, 0, CURRENT_TIMESTAMP)~, undef,
-            new_id, $judge_name, $account_id, $pin_mode);
-        $dbh->commit;
-        msg(1006, $judge_name);
-    }
-}
-
-my $form = CATS::Form->new({ table => 'judges', fields => [], });
 
 sub update_judges {
     my ($p) = @_;
@@ -109,7 +102,6 @@ sub judges_frame {
             CATS::Judge::ping($p->{ping});
             return $p->redirect(url_f 'judges');
         }
-        $p->{new} || $p->{edit} and return edit_frame($p);
         $p->{update} and update_judges($p);
         $p->{set_pin_mode} && defined $p->{pin_mode} and set_pin_mode($p);
     }
@@ -117,10 +109,7 @@ sub judges_frame {
     init_template($p, 'judges.html.tt');
     my $lv = CATS::ListView->new(web => $p, name => 'judges');
 
-    if ($is_root) {
-        $p->{edit_save} and edit_save($p);
-        $form->edit_delete(id => $p->{delete}, descr => 'nick', msg => 1020);
-    }
+    $is_root and $form->delete_or_saved($p);
 
     $lv->define_columns(url_f('judges'), 0, 0, [
         { caption => res_str(625), order_by => 'nick', width => '15%' },
@@ -156,7 +145,7 @@ sub judges_frame {
             CATS::IP::linkify_ip($row->{last_ip}),
 
             href_ping => url_f('judges', ping => $jid),
-            href_edit => url_f('judges', edit => $jid),
+            href_edit => url_f('judges_edit', id => $jid),
             href_delete => url_f('judges', 'delete' => $jid),
             href_account => url_f('users_edit', uid => $row->{account_id}),
             href_console => url_f('console',

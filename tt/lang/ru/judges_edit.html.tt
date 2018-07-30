@@ -1,6 +1,5 @@
 [%
   capt.import({
-    judge_name => 'Идентификатор судьи',
     account_name => 'Логин пользователя',
     contests => 'турниры',
     dev_envs => 'Среды разработки',

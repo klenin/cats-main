@@ -1,35 +1,33 @@
 [% PROCESS includes/menu_begin.tti %]
-[% PROCESS includes/html.tti %]
+[% PROCESS includes/html_input.tti %]
 [% PROCESS includes/de_bitmap.tti %]
 [% PROCESS "lang/$lang/judges_common.tti" %]
 
-
-<form method="post" enctype="multipart/form-data" action="[% href_action %]">
-<table class="padded">
-<tr><td>[% capt.judge_name %]</td><td><input type="text" name="judge_name" value="[% judge_name | html %]" class="bordered"></td></tr>
+[%-
+    pin_modes = [];
+    FOR pin_mode_value IN capt.pin_mode_values;
+        pin_modes.push({ value => loop.index , text => pin_mode_value });
+    END;
+-%]
+<form method="post" enctype="multipart/form-data" action="[% j.href_action %]">
+<table class="padded edit_form">
+[% tr_text(j.indexed.name, j) %]
 <tr><td>[% capt.account_name %]</td>
-  <td><input type="text" name="account_name" value="[% account_name | html %]" class="bordered"> [% href(href_contests, capt.contests) %]</td>
+  <td>
+    <input type="text" name="account_name" value="[% j.extra_fields.account_name | html %]" class="bordered">
+    [% href(j.href_contests, capt.contests) %]
+    [% maybe_err(j.account) %]
+  </td>
 </tr>
-<tr>
-    <td>[% capt.pin_mode %]</td>
-    <td>
-        [%
-            pin_modes = [];
-            FOR pin_mode_value IN capt.pin_mode_values;
-                pin_modes.push({ value => loop.index , text => pin_mode_value });
-            END;
-            select_value('pin_mode', pin_modes, pin_mode);
-        %]
-    </td>
-</tr>
-[% IF de_bitmap %]
+[% tr_select_value(j.indexed.pin_mode, j, pin_modes) %]
+[% IF j.de_bitmap %]
 <tr><td>[% capt.dev_envs %]</td><td>
   <table class="bordered internal_borders">
-  [% FOREACH de IN supported_DEs -%]
+  [% FOREACH de IN j.supported_DEs -%]
   <tr><td>[% de.code %]</td><td>[% de.description %]</td></tr>
   [% END ~%]
   </table>
-  <p>[% show_de_bitmap(de_bitmap, '') %]</p>
+  <p>[% show_de_bitmap(j.de_bitmap, '') %]</p>
 </td></tr>
 [% END %]
 </table>
