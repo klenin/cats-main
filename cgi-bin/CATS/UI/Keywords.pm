@@ -49,9 +49,9 @@ sub keywords_frame {
     $lv->define_db_searches([ qw(K.id code name_ru name_en) ]);
 
     my $c = $dbh->prepare(q~
-        SELECT k.id AS kwid, k.code, k.name_ru, k.name_en,
-            (SELECT COUNT(*) FROM problem_keywords pk WHERE pk.keyword_id = k.id) AS ref_count
-        FROM keywords k WHERE 1 = 1 ~ . $lv->maybe_where_cond . $lv->order_by);
+        SELECT K.id AS kwid, K.code, K.name_ru, K.name_en,
+            (SELECT COUNT(*) FROM problem_keywords PK WHERE PK.keyword_id = K.id) AS ref_count
+        FROM keywords K WHERE 1 = 1 ~ . $lv->maybe_where_cond . $lv->order_by);
     $c->execute($lv->where_params);
 
     my $fetch_record = sub {
