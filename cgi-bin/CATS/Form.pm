@@ -198,14 +198,27 @@ use Exporter qw(import);
 
 our @EXPORT = qw(int_range str_length);
 
+sub _extract_field_name {
+    $_[0] =~ /(?:\w+\.)?(\w+)(?:\s+AS\s+(\w+))?$/ or die;
+    $2 // $1;
+}
+
 sub new {
     my ($class, %r) = @_;
     bless my $self = {}, $class;
 
     $self->{$_} = $r{$_} or die "No $_" for qw(table href_action);
+    if ($self->{table} =~ /\s+(\w+)$/) {
+        $self->{table_alias} = $1;
+    }
+    $self->{joins} = $r{joins} // [];
     $r{fields} or die 'No fields';
     $self->{fields} = [ map ref $_ eq 'CATS::Field' ? $_ : CATS::Field->new(@$_), @{$r{fields}} ];
-    $self->{sql_fields} = [ map $_->{db_name}, $self->fields ];
+    my $alias = $self->{table_alias} ? "$self->{table_alias}." : '';
+    $self->{sql_fields} = [ map "$alias$_->{db_name}", $self->fields ];
+    my @all_extra_fields = map ref $_->{fields} ? @{$_->{fields}} : $_->{fields}, @{$self->{joins}};
+    $self->{extra_fields} = [ map +{ sql => $_, name => _extract_field_name($_) }, @all_extra_fields ];
+    $self->{select_fields} = [ @{$self->{sql_fields}}, @all_extra_fields ];
     $self->{id_param} = $r{id_param} // 'id';
     $self->{template_var} = $r{template_var} // 'form_data';
     $self->{descr_field} = $r{descr_field} // 'id';
@@ -219,20 +232,26 @@ sub fields { @{$_[0]->{fields}} }
 
 sub load {
     my ($self, $id) = @_;
+    my $id_field = $self->{table_alias} ? "$self->{table_alias}.id" : 'id';
     my @db_data = $dbh->selectrow_array(_u $sql->select(
-        $self->{table}, $self->{sql_fields}, { id => $id }));
+        $self->{table} . join('', map " $_->{sql}", @{$self->{joins}}),
+        $self->{select_fields}, { $id_field => $id }));
     my $i = 0;
-    my $data = [ map +$_->load($db_data[$i++]), $self->fields ];
-    $data;
+    [
+        (map +$_->load($db_data[$i++]), $self->fields),
+        (map $db_data[$i++], @{$self->{extra_fields}}),
+    ];
 }
 
 sub save {
     my ($self, $id, $data, %opts) = @_;
     my $i = 0;
     my %db_data = map { $_->{db_name} => $_->save($data->[$i++]) } $self->fields;
+    # INSERT does not support table aliases.
+    my ($bare_table) = $self->{table} =~ /^(\w+)/;
     my ($stmt, @bind) = $id ?
-        $sql->update($self->{table}, \%db_data, { id => $id }) :
-        $sql->insert($self->{table}, { %db_data, id => ($id = new_id) });
+        $sql->update($bare_table, \%db_data, { id => $id }) :
+        $sql->insert($bare_table, { %db_data, id => ($id = new_id) });
     warn "$stmt\n@bind" if $self->{debug} || $opts{debug};
     $dbh->do($stmt, undef, @bind);
     if ($opts{commit}) {
@@ -270,9 +289,9 @@ sub _redirect {
 }
 
 sub validate {
-    my ($self, $form_data, $id) = @_;
+    my ($self, $form_data, $p) = @_;
     for (@{$self->{validators}}) {
-        $_->($form_data) or return;
+        $_->($form_data, $p) or return;
     }
     1;
 }
@@ -295,7 +314,7 @@ sub edit_frame {
     $t->param($self->{template_var} => $form_data);
     if ($p->{edit_save} && !$opts{readonly}) {
         _set_form_data($form_data, my $data = $self->parse_params($p));
-        if ((grep $_->{error}, @$data) || !$self->validate($form_data, $id)) {
+        if ((grep $_->{error}, @$data) || !$self->validate($form_data, $p)) {
             $self->{before_display}->($form_data, $p) if $self->{before_display};
             return;
         }
@@ -314,6 +333,8 @@ sub edit_frame {
         my $data = $id ? $self->load($id) : $self->make;
         my $i = 0;
         _set_form_data($form_data, [ map $_->web_data($data->[$i++]), $self->fields ]);
+        $form_data->{extra_fields} = $id ?
+            { map { +$_->{name} => $data->[$i++] } @{$self->{extra_fields}} } : {};
         $self->{after_load}->($form_data, $p) if $self->{after_load} && $id;
         $self->{after_make}->($form_data, $p) if $self->{after_make} && !$id;
     }
