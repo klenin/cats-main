@@ -25,7 +25,7 @@ sub user_submenu {
     my $is_profile = $uid && $uid == $user_id;
     my @m = (
         (($is_root || $is_profile) && $selected eq 'user_contacts' ? (
-            { href => url_f('user_contacts', uid => $user_id, new => 1), item => res_str(587), selected => '' }
+            { href => url_f('user_contacts_edit', uid => $user_id), item => res_str(587), selected => '' }
         ) : ()),
         (
             $is_jury ?
@@ -290,14 +290,56 @@ sub user_vdiff_frame {
     );
 }
 
-sub user_contact_fields() {qw(account_id contact_type_id handle is_public is_actual)}
+sub _check_contact_owner {
+    my ($fd, $p) = @_;
+    my $aid = $fd->{indexed}->{account_id};
+    if ($is_root || !$fd->{id}) {
+        $aid->{value} = $p->{uid};
+    }
+    else {
+        my ($old_uid) = $dbh->selectrow_array(q~
+            SELECT account_id FROM contacts WHERE id = ?~, undef,
+            $fd->{id});
+        $old_uid == $uid or return CATS::Messages::msg_debug('Bad account');
+        $aid->{value} = $uid;
+    }
+    1;
+}
 
-my $user_contact_form = CATS::Form->new({
+our $user_contact_form = CATS::Form1->new(
     table => 'contacts',
-    fields => [ map +{ name => $_ }, user_contact_fields ],
-    templates => { edit_frame => 'user_contacts_edit.html.tt' },
-    href_action => 'user_contacts',
-});
+    fields => [
+        [ name => 'account_id' ],
+        [ name => 'contact_type_id',
+            validators => [ CATS::Field::int_range(min => 0, max => 1000000000) ], caption => 642 ],
+        [ name => 'handle', validators => [ CATS::Field::str_length(1, 200) ], caption => 657 ],
+        [ name => 'is_public', validators => [ qr/^1?$/ ], caption => 669 ],
+        [ name => 'is_actual', validators => [ qr/^1?$/ ], caption => 670 ],
+    ],
+    href_action => 'user_contacts_edit',
+    descr_field => 'handle',
+    template_var => 'uc',
+    msg_saved => 1071,
+    msg_deleted => 1072,
+    before_display => sub {
+        my ($fd) = @_;
+        $fd->{contact_types} = $dbh->selectall_arrayref(q~
+            SELECT id AS "value", name AS "text" FROM contact_types ORDER BY name~, { Slice => {} });
+        unshift @{$fd->{contact_types}}, {};
+        $fd->{account_id}->{value}
+    },
+    validators => [ \&_check_contact_owner ],
+);
+
+sub user_contacts_edit_frame {
+    my ($p) = @_;
+    init_template($p, 'user_contacts_edit.html.tt');
+    my $is_profile = $uid && $uid == $p->{uid};
+    $is_root || $is_profile or return;
+    my @puid = (uid => $p->{uid});
+    $user_contact_form->edit_frame($p,
+        redirect => [ 'user_contacts', @puid ], href_action_params => \@puid);
+}
 
 sub user_contacts_frame {
     my ($p) = @_;
@@ -306,17 +348,7 @@ sub user_contacts_frame {
     $p->{uid} or return;
 
     my $is_profile = $uid && $uid == $p->{uid};
-    if ($is_root || $is_profile) {
-        $p->{new} || $p->{edit} and return $user_contact_form->edit_frame($p, after => sub {
-            $_[0]->{contact_types} = $dbh->selectall_arrayref(q~
-                SELECT id AS "value", name AS "text" FROM contact_types ORDER BY name~, { Slice => {} });
-            unshift @{$_[0]->{contact_types}}, {};
-        }, href_action_params => [ uid => $p->{uid} ]);
-        $user_contact_form->edit_delete(id => $p->{delete}, descr => 'handle', msg => 1071);
-        $p->{edit_save} and $user_contact_form->edit_save($p, before => sub {
-            $_[0]->{account_id} = $p->{uid};
-        }) and msg(1072, Encode::decode_utf8($p->{handle}));
-    }
+    $user_contact_form->delete_or_saved($p) if $is_root || $is_profile;
 
     init_template($p, 'user_contacts.html.tt');
     my $lv = CATS::ListView->new(web => $p, name => 'user_contacts');
@@ -331,7 +363,7 @@ sub user_contacts_frame {
             ({ caption => res_str(669), order_by => 'is_public', width => '15%', col => 'Ip' }) : ()),
         { caption => res_str(670), order_by => 'is_actual', width => '15%', col => 'Ia' },
     ]);
-    $lv->define_db_searches([ user_contact_fields ]);
+    $lv->define_db_searches($user_contact_form->{sql_fields});
     my $public_cond = $is_root || $is_profile ? '' : ' AND C.is_public = 1';
     my $sth = $dbh->prepare(qq~
         SELECT C.id, C.contact_type_id, C.handle, C.is_public, C.is_actual, CT.name AS type_name, CT.url
@@ -344,7 +376,7 @@ sub user_contacts_frame {
         my $row = $_[0]->fetchrow_hashref or return ();
         (
             ($is_root || $is_profile ? (
-                href_edit => url_f('user_contacts', edit => $row->{id}, uid => $p->{uid}),
+                href_edit => url_f('user_contacts_edit', id => $row->{id}, uid => $p->{uid}),
                 href_delete => url_f('user_contacts', 'delete' => $row->{id}, uid => $p->{uid})) : ()),
             %$row,
             ($row->{url} ? (href_contact => sprintf $row->{url}, CATS::Utils::escape_url($row->{handle})) : ()),

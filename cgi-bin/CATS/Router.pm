@@ -18,8 +18,6 @@ my %console_params = (
     show_contests => bool0, show_messages => bool0, show_results => bool0,
 );
 
-my %form_params = (new => bool, edit => integer, delete => integer, edit_save => bool);
-
 my $main_routes = {
     login => [ \&CATS::UI::LoginLogout::login_frame,
         logout => bool, login => str, passwd => str, redir => str, cid => integer, ],
@@ -168,8 +166,10 @@ my $main_routes = {
         ext_time => fixed, ext_units => ident,
         is_virtual => bool, save => bool, finish_now => bool ],
     user_contacts => [ \&CATS::UI::UserDetails::user_contacts_frame,
-        uid => integer, %form_params,
-        map { $_ => str } CATS::UI::UserDetails::user_contact_fields,
+        uid => integer, delete => integer, saved => bool,
+    ],
+    user_contacts_edit => [ \&CATS::UI::UserDetails::user_contacts_edit_frame,
+        uid => integer, $CATS::UI::UserDetails::user_contact_form->route,
     ],
     impersonate => [ \&CATS::UI::UserDetails::impersonate_frame, uid => integer, ],
     contact_types => [
