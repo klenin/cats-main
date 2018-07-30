@@ -197,7 +197,7 @@ sub similarity_frame {
     my $users_idx = {};
     for my $u (@$users) {
         $users_idx->{$u->{account_id}} = $u;
-        $u->{href_site} = $is_root ? url_f('sites', edit => $u->{site_id}) : '#';
+        $u->{href_site} = $is_root ? url_f('sites_edit', id => $u->{site_id}) : '#';
     }
 
     $t->param(

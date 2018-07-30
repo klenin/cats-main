@@ -70,7 +70,7 @@ sub problem_details_frame {
         WHERE PK.problem_id = ? ORDER BY K.code~, { Slice => {} },
         $p->{pid});
     if ($is_root) {
-        $_->{href} = url_f('keywords', edit => $_->{id}) for @{$pr->{keywords}};
+        $_->{href} = url_f('keywords_edit', id => $_->{id}) for @{$pr->{keywords}};
     }
 
     my ($rc_all, $rc_contest);

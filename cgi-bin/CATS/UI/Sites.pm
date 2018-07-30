@@ -171,7 +171,7 @@ sub contest_sites_edit_frame {
     $t->param(
         href_contest => url_f('contest_params', id => $s->{contest_id}),
         href_users => url_f('users', search => "site_id=$s->{id}"),
-        ($user->privs->{edit_sites} ? (href_site => url_f('sites', edit => $s->{id})) : ()),
+        ($user->privs->{edit_sites} ? (href_site => url_f('sites_edit', id => $s->{id})) : ()),
         s => $s,
         formatted_diff_time => CATS::Time::format_diff($s->{diff_time}, display_plus => 1),
         formatted_ext_time => CATS::Time::format_diff($s->{ext_time}, display_plus => 1),
@@ -268,7 +268,7 @@ sub contest_sites_frame {
         return (
             %$row,
             formatted_time => CATS::Time::format_diff_ext($row->{diff_time}, $row->{ext_time}, display_plus => 1),
-            ($user->privs->{edit_sites} ? (href_site => url_f('sites', edit => $row->{id})) : ()),
+            ($user->privs->{edit_sites} ? (href_site => url_f('sites_edit', id => $row->{id})) : ()),
             ($is_jury ? (href_delete => url_f('contest_sites', 'delete' => $row->{id})) : ()),
             href_edit => url_f('contest_sites_edit', site_id => $row->{id}),
             href_users => url_f('users', search => "site_id=$row->{id}"),

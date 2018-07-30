@@ -31,7 +31,7 @@ sub menu {
             { href => url_f($_->{name}), item => res_str($_->{item}), selected => $sel };
         if ($sel && ($user->is_root || $_->{name} eq 'sites' && $user->privs->{edit_sites}) && $_->{new}) {
             unshift @result,
-                { href => url_f($_->{name}, new => 1, edit => 0), item => res_str($_->{new}) };
+                { href => url_f($_->{name} . '_edit'), item => res_str($_->{new}) };
         }
         $t->param(title_suffix => res_str($_->{item})) if $sel;
     }
