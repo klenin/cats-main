@@ -272,7 +272,7 @@ sub _redirect {
 sub validate {
     my ($self, $form_data, $id) = @_;
     for (@{$self->{validators}}) {
-        $_->($form_data, id => $id, form => $self) or return;
+        $_->($form_data) or return;
     }
     1;
 }
@@ -295,8 +295,10 @@ sub edit_frame {
     $t->param($self->{template_var} => $form_data);
     if ($p->{edit_save} && !$opts{readonly}) {
         _set_form_data($form_data, my $data = $self->parse_params($p));
-        return if grep $_->{error}, @$data;
-        $self->validate($form_data, $id) or return;
+        if ((grep $_->{error}, @$data) || !$self->validate($form_data, $id)) {
+            $self->{before_display}->($form_data, $p) if $self->{before_display};
+            return;
+        }
         $self->{before_save}->($form_data, $p) if $self->{before_save};
         $form_data->{$self->{id_param}} = $id =
             $self->save($id, [ map $_->{value}, @$data ], commit => 1);

@@ -15,14 +15,14 @@ my $str0_200 = CATS::Field::str_length(0, 200);
 my $int = CATS::Field::int_range(min => 1, max => 1000000000);
 
 sub _validate_unique_snippet {
-    my ($d, %opts) = @_;
-    my $p = $d->{indexed};
+    my ($fd) = @_;
+    my $sn = $fd->{indexed};
     my ($snippet_id) = $dbh->selectrow_array(q~
         SELECT id FROM snippets
         WHERE problem_id = ? AND account_id = ? AND contest_id = ? AND name = ?~, undef,
-        map $p->{$_}->{value}, qw(problem_id account_id contest_id name)
+        map $sn->{$_}->{value}, qw(problem_id account_id contest_id name)
     );
-    !$snippet_id || $snippet_id == ($opts{id} // 0) or msg(1077, $p->{name}->{value});
+    !$snippet_id || $snippet_id == ($fd->{id} // 0) or msg(1077, $sn->{name}->{value});
 }
 
 our $form = CATS::Form1->new(
