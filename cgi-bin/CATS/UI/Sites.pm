@@ -24,11 +24,11 @@ my $person_phone_sql = qq~
 our $form = CATS::Form1->new(
     table => 'sites',
     fields => [
-      [ name => 'name', validators => [ $str1_200 ], caption => 601, ],
-      [ name => 'region', validators => [ $str0_200 ], caption => 654 ],
-      [ name => 'city', validators => [ $str0_200 ], caption => 655, ],
-      [ name => 'org_name', validators => [ $str1_200 ], caption => 656, editor => { size => 100 }, ],
-      [ name => 'address', validators => [ $str0_200 ], caption => 657, editor => { size => 100 }, ],
+        [ name => 'name', validators => [ $str1_200 ], caption => 601, ],
+        [ name => 'region', validators => [ $str0_200 ], caption => 654 ],
+        [ name => 'city', validators => [ $str0_200 ], caption => 655, ],
+        [ name => 'org_name', validators => [ $str1_200 ], caption => 656, editor => { size => 100 }, ],
+        [ name => 'address', validators => [ $str0_200 ], caption => 657, editor => { size => 100 }, ],
     ],
     href_action => 'sites_edit',
     descr_field => 'name',

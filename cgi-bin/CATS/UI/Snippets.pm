@@ -28,11 +28,11 @@ sub _validate_unique_snippet {
 our $form = CATS::Form1->new(
     table => 'snippets',
     fields => [
-      [ name => 'account_id', validators => [ $int ], caption => 608, ],
-      [ name => 'problem_id', validators => [ $int ], caption => 602 ],
-      [ name => 'contest_id', before_save => sub { $cid }, ],
-      [ name => 'name', validators => [ $str1_200 ], caption => 601, ],
-      [ name => 'text', validators => [ $str0_200 ], caption => 672, editor => { cols => 100, rows => 5 }, ],
+        [ name => 'account_id', validators => [ $int ], caption => 608, ],
+        [ name => 'problem_id', validators => [ $int ], caption => 602 ],
+        [ name => 'contest_id', before_save => sub { $cid }, ],
+        [ name => 'name', validators => [ $str1_200 ], caption => 601, ],
+        [ name => 'text', validators => [ $str0_200 ], caption => 672, editor => { cols => 100, rows => 5 }, ],
     ],
     href_action => 'snippets_edit',
     descr_field => 'name',

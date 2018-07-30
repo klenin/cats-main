@@ -16,9 +16,9 @@ my @field_common = (validators => [ CATS::Field::str_length(1, 200) ], editor =>
 our $form = CATS::Form1->new(
     table => 'keywords',
     fields => [
-      [ name => 'code', @field_common, caption => 625 ],
-      [ name => 'name_ru', @field_common, caption => 636, ],
-      [ name => 'name_en', @field_common, caption => 637, ],
+        [ name => 'code', @field_common, caption => 625 ],
+        [ name => 'name_ru', @field_common, caption => 636, ],
+        [ name => 'name_en', @field_common, caption => 637, ],
     ],
     href_action => 'keywords_edit',
     descr_field => 'code',

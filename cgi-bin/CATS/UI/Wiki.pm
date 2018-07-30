@@ -26,8 +26,8 @@ my $str1_200 = CATS::Field::str_length(1, 200);
 our $page_form = CATS::Form1->new(
     table => 'wiki_pages',
     fields => [
-      [ name => 'name', validators => [ $str1_200 ], caption => 601, ],
-      [ name => 'is_public', validators => [ qr/^1?$/ ], caption => 669, before_save => sub { $_[0] // 0 } ],
+        [ name => 'name', validators => [ $str1_200 ], caption => 601, ],
+        [ name => 'is_public', validators => [ qr/^1?$/ ], caption => 669, before_save => sub { $_[0] // 0 } ],
     ],
     href_action => 'wiki_pages_edit',
     descr_field => 'name',
@@ -89,12 +89,12 @@ my $int = CATS::Field::int_range(min => 0, max => 1000000000);
 our $text_form = CATS::Form1->new(
     table => 'wiki_texts',
     fields => [
-      [ name => 'wiki_id', validators => [ $int ], ],
-      [ name => 'wiki_lang', db_name => 'lang', validators => [ qr/^([a-z]{2})?$/ ], ],
-      [ name => 'title', validators => [ $str1_200 ], caption => 601 ],
-      [ name => 'text', caption => 677 ],
-      [ name => 'author_id' ],
-      [ name => 'last_modified', before_save => sub { \'CURRENT_TIMESTAMP' } ],
+        [ name => 'wiki_id', validators => [ $int ], ],
+        [ name => 'wiki_lang', db_name => 'lang', validators => [ qr/^([a-z]{2})?$/ ], ],
+        [ name => 'title', validators => [ $str1_200 ], caption => 601 ],
+        [ name => 'text', caption => 677 ],
+        [ name => 'author_id' ],
+        [ name => 'last_modified', before_save => sub { \'CURRENT_TIMESTAMP' } ],
     ],
     href_action => 'wiki_edit',
     descr_field => 'title',

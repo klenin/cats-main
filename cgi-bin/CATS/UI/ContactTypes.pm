@@ -19,9 +19,9 @@ my $str1_200 = CATS::Field::str_length(1, 200);
 our $form = CATS::Form1->new(
     table => 'contact_types',
     fields => [
-      [ name => 'name', validators => [ CATS::Field::str_length(1, 200) ], caption => 601, ],
-      [ name => 'url', validators => [ CATS::Field::str_length(0, 200) ],
-        caption => 668, editor => { size => 80 } ],
+        [ name => 'name', validators => [ CATS::Field::str_length(1, 200) ], caption => 601, ],
+        [ name => 'url', validators => [ CATS::Field::str_length(0, 200) ],
+            caption => 668, editor => { size => 80 } ],
     ],
     href_action => 'contact_types_edit',
     descr_field => 'name',
