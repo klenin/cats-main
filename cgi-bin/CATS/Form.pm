@@ -224,7 +224,9 @@ sub new {
     $self->{descr_field} = $r{descr_field} // 'id';
     $self->{validators} = $r{validators} // [];
     $self->{$_} = $r{$_} for qw(
-        after_load after_make before_commit before_display before_save debug msg_deleted msg_saved);
+        after_load after_make
+        before_commit before_display before_save before_save_db
+        debug msg_deleted msg_saved);
     $self;
 }
 
@@ -246,12 +248,13 @@ sub load {
 sub save {
     my ($self, $id, $data, %opts) = @_;
     my $i = 0;
-    my %db_data = map { $_->{db_name} => $_->save($data->[$i++]) } $self->fields;
+    my $db_data = { map { $_->{db_name} => $_->save($data->[$i++]) } $self->fields };
+    $self->{before_save_db}->($db_data, $id, $self) if $self->{before_save_db};
     # INSERT does not support table aliases.
     my ($bare_table) = $self->{table} =~ /^(\w+)/;
     my ($stmt, @bind) = $id ?
-        $sql->update($bare_table, \%db_data, { id => $id }) :
-        $sql->insert($bare_table, { %db_data, id => ($id = new_id) });
+        $sql->update($bare_table, $db_data, { id => $id }) :
+        $sql->insert($bare_table, { %$db_data, id => ($id = new_id) });
     warn "$stmt\n@bind" if $self->{debug} || $opts{debug};
     $dbh->do($stmt, undef, @bind);
     if ($opts{commit}) {
