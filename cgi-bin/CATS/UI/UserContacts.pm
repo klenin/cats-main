@@ -26,6 +26,14 @@ sub _check_contact_owner {
     1;
 }
 
+sub _is_profile { $user->{id} && $user->{id} == $_[0]->{uid} }
+
+sub _user_name_and_site {
+    my ($p) = @_;
+    my ($user_name, $user_site) = _is_profile($p) ? ($user->{name}, $user->{site_id}) :
+        @{CATS::User->new->contest_fields([ 'site_id' ])->load($p->{uid}) // {}}{qw(team_name site_id)};
+}
+
 our $user_contact_form = CATS::Form1->new(
     table => 'contacts',
     fields => [
@@ -42,10 +50,12 @@ our $user_contact_form = CATS::Form1->new(
     msg_saved => 1071,
     msg_deleted => 1072,
     before_display => sub {
-        my ($fd) = @_;
+        my ($fd, $p) = @_;
         $fd->{contact_types} = $dbh->selectall_arrayref(q~
             SELECT id AS "value", name AS "text" FROM contact_types ORDER BY name~, { Slice => {} });
         unshift @{$fd->{contact_types}}, {};
+        my (undef, $user_site) = _user_name_and_site($p);
+        $t->param(CATS::User::submenu('user_contacts', $p->{uid}, $user_site));
     },
     validators => [ \&_check_contact_owner ],
 );
@@ -53,8 +63,7 @@ our $user_contact_form = CATS::Form1->new(
 sub user_contacts_edit_frame {
     my ($p) = @_;
     init_template($p, 'user_contacts_edit.html.tt');
-    my $is_profile = $user->{id} && $user->{id} == $p->{uid};
-    $is_root || $is_profile or return;
+    $is_root || _is_profile($p) or return;
     my @puid = (uid => $p->{uid});
     $user_contact_form->edit_frame($p,
         redirect => [ 'user_contacts', @puid ], href_action_params => \@puid);
@@ -66,24 +75,23 @@ sub user_contacts_frame {
     init_template($p, 'user_contacts.html.tt');
     $p->{uid} or return;
 
-    my $is_profile = $user->{id} && $user->{id} == $p->{uid};
-    $user_contact_form->delete_or_saved($p) if $is_root || $is_profile;
+    my $editable = $is_root || _is_profile($p);
+    $user_contact_form->delete_or_saved($p) if $editable;
 
     init_template($p, 'user_contacts.html.tt');
     my $lv = CATS::ListView->new(web => $p, name => 'user_contacts');
-    my ($user_name, $user_site) = $is_profile ? ($user->{name}, $user->{site_id}) :
-        @{CATS::User->new->contest_fields([ 'site_id' ])->load($p->{uid}) // {}}{qw(team_name site_id)};
+    my ($user_name, $user_site) = _user_name_and_site($p);
     $user_name or return;
 
     $lv->define_columns(url_f('user_contacts'), 0, 0, [
         { caption => res_str(642), order_by => 'type_name', width => '20%' },
         { caption => res_str(657), order_by => 'handle', width => '30%' },
-        ($is_root || $is_profile ?
+        ($editable ?
             ({ caption => res_str(669), order_by => 'is_public', width => '15%', col => 'Ip' }) : ()),
         { caption => res_str(670), order_by => 'is_actual', width => '15%', col => 'Ia' },
     ]);
     $lv->define_db_searches($user_contact_form->{sql_fields});
-    my $public_cond = $is_root || $is_profile ? '' : ' AND C.is_public = 1';
+    my $public_cond = $editable ? '' : ' AND C.is_public = 1';
     my $sth = $dbh->prepare(qq~
         SELECT C.id, C.contact_type_id, C.handle, C.is_public, C.is_actual, CT.name AS type_name, CT.url
         FROM contacts C
@@ -94,7 +102,7 @@ sub user_contacts_frame {
     my $fetch_record = sub {
         my $row = $_[0]->fetchrow_hashref or return ();
         (
-            ($is_root || $is_profile ? (
+            ($editable ? (
                 href_edit => url_f('user_contacts_edit', id => $row->{id}, uid => $p->{uid}),
                 href_delete => url_f('user_contacts', 'delete' => $row->{id}, uid => $p->{uid})) : ()),
             %$row,
