@@ -531,4 +531,33 @@ sub copy_from_contest {
     msg(1097, $already) if $already;
 }
 
+sub submenu {
+    my ($selected, $user_id, $site_id) = @_;
+    $site_id //= 0;
+    my $is_profile = $uid && $uid == $user_id;
+    my @m = (
+        (($is_root || $is_profile) && $selected eq 'user_contacts' ? (
+            { href => url_f('user_contacts_edit', uid => $user_id), item => res_str(587), selected => '' }
+        ) : ()),
+        (
+            $is_jury ?
+                ({ href => url_f('users_edit', uid => $user_id), item => res_str(573), selected => 'edit' }) :
+            $is_profile ?
+                ({ href => url_f('profile'), item => res_str(518), selected => 'profile' }) :
+                ()
+        ),
+        { href => url_f('user_stats', uid => $user_id), item => res_str(574), selected => 'user_stats' },
+        (!$is_root ? () : (
+            { href => url_f('user_settings', uid => $user_id), item => res_str(575), selected => 'user_settings' },
+        )),
+        { href => url_f('user_contacts', uid => $user_id), item => res_str(586), selected => 'user_contacts' },
+        ($is_jury || $user->{is_site_org} && (!$user->{site_id} || $user->{site_id} == $site_id) ? (
+            { href => url_f('user_vdiff', uid => $user_id), item => res_str(580), selected => 'user_vdiff' },
+            { href => url_f('user_ip', uid => $user_id), item => res_str(576), selected => 'user_ip' },
+        ) : ()),
+    );
+    $_->{selected} = $_->{selected} eq $selected for @m;
+    (submenu => \@m);
+}
+
 1;

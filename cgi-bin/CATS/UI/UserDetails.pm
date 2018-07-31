@@ -19,35 +19,6 @@ use CATS::Time;
 use CATS::User;
 use CATS::Utils qw(url_function);
 
-sub user_submenu {
-    my ($selected, $user_id, $site_id) = @_;
-    $site_id //= 0;
-    my $is_profile = $uid && $uid == $user_id;
-    my @m = (
-        (($is_root || $is_profile) && $selected eq 'user_contacts' ? (
-            { href => url_f('user_contacts_edit', uid => $user_id), item => res_str(587), selected => '' }
-        ) : ()),
-        (
-            $is_jury ?
-                ({ href => url_f('users_edit', uid => $user_id), item => res_str(573), selected => 'edit' }) :
-            $is_profile ?
-                ({ href => url_f('profile'), item => res_str(518), selected => 'profile' }) :
-                ()
-        ),
-        { href => url_f('user_stats', uid => $user_id), item => res_str(574), selected => 'user_stats' },
-        (!$is_root ? () : (
-            { href => url_f('user_settings', uid => $user_id), item => res_str(575), selected => 'user_settings' },
-        )),
-        { href => url_f('user_contacts', uid => $user_id), item => res_str(586), selected => 'user_contacts' },
-        ($is_jury || $user->{is_site_org} && (!$user->{site_id} || $user->{site_id} == $site_id) ? (
-            { href => url_f('user_vdiff', uid => $user_id), item => res_str(580), selected => 'user_vdiff' },
-            { href => url_f('user_ip', uid => $user_id), item => res_str(576), selected => 'user_ip' },
-        ) : ()),
-    );
-    $_->{selected} = $_->{selected} eq $selected for @m;
-    (submenu => \@m);
-}
-
 sub users_new_frame {
     my ($p) = @_;
 
@@ -70,7 +41,7 @@ sub users_edit_frame {
     my $u = CATS::User->new->contest_fields([ 'site_id' ])->load($p->{uid}, [ qw(locked settings srole) ])
         or return;
     $t->param(
-        user_submenu('edit', $p->{uid}, $u->{site_id}),
+        CATS::User::submenu('edit', $p->{uid}, $u->{site_id}),
         title_suffix => $u->{team_name},
         %$u, privs => CATS::Privileges::unpack_privs($u->{srole}),
         id => $p->{uid},
@@ -132,7 +103,7 @@ sub user_stats_frame {
             show_results => 1, rows => 30, search => "contest_id=$_->{id}");
     }
     $t->param(
-        user_submenu('user_stats', $p->{uid}, $u->{site_id}),
+        CATS::User::submenu('user_stats', $p->{uid}, $u->{site_id}),
         %$u, contests => $contests,
         CATS::IP::linkify_ip($u->{last_ip}),
         ($is_jury ? (href_edit => url_f('users_edit', uid => $p->{uid})) : ()),
@@ -177,7 +148,7 @@ sub user_settings_frame {
         WHERE CA.account_id = ? AND CA.contest_id = ?~, undef,
         $p->{uid}, $cid);
     $t->param(
-        user_submenu('user_settings', $p->{uid}, $site_id),
+        CATS::User::submenu('user_settings', $p->{uid}, $site_id),
         team_name => $team_name,
         title_suffix => $team_name,
     );
@@ -203,7 +174,7 @@ sub user_ip_frame {
         $e->{$_} = $linkified{$_} for keys %linkified;
     }
     $t->param(
-        user_submenu('user_ip', $p->{uid}, $u->{site_id}),
+        CATS::User::submenu('user_ip', $p->{uid}, $u->{site_id}),
         %$u,
         events => $events,
         title_suffix => $u->{team_name},
@@ -280,112 +251,13 @@ sub user_vdiff_frame {
     }
 
     $t->param(
-        user_submenu('user_vdiff', $p->{uid}, $u->{site_id}),
+        CATS::User::submenu('user_vdiff', $p->{uid}, $u->{site_id}),
         u => $u,
         (map { +"formatted_$_" => CATS::Time::format_diff($u->{$_}, display_plus => 1) }
             qw(diff_time site_diff_time ext_time site_ext_time since_start since_finish) ),
         can_finish_now => can_finish_now($u),
         title_suffix => $u->{team_name},
         href_site => url_f('contest_sites_edit', site_id => $u->{site_id}),
-    );
-}
-
-sub _check_contact_owner {
-    my ($fd, $p) = @_;
-    my $aid = $fd->{indexed}->{account_id};
-    if ($is_root || !$fd->{id}) {
-        $aid->{value} = $p->{uid};
-    }
-    else {
-        my ($old_uid) = $dbh->selectrow_array(q~
-            SELECT account_id FROM contacts WHERE id = ?~, undef,
-            $fd->{id});
-        $old_uid == $uid or return CATS::Messages::msg_debug('Bad account');
-        $aid->{value} = $uid;
-    }
-    1;
-}
-
-our $user_contact_form = CATS::Form1->new(
-    table => 'contacts',
-    fields => [
-        [ name => 'account_id' ],
-        [ name => 'contact_type_id',
-            validators => [ CATS::Field::int_range(min => 0, max => 1000000000) ], caption => 642 ],
-        [ name => 'handle', validators => [ CATS::Field::str_length(1, 200) ], caption => 657 ],
-        [ name => 'is_public', validators => [ qr/^1?$/ ], caption => 669 ],
-        [ name => 'is_actual', validators => [ qr/^1?$/ ], caption => 670 ],
-    ],
-    href_action => 'user_contacts_edit',
-    descr_field => 'handle',
-    template_var => 'uc',
-    msg_saved => 1071,
-    msg_deleted => 1072,
-    before_display => sub {
-        my ($fd) = @_;
-        $fd->{contact_types} = $dbh->selectall_arrayref(q~
-            SELECT id AS "value", name AS "text" FROM contact_types ORDER BY name~, { Slice => {} });
-        unshift @{$fd->{contact_types}}, {};
-    },
-    validators => [ \&_check_contact_owner ],
-);
-
-sub user_contacts_edit_frame {
-    my ($p) = @_;
-    init_template($p, 'user_contacts_edit.html.tt');
-    my $is_profile = $uid && $uid == $p->{uid};
-    $is_root || $is_profile or return;
-    my @puid = (uid => $p->{uid});
-    $user_contact_form->edit_frame($p,
-        redirect => [ 'user_contacts', @puid ], href_action_params => \@puid);
-}
-
-sub user_contacts_frame {
-    my ($p) = @_;
-
-    init_template($p, 'user_contacts.html.tt');
-    $p->{uid} or return;
-
-    my $is_profile = $uid && $uid == $p->{uid};
-    $user_contact_form->delete_or_saved($p) if $is_root || $is_profile;
-
-    init_template($p, 'user_contacts.html.tt');
-    my $lv = CATS::ListView->new(web => $p, name => 'user_contacts');
-    my ($user_name, $user_site) = $is_profile ? ($user->{name}, $user->{site_id}) :
-        @{CATS::User->new->contest_fields([ 'site_id' ])->load($p->{uid}) // {}}{qw(team_name site_id)};
-    $user_name or return;
-
-    $lv->define_columns(url_f('user_contacts'), 0, 0, [
-        { caption => res_str(642), order_by => 'type_name', width => '20%' },
-        { caption => res_str(657), order_by => 'handle', width => '30%' },
-        ($is_root || $is_profile ?
-            ({ caption => res_str(669), order_by => 'is_public', width => '15%', col => 'Ip' }) : ()),
-        { caption => res_str(670), order_by => 'is_actual', width => '15%', col => 'Ia' },
-    ]);
-    $lv->define_db_searches($user_contact_form->{sql_fields});
-    my $public_cond = $is_root || $is_profile ? '' : ' AND C.is_public = 1';
-    my $sth = $dbh->prepare(qq~
-        SELECT C.id, C.contact_type_id, C.handle, C.is_public, C.is_actual, CT.name AS type_name, CT.url
-        FROM contacts C
-        INNER JOIN contact_types CT ON CT.id = C.contact_type_id
-        WHERE C.account_id = ?$public_cond~ . $lv->maybe_where_cond . $lv->order_by);
-    $sth->execute($p->{uid}, $lv->where_params);
-
-    my $fetch_record = sub {
-        my $row = $_[0]->fetchrow_hashref or return ();
-        (
-            ($is_root || $is_profile ? (
-                href_edit => url_f('user_contacts_edit', id => $row->{id}, uid => $p->{uid}),
-                href_delete => url_f('user_contacts', 'delete' => $row->{id}, uid => $p->{uid})) : ()),
-            %$row,
-            ($row->{url} ? (href_contact => sprintf $row->{url}, CATS::Utils::escape_url($row->{handle})) : ()),
-        );
-    };
-    $lv->attach(url_f('user_contacts'), $fetch_record, $sth, { page_params => { uid => $p->{uid} } });
-    $t->param(
-        user_submenu('user_contacts', $p->{uid}, $user_site),
-        title_suffix => res_str(586),
-        problem_title => $user_name,
     );
 }
 
@@ -423,7 +295,7 @@ sub profile_frame {
         WHERE C.account_id = ? AND C.contact_type_id = ? AND C.is_public = 1~, undef,
         $uid, $CATS::Globals::contact_email);
     $t->param(
-        user_submenu('profile', $uid, $user->{site_id}),
+        CATS::User::submenu('profile', $uid, $user->{site_id}),
         countries => \@CATS::Countries::countries,
         href_action => url_f('users'),
         title_suffix => res_str(518),
