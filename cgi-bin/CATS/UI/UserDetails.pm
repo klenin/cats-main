@@ -326,7 +326,6 @@ our $user_contact_form = CATS::Form1->new(
         $fd->{contact_types} = $dbh->selectall_arrayref(q~
             SELECT id AS "value", name AS "text" FROM contact_types ORDER BY name~, { Slice => {} });
         unshift @{$fd->{contact_types}}, {};
-        $fd->{account_id}->{value}
     },
     validators => [ \&_check_contact_owner ],
 );

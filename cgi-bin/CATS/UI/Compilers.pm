@@ -19,6 +19,10 @@ sub invert { !$_[0] }
 my $str1_200 = CATS::Field::str_length(1, 200);
 my $str0_200 = CATS::Field::str_length(0, 200);
 
+sub _submenu {
+    $t->param(submenu => [ CATS::References::menu('compilers') ]) if $is_jury;
+}
+
 our $form = CATS::Form1->new(
     table => 'default_de',
     fields => [
@@ -39,6 +43,7 @@ our $form = CATS::Form1->new(
     template_var => 'cp',
     msg_deleted => 1064,
     msg_saved => 1065,
+    before_display => \&_submenu,
 );
 
 sub compilers_edit_frame {
@@ -87,9 +92,7 @@ sub compilers_frame {
         );
     };
     $lv->attach(url_f('compilers'), $fetch_record, $c);
-
-    $t->param(submenu => [ CATS::References::menu('compilers') ])
-        if $is_jury;
+    _submenu;
 }
 
 1;

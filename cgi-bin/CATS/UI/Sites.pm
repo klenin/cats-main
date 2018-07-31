@@ -46,7 +46,7 @@ our $form = CATS::Form1->new(
             INNER JOIN contest_sites CS ON CS.contest_id = C.id AND CS.site_id = ?
             ORDER BY C.start_date DESC ROWS 50~, { Slice => {} },
             $fd->{id}) : [];
-        warn @{$fd->{contests}};
+        $t->param(submenu => [ CATS::References::menu('sites') ]);
     },
 );
 
@@ -119,8 +119,7 @@ sub sites_frame {
     };
     $lv->attach(url_f('sites'), $fetch_record, $c);
 
-    $t->param(submenu => [ CATS::References::menu('sites') ], editable => $is_root)
-        if $is_jury;
+    $t->param(submenu => [ CATS::References::menu('sites') ], editable => $user->privs->{edit_sites});
 }
 
 sub contest_sites_edit_save {

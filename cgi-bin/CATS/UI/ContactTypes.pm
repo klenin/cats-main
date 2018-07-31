@@ -16,6 +16,8 @@ use CATS::References;
 
 my $str1_200 = CATS::Field::str_length(1, 200);
 
+sub _submenu { $t->param(submenu => [ CATS::References::menu('contact_types') ]); }
+
 our $form = CATS::Form1->new(
     table => 'contact_types',
     fields => [
@@ -28,6 +30,7 @@ our $form = CATS::Form1->new(
     template_var => 'ct',
     msg_deleted => 1069,
     msg_saved => 1070,
+    before_display => \&_submenu,
 );
 
 sub contact_types_edit_frame {
@@ -64,8 +67,7 @@ sub contact_types_frame {
         );
     };
     $lv->attach(url_f('contact_types'), $fetch_record, $c);
-
-    $t->param(submenu => [ CATS::References::menu('contact_types') ]);
+    _submenu;
 }
 
 1;

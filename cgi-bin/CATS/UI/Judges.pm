@@ -16,6 +16,8 @@ use CATS::Messages qw(msg res_str);
 use CATS::Output qw(init_template url_f);
 use CATS::References;
 
+sub _submenu { $t->param(submenu => [ CATS::References::menu('judges') ]); }
+
 our $form = CATS::Form1->new(
     table => 'judges J',
     fields => [
@@ -48,7 +50,7 @@ our $form = CATS::Form1->new(
             $fd->{href_contests} = url_f('contests', search => "has_user($aid)");
         }
         $fd->{extra_fields}->{account_name} = $p->{account_name} if $p->{account_name};
-        $t->param(submenu => [ CATS::References::menu('judges') ]);
+        _submenu;
     },
     validators => [ sub {
         my ($fd, $p) = @_;
@@ -157,7 +159,8 @@ sub judges_frame {
 
     $lv->attach(url_f('judges'), $fetch_record, $c);
 
-    $t->param(submenu => [ CATS::References::menu('judges') ], editable => $is_root);
+    _submenu;
+    $t->param(editable => $is_root);
 
     my ($not_processed) = $dbh->selectrow_array(q~
         SELECT COUNT(*) FROM reqs WHERE state = ? AND judge_id IS NULL~, undef,

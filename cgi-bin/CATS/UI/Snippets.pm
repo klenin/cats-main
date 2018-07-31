@@ -25,6 +25,8 @@ sub _validate_unique_snippet {
     !$snippet_id || $snippet_id == ($fd->{id} // 0) or msg(1077, $sn->{name}->{value});
 }
 
+sub _submenu { $t->param(submenu => [ CATS::References::menu('snippets') ] ) }
+
 our $form = CATS::Form1->new(
     table => 'snippets',
     fields => [
@@ -54,6 +56,7 @@ our $form = CATS::Form1->new(
             WHERE CA.contest_id = ?
             ORDER BY A.team_name~, { Slice => {} },
             $cid);
+        _submenu;
     },
 );
 
@@ -204,9 +207,7 @@ sub snippets_frame {
 
     $sth->finish;
 
-    $t->param(
-        submenu => [ CATS::References::menu('snippets') ],
-    );
+    _submenu;
 }
 
 1;

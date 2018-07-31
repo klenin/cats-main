@@ -25,6 +25,7 @@ our $form = CATS::Form1->new(
     template_var => 'kw',
     msg_saved => 1174,
     msg_deleted => 1175,
+    before_display => sub { $t->param(submenu => [ CATS::References::menu('keywords') ]) },
 );
 
 sub keywords_edit_frame {
