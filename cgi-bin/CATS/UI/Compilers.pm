@@ -23,7 +23,7 @@ sub _submenu {
     $t->param(submenu => [ CATS::References::menu('compilers') ]) if $is_jury;
 }
 
-our $form = CATS::Form1->new(
+our $form = CATS::Form->new(
     table => 'default_de',
     fields => [
         [ name => 'code', validators => [ $str1_200 ], caption => 619, ],

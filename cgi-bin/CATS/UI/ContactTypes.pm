@@ -18,7 +18,7 @@ my $str1_200 = CATS::Field::str_length(1, 200);
 
 sub _submenu { $t->param(submenu => [ CATS::References::menu('contact_types') ]); }
 
-our $form = CATS::Form1->new(
+our $form = CATS::Form->new(
     table => 'contact_types',
     fields => [
         [ name => 'name', validators => [ CATS::Field::str_length(1, 200) ], caption => 601, ],

@@ -21,7 +21,7 @@ my $person_phone_sql = qq~
     COALESCE((SELECT LIST(' ' || C.handle) FROM contacts C
         WHERE C.account_id = A.id AND C.contact_type_id = $CATS::Globals::contact_phone AND C.is_actual = 1), '')~;
 
-our $form = CATS::Form1->new(
+our $form = CATS::Form->new(
     table => 'sites',
     fields => [
         [ name => 'name', validators => [ $str1_200 ], caption => 601, ],

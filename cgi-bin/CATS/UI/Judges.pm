@@ -18,7 +18,7 @@ use CATS::References;
 
 sub _submenu { $t->param(submenu => [ CATS::References::menu('judges') ]); }
 
-our $form = CATS::Form1->new(
+our $form = CATS::Form->new(
     table => 'judges J',
     fields => [
         [ name => 'name', db_name => 'nick', validators => [ CATS::Field::str_length(1, 20) ], caption => 625 ],

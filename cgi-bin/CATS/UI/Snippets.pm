@@ -27,7 +27,7 @@ sub _validate_unique_snippet {
 
 sub _submenu { $t->param(submenu => [ CATS::References::menu('snippets') ] ) }
 
-our $form = CATS::Form1->new(
+our $form = CATS::Form->new(
     table => 'snippets',
     fields => [
         [ name => 'account_id', validators => [ $int ], caption => 608, ],

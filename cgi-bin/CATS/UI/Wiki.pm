@@ -23,7 +23,7 @@ BEGIN {
 }
 
 my $str1_200 = CATS::Field::str_length(1, 200);
-our $page_form = CATS::Form1->new(
+our $page_form = CATS::Form->new(
     table => 'wiki_pages',
     fields => [
         [ name => 'name', validators => [ $str1_200 ], caption => 601, ],
@@ -86,7 +86,7 @@ sub wiki_pages_frame {
 
 my $int = CATS::Field::int_range(min => 0, max => 1000000000);
 
-our $text_form = CATS::Form1->new(
+our $text_form = CATS::Form->new(
     table => 'wiki_texts',
     fields => [
         [ name => 'wiki_id', validators => [ $int ], ],

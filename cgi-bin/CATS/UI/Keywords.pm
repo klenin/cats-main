@@ -13,7 +13,7 @@ use CATS::References;
 
 my @field_common = (validators => [ CATS::Field::str_length(1, 200) ], editor => { size => 50 });
 
-our $form = CATS::Form1->new(
+our $form = CATS::Form->new(
     table => 'keywords',
     fields => [
         [ name => 'code', @field_common, caption => 625 ],

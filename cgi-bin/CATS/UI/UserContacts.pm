@@ -34,7 +34,7 @@ sub _user_name_and_site {
         @{CATS::User->new->contest_fields([ 'site_id' ])->load($p->{uid}) // {}}{qw(team_name site_id)};
 }
 
-our $user_contact_form = CATS::Form1->new(
+our $user_contact_form = CATS::Form->new(
     table => 'contacts',
     fields => [
         [ name => 'account_id' ],
