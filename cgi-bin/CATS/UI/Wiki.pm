@@ -14,12 +14,20 @@ use CATS::Messages qw(msg res_str);
 use CATS::Output qw(init_template url_f);
 use CATS::References;
 use CATS::Settings;
+use CATS::TeX::Lite;
 
 my $markdown;
 BEGIN {
     $markdown = eval { require Text::MultiMarkdown; } ?
         sub { Text::MultiMarkdown::markdown($_[0]) } :
         sub { $_[0] }
+}
+
+sub _prepare_text {
+    my ($text) = @_;
+    $text = $markdown->($text);
+    CATS::TeX::Lite::convert_all($text);
+    $text;
 }
 
 my $str1_200 = CATS::Field::str_length(1, 200);
@@ -122,7 +130,7 @@ our $text_form = CATS::Form->new(
         $wt->{last_modified}->{value} ||= $form_data->{id} && $dbh->selectrow_array(q~
             SELECT last_modified FROM wiki_texts WHERE id = ?~, undef,
             $form_data->{id});
-        $form_data->{markdown} = $markdown->($wt->{text}->{value});
+        $form_data->{markdown} = _prepare_text($wt->{text}->{value});
         $t->param(
             title_suffix => $pn,
             problem_title => $pn,
@@ -176,7 +184,7 @@ sub wiki_frame {
         SELECT title, text FROM wiki_texts WHERE id = ?~, undef,
         $chosen_lang->{id});
     $page->{name} = $p->{name};
-    $page->{markdown} = $markdown->($page->{text});
+    $page->{markdown} = _prepare_text($page->{text});
     delete $contest->{title};
     $t->param(
         page => $page,
