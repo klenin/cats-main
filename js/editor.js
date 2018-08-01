@@ -15,6 +15,9 @@ $(document).ready(function () {
     var resizable = $(editorContainer.parent());
     resizable.wrap('<div class="container"></div>');
 
+    resizable.css('width', textarea.width());
+    resizable.css('height', textarea.height());
+
     var widthResize = $('<div class="resizable-line resizable-right-line"></div>');
     var heightResize = $('<div class="resizable-line resizable-bottom-line"></div>');
     resizable.append(heightResize).append(widthResize);
@@ -30,8 +33,6 @@ $(document).ready(function () {
       fontSize: '14px',
     });
 
-    var resizableContainer = $('.container');
-    
     textarea.closest('form').submit(function() {
       textarea.val(editor.getSession().getValue());
       this.np.value = navigator.plugins.length;
@@ -45,7 +46,7 @@ $(document).ready(function () {
       doc.mousemove(function(e) {
         var value = widthOrHeight == 'width' ? e.pageX : e.pageY - top_offset;
         editorContainer.css(widthOrHeight, value);
-        resizableContainer.css(widthOrHeight, value);
+        resizable.css(widthOrHeight, value);
         if (e.pageY + 40 > doc.height()) {
             doc.scrollTop(doc.scrollTop() + 10);
         }
