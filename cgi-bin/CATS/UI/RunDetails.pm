@@ -11,7 +11,7 @@ use CATS::BinaryFile;
 use CATS::Constants;
 use CATS::DB;
 use CATS::DevEnv;
-use CATS::Globals qw($is_jury $is_root $sid $cid $t $uid);
+use CATS::Globals qw($cid $contest $is_jury $is_root $sid $t $uid $user);
 use CATS::IP;
 use CATS::JudgeDB;
 use CATS::Messages qw(msg res_str);
@@ -317,10 +317,26 @@ sub view_source_frame {
     my $sources_info = get_sources_info($p, request_id => $p->{rid}, get_source => 1, encode_source => 1);
     $sources_info or return;
 
+    msg(1014) if $p->{submitted};
+
+    if ($p->{submit}) {
+        $p->{problem_id} = $dbh->selectrow_array(q~
+            SELECT problem_id FROM reqs WHERE id = ?~, 
+            undef, $p->{rid});
+        $p->{de_id} = $sources_info->{de_id};
+        if ($p->{source}) {
+            $p->{source_text} = '';
+        }
+        my $rid = CATS::Problem::Submit::problems_submit($p);
+        if ($rid) {
+            return $p->redirect(url_f 'view_source', rid => $rid, sid => $sid, submitted => 1);
+        }
+    }
+
     if ($sources_info->{is_jury} && $p->{replace}) {
         my $u;
-        if ($p->{replace_file}) {
-            $u->{src} = $p->{replace_file}->content or die;
+        if ($p->{source}) {
+            $u->{src} = $p->{source}->content or die;
             $u->{hash} = CATS::Utils::source_hash($u->{src});
         }
         my $de_bitmap;
@@ -361,7 +377,11 @@ sub view_source_frame {
         $sources_info->{compiler_output} = _get_compilation_error($logs, $st)
     }
 
-    if ($sources_info->{is_jury}) {
+    my $can_submit = $is_jury ||
+            $user->{is_participant} &&
+            ($user->{is_virtual} || !$contest->has_finished($user->{diff_time} + $user->{ext_time}));
+
+    if ($sources_info->{is_jury} || $can_submit) {
         my $de_list = CATS::DevEnv->new(CATS::JudgeDB::get_DEs({ active_only => 1 }));
         if ($p->{de_id}) {
             $sources_info->{de_id} = $p->{de_id};
@@ -375,7 +395,10 @@ sub view_source_frame {
             }, @{$de_list->des}
         ]);
     }
-    $t->param(source_width => $settings->{source_width} // 90);
+    $t->param(
+        source_width => $settings->{source_width} // 90,
+        can_submit => $can_submit,
+    );
 }
 
 sub download_source_frame {

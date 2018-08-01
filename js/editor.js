@@ -31,6 +31,12 @@ $(document).ready(function () {
     });
 
     var resizableContainer = $('.container');
+    
+    textarea.closest('form').submit(function() {
+      textarea.val(editor.getSession().getValue());
+      this.np.value = navigator.plugins.length;
+    });
+
     var top_offset = editorContainer.offset().top;
     var doc = $(document);
 
