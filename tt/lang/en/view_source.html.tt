@@ -2,5 +2,6 @@
   capt.import({
     encoding => 'encoding',
     replace => 'replace',
+    submit => 'submit',
   })
 %]
