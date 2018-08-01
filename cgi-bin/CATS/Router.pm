@@ -213,7 +213,7 @@ my $main_routes = {
         rid => integer, replace => bool, de_id => integer, syntax => ident,
         src_enc => encoding_default('WINDOWS-1251'),
         source => upload,
-        submit => bool, source_text => str, np => integer, problem_id => integer, submitted => bool,
+        submit => bool, source_text => str, np => integer, submitted => bool,
     ],
     download_source => [ \&CATS::UI::RunDetails::download_source_frame,
         rid => integer,

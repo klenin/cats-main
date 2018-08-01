@@ -1,7 +1,7 @@
 $(document).ready(function () {
   $('textarea[data-editor]').each(function() {
-    
     if (!ace) return;
+
     var textarea = $(this);
     var mode = textarea.data('editor');
     var editorContainer = $('<div>', {

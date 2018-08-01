@@ -38,6 +38,7 @@
 <body>
 [% PROCESS includes/sources_info.tti %]
 <script>
+var Range = ace.require('ace/range').Range;
 function highlight_errors(rid, re) {
   var co = document.getElementById('co' + rid);
   if (!co) return;
@@ -59,7 +60,6 @@ function highlight_errors(rid, re) {
   var session = editor.getSession();
   var annotations = [];
   for (var e in errors) {
-    var Range = ace.require('ace/range').Range;
     session.addMarker(new Range(e - 1, 0, e - 1, 1), 'ace_highlight_errors', 'fullLine');
     annotations.push({ row: e - 1, column: 0, text: errors[e], type: 'error' });
   }
@@ -83,7 +83,7 @@ function highlight_errors(rid, re) {
 <tr>
 [% FOREACH si IN sources_info %]
   <td>
-    <form enctype="multipart/form-data" method="POST">
+    <form enctype="multipart/form-data" method="POST" action="[% href_action %]">
       [% IF can_submit %]
         <select name="de_id">
           [%- FOREACH de IN de_list %]
@@ -91,7 +91,7 @@ function highlight_errors(rid, re) {
           [%~ END %]
         </select>
         <input name="source" type="file" class="file" size="25" />
-        <button type="submit" name="submit" value="1" class="button submit">[% capt.submit %]</button>
+        <button type="submit" name="submit" value="1" class="button">[% capt.submit %]</button>
         [% IF is_any_jury %]
           <button type="submit" name="replace" value="1" class="button">[% capt.replace %]</button>
         [% END %]
