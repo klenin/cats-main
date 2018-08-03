@@ -113,7 +113,8 @@ for(var i = 0; i < rank_table.length; ++i) {
   td(r.tp);
   [% ELSE %]
   for (var j = 0; j < r.tm.length; ++j) {
-    var cls = r.td[j].substr(0, 1) === '+' ? 'ok' : 'fail';
+    var fc = r.td[j].substr(0, 1);
+    var cls = fc  === '+' ? 'ok' : fc  === '-' ? 'fail' : fc  === '?' ? 'unproc' : '';
     td(href(url_problem(j) + ';uf=' + r.id, '<p>' + r.tm[j] + '</p>' + r.td[j]), 'class="' + cls + '"');
   }
   td(r.ts); td(r.ttm);

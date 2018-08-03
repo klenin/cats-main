@@ -368,6 +368,7 @@ table.rank_table .col_defs a { display: block; width: 100%; height: 100%; }
 table.rank_table .rank_row td { text-align: center; vertical-align: bottom; }
 table.rank_table .rank_row td.ok { font-weight: bold; color: green; }
 table.rank_table .rank_row td.fail { color: red; }
+table.rank_table .rank_row td.unproc { color: blue; }
 table.rank_table .rank_row td:first-child { text-align: right; }
 table.rank_table .rank_row td:first-child + td { text-align: left; }
 table.rank_table .rank_row td a, table.rank_table .stats a { color: inherit; }

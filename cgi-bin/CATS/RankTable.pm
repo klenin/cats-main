@@ -218,6 +218,20 @@ sub get_results {
             ($self->{has_competitive} ? 2 : 1));
 }
 
+sub get_unprocessed {
+    my ($self) = @_;
+    $uid or return {};
+    my $u = $dbh->selectall_arrayref(_u $sql->select(
+        'reqs', [ 'account_id', 'problem_id' ], {
+            contest_id => $self->{clist},
+            state => { '<', $cats::request_processed },
+            ($is_jury ? () : (account_id => $uid)) }
+    ));
+    my $unprocessed = {};
+    $unprocessed->{$_->{account_id}}->{$_->{problem_id}} = 1 for @$u;
+    $unprocessed;
+}
+
 sub get_partial_points {
     my ($req_row, $test_max_points) = @_;
     my $p = ($req_row->{checker_comment} // '') =~ /^(\d+)/ ? min($1, $test_max_points || $1) : 0;
@@ -337,7 +351,7 @@ sub parse_params {
 }
 
 sub prepare_ranks {
-    (my CATS::RankTable $self, my $teams) = @_;
+    (my CATS::RankTable $self, my $teams, my $unprocessed) = @_;
 
     my @rank = values %$teams;
 
@@ -380,10 +394,14 @@ sub prepare_ranks {
     for my $team (@rank) {
         my @columns = ();
 
+        my $u = $unprocessed->{$team->{account_id}};
         for (@{$self->{problems}}) {
             my $p = $team->{problems}->{$_->{problem_id}};
 
-            my $c = $p->{solved} ? '+' . ($p->{runs} - 1 || '') : -$p->{runs} || '.';
+            my $c =
+                $p->{solved} ? '+' . ($p->{runs} - 1 || '') :
+                $u->{$_->{problem_id}} ? '?' . ($p->{runs} || '') :
+                -$p->{runs} || '.';
 
             push @columns, {
                 td => $c, 'time' => ($p->{time_hm} || ''),
@@ -519,6 +537,7 @@ sub rank_table {
     }
 
     my $results = $self->get_results($virtual_cond . $ooc_cond, $max_cached_req_id);
+    my $unprocessed = $self->get_unprocessed;
     my $max_req_id = 0;
     for (@$results) {
         my $id = $_->{ref_id} || $_->{id};
@@ -574,7 +593,7 @@ sub rank_table {
         Storable::lock_store({ t => $teams, p => $problem_stats, r => $max_req_id }, $cache_file);
     }
 
-    my ($row_num, $row_color) = $self->prepare_ranks($teams);
+    my ($row_num, $row_color) = $self->prepare_ranks($teams, $unprocessed);
     # Calculate stats.
     @$_{qw(total_runs total_accepted total_points)} = (0, 0, 0) for values %$problem_stats;
     for my $t (@{$self->{rank}}) {
