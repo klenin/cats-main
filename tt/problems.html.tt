@@ -10,6 +10,7 @@
   input[type=color] { width: 1.5em; padding: 0; margin: 0; border: 0; background-color: inherit; }
 </style>
 [%- END %]
+[% PROCESS includes/ace.tti %]
 [% PROCESS includes/menu_begin.tti %]
 [%- PROCESS includes/html.tti -%]
 [%- PROCESS "lang/$lang/verdicts.tti" -%]
@@ -178,7 +179,8 @@ function chg_code(st_sel, pid) {
     </select>
   </p>
   <p><label for="source_text">[% capt.solution_text %]:</label><br/>
-  <textarea id="source_text" name="source_text" cols="50" rows="5"></textarea></p>
+  <textarea id="source_text" name="source_text" cols="50" rows="5"
+        data-editor="plain_text" data-gutter="1"></textarea></p>
   <button type="submit" name="submit" onclick="document.problems_form.np.value = navigator.plugins.length; return true;" value="1" class="button">
     [%~ capt.submit ~%]
   </button>
