@@ -9,17 +9,16 @@ $(document).ready(function () {
       width: textarea.width(),
       height: textarea.height(),
       'class': 'bordered',
-    }).css({position: 'relative'}).insertBefore(textarea);
+    }).insertBefore(textarea);
 
     editorContainer.wrap('<div class="resizable"></div>');
     var resizable = $(editorContainer.parent());
-    resizable.wrap('<div class="container"></div>');
 
     resizable.css('width', textarea.width());
     resizable.css('height', textarea.height());
 
-    var widthResize = $('<div class="resizable-line resizable-right-line"></div>');
-    var heightResize = $('<div class="resizable-line resizable-bottom-line"></div>');
+    var widthResize = $('<div class="resizable_line resizable_right_line"></div>');
+    var heightResize = $('<div class="resizable_line resizable_bottom_line"></div>');
     resizable.append(heightResize).append(widthResize);
 
     textarea.hide();
@@ -57,6 +56,7 @@ $(document).ready(function () {
         $('body').css({cursor: ''});
         var value = widthOrHeight == 'width' ? e.pageX : e.pageY - top_offset;
         editorContainer.css(widthOrHeight, value);
+        resizable.css(widthOrHeight, value);
         editor.resize();
       });
     };
