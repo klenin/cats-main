@@ -3,6 +3,7 @@
   table.wiki_edit tr td { vertical-align: top; padding-right: 1em; }
 </style>
 [% END -%]
+[% PROCESS includes/ace.tti %]
 [% PROCESS includes/menu_begin.tti %]
 [% PROCESS includes/html_input.tti %]
 
@@ -14,7 +15,9 @@
   [% wt.indexed.title.caption %]:<br>
   <input type="text" name="title" value="[% wt.indexed.title.value | html %]" size="80" class="bordered"/>
   [% maybe_err(wt.indexed.title) %]<br>
-  <textarea name="text" cols="80" rows="30">[% wt.indexed.text.value | html %]</textarea>
+  <textarea name="text" cols="80" rows="30" data-editor="markdown" data-gutter="1">
+    [%- wt.indexed.text.value | html ~%]
+  </textarea>
   <br>
   [% PROCESS includes/edit_save_cancel.tti %]
   </form>
