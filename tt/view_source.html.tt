@@ -2,38 +2,6 @@
 [% PROCESS includes/header.tti %]
 
 [% PROCESS includes/ace.tti %]
-<style type="text/css">
-.ace_highlight_errors {
-  position: absolute;
-  background: #FFC0C0;
-}
-.container {
-  position: relative;
-}
-.resizable {
-  position: relative;
-  background-color: #cccccc;
-  margin-bottom: 20px;
-}
-.resizable-line {
-  position: absolute;
-  z-index: 10;
-}
-.resizable .resizable-bottom-line {
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 5px;
-  cursor: row-resize;
-}
-.resizable .resizable-right-line {
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: 5px;
-  cursor: col-resize;
-}
-</style>
 </head>
 <body>
 [% PROCESS includes/sources_info.tti %]
