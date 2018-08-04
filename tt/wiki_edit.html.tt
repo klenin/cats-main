@@ -2,8 +2,8 @@
 <style>
   table.wiki_edit tr td { vertical-align: top; padding-right: 1em; }
 </style>
-[% END -%]
 [% PROCESS includes/ace.tti %]
+[% END -%]
 [% PROCESS includes/menu_begin.tti %]
 [% PROCESS includes/html_input.tti %]
 
