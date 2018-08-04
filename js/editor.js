@@ -26,6 +26,7 @@ $(document).ready(function () {
     editor.renderer.setShowGutter(textarea.data('gutter'));
     editor.getSession().setValue(textarea.val());
     editor.getSession().setMode('ace/mode/' + mode);
+    editor.getSession().setOption('useWorker', false);
     editor.setTheme('ace/theme/chrome');
 
     editor.setOptions({
@@ -34,7 +35,8 @@ $(document).ready(function () {
 
     textarea.closest('form').submit(function() {
       textarea.val(editor.getSession().getValue());
-      this.np.value = navigator.plugins.length;
+      if (this.np)
+        this.np.value = navigator.plugins.length;
     });
 
     var top_offset = editorContainer.offset().top;
@@ -73,3 +75,36 @@ $(document).ready(function () {
 
   });
 });
+
+function add_error(errors, line, error_regexp) {
+  var m = line.match(error_regexp);
+  if (!m) return;
+  if (errors[m[1]])
+    errors[m[1]] += "\n" + line;
+  else
+    errors[m[1]] = line;
+}
+
+function highlight_errors(error_list_id, error_list_regexp, editor_id) {
+  var co = document.getElementById(error_list_id);
+  if (!co) return;
+  var co_text = co.textContent;
+  if (!co_text) return;
+  var editor = ace.edit(document.getElementById(editor_id));
+  if (!editor) return;
+  var Range = ace.require('ace/range').Range;
+  var co_lines = co_text.split('\n');
+  var errors = {};
+  for (var i = 0; co_lines.length > i; ++i) {
+    for (var j = 0; error_list_regexp.length > j; ++j) {
+      add_error(errors, co_lines[i], error_list_regexp[j]);
+    }
+  }
+  var session = editor.getSession();
+  var annotations = [];
+  for (var e in errors) {
+    session.addMarker(new Range(e - 1, 0, e - 1, 1), 'ace_highlight_errors', 'fullLine');
+    annotations.push({ row: e - 1, column: 0, text: errors[e], type: 'error' });
+  }
+  session.setAnnotations(annotations);
+}

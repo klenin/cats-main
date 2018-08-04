@@ -5,35 +5,6 @@
 </head>
 <body>
 [% PROCESS includes/sources_info.tti %]
-<script>
-var Range = ace.require('ace/range').Range;
-function highlight_errors(rid, re) {
-  var co = document.getElementById('co' + rid);
-  if (!co) return;
-  var co_text = co.textContent;
-  if (!co_text) return;
-  var co_lines = co_text.split('\n');
-  var errors = {};
-  for (var i = 0; co_lines.length > i; ++i) {
-    for (var j = 0; re.length > j; ++j) {
-      var m = co_lines[i].match(re[j]);
-      if (!m) continue;
-      if (errors[m[1]])
-        errors[m[1]] += "\n" + co_lines[i];
-      else
-        errors[m[1]] = co_lines[i];
-    }
-  }
-  var editor = ace.edit(document.getElementById('ed' + rid));
-  var session = editor.getSession();
-  var annotations = [];
-  for (var e in errors) {
-    session.addMarker(new Range(e - 1, 0, e - 1, 1), 'ace_highlight_errors', 'fullLine');
-    annotations.push({ row: e - 1, column: 0, text: errors[e], type: 'error' });
-  }
-  session.setAnnotations(annotations);
-}
-</script>
 [% settings %]
 <table>
 <tr>
@@ -73,7 +44,7 @@ function highlight_errors(rid, re) {
     </form>
   </td>
   <script>window.addEventListener('load', function () {
-    highlight_errors([% si.req_id %], [ [% si.err_regexp_js.join(', ') %] ]);
+    highlight_errors('co[% si.req_id %]', [ [% si.err_regexp_js.join(', ') %] ], 'ed[% si.req_id %]');
   })</script>
 [% END %]
 </tr>
