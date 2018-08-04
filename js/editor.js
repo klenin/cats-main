@@ -57,6 +57,7 @@ $(document).ready(function () {
         $('body').css({cursor: ''});
         var value = widthOrHeight == 'width' ? e.pageX : e.pageY - top_offset;
         editorContainer.css(widthOrHeight, value);
+        resizable.css(widthOrHeight, value);
         editor.resize();
       });
     };
