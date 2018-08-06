@@ -139,6 +139,7 @@ Some historical code, mostly located in `unused` directory, does not conform to 
 * Controllers (`xxx_frame`) MUST be called only by `Router`.
 * Controllers MUST be defined only in `CATS::UI::`namespace. `CATS::UI` modules MUST be used only by `Router`.
 * SQL structure changes MUST include migration in the same commit.
+* All `use lib` statements in utilities and tests MUST use `FindBin`.
 
 ## Git commits
 * Each commit MUST result in working code (and pass tests, where applicable). Temporary breakage in PRs is not allowed, use feature checks when needed.
