@@ -238,7 +238,7 @@ my $main_routes = {
         rid => integer, test_rank => integer,
         delete_request_outputs => bool, delete_test_output => bool, as_user => bool, ],
     request_params => [
-        \&CATS::UI::RunDetails::request_params_frame,
+        \&CATS::UI::RequestParams::request_params_frame,
         rid => integer,
         status_ok => bool,
         reinstall => bool,
