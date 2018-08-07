@@ -184,7 +184,7 @@ sub get_sources_info {
             'COALESCE(R.testsets, CP.testsets) AS testsets',
             'CP.id AS cp_id',
             'CP.status', 'CP.code',
-            'CA.id AS ca_id',
+            'CA.id AS ca_id', 'CA.is_jury AS submitter_is_jury',
         ],
         tables => [
             'LEFT JOIN sources S ON S.req_id = R.id',

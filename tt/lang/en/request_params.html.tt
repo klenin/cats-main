@@ -1,6 +1,7 @@
 [%
   capt.import({
     status_ok => 'Continue automated judging',
+    need_status_ok => 'it is paused currently',
     reinstall => 'Reinstall problem',
     retest => 'Retest',
     clone => 'Clone',

@@ -61,6 +61,7 @@ sub request_params_frame {
         }
     }
 
+    $si->{need_status_ok} = $si->{status} >= $cats::problem_st_suspended && !$si->{submitter_is_jury};
     my $params = {
         state => $cats::st_not_processed,
         # Insert NULL into database to be replaced with contest-default testset.

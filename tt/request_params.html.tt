@@ -1,5 +1,8 @@
 [%- PROCESS includes/sources_styles.tti -%]
 [% PROCESS includes/header.tti %]
+<style>
+  .btn_warning { background-color: #FFA0A0; }
+</style>
 </head>
 <body>
 
@@ -67,7 +70,8 @@
   </tr>
   <tr>
     <td colspan="2">
-      <label><input type="checkbox" name="status_ok" value="1" /> [% capt.status_ok %]</label>
+      <label><input type="checkbox" name="status_ok" value="1" />
+        [% capt.status_ok; " (${capt.need_status_ok})" IF si.need_status_ok %]</label>
       [% IF si.can_reinstall %]<br/>
       <label><input type="checkbox" name="reinstall" value="1" /> [% capt.reinstall %]</label>
       [% END %]
@@ -75,7 +79,7 @@
   </tr>
   <tr>
     <td colspan="2">
-      <button type="submit" value="1" class="button" name="retest">[% capt.retest %]</button>
+      <button type="submit" value="1" class="button[% ' btn_warning' IF si.need_status_ok %]" name="retest">[% capt.retest %]</button>
       <button type="submit" value="1" class="button" name="clone">[% capt.clone %]</button>
     </td>
   </tr>
