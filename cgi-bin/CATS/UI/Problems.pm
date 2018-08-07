@@ -215,7 +215,7 @@ sub has_lang_tag {
 }
 
 sub _prepare_de_list {
-    my $de_list = CATS::DevEnv->new(CATS::JudgeDB::get_DEs({ active_only => 1 }));
+    my $de_list = CATS::DevEnv->new(CATS::JudgeDB::get_DEs({ active_only => 1, fields => 'syntax' }));
 
     my ($allowed_des) = $dbh->selectall_arrayref(q~
         SELECT CP.id, CPD.de_id FROM contest_problems CP
@@ -238,7 +238,7 @@ sub _prepare_de_list {
     my @all_des = $allow_all ? @{$de_list->des} : grep $allowed{$_->{id}}, @{$de_list->des};
     my @de = (
         { de_id => 'by_extension', de_name => res_str(536) },
-         map {{ de_id => $_->{id}, de_name => $_->{description} }} @all_des );
+         map {{ de_id => $_->{id}, de_name => $_->{description}, syntax => $_->{syntax} }} @all_des );
     (de_list => \@de, (@all_des == 1 ? (de_selected => $all_des[0]->{id}) : ()));
 }
 
