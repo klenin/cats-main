@@ -27,13 +27,14 @@
 </div>
 <div class="page_body">
   [% PROCESS includes/encoding_form.html.tti capt_enc = capt.enc %]
+  <br/>
   <form method="post" accept-charset="UTF-8" style="margin: 0">
     <div>
-      <textarea rows="40" cols="100" name="source" data-editor="xml" data-gutter="1" data-id="editor">
-        [%- IF blob.content; blob.content | html; ELSE; FOREACH line IN blob.lines -%]
-        [%- line.text | html -%]
-        [%- END; END ~%]
-      </textarea>
+<textarea rows="40" cols="100" name="source" data-editor="xml" data-gutter="1" data-id="editor">
+[%- IF blob.content; blob.content | html; ELSE; FOREACH line IN blob.lines %]
+[% line.text | html %]
+[%- END; END ~%]
+</textarea>
     </div>
     <div class="problem_submit">
       <input type="hidden" name="src_enc" value="[% src_enc %]" />
