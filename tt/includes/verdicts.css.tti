@@ -1,6 +1,6 @@
-table.[% class %] td.verdict { padding: 0; height: 100%; width: 4em; }
-table.[% class %] td.verdict table { border-collapse: collapse; width: 100%; height: 100%; color: inherit; font-weight: inherit; }
-table.[% class %] td.verdict table td { padding: 0 0 0 2px; }
-table.[% class %] td.verdict table td:first-child { width: 2em; }
-table.[% class %] td.verdict table td:first-child a { color: inherit; }
-table.[% class %] td.verdict table td:last-child div { text-align: right; background: white; margin: 2px; }
+.[% class %] .verdict { padding: 0; height: 100%; width: 4em; }
+.[% class %] .verdict table { border-collapse: collapse; width: 100%; height: 100%; color: inherit; font-weight: inherit; }
+.[% class %] .verdict table td { padding: 0 0 0 2px; }
+.[% class %] .verdict table td:first-child { width: 2em; }
+.[% class %] .verdict table td:first-child a { color: inherit; }
+.[% class %] .verdict table td:last-child div { text-align: right; background: white; margin: 2px; }

@@ -547,4 +547,24 @@ sub diff_runs_frame {
     $t->param(diff_lines => \@diff);
 }
 
+sub get_last_verdicts_api {
+    my ($p) = @_;
+    $uid && @{$p->{problem_ids}} or return $p->print_json->({});
+    my $state_sth = $dbh->prepare(q~
+        SELECT state, failed_test, id FROM reqs
+        WHERE contest_id = ? AND account_id = ? AND problem_id = ?
+        ORDER BY submit_time DESC ROWS 1~);
+    my $result = {};
+    for (@{$p->{problem_ids}}) {
+        $state_sth->execute($cid, $uid, $_);
+        my ($state, $failed_test, $rid) = $state_sth->fetchrow_array;
+        $state_sth->finish;
+        defined $state or next;
+        $result->{$_} = [
+            $CATS::Verdicts::state_to_name->{$state}, $failed_test,
+            url_f('run_details', rid => $rid) ]
+    }
+    $p->print_json($result);
+}
+
 1;

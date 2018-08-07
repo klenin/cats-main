@@ -69,16 +69,21 @@ MathJax.Hub.Register.StartupHook('onLoad', function () {
   div.problem_menu { display: none; width: 100%; background-color: #eeeeee; }
   div.problem_menu ul { list-style-type: none; padding: 0; }
   div.problem_menu ul li { display: inline-block; padding: 3px 10px; border-right: 1px solid; }
+  div.problem_menu ul li a.problem_list_link { display: inline-block; padding-top: 2px; }
   div.problem_menu input[type=checkbox] { display: none; }
   div.problem_menu input[type=checkbox] + span:after { content: '\2610'; }
   div.problem_menu input[type=checkbox]:checked + span:after { content: '\2611'; }
+  div.problem_menu ul li.last_verdict { padding-top: 2px; padding-bottom: 2px; vertical-align: bottom; }
+  div.problem_menu ul li.last_verdict span { display: inline-block; vertical-align: bottom; }
   div.problem_menu li.langs { font-weight: bold; }
   div.problem_menu li.langs a { font-weight: normal; }
+
   div.problem_text table.problem_header { width: 100%; }
   div.problem_text p, div.problem_text ul, div.problem_text ol { hyphens: auto; max-width: [% text_width %]; text-align: justify; text-indent1: 3em; }
   div.problem_text p span { text-indent: 0; }
   div.problem_text table.thin_border { border-collapse: collapse; border: 1px; }
   div.problem_text table.thin_border td, div.problem_text table.thin_border th { border: 1px solid black; padding: 2px; }
+  [%- PROCESS includes/verdicts.css.tti class='last_verdict' IF href_get_last_verdicts -%]
 </style>
 </head>
 <body>
@@ -97,6 +102,9 @@ MathJax.Hub.Register.StartupHook('onLoad', function () {
     <li><label><input type="checkbox" class="whitespace"><span></span> [% c.visible_spaces %]</label></li>
     <li><label><input type="checkbox" class="basic_math"><span></span> [% c.basic_math %]</label></li>
     <li><label><input type="checkbox" class="wide_text"><span></span> [% c.wide_text %]</label></li>
+    <li class="last_verdict" style="display: none"><span class="verdict">
+      <table><tr><td><a href="#"></a></td><td><div></div></td></tr></table>
+    </span></li>
     [% IF problems.size == 1 && p.langs && p.langs.size > 1 -%]
     <li class="langs">[% FOREACH lang IN p.langs; maybe_href(lang == p.lang ? '' : '#', lang); ' '; END %]</li>
     [%- END %]
@@ -219,6 +227,23 @@ $('.problem_text div.problem_menu li.langs a').click(function() {
       s.indexOf('pl=') < 0  ? s + ';pl=' + this.innerText : s.replace(/pl=[a-z]+/, 'pl=' + this.innerText);
   }
 });
+
+[%- IF href_get_last_verdicts -%]
+if (sid)
+  $(document).ready(function () {
+    $.get('[% href_get_last_verdicts %];sid=' + sid).success(function(result) {
+      if (!result) return;
+      for (var r in result) {
+        if (!result[r]) continue;
+        var v = $('#p' + r + ' .last_verdict > .verdict');
+        v.addClass('run_details_' + result[r][0]);
+        v.find('a').attr('href', result[r][2]).text(result[r][0]);
+        v.find('div').html(result[r][1] || '.&nbsp;');
+        v.parent().show();
+      }
+    });
+  });
+[%- END -%]
 
 [% IF has_snippets %]
 [%# Assigning to innerHTML forcibly comments out CDATA sections. https://stackoverflow.com/a/7068088 %]

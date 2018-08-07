@@ -292,6 +292,8 @@ sub problem_text {
 
     $spellchecker = $is_jury_in_contest && !$p->{nospell} ? CATS::Problem::Spell->new : undef;
 
+    my $static_path = $CATS::StaticPages::is_static_page ? '../' : '';
+
     $has_snippets = 0;
     my $need_commit = 0;
     for my $problem (@problems) {
@@ -339,8 +341,6 @@ sub problem_text {
             FROM samples WHERE problem_id = ? ORDER BY rank~, { Slice => {} },
             $problem->{problem_id});
 
-        my $static_path = $CATS::StaticPages::is_static_page ? '../' : '';
-
         $problem->{href_problem_list} = $static_path .
             url_function('problems', cid => $problem->{contest_id} || $problem->{orig_contest_id});
         $problem->{href_get_snippets} = $static_path .
@@ -367,6 +367,8 @@ sub problem_text {
         tex_styles => CATS::TeX::Lite::styles(),
         mathjax => !$p->{nomath},
         has_snippets => $has_snippets,
+        href_get_last_verdicts => @problems > 100 ? undef : $static_path .
+            url_function('api_get_last_verdicts', problem_ids => join ',', map $_->{problem_id}, @problems),
     );
 }
 

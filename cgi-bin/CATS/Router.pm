@@ -254,6 +254,7 @@ my $main_routes = {
         testsets => str,
         judge => str, set_judge => bool,
     ],
+    api_get_last_verdicts => [ \&CATS::UI::RunDetails::get_last_verdicts_api, problem_ids => clist_of integer ],
 
     test_diff => [ \&CATS::UI::Stats::test_diff_frame, pid => integer, test => integer, ],
     compare_tests => [ \&CATS::UI::Stats::compare_tests_frame, pid => required integer, ],
