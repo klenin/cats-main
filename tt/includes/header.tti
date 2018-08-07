@@ -18,4 +18,5 @@
 <link rel="stylesheet" type="text/css" href="css/main.css">
 <!--[if IE]><link rel="stylesheet" type="text/css" href="css/ie.css"><![endif]-->
 [%- END %]
+[% IF js.jquery %]<script type="text/javascript" src="js/lib/jquery.min.js"></script>[% END %]
 [%- extra_head -%]

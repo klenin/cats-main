@@ -1,3 +1,4 @@
+[% js.jquery = 1 %]
 [% PROCESS includes/menu_begin.tti %]
 [% PROCESS includes/listview_header.tti %]
 </form>
@@ -30,7 +31,6 @@
 <button type="submit" name="link_save" value="1" class="button">[% move ? capt.move : capt.link %]</button>
 <button type="submit" name="link_cancel" value="1" class="button">[% capt.cancel %]</button>
 
-<script type="text/javascript" src="js/lib/jquery.min.js"></script>
 <script type="text/javascript">
 var used_codes = { [% FOREACH u IN used_codes %]"[% u %]": 1[% ', ' UNLESS loop.last; END %] };
 [% PROCESS includes/select_problem_code.tti %]

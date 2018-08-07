@@ -23,7 +23,6 @@ function send_message(href) {
   window.open(href, '', 'width=500,height=400,location=no,menubar=no,resizable=yes,scrollbars=no,status=no,toolbar=no');
 }
 </script>
-<script type="text/javascript" src="js/lib/jquery.min.js"></script>
 [% END %]
 
 [% BLOCK sources_info_row %]

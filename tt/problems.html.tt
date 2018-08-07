@@ -223,7 +223,6 @@ function chg_code(st_sel, pid) {
 [% END %]
 </form>
 [% IF editable %]
-<script type="text/javascript" src="js/lib/jquery.min.js"></script>
 <script type="text/javascript">
 (function add_udebug_hrefs() {
   $.get('https://www.udebug.com/api/CATS').then(function (json) {
