@@ -19,4 +19,9 @@
 <!--[if IE]><link rel="stylesheet" type="text/css" href="css/ie.css"><![endif]-->
 [%- END %]
 [% IF js.jquery %]<script type="text/javascript" src="js/lib/jquery.min.js"></script>[% END %]
+[% IF js.jquery_flot -%]
+<!--[if lte IE 8]><script language="javascript" type="text/javascript" src="js/lib/excanvas.min.js"></script><![endif]-->
+<script type="text/javascript" src="js/lib/jquery.flot.min.js"></script>
+[%- END %]
+
 [%- extra_head -%]
