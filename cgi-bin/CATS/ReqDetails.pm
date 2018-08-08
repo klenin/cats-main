@@ -307,7 +307,9 @@ sub sources_info_param {
     $set_data->($sources_info);
     $t->param(
         title_suffix => build_title_suffix($sources_info),
-        sources_info => $sources_info
+        sources_info => $sources_info,
+        unprocessed_sources => [ grep $_->{state} < $cats::request_processed, @$sources_info ],
+        href_get_request_state => url_f('api_get_request_state'),
     );
     my $elements_info = [
         map { @{$_->{elements}} > 0 ? @{$_->{elements}} : undef } @$sources_info ];

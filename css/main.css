@@ -269,6 +269,8 @@ td.ts { font-size: 10pt; font-style: italic; }
 
 .hidden { display: none; }
 
+.progress { background: no-repeat 95% 50%/60px 8px url(../images/progress.gif); }
+
 tr.odd { background-color: #ffffff; }
 tr.even { background-color: #f0f0f0; }
 table.highlight > tbody > tr:hover { background-color: #ffcc55; }

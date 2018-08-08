@@ -15,5 +15,6 @@
     .fill_width {
       width: 100%;
     }
+    .verdict_short { width: 1px; }
   </style>
 [%- END; END %]

@@ -24,6 +24,43 @@ function send_message(href) {
 }
 </script>
 [% END %]
+[% IF unprocessed_sources.size > 0 %]
+<script type="text/javascript">
+var verdict_descrs = {
+[% FOREACH v IN capt.verdicts; "${v.key}:'${v.value}'"; ', ' UNLESS loop.last; END %]
+};
+var np_requests = { [% FOREACH si IN unprocessed_sources; "${si.req_id}: 1"; ', ' UNLESS loop.last; END %] };
+function update_request_status() {
+  var req_ids = '';
+  for (var r in np_requests) {
+    $('.state_' + r + ' td.verdict_long').addClass('progress');
+    req_ids += (req_ids ? ',' : '') + r;
+  }
+  if (!req_ids) return;
+  $.get('[% href_get_request_state %];req_ids=' + req_ids).success(function (resp) {
+    np_requests = {};
+    var manual_only = 1;
+    for (var i = 0; i < resp.length; ++i) {
+      var ri = resp[i];
+      var v = $('.state_' + ri.id);
+      v.find('td.verdict_short').attr('class', 'verdict_short run_details_' + ri.verdict).text(ri.verdict);
+      var vl = v.find('td.verdict_long');
+      vl.text(verdict_descrs[ri.verdict] + (ri.failed_test ? '[% capt.on_test %]' + ri.failed_test : ''));
+      if (ri.np) {
+        np_requests[ri.id] = 1;
+        if (ri.verdict !== 'AW')
+          manual_only = 0;
+      }
+      else
+        vl.removeClass('progress');
+    }
+    if (np_requests)
+      setTimeout(update_request_status, manual_only ? 30000 : 1000);
+  });
+}
+$(document).ready(update_request_status);
+</script>
+[% END %]
 
 [% BLOCK sources_info_row %]
 <tr [% IF second_row %] style="border-top-style: solid" [% END %]>
@@ -132,9 +169,9 @@ function send_message(href) {
   <th>[% capt.status %]<span style="font-weight: normal;">&nbsp;[<a href="docs/verdicts.[% lang %].html">?</a>]</span></th>
   [% FOREACH si IN sources_info; IF si %]
     <td class="nested" colspan="[% si.colspan %]">
-      <table class="internal_borders padded"><tr>
-        <td style="width: 1px;" class="run_details_[% si.short_state %]">[% si.short_state %]</td>
-        <td>[% capt.verdicts.item(si.short_state) %][% " $capt.on_test$si.failed_test" IF si.failed_test%]</td>
+      <table class="internal_borders padded state_[% si.req_id %]"><tr>
+        <td class="verdict_short run_details_[% si.short_state %]">[% si.short_state %]</td>
+        <td class="verdict_long">[% capt.verdicts.item(si.short_state) %][% " $capt.on_test$si.failed_test" IF si.failed_test%]<div></div></td>
         [% IF si.points.defined() %]<td>[% capt.pts %]: [% si.points %]</td>[% END %]
       </tr></table>
     </td>

@@ -567,4 +567,37 @@ sub get_last_verdicts_api {
     $p->print_json($result);
 }
 
+sub _get_request_state {
+    my ($p) = @_;
+    $uid && @{$p->{req_ids}} or return ();
+    my $result = $dbh->selectall_arrayref(_u $sql->select(
+        'reqs', 'id, state, failed_test, account_id, contest_id',
+        { id => $p->{req_ids} }));
+    return @$result if $is_root;
+    my %contest_ids;
+    for (@$result) {
+        if ($_->{account_id} == $uid || $_->{contest_id} == $cid && $is_jury) {
+            $_->{ok} = 1;
+        }
+        else {
+            $contest_ids{$_->{id}} = 1;
+        }
+    }
+    my ($stmt, @bind) = $sql->select(
+        'contest_accounts', 'is_jury',
+        { contest_id => [ keys %contest_ids ], account_id => $uid });
+    my $jury_in_contest = $dbh->selectall_hashref($stmt, 'contest_id', undef, @bind);
+    grep $_->{ok} || $jury_in_contest->{$_->{contest_id}}, @$result;
+}
+
+sub get_request_state_api {
+    my ($p) = @_;
+    $p->print_json([ map {
+        id => $_->{id},
+        verdict => $CATS::Verdicts::state_to_name->{$_->{state}},
+        failed_test => $_->{failed_test},
+        np => $_->{state} < $cats::request_processed,
+    }, _get_request_state($p) ]);
+}
+
 1;
