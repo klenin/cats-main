@@ -9,8 +9,8 @@
   span.pcode input { width: 2em; }
   input[type=color] { width: 1.5em; padding: 0; margin: 0; border: 0; background-color: inherit; }
 </style>
-[%- END %]
 [% PROCESS includes/ace.tti %]
+[%- END %]
 [% PROCESS includes/menu_begin.tti %]
 [%- PROCESS includes/html.tti -%]
 [%- PROCESS "lang/$lang/verdicts.tti" -%]
@@ -180,7 +180,7 @@ function chg_code(st_sel, pid) {
   </p>
   <p><label for="source_text">[% capt.solution_text %]:</label><br/>
   <textarea id="source_text" name="source_text" cols="50" rows="5"
-        data-editor="plain_text" data-gutter="1"></textarea></p>
+        data-editor="plain_text" data-gutter="1" data-id="source-editor"></textarea></p>
   <button type="submit" name="submit" onclick="document.problems_form.np.value = navigator.plugins.length; return true;" value="1" class="button">
     [%~ capt.submit ~%]
   </button>
@@ -222,6 +222,12 @@ function chg_code(st_sel, pid) {
 </div>
 [% END %]
 </form>
+<script type="text/javascript">
+  var de_syntaxes = { [% FOREACH de IN de_list; de.de_id %]: "[% de.syntax %]"[% ', ' UNLESS loop.last; END %] };
+  $(document).ready(function() {
+    set_syntax('source-editor', 'de_id', de_syntaxes);
+  });
+</script>
 [% IF editable %]
 <script type="text/javascript">
 (function add_udebug_hrefs() {
@@ -240,7 +246,7 @@ function chg_code(st_sel, pid) {
   });
 })();
 
-var used_codes = { [% FOREACH p IN problems %]"[%p.code %]": 1[% ', ' UNLESS loop.last; END %] };
+var used_codes = { [% FOREACH p IN problems %]"[% p.code %]": 1[% ', ' UNLESS loop.last; END %] };
 [% PROCESS includes/select_problem_code.tti %]
 
 function chg_color(input, cpid) {

@@ -378,7 +378,7 @@ sub view_source_frame {
             ($user->{is_virtual} || !$contest->has_finished($user->{diff_time} + $user->{ext_time}));
 
     if ($sources_info->{is_jury} || $can_submit) {
-        my $de_list = CATS::DevEnv->new(CATS::JudgeDB::get_DEs({ active_only => 1 }));
+        my $de_list = CATS::DevEnv->new(CATS::JudgeDB::get_DEs({ active_only => 1, fields => 'syntax' }));
         if ($p->{de_id}) {
             $sources_info->{de_id} = $p->{de_id};
             $sources_info->{de_name} = $de_list->by_id($p->{de_id})->{description};
@@ -388,6 +388,7 @@ sub view_source_frame {
                 de_id => $_->{id},
                 de_name => $_->{description},
                 selected => $_->{id} == $sources_info->{de_id},
+                syntax => $_->{syntax},
             }, @{$de_list->des}
         ]);
     }
