@@ -8,8 +8,8 @@ UPDATE default_de SET syntax = 'pascal' WHERE code = 203;
 UPDATE default_de SET syntax = 'pascal' WHERE code = 204;
 UPDATE default_de SET syntax = 'pascal' WHERE code = 205;
 
-UPDATE default_de SET syntax = 'vb' WHERE code = 301;
-UPDATE default_de SET syntax = 'vb' WHERE code = 302;
+UPDATE default_de SET syntax = 'vbscript' WHERE code = 301;
+UPDATE default_de SET syntax = 'vbscript' WHERE code = 302;
 
 UPDATE default_de SET syntax = 'java' WHERE code = 401;
 UPDATE default_de SET syntax = 'csharp' WHERE code = 402;
