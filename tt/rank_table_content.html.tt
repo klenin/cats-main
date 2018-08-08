@@ -67,7 +67,8 @@
   [% FOREACH c IN r.columns %]<td>[% c.points %]</td>[% END -%]
 [% ELSE ~%]
   [% FOREACH c IN r.columns ~%]
-    <td class="[% c.td.substr(0, 1) == '+' ? 'ok' : 'fail' %]"><p>[% c.time | html %]</p>[% c.td | html %]</td>
+    [%~ fc = c.td.substr(0, 1); cls = fc == '+' ? 'ok' : fc == '-' ? 'fail' : fc == '?' ? 'unproc' : '' ~%]
+    <td class="[% cls %]"><p>[% c.time | html %]</p>[% c.td | html %]</td>
   [% END -%]
 [% END -%]
 <td>[% IF show_points %][% r.total_points ~%]
