@@ -619,7 +619,7 @@ sub rank_table {
 
     $t->param(
         problems => $self->{problems},
-        problem_column_width => min(max(int(60 / @{$self->{problems}}), 2), 7),
+        problem_column_width => min(max(int(60 / max(scalar @{$self->{problems}}, 1)), 2), 7),
         problem_stats => [ map $problem_stats->{$_->{problem_id}}, @{$self->{problems}} ],
         problem_stats_color => 1 - $row_color,
         rank => $self->{rank},
