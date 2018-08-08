@@ -24,7 +24,7 @@
   <td>
     <form enctype="multipart/form-data" method="POST" action="[% href_action %]">
       [% IF can_submit %]
-        <select name="de_id">
+        <select name="de_id" id="de[% si.req_id %]">
           [%- FOREACH de IN de_list %]
           <option value="[% de.de_id %]"[% ' selected="selected"' IF de.selected %]>[% de.de_name | html %]</option>
           [%~ END %]
@@ -45,6 +45,8 @@
   </td>
   <script>window.addEventListener('load', function () {
     highlight_errors('co[% si.req_id %]', [ [% si.err_regexp_js.join(', ') %] ], 'ed[% si.req_id %]');
+    var de_syntaxes = { [% FOREACH de IN de_list; de.de_id %]: "[% de.syntax %]"[% ', ' UNLESS loop.last; END %] };
+    set_syntax('ed[% si.req_id %]', 'de[% si.req_id %]', de_syntaxes);
   })</script>
 [% END %]
 </tr>

@@ -28,8 +28,8 @@ INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
     VALUES (GEN_ID(key_seq, 1), 205, 'PascalABC', '', 'pascal', '^\[~LINE~,~POS~\]\s~FILE~:');
 
-INSERT INTO default_de (id, code, description, file_ext, err_regexp)
-    VALUES (GEN_ID(key_seq, 1), 301, 'Quick Basic 4.5', 'vbscript', 'vb');
+INSERT INTO default_de (id, code, description, syntax, file_ext)
+    VALUES (GEN_ID(key_seq, 1), 301, 'Quick Basic 4.5', 'vbscript', 'qb');
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
     VALUES (GEN_ID(key_seq, 1), 302, 'Free Basic', 'bas', 'vbscript', '^~FILE~\(~LINE~\)\s');
 

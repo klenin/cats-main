@@ -74,6 +74,7 @@ $(document).ready(function () {
     });
 
   });
+
 });
 
 function add_error(errors, line, error_regexp) {
@@ -107,4 +108,15 @@ function highlight_errors(error_list_id, error_list_regexp, editor_id) {
     annotations.push({ row: e - 1, column: 0, text: errors[e], type: 'error' });
   }
   session.setAnnotations(annotations);
+}
+
+function set_syntax(editor_id, select_id, syntaxes) {
+  var editor = ace.edit(editor_id);
+  if (!editor) return;
+  $('#' + select_id).change(function() {
+    var mode = syntaxes[$(this).val()];
+    editor.getSession().setMode({
+      path: mode ? 'ace/mode/' + mode : 'ace/mode/plain_text',
+    });
+  });
 }
