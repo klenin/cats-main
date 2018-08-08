@@ -218,18 +218,28 @@ sub get_results {
             ($self->{has_competitive} ? 2 : 1));
 }
 
-sub get_unprocessed {
+sub _get_unprocessed {
     my ($self) = @_;
     $uid or return {};
-    my $u = $dbh->selectall_arrayref(_u $sql->select(
-        'reqs', [ 'account_id', 'problem_id' ], {
-            contest_id => $self->{clist},
-            state => { '<', $cats::request_processed },
-            ($is_jury ? () : (account_id => $uid)) }
-    ));
+    my ($stmt, @bind) = $sql->select('reqs', [ 'account_id', 'problem_id' ], {
+        'contest_id' => $self->{clist},
+        'state' => { '<', $cats::request_processed },
+        ($is_jury ? () : ('account_id' => $uid)),
+    }, 'id');
+    # Avoid DoS for in case of mass-retest.
+    my $u = $dbh->selectall_arrayref("$stmt ROWS 100", { Slice => {} }, @bind) || [];
     my $unprocessed = {};
     $unprocessed->{$_->{account_id}}->{$_->{problem_id}} = 1 for @$u;
     $unprocessed;
+}
+#'
+sub _get_first_unprocessed {
+    my ($self) = @_;
+    # Do not include AW submissions, manual state update clears cache anyway.
+    $dbh->selectrow_array(_u $sql->select(
+        'reqs R INNER JOIN jobs J ON J.req_id = R.id INNER JOIN jobs_queue JQ ON JQ.id = J.id',
+        'MIN(R.id)', { 'R.contest_id' => $self->{clist} }
+    ));
 }
 
 sub get_partial_points {
@@ -462,6 +472,67 @@ sub search_clist {
     join ',', map "contest_id=$_", split ',', $self->{contest_list};
 }
 
+my %init_problem = (runs => 0, penalty_runs => 0, time_consumed => 0, solved => 0, points => undef);
+
+sub _virtual_ooc_cond {
+    ($_[0]->{hide_virtual} ? ' AND (CA.is_virtual = 0 OR CA.is_virtual IS NULL)' : '') .
+    ($_[0]->{hide_ooc} ? ' AND CA.is_ooc = 0' : '')
+}
+
+sub _select_teams {
+    my ($self, $account_id) = @_;
+    my $virtual_ooc_cond = $self->_virtual_ooc_cond;
+    my $acc_cond = $account_id ? 'AND A.id = ?' : '';
+    my $account_fields = q~A.team_name, A.motto, A.country, A.city, A.affiliation_year~;
+    my $res = $dbh->selectall_hashref(qq~
+        SELECT
+            $account_fields,
+            MAX(CA.is_virtual) AS is_virtual, MAX(CA.is_ooc) AS is_ooc, MAX(CA.is_remote) AS is_remote,
+            CA.account_id, CA.tag, CA.site_id
+        FROM accounts A INNER JOIN contest_accounts CA ON A.id = CA.account_id
+        WHERE CA.contest_id IN ($self->{contest_list}) AND CA.is_hidden = 0
+            $virtual_ooc_cond $acc_cond
+        GROUP BY CA.account_id, CA.tag, CA.site_id, $account_fields~, 'account_id', { Slice => {} },
+        ($account_id || ())
+    );
+
+    for my $team (values %$res) {
+        # Since virtual team is always ooc, do not output extra string.
+        $team->{is_ooc} = 0 if $team->{is_virtual};
+        $team->{$_} = 0 for qw(total_solved total_runs total_time total_points);
+        ($team->{country}, $team->{flag}) = CATS::Countries::get_flag($team->{country});
+        $team->{$_} = Encode::decode_utf8($team->{$_}) for qw(team_name city tag);
+        $team->{problems} = { map { $_->{problem_id} => { %init_problem } } @{$self->{problems}} };
+    }
+
+    $res;
+}
+
+sub _empty_cache {
+    my ($self) = @_;
+    my $teams = $self->_select_teams($is_jury || $self->{show_all_results} ? undef : $uid || -1);
+    my $problem_stats = { map { $_->{problem_id} => {} } @{$self->{problems}} };
+    ($teams, $problem_stats, 0);
+}
+
+sub _read_cache {
+    my ($self, $cache_file, $first_unprocessed) = @_;
+
+    $self->{use_cache} && !$user->{is_virtual} &&  -f $cache_file &&
+        (my $cache = Storable::lock_retrieve($cache_file))
+        or return $self->_empty_cache;
+    my ($teams, $problem_stats, $max_cached_req_id) = @{$cache}{qw(t p r)};
+    !$first_unprocessed || $max_cached_req_id > $first_unprocessed
+        or return $self->_empty_cache;
+    # A problem was added after last cache refresh -- initialize it.
+    for my $p (map $_->{problem_id}, @{$self->{problems}}) {
+        next if $problem_stats->{$p};
+        $problem_stats->{$p} = {};
+        $_->{problems}->{$p} = { %init_problem } for values %$teams;
+    }
+    ($teams, $problem_stats, $max_cached_req_id);
+}
+
 sub rank_table {
     (my CATS::RankTable $self) = @_;
 
@@ -485,66 +556,34 @@ sub rank_table {
     #return if $not_started;
 
     $self->get_problems;
-    my $virtual_cond = $self->{hide_virtual} ? ' AND (CA.is_virtual = 0 OR CA.is_virtual IS NULL)' : '';
-    my $ooc_cond = $self->{hide_ooc} ? ' AND CA.is_ooc = 0' : '';
 
-    my %init_problem = (runs => 0, penalty_runs => 0, time_consumed => 0, solved => 0, points => undef);
-    my $select_teams = sub {
-        my ($account_id) = @_;
-        my $acc_cond = $account_id ? 'AND A.id = ?' : '';
-        my $account_fields = q~A.team_name, A.motto, A.country, A.city, A.affiliation_year~;
-        my $res = $dbh->selectall_hashref(qq~
-            SELECT
-                $account_fields,
-                MAX(CA.is_virtual) AS is_virtual, MAX(CA.is_ooc) AS is_ooc, MAX(CA.is_remote) AS is_remote,
-                CA.account_id, CA.tag, CA.site_id
-            FROM accounts A INNER JOIN contest_accounts CA ON A.id = CA.account_id
-            WHERE CA.contest_id IN ($self->{contest_list}) AND CA.is_hidden = 0
-                $virtual_cond $ooc_cond $acc_cond
-            GROUP BY CA.account_id, CA.tag, CA.site_id, $account_fields~, 'account_id', { Slice => {} },
-            ($account_id || ())
-        );
-
-        for my $team (values %$res) {
-            # Since virtual team is always ooc, do not output extra string.
-            $team->{is_ooc} = 0 if $team->{is_virtual};
-            $team->{$_} = 0 for qw(total_solved total_runs total_time total_points);
-            ($team->{country}, $team->{flag}) = CATS::Countries::get_flag($team->{country});
-            $team->{$_} = Encode::decode_utf8($team->{$_}) for qw(team_name city tag);
-            $team->{problems} = { map { $_->{problem_id} => { %init_problem } } @{$self->{problems}} };
-        }
-
-        $res;
-    };
+    my $unprocessed = $self->_get_unprocessed;
+    my $first_unprocessed = $self->_get_first_unprocessed;
 
     my $cache_file = cache_file_name(@$self{qw(contest_list hide_ooc hide_virtual)});
 
-    my ($teams, $problem_stats, $max_cached_req_id) = ({}, {}, 0);
-    if ($self->{use_cache} && !$user->{is_virtual} &&  -f $cache_file &&
-        (my $cache = Storable::lock_retrieve($cache_file))
-    ) {
-        ($teams, $problem_stats, $max_cached_req_id) = @{$cache}{qw(t p r)};
-        # A problem was added after last cache refresh -- initialize it.
-        for my $p (map $_->{problem_id}, @{$self->{problems}}) {
-            next if $problem_stats->{$p};
-            $problem_stats->{$p} = {};
-            $_->{problems}->{$p} = { %init_problem } for values %$teams;
-        }
-    }
-    else {
-        $problem_stats->{$_} = {} for map $_->{problem_id}, @{$self->{problems}};
-        $teams = $select_teams->($is_jury || $self->{show_all_results} ? undef : $uid || -1);
-    }
+    my ($teams, $problem_stats, $max_cached_req_id) = $self->_read_cache($cache_file, $first_unprocessed);
 
-    my $results = $self->get_results($virtual_cond . $ooc_cond, $max_cached_req_id);
-    my $unprocessed = $self->get_unprocessed;
-    my $max_req_id = 0;
+    my $results = $self->get_results($self->_virtual_ooc_cond, $max_cached_req_id);
+    my ($max_req_id, $cache_written) = (0, 0);
+
+    my $write_cache = sub {
+        !$self->{frozen} && !$user->{is_virtual} && @$results && $self->{show_all_results} && !$cache_written
+            or return;
+        Storable::lock_store({ t => $teams, p => $problem_stats, r => $max_req_id }, $cache_file);
+        #warn "$cache_file $max_req_id";
+        $cache_written  = 1;
+    };
+
     for (@$results) {
         my $id = $_->{ref_id} || $_->{id};
-        $max_req_id = $id if $id > $max_req_id;
+        if ($id > $max_req_id) {
+            $write_cache->() if $first_unprocessed && $id > $first_unprocessed;
+            $max_req_id = $id;
+        }
         $_->{time_elapsed} ||= 0;
         next if $_->{state} == $cats::st_ignore_submit;
-        my $t = $teams->{$_->{account_id}} || $select_teams->($_->{account_id});
+        my $t = $teams->{$_->{account_id}} || $self->_select_teams($_->{account_id});
         my $p = $t->{problems}->{$_->{problem_id}};
         my $problem = $self->{problems_idx}->{$_->{problem_id}};
         if ($self->{show_points} && !defined $_->{points}) {
@@ -588,10 +627,7 @@ sub rank_table {
             }
         }
     }
-
-    if (!$self->{frozen} && !$user->{is_virtual} && @$results && $self->{show_all_results}) {
-        Storable::lock_store({ t => $teams, p => $problem_stats, r => $max_req_id }, $cache_file);
-    }
+    $write_cache->() if !$first_unprocessed || $max_req_id < $first_unprocessed;
 
     my ($row_num, $row_color) = $self->prepare_ranks($teams, $unprocessed);
     # Calculate stats.
