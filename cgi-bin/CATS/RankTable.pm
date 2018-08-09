@@ -178,31 +178,33 @@ sub get_results {
         LEFT JOIN contest_sites CS ON CS.contest_id = CA.contest_id AND CS.site_id = CA.site_id
         ~;
 
+    # Disable index on C.id to improve speed on multi-contest rank tables.
+    my $disable_index = @{$self->{clist}} > 1 && $max_cached_req_id ? ' + 0' : '';
     my $where = qq~
         CA.is_hidden = 0 AND CP.status < ? AND R.state >= ? AND R.id > ? AND
-        C.id IN ($self->{contest_list})$cond_str~;
+        C.id$disable_index IN ($self->{contest_list})$cond_str~;
 
     my $select_competitive_query = $self->{has_competitive} ? qq~
         UNION
             SELECT $select_fields, RO.id, R.id AS ref_id, RO.account_id, R.account_id AS ref_account_id
             FROM reqs R
-                INNER JOIN req_groups RGE ON RGE.group_id = R.id
-                INNER JOIN reqs RO ON RO.id = RGE.element_id
-                INNER JOIN accounts AO ON AO.id = RO.account_id
-                INNER JOIN contest_accounts CA ON CA.account_id = RO.account_id AND CA.contest_id = R.contest_id
-                $joins
+            INNER JOIN req_groups RGE ON RGE.group_id = R.id
+            INNER JOIN reqs RO ON RO.id = RGE.element_id
+            INNER JOIN accounts AO ON AO.id = RO.account_id
+            INNER JOIN contest_accounts CA ON CA.account_id = RO.account_id AND CA.contest_id = R.contest_id
+            $joins
             WHERE
-               EXISTS ( SELECT * FROM req_groups RGP WHERE RGP.element_id = R.id ) AND
+                EXISTS (SELECT * FROM req_groups RGP WHERE RGP.element_id = R.id) AND
                 P.run_method = $cats::rm_competitive AND
                 $where
     ~ : '';
 
-    $dbh->selectall_arrayref(qq~
+    $dbh->selectall_arrayref(my $stmt = qq~
         SELECT * FROM (
             SELECT $select_fields, R.id, NULL AS ref_id, R.account_id, NULL as ref_account_id
             FROM reqs R
-                INNER JOIN contest_accounts CA ON CA.account_id = R.account_id AND CA.contest_id = R.contest_id
-                $joins
+            INNER JOIN contest_accounts CA ON CA.account_id = R.account_id AND CA.contest_id = R.contest_id
+            $joins
             WHERE
                 P.run_method <> $cats::rm_competitive AND
                 $where
@@ -566,7 +568,6 @@ sub rank_table {
         !$self->{frozen} && !$user->{is_virtual} && @$results && $self->{show_all_results} && !$cache_written
             or return;
         Storable::lock_store({ t => $teams, p => $problem_stats, r => $max_req_id }, $cache_file);
-        #warn "$cache_file $max_req_id";
         $cache_written  = 1;
     };
 
