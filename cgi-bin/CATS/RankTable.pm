@@ -340,7 +340,7 @@ sub parse_params {
     $self->{hide_ooc} = $p->{hide_ooc} || 0;
 
     $self->{hide_virtual} = $p->{hide_virtual} //
-        (!$user->{is_virtual} && !$is_jury || !$user->{is_participant});
+        (!$user->{is_virtual} && !$is_jury || !$user->{is_participant}) || 0;
 
     $self->get_contests_info($uid);
     $self->{show_points} = $p->{points} if defined $p->{points};
@@ -455,7 +455,7 @@ sub remove_cache {
     my ($contest_id) = @_ or die;
     for my $virt (0, 1) {
         for my $ooc (0, 1) {
-            unlink cache_file_name($contest_id, $virt, $ooc);
+            unlink cache_file_name($contest_id, $ooc, $virt);
         }
     }
 }
