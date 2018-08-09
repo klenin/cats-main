@@ -41,17 +41,20 @@ sub format_diff_ext {
     format_diff($diff, %opts) . ($ext ? ' ... ' . format_diff($ext, %opts) : '');
 }
 
+sub timer_start { [ Time::HiRes::gettimeofday ] }
+sub timer_since { Time::HiRes::tv_interval($_[0], [ Time::HiRes::gettimeofday ]) }
+sub timer_fmt { sprintf('%.3fs', $_[0] || 0) }
+
 my ($start_time, $init_time);
 
-sub mark_start { $start_time = [ Time::HiRes::gettimeofday ] }
+sub mark_start { $start_time = timer_start }
 
-sub mark_init { $init_time = Time::HiRes::tv_interval($start_time, [ Time::HiRes::gettimeofday ]) }
+sub mark_init { $init_time = timer_since($start_time) }
 
 sub mark_finish {
     $t->param(
-        request_process_time => sprintf('%.3fs',
-            Time::HiRes::tv_interval($start_time, [ Time::HiRes::gettimeofday ])),
-        init_time => sprintf('%.3fs', $init_time || 0),
+        request_process_time => timer_fmt(timer_since($start_time)),
+        init_time => timer_fmt($init_time),
     );
     prepare_server_time;
 }
