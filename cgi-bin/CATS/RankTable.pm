@@ -87,7 +87,7 @@ sub partial_checker_sql {
 }
 
 sub get_problems {
-    (my CATS::RankTable $self) = @_;
+    my ($self) = @_;
     my $problems = $self->{problems} = $dbh->selectall_arrayref(qq~
         SELECT
             CP.id, CP.problem_id, CP.code, CP.contest_id,
@@ -144,7 +144,7 @@ sub get_problems {
 }
 
 sub get_results {
-    (my CATS::RankTable $self, my $cond_str, my $max_cached_req_id) = @_;
+    my ($self, $cond_str, $max_cached_req_id) = @_;
     my (@conditions, @params);
 
     unless ($is_jury) {
@@ -295,7 +295,7 @@ sub cache_req_points {
 }
 
 sub get_contests_info {
-    (my CATS::RankTable $self, my $uid) = @_;
+    my ($self, $uid) = @_;
     $uid ||= 0;
     $self->{frozen} = $self->{not_started} = $self->{has_practice} = $self->{show_points} = 0;
     my $sth = $dbh->prepare(qq~
@@ -337,7 +337,7 @@ sub get_contests_info {
 }
 
 sub parse_params {
-    (my CATS::RankTable $self, my $p) = @_;
+    my ($self, $p) = @_;
 
     $self->{hide_ooc} = $p->{hide_ooc} || 0;
 
@@ -358,7 +358,7 @@ sub parse_params {
 }
 
 sub prepare_ranks {
-    (my CATS::RankTable $self, my $teams, my $unprocessed) = @_;
+    my ($self, $teams, $unprocessed) = @_;
 
     my @rank = values %$teams;
 
@@ -531,7 +531,7 @@ sub _read_cache {
 }
 
 sub rank_table {
-    (my CATS::RankTable $self) = @_;
+    my ($self) = @_;
 
     my @p = ('rank_table', clist => $self->{contest_list}, cache => $self->{use_cache});
     $t->param(
