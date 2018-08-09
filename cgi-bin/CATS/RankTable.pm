@@ -105,11 +105,7 @@ sub get_problems {
         $cats::problem_st_disabled
     );
 
-    my $w = int(50 / (@$problems + 1));
-    $w = $w < 3 ? 3 : $w > 10 ? 10 : $w;
-    $_->{column_width} = $w for @$problems;
-
-    my @contests = ();
+    my @contests;
     my $prev_cid = -1;
     my $need_commit = 0;
     my $max_total_points = 0;
@@ -138,9 +134,8 @@ sub get_problems {
 
     $t->param(
         problems => $problems,
-        problem_column_width => $w,
-        contests => [ @contests ],
-        many_contests => @contests > 1,
+        problem_column_width => min(max(int(60 / max(scalar @$problems, 1)), 2), 7),
+        contests => \@contests,
         max_total_points => $max_total_points
     );
 
@@ -232,7 +227,7 @@ sub _get_unprocessed {
     $unprocessed->{$_->{account_id}}->{$_->{problem_id}} = 1 for @$u;
     $unprocessed;
 }
-#'
+
 sub _get_first_unprocessed {
     my ($self) = @_;
     # Do not include AW submissions, manual state update clears cache anyway.
@@ -654,8 +649,6 @@ sub rank_table {
     }
 
     $t->param(
-        problems => $self->{problems},
-        problem_column_width => min(max(int(60 / max(scalar @{$self->{problems}}, 1)), 2), 7),
         problem_stats => [ map $problem_stats->{$_->{problem_id}}, @{$self->{problems}} ],
         problem_stats_color => 1 - $row_color,
         rank => $self->{rank},

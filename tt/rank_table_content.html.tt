@@ -32,7 +32,7 @@
 [% END -%]
 
 <table class="bordered rank_table highlight">
-[%- IF many_contests %]
+[%- IF contests.size > 1 %]
   <tr class="col_defs">
   <th colspan="2"></th>
   [% FOREACH c IN contests %]<th colspan="[% c.count %]">[% c.start_date %]</th>[% END %]
