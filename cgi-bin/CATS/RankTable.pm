@@ -530,6 +530,55 @@ sub _read_cache {
     ($teams, $problem_stats, $max_cached_req_id);
 }
 
+sub _process_single_run {
+    my ($self, $r, $teams) = @_;
+    $r->{time_elapsed} ||= 0;
+    return if $r->{state} == $cats::st_ignore_submit;
+    my $t = $teams->{$r->{account_id}} || $self->_select_teams($r->{account_id});
+    my $ap = $t->{problems}->{$r->{problem_id}};
+    my $problem = $self->{problems_idx}->{$r->{problem_id}};
+    if ($self->{show_points} && !defined $r->{points}) {
+        $r->{points} = cache_req_points($r, $problem);
+    }
+    next if $ap->{solved} && !$self->{show_points};
+
+    $problem->{run_method} //= $cats::rm_default;
+    if (
+        $problem->{run_method} == $cats::rm_competitive &&
+        (!defined $ap->{last_req_id} || $ap->{last_req_id} < $r->{id})
+    ) {
+        $t->{total_points} = $ap->{points} = 0;
+        $ap->{last_req_id} = $r->{id};
+    }
+
+    if ($r->{state} == $cats::st_accepted) {
+        my $te = int($r->{time_elapsed} + 0.5);
+        $ap->{time_consumed} = $te + ($ap->{penalty_runs} || 0) * ($problem->{penalty} || $cats::penalty);
+        $ap->{time_hm} = sprintf('%d:%02d', int($te / 60), $te % 60);
+        $ap->{solved} = 1;
+        $t->{total_time} += $ap->{time_consumed};
+        $t->{total_solved}++;
+    }
+    $ap->{penalty_runs}++ unless $problem->{exclude_penalty}->{$r->{state}};
+    $ap->{runs}++;
+    $t->{total_runs}++;
+    if ($r->{state} != $cats::st_security_violation && $r->{state} != $cats::st_manually_rejected) {
+        $ap->{points} ||= 0;
+
+        if ($problem->{run_method} == $cats::rm_competitive) {
+            $t->{total_points} += $r->{points};
+            $ap->{points} += $r->{points};
+        } else {
+            my $dp = ($r->{points} || 0) - $ap->{points};
+            # If req_selection is set to 'best', ignore negative point changes.
+            if ($self->{req_selection}->{$r->{contest_id}} == 0 || $dp > 0) {
+                $t->{total_points} += $dp;
+                $ap->{points} = $r->{points};
+            }
+        }
+    }
+}
+
 sub rank_table {
     my ($self) = @_;
 
@@ -577,51 +626,7 @@ sub rank_table {
             $write_cache->() if $first_unprocessed && $id > $first_unprocessed;
             $max_req_id = $id;
         }
-        $_->{time_elapsed} ||= 0;
-        next if $_->{state} == $cats::st_ignore_submit;
-        my $t = $teams->{$_->{account_id}} || $self->_select_teams($_->{account_id});
-        my $p = $t->{problems}->{$_->{problem_id}};
-        my $problem = $self->{problems_idx}->{$_->{problem_id}};
-        if ($self->{show_points} && !defined $_->{points}) {
-            $_->{points} = cache_req_points($_, $problem);
-        }
-        next if $p->{solved} && !$self->{show_points};
-
-        $problem->{run_method} //= $cats::rm_default;
-        if (
-            $problem->{run_method} == $cats::rm_competitive &&
-            (!defined $p->{last_req_id} || $p->{last_req_id} < $_->{id})
-        ) {
-            $t->{total_points} = $p->{points} = 0;
-            $p->{last_req_id} = $_->{id};
-        }
-
-        if ($_->{state} == $cats::st_accepted) {
-            my $te = int($_->{time_elapsed} + 0.5);
-            $p->{time_consumed} = $te + ($p->{penalty_runs} || 0) * ($problem->{penalty} || $cats::penalty);
-            $p->{time_hm} = sprintf('%d:%02d', int($te / 60), $te % 60);
-            $p->{solved} = 1;
-            $t->{total_time} += $p->{time_consumed};
-            $t->{total_solved}++;
-        }
-        $p->{penalty_runs}++ unless $problem->{exclude_penalty}->{$_->{state}};
-        $p->{runs}++;
-        $t->{total_runs}++;
-        if ($_->{state} != $cats::st_security_violation && $_->{state} != $cats::st_manually_rejected) {
-            $p->{points} ||= 0;
-
-            if ($problem->{run_method} == $cats::rm_competitive) {
-                $t->{total_points} += $_->{points};
-                $p->{points} += $_->{points};
-            } else {
-                my $dp = ($_->{points} || 0) - $p->{points};
-                # If req_selection is set to 'best', ignore negative point changes.
-                if ($self->{req_selection}->{$_->{contest_id}} == 0 || $dp > 0) {
-                    $t->{total_points} += $dp;
-                    $p->{points} = $_->{points};
-                }
-            }
-        }
+        $self->_process_single_run($_, $teams);
     }
     $write_cache->() if !$first_unprocessed || $max_req_id < $first_unprocessed;
 
