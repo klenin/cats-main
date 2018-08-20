@@ -86,6 +86,7 @@ div.search_hint {
     left: 8%;
     display: none;
     background: #fffd9d;
+    z-index: 11;
 }
 div.search_hint table td { padding: 1px 1px; }
 div.search_hint table td a { display: block; padding: 0 4px; }
