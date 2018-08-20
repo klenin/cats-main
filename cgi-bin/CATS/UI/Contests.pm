@@ -28,6 +28,7 @@ sub contests_new_frame {
     my $date = $dbh->selectrow_array(q~
         SELECT CURRENT_TIMESTAMP FROM RDB$DATABASE~);
     $date =~ s/\s*$//;
+    my $verdicts = [ map +{ short => $_->[0], checked => 0 }, @$CATS::Verdicts::name_to_state_sorted ];
     $t->param(
         start_date => $date, freeze_date => $date,
         finish_date => $date, defreeze_date => $date,
@@ -35,8 +36,8 @@ sub contests_new_frame {
         is_hidden => !$is_root,
         show_all_results => 1,
         href_action => url_f('contests'),
-        verdicts => [ map +{ short => $_->[0], checked => 0 },
-            @$CATS::Verdicts::name_to_state_sorted ],
+        verdicts_max_reqs => $verdicts,
+        verdicts_penalty => $verdicts,
     );
 
 }
