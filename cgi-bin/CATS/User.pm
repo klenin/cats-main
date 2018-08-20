@@ -189,7 +189,7 @@ sub prepare_password {
     my ($u, $set_password) = @_;
     if ($set_password) {
         $u->{passwd} = hash_password($u->{password1});
-        msg(1085, $u->{team_name});
+        msg(1085, Encode::decode_utf8($u->{team_name}));
     }
     delete @$u{qw(password1 password2)};
 }
