@@ -585,10 +585,10 @@ sub _get_request_state {
         }
     }
     my ($stmt, @bind) = $sql->select(
-        'contest_accounts', 'is_jury',
+        'contest_accounts', 'contest_id, is_jury',
         { contest_id => [ keys %contest_ids ], account_id => $uid });
     my $jury_in_contest = $dbh->selectall_hashref($stmt, 'contest_id', undef, @bind);
-    grep $_->{ok} || $jury_in_contest->{$_->{contest_id}}, @$result;
+    grep $_->{ok} || $jury_in_contest->{$_->{contest_id}}->{is_jury}, @$result;
 }
 
 sub get_request_state_api {
