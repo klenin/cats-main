@@ -87,7 +87,7 @@ package CATS::Form;
 
 use CATS::DB;
 use CATS::Globals qw($t);
-use CATS::Messages qw(msg);
+use CATS::Messages qw(msg res_str);
 use CATS::Output qw(init_template url_f);
 use CATS::RouteParser;
 
