@@ -172,7 +172,7 @@ sub insert {
     $dbh->do(q~
         INSERT INTO accounts (
             id, srole, passwd, settings, ~ . join (', ', param_names()) . q~
-        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)~, {},
+        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)~, {},
         $aid, $CATS::Privileges::srole_user, $self->{password1}, $new_settings, $self->values
     );
     add_to_contest(contest_id => $_->{id}, account_id => $aid, is_ooc => 1)
