@@ -8,12 +8,15 @@ use Time::HiRes;
 use CATS::Messages qw(res_str);
 use CATS::Globals qw($contest $t $user);
 
+sub since_contest_start_text {
+    my ($dt) = @_;
+    res_str($dt < 0 ? 578 : 579) . ': ' . format_diff(abs($dt));
+}
+
 sub prepare_server_time {
-    my $dt = $contest->{time_since_start} - $user->{diff_time};
     $t->param(
         server_time => $contest->{server_time},
-        elapsed_msg => res_str($dt < 0 ? 578 : 579),
-        elapsed_time => format_diff(abs($dt)),
+        elapsed_msg => since_contest_start_text($contest->{time_since_start} - $user->{diff_time}),
     );
 }
 
@@ -31,7 +34,7 @@ sub format_diff {
     my $minutes = int($dt);
     $dt = ($dt - $minutes) * 60;
     my $seconds = $opts{seconds} ? sprintf(':%04.1f', $dt) : '';
-    !$days && !$hours ? $sign. sprintf('0:%02d%s', $minutes, $seconds) :
+    !$days && !$hours ? $sign . sprintf('0:%02d%s', $minutes, $seconds) :
         sprintf($days ? '%s%d%s %02d:%02d%s' : '%s%4$d:%5$02d%6$s',
             $sign, $days, res_str(577), $hours, $minutes, $seconds);
 }

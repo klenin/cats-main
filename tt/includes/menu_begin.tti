@@ -27,7 +27,7 @@
       [% l.name; '</a> '; END %]</p>
       [% IF server_time ~%]
         <span>
-        <span id="elapsed">[% elapsed_msg %]: [% elapsed_time %]</span><br>
+        <span id="elapsed">[% elapsed_msg %]</span><br>
         [% capt.last_updated %]: <span id="server_time">[% server_time %]</span>
         </span>
       [%~ END %]

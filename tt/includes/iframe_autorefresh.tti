@@ -6,7 +6,7 @@
       el.innerHTML = value;
   }
   topSet('server_time', "[% server_time %]");
-  topSet('elapsed', "[% elapsed_msg %]: [% elapsed_time %]");
+  topSet('elapsed', "[% elapsed_msg %]");
   topSet('refreshable_content', document.getElementById('refreshable_content').innerHTML);
   setTimeout(function() { document.location.reload(1); }, 30000);
 </script>
