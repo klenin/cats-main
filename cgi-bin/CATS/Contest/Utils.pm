@@ -5,6 +5,7 @@ use warnings;
 
 use List::Util qw(reduce);
 
+use CATS::Config;
 use CATS::Constants;
 use CATS::DB;
 use CATS::Globals qw($cid $is_root $sid $t $uid);
@@ -45,6 +46,7 @@ sub contest_fields_str {
     join ', ', map("C.$_", contest_fields),
         'CURRENT_TIMESTAMP - start_date AS since_start',
         'CURRENT_TIMESTAMP - finish_date AS since_finish',
+        'CAST((finish_date - start_date) * 24 AS DECIMAL(15,1)) AS duration_hours',
 }
 
 sub _contest_search_fields() {qw(
@@ -66,17 +68,19 @@ sub contest_searches { return {
     (map { $_ => "C.$_" } contest_fields, _contest_search_fields),
     since_start => '(CURRENT_TIMESTAMP - start_date)',
     since_finish => '(CURRENT_TIMESTAMP - finish_date)',
+    duration_hours => 'CAST((finish_date - start_date) * 24 AS DECIMAL(15,1))',
 }}
 
 sub common_contests_view {
     my ($c) = @_;
+    my $start_date_iso = date_to_iso($c->{start_date});
     return (
         %$c,
         contest_name => $c->{title},
         short_descr => $c->{short_descr},
         start_date => $c->{start_date},
         since_start => $c->{since_start},
-        start_date_iso => date_to_iso($c->{start_date}),
+        start_date_iso => $start_date_iso,
         finish_date => $c->{finish_date},
         since_finish => $c->{since_finish},
         finish_date_iso => date_to_iso($c->{finish_date}),
@@ -90,6 +94,12 @@ sub common_contests_view {
         href_params => url_f('contest_params', id => $c->{id}),
         href_problems => url_function('problems', sid => $sid, cid => $c->{id}),
         href_problems_text => CATS::StaticPages::url_static('problem_text', cid => $c->{id}),
+        (href_start_date => !$CATS::Config::timeanddate_url ? undef :
+            "$CATS::Config::timeanddate_url?" .
+            # timeanddate.com requires ampersand as a separator.
+            join '&', CATS::Utils::gen_url_params(
+                msg => $c->{title}, %CATS::Config::timeanddate_tz, iso => $start_date_iso,
+                ($c->{duration_hours} < 24 ? (ah => $c->{duration_hours}) : ()))),
     );
 }
 
