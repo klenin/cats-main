@@ -24,7 +24,7 @@ my %problem_key_to_tag = (allow_des => 'AllowDEs', map { $_ => _snake_to_camel_c
     time_limit write_limit memory_limit process_limit points_testsets repo_path
 ));
 
-my %key_to_tag = ( ctype => 'ContestType', map { $_ => _snake_to_camel_case($_) } qw(
+my %key_to_tag = (ctype => 'ContestType', map { $_ => _snake_to_camel_case($_) } qw(
     id rules title closed penalty max_reqs is_hidden local_only show_sites show_flags
     start_date short_descr is_official finish_date run_all_tests req_selection show_packages
     show_all_tests defreeze_date show_test_data max_reqs_except show_frozen_reqs show_all_results

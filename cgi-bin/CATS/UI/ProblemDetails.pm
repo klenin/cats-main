@@ -409,16 +409,6 @@ sub _matrix {
     $matrix;
 }
 
-sub _save_contest_problem_des {
-    my ($p, $problem, $des) = @_;
-    $p->{save} or return;
-    my @to_be_allowed;
-    for my $id (@{$p->{allow}}) {
-        push @to_be_allowed, grep( { $id == $_->{id} } @$des);
-    }
-    @$des = @{CATS::Problem::Save::set_contest_problem_des([ map { $_->{code} } @to_be_allowed ], $problem->{cpid})};
-}
-
 sub problem_des_frame {
     my ($p) = @_;
 
@@ -434,8 +424,9 @@ sub problem_des_frame {
         $p->{pid}, $cid) or return;
     $problem->{commit_sha} = eval { CATS::Problem::Storage::get_latest_master_sha($p->{pid}); } || 'error';
 
-    my $des = CATS::Problem::Save::get_all_des($problem->{cpid}) or return;
-    _save_contest_problem_des($p, $problem, $des);
+    my $des = $p->{save} ?
+        CATS::Problem::Save::set_contest_problem_des($problem->{cpid}, $p->{allow}, 'id') :
+        CATS::Problem::Save::get_all_des($problem->{cpid});
 
     $lv->define_columns(url_f('problem_des', pid => $p->{pid}), 0, 0, [
         { caption => res_str(642), order_by => 'stype', width => '10%' },

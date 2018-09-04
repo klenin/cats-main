@@ -189,20 +189,20 @@ sub problems_add_new_remote {
 }
 
 sub set_contest_problem_des {
-    my ($des, $cpid) = @_;
+    my ($cpid, $des, $field) = @_;
 
     my $all_des = get_all_des($cpid);
     my (@delete_des, @insert_des);
     my %indexed_des = map { $_ => 1 } @$des;
 
     for (@$all_des) {
-        my $new = exists $indexed_des{$_->{code}};
+        my $new = exists $indexed_des{$_->{$field}};
         push @delete_des, $_->{id} if $_->{allow} && !$new;
         push @insert_des, $_->{id} if !$_->{allow} && $new;
         $_->{allow} = $new;
     }
 
-    @delete_des || @insert_des or return;
+    @delete_des || @insert_des or return $all_des;
 
     if (@delete_des) {
         $dbh->do(_u $sql->delete('contest_problem_des',
