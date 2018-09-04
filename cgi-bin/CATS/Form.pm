@@ -199,6 +199,11 @@ sub validate {
     1;
 }
 
+sub _href_action {
+    my ($self, $id, $params) = @_;
+    url_f($self->{href_action}, $self->{id_param} => $id, @{$params || []});
+}
+
 # Params: opts { href_action_params, readonly, redirect, redirect_cancel, redirect_save }
 sub edit_frame {
     my ($self, $p, %opts) = @_;
@@ -211,8 +216,7 @@ sub edit_frame {
         form => $self,
         readonly => $opts{readonly},
         $self->{id_param} => $id,
-        href_action => url_f($self->{href_action},
-            $self->{id_param} => $id, @{$opts{href_action_params} || []}),
+        href_action => $self->_href_action($id, $opts{href_action_params}),
     };
     $t->param($self->{template_var} => $form_data);
     if ($p->{edit_save} && !$opts{readonly}) {
@@ -227,6 +231,7 @@ sub edit_frame {
         if ($redir{save}) {
             return _redirect($p, $redir{save}, saved => $id);
         }
+        $form_data->{href_action} = $self->_href_action($id, $opts{href_action_params});
         if ($self->{descr_field} && $self->{msg_saved}) {
             my $descr = $form_data->{indexed}->{$self->{descr_field}}->{value};
             msg($self->{msg_saved}, $descr);
