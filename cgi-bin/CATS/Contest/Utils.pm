@@ -11,6 +11,7 @@ use CATS::DB;
 use CATS::Globals qw($cid $is_root $sid $t $uid);
 use CATS::Messages qw(res_str);
 #use CATS::Output qw(url_f);
+use CATS::Time;
 use CATS::Utils qw(url_function date_to_iso);
 
 # Avoid CATS::Output to work on Travis.
@@ -78,6 +79,7 @@ sub common_contests_view {
         %$c,
         contest_name => $c->{title},
         start_date_iso => $start_date_iso,
+        since_start_text => CATS::Time::since_contest_start_text($c->{since_start}),
         finish_date_iso => date_to_iso($c->{finish_date}),
         freeze_date_iso => date_to_iso($c->{freeze_date}),
         unfreeze_date_iso => date_to_iso($c->{defreeze_date}),
