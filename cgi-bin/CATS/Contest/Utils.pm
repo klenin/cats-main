@@ -77,12 +77,7 @@ sub common_contests_view {
     return (
         %$c,
         contest_name => $c->{title},
-        short_descr => $c->{short_descr},
-        start_date => $c->{start_date},
-        since_start => $c->{since_start},
         start_date_iso => $start_date_iso,
-        finish_date => $c->{finish_date},
-        since_finish => $c->{since_finish},
         finish_date_iso => date_to_iso($c->{finish_date}),
         freeze_date_iso => date_to_iso($c->{freeze_date}),
         unfreeze_date_iso => date_to_iso($c->{defreeze_date}),
