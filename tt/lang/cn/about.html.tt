@@ -1,9 +1,7 @@
 [%
   capt.import({
     welcome => 'Welcome to the automated program testing system with a problem archive',
-    description => [
-      'This system is used for Far Eastern Subregional ACM ICPC, other student competitions and training.',
-    ],
+    upcoming => 'Upcoming events',
     judges_active => 'Active judging computers',
     queue_length => 'Submissions queued for evaluation',
     problem_count => 'Total number of problems',

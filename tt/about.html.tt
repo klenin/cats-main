@@ -1,9 +1,44 @@
 [%- contest.title = '' -%]
+[%- extra_head = BLOCK %]
+<style>
+  div.tiles { width: 100%; display: flex; flex-wrap: wrap; }
+  div.tiles > div > a { color: black; }
+  div.tiles > div:hover { box-shadow: 2px 2px gray; }
+  div.tiles > div {
+    padding: 5px;
+    margin: 5px;
+    border: 1px solid black;
+    width: 20%;
+    max-width: 300px;
+    min-width: 150px;
+  }
+  div.tiles > div > a > div {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  div.tiles div.title { font-weight: bold; padding-bottom: 10px; }
+  div.tiles div.descr { font-size: small; font-style: italic; padding-bottom: 10px; }
+</style>
+[% END -%]
 [% PROCESS includes/menu_begin.tti %]
 
 <b>[% capt.welcome %]</b><br/><br/>
 
-<p>[% capt.description.join %]</p>
+[% IF contests.size > 0 %]
+<p>[% capt.upcoming %]</p>
+<div class="tiles">
+[% FOREACH c IN contests %]
+  <div><a href="[% c.href_contest %]"><div>
+    <div class="title">[% c.title %]</div>
+    <div class="descr">[% c.short_descr %]</div>
+    <div class="start">[% c.start_date %]<br/>[% c.since_start_text %]</div>
+  </div></a></div>
+[% END %]
+</div>
+<br/>
+[% END %]
 
 <p>[% capt.judges_active %]: <b>[% judges_active %] / [% judges_total %]</b>.</p>
 <p>[% capt.queue_length %]: <b>[% queue_length %]</b>.</p>

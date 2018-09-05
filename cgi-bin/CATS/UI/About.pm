@@ -4,10 +4,12 @@ use strict;
 use warnings;
 
 use CATS::DB;
-use CATS::Globals qw($t);
+use CATS::Globals qw($sid $t);
 use CATS::Judge;
 use CATS::Messages qw(res_str);
 use CATS::Output qw(init_template);
+use CATS::Time;
+use CATS::Utils;
 
 sub about_frame {
     my ($p) = @_;
@@ -19,11 +21,22 @@ sub about_frame {
         SELECT COUNT(*) FROM reqs R
             WHERE R.state = $cats::st_not_processed AND R.submit_time > CURRENT_TIMESTAMP - 30~);
     my ($jactive, $jtotal) = CATS::Judge::get_active_count;
+    my $contests = $dbh->selectall_arrayref(q~
+        SELECT C.id, C.title, C.start_date, C.short_descr,
+            CURRENT_TIMESTAMP - C.start_date AS since_start
+        FROM contests C
+        WHERE C.is_hidden = 0 AND C.is_official = 1 AND C.finish_date > CURRENT_TIMESTAMP
+        ORDER BY C.start_date~, { Slice => {} });
+    for (@$contests) {
+        $_->{href_contest} = CATS::Utils::url_function('problems', cid => $_->{id}, sid => $sid);
+        $_->{since_start_text} = CATS::Time::since_contest_start_text($_->{since_start});
+    }
     $t->param(
         problem_count => $problem_count,
         queue_length => $queue_length,
         judges_active => $jactive,
         judges_total => $jtotal,
+        contests => $contests,
         title_suffix => res_str(1000),
     );
 }
