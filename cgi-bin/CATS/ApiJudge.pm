@@ -271,6 +271,13 @@ sub save_problem_snippet {
     $p->print_json({ ok => 1 });
 }
 
+sub get_subtasks {
+    my ($p) = @_;
+    bad_judge($p) and return -1;
+
+    $p->print_json({ subtasks => CATS::Testset::get_subtasks($dbh, $p->{req_id}) });
+}
+
 sub get_testset {
     my ($p) = @_;
     bad_judge($p) and return -1;

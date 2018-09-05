@@ -372,6 +372,10 @@ my $api_judge_routes = {
         snippet_name => ident,
         text => undef,
     ],
+    api_judge_get_subtasks => [
+        \&CATS::ApiJudge::get_subtasks,
+        req_id => integer,
+    ],
     api_judge_get_testset => [
         \&CATS::ApiJudge::get_testset,
         table => qr/^(reqs|jobs)$/, id => integer, update => integer,
