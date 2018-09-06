@@ -25,5 +25,10 @@
   </td>
 </tr>
 </table>
+[% IF js.datepicker %]
+<script>
+  $(document).ready(init_datepickers('[% lang %]'));
+</script>
+[% END %]
 </body>
 </html>

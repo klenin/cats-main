@@ -288,11 +288,17 @@ a.icon {
     height: 16px;
     background-repeat: no-repeat;
 }
+a.icon_centered {
+    position: absolute;
+    top: 50%;
+    margin-top: -8px;
+}
 
 a.edit { background-image: url(../images/icons/edit.png); }
 a.view { background-image: url(../images/icons/view.png); }
 a.delete { background-image: url(../images/icons/delete.png); }
 a.checked { background-image: url(../images/icons/checked.png); }
+a.datepicker { background-image: url(../images/icons/datepicker.png); margin-left: 3px; }
 
 a.contest_selected { color: black; background-color: #ccccff; }
 
