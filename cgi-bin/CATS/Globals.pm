@@ -48,8 +48,8 @@ BEGIN {
     $jobs = {
         name_to_type => $name_to_type,
         name_to_state => $name_to_state,
-        type_to_name => { map { $name_to_type->{$_} => $_ } keys %$name_to_type },
-        state_to_name => { map { $name_to_state->{$_} => $_ } keys %$name_to_state },
+        type_to_name => { reverse %$name_to_type },
+        state_to_name => { reverse %$name_to_state },
     };
 };
 
