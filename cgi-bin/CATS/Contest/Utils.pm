@@ -65,12 +65,17 @@ sub _contest_search_fields() {qw(
     show_sites
 )}
 
-sub contest_searches { return {
-    (map { $_ => "C.$_" } contest_fields, _contest_search_fields),
-    since_start => '(CURRENT_TIMESTAMP - start_date)',
-    since_finish => '(CURRENT_TIMESTAMP - finish_date)',
-    duration_hours => 'CAST((finish_date - start_date) * 24 AS DECIMAL(15,1))',
-}}
+sub _contest_searches {
+    my ($p) = @_;
+
+    $p->{listview}->define_db_searches({
+        (map { $_ => "C.$_" } contest_fields, _contest_search_fields),
+        since_start => '(CURRENT_TIMESTAMP - start_date)',
+        since_finish => '(CURRENT_TIMESTAMP - finish_date)',
+        duration_hours => 'CAST((finish_date - start_date) * 24 AS DECIMAL(15,1))',
+    });
+    $p->{listview}->define_enums({ rules => { acm => 0, school => 1 } });
+}
 
 sub common_contests_view {
     my ($c) = @_;
@@ -103,7 +108,7 @@ sub common_contests_view {
 sub authenticated_contests_view {
     my ($p) = @_;
     my $cf = contest_fields_str;
-    $p->{listview}->define_db_searches(contest_searches);
+    _contest_searches($p);
     $p->{listview}->define_db_searches({
         is_virtual => 'CA.is_virtual',
         is_jury => 'CA.is_jury',
@@ -180,7 +185,7 @@ sub authenticated_contests_view {
 sub anonymous_contests_view {
     my ($p) = @_;
     my $cf = contest_fields_str;
-    $p->{listview}->define_db_searches(contest_searches);
+    _contest_searches($p);
     my $sth = $dbh->prepare(qq~
         SELECT $cf FROM contests C WHERE COALESCE(C.is_hidden, 0) = 0 ~ .
        ($p->{filter} || '') . $p->{listview}->order_by
