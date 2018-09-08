@@ -125,7 +125,7 @@ sub new {
     $self->{validators} = $r{validators} // [];
     $self->{$_} = $r{$_} for qw(
         after_load after_make
-        before_commit before_display before_save before_save_db
+        before_commit before_delete before_display before_save before_save_db
         debug msg_deleted msg_saved);
     $self;
 }
@@ -257,6 +257,9 @@ sub delete_or_saved {
     my ($descr) = $dbh->selectrow_array(_u $sql->select(
         $self->{table}, $self->{descr_field}, { id => $id })) or return;
     if ($p->{delete}) {
+        if ($self->{before_delete}) {
+            $self->{before_delete}->($p, $id) or return;
+        }
         $dbh->do(_u $sql->delete($self->{table}, { id => $id }));
         $opts{before_commit}->($self) if $opts{before_commit};
         $dbh->commit;
