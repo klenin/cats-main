@@ -1,0 +1,27 @@
+[% PROCESS includes/menu_begin.tti %]
+[% PROCESS includes/html_input.tti %]
+[% PROCESS "lang/$lang/user_relations.html.tt" %]
+
+[%- MACRO tr_select_value_cb(f, fd, select_items, fcb) BLOCK -%]
+<tr>
+  <td>[% f.caption || capt.item(f.field.name) %]</td>
+  <td>
+    [% select_value(f.field.name, select_items, f.value, !fd.readonly) %]
+    [% checkbox_1(fcb.field.name, fcb.value, !fd.readonly) %]
+    [%- maybe_err(f); maybe_err(fcb); %]
+  </td>
+</tr>
+[%- END -%]
+
+<form method="post" enctype="multipart/form-data" action="[% ur.href_action %]">
+<table class="edit_form">
+[% tr_select_value_cb(ur.indexed.from_id, ur, ur.accounts, ur.indexed.from_ok) %]
+[%- FOREACH rt IN ur.rel_types; rt.text = capt.relation.item(rt.text); END -%]
+[% tr_select_value(ur.indexed.rel_type, ur, ur.rel_types) %]
+[% tr_select_value_cb(ur.indexed.to_id, ur, ur.accounts, ur.indexed.to_ok) %]
+</table>
+<br>
+[% PROCESS includes/edit_save_cancel.tti %]
+</form>
+
+[% PROCESS includes/menu_end.tti %]

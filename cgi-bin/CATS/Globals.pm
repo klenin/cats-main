@@ -25,6 +25,9 @@ sub max_fetch_row_count() { 1000 }
 our $contact_phone = 901;
 our $contact_email = 902;
 
+our $relation = { sees_reqs => 1, is_member_of => 2, upsolves_for => 3 };
+our $relation_to_name = { reverse %$relation };
+
 our $jobs;
 
 BEGIN {

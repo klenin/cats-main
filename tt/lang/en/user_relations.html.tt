@@ -1,0 +1,10 @@
+[%
+  capt.import({
+    want_to_delete => 'Do you really want to delete relation',
+    relation => {
+      sees_reqs => 'sees submissions',
+      is_member_of => 'is member of team',
+      upsolves_for => 'upsolves for',
+    },
+  })
+%]

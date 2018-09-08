@@ -1,0 +1,36 @@
+[% PROCESS includes/menu_begin.tti %]
+[% PROCESS includes/html.tti %]
+
+<script>
+function delete_user_relation(href, name) {
+  if (confirm("[% capt.want_to_delete %] '" + name + "'?" ))
+      document.location = href;
+}
+</script>
+
+[% PROCESS includes/listview_header.tti %]
+
+<table class="listview bordered highlight">
+[% PROCESS includes/listview_col_defs.tti sel_col = 1 %]
+[% FOREACH ur IN user_relations %]
+<tr class="[% loop.parity %]">
+<td class="nobr">
+  [% IF ur.href_delete ~%]
+  <a href="javascript:delete_user_relation('[% ur.href_delete %]', '[% ur.from_name | html %] [% capt.relation.item(ur.type_name) %] [% ur.to_name | html %]');" class="icon delete"></a>
+  [%~ END %]
+  [% IF ur.href_edit ~%]
+  <a href="[% ur.href_edit %]" class="icon edit"></a>
+  [%~ END %]
+</td>
+<td>[% maybe_href(ur.href_from, ur.from_name) %] [% IF ur.from_ok %]<a class="icon checked"></a>[% END %]</td>
+<td>[% capt.relation.item(ur.type_name) %]</td>
+<td>[% maybe_href(ur.href_to, ur.to_name) %] [% IF ur.to_ok %]<a class="icon checked"></a>[% END %]</td>
+[% IF visible_cols.Ts %]<td>[% ur.ts %]</td>[% END %]
+</tr>
+[% END %]
+</table>
+<br/>
+[% PROCESS includes/pages.tti %]
+</form>
+
+[% PROCESS includes/menu_end.tti %]
