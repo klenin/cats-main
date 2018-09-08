@@ -166,7 +166,7 @@ my $main_routes = {
         ext_time => fixed, ext_units => ident,
         is_virtual => bool, save => bool, finish_now => bool ],
     user_contacts => [ \&CATS::UI::UserContacts::user_contacts_frame,
-        uid => integer, delete => integer, saved => bool,
+        uid => integer, delete => integer, saved => integer,
     ],
     user_contacts_edit => [ \&CATS::UI::UserContacts::user_contacts_edit_frame,
         uid => integer, $CATS::UI::UserContacts::user_contact_form->route,

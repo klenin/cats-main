@@ -47,8 +47,8 @@ our $user_contact_form = CATS::Form->new(
     href_action => 'user_contacts_edit',
     descr_field => 'handle',
     template_var => 'uc',
-    msg_saved => 1071,
-    msg_deleted => 1072,
+    msg_saved => 1072,
+    msg_deleted => 1071,
     before_display => sub {
         my ($fd, $p) = @_;
         $fd->{contact_types} = $dbh->selectall_arrayref(q~
@@ -78,7 +78,6 @@ sub user_contacts_frame {
     my $editable = $is_root || _is_profile($p);
     $user_contact_form->delete_or_saved($p) if $editable;
 
-    init_template($p, 'user_contacts.html.tt');
     my $lv = CATS::ListView->new(web => $p, name => 'user_contacts');
     my ($user_name, $user_site) = _user_name_and_site($p);
     $user_name or return;
