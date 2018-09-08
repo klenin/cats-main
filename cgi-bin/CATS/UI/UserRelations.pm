@@ -13,22 +13,41 @@ use CATS::Messages qw(msg res_str);
 use CATS::Output qw(init_template url_f);
 use CATS::User;
 
-sub _check_owner {
+sub _check {
     my ($fd, $p) = @_;
+
+    my $from_id = $fd->{indexed}->{from_id}->{value} || 0;
+    my $to_id = $fd->{indexed}->{to_id}->{value} || 0;
+    $from_id != $to_id or return msg(1179);
+
     return 1 if $is_root;
 
-    my $from_id = $fd->{indexed}->{from_id};
-    my $to_id = $fd->{indexed}->{to_id};
+    ($from_id == $user->{id} || $to_id == $user->{id}) or return msg(1181);
 
-    if (!$fd->{id}) {
-        $from_id->{value} = $p->{uid};
-    }
-    else {
-        my ($old_from_id, $old_to_id) = $dbh->selectrow_array(q~
-            SELECT from_id, to_id FROM relations WHERE id = ?~, undef,
+    my $old;
+    if ($fd->{id}) {
+        $old = $dbh->selectrow_hashref(q~
+            SELECT from_id, to_id, from_ok, to_ok FROM relations WHERE id = ?~, { Slice => {} },
             $fd->{id});
-        $old_from_id == $user->{id} || $old_to_id == $user->{id}
-            or return CATS::Messages::msg_debug('Bad account %d', $old_from_id);
+        ($old->{from_id} == $user->{id} || $old->{to_id} == $user->{id}) &&
+        (!$old->{from_ok} || $from_id == $old->{from_id}) &&
+        (!$old->{to_ok} || $to_id == $old->{to_id})
+            or return msg(1178);
+    }
+
+    if ($from_id == $user->{id}) {
+        my $to_ok = $fd->{indexed}->{to_ok};
+        if (($to_ok->{value} || 0) != ($old->{to_ok} // 0)) {
+            $to_ok->{error} = res_str(1180);
+            return;
+        }
+    }
+    if ($to_id == $user->{id}) {
+        my $from_ok = $fd->{indexed}->{from_ok};
+        if (($from_ok->{value} || 0) != ($old->{from_ok} // 0)) {
+            $from_ok->{error} = res_str(1180);
+            return;
+        }
     }
     1;
 }
@@ -52,6 +71,12 @@ our $form = CATS::Form->new(
     template_var => 'ur',
     msg_deleted => 1177,
     msg_saved => 1176,
+    before_delete => sub {
+        my ($p, $id) = @_;
+        $is_root || $dbh->selectrow_array(q~
+            SELECT id FROM relations WHERE id = ? AND (from_id = ? OR to_id = ?)~, undef,
+            $id, $user->{id}, $user->{id});
+    },
     before_display => sub {
         my ($fd, $p) = @_;
         $fd->{accounts} = $dbh->selectall_arrayref(q~
@@ -66,13 +91,13 @@ our $form = CATS::Form->new(
             keys %$CATS::Globals::relation ];
         $t->param(CATS::User::submenu('user_relations', $p->{uid}));
     },
-    validators => [ \&_check_owner ],
+    validators => [ \&_check ],
 );
 
 sub user_relations_edit_frame {
     my ($p) = @_;
     init_template($p, 'user_relations_edit.html.tt');
-    $is_root or return;
+    $is_root || ($user->{id} // 0) == $p->{uid} or return;
     my @puid = (uid => $p->{uid});
     $form->edit_frame($p, redirect => [ 'user_relations', @puid ], href_action_params => \@puid);
 }
@@ -81,10 +106,9 @@ sub user_relations_frame {
     my ($p) = @_;
 
     init_template($p, 'user_relations.html.tt');
-    $p->{uid} or return;
+    $is_root || ($user->{id} // 0) == $p->{uid} or return;
 
-    my $editable = $is_root;
-    $form->delete_or_saved($p) if $editable;
+    $form->delete_or_saved($p);
 
     my $lv = CATS::ListView->new(web => $p, name => 'user_relations');
     my ($user_name) = $dbh->selectrow_array(q~
@@ -107,17 +131,16 @@ sub user_relations_frame {
     $sth->execute($p->{uid}, $p->{uid}, $lv->where_params);
 
     my @pp = (uid => $p->{uid});
+    my $user_page = $is_root ? 'users_edit' : 'user_stats';
     my $fetch_record = sub {
         my $row = $_[0]->fetchrow_hashref or return ();
         (
-            ($editable ? (
-                href_edit => url_f('user_relations_edit', id => $row->{id}, @pp),
-                href_delete => url_f('user_relations', 'delete' => $row->{id}, @pp),
-                href_from => url_f('users_edit', uid => $row->{from_id}),
-                href_to => url_f('users_edit', uid => $row->{to_id}),
-            ) : ()),
             %$row,
             type_name => $CATS::Globals::relation_to_name->{$row->{rel_type}},
+            href_edit => url_f('user_relations_edit', id => $row->{id}, @pp),
+            href_delete => url_f('user_relations', 'delete' => $row->{id}, @pp),
+            href_from => url_f($user_page, uid => $row->{from_id}),
+            href_to => url_f($user_page, uid => $row->{to_id}),
         );
     };
     $lv->attach(url_f('user_relations'), $fetch_record, $sth, { page_params => { @pp } });

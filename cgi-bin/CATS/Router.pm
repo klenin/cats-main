@@ -172,10 +172,10 @@ my $main_routes = {
         uid => integer, $CATS::UI::UserContacts::user_contact_form->route,
     ],
     user_relations => [ \&CATS::UI::UserRelations::user_relations_frame,
-        uid => integer, delete => integer, saved => integer,
+        uid => required integer, delete => integer, saved => integer,
     ],
     user_relations_edit => [ \&CATS::UI::UserRelations::user_relations_edit_frame,
-        uid => integer, $CATS::UI::UserRelations::form->route,
+        uid => required integer, $CATS::UI::UserRelations::form->route,
     ],
     impersonate => [ \&CATS::UI::UserDetails::impersonate_frame, uid => integer, ],
     contact_types => [

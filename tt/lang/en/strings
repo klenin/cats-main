@@ -326,3 +326,7 @@
 1175 "Keyword '%s' deleted."
 1176 "Relation '%d' saved."
 1177 "Relation '%d' deleted."
+1178 "Not enough privileges for a change."
+1179 "Relation must connect different users."
+1180 "You can accept only your side of relation."
+1181 "Relation must include current user."

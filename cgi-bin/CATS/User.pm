@@ -554,7 +554,9 @@ sub submenu {
             { href => url_f('user_settings', uid => $user_id), item => res_str(575), selected => 'user_settings' },
         )),
         { href => url_f('user_contacts', uid => $user_id), item => res_str(586), selected => 'user_contacts' },
-        { href => url_f('user_relations', uid => $user_id), item => res_str(597), selected => 'user_relations' },
+        ($is_root || $is_profile ?
+            ({ href => url_f('user_relations', uid => $user_id),
+                item => res_str(597), selected => 'user_relations' }) : ()),
         ($is_jury || $user->{is_site_org} && (!$user->{site_id} || $user->{site_id} == $site_id) ? (
             { href => url_f('user_vdiff', uid => $user_id), item => res_str(580), selected => 'user_vdiff' },
             { href => url_f('user_ip', uid => $user_id), item => res_str(576), selected => 'user_ip' },
