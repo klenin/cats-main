@@ -50,7 +50,8 @@ sub msg {
 }
 
 sub msg_debug {
-    push @$messages, sprintf(@_);
+    # sprintf forces scalar context of format.
+    push @$messages, sprintf(shift, @_);
     undef;
 }
 
