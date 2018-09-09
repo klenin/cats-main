@@ -1,15 +1,60 @@
+[%- js.autocomplete = 1 -%]
 [% PROCESS includes/menu_begin.tti %]
 [% PROCESS includes/html_input.tti %]
+[%- PROCESS "lang/$lang/autocomplete.tti" -%]
+
+[%- MACRO tr_autocomplete_user(f, fd) BLOCK -%]
+<tr>
+  <td>[% f.caption || capt.item(f.field.name) %]</td>
+  <td>
+    <input type="text" name="login" id="login" class="bordered" size="40" value="[% fd.login %]" />
+    (<span id="user_name">[% fd.team_name %]</span>)
+    <input type="hidden" name="[% f.field.name %]" id="[% f.field.name %]" value="[% f.value %]" />
+    [%- maybe_err(f); %]
+  </td>
+</tr>
+[%- END -%]
 
 <form method="post" enctype="multipart/form-data" action="[% sn.href_action %]">
 <table class="edit_form padded">
 [% tr_select_value(sn.indexed.problem_id, sn, sn.problems) %]
-[% tr_select_value(sn.indexed.account_id, sn, sn.accounts) %]
+[% tr_autocomplete_user(sn.indexed.account_id, sn) %]
 [% tr_text(sn.indexed.name, sn) %]
 [% tr_textarea(sn.indexed.text, sn) %]
 </table>
 <br>
 [% PROCESS includes/edit_save_cancel.tti %]
+<input type="hidden" name="js" id="js" />
 </form>
+
+<script>
+function autocomplete() {
+  var input = $('#login');
+  input.autocomplete({
+    minChars: 2,
+    deferRequestBy: 100,
+    showNoSuggestionNotice: true,
+    noSuggestionNotice: '[% capt.no_suggestion %]',
+    serviceUrl: '[% sn.href_find_users %]',
+    onSelect: function (suggestion) {
+      $('#account_id').val(suggestion.data.id);
+      $('#user_name').text(suggestion.data.team_name);
+    },
+    formatResult: function (suggestion, currentValue) {
+      return suggestion.data.login + ' (' + suggestion.data.team_name + ')';
+    }
+  });
+  var on_focus = function () {
+    input.autocomplete('setOptions', { width: input.width() * 2 });
+    input.off('focus', on_focus);
+  };
+  input.on('focus', on_focus);
+}
+
+$(document).ready(function () {
+  autocomplete();
+  $('#js').val(1);
+});
+</script>
 
 [% PROCESS includes/menu_end.tti %]

@@ -33,4 +33,3 @@ function delete_snippet(href, name) {
 </form>
 
 [% PROCESS includes/menu_end.tti %]
-

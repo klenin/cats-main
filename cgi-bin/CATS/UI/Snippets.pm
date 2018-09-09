@@ -27,14 +27,22 @@ sub _validate_unique_snippet {
 
 sub _submenu { $t->param(submenu => [ CATS::References::menu('snippets') ] ) }
 
+sub _parse_login {
+    my ($value, $p) = @_;
+    return $value if $p->{js};
+    $dbh->selectrow_array(q~
+        SELECT id FROM accounts WHERE login = ?~, undef,
+        $p->{login} // '') // 0;
+}
+
 our $form = CATS::Form->new(
     table => 'snippets',
     fields => [
-        [ name => 'account_id', validators => [ $int ], caption => 608, ],
+        [ name => 'account_id', after_parse => \&_parse_login, validators => [ $int ], caption => 608, ],
         [ name => 'problem_id', validators => [ $int ], caption => 602 ],
         [ name => 'contest_id', before_save => sub { $cid }, ],
         [ name => 'name', validators => [ $str1_200 ], caption => 601, ],
-        [ name => 'text', validators => [ $str0_200 ], caption => 672, editor => { cols => 100, rows => 5 }, ],
+        [ name => 'text', caption => 672, editor => { cols => 100, rows => 5 }, ],
     ],
     href_action => 'snippets_edit',
     descr_field => 'name',
@@ -50,12 +58,12 @@ our $form = CATS::Form->new(
             WHERE CP.contest_id = ?
             ORDER BY CP.code~, { Slice => {} },
             $cid);
-        $fd->{accounts} = $dbh->selectall_arrayref(q~
-            SELECT A.id AS "value", A.team_name AS text
-            FROM accounts A INNER JOIN contest_accounts CA ON A.id = CA.account_id
-            WHERE CA.contest_id = ?
-            ORDER BY A.team_name~, { Slice => {} },
-            $cid);
+        if (my $aid = $fd->{indexed}->{account_id}->{value}) {
+            ($fd->{login}, $fd->{team_name}) = $dbh->selectrow_array(q~
+                SELECT login, team_name FROM accounts WHERE id = ?~, undef,
+                $aid);
+        }
+        $fd->{href_find_users} = url_f('api_find_users');
         _submenu;
     },
 );
