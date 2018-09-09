@@ -240,6 +240,10 @@ if [[ $step =~ (^|,)7(,|$) || $step == "*" ]]; then
 	unzip v1.0.0.zip
 	mv datepicker-1.0.0/dist ../js/lib/datepicker
 
+	wget https://github.com/devbridge/jQuery-Autocomplete/archive/v1.4.9.zip
+	unzip v1.4.9.zip
+	mv jQuery-Autocomplete-1.4.9/dist ../js/lib/autocomplete
+
 	cd $CATS_ROOT
 	rm -rf tmp_js/
 	echo "ok"
