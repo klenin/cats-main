@@ -176,7 +176,9 @@ my $main_routes = {
     ],
     user_relations_edit => [ \&CATS::UI::UserRelations::user_relations_edit_frame,
         uid => required integer, $CATS::UI::UserRelations::form->route,
+        from_login => str, to_login => str, js => bool,
     ],
+    api_find_users => [ \&CATS::UI::UserRelations::find_users_api, query => str, ],
     impersonate => [ \&CATS::UI::UserDetails::impersonate_frame, uid => integer, ],
     contact_types => [
         \&CATS::UI::ContactTypes::contact_types_frame,

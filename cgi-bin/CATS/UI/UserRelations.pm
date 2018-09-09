@@ -55,13 +55,21 @@ sub _check {
 my $int_fk = CATS::Field::int_range(min => 1, max => 1000000000);
 my @rel_values = values %$CATS::Globals::relation;
 
+sub _parse_login {
+    my ($value, $p, $login) = @_;
+    return $value if $p->{js};
+    $dbh->selectrow_array(q~
+        SELECT id FROM accounts WHERE login = ?~, undef,
+        $p->{$login} // '') // 0;
+}
+
 our $form = CATS::Form->new(
     table => 'relations',
     fields => [
         [ name => 'rel_type', validators => [
             CATS::Field::int_range(min => min(@rel_values), max => max(@rel_values)) ], caption => 642, ],
-        [ name => 'from_id', validators => [ $int_fk ], caption => 679 ],
-        [ name => 'to_id', validators => [ $int_fk ], caption => 680, ],
+        [ name => 'from_id', after_parse => sub { _parse_login(@_, 'from_login') }, validators => [ $int_fk ], caption => 679 ],
+        [ name => 'to_id', after_parse => sub { _parse_login(@_, 'to_login') }, validators => [ $int_fk ], caption => 680, ],
         [ name => 'from_ok', validators => [ CATS::Field::int_range(min => 0, max => 1, allow_empty => 1) ], caption => 622, ],
         [ name => 'to_ok', validators => [ CATS::Field::int_range(min => 0, max => 1, allow_empty => 1) ], caption => 622, ],
         [ name => 'ts', before_save => sub { \'CURRENT_TIMESTAMP' } ],
@@ -79,16 +87,17 @@ our $form = CATS::Form->new(
     },
     before_display => sub {
         my ($fd, $p) = @_;
-        $fd->{accounts} = $dbh->selectall_arrayref(q~
-            SELECT A.id AS "value", A.team_name || ' ' || A.login AS "text"
+        $fd->{accounts} = $fd->{id} ? $dbh->selectall_hashref(q~
+            SELECT A.id, A.team_name, A.login
             FROM accounts A
-            INNER JOIN contest_accounts CA ON CA.account_id = A.id
-            WHERE CA.contest_id = ? ORDER BY A.login~, { Slice => {} },
-            $cid);
+            WHERE A.id = ? OR A.id = ?~, 'id', { Slice => {} },
+            $fd->{indexed}->{from_id}->{value},
+            $fd->{indexed}->{to_id}->{value}) : {};
         $fd->{rel_types} = [
             sort { $a->{value} <=> $b->{value} }
             map { value => $CATS::Globals::relation->{$_}, text => $_ },
             keys %$CATS::Globals::relation ];
+        $fd->{href_find_users} = url_f('api_find_users');
         $t->param(CATS::User::submenu('user_relations', $p->{uid}));
     },
     validators => [ \&_check ],
@@ -100,6 +109,21 @@ sub user_relations_edit_frame {
     $is_root || ($user->{id} // 0) == $p->{uid} or return;
     my @puid = (uid => $p->{uid});
     $form->edit_frame($p, redirect => [ 'user_relations', @puid ], href_action_params => \@puid);
+}
+
+sub find_users_api {
+    my ($p) = @_;
+    my $root_cond = $is_root ? '' : ' AND srole > 0';
+    my $r = $dbh->selectall_arrayref(qq~
+        SELECT id, login, team_name FROM accounts
+        WHERE (login STARTS WITH ? OR team_name STARTS WITH ?)$root_cond
+        ORDER BY login
+        ROWS 100~,
+        { Slice => {} },
+        $p->{query}, $p->{query});
+    $p->print_json({ suggestions =>
+        [ map { value => $_->{login}, data => $_ }, @$r ]
+    });
 }
 
 sub user_relations_frame {

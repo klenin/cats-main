@@ -1,12 +1,16 @@
+[%- js.autocomplete = 1 -%]
 [% PROCESS includes/menu_begin.tti %]
 [% PROCESS includes/html_input.tti %]
-[% PROCESS "lang/$lang/user_relations.html.tt" %]
+[%- PROCESS "lang/$lang/user_relations.html.tt" -%]
+[%- PROCESS "lang/$lang/autocomplete.tti" -%]
 
-[%- MACRO tr_select_value_cb(f, fd, select_items, fcb) BLOCK -%]
+[%- MACRO tr_autocomplete_user(f, fd, prefix, fcb) BLOCK -%]
 <tr>
   <td>[% f.caption || capt.item(f.field.name) %]</td>
   <td>
-    [% select_value(f.field.name, select_items, f.value, !fd.readonly) %]
+    <input type="text" name="[% prefix %]_login" id="[% prefix %]_login" class="bordered" size="40" value="[% fd.accounts.item(f.value).login %]" />
+    (<span id="[% prefix %]_name">[% fd.accounts.item(f.value).team_name %]</span>)
+    <input type="hidden" name="[% f.field.name %]" id="[% f.field.name %]" value="[% f.value %]" />
     [% checkbox_1(fcb.field.name, fcb.value, !fd.readonly) %]
     [%- maybe_err(f); maybe_err(fcb); %]
   </td>
@@ -15,13 +19,43 @@
 
 <form method="post" enctype="multipart/form-data" action="[% ur.href_action %]">
 <table class="edit_form">
-[% tr_select_value_cb(ur.indexed.from_id, ur, ur.accounts, ur.indexed.from_ok) %]
+[% tr_autocomplete_user(ur.indexed.from_id, ur, 'from', ur.indexed.from_ok) %]
 [%- FOREACH rt IN ur.rel_types; rt.text = capt.relation.item(rt.text); END -%]
 [% tr_select_value(ur.indexed.rel_type, ur, ur.rel_types) %]
-[% tr_select_value_cb(ur.indexed.to_id, ur, ur.accounts, ur.indexed.to_ok) %]
+[% tr_autocomplete_user(ur.indexed.to_id, ur, 'to', ur.indexed.to_ok) %]
 </table>
 <br>
 [% PROCESS includes/edit_save_cancel.tti %]
+<input type="hidden" name="js" id="js" />
 </form>
 
+<script>
+function autocomplete(name) {
+  var input = $('#' + name + '_login');
+  input.autocomplete({
+    minChars: 2,
+    deferRequestBy: 100,
+    showNoSuggestionNotice: true,
+    noSuggestionNotice: '[% capt.no_suggestion %]',
+    serviceUrl: '[% ur.href_find_users %]',
+    onSelect: function (suggestion) {
+      $('#' + name + '_id').val(suggestion.data.id);
+      $('#' + name + '_name').text(suggestion.data.team_name);
+    },
+    formatResult: function (suggestion, currentValue) {
+      return suggestion.data.login + ' (' + suggestion.data.team_name + ')';
+    }
+  });
+  var on_focus = function () {
+    input.autocomplete('setOptions', { width: input.width() * 2 });
+    input.off('focus', on_focus);
+  };
+  input.on('focus', on_focus);
+}
+$(document).ready(function () {
+  autocomplete('from');
+  autocomplete('to');
+  $('#js').val(1);
+});
+</script>
 [% PROCESS includes/menu_end.tti %]
