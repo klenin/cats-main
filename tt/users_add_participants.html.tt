@@ -1,4 +1,6 @@
+[%- js.autocomplete = 1 -%]
 [% PROCESS includes/menu_begin.tti %]
+[%- PROCESS "lang/$lang/autocomplete.tti" -%]
 
 <h3>[% capt.add_participants %]</h3>
 
@@ -6,7 +8,7 @@
 <form method="post" action="[% href_action %]">
 <div>
 <p>[% capt.logins_to_add %]:</p>
-<input name="logins_to_add" size="100"/>
+<input name="logins_to_add" id="logins_to_add" size="100"/>
 </div>
 <button type="submit" class="button" name="by_login" value="1">[% capt.by_login %]</button>
 <label>[% checkbox_1('make_jury'); capt.make_jury %]</label>
@@ -22,4 +24,22 @@
 <button type="submit" class="button" name="from_contest" value="1">[% capt.from_contest %]</button>
 <label>[% checkbox_1('include_ooc'); capt.include_ooc %]</label>
 </form>
+
+<script>
+function autocomplete() {
+  var input = $('#logins_to_add');
+  input.autocomplete({
+    minChars: 2,
+    deferRequestBy: 100,
+    showNoSuggestionNotice: true,
+    noSuggestionNotice: '[% capt.no_suggestion %]',
+    serviceUrl: '[% href_find_users %]',
+    delimiter: ',',
+    formatResult: function (suggestion, currentValue) {
+      return suggestion.data.login + ' (' + suggestion.data.team_name + ')';
+    }
+  });
+}
+$(document).ready(autocomplete);
+</script>
 [% PROCESS includes/menu_end.tti %]
