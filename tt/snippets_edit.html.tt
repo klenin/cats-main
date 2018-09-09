@@ -15,7 +15,10 @@
 </tr>
 [%- END -%]
 
+[% IF sn.contest_name %]<p>[% sn.indexed.contest_id.caption; ': '; sn.contest_name %]</p>[% END %]
+[%- maybe_err(sn.indexed.contest_id); %]
 <form method="post" enctype="multipart/form-data" action="[% sn.href_action %]">
+<input type="hidden" name="contest_id" value="[% sn.indexed.contest_id.value %]" />
 <table class="edit_form padded">
 [% tr_select_value(sn.indexed.problem_id, sn, sn.problems) %]
 [% tr_autocomplete_user(sn.indexed.account_id, sn) %]

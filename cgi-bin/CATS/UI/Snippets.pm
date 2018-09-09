@@ -35,12 +35,14 @@ sub _parse_login {
         $p->{login} // '') // 0;
 }
 
+sub _must_be_current_contest { ($_[0] || 0) != $cid and res_str(1182) }
+
 our $form = CATS::Form->new(
     table => 'snippets',
     fields => [
         [ name => 'account_id', after_parse => \&_parse_login, validators => [ $int ], caption => 608, ],
         [ name => 'problem_id', validators => [ $int ], caption => 602 ],
-        [ name => 'contest_id', before_save => sub { $cid }, ],
+        [ name => 'contest_id', validators => [ $int, \&_must_be_current_contest ], caption => 603, ],
         [ name => 'name', validators => [ $str1_200 ], caption => 601, ],
         [ name => 'text', caption => 672, editor => { cols => 100, rows => 5 }, ],
     ],
@@ -58,6 +60,11 @@ our $form = CATS::Form->new(
             WHERE CP.contest_id = ?
             ORDER BY CP.code~, { Slice => {} },
             $cid);
+        if (((my $snippet_cid = $fd->{indexed}->{contest_id}->{value}) // 0) != $cid) {
+            $fd->{contest_name} = $dbh->selectrow_array(q~
+                SELECT title FROM contests WHERE id = ?~, undef,
+                $snippet_cid);
+        }
         if (my $aid = $fd->{indexed}->{account_id}->{value}) {
             ($fd->{login}, $fd->{team_name}) = $dbh->selectrow_array(q~
                 SELECT login, team_name FROM accounts WHERE id = ?~, undef,
