@@ -15,7 +15,7 @@ sub new {
     $self->{caption} = $r{caption} || $r{name};
     $self->{validators} = $r{validators} // [];
     ref $self->{validators} eq 'ARRAY' or $self->{validators} = [ $self->{validators} ];
-    $self->{$_} = $r{$_} for qw(after_load before_save editor);
+    $self->{$_} = $r{$_} for qw(after_load after_parse before_save editor);
     $self;
 }
 
@@ -30,6 +30,7 @@ sub caption_msg { $_[0]->caption_res || $_->{name} }
 sub parse_web_param {
     my ($self, $p) = @_;
     my $value = Encode::decode_utf8($p->{$self->{name}} // '');
+    $value = $self->{after_parse}->($value, $p) if $self->{after_parse};
     $self->web_data($value, $self->validate($value));
 }
 
