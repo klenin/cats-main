@@ -49,6 +49,7 @@ our $form = CATS::Form->new(
         if (my $aid = $fd->{indexed}->{account_id}->{value}) {
             $fd->{href_contests} = url_f('contests', search => "has_user($aid)");
         }
+        $fd->{href_find_users} = url_f('api_find_users');
         $fd->{extra_fields}->{account_name} = $p->{account_name} if $p->{account_name};
         _submenu;
     },

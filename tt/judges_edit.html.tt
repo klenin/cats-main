@@ -1,7 +1,9 @@
+[%- js.autocomplete = 1 -%]
 [% PROCESS includes/menu_begin.tti %]
 [% PROCESS includes/html_input.tti %]
 [% PROCESS includes/de_bitmap.tti %]
-[% PROCESS "lang/$lang/judges_common.tti" %]
+[%- PROCESS "lang/$lang/judges_common.tti" -%]
+[%- PROCESS "lang/$lang/autocomplete.tti" -%]
 
 [%-
     pin_modes = [];
@@ -14,7 +16,7 @@
 [% tr_text(j.indexed.name, j) %]
 <tr><td>[% capt.account_name %]</td>
   <td>
-    <input type="text" name="account_name" value="[% j.extra_fields.account_name | html %]" class="bordered">
+    <input type="text" name="account_name" id="account_name" value="[% j.extra_fields.account_name | html %]" class="bordered">
     [% href(j.href_contests, capt.contests) %]
     [% maybe_err(j.account) %]
   </td>
@@ -35,4 +37,17 @@
 [% PROCESS includes/edit_save_cancel.tti %]
 </form>
 
+<script>
+function autocomplete() {
+  var input = $('#account_name');
+  input.autocomplete({
+    minChars: 2,
+    deferRequestBy: 100,
+    showNoSuggestionNotice: true,
+    noSuggestionNotice: '[% capt.no_suggestion %]',
+    serviceUrl: '[% j.href_find_users %]',
+  });
+}
+$(document).ready(autocomplete);
+</script>
 [% PROCESS includes/menu_end.tti %]
