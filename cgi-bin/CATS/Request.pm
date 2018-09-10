@@ -5,6 +5,7 @@ use warnings;
 
 use CATS::Constants;
 use CATS::DB;
+use CATS::Globals;
 use CATS::IP;
 use CATS::JudgeDB;
 use CATS::Job;
@@ -311,6 +312,15 @@ sub delete {
     $dbh->do(q~
         DELETE FROM reqs WHERE id = ?~, undef,
         $req_id);
+}
+
+sub can_see_by_relation {
+    my ($user_id) = @_;
+
+    $dbh->selectall_hashref(q~
+        SELECT to_id FROM relations R
+        WHERE R.from_id = ? AND R.from_ok = 1 AND R.to_ok = 1 AND R.rel_type = ?~, 'to_id', undef,
+        $user_id, $CATS::Globals::relation->{sees_reqs});
 }
 
 1;

@@ -155,7 +155,12 @@ sub _console_content {
             FROM jobs J INNER JOIN jobs_queue JQ ON J.id = JQ.id
             WHERE J.req_id = R.id)~,
         judge_name => '(SELECT JD.nick FROM judges JD WHERE JD.id = R.judge_id)',
-        cp_id => '(SELECT CP.id FROM contest_problems CP WHERE CP.contest_id = R.contest_id AND CP.problem_id = R.problem_id)',
+        cp_id => q~(
+            SELECT CP.id FROM contest_problems CP
+            WHERE CP.contest_id = R.contest_id AND CP.problem_id = R.problem_id)~,
+        ($uid ? (can_see_reqs => qq~(
+            SELECT RL.from_ok * RL.to_ok FROM relations RL
+            WHERE RL.from_id = $uid AND RL.to_id = R.account_id)~) : ()),
     });
 
     $lv->define_enums({
@@ -164,6 +169,8 @@ sub _console_content {
         contest_id => { this => $cid },
         account_id => { this => $uid },
     });
+
+    my $can_see = $uid && !$is_jury ? CATS::Request::can_see_by_relation($uid) : {};
 
     my $user_filter = url_param('uf') || '';
     my $sth = CATS::Console::build_query($s, $lv, $user_filter);
@@ -191,7 +198,9 @@ sub _console_content {
             $is_jury ? $true_short_state :
             $CATS::Verdicts::hidden_verdicts_self->{$true_short_state} // $true_short_state;
 
-        my $show_details = $is_jury || $uid && $team_id && $uid == $team_id;
+        my $show_details =
+            $is_jury || $uid && $team_id && $uid == $team_id ||
+            $team_id && $can_see->{$team_id};
 
         return (
             country => $country,

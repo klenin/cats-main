@@ -209,9 +209,12 @@ sub get_sources_info {
         $jury_cache{$_[0]} //= is_jury_in_contest(contest_id => $_[0]) ? 1 : 0
     };
 
+    my $can_see;
     for (keys %$req_tree) {
         my $r = $req_tree->{$_};
-        ($r->{is_jury} = $is_jury_cached->($r->{contest_id})) || ($r->{account_id} == ($uid || 0))
+        $r->{is_jury} = $is_jury_cached->($r->{contest_id});
+        $r->{is_jury} || $r->{account_id} == ($uid || 0) ||
+            ($can_see //= $uid ? CATS::Request::can_see_by_relation($uid) : {})->{$r->{account_id}}
             or delete $req_tree->{$_};
     }
 
