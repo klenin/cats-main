@@ -92,6 +92,13 @@ sub _decorate_rows {
     }
 }
 
+sub _shortened_team_name {
+    my ($team_name) = @_;
+    length($team_name) > 50 ?
+        (team_name => substr($team_name, 0, 50) . "\x{2026}", team_name_full => $team_name) :
+        (team_name => $team_name);
+}
+
 sub _console_content {
     my ($p) = @_;
 
@@ -241,7 +248,7 @@ sub _console_content {
             answer_text =>          decode_utf8($answer),
             message_text =>         decode_utf8($jury_message),
             team_id =>              $team_id,
-            team_name =>            $team_name,
+            _shortened_team_name($team_name),
             CATS::IP::linkify_ip($last_ip),
             id      =>              $id,
             contest_id =>           $contest_id,

@@ -16,7 +16,8 @@
   </td>
   <td class="name">
     [% IF user.is_jury %]
-    [% h = c.href_send_message_box ? "javascript:send_message('$c.href_send_message_box')" : ''; maybe_href(h, c.team_name) %]
+    [% h = c.href_send_message_box ? "javascript:send_message('$c.href_send_message_box')" : '';
+      maybe_href(h, c.team_name, c.team_name_full) %]
     [% ELSE; c.team_name | html; END %]
   </td>
   <td class="verdict run_details_[% c.short_state %]"><table><tr>
