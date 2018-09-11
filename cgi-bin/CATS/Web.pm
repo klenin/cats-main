@@ -10,12 +10,6 @@ use Apache2::Upload;
 
 use 5.010;
 
-use Exporter qw(import);
-our @EXPORT_OK = qw(
-    param
-    url_param
-);
-
 my $r;
 my $jar;
 my $qq;
@@ -52,8 +46,7 @@ sub get_uri { $r->uri }
 
 sub web_param { $qq->param($_[1]) }
 
-sub param { $qq->param(@_) }
-*url_param = \&param;
+sub web_param_names { $qq->param }
 
 sub has_upload { $qq->upload($_[1]) ? 1 : 0 }
 

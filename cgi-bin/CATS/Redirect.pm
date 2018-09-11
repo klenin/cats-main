@@ -6,12 +6,11 @@ use warnings;
 use MIME::Base64;
 use Storable qw();
 
-use CATS::Web qw(url_param);
-
 sub pack_params {
     my ($p) = @_;
-    encode_base64(Storable::nfreeze
-        { map { $_ eq 'sid' || $p->has_upload($_) ? () : ($_ => url_param($_)) } url_param })
+    my $params = {
+        map { $_ eq 'sid' || $p->has_upload($_) ? () : ($_ => $p->web_param($_)) } $p->web_param_names };
+    encode_base64(Storable::nfreeze($params), '');
 }
 
 sub unpack_params {
