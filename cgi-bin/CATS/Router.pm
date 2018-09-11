@@ -15,6 +15,8 @@ BEGIN {
 
 my %console_params = (
     selection => clist_of integer, uf => clist_of integer, se => ident, page => integer,
+    i_value => signed_integer, i_unit => ident,
+    by_reference => bool, retest => bool, create_group => bool,
     show_contests => bool0, show_messages => bool0, show_results => bool0,
 );
 

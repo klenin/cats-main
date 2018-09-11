@@ -21,7 +21,6 @@ use CATS::Settings qw($settings);
 use CATS::Time;
 use CATS::Utils qw(date_to_iso url_function);
 use CATS::Verdicts;
-use CATS::Web qw(param);
 
 # This is called before init_template to display submitted question immediately.
 sub send_question_to_jury {
@@ -52,8 +51,8 @@ sub send_question_to_jury {
 sub _get_settings {
     my ($p, $lv) = @_;
     my $s = $lv->settings;
-    $s->{i_value} = param('i_value') // $s->{i_value} // 1;
-    $s->{i_unit} = param('i_unit') || $s->{i_unit} || 'hours';
+    $s->{i_value} = $p->{i_value} // $s->{i_value} // 1;
+    $s->{i_unit} = $p->{i_unit} || $s->{i_unit} || 'hours';
     if ($is_jury) {
         $s->{$_} = $lv->submitted ? ($p->{$_} ? 1 : 0) : ($p->{$_} // $s->{$_} // 1)
             for qw(show_contests show_messages show_results);
@@ -63,7 +62,7 @@ sub _get_settings {
 
 sub _init_console_template {
     my ($p, $template_name) = @_;
-    my $se = $p->{se} ? '' : "_$p->{se}";
+    my $se = $p->{se} ? "_$p->{se}" : '';
     init_template($p, $template_name);
     CATS::ListView->new(web => $p, name => "console$se", array_name => 'console');
 }
@@ -93,7 +92,7 @@ sub _decorate_rows {
 
 sub _shortened_team_name {
     my ($team_name) = @_;
-    length($team_name) > 50 ?
+    $team_name && length($team_name) > 50 ?
         (team_name => substr($team_name, 0, 50) . "\x{2026}", team_name_full => $team_name) :
         (team_name => $team_name);
 }
@@ -104,8 +103,8 @@ sub _console_content {
     my $lv = _init_console_template($p, 'console_content');
 
     if (@{$p->{selection}}) {
-        retest_submissions($p->{selection}, param('by_reference')) if defined param('retest');
-        group_submissions($p->{selection}, param('by_reference')) if defined param('create_group');
+        retest_submissions($p->{selection}, $p->{by_reference}) if $p->{retest};
+        group_submissions($p->{selection}, $p->{by_reference}) if $p->{create_group};
     }
 
     my $s = _get_settings($p, $lv);
@@ -309,8 +308,8 @@ sub graphs_frame {
 }
 
 sub retest_submissions {
-    $is_jury or return;
     my ($selection, $by_reference) = @_;
+    $is_jury or return;
     my $count = 0;
     if ($by_reference) {
         $count = @{CATS::Request::clone($selection, undef, $uid)};
