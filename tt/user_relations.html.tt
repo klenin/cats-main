@@ -22,9 +22,15 @@ function delete_user_relation(href, name) {
   <a href="[% ur.href_edit %]" class="icon edit"></a>
   [%~ END %]
 </td>
-<td>[% maybe_href(ur.href_from, ur.from_name) %] [% IF ur.from_ok %]<a class="icon checked"></a>[% END %]</td>
+<td>
+  [%- maybe_href(ur.href_from, ur.from_name) %] [% IF ur.from_ok %]<a class="icon checked"></a>[% END -%]
+  [%- IF ur.href_from_accept; '['; href(ur.href_from_accept, capt.accept); ']'; END -%]
+</td>
 <td>[% capt.relation.item(ur.type_name) %]</td>
-<td>[% maybe_href(ur.href_to, ur.to_name) %] [% IF ur.to_ok %]<a class="icon checked"></a>[% END %]</td>
+<td>
+  [%- maybe_href(ur.href_to, ur.to_name) %] [% IF ur.to_ok %]<a class="icon checked"></a>[% END -%]
+  [%- IF ur.href_to_accept; '['; href(ur.href_to_accept, capt.accept); ']'; END -%]
+</td>
 [% IF visible_cols.Ts %]<td>[% ur.ts %]</td>[% END %]
 </tr>
 [% END %]

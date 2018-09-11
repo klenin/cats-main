@@ -1,6 +1,7 @@
 [%
   capt.import({
     want_to_delete => 'Вы действительно желаете удалить отношение',
+    accept => 'принять',
     relation => {
       sees_reqs => 'видит попытки',
       is_member_of => 'входит в команду',

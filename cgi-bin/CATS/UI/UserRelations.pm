@@ -126,6 +126,13 @@ sub find_users_api {
     });
 }
 
+sub _url_accept {
+    my ($row, @rest) = @_;
+    url_f('user_relations_edit', uid => $user->{id},
+        (map { $_ => $row->{$_} } qw(id rel_type from_id to_id)),
+        js => 1, edit_save => 1, @rest);
+}
+
 sub user_relations_frame {
     my ($p) = @_;
 
@@ -165,6 +172,10 @@ sub user_relations_frame {
             href_delete => url_f('user_relations', 'delete' => $row->{id}, @pp),
             href_from => url_f($user_page, uid => $row->{from_id}),
             href_to => url_f($user_page, uid => $row->{to_id}),
+            href_from_accept => $row->{from_id} == $user->{id} && !$row->{from_ok} ?
+                _url_accept($row, from_ok => 1, to_ok => $row->{to_ok}) : undef,
+            href_to_accept => $row->{to_id} == $user->{id} && !$row->{to_ok} ?
+                _url_accept($row, from_ok => $row->{from_ok}, to_ok => 1) : undef,
         );
     };
     $lv->attach(url_f('user_relations'), $fetch_record, $sth, { page_params => { @pp } });
