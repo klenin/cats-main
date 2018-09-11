@@ -1,3 +1,9 @@
+[%- extra_head = BLOCK %]
+<style>
+  tr.odd tr, tr.even td { position: relative }
+  a.icon_centered { margin-left: 4px; }
+</style>
+[% END -%]
 [% PROCESS includes/menu_begin.tti %]
 [% PROCESS includes/html.tti %]
 
@@ -23,12 +29,12 @@ function delete_user_relation(href, name) {
   [%~ END %]
 </td>
 <td>
-  [%- maybe_href(ur.href_from, ur.from_name) %] [% IF ur.from_ok %]<a class="icon checked"></a>[% END -%]
+  [%- maybe_href(ur.href_from, ur.from_name) %] [% IF ur.from_ok %]<a class="icon checked icon_centered"></a>[% END -%]
   [%- IF ur.href_from_accept; '['; href(ur.href_from_accept, capt.accept); ']'; END -%]
 </td>
 <td>[% capt.relation.item(ur.type_name) %]</td>
 <td>
-  [%- maybe_href(ur.href_to, ur.to_name) %] [% IF ur.to_ok %]<a class="icon checked"></a>[% END -%]
+  [%- maybe_href(ur.href_to, ur.to_name) %] [% IF ur.to_ok %]<a class="icon checked icon_centered"></a>[% END -%]
   [%- IF ur.href_to_accept; '['; href(ur.href_to_accept, capt.accept); ']'; END -%]
 </td>
 [% IF visible_cols.Ts %]<td>[% ur.ts %]</td>[% END %]
