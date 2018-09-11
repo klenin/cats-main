@@ -269,7 +269,7 @@ sub registration_frame {
 
     $p->{register} or return;
 
-    my $u = CATS::User->new->parse_params;
+    my $u = CATS::User->new->parse_params($p);
     $u->validate_params(validate_password => 1) or return;
     $u->{password1} = CATS::User::hash_password($u->{password1});
     $u->insert(undef, save_settings => 1) or return;

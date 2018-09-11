@@ -18,7 +18,6 @@ use CATS::Output qw(url_f);
 use CATS::Privileges;
 use CATS::Settings qw($settings);
 use CATS::RankTable;
-use CATS::Web qw(param);
 
 my $hash_password;
 BEGIN {
@@ -47,8 +46,9 @@ sub new {
 }
 
 sub parse_params {
-   $_[0]->{$_} = param($_) || '' for param_names(), qw(password1 password2);
-   $_[0];
+    my ($self, $p) = @_;
+    $self->{$_} = $p->{$_} || '' for param_names(), qw(password1 password2);
+    $self;
 }
 
 sub contest_fields {
@@ -220,35 +220,39 @@ my @editable_settings = (
     },
 );
 
+sub setting_names { map "settings.$_->{name}", @editable_settings }
+
 sub update_settings {
-    my ($settings_root) = @_;
+    my ($p, $settings_root) = @_;
     for (@editable_settings) {
-        return if $_->{validate} && !$_->{validate}->(param("settings.$_->{name}"));
+        return if $_->{validate} && !$_->{validate}->($p->{"settings.$_->{name}"} // '');
     }
     for (@editable_settings) {
-        update_settings_item($settings_root, $_, param("settings.$_->{name}"));
+        update_settings_item($settings_root, $_, $p->{"settings.$_->{name}"});
     }
     1;
 }
 
 # Admin adds new user to current contest
 sub new_save {
+    my ($p) = @_;
     $is_jury or return;
-    my $u = CATS::User->new->parse_params;
+    my $u = CATS::User->new->parse_params($p);
     $u->validate_params(validate_password => 1) or return;
     $u->{password1} = hash_password($u->{password1});
     $u->insert($cid) or return;
 }
 
 sub edit_save {
-    my $u = CATS::User->new->parse_params;
+    my ($p) = @_;
+    my $u = CATS::User->new->parse_params($p);
     if (!$is_root) {
         delete $u->{restrict_ips};
     }
     # Simple $is_jury check is insufficient since jury member
     # can add any team to his contest.
-    my $set_password = param('set_password') && $is_root;
-    my $id = param('id');
+    my $set_password = $p->{set_password} && $is_root;
+    my $id = $p->{id};
     my $old_user = $id ? CATS::User->new->load($id, [ qw(settings srole) ]) : undef;
     # Only admins may edit other admins.
     return if !$is_root && CATS::Privileges::unpack_privs($old_user->{srole})->{is_root};
@@ -259,10 +263,10 @@ sub edit_save {
         allow_official_rename => $is_root)
         or return;
     $old_user->{settings} ||= {};
-    update_settings($old_user->{settings}) or return;
+    update_settings($p, $old_user->{settings}) or return;
     prepare_password($u, $set_password);
 
-    $u->{locked} = param('locked') ? 1 : 0 if $is_root;
+    $u->{locked} = $p->{locked} ? 1 : 0 if $is_root;
 
     my $new_settings = Storable::freeze($old_user->{settings});
     $u->{settings} = $new_settings if $new_settings ne ($old_user->{frozen_settings} // '');
@@ -274,13 +278,13 @@ sub edit_save {
 
 sub profile_save {
     my ($p) = @_;
-    my $u = CATS::User->new->parse_params;
+    my $u = CATS::User->new->parse_params($p);
     if (!$is_root) {
         delete $u->{restrict_ips};
     }
 
     $u->validate_params(validate_password => $p->{set_password}, id => $uid) or return;
-    update_settings($settings) or return;
+    update_settings($p, $settings) or return;
     prepare_password($u, $p->{set_password});
     $dbh->do(_u $sql->update('accounts', { %$u }, { id => $uid }));
     $dbh->commit;
@@ -435,11 +439,11 @@ sub gen_passwords {
 }
 
 sub save_attributes_single {
-    my ($user_id, $attr_names, $force_jury) = @_;
+    my ($p, $user_id, $attr_names, $force_jury) = @_;
 
     my (%set, %where);
     for (@$attr_names) {
-        my $v = $set{"is_$_"} = param($_ . $user_id) ? 1 : 0;
+        my $v = $set{"is_$_"} = $p->web_param($_ . $user_id) ? 1 : 0;
         # Only perform update if it actually changes values.
         $where{"is_$_"} = { '!=', $v };
     }
@@ -474,7 +478,7 @@ sub save_attributes_jury {
             $user_id
         );
         $changed_count += save_attributes_single(
-            $user_id, [ qw(jury hidden remote ooc site_org) ],
+            $p, $user_id, [ qw(jury hidden remote ooc site_org) ],
             CATS::Privileges::is_root($srole));
     }
     save_attributes_finalize($changed_count);
@@ -492,7 +496,7 @@ sub save_attributes_org {
             );
             (!$user->{site_id} || $user->{site_id} == $site_id) && $aid != $uid or next;
         }
-        $changed_count += save_attributes_single($user_id, [ qw(remote ooc) ]);
+        $changed_count += save_attributes_single($p, $user_id, [ qw(remote ooc) ]);
     }
     save_attributes_finalize($changed_count);
 }

@@ -20,13 +20,18 @@ my %console_params = (
     show_contests => bool0, show_messages => bool0, show_results => bool0,
 );
 
+my %user_params = (
+    (map { $_ => str } CATS::User::param_names, CATS::User::setting_names, qw(password1 password2)),
+    set_password => bool,
+);
+
 my $main_routes = {
     login => [ \&CATS::UI::LoginLogout::login_frame,
         logout => bool, login => str, passwd => str, redir => str, cid => integer, ],
     logout => \&CATS::UI::LoginLogout::logout_frame,
     registration => [ \&CATS::UI::UserDetails::registration_frame, register => bool, ],
-    profile => [ \&CATS::UI::UserDetails::profile_frame,
-        json => bool, clear => bool, edit_save => str, set_password => bool, ],
+    profile => [ \&CATS::UI::UserDetails::profile_frame, %user_params,
+        json => bool, clear => bool, edit_save => bool, ],
     contests => [ \&CATS::UI::Contests::contests_frame,
         summary_rank => bool, create_group => bool, delete => integer,
         online_registration => bool, virtual_registration => bool,
@@ -142,7 +147,8 @@ my $main_routes = {
 
     users => [
         \&CATS::UI::Users::users_frame,
-        save_attributes => bool,
+        %user_params,
+        save_attributes => bool, id => integer, locked => bool,
         set_tag => bool, tag_to_set => str,
         set_site => bool, site_id => integer,
         gen_passwords => bool, password_len => integer,
