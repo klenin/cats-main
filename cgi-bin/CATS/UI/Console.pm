@@ -21,7 +21,7 @@ use CATS::Settings qw($settings);
 use CATS::Time;
 use CATS::Utils qw(date_to_iso url_function);
 use CATS::Verdicts;
-use CATS::Web qw(param url_param);
+use CATS::Web qw(param);
 
 # This is called before init_template to display submitted question immediately.
 sub send_question_to_jury {
@@ -63,8 +63,7 @@ sub _get_settings {
 
 sub _init_console_template {
     my ($p, $template_name) = @_;
-    my $se = param('se') || '';
-    $se = "_$se" if $se;
+    my $se = $p->{se} ? '' : "_$p->{se}";
     init_template($p, $template_name);
     CATS::ListView->new(web => $p, name => "console$se", array_name => 'console');
 }
@@ -256,7 +255,7 @@ sub _console_content {
 
     $lv->attach(
         url_f('console'), ($sth ? $fetch_console_record : sub { () }), $sth,
-        { page_params => { se => param('se') || undef, uf => join(',', @{$p->{uf}}) || undef } });
+        { page_params => { se => $p->{se}, uf => join(',', @{$p->{uf}}) || undef } });
 
     $sth->finish if $sth;
 
@@ -389,11 +388,11 @@ sub console_frame {
     $t->param(
         href_console_content =>
             url_f('console_content', noredir => 1, uf => join(',', @{$p->{uf}}) || undef,
-            map { $_ => (url_param($_) || '') } qw(se page)),
-        selection => scalar(param('selection')),
+            map { $_ => $p->{$_} } qw(se page)),
+        selection => join(',', @{$p->{selection}}),
         href_my_events_only =>
-            url_f('console', uf => ($uid || $user->{anonymous_id}), se => param('se') || undef),
-        href_all_events => url_f('console', se => param('se') || undef),
+            url_f('console', uf => ($uid || $user->{anonymous_id}), se => $p->{se}),
+        href_all_events => url_f('console', se => $p->{se}),
         href_view_source => url_f('view_source'),
         href_run_details => url_f('run_details'),
         href_run_log => url_f('run_log'),
