@@ -247,9 +247,9 @@ sub build_query {
     my @selected_parts;
     my $select_part = sub { push @selected_parts, $_[0]; $parts{$_[0]}; };
 
-    if (my @user_ids = grep /^\d+$/, split ',', $user_filter) {
-        my $events_filter = @user_ids ? '(' . join(' OR ', map 'A.id = ?', @user_ids) . ')' : '';
-        $parts{$_}->add($events_filter, @user_ids) for qw(run question message);
+    if (@$user_filter) {
+        my $events_filter = '(' . join(' OR ', map 'A.id = ?', @$user_filter) . ')';
+        $parts{$_}->add($events_filter, @$user_filter) for qw(run question message);
     }
 
     if (!$is_jury || $s->{show_results}) {

@@ -14,7 +14,7 @@ BEGIN {
 }
 
 my %console_params = (
-    selection => clist_of integer,
+    selection => clist_of integer, uf => clist_of integer,
     show_contests => bool0, show_messages => bool0, show_results => bool0,
 );
 

@@ -179,8 +179,7 @@ sub _console_content {
 
     my $can_see = $uid && !$is_jury ? CATS::Request::can_see_by_relation($uid) : {};
 
-    my $user_filter = url_param('uf') || '';
-    my $sth = CATS::Console::build_query($s, $lv, $user_filter);
+    my $sth = CATS::Console::build_query($s, $lv, $p->{uf});
 
     my $fetch_console_record = sub {
         my ($rtype, $rank, $submit_time, $id, $request_state, $failed_test,
@@ -257,7 +256,7 @@ sub _console_content {
 
     $lv->attach(
         url_f('console'), ($sth ? $fetch_console_record : sub { () }), $sth,
-        { page_params => { se => param('se') || undef, uf => $user_filter || undef } });
+        { page_params => { se => param('se') || undef, uf => join(',', @{$p->{uf}}) || undef } });
 
     $sth->finish if $sth;
 
@@ -379,7 +378,6 @@ sub console_frame {
     CATS::Time::prepare_server_time;
     my $lvparams = $t->{vars};
     my $cc = $t->output;
-    my $user_filter = url_param('uf') || '';
 
     my $lv = _init_console_template($p, 'console.html.tt');
 
@@ -390,11 +388,12 @@ sub console_frame {
     );
     $t->param(
         href_console_content =>
-            url_f('console_content', noredir => 1, map { $_ => (url_param($_) || '') } qw(uf se page)),
+            url_f('console_content', noredir => 1, uf => join(',', @{$p->{uf}}) || undef,
+            map { $_ => (url_param($_) || '') } qw(se page)),
         selection => scalar(param('selection')),
         href_my_events_only =>
             url_f('console', uf => ($uid || $user->{anonymous_id}), se => param('se') || undef),
-        href_all_events => url_f('console', uf => 0, se => param('se') || undef),
+        href_all_events => url_f('console', se => param('se') || undef),
         href_view_source => url_f('view_source'),
         href_run_details => url_f('run_details'),
         href_run_log => url_f('run_log'),
@@ -403,7 +402,7 @@ sub console_frame {
         initial_content => $cc,
         autoupdate => $lv->settings->{autoupdate} // 30,
         ajax_error_msg => res_str(1151),
-        user_filter => $user_filter,
+        user_filter => scalar(@{$p->{uf}}),
     );
     my %all_types = (show_contests => 1, show_messages => 1, show_results => 1);
     $t->param(submenu => [
