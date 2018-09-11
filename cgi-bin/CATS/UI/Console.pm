@@ -103,8 +103,8 @@ sub _console_content {
     my $lv = _init_console_template($p, 'console_content');
 
     if (@{$p->{selection}}) {
-        retest_submissions($p->{selection}, $p->{by_reference}) if $p->{retest};
-        group_submissions($p->{selection}, $p->{by_reference}) if $p->{create_group};
+        _retest_submissions($p->{selection}, $p->{by_reference}) if $p->{retest};
+        _group_submissions($p->{selection}, $p->{by_reference}) if $p->{create_group};
     }
 
     my $s = _get_settings($p, $lv);
@@ -307,7 +307,7 @@ sub graphs_frame {
     );
 }
 
-sub retest_submissions {
+sub _retest_submissions {
     my ($selection, $by_reference) = @_;
     $is_jury or return;
     my $count = 0;
@@ -318,23 +318,24 @@ sub retest_submissions {
         my $contest_sth = $dbh->prepare(q~
             SELECT contest_id FROM reqs WHERE id = ?~);
         for (@$selection) {
-            if (CATS::Request::enforce_state($_, { state => $cats::st_not_processed, judge_id => undef })) {
-                if (CATS::Job::create_or_replace($cats::job_type_submission, { req_id => $_ })) {
-                    $contest_sth->execute($_);
-                    my ($contest_id) = $contest_sth->fetchrow_array;
-                    $affected_contests{$contest_id} = 1;
-                    ++$count;
-                }
-            }
+            $contest_sth->execute($_);
+            my ($contest_id) = $contest_sth->fetchrow_array;
+            $contest_sth->finish;
+            $contest_id && ($contest_id == $cid || $is_root) &&
+            CATS::Request::enforce_state($_, { state => $cats::st_not_processed, judge_id => undef }) &&
+            CATS::Job::create_or_replace($cats::job_type_submission, { req_id => $_ })
+                or next;
+            $affected_contests{$contest_id} = 1;
+            ++$count;
         }
         CATS::RankTable::remove_cache($_) for keys %affected_contests;
     }
 
     $dbh->commit;
-    return $count;
+    msg(1128, $count);
 }
 
-sub group_submissions {
+sub _group_submissions {
     $is_root or return;
     my ($selection, $by_reference) = @_;
     my $count = 0;
