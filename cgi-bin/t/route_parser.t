@@ -3,7 +3,7 @@ use warnings;
 
 use File::Spec;
 use FindBin;
-use Test::More tests => 18;
+use Test::More tests => 24;
 
 use lib File::Spec->catdir($FindBin::Bin, '..');
 use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
@@ -33,6 +33,18 @@ is pr(MockupWeb->new, 'zz'), 'zz', 'no params';
     ok !exists $w->{z}, 'integer bad';
     is $w->{bb}, 1, 'bool';
     is $w->{id}, 'abc1', 'ident';
+}
+
+{
+    my $w = MockupWeb->new(nsi => -5, psi => '+55', ni => -5, pi => '+55', z => 0);
+    is pr($w, [ 'a',
+        nsi => signed_integer, psi => signed_integer,
+        ni => integer, pi => integer, z => integer ]), 'a', 'route signed';
+    ok !exists $w->{ni}, 'ni signed';
+    ok !exists $w->{pi}, 'pi signed';
+    is $w->{nsi}, -5, 'nsi signed';
+    is $w->{psi}, '+55', 'psi signed';
+    is $w->{z}, 0, 'zero';
 }
 
 {

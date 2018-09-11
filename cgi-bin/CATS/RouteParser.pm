@@ -20,6 +20,7 @@ our @EXPORT = qw(
     problem_code
     required
     sha
+    signed_integer
     str
     upload
 );
@@ -27,6 +28,7 @@ our @EXPORT = qw(
 sub bool() { qr/^1$/ }
 sub bool0() { qr/^[01]$/ }
 sub integer() { qr/^[0-9]+$/ } # 'int' is reserved.
+sub signed_integer() { qr/^[+-]?[0-9]+$/ }
 sub fixed() { qr/^[+-]?([0-9]*[.])?[0-9]+$/ }
 sub sha() { qr/^[a-h0-9]+$/ }
 sub str() { qr/./ }
