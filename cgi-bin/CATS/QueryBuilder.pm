@@ -88,8 +88,8 @@ sub make_where {
         my $sq = $self->{subqueries}->{$name}
             or push @sq_unknown, $name and next;
         if ($sq->{m}) {
-            my $msg_arg = $sq->{t} ? $dbh->selectrow_array($sq->{t}, undef, $value) : undef;
-            msg($sq->{m}, $msg_arg);
+            my @msg_args = $sq->{t} ? $dbh->selectrow_array($sq->{t}, undef, $value) : ();
+            msg($sq->{m}, @msg_args);
         }
         # SQL::Abstract uses double reference to designate subquery.
         push @sq_list, \[ $sq->{sq} => $value ];
@@ -120,6 +120,8 @@ sub define_db_searches {
         die;
     }
 }
+
+# sql OR { sq => sql, m => msg id, t => msg arguments sql }
 
 sub define_subqueries {
     my ($self, $subqueries) = @_;
