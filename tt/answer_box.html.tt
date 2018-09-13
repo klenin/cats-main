@@ -3,7 +3,9 @@
 <body>
 [% UNLESS clarified %]
 <div style="padding: 10px">
-  [% participant_name | html %], [% submit_time %]<br/><br/>
+  <h3>[% contest.title | html %]</h3>
+  <br/>
+  <p>[% participant_name | html %], [% submit_time %]</p>
   <div class="bordered" style="width: 100%">[% question_text | html %]</div>
   [% IF answer %]<br/>[% capt.answered %]: [% answer | html %]<br/><br/>[% END %]
   <form method="post" enctype="multipart/form-data">
