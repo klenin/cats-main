@@ -185,9 +185,11 @@ sub get_tags {
     [ sort keys %tags ];
 }
 
-sub contest_visible {
+my $all_visible = { explain => 1, is_jury_in_contest => 1 };
+
+sub _contest_visible {
     my ($p) = @_;
-    return (1, 1, 1) if $is_root;
+    return $all_visible if $is_root;
 
     my $pid = $p->{pid};
     my $cpid = $p->{cpid};
@@ -220,15 +222,15 @@ sub contest_visible {
             LEFT JOIN contest_sites CS ON CS.contest_id = C.id AND CS.site_id = CA.site_id
             WHERE $t.id = ?~, undef,
         $uid, $q);
-    return (1, 1, 1) if $c->{is_jury};
-    if (($c->{since_start} || 0) > 0 && (!$c->{is_hidden} || $c->{caid})) {
-        $c->{local_only} or return (1, $c->{show_packages}, 0);
-        defined $uid or return (0, 0, 0);
-        # Require local participation.
-        return (1, $c->{show_packages}, 0)
-            if defined $c->{is_remote} && $c->{is_remote} == 0 || defined $c->{is_ooc} && $c->{is_ooc} == 0;
-    }
-    return (0, 0, 0);
+    return $all_visible if $c->{is_jury};
+    ($c->{since_start} || 0) > 0 && (!$c->{is_hidden} || $c->{caid}) or return;
+    my $res = { explain => $c->{show_packages} && $p->{explain} };
+    $c->{local_only} or return $res;
+    # Require local participation.
+    defined $uid &&
+    (defined $c->{is_remote} && $c->{is_remote} == 0 || defined $c->{is_ooc} && $c->{is_ooc} == 0)
+        or return;
+    $res;
 }
 
 sub choose_lang {
@@ -247,9 +249,7 @@ sub choose_lang {
 
 sub problem_text {
     my ($p) = @_;
-    my ($show, $explain, $is_jury_in_contest) = contest_visible($p);
-    $show or return $p->not_found;
-    $explain = $explain && $p->{explain};
+    my $v = _contest_visible($p) or return $p->not_found;
 
     init_template($p, 'problem_text');
 
@@ -272,7 +272,7 @@ sub problem_text {
             WHERE CP.id = ?~, undef,
             $cpid) or return;
         $show_points = $pr->{rules};
-        push @problems, $pr if $is_jury_in_contest || $pr->{status} < $cats::problem_st_hidden;
+        push @problems, $pr if $v->{is_jury_in_contest} || $pr->{status} < $cats::problem_st_hidden;
     }
     else { # Show all problems from the contest.
         ($show_points) = $contest->{rules};
@@ -290,7 +290,7 @@ sub problem_text {
         push @problems, @$prs;
     }
 
-    $spellchecker = $is_jury_in_contest && !$p->{nospell} ? CATS::Problem::Spell->new : undef;
+    $spellchecker = $v->{is_jury_in_contest} && !$p->{nospell} ? CATS::Problem::Spell->new : undef;
 
     my $static_path = $CATS::StaticPages::is_static_page ? '../' : '';
 
@@ -304,22 +304,22 @@ sub problem_text {
                 'contest_id AS orig_contest_id',
                 'max_points AS max_points_def',
                 grep(!$problem->{$_}, @cats::limits_fields),
-                ($explain ? 'explanation' : qw(input_format output_format)),
-                ($is_jury_in_contest && !$p->{noformal} ? 'formal_input' : ()),
+                ($v->{explain} ? 'explanation' : qw(input_format output_format)),
+                ($v->{is_jury_in_contest} && !$p->{noformal} ? 'formal_input' : ()),
             );
             my $p_orig = $dbh->selectrow_hashref(qq~
                 SELECT $fields_str FROM problems WHERE id = ?~, { Slice => {} },
                 $problem->{problem_id}) or next;
             $problem = { %$problem, %$p_orig };
         }
-        $problem->{tags} = $p->{tags} if $is_jury_in_contest && defined $p->{tags};
+        $problem->{tags} = $p->{tags} if $v->{is_jury_in_contest} && defined $p->{tags};
         $problem->{parsed_tags} = $tags = CATS::Problem::Tags::parse_tag_condition($problem->{tags}, sub {});
-        $problem->{lang} = choose_lang($problem, $p, $is_jury_in_contest);
+        $problem->{lang} = choose_lang($problem, $p, $v->{is_jury_in_contest});
         $problem->{iface_lang} = (grep $_ eq $problem->{lang}, @cats::langs) ? $problem->{lang} : 'en';
         $tags->{lang} = [ 0, $problem->{lang} ];
         $problem->{interactive_io} = $problem->{run_method} != $cats::rm_default;
 
-        if ($is_jury_in_contest && !$p->{nokw}) {
+        if ($v->{is_jury_in_contest} && !$p->{nokw}) {
             my $lang_col = $problem->{lang} eq 'ru' ? 'name_ru' : 'name_en';
             my $kw_list = $dbh->selectcol_arrayref(qq~
                 SELECT $lang_col FROM keywords K
