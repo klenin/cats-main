@@ -77,7 +77,7 @@ sub problems_submit {
                 S.account_id = ? AND S.contest_id = ?)~, undef,
         $pid, $uid, $cid) and return msg(1168);
 
-    my $contest_finished = $contest->has_finished($user->{diff_time} + $user->{ext_time});
+    my $contest_finished = $contest->has_finished_for($user);
     my ($cpid, $status, $title) = $dbh->selectrow_array(q~
         SELECT CP.id, CP.status, P.title
         FROM contest_problems CP

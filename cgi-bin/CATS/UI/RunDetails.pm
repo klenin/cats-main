@@ -375,7 +375,7 @@ sub view_source_frame {
 
     my $can_submit = $is_jury ||
             $user->{is_participant} &&
-            ($user->{is_virtual} || !$contest->has_finished($user->{diff_time} + $user->{ext_time}));
+            ($user->{is_virtual} || !$contest->has_finished_for($user));
 
     if ($sources_info->{is_jury} || $can_submit) {
         my $de_list = CATS::DevEnv->new(CATS::JudgeDB::get_DEs({ active_only => 1, fields => 'syntax' }));

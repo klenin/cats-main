@@ -59,6 +59,11 @@ sub has_finished {
     $self->{time_since_finish} >= ($offset || 0);
 }
 
+sub has_finished_for {
+    my ($self, $u) = @_;
+    $self->has_finished($u->{diff_time} + $u->{ext_time});
+}
+
 sub current_official {
     $dbh->selectrow_hashref(q~
         SELECT id, title FROM contests

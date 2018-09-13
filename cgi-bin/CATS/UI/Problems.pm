@@ -506,7 +506,7 @@ sub problems_frame {
         is_user => $uid,
         can_submit => $is_jury ||
             $user->{is_participant} &&
-            ($user->{is_virtual} || !$contest->has_finished($user->{diff_time} + $user->{ext_time})),
+            ($user->{is_virtual} || !$contest->has_finished_for($user)),
         _prepare_de_list(),
         contest_id => $cid, no_judges => !$jactive,
      );
