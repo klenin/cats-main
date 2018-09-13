@@ -185,7 +185,7 @@ sub get_tags {
     [ sort keys %tags ];
 }
 
-my $all_visible = { explain => 1, is_jury_in_contest => 1 };
+my $all_visible = { author => 1, explain => 1, is_jury_in_contest => 1 };
 
 sub _contest_visible {
     my ($p) = @_;
@@ -215,7 +215,8 @@ sub _contest_visible {
     my $c = $dbh->selectrow_hashref(qq~
         SELECT
             CAST(CURRENT_TIMESTAMP - $CATS::Time::contest_start_offset_sql AS DOUBLE PRECISION) AS since_start,
-            C.local_only, C.id AS orig_cid, C.show_packages, C.is_hidden,
+            CAST(CURRENT_TIMESTAMP - $CATS::Time::contest_finish_offset_sql AS DOUBLE PRECISION) AS since_finish,
+            C.local_only, C.id AS orig_cid, C.show_packages, C.is_hidden, C.is_official,
             CA.id AS caid, CA.is_jury, CA.is_remote, CA.is_ooc
             FROM contests C $s
             LEFT JOIN contest_accounts CA ON CA.contest_id = C.id AND CA.account_id = ?
@@ -224,7 +225,10 @@ sub _contest_visible {
         $uid, $q);
     return $all_visible if $c->{is_jury};
     ($c->{since_start} || 0) > 0 && (!$c->{is_hidden} || $c->{caid}) or return;
-    my $res = { explain => $c->{show_packages} && $p->{explain} };
+    my $res = {
+        explain => $c->{show_packages} && $p->{explain},
+        author => !$c->{is_official} || $c->{since_finish} > 0,
+    };
     $c->{local_only} or return $res;
     # Require local participation.
     defined $uid &&
@@ -300,9 +304,10 @@ sub problem_text {
         $current_pid = $problem->{problem_id};
         {
             my $fields_str = join ', ', (qw(
-                id title lang difficulty author input_file output_file statement pconstraints json_data run_method),
+                id title lang difficulty input_file output_file statement pconstraints json_data run_method),
                 'contest_id AS orig_contest_id',
                 'max_points AS max_points_def',
+                ($v->{author} ? ('author') : ()),
                 grep(!$problem->{$_}, @cats::limits_fields),
                 ($v->{explain} ? 'explanation' : qw(input_format output_format)),
                 ($v->{is_jury_in_contest} && !$p->{noformal} ? 'formal_input' : ()),
