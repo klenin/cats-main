@@ -86,7 +86,7 @@ my $main_routes = {
     ],
     problems_all => [
         \&CATS::UI::Problems::problems_all_frame,
-        kw => integer, link => bool, move => bool,
+        link => bool, move => bool,
     ],
     problems_udebug => [ \&CATS::UI::Problems::problems_udebug_frame, ],
     problems_retest => [ \&CATS::UI::ProblemsRetest::problems_retest_frame,

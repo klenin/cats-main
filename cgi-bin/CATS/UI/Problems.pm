@@ -26,32 +26,14 @@ use CATS::Problem::Utils;
 use CATS::Problem::Storage;
 use CATS::Redirect;
 use CATS::Request;
-use CATS::Settings;
 use CATS::StaticPages;
 use CATS::Utils qw(file_type date_to_iso redirect_url_function url_function);
 use CATS::Verdicts;
-
-sub prepare_keyword {
-    my ($where, $p) = @_;
-    $p->{kw} or return;
-    # Keywords are only in English and Russian for now.
-    my $lang = CATS::Settings::lang;
-    my $name_field = 'name_' . ($lang =~ /^(en|ru)$/ ? $lang : 'en');
-    my ($code, $name) = $dbh->selectrow_array(qq~
-        SELECT code, $name_field FROM keywords WHERE id = ?~, undef,
-        $p->{kw}) or do { $p->{kw} = undef; return; };
-    msg(1016, $code, $name);
-    push @{$where->{cond}}, q~
-        (EXISTS (SELECT 1 FROM problem_keywords PK WHERE PK.problem_id = P.id AND PK.keyword_id = ?))~;
-    push @{$where->{params}}, $p->{kw};
-}
 
 sub problems_all_frame {
     my ($p) = @_;
     init_template($p, 'problems_all.html.tt');
     my $lv = CATS::ListView->new(web => $p, name => 'link_problem');
-
-    $is_jury && $p->{link} || $p->{kw} or return;
 
     $t->param(used_codes => $contest->used_problem_codes) if $p->{link};
 
@@ -71,16 +53,16 @@ sub problems_all_frame {
             )~],
             params => [ $uid // 0 ]
         };
-    prepare_keyword($where, $p);
     my $where_cond = join(' AND ', @{$where->{cond}}) || '1=1';
 
-    $lv->define_columns(url_f('problems_all', link => $p->{link}, kw => $p->{kw}), 0, 0, [
+    $lv->define_columns(url_f('problems_all', link => $p->{link}), 0, 0, [
         { caption => res_str(602), order_by => 'P.title', width => '30%' },
         { caption => res_str(603), order_by => 'C.title', width => '30%' },
         { caption => res_str(604), order_by => 'ok_wa_tl', width => '10%', col => 'Ok' },
         { caption => res_str(667), order_by => 'keywords', width => '20%', col => 'Kw' },
     ]);
     CATS::Problem::Utils::define_common_searches($lv);
+    CATS::Problem::Utils::define_kw_subquery($lv);
     $lv->define_db_searches({
         contest_title => 'C.title',
         ($is_root ? (tags => q~
@@ -125,7 +107,7 @@ sub problems_all_frame {
         );
     };
 
-    $lv->attach(url_f('problems_all', link => $p->{link}, kw => $p->{kw}, move => $p->{move}), $fetch_record, $c);
+    $lv->attach(url_f('problems_all', link => $p->{link}, move => $p->{move}), $fetch_record, $c);
     $c->finish;
 
     $t->param(
@@ -292,6 +274,7 @@ sub problems_frame {
     );
     $lv->define_columns(url_f('problems'), 0, 0, \@cols);
     CATS::Problem::Utils::define_common_searches($lv);
+    CATS::Problem::Utils::define_kw_subquery($lv) if $is_jury || $contest->has_finished_for($user);
     $lv->define_db_searches([ qw(
         CP.code CP.testsets CP.tags CP.points_testsets CP.status
     ) ]);

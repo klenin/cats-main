@@ -8,6 +8,7 @@ use CATS::DB;
 use CATS::Globals qw($cid $contest $is_jury $t $user);
 use CATS::Messages qw(res_str msg);
 use CATS::Output qw(url_f);
+use CATS::Settings;
 
 # If the problem was not downloaded yet, generate a hash for it.
 sub ensure_problem_hash {
@@ -112,6 +113,22 @@ sub define_common_searches {
     });
 
     $lv->define_enums({ run_method => CATS::Problem::Utils::run_method_enum() });
+}
+
+sub define_kw_subquery {
+    my ($lv) = @_;
+
+    # Keywords are only in English and Russian for now.
+    my $lang = CATS::Settings::lang;
+    my $name_field = 'name_' . ($lang =~ /^(en|ru)$/ ? $lang : 'en');
+    $lv->define_subqueries({ has_kw => {
+        sq => q~(EXISTS (
+            SELECT 1 FROM problem_keywords PK
+            WHERE PK.problem_id = P.id AND PK.keyword_id = ?))~,
+        m => 1016,
+        t => qq~
+            SELECT code, $name_field FROM keywords WHERE id = ?~,
+    }});
 }
 
 sub can_download_package {
