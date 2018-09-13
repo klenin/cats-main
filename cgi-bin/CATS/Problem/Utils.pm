@@ -121,14 +121,24 @@ sub define_kw_subquery {
     # Keywords are only in English and Russian for now.
     my $lang = CATS::Settings::lang;
     my $name_field = 'name_' . ($lang =~ /^(en|ru)$/ ? $lang : 'en');
-    $lv->define_subqueries({ has_kw => {
-        sq => q~(EXISTS (
-            SELECT 1 FROM problem_keywords PK
-            WHERE PK.problem_id = P.id AND PK.keyword_id = ?))~,
-        m => 1016,
-        t => qq~
-            SELECT code, $name_field FROM keywords WHERE id = ?~,
-    }});
+
+    $lv->define_subqueries({
+        has_kw => {
+            sq => q~(EXISTS (
+                SELECT 1 FROM problem_keywords PK
+                WHERE PK.problem_id = P.id AND PK.keyword_id = ?))~,
+            m => 1016,
+            t => qq~SELECT code, $name_field FROM keywords WHERE id = ?~,
+        },
+        has_kw_code => {
+            sq => q~(EXISTS (
+                SELECT 1 FROM problem_keywords PK
+                INNER JOIN keywords K ON K.id = PK.keyword_id
+                WHERE PK.problem_id = P.id AND K.code = ?))~,
+            m => 1016,
+            t => qq~SELECT code, $name_field FROM keywords WHERE code = ?~,
+        },
+    });
 }
 
 sub can_download_package {
