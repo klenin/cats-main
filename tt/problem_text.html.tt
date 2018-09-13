@@ -112,31 +112,37 @@ MathJax.Hub.Register.StartupHook('onLoad', function () {
   </ul></div>
   <table class="problem_header">
   [% IF p.author %]<tr><td class="narrow nobr">[% c.author %]:</td><td colspan="4">[% p.author | html %]</td></tr>[% END %]
+  [%-
+    left_col = [
+      { n => p.interactive_io ? c.input_output : c.input_file,
+        t => p.interactive_io ? c.interactive : (p.input_file == '*STDIN' ? c.standard_input : p.input_file) },
+      { n => p.interactive_io ? '' : c.output_file,
+        t => p.interactive_io ? '' : (p.output_file == '*STDOUT' ? c.standard_output : p.output_file) },
+      { n => p.show_points ? c.max_points : '',
+        t => p.max_points },
+    ];
+    right_col => [
+      { n => c.time_limit,
+        t => "${p.time_limit} ${c.seconds}" },
+      { n => c.memory_limit,
+        t => "${p.memory_limit} ${c.megabytes}" },
+      { n => p.write_limit ? c.write_limit : ''
+        t => "${p.write_limit} ${c.bytes}" },
+    ];
+  -%]
+  [% li = 0; ri = 0;
+    WHILE 1;
+      WHILE li < left_col.size && !left_col.item(li).n; li = li + 1; END;
+      WHILE ri < right_col.size && !right_col.item(ri).n; ri = ri + 1; END;
+      LAST IF li >= left_col.size && ri >= right_col.size;
+      lc = left_col.item(li); rc = right_col.item(ri);
+  %]
   <tr>
-    <td class="narrow nobr">[% p.interactive_io ? c.input_output : c.input_file %]:</td>
-    <td>[% p.interactive_io ? c.interactive : (p.input_file == '*STDIN' ? c.standard_input : p.input_file) | html %]</td>
+    <td class="narrow nobr">[% lc.n; lc.n ? ':' : '' %]</td><td>[% lc.n ? lc.t : '' | html %]</td>
     <td>&nbsp;</td>
-    <td class="narrow nobr">[% c.time_limit %]:</td><td>[% p.time_limit %] [% c.seconds %]</td></tr>
-  <tr>
-    <td class="narrow nobr">[% p.interactive_io ? '' : c.output_file _ ':' %]</td>
-    <td>[% p.interactive_io ? '' : (p.output_file == '*STDOUT' ? c.standard_output : p.output_file) | html %]</td>
-    <td>&nbsp;</td>
-    <td class="narrow nobr">[% c.memory_limit %]:</td><td>[% p.memory_limit %] [% c.megabytes %]</td></tr>
-  [% IF p.write_limit || p.show_points %]
-  <tr>
-    [% IF p.show_points %]
-    <td class="narrow nobr">[% c.max_points %]:</td><td>[% p.max_points %]</td>
-    [% ELSE %]
-    <td></td><td></td>
-    [% END %]
-    <td>&nbsp;</td>
-    [% IF p.write_limit %]
-    <td class="narrow nobr">[% c.write_limit %]:</td><td>[% p.write_limit %] [% c.bytes %]</td>
-    [% ELSE %]
-    <td></td><td></td>
-    [% END %]
+    <td class="narrow nobr">[% rc.n; rc.n ? ':' : '' %]</td><td>[% rc.n ? rc.t : '' | html %]</td>
   </tr>
-  [% END %]
+  [% li = li + 1; ri = ri + 1; END %]
   [% IF p.keywords %]<tr><td class="narrow nobr">[% c.keywords %]:</td><td colspan="4">[% p.keywords %]</td></tr>[% END %]
   </table>
 
