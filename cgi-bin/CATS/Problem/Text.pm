@@ -20,7 +20,7 @@ use CATS::TeX::Lite;
 use CATS::Time;
 use CATS::Utils qw(url_function);
 
-my ($current_pid, $html_code, $spellchecker, $text_span, $tags, $skip_depth, $has_snippets);
+my ($current_pid, $html_code, $spellchecker, $text_span, $tags, $skip_depth, $has_snippets, $noif);
 my $wrapper = 'cats-wrapper';
 my @parsed_fields = qw(statement pconstraints input_format output_format explanation);
 
@@ -102,7 +102,12 @@ sub _on_start {
     }
     if (my $cond = $atts{'cats-if'}) {
         my $pc = CATS::Problem::Tags::parse_tag_condition($cond, sub {});
-        if (!CATS::Problem::Tags::check_tag_condition($tags, $pc, sub {})) {
+        my $cond_true = CATS::Problem::Tags::check_tag_condition($tags, $pc, sub {});
+        if ($noif) {
+            $atts{class} .= $cond_true ? ' cond_true' : ' cond_false';
+            $atts{title} .= $cond;
+        }
+        elsif (!$cond_true) {
             $skip_depth = 1;
             return;
         }
@@ -295,6 +300,7 @@ sub problem_text {
     }
 
     $spellchecker = $v->{is_jury_in_contest} && !$p->{nospell} ? CATS::Problem::Spell->new : undef;
+    $noif = $v->{is_jury_in_contest} && $p->{noif};
 
     my $static_path = $CATS::StaticPages::is_static_page ? '../' : '';
 

@@ -85,6 +85,8 @@ MathJax.Hub.Register.StartupHook('onLoad', function () {
   div.problem_text table.thin_border { border-collapse: collapse; border: 1px; }
   div.problem_text table.thin_border td, div.problem_text table.thin_border th { border: 1px solid black; padding: 2px; }
   [%- PROCESS includes/verdicts.css.tti class='last_verdict' IF href_get_last_verdicts -%]
+  .cond_true { color: #008000; }
+  .cond_false { color: #800000; }
 </style>
 </head>
 <body>

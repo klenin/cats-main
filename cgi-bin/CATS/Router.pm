@@ -290,7 +290,7 @@ my $main_routes = {
     rank_problem_details => \&CATS::UI::RankTable::rank_problem_details,
     problem_text => [ \&CATS::UI::Problems::problem_text_frame,
         pid => integer, cpid => integer, cid => integer,
-        explain => bool, nospell => bool, noformal => bool, pl => ident, nokw => bool,
+        explain => bool, nospell => bool, noformal => bool, noif => bool, pl => ident, nokw => bool,
         tags => str, raw => bool, nomath => bool, uid => integer,
     ],
     get_snippets => [ \&CATS::UI::Snippets::get_snippets,
