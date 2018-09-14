@@ -540,7 +540,7 @@ sub _process_single_run {
     if ($self->{show_points} && !defined $r->{points}) {
         $r->{points} = cache_req_points($r, $problem);
     }
-    next if $ap->{solved} && !$self->{show_points};
+    return if $ap->{solved} && !$self->{show_points};
 
     $problem->{run_method} //= $cats::rm_default;
     if (
