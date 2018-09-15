@@ -127,7 +127,7 @@ sub new {
     $self->{$_} = $r{$_} for qw(
         after_load after_make
         before_commit before_delete before_display before_save before_save_db
-        debug msg_deleted msg_saved);
+        debug msg_deleted msg_saved override_save);
     $self;
 }
 
@@ -148,6 +148,7 @@ sub load {
 
 sub save {
     my ($self, $id, $data, %opts) = @_;
+    return $self->{override_save}->($self, $data, $id) if $self->{override_save};
     my $i = 0;
     my $db_data = { map { $_->{db_name} => $_->save($data->[$i++]) } $self->fields };
     $self->{before_save_db}->($db_data, $id, $self) if $self->{before_save_db};
