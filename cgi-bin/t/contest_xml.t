@@ -3,8 +3,8 @@ use warnings;
 
 use File::Spec;
 use FindBin;
-use Test::More tests => 45;
 use Test::Exception;
+use Test::More tests => 45;
 
 use lib $FindBin::Bin;
 use lib File::Spec->catdir($FindBin::Bin, '..');
