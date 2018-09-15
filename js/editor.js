@@ -1,7 +1,7 @@
 $(document).ready(function () {
-  $('textarea[data-editor]').each(function() {
-    if (!ace) return;
+  if (!ace) return;
 
+  $('textarea[data-editor]').each(function() {
     var textarea = $(this);
     var mode = textarea.data('editor');
     var editorContainer = $('<div>', {
@@ -30,6 +30,7 @@ $(document).ready(function () {
     editor.setTheme('ace/theme/chrome');
 
     editor.setOptions({
+      enableBasicAutocompletion: true,
       fontSize: '14px',
     });
 
