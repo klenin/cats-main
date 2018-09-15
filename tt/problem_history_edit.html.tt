@@ -4,7 +4,13 @@
 </style>
 [% PROCESS includes/ace.tti %]
 <script>window.addEventListener('load', function () {
-    highlight_errors('log', [ /at\sline\s(\d+)/ ], 'editor');
+  highlight_errors('log', [ /at\sline\s(\d+)/ ], 'editor');
+  var langTools = ace.require('ace/ext/language_tools');
+  var completions = [ [% FOREACH a IN autocomplete; "'$a'"; ', ' UNLESS loop.last; END %] ];
+  langTools.addCompleter({ getCompletions: function(editor, session, pos, prefix, callback) {
+    if (prefix.length === 0) { callback(null, []); return }
+    callback(null, $.map(completions, function (c) { return { value: c, score: 1, meta: 'cats' }; }));
+  }});
 })</script>
 [%- END %]
 [% PROCESS includes/menu_begin.tti %]

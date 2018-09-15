@@ -10,6 +10,7 @@ use CATS::Globals qw($cid $is_jury $is_root $t $uid);
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
 use CATS::Output qw(init_template url_f);
+use CATS::Problem::Parser;
 use CATS::Problem::Save;
 use CATS::Problem::Storage;
 use CATS::Problem::Utils;
@@ -192,6 +193,8 @@ sub problem_history_edit_frame {
         last_commit => CATS::Problem::Storage::get_log($p->{pid}, $hash_base, 1)->[0],
         message => Encode::decode_utf8($p->{message}),
         problem_import_log => $log,
+        autocomplete => $p->{file} =~ m/\.xml$/ ?
+            [ sort keys %{CATS::Problem::Parser::tag_handlers()} ] : [],
     );
 }
 
