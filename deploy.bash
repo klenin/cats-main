@@ -92,6 +92,7 @@ if [[ $step =~ (^|,)2(,|$) || $step == "*" ]]; then
 		Apache2::Request
 		Archive::Zip
 		Authen::Passphrase
+		File::Copy::Recursive
 		JSON::XS
 		SQL::Abstract
 		Template
