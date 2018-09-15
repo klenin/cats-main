@@ -3,6 +3,9 @@ package CATS::Problem::Save;
 use strict;
 use warnings;
 
+use File::Temp;
+use Template;
+
 use CATS::Contest;
 use CATS::Contest::Participate qw(is_jury_in_contest);
 use CATS::Constants;
@@ -140,17 +143,28 @@ sub problems_replace {
 }
 
 sub problems_add {
-    my ($source_name, $is_remote, $repo_path) = @_;
+    my ($source_name, %opts) = @_;
+
+    $opts{source} or die;
+
     my $problem_code;
     if (!$contest->is_practice) {
         $problem_code = _unused_problem_code($contest) or return;
     }
 
-    my CATS::Problem::Storage $p = CATS::Problem::Storage->new;
-    my ($error, $result_sha, $problem) = $is_remote ?
-        $p->load(CATS::Problem::Source::Git->new($source_name, $p, $repo_path), $cid, new_id, 0, $source_name) :
-        $p->load(CATS::Problem::Source::Zip->new($source_name, $p), $cid, new_id, 0, undef);
-    $t->param(problem_import_log => $p->encoded_import_log());
+    my CATS::Problem::Storage $ps = CATS::Problem::Storage->new;
+
+    my $source =
+        $opts{source} eq 'remote' ?
+            CATS::Problem::Source::Git->new($source_name, $ps, $opts{repo_path} || die) :
+        $opts{source} eq 'zip' ?
+            CATS::Problem::Source::Zip->new($source_name, $ps) :
+        $opts{source} eq 'dir' ?
+            CATS::Problem::Source::PlainFiles->new(dir => $source_name, logger => $ps) : die;
+    my ($error, $result_sha, $problem) =
+        $ps->load_problem($source, $cid, new_id, 0, $opts{source} eq 'remote' ? $source_name : undef);
+
+    $t->param(problem_import_log => $ps->encoded_import_log);
     $error ||= !_add_problem_to_contest($cid, $problem->{id}, $problem_code);
 
     if (!$error) {
@@ -160,7 +174,7 @@ sub problems_add {
         $dbh->rollback;
         msg(1008);
     }
-    $p->encoded_import_log();
+    $ps->encoded_import_log;
 }
 
 sub problems_add_new {
@@ -169,8 +183,22 @@ sub problems_add_new {
     $zip->remote_file_name =~ /\.(zip|ZIP)$/
         or return msg(1053);
     my $fname = $zip->local_file_name;
-    problems_add($fname, 0);
+    problems_add($fname, source => 'zip');
     unlink $fname;
+}
+
+sub problems_add_template {
+    my ($template_path, $template_params) = @_;
+
+    my $tmpdir = File::Temp->newdir;
+    my $tt = Template->new({
+        INCLUDE_PATH => $template_path,
+        ENCODING => 'utf8',
+    }) or die $Template::ERROR;
+
+    $tt->process('task.xml', $template_params, File::Spec->catdir($tmpdir, 'task.xml'))
+        or die $tt->error();
+    problems_add($tmpdir->dirname, source => 'dir');
 }
 
 sub get_all_des {
@@ -185,7 +213,7 @@ sub get_all_des {
 sub problems_add_new_remote {
     my ($p) = @_;
     $p->{remote_url} or return msg(1091);
-    problems_add($p->{remote_url}, 1, $p->{repo_path});
+    problems_add($p->{remote_url}, source => 'remote', repo_path => $p->{repo_path});
 }
 
 sub set_contest_problem_des {

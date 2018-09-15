@@ -184,6 +184,9 @@ sub problems_frame_jury_action {
     $p->{change_code} and return CATS::Problem::Utils::problems_change_code($p);
     $p->{replace} and return CATS::Problem::Save::problems_replace($p, $p->{problem_id});
     $p->{add_new} and return CATS::Problem::Save::problems_add_new($p);
+    $p->{add_new_template} and return CATS::Problem::Save::problems_add_template(
+        File::Spec->catdir(CATS::Config::cats_dir, 'cats-problem', 'templates', 'minimal'),
+        { title => $p->{new_title}, lang => $p->{new_lang} });
     $p->{add_remote} and return CATS::Problem::Save::problems_add_new_remote($p);
     $p->{std_solution} and return CATS::Problem::Submit::problems_submit_std_solution($p);
     CATS::Problem::Storage::delete($p->{delete_problem}) if $p->{delete_problem};
