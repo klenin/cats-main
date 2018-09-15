@@ -274,7 +274,10 @@ sub problems_frame {
     );
     $lv->define_columns(url_f('problems'), 0, 0, \@cols);
     CATS::Problem::Utils::define_common_searches($lv);
-    CATS::Problem::Utils::define_kw_subquery($lv) if $is_jury || $contest->has_finished_for($user);
+    if ($is_jury || $contest->has_finished_for($user)) {
+        CATS::Problem::Utils::define_kw_subquery($lv);
+        $lv->define_subqueries({ has_tag => q~(POSITION(?, CP.tags) > 0)~ });
+    }
     $lv->define_db_searches([ qw(
         CP.code CP.testsets CP.tags CP.points_testsets CP.status
     ) ]);
