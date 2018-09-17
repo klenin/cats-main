@@ -3,6 +3,7 @@ package CATS::UI::Contests;
 use strict;
 use warnings;
 
+use CATS::Config;
 use CATS::Constants;
 use CATS::Contest::Participate qw(get_registered_contestant is_jury_in_contest);
 use CATS::Contest;
@@ -18,6 +19,7 @@ use CATS::Problem::Storage;
 use CATS::RankTable;
 use CATS::Settings qw($settings);
 use CATS::StaticPages;
+use CATS::Utils;
 use CATS::Verdicts;
 
 sub contests_new_frame {
@@ -345,6 +347,23 @@ sub contests_submenu_filter {
     }->{$f} || '';
 }
 
+sub _abs_url_f { $CATS::Config::absolute_url . CATS::Utils::url_function(@_) }
+
+sub contests_rss_frame {
+    my ($p) = @_;
+    init_template($p, 'contests_rss.xml.tt');
+    my $contests = $dbh->selectall_arrayref(q~
+        SELECT id, title, short_descr, start_date
+        FROM contests
+        WHERE is_official = 1 AND is_hidden = 0
+        ORDER BY start_date DESC ROWS 100~, { Slice => {} });
+    for my $c (@$contests) {
+        $c->{start_date_rfc822} = CATS::Utils::date_to_rfc822($c->{start_date});
+        $c->{href_link} = _abs_url_f('problems', cid => $c->{id});
+    }
+    $t->param(href_root => $CATS::Config::absolute_url, contests => $contests);
+}
+
 sub contests_frame {
     my ($p) = @_;
 
@@ -397,9 +416,11 @@ sub contests_frame {
             { href => url_f('contests_new'), item => res_str(537) } : ()),
         { href => url_f('contests',
             ical => 1, rows => 50, filter => $filter), item => res_str(562) },
+        { href => url_function('contests_rss'), item => 'RSS' },
     ];
     $t->param(
         submenu => $submenu,
+        href_rss => _abs_url_f('contests_rss'),
         CATS::Contest::Participate::flags_can_participate,
     );
 }

@@ -1,4 +1,5 @@
 [% extra_head = BLOCK %]
+<link rel="alternate" type="application/rss+xml" title="RSS" href="[% href_rss %]">
 <style>
   .ct_official { color: blue; }
   .ct_denied { color: red; }

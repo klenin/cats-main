@@ -44,6 +44,7 @@ my $main_routes = {
         penalty => integer,
         ical => bool, set_contest => bool, filter => ident,
     ],
+    contests_rss => [ \&CATS::UI::Contests::contests_rss_frame, ],
     contests_new => [ \&CATS::UI::Contests::contests_new_frame, ],
     contest_params => [ \&CATS::UI::Contests::contest_params_frame, id => integer, ],
     contest_xml => [ \&CATS::UI::Contests::contest_xml_frame, edit_save_xml => bool, contest_xml => str ],
