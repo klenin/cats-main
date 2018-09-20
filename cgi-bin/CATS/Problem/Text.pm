@@ -190,11 +190,11 @@ sub get_tags {
     [ sort keys %tags ];
 }
 
-my $all_visible = { author => 1, explain => 1, is_jury_in_contest => 1 };
+sub _all_visible { { author => 1, explain => $_[0]->{explain}, is_jury_in_contest => 1 } };
 
 sub _contest_visible {
     my ($p) = @_;
-    return $all_visible if $is_root;
+    return _all_visible($p) if $is_root;
 
     my $pid = $p->{pid};
     my $cpid = $p->{cpid};
@@ -228,7 +228,7 @@ sub _contest_visible {
             LEFT JOIN contest_sites CS ON CS.contest_id = C.id AND CS.site_id = CA.site_id
             WHERE $t.id = ?~, undef,
         $uid, $q);
-    return $all_visible if $c->{is_jury};
+    return _all_visible($p) if $c->{is_jury};
     ($c->{since_start} || 0) > 0 && (!$c->{is_hidden} || $c->{caid}) or return;
     my $res = {
         explain => $c->{show_packages} && $p->{explain},
