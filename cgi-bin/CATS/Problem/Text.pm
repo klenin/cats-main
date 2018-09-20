@@ -348,7 +348,9 @@ sub problem_text {
         }
 
         $problem->{samples} = $dbh->selectall_arrayref(qq~
-            SELECT rank, in_file, out_file
+            SELECT rank,
+                CAST(in_file AS BLOB SUB_TYPE TEXT) AS in_file,
+                CAST(out_file AS BLOB SUB_TYPE TEXT) AS out_file
             FROM samples WHERE problem_id = ? ORDER BY rank~, { Slice => {} },
             $problem->{problem_id});
 
