@@ -3,7 +3,7 @@ use warnings;
 
 use File::Spec;
 use FindBin;
-use Test::More tests => 24;
+use Test::More tests => 30;
 
 use lib File::Spec->catdir($FindBin::Bin, '..');
 use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
@@ -58,6 +58,22 @@ is pr(MockupWeb->new, 'zz'), 'zz', 'no params';
     my $w3 = MockupWeb->new;
     is pr($w3, $r), 'r2', 'route clist empty';
     is_deeply $w3->{clist}, [], 'clist empty';
+}
+
+{
+    my $r1 = [ 'rr', enc => encoding ];
+    my $w1 = MockupWeb->new(enc => 'zzz');
+    is pr($w1, $r1), 'rr', 'encoding bad 1';
+    is $w1->{enc}, undef, 'encoding bad 2';
+
+    my $w2 = MockupWeb->new(enc => 'WINDOWS-1251');
+    is pr($w2, $r1), 'rr', 'encoding good 1';
+    is $w2->{enc}, 'WINDOWS-1251', 'encoding good 2';
+
+    my $r2 = [ 'rr', enc => encoding_default('UTF-8') ];
+    my $w3 = MockupWeb->new(enc => 'zzz');
+    is pr($w3, $r2), 'rr', 'encoding default 1';
+    is $w3->{enc}, 'UTF-8', 'encoding default 2';
 }
 
 is pr(MockupWeb->new, [ 'rreq', x => required integer ]), undef, 'required';
