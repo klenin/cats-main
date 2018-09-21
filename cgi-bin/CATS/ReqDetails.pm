@@ -52,15 +52,15 @@ sub get_contest_tests {
     my ($c, $problem_id) = @_;
 
     my $fields = join ', ',
-        ($c->{show_all_tests} ? 't.points' : ()),
+        ($c->{show_all_tests} ? 'T.points' : ()),
         ($c->{show_test_data} ? qq~
-            (SELECT ps.fname FROM problem_sources ps WHERE ps.id = t.generator_id) AS gen_name,
-            t.param, t.gen_group, t.in_file_size AS input_file_size, t.out_file_size AS answer_file_size,
-            SUBSTRING(t.in_file FROM 1 FOR $cats::test_file_cut + 1) AS input,
-            SUBSTRING(t.out_file FROM 1 FOR $cats::test_file_cut + 1) AS answer ~ : ());
+            (SELECT PS.fname FROM problem_sources PS WHERE PS.id = T.generator_id) AS gen_name,
+            T.param, T.gen_group, T.in_file_size AS input_file_size, T.out_file_size AS answer_file_size,
+            SUBSTRING(T.in_file FROM 1 FOR $cats::test_file_cut + 1) AS input,
+            SUBSTRING(T.out_file FROM 1 FOR $cats::test_file_cut + 1) AS answer ~ : ());
     my $tests = $c->{tests} = $fields ?
         $dbh->selectall_arrayref(qq~
-            SELECT $fields FROM tests t WHERE t.problem_id = ? ORDER BY t.rank~, { Slice => {} },
+            SELECT $fields FROM tests T WHERE T.problem_id = ? ORDER BY T.rank~, { Slice => {} },
             $problem_id) : [];
     my $p = $c->{points} = $c->{show_all_tests} ? [ map $_->{points}, @$tests ] : [];
     $c->{show_points} = 0 != grep defined $_ && $_ > 0, @$p;
@@ -75,7 +75,7 @@ sub get_test_data {
             T.in_file AS input, T.in_file_size AS input_size,
             T.out_file AS answer, T.out_file_size AS answer_size
         FROM tests T
-            INNER JOIN reqs R ON R.problem_id = T.problem_id
+        INNER JOIN reqs R ON R.problem_id = T.problem_id
         WHERE R.id = ? AND T.rank = ?~, { Slice => {} },
         $p->{rid}, $p->{test_rank});
 }

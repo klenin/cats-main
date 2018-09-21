@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use Algorithm::Diff;
+use Encode;
 use List::Util qw(max);
 use JSON::XS;
 
@@ -33,6 +34,15 @@ use CATS::Testset;
 use CATS::Utils;
 use CATS::Verdicts;
 
+sub _decode_quietly {
+    my ($p, $s) = @_;
+    $s ||= '';
+    # Comment or output may be non-well-formed utf8.
+    my $result = Encode::decode($p->{comment_enc}, $s, Encode::FB_QUIET);
+    # Encode::decode modifies $s to contain non-well-formed part.
+    $result . ($s eq '' ? '' : "\x{fffd}$s");
+}
+
 sub get_run_info {
     my ($p, $contest, $req) = @_;
     my $points = $contest->{points};
@@ -44,8 +54,6 @@ sub get_run_info {
     $contest->{show_points} ||= 0 < grep $_, values %testset;
     my (%run_details, %used_testsets, %accepted_tests, %accepted_deps);
 
-    my $comment_enc = $p->{comment_enc};
-
     my @resources = qw(time_used memory_used disk_used);
     my $rd_fields = join ', ', (
          qw(test_rank result points),
@@ -56,10 +64,7 @@ sub get_run_info {
     for my $row (get_req_details($contest, $req, $rd_fields, \%accepted_tests)) {
         $_ and $_ = sprintf('%.3g', $_) for $row->{time_used};
         if ($contest->{show_checker_comment}) {
-            my $d = $row->{checker_comment} || '';
-            # Comment may be non-well-formed utf8
-            $row->{checker_comment} = Encode::decode($comment_enc, $d, Encode::FB_QUIET);
-            $row->{checker_comment} .= '...' if $d ne '';
+            $row->{checker_comment} = _decode_quietly($p, $row->{checker_comment});
         }
 
         $last_test = $row->{test_rank};
@@ -131,7 +136,8 @@ sub get_run_info {
         $req->{req_id}, $cats::visualizer);
 
     my %outputs = map { $_->{test_rank} => $_->{output} } @{$dbh->selectall_arrayref(qq~
-        SELECT SUBSTRING(SO.output FROM 1 FOR $cats::test_file_cut + 1) as output, SO.test_rank
+        SELECT SO.test_rank,
+            SUBSTRING(SO.output FROM 1 FOR $cats::test_file_cut + 1) AS output
         FROM solution_output SO WHERE SO.req_id = ? AND SO.test_rank <= ?~, { Slice => {} },
         $req->{req_id}, $last_test)};
 
@@ -142,20 +148,23 @@ sub get_run_info {
         my $t = $contest->{tests}->[$row->{test_rank} - 1] or return $row;
         $t->{param} //= '';
         $row->{input_gen_params} = CATS::Problem::Utils::gen_group_text($t);
-        $row->{input_data} =
-            defined $t->{input} ? $t->{input} : $row->{input_gen_params};
         $row->{input_data_cut} = length($t->{input} || '') > $cats::test_file_cut;
-        $row->{answer_data} = $t->{answer};
+        $row->{input_data} =
+            _decode_quietly($p, defined $t->{input} ? $t->{input} : $row->{input_gen_params});
         $row->{answer_data_cut} = length($t->{answer} || '') > $cats::test_file_cut;
+        $row->{answer_data} = _decode_quietly($p, $t->{answer});
         $row->{visualize_test_hrefs} =
             defined $t->{input} ? [ map +{
-                href => url_f('visualize_test', rid => $req->{req_id}, test_rank => $row->{test_rank}, vid => $_->{id}),
+                href => url_f('visualize_test',
+                    rid => $req->{req_id}, test_rank => $row->{test_rank}, vid => $_->{id}),
                 name => $_->{name}
             }, @$visualizers ] : [];
         $maximums->{$_} = max($maximums->{$_}, $row->{$_} // 0) for @resources;
-        $row->{output_data} = $outputs{$row->{test_rank}};
-        $row->{output_data_cut} = length($row->{output_data} || '') > $cats::test_file_cut;
-        $row->{view_test_details_href} = url_f('view_test_details', rid => $req->{req_id}, test_rank => $row->{test_rank});
+        my $output_data = $outputs{$row->{test_rank}} || '';
+        $row->{output_data_cut} = length($output_data) > $cats::test_file_cut;
+        $row->{output_data} = _decode_quietly($p, $output_data);
+        $row->{view_test_details_href} =
+            url_f('view_test_details', rid => $req->{req_id}, test_rank => $row->{test_rank});
         $row;
     };
     if (
@@ -448,19 +457,21 @@ sub view_test_details_frame {
             SELECT SO.output, SO.output_size FROM solution_output SO
             WHERE SO.req_id = ? AND SO.test_rank = ?~, { Slice => {} },
             $p->{rid}, $p->{test_rank});
+        $output_data->{decoded} = _decode_quietly($p, $output_data->{output});
     }
 
     my $save_prefix_lengths = $dbh->selectrow_hashref(q~
         SELECT
-            p.save_input_prefix as input_prefix,
-            p.save_answer_prefix as answer_prefix,
-            p.save_output_prefix as output_prefix
+            p.save_input_prefix AS input_prefix,
+            p.save_answer_prefix AS answer_prefix,
+            p.save_output_prefix AS output_prefix
         FROM problems P
-            INNER JOIN reqs R ON R.problem_id = P.id
+        INNER JOIN reqs R ON R.problem_id = P.id
         WHERE R.id = ?~, { Slice => {} },
         $p->{rid});
 
     my $test_data = get_test_data($p);
+    $test_data->{"decoded_$_"} = _decode_quietly($p, $test_data->{$_}) for qw(input answer);
 
     my $tdhref = sub { url_f('view_test_details', rid => $p->{rid}, test_rank => $_[0]) };
 

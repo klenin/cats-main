@@ -255,6 +255,7 @@ my $main_routes = {
     ],
     view_test_details => [
         \&CATS::UI::RunDetails::view_test_details_frame,
+        comment_enc => encoding_default('UTF-8'),
         rid => integer, test_rank => integer,
         delete_request_outputs => bool, delete_test_output => bool, as_user => bool, ],
     request_params => [
