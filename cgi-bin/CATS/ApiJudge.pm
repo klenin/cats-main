@@ -9,9 +9,10 @@ use Math::BigInt;
 use CATS::Constants;
 use CATS::DB;
 use CATS::Globals qw($sid);
-use CATS::JudgeDB;
-use CATS::Testset;
 use CATS::Job;
+use CATS::JudgeDB;
+use CATS::RouteParser;
+use CATS::Testset;
 
 # DE bitmap cache may return bigints.
 sub Math::BigInt::TO_JSON { $_[0]->bstr }
@@ -223,9 +224,19 @@ sub get_tests_req_details {
     $p->print_json({ req_details => CATS::JudgeDB::get_tests_req_details($p->{req_id}) });
 }
 
-my @req_details_fields = qw(
-    req_id test_rank result time_used memory_used disk_used checker_comment
-    output output_size);
+our %req_details_fields = (
+    job_id => integer,
+    output => str,
+    output_size => integer,
+    req_id => integer,
+    test_rank => integer,
+    result => integer,
+    time_used => fixed,
+    memory_used => integer,
+    disk_used => integer,
+    checker_comment => str,
+    points => integer,
+);
 
 sub insert_req_details {
     my ($p) = @_;
@@ -233,9 +244,8 @@ sub insert_req_details {
     my $judge_id = $sid && CATS::JudgeDB::get_judge_id($sid)
         or return $p->print_json($bad_sid);
 
-    my $params = decode_json($p->{params});
     my %filtered_params =
-        map { exists $params->{$_} ? ($_ => $params->{$_}) : () } @req_details_fields;
+        map { exists $p->{$_} ? ($_ => $p->{$_}) : () } keys %req_details_fields;
 
     $p->print_json({ result =>
         CATS::JudgeDB::insert_req_details($p->{job_id}, %filtered_params, judge_id => $judge_id) // 0 });
