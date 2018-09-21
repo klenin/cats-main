@@ -1,6 +1,7 @@
 [%
   capt.import({
-    output_data => 'Вывод решения',
+    encoding => 'кодировка',
+    output_data => 'Выходные данные попытки',
     input_data => 'Входные данные',
     answer_data => 'Ответ',
     no_output => 'Вывод недоступен',

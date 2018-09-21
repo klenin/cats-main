@@ -1,6 +1,7 @@
 [%
   capt.import({
-    output_data => 'Solution output',
+    encoding => 'encoding',
+    output_data => 'Submission output',
     input_data => 'Input test data',
     answer_data => 'Answer test data',
     no_output => 'No output',

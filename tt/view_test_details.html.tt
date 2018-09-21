@@ -20,6 +20,10 @@
 </span></div>
 
 <form method="post">
+[% PROCESS includes/encoding_form.html.tti
+    capt_enc = capt.encoding
+    select_name = 'comment_enc'
+%]
 <p><button type="submit" name="delete_request_outputs" class="button" value="1" onclick="return confirm('[% capt.confirm_delete_for_request %]')">
 [%- capt.delete_request_outputs -%]
 </button></p>
@@ -49,7 +53,7 @@
 <div>
     <h3>[% capt.output_data %]</h3>
     [% IF output_data.output_size %]
-        [% capt.size %]: [% output_data.length | group_digits %] / [% output_data.output_size | group_digits %]<br>
+        [% capt.size %]: [% output_data.output.length | group_digits %] / [% output_data.output_size | group_digits %]<br>
     [% END %]
     <textarea class="scrollable" wrap="off">[% output_data.decoded | html %]</textarea>
 </div>
