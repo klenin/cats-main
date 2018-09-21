@@ -115,12 +115,12 @@
     [% END %]
     [% IF r.show_checker_comment %]<td><pre>[% rd.checker_comment | html %]</pre></td>[% END %]
     [% IF r.show_test_data %]
-      <td class="test_data input_data"><a href="[% rd.view_test_details_href %]" [% "title='$rd.input_gen_params'" IF rd.input_gen_params %]>
+      <td class="test_data input_data"><a href="[% rd.href_view_test_details %]" [% "title='$rd.input_gen_params'" IF rd.input_gen_params %]>
         [% rd.input_data | html; '&hellip;' IF rd.input_data_cut %]</a>
       </td>
-      <td class="test_data answer_data"><a href="[% rd.view_test_details_href %]">[% rd.answer_data | html; '&hellip;' IF rd.answer_data_cut %]</a></td>
+      <td class="test_data answer_data"><a href="[% rd.href_view_test_details %]">[% rd.answer_data | html; '&hellip;' IF rd.answer_data_cut %]</a></td>
       [% IF r.has_output %]
-        <td class="test_data output_data"><a href="[% rd.view_test_details_href %]">[% rd.output_data | html; '&hellip;' IF rd.output_data_cut %]</a></td>
+        <td class="test_data output_data"><a href="[% rd.href_view_test_details %]">[% rd.output_data | html; '&hellip;' IF rd.output_data_cut %]</a></td>
       [% END %]
       [% IF r.has_visualizer %]
         <td>

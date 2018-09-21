@@ -163,7 +163,7 @@ sub get_run_info {
         my $output_data = $outputs{$row->{test_rank}} || '';
         $row->{output_data_cut} = length($output_data) > $cats::test_file_cut;
         $row->{output_data} = _decode_quietly($p, $output_data);
-        $row->{view_test_details_href} =
+        $row->{href_view_test_details} =
             url_f('view_test_details', rid => $req->{req_id}, test_rank => $row->{test_rank});
         $row;
     };
