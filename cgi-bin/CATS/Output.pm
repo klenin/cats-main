@@ -55,6 +55,8 @@ sub init_template {
         contest => $contest,
         noiface => $p->{noiface},
     );
+
+    $t;
 }
 
 sub url_f { CATS::Utils::url_function(@_, sid => $sid, cid => $cid) }
