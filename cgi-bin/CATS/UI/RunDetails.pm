@@ -3,7 +3,6 @@ package CATS::UI::RunDetails;
 use strict;
 use warnings;
 
-use Algorithm::Diff;
 use Encode;
 use List::Util qw(max);
 use JSON::XS;
@@ -11,15 +10,12 @@ use JSON::XS;
 use CATS::BinaryFile;
 use CATS::Constants;
 use CATS::DB;
-use CATS::DevEnv;
 use CATS::Globals qw($cid $contest $is_jury $is_root $sid $t $uid $user);
 use CATS::IP;
-use CATS::JudgeDB;
 use CATS::Messages qw(msg res_str);
 use CATS::Output qw(init_template downloads_path downloads_url url_f);
 use CATS::Problem::Utils;
 use CATS::RankTable;
-use CATS::Request;
 use CATS::ReqDetails qw(
     get_contest_info
     get_contest_tests
@@ -29,6 +25,7 @@ use CATS::ReqDetails qw(
     get_test_data
     sources_info_param
     source_links);
+use CATS::Request;
 use CATS::Settings qw($settings);
 use CATS::Testset;
 use CATS::Utils;
@@ -319,115 +316,6 @@ sub visualize_test_frame {
     );
 }
 
-sub view_source_frame {
-    my ($p) = @_;
-    init_template($p, 'view_source.html.tt');
-    $p->{rid} or return;
-    my $sources_info = get_sources_info($p, request_id => $p->{rid}, get_source => 1, encode_source => 1);
-    $sources_info or return;
-
-    if ($p->{submit}) {
-        $p->{problem_id} = $dbh->selectrow_array(q~
-            SELECT problem_id FROM reqs WHERE id = ?~,
-            undef, $p->{rid});
-        $p->{source_text} = '' if $p->{source};
-        my $rid = CATS::Problem::Submit::problems_submit($p);
-        $rid and return $p->redirect(url_f 'view_source', rid => $rid, submitted => 1);
-    }
-    elsif ($sources_info->{is_jury} && $p->{replace}) {
-        my $u;
-        my $src = $p->{source} ? $p->{source}->content // die : $p->{source_text};
-        if (defined $src && $src ne '') {
-            $u->{src} = $src;
-            $u->{hash} = CATS::Utils::source_hash($src);
-        }
-        my $de_bitmap;
-        if ($p->{de_id} && $p->{de_id} != $sources_info->{de_id}) {
-            $u->{de_id} = $p->{de_id};
-            $de_bitmap = [ CATS::DevEnv->new(CATS::JudgeDB::get_DEs())->bitmap_by_ids($p->{de_id}) ];
-        }
-        if ($u) {
-            CATS::Request::update_source($sources_info->{req_id}, $u, $de_bitmap);
-            $dbh->commit;
-            $sources_info = get_sources_info($p,
-                request_id => $p->{rid}, get_source => 1, encode_source => 1);
-        }
-    }
-    else {
-        msg(1014) if $p->{submitted};
-    }
-    source_links($p, $sources_info);
-    sources_info_param([ $sources_info ]);
-    @{$sources_info->{elements}} <= 1 or return msg(1155);
-
-    if ($sources_info->{file_name} =~ m/\.zip$/) {
-        $sources_info->{src} = sprintf 'ZIP, %d bytes', length ($sources_info->{src});
-    }
-    if (my $r = $sources_info->{err_regexp}) {
-        my (undef, undef, $file_name) = CATS::Utils::split_fname($sources_info->{file_name});
-        CATS::Utils::sanitize_file_name($file_name);
-        $file_name =~ s/([^a-zA-Z0-9_])/\\$1/g;
-        for (split ' ', $r) {
-            s/~FILE~/$file_name/;
-            s/~LINE~/(\\d+)/;
-            s/~POS~/\\d+/;
-            push @{$sources_info->{err_regexp_js}}, "/$_/";
-        }
-    }
-    $sources_info->{syntax} = $p->{syntax} if $p->{syntax};
-    $sources_info->{src_lines} = [ map {}, split("\n", $sources_info->{src}) ];
-    my $st = $sources_info->{state};
-    if ($st == $cats::st_compilation_error || $st == $cats::st_lint_error) {
-        my $logs = get_log_dump({ req_id => $sources_info->{req_id} });
-        $sources_info->{compiler_output} = _get_compilation_error($logs, $st)
-    }
-
-    my $can_submit = $is_jury ||
-            $user->{is_participant} &&
-            ($user->{is_virtual} || !$contest->has_finished_for($user));
-
-    if ($sources_info->{is_jury} || $can_submit) {
-        my $de_list = CATS::DevEnv->new(CATS::JudgeDB::get_DEs({ active_only => 1, fields => 'syntax' }));
-        if ($p->{de_id}) {
-            $sources_info->{de_id} = $p->{de_id};
-            $sources_info->{de_name} = $de_list->by_id($p->{de_id})->{description};
-        }
-        $t->param(de_list => [
-            map {
-                de_id => $_->{id},
-                de_name => $_->{description},
-                selected => $_->{id} == $sources_info->{de_id},
-                syntax => $_->{syntax},
-            }, @{$de_list->des}
-        ]);
-    }
-    $t->param(
-        source_width => $settings->{source_width} // 90,
-        can_submit => $can_submit,
-        href_action => url_f('view_source', rid => $p->{rid}),
-    );
-}
-
-sub download_source_frame {
-    my ($p) = @_;
-    $p->{rid} or return;
-    my $si = get_sources_info($p, request_id => $p->{rid}, get_source => 1, encode_source => 1);
-
-    unless ($si) {
-        init_template($p, 'view_source.html.tt');
-        return;
-    }
-
-    $si->{file_name} =~ m/\.([^.]+)$/;
-    my $ext = $1 || 'unknown';
-    $p->print_file(
-        ($ext eq 'zip' ?
-            (content_type => 'application/zip') :
-            (content_type => 'text/plain', charset => 'UTF-8')),
-        file_name => "$si->{req_id}.$ext",
-        content => Encode::encode_utf8($si->{src}));
-}
-
 sub view_test_details_frame {
     my ($p) = @_;
     init_template($p, 'view_test_details.html.tt');
@@ -517,46 +405,6 @@ sub run_log_frame {
         logs => get_log_dump({ req_id => $rid, parent_id => undef }),
         job_enums => $CATS::Globals::jobs,
     );
-}
-
-sub diff_runs_frame {
-    my ($p) = @_;
-    init_template($p, 'diff_runs.html.tt');
-    $p->{r1} && $p->{r2} or return;
-
-    my $si = get_sources_info($p,
-        request_id => [ $p->{r1}, $p->{r2} ], get_source => 1, encode_source => 1) or return;
-    @$si == 2 or return;
-
-    source_links($p, $_) for @$si;
-    sources_info_param($si);
-
-    return msg(1155) if grep @{$_->{elements}} > 1, @$si;
-
-    for my $info (@$si) {
-        $info->{lines} = [ split "\n", $info->{src} ];
-        s/\s*$// for @{$info->{lines}};
-    }
-
-    my @diff;
-
-    my $SL = sub { $si->[$_[0]]->{lines}->[$_[1]] || '' };
-
-    my $match = sub { push @diff, { class => 'diff_both', line => $SL->(0, $_[0]) }; };
-    my $only_a = sub { push @diff, { class => 'diff_only_a', line => $SL->(0, $_[0]) }; };
-    my $only_b = sub { push @diff, { class => 'diff_only_b', line => $SL->(1, $_[1]) }; };
-
-    Algorithm::Diff::traverse_sequences(
-        $si->[0]->{lines},
-        $si->[1]->{lines},
-        {
-            MATCH     => $match,  # callback on identical lines
-            DISCARD_A => $only_a, # callback on A-only
-            DISCARD_B => $only_b, # callback on B-only
-        }
-    );
-
-    $t->param(diff_lines => \@diff);
 }
 
 sub get_last_verdicts_api {
