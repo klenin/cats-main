@@ -1,5 +1,5 @@
-  [% IF pages -%]
-  <div[% ' id="' _ id _ '"' IF id %] class="pages">
+  [% IF pages && pages.size > 0 -%]
+  <div[% ' id="' _ id _ '"' IF id %] class="pages" title="[% "${lv_range.first_row} .. ${lv_range.last_row}" %]">
   [% capt.pages %]:
   <span class="bordered">[%# Must have spaces inside. ~%]
   [%~ href(href_prev_pages, '<<') IF href_prev_pages ~%]

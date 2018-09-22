@@ -101,6 +101,7 @@ sub attach {
     my $s = $settings->{$self->{name}} ||= {};
 
     my ($row_count, $fetch_count, $page_count, @data) = (0, 0, 0);
+    my $range = { first_row => 0, last_row => 0 };
     my $page = \$s->{page};
     $$page ||= 0;
     my $rows = $s->{rows} || 1;
@@ -127,6 +128,8 @@ sub attach {
         next if $page_count > $$page + 1;
         # Remember the last visible page data in case of a too large requested page number.
         @data = () if @data == $rows;
+        $range->{first_row} = $row_count if !@data;
+        $range->{last_row} = $row_count;
         push @data, \%row;
     }
 
@@ -157,6 +160,7 @@ sub attach {
             [ map { value => $_, text => $_, selected => $s->{rows} == $_ }, @display_rows ],
         $self->{array_name} => \@data,
         lv_settings => $self->settings,
+        lv_range => $range,
     );
     if ($is_jury) {
         my @s = (
