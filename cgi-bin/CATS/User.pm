@@ -314,6 +314,7 @@ sub register_by_login {
         for keys %aids;
     $dbh->commit;
     msg($make_jury ? 1125 : 1119, join ',', @logins);
+    1;
 }
 
 
