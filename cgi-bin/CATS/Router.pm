@@ -90,7 +90,7 @@ my $main_routes = {
         \&CATS::UI::Problems::problems_all_frame,
         link => bool, move => bool,
     ],
-    problems_udebug => [ \&CATS::UI::Problems::problems_udebug_frame, ],
+    problems_udebug => [ \&CATS::UI::ProblemsUdebug::problems_udebug_frame, ],
     problems_retest => [ \&CATS::UI::ProblemsRetest::problems_retest_frame,
         mass_retest => bool, recalc_points => bool, all_runs => bool,
         problem_id => array_of integer, ignore_states => array_of ident,
