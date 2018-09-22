@@ -17,6 +17,7 @@ use CATS::Output qw(init_template downloads_path downloads_url url_f);
 use CATS::Problem::Utils;
 use CATS::RankTable;
 use CATS::ReqDetails qw(
+    get_compilation_error
     get_contest_info
     get_contest_tests
     get_log_dump
@@ -193,23 +194,6 @@ sub get_run_info {
     };
 }
 
-sub _get_compilation_error {
-    my ($logs, $st) = @_;
-
-    my $section = $st == $cats::st_compilation_error ? $cats::log_section_compile : $cats::log_section_lint;
-    my $compilation_error_re = qr/
-        \Q$cats::log_section_start_prefix$section\E
-        (.*)
-        \Q$cats::log_section_end_prefix$section\E
-        /sx;
-    for (@$logs) {
-        $_->{dump} or next;
-        my ($error) = $_->{dump} =~ $compilation_error_re;
-        return $error if $error;
-    }
-    undef;
-}
-
 sub run_details_frame {
     my ($p) = @_;
     init_template($p, 'run_details.html.tt');
@@ -224,7 +208,7 @@ sub run_details_frame {
         my $st = $_->{state};
         if ($st == $cats::st_compilation_error || $st == $cats::st_lint_error) {
             my $logs = get_log_dump({ req_id => $_->{req_id} });
-            push @runs, { compiler_output => _get_compilation_error($logs, $st) };
+            push @runs, { compiler_output => get_compilation_error($logs, $st) };
             next;
         }
         my $c = get_contest_tests(get_contest_info($p, $_, $contest_cache), $_->{problem_id});

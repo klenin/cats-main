@@ -18,6 +18,7 @@ use CATS::Request;
 
 use Exporter qw(import);
 our @EXPORT_OK = qw(
+    get_compilation_error
     get_contest_info
     get_contest_tests
     get_log_dump
@@ -389,6 +390,23 @@ sub get_log_dump {
 
     $_->{dump} = Encode::decode_utf8($_->{dump}) for @$logs;
     $logs;
+}
+
+sub get_compilation_error {
+    my ($logs, $st) = @_;
+
+    my $section = $st == $cats::st_compilation_error ? $cats::log_section_compile : $cats::log_section_lint;
+    my $compilation_error_re = qr/
+        \Q$cats::log_section_start_prefix$section\E
+        (.*)
+        \Q$cats::log_section_end_prefix$section\E
+        /sx;
+    for (@$logs) {
+        $_->{dump} or next;
+        my ($error) = $_->{dump} =~ $compilation_error_re;
+        return $error if $error;
+    }
+    undef;
 }
 
 1;

@@ -13,6 +13,7 @@ use CATS::Output qw(init_template url_f);
 use CATS::JudgeDB;
 use CATS::Messages qw(msg);
 use CATS::ReqDetails qw(
+    get_compilation_error
     get_contest_info
     get_log_dump
     get_sources_info
@@ -121,7 +122,7 @@ sub view_source_frame {
     my $st = $sources_info->{state};
     if ($st == $cats::st_compilation_error || $st == $cats::st_lint_error) {
         my $logs = get_log_dump({ req_id => $sources_info->{req_id} });
-        $sources_info->{compiler_output} = _get_compilation_error($logs, $st)
+        $sources_info->{compiler_output} = get_compilation_error($logs, $st)
     }
 
     my $can_submit = $is_jury ||
