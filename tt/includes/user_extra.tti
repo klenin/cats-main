@@ -14,7 +14,7 @@
   FOREACH f IN fields; input_tr(f); END
 %]
 [% IF user.privs.is_root -%]
-[% input_tr('restrict_ips'); #input_tr('phone'); input_tr('email'); input_tr('icq_number'); input_tr('home_page'); %]
+[% input_tr('restrict_ips') %]
 [%- END %]
   <tr><td>[% capt.hide_envelopes %]</td>
   <td>[% checkbox_1('settings.hide_envelopes', settings.hide_envelopes) %]</td></tr>

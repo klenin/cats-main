@@ -352,9 +352,10 @@ span.TeX span.int { font-size: 150%; vertical-align: middle; }
 span.TeX span.mathcal { font-family: MJXc-TeX-cal-R,MJXc-TeX-cal-Rw, serif; }
 span.Tex .MathJax { font-weight: 100; }
 
-table.nobr tr td, span.nobr, label.nobr, td.nobr { white-space: nowrap; }
+table.nobr tr td, .nobr { white-space: nowrap; }
 td.center { text-align: center; }
 th.narrow, td.narrow { width: 1px; }
+.small { font-size: small; }
 
 a.spell { text-decoration: underline; color: red; }
 

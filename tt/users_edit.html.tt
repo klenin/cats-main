@@ -15,6 +15,7 @@
     <label class="nobr">[% checkbox_1(pn, privs.$pn, 0); capt.roles.$pn %]</label>
   [% END -%]
   [% END %]
+  <code class="small nobr">set_privs.pl --id=[% id %] --login=[% login %]</code>
 </td></tr>
 </table>
 [% PROCESS includes/password.tti change_password = 1 %]
