@@ -313,7 +313,12 @@ sub problems_frame {
     my $allow_des = $is_jury && $lv->visible_cols->{Ad} ? q~(
         SELECT LIST(DISTINCT D.code, ' ') FROM default_de D
         INNER JOIN contest_problem_des CPD ON CPD.cp_id = CP.id AND CPD.de_id = D.id
-        ) AS allow_des,~ : '';
+        ORDER BY 1
+        ) AS allow_des, (
+        SELECT LIST(DISTINCT D.description, ' ') FROM default_de D
+        INNER JOIN contest_problem_des CPD ON CPD.cp_id = CP.id AND CPD.de_id = D.id
+        ORDER BY 1
+        ) AS allow_des_names,~ : '';
     # Use result_time to account for re-testing standard solutions,
     # but also limit by sumbit_time to speed up since there is no index on result_time.
     my $judges_installed_sql = $is_jury && $lv->visible_cols->{Vc} ? qq~
@@ -453,6 +458,7 @@ sub problems_frame {
             last_verdict => $last_verdict,
             keywords => $c->{keywords},
             allow_des => $c->{allow_des} // '*',
+            allow_des_names => $c->{allow_des_names} // '',
             color => $c->{color},
         );
     };

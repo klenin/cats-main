@@ -151,7 +151,7 @@ function chg_code(st_sel, pid) {
 [%- END %]
 [% IF visible_cols.Mu %]<td>[% p.last_modified_by %]</td>[% END %]
 [% IF visible_cols.Mt %]<td class="num">[% p.upload_date %]</td>[% END %]
-[% IF visible_cols.Ad %]<td>[% href(p.href_allow_des, p.allow_des) %]</td>[% END %]
+[% IF visible_cols.Ad %]<td>[% href(p.href_allow_des, p.allow_des, p.allow_des_names) %]</td>[% END %]
 [% END %]
 [% IF contest.is_practice %]<td>[% p.contest_title | html %]</td>[% END %]
 [% IF (is_user || contest.is_practice) && visible_cols.Vc %]
