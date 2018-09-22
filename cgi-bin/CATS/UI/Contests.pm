@@ -247,7 +247,7 @@ sub contest_params_frame {
 
 sub contests_edit_save_xml {
     my ($p) = @_;
-    $is_root or return;
+    $is_jury or return;
 
     my $logger = CATS::Problem::Storage->new;
     $t->param(logger => $logger);
