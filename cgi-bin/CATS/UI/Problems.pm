@@ -142,18 +142,21 @@ sub problems_frame_jury_action {
 sub has_lang_tag {
     my ($problem) = @_;
     $problem->{tags} or return;
-    my $parsed_tags = eval { CATS::Problem::Tags::parse_tag_condition($problem->{tags}); } or return;
+    my $parsed_tags =
+        eval { CATS::Problem::Tags::parse_tag_condition($problem->{tags}); } or return;
     $parsed_tags->{lang};
 }
 
 sub _prepare_de_list {
-    my $de_list = CATS::DevEnv->new(CATS::JudgeDB::get_DEs({ active_only => 1, fields => 'syntax' }));
+    my $de_list =
+        CATS::DevEnv->new(CATS::JudgeDB::get_DEs({ active_only => 1, fields => 'syntax' }));
 
-    my ($allowed_des) = $dbh->selectall_arrayref(q~
-        SELECT CP.id, CPD.de_id FROM contest_problems CP
-        LEFT JOIN contest_problem_des CPD ON CP.id = CPD.cp_id
-        WHERE CP.contest_id = ?~, { Slice => {} },
-        $cid);
+    my ($allowed_des) = $dbh->selectall_arrayref(_u $sql->select(
+        'contest_problems CP LEFT JOIN contest_problem_des CPD ON CP.id = CPD.cp_id',
+        'CP.id, CPD.de_id',
+        { 'CP.contest_id' => $cid,
+            ($is_jury ? () : ('CP.status' => { '<', $cats::problem_st_disabled })) }
+    ));
 
     my $allow_all = 0;
     my %allowed;
