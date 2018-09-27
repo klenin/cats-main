@@ -45,7 +45,7 @@ function update_request_status() {
       var v = $('.state_' + ri.id);
       v.find('td.verdict_short').attr('class', 'verdict_short run_details_' + ri.verdict).text(ri.verdict);
       var vl = v.find('td.verdict_long');
-      vl.text(verdict_descrs[ri.verdict] + (ri.failed_test ? '[% capt.on_test %]' + ri.failed_test : ''));
+      vl.text(verdict_descrs[ri.verdict] + (ri.failed_test ? ' [% capt.on_test %]' + ri.failed_test : ''));
       if (ri.np) {
         np_requests[ri.id] = 1;
         if (ri.verdict !== 'AW')
