@@ -339,7 +339,8 @@ files with tests, solutions etc.
   </td>
   <td>Linter runs either before or after compilation, depending on 'stage' attribute.
     Linter accepts source file names on command line and exits with non-zero code
-    if the source does not pass the check.</td>
+    if the source does not pass the check.
+    Standard output of linter may contain error message.</td>
 </tr>
 <tr>
   <td>[% tag_in('Run', 'Problem', v19) %]</td>
