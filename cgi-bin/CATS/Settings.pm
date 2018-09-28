@@ -49,10 +49,12 @@ sub save {
     $enc_settings = $new_enc_settings;
     $uid or return; # Cookie only for anonymous users.
     $dbh->commit;
-    $dbh->do(q~
-        UPDATE accounts SET settings = ? WHERE id = ?~, undef,
-        $new_enc_settings, $uid);
-    $dbh->commit;
+    eval {
+        $dbh->do(q~
+            UPDATE accounts SET settings = ? WHERE id = ?~, undef,
+            $new_enc_settings, $uid);
+        $dbh->commit;
+    } or CATS::DB::catch_deadlock_error("save settings for $uid");
 }
 
 sub _apply_rec {
