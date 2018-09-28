@@ -466,6 +466,8 @@ files with tests, solutions etc.
       <li>de_code[% opt %] — development environment code.</li>
       <li>type — module type (generator, checker, solution).</li>
       <li>export[% opt %] [% v14 %] — globally unique identifier.</li>
+      <li>main[% opt %] [% v110 %] — use this module as main file, and submitted code as a module with given name.
+        For modules of type 'solution' only.</li>
     </ul>
   </td>
   <td>Module description. Module files are unpacked and compiled together with every object of the corresponding type.
