@@ -2,7 +2,7 @@
 
 [% MACRO limits_str(time_limit, memory_limit, write_limit)
 BLOCK;
-    IF time_limit; "$capt.time: ${time_limit}$capt.s "; END;
-    IF memory_limit; "$capt.memory: ${memory_limit}$capt.mb "; END;
-    IF write_limit; "$capt.write: ${write_limit}$capt.b"; END;
+  IF time_limit; "$capt.time: ${time_limit}$capt.s "; END;
+  IF memory_limit; "$capt.memory: ${memory_limit}$capt.mb "; END;
+  IF write_limit; "$capt.write: ${write_limit}$capt.b"; END;
 END %]
