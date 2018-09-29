@@ -40,6 +40,9 @@ sub _problem_commitdiff {
         { href => url_f('problem_history', pid => $pid), item => res_str(568) },
         { href => url_f('problem_history_tree', hb => $sha, pid => $pid), item => res_str(570) },
         { href => url_f('problem_git_package', pid => $pid, sha => $sha), item => res_str(569) },
+        ($p->{file} ? ({
+            href => url_f('problem_history_edit', file => $p->{file}, pid => $pid, hb => $sha),
+            item => res_str(572) }) : ()),
     ];
     $t->param(
         commit => CATS::Problem::Storage::show_commit($pid, $sha, $se),
@@ -67,14 +70,13 @@ sub set_history_paths_urls {
 
 sub set_submenu_for_tree_frame {
     my ($pid, $hash, @items) = @_;
-    my $submenu = [
+    $t->param(submenu => [
         { href => url_f('problem_details', pid => $pid), item => res_str(504) },
         { href => url_f('problem_history', pid => $pid), item => res_str(568) },
         { href => url_f('problem_history_commit', pid => $pid, h => $hash), item => res_str(571) },
         { href => url_f('problem_git_package', pid => $pid, sha => $hash), item => res_str(569) },
         @items,
-    ];
-    $t->param(submenu => $submenu);
+    ]);
 }
 
 sub is_allow_editing {
