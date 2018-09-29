@@ -45,7 +45,8 @@
     <div class="problem_submit">
       <input type="hidden" name="src_enc" value="[% src_enc %]" />
       <p><label>
-        <input type="checkbox" id="is_amend" name="is_amend" value="1" onclick="javascript:toggle_amend()"/> [% capt.amend %]
+        <input type="checkbox" id="is_amend" name="is_amend" value="1"
+          [%- ' checked="checked"' IF is_amend %] onclick="javascript:toggle_amend()"/> [% capt.amend %]
         </label></p>
       <p>
         <label for="message">[% capt.message %]:</label><br/>

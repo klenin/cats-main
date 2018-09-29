@@ -192,6 +192,7 @@ sub problem_history_edit_frame {
         source_encodings => source_encodings($enc),
         last_commit => CATS::Problem::Storage::get_log($p->{pid}, $hash_base, 1)->[0],
         message => Encode::decode_utf8($p->{message}),
+        is_amend => $p->{is_amend},
         problem_import_log => $log,
         autocomplete => $p->{file} =~ m/\.xml$/ ?
             [ sort keys %{CATS::Problem::Parser::tag_handlers()} ] : [],
