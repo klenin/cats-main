@@ -1,11 +1,21 @@
 [% PROCESS includes/menu_begin.tti %]
 
 <h3>[% problem.title %]</h3>
-<p>[% capt.available_tags %]: <code>[% available_tags.join(' ') %]</code></p>
+<p>[% capt.available_tags %]:
+  [% FOREACH at IN available_tags -%]
+    <a href="#" onclick="add_tag(this)"><code>[% at %]</code></a>
+  [% END -%]
+</p>
+<script>
+function add_tag(elem) {
+  var t = document.getElementById('tags');
+  t.value += (t.value ? ',' : '') + elem.firstChild.innerHTML;
+}
+</script>
 
 [% capt.select_tags %] (<a href="docs/format.[% lang %].html#cats_if">?</a>):
 <form method="post" action="[% href_action %]">
-<input type="text" size="60" maxlength="200" name="tags" value="[% problem.tags %]" class="bordered"/>
+<input type="text" size="60" maxlength="200" name="tags" id="tags" value="[% problem.tags %]" class="bordered"/>
 <br/><br/>
 <button type="submit" name="save" value="1" class="button">[% capt.save %]</button>
 </form>
