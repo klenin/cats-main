@@ -5,19 +5,18 @@ use warnings;
 use File::Spec;
 use FindBin qw($Bin);
 use Getopt::Long;
+use IPC::Cmd;
 use POSIX qw();
 
-GetOptions(
-    help => \(my $help = 0),
-    'make=s' => \(my $make = ''),
-    'dry-run' => \(my $dry_run = ''),
-    force => \(my $force = 0),
-);
+use lib File::Spec->catdir($FindBin::Bin, 'cats-problem');
+
+use CATS::Config;
 
 sub usage {
     print STDERR qq~CATS migration tool
 Usage: $0
   --help
+  --apply=<index>
   --make=<name>
   --dry_run
   --force
@@ -25,53 +24,93 @@ Usage: $0
     exit;
 }
 
-usage if $help || !$make;
+GetOptions(
+    help => \(my $help = 0),
+    'apply=i' => \(my $apply = ''),
+    'make=s' => \(my $make = ''),
+    'dry-run' => \(my $dry_run = ''),
+    force => \(my $force = 0),
+) or usage;
 
-$make =~ /^[a-z0-9\-_]+$/ or die "Bad migration name: $make";
-$make =~ s/_/-/g;
+my $migration_path = File::Spec->catdir($Bin, qw(.. sql interbase migrations));
+-d $migration_path or die "Migrations path not available: $migration_path";
 
-my $diff = `git diff -- sql/interbase`;
-$diff or die 'No diff';
+sub make_migration() {
+    $make =~ /^[a-z0-9\-_]+$/ or die "Bad migration name: $make";
+    $make =~ s/_/-/g;
 
-my $name = File::Spec->catfile(
-    qw(sql interbase migrations),
-    POSIX::strftime('%Y%m%d', localtime) . "-$make.sql");
-say "Creating migration: $name";
+    my $diff = `git diff -- sql/interbase`;
+    $diff or die 'No diff';
 
-if (-f $name) {
-    my $err = 'Migration already exists';
-    $dry_run ? say $err : $force ? say "$err, forcing" : die $err;
-}
+    my $name = File::Spec->catfile(
+        $migration_path, POSIX::strftime('%Y%m%d', localtime) . "-$make.sql");
+    say "Creating migration: $name";
 
-if ($dry_run) {
-    say 'Dry run';
-}
-else {
-   open STDOUT, '>', $name or die $!;
-}
+    if (-f $name) {
+        my $err = 'Migration already exists';
+        $dry_run ? say $err : $force ? say "$err, forcing" : die $err;
+    }
 
-my $table;
-for (split "\n", $diff) {
-    if (my ($line) = m/^\+([^+].+)$/) {
-        undef $table if m/(:?CREATE|ALTER) TABLE/;
-        if ($table) {
-            say "ALTER TABLE $table";
-            say "    ADD $line;";
+    if ($dry_run) {
+        say 'Dry run';
+    }
+    else {
+       open STDOUT, '>', $name or die $!;
+    }
+
+    my $table;
+    for (split "\n", $diff) {
+        if (my ($line) = m/^\+([^+].+)$/) {
+            undef $table if m/(:?CREATE|ALTER) TABLE/;
+            if ($table) {
+                say "ALTER TABLE $table";
+                say "    ADD $line;";
+            }
+            else {
+                say $line;
+            }
         }
-        else {
-            say $line;
+        elsif (my ($line1) = m/^\-([^\-].+)$/) {
+            if ($table) {
+                say "ALTER TABLE $table";
+                say "    DROP $line1;";
+            }
+            else {
+                say; # Unable auto-converl this removal, trigger syntax error.
+            }
+        }
+        elsif (m/@@ CREATE TABLE (\w+) \(/) {
+            $table = $1;
         }
     }
-    elsif (my ($line1) = m/^\-([^\-].+)$/) {
-        if ($table) {
-            say "ALTER TABLE $table";
-            say "    DROP $line1;";
-        }
-        else {
-            say; # Unable auto-converl this removal, trigger syntax error.
-        }
-    }
-    elsif (m/@@ CREATE TABLE (\w+) \(/) {
-        $table = $1;
-    }
 }
+
+sub apply_migration() {
+    opendir my $d, $migration_path or die $!;
+    my @files = grep -f, map File::Spec->catfile($migration_path, $_), sort readdir $d;
+    my $file = $files[-$apply] or die "No migration for index: $apply";
+    say "Applying migration: $file";
+    if ($dry_run) {
+        say 'Dry run';
+        return;
+    }
+
+    my $isql = $^O eq 'Win32' ? 'isql' : 'isql-fb';
+    IPC::Cmd::can_run($isql) or die "Error: $isql not found";
+
+    my ($db, $host) = $CATS::Config::db_dsn =~ /dbname=(\S+?);host=(\S+?);/
+        or die "Bad config DSN: $CATS::Config::db_dsn";
+    say "Host: $host\nDatabase: $db";
+
+    my $cmd = [ $isql, '-i', $file,
+        '-u', $CATS::Config::db_user, '-p', $CATS::Config::db_password, '-q', "$host:$db" ];
+    # say join ' ', 'Running:', @$cmd;
+    my ($ok, $err, $full) = IPC::Cmd::run command => $cmd;
+    $ok or die join "\n", $err, @$full;
+    print '-' x 20, "\n", @$full;
+}
+
+$help || $make && $apply ? usage :
+    $make ? make_migration :
+    $apply ? apply_migration :
+    usage;
