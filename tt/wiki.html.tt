@@ -1,6 +1,6 @@
 [% PROCESS includes/menu_begin.tti %]
 
-<h3>[% page.title | html %]</h3>
+<h1>[% page.title | html %]</h1>
 
 <div>
 [% page.markdown %]
