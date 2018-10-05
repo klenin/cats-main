@@ -92,12 +92,10 @@ sub wiki_pages_frame {
     $t->param(submenu => [ CATS::References::menu('wiki_pages') ]);
 }
 
-my $int = CATS::Field::int_range(min => 0, max => 1000000000);
-
 our $text_form = CATS::Form->new(
     table => 'wiki_texts',
     fields => [
-        [ name => 'wiki_id', validators => [ $int ], ],
+        [ name => 'wiki_id', validators => [ $CATS::Fields::foreign_key ], ],
         [ name => 'wiki_lang', db_name => 'lang', validators => [ qr/^([a-z]{2})?$/ ], ],
         [ name => 'title', validators => [ $str1_200 ], caption => 601 ],
         [ name => 'text', caption => 677 ],

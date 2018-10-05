@@ -52,7 +52,6 @@ sub _check {
     1;
 }
 
-my $int_fk = CATS::Field::int_range(min => 1, max => 1000000000);
 my @rel_values = values %$CATS::Globals::relation;
 
 sub _parse_login {
@@ -68,8 +67,10 @@ our $form = CATS::Form->new(
     fields => [
         [ name => 'rel_type', validators => [
             CATS::Field::int_range(min => min(@rel_values), max => max(@rel_values)) ], caption => 642, ],
-        [ name => 'from_id', after_parse => sub { _parse_login(@_, 'from_login') }, validators => [ $int_fk ], caption => 679 ],
-        [ name => 'to_id', after_parse => sub { _parse_login(@_, 'to_login') }, validators => [ $int_fk ], caption => 680, ],
+        [ name => 'from_id', after_parse => sub { _parse_login(@_, 'from_login') },
+            validators => [ $CATS::Fields::foreign_key ], caption => 679 ],
+        [ name => 'to_id', after_parse => sub { _parse_login(@_, 'to_login') },
+            validators => [ $CATS::Fields::foreign_key ], caption => 680, ],
         [ name => 'from_ok', validators => [ CATS::Field::int_range(min => 0, max => 1, allow_empty => 1) ], caption => 622, ],
         [ name => 'to_ok', validators => [ CATS::Field::int_range(min => 0, max => 1, allow_empty => 1) ], caption => 622, ],
         [ name => 'ts', before_save => sub { \'CURRENT_TIMESTAMP' } ],

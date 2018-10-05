@@ -12,7 +12,6 @@ use CATS::Job;
 
 my $str1_200 = CATS::Field::str_length(1, 200);
 my $str0_200 = CATS::Field::str_length(0, 200);
-my $int = CATS::Field::int_range(min => 1, max => 1000000000);
 
 sub _validate_unique_snippet {
     my ($fd) = @_;
@@ -40,9 +39,11 @@ sub _must_be_current_contest { ($_[0] || 0) != $cid and res_str(1182) }
 our $form = CATS::Form->new(
     table => 'snippets',
     fields => [
-        [ name => 'account_id', after_parse => \&_parse_login, validators => [ $int ], caption => 608, ],
-        [ name => 'problem_id', validators => [ $int ], caption => 602 ],
-        [ name => 'contest_id', validators => [ $int, \&_must_be_current_contest ], caption => 603, ],
+        [ name => 'account_id', after_parse => \&_parse_login,
+            validators => [ $CATS::Fields::foreign_key ], caption => 608, ],
+        [ name => 'problem_id', validators => [ $CATS::Fields::foreign_key ], caption => 602 ],
+        [ name => 'contest_id',
+            validators => [ $CATS::Fields::foreign_key, \&_must_be_current_contest ], caption => 603, ],
         [ name => 'name', validators => [ $str1_200 ], caption => 601, ],
         [ name => 'text', caption => 672, editor => { cols => 100, rows => 5 }, ],
     ],

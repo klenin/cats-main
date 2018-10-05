@@ -38,8 +38,7 @@ our $user_contact_form = CATS::Form->new(
     table => 'contacts',
     fields => [
         [ name => 'account_id' ],
-        [ name => 'contact_type_id',
-            validators => [ CATS::Field::int_range(min => 0, max => 1000000000) ], caption => 642 ],
+        [ name => 'contact_type_id', validators => [ $CATS::Field::foreign_key ], caption => 642 ],
         [ name => 'handle', validators => [ CATS::Field::str_length(1, 200) ], caption => 657 ],
         [ name => 'is_public', validators => [ qr/^1?$/ ], caption => 669 ],
         [ name => 'is_actual', validators => [ qr/^1?$/ ], caption => 670 ],
