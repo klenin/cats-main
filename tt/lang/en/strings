@@ -154,6 +154,8 @@
 678 "Pin mode"
 679 "Relation from"
 680 "Relation to"
+681 "Allow editing"
+682 "Ordering"
 700 "manual"
 701 "ok"
 702 "paused"

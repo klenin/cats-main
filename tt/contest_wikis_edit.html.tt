@@ -1,0 +1,15 @@
+[% PROCESS includes/menu_begin.tti %]
+[% PROCESS includes/html_input.tti %]
+
+[% idx = cp.indexed %]
+<form method="post" enctype="multipart/form-data" action="[% cw.href_action %]">
+<table class="edit_form">
+[% tr_select_value(cw.indexed.wiki_id, cw, cw.wikis) %]
+[% tr_checkbox1(cw.indexed.allow_edit, cw) %]
+[% tr_text(cw.indexed.ordering, cw) %]
+</table>
+<br>
+[% PROCESS includes/edit_save_cancel.tti %]
+</form>
+
+[% PROCESS includes/menu_end.tti %]

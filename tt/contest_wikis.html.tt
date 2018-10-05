@@ -1,0 +1,33 @@
+[% PROCESS includes/menu_begin.tti %]
+[% PROCESS includes/html.tti %]
+
+<script>
+function delete_contest_wiki(href, name) {
+  if (confirm("[% capt.want_to_delete %] '" + name + "'?" ))
+    document.location = href;
+}
+</script>
+
+[% PROCESS includes/listview_header.tti %]
+
+<table class="listview bordered highlight">
+[% PROCESS includes/listview_col_defs.tti %]
+
+[% FOREACH cw IN contest_wikis %]
+<tr class="[% loop.parity() %]">
+<td class="nobr">
+  [% IF user.privs.is_root %]
+  <a href="[% cw.href_edit %]" class="icon edit"></a>
+  <a href="javascript:delete_contest_wiki('[% cw.href_delete %]', '[% cw.name | html %]');" class="icon delete"></a>
+  [% END %]
+  [% cw.name | html %]
+</td>
+[% IF visible_cols.Ae %]<td style="position: relative;">[% IF cw.allow_edit %]<a class="icon checked icon_centered"></a>[% END %]</td>[% END %]
+[% IF visible_cols.Or %]<td>[% cw.ordering | html %]</td>[% END %]
+</tr>
+[% END %]
+</table>
+[% PROCESS includes/pages.tti %]
+</form>
+
+[% PROCESS includes/menu_end.tti %]
