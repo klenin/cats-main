@@ -1,7 +1,7 @@
 [%- js.datepicker = 1 -%]
 [% PROCESS includes/menu_begin.tti %]
 
-<form method=post enctype='multipart/form-data' action='[% href_action %]'>
+<form method="post" enctype="multipart/form-data" action="[% href_action %]">
 [% PROCESS includes/contest_params.tti %]
 [% IF can_edit %]
 <input type="hidden" name="id" value="[% id %]" />
