@@ -1,5 +1,5 @@
 [%
   capt.import({
-    want_to_delete => 'Вы действительно желаете удалить страницу',
+    want_to_delete => 'Do you really want to delete page',
   })
 %]
