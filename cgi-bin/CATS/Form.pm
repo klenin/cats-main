@@ -87,6 +87,7 @@ sub int_range {
 sub foreign_key { int_range(min => 1, max => 2e9, @_) }
 our $foreign_key = foreign_key;
 our $foreign_key_opt = foreign_key(allow_empty => 1);
+our $bool = int_range(min => 0, max => 1, allow_empty => 1);
 
 package CATS::Form;
 
