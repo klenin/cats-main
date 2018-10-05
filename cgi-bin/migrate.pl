@@ -63,6 +63,7 @@ sub make_migration() {
         if (my ($line) = m/^\+([^+].+)$/) {
             undef $table if m/(:?CREATE|ALTER) TABLE/;
             if ($table) {
+                $line =~ s/^\s*(.+?),?$/$1/;
                 say "ALTER TABLE $table";
                 say "    ADD $line;";
             }
@@ -79,7 +80,7 @@ sub make_migration() {
                 say; # Unable auto-converl this removal, trigger syntax error.
             }
         }
-        elsif (m/@@ CREATE TABLE (\w+) \(/) {
+        elsif (m/^(?:\s*|.+@@ )CREATE TABLE (\w+) \(/) {
             $table = $1;
         }
     }
