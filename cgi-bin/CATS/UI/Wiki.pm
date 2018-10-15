@@ -69,11 +69,16 @@ sub wiki_pages_frame {
 
     $lv->define_columns(url_f('wiki_pages'), 0, 0, [
         { caption => res_str(601), order_by => 'name', width => '30%' },
-        { caption => res_str(669), order_by => 'is_public', width => '5%' },
+        { caption => res_str(669), order_by => 'is_public', width => '5%', col => 'Pb' },
+        { caption => res_str(672), order_by => 'langs', width => '5%', col => 'Ls' },
     ]);
     $lv->define_db_searches($page_form->{sql_fields});
 
-    my ($q, @bind) = $sql->select('wiki_pages', [ 'id', @{$page_form->{sql_fields}} ], $lv->where);
+    my ($q, @bind) = $sql->select('wiki_pages', [
+        'id', @{$page_form->{sql_fields}},
+        ($lv->visible_cols->{Ls} ?
+            '(SELECT LIST(WT.lang) FROM wiki_texts WT WHERE WT.wiki_id = wiki_pages.id) AS langs' : ()),
+    ], $lv->where);
     my $c = $dbh->prepare("$q " . $lv->order_by);
     $c->execute(@bind);
 
