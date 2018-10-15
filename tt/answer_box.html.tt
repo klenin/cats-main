@@ -7,7 +7,7 @@
   <br/>
   <p>[% participant_name | html %], [% submit_time %]</p>
   <div class="bordered" style="width: 100%">[% question_text | html %]</div>
-  [% IF answer %]<br/>[% capt.answered %]: [% answer | html %]<br/><br/>[% END %]
+  [% IF answer %]<br/>[% capt.answered %]: [% answer | html %]<br/>[% END %]<br/>
   <form method="post" enctype="multipart/form-data">
     <input type="text" size="70" value="[% capt.no_comments %]" name="answer_text" class="bordered" />
     <br/><br/>
