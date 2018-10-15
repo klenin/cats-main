@@ -182,6 +182,11 @@ sub wiki_frame {
     my $page = $dbh->selectrow_hashref(q~
         SELECT title, text FROM wiki_texts WHERE id = ?~, undef,
         $chosen_lang->{id});
+    if ($page->{title} =~ /^\!(\w+)\s*(\w+)?/) {
+        if ($1 eq 'redirect' && $2) {
+            return $p->redirect(url_f('wiki', name => $2));
+        }
+    }
     $page->{name} = $p->{name};
     $page->{markdown} = _prepare_text($page->{text});
     delete $contest->{title};
