@@ -45,6 +45,7 @@ sub _name {
 sub url_static { './static/' . _name(@_) . '.html' . ($sid ? "?sid=$sid" : ''); }
 sub path { cats_dir() . '../static/' }
 sub full_name { path() . _name(@_) . '.html' }
+sub full_name_glob { path() . _name(@_) . '*.html' }
 
 sub invalidate_problem_text {
     my (%p) = @_;
@@ -66,8 +67,8 @@ sub invalidate_problem_text {
             undef, $p{cid});
         push @cpids, @$c;
     }
-    unlink full_name('problem_text', cid => $_) for @contest_ids;
-    unlink full_name('problem_text', cpid => $_) for @cpids;
+    unlink glob full_name_glob('problem_text', cid => $_) for @contest_ids;
+    unlink glob full_name_glob('problem_text', cpid => $_) for @cpids;
 }
 
 1;
