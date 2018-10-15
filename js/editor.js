@@ -24,9 +24,18 @@ $(document).ready(function () {
     textarea.hide();
     var editor = ace.edit(editorContainer[0]);
     editor.renderer.setShowGutter(textarea.data('gutter'));
-    editor.getSession().setValue(textarea.val());
-    editor.getSession().setMode('ace/mode/' + mode);
-    editor.getSession().setOption('useWorker', false);
+    var sess = editor.getSession();
+    sess.setValue(textarea.val());
+    sess.setMode('ace/mode/' + mode);
+    sess.setOption('useWorker', false);
+    editor.commands.addCommand({
+        name: 'toggleWrapMode',
+        bindKey: { win: 'Ctrl-Alt-w', mac: 'Command-Alt-w' },
+        exec: function(ed) {
+            ed.getSession().setUseWrapMode(!ed.getSession().getUseWrapMode());
+        }
+    })
+
     editor.setTheme('ace/theme/chrome');
 
     editor.setOptions({
