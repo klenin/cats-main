@@ -176,7 +176,8 @@ sub wiki_frame {
     my $langs = $dbh->selectall_arrayref(q~
         SELECT id, lang FROM wiki_texts WHERE wiki_id = ?~, { Slice => {} },
         $id);
-    @$langs or return;
+    @$langs or return $is_root && $p->redirect(url_f('wiki_edit',
+        wiki_id => $id, wiki_lang => CATS::Settings::lang));
     my $chosen_lang = _choose_lang($langs);
     my $page = $dbh->selectrow_hashref(q~
         SELECT title, text FROM wiki_texts WHERE id = ?~, undef,
