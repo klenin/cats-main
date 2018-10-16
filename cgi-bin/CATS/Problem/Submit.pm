@@ -15,12 +15,14 @@ sub too_frequent {
     my ($submit_uid) = @_;
     # Protect from Denial of Service -- disable too frequent submissions.
     my $prev = $dbh->selectcol_arrayref(q~
-        SELECT FIRST 2 CAST(CURRENT_TIMESTAMP - R.submit_time AS DOUBLE PRECISION) FROM reqs R
+        SELECT CAST(CURRENT_TIMESTAMP - R.submit_time AS DOUBLE PRECISION) FROM reqs R
         WHERE R.account_id = ?
-        ORDER BY R.submit_time DESC~, {},
+        ORDER BY R.submit_time DESC
+        ROWS 2~, {},
         $submit_uid);
     my $SECONDS_PER_DAY = 24 * 60 * 60;
-    ($prev->[0] || 1) < 3/$SECONDS_PER_DAY || ($prev->[1] || 1) < 60/$SECONDS_PER_DAY;
+    ($prev->[0] || 1) < 3/$SECONDS_PER_DAY ||
+    ($prev->[1] || 1) < 20/$SECONDS_PER_DAY;
 }
 
 sub _determine_state {
