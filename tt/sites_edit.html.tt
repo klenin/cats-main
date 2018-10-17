@@ -13,7 +13,8 @@
 <table class="bordered internal_borders">
 <tr><th>[% capt.contest %]</th><th>[% capt.start_date %]</th><th>[% capt.orgs %]</th></tr>
 [% FOREACH c IN site.contests %]
-<tr><td>[% c.title %]</td><td>[% c.start_date %]</td><td>[% c.orgs %]</td></tr>
+<tr><td>[% c.title %]</td><td>[% c.start_date %]</td><td>[% c.orgs %]
+  [% IF c.href_add; '['; href(c.href_add, '+'); ']'; END %]</td></tr>
 [% END %]
 </table>
 [% END %]

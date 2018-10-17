@@ -5,6 +5,8 @@ use warnings;
 
 use Encode;
 
+use CATS::Contest;
+use CATS::Contest::Participate;
 use CATS::DB;
 use CATS::Form qw(validate_string_length);
 use CATS::Globals qw($cid $contest $t $is_jury $is_root $user);
@@ -38,7 +40,7 @@ our $form = CATS::Form->new(
     before_display => sub {
         my ($fd, $p) = @_;
         $fd->{contests} = $is_root && $fd->{id} ? $dbh->selectall_arrayref(qq~
-            SELECT C.title, C.start_date,
+            SELECT C.id, C.title, C.start_date,
                 (SELECT LIST(A.team_name || $person_phone_sql, ', ') FROM contest_accounts CA
                 INNER JOIN accounts A ON A.id = CA.account_id
                 WHERE CA.contest_id = C.id AND CA.site_id = CS.site_id AND CA.is_site_org = 1) AS orgs
@@ -46,6 +48,15 @@ our $form = CATS::Form->new(
             INNER JOIN contest_sites CS ON CS.contest_id = C.id AND CS.site_id = ?
             ORDER BY C.start_date DESC ROWS 50~, { Slice => {} },
             $fd->{id}) : [];
+        if (@{$fd->{contests}} && !$dbh->selectrow_array(q~
+            SELECT 1 FROM contest_sites WHERE contest_id = ? AND site_id = ?~, undef,
+            $cid, $fd->{id}))
+        {
+            for (@{$fd->{contests}}) {
+                $_->{href_add} = url_f('contest_sites',
+                    add => 1, check => $fd->{id}, with_org => $_->{id});
+            }
+        }
         $t->param(submenu => [ CATS::References::menu('sites') ]);
     },
 );
@@ -179,16 +190,28 @@ sub contest_sites_edit_frame {
 }
 
 sub contest_sites_add {
-    my ($p) = @_;
-    my @checked = grep $_ && $_ > 0, @{$p->{check}} or return;
-    my $sth_add= $dbh->prepare(q~
+    my ($sites, $with_org) = @_;
+    @$sites or return;
+    my $sth_add = $dbh->prepare(q~
         INSERT INTO contest_sites (contest_id, site_id) VALUES (?, ?)~);
     my $count = 0;
-    for (@checked) {
+    for my $site_id (@$sites) {
         next if $dbh->selectrow_array(q~
             SELECT 1 FROM contest_sites WHERE contest_id = ? AND site_id = ?~, undef,
-            $cid, $_);
-        $count += $sth_add->execute($cid, $_);
+            $cid, $site_id);
+        $sth_add->execute($cid, $site_id) > 0 or next;
+        ++$count;
+        $with_org or next;
+
+        my $orgs = $dbh->selectcol_arrayref(q~
+            SELECT account_id FROM contest_accounts
+            WHERE contest_id = ? AND site_id = ? AND is_site_org = 1~, undef,
+            $with_org, $site_id) or return;
+        for (@$orgs) {
+            CATS::Contest::Participate::get_registered_contestant(contest_id => $cid, account_id => $_)
+                or $contest->register_account(
+                    account_id => $_, site_id => $site_id, is_site_org => 1, is_hidden => 1);
+        }
     }
     $dbh->commit;
     msg(1068, $count);
@@ -233,7 +256,7 @@ sub contest_sites_frame {
 
     if ($is_jury) {
         contest_sites_delete($p);
-        contest_sites_add($p) if $p->{add};
+        contest_sites_add([ grep $_ && $_ > 0, @{$p->{check}} ], $p->{with_org}) if $p->{add};
     }
 
     my $org_person_phone = $user->privs->{is_root} ? qq~ || $person_phone_sql~ : '';

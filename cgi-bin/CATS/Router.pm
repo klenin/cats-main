@@ -49,7 +49,7 @@ my $main_routes = {
     contest_params => [ \&CATS::UI::Contests::contest_params_frame, id => integer, ],
     contest_xml => [ \&CATS::UI::Contests::contest_xml_frame, edit_save_xml => bool, contest_xml => str ],
     contest_sites => [ \&CATS::UI::Sites::contest_sites_frame,
-        add => bool, delete => integer, check => array_of integer, ],
+        add => bool, delete => integer, check => array_of integer, with_org => integer ],
     contest_sites_edit => [ \&CATS::UI::Sites::contest_sites_edit_frame,
         site_id => integer,
         diff_time => fixed, diff_units => ident,
