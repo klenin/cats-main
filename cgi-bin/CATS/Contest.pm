@@ -82,13 +82,11 @@ sub register_account {
     my ($self, %p) = @_;
     $p{account_id} or die;
     $p{contest_id} ||= $self->{id};
-    $p{$_} ||= 0 for (qw(is_jury is_pop is_hidden is_virtual diff_time));
+    $p{$_} ||= 0 for (qw(is_jury is_pop is_hidden is_virtual is_site_org diff_time));
     $p{$_} ||= 1 for (qw(is_ooc is_remote));
     $p{id} = new_id;
-    my ($f, $v) = (join(', ', keys %p), join(',', map '?', keys %p));
-    $dbh->do(qq~
-        INSERT INTO contest_accounts ($f) VALUES ($v)~, undef,
-        values %p);
+    $dbh->do(_u $sql->insert('contest_accounts', \%p));
+    return if $p{is_hidden};
     my $p = cats_dir() . "./rank_cache/$p{contest_id}#";
     unlink <$p*>;
 }
