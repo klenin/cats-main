@@ -39,8 +39,8 @@ sub qb { $_[0]->{qb} }
 sub submitted { $_[0]->{submitted} }
 
 my $route = [ 1,
-    page => integer, search => undef, sort => integer, sort_dir => integer, submitted => bool,
-    rows => integer, cols => array_of ident, ];
+    page => integer, search => undef, sort => qr/^[0-9a-zA-Z]+$/, sort_dir => integer,
+    submitted => bool, rows => integer, cols => array_of ident, ];
 
 sub init_params {
     my ($self) = @_;
@@ -63,7 +63,7 @@ sub init_params {
     $self->qb->parse_search($s->{search});
 
     if (defined $w->{sort}) {
-        $s->{sort_by} = int($w->{sort});
+        $s->{sort_by} = /^\d+$/ ? int($_) : $_ for $w->{sort};
         $s->{page} = 0;
     }
 
@@ -186,17 +186,17 @@ sub attach {
 
 sub visible_data { $_[0]->{visible_data} }
 
-sub check_sortable_field {
+sub find_sorting_col {
     my ($self, $s) = @_;
-    return defined $s->{sort_by} && $s->{sort_by} =~ /^\d+$/ && $self->{col_defs}->[$s->{sort_by}]
+    return defined $_ && (/^\d+$/ ? $self->{col_defs}->[$_] : $self->{col_defs_idx}->{$_})
+        for $s->{sort_by};
 }
 
 sub order_by {
     my ($self) = @_;
     my $s = $self->settings;
-    $self->check_sortable_field($s) or return '';
-    sprintf 'ORDER BY %s %s',
-        $self->{col_defs}->[$s->{sort_by}]{order_by}, ($s->{sort_dir} ? 'DESC' : 'ASC');
+    my $c = $self->find_sorting_col($s) or return '';
+    sprintf 'ORDER BY %s %s', $c->{order_by}, ($s->{sort_dir} ? 'DESC' : 'ASC');
 }
 
 sub where { $_[0]->{where} ||= $_[0]->make_where }
@@ -224,8 +224,7 @@ sub where_params {
 sub sort_in_memory {
     my ($self, $data) = @_;
     my $s = $self->settings;
-    $self->check_sortable_field($s) or return $data;
-    my $col_def = $self->{col_defs}->[$s->{sort_by}];
+    my $col_def = $self->find_sorting_col($s) or return $data;
     my $order_by = $col_def->{order_by};
     my $cmp =
         $col_def->{numeric} ?
@@ -250,6 +249,8 @@ sub define_columns {
     $s->{sort_dir} = $default_dir if !defined $s->{sort_dir} || $s->{sort_dir} eq '';
 
     $self->{col_defs} = $col_defs or die;
+    my $cd_idx = $self->{col_defs_idx} = {};
+    $cd_idx->{$_->{col}} = $_ for grep $_->{col}, @$col_defs;
 
     my $init = defined $self->{cols} ? 0 : 1;
     $self->{visible_cols} = { map { $_->{col} => $init } grep $_->{col}, @$col_defs };
@@ -261,11 +262,11 @@ sub define_columns {
         my $def = $col_defs->[$i];
         $def->{visible} = !$def->{col} || $self->{visible_cols}->{$def->{col}} or next;
         my $dir = 0;
-        if ($s->{sort_by} eq $i) {
+        if ($s->{sort_by} eq $i || $s->{sort_by} eq ($def->{col} // '')) {
             $def->{'sort_' . ($s->{sort_dir} ? 'down' : 'up')} = 1;
             $dir = 1 - $s->{sort_dir};
         }
-        $def->{href_sort} = "$url;sort=$i;sort_dir=$dir";
+        $def->{href_sort} = sprintf '%s;sort=%s;sort_dir=%s', $url, $def->{col} // $i, $dir;
     }
     if (grep !$_->{visible}, @$col_defs) {
         $s->{cols} = join(',', map { $_->{visible} && $_->{col} ? $_->{col} : () } @$col_defs) || '-';
