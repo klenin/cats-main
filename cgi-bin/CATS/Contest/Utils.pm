@@ -123,6 +123,12 @@ sub authenticated_contests_view {
             m => 1015, t => q~
             SELECT P.title FROM problems P WHERE P.id = ?~
         },
+        has_json => { sq => qq~CASE WHEN EXISTS (
+            SELECT 1 FROM contest_problems CP1 INNER JOIN problems P1 ON P1.id = CP1.problem_id
+            WHERE CP1.contest_id = C.id AND P1.json_data IS NOT NULL$cp_hidden) THEN 1 ELSE 0 END = ?~,
+            #m => 1015, t => q~
+            #SELECT P.title FROM problems P WHERE P.id = ?~
+        },
         has_site => { sq => q~EXISTS (
             SELECT 1 FROM contest_sites CS WHERE CS.contest_id = C.id AND CS.site_id = ?)~,
             m => 1030, t => q~
