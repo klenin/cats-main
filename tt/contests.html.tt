@@ -40,8 +40,13 @@ function delete_contest(href, name) {
     [<a href="[% c.href_problems %]">[% capt.problems %]</a>]
 </td>
 [% IF user.privs.is_root && visible_cols.Pc %]<td>[% c.problems_count %]</td>[% END %]
-<td class="date">[% maybe_href(c.href_start_date, c.start_date, c.since_start_text) %]</td>
+[% IF visible_cols.Sd -%]
+  <td class="date">[% maybe_href(c.href_start_date, c.start_date, c.since_start_text) %]</td>
+[%- END %]
+[% IF visible_cols.Fd -%]
 <td class="date[% ' finished' IF c.since_finish > 0 %]">[% c.finish_date | html %]</td>
+[%- END %]
+[% IF visible_cols.Nt -%]
 [%- MACRO flag(name) BLOCK %]<span class="[% name %]">[% capt.$name %]</span>[% END %]
 <td>
     [% IF c.registered_online && !user.privs.is_root; capt.ct_participant; END =%]
@@ -52,6 +57,7 @@ function delete_contest(href, name) {
     [% IF c.is_hidden; flag('ct_hidden'); END =%]
     [% IF c.has_orig; capt.ct_original; END %]
 </td>
+[%- END %]
 </tr>
 [% END %]
 </table>
