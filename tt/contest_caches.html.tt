@@ -1,0 +1,30 @@
+[% PROCESS includes/menu_begin.tti %]
+<ul>
+[% FOREACH tc IN text_caches %]
+  <li>[% tc.n | html %]: [% tc.s %]</li>
+[% END %]
+</ul>
+<ul>
+[% FOREACH p IN problems %]
+  <li>[% p.code | html %]: [% p.title | html %]
+    <ul>
+    [% FOREACH c IN p.caches %]
+      <li>[% c.n | html %]: [% c.s %]</li>
+    [% END %]
+    </ul>
+  </li>
+[% END %]
+</ul>
+<form method="post" enctype="multipart/form-data" action="[% form_action %]" accept-charset="UTF-8">
+  <p><button type="submit" name="clear_text_cache" value="1" class="button">[% capt.clear_text_cache %]</button></p>
+</form>
+
+<ul>
+[% FOREACH rc IN rank_caches %]
+  <li>[% rc.n | html %]: [% rc.s %]</li>
+[% END %]
+</ul>
+<form method="post" enctype="multipart/form-data" action="[% form_action %]" accept-charset="UTF-8">
+  <p><button type="submit" name="clear_rank_cache" value="1" class="button">[% capt.clear_rank_cache %]</button></p>
+</form>
+[% PROCESS includes/menu_end.tti %]

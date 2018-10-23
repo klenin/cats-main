@@ -1,0 +1,6 @@
+[%
+  capt.import({
+    clear_text_cache => 'Clear text cache',
+    clear_rank_cache => 'Clear rank cache',
+  })
+%]

@@ -454,13 +454,21 @@ sub cache_file_name {
     cats_dir() . './rank_cache/' . join ('#', @_, '');
 }
 
-sub remove_cache {
+sub cache_files {
     my ($contest_id) = @_ or die;
+    my @result;
     for my $virt (0, 1) {
         for my $ooc (0, 1) {
-            unlink cache_file_name($contest_id, $ooc, $virt);
+            my $f = cache_file_name($contest_id, $ooc, $virt);
+            push @result, $f if -f $f;
         }
     }
+    @result;
+}
+
+sub remove_cache {
+    my ($contest_id) = @_ or die;
+    unlink for cache_files(@_);
 }
 
 sub same_or_default { @_ > 1 ? -1 : $_[0]; }

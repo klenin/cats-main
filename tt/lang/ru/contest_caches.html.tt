@@ -1,0 +1,6 @@
+[%
+  capt.import({
+    clear_text_cache => 'Очистить кеш текстов',
+    clear_rank_cache => 'Очистить кеш результатов',
+  })
+%]

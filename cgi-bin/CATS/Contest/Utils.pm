@@ -221,7 +221,8 @@ sub contest_submenu {
             selected => $_->{href} eq $selected_href },
             ($is_root && $selected_href eq 'contest_wikis' ?
                 ({ href => 'contest_wikis_edit', item => 590 }) : ()),
-            @$contest_submenu
+            @$contest_submenu,
+            ($is_root ? { href => 'contest_caches', item => 515 } : ()),
         ]
     );
 }

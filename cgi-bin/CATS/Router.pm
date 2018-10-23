@@ -48,6 +48,8 @@ my $main_routes = {
     contests_new => [ \&CATS::UI::Contests::contests_new_frame, ],
     contest_params => [ \&CATS::UI::Contests::contest_params_frame, id => integer, ],
     contest_xml => [ \&CATS::UI::Contests::contest_xml_frame, edit_save_xml => bool, contest_xml => str ],
+    contest_caches => [ \&CATS::UI::ContestCaches::contest_caches_frame,
+        clear_text_cache => bool, clear_rank_cache => bool ],
     contest_sites => [ \&CATS::UI::Sites::contest_sites_frame,
         add => bool, delete => integer, check => array_of integer, with_org => integer ],
     contest_sites_edit => [ \&CATS::UI::Sites::contest_sites_edit_frame,
