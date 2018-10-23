@@ -300,7 +300,7 @@ my $main_routes = {
     problem_text => [ \&CATS::UI::Problems::problem_text_frame,
         pid => integer, cpid => integer, cid => integer,
         explain => bool, nospell => bool, noformal => bool, noif => bool, pl => ident, nokw => bool,
-        tags => str, raw => bool, nomath => bool, uid => integer,
+        tags => str, raw => bool, nomath => bool, uid => integer, noauthor => 1,
     ],
     get_snippets => [ \&CATS::UI::Snippets::get_snippets,
         cpid => integer, snippet_names => array_of ident, uid => integer,

@@ -313,7 +313,7 @@ sub problem_text {
                 id title lang difficulty input_file output_file statement pconstraints json_data run_method),
                 'contest_id AS orig_contest_id',
                 'max_points AS max_points_def',
-                ($v->{author} ? ('author') : ()),
+                ($v->{author} && !$p->{noauthor} ? ('author') : ()),
                 grep(!$problem->{$_}, @cats::limits_fields),
                 ($v->{explain} ? 'explanation' : qw(input_format output_format)),
                 ($v->{is_jury_in_contest} && !$p->{noformal} ? 'formal_input' : ()),

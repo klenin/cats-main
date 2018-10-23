@@ -431,7 +431,8 @@ sub problems_frame {
     my $pr = $contest->is_practice;
     my @submenu = grep $_,
         ($is_jury ? (
-            !$pr && $pt_url->([ 'problem_text', nospell => 1, nokw => 1, notime => 1, noformal => 1 ]),
+            !$pr && $pt_url->([ 'problem_text',
+                nospell => 1, nokw => 1, notime => 1, noformal => 1, noauthor => 1 ]),
             !$pr && $pt_url->([ 'problem_text' ], res_str(555)),
             { href => url_f('problems_all', link => 1), item => res_str(540) },
             { href => url_f('problems_all', link => 1, move => 1), item => res_str(551) },
