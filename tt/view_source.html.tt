@@ -37,7 +37,7 @@
         <br><br>
       [% END %]
       <textarea name="source_text" cols="[% source_width %]" rows="40"
-        data-editor="[% si.syntax.lower %]" data-gutter="1" data-id="ed[% si.req_id %]">
+        data-editor="[% si.syntax.lower || 'text' %]" data-gutter="1" data-id="ed[% si.req_id %]">
         [%- si.src | html ~%]
       </textarea>
       <input type="hidden" name="np" value="0"/>
