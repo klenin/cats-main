@@ -36,7 +36,7 @@ sub _decode_quietly {
     my ($p, $s) = @_;
     $s ||= '';
     # Comment or output may be non-well-formed utf8.
-    my $result = Encode::decode($p->{comment_enc}, $s, Encode::FB_QUIET);
+    my $result = eval { Encode::decode($p->{comment_enc}, $s, Encode::FB_QUIET); } || '';
     # Encode::decode modifies $s to contain non-well-formed part.
     $result . ($s eq '' ? '' : "\x{fffd}$s");
 }
