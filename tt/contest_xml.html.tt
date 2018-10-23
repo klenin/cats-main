@@ -1,5 +1,4 @@
 [% PROCESS includes/menu_begin.tti %]
-[%- PROCESS "lang/$lang/contest_xml.tt" -%]
 [% IF logger %]
   <textarea rows="10" cols="80" readonly>[% logger.encoded_import_log %]</textarea>
 [% END %]
