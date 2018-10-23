@@ -97,6 +97,8 @@ function chg_code(st_sel, pid) {
 <p>[% contest.short_descr | html | linkify %]</p>
 [% END %]
 
+[% FOREACH w IN wikis %]<p>[% href(w.href, w.title || w.name) %]</p>[% END %]
+
 [% PROCESS includes/listview_header.tti form_name='problems_form' %]
 <table class="listview bordered highlight">
 [% IF can_submit %]

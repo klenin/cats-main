@@ -26,6 +26,7 @@ use CATS::Problem::Utils;
 use CATS::Problem::Storage;
 use CATS::Redirect;
 use CATS::Request;
+use CATS::Settings;
 use CATS::StaticPages;
 use CATS::Utils qw(file_type date_to_iso redirect_url_function url_function);
 use CATS::Verdicts;
@@ -204,6 +205,17 @@ sub problems_frame {
     CATS::Problem::Submit::problems_submit($p) if $p->{submit};
     CATS::Contest::Participate::online if $p->{participate_online};
     CATS::Contest::Participate::virtual if $p->{participate_virtual};
+
+    my $wikis = $dbh->selectall_arrayref(q~
+        SELECT CW.wiki_id, CW.allow_edit, WP.name, WT.title
+        FROM contest_wikis CW
+        INNER JOIN wiki_pages WP ON CW.wiki_id = WP.id
+        LEFT JOIN wiki_texts WT ON WT.wiki_id = WP.id AND WT.lang = ?
+        WHERE CW.contest_id = ?
+        ORDER BY CW.ordering, WP.name~, { Slice => {} },
+        CATS::Settings::lang, $cid);
+    $_->{href} = url_f('wiki', name => $_->{name}) for @$wikis;
+    $t->param(wikis => $wikis);
 
     my @cols = (
         { caption => res_str(602), order_by => ($contest->is_practice ? 'P.title' : 3), width => '25%' },
