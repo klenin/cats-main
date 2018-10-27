@@ -28,7 +28,7 @@
 [%- MACRO tr_checkbox1(f, fd) BLOCK -%]
 <tr>
   <td>[% f.caption || capt.item(f.field.name) %]</td>
-  <td>[% checkbox_1(f.field.name, f.value, !fd.readonly) %]
+  <td>[% checkbox_1(f.field.name, f.value, !fd.readonly && !f.readonly) %]
     [%- maybe_err(f) %]
   </td>
 </tr>
