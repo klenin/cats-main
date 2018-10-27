@@ -92,6 +92,7 @@ sub contest_wikis_frame {
         my $row = $_[0]->fetchrow_hashref or return ();
         (
             %$row,
+            href_view => url_f('wiki', name => $row->{name}),
             href_edit => url_f('contest_wikis_edit', id => $row->{id}),
             href_delete => url_f('contest_wikis', 'delete' => $row->{id}),
         );

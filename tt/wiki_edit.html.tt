@@ -23,7 +23,7 @@
   </form>
 </td>
 <td>
-  <p>[% href(href_view, capt.view) %] | [% href(href_page, capt.page) %]</p>
+  <p>[% href(href_view, capt.view); IF href_page; ' | '; href(href_page, capt.page); END %]</p>
   [% wt.markdown %]
 </td>
 </tr></table>

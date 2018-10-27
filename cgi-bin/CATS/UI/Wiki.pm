@@ -138,7 +138,7 @@ our $text_form = CATS::Form->new(
             title_suffix => $pn,
             problem_title => $pn,
             href_view => url_f('wiki', name => $pn),
-            href_page => url_f('wiki_pages_edit', id => $wt->{wiki_id}->{value}),
+            href_page => $is_root && url_f('wiki_pages_edit', id => $wt->{wiki_id}->{value}),
             submenu => [ CATS::References::menu('wiki_pages') ],
         );
     },
@@ -152,9 +152,17 @@ sub wiki_pages_edit_frame {
     $page_form->edit_frame($p, redirect => [ 'wiki_pages' ]);
 }
 
+sub _can_edit {
+    my ($wiki_id) = @_;
+    $is_root || $is_jury && $dbh->selectrow_array(q~
+        SELECT id FROM contest_wikis
+        WHERE contest_id = ? AND wiki_id = ? AND allow_edit = 1~, undef,
+        $contest->{id}, $wiki_id);
+}
+
 sub wiki_edit_frame {
     my ($p) = @_;
-    $is_root && $p->{wiki_id} or return $p->redirect(url_f 'contests');
+    $p->{wiki_id} && _can_edit($p->{wiki_id}) or return $p->redirect(url_f 'contests');
     init_template($p, 'wiki_edit.html.tt');
     $text_form->edit_frame($p, redirect_cancel => [ 'wiki_pages_edit', id => $p->{wiki_id} ]);
 }
@@ -199,7 +207,7 @@ sub wiki_frame {
         page => $page,
         title_suffix => $page->{title},
         submenu => [
-            ($is_root ? {
+            (_can_edit($id) ? {
                 href => url_f('wiki_edit',
                     wiki_id => $id, id => $chosen_lang->{id}, wiki_lang => $chosen_lang->{lang}),
                 item => res_str(509, $p->{name}) } : ()),

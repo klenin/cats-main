@@ -18,7 +18,7 @@ function delete_contest_wiki(href, name) {
 <td class="nobr">
   <a href="[% cw.href_edit %]" class="icon edit"></a>
   <a href="javascript:delete_contest_wiki('[% cw.href_delete %]', '[% cw.name | html %]');" class="icon delete"></a>
-  [% cw.name | html %]
+  [% href(cw.href_view, cw.name) %]
 </td>
 [% IF visible_cols.Ae %]<td style="position: relative;">[% IF cw.allow_edit %]<a class="icon checked icon_centered"></a>[% END %]</td>[% END %]
 [% IF visible_cols.Or %]<td>[% cw.ordering | html %]</td>[% END %]
