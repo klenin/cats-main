@@ -243,6 +243,7 @@
 1075 "Snippet '%s' saved."
 1076 "Snippet '%s' deleted."
 1077 "Snippet '%s' already exists."
+1078 "Incorrect page."
 1080 "Unable to submit a solution: the contest is not started yet."
 1081 "Unable to submit a solution: the contest is over."
 1084 "Incorrect keyword parameters."

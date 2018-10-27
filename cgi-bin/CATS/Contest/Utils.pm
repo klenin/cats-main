@@ -219,7 +219,7 @@ sub contest_submenu {
             href => CATS::Utils::url_function($_->{href}, sid => $sid, cid => $contest_id),
             item => res_str($_->{item}),
             selected => $_->{href} eq $selected_href },
-            ($is_root && $selected_href eq 'contest_wikis' ?
+            ($selected_href eq 'contest_wikis' ?
                 ({ href => 'contest_wikis_edit', item => 590 }) : ()),
             @$contest_submenu,
             ($is_root ? { href => 'contest_caches', item => 515 } : ()),

@@ -11,13 +11,15 @@ use CATS::ListView;
 use CATS::Messages qw(res_str);
 use CATS::Output qw(init_template url_f);
 
+my $ordering = CATS::Field::int_range(min => 0, max => 100000);
+
 our $form = CATS::Form->new(
     table => 'contest_wikis',
     fields => [
         [ name => 'contest_id', caption => 603, before_save => sub { $cid } ],
         [ name => 'wiki_id', validators => [ $CATS::Field::foreign_key ], caption => 601, ],
         [ name => 'allow_edit', validators => [ $CATS::Field::bool ], caption => 681, ],
-        [ name => 'ordering', validators => [ CATS::Field::int_range(min => 0, max => 100000) ], caption => 682, ],
+        [ name => 'ordering', validators => [ $ordering ], caption => 682, ],
     ],
     href_action => 'contest_wikis_edit',
     descr_field => 'wiki_id',
@@ -32,13 +34,34 @@ our $form = CATS::Form->new(
             WHERE W.is_public = 1
             ORDER BY W.name~, { Slice => {} });
         unshift @{$fd->{wikis}}, { value => 0, text => '' };
+        $fd->{indexed}->{allow_edit}->{readonly} = !$is_root;
     },
+    validators => [ sub {
+        my ($fd, $p) = @_;
+        my $wiki_id = $fd->{indexed}->{wiki_id};
+        $dbh->selectrow_array(q~
+            SELECT id FROM wiki_pages
+            WHERE id = ? AND is_public = 1~, undef,
+            $wiki_id->{value}) or return ($wiki_id->{error} = res_str(1078) and undef);
+        return 1 if $is_root;
+        if (!$fd->{id}) {
+            $fd->{indexed}->{allow_edit}->{value} = 0;
+            return 1;
+        }
+        my ($old_wiki_id, $old_allow_edit) = $dbh->selectrow_array(q~
+            SELECT wiki_id, allow_edit FROM contest_wikis WHERE id = ?~, undef,
+            $fd->{id});
+        $fd->{indexed}->{allow_edit}->{value} = $old_allow_edit;
+        return ($wiki_id->{error} = res_str(1078) and undef)
+            if $old_allow_edit && $old_wiki_id != $wiki_id->{value};
+        1;
+    }, ],
 );
 
 sub contest_wikis_edit_frame {
     my ($p) = @_;
-    $is_root or return;
     init_template($p, 'contest_wikis_edit.html.tt');
+    $is_jury or return;
     $form->edit_frame($p, redirect => [ 'contest_wikis' ]);
 }
 

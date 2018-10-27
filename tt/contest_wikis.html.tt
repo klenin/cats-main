@@ -16,10 +16,8 @@ function delete_contest_wiki(href, name) {
 [% FOREACH cw IN contest_wikis %]
 <tr class="[% loop.parity() %]">
 <td class="nobr">
-  [% IF user.privs.is_root %]
   <a href="[% cw.href_edit %]" class="icon edit"></a>
   <a href="javascript:delete_contest_wiki('[% cw.href_delete %]', '[% cw.name | html %]');" class="icon delete"></a>
-  [% END %]
   [% cw.name | html %]
 </td>
 [% IF visible_cols.Ae %]<td style="position: relative;">[% IF cw.allow_edit %]<a class="icon checked icon_centered"></a>[% END %]</td>[% END %]
