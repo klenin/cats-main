@@ -47,6 +47,8 @@ function delete_contest_site(href, name) {
 <br/>
 <button name="add" value="1" class="button">[% capt.add_sites %]</button>
 [% END %]
+<button name="multi_console" value="1" class="button">[% capt.console %]</button>
+<button name="multi_rank_table" value="1" class="button">[% capt.rank_table %]</button>
 [% PROCESS includes/pages.tti %]
 </form>
 

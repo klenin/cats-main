@@ -234,12 +234,23 @@ sub contest_sites_delete {
     msg(1066, $name);
 }
 
+sub _href_console {
+    url_f('console',
+        i_value => -1, se => 'sites', show_results => 1,
+        search => join(',', map "site_id=$_", @_) . ($is_root ? ',contest_id=this' : ''));
+}
+
 sub contest_sites_frame {
     my ($p) = @_;
 
     init_template($p, 'contest_sites.html.tt');
     my $lv = CATS::ListView->new(web => $p, name => 'contest_sites');
     $is_jury || $user->{is_site_org} || $contest->{show_sites} or return;
+
+    if (my @check = @{$p->{check}}) {
+        $p->redirect(_href_console @check) if $p->{multi_console};
+        $p->redirect(url_f 'rank_table', sites => join ',', @check) if $p->{multi_rank_table};
+    }
 
     $lv->define_columns(url_f('contest_sites'), 0, 0, [
         { caption => res_str(601), order_by => 'name'       , width => '15%' },
@@ -294,9 +305,7 @@ sub contest_sites_frame {
             ($is_jury ? (href_delete => url_f('contest_sites', 'delete' => $row->{id})) : ()),
             href_edit => url_f('contest_sites_edit', site_id => $row->{id}),
             href_users => url_f('users', search => "site_id=$row->{id}"),
-            href_console => url_f('console',
-                i_value => -1, se => 'sites', show_results => 1,
-                search => "site_id=$row->{id}" . ($is_root ? ',contest_id=this' : '')),
+            href_console => _href_console($row->{id}),
             href_rank_table => url_f('rank_table', sites => $row->{id}),
         );
     };
