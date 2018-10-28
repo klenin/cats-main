@@ -252,6 +252,7 @@ sub users_frame {
             ($is_jury && $site_id ?
                 (href_contest_site => url_f('contest_sites_edit', site_id => $site_id)) : ()),
             ($is_jury || $user->{is_site_org} ? (href_vdiff => url_f('user_vdiff', uid => $aid)) : ()),
+            href_rank_table_filter => $is_jury ? url_f('rank_table', filter => $tag) : undef,
 
             motto => $motto,
             id => $caid,

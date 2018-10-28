@@ -38,7 +38,7 @@ function delete_team(href, name) {
 [% IF visible_cols.Si ~%]
   <td>[% maybe_href(u.href_contest_site, u.site_name || u.city); IF u.href_site %] <a href="[% u.href_site %]" class="icon edit"></a>[% END %]</td>
 [%~ END %]
-[% IF visible_cols.Tg %]<td>[% u.tag %]</td>[% END %]
+[% IF visible_cols.Tg %]<td>[% maybe_href(u.href_rank_table_filter, u.tag) %]</td>[% END %]
 [% IF user.is_jury || user.is_site_org %]
 [% IF visible_cols.Ip -%]
 <td>[<a href="[% u.href_whois %]" title="[% u.last_ip %]">[% u.last_ip_short %]</a>]</td>
