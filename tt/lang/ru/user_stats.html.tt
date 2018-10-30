@@ -10,5 +10,6 @@
     solved => 'решённые',
     contests => 'Турниры',
     send_message => 'сообщение',
+    tokens => 'Токены',
   })
 %]

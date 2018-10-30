@@ -102,9 +102,14 @@ sub user_stats_frame {
             uf => $p->{uid}, i_value => -1, se => 'user_stats',
             show_results => 1, rows => 30, search => "contest_id=$_->{id}");
     }
+
+    my $tokens = $is_root && $dbh->selectall_arrayref(q~
+        SELECT token, last_used, referer FROM account_tokens
+        WHERE account_id = ?~, { Slice => {} },
+        $p->{uid});
     $t->param(
         CATS::User::submenu('user_stats', $p->{uid}, $u->{site_id}),
-        %$u, contests => $contests,
+        %$u, contests => $contests, tokens => $tokens,
         CATS::IP::linkify_ip($u->{last_ip}),
         ($is_jury ? (href_edit => url_f('users_edit', uid => $p->{uid})) : ()),
         ($user->privs->{edit_sites} ? (

@@ -27,4 +27,17 @@
 [%- END %]
 </table>
 
+[% IF tokens %]
+<h3>[% capt.tokens %]</h3>
+<table class="internal_borders padded">
+[% FOREACH t IN tokens -%]
+<tr>
+<td>[% t.token %]</td>
+<td>[% t.last_used %]</td>
+<td>[% t.referer %]</td>
+</tr>
+[%- END %]
+</table>
+[%- END %]
+
 [% PROCESS includes/menu_end.tti %]
