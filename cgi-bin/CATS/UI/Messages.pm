@@ -40,16 +40,19 @@ sub answer_box_frame {
     my $r = $dbh->selectrow_hashref(q~
         SELECT
             Q.account_id AS caid, CA.account_id AS aid, A.login, A.team_name,
-            Q.submit_time, Q.question, Q.clarified, Q.answer
+            Q.submit_time, Q.question, Q.clarified, Q.answer, C.title
         FROM questions Q
-            INNER JOIN contest_accounts CA ON CA.id = Q.account_id
-            INNER JOIN accounts A ON A.id = CA.account_id
+        INNER JOIN contest_accounts CA ON CA.id = Q.account_id
+        INNER JOIN accounts A ON A.id = CA.account_id
+        INNER JOIN contests C ON C.id = CA.contest_id
         WHERE Q.id = ?~, { Slice => {} },
         $p->{qid});
     # BLOBs are not auto-decoded.
     $_ = Encode::decode_utf8($_) for @$r{qw(question answer)};
 
-    $t->param(participant_name => $r->{team_name}, title_suffix => res_str(566));
+    $t->param(
+        participant_name => $r->{team_name},
+        title_suffix => res_str(566), contest_title => $r->{title});
 
     if ($p->{clarify} && (my $ans = Encode::decode_utf8($p->{answer_text}) // '') ne '') {
         $r->{answer} = $user->privs->{moderate_messages} ? $ans : ($r->{answer} // '') . " $ans";

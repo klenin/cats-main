@@ -3,7 +3,7 @@
 <body>
 [% UNLESS clarified %]
 <div style="padding: 10px">
-  <h3>[% contest.title | html %]</h3>
+  <h3>[% contest_title | html %]</h3>
   <br/>
   <p>[% participant_name | html %], [% submit_time %]</p>
   <div class="bordered" style="width: 100%">[% question_text | html %]</div>
