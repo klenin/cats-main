@@ -286,6 +286,24 @@ sub contests_edit_save_xml {
 sub contests_edit_save {
     my ($p, $c) = @_;
     $is_root or delete $c->{is_official};
+    {
+        my $d = 'CAST(? AS TIMESTAMP)';
+        my @flags = $dbh->selectrow_array(qq~
+            SELECT
+                CASE WHEN $d <= $d THEN 1 ELSE 0 END,
+                CASE WHEN $d BETWEEN $d AND $d THEN 1 ELSE 0 END,
+                CASE WHEN $d >= $d THEN 1 ELSE 0 END
+            FROM RDB\$DATABASE~, undef,
+            @$c{qw(
+                start_date finish_date
+                freeze_date start_date finish_date
+                defreeze_date freeze_date)});
+        if (my @errors = grep !$flags[$_], 0 .. $#flags) {
+            my @msgs = (1183, 1184, 1185);
+            msg($_) for @msgs[@errors];
+            return;
+        }
+    }
     eval {
         $dbh->do(_u $sql->update(contests => $c, { id => $p->{id} }));
         $dbh->commit;

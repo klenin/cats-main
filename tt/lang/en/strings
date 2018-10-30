@@ -335,3 +335,6 @@
 1180 "You can accept only your side of relation."
 1181 "Relation must include current user."
 1182 "Snippet must belong to the current contest."
+1183 "Start date must be no later than finish."
+1184 "Freeze date must be between start and finish."
+1185 "Unfreeze date must be no earlier than freeze."
