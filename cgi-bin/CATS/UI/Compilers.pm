@@ -3,8 +3,6 @@ package CATS::UI::Compilers;
 use strict;
 use warnings;
 
-use Encode;
-
 use CATS::DB;
 use CATS::Form;
 use CATS::Globals qw($is_jury $is_root $t);

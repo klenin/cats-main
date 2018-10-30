@@ -3,7 +3,7 @@ package CATS::References;
 use strict;
 use warnings;
 
-use CATS::Globals qw($is_jury $t $user);
+use CATS::Globals qw($is_jury $is_root $t $user);
 use CATS::Messages qw(res_str);
 use CATS::Output qw(url_f);
 
@@ -18,6 +18,7 @@ sub reference_names() {
         ($user->is_root ? { name => 'wiki_pages', new => 590, item => 589 } : ()),
         ($is_jury ? { name => 'snippets', new => 592, item => 591 } : ()),
         ($user->privs->{edit_sites} ? { name => 'sites', new => 514, item => 513 } : ()),
+        ($is_root ? { name => 'account_tokens', item => 516 } : ()),
     )
 }
 

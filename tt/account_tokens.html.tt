@@ -1,0 +1,35 @@
+[% PROCESS includes/menu_begin.tti %]
+
+<script>
+function delete_account_token(href, name) {
+  if (confirm("[% capt.want_to_delete %] '" + name + "'?" ))
+    document.location=href;
+}
+</script>
+
+[% PROCESS includes/listview_header.tti %]
+
+<table class="listview bordered highlight">
+[% PROCESS includes/listview_col_defs.tti %]
+
+[% FOREACH at IN account_tokens %]
+<tr class="[% loop.parity() %]">
+<td>
+  [% IF at.href_delete ~%]
+  <a href="javascript:delete_account_token('[% at.href_delete %]', '[% at.token | html %]');" class="icon delete"></a>
+  [%~ END %]
+  [% IF at.href_edit ~%]
+  <a href="[% at.href_edit %]" class="icon edit"></a>
+  [%~ END %]
+  [% at.token | html %]
+</td>
+<td>[% href(at.href_user, at.team_name) %]</td>
+[% IF visible_cols.Lu %]<td>[% at.last_used | html %]</td>[% END %]
+[% IF visible_cols.Rf %]<td>[% at.referer | html %]</td>[% END %]
+</tr>
+[% END %]
+</table>
+[% PROCESS includes/pages.tti %]
+</form>
+
+[% PROCESS includes/menu_end.tti %]

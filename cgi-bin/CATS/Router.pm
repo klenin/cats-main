@@ -205,6 +205,7 @@ my $main_routes = {
         \&CATS::UI::ContactTypes::contact_types_edit_frame,
         $CATS::UI::ContactTypes::form->route,
     ],
+    account_tokens => [ \&CATS::UI::AccountTokens::account_tokens_frame, delete => integer, ],
     compilers => [ \&CATS::UI::Compilers::compilers_frame, delete => integer, saved => integer, ],
     compilers_edit => [ \&CATS::UI::Compilers::compilers_edit_frame, $CATS::UI::Compilers::form->route, ],
     judges => [ \&CATS::UI::Judges::judges_frame,
