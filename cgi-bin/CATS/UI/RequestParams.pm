@@ -82,7 +82,7 @@ sub request_params_frame {
         CATS::Request::delete_limits($si->{limits_id}) if $need_clear_limits && $si->{limits_id};
         maybe_reinstall($p, $si);
         maybe_status_ok($p, $si);
-        CATS::RankTable::remove_cache($si->{contest_id});
+        CATS::RankTable::remove_cache($si->{contest_id}) unless $si->{is_hidden};
         $dbh->commit;
         $si = get_sources_info($p, request_id => $si->{req_id});
     }
@@ -119,7 +119,7 @@ sub request_params_frame {
     }
 
     # Reload problem after the successful state change.
-    $si = get_sources_info($p, request_id => $si->{req_id}) if try_set_state($p);
+    $si = get_sources_info($p, request_id => $si->{req_id}) if try_set_state($p, $si);
 
     my $tests = $dbh->selectcol_arrayref(q~
         SELECT rank FROM tests WHERE problem_id = ? ORDER BY rank~, undef,
@@ -159,7 +159,7 @@ sub request_params_frame {
 }
 
 sub try_set_state {
-    my ($p) = @_;
+    my ($p, $si) = @_;
     $p->{set_state} or return;
     grep $_ eq $p->{state}, @$settable_verdicts or return;
     my $state = $CATS::Verdicts::name_to_state->{$p->{state}};
@@ -168,6 +168,7 @@ sub try_set_state {
         failed_test => $p->{failed_test}, state => $state, points => $p->{points}
     });
     $dbh->commit;
+    CATS::RankTable::remove_cache($si->{contest_id}) unless $si->{is_hidden};
     msg(1055);
     1;
 }
