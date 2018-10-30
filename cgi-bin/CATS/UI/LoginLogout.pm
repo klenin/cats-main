@@ -45,19 +45,25 @@ sub login_frame {
     $t->param(href_login => url_function('login', redir => $p->{redir}));
     msg(1004) if $p->{logout};
 
-    my $login = $p->{login};
-    if (!$login) {
-        $t->param(message => 'No login') if $p->{json};
-        return;
+    my $where = {};
+    if ($p->{token}) {
+        my ($account_id, $referer) = $dbh->selectrow_array(q~
+            SELECT account_id, referer FROM account_tokens WHERE token = ?~, undef,
+            $p->{token}) or return msg(1040);
+        $dbh->do(_u $sql->update('account_tokens',
+            { referer => $p->referer || undef, last_used => \'CURRENT_TIMESTAMP' }));
+        $where->{id} = $account_id;
     }
-    $t->param(login => Encode::decode_utf8($login));
+    else {
+        $p->{login} or return $t->param(message => 'No login');
+        $where->{login} = $p->{login};
+        $t->param(login => Encode::decode_utf8($p->{login} || ''));
+    }
 
-    my ($aid, $hash, $locked, $restrict_ips, $last_ip, $last_sid) = $dbh->selectrow_array(q~
-        SELECT id, passwd, locked, restrict_ips, last_ip, sid
-        FROM accounts WHERE login = ?~, undef,
-        $login);
+    my ($aid, $hash, $locked, $restrict_ips, $last_ip, $last_sid) = $dbh->selectrow_array(
+        _u $sql->select('accounts', [qw(id passwd locked restrict_ips last_ip sid)], $where));
 
-    $aid && $check_password->($p->{passwd} // '', $hash) or return msg(1040);
+    $aid && ($p->{token} || $check_password->($p->{passwd} // '', $hash)) or return msg(1040);
     !$locked or return msg(1041);
 
     my $current_ip = CATS::IP::get_ip();

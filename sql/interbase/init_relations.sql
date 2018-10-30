@@ -36,6 +36,13 @@ CREATE TABLE accounts (
 );
 CREATE INDEX accounts_sid_idx ON accounts(sid);
 
+CREATE TABLE account_tokens (
+    token       VARCHAR(40) NOT NULL PRIMARY KEY,
+    account_id  INTEGER NOT NULL REFERENCES accounts(id),
+    last_used   TIMESTAMP,
+    referer     VARCHAR(200)
+);
+
 CREATE TABLE contact_types (
     id      INTEGER NOT NULL PRIMARY KEY,
     name    VARCHAR(100) NOT NULL,
