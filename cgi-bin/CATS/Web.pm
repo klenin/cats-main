@@ -99,6 +99,7 @@ sub make_cookie {
 }
 
 sub user_agent { $r->headers_in->get('User-Agent') }
+sub referer { $r->headers_in->get('Referer') }
 
 sub log_info {
     my ($self, @rest) = @_;
