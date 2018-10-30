@@ -17,6 +17,12 @@ sub account_tokens_frame {
     my $lv = CATS::ListView->new(web => $p, name => 'account_tokens');
 
     #$is_root and $form->delete_or_saved($p);
+    if ($p->{delete}) {
+        $dbh->do(q~
+            DELETE FROM account_tokens WHERE token = ?~, undef,
+            $p->{delete}) and msg(1186, $p->{delete});
+        $dbh->commit;
+    }
 
     $lv->define_columns(url_f('account_tokens'), 0, 0, [
         { caption => res_str(619), order_by => 'token', width => '30%' },
