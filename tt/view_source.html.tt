@@ -16,7 +16,10 @@
 </tr>
 <tr>
   <td>
-    [% PROCESS includes/encoding_form.html.tti capt_enc = capt.encoding %]
+    <table><tr>
+      <td>[% PROCESS includes/encoding_form.html.tti capt_enc = capt.encoding %]</td>
+      <td>[[% href(si.href_print, capt.print) %]]</td>
+    </tr></table>
   </td>
 </tr>
 <tr>

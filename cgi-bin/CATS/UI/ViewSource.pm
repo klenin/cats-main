@@ -102,6 +102,7 @@ sub view_source_frame {
     source_links($p, $sources_info);
     sources_info_param([ $sources_info ]);
     @{$sources_info->{elements}} <= 1 or return msg(1155);
+    $sources_info->{href_print} = url_f('print_source', rid => $p->{rid});
 
     if ($sources_info->{file_name} =~ m/\.zip$/) {
         $sources_info->{src} = sprintf 'ZIP, %d bytes', length ($sources_info->{src});
@@ -169,6 +170,16 @@ sub download_source_frame {
             (content_type => 'text/plain', charset => 'UTF-8')),
         file_name => "$si->{req_id}.$ext",
         content => Encode::encode_utf8($si->{src}));
+}
+
+sub print_source_frame {
+    my ($p) = @_;
+    my $t = init_template($p, 'print_source.html.tt');
+    $p->{rid} or return;
+    my $sources_info = get_sources_info($p, request_id => $p->{rid}, get_source => 1, encode_source => 1);
+    $sources_info or return;
+    $sources_info->{syntax} = $p->{syntax} if $p->{syntax};
+    $t->param(sources_info => $sources_info);
 }
 
 1;

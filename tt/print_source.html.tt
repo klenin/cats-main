@@ -1,0 +1,55 @@
+[% js.jquery = 1; PROCESS includes/header.tti %]
+[% PROCESS includes/ace.tti %]
+<script src="js/lib/ace/ext-static_highlight.js"></script>
+
+<style>
+@page {
+  size: A4;
+  margin: 10mm;
+}
+
+div#header {
+  display: table-header-group;
+  break-inside: avoid;
+}
+
+div#header > span {
+  font-size: large;
+}
+
+div#source_text {
+  white-space: pre-wrap;
+  font-family: monospace;
+  display: table-row-group;
+}
+
+html, body {
+  width: 210mm;
+  height: 297mm;
+}
+
+</style>
+</head>
+
+<body>
+  <div id="header"><span>[% sources_info.team_name %]</span>
+    [% sources_info.submit_time; " ($sources_info.formatted_time_since_start)" IF sources_info.time_since_start %]
+    [[% sources_info.req_id %]]
+    <hr/>
+  </div>
+  <div style="" id="source_text">
+    [%- sources_info.src | html ~%]
+  </div>
+
+  <script>window.addEventListener('load', function () {
+    var highlight = ace.require('ace/ext/static_highlight');
+    var e = document.getElementById('source_text');
+    highlight(e, {
+      mode: 'ace/mode/[% sources_info.syntax.lower || 'text' %]',
+      theme: 'ace/theme/github',
+      showGutter: false,
+    }, function () {});
+  })</script>
+[% PROCESS includes/timing.tti %]
+</body>
+</html>

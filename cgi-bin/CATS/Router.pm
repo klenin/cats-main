@@ -247,6 +247,8 @@ my $main_routes = {
         rid => integer,
         src_enc => encoding_default('WINDOWS-1251'),
     ],
+    print_source => [ \&CATS::UI::ViewSource::print_source_frame,
+        rid => integer, syntax => ident, ],
     run_details => [ \&CATS::UI::RunDetails::run_details_frame,
         rid => required clist_of integer,
         comment_enc => encoding_default('UTF-8'),
