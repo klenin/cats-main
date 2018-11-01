@@ -139,6 +139,7 @@ sub _console_content {
         de_name => sprintf($de_select, 'DE.description'),
         run_method => 'P.run_method',
         code => '(SELECT CP.code FROM contest_problems CP WHERE CP.contest_id = C.id AND CP.problem_id = P.id)',
+        src_length => '(SELECT OCTET_LENGTH(S.src) FROM sources S WHERE S.req_id = R.id)',
         next => q~COALESCE((
             SELECT R1.id FROM reqs R1
             WHERE
