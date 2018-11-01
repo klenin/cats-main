@@ -18,7 +18,7 @@
   <td>
     <table><tr>
       <td>[% PROCESS includes/encoding_form.html.tti capt_enc = capt.encoding %]</td>
-      <td>[[% href(si.href_print, capt.print) %]]</td>
+      <td>[ [% href(si.href_print, capt.print) %] | [% href(si.href_download_source, capt.download) %] ]</td>
     </tr></table>
   </td>
 </tr>

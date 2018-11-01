@@ -182,7 +182,6 @@ $(document).ready(update_request_status);
   [% FOREACH si IN sources_info; IF si %]
     <td colspan="[% si.colspan %]">
       <a href="[% si.href_view_source %]" class="[% si.href_class_view_source %]">[% capt.source %]</a> |
-      <a href="[% si.href_download_source %]" class="[% si.href_class_download_source %]">[% capt.download %]</a> |
       <a href="[% si.href_run_details %]" class="[% si.href_class_run_details %]">[% capt.run_details %]</a>
       [% IF si.href_diff_runs %] | <a href="[% si.href_diff_runs %]" class="[% si.href_class_diff_runs %]">[% capt.diff_runs %]</a>[% END %]
       [% IF si.is_jury %] | <a href="[% si.href_run_log %]" class="[% si.href_class_run_log %]">[% capt.log %]</a>[% END %]
