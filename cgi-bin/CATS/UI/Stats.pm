@@ -145,7 +145,6 @@ sub similarity_score {
 sub _get_reqs {
     my ($p) = @_;
     my $cond = {
-        code => { '>=', 100 }, # Ignore non-code DEs.
         ($p->{all_contests} ? () : ('R.contest_id' => $cid)),
         ($p->{pid} ? (problem_id => $p->{pid}) : ()),
         ($p->{virtual} ? () : (is_virtual => 0)),
@@ -155,7 +154,7 @@ sub _get_reqs {
 
     # Manually join with accounts since it is faster.
     $dbh->selectall_arrayref(q~
-        SELECT R.id, R.account_id, R.problem_id, R.contest_id, R.state, R.failed_test, S.src
+        SELECT R.id, R.account_id, R.problem_id, R.contest_id, R.state, R.failed_test, S.src, D.code
         FROM reqs R
         INNER JOIN contest_accounts CA ON CA.contest_id = R.contest_id AND CA.account_id = R.account_id
         INNER JOIN sources S ON S.req_id = R.id
@@ -254,6 +253,7 @@ sub similarity_frame {
         for my $i (1, 2) {
             $r->{"$_$i"} = $users_idx->{$r->{"t$i"}}->{$_} for qw(name city site);
             $r->{"verdict$i"} = $CATS::Verdicts::state_to_name->{$r->{"req$i"}->{state}};
+            $r->{"de_code$i"} = $r->{"req$i"}->{code};
         }
     }
 
