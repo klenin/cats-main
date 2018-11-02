@@ -23,7 +23,7 @@ sub about_frame {
     my ($jactive, $jtotal) = CATS::Judge::get_active_count;
     my $contests = $dbh->selectall_arrayref(q~
         SELECT C.id, C.title, C.start_date, C.short_descr,
-            CURRENT_TIMESTAMP - C.start_date AS since_start
+            CAST(CURRENT_TIMESTAMP - C.start_date AS DOUBLE PRECISION) AS since_start
         FROM contests C
         WHERE C.is_hidden = 0 AND C.is_official = 1 AND C.finish_date > CURRENT_TIMESTAMP
         ORDER BY C.start_date~, { Slice => {} });
