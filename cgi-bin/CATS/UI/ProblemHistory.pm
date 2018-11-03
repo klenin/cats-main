@@ -209,13 +209,15 @@ sub problem_history_edit_save {
 
     my CATS::Problem::Storage $ps = CATS::Problem::Storage->new;
     Encode::from_to($content, $p->{enc} // 'UTF-8', $p->{src_enc});
-    my ($error, $latest_sha) = $ps->change_file(
+    my ($error, $latest_sha, $parsed_problem) = $ps->change_file(
         $pr->{contest_id}, $p->{pid}, $p->{file}, $content, $p->{message}, $p->{is_amend} || 0);
 
     unless ($error) {
         $dbh->commit;
         CATS::StaticPages::invalidate_problem_text(pid => $p->{pid});
-        return _problem_commitdiff($p, $pr->{title}, $latest_sha, $p->{src_enc}, $ps->encoded_import_log);
+        return _problem_commitdiff(
+            $p, $parsed_problem->{description}->{title},
+            $latest_sha, $p->{src_enc}, $ps->encoded_import_log);
     }
 
     $content = Encode::decode($p->{enc} // 'UTF-8', $p->{source});
