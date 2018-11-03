@@ -115,7 +115,7 @@ MathJax.Hub.Register.StartupHook('onLoad', function () {
   <table class="problem_header">
   [%-
     left_col = [
-      { n => c.author, t => p.author },
+      { n => p.author ? c.author : '', t => p.author },
       { n => p.interactive_io ? c.input_output : c.input_file,
         t => p.interactive_io ? c.interactive : (p.input_file == '*STDIN' ? c.standard_input : p.input_file) },
       { n => p.interactive_io ? '' : c.output_file,
