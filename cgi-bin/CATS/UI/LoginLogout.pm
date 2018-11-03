@@ -51,7 +51,8 @@ sub login_frame {
             SELECT account_id, referer FROM account_tokens WHERE token = ?~, undef,
             $p->{token}) or return msg(1040);
         $dbh->do(_u $sql->update('account_tokens',
-            { referer => $p->referer || undef, last_used => \'CURRENT_TIMESTAMP' }));
+            { referer => $p->referer || undef, last_used => \'CURRENT_TIMESTAMP' },
+            { token => $p->{token} }));
         $where->{id} = $account_id;
     }
     else {
