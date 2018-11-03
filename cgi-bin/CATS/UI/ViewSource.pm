@@ -102,7 +102,7 @@ sub view_source_frame {
     source_links($p, $sources_info);
     sources_info_param([ $sources_info ]);
     @{$sources_info->{elements}} <= 1 or return msg(1155);
-    $sources_info->{href_print} = url_f('print_source', rid => $p->{rid});
+    $sources_info->{href_print} = url_f('print_source', rid => $p->{rid}, notime => 1);
 
     if ($sources_info->{file_name} =~ m/\.zip$/) {
         $sources_info->{src} = sprintf 'ZIP, %d bytes', length ($sources_info->{src});

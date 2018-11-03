@@ -32,7 +32,7 @@ html, body {
 </head>
 
 <body>
-  <div id="header"><span>[% sources_info.team_name %]</span>
+  <div id="header"><span>[% sources_info.team_name; " | ${sources_info.ca_tag}" IF sources_info.ca_tag %]</span>
     [% sources_info.submit_time; " ($sources_info.formatted_time_since_start)" IF sources_info.time_since_start %]
     [[% sources_info.req_id %]]
     <hr/>
