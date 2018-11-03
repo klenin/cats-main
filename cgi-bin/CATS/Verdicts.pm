@@ -53,9 +53,14 @@ our $hidden_verdicts_others = {
 };
 
 # What non-jury see during official contest.
-our $hidden_verdicts_self = {
+my $hidden_verdicts_self = {
     UH => 'NP',
     P  => 'NP',
 };
+
+sub hide_verdict_self {
+    my ($jury, $true_verdict) = @_;
+    $jury ? $true_verdict : $hidden_verdicts_self->{$true_verdict} // $true_verdict;
+}
 
 1;

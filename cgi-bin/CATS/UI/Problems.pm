@@ -362,7 +362,7 @@ sub problems_frame {
         my ($last_request, $last_state) = split ' ', $c->{last_submission} || '';
         my $last_verdict = do {
             my $lv = $last_state ? $CATS::Verdicts::state_to_name->{$last_state} : '';
-            $is_jury ? $lv : $CATS::Verdicts::hidden_verdicts_self->{$lv} // $lv;
+            CATS::Verdicts::hide_verdict_self($is_jury, $lv);
         };
 
         my $can_download = CATS::Problem::Utils::can_download_package;

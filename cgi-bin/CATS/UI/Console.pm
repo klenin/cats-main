@@ -200,8 +200,7 @@ sub _console_content {
         my $true_short_state = $CATS::Verdicts::state_to_name->{$request_state} || '';
         my $short_state =
             $hide_verdict ? $CATS::Verdicts::hidden_verdicts_others->{$true_short_state} :
-            $is_jury ? $true_short_state :
-            $CATS::Verdicts::hidden_verdicts_self->{$true_short_state} // $true_short_state;
+            CATS::Verdicts::hide_verdict_self($is_jury, $true_short_state);
 
         my $show_details =
             $is_jury || $uid && $team_id && $uid == $team_id ||

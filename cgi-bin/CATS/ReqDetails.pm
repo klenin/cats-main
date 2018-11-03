@@ -238,9 +238,8 @@ sub get_sources_info {
         # We need to save original hash reference
         $r->{$_} = $additional_info{$_} for keys %additional_info;
 
-        my $ss = $CATS::Verdicts::state_to_name->{$r->{state}};
-        $r->{short_state} = $r->{is_jury} ? $ss :
-            $CATS::Verdicts::hidden_verdicts_self->{$ss} // $ss;
+        $r->{short_state} = CATS::Verdicts::hide_verdict_self(
+            $r->{is_jury}, $CATS::Verdicts::state_to_name->{$r->{state}});
 
         # Just hour and minute from testing start and finish timestamps.
         ($r->{"${_}_short"} = $r->{$_}) =~ s/^(.*)\s+(\d\d:\d\d)\s*$/$2/
