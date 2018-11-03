@@ -113,9 +113,9 @@ MathJax.Hub.Register.StartupHook('onLoad', function () {
     [%- END %]
   </ul></div>
   <table class="problem_header">
-  [% IF p.author %]<tr><td class="narrow nobr">[% c.author %]:</td><td colspan="4">[% p.author | html %]</td></tr>[% END %]
   [%-
     left_col = [
+      { n => c.author, t => p.author },
       { n => p.interactive_io ? c.input_output : c.input_file,
         t => p.interactive_io ? c.interactive : (p.input_file == '*STDIN' ? c.standard_input : p.input_file) },
       { n => p.interactive_io ? '' : c.output_file,
