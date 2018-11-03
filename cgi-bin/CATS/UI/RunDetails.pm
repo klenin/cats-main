@@ -405,7 +405,8 @@ sub get_last_verdicts_api {
         $state_sth->finish;
         defined $state or next;
         $result->{$_} = [
-            $CATS::Verdicts::state_to_name->{$state}, $failed_test,
+            CATS::Verdicts::hide_verdict_self($is_jury, $CATS::Verdicts::state_to_name->{$state}),
+            $failed_test,
             url_f('run_details', rid => $rid) ]
     }
     $p->print_json($result);
@@ -417,10 +418,10 @@ sub _get_request_state {
     my $result = $dbh->selectall_arrayref(_u $sql->select(
         'reqs', 'id, state, failed_test, account_id, contest_id',
         { id => $p->{req_ids} }));
-    return @$result if $is_root;
     my %contest_ids;
     for (@$result) {
-        if ($_->{account_id} == $uid || $_->{contest_id} == $cid && $is_jury) {
+        $_->{is_jury} = $is_root || $_->{contest_id} == $cid && $is_jury;
+        if ($_->{account_id} == $uid || $_->{is_jury}) {
             $_->{ok} = 1;
         }
         else {
@@ -431,14 +432,19 @@ sub _get_request_state {
         'contest_accounts', 'contest_id, is_jury',
         { contest_id => [ keys %contest_ids ], account_id => $uid });
     my $jury_in_contest = $dbh->selectall_hashref($stmt, 'contest_id', undef, @bind);
-    grep $_->{ok} || $jury_in_contest->{$_->{contest_id}}->{is_jury}, @$result;
+    for (@$result) {
+        $_->{is_jury} ||= $jury_in_contest->{$_->{contest_id}}->{is_jury};
+        $_->{verdict} = CATS::Verdicts::hide_verdict_self(
+            $_->{is_jury}, $CATS::Verdicts::state_to_name->{$_->{state}});
+    }
+    grep $_->{ok} || $_->{is_jury}, @$result;
 }
 
 sub get_request_state_api {
     my ($p) = @_;
     $p->print_json([ map {
         id => $_->{id},
-        verdict => $CATS::Verdicts::state_to_name->{$_->{state}},
+        verdict => $_->{verdict},
         failed_test => $_->{failed_test},
         np => $_->{state} < $cats::request_processed,
     }, _get_request_state($p) ]);

@@ -60,7 +60,7 @@ my $hidden_verdicts_self = {
 
 sub hide_verdict_self {
     my ($jury, $true_verdict) = @_;
-    $jury ? $true_verdict : $hidden_verdicts_self->{$true_verdict} // $true_verdict;
+    $jury ? $true_verdict : ($hidden_verdicts_self->{$true_verdict} // $true_verdict);
 }
 
 1;
