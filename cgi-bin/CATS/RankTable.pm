@@ -21,7 +21,7 @@ use fields qw(
     clist contest_list hide_ooc hide_virtual show_points frozen
     title has_practice not_started filter sites use_cache
     rank problems problems_idx show_all_results show_prizes req_selection has_competitive
-    show_regions show_flags
+    show_regions show_flags sort
 );
 
 sub new {
@@ -356,6 +356,7 @@ sub parse_params {
     $self->{show_prizes} = $p->{show_prizes};
     $self->{show_regions} = $p->{show_regions};
     $self->{show_flags} = $p->{show_flags} if defined $p->{show_flags};
+    $self->{sort} = $p->{sort} // '';
 }
 
 sub prepare_ranks {
@@ -375,11 +376,15 @@ sub prepare_ranks {
         @rank = grep $sites{$_->{site_id} // 0}, @rank;
     }
 
-    my $sort_criteria = $self->{show_points} ?
+    my $sort_criteria = $self->{sort} eq 'name' ?
+        sub {
+            $a->{team_name} cmp $b->{team_name}
+        } :
+    $self->{show_points} ?
         sub {
             $b->{total_points} <=> $a->{total_points} ||
             $b->{total_runs} <=> $a->{total_runs}
-        }:
+        } :
         sub {
             $b->{total_solved} <=> $a->{total_solved} ||
             $a->{total_time} <=> $b->{total_time} ||

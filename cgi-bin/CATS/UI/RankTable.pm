@@ -54,6 +54,7 @@ sub rank_table_frame {
         clist => $rt->{contest_list},
         filter => Encode::decode_utf8($p->{filter}),
         sites => join(',', map $_->{id}, @$sites) || undef,
+        sort => $p->{sort},
     );
     $t->param(href_rank_table_content => url_f('rank_table_content', @params));
     my $submenu =
