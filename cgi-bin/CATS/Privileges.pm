@@ -14,6 +14,7 @@ my %flags = (
     moderate_messages => 4,
     delete_problems => 8,
     edit_sites => 16,
+    manage_judges => 32,
 );
 
 sub get_root_account_ids {

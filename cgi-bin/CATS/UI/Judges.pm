@@ -6,7 +6,7 @@ use warnings;
 use CATS::DB;
 use CATS::DevEnv;
 use CATS::Form;
-use CATS::Globals qw($is_jury $is_root $t);
+use CATS::Globals qw($is_jury $t $user);
 use CATS::IP;
 use CATS::Job;
 use CATS::Judge;
@@ -68,7 +68,7 @@ our $form = CATS::Form->new(
 sub judges_edit_frame {
     my ($p) = @_;
     init_template($p, 'judges_edit.html.tt');
-    $is_root or return;
+    $user->privs->{manage_judges} or return;
     $form->edit_frame($p, redirect => [ 'judges' ]);
 }
 
@@ -100,7 +100,7 @@ sub judges_frame {
     my ($p) = @_;
     $is_jury or return;
 
-    if ($is_root) {
+    if ($user->privs->{manage_judges}) {
         if ($p->{ping}) {
             CATS::Judge::ping($p->{ping});
             return $p->redirect(url_f 'judges');
@@ -112,12 +112,14 @@ sub judges_frame {
     init_template($p, 'judges.html.tt');
     my $lv = CATS::ListView->new(web => $p, name => 'judges');
 
-    $is_root and $form->delete_or_saved($p);
+    $user->privs->{manage_judges} and $form->delete_or_saved($p);
 
     $lv->define_columns(url_f('judges'), 0, 0, [
         { caption => res_str(625), order_by => 'nick', width => '15%' },
-        ($is_root ? ({ caption => res_str(616), order_by =>  'login', width => '25%', col => 'Lg' }) : ()),
-        ($is_root ? ({ caption => res_str(649), order_by => 'processing_count', width => '10%', col => 'Rq' }) : ()),
+        ($user->privs->{manage_judges} ? (
+            { caption => res_str(616), order_by =>  'login', width => '25%', col => 'Lg' },
+            { caption => res_str(649), order_by => 'processing_count', width => '10%', col => 'Rq' },
+        ) : ()),
         { caption => res_str(626), order_by => 'is_alive', width => '10%', col => 'Re' },
         { caption => res_str(633), order_by => 'alive_date', width => '10%', col => 'Ad' },
         { caption => res_str(622), order_by => 'pin_mode', width => '10%' },
@@ -128,7 +130,8 @@ sub judges_frame {
     $lv->define_enums({ pin_mode => { map { $pin_mode_values[$_] => $_ } 0 .. $#pin_mode_values } });
 
     my $req_counts =
-        !$is_root || !$lv->visible_cols->{Rq} ? ', NULL AS processing_count, NULL AS processed_count' :
+        !$user->privs->{manage_judges} || !$lv->visible_cols->{Rq} ?
+        ', NULL AS processing_count, NULL AS processed_count' :
         qq~,
         (SELECT COUNT(*) FROM reqs R WHERE R.judge_id = J.id AND R.state <= $cats::st_testing) AS processing_count,
         (SELECT COUNT(*) FROM reqs R WHERE R.judge_id = J.id) AS processed_count~;
@@ -163,7 +166,7 @@ sub judges_frame {
     $lv->attach(url_f('judges'), $fetch_record, $c);
 
     _submenu;
-    $t->param(editable => $is_root);
+    $t->param(editable => $user->privs->{manage_judges});
 
     my ($not_processed) = $dbh->selectrow_array(q~
         SELECT COUNT(*) FROM reqs WHERE state = ? AND judge_id IS NULL~, undef,
