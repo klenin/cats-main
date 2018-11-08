@@ -4,6 +4,7 @@ $(document).ready(function () {
   $('textarea[data-editor]').each(function() {
     var textarea = $(this);
     var mode = textarea.data('editor');
+    textarea.width(Math.min(textarea.width(), document.body.clientWidth - 8));
     var editorContainer = $('<div>', {
       id: textarea.data('id'),
       width: textarea.width(),
