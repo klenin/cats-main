@@ -94,7 +94,7 @@ sub get_cookie {
 }
 
 sub make_cookie {
-    my ($self, @rest);
+    my ($self, @rest) = @_;
     Apache2::Cookie->new($r, @rest);
 }
 
