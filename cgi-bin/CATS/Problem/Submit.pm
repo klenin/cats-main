@@ -180,6 +180,10 @@ sub problems_submit_std_solution {
     my $de_list = CATS::DevEnv->new(CATS::JudgeDB::get_DEs({ active_only => 1 }));
 
     while (my ($name, $src, $did, $fname) = $c->fetchrow_array) {
+        if (!$de_list->by_id($did)) {
+            msg(1013);
+            next;
+        }
         my $rid = CATS::Request::insert($pid, $cid, $uid,
             [ $de_list->bitmap_by_ids($did) ], { state => _determine_state($p), tag => $name });
 
