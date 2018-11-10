@@ -114,13 +114,13 @@ sub attach {
             my @unknown_searches = grep $_ && !exists $row{$_}, sort keys %mask;
             delete $mask{$_} for @unknown_searches;
             msg(1143, join ', ', @unknown_searches) if @unknown_searches;
-            $row_keys = [ sort grep !$self->qb->{db_searches}->{$_} && !/^href_/, keys %row ];
+            $row_keys = [ sort grep !/^href_/, keys %row ];
         }
         msg(1166), last if ++$fetch_count > CATS::Globals::max_fetch_row_count;
         last if $page_count > $$page + $visible_pages;
         for my $key (keys %mask) {
             defined first { ($_ // '') =~ $mask{$key} }
-                ($key ? ($row{$key}) : values %row)
+                @row{$key ? $key : @$row_keys}
                 or next ROWS;
         }
         ++$row_count;
@@ -165,7 +165,7 @@ sub attach {
     if ($is_jury) {
         my @s = (
             map([ $_, 0 ], sort keys %{$self->qb->{db_searches}}),
-            map([ $_, 1 ], @$row_keys),
+            map([ $_, 1 ], grep !$self->qb->{db_searches}->{$_}, @$row_keys),
             map([ $_, 2 ], sort keys %{$self->qb->{subqueries}}),
         );
         my $col_count = 4;
