@@ -3,6 +3,8 @@ package CATS::UI::LoginLogout;
 use strict;
 use warnings;
 
+use Digest::SHA;
+
 use CATS::Constants;
 use CATS::DB;
 use CATS::Globals qw($cid $contest $is_jury $is_root $sid $t $uid);
@@ -46,7 +48,7 @@ sub login_frame {
     msg(1004) if $p->{logout};
 
     my $where = {};
-    if ($p->{token}) {
+    if ($p->{token} && !$p->{salt}) {
         my ($account_id, $referer) = $dbh->selectrow_array(q~
             SELECT account_id, referer FROM account_tokens WHERE token = ?~, undef,
             $p->{token}) or return msg(1040);
@@ -64,7 +66,24 @@ sub login_frame {
     my ($aid, $hash, $locked, $restrict_ips, $last_ip, $last_sid) = $dbh->selectrow_array(
         _u $sql->select('accounts', [qw(id passwd locked restrict_ips last_ip sid)], $where));
 
-    $aid && ($p->{token} || $check_password->($p->{passwd} // '', $hash)) or return msg(1040);
+    $aid or return msg(1040);
+
+    if ($p->{token} && $p->{salt}) {
+        my $tokens = $dbh->selectall_arrayref(q~
+            SELECT token, referer FROM account_tokens WHERE account_id = ?~, { Slice => {} },
+            $aid) or return msg(1040);
+        my $found;
+        for (@$tokens) {
+            if (Digest::SHA::hmac_sha1_hex($_->{token}, $p->{salt}) eq $p->{token}) {
+                $found = 1;
+                last;
+            }
+        }
+        $found or return msg(1040);
+    }
+    elsif (!$p->{token}) {
+        $check_password->($p->{passwd} // '', $hash) or return msg(1040);
+    }
     !$locked or return msg(1041);
 
     my $current_ip = CATS::IP::get_ip();

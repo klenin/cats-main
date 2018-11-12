@@ -27,7 +27,7 @@ my %user_params = (
 
 my $main_routes = {
     login => [ \&CATS::UI::LoginLogout::login_frame,
-        logout => bool, login => str, passwd => str, redir => str, cid => integer, token => str ],
+        logout => bool, login => str, passwd => str, redir => str, cid => integer, token => str, salt => integer ],
     logout => \&CATS::UI::LoginLogout::logout_frame,
     registration => [ \&CATS::UI::UserDetails::registration_frame, %user_params, register => bool, ],
     profile => [ \&CATS::UI::UserDetails::profile_frame, %user_params,
