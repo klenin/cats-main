@@ -417,7 +417,7 @@ sub contests_frame {
     $settings->{contests}->{filter} = my $filter =
         $p->{filter} || $settings->{contests}->{filter} || 'unfinished';
 
-    $p->{filter} = contests_submenu_filter;
+    $p->{filter_sql} = contests_submenu_filter;
     $lv->attach(url_f('contests'),
         defined $uid ?
             CATS::Contest::Utils::authenticated_contests_view($p) :

@@ -3,6 +3,7 @@ package CATS::Contest::Utils;
 use strict;
 use warnings;
 
+use Encode;
 use List::Util qw(reduce);
 
 use CATS::Config;
@@ -77,8 +78,8 @@ sub _contest_searches {
     $p->{listview}->define_enums({ rules => { acm => 0, school => 1 } });
 }
 
-sub common_contests_view {
-    my ($c) = @_;
+sub _common_contests_view {
+    my ($c, $p) = @_;
     my $start_date_iso = date_to_iso($c->{start_date});
     return (
         %$c,
@@ -92,7 +93,10 @@ sub common_contests_view {
         selected => $c->{id} == $cid,
         is_official => $c->{is_official},
         show_points => $c->{rules},
-        href_contest => url_function('contests', sid => $sid, set_contest => 1, cid => $c->{id}),
+        href_contest => url_function('contests',
+            sid => $sid, set_contest => 1, cid => $c->{id},
+            map { $_ => ($p->{$_} ? Encode::decode_utf8($p->{$_}) : undef) }
+            qw(filter search page)),
         href_params => url_f('contest_params', id => $c->{id}),
         href_problems => url_function('problems', sid => $sid, cid => $c->{id}),
         href_problems_text => CATS::StaticPages::url_static('problem_text', cid => $c->{id}),
@@ -160,7 +164,7 @@ sub authenticated_contests_view {
         LEFT JOIN contest_accounts CA ON CA.contest_id = C.id AND CA.account_id = ?
         WHERE
             (CA.account_id IS NOT NULL OR COALESCE(C.is_hidden, 0) = 0) ~ .
-            ($p->{filter} || '') .
+            ($p->{filter_sql} || '') .
             $p->{listview}->maybe_where_cond .
             $p->{listview}->order_by);
     $sth->execute($uid, $p->{listview}->where_params);
@@ -174,7 +178,7 @@ sub authenticated_contests_view {
     my $fetch_contest = sub {
         my $c = $_[0]->fetchrow_hashref or return;
         return (
-            common_contests_view($c),
+            _common_contests_view($c),
             is_hidden => $c->{is_hidden},
             authorized => 1,
             editable => $c->{is_jury},
@@ -194,13 +198,13 @@ sub anonymous_contests_view {
     _contest_searches($p);
     my $sth = $dbh->prepare(qq~
         SELECT $cf FROM contests C WHERE COALESCE(C.is_hidden, 0) = 0 ~ .
-       ($p->{filter} || '') . $p->{listview}->order_by
+       ($p->{filter_sql} || '') . $p->{listview}->order_by
     );
     $sth->execute;
 
     my $fetch_contest = sub {
         my $c = $_[0]->fetchrow_hashref or return;
-        common_contests_view($c);
+        _common_contests_view($c, $p);
     };
     ($fetch_contest, $sth);
 }
