@@ -129,4 +129,28 @@ sub logout_frame {
     }
 }
 
+sub _login_token {
+    my ($p) = @_;
+    $p->{login} && $p->{apikey} && $p->{cid} or return;
+    $p->{apikey} eq 'zzz' or return;
+    my ($account_id, $is_jury_in_contest) = $dbh->selectrow_array(q~
+        SELECT CA.account_id, CA.is_jury FROM contest_accounts CA
+        INNER JOIN accounts A ON A.id = CA.account_id
+        WHERE A.login = ? AND CA.contest_id = ?~, undef,
+        $p->{login}, $p->{cid}) or return;
+    $is_jury_in_contest and return;
+    my $token = CATS::User::make_sid;
+    $dbh->do(_u $sql->insert(
+        'account_tokens', { token => $token, account_id => $account_id }))
+        or return;
+    $dbh->commit;
+    url_function('login', cid => $p->{cid}, token => $token, redir => $p->{redir});
+}
+
+sub login_token_api {
+    my ($p) = @_;
+    my $u = _login_token($p);
+    $p->print_json($u ? { url => $u } : { error => 'oops' });
+}
+
 1;
