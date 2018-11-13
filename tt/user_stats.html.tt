@@ -32,9 +32,10 @@
 <table class="internal_borders padded">
 [% FOREACH t IN tokens -%]
 <tr>
-<td>[% t.token %]</td>
-<td>[% t.last_used %]</td>
-<td>[% t.referer %]</td>
+<td>[% t.token | html %]</td>
+<td>[% t.usages_left | html %]</td>
+<td>[% t.last_used | html %]</td>
+<td>[% t.referer | html %]</td>
 </tr>
 [%- END %]
 </table>

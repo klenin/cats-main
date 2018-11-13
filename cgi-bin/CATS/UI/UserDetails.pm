@@ -104,7 +104,7 @@ sub user_stats_frame {
     }
 
     my $tokens = $is_root && $dbh->selectall_arrayref(q~
-        SELECT token, last_used, referer FROM account_tokens
+        SELECT token, last_used, usages_left, referer FROM account_tokens
         WHERE account_id = ?~, { Slice => {} },
         $p->{uid});
     $t->param(

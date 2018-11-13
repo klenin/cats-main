@@ -24,6 +24,7 @@ function delete_account_token(href, name) {
   [% at.token | html %]
 </td>
 <td>[% href(at.href_user, at.team_name) %]</td>
+[% IF visible_cols.Ul %]<td>[% at.usages_left | html %]</td>[% END %]
 [% IF visible_cols.Lu %]<td>[% at.last_used | html %]</td>[% END %]
 [% IF visible_cols.Rf %]<td>[% at.referer | html %]</td>[% END %]
 </tr>

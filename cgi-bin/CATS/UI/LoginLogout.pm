@@ -41,6 +41,23 @@ sub _ensure_good_sid {
     die 'Can not generate sid';
 }
 
+sub _token_no_salt {
+    my ($p) = @_;
+    my ($account_id, $usages_left) = $dbh->selectrow_array(q~
+        SELECT account_id, usages_left FROM account_tokens WHERE token = ?~, undef,
+        $p->{token}) or return msg(1040);
+    my $token_cond = { token => $p->{token} };
+    my @s = ($usages_left // 0) == 1 ?
+        $sql->delete('account_tokens', $token_cond) :
+        $sql->update('account_tokens', {
+            referer => $p->referer || undef,
+            last_used => \'CURRENT_TIMESTAMP',
+            usages_left => $usages_left && $usages_left - 1 },
+            $token_cond);
+    $dbh->do(_u @s) or return;
+    $account_id;
+}
+
 sub login_frame {
     my ($p) = @_;
     init_template($p, 'login');
@@ -49,13 +66,7 @@ sub login_frame {
 
     my $where = {};
     if ($p->{token} && !$p->{salt}) {
-        my ($account_id, $referer) = $dbh->selectrow_array(q~
-            SELECT account_id, referer FROM account_tokens WHERE token = ?~, undef,
-            $p->{token}) or return msg(1040);
-        $dbh->do(_u $sql->update('account_tokens',
-            { referer => $p->referer || undef, last_used => \'CURRENT_TIMESTAMP' },
-            { token => $p->{token} }));
-        $where->{id} = $account_id;
+        $where->{id} = _token_no_salt($p) or return;
     }
     else {
         $p->{login} or return $t->param(message => 'No login');
@@ -140,8 +151,8 @@ sub _login_token {
         $p->{login}, $p->{cid}) or return;
     $is_jury_in_contest and return;
     my $token = CATS::User::make_sid;
-    $dbh->do(_u $sql->insert(
-        'account_tokens', { token => $token, account_id => $account_id }))
+    $dbh->do(_u $sql->insert('account_tokens',
+        { token => $token, account_id => $account_id, usages_left => 1 }))
         or return;
     $dbh->commit;
     url_function('login', cid => $p->{cid}, token => $token, redir => $p->{redir});

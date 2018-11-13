@@ -27,6 +27,7 @@ sub account_tokens_frame {
     $lv->define_columns(url_f('account_tokens'), 0, 0, [
         { caption => res_str(619), order_by => 'token', width => '30%' },
         { caption => res_str(608), order_by => 'account_id', width => '30%' },
+        { caption => res_str(683), order_by => 'usages_left', width => '10%', col => 'Ul' },
         { caption => res_str(632), order_by => 'last_used', width => '10%', col => 'Lu' },
         { caption => res_str(668), order_by => 'referer', width => '30%', col => 'Rf' },
     ]);
@@ -34,7 +35,7 @@ sub account_tokens_frame {
     #$lv->define_db_searches($form->{sql_fields});
 
     my ($q, @bind) = $sql->select('account_tokens AcT INNER JOIN accounts A ON AcT.account_id = A.id',
-        [ qw(AcT.token AcT.account_id AcT.last_used AcT.referer A.team_name) ],
+        [ qw(AcT.token AcT.account_id AcT.usages_left AcT.last_used AcT.referer A.team_name) ],
         $lv->where);
     my $c = $dbh->prepare("$q " . $lv->order_by);
     $c->execute(@bind);
