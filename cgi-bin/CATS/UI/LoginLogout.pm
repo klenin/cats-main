@@ -142,6 +142,10 @@ sub logout_frame {
 
 sub _login_token {
     my ($p) = @_;
+    # ONTI compatibility.
+    $p->{apikey} ||= $p->{token};
+    $p->{login} ||= $p->{team_id};
+
     $p->{login} && $p->{apikey} && $p->{cid} or return;
     $p->{apikey} eq 'zzz' or return;
     my ($account_id, $is_jury_in_contest) = $dbh->selectrow_array(q~
