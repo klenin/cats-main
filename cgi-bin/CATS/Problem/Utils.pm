@@ -138,6 +138,14 @@ sub define_kw_subquery {
             m => 1016,
             t => qq~SELECT code, $name_field FROM keywords WHERE code = ?~,
         },
+        has_kw_code_prefix => {
+            sq => q~(EXISTS (
+                SELECT 1 FROM problem_keywords PK
+                INNER JOIN keywords K ON K.id = PK.keyword_id
+                WHERE PK.problem_id = P.id AND K.code STARTS WITH ?))~,
+            m => 1016,
+            t => qq~SELECT code, $name_field FROM keywords WHERE code = ?~,
+        },
     });
 }
 
