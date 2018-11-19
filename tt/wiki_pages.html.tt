@@ -23,7 +23,9 @@ function delete_wiki_page(href, name) {
   [%~ END %]
   [% href(w.href_text, w.name) %]
 </td>
-[% IF visible_cols.Pb %]<td>[% IF w.is_public %]<a href="#" class="icon checked"></a>[% END %]</td>[% END %]
+[% IF visible_cols.Pb %]<td>
+  [%- IF w.is_public %]<a href="[% w.href_public %]" class="icon checked"></a>[% END -%]
+</td>[% END %]
 [% IF visible_cols.Ls %]<td>[% w.langs | html %]</td>[% END %]
 </tr>
 [% END %]

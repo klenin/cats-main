@@ -15,6 +15,7 @@ use CATS::Output qw(init_template url_f);
 use CATS::References;
 use CATS::Settings;
 use CATS::TeX::Lite;
+use CATS::Utils;
 
 my $markdown;
 BEGIN {
@@ -89,6 +90,7 @@ sub wiki_pages_frame {
             ($is_root ? (
                 href_text => url_f('wiki', name => $row->{name}),
                 href_edit => url_f('wiki_pages_edit', id => $row->{id}),
+                href_public => url_function('wiki', name => $row->{name}),
                 href_delete => url_f('wiki_pages', 'delete' => $row->{id})) : ()),
         );
     };
@@ -138,6 +140,7 @@ our $text_form = CATS::Form->new(
             title_suffix => $pn,
             problem_title => $pn,
             href_view => url_f('wiki', name => $pn),
+            href_public_view => $wt->{is_publc}->{value} && url_function('wiki', name => $pn),
             href_page => $is_root && url_f('wiki_pages_edit', id => $wt->{wiki_id}->{value}),
             submenu => [ CATS::References::menu('wiki_pages') ],
         );
@@ -207,10 +210,14 @@ sub wiki_frame {
         page => $page,
         title_suffix => $page->{title},
         submenu => [
-            (_can_edit($id) ? {
+            (_can_edit($id) ? ({
                 href => url_f('wiki_edit',
                     wiki_id => $id, id => $chosen_lang->{id}, wiki_lang => $chosen_lang->{lang}),
-                item => res_str(509, $p->{name}) } : ()),
+                item => res_str(509, $p->{name}) },
+                ($is_public ?
+                    { href => url_function('wiki', name => $p->{name}), item => res_str(400) } :
+                    ()),
+            ) : ()),
         ],
     );
 }
