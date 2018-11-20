@@ -155,6 +155,7 @@ sub authenticated_contests_view {
         });
     }
 
+    my $c_hidden = $is_root ? '1=1' : q~(CA.account_id IS NOT NULL OR C.is_hidden = 0)~;
     my $sth = $dbh->prepare(qq~
         SELECT
             $cf, CA.is_virtual, CA.is_jury, CA.id AS registered, C.is_hidden,
@@ -163,7 +164,7 @@ sub authenticated_contests_view {
         FROM contests C
         LEFT JOIN contest_accounts CA ON CA.contest_id = C.id AND CA.account_id = ?
         WHERE
-            (CA.account_id IS NOT NULL OR COALESCE(C.is_hidden, 0) = 0) ~ .
+            $c_hidden ~ .
             ($p->{filter_sql} || '') .
             $p->{listview}->maybe_where_cond .
             $p->{listview}->order_by);
@@ -197,7 +198,7 @@ sub anonymous_contests_view {
     my $cf = contest_fields_str;
     _contest_searches($p);
     my $sth = $dbh->prepare(qq~
-        SELECT $cf FROM contests C WHERE COALESCE(C.is_hidden, 0) = 0 ~ .
+        SELECT $cf FROM contests C WHERE C.is_hidden = 0 ~ .
        ($p->{filter_sql} || '') . $p->{listview}->order_by
     );
     $sth->execute;
