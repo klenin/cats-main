@@ -1,5 +1,7 @@
 $(document).ready(function () {
   if (!ace) return;
+  // Ace is broken on mobile browsers.
+  if (/Mobi|Android/i.test(navigator.userAgent)) return;
 
   $('textarea[data-editor]').each(function() {
     var textarea = $(this);
