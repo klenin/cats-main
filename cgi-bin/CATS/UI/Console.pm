@@ -7,6 +7,7 @@ use Encode qw(decode_utf8);
 use List::Util;
 
 use CATS::Console;
+use CATS::Constants;
 use CATS::Contest::Participate qw(get_registered_contestant);
 use CATS::Countries;
 use CATS::DB;
@@ -138,7 +139,9 @@ sub _console_content {
         de_code => sprintf($de_select, 'DE.code'),
         de_name => sprintf($de_select, 'DE.description'),
         run_method => 'P.run_method',
-        code => '(SELECT CP.code FROM contest_problems CP WHERE CP.contest_id = C.id AND CP.problem_id = P.id)',
+        code => q~(
+            SELECT CP.code FROM contest_problems CP
+            WHERE CP.contest_id = C.id AND CP.problem_id = P.id)~,
         src_length => '(SELECT OCTET_LENGTH(S.src) FROM sources S WHERE S.req_id = R.id)',
         next => q~COALESCE((
             SELECT R1.id FROM reqs R1
@@ -156,6 +159,8 @@ sub _console_content {
         submit_month => 'EXTRACT(MONTH FROM R.submit_time)',
         submit_day => 'EXTRACT(DAY FROM R.submit_time)',
         jobs => '(SELECT COUNT(*) FROM jobs J WHERE J.req_id = R.id)',
+        jobs_failed => qq~(
+            SELECT COUNT(*) FROM jobs J WHERE J.req_id = R.id AND J.state = $cats::job_st_failed)~,
         jobs_queue => q~
             (SELECT COUNT(*)
             FROM jobs J INNER JOIN jobs_queue JQ ON J.id = JQ.id
