@@ -393,7 +393,7 @@ sub run_log_frame {
 
 sub get_last_verdicts_api {
     my ($p) = @_;
-    $uid && @{$p->{problem_ids}} or return $p->print_json->({});
+    $uid && @{$p->{problem_ids}} or return $p->print_json({});
     my $state_sth = $dbh->prepare(q~
         SELECT state, failed_test, id FROM reqs
         WHERE contest_id = ? AND account_id = ? AND problem_id = ?
