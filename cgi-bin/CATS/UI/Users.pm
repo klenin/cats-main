@@ -46,17 +46,23 @@ sub users_import_frame {
     $t->param(href_action => url_f('users_import'), title_suffix => res_str(564), users_submenu);
     $p->{go} or return;
     my @report;
+    my $count = 0;
     for my $line (split "\r\n", Encode::decode_utf8($p->{user_list})) {
         my $u = CATS::User->new;
         @$u{qw(team_name login password1 city)} = split "\t", $line;
-        my $r = eval {
+        my $r = $dbh->selectrow_array(q~
+            SELECT 1 FROM accounts WHERE login = ?~, undef,
+            $u->{login}) ? 'exists' :
+        eval {
             $u->{password1} = CATS::User::hash_password(Encode::encode_utf8($u->{password1}));
-            $u->insert($contest->{id}, is_ooc => 0, commit => 0); 'ok'
+            $u->insert($contest->{id}, is_ooc => 0, commit => 0);
+            $count++;
+            'ok';
         } || $@;
         push @report, "$u->{team_name} -- $r";
     }
     $p->{do_import} ? $dbh->commit : $dbh->rollback;
-    push @report, ($p->{do_import} ? 'Import' : 'Test') . ' complete';
+    push @report, ($p->{do_import} ? 'Import' : 'Test') . " complete: $count";
     $t->param(report => join "\n", @report);
 }
 
