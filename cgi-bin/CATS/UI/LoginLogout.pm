@@ -150,23 +150,23 @@ sub _login_token {
     $p->{apikey} ||= $p->{token};
     $p->{login} ||= $p->{team_id};
 
-    $p->{login} && $p->{apikey} && $p->{cid} or return;
-    $p->{apikey} eq $apikey or return;
+    $p->{login} && $p->{apikey} && $p->{cid} or return [ 0, 'no param' ];
+    $p->{apikey} eq $apikey or return [ 0, 'bad api key' ];
     my ($account_id, $is_jury_in_contest) = $dbh->selectrow_array(q~
         SELECT CA.account_id, CA.is_jury FROM contest_accounts CA
         INNER JOIN accounts A ON A.id = CA.account_id
         WHERE A.login = ? AND CA.contest_id = ?~, undef,
-        $login_prefix . $p->{login}, $p->{cid}) or return;
-    $is_jury_in_contest and return;
+        $login_prefix . $p->{login}, $p->{cid}) or return [ 0, 'bad login' ];
+    $is_jury_in_contest and return [ 0, 'bad user' ];
     my $token = CATS::User::make_token($account_id);
-    $CATS::Config::absolute_url .
-        url_function('login', cid => $p->{cid}, token => $token, redir => $p->{redir});
+    [ 1, $CATS::Config::absolute_url .
+        url_function('login', cid => $p->{cid}, token => $token, redir => $p->{redir}) ];
 }
 
 sub login_token_api {
     my ($p) = @_;
-    my $u = _login_token($p);
-    $p->print_json($u ? { url => $u } : { error => 'oops' });
+    my ($ok, $res) = @{_login_token($p)};
+    $p->print_json($ok ? { url => $res } : { error => $res });
 }
 
 1;
