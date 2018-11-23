@@ -155,11 +155,7 @@ sub _login_token {
         WHERE A.login = ? AND CA.contest_id = ?~, undef,
         $p->{login}, $p->{cid}) or return;
     $is_jury_in_contest and return;
-    my $token = CATS::User::make_sid;
-    $dbh->do(_u $sql->insert('account_tokens',
-        { token => $token, account_id => $account_id, usages_left => 1 }))
-        or return;
-    $dbh->commit;
+    my $token = CATS::User::make_token($account_id);
     $CATS::Config::absolute_url .
         url_function('login', cid => $p->{cid}, token => $token, redir => $p->{redir});
 }

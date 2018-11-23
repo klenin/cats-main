@@ -323,6 +323,16 @@ sub make_sid {
     join '', map { $ch[rand @ch] } 1..30;
 }
 
+sub make_token {
+    my ($user_id) = @_;
+    my $token = CATS::User::make_sid;
+    $dbh->do(_u $sql->insert('account_tokens',
+        { token => $token, account_id => $user_id, usages_left => 1 }))
+        or return;
+    $dbh->commit;
+    $token;
+}
+
 sub _prepare_msg_inserts {
     return map $dbh->prepare($_), (
     q~
