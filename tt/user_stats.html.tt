@@ -29,10 +29,13 @@
 
 [% IF tokens %]
 <h3>[% capt.tokens %]</h3>
+<form method="post" enctype="multipart/form-data" action="[% href_make_token %]">
+  <p><button type="submit" name="make_token" value="1" class="button">[% capt.make_token %]</button></p>
+</form>
 <table class="internal_borders padded">
 [% FOREACH t IN tokens -%]
 <tr>
-<td>[% t.token | html %]</td>
+<td>[% href(t.href_login, t.token) %]</td>
 <td>[% t.usages_left | html %]</td>
 <td>[% t.last_used | html %]</td>
 <td>[% t.referer | html %]</td>

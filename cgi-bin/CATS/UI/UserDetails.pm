@@ -50,6 +50,23 @@ sub users_edit_frame {
         href_impersonate => url_f('impersonate', uid => $p->{uid}));
 }
 
+sub _tokens {
+    my ($p) = @_;
+    $is_root or return;
+    if ($p->{make_token}) {
+        CATS::User::make_token($p->{uid});
+    }
+    my $tokens = $dbh->selectall_arrayref(q~
+        SELECT token, last_used, usages_left, referer FROM account_tokens
+        WHERE account_id = ?~, { Slice => {} },
+        $p->{uid});
+    $_->{href_login} = url_function('login', token => $_->{token}) for @$tokens;
+    $t->param(
+        href_make_token => url_f('user_stats', uid => $p->{uid}),
+        tokens => $tokens,
+    );
+}
+
 sub user_stats_frame {
     my ($p) = @_;
     init_template($p, 'user_stats.html.tt');
@@ -103,13 +120,10 @@ sub user_stats_frame {
             show_results => 1, rows => 30, search => "contest_id=$_->{id}");
     }
 
-    my $tokens = $is_root && $dbh->selectall_arrayref(q~
-        SELECT token, last_used, usages_left, referer FROM account_tokens
-        WHERE account_id = ?~, { Slice => {} },
-        $p->{uid});
+    _tokens($p);
     $t->param(
         CATS::User::submenu('user_stats', $p->{uid}, $u->{site_id}),
-        %$u, contests => $contests, tokens => $tokens,
+        %$u, contests => $contests,
         CATS::IP::linkify_ip($u->{last_ip}),
         ($is_jury ? (href_edit => url_f('users_edit', uid => $p->{uid})) : ()),
         ($user->privs->{edit_sites} ? (

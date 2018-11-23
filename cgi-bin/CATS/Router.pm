@@ -179,7 +179,7 @@ my $main_routes = {
     ],
     users_new => \&CATS::UI::UserDetails::users_new_frame,
     users_edit => [ \&CATS::UI::UserDetails::users_edit_frame, uid => integer, ],
-    user_stats => [ \&CATS::UI::UserDetails::user_stats_frame, uid => integer, ],
+    user_stats => [ \&CATS::UI::UserDetails::user_stats_frame, uid => integer, make_token => bool, ],
     user_settings => [ \&CATS::UI::UserDetails::user_settings_frame, uid => integer, clear => bool, ],
     user_ip => [ \&CATS::UI::UserDetails::user_ip_frame, uid => integer, ],
     user_vdiff => [ \&CATS::UI::UserDetails::user_vdiff_frame,

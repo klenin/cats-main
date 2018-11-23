@@ -11,5 +11,6 @@
     contests => 'Contests',
     send_message => 'message',
     tokens => 'Tokens',
+    make_token => 'make token',
   })
 %]

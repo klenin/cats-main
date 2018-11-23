@@ -11,5 +11,6 @@
     contests => 'Турниры',
     send_message => 'сообщение',
     tokens => 'Токены',
+    make_token => 'создать токен',
   })
 %]
