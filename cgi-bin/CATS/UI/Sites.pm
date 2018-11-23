@@ -39,7 +39,7 @@ our $form = CATS::Form->new(
     msg_saved => 1067,
     before_display => sub {
         my ($fd, $p) = @_;
-        $fd->{contests} = $is_root && $fd->{id} ? $dbh->selectall_arrayref(qq~
+        $fd->{contests} = $user->privs->{edit_sites} && $fd->{id} ? $dbh->selectall_arrayref(qq~
             SELECT C.id, C.title, C.start_date,
                 (SELECT LIST(A.team_name || $person_phone_sql, ', ') FROM contest_accounts CA
                 INNER JOIN accounts A ON A.id = CA.account_id
