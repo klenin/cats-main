@@ -5,6 +5,7 @@ use warnings;
 
 use Digest::SHA;
 
+use CATS::Config;
 use CATS::Constants;
 use CATS::DB;
 use CATS::Globals qw($cid $contest $is_jury $is_root $sid $t $uid);
@@ -159,7 +160,8 @@ sub _login_token {
         { token => $token, account_id => $account_id, usages_left => 1 }))
         or return;
     $dbh->commit;
-    url_function('login', cid => $p->{cid}, token => $token, redir => $p->{redir});
+    $CATS::Config::absolute_url .
+        url_function('login', cid => $p->{cid}, token => $token, redir => $p->{redir});
 }
 
 sub login_token_api {
