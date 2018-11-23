@@ -141,6 +141,9 @@ sub logout_frame {
     }
 }
 
+my $apikey = 'zzz';
+my $login_prefix = 'nti_2018_';
+
 sub _login_token {
     my ($p) = @_;
     # ONTI compatibility.
@@ -148,12 +151,12 @@ sub _login_token {
     $p->{login} ||= $p->{team_id};
 
     $p->{login} && $p->{apikey} && $p->{cid} or return;
-    $p->{apikey} eq 'zzz' or return;
+    $p->{apikey} eq $apikey or return;
     my ($account_id, $is_jury_in_contest) = $dbh->selectrow_array(q~
         SELECT CA.account_id, CA.is_jury FROM contest_accounts CA
         INNER JOIN accounts A ON A.id = CA.account_id
         WHERE A.login = ? AND CA.contest_id = ?~, undef,
-        $p->{login}, $p->{cid}) or return;
+        $login_prefix . $p->{login}, $p->{cid}) or return;
     $is_jury_in_contest and return;
     my $token = CATS::User::make_token($account_id);
     $CATS::Config::absolute_url .
