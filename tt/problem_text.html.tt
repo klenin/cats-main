@@ -246,7 +246,7 @@ if (sid)
         if (!result[r]) continue;
         var v = $('#p' + r + ' .last_verdict > .verdict');
         v.addClass('run_details_' + result[r][0]);
-        v.find('a').attr('href', result[r][2]).text(result[r][0]);
+        v.find('a').attr('href', '[% href_static_path %]' + result[r][2]).text(result[r][0]);
         v.find('div').html(result[r][1] || '.&nbsp;');
         v.parent().show();
       }

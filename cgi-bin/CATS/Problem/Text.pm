@@ -381,6 +381,7 @@ sub problem_text {
         tex_styles => CATS::TeX::Lite::styles(),
         mathjax => !$p->{nomath},
         has_snippets => $has_snippets,
+        href_static_path => $static_path,
         href_get_last_verdicts => @problems > 100 ? undef : $static_path .
             url_function('api_get_last_verdicts', problem_ids => join ',', map $_->{problem_id}, @problems),
     );
