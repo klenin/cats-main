@@ -34,9 +34,9 @@ use CATS::Verdicts;
 
 sub _decode_quietly {
     my ($p, $s) = @_;
-    $s ||= '';
+    $s //= '';
     # Comment or output may be non-well-formed utf8.
-    my $result = eval { Encode::decode($p->{comment_enc}, $s, Encode::FB_QUIET); } || '';
+    my $result = eval { Encode::decode($p->{comment_enc}, $s, Encode::FB_QUIET); } // '';
     # Encode::decode modifies $s to contain non-well-formed part.
     $result . ($s eq '' ? '' : "\x{fffd}$s");
 }
@@ -158,7 +158,7 @@ sub get_run_info {
                 name => $_->{name}
             }, @$visualizers ] : [];
         $maximums->{$_} = max($maximums->{$_}, $row->{$_} // 0) for @resources;
-        my $output_data = $outputs{$row->{test_rank}} || '';
+        my $output_data = $outputs{$row->{test_rank}} // '';
         $row->{output_data_cut} = length($output_data) > $cats::test_file_cut;
         $row->{output_data} = _decode_quietly($p, $output_data);
         $row->{href_view_test_details} =
