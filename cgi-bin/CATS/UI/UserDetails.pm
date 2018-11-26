@@ -44,6 +44,7 @@ sub users_edit_frame {
         CATS::User::submenu('edit', $p->{uid}, $u->{site_id}),
         title_suffix => $u->{team_name},
         %$u, privs => CATS::Privileges::unpack_privs($u->{srole}),
+        priv_names => CATS::Privileges::ui_names,
         id => $p->{uid},
         countries => \@CATS::Countries::countries,
         href_action => url_f('users'),

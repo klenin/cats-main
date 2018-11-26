@@ -9,13 +9,15 @@ my $srole_root = 0;
 our $srole_user = 1;
 
 # Bit flag values for accounts.srole. Root includes all other roles.
-my %flags = (
-    create_contests => 2,
-    moderate_messages => 4,
-    delete_problems => 8,
-    edit_sites => 16,
-    manage_judges => 32,
+my @flag_names = qw(
+    create_contests
+    moderate_messages
+    delete_problems
+    edit_sites
+    manage_judges
 );
+
+my %flags = map { $flag_names[$_] => 2 << $_ } 0..$#flag_names;
 
 sub get_root_account_ids {
     $dbh->selectcol_arrayref(q~
@@ -29,7 +31,7 @@ sub unpack_privs {
     my ($srole) = @_;
     my $p = {};
     my $r = $p->{is_root} = is_root($srole);
-    $p->{$_} = $r || ($srole & $flags{$_}) for keys %flags;
+    $p->{$_} = $r || ($srole & $flags{$_}) for @flag_names;
     $p;
 }
 
@@ -37,11 +39,12 @@ sub pack_privs {
     my ($p) = @_;
     return $srole_root if $p->{is_root};
     my $srole = $srole_user;
-    $p->{$_} and $srole |= $flags{$_} for keys %flags;
+    $p->{$_} and $srole |= $flags{$_} for @flag_names;
     $srole;
 }
 
-sub all_names { sort 'is_root', keys %flags }
+sub all_names { sort 'is_root', @flag_names }
+sub ui_names { \@flag_names }
 
 sub is_good_name { $_[0] eq 'is_root' || exists $flags{$_[0]} }
 
