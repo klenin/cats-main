@@ -78,9 +78,6 @@ sub problems_retest_frame {
     );
     $lv->define_columns(url_f('problems_retest'), 0, 0, [ @cols ]);
     CATS::Problem::Utils::define_common_searches($lv);
-    $lv->define_db_searches([ qw(
-        CP.code CP.testsets CP.points_testsets CP.status
-    ) ]);
 
     my $psn = CATS::Problem::Utils::problem_status_names_enum($lv);
 

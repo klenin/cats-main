@@ -105,6 +105,10 @@ sub define_common_searches {
         statement_url explanation_url
     ), @cats::limits_fields ]);
 
+    $lv->define_db_searches([ qw(
+        CP.code CP.testsets CP.tags CP.points_testsets CP.status
+    ) ]);
+
     $lv->define_db_searches({
         map {
             join('_', split /\W+/, $cats::source_module_names{$_}) =>

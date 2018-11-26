@@ -66,7 +66,7 @@ sub problems_all_frame {
     CATS::Problem::Utils::define_kw_subquery($lv);
     $lv->define_db_searches({
         contest_title => 'C.title',
-        ($is_root ? (tags => q~
+        ($is_root ? (all_tags => q~
             (SELECT LIST(DISTINCT CP1.tags) FROM contest_problems CP1
                 WHERE CP1.problem_id = P.id AND CP1.tags IS NOT NULL)~) : ()),
     });
@@ -86,6 +86,7 @@ sub problems_all_frame {
             ($keywords) AS keywords,
             (SELECT COUNT(*) FROM contest_problems CP WHERE CP.problem_id = P.id AND CP.contest_id = ?)
         FROM problems P INNER JOIN contests C ON C.id = P.contest_id
+        INNER JOIN contest_problems CP ON CP.contest_id = C.id AND CP.problem_id = P.id
         WHERE $where_cond ~ . $lv->maybe_where_cond . $lv->order_by);
     $c->execute($cid, @{$where->{params}}, $lv->where_params);
 
@@ -243,9 +244,6 @@ sub problems_frame {
         CATS::Problem::Utils::define_kw_subquery($lv);
         $lv->define_subqueries({ has_tag => q~(POSITION(?, CP.tags) > 0)~ });
     }
-    $lv->define_db_searches([ qw(
-        CP.code CP.testsets CP.tags CP.points_testsets CP.status
-    ) ]);
     $lv->define_db_searches({ contest_title => 'OC.title' });
     my $psn = CATS::Problem::Utils::problem_status_names_enum($lv);
 
