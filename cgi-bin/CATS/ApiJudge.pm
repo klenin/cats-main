@@ -226,7 +226,7 @@ sub get_tests_req_details {
 
 our %req_details_fields = (
     job_id => integer,
-    output => str,
+    output => undef,
     output_size => integer,
     req_id => integer,
     test_rank => integer,
