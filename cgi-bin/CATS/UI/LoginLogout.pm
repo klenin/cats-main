@@ -141,7 +141,6 @@ sub logout_frame {
     }
 }
 
-my $apikey = 'zzz';
 my $login_prefix = 'nti_2018_';
 
 sub _login_token {
@@ -151,12 +150,13 @@ sub _login_token {
     $p->{login} ||= $p->{team_id};
 
     $p->{login} && $p->{apikey} && $p->{cid} or return [ 0, 'no param' ];
-    $p->{apikey} eq $apikey or return [ 0, 'bad api key' ];
-    my ($account_id, $is_jury_in_contest) = $dbh->selectrow_array(q~
-        SELECT CA.account_id, CA.is_jury FROM contest_accounts CA
+    my ($account_id, $is_jury_in_contest, $apikey) = $dbh->selectrow_array(q~
+        SELECT CA.account_id, CA.is_jury, C.apikey FROM contest_accounts CA
         INNER JOIN accounts A ON A.id = CA.account_id
+        INNER JOIN contests C ON C.id = CA.contest_id
         WHERE A.login = ? AND CA.contest_id = ?~, undef,
         $login_prefix . $p->{login}, $p->{cid}) or return [ 0, 'bad login' ];
+    $p->{apikey} eq $apikey or return [ 0, 'bad api key' ];
     $is_jury_in_contest and return [ 0, 'bad user' ];
     my $token = CATS::User::make_token($account_id);
     [ 1, $CATS::Config::absolute_url .

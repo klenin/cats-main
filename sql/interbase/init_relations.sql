@@ -92,6 +92,7 @@ CREATE TABLE contests (
     penalty              INTEGER,
     penalty_except       VARCHAR(100),
     ctype                INTEGER, /* 0 -- normal, 1 -- training session */
+    apikey               VARCHAR(50),
 
     is_official          INTEGER DEFAULT 0 CHECK (is_official IN (0, 1)),
     run_all_tests        INTEGER DEFAULT 0 CHECK (run_all_tests IN (0, 1)),

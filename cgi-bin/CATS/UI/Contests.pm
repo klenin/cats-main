@@ -235,6 +235,9 @@ sub contest_params_frame {
         %$c,
         href_action => url_f('contests'),
         can_edit => $is_jury_in_contest,
+        href_api_login_token => (
+            $is_root && $c->{apikey} ?
+            url_f('api_login_token', token => $c->{apikey}, team_id => 'xxx') : undef),
         verdicts_max_reqs => [ map +{ short => $_->[0], checked => $verdicts_excluded_max_reqs{$_->[0]} },
             @$CATS::Verdicts::name_to_state_sorted ],
         verdicts_penalty => [ map +{ short => $_->[0], checked => $verdicts_excluded_penalty{$_->[0]} },

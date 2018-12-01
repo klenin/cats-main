@@ -15,4 +15,6 @@
 <button type="submit" name="edit_cancel" value="1" class="button">[% capt.cancel %]</button>
 </form>
 
+[% IF href_api_login_token; '<p>'; href(href_api_login_token, href_api_login_token); '</p>'; END %]
+
 [% PROCESS includes/menu_end.tti %]
