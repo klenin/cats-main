@@ -70,6 +70,12 @@ function toggle_search_hints() {
   return false;
 }
 
+function _add_search(text, comma) {
+  var i = document.getElementById('search');
+  if (comma) if (i.value) i.value += ','; // Avoid ampersand.
+  i.value += text;
+}
+
 function activate_search_hint(a, comma, type) {
   var ul = a.nextElementSibling;
   if (ul) {
@@ -77,11 +83,10 @@ function activate_search_hint(a, comma, type) {
     if (ul.style.display === 'none')
       return;
   }
-  var i = document.getElementById('search');
-  if (comma) if (i.value) i.value += ','; // Avoid ampersand.
-  i.value += a.text;
-  if (type == 2) i.value += '()';
+  _add_search(a.text + (type == 2 ? '()' : ''), comma);
 }
+
+function add_search(field, value) { _add_search(field + '=' + value, true); }
 
 function click_enum(a) {
   var i = document.getElementById('search');

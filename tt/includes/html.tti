@@ -41,3 +41,8 @@
 [%- END -%]
 
 [%- MACRO span(text, class) BLOCK -%]<span[% " class=\"$class\"" IF class %]>[% text | html %]</span>[% END -%]
+
+[%- MACRO cell_search_ex(field, value) BLOCK -%]
+  <a href="#" class="add_search" onclick="add_search('[% field %]', '[% value | html %]')">&#8981;</a>
+[%- END -%]
+[%- MACRO cell_search(field, row) BLOCK; cell_search_ex(field, row.item(field)); END -%]
