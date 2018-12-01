@@ -3,6 +3,8 @@ package CATS::QueryBuilder;
 use strict;
 use warnings;
 
+use Carp qw(croak);
+
 use CATS::DB;
 use CATS::Messages qw(msg);
 
@@ -100,7 +102,7 @@ sub make_where {
 
 sub add_db_search {
     my ($self, $k, $v) = @_;
-    $self->{db_searches}->{$k} and die "Duplicate search: $k";
+    $self->{db_searches}->{$k} and croak "Duplicate search: $k";
     $self->{db_searches}->{$k} = $v;
 }
 
@@ -126,7 +128,7 @@ sub define_db_searches {
 sub define_subqueries {
     my ($self, $subqueries) = @_;
     for my $k (keys %$subqueries) {
-        $self->{subqueries}->{$k} and die "Duplicate subquery: $k";
+        $self->{subqueries}->{$k} and croak "Duplicate subquery: $k";
         $self->{subqueries}->{$k} =
             ref $subqueries->{$k} ? $subqueries->{$k} : { sq => $subqueries->{$k} };
     }
@@ -135,7 +137,7 @@ sub define_subqueries {
 sub define_enums {
     my ($self, $enums) = @_;
     for my $k (keys %$enums) {
-        die "Duplicate enum: $k" if $self->{enums}->{$k};
+        croak "Duplicate enum: $k" if $self->{enums}->{$k};
         $self->{enums}->{$k} = $enums->{$k};
     }
 }
