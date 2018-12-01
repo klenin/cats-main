@@ -23,7 +23,7 @@ function delete_team(href, name) {
 </textarea>[% END %]
 
 [% PROCESS includes/listview_header.tti %]
-<table class="listview bordered highlight">
+<table class="listview bordered cell_search highlight">
 [% PROCESS includes/listview_col_defs.tti %]
 [% FOREACH u IN users %]
 <tr class="[% loop.parity %]">
@@ -36,12 +36,14 @@ function delete_team(href, name) {
 [% END %]
 <td class="user_checkbox">[% IF user.is_jury || user.is_site_org %]<label><input type="checkbox" name="sel" value="[% u.id %]"> [% END; href(u.href_stats, u.team_name); '</label>' IF user.is_jury || user.is_site_org %]</td>
 [% IF visible_cols.Si ~%]
-  <td>[% maybe_href(u.href_contest_site, u.site_name || u.city); IF u.href_site %] <a href="[% u.href_site %]" class="icon edit"></a>[% END %]</td>
+<td>[% maybe_href(u.href_contest_site, u.site_name || u.city); IF u.href_site %] <a href="[% u.href_site %]" class="icon edit"></a>[% END %]
+  [%- cell_search('site_id', u) IF user.is_jury -%]
+</td>
 [%~ END %]
 [% IF visible_cols.Tg %]<td>[% maybe_href(u.href_rank_table_filter, u.tag) %]</td>[% END %]
 [% IF user.is_jury || user.is_site_org %]
 [% IF visible_cols.Ip -%]
-<td>[<a href="[% u.href_whois %]" title="[% u.last_ip %]">[% u.last_ip_short %]</a>]</td>
+<td>[<a href="[% u.href_whois %]" title="[% u.last_ip %]">[% u.last_ip_short %]</a>][% cell_search('last_ip_short', u) %]</td>
 [%- END %]
 <td class="user_checkbox center"><label>[% checkbox_1("ooc$u.id", u.ooc, u.editable_attrs) %]</label></td>
 <td class="user_checkbox center"><label>[% checkbox_1("remote$u.id", u.remote, u.editable_attrs) %]</label></td>
