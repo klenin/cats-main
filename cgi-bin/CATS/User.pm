@@ -449,8 +449,8 @@ sub gen_passwords {
     $t->param(new_passwords => \@res);
 }
 
-sub save_attributes_single {
-    my ($p, $user_id, $attr_names, $force_jury) = @_;
+sub _save_attributes_single {
+    my ($p, $user_id, $attr_names) = @_;
 
     my (%set, %where);
     for (@$attr_names) {
@@ -458,7 +458,6 @@ sub save_attributes_single {
         # Only perform update if it actually changes values.
         $where{"is_$_"} = { '!=', $v };
     }
-    $set{is_jury} = 1 if $force_jury;
     # Security: Forbid changing of user parameters in other contests.
     my ($s, @b) = $sql->update('contest_accounts',
         \%set, { id => $user_id, contest_id => $cid, -or => \%where }
@@ -488,9 +487,10 @@ sub save_attributes_jury {
             WHERE CA.id = ?~, undef,
             $user_id
         );
-        $changed_count += save_attributes_single(
-            $p, $user_id, [ qw(jury hidden remote ooc site_org) ],
-            CATS::Privileges::is_root($srole));
+        $changed_count += _save_attributes_single(
+            $p, $user_id, [
+            (CATS::Privileges::is_root($srole) || !$user->privs->{grant_jury} ? () : 'jury'),
+            qw(hidden remote ooc site_org) ]);
     }
     save_attributes_finalize($changed_count);
 }
@@ -507,7 +507,7 @@ sub save_attributes_org {
             );
             (!$user->{site_id} || $user->{site_id} == $site_id) && $aid != $uid or next;
         }
-        $changed_count += save_attributes_single($p, $user_id, [ qw(remote ooc) ]);
+        $changed_count += _save_attributes_single($p, $user_id, [ qw(remote ooc) ]);
     }
     save_attributes_finalize($changed_count);
 }

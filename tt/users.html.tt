@@ -50,7 +50,7 @@ function delete_team(href, name) {
 <td class="user_checkbox center"><label>[% checkbox_1("site_org$u.id", u.site_org, user.is_jury) %]</label></td>
 [% END %]
 [% IF user.is_jury %]
-<td class="user_checkbox center"><label>[% checkbox_1("jury$u.id", u.jury) %]</label></td>
+<td class="user_checkbox center"><label>[% checkbox_1("jury$u.id", u.jury, user.privs.grant_jury) %]</label></td>
 <td class="user_checkbox center"><label>[% checkbox_1("hidden$u.id", u.hidden) %]</label></td>
 [% END %]
 [% IF visible_cols.Fl %]

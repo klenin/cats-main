@@ -101,7 +101,8 @@ sub users_add_participants_frame {
     $is_jury or return;
     init_template($p, 'users_add_participants.html.tt');
     if ($p->{by_login}) {
-        CATS::User::register_by_login($p->{logins_to_add}, $cid, $p->{make_jury})
+        CATS::User::register_by_login($p->{logins_to_add}, $cid,
+            $p->{make_jury} && $user->privs->{grant_jury})
             or $t->param(logins_to_add => $p->{logins_to_add});
     }
     CATS::User::copy_from_contest($p->{source_cid}, $p->{include_ooc}) if $p->{from_contest};

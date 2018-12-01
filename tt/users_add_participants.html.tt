@@ -10,8 +10,10 @@
 <p>[% capt.logins_to_add %]:</p>
 <input name="logins_to_add" id="logins_to_add" size="100" value="[% logins_to_add | html %]"/>
 </div>
+<p>
 <button type="submit" class="button" name="by_login" value="1">[% capt.by_login %]</button>
-<label>[% checkbox_1('make_jury'); capt.make_jury %]</label>
+[% IF user.privs.grant_jury %]<label>[% checkbox_1('make_jury'); capt.make_jury %]</label>[% END %]
+</p>
 </form>
 
 <hr/>
