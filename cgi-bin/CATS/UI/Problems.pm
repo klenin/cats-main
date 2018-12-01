@@ -452,7 +452,7 @@ sub problems_frame {
         : (
             !$pr && $pt_url->([ 'problem_text', cid => $cid ]),
         )),
-        { href => url_f('contest_params', id => $cid), item => res_str(546) };
+        { href => url_f('contest_params', id => $cid), item => res_str(594) };
 
     $t->param(
         href_login => url_f('login', redir => CATS::Redirect::pack_params($p)),
