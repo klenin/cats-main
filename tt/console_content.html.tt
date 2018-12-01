@@ -3,7 +3,7 @@
 [%- PROCESS "lang/$lang/verdicts.tti" -%]
 
 <span id="messages_update" style="display: none">[% FOREACH m IN messages %][% m | html %]<br>[% END %]</span>
-<table class="bordered console highlight">
+<table class="bordered console highlight cell_search">
 [%- colspan = user.is_jury ? 5 : 3 -%]
 [% FOREACH c IN console %]
 <tr>
@@ -17,11 +17,14 @@
   <td class="name">
     [% IF user.is_jury %]
     [% h = c.href_send_message_box ? "javascript:send_message('$c.href_send_message_box')" : '';
-      maybe_href(h, c.team_name, c.team_name_full) %]
-    [% ELSE; c.team_name | html; END %]
+      maybe_href(h, c.team_name, c.team_name_full); cell_search_ex('account_id', c.team_id) -%]
+    [%- ELSE; c.team_name | html; END %]
   </td>
   <td class="verdict run_details_[% c.short_state %]"><table><tr>
-    <td>[% href(c.href_details, c.short_state, capt.verdicts.item(c.short_state)) %]</td>
+    <td>[%
+      href(c.href_details, c.short_state, capt.verdicts.item(c.short_state));
+      cell_search_ex('state', c.short_state) IF user.is_jury;
+    %]</td>
     <td><div>[% c.failed_test %]</div></td>
   </tr></table></td>
   <td class="pts">[% c.points IF user.is_jury %]</td>
@@ -29,16 +32,20 @@
     "$c.code: " IF c.code;
     maybe_href(c.href_source, c.problem_title, user.privs.is_root ? c.contest_title : '');
     " [$c.message_text]" IF user.is_jury && c.message_text;
+    cell_search('problem_id', c) IF user.is_jury;
   %]</td>
   [% IF user.is_jury %]
-  <td title="[% c.de.code %]">[% c.de.description; IF c.elements_count; '=>'; c.elements_count; END %]</td>
-  <td>[<a href="[% c.href_whois %]" title="[% c.last_ip %]">[% c.last_ip_short %]</a>]</td>
+  <td title="[% c.de.code %]">[% c.de.description; IF c.elements_count; '=>'; c.elements_count; END %]
+  [%- cell_search_ex('de_code', c.de.code) %]</td>
+  <td>[<a href="[% c.href_whois %]" title="[% c.last_ip %]">[% c.last_ip_short %]</a>]
+  [%- cell_search('last_ip_short', c) %]</td>
   [% END %]
 [% ELSIF c.is_question %]
   <td>[% c.time %]</td>
   <td class="name">[
     [%~ IF user.is_jury ~%]
     <a href="javascript:send_message('[% c.href_send_message_box %]')">[% c.team_name | html %]</a>
+    [%- cell_search_ex('account_id', c.team_id) %]
     [%~ ELSE; c.team_name | html; END %]
     &gt; [% capt.jury %]]
   </td>
@@ -53,12 +60,17 @@
     [% END %]
   </td>
   [% IF user.is_jury %]
-  <td>[[% IF c.last_ip %]<a href="[% c.href_whois %]" title="[% c.last_ip %]">[% c.last_ip_short %]</a>[% ELSE; c.last_ip_short; END ~%]]</td>
+  <td>[
+    [%- IF c.last_ip %]<a href="[% c.href_whois %]" title="[% c.last_ip %]">[% c.last_ip_short %]</a>]
+      [%- cell_search('last_ip_short', c) -%]
+    [%- ELSE; c.last_ip_short; ']'; END -%]
+  </td>
   [% END %]
 [% ELSIF c.is_message %]
   <td>[% c.time %]</td>
   <td class="name">
     [[% capt.jury %] &gt; [% c.team_name | html %]]
+    [%- cell_search_ex('account_id', c.team_id) IF user.is_jury -%]
   </td>
   <td colspan="[% colspan %]">
     <a title="[% c.contest_title %]"><span class="jury_message">[% c.message_text | html %]</span></a>
