@@ -112,13 +112,12 @@ sub problems_submit {
     my $prev_reqs_count;
     if ($contest->{max_reqs} && !$is_jury && !$user->{is_virtual}) {
         my @excluded_verdicts = split /,/, $contest->{max_reqs_except} // '';
-        $prev_reqs_count = $dbh->selectrow_array(_u $sql->select('reqs', 'count(*)', {
-                account_id => $submit_uid,
-                problem_id => $pid,
-                contest_id => $cid,
-                state => { -not_in => \@excluded_verdicts }
-            })
-        );
+        $prev_reqs_count = $dbh->selectrow_array(_u $sql->select('reqs', 'COUNT(*)', {
+            account_id => $submit_uid,
+            problem_id => $pid,
+            contest_id => $cid,
+            state => { -not_in => \@excluded_verdicts },
+        }));
 
         return msg(1137) if $prev_reqs_count >= $contest->{max_reqs};
     }
@@ -177,7 +176,7 @@ sub problems_submit_std_solution {
         WHERE problem_id = ? AND (stype = ? OR stype = ?)~);
     $c->execute($pid, $cats::solution, $cats::adv_solution);
 
-    my $de_list = CATS::DevEnv->new(CATS::JudgeDB::get_DEs({ active_only => 1 }));
+    my $de_list = CATS::DevEnv->new(CATS::JudgeDB::get_DEs());
 
     while (my ($name, $src, $did, $fname) = $c->fetchrow_array) {
         if (!$de_list->by_id($did)) {
