@@ -1,4 +1,5 @@
-[% extra_head = BLOCK %]
+[%- js.jquery = 1 -%]
+[%- extra_head = BLOCK %]
 <style>
   .last_verdict { display: inline-block; width: 2em; padding: 2px; }
   .last_verdict a { color: inherit; font-weight: inherit; }
@@ -10,8 +11,8 @@
   input[type=color] { width: 1.5em; padding: 0; margin: 0; border: 0; background-color: inherit; }
 </style>
 [% PROCESS includes/ace.tti %]
-[%- END %]
-[% PROCESS includes/menu_begin.tti %]
+[%- END -%]
+[%- PROCESS includes/menu_begin.tti %]
 [%- PROCESS includes/html.tti -%]
 [%- PROCESS "lang/$lang/verdicts.tti" -%]
 [% IF editable %]
@@ -126,9 +127,11 @@ function chg_code(st_sel, pid) {
     [% IF p.color %]<span class="problem_color" style="background-color: [% p.color | html %];"></span>[% END %]
     [% IF p.code; p.code %] - [% END %]
   [% END %][% p.title | html %]</a>
-  [% IF p.problem_langs.size %][[% FOREACH pl IN p.problem_langs; href(pl.href, pl.name); ' ' UNLESS loop.last; END %]][% END %]
-  [% IF p.href_explanation %]&nbsp;[<a href="[% p.href_explanation %]" target="_blank">[% capt.explanation %]</a>][% END %]
-  [% IF p.show_packages %]&nbsp;[<a href="[% p.href_download %]">[% capt.package %]</a>][% END %]
+  [% IF p.problem_langs.size %][[% FOREACH pl IN p.problem_langs; href(pl.href, pl.name); ' ' UNLESS loop.last; END %]][% END -%]
+  [% IF p.href_explanation %]&nbsp;[<a href="[% p.href_explanation %]" target="_blank">[% capt.explanation %]</a>][% END -%]
+  [% IF p.show_packages -%]
+    &nbsp;[<a href="[% p.href_download %]" download="[% p.code %]_[% p.problem_id %].zip">[% capt.package %]</a>]
+  [%- END -%]
 </td>
 [% IF editable %]
 <td>
@@ -262,8 +265,40 @@ var used_codes = { [% FOREACH p IN problems %]"[% p.code %]": 1[% ', ' UNLESS lo
 [% PROCESS includes/select_problem_code.tti %]
 
 function chg_color(input, cpid) {
-    $.post('[% href_set_problem_color %]', { cpid: cpid, color: input.value });
+  $.post('[% href_set_problem_color %]', { cpid: cpid, color: input.value });
 }
+
+[%#
+  HTML 'download' attriblte does not work across redirect, so emulate it.
+  jQuery does not support binary downloads, so use XMLHttpRequest directly.
+-%]
+function emulate_download() {
+  $('a[download]').each(function(_, a) {
+    $(a).click(function() {
+      var xhr = new XMLHttpRequest();
+      if (!xhr) return true;
+      xhr.open('GET', a.href);
+      xhr.responseType = 'blob';
+      xhr.onreadystatechange = function () {
+        if(xhr.readyState === 4 && xhr.status === 200) {
+          var blob = new Blob([xhr.response], { type: 'application/zip' });
+          var emulated = $('<a>').attr({
+            href: window.URL.createObjectURL(blob),
+            download: a.download,
+          }).hide().appendTo($('body')); [%# Required by Firefox %]
+          emulated.click(function() {
+            emulated.remove();
+            return true;
+          });
+          emulated[0].click();
+        }
+      };
+      xhr.send();
+      return false;
+    });
+  });
+}
+$(emulate_download);
 
 </script>
 [% END %]
