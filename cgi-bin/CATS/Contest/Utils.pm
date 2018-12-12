@@ -144,6 +144,7 @@ sub authenticated_contests_view {
             SELECT A.team_name FROM accounts A WHERE A.id = ?~
         },
     });
+    $p->{listview}->define_enums({ has_user => { this => $uid } });
     my $extra_fields = $p->{extra_fields} ? join ',', '', @{$p->{extra_fields}} : '';
     my $problems_count_sql = ($is_root && $p->{listview}->visible_cols->{Pc}) ? q~
         SELECT COUNT(*) FROM contest_problems CP WHERE CP.contest_id = C.id~ : 'NULL';
