@@ -89,6 +89,7 @@ sub make_where {
         my ($name, $value) = @$d;
         my $sq = $self->{subqueries}->{$name}
             or push @sq_unknown, $name and next;
+        $value = $self->{enums}->{$name}->{$value} // $value;
         if ($sq->{m}) {
             my @msg_args = $sq->{t} ? $dbh->selectrow_array($sq->{t}, undef, $value) : ();
             msg($sq->{m}, @msg_args);
