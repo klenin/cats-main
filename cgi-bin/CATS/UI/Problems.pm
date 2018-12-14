@@ -457,7 +457,7 @@ sub problems_frame {
     $t->param(
         href_login => url_f('login', redir => CATS::Redirect::pack_params($p)),
         href_set_problem_color => url_f('set_problem_color'),
-        href_find_users => url_f('api_find_users', in_contest => 1),
+        href_find_users => url_f('api_find_users', in_contest => $cid),
         CATS::Contest::Participate::flags_can_participate,
         submenu => \@submenu, title_suffix => res_str(525),
         is_user => $uid,

@@ -120,15 +120,16 @@ sub find_users_api {
     my $root_cond = $is_root ? '' : ' AND srole > 0';
     my $contest_cond =
         !exists $p->{in_contest} ? '' :
-        $p->{in_contest} == 1 ? " AND EXISTS ($_contest_account_sql)" :
-        $p->{in_contest} == 0 ? " AND NOT EXISTS ($_contest_account_sql)" : die;
+        $p->{in_contest} > 0 ?
+            " AND EXISTS ($_contest_account_sql)" :
+            " AND NOT EXISTS ($_contest_account_sql)";
     my $r = $dbh->selectall_arrayref(qq~
         SELECT A.id, A.login, A.team_name FROM accounts A
         WHERE (A.login STARTS WITH ? OR A.team_name STARTS WITH ?)$root_cond$contest_cond
         ORDER BY A.login
         ROWS 100~,
         { Slice => {} },
-        $p->{query}, $p->{query}, ($contest_cond ? $cid : ()));
+        $p->{query}, $p->{query}, ($contest_cond ? $p->{in_contest} : ()));
     $p->print_json({ suggestions =>
         [ map { value => $_->{login}, data => $_ }, @$r ]
     });

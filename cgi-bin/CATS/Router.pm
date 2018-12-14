@@ -201,7 +201,8 @@ my $main_routes = {
         uid => required integer, $CATS::UI::UserRelations::form->route,
         from_login => str, to_login => str, js => bool,
     ],
-    api_find_users => [ \&CATS::UI::UserRelations::find_users_api, query => str, in_contest => bool0, ],
+    api_find_users => [ \&CATS::UI::UserRelations::find_users_api,
+        query => str, in_contest => integer, ],
     impersonate => [ \&CATS::UI::UserDetails::impersonate_frame, uid => integer, ],
     contact_types => [
         \&CATS::UI::ContactTypes::contact_types_frame,
