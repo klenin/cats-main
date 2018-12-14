@@ -14,9 +14,8 @@
 [% PROCESS includes/ace.tti %]
 [%- END -%]
 [%- PROCESS includes/menu_begin.tti %]
-[%- PROCESS includes/html.tti -%]
+[%- PROCESS includes/autocomplete.tti -%]
 [%- PROCESS "lang/$lang/verdicts.tti" -%]
-[%- PROCESS "lang/$lang/autocomplete.tti" -%]
 [% IF editable %]
 <script type="text/javascript">
 function getSelectedButton(button) {
@@ -305,25 +304,7 @@ function emulate_download() {
 }
 $(emulate_download);
 
-function autocomplete() {
-  var input = $('#submit_as');
-  input.autocomplete({
-    minChars: 2,
-    deferRequestBy: 100,
-    showNoSuggestionNotice: true,
-    noSuggestionNotice: '[% capt.no_suggestion %]',
-    serviceUrl: '[% href_find_users %]',
-    formatResult: function (suggestion, currentValue) {
-      return suggestion.data.login + ' (' + suggestion.data.team_name + ')';
-    }
-  });
-  var on_focus = function () {
-    input.autocomplete('setOptions', { width: input.width() * 2 });
-    input.off('focus', on_focus);
-  };
-  input.on('focus', on_focus);
-}
-$(autocomplete);
+$(function() { autocomplete($('#submit_as')); });
 </script>
 [% END %]
 [% PROCESS includes/menu_end.tti %]

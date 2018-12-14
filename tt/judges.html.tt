@@ -5,8 +5,8 @@
 
 <script>
 function delete_judge(href, name) {
-    if (confirm("[% capt.want_to_delete %] '" + name + "'?" ))
-        document.location = href;
+  if (confirm("[% capt.want_to_delete %] '" + name + "'?" ))
+    document.location = href;
 }
 </script>
 

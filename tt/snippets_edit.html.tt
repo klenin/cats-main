@@ -1,7 +1,7 @@
 [%- js.autocomplete = 1 -%]
 [% PROCESS includes/menu_begin.tti %]
 [% PROCESS includes/html_input.tti %]
-[%- PROCESS "lang/$lang/autocomplete.tti" -%]
+[%- PROCESS includes/autocomplete.tti href_find_users = sn.href_find_users -%]
 
 [%- MACRO tr_autocomplete_user(f, fd) BLOCK -%]
 <tr>
@@ -31,31 +31,13 @@
 </form>
 
 <script>
-function autocomplete() {
-  var input = $('#login');
-  input.autocomplete({
-    minChars: 2,
-    deferRequestBy: 100,
-    showNoSuggestionNotice: true,
-    noSuggestionNotice: '[% capt.no_suggestion %]',
-    serviceUrl: '[% sn.href_find_users %]',
+$(function () {
+  autocomplete($('#login'), {
     onSelect: function (suggestion) {
       $('#account_id').val(suggestion.data.id);
       $('#user_name').text(suggestion.data.team_name);
     },
-    formatResult: function (suggestion, currentValue) {
-      return suggestion.data.login + ' (' + suggestion.data.team_name + ')';
-    }
   });
-  var on_focus = function () {
-    input.autocomplete('setOptions', { width: input.width() * 2 });
-    input.off('focus', on_focus);
-  };
-  input.on('focus', on_focus);
-}
-
-$(document).ready(function () {
-  autocomplete();
   $('#js').val(1);
 });
 </script>

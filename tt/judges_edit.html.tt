@@ -2,21 +2,21 @@
 [% PROCESS includes/menu_begin.tti %]
 [% PROCESS includes/html_input.tti %]
 [% PROCESS includes/de_bitmap.tti %]
+[%- PROCESS includes/autocomplete.tti href_find_users = j.href_find_users -%]
 [%- PROCESS "lang/$lang/judges_common.tti" -%]
-[%- PROCESS "lang/$lang/autocomplete.tti" -%]
 
 [%-
-    pin_modes = [];
-    FOR pin_mode_value IN capt.pin_mode_values;
-        pin_modes.push({ value => loop.index , text => pin_mode_value });
-    END;
+  pin_modes = [];
+  FOR pin_mode_value IN capt.pin_mode_values;
+    pin_modes.push({ value => loop.index , text => pin_mode_value });
+  END;
 -%]
 <form method="post" enctype="multipart/form-data" action="[% j.href_action %]">
 <table class="padded edit_form">
 [% tr_text(j.indexed.name, j) %]
 <tr><td>[% capt.account_name %]</td>
   <td>
-    <input type="text" name="account_name" id="account_name" value="[% j.extra_fields.account_name | html %]" class="bordered">
+    <input type="text" name="account_name" id="account_name" value="[% j.extra_fields.account_name | html %]" class="bordered" size="30">
     [% href(j.href_contests, capt.contests) %]
     [% maybe_err(j.account) %]
   </td>
@@ -38,16 +38,6 @@
 </form>
 
 <script>
-function autocomplete() {
-  var input = $('#account_name');
-  input.autocomplete({
-    minChars: 2,
-    deferRequestBy: 100,
-    showNoSuggestionNotice: true,
-    noSuggestionNotice: '[% capt.no_suggestion %]',
-    serviceUrl: '[% j.href_find_users %]',
-  });
-}
-$(document).ready(autocomplete);
+$(function() { autocomplete($('#account_name')); });
 </script>
 [% PROCESS includes/menu_end.tti %]

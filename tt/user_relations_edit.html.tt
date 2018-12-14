@@ -1,8 +1,8 @@
 [%- js.autocomplete = 1 -%]
 [% PROCESS includes/menu_begin.tti %]
 [% PROCESS includes/html_input.tti %]
+[%- PROCESS includes/autocomplete.tti href_find_users = ur.href_find_users -%]
 [%- PROCESS "lang/$lang/user_relations.html.tt" -%]
-[%- PROCESS "lang/$lang/autocomplete.tti" -%]
 
 [%- MACRO tr_autocomplete_user(f, fd, prefix, fcb) BLOCK -%]
 <tr>
@@ -30,31 +30,17 @@
 </form>
 
 <script>
-function autocomplete(name) {
-  var input = $('#' + name + '_login');
-  input.autocomplete({
-    minChars: 2,
-    deferRequestBy: 100,
-    showNoSuggestionNotice: true,
-    noSuggestionNotice: '[% capt.no_suggestion %]',
-    serviceUrl: '[% ur.href_find_users %]',
+function _autocomplete(name) {
+  autocomplete($('#' + name + '_login'), {
     onSelect: function (suggestion) {
       $('#' + name + '_id').val(suggestion.data.id);
       $('#' + name + '_name').text(suggestion.data.team_name);
     },
-    formatResult: function (suggestion, currentValue) {
-      return suggestion.data.login + ' (' + suggestion.data.team_name + ')';
-    }
   });
-  var on_focus = function () {
-    input.autocomplete('setOptions', { width: input.width() * 2 });
-    input.off('focus', on_focus);
-  };
-  input.on('focus', on_focus);
 }
-$(document).ready(function () {
-  autocomplete('from');
-  autocomplete('to');
+$(function () {
+  _autocomplete('from');
+  _autocomplete('to');
   $('#js').val(1);
 });
 </script>

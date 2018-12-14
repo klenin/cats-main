@@ -1,0 +1,26 @@
+[% IF js.autocomplete %]
+[%- PROCESS "lang/$lang/autocomplete.tti" -%]
+<script>
+function autocomplete(input, extra) {
+  var params = {
+    minChars: 2,
+    deferRequestBy: 100,
+    showNoSuggestionNotice: true,
+    noSuggestionNotice: '[% capt.no_suggestion %]',
+    serviceUrl: '[% href_find_users %]',
+    formatResult: function (suggestion, currentValue) {
+      return suggestion.data.login + ' (' + suggestion.data.team_name + ')';
+    }
+  };
+  if (extra)
+    for (var p in extra)
+      params[p] = extra[p];
+  input.autocomplete(params);
+  var on_focus = function () {
+    input.autocomplete('setOptions', { width: input.width() * 2 });
+    input.off('focus', on_focus);
+  };
+  input.on('focus', on_focus);
+}
+</script>
+[% END -%]

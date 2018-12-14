@@ -1,6 +1,6 @@
 [%- js.autocomplete = 1 -%]
 [% PROCESS includes/menu_begin.tti %]
-[%- PROCESS "lang/$lang/autocomplete.tti" -%]
+[%- PROCESS includes/autocomplete.tti -%]
 
 <h3>[% capt.add_participants %]</h3>
 
@@ -28,20 +28,6 @@
 </form>
 
 <script>
-function autocomplete() {
-  var input = $('#logins_to_add');
-  input.autocomplete({
-    minChars: 2,
-    deferRequestBy: 100,
-    showNoSuggestionNotice: true,
-    noSuggestionNotice: '[% capt.no_suggestion %]',
-    serviceUrl: '[% href_find_users %]',
-    delimiter: ',',
-    formatResult: function (suggestion, currentValue) {
-      return suggestion.data.login + ' (' + suggestion.data.team_name + ')';
-    }
-  });
-}
-$(document).ready(autocomplete);
+$(function () { autocomplete($('#logins_to_add'), { delimiter: ',' }); });
 </script>
 [% PROCESS includes/menu_end.tti %]
