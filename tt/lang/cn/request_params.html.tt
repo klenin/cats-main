@@ -13,6 +13,7 @@
     save_output_prefix => 'Save output prefix',
     job_split_strategy => 'Job split strategy',
     set_tag => 'Set tag',
+    set_user => 'Set user',
     not_supported_DE => 'This request uses development environments not supported by the selected judge',
   })
 %]

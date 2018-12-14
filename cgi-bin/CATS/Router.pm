@@ -288,6 +288,7 @@ my $main_routes = {
         points => integer,
         state => ident,
         set_tag => bool, tag => str,
+        set_user => bool, new_login => str,
         (map { $_ => str, "set_$_" => bool } @cats::limits_fields, 'job_split_strategy'),
         testsets => str,
         judge => str, set_judge => bool,

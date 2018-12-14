@@ -1,3 +1,4 @@
+[%- js.autocomplete = 1 -%]
 [%- PROCESS includes/sources_styles.tti -%]
 [% PROCESS includes/header.tti %]
 <style>
@@ -6,6 +7,7 @@
 </head>
 <body>
 
+[% PROCESS includes/autocomplete.tti %]
 [% PROCESS includes/sources_info.tti %]
 <br/>
 
@@ -116,6 +118,14 @@
   <button type="submit" value="1" class="button" name="set_tag">[% capt.set_tag %]:</button>
   <input type="text" name="tag" value="[% si.tag %]" size="40" class="bordered"/>
 </p></form>
+
+<form method="post"><p>
+  <button type="submit" value="1" class="button" name="set_user">[% capt.set_user %]:</button>
+  <input type="text" id="new_login" name="new_login" size="40" class="bordered"/>
+</p></form>
+<script>
+  $(function() { autocomplete($('#new_login')); });
+</script>
 
 [% IF de_cache %]
 [% capt.not_supported_DE UNLESS de_cache.is_supported %]

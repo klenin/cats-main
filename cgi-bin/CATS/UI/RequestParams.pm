@@ -35,6 +35,21 @@ sub maybe_status_ok {
         $cats::problem_st_ready, $si->{contest_id}, $si->{problem_id}, $cats::problem_st_ready);
 }
 
+sub _try_set_user {
+    my ($p, $si) = @_;
+    $p->{set_user} && $p->{new_login} or return;
+    my ($new_account_id, $new_name) = $dbh->selectrow_array(q~
+        SELECT A.id, A.team_name FROM accounts A
+        INNER JOIN contest_accounts CA ON CA.account_id = A.id
+        WHERE CA.contest_id = ? AND A.login = ?~, undef,
+        $si->{contest_id}, $p->{new_login})
+        or return msg(1139, $p->{new_login});
+    $dbh->do(q~
+        UPDATE reqs SET account_id = ? WHERE id = ?~, undef,
+        $new_account_id, $si->{req_id});
+    $dbh->commit;
+}
+
 my $settable_verdicts = [ qw(NP AW OK WA PE TL ML WL RE CE SV IS IL MR LI) ];
 
 sub request_params_frame {
@@ -98,7 +113,8 @@ sub request_params_frame {
         maybe_reinstall($p, $si);
         maybe_status_ok($p, $si);
         $dbh->commit;
-        return $group_req_id ? $p->redirect(url_f 'request_params', rid => $group_req_id, sid => $sid) : undef;
+        return $group_req_id ?
+            $p->redirect(url_f 'request_params', rid => $group_req_id, sid => $sid) : undef;
     }
     my $can_delete = !$si->{is_official} || $is_root || ($si->{account_id} // 0) == $uid;
     $t->param(can_delete => $can_delete);
@@ -118,8 +134,11 @@ sub request_params_frame {
         $si->{tag} = Encode::decode_utf8($p->{tag});
     }
 
-    # Reload problem after the successful state change.
-    $si = get_sources_info($p, request_id => $si->{req_id}) if try_set_state($p, $si);
+    $t->param(href_find_users => url_f('api_find_users', in_contest => $si->{contest_id}));
+
+    # Reload problem after the successful change.
+    $si = get_sources_info($p, request_id => $si->{req_id})
+        if try_set_state($p, $si) || _try_set_user($p, $si);
 
     my $tests = $dbh->selectcol_arrayref(q~
         SELECT rank FROM tests WHERE problem_id = ? ORDER BY rank~, undef,
