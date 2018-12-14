@@ -1,4 +1,5 @@
-[%- js.jquery = 1 -%]
+
+[%- js.jquery = 1; js.ace = 1 -%]
 [%- SET js.autocomplete = 1 IF editable -%]
 [%- extra_head = BLOCK %]
 <style>
@@ -11,9 +12,9 @@
   span.pcode input { width: 2em; }
   input[type=color] { width: 1.5em; padding: 0; margin: 0; border: 0; background-color: inherit; }
 </style>
-[% PROCESS includes/ace.tti %]
 [%- END -%]
-[%- PROCESS includes/menu_begin.tti %]
+[% PROCESS includes/menu_begin.tti %]
+[%- PROCESS includes/html.tti -%]
 [%- PROCESS includes/autocomplete.tti href_find = href_find_users -%]
 [%- PROCESS "lang/$lang/verdicts.tti" -%]
 [% IF editable %]

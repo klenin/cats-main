@@ -1,4 +1,0 @@
-[% js.jquery = 1 %]
-<script src="js/lib/ace/ace.js"></script>
-<script src="js/lib/ace/ext-language_tools.js"></script>
-<script src="js/editor.js"></script>

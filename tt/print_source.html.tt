@@ -1,5 +1,4 @@
-[% js.jquery = 1; PROCESS includes/header.tti %]
-[% PROCESS includes/ace.tti %]
+[%- js.jquery = 1; js.ace = 1; PROCESS includes/header.tti -%]
 <script src="js/lib/ace/ext-static_highlight.js"></script>
 
 <style>
