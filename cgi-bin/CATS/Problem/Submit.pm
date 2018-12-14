@@ -11,6 +11,18 @@ use CATS::Messages qw(msg);
 use CATS::Output qw(url_f);
 use CATS::Request;
 
+sub _get_submit_uid {
+    my ($p) = @_;
+    if ($is_jury && $p->{submit_as}) {
+        return scalar $dbh->selectrow_array(q~
+            SELECT A.id FROM accounts A
+            INNER JOIN contest_accounts CA ON CA.account_id = A.id
+            WHERE CA.contest_id = ? AND A.login = ?~, undef,
+            $cid, $p->{submit_as}) || msg(1139, $p->{submit_as});
+    }
+    $uid // ($contest->is_practice ? $user->{anonymous_id} : die);
+}
+
 sub too_frequent {
     my ($submit_uid) = @_;
     # Protect from Denial of Service -- disable too frequent submissions.
@@ -105,7 +117,7 @@ sub problems_submit {
         }
     }
 
-    my $submit_uid = $uid // ($contest->is_practice ? $user->{anonymous_id} : die);
+    my $submit_uid = _get_submit_uid($p) or return;
 
     return msg(1131) if too_frequent($submit_uid);
 

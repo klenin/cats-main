@@ -95,6 +95,7 @@ my $main_routes = {
         link_save => bool, move => bool,
         zip => upload, allow_rename => bool,
         remote_url => str, repo_path => qr/[A-Za-z0-9_\/]*/,
+        submit_as => str,
         source => upload, source_text => str, np => integer,
         new_title => str, new_lang => ident, add_new_template => bool,
     ],

@@ -16,6 +16,7 @@
     used_in => '用于比赛',
     solution_file => '解决方案文件',
     dev_env => '开发环境',
+    submit_as => '提交 as user:',
     solution_text => '解决方案文本',
     submit => '提交',
     std_solution => '标准解决方案',

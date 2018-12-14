@@ -1,4 +1,5 @@
 [%- js.jquery = 1 -%]
+[%- SET js.autocomplete = 1 IF editable -%]
 [%- extra_head = BLOCK %]
 <style>
   .last_verdict { display: inline-block; width: 2em; padding: 2px; }
@@ -15,6 +16,7 @@
 [%- PROCESS includes/menu_begin.tti %]
 [%- PROCESS includes/html.tti -%]
 [%- PROCESS "lang/$lang/verdicts.tti" -%]
+[%- PROCESS "lang/$lang/autocomplete.tti" -%]
 [% IF editable %]
 <script type="text/javascript">
 function getSelectedButton(button) {
@@ -183,6 +185,9 @@ function chg_code(st_sel, pid) {
     [% FOREACH de IN de_list; option(de.de_id, de.de_name, de_selected); END %]
     </select>
   </p>
+  [% IF editable %]
+  <p><label>[% capt.submit_as %]: <input type="text" id="submit_as" name="submit_as" class="bordered" size="40"/></label></p>
+  [% END %]
   <p><label for="source_text">[% capt.solution_text %]:</label><br/>
   <textarea id="source_text" name="source_text" cols="50" rows="5"
         data-editor="plain_text" data-gutter="1" data-id="source-editor"></textarea></p>
@@ -300,6 +305,25 @@ function emulate_download() {
 }
 $(emulate_download);
 
+function autocomplete() {
+  var input = $('#submit_as');
+  input.autocomplete({
+    minChars: 2,
+    deferRequestBy: 100,
+    showNoSuggestionNotice: true,
+    noSuggestionNotice: '[% capt.no_suggestion %]',
+    serviceUrl: '[% href_find_users %]',
+    formatResult: function (suggestion, currentValue) {
+      return suggestion.data.login + ' (' + suggestion.data.team_name + ')';
+    }
+  });
+  var on_focus = function () {
+    input.autocomplete('setOptions', { width: input.width() * 2 });
+    input.off('focus', on_focus);
+  };
+  input.on('focus', on_focus);
+}
+$(autocomplete);
 </script>
 [% END %]
 [% PROCESS includes/menu_end.tti %]
