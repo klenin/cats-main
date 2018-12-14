@@ -149,36 +149,6 @@ sub has_lang_tag {
     $parsed_tags->{lang};
 }
 
-sub _prepare_de_list {
-    my $de_list =
-        CATS::DevEnv->new(CATS::JudgeDB::get_DEs({ active_only => 1, fields => 'syntax' }));
-
-    my ($allowed_des) = $dbh->selectall_arrayref(_u $sql->select(
-        'contest_problems CP LEFT JOIN contest_problem_des CPD ON CP.id = CPD.cp_id',
-        'CP.id, CPD.de_id',
-        { 'CP.contest_id' => $cid,
-            ($is_jury ? () : ('CP.status' => { '<', $cats::problem_st_disabled })) }
-    ));
-
-    my $allow_all = 0;
-    my %allowed;
-    for (@$allowed_des) {
-        if($_->{de_id}) {
-            $allowed{$_->{de_id}} = 1;
-        }
-        else {
-            $allow_all = 1;
-            last;
-        }
-    }
-
-    my @all_des = $allow_all ? @{$de_list->des} : grep $allowed{$_->{id}}, @{$de_list->des};
-    my @de = (
-        { de_id => 'by_extension', de_name => res_str(536) },
-         map {{ de_id => $_->{id}, de_name => $_->{description}, syntax => $_->{syntax} }} @all_des );
-    (de_list => \@de, (@all_des == 1 ? (de_selected => $all_des[0]->{id}) : ()));
-}
-
 sub problems_frame {
     my ($p) = @_;
 
@@ -471,7 +441,7 @@ sub problems_frame {
         can_submit => $is_jury ||
             $user->{is_participant} &&
             ($user->{is_virtual} || !$contest->has_finished_for($user)),
-        _prepare_de_list(),
+        CATS::Problem::Submit::prepare_de_list(),
         contest_id => $cid, no_judges => !$jactive,
      );
 }

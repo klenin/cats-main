@@ -1,4 +1,3 @@
-
 [%- js.jquery = 1; js.ace = 1 -%]
 [%- SET js.autocomplete = 1 IF editable -%]
 [%- extra_head = BLOCK %]

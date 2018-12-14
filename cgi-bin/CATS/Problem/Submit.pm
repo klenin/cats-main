@@ -7,9 +7,11 @@ use CATS::Constants;
 use CATS::DB;
 use CATS::DevEnv;
 use CATS::Globals qw($cid $contest $is_jury $t $uid $user);
-use CATS::Messages qw(msg);
+use CATS::Messages qw(msg res_str);
 use CATS::Output qw(url_f);
 use CATS::Request;
+use Exporter qw(import);
+our @EXPORT_OK = qw(prepare_de prepare_de_list);
 
 sub _get_submit_uid {
     my ($p) = @_;
@@ -44,7 +46,7 @@ sub _determine_state {
         $cats::st_ignore_submit : $cats::st_not_processed;
 }
 
-sub _prepare_de {
+sub prepare_de {
     my ($p, $file, $cpid) = @_;
 
     my $did = $p->{de_id} or return msg(1013);
@@ -65,6 +67,36 @@ sub _prepare_de {
         return;
     }
     $did;
+}
+
+sub prepare_de_list {
+    my $de_list =
+        CATS::DevEnv->new(CATS::JudgeDB::get_DEs({ active_only => 1, fields => 'syntax' }));
+
+    my ($allowed_des) = $dbh->selectall_arrayref(_u $sql->select(
+        'contest_problems CP LEFT JOIN contest_problem_des CPD ON CP.id = CPD.cp_id',
+        'CP.id, CPD.de_id',
+        { 'CP.contest_id' => $cid,
+            ($is_jury ? () : ('CP.status' => { '<', $cats::problem_st_disabled })) }
+    ));
+
+    my $allow_all = 0;
+    my %allowed;
+    for (@$allowed_des) {
+        if($_->{de_id}) {
+            $allowed{$_->{de_id}} = 1;
+        }
+        else {
+            $allow_all = 1;
+            last;
+        }
+    }
+
+    my @all_des = $allow_all ? @{$de_list->des} : grep $allowed{$_->{id}}, @{$de_list->des};
+    my @de = (
+        { de_id => 'by_extension', de_name => res_str(536) },
+         map {{ de_id => $_->{id}, de_name => $_->{description}, syntax => $_->{syntax} }} @all_des );
+    (de_list => \@de, (@all_des == 1 ? (de_selected => $all_des[0]->{id}) : ()));
 }
 
 sub problems_submit {
@@ -134,7 +166,7 @@ sub problems_submit {
         return msg(1137) if $prev_reqs_count >= $contest->{max_reqs};
     }
 
-    my $did = _prepare_de($p, $file ? $file->remote_file_name : '', $cpid) or return;
+    my $did = prepare_de($p, $file ? $file->remote_file_name : '', $cpid) or return;
 
     # Forbid repeated submissions of the identical code with the same DE.
     my $source_hash = CATS::Utils::source_hash($source_text);
