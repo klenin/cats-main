@@ -118,7 +118,7 @@ sub users_add_participants_frame {
         title_suffix => res_str(584),
         users_submenu,
         contests => $contests,
-        href_find_users => url_f('api_find_users'),
+        href_find_users => url_f('api_find_users', in_contest => 0),
     );
 }
 
