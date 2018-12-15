@@ -18,7 +18,8 @@ sub reference_names() {
         ($user->is_root ? { name => 'wiki_pages', new => 590, item => 589 } : ()),
         ($is_jury ? { name => 'snippets', new => 592, item => 591 } : ()),
         ($user->privs->{edit_sites} ? { name => 'sites', new => 514, item => 513 } : ()),
-        ($is_root ? { name => 'account_tokens', item => 516 } : ()),
+        ($user->is_root ? { name => 'account_tokens', item => 516 } : ()),
+        ($user->is_root ? { name => 'contest_tags', new => 519, item => 506 } : ()),
     )
 }
 

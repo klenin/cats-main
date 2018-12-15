@@ -18,6 +18,7 @@
 516 "tokens"
 517 "compilers"
 518 "profile"
+519 "new tag"
 524 "statements"
 525 "problems"
 526 "participants"
@@ -343,3 +344,5 @@
 1184 "Freeze date must be between start and finish."
 1185 "Unfreeze date must be no earlier than freeze."
 1186 "Token '%s' deleted."
+1187 "Tag '%s' saved."
+1188 "Tag '%s' deleted."

@@ -18,6 +18,7 @@
 516 "tokens"
 517 "编译器"
 518 "个人资料"
+519 "新标签"
 524 "条件"
 525 "任务"
 526 "参与者"
@@ -343,3 +344,5 @@
 1184 "Freeze date must be between start and finish."
 1185 "Unfreeze date must be no earlier than freeze."
 1186 "Token '%s' deleted."
+1187 "Tag '%s' saved."
+1188 "Tag '%s' deleted."
