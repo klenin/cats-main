@@ -81,6 +81,14 @@ sub contest_tags_frame {
         { caption => res_str(643), order_by => 'ref_count', width => '10%' },
     ]);
     $lv->define_db_searches([ qw(id name) ]);
+    $lv->define_subqueries({
+        in_contest => { sq => qq~EXISTS (
+            SELECT 1 FROM contest_contest_tags CCT1 WHERE CCT1.contest_id = ? AND CCT1.tag_id = CT.id)~,
+            m => 1192, t => q~
+            SELECT C.title FROM contests C WHERE C.id = ?~
+        },
+    });
+    $lv->define_enums({ in_contest => { this => $cid } });
 
     my $c = $dbh->prepare(q~
         SELECT CT.id, CT.name,

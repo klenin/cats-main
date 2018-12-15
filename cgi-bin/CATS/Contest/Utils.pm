@@ -76,6 +76,13 @@ sub _contest_searches {
         duration_hours => 'CAST((finish_date - start_date) * 24 AS DECIMAL(15,1))',
     });
     $p->{listview}->define_enums({ rules => { acm => 0, school => 1 } });
+    $p->{listview}->define_subqueries({
+        has_tag => { sq => qq~EXISTS (
+            SELECT 1 FROM contest_contest_tags CCT1 WHERE CCT1.contest_id = C.id AND CCT1.tag_id = ?)~,
+            m => 1191, t => q~
+            SELECT CT.name FROM contest_tags CT WHERE CT.id = ?~
+        },
+    });
 }
 
 sub _common_contests_view {
