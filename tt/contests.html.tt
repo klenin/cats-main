@@ -58,6 +58,9 @@ function delete_contest(href, name) {
     [% IF c.has_orig; capt.ct_original; END %]
 </td>
 [%- END %]
+[% IF visible_cols.Tg -%]
+<td>[% c.tags | html %]</td>
+[%- END %]
 </tr>
 [% END %]
 </table>

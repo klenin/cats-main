@@ -162,12 +162,17 @@ sub authenticated_contests_view {
                 (SELECT COUNT(*) FROM problems P WHERE P.contest_id = C.id)~,
         });
     }
+    my $tags_sql = $p->{listview}->visible_cols->{Tg} ? q~
+        SELECT LIST(CT.name, ', ') FROM contest_contest_tags CCT
+        INNER JOIN contest_tags CT ON CT.id = CCT.tag_id
+        WHERE CCT.contest_id = C.id~ : 'NULL';
 
     my $c_hidden = $is_root ? '1=1' : q~(CA.account_id IS NOT NULL OR C.is_hidden = 0)~;
     my $sth = $dbh->prepare(qq~
         SELECT
             $cf, CA.is_virtual, CA.is_jury, CA.id AS registered, C.is_hidden,
-            ($problems_count_sql) AS problems_count
+            ($problems_count_sql) AS problems_count,
+            ($tags_sql) AS tags
             $extra_fields
         FROM contests C
         LEFT JOIN contest_accounts CA ON CA.contest_id = C.id AND CA.account_id = ?
