@@ -35,6 +35,16 @@ GetOptions(
 my $migration_path = File::Spec->catdir($Bin, qw(.. sql interbase migrations));
 -d $migration_path or die "Migrations path not available: $migration_path";
 
+my $has_lines;
+sub say_c {
+    say @_;
+    $has_lines = 1;
+}
+sub say_n {
+    say '' if $has_lines;
+    say_c @_;
+}
+
 sub make_migration() {
     $make =~ /^[a-z0-9\-_]+$/ or die "Bad migration name: $make";
     $make =~ s/_/-/g;
@@ -61,23 +71,25 @@ sub make_migration() {
     my $table;
     for (split "\n", $diff) {
         if (my ($line) = m/^\+([^+].+)$/) {
-            undef $table if m/(:?CREATE|ALTER) TABLE/;
-            if ($table) {
+            if (m/(:?CREATE|ALTER) TABLE/) {
+                undef $table;
+                say_n $line;
+            } elsif ($table) {
                 $line =~ s/^\s*(.+?),?$/$1/;
-                say "ALTER TABLE $table";
-                say "    ADD $line;";
+                say_n "ALTER TABLE $table";
+                say_c "    ADD $line;";
             }
             else {
-                say $line;
+                say_c $line;
             }
         }
         elsif (my ($line1) = m/^\-([^\-].+)$/) {
             if ($table) {
-                say "ALTER TABLE $table";
-                say "    DROP $line1;";
+                say_n "ALTER TABLE $table";
+                say_c "    DROP $line1;";
             }
             else {
-                say; # Unable auto-converl this removal, trigger syntax error.
+                say; # Unable auto-convert this removal, trigger syntax error.
             }
         }
         elsif (m/^(?:\s*|.+@@ )CREATE TABLE (\w+) \(/) {
