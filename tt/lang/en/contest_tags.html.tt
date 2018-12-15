@@ -1,5 +1,7 @@
 [%
   capt.import({
     want_to_delete => 'Do you really want to delete tag',
+    add => 'tag contest',
+    remove => 'untag contest',
   })
 %]

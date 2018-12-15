@@ -162,6 +162,7 @@
 682 "Ordering"
 683 "Usages left"
 684 "Size"
+685 "In this contest"
 700 "manual"
 701 "ok"
 702 "paused"
@@ -346,3 +347,5 @@
 1186 "Token '%s' deleted."
 1187 "Tag '%s' saved."
 1188 "Tag '%s' deleted."
+1189 "Tags added: %d."
+1190 "Tags removed: %d."

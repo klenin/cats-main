@@ -5,7 +5,7 @@ use warnings;
 
 use CATS::DB;
 use CATS::Form;
-use CATS::Globals qw($t $is_jury $is_root);
+use CATS::Globals qw($is_jury $is_root $t);
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
 use CATS::Output qw(init_template url_f);

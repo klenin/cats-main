@@ -18,13 +18,18 @@ function delete_contest_tag(href, name) {
 <td class="nobr">
   <a href="javascript:delete_contest_tag('[% ct.href_delete %]', '[% ct.name | html %]');" class="icon delete"></a>
   <a href="[% ct.href_edit %]" class="icon edit"></a>
+  <input type="checkbox" name="check" value="[% ct.id %]" />
 </td>
 [% END %]
 <td><a href="[% ct.href_view_contests %]">[% ct.name | html %]</a></td>
-<td>[% k.ref_count %]</td>
+<td>[% IF ct.is_used %]<a href="#" class="icon checked"></a>[% END %]</td>
+<td>[% ct.ref_count %]</td>
 </tr>
 [% END %]
 </table>
+<br/>
+<button name="add" value="1" class="button">[% capt.add %]</button>
+<button name="remove" value="1" class="button">[% capt.remove %]</button>
 [% PROCESS includes/pages.tti %]
 </form>
 
