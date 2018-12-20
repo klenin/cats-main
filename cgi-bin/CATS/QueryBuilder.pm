@@ -91,7 +91,9 @@ sub make_where {
             or push @sq_unknown, $name and next;
         $value = $self->{enums}->{$name}->{$value} // $value;
         if ($sq->{m}) {
-            my @msg_args = $sq->{t} ? $dbh->selectrow_array($sq->{t}, undef, $value) : ();
+            my @msg_args =
+                !exists $sq->{t} ? () :
+                $sq->{t} ? $dbh->selectrow_array($sq->{t}, undef, $value) : $value;
             msg($sq->{m}, @msg_args);
         }
         # SQL::Abstract uses double reference to designate subquery.
