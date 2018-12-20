@@ -385,6 +385,29 @@ sub contests_rss_frame {
     $t->param(href_root => $CATS::Config::absolute_url, contests => $contests);
 }
 
+sub _contests_set_tags {
+    my ($p) = @_;
+    my $tag_id = $dbh->selectrow_array(q~
+        SELECT id FROM contest_tags WHERE name = ?~, undef,
+        $p->{tag_name}) or return;
+    my $count = 0;
+    my $existing_sth = $dbh->prepare(q~
+        SELECT 1 FROM contest_contest_tags WHERE contest_id = ? AND tag_id = ?~);
+    my $insert_sth = $dbh->prepare(q~
+        INSERT INTO contest_contest_tags (contest_id, tag_id) VALUES (?, ?)~);
+    for (@{$p->{contests_selection}}) {
+        $existing_sth->execute($_, $tag_id);
+        my @r = $existing_sth->fetchrow_array;
+        warn @r;
+        @r and next;
+        $existing_sth->finish;
+        $insert_sth->execute($_, $tag_id);
+        ++$count;
+    }
+    $dbh->commit;
+    msg(1189, $count);
+}
+
 sub contests_frame {
     my ($p) = @_;
 
@@ -407,6 +430,8 @@ sub contests_frame {
 
     CATS::Contest::Participate::online if $p->{online_registration};
     CATS::Contest::Participate::virtual if $p->{virtual_registration};
+
+    _contests_set_tags($p) if $is_root && $p->{set_tags} && $p->{tag_name};
 
     contests_select_current if $p->{set_contest};
 

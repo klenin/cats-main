@@ -15,6 +15,7 @@
     participate_virtually => '虚拟参与',
     summary_rank => '总结排名',
     create_group => '创建组',
+    set_tags => 'set 标签',
     virt_help => [
       '即使比赛结束后，虚拟参与还可以解决时差问题。',
       '用户只有在没有在线参与的情况下才能虚拟参与。'

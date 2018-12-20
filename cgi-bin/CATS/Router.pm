@@ -48,6 +48,7 @@ my $main_routes = {
         exclude_verdict_penalty => array_of ident,
         penalty => integer,
         ical => bool, set_contest => bool, filter => ident,
+        set_tags => bool, tag_name => str,
     ],
     contests_rss => [ \&CATS::UI::Contests::contests_rss_frame, ],
     contests_new => [ \&CATS::UI::Contests::contests_new_frame, ],

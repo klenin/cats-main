@@ -15,6 +15,7 @@
     participate_virtually => 'participate virtually',
     summary_rank => 'summary rank',
     create_group => 'create group',
+    set_tags => 'set tags',
     virt_help => [
       'Virtual participation allows to solve problems with a time shift, even after the end of the contest.',
       'A user can participate virtually only if he did not participate online.'

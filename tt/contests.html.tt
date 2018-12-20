@@ -77,6 +77,8 @@ function delete_contest(href, name) {
 <button type="submit" name="summary_rank" value="1" class="button">[% capt.summary_rank %]</button>
 [% IF user.privs.is_root -%]
 <button type="submit" name="create_group" value="1" class="button">[% capt.create_group %]</button>
+<button type="submit" name="set_tags" value="1" class="button">[% capt.set_tags %]</button>
+<input type="text" name="tag_name" size="30" class="bordered"/>
 [%- END %]
 [% PROCESS includes/pages.tti %]
 </form>
