@@ -134,6 +134,10 @@ sub _console_content {
 
     my $de_select = q~
         (SELECT %s FROM sources S INNER JOIN default_de DE ON DE.id = S.de_id WHERE S.req_id = R.id)~;
+    my $same_contest_problem_account = q~
+        R1.contest_id = R.contest_id AND
+        R1.problem_id = R.problem_id AND
+        R1.account_id = R.account_id AND~;
 
     $lv->define_db_searches({
         de_code => sprintf($de_select, 'DE.code'),
@@ -143,13 +147,9 @@ sub _console_content {
             SELECT CP.code FROM contest_problems CP
             WHERE CP.contest_id = C.id AND CP.problem_id = P.id)~,
         src_length => '(SELECT OCTET_LENGTH(S.src) FROM sources S WHERE S.req_id = R.id)',
-        next => q~COALESCE((
+        next => qq~COALESCE((
             SELECT R1.id FROM reqs R1
-            WHERE
-                R1.contest_id = R.contest_id AND
-                R1.problem_id = R.problem_id AND
-                R1.account_id = R.account_id AND
-                R1.id > R.id
+            WHERE $same_contest_problem_account R1.id > R.id
             ROWS 1), 0)~,
         tag => q~COALESCE(R.tag, '')~,
         contest_title => 'C.title',
@@ -172,6 +172,9 @@ sub _console_content {
         ($uid ? (can_see_reqs => qq~(
             SELECT RL.from_ok * RL.to_ok FROM relations RL
             WHERE RL.from_id = $uid AND RL.to_id = R.account_id)~) : ()),
+        problem_solved => qq~(
+            SELECT COUNT(*) FROM reqs R1
+            WHERE $same_contest_problem_account R1.state = $cats::st_accepted)~,
     });
 
     $lv->define_enums({
