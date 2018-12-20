@@ -82,6 +82,12 @@ sub _contest_searches {
             m => 1191, t => q~
             SELECT CT.name FROM contest_tags CT WHERE CT.id = ?~
         },
+        has_tag_named => { sq => qq~EXISTS (
+            SELECT 1 FROM contest_contest_tags CCT1
+            INNER JOIN contest_tags CT1 ON CT1.id = CCT1.tag_id
+            WHERE CCT1.contest_id = C.id AND CT1.name = ?)~,
+            m => 1191, t => undef,
+        },
     });
 }
 

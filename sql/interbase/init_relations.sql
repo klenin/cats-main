@@ -129,6 +129,8 @@ CREATE TABLE contest_tags (
     name     VARCHAR(100) NOT NULL
 );
 
+CREATE INDEX contest_tags_name_idx ON contest_tags(name);
+
 CREATE TABLE contest_contest_tags (
     contest_id   INTEGER NOT NULL,
     tag_id       INTEGER NOT NULL,
