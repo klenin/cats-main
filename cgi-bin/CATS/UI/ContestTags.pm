@@ -78,24 +78,26 @@ sub contest_tags_frame {
     $lv->define_columns(url_f('v'), 0, 0, [
         { caption => res_str(601), order_by => 'name', width => '30%' },
         { caption => res_str(685), order_by => 'is_used', width => '10%' },
-        { caption => res_str(643), order_by => 'ref_count', width => '10%' },
+        { caption => res_str(643), order_by => 'ref_count', width => '10%', col => 'Rc' },
     ]);
     $lv->define_db_searches([ qw(id name) ]);
     $lv->define_subqueries({
         in_contest => { sq => qq~EXISTS (
-            SELECT 1 FROM contest_contest_tags CCT1 WHERE CCT1.contest_id = ? AND CCT1.tag_id = CT.id)~,
+            SELECT 1 FROM contest_contest_tags CCT1
+            WHERE CCT1.contest_id = ? AND CCT1.tag_id = CT.id)~,
             m => 1192, t => q~
             SELECT C.title FROM contests C WHERE C.id = ?~
         },
     });
     $lv->define_enums({ in_contest => { this => $cid } });
 
-    my $c = $dbh->prepare(q~
+    my $ref_count_sql = $lv->visible_cols->{Rc} ? q~
+        SELECT COUNT(*) FROM contest_contest_tags CCT2 WHERE CCT2.tag_id = CT.id~ : 'NULL';
+    my $c = $dbh->prepare(qq~
         SELECT CT.id, CT.name,
             (SELECT 1 FROM contest_contest_tags CCT1
                 WHERE CCT1.tag_id = CT.id AND CCT1.contest_id = ?) AS is_used,
-            (SELECT COUNT(*) FROM contest_contest_tags CCT2
-                WHERE CCT2.tag_id = CT.id) AS ref_count
+            ($ref_count_sql) AS ref_count
         FROM contest_tags CT WHERE 1 = 1 ~ . $lv->maybe_where_cond . $lv->order_by);
     $c->execute($cid, $lv->where_params);
 

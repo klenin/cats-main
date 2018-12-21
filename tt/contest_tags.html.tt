@@ -23,7 +23,7 @@ function delete_contest_tag(href, name) {
 [% END %]
 <td><a href="[% ct.href_view_contests %]">[% ct.name | html %]</a></td>
 <td>[% IF ct.is_used %]<a href="#" class="icon checked"></a>[% END %]</td>
-<td>[% ct.ref_count %]</td>
+[% IF visible_cols.Rc %]<td>[% ct.ref_count %]</td>[% END %]
 </tr>
 [% END %]
 </table>
