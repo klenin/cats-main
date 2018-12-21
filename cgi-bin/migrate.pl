@@ -71,7 +71,7 @@ sub make_migration() {
     my $table;
     for (split "\n", $diff) {
         if (my ($line) = m/^\+([^+].+)$/) {
-            if (m/(:?CREATE|ALTER) TABLE/) {
+            if (m/(:?CREATE|ALTER) (:?TABLE|INDEX)/) {
                 undef $table;
                 say_n $line;
             } elsif ($table) {
