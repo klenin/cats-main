@@ -136,6 +136,13 @@ sub judges_frame {
         (SELECT COUNT(*) FROM reqs R WHERE R.judge_id = J.id AND R.state <= $cats::st_testing) AS processing_count,
         (SELECT COUNT(*) FROM reqs R WHERE R.judge_id = J.id) AS processed_count~;
 
+    # SQL join is too slow.
+    $t->param(updates_pending => $lv->visible_cols->{Vr} ? $dbh->selectall_hashref(qq~
+        SELECT JB.judge_id, COUNT(*) AS cnt
+        FROM jobs_queue JQ INNER JOIN jobs JB ON JQ.id = JB.id
+        WHERE JB.type = $cats::job_type_update_self
+        GROUP BY JB.judge_id~, 'judge_id', { Slice => {} }) : {});
+
     my $c = $dbh->prepare(qq~
         SELECT
             J.id AS jid, J.nick AS judge_name, A.login AS account_name,
