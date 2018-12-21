@@ -12,7 +12,7 @@
 </style>
 [%- END %]
 [% PROCESS includes/menu_begin.tti %]
-[%- PROCESS includes/autocomplete.tti href_find_users = href_find_tags IF user.privs.is_root -%]
+[%- PROCESS includes/autocomplete.tti href_find = href_find_tags IF user.privs.is_root -%]
 
 <script type="text/javascript">
 function delete_contest(href, name) {

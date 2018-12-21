@@ -14,7 +14,7 @@
 [% PROCESS includes/ace.tti %]
 [%- END -%]
 [%- PROCESS includes/menu_begin.tti %]
-[%- PROCESS includes/autocomplete.tti -%]
+[%- PROCESS includes/autocomplete.tti href_find = href_find_users -%]
 [%- PROCESS "lang/$lang/verdicts.tti" -%]
 [% IF editable %]
 <script type="text/javascript">

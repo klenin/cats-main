@@ -1,6 +1,6 @@
 [%- js.autocomplete = 1 -%]
 [% PROCESS includes/menu_begin.tti %]
-[%- PROCESS includes/autocomplete.tti -%]
+[%- PROCESS includes/autocomplete.tti href_find = href_find_users -%]
 
 <h3>[% capt.add_participants %]</h3>
 

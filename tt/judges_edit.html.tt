@@ -2,7 +2,7 @@
 [% PROCESS includes/menu_begin.tti %]
 [% PROCESS includes/html_input.tti %]
 [% PROCESS includes/de_bitmap.tti %]
-[%- PROCESS includes/autocomplete.tti href_find_users = j.href_find_users -%]
+[%- PROCESS includes/autocomplete.tti href_find = j.href_find_users -%]
 [%- PROCESS "lang/$lang/judges_common.tti" -%]
 
 [%-

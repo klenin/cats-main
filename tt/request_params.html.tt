@@ -7,7 +7,7 @@
 </head>
 <body>
 
-[% PROCESS includes/autocomplete.tti %]
+[% PROCESS includes/autocomplete.tti href_find = href_find_users %]
 [% PROCESS includes/sources_info.tti %]
 <br/>
 

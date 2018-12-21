@@ -7,7 +7,7 @@ function autocomplete(input, extra) {
     deferRequestBy: 100,
     showNoSuggestionNotice: true,
     noSuggestionNotice: '[% capt.no_suggestion %]',
-    serviceUrl: '[% href_find_users %]',
+    serviceUrl: '[% href_find %]',
     formatResult: function (suggestion, currentValue) {
       return suggestion.data.login + ' (' + suggestion.data.team_name + ')';
     }
