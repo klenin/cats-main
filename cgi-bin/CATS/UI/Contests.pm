@@ -469,6 +469,7 @@ sub contests_frame {
     $t->param(
         submenu => $submenu,
         href_rss => _abs_url_f('contests_rss'),
+        href_find_tags => url_f('api_find_contest_tags'),
         CATS::Contest::Participate::flags_can_participate,
     );
 }
