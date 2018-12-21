@@ -1,6 +1,12 @@
 [% IF js.autocomplete %]
 [%- PROCESS "lang/$lang/autocomplete.tti" -%]
 <script>
+function bold_prefix(s, prefix) {
+  var len = prefix.length;
+  var s_prefix = s.substr(0, len);
+  return s_prefix === prefix ? '<b>' + prefix + '</b>' + s.substr(len) : s;
+}
+
 function autocomplete(input, extra) {
   var params = {
     minChars: 2,
@@ -9,7 +15,8 @@ function autocomplete(input, extra) {
     noSuggestionNotice: '[% capt.no_suggestion %]',
     serviceUrl: '[% href_find %]',
     formatResult: function (suggestion, currentValue) {
-      return suggestion.data.login + ' (' + suggestion.data.team_name + ')';
+      return bold_prefix(suggestion.data.login, currentValue) +
+        ' (' + bold_prefix(suggestion.data.team_name, currentValue) + ')';
     }
   };
   if (extra)

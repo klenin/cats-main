@@ -87,8 +87,7 @@ function delete_contest(href, name) {
 <script>
 $(function() { autocomplete($('#tag_name'), {
   formatResult: function (suggestion, currentValue) {
-    var n = suggestion.data.name, len = currentValue.length;
-    return '<b>' + n.substr(0, len) + '</b>' +  n.substr(len);
+    return bold_prefix(suggestion.data.name, currentValue);
   },
 }); });
 </script>
