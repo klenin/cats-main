@@ -45,13 +45,14 @@ sub keywords_frame {
         { caption => res_str(625), order_by => 'code', width => '30%' },
         { caption => res_str(636), order_by => 'name_ru', width => '30%' },
         { caption => res_str(637), order_by => 'name_en', width => '30%' },
-        { caption => res_str(643), order_by => 'ref_count', width => '10%' },
+        { caption => res_str(643), order_by => 'ref_count', width => '10%', col => 'Rc' },
     ]);
     $lv->define_db_searches([ qw(K.id code name_ru name_en) ]);
 
-    my $c = $dbh->prepare(q~
-        SELECT K.id AS kwid, K.code, K.name_ru, K.name_en,
-            (SELECT COUNT(*) FROM problem_keywords PK WHERE PK.keyword_id = K.id) AS ref_count
+    my $ref_count_sql = $lv->visible_cols->{Rc} ? q~
+        SELECT COUNT(*) FROM problem_keywords PK WHERE PK.keyword_id = K.id~ : 'NULL';
+    my $c = $dbh->prepare(qq~
+        SELECT K.id AS kwid, K.code, K.name_ru, K.name_en, ($ref_count_sql) AS ref_count
         FROM keywords K WHERE 1 = 1 ~ . $lv->maybe_where_cond . $lv->order_by);
     $c->execute($lv->where_params);
 
