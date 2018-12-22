@@ -8,7 +8,7 @@ use Encode;
 
 use CATS::DB;
 use CATS::DevEnv;
-use CATS::Globals qw($contest $is_jury $user);
+use CATS::Globals qw($cid $contest $is_jury $user);
 use CATS::Output qw(init_template url_f);
 use CATS::JudgeDB;
 use CATS::Messages qw(msg);
@@ -21,6 +21,7 @@ use CATS::ReqDetails qw(
     source_links);
 use CATS::Request;
 use CATS::Settings qw($settings);
+use CATS::Problem::Submit qw(prepare_de prepare_de_list);
 
 sub diff_runs_frame {
     my ($p) = @_;
@@ -69,10 +70,11 @@ sub view_source_frame {
     my $sources_info = get_sources_info($p, request_id => $p->{rid}, get_source => 1, encode_source => 1);
     $sources_info or return;
 
-    if ($p->{submit}) {
-        $p->{problem_id} = $dbh->selectrow_array(q~
+    $p->{problem_id} = $dbh->selectrow_array(q~
             SELECT problem_id FROM reqs WHERE id = ?~,
             undef, $p->{rid});
+
+    if ($p->{submit}) {
         $p->{source_text} = '' if $p->{source};
         my $rid = CATS::Problem::Submit::problems_submit($p);
         $rid and return $p->redirect(url_f 'view_source', rid => $rid, submitted => 1);
@@ -86,8 +88,18 @@ sub view_source_frame {
         }
         my $de_bitmap;
         if ($p->{de_id} && $p->{de_id} != $sources_info->{de_id}) {
-            $u->{de_id} = $p->{de_id};
-            $de_bitmap = [ CATS::DevEnv->new(CATS::JudgeDB::get_DEs())->bitmap_by_ids($p->{de_id}) ];
+            my $cpid = $dbh->selectrow_array(q~
+                SELECT CP.id
+                FROM contest_problems CP
+                INNER JOIN problems P ON P.id = CP.problem_id
+                WHERE CP.contest_id = ? AND CP.problem_id = ?~, undef,
+                $cid, $p->{problem_id}) or return msg(1012);
+            my $file = $p->{source};
+            my $did = prepare_de($p, $file ? $file->remote_file_name : '', $cpid);
+            if ($did) {
+                $u->{de_id} = $did;
+                $de_bitmap = [ (CATS::DevEnv->new(CATS::JudgeDB::get_DEs()))->bitmap_by_ids($u->{de_id}) ];
+            }
         }
         if ($u) {
             CATS::Request::update_source($sources_info->{req_id}, $u, $de_bitmap);
@@ -129,21 +141,10 @@ sub view_source_frame {
     my $can_submit = $is_jury ||
         $user->{is_participant} &&
         ($user->{is_virtual} || !$contest->has_finished_for($user));
-
+    
+    my @de_list = prepare_de_list();
     if ($sources_info->{is_jury} || $can_submit) {
-        my $de_list = CATS::DevEnv->new(CATS::JudgeDB::get_DEs({ active_only => 1, fields => 'syntax' }));
-        if ($p->{de_id}) {
-            $sources_info->{de_id} = $p->{de_id};
-            $sources_info->{de_name} = $de_list->by_id($p->{de_id})->{description};
-        }
-        $t->param(de_list => [
-            map {
-                de_id => $_->{id},
-                de_name => $_->{description},
-                selected => $_->{id} == $sources_info->{de_id},
-                syntax => $_->{syntax},
-            }, @{$de_list->des}
-        ]);
+        $t->param(prepare_de_list(), de_selected => $sources_info->{de_id});
     }
     $t->param(
         source_width => $settings->{source_width} // 90,

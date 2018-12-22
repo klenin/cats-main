@@ -4,5 +4,7 @@
     print => 'print',
     replace => 'replace',
     submit => 'submit',
+    dev_env_detected => 'Development environment detected',
+    de_not_allowed => 'This development environment is forbidden. Allowed development environments:',
   })
 %]
