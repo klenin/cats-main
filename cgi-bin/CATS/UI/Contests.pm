@@ -397,9 +397,7 @@ sub _contests_set_tags {
         INSERT INTO contest_contest_tags (contest_id, tag_id) VALUES (?, ?)~);
     for (@{$p->{contests_selection}}) {
         $existing_sth->execute($_, $tag_id);
-        my @r = $existing_sth->fetchrow_array;
-        warn @r;
-        @r and next;
+        my @r = $existing_sth->fetchrow_array and next;
         $existing_sth->finish;
         $insert_sth->execute($_, $tag_id);
         ++$count;
