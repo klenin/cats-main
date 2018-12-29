@@ -93,6 +93,7 @@ CREATE TABLE contests (
     penalty_except       VARCHAR(100),
     ctype                INTEGER, /* 0 -- normal, 1 -- training session */
     apikey               VARCHAR(50),
+    parent_id            INTEGER,
 
     is_official          INTEGER DEFAULT 0 CHECK (is_official IN (0, 1)),
     run_all_tests        INTEGER DEFAULT 0 CHECK (run_all_tests IN (0, 1)),
@@ -123,6 +124,8 @@ CREATE TABLE contests (
 );
 ALTER TABLE contests ADD CONSTRAINT chk_pinned_judges_only
     CHECK (pinned_judges_only IN (0, 1));
+ALTER TABLE contests ADD CONSTRAINT contest_parent_fk
+    FOREIGN KEY (parent_id) REFERENCES contests(id);
 
 CREATE TABLE contest_tags (
     id       INTEGER NOT NULL PRIMARY KEY,
