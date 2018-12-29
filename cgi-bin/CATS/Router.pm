@@ -49,6 +49,7 @@ my $main_routes = {
         penalty => integer,
         ical => bool, set_contest => bool, filter => ident,
         set_tags => bool, tag_name => str,
+        add_children => bool, remove_children => bool,
     ],
     api_find_contest_tags => [ \&CATS::UI::ContestTags::find_contest_tags_api, query => str, ],
     contests_rss => [ \&CATS::UI::Contests::contests_rss_frame, ],

@@ -64,6 +64,7 @@ sub _contest_search_fields() {qw(
     req_selection
     pinned_judges_only
     show_sites
+    parent_id
 )}
 
 sub _contest_searches {
@@ -75,7 +76,10 @@ sub _contest_searches {
         since_finish => '(CURRENT_TIMESTAMP - finish_date)',
         duration_hours => 'CAST((finish_date - start_date) * 24 AS DECIMAL(15,1))',
     });
-    $p->{listview}->define_enums({ rules => { acm => 0, school => 1 } });
+    $p->{listview}->define_enums({
+        rules => { acm => 0, school => 1 },
+        parent_id => { this => $cid },
+    });
     $p->{listview}->define_subqueries({
         has_tag => { sq => qq~EXISTS (
             SELECT 1 FROM contest_contest_tags CCT1 WHERE CCT1.contest_id = C.id AND CCT1.tag_id = ?)~,

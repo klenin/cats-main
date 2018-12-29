@@ -84,6 +84,11 @@ function delete_contest(href, name) {
 <button type="submit" name="set_tags" value="1" class="button">[% capt.set_tags %]</button>
 <input type="text" id="tag_name" name="tag_name" size="30" class="bordered"/>
 </div>
+<div class="action send_message">
+<label>[% capt.child_contests %]</label>
+<button type="submit" name="add_children" value="1" class="button">[% capt.children.add %]</button>
+<button type="submit" name="remove_children" value="1" class="button">[% capt.children.remove %]</button>
+</div>
 <script>
 $(function() { autocomplete($('#tag_name'), {
   formatResult: function (suggestion, currentValue) {

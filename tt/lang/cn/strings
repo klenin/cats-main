@@ -351,3 +351,5 @@
 1190 "Tags removed: %d."
 1191 "Contests with tag '%s'."
 1192 "Tags of contest '%s'."
+1193 "Child contests added: %d."
+1194 "Child contests removed: %d."

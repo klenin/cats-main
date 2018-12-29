@@ -406,6 +406,34 @@ sub _contests_set_tags {
     msg(1189, $count);
 }
 
+sub _contests_add_children {
+    my ($p) = @_;
+    my $count = 0;
+    my $update_sth = $dbh->prepare(q~
+        UPDATE contests SET parent_id = ?
+        WHERE id = ? AND parent_id IS DISTINCT FROM ?~);
+    for (@{$p->{contests_selection}}) {
+        next if $_ == $cid;
+        $count += $update_sth->execute($cid, $_, $cid);
+    }
+    $dbh->commit;
+    msg(1193, $count);
+}
+
+sub _contests_remove_children {
+    my ($p) = @_;
+    my $count = 0;
+    my $update_sth = $dbh->prepare(q~
+        UPDATE contests SET parent_id = NULL
+        WHERE id = ? AND parent_id = ?~);
+    for (@{$p->{contests_selection}}) {
+        next if $_ == $cid;
+        $count += $update_sth->execute($_, $cid);
+    }
+    $dbh->commit;
+    msg(1194, $count);
+}
+
 sub contests_frame {
     my ($p) = @_;
 
@@ -429,7 +457,11 @@ sub contests_frame {
     CATS::Contest::Participate::online if $p->{online_registration};
     CATS::Contest::Participate::virtual if $p->{virtual_registration};
 
-    _contests_set_tags($p) if $is_root && $p->{set_tags} && $p->{tag_name};
+    if ($is_root) {
+        _contests_set_tags($p) if $p->{set_tags} && $p->{tag_name};
+        _contests_add_children($p) if $p->{add_children};
+        _contests_remove_children($p) if $p->{remove_children};
+    }
 
     contests_select_current if $p->{set_contest};
 
