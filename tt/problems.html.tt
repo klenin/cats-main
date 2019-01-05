@@ -152,6 +152,9 @@ function chg_code(st_sel, pid) {
 <td><a href="[% p.href_select_tags %]">[% p.tags.replace(',', ',&#8203;') || '*' %]</a>
 </td>
 [%- END %]
+[% IF visible_cols.St -%]
+<td>[% href(p.href_select_strategy, p.strategy) %]</td>
+[%- END %]
 [% IF visible_cols.Kw -%]
 <td>[% p.keywords %]</td>
 [%- END %]

@@ -254,7 +254,8 @@ sub problem_limits_frame {
 
     $t->param(
         p => $problem,
-        href_action => url_f('problem_limits', pid => $problem->{id}, cid => $cid)
+        href_action => url_f('problem_limits', pid => $problem->{id}, cid => $cid,
+            from_problems => $p->{from_problems})
     );
 
     CATS::Problem::Utils::problem_submenu('problem_limits', $p->{pid});
@@ -288,6 +289,7 @@ sub problem_limits_frame {
         CATS::StaticPages::invalidate_problem_text(cid => $cid, cpid => $problem->{cpid});
 
         msg($new_limits ? 1145 : 1146, $problem->{title});
+        return $p->redirect(url_f 'problems') if $p->{from_problems} && !$new_limits;
     } elsif ($p->{clear_override}) {
         if ($problem->{limits_id}) {
             $dbh->do(q~
@@ -306,6 +308,7 @@ sub problem_limits_frame {
         }
 
         msg(1147, $problem->{title});
+        return $p->redirect(url_f 'problems') if $p->{from_problems};
     }
 }
 

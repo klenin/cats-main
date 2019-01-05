@@ -225,6 +225,7 @@ sub problems_frame {
             { caption => res_str(622), order_by => 'CP.status', width => '8%' },
             { caption => res_str(605), order_by => 'CP.testsets', width => '12%', col => 'Ts' },
             { caption => res_str(629), order_by => 'CP.tags', width => '8%', col => 'Tg' },
+            { caption => res_str(638), order_by => 'L.job_split_strategy', width => '8%', col => 'St' },
             { caption => res_str(667), order_by => 'keywords', width => '10%', col => 'Kw' },
             { caption => res_str(635), order_by => 'last_modified_by', width => '5%', col => 'Mu' },
             { caption => res_str(634), order_by => 'P.upload_date', width => '10%', col => 'Mt' },
@@ -302,11 +303,12 @@ sub problems_frame {
             P.upload_date, $judges_installed_sql AS judges_installed,
             (SELECT A.login FROM accounts A WHERE A.id = P.last_modified_by) AS last_modified_by,
             SUBSTRING(P.explanation FROM 1 FOR 1) AS has_explanation,
-            $test_count_sql CP.testsets, CP.points_testsets, P.lang, $limits_str,
+            $test_count_sql CP.testsets, CP.points_testsets, P.lang, $limits_str, L.job_split_strategy,
             CP.max_points, P.repo, CP.tags, P.statement_url, P.explanation_url, CP.color
         FROM problems P
         INNER JOIN contest_problems CP ON CP.problem_id = P.id
         INNER JOIN contests OC ON OC.id = P.contest_id
+        LEFT JOIN limits L ON L.id = CP.limits_id
         WHERE CP.contest_id = ?$hidden_problems
         ~ . $lv->maybe_where_cond . $lv->order_by
     );
@@ -380,6 +382,8 @@ sub problems_frame {
                     se => 'problem', i_value => -1, show_results => 1),
             href_select_testsets => url_f('problem_select_testsets', pid => $c->{pid}, from_problems => 1),
             href_select_tags => url_f('problem_select_tags', pid => $c->{pid}, from_problems => 1),
+            href_select_strategy => url_f('problem_limits', pid => $c->{pid}, cid => $c->{cid},
+                from_problems => 1),
             href_last_request => ($last_request ? url_f('run_details', rid => $last_request) : ''),
             href_allow_des => url_f('problem_des', pid => $c->{pid}),
 
@@ -415,6 +419,7 @@ sub problems_frame {
             write_limit => $c->{write_limit},
             max_points => $c->{max_points},
             tags => $c->{tags},
+            strategy => $c->{job_split_strategy} // '*',
             last_verdict => $last_verdict,
             keywords => $c->{keywords},
             allow_des => $c->{allow_des} // '*',
