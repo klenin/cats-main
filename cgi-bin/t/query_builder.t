@@ -4,7 +4,7 @@ use warnings;
 use File::Spec;
 use FindBin;
 use Test::Exception;
-use Test::More tests => 16;
+use Test::More tests => 20;
 
 use lib File::Spec->catdir($FindBin::Bin, '..');
 use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
@@ -19,6 +19,8 @@ is_deeply qb_mask('a=2 , b_c=dddd'), { a => qr/^2\ $/i, b_c => qr/^dddd$/i }, 'm
 is_deeply qb_mask('mm=*'), { mm => qr/^\*$/i }, 'mask quoting';
 is_deeply qb_mask('not_eq!=a,starts^=b,contains~=c,not_contains!~d'),
     { not_eq => qr/^(?!a)$/i, starts => qr/^b/i, contains => qr/c/i, not_contains => qr/^(?!.*d)/i }, 'mask ops';
+is_deeply qb_mask('zz?'), { zz => qr/./i }, 'mask not NULL';
+is_deeply qb_mask('zz??'), { zz => qr/^$/i }, 'mask NULL';
 
 {
     my $qb = CATS::QueryBuilder->new;
@@ -36,6 +38,11 @@ is_deeply qb_mask('not_eq!=a,starts^=b,contains~=c,not_contains!~d'),
     $qb->parse_search('a!=1,id=2,b=3');
     is_deeply $qb->get_mask, { b => qr/^3$/i }, 'mask db';
     is_deeply $qb->make_where, { a => [ { '!=', 1 } ], 't.id' => [ { '=', 2 } ] }, 'db where';
+
+    $qb->parse_search('a?');
+    is_deeply $qb->make_where, { a => [ { '!=', undef } ] }, 'db not null';
+    $qb->parse_search('a??');
+    is_deeply $qb->make_where, { a => [ { '=', undef } ] }, 'db null';
 
     $qb->parse_search('a=1,b=x,a=2,b=y');
     is_deeply $qb->extract_search_values('b'), [ 'x', 'y' ], 'extract_search_values';

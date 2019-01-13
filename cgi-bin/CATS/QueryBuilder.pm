@@ -26,7 +26,7 @@ sub parse_search {
     $self->{search} = [];
     $self->{search_subqueries} = [];
     for (split /,\s*/, $search) {
-        /^($ident)([!~^=><]?=|>|<|\?|!~)(.*)$/ ? push @{$self->{search}}, [ $1, $3, $2 ] :
+        /^($ident)([!~^=><]?=|>|<|\?\??|!~)(.*)$/ ? push @{$self->{search}}, [ $1, $3, $2 ] :
         /^($ident)\((\d+|[a-zA-Z][a-zA-Z0-9_.]*)\)$/ ? push @{$self->{search_subqueries}}, [ $1, $2 ] :
         push @{$self->{search}}, [ '', $_, '' ];
     }
@@ -40,7 +40,8 @@ sub regex_op {
     $op eq '^=' ? "^\Q$v\E" :
     $op eq '~=' || $op eq '' ? "\Q$v\E" :
     $op eq '!~' ? "^(?!.*\Q$v\E)" :
-    $op eq '?' ? "." :
+    $op eq '?' ? '.' :
+    $op eq '??' ? '^$' :
     die "Unknown search op '$op'";
 }
 
@@ -51,7 +52,8 @@ sub sql_op {
     $op eq '^=' ? { 'STARTS WITH', $v } :
     $op eq '~=' ? { 'LIKE', '%' . "$v%" } :
     $op eq '!~' ? { 'NOT LIKE', '%' . "$v%" } :
-    $op eq '?' ? { '!=', undef, '!=', \q~''~ } :
+    $op eq '?' ? { '!=', undef } :
+    $op eq '??' ? { '=', undef } :
     $op =~ /^>|>=|<|<=$/ ? { $op, $v } : # SQL-only for now.
     die "Unknown search op '$op'";
 }
