@@ -50,7 +50,7 @@
     &gt; [% capt.jury %]]
   </td>
   <td colspan="[% user.is_jury ? colspan - 1 : colspan %]">
-    <i>[% c.question_text | html %]</i> - 
+    <a title="[% c.contest_title | html %]" class="question">[% c.question_text | html %]</a> -
     [% IF c.clarified %]<span class="jury_message">[% c.answer_text | html %]</span>[% END %]
     [% IF c.href_answer_box %]
       <a href="[% c.href_answer_box %]" target="_blank">[[% capt.answer %]]</a>
@@ -73,7 +73,7 @@
     [%- cell_search_ex('account_id', c.team_id) IF user.is_jury -%]
   </td>
   <td colspan="[% colspan %]">
-    <a title="[% c.contest_title %]"><span class="jury_message">[% c.message_text | html %]</span></a>
+    <a title="[% c.contest_title | html  %]"><span class="jury_message">[% c.message_text | html %]</span></a>
     [% IF c.href_delete_message %]<a href="[% c.href_delete_message %]">[[% capt.delete %]]</a>[% END %]
   </td>
 [% ELSIF c.is_broadcast %]
@@ -82,7 +82,7 @@
     <b><span class="jury_message">[[% capt.jury %] &gt; [% capt.all_teams %]]</span></b>
   </td>
   <td colspan="[% colspan %]">
-    <a title="[% c.contest_title %]"><b><span class="jury_message">[% c.message_text | html %]</span></b></a>
+    <a title="[% c.contest_title | html %]"><b><span class="jury_message">[% c.message_text | html %]</span></b></a>
     [% IF c.href_delete_message %]<a href="[% c.href_delete_message %]">[[% capt.delete %]]</a>[% END %]
   </td>
 [% ELSIF c.is_contest %]

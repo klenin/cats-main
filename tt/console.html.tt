@@ -3,6 +3,7 @@
 [% PROCESS includes/verdicts.css.tti class='console' %]
 table.console td.pts { text-align: right; width: 0; }
 td.name { text-align: left; white-space: nowrap; width: 1px; }
+a.question { color: black; font-style: italic; }
 </style>
 [%- END %]
 [% PROCESS includes/menu_begin.tti %]
