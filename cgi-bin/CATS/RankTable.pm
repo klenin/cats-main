@@ -63,7 +63,7 @@ sub cache_max_points {
         $max_points = $dbh->selectrow_array(q~
             SELECT SUM(points) FROM tests WHERE problem_id = ?~, undef, $pid);
     }
-    $max_points ||= $problem->{max_points_def};
+    $max_points ||= $problem->{max_points_def} || 1;
     if ($problem->{cpid}) {
         $dbh->do(q~
             UPDATE contest_problems SET max_points = ?
@@ -282,10 +282,10 @@ sub cache_req_points {
         max($_->{points} || 0, 0)
     } @$test_points;
 
+    # In case of school-style view of acm-style contest.
+    $total ||= 1 if $req->{state} == $cats::st_accepted;
     eval {
-        warn sprintf 'Zero points: req=%d old=%s', $req->{ref_id} || $req->{id}, $req->{points} // 'NULL'
-            if $req->{state} == $cats::st_accepted && $total == 0;
-        # To reduce chance of deadlock, commit every change separately, even if it is slower.
+        # To reduce chance of deadlock, commit every change separately, even if that is slower.
         $dbh->do(q~
             UPDATE reqs SET points = ? WHERE id = ? AND points IS DISTINCT FROM ?~, undef,
             $total, $req->{ref_id} || $req->{id}, $total);
