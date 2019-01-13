@@ -40,7 +40,7 @@ sub contest_fields () {
     # (($s->{page} || 0) == 0 && !$s->{search} ? 'FIRST ' . ($s->{rows} + 1) : '') .
     qw(
         ctype id title short_descr
-        start_date finish_date freeze_date defreeze_date closed is_official rules
+        start_date finish_date freeze_date defreeze_date closed is_official rules parent_id
     )
 }
 
@@ -64,7 +64,6 @@ sub _contest_search_fields() {qw(
     req_selection
     pinned_judges_only
     show_sites
-    parent_id
 )}
 
 sub _contest_searches {
