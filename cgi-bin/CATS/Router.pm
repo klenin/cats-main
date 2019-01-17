@@ -254,7 +254,7 @@ my $main_routes = {
     run_log => [ \&CATS::UI::RunDetails::run_log_frame,
         rid => integer, delete_log => bool, delete_jobs => bool, ],
     view_source => [ \&CATS::UI::ViewSource::view_source_frame,
-        rid => integer, replace => bool, de_id => integer, syntax => ident,
+        rid => integer, replace => bool, de_id => qr/\d+|by_extension/, syntax => ident,
         src_enc => encoding_default('WINDOWS-1251'),
         source => upload,
         submit => bool, source_text => str, np => integer, submitted => bool,

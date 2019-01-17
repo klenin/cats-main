@@ -4,5 +4,7 @@
     print => '打印',
     replace => 'replace',
     submit => '提交',
+    dev_env_detected => '开发环境被发现',
+    de_not_allowed => 'This development environment is forbidden. Allowed development environments:',
   })
 %]
