@@ -1,7 +1,5 @@
 [%- PROCESS includes/sources_styles.tti -%]
-[% PROCESS includes/header.tti %]
-
-[% PROCESS includes/ace.tti %]
+[%- js.jquery = 1; js.ace = 1; PROCESS includes/header.tti -%]
 </head>
 <body>
 [% PROCESS includes/sources_info.tti %]

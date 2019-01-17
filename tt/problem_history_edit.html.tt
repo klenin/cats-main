@@ -1,8 +1,8 @@
+[%- js.jquery = 1; js.ace = 1 -%]
 [% extra_head = BLOCK %]
 <style>
   @import 'css/git.css';
 </style>
-[% PROCESS includes/ace.tti %]
 <script>window.addEventListener('load', function () {
   highlight_errors('log', [ /at\sline\s(\d+)/ ], 'editor');
   var langTools = ace.require('ace/ext/language_tools');
