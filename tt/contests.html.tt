@@ -9,6 +9,7 @@
   .date { text-align: center; }
   .finished { color: #901010; }
   div.action { display: inline-block; }
+  td.sel label { display: block; }
 </style>
 [%- END %]
 [% PROCESS includes/menu_begin.tti %]
@@ -24,12 +25,13 @@ function delete_contest(href, name) {
 [% PROCESS includes/listview_header.tti form_id='contest_form' %]
 
 <table class="listview bordered highlight">
-[% PROCESS includes/listview_col_defs.tti %]
+[% PROCESS includes/listview_col_defs.tti sel_col = 1 %]
 
 [% FOREACH c IN contests %]
 <tr class="[% loop.parity() %]">
-<td>
-  <input type="checkbox" class="listview_checkbox" name="contests_selection" value="[% c.id %]" />
+<td class="sel">
+  <label><input type="checkbox" class="listview_checkbox" name="contests_selection" value="[% c.id %]" /></label>
+</td><td>
   [% IF c.deletable %]
   <a href="javascript:delete_contest('[% c.href_delete %]', '[% c.contest_name | html %]');" class="icon delete"></a>
   [% END %]
