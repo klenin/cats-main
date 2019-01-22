@@ -27,7 +27,7 @@ my %problem_key_to_tag = (allow_des => 'AllowDEs', map { $_ => _snake_to_camel_c
 my %key_to_tag = (ctype => 'ContestType', map { $_ => _snake_to_camel_case($_) } qw(
     id rules title closed penalty max_reqs is_hidden local_only show_sites show_flags
     start_date short_descr is_official finish_date run_all_tests req_selection show_packages
-    show_all_tests defreeze_date show_test_data max_reqs_except show_frozen_reqs show_all_results
+    show_all_tests freeze_date defreeze_date show_test_data max_reqs_except show_frozen_reqs show_all_results
     pinned_judges_only show_test_resources show_checker_comment penalty_except
 ));
 
@@ -73,6 +73,7 @@ sub serialize {
     qq~<?xml version="1.0"?>\n~ .
     struct_to_string([ 'CATS-Contest', [
         $self->_serialize($contest, \%key_to_tag),
+        (map [ 'ContestTag', $_->{name} ], @{$contest->{tags} // []}),
         (map $self->_serialize_problem($_), @$problems)
     ]]);
 }
@@ -139,6 +140,11 @@ sub assign_contest_prop {
     $self->{contest}->{$key} = $fn->($self, $el);
 }
 
+sub assign_contest_tag {
+    (my CATS::Contest::XmlSerializer $self, my $el, my $fn) = @_;
+    push @{ $self->{contest}->{tags} //= [] }, $fn->($self, $el);
+}
+
 sub assign_problem_prop {
     (my CATS::Contest::XmlSerializer $self, my $el, my $fn) = @_;
     my $key = $tag_to_key{$el};
@@ -168,6 +174,7 @@ sub tag_handlers() {{
     ReqSelection => { e => sub { assign_contest_prop(@_, \&to_enum) } },
     ShowPackages => { e => sub { assign_contest_prop(@_, \&to_bool) } },
     ShowAllTests => { e => sub { assign_contest_prop(@_, \&to_bool) } },
+    FreezeDate => { e => sub { assign_contest_prop(@_, \&to_date) } },
     DefreezeDate => { e => sub { assign_contest_prop(@_, \&to_date) } },
     ShowTestData => { e => sub { assign_contest_prop(@_, \&to_bool) } },
     MaxReqsExcept => { e => sub { assign_contest_prop(@_, \&to_string) } },
@@ -176,6 +183,7 @@ sub tag_handlers() {{
     PinnedJudgesOnly => { e => sub { assign_contest_prop(@_, \&to_bool) } },
     ShowTestResources => { e => sub { assign_contest_prop(@_, \&to_bool) } },
     ShowCheckerComment => { e => sub { assign_contest_prop(@_, \&to_bool) } },
+    ContestTag => { e => sub { assign_contest_tag(@_, \&to_string) } },
     # problem
     Code => { e => sub { assign_problem_prop(@_, \&to_string) }, in => [ 'Problem' ] },
     Tags => { e => sub { assign_problem_prop(@_, \&to_string) }, in => [ 'Problem' ] },

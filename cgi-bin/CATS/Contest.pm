@@ -12,7 +12,7 @@ sub database_fields {qw(
     local_only is_hidden max_reqs_except
 )}
 
-use fields (database_fields(), qw(server_time time_since_start time_since_finish time_since_defreeze));
+use fields (database_fields(), qw(server_time time_since_start time_since_finish time_since_defreeze tags));
 
 use CATS::Config qw(cats_dir);
 use CATS::Contest::Utils;

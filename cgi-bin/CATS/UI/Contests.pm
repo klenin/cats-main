@@ -47,7 +47,7 @@ sub contests_new_frame {
 sub contest_params() {qw(
     rules title closed penalty max_reqs is_hidden local_only show_sites show_flags
     start_date short_descr is_official finish_date run_all_tests req_selection show_packages
-    show_all_tests defreeze_date show_test_data max_reqs_except show_frozen_reqs show_all_results
+    show_all_tests freeze_date defreeze_date show_test_data max_reqs_except show_frozen_reqs show_all_results
     pinned_judges_only show_test_resources show_checker_comment
 )}
 
@@ -263,6 +263,17 @@ sub contests_edit_save_xml {
     } or return $logger->note($@);
 
     contests_edit_save($c, { map { $_ => $c->{$_} } contest_params });
+
+    if (@{$c->{tags}}) {
+        $dbh->do(q~
+            DELETE FROM contest_contest_tags WHERE contest_id = ?~, undef,
+            $cid);
+        my $insert_sth = $dbh->prepare(q~
+            INSERT INTO contest_contest_tags
+            SELECT ?, id FROM contest_tags WHERE name = ?~);
+        $insert_sth->execute($cid, $_) for @{$c->{tags}};
+        $dbh->commit;
+    }
 
     for my $problem (@{$c->{problems}}) {
         if ($problem->{problem_id}) {
@@ -515,7 +526,12 @@ sub contest_xml_frame {
     my $c = $dbh->selectrow_hashref(q~
         SELECT * FROM contests WHERE id = ?~, { Slice => {} },
         $cid) or return;
-    
+
+    $c->{tags} = $dbh->selectall_arrayref(q~
+        SELECT CT.name FROM contest_tags CT
+        INNER JOIN contest_contest_tags CCT ON CT.id = CCT.tag_id
+        WHERE CCT.contest_id = ? ORDER BY CT.name~, { Slice => {} },
+        $cid);
     my $problems = $dbh->selectall_arrayref(q~
         SELECT (
             SELECT LIST(DD.code, ',')
@@ -529,7 +545,9 @@ sub contest_xml_frame {
         $cid
     );
     $t->param(
-        contest_xml => $p->{contest_xml} // CATS::Contest::XmlSerializer->new->serialize($c, $problems),
+        contest_xml =>
+            Encode::decode_utf8($p->{contest_xml}) //
+            CATS::Contest::XmlSerializer->new->serialize($c, $problems),
         form_action => url_f('contest_xml'),
     );
     CATS::Contest::Utils::contest_submenu('contest_xml', $cid);

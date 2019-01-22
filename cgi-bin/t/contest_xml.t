@@ -4,7 +4,7 @@ use warnings;
 use File::Spec;
 use FindBin;
 use Test::Exception;
-use Test::More tests => 45;
+use Test::More tests => 46;
 
 use lib $FindBin::Bin;
 use lib File::Spec->catdir($FindBin::Bin, '..');
@@ -45,6 +45,7 @@ my $c = CATS::Contest->new({
     time_since_finish => 0.213666042,
     time_since_start => 0.213666042,
     title => 'sdf',
+    tags => [ { name => 'test2' }, { name => 'test1' } ],
 });
 
 my $problem = {
@@ -69,6 +70,7 @@ q~<?xml version="1.0"?>
   <ContestType>normal</ContestType>
   <DefreezeDate>12.06.2018 12:58</DefreezeDate>
   <FinishDate>12.06.2018 12:58</FinishDate>
+  <FreezeDate>12.06.2018 12:58</FreezeDate>
   <Id>1774</Id>
   <IsHidden>1</IsHidden>
   <IsOfficial>1</IsOfficial>
@@ -87,6 +89,8 @@ q~<?xml version="1.0"?>
   <ShowTestResources>1</ShowTestResources>
   <StartDate>12.06.2018 12:58</StartDate>
   <Title>sdf</Title>
+  <ContestTag>test2</ContestTag>
+  <ContestTag>test1</ContestTag>
 </CATS-Contest>~;
 
 my $problem_expected =
@@ -116,7 +120,7 @@ is $s->serialize_problem($problem), $problem_expected, 'problem check 1';
 
 {
     my $contest = $s->parse_xml($expected);
-    $_ eq 'problems' ? undef : is $contest->{$_}, $c->{$_}, "$_ check" for keys %$contest;
+    /^problems|tags$/ ? undef : is $contest->{$_}, $c->{$_}, "$_ check" for keys %$contest;
 }
 
 {
@@ -129,11 +133,14 @@ is $s->serialize_problem($problem), $problem_expected, 'problem check 1';
 }
 
 {
-    my $contest = $s->parse_xml(cats_contest("<Problem><AllowDEs>101,102</AllowDEs></Problem>"));
-    is $contest->{problems}->[-1]->{allow_des}->[0], 101, 'allow DEs check 1';
-    is $contest->{problems}->[-1]->{allow_des}->[1], 102, 'allow DEs check 2';
+    my $contest = $s->parse_xml(cats_contest('<Problem><AllowDEs>101,102</AllowDEs></Problem>'));
+    is_deeply $contest->{problems}->[-1]->{allow_des}, [ 101, 102 ], 'allow DEs';
 }
 
+{
+    my $contest = $s->parse_xml(cats_contest('<ContestTag>dasd</ContestTag>'));
+    is_deeply $contest->{tags}, [ 'dasd' ], 'contest tags check';
+}
 
 throws_ok { $s->parse_xml(cats_contest('<UnknownTag>123</Closed>')) } qr/Unknown tag/, 'unknown tag at the start';
 throws_ok { $s->parse_xml(cats_contest('<Closed>123</UnknownTag>')) } qr/mismatched tag/, 'unknown tag at the end';
