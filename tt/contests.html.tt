@@ -64,7 +64,11 @@ function delete_contest(href, name) {
 </td>
 [%- END %]
 [% IF visible_cols.Tg -%]
-<td>[% c.tags | html %]</td>
+<td>[% FOREACH ct IN c.tags_split;
+  t = ct | url | format(href_has_tag_named.replace('%25', '%')); # Unquote '%' from url_f.
+  href(t, ct);
+  ', ' UNLESS loop.last;
+END %]</td>
 [%- END %]
 </tr>
 [% END %]

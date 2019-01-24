@@ -200,10 +200,9 @@ sub authenticated_contests_view {
     }
     my $fetch_contest = sub {
         my $c = $_[0]->fetchrow_hashref or return;
+        $c->{tags_split} = [ split ', ', $c->{tags} // '' ];
         return (
             _common_contests_view($c),
-            is_hidden => $c->{is_hidden},
-            authorized => 1,
             editable => $c->{is_jury},
             deletable => $is_root,
             registered_online => $c->{registered} && !$c->{is_virtual},

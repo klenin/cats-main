@@ -511,6 +511,7 @@ sub contests_frame {
         submenu => $submenu,
         href_rss => _abs_url_f('contests_rss'),
         href_find_tags => url_f('api_find_contest_tags'),
+        href_has_tag_named => url_f('contests', search => 'has_tag_named(%s)'),
         CATS::Contest::Participate::flags_can_participate,
     );
 }
