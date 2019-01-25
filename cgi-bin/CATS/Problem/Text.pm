@@ -185,8 +185,8 @@ sub get_tags {
         $tags{$_} = 1 for keys %$pc;
     });
 
-    eval { $parser->parse("<$wrapper>$_</$wrapper>"); }
-        for grep $_, map $problem->{$_}, @parsed_fields;
+    my $all_text = join '', grep $_, map $problem->{$_}, @parsed_fields;
+    eval { $parser->parse("<$wrapper>$all_text</$wrapper>"); };
 
     [ sort keys %tags ];
 }
