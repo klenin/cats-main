@@ -42,7 +42,7 @@ GRANT UPDATE(status)
 GRANT UPDATE(in_file, in_file_size, in_file_hash, out_file, out_file_size)
     ON TABLE tests TO judge;
 
-GRANT UPDATE(state, failed_test, result_time, judge_id, testsets)
+GRANT UPDATE(state, failed_test, result_time, test_time, judge_id, testsets)
     ON TABLE reqs TO judge;
 
 GRANT DELETE, INSERT
