@@ -112,6 +112,7 @@ $(document).ready(update_request_status);
     <td colspan="[% si.colspan %]">
       [% IF si.is_jury; si.judge_name %]: [% END %]
       [% si.test_time_short %] ... [% si.result_time_short %]
+        ([%- si.test_duration * 24 * 60 * 60 | format('%.2f') %] [% capt.sec %])
     </td>
   [% END; END %]
 </tr>

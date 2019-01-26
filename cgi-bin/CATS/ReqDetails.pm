@@ -170,6 +170,7 @@ sub get_sources_info {
             R.state R.failed_test R.points R.tag
             R.submit_time R.test_time R.result_time
             ),
+            "(R.result_time - R.test_time) AS test_duration",
             "(R.submit_time - $CATS::Time::contest_start_offset_sql) AS time_since_start",
             'DE.description AS de_name',
             'A.team_name', 'COALESCE(E.ip, A.last_ip) AS last_ip',

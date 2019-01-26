@@ -6,6 +6,7 @@
     disqualified => 'disqualified',
     time => 'Time',
     processing => 'Processing',
+    sec => 'sec.',
     file => 'File',
     contest => 'Contest',
     problem => 'Problem',

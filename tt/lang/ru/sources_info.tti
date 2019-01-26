@@ -6,6 +6,7 @@
     disqualified => 'дисквалифицирован',
     time => 'Время',
     processing => 'Обработка',
+    sec => 'сек.',
     file => 'Файл',
     contest => 'Турнир',
     problem => 'Задача',
