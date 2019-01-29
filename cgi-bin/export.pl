@@ -27,6 +27,7 @@ GetOptions(
     'dry-run' => \(my $dry_run),
     'encoding=s' => \(my $encoding = 'UTF-8'),
     'file-pattern=s' => \(my $file_pattern = $file_pattern_default),
+    'site=i' => \(my $site),
 );
 
 sub usage {
@@ -37,6 +38,7 @@ Usage: $0 [--help] --contest=<contest id> --mode={log|runs}
     [--dry-run]
     [--encoding=<encoding>]
     [--file-pattern=<file name pattern>, default is $file_pattern_default]
+    [--site=<site id>]
 ~;
     exit;
 }
@@ -58,13 +60,20 @@ my ($contest_title) = $dbh->selectrow_array(q~
     SELECT title FROM contests WHERE id = ?~, undef, $contest_id) or usage('Error: Unknown contest');
 say STDERR 'Contest: ', Encode::encode_utf8($contest_title);
 
+if ($site) {
+    my ($site_name) = $dbh->selectrow_array(q~
+        SELECT name FROM sites WHERE id = ?~, undef,
+        $site) or usage('Error: unknown site');
+    say STDERR 'Site: ', Encode::encode_utf8($site_name);
+}
+
 if ($mode eq 'log') {
     my $t = CATS::Template->new('console_export.xml.tt', cats_dir, { compile_dir => '' });
-    $t->param(encoding => $encoding, reqs => CATS::Console::export($contest_id));
+    $t->param(encoding => $encoding, reqs => CATS::Console::export($contest_id, { site_id => $site }));
     print Encode::encode($encoding, $t->output);
 }
 elsif ($mode eq 'runs') {
-    my $reqs = CATS::Console::select_all_reqs($contest_id);
+    my $reqs = CATS::Console::select_all_reqs($contest_id, { site_id => $site });
     my $count = 0;
     my $src_sth = $dbh->prepare(q~
         SELECT src, fname FROM sources WHERE req_id = ?~);

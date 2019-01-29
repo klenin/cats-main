@@ -302,7 +302,8 @@ sub build_query {
 }
 
 sub select_all_reqs {
-    my ($contest_id) = @_;
+    my ($contest_id, $params) = @_;
+    my $site_sql = $params->{site_id} ? ' AND CA.site_id = ?' : '';
     $dbh->selectall_arrayref(qq~
         SELECT
             R.id AS id, R.submit_time, R.state, R.failed_test, R.points,
@@ -322,12 +323,13 @@ sub select_all_reqs {
             LEFT JOIN events E ON E.id = R.id
         WHERE
             R.contest_id = ? AND CA.is_hidden = 0 AND CA.is_virtual = 0 AND R.submit_time > C.start_date
+            $site_sql
         ORDER BY R.submit_time ASC~, { Slice => {} },
-        $contest_id);
+        $contest_id, ($params->{site_id} || ()));
 }
 
 sub export {
-    my ($contest_id) = @_;
+    my ($contest_id, $params) = @_;
     # Legacy field, new consumers should use short_state.
     my %state_to_display = (
         $cats::st_wrong_answer => 'wrong_answer',
@@ -348,7 +350,7 @@ sub export {
         $cats::st_security_violation => 'security_violation',
         $cats::st_ignore_submit => 'ignore_submit',
     );
-    my $reqs = select_all_reqs($contest_id);
+    my $reqs = select_all_reqs($contest_id, $params);
     for my $req (@$reqs) {
         $req->{submit_time} =~ s/\s+$//;
         $req->{short_state} = $CATS::Verdicts::state_to_name->{$req->{state}};
