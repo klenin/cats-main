@@ -311,7 +311,9 @@ sub select_all_reqs {
             CP.code, P.title AS problem_title,
             A.id AS team_id, A.team_name,
             COALESCE(E.ip, A.last_ip) AS last_ip,
-            CA.is_remote, CA.is_ooc
+            CA.is_remote, CA.is_ooc, S.name AS site_name,
+            (SELECT LIST(code) FROM default_de D INNER JOIN sources S ON S.de_id = D.id
+                WHERE S.req_id = R.id) AS de_code
         FROM
             reqs R
             INNER JOIN problems P ON R.problem_id = P.id
@@ -320,6 +322,7 @@ sub select_all_reqs {
             INNER JOIN contest_problems CP ON R.contest_id = CP.contest_id AND CP.problem_id = R.problem_id
             INNER JOIN accounts A ON CA.account_id = A.id
             LEFT JOIN contest_sites CS ON CS.contest_id = C.id AND CS.site_id = CA.site_id
+            LEFT JOIN sites S ON S.id = CA.site_id
             LEFT JOIN events E ON E.id = R.id
         WHERE
             R.contest_id = ? AND CA.is_hidden = 0 AND CA.is_virtual = 0 AND R.submit_time > C.start_date
