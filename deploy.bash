@@ -179,6 +179,7 @@ PerlSetEnv CATS_DIR ${CATS_ROOT}/cgi-bin/
 	<Directory "${CATS_ROOT}/download">
 		Options -Indexes
 		Require all granted
+		AddCharset utf-8 .txt
 	</Directory>
 
 	Alias /cats/docs/ "${CATS_ROOT}/docs/"
@@ -224,7 +225,7 @@ EOF
 	# Adjust permissions.
 	sudo chgrp -R ${http_group} cgi-bin css download images static tt
 	chmod -R g+r cgi-bin
-	chmod g+rw static tt download/{,att,img,pr,vis} cgi-bin/rank_cache{,/r} cgi-bin/repos
+	chmod g+rw static tt download/{,att,f,img,pr,vis} cgi-bin/rank_cache{,/r} cgi-bin/repos
 	sudo service apache2 reload
 	sudo service apache2 restart
 	echo "ok"
