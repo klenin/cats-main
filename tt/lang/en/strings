@@ -357,4 +357,5 @@
 1194 "Child contests removed: %d."
 1195 "File '%s' saved."
 1196 "File '%s' deleted."
-1197 "Field '%s' must have unique value."
+1197 "Field '%s' must have a unique value."
+1198 "Field '%s' must match the pattern '%s'."

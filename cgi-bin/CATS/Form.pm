@@ -43,7 +43,7 @@ sub validate {
             return $error if $error;
         }
         elsif ($value !~ $v) {
-            return 'Wrong format of ' . $self->caption_msg;
+            return res_str(1198, $self->caption_msg, $v);
         }
     }
 }
@@ -96,6 +96,7 @@ sub unique {
         my $conflicts = $dbh->selectall_arrayref(_u $sql->select('files',
             'id', { $f->{field}->{db_name} => $f->{value}, @id_cond }
         )) or return 1;
+        @$conflicts or return 1;
         $f->{error} = res_str(1197, $f->{field}->caption_msg);
         undef;
     };
