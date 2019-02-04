@@ -56,6 +56,7 @@ our $form = CATS::Form->new(
         [ name => 'guid', validators => [ qr/^[a-zA-Z0-9\.]{0,50}$/ ],
             editor => { size => 50 }, caption => 619, ],
         [ name => 'file_size', caption => 684, ],
+        [ name => 'last_modified', before_save => sub { \'CURRENT_TIMESTAMP' } ],
     ],
     href_action => 'files_edit',
     descr_field => 'name, guid',
@@ -94,17 +95,18 @@ sub files_frame {
     init_template($p, 'files.html.tt');
     my $lv = CATS::ListView->new(web => $p, name => 'files');
 
-    $lv->define_columns(url_f('v'), 0, 0, [
+    $lv->define_columns(url_f('files'), 0, 0, [
         { caption => res_str(601), order_by => 'name', width => '20%' },
-        { caption => res_str(619), order_by => 'guid', width => '30%' },
-        { caption => res_str(620), order_by => 'description', width => '30%', col => 'De' },
-        { caption => res_str(684), order_by => 'file_size', width => '20%', col => 'Fs' },
+        { caption => res_str(619), order_by => 'guid', width => '25%' },
+        { caption => res_str(620), order_by => 'description', width => '25%', col => 'De' },
+        { caption => res_str(684), order_by => 'file_size', width => '15%', col => 'Fs' },
+        { caption => res_str(634), order_by => 'last_modified', width => '15%', col => 'Lm' },
     ]);
     $lv->define_db_searches([ qw(id name guid description file_size) ]);
 
     my $c = $dbh->prepare(qq~
         SELECT
-            F.id, F.name, F.file_size, F.guid,
+            F.id, F.name, F.file_size, F.guid, F.last_modified,
             SUBSTRING(F.description FROM 1 FOR 100) as description,
             OCTET_LENGTH(F.description) AS description_len
         FROM files F WHERE 1 = 1 ~ . $lv->maybe_where_cond . $lv->order_by);

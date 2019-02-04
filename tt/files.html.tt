@@ -25,7 +25,8 @@ function delete_file(href, name) {
 [% IF visible_cols.De -%]
 <td>[% f.description | html; '&hellip;' IF f.description_len > f.description.length %]</td>
 [%- END %]
-[% IF visible_cols.Fs %]<td class="num">[% f.file_size %]</a></td>[% END %]
+[% IF visible_cols.Fs %]<td class="num">[% f.file_size %]</td>[% END %]
+[% IF visible_cols.Lm %]<td>[% f.last_modified %]</td>[% END %]
 </tr>
 [% END %]
 </table>
