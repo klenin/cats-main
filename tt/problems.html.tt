@@ -10,6 +10,7 @@
   td.problem_radio label a { vertical-align: middle; }
   span.pcode input { width: 2em; }
   input[type=color] { width: 1.5em; padding: 0; margin: 0; border: 0; background-color: inherit; }
+  .yscroll { display: block; overflow-y: scroll; max-height: 7ex; }
 </style>
 [%- END -%]
 [% PROCESS includes/menu_begin.tti %]
@@ -160,7 +161,8 @@ function chg_code(st_sel, pid) {
 [%- END %]
 [% IF visible_cols.Mu %]<td>[% p.last_modified_by %]</td>[% END %]
 [% IF visible_cols.Mt %]<td class="num">[% p.upload_date %]</td>[% END %]
-[% IF visible_cols.Ad %]<td>[% href(p.href_allow_des, p.allow_des, p.allow_des_names) %]</td>[% END %]
+[% IF visible_cols.Ad %]<td[% ' class="yscroll"' IF p.allow_des.length > 20 %]><div>
+[% href(p.href_allow_des, p.allow_des, p.allow_des_names) %]</div></td>[% END %]
 [% END %]
 [% IF contest.is_practice %]<td>[% p.contest_title | html %]</td>[% END %]
 [% IF (is_user || contest.is_practice) && visible_cols.Vc %]
