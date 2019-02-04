@@ -21,7 +21,7 @@ use fields qw(
     clist contest_list hide_ooc hide_virtual show_points frozen
     title has_practice not_started filter sites use_cache
     rank problems problems_idx show_all_results show_prizes req_selection has_competitive
-    show_regions show_flags sort
+    show_regions show_flags show_logins sort
 );
 
 sub new {
@@ -355,6 +355,7 @@ sub parse_params {
     $self->{sites} = $p->{sites};
     $self->{show_prizes} = $p->{show_prizes};
     $self->{show_regions} = $p->{show_regions};
+    $self->{show_logins} = $p->{show_logins};
     $self->{show_flags} = $p->{show_flags} if defined $p->{show_flags};
     $self->{sort} = $p->{sort} // '';
 }
@@ -494,7 +495,7 @@ sub _select_teams {
     my ($self, $account_id) = @_;
     my $virtual_ooc_cond = $self->_virtual_ooc_cond;
     my $acc_cond = $account_id ? 'AND A.id = ?' : '';
-    my $account_fields = q~A.team_name, A.motto, A.country, A.city, A.affiliation_year~;
+    my $account_fields = q~A.login, A.team_name, A.motto, A.country, A.city, A.affiliation_year~;
     my $res = $dbh->selectall_hashref(qq~
         SELECT
             $account_fields,
@@ -609,6 +610,7 @@ sub rank_table {
         show_points => $self->{show_points},
         show_regions => $self->{show_regions},
         show_flags => $self->{show_flags},
+        show_logins => $self->{show_logins},
         req_selection => same_or_default(values %{$self->{req_selection}}),
     );
     # Results must not include practice contest.

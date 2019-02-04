@@ -61,7 +61,7 @@
 <td>
   [%- IF show_flags && r.flag %]<img src="[% r.flag %]" alt="[% r.country | html %]"> [% END %]
   [%- IF 0 %]<a href="[% href_user_stats %];uid=[% r.id %]" title="[% r.city %]"></a>[% END -%]
-  [%- r.team_name | html; IF show_regions && r.city; ' <small>('; r.city; ')</small>'; END -%]
+  [%- show_logins ? r.login : r.team_name | html; IF show_regions && r.city; ' <small>('; r.city; ')</small>'; END -%]
 </td>
 [% IF show_points ~%]
   [% FOREACH c IN r.columns %]<td>[% c.points %]</td>[% END -%]
@@ -81,7 +81,7 @@
 [% IF rank %]<script type="text/javascript"><!--
 var rank_table = [
 [% FOREACH r IN rank %]
-  { id: [% r.account_id %], n: "[% r.team_name | html | $Javascript %]", fl: "[% r.flag %]",[% IF show_points %]
+  { id: [% r.account_id %], n: "[% show_logins ? r.login : r.team_name | html | $Javascript %]", fl: "[% r.flag %]",[% IF show_points %]
     pt: [[% FOREACH c IN r.columns %]'[% c.points %]'[% UNLESS loop.last %],[% END %][% END %]], tp: [% r.total_points %][% ELSE %]
     tm: [[% FOREACH c IN r.columns %]'[% c.time %]'[% UNLESS loop.last %],[% END %][% END %]],
     td: [[% FOREACH c IN r.columns %]'[% c.td %]'[% UNLESS loop.last %],[% END %][% END %]],
