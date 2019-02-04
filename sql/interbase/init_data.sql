@@ -84,3 +84,4 @@ INSERT INTO contact_types(id, name, url) VALUES(907, 'Topcoder', 'https://www.to
 INSERT INTO contact_types(id, name, url) VALUES(908, 'Github', 'https://github.com/%s');
 INSERT INTO contact_types(id, name, url) VALUES(909, 'VKontakte', 'https://vk.com/id%s');
 INSERT INTO contact_types(id, name, url) VALUES(910, 'Facebook', 'https://www.facebook.com/people/%s');
+INSERT INTO contact_types(id, name, url) VALUES(911, 'Stepik', 'https://stepik.org/users/%s');
