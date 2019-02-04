@@ -5,6 +5,7 @@ package CATS::Field;
 
 use Encode;
 
+use CATS::DB;
 use CATS::Messages qw(msg res_str);
 
 sub new {
@@ -81,6 +82,22 @@ sub int_range {
             return;
         }
         res_str(1045, $field->caption_msg, $opts{min}, $opts{max});
+    };
+}
+
+sub unique {
+    my ($field) = @_;
+    $field or die;
+    sub {
+        my ($fd, $p) = @_;
+        my $f = $fd->{indexed}->{$field} or die;
+        $f->{value} or return 1;
+        my @id_cond = $fd->{id} ? ('id' => { '!=', $fd->{id} }) : ();
+        my $conflicts = $dbh->selectall_arrayref(_u $sql->select('files',
+            'id', { $f->{field}->{db_name} => $f->{value}, @id_cond }
+        )) or return 1;
+        $f->{error} = res_str(1197, $f->{field}->caption_msg);
+        undef;
     };
 }
 

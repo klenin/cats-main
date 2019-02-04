@@ -357,3 +357,4 @@
 1194 "Child contests removed: %d."
 1195 "File '%s' saved."
 1196 "File '%s' deleted."
+1197 "Field '%s' must have unique value."
