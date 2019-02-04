@@ -359,3 +359,5 @@
 1196 "File '%s' deleted."
 1197 "Field '%s' must have a unique value."
 1198 "Field '%s' must match the pattern '%s'."
+1199 "Checked on test %d."
+1200 "Not checked on test %d."

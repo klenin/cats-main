@@ -184,6 +184,13 @@ sub _console_content {
         account_id => { this => $uid },
     });
 
+    my $tested_on_sql = q~
+        SELECT 1 FROM req_details RD WHERE RD.req_id = R.id AND RD.test_rank = ?~;
+    $lv->define_subqueries({
+        tested_on => { sq => qq~EXISTS ($tested_on_sql)~, m => 1199, t => undef },
+        not_tested_on => { sq => qq~NOT EXISTS ($tested_on_sql)~, m => 1200, t => undef },
+    });
+
     my $can_see = $uid && !$is_jury ? CATS::Request::can_see_by_relation($uid) : {};
 
     my $sth = CATS::Console::build_query($s, $lv, $p->{uf});
