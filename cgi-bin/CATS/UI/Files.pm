@@ -5,7 +5,6 @@ use warnings;
 
 use File::Copy qw();
 
-use CATS::BinaryFile;
 use CATS::DB;
 use CATS::Form;
 use CATS::Globals qw($cid $is_root $t);
@@ -17,6 +16,38 @@ use CATS::User;
 
 my @str_1_200 = (validators => [ CATS::Field::str_length(1, 200) ]);
 
+sub guid_to_fn { downloads_path . "f/$_[0]" }
+sub unlink_guid {
+    my $fn = guid_to_fn($_[0]);
+    unlink $fn or die $! if -f $fn;
+}
+
+sub _remove_old_guid {
+    my ($fd, $p) = @_;
+    $fd->{id} or return;
+    my $guid = $fd->{indexed}->{guid}->{value};
+    my ($old_guid) = $dbh->selectrow_array(q~
+        SELECT guid FROM files WHERE id = ?~, undef,
+        $fd->{id}) or return;
+    $old_guid ne $guid or return;
+    if ($p->{file}) {
+        unlink_guid($old_guid);
+    }
+    else {
+        my $old_fn = guid_to_fn($old_guid);
+        File::Copy::move($old_fn, guid_to_fn($guid)) or die $! if -f $old_fn;
+    }
+}
+
+sub _upload_file {
+    my ($fd, $p) = @_;
+    my $f = $p->{file} or return;
+    my ($ext) = $f->remote_file_name =~ /(\.[a-zA-Z0-9]+)$/;
+    my $guid = $fd->{indexed}->{guid}->{value} ||= CATS::User::make_sid . ($ext || '');
+    $fd->{indexed}->{file_size}->{value} = -s $f->local_file_name;
+    File::Copy::move($f->local_file_name, guid_to_fn($guid)) or die $!;
+}
+
 our $form = CATS::Form->new(
     table => 'files',
     fields => [
@@ -27,18 +58,21 @@ our $form = CATS::Form->new(
         [ name => 'file_size', caption => 684, ],
     ],
     href_action => 'files_edit',
-    descr_field => 'name',
+    descr_field => 'name, guid',
     template_var => 'f',
     msg_saved => 1195,
     msg_deleted => 1196,
     before_display => sub { $t->param(submenu => [ CATS::References::menu('files') ]) },
+    validators => [ CATS::Field::unique('guid') ],
     before_save => sub {
-        my ($fd, $p) = @_;
-        my $f = $p->{file} or return;
-        my ($ext) = $f->remote_file_name =~ /(\.[a-zA-Z0-9]+)$/;
-        my $fn = $fd->{indexed}->{guid}->{value} ||= CATS::User::make_sid . ($ext || '');
-        $fd->{indexed}->{file_size}->{value} = -s $f->local_file_name;
-        File::Copy::move($f->local_file_name, downloads_path . "f/$fn") or die $!;
+        _remove_old_guid(@_);
+        _upload_file(@_);
+    },
+    after_delete => sub {
+        my ($p, $id, %rest) = @_;
+        if (my $guid = $rest{descr}->[1]) {
+            unlink_guid($guid);
+        }
     },
     before_save_db => sub {
         $_[0]->{file_size} ne '' or delete $_[0]->{file_size};
