@@ -1,7 +1,7 @@
 [%
   capt.import({
     create_and_add => 'Create and add users',
-    parts => [ 'name', 'login', 'password', 'city' ],
+    headers => 'First line must contain headers',
     do_import => 'Import',
   })
 %]

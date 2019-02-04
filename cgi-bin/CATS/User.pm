@@ -175,6 +175,7 @@ sub insert {
         ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)~, {},
         $aid, $CATS::Privileges::srole_user, $self->{password1}, $new_settings, $self->values
     );
+    $self->{id} = $aid;
     add_to_contest(contest_id => $_->{id}, account_id => $aid, is_ooc => 1)
         for @$training_contests;
     if ($contest_id && !grep $_->{id} == $contest_id, @$training_contests) {

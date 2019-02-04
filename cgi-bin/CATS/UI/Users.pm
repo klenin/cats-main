@@ -39,28 +39,62 @@ sub users_submenu {
     }
 }
 
+
+my %user_fields = (password => 'password1', map { $_ => $_ } CATS::User::param_names);
+
 sub users_import_frame {
     my ($p) = @_;
     init_template($p, 'users_import.html.tt');
     $is_root or return;
-    $t->param(href_action => url_f('users_import'), title_suffix => res_str(564), users_submenu);
+    my $contact_types = $dbh->selectall_hashref(q~
+        SELECT id, name FROM contact_types~, 'name');
+    $t->param(
+        href_action => url_f('users_import'), title_suffix => res_str(564), users_submenu,
+        contact_types => $contact_types, user_fields => \%user_fields);
     $p->{go} or return;
+
+    my ($header, @lines) = split "\r\n", Encode::decode_utf8($p->{user_list});
+    my ($i, @fields_idx, @field_names_idx, @contact_types_idx) = (0);
+    for my $h (split "\t", $header) {
+        if (my $uf = $user_fields{$h}) {
+            push @fields_idx, $i;
+            push @field_names_idx, $uf;
+        }
+        elsif (my $ct = $contact_types->{$h}) {
+            push @contact_types_idx, [ $i, $ct->{id} ];
+        }
+        $i++;
+    }
+
     my @report;
     my $count = 0;
-    for my $line (split "\r\n", Encode::decode_utf8($p->{user_list})) {
+    for my $line (@lines) {
+        my @cols = split "\t", $line;
         my $u = CATS::User->new;
-        @$u{qw(team_name login password1 city)} = split "\t", $line;
-        my $r = $dbh->selectrow_array(q~
-            SELECT 1 FROM accounts WHERE login = ?~, undef,
-            $u->{login}) ? 'exists' :
+        @$u{@field_names_idx} = @cols[@fields_idx];
+        my ($user_id) = $dbh->selectrow_array(q~
+            SELECT id FROM accounts WHERE login = ?~, undef,
+            $u->{login});
+        my $r = $user_id ? 'exists' :
         eval {
-            $u->{password1} = CATS::User::hash_password(Encode::encode_utf8($u->{password1}));
+            $u->{password1} = CATS::User::hash_password(Encode::encode_utf8($u->{password1}))
+                if $u->{password1};
             $u->insert($contest->{id}, is_ooc => 0, commit => 0);
             $count++;
             'ok';
         } || $@;
-        push @report, "$u->{team_name} -- $r";
+        my $contact_count = 0;
+        for my $ct (@contact_types_idx) {
+            my ($i, $ct_id) = @$ct;
+            $contact_count += $dbh->do(_u $sql->insert('contacts', {
+                id => new_id,
+                account_id => $u->{id}, contact_type_id => $ct_id,
+                handle => $cols[$i], is_actual => 1,
+            }));
+        }
+        push @report, "$u->{team_name} -- $r ($contact_count)";
     }
+
     $p->{do_import} ? $dbh->commit : $dbh->rollback;
     push @report, ($p->{do_import} ? 'Import' : 'Test') . " complete: $count";
     $t->param(report => join "\n", @report);
