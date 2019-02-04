@@ -147,7 +147,7 @@ sub new {
     $self->{descr_field} = $r{descr_field} // 'id';
     $self->{validators} = $r{validators} // [];
     $self->{$_} = $r{$_} for qw(
-        after_load after_make
+        after_delete after_load after_make
         before_commit before_delete before_display before_save before_save_db
         debug msg_deleted msg_saved override_save);
     $self;
@@ -278,19 +278,20 @@ sub edit_frame {
 sub delete_or_saved {
     my ($self, $p, %opts) = @_;
     my $id = $p->{delete} || $p->{saved} or return;
-    my ($descr) = $dbh->selectrow_array(_u $sql->select(
+    my @descr = $dbh->selectrow_array(_u $sql->select(
         $self->{table}, $self->{descr_field}, { id => $id })) or return;
     if ($p->{delete}) {
         if ($self->{before_delete}) {
-            $self->{before_delete}->($p, $id) or return;
+            $self->{before_delete}->($p, $id, descr => \@descr) or return;
         }
         $dbh->do(_u $sql->delete($self->{table}, { id => $id }));
+        $self->{after_delete}->($p, $id, descr => \@descr) if $self->{after_delete};
         $opts{before_commit}->($self) if $opts{before_commit};
         $dbh->commit;
-        msg($self->{msg_deleted}, $descr) if $self->{msg_deleted};
+        msg($self->{msg_deleted}, @descr) if $self->{msg_deleted};
     }
     if ($p->{saved}) {
-        msg($self->{msg_saved}, $descr) if $self->{msg_saved};
+        msg($self->{msg_saved}, @descr) if $self->{msg_saved};
     }
 }
 
