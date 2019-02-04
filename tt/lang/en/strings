@@ -1,4 +1,5 @@
 400 "public link"
+401 "new file"
 500 "login"
 501 "register"
 502 "contests"
@@ -354,3 +355,5 @@
 1192 "Tags of contest '%s'."
 1193 "Child contests added: %d."
 1194 "Child contests removed: %d."
+1195 "File '%s' saved."
+1196 "File '%s' deleted."

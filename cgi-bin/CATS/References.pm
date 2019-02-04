@@ -20,6 +20,7 @@ sub reference_names() {
         ($user->privs->{edit_sites} ? { name => 'sites', new => 514, item => 513 } : ()),
         ($user->is_root ? { name => 'account_tokens', item => 516 } : ()),
         ($user->is_root ? { name => 'contest_tags', new => 519, item => 506 } : ()),
+        ($user->is_root ? { name => 'files', new => 401, item => 570 } : ()),
     )
 }
 

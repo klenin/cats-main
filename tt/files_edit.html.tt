@@ -1,0 +1,16 @@
+[% PROCESS includes/menu_begin.tti %]
+[% PROCESS includes/html_input.tti %]
+
+<form method="post" enctype="multipart/form-data" action="[% f.href_action %]">
+<table class="edit_form">
+[% tr_text(f.indexed.name, f) %]
+[% d = f.indexed.description; d.field.editor = { rows = 3 }; tr_textarea(d, f) %]
+[% tr_text(f.indexed.guid, f) %]
+<tr><td>[% capt.file %]</td><td><input type="file" name="file" /></td></tr>
+<tr><td>[% capt.file_size %]</td><td class="num">[% f.indexed.file_size.value %]</td></tr>
+</table>
+<br/>
+[% PROCESS includes/edit_save_cancel.tti %]
+</form>
+
+[% PROCESS includes/menu_end.tti %]

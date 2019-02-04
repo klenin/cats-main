@@ -1,0 +1,6 @@
+[%
+  capt.import({
+    file => 'File',
+    file_size => 'File size',
+  })
+%]

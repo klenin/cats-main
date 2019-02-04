@@ -1,0 +1,36 @@
+[% PROCESS includes/menu_begin.tti %]
+
+<script>
+function delete_file(href, name) {
+  if (confirm( "[% capt.want_to_delete %] '" + name + "'?" ))
+    document.location = href;
+}
+</script>
+
+[% PROCESS includes/listview_header.tti %]
+
+<table class="listview bordered highlight">
+[% PROCESS includes/listview_col_defs.tti sel_col = editable %]
+
+[% FOREACH f IN files %]
+<tr class="[% loop.parity() %]">
+[% IF editable %]
+<td class="nobr">
+  <a href="javascript:delete_file('[% f.href_delete %]', '[% f.name | html %]');" class="icon delete"></a>
+  <a href="[% f.href_edit %]" class="icon edit"></a>
+</td>
+[% END %]
+<td>[% f.name | html %]</td>
+<td><a href="[% f.href_download %]">[% f.guid | html %]</a></td>
+[% IF visible_cols.De -%]
+<td>[% f.description | html; '&hellip;' IF f.description_len > f.description.length %]</td>
+[%- END %]
+[% IF visible_cols.Fs %]<td class="num">[% f.file_size %]</a></td>[% END %]
+</tr>
+[% END %]
+</table>
+<br/>
+[% PROCESS includes/pages.tti %]
+</form>
+
+[% PROCESS includes/menu_end.tti %]

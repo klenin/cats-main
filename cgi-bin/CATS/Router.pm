@@ -344,6 +344,11 @@ my $main_routes = {
         delete => integer, $CATS::UI::Wiki::page_form->route, ],
     wiki_edit => [ \&CATS::UI::Wiki::wiki_edit_frame, $CATS::UI::Wiki::text_form->route, ],
     jobs => [ \&CATS::UI::Jobs::jobs_frame, delete => integer, ],
+    files => [ \&CATS::UI::Files::files_frame,
+        delete => integer, saved => integer,
+    ],
+    files_edit => [ \&CATS::UI::Files::files_edit_frame,
+        $CATS::UI::Files::form->route, file => upload, ],
 };
 
 my $api_judge_routes = {
