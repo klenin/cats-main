@@ -118,7 +118,7 @@ sub files_frame {
             %$row,
             href_edit=> url_f('files_edit', id => $row->{id}),
             href_delete => url_f('files', 'delete' => $row->{id}),
-            href_download => downloads_url . "/f/$row->{guid}",
+            href_download => downloads_url . "f/$row->{guid}",
         );
     };
 
