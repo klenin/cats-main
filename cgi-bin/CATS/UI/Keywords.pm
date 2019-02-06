@@ -34,10 +34,18 @@ sub keywords_edit_frame {
     $form->edit_frame($p, readonly => !$is_root, redirect => [ 'keywords' ]);
 }
 
+sub _has_kw { (search => join ',', map "has_kw($_)", @_) }
+
 sub keywords_frame {
     my ($p) = @_;
 
     $form->delete_or_saved($p) if $is_root;
+
+    my @search_link = ($is_jury ? (link => 1) : ());
+    if ($p->{search_selected} && @{$p->{sel}}) {
+        return $p->redirect(url_f('problems_all', _has_kw(@{$p->{sel}}), @search_link));
+    }
+
     init_template($p, 'keywords.html.tt');
     my $lv = CATS::ListView->new(web => $p, name => 'keywords');
 
@@ -62,7 +70,7 @@ sub keywords_frame {
             %$row,
             href_edit=> url_f('keywords_edit', id => $row->{kwid}),
             href_delete => url_f('keywords', 'delete' => $row->{kwid}),
-            href_view_problems => url_f('problems_all', search => "has_kw($row->{kwid})", ($is_jury ? (link => 1) : ())),
+            href_view_problems => url_f('problems_all', _has_kw($row->{kwid}), @search_link),
         );
     };
 

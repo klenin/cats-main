@@ -1,5 +1,5 @@
+[% js.jquery = 1 IF editable %]
 [% PROCESS includes/menu_begin.tti %]
-
 <script>
 function delete_kw(href, name) {
   if (confirm( "[% capt.want_to_delete %] '" + name + "'?" ))
@@ -15,9 +15,10 @@ function delete_kw(href, name) {
 [% FOREACH k IN keywords %]
 <tr class="[% loop.parity() %]">
 [% IF editable %]
-<td class="nobr">
+<td class="nobr sel_col">
   <a href="javascript:delete_kw('[% k.href_delete %]', '[% k.code | html %]');" class="icon delete"></a>
   <a href="[% k.href_edit %]" class="icon edit"></a>
+  <input type="checkbox" class="listview_checkbox" name="sel" value="[% k.kwid %]" />
 </td>
 [% END %]
 <td><a href="[% k.href_view_problems %]">[% k.code | html %]</a></td>
@@ -27,6 +28,7 @@ function delete_kw(href, name) {
 </tr>
 [% END %]
 </table>
+[% IF editable %]<br/><button class="button" name="search_selected" value="1">[% capt.search_selected %]</button>[% END %]
 [% PROCESS includes/pages.tti %]
 </form>
 
