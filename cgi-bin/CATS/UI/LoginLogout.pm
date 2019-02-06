@@ -147,7 +147,7 @@ sub _login_token {
     my ($p) = @_;
     # ONTI compatibility.
     $p->{apikey} ||= $p->{token};
-    $p->{login} ||= $p->{team_id};
+    $p->{login} ||= $login_prefix . $p->{team_id};
 
     $p->{login} && $p->{apikey} && $p->{cid} or return [ 0, 'no param' ];
     my ($account_id, $is_jury_in_contest, $apikey) = $dbh->selectrow_array(q~
@@ -155,7 +155,7 @@ sub _login_token {
         INNER JOIN accounts A ON A.id = CA.account_id
         INNER JOIN contests C ON C.id = CA.contest_id
         WHERE A.login = ? AND CA.contest_id = ?~, undef,
-        $login_prefix . $p->{login}, $p->{cid}) or return [ 0, 'bad login' ];
+        $p->{login}, $p->{cid}) or return [ 0, 'bad login' ];
     $p->{apikey} eq $apikey or return [ 0, 'bad api key' ];
     $is_jury_in_contest and return [ 0, 'bad user' ];
     my $token = CATS::User::make_token($account_id);
