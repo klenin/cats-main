@@ -21,5 +21,11 @@ CREATE TABLE contest_de_tags (
     CONSTRAINT contest_de_tags_de_fk
         FOREIGN KEY (contest_id) REFERENCES contests(id) ON DELETE CASCADE,
     CONSTRAINT contest_de_tags_tag_fk
-        FOREIGN KEY (tag_id) REFERENCES de_tags(id) ON DELETE CASCADE
+        FOREIGN KEY (tag_id) REFERENCES de_tags(id)
 );
+
+COMMIT;
+
+INSERT INTO de_tags(id, name) VALUES(7, 'default');
+INSERT INTO de_de_tags(tag_id, de_id) SELECT 7, id FROM default_de WHERE in_contests = 1;
+COMMIT;

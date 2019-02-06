@@ -646,7 +646,7 @@ CREATE TABLE contest_de_tags (
     CONSTRAINT contest_de_tags_de_fk
         FOREIGN KEY (contest_id) REFERENCES contests(id) ON DELETE CASCADE,
     CONSTRAINT contest_de_tags_tag_fk
-        FOREIGN KEY (tag_id) REFERENCES de_tags(id) ON DELETE CASCADE
+        FOREIGN KEY (tag_id) REFERENCES de_tags(id)
 );
 
 CREATE GENERATOR key_seq;

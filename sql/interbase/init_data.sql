@@ -73,6 +73,10 @@ INSERT INTO judges(id, nick, pin_mode, account_id) VALUES (4, 'fox', 3, 5);
 /* See $cats::anonymous_login */
 INSERT INTO accounts(id, login, passwd, srole, locked) VALUES(6, 'anonymous', '', 0, 1);
 
+/* See CATS::Globals::default_de_tag. */
+INSERT INTO de_tags(id, name) VALUES(7, 'default');
+INSERT INTO de_de_tags(tag_id, de_id) SELECT 7, id FROM default_de;
+
 /* See CATS::Globals::contact_* constants. */
 INSERT INTO contact_types(id, name, url) VALUES(901, 'Phone', '');
 INSERT INTO contact_types(id, name, url) VALUES(902, 'Email', 'mailto:%s');
