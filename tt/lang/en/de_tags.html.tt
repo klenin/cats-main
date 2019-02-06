@@ -1,0 +1,7 @@
+[%
+  capt.import({
+    want_to_delete => 'Do you really want to delete dev. env. tag',
+    add => 'tag contest',
+    remove => 'untag contest',
+  })
+%]

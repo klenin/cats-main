@@ -351,6 +351,12 @@ my $main_routes = {
     ],
     files_edit => [ \&CATS::UI::Files::files_edit_frame,
         $CATS::UI::Files::form->route, file => upload, ],
+    de_tags => [ \&CATS::UI::DeTags::de_tags_frame,
+        delete => integer, saved => integer,
+        add => bool, remove => bool, check => array_of integer,
+    ],
+    de_tags_edit => [ \&CATS::UI::DeTags::de_tags_edit_frame,
+        $CATS::UI::ContestTags::form->route, ],
 };
 
 my $api_judge_routes = {

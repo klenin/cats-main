@@ -1,0 +1,35 @@
+[% js.jquery = 1 %]
+[% PROCESS includes/menu_begin.tti %]
+
+<script>
+function delete_de_tag(href, name) {
+  if (confirm( "[% capt.want_to_delete %] '" + name + "'?" ))
+    document.location = href;
+}
+</script>
+
+[% PROCESS includes/listview_header.tti %]
+
+<table class="listview bordered highlight">
+[% PROCESS includes/listview_col_defs.tti sel_col = 1 %]
+
+[% FOREACH dt IN de_tags %]
+<tr class="[% loop.parity() %]">
+<td class="nobr sel_col">
+  <a href="javascript:delete_de_tag('[% dt.href_delete %]', '[% dt.name | html %]');" class="icon delete"></a>
+  <a href="[% dt.href_edit %]" class="icon edit"></a>
+  <input type="checkbox" name="check" value="[% dt.id %]" />
+</td>
+<td><a href="[% dt.href_view_contests %]">[% dt.name | html %]</a></td>
+<td>[% IF dt.is_used %]<a href="#" class="icon checked"></a>[% END %]</td>
+[% IF visible_cols.Rc %]<td>[% dt.ref_count %]</td>[% END %]
+</tr>
+[% END %]
+</table>
+<br/>
+<button name="add" value="1" class="button">[% capt.add %]</button>
+<button name="remove" value="1" class="button">[% capt.remove %]</button>
+[% PROCESS includes/pages.tti %]
+</form>
+
+[% PROCESS includes/menu_end.tti %]
