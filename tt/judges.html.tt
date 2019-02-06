@@ -1,3 +1,4 @@
+[% js.jquery = 1 IF editable %]
 [% PROCESS includes/menu_begin.tti %]
 [% PROCESS "lang/$lang/judges_common.tti" %]
 

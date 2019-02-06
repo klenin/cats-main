@@ -1,3 +1,4 @@
+[% js.jquery = 1 %]
 [% PROCESS includes/menu_begin.tti %]
 
 <script>
@@ -15,7 +16,7 @@ function delete_contest_tag(href, name) {
 [% FOREACH ct IN contest_tags %]
 <tr class="[% loop.parity() %]">
 [% IF 1 %]
-<td class="nobr">
+<td class="nobr sel_col">
   <a href="javascript:delete_contest_tag('[% ct.href_delete %]', '[% ct.name | html %]');" class="icon delete"></a>
   <a href="[% ct.href_edit %]" class="icon edit"></a>
   <input type="checkbox" name="check" value="[% ct.id %]" />

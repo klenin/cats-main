@@ -99,8 +99,9 @@ sub set_pin_mode {
 sub judges_frame {
     my ($p) = @_;
     $is_jury or return;
+    my $editable = $user->privs->{manage_judges};
 
-    if ($user->privs->{manage_judges}) {
+    if ($editable) {
         if ($p->{ping}) {
             CATS::Judge::ping($p->{ping});
             return $p->redirect(url_f 'judges');
@@ -112,25 +113,26 @@ sub judges_frame {
     init_template($p, 'judges.html.tt');
     my $lv = CATS::ListView->new(web => $p, name => 'judges');
 
-    $user->privs->{manage_judges} and $form->delete_or_saved($p);
+    $editable and $form->delete_or_saved($p);
 
     $lv->define_columns(url_f('judges'), 0, 0, [
-        { caption => res_str(625), order_by => 'nick', width => '15%' },
-        ($user->privs->{manage_judges} ? (
-            { caption => res_str(616), order_by =>  'login', width => '25%', col => 'Lg' },
+        { caption => res_str(625), order_by => 'nick', width => '15%',
+            checkbox => $editable && 'input[name=selected]' },
+        ($editable ? (
+            { caption => res_str(616), order_by => 'login', width => '15%', col => 'Lg' },
             { caption => res_str(649), order_by => 'processing_count', width => '10%', col => 'Rq' },
         ) : ()),
         { caption => res_str(626), order_by => 'is_alive', width => '10%', col => 'Re' },
         { caption => res_str(633), order_by => 'alive_date', width => '10%', col => 'Ad' },
         { caption => res_str(622), order_by => 'pin_mode', width => '10%' },
-        { caption => res_str(676), order_by => 'version', width => '15%', col => 'Vr' },
+        { caption => res_str(676), order_by => 'version', width => '25%', col => 'Vr' },
     ]);
     $lv->define_db_searches([ qw(J.id nick login version is_alive alive_date pin_mode account_id last_ip) ]);
     my @pin_mode_values = qw(locked request contest any);
     $lv->define_enums({ pin_mode => { map { $pin_mode_values[$_] => $_ } 0 .. $#pin_mode_values } });
 
     my $req_counts =
-        !$user->privs->{manage_judges} || !$lv->visible_cols->{Rq} ?
+        !$editable || !$lv->visible_cols->{Rq} ?
         ', NULL AS processing_count, NULL AS processed_count' :
         qq~,
         (SELECT COUNT(*) FROM reqs R WHERE R.judge_id = J.id AND R.state <= $cats::st_testing) AS processing_count,
@@ -173,7 +175,7 @@ sub judges_frame {
     $lv->attach(url_f('judges'), $fetch_record, $c);
 
     _submenu;
-    $t->param(editable => $user->privs->{manage_judges});
+    $t->param(editable => $editable);
 
     my ($not_processed) = $dbh->selectrow_array(q~
         SELECT COUNT(*) FROM reqs WHERE state = ? AND judge_id IS NULL~, undef,

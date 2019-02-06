@@ -9,7 +9,6 @@
   .date { text-align: center; }
   .finished { color: #901010; }
   div.action { display: inline-block; }
-  td.sel label { display: block; }
 </style>
 [%- END %]
 [% PROCESS includes/menu_begin.tti %]
@@ -29,7 +28,7 @@ function delete_contest(href, name) {
 
 [% FOREACH c IN contests %]
 <tr class="[% loop.parity() %]">
-<td class="sel">
+<td class="sel_col">
   <label><input type="checkbox" class="listview_checkbox" name="contests_selection" value="[% c.id %]" /></label>
 </td><td>
   [% IF c.deletable %]

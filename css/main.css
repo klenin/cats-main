@@ -80,6 +80,10 @@ a.listview_dropper, a.listview_dropper:link { font-size: small; width: 1px; }
 
 table.listview { width: 100%; border-spacing: 1px; }
 table.listview > tbody > tr > td { padding: 2px; }
+table.listview th input.toggle_all_cb { padding: 0; margin: 0; }
+table.listview th.sel_col { width: 1%; }
+table.listview .sel_col { padding: 0; }
+table.listview .sel_col label { display: block; padding: 0 2px; }
 
 div.search_hint {
     position: absolute;
