@@ -208,18 +208,18 @@ sub users_frame {
     my @cols = (
         ($is_jury ?
             { caption => res_str(616), order_by => 'login', width => '20%' } : ()),
-        { caption => res_str(608), order_by => 'team_name', width => '30%' },
+        { caption => res_str(608), order_by => 'team_name', width => '30%', checkbox => $is_jury && '[name=sel]' },
         { caption => res_str(627), order_by => 'COALESCE(S.name, A.city)', width => '20%', col => 'Si' },
         { caption => res_str(629), order_by => 'tag', width => '5%', col => 'Tg' },
         ($is_jury || $user->{is_site_org} ? (
             { caption => res_str(671), order_by => 'ip', width => '5%', col => 'Ip' },
-            { caption => res_str(612), order_by => 'is_ooc', width => '1%' },
-            { caption => res_str(613), order_by => 'is_remote', width => '1%' },
-            { caption => res_str(610), order_by => 'is_site_org', width => '1%' },
+            { caption => res_str(612), order_by => 'is_ooc', width => '1%', checkbox => '.is_ooc input' },
+            { caption => res_str(613), order_by => 'is_remote', width => '1%', checkbox => '.is_remote input' },
+            { caption => res_str(610), order_by => 'is_site_org', width => '1%', checkbox => '.is_site_org input' },
         ) : ()),
         ($is_jury ? (
-            { caption => res_str(611), order_by => 'is_jury', width => '1%' },
-            { caption => res_str(614), order_by => 'is_hidden', width => '1%' },
+            { caption => res_str(611), order_by => 'is_jury', width => '1%', checkbox => '.is_jury input' },
+            { caption => res_str(614), order_by => 'is_hidden', width => '1%', checkbox => '.is_hidden input' },
         ) : ()),
         ($is_jury || $contest->{show_flags} ? (
             { caption => res_str(607), order_by => 'country', width => '5%', col => 'Fl' },
