@@ -91,6 +91,17 @@ sub _contest_searches {
             WHERE CCT1.contest_id = C.id AND CT1.name = ?)~,
             m => 1191, t => undef,
         },
+        has_de_tag => { sq => qq~EXISTS (
+            SELECT 1 FROM contest_de_tags CDT1 WHERE CDT1.contest_id = C.id AND CDT1.tag_id = ?)~,
+            m => 1191, t => q~
+            SELECT DT.name FROM de_tags DT WHERE DT.id = ?~
+        },
+        has_de_tag_named => { sq => qq~EXISTS (
+            SELECT 1 FROM contest_de_tags CDT1
+            INNER JOIN de_tags DT1 ON CD1.id = CDT1.tag_id
+            WHERE CDT1.contest_id = C.id AND CD1.name = ?)~,
+            m => 1191, t => undef,
+        },
     });
 }
 
