@@ -286,7 +286,13 @@ sub delete_or_saved {
         if ($self->{before_delete}) {
             $self->{before_delete}->($p, $id, descr => \@descr) or return;
         }
-        $dbh->do(_u $sql->delete($self->{table}, { id => $id }));
+        eval {
+            $dbh->do(_u $sql->delete($self->{table}, { id => $id }));
+        };
+        if (my $err = $@) {
+            my $ref_table = CATS::DB::foreign_key_violation($err);
+            return $ref_table ? msg(1201, $ref_table, @descr) : CATS::Messages::msg_debug($err);
+        }
         $self->{after_delete}->($p, $id, descr => \@descr) if $self->{after_delete};
         $opts{before_commit}->($self) if $opts{before_commit};
         $dbh->commit;
