@@ -148,7 +148,7 @@ sub new {
     $self->{descr_field} = $r{descr_field} // 'id';
     $self->{validators} = $r{validators} // [];
     $self->{$_} = $r{$_} for qw(
-        after_delete after_load after_make
+        after_delete after_load after_make after_save
         before_commit before_delete before_display before_save before_save_db
         debug msg_deleted msg_saved override_save);
     $self;
@@ -253,6 +253,7 @@ sub edit_frame {
         $self->{before_save}->($form_data, $p) if $self->{before_save};
         $form_data->{$self->{id_param}} = $id =
             $self->save($id, [ map $_->{value}, @$data ], commit => 1);
+        $self->{after_save}->($form_data, $p) if $self->{after_save};
         if ($redir{save}) {
             return _redirect($p, $redir{save}, saved => $id);
         }
