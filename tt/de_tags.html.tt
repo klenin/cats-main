@@ -20,9 +20,9 @@ function delete_de_tag(href, name) {
   <a href="[% dt.href_edit %]" class="icon edit"></a>
   <input type="checkbox" name="check" value="[% dt.id %]" />
 </td>
-<td><a href="[% dt.href_view_contests %]">[% dt.name | html %]</a></td>
+<td>[% dt.name | html %]</td>
 <td>[% IF dt.is_used %]<a href="#" class="icon checked"></a>[% END %]</td>
-[% IF visible_cols.Rc %]<td>[% dt.ref_count %]</td>[% END %]
+[% IF visible_cols.Rc %]<td><a href="[% dt.href_view_contests %]">[% dt.ref_count %]</a></td>[% END %]
 </tr>
 [% END %]
 </table>

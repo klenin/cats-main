@@ -356,7 +356,7 @@ my $main_routes = {
         add => bool, remove => bool, check => array_of integer,
     ],
     de_tags_edit => [ \&CATS::UI::DeTags::de_tags_edit_frame,
-        $CATS::UI::ContestTags::form->route, ],
+        $CATS::UI::ContestTags::form->route, include => array_of integer, ],
 };
 
 my $api_judge_routes = {

@@ -6,6 +6,19 @@
 [% FOREACH f IN dt.ordered; tr_text(f, ct); END %]
 </table>
 <br/>
+<table class="highlight bordered">
+[% FOREACH row IN dt.de_matrix %]
+<tr>
+  [% FOREACH de IN row %]
+  <td><label>
+    <input type="checkbox" value="[% de.id %]" name="include"[% ' checked="checked"' IF de.include %] />
+    [% de.code %] [% de.description %]
+  </label></td>
+  [% END %]
+</tr>
+[% END %]
+</table>
+<br/>
 [% PROCESS includes/edit_save_cancel.tti %]
 </form>
 

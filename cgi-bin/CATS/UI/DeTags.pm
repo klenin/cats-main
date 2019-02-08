@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use CATS::DB;
+use CATS::DeGrid;
 use CATS::Form;
 use CATS::Globals qw($cid $is_root $t);
 use CATS::ListView;
@@ -12,6 +13,40 @@ use CATS::Output qw(init_template url_f);
 use CATS::References;
 
 my @field_common = (validators => [ CATS::Field::str_length(1, 200) ], editor => { size => 50 });
+
+sub _get_all_des {
+    $dbh->selectall_arrayref(q~
+        SELECT D.id, D.code, D.description, D.in_contests,
+            (SELECT 1 FROM de_de_tags DDT WHERE DDT.tag_id = ? AND DDT.de_id = D.id) AS include
+        FROM default_de D
+        ORDER BY D.code~, { Slice => {} }, $_[0]
+    );
+}
+
+sub _set_des {
+    my ($tag_id, $des) = @_;
+
+    my $all_des = _get_all_des($tag_id);
+    my (@delete_des, @insert_des);
+    my ($delete_des, $insert_des) =
+        CATS::DeGrid::calc_deletes_inserts($all_des, $des, 'id', 'include');
+
+    @$delete_des || @$insert_des or return $all_des;
+
+    if (@$delete_des) {
+        $dbh->do(_u $sql->delete('de_de_tags',
+            { tag_id => $tag_id, de_id => $delete_des }));
+    }
+    if (@$insert_des) {
+        my $sth = $dbh->prepare(q~
+            INSERT INTO de_de_tags(tag_id, de_id) VALUES (?, ?)~);
+        $sth->execute($tag_id, $_) for @$insert_des;
+    }
+    $dbh->commit;
+
+    msg(1169, scalar @$delete_des, scalar @$insert_des);
+    $all_des;
+}
 
 our $form = CATS::Form->new(
     table => 'de_tags',
@@ -23,14 +58,23 @@ our $form = CATS::Form->new(
     template_var => 'dt',
     msg_saved => 1187,
     msg_deleted => 1188,
-    before_display => sub { $t->param(submenu => [ CATS::References::menu('de_tags') ]) },
+    before_display => sub {
+        my ($fd, $p) = @_;
+        $fd->{des} //= _get_all_des($fd->{id} // 0);
+        $fd->{de_matrix} = CATS::DeGrid::matrix($fd->{des}, 3);
+        $t->param(submenu => [ CATS::References::menu('de_tags') ]);
+    },
+    after_save => sub {
+        my ($fd, $p) = @_;
+        $fd->{des} = _set_des($fd->{id}, $p->{include});
+    },
 );
 
 sub de_tags_edit_frame {
     my ($p) = @_;
     $is_root or return;
     init_template($p, 'de_tags_edit.html.tt');
-    $form->edit_frame($p, redirect => [ 'de_tags' ]);
+    $form->edit_frame($p, redirect_cancel => [ 'de_tags' ]);
 }
 
 sub _add_remove {
