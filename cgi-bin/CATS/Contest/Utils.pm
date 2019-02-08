@@ -10,7 +10,7 @@ use CATS::Config;
 use CATS::Constants;
 use CATS::DB;
 use CATS::Globals qw($cid $is_root $sid $t $uid);
-use CATS::Messages qw(res_str);
+use CATS::Messages qw(msg res_str);
 #use CATS::Output qw(url_f);
 use CATS::Time;
 use CATS::Utils qw(url_function date_to_iso);
@@ -262,6 +262,38 @@ sub contest_submenu {
             ($is_root ? { href => 'contest_caches', item => 515 } : ()),
         ]
     );
+}
+
+sub add_remove_tags {
+    my ($p, $table) = @_;
+    my $existing = $dbh->selectcol_arrayref(qq~
+        SELECT tag_id FROM $table WHERE contest_id = ?~, undef,
+        $cid);
+    my %existing_idx;
+    @existing_idx{@$existing} = undef;
+    my $count = 0;
+    if ($p->{add}) {
+        my $q = $dbh->prepare(qq~
+            INSERT INTO $table (contest_id, tag_id) VALUES (?, ?)~);
+        for (@{$p->{check}}) {
+            exists $existing_idx{$_} and next;
+            $q->execute($cid, $_);
+            ++$count;
+        }
+        $dbh->commit;
+        msg(1189, $count);
+    }
+    elsif ($p->{remove}) {
+        my $q = $dbh->prepare(qq~
+            DELETE FROM $table WHERE contest_id = ? AND tag_id = ?~);
+        for (@{$p->{check}}) {
+            exists $existing_idx{$_} or next;
+            $q->execute($cid, $_);
+            ++$count;
+        }
+        $dbh->commit;
+        msg(1190, $count);
+    }
 }
 
 1;

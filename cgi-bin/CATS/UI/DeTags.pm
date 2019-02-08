@@ -3,6 +3,7 @@ package CATS::UI::DeTags;
 use strict;
 use warnings;
 
+use CATS::Contest::Utils;
 use CATS::DB;
 use CATS::DeGrid;
 use CATS::Form;
@@ -77,38 +78,6 @@ sub de_tags_edit_frame {
     $form->edit_frame($p, redirect_cancel => [ 'de_tags' ]);
 }
 
-sub _add_remove {
-    my ($p) = @_;
-    my $existing = $dbh->selectcol_arrayref(q~
-        SELECT tag_id FROM contest_de_tags WHERE contest_id = ?~, undef,
-        $cid);
-    my %existing_idx;
-    @existing_idx{@$existing} = undef;
-    my $count = 0;
-    if ($p->{add}) {
-        my $q = $dbh->prepare(q~
-            INSERT INTO contest_de_tags (contest_id, tag_id) VALUES (?, ?)~);
-        for (@{$p->{check}}) {
-            exists $existing_idx{$_} and next;
-            $q->execute($cid, $_);
-            ++$count;
-        }
-        $dbh->commit;
-        msg(1189, $count);
-    }
-    elsif ($p->{remove}) {
-        my $q = $dbh->prepare(q~
-            DELETE FROM contest_de_tags WHERE contest_id = ? AND tag_id = ?~);
-        for (@{$p->{check}}) {
-            exists $existing_idx{$_} or next;
-            $q->execute($cid, $_);
-            ++$count;
-        }
-        $dbh->commit;
-        msg(1190, $count);
-    }
-}
-
 sub de_tags_frame {
     my ($p) = @_;
 
@@ -117,7 +86,7 @@ sub de_tags_frame {
     init_template($p, 'de_tags.html.tt');
     my $lv = CATS::ListView->new(web => $p, name => 'de_tags');
 
-    _add_remove($p) if $p->{add} || $p->{remove};
+    CATS::Contest::Utils::add_remove_tags($p, 'contest_de_tags') if $p->{add} || $p->{remove};
 
     $lv->define_columns(url_f('de_tags'), 0, 0, [
         { caption => res_str(601), order_by => 'name', width => '30%' },
