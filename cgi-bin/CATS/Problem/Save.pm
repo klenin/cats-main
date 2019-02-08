@@ -10,6 +10,7 @@ use CATS::Contest;
 use CATS::Contest::Participate qw(is_jury_in_contest);
 use CATS::Constants;
 use CATS::DB;
+use CATS::DeGrid;
 use CATS::Globals qw($t $cid $uid $contest);
 use CATS::Messages qw(msg);
 use CATS::Output qw(url_f);
@@ -220,30 +221,23 @@ sub set_contest_problem_des {
     my ($cpid, $des, $field) = @_;
 
     my $all_des = get_all_des($cpid);
-    my (@delete_des, @insert_des);
-    my %indexed_des = map { $_ => 1 } @$des;
+    my ($delete_des, $insert_des) =
+        CATS::DeGrid::calc_deletes_inserts($all_des, $des, $field, 'allow');
 
-    for (@$all_des) {
-        my $new = exists $indexed_des{$_->{$field}};
-        push @delete_des, $_->{id} if $_->{allow} && !$new;
-        push @insert_des, $_->{id} if !$_->{allow} && $new;
-        $_->{allow} = $new;
-    }
+    @$delete_des || @$insert_des or return $all_des;
 
-    @delete_des || @insert_des or return $all_des;
-
-    if (@delete_des) {
+    if (@$delete_des) {
         $dbh->do(_u $sql->delete('contest_problem_des',
-            { cp_id => $cpid, de_id => \@delete_des }));
+            { cp_id => $cpid, de_id => $delete_des }));
     }
-    if (@insert_des) {
+    if (@$insert_des) {
         my $sth = $dbh->prepare(q~
             INSERT INTO contest_problem_des(cp_id, de_id) VALUES (?, ?)~);
-        $sth->execute($cpid, $_) for @insert_des;
+        $sth->execute($cpid, $_) for @$insert_des;
     }
     $dbh->commit;
 
-    msg(1169, scalar @delete_des, scalar @insert_des);
+    msg(1169, scalar @$delete_des, scalar @$insert_des);
     $all_des;
 }
 

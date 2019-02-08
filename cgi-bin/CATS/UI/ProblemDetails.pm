@@ -5,11 +5,11 @@ use warnings;
 
 use File::stat;
 use List::Util qw(sum);
-use POSIX qw(ceil);
 
 use CATS::BinaryFile;
 use CATS::Constants;
 use CATS::DB;
+use CATS::DeGrid;
 use CATS::Globals qw($cid $contest $is_jury $is_root $sid $t);
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
@@ -403,15 +403,6 @@ sub problem_select_tags_frame {
     CATS::Problem::Utils::problem_submenu('problem_select_tags', $p->{pid});
 }
 
-sub _matrix {
-    my ($data, $col_count) = @_;
-    my $matrix = [];
-    my $height = ceil(@$data / $col_count);
-    my $i = 0;
-    push @{$matrix->[$i++ % $height]}, $_ for @$data;
-    $matrix;
-}
-
 sub problem_des_frame {
     my ($p) = @_;
 
@@ -464,7 +455,7 @@ sub problem_des_frame {
         title_suffix => $problem->{title},
         problem => $problem,
         des => $des,
-        de_matrix => _matrix($des, 3),
+        de_matrix => CATS::DeGrid::matrix($des, 3),
     );
     CATS::Problem::Utils::problem_submenu('problem_des', $p->{pid});
 }
