@@ -1,5 +1,7 @@
 INSERT INTO default_de (id, code, description, file_ext)
     VALUES (GEN_ID(key_seq, 1), 1, 'Do not compile this file', 'h;inc');
+INSERT INTO default_de (id, code, description, file_ext)
+    VALUES (GEN_ID(key_seq, 1), 3, 'Answer text', '');
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
     VALUES (GEN_ID(key_seq, 1), 101, 'Cross-platform C/C++ compiler', 'cc', 'c_cpp', '^~FILE~:~LINE~:~POS~:');
 
