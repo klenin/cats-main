@@ -38,6 +38,7 @@ sub parse_web_param {
 sub validate {
     my ($self, $value) = @_;
     for my $v (@{$self->{validators}}) {
+        $v or die "Empty validator for '$self->{name}'";
         if (ref $v eq 'CODE') {
             my $error = $v->($value, $self);
             return $error if $error;
