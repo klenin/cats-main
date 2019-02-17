@@ -172,7 +172,7 @@ function chg_code(st_sel, pid) {
     [%- maybe_href(p.href_last_request, p.last_verdict, capt.verdicts.item(p.last_verdict)) -%]
   </div>
   [%- IF p.href_problem_console %]<a href="[% p.href_problem_console %]">[% END -%]
-  [% p.accept_count %] / [% p.wa_count %] / [% p.tle_count %]
+  [% p.accept_count; " + ${p.aw_count}" IF p.aw_count %] / [% p.wa_count %] / [% p.tle_count %]
   [%- IF p.href_problem_console %]</a>[% END -%]
   [% IF p.judges_installed %][[% p.judges_installed %]][% END -%]
   </div>

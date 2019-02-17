@@ -229,6 +229,7 @@ sub problems_frame {
         ($reqs_count_sql $cats::st_accepted$account_condition) AS accepted_count,
         ($reqs_count_sql $cats::st_wrong_answer$account_condition) AS wrong_answer_count,
         ($reqs_count_sql $cats::st_time_limit_exceeded$account_condition) AS time_limit_count,
+        ($reqs_count_sql $cats::st_awaiting_verification$account_condition) AS awaiting_verification_count,
         (SELECT R.id || ' ' || R.state FROM reqs R
             WHERE R.problem_id = P.id AND R.account_id = ? AND R.contest_id = ?
             ORDER BY R.submit_time DESC ROWS 1) AS last_submission~
@@ -236,6 +237,7 @@ sub problems_frame {
         NULL AS accepted_count,
         NULL AS wrong_answer_count,
         NULL AS time_limit_count,
+        NULL AS awaiting_verification_count,
         NULL AS last_submission~;
     my $keywords = $is_jury && $lv->visible_cols->{Kw} ? q~(
         SELECT LIST(DISTINCT K.code, ' ') FROM keywords K
@@ -288,7 +290,7 @@ sub problems_frame {
     my @params =
         !$lv->visible_cols->{Vc} ? () :
         $contest->is_practice ? ($aid, $cid) :
-        (($aid) x 4, $cid);
+        (($aid) x 5, $cid);
     $sth->execute(@params, $cid, $lv->where_params);
 
     my @status_list;
@@ -379,6 +381,7 @@ sub problems_frame {
             accept_count => $c->{accepted_count},
             wa_count => $c->{wrong_answer_count},
             tle_count => $c->{time_limit_count},
+            aw_count => $c->{awaiting_verification_count},
             upload_date => $c->{upload_date},
             upload_date_iso => date_to_iso($c->{upload_date}),
             judges_installed => $c->{judges_installed},
