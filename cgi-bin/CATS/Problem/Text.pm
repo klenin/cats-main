@@ -294,9 +294,11 @@ sub problem_text {
                 $overridden_limits_str
             FROM contest_problems CP
                 LEFT JOIN limits L ON L.id = CP.limits_id
-            WHERE CP.contest_id = ? AND CP.status < $cats::problem_st_hidden
-            ORDER BY CP.code~, { Slice => {} },
-            $p->{cid} || $cid);
+            WHERE (CP.contest_id = ? OR
+                EXISTS (SELECT 1 FROM contests C1 WHERE C1.parent_id = ? AND CP.contest_id = C1.id))
+            AND CP.status < $cats::problem_st_hidden
+            ORDER BY CP.contest_id, CP.code~, { Slice => {} },
+            $p->{cid} || $cid, $p->{cid} || $cid);
         push @problems, @$prs;
     }
 
