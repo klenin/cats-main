@@ -125,6 +125,8 @@ sub _common_contests_view {
             map { $_ => ($p->{$_} ? Encode::decode_utf8($p->{$_}) : undef) }
             qw(filter search page)),
         href_params => url_f('contest_params', id => $c->{id}),
+        href_children => ($c->{child_count} ?
+            url_function('contests', sid => $sid, cid => $c->{id}, search => "parent_id=$c->{id}") : undef),
         href_problems => url_function('problems', sid => $sid, cid => $c->{id}),
         href_problems_text => CATS::StaticPages::url_static('problem_text', cid => $c->{id}),
         (href_start_date => !$CATS::Config::timeanddate_url ? undef :
@@ -191,6 +193,7 @@ sub authenticated_contests_view {
     my $sth = $dbh->prepare(qq~
         SELECT
             $cf, CA.is_virtual, CA.is_jury, CA.id AS registered, C.is_hidden,
+            (SELECT COUNT(*) FROM contests C1 WHERE C1.parent_id = C.id) AS child_count,
             ($problems_count_sql) AS problems_count,
             ($tags_sql) AS tags
             $extra_fields
