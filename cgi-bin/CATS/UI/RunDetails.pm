@@ -395,19 +395,23 @@ sub get_last_verdicts_api {
     my ($p) = @_;
     $uid && @{$p->{problem_ids}} or return $p->print_json({});
     my $state_sth = $dbh->prepare(q~
-        SELECT state, failed_test, id FROM reqs
-        WHERE contest_id = ? AND account_id = ? AND problem_id = ?
-        ORDER BY submit_time DESC ROWS 1~);
+        SELECT R.state, R.failed_test, R.id, CA.is_jury FROM reqs R
+        INNER JOIN contest_accounts CA
+            ON CA.contest_id = R.contest_id AND Ca.account_id = R.account_id
+        WHERE R.contest_id = ? AND R.account_id = ? AND R.problem_id = ?
+        ORDER BY R.submit_time DESC ROWS 1~);
     my $result = {};
     for (@{$p->{problem_ids}}) {
         $state_sth->execute($cid, $uid, $_);
-        my ($state, $failed_test, $rid) = $state_sth->fetchrow_array;
+        my ($state, $failed_test, $rid, $is_jury) = $state_sth->fetchrow_array;
         $state_sth->finish;
         defined $state or next;
         $result->{$_} = [
             CATS::Verdicts::hide_verdict_self($is_jury, $CATS::Verdicts::state_to_name->{$state}),
             $failed_test,
-            url_f('run_details', rid => $rid) ]
+            url_f('run_details', rid => $rid),
+            ($is_jury ? url_f('problem_details', pid => $_) : ''),
+        ]
     }
     $p->print_json($result);
 }

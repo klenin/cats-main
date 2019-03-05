@@ -1,7 +1,8 @@
 [%
   capt.problem_text.ru = {
     problem => 'Задача',
-    problem_list => 'список задач',
+    problem_list => 'задачи',
+    problem_details => 'детали',
     visible_spaces => 'видимые пробелы',
     basic_math => 'простые формулы',
     wide_text => 'широкий текст',

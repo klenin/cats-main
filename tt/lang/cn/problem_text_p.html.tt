@@ -1,7 +1,8 @@
 [%
   capt.problem_text.en = {
     problem => 'Problem',
-    problem_list => 'problem list',
+    problem_list => 'problems',
+    problem_details => 'details',
     visible_spaces => 'visible spaces',
     basic_math => 'basic formulae',
     wide_text => 'wide text',
