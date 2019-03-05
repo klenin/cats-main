@@ -241,6 +241,7 @@ sub get_sources_info {
 
         $r->{short_state} = CATS::Verdicts::hide_verdict_self(
             $r->{is_jury}, $CATS::Verdicts::state_to_name->{$r->{state}});
+        $r->{href_quick_verdict} = url_f('request_params', rid => $r->{req_id});
 
         # Just hour and minute from testing start and finish timestamps.
         ($r->{"${_}_short"} = $r->{$_}) =~ s/^(.*)\s+(\d\d:\d\d)\s*$/$2/
