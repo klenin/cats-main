@@ -92,8 +92,8 @@ MathJax.Hub.Register.StartupHook('onLoad', function () {
 <body>
 [% FOREACH p IN problems; il = p.iface_lang; PROCESS "lang/$il/problem_text_p.html.tt" UNLESS capt.problem_text.item(il); END; %]
 [% FOREACH p IN problems; c = capt.problem_text.item(p.iface_lang) %]
-<div class="problem_text" id="p[% p.id %]" [% UNLESS loop.first %]style="page-break-before: always"[% END %] lang="[% p.lang %]">
-  <a name="pr[% p.code || p.id %]"></a>
+<div class="problem_text" id="p[% p.cpid %]" [% UNLESS loop.first %]style="page-break-before: always"[% END %] lang="[% p.lang %]">
+  <a name="pr[% p.code || p.cpid || p.id %]"></a>
 
   <h2>
   [% IF p.color %]<span class="problem_color" style="background-color: [% p.color | html %];"></span>[% END %]
@@ -168,7 +168,7 @@ MathJax.Hub.Register.StartupHook('onLoad', function () {
     [% section('pconstraints') %]
     [% IF p.samples.size %]
       <h3>[% c.sample_tests %]</h3>
-      <table class="sample" id="sample[% p.id %]">
+      <table class="sample" id="sample[% p.cpid %]">
       <tr><th>[% c.sample_number %]</th>
       <th>[% IF p.input_file == '*STDIN'; c.standard_input; ELSE; c.input_file %] (<code>[% p.input_file | html %]</code>)[% END %]</th>
       <th>[% IF p.output_file == '*STDOUT'; c.standard_output; ELSE; c.output_file %] (<code>[% p.output_file | html %]</code>)[% END %]</th></tr>
@@ -245,11 +245,14 @@ if (sid)
       if (!result) return;
       for (var r in result) {
         if (!result[r]) continue;
-        var v = $('#p' + r + ' .last_verdict > .verdict');
-        v.addClass('run_details_' + result[r][0]);
-        v.find('a').attr('href', '[% href_static_path %]' + result[r][2]).text(result[r][0]);
-        v.find('div').html(result[r][1] || '.&nbsp;');
-        v.parent().show();
+        var verdict = result[r][0];
+        if (verdict) {
+            var v = $('#p' + r + ' .last_verdict > .verdict');
+            v.addClass('run_details_' + verdict);
+            v.find('a').attr('href', '[% href_static_path %]' + result[r][2]).text(verdict);
+            v.find('div').html(result[r][1] || '.&nbsp;');
+            v.parent().show();
+        }
         if (result[r][3]) {
           var pd = $('#p' + r + ' .problem_details_link');
           pd.find('a').attr('href', '[% href_static_path %]' + result[r][3]);
@@ -339,7 +342,7 @@ function get_snippets_data(problem_id, request_url) {
 
 function update_snippets() {
   [% FOREACH p IN problems %]
-    get_snippets_data([% p.problem_id %], '[% p.href_get_snippets %]');
+    get_snippets_data([% p.cpid %], '[% p.href_get_snippets %]');
   [% END %]
 }
 $(document).ready(update_snippets);

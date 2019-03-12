@@ -394,23 +394,30 @@ sub run_log_frame {
 sub get_last_verdicts_api {
     my ($p) = @_;
     $uid && @{$p->{problem_ids}} or return $p->print_json({});
+    my $cp_sth //= $dbh->prepare(q~
+        SELECT CP.problem_id, CP.contest_id, CA.is_jury FROM contest_problems CP
+        LEFT JOIN contest_accounts CA ON CP.contest_id = CA.contest_id
+        WHERE CP.id = ? AND CA.account_id = ?~);
     my $state_sth = $dbh->prepare(q~
-        SELECT R.state, R.failed_test, R.id, CA.is_jury FROM reqs R
-        INNER JOIN contest_accounts CA
-            ON CA.contest_id = R.contest_id AND Ca.account_id = R.account_id
+        SELECT R.state, R.failed_test, R.id FROM reqs R
         WHERE R.contest_id = ? AND R.account_id = ? AND R.problem_id = ?
         ORDER BY R.submit_time DESC ROWS 1~);
     my $result = {};
     for (@{$p->{problem_ids}}) {
-        $state_sth->execute($cid, $uid, $_);
-        my ($state, $failed_test, $rid, $is_jury) = $state_sth->fetchrow_array;
+        $cp_sth->execute($_, $uid);
+        my ($problem_id, $contest_id, $is_jury_in_contest) = $cp_sth->fetchrow_array or next;
+        $cp_sth->finish;
+        $state_sth->execute($contest_id, $uid, $problem_id);
+        my ($state, $failed_test, $rid) = $state_sth->fetchrow_array;
         $state_sth->finish;
-        defined $state or next;
+        $is_jury_in_contest || defined $state or next;
         $result->{$_} = [
-            CATS::Verdicts::hide_verdict_self($is_jury, $CATS::Verdicts::state_to_name->{$state}),
+            defined $state && CATS::Verdicts::hide_verdict_self(
+                $is_jury_in_contest, $CATS::Verdicts::state_to_name->{$state}),
             $failed_test,
-            url_f('run_details', rid => $rid),
-            ($is_jury ? url_f('problem_details', pid => $_) : ''),
+            $rid && url_f('run_details', rid => $rid),
+            ($is_jury_in_contest ? url_function('problem_details',
+                cid => $contest_id, pid => $problem_id, sid => $sid) : ''),
         ]
     }
     $p->print_json($result);
