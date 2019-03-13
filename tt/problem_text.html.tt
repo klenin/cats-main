@@ -117,9 +117,9 @@ MathJax.Hub.Register.StartupHook('onLoad', function () {
   [%-
     left_col = [
       { n => p.author ? c.author : '', t => p.author },
-      { n => p.interactive_io ? c.input_output : c.input_file,
-        t => p.interactive_io ? c.interactive : (p.input_file == '*STDIN' ? c.standard_input : p.input_file) },
-      { n => p.interactive_io ? '' : c.output_file,
+      { n => p.input_file == '*NONE' ? '' : ( p.interactive_io ? c.input_output : c.input_file ),
+        t => p.interactive_io ? c.interactive : ((p.input_file == '*STDIN' ? c.standard_input : p.input_file)) },
+      { n => p.output_file == '*NONE' ? '' : ( p.interactive_io ? '' : c.output_file),
         t => p.interactive_io ? '' : (p.output_file == '*STDOUT' ? c.standard_output : p.output_file) },
       { n => p.show_points ? c.max_points : '',
         t => p.max_points },
