@@ -385,7 +385,7 @@ sub problem_text {
         has_snippets => $has_snippets,
         href_static_path => $static_path,
         href_get_last_verdicts => @problems > 100 ? undef : $static_path .
-            url_function('api_get_last_verdicts', problem_ids => join ',', map $_->{problem_id}, @problems),
+            url_function('api_get_last_verdicts', problem_ids => join ',', map $_->{cpid}, @problems),
     );
 }
 
