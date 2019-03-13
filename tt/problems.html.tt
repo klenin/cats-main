@@ -96,6 +96,10 @@ function chg_code(st_sel, pid) {
 <p>[% capt.login_to_participate.replace('\[\[(.*)\]\]', href(href_login, '$1')) %]</p>
 [% END %]
 
+[% IF parent_contest %]
+<p>[% href(parent_contest.href, parent_contest.title) %]</p>
+<p>[% parent_contest.short_descr | html | linkify %]</p>
+[% END %]
 [% IF contest.short_descr %]
 <p>[% contest.short_descr | html | linkify %]</p>
 [% END %]

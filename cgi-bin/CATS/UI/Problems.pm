@@ -434,6 +434,15 @@ sub problems_frame {
         )),
         { href => url_f('contest_params', id => $cid), item => res_str(594) };
 
+    my $parent_contest = $dbh->selectrow_hashref(q~
+        SELECT C1.title, C1.id, C1.short_descr
+        FROM contests C1 INNER JOIN contests C ON C1.id = C.parent_id
+        WHERE C.id = ?~, undef,
+        $cid);
+    if ($parent_contest) {
+        $parent_contest->{href} = url_function('problems', sid => $sid, cid => $parent_contest->{id});
+    }
+
     $t->param(
         href_login => url_f('login', redir => CATS::Redirect::pack_params($p)),
         href_set_problem_color => url_f('set_problem_color'),
@@ -446,6 +455,7 @@ sub problems_frame {
             ($user->{is_virtual} || !$contest->has_finished_for($user)),
         CATS::Problem::Submit::prepare_de_list(),
         contest_id => $cid, no_judges => !$jactive,
+        parent_contest => $parent_contest,
      );
 }
 
