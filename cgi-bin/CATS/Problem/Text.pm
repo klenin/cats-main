@@ -319,7 +319,8 @@ sub problem_text {
                 'max_points AS max_points_def',
                 ($v->{author} && !$p->{noauthor} ? ('author') : ()),
                 grep(!$problem->{$_}, @cats::limits_fields),
-                ($v->{explain} ? 'explanation' : qw(input_format output_format)),
+                ($v->{explain} ? 'explanation' : ()),
+                ($p->{noformats} ? () : qw(input_format output_format)),
                 ($v->{is_jury_in_contest} && !$p->{noformal} ? 'formal_input' : ()),
             );
             my $p_orig = $dbh->selectrow_hashref(qq~

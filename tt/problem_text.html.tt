@@ -155,33 +155,29 @@ MathJax.Hub.Register.StartupHook('onLoad', function () {
   [% END -%]
 
   [% section('statement') %]
-  [% IF p.explanation %]
-    [% section('pconstraints') %]
-    [% section('explanation') %]
-  [% ELSE %]
-    [% section('input_format', p.input_file == '*STDIN' ? 0 : 'input_file_format') %]
-    [% IF p.formal_input %]
-      <h3>[% c.formal_input %]</h3>
-      <pre>[% p.formal_input %]</pre>
-    [% END %]
-    [% section('output_format', p.output_file == '*STDOUT' ? 0 : 'output_file_format') %]
-    [% section('pconstraints') %]
-    [% IF p.samples.size %]
-      <h3>[% c.sample_tests %]</h3>
-      <table class="sample" id="sample[% p.cpid %]">
-      <tr><th>[% c.sample_number %]</th>
-      <th>[% IF p.input_file == '*STDIN'; c.standard_input; ELSE; c.input_file %] (<code>[% p.input_file | html %]</code>)[% END %]</th>
-      <th>[% IF p.output_file == '*STDOUT'; c.standard_output; ELSE; c.output_file %] (<code>[% p.output_file | html %]</code>)[% END %]</th></tr>
-      [% FOREACH s IN p.samples %]
-      <tr>
-        <td>[% s.rank %]</td>
-        <td><pre><code>[% s.in_file | html %]</code></pre></td>
-        <td><pre><code>[% s.out_file | html %]</code></pre></td>
-      </tr>
-      [% END %]
-      </table>
-    [% END %]
+  [% section('input_format', p.input_file == '*STDIN' ? 0 : 'input_file_format') %]
+  [% IF p.formal_input %]
+    <h3>[% c.formal_input %]</h3>
+    <pre>[% p.formal_input %]</pre>
   [% END %]
+  [% section('output_format', p.output_file == '*STDOUT' ? 0 : 'output_file_format') %]
+  [% section('pconstraints') %]
+  [% IF p.samples.size %]
+    <h3>[% c.sample_tests %]</h3>
+    <table class="sample" id="sample[% p.cpid %]">
+    <tr><th>[% c.sample_number %]</th>
+    <th>[% IF p.input_file == '*STDIN'; c.standard_input; ELSE; c.input_file %] (<code>[% p.input_file | html %]</code>)[% END %]</th>
+    <th>[% IF p.output_file == '*STDOUT'; c.standard_output; ELSE; c.output_file %] (<code>[% p.output_file | html %]</code>)[% END %]</th></tr>
+    [% FOREACH s IN p.samples %]
+    <tr>
+      <td>[% s.rank %]</td>
+      <td><pre><code>[% s.in_file | html %]</code></pre></td>
+      <td><pre><code>[% s.out_file | html %]</code></pre></td>
+    </tr>
+    [% END %]
+    </table>
+  [% END %]
+  [% section('explanation') %]
   <hr>
 </div>
 [% END %]
