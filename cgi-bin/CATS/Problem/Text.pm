@@ -267,10 +267,11 @@ sub problem_text {
 
     my $overridden_limits_str = join ', ', map "L.$_", @cats::limits_fields;
 
-    if (my $pid = $p->{pid}) {
-        push @problems, { problem_id => $pid };
-    }
-    elsif (my $cpid = $p->{cpid}) {
+    if ($p->{cpid} || $p->{pid}) {
+        my ($cond, @params) = $p->{cpid} ?
+            ('CP.id = ?', $p->{cpid}) :
+            ('CP.problem_id = ? AND CP.contest_id = (SELECT P.contest_id FROM problems P WHERE P.id = ?)',
+                $p->{pid}, $p->{pid});
         my $pr = $dbh->selectrow_hashref(qq~
             SELECT
                 CP.id AS cpid, CP.contest_id, CP.problem_id, CP.code, CP.color,
@@ -279,8 +280,8 @@ sub problem_text {
             FROM contests C
                 INNER JOIN contest_problems CP ON CP.contest_id = C.id
                 LEFT JOIN limits L ON L.id = CP.limits_id
-            WHERE CP.id = ?~, undef,
-            $cpid) or return;
+            WHERE $cond~, undef,
+            @params) or return;
         $show_points = $pr->{rules};
         push @problems, $pr if $v->{is_jury_in_contest} || $pr->{status} < $cats::problem_st_hidden;
     }
