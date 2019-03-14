@@ -138,6 +138,8 @@ sub _console_content {
         R1.contest_id = R.contest_id AND
         R1.problem_id = R.problem_id AND
         R1.account_id = R.account_id AND~;
+    my $src_prefix_len = 2000;
+    my $from_src = sub { "(SELECT $_[0] FROM sources S WHERE S.req_id = R.id)" };
 
     $lv->define_db_searches({
         de_code => sprintf($de_select, 'DE.code'),
@@ -146,7 +148,9 @@ sub _console_content {
         code => q~(
             SELECT CP.code FROM contest_problems CP
             WHERE CP.contest_id = C.id AND CP.problem_id = P.id)~,
-        src_length => '(SELECT OCTET_LENGTH(S.src) FROM sources S WHERE S.req_id = R.id)',
+        source => $from_src->(
+            "CAST(SUBSTRING(S.src FROM 1 FOR $src_prefix_len) AS VARCHAR($src_prefix_len))"),
+        source_length => $from_src->('OCTET_LENGTH(S.src)'),
         next => qq~COALESCE((
             SELECT R1.id FROM reqs R1
             WHERE $same_contest_problem_account R1.id > R.id
