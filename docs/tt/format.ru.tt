@@ -50,8 +50,8 @@ END -%]
       <li>mlimit[% v11 %] — лимит памяти на прохождение одного теста [% mem_units %].</li>
       <li>wlimit[% opt %] [% v19 %] — лимит записи на прохождение одного теста [% mem_units %], по умолчанию 30.</li>
       <li>author[% opt %] — автор.</li>
-      <li>inputFile — имя входного файла или <code>*STDIN</code>[% v18 %].</li>
-      <li>outputFile — имя выходного файла или <code>*STDOUT</code>[% v18 %].</li>
+      <li>inputFile — имя входного файла или <code>*STDIN</code>[% v18 %] или <code>*NONE</code>[% v110 %].</li>
+      <li>outputFile — имя выходного файла или <code>*STDOUT</code>[% v18 %] или <code>*NONE</code>[% v110 %].</li>
       <li>difficulty[% opt %] [% dv14 %] — авторская оценка сложности задачи в баллах от (1 до 100).</li>
       <li>stdChecker[% opt %] [% dv14 %] — имя стандартной программы проверки.</li>
       <li>maxPoints[% opt %] [% v13 %] — максимальный балл за задачу, имеет приоритет перед суммой баллов по тестам.</li>

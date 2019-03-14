@@ -51,8 +51,8 @@ files with tests, solutions etc.
       <li>mlimit[% v11 %] — memory limit for a single test [% mem_units %].</li>
       <li>wlimit[% opt %] [% v19 %] — write limit for a single test [% mem_units %], default value is 30.</li>
       <li>author[% opt %] — author name.</li>
-      <li>inputFile — input file name or <code>*STDIN</code>[% v18 %].</li>
-      <li>outputFile — output file name or <code>*STDOUT</code>[% v18 %].</li>
+      <li>inputFile — input file name or <code>*STDIN</code>[% v18 %] or <code>*NONE</code>[% v110 %].</li>
+      <li>outputFile — output file name or <code>*STDOUT</code>[% v18 %] or <code>*NONE</code>[% v110 %].</li>
       <li>difficulty[% opt %] [% dv14 %] — author's estimate of the problem difficulty (1 to 100).</li>
       <li>stdChecker[% opt %] [% dv14 %] — standard checker name.</li>
       <li>maxPoints[% opt %] [% v13 %] — maximum number of points per problem, overrides the sum of points for each test.</li>
