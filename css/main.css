@@ -238,6 +238,7 @@ table > tbody > tr > td.nested table { border-style: hidden; height: 100%; width
     color: #4040ff;
     height: 22px;
     vertical-align: middle;
+    cursor: pointer;
 }
 .button2 {
     border: 1px solid #ffffff;
