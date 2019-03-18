@@ -128,6 +128,7 @@ sub _console_content {
         P.title
         A.team_name
         A.city
+        A.login
         CA.is_jury
         CA.site_id
     ) ]);
