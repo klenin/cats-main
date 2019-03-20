@@ -44,7 +44,8 @@ function delete_team(href, name) {
 [% IF visible_cols.Tg %]<td>[% maybe_href(u.href_rank_table_filter, u.tag) %]</td>[% END %]
 [% IF user.is_jury || user.is_site_org %]
 [% IF visible_cols.Ip -%]
-<td>[<a href="[% u.href_whois %]" title="[% u.last_ip %]">[% u.last_ip_short %]</a>][% cell_search('last_ip_short', u) %]</td>
+<td>[<a href="[% u.href_whois %]" title="[% u.last_ip %]">[% u.last_ip_short %]
+  [%- '*' UNLESS u.last_ip_submission %]</a>][% cell_search('last_ip_short', u) %]</td>
 [%- END %]
 <td class="user_checkbox center is_ooc"><label>[% checkbox_1("ooc$u.id", u.ooc, u.editable_attrs) %]</label></td>
 <td class="user_checkbox center is_remote"><label>[% checkbox_1("remote$u.id", u.remote, u.editable_attrs) %]</label></td>
