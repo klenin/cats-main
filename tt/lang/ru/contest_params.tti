@@ -12,6 +12,7 @@
     req_selection_best => 'лучшую',
     ACM => 'ACM',
     school => 'школьные',
+    flags => 'Флажки',
     open_registration => 'Свободная регистрация',
     is_official => 'Официальный турнир',
     run_all_tests => 'Запускать все тесты',

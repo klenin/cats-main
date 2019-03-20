@@ -12,6 +12,7 @@
     req_selection_best => 'best',
     ACM => 'ACM',
     school => 'school',
+    flags => 'Flags',
     open_registration => 'Open registration',
     is_official => 'Official contest',
     run_all_tests => 'Run all tests',
