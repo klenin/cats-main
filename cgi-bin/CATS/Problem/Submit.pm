@@ -46,15 +46,16 @@ sub _determine_state {
         $cats::st_ignore_submit : $cats::st_not_processed;
 }
 
-sub prepare_de {
+sub _prepare_de {
     my ($p, $file, $cpid) = @_;
+    my $result = {};
 
     my $did = $p->{de_id} or return msg(1013);
     if ($did eq 'by_extension') {
         my $de = CATS::DevEnv->new(CATS::JudgeDB::get_DEs({ active_only => 1 }))->by_file_extension($file)
             or return msg(1013);
         $did = $de->{id};
-        $t->param(de_name => $de->{description});
+        $result->{de_name} = $de->{description};
     }
     my $allowed_des = $dbh->selectall_arrayref(q~
         SELECT CPD.de_id, D.description
@@ -63,9 +64,18 @@ sub prepare_de {
         WHERE cp_id = ? ORDER BY D.code~, { Slice => {} },
         $cpid);
     if ($allowed_des && @$allowed_des && 0 == grep $_->{de_id} == $did, @$allowed_des) {
-        $t->param(de_not_allowed => $allowed_des);
-        return;
+        $result->{de_not_allowed} = $allowed_des;
+        return (undef, $result);
     }
+    else {
+        return ($did, $result);
+    }
+}
+
+sub prepare_de {
+    my ($p, $file, $cpid) = @_;
+    my ($did, $r) = _prepare_de(@_);
+    $t->param(%$r) if $t;
     $did;
 }
 
@@ -97,6 +107,10 @@ sub prepare_de_list {
         { de_id => 'by_extension', de_name => res_str(536) },
          map {{ de_id => $_->{id}, de_name => $_->{description}, syntax => $_->{syntax} }} @all_des );
     (de_list => \@de, (@all_des == 1 ? (de_selected => $all_des[0]->{id}) : ()));
+}
+
+sub can_submit {
+    $is_jury || $user->{is_participant} && ($user->{is_virtual} || !$contest->has_finished_for($user));
 }
 
 sub problems_submit {
@@ -166,8 +180,9 @@ sub problems_submit {
         return msg(1137) if $prev_reqs_count >= $contest->{max_reqs};
     }
 
-    my $did = prepare_de($p, $file ? $file->remote_file_name : '', $cpid) or return;
-
+    my ($did, $result) = _prepare_de($p, $file ? $file->remote_file_name : '', $cpid);
+    $t->param(%$result) if $t;
+    $did or return (undef, $result);
     # Forbid repeated submissions of the identical code with the same DE.
     my $source_hash = CATS::Utils::source_hash($source_text);
     my ($same_source, $prev_submit_time) = $dbh->selectrow_array(q~
@@ -194,12 +209,12 @@ sub problems_submit {
     $s->bind_param(5, $source_hash);
     $s->execute;
     $dbh->commit;
-
-    $t->param(solution_submitted => 1, href_run_details => url_f('run_details', rid => $rid));
+    $result->{href_run_details} = url_f('run_details', rid => $rid);
+    $t->param(%$result) if $t;
     $contest_finished ? msg(1087) :
     defined $prev_reqs_count ? msg(1088, $contest->{max_reqs} - $prev_reqs_count - 1) :
     msg(1014);
-    $rid;
+    ($rid, $result);
 }
 
 sub problems_submit_std_solution {

@@ -32,7 +32,7 @@
     <form enctype="multipart/form-data" method="POST" action="[% href_action %]">
       [% IF can_submit %]
         <select name="de_id" id="de[% si.req_id %]">
-          [% FOREACH de IN de_list; option(de.de_id, de.de_name, de.de_id == de_selected); END %]
+          [% FOREACH de IN de_list; editor_select_option(de.de_id, de.de_name, de.syntax, de.de_id == de_selected); END %]
         </select>
         <input name="source" type="file" class="file" size="25" />
         <button type="submit" name="submit" value="1" class="button">[% capt.submit %]</button>
@@ -50,8 +50,7 @@
   </td>
   <script>window.addEventListener('load', function () {
     highlight_errors('co[% si.req_id %]', [ [% si.err_regexp_js.join(', ') %] ], 'ed[% si.req_id %]');
-    var de_syntaxes = { [% FOREACH de IN de_list; de.de_id %]: "[% de.syntax %]"[% ', ' UNLESS loop.last; END %] };
-    set_syntax('ed[% si.req_id %]', 'de[% si.req_id %]', de_syntaxes);
+    set_syntax('ed[% si.req_id %]', 'de[% si.req_id %]');
   })</script>
 [% END %]
 </tr>

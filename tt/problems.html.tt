@@ -83,7 +83,7 @@ function chg_code(st_sel, pid) {
   [% FOREACH de IN de_not_allowed; "<li>$de.description</li>"; END %]
 </ul>
 [% END %]
-[% IF solution_submitted %]
+[% IF href_run_details %]
 [% href(href_run_details, capt.view_results) %].
 <hr/>
 [% END %]
@@ -190,7 +190,7 @@ function chg_code(st_sel, pid) {
 <div class="problem_submit">
   <p><label for="source">[% capt.solution_file %]:</label><input type="file" id="source" name="source" class="file" size="25"/></p>
   <p><label for="de_id">[% capt.dev_env %]:</label><select name="de_id" id="de_id">
-    [% FOREACH de IN de_list; option(de.de_id, de.de_name, de_selected); END %]
+    [% FOREACH de IN de_list; editor_select_option(de.de_id, de.de_name, de.syntax, de_selected); END %]
     </select>
   </p>
   [% IF editable %]
@@ -251,10 +251,7 @@ function chg_code(st_sel, pid) {
 [% END %]
 </form>
 <script type="text/javascript">
-  var de_syntaxes = { [% FOREACH de IN de_list; de.de_id %]: "[% de.syntax %]"[% ', ' UNLESS loop.last; END %] };
-  $(document).ready(function() {
-    set_syntax('source-editor', 'de_id', de_syntaxes);
-  });
+  $(document).on('ready', (function() { set_syntax('source-editor', 'de_id'); }));
 </script>
 [% IF editable %]
 <script type="text/javascript">

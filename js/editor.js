@@ -1,4 +1,6 @@
-$(document).ready(function () {
+$(document).ready(init_editors);
+
+function init_editors() {
   if (!ace) return;
   // Ace is broken on mobile browsers.
   if (/Mobi|Android/i.test(navigator.userAgent)) return;
@@ -46,7 +48,7 @@ $(document).ready(function () {
       fontSize: '14px',
     });
 
-    textarea.closest('form').submit(function() {
+    textarea.closest('form').on('submit', function() {
       textarea.val(editor.getSession().getValue());
       if (this.np)
         this.np.value = navigator.plugins.length;
@@ -88,7 +90,7 @@ $(document).ready(function () {
 
   });
 
-});
+}
 
 function add_error(errors, line, error_regexp) {
   var m = line.match(error_regexp);
@@ -123,11 +125,11 @@ function highlight_errors(error_list_id, error_list_regexp, editor_id) {
   session.setAnnotations(annotations);
 }
 
-function set_syntax(editor_id, select_id, syntaxes) {
-  var editor = ace.edit(editor_id);
-  if (!editor) return;
-  $('#' + select_id).change(function() {
-    var mode = syntaxes[$(this).val()];
+function set_syntax(editor_id, select_id) {
+  $('#' + select_id).on('change', function(e) {
+    var editor = ace.edit(editor_id);
+    if (!editor) return;
+    var mode = $('option:selected', this).attr('editor-syntax');
     editor.getSession().setMode({
       path: mode ? 'ace/mode/' + mode : 'ace/mode/plain_text',
     });
