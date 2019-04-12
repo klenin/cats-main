@@ -234,9 +234,11 @@ sub anonymous_contests_view {
     _contest_searches($p);
     my $sth = $dbh->prepare(qq~
         SELECT $cf FROM contests C WHERE C.is_hidden = 0 ~ .
-       ($p->{filter_sql} || '') . $p->{listview}->order_by
+       ($p->{filter_sql} || '') .
+       $p->{listview}->maybe_where_cond .
+       $p->{listview}->order_by
     );
-    $sth->execute;
+    $sth->execute($p->{listview}->where_params);
 
     my $fetch_contest = sub {
         my $c = $_[0]->fetchrow_hashref or return;
