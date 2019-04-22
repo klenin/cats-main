@@ -15,7 +15,7 @@
     used_in => 'Used in contests',
     solution_file => 'Solution file',
     dev_env => 'Dev. environment',
-    submit_as => 'Submit as user:',
+    submit_as => 'Submit as user',
     solution_text => 'Solution text',
     submit => 'submit',
     std_solution => 'standard solution',
