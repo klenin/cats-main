@@ -10,11 +10,12 @@ use CATS::DB;
 use CATS::Globals qw($contest $is_jury $is_root $sid $t $uid);
 use CATS::Messages qw(res_str);
 use CATS::Output qw(url_f);
+use CATS::Problem::Utils;
 use CATS::RankTable;
+use CATS::Request;
 use CATS::Time;
 use CATS::Utils qw(encodings source_encodings url_function);
 use CATS::Verdicts;
-use CATS::Request;
 
 use Exporter qw(import);
 our @EXPORT_OK = qw(
@@ -272,6 +273,7 @@ sub get_sources_info {
         $r->{src} //= '';
         $r->{de_id} //= 0;
         $r->{$_} = $r->{"lr_$_"} || $r->{"lcp_$_"} || $r->{"p_$_"} for @cats::limits_fields, 'job_split_strategy';
+        CATS::Problem::Utils::round_time_limit($r->{time_limit});
 
         $r->{can_reinstall} = $is_root || $r->{orig_contest_id} == $r->{contest_id};
 
