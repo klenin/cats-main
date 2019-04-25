@@ -41,6 +41,8 @@ INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
     VALUES (GEN_ID(key_seq, 1), 402, 'Microsoft Visual C#', 'cs', 'csharp', '^~FILE~\(~LINE~,~POS~\):');
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
     VALUES (GEN_ID(key_seq, 1), 404, 'Go', 'go', 'golang', '^~FILE~:~LINE~:~POS~:');
+INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
+    VALUES (GEN_ID(key_seq, 1), 406, 'Kotlin', 'kt', 'kotlin', '^~FILE~:~LINE~:~POS~:');
 
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
     VALUES (GEN_ID(key_seq, 1), 501, 'Perl', 'pl', 'perl', 'at\s~FILE~\sline\s~LINE~');
