@@ -183,6 +183,7 @@ sub try_set_state {
     grep $_ eq $p->{state}, @$settable_verdicts or return;
     my $state = $CATS::Verdicts::name_to_state->{$p->{state}};
 
+    CATS::Job::cancel_all($si->{req_id});
     CATS::Request::enforce_state($p->{rid}, {
         failed_test => $p->{failed_test}, state => $state, points => $p->{points}
     });
