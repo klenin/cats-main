@@ -6,7 +6,7 @@ use warnings;
 use CATS::Contest::Utils;
 use CATS::DB;
 use CATS::Form;
-use CATS::Globals qw($cid $is_root $t);
+use CATS::Globals qw($cid $is_jury $is_root $t);
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
 use CATS::Output qw(init_template url_f);
@@ -37,7 +37,7 @@ sub contest_tags_edit_frame {
 sub contest_tags_frame {
     my ($p) = @_;
 
-    $is_root or return;
+    $is_jury or return;
     $form->delete_or_saved($p) if $is_root;
     init_template($p, 'contest_tags.html.tt');
     my $lv = CATS::ListView->new(web => $p, name => 'contest_tags');
