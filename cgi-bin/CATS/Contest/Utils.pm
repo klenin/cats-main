@@ -223,6 +223,8 @@ sub authenticated_contests_view {
             registered_virtual => $c->{registered} && $c->{is_virtual},
             href_delete => url_f('contests', delete => $c->{id}),
             has_orig => $c->{id} == $original_contest,
+            href_contest_tags =>
+                $c->{is_jury} ? url_function('contest_tags', cid => $c->{id}, sid => $sid) : '',
         );
     };
     ($fetch_contest, $sth);
