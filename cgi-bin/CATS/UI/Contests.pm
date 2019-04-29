@@ -372,6 +372,9 @@ sub contests_submenu_filter {
         official => 'AND C.is_official = 1 ',
         unfinished => 'AND CURRENT_TIMESTAMP <= finish_date ',
         current => 'AND CURRENT_TIMESTAMP BETWEEN start_date AND finish_date ',
+        ($uid ? (my =>
+            "AND EXISTS(SELECT 1 FROM contest_accounts CA
+            WHERE CA.contest_id = C.id AND CA.account_id = $uid)") : ()),
         json => q~
             AND EXISTS (
                 SELECT 1 FROM problems P INNER JOIN contest_problems CP ON P.id = CP.problem_id
@@ -500,7 +503,12 @@ sub contests_frame {
             href => url_f('contests', page => 0, filter => $_->{n}),
             item => res_str($_->{i}),
             selected => $settings->{contests}->{filter} eq $_->{n},
-        }, { n => 'all', i => 558 }, { n => 'official', i => 559 }, { n => 'unfinished', i => 560 }),
+        },
+            { n => 'all', i => 558 },
+            { n => 'official', i => 559 },
+            { n => 'unfinished', i => 560 },
+            { n => 'my', i => 407 },
+        ),
         ($user->privs->{create_contests} ?
             { href => url_f('contests_new'), item => res_str(537) } : ()),
         { href => url_f('contests',
