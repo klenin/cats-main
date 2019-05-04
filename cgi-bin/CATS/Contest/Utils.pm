@@ -120,10 +120,6 @@ sub _common_contests_view {
         selected => $c->{id} == $cid,
         is_official => $c->{is_official},
         show_points => $c->{rules},
-        href_contest => url_function('contests',
-            sid => $sid, set_contest => 1, cid => $c->{id},
-            map { $_ => ($p->{$_} ? Encode::decode_utf8($p->{$_}) : undef) }
-            qw(filter search page)),
         href_params => url_f('contest_params', id => $c->{id}),
         href_children => ($c->{child_count} ?
             url_function('contests', sid => $sid, cid => $c->{id}, search => "parent_id=$c->{id}") : undef),

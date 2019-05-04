@@ -39,9 +39,8 @@ function delete_contest(href, name) {
   [% ELSE %]
   <a href="[% c.href_params %]" class="icon view" title="[% capt.alt_params %]"></a>
   [% END %]
-  <a href="[% c.href_contest %]" title="[% c.short_descr | html %]"[% ' class="contest_selected"' IF c.selected %]>
+  <a href="[% c.href_problems %]" title="[% c.short_descr | html %]"[% ' class="contest_selected"' IF c.selected %]>
     [%- c.contest_name | html %]</a>
-  [<a href="[% c.href_problems %]">[% capt.problems %]</a>]
   [% IF c.child_count %][<a href="[% c.href_children %]">[% c.child_count %]</a>][% END %]
 </td>
 [% IF user.privs.is_root && visible_cols.Pc %]<td>[% c.problems_count %]</td>[% END %]

@@ -331,24 +331,6 @@ sub contests_edit_save {
     msg(1036, $contest_name);
 }
 
-sub contests_select_current {
-    defined $uid or return;
-
-    my ($registered, $is_virtual, $is_jury) = get_registered_contestant(
-        fields => '1, is_virtual, is_jury', contest_id => $cid
-    );
-    return if $is_jury;
-
-    $t->param(selected_contest_title => $contest->{title});
-
-    if ($contest->{time_since_finish} > 0) {
-        msg(1115, $contest->{title});
-    }
-    elsif (!$registered) {
-        msg(1116);
-    }
-}
-
 sub contest_delete {
     my ($delete_cid) = @_;
     $is_root or return;
@@ -476,8 +458,6 @@ sub contests_frame {
         _contests_add_children($p) if $p->{add_children};
         _contests_remove_children($p) if $p->{remove_children};
     }
-
-    contests_select_current if $p->{set_contest};
 
     $lv->define_columns(url_f('contests'), 'Sd', 1, [
         { caption => res_str(601), order_by => 'ctype DESC, title', width => '40%' },

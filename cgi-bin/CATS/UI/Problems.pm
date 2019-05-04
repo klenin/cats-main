@@ -177,6 +177,15 @@ sub problems_frame {
     CATS::Contest::Participate::online if $p->{participate_online};
     CATS::Contest::Participate::virtual if $p->{participate_virtual};
 
+    if ($uid && !$is_jury) {
+        if ($contest->{time_since_finish} > 0) {
+            msg(1115, $contest->{title});
+        }
+        elsif (!$user->{is_participant}) {
+            msg(1116);
+        }
+    }
+
     my $wikis = $dbh->selectall_arrayref(q~
         SELECT CW.wiki_id, CW.allow_edit, WP.name, WT.title
         FROM contest_wikis CW
@@ -349,7 +358,7 @@ sub problems_frame {
             href_download => $can_download && url_f('problem_download', pid => $c->{pid}),
             href_problem_details => $is_jury && url_f('problem_details', pid => $c->{pid}),
             href_original_contest =>
-                url_function('problems', sid => $sid, cid => $c->{original_contest_id}, set_contest => 1),
+                url_function('problems', sid => $sid, cid => $c->{original_contest_id}),
             href_usage => url_f('contests', search => "has_problem($c->{pid})", filter => 'all'),
             href_problem_console => $uid &&
                 url_f('console', search => "problem_id=$c->{pid}", uf => ($is_jury ? undef : $uid),
