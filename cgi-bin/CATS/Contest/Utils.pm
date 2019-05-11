@@ -131,6 +131,7 @@ sub _common_contests_view {
             join '&', CATS::Utils::gen_url_params(
                 msg => $c->{title}, %CATS::Config::timeanddate_tz, iso => $start_date_iso,
                 ($c->{duration_hours} < 24 ? (ah => $c->{duration_hours}) : ()))),
+        href_parent => $c->{parent_id} ? url_function('problems', sid => $sid, cid => $c->{parent_id}) : '',
     );
 }
 
