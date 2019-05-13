@@ -184,6 +184,7 @@ sub get_sources_info {
             'R.limits_id AS limits_id',
             'C.title AS contest_name',
             'C.is_official',
+            'CAST(CURRENT_TIMESTAMP - C.pub_reqs_date AS DOUBLE PRECISION) AS time_since_pub_reqs',
             'COALESCE(R.testsets, CP.testsets) AS testsets',
             'CP.id AS cp_id',
             'CP.status', 'CP.code',
@@ -217,6 +218,7 @@ sub get_sources_info {
         my $r = $req_tree->{$_};
         $r->{is_jury} = $is_jury_cached->($r->{contest_id});
         $r->{is_jury} || $r->{account_id} == ($uid || 0) ||
+            ($r->{time_since_pub_reqs} // 0) > 0 && !$r->{submitter_is_jury} ||
             ($can_see //= $uid ? CATS::Request::can_see_by_relation($uid) : {})->{$r->{account_id}}
             or delete $req_tree->{$_};
     }

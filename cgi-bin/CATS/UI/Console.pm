@@ -225,6 +225,7 @@ sub _console_content {
 
         my $show_details =
             $is_jury || $uid && $team_id && $uid == $team_id ||
+            ($contest->{time_since_pub_reqs} // 0) > 0 ||
             $team_id && $can_see->{$team_id};
 
         return (

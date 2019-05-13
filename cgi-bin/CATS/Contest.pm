@@ -12,7 +12,8 @@ sub database_fields {qw(
     local_only is_hidden max_reqs_except
 )}
 
-use fields (database_fields(), qw(server_time time_since_start time_since_finish time_since_defreeze tags));
+use fields (database_fields(), qw(
+    server_time time_since_start time_since_finish time_since_defreeze time_since_pub_reqs tags));
 
 use CATS::Config qw(cats_dir);
 use CATS::Contest::Utils;
@@ -35,7 +36,7 @@ sub load {
     $fields //= [
         database_fields(),
         'CURRENT_TIMESTAMP AS server_time',
-        map time_since_sql($_), qw(start finish defreeze)
+        map time_since_sql($_), qw(start finish defreeze pub_reqs)
     ];
     my $r = $contest_id ? CATS::DB::select_row('contests', $fields, { id => $contest_id }) : undef;
     # Choose training contest by default.
