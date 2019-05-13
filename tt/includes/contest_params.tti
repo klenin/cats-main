@@ -17,6 +17,7 @@
   [% date_row('freeze_date', freeze_date) %]
   [% date_row('finish_date', finish_date) %]
   [% date_row('defreeze_date', defreeze_date) %]
+  [% date_row('pub_reqs_date', pub_reqs_date) %]
   <tr><td>[% capt.rules %]:</td><td>[% IF can_edit %]
     <select name="rules" class="bordered">
       <option value="0"[% UNLESS rules %] selected="selected"[% END %]>[% capt.ACM %]</option>
@@ -54,6 +55,7 @@
   <tr><td>[% capt.show_packages %]:</td><td>[% checkbox_1('show_packages', show_packages, can_edit) %]</td></tr>
   <tr><td>[% capt.show_flags %]:</td><td>[% checkbox_1('show_flags', show_flags, can_edit) %]</td></tr>
   <tr><td>[% capt.show_sites %]:</td><td>[% checkbox_1('show_sites', show_sites, can_edit) %]</td></tr>
+  <tr><td>[% capt.show_all_for_solved %]:</td><td>[% checkbox_1('show_all_for_solved', show_all_for_solved, can_edit) %]</td></tr>
 </table>
 </div>
 <table class="bordered verdict_list">

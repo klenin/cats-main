@@ -87,8 +87,9 @@ CREATE TABLE contests (
     finish_date   TIMESTAMP,
     freeze_date   TIMESTAMP,
     defreeze_date TIMESTAMP,
-    closed        INTEGER DEFAULT 0 CHECK (closed IN (0, 1)),
-    is_hidden     SMALLINT DEFAULT 0 CHECK (is_hidden IN (0, 1)),
+    pub_reqs_date TIMESTAMP,
+    closed               INTEGER DEFAULT 0 CHECK (closed IN (0, 1)),
+    is_hidden            SMALLINT DEFAULT 0 CHECK (is_hidden IN (0, 1)),
     penalty              INTEGER,
     penalty_except       VARCHAR(100),
     ctype                INTEGER, /* 0 -- normal, 1 -- training session */
@@ -116,6 +117,7 @@ CREATE TABLE contests (
     req_selection        SMALLINT DEFAULT 0 NOT NULL CHECK (req_selection IN (0, 1)),
     pinned_judges_only   SMALLINT DEFAULT 0 NOT NULL,
     show_sites           SMALLINT DEFAULT 0 NOT NULL,
+    show_all_for_solved  SMALLINT DEFAULT 0 NOT NULL,
 
     CHECK (
         start_date <= finish_date AND freeze_date >= start_date

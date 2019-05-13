@@ -49,16 +49,19 @@ sub contest_params() {qw(
     start_date short_descr is_official finish_date run_all_tests req_selection show_packages
     show_all_tests freeze_date defreeze_date show_test_data max_reqs_except show_frozen_reqs show_all_results
     pinned_judges_only show_test_resources show_checker_comment
+    pub_reqs_date show_all_for_solved
 )}
 
 sub contest_checkbox_params() {qw(
     free_registration run_all_tests
     show_all_tests show_test_resources show_checker_comment show_all_results show_flags
     is_official show_packages local_only is_hidden show_test_data pinned_judges_only show_sites
+    show_all_for_solved
 )}
 
 sub contest_string_params() {qw(
-    title short_descr start_date freeze_date finish_date defreeze_date rules req_selection max_reqs
+    title short_descr start_date freeze_date finish_date defreeze_date pub_reqs_date
+    rules req_selection max_reqs
 )}
 
 sub get_contest_html_params {
@@ -302,18 +305,23 @@ sub contests_edit_save {
     $is_root or delete $c->{is_official};
     {
         my $d = 'CAST(? AS TIMESTAMP)';
+        my $check_after = qq~CASE WHEN $d <= $d THEN 1 ELSE 0 END,~;
+        my $check_pub_reqs_date = $c->{pub_reqs_date} ? $check_after : '1,';
         my @flags = $dbh->selectrow_array(qq~
             SELECT
-                CASE WHEN $d <= $d THEN 1 ELSE 0 END,
-                CASE WHEN $d BETWEEN $d AND $d THEN 1 ELSE 0 END,
-                CASE WHEN $d >= $d THEN 1 ELSE 0 END
+                $check_after
+                $check_after
+                $check_pub_reqs_date
+                CASE WHEN $d BETWEEN $d AND $d THEN 1 ELSE 0 END
             FROM RDB\$DATABASE~, undef,
-            @$c{qw(
-                start_date finish_date
-                freeze_date start_date finish_date
-                defreeze_date freeze_date)});
+            @$c{
+                qw(start_date finish_date),
+                qw(freeze_date defreeze_date),
+                ($c->{pub_reqs_date} ? qw(start_date pub_reqs_date) : ()),
+                qw(freeze_date start_date finish_date),
+            });
         if (my @errors = grep !$flags[$_], 0 .. $#flags) {
-            my @msgs = (1183, 1184, 1185);
+            my @msgs = (1183, 1185, 1202, 1184);
             msg($_) for @msgs[@errors];
             return;
         }
