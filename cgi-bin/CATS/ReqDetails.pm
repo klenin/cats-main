@@ -280,6 +280,9 @@ sub get_sources_info {
         $r->{can_reinstall} = $is_root || $r->{orig_contest_id} == $r->{contest_id};
 
         $r->{contacts} = $user_cached->($r->{account_id})->{contacts} if $r->{is_jury};
+        $r->{href_test_diff} = url_function('test_diff',
+            pid => $r->{problem_id}, test => $r->{failed_test}, cid => $r->{contest_id}, sid => $sid)
+            if $r->{is_jury} && $r->{failed_test};
     }
 
     return ref $rid ? [ map { $req_tree->{$_} // () } @req_ids ] : $req_tree->{$rid};
