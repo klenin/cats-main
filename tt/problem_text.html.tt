@@ -90,7 +90,6 @@ MathJax.Hub.Register.StartupHook('onLoad', function () {
   .cond_false { color: #800000; }
   .submit_messages { margin: 15px 0; }
   .submit_form { margin-top: 15px; }
-  .submit_message_italic { font-style: italic; }
   .submit_input { margin-right: 5px; }
 </style>
 </head>
@@ -366,7 +365,7 @@ function fill_messages(response, form) {
   }
   var messages = response.messages;
   for (var i = 0; i < messages.length; i++) {
-    append_to_container(messages[i], 'submit_message_italic');
+    append_to_container(messages[i], 'messages');
   }
   if (response.href_run_details) {
     var href_run_details = $("<a/>", {
