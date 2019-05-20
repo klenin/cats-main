@@ -199,7 +199,8 @@ sub _console_content {
 
     my $can_see = $uid && !$is_jury ? CATS::Request::can_see_by_relation($uid) : {};
 
-    my $sth = CATS::Console::build_query($s, $lv, $p->{uf});
+    my $uf = $is_jury || $contest->{show_all_results} ? $p->{uf} : [ $uid // -1 ];
+    my $sth = CATS::Console::build_query($s, $lv, $uf);
 
     my $fetch_console_record = sub {
         my ($rtype, $rank, $submit_time, $id, $request_state, $failed_test,
