@@ -464,6 +464,7 @@ sub problems_frame {
         CATS::Problem::Submit::prepare_de_list(),
         contest_id => $cid, no_judges => !$jactive,
         parent_contest => $parent_contest,
+        source_text => $p->{source_text},
      );
 }
 

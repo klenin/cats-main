@@ -198,7 +198,7 @@ function chg_code(st_sel, pid) {
   [% END %]
   <p><label for="source_text">[% capt.solution_text %]:</label><br/>
   <textarea id="source_text" name="source_text" cols="50" rows="5"
-        data-editor="plain_text" data-gutter="1" data-id="source-editor"></textarea></p>
+        data-editor="plain_text" data-gutter="1" data-id="source-editor">[% source_text | html %]</textarea></p>
   <button type="submit" name="submit" onclick="document.problems_form.np.value = navigator.plugins.length; return true;" value="1" class="button">
     [%~ capt.submit ~%]
   </button>
