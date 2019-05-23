@@ -402,7 +402,7 @@ sub get_last_verdicts_api {
         SELECT R.state, R.failed_test, R.id FROM reqs R
         WHERE R.contest_id = ? AND R.account_id = ? AND R.problem_id = ?
         ORDER BY R.submit_time DESC ROWS 1~);
-    my $result = {};
+    my $result = { can_submit => CATS::Problem::Submit::can_submit };
     for (@{$p->{problem_ids}}) {
         $cp_sth->execute($_, $uid);
         my ($problem_id, $contest_id, $is_jury_in_contest) = $cp_sth->fetchrow_array or next;

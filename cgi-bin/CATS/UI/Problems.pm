@@ -431,7 +431,7 @@ sub problems_frame {
     my @submenu = grep $_,
         ($is_jury ? (
             !$pr && $pt_url->([ 'problem_text',
-                nospell => 1, nokw => 1, notime => 1, noformal => 1, noauthor => 1 ]),
+                nospell => 1, nokw => 1, notime => 1, noformal => 1, noauthor => 1, nosubmit => 1 ]),
             !$pr && $pt_url->([ 'problem_text' ], res_str(555)),
             { href => url_f('problems_all', link => 1), item => res_str(540) },
             { href => url_f('problems_all', link => 1, move => 1), item => res_str(551) },
@@ -439,7 +439,8 @@ sub problems_frame {
             { href => url_f('contests_prizes', clist => $cid), item => res_str(565) },
         )
         : (
-            !$pr && $pt_url->([ 'problem_text', cid => $cid ]),
+            !$pr && $pt_url->([ 'problem_text', cid => $cid, nosubmit => 1 ]),
+            !$pr && $pt_url->([ 'problem_text', cid => $cid ], res_str(555)),
         )),
         { href => url_f('contest_params', id => $cid), item => res_str(594) };
 
@@ -459,9 +460,7 @@ sub problems_frame {
         CATS::Contest::Participate::flags_can_participate,
         submenu => \@submenu, title_suffix => res_str(525),
         is_user => $uid,
-        can_submit => $is_jury ||
-            $user->{is_participant} &&
-            ($user->{is_virtual} || !$contest->has_finished_for($user)),
+        can_submit => CATS::Problem::Submit::can_submit,
         CATS::Problem::Submit::prepare_de_list(),
         contest_id => $cid, no_judges => !$jactive,
         parent_contest => $parent_contest,
@@ -469,6 +468,12 @@ sub problems_frame {
 }
 
 sub problem_text_frame { goto \&CATS::Problem::Text::problem_text }
+
+sub submit_problem_api {
+    my ($p) = @_;
+    my ($rid, $result) = CATS::Problem::Submit::problems_submit($p);
+    $p->print_json({ messages => CATS::Messages::get, $result ? %$result : () });
+}
 
 sub set_problem_color {
     my ($p) = @_;

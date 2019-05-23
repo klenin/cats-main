@@ -75,8 +75,7 @@ sub view_source_frame {
             undef, $p->{rid});
 
     if ($p->{submit}) {
-        $p->{source_text} = '' if $p->{source};
-        my $rid = CATS::Problem::Submit::problems_submit($p);
+        my ($rid) = CATS::Problem::Submit::problems_submit($p);
         $rid and return $p->redirect(url_f 'view_source', rid => $rid, submitted => 1);
     }
     elsif ($sources_info->{is_jury} && $p->{replace}) {
@@ -138,11 +137,8 @@ sub view_source_frame {
         $sources_info->{compiler_output} = get_compilation_error($logs, $st)
     }
 
-    my $can_submit = $is_jury ||
-        $user->{is_participant} &&
-        ($user->{is_virtual} || !$contest->has_finished_for($user));
+    my $can_submit = CATS::Problem::Submit::can_submit;
     
-    my @de_list = prepare_de_list();
     if ($sources_info->{is_jury} || $can_submit) {
         $t->param(prepare_de_list(), de_selected => $sources_info->{de_id});
     }

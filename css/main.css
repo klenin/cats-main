@@ -57,7 +57,7 @@ table.header td.elapsed p a:hover { background-color: #ffcc55; }
     color: white;
 } 
 
-#messages { font-style: italic; }
+.messages { font-style: italic; }
 
 table.listview_header {
     border-collapse: collapse;

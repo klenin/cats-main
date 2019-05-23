@@ -11,8 +11,9 @@ use CATS::Config qw(cats_dir);
 use CATS::DB;
 use CATS::Globals qw($cid $contest $is_jury $is_root $t $uid);
 use CATS::Messages qw(res_str);
-use CATS::Output qw(downloads_path downloads_url init_template);
+use CATS::Output qw(downloads_path downloads_url init_template url_f);
 use CATS::Problem::Spell;
+use CATS::Problem::Submit qw(prepare_de_list);
 use CATS::Problem::Tags;
 use CATS::Problem::Utils;
 use CATS::StaticPages;
@@ -387,8 +388,10 @@ sub problem_text {
         mathjax => !$p->{nomath},
         has_snippets => $has_snippets,
         href_static_path => $static_path,
+        href_submit_problem => $static_path . url_function('api_submit_problem'),
         href_get_last_verdicts => @problems > 100 ? undef : $static_path .
             url_function('api_get_last_verdicts', problem_ids => join ',', map $_->{cpid}, @problems),
+        prepare_de_list,
     );
 }
 

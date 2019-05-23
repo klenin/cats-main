@@ -1,6 +1,7 @@
-[% js.jquery = 1 -%]
-[%- PROCESS includes/header.tti %]
-[% PROCESS includes/html.tti %]
+[%- js.jquery = 1; js.ace = 1; -%]
+[%- PROCESS includes/header.tti -%]
+[%- PROCESS includes/html.tti -%]
+[%- PROCESS "lang/$lang/problems.html.tt" -%]
 [% tex_styles %]
 [% IF mathjax %]
 <script type="text/javascript">
@@ -87,6 +88,9 @@ MathJax.Hub.Register.StartupHook('onLoad', function () {
   [%- PROCESS includes/verdicts.css.tti class='last_verdict' IF href_get_last_verdicts -%]
   .cond_true { color: #008000; }
   .cond_false { color: #800000; }
+  .submit_messages { margin: 15px 0; }
+  .submit_form { margin-top: 15px; }
+  .submit_input { margin-right: 5px; }
 </style>
 </head>
 <body>
@@ -178,16 +182,27 @@ MathJax.Hub.Register.StartupHook('onLoad', function () {
     </table>
   [% END %]
   [% section('explanation') %]
+  <div class="submit"></div>
   <hr>
 </div>
 [% END %]
 <script type="text/javascript">
 $('.problem_menu_trigger').click(function() { $(this).parent().next().toggle(); return false; });
 
-var sid = (new RegExp('sid=([a-zA-Z0-9]{30})')).exec(window.location.href);
-var uid = (new RegExp('uid=([0-9]+)')).exec(window.location.href);
+var query_params = (function() {
+    var url = window.location.search;
+    var qs = url.substring(url.indexOf('?') + 1).split(';');
+    for(var i = 0, result = {}; i < qs.length; i++) {
+        qs[i] = qs[i].split('=');
+        result[qs[i][0]] = decodeURIComponent(qs[i][1]);
+    }
+    return result;
+})();
+var sid = query_params.sid;
+var uid = query_params.uid;
+var has_submit = !query_params.nosubmit;
+
 if (sid) {
-  sid = sid[1];
   $('.problem_list_link').each(function() { this.href += ';sid=' + sid; });
 }
 
@@ -233,7 +248,6 @@ $('.problem_text div.problem_menu li.langs a').click(function() {
       s.indexOf('pl=') < 0  ? s + ';pl=' + this.innerText : s.replace(/pl=[a-z]+/, 'pl=' + this.innerText);
   }
 });
-
 [%- IF href_get_last_verdicts -%]
 if (sid)
   $(document).ready(function () {
@@ -255,8 +269,112 @@ if (sid)
           pd.show();
         }
       }
+      if (result.can_submit && has_submit) {
+        gen_forms();
+      }
     });
   });
+
+function gen_forms() {
+  var gen_form = function(select_id, editor_id, problem_id, contest_id) {
+    var container = $('#p' + contest_id).find('.submit');
+    var form = $('<form>').attr({ enctype: 'multipart/form-data', class: 'submit_form hidden' });
+
+    var select = $('<select>').attr({ name: 'de_id', id: select_id, class: 'submit_input' });
+    var add_option = function(de_id, de_syntax, de_name) {
+      select.append($('<option>').attr({ value: de_id, 'editor-syntax': de_syntax }).text(de_name));
+    }
+    [% FOREACH de IN de_list %] add_option('[% de.de_id %]', '[% de.syntax %]', '[% de.de_name %]'); [% END %]
+    select.appendTo(form);
+
+    $('<input>').attr({ type: 'file', name: 'source', size: '25', class: 'file submit_input' }).appendTo(form);
+    $('<button>').
+      attr({ type: 'submit', name: 'submit', class: 'button submit_input' }).text('[% capt.submit %]').appendTo(form);
+    $('<br><br>').appendTo(form);
+
+    $('<textarea>').attr({
+      name: 'source_text', cols: 100, rows: 15,
+      'data-editor': 'text', 'data-gutter': '1', 'data-id': editor_id
+    }).appendTo(form);
+    $('<input>').attr({ type: 'hidden', name: 'problem_id', value: problem_id }).appendTo(form);
+
+    $('<div>').attr({ 'class' : 'submit_messages'}).appendTo(container);
+    form.on('submit', process_submit);
+    form.appendTo(container);
+    set_syntax(editor_id, select_id);
+  }
+  [% FOREACH p IN problems %] gen_form('de[% p.id %]', 'ed[% p.id %]', '[% p.id %]', '[% p.cpid %]'); [% END %]
+  $('.submit_form').toggleClass('hidden');
+  init_editors();
+}
+
+function process_submit(e) {
+  e.preventDefault();
+  var form = $(this);
+  var request_url = '[% href_submit_problem %]';
+  if (!sid) return;
+  request_url += ';sid=' + sid;
+
+  var form_params = form.serializeArray();
+  var form_data = new FormData();
+  var file_tag = form.find('input[type="file"]')[0];
+  form_data.append(file_tag.name, file_tag.files[0]);
+
+  for (var i = 0; i < form_params.length; i++) {
+    if (form_params[i].name === 'source_text') {
+      var editor_id = form.find('textarea[name="source_text"]').attr('data-id');
+      form_params[i].value = ace.edit(editor_id).getSession().getValue();
+    }
+    form_data.append(form_params[i].name, form_params[i].value);
+  }
+
+  var xhr = new XMLHttpRequest();
+  if (!xhr) {
+    return false;
+  }
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState === XMLHttpRequest.DONE) {
+      if (xhr.status == 200) {
+        fill_messages(xhr.response, form);
+      }
+      // TODO
+    }
+  };
+  xhr.open('POST', request_url);
+  xhr.send(form_data);
+};
+
+function fill_messages(response, form) {
+  var message_container = form.parent().find('.submit_messages');
+  response = JSON.parse(response);
+  message_container.empty();
+  var append_to_container = function(message, classes) {
+    message_container.append($('<div>', { class: classes } ).text(message));
+  }
+  if (response.de_name) {
+    append_to_container('[% capt.dev_env_detected %]' + ': ' + response.de_name);
+  }
+  if (response.de_not_allowed) {
+    var not_allowed = response.de_not_allowed;
+    append_to_container('[% capt.de_not_allowed %]');
+    var de_list = $('<ul>');
+    for (var i = 0; i < not_allowed.length; i++) {
+      de_list.append('<li>' + not_allowed[i].description + '</li>');
+    }
+    message_container.append(de_list);
+  }
+  var messages = response.messages;
+  for (var i = 0; i < messages.length; i++) {
+    append_to_container(messages[i], 'messages');
+  }
+  if (response.href_run_details) {
+    var href_run_details = $("<a/>", {
+      href: '[% href_static_path %]' + response.href_run_details,
+      text: '[% capt.view_results %]',
+    });
+    message_container.append(href_run_details);
+  }
+}
 [%- END -%]
 
 [% IF has_snippets %]
@@ -319,7 +437,7 @@ function get_snippets_data(problem_id, request_url) {
   if (sid)
     request_url += ';sid=' + sid;
   if (uid)
-    request_url += ';uid=' + uid[1];
+    request_url += ';uid=' + uid;
 
   $.ajax({
     method: 'GET',
