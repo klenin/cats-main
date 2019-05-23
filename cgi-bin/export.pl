@@ -84,7 +84,7 @@ elsif ($mode eq 'runs') {
             $r->{verdict} = $CATS::Verdicts::state_to_name->{$r->{state}};
             (my $fn = $file_pattern) =~ s~%([a-z_]+)%~$r->{$1} // ''~ge;
             if ($dry_run) {
-                print $fn, (8 < length $fn ? "\t\t" : "\t");
+                print Encode::encode_utf8($fn), (8 < length $fn ? "\t\t" : "\t");
             }
             else {
                 open my $f, '>', File::Spec->catfile($dest, $fn . ($ext // ''));
