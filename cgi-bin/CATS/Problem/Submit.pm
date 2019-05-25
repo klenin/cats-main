@@ -135,7 +135,7 @@ sub problems_submit {
             SELECT 1 FROM snippets S
             WHERE S.name = T.snippet_name AND S.problem_id = T.problem_id AND
                 S.account_id = ? AND S.contest_id = ?)~, undef,
-        $pid, $uid, $cid) and return msg(1168);
+        $pid, $uid // $user->{anonymous_id}, $cid) and return msg(1168);
 
     my $contest_finished = $contest->has_finished_for($user);
     my ($cpid, $status, $title) = $dbh->selectrow_array(q~
