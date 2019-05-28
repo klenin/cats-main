@@ -39,6 +39,14 @@ function init_editors() {
         exec: function(ed) {
             ed.getSession().setUseWrapMode(!ed.getSession().getUseWrapMode());
         }
+    });
+
+    editor.commands.addCommand({
+        name: 'removeline',
+        bindKey: { win: 'Ctrl-Y', mac: 'Command-Y' },
+        exec: function(ed) { ed.removeLines(); },
+        scrollIntoView: 'cursor',
+        multiSelectAction: 'forEachLine'
     })
 
     editor.setTheme('ace/theme/chrome');
