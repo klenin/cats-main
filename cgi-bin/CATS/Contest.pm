@@ -9,7 +9,7 @@ sub database_fields {qw(
     closed penalty ctype rules max_reqs
     is_official run_all_tests
     show_all_tests show_test_resources show_checker_comment show_packages show_test_data show_flags show_sites
-    local_only is_hidden max_reqs_except
+    local_only is_hidden max_reqs_except show_all_results
 )}
 
 use fields (database_fields(), qw(
