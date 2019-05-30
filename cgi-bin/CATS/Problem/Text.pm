@@ -389,6 +389,7 @@ sub problem_text {
         has_snippets => $has_snippets,
         href_static_path => $static_path,
         href_submit_problem => $static_path . url_function('api_submit_problem'),
+        href_get_sources_info => $static_path . url_function('api_get_sources_info'),
         href_get_last_verdicts => @problems > 100 ? undef : $static_path .
             url_function('api_get_last_verdicts', problem_ids => join ',', map $_->{cpid}, @problems),
         prepare_de_list,

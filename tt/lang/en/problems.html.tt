@@ -6,6 +6,7 @@
     problem_import_log => 'Problem import log',
     problem_import_diff => 'Diff',
     no_judges => 'There are currently no active judging computers. Solution evaluation will be postponed.',
+    last_submit => 'last submit',
     login_to_participate => 'You must [[log in]] to participate in this contest.',
     dev_env_detected => 'Development environment detected',
     de_not_allowed => 'This development environment is forbidden. Allowed development environments:'
