@@ -185,6 +185,8 @@ sub problem_history_edit_frame {
     set_submenu_for_tree_frame($p->{pid}, $hash_base);
     set_history_paths_urls($p->{pid}, $blob->{paths});
     my $enc = ref $blob->{encoding} ? 'UTF-8' : $blob->{encoding};
+    my $keywords = $dbh->selectall_arrayref(q~
+        SELECT code FROM keywords~, { Slice => {} });
     $t->param(
         file => $p->{file},
         blob => $blob,
@@ -196,8 +198,9 @@ sub problem_history_edit_frame {
         message => Encode::decode_utf8($p->{message}),
         is_amend => $p->{is_amend},
         problem_import_log => $log,
-        autocomplete => $p->{file} =~ m/\.xml$/ ?
+        cats_tags => $p->{file} =~ m/\.xml$/ ?
             [ sort keys %{CATS::Problem::Parser::tag_handlers()} ] : [],
+        keywords => $keywords,
     );
 }
 
