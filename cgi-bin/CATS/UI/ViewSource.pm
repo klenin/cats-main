@@ -105,7 +105,7 @@ sub view_source_frame {
         }
     }
     else {
-        msg(1014) if $p->{submitted};
+        msg(1014, $sources_info->{submit_time}) if $p->{submitted};
     }
     source_links($p, $sources_info);
     sources_info_param([ $sources_info ]);
