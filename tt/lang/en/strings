@@ -369,3 +369,4 @@
 1200 "Not checked on test %d."
 1201 "Unable to delete '%2$s': there are still references from table '%1$s'."
 1202 "Submissions publication date must be no earlier than start date."
+1203 "You are banned from submitting this problem."

@@ -373,7 +373,8 @@ sub problems_frame {
             show_packages => $show_packages,
             status => $c->{status},
             status_text => $psn->{$c->{status}},
-            disabled => !$is_jury && $c->{status} == $cats::problem_st_disabled,
+            disabled => !$is_jury &&
+                ($c->{status} == $cats::problem_st_disabled || $last_state == $cats::st_banned),
             href_view_problem => $hrefs_view{statement} || $text_link_f->('problem_text', cpid => $c->{cpid}),
             problem_langs => $problem_langs,
             href_explanation => $show_packages && $c->{has_explanation} ?

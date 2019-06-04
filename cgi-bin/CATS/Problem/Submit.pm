@@ -39,6 +39,15 @@ sub too_frequent {
     ($prev->[1] || 1) < 20/$SECONDS_PER_DAY;
 }
 
+sub user_is_banned {
+    my ($problem_id) = @_;
+    $uid or return;
+    scalar $dbh->selectrow_array(q~
+        SELECT 1 FROM reqs
+        WHERE account_id = ? AND contest_id = ? AND problem_id = ? AND state = ? ROWS 1~, undef,
+        $uid, $cid, $problem_id, $cats::st_banned);
+}
+
 sub _determine_state {
     my ($p) = @_;
     return $cats::st_ignore_submit if $p->{ignore};
@@ -161,6 +170,8 @@ sub problems_submit {
             !$current_official
                 or return msg(1123, $current_official->{title});
         }
+
+        return msg(1203) if user_is_banned($pid);
     }
 
     my $submit_uid = _get_submit_uid($p) or return;
