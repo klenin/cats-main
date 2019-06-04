@@ -190,13 +190,13 @@ MathJax.Hub.Register.StartupHook('onLoad', function () {
 $('.problem_menu_trigger').click(function() { $(this).parent().next().toggle(); return false; });
 
 var query_params = (function() {
-    var url = window.location.search;
-    var qs = url.substring(url.indexOf('?') + 1).split(';');
-    for(var i = 0, result = {}; i < qs.length; i++) {
-        qs[i] = qs[i].split('=');
-        result[qs[i][0]] = decodeURIComponent(qs[i][1]);
-    }
-    return result;
+  var url = window.location.search;
+  var qs = url.substring(url.indexOf('?') + 1).split(';');
+  for(var i = 0, result = {}; i < qs.length; i++) {
+    qs[i] = qs[i].split('=');
+    result[qs[i][0]] = decodeURIComponent(qs[i][1]);
+  }
+  return result;
 })();
 var sid = query_params.sid;
 var uid = query_params.uid;
@@ -276,8 +276,8 @@ if (sid)
   });
 
 function gen_forms() {
-  var gen_form = function(select_id, editor_id, problem_id, contest_id) {
-    var container = $('#p' + contest_id).find('.submit');
+  var gen_form = function(select_id, editor_id, problem_id, cpid) {
+    var container = $('#p' + cpid).find('.submit');
     var form = $('<form>').attr({ enctype: 'multipart/form-data', class: 'submit_form hidden' });
 
     var select = $('<select>').attr({ name: 'de_id', id: select_id, class: 'submit_input' });
@@ -290,6 +290,9 @@ function gen_forms() {
     $('<input>').attr({ type: 'file', name: 'source', size: '25', class: 'file submit_input' }).appendTo(form);
     $('<button>').
       attr({ type: 'submit', name: 'submit', class: 'button submit_input' }).text('[% capt.submit %]').appendTo(form);
+    $('<button>').
+      attr({ type: 'button', class: 'button submit_input'}).text('[% capt.last_submit %]').
+      click(get_sources_info_api).appendTo(form);
     $('<br><br>').appendTo(form);
 
     $('<textarea>').attr({
@@ -374,6 +377,28 @@ function fill_messages(response, form) {
     });
     message_container.append(href_run_details);
   }
+}
+
+function get_sources_info_api() {
+  if (!sid) return;
+  var form = $(this).parent();
+  var editor = ace.edit(form.find('textarea[name="source_text"]').attr('data-id'));
+  if (!ace || !editor) return;
+  var request_url = '[% href_get_sources_info %]';
+  request_url += ';sid=' + sid;
+  $.ajax({
+    url: request_url,
+    data: { problem_id: form.find('input[name=problem_id]').val() },
+    success: function(response) {
+      if (response.src) {
+        editor.session.doc.setValue(response.src);
+        editor.focus();
+      }
+      if (response.de_id) {
+        form.find('select[name=de_id]').val(response.de_id).change();
+      }
+    }
+  });
 }
 [%- END -%]
 

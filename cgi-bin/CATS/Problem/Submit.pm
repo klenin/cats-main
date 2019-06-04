@@ -211,9 +211,12 @@ sub problems_submit {
     $dbh->commit;
     $result->{href_run_details} = url_f('run_details', rid => $rid);
     $t->param(%$result) if $t;
+    my $submit_time = $dbh->selectrow_array(q~
+        SELECT submit_time FROM reqs WHERE id = ?~, { Slice => {} },
+        $rid);
     $contest_finished ? msg(1087) :
     defined $prev_reqs_count ? msg(1088, $contest->{max_reqs} - $prev_reqs_count - 1) :
-    msg(1014);
+    msg(1014, $submit_time);
     ($rid, $result);
 }
 

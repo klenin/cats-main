@@ -417,4 +417,29 @@ sub get_compilation_error {
     undef;
 }
 
+sub prepare_sources {
+    my ($p, $sources_info) = @_;
+    if ($sources_info->{file_name} =~ m/\.zip$/) {
+        $sources_info->{src} = sprintf 'ZIP, %d bytes', length ($sources_info->{src});
+    }
+    if (my $r = $sources_info->{err_regexp}) {
+        my (undef, undef, $file_name) = CATS::Utils::split_fname($sources_info->{file_name});
+        CATS::Utils::sanitize_file_name($file_name);
+        $file_name =~ s/([^a-zA-Z0-9_])/\\$1/g;
+        for (split ' ', $r) {
+            s/~FILE~/$file_name/;
+            s/~LINE~/(\\d+)/;
+            s/~POS~/\\d+/;
+            push @{$sources_info->{err_regexp_js}}, "/$_/";
+        }
+    }
+    $sources_info->{syntax} = $p->{syntax} if $p->{syntax};
+    my $st = $sources_info->{state};
+    if ($st == $cats::st_compilation_error || $st == $cats::st_lint_error) {
+        my $logs = get_log_dump({ req_id => $sources_info->{req_id} });
+        $sources_info->{compiler_output} = get_compilation_error($logs, $st)
+    }
+    $sources_info;
+}
+
 1;

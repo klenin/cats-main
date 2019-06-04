@@ -13,9 +13,6 @@ use CATS::Output qw(init_template url_f);
 use CATS::JudgeDB;
 use CATS::Messages qw(msg);
 use CATS::ReqDetails qw(
-    get_compilation_error
-    get_contest_info
-    get_log_dump
     get_sources_info
     sources_info_param
     source_links);
@@ -108,43 +105,19 @@ sub view_source_frame {
         }
     }
     else {
-        msg(1014) if $p->{submitted};
+        msg(1014, $sources_info->{submit_time}) if $p->{submitted};
     }
     source_links($p, $sources_info);
     sources_info_param([ $sources_info ]);
     @{$sources_info->{elements}} <= 1 or return msg(1155);
     $sources_info->{href_print} = url_f('print_source', rid => $p->{rid}, notime => 1);
-
-    if ($sources_info->{file_name} =~ m/\.zip$/) {
-        $sources_info->{src} = sprintf 'ZIP, %d bytes', length ($sources_info->{src});
-    }
-    if (my $r = $sources_info->{err_regexp}) {
-        my (undef, undef, $file_name) = CATS::Utils::split_fname($sources_info->{file_name});
-        CATS::Utils::sanitize_file_name($file_name);
-        $file_name =~ s/([^a-zA-Z0-9_])/\\$1/g;
-        for (split ' ', $r) {
-            s/~FILE~/$file_name/;
-            s/~LINE~/(\\d+)/;
-            s/~POS~/\\d+/;
-            push @{$sources_info->{err_regexp_js}}, "/$_/";
-        }
-    }
-    $sources_info->{syntax} = $p->{syntax} if $p->{syntax};
-    $sources_info->{src_lines} = [ map {}, split("\n", $sources_info->{src}) ];
-    my $st = $sources_info->{state};
-    if ($st == $cats::st_compilation_error || $st == $cats::st_lint_error) {
-        my $logs = get_log_dump({ req_id => $sources_info->{req_id} });
-        $sources_info->{compiler_output} = get_compilation_error($logs, $st)
-    }
-
-    my $can_submit = CATS::Problem::Submit::can_submit;
+    CATS::ReqDetails::prepare_sources($p, $sources_info);
     
-    if ($sources_info->{is_jury} || $can_submit) {
-        $t->param(prepare_de_list(), de_selected => $sources_info->{de_id});
+    if ($sources_info->{is_jury} || CATS::Problem::Submit::can_submit) {
+        $t->param(prepare_de_list(), de_selected => $sources_info->{de_id}, can_submit => 1);
     }
     $t->param(
         source_width => $settings->{source_width} // 90,
-        can_submit => $can_submit,
         href_action => url_f('view_source', rid => $p->{rid}),
     );
 }

@@ -6,6 +6,7 @@
     problem_import_log => '导入问题的日志',
     problem_import_diff => '差异',
     no_judges => '目前没有主动判断电脑。 解决方案检查将推迟。',
+    last_submit => 'last submit',
     login_to_participate => '您必须[[登录]]参与此次比赛',
     dev_env_detected => '开发环境被发现',
     de_not_allowed => 'This development environment is forbidden. Allowed development environments:'
