@@ -81,7 +81,7 @@ sub view_source_frame {
             $u->{hash} = CATS::Utils::source_hash($src);
         }
         my $de_bitmap;
-        if ($p->{de_id} && $p->{de_id} != $sources_info->{de_id}) {
+        if ($p->{de_id} && $p->{de_id} ne 'by_extension' && $p->{de_id} != $sources_info->{de_id}) {
             my $cpid = $dbh->selectrow_array(q~
                 SELECT CP.id
                 FROM contest_problems CP
