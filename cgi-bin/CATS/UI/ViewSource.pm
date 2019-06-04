@@ -67,9 +67,7 @@ sub view_source_frame {
     my $sources_info = get_sources_info($p, request_id => $p->{rid}, get_source => 1, encode_source => 1);
     $sources_info or return;
 
-    $p->{problem_id} = $dbh->selectrow_array(q~
-            SELECT problem_id FROM reqs WHERE id = ?~,
-            undef, $p->{rid});
+    $p->{problem_id} = $sources_info->{problem_id};
 
     if ($p->{submit}) {
         my ($rid) = CATS::Problem::Submit::problems_submit($p);
