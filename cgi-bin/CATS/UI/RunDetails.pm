@@ -425,6 +425,7 @@ sub get_last_verdicts_api {
 
 sub get_sources_info_api {
     my ($p) = @_;
+    $uid or return;
     my $rid = $dbh->selectrow_array(qq~
         SELECT id FROM reqs
         WHERE problem_id = ? AND account_id = ? AND contest_id = ?

@@ -326,7 +326,7 @@ my $main_routes = {
         source => upload, source_text => str, problem_id => integer, de_id => qr/\d+|by_extension/,
     ],
     api_get_sources_info => [ \&CATS::UI::RunDetails::get_sources_info_api,
-        problem_id => integer, contest_id => integer, src_enc => encoding_default('WINDOWS-1251'),
+        problem_id => integer, contest_id => integer, src_enc => encoding_default('UTF-8'),
     ],
     problem_text => [ \&CATS::UI::Problems::problem_text_frame,
         pid => integer, cpid => integer, cid => integer,

@@ -289,9 +289,10 @@ function gen_forms() {
 
     $('<input>').attr({ type: 'file', name: 'source', size: '25', class: 'file submit_input' }).appendTo(form);
     $('<button>').
-      attr({ type: 'submit', name: 'submit', class: 'button submit_input' }).text('[% capt.submit %]').appendTo(form);
+      attr({ type: 'submit', name: 'submit', class: 'button submit_input' }).
+      text('[% capt.submit %]').appendTo(form);
     $('<button>').
-      attr({ type: 'button', class: 'button submit_input'}).text('[% capt.last_submit %]').
+      attr({ type: 'button', class: 'button submit_input' }).text('[% capt.last_submit %]').
       click(get_sources_info_api).appendTo(form);
     $('<br><br>').appendTo(form);
 
@@ -384,8 +385,7 @@ function get_sources_info_api() {
   var form = $(this).parent();
   var editor = ace.edit(form.find('textarea[name="source_text"]').attr('data-id'));
   if (!ace || !editor) return;
-  var request_url = '[% href_get_sources_info %]';
-  request_url += ';sid=' + sid;
+  var request_url = '[% href_get_sources_info %]' + ';sid=' + sid;
   $.ajax({
     url: request_url,
     data: { problem_id: form.find('input[name=problem_id]').val() },
@@ -394,9 +394,8 @@ function get_sources_info_api() {
         editor.session.doc.setValue(response.src);
         editor.focus();
       }
-      if (response.de_id) {
+      if (response.de_id)
         form.find('select[name=de_id]').val(response.de_id).change();
-      }
     }
   });
 }
