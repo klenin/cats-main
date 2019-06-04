@@ -50,7 +50,7 @@ sub _try_set_user {
     $dbh->commit;
 }
 
-my $settable_verdicts = [ qw(NP AW OK WA PE TL ML WL RE CE SV IS IL MR LI) ];
+my $settable_verdicts = [ qw(NP AW OK WA PE TL ML WL RE CE SV IS IL MR LI BA) ];
 
 sub request_params_frame {
     my ($p) = @_;
