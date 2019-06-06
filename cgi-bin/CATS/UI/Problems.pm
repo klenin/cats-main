@@ -343,6 +343,7 @@ sub problems_frame {
         $any_langs{$lang_tag->[1] // $c->{lang}} = undef if !@$problem_langs && !$hrefs_view{statement};
 
         my ($last_request, $last_state) = split ' ', $c->{last_submission} || '';
+        $last_state //= 0;
         my $last_verdict = do {
             my $lv = $last_state ? $CATS::Verdicts::state_to_name->{$last_state} : '';
             CATS::Verdicts::hide_verdict_self($is_jury, $lv);
