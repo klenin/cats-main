@@ -187,6 +187,8 @@ sub problem_history_edit_frame {
     my $enc = ref $blob->{encoding} ? 'UTF-8' : $blob->{encoding};
     my $keywords = $dbh->selectall_arrayref(q~
         SELECT code FROM keywords~, { Slice => {} });
+    my $de_list = CATS::DevEnv->new(CATS::JudgeDB::get_DEs({ fields => 'syntax' }));
+    my $de = $de_list->by_file_extension($p->{file});
     $t->param(
         file => $p->{file},
         blob => $blob,
@@ -201,6 +203,8 @@ sub problem_history_edit_frame {
         cats_tags => $p->{file} =~ m/\.xml$/ ?
             [ sort keys %{CATS::Problem::Parser::tag_handlers()} ] : [],
         keywords => $keywords,
+        de_list => $de_list,
+        de_selected => $de,
     );
 }
 
