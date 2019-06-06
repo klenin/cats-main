@@ -270,13 +270,14 @@ if (sid)
         }
       }
       if (result.can_submit && has_submit) {
-        gen_forms();
+        gen_forms(result);
       }
     });
   });
 
-function gen_forms() {
+function gen_forms(problems) {
   var gen_form = function(select_id, editor_id, problem_id, cpid) {
+    if (!problems[cpid][4]) return;
     var container = $('#p' + cpid).find('.submit');
     var form = $('<form>').attr({ enctype: 'multipart/form-data', class: 'submit_form hidden' });
 

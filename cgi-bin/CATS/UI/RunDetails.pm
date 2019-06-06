@@ -395,7 +395,7 @@ sub get_last_verdicts_api {
     my ($p) = @_;
     $uid && @{$p->{problem_ids}} or return $p->print_json({});
     my $cp_sth //= $dbh->prepare(q~
-        SELECT CP.problem_id, CP.contest_id, CA.is_jury FROM contest_problems CP
+        SELECT CP.problem_id, CP.contest_id, CP.status, CA.is_jury FROM contest_problems CP
         LEFT JOIN contest_accounts CA ON CP.contest_id = CA.contest_id
         WHERE CP.id = ? AND CA.account_id = ?~);
     my $state_sth = $dbh->prepare(q~
@@ -405,7 +405,7 @@ sub get_last_verdicts_api {
     my $result = { can_submit => CATS::Problem::Submit::can_submit };
     for (@{$p->{problem_ids}}) {
         $cp_sth->execute($_, $uid);
-        my ($problem_id, $contest_id, $is_jury_in_contest) = $cp_sth->fetchrow_array or next;
+        my ($problem_id, $contest_id, $problem_status, $is_jury_in_contest) = $cp_sth->fetchrow_array or next;
         $cp_sth->finish;
         $state_sth->execute($contest_id, $uid, $problem_id);
         my ($state, $failed_test, $rid) = $state_sth->fetchrow_array;
@@ -418,7 +418,8 @@ sub get_last_verdicts_api {
             $rid && url_f('run_details', rid => $rid),
             ($is_jury_in_contest ? url_function('problem_details',
                 cid => $contest_id, pid => $problem_id, sid => $sid) : ''),
-        ]
+            $is_jury || $problem_status != $cats::problem_st_disabled && $state != $cats::st_banned,
+        ];
     }
     $p->print_json($result);
 }
