@@ -111,7 +111,10 @@ sub view_source_frame {
     $sources_info->{href_print} = url_f('print_source', rid => $p->{rid}, notime => 1);
     CATS::ReqDetails::prepare_sources($p, $sources_info);
     
-    if ($sources_info->{is_jury} || CATS::Problem::Submit::can_submit) {
+    if (
+        $sources_info->{is_jury} || $sources_info->{status} != $cats::problem_st_disabled &&
+        !CATS::Problem::Submit::user_is_banned($p->{problem_id}) && CATS::Problem::Submit::can_submit
+    ) {
         $t->param(prepare_de_list(), de_selected => $sources_info->{de_id}, can_submit => 1);
     }
     $t->param(

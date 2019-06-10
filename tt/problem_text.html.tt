@@ -253,30 +253,31 @@ if (sid)
   $(document).ready(function () {
     $.get('[% href_get_last_verdicts %];sid=' + sid).success(function(result) {
       if (!result) return;
-      for (var r in result) {
-        if (!result[r]) continue;
-        var verdict = result[r][0];
-        if (verdict) {
-            var v = $('#p' + r + ' .last_verdict > .verdict');
-            v.addClass('run_details_' + verdict);
-            v.find('a').attr('href', '[% href_static_path %]' + result[r][2]).text(verdict);
-            v.find('div').html(result[r][1] || '.&nbsp;');
+      for (var cpid in result) {
+        if (!result[cpid]) continue;
+        var r = result[cpid];
+        if (r.verdict) {
+            var v = $('#p' + cpid + ' .last_verdict > .verdict');
+            v.addClass('run_details_' + r.verdict);
+            v.find('a').attr('href', '[% href_static_path %]' + r.href_run_details).text(r.verdict);
+            v.find('div').html(r.failed_test || '.&nbsp;');
             v.parent().show();
         }
-        if (result[r][3]) {
-          var pd = $('#p' + r + ' .problem_details_link');
-          pd.find('a').attr('href', '[% href_static_path %]' + result[r][3]);
+        if (r.href_problem_details) {
+          var pd = $('#p' + cpid + ' .problem_details_link');
+          pd.find('a').attr('href', '[% href_static_path %]' + r.href_problem_details);
           pd.show();
         }
       }
       if (result.can_submit && has_submit) {
-        gen_forms();
+        gen_forms(result);
       }
     });
   });
 
-function gen_forms() {
+function gen_forms(problems) {
   var gen_form = function(select_id, editor_id, problem_id, cpid) {
+    if (!problems[cpid].allowed) return;
     var container = $('#p' + cpid).find('.submit');
     var form = $('<form>').attr({ enctype: 'multipart/form-data', class: 'submit_form hidden' });
 
