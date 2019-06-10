@@ -60,6 +60,9 @@ Submission judging can result in following verdicts:
 
 <tr><td>MR</td><td>Rejected by manual verification</td><td>Rejected by human judge.</td>
   <td>During the manual inspection submission was judged unacceptable. For example, bad coding style.</td></tr>
+
+<tr><td>BA</td><td>Banned</td><td>Participant is no longer permitted to submit this problem.</td>
+  <td>Illegal access to hint or source code for solution.</td></tr>
 </table>
 </p>
 
