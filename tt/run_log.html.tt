@@ -38,7 +38,7 @@
   <a name="job[% log.job_id %]"></a><b><a href="#log_top">^</a> [% log.job_id %]</b>
   [% capt.jobs.types.item(job_enums.type_to_name.item(log.type)) %] [% "@ $log.judge_name" IF log.judge_name %] =>
   [% capt.jobs.states.item(job_enums.state_to_name.item(log.state)) %]
-  [[% log.start_time %] ... [% log.finish_time %]]
+  [[% log.create_time %] ... [% log.start_time %] ... [% log.finish_time %]]
   [% IF log.length; capt.length %]: [% log.length; END %]
   [% IF log.testsets %]<br/>([% log.testsets %])[% END %]
   <pre><code class="judge_log">[% log.dump | html %]</code></pre>
