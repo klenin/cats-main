@@ -49,9 +49,13 @@ sub jobs_frame {
     ]);
     $lv->define_db_searches([ qw(
         id type state create_time start_time finish_time time_len judge_id judge_name
-        problem_id problem_title J1.contest_id contest_title account_id team_name req_id
+        J1.contest_id contest_title account_id team_name req_id
         in_queue
     ) ]);
+    $lv->define_db_searches({
+        problem_title => 'P.title',
+        problem_id => 'P.id',
+    });
 
     my $judges = $dbh->selectall_arrayref(q~
         SELECT nick, id FROM judges WHERE pin_mode > ?~, undef,
