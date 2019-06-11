@@ -20,6 +20,7 @@ sub job_details_frame {
     my $lv = CATS::ListView->new(web => $p, name => 'job_details');
 
     CATS::Request::delete_logs({ id => $p->{jid} }) if $p->{delete_log};
+    CATS::Request::delete_jobs({ id => $p->{jid} }) if $p->{delete_jobs};
 
     $t->param(
         logs => CATS::ReqDetails::get_log_dump({ id => $p->{jid} }),
