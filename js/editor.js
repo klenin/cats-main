@@ -10,6 +10,15 @@ function init_editors() {
   // Ace is broken on mobile browsers.
   if (/Mobi|Android/i.test(navigator.userAgent)) return;
 
+  var storage;
+  try {
+    var uid = new Date;
+    (storage = window.localStorage).setItem(uid, uid);
+    var fail = storage.getItem(uid) != uid;
+    storage.removeItem(uid);
+    fail && (storage = false);
+  } catch (exception) {}
+
   get_editor($('body')).each(function() {
     var textarea = $(this);
     var mode = textarea.data('editor');
@@ -38,19 +47,17 @@ function init_editors() {
     sess.setMode('ace/mode/' + mode);
     sess.setOption('useWorker', false);
     editor.commands.addCommand({
-        name: 'toggleWrapMode',
-        bindKey: { win: 'Ctrl-Alt-w', mac: 'Command-Alt-w' },
-        exec: function(ed) {
-            ed.getSession().setUseWrapMode(!ed.getSession().getUseWrapMode());
-        }
+      name: 'toggleWrapMode',
+      bindKey: { win: 'Ctrl-Alt-w', mac: 'Command-Alt-w' },
+      exec: function(ed) { ed.getSession().setUseWrapMode(!ed.getSession().getUseWrapMode()); }
     });
 
     editor.commands.addCommand({
-        name: 'removeline',
-        bindKey: { win: 'Ctrl-Y', mac: 'Command-Y' },
-        exec: function(ed) { ed.removeLines(); },
-        scrollIntoView: 'cursor',
-        multiSelectAction: 'forEachLine'
+      name: 'removeline',
+      bindKey: { win: 'Ctrl-Y', mac: 'Command-Y' },
+      exec: function(ed) { ed.removeLines(); },
+      scrollIntoView: 'cursor',
+      multiSelectAction: 'forEachLine'
     })
 
     editor.setTheme('ace/theme/chrome');
@@ -59,6 +66,19 @@ function init_editors() {
       enableBasicAutocompletion: true,
       fontSize: '14px',
     });
+
+    if (storage) {
+      get_editor_session(editor);
+      var save_editor_session = function() {
+        localStorage.setItem(editor.container.id, JSON.stringify(session_to_json(editor)));
+      }
+      sess.on('change', save_editor_session);
+      sess.selection.on('changeSelection', save_editor_session);
+      sess.selection.on('changeCursor', save_editor_session);
+      sess.on('changeFold', save_editor_session);
+      sess.on('changeScrollLeft', save_editor_session);
+      sess.on('changeScrollTop', save_editor_session);
+    }
 
     textarea.closest('form').on('submit', function() {
       textarea.val(editor.getSession().getValue());
@@ -103,6 +123,38 @@ function init_editors() {
 
   });
 
+  function get_editor_session(editor) {
+    var state = JSON.parse(localStorage.getItem(editor.container.id));
+    if (!state) return;
+    json_to_session(editor, state);
+  }
+
+  function json_to_session(editor, state) {
+    var sess = editor.getSession();
+    sess.setValue(state.content);
+    editor.selection.fromJSON(state.selection);
+    sess.setOptions(state.options);
+    sess.setMode(state.mode);
+    sess.setScrollTop(state.scrollTop);
+    sess.setScrollLeft(state.scrollLeft);
+    sess.$undoManager.$undoStack = state.history.undo;
+    sess.$undoManager.$redoStack = state.history.redo;
+  }
+
+  function session_to_json(editor) {
+    return {
+      content: editor.getSession().getValue(),
+      selection: editor.getSelection().toJSON(),
+      options: editor.getSession().getOptions(),
+      mode: editor.session.getMode().$id,
+      scrollTop: editor.session.getScrollTop(),
+      scrollLeft: editor.session.getScrollLeft(),
+      history: {
+        undo: editor.session.getUndoManager().$undoStack,
+        redo: editor.session.getUndoManager().$redoStack
+      },
+    }
+  }
 }
 
 function add_error(errors, line, error_regexp) {

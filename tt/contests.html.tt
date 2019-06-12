@@ -19,6 +19,11 @@ function delete_contest(href, name) {
   if (confirm("[% capt.want_to_delete %] '" + name + "'?" ))
     document.location = href;
 }
+try {
+  var sid = (new RegExp('sid=([a-zA-Z0-9]{30})')).exec(window.location.href)[1];
+  if (localStorage.getItem('sid') != sid) localStorage.clear();
+  localStorage.setItem('sid', sid);
+} catch (exception) {}
 </script>
 
 [% PROCESS includes/listview_header.tti form_id='contest_form' %]
