@@ -193,9 +193,9 @@ MathJax.Hub.Register.StartupHook('onLoad', function () {
 </div>
 [% END %]
 <div class="nav_container hidden">
-  [% IF problems.size > 1; FOREACH p IN problems %]
+  [% FOREACH p IN problems %]
   <div class="n_item" id="p[% p.cpid %]_verdict"><a href="#p[% p.cpid %]" class="n_button" title="[% p.title | html %]">[% p.code %]</a></div>
-  [% END; END %]
+  [% END %]
 </div>
 <script type="text/javascript">
 $('.problem_menu_trigger').click(function() { $(this).parent().next().toggle(); return false; });
@@ -260,13 +260,13 @@ $('.problem_text div.problem_menu li.langs a').click(function() {
   }
 });
 
-var enable_naviagtion = function() {
+var enable_navigation = function() {
   if (!has_submit) return;
   $('.nav_container').removeClass('hidden');
   $('.n_item a').first().addClass('current');
   var $root = $('html, body');
   $(document).on('click', 'a[href^="#p"]', function () {
-    $root.animate({ scrollTop: $($.attr(this, 'href')).offset().top }, 400);
+    $root.animate({ scrollTop: $($.attr(this, 'href')).offset().top - 10 }, 400);
     return false;
   });
   var nav_links = $('.n_item a');
@@ -281,6 +281,7 @@ var enable_naviagtion = function() {
     })
   });
 };
+
 [%- IF href_get_last_verdicts -%]
 if (sid)
   $(document).ready(function () {
@@ -305,7 +306,7 @@ if (sid)
       }
       if (result.can_submit && has_submit)
         gen_forms(result);
-      enable_naviagtion();
+      enable_navigation();
     });
   });
 
