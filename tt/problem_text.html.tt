@@ -63,6 +63,9 @@ MathJax.Hub.Register.StartupHook('onLoad', function () {
 <script type="text/javascript" src="https://cdn.rawgit.com/mathjax/MathJax/2.7.1/MathJax.js?config=TeX-AMS_CHTML"></script>
 <script type="text/javascript">window.MathJax || document.write('<script src="js/lib/MathJax/MathJax.js?config=TeX-AMS_CHTML"><\/script>')</script>
 <script type="text/javascript" src="js/lib/jquery.min.js"></script>
+[% IF has_quizzes %]
+<script type="text/javascript" src="https://surveyjs.azureedge.net/1.0.9/survey.jquery.min.js"></script>
+[% END %]
 [% END %]
 [%- text_width = '1000px' -%]
 <style>
@@ -346,7 +349,53 @@ function gen_forms(problems) {
   [% FOREACH p IN problems %] gen_form('de[% p.id %]', 'ed[% p.id %]', '[% p.id %]', '[% p.cpid %]'); [% END %]
   $('.submit_form').toggleClass('hidden');
   init_editors();
+  [% IF has_quizzes %]
+  init_quizzes();
+  [% END %]
 }
+
+[% IF has_quizzes %]
+function survey_value_changed(editor, question_number, value) {
+  editor.moveCursorTo(question_number);
+  editor.navigateLineEnd();
+  editor.removeToLineStart();
+  editor.insert(value);
+}
+
+function init_quizzes() {
+  Survey.StylesManager.applyTheme('default');
+  $('.problem_text').each(function() {
+    var editor_id = $(this).find('form textarea[name="source_text"]').attr('data-id');
+    var editor = ace.edit(editor_id);
+    var quiz_count = 0;
+    $(this).find('Quiz').each(function() {
+      var quiz = $(this);
+      var question = { type: quiz.attr('type') };
+      if (question.type === 'radiogroup')
+        question.choices = $.map(quiz.children('Choice'), function(choice, i) {
+          return { value: i + 1, text: choice.innerHTML };
+        });
+      var survey = new Survey.Model({
+        questionTitleTemplate : '{no}',
+        questions: [question],
+        showNavigationButtons: false,
+        showQuestionNumbers: 'off'
+      });
+      survey.onTextMarkdown.add(function(survey, options) {
+        options.html = options.text;
+      });
+      survey.onValueChanged.add(function() {
+        var quiz_number = quiz_count;
+        return function (survey, options) { survey_value_changed(editor, quiz_number, options.value); };
+      }());
+            
+      quiz.Survey({model: survey});
+      quiz_count++;
+      editor.insert('\n');
+    });
+  });
+}
+[% END %]
 
 function process_submit(e) {
   e.preventDefault();

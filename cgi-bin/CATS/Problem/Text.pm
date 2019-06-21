@@ -21,7 +21,7 @@ use CATS::TeX::Lite;
 use CATS::Time;
 use CATS::Utils qw(url_function);
 
-my ($current_pid, $html_code, $spellchecker, $text_span, $tags, $skip_depth, $has_snippets, $noif);
+my ($current_pid, $html_code, $spellchecker, $text_span, $tags, $skip_depth, $has_snippets, $noif, $has_quizzes);
 my $wrapper = 'cats-wrapper';
 my @parsed_fields = qw(statement pconstraints input_format output_format explanation);
 
@@ -126,6 +126,9 @@ sub _on_start {
     elsif ($el eq 'object' && $atts{attachment}) {
         $atts{data} = save_attachment($atts{attachment}, 1);
         delete $atts{attachment};
+    }
+    elsif ($el eq 'Quiz') {
+        $has_quizzes = 1;
     }
 
     process_text;
@@ -393,6 +396,7 @@ sub problem_text {
         href_get_last_verdicts => @problems > 100 ? undef : $static_path .
             url_function('api_get_last_verdicts', problem_ids => join ',', map $_->{cpid}, @problems),
         prepare_de_list,
+        has_quizzes => $has_quizzes
     );
 }
 
