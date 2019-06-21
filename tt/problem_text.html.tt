@@ -1,6 +1,7 @@
-[% js.jquery = 1 -%]
-[%- PROCESS includes/header.tti %]
-[% PROCESS includes/html.tti %]
+[%- js.jquery = 1; js.ace = 1; -%]
+[%- PROCESS includes/header.tti -%]
+[%- PROCESS includes/html.tti -%]
+[%- PROCESS "lang/$lang/problems.html.tt" -%]
 [% tex_styles %]
 [% IF mathjax %]
 <script type="text/javascript">
@@ -62,6 +63,7 @@ MathJax.Hub.Register.StartupHook('onLoad', function () {
 <script type="text/javascript" src="https://cdn.rawgit.com/mathjax/MathJax/2.7.1/MathJax.js?config=TeX-AMS_CHTML"></script>
 <script type="text/javascript">window.MathJax || document.write('<script src="js/lib/MathJax/MathJax.js?config=TeX-AMS_CHTML"><\/script>')</script>
 <script type="text/javascript" src="js/lib/jquery.min.js"></script>
+<script type="text/javascript" src="https://surveyjs.azureedge.net/1.0.9/survey.jquery.min.js"></script>
 [% END %]
 [%- text_width = '1000px' -%]
 <style>
@@ -87,13 +89,16 @@ MathJax.Hub.Register.StartupHook('onLoad', function () {
   [%- PROCESS includes/verdicts.css.tti class='last_verdict' IF href_get_last_verdicts -%]
   .cond_true { color: #008000; }
   .cond_false { color: #800000; }
+  .submit_messages { margin: 15px 0; }
+  .submit_form { margin-top: 15px; }
+  .submit_input { margin-right: 5px; }
 </style>
 </head>
 <body>
 [% FOREACH p IN problems; il = p.iface_lang; PROCESS "lang/$il/problem_text_p.html.tt" UNLESS capt.problem_text.item(il); END; %]
 [% FOREACH p IN problems; c = capt.problem_text.item(p.iface_lang) %]
-<div class="problem_text" id="p[% p.id %]" [% UNLESS loop.first %]style="page-break-before: always"[% END %] lang="[% p.lang %]">
-  <a name="pr[% p.code || p.id %]"></a>
+<div class="problem_text" id="p[% p.cpid %]" [% UNLESS loop.first %]style="page-break-before: always"[% END %] lang="[% p.lang %]">
+  <a name="pr[% p.code || p.cpid || p.id %]"></a>
 
   <h2>
   [% IF p.color %]<span class="problem_color" style="background-color: [% p.color | html %];"></span>[% END %]
@@ -102,6 +107,7 @@ MathJax.Hub.Register.StartupHook('onLoad', function () {
   </h2>
   <div class="jsonly problem_menu"><ul>
     <li><a class="problem_list_link" href="[% p.href_problem_list %]">[% c.problem_list %]</a></li>
+    <li class="problem_details_link" style="display: none"><a href="#">[% c.problem_details %]</a></li>
     <li><label><input type="checkbox" class="whitespace"><span></span> [% c.visible_spaces %]</label></li>
     <li><label><input type="checkbox" class="basic_math"><span></span> [% c.basic_math %]</label></li>
     <li><label><input type="checkbox" class="wide_text"><span></span> [% c.wide_text %]</label></li>
@@ -116,10 +122,10 @@ MathJax.Hub.Register.StartupHook('onLoad', function () {
   [%-
     left_col = [
       { n => p.author ? c.author : '', t => p.author },
-      { n => p.input_file == '*NONE' ? '' : ( p.interactive_io ? c.input_output : c.input_file ),
-        t => p.interactive_io ? c.interactive : ((p.input_file == '*STDIN' ? c.standard_input : p.input_file)) },
-      { n => p.output_file == '*NONE' ? '' : ( p.interactive_io ? '' : c.output_file),
-        t => p.interactive_io ? '' : (p.output_file == '*STDOUT' ? c.standard_output : p.output_file) },
+      { n => p.input_file == '*NONE' ? '' : p.interactive_io ? c.input_output : c.input_file,
+        t => p.interactive_io ? c.interactive : p.input_file == '*STDIN' ? c.standard_input : p.input_file },
+      { n => p.output_file == '*NONE' || p.interactive_io ? '' : c.output_file,
+        t => p.interactive_io ? '' : p.output_file == '*STDOUT' ? c.standard_output : p.output_file },
       { n => p.show_points ? c.max_points : '',
         t => p.max_points },
     ];
@@ -154,43 +160,50 @@ MathJax.Hub.Register.StartupHook('onLoad', function () {
   [% END -%]
 
   [% section('statement') %]
-  [% IF p.explanation %]
-    [% section('pconstraints') %]
-    [% section('explanation') %]
-  [% ELSE %]
-    [% section('input_format', p.input_file == '*STDIN' ? 0 : 'input_file_format') %]
-    [% IF p.formal_input %]
-      <h3>[% c.formal_input %]</h3>
-      <pre>[% p.formal_input %]</pre>
-    [% END %]
-    [% section('output_format', p.output_file == '*STDOUT' ? 0 : 'output_file_format') %]
-    [% section('pconstraints') %]
-    [% IF p.samples.size %]
-      <h3>[% c.sample_tests %]</h3>
-      <table class="sample" id="sample[% p.id %]">
-      <tr><th>[% c.sample_number %]</th>
-      <th>[% IF p.input_file == '*STDIN'; c.standard_input; ELSE; c.input_file %] (<code>[% p.input_file | html %]</code>)[% END %]</th>
-      <th>[% IF p.output_file == '*STDOUT'; c.standard_output; ELSE; c.output_file %] (<code>[% p.output_file | html %]</code>)[% END %]</th></tr>
-      [% FOREACH s IN p.samples %]
-      <tr>
-        <td>[% s.rank %]</td>
-        <td><pre><code>[% s.in_file | html %]</code></pre></td>
-        <td><pre><code>[% s.out_file | html %]</code></pre></td>
-      </tr>
-      [% END %]
-      </table>
-    [% END %]
+  [% section('input_format', p.input_file == '*STDIN' ? 0 : 'input_file_format') %]
+  [% IF p.formal_input %]
+    <h3>[% c.formal_input %]</h3>
+    <pre>[% p.formal_input %]</pre>
   [% END %]
+  [% section('output_format', p.output_file == '*STDOUT' ? 0 : 'output_file_format') %]
+  [% section('pconstraints') %]
+  [% IF p.samples.size %]
+    <h3>[% c.sample_tests %]</h3>
+    <table class="sample" id="sample[% p.cpid %]">
+    <tr><th>[% c.sample_number %]</th>
+    <th>[% IF p.input_file == '*STDIN'; c.standard_input; ELSE; c.input_file %] (<code>[% p.input_file | html %]</code>)[% END %]</th>
+    <th>[% IF p.output_file == '*STDOUT'; c.standard_output; ELSE; c.output_file %] (<code>[% p.output_file | html %]</code>)[% END %]</th></tr>
+    [% FOREACH s IN p.samples %]
+    <tr>
+      <td>[% s.rank %]</td>
+      <td><pre><code>[% s.in_file | html %]</code></pre></td>
+      <td><pre><code>[% s.out_file | html %]</code></pre></td>
+    </tr>
+    [% END %]
+    </table>
+  [% END %]
+  [% section('explanation') %]
+  <div class="submit"></div>
   <hr>
 </div>
 [% END %]
 <script type="text/javascript">
 $('.problem_menu_trigger').click(function() { $(this).parent().next().toggle(); return false; });
 
-var sid = (new RegExp('sid=([a-zA-Z0-9]{30})')).exec(window.location.href);
-var uid = (new RegExp('uid=([0-9]+)')).exec(window.location.href);
+var query_params = (function() {
+  var url = window.location.search;
+  var qs = url.substring(url.indexOf('?') + 1).split(';');
+  for(var i = 0, result = {}; i < qs.length; i++) {
+    qs[i] = qs[i].split('=');
+    result[qs[i][0]] = decodeURIComponent(qs[i][1]);
+  }
+  return result;
+})();
+var sid = query_params.sid;
+var uid = query_params.uid;
+var has_submit = !query_params.nosubmit;
+
 if (sid) {
-  sid = sid[1];
   $('.problem_list_link').each(function() { this.href += ';sid=' + sid; });
 }
 
@@ -236,22 +249,201 @@ $('.problem_text div.problem_menu li.langs a').click(function() {
       s.indexOf('pl=') < 0  ? s + ';pl=' + this.innerText : s.replace(/pl=[a-z]+/, 'pl=' + this.innerText);
   }
 });
-
 [%- IF href_get_last_verdicts -%]
 if (sid)
   $(document).ready(function () {
     $.get('[% href_get_last_verdicts %];sid=' + sid).success(function(result) {
       if (!result) return;
-      for (var r in result) {
-        if (!result[r]) continue;
-        var v = $('#p' + r + ' .last_verdict > .verdict');
-        v.addClass('run_details_' + result[r][0]);
-        v.find('a').attr('href', '[% href_static_path %]' + result[r][2]).text(result[r][0]);
-        v.find('div').html(result[r][1] || '.&nbsp;');
-        v.parent().show();
+      for (var cpid in result) {
+        if (!result[cpid]) continue;
+        var r = result[cpid];
+        if (r.verdict) {
+            var v = $('#p' + cpid + ' .last_verdict > .verdict');
+            v.addClass('run_details_' + r.verdict);
+            v.find('a').attr('href', '[% href_static_path %]' + r.href_run_details).text(r.verdict);
+            v.find('div').html(r.failed_test || '.&nbsp;');
+            v.parent().show();
+        }
+        if (r.href_problem_details) {
+          var pd = $('#p' + cpid + ' .problem_details_link');
+          pd.find('a').attr('href', '[% href_static_path %]' + r.href_problem_details);
+          pd.show();
+        }
+      }
+      if (result.can_submit && has_submit) {
+        gen_forms(result);
       }
     });
   });
+
+function gen_forms(problems) {
+  var gen_form = function(select_id, editor_id, problem_id, cpid) {
+    if (!problems[cpid].allowed) return;
+    var container = $('#p' + cpid).find('.submit');
+    var form = $('<form>').attr({ enctype: 'multipart/form-data', class: 'submit_form hidden' });
+
+    var select = $('<select>').attr({ name: 'de_id', id: select_id, class: 'submit_input' });
+    var add_option = function(de_id, de_syntax, de_name) {
+      select.append($('<option>').attr({ value: de_id, 'editor-syntax': de_syntax }).text(de_name));
+    }
+    [% FOREACH de IN de_list %] add_option('[% de.de_id %]', '[% de.syntax %]', '[% de.de_name %]'); [% END %]
+    select.appendTo(form);
+
+    $('<input>').attr({ type: 'file', name: 'source', size: '25', class: 'file submit_input' }).appendTo(form);
+    $('<button>').
+      attr({ type: 'submit', name: 'submit', class: 'button submit_input' }).
+      text('[% capt.submit %]').appendTo(form);
+    $('<button>').
+      attr({ type: 'button', class: 'button submit_input' }).text('[% capt.last_submit %]').
+      click(get_sources_info_api).appendTo(form);
+    $('<br><br>').appendTo(form);
+
+    $('<textarea>').attr({
+      name: 'source_text', cols: 100, rows: 15,
+      'data-editor': 'text', 'data-gutter': '1', 'data-id': editor_id
+    }).appendTo(form);
+    $('<input>').attr({ type: 'hidden', name: 'problem_id', value: problem_id }).appendTo(form);
+
+    $('<div>').attr({ 'class' : 'submit_messages'}).appendTo(container);
+    form.on('submit', process_submit);
+    form.appendTo(container);
+    set_syntax(editor_id, select_id);
+  }
+  [% FOREACH p IN problems %] gen_form('de[% p.id %]', 'ed[% p.id %]', '[% p.id %]', '[% p.cpid %]'); [% END %]
+  $('.submit_form').toggleClass('hidden');
+  init_editors();
+  init_quizzes();
+}
+
+function survey_value_changed(editor, question_number, value) {
+  editor.moveCursorTo(question_number);
+  editor.navigateLineEnd();
+  editor.removeToLineStart();
+  editor.insert(value);
+}
+
+function init_quizzes() {
+  Survey.StylesManager.applyTheme('default');
+  $('.problem_text').each(function() {
+    var editor_id = $(this).find('form textarea[name="source_text"]').attr('data-id');
+    var editor = ace.edit(editor_id);
+    var quiz_count = 0;
+    $(this).find('Quiz').each(function() {
+      var quiz = $(this);
+
+      var question = { type: quiz.attr('type') };
+      if (question.type === 'radiogroup')
+        question.choices = $.map(quiz.children('Choice'), function(choice, i) {
+          return { value: i + 1, text: choice.innerHTML };
+        });
+      var survey = new Survey.Model({
+        questionTitleTemplate : '{no}',
+        questions: [question],
+        showNavigationButtons: false,
+        showQuestionNumbers: 'off'
+      });
+      survey.onTextMarkdown.add(function(survey, options) {
+        options.html = options.text;
+      });
+      survey.onValueChanged.add(function() {
+        var quiz_number = quiz_count;
+        return function (survey, options) { survey_value_changed(editor, quiz_number, options.value); };
+      }());
+            
+      quiz.Survey({model: survey});
+      quiz_count++;
+      editor.insert('\n');
+    });
+  });
+}
+
+function process_submit(e) {
+  e.preventDefault();
+  var form = $(this);
+  var request_url = '[% href_submit_problem %]';
+  if (!sid) return;
+  request_url += ';sid=' + sid;
+
+  var form_params = form.serializeArray();
+  var form_data = new FormData();
+  var file_tag = form.find('input[type="file"]')[0];
+  form_data.append(file_tag.name, file_tag.files[0]);
+
+  for (var i = 0; i < form_params.length; i++) {
+    if (form_params[i].name === 'source_text') {
+      var editor_id = form.find('textarea[name="source_text"]').attr('data-id');
+      form_params[i].value = ace.edit(editor_id).getSession().getValue();
+    }
+    form_data.append(form_params[i].name, form_params[i].value);
+  }
+
+  var xhr = new XMLHttpRequest();
+  if (!xhr) {
+    return false;
+  }
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState === XMLHttpRequest.DONE) {
+      if (xhr.status == 200) {
+        fill_messages(xhr.response, form);
+      }
+      // TODO
+    }
+  };
+  xhr.open('POST', request_url);
+  xhr.send(form_data);
+};
+
+function fill_messages(response, form) {
+  var message_container = form.parent().find('.submit_messages');
+  response = JSON.parse(response);
+  message_container.empty();
+  var append_to_container = function(message, classes) {
+    message_container.append($('<div>', { class: classes } ).text(message));
+  }
+  if (response.de_name) {
+    append_to_container('[% capt.dev_env_detected %]' + ': ' + response.de_name);
+  }
+  if (response.de_not_allowed) {
+    var not_allowed = response.de_not_allowed;
+    append_to_container('[% capt.de_not_allowed %]');
+    var de_list = $('<ul>');
+    for (var i = 0; i < not_allowed.length; i++) {
+      de_list.append('<li>' + not_allowed[i].description + '</li>');
+    }
+    message_container.append(de_list);
+  }
+  var messages = response.messages;
+  for (var i = 0; i < messages.length; i++) {
+    append_to_container(messages[i], 'messages');
+  }
+  if (response.href_run_details) {
+    var href_run_details = $("<a/>", {
+      href: '[% href_static_path %]' + response.href_run_details,
+      text: '[% capt.view_results %]',
+    });
+    message_container.append(href_run_details);
+  }
+}
+
+function get_sources_info_api() {
+  if (!sid) return;
+  var form = $(this).parent();
+  var editor = ace.edit(form.find('textarea[name="source_text"]').attr('data-id'));
+  if (!ace || !editor) return;
+  var request_url = '[% href_get_sources_info %]' + ';sid=' + sid;
+  $.ajax({
+    url: request_url,
+    data: { problem_id: form.find('input[name=problem_id]').val() },
+    success: function(response) {
+      if (response.src) {
+        editor.session.doc.setValue(response.src);
+        editor.focus();
+      }
+      if (response.de_id)
+        form.find('select[name=de_id]').val(response.de_id).change();
+    }
+  });
+}
 [%- END -%]
 
 [% IF has_snippets %]
@@ -314,7 +506,7 @@ function get_snippets_data(problem_id, request_url) {
   if (sid)
     request_url += ';sid=' + sid;
   if (uid)
-    request_url += ';uid=' + uid[1];
+    request_url += ';uid=' + uid;
 
   $.ajax({
     method: 'GET',
@@ -333,12 +525,11 @@ function get_snippets_data(problem_id, request_url) {
 
 function update_snippets() {
   [% FOREACH p IN problems %]
-    get_snippets_data([% p.problem_id %], '[% p.href_get_snippets %]');
+    get_snippets_data([% p.cpid %], '[% p.href_get_snippets %]');
   [% END %]
 }
 $(document).ready(update_snippets);
-[% END %]
-
+[% END %] 
 </script>
 [% PROCESS includes/timing.tti %]
 </body>

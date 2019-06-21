@@ -68,9 +68,9 @@ our $form = CATS::Form->new(
         [ name => 'rel_type', validators => [
             CATS::Field::int_range(min => min(@rel_values), max => max(@rel_values)) ], caption => 642, ],
         [ name => 'from_id', after_parse => sub { _parse_login(@_, 'from_login') },
-            validators => [ $CATS::Fields::foreign_key ], caption => 679 ],
+            validators => [ $CATS::Field::foreign_key ], caption => 679 ],
         [ name => 'to_id', after_parse => sub { _parse_login(@_, 'to_login') },
-            validators => [ $CATS::Fields::foreign_key ], caption => 680, ],
+            validators => [ $CATS::Field::foreign_key ], caption => 680, ],
         [ name => 'from_ok', validators => [ $CATS::Field::bool ], caption => 622, ],
         [ name => 'to_ok', validators => [ $CATS::Field::bool ], caption => 622, ],
         [ name => 'ts', before_save => sub { \'CURRENT_TIMESTAMP' } ],

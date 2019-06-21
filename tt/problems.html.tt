@@ -83,7 +83,7 @@ function chg_code(st_sel, pid) {
   [% FOREACH de IN de_not_allowed; "<li>$de.description</li>"; END %]
 </ul>
 [% END %]
-[% IF solution_submitted %]
+[% IF href_run_details %]
 [% href(href_run_details, capt.view_results) %].
 <hr/>
 [% END %]
@@ -96,6 +96,10 @@ function chg_code(st_sel, pid) {
 <p>[% capt.login_to_participate.replace('\[\[(.*)\]\]', href(href_login, '$1')) %]</p>
 [% END %]
 
+[% IF parent_contest %]
+<p>[% href(parent_contest.href, parent_contest.title) %]</p>
+<p>[% parent_contest.short_descr | html | linkify %]</p>
+[% END %]
 [% IF contest.short_descr %]
 <p>[% contest.short_descr | html | linkify %]</p>
 [% END %]
@@ -172,7 +176,7 @@ function chg_code(st_sel, pid) {
     [%- maybe_href(p.href_last_request, p.last_verdict, capt.verdicts.item(p.last_verdict)) -%]
   </div>
   [%- IF p.href_problem_console %]<a href="[% p.href_problem_console %]">[% END -%]
-  [% p.accept_count %] / [% p.wa_count %] / [% p.tle_count %]
+  [% p.accept_count; " + ${p.aw_count}" IF p.aw_count %] / [% p.wa_count %] / [% p.tle_count %]
   [%- IF p.href_problem_console %]</a>[% END -%]
   [% IF p.judges_installed %][[% p.judges_installed %]][% END -%]
   </div>
@@ -186,7 +190,7 @@ function chg_code(st_sel, pid) {
 <div class="problem_submit">
   <p><label for="source">[% capt.solution_file %]:</label><input type="file" id="source" name="source" class="file" size="25"/></p>
   <p><label for="de_id">[% capt.dev_env %]:</label><select name="de_id" id="de_id">
-    [% FOREACH de IN de_list; option(de.de_id, de.de_name, de_selected); END %]
+    [% FOREACH de IN de_list; editor_select_option(de.de_id, de.de_name, de.syntax, de_selected); END %]
     </select>
   </p>
   [% IF editable %]
@@ -194,7 +198,7 @@ function chg_code(st_sel, pid) {
   [% END %]
   <p><label for="source_text">[% capt.solution_text %]:</label><br/>
   <textarea id="source_text" name="source_text" cols="50" rows="5"
-        data-editor="plain_text" data-gutter="1" data-id="source-editor"></textarea></p>
+        data-editor="plain_text" data-gutter="1" data-id="source-editor">[% source_text | html %]</textarea></p>
   <button type="submit" name="submit" onclick="document.problems_form.np.value = navigator.plugins.length; return true;" value="1" class="button">
     [%~ capt.submit ~%]
   </button>
@@ -247,10 +251,7 @@ function chg_code(st_sel, pid) {
 [% END %]
 </form>
 <script type="text/javascript">
-  var de_syntaxes = { [% FOREACH de IN de_list; de.de_id %]: "[% de.syntax %]"[% ', ' UNLESS loop.last; END %] };
-  $(document).ready(function() {
-    set_syntax('source-editor', 'de_id', de_syntaxes);
-  });
+  $(document).on('ready', (function() { set_syntax('source-editor', 'de_id'); }));
 </script>
 [% IF editable %]
 <script type="text/javascript">

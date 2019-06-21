@@ -16,6 +16,7 @@ our @router_bool_params = qw(
     points
     printable
     show_flags
+    show_logins
     show_prizes
     show_regions
 );

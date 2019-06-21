@@ -11,8 +11,9 @@ use CATS::Config qw(cats_dir);
 use CATS::DB;
 use CATS::Globals qw($cid $contest $is_jury $is_root $t $uid);
 use CATS::Messages qw(res_str);
-use CATS::Output qw(downloads_path downloads_url init_template);
+use CATS::Output qw(downloads_path downloads_url init_template url_f);
 use CATS::Problem::Spell;
+use CATS::Problem::Submit qw(prepare_de_list);
 use CATS::Problem::Tags;
 use CATS::Problem::Utils;
 use CATS::StaticPages;
@@ -267,10 +268,11 @@ sub problem_text {
 
     my $overridden_limits_str = join ', ', map "L.$_", @cats::limits_fields;
 
-    if (my $pid = $p->{pid}) {
-        push @problems, { problem_id => $pid };
-    }
-    elsif (my $cpid = $p->{cpid}) {
+    if ($p->{cpid} || $p->{pid}) {
+        my ($cond, @params) = $p->{cpid} ?
+            ('CP.id = ?', $p->{cpid}) :
+            ('CP.problem_id = ? AND CP.contest_id = (SELECT P.contest_id FROM problems P WHERE P.id = ?)',
+                $p->{pid}, $p->{pid});
         my $pr = $dbh->selectrow_hashref(qq~
             SELECT
                 CP.id AS cpid, CP.contest_id, CP.problem_id, CP.code, CP.color,
@@ -279,8 +281,8 @@ sub problem_text {
             FROM contests C
                 INNER JOIN contest_problems CP ON CP.contest_id = C.id
                 LEFT JOIN limits L ON L.id = CP.limits_id
-            WHERE CP.id = ?~, undef,
-            $cpid) or return;
+            WHERE $cond~, undef,
+            @params) or return;
         $show_points = $pr->{rules};
         push @problems, $pr if $v->{is_jury_in_contest} || $pr->{status} < $cats::problem_st_hidden;
     }
@@ -294,9 +296,11 @@ sub problem_text {
                 $overridden_limits_str
             FROM contest_problems CP
                 LEFT JOIN limits L ON L.id = CP.limits_id
-            WHERE CP.contest_id = ? AND CP.status < $cats::problem_st_hidden
-            ORDER BY CP.code~, { Slice => {} },
-            $p->{cid} || $cid);
+            WHERE (CP.contest_id = ? OR
+                EXISTS (SELECT 1 FROM contests C1 WHERE C1.parent_id = ? AND CP.contest_id = C1.id))
+            AND CP.status < $cats::problem_st_hidden
+            ORDER BY CP.contest_id, CP.code~, { Slice => {} },
+            $p->{cid} || $cid, $p->{cid} || $cid);
         push @problems, @$prs;
     }
 
@@ -316,7 +320,8 @@ sub problem_text {
                 'max_points AS max_points_def',
                 ($v->{author} && !$p->{noauthor} ? ('author') : ()),
                 grep(!$problem->{$_}, @cats::limits_fields),
-                ($v->{explain} ? 'explanation' : qw(input_format output_format)),
+                ($v->{explain} ? 'explanation' : ()),
+                ($p->{noformats} ? () : qw(input_format output_format)),
                 ($v->{is_jury_in_contest} && !$p->{noformal} ? 'formal_input' : ()),
             );
             my $p_orig = $dbh->selectrow_hashref(qq~
@@ -330,6 +335,7 @@ sub problem_text {
         $problem->{iface_lang} = (grep $_ eq $problem->{lang}, @cats::langs) ? $problem->{lang} : 'en';
         $tags->{lang} = [ 0, $problem->{lang} ];
         $problem->{interactive_io} = $problem->{run_method} != $cats::rm_default;
+        CATS::Problem::Utils::round_time_limit($problem->{time_limit});
 
         if ($v->{is_jury_in_contest} && !$p->{nokw}) {
             my $lang_col = $problem->{lang} eq 'ru' ? 'name_ru' : 'name_en';
@@ -382,8 +388,11 @@ sub problem_text {
         mathjax => !$p->{nomath},
         has_snippets => $has_snippets,
         href_static_path => $static_path,
+        href_submit_problem => $static_path . url_function('api_submit_problem'),
+        href_get_sources_info => $static_path . url_function('api_get_sources_info'),
         href_get_last_verdicts => @problems > 100 ? undef : $static_path .
-            url_function('api_get_last_verdicts', problem_ids => join ',', map $_->{problem_id}, @problems),
+            url_function('api_get_last_verdicts', problem_ids => join ',', map $_->{cpid}, @problems),
+        prepare_de_list,
     );
 }
 

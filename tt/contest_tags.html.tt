@@ -15,13 +15,13 @@ function delete_contest_tag(href, name) {
 
 [% FOREACH ct IN contest_tags %]
 <tr class="[% loop.parity() %]">
-[% IF 1 %]
 <td class="nobr sel_col">
+[% IF user.is_root %]
   <a href="javascript:delete_contest_tag('[% ct.href_delete %]', '[% ct.name | html %]');" class="icon delete"></a>
   <a href="[% ct.href_edit %]" class="icon edit"></a>
+[% END %]
   <input type="checkbox" name="check" value="[% ct.id %]" />
 </td>
-[% END %]
 <td><a href="[% ct.href_view_contests %]">[% ct.name | html %]</a></td>
 <td>[% IF ct.is_used %]<a href="#" class="icon checked"></a>[% END %]</td>
 [% IF visible_cols.Rc %]<td>[% ct.ref_count %]</td>[% END %]

@@ -225,7 +225,7 @@ sub _get_unprocessed {
         ($is_jury ? () : ('account_id' => $uid)),
     }, 'id');
     # Avoid DoS for in case of mass-retest.
-    my $u = $dbh->selectall_arrayref("$stmt ROWS 100", { Slice => {} }, @bind) || [];
+    my $u = $dbh->selectall_arrayref("$stmt ROWS 1000", { Slice => {} }, @bind) || [];
     my $unprocessed = {};
     $unprocessed->{$_->{account_id}}->{$_->{problem_id}} = 1 for @$u;
     $unprocessed;

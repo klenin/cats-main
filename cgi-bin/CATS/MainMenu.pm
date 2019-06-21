@@ -95,6 +95,7 @@ sub generate {
 
     push @right_menu, (
         { item => res_str(544), href => url_f('about') },
+        { item => res_str(406), href => url_f('problems_all') },
         { item => res_str(501), href => url_f('registration') } );
 
     $self->_attach_menu('left_menu', undef, \@left_menu);

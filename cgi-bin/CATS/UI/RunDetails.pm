@@ -394,22 +394,47 @@ sub run_log_frame {
 sub get_last_verdicts_api {
     my ($p) = @_;
     $uid && @{$p->{problem_ids}} or return $p->print_json({});
+    my $cp_sth //= $dbh->prepare(q~
+        SELECT CP.problem_id, CP.contest_id, CP.status, CA.is_jury FROM contest_problems CP
+        LEFT JOIN contest_accounts CA ON CP.contest_id = CA.contest_id
+        WHERE CP.id = ? AND CA.account_id = ?~);
     my $state_sth = $dbh->prepare(q~
-        SELECT state, failed_test, id FROM reqs
-        WHERE contest_id = ? AND account_id = ? AND problem_id = ?
-        ORDER BY submit_time DESC ROWS 1~);
-    my $result = {};
+        SELECT R.state, R.failed_test, R.id FROM reqs R
+        WHERE R.contest_id = ? AND R.account_id = ? AND R.problem_id = ?
+        ORDER BY R.submit_time DESC ROWS 1~);
+    my $result = { can_submit => CATS::Problem::Submit::can_submit };
     for (@{$p->{problem_ids}}) {
-        $state_sth->execute($cid, $uid, $_);
+        $cp_sth->execute($_, $uid);
+        my ($problem_id, $contest_id, $problem_status, $is_jury_in_contest) = $cp_sth->fetchrow_array or next;
+        $cp_sth->finish;
+        $state_sth->execute($contest_id, $uid, $problem_id);
         my ($state, $failed_test, $rid) = $state_sth->fetchrow_array;
         $state_sth->finish;
-        defined $state or next;
-        $result->{$_} = [
-            CATS::Verdicts::hide_verdict_self($is_jury, $CATS::Verdicts::state_to_name->{$state}),
-            $failed_test,
-            url_f('run_details', rid => $rid) ]
+        $is_jury_in_contest || defined $state or next;
+        $result->{$_} = {
+            verdict => defined $state && CATS::Verdicts::hide_verdict_self(
+                $is_jury_in_contest, $CATS::Verdicts::state_to_name->{$state}),
+            failed_test => $failed_test,
+            href_run_details => $rid && url_f('run_details', rid => $rid),
+            href_problem_details => ($is_jury_in_contest ? url_function('problem_details',
+                cid => $contest_id, pid => $problem_id, sid => $sid) : ''),
+            allowed => $is_jury || $problem_status != $cats::problem_st_disabled && $state != $cats::st_banned,
+        };
     }
     $p->print_json($result);
+}
+
+sub get_sources_info_api {
+    my ($p) = @_;
+    $uid or return;
+    my $rid = $dbh->selectrow_array(qq~
+        SELECT id FROM reqs
+        WHERE problem_id = ? AND account_id = ? AND contest_id = ?
+        ORDER BY submit_time DESC~, { Slice => {} },
+        $p->{problem_id}, $uid, $cid);
+    $rid or return;
+    my $sources_info = get_sources_info($p, request_id => $rid, get_source => 1, encode_source => 1);
+    $p->print_json(CATS::ReqDetails::prepare_sources($p, $sources_info));
 }
 
 sub _get_request_state {

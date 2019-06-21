@@ -39,6 +39,7 @@ my %generators = (
     array  => sub { sc(tbl => ss(ss($_[1]))) },
     cell   => sub { '</span><span>' },
     row    => sub { '</span></span><span><span>' },
+    prime  => sub { length($_[0]) == 2 ? '&#8243;' : '&prime;' x length($_[0]) },
 );
 
 my $source;
@@ -66,6 +67,7 @@ sub parse_token {
         # Single space after punctuation.
         s/^([.,:;])(\s*)// && return [ op => $1, ($2 eq '' ? '' : ' ') ];
         s/^{// && return parse_block();
+        s/^('+)// && return [ prime => $1 ];
         s/^(\S)// && return [ op => $1 ];
     }
 }

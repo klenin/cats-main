@@ -49,16 +49,19 @@ sub contest_params() {qw(
     start_date short_descr is_official finish_date run_all_tests req_selection show_packages
     show_all_tests freeze_date defreeze_date show_test_data max_reqs_except show_frozen_reqs show_all_results
     pinned_judges_only show_test_resources show_checker_comment
+    pub_reqs_date show_all_for_solved
 )}
 
 sub contest_checkbox_params() {qw(
     free_registration run_all_tests
     show_all_tests show_test_resources show_checker_comment show_all_results show_flags
     is_official show_packages local_only is_hidden show_test_data pinned_judges_only show_sites
+    show_all_for_solved
 )}
 
 sub contest_string_params() {qw(
-    title short_descr start_date freeze_date finish_date defreeze_date rules req_selection max_reqs
+    title short_descr start_date freeze_date finish_date defreeze_date pub_reqs_date
+    rules req_selection max_reqs
 )}
 
 sub get_contest_html_params {
@@ -302,18 +305,23 @@ sub contests_edit_save {
     $is_root or delete $c->{is_official};
     {
         my $d = 'CAST(? AS TIMESTAMP)';
+        my $check_after = qq~CASE WHEN $d <= $d THEN 1 ELSE 0 END,~;
+        my $check_pub_reqs_date = $c->{pub_reqs_date} ? $check_after : '1,';
         my @flags = $dbh->selectrow_array(qq~
             SELECT
-                CASE WHEN $d <= $d THEN 1 ELSE 0 END,
-                CASE WHEN $d BETWEEN $d AND $d THEN 1 ELSE 0 END,
-                CASE WHEN $d >= $d THEN 1 ELSE 0 END
+                $check_after
+                $check_after
+                $check_pub_reqs_date
+                CASE WHEN $d BETWEEN $d AND $d THEN 1 ELSE 0 END
             FROM RDB\$DATABASE~, undef,
-            @$c{qw(
-                start_date finish_date
-                freeze_date start_date finish_date
-                defreeze_date freeze_date)});
+            @$c{
+                qw(start_date finish_date),
+                qw(freeze_date defreeze_date),
+                ($c->{pub_reqs_date} ? qw(start_date pub_reqs_date) : ()),
+                qw(freeze_date start_date finish_date),
+            });
         if (my @errors = grep !$flags[$_], 0 .. $#flags) {
-            my @msgs = (1183, 1184, 1185);
+            my @msgs = (1183, 1185, 1202, 1184);
             msg($_) for @msgs[@errors];
             return;
         }
@@ -329,24 +337,6 @@ sub contests_edit_save {
     # Change page title immediately if the current contest is renamed.
     $contest->{title} = $contest_name if $p->{id} == $cid;
     msg(1036, $contest_name);
-}
-
-sub contests_select_current {
-    defined $uid or return;
-
-    my ($registered, $is_virtual, $is_jury) = get_registered_contestant(
-        fields => '1, is_virtual, is_jury', contest_id => $cid
-    );
-    return if $is_jury;
-
-    $t->param(selected_contest_title => $contest->{title});
-
-    if ($contest->{time_since_finish} > 0) {
-        msg(1115, $contest->{title});
-    }
-    elsif (!$registered) {
-        msg(1116);
-    }
 }
 
 sub contest_delete {
@@ -372,6 +362,9 @@ sub contests_submenu_filter {
         official => 'AND C.is_official = 1 ',
         unfinished => 'AND CURRENT_TIMESTAMP <= finish_date ',
         current => 'AND CURRENT_TIMESTAMP BETWEEN start_date AND finish_date ',
+        ($uid ? (my =>
+            "AND EXISTS(SELECT 1 FROM contest_accounts CA
+            WHERE CA.contest_id = C.id AND CA.account_id = $uid)") : ()),
         json => q~
             AND EXISTS (
                 SELECT 1 FROM problems P INNER JOIN contest_problems CP ON P.id = CP.problem_id
@@ -474,8 +467,6 @@ sub contests_frame {
         _contests_remove_children($p) if $p->{remove_children};
     }
 
-    contests_select_current if $p->{set_contest};
-
     $lv->define_columns(url_f('contests'), 'Sd', 1, [
         { caption => res_str(601), order_by => 'ctype DESC, title', width => '40%' },
         ($is_root ? { caption => res_str(663), order_by => 'ctype DESC, problems_count', width => '5%', col => 'Pc' } : ()),
@@ -500,7 +491,12 @@ sub contests_frame {
             href => url_f('contests', page => 0, filter => $_->{n}),
             item => res_str($_->{i}),
             selected => $settings->{contests}->{filter} eq $_->{n},
-        }, { n => 'all', i => 558 }, { n => 'official', i => 559 }, { n => 'unfinished', i => 560 }),
+        },
+            { n => 'all', i => 558 },
+            { n => 'official', i => 559 },
+            { n => 'unfinished', i => 560 },
+            { n => 'my', i => 407 },
+        ),
         ($user->privs->{create_contests} ?
             { href => url_f('contests_new'), item => res_str(537) } : ()),
         { href => url_f('contests',

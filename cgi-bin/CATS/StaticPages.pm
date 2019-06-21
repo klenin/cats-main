@@ -42,7 +42,14 @@ sub _name {
     "$f-" . join('-', map "$_-$p{$_}", grep $p{$_}, sort keys %p);
 }
 
-sub url_static { './static/' . _name(@_) . '.html' . ($sid ? "?sid=$sid" : ''); }
+sub url_static {
+    my ($f, %p) = @_;
+    my $nosubmit = $p{nosubmit} and delete $p{nosubmit};
+    # These parameters are checked dynamically in JavaScript
+    my %dp = (sid => $sid, nosubmit => $nosubmit);
+    my $q = join ';', map { $dp{$_} ? "$_=$dp{$_}" : () } keys %dp;
+   './static/' . _name($f, %p) . '.html' . ($q ? "?$q" : '');
+}
 sub path { cats_dir() . '../static/' }
 sub full_name { path() . _name(@_) . '.html' }
 sub full_name_glob { path() . _name(@_) . '*.html' }

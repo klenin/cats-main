@@ -10,11 +10,12 @@ use CATS::DB;
 use CATS::Globals qw($contest $is_jury $is_root $sid $t $uid);
 use CATS::Messages qw(res_str);
 use CATS::Output qw(url_f);
+use CATS::Problem::Utils;
 use CATS::RankTable;
+use CATS::Request;
 use CATS::Time;
 use CATS::Utils qw(encodings source_encodings url_function);
 use CATS::Verdicts;
-use CATS::Request;
 
 use Exporter qw(import);
 our @EXPORT_OK = qw(
@@ -183,6 +184,7 @@ sub get_sources_info {
             'R.limits_id AS limits_id',
             'C.title AS contest_name',
             'C.is_official',
+            'CAST(CURRENT_TIMESTAMP - C.pub_reqs_date AS DOUBLE PRECISION) AS time_since_pub_reqs',
             'COALESCE(R.testsets, CP.testsets) AS testsets',
             'CP.id AS cp_id',
             'CP.status', 'CP.code',
@@ -216,6 +218,7 @@ sub get_sources_info {
         my $r = $req_tree->{$_};
         $r->{is_jury} = $is_jury_cached->($r->{contest_id});
         $r->{is_jury} || $r->{account_id} == ($uid || 0) ||
+            ($r->{time_since_pub_reqs} // 0) > 0 && !$r->{submitter_is_jury} ||
             ($can_see //= $uid ? CATS::Request::can_see_by_relation($uid) : {})->{$r->{account_id}}
             or delete $req_tree->{$_};
     }
@@ -241,6 +244,7 @@ sub get_sources_info {
 
         $r->{short_state} = CATS::Verdicts::hide_verdict_self(
             $r->{is_jury}, $CATS::Verdicts::state_to_name->{$r->{state}});
+        $r->{href_quick_verdict} = url_f('request_params', rid => $r->{req_id});
 
         # Just hour and minute from testing start and finish timestamps.
         ($r->{"${_}_short"} = $r->{$_}) =~ s/^(.*)\s+(\d\d:\d\d)\s*$/$2/
@@ -271,10 +275,14 @@ sub get_sources_info {
         $r->{src} //= '';
         $r->{de_id} //= 0;
         $r->{$_} = $r->{"lr_$_"} || $r->{"lcp_$_"} || $r->{"p_$_"} for @cats::limits_fields, 'job_split_strategy';
+        CATS::Problem::Utils::round_time_limit($r->{time_limit});
 
         $r->{can_reinstall} = $is_root || $r->{orig_contest_id} == $r->{contest_id};
 
         $r->{contacts} = $user_cached->($r->{account_id})->{contacts} if $r->{is_jury};
+        $r->{href_test_diff} = url_function('test_diff',
+            pid => $r->{problem_id}, test => $r->{failed_test}, cid => $r->{contest_id}, sid => $sid)
+            if $r->{is_jury} && $r->{failed_test};
     }
 
     return ref $rid ? [ map { $req_tree->{$_} // () } @req_ids ] : $req_tree->{$rid};
@@ -407,6 +415,31 @@ sub get_compilation_error {
         return $error if $error;
     }
     undef;
+}
+
+sub prepare_sources {
+    my ($p, $sources_info) = @_;
+    if ($sources_info->{file_name} =~ m/\.zip$/) {
+        $sources_info->{src} = sprintf 'ZIP, %d bytes', length ($sources_info->{src});
+    }
+    if (my $r = $sources_info->{err_regexp}) {
+        my (undef, undef, $file_name) = CATS::Utils::split_fname($sources_info->{file_name});
+        CATS::Utils::sanitize_file_name($file_name);
+        $file_name =~ s/([^a-zA-Z0-9_])/\\$1/g;
+        for (split ' ', $r) {
+            s/~FILE~/$file_name/;
+            s/~LINE~/(\\d+)/;
+            s/~POS~/\\d+/;
+            push @{$sources_info->{err_regexp_js}}, "/$_/";
+        }
+    }
+    $sources_info->{syntax} = $p->{syntax} if $p->{syntax};
+    my $st = $sources_info->{state};
+    if ($st == $cats::st_compilation_error || $st == $cats::st_lint_error) {
+        my $logs = get_log_dump({ req_id => $sources_info->{req_id} });
+        $sources_info->{compiler_output} = get_compilation_error($logs, $st)
+    }
+    $sources_info;
 }
 
 1;

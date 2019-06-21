@@ -6,6 +6,7 @@
     problem_import_log => 'Problem import log',
     problem_import_diff => 'Diff',
     no_judges => 'There are currently no active judging computers. Solution evaluation will be postponed.',
+    last_submit => 'last submit',
     login_to_participate => 'You must [[log in]] to participate in this contest.',
     dev_env_detected => 'Development environment detected',
     de_not_allowed => 'This development environment is forbidden. Allowed development environments:'
@@ -15,7 +16,7 @@
     used_in => 'Used in contests',
     solution_file => 'Solution file',
     dev_env => 'Dev. environment',
-    submit_as => 'Submit as user:',
+    submit_as => 'Submit as user',
     solution_text => 'Solution text',
     submit => 'submit',
     std_solution => 'standard solution',
@@ -39,5 +40,7 @@
     participate => 'participate',
     participate_virtually => 'participate virtually',
     virtual_warning => 'Warning! Second virtual participation will remove all submits of the first one. Continue?',
+    wrap => 'wrap',
+    keyword => 'keyword',
   });
 %]

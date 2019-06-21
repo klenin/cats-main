@@ -17,6 +17,7 @@
   [% date_row('freeze_date', freeze_date) %]
   [% date_row('finish_date', finish_date) %]
   [% date_row('defreeze_date', defreeze_date) %]
+  [% date_row('pub_reqs_date', pub_reqs_date) %]
   <tr><td>[% capt.rules %]:</td><td>[% IF can_edit %]
     <select name="rules" class="bordered">
       <option value="0"[% UNLESS rules %] selected="selected"[% END %]>[% capt.ACM %]</option>
@@ -32,7 +33,8 @@
     [% END %]
   </td></tr>
 </table>
-<br/>
+<div style="margin: 10px; float: left;">
+[% capt.flags %]:
 <table class="bordered">
   <tr><td>[% capt.open_registration %]:</td><td>[% checkbox_1('free_registration', free_registration, can_edit) %]</td></tr>
   <tr><td>[% capt.is_official %]:</td><td>[% checkbox_1('is_official', is_official, user.privs.is_root) %]</td></tr>
@@ -41,8 +43,9 @@
   <tr><td>[% capt.is_hidden %]:</td><td>[% checkbox_1('is_hidden', is_hidden, can_edit) %]</td></tr>
   <tr><td>[% capt.pinned_judges_only %]:</td><td>[% checkbox_1('pinned_judges_only', pinned_judges_only, can_edit) %]</td></tr>
 </table>
-<br/>
-[% capt.show_to_teams %]
+</div>
+<div style="margin: 10px;">
+[% capt.show_to_teams %]:
 <table class="bordered">
   <tr><td>[% capt.show_all_results %]:</td><td>[% checkbox_1('show_all_results', show_all_results, can_edit) %]</td></tr>
   <tr><td>[% capt.show_all_tests %]:</td><td>[% checkbox_1('show_all_tests', show_all_tests, can_edit) %]</td></tr>
@@ -52,8 +55,9 @@
   <tr><td>[% capt.show_packages %]:</td><td>[% checkbox_1('show_packages', show_packages, can_edit) %]</td></tr>
   <tr><td>[% capt.show_flags %]:</td><td>[% checkbox_1('show_flags', show_flags, can_edit) %]</td></tr>
   <tr><td>[% capt.show_sites %]:</td><td>[% checkbox_1('show_sites', show_sites, can_edit) %]</td></tr>
+  <tr><td>[% capt.show_all_for_solved %]:</td><td>[% checkbox_1('show_all_for_solved', show_all_for_solved, can_edit) %]</td></tr>
 </table>
-<br/>
+</div>
 <table class="bordered verdict_list">
   <tr><td>[% capt.max_reqs %]:</td><td><input type="text" name="max_reqs" value="[% max_reqs | html %]" class="bordered" [% UNLESS can_edit %]readonly="readonly"[% END %]/></td></tr>
   <tr><td>[% capt.exclude_verdicts %]:</td>

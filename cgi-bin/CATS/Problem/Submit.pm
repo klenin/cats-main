@@ -39,6 +39,15 @@ sub too_frequent {
     ($prev->[1] || 1) < 20/$SECONDS_PER_DAY;
 }
 
+sub user_is_banned {
+    my ($problem_id) = @_;
+    $uid or return;
+    scalar $dbh->selectrow_array(q~
+        SELECT 1 FROM reqs
+        WHERE account_id = ? AND contest_id = ? AND problem_id = ? AND state = ? ROWS 1~, undef,
+        $uid, $cid, $problem_id, $cats::st_banned);
+}
+
 sub _determine_state {
     my ($p) = @_;
     return $cats::st_ignore_submit if $p->{ignore};
@@ -46,15 +55,16 @@ sub _determine_state {
         $cats::st_ignore_submit : $cats::st_not_processed;
 }
 
-sub prepare_de {
+sub _prepare_de {
     my ($p, $file, $cpid) = @_;
+    my $result = {};
 
     my $did = $p->{de_id} or return msg(1013);
     if ($did eq 'by_extension') {
         my $de = CATS::DevEnv->new(CATS::JudgeDB::get_DEs({ active_only => 1 }))->by_file_extension($file)
             or return msg(1013);
         $did = $de->{id};
-        $t->param(de_name => $de->{description});
+        $result->{de_name} = $de->{description};
     }
     my $allowed_des = $dbh->selectall_arrayref(q~
         SELECT CPD.de_id, D.description
@@ -63,9 +73,18 @@ sub prepare_de {
         WHERE cp_id = ? ORDER BY D.code~, { Slice => {} },
         $cpid);
     if ($allowed_des && @$allowed_des && 0 == grep $_->{de_id} == $did, @$allowed_des) {
-        $t->param(de_not_allowed => $allowed_des);
-        return;
+        $result->{de_not_allowed} = $allowed_des;
+        return (undef, $result);
     }
+    else {
+        return ($did, $result);
+    }
+}
+
+sub prepare_de {
+    my ($p, $file, $cpid) = @_;
+    my ($did, $r) = _prepare_de(@_);
+    $t->param(%$r) if $t;
     $did;
 }
 
@@ -99,6 +118,10 @@ sub prepare_de_list {
     (de_list => \@de, (@all_des == 1 ? (de_selected => $all_des[0]->{id}) : ()));
 }
 
+sub can_submit {
+    $is_jury || $user->{is_participant} && ($user->{is_virtual} || !$contest->has_finished_for($user));
+}
+
 sub problems_submit {
     my ($p) = @_;
     my $pid = $p->{problem_id} or return msg(1012);
@@ -121,7 +144,7 @@ sub problems_submit {
             SELECT 1 FROM snippets S
             WHERE S.name = T.snippet_name AND S.problem_id = T.problem_id AND
                 S.account_id = ? AND S.contest_id = ?)~, undef,
-        $pid, $uid, $cid) and return msg(1168);
+        $pid, $uid // $user->{anonymous_id}, $cid) and return msg(1168);
 
     my $contest_finished = $contest->has_finished_for($user);
     my ($cpid, $status, $title) = $dbh->selectrow_array(q~
@@ -147,6 +170,8 @@ sub problems_submit {
             !$current_official
                 or return msg(1123, $current_official->{title});
         }
+
+        return msg(1203) if user_is_banned($pid);
     }
 
     my $submit_uid = _get_submit_uid($p) or return;
@@ -166,8 +191,9 @@ sub problems_submit {
         return msg(1137) if $prev_reqs_count >= $contest->{max_reqs};
     }
 
-    my $did = prepare_de($p, $file ? $file->remote_file_name : '', $cpid) or return;
-
+    my ($did, $result) = _prepare_de($p, $file ? $file->remote_file_name : '', $cpid);
+    $t->param(%$result) if $t;
+    $did or return (undef, $result);
     # Forbid repeated submissions of the identical code with the same DE.
     my $source_hash = CATS::Utils::source_hash($source_text);
     my ($same_source, $prev_submit_time) = $dbh->selectrow_array(q~
@@ -194,12 +220,15 @@ sub problems_submit {
     $s->bind_param(5, $source_hash);
     $s->execute;
     $dbh->commit;
-
-    $t->param(solution_submitted => 1, href_run_details => url_f('run_details', rid => $rid));
+    $result->{href_run_details} = url_f('run_details', rid => $rid);
+    $t->param(%$result) if $t;
+    my $submit_time = $dbh->selectrow_array(q~
+        SELECT submit_time FROM reqs WHERE id = ?~, { Slice => {} },
+        $rid);
     $contest_finished ? msg(1087) :
     defined $prev_reqs_count ? msg(1088, $contest->{max_reqs} - $prev_reqs_count - 1) :
-    msg(1014);
-    $rid;
+    msg(1014, $submit_time);
+    ($rid, $result);
 }
 
 sub problems_submit_std_solution {

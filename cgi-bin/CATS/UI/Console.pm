@@ -128,6 +128,7 @@ sub _console_content {
         P.title
         A.team_name
         A.city
+        A.login
         CA.is_jury
         CA.site_id
     ) ]);
@@ -138,15 +139,20 @@ sub _console_content {
         R1.contest_id = R.contest_id AND
         R1.problem_id = R.problem_id AND
         R1.account_id = R.account_id AND~;
+    my $src_prefix_len = 2000;
+    my $from_src = sub { "(SELECT $_[0] FROM sources S WHERE S.req_id = R.id)" };
 
     $lv->define_db_searches({
         de_code => sprintf($de_select, 'DE.code'),
         de_name => sprintf($de_select, 'DE.description'),
         run_method => 'P.run_method',
+        last_ip => 'COALESCE(E.ip, A.last_ip)',
         code => q~(
             SELECT CP.code FROM contest_problems CP
             WHERE CP.contest_id = C.id AND CP.problem_id = P.id)~,
-        src_length => '(SELECT OCTET_LENGTH(S.src) FROM sources S WHERE S.req_id = R.id)',
+        source => $from_src->(
+            "CAST(SUBSTRING(S.src FROM 1 FOR $src_prefix_len) AS VARCHAR($src_prefix_len))"),
+        source_length => $from_src->('OCTET_LENGTH(S.src)'),
         next => qq~COALESCE((
             SELECT R1.id FROM reqs R1
             WHERE $same_contest_problem_account R1.id > R.id
@@ -193,7 +199,8 @@ sub _console_content {
 
     my $can_see = $uid && !$is_jury ? CATS::Request::can_see_by_relation($uid) : {};
 
-    my $sth = CATS::Console::build_query($s, $lv, $p->{uf});
+    my $uf = $is_jury || $contest->{show_all_results} ? $p->{uf} : [ $uid // -1 ];
+    my $sth = CATS::Console::build_query($s, $lv, $uf);
 
     my $fetch_console_record = sub {
         my ($rtype, $rank, $submit_time, $id, $request_state, $failed_test,
@@ -219,6 +226,7 @@ sub _console_content {
 
         my $show_details =
             $is_jury || $uid && $team_id && $uid == $team_id ||
+            ($contest->{time_since_pub_reqs} // 0) > 0 ||
             $team_id && $can_see->{$team_id};
 
         return (

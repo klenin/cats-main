@@ -120,11 +120,9 @@ sub _common_contests_view {
         selected => $c->{id} == $cid,
         is_official => $c->{is_official},
         show_points => $c->{rules},
-        href_contest => url_function('contests',
-            sid => $sid, set_contest => 1, cid => $c->{id},
-            map { $_ => ($p->{$_} ? Encode::decode_utf8($p->{$_}) : undef) }
-            qw(filter search page)),
         href_params => url_f('contest_params', id => $c->{id}),
+        href_children => ($c->{child_count} ?
+            url_function('contests', sid => $sid, cid => $c->{id}, search => "parent_id=$c->{id}") : undef),
         href_problems => url_function('problems', sid => $sid, cid => $c->{id}),
         href_problems_text => CATS::StaticPages::url_static('problem_text', cid => $c->{id}),
         (href_start_date => !$CATS::Config::timeanddate_url ? undef :
@@ -133,6 +131,7 @@ sub _common_contests_view {
             join '&', CATS::Utils::gen_url_params(
                 msg => $c->{title}, %CATS::Config::timeanddate_tz, iso => $start_date_iso,
                 ($c->{duration_hours} < 24 ? (ah => $c->{duration_hours}) : ()))),
+        href_parent => $c->{parent_id} ? url_function('problems', sid => $sid, cid => $c->{parent_id}) : '',
     );
 }
 
@@ -191,6 +190,7 @@ sub authenticated_contests_view {
     my $sth = $dbh->prepare(qq~
         SELECT
             $cf, CA.is_virtual, CA.is_jury, CA.id AS registered, C.is_hidden,
+            (SELECT COUNT(*) FROM contests C1 WHERE C1.parent_id = C.id) AS child_count,
             ($problems_count_sql) AS problems_count,
             ($tags_sql) AS tags
             $extra_fields
@@ -220,6 +220,8 @@ sub authenticated_contests_view {
             registered_virtual => $c->{registered} && $c->{is_virtual},
             href_delete => url_f('contests', delete => $c->{id}),
             has_orig => $c->{id} == $original_contest,
+            href_contest_tags =>
+                $c->{is_jury} ? url_function('contest_tags', cid => $c->{id}, sid => $sid) : '',
         );
     };
     ($fetch_contest, $sth);
@@ -231,9 +233,11 @@ sub anonymous_contests_view {
     _contest_searches($p);
     my $sth = $dbh->prepare(qq~
         SELECT $cf FROM contests C WHERE C.is_hidden = 0 ~ .
-       ($p->{filter_sql} || '') . $p->{listview}->order_by
+       ($p->{filter_sql} || '') .
+       $p->{listview}->maybe_where_cond .
+       $p->{listview}->order_by
     );
-    $sth->execute;
+    $sth->execute($p->{listview}->where_params);
 
     my $fetch_contest = sub {
         my $c = $_[0]->fetchrow_hashref or return;

@@ -57,7 +57,7 @@ table.header td.elapsed p a:hover { background-color: #ffcc55; }
     color: white;
 } 
 
-#messages { font-style: italic; }
+.messages { font-style: italic; }
 
 table.listview_header {
     border-collapse: collapse;
@@ -238,6 +238,7 @@ table > tbody > tr > td.nested table { border-style: hidden; height: 100%; width
     color: #4040ff;
     height: 22px;
     vertical-align: middle;
+    cursor: pointer;
 }
 .button2 {
     border: 1px solid #ffffff;
@@ -269,6 +270,8 @@ td.ts { font-size: 10pt; font-style: italic; }
 .run_details_MR { background-color: #FFC0C0; }
 .run_details_WL { background-color: #E0E080; }
 .run_details_LI { background-color: #A0FFFF; }
+.run_details_BA { color: #E00000; font-weight: bold; }
+.run_details_BA > table { border: 1px solid #E00000; }
 
 .verdict_list label { display: inline-block; padding: 0 3px; }
 
@@ -451,3 +454,5 @@ table.edit_form td p.form_error { color: red; font-size: small; }
 .autocomplete-selected { background: #F0F0F0; }
 .autocomplete-suggestions strong { font-weight: bold; color: #000; }
 .autocomplete-group { padding: 2px 5px; font-weight: bold; font-size: 16px; color: #000; display: block; border-bottom: 1px solid #000; }
+
+.wiki { padding: 0px 10px; }

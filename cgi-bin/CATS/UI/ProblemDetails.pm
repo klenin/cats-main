@@ -63,6 +63,8 @@ sub problem_details_frame {
         WHERE P.id = ?~, { Slice => {} },
         $cid, $p->{pid}) or return;
 
+    CATS::Problem::Utils::round_time_limit($pr->{overridden_time_limit});
+
     my $kw_lang = "name_" . (CATS::Settings::lang eq 'ru' ? 'ru' : 'en');
     $pr->{keywords} = $dbh->selectall_arrayref(qq~
         SELECT K.id, K.code, K.$kw_lang AS name
@@ -251,6 +253,7 @@ sub problem_limits_frame {
         LEFT JOIN limits L ON L.id = CP.limits_id
         WHERE P.id = ? AND CP.contest_id = ?~, undef,
         $p->{pid}, $cid) or return;
+    CATS::Problem::Utils::round_time_limit($problem->{overridden_time_limit});
 
     $t->param(
         p => $problem,

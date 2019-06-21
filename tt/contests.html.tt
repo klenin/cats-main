@@ -1,4 +1,4 @@
-[%- IF user.privs.is_root; js.jquery = 1; js.autocomplete = 1; END -%]
+[%- js.jquery = 1; IF user.privs.is_root; js.autocomplete = 1; END -%]
 [%- extra_head = BLOCK %]
 <link rel="alternate" type="application/rss+xml" title="RSS" href="[% href_rss %]">
 <style>
@@ -39,9 +39,10 @@ function delete_contest(href, name) {
   [% ELSE %]
   <a href="[% c.href_params %]" class="icon view" title="[% capt.alt_params %]"></a>
   [% END %]
-  <a href="[% c.href_contest %]" title="[% c.short_descr | html %]"[% ' class="contest_selected"' IF c.selected %]>
+  [% '<a href="' _ c.href_parent _ '">&#x21E1;</a>' IF c.href_parent # Avoid quoting. %]
+  <a href="[% c.href_problems %]" title="[% c.short_descr | html %]"[% ' class="contest_selected"' IF c.selected %]>
     [%- c.contest_name | html %]</a>
-  [<a href="[% c.href_problems %]">[% capt.problems %]</a>]
+  [% IF c.child_count %][<a href="[% c.href_children %]">[% c.child_count %]</a>][% END %]
 </td>
 [% IF user.privs.is_root && visible_cols.Pc %]<td>[% c.problems_count %]</td>[% END %]
 [% IF visible_cols.Sd -%]
@@ -67,7 +68,8 @@ function delete_contest(href, name) {
   t = ct | url | format(href_has_tag_named.replace('%25', '%')); # Unquote '%' from url_f.
   href(t, ct);
   ', ' UNLESS loop.last;
-END %]</td>
+END %]
+[% href(c.href_contest_tags, '…') IF c.href_contest_tags %]</td>
 [%- END %]
 </tr>
 [% END %]

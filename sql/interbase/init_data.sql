@@ -1,5 +1,9 @@
 INSERT INTO default_de (id, code, description, file_ext)
     VALUES (GEN_ID(key_seq, 1), 1, 'Do not compile this file', 'h;inc');
+INSERT INTO default_de (id, code, description, file_ext)
+    VALUES (GEN_ID(key_seq, 1), 3, 'Answer text', '');
+INSERT INTO default_de (id, code, description, file_ext, in_contests, syntax)
+    VALUES (GEN_ID(key_seq, 1), 5, 'XML', 'xml', 0, 'xml');
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
     VALUES (GEN_ID(key_seq, 1), 101, 'Cross-platform C/C++ compiler', 'cc', 'c_cpp', '^~FILE~:~LINE~:~POS~:');
 
@@ -39,6 +43,8 @@ INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
     VALUES (GEN_ID(key_seq, 1), 402, 'Microsoft Visual C#', 'cs', 'csharp', '^~FILE~\(~LINE~,~POS~\):');
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
     VALUES (GEN_ID(key_seq, 1), 404, 'Go', 'go', 'golang', '^~FILE~:~LINE~:~POS~:');
+INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
+    VALUES (GEN_ID(key_seq, 1), 406, 'Kotlin', 'kt', 'kotlin', '^~FILE~:~LINE~:~POS~:');
 
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
     VALUES (GEN_ID(key_seq, 1), 501, 'Perl', 'pl', 'perl', 'at\s~FILE~\sline\s~LINE~');

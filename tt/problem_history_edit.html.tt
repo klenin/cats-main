@@ -2,15 +2,53 @@
 [% extra_head = BLOCK %]
 <style>
   @import 'css/git.css';
+  .toolbar_container { margin-bottom: 5px; }
 </style>
 <script>window.addEventListener('load', function () {
-  highlight_errors('log', [ /at\sline\s(\d+)/ ], 'editor');
+  if (!ace) return;
+  set_syntax('editor', 'de_id');
+  var editor = ace.edit('editor');
+  if ($('option:selected', $('#de_id')).attr('editor-syntax') === 'xml') {
+    highlight_errors('log', [ /at\sline\s(\d+)/ ], 'editor');
+  }
   var langTools = ace.require('ace/ext/language_tools');
-  var completions = [ [% FOREACH a IN autocomplete; "'$a'"; ', ' UNLESS loop.last; END %] ];
-  langTools.addCompleter({ getCompletions: function(editor, session, pos, prefix, callback) {
-    if (prefix.length === 0) { callback(null, []); return }
-    callback(null, $.map(completions, function (c) { return { value: c, score: 1, meta: 'cats' }; }));
-  }});
+  var cats_tags = [ [% FOREACH a IN cats_tags; "'$a'"; ', ' UNLESS loop.last; END %] ];
+  var keywords = [ [% FOREACH kw IN keywords; "'$kw.code'"; ', ' UNLESS loop.last; END %] ];
+
+  var completer = function(data, meta) {
+    return {
+      getCompletions: function(editor, session, pos, prefix, callback) {
+        if (prefix.length === 0) { callback(null, []); return }
+        callback(null, $.map(data, function (c) { return { value: c, score: 1, meta: meta }; }));
+      }
+    }
+  };
+
+  langTools.setCompleters([completer(cats_tags, 'cats'), completer(keywords, 'keyword')]);
+
+  var add_keyword = function() {
+    editor.focus();
+    var search = function() { return editor.$search.findAll(editor.session); }
+    editor.$search.setOptions({ needle: /<Keyword code=/ });
+    var matches = search();
+    var offset = 1;
+    if (!matches.length) {
+      editor.$search.setOptions({ needle: /<ProblemStatement>/ });
+      matches = search();
+      offset = 0;
+    }
+    if (!matches) return;
+    var match = matches[matches.length - 1].start;
+    var keyword_position = { row: match.row + offset, column: match.column  };
+    var prefix = '<Keyword code="';
+    var suffix = '" />\n';
+    editor.session.insert(keyword_position, prefix + suffix);
+    editor.selection.moveTo(keyword_position.row, prefix.length);
+    // 0.5 centers the line on screen
+    editor.renderer.scrollCursorIntoView(keyword_position, 0.5);
+  }
+  $('#wrap_button').click(function() { editor.execCommand('toggleWrapMode'); });
+  $('#keyword_button').click(add_keyword);
 })</script>
 [%- END %]
 [% PROCESS includes/menu_begin.tti %]
@@ -34,9 +72,16 @@
 <div class="page_body">
   [% PROCESS includes/encoding_form.html.tti capt_enc = capt.enc %]
   <br/>
+  <div class="toolbar_container">
+    <select id="de_id">
+      [% FOREACH de IN de_list.des; editor_select_option(de.id, de.description, de.syntax, de.id == de_selected.id); END %]
+    </select>
+    <button id="wrap_button" class="button">[% capt.wrap %]</button>
+    <button id="keyword_button" class="button">[% capt.keyword %]</button>
+  </div>
   <form method="post" accept-charset="UTF-8" style="margin: 0">
     <div>
-<textarea rows="40" cols="100" name="source" data-editor="xml" data-gutter="1" data-id="editor">
+<textarea rows="40" cols="100" name="source" data-editor="[% de_selected.syntax || 'text' %]" data-gutter="1" data-id="editor">
 [%- IF blob.content; blob.content | html; ELSE; FOREACH line IN blob.lines %]
 [% line.text | html %]
 [%- END; END ~%]

@@ -50,7 +50,7 @@ sub _try_set_user {
     $dbh->commit;
 }
 
-my $settable_verdicts = [ qw(NP AW OK WA PE TL ML WL RE CE SV IS IL MR LI) ];
+my $settable_verdicts = [ qw(NP AW OK WA PE TL ML WL RE CE SV IS IL MR LI BA) ];
 
 sub request_params_frame {
     my ($p) = @_;
@@ -183,6 +183,7 @@ sub try_set_state {
     grep $_ eq $p->{state}, @$settable_verdicts or return;
     my $state = $CATS::Verdicts::name_to_state->{$p->{state}};
 
+    CATS::Job::cancel_all($si->{req_id});
     CATS::Request::enforce_state($p->{rid}, {
         failed_test => $p->{failed_test}, state => $state, points => $p->{points}
     });

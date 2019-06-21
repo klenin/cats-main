@@ -161,4 +161,6 @@ sub can_download_package {
         (!$contest->{is_hidden} || $user->{is_participant});
 }
 
+sub round_time_limit { $_[0] = int($_[0] * 100) / 100 if $_[0] }
+
 1;

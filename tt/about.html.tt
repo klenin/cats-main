@@ -30,11 +30,11 @@
 <p>[% capt.upcoming %]</p>
 <div class="tiles">
 [% FOREACH c IN contests %]
-  <div><a href="[% c.href_contest %]"><div>
-    <div class="title">[% c.title %]</div>
-    <div class="descr">[% c.short_descr %]</div>
+  <div><div>
+    <a href="[% c.href_contest %]"><div class="title">[% c.title %]</div></a>
+    <div class="descr">[% c.short_descr | html | linkify %]</div>
     <div class="start">[% c.start_date %]<br/>[% c.since_start_text %]</div>
-  </div></a></div>
+  </div></div>
 [% END %]
 </div>
 <br/>

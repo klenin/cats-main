@@ -177,6 +177,15 @@ sub problems_frame {
     CATS::Contest::Participate::online if $p->{participate_online};
     CATS::Contest::Participate::virtual if $p->{participate_virtual};
 
+    if ($uid && !$is_jury) {
+        if ($contest->{time_since_finish} > 0) {
+            msg(1115, $contest->{title});
+        }
+        elsif (!$user->{is_participant}) {
+            msg(1116);
+        }
+    }
+
     my $wikis = $dbh->selectall_arrayref(q~
         SELECT CW.wiki_id, CW.allow_edit, WP.name, WT.title
         FROM contest_wikis CW
@@ -229,6 +238,7 @@ sub problems_frame {
         ($reqs_count_sql $cats::st_accepted$account_condition) AS accepted_count,
         ($reqs_count_sql $cats::st_wrong_answer$account_condition) AS wrong_answer_count,
         ($reqs_count_sql $cats::st_time_limit_exceeded$account_condition) AS time_limit_count,
+        ($reqs_count_sql $cats::st_awaiting_verification$account_condition) AS awaiting_verification_count,
         (SELECT R.id || ' ' || R.state FROM reqs R
             WHERE R.problem_id = P.id AND R.account_id = ? AND R.contest_id = ?
             ORDER BY R.submit_time DESC ROWS 1) AS last_submission~
@@ -236,6 +246,7 @@ sub problems_frame {
         NULL AS accepted_count,
         NULL AS wrong_answer_count,
         NULL AS time_limit_count,
+        NULL AS awaiting_verification_count,
         NULL AS last_submission~;
     my $keywords = $is_jury && $lv->visible_cols->{Kw} ? q~(
         SELECT LIST(DISTINCT K.code, ' ') FROM keywords K
@@ -288,7 +299,7 @@ sub problems_frame {
     my @params =
         !$lv->visible_cols->{Vc} ? () :
         $contest->is_practice ? ($aid, $cid) :
-        (($aid) x 4, $cid);
+        (($aid) x 5, $cid);
     $sth->execute(@params, $cid, $lv->where_params);
 
     my @status_list;
@@ -332,6 +343,7 @@ sub problems_frame {
         $any_langs{$lang_tag->[1] // $c->{lang}} = undef if !@$problem_langs && !$hrefs_view{statement};
 
         my ($last_request, $last_state) = split ' ', $c->{last_submission} || '';
+        $last_state //= 0;
         my $last_verdict = do {
             my $lv = $last_state ? $CATS::Verdicts::state_to_name->{$last_state} : '';
             CATS::Verdicts::hide_verdict_self($is_jury, $lv);
@@ -347,7 +359,7 @@ sub problems_frame {
             href_download => $can_download && url_f('problem_download', pid => $c->{pid}),
             href_problem_details => $is_jury && url_f('problem_details', pid => $c->{pid}),
             href_original_contest =>
-                url_function('problems', sid => $sid, cid => $c->{original_contest_id}, set_contest => 1),
+                url_function('problems', sid => $sid, cid => $c->{original_contest_id}),
             href_usage => url_f('contests', search => "has_problem($c->{pid})", filter => 'all'),
             href_problem_console => $uid &&
                 url_f('console', search => "problem_id=$c->{pid}", uf => ($is_jury ? undef : $uid),
@@ -362,7 +374,8 @@ sub problems_frame {
             show_packages => $show_packages,
             status => $c->{status},
             status_text => $psn->{$c->{status}},
-            disabled => !$is_jury && $c->{status} == $cats::problem_st_disabled,
+            disabled => !$is_jury &&
+                ($c->{status} == $cats::problem_st_disabled || $last_state == $cats::st_banned),
             href_view_problem => $hrefs_view{statement} || $text_link_f->('problem_text', cpid => $c->{cpid}),
             problem_langs => $problem_langs,
             href_explanation => $show_packages && $c->{has_explanation} ?
@@ -379,6 +392,7 @@ sub problems_frame {
             accept_count => $c->{accepted_count},
             wa_count => $c->{wrong_answer_count},
             tle_count => $c->{time_limit_count},
+            aw_count => $c->{awaiting_verification_count},
             upload_date => $c->{upload_date},
             upload_date_iso => date_to_iso($c->{upload_date}),
             judges_installed => $c->{judges_installed},
@@ -419,7 +433,7 @@ sub problems_frame {
     my @submenu = grep $_,
         ($is_jury ? (
             !$pr && $pt_url->([ 'problem_text',
-                nospell => 1, nokw => 1, notime => 1, noformal => 1, noauthor => 1 ]),
+                nospell => 1, nokw => 1, notime => 1, noformal => 1, noauthor => 1, nosubmit => 1 ]),
             !$pr && $pt_url->([ 'problem_text' ], res_str(555)),
             { href => url_f('problems_all', link => 1), item => res_str(540) },
             { href => url_f('problems_all', link => 1, move => 1), item => res_str(551) },
@@ -427,9 +441,19 @@ sub problems_frame {
             { href => url_f('contests_prizes', clist => $cid), item => res_str(565) },
         )
         : (
-            !$pr && $pt_url->([ 'problem_text', cid => $cid ]),
+            !$pr && $pt_url->([ 'problem_text', cid => $cid, nosubmit => 1 ]),
+            !$pr && $pt_url->([ 'problem_text', cid => $cid ], res_str(555)),
         )),
         { href => url_f('contest_params', id => $cid), item => res_str(594) };
+
+    my $parent_contest = $dbh->selectrow_hashref(q~
+        SELECT C1.title, C1.id, C1.short_descr
+        FROM contests C1 INNER JOIN contests C ON C1.id = C.parent_id
+        WHERE C.id = ?~, undef,
+        $cid);
+    if ($parent_contest) {
+        $parent_contest->{href} = url_function('problems', sid => $sid, cid => $parent_contest->{id});
+    }
 
     $t->param(
         href_login => url_f('login', redir => CATS::Redirect::pack_params($p)),
@@ -438,15 +462,21 @@ sub problems_frame {
         CATS::Contest::Participate::flags_can_participate,
         submenu => \@submenu, title_suffix => res_str(525),
         is_user => $uid,
-        can_submit => $is_jury ||
-            $user->{is_participant} &&
-            ($user->{is_virtual} || !$contest->has_finished_for($user)),
+        can_submit => CATS::Problem::Submit::can_submit,
         CATS::Problem::Submit::prepare_de_list(),
         contest_id => $cid, no_judges => !$jactive,
+        parent_contest => $parent_contest,
+        source_text => $p->{source_text},
      );
 }
 
 sub problem_text_frame { goto \&CATS::Problem::Text::problem_text }
+
+sub submit_problem_api {
+    my ($p) = @_;
+    my ($rid, $result) = CATS::Problem::Submit::problems_submit($p);
+    $p->print_json({ messages => CATS::Messages::get, $result ? %$result : () });
+}
 
 sub set_problem_color {
     my ($p) = @_;

@@ -172,8 +172,19 @@ $(document).ready(update_request_status);
     <td class="nested" colspan="[% si.colspan %]">
       <table class="internal_borders padded state_[% si.req_id %]"><tr>
         <td class="verdict_short run_details_[% si.short_state %]">[% si.short_state %]</td>
-        <td class="verdict_long">[% capt.verdicts.item(si.short_state) %][% " $capt.on_test$si.failed_test" IF si.failed_test%]<div></div></td>
+        <td class="verdict_long">
+        [%- capt.verdicts.item(si.short_state); " $capt.on_test" _ maybe_href(si.href_test_diff, si.failed_test) IF si.failed_test -%]
+        <div></div></td>
         [% IF si.points.defined() %]<td>[% capt.pts %]: [% si.points %]</td>[% END %]
+        [% IF si.is_jury && si.short_state == 'AW' -%]
+        <td><form method="POST" action="[% si.href_quick_verdict %]">
+          <input type="hidden" name="set_state" value="1"/>
+          [% FOREACH qv IN ['OK', 'MR']; t = capt.set_verdict _ ': '_ capt.verdicts.item(qv) %]
+          <button name="state" value="[% qv %]" title="[% t %]" class="button run_details_[% qv %]">[% qv %]</button>
+          [% END %]
+          </form>
+        </td>
+        [%- END %]
       </tr></table>
     </td>
   [% END; END %]

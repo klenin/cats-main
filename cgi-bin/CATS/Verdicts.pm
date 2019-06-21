@@ -24,6 +24,7 @@ our $name_to_state_sorted = [
     [ MR => $cats::st_manually_rejected ],
     [ WL => $cats::st_write_limit_exceeded ],
     [ LI => $cats::st_lint_error ],
+    [ BA => $cats::st_banned ],
 ];
 
 our $name_to_state = { map @$_, @$name_to_state_sorted };
@@ -50,6 +51,7 @@ our $hidden_verdicts_others = {
     MR => 'RJ',
     WL => 'RJ',
     LI => 'RJ',
+    BA => 'RJ',
 };
 
 # What non-jury see during official contest.

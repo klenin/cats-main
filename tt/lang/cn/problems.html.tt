@@ -6,6 +6,7 @@
     problem_import_log => '导入问题的日志',
     problem_import_diff => '差异',
     no_judges => '目前没有主动判断电脑。 解决方案检查将推迟。',
+    last_submit => 'last submit',
     login_to_participate => '您必须[[登录]]参与此次比赛',
     dev_env_detected => '开发环境被发现',
     de_not_allowed => 'This development environment is forbidden. Allowed development environments:'
@@ -16,7 +17,7 @@
     used_in => '用于比赛',
     solution_file => '解决方案文件',
     dev_env => '开发环境',
-    submit_as => '提交 as user:',
+    submit_as => '提交 as user',
     solution_text => '解决方案文本',
     submit => '提交',
     std_solution => '标准解决方案',
@@ -40,5 +41,7 @@
     participate => '参与',
     participate_virtually => '虚拟参与',
     virtual_warning => '警告！ 第二次虚拟参与将删除第一个参与所有的提交。 继续吗？',
+    wrap => 'wrap',
+    keyword => 'keyword',
   });
 %]
