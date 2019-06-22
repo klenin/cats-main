@@ -200,3 +200,10 @@ function set_syntax(editor_id, select_id) {
     });
   });
 }
+
+function reset_localstorage(editor_id) {
+  try {
+    localStorage.removeItem(editor_id);
+    document.location.reload();
+  } catch(exception) {}
+}

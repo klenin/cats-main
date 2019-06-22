@@ -69,8 +69,6 @@ MathJax.Hub.Register.StartupHook('onLoad', function () {
 [% END %]
 [%- text_width = '1000px' -%]
 <style>
-  a.problem_menu_trigger { font-size: small; color: inherit; padding: 1px 3px; background-color: #eeeeee; }
-  a.problem_menu_trigger:hover { font-size: medium; }
   div.problem_menu { display: none; width: 100%; background-color: #eeeeee; }
   div.problem_menu ul { list-style-type: none; padding: 0; }
   div.problem_menu ul li { display: inline-block; padding: 3px 10px; border-right: 1px solid; }
@@ -111,7 +109,7 @@ MathJax.Hub.Register.StartupHook('onLoad', function () {
   <h2>
   [% IF p.color %]<span class="problem_color" style="background-color: [% p.color | html %];"></span>[% END %]
   [% "${c.problem} ${p.code}. " IF p.code; p.title | html %]
-  <a class="jsonly problem_menu_trigger" href="#">&#x2261;</a>
+  <a id="problem_menu" class="jsonly problem_menu_trigger">&#x2261;</a>
   </h2>
   <div class="jsonly problem_menu"><ul>
     <li><a class="problem_list_link" href="[% p.href_problem_list %]">[% c.problem_list %]</a></li>
@@ -202,7 +200,7 @@ MathJax.Hub.Register.StartupHook('onLoad', function () {
   [% END %]
 </div>
 <script type="text/javascript">
-$('.problem_menu_trigger').click(function() { $(this).parent().next().toggle(); return false; });
+$('#problem_menu').click(function() { $(this).parent().next().toggle(); $(this).toggleClass('problem_menu_hovered'); });
 
 var query_params = (function() {
   var url = window.location.search;
@@ -333,20 +331,26 @@ function gen_forms(problems) {
     var container = $('#p' + cpid).find('.submit');
     var form = $('<form>').attr({ enctype: 'multipart/form-data', class: 'submit_form hidden' });
 
-    var select = $('<select>').attr({ name: 'de_id', id: select_id, class: 'submit_input editor_only' });
+    var select = $('<select>').attr({ name: 'de_id', id: select_id, class: 'toolbar_item editor_only' });
     var add_option = function(de_id, de_syntax, de_name) {
       select.append($('<option>').attr({ value: de_id, 'editor-syntax': de_syntax }).text(de_name));
     }
     [% FOREACH de IN de_list %] add_option('[% de.de_id %]', '[% de.syntax %]', '[% de.de_name %]'); [% END %]
     select.appendTo(form);
 
-    $('<input>').attr({ type: 'file', name: 'source', size: '25', class: 'file submit_input editor_only' }).appendTo(form);
+    $('<input>').attr({ type: 'file', name: 'source', size: '25', class: 'file toolbar_item editor_only' }).appendTo(form);
     $('<button>').
-      attr({ type: 'submit', name: 'submit', class: 'button submit_input' }).
+      attr({ type: 'submit', name: 'submit', class: 'button toolbar_item' }).
       text('[% capt.submit %]').appendTo(form);
     $('<button>').
-      attr({ type: 'button', class: 'button submit_input editor_only' }).text('[% capt.last_submit %]').
+      attr({ type: 'button', class: 'button toolbar_item editor_only' }).text('[% capt.last_submit %]').
       click(get_sources_info_api).appendTo(form);
+
+    var menu_trigger = $('<a>').attr({ class: 'problem_menu_trigger toolbar_item' }).
+      html('&#x2261').click(function() { $(this).toggleClass('problem_menu_hovered'); }).appendTo(form);
+    var editor_menu = $('<div>').attr('class', 'editor_menu').appendTo(menu_trigger);
+    $('<button>').attr({ class: 'button', type: 'button' }).
+      text('[% capt.reset %]').click(function() { reset_localstorage(editor_id) }).appendTo(editor_menu);
     $('<br><br>').appendTo(form);
 
     $('<textarea>').attr({
@@ -360,7 +364,7 @@ function gen_forms(problems) {
     form.appendTo(container);
     set_syntax(editor_id, select_id);
   }
-  [% FOREACH p IN problems %] gen_form('de[% p.id %]', 'ed[% p.id %]', '[% p.id %]', '[% p.cpid %]'); [% END %]
+  [% FOREACH p IN problems %] gen_form('de[% p.id %]', 'ed_pt[% p.cpid %]', '[% p.id %]', '[% p.cpid %]'); [% END %]
   $('.submit_form').toggleClass('hidden');
   init_editors();
   [% IF has_quizzes %] init_quizzes(); [% END %]

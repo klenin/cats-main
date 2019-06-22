@@ -43,5 +43,6 @@
     wrap => 'wrap',
     keyword => 'keyword',
     upload => 'upload',
+    reset => 'reset editor',
   });
 %]
