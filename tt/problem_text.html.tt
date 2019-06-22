@@ -119,6 +119,7 @@ MathJax.Hub.Register.StartupHook('onLoad', function () {
     <li><label><input type="checkbox" class="whitespace"><span></span> [% c.visible_spaces %]</label></li>
     <li><label><input type="checkbox" class="basic_math"><span></span> [% c.basic_math %]</label></li>
     <li><label><input type="checkbox" class="wide_text"><span></span> [% c.wide_text %]</label></li>
+    <li><label><input type="checkbox" class="show_editor" checked="true"><span></span> [% c.show_editor %]</label></li>
     <li class="last_verdict" style="display: none"><span class="verdict">
       <table><tr><td><a href="#"></a></td><td><div></div></td></tr></table>
     </span></li>
@@ -248,6 +249,15 @@ function toggle_wide_text() {
 }
 $('.wide_text').click(toggle_wide_text).each(toggle_wide_text);
 
+function toggle_edtitor_visibility() {
+  var editor_container = get_editor_container($(this).parents('.problem_text'));
+  if (this.checked)
+    editor_container.show();
+  else
+    editor_container.hide();
+}
+$('.show_editor').click(toggle_edtitor_visibility);
+
 $('.problem_text div.problem_menu li.langs a').click(function() {
   var p = document.location.pathname;
   if (p.substring(p.length - 5) === '.html') {
@@ -363,7 +373,7 @@ function survey_value_changed(editor, question_number, value) {
 function init_quizzes() {
   Survey.StylesManager.applyTheme('default');
   $('.problem_text').each(function() {
-    var editor_id = $(this).find('form textarea[name="source_text"]').attr('data-id');
+    var editor_id = get_editor($(this)).attr('data-id');
     var editor = ace.edit(editor_id);
     var quiz_count = 0;
     $(this).find('Quiz').each(function() {
@@ -391,6 +401,8 @@ function init_quizzes() {
       quiz_count++;
       editor.insert('\n');
     });
+    if (quiz_count)
+      $(this).find('.show_editor').click();
   });
 }
 [% END %]
@@ -409,7 +421,7 @@ function process_submit(e) {
 
   for (var i = 0; i < form_params.length; i++) {
     if (form_params[i].name === 'source_text') {
-      var editor_id = form.find('textarea[name="source_text"]').attr('data-id');
+      var editor_id = get_editor(form).attr('data-id');
       form_params[i].value = ace.edit(editor_id).getSession().getValue();
     }
     form_data.append(form_params[i].name, form_params[i].value);
@@ -466,7 +478,7 @@ function fill_messages(response, form) {
 function get_sources_info_api() {
   if (!sid) return;
   var form = $(this).parent();
-  var editor = ace.edit(form.find('textarea[name="source_text"]').attr('data-id'));
+  var editor = ace.edit(get_editor(form).attr('data-id'));
   if (!ace || !editor) return;
   var request_url = '[% href_get_sources_info %]' + ';sid=' + sid;
   $.ajax({

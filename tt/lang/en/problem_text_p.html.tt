@@ -31,5 +31,6 @@
     pconstraints => 'Constraints',
     sample_tests => 'Sample tests',
     sample_number => 'No.',
+    show_editor => 'editor',
   }
 %]
