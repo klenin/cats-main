@@ -1,11 +1,16 @@
 $(document).ready(init_editors);
 
+function get_editor(context) { return context.find('textarea[data-id]'); }
+
+// Container is inserted before the original textarea. See init_editors().
+function get_editor_container(context) { return get_editor(context).prev(); }
+
 function init_editors() {
   if (!ace) return;
   // Ace is broken on mobile browsers.
   if (/Mobi|Android/i.test(navigator.userAgent)) return;
 
-  $('textarea[data-editor]').each(function() {
+  get_editor($('body')).each(function() {
     var textarea = $(this);
     var mode = textarea.data('editor');
     textarea.width(Math.min(textarea.width(), document.body.clientWidth - 8));
