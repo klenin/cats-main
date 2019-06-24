@@ -114,7 +114,7 @@ sub prepare_de_list {
     my @all_des = $allow_all ? @{$de_list->des} : grep $allowed{$_->{id}}, @{$de_list->des};
     my @de = (
         { de_id => 'by_extension', de_name => res_str(536) },
-         map {{ de_id => $_->{id}, de_name => $_->{description}, syntax => $_->{syntax} }} @all_des );
+         map {{ de_id => $_->{id}, de_name => $_->{description}, syntax => $_->{syntax}, code => $_->{code} }} @all_des );
     (de_list => \@de, (@all_des == 1 ? (de_selected => $all_des[0]->{id}) : ()));
 }
 
