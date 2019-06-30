@@ -17,10 +17,13 @@
   <input type="text" name="title" value="[% wt.indexed.title.value | html %]" size="80" class="bordered"/>
   [% maybe_err(wt.indexed.title) %]<br>
   <br>
-  <textarea name="text" cols="80" rows="30" data-editor="markdown" data-gutter="1">
+  <textarea name="text" cols="80" rows="30" data-editor="markdown" data-gutter="1" data-id="ed_wi[% wt.indexed.wiki_id.value %]">
     [%- wt.indexed.text.value | html ~%]
   </textarea>
   [% PROCESS includes/edit_save_cancel.tti %]
+  <a class="problem_menu_trigger" onclick="$(this).toggleClass('problem_menu_hovered')">&#x2261
+    <div class="editor_menu"><button class="button" type="button" onclick="reset_localstorage('ed_wi[% wt.indexed.wiki_id.value %]')">[% capt.reset %]</button></div>
+  </a>
   </form>
   </div>
 </td>
