@@ -343,7 +343,7 @@ function gen_forms(problems) {
       attr({ type: 'submit', name: 'submit', class: 'button toolbar_item' }).
       text('[% capt.submit %]').appendTo(form);
     $('<button>').
-      attr({ type: 'button', class: 'button toolbar_item editor_only' }).text('[% capt.last_submit %]').
+      attr({ type: 'button', class: 'button toolbar_item' }).text('[% capt.last_submit %]').
       click(get_sources_info_api).appendTo(form);
 
     var menu_trigger = $('<a>').attr({ class: 'problem_menu_trigger toolbar_item' }).
@@ -372,22 +372,35 @@ function gen_forms(problems) {
 
 [% IF has_quizzes %]
 function survey_value_changed(editor, question_number, value) {
-  editor.moveCursorTo(question_number);
-  editor.navigateLineEnd();
-  editor.removeToLineStart();
-  editor.insert(value);
+  var answers = editor.getValue().split('\n');
+  if (answers.length > question_number) {
+    editor.moveCursorTo(question_number);
+    editor.navigateLineEnd();
+    editor.removeToLineStart();
+    editor.insert(value);
+  }
+  else {
+    editor.moveCursorTo(answers.length);
+    for (var i = answers.length; i <= question_number; ++i)
+      editor.insert('\n');
+    editor.insert(value);
+  }
 }
 
 function init_quizzes() {
   Survey.StylesManager.applyTheme('default');
   $('.problem_text').each(function() {
+    var survey_models = []
     var problem_text = $(this);
     var editor_id = get_editor(problem_text).attr('data-id');
     var editor = ace.edit(editor_id);
     var quiz_count = 0;
     problem_text.find('Quiz').each(function() {
       var quiz = $(this);
-      var question = { type: quiz.attr('type') };
+      var question = { 
+        type: quiz.attr('type'), 
+        name: 'Quiz' + quiz_count
+      };
       if (question.type === 'radiogroup')
         question.choices = $.map(quiz.children('Choice'), function(choice, i) {
           return { value: i + 1, text: choice.innerHTML };
@@ -405,10 +418,9 @@ function init_quizzes() {
         var quiz_number = quiz_count;
         return function (survey, options) { survey_value_changed(editor, quiz_number, options.value); };
       }());
-            
       quiz.Survey({model: survey});
+      survey_models.push(survey);
       quiz_count++;
-      editor.insert('\n');
     });
     if (quiz_count) {
       var check_box = problem_text.find('.show_editor');
@@ -416,6 +428,7 @@ function init_quizzes() {
       toggle_editor_visibility.bind(check_box).call();
       [% FOREACH de IN de_list; IF de.code == 3 %] problem_text.find('select[name=de_id]').val('[% de.de_id %]'); [% END; END %]
       problem_text.find('.editor_only').hide();
+      problem_text.data('survey_models', survey_models);
       editor.setReadOnly(true);
     }
   });
@@ -506,9 +519,18 @@ function get_sources_info_api() {
       }
       if (response.de_id)
         form.find('select[name=de_id]').val(response.de_id).change();
+      [% IF has_quizzes %] fill_quiz_forms(editor, form.parents('.problem_text')); [% END %]
     }
   });
 }
+
+function fill_quiz_forms(editor, problem_text) {
+  var survey_models = problem_text.data('survey_models');
+  var answers = editor.getValue().split('\n');
+  for (var i = 0; i < survey_models.length; ++i)
+    survey_models[i].getQuestionByName('Quiz' + i).value = answers[i];
+}
+
 [%- END -%]
 
 [% IF has_snippets %]
