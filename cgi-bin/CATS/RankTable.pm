@@ -77,12 +77,11 @@ sub partial_checker_sql {
     my $checker_types = join ', ',
         grep $cats::source_modules{$_} == $cats::checker_module, keys %cats::source_modules;
     qq~
-        CASE COALESCE(
-            (SELECT PS.stype FROM problem_sources PS
-                WHERE PS.problem_id = P.id AND PS.stype IN ($checker_types)),
-            (SELECT PS.stype FROM problem_sources PS
-                INNER JOIN problem_sources_import PSI ON PSI.guid = PS.guid
-                WHERE PSI.problem_id = P.id AND PS.stype IN ($checker_types)))
+        CASE (SELECT COALESCE(PSL.stype, PSLE.stype) FROM problem_sources PS
+            LEFT JOIN problem_sources_local PSL on PSL.id = PS.id
+            LEFT JOIN problem_sources_imported PSI on PSI.id = PS.id
+            LEFT JOIN problem_sources_local PSLE on PSLE.guid = PSI.guid
+            WHERE PS.problem_id = P.id AND PSL.stype IN ($checker_types))
         WHEN $cats::partial_checker THEN 1 ELSE 0
         END AS partial_checker~;
 }

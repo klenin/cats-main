@@ -34,9 +34,11 @@ sub problems_udebug_frame {
     $c->execute($cats::problem_st_hidden);
 
     my $sol_sth = $dbh->prepare(q~
-        SELECT PS.fname, PS.src, DE.code
-        FROM problem_sources PS INNER JOIN default_de DE ON DE.id = PS.de_id
-        WHERE PS.problem_id = ? AND PS.stype = ?~);
+        SELECT PSL.fname, PSL.src, DE.code
+        FROM problem_sources PS
+        INNER JOIN problem_sources_local PSL ON PSL.id = PS.id
+        INNER JOIN default_de DE ON DE.id = PSL.de_id
+        WHERE PS.problem_id = ? AND PSL.stype = ?~);
 
     my $fetch_record = sub {
         my $r = $_[0]->fetchrow_hashref or return ();

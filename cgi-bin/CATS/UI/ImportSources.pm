@@ -25,13 +25,15 @@ sub import_sources_frame {
     $lv->define_db_searches([ qw(PS.id guid stype code fname problem_id title contest_id) ]);
 
     my $c = $dbh->prepare(q~
-        SELECT ps.id, ps.guid, ps.stype, de.code,
-            (SELECT COUNT(*) FROM problem_sources_import psi WHERE ps.guid = psi.guid) AS ref_count,
-            ps.fname, ps.problem_id, p.title, p.contest_id,
+        SELECT ps.id, psl.guid, psl.stype, de.code,
+            (SELECT COUNT(*) FROM problem_sources_imported psi WHERE psl.guid = psi.guid) AS ref_count,
+            psl.fname, ps.problem_id, p.title, p.contest_id,
             (SELECT CA.is_jury FROM contest_accounts CA WHERE CA.account_id = ? AND CA.contest_id = p.contest_id)
-            FROM problem_sources ps INNER JOIN default_de de ON de.id = ps.de_id
+            FROM problem_sources ps
+            INNER JOIN problem_sources_local psl ON psl.id = ps.id
+            INNER JOIN default_de de ON de.id = psl.de_id
             INNER JOIN problems p ON p.id = ps.problem_id
-            WHERE ps.guid IS NOT NULL ~ . $lv->maybe_where_cond . $lv->order_by);
+            WHERE psl.guid IS NOT NULL ~ . $lv->maybe_where_cond . $lv->order_by);
     $c->execute($uid // 0, $lv->where_params);
 
     my $fetch_record = sub {

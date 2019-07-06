@@ -244,9 +244,10 @@ sub problems_submit_std_solution {
     my $sol_count = 0;
 
     my $c = $dbh->prepare(q~
-        SELECT name, src, de_id, fname
-        FROM problem_sources
-        WHERE problem_id = ? AND (stype = ? OR stype = ?)~);
+        SELECT psl.name, psl.src, psl.de_id, psl.fname
+        FROM problem_sources ps
+        INNER JOIN problem_sources_local psl on ps.id = psl.id
+        WHERE ps.problem_id = ? AND (psl.stype = ? OR psl.stype = ?)~);
     $c->execute($pid, $cats::solution, $cats::adv_solution);
 
     my $de_list = CATS::DevEnv->new(CATS::JudgeDB::get_DEs());
