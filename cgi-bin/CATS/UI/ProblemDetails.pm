@@ -346,7 +346,7 @@ sub problem_test_data_frame {
         $p->{pid}, $cid) or return;
 
     my $tests = $dbh->selectall_arrayref(qq~
-        SELECT PS.fname AS gen_name, T.rank, T.gen_group, T.param,
+        SELECT COALESCE(PSL.fname, PSLE.fname) AS gen_name, T.rank, T.gen_group, T.param,
             SUBSTRING(T.in_file FROM 1 FOR $cats::test_file_cut + 1) AS input,
             T.in_file_size AS input_file_size,
             T.in_file_hash AS input_hash,
@@ -354,6 +354,9 @@ sub problem_test_data_frame {
             T.out_file_size AS answer_file_size
         FROM tests T
             LEFT JOIN problem_sources PS ON PS.id = generator_id
+            LEFT JOIN problem_sources_local PSL ON PSL.id = PS.id
+            LEFT JOIN problem_sources_imported PSI ON PSI.id = PS.id
+            LEFT JOIN problem_sources_local PSLE ON PSLE.guid = PSI.guid
         WHERE T.problem_id = ? ORDER BY T.rank~, { Slice => {} },
         $p->{pid}) or return;
 
@@ -435,8 +438,16 @@ sub problem_des_frame {
     $lv->define_db_searches([qw(stype name fname D.id code description)]);
 
     my $c = $dbh->prepare(q~
-        SELECT PS.stype, PS.name, PS.fname, D.id, D.code, D.description
-        FROM problem_sources PS INNER JOIN default_de D ON PS.de_id = D.id
+        SELECT
+            COALESCE(PSL.stype, PSLE.stype) AS stype,
+            COALESCE(PSL.name, PSLE.name) AS name,
+            COALESCE(PSL.fname, PSLE.fname) AS fname,
+            D.id, D.code, D.description
+        FROM problem_sources PS
+        LEFT JOIN problem_sources_local PSL ON PSL.id = PS.id
+        LEFT JOIN problem_sources_imported PSI ON PSI.id = PS.id
+        LEFT JOIN problem_sources_local PSLE ON PSLE.guid = PSI.guid
+        INNER JOIN default_de D ON COALESCE(PSL.de_id, PSLE.de_id) = D.id
         WHERE PS.problem_id = ? ~ . $lv->maybe_where_cond . $lv->order_by);
     $c->execute($p->{pid}, $lv->where_params);
 

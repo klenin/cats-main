@@ -56,7 +56,11 @@ sub get_contest_tests {
     my $fields = join ', ',
         ($c->{show_all_tests} ? 'T.points' : ()),
         ($c->{show_test_data} ? qq~
-            (SELECT PS.fname FROM problem_sources PS WHERE PS.id = T.generator_id) AS gen_name,
+            (SELECT COALESCE(PSL.fname, PSLE.fname) FROM problem_sources PS
+            LEFT JOIN problem_sources_local PSL on PSL.id = PS.id
+            LEFT JOIN problem_sources_imported PSI on PSI.id = PS.id
+            LEFT JOIN problem_sources_local PSLE on PSLE.guid = PSI.guid
+            WHERE PS.id = T.generator_id) AS gen_name,
             T.param, T.gen_group, T.in_file_size AS input_file_size, T.out_file_size AS answer_file_size,
             SUBSTRING(T.in_file FROM 1 FOR $cats::test_file_cut + 1) AS input,
             SUBSTRING(T.out_file FROM 1 FOR $cats::test_file_cut + 1) AS answer ~ : ());

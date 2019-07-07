@@ -111,8 +111,10 @@ sub define_common_searches {
 
     $lv->define_db_searches({
         map {
-            join('_', split /\W+/, $cats::source_module_names{$_}) =>
-            "(SELECT COUNT (*) FROM problem_sources PS WHERE PS.problem_id = P.id AND PS.stype = $_)"
+            join('_', split /\W+/, $cats::source_module_names{$_}) => qq~
+            (SELECT COUNT (*) FROM problem_sources PS
+                INNER JOIN problem_sources_local PSL on PS.id = PSL.id
+                WHERE PS.problem_id = P.id AND PSL.stype = $_)~
         } keys %cats::source_modules
     });
 

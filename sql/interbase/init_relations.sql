@@ -272,30 +272,31 @@ CREATE TABLE contest_problem_des (
 
 CREATE TABLE problem_sources (
     id          INTEGER NOT NULL PRIMARY KEY,
-    stype       INTEGER, /* stype: See Constants.pm */
-    problem_id  INTEGER REFERENCES problems(id) ON DELETE CASCADE,
-    de_id       INTEGER NOT NULL REFERENCES default_de(id) ON DELETE CASCADE,
-    src         BLOB,
-    fname       VARCHAR(200),
-    name        VARCHAR(60),
-    input_file  VARCHAR(200),
-    output_file VARCHAR(200),
-    guid        VARCHAR(100), /* For cross-contest references. */
-    time_limit  FLOAT, /* In seconds. */
-    memory_limit INTEGER, /* In mebibytes. */
-    write_limit INTEGER, /* In bytes */
-    main        VARCHAR(200)
+    problem_id  INTEGER REFERENCES problems(id) ON DELETE CASCADE
 );
-ALTER TABLE problem_sources
-    ADD CONSTRAINT chk_problem_sources_1 CHECK (0 <= stype AND stype <= 15);
-CREATE INDEX ps_guid_idx ON problem_sources(guid);
 
-CREATE TABLE problem_sources_import (
-    problem_id  INTEGER NOT NULL REFERENCES problems(id) ON DELETE CASCADE,
-    /* Reference to problem_sources.guid, no constraint to simplify update of the referenced problem. */
-    guid        VARCHAR(100) NOT NULL,
-    PRIMARY KEY (problem_id, guid)
+CREATE TABLE problem_sources_local (
+    id           INTEGER NOT NULL PRIMARY KEY REFERENCES problem_sources(id) ON DELETE CASCADE,
+    stype        INTEGER, /* stype: See Constants.pm */
+    de_id        INTEGER NOT NULL REFERENCES default_de(id) ON DELETE CASCADE,
+    src          BLOB,
+    fname        VARCHAR(200),
+    name         VARCHAR(60),
+    input_file   VARCHAR(200),
+    output_file  VARCHAR(200),
+    guid         VARCHAR(100), /* For cross-contest references. */
+    time_limit   FLOAT, /* In seconds. */
+    memory_limit INTEGER, /* In mebibytes. */
+    write_limit  INTEGER, /* In bytes */
+    main         VARCHAR(200)
 );
+
+CREATE TABLE problem_sources_imported (
+    id          INTEGER NOT NULL PRIMARY KEY REFERENCES problem_sources(id) ON DELETE CASCADE,
+    guid        VARCHAR(100) /* For cross-contest references. */
+);
+
+CREATE INDEX ps_guid_idx ON problem_sources_local(guid);
 
 CREATE TABLE problem_attachments (
     id          INTEGER NOT NULL PRIMARY KEY,

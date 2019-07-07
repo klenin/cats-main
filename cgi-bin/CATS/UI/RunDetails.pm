@@ -126,11 +126,12 @@ sub get_run_info {
     };
 
     my $visualizers = $dbh->selectall_arrayref(q~
-        SELECT PS.id, PS.name
-        FROM problem_sources PS
-        INNER JOIN problems P ON PS.problem_id = P.id
-        INNER JOIN reqs R ON R.problem_id = P.id
-        WHERE R.id = ? AND PS.stype = ?~, { Slice => {} },
+        SELECT PS.id, COALESCE(PSL.name, PSLE.name) FROM problem_sources PS
+        LEFT JOIN problem_sources_local PSL ON PSL.id = PS.id
+        LEFT JOIN problem_sources_imported PSI ON PSI.id = PS.id
+        LEFT JOIN problem_sources_local PSLE ON PSLE.guid = PSI.guid
+        INNER JOIN reqs R ON R.problem_id = PS.problem_id
+        WHERE R.id = ? AND COALESCE(PSL.stype, PSLE.stype) = ?~, { Slice => {} },
         $req->{req_id}, $cats::visualizer);
 
     my %outputs = map { $_->{test_rank} => $_->{output} } @{$dbh->selectall_arrayref(qq~
@@ -256,19 +257,31 @@ sub visualize_test_frame {
     grep $_->{test_rank} == $test_rank, @tests or return;
 
     my $visualizer = $dbh->selectrow_hashref(q~
-        SELECT PS.name, PS.src, PS.fname, P.id AS problem_id, P.hash
+        SELECT
+            COALESCE(PSL.name, PSLE.name),
+            COALESCE(PSL.src, PSLE.src),
+            COALESCE(PSL.fname, PSLE.fname),
+        P.id AS problem_id, P.hash
         FROM problem_sources PS
+        LEFT JOIN problem_sources_local PSL ON PSL.id = PS.id
+        LEFT JOIN problem_sources_imported PSI ON PSI.id = PS.id
+        LEFT JOIN problem_sources_local PSLE ON PSLE.guid = PSI.guid
         INNER JOIN problems P ON PS.problem_id = P.id
         INNER JOIN reqs R ON R.problem_id = P.id
-        WHERE R.id = ? AND PS.id = ? AND PS.stype = ?~, { Slice => {} },
+        WHERE R.id = ? AND PS.id = ? AND COALESCE(PSL.stype, PSLE.stype) = ?~, { Slice => {} },
         $rid, $vid, $cats::visualizer) or return;
 
     my @imports_js = (@{$dbh->selectall_arrayref(q~
-        SELECT PS.src, PS.fname, PS.problem_id, P.hash
-        FROM problem_sources_import PSI
-        INNER JOIN problem_sources PS ON PS.guid = PSI.guid
+        SELECT
+            COALESCE(PSL.name, PSLE.name),
+            COALESCE(PSL.src, PSLE.src),
+        PS.problem_id, P.hash
+        FROM problem_sources PS
+        LEFT JOIN problem_sources_local PSL ON PSL.id = PS.id
+        LEFT JOIN problem_sources_imported PSI ON PSI.id = PS.id
+        LEFT JOIN problem_sources_local PSLE ON PSLE.guid = PSI.guid
         INNER JOIN problems P ON P.id = PS.problem_id
-        WHERE PSI.problem_id = ? AND PS.stype = ?~, { Slice => {} },
+        WHERE PS.problem_id = ? AND COALESCE(PSL.stype, PSLE.stype) = ?~, { Slice => {} },
         $visualizer->{problem_id}, $cats::visualizer_module)}, $visualizer);
 
     my $test_data = get_test_data($p) or return;

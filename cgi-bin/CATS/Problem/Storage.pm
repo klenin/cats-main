@@ -231,7 +231,7 @@ sub delete_child_records {
         $pid)
         for qw(
             pictures samples tests testsets problem_sources
-            problem_sources_import problem_keywords problem_attachments problem_snippets);
+            problem_keywords problem_attachments problem_snippets);
 }
 
 sub save {
@@ -321,30 +321,36 @@ sub insert_problem_source {
 
     if ($s->{guid}) {
         my $dup_id = $dbh->selectrow_array(q~
-            SELECT problem_id FROM problem_sources WHERE guid = ?~, undef,
+            SELECT ps.problem_id FROM problem_sources ps
+                INNER JOIN problem_sources_local psl on psl.id = ps.id
+            WHERE psl.guid = ?~, undef,
             $s->{guid});
-        $self->warning("Duplicate guid with problem $dup_id") if $dup_id;
+        $self->error("Duplicate guid with problem $dup_id") if $dup_id;
     }
+
+    $dbh->do(q~
+        INSERT INTO problem_sources (id, problem_id) VALUES (?, ?)~, undef,
+        $s->{id}, $p{pid});
+
     my $c = $dbh->prepare(q~
-        INSERT INTO problem_sources (
-            id, problem_id, de_id, src, fname, name, stype, input_file, output_file, guid,
+        INSERT INTO problem_sources_local (
+            id, de_id, src, fname, name, stype, input_file, output_file, guid,
             time_limit, memory_limit, write_limit, main
-        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)~);
+        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)~);
 
     $c->bind_param(1, $s->{id});
-    $c->bind_param(2, $p{pid});
-    $c->bind_param(3, $self->get_de_id($s->{de_code}, $s->{path}));
-    $c->bind_param(4, $s->{src}, { ora_type => 113 });
-    $c->bind_param(5, $s->{path});
-    $c->bind_param(6, $s->{name});
-    $c->bind_param(7, $p{source_type});
-    $c->bind_param(8, $s->{inputFile});
-    $c->bind_param(9, $s->{outputFile});
-    $c->bind_param(10, $s->{guid});
-    $c->bind_param(11, $s->{time_limit});
-    $c->bind_param(12, $s->{memory_limit});
-    $c->bind_param(13, $s->{write_limit});
-    $c->bind_param(14, $s->{main});
+    $c->bind_param(2, $self->get_de_id($s->{de_code}, $s->{path}));
+    $c->bind_param(3, $s->{src}, { ora_type => 113 });
+    $c->bind_param(4, $s->{path});
+    $c->bind_param(5, $s->{name});
+    $c->bind_param(6, $p{source_type});
+    $c->bind_param(7, $s->{inputFile});
+    $c->bind_param(8, $s->{outputFile});
+    $c->bind_param(9, $s->{guid});
+    $c->bind_param(10, $s->{time_limit});
+    $c->bind_param(11, $s->{memory_limit});
+    $c->bind_param(12, $s->{write_limit});
+    $c->bind_param(13, $s->{main});
     $c->execute;
 
     my $g = $s->{guid} ? ", guid=$s->{guid}" : '';
@@ -412,8 +418,11 @@ sub insert_problem_content {
 
     for (@{$problem->{imports}}) {
         $dbh->do(q~
-            INSERT INTO problem_sources_import (problem_id, guid) VALUES (?, ?)~, undef,
-            $problem->{id}, $_->{guid});
+            INSERT INTO problem_sources (id, problem_id) VALUES (?, ?)~, undef,
+            $_->{id}, $problem->{id});
+        $dbh->do(q~
+            INSERT INTO problem_sources_imported (id, guid) VALUES (?, ?)~, undef,
+            $_->{id}, $_->{guid});
     }
 
     for my $ts (values %{$problem->{testsets}}) {
