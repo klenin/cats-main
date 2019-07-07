@@ -57,7 +57,7 @@ sub download_frame {
     # Source encoding may be arbitrary.
     local $dbh->{ib_enable_utf8} = 0;
     my ($fname, $src) = $dbh->selectrow_array(q~
-        SELECT fname, src FROM problem_sources WHERE id = ? AND guid IS NOT NULL~, undef,
+        SELECT fname, src FROM problem_sources_local WHERE id = ? AND guid IS NOT NULL~, undef,
         $p->{psid}) or return;
     $p->print_file(
         content_type => 'text/plain',
