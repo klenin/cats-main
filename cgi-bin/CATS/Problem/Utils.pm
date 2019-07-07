@@ -152,6 +152,14 @@ sub define_kw_subquery {
             m => 1016,
             t => qq~SELECT code, $name_field FROM keywords WHERE code = ?~,
         },
+        has_import_guid => {
+            sq => q~(EXISTS (
+                SELECT 1 FROM problem_sources PS
+                INNER JOIN problem_sources_imported PSI ON PS.id = PSI.id
+                WHERE PS.problem_id = P.id AND PSI.guid STARTS WITH ?))~,
+            m => 1204,
+            t => q~SELECT guid, fname FROM problem_sources_local WHERE guid = ?~,
+        },
     });
 }
 
