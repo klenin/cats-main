@@ -118,7 +118,7 @@ sub init_contest {
     }
     $user->{is_jury} = $is_jury;
     $user->{is_local} = $user->{is_participant} && !$user->{is_remote} && !$user->{is_ooc};
-    if ($contest->{is_hidden} && !$user->{is_participant}) {
+    if ($contest->{is_hidden} && !$user->{is_participant} && !$is_root) {
         # If user tries to look at a hidden contest, show training instead.
         $contest->load(0);
         $settings->{contest_id} = $cid = $contest->{id};
