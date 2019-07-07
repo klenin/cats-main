@@ -115,7 +115,7 @@ sub apply_migration() {
         or die "Bad config DSN: $CATS::Config::db_dsn";
     say "Host: $host\nDatabase: $db";
 
-    my $cmd = [ $isql, '-i', $file,
+    my $cmd = [ $isql, '-b', '-i', $file,
         '-u', $CATS::Config::db_user, '-p', $CATS::Config::db_password, '-q', "$host:$db" ];
     # say join ' ', 'Running:', @$cmd;
     my ($ok, $err, $full) = IPC::Cmd::run command => $cmd;
