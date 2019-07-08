@@ -43,5 +43,6 @@
     virtual_warning => '警告！ 第二次虚拟参与将删除第一个参与所有的提交。 继续吗？',
     wrap => 'wrap',
     keyword => 'keyword',
+    upload => 'upload',
   });
 %]

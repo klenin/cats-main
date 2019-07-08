@@ -42,5 +42,6 @@
     virtual_warning => 'Warning! Second virtual participation will remove all submits of the first one. Continue?',
     wrap => 'wrap',
     keyword => 'keyword',
+    upload => 'upload',
   });
 %]

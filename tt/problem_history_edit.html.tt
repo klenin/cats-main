@@ -79,9 +79,9 @@
     <button id="wrap_button" class="button">[% capt.wrap %]</button>
     <button id="keyword_button" class="button">[% capt.keyword %]</button>
   </div>
-  <form method="post" accept-charset="UTF-8" style="margin: 0">
+  <form method="post" accept-charset="UTF-8" enctype="multipart/form-data" style="margin: 0">
     <div>
-<textarea rows="40" cols="100" name="source" data-editor="[% de_selected.syntax || 'text' %]" data-gutter="1" data-id="editor">
+<textarea rows="40" cols="100" name="src" data-editor="[% de_selected.syntax || 'text' %]" data-gutter="1" data-id="editor">
 [%- IF blob.content; blob.content | html; ELSE; FOREACH line IN blob.lines %]
 [% line.text | html %]
 [%- END; END ~%]
@@ -99,6 +99,8 @@
       </p>
       <p>
         <button type="submit" name="save" value="1" class="button">[% capt.save %]</button>
+        <input name="source" type="file" class="file" size="25" />
+        <button type="submit" name="upload" value="1" class="button">[% capt.upload %]</button>
       </p>
     </div>
   </form>

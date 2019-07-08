@@ -171,8 +171,8 @@ sub problem_history_edit_frame {
     }
 
     my ($content, $log);
-    if ($p->{save} && $p->{src_enc}) {
-        ($content, $log) = problem_history_edit_save($p, $pr);
+    if (($p->{save} || $p->{upload}) && $p->{src_enc}) {
+        ($content, $log) = save_content($p, $pr);
         $log or return;
     }
 
@@ -208,11 +208,12 @@ sub problem_history_edit_frame {
     );
 }
 
-sub problem_history_edit_save {
+sub save_content {
     my ($p, $pr) = @_;
     my $hash_base = $p->{hb};
 
-    my $content = $p->{source};
+    $p->{src} = $p->{source}->content if $p->{upload};
+    my $content = $p->{src};
 
     my CATS::Problem::Storage $ps = CATS::Problem::Storage->new;
     Encode::from_to($content, $p->{enc} // 'UTF-8', $p->{src_enc});
@@ -227,7 +228,7 @@ sub problem_history_edit_save {
             $latest_sha, $p->{src_enc}, $ps->encoded_import_log);
     }
 
-    $content = Encode::decode($p->{enc} // 'UTF-8', $p->{source});
+    $content = Encode::decode($p->{enc} // 'UTF-8', $p->{src});
     return ($content, $ps->encoded_import_log);
 }
 
