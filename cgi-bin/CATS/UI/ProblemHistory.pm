@@ -172,7 +172,7 @@ sub problem_history_edit_frame {
 
     my ($content, $log);
     if (($p->{save} || $p->{upload}) && $p->{src_enc}) {
-        ($content, $log) = save_content($p, $pr);
+        ($content, $log) = _save_content($p, $pr);
         $log or return;
     }
 
@@ -208,10 +208,13 @@ sub problem_history_edit_frame {
     );
 }
 
-sub save_content {
+sub _save_content {
     my ($p, $pr) = @_;
-    my $hash_base = $p->{hb};
 
+    !$p->{upload} || $p->{source}
+        or return (Encode::decode($p->{enc} // 'UTF-8', $p->{src}), res_str(1205));
+
+    my $hash_base = $p->{hb};
     $p->{src} = $p->{source}->content if $p->{upload};
     my $content = $p->{src};
 

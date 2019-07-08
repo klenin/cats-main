@@ -371,3 +371,4 @@
 1202 "Submissions publication date must be no earlier than start date."
 1203 "You are banned from submitting this problem."
 1204 "Problems using module '%s' (%s)."
+1205 "No file."
