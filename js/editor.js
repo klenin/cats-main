@@ -24,8 +24,7 @@ function init_editors() {
     editorContainer.wrap('<div class="resizable"></div>');
     var resizable = $(editorContainer.parent());
 
-    resizable.css('width', textarea.width());
-    resizable.css('height', textarea.height());
+    resizable.css({ width: textarea.width(), height: textarea.height() });
 
     var widthResize = $('<div class="resizable_line resizable_right_line"></div>');
     var heightResize = $('<div class="resizable_line resizable_bottom_line"></div>');
@@ -67,26 +66,27 @@ function init_editors() {
         this.np.value = navigator.plugins.length;
     });
 
-    var top_offset = editorContainer.offset().top;
     var doc = $(document);
 
-    var mousedownResize = function(widthOrHeight) {
-      $('body').css({cursor: widthOrHeight == 'width' ? 'col-resize' : 'row-resize'});
-      doc.mousemove(function(e) {
-        var value = widthOrHeight == 'width' ? e.pageX : e.pageY - top_offset;
+    var mouseHandler = function(e, widthOrHeight) {
+        var value = widthOrHeight == 'width' ?
+          e.pageX : e.pageY - editorContainer.offset().top;
         editorContainer.css(widthOrHeight, value);
         resizable.css(widthOrHeight, value);
-        if (e.pageY + 40 > doc.height()) {
-            doc.scrollTop(doc.scrollTop() + 10);
-        }
+    };
+
+    var mousedownResize = function(widthOrHeight) {
+      $('body').css({ cursor: widthOrHeight == 'width' ? 'col-resize' : 'row-resize' });
+      doc.mousemove(function(e) {
+        mouseHandler(e, widthOrHeight);
+        if (e.pageY + 40 > doc.height())
+          doc.scrollTop(doc.scrollTop() + 10);
       });
-      $(document).mouseup(function(e) {
+      doc.mouseup(function(e) {
         doc.unbind('mousemove');
         doc.unbind('mouseup');
-        $('body').css({cursor: ''});
-        var value = widthOrHeight == 'width' ? e.pageX : e.pageY - top_offset;
-        editorContainer.css(widthOrHeight, value);
-        resizable.css(widthOrHeight, value);
+        $('body').css({ cursor: '' });
+        mouseHandler(e, widthOrHeight);
         editor.resize();
       });
     };
