@@ -9,6 +9,7 @@
 
 <table class="wiki_edit edit_form"><tr>
 <td>
+  <div id="editor_fixed">
   <form method="post" enctype="multipart/form-data" action="[% wt.href_action %]">
   <input type="hidden" name="wiki_lang" value="[% wt.indexed.wiki_lang.value | html %]"/>
   <input type="hidden" name="wiki_id" value="[% wt.indexed.wiki_id.value %]"/>
@@ -21,6 +22,7 @@
   </textarea>
   [% PROCESS includes/edit_save_cancel.tti %]
   </form>
+  </div>
 </td>
 <td>
   <p>[% href(href_view, capt.view); IF href_page; ' | '; href(href_page, capt.page); END %]</p>
@@ -29,5 +31,11 @@
 </tr></table>
 [% capt.author %]: [% wt.author %]<br>
 [% capt.last_modified %]: [% wt.indexed.last_modified.value %]
-
+<script>
+$(function() {
+  var d = $('#editor_fixed');
+  d.parent().css({ width: Math.floor(d.parent().width()) + 'px' });
+  d.css({ position: 'fixed' });
+});
+</script>
 [% PROCESS includes/menu_end.tti %]
