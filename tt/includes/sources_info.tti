@@ -132,7 +132,7 @@ $(document).ready(update_request_status);
   <th>[% capt.problem %]</th>
   [% FOREACH si IN sources_info; IF si %]
     <td colspan="[% si.colspan %]">
-      [% si.code; ': ' IF si.code; maybe_href(si.href_problem_text, si.problem_name) %]
+      [% si.code; ': ' IF si.code != ''; maybe_href(si.href_problem_text, si.problem_name) %]
       [%- IF si.is_jury %] ([% maybe_href(si.href_problem_details, si.status_name) %])[% END %]
     </td>
   [% END; END %]
