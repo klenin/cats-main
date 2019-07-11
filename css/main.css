@@ -456,3 +456,31 @@ table.edit_form td p.form_error { color: red; font-size: small; }
 .autocomplete-group { padding: 2px 5px; font-weight: bold; font-size: 16px; color: #000; display: block; border-bottom: 1px solid #000; }
 
 .wiki { padding: 0px 10px; }
+
+.problem_menu_trigger {
+    font-size: small;
+    color: inherit;
+    padding: 1px 3px;
+    background-color: #eeeeee;
+    display: inline-block;
+    vertical-align: middle;
+    cursor: pointer;
+}
+.problem_menu_trigger:hover,
+.problem_menu_hovered { font-size: medium; }
+
+.toolbar_container { margin-bottom: 5px; font-size: 0; }
+.toolbar_item { margin-right: 5px; }
+
+.editor_menu {
+    position: absolute;
+    z-index: 12;
+    margin: 5px 0 0 -4px;
+    padding: 5px;
+    background: #eeeeee;
+}
+.editor_menu button { display: block; width: 100%; }
+.editor_menu button + button { margin-top: 5px; }
+
+.problem_menu_trigger .editor_menu { display: none; }
+.problem_menu_trigger.problem_menu_hovered .editor_menu { display: block; }

@@ -205,6 +205,7 @@ sub problem_history_edit_frame {
         keywords => $keywords,
         de_list => $de_list,
         de_selected => $de,
+        pid => $p->{pid},
     );
 }
 

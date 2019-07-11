@@ -4,5 +4,6 @@
     page => 'page',
     author => 'Author',
     last_modified => 'Last modified',
+    reset => 'reset editor',
   })
 %]

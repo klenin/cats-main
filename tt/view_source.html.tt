@@ -30,27 +30,31 @@
 [% FOREACH si IN sources_info %]
   <td>
     <form enctype="multipart/form-data" method="POST" action="[% href_action %]">
+      <div class="toolbar_container">
       [% IF can_submit %]
-        <select name="de_id" id="de[% si.req_id %]">
+        <select name="de_id" id="de[% si.req_id %]" class="toolbar_item">
           [% FOREACH de IN de_list; editor_select_option(de.de_id, de.de_name, de.syntax, de.de_id == de_selected); END %]
         </select>
-        <input name="source" type="file" class="file" size="25" />
-        <button type="submit" name="submit" value="1" class="button">[% capt.submit %]</button>
+        <input name="source" type="file" class="file toolbar_item" size="25" />
+        <button type="submit" name="submit" value="1" class="button toolbar_item">[% capt.submit %]</button>
         [% IF is_any_jury %]
-          <button type="submit" name="replace" value="1" class="button">[% capt.replace %]</button>
+          <button type="submit" name="replace" value="1" class="button toolbar_item">[% capt.replace %]</button>
         [% END %]
-        <br><br>
       [% END %]
+        <a class="problem_menu_trigger toolbar_item" onclick="$(this).toggleClass('problem_menu_hovered')">&#x2261
+          <div class="editor_menu"><button class="button" type="button" onclick="reset_localstorage('ed_vs[% si.req_id %]')">[% capt.reset %]</button></div>
+        </a>
+      </div>
       <textarea name="source_text" cols="[% source_width %]" rows="40"
-        data-editor="[% si.syntax.lower || 'text' %]" data-gutter="1" data-id="ed[% si.req_id %]">
+        data-editor="[% si.syntax.lower || 'text' %]" data-gutter="1" data-id="ed_vs[% si.req_id %]">
         [%- si.src | html ~%]
       </textarea>
       <input type="hidden" name="np" value="0"/>
     </form>
   </td>
   <script>window.addEventListener('load', function () {
-    highlight_errors('co[% si.req_id %]', [ [% si.err_regexp_js.join(', ') %] ], 'ed[% si.req_id %]');
-    set_syntax('ed[% si.req_id %]', 'de[% si.req_id %]');
+    highlight_errors('co[% si.req_id %]', [ [% si.err_regexp_js.join(', ') %] ], 'ed_vs[% si.req_id %]');
+    set_syntax('ed_vs[% si.req_id %]', 'de[% si.req_id %]');
   })</script>
 [% END %]
 </tr>
