@@ -42,7 +42,7 @@ function get_element(name) {
 [% UNLESS initial_content %]<br/>[% capt.loading %]<br/>
 [% ELSE; initial_content; END %]
 </div>
-[% IF user.is_participant %]
+[% IF user.is_participant || user.is_jury %]
 <br/>
 [% IF user.is_jury %]
 <div>
