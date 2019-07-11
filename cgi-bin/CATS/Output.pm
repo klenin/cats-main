@@ -17,7 +17,7 @@ use Encode();
 use CATS::Config qw(cats_dir);
 use CATS::Globals qw($cid $contest $sid $t $user);
 use CATS::DB;
-use CATS::Messages;
+use CATS::Messages qw(msg);
 use CATS::Settings;
 use CATS::Template;
 use CATS::Utils qw();
@@ -64,9 +64,9 @@ sub url_f { CATS::Utils::url_function(@_, sid => $sid, cid => $cid) }
 sub generate {
     my ($p, $output_file) = @_;
     defined $t or return; #? undef : ref $t eq 'SCALAR' ? return : die 'Template not defined';
-    $contest->{time_since_start} or warn 'No contest from: ', $ENV{HTTP_REFERER} || '';
+    $p->{down} || $contest->{time_since_start} or warn 'No contest from: ', $ENV{HTTP_REFERER} || '';
     $t->param(
-        dbi_profile => $dbh->{Profile}->{Data}->[0],
+        dbi_profile => $dbh && $dbh->{Profile}->{Data}->[0],
         #dbi_profile => Data::Dumper::Dumper($dbh->{Profile}->{Data}),
     ) unless $p->{notime};
     $t->param(
@@ -88,6 +88,15 @@ sub generate {
             or die "Error opening $output_file: $!";
         print $f $out;
     }
+}
+
+sub down {
+    my ($p) = @_;
+    CATS::Settings::init(undef, $p->web_param('lang'), $p->get_cookie('settings'));
+    init_template($p, 'down');
+    $p->{down} = 1;
+    generate($p);
+    $p->get_return_code;
 }
 
 1;

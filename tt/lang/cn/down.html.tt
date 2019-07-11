@@ -1,0 +1,5 @@
+[%
+  capt.import({
+    down => 'Sorry, system is down for maintenance.',
+  })
+%]

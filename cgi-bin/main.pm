@@ -64,6 +64,7 @@ sub handler {
 
     my $p = CATS::Web->new;
     $p->init_request($r);
+    return CATS::Output::down($p) if $CATS::Config::DOWN;
     return $p->not_found unless CATS::Router::parse_uri($p);
 
     CATS::Router::common_params($p);
