@@ -6,7 +6,7 @@
 <script>window.addEventListener('load', function () {
   if (!ace) return;
   set_syntax('editor', 'de_id');
-  var editor = ace.edit('ed_pe[% pid %]');
+  var editor = ace.edit(get_editor($('.page_body')).attr('data-id'));
   if ($('option:selected', $('#de_id')).attr('editor-syntax') === 'xml') {
     highlight_errors('log', [ /at\sline\s(\d+)/ ], 'editor');
   }
@@ -84,7 +84,7 @@
   </div>
   <form method="post" accept-charset="UTF-8" enctype="multipart/form-data" style="margin: 0">
     <div>
-<textarea rows="40" cols="100" name="source" data-editor="[% de_selected.syntax || 'text' %]" data-gutter="1" data-id="ed_pe[% pid %]">
+<textarea rows="40" cols="100" name="src" data-editor="[% de_selected.syntax || 'text' %]" data-gutter="1" data-id="ed_pe[% pid %]_[% path.file_name %]">
 [%- IF blob.content; blob.content | html; ELSE; FOREACH line IN blob.lines %]
 [% line.text | html %]
 [%- END; END ~%]
