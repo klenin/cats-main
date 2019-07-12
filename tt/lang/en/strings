@@ -373,3 +373,4 @@
 1203 "You are banned from submitting this problem."
 1204 "Problems using module '%s' (%s)."
 1205 "No file."
+1206 "File '%s' not found."

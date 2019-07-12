@@ -171,6 +171,21 @@ sub change_file {
     );
 }
 
+sub delete_file {
+    my ($self, $cid, $pid, $file, $message) = @_;
+    $user->{git_author_name} && $user->{git_author_email} or return (-1, msg(1167));
+
+    my $repo = get_repo($pid);
+    $repo->is_file_exist($file) or return (-1, msg(1206, $file));
+
+    $repo->rm($file);
+
+    $self->load_problem(
+        CATS::Problem::Source::PlainFiles->new(dir => $repo->get_dir, logger => $self),
+        $cid, $pid, 1, undef, $message, 0
+    );
+}
+
 sub delete {
     my ($cpid) = @_;
     $cpid or die;

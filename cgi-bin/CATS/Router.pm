@@ -163,7 +163,7 @@ my $main_routes = {
         pid => required integer, h => required sha, src_enc => str,
     ],
     problem_history_tree => [ \&CATS::UI::ProblemHistory::problem_history_tree_frame,
-        pid => required integer, hb => required sha, file => str, repo_enc => encoding,
+        pid => required integer, hb => required sha, file => str, repo_enc => encoding, delete_file => str,
     ],
     set_problem_color => [ \&CATS::UI::Problems::set_problem_color,
         cpid => integer, color => qr/^#[0-9A-Fa-f]{6}$/,
