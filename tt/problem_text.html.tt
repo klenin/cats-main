@@ -109,7 +109,7 @@ MathJax.Hub.Register.StartupHook('onLoad', function () {
   <h2>
   [% IF p.color %]<span class="problem_color" style="background-color: [% p.color | html %];"></span>[% END %]
   [% "${c.problem} ${p.code}. " IF p.code; p.title | html %]
-  <a id="problem_menu" class="jsonly problem_menu_trigger">&#x2261;</a>
+  <a class="jsonly problem_menu_trigger problem_menu_click">&#x2261;</a>
   </h2>
   <div class="jsonly problem_menu"><ul>
     <li><a class="problem_list_link" href="[% p.href_problem_list %]">[% c.problem_list %]</a></li>
@@ -200,7 +200,7 @@ MathJax.Hub.Register.StartupHook('onLoad', function () {
   [% END %]
 </div>
 <script type="text/javascript">
-$('#problem_menu').click(function() { $(this).parent().next().toggle(); $(this).toggleClass('problem_menu_hovered'); });
+$('.problem_menu_click').click(function() { $(this).parent().next().toggle(); $(this).toggleClass('problem_menu_hovered'); });
 
 var query_params = (function() {
   var url = window.location.search;
