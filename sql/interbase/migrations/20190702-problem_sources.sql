@@ -37,9 +37,9 @@ BEGIN
 
         SELECT id FROM problem_sources WHERE guid = :guid_ into :old_id;
 
-        UPDATE tests SET generator_id = :id_ WHERE generator_id = :old_id WHERE problem_id = :problem_id_;
-        UPDATE tests SET input_validator_id = :id_ WHERE input_validator_id = :old_id WHERE problem_id = :problem_id_;
-        UPDATE tests SET std_solution_id = :id_ WHERE std_solution_id = :old_id WHERE problem_id = :problem_id_;
+        UPDATE tests SET generator_id = :id_ WHERE generator_id = :old_id AND problem_id = :problem_id_;
+        UPDATE tests SET input_validator_id = :id_ WHERE input_validator_id = :old_id AND problem_id = :problem_id_;
+        UPDATE tests SET std_solution_id = :id_ WHERE std_solution_id = :old_id AND problem_id = :problem_id_;
     END
 END^
 
