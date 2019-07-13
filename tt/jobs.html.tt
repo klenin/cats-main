@@ -7,14 +7,14 @@
 
 <script>
 function delete_job(href, name) {
-    if (confirm("[% capt.want_to_delete %] '" + name + "'?" ))
-        document.location = href;
+  if (confirm("[% capt.want_to_delete %] '" + name + "'?" ))
+    document.location = href;
 }
 </script>
 
 [% PROCESS includes/listview_header.tti %]
 
-<table class="listview bordered highlight">
+<table class="listview bordered cell_search highlight">
 [% PROCESS includes/listview_col_defs.tti %]
 
 [% FOREACH j IN jobs %]
@@ -26,15 +26,15 @@ function delete_job(href, name) {
   [% capt.jobs.types.item(job_type_to_name.item(j.type)) %]
 </td>
 <td>[% href(j.href_details, j.id) %]</td>
-<td[% ' class="in_queue"' IF j.in_queue %]>[% capt.jobs.states.item(job_state_to_name.item(j.state)) %]</td>
+<td[% class({ in_queue => j.in_queue }) %]>[% capt.jobs.states.item(job_state_to_name.item(j.state)); cell_search('state', j) %]</td>
 [% IF visible_cols.Tc %]<td>[% j.create_time %]</td>[% END %]
 [% IF visible_cols.Ts %]<td>[% j.start_time %]</td>[% END %]
 [% IF visible_cols.Tf %]<td>[% j.finish_time %]</td>[% END %]
 [% IF visible_cols.Tt %]<td>[% j.time_len_fmt %]</td>[% END %]
-[% IF visible_cols.Jn %]<td>[% j.judge_name %]</td>[% END %]
-[% IF visible_cols.Pr %]<td>[% href(j.href_problem_text, j.problem_title) %]</td>[% END %]
-[% IF visible_cols.Ct %]<td>[% href(j.href_contest, j.contest_title) %]</td>[% END %]
-[% IF visible_cols.Ac %]<td>[% href(j.href_user, j.team_name) %]</td>[% END %]
+[% IF visible_cols.Jn %]<td>[% j.judge_name; cell_search('judge_id', j) %]</td>[% END %]
+[% IF visible_cols.Pr %]<td>[% href(j.href_problem_text, j.problem_title); cell_search('problem_id', j) %]</td>[% END %]
+[% IF visible_cols.Ct %]<td>[% href(j.href_contest, j.contest_title); cell_search('contest_id', j) %]</td>[% END %]
+[% IF visible_cols.Ac %]<td>[% href(j.href_user, j.team_name); cell_search('account_id', j) %]</td>[% END %]
 </tr>
 [% END %]
 </table>
