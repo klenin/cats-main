@@ -30,6 +30,14 @@
 [%- END -%]
 [%- MACRO maybe_href(url, text, title) BLOCK; IF url; href(url, text, title); ELSE; text | html ; END; END -%]
 
+[%- MACRO class(classes) BLOCK;
+  s = [];
+  FOREACH c IN classes;
+    s.push(c.key) IF c.value;
+  END;
+  IF s.size; ' class="'; s.join(' '); '"'; END;
+END -%]
+
 [%- MACRO menu(items, selected) BLOCK -%]
   [%- FOREACH i IN items ~%]
     [%- IF i.href -%]
