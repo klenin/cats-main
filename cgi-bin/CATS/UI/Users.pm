@@ -39,7 +39,6 @@ sub users_submenu {
     }
 }
 
-
 my %user_fields = (password => 'password1', map { $_ => $_ } CATS::User::param_names);
 
 sub users_import_frame {
@@ -354,7 +353,7 @@ sub users_all_settings_frame {
     my $fetch_record = sub {
         my $row = $_[0]->fetchrow_hashref or return ();
         my $all_settings = $row->{settings} ? thaw($row->{settings}) : '';
-        if ($selector) {
+        if ($all_settings && $selector) {
             for (split /\./, $selector) {
                 $all_settings = $all_settings->{$_} or last;
             }
