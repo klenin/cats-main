@@ -80,6 +80,26 @@ sub online {
     msg(1110, $contest->{title});
 }
 
+sub multi_online {
+    my ($user_id, $clist) = @_;
+    @$clist or return;
+    my $clist_text = join ', ', @$clist;
+    my $good_cids = $dbh->selectcol_arrayref(qq~
+        SELECT C.id FROM contests C
+        WHERE C.id IN ($clist_text) AND C.closed = 0 AND
+            CURRENT_TIMESTAMP <= C.finish_date AND NOT EXISTS (
+                SELECT 1 FROM contest_accounts CA
+                WHERE CA.contest_id = C.id AND CA.account_id = ?)~, undef,
+        $user_id);
+    @$good_cids or return;
+    for (@$good_cids) {
+        $contest->register_account(contest_id => $_, account_id => $user_id);
+        $user->{is_participant} = 1 if $_ == $cid;
+    }
+    $dbh->commit;
+    1;
+}
+
 sub virtual {
     !$user->{is_participant} || $user->{is_virtual}
         or return msg(1114, $contest->{title});

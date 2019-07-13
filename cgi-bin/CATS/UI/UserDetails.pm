@@ -6,6 +6,7 @@ use warnings;
 use Storable qw(thaw);
 
 use CATS::Constants;
+use CATS::Contest::Participate;
 use CATS::Countries;
 use CATS::DB;
 use CATS::Form;
@@ -292,8 +293,11 @@ sub registration_frame {
     my $u = CATS::User->new->parse_params($p);
     $u->validate_params(validate_password => 1) or return;
     $u->{password1} = CATS::User::hash_password($u->{password1});
-    $u->insert(undef, save_settings => 1) or return;
-    $t->param(successfully_registred => 1);
+    my $has_clist = @{$p->{clist}} > 0;
+    $settings->{contests}->{filter} = 'my' if $has_clist;
+    $u->insert(undef, save_settings => 1, commit => !$has_clist) or return;
+    CATS::Contest::Participate::multi_online($u->{id}, $p->{clist});
+    $t->param(successfully_registered => 1);
 }
 
 sub profile_frame {
