@@ -154,6 +154,12 @@ a, a:link {
 
 .sub_menu a { color: #3030a0; }
 
+.sub_menu a.new {
+    background: no-repeat url(../images/icons/plus.png);
+    padding-left: 16px;
+    padding-bottom: 4px;
+}
+
 .main_menu a.main_menu_selected, .main_menu a.main_menu_selected:visited { color: yellow; }
 a.sub_menu_selected, a.sub_menu_selected:visited { color: white; }
 

@@ -20,7 +20,7 @@ use CATS::User;
 sub users_submenu {
     if ($is_jury)  {
         submenu => [
-            { href => url_f('users_new'), item => res_str(541) },
+            { href => url_f('users_new'), item => res_str(541), new => 1 },
             { href => url_f('users_import'), item => res_str(564) },
             { href => url_f('users_add_participants'), item => res_str(584) },
             ($is_root ?

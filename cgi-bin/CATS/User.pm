@@ -553,10 +553,10 @@ sub submenu {
     my $is_profile = $uid && $uid == $user_id;
     my @m = (
         (($is_root || $is_profile) && $selected eq 'user_contacts' ? (
-            { href => url_f('user_contacts_edit', uid => $user_id), item => res_str(587), selected => '' }
+            { href => url_f('user_contacts_edit', uid => $user_id), item => res_str(587), selected => '', new => 1 }
         ) : ()),
         (($is_root || $is_profile) && $selected eq 'user_relations' ? (
-            { href => url_f('user_relations_edit', uid => $user_id), item => res_str(598), selected => '' }
+            { href => url_f('user_relations_edit', uid => $user_id), item => res_str(598), selected => '', new => 1 }
         ) : ()),
         (
             $is_jury ?

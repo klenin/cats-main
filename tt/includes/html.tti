@@ -41,8 +41,7 @@ END -%]
 [%- MACRO menu(items, selected) BLOCK -%]
   [%- FOREACH i IN items ~%]
     [%- IF i.href -%]
-      <a
-        [%~ " class=\"$selected\"" IF i.selected %] href="[% i.href %]"
+      <a[% class({ $selected => i.selected, new => i.new }) %] href="[% i.href %]"
         [%- " target=\"${i.target}\"" IF i.target %]>[% i.item %]</a>
     [%- ELSE ~%]
       [%- i.item -%]

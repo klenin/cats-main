@@ -498,7 +498,7 @@ sub contests_frame {
             { n => 'my', i => 407 },
         ),
         ($user->privs->{create_contests} ?
-            { href => url_f('contests_new'), item => res_str(537) } : ()),
+            { href => url_f('contests_new'), item => res_str(537), new => 1 } : ()),
         { href => url_f('contests',
             ical => 1, rows => 50, filter => $filter), item => res_str(562) },
         { href => url_function('contests_rss'), item => 'RSS' },
