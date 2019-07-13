@@ -80,8 +80,11 @@ sub jobs_frame {
     my $where = $lv->where;
     $is_root or $where->{'J1.contest_id'} = $cid;
 
+    my $in_queue_val = $lv->qb->extract_search_values('in_queue');
+    my $jq_join = @$in_queue_val == 1 && $in_queue_val->[0] ? 'INNER' : 'LEFT';
+
     my ($q) = $sql->select(
-        'jobs J LEFT JOIN jobs_queue JQ ON JQ.id = J.id' .
+        qq~jobs J $jq_join JOIN jobs_queue JQ ON JQ.id = J.id~ .
         ($lv->visible_cols->{Jn} ? ' LEFT JOIN judges JD ON J.judge_id = JD.id' : '') .
         ($lv->visible_cols->{Pr} || $lv->visible_cols->{Ct} || $lv->visible_cols->{Ac} ?
             ' LEFT JOIN reqs R ON J.req_id = R.id' : ''),
