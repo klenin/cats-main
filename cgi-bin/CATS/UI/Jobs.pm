@@ -72,6 +72,7 @@ sub jobs_frame {
     $t->param(
         job_type_to_name => $jc->{type_to_name},
         job_state_to_name => $jc->{state_to_name},
+        submenu => [ { item => res_str(408), href => url_f('jobs', 'search' => 'in_queue=1') } ],
     );
 
     my $maybe_field = sub {
