@@ -128,12 +128,16 @@ sub detect_encoding_by_xml_header {
     $_[0] =~ /^(?:\xEF\xBB\xBF)?\s*<\?xml.*encoding="(.*)"\s*\?>/ ? uc $1 : 'WINDOWS-1251'
 }
 
-sub _delete_file {
+sub _is_latest_sha_or_redirect {
     my ($p, $pr) = @_;
     !CATS::Problem::Storage::get_remote_url($pr->{repo}) &&
         $p->{hb} eq CATS::Problem::Storage::get_latest_master_sha($p->{pid})
         or return $p->redirect(url_f 'problem_history', pid => $p->{pid});
+}
 
+sub _delete_file {
+    my ($p, $pr) = @_;
+    _is_latest_sha_or_redirect($p, $pr);
     my $message = 'Delete file ' . $p->{delete_file};
 
     my CATS::Problem::Storage $ps = CATS::Problem::Storage->new;
@@ -195,9 +199,8 @@ sub problem_history_edit_frame {
         or return $p->redirect(url_f 'contests');
     $pr->{is_jury} or return;
 
-    !CATS::Problem::Storage::get_remote_url($pr->{repo}) &&
-        $hash_base eq CATS::Problem::Storage::get_latest_master_sha($p->{pid})
-        or return $p->redirect(url_f 'problem_history', pid => $p->{pid});
+    _is_latest_sha_or_redirect($p, $pr);
+
     init_template($p, 'problem_history_edit.html.tt');
 
     if ($p->{file} eq '*') {
