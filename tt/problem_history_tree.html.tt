@@ -5,6 +5,13 @@
 [%- END %]
 [% PROCESS includes/menu_begin.tti %]
 [%- PROCESS includes/html.tti -%]
+[% PROCESS "lang/$lang/problems.html.tt" %]
+<script>
+  function delete_file(href, name) {
+    if (confirm("[% capt.want_to_delete_file %] '" + name + "'?")) document.location = href;
+  }
+</script>
+
 <div class="commit_header">[% tree.commit.title | html %]</div>
 <div class="page_path">
   [% FOREACH path IN tree.paths %]
@@ -12,6 +19,13 @@
     /
   [% END %]
 </div>
+
+[% IF problem_import_log %]
+[% capt.problem_import_log %]:<br/>
+<textarea id="log" cols="100" rows="10" readonly="readonly">
+  [%- problem_import_log | html %]
+</textarea>
+[% END %]
 
 <div class="page_body">
   <table class="tree">
@@ -24,6 +38,7 @@
           [%- IF entry.href_edit %]<a href="[% entry.href_edit %]" target="_blank">edit</a> | [% END %]
           <a href="[% entry.href %]">[% entry.type %]</a>
           [%- IF entry.href_raw %] | <a href="[% entry.href_raw %]" target="_blank">raw</a>[% END %]
+          [%- IF entry.href_delete %] | <a target="_blank" href="javascript:delete_file('[% entry.href_delete %]', '[% entry.file_name %]');">delete</a>[% END %]
         </td>
       </tr>
     [% END %]
