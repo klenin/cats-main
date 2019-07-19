@@ -31,7 +31,7 @@ sub _get_problem_info {
 }
 
 sub _problem_commitdiff {
-    my ($p, $title, $sha, $se, $import_log) = @_;
+    my ($p, $title, $sha, $se, $import_log, $new_name) = @_;
 
     my $pid = $p->{pid};
     init_template($p, 'problem_history_commit.html.tt');
@@ -41,7 +41,7 @@ sub _problem_commitdiff {
         { href => url_f('problem_history_tree', hb => $sha, pid => $pid), item => res_str(570) },
         { href => url_f('problem_git_package', pid => $pid, sha => $sha), item => res_str(569) },
         ($p->{file} ? ({
-            href => url_f('problem_history_edit', file => $p->{file}, pid => $pid, hb => $sha),
+            href => url_f('problem_history_edit', file => $new_name || $p->{file}, pid => $pid, hb => $sha),
             item => res_str(572) }) : ()),
     ];
     $t->param(
@@ -210,7 +210,7 @@ sub problem_history_edit_frame {
     my ($content, $log);
     if (($p->{save} || $p->{upload}) && $p->{src_enc}) {
         ($content, $log) = _save_content($p, $pr);
-        $log or return;
+        defined $log or return;
     }
 
     my @blob_params = ($p->{pid}, $hash_base, $p->{file});
@@ -227,7 +227,7 @@ sub problem_history_edit_frame {
     my $de_list = CATS::DevEnv->new(CATS::JudgeDB::get_DEs({ fields => 'syntax' }));
     my $de = $de_list->by_file_extension($p->{file});
     $t->param(
-        file => $p->{file},
+        file => $p->{new_name} || $p->{file},
         blob => $blob,
         problem_title => $pr->{title},
         title_suffix => $p->{file},
@@ -259,18 +259,18 @@ sub _save_content {
     my CATS::Problem::Storage $ps = CATS::Problem::Storage->new;
     Encode::from_to($content, $p->{enc} // 'UTF-8', $p->{src_enc});
     my ($error, $latest_sha, $parsed_problem) = $ps->change_file(
-        $pr->{contest_id}, $p->{pid}, $p->{file}, $content, $p->{message}, $p->{is_amend} || 0);
+        $pr->{contest_id}, $p->{pid}, $p->{file}, $content, $p->{message}, $p->{is_amend} || 0, $p->{new_name});
 
     unless ($error) {
         $dbh->commit;
         CATS::StaticPages::invalidate_problem_text(pid => $p->{pid});
         return _problem_commitdiff(
             $p, $parsed_problem->{description}->{title},
-            $latest_sha, $p->{src_enc}, $ps->encoded_import_log);
+            $latest_sha, $p->{src_enc}, $ps->encoded_import_log, $p->{new_name});
     }
 
     $content = Encode::decode($p->{enc} // 'UTF-8', $p->{src});
-    return ($content, $ps->encoded_import_log);
+    return ($content, $ps->encoded_import_log // '');
 }
 
 sub problem_history_frame {

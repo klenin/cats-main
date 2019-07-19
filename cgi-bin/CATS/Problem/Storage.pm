@@ -160,15 +160,28 @@ sub load {
 }
 
 sub change_file {
-    my ($self, $cid, $pid, $file, $content, $message, $is_amend) = @_;
+    my ($self, $cid, $pid, $file, $content, $message, $is_amend, $new_name) = @_;
+    $user->{git_author_name} && $user->{git_author_email} or return (-1, msg(1167));
 
     my $repo = get_repo($pid);
+    $repo->is_file_exist($file) or return (-1, msg(1206, $file));
     $repo->replace_file_content($file, $content);
 
-    return $self->load_problem(
+    my $rename = $file ne $new_name;
+    if ($rename) {
+        $new_name =~ /^[A-Za-z0-9_\-\.]+$/ or return (-1, msg(1209));
+        $repo->is_file_exist($new_name) and return (-1, msg(1208, $new_name));
+        # TODO: Move between directories
+        $repo->mv($file, $new_name);
+    }
+
+    my ($error, $latest_master_sha, $problem) = $self->load_problem(
         CATS::Problem::Source::PlainFiles->new(dir => $repo->get_dir, logger => $self),
         $cid, $pid, 1, undef, $message, $is_amend
     );
+    $error or return (0, $latest_master_sha, $problem);
+    $rename and $repo->reset('--hard')->clean('-fd');
+    -1;
 }
 
 sub delete_file {
