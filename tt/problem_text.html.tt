@@ -377,14 +377,17 @@ function fill_quiz_forms(editor, problem_text) {
   for (var i = 0; i < survey_models.length; ++i) {
     var sm = survey_models[i];
     sm.onValueChanged.remove(sm.changed_callback);
-    sm.getQuestionByName('Quiz' + i).value = answers[i];
+    var question = sm.getQuestionByName('Quiz' + i);
+    if (question.getType() === 'checkbox' && answers[i] !== undefined)
+      question.value = (answers[i] === '') ? [] : answers[i].split(' ');
+    else
+      question.value = answers[i];
     sm.onValueChanged.add(sm.changed_callback);
   }
 }
 
-function survey_value_changed(editor, question_number, value, editor_changed_callback) {
-  // TODO: Add UI for unanswering question.
-  if (value === undefined) return;
+function survey_value_changed(editor, question_number, survey, editor_changed_callback) {
+  var question = survey.getQuestionByName('Quiz' + question_number);
   editor.getSession().removeEventListener('change', editor_changed_callback);
   var answers = editor.getValue().split('\n');
   if (answers.length > question_number) {
@@ -397,7 +400,12 @@ function survey_value_changed(editor, question_number, value, editor_changed_cal
     for (var i = answers.length; i <= question_number; ++i)
       editor.insert('\n');
   }
-  editor.insert(value);
+  // TODO: Add UI for unanswering question.
+  if (question.value === undefined) return;
+  if (question.getType() === 'checkbox')
+    editor.insert(question.value.join(' '));
+  else
+    editor.insert(question.value);
   editor.getSession().addEventListener('change', editor_changed_callback);
 }
 
@@ -416,7 +424,7 @@ function init_quizzes() {
         type: quiz.attr('type'), 
         name: 'Quiz' + quiz_count
       };
-      if (question.type === 'radiogroup')
+      if (question.type === 'radiogroup' || question.type === 'checkbox')
         question.choices = $.map(quiz.children('Choice'), function(choice, i) {
           return { value: i + 1, text: choice.innerHTML };
         });
@@ -431,7 +439,7 @@ function init_quizzes() {
       });
       var survey_changed_callback = function() {
         var quiz_number = quiz_count;
-        return function (survey, options) { survey_value_changed(editor, quiz_number, options.value, editor_changed_callback); };
+        return function (survey, options) { survey_value_changed(editor, quiz_number, survey, editor_changed_callback); };
       }();
       survey.onValueChanged.add(survey_changed_callback);
       quiz.Survey({model: survey});
