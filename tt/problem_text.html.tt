@@ -136,6 +136,7 @@ MathJax.Hub.Register.StartupHook('onLoad', function () {
       { n => p.show_points ? c.max_points : '',
         t => p.max_points },
     ];
+    lc_nonempty = 0; FOREACH lc IN left_col; SET lc_nonempty = 1 IF lc.n; END;
     right_col => [
       { n => c.time_limit,
         t => "${p.time_limit} ${c.seconds}" },
@@ -153,12 +154,16 @@ MathJax.Hub.Register.StartupHook('onLoad', function () {
       lc = left_col.item(li); rc = right_col.item(ri);
   %]
   <tr>
+    [% IF lc_nonempty -%]
     <td class="narrow nobr">[% lc.n; lc.n ? ':' : '' %]</td><td>[% lc.n ? lc.t : '' | html %]</td>
     <td>&nbsp;</td>
+    [%- END %]
     <td class="narrow nobr">[% rc.n; rc.n ? ':' : '' %]</td><td>[% rc.n ? rc.t : '' | html %]</td>
   </tr>
   [% li = li + 1; ri = ri + 1; END %]
-  [% IF p.keywords %]<tr><td class="narrow nobr">[% c.keywords %]:</td><td colspan="4">[% p.keywords %]</td></tr>[% END %]
+  [% IF p.keywords -%]
+  <tr><td class="narrow nobr">[% c.keywords %]:</td><td colspan="[% lc_nonempty ? 4 : 2 %]">[% p.keywords %]</td></tr>
+  [%- END %]
   </table>
 
   [%- MACRO section(name, caption) IF p.item(name).trim() %]
