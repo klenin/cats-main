@@ -20,6 +20,7 @@
 END -%]
 [%- MACRO tag_ref(t) BLOCK %]<code>&lt;<a href="#[% t %]">[% t %]</a>&gt;</code>[% END -%]
 [%- MACRO mem_units BLOCK %](in <a href="#memoryUnits">megabytes or other units</a>)[% END -%]
+[%- MACRO stml BLOCK %]<a href="#STML">STML</a>[% END -%]
 <h2>Version 1.10</h2>
 
 <p><a href="sample.zip">download sample problem package</a></p>
@@ -100,24 +101,24 @@ files with tests, solutions etc.
     </ul>
   </td>
   <td>
-    Problem statement text in STML format.
+    Problem statement text in [% stml %] format.
     If attachment or url attribute is present, statement text is replaced by a link.
   </td>
 </tr>
 <tr>
   <td>[% tag_in('ProblemConstraints', 'Problem') %]</td>
   <td>&nbsp;</td>
-  <td>Problem input constraints in STML format.</td>
+  <td>Problem input constraints in [% stml %] format.</td>
 </tr>
 <tr>
   <td>[% tag_in('InputFormat', 'Problem') %]</td>
   <td>&nbsp;</td>
-  <td>Input file format description in STML format.</td>
+  <td>Input file format description in [% stml %] format.</td>
 </tr>
 <tr>
   <td>[% tag_in('OutputFormat', 'Problem') %]</td>
   <td>&nbsp;</td>
-  <td>Output file format description in STML format.</td>
+  <td>Output file format description in [% stml %] format.</td>
 </tr>
 <tr>
   <td>[% tag_in('JsonData', 'Problem', v17) %]</td>
@@ -134,7 +135,7 @@ files with tests, solutions etc.
     </ul>
   </td>
   <td>
-    Solution explanation in STML format.
+    Solution explanation in [% stml %] format.
     If attachment or url attribute is present, explanation text is replaced by a link.
   </td>
 </tr>
@@ -551,6 +552,7 @@ files with tests, solutions etc.
 
 <p>Have a form of <code>%n</code>, <code>%0n</code>, meaning test number and zero-padded test number correspondingly.</p>
 
+<a name="STML"></a>
 <h2>STML (Simple Text Markup Language)</h2>
 
 <p>STML is a radically simplified subset of HTML with a few additional tags. The following tags are defined in STML:</p>
@@ -639,7 +641,7 @@ files with tests, solutions etc.
 
 <a name="cats-if"></a>
 <h2>STML conditionals</h2>
-<p>Any tag inside STML can have additional <code>cats-if</code> attribute.
+<p>Any tag inside [% stml %] can have additional <code>cats-if</code> attribute.
 Its value is a condition on problem tags.
 </p>
 <p>Condition is a list of expressions separated by comma.
