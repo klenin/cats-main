@@ -79,6 +79,7 @@ sub _contest_searches {
         rules => { acm => 0, school => 1 },
         parent_id => { this => $cid },
     });
+    my $cp_hidden = $is_root ? '' : " AND CP1.status < $cats::problem_st_hidden";
     $p->{listview}->define_subqueries({
         has_tag => { sq => qq~EXISTS (
             SELECT 1 FROM contest_contest_tags CCT1 WHERE CCT1.contest_id = C.id AND CCT1.tag_id = ?)~,
@@ -101,6 +102,12 @@ sub _contest_searches {
             INNER JOIN de_tags DT1 ON CD1.id = CDT1.tag_id
             WHERE CDT1.contest_id = C.id AND CD1.name = ?)~,
             m => 1191, t => undef,
+        },
+        has_json => { sq => qq~CASE WHEN EXISTS (
+            SELECT 1 FROM contest_problems CP1 INNER JOIN problems P1 ON P1.id = CP1.problem_id
+            WHERE CP1.contest_id = C.id AND P1.json_data IS NOT NULL$cp_hidden) THEN 1 ELSE 0 END = ?~,
+            #m => 1015, t => q~
+            #SELECT P.title FROM problems P WHERE P.id = ?~
         },
     });
 }
@@ -152,12 +159,6 @@ sub authenticated_contests_view {
             SELECT 1 FROM contest_problems CP1 WHERE CP1.contest_id = C.id AND CP1.problem_id = ?$cp_hidden)~,
             m => 1015, t => q~
             SELECT P.title FROM problems P WHERE P.id = ?~
-        },
-        has_json => { sq => qq~CASE WHEN EXISTS (
-            SELECT 1 FROM contest_problems CP1 INNER JOIN problems P1 ON P1.id = CP1.problem_id
-            WHERE CP1.contest_id = C.id AND P1.json_data IS NOT NULL$cp_hidden) THEN 1 ELSE 0 END = ?~,
-            #m => 1015, t => q~
-            #SELECT P.title FROM problems P WHERE P.id = ?~
         },
         has_site => { sq => q~EXISTS (
             SELECT 1 FROM contest_sites CS WHERE CS.contest_id = C.id AND CS.site_id = ?)~,
