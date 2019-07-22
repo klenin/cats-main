@@ -32,8 +32,8 @@ sub contests_new_frame {
     $date =~ s/\s*$//;
     my $verdicts = [ map +{ short => $_->[0], checked => 0 }, @$CATS::Verdicts::name_to_state_sorted ];
     $t->param(
-        start_date => $date, freeze_date => $date,
-        finish_date => $date, defreeze_date => $date,
+        start_date => $date,
+        finish_date => $date,
         can_edit => 1,
         is_hidden => !$is_root,
         show_all_results => 1,
@@ -86,10 +86,48 @@ sub get_contest_html_params {
     $c;
 }
 
+sub _validate {
+    my ($c) = @_;
+    my $req_fields = [
+        { f => 'start_date', n => 600 },
+        { f => 'finish_date', n => 631 },
+    ];
+    if (my @req_errors = grep !$c->{$_->{f}}, @$req_fields) {
+        msg(1207, res_str($_->{n})) for @req_errors;
+        return;
+    }
+    $c->{freeze_date} ||= $c->{finish_date};
+    $c->{defreeze_date} ||= $c->{finish_date};
+    {
+        my $d = 'CAST(? AS TIMESTAMP)';
+        my $check_after = qq~CASE WHEN $d <= $d THEN 1 ELSE 0 END,~;
+        my $check_pub_reqs_date = $c->{pub_reqs_date} ? $check_after : '1,';
+        my @flags = $dbh->selectrow_array(qq~
+            SELECT
+                $check_after
+                $check_after
+                $check_pub_reqs_date
+                CASE WHEN $d BETWEEN $d AND $d THEN 1 ELSE 0 END
+            FROM RDB\$DATABASE~, undef,
+            @$c{
+                qw(start_date finish_date),
+                qw(freeze_date defreeze_date),
+                ($c->{pub_reqs_date} ? qw(start_date pub_reqs_date) : ()),
+                qw(freeze_date start_date finish_date),
+            });
+        if (my @errors = grep !$flags[$_], 0 .. $#flags) {
+            my @msgs = (1183, 1185, 1202, 1184);
+            msg($_) for @msgs[@errors];
+            return;
+        }
+    }
+    1;
+}
+
 sub contests_new_save {
     my ($p) = @_;
     my $c = get_contest_html_params($p) or return;
-
+    _validate($c) or return;
     $c->{ctype} = 0;
     $c->{id} = new_id;
     $is_root or $c->{is_official} = 0;
@@ -302,30 +340,8 @@ sub contests_edit_save_xml {
 
 sub contests_edit_save {
     my ($p, $c) = @_;
+    _validate($c) or return;
     $is_root or delete $c->{is_official};
-    {
-        my $d = 'CAST(? AS TIMESTAMP)';
-        my $check_after = qq~CASE WHEN $d <= $d THEN 1 ELSE 0 END,~;
-        my $check_pub_reqs_date = $c->{pub_reqs_date} ? $check_after : '1,';
-        my @flags = $dbh->selectrow_array(qq~
-            SELECT
-                $check_after
-                $check_after
-                $check_pub_reqs_date
-                CASE WHEN $d BETWEEN $d AND $d THEN 1 ELSE 0 END
-            FROM RDB\$DATABASE~, undef,
-            @$c{
-                qw(start_date finish_date),
-                qw(freeze_date defreeze_date),
-                ($c->{pub_reqs_date} ? qw(start_date pub_reqs_date) : ()),
-                qw(freeze_date start_date finish_date),
-            });
-        if (my @errors = grep !$flags[$_], 0 .. $#flags) {
-            my @msgs = (1183, 1185, 1202, 1184);
-            msg($_) for @msgs[@errors];
-            return;
-        }
-    }
     eval {
         $dbh->do(_u $sql->update(contests => $c, { id => $p->{id} }));
         $dbh->commit;

@@ -374,3 +374,4 @@
 1204 "Problems using module '%s' (%s)."
 1205 "No file."
 1206 "File '%s' not found."
+1207 "Field '%s' must not be empty."
