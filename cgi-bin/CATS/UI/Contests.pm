@@ -506,7 +506,7 @@ sub contests_frame {
         map({
             href => url_f('contests', page => 0, filter => $_->{n}),
             item => res_str($_->{i}),
-            selected => $settings->{contests}->{filter} eq $_->{n},
+            selected => $filter eq $_->{n},
         },
             { n => 'all', i => 558 },
             { n => 'official', i => 559 },
@@ -518,6 +518,8 @@ sub contests_frame {
         { href => url_f('contests',
             ical => 1, rows => 50, filter => $filter), item => res_str(562) },
         { href => url_function('contests_rss'), item => 'RSS' },
+        { href => url_function('contests',
+            filter => $filter, search => $settings->{contests}->{search}), item => res_str(400) },
     ];
     $t->param(
         submenu => $submenu,
