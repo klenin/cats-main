@@ -254,6 +254,7 @@ sub similarity_frame {
             $r->{"$_$i"} = $users_idx->{$r->{"t$i"}}->{$_} for qw(name city site);
             $r->{"verdict$i"} = $CATS::Verdicts::state_to_name->{$r->{"req$i"}->{state}};
             $r->{"de_code$i"} = $r->{"req$i"}->{code};
+            $r->{"href_view_source$i"} = url_f('view_source', rid => $r->{"req$i"}->{id});
         }
     }
 
