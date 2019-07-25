@@ -110,6 +110,10 @@ sub define_common_searches {
     ) ]);
 
     $lv->define_db_searches({
+        test_count => q~
+            (SELECT COUNT(*) FROM tests T WHERE T.problem_id = P.id)~,
+        attachment_count => q~
+            (SELECT COUNT(*) FROM problem_attachments PA WHERE PA.problem_id = P.id)~,
         map {
             join('_', split /\W+/, $cats::source_module_names{$_}) => qq~
             (SELECT COUNT (*) FROM problem_sources PS
