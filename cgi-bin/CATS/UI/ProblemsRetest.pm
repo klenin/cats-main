@@ -51,11 +51,12 @@ sub problems_mass_retest {
 sub problems_recalc_points {
     my ($p) = @_;
     @{$p->{problem_id}} or return msg(1012);
-    $dbh->do(_u $sql->update(
+    my $reqs_count = $dbh->do(_u $sql->update(
         reqs => { points => undef }, { contest_id => $cid, problem_id => $p->{problem_id} }
     ));
     CATS::RankTable::remove_cache($cid);
     $dbh->commit;
+    msg(1128, $reqs_count);
 }
 
 my $retest_default_ignore = { IS => 1, SV => 1 };
