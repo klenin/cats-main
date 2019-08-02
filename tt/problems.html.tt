@@ -199,14 +199,13 @@ function chg_code(st_sel, pid) {
   <p><label for="source_text">[% capt.solution_text %]:</label><br/>
   <textarea id="source_text" name="source_text" cols="50" rows="5"
         data-editor="plain_text" data-gutter="1" data-id="ed_p[% contest_id %]">[% source_text | html %]</textarea></p>
-  <button type="submit" name="submit" onclick="document.problems_form.np.value = navigator.plugins.length; return true;" value="1" class="button">
+  <button type="submit" name="submit" value="1" class="button">
     [%~ capt.submit ~%]
   </button>
   [% IF editable %]
   <button type="submit" name="std_solution" value="1" class="button">[% capt.std_solution %]</button>
   <input type="checkbox" name="ignore" value="1" /> [% capt.ignore_submit %]
   [% END %]
-  <input type="hidden" name="np" value="0"/>
 </div>
 [% IF editable %]
 <div class="problem_submit">

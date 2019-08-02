@@ -6,7 +6,7 @@
 <table class="internal_borders padded">
 <tr><th>[% capt.ts %]</th><th>[% capt.ip %]</th></tr>
 [% FOREACH e IN events %]
-<tr><td>[% e.ts %]</td><td class="num">[% href(e.href_whois, e.last_ip) %]</td></tr>
+<tr><td>[% e.ts %]</td><td class="num">[% href(e.href_whois, e.last_ip); ' Tor' IF e.is_tor %]</td></tr>
 [% END %]
 </table>
 [% PROCESS includes/menu_end.tti %]

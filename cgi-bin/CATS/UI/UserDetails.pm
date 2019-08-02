@@ -189,7 +189,12 @@ sub user_ip_frame {
         WHERE E.account_id = ?$cond
         GROUP BY E.ip ORDER BY 1 DESC~,
         { Slice => {} }, $p->{uid}, ($is_root ? () : $cid));
-    unshift @$events, { ts => $u->{last_login}, ip => $u->{last_ip } } if $is_root;
+    unshift @$events, { ts => $u->{last_login}, ip => $u->{last_ip} } if $is_root;
+    for (@$events) {
+        $_->{ip} or next;
+        $_->{is_tor} = CATS::IP::is_tor($_->{ip});
+        last;
+    }
     for my $e (@$events) {
         my %linkified = CATS::IP::linkify_ip($e->{ip});
         $e->{$_} = $linkified{$_} for keys %linkified;

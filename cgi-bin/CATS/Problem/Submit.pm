@@ -7,6 +7,7 @@ use CATS::Constants;
 use CATS::DB;
 use CATS::DevEnv;
 use CATS::Globals qw($cid $contest $is_jury $t $uid $user);
+use CATS::IP;
 use CATS::Messages qw(msg res_str);
 use CATS::Output qw(url_f);
 use CATS::Request;
@@ -50,8 +51,7 @@ sub user_is_banned {
 
 sub _determine_state {
     my ($p) = @_;
-    return $cats::st_ignore_submit if $p->{ignore};
-    !$is_jury && !$p->{np} && $CATS::Config::TB && $p->user_agent =~ /$CATS::Config::TB/ ?
+    $p->{ignore} || !$is_jury && CATS::IP::is_tor(CATS::IP::get_ip) ?
         $cats::st_ignore_submit : $cats::st_not_processed;
 }
 

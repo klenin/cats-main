@@ -34,4 +34,18 @@ sub linkify_ip {
     )
 }
 
+# See https://2019.www.torproject.org/projects/tordnsel.html.en
+
+my $https_port = 443;
+my $some_google_ip = '216.58.206.110';
+my $tor_dnsel = 'ip-port.exitlist.torproject.org';
+
+sub is_tor {
+    my ($ip) = @_;
+    my @parts = $ip =~ /(\d+)\.(\d+)\.(\d+)\.(\d+)/ or return;
+    my $reversed_parts = join '.', reverse @parts;
+    my $out = `nslookup -timeout=1 $reversed_parts.$https_port.$some_google_ip.$tor_dnsel`;
+    $out =~ /Address:\s+127\.0\.0\.2/ ? 1 : undef;
+}
+
 1;
