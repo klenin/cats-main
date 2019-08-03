@@ -475,7 +475,7 @@ table.edit_form td p.form_error { color: red; font-size: small; }
 .problem_menu_trigger:hover,
 .problem_menu_hovered { font-size: medium; }
 
-.toolbar_container { margin-bottom: 5px; font-size: 0; }
+.toolbar_container { margin-bottom: 5px; }
 .toolbar_item { margin-right: 5px; }
 
 .editor_menu {

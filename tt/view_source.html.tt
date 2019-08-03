@@ -39,9 +39,10 @@
         <button type="submit" name="submit" value="1" class="button toolbar_item">[% capt.submit %]</button>
         [% IF is_any_jury %]
           <button type="submit" name="replace" value="1" class="button toolbar_item">[% capt.replace %]</button>
+          <label>+ [% capt.submit %] <input type="checkbox" name="replace_and_submit" value="1" checked="checked"/></label>
         [% END %]
       [% END %]
-        <a class="problem_menu_trigger toolbar_item" onclick="$(this).toggleClass('problem_menu_hovered')">&#x2261
+        <a class="problem_menu_trigger toolbar_item" onclick="$(this).toggleClass('problem_menu_hovered')">&#x2261;
           <div class="editor_menu"><button class="button" type="button" onclick="reset_localstorage('ed_vs[% si.req_id %]')">[% capt.reset %]</button></div>
         </a>
       </div>

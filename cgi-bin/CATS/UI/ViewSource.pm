@@ -97,6 +97,12 @@ sub view_source_frame {
         }
         if ($u) {
             CATS::Request::update_source($sources_info->{req_id}, $u, $de_bitmap);
+        }
+        if ($p->{replace_and_submit}) {
+            CATS::Request::retest($sources_info->{req_id});
+            CATS::RankTable::remove_cache($sources_info->{contest_id}) unless $sources_info->{is_hidden};
+        }
+        if ($u || $p->{replace_and_submit}) {
             $dbh->commit;
             $sources_info = get_sources_info($p,
                 request_id => $p->{rid}, get_source => 1, encode_source => 1);
