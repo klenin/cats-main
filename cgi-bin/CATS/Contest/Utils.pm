@@ -191,7 +191,7 @@ sub authenticated_contests_view {
     my $sth = $dbh->prepare(qq~
         SELECT
             $cf, CA.is_virtual, CA.is_jury, CA.id AS registered, C.is_hidden,
-            (SELECT COUNT(*) FROM contests C1 WHERE C1.parent_id = C.id) AS child_count,
+            (SELECT COUNT(*) FROM contests C1 WHERE C1.parent_id = C.id AND C1.is_hidden = 0) AS child_count,
             ($problems_count_sql) AS problems_count,
             ($tags_sql) AS tags
             $extra_fields
