@@ -130,6 +130,14 @@ sub enforce_state {
     1;
 }
 
+sub retest {
+    my ($request_id) = @_;
+    my $fields = {
+        state => $cats::st_not_processed, judge_id => undef, points => undef, testsets => undef };
+    enforce_state($request_id, $fields) &&
+    CATS::Job::create_or_replace($cats::job_type_submission, { req_id => $request_id });
+}
+
 # Params: problem_id (required), contest_id (required), submit_uid (required), de_bitmap (required),
 #   fields: { state = $cats::st_not_processed, failed_test, testsets, points, judge_id, limits_id, elements_count, tag }
 sub insert {

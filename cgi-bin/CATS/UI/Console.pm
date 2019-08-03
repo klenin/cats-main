@@ -344,10 +344,7 @@ sub _retest_submissions {
             $contest_sth->execute($_);
             my ($contest_id) = $contest_sth->fetchrow_array;
             $contest_sth->finish;
-            $contest_id && ($contest_id == $cid || $is_root) &&
-            CATS::Request::enforce_state($_, { state => $cats::st_not_processed, judge_id => undef }) &&
-            CATS::Job::create_or_replace($cats::job_type_submission, { req_id => $_ })
-                or next;
+            $contest_id && ($contest_id == $cid || $is_root) && CATS::Request::retest($_) or next;
             $affected_contests{$contest_id} = 1;
             ++$count;
         }
