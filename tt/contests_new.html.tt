@@ -1,8 +1,27 @@
 [%- js.datepicker = 1 -%]
+[%- IF user.privs.is_root;
+  js.jquery = 1; js.autocomplete = 1; PROCESS includes/autocomplete.tti href_find = href_find_tags;
+END -%]
 [% PROCESS includes/menu_begin.tti %]
 
 <form method="post" enctype="multipart/form-data" action="[% href_action %]">
 [% PROCESS includes/contest_params.tti %]
+
+[%- IF user.privs.is_root %]
+<div class="action send_message">
+<button type="submit" name="set_tags" value="1" class="button">[% capt.set_tag %]</button>
+<input type="text" id="tag_name" name="tag_name" size="30" class="bordered"/>
+</div>
+<br/>
+<script>
+$(function() { autocomplete($('#tag_name'), {
+  formatResult: function (suggestion, currentValue) {
+    return bold_prefix(suggestion.data.name, currentValue);
+  },
+}); });
+</script>
+[% END -%]
+
 <button type="submit" name="new_save" value="1" class="button">[% capt.ok %]</button>
 <button type="submit" name="new_cancel" value="1" class="button">[% capt.cancel %]</button>
 </form>

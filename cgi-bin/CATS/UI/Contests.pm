@@ -40,6 +40,7 @@ sub contests_new_frame {
         href_action => url_f('contests'),
         verdicts_max_reqs => $verdicts,
         verdicts_penalty => $verdicts,
+        href_find_tags => url_f('api_find_contest_tags'),
     );
 
 }
@@ -150,6 +151,15 @@ sub contests_new_save {
         $contest->register_account(
             contest_id => $c->{id}, account_id => $_, is_jury => 1, is_pop => 1, is_hidden => 1);
     }
+
+    if ($is_root && $p->{tag_name}) {
+        my $tag_id = $dbh->selectrow_array(q~
+            SELECT id FROM contest_tags WHERE name = ?~, undef,
+            $p->{tag_name});
+        $dbh->do(_u $sql->insert(contest_contest_tags => { contest_id => $c->{id}, tag_id => $tag_id }))
+            if $tag_id;
+    }
+
     $dbh->commit;
     msg(1028, Encode::decode_utf8($c->{title}));
 }

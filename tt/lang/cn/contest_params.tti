@@ -33,6 +33,7 @@
     max_reqs => 'Submissions limit',
     exclude_verdicts => 'Exclude verdicts',
     penalty => 'Penalty',
+    set_tag => 'Set tag',
     ok => '     Ok     ',
     create_copy => 'Create a copy',
     cancel => 'Cancel',
