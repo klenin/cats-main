@@ -132,12 +132,7 @@ sub _common_contests_view {
             url_function('contests', sid => $sid, cid => $c->{id}, search => "parent_id=$c->{id}") : undef),
         href_problems => url_function('problems', sid => $sid, cid => $c->{id}),
         href_problems_text => CATS::StaticPages::url_static('problem_text', cid => $c->{id}),
-        (href_start_date => !$CATS::Config::timeanddate_url ? undef :
-            "$CATS::Config::timeanddate_url?" .
-            # timeanddate.com requires ampersand as a separator.
-            join '&', CATS::Utils::gen_url_params(
-                msg => $c->{title}, %CATS::Config::timeanddate_tz, iso => $start_date_iso,
-                ($c->{duration_hours} < 24 ? (ah => $c->{duration_hours}) : ()))),
+        href_start_date => CATS::Time::href_time_zone($start_date_iso, $c->{title}, $c->{duration_hours}),
         href_parent => $c->{parent_id} ? url_function('problems', sid => $sid, cid => $c->{parent_id}) : '',
     );
 }

@@ -7,6 +7,7 @@ use Time::HiRes;
 
 use CATS::Messages qw(res_str);
 use CATS::Globals qw($contest $t $user);
+use CATS::Utils qw(external_url_function);
 
 sub since_contest_start_text {
     my ($dt) = @_;
@@ -70,6 +71,17 @@ sub set_diff_time {
     my $n = $prefix . '_time';
     $obj->{$n} = $p->{$n} ? $p->{$n} * $k : undef;
     1;
+}
+
+sub href_time_zone {
+    my ($date_iso, $msg, $duration_hours) = @_;
+    $CATS::Config::timeanddate_url or return;
+    my %p = (msg => $msg, %CATS::Config::timeanddate_tz, iso => $date_iso);
+    if ($duration_hours && $duration_hours < 24) {
+        $p{ah} = int($duration_hours);
+        $p{am} = int(($duration_hours - int($duration_hours)) * 60);
+    }
+    external_url_function $CATS::Config::timeanddate_url, %p;
 }
 
 our $diff_time_sql = '(COALESCE(CA.diff_time, 0) + COALESCE(CS.diff_time, 0))';
