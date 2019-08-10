@@ -180,7 +180,7 @@ sub user_ip_frame {
     init_template($p, 'user_ip.html.tt');
     $is_jury || $user->{is_site_org} or return;
     $p->{uid} or return;
-    my $u = CATS::User->new->contest_fields([ 'site_id' ])->load($p->{uid}) or return;
+    my $u = CATS::User->new->contest_fields([ qw(site_id last_login last_ip) ])->load($p->{uid}) or return;
     my $cond = $is_root ? '' : ' AND CA.contest_id = ?';
     my $events = $dbh->selectall_arrayref(qq~
         SELECT MAX(E.ts) AS ts, E.ip FROM events E
