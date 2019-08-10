@@ -163,6 +163,8 @@ sub _get_reqs {
         @bind);
 }
 
+sub _is_trivial { length($_[0]) < 20 || $_[0] =~ /\A[0-9a-zA-Z\.]*[\n\r]*\Z/m }
+
 sub similarity_frame {
     my ($p) = @_;
 
@@ -206,7 +208,7 @@ sub similarity_frame {
     $lv->submitted || $p->{cont} or return;
     $s->{pid} || $s->{account_id} && !$s->{all_contests} or return;
 
-    my $reqs = _get_reqs($s);
+    my $reqs = [ grep !_is_trivial($_->{src}), @{_get_reqs($s)} ];
     preprocess_source($_, $s->{collapse_idents}) for @$reqs;
 
     my %missing_users;
