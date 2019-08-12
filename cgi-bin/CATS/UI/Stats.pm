@@ -205,8 +205,9 @@ sub similarity_frame {
         params => $s, problems => $problems, users => $users, users_idx => $users_idx,
         title_suffix => res_str(545),
     );
-    $lv->submitted || $p->{cont} or return;
-    $s->{pid} || $s->{account_id} && !$s->{all_contests} or return;
+
+    ($lv->submitted || $p->{cont}) && ($s->{pid} || $s->{account_id} && !$s->{all_contests})
+        or do { $lv->common_param; return; };
 
     my $reqs = [ grep !_is_trivial($_->{src}), @{_get_reqs($s)} ];
     preprocess_source($_, $s->{collapse_idents}) for @$reqs;
