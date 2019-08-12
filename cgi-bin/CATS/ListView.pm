@@ -95,6 +95,16 @@ sub init_params {
     }
 }
 
+sub common_param {
+    my ($self) = @_;
+    my $s = $settings->{$self->{name}} ||= {};
+    $t->param(
+        search => $s->{search},
+        display_rows => [ map { value => $_, text => $_, selected => $s->{rows} == $_ }, @display_rows ],
+        lv_settings => $self->settings,
+    );
+}
+
 sub attach {
     my ($self, $url, $fetch_row, $sth, $p) = @_;
 
@@ -151,15 +161,13 @@ sub attach {
     }
 
     $self->{visible_data} = \@data;
+    $self->common_param;
     $t->param(
-        page => $$page, pages => \@pages, search => $s->{search},
+        page => $$page, pages => \@pages,
         href_lv_action => "$url$page_extra_params",
         ($range_start > 0 ? (href_prev_pages => $href_page->($range_start - 1)) : ()),
         ($range_end < $page_count - 1 ? (href_next_pages => $href_page->($range_end + 1)) : ()),
-        display_rows =>
-            [ map { value => $_, text => $_, selected => $s->{rows} == $_ }, @display_rows ],
         $self->{array_name} => \@data,
-        lv_settings => $self->settings,
         lv_range => $range,
     );
     if ($is_jury) {
@@ -182,7 +190,7 @@ sub attach {
         );
     }
 
-    # Suppose that attach_listview call comes last, so we modify settings in-place.
+    # Suppose that attach call comes last, so we modify settings in-place.
     defined $s->{$_} && $s->{$_} ne '' or delete $s->{$_} for keys %$s;
 }
 
