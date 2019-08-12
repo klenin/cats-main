@@ -179,7 +179,7 @@ sub request_params_frame {
 
 sub try_set_state {
     my ($p, $si) = @_;
-    $p->{set_state} or return;
+    $p->{set_state} && $p->{state} or return;
     grep $_ eq $p->{state}, @$settable_verdicts or return;
     my $state = $CATS::Verdicts::name_to_state->{$p->{state}};
 
