@@ -81,15 +81,9 @@ sub view_source_frame {
             $u->{hash} = CATS::Utils::source_hash($src);
         }
         my $de_bitmap;
-        if ($p->{de_id} && $p->{de_id} ne 'by_extension' && $p->{de_id} != $sources_info->{de_id}) {
-            my $cpid = $dbh->selectrow_array(q~
-                SELECT CP.id
-                FROM contest_problems CP
-                INNER JOIN problems P ON P.id = CP.problem_id
-                WHERE CP.contest_id = ? AND CP.problem_id = ?~, undef,
-                $cid, $p->{problem_id}) or return msg(1012);
+        if ($p->{de_id} && ($p->{de_id} eq 'by_extension' || $p->{de_id} != $sources_info->{de_id})) {
             my $file = $p->{source};
-            my $did = prepare_de($p, $file ? $file->remote_file_name : '', $cpid);
+            my $did = prepare_de($p, $file ? $file->remote_file_name : '', $sources_info->{cp_id});
             if ($did) {
                 $u->{de_id} = $did;
                 $de_bitmap = [ (CATS::DevEnv->new(CATS::JudgeDB::get_DEs()))->bitmap_by_ids($u->{de_id}) ];

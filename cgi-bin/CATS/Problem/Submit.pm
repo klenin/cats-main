@@ -70,7 +70,7 @@ sub _prepare_de {
         SELECT CPD.de_id, D.description
         FROM contest_problem_des CPD
         INNER JOIN default_de D ON D.id = CPD.de_id
-        WHERE cp_id = ? ORDER BY D.code~, { Slice => {} },
+        WHERE CPD.cp_id = ? ORDER BY D.code~, { Slice => {} },
         $cpid);
     if ($allowed_des && @$allowed_des && 0 == grep $_->{de_id} == $did, @$allowed_des) {
         $result->{de_not_allowed} = $allowed_des;
