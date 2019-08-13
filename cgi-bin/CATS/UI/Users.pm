@@ -233,7 +233,7 @@ sub users_frame {
 
     my @fields = qw(
         A.id A.country A.motto A.login A.team_name A.city A.last_ip
-        CA.is_jury CA.is_ooc CA.is_remote CA.is_hidden CA.is_site_org
+        CA.is_admin CA.is_jury CA.is_ooc CA.is_remote CA.is_hidden CA.is_site_org
         CA.is_virtual CA.diff_time CA.ext_time CA.tag);
     $lv->define_db_searches(\@fields);
     $lv->define_db_searches({
@@ -279,7 +279,7 @@ sub users_frame {
     my $fetch_record = sub {
         my (
             $accepted, $ip, $caid, $aid, $country_abbr, $motto, $login, $team_name, $city, $last_ip,
-            $jury, $ooc, $remote, $hidden, $site_org, $virtual, $diff_time, $ext_time,
+            $admin, $jury, $ooc, $remote, $hidden, $site_org, $virtual, $diff_time, $ext_time,
             $tag, $site_id, $site_name
         ) = $_[0]->fetchrow_array
             or return ();
@@ -308,6 +308,7 @@ sub users_frame {
             accepted => $accepted,
             CATS::IP::linkify_ip($ip // $last_ip),
             last_ip_submission => $ip,
+            admin => $admin,
             jury => $jury,
             hidden => $hidden,
             ooc => $ooc,

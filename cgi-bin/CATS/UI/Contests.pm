@@ -149,7 +149,8 @@ sub contests_new_save {
     push @$root_accounts, $uid unless $is_root; # User with contests_creator role.
     for (@$root_accounts) {
         $contest->register_account(
-            contest_id => $c->{id}, account_id => $_, is_jury => 1, is_pop => 1, is_hidden => 1);
+            contest_id => $c->{id}, account_id => $_, is_jury => 1, is_pop => 1, is_hidden => 1,
+            ($_ == $uid ? (is_admin => 1) : ()));
     }
 
     if ($is_root && $p->{tag_name}) {
