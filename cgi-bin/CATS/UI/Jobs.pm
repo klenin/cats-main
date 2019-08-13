@@ -5,13 +5,12 @@ use warnings;
 
 use CATS::Constants;
 use CATS::DB;
-use CATS::Globals qw($cid $is_jury $is_root $sid $t);
+use CATS::Globals qw($cid $is_jury $is_root $t);
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
-use CATS::Output qw(init_template url_f);
-use CATS::Utils qw(url_function);
-use CATS::Request;
+use CATS::Output qw(init_template url_f url_f_cid);
 use CATS::ReqDetails;
+use CATS::Request;
 use CATS::Time;
 
 sub job_details_frame {
@@ -125,10 +124,10 @@ sub jobs_frame {
                 url_f('run_log', rid => $row->{req_id}) . "#job$row->{id}" :
                 url_f('job_details', jid => $row->{id})
             ),
-            href_problem_text => url_function('problem_text',
-                pid => $row->{problem}, cpid => $row->{cpid}, sid => $sid,
+            href_problem_text => url_f_cid('problem_text',
+                pid => $row->{problem}, cpid => $row->{cpid},
                 uid => $row->{account_id}),
-            href_contest => url_function('problems', cid => $row->{contest_id}, sid => $sid),
+            href_contest => url_f_cid('problems', cid => $row->{contest_id}),
             href_user => url_f('user_stats', uid => $row->{account_id}),
             # href_delete => url_f('jobs', 'delete' => $row->{id}),
         );

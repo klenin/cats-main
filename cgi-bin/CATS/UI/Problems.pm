@@ -15,7 +15,7 @@ use CATS::Judge;
 use CATS::JudgeDB;
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
-use CATS::Output qw(init_template url_f);
+use CATS::Output qw(init_template url_f url_f_cid);
 use CATS::Problem::Save;
 use CATS::Problem::Source::Git;
 use CATS::Problem::Source::Zip;
@@ -28,7 +28,7 @@ use CATS::Redirect;
 use CATS::Request;
 use CATS::Settings;
 use CATS::StaticPages;
-use CATS::Utils qw(file_type date_to_iso redirect_url_function url_function);
+use CATS::Utils qw(file_type date_to_iso redirect_url_function);
 use CATS::Verdicts;
 
 sub problems_all_frame {
@@ -93,13 +93,13 @@ sub problems_all_frame {
     my $fetch_record = sub {
         my ($pid, $title, $contest_title, $contest_id, $counts, $keywords, $linked) = $_[0]->fetchrow_array
             or return ();
-        my %pp = (sid => $sid, cid => $contest_id, pid => $pid);
+        my %pp = (cid => $contest_id, pid => $pid);
         return (
             href_view_problem => url_f('problem_text', pid => $pid),
-            href_view_contest => url_function('problems', sid => $sid, cid => $contest_id),
+            href_view_contest => url_f_cid('problems', cid => $contest_id),
             # Jury can download package for any problem after linking, but not before.
-            ($is_root ? (href_download => url_function('problem_download', %pp)) : ()),
-            ($is_jury ? (href_problem_history => url_function('problem_history', %pp)) : ()),
+            ($is_root ? (href_download => url_f_cid('problem_download', %pp)) : ()),
+            ($is_jury ? (href_problem_history => url_f_cid('problem_history', %pp)) : ()),
             keywords => $keywords,
             linked => $linked || !$p->{link},
             problem_id => $pid,
@@ -358,8 +358,7 @@ sub problems_frame {
             href_replace  => url_f('problems', replace => $c->{cpid}),
             href_download => $can_download && url_f('problem_download', pid => $c->{pid}),
             href_problem_details => $is_jury && url_f('problem_details', pid => $c->{pid}),
-            href_original_contest =>
-                url_function('problems', sid => $sid, cid => $c->{original_contest_id}),
+            href_original_contest => url_f_cid('problems', cid => $c->{original_contest_id}),
             href_usage => url_f('contests', search => "has_problem($c->{pid})", filter => 'all'),
             href_problem_console => $uid &&
                 url_f('console', search => "problem_id=$c->{pid}", uf => ($is_jury ? undef : $uid),
@@ -452,7 +451,7 @@ sub problems_frame {
         WHERE C.id = ?~, undef,
         $cid);
     if ($parent_contest) {
-        $parent_contest->{href} = url_function('problems', sid => $sid, cid => $parent_contest->{id});
+        $parent_contest->{href} = url_f_cid('problems', cid => $parent_contest->{id});
     }
 
     $t->param(

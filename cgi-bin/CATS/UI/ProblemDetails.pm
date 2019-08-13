@@ -10,10 +10,10 @@ use CATS::BinaryFile;
 use CATS::Constants;
 use CATS::DB;
 use CATS::DeGrid;
-use CATS::Globals qw($cid $contest $is_jury $is_root $sid $t);
+use CATS::Globals qw($cid $contest $is_jury $is_root $t);
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
-use CATS::Output qw(downloads_path downloads_url init_template url_f);
+use CATS::Output qw(downloads_path downloads_url init_template url_f url_f_cid);
 use CATS::Problem::Save;
 use CATS::Problem::Storage;
 use CATS::Problem::Tags;
@@ -22,7 +22,6 @@ use CATS::Problem::Utils;
 use CATS::Settings;
 use CATS::StaticPages;
 use CATS::Testset;
-use CATS::Utils qw(url_function);
 use CATS::Verdicts;
 
 sub get_request_count {
@@ -122,7 +121,7 @@ sub problem_details_frame {
         href_modifier => url_f('users_edit', uid => $pr->{last_modified_by}),
         href_edit => url_f('problem_history_tree', pid => $p->{pid}, hb => $pr->{commit_sha}),
         href_edit_xml => url_f('problem_history_edit', pid => $p->{pid}, hb => $pr->{commit_sha}, file => '*'),
-        href_original_contest => url_function('problems', cid => $pr->{contest_id}, sid => $sid),
+        href_original_contest => url_f_cid('problems', cid => $pr->{contest_id}),
         href_download => url_f('problem_download', pid => $p->{pid}),
         href_git_package => url_f('problem_git_package', pid => $p->{pid}),
         problem_langs => [ map $text_hrefs->($_), undef, split ',', $pr->{lang} ],
@@ -513,8 +512,7 @@ sub problem_link_frame {
     }
 
     $problem->{is_original} = $problem->{contest_id} == $cid;
-    $t->param(href_original_contest =>
-        url_function('problems', cid => $problem->{contest_id}, sid => $sid));
+    $t->param(href_original_contest => url_f_cid('problems', cid => $problem->{contest_id}));
     if (!$problem->{is_original}) {
         $problem->{original_contest_title} = $dbh->selectrow_array(q~
             SELECT title FROM contests WHERE id = ?~, undef,
