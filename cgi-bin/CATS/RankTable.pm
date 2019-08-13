@@ -11,11 +11,10 @@ use CATS::Constants;
 use CATS::Contest::Utils;
 use CATS::Countries;
 use CATS::DB;
-use CATS::Globals qw($cid $contest $is_jury $is_root $sid $t $uid $user);
-use CATS::Output qw(url_f);
+use CATS::Globals qw($cid $contest $is_jury $is_root $t $uid $user);
+use CATS::Output qw(url_f url_f_cid);
 use CATS::Testset;
 use CATS::Time;
-use CATS::Utils qw(url_function);
 
 use fields qw(
     clist contest_list hide_ooc hide_virtual show_points frozen
@@ -665,8 +664,8 @@ sub rank_table {
         my $ps = $problem_stats->{$pr->{problem_id}};
         $ps->{percent_accepted} = int($ps->{total_accepted} / ($ps->{total_runs} || 1) * 100 + 0.5);
         $ps->{average_points} = sprintf '%.1f', $ps->{total_points} / max($row_num, 1);
-        $ps->{href_submits} = url_function 'console', @href_submits_params,
-            sid => $sid, (cid => $is_root ? $cid : $pr->{contest_id}),
+        $ps->{href_submits} = url_f_cid 'console', @href_submits_params,
+            (cid => $is_root ? $cid : $pr->{contest_id}),
             search => join(',', "problem_id=$pr->{problem_id}", $search_contest || ());
     }
 
@@ -676,8 +675,8 @@ sub rank_table {
         rank => $self->{rank},
         href_user_stats => url_f('user_stats'),
         href_submits => url_f('console', @href_submits_params, search => $search_contest),
-        href_submits_problem => url_function('console', @href_submits_params,
-            sid => $sid, (cid => $is_root ? $cid : 0),
+        href_submits_problem => url_f_cid('console', @href_submits_params,
+            (cid => $is_root ? $cid : 0),
             search => join(',', 'problem_id=0', $search_contest || ()),
         ),
     );

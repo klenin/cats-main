@@ -7,14 +7,14 @@ use CATS::Constants;
 use CATS::Contest;
 use CATS::Contest::Participate qw(is_jury_in_contest);
 use CATS::DB;
-use CATS::Globals qw($contest $is_jury $is_root $sid $t $uid);
+use CATS::Globals qw($contest $is_jury $is_root $t $uid);
 use CATS::Messages qw(res_str);
-use CATS::Output qw(url_f);
+use CATS::Output qw(url_f url_f_cid);
 use CATS::Problem::Utils;
 use CATS::RankTable;
 use CATS::Request;
 use CATS::Time;
-use CATS::Utils qw(encodings source_encodings url_function);
+use CATS::Utils qw(encodings source_encodings);
 use CATS::Verdicts;
 
 use Exporter qw(import);
@@ -284,8 +284,8 @@ sub get_sources_info {
         $r->{can_reinstall} = $is_root || $r->{orig_contest_id} == $r->{contest_id};
 
         $r->{contacts} = $user_cached->($r->{account_id})->{contacts} if $r->{is_jury};
-        $r->{href_test_diff} = url_function('test_diff',
-            pid => $r->{problem_id}, test => $r->{failed_test}, cid => $r->{contest_id}, sid => $sid)
+        $r->{href_test_diff} = url_f_cid('test_diff',
+            pid => $r->{problem_id}, test => $r->{failed_test}, cid => $r->{contest_id})
             if $r->{is_jury} && $r->{failed_test};
     }
 
@@ -351,10 +351,9 @@ sub source_links {
 
     return if $si->{href_contest};
 
-    $si->{href_contest} =
-        url_function('problems', cid => $si->{contest_id}, sid => $sid);
+    $si->{href_contest} = url_f_cid('problems', cid => $si->{contest_id});
     $si->{href_problem_details} =
-        url_function('problem_details', pid => $si->{problem_id}, cid => $si->{contest_id}, sid => $sid);
+        url_f_cid('problem_details', pid => $si->{problem_id}, cid => $si->{contest_id});
     my $problem_text_uid = $si->{account_id};
     if ($si->{elements_count} == 1) {
         my $original_req = $si->{elements}->[0];
@@ -364,8 +363,8 @@ sub source_links {
             url_f('user_stats', uid => $original_req->{account_id});
         $problem_text_uid = $original_req->{account_id};
     }
-    $si->{href_problem_text} = url_function('problem_text',
-        cpid => $si->{cp_id}, cid => $si->{contest_id}, sid => $sid,
+    $si->{href_problem_text} = url_f_cid('problem_text',
+        cpid => $si->{cp_id}, cid => $si->{contest_id},
         ($si->{is_jury} ? (uid => $problem_text_uid) : ()));
     for (qw/run_details view_source run_log download_source view_test_details request_params/) {
         $si->{"href_$_"} = url_f($_, rid => $si->{req_id});

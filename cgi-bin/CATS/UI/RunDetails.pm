@@ -10,10 +10,10 @@ use JSON::XS;
 use CATS::BinaryFile;
 use CATS::Constants;
 use CATS::DB;
-use CATS::Globals qw($cid $contest $is_jury $is_root $sid $t $uid $user);
+use CATS::Globals qw($cid $contest $is_jury $is_root $t $uid $user);
 use CATS::IP;
 use CATS::Messages qw(msg res_str);
-use CATS::Output qw(init_template downloads_path downloads_url url_f);
+use CATS::Output qw(init_template downloads_path downloads_url url_f url_f_cid);
 use CATS::Problem::Utils;
 use CATS::RankTable;
 use CATS::ReqDetails qw(
@@ -429,8 +429,8 @@ sub get_last_verdicts_api {
                 $is_jury_in_contest, $CATS::Verdicts::state_to_name->{$state}),
             failed_test => $failed_test,
             href_run_details => $rid && url_f('run_details', rid => $rid),
-            href_problem_details => ($is_jury_in_contest ? url_function('problem_details',
-                cid => $contest_id, pid => $problem_id, sid => $sid) : ''),
+            href_problem_details => ($is_jury_in_contest ?
+                url_f_cid('problem_details', cid => $contest_id, pid => $problem_id) : ''),
             allowed => $is_jury || $problem_status != $cats::problem_st_disabled && $state != $cats::st_banned,
         };
     }
