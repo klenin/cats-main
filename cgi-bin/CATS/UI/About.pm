@@ -4,12 +4,11 @@ use strict;
 use warnings;
 
 use CATS::DB;
-use CATS::Globals qw($sid $t);
+use CATS::Globals qw($t);
 use CATS::Judge;
 use CATS::Messages qw(res_str);
-use CATS::Output qw(init_template);
+use CATS::Output qw(init_template url_f_cid);
 use CATS::Time;
-use CATS::Utils;
 
 sub about_frame {
     my ($p) = @_;
@@ -28,7 +27,7 @@ sub about_frame {
         WHERE C.is_hidden = 0 AND C.is_official = 1 AND C.finish_date > CURRENT_TIMESTAMP
         ORDER BY C.start_date~, { Slice => {} });
     for (@$contests) {
-        $_->{href_contest} = CATS::Utils::url_function('problems', cid => $_->{id}, sid => $sid);
+        $_->{href_contest} = url_f_cid('problems', cid => $_->{id});
         $_->{since_start_text} = CATS::Time::since_contest_start_text($_->{since_start});
     }
     $t->param(

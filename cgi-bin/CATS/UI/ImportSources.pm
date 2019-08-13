@@ -5,12 +5,11 @@ use warnings;
 
 use CATS::Constants;
 use CATS::DB;
-use CATS::Globals qw($is_jury $sid $t $uid);
+use CATS::Globals qw($is_jury $t $uid);
 use CATS::ListView;
 use CATS::Messages qw(res_str);
-use CATS::Output qw(init_template url_f);
+use CATS::Output qw(init_template url_f url_f_cid);
 use CATS::References;
-use CATS::Utils qw(url_function);
 
 sub import_sources_frame {
     my ($p) = @_;
@@ -41,7 +40,7 @@ sub import_sources_frame {
         return (
             %$f,
             stype_name => $cats::source_module_names{$f->{stype}},
-            href_problems => url_function('problems', sid => $sid, cid => $f->{contest_id}),
+            href_problems => url_f_cid('problems', cid => $f->{contest_id}),
             href_source => url_f('download_import_source', psid => $f->{id}),
         );
     };

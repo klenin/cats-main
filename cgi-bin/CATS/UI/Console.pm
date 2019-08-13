@@ -11,16 +11,16 @@ use CATS::Constants;
 use CATS::Contest::Participate qw(get_registered_contestant);
 use CATS::Countries;
 use CATS::DB;
-use CATS::Globals qw($cid $contest $is_jury $is_root $sid $t $uid $user);
+use CATS::Globals qw($cid $contest $is_jury $is_root $t $uid $user);
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
-use CATS::Output qw(init_template url_f);
+use CATS::Output qw(init_template url_f url_f_cid);
 use CATS::Problem::Utils;
 use CATS::RankTable;
 use CATS::Request;
 use CATS::Settings qw($settings);
 use CATS::Time;
-use CATS::Utils qw(date_to_iso url_function);
+use CATS::Utils qw(date_to_iso);
 use CATS::Verdicts;
 
 # This is called before init_template to display submitted question immediately.
@@ -245,7 +245,7 @@ sub _console_content {
             (($contest_id // 0) == $cid && $problem_id ? (code => $problem_codes->{$problem_id}->{code}) : ()),
             href_details =>         ($show_details ? url_f('run_details', rid => $id) : undef),
             href_source =>          ($show_details ? url_f('view_source', rid => $id) : undef),
-            href_problems =>        url_function('problems', sid => $sid, cid => $id),
+            href_problems =>        url_f_cid('problems', cid => $id),
             ($is_jury && $user->privs->{moderate_messages} ? (
                 href_delete_question => url_f('console', delete_question => $id),
                 href_delete_message =>  url_f('console', delete_message => $id),

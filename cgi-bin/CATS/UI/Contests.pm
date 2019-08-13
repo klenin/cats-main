@@ -10,7 +10,7 @@ use CATS::Contest;
 use CATS::Contest::Utils;
 use CATS::Contest::XmlSerializer;
 use CATS::DB;
-use CATS::Globals qw($cid $contest $is_jury $is_root $sid $t $uid $user);
+use CATS::Globals qw($cid $contest $is_jury $is_root $t $uid $user);
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
 use CATS::Output qw(init_template url_f);
