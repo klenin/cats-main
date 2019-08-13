@@ -10,6 +10,7 @@ our @EXPORT_OK = qw(
     downloads_url
     init_template
     url_f
+    url_f_cid
 );
 
 use Encode();
@@ -60,6 +61,7 @@ sub init_template {
 }
 
 sub url_f { CATS::Utils::url_function(@_, sid => $sid, cid => $cid) }
+sub url_f_cid { CATS::Utils::url_function(@_, sid => $sid) }
 
 sub generate {
     my ($p, $output_file) = @_;

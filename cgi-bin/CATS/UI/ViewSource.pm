@@ -8,8 +8,8 @@ use Encode;
 
 use CATS::DB;
 use CATS::DevEnv;
-use CATS::Globals qw($cid $contest $is_jury $sid $user);
-use CATS::Output qw(init_template url_f);
+use CATS::Globals qw($cid $contest $is_jury $user);
+use CATS::Output qw(init_template url_f url_f_cid);
 use CATS::JudgeDB;
 use CATS::Messages qw(msg);
 use CATS::ReqDetails qw(
@@ -19,7 +19,6 @@ use CATS::ReqDetails qw(
 use CATS::Request;
 use CATS::Settings qw($settings);
 use CATS::Problem::Submit qw(prepare_de prepare_de_list);
-use CATS::Utils qw(url_function);
 
 sub diff_runs_frame {
     my ($p) = @_;
@@ -120,8 +119,7 @@ sub view_source_frame {
     }
     $t->param(
         source_width => $settings->{source_width} // 90,
-        href_action => url_function('view_source',
-            rid => $p->{rid}, sid => $sid, cid => $sources_info->{contest_id}),
+        href_action => url_f_cid('view_source', rid => $p->{rid}, cid => $sources_info->{contest_id}),
     );
 }
 
