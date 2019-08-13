@@ -9,8 +9,7 @@ END -%]
 
 [%- IF user.privs.is_root %]
 <div class="action send_message">
-<button type="submit" name="set_tags" value="1" class="button">[% capt.set_tag %]</button>
-<input type="text" id="tag_name" name="tag_name" size="30" class="bordered"/>
+[% capt.set_tag %]: <input type="text" id="tag_name" name="tag_name" size="30" class="bordered"/>
 </div>
 <br/>
 <script>
