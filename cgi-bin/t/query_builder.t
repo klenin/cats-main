@@ -4,7 +4,7 @@ use warnings;
 use File::Spec;
 use FindBin;
 use Test::Exception;
-use Test::More tests => 20;
+use Test::More tests => 22;
 
 use lib File::Spec->catdir($FindBin::Bin, '..');
 use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
@@ -21,6 +21,11 @@ is_deeply qb_mask('not_eq!=a,starts^=b,contains~=c,not_contains!~d'),
     { not_eq => qr/^(?!a)$/i, starts => qr/^b/i, contains => qr/c/i, not_contains => qr/^(?!.*d)/i }, 'mask ops';
 is_deeply qb_mask('zz?'), { zz => qr/./i }, 'mask not NULL';
 is_deeply qb_mask('zz??'), { zz => qr/^$/i }, 'mask NULL';
+{
+my $mask = qb_mask('a!=b')->{a};
+ok 'b' !~ $mask, 'mask != 1';
+ok 'c' =~ $mask, 'mask != 2';
+}
 
 {
     my $qb = CATS::QueryBuilder->new;

@@ -36,7 +36,7 @@ sub parse_search {
 sub regex_op {
     my ($op, $v) = @_;
     $op eq '=' || $op eq '==' ? "^\Q$v\E\$" :
-    $op eq '!=' ? "^(?!\Q$v\E)\$" :
+    $op eq '!=' ? "^(?!\Q$v\E).*\$" :
     $op eq '^=' ? "^\Q$v\E" :
     $op eq '~=' || $op eq '' ? "\Q$v\E" :
     $op eq '!~' ? "^(?!.*\Q$v\E)" :
