@@ -10,10 +10,10 @@ use CATS::Contest::Participate;
 use CATS::Countries;
 use CATS::DB;
 use CATS::Form;
-use CATS::Globals qw ($cid $is_jury $is_root $t $sid $uid $user);
+use CATS::Globals qw ($cid $is_jury $is_root $t $uid $user);
 use CATS::IP;
 use CATS::Messages qw(msg res_str);
-use CATS::Output qw(init_template url_f);
+use CATS::Output qw(init_template url_f url_f_cid);
 use CATS::Privileges;
 use CATS::Settings qw($settings);
 use CATS::Time;
@@ -116,8 +116,8 @@ sub user_stats_frame {
         $p->{uid});
     for (@$contests) {
         $_->{href_send_message} = url_f('send_message_box', caid => $_->{caid}) if $is_root;
-        $_->{href_problems} = url_function('problems', sid => $sid, cid => $_->{id});
-        $_->{href_submits} = url_function('console', sid => $sid, cid => $_->{id},
+        $_->{href_problems} = url_f_cid('problems', cid => $_->{id});
+        $_->{href_submits} = url_f_cid('console', cid => $_->{id},
             uf => $p->{uid}, i_value => -1, se => 'user_stats',
             show_results => 1, rows => 30, search => "contest_id=$_->{id}");
     }

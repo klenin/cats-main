@@ -5,7 +5,7 @@ use warnings;
 
 use CATS::Constants;
 use CATS::DB;
-use CATS::Globals qw($is_root $sid $t $uid);
+use CATS::Globals qw($is_root $t $uid);
 use CATS::JudgeDB;
 use CATS::Messages qw(msg);
 use CATS::Output qw(init_template url_f);
@@ -113,8 +113,7 @@ sub request_params_frame {
         maybe_reinstall($p, $si);
         maybe_status_ok($p, $si);
         $dbh->commit;
-        return $group_req_id ?
-            $p->redirect(url_f 'request_params', rid => $group_req_id, sid => $sid) : undef;
+        return $group_req_id ? $p->redirect(url_f 'request_params', rid => $group_req_id) : undef;
     }
     my $can_delete = !$si->{is_official} || $is_root || ($si->{account_id} // 0) == $uid;
     $t->param(can_delete => $can_delete);

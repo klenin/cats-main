@@ -3,7 +3,7 @@ package CATS::UI::Snippets;
 use strict;
 use warnings;
 
-use CATS::Globals qw($cid $is_jury $is_root $sid $t $uid);
+use CATS::Globals qw($cid $is_jury $is_root $t $uid);
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
 use CATS::Output qw(init_template url_f);
