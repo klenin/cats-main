@@ -118,12 +118,13 @@ sub attach {
 
     my %mask = %{$self->qb->get_mask};
 
-    my ($row_keys, @unknown_searches);
+    my $row_keys;
     ROWS: while (my %row = $fetch_row->($sth)) {
         if (!$row_keys) {
-            my @unknown_searches = grep $_ && !exists $row{$_}, sort keys %mask;
-            delete $mask{$_} for @unknown_searches;
-            msg(1143, join ', ', @unknown_searches) if @unknown_searches;
+            if (my @unknown_searches = grep $_ && !exists $row{$_}, sort keys %mask) {
+                delete $mask{$_} for @unknown_searches;
+                msg(1143, join ', ', @unknown_searches);
+            }
             $row_keys = [ sort grep !/^href_/, keys %row ];
         }
         msg(1166), last if ++$fetch_count > CATS::Globals::max_fetch_row_count;
