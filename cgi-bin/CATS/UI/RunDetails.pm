@@ -126,7 +126,7 @@ sub get_run_info {
     };
 
     my $visualizers = $dbh->selectall_arrayref(q~
-        SELECT PS.id, COALESCE(PSL.name, PSLE.name) FROM problem_sources PS
+        SELECT PS.id, COALESCE(PSL.name, PSLE.name) AS name FROM problem_sources PS
         LEFT JOIN problem_sources_local PSL ON PSL.id = PS.id
         LEFT JOIN problem_sources_imported PSI ON PSI.id = PS.id
         LEFT JOIN problem_sources_local PSLE ON PSLE.guid = PSI.guid
@@ -258,9 +258,9 @@ sub visualize_test_frame {
 
     my $visualizer = $dbh->selectrow_hashref(q~
         SELECT
-            COALESCE(PSL.name, PSLE.name),
-            COALESCE(PSL.src, PSLE.src),
-            COALESCE(PSL.fname, PSLE.fname),
+            COALESCE(PSL.name, PSLE.name) AS name,
+            COALESCE(PSL.src, PSLE.src) AS src,
+            COALESCE(PSL.fname, PSLE.fname) AS fname,
         P.id AS problem_id, P.hash
         FROM problem_sources PS
         LEFT JOIN problem_sources_local PSL ON PSL.id = PS.id
@@ -273,8 +273,8 @@ sub visualize_test_frame {
 
     my @imports_js = (@{$dbh->selectall_arrayref(q~
         SELECT
-            COALESCE(PSL.name, PSLE.name),
-            COALESCE(PSL.src, PSLE.src),
+            COALESCE(PSL.name, PSLE.name) AS name,
+            COALESCE(PSL.src, PSLE.src) AS src,
         PS.problem_id, P.hash
         FROM problem_sources PS
         LEFT JOIN problem_sources_local PSL ON PSL.id = PS.id
