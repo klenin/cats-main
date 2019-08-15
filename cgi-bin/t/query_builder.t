@@ -18,7 +18,7 @@ is_deeply qb_mask('a=2,  a=a'), { a => qr/^2$|^a$/i }, 'mask or';
 is_deeply qb_mask('a=2 , b_c=dddd'), { a => qr/^2\ $/i, b_c => qr/^dddd$/i }, 'mask and';
 is_deeply qb_mask('mm=*'), { mm => qr/^\*$/i }, 'mask quoting';
 is_deeply qb_mask('not_eq!=a,starts^=b,contains~=c,not_contains!~d'),
-    { not_eq => qr/^(?!a)$/i, starts => qr/^b/i, contains => qr/c/i, not_contains => qr/^(?!.*d)/i }, 'mask ops';
+    { not_eq => qr/^(?!a).*$/i, starts => qr/^b/i, contains => qr/c/i, not_contains => qr/^(?!.*d)/i }, 'mask ops';
 is_deeply qb_mask('zz?'), { zz => qr/./i }, 'mask not NULL';
 is_deeply qb_mask('zz??'), { zz => qr/^$/i }, 'mask NULL';
 {
