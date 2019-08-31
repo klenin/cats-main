@@ -60,7 +60,7 @@
     <th>[% capt.job_split_strategy %]</th>
     <td style="padding: 0;">
       <div class="limits [% si.style_classes.job_split_strategy %]">
-      <textarea name="job_split_strategy" rows="2" cols="25" class="bordered">[% si.job_split_strategy | html %]</textarea>
+      <textarea name="job_split_strategy" rows="4" cols="50" class="bordered">[% si.job_split_strategy | html %]</textarea>
       </div>
       <input type="checkbox" name="set_job_split_strategy" value="1"
         [%- 'checked="checked"' IF si.req_overidden_limits.job_split_strategy %] />
@@ -68,7 +68,19 @@
   </tr>
   <tr>
     <th>[% capt.judge %]</th>
-    <td>[% select('judge', si.judges) %] <input type="checkbox" name="set_judge" value="1" /></td>
+    <td class="nested">
+      <table class="internal_borders">
+        <tr>
+          <td>
+            [% select('judge', si.judges) %]
+            <input type="checkbox" name="set_judge" value="1" />
+          </td>
+          <td>
+            <label><input type="checkbox" name="this_judge_only" value="1" /> [% capt.this_judge_only %] </label>
+          </td>
+        </tr>
+      </table>
+    </td>
   </tr>
   <tr>
     <td colspan="2">

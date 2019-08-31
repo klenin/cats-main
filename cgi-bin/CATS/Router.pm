@@ -292,6 +292,7 @@ my $main_routes = {
         rid => integer,
         status_ok => bool,
         reinstall => bool,
+        this_judge_only => bool,
         retest => bool,
         clone => bool,
         delete_request => bool,

@@ -17,6 +17,8 @@ use CATS::ReqDetails qw(
     source_links);
 use CATS::Verdicts;
 
+use JSON::XS;
+
 sub maybe_reinstall {
     my ($p, $si) = @_;
     $p->{reinstall} && $si->{can_reinstall} or return;
@@ -66,6 +68,11 @@ sub request_params_frame {
     my $limits = { map { $_ => $p->{$_} } grep $p->{$_} && $p->{"set_$_"}, @limits_fields };
 
     my $need_clear_limits = 0 == grep $p->{"set_$_"}, @limits_fields;
+
+    if ($p->{this_judge_only}) {
+        $limits->{job_split_strategy} = encode_json({method => $cats::split_none});
+        $need_clear_limits = 0;
+    }
 
     if (!$need_clear_limits) {
         my $filtered_limits = CATS::Request::filter_valid_limits($limits);
