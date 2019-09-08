@@ -281,7 +281,6 @@ $('.problem_text div.problem_menu li.langs a').click(function() {
 });
 
 var enable_navigation = function() {
-  if (!has_submit) return;
   $('.nav_container').removeClass('hidden');
   $('.n_item a').first().addClass('current');
   var $root = $('html, body');
@@ -295,12 +294,13 @@ var enable_navigation = function() {
     $(nav_links).each(function() {
       var link = $(this);
       var problem_text = $(link[0].hash)[0];
-      var eps = 10;
+      var eps = 15;
       problem_text.offsetTop - eps <= from_top && problem_text.offsetTop + problem_text.offsetHeight > from_top ?
         link.addClass('current') : link.removeClass('current');
     })
   });
 };
+$(document).ready(enable_navigation);
 
 [%- IF href_get_last_verdicts -%]
 if (sid)
@@ -326,7 +326,6 @@ if (sid)
       }
       if (result.can_submit && has_submit)
         gen_forms(result);
-      enable_navigation();
     });
   });
 
