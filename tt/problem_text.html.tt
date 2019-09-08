@@ -138,9 +138,9 @@ MathJax.Hub.Register.StartupHook('onLoad', function () {
     ];
     lc_nonempty = 0; FOREACH lc IN left_col; SET lc_nonempty = 1 IF lc.n; END;
     right_col => [
-      { n => c.time_limit,
+      { n => p.time_limit > 0 ? c.time_limit : '',
         t => "${p.time_limit} ${c.seconds}" },
-      { n => c.memory_limit,
+      { n => p.time_limit > 0 ? c.memory_limit : '', # memory_limit defaults to 200 in legacy problems.
         t => "${p.memory_limit} ${c.megabytes}" },
       { n => p.write_limit ? c.write_limit : ''
         t => "${p.write_limit} ${c.bytes}" },
