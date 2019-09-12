@@ -97,6 +97,11 @@ MathJax.Hub.Register.StartupHook('onLoad', function () {
   .n_item { border: 1px solid #4040ff; border-top: none; }
   .n_item:first-of-type { border-top: 1px solid #4040ff; }
   .n_button { width: 35px; height: 18px;  text-align: center; text-decoration: none; display: inline-block; cursor: pointer; }
+  Quiz Choice { display: block; }
+  Quiz Choice:before { font-size: larger; margin-right: 0.5em; }
+  Quiz[type=checkbox] Choice:before { content: '\2610';}
+  Quiz[type=radiogroup] Choice:before { content: '\25EF';}
+  Quiz[type=text]:not(.active) { display: block; width: 50em; height: 4ex; border: 1px solid black; }
   @media only screen and (max-device-width: 736px) { .nav_container { display: none; } }
 </style>
 </head>
@@ -424,6 +429,7 @@ function init_quizzes() {
     var editor_changed_callback = fill_quiz_forms.bind(null, editor, problem_text);
     problem_text.find('Quiz').each(function() {
       var quiz = $(this);
+      quiz.addClass('active');
       var question = { 
         type: quiz.attr('type'), 
         name: 'Quiz' + quiz_count
