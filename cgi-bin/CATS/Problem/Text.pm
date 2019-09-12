@@ -21,7 +21,9 @@ use CATS::TeX::Lite;
 use CATS::Time;
 use CATS::Utils qw(url_function);
 
-my ($current_pid, $html_code, $spellchecker, $text_span, $tags, $skip_depth, $has_snippets, $noif, $has_quizzes);
+my (
+    $current_pid, $html_code, $spellchecker, $text_span, $tags, $skip_depth,
+    $has_snippets, $noif, $has_quizzes, $has_static_highlight);
 my $wrapper = 'cats-wrapper';
 my @parsed_fields = qw(statement pconstraints input_format output_format explanation);
 
@@ -129,6 +131,9 @@ sub _on_start {
     }
     elsif ($el eq 'Quiz') {
         $has_quizzes = 1;
+    }
+    elsif ($el eq 'code' && $atts{language}) {
+        $has_static_highlight = 1;
     }
 
     process_text;
@@ -312,7 +317,7 @@ sub problem_text {
 
     my $static_path = $CATS::StaticPages::is_static_page ? '../' : '';
 
-    $has_snippets = 0;
+    $has_snippets = $has_quizzes = $has_static_highlight = 0;
     my $need_commit = 0;
     for my $problem (@problems) {
         $current_pid = $problem->{problem_id};
@@ -390,13 +395,14 @@ sub problem_text {
         tex_styles => CATS::TeX::Lite::styles(),
         mathjax => !$p->{nomath},
         has_snippets => $has_snippets,
+        has_quizzes => $has_quizzes,
+        has_static_highlight => $has_static_highlight,
+        prepare_de_list,
         href_static_path => $static_path,
         href_submit_problem => $static_path . url_function('api_submit_problem'),
         href_get_sources_info => $static_path . url_function('api_get_sources_info'),
         href_get_last_verdicts => @problems > 100 ? undef : $static_path .
             url_function('api_get_last_verdicts', problem_ids => join ',', map $_->{cpid}, @problems),
-        prepare_de_list,
-        has_quizzes => $has_quizzes,
     );
 }
 
