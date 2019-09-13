@@ -595,6 +595,14 @@ files with tests, solutions etc.
   </td>
   <td>Insert a text from the file.</td>
 </tr>
+<tr><td>[% tag_in('code') %]</td>
+  <td>
+    <ul>
+      <li>language[% v110 %] — programming language name for syntax highlighting.</li>
+    </ul>
+  </td>
+  <td>Format text as code.</td>
+</tr>
 <tr><td>[% tag_in('i') %], [% tag_in('em') %]</td>
   <td>&nbsp;</td>
   <td>Italics.</td>
