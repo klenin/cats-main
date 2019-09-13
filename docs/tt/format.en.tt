@@ -595,7 +595,7 @@ files with tests, solutions etc.
   </td>
   <td>Insert a text from the file.</td>
 </tr>
-<tr><td>[% tag_in('i') %]</td>
+<tr><td>[% tag_in('i') %], [% tag_in('em') %]</td>
   <td>&nbsp;</td>
   <td>Italics.</td>
 </tr>
@@ -603,19 +603,11 @@ files with tests, solutions etc.
   <td>&nbsp;</td>
   <td>Bold.</td>
 </tr>
-<tr><td>[% tag_in('sup') %]</td>
-  <td>&nbsp;</td>
-  <td>Upper subscript.</td>
-</tr>
-<tr><td>[% tag_in('sub') %]</td>
-  <td>&nbsp;</td>
-  <td>Lower subscript.</td>
-</tr>
 <tr><td>[% tag_in('p') %]</td>
   <td>&nbsp;</td>
   <td>Paragraph</td>
 </tr>
-<tr><td>&lt;table&gt;</td>
+<tr><td>[% tag_in('table') %]</td>
   <td>
     <ul>
       <li>border[% opt %] — 1 — draw border (default),<br/>

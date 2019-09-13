@@ -597,7 +597,7 @@ END -%]
   </td>
   <td>Вставка текста из файла.</td>
 </tr>
-<tr><td>[% tag_in('i') %]</td>
+<tr><td>[% tag_in('i') %], [% tag_in('em') %]</td>
   <td>&nbsp;</td>
   <td>Выделение курсивом.</td>
 </tr>
@@ -605,19 +605,11 @@ END -%]
   <td>&nbsp;</td>
   <td>Выделение жирным шрифтом.</td>
 </tr>
-<tr><td>[% tag_in('sup') %]</td>
-  <td>&nbsp;</td>
-  <td>Перевод в надстрочный индекс.</td>
-</tr>
-<tr><td>[% tag_in('sub') %]</td>
-  <td>&nbsp;</td>
-  <td>Перевод в подстрочный индекс.</td>
-</tr>
 <tr><td>[% tag_in('p') %]</td>
   <td>&nbsp;</td>
   <td>Параграф.</td>
 </tr>
-<tr><td>&lt;table&gt;</td>
+<tr><td>[% tag_in('table') %]</td>
   <td>
     <ul>
       <li>border[% opt %] — 1 — граница присутствует,<br/>
