@@ -25,7 +25,9 @@ sub common_seq_prefix {
     [ @$pa[0 .. $i - 1] ];
 }
 
-sub common_prefix { join ' ', @{(reduce { common_seq_prefix($a, $b) } map [ split /\s+|_+/ ], @_) || []} }
+sub common_prefix {
+    join ' ', @{(reduce { common_seq_prefix($a, $b) } map [ split /\s+|_+|[:,\.]/ ], @_) || []}
+}
 
 sub contest_group_by_clist {
     $dbh->selectrow_array(q~
