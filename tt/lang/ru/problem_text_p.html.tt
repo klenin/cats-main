@@ -32,5 +32,6 @@
     sample_tests => 'Примеры тестов',
     sample_number => '&#8470;',
     show_editor => 'редактор',
+    spaces_in_answer => 'Не используйте пробелы в ответе',
   }
 %]

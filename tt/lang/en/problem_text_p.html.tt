@@ -32,5 +32,6 @@
     sample_tests => 'Sample tests',
     sample_number => 'No.',
     show_editor => 'editor',
+    spaces_in_answer => 'Dont use spaces in answer',
   }
 %]
