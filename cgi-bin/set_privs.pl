@@ -2,6 +2,7 @@ use v5.10;
 use strict;
 use warnings;
 
+use Encode;
 use File::Spec;
 use FindBin;
 use Getopt::Long;
@@ -26,7 +27,7 @@ sub usage {
 Usage: $0
   --help
   --id=<user id> --login=<user login> [--add=<priv>...] [--remove=<priv>...]
-  --find=<priv>
+  --find=<priv>|any_jury
 Privileges:\n~;
     say "  $_" for CATS::Privileges::all_names;
     exit;
@@ -38,16 +39,22 @@ $find || $user_id && $user_login or die 'Must use BOTH id and login';
 
 CATS::DB::sql_connect({});
 
-if ($find) {
+sub make_find_cond {
+    $find eq 'any_jury' and return (q~
+        EXISTS (SELECT 1 FROM contest_accounts CA WHERE CA.account_id = A.id AND Ca.is_jury = 1)~, ());
     CATS::Privileges::is_good_name($find) or die "Unknown priviledge: $find";
-    my ($cond, @params) = CATS::Privileges::where_cond($find);
+    CATS::Privileges::where_cond($find);
+}
+
+if ($find) {
+    my ($cond, @params) = make_find_cond;
     #$find eq 'is_root' ?
     my $users = $dbh->selectall_arrayref(qq~
         SELECT A.id, A.login FROM accounts A
         WHERE $cond~, undef,
         @params);
     say "Found: " . scalar(@$users);
-    printf "  %10d %s\n", @$_ for @$users;
+    printf "  %10d %s\n", $_->[0], Encode::encode_utf8($_->[1]) for @$users;
     exit;
 }
 
