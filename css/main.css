@@ -18,13 +18,19 @@ table.header {
     color: #333300;
 }
 table.header td { }
+@media (min-width: 700px) {
+    table.header td.contest_title {
+        background-image: url(../images/logo.gif);
+        padding-left: 104px;
+    }
+}
 table.header td.contest_title {
-    background-image: url(../images/logo.gif);
+    background-image1: url(../images/logo.gif);
     background-repeat: no-repeat;
     background-position: left center;
     font-size: x-large;
     height: 72px;
-    padding-left: 104px;
+    padding-left1: 104px;
     vertical-align: bottom;
 }
 table.header td.contest_title span { font-size: large; }
