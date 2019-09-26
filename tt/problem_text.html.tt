@@ -474,6 +474,7 @@ function init_quizzes() {
       var quiz = $(this);
       var form = $('<form/>');
       quiz.addClass('active').append(form);
+      form.attr('onsubmit', 'return false;');
       var question = { 
         type: quiz.attr('type'), 
         name: 'Quiz' + quiz_count
