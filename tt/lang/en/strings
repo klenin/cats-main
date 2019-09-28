@@ -375,3 +375,5 @@
 1205 "No file."
 1206 "File '%s' not found."
 1207 "Field '%s' must not be empty."
+1208 "File '%s' already exists."
+1209 "Incorrect file name."
