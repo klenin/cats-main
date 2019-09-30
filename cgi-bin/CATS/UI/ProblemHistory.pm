@@ -115,7 +115,8 @@ sub problem_history_tree_frame {
         }
     }
     set_history_paths_urls($p->{pid}, $tree->{paths});
-    set_submenu_for_tree_frame($p->{pid}, $p->{hb});
+    my @items = { href => url_f('problem_history_edit', pid => $p->{pid}, hb => $p->{hb}), item => res_str(401) };
+    set_submenu_for_tree_frame($p->{pid}, $p->{hb}, @items);
     $t->param(
         tree => $tree,
         problem_title => $pr->{title},
@@ -203,7 +204,7 @@ sub problem_history_edit_frame {
 
     init_template($p, 'problem_history_edit.html.tt');
 
-    if ($p->{file} eq '*') {
+    if ($p->{file} && $p->{file} eq '*') {
         $p->{file} = CATS::Problem::Storage::find_xml($p->{pid}, $hash_base) or return;
     }
 
@@ -213,22 +214,24 @@ sub problem_history_edit_frame {
         defined $log or return;
     }
 
-    my @blob_params = ($p->{pid}, $hash_base, $p->{file});
-    my $blob = CATS::Problem::Storage::show_blob(
-        @blob_params, $p->{src_enc} || \&detect_encoding_by_xml_header);
-    $blob->{content} = $blob->{image} ?
-        CATS::Problem::Storage::show_raw(@blob_params)->{content} : $content;
-
+    my $enc = 'UTF-8';
+    if ($p->{file}) {
+        my @blob_params = ($p->{pid}, $hash_base, $p->{file});
+        my $blob = CATS::Problem::Storage::show_blob(
+            @blob_params, $p->{src_enc} || \&detect_encoding_by_xml_header);
+        $blob->{content} = $blob->{image} ?
+            CATS::Problem::Storage::show_raw(@blob_params)->{content} : $content;
+        $enc = ref $blob->{encoding} ? 'UTF-8' : $blob->{encoding};
+        set_history_paths_urls($p->{pid}, $blob->{paths});
+        $t->param(blob => $blob);
+    }
     set_submenu_for_tree_frame($p->{pid}, $hash_base);
-    set_history_paths_urls($p->{pid}, $blob->{paths});
-    my $enc = ref $blob->{encoding} ? 'UTF-8' : $blob->{encoding};
     my $keywords = $dbh->selectall_arrayref(q~
         SELECT code FROM keywords~, { Slice => {} });
     my $de_list = CATS::DevEnv->new(CATS::JudgeDB::get_DEs({ fields => 'syntax' }));
     my $de = $de_list->by_file_extension($p->{file});
     $t->param(
         file => $p->{new_name} || $p->{file},
-        blob => $blob,
         problem_title => $pr->{title},
         title_suffix => $p->{file},
         src_enc => $enc,
@@ -243,6 +246,7 @@ sub problem_history_edit_frame {
         de_list => $de_list,
         de_selected => $de,
         pid => $p->{pid},
+        edit_file => $p->{file},
     );
 }
 
@@ -255,11 +259,14 @@ sub _save_content {
     my $hash_base = $p->{hb};
     $p->{src} = $p->{source}->content if $p->{upload};
     my $content = $p->{src};
+    undef $p->{new_name} if $p->{new_name} eq $p->{file};
 
     my CATS::Problem::Storage $ps = CATS::Problem::Storage->new;
     Encode::from_to($content, $p->{enc} // 'UTF-8', $p->{src_enc});
     my ($error, $latest_sha, $parsed_problem) = $ps->change_file(
-        $pr->{contest_id}, $p->{pid}, $p->{file}, $content, $p->{message}, $p->{is_amend} || 0, $p->{new_name});
+        $pr->{contest_id}, $p->{pid}, $p->{file} // '', $content,
+        $p->{message}, $p->{is_amend} || 0, $p->{new_name}
+    );
 
     unless ($error) {
         $dbh->commit;
