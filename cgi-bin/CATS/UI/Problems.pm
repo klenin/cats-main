@@ -57,7 +57,8 @@ sub problems_all_frame {
     my $where_cond = join(' AND ', @{$where->{cond}}) || '1=1';
 
     $lv->define_columns(url_f('problems_all', link => $p->{link}), 0, 0, [
-        { caption => res_str(602), order_by => 'P.title', width => '30%' },
+        { caption => res_str(602), order_by => 'P.title', width => '30%',
+            checkbox => $is_jury && $p->{link} && '[name=problems_selection]' },
         { caption => res_str(603), order_by => 'C.title', width => '30%' },
         { caption => res_str(604), order_by => 'ok_wa_tl', width => '10%', col => 'Ok' },
         { caption => res_str(667), order_by => 'keywords', width => '20%', col => 'Kw' },
