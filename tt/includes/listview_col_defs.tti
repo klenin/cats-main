@@ -1,6 +1,8 @@
 <tr class="col_defs">
 [% IF sel_col %]<th class="sel_col">
+  [%- UNLESS nocheckbox -%]
   <label><input class="toggle_all_cb" type="checkbox" onclick="toggle_all_cb(this, 'td.sel_col input')"/></label>
+  [%- END -%]
 </th>[% END %]
 [% FOREACH col_def IN col_defs; NEXT IF !col_def.visible || !col_def.order_by %]
 <th[% IF col_def.width %] style="width: [% col_def.width %];"[% END %]>

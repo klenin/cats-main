@@ -109,7 +109,7 @@ function chg_code(st_sel, pid) {
 [% PROCESS includes/listview_header.tti form_name='problems_form' %]
 <table class="listview bordered highlight">
 [% IF can_submit %]
-[% PROCESS includes/listview_col_defs.tti sel_col = 1 %]
+[% PROCESS includes/listview_col_defs.tti sel_col = 1 nocheckbox = 1 %]
 [% END %]
 [% FOREACH p IN problems %]
 <tr class="[% loop.parity() %] problem_row" id="pr_[% p.cpid %]">
