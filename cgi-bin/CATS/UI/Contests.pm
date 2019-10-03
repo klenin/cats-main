@@ -329,6 +329,8 @@ sub contests_edit_save_xml {
 
     for my $problem (@{$c->{problems}}) {
         if ($problem->{problem_id}) {
+            ($problem->{contest_id} // $cid) == $cid
+                or $logger->note(sprintf('Problem %d is from different context', $problem->{problem_id})), next;
             my %cp_update_values = %$problem;
             delete $cp_update_values{$_} for qw(repo_path repo_url allow_des);
             $dbh->do(_u $sql->update('contest_problems', \%cp_update_values,
@@ -338,6 +340,7 @@ sub contests_edit_save_xml {
                 SELECT CP.id FROM contest_problems CP
                 WHERE CP.contest_id = ? AND CP.problem_id = ?~, undef,
                 $cid, $problem->{problem_id});
+            $cpid or $logger->note(sprintf('Problem not found: %d', $problem->{problem_id})), next;
             CATS::Problem::Save::set_contest_problem_des($cpid, $problem->{allow_des} || [], 'code');
             $dbh->commit;
         }
