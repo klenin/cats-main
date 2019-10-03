@@ -164,6 +164,13 @@ sub define_kw_subquery {
             m => 1204,
             t => q~SELECT guid, fname FROM problem_sources_local WHERE guid = ?~,
         },
+        is_used_by_contest => {
+            sq => q~(EXISTS (
+                SELECT 1 FROM contest_problems CP
+                WHERE CP.problem_id = P.id AND CP.contest_id = ?))~,
+            m => 1048,
+            t => q~SELECT title FROM contests WHERE id = ?~,
+        },
     });
 }
 
