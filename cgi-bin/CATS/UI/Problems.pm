@@ -113,9 +113,16 @@ sub problems_all_frame {
     $lv->attach(url_f('problems_all', link => $p->{link}, move => $p->{move}), $fetch_record, $c);
     $c->finish;
 
+    my @submenu = !$p->{link} ? () :
+        { href => url_f('problems_all',
+            search => sprintf('is_used_by_contest(%d)', $cid), link => $p->{link}, move => $p->{move}),
+            item => res_str(588) };
     $t->param(
         href_action => url_f('problems'),
-        link => !$contest->is_practice && $p->{link}, move => $p->{move});
+        link => !$contest->is_practice && $p->{link},
+        move => $p->{move},
+        submenu => \@submenu,
+    );
 }
 
 sub problems_frame_jury_action {
