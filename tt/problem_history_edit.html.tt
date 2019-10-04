@@ -5,7 +5,7 @@
 </style>
 <script>window.addEventListener('load', function () {
   if (!ace) return;
-  set_syntax('editor', 'de_id');
+  set_syntax('ed_pe[% pid %]_[% file %]', 'de_id');
   var editor = ace.edit(get_editor($('.page_body')).attr('data-id'));
   if ($('option:selected', $('#de_id')).attr('editor-syntax') === 'xml') {
     highlight_errors('log', [ /at\sline\s(\d+)/ ], 'editor');
@@ -85,7 +85,7 @@
     <button type="button" id="wrap_button" class="button toolbar_item">[% capt.wrap %]</button>
     <button type="button" id="keyword_button" class="button toolbar_item">[% capt.keyword %]</button>
     <a class="problem_menu_trigger toolbar_item">&#x2261
-      <div class="editor_menu"><button class="button" type="button" onclick="reset_localstorage('ed_pe[% pid %]_[% path.file_name %]')">[% capt.reset %]</button></div>
+      <div class="editor_menu"><button class="button" type="button" onclick="reset_localstorage('ed_pe[% pid %]_[% file %]')">[% capt.reset %]</button></div>
     </a>
   </div>
     <div>
@@ -112,6 +112,7 @@
       </p>
     </div>
   </form>
+  <div id="different_versions_msg" class="hidden">[% capt.different_versions %]</div>
 </div>
 [% PROCESS includes/amend.tti %]
 [% PROCESS includes/menu_end.tti %]
