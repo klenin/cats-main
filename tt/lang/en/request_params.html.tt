@@ -6,7 +6,7 @@
     retest => 'Retest',
     clone => 'Clone',
     judge => 'Judge',
-    this_judge_only => "This judge only",
+    single_judge => 'Single judge',
     delete => 'Delete run request',
     confirm_delete => 'Delete run request %d. Are you sure?',
     set_verdict => 'Set verdict',

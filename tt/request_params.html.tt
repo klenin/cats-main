@@ -76,7 +76,7 @@
             <input type="checkbox" name="set_judge" value="1" />
           </td>
           <td>
-            <label><input type="checkbox" name="this_judge_only" value="1" /> [% capt.this_judge_only %] </label>
+            <label><input type="checkbox" name="single_judge" value="1" /> [% capt.single_judge %]</label>
           </td>
         </tr>
       </table>

@@ -3,6 +3,8 @@ package CATS::UI::RequestParams;
 use strict;
 use warnings;
 
+use JSON::XS;
+
 use CATS::Constants;
 use CATS::DB;
 use CATS::Globals qw($is_root $t $uid);
@@ -16,8 +18,6 @@ use CATS::ReqDetails qw(
     sources_info_param
     source_links);
 use CATS::Verdicts;
-
-use JSON::XS;
 
 sub maybe_reinstall {
     my ($p, $si) = @_;
@@ -66,10 +66,9 @@ sub request_params_frame {
     my @limits_fields = (@cats::limits_fields, 'job_split_strategy');
 
     my $limits = { map { $_ => $p->{$_} } grep $p->{$_} && $p->{"set_$_"}, @limits_fields };
-
     my $need_clear_limits = 0 == grep $p->{"set_$_"}, @limits_fields;
 
-    if ($p->{this_judge_only}) {
+    if ($p->{single_judge}) {
         $limits->{job_split_strategy} = encode_json({method => $cats::split_none});
         $need_clear_limits = 0;
     }
