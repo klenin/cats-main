@@ -5,6 +5,7 @@ use warnings;
 
 use CATS::Constants;
 use CATS::DB;
+use CATS::DeBitmaps;
 use CATS::Globals;
 use CATS::IP;
 use CATS::JudgeDB;
@@ -166,7 +167,7 @@ sub insert {
     $dbh->do(_u $sql->insert('req_de_bitmap_cache', {
         req_id => $rid,
         version => CATS::JudgeDB::current_de_version,
-        CATS::JudgeDB::get_de_bitfields_hash(@$de_bitmap),
+        CATS::DeBitmaps::get_de_bitfields_hash(@$de_bitmap),
     })) or return;
 
     $dbh->do(q~
@@ -189,7 +190,7 @@ sub update_source {
     $dbh->do(_u $sql->update('req_de_bitmap_cache', {
         req_id => $request_id,
         version => CATS::JudgeDB::current_de_version,
-        CATS::JudgeDB::get_de_bitfields_hash(@$de_bitmap),
+        CATS::DeBitmaps::get_de_bitfields_hash(@$de_bitmap),
     })) if $de_bitmap;
 }
 
