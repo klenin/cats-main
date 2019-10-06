@@ -96,7 +96,8 @@ sub get_problems {
             C.local_only, C.penalty, C.penalty_except,
             @{[ partial_checker_sql ]}
         FROM
-            contest_problems CP INNER JOIN contests C ON C.id = CP.contest_id
+            contest_problems CP
+            INNER JOIN contests C ON C.id = CP.contest_id
             INNER JOIN problems P ON P.id = CP.problem_id
         WHERE
             CP.contest_id IN ($self->{contest_list}) AND CP.status < ?
@@ -397,8 +398,9 @@ sub prepare_ranks {
     my $prizes = [];
     if ($self->{show_prizes}) {
         $prizes = $dbh->selectall_arrayref(q~
-            SELECT p.rank, p.name FROM prizes p INNER JOIN contest_groups cg ON p.cg_id = cg.id
-            WHERE cg.clist = ? ORDER BY p.rank~, { Slice => {} },
+            SELECT P.rank, P.name
+            FROM prizes P INNER JOIN contest_groups CG ON P.cg_id = CG.id
+            WHERE CG.clist = ? ORDER BY P.rank~, { Slice => {} },
             $self->{contest_list});
     }
     my $ooc_count = 0;
