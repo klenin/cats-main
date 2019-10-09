@@ -55,17 +55,49 @@ sub _determine_state {
         $cats::st_ignore_submit : $cats::st_not_processed;
 }
 
+sub _get_DEs {
+    my ($contest_id, $de_id) = @_;
+    my ($has_de_tags) = $dbh->selectrow_array(q~
+        SELECT 1 FROM contest_de_tags CDT WHERE CDT.contest_id = ? ROWS 1~, undef,
+        $contest_id);
+    my $tag_sql = $has_de_tags ? q~
+        SELECT 1 FROM de_de_tags DDT
+            INNER JOIN contest_de_tags CDT ON CDT.tag_id = DDT.tag_id
+            WHERE DDT.de_id = D.id AND CDT.contest_id = ?~ : q~
+        SELECT 1 FROM de_de_tags DDT
+            WHERE DDT.de_id = D.id AND DDT.tag_id = ?~;
+    my $id_cond = $de_id ? 'AND D.id = ?' : '';
+    {
+        des => $dbh->selectall_arrayref(qq~
+            SELECT D.id, D.id AS de_id, D.code, D.description, D.file_ext,
+                D.default_file_ext, D.memory_handicap, D.syntax
+            FROM default_de D
+            WHERE D.in_contests = 1$id_cond AND EXISTS ($tag_sql)
+            ORDER BY code~, { Slice => {} },
+            ($de_id ? ($de_id) : ()),
+            ($has_de_tags ? $contest_id : $CATS::Globals::default_de_tag)),
+        version => CATS::JudgeDB::current_de_version()
+    }
+}
+
 sub _prepare_de {
     my ($p, $file, $cpid) = @_;
     my $result = {};
 
     my $did = $p->{de_id} or return msg(1013);
     if ($did eq 'by_extension') {
-        my $de = CATS::DevEnv->new(CATS::JudgeDB::get_DEs({ active_only => 1 }))->by_file_extension($file)
+        my $de = CATS::DevEnv->new(_get_DEs($cid))->by_file_extension($file)
             or return msg(1013);
         $did = $de->{id};
         $result->{de_name} = $de->{description};
     }
+    else {
+        @{_get_DEs($cid, $did)->{des}} or do {
+            $t->param(de_not_allowed => _get_DEs($cid)->{des});
+            return;
+        };
+    }
+
     my $allowed_des = $dbh->selectall_arrayref(q~
         SELECT CPD.de_id, D.description
         FROM contest_problem_des CPD
@@ -89,8 +121,7 @@ sub prepare_de {
 }
 
 sub prepare_de_list {
-    my $de_list =
-        CATS::DevEnv->new(CATS::JudgeDB::get_DEs({ active_only => 1, fields => 'syntax' }));
+    my $de_list = CATS::DevEnv->new(_get_DEs($cid));
 
     my ($allowed_des) = $dbh->selectall_arrayref(_u $sql->select(
         'contest_problems CP LEFT JOIN contest_problem_des CPD ON CP.id = CPD.cp_id',
