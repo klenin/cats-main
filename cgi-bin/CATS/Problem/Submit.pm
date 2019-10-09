@@ -307,4 +307,13 @@ sub problems_submit_std_solution {
     msg(1107, $title, $sol_count);
 }
 
+sub _get_upsolver { # TODO
+    scalar $dbh->selectrow_array(q~
+        SELECT UR.from_id FROM user_relations UR
+        WHERE UR.to_id = ? AND UR.rel_type = ? AND EXISTS (
+            SELECT CA.account_id FROM contest_accounts CA
+            WHERE CA.contest_id = ?)~, undef,
+        $uid, $CATS::Globals::relation->{upsolves_for}, $cid);
+}
+
 1;
