@@ -16,6 +16,7 @@ my @flag_names = qw(
     edit_sites
     manage_judges
     grant_jury
+    link_problems
 );
 
 my %flags = map { $flag_names[$_] => 2 << $_ } 0..$#flag_names;
