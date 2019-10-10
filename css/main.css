@@ -240,7 +240,7 @@ table.padded > tbody > tr > td, table.padded > tbody > tr > th { padding: 3px; }
 tr.padded > td { padding: 3px; }
 table.sample { border-collapse: collapse; border: 2px; }
 table.sample td, table.sample th { border: 1px solid black; padding: 5px; }
-table.sample td { vertical-align: top; }
+table.sample td { vertical-align: top; position: relative }
 table > tbody > tr > td.nested { height: 100%; padding: 0;  }
 table > tbody > tr > td.nested table { border-style: hidden; height: 100%; width: 100%; }
 
@@ -256,6 +256,11 @@ table > tbody > tr > td.nested table { border-style: hidden; height: 100%; width
     border: 1px solid #ffffff;
     color: #ffffff;
     background-color: #7070ff;
+}
+.copy_button {
+    position: absolute;
+    top: 0;
+    right: 0;
 }
 
 th { font-size: 11pt; font-weight: bold; color:#000000; }
