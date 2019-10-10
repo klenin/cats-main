@@ -33,5 +33,6 @@
     sample_number => 'No.',
     show_editor => 'editor',
     spaces_in_answer => 'Do not use spaces in answer',
+    copy => 'copy',
   }
 %]

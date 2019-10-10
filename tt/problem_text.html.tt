@@ -197,8 +197,14 @@ MathJax.Hub.Register.StartupHook('onLoad', function () {
     [% FOREACH s IN p.samples %]
     <tr>
       <td>[% s.rank %]</td>
-      <td><pre><code>[% s.in_file | html %]</code></pre></td>
-      <td><pre><code>[% s.out_file | html %]</code></pre></td>
+      <td>
+        <pre><code>[% s.in_file | html %]</code></pre>
+        <button type='button' class='button copy_button'>[% c.copy %]</button>
+      </td>
+      <td>
+        <pre><code>[% s.out_file | html %]</code></pre>
+        <button type='button' class='button copy_button'>[% c.copy %]</button>
+      </td>
     </tr>
     [% END %]
     </table>
@@ -288,6 +294,12 @@ $('.problem_text div.problem_menu li.langs a').click(function() {
       s.indexOf('pl=') < 0  ? s + ';pl=' + this.innerText : s.replace(/pl=[a-z]+/, 'pl=' + this.innerText);
   }
 });
+
+function copy_button_click() {
+  var td = $(this).parents('td');
+  navigator.clipboard.writeText(td.find('code')[0].innerText);
+}
+$('.copy_button').click(copy_button_click);
 
 var enable_navigation = function() {
   if (query_params.nonav) return;
