@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use CATS::DB;
+use CATS::DeBitmaps;
 use CATS::DevEnv;
 use CATS::Form;
 use CATS::Globals qw($is_jury $t $user);
@@ -44,7 +45,7 @@ our $form = CATS::Form->new(
         if ($fd->{de_bitmap}) {
             my $dev_env = CATS::DevEnv->new(CATS::JudgeDB::get_DEs);
             $fd->{supported_DEs} = [
-                $dev_env->by_bitmap([ CATS::JudgeDB::extract_de_bitmap($fd->{de_bitmap}) ]) ],
+                $dev_env->by_bitmap([ CATS::DeBitmaps::extract_de_bitmap($fd->{de_bitmap}) ]) ],
         }
         if (my $aid = $fd->{indexed}->{account_id}->{value}) {
             $fd->{href_contests} = url_f('contests', search => "has_user($aid)");
