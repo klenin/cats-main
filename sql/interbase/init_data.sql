@@ -17,6 +17,8 @@ INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
     VALUES (GEN_ID(key_seq, 1), 105, 'GNU C', 'c', 'c_cpp', '^~FILE~:~LINE~:~POS~:');
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
     VALUES (GEN_ID(key_seq, 1), 106, 'LLVM/CLang', '', 'c_cpp', '^~FILE~:~LINE~:~POS~:');
+INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp, memory_handicap)
+    VALUES (GEN_ID(key_seq, 1), 107, 'LLVM/CLang with Address Sanitizer', '', 'c_cpp', '^~FILE~:~LINE~:~POS~:', -1);
 
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
     VALUES (GEN_ID(key_seq, 1), 120, 'Rust', 'rs', 'rust', '^\s+-->\s~FILE~:~LINE~:~POS~');
