@@ -32,7 +32,7 @@ our $form = CATS::Form->new(
         [ name => 'locked', validators => [ qr/^1?$/ ],
             db_name => 'in_contests', after_load => \&invert, before_save => \&invert, caption => 622, ],
         [ name => 'memory_handicap',
-            validators => [ CATS::Field::int_range(min => 0, max => 10000, allow_empty => 1) ], caption => 640, ],
+            validators => [ CATS::Field::int_range(min => -1, max => 10000, allow_empty => 1) ], caption => 640, ],
         [ name => 'syntax', validators => [ $str0_200 ], caption => 623, ],
     ],
     href_action => 'compilers_edit',
