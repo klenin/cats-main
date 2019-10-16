@@ -77,7 +77,7 @@ sub int_range {
     sub {
         my ($value, $field) = @_;
         if (($value // '') ne '') {
-            return if $value =~ /^\d+$/ && $opts{min} <= $value && $value <= $opts{max};
+            return if $value =~ /^-?\d+$/ && $opts{min} <= $value && $value <= $opts{max};
         }
         elsif ($opts{allow_empty}) {
             return;
