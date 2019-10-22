@@ -39,7 +39,7 @@ function apply_mathjax(p) {
 <script type="text/x-mathjax-config">
 MathJax.Hub.Config({
   TeX: {
-    Macros: { deg: '^\\circ' }
+    Macros: { deg: '^\\circ', sgn: [ '\\operatorname\{sgn\}' ] }
   },
   'HTML-CSS': { scale: 100 },
   SVG: { scale: 100 },

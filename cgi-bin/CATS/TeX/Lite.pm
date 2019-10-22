@@ -18,7 +18,7 @@ my %generators = (
         join '', map { $CATS::TeX::Data::symbols{$_} || $_ && $_ ne '&nbsp;' && "<b>$_</b>" || $_ } @_ },
     sup    => sub { qq~<sup>$_[0]</sup>~ },
     'sub'  => sub { qq~<sub>$_[0]</sub>~ },
-    # We wish to align to baselibe of the middle row, but CSS calculates baseline only from first row.
+    # We wish to align to baseline of the middle row, but CSS calculates baseline only from first row.
     # So use baseline when there is no upper limit and middle otherwise.
     limits => sub { sc('limits' . ($_[1] ? ' hh' : '') =>
         ($_[1] ? sc(hi => ss($_[1])) : '') . sc(mid => ss($_[0])) . ($_[2] ? sc(lo => ss($_[2])) : '')
