@@ -618,8 +618,8 @@ files with tests, solutions etc.
 <tr><td>[% tag_in('table') %]</td>
   <td>
     <ul>
-      <li>border[% opt %] — 1 — draw border (default),<br/>
-        0 — do not draw border.</li>
+      <li>border[% opt %] — 1 — draw border,<br/>
+        0 — do not draw border (default).</li>
       <li>width[% opt %] — table width.</li>
     </ul>
   </td>
