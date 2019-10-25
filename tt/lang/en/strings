@@ -236,6 +236,7 @@
 1046 "Field '%s' must be zero or integer no less than %d."
 1047 "Sites used by contest '%s'."
 1048 "Problems used by contest '%s'."
+1049 "Field '%s' must be a fixed point real number."
 1053 "Problem package file not selected."
 1055 "Testing result was changed."
 1056 "Submission '%d' was deleted."

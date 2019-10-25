@@ -119,8 +119,9 @@ use CATS::RouteParser;
 use Exporter qw(import);
 
 our @EXPORT = qw(
-    validate_string_length
+    validate_fixed_point
     validate_integer
+    validate_string_length
 );
 
 sub _extract_field_name {
@@ -323,4 +324,15 @@ sub validate_integer {
         return 1;
     }
     msg(1045, res_str($field_name_id), $p{min}, $p{max});
+}
+
+sub validate_fixed_point {
+    my ($str, $field_name_id, %p) = @_;
+    if ($str) {
+        return 1 if $str =~ /^[+|-]?\d+(\.\d*)?$/;
+    }
+    elsif ($p{allow_empty}) {
+        return 1;
+    }
+    msg(1049, res_str($field_name_id));
 }
