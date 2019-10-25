@@ -11,7 +11,7 @@ use CATS::Constants;
 use CATS::Contest::Participate qw(get_registered_contestant is_jury_in_contest);
 use CATS::Countries;
 use CATS::DB;
-use CATS::Form qw(validate_integer validate_string_length);
+use CATS::Form qw(validate_fixed_point validate_integer validate_string_length);
 use CATS::Globals qw($cid $is_jury $is_root $t $uid $user);
 use CATS::Messages qw(msg res_str);
 use CATS::Output qw(url_f);
@@ -33,7 +33,7 @@ sub hash_password { $hash_password->(@_); }
 
 sub param_names () {qw(
     login team_name capitan_name country motto restrict_ips
-    city affiliation affiliation_year
+    city tz_offset affiliation affiliation_year
     git_author_name git_author_email
 )}
 
@@ -126,7 +126,8 @@ sub validate_params {
     validate_string_length($self->{capitan_name}, 801, 0, 100) or return;
     validate_string_length($self->{motto}, 802, 0, 100) or return;
     validate_string_length($self->{affiliation}, 807, 0, 100) or return;
-    validate_integer($self->{affiliation_year}, 807, allow_empty => 1, min => 1900, max => 2100) or return;
+    validate_integer($self->{affiliation_year}, 808, allow_empty => 1, min => 1900, max => 2100) or return;
+    validate_fixed_point($self->{tz_offset}, 686, allow_empty => 1) or return;
     $self->{affiliation_year} or $self->{affiliation_year} = undef;
 
     if ($p{validate_password}) {
@@ -172,7 +173,7 @@ sub insert {
     $dbh->do(q~
         INSERT INTO accounts (
             id, srole, passwd, settings, ~ . join (', ', param_names()) . q~
-        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)~, {},
+        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)~, {},
         $aid, $CATS::Privileges::srole_user, $self->{password1}, $new_settings, $self->values
     );
     $self->{id} = $aid;

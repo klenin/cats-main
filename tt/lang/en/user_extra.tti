@@ -2,6 +2,7 @@
   capt.import({
     country => 'Country',
     city => 'City / region',
+    tz_offset => 'Time zone (UTC)',
     affiliation => 'Educational institution',
     affiliation_year => 'Year of enrollment',
     motto => 'Motto',

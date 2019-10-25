@@ -31,6 +31,7 @@ CREATE TABLE accounts (
     git_author_email VARCHAR(200) DEFAULT NULL,
     settings         BLOB SUB_TYPE 0,
     city             VARCHAR(200),
+    tz_offset        FLOAT,
     affiliation      VARCHAR(200),
     affiliation_year INTEGER
 );

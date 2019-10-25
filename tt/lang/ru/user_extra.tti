@@ -2,6 +2,7 @@
   capt.import({
     country => 'Страна',
     city => 'Город / регион',
+    tz_offset => 'Часовая зона (UTC)',
     affiliation => 'Учебное заведение',
     affiliation_year => 'Год поступления',
     motto => 'Девиз команды',
