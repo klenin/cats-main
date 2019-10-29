@@ -423,7 +423,6 @@ sub get_last_verdicts_api {
         $state_sth->execute($contest_id, $uid, $problem_id);
         my ($state, $failed_test, $rid) = $state_sth->fetchrow_array;
         $state_sth->finish;
-        $is_jury_in_contest || defined $state or next;
         $result->{$_} = {
             verdict => defined $state && CATS::Verdicts::hide_verdict_self(
                 $is_jury_in_contest, $CATS::Verdicts::state_to_name->{$state}),
@@ -431,7 +430,8 @@ sub get_last_verdicts_api {
             href_run_details => $rid && url_f('run_details', rid => $rid),
             href_problem_details => ($is_jury_in_contest ?
                 url_f_cid('problem_details', cid => $contest_id, pid => $problem_id) : ''),
-            allowed => $is_jury || $problem_status != $cats::problem_st_disabled && $state != $cats::st_banned,
+            allowed => $is_jury ||
+                $problem_status != $cats::problem_st_disabled && ($state // 0) != $cats::st_banned,
         };
     }
     $p->print_json($result);
