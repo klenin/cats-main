@@ -4,7 +4,7 @@ use warnings;
 use File::Spec;
 use FindBin;
 use Test::Exception;
-use Test::More tests => 22;
+use Test::More tests => 24;
 
 use lib File::Spec->catdir($FindBin::Bin, '..');
 use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
@@ -22,9 +22,14 @@ is_deeply qb_mask('not_eq!=a,starts^=b,contains~=c,not_contains!~d'),
 is_deeply qb_mask('zz?'), { zz => qr/./i }, 'mask not NULL';
 is_deeply qb_mask('zz??'), { zz => qr/^$/i }, 'mask NULL';
 {
-my $mask = qb_mask('a!=b')->{a};
-ok 'b' !~ $mask, 'mask != 1';
-ok 'c' =~ $mask, 'mask != 2';
+    my $mask = qb_mask('a!=b')->{a};
+    unlike 'b', $mask, 'mask != 1';
+    like 'c', $mask, 'mask != 2';
+}
+{
+    my $mask = qb_mask('a>3')->{a};
+    unlike 2, $mask, 'mask gt 1';
+    like 5, $mask, 'mask gt 2';
 }
 
 {

@@ -42,6 +42,7 @@ sub regex_op {
     $op eq '!~' ? "^(?!.*\Q$v\E)" :
     $op eq '?' ? '.' :
     $op eq '??' ? '^$' :
+    $op =~ /^>|>=|<|<=$/ ? "^(.+)(?(?{\$1$op\Q$v\E})|(*F))\$" :
     die "Unknown search op '$op'";
 }
 
@@ -54,7 +55,7 @@ sub sql_op {
     $op eq '!~' ? { 'NOT LIKE', '%' . "$v%" } :
     $op eq '?' ? { '!=', undef } :
     $op eq '??' ? { '=', undef } :
-    $op =~ /^>|>=|<|<=$/ ? { $op, $v } : # SQL-only for now.
+    $op =~ /^>|>=|<|<=$/ ? { $op, $v } :
     die "Unknown search op '$op'";
 }
 
@@ -72,6 +73,7 @@ sub get_mask {
     }
     for (values %mask) {
         my $s = join '|', @$_;
+        use re 'eval'; # We use ?{...} for inequality comparisons.
         $_ = qr/$s/i;
     }
     \%mask;
