@@ -234,8 +234,11 @@ sub users_frame {
     my @fields = qw(
         A.id A.country A.motto A.login A.team_name A.city A.last_ip
         CA.is_admin CA.is_jury CA.is_ooc CA.is_remote CA.is_hidden CA.is_site_org
-        CA.is_virtual CA.diff_time CA.ext_time CA.tag);
-    $lv->define_db_searches(\@fields);
+        CA.is_virtual CA.diff_time CA.ext_time CA.tag
+    );
+    $lv->define_db_searches([ @fields, qw(
+        A.affiliation A.affiliation_year A.capitan_name A.git_author_email A.git_author_name A.tz_offset
+    ) ]);
     $lv->define_db_searches({
         'CA.id' => 'CA.id',
         is_judge => q~
