@@ -15,7 +15,7 @@
   </tr>
 </table>
 
-[% FOREACH m IN messages %]<i>[% m | html %]</i><br/>[% END %]
+<div class="messages">[% FOREACH m IN messages %]<i>[% m | html %]</i><br/>[% END %]</div>
 
 [% IF is_any_jury %]
 <script type="text/javascript">

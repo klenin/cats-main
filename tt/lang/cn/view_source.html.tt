@@ -7,5 +7,6 @@
     dev_env_detected => '开发环境被发现',
     de_not_allowed => 'This development environment is forbidden. Allowed development environments:',
     reset => 'reset editor',
+    different_versions => 'Files on server and client did not match',
   })
 %]
