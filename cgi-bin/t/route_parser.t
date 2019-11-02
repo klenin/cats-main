@@ -5,19 +5,11 @@ use File::Spec;
 use FindBin;
 use Test::More tests => 30;
 
+use lib $FindBin::Bin;
 use lib File::Spec->catdir($FindBin::Bin, '..');
 use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
 
-package MockupWeb;
-
-sub new {
-    my ($class, %rest) = @_;
-    bless { p => \%rest }, $class
-}
-
-sub web_param { $_[0]->{p}->{$_[1]} }
-
-package main;
+use MockupWeb;
 
 use CATS::RouteParser;
 
