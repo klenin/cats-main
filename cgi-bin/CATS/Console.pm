@@ -151,6 +151,7 @@ sub build_query {
             INNER JOIN problems P ON R.problem_id = P.id
             INNER JOIN accounts A ON R.account_id = A.id
             INNER JOIN contests C ON R.contest_id = C.id
+            LEFT JOIN contest_problems CP ON R.contest_id = CP.contest_id AND R.problem_id = CP.problem_id
             LEFT JOIN contest_accounts CA ON CA.account_id = A.id AND CA.contest_id = R.contest_id
             LEFT JOIN events E ON E.id = R.id
         ~,

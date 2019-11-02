@@ -178,9 +178,13 @@ sub _console_content {
         ($uid ? (can_see_reqs => qq~(
             SELECT RL.from_ok * RL.to_ok FROM relations RL
             WHERE RL.from_id = $uid AND RL.to_id = R.account_id)~) : ()),
-        problem_solved => qq~(
+        problem_accepted => qq~(
             SELECT COUNT(*) FROM reqs R1
             WHERE $same_contest_problem_account R1.state = $cats::st_accepted)~,
+        problem_solved => qq~(
+            SELECT COUNT(*) FROM reqs R1
+            WHERE $same_contest_problem_account
+                R1.state = $cats::st_accepted AND R1.points = CP.max_points)~,
     });
 
     $lv->define_enums({
