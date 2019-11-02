@@ -72,19 +72,6 @@ sub cache_max_points {
     $max_points;
 }
 
-sub partial_checker_sql {
-    my $checker_types = join ', ',
-        grep $cats::source_modules{$_} == $cats::checker_module, keys %cats::source_modules;
-    qq~
-        CASE (SELECT COALESCE(PSL.stype, PSLE.stype) FROM problem_sources PS
-            LEFT JOIN problem_sources_local PSL on PSL.id = PS.id
-            LEFT JOIN problem_sources_imported PSI on PSI.id = PS.id
-            LEFT JOIN problem_sources_local PSLE on PSLE.guid = PSI.guid
-            WHERE PS.problem_id = P.id AND PSL.stype IN ($checker_types))
-        WHEN $cats::partial_checker THEN 1 ELSE 0
-        END AS partial_checker~;
-}
-
 sub get_problems {
     my ($self) = @_;
     my $problems = $self->{problems} = $dbh->selectall_arrayref(qq~
@@ -93,8 +80,7 @@ sub get_problems {
             CP.testsets, CP.points_testsets, CP.color, C.start_date,
             CAST(CURRENT_TIMESTAMP - C.start_date AS DOUBLE PRECISION) AS since_start,
             CP.max_points, P.title, P.max_points AS max_points_def, P.run_method,
-            C.local_only, C.penalty, C.penalty_except,
-            @{[ partial_checker_sql ]}
+            C.local_only, C.penalty, C.penalty_except
         FROM
             contest_problems CP
             INNER JOIN contests C ON C.id = CP.contest_id
@@ -239,11 +225,6 @@ sub _get_first_unprocessed {
     ));
 }
 
-sub get_partial_points {
-    my ($req_row, $test_max_points) = @_;
-    my $p = ($req_row->{checker_comment} // '') =~ /^(\d+)/ ? min($1, $test_max_points || $1) : 0;
-}
-
 sub dependencies_accepted {
     my ($all_testsets, $ts, $accepted_tests, $cache) = @_;
     return 1 if !$ts->{depends_on} or $cache->{$ts->{name}};
@@ -255,8 +236,8 @@ sub dependencies_accepted {
 
 sub cache_req_points {
     my ($req, $problem) = @_;
-    my $test_points = $dbh->selectall_arrayref(qq~
-        SELECT RD.result, RD.checker_comment, COALESCE(RD.points, T.points) AS points, T.rank
+    my $test_points = $dbh->selectall_arrayref(q~
+        SELECT RD.result, RD.checker_comment, RD.points, T.points AS test_points, T.rank
             FROM reqs R
             INNER JOIN req_details RD ON RD.req_id = R.id
             INNER JOIN tests T ON RD.test_rank = T.rank AND T.problem_id = R.problem_id
@@ -277,8 +258,7 @@ sub cache_req_points {
         # Scoring groups have priority over partial checkers,
         # although they should not be used together.
         $t && defined($t->{points}) ? (++$used_testsets{$t->{name}} == $t->{test_count} ? $t->{points} : 0) :
-        $problem->{partial_checker} ? get_partial_points($_, $_->{points}) :
-        max($_->{points} || 0, 0)
+        max(min($_->{points} || 0, $_->{test_points} || 0), 0)
     } @$test_points;
 
     # In case of school-style view of acm-style contest.
