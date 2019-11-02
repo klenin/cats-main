@@ -55,7 +55,7 @@ sub problems_recalc_points {
     msg(1128, $reqs_count);
 }
 
-my $retest_default_ignore = { IS => 1, SV => 1 };
+my $retest_default_ignore = { IS => 1, SV => 1, MR => 1, BA => 1 };
 
 sub problems_retest_frame {
     my ($p) = @_;
