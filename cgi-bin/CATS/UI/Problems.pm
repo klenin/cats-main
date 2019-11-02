@@ -85,7 +85,8 @@ sub problems_all_frame {
             P.id, P.title, C.title, C.id,
             ($ok_wa_tl) AS ok_wa_tl,
             ($keywords) AS keywords,
-            (SELECT COUNT(*) FROM contest_problems CP WHERE CP.problem_id = P.id AND CP.contest_id = ?)
+            (SELECT COUNT(*) FROM contest_problems CP
+                WHERE CP.problem_id = P.id AND CP.contest_id = ?) AS linked
         FROM problems P INNER JOIN contests C ON C.id = P.contest_id
         INNER JOIN contest_problems CP ON CP.contest_id = C.id AND CP.problem_id = P.id
         WHERE $where_cond ~ . $lv->maybe_where_cond . $lv->order_by);
