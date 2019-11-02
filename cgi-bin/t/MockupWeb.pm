@@ -5,6 +5,10 @@ sub new {
     bless { p => \%rest }, $class
 }
 
-sub web_param { $_[0]->{p}->{$_[1]} }
+sub web_param {
+    my ($self, $name) = @_;
+    my $v = $self->{p}->{$name};
+    !wantarray ? $v : $v ? @$v : ();
+}
 
 1;

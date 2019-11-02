@@ -3,7 +3,7 @@ use warnings;
 
 use File::Spec;
 use FindBin;
-use Test::More tests => 30;
+use Test::More tests => 36;
 
 use lib $FindBin::Bin;
 use lib File::Spec->catdir($FindBin::Bin, '..');
@@ -37,6 +37,19 @@ is pr(MockupWeb->new, 'zz'), 'zz', 'no params';
     is $w->{nsi}, -5, 'nsi signed';
     is $w->{psi}, '+55', 'psi signed';
     is $w->{z}, 0, 'zero';
+}
+
+{
+    my $r = [ 'rar', ar => array_of integer ];
+    my $w1 = MockupWeb->new(ar => [1, 5]);
+    is pr($w1, $r), 'rar', 'route array 1';
+    is_deeply $w1->{ar}, [ 1, 5 ], 'array 1';
+    my $w2 = MockupWeb->new(ar => []);
+    is pr($w2, $r), 'rar', 'route array 2';
+    is_deeply $w2->{ar}, [], 'array 2';
+    my $w3 = MockupWeb->new;
+    is pr($w3, $r), 'rar', 'route array empty';
+    is_deeply $w3->{ar}, [], 'array empty';
 }
 
 {
