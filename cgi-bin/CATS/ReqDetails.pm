@@ -11,7 +11,6 @@ use CATS::Globals qw($contest $is_jury $is_root $t $uid);
 use CATS::Messages qw(res_str);
 use CATS::Output qw(url_f url_f_cid);
 use CATS::Problem::Utils;
-use CATS::RankTable;
 use CATS::Request;
 use CATS::Time;
 use CATS::Utils qw(encodings source_encodings);
@@ -160,7 +159,6 @@ sub get_sources_info {
     @req_ids = map +$_, grep $_ && /^\d+$/, @req_ids or return;
 
     my @src = $opts{get_source} ? qw(S.src DE.syntax DE.err_regexp) : ();
-    my @pc_sql = $opts{partial_checker} ? ( CATS::RankTable::partial_checker_sql() ) : ();
 
     my @limits = map { my $l = $_; map "$_.$l AS @{[$_]}_$l", qw(lr lcp p) } @cats::limits_fields;
 
@@ -181,7 +179,6 @@ sub get_sources_info {
             'A.team_name', 'COALESCE(E.ip, A.last_ip) AS last_ip',
             'P.title AS problem_name', 'P.save_output_prefix',
             'P.contest_id AS orig_contest_id',
-            @pc_sql,
             @limits,
             'LR.job_split_strategy AS lr_job_split_strategy',
             'LCP.job_split_strategy AS lcp_job_split_strategy',

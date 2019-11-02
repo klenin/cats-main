@@ -56,7 +56,7 @@ sub get_run_info {
     my $rd_fields = join ', ', (
          qw(test_rank result points),
          ($contest->{show_test_resources} ? @resources : ()),
-         ($contest->{show_checker_comment} || $req->{partial_checker} ? qw(checker_comment) : ()),
+         ($contest->{show_checker_comment} ? qw(checker_comment) : ()),
     );
 
     for my $row (get_req_details($contest, $req, $rd_fields, \%accepted_tests)) {
@@ -92,9 +92,6 @@ sub get_run_info {
                 $p = '';
             }
             $p .= " => $ts->{name}";
-        }
-        elsif ($row->{is_accepted} && $req->{partial_checker}) {
-            $total_points += $p = CATS::RankTable::get_partial_points($row, $p);
         }
         else {
             $total_points += $p;
@@ -199,7 +196,7 @@ sub run_details_frame {
     my ($p) = @_;
     init_template($p, 'run_details.html.tt');
 
-    my $sources_info = get_sources_info($p, request_id => $p->{rid}, partial_checker => 1) or return;
+    my $sources_info = get_sources_info($p, request_id => $p->{rid}) or return;
     my @runs;
     my $contest_cache = {};
 
