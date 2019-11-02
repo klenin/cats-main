@@ -201,6 +201,17 @@ sub _console_content {
         not_tested_on => { sq => qq~NOT EXISTS ($tested_on_sql)~, m => 1200, t => undef },
     });
 
+    my $max_points_cond = $contest->{rules} ? ' AND R.points = CP.max_points' : '';
+    my $solved = $contest->{show_all_for_solved} && $uid && !$is_jury ? $dbh->selectall_hashref(qq~
+        SELECT CP.problem_id
+        FROM contest_problems CP
+        WHERE CP.contest_id = ? AND CP.status < $cats::problem_st_hidden AND EXISTS (
+            SELECT * FROM reqs R
+            WHERE R.account_id = ? AND R.contest_id = CP.contest_id AND R.problem_id = CP.problem_id AND
+                R.state = $cats::st_accepted$max_points_cond
+        )~, 'problem_id', undef,
+        $cid, $uid) : {};
+
     my $can_see = $uid && !$is_jury ? CATS::Request::can_see_by_relation($uid) : {};
 
     my $uf = $is_jury || $contest->{show_all_results} ? $p->{uf} : [ $uid // -1 ];
@@ -231,7 +242,8 @@ sub _console_content {
         my $show_details =
             $is_jury || $uid && $team_id && $uid == $team_id ||
             ($contest->{time_since_pub_reqs} // 0) > 0 ||
-            $team_id && $can_see->{$team_id};
+            $team_id && $can_see->{$team_id} ||
+            $problem_id && $solved->{$problem_id};
 
         return (
             country => $country,

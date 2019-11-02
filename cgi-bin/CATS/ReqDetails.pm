@@ -185,6 +185,8 @@ sub get_sources_info {
             'R.limits_id AS limits_id',
             'C.title AS contest_name',
             'C.is_official',
+            'C.rules',
+            'C.show_all_for_solved',
             'CAST(CURRENT_TIMESTAMP - C.pub_reqs_date AS DOUBLE PRECISION) AS time_since_pub_reqs',
             'COALESCE(R.testsets, CP.testsets) AS testsets',
             'CP.id AS cp_id',
@@ -214,13 +216,26 @@ sub get_sources_info {
         $jury_cache{$_[0]} //= is_jury_in_contest(contest_id => $_[0]) ? 1 : 0
     };
 
+    my %solved;
+    my $is_solved = sub {
+        my ($r) = @_;
+        my $max_points_cond = $r->{rules} ? ' AND R.points = CP.max_points' : '';
+        $solved{$r->{problem_id}} //= $r->{show_all_for_solved} && $dbh->selectrow_array(qq~
+            SELECT 1 FROM reqs R
+            WHERE
+                R.contest_id = ? AND R.problem_id = ? AND R.account_id = ? AND
+                R.state = $cats::st_accepted$max_points_cond ROWS 1~, undef,
+            $r->{contest_id}, $r->{problem_id}, $uid)
+    };
+
     my $can_see;
     for (keys %$req_tree) {
         my $r = $req_tree->{$_};
         $r->{is_jury} = $is_jury_cached->($r->{contest_id});
         $r->{is_jury} || $r->{account_id} == ($uid || 0) ||
             ($r->{time_since_pub_reqs} // 0) > 0 && !$r->{submitter_is_jury} ||
-            ($can_see //= $uid ? CATS::Request::can_see_by_relation($uid) : {})->{$r->{account_id}}
+            ($can_see //= $uid ? CATS::Request::can_see_by_relation($uid) : {})->{$r->{account_id}} ||
+            $is_solved->($r)
             or delete $req_tree->{$_};
     }
 
