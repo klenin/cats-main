@@ -102,7 +102,7 @@ my $main_routes = {
         change_status => integer, status => integer,
         change_code => integer, code => problem_code,
         link_save => bool, move => bool,
-        zip => upload, allow_rename => bool,
+        zip => upload, allow_rename => bool, add_zip => upload,
         remote_url => str, repo_path => qr/[A-Za-z0-9_\/]*/,
         submit_as => str,
         source => upload, source_text => str,

@@ -180,7 +180,7 @@ sub problems_add {
 
 sub problems_add_new {
     my ($p) = @_;
-    my $zip = $p->{zip} or return msg(1053);
+    my $zip = $p->{add_zip} or return msg(1053);
     $zip->remote_file_name =~ /\.(zip|ZIP)$/
         or return msg(1053);
     my $fname = $zip->local_file_name;
