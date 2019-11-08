@@ -11,6 +11,11 @@
   span.pcode input { width: 2em; }
   input[type=color] { width: 1.5em; padding: 0; margin: 0; border: 0; background-color: inherit; }
   .yscroll { display: block; overflow-y: scroll; max-height: 7ex; }
+  .problem_submit table { border-collapse: collapse; }
+  .problem_submit table tr.sep { border-top: 1px dotted #4040ff; padding-top: 10px; }
+  .problem_submit table tr.sep td { padding-top: 10px; }
+  .problem_submit table td { padding: 3px; }
+  .problem_submit table td input { width: 97%; }
 </style>
 [%- END -%]
 [% PROCESS includes/menu_begin.tti %]
@@ -216,24 +221,44 @@ function chg_code(st_sel, pid) {
     <label><input type="checkbox" name="allow_rename" value="1"/> [% capt.rename %]</label>
   </p>
 </div>
-<div class="problem_submit weak_border">
+<div class="problem_submit">
   <p>[% capt.add_problem %]</p>
-  <p>
-    <label for="add_zip">[% capt.problem_file %]:</label><input type="file" id="add_zip" name="add_zip" class="file" size="25"/>
-  </p><p>
-    <button type="submit" name="add_new" value="1" class="button">[% capt.add_new_package %]</button>
-  </p>
-  <p>
-    <label>[% capt.new_title %]: <input type="text" name="new_title" size="30" class="bordered"/></label>
-    <label>[% capt.new_lang %]: <select name="new_lang">
+  <table class="weak_border">
+  <tr>
+    <td><label for="add_zip">[% capt.problem_file %]:</label></td>
+    <td><input type="file" id="add_zip" name="add_zip" class="file" size="25"/></td>
+  </tr><tr>
+    <td colspan="2">
+      <button type="submit" name="add_new" value="1" class="button">[% capt.add_new_package %]</button>
+    </td>
+  </tr>
+  <tr class="sep">
+    <td><label>[% capt.new_title %]:</td>
+    <td><input type="text" name="new_title" size="35" class="bordered"/></label></td>
+  </tr><tr>
+    <td><label for="new_lang">[% capt.new_lang %]:</label></td>
+    <td><select id="new_lang" name="new_lang">
       [%- FOREACH l IN langs; option(l.name, l.name, l.name == lang); END -%]
-    </select></label>
-  </p><p>
-    <button type="submit" name="add_new_template" value="1" class="button">[% capt.add_new_template %]</button>
-  </p>
-  <p><label for="remote_url">[% capt.problem_url %]:</label><input type="text" id="remote_url" name="remote_url" size="30"/></p>
-  <p><label for="repo_path">[% capt.repo_path %]:</label><input type="text" id="repo_path" name="repo_path" size="30"/></p>
-  <p><button type="submit" name="add_remote" value="1" class="button">[% capt.add_new_repo %]</button></p>
+    </select></td>
+  </tr><tr>
+    <td colspan="2">
+      <button type="submit" name="add_new_template" value="1" class="button">[% capt.add_new_template %]</button>
+    </td>
+  </tr>
+  <tr class="sep">
+    <td><label for="remote_url">[% capt.problem_url %]:</label></td>
+    <td><input type="text" id="remote_url" name="remote_url" size="35" class="bordered"/></td>
+  </tr>
+  <tr>
+    <td><label for="repo_path">[% capt.repo_path %]:</label></td>
+    <td><input type="text" id="repo_path" name="repo_path" size="35" class="bordered"/></td>
+  </tr>
+  <tr>
+    <td colspan="2">
+      <button type="submit" name="add_remote" value="1" class="button">[% capt.add_new_repo %]</button>
+    </td>
+  </tr>
+  </table>
 </div>
 <div class="problem_submit">
   <button type="button" name="delete_problem" value="1" class="button" onclick="d()">[% capt.delete %]</button>
