@@ -133,7 +133,9 @@ function init_editors() {
     var state = JSON.parse(localStorage.getItem(editor.container.id));
     if (!state) return;
     if (new_hash != old_hash) {
-      $('.messages').text($('#different_versions_msg').text());
+      var msg = $('#different_versions_msg').text();
+      if (msg)
+        $('.messages').text(msg);
       localStorage.setItem(hash_key, new_hash);
       json_to_session(editor, state, editor.getSession().getValue());
     } else
