@@ -670,7 +670,7 @@ have explicit <code>lang</code> attribute.
 <p>
   Memory size in mlimit, memoryLimit, wlimit or writeLimit
   attribute value must be an integer optionally followed
-  by a suffix 'B' for bytes, 'K' for kilobytes, 'M' for megabytes.
+  by a suffix 'B' for bytes, 'K' for kilobytes, 'M' for megabytes, 'G' for gigabytes.
   If no suffix is given, megabytes are assumed.
 </p>
 
