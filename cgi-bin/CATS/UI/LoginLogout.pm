@@ -141,22 +141,25 @@ sub logout_frame {
     }
 }
 
-my $login_prefix = 'nti_2018_';
-
 sub _login_token {
     my ($p) = @_;
     # ONTI compatibility.
     $p->{apikey} ||= $p->{token};
-    $p->{login} ||= $login_prefix . $p->{team_id};
 
-    $p->{login} && $p->{apikey} && $p->{cid} or return [ 0, 'no param' ];
-    my ($account_id, $is_jury_in_contest, $apikey) = $dbh->selectrow_array(q~
-        SELECT CA.account_id, CA.is_jury, C.apikey FROM contest_accounts CA
+    $p->{$_} or return [ 0, "no param '$_'" ] for qw(apikey cid);
+    my ($apikey, $login_prefix) = $dbh->selectrow_array(q~
+        SELECT C.apikey, C.login_prefix FROM contests C WHERE C.id = ?~, undef,
+        $p->{cid});
+    $p->{apikey} eq ($apikey // '') or return [ 0, 'bad api key' ];
+
+    $p->{login} ||= ($login_prefix // '') . ($p->{team_id} // '')
+        or return [ 0, "no param 'login'" ];
+
+    my ($account_id, $is_jury_in_contest) = $dbh->selectrow_array(q~
+        SELECT CA.account_id, CA.is_jury FROM contest_accounts CA
         INNER JOIN accounts A ON A.id = CA.account_id
-        INNER JOIN contests C ON C.id = CA.contest_id
         WHERE A.login = ? AND CA.contest_id = ?~, undef,
         $p->{login}, $p->{cid}) or return [ 0, 'bad login' ];
-    $p->{apikey} eq $apikey or return [ 0, 'bad api key' ];
     $is_jury_in_contest and return [ 0, 'bad user' ];
     my $token = CATS::User::make_token($account_id);
     [ 1, $CATS::Config::absolute_url .
