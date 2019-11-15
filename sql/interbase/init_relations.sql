@@ -95,6 +95,7 @@ CREATE TABLE contests (
     penalty_except       VARCHAR(100),
     ctype                INTEGER, /* 0 -- normal, 1 -- training session */
     apikey               VARCHAR(50),
+    login_prefix         VARCHAR(50),
     parent_id            INTEGER,
 
     is_official          INTEGER DEFAULT 0 CHECK (is_official IN (0, 1)),
