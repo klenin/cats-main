@@ -171,6 +171,15 @@ sub define_kw_subquery {
             m => 1048,
             t => q~SELECT title FROM contests WHERE id = ?~,
         },
+        from_contest_with_tag => {
+            sq => q~(EXISTS (
+                SELECT 1 FROM contest_tags CT
+                INNER JOIN contest_contest_tags CCT
+                    ON CCT.contest_id = P.contest_id AND CCT.tag_id = CT.id
+                WHERE CT.name = ?))~,
+            m => 1048,
+            t => q~SELECT name FROM contest_tags CT WHERE name = ?~,
+        },
     });
 }
 
