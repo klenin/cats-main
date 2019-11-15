@@ -17,6 +17,7 @@ use CATS::Output qw(init_template url_f);
 use CATS::Problem::Save;
 use CATS::Problem::Storage;
 use CATS::RankTable;
+use CATS::Redirect;
 use CATS::Settings qw($settings);
 use CATS::StaticPages;
 use CATS::Utils;
@@ -50,7 +51,7 @@ sub contest_params() {qw(
     start_date short_descr is_official finish_date run_all_tests req_selection show_packages
     show_all_tests freeze_date defreeze_date show_test_data max_reqs_except show_frozen_reqs show_all_results
     pinned_judges_only show_test_resources show_checker_comment
-    pub_reqs_date show_all_for_solved
+    pub_reqs_date show_all_for_solved apikey login_prefix
 )}
 
 sub contest_checkbox_params() {qw(
@@ -62,7 +63,7 @@ sub contest_checkbox_params() {qw(
 
 sub contest_string_params() {qw(
     title short_descr start_date freeze_date finish_date defreeze_date pub_reqs_date
-    rules req_selection max_reqs
+    rules req_selection max_reqs apikey login_prefix
 )}
 
 sub get_contest_html_params {
@@ -89,6 +90,11 @@ sub get_contest_html_params {
 
 sub _validate {
     my ($c) = @_;
+
+    if (!$is_root) {
+        delete $c->{_} for qw(apikey login_prefix);
+    }
+
     my $req_fields = [
         { f => 'start_date', n => 600 },
         { f => 'finish_date', n => 631 },
@@ -289,7 +295,9 @@ sub contest_params_frame {
         can_edit => $is_jury_in_contest,
         href_api_login_token => (
             $is_root && $c->{apikey} ?
-            url_f('api_login_token', token => $c->{apikey}, team_id => 'xxx') : undef),
+            CATS::Utils::url_function('api_login_token',
+                token => $c->{apikey}, login => ($c->{login_prefix} // '') . 'XXXX',
+                cid => $cid, redir => CATS::Redirect::encode({ f => 'problems' })) : undef),
         verdicts_max_reqs => [ map +{ short => $_->[0], checked => $verdicts_excluded_max_reqs{$_->[0]} },
             @$CATS::Verdicts::name_to_state_sorted ],
         verdicts_penalty => [ map +{ short => $_->[0], checked => $verdicts_excluded_penalty{$_->[0]} },
