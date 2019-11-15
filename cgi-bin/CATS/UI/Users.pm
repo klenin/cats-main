@@ -91,7 +91,7 @@ sub users_import_frame {
                 handle => $cols[$i], is_actual => 1,
             }));
         }
-        push @report, "$u->{team_name} -- $r ($contact_count)";
+        push @report, "$u->{team_name} -- $r (contacts=$contact_count)";
     }
 
     $p->{do_import} ? $dbh->commit : $dbh->rollback;
