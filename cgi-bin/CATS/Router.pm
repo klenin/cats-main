@@ -149,7 +149,7 @@ my $main_routes = {
         a => ident, pid => integer, pull => bool, replace => bool,
         message => str, is_amend => bool, allow_rename => bool, zip => upload, ],
     problem_history_edit => [ \&CATS::UI::ProblemHistory::problem_history_edit_frame,
-        pid => required integer, hb => required sha, file => required str,
+        pid => required integer, hb => required sha, file => str,
         save => bool, src_enc => encoding, message => str, src => undef,
         is_amend => bool, source => upload, upload => bool, new_name => str,
     ],
