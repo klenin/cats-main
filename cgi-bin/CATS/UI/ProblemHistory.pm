@@ -247,6 +247,7 @@ sub problem_history_edit_frame {
         de_selected => $de,
         pid => $p->{pid},
         edit_file => $p->{file},
+        hash => $hash_base,
     );
 }
 

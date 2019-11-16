@@ -91,7 +91,7 @@
     </a>
   </div>
     <div>
-<textarea rows="40" cols="100" name="src" data-editor="[% de_selected.syntax || 'text' %]" data-gutter="1" data-id="ed_pe[% pid %]_[% path.file_name %]">
+<textarea rows="40" cols="100" name="src" data-editor="[% de_selected.syntax || 'text' %]" data-gutter="1" data-id="ed_pe[% pid %]_[%- IF edit_file; path.file_name; ELSE; hash; END; %]">
 [%- IF blob.content; blob.content | html; ELSE; FOREACH line IN blob.lines %]
 [% line.text | html %]
 [%- END; END ~%]
