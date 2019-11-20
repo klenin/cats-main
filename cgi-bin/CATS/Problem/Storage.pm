@@ -162,7 +162,7 @@ sub load {
 sub change_file {
     my ($self, $cid, $pid, $file, $content, $message, $is_amend, $new_name) = @_;
     $user->{git_author_name} && $user->{git_author_email} or return (-1, msg(1167));
-    $new_name =~ /^[A-Za-z0-9_\-\.]+$/ or return (-1, msg(1209)) if $new_name;
+    $new_name =~ /^([A-Za-z0-9_\-\.]+[A-Za-z0-9][\/]?)+[^\/\s]$/ or return (-1, msg(1209)) if $new_name;
 
     my $repo = get_repo($pid);
     $repo->is_file_exist($new_name) and return (-1, msg(1208, $new_name)) if $new_name;
@@ -171,7 +171,6 @@ sub change_file {
     $repo->replace_file_content($file || $new_name, $content);
 
     if ($file && $new_name && ($file ne $new_name)) {
-        # TODO: Move between directories
         $repo->mv($file, $new_name);
     }
 
