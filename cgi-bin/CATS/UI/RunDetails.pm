@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use Encode;
-use List::Util qw(max);
+use List::Util qw(max min);
 use JSON::XS;
 
 use CATS::BinaryFile;
@@ -66,7 +66,11 @@ sub get_run_info {
         }
 
         $last_test = $row->{test_rank};
-        my $p = $row->{is_accepted} ? $row->{points} || $points->[$row->{test_rank} - 1] || 0 : 0;
+        my $test_points = $points->[$row->{test_rank} - 1] // 0;
+        my $p =
+            !$row->{is_accepted} ? 0 :
+            !defined $row->{points} ? $test_points :
+            min(max($row->{points}, 0), $test_points);
         if (my $ts = $row->{ts} = $testset{$last_test}) {
             $used_testsets{$ts->{name}} = $ts;
             $ts->{accepted_count} //= 0;

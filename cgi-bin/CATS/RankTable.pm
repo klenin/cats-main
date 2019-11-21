@@ -252,13 +252,15 @@ sub cache_req_points {
     }
     my $total = sum map {
         my $t = $test_testsets->{$_->{rank}};
+        $_->{test_points} //= 0;
         $_->{result} != $cats::st_accepted ? 0 :
         $t && $t->{depends_on} && !dependencies_accepted(
             $problem->{all_testsets}, $t, \%accepted_tests, \%accepted_deps) ? 0 :
         # Scoring groups have priority over partial checkers,
         # although they should not be used together.
         $t && defined($t->{points}) ? (++$used_testsets{$t->{name}} == $t->{test_count} ? $t->{points} : 0) :
-        max(min($_->{points} || 0, $_->{test_points} || 0), 0)
+        !defined $_->{points} ? $_->{test_points} :
+        min(max($_->{points}, 0), $_->{test_points});
     } @$test_points;
 
     # In case of school-style view of acm-style contest.
