@@ -17,6 +17,7 @@
     download => 'Скачать',
     package => 'пакет',
     git_package => 'пакет git',
+    package_size => 'объём',
     text => 'Текст',
     full_text => 'полный',
     nospell_text => 'без орфографии',

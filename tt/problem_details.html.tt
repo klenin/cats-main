@@ -32,6 +32,7 @@
 <tr><td>[% capt.download %]</td><td>
 [% IF href_download %][<a href="[% href_download %]">[% capt.package %]</a>][% END %]
 [% IF href_git_package %][<a href="[% href_git_package %]">[% capt.git_package %]</a>][% END %]
+([% capt.package_size %]: [% p.package_size | group_digits %])
 </td></tr>
 <tr><td>[% capt.text %]</td><td class="nested"><table class="internal_borders padded">
 [% FOREACH pl IN problem_langs %]
@@ -45,9 +46,9 @@
 </table></td></tr>
 <tr><td>[% capt.save_test_data %]</td><td class="nested">
   <table class="internal_borders padded"><tr>
-    <td>[% capt.save.input  %]: [% p.save_input_prefix || '--' %]</td>
-    <td>[% capt.save.answer %]: [% p.save_answer_prefix || '--'  %]</td>
-    <td>[% capt.save.output %]: [% p.save_output_prefix || '--'  %]</td>
+    <td>[% capt.save.input  %]: [% p.save_input_prefix || '--' | group_digits %]</td>
+    <td>[% capt.save.answer %]: [% p.save_answer_prefix || '--' | group_digits %]</td>
+    <td>[% capt.save.output %]: [% p.save_output_prefix || '--' | group_digits %]</td>
   </tr></table>
 </td></tr>
 <tr><td>[% capt.testsets %]</td><td>[% href(href_testsets, p.testsets || capt.testsets_all) %]</td></tr>

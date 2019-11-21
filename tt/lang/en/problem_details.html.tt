@@ -17,6 +17,7 @@
     download => 'Download',
     package => 'package',
     git_package => 'git package',
+    package_size => 'size',
     text => 'Text',
     full_text => 'full',
     nospell_text => 'no spellchecking',
