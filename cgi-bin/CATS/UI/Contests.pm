@@ -63,7 +63,7 @@ sub contest_checkbox_params() {qw(
 
 sub contest_string_params() {qw(
     title short_descr start_date freeze_date finish_date defreeze_date pub_reqs_date
-    rules req_selection max_reqs apikey login_prefix
+    rules req_selection max_reqs
 )}
 
 sub get_contest_html_params {
