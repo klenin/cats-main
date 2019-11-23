@@ -157,7 +157,7 @@ sub problems_add {
 
     my $source =
         $opts{source} eq 'remote' ?
-            CATS::Problem::Source::Git->new($source_name, $ps, $opts{repo_path} || die) :
+            CATS::Problem::Source::Git->new($source_name, $ps, $opts{repo_path}) :
         $opts{source} eq 'zip' ?
             CATS::Problem::Source::Zip->new($source_name, $ps) :
         $opts{source} eq 'dir' ?
