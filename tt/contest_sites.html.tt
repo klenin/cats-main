@@ -16,7 +16,7 @@ function delete_contest_site(href, name) {
 
 [% PROCESS includes/listview_header.tti %]
 
-<table class="listview bordered highlight">
+<table class="listview cell_search bordered highlight">
 [% PROCESS includes/listview_col_defs.tti sel_col = user.is_jury %]
 
 [% FOREACH cs IN contest_sites %]
@@ -32,9 +32,9 @@ function delete_contest_site(href, name) {
 </td>
 [% END %]
 <td>[% maybe_href(cs.href_site, cs.name) %]</td>
-[% IF visible_cols.Rg %]<td>[% cs.region | html %]</td>[% END %]
-[% IF visible_cols.Ci %]<td>[% cs.city | html %]</td>[% END %]
-[% IF visible_cols.Oc %]<td>[% cs.org_name | html %]</td>[% END %]
+[% IF visible_cols.Rg %]<td>[% cs.region | html; cell_search('region', cs) %]</td>[% END %]
+[% IF visible_cols.Ci %]<td>[% cs.city | html; cell_search('city', cs) %]</td>[% END %]
+[% IF visible_cols.Oc %]<td>[% cs.org_name | html; cell_search('org_name', cs) %]</td>[% END %]
 [% IF visible_cols.Op %]<td>[% cs.org_person | html %]</td>[% END %]
 [% IF visible_cols.Dt %]<td>[% cs.formatted_time | html %]</td>[% END %]
 [% IF visible_cols.Pt %]

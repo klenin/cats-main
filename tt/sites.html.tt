@@ -9,7 +9,7 @@ function delete_site(href, name) {
 
 [% PROCESS includes/listview_header.tti %]
 
-<table class="listview bordered highlight">
+<table class="listview cell_search bordered highlight">
 [% PROCESS includes/listview_col_defs.tti %]
 
 [% FOREACH s IN sites %]
@@ -19,10 +19,10 @@ function delete_site(href, name) {
   <a href="[% s.href_edit %]" class="icon edit"></a>
   [% s.name | html %]
 </td>
-[% IF visible_cols.Rg %]<td>[% s.region | html %]</td>[% END %]
-[% IF visible_cols.Ct %]<td>[% s.city | html %]</td>[% END %]
-[% IF visible_cols.On %]<td>[% s.org_name | html %]</td>[% END %]
-[% IF visible_cols.Ad %]<td>[% s.address | html %]</td>[% END %]
+[% IF visible_cols.Rg %]<td>[% s.region | html; cell_search('region', s) %]</td>[% END %]
+[% IF visible_cols.Ct %]<td>[% s.city | html; cell_search('city', s) %]</td>[% END %]
+[% IF visible_cols.On %]<td>[% s.org_name | html; cell_search('org_name', s) %]</td>[% END %]
+[% IF visible_cols.Ad %]<td>[% s.address | html; cell_search('address', s) %]</td>[% END %]
 [% IF visible_cols.Cc %]<td>[% href(s.href_contests, s.contests) %]</td>[% END %]
 </tr>
 [% END %]
