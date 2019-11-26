@@ -382,6 +382,8 @@ sub problem_text {
                 $_ = $_ eq '' ? undef : _parse($_) unless $is_root && $p->{raw};
                 CATS::TeX::Lite::convert_all($_);
                 s/(\s|~)(:?-){2,3}(?!-)/($1 ? '&nbsp;' : '') . '&#8212;'/ge; # em-dash
+                s/``/\xAB/g; # Left guillemet.
+                s/''/\xBB/g; # Right guillemet.
             }
         }
         $spellchecker->pop_lang if $spellchecker;
