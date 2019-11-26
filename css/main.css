@@ -365,12 +365,28 @@ span.TeX span.limits.hh { vertical-align: middle; }
 span.TeX span.limits > span { display: table-row; }
 span.TeX span.limits > .hi { font-size: 80%; line-height: 80%; }
 span.TeX span.limits > .lo { font-size: 80%; line-height: 80%; }
-span.TeX span.large { font-size: 150%; }
+span.TeX span.large { display: inline-block; font-size: 150%; transform: scaleY(2.0) }
 
+span.TeX span.array { display: inline-block; vertical-align: middle; }
 span.TeX span.tbl { display: inline-table; }
 span.TeX span.tbl > span { display: table-row; }
-span.TeX span.tbl > span > span { display: table-cell; }
+span.TeX span.tbl > span > span { display: table-cell; padding: 2px; }
 span.TeX span.tbl.hilo { font-size: 80%; vertical-align: middle; }
+span.TeX span.l1 > span > span:nth-child(1),
+span.TeX span.l2 > span > span:nth-child(2),
+span.TeX span.l3 > span > span:nth-child(3),
+span.TeX span.l4 > span > span:nth-child(4)
+    { text-align: left; }
+span.TeX span.c1 > span > span:nth-child(1),
+span.TeX span.c2 > span > span:nth-child(2),
+span.TeX span.c3 > span > span:nth-child(3),
+span.TeX span.c4 > span > span:nth-child(4)
+    { text-align: center; }
+span.TeX span.r1 > span > span:nth-child(1),
+span.TeX span.r2 > span > span:nth-child(2),
+span.TeX span.r3 > span > span:nth-child(3),
+span.TeX span.r4 > span > span:nth-child(4)
+    { text-align: right; }
 
 span.TeX span.limits > .hi { font-size: 80%; line-height: 80%; }
 span.TeX span.limits > .lo { font-size: 80%; line-height: 80%; line-height: 80%; }

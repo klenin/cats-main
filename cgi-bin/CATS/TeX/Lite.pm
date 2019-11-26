@@ -36,7 +36,7 @@ my %generators = (
     sum    => $large_sym->('sum'),
     prod   => $large_sym->('prod'),
     int    => $large_sym->('int', 'int'),
-    array  => sub { sc(tbl => ss(ss($_[1]))) },
+    array  => sub { sc(array => sc("tbl $_[0]" => ss(ss($_[1])))) },
     cell   => sub { '</span><span>' },
     row    => sub { '</span></span><span><span>' },
     prime  => sub { length($_[0]) == 2 ? '&#8243;' : '&prime;' x length($_[0]) },
@@ -125,7 +125,8 @@ sub parse_block {
                 if ($source =~ s/^\{([a-zA-Z]+)\}\s*//) {
                     my $env= $1;
                     if ($env eq 'array') {
-                        my ($cols) = $source =~ s/^\{([a-zA-Z]+)\}\s*//;
+                        $source =~ s/^\{([a-zA-Z]+)\}\s*//;
+                        my $cols = join ' ', map substr($1, $_ - 1, 1) . $_, 1 .. length($1);
                         push @res, [ array => $cols // '', parse_block() ];
                     }
                     else {
