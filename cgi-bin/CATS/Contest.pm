@@ -18,6 +18,7 @@ use fields (database_fields(), qw(
 use CATS::Config qw(cats_dir);
 use CATS::Contest::Utils;
 use CATS::DB;
+use CATS::Globals qw($cid);
 use CATS::Messages qw(msg);
 
 sub new {
@@ -66,9 +67,13 @@ sub has_finished_for {
 }
 
 sub current_official {
+    # If several official contests are in progress, prefer current contest.
     $dbh->selectrow_hashref(q~
         SELECT id, title FROM contests
-            WHERE CURRENT_TIMESTAMP BETWEEN start_date AND finish_date AND is_official = 1~);
+            WHERE CURRENT_TIMESTAMP BETWEEN start_date AND finish_date AND is_official = 1
+            ORDER BY CASE WHEN id = ? THEN 0 ELSE 1 END
+            ROWS 1~, undef,
+         $cid);
 }
 
 sub used_problem_codes {

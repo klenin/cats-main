@@ -173,8 +173,8 @@ sub get_sources_info {
             R.state R.failed_test R.points R.tag
             R.submit_time R.test_time R.result_time
             ),
-            "(R.result_time - R.test_time) AS test_duration",
-            "(R.submit_time - $CATS::Time::contest_start_offset_sql) AS time_since_start",
+            "CAST(R.result_time - R.test_time AS DOUBLE PRECISION) AS test_duration",
+            "CAST(R.submit_time - $CATS::Time::contest_start_offset_sql AS DOUBLE PRECISION) AS time_since_start",
             'DE.description AS de_name',
             'A.team_name', 'COALESCE(E.ip, A.last_ip) AS last_ip',
             'P.title AS problem_name', 'P.save_output_prefix',
@@ -242,8 +242,8 @@ sub get_sources_info {
     my %user_cache;
     my $user_cached = sub { $user_cache{$_[0]} //= _get_user_details($_[0]) };
 
-    my $official = $opts{get_source} && CATS::Contest::current_official;
-    $official = 0 if $official && $is_jury_cached->($official->{id});
+    my $current_official = $opts{get_source} && CATS::Contest::current_official;
+    undef $current_official if $current_official && $is_jury_cached->($current_official->{id});
     my $se = $p->{src_enc};
 
     for my $r (values %$req_tree) {
@@ -271,8 +271,8 @@ sub get_sources_info {
         _get_nearby_attempt($p, $r, 'next', '>', 'ASC' , 0, $opts{extra_params});
         # During the official contest, viewing sources from other contests
         # is disallowed to prevent cheating.
-        if ($official && $official->{id} != $r->{contest_id}) {
-            $r->{src} = res_str(1138, $official->{title});
+        if ($current_official && $r->{contest_id} != $current_official->{id}) {
+            $r->{src} = res_str(1138, $current_official->{title} . $r->{contest_id});
         }
         elsif ($opts{encode_source}) {
             if (encodings()->{$se} && $r->{file_name} && $r->{file_name} !~ m/\.zip$/) {
