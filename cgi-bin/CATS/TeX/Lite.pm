@@ -33,6 +33,7 @@ my %generators = (
     left   => sub { sc(large => @_) },
     right  => sub { sc(large => @_) },
     mathcal=> sub { sc(mathcal => @_) },
+    texttt => sub { sc(tt => @_) },
     sum    => $large_sym->('sum'),
     prod   => $large_sym->('prod'),
     int    => $large_sym->('int', 'int'),
@@ -108,6 +109,10 @@ sub parse_block {
             my ($lsp, $f, $rsp) = ($1, $2, $3);
             if (defined(my $args_count = $simple_commands{$f})) {
                 push @res, [ $f, map parse_token, 1 .. $args_count ]
+            }
+            elsif ($f eq 'texttt') {
+                $source =~ s/^{([^{]*)}//;
+                push @res, [ texttt => $1 ];
             }
             elsif ($f eq 'over') {
                 my $d = [ frac => $res[-1] // '', parse_token() ];
