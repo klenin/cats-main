@@ -58,6 +58,7 @@
     <textarea class="scrollable" wrap="off">[% output_data.decoded | html %]</textarea>
 </div>
 
+<div style="height: 50px"></div>
 [% PROCESS includes/timing.tti %]
 </body>
 </html>
