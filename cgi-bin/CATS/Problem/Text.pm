@@ -22,12 +22,21 @@ use CATS::Time;
 use CATS::Utils qw(url_function);
 
 my (
-    $current_pid, $html_code, $spellchecker, $text_span, $tags, $skip_depth,
+    $current_pid, $html_code, $spellchecker, $text_span, $tags, $skip_depth, $verbatim_depth,
     $has_snippets, $noif, $has_quizzes, $has_static_highlight);
 my $wrapper = 'cats-wrapper';
 my @parsed_fields = qw(statement pconstraints input_format output_format explanation);
 
+my $verbatim_tags = { code => 1, script => 1, svg => 1, style => 1 };
+
 sub process_text {
+    if (!$verbatim_depth) {
+        for ($text_span) {
+            s/(\s|~)(:?-){2,3}(?!-)/($1 ? '&nbsp;' : '') . '&#8212;'/ge; # Em-dash.
+            s/``/\xAB/g; # Left guillemet.
+            s/''/\xBB/g; # Right guillemet.
+        }
+    }
     if ($spellchecker) {
         my @tex_parts = split /\$/, $text_span;
         my $i = 0;
@@ -93,8 +102,6 @@ sub save_attachment {
     return downloads_url . $fname;
 }
 
-my $no_spellcheck_tags = { code => 1, script => 1, svg => 1, style => 1 };
-
 sub _on_start {
     my ($p, $el, %atts) = @_;
     return if $el eq $wrapper;
@@ -136,11 +143,12 @@ sub _on_start {
         $has_static_highlight = 1;
     }
 
+    --$verbatim_depth if $verbatim_tags->{lc($el)};
     process_text;
     if ($spellchecker) {
         my $lang = $atts{lang};
         # Do not spellcheck code unless explicitly requested.
-        $lang //= 'code' if $no_spellcheck_tags->{lc($el)};
+        $lang //= 'code' if $verbatim_tags->{lc($el)};
         $spellchecker->push_lang($lang, $atts{'cats-dict'});
     }
     $html_code .= "<$el";
@@ -157,6 +165,7 @@ sub _on_end {
         $skip_depth--;
         return;
     }
+    --$verbatim_depth if $verbatim_tags->{lc($el)};
     process_text;
     return if $el eq $wrapper;
     $spellchecker->pop_lang if $spellchecker;
@@ -381,9 +390,6 @@ sub problem_text {
                 $text_span = '';
                 $_ = $_ eq '' ? undef : _parse($_) unless $is_root && $p->{raw};
                 CATS::TeX::Lite::convert_all($_);
-                s/(\s|~)(:?-){2,3}(?!-)/($1 ? '&nbsp;' : '') . '&#8212;'/ge; # em-dash
-                s/``/\xAB/g; # Left guillemet.
-                s/''/\xBB/g; # Right guillemet.
             }
         }
         $spellchecker->pop_lang if $spellchecker;
