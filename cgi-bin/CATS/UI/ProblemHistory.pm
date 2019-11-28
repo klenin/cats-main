@@ -242,7 +242,7 @@ sub problem_history_edit_frame {
         message => Encode::decode_utf8($p->{message}),
         is_amend => $p->{is_amend},
         problem_import_log => $log,
-        cats_tags => $p->{file} =~ m/\.xml$/ ?
+        cats_tags => $p->{file} && ($p->{file} =~ m/\.xml$/) ?
             [ sort keys %{CATS::Problem::Parser::tag_handlers()} ] : [],
         keywords => $keywords,
         de_list => $de_list,
