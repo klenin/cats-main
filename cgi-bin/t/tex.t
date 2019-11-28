@@ -3,7 +3,7 @@ use warnings;
 
 use File::Spec;
 use FindBin;
-use Test::More tests => 33;
+use Test::More tests => 34;
 
 use lib File::Spec->catdir($FindBin::Bin, '..');
 use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
@@ -26,6 +26,7 @@ is_ 'a', '<i>a</i>';
 is_ 'abc+def', '<i>abc</i>+<i>def</i>';
 is_ 'a-b', '<i>a</i>&minus;<i>b</i>';
 is_ 'a \le b', '<i>a</i>&nbsp;&le;&nbsp;<i>b</i>';
+is_ 'a \texttt{c+1} b', '<i>a</i><span class="tt">c+1</span><i>b</i>';
 
 is_ 'a b c', '<i>a</i> <i>b</i> <i>c</i>';
 is_ 'a b+c', '<i>a</i> <i>b</i>+<i>c</i>';
@@ -108,7 +109,7 @@ is_ '\int\sum\prod',
     '<span class="int">&int;</span><span class="large_sym">&sum;</span><span class="large_sym">&prod;</span>';
 
 is_ q~\begin{array}{lr}123&a \\\\ b & c\end{array}~,
-    '<span class="tbl">' .
+    '<span class="array"><span class="tbl l1 r2">' .
     '<span><span><span class="num">123</span></span><span><i>a</i></span></span>' .
     '<span><span><i>b</i></span><span><i>c</i></span></span>' .
-    '</span>';
+    '</span></span>';
