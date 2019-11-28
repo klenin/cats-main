@@ -117,7 +117,8 @@ sub problem_history_tree_frame {
     set_history_paths_urls($p->{pid}, $tree->{paths});
     my @items = {
         href => url_f('problem_history_edit',
-            file => $p->{file} ? $p->{file} . '/' : '', pid => $p->{pid}, hb => $p->{hb}, new => 1), item => res_str(401) };
+            file => $p->{file} ? $p->{file} . '/' : '', pid => $p->{pid}, hb => $p->{hb}, new => 1),
+        item => res_str(401), new => 1 };
     set_submenu_for_tree_frame($p->{pid}, $p->{hb}, @items);
     $t->param(
         tree => $tree,
