@@ -115,7 +115,9 @@ sub problem_history_tree_frame {
         }
     }
     set_history_paths_urls($p->{pid}, $tree->{paths});
-    my @items = { href => url_f('problem_history_edit', pid => $p->{pid}, hb => $p->{hb}), item => res_str(401) };
+    my @items = {
+        href => url_f('problem_history_edit',
+            file => $p->{file} ? $p->{file} . '/' : '', pid => $p->{pid}, hb => $p->{hb}, new => 1), item => res_str(401) };
     set_submenu_for_tree_frame($p->{pid}, $p->{hb}, @items);
     $t->param(
         tree => $tree,
@@ -215,7 +217,7 @@ sub problem_history_edit_frame {
     }
 
     my $enc = 'UTF-8';
-    if ($p->{file}) {
+    if (!defined $p->{new}) {
         my @blob_params = ($p->{pid}, $hash_base, $p->{file});
         my $blob = CATS::Problem::Storage::show_blob(
             @blob_params, $p->{src_enc} || \&detect_encoding_by_xml_header);
@@ -246,7 +248,7 @@ sub problem_history_edit_frame {
         de_list => $de_list,
         de_selected => $de,
         pid => $p->{pid},
-        edit_file => $p->{file},
+        edit_file => !$p->{new},
         hash => $hash_base,
     );
 }
@@ -260,7 +262,8 @@ sub _save_content {
     my $hash_base = $p->{hb};
     $p->{src} = $p->{source}->content if $p->{upload};
     my $content = $p->{src};
-    undef $p->{new_name} if $p->{new_name} eq $p->{file};
+    undef $p->{new_name} if $p->{file} and $p->{new_name} eq $p->{file};
+    undef $p->{file} if $p->{new};
 
     my CATS::Problem::Storage $ps = CATS::Problem::Storage->new;
     Encode::from_to($content, $p->{enc} // 'UTF-8', $p->{src_enc});

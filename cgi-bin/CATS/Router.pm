@@ -151,7 +151,7 @@ my $main_routes = {
     problem_history_edit => [ \&CATS::UI::ProblemHistory::problem_history_edit_frame,
         pid => required integer, hb => required sha, file => str,
         save => bool, src_enc => encoding, message => str, src => undef,
-        is_amend => bool, source => upload, upload => bool, new_name => str,
+        is_amend => bool, source => upload, upload => bool, new_name => str, new => bool,
     ],
     problem_history_blob => [ \&CATS::UI::ProblemHistory::problem_history_blob_frame,
         pid => required integer, hb => required sha, file => required str, src_enc => str,
