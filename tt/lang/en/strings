@@ -380,3 +380,4 @@
 1207 "Field '%s' must not be empty."
 1208 "File '%s' already exists."
 1209 "Incorrect file name."
+1210 "File must not be empty."
