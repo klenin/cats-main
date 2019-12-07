@@ -143,7 +143,7 @@ sub _on_start {
         $has_static_highlight = 1;
     }
 
-    --$verbatim_depth if $verbatim_tags->{lc($el)};
+    ++$verbatim_depth if $verbatim_tags->{lc($el)};
     process_text;
     if ($spellchecker) {
         my $lang = $atts{lang};
@@ -183,6 +183,7 @@ sub _parse {
     # XML parser requires all text to be inside of top-level tag.
     eval { $parser->parse("<$wrapper>$xml_patch</$wrapper>"); 1; } or return $@;
     $skip_depth and die;
+    $verbatim_depth and die;
     $html_code;
 }
 
