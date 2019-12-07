@@ -27,7 +27,7 @@ sub parse_search {
     $self->{search_subqueries} = [];
     for (split /,\s*/, $search) {
         /^($ident)([!~^=><]?=|>|<|\?\??|!~)(.*)$/ ? push @{$self->{search}}, [ $1, $3, $2 ] :
-        /^($ident)\((\d+|\p{L}(?:\p{L}|[_.])*)\)$/ ? push @{$self->{search_subqueries}}, [ $1, $2 ] :
+        /^($ident)\((\d+|\p{L}(?:\p{L}|\d|[_.])*)\)$/ ? push @{$self->{search_subqueries}}, [ $1, $2 ] :
         push @{$self->{search}}, [ '', $_, '' ];
     }
     $self;
