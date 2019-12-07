@@ -30,7 +30,9 @@
 <button type="submit" name="mass_retest" value="1" class="button">[% capt.retest %]</button>
 <label><input type="checkbox" name="all_runs" value="1"/> [% capt.all_runs %]</label>
 <div class="verdict_list">
-[% capt.ignore_verdicts %]:<br/>
+<label><input type="checkbox" onclick="toggle_all_cb(this, '.verdict_list input[name=ignore_states]')"/>
+[% capt.ignore_verdicts %]:</label>
+<br/>
 [% FOREACH v IN verdicts ~%]
 <label class="run_details_[% v.short %]" title="[% capt.verdicts.item(v.short) %]">
   <input type="checkbox" name="ignore_states" value="[% v.short %]" [% ' checked="checked"' IF v.checked %]/>
