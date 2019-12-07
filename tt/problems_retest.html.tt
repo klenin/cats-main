@@ -14,12 +14,12 @@
 <td>
   <a href="[% p.href_view_problem %]" target="_blank">[% p.code %] - [% p.title | html %]</a>
 </td>
-<td>[% p.in_queue %]</td>
+<td>[% href(p.href_problem_console_queued, p.in_queue) %]</td>
 <td>[% p.status %]</td>
-<td><a href="[% p.href_select_testsets %]">[% p.testsets %]</a>
-  [%- IF p.points_testsets %] / <a href="[% p.href_select_testsets %]">[% p.points_testsets %]</a>[% END -%]
+<td>[% href(p.href_select_testsets, p.testsets) %]</a>
+  [%- IF p.points_testsets %] / [% href(p.href_select_testsets, p.points_testsets); END -%]
 </td>
-<td class="center">[% p.accept_count %] / [% p.wa_count %]  / [% p.tle_count %]</td>
+<td class="center">[% href(p.href_problem_console, "${p.accept_count} / ${p.wa_count} / ${p.tle_count}") %]</td>
 </tr>
 [% END %]
 </table>

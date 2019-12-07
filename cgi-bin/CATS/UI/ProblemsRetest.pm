@@ -99,9 +99,9 @@ sub problems_retest_frame {
         my $c = $_[0]->fetchrow_hashref or return ();
         $c->{status} ||= 0;
         $total_queue += $c->{in_queue};
+        my @href_console_params = (uf => undef, se => 'problem', i_value => -1, show_results => 1);
         return (
             status => $psn->{$c->{status}},
-            href_view_problem => url_f('problem_text', cpid => $c->{cpid}),
             problem_id => $c->{pid},
             code => $c->{code},
             title => $c->{title},
@@ -111,7 +111,12 @@ sub problems_retest_frame {
             testsets => $c->{testsets} || '*',
             points_testsets => $c->{points_testsets},
             in_queue => $c->{in_queue},
+            href_view_problem => url_f('problem_text', cpid => $c->{cpid}),
             href_select_testsets => url_f('problem_select_testsets', pid => $c->{pid}, from_problems => 1),
+            href_problem_console =>
+                url_f('console', search => "problem_id=$c->{pid}", @href_console_params),
+            href_problem_console_queued =>
+                url_f('console', search => "problem_id=$c->{pid},state<=T", @href_console_params),
         );
     };
     $lv->attach(url_f('problems_retest'), $fetch_record, $sth);
