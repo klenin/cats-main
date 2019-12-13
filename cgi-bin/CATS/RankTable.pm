@@ -310,7 +310,7 @@ sub get_contests_info {
         $self->{show_all_results} &&= $show_all_results;
         $self->{show_flags} ||= $show_flags;
         $self->{req_selection}->{$id} = $req_selection;
-        push @names, Encode::decode_utf8($title);
+        push @names, $title;
     }
     $self->{title} =
          (CATS::Contest::Utils::common_prefix(@names) || 'Contests') .
@@ -495,7 +495,6 @@ sub _select_teams {
         $team->{is_ooc} = 0 if $team->{is_virtual};
         $team->{$_} = 0 for qw(total_solved total_runs total_time total_points);
         ($team->{country}, $team->{flag}) = CATS::Countries::get_flag($team->{country});
-        $team->{$_} = Encode::decode_utf8($team->{$_}) for qw(team_name city tag);
         $team->{problems} = { map { $_->{problem_id} => { %init_problem } } @{$self->{problems}} };
     }
 
