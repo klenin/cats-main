@@ -143,8 +143,8 @@ sub _on_start {
         $has_static_highlight = 1;
     }
 
-    ++$verbatim_depth if $verbatim_tags->{lc($el)};
     process_text;
+    ++$verbatim_depth if $verbatim_tags->{lc($el)};
     if ($spellchecker) {
         my $lang = $atts{lang};
         # Do not spellcheck code unless explicitly requested.
@@ -165,8 +165,8 @@ sub _on_end {
         $skip_depth--;
         return;
     }
-    --$verbatim_depth if $verbatim_tags->{lc($el)};
     process_text;
+    --$verbatim_depth if $verbatim_tags->{lc($el)};
     return if $el eq $wrapper;
     $spellchecker->pop_lang if $spellchecker;
     $html_code .= "</$el>";
