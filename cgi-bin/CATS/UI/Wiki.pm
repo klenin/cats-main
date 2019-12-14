@@ -24,11 +24,19 @@ BEGIN {
         sub { $_[0] }
 }
 
+sub linkify_headers {
+    my ($text) = @_;
+    my $unicode_link_char = '&#128279;';
+    $text =~ s~<h(\d+)([^>]*)id="([^"]+)"([^>]*)>([^<]*)</h\1>~
+        <h$1$2id="$3"$4>$5<a class="wiki_header" href="#$3">$unicode_link_char</a></h$1>~gx;
+    $text;
+}
+
 sub _prepare_text {
     my ($text) = @_;
     $text = $markdown->($text);
     CATS::TeX::Lite::convert_all($text);
-    $text;
+    linkify_headers($text);
 }
 
 my $str1_200 = CATS::Field::str_length(1, 200);
@@ -36,7 +44,8 @@ our $page_form = CATS::Form->new(
     table => 'wiki_pages',
     fields => [
         [ name => 'name', validators => [ $str1_200 ], caption => 601, ],
-        [ name => 'is_public', validators => [ qr/^1?$/ ], caption => 669, before_save => sub { $_[0] // 0 } ],
+        [ name => 'is_public', validators => [ qr/^1?$/ ], caption => 669,
+            before_save => sub { $_[0] // 0 } ],
     ],
     href_action => 'wiki_pages_edit',
     descr_field => 'name',

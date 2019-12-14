@@ -489,6 +489,8 @@ table.edit_form td p.form_error { color: red; font-size: small; }
 .wiki { padding: 0px 16px; margin: 0 auto; max-width: 1012px; box-sizing: border-box; }
 .wiki > div { padding: 24px 40px; border: 1px solid #bbbbff; }
 .wiki h2 { padding-bottom: 0.3em; margin-bottom: 1em; border-bottom: 1px solid lightgray; }
+.wiki a.wiki_header { display: none; padding-left: 10px; }
+.wiki :hover > a.wiki_header { display: inline; }
 
 .problem_menu_trigger {
     font-size: small;
