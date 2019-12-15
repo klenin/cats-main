@@ -239,6 +239,15 @@ sub users_frame {
     $lv->define_db_searches([ @fields, qw(
         A.affiliation A.affiliation_year A.capitan_name A.git_author_email A.git_author_name A.tz_offset
     ) ]);
+    if ($is_jury) {
+        my $contact_types = $dbh->selectall_arrayref(q~
+            SELECT id, name FROM contact_types~, { Slice => {} });
+        $lv->define_db_searches({ map {
+            $_->{name} => qq~(
+                SELECT CT.handle FROM contacts CT
+                WHERE CT.account_id = A.id AND CT.contact_type_id = $_->{id} ORDER BY is_actual DESC ROWS 1)~,
+        } @$contact_types });
+    }
     $lv->define_db_searches({
         'CA.id' => 'CA.id',
         is_judge => q~
