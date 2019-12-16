@@ -65,9 +65,9 @@ INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
     VALUES (GEN_ID(key_seq, 1), 509, 'SWI Prolog', 'pro', 'prolog', '^ERROR:\s.+~FILE~:~LINE~:~POS~:');
 
-INSERT INTO default_de (id, code, description, syntax)
+INSERT INTO default_de (id, code, description, syntax, err_regexp)
     VALUES (GEN_ID(key_seq, 1), 602, 'Unity', 'csharp', '^(?:.*)\\\w+\.cs\(~LINE~,~POS~\):\serror');
-INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
+INSERT INTO default_de (id, code, description)
     VALUES (GEN_ID(key_seq, 1), 604, 'OBJ');
 
 /* All users are participants here. */
@@ -76,7 +76,7 @@ INSERT INTO contests(id, title, ctype, start_date, finish_date) VALUES(101, 'Arc
 INSERT INTO contests(id, title, ctype, start_date, finish_date) VALUES(102, 'Default', 0, CURRENT_DATE - 100, CURRENT_DATE + 1000000);
 
 INSERT INTO accounts(id, login, passwd, srole, team_name, git_author_name, git_author_email)
-    VALUES (2, 'root', 'root', 0, 'Root', 'root@localhost');
+    VALUES (2, 'root', 'root', 0, 'Root', 'Root', 'root@localhost');
 INSERT INTO contest_accounts(id, contest_id, account_id, is_jury) VALUES (3, 101, 2, 1);
 INSERT INTO contest_accounts(id, contest_id, account_id, is_jury) VALUES (4, 102, 2, 1);
 
