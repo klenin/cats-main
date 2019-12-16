@@ -6,6 +6,7 @@ use FindBin;
 use Test::More tests => 36;
 
 use lib $FindBin::Bin;
+use lib File::Spec->catdir($FindBin::Bin);
 use lib File::Spec->catdir($FindBin::Bin, '..');
 use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
 
