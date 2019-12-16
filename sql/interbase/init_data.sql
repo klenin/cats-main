@@ -70,7 +70,8 @@ INSERT INTO contests(id, title, ctype, start_date, finish_date) VALUES(101, 'Arc
 /* Default modules are exported from problems here. */
 INSERT INTO contests(id, title, ctype, start_date, finish_date) VALUES(102, 'Default', 0, CURRENT_DATE - 100, CURRENT_DATE + 1000000);
 
-INSERT INTO accounts(id, login, passwd, srole) VALUES(2, 'root', 'root', 0);
+INSERT INTO accounts(id, login, passwd, srole, team_name, git_author_name, git_author_email)
+    VALUES (2, 'root', 'root', 0, 'Root', 'root@localhost');
 INSERT INTO contest_accounts(id, contest_id, account_id, is_jury) VALUES (3, 101, 2, 1);
 INSERT INTO contest_accounts(id, contest_id, account_id, is_jury) VALUES (4, 102, 2, 1);
 
