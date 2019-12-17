@@ -35,10 +35,11 @@
     cell_search('problem_id', c) IF user.is_jury;
   %]</td>
   [% IF user.is_jury %]
-  <td title="[% c.de.code %]">[% c.de.description; IF c.elements_count; '=>'; c.elements_count; END %]
+  <td title="[% c.de.code %]">[% IF visible_cols.De; c.de.description; IF c.elements_count; '=>'; c.elements_count; END; END %]
   [%- cell_search_ex('de_code', c.de.code) %]</td>
-  <td>[<a href="[% c.href_whois %]" title="[% c.last_ip %]">[% c.last_ip_short %]</a>]
-  [%- cell_search('last_ip_short', c) %]</td>
+  <td>[% IF visible_cols.Ip -%]
+    [<a href="[% c.href_whois %]" title="[% c.last_ip %]">[% c.last_ip_short %]</a>]
+  [%- cell_search('last_ip_short', c); END %]</td>
   [% END %]
 [% ELSIF c.is_question %]
   <td>[% c.time %]</td>
@@ -60,10 +61,10 @@
     [% END %]
   </td>
   [% IF user.is_jury %]
-  <td>[
+  <td>[% IF visible_cols.Ip %][
     [%- IF c.last_ip %]<a href="[% c.href_whois %]" title="[% c.last_ip %]">[% c.last_ip_short %]</a>]
       [%- cell_search('last_ip_short', c) -%]
-    [%- ELSE; c.last_ip_short; ']'; END -%]
+    [%- ELSE; c.last_ip_short; ']'; END ; END -%]
   </td>
   [% END %]
 [% ELSIF c.is_message %]

@@ -48,4 +48,4 @@
   [%- END %]
 </table>
 <div style="width: 99%; padding: 4px;">
-<span class="messages">[% FOREACH m IN messages; m | html %]<br>[% END %]</span>
+<span class="messages" id="messages">[% FOREACH m IN messages; m | html %]<br>[% END %]</span>

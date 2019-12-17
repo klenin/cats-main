@@ -153,6 +153,7 @@ function update_content(response) {
 
 function form_submit_handler(e) {
     get_element('search_hint').style.display = 'none';
+    get_element('select_cols').style.display = 'none';
     var fd = new FormData(e.target);
     xhr_request(console_url, 'POST', fd, update_content);
     e.preventDefault();

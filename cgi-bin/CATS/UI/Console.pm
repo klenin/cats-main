@@ -116,6 +116,10 @@ sub _console_content {
     my $problem_codes = !$contest->is_practice ? $dbh->selectall_hashref(q~
         SELECT problem_id, code FROM contest_problems WHERE contest_id = ?~, 'problem_id', undef, $cid) : {};
 
+    $lv->define_columns(url_f('console'), 0, 0, [
+        { caption => res_str(641), col => 'De' },
+        { caption => res_str(671), col => 'Ip' },
+    ]);
     $lv->define_db_searches([ qw(
         R.submit_time
         R.id
@@ -420,6 +424,7 @@ sub console_frame {
         i_units i_unit i_values i_value display_rows rows
         page pages search show_contests show_messages show_results
         href_lv_action href_next_pages href_prev_pages search_hints search_enums
+        can_change_cols visible_cols col_defs
     );
     $t->param(
         href_console_content =>
