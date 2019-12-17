@@ -296,7 +296,7 @@ sub contest_params_frame {
         href_api_login_token => (
             $is_root && $c->{apikey} ?
             CATS::Utils::url_function('api_login_token',
-                token => $c->{apikey}, login => ($c->{login_prefix} // '') . 'XXXX',
+                apikey => $c->{apikey}, login => ($c->{login_prefix} // '') . 'XXXX',
                 cid => $cid, redir => CATS::Redirect::encode({ f => 'problems' })) : undef),
         verdicts_max_reqs => [ map +{ short => $_->[0], checked => $verdicts_excluded_max_reqs{$_->[0]} },
             @$CATS::Verdicts::name_to_state_sorted ],
