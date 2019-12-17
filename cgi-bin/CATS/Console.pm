@@ -130,6 +130,8 @@ sub build_query {
         q~ || (CASE WHEN A.city IS NULL OR A.city = '' THEN '' ELSE ' (' || A.city || ')' END)~ : '';
     my $time_sql = $is_jury && $lv->visible_cols->{Tm} ?
         q~(SELECT MAX(RD.time_used) FROM req_details RD WHERE RD.req_id = R.id)~ : 'NULL';
+    my $de_sql = !$is_jury || $lv->visible_cols->{De} ?
+        q~(SELECT s.de_id FROM sources s WHERE s.req_id = R.id)~ : 'NULL';
     my %parts_sql = (
         run => qq~
             1 AS rtype,
@@ -141,7 +143,7 @@ sub build_query {
             R.problem_id AS problem_id,
             R.elements_count,
             P.title AS problem_title,
-            (SELECT s.de_id FROM sources s WHERE s.req_id = R.id) AS de,
+            $de_sql AS de,
             $time_sql AS time_used,
             R.points AS clarified,
             NULL AS question,
