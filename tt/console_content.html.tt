@@ -4,7 +4,7 @@
 
 <span id="messages_update" style="display: none">[% FOREACH m IN messages %][% m | html %]<br>[% END %]</span>
 <table class="bordered console highlight cell_search">
-[%- colspan = user.is_jury ? 5 : 3 -%]
+[%- colspan = user.is_jury ? 6 : 3 -%]
 [% FOREACH c IN console %]
 <tr>
 [% IF c.is_submit_result %]
@@ -37,6 +37,9 @@
   [% IF user.is_jury %]
   <td title="[% c.de.code %]">[% IF visible_cols.De; c.de.description; IF c.elements_count; '=>'; c.elements_count; END; END %]
   [%- cell_search_ex('de_code', c.de.code) %]</td>
+  <td class="num">[% IF visible_cols.Tm -%]
+    <small>[% c.time_used %]</small>
+  [%- END %]</td>
   <td>[% IF visible_cols.Ip -%]
     [<a href="[% c.href_whois %]" title="[% c.last_ip %]">[% c.last_ip_short %]</a>]
   [%- cell_search('last_ip_short', c); END %]</td>

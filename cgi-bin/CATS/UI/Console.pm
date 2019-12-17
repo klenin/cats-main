@@ -117,6 +117,7 @@ sub _console_content {
         SELECT problem_id, code FROM contest_problems WHERE contest_id = ?~, 'problem_id', undef, $cid) : {};
 
     $lv->define_columns(url_f('console'), 0, 0, [
+        { caption => res_str(632), col => 'Tm' },
         { caption => res_str(641), col => 'De' },
         { caption => res_str(671), col => 'Ip' },
     ]);
@@ -224,7 +225,7 @@ sub _console_content {
     my $fetch_console_record = sub {
         my ($rtype, $rank, $submit_time, $id, $request_state, $failed_test,
             $problem_id, $elements_count, $problem_title,
-            $de_id, $clarified, $question, $answer, $jury_message,
+            $de_id, $time_used, $clarified, $question, $answer, $jury_message,
             $team_id, $team_name, $country_abbr, $last_ip, $caid, $contest_id
         ) = $_[0]->fetchrow_array
             or return ();
@@ -281,6 +282,7 @@ sub _console_content {
             elements_count =>       $elements_count,
             problem_title =>        $problem_title,
             de_id =>                $de_id,
+            time_used =>            sprintf('%.1f', $time_used),
             request_state =>        $request_state,
             short_state =>          $short_state,
             failed_test =>          ($hide_verdict ? '' : $failed_test),
