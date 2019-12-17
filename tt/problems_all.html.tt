@@ -14,7 +14,7 @@
 [% IF p.href_download %]&nbsp;[<a href="[% p.href_download %]">[% capt.package %]</a>][% END %]
 </td>
 <td><a href="[% p.href_view_contest %]">[% p.contest_title | html %]</a></td>
-[% IF visible_cols.Ok %]<td class="center">[% p.counts %]</td>[% END %]
+[% IF visible_cols.Ok %]<td class="center">[% maybe_href(p.href_problem_console, p.counts) %]</td>[% END %]
 [% IF visible_cols.Kw %]<td>[% p.keywords %]</td>[% END %]
 </tr>
 [% END %]

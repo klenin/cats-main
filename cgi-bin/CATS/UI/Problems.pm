@@ -31,6 +31,13 @@ use CATS::StaticPages;
 use CATS::Utils qw(file_type date_to_iso redirect_url_function);
 use CATS::Verdicts;
 
+sub _href_problem_console {
+    my ($pid) = @_;
+    $uid && url_f('console',
+        search => "problem_id=$pid", uf => ($is_jury ? undef : $uid),
+        se => 'problem', i_value => -1, show_results => 1)
+}
+
 sub problems_all_frame {
     my ($p) = @_;
     init_template($p, 'problems_all.html.tt');
@@ -102,6 +109,7 @@ sub problems_all_frame {
             # Jury can download package for any problem after linking, but not before.
             ($is_root ? (href_download => url_f_cid('problem_download', %pp)) : ()),
             ($is_jury ? (href_problem_history => url_f_cid('problem_history', %pp)) : ()),
+            href_problem_console => _href_problem_console($pid),
             keywords => $keywords,
             linked => $linked || !$p->{link},
             problem_id => $pid,
@@ -369,9 +377,7 @@ sub problems_frame {
             href_problem_details => $is_jury && url_f('problem_details', pid => $c->{pid}),
             href_original_contest => url_f_cid('problems', cid => $c->{original_contest_id}),
             href_usage => url_f('contests', search => "has_problem($c->{pid})", filter => 'all'),
-            href_problem_console => $uid &&
-                url_f('console', search => "problem_id=$c->{pid}", uf => ($is_jury ? undef : $uid),
-                    se => 'problem', i_value => -1, show_results => 1),
+            href_problem_console => _href_problem_console($c->{pid}),
             href_select_testsets => url_f('problem_select_testsets', pid => $c->{pid}, from_problems => 1),
             href_select_tags => url_f('problem_select_tags', pid => $c->{pid}, from_problems => 1),
             href_select_strategy => url_f('problem_limits', pid => $c->{pid}, cid => $c->{cid},
