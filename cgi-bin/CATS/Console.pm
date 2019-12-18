@@ -126,7 +126,7 @@ sub build_query {
         CAST(NULL AS VARCHAR(200)) AS de,
         NULL AS time_used
     ~;
-    my $city_sql = $is_jury ?
+    my $city_sql = $is_jury && $lv->visible_cols->{Cy} ?
         q~ || (CASE WHEN A.city IS NULL OR A.city = '' THEN '' ELSE ' (' || A.city || ')' END)~ : '';
     my $time_sql = $is_jury && $lv->visible_cols->{Tm} ?
         q~(SELECT MAX(RD.time_used) FROM req_details RD WHERE RD.req_id = R.id)~ : 'NULL';

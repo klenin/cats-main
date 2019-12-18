@@ -117,6 +117,7 @@ sub _console_content {
         SELECT problem_id, code FROM contest_problems WHERE contest_id = ?~, 'problem_id', undef, $cid) : {};
 
     $lv->define_columns(url_f('console'), 0, 0, [
+        { caption => res_str(654), col => 'Cy' },
         { caption => res_str(632), col => 'Tm' },
         { caption => res_str(641), col => 'De' },
         { caption => res_str(671), col => 'Ip' },
