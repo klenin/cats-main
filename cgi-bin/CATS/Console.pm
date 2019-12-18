@@ -283,8 +283,14 @@ sub build_query {
                 $message->search;
             }
             if (!$is_jury) {
-                $question->add('A.id = ?', $uid);
-                $message->add('E.account_id = ?', $uid);
+                if (!$user->{is_site_org}) {
+                    $question->add('A.id = ?', $uid);
+                    $message->add('E.account_id = ?', $uid);
+                }
+                elsif ($user->{site_id}) {
+                    $question->add('CA.site_id = ?', $user->{site_id});
+                    $message->add('CA.site_id = ?', $user->{site_id});
+                }
             }
         }
 
