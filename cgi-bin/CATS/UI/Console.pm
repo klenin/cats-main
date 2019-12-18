@@ -282,7 +282,7 @@ sub _console_content {
             elements_count =>       $elements_count,
             problem_title =>        $problem_title,
             de_id =>                $de_id,
-            time_used =>            sprintf('%.1f', $time_used),
+            time_used =>            $time_used && sprintf('%.1f', $time_used),
             request_state =>        $request_state,
             short_state =>          $short_state,
             failed_test =>          ($hide_verdict ? '' : $failed_test),
