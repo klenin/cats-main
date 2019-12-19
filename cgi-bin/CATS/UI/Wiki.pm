@@ -8,7 +8,7 @@ use Encode;
 use CATS::Constants;
 use CATS::DB;
 use CATS::Form;
-use CATS::Globals qw($contest $is_jury $is_root $t $uid);
+use CATS::Globals qw($contest $is_jury $t $uid $user);
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
 use CATS::Output qw(init_template url_f);
@@ -70,12 +70,12 @@ our $page_form = CATS::Form->new(
 
 sub wiki_pages_frame {
     my ($p) = @_;
-    $is_root or return;
+    $user->privs->{edit_wiki} or return;
 
     init_template($p, 'wiki_pages.html.tt');
     my $lv = CATS::ListView->new(web => $p, name => 'wiki_pages');
 
-    $is_root and $page_form->delete_or_saved($p);
+    $user->privs->{edit_wiki} and $page_form->delete_or_saved($p);
 
     $lv->define_columns(url_f('wiki_pages'), 0, 0, [
         { caption => res_str(601), order_by => 'name', width => '30%' },
@@ -101,7 +101,7 @@ sub wiki_pages_frame {
         my $row = $_[0]->fetchrow_hashref or return ();
         return (
             %$row,
-            ($is_root ? (
+            ($user->privs->{edit_wiki} ? (
                 href_text => url_f('wiki', name => $row->{name}),
                 href_edit => url_f('wiki_pages_edit', id => $row->{id}),
                 href_public => url_function('wiki', name => $row->{name}),
@@ -155,7 +155,8 @@ our $text_form = CATS::Form->new(
             problem_title => $pn,
             href_view => url_f('wiki', name => $pn),
             href_public_view => $wt->{is_publc}->{value} && url_function('wiki', name => $pn),
-            href_page => $is_root && url_f('wiki_pages_edit', id => $wt->{wiki_id}->{value}),
+            href_page => $user->privs->{edit_wiki} &&
+                url_f('wiki_pages_edit', id => $wt->{wiki_id}->{value}),
             submenu => [ CATS::References::menu('wiki_pages') ],
         );
     },
@@ -163,7 +164,7 @@ our $text_form = CATS::Form->new(
 
 sub wiki_pages_edit_frame {
     my ($p) = @_;
-    $is_root or return;
+    $user->privs->{edit_wiki} or return;
     init_template($p, 'wiki_pages_edit.html.tt');
     $text_form->delete_or_saved($p);
     $page_form->edit_frame($p, redirect => [ 'wiki_pages' ]);
@@ -171,7 +172,7 @@ sub wiki_pages_edit_frame {
 
 sub _can_edit {
     my ($wiki_id) = @_;
-    $is_root || $is_jury && $dbh->selectrow_array(q~
+    $user->privs->{edit_wiki} || $is_jury && $dbh->selectrow_array(q~
         SELECT id FROM contest_wikis
         WHERE contest_id = ? AND wiki_id = ? AND allow_edit = 1~, undef,
         $contest->{id}, $wiki_id);
@@ -202,11 +203,11 @@ sub wiki_frame {
     my ($id, $is_public) = $dbh->selectrow_array(q~
         SELECT id, is_public FROM wiki_pages WHERE name = ?~, undef,
         $p->{name});
-    $id && ($is_public || $is_root) or return;
+    $id && ($is_public || $user->privs->{edit_wiki}) or return;
     my $langs = $dbh->selectall_arrayref(q~
         SELECT id, lang FROM wiki_texts WHERE wiki_id = ?~, { Slice => {} },
         $id);
-    @$langs or return $is_root && $p->redirect(url_f('wiki_edit',
+    @$langs or return $user->privs->{edit_wiki} && $p->redirect(url_f('wiki_edit',
         wiki_id => $id, wiki_lang => CATS::Settings::lang));
     my $chosen_lang = _choose_lang($langs);
     my $page = $dbh->selectrow_hashref(q~
