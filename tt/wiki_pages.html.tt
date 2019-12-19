@@ -27,7 +27,8 @@ function delete_wiki_page(href, name) {
   [%- IF w.is_public %]<a href="[% w.href_public %]" class="icon checked"></a>[% END -%]
 </td>[% END %]
 [% IF visible_cols.Ls %]<td>[% w.langs | html %]</td>[% END %]
-[% IF visible_cols.Sz %]<td class="num">[% w.total_size | html %]</td>[% END %]
+[% IF visible_cols.Ct %]<td class="num">[% href(w.href_contests, w.contest_count) %]</td>[% END %]
+[% IF visible_cols.Sz %]<td class="num">[% w.total_size %]</td>[% END %]
 </tr>
 [% END %]
 </table>

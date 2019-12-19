@@ -81,6 +81,7 @@ sub wiki_pages_frame {
         { caption => res_str(601), order_by => 'name', width => '30%' },
         { caption => res_str(669), order_by => 'is_public', width => '5%', col => 'Pb' },
         { caption => res_str(672), order_by => 'langs', width => '5%', col => 'Ls' },
+        { caption => res_str(645), order_by => 'contest_count', width => '5%', col => 'Ct' },
         { caption => res_str(684), order_by => 'total_size', width => '5%', col => 'Sz' },
     ]);
     $lv->define_db_searches($page_form->{sql_fields});
@@ -90,6 +91,9 @@ sub wiki_pages_frame {
         ($lv->visible_cols->{Ls} ? q~(
             SELECT LIST(WT.lang) FROM wiki_texts WT
             WHERE WT.wiki_id = wiki_pages.id) AS langs~ : ()),
+        ($lv->visible_cols->{Ct} ? q~(
+            SELECT COUNT(*) FROM contest_wikis CW
+            WHERE CW.wiki_id = wiki_pages.id) AS contest_count~ : ()),
         ($lv->visible_cols->{Sz} ? q~(
             SELECT SUM(OCTET_LENGTH(WT.text)) FROM wiki_texts WT
             WHERE WT.wiki_id = wiki_pages.id) AS total_size~ : ()),
@@ -103,6 +107,7 @@ sub wiki_pages_frame {
             %$row,
             ($user->privs->{edit_wiki} ? (
                 href_text => url_f('wiki', name => $row->{name}),
+                href_contests => url_f('contests', search => "has_wiki($row->{id})"),
                 href_edit => url_f('wiki_pages_edit', id => $row->{id}),
                 href_public => url_function('wiki', name => $row->{name}),
                 href_delete => url_f('wiki_pages', 'delete' => $row->{id})) : ()),
