@@ -111,6 +111,12 @@ sub _contest_searches {
             #m => 1015, t => q~
             #SELECT P.title FROM problems P WHERE P.id = ?~
         },
+        has_wiki => { sq => q~EXISTS (
+            SELECT 1 FROM contest_wikis CW
+            WHERE CW.contest_id = C.id AND CW.wiki_id = ?)~,
+            m => 1211, t => q~
+            SELECT W.name FROM wiki_pages W WHERE W.id = ?~
+        },
     });
 }
 
