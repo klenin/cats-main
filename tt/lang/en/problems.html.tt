@@ -24,6 +24,7 @@
     problem_file => 'Problem file',
     problem_url => 'Problem repository url',
     repo_path => 'Path in repository',
+    replace_problem => 'Replace problem',
     rename => 'rename',
     delete => 'delete problem',
     new_title => 'Title',

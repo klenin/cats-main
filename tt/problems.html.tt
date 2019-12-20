@@ -213,6 +213,7 @@ function chg_code(st_sel, pid) {
   [% END %]
 </div>
 [% IF editable %]
+<p>[% capt.replace_problem %]</p>
 <div class="problem_submit weak_border">
   <p>
     <label for="zip">[% capt.problem_file %]:</label><input type="file" id="zip" name="zip" class="file" size="25"/>

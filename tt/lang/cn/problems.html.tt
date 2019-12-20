@@ -25,6 +25,7 @@
     problem_file => '问题文件',
     problem_url => '问题库url',
     repo_path => 'Path in repository',
+    replace_problem => 'Replace problem',
     rename => '改名',
     delete => '删除',
     new_title => '名',
