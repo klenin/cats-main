@@ -1,5 +1,7 @@
 $(document).ready(init_editors);
 
+var editor_theme = 'chrome';
+
 function get_editor(context) { return context.find('textarea[data-id]'); }
 
 // Container is inserted before the original textarea. See init_editors().
@@ -64,7 +66,7 @@ function init_editors() {
       multiSelectAction: 'forEachLine'
     })
 
-    editor.setTheme('ace/theme/chrome');
+    editor.setTheme('ace/theme/' + editor_theme);
 
     editor.setOptions({
       enableBasicAutocompletion: true,
