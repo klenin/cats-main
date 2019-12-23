@@ -143,14 +143,14 @@ sub similarity_score {
 }
 
 sub _get_reqs {
-    my ($p) = @_;
+    my ($p, $lv) = @_;
     my $cond = {
         ($p->{all_contests} ? () : ('R.contest_id' => $cid)),
         ($p->{pid} ? (problem_id => $p->{pid}) : ()),
         ($p->{virtual} ? () : (is_virtual => 0)),
         ($p->{jury} ? () : (is_jury => 0)),
     };
-    my ($where, @bind) = %$cond ? $sql->where($cond) : ('');
+    my ($where, @bind) = $sql->where({ %$cond, %{$lv->where} });
 
     # Manually join with accounts since it is faster.
     $dbh->selectall_arrayref(q~
@@ -159,7 +159,7 @@ sub _get_reqs {
         INNER JOIN contest_accounts CA ON CA.contest_id = R.contest_id AND CA.account_id = R.account_id
         INNER JOIN sources S ON S.req_id = R.id
         INNER JOIN default_de D ON D.id = S.de_id~ .
-        $where, { Slice => {} },
+        ($where // ''), { Slice => {} },
         @bind);
 }
 
@@ -171,6 +171,12 @@ sub similarity_frame {
     init_template($p, 'similarity.html.tt');
     my $lv = CATS::ListView->new(web => $p, name => 'similarity');
     $is_jury && !$contest->is_practice or return;
+
+    $lv->define_db_searches([ qw(state points) ]);
+    $lv->define_db_searches({ src_length => 'OCTET_LENGTH(S.src)' });
+    $lv->define_enums({
+        state => $CATS::Verdicts::name_to_state,
+    });
 
     my $s = $lv->settings;
     if ($lv->submitted) {
@@ -209,7 +215,7 @@ sub similarity_frame {
     ($lv->submitted || $p->{cont}) && ($s->{pid} || $s->{account_id} && !$s->{all_contests})
         or do { $lv->common_param; return; };
 
-    my $reqs = [ grep !_is_trivial($_->{src}), @{_get_reqs($s)} ];
+    my $reqs = [ grep !_is_trivial($_->{src}), @{_get_reqs($s, $lv)} ];
     preprocess_source($_, $s->{collapse_idents}) for @$reqs;
 
     my %missing_users;
