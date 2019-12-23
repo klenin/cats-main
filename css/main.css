@@ -203,7 +203,7 @@ select, option {
     vertical-align: middle;
 }
 
-input {
+input[type=text] {
     height: 20px;
     padding: 0 1px;
     vertical-align: middle;
