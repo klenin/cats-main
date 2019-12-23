@@ -195,7 +195,7 @@ sub problems_frame {
     CATS::Contest::Participate::virtual if $p->{participate_virtual};
 
     if ($uid && !$is_jury) {
-        if ($contest->{time_since_finish} > 0) {
+        if ($contest->has_finished_for($user)) {
             msg(1115, $contest->{title});
         }
         elsif (!$user->{is_participant}) {
