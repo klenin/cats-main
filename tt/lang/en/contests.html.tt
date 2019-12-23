@@ -4,6 +4,7 @@
     virtual_warning => 'Warning! Second virtual participation will remove all submits of the first one. Continue?',
     alt_params => 'Parameters',
     problems => 'problems',
+    ct_jury => 'jury',
     ct_participant => 'participant',
     ct_virtual => 'virtual participant',
     ct_official => 'official',

@@ -59,7 +59,7 @@ try {
 [% IF visible_cols.Nt -%]
 [%- MACRO flag(name) BLOCK %]<span class="[% name %]">[% capt.$name %]</span>[% END %]
 <td>
-  [% IF c.registered_online && !user.privs.is_root; capt.ct_participant; END =%]
+  [% IF user.privs.is_root; ELSIF c.is_jury; capt.ct_jury; ELSIF c.registered_online; capt.ct_participant; END =%]
   [% IF c.registered_virtual; capt.ct_virtual; END =%]
   [% IF c.is_official; flag('ct_official'); END =%]
   [% IF c.registration_denied; flag('ct_denied'); END =%]
