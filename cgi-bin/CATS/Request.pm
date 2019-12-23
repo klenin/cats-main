@@ -113,7 +113,7 @@ sub delete_jobs {
 }
 
 # Set request state manually. May be also used for retesting.
-# Params: request_id, fields: { state (required), failed_test, testsets, points, judge_id, limits_id }
+# Params: request_id, fields: { state (required), failed_test, testsets, points, judge_id, limits_id, tag }
 sub enforce_state {
     my ($request_id, $fields) = @_;
     $request_id && defined $fields->{state} or die;

@@ -7,5 +7,7 @@
     diff => 'отличия',
     a_only => 'только A',
     b_only => 'только B',
+    reject_both => 'отвергнуть',
+    reject_both_message => 'списано',
   })
 %]

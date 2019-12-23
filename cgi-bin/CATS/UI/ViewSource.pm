@@ -10,12 +10,15 @@ use CATS::DB;
 use CATS::DevEnv;
 use CATS::Globals qw($cid $contest $is_jury $user);
 use CATS::Output qw(init_template url_f url_f_cid);
+use CATS::Job;
 use CATS::JudgeDB;
 use CATS::Messages qw(msg);
+use CATS::RankTable;
 use CATS::ReqDetails qw(
     get_sources_info
     sources_info_param
-    source_links);
+    source_links
+);
 use CATS::Request;
 use CATS::Settings qw($settings);
 use CATS::Problem::Submit qw(prepare_de prepare_de_list);
@@ -33,6 +36,24 @@ sub diff_runs_frame {
     sources_info_param($si);
 
     return msg(1155) if grep @{$_->{elements}} > 1, @$si;
+
+    my $both_jury = 2 == grep $_->{is_jury}, @$si;
+    if ($p->{reject_both} && $both_jury) {
+        my %remove_cache;
+        for my $r (@$si) {
+            CATS::Job::cancel_all($r->{req_id});
+            my %update = (
+                failed_test => undef, state => $cats::st_manually_rejected,
+                points => 0, tag => Encode::decode_utf8($p->{reject_both_message}),
+            );
+            CATS::Request::enforce_state($r->{req_id}, \%update);
+            $remove_cache{$r->{contest_id}} = 1 unless $r->{is_hidden};
+            $r->{$_} = $update{$_} for keys %update;
+            CATS::ReqDetails::update_verdict($r);
+        }
+        $dbh->commit;
+        CATS::RankTable::remove_cache($_) for keys %remove_cache;
+    }
 
     for my $info (@$si) {
         $info->{lines} = [ split "\n", $info->{src} ];
@@ -57,7 +78,7 @@ sub diff_runs_frame {
         }
     );
 
-    $t->param(diff_lines => \@diff);
+    $t->param(diff_lines => \@diff, similar => $p->{similar} && $both_jury);
 }
 
 sub view_source_frame {

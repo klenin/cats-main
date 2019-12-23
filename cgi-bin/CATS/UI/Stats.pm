@@ -230,7 +230,7 @@ sub similarity_frame {
                 ($i->{problem_id} == $j->{problem_id} ? '' : ",problem_id=$j->{problem_id}");
             my $pair = {
                 score => sprintf('%.1f', $score * 100), s => $score,
-                href_diff => url_f('diff_runs', r1 => $i->{id}, r2 => $j->{id}),
+                href_diff => url_f('diff_runs', r1 => $i->{id}, r2 => $j->{id}, similar => 1),
                 href_console => url_f('console',
                     se => 'user_stats', search => $search, i_value => -1, show_results => 1),
                 t1 => $ai, t2 => $aj, req1 => $i, req2 => $j,

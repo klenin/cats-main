@@ -149,6 +149,12 @@ sub _get_user_details {
     { contacts => $contacts };
 }
 
+sub update_verdict {
+    my ($r) = @_;
+    $r->{short_state} = CATS::Verdicts::hide_verdict_self(
+        $r->{is_jury}, $CATS::Verdicts::state_to_name->{$r->{state}});
+}
+
 # Load information about one or several runs.
 # Parameters: request_id, may be either scalar or array ref.
 sub get_sources_info {
@@ -258,8 +264,7 @@ sub get_sources_info {
         # We need to save original hash reference
         $r->{$_} = $additional_info{$_} for keys %additional_info;
 
-        $r->{short_state} = CATS::Verdicts::hide_verdict_self(
-            $r->{is_jury}, $CATS::Verdicts::state_to_name->{$r->{state}});
+        update_verdict($r);
         $r->{href_quick_verdict} = url_f('request_params', rid => $r->{req_id});
 
         # Just hour and minute from testing start and finish timestamps.

@@ -36,12 +36,18 @@ var diff_lines = [
 [% PROCESS includes/sources_info.tti subcaption=capt.compare_submissions %]
 <br/>
 [% PROCESS includes/encoding_form.html.tti capt_enc = capt.encoding %]
+<form method="POST">
 [% capt.show %]:
 [ <a onclick="show_ab({ diff_only_a: 2, diff_only_b: 2, diff_both: 2 }); return false" href="#">[% capt.both %]</a>
 | <a onclick="show_ab({ diff_only_a: 2, diff_only_b: 2, diff_both: 0 }); return false" href="#">[% capt.diff %]</a>
 | <a onclick="show_ab({ diff_only_a: 2, diff_only_b: 1, diff_both: 2 }); return false" href="#">[% capt.a_only %]</a>
 | <a onclick="show_ab({ diff_only_a: 1, diff_only_b: 2, diff_both: 2 }); return false" href="#">[% capt.b_only %]</a>
 ]
+[% IF similar %]
+<button type="submit" name="reject_both" value="1" class="button">[% capt.reject_both %]</button>
+<input type="text" name="reject_both_message" class="bordered" value="[% capt.reject_both_message %]" />
+[% END %]
+</form>
 <table class="internal_borders">
 <tr>
 <td class="narrow num"><pre id="line_numbers"><code>[% FOREACH dl IN diff_lines; loop.count %]

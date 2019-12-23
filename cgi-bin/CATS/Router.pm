@@ -281,6 +281,7 @@ my $main_routes = {
     diff_runs => [ \&CATS::UI::ViewSource::diff_runs_frame,
         r1 => integer, r2 => integer,
         src_enc => encoding_default('WINDOWS-1251'),
+        similar => bool, reject_both => bool, reject_both_message => str,
     ],
     view_test_details => [
         \&CATS::UI::RunDetails::view_test_details_frame,
