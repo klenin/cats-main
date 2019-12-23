@@ -65,7 +65,7 @@ sub request_params_frame {
 
     my @limits_fields = (@cats::limits_fields, 'job_split_strategy');
 
-    my $limits = { map { $_ => $p->{$_} } grep $p->{$_} && $p->{"set_$_"}, @limits_fields };
+    my $limits = { map { $_ => $p->{$_} || undef } grep $p->{"set_$_"}, @limits_fields };
     my $need_clear_limits = 0 == grep $p->{"set_$_"}, @limits_fields;
 
     if ($p->{single_judge}) {
