@@ -58,6 +58,9 @@ sub diff_runs_frame {
     for my $info (@$si) {
         $info->{lines} = [ split "\n", $info->{src} ];
         s/\s*$// for @{$info->{lines}};
+        if ($p->{ignore_ws}) {
+            s/^\s*// for @{$info->{lines}};
+        }
     }
 
     my @diff;
