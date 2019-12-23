@@ -171,6 +171,8 @@ sub get_run_info {
         $contest->{show_points} && $contest->{points} &&
         # Do not cache incomplete points to avoid messing up RankTable cache.
         $req->{state} > $cats::request_processed &&
+        $req->{state} != $cats::st_security_violation &&
+        $req->{state} != $cats::st_manually_rejected &&
         (!defined $req->{points} || $req->{points} != $total_points)
     ) {
         $req->{points} = $total_points;
