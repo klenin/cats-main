@@ -6,7 +6,7 @@ use warnings;
 use Carp qw(croak);
 
 use CATS::DB;
-use CATS::Messages qw(msg);
+use CATS::Messages qw(msg res_str);
 
 sub new {
     my ($class, %p) = @_;
@@ -27,7 +27,8 @@ sub parse_search {
     $self->{search_subqueries} = [];
     for (split /,\s*/, $search) {
         /^($ident)([!~^=><]?=|>|<|\?\??|!~)(.*)$/ ? push @{$self->{search}}, [ $1, $3, $2 ] :
-        /^($ident)\((\d+|\p{L}(?:\p{L}|\d|[_.])*)\)$/ ? push @{$self->{search_subqueries}}, [ $1, $2 ] :
+        /^(\!)?($ident)\((\d+|\p{L}(?:\p{L}|\d|[_.])*)\)$/ ?
+            push @{$self->{search_subqueries}}, [ $2, $3, $1 ? 1 : 0 ] :
         push @{$self->{search}}, [ '', $_, '' ];
     }
     $self;
@@ -90,7 +91,7 @@ sub make_where {
     }
     my (@sq_list, @sq_unknown);
     for my $d (@{$self->{search_subqueries}}) {
-        my ($name, $value) = @$d;
+        my ($name, $value, $negate) = @$d;
         my $sq = $self->{subqueries}->{$name}
             or push @sq_unknown, $name and next;
         $value = $self->{enums}->{$name}->{$value} // $value;
@@ -98,10 +99,11 @@ sub make_where {
             my @msg_args =
                 !exists $sq->{t} ? () :
                 $sq->{t} ? $dbh->selectrow_array($sq->{t}, undef, $value) : $value;
-            msg($sq->{m}, @msg_args);
+            $negate ? msg(1212, res_str($sq->{m}, @msg_args)) : msg($sq->{m}, @msg_args);
         }
         # SQL::Abstract uses double reference to designate subquery.
-        push @sq_list, \[ $sq->{sq} => $value ];
+        my $sql_sq = \[ $sq->{sq} => $value ];
+        push @sq_list, $negate ? { -not_bool => $sql_sq } : $sql_sq;
     }
     msg(1143, join ',', @sq_unknown) if @sq_unknown;
     @sq_list ? { -and => [ (%result ? \%result : ()), @sq_list ] } : \%result;

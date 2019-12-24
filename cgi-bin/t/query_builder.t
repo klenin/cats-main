@@ -5,7 +5,7 @@ use Encode;
 use File::Spec;
 use FindBin;
 use Test::Exception;
-use Test::More tests => 26;
+use Test::More tests => 27;
 
 use lib File::Spec->catdir($FindBin::Bin, '..');
 use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
@@ -67,6 +67,8 @@ is_deeply qb_mask('zz??'), { zz => qr/^$/i }, 'mask NULL';
 
     $qb->parse_search('has_v(99)');
     is_deeply $qb->make_where, { -and => [ \[ $sq, 99 ] ] }, 'db subquery';
+    $qb->parse_search('!has_v(99)');
+    is_deeply $qb->make_where, { -and => [ { -not_bool => \[ $sq, 99 ] } ] }, 'db subquery negated';
     $qb->parse_search('has_v(5),a<1');
     is_deeply $qb->make_where, { -and => [ { a => [ { '<', 1 } ] }, \[ $sq, 5 ] ] }, 'db search and subquery';
     $qb->parse_search(Encode::decode_utf8('has_v(пример)'));
