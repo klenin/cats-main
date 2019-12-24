@@ -239,6 +239,12 @@ sub users_frame {
     $lv->define_db_searches([ @fields, qw(
         A.affiliation A.affiliation_year A.capitan_name A.git_author_email A.git_author_name A.tz_offset
     ) ]);
+    $lv->define_subqueries({
+        in_contest => { sq => q~EXISTS (
+            SELECT 1 FROM contest_accounts CA1 WHERE CA1.account_id = A.id AND CA1.contest_id = ?)~,
+            m => 1213, t => q~SELECT title FROM contests WHERE id = ?~
+        },
+    });
     if ($is_jury) {
         my $contact_types = $dbh->selectall_arrayref(q~
             SELECT id, name FROM contact_types~, { Slice => {} });
