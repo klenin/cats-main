@@ -6,15 +6,6 @@
 [% END -%]
 </head>
 <body>
-<script>
-  // Prevent FOUC on Firefox by briefly hiding the body.
-  if (!window.ace && navigator.userAgent.indexOf('Gecko/') >= 0) {
-    document.body.style.display = 'none';
-    document.addEventListener('DOMContentLoaded', function() {
-      document.body.style.display = '';
-    });
-  }
-</script>
 <table class="iface header">
   <tr>
     <td class="contest_title">
