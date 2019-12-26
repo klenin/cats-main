@@ -168,6 +168,7 @@ sub problems_submit {
         $source_text = $file->content;
         $source_text ne '' or return msg(1011);
     }
+    length($source_text) < 1000000 or return msg(1214);
 
     $dbh->selectrow_array(q~
         SELECT COUNT(*) FROM tests T
