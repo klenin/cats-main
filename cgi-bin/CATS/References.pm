@@ -22,6 +22,7 @@ sub reference_names() {
         ($is_jury ? { name => 'contest_tags', new => 405, item => 404 } : ()),
         ($user->is_root ? { name => 'de_tags', new => 403, item => 402 } : ()),
         ($user->is_root ? { name => 'files', new => 401, item => 570 } : ()),
+        ($user->is_root ? { name => 'acc_groups', new => 409, item => 410 } : ()),
     )
 }
 

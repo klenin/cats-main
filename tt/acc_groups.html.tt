@@ -1,0 +1,37 @@
+[% js.jquery = 1 %]
+[% PROCESS includes/menu_begin.tti %]
+
+<script>
+function delete_acc_group(href, name) {
+  if (confirm( "[% capt.want_to_delete %] '" + name + "'?" ))
+    document.location = href;
+}
+</script>
+
+[% PROCESS includes/listview_header.tti %]
+
+<table class="listview bordered highlight">
+[% PROCESS includes/listview_col_defs.tti sel_col = 1 %]
+
+[% FOREACH ag IN acc_groups %]
+<tr class="[% loop.parity() %]">
+<td class="nobr sel_col">
+[% IF user.is_root %]
+  <a href="javascript:delete_acc_group('[% ag.href_delete %]', '[% ag.name | html %]');" class="icon delete"></a>
+  <a href="[% ag.href_edit %]" class="icon edit"></a>
+[% END %]
+  <input type="checkbox" name="check" value="[% ag.id %]" />
+</td>
+<td>[% ag.name | html %]</td>
+<td>[% IF ag.is_used %]<a href="#" class="icon checked"></a>[% END %]</td>
+[% IF visible_cols.Rc %]<td>[% href(ag.href_view_contests, ag.ref_count) %]</td>[% END %]
+</tr>
+[% END %]
+</table>
+<br/>
+<button name="add" value="1" class="button">[% capt.add %]</button>
+<button name="remove" value="1" class="button">[% capt.remove %]</button>
+[% PROCESS includes/pages.tti %]
+</form>
+
+[% PROCESS includes/menu_end.tti %]

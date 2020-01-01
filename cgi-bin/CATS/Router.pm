@@ -91,6 +91,13 @@ my $main_routes = {
     console_export => \&CATS::UI::Console::export_frame,
     console_graphs => \&CATS::UI::Console::graphs_frame,
 
+    acc_groups => [ \&CATS::UI::AccGroups::acc_groups_frame,
+        delete => integer, saved => integer,
+        add => bool, remove => bool, check => array_of integer,
+    ],
+    acc_groups_edit => [ \&CATS::UI::AccGroups::acc_groups_edit_frame,
+        $CATS::UI::AccGroups::form->route, ],
+
     problems => [
         \&CATS::UI::Problems::problems_frame,
         problem_id => integer,
