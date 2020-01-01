@@ -390,3 +390,6 @@
 1215 "Group '%s' saved."
 1216 "Group '%s' deleted."
 1217 "Groups of contest '%s'."
+1218 "Groups added: %d."
+1219 "Groups removed: %d."
+1220 "Contests with group '%s'."

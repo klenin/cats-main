@@ -83,23 +83,28 @@ sub _contest_searches {
     });
     my $cp_hidden = $is_root ? '' : " AND CP1.status < $cats::problem_st_hidden";
     $p->{listview}->define_subqueries({
-        has_tag => { sq => qq~EXISTS (
+        has_tag => { sq => q~EXISTS (
             SELECT 1 FROM contest_contest_tags CCT1 WHERE CCT1.contest_id = C.id AND CCT1.tag_id = ?)~,
             m => 1191, t => q~
             SELECT CT.name FROM contest_tags CT WHERE CT.id = ?~
         },
-        has_tag_named => { sq => qq~EXISTS (
+        has_tag_named => { sq => q~EXISTS (
             SELECT 1 FROM contest_contest_tags CCT1
             INNER JOIN contest_tags CT1 ON CT1.id = CCT1.tag_id
             WHERE CCT1.contest_id = C.id AND CT1.name = ?)~,
             m => 1191, t => undef,
         },
-        has_de_tag => { sq => qq~EXISTS (
+        has_group => { sq => q~EXISTS (
+            SELECT 1 FROM acc_group_contests AGC1 WHERE AGC1.contest_id = C.id AND AGC1.acc_group_id = ?)~,
+            m => 1220, t => q~
+            SELECT AG.name FROM acc_groups AG WHERE AG.id = ?~
+        },
+        has_de_tag => { sq => q~EXISTS (
             SELECT 1 FROM contest_de_tags CDT1 WHERE CDT1.contest_id = C.id AND CDT1.tag_id = ?)~,
             m => 1191, t => q~
             SELECT DT.name FROM de_tags DT WHERE DT.id = ?~
         },
-        has_de_tag_named => { sq => qq~EXISTS (
+        has_de_tag_named => { sq => q~EXISTS (
             SELECT 1 FROM contest_de_tags CDT1
             INNER JOIN de_tags DT1 ON CD1.id = CDT1.tag_id
             WHERE CDT1.contest_id = C.id AND CD1.name = ?)~,
@@ -301,6 +306,38 @@ sub add_remove_tags {
         }
         $dbh->commit;
         msg(1190, $count);
+    }
+}
+
+sub add_remove_groups {
+    my ($p) = @_;
+    my $existing = $dbh->selectcol_arrayref(q~
+        SELECT acc_group_id FROM acc_group_contests WHERE contest_id = ?~, undef,
+        $cid);
+    my %existing_idx;
+    @existing_idx{@$existing} = undef;
+    my $count = 0;
+    if ($p->{add}) {
+        my $q = $dbh->prepare(q~
+            INSERT INTO acc_group_contests (contest_id, acc_group_id) VALUES (?, ?)~);
+        for (@{$p->{check}}) {
+            exists $existing_idx{$_} and next;
+            $q->execute($cid, $_);
+            ++$count;
+        }
+        $dbh->commit;
+        msg(1218, $count);
+    }
+    elsif ($p->{remove}) {
+        my $q = $dbh->prepare(q~
+            DELETE FROM acc_group_contests WHERE contest_id = ? AND acc_group_id = ?~);
+        for (@{$p->{check}}) {
+            exists $existing_idx{$_} or next;
+            $q->execute($cid, $_);
+            ++$count;
+        }
+        $dbh->commit;
+        msg(1219, $count);
     }
 }
 

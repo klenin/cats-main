@@ -3,6 +3,7 @@ package CATS::UI::AccGroups;
 use strict;
 use warnings;
 
+use CATS::Contest::Utils;
 use CATS::DB;
 use CATS::Form;
 use CATS::Globals qw($cid $is_jury $is_root $t);
@@ -40,7 +41,7 @@ sub acc_groups_frame {
     init_template($p, 'acc_groups.html.tt');
     my $lv = CATS::ListView->new(web => $p, name => 'acc_groups');
 
-    #CATS::Contest::Utils::add_remove_tags($p, 'contest_contest_tags') if $p->{add} || $p->{remove};
+    CATS::Contest::Utils::add_remove_groups($p) if $p->{add} || $p->{remove};
 
     $lv->define_columns(url_f('acc_groups'), 0, 0, [
         { caption => res_str(601), order_by => 'name', width => '30%' },
@@ -74,7 +75,7 @@ sub acc_groups_frame {
             %$row,
             href_edit=> url_f('acc_groups_edit', id => $row->{id}),
             href_delete => url_f('acc_groups', 'delete' => $row->{id}),
-            href_view_contests => url_f('acc_groups', search => "has_group($row->{id})"),
+            href_view_contests => url_f('contests', search => "has_group($row->{id})"),
         );
     };
 
