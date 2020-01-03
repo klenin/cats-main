@@ -27,6 +27,7 @@ sub new {
         col_defs => undef,
         extra_settings => $p{extra_settings} || {},
         qb => CATS::QueryBuilder->new,
+        url => $p{url},
     };
     bless $self, $class;
     $self->init_params;
@@ -37,6 +38,7 @@ sub settings { $settings->{$_[0]->{name}} }
 sub visible_cols { $_[0]->{visible_cols} }
 sub qb { $_[0]->{qb} }
 sub submitted { $_[0]->{submitted} }
+sub url { $_[0]->{url} }
 
 my $route = [ 1,
     page => integer, search => undef, sort => qr/^[0-9a-zA-Z]+$/, sort_dir => integer,
@@ -106,7 +108,15 @@ sub common_param {
 }
 
 sub attach {
-    my ($self, $url, $fetch_row, $sth, $p) = @_;
+    my ($self, @rest) = @_;
+    my ($fetch_row, $sth, $p);
+    if (!ref $rest[0]) {
+        ($self->{url}, $fetch_row, $sth, $p) = @rest;
+    }
+    else {
+        ($fetch_row, $sth, $p) = @rest;
+    }
+    $self->{url} or die;
 
     my $s = $settings->{$self->{name}} ||= {};
 
@@ -151,7 +161,7 @@ sub attach {
     my $pp = $p->{page_params} || {};
     my $page_extra_params = join '', map ";$_=" . CATS::Utils::escape_url($pp->{$_}),
         grep defined $pp->{$_}, sort keys %$pp;
-    my $href_page = sub { "$url$page_extra_params;page=$_[0]" };
+    my $href_page = sub { "$self->{url}$page_extra_params;page=$_[0]" };
     my @pages = map {{
         page_number => $_ + 1,
         href_page => $href_page->($_),
@@ -165,7 +175,7 @@ sub attach {
     $self->common_param;
     $t->param(
         page => $$page, pages => \@pages,
-        href_lv_action => "$url$page_extra_params",
+        href_lv_action => $self->{url} . $page_extra_params,
         ($range_start > 0 ? (href_prev_pages => $href_page->($range_start - 1)) : ()),
         ($range_end < $page_count - 1 ? (href_next_pages => $href_page->($range_end + 1)) : ()),
         $self->{array_name} => \@data,
@@ -252,14 +262,29 @@ sub define_db_searches { $_[0]->qb->define_db_searches($_[1]) }
 sub define_subqueries { $_[0]->qb->define_subqueries($_[1]) }
 sub define_enums { $_[0]->qb->define_enums($_[1]) }
 
-sub define_columns {
-    my ($self, $url, $default_by, $default_dir, $col_defs) = @_;
-
+sub default_sort {
+    my ($self, $default_by, $default_dir) = @_;
     my $s = $self->settings;
     $s->{sort_by} = $default_by if !defined $s->{sort_by} || $s->{sort_by} eq '';
-    $s->{sort_dir} = $default_dir if !defined $s->{sort_dir} || $s->{sort_dir} eq '';
+    $s->{sort_dir} = ($default_dir // 0) if !defined $s->{sort_dir} || $s->{sort_dir} eq '';
+    $self;
+}
 
-    $self->{col_defs} = $col_defs or die;
+sub define_columns {
+    my ($self, @rest) = @_;
+    my $s = $self->settings;
+    if (@_ == 5) {
+        ($self->{url}, my $default_by, my $default_dir, $self->{col_defs}) = @rest;
+        $self->default_sort($default_by, $default_dir);
+    }
+    elsif (@_ == 2) {
+        ($self->{col_defs}) = @rest;
+    }
+    else { die; }
+
+    $self->{url} or die;
+    my $col_defs = $self->{col_defs} or die;
+
     my $cd_idx = $self->{col_defs_idx} = {};
     $cd_idx->{$_->{col}} = $_ for grep $_->{col}, @$col_defs;
 
@@ -277,7 +302,7 @@ sub define_columns {
             $def->{'sort_' . ($s->{sort_dir} ? 'down' : 'up')} = 1;
             $dir = 1 - $s->{sort_dir};
         }
-        $def->{href_sort} = sprintf '%s;sort=%s;sort_dir=%s', $url, $def->{col} // $i, $dir;
+        $def->{href_sort} = sprintf '%s;sort=%s;sort_dir=%s', $self->{url}, $def->{col} // $i, $dir;
     }
     if (grep !$_->{visible}, @$col_defs) {
         $s->{cols} = join(',', map { $_->{visible} && $_->{col} ? $_->{col} : () } @$col_defs) || '-';
