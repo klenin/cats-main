@@ -14,7 +14,7 @@ sub account_tokens_frame {
     my ($p) = @_;
     $is_root or return;
     init_template($p, 'account_tokens.html.tt');
-    my $lv = CATS::ListView->new(web => $p, name => 'account_tokens');
+    my $lv = CATS::ListView->new(web => $p, name => 'account_tokens', url => url_f('account_tokens'));
 
     #$is_root and $form->delete_or_saved($p);
     if ($p->{delete}) {
@@ -24,7 +24,7 @@ sub account_tokens_frame {
         $dbh->commit;
     }
 
-    $lv->define_columns(url_f('account_tokens'), 0, 0, [
+    $lv->default_sort(0)->define_columns([
         { caption => res_str(619), order_by => 'token', width => '30%' },
         { caption => res_str(608), order_by => 'account_id', width => '30%' },
         { caption => res_str(683), order_by => 'usages_left', width => '10%', col => 'Ul' },
@@ -50,7 +50,7 @@ sub account_tokens_frame {
                 href_delete => url_f('account_tokens', 'delete' => $row->{token})) : ()),
         );
     };
-    $lv->attach(url_f('account_tokens'), $fetch_record, $c);
+    $lv->attach($fetch_record, $c);
     $t->param(submenu => [ CATS::References::menu('account_tokens') ]);
 }
 

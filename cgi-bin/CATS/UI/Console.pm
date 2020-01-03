@@ -65,7 +65,8 @@ sub _init_console_template {
     my ($p, $template_name) = @_;
     my $se = $p->{se} ? "_$p->{se}" : '';
     init_template($p, $template_name);
-    CATS::ListView->new(web => $p, name => "console$se", array_name => 'console');
+    CATS::ListView->new(
+        web => $p, name => "console$se", array_name => 'console', url => url_f('console'));
 }
 
 sub _decorate_rows {
@@ -116,7 +117,7 @@ sub _console_content {
     my $problem_codes = !$contest->is_practice ? $dbh->selectall_hashref(q~
         SELECT problem_id, code FROM contest_problems WHERE contest_id = ?~, 'problem_id', undef, $cid) : {};
 
-    $lv->define_columns(url_f('console'), 0, 0, [
+    $lv->default_sort(0)->define_columns([
         { caption => res_str(654), col => 'Cy' },
         { caption => res_str(632), col => 'Tm' },
         { caption => res_str(641), col => 'De' },
@@ -299,7 +300,7 @@ sub _console_content {
     };
 
     $lv->attach(
-        url_f('console'), ($sth ? $fetch_console_record : sub { () }), $sth,
+        ($sth ? $fetch_console_record : sub { () }), $sth,
         { page_params => { se => $p->{se}, uf => join(',', @{$p->{uf}}) || undef } });
 
     $sth->finish if $sth;

@@ -54,12 +54,12 @@ sub compilers_frame {
     my ($p) = @_;
 
     init_template($p, 'compilers.html.tt');
-    my $lv = CATS::ListView->new(web => $p, name => 'compilers');
+    my $lv = CATS::ListView->new(web => $p, name => 'compilers', url => url_f('compilers'));
 
     $is_root and $form->delete_or_saved($p,
         before_commit => \&CATS::JudgeDB::invalidate_de_bitmap_cache);
 
-    $lv->define_columns(url_f('compilers'), 0, 0, [
+    $lv->default_sort(0)->define_columns([
         { caption => res_str(619), order_by => 'code', width => '10%' },
         { caption => res_str(620), order_by => 'description', width => '40%' },
         { caption => res_str(621), order_by => 'file_ext', width => '10%' },
@@ -89,7 +89,7 @@ sub compilers_frame {
                 href_delete => url_f('compilers', 'delete' => $row->{did})) : ()),
         );
     };
-    $lv->attach(url_f('compilers'), $fetch_record, $c);
+    $lv->attach($fetch_record, $c);
     _submenu;
 }
 
