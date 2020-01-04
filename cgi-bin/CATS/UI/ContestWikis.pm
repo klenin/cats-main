@@ -73,9 +73,9 @@ sub contest_wikis_frame {
 
     $form->delete_or_saved($p);
 
-    my $lv = CATS::ListView->new(web => $p, name => 'contest_wikis');
+    my $lv = CATS::ListView->new(web => $p, name => 'contest_wikis', url => url_f('contest_wikis'));
 
-    $lv->define_columns(url_f('contest_wikis'), 0, 0, [
+    $lv->default_sort(0)->define_columns([
         { caption => res_str(601), order_by => 'name', width => '70%' },
         { caption => res_str(681), order_by => 'allow_edit', width => '15%', col => 'Ae' },
         { caption => res_str(682), order_by => 'ordering', width => '15%', col => 'Or' },
@@ -97,7 +97,7 @@ sub contest_wikis_frame {
             href_delete => url_f('contest_wikis', 'delete' => $row->{id}),
         );
     };
-    $lv->attach(url_f('contest_wikis'), $fetch_record, $sth);
+    $lv->attach($fetch_record, $sth);
     CATS::Contest::Utils::contest_submenu('contest_wikis');
     $t->param(title_suffix => res_str(589));
 }

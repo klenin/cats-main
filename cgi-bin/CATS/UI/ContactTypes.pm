@@ -43,11 +43,11 @@ sub contact_types_frame {
     my ($p) = @_;
 
     init_template($p, 'contact_types.html.tt');
-    my $lv = CATS::ListView->new(web => $p, name => 'contact_types');
+    my $lv = CATS::ListView->new(web => $p, name => 'contact_types', url => url_f('contact_types'));
 
     $is_root and $form->delete_or_saved($p);
 
-    $lv->define_columns(url_f('contact_types'), 0, 0, [
+    $lv->default_sort(0)->define_columns([
         { caption => res_str(601), order_by => 'name', width => '40%' },
         { caption => res_str(668), order_by => 'url', width => '40%' },
     ]);
@@ -66,7 +66,7 @@ sub contact_types_frame {
             href_delete => url_f('contact_types', 'delete' => $row->{ct_id}),
         );
     };
-    $lv->attach(url_f('contact_types'), $fetch_record, $c);
+    $lv->attach($fetch_record, $c);
     _submenu;
 }
 

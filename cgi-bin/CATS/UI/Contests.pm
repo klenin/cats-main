@@ -485,7 +485,7 @@ sub contests_frame {
 
     return if $p->{ical} && $p->{json};
     init_template($p, 'contests.' . ($p->{ical} ? 'ics' : $p->{json} ? 'json' : 'html') . '.tt');
-    $p->{listview} = my $lv = CATS::ListView->new(web => $p, name => 'contests');
+    $p->{listview} = my $lv = CATS::ListView->new(web => $p, name => 'contests', url => url_f('contests'));
 
     CATS::Contest::contest_group_auto_new($p->{contests_selection})
         if $p->{create_group} && $is_root;
@@ -505,7 +505,7 @@ sub contests_frame {
         _contests_remove_children($p) if $p->{remove_children};
     }
 
-    $lv->define_columns(url_f('contests'), 'Sd', 1, [
+    $lv->default_sort('Sd', 1)->define_columns([
         { caption => res_str(601), order_by => 'ctype DESC, title', width => '40%' },
         ($is_root ? { caption => res_str(663), order_by => 'ctype DESC, problems_count', width => '5%', col => 'Pc' } : ()),
         { caption => res_str(600), order_by => 'ctype DESC, start_date', width => '15%', col => 'Sd' },
@@ -518,7 +518,7 @@ sub contests_frame {
         $p->{filter} || $settings->{contests}->{filter} || 'unfinished';
 
     $p->{filter_sql} = contests_submenu_filter;
-    $lv->attach(url_f('contests'),
+    $lv->attach(
         defined $uid ?
             CATS::Contest::Utils::authenticated_contests_view($p) :
             CATS::Contest::Utils::anonymous_contests_view($p),
