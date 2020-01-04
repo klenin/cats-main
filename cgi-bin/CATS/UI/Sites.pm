@@ -97,11 +97,11 @@ sub sites_frame {
     $user->privs->{edit_sites} or return;
 
     init_template($p, 'sites.html.tt');
-    my $lv = CATS::ListView->new(web => $p, name => 'sites');
+    my $lv = CATS::ListView->new(web => $p, name => 'sites', url => url_f('sites'));
 
     $form->delete_or_saved($p);
 
-    $lv->define_columns(url_f('sites'), 0, 0, [
+    $lv->default_sort(0)->define_columns([
         { caption => res_str(601), order_by => 'name',     width => '20%' },
         { caption => res_str(654), order_by => 'region',   width => '15%', col => 'Rg' },
         { caption => res_str(655), order_by => 'city',     width => '15%', col => 'Ct' },
@@ -116,8 +116,8 @@ sub sites_frame {
 
     my ($q, @bind) = $sql->select('sites S',
         [ 'id', @{$form->{sql_fields}}, "$count_fld AS contests" ], $lv->where);
-    my $c = $dbh->prepare("$q " . $lv->order_by);
-    $c->execute(@bind);
+    my $sth = $dbh->prepare("$q " . $lv->order_by);
+    $sth->execute(@bind);
 
     my $fetch_record = sub {
         my $row = $_[0]->fetchrow_hashref or return ();
@@ -128,7 +128,7 @@ sub sites_frame {
             href_contests => url_f('contests', search => "has_site($row->{id})", filter => 'all'),
         );
     };
-    $lv->attach(url_f('sites'), $fetch_record, $c);
+    $lv->attach($fetch_record, $sth);
 
     $t->param(submenu => [ CATS::References::menu('sites') ], editable => $user->privs->{edit_sites});
 }
@@ -244,7 +244,7 @@ sub contest_sites_frame {
     my ($p) = @_;
 
     init_template($p, 'contest_sites.html.tt');
-    my $lv = CATS::ListView->new(web => $p, name => 'contest_sites');
+    my $lv = CATS::ListView->new(web => $p, name => 'contest_sites', url => url_f('contest_sites'));
     $is_jury || $user->{is_site_org} || $contest->{show_sites} or return;
 
     if (my @check = @{$p->{check}}) {
@@ -252,7 +252,7 @@ sub contest_sites_frame {
         $p->redirect(url_f 'rank_table', sites => join ',', @check) if $p->{multi_rank_table};
     }
 
-    $lv->define_columns(url_f('contest_sites'), 0, 0, [
+    $lv->default_sort(0)->define_columns([
         { caption => res_str(601), order_by => 'name'       , width => '15%' },
         { caption => res_str(654), order_by => 'region'     , width => '15%', col => 'Rg' },
         { caption => res_str(655), order_by => 'city'       , width => '15%', col => 'Ci' },
@@ -309,7 +309,7 @@ sub contest_sites_frame {
             href_rank_table => url_f('rank_table', sites => $row->{id}),
         );
     };
-    $lv->attach(url_f('contest_sites'), $fetch_record, $sth);
+    $lv->attach($fetch_record, $sth);
     $t->param(submenu => [
         ($is_jury ? { item => res_str(588), href => url_f('contest_sites', search => 'is_used=1') } : ()),
         ($user->privs->{edit_sites} ? { item => res_str(514), href => url_f('sites_edit'), new => 1 } : ()),

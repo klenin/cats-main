@@ -169,7 +169,7 @@ sub similarity_frame {
     my ($p) = @_;
 
     init_template($p, 'similarity.html.tt');
-    my $lv = CATS::ListView->new(web => $p, name => 'similarity');
+    my $lv = CATS::ListView->new(web => $p, name => 'similarity', url => url_f('similarity'));
     $is_jury && !$contest->is_practice or return;
 
     $lv->define_db_searches([ qw(state points) ]);
@@ -180,7 +180,8 @@ sub similarity_frame {
 
     my $s = $lv->settings;
     if ($lv->submitted) {
-        $s->{$_} = $p->{$_} for qw(threshold self_diff all_contests pid account_id collapse_idents group jury virtual);
+        $s->{$_} = $p->{$_} for qw(
+            threshold self_diff all_contests pid account_id collapse_idents group jury virtual);
     }
     $s->{threshold} //= 50;
     $s->{self_diff} //= 0;
@@ -268,7 +269,7 @@ sub similarity_frame {
         }
     }
 
-    $lv->define_columns(url_f('similarity'), 0, 0, [
+    $lv->default_sort(0)->define_columns([
         { caption => res_str(664), width => '5%', order_by => 'score', numeric => 1 },
         { caption => res_str(608) . ' 1', width => '20%', order_by => 'name1' },
         { caption => res_str(627) . ' 1', width => '20%', order_by => 'site1', col => 'S1' },

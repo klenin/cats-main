@@ -162,17 +162,15 @@ sub snippets_frame {
 
     init_template($p, 'snippets.html.tt');
     $form->delete_or_saved($p);
-    my $lv = CATS::ListView->new(web => $p, name => 'snippets');
+    my $lv = CATS::ListView->new(web => $p, name => 'snippets', url => url_f('snippets'));
 
-    my @cols = (
+    $lv->default_sort(0)->define_columns([
         { caption => res_str(602), order_by => 'title', width => '20%' },
         { caption => res_str(608), order_by => 'team_name', width => '20%' },
         { caption => res_str(601), order_by => 'name', width => '20%' },
         { caption => res_str(672), order_by => 'text', width => '30%' },
         { caption => res_str(632), order_by => 'finish_time', width => '10%', col => 'Ft' },
-    );
-
-    $lv->define_columns(url_f('snippets'), 0, 0, \@cols);
+    ]);
 
     $lv->define_db_searches([ 'code', 'name' ]);
     $lv->define_db_searches({
@@ -219,7 +217,7 @@ sub snippets_frame {
         );
     };
 
-    $lv->attach(url_f('snippets'), $fetch_record, $sth);
+    $lv->attach($fetch_record, $sth);
 
     $sth->finish;
 

@@ -73,11 +73,11 @@ sub wiki_pages_frame {
     $user->privs->{edit_wiki} or return;
 
     init_template($p, 'wiki_pages.html.tt');
-    my $lv = CATS::ListView->new(web => $p, name => 'wiki_pages');
+    my $lv = CATS::ListView->new(web => $p, name => 'wiki_pages', url => url_f('wiki_pages'));
 
     $user->privs->{edit_wiki} and $page_form->delete_or_saved($p);
 
-    $lv->define_columns(url_f('wiki_pages'), 0, 0, [
+    $lv->default_sort(0)->define_columns([
         { caption => res_str(601), order_by => 'name', width => '30%' },
         { caption => res_str(669), order_by => 'is_public', width => '5%', col => 'Pb' },
         { caption => res_str(672), order_by => 'langs', width => '5%', col => 'Ls' },
@@ -98,8 +98,8 @@ sub wiki_pages_frame {
             SELECT SUM(OCTET_LENGTH(WT.text)) FROM wiki_texts WT
             WHERE WT.wiki_id = wiki_pages.id) AS total_size~ : ()),
     ], $lv->where);
-    my $c = $dbh->prepare("$q " . $lv->order_by);
-    $c->execute(@bind);
+    my $sth = $dbh->prepare("$q " . $lv->order_by);
+    $sth->execute(@bind);
 
     my $fetch_record = sub {
         my $row = $_[0]->fetchrow_hashref or return ();
@@ -113,7 +113,7 @@ sub wiki_pages_frame {
                 href_delete => url_f('wiki_pages', 'delete' => $row->{id})) : ()),
         );
     };
-    $lv->attach(url_f('wiki_pages'), $fetch_record, $c);
+    $lv->attach($fetch_record, $sth);
 
     $t->param(submenu => [ CATS::References::menu('wiki_pages') ]);
 }
