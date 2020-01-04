@@ -15,7 +15,8 @@ use CATS::References;
 our $form = CATS::Form->new(
     table => 'acc_groups',
     fields => [
-        [ name => 'name', validators => [ CATS::Field::str_length(1, 200) ], editor => { size => 50 }, caption => 601 ],
+        [ name => 'name',
+            validators => [ CATS::Field::str_length(1, 200) ], editor => { size => 50 }, caption => 601 ],
         [ name => 'description', caption => 620 ],
     ],
     href_action => 'acc_groups_edit',
@@ -39,11 +40,11 @@ sub acc_groups_frame {
     $is_jury or return;
     $form->delete_or_saved($p) if $is_root;
     init_template($p, 'acc_groups.html.tt');
-    my $lv = CATS::ListView->new(web => $p, name => 'acc_groups');
+    my $lv = CATS::ListView->new(web => $p, name => 'acc_groups', url => url_f('acc_groups'));
 
     CATS::Contest::Utils::add_remove_groups($p) if $p->{add} || $p->{remove};
 
-    $lv->define_columns(url_f('acc_groups'), 0, 0, [
+    $lv->default_sort(0)->define_columns([
         { caption => res_str(601), order_by => 'name', width => '30%' },
         { caption => res_str(685), order_by => 'is_used', width => '10%' },
         { caption => res_str(643), order_by => 'ref_count', width => '10%', col => 'Rc' },
@@ -61,13 +62,13 @@ sub acc_groups_frame {
 
     my $ref_count_sql = $lv->visible_cols->{Rc} ? q~
         SELECT COUNT(*) FROM acc_group_contests AGC2 WHERE AGC2.acc_group_id = AG.id~ : 'NULL';
-    my $c = $dbh->prepare(qq~
+    my $sth = $dbh->prepare(qq~
         SELECT AG.id, AG.name,
             (SELECT 1 FROM acc_group_contests AGC1
                 WHERE AGC1.acc_group_id = AG.id AND AGC1.contest_id = ?) AS is_used,
             ($ref_count_sql) AS ref_count
         FROM acc_groups AG WHERE 1 = 1 ~ . $lv->maybe_where_cond . $lv->order_by);
-    $c->execute($cid, $lv->where_params);
+    $sth->execute($cid, $lv->where_params);
 
     my $fetch_record = sub {
         my $row = $_[0]->fetchrow_hashref or return ();
