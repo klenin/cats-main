@@ -120,7 +120,7 @@ sub problems_retest_frame {
                 url_f('console', search => "problem_id=$c->{pid},state<=T", @href_console_params),
         );
     };
-    $lv->attach(url_f('problems_retest'), $fetch_record, $sth);
+    $lv->attach($fetch_record, $sth);
 
     $sth->finish;
 

@@ -77,11 +77,11 @@ sub user_contacts_frame {
     my $editable = $is_root || _is_profile($p);
     $user_contact_form->delete_or_saved($p) if $editable;
 
-    my $lv = CATS::ListView->new(web => $p, name => 'user_contacts');
+    my $lv = CATS::ListView->new(web => $p, name => 'user_contacts', url => url_f('user_contacts'));
     my ($user_name, $user_site) = _user_name_and_site($p);
     $user_name or return;
 
-    $lv->define_columns(url_f('user_contacts'), 0, 0, [
+    $lv->default_sort(0)->define_columns([
         { caption => res_str(642), order_by => 'type_name', width => '20%' },
         { caption => res_str(657), order_by => 'handle', width => '30%' },
         ($editable ?
@@ -107,7 +107,7 @@ sub user_contacts_frame {
             ($row->{url} ? (href_contact => sprintf $row->{url}, CATS::Utils::escape_url($row->{handle})) : ()),
         );
     };
-    $lv->attach(url_f('user_contacts'), $fetch_record, $sth, { page_params => { uid => $p->{uid} } });
+    $lv->attach($fetch_record, $sth, { page_params => { uid => $p->{uid} } });
     $t->param(
         CATS::User::submenu('user_contacts', $p->{uid}, $user_site),
         title_suffix => res_str(586),

@@ -162,7 +162,9 @@ sub users_frame {
     my $lv = CATS::ListView->new(
         web => $p,
         name => 'users' . ($contest->is_practice ? '_practice' : ''),
-        array_name => 'users');
+        array_name => 'users',
+        url => url_f('users'),
+    );
     $t->param(title_suffix => res_str(526), users_submenu);
 
     if ($is_jury) {
@@ -204,7 +206,7 @@ sub users_frame {
             $cid, @site_param));
     }
 
-    my @cols = (
+    $lv->default_sort($is_jury ? 3 : 2, 1)->define_columns([
         ($is_jury ?
             { caption => res_str(616), order_by => 'login', width => '20%' } : ()),
         { caption => res_str(608), order_by => 'team_name', width => '30%', checkbox => $is_jury && '[name=sel]' },
@@ -225,9 +227,7 @@ sub users_frame {
         ) : ()),
         { caption => res_str(609), order_by => 'rating', width => '5%', col => 'Rt' },
         { caption => res_str(632), order_by => 'diff_time', width => '5%', col => 'Dt' },
-    );
-
-    $lv->define_columns(url_f('users'), $is_jury ? 3 : 2, 1, \@cols);
+    ]);
 
     return if !$is_jury && $p->{json} && $contest->is_practice;
 
@@ -290,9 +290,9 @@ sub users_frame {
         ' AND CA.is_hidden = 0'),
         $lv->maybe_where_cond;
 
-    my $c = $dbh->prepare($sql);
+    my $sth = $dbh->prepare($sql);
     my @maybe_site_id = ($check_site_id ? $user->{site_id} : ());
-    $c->execute(@maybe_site_id, $cid, @maybe_site_id, $lv->where_params);
+    $sth->execute(@maybe_site_id, $cid, @maybe_site_id, $lv->where_params);
 
     my $fetch_record = sub {
         my (
@@ -339,8 +339,8 @@ sub users_frame {
          );
     };
 
-    $lv->attach(url_f('users'), $fetch_record, $c);
-    $c->finish;
+    $lv->attach($fetch_record, $sth);
+    $sth->finish;
 }
 
 sub users_all_settings_frame {
@@ -352,9 +352,10 @@ sub users_all_settings_frame {
     my $lv = CATS::ListView->new(
         web => $p,
         name => 'users_all_settings',
+        url => url_f('users_all_settings'),
         extra_settings => { selector => undef });
 
-    $lv->define_columns(url_f('users_all_settings'), 0, 0, [
+    $lv->default_sort(0)->define_columns([
         { caption => res_str(616), order_by => 'login', width => '15%' },
         { caption => res_str(608), order_by => 'team_name', width => '15%' },
         { caption => res_str(660), order_by => 'last_login', width => '15%' },
@@ -387,7 +388,7 @@ sub users_all_settings_frame {
             settings_full => $full,
         );
     };
-    $lv->attach(url_f('users_all_settings'), $fetch_record, $sth);
+    $lv->attach($fetch_record, $sth);
     $t->param(title_suffix => res_str(575), users_submenu);
 }
 

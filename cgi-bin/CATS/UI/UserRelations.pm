@@ -150,12 +150,12 @@ sub user_relations_frame {
 
     $form->delete_or_saved($p);
 
-    my $lv = CATS::ListView->new(web => $p, name => 'user_relations');
+    my $lv = CATS::ListView->new(web => $p, name => 'user_relations', url => url_f('user_relations'));
     my ($user_name) = $dbh->selectrow_array(q~
         SELECT team_name FROM accounts WHERE id = ?~, undef,
         $p->{uid}) or return;
 
-    $lv->define_columns(url_f('user_relations'), 0, 0, [
+    $lv->default_sort(0)->define_columns([
         { caption => res_str(679), order_by => 'from_name', width => '30%' },
         { caption => res_str(642), order_by => 'rel_type', width => '20%' },
         { caption => res_str(680), order_by => 'to_name', width => '30%' },
@@ -187,7 +187,7 @@ sub user_relations_frame {
                 _url_accept($row, from_ok => $row->{from_ok}, to_ok => 1) : undef,
         );
     };
-    $lv->attach(url_f('user_relations'), $fetch_record, $sth, { page_params => { @pp } });
+    $lv->attach($fetch_record, $sth, { page_params => { @pp } });
     $t->param(
         CATS::User::submenu('user_relations', $p->{uid}),
         title_suffix => res_str(597),
