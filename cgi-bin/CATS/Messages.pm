@@ -51,6 +51,17 @@ sub res_str_lang {
 
 sub res_str { res_str_lang(CATS::Settings::lang, @_) }
 
+sub find_res_str {
+    my ($lang, $substr) = @_;
+    my $rs = $resource_strings->{$lang} or die "Unknown lang: $lang";
+    my @answers;
+    for (my $i = 0; $i < @$rs; ++$i) {
+        my $s = $rs->[$i] or next;
+        push @answers, [ $i, $s ] if $s =~ /\Q$substr\E/i;
+    }
+    \@answers;
+}
+
 sub msg {
     push @$messages, res_str(@_);
     # Support 'return msg' pattern.

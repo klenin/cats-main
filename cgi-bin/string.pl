@@ -15,21 +15,36 @@ use CATS::Messages;
 
 GetOptions(
     help => \(my $help = 0),
-    'string=i' => \(my $string_id = 0),
+    'id=i' => \(my $string_id = 0),
+    'find=s' => \(my $substr = ''),
     'lang=s' => \(my $lang = ''),
 );
 
 sub usage {
     print STDERR @_, "\n" if @_;
     print STDERR qq~CATS String management tool
-Usage: $0 [--help] --string=<string id> [--lang=<lang>]
+Usage: $0 [--help] [--id=<string id>|--find=<substr>] [--lang=<lang>]
 ~;
     exit;
 }
 
-usage if $help || !$string_id;
+usage if $help;
 
 CATS::Messages::init;
 
-say "$_: ", Encode::encode_utf8(CATS::Messages::res_str_lang_raw($_, $string_id))
-    for $lang ? $lang : @cats::langs;
+if ($string_id) {
+    say "$_: ", Encode::encode_utf8(CATS::Messages::res_str_lang_raw($_, $string_id))
+        for $lang ? $lang : @cats::langs;
+}
+elsif ($substr) {
+    my $answers = CATS::Messages::find_res_str($lang || 'en', $substr);
+    if (@$answers) {
+        printf "%s: %s\n", @$_ for @$answers;
+    }
+    else {
+        say "String not found";
+    }
+}
+else {
+    usage;
+}
