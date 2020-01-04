@@ -37,8 +37,8 @@ sub account_tokens_frame {
     my ($q, @bind) = $sql->select('account_tokens AcT INNER JOIN accounts A ON AcT.account_id = A.id',
         [ qw(AcT.token AcT.account_id AcT.usages_left AcT.last_used AcT.referer A.team_name) ],
         $lv->where);
-    my $c = $dbh->prepare("$q " . $lv->order_by);
-    $c->execute(@bind);
+    my $sth = $dbh->prepare("$q " . $lv->order_by);
+    $sth->execute(@bind);
 
     my $fetch_record = sub {
         my $row = $_[0]->fetchrow_hashref or return ();
@@ -50,7 +50,7 @@ sub account_tokens_frame {
                 href_delete => url_f('account_tokens', 'delete' => $row->{token})) : ()),
         );
     };
-    $lv->attach($fetch_record, $c);
+    $lv->attach($fetch_record, $sth);
     $t->param(submenu => [ CATS::References::menu('account_tokens') ]);
 }
 

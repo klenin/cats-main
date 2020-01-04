@@ -76,8 +76,8 @@ sub compilers_frame {
 
     my ($q, @bind) = $sql->select('default_de', [ 'id as did', @{$form->{sql_fields}} ],
         $is_jury ? $lv->where : { %{$lv->where}, in_contests => 1 });
-    my $c = $dbh->prepare("$q " . $lv->order_by);
-    $c->execute(@bind);
+    my $sth = $dbh->prepare("$q " . $lv->order_by);
+    $sth->execute(@bind);
 
     my $fetch_record = sub {
         my $row = $_[0]->fetchrow_hashref or return ();
@@ -89,7 +89,7 @@ sub compilers_frame {
                 href_delete => url_f('compilers', 'delete' => $row->{did})) : ()),
         );
     };
-    $lv->attach($fetch_record, $c);
+    $lv->attach($fetch_record, $sth);
     _submenu;
 }
 

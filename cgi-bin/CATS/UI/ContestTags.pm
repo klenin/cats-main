@@ -62,13 +62,13 @@ sub contest_tags_frame {
 
     my $ref_count_sql = $lv->visible_cols->{Rc} ? q~
         SELECT COUNT(*) FROM contest_contest_tags CCT2 WHERE CCT2.tag_id = CT.id~ : 'NULL';
-    my $c = $dbh->prepare(qq~
+    my $sth = $dbh->prepare(qq~
         SELECT CT.id, CT.name,
             (SELECT 1 FROM contest_contest_tags CCT1
                 WHERE CCT1.tag_id = CT.id AND CCT1.contest_id = ?) AS is_used,
             ($ref_count_sql) AS ref_count
         FROM contest_tags CT WHERE 1 = 1 ~ . $lv->maybe_where_cond . $lv->order_by);
-    $c->execute($cid, $lv->where_params);
+    $sth->execute($cid, $lv->where_params);
 
     my $fetch_record = sub {
         my $row = $_[0]->fetchrow_hashref or return ();
@@ -80,7 +80,7 @@ sub contest_tags_frame {
         );
     };
 
-    $lv->attach($fetch_record, $c);
+    $lv->attach($fetch_record, $sth);
 
     $t->param(submenu => [ CATS::References::menu('contest_tags') ], editable => $is_root);
 }
