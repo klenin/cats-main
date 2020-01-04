@@ -31,5 +31,5 @@ usage if $help || !$string_id;
 
 CATS::Messages::init;
 
-say "$_: ", Encode::encode_utf8(CATS::Messages::res_str_lang($_, $string_id))
+say "$_: ", Encode::encode_utf8(CATS::Messages::res_str_lang_raw($_, $string_id))
     for $lang ? $lang : @cats::langs;

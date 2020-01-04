@@ -37,9 +37,15 @@ sub init {
     $messages = [];
 }
 
+sub res_str_lang_raw {
+    my ($lang, $id, @params) = @_;
+    my $s = $resource_strings->{$lang}->[$id] or die "Unknown res_str id: $id";
+}
+
 sub res_str_lang {
     my ($lang, $id, @params) = @_;
     my $s = $resource_strings->{$lang}->[$id] or die "Unknown res_str id: $id";
+    warn "Insufficient params for mgs $id" if $s =~ /%/ && !@params;
     sprintf($s, @params);
 }
 
