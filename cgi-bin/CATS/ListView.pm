@@ -108,14 +108,7 @@ sub common_param {
 }
 
 sub attach {
-    my ($self, @rest) = @_;
-    my ($fetch_row, $sth, $p);
-    if (!ref $rest[0]) {
-        ($self->{url}, $fetch_row, $sth, $p) = @rest;
-    }
-    else {
-        ($fetch_row, $sth, $p) = @rest;
-    }
+    my ($self, $fetch_row, $sth, $p) = @_;
     $self->{url} or die;
 
     my $s = $settings->{$self->{name}} ||= {};
@@ -271,19 +264,12 @@ sub default_sort {
 }
 
 sub define_columns {
-    my ($self, @rest) = @_;
+    my ($self, $col_defs) = @_;
+
     my $s = $self->settings;
-    if (@_ == 5) {
-        ($self->{url}, my $default_by, my $default_dir, $self->{col_defs}) = @rest;
-        $self->default_sort($default_by, $default_dir);
-    }
-    elsif (@_ == 2) {
-        ($self->{col_defs}) = @rest;
-    }
-    else { die; }
 
     $self->{url} or die;
-    my $col_defs = $self->{col_defs} or die;
+    $self->{col_defs} = $col_defs or die;
 
     my $cd_idx = $self->{col_defs_idx} = {};
     $cd_idx->{$_->{col}} = $_ for grep $_->{col}, @$col_defs;
