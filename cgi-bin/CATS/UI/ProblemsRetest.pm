@@ -61,25 +61,26 @@ sub problems_retest_frame {
     my ($p) = @_;
     $is_jury && !$contest->is_practice or return;
     init_template($p, 'problems_retest.html.tt');
-    my $lv = CATS::ListView->new(web => $p, name => 'problems_retest', array_name => 'problems');
+    my $lv = CATS::ListView->new(
+        web => $p, name => 'problems_retest', array_name => 'problems', url => url_f('problems_retest'));
 
     problems_mass_retest($p) if $p->{mass_retest};
     problems_recalc_points($p) if $p->{recalc_points};
 
-    my @cols = (
+    $lv->default_sort(0)->define_columns([
         { caption => res_str(602), order_by => 'code', width => '30%' },
         { caption => res_str(639), order_by => 'in_queue', width => '10%' },
         { caption => res_str(622), order_by => 'status', width => '10%' },
         { caption => res_str(605), order_by => 'testsets', width => '10%' },
         { caption => res_str(604), order_by => 'accepted_count', width => '10%' },
-    );
-    $lv->define_columns(url_f('problems_retest'), 0, 0, [ @cols ]);
+    ]);
     CATS::Problem::Utils::define_common_searches($lv);
 
     my $psn = CATS::Problem::Utils::problem_status_names_enum($lv);
 
     my $reqs_count_sql = q~
-        SELECT COUNT(*) FROM reqs D WHERE D.problem_id = P.id AND D.contest_id = CP.contest_id AND D.state =~;
+        SELECT COUNT(*) FROM reqs D
+        WHERE D.problem_id = P.id AND D.contest_id = CP.contest_id AND D.state =~;
     my $sth = $dbh->prepare(qq~
         SELECT
             CP.id AS cpid, P.id AS pid,

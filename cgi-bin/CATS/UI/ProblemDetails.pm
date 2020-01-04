@@ -413,7 +413,9 @@ sub problem_des_frame {
     my ($p) = @_;
 
     init_template($p, 'problem_des.html.tt');
-    my $lv = CATS::ListView->new(web => $p, name => 'problem_des', array_name => 'problem_sources');
+    my $lv = CATS::ListView->new(
+        web => $p, name => 'problem_des', array_name => 'problem_sources',
+        url => url_f('problem_des', pid => $p->{pid}));
 
     $p->{pid} && $is_jury or return;
 
@@ -428,7 +430,7 @@ sub problem_des_frame {
         CATS::Problem::Save::set_contest_problem_des($problem->{cpid}, $p->{allow}, 'id') :
         CATS::Problem::Save::get_all_des($problem->{cpid});
 
-    $lv->define_columns(url_f('problem_des', pid => $p->{pid}), 0, 0, [
+    $lv->default_sort(0)->define_columns([
         { caption => res_str(642), order_by => 'stype', width => '10%' },
         { caption => res_str(601), order_by => 'name', width => '20%' },
         { caption => res_str(674), order_by => 'fname', width => '20%' },
@@ -437,7 +439,7 @@ sub problem_des_frame {
     ]);
     $lv->define_db_searches([qw(stype name fname D.id code description)]);
 
-    my $c = $dbh->prepare(q~
+    my $sth = $dbh->prepare(q~
         SELECT
             COALESCE(PSL.stype, PSLE.stype) AS stype,
             COALESCE(PSL.name, PSLE.name) AS name,
@@ -449,7 +451,7 @@ sub problem_des_frame {
         LEFT JOIN problem_sources_local PSLE ON PSLE.guid = PSI.guid
         INNER JOIN default_de D ON COALESCE(PSL.de_id, PSLE.de_id) = D.id
         WHERE PS.problem_id = ? ~ . $lv->maybe_where_cond . $lv->order_by);
-    $c->execute($p->{pid}, $lv->where_params);
+    $sth->execute($p->{pid}, $lv->where_params);
 
     my $fetch_record = sub {
         my $c = $_[0]->fetchrow_hashref or return ();
@@ -461,8 +463,8 @@ sub problem_des_frame {
         );
     };
 
-    $lv->attach(url_f('problem_des', pid => $p->{pid}), $fetch_record, $c);
-    $c->finish;
+    $lv->attach($fetch_record, $sth);
+    $sth->finish;
 
     $t->param(
         problem_title => $problem->{title},
@@ -486,11 +488,11 @@ sub problem_link_frame {
         $p->{pid}, $cid) or return;
 
     init_template($p, 'problem_link.html.tt');
+    my $href_action = url_f('problem_link', pid => $p->{pid});
     $p->{listview} = my $lv = CATS::ListView->new(
-        web => $p, name => 'problem_link', array_name => 'contests');
+        web => $p, name => 'problem_link', array_name => 'contests', url => $href_action);
 
     CATS::Problem::Utils::problem_submenu('problem_link', $p->{pid});
-    my $href_action = url_f('problem_link', pid => $p->{pid});
     $t->param(
         problem_title => $problem->{title},
         title_suffix => $problem->{title},
@@ -521,7 +523,7 @@ sub problem_link_frame {
         return;
     }
 
-    $lv->define_columns($href_action, 2, 1, [
+    $lv->default_sort(2, 1)->define_columns([
         { caption => res_str(601), order_by => 'ctype DESC, title', width => '50%' },
         { caption => res_str(663), order_by => 'ctype DESC, problems_count', width => '10%' },
         { caption => res_str(600), order_by => 'ctype DESC, start_date', width => '15%' },
@@ -537,8 +539,7 @@ sub problem_link_frame {
     ];
     $p->{filter} = $is_root ? '' : ' AND CA.is_jury = 1';
 
-    $lv->attach(url_f('problem_link', pid => $p->{pid}),
-        CATS::Contest::Utils::authenticated_contests_view($p));
+    $lv->attach(CATS::Contest::Utils::authenticated_contests_view($p));
 }
 
 1;

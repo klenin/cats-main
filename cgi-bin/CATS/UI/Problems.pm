@@ -41,7 +41,9 @@ sub _href_problem_console {
 sub problems_all_frame {
     my ($p) = @_;
     init_template($p, 'problems_all.html.tt');
-    my $lv = CATS::ListView->new(web => $p, name => 'link_problem');
+    my $lv = CATS::ListView->new(
+        web => $p, name => 'link_problem',
+        url => url_f('problems_all', link => $p->{link}, move => $p->{move}));
 
     $t->param(used_codes => $contest->used_problem_codes) if $p->{link};
 
@@ -63,7 +65,7 @@ sub problems_all_frame {
         };
     my $where_cond = join(' AND ', @{$where->{cond}}) || '1=1';
 
-    $lv->define_columns(url_f('problems_all', link => $p->{link}), 0, 0, [
+    $lv->default_sort(0)->define_columns([
         { caption => res_str(602), order_by => 'P.title', width => '30%',
             checkbox => $is_jury && $p->{link} && '[name=problems_selection]' },
         { caption => res_str(603), order_by => 'C.title', width => '30%' },
@@ -87,7 +89,7 @@ sub problems_all_frame {
     my $keywords = $lv->visible_cols->{Kw} ? q~
         SELECT LIST(DISTINCT K.code, ' ') FROM keywords K
         INNER JOIN problem_keywords PK ON PK.keyword_id = K.id AND PK.problem_id = P.id~ : 'NULL';
-    my $c = $dbh->prepare(qq~
+    my $sth = $dbh->prepare(qq~
         SELECT
             P.id, P.title, C.title, C.id,
             ($ok_wa_tl) AS ok_wa_tl,
@@ -97,7 +99,7 @@ sub problems_all_frame {
         FROM problems P INNER JOIN contests C ON C.id = P.contest_id
         INNER JOIN contest_problems CP ON CP.contest_id = C.id AND CP.problem_id = P.id
         WHERE $where_cond ~ . $lv->maybe_where_cond . $lv->order_by);
-    $c->execute($cid, @{$where->{params}}, $lv->where_params);
+    $sth->execute($cid, @{$where->{params}}, $lv->where_params);
 
     my $fetch_record = sub {
         my ($pid, $title, $contest_title, $contest_id, $counts, $keywords, $linked) = $_[0]->fetchrow_array
@@ -119,8 +121,8 @@ sub problems_all_frame {
         );
     };
 
-    $lv->attach(url_f('problems_all', link => $p->{link}, move => $p->{move}), $fetch_record, $c);
-    $c->finish;
+    $lv->attach($fetch_record, $sth);
+    $sth->finish;
 
     my @submenu = !$p->{link} ? () :
         { href => url_f('problems_all',
@@ -186,7 +188,7 @@ sub problems_frame {
     init_template($p, 'problems');
     my $lv = CATS::ListView->new(
         web => $p, name => 'problems' . ($contest->is_practice ? '_practice' : ''),
-        array_name => 'problems');
+        array_name => 'problems', url => url_f('problems'));
 
     problems_frame_jury_action($p);
 
@@ -214,7 +216,7 @@ sub problems_frame {
     $_->{href} = url_f('wiki', name => $_->{name}) for @$wikis;
     $t->param(wikis => $wikis);
 
-    my @cols = (
+    $lv->default_sort(0)->define_columns([
         { caption => res_str(602), order_by => ($contest->is_practice ? 'P.title' : 3), width => '25%' },
         ($is_jury ?
         (
@@ -234,8 +236,7 @@ sub problems_frame {
         { caption => res_str(603), order_by => '5', width => '15%' } : () # contest
         ),
         { caption => res_str(604), order_by => '6', width => '12%', col => 'Vc' }, # ok/wa/tl
-    );
-    $lv->define_columns(url_f('problems'), 0, 0, \@cols);
+    ]);
     CATS::Problem::Utils::define_common_searches($lv);
     if ($is_jury || $contest->has_finished_for($user)) {
         CATS::Problem::Utils::define_kw_subquery($lv);
@@ -428,7 +429,7 @@ sub problems_frame {
         );
     };
 
-    $lv->attach(url_f('problems'), $fetch_record, $sth);
+    $lv->attach($fetch_record, $sth);
 
     $sth->finish;
 

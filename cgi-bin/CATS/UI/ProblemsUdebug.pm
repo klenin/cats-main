@@ -13,13 +13,13 @@ use CATS::Output qw(init_template url_f);
 sub problems_udebug_frame {
     my ($p) = @_;
     my $t = init_template($p, 'problems_udebug');
-    my $lv = CATS::ListView->new(web => $p, name => 'problems_udebug');
+    my $lv = CATS::ListView->new(web => $p, name => 'problems_udebug', url => url_f('problems_udebug'));
 
-    $lv->define_columns(url_f('problems'), 0, 0, [
+    $lv->default_sort(0)->define_columns([
         { caption => res_str(602), order_by => 'P.id', width => '30%' },
     ]);
 
-    my $c = $dbh->prepare(q~
+    my $sth = $dbh->prepare(q~
         SELECT
             CP.id AS cpid, P.id AS pid, CP.code, P.title, P.lang, C.title AS contest_title,
             SUBSTRING(P.explanation FROM 1 FOR 1) AS has_explanation,
@@ -31,7 +31,7 @@ sub problems_udebug_frame {
             C.is_official = 1 AND C.show_packages = 1 AND
             CURRENT_TIMESTAMP > C.finish_date AND (C.is_hidden = 0 OR C.is_hidden IS NULL) AND
             CP.status < ? AND P.lang STARTS WITH 'en' ~ . $lv->order_by);
-    $c->execute($cats::problem_st_hidden);
+    $sth->execute($cats::problem_st_hidden);
 
     my $sol_sth = $dbh->prepare(q~
         SELECT PSL.fname, PSL.src, DE.code
@@ -61,8 +61,8 @@ sub problems_udebug_frame {
         );
     };
 
-    $lv->attach(url_f('problems_udebug'), $fetch_record, $c);
-    $c->finish;
+    $lv->attach($fetch_record, $sth);
+    $sth->finish;
 }
 
 1;

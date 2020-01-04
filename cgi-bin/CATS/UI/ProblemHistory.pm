@@ -292,7 +292,8 @@ sub problem_history_frame {
     my $pr = _get_problem_info($p) or return $p->redirect(url_f 'contests');
 
     init_template($p, 'problem_history');
-    my $lv = CATS::ListView->new(web => $p, name => 'problem_history');
+    my $lv = CATS::ListView->new(
+        web => $p, name => 'problem_history', url => url_f('problem_history', pid => $p->{pid}));
 
     my $repo = CATS::Problem::Storage::get_repo(
         $p->{pid}, undef, 1, logger => CATS::Problem::Storage->new);
@@ -313,14 +314,13 @@ sub problem_history_frame {
     );
     CATS::Problem::Utils::problem_submenu('problem_history', $p->{pid});
 
-    my @cols = (
+    $lv->default_sort(1)->define_columns([
         { caption => res_str(650), width => '25%', order_by => 'author' },
         { caption => res_str(634), width => '10%', order_by => 'author_date' },
         { caption => res_str(651), width => '10%', order_by => 'committer_date' },
         { caption => res_str(652), width => '15%', order_by => 'sha' },
         { caption => res_str(653), width => '40%', order_by => 'message' },
-    );
-    $lv->define_columns(url_f('problem_history', pid => $p->{pid}), 1, 0, \@cols);
+    ]);
     my $fetch_record = sub {
         my $log = shift @{$_[0]} or return ();
         return (
@@ -328,12 +328,11 @@ sub problem_history_frame {
             href_commit => url_f('problem_history_commit', pid => $p->{pid}, h => $log->{sha}),
             href_tree => url_f('problem_history_tree', pid => $p->{pid}, hb => $log->{sha}),
             href_git_package => url_f('problem_git_package', pid => $p->{pid}, sha => $log->{sha}),
-            href_problem_tree => url_f('problem_history_tree', pid => $p->{pid}, hb => $log->{sha}, file => $pr->{repo_path})
+            href_problem_tree => url_f('problem_history_tree',
+                pid => $p->{pid}, hb => $log->{sha}, file => $pr->{repo_path})
         );
     };
-    $lv->attach(
-        url_f('problem_history', pid => $p->{pid}), $fetch_record,
-        $lv->sort_in_memory(CATS::Problem::Storage::get_log($p->{pid})));
+    $lv->attach($fetch_record, $lv->sort_in_memory(CATS::Problem::Storage::get_log($p->{pid})));
 }
 
 1;
