@@ -84,11 +84,11 @@ sub de_tags_frame {
     $is_root or return;
     $form->delete_or_saved($p) if $is_root;
     init_template($p, 'de_tags.html.tt');
-    my $lv = CATS::ListView->new(web => $p, name => 'de_tags');
+    my $lv = CATS::ListView->new(web => $p, name => 'de_tags', url => url_f('de_tags'));
 
     CATS::Contest::Utils::add_remove_tags($p, 'contest_de_tags') if $p->{add} || $p->{remove};
 
-    $lv->define_columns(url_f('de_tags'), 0, 0, [
+    $lv->default_sort(0)->define_columns([
         { caption => res_str(601), order_by => 'name', width => '30%' },
         { caption => res_str(685), order_by => 'is_used', width => '10%' },
         { caption => res_str(643), order_by => 'ref_count', width => '10%', col => 'Rc' },
@@ -124,7 +124,7 @@ sub de_tags_frame {
         );
     };
 
-    $lv->attach(url_f('de_tags'), $fetch_record, $c);
+    $lv->attach($fetch_record, $c);
 
     $t->param(submenu => [ CATS::References::menu('de_tags') ], editable => $is_root);
 }

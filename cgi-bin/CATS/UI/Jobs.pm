@@ -32,9 +32,9 @@ sub jobs_frame {
     $is_jury or return;
 
     init_template($p, 'jobs.html.tt');
-    my $lv = CATS::ListView->new(web => $p, name => 'jobs');
+    my $lv = CATS::ListView->new(web => $p, name => 'jobs', url => url_f('jobs'));
 
-    $lv->define_columns(url_f('jobs'), 0, 0, [
+    $lv->default_sort(0)->define_columns([
         { caption => res_str(642), order_by => 'type', width => '5%' },
         { caption => res_str(619), order_by => 'id', width => '5%' },
         { caption => res_str(622), order_by => 'state', width => '5%' },
@@ -111,8 +111,8 @@ sub jobs_frame {
             ($lv->visible_cols->{Ac} ? 'A.team_name' : 'NULL') . ' AS team_name',
         ], $where
     );
-    my $c = $dbh->prepare($q1 . $lv->order_by);
-    $c->execute(@bind);
+    my $sth = $dbh->prepare($q1 . $lv->order_by);
+    $sth->execute(@bind);
 
     my $fetch_record = sub {
         my $row = $_[0]->fetchrow_hashref or return ();
@@ -132,7 +132,7 @@ sub jobs_frame {
             # href_delete => url_f('jobs', 'delete' => $row->{id}),
         );
     };
-    $lv->attach(url_f('jobs'), $fetch_record, $c);
+    $lv->attach($fetch_record, $sth);
 }
 
 1;

@@ -93,9 +93,9 @@ sub files_frame {
     $is_root or return;
     $form->delete_or_saved($p) if $is_root;
     init_template($p, 'files.html.tt');
-    my $lv = CATS::ListView->new(web => $p, name => 'files');
+    my $lv = CATS::ListView->new(web => $p, name => 'files', url => url_f('files'));
 
-    $lv->define_columns(url_f('files'), 0, 0, [
+    $lv->default_sort(0)->define_columns([
         { caption => res_str(601), order_by => 'name', width => '20%' },
         { caption => res_str(619), order_by => 'guid', width => '25%' },
         { caption => res_str(620), order_by => 'description', width => '25%', col => 'De' },
@@ -104,13 +104,13 @@ sub files_frame {
     ]);
     $lv->define_db_searches([ qw(id name guid description file_size) ]);
 
-    my $c = $dbh->prepare(qq~
+    my $sth = $dbh->prepare(qq~
         SELECT
             F.id, F.name, F.file_size, F.guid, F.last_modified,
             SUBSTRING(F.description FROM 1 FOR 100) as description,
             OCTET_LENGTH(F.description) AS description_len
         FROM files F WHERE 1 = 1 ~ . $lv->maybe_where_cond . $lv->order_by);
-    $c->execute($lv->where_params);
+    $sth->execute($lv->where_params);
 
     my $fetch_record = sub {
         my $row = $_[0]->fetchrow_hashref or return ();
@@ -122,7 +122,7 @@ sub files_frame {
         );
     };
 
-    $lv->attach(url_f('files'), $fetch_record, $c);
+    $lv->attach($fetch_record, $sth);
 
     $t->param(submenu => [ CATS::References::menu('files') ], editable => $is_root);
 }

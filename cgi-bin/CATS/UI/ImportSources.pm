@@ -14,8 +14,8 @@ use CATS::References;
 sub import_sources_frame {
     my ($p) = @_;
     init_template($p, 'import_sources.html.tt');
-    my $lv = CATS::ListView->new(web => $p, name => 'import_sources');
-    $lv->define_columns(url_f('import_sources'), 0, 0, [
+    my $lv = CATS::ListView->new(web => $p, name => 'import_sources', url => url_f('import_sources'));
+    $lv->default_sort(0)->define_columns([
         { caption => res_str(625), order_by => '2', width => '30%' },
         { caption => res_str(642), order_by => '3', width => '30%' },
         { caption => res_str(641), order_by => '4', width => '30%' },
@@ -23,17 +23,18 @@ sub import_sources_frame {
     ]);
     $lv->define_db_searches([ qw(PS.id guid stype code fname problem_id title contest_id) ]);
 
-    my $c = $dbh->prepare(q~
+    my $sth = $dbh->prepare(q~
         SELECT ps.id, psl.guid, psl.stype, de.code,
             (SELECT COUNT(*) FROM problem_sources_imported psi WHERE psl.guid = psi.guid) AS ref_count,
             psl.fname, ps.problem_id, p.title, p.contest_id,
-            (SELECT CA.is_jury FROM contest_accounts CA WHERE CA.account_id = ? AND CA.contest_id = p.contest_id)
+            (SELECT CA.is_jury FROM contest_accounts CA
+                WHERE CA.account_id = ? AND CA.contest_id = p.contest_id)
             FROM problem_sources ps
             INNER JOIN problem_sources_local psl ON psl.id = ps.id
             INNER JOIN default_de de ON de.id = psl.de_id
             INNER JOIN problems p ON p.id = ps.problem_id
             WHERE psl.guid IS NOT NULL ~ . $lv->maybe_where_cond . $lv->order_by);
-    $c->execute($uid // 0, $lv->where_params);
+    $sth->execute($uid // 0, $lv->where_params);
 
     my $fetch_record = sub {
         my $f = $_[0]->fetchrow_hashref or return ();
@@ -45,7 +46,7 @@ sub import_sources_frame {
         );
     };
 
-    $lv->attach(url_f('import_sources'), $fetch_record, $c);
+    $lv->attach($fetch_record, $sth);
 
     $t->param(submenu => [ CATS::References::menu('import_sources') ]) if $is_jury;
 }
