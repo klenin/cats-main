@@ -112,11 +112,11 @@ sub judges_frame {
     }
 
     init_template($p, 'judges.html.tt');
-    my $lv = CATS::ListView->new(web => $p, name => 'judges');
+    my $lv = CATS::ListView->new(web => $p, name => 'judges', url => url_f('judges'));
 
     $editable and $form->delete_or_saved($p);
 
-    $lv->define_columns(url_f('judges'), 0, 0, [
+    $lv->default_sort(0)->define_columns([
         { caption => res_str(625), order_by => 'nick', width => '15%',
             checkbox => $editable && 'input[name=selected]' },
         ($editable ? (
@@ -146,14 +146,14 @@ sub judges_frame {
         WHERE JB.type = $cats::job_type_update_self
         GROUP BY JB.judge_id~, 'judge_id', { Slice => {} }) : {});
 
-    my $c = $dbh->prepare(qq~
+    my $sth = $dbh->prepare(qq~
         SELECT
             J.id AS jid, J.nick AS judge_name, A.login AS account_name,
             J.version, J.is_alive, J.alive_date, J.pin_mode,
             A.id AS account_id, A.last_ip, A.restrict_ips$req_counts
         FROM judges J LEFT JOIN accounts A ON A.id = J.account_id WHERE 1 = 1 ~ .
         $lv->maybe_where_cond . $lv->order_by);
-    $c->execute($lv->where_params);
+    $sth->execute($lv->where_params);
 
     my $fetch_record = sub {
         my $row = $_[0]->fetchrow_hashref or return ();
@@ -173,7 +173,7 @@ sub judges_frame {
         );
     };
 
-    $lv->attach(url_f('judges'), $fetch_record, $c);
+    $lv->attach($fetch_record, $sth);
 
     _submenu;
     $t->param(editable => $editable);

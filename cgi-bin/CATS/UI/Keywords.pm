@@ -47,9 +47,9 @@ sub keywords_frame {
     }
 
     init_template($p, 'keywords.html.tt');
-    my $lv = CATS::ListView->new(web => $p, name => 'keywords');
+    my $lv = CATS::ListView->new(web => $p, name => 'keywords', url => url_f('keywords'));
 
-    $lv->define_columns(url_f('keywords'), 0, 0, [
+    $lv->default_sort(0)->define_columns([
         { caption => res_str(625), order_by => 'code', width => '30%' },
         { caption => res_str(636), order_by => 'name_ru', width => '30%' },
         { caption => res_str(637), order_by => 'name_en', width => '30%' },
@@ -59,10 +59,10 @@ sub keywords_frame {
 
     my $ref_count_sql = $lv->visible_cols->{Rc} ? q~
         SELECT COUNT(*) FROM problem_keywords PK WHERE PK.keyword_id = K.id~ : 'NULL';
-    my $c = $dbh->prepare(qq~
+    my $sth = $dbh->prepare(qq~
         SELECT K.id AS kwid, K.code, K.name_ru, K.name_en, ($ref_count_sql) AS ref_count
         FROM keywords K WHERE 1 = 1 ~ . $lv->maybe_where_cond . $lv->order_by);
-    $c->execute($lv->where_params);
+    $sth->execute($lv->where_params);
 
     my $fetch_record = sub {
         my $row = $_[0]->fetchrow_hashref or return ();
@@ -74,7 +74,7 @@ sub keywords_frame {
         );
     };
 
-    $lv->attach(url_f('keywords'), $fetch_record, $c);
+    $lv->attach($fetch_record, $sth);
 
     $t->param(submenu => [ CATS::References::menu('keywords') ], editable => $is_root) if $is_jury;
 }
