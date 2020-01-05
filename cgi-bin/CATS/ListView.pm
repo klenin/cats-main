@@ -97,14 +97,38 @@ sub init_params {
     }
 }
 
+sub search_hints {
+    my ($self, $row_keys) = @_;
+    $is_jury or return;
+    $row_keys ||= [];
+    my @s = (
+        map([ $_, 0 ], sort keys %{$self->qb->{db_searches}}),
+        map([ $_, 1 ], grep !$self->qb->{db_searches}->{$_}, @$row_keys),
+        map([ $_, 2 ], sort keys %{$self->qb->{subqueries}}),
+    );
+    my $col_count = 4;
+    my $row_count = int((@s + $col_count - 1) / $col_count);
+    my $rows;
+    for my $i (0 .. $row_count - 1) {
+        for my $j (0 .. $col_count - 1) {
+            push @{$rows->[$i]}, $s[$j * $row_count + $i];
+        }
+    }
+    $t->param(
+        search_hints => $rows,
+        search_enums => $self->qb->{enums},
+    );
+}
+
 sub common_param {
-    my ($self) = @_;
+    my ($self, $row_keys) = @_;
     my $s = $settings->{$self->{name}} ||= {};
     $t->param(
         search => $s->{search},
         display_rows => [ map { value => $_, text => $_, selected => $s->{rows} == $_ }, @display_rows ],
         lv_settings => $self->settings,
     );
+    $self->search_hints($row_keys);
 }
 
 sub attach {
@@ -165,7 +189,7 @@ sub attach {
     }
 
     $self->{visible_data} = \@data;
-    $self->common_param;
+    $self->common_param($row_keys);
     $t->param(
         page => $$page, pages => \@pages,
         href_lv_action => $self->{url} . $page_extra_params,
@@ -174,25 +198,6 @@ sub attach {
         $self->{array_name} => \@data,
         lv_range => $range,
     );
-    if ($is_jury) {
-        my @s = (
-            map([ $_, 0 ], sort keys %{$self->qb->{db_searches}}),
-            map([ $_, 1 ], grep !$self->qb->{db_searches}->{$_}, @$row_keys),
-            map([ $_, 2 ], sort keys %{$self->qb->{subqueries}}),
-        );
-        my $col_count = 4;
-        my $row_count = int((@s + $col_count - 1) / $col_count);
-        my $rows;
-        for my $i (0 .. $row_count - 1) {
-            for my $j (0 .. $col_count - 1) {
-                push @{$rows->[$i]}, $s[$j * $row_count + $i];
-            }
-        }
-        $t->param(
-            search_hints => $rows,
-            search_enums => $self->qb->{enums},
-        );
-    }
 
     # Suppose that attach call comes last, so we modify settings in-place.
     defined $s->{$_} && $s->{$_} ne '' or delete $s->{$_} for keys %$s;
