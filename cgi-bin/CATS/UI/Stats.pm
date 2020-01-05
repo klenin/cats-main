@@ -173,7 +173,10 @@ sub similarity_frame {
     $is_jury && !$contest->is_practice or return;
 
     $lv->define_db_searches([ qw(state points) ]);
-    $lv->define_db_searches({ src_length => 'OCTET_LENGTH(S.src)' });
+    $lv->define_db_searches({
+        src_length => 'OCTET_LENGTH(S.src)',
+        since_submit_days => 'CAST(CURRENT_TIMESTAMP - submit_time AS DOUBLE PRECISION)',
+    });
     $lv->define_enums({
         state => $CATS::Verdicts::name_to_state,
     });
