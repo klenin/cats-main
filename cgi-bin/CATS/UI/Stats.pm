@@ -213,8 +213,13 @@ sub similarity_frame {
         title_suffix => res_str(545),
     );
 
-    ($lv->submitted || $p->{cont}) && ($s->{pid} || $s->{account_id} && !$s->{all_contests})
-        or do { $lv->common_param; return; };
+    unless(($lv->submitted || $p->{cont}) && ($s->{pid} || $s->{account_id} && !$s->{all_contests})) {
+        $lv->common_param([
+            qw(s score),
+            map { ($_ . 1, $_ . 2) } qw(name city site verdict de_code tag req t),
+        ]);
+        return;
+    }
 
     my $reqs = [ grep !_is_trivial($_->{src}), @{_get_reqs($s, $lv)} ];
     preprocess_source($_, $s->{collapse_idents}) for @$reqs;
@@ -286,7 +291,7 @@ sub similarity_frame {
     };
 
     $lv->attach(
-        url_f('similarity'), $fetch_record,
+        $fetch_record,
         $lv->sort_in_memory(\@similar), { page_params => { cont => 1 } });
 
     $t->param(
