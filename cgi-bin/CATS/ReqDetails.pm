@@ -3,6 +3,8 @@ package CATS::ReqDetails;
 use strict;
 use warnings;
 
+use Digest::SHA;
+
 use CATS::Constants;
 use CATS::Contest;
 use CATS::Contest::Participate qw(is_jury_in_contest);
@@ -237,8 +239,10 @@ sub get_sources_info {
     my $can_see;
     for (keys %$req_tree) {
         my $r = $req_tree->{$_};
+        $r->{sha1} = Digest::SHA::sha1_hex($r->{src} // '');
         $r->{is_jury} = $is_jury_cached->($r->{contest_id});
         $r->{is_jury} || $r->{account_id} == ($uid || 0) ||
+            $p->{hash} && $p->{hash} eq $r->{sha1} ||
             ($r->{time_since_pub_reqs} // 0) > 0 && !$r->{submitter_is_jury} ||
             ($can_see //= $uid ? CATS::Request::can_see_by_relation($uid) : {})->{$r->{account_id}} ||
             $is_solved->($r)

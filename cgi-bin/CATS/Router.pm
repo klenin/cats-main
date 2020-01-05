@@ -270,7 +270,7 @@ my $main_routes = {
         submit => bool, source_text => str, np => integer, submitted => bool,
     ],
     download_source => [ \&CATS::UI::ViewSource::download_source_frame,
-        rid => integer,
+        rid => integer, hash => str,
         src_enc => encoding_default('WINDOWS-1251'),
     ],
     print_source => [ \&CATS::UI::ViewSource::print_source_frame,

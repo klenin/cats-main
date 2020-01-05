@@ -158,7 +158,10 @@ sub download_source_frame {
     }
 
     $si->{file_name} =~ m/\.([^.]+)$/;
-    my $ext = $1 || 'unknown';
+    my $ext = lc($1 || 'unknown');
+    if ($p->{hash}) {
+        $p->headers('Access-Control-Allow-Origin' => '*');
+    }
     $p->print_file(
         ($ext eq 'zip' ?
             (content_type => 'application/zip') :
