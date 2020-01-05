@@ -94,7 +94,7 @@ sub login_frame {
         $found or return msg(1040);
     }
     elsif (!$p->{token}) {
-        $check_password->($p->{passwd} // '', $hash) or return msg(1040);
+        defined $hash && $check_password->($p->{passwd} // '', $hash) or return msg(1040);
     }
     !$locked or return msg(1041);
 
