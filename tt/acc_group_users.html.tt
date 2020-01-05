@@ -2,7 +2,7 @@
 [% PROCESS includes/menu_begin.tti %]
 
 <script>
-function delete_acc_group(href, name) {
+function delete_acc_group_user(href, name) {
   if (confirm( "[% capt.want_to_delete %] '" + name + "'?" ))
     document.location = href;
 }
@@ -13,18 +13,21 @@ function delete_acc_group(href, name) {
 <table class="listview bordered highlight">
 [% PROCESS includes/listview_col_defs.tti sel_col = 1 %]
 
-[% FOREACH ag IN acc_groups %]
+[% FOREACH u IN users %]
 <tr class="[% loop.parity() %]">
 <td class="nobr sel_col">
 [% IF user.is_root %]
-  <a href="javascript:delete_acc_group('[% ag.href_delete %]', '[% ag.name | html %]');" class="icon delete"></a>
-  <a href="[% ag.href_edit %]" class="icon edit"></a>
+  <a href="javascript:delete_acc_group_user('[% u.href_delete %]', '[% u.team_name | html %]');" class="icon delete"></a>
+  <a href="[% u.href_edit %]" class="icon edit"></a>
 [% END %]
-  <input type="checkbox" name="check" value="[% ag.id %]" />
+  <input type="checkbox" name="check" value="[% u.id %]" />
 </td>
-<td>[% href(ag.href_view_users, ag.name) %]</td>
-<td>[% IF ag.is_used %]<a href="#" class="icon checked"></a>[% END %]</td>
-[% IF visible_cols.Rc %]<td>[% href(ag.href_view_contests, ag.ref_count) %]</td>[% END %]
+<td>[% u.login | html %]</td>
+<td>[% href(u.href_stats, u.team_name) %]</td>
+<td>[% IF u.is_admin %]<a href="#" class="icon checked"></a>[% END %]</td>
+<td>[% IF u.is_hidden %]<a href="#" class="icon checked"></a>[% END %]</td>
+[% IF visible_cols.Ds %]<td>[% u.date_start %]</td>[% END %]
+[% IF visible_cols.Df %]<td>[% u.date_finish %]</td>[% END %]
 </tr>
 [% END %]
 </table>

@@ -6,7 +6,7 @@ use warnings;
 use CATS::Contest::Utils;
 use CATS::DB;
 use CATS::Form;
-use CATS::Globals qw($cid $is_jury $is_root $t);
+use CATS::Globals qw($cid $is_jury $is_root $t $uid);
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
 use CATS::Output qw(init_template url_f);
@@ -76,13 +76,142 @@ sub acc_groups_frame {
             %$row,
             href_edit=> url_f('acc_groups_edit', id => $row->{id}),
             href_delete => url_f('acc_groups', 'delete' => $row->{id}),
+            href_view_users => url_f('acc_group_users', group => $row->{id}),
             href_view_contests => url_f('contests', search => "has_group($row->{id})"),
         );
     };
 
-    $lv->attach(url_f('acc_groups'), $fetch_record, $c);
+    $lv->attach($fetch_record, $sth);
 
     $t->param(submenu => [ CATS::References::menu('acc_groups') ], editable => $is_root);
+}
+
+sub acc_group_users_frame {
+    my ($p) = @_;
+    init_template($p, 'acc_group_users');
+    $is_root && $p->{group} or return;
+    my $lv = CATS::ListView->new(
+        web => $p, name => 'users', url => url_f('acc_group_users', group => $p->{group}));
+
+    $lv->default_sort($is_root ? 1 : 0)->define_columns([
+        ($is_root ?
+            { caption => res_str(616), order_by => 'login', width => '20%' } : ()),
+        { caption => res_str(608), order_by => 'team_name', width => '30%', checkbox => $is_root && '[name=sel]' },
+        ($is_root ? (
+            { caption => res_str(610), order_by => 'is_admin', width => '1%' },
+            { caption => res_str(614), order_by => 'is_hidden', width => '1%' },
+        ) : ()),
+        { caption => res_str(600), order_by => 'date_start', width => '5%', col => 'Ds' },
+        { caption => res_str(631), order_by => 'date_finish', width => '5%', col => 'Df' },
+    ]);
+    my $sth = $dbh->prepare(q~
+        SELECT A.login, A.team_name,
+            AGA.account_id, AGA.is_admin, AGA.is_hidden, AGA.date_start, AGA.date_finish
+        FROM acc_group_accounts AGA
+        INNER JOIN accounts A ON A.id = AGA.account_id
+        WHERE AGA.acc_group_id = ?~ . $lv->maybe_where_cond . $lv->order_by);
+    $sth->execute($p->{group}, $lv->where_params);
+
+    my $fetch_record = sub {
+        my $row = $_[0]->fetchrow_hashref or return ();
+        return (
+            href_delete => url_f('acc_group_users', delete_user => $row->{account_id}),
+            href_edit => url_f('users_edit', uid => $row->{account_id}),
+            href_stats => url_f('user_stats', uid => $row->{account_id}),
+            %$row,
+         );
+    };
+
+    $lv->attach($fetch_record, $sth);
+    $sth->finish;
+    $t->param(
+        submenu => [
+            { href => url_f('users_new', group => $p->{group}), item => res_str(541), new => 1 },
+            { href => url_f('acc_group_add_users', group => $p->{group}), item => res_str(584) },
+        ],
+    );
+}
+
+sub _add_accounts {
+    my ($accounts, $group_id, $make_hidden) = @_;
+    my $in_group_sth = $dbh->prepare(q~
+        SELECT 1 FROM acc_group_accounts WHERE acc_group_id = ? AND account_id = ?~);
+    my $add_sth = $dbh->prepare(q~
+        INSERT INTO acc_group_accounts (acc_group_id, account_id, is_hidden, date_start)
+        VALUES (?, ?, ?, CURRENT_DATE)~);
+    for (@$accounts) {
+        $in_group_sth->execute($group_id, $_);
+        my ($in_group) = $in_group_sth->fetchrow_array;
+        $in_group_sth->finish;
+        $in_group and return msg(1120, $_);
+    }
+    for (@$accounts) {
+        $add_sth->execute($group_id, $_, $make_hidden ? 1 : 0);
+    }
+    $dbh->commit;
+    1;
+}
+
+sub trim { s/^\s+|\s+$//; $_; }
+
+sub _accounts_by_login {
+    my ($login_str) = @_;
+    $login_str = Encode::decode_utf8($login_str || '');
+    my @logins = map trim, split(/,/, $login_str) or return msg(1101);
+    my %aids;
+    my $aid_sth = $dbh->prepare(q~
+        SELECT id FROM accounts WHERE login = ?~);
+    for (@logins) {
+        length $_ <= 50 or return msg(1101);
+        $aid_sth->execute($_);
+        my ($aid) = $aid_sth->fetchrow_array;
+        $aid_sth->finish;
+        $aid or return msg(1118, $_);
+        $aids{$aid} = 1;
+    }
+    %aids or return msg(1118);
+    [ keys %aids ];
+}
+
+sub _accounts_by_contest {
+    my ($contest_id, $include_ooc) = @_;
+    $dbh->selectrow_array(_u $sql->select('contest_accounts', '1',
+        { contest_id => $contest_id, account_id => $uid, is_jury => 1 })) or return;
+    $dbh->selectcol_arrayref(_u $sql->select('contest_accounts', 'account_id',
+        { contest_id => $contest_id, is_hidden => 0, is_jury => 0, $include_ooc ? (is_ooc => 0) : () }
+    ));
+}
+
+sub acc_group_add_users_frame {
+    my ($p) = @_;
+    $is_root && $p->{group} or return;
+    init_template($p, 'acc_group_add_users.html.tt');
+    my $accounts =
+        $p->{by_login} ? _accounts_by_login($p->{logins_to_add}) :
+        $p->{source_cid} ? _accounts_by_contest($p->{source_cid}, $p->{include_ooc}) : undef;
+    if ($accounts && _add_accounts($accounts, $p->{group}, $p->{make_hidden})) {
+        msg(1221, scalar @$accounts);
+    }
+    elsif ($p->{by_login}) {
+        $t->param(logins_to_add => Encode::decode_utf8($p->{logins_to_add}));
+    }
+    my $contests = $dbh->selectall_arrayref(q~
+        SELECT C.id, C.title FROM contests C
+        WHERE EXISTS (
+            SELECT 1 FROM contest_accounts CA
+            WHERE CA.contest_id = C.id AND CA.account_id = ? AND CA.is_jury = 1)
+            ORDER BY C.start_date DESC~, { Slice => {} },
+        $uid);
+    $t->param(
+        href_action => url_f('acc_group_add_users', group => $p->{group}),
+        title_suffix => res_str(584),
+        contests => $contests,
+        href_find_users => url_f('api_find_users', in_contest => 0),
+        submenu => [
+            { href => url_f('acc_groups'), item => res_str(410) },
+            { href => url_f('acc_group_users', group => $p->{group}), item => res_str(526) },
+        ],
+    );
 }
 
 1;
