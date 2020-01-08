@@ -12,6 +12,7 @@ use CATS::ListView;
 use CATS::Messages qw(res_str);
 use CATS::Output qw(init_template url_f);
 use CATS::Problem::Utils;
+use CATS::Similarity;
 use CATS::Verdicts;
 
 sub greedy_cliques {
@@ -115,33 +116,6 @@ sub compare_tests_frame {
     CATS::Problem::Utils::problem_submenu('compare_tests', $p->{pid});
 }
 
-sub preprocess_source {
-    my $h = $_[0]->{hash} = {};
-    my $collapse_indents = $_[1];
-    for (split /\n/, $_[0]->{src}) {
-        $_ = Encode::encode('WINDOWS-1251', $_);
-        use bytes; # MD5 works with bytes, prevent upgrade to utf8
-        s/\s+//g;
-        if ($collapse_indents) {
-            s/(\w+)/A/g;
-        }
-        else {
-            s/(\w+)/uc($1)/eg;
-        }
-        s/\d+/1/g;
-        $h->{Digest::MD5::md5_hex($_)} = 1;
-    }
-    return;
-}
-
-sub similarity_score {
-    my ($i, $j) = @_;
-    my $sim = 0;
-    $sim++ for grep exists $j->{$_}, keys %$i;
-    $sim++ for grep exists $i->{$_}, keys %$j;
-    return $sim / (keys(%$i) + keys(%$j));
-}
-
 sub _get_reqs {
     my ($p, $lv) = @_;
     my $cond = {
@@ -240,7 +214,7 @@ sub similarity_frame {
     }
 
     my $reqs = [ grep !_is_trivial($_->{src}), @{_get_reqs($s, $lv)} ];
-    preprocess_source($_, $s->{collapse_idents}) for @$reqs;
+    CATS::Similarity::preprocess_source($_, $s) for @$reqs;
 
     my %missing_users;
     my @similar;
@@ -252,7 +226,7 @@ sub similarity_frame {
             my $aj = $j->{account_id};
             next if $i->{id} >= $j->{id} && !$s->{account_id};
             next if $s->{self_diff} ? $ai != $aj : $ai == $aj && $i->{contest_id} == $j->{contest_id};
-            my $score = similarity_score($i->{hash}, $j->{hash});
+            my $score = CATS::Similarity::similarity_score($i->{hash}, $j->{hash});
             ($score * 100 > $s->{threshold}) ^ $s->{self_diff} or next;
             my $search =
                 "account_id=$ai" . ($ai == $aj ? '' : ",account_id=$aj") .
