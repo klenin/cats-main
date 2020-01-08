@@ -33,4 +33,10 @@ sub similarity_score {
     return $sim / (keys(%$i) + keys(%$j));
 }
 
+sub similarity_score_2 {
+    my ($req1, $req2, $s) = @_;
+    preprocess_source($_, $s) for ($req1, $req2);
+    similarity_score(map $_->{hash}, $req1, $req2);
+}
+
 1;

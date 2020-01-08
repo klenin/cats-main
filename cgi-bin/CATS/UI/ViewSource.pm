@@ -21,6 +21,7 @@ use CATS::ReqDetails qw(
 );
 use CATS::Request;
 use CATS::Settings qw($settings);
+use CATS::Similarity;
 use CATS::Problem::Submit qw(prepare_de prepare_de_list);
 
 sub diff_runs_frame {
@@ -53,6 +54,14 @@ sub diff_runs_frame {
         }
         $dbh->commit;
         CATS::RankTable::remove_cache($_) for keys %remove_cache;
+    }
+    if ($both_jury) {
+        my %scores = (
+            basic => CATS::Similarity::similarity_score_2(@$si),
+            collapse_idents => CATS::Similarity::similarity_score_2(@$si, { collapse_idents => 1 }),
+        );
+        $_ = sprintf '%.1f%%', 100 * $_ for values %scores;
+        $t->param(similarity => \%scores);
     }
 
     for my $info (@$si) {

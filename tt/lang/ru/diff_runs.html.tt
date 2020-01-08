@@ -2,12 +2,13 @@
   capt.import({
     compare_submissions => 'Сравнение отправленных файлов',
     encoding => 'кодировка',
+    similarity => 'Сходство',
+    reject_both => 'отвергнуть',
+    reject_both_message => 'списано',
     show => 'Показывать',
     both => 'сравнение',
     diff => 'отличия',
     a_only => 'только A',
     b_only => 'только B',
-    reject_both => 'отвергнуть',
-    reject_both_message => 'списано',
   })
 %]

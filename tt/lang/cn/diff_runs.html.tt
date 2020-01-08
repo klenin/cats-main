@@ -2,12 +2,13 @@
   capt.import({
     compare_submissions => 'Compare submissions',
     encoding => 'encoding',
+    similarity => 'Similarity',
+    reject_both => 'reject',
+    reject_both_message => 'plagiarized',
     show => 'Show',
     both => 'both',
     diff => 'diff',
     a_only => 'A only',
     b_only => 'B only',
-    reject_both => 'reject',
-    reject_both_message => 'plagiarized',
   })
 %]
