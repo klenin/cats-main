@@ -37,12 +37,18 @@ if ($string_id) {
         for $lang ? $lang : @cats::langs;
 }
 elsif ($substr) {
-    my $answers = CATS::Messages::find_res_str($lang || 'en', $substr);
-    if (@$answers) {
-        printf "%s: %s\n", @$_ for @$answers;
+    my @answers;
+    my $decoded = Encode::decode_utf8($substr);
+    for my $cur_lang ($lang ? $lang : @cats::langs) {
+        my $r = CATS::Messages::find_res_str($cur_lang, $decoded) or next;
+        push @answers,
+            sprintf "%s: %d: %s", $cur_lang, map Encode::encode_utf8($_), @$_ for @$r;
+    }
+    if (@answers) {
+        say for @answers;
     }
     else {
-        say "String not found";
+        printf "String '%s' not found\n", $substr;
     }
 }
 else {
