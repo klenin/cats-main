@@ -154,7 +154,9 @@ sub _get_reqs {
 
     # Manually join with accounts since it is faster.
     $dbh->selectall_arrayref(q~
-        SELECT R.id, R.account_id, R.problem_id, R.contest_id, R.state, R.failed_test, R.tag, S.src, D.code
+        SELECT
+            R.id, R.account_id, R.problem_id, R.contest_id, R.state, R.failed_test, R.tag, R.points,
+            S.src, D.code
         FROM reqs R
         INNER JOIN contest_accounts CA ON CA.contest_id = R.contest_id AND CA.account_id = R.account_id
         INNER JOIN sources S ON S.req_id = R.id
@@ -172,7 +174,7 @@ sub similarity_frame {
     my $lv = CATS::ListView->new(web => $p, name => 'similarity', url => url_f('similarity'));
     $is_jury && !$contest->is_practice or return;
 
-    $lv->define_db_searches([ qw(state points) ]);
+    $lv->define_db_searches([ qw(code points src state tag) ]);
     $lv->define_db_searches({
         src_length => 'OCTET_LENGTH(S.src)',
         since_submit_days => 'CAST(CURRENT_TIMESTAMP - submit_time AS DOUBLE PRECISION)',
@@ -216,10 +218,23 @@ sub similarity_frame {
         title_suffix => res_str(545),
     );
 
+    $lv->default_sort(0)->define_columns([
+        { caption => res_str(664), width => '5%', order_by => 'score', numeric => 1 },
+        { caption => res_str(608) . ' 1', width => '20%', order_by => 'name1' },
+        { caption => res_str(627) . ' 1', width => '20%', order_by => 'site1', col => 'S1' },
+        { caption => res_str(666) . ' 1', width => '3%', order_by => 'verdict1' },
+        { caption => res_str(687) . ' 1', width => '3%', order_by => 'points1', col => 'P1' },
+        { caption => res_str(608) . ' 2', width => '20%', order_by => 'name2' },
+        { caption => res_str(627) . ' 2', width => '20%', order_by => 'site2', col => 'S2' },
+        { caption => res_str(666) . ' 2', width => '3%', order_by => 'verdict2' },
+        { caption => res_str(687) . ' 2', width => '3%', order_by => 'points2', col => 'P2' },
+        { caption => res_str(665), width => '5%', order_by => 'link' },
+    ]);
+
     unless(($lv->submitted || $p->{cont}) && ($s->{pid} || $s->{account_id} && !$s->{all_contests})) {
         $lv->common_param([
             qw(s score),
-            map { ($_ . 1, $_ . 2) } qw(name city site verdict de_code tag req t),
+            map { ($_ . 1, $_ . 2) } qw(name city site verdict de_code points tag req t),
         ]);
         return;
     }
@@ -272,21 +287,11 @@ sub similarity_frame {
             $r->{"$_$i"} = $users_idx->{$r->{"t$i"}}->{$_} for qw(name city site);
             $r->{"verdict$i"} = $CATS::Verdicts::state_to_name->{$r->{"req$i"}->{state}};
             $r->{"de_code$i"} = $r->{"req$i"}->{code};
+            $r->{"points$i"} = $r->{"req$i"}->{points};
             $r->{"tag$i"} = $r->{"req$i"}->{tag};
             $r->{"href_view_source$i"} = url_f('view_source', rid => $r->{"req$i"}->{id});
         }
     }
-
-    $lv->default_sort(0)->define_columns([
-        { caption => res_str(664), width => '5%', order_by => 'score', numeric => 1 },
-        { caption => res_str(608) . ' 1', width => '20%', order_by => 'name1' },
-        { caption => res_str(627) . ' 1', width => '20%', order_by => 'site1', col => 'S1' },
-        { caption => res_str(666) . ' 1', width => '3%', order_by => 'verdict1' },
-        { caption => res_str(608) . ' 2', width => '20%', order_by => 'name2' },
-        { caption => res_str(627) . ' 2', width => '20%', order_by => 'site2', col => 'S2' },
-        { caption => res_str(666) . ' 2', width => '3%', order_by => 'verdict2' },
-        { caption => res_str(665), width => '5%', order_by => 'link' },
-    ]);
 
     my $fetch_record = sub {
         my $pair = shift @{$_[0]} or return ();

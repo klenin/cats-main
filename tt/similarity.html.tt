@@ -41,12 +41,14 @@
     <td>[% href(s.href_view_source1, s.verdict1, capt.verdicts.item(s.verdict1) _ (s.tag1 ? " [${s.tag1}]" : '')) %]</td>
     <td><div>[% s.req1.failed_test %]</div></td>
   </tr></table></td>
+  [% IF visible_cols.P1 %]<td class="num">[% s.points1 %]</td>[% END %]
   <td>[% IF s.t1 != s.t2; u2.name; END %]</td>
   [% IF visible_cols.S1 %]<td>[% IF s.t1 != s.t2; IF u2.site; href(u2.href_site, u2.site, u2.city); ELSE; u2.city; END; END %]</td>[% END %]
   <td class="verdict run_details_[% s.verdict2 %]"><table><tr>
     <td>[% href(s.href_view_source2, s.verdict2, capt.verdicts.item(s.verdict2) _ (s.tag2 ? " [${s.tag2}]" : '')) %]</td>
     <td><div>[% s.req2.failed_test %]</div></td>
   </tr></table></td>
+  [% IF visible_cols.P2 %]<td class="num">[% s.points2 %]</td>[% END %]
   <td>[% href(s.href_console, capt.console) %]</td>
   </tr>
 [% END %]
