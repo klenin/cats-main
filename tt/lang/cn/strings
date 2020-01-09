@@ -395,3 +395,4 @@
 1219 "Groups removed: %d."
 1220 "Contests with group '%s'."
 1221 "Users added: %d."
+1222 "Incorrectc search parameter '%s'."

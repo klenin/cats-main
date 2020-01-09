@@ -80,6 +80,17 @@ sub get_mask {
     \%mask;
 }
 
+sub _where_msg {
+    my ($sq, $value, $negate) = @_;
+    $sq->{m} or return;
+    my @msg_args =
+        !exists $sq->{t} ? die :
+        !$sq->{t} ? $value :
+        $dbh->selectrow_array($sq->{t}, undef, $value)
+        or return msg(1222, $value);
+    $negate ? msg(1212, res_str($sq->{m}, @msg_args)) : msg($sq->{m}, @msg_args);
+}
+
 sub make_where {
     my ($self) = @_;
     my %result;
@@ -95,12 +106,7 @@ sub make_where {
         my $sq = $self->{subqueries}->{$name}
             or push @sq_unknown, $name and next;
         $value = $self->{enums}->{$name}->{$value} // $value;
-        if ($sq->{m}) {
-            my @msg_args =
-                !exists $sq->{t} ? () :
-                $sq->{t} ? $dbh->selectrow_array($sq->{t}, undef, $value) : $value;
-            $negate ? msg(1212, res_str($sq->{m}, @msg_args)) : msg($sq->{m}, @msg_args);
-        }
+        _where_msg($sq, $value, $negate);
         # SQL::Abstract uses double reference to designate subquery.
         my $sql_sq = \[ $sq->{sq} => $value ];
         push @sq_list, $negate ? { -not_bool => $sql_sq } : $sql_sq;
