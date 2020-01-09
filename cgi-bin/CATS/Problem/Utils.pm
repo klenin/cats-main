@@ -153,8 +153,8 @@ sub define_kw_subquery {
                 SELECT 1 FROM problem_keywords PK
                 INNER JOIN keywords K ON K.id = PK.keyword_id
                 WHERE PK.problem_id = P.id AND K.code STARTS WITH ?))~,
-            m => 1016,
-            t => qq~SELECT code, $name_field FROM keywords WHERE code = ?~,
+            m => 1050,
+            t => undef,
         },
         has_import_guid => {
             sq => q~(EXISTS (
