@@ -1,7 +1,7 @@
 [%- WRAPPER includes/jsonp.tti -%]
 [%- USE Javascript -%]
 {
-[% IF messages.size %]"message": "[% messages.join(',') | $Javascript %]"[% ELSE %]
+[% IF messages.size %]"message": "[% messages.join(',') | $Javascript %]",[% END %]
 "contests": [
 [% FOREACH c IN contests %]
 {
@@ -23,6 +23,5 @@
 }
 [% UNLESS loop.last %],[% END %][% END %]
 ]
-[% END %]
 }
 [%- END -%]
