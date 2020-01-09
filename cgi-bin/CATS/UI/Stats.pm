@@ -12,6 +12,7 @@ use CATS::ListView;
 use CATS::Messages qw(res_str);
 use CATS::Output qw(init_template url_f);
 use CATS::Problem::Utils;
+use CATS::RouteParser;
 use CATS::Similarity;
 use CATS::Verdicts;
 
@@ -141,6 +142,18 @@ sub _get_reqs {
 
 sub _is_trivial { length($_[0]) < 20 || $_[0] =~ /\A[0-9a-zA-Z\.]*[\n\r]*\Z/m }
 
+our %similarity_route = (
+    account_id => integer,
+    all_contests => bool,
+    collapse_idents => bool,
+    group => bool,
+    jury => bool,
+    pid => integer,
+    self_diff => bool,
+    threshold => integer,
+    virtual => bool,
+);
+
 sub similarity_frame {
     my ($p) = @_;
 
@@ -159,8 +172,7 @@ sub similarity_frame {
 
     my $s = $lv->settings;
     if ($lv->submitted) {
-        $s->{$_} = $p->{$_} for qw(
-            threshold self_diff all_contests pid account_id collapse_idents group jury virtual);
+        $s->{$_} = $p->{$_} for keys %similarity_route;
     }
     $s->{threshold} //= 50;
     $s->{self_diff} //= 0;
