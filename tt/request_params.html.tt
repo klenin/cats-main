@@ -113,7 +113,7 @@
 <select name="state">
 <option>&nbsp;</option>
 [% capt.verdicts.NP = capt.retest; FOREACH v IN settable_verdicts %]
-<option value="[% v %]">[% capt.verdicts.item(v); " ($v)" %]</option>
+<option value="[% v %]">[% "$v: "; capt.verdicts.item(v) %]</option>
 [% END %]
 </select>
 [% capt.on_test %]
