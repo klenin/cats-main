@@ -146,8 +146,10 @@ our %similarity_route = (
     account_id => integer,
     all_contests => bool,
     collapse_idents => bool,
+    collapse_nums => bool,
     group => bool,
     jury => bool,
+    max_lines => integer,
     pid => integer,
     self_diff => bool,
     threshold => integer,
@@ -277,6 +279,7 @@ sub similarity_frame {
             $r->{"tag$i"} = $r->{"req$i"}->{tag};
             $r->{"href_view_source$i"} = url_f('view_source', rid => $r->{"req$i"}->{id});
         }
+        $r->{verdicts} = $r->{verdict1} . $r->{verdict2};
     }
 
     my $fetch_record = sub {

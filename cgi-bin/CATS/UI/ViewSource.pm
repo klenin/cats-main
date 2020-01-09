@@ -56,9 +56,11 @@ sub diff_runs_frame {
         CATS::RankTable::remove_cache($_) for keys %remove_cache;
     }
     if ($both_jury) {
+        my %ml = (max_lines => 20000);
         my %scores = (
-            basic => CATS::Similarity::similarity_score_2(@$si),
-            collapse_idents => CATS::Similarity::similarity_score_2(@$si, { collapse_idents => 1 }),
+            basic => CATS::Similarity::similarity_score_2(@$si, \%ml),
+            collapse_idents =>
+                CATS::Similarity::similarity_score_2(@$si, { collapse_idents => 1, %ml }),
         );
         $_ = sprintf '%.1f%%', 100 * $_ for values %scores;
         $t->param(similarity => \%scores);

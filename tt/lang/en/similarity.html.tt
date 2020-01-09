@@ -8,6 +8,8 @@
     group_by_team => 'Group by team',
     sudden_changes => 'Sudden changes',
     collapse_idents => 'Collapse identifiers',
+    collapse_nums => 'Collapse numbers',
+    max_lines => 'Max. lines',
     all_contests => 'All contests',
     console => 'console',
     equivalency_groups => 'Equivalency groups',

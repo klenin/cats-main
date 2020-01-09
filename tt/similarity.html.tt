@@ -1,6 +1,7 @@
 [% extra_head = BLOCK %]
 <style>
 [% PROCESS includes/verdicts.css.tti class='similarity' %]
+p.params label { white-space: nowrap; margin-right: 8px; }
 </style>
 [%- END %]
 [% PROCESS includes/menu_begin.tti %]
@@ -22,13 +23,16 @@
 </select>
 </label>
 <label>[% capt.threshold %], %: <input type="text" name="threshold" value="[% params.threshold %]" class="bordered"/></label>
-<br/>
+<p class="params">
 <label>[% checkbox_1('virtual', params.virtual) %] [% capt.include_virtual %]</label>
 <label>[% checkbox_1('jury', params.jury) %] [% capt.include_jury %]</label>
 <label>[% checkbox_1('group', params.group) %] [% capt.group_by_team %]</label>
 <label>[% checkbox_1('self_diff', params.self_diff) %] [% capt.sudden_changes %]</label>
 <label>[% checkbox_1('collapse_idents', params.collapse_idents) %] [% capt.collapse_idents %]</label>
+<label>[% checkbox_1('collapse_nums', params.collapse_nums) %] [% capt.collapse_nums %]</label>
+<label><input type="text" name="max_lines" value="[% params.max_lines | html %]" size="3" class="bordered" /> [% capt.max_lines %]</label>
 [% IF user.privs.is_root %]<label>[% checkbox_1('all_contests', params.all_contests) %] [% capt.all_contests %]</label>[% END %]
+</p>
 </form>
 
 <table class="listview highlight bordered similarity">

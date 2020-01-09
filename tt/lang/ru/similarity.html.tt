@@ -8,6 +8,8 @@
     group_by_team => 'Группировать по участникам',
     sudden_changes => 'Резкие изменения',
     collapse_idents => 'Игнорировать идентификаторы',
+    collapse_nums => 'Игнорировать числа',
+    max_lines => 'Макс. строк',
     all_contests => 'Все турниры',
     console => 'консоль',
     equivalency_groups => 'Группы эквивалентности',
