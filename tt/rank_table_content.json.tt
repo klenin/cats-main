@@ -1,0 +1,28 @@
+[%- WRAPPER includes/jsonp.tti -%]
+[%- USE Javascript -%]
+{
+"ranks": [
+[% FOREACH r IN rank %]
+  {
+    "id": [% r.account_id %],
+    "lg": "[% r.login %]",
+    "n": "[% show_logins ? r.login : r.team_name | html | $Javascript %]",
+    "fl": "[% r.flag %]",
+    [% IF show_points %]
+    "pt": [[% FOREACH c IN r.columns %]"[% c.points %]"[% UNLESS loop.last %],[% END %][% END %]],
+    "tp": [% r.total_points %][% ELSE %]
+    "tm": [[% FOREACH c IN r.columns %]"[% c.time %]"[% UNLESS loop.last %],[% END %][% END %]],
+    "td": [[% FOREACH c IN r.columns %]"[% c.td %]"[% UNLESS loop.last %],[% END %][% END %]],
+    "ts": [% r.total_solved %],
+    "ttm": [% r.total_time %][% END %],
+    "rc": [% r.row_color %],
+    "pl": [% r.place %],
+    "st": "[% capt.ooc IF r.is_ooc %] [% capt.remote IF r.is_remote %] [% capt.virtual IF r.is_virtual %] [% r.prize %]",
+    "t": "[% r.city | html | $Javascript %]"
+  }[% UNLESS loop.last %],[% END %][% END %]
+],
+"problem_ids": [
+  [%- FOREACH p IN problems; '['; p.problem_id; ','; p.contest_id; ']'; ', ' UNLESS loop.last; END -%]
+]
+}
+[%- END -%]
