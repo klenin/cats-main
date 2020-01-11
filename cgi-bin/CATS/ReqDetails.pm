@@ -166,7 +166,7 @@ sub get_sources_info {
     my @req_ids = ref $rid eq 'ARRAY' ? @$rid : ($rid);
     @req_ids = map +$_, grep $_ && /^\d+$/, @req_ids or return;
 
-    my @src = $opts{get_source} ? qw(S.src DE.syntax DE.err_regexp) : ();
+    my @src = $opts{get_source} ? (qw(S.src DE.syntax DE.err_regexp), 'OCTET_LENGTH(S.src) AS src_len') : ();
 
     my @limits = map { my $l = $_; map "$_.$l AS @{[$_]}_$l", qw(lr lcp p) } @cats::limits_fields;
 

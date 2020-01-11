@@ -53,7 +53,7 @@
       <input type="hidden" name="np" value="0"/>
     </form>
     <div id="different_versions_msg" class="hidden">[% capt.different_versions %]</div>
-    ([% si.src.length %] b) [% si.sha1 IF user.is_root %]
+    ([% si.src_len %] b) [% si.sha1 IF user.is_root %]
   </td>
   <script>window.addEventListener('load', function () {
     highlight_errors('co[% si.req_id %]', [ [% si.err_regexp_js.join(', ') %] ], 'ed_vs[% si.req_id %]');
