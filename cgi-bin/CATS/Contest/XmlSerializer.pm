@@ -29,7 +29,7 @@ my %key_to_tag = (ctype => 'ContestType', map { $_ => _snake_to_camel_case($_) }
     start_date short_descr is_official finish_date run_all_tests req_selection show_packages
     show_all_tests freeze_date defreeze_date show_test_data max_reqs_except show_frozen_reqs show_all_results
     pinned_judges_only show_test_resources show_checker_comment penalty_except
-    pub_reqs_date show_all_for_solved apikey login_prefix
+    pub_reqs_date show_all_for_solved apikey login_prefix offset_start_until
 ));
 
 my %tag_to_key = (Problem => '', reverse(( %key_to_tag, %problem_key_to_tag )));
@@ -171,6 +171,7 @@ sub tag_handlers() {{
     IsOfficial => { e => sub { assign_contest_prop(@_, \&to_bool) } },
     FinishDate => { e => sub { assign_contest_prop(@_, \&to_date) } },
     PubReqsDate => { e => sub { assign_contest_prop(@_, \&to_date) } },
+    OffsetStartUntil => { e => sub { assign_contest_prop(@_, \&to_date) } },
     RunAllTests => { e => sub { assign_contest_prop(@_, \&to_bool) } },
     ContestType => { e => sub { assign_contest_prop(@_, \&to_enum) } },
     ReqSelection => { e => sub { assign_contest_prop(@_, \&to_enum) } },

@@ -7,6 +7,7 @@
     finish_date => 'Finish date/time',
     defreeze_date => 'Rank table defreeze date/time',
     pub_reqs_date => 'Submissions publication date/time',
+    offset_start_until => 'Offset start until',
     rules => 'Rules',
     req_selection => 'Assign points for request',
     req_selection_last => 'last',

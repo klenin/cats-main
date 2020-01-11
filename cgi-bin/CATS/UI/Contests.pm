@@ -51,7 +51,7 @@ sub contest_params() {qw(
     start_date short_descr is_official finish_date run_all_tests req_selection show_packages
     show_all_tests freeze_date defreeze_date show_test_data max_reqs_except show_frozen_reqs show_all_results
     pinned_judges_only show_test_resources show_checker_comment
-    pub_reqs_date show_all_for_solved apikey login_prefix
+    pub_reqs_date show_all_for_solved apikey login_prefix offset_start_until
 )}
 
 sub contest_checkbox_params() {qw(
@@ -62,7 +62,7 @@ sub contest_checkbox_params() {qw(
 )}
 
 sub contest_string_params() {qw(
-    title short_descr start_date freeze_date finish_date defreeze_date pub_reqs_date
+    title short_descr start_date freeze_date finish_date defreeze_date pub_reqs_date offset_start_until
     rules req_selection max_reqs
 )}
 
@@ -109,21 +109,24 @@ sub _validate {
         my $d = 'CAST(? AS TIMESTAMP)';
         my $check_after = qq~CASE WHEN $d <= $d THEN 1 ELSE 0 END,~;
         my $check_pub_reqs_date = $c->{pub_reqs_date} ? $check_after : '1,';
+        my $check_offset_start_until = $c->{offset_start_until} ? $check_after : '1,';
         my @flags = $dbh->selectrow_array(qq~
             SELECT
                 $check_after
                 $check_after
                 $check_pub_reqs_date
+                $check_offset_start_until
                 CASE WHEN $d BETWEEN $d AND $d THEN 1 ELSE 0 END
             FROM RDB\$DATABASE~, undef,
             @$c{
                 qw(start_date finish_date),
                 qw(freeze_date defreeze_date),
                 ($c->{pub_reqs_date} ? qw(start_date pub_reqs_date) : ()),
+                ($c->{offset_start_until} ? qw(start_date offset_start_until) : ()),
                 qw(freeze_date start_date finish_date),
             });
         if (my @errors = grep !$flags[$_], 0 .. $#flags) {
-            my @msgs = (1183, 1185, 1202, 1184);
+            my @msgs = (1183, 1185, 1202, 1223, 1184);
             msg($_) for @msgs[@errors];
             return;
         }

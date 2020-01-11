@@ -397,3 +397,4 @@
 1220 "Contests with group '%s'."
 1221 "Users added: %d."
 1222 "Incorrectc search parameter '%s'."
+1223 "Last offset start date must be no earlier than start date."
