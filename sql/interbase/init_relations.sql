@@ -89,6 +89,7 @@ CREATE TABLE contests (
     freeze_date   TIMESTAMP,
     defreeze_date TIMESTAMP,
     pub_reqs_date TIMESTAMP,
+    offset_start_until   TIMESTAMP,
     closed               INTEGER DEFAULT 0 CHECK (closed IN (0, 1)),
     is_hidden            SMALLINT DEFAULT 0 CHECK (is_hidden IN (0, 1)),
     penalty              INTEGER,
