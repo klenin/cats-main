@@ -38,6 +38,7 @@ function delete_team(href, name) {
 <td class="user_checkbox"><label>
 [%- IF user.is_jury || user.is_site_org -%]
 <input type="checkbox" name="sel" value="[% u.id %]"> [% END; href(u.href_stats, u.team_name); ' *' IF (user.is_jury || user.is_site_org) && u.admin -%]
+[%- cell_search('team_name', u) IF user.is_jury -%]
 </label></td>
 [% IF visible_cols.Si ~%]
 <td>[% maybe_href(u.href_contest_site, u.site_name || u.city); IF u.href_site %] <a href="[% u.href_site %]" class="icon edit"></a>[% END %]
