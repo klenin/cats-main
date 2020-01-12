@@ -131,7 +131,7 @@ sub _get_reqs {
     $dbh->selectall_arrayref(q~
         SELECT
             R.id, R.account_id, R.problem_id, R.contest_id, R.state, R.failed_test, R.tag, R.points,
-            S.src, D.code
+            S.src, D.code AS de_code
         FROM reqs R
         INNER JOIN contest_accounts CA ON CA.contest_id = R.contest_id AND CA.account_id = R.account_id
         INNER JOIN sources S ON S.req_id = R.id
@@ -222,7 +222,7 @@ sub similarity_frame {
     unless(($lv->submitted || $p->{cont}) && ($s->{pid} || $s->{account_id} && !$s->{all_contests})) {
         $lv->common_param([
             qw(s score),
-            map { ($_ . 1, $_ . 2) } qw(name city site verdict de_code points tag req t),
+            map { ($_ . 1, $_ . 2) } qw(city de_code id name points req site t tag verdict),
         ]);
         return;
     }
@@ -274,9 +274,8 @@ sub similarity_frame {
         for my $i (1, 2) {
             $r->{"$_$i"} = $users_idx->{$r->{"t$i"}}->{$_} for qw(name city site);
             $r->{"verdict$i"} = $CATS::Verdicts::state_to_name->{$r->{"req$i"}->{state}};
-            $r->{"de_code$i"} = $r->{"req$i"}->{code};
-            $r->{"points$i"} = $r->{"req$i"}->{points};
-            $r->{"tag$i"} = $r->{"req$i"}->{tag};
+
+            $r->{"$_$i"} = $r->{"req$i"}->{$_} for qw(de_code id points tag);
             $r->{"href_view_source$i"} = url_f('view_source', rid => $r->{"req$i"}->{id});
         }
         $r->{verdicts} = $r->{verdict1} . $r->{verdict2};
