@@ -11,6 +11,7 @@ use CATS::DB;
 use CATS::Globals qw($cid $contest $is_jury $is_root $sid $t $uid);
 use CATS::Messages qw(msg res_str);
 use CATS::Output qw(init_template url_f);
+use CATS::Privileges;
 use CATS::Redirect;
 use CATS::User;
 use CATS::Utils qw(url_function);
@@ -59,6 +60,13 @@ sub _token_no_salt {
     $account_id;
 }
 
+sub _login_failed {
+    my ($p, $srole) = @_;
+    $p->log_info(sprintf "Failed root login as '%s'", $p->{login})
+        if CATS::Privileges::is_root($srole);
+    msg(1040);
+}
+
 sub login_frame {
     my ($p) = @_;
     init_template($p, 'login');
@@ -75,8 +83,8 @@ sub login_frame {
         $t->param(login => Encode::decode_utf8($p->{login} || ''));
     }
 
-    my ($aid, $hash, $locked, $restrict_ips, $last_ip, $last_sid) = $dbh->selectrow_array(
-        _u $sql->select('accounts', [qw(id passwd locked restrict_ips last_ip sid)], $where));
+    my ($aid, $hash, $locked, $restrict_ips, $last_ip, $last_sid, $srole) = $dbh->selectrow_array(
+        _u $sql->select('accounts', [qw(id passwd locked restrict_ips last_ip sid srole)], $where));
 
     $aid or return msg(1040);
 
@@ -91,10 +99,10 @@ sub login_frame {
                 last;
             }
         }
-        $found or return msg(1040);
+        $found or return _login_failed($p, $srole);
     }
     elsif (!$p->{token}) {
-        defined $hash && $check_password->($p->{passwd} // '', $hash) or return msg(1040);
+        defined $hash && $check_password->($p->{passwd} // '', $hash) or return _login_failed($p, $srole);
     }
     !$locked or return msg(1041);
 
