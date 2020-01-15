@@ -136,12 +136,9 @@ div.select_cols > label {
     width: 100%;
 }
 
-
-a.top, a.top:link, a.top:visited, a.top:active,
-.top a, .top a:link, .top a:visited, .top a:active
-{
+.top a, .top a:link, .top a:visited, .top a:active {
     font-family: Arial, sans-serif;
-    font-size: 13px;
+    font-size: 14px;
     color: white;
     text-decoration: none;
 }
@@ -155,7 +152,7 @@ a, a:link {
 
 .sub_menu td, .sub_menu a {
     font-family: Arial, sans-serif;
-    font-size: 12px;
+    font-size: 13px;
 }
 
 .sub_menu a { color: #3030a0; }
