@@ -367,6 +367,7 @@ span.TeX span.limits > .hi { font-size: 80%; line-height: 80%; }
 span.TeX span.limits > .lo { font-size: 80%; line-height: 80%; }
 span.TeX span.large { display: inline-block; font-size: 150%; transform: scaleY(2.0) }
 span.TeX span.tt { font-weight: bold; font-family: Courier New, monospace; }
+span.TeX span.b { font-weight: bold; }
 
 span.TeX span.array { display: inline-block; vertical-align: middle; }
 span.TeX span.tbl { display: inline-table; }
