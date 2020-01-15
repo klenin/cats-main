@@ -346,17 +346,28 @@ sub problem_test_data_frame {
         $p->{pid}, $cid) or return;
 
     my $tests = $dbh->selectall_arrayref(qq~
-        SELECT COALESCE(PSL.fname, PSLE.fname) AS gen_name, T.rank, T.gen_group, T.param,
+        SELECT T.rank, T.gen_group, T.param,
             SUBSTRING(T.in_file FROM 1 FOR $cats::test_file_cut + 1) AS input,
+            COALESCE(PSL1.fname, PSLE1.fname) AS gen_name,
+            COALESCE(PSL2.fname, PSLE2.fname) AS val_name,
             T.in_file_size AS input_file_size,
             T.in_file_hash AS input_hash,
+            T.input_validator_id,
+            T.input_validator_param,
             SUBSTRING(T.out_file FROM 1 FOR $cats::test_file_cut + 1) AS answer,
             T.out_file_size AS answer_file_size
         FROM tests T
-            LEFT JOIN problem_sources PS ON PS.id = generator_id
-            LEFT JOIN problem_sources_local PSL ON PSL.id = PS.id
-            LEFT JOIN problem_sources_imported PSI ON PSI.id = PS.id
-            LEFT JOIN problem_sources_local PSLE ON PSLE.guid = PSI.guid
+
+            LEFT JOIN problem_sources PS1 ON PS1.id = T.generator_id
+            LEFT JOIN problem_sources_local PSL1 ON PSL1.id = PS1.id
+            LEFT JOIN problem_sources_imported PSI1 ON PSI1.id = PS1.id
+            LEFT JOIN problem_sources_local PSLE1 ON PSLE1.guid = PSI1.guid
+
+            LEFT JOIN problem_sources PS2 ON PS2.id = T.input_validator_id
+            LEFT JOIN problem_sources_local PSL2 ON PSL2.id = PS2.id
+            LEFT JOIN problem_sources_imported PSI2 ON PSI2.id = PS2.id
+            LEFT JOIN problem_sources_local PSLE2 ON PSLE2.guid = PSI2.guid
+
         WHERE T.problem_id = ? ORDER BY T.rank~, { Slice => {} },
         $p->{pid}) or return;
 

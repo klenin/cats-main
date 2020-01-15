@@ -16,6 +16,7 @@
     <th>[% capt.input %]</th>
     <th>[% capt.answer %]</th>
     <th>[% capt.generator_params %]</th>
+    <th>[% capt.validator %]</th>
     <th>[% capt.input_hash %]</th>
   </tr>
 [% FOREACH t IN tests %]
@@ -24,6 +25,7 @@
     <td>[% t.input | html; '&hellip;' IF t.input_cut %]</td>
     <td>[% t.answer | html; '&hellip;' IF t.answer_cut %]</td>
     <td>[% t.generator_params | html %]</td>
+    <td>[% t.val_name | html %] [% t.input_validator_param | html %]</td>
     <td><code>[% t.input_hash | html %]</code></td>
   </tr>
 [% END %]
