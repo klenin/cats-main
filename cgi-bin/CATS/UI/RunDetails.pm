@@ -35,6 +35,7 @@ use CATS::Verdicts;
 sub _decode_quietly {
     my ($p, $s) = @_;
     $s //= '';
+    return CATS::Utils::hex_dump($s) if $p->{comment_enc} eq 'HEX';
     # Comment or output may be non-well-formed utf8.
     my $result = eval { Encode::decode($p->{comment_enc}, $s, Encode::FB_QUIET); } // '';
     # Encode::decode modifies $s to contain non-well-formed part.

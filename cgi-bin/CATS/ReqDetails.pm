@@ -285,8 +285,13 @@ sub get_sources_info {
         }
         elsif ($opts{encode_source}) {
             if (encodings()->{$se} && $r->{file_name} && $r->{file_name} !~ m/\.zip$/) {
-                Encode::from_to($r->{src}, $se, 'utf-8');
-                $r->{src} = Encode::decode_utf8($r->{src});
+                if ($se eq 'HEX') {
+                    $r->{src} = CATS::Utils::hex_dump($r->{src}, 16);
+                }
+                else {
+                    Encode::from_to($r->{src}, $se, 'utf-8');
+                    $r->{src} = Encode::decode_utf8($r->{src});
+                }
             }
         }
         $r->{status_name} = CATS::Messages::problem_status_names->{$r->{status}};
