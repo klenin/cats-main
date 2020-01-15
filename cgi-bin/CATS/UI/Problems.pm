@@ -436,12 +436,13 @@ sub problems_frame {
     my ($jactive) = CATS::Judge::get_active_count;
 
     my $pt_url = sub {
-        my ($href, $item) = @_;
+        my ($href, $item, $tf) = @_;
         $item //= res_str(538);
+        $tf //= $text_link_f;
         {
-            href => $text_link_f->(@$href), item => $item,
+            href => $tf->(@$href), item => $item,
             keys %any_langs < 2 ? () : (sub_items => [
-                map +{ href => $text_link_f->(@$href, pl => $_), item => $_ }, sort keys %any_langs ])
+                map +{ href => $tf->(@$href, pl => $_), item => $_ }, sort keys %any_langs ])
         }
     };
     my $pr = $contest->is_practice;
@@ -450,6 +451,8 @@ sub problems_frame {
             !$pr && $pt_url->([ 'problem_text',
                 nospell => 1, nokw => 1, notime => 1, noformal => 1, noauthor => 1, nosubmit => 1, nonav => 1 ]),
             !$pr && $pt_url->([ 'problem_text' ], res_str(555)),
+            $is_jury && !$pr && $pt_url->(
+                [ 'problem_text', cid => $cid ], res_str(515), \&CATS::StaticPages::url_static),
             { href => url_f('problems_all', link => 1), item => res_str(540) },
             { href => url_f('problems_all', link => 1, move => 1), item => res_str(551) },
             !$pr && ({ href => url_f('problems_retest'), item => res_str(556) }),
