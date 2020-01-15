@@ -247,6 +247,10 @@ sub users_frame {
             SELECT 1 FROM contest_accounts CA1 WHERE CA1.account_id = A.id AND CA1.contest_id = ?)~,
             m => 1213, t => q~SELECT title FROM contests WHERE id = ?~
         },
+        used_ip => { sq => q~EXISTS(
+            SELECT 1 FROM reqs R INNER JOIN events E ON E.id = R.id
+            WHERE R.account_id = A.id AND R.contest_id = C.id AND E.ip LIKE '%' || ? || '%')~,
+        },
     });
     if ($is_jury) {
         my $contact_types = $dbh->selectall_arrayref(q~
