@@ -228,7 +228,7 @@ sub _console_content {
         my ($rtype, $rank, $submit_time, $id, $request_state, $failed_test,
             $problem_id, $elements_count, $problem_title,
             $de_id, $time_used, $clarified, $question, $answer, $jury_message,
-            $team_id, $team_name, $country_abbr, $last_ip, $caid, $contest_id
+            $team_id, $team_name, $country_abbr, $last_ip, $caid, $site_id, $contest_id
         ) = $_[0]->fetchrow_array
             or return ();
 
@@ -250,6 +250,7 @@ sub _console_content {
             $is_jury || $uid && $team_id && $uid == $team_id ||
             ($contest->{time_since_pub_reqs} // 0) > 0 ||
             $team_id && $can_see->{$team_id} ||
+            # $user->{is_site_org} && (!$user->{site_id} || $user->{site_id} == ($site_id // 0)) ||
             $problem_id && $solved->{$problem_id};
 
         return (

@@ -113,7 +113,8 @@ sub build_query {
         CAST(NULL AS VARCHAR(200)) AS team_name,
         CAST(NULL AS VARCHAR(30)) AS country,
         CAST(NULL AS VARCHAR(100)) AS last_ip,
-        CAST(NULL AS INTEGER) AS caid
+        CAST(NULL AS INTEGER) AS caid,
+        CAST(NULL AS INTEGER) AS site_id
     ~;
     my $dummy_req_block = q~
         CAST(NULL AS INTEGER) AS request_state,
@@ -154,6 +155,7 @@ sub build_query {
             A.country AS country,
             COALESCE(E.ip, A.last_ip) AS last_ip,
             CA.id AS caid,
+            CA.site_id,
             R.contest_id
             FROM reqs R
             INNER JOIN problems P ON R.problem_id = P.id
@@ -179,6 +181,7 @@ sub build_query {
             A.country AS country,
             A.last_ip AS last_ip,
             CA.id AS caid,
+            CA.site_id,
             CA.contest_id
             FROM questions Q
             INNER JOIN contest_accounts CA ON Q.account_id = CA.id
@@ -201,6 +204,7 @@ sub build_query {
             A.country AS country,
             A.last_ip AS last_ip,
             CA.id AS caid,
+            CA.site_id,
             M.contest_id
             FROM messages M
             INNER JOIN events E ON E.id = M.id
