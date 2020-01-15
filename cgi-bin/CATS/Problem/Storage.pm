@@ -517,18 +517,19 @@ sub insert_problem_content {
     );
 
     for (sort { $a->{rank} <=> $b->{rank} } values %{$problem->{tests}}) {
-        $c->bind_param(1, $problem->{id});
-        $c->bind_param(2, $_->{rank});
-        $c->bind_param(3, $_->{input_validator_id});
-        $c->bind_param(4, $_->{generator_id});
-        $c->bind_param(5, $_->{param});
-        $c->bind_param(6, $_->{std_solution_id} );
-        $c->bind_param(7, $_->{in_file}, { ora_type => 113 });
-        $c->bind_param(8, $_->{out_file}, { ora_type => 113 });
-        $c->bind_param(9, $_->{points});
-        $c->bind_param(10, $_->{gen_group});
-        $c->bind_param(11, $_->{hash});
-        $c->bind_param(12, $_->{snippet_name});
+        my $i = 0;
+        $c->bind_param(++$i, $problem->{id});
+        $c->bind_param(++$i, $_->{rank});
+        $c->bind_param(++$i, $_->{input_validator_id});
+        $c->bind_param(++$i, $_->{generator_id});
+        $c->bind_param(++$i, $_->{param});
+        $c->bind_param(++$i, $_->{std_solution_id} );
+        $c->bind_param(++$i, $_->{in_file}, { ora_type => 113 });
+        $c->bind_param(++$i, $_->{out_file}, { ora_type => 113 });
+        $c->bind_param(++$i, $_->{points});
+        $c->bind_param(++$i, $_->{gen_group});
+        $c->bind_param(++$i, $_->{hash});
+        $c->bind_param(++$i, $_->{snippet_name});
         $c->execute
             or $self->error("Can not add test $_->{rank}: $dbh->errstr");
         $self->note("Test $_->{rank} added");
