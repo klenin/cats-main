@@ -78,6 +78,10 @@ sub get_run_info {
             push @{$ts->{list} ||= []}, $last_test;
             if (CATS::RankTable::dependencies_accepted($all_testsets, $ts, \%accepted_tests, \%accepted_deps)) {
                 $ts->{accepted_count} += $row->{is_accepted};
+                if (!$row->{is_accepted} && ($ts->{failed_test} // 1e12) > $last_test) {
+                    $ts->{failed_test} = $last_test;
+                    $ts->{verdict} = $CATS::Verdicts::state_to_name->{$row->{result}};
+                }
                 if (defined $ts->{points}) {
                     $total_points += $ts->{earned_points} = $ts->{points}
                         if $ts->{accepted_count} == $ts->{test_count};

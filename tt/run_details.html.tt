@@ -1,4 +1,6 @@
+[% extra_head = BLOCK %]<style>[% PROCESS includes/verdicts.css.tti class='testsets' %]</style>[% END %]
 [%- PROCESS includes/sources_styles.tti -%]
+[%- PROCESS "lang/$lang/verdicts.tti" -%]
 [%- js.jquery_flot = 1 IF is_any_jury %]
 [% PROCESS includes/header.tti %]
 <style>
@@ -49,15 +51,20 @@
 [% ELSE %]
   [% IF r.testsets.size %]
     <p>[% capt.testsets %]</p>
-    <table class="bordered">
+    <table class="testsets bordered">
     <tr>
       <th>[% capt.name %]</th>
+      <th>[% capt.verdict %]</th>
       <th>[% capt.tests_passed %]</th><th>[% capt.points %]</th><th>[% capt.comment %]</th>
       [%- IF r.has_depends_on %]<th>[% capt.depends_on %]</th>[% END -%]
     </tr>
     [% FOREACH ts IN r.testsets %]
-    <tr [% IF ts.earned_points %] class="run_details_OK"[% END %]>
+    <tr>
       <td><a href="#" onclick="filter_testset([% r.id %], '[% ts.name %]')">[% ts.name %]</a></td>
+      <td class="verdict run_details_[% ts.verdict || (ts.earned_points ? 'OK' : 'IS') %]"><table><tr>
+        <td>[% href('#', ts.verdict, capt.verdicts.item(ts.verdict)) %]</td>
+        <td><div>[% ts.failed_test %]</div></td>
+      </tr></table></td>
       <td class="num">[% ts.accepted_count || 0 %] / [% ts.test_count %]</td>
       <td class="num">[% ts.earned_points || 0 %]</td>
       <td>[% ts.comment %]</td>

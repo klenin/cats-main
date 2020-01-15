@@ -1,5 +1,5 @@
 [% js.jquery = 1; -%]
-[% IF is_any_jury; extra_head = BLOCK %]
+[% IF is_any_jury; e = BLOCK %]
   <style>
     .limits {
       float: left;
@@ -17,4 +17,4 @@
     }
     .verdict_short { width: 1px; }
   </style>
-[%- END; END %]
+[%- END; END; SET extra_head = extra_head _ e %]
