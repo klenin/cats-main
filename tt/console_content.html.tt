@@ -27,7 +27,7 @@
     %]</td>
     <td><div>[% c.failed_test %]</div></td>
   </tr></table></td>
-  <td class="pts">[% c.points IF user.is_jury %]</td>
+  <td class="pts">[% c.points IF user.is_jury || user.id == c.team_id %]</td>
   <td>[%
     "$c.code: " IF c.code;
     maybe_href(c.href_source, c.problem_title, user.privs.is_root ? c.contest_title : '');
