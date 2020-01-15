@@ -511,9 +511,10 @@ sub insert_problem_content {
 
     $c = $dbh->prepare(q~
         INSERT INTO tests (
-            problem_id, rank, input_validator_id, generator_id, param, std_solution_id, in_file, out_file,
+            problem_id, rank, input_validator_id, input_validator_param,
+            generator_id, param, std_solution_id, in_file, out_file,
             points, gen_group, in_file_hash, snippet_name
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)~
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)~
     );
 
     for (sort { $a->{rank} <=> $b->{rank} } values %{$problem->{tests}}) {
@@ -521,6 +522,7 @@ sub insert_problem_content {
         $c->bind_param(++$i, $problem->{id});
         $c->bind_param(++$i, $_->{rank});
         $c->bind_param(++$i, $_->{input_validator_id});
+        $c->bind_param(++$i, $_->{input_validator_param});
         $c->bind_param(++$i, $_->{generator_id});
         $c->bind_param(++$i, $_->{param});
         $c->bind_param(++$i, $_->{std_solution_id} );
