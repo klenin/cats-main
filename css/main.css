@@ -198,6 +198,7 @@ select, option {
     border: 1px solid #4040ff;
     height: 22px;
     vertical-align: middle;
+    border-radius: 3px;
 }
 
 input[type=text] {
@@ -214,10 +215,12 @@ input.listview_checkbox {
 .file {
     border: 1px solid #4040ff;
     background: #ffffff;
+    border-radius: 3px;
 }
 
 .bordered {
     border: 1px solid #4040ff;
+    border-radius: 3px;
 }
 
 .weak_border {
@@ -248,6 +251,7 @@ table > tbody > tr > td.nested table { border-style: hidden; height: 100%; width
     height: 22px;
     vertical-align: middle;
     cursor: pointer;
+    border-radius: 3px;
 }
 .button2 {
     border: 1px solid #ffffff;
