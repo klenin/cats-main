@@ -61,7 +61,7 @@ sub answer_box_frame {
 
     $t->param(
         participant_name => $r->{team_name},
-        title_suffix => res_str(566), contest_title => $r->{title});
+        title_suffix => res_str(566) . " $r->{team_name}", contest_title => $r->{title});
 
     if ($p->{clarify} && (my $ans = Encode::decode_utf8($p->{answer_text}) // '') ne '') {
         $r->{answer} = $user->privs->{moderate_messages} ? $ans : ($r->{answer} // '') . " $ans";
