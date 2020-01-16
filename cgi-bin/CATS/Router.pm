@@ -382,6 +382,8 @@ my $main_routes = {
         $CATS::UI::ContestTags::form->route, include => array_of integer, ],
     api_questions => [ \&CATS::UI::Messages::questions_api,
         clarified => bool, ],
+    api_answer => [ \&CATS::UI::Messages::answer_api,
+        qid => integer, answer => str, ],
 };
 
 my $api_judge_routes = {
