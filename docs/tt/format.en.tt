@@ -411,6 +411,7 @@ files with tests, solutions etc.
       <li>src[% opt %] — path to the input file (if the use attribute is omitted).</li>
       <li>genAll[% s(opt, v15) %] — generate a group of tests with a single generator.</li>
       <li>validate[% s(opt, v110) %] — identifier of the [% tag_ref('Validator') %] object.</li>
+      <li>validateParam[% s(opt, v110) %] — command-line argument to pass to [% tag_ref('Validator') %].</li>
       <li>hash[% s(opt, v110) %] — input file hash in the format <code>$alg$hex</code>,
         where 'alg' is one of 'sha' or 'md5',
         and 'hex' is a sequence of lowcase hexadecimal digits representing hash value.</li>
