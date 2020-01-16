@@ -3,6 +3,8 @@ package CATS::UI::Messages;
 use strict;
 use warnings;
 
+use Encode;
+
 use CATS::DB;
 use CATS::Globals qw($cid $t $is_jury $uid $user);
 use CATS::Messages qw(res_str);
@@ -91,6 +93,24 @@ sub envelope_frame {
         WHERE R.id = ? AND R.account_id = ?~, { Slice => {} },
         $p->{rid}, $uid) or return;
     $t->param(%$r, verdict => $CATS::Verdicts::state_to_name->{$r->{state}});
+}
+
+sub questions_api {
+    my ($p) = @_;
+    $is_jury or return $p->print_json({});
+    my $questions = $dbh->selectall_arrayref(q~
+        SELECT
+            CA.contest_id, A.team_name,
+            Q.id, Q.submit_time, Q.clarification_time, Q.clarified, Q.question, Q.answer
+        FROM questions Q
+        INNER JOIN contest_accounts CA ON CA.id = Q.account_id
+        INNER JOIN accounts A ON A.id = CA.account_id
+        WHERE CA.contest_id = ? AND Q.clarified = ?~, { Slice => {} },
+        $cid, $p->{clarified} ? 1 : 0);
+    for my $q (@$questions) {
+        $q->{$_} = Encode::decode_utf8($q->{$_}) for qw(answer question team_name);
+    }
+    $p->print_json({ questions => $questions });
 }
 
 1;

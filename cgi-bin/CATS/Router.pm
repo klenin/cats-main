@@ -380,6 +380,8 @@ my $main_routes = {
     ],
     de_tags_edit => [ \&CATS::UI::DeTags::de_tags_edit_frame,
         $CATS::UI::ContestTags::form->route, include => array_of integer, ],
+    api_questions => [ \&CATS::UI::Messages::questions_api,
+        clarified => bool, ],
 };
 
 my $api_judge_routes = {
