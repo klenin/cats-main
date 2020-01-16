@@ -34,23 +34,30 @@ sub send_message_box_frame {
     $t->param(sent => 1);
 }
 
-sub answer_box_frame {
+sub _get_question {
     my ($p) = @_;
-    init_template($p, 'answer_box.html.tt');
-    $is_jury && $p->{qid} or return;
-
     my $r = $dbh->selectrow_hashref(q~
         SELECT
             Q.account_id AS caid, CA.account_id AS aid, A.login, A.team_name,
-            Q.submit_time, Q.question, Q.clarified, Q.answer, C.title
+            Q.submit_time, Q.question, Q.clarified, Q.answer, C.title, CA.contest_id
         FROM questions Q
         INNER JOIN contest_accounts CA ON CA.id = Q.account_id
         INNER JOIN accounts A ON A.id = CA.account_id
         INNER JOIN contests C ON C.id = CA.contest_id
         WHERE Q.id = ?~, { Slice => {} },
-        $p->{qid});
+        $p->{qid}) or return;
     # BLOBs are not auto-decoded.
     $_ = Encode::decode_utf8($_) for @$r{qw(question answer)};
+    $r;
+}
+
+sub answer_box_frame {
+    my ($p) = @_;
+    init_template($p, 'answer_box.html.tt');
+    $is_jury && $p->{qid} or return;
+
+    my $r = _get_question($p) or return;
+    $user->{is_root} || $r->{contest_id} == $cid or return;
 
     $t->param(
         participant_name => $r->{team_name},
