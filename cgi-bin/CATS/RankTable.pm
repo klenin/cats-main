@@ -13,6 +13,7 @@ use CATS::Countries;
 use CATS::DB;
 use CATS::Globals qw($cid $contest $is_jury $is_root $t $uid $user);
 use CATS::Output qw(url_f url_f_cid);
+use CATS::RouteParser qw();
 use CATS::Testset;
 use CATS::Time;
 
@@ -20,12 +21,13 @@ use fields qw(
     clist contest_list hide_ooc hide_virtual show_points frozen
     title has_practice not_started filter sites use_cache
     rank problems problems_idx show_all_results show_prizes req_selection has_competitive
-    show_regions show_flags show_logins sort
+    show_regions show_flags show_logins sort p
 );
 
 sub new {
     my ($self, $p) = @_;
     $self = fields::new($self) unless ref $self;
+    $self->{p} = $p;
     $self->{clist} = [ @{$p->{clist}} ? sort { $a <=> $b } @{$p->{clist}} : $cid ];
     $self->{contest_list} = join ',', @{$self->{clist}};
     return $self;
@@ -578,16 +580,17 @@ sub _process_single_run {
 sub rank_table {
     my ($self) = @_;
 
-    my @p = ('rank_table', clist => $self->{contest_list}, cache => $self->{use_cache});
+    my @pp = (clist => $self->{contest_list}, cache => $self->{use_cache});
+    my $url = sub { url_f('rank_table', CATS::RouteParser::reconstruct($self->{p}, @pp, @_)) };
     $t->param(
         not_started => $self->{not_started} && !$is_jury,
         frozen => $self->{frozen},
         hide_ooc => !$self->{hide_ooc},
         hide_virtual => !$self->{hide_virtual},
-        href_hide_ooc => url_f(@p, hide_ooc => 1, hide_virtual => $self->{hide_virtual}),
-        href_show_ooc => url_f(@p, hide_ooc => 0, hide_virtual => $self->{hide_virtual}),
-        href_hide_virtual => url_f(@p, hide_virtual => 1, hide_ooc => $self->{hide_ooc}),
-        href_show_virtual => url_f(@p, hide_virtual => 0, hide_ooc => $self->{hide_ooc}),
+        href_hide_ooc => $url->(hide_ooc => 1, hide_virtual => $self->{hide_virtual}),
+        href_show_ooc => $url->(hide_ooc => 0, hide_virtual => $self->{hide_virtual}),
+        href_hide_virtual => $url->(hide_virtual => 1, hide_ooc => $self->{hide_ooc}),
+        href_show_virtual => $url->(hide_virtual => 0, hide_ooc => $self->{hide_ooc}),
         show_points => $self->{show_points},
         show_regions => $self->{show_regions},
         show_flags => $self->{show_flags},

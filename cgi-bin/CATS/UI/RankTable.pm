@@ -8,6 +8,7 @@ use CATS::Globals qw($cid $contest $is_jury $t $uid);
 use CATS::Messages qw(msg res_str);
 use CATS::Output qw(init_template url_f);
 use CATS::RankTable;
+use CATS::RouteParser;
 
 our @router_bool_params = qw(
     cache
@@ -51,20 +52,16 @@ sub rank_table_frame {
         'sites', 'id, name', { id => $p->{sites} }, 'name')) : [];
     $t->param(problem_title => join '; ', map $_->{name}, @$sites);
 
-    my @params = (
-        (map { $_ => $p->{$_} } @router_bool_params),
-        clist => $rt->{contest_list},
-        filter => Encode::decode_utf8($p->{filter}),
-        sites => join(',', map $_->{id}, @$sites) || undef,
-        sort => $p->{sort},
-    );
-    $t->param(href_rank_table_content => url_f('rank_table_content', @params));
+    my $url = sub {
+        url_f(shift, CATS::RouteParser::reconstruct($p, clist => $rt->{contest_list}, @_));
+    };
+    $t->param(href_rank_table_content => $url->('rank_table_content'));
     my $submenu =
-        [ { href => url_f('rank_table_content', @params, printable => 1), item => res_str(538) } ];
+        [ { href => $url->('rank_table_content', printable => 1), item => res_str(538) } ];
     if ($is_jury) {
         push @$submenu,
-            { href => url_f('rank_table', @params, cache => ($p->{cache} ? 0 : 1)), item => res_str(553) },
-            { href => url_f('rank_table', @params, points => ($p->{points} ? 0 : 1)), item => res_str(554) };
+            { href => $url->('rank_table', cache => ($p->{cache} ? 0 : 1)), item => res_str(553) },
+            { href => $url->('rank_table', points => ($p->{points} ? 0 : 1)), item => res_str(554) };
     }
     $t->param(submenu => $submenu, title_suffix => res_str(529));
 }
