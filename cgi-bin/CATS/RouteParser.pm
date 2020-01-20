@@ -5,6 +5,8 @@ use warnings;
 
 use Exporter qw(import);
 
+use Encode;
+
 use CATS::Utils;
 
 our @EXPORT = qw(
@@ -62,6 +64,7 @@ sub parse_route {
     my ($p, $route) = @_;
     ref $route eq 'ARRAY' or return $route;
     my $fn = $route->[0];
+    $p->{route} = $route;
 
     for (my $i = 1; $i < @$route; $i += 2) {
         my $name = $route->[$i];
@@ -111,6 +114,32 @@ sub parse_route {
     }
 
     $fn;
+}
+
+sub _reconstruct_one {
+    my ($name, $value, $type) = @_;
+    if (ref $type eq 'HASH') {
+        $type->{upload} and die 'Unable to reconstruct upload';
+        return
+            $type->{array_of} ? map { $name => $_ } @$value :
+            $type->{clist_of} ? (@$value ? ($name, join ',', @$value) : ()):
+            ($name, $value);
+    }
+    return ($name, $value);
+}
+
+sub reconstruct {
+    my ($p, %override) = @_;
+    my @result = %override;
+    my $route = $p->{route} or die;
+    for (my $i = 1; $i < @$route; $i += 2) {
+        my $name = $route->[$i];
+        exists $p->{$name} && !exists $override{$name} or next;
+        my $type = $route->[$i + 1];
+        my $value = ref $p->{$name} ? $p->{$name} : Encode::decode_utf8($p->{$name});
+        push @result, _reconstruct_one($name, $value, $type);
+    }
+    @result;
 }
 
 1;

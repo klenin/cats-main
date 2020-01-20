@@ -3,7 +3,7 @@ use warnings;
 
 use File::Spec;
 use FindBin;
-use Test::More tests => 36;
+use Test::More tests => 40;
 
 use lib $FindBin::Bin;
 use lib File::Spec->catdir($FindBin::Bin);
@@ -92,6 +92,22 @@ is pr(MockupWeb->new, [ 'rreq', x => required integer ]), undef, 'required';
     my $w2 = MockupWeb->new(qwe => 5);
     is pr($w2, $r), 'rcode', 'route code 2';
     ok !exists $w2->{qwe}, 'code 2';
+}
+
+{
+    my $r = [ 'r', s => str, a => array_of integer, c => clist_of integer ];
+    {
+        my @orig = (s => 'xx', c => '5,6');
+        my $w1 = MockupWeb->new(@orig);
+        is pr($w1, $r), 'r', 'reconstruct prepare 1';
+        is_deeply [ CATS::RouteParser::reconstruct($w1) ], \@orig, 'reconstruct 1';
+    }
+    {
+        my $w1 = MockupWeb->new(s => 'xx', a => [ 3, 4 ]);
+        is pr($w1, $r), 'r', 'reconstruct prepare 2';
+        is_deeply [ CATS::RouteParser::reconstruct($w1, s => 'yy') ],
+            [ s => 'yy', a => 3, a => 4 ], 'reconstruct 2';
+    }
 }
 
 1;
