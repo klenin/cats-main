@@ -52,11 +52,16 @@ function init_editors() {
     sess.setValue(textarea.val());
     sess.setMode('ace/mode/' + mode);
     sess.setOption('useWorker', false);
-    editor.commands.addCommand({
+    editor.commands.addCommands([
+    {
       name: 'toggleWrapMode',
       bindKey: { win: 'Ctrl-Alt-w', mac: 'Command-Alt-w' },
-      exec: function(ed) { ed.getSession().setUseWrapMode(!ed.getSession().getUseWrapMode()); }
-    });
+      exec: function(ed) { ed.getSession().setUseWrapMode(!ed.getSession().getUseWrapMode()); }},
+    {
+      name: 'toggleInvisibleChars',
+      bindKey: { win: 'Ctrl-Alt-v', mac: 'Command-Alt-v' },
+      exec: function(ed) { ed.setShowInvisibles(!ed.getShowInvisibles()); }
+    }]);
 
     editor.commands.addCommand({
       name: 'removeline',
