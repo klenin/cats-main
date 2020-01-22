@@ -178,7 +178,7 @@ sub download_source_frame {
             (content_type => 'application/zip') :
             (content_type => 'text/plain', charset => 'UTF-8')),
         file_name => "$si->{req_id}.$ext",
-        content => Encode::encode_utf8($si->{src}));
+        content => $ext eq 'zip' ? $si->{src} : Encode::encode_utf8($si->{src}));
 }
 
 sub print_source_frame {
