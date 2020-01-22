@@ -228,7 +228,11 @@ sub problem_history_edit_frame {
         set_history_paths_urls($p->{pid}, $blob->{paths});
         $t->param(blob => $blob);
     }
-    set_submenu_for_tree_frame($p->{pid}, $hash_base);
+
+    my $is_xml = $p->{file} && ($p->{file} =~ m/\.xml$/);
+    my @text_item = $is_xml ?
+        { href => url_f('problem_text', pid => $p->{pid}), item => res_str(411) } : ();
+    set_submenu_for_tree_frame($p->{pid}, $hash_base, @text_item);
     my $keywords = $dbh->selectall_arrayref(q~
         SELECT code FROM keywords~, { Slice => {} });
     my $de_list = CATS::DevEnv->new(CATS::JudgeDB::get_DEs({ fields => 'syntax' }));
@@ -243,8 +247,7 @@ sub problem_history_edit_frame {
         message => Encode::decode_utf8($p->{message}),
         is_amend => $p->{is_amend},
         problem_import_log => $log,
-        cats_tags => $p->{file} && ($p->{file} =~ m/\.xml$/) ?
-            [ sort keys %{CATS::Problem::Parser::tag_handlers()} ] : [],
+        cats_tags => $is_xml ? [ sort keys %{CATS::Problem::Parser::tag_handlers()} ] : [],
         keywords => $keywords,
         de_list => $de_list,
         de_selected => $de,
