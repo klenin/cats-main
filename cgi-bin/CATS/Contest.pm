@@ -5,7 +5,7 @@ use warnings;
 
 sub database_fields {qw(
     id title short_descr
-    start_date finish_date freeze_date defreeze_date
+    start_date finish_date freeze_date defreeze_date offset_start_until
     closed penalty ctype rules max_reqs
     is_official run_all_tests
     show_all_tests show_test_resources show_checker_comment show_packages show_test_data show_flags show_sites
@@ -13,7 +13,8 @@ sub database_fields {qw(
 )}
 
 use fields (database_fields(), qw(
-    server_time time_since_start time_since_finish time_since_defreeze time_since_pub_reqs tags));
+    server_time time_since_start time_since_finish time_since_defreeze time_since_pub_reqs
+    time_since_offset_start_until tags));
 
 use CATS::Config qw(cats_dir);
 use CATS::Contest::Utils;
@@ -30,14 +31,15 @@ sub new {
     $self;
 }
 
-sub time_since_sql { "CAST(CURRENT_TIMESTAMP - $_[0]_date AS DOUBLE PRECISION) AS time_since_$_[0]" }
+sub time_since_sql { "CAST(CURRENT_TIMESTAMP - $_[0]$_[1] AS DOUBLE PRECISION) AS time_since_$_[0]" }
 
 sub load {
     my ($self, $contest_id, $fields) = @_;
     $fields //= [
         database_fields(),
         'CURRENT_TIMESTAMP AS server_time',
-        map time_since_sql($_), qw(start finish defreeze pub_reqs)
+        time_since_sql('offset_start_until', ''),
+        map time_since_sql($_, '_date'), qw(start finish defreeze pub_reqs)
     ];
     my $r = $contest_id ? CATS::DB::select_row('contests', $fields, { id => $contest_id }) : undef;
     # Choose training contest by default.
