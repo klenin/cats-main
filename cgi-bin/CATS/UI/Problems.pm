@@ -185,7 +185,11 @@ sub problems_frame {
         $show_packages = $contest->{show_packages};
         if (my $reason = _check_inaccessible) {
             init_template($p, 'problems_inaccessible');
-            $t->param(reason => $reason);
+            CATS::Contest::Participate::online if $p->{participate_online};
+            $t->param(
+                reason => $reason,
+                CATS::Contest::Participate::flags_can_participate,
+            );
             return;
         }
     }

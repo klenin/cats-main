@@ -3,4 +3,11 @@
 <p>[% contest.short_descr | html | linkify %]</p>
 [% END %]
 [% capt.item(reason) %]
+[% IF can_participate_online -%]
+<p>
+<form method="post" enctype="multipart/form-data" action1="[% href_lv_action %]" accept-charset="UTF-8">
+  <button class="button" type="submit" name="participate_online" value="1">[% capt.participate %]</button>
+</form>
+</p>
+[%- END %]
 [% PROCESS includes/menu_end.tti %]
