@@ -54,7 +54,13 @@ try {
   <td class="date">[% maybe_href(c.href_start_date, c.start_date, c.since_start_text) %]</td>
 [%- END %]
 [% IF visible_cols.Fd -%]
-<td class="date[% ' finished' IF c.since_finish > 0 %]">[% c.finish_date | html %]</td>
+[%- IF c.offset_start_until %]
+<td class="[% 'finished' IF c.since_offset_start_until > 0 %]">[% c.offset_start_until | html %]
+[%- ELSE %]
+<td class="[% 'finished' IF c.since_finish > 0 %]">[% c.finish_date | html %]
+[%- END %]
+[% IF c.duration_str %]<span class="small nobr">([% c.duration_str %])</span>[% END %]
+</td>
 [%- END %]
 [% IF visible_cols.Nt -%]
 [%- MACRO flag(name) BLOCK %]<span class="[% name %]">[% capt.$name %]</span>[% END %]

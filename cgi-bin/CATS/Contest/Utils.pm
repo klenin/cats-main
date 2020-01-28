@@ -42,14 +42,17 @@ sub contest_fields () {
     # (($s->{page} || 0) == 0 && !$s->{search} ? 'FIRST ' . ($s->{rows} + 1) : '') .
     qw(
         ctype id title short_descr
-        start_date finish_date freeze_date defreeze_date closed is_official rules parent_id
+        start_date finish_date freeze_date defreeze_date offset_start_until
+        closed is_official rules parent_id
     )
 }
 
 sub contest_fields_str {
     join ', ', map("C.$_", contest_fields),
-        'CURRENT_TIMESTAMP - start_date AS since_start',
-        'CURRENT_TIMESTAMP - finish_date AS since_finish',
+        'CAST(CURRENT_TIMESTAMP - start_date AS DOUBLE PRECISION) AS since_start',
+        'CAST(CURRENT_TIMESTAMP - finish_date AS DOUBLE PRECISION) AS since_finish',
+        'CAST(CURRENT_TIMESTAMP - offset_start_until AS DOUBLE PRECISION) AS since_offset_start_until',
+        'CAST(finish_date - start_date AS DOUBLE PRECISION) AS duration',
         'CAST((finish_date - start_date) * 24 AS DECIMAL(15,1)) AS duration_hours',
 }
 
@@ -75,6 +78,7 @@ sub _contest_searches {
         (map { $_ => "C.$_" } contest_fields, _contest_search_fields),
         since_start => '(CURRENT_TIMESTAMP - start_date)',
         since_finish => '(CURRENT_TIMESTAMP - finish_date)',
+        since_offset_start_until => '(CURRENT_TIMESTAMP - offset_start_until)',
         duration_hours => 'CAST((finish_date - start_date) * 24 AS DECIMAL(15,1))',
     });
     $p->{listview}->define_enums({
@@ -136,6 +140,8 @@ sub _common_contests_view {
         finish_date_iso => date_to_iso($c->{finish_date}),
         freeze_date_iso => date_to_iso($c->{freeze_date}),
         unfreeze_date_iso => date_to_iso($c->{defreeze_date}),
+        offset_start_until_iso => date_to_iso($c->{offset_start_until}),
+        duration_str => CATS::Time::format_diff($c->{duration}),
         registration_denied => $c->{closed},
         selected => $c->{id} == $cid,
         is_official => $c->{is_official},
