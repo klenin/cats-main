@@ -109,7 +109,7 @@ my $main_routes = {
         \&CATS::UI::Problems::problems_frame,
         problem_id => integer,
         problems_selection => array_of integer,
-        participate_online => bool, participate_virtual => bool,
+        participate_online => bool, participate_virtual => bool, start_offset => bool,
         submit => bool, replace => bool, add_new => bool,
         add_remote => bool, std_solution => bool, delete_problem => integer,
         de_id => qr/\d+|by_extension/, ignore => bool,

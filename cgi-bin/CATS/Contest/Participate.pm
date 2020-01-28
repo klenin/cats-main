@@ -53,6 +53,12 @@ sub all_sites_finished {
    $main_time_since_finish > 0 && $all_sites;
 }
 
+sub can_start_offset {
+    $user->{is_participant} && !$user->{is_local} &&
+    $contest->{time_since_start} >= 0 &&
+    ($contest->{time_since_offset_start_until} // 0) < 0;
+}
+
 sub flags_can_participate {
     my $contest_finished = all_sites_finished($cid);
     return (
@@ -61,7 +67,10 @@ sub flags_can_participate {
         can_participate_virtual =>
             $uid && !$contest->{closed} && (!$user->{is_participant} || $user->{is_virtual}) &&
             $contest->{time_since_start} >= 0 &&
-            (!$contest->{is_official} || $contest_finished));
+            (!$contest->{is_official} && !defined($contest->{time_since_offset_start_until}) ||
+                $contest_finished),
+        can_start_offset => can_start_offset(),
+    );
 }
 
 sub online {
@@ -137,6 +146,18 @@ sub virtual {
     $user->{is_virtual} = 1;
     $user->{diff_time} = $contest->{time_since_start};
     msg($removed_req_count > 0 ? 1113 : 1112, $contest->{title}, $removed_req_count);
+}
+
+# Global $user will became inconsistent, must redirect after success.
+sub start_offset {
+    can_start_offset or return;
+
+    $dbh->do(q~
+        UPDATE contest_accounts SET is_ooc = 0, is_remote = 0, diff_time = ?
+        WHERE contest_id = ? AND account_id = ?~, undef,
+        $contest->{time_since_start}, $cid, $user->{id});
+    $dbh->commit;
+    1;
 }
 
 1;

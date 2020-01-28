@@ -173,7 +173,7 @@ sub _check_inaccessible {
         return 'not_started';
     }
     if ($contest->{local_only} && !$user->{is_local}) {
-        return 'local_only';
+        return CATS::Contest::Participate::can_start_offset() ? 'can_start_offset' : 'local_only';
     }
 }
 
@@ -186,6 +186,9 @@ sub problems_frame {
         if (my $reason = _check_inaccessible) {
             init_template($p, 'problems_inaccessible');
             CATS::Contest::Participate::online if $p->{participate_online};
+            if ($p->{start_offset}) {
+                CATS::Contest::Participate::start_offset && $p->redirect(url_f 'problems');
+            }
             $t->param(
                 reason => $reason,
                 CATS::Contest::Participate::flags_can_participate,

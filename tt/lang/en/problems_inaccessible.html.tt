@@ -1,7 +1,9 @@
 [%
   capt.import({
+    can_start_offset => 'This contest uses individual time offset for every participant. Pressing "start" button will start your timer.',
     local_only => 'Problems are <a href="docs/rules_school.html#localonly">temporarily available</a> to local contestants only.'
     not_started => 'Problems are not available before the start of the contest.',
     participate => 'register for participation',
+    start_offset => 'start',
   });
 %]
