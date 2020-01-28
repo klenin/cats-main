@@ -2,5 +2,5 @@
 [% IF contest.short_descr %]
 <p>[% contest.short_descr | html | linkify %]</p>
 [% END %]
-[% capt.local_only IF local_only %]
+[% capt.item(reason) %]
 [% PROCESS includes/menu_end.tti %]

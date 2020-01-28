@@ -308,7 +308,6 @@
 1125 "User(s) '%s' were added to contest jury."
 1129 "Error while trying to move problem."
 1128 "Submissions queued for re-testing: %d."
-1130 "比赛开始之前，问题是不可用的。"
 1131 "自从发送最近的尝试以来，过得太少时间，请一分中后再试。"
 1132 "此源代码已背发送: %s."
 1134 "Invalid problem code."

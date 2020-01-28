@@ -1,5 +1,6 @@
 [%
   capt.import({
     local_only => 'Problems are <a href="docs/rules_school.html#localonly">temporarily available</a> to local contestants only.'
+    not_started => 'Problems are not available before the start of the contest.',
   });
 %]

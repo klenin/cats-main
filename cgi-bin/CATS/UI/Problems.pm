@@ -168,19 +168,24 @@ sub has_lang_tag {
     $parsed_tags->{lang};
 }
 
+sub _check_inaccessible {
+    if (!$contest->has_started($user->{diff_time})) {
+        return 'not_started';
+    }
+    if ($contest->{local_only} && !$user->{is_local}) {
+        return 'local_only';
+    }
+}
+
 sub problems_frame {
     my ($p) = @_;
 
     my $show_packages = 1;
     unless ($is_jury) {
         $show_packages = $contest->{show_packages};
-        if (!$contest->has_started($user->{diff_time})) {
+        if (my $reason = _check_inaccessible) {
             init_template($p, 'problems_inaccessible');
-            return msg(1130);
-        }
-        if ($contest->{local_only} && !$user->{is_local}) {
-            init_template($p, 'problems_inaccessible');
-            $t->param(local_only => 1);
+            $t->param(reason => $reason);
             return;
         }
     }

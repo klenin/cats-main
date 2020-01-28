@@ -1,5 +1,6 @@
 [%
   capt.import({
     local_only => 'Задачи <a href="docs/rules_school.html#localonly">временно доступны</a> только локальным участникам.',
+    not_started => 'Задачи недоступны до начала турнира.',
   });
 %]
