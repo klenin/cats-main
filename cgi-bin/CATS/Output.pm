@@ -32,19 +32,20 @@ sub init_template {
     my ($p, $file_name, $extra) = @_;
 
     my ($base_name, $ext) = $file_name =~ /^(\w+)(?:\.(\w+)(:?\.tt))?$/ or die;
-    $ext //= $p->{json} ? 'json' : 'html';
+    $ext //= $p->{json} ? 'json' : @{$p->{csv}} ? 'csv': 'html';
 
     $http_mime_type = {
         html => 'text/html',
         xml => 'application/xml',
         ics => 'text/calendar',
         json => 'application/json',
+        csv => 'text/csv',
     }->{$ext} or die 'Unknown template extension';
     $t = CATS::Template->new("$base_name.$ext.tt", cats_dir(), $extra);
 
     %extra_headers = (
-        ($ext eq 'ics' ?
-            ('Content-Disposition' => "inline;filename=$base_name.ics") : ()),
+        ($ext =~ /^(ics|csv)$/ ?
+            ('Content-Disposition' => "inline;filename=$base_name.$ext") : ()),
         ($p->{json} ?
             ('Access-Control-Allow-Origin' => '*') : ()),
     );
@@ -62,6 +63,25 @@ sub init_template {
 
 sub url_f { CATS::Utils::url_function(@_, sid => $sid, cid => $cid) }
 sub url_f_cid { CATS::Utils::url_function(@_, sid => $sid) }
+
+sub _csv_quote {
+    my ($v) = @_;
+    $v =~ /\s|[,;]/ or return $v;
+    $v =~ s/"/""/g;
+    qq~"$v"~;
+}
+
+sub _generate_csv {
+    my ($p) = @_;
+    my @fields = @{$p->{csv}};
+    my $sep = "\t";
+    my @res = join $sep, @fields;
+    my $an = $t->{vars}->{lv_array_name} or return '';
+    for my $row (@{$t->{vars}->{$an}}) {
+        push @res, join $sep, map _csv_quote($_), @$row{@fields};
+    }
+    join "\n", @res;
+}
 
 sub generate {
     my ($p, $output_file) = @_;
@@ -82,8 +102,8 @@ sub generate {
     $p->content_type($http_mime_type, $enc);
     $p->headers(cookie => $cookie, %extra_headers);
 
-    my $out = $enc eq 'UTF-8' ?
-        $t->output : Encode::encode($enc, $t->output, Encode::FB_XMLCREF);
+    my $decoded_out = $http_mime_type eq 'text/csv' ? _generate_csv($p) : $t->output;
+    my $out = $enc eq 'UTF-8' ? $decoded_out : Encode::encode($enc, $decoded_out, Encode::FB_XMLCREF);
     $p->print($out);
     if ($output_file) {
         open my $f, '>:utf8', $output_file

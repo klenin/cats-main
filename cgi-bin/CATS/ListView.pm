@@ -196,6 +196,7 @@ sub attach {
         ($range_start > 0 ? (href_prev_pages => $href_page->($range_start - 1)) : ()),
         ($range_end < $page_count - 1 ? (href_next_pages => $href_page->($range_end + 1)) : ()),
         $self->{array_name} => \@data,
+        lv_array_name => $self->{array_name},
         lv_range => $range,
     );
 
