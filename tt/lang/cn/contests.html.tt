@@ -12,6 +12,7 @@
     ct_school => '校规',
     ct_hidden => '隐的',
     ct_original => '原版',
+    ct_offset_start_until => 'individual time',
     participate => '参加',
     participate_virtually => '虚拟参与',
     summary_rank => '总结排名',

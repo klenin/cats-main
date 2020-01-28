@@ -12,6 +12,7 @@
     ct_school => 'school rules',
     ct_hidden => 'hidden',
     ct_original => 'original',
+    ct_offset_start_until => 'individual time',
     participate => 'participate',
     participate_virtually => 'participate virtually',
     summary_rank => 'summary rank',

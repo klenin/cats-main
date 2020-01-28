@@ -12,6 +12,7 @@
     ct_school => 'школьные правила',
     ct_hidden => 'скрытый',
     ct_original => 'оригинал',
+    ct_offset_start_until => 'индивидуальное время',
     participate => 'участвовать',
     participate_virtually => 'участвовать виртуально',
     summary_rank => 'суммарная таблица',
