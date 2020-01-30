@@ -487,7 +487,8 @@ sub contests_frame {
     }
 
     return if $p->{ical} && $p->{json};
-    init_template($p, 'contests.' . ($p->{ical} ? 'ics' : $p->{json} ? 'json' : @{$p->{csv}} ? 'csv': 'html') . '.tt');
+    init_template($p, 'contests.' . ($p->{ical} ? 'ics' : $p->{json} ? 'json' :
+        $user->is_root && @{$p->{csv}} ? 'csv': 'html') . '.tt');
     $p->{listview} = my $lv = CATS::ListView->new(web => $p, name => 'contests', url => url_f('contests'));
 
     CATS::Contest::contest_group_auto_new($p->{contests_selection})

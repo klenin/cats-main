@@ -32,7 +32,7 @@ sub init_template {
     my ($p, $file_name, $extra) = @_;
 
     my ($base_name, $ext) = $file_name =~ /^(\w+)(?:\.(\w+)(:?\.tt))?$/ or die;
-    $ext //= $p->{json} ? 'json' : @{$p->{csv}} ? 'csv': 'html';
+    $ext //= $p->{json} ? 'json' : $user->is_root && @{$p->{csv}} ? 'csv': 'html';
 
     $http_mime_type = {
         html => 'text/html',
@@ -102,7 +102,7 @@ sub generate {
     $p->content_type($http_mime_type, $enc);
     $p->headers(cookie => $cookie, %extra_headers);
 
-    my $decoded_out = $http_mime_type eq 'text/csv' ? _generate_csv($p) : $t->output;
+    my $decoded_out = $user->is_root && $http_mime_type eq 'text/csv' ? _generate_csv($p) : $t->output;
     my $out = $enc eq 'UTF-8' ? $decoded_out : Encode::encode($enc, $decoded_out, Encode::FB_XMLCREF);
     $p->print($out);
     if ($output_file) {
