@@ -40,9 +40,10 @@ sub all_sites_finished {
     my ($contest_id) = @_;
     return 0 if $contest_id == $cid && $contest->{time_since_finish} <= 0;
 
-    my ($main_time_since_finish, $all_sites) = $dbh->selectrow_array(qq~
+    my ($main_time_since_finish, $main_time_since_offset_start_until, $all_sites) = $dbh->selectrow_array(qq~
         SELECT
             CAST(CURRENT_TIMESTAMP - finish_date AS DOUBLE PRECISION),
+            CAST(CURRENT_TIMESTAMP - offset_start_until AS DOUBLE PRECISION),
             CASE WHEN EXISTS (
                 SELECT 1 FROM contest_sites CS
                 WHERE CS.contest_id = C.id AND
@@ -50,7 +51,11 @@ sub all_sites_finished {
             THEN 0 ELSE 1 END
         FROM contests C WHERE C.id = ?~, undef,
         $contest_id);
-   $main_time_since_finish > 0 && $all_sites;
+    my $t = $main_time_since_finish;
+    if (defined($main_time_since_offset_start_until) && $main_time_since_offset_start_until < $t) {
+        $t = $main_time_since_offset_start_until;
+    }
+    $t > 0 && $all_sites;
 }
 
 sub can_start_offset {
