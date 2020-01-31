@@ -32,7 +32,11 @@ sub init_template {
     my ($p, $file_name, $extra) = @_;
 
     my ($base_name, $ext) = $file_name =~ /^(\w+)(?:\.(\w+)(:?\.tt))?$/ or die;
-    $ext //= $p->{json} ? 'json' : $user->is_root && @{$p->{csv}} ? 'csv': 'html';
+    $ext //=
+        $p->{json} ? 'json' :
+        $p->{ical} ? 'ics' :
+        $user->is_root && @{$p->{csv}} ? 'csv':
+        'html';
 
     $http_mime_type = {
         html => 'text/html',
