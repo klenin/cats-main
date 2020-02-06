@@ -398,6 +398,8 @@ sub problem_text {
     }
     $dbh->commit if $need_commit;
 
+    my %de = prepare_de_list;
+    ($de{answer_text_de}) = grep $_->{code} == $CATS::Globals::answer_text_de_code, @{$de{de_list}};
     $t->param(
         title_suffix => (@problems == 1 ? $problems[0]->{title} : res_str(524)),
         problems => \@problems,
@@ -406,7 +408,7 @@ sub problem_text {
         has_snippets => $has_snippets,
         has_quizzes => $has_quizzes,
         has_static_highlight => $has_static_highlight,
-        prepare_de_list,
+        %de,
         href_static_path => $static_path,
         href_submit_problem => $static_path . url_function('api_submit_problem'),
         href_get_sources_info => $static_path . url_function('api_get_sources_info'),
