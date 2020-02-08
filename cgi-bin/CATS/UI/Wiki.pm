@@ -8,7 +8,7 @@ use Encode;
 use CATS::Constants;
 use CATS::DB;
 use CATS::Form;
-use CATS::Globals qw($contest $is_jury $t $uid $user);
+use CATS::Globals qw($contest $is_jury $sid $t $uid $user);
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
 use CATS::Output qw(init_template url_f);
@@ -34,6 +34,7 @@ sub linkify_headers {
 
 sub _prepare_text {
     my ($text) = @_;
+    $text =~ s/(\]\(\?f=(:?.+))\)/$1;sid=$sid)/g if $sid;
     $text = $markdown->($text);
     CATS::TeX::Lite::convert_all($text);
     linkify_headers($text);
