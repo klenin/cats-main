@@ -22,7 +22,7 @@ sub reference_names() {
         ($user->privs->{edit_sites} ? { name => 'sites', new => 514, item => 513 } : ()),
         ($user->is_root ? { name => 'account_tokens', item => 516 } : ()),
         ($is_jury ? { name => 'contest_tags', new_if_root(405), item => 404 } : ()),
-        ($user->is_root ? { name => 'de_tags', new => 403, item => 402 } : ()),
+        ($is_jury ? { name => 'de_tags', new_if_root(403), item => 402 } : ()),
         ($user->is_root ? { name => 'files', new => 401, item => 570 } : ()),
         ($user->is_root ? { name => 'acc_groups', new => 409, item => 410 } : ()),
     )

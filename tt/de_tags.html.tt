@@ -16,8 +16,10 @@ function delete_de_tag(href, name) {
 [% FOREACH dt IN de_tags %]
 <tr class="[% loop.parity() %]">
 <td class="nobr sel_col">
+  [% IF editable -%]
   <a href="javascript:delete_de_tag('[% dt.href_delete %]', '[% dt.name | html %]');" class="icon delete"></a>
   <a href="[% dt.href_edit %]" class="icon edit"></a>
+  [%- END %]
   <input type="checkbox" name="check" value="[% dt.id %]" />
 </td>
 <td>[% dt.name | html %]</td>
