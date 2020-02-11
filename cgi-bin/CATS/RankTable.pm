@@ -18,9 +18,9 @@ use CATS::Testset;
 use CATS::Time;
 
 use fields qw(
-    clist contest_list hide_ooc hide_virtual show_points frozen
+    clist contests contest_list hide_ooc hide_virtual show_points frozen
     title has_practice not_started filter sites use_cache
-    rank problems problems_idx show_all_results show_prizes req_selection has_competitive
+    rank problems problems_idx show_all_results show_prizes has_competitive
     show_regions show_flags show_logins sort p
 );
 
@@ -300,6 +300,7 @@ sub get_contests_info {
     my (@actual_contests, @names);
     $self->{show_all_results} = 1;
     while (my $c = $sth->fetchrow_hashref) {
+        $self->{contests}->{$c->{id}} = $c;
         push @actual_contests, $c->{id};
         $self->{frozen} ||= $c->{since_freeze} >= 0 && $c->{since_defreeze} < 0;
         $self->{not_started} ||= $c->{since_start} < 0 && !$c->{is_jury};
@@ -307,7 +308,6 @@ sub get_contests_info {
         $self->{show_points} ||= $c->{rules};
         $self->{show_all_results} &&= $c->{show_all_results};
         $self->{show_flags} ||= $c->{show_flags};
-        $self->{req_selection}->{$c->{id}} = $c->{req_selection};
         push @names, $c->{title};
     }
     $self->{title} =
@@ -565,7 +565,7 @@ sub _process_single_run {
         } else {
             my $dp = ($r->{points} || 0) - $ap->{points};
             # If req_selection is set to 'best', ignore negative point changes.
-            if ($self->{req_selection}->{$r->{contest_id}} == 0 || $dp > 0) {
+            if ($self->{contests}->{$r->{contest_id}}->{req_selection} == 0 || $dp > 0) {
                 $t->{total_points} += $dp;
                 $ap->{points} = $r->{points};
             }
@@ -591,7 +591,7 @@ sub rank_table {
         show_regions => $self->{show_regions},
         show_flags => $self->{show_flags},
         show_logins => $self->{show_logins},
-        req_selection => same_or_default(values %{$self->{req_selection}}),
+        req_selection => same_or_default(map $_->{req_selection}, values %{$self->{contests}}),
     );
     # Results must not include practice contest.
     !$self->{has_practice} && $self->{contest_list} or return;
