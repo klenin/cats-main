@@ -93,19 +93,17 @@ sub get_problems {
         $cats::problem_st_disabled
     );
 
-    my @contests;
+    my @contest_order;
     my $prev_cid = -1;
     my $need_commit = 0;
     my $max_total_points = 0;
     for (@$problems) {
+        my $c = $self->{contests}->{$_->{contest_id}};
         if ($_->{contest_id} != $prev_cid) {
-            $_->{start_date} =~ /^(\S+)/;
-            push @contests, { start_date => $1, count => 1 };
+            push @contest_order, $c;
             $prev_cid = $_->{contest_id};
         }
-        else {
-            $contests[$#contests]->{count}++;
-        }
+        $c->{count}++;
         # Optimization: do not output tooltip in local_only contests to avoid extra query.
         $_->{title} = '' if ($_->{since_start} < 0 || $_->{local_only}) && !$is_jury;
         $_->{problem_text} = url_f('problem_text', cpid => $_->{id});
@@ -123,7 +121,8 @@ sub get_problems {
     $t->param(
         problems => $problems,
         problem_column_width => min(max(int(60 / max(scalar @$problems, 1)), 2), 7),
-        contests => \@contests,
+        contests => $self->{contests},
+        contest_order => \@contest_order,
         max_total_points => $max_total_points
     );
 
@@ -283,7 +282,7 @@ sub get_contests_info {
     $uid ||= 0;
     $self->{frozen} = $self->{not_started} = $self->{has_practice} = $self->{show_points} = 0;
     my $sth = $dbh->prepare(qq~
-        SELECT C.id, C.title,
+        SELECT C.id, C.title, CAST(C.start_date AS DATE) AS start_date,
           CAST(CURRENT_TIMESTAMP - C.freeze_date AS DOUBLE PRECISION) AS since_freeze,
           CAST(CURRENT_TIMESTAMP - C.defreeze_date AS DOUBLE PRECISION) AS since_defreeze,
           CAST(CURRENT_TIMESTAMP - $CATS::Time::contest_start_offset_sql AS DOUBLE PRECISION) AS since_start,
@@ -308,6 +307,7 @@ sub get_contests_info {
         $self->{show_points} ||= $c->{rules};
         $self->{show_all_results} &&= $c->{show_all_results};
         $self->{show_flags} ||= $c->{show_flags};
+        $c->{href_problems} = url_f_cid('problems', cid => $c->{id});
         push @names, $c->{title};
     }
     $self->{title} =

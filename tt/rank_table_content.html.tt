@@ -35,7 +35,9 @@
 [%- IF contests.size > 1 %]
   <tr class="col_defs">
   <th colspan="2"></th>
-  [% FOREACH c IN contests %]<th colspan="[% c.count %]">[% c.start_date %]</th>[% END %]
+  [% FOREACH c IN contest_order; -%]
+  <th colspan="[% c.count %]"><a href="[% c.href_problems %]" title="[% c.title | html %]">[% c.start_date %]</a></th>
+  [%- END %]
   <th colspan="4"></th>
 [% END -%]
 <tr class="col_defs">
