@@ -284,10 +284,10 @@ sub get_contests_info {
     $self->{frozen} = $self->{not_started} = $self->{has_practice} = $self->{show_points} = 0;
     my $sth = $dbh->prepare(qq~
         SELECT C.id, C.title,
-          CAST(CURRENT_TIMESTAMP - C.freeze_date AS DOUBLE PRECISION),
-          CAST(CURRENT_TIMESTAMP - C.defreeze_date AS DOUBLE PRECISION),
-          CAST(CURRENT_TIMESTAMP - $CATS::Time::contest_start_offset_sql AS DOUBLE PRECISION),
-          CA.is_jury, CA.id,
+          CAST(CURRENT_TIMESTAMP - C.freeze_date AS DOUBLE PRECISION) AS since_freeze,
+          CAST(CURRENT_TIMESTAMP - C.defreeze_date AS DOUBLE PRECISION) AS since_defreeze,
+          CAST(CURRENT_TIMESTAMP - $CATS::Time::contest_start_offset_sql AS DOUBLE PRECISION) AS since_start,
+          CA.is_jury, CA.id AS caid,
           C.is_hidden, C.rules, C.ctype, C.show_all_results, C.show_flags, C.req_selection
         FROM contests C
         LEFT JOIN contest_accounts CA ON CA.contest_id = C.id AND CA.account_id = ?
@@ -299,20 +299,16 @@ sub get_contests_info {
 
     my (@actual_contests, @names);
     $self->{show_all_results} = 1;
-    while (my (
-        $id, $title, $since_freeze, $since_defreeze, $since_start, $is_local_jury, $caid,
-        $is_hidden, $rules, $ctype, $show_all_results, $show_flags, $req_selection) =
-            $sth->fetchrow_array
-    ) {
-        push @actual_contests, $id;
-        $self->{frozen} ||= $since_freeze >= 0 && $since_defreeze < 0;
-        $self->{not_started} ||= $since_start < 0 && !$is_local_jury;
-        $self->{has_practice} ||= ($ctype || 0);
-        $self->{show_points} ||= $rules;
-        $self->{show_all_results} &&= $show_all_results;
-        $self->{show_flags} ||= $show_flags;
-        $self->{req_selection}->{$id} = $req_selection;
-        push @names, $title;
+    while (my $c = $sth->fetchrow_hashref) {
+        push @actual_contests, $c->{id};
+        $self->{frozen} ||= $c->{since_freeze} >= 0 && $c->{since_defreeze} < 0;
+        $self->{not_started} ||= $c->{since_start} < 0 && !$c->{is_jury};
+        $self->{has_practice} ||= ($c->{ctype} || 0);
+        $self->{show_points} ||= $c->{rules};
+        $self->{show_all_results} &&= $c->{show_all_results};
+        $self->{show_flags} ||= $c->{show_flags};
+        $self->{req_selection}->{$c->{id}} = $c->{req_selection};
+        push @names, $c->{title};
     }
     $self->{title} =
          (CATS::Contest::Utils::common_prefix(@names) || 'Contests') .
