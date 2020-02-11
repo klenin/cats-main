@@ -10,6 +10,7 @@
     collapse_idents => 'Игнорировать идентификаторы',
     collapse_nums => 'Игнорировать числа',
     max_lines => 'Макс. строк',
+    min_chars => 'Мин. символов',
     all_contests => 'Все турниры',
     console => 'консоль',
     equivalency_groups => 'Группы эквивалентности',

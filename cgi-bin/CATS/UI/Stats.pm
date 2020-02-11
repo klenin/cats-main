@@ -140,7 +140,10 @@ sub _get_reqs {
         @bind);
 }
 
-sub _is_trivial { length($_[0]) < 20 || $_[0] =~ /\A[0-9a-zA-Z\.]*[\n\r]*\Z/m }
+sub _is_trivial {
+    my ($s, $line) = @_;
+    length($line) < $s->{min_chars} || $line =~ /\A[0-9a-zA-Z\.]*[\n\r]*\Z/m;
+}
 
 our %similarity_route = (
     account_id => integer,
@@ -150,6 +153,7 @@ our %similarity_route = (
     group => bool,
     jury => bool,
     max_lines => integer,
+    min_chars => integer,
     pid => integer,
     self_diff => bool,
     threshold => integer,
@@ -178,6 +182,8 @@ sub similarity_frame {
     }
     $s->{threshold} //= 50;
     $s->{self_diff} //= 0;
+    $s->{max_lines} //= 500;
+    $s->{min_chars} //= 100;
     delete $s->{all_contests} if !$is_root;
 
     my $problems = $dbh->selectall_arrayref(q~
@@ -227,7 +233,7 @@ sub similarity_frame {
         return;
     }
 
-    my $reqs = [ grep !_is_trivial($_->{src}), @{_get_reqs($s, $lv)} ];
+    my $reqs = [ grep !_is_trivial($s, $_->{src}), @{_get_reqs($s, $lv)} ];
     CATS::Similarity::preprocess_source($_, $s) for @$reqs;
 
     my %missing_users;
