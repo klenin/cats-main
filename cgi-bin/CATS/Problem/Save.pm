@@ -37,7 +37,8 @@ sub _unused_problem_code {
 sub _add_problem_to_contest {
     my ($contest_id, $pid, $code) = @_;
     my $target_contest = $contest_id == $cid ? $contest :
-        CATS::Contest->new->load($contest_id, [ 'id', 'ctype', CATS::Contest::time_since_sql('start') ]);
+        CATS::Contest->new->load(
+            $contest_id, [ 'id', 'ctype', CATS::Contest::time_since_sql('start', '_date') ]);
 
     if (!$target_contest->is_practice) {
         $code //= _unused_problem_code($target_contest) or return;
