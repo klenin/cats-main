@@ -175,9 +175,9 @@ sub get_sources_info {
 
     my $req_tree = CATS::JudgeDB::get_req_tree(\@req_ids, {
         fields => [
-            'R.id AS req_id', @src, 'S.fname AS file_name',
+            'R.id AS req_id', @src, 'S.fname AS file_name', 'S.hash AS db_hash',
             qw(
-            S.de_id S.hash R.account_id R.contest_id R.problem_id R.judge_id
+            S.de_id R.account_id R.contest_id R.problem_id R.judge_id
             R.state R.failed_test R.points R.tag
             R.submit_time R.test_time R.result_time
             ),
