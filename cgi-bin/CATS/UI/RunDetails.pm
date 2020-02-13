@@ -355,21 +355,21 @@ sub view_test_details_frame {
 
     my $save_prefix_lengths = $dbh->selectrow_hashref(q~
         SELECT
-            p.save_input_prefix AS input_prefix,
-            p.save_answer_prefix AS answer_prefix,
-            p.save_output_prefix AS output_prefix
+            P.save_input_prefix AS input_prefix,
+            P.save_answer_prefix AS answer_prefix,
+            P.save_output_prefix AS output_prefix
         FROM problems P
         INNER JOIN reqs R ON R.problem_id = P.id
         WHERE R.id = ?~, { Slice => {} },
         $p->{rid});
 
-    my $test_data = get_test_data($p);
+    my $test_data = get_test_data($p) or return;
     $test_data->{"decoded_$_"} = _decode_quietly($p, $test_data->{$_}) for qw(input answer);
 
     my $tdhref = sub { url_f('view_test_details', rid => $p->{rid}, test_rank => $_[0]) };
 
     my @tests = get_req_details($ci, $sources_info, 'test_rank, result', {});
-    grep $_->{test_rank} == $p->{test_rank}, @tests or return;
+    $is_root || grep $_->{test_rank} == $p->{test_rank}, @tests or return;
 
     source_links($p, $sources_info);
     sources_info_param([ $sources_info ]);

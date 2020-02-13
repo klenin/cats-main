@@ -82,7 +82,7 @@ sub get_test_data {
             T.in_file AS input, T.in_file_size AS input_size,
             T.out_file AS answer, T.out_file_size AS answer_size
         FROM tests T
-        INNER JOIN reqs R ON R.problem_id = T.problem_id
+        LEFT JOIN reqs R ON R.problem_id = T.problem_id
         WHERE R.id = ? AND T.rank = ?~, { Slice => {} },
         $p->{rid}, $p->{test_rank});
 }
