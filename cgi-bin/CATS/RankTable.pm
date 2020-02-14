@@ -291,10 +291,10 @@ sub get_contests_info {
         FROM contests C
         LEFT JOIN contest_accounts CA ON CA.contest_id = C.id AND CA.account_id = ?
         LEFT JOIN contest_sites CS ON CS.contest_id = C.id AND CS.site_id = CA.site_id
-        WHERE C.id IN ($self->{contest_list}) AND (C.is_hidden = 0 OR CA.id IS NOT NULL)
+        WHERE C.id IN ($self->{contest_list}) OR C.parent_id = ? AND (C.is_hidden = 0 OR CA.id IS NOT NULL)
         ORDER BY C.id~
     );
-    $sth->execute($uid);
+    $sth->execute($uid, $cid);
 
     my (@actual_contests, @names);
     $self->{show_all_results} = 1;
