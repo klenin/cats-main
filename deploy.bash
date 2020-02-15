@@ -166,7 +166,7 @@ PerlSetEnv CATS_DIR ${CATS_ROOT}/cgi-bin/
 	ExpiresByType image/png "access plus 1 week"
 	ExpiresByType image/x-icon "access plus 1 week"
 
-	Alias /cats/static/css/ "${CATS_ROOT}/static/css/"
+	Alias /cats/static/css/ "${CATS_ROOT}/css/"
 	Alias /cats/static/ "${CATS_ROOT}/static/"
 	<Directory "${CATS_ROOT}/static">
 		# Apache allows only absolute URL-path

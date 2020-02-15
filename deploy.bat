@@ -398,7 +398,7 @@ __END__
 
 ^
 
-	Alias /cats/static/css/ "${CATS_ROOT}/static/css/"^
+	Alias /cats/static/css/ "${CATS_ROOT}/css/"^
 
 	Alias /cats/static/ "%CATS_ROOT%/static/"^
 
