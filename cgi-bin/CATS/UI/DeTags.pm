@@ -92,6 +92,7 @@ sub de_tags_frame {
         { caption => res_str(601), order_by => 'name', width => '30%' },
         { caption => res_str(685), order_by => 'is_used', width => '10%' },
         { caption => res_str(643), order_by => 'ref_count', width => '10%', col => 'Rc' },
+        { caption => res_str(641), order_by => 'de_count', width => '10%', col => 'Dc' },
     ]);
     $lv->define_db_searches([ qw(id name) ]);
     $lv->define_subqueries({
@@ -106,11 +107,14 @@ sub de_tags_frame {
 
     my $ref_count_sql = $lv->visible_cols->{Rc} ? q~
         SELECT COUNT(*) FROM contest_de_tags CDT2 WHERE CDT2.tag_id = DT.id~ : 'NULL';
+    my $de_count_sql = $lv->visible_cols->{Dc} ? q~
+        SELECT COUNT(*) FROM de_de_tags DDT2 WHERE DDT2.tag_id = DT.id~ : 'NULL';
     my $sth = $dbh->prepare(qq~
         SELECT DT.id, DT.name,
             (SELECT 1 FROM contest_de_tags CDT1
                 WHERE CDT1.tag_id = DT.id AND CDT1.contest_id = ?) AS is_used,
-            ($ref_count_sql) AS ref_count
+            ($ref_count_sql) AS ref_count,
+            ($de_count_sql) AS de_count
         FROM de_tags DT WHERE 1 = 1 ~ . $lv->maybe_where_cond . $lv->order_by);
     $sth->execute($cid, $lv->where_params);
 
