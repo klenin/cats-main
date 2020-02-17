@@ -83,7 +83,8 @@ function toggle_search_hints() {
 
 function _add_search(text, comma) {
   var i = document.getElementById('search');
-  if (comma) if (i.value) i.value += ','; // Avoid ampersand.
+  if (comma && i.value && i.value.substring(i.value.length - 1) !== ',')
+    i.value += ',';
   i.value += text;
 }
 
