@@ -9,7 +9,8 @@
   td.problem_radio label { display: block; width: 100%; height: 100%; vertical-align: middle; }
   td.problem_radio label a { vertical-align: middle; }
   span.pcode input { width: 2em; }
-  input[type=color] { width: 1.5em; padding: 0; margin: 0; border: 0; background-color: inherit; }
+  input[type=color] {
+    width: 1.5em; padding: 0; margin: 0; border: 0; background-color: inherit; vertical-align: middle; }
   .yscroll { display: block; overflow-y: scroll; max-height: 7ex; }
   .problem_submit table { border-collapse: collapse; }
   .problem_submit table tr.sep { border-top: 1px dotted #4040ff; padding-top: 10px; }
