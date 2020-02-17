@@ -9,7 +9,8 @@ use CATS::Globals qw($sid);
 use CATS::RouteParser;
 
 sub allowed_pages {{
-    problem_text => { cid => integer, cpid => integer, pid => integer, pl => qr/^[a-z]{2}$/ },
+    problem_text => {
+        cid => integer, cpid => integer, pid => integer, pl => qr/^[a-z]{2}$/, explain => bool },
     rank_table_content => { cid => integer, hide_ooc => bool0, printable => bool0 },
 }}
 
@@ -22,7 +23,7 @@ sub process_static {
     my $url = $ENV{REDIRECT_URL};
     my ($f, $param_str) = $url =~ /^\/\w+\/static\/([a-z_]+)-([a-z_\-0-9]+)\.html/;
     $f && $param_str or die $url;
-    $p->log_info("generating static page $url");
+    #$p->log_info("generating static page $url");
     my $ap = allowed_pages()->{$f} or die "Unknown static: $f";
     my %params;
     $param_str =~ s/([a-z_]+)-([^\-]+)/
