@@ -125,6 +125,10 @@ div.select_cols {
     position: absolute;
     right: 10%;
     z-index: 1;
+    max-height: 60%;
+    overflow: hidden auto;
+    padding-right: 10px;
+    scrollbar-width: thin;
 }
 div.select_cols > div {
 }

@@ -43,6 +43,14 @@
 </td>
 <td>
   [% IF can_change_cols %]
+  <a href="#" class="listview_dropper" onclick="return toggle_csv()">&#x1f5d0;</a>
+  <div id="csv" class="bordered select_cols" style="display: none;">
+    [% FOREACH col IN ${lv_array_name}.0.keys.sort %]
+    <label><input type="checkbox" name="csv" value="[% col %]"> [% col %]</label>
+    [% END %]
+    <hr/>
+    <label><a href="#" onclick="return link_to_csv()">CSV</a></label>
+  </div>
   <a href="#" class="listview_dropper" onclick="return toggle_select_cols()">?</a>
   <div id="select_cols" class="bordered select_cols" style="display: none;">
     [% FOREACH cd IN col_defs; NEXT UNLESS cd.col %]
@@ -61,9 +69,12 @@
 
 <script>
 
+function _hide(el) { el.style.display = 'none'; }
+function _toggle(el) { el.style.display = el.style.display === 'block' ? 'none' : 'block'; }
+
 function toggle_search_hints() {
   var s = document.getElementById('search_hint');
-  s.style.display = s.style.display === 'block' ? 'none' : 'block';
+  _toggle(s);
   var ul = s.getElementsByTagName('ul');
   for (var i = 0; i < ul.length; ++i)
     ul[i].style.display = 'none';
@@ -79,7 +90,7 @@ function _add_search(text, comma) {
 function activate_search_hint(a, comma, type) {
   var ul = a.nextElementSibling;
   if (ul) {
-    ul.style.display = ul.style.display === 'block' ? 'none' : 'block';
+    _toggle(ul);
     if (ul.style.display === 'none')
       return;
   }
@@ -98,8 +109,29 @@ function click_enum(a) {
 }
 
 function toggle_select_cols() {
-  var s = document.getElementById('select_cols');
-  s.style.display = s.style.display === 'block' ? 'none' : 'block';
+  _hide(document.getElementById('csv'));
+  _toggle(document.getElementById('select_cols'));
+}
+
+function toggle_csv() {
+  _hide(document.getElementById('select_cols'));
+  _toggle(document.getElementById('csv'));
+}
+
+function link_to_csv() {
+  var csv = document.getElementById('csv');
+  var fields = csv.getElementsByTagName('input');
+  var p = '';
+  for (var i = 0; i < fields.length; ++i) {
+    if (fields[i].checked) {
+      if (p) p = p + ',';
+      p = p + fields[i].value;
+    }
+  }
+  if (p) {
+    var dl = document.location;
+    document.location = [ dl.protocol, '//', dl.host, dl.pathname, dl.search, ';csv=', p ].join('');
+  }
 }
 
 function clear_search() {
