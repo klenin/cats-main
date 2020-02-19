@@ -12,7 +12,7 @@
   <input type="text" name="search" id="search" value="[% search %]" style="min-width: 100px; width: 70%;" maxlength="100" class="bordered" />
   <a href="#" class="listview_dropper" onclick="clear_search()" title="[% capt.clear_search %]">&#xD7;</a>
   [% IF search_hints ~%]
-  <a href="#" class="listview_dropper" onclick="return toggle_search_hints()">?</a>
+  <a href="#" class="listview_dropper" onclick="return toggle_search_hints()">&#8981;</a>
   [% END -%]
   </span>
   [% IF search_hints -%]
