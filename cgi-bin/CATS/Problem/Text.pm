@@ -399,7 +399,8 @@ sub problem_text {
     $dbh->commit if $need_commit;
 
     my %de = prepare_de_list;
-    ($de{answer_text_de}) = grep $_->{code} == $CATS::Globals::answer_text_de_code, @{$de{de_list}};
+    ($de{answer_text_de}) =
+        grep $_->{code} && $_->{code} == $CATS::Globals::answer_text_de_code, @{$de{de_list}};
     $t->param(
         title_suffix => (@problems == 1 ? $problems[0]->{title} : res_str(524)),
         problems => \@problems,
