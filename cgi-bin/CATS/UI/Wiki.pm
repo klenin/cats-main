@@ -56,7 +56,8 @@ our $page_form = CATS::Form->new(
     before_display => sub {
         my ($fd, $p) = @_;
         my $ts = $fd->{texts} = $fd->{id} ? $dbh->selectall_hashref(q~
-            SELECT id, lang, title FROM wiki_texts WHERE wiki_id = ?~, 'lang', undef,
+            SELECT id, lang, title, last_modified, OCTET_LENGTH(text) AS text_length
+            FROM wiki_texts WHERE wiki_id = ?~, 'lang', undef,
             $fd->{id}) : {};
         for (@cats::langs) {
             my $r = $ts->{$_} //= {};

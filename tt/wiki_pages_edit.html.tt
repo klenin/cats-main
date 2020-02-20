@@ -18,10 +18,10 @@ function delete_wiki_text(href, name) {
 </form>
 [% IF wp.indexed.name.value %]
 <br>
-<table class="bordered">
+<table class="listview bordered">
 [% FOREACH lng IN langs %]
-<tr>
-<td>
+<tr class="[% loop.parity() %]">
+<td class="narrow nobr">
   [%- t = wp.texts.item(lng.name) -%]
   [% IF t.href_delete -%]
     <a href="#" class="icon delete" onclick="delete_wiki_text('[% t.href_delete %]', '[% t.title %] ([% t.lang %])')"></a>
@@ -32,6 +32,8 @@ function delete_wiki_text(href, name) {
 <td>
   [% maybe_href(t.href_view, t.title || '-') %]
 </td>
+<td>[% t.last_modified %]</td>
+<td class="num">[% t.text_length | group_digits %]</td>
 </tr>
 [% END %]
 </table>
