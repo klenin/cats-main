@@ -84,20 +84,24 @@ sub wiki_pages_frame {
         { caption => res_str(672), order_by => 'langs', width => '5%', col => 'Ls' },
         { caption => res_str(645), order_by => 'contest_count', width => '5%', col => 'Ct' },
         { caption => res_str(684), order_by => 'total_size', width => '5%', col => 'Sz' },
+        { caption => res_str(634), order_by => 'last_modified', width => '5%', col => 'Lm' },
     ]);
     $lv->define_db_searches($page_form->{sql_fields});
 
-    my ($q, @bind) = $sql->select('wiki_pages', [
-        'id', @{$page_form->{sql_fields}},
+    my ($q, @bind) = $sql->select('wiki_pages WP', [
+        'WP.id', @{$page_form->{sql_fields}},
         ($lv->visible_cols->{Ls} ? q~(
             SELECT LIST(WT.lang) FROM wiki_texts WT
-            WHERE WT.wiki_id = wiki_pages.id) AS langs~ : ()),
+            WHERE WT.wiki_id = WP.id) AS langs~ : ()),
         ($lv->visible_cols->{Ct} ? q~(
             SELECT COUNT(*) FROM contest_wikis CW
-            WHERE CW.wiki_id = wiki_pages.id) AS contest_count~ : ()),
+            WHERE CW.wiki_id = WP.id) AS contest_count~ : ()),
         ($lv->visible_cols->{Sz} ? q~(
             SELECT SUM(OCTET_LENGTH(WT.text)) FROM wiki_texts WT
-            WHERE WT.wiki_id = wiki_pages.id) AS total_size~ : ()),
+            WHERE WT.wiki_id = WP.id) AS total_size~ : ()),
+        ($lv->visible_cols->{Sz} ? q~(
+            SELECT MAX(WT.last_modified) FROM wiki_texts WT
+            WHERE WT.wiki_id = WP.id) AS last_modified~ : ()),
     ], $lv->where);
     my $sth = $dbh->prepare("$q " . $lv->order_by);
     $sth->execute(@bind);
