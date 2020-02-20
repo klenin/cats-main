@@ -114,6 +114,9 @@ sub wiki_pages_frame {
                 href_text => url_f('wiki', name => $row->{name}),
                 href_contests => url_f('contests', search => "has_wiki($row->{id})"),
                 href_edit => url_f('wiki_pages_edit', id => $row->{id}),
+                href_edit_langs => $row->{langs} && {
+                    map { $_ => url_f('wiki_edit', wiki_id => $row->{id}, wiki_lang => $_) }
+                        split ',', $row->{langs} },
                 href_public => url_function('wiki', name => $row->{name}),
                 href_delete => url_f('wiki_pages', 'delete' => $row->{id})) : ()),
         );
@@ -169,6 +172,13 @@ our $text_form = CATS::Form->new(
                 url_f('wiki_pages_edit', id => $wt->{wiki_id}->{value}),
             submenu => [ CATS::References::menu('wiki_pages') ],
         );
+    },
+    override_get_id => sub {
+        my ($form, $p) = @_;
+        $p->{$form->{id_param}} ||
+        $p->{wiki_id} && $p->{wiki_lang} && $dbh->selectrow_array(q~
+            SELECT id FROM wiki_texts WHERE wiki_id = ? AND lang = ?~, undef,
+            $p->{wiki_id}, $p->{wiki_lang});
     },
 );
 
