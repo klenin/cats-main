@@ -152,7 +152,9 @@ sub new {
     $self->{$_} = $r{$_} for qw(
         after_delete after_load after_make after_save
         before_commit before_delete before_display before_save before_save_db
-        debug msg_deleted msg_saved override_save);
+        debug msg_deleted msg_saved
+        override_get_id override_save
+    );
     $self;
 }
 
@@ -238,7 +240,7 @@ sub edit_frame {
     my %redir = map { $_ => $opts{"redirect_$_"} // $opts{redirect} } qw(cancel save);
     return _redirect($p, $redir{cancel}) if $p->{edit_cancel};
 
-    my $id = $p->{$self->{id_param}};
+    my $id = $self->{override_get_id} ? $self->{override_get_id}->($self, $p) : $p->{$self->{id_param}};
     my $form_data = {
         form => $self,
         readonly => $opts{readonly},
