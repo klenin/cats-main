@@ -65,7 +65,7 @@ sub sql {
 
 package CATS::Console;
 
-use CATS::DB;
+use CATS::DB qw(:DEFAULT $TEXT_TYPE);
 use CATS::Globals qw($is_jury $t $uid $user);
 use CATS::Messages qw(res_str);
 use CATS::Time;
@@ -149,7 +149,7 @@ sub build_query {
             R.points AS clarified,
             NULL AS question,
             NULL AS answer,
-            CAST(R.tag AS BLOB SUB_TYPE TEXT) AS jury_message,
+            CAST(R.tag AS $TEXT_TYPE) AS jury_message,
             A.id AS team_id,
             A.team_name$city_sql AS team_name,
             A.country AS country,
