@@ -124,7 +124,7 @@ sub build_query {
         CAST(NULL AS VARCHAR(200)) AS problem_title
     ~;
     my $no_de = q~
-        CAST(NULL AS VARCHAR(200)) AS de,
+        CAST(NULL AS INTEGER) AS de,
         NULL AS time_used
     ~;
     my $city_sql = $is_jury && $lv->visible_cols->{Cy} ?
