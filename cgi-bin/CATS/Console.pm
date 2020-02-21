@@ -54,11 +54,11 @@ sub contest {
 }
 
 sub sql {
-    my ($self) = @_;
+    my ($self, $subquery_id) = @_;
     my $where = $self->{cond} ? " WHERE $self->{cond}" : '';
     my $q = $is_root && !defined $self->{day_count} ?
         # Prevent server overload by limiting each subquery separately.
-        "SELECT * FROM (SELECT %s%s ORDER BY 2 DESC $KW_LIMIT %d)" :
+        "SELECT * FROM (SELECT %s%s ORDER BY 2 DESC $KW_LIMIT %d) AS x$subquery_id" :
         'SELECT %s%s';
     sprintf($q, $self->{sql}, $where, CATS::Globals::max_fetch_row_count);
 }
@@ -312,7 +312,8 @@ sub build_query {
     }
 
     @selected_parts or return;
-    my $sql = join ' UNION ', map $parts{$_}->sql, @selected_parts;
+    my $subquery_id = 0;
+    my $sql = join ' UNION ', map $parts{$_}->sql($subquery_id++), @selected_parts;
     #warn $sql;
     my $sth = $dbh->prepare("$sql ORDER BY 2 DESC");
     #warn join ',', map @{$console_params{$_}}, @selected_parts;
