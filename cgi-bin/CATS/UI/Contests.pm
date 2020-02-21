@@ -9,7 +9,7 @@ use CATS::Contest::Participate qw(get_registered_contestant is_jury_in_contest);
 use CATS::Contest;
 use CATS::Contest::Utils;
 use CATS::Contest::XmlSerializer;
-use CATS::DB qw(:DEFAULT $KW_LIMIT);
+use CATS::DB qw(:DEFAULT $FROM_DUMMY $KW_LIMIT);
 use CATS::Globals qw($cid $contest $is_jury $is_root $t $uid $user);
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
@@ -28,8 +28,8 @@ sub contests_new_frame {
     $user->privs->{create_contests} or return;
     init_template($p, 'contests_new.html.tt');
 
-    my $date = $dbh->selectrow_array(q~
-        SELECT CURRENT_TIMESTAMP FROM RDB$DATABASE~);
+    my $date = $dbh->selectrow_array(qq~
+        SELECT CURRENT_TIMESTAMP $FROM_DUMMY~);
     $date =~ s/\s*$//;
     my $verdicts = [ map +{ short => $_->[0], checked => 0 }, @$CATS::Verdicts::name_to_state_sorted ];
     $t->param(
@@ -117,7 +117,7 @@ sub _validate {
                 $check_pub_reqs_date
                 $check_offset_start_until
                 CASE WHEN $d BETWEEN $d AND $d THEN 1 ELSE 0 END
-            FROM RDB\$DATABASE~, undef,
+            $FROM_DUMMY~, undef,
             @$c{
                 qw(start_date finish_date),
                 qw(freeze_date defreeze_date),
