@@ -118,6 +118,7 @@ sub validate_params {
     validate_integer($self->{affiliation_year}, 808, allow_empty => 1, min => 1900, max => 2100) or return;
     validate_fixed_point($self->{tz_offset}, 686, allow_empty => 1) or return;
     $self->{affiliation_year} or $self->{affiliation_year} = undef;
+    $self->{tz_offset} or $self->{tz_offset} = undef;
 
     if ($p{validate_password}) {
         validate_string_length($self->{password1}, 806, 1, 72) or return;
