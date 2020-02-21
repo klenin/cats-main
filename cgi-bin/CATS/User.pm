@@ -10,7 +10,7 @@ use CATS::Config;
 use CATS::Constants;
 use CATS::Contest::Participate qw(get_registered_contestant is_jury_in_contest);
 use CATS::Countries;
-use CATS::DB;
+use CATS::DB qw(:DEFAULT next_sequence_value);
 use CATS::Form qw(validate_fixed_point validate_integer validate_string_length);
 use CATS::Globals qw($cid $is_jury $is_root $t $uid $user);
 use CATS::Messages qw(msg res_str);
@@ -92,18 +92,7 @@ sub add_to_contest {
 }
 
 sub generate_login {
-    my $login_num;
-
-    if ($CATS::Config::db_dsn =~ /Firebird/) {
-        $login_num = $dbh->selectrow_array(q~
-            SELECT GEN_ID(login_seq, 1) FROM RDB$DATABASE~);
-    }
-    elsif ($cats_db::db_dsn =~ /Oracle/) {
-        $login_num = $dbh->selectrow_array(q~
-            SELECT login_seq.nextval FROM DUAL~);
-    }
-    $login_num or die;
-
+    my $login_num = next_sequence_value('login_seq');
     return "team$login_num";
 }
 
