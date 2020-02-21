@@ -185,7 +185,7 @@ sub snippets_frame {
         SELECT J.finish_time FROM jobs J
         WHERE J.contest_id = S.contest_id AND J.problem_id = S.problem_id AND
             J.account_id = S.account_id
-        ORDER BY J.finish_time DESC ROWS 1~ : 'NULL';
+        ORDER BY J.finish_time DESC $CATS::DB::KW_LIMIT 1~ : 'NULL';
 
     my $sth = $dbh->prepare(qq~
         SELECT

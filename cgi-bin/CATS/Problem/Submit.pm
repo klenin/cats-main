@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use CATS::Constants;
-use CATS::DB;
+use CATS::DB qw(:DEFAULT $KW_LIMIT);
 use CATS::DevEnv;
 use CATS::Globals qw($cid $contest $is_jury $t $uid $user);
 use CATS::IP;
@@ -29,11 +29,11 @@ sub _get_submit_uid {
 sub too_frequent {
     my ($submit_uid) = @_;
     # Protect from Denial of Service -- disable too frequent submissions.
-    my $prev = $dbh->selectcol_arrayref(q~
+    my $prev = $dbh->selectcol_arrayref(qq~
         SELECT CAST(CURRENT_TIMESTAMP - R.submit_time AS DOUBLE PRECISION) FROM reqs R
         WHERE R.account_id = ?
         ORDER BY R.submit_time DESC
-        ROWS 2~, {},
+        $KW_LIMIT 2~, {},
         $submit_uid);
     my $SECONDS_PER_DAY = 24 * 60 * 60;
     ($prev->[0] || 1) < 3/$SECONDS_PER_DAY ||
@@ -43,9 +43,9 @@ sub too_frequent {
 sub user_is_banned {
     my ($problem_id) = @_;
     $uid or return;
-    scalar $dbh->selectrow_array(q~
+    scalar $dbh->selectrow_array(qq~
         SELECT 1 FROM reqs
-        WHERE account_id = ? AND contest_id = ? AND problem_id = ? AND state = ? ROWS 1~, undef,
+        WHERE account_id = ? AND contest_id = ? AND problem_id = ? AND state = ? $KW_LIMIT 1~, undef,
         $uid, $cid, $problem_id, $cats::st_banned);
 }
 
@@ -57,8 +57,8 @@ sub _determine_state {
 
 sub _get_DEs {
     my ($contest_id, $de_id) = @_;
-    my ($has_de_tags) = $dbh->selectrow_array(q~
-        SELECT 1 FROM contest_de_tags CDT WHERE CDT.contest_id = ? ROWS 1~, undef,
+    my ($has_de_tags) = $dbh->selectrow_array(qq~
+        SELECT 1 FROM contest_de_tags CDT WHERE CDT.contest_id = ? $KW_LIMIT 1~, undef,
         $contest_id);
     my $tag_sql = $has_de_tags ? q~
         SELECT 1 FROM de_de_tags DDT
@@ -228,13 +228,13 @@ sub problems_submit {
     $did or return (undef, $result);
     # Forbid repeated submissions of the identical code with the same DE.
     my $source_hash = CATS::Utils::source_hash($source_text);
-    my ($same_source, $prev_submit_time) = $dbh->selectrow_array(q~
+    my ($same_source, $prev_submit_time) = $dbh->selectrow_array(qq~
         SELECT S.req_id, R.submit_time
         FROM sources S INNER JOIN reqs R ON S.req_id = R.id
         WHERE
             R.account_id = ? AND R.problem_id = ? AND
             R.contest_id = ? AND S.hash = ? AND S.de_id = ?
-        ROWS 1~, undef,
+        $KW_LIMIT 1~, undef,
         $submit_uid, $pid, $cid, $source_hash, $did);
     $same_source and return msg(1132, $prev_submit_time);
 

@@ -3,7 +3,7 @@ use warnings;
 
 package CATS::Console::Part;
 
-use CATS::DB;
+use CATS::DB qw(:DEFAULT $KW_LIMIT);
 use CATS::Globals qw($cid $is_root);
 
 sub new {
@@ -58,7 +58,7 @@ sub sql {
     my $where = $self->{cond} ? " WHERE $self->{cond}" : '';
     my $q = $is_root && !defined $self->{day_count} ?
         # Prevent server overload by limiting each subquery separately.
-        'SELECT * FROM (SELECT %s%s ORDER BY 2 DESC ROWS %d)' :
+        "SELECT * FROM (SELECT %s%s ORDER BY 2 DESC $KW_LIMIT %d)" :
         'SELECT %s%s';
     sprintf($q, $self->{sql}, $where, CATS::Globals::max_fetch_row_count);
 }

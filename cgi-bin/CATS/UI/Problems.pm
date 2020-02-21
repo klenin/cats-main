@@ -271,7 +271,7 @@ sub problems_frame {
         ($reqs_count_sql $cats::st_awaiting_verification$account_condition) AS awaiting_verification_count,
         (SELECT R.id || ' ' || R.state FROM reqs R
             WHERE R.problem_id = P.id AND R.account_id = ? AND R.contest_id = ?
-            ORDER BY R.submit_time DESC ROWS 1) AS last_submission~
+            ORDER BY R.submit_time DESC $CATS::DB::KW_LIMIT 1) AS last_submission~
     : q~
         NULL AS accepted_count,
         NULL AS wrong_answer_count,

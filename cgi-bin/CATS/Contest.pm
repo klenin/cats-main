@@ -70,11 +70,11 @@ sub has_finished_for {
 
 sub current_official {
     # If several official contests are in progress, prefer current contest.
-    $dbh->selectrow_hashref(q~
+    $dbh->selectrow_hashref(qq~
         SELECT id, title FROM contests
             WHERE CURRENT_TIMESTAMP BETWEEN start_date AND finish_date AND is_official = 1
             ORDER BY CASE WHEN id = ? THEN 0 ELSE 1 END
-            ROWS 1~, undef,
+            $CATS::DB::KW_LIMIT 1~, undef,
          $cid);
 }
 

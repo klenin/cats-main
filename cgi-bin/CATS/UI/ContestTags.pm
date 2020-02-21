@@ -87,10 +87,10 @@ sub contest_tags_frame {
 
 sub find_contest_tags_api {
     my ($p) = @_;
-    my $r = $dbh->selectall_arrayref(q~
+    my $r = $dbh->selectall_arrayref(qq~
         SELECT CT.id, CT.name FROM contest_tags CT
         WHERE CT.name STARTS WITH ?
-        ORDER BY CT.name ROWS 100~, { Slice => {} },
+        ORDER BY CT.name $CATS::DB::KW_LIMIT 100~, { Slice => {} },
         $p->{query});
     $p->print_json({ suggestions =>
         [ map { value => $_->{name}, data => $_ }, @$r ]
