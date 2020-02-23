@@ -452,7 +452,7 @@ sub get_sources_info_api {
         SELECT id FROM reqs
         WHERE problem_id = ? AND account_id = ? AND contest_id = ?
         ORDER BY submit_time DESC~, { Slice => {} },
-        $p->{problem_id}, $uid, $cid);
+        $p->{problem_id}, $is_jury && $p->{uid} ? $p->{uid} : $uid, $cid);
     $rid or return;
     my $sources_info = get_sources_info($p, request_id => $rid, get_source => 1, encode_source => 1);
     $p->print_json(CATS::ReqDetails::prepare_sources($p, $sources_info));

@@ -492,6 +492,7 @@ function get_sources_info_api() {
   var editor = ace.edit(get_editor(form).attr('data-id'));
   if (!ace || !editor) return;
   var request_url = '[% href_get_sources_info %]' + ';sid=' + sid;
+  if (uid) request_url += ';uid=' + uid;
   $.ajax({
     url: request_url,
     data: { problem_id: form.find('input[name=problem_id]').val() },
