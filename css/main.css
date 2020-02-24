@@ -28,12 +28,10 @@ table.header td.contest_title {
     background-image1: url(../images/logo.gif);
     background-repeat: no-repeat;
     background-position: left center;
-    font-size: x-large;
+    font-size: large;
     height: 72px;
-    padding-left1: 104px;
-    vertical-align: bottom;
 }
-table.header td.contest_title span { font-size: large; }
+table.header td.contest_title span { font-size: normal; }
 table.header td.elapsed {
     font-size: small;
     padding-right: 4px;
