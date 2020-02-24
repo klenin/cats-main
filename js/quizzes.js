@@ -60,7 +60,7 @@ function init_quizzes(answer_text_env_id) {
 
 function fill_quiz_forms(editor, problem_text) {
   var survey_models = problem_text.data('survey_models');
-  var answers = editor.getValue().split('\n');
+  var answers = editor.getValue().split(/\r?\n/);
   for (var i = 0; i < survey_models.length; ++i) {
     var sm = survey_models[i];
     sm.onValueChanged.remove(sm.changed_callback);
