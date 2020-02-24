@@ -8,7 +8,7 @@ use Digest::SHA;
 use CATS::Constants;
 use CATS::Contest;
 use CATS::Contest::Participate qw(is_jury_in_contest);
-use CATS::DB;
+use CATS::DB qw(:DEFAULT $KW_LIMIT);
 use CATS::Globals qw($contest $is_jury $is_root $t $uid);
 use CATS::Messages qw(res_str);
 use CATS::Output qw(url_f url_f_cid);
@@ -117,7 +117,7 @@ sub _get_nearby_attempt {
     my $na = $dbh->selectrow_hashref(qq~
         SELECT id, submit_time FROM reqs
         WHERE account_id = ? AND problem_id = ? AND id $cmp ?
-        ORDER BY id $ord ROWS 1~, { Slice => {} },
+        ORDER BY id $ord $KW_LIMIT 1~, { Slice => {} },
         $si->{account_id}, $si->{problem_id}, $si->{req_id}
     ) or return;
     for ($na->{submit_time}) {
@@ -232,7 +232,7 @@ sub get_sources_info {
             SELECT 1 FROM reqs R
             WHERE
                 R.contest_id = ? AND R.problem_id = ? AND R.account_id = ? AND
-                R.state = $cats::st_accepted$max_points_cond ROWS 1~, undef,
+                R.state = $cats::st_accepted$max_points_cond $KW_LIMIT 1~, undef,
             $r->{contest_id}, $r->{problem_id}, $uid)
     };
 

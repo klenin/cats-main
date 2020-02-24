@@ -10,7 +10,7 @@ use CATS::Config;
 use CATS::Constants;
 use CATS::Contest::Participate qw(get_registered_contestant is_jury_in_contest);
 use CATS::Countries;
-use CATS::DB;
+use CATS::DB qw(:DEFAULT next_sequence_value);
 use CATS::Form qw(validate_fixed_point validate_integer validate_string_length);
 use CATS::Globals qw($cid $is_jury $is_root $t $uid $user);
 use CATS::Messages qw(msg res_str);
@@ -92,18 +92,7 @@ sub add_to_contest {
 }
 
 sub generate_login {
-    my $login_num;
-
-    if ($CATS::Config::db_dsn =~ /Firebird/) {
-        $login_num = $dbh->selectrow_array(q~
-            SELECT GEN_ID(login_seq, 1) FROM RDB$DATABASE~);
-    }
-    elsif ($cats_db::db_dsn =~ /Oracle/) {
-        $login_num = $dbh->selectrow_array(q~
-            SELECT login_seq.nextval FROM DUAL~);
-    }
-    $login_num or die;
-
+    my $login_num = next_sequence_value('login_seq');
     return "team$login_num";
 }
 
@@ -129,6 +118,7 @@ sub validate_params {
     validate_integer($self->{affiliation_year}, 808, allow_empty => 1, min => 1900, max => 2100) or return;
     validate_fixed_point($self->{tz_offset}, 686, allow_empty => 1) or return;
     $self->{affiliation_year} or $self->{affiliation_year} = undef;
+    $self->{tz_offset} or $self->{tz_offset} = undef;
 
     if ($p{validate_password}) {
         validate_string_length($self->{password1}, 806, 1, 72) or return;

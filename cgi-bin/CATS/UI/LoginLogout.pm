@@ -33,7 +33,7 @@ sub _ensure_good_sid {
     my ($current_ip, $aid) = @_;
     for (1..20) {
         $dbh->do(q~
-            UPDATE accounts A SET A.sid = ?, A.last_login = CURRENT_TIMESTAMP, A.last_ip = ?
+            UPDATE accounts A SET sid = ?, last_login = CURRENT_TIMESTAMP, last_ip = ?
             WHERE A.id = ? AND
                 NOT EXISTS (SELECT 1 FROM accounts A1 WHERE A1.sid = ? AND A1.id <> ?)~, undef,
             $sid, $current_ip, $aid, $sid, $aid
