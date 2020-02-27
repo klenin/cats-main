@@ -167,7 +167,7 @@ sub similarity_frame {
     my $lv = CATS::ListView->new(web => $p, name => 'similarity', url => url_f('similarity'));
     $is_jury && !$contest->is_practice or return;
 
-    $lv->define_db_searches([ qw(code points src state tag) ]);
+    $lv->define_db_searches([ qw(code is_ooc points src state tag) ]);
     $lv->define_db_searches({
         src_length => 'OCTET_LENGTH(S.src)',
         since_submit_days => 'CAST(CURRENT_TIMESTAMP - submit_time AS DOUBLE PRECISION)',
