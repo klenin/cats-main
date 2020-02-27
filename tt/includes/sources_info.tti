@@ -68,7 +68,7 @@ $(document).ready(update_request_status);
   [% FOREACH si IN sources_info; IF si %]
     [%- IF si.debug_dump %]<!-- [% si.debug_dump %] -->[% END %]
     <td colspan="[% si.colspan %]">
-      [% IF si.is_jury %]<a href="#" title="[% si.db_hash %]">[% si.req_id %]</a>[% ELSE; si.req_id; END %]
+      [% IF si.is_jury %]<a href="#" title="[% si.db_hash %]">[% si.req_id %]</a>[% " [$si.ca_tag]" IF si.ca_tag; ELSE; si.req_id; END %]
       [% IF si.original_req_id %]
       (<a href = "[% si.href_original_req_run_details %]">[% si.original_req_id %]</a>)
       [% END %]
