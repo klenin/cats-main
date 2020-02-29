@@ -9,6 +9,9 @@ function init_quizzes(answer_text_env_id) {
     var editor_changed_callback = fill_quiz_forms.bind(null, editor, problem_text);
     problem_text.find('Quiz').each(function() {
       var quiz = $(this);
+      quiz.find('Text').each(function() {
+        $(this).replaceWith($('<p></p>', {html: $(this).html()}));
+      });
       var form = $('<form/>');
       quiz.addClass('active').append(form);
       form.attr('onsubmit', 'return false;');
