@@ -391,7 +391,8 @@ sub source_links {
     }
     $si->{href_problem_text} = url_f_cid('problem_text',
         cpid => $si->{cp_id}, cid => $si->{contest_id},
-        ($si->{is_jury} ? (uid => $problem_text_uid) : ()));
+        ($si->{is_jury} ? (uid => $problem_text_uid) : ()),
+        ($si->{is_jury} ? (rid => $p->{rid}) : ()));
     for (qw/run_details view_source run_log download_source view_test_details request_params/) {
         $si->{"href_$_"} = url_f($_, rid => $si->{req_id});
         $si->{"href_class_$_"} = $_ eq $current_link ? 'current_link' : '';

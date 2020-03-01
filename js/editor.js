@@ -7,7 +7,7 @@ function get_editor(context) { return context.find('textarea[data-id]'); }
 // Container is inserted before the original textarea. See init_editors().
 function get_editor_container(context) { return get_editor(context).prev(); }
 
-function init_editors() {
+function init_editors(callback) {
   if (!ace) return;
   // Ace is broken on mobile browsers.
   if (/Mobi|Android/i.test(navigator.userAgent)) return;
@@ -181,6 +181,7 @@ function init_editors() {
       },
     }
   }
+  if (callback !== 'undefined') callback();
 }
 
 function add_error(errors, line, error_regexp) {
