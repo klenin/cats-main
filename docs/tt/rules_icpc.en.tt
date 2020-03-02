@@ -1,4 +1,4 @@
-[% PROCESS header.tti title = 'ACM competition rules' lang = 'en' %]
+[% PROCESS header.tti title = 'ICPC competition rules' lang = 'en' %]
 <h2>Submission evaluation</h2>
 <p>
 Submissions are automatically evaluated immediately aftes sending.
