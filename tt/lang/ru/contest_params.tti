@@ -12,7 +12,7 @@
     req_selection => 'Учитывать баллы за попытку',
     req_selection_last => 'последнюю',
     req_selection_best => 'лучшую',
-    ACM => 'ACM',
+    icpc => 'icpc',
     school => 'школьные',
     flags => 'Флажки',
     open_registration => 'Свободная регистрация',

@@ -12,7 +12,7 @@
     req_selection => 'Assign points for request',
     req_selection_last => 'last',
     req_selection_best => 'best',
-    ACM => 'ACM',
+    icpc => 'icpc',
     school => 'school',
     flags => 'Flags',
     open_registration => 'Open registration',

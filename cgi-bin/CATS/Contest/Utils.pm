@@ -82,7 +82,7 @@ sub _contest_searches {
         duration_hours => 'CAST((finish_date - start_date) * 24 AS DECIMAL(15,1))',
     });
     $p->{listview}->define_enums({
-        rules => { acm => 0, school => 1 },
+        rules => { icpc => 0, school => 1 },
         parent_id => { this => $cid },
     });
     my $cp_hidden = $is_root ? '' : " AND CP1.status < $cats::problem_st_hidden";

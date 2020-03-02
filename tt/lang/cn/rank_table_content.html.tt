@@ -9,7 +9,7 @@
     school => 'school',
     req_selection_last => 'last',
     req_selection_best => 'best',
-    acm => 'ACM',
+    icpc => 'icpc',
     status => 'status',
     frozen => 'frozen',
     actual => 'actual',

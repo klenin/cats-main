@@ -36,7 +36,7 @@ my %tag_to_key = (Problem => '', reverse(( %key_to_tag, %problem_key_to_tag )));
 
 my %enums = (
     ctype => [ qw(normal training) ],
-    rules => [ qw(ACM school) ],
+    rules => [ qw(icpc school) ],
     req_selection => [ qw(last best) ],
     status => [ qw(manual ready compile suspended disabled hidden) ],
 );

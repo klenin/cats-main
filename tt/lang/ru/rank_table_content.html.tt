@@ -7,7 +7,7 @@
     show_virtual => 'показать виртуальные',
     rules => 'правила',
     school => 'школьные',
-    acm => 'ACM',
+    icpc => 'icpc',
     req_selection_last => 'посл.',
     req_selection_best => 'лучш.',
     status => 'состояние',

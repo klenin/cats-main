@@ -21,9 +21,9 @@
   [% date_row('offset_start_until', offset_start_until) %]
   <tr><td>[% capt.rules %]:</td><td>[% IF can_edit %]
     <select name="rules" class="bordered">
-      <option value="0"[% UNLESS rules %] selected="selected"[% END %]>[% capt.ACM %]</option>
+      <option value="0"[% UNLESS rules %] selected="selected"[% END %]>[% capt.icpc %]</option>
       <option value="1"[% IF rules %] selected="selected"[% END %]>[% capt.school %]</option>
-    </select>[% ELSE %][% IF rules; capt.school; ELSE; capt.ACM; END %]
+    </select>[% ELSE %][% IF rules; capt.school; ELSE; capt.icpc; END %]
     [% END %]
   </td></tr>
   <tr><td>[% capt.req_selection %]:</td><td>[% IF can_edit %]
