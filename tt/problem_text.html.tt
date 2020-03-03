@@ -237,6 +237,7 @@ var query_params = (function() {
 var sid = query_params.sid;
 var uid = query_params.uid;
 var has_submit = !query_params.nosubmit;
+var rid = query_params.rid;
 
 if (sid) {
   $('.problem_list_link').each(function() { this.href += ';sid=' + sid; });
@@ -368,11 +369,13 @@ if (sid)
         }
       }
       if (result.can_submit && has_submit)
-        gen_forms(result);
+        gen_forms(result, function() {
+          if (rid) get_sources_info_api(rid);
+        });
     });
   });
 
-function gen_forms(problems) {
+function gen_forms(problems, callback) {
   var gen_form = function(select_id, editor_id, problem_id, cpid) {
     if (!problems[cpid].allowed) return;
     var container = $('#p' + cpid).find('.submit');
@@ -413,7 +416,7 @@ function gen_forms(problems) {
   }
   [% FOREACH p IN problems %] gen_form('de[% p.id %]', 'ed_pt[% p.cpid %]', '[% p.id %]', '[% p.cpid %]'); [% END %]
   $('.submit_form').toggleClass('hidden');
-  init_editors();
+  init_editors(callback);
   [% IF has_quizzes %] init_quizzes('[% answer_text_de.de_id %]');  [% END %]
 }
 
@@ -486,17 +489,22 @@ function fill_messages(response, form) {
   }
 }
 
-function get_sources_info_api() {
+function get_sources_info_api(rid_param) {
   if (!sid) return;
   var form = $(this).parent();
   var editor = ace.edit(get_editor(form).attr('data-id'));
   if (!ace || !editor) return;
   var request_url = '[% href_get_sources_info %]' + ';sid=' + sid;
   if (uid) request_url += ';uid=' + uid;
+  if (rid_param) request_url += ';rid=' + rid_param;
   $.ajax({
     url: request_url,
     data: { problem_id: form.find('input[name=problem_id]').val() },
     success: function(response) {
+      if (rid_param && response.cp_id) {
+        form = $('#p' + response.cp_id);
+        editor = ace.edit(get_editor(form).attr('data-id'));
+      }
       if (response.src) {
         editor.session.doc.setValue(response.src);
         editor.focus();
