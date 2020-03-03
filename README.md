@@ -13,21 +13,19 @@ To install CATS you need to have `git` and `sudo` installed:
 
 `# apt-get install git sudo`
 
-Make sure current user is in sudoers (sudo group).
+Make sure current user is in `sudoers` (sudo group).
 
 Clone this repo:
 
 `$ git clone git://github.com/klenin/cats-main.git`
 
 Look at `deploy.bash`, adjust `http_proxy` (and set `env_keep` in `/etc/sudoers`,
-see comments in `deploy.bash`) and Apache user group. Then execute that script:
+see comments in `deploy.bash`) and Apache user group. Then execute the script:
 
 `$ ./deploy.bash`
 
-If everything is ok, copy `Config.pm.template` to `Config.pm` in
-`cgi-bin/CATS/` and adjust database connection settings to your.
-
 Restart Apache. You should now have working CATS installation.
+Visit `http://localhost/cats/` to check.
 
 ## Installation on Windows
 

@@ -41,8 +41,6 @@ CATS_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )" # assume, that scr
 # Group, apache running under
 http_group=www-data
 
-
-
 FB_DEV_VERSION=`sudo apt-cache pkgnames | grep firebird-dev`
 FB_DEV_VERSION=`sudo apt-cache show firebird-dev | grep Version`
 [[ $FB_DEV_VERSION =~ ([0-9]+\.[0-9]+) ]]
