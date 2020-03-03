@@ -3,7 +3,7 @@
  * Microsoft Visual C++ compiler
 
 # Apache 2.2
- * https://www.apachelounge.com/download/win32/binaries/httpd-2.2.29-win32-VC9.zip
+ * http://archive.apache.org/dist/httpd/binaries/win32/httpd-2.2.22-win32-x86-openssl-0.9.8t.msi
 
 ${APACHE_PATH} -- default is `C:\Apache2`
 
