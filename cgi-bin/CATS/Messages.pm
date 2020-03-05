@@ -38,8 +38,8 @@ sub init {
 }
 
 sub res_str_lang_raw {
-    my ($lang, $id, @params) = @_;
-    my $s = $resource_strings->{$lang}->[$id] or die "Unknown res_str id: $id";
+    my ($lang, $id) = @_;
+    $resource_strings->{$lang}->[$id] or die "Unknown res_str id: $id";
 }
 
 sub res_str_lang {

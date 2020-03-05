@@ -97,14 +97,23 @@ sub init_params {
     }
 }
 
+sub _subquery_msg_raw {
+    my ($sq) = @_;
+    $sq->{m} or return;
+    my $r = CATS::Messages::res_str_lang_raw(CATS::Settings::lang, $sq->{m});
+    $r =~ s/%[a-z]/?/g;
+    $r;
+}
+
 sub search_hints {
     my ($self, $row_keys) = @_;
     $is_jury or return;
     $row_keys ||= [];
+    my $sqs = $self->qb->{subqueries};
     my @s = (
         map([ $_, 0 ], sort keys %{$self->qb->{db_searches}}),
         map([ $_, 1 ], grep !$self->qb->{db_searches}->{$_}, @$row_keys),
-        map([ $_, 2 ], sort keys %{$self->qb->{subqueries}}),
+        map([ $_, 2, _subquery_msg_raw($sqs->{$_}) ], sort keys %$sqs),
     );
     my $col_count = 4;
     my $row_count = int((@s + $col_count - 1) / $col_count);
