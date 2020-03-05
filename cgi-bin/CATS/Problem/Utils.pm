@@ -114,6 +114,8 @@ sub define_common_searches {
             (SELECT COUNT(*) FROM tests T WHERE T.problem_id = P.id)~,
         attachment_count => q~
             (SELECT COUNT(*) FROM problem_attachments PA WHERE PA.problem_id = P.id)~,
+        contest_count => q~
+            (SELECT COUNT(*) FROM contest_problems CP2 WHERE CP2.problem_id = P.id)~,
         map {
             join('_', split /\W+/, $cats::source_module_names{$_}) => qq~
             (SELECT COUNT (*) FROM problem_sources PS
@@ -179,6 +181,15 @@ sub define_kw_subquery {
                 WHERE CT.name = ?))~,
             m => 1048,
             t => q~SELECT name FROM contest_tags CT WHERE name = ?~,
+        },
+        last_used_before => {
+            sq => q~(CAST(? AS DATE) > ALL (
+                SELECT C2.start_date FROM contests C2
+                INNER JOIN contest_problems CP2
+                    ON CP2.contest_id = C2.id
+                WHERE CP2.problem_id = P.id))~,
+            m => 1224,
+            t => undef,
         },
     });
 }
