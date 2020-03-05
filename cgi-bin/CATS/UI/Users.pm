@@ -45,7 +45,7 @@ my %user_fields = (password => 'password1', map { $_ => $_ } CATS::User::param_n
 sub users_import_frame {
     my ($p) = @_;
     init_template($p, 'users_import.html.tt');
-    $is_root or return;
+    $is_jury or return;
     my $contact_types = $dbh->selectall_hashref(q~
         SELECT id, name FROM contact_types~, 'name');
     $t->param(
