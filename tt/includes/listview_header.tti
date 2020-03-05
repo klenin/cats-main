@@ -26,9 +26,10 @@
     [% FOREACH row IN search_hints %]
       <tr>
       [% FOREACH col IN row %]
-        [% UNLESS col; '<td></td>'; NEXT; END %]
-        <td class="sh[% col.1 %]"><a href="#" onclick="activate_search_hint(this, 1, [% col.1 %]);">[% col.0 | html %]</a>
-          [% enum = search_enums.item(col.0); IF enum.keys.size %]
+        [%- UNLESS col; '<td></td>'; NEXT; END -%]
+        [%- enum = search_enums.item(col.0) -%]
+        <td class="sh[% col.1;' drop' IF enum.keys.size %]"><a href="#" onclick="activate_search_hint(this, 1, [% col.1 %]);">[% col.0 | html %]</a>
+          [% IF enum.keys.size %]
           <ul>[% FOREACH e IN enum %]<li><a href="#" onclick="click_enum(this)">[% e.key | html %]</a></li>[% END %]</ul>
           [% END %]
         </td>

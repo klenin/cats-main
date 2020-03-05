@@ -59,7 +59,7 @@ table.header td.elapsed p a:hover { background-color: #ffcc55; }
     font-family: Arial, sans-serif;
     font-size: 13px;
     color: white;
-} 
+}
 
 .messages { font-style: italic; }
 
@@ -116,6 +116,7 @@ div.search_hint table td ul li {
     margin:  2px;
 }
 div.search_hint table td ul li:hover { background-color: #ffcc55; }
+div.search_hint table td.drop > a::after { content: " \25BE" }
 
 div.select_cols {
     background: #fffd9d;
