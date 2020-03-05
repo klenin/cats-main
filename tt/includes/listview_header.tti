@@ -103,10 +103,14 @@ function add_search(field, value) { _add_search(field + '=' + value, true); }
 
 function click_enum(a) {
   var i = document.getElementById('search');
-  [%# Do not add a comparison twice. %]
-  if (i.value && '<>='.indexOf(i.value.charAt(i.value.length - 1)) < 0)
-    i.value += '==';
-  i.value += a.text;
+  if (i.value && i.value.substring (i.value.length - 2) === '()')
+    i.value = i.value.substring(0, i.value.length - 1) + a.text + ')';
+  else {
+    [%# Do not add a comparison twice. %]
+    if (i.value && '<>='.indexOf(i.value.charAt(i.value.length - 1)) < 0)
+      i.value += '==';
+    i.value += a.text;
+  }
   toggle_search_hints();
 }
 
