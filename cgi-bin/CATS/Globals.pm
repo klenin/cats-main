@@ -24,7 +24,7 @@ sub max_fetch_row_count() { 1000 }
 
 our $default_de_tag = 7;
 
-our $answer_text_de_code = 3;
+our $quiz_de_code = 6;
 
 our $contact_phone = 901;
 our $contact_email = 902;
