@@ -417,7 +417,7 @@ function gen_forms(problems, callback) {
   [% FOREACH p IN problems %] gen_form('de[% p.id %]', 'ed_pt[% p.cpid %]', '[% p.id %]', '[% p.cpid %]'); [% END %]
   $('.submit_form').toggleClass('hidden');
   init_editors(callback);
-  [% IF has_quizzes %] init_quizzes('[% answer_text_de.de_id %]');  [% END %]
+  [% IF has_quizzes %] init_quizzes('[% quiz_de.de_id %]');  [% END %]
 }
 
 function process_submit(e) {
