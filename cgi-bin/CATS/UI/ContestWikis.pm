@@ -62,6 +62,7 @@ sub contest_wikis_edit_frame {
     my ($p) = @_;
     init_template($p, 'contest_wikis_edit.html.tt');
     $is_jury or return;
+    CATS::Contest::Utils::contest_submenu('contest_wikis_edit');
     $form->edit_frame($p, redirect => [ 'contest_wikis' ]);
 }
 
