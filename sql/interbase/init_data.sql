@@ -4,6 +4,8 @@ INSERT INTO default_de (id, code, description, file_ext)
     VALUES (GEN_ID(key_seq, 1), 3, 'Answer text', '');
 INSERT INTO default_de (id, code, description, file_ext, in_contests, syntax)
     VALUES (GEN_ID(key_seq, 1), 5, 'XML', 'xml', 0, 'xml');
+INSERT INTO default_de (id, code, description, file_ext)
+    VALUES (GEN_ID(key_seq, 1), 6, 'Quiz', 'quiz');
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
     VALUES (GEN_ID(key_seq, 1), 101, 'Cross-platform C/C++ compiler', 'cc', 'c_cpp', '^~FILE~:~LINE~:~POS~:');
 
