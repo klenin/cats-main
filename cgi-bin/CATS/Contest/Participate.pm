@@ -86,7 +86,8 @@ sub online {
     }
     else {
         !$contest->{closed} or return msg(1105, $contest->{title});
-        $contest->{time_since_finish} <= 0 or return msg(1108, $contest->{title});
+        ($contest->{time_since_offset_start_until} // 1) <= 0 || $contest->{time_since_finish} <= 0
+            or return msg(1108, $contest->{title});
         $contest->register_account(account_id => $uid);
     }
     $dbh->commit;

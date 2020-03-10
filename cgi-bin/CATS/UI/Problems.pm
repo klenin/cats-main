@@ -185,7 +185,10 @@ sub problems_frame {
         $show_packages = $contest->{show_packages};
         if (my $reason = _check_inaccessible) {
             init_template($p, 'problems_inaccessible');
-            CATS::Contest::Participate::online if $p->{participate_online};
+            if ($p->{participate_online}) {
+                CATS::Contest::Participate::online;
+                $reason = _check_inaccessible;
+            }
             if ($p->{start_offset}) {
                 CATS::Contest::Participate::start_offset && $p->redirect(url_f 'problems');
             }
