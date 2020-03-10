@@ -290,7 +290,7 @@
 1107 "Submitted standard solutions for problem '%s': %d."
 1108 "You can not participate in a finished contest '%s'. Try to participate virtually."
 1109 "Virtual participation is not available until the contest start."
-1110 "Participation in contest '%s' started."
+1110 "You are now a participant of contest '%s'."
 1111 "You already participate in contest '%s'."
 1112 "Virtual participation in contest '%s' started."
 1113 "Virtual participation in contest '%s' started. Previous submissions discarded: %d."
