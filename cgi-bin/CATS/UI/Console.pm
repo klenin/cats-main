@@ -3,7 +3,7 @@ package CATS::UI::Console;
 use strict;
 use warnings;
 
-use Encode qw(decode_utf8);
+use Encode;
 use List::Util;
 
 use CATS::Console;
@@ -289,9 +289,9 @@ sub _console_content {
             request_state =>        $request_state,
             short_state =>          $short_state,
             failed_test =>          ($hide_verdict ? '' : $failed_test),
-            question_text =>        decode_utf8($question),
-            answer_text =>          decode_utf8($answer),
-            message_text =>         decode_utf8($jury_message),
+            question_text =>        Encode::decode_utf8($question),
+            answer_text =>          Encode::decode_utf8($answer),
+            message_text =>         $jury_message,
             team_id =>              $team_id,
             _shortened_team_name($team_name),
             CATS::IP::linkify_ip($last_ip),
