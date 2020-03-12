@@ -55,12 +55,12 @@ sub contest {
 
 sub sql {
     my ($self, $subquery_id) = @_;
-    my $where = $self->{cond} ? " WHERE $self->{cond}" : '';
-    my $q = $is_root && !defined $self->{day_count} ?
+    my $simple_q = "SELECT $self->{sql}" . ($self->{cond} ? " WHERE $self->{cond}" : '');
+    my $max_fetch = CATS::Globals::max_fetch_row_count;
+    $is_root && !defined $self->{day_count} ?
         # Prevent server overload by limiting each subquery separately.
-        "SELECT * FROM (SELECT %s%s ORDER BY 2 DESC $KW_LIMIT %d) AS x$subquery_id" :
-        'SELECT %s%s';
-    sprintf($q, $self->{sql}, $where, CATS::Globals::max_fetch_row_count);
+        "SELECT * FROM ($simple_q ORDER BY 2 DESC $KW_LIMIT $max_fetch) AS x$subquery_id" :
+        $simple_q;
 }
 
 package CATS::Console;
