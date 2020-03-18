@@ -17,7 +17,7 @@ table.header {
     background-position: right;
     color: #333300;
 }
-table.header td { }
+table.header td.contest_title { padding-left: 4px; }
 @media (min-width: 700px) {
     table.header td.contest_title {
         background-image: url(../images/logo.gif);
@@ -35,6 +35,7 @@ table.header td.contest_title span { font-size: normal; }
 table.header td.elapsed {
     font-size: small;
     padding-right: 4px;
+    padding-bottom: 2px;
     text-align: right;
     vertical-align: bottom;
 }
