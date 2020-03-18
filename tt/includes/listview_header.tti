@@ -3,6 +3,7 @@
 <form method="post" enctype="multipart/form-data" action="[% href_lv_action %]" accept-charset="UTF-8"
   [%- " id=\"$form_id\"" IF form_id %]
   [%- " name=\"$form_name\"" IF form_name %]>
+[%- UNLESS no_listview_header -%]
 <table class="listview_header">
 <tr>
 <td>
@@ -68,6 +69,7 @@
 </td>
 </tr>
 </table>
+[%- END %]
 
 <script>
 

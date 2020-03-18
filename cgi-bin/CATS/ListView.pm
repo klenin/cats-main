@@ -214,6 +214,7 @@ sub attach {
 }
 
 sub visible_data { $_[0]->{visible_data} }
+sub total_row_count { scalar @{$_[0]->{visible_data}} }
 
 sub find_sorting_col {
     my ($self, $s) = @_;

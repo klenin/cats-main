@@ -503,6 +503,7 @@ sub problems_frame {
         contest_id => $cid, no_judges => !$jactive,
         parent_contest => $parent_contest,
         source_text => $p->{source_text},
+        no_listview_header => !$is_jury && !$lv->total_row_count && $lv->settings->{search} eq '',
      );
 }
 
