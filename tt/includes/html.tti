@@ -40,14 +40,14 @@ END -%]
 
 [%- MACRO menu(items, selected) BLOCK -%]
   [%- FOREACH i IN items ~%]
-    [%- IF i.href -%]
+    [%- IF i.href ~%]
       <a[% class({ $selected => i.selected, new => i.new }) %] href="[% i.href %]"
         [%- " target=\"${i.target}\"" IF i.target %]>[% i.item %]</a>
-    [%- ELSE ~%]
+    [%~ ELSE ~%]
       [%- i.item -%]
     [%- END -%]
     [%- IF i.sub_items %]: [%- FOREACH si IN i.sub_items %]<a href="[% si.href %]">[% si.item %]</a> [% END; END ~%]
-    [%- loop.last ? ' ' : ' | ' %]
+    [%#- loop.last ? ' ' : ' | ' %]
   [%- END -%]
 [%- END -%]
 

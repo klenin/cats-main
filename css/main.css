@@ -44,7 +44,6 @@ table.header td.elapsed p a:hover { background-color: #ffcc55; }
 
 .main_menu {
     background-color: #7070ff;
-    height: 30px;
 }
 
 .main_menu > td:first-child { text-align: left; }
@@ -52,7 +51,6 @@ table.header td.elapsed p a:hover { background-color: #ffcc55; }
 
 .sub_menu {
     background-color: #bbbbff;
-    height: 25px;
 }
 
 .top { 
@@ -144,7 +142,12 @@ div.select_cols > label {
     font-size: 14px;
     color: white;
     text-decoration: none;
+    display: inline-block;
+    padding: 5px 5px;
+    border-right: 1px solid #bbbbff;
 }
+.top a:last-child { border-right: none; }
+.top a:hover { color: #3030a0; background-color: #bbbbff; }
 
 a, a:link {
     color: #4040ff;
@@ -158,12 +161,18 @@ a, a:link {
     font-size: 13px;
 }
 
-.sub_menu a { color: #3030a0; }
+.sub_menu a {
+    color: #3030a0;
+    display: inline-block;
+    padding: 5px 4px;
+    border-right: 1px solid white;
+}
+
+.sub_menu a:hover, .sub_menu a.new:hover { color: white; background-color: #3030a0; }
 
 .sub_menu a.new {
-    background: no-repeat url(../images/icons/plus.png);
-    padding-left: 16px;
-    padding-bottom: 4px;
+    background: no-repeat 4px center url(../images/icons/plus.png);
+    padding-left: 20px;
 }
 
 .main_menu a.main_menu_selected, .main_menu a.main_menu_selected:visited { color: yellow; }
@@ -171,7 +180,6 @@ a.sub_menu_selected, a.sub_menu_selected:visited { color: white; }
 
 tr.footer, tr.footer td {
     background-color: #7070ff;
-    height: 30px;
     color: white;
     font-family: Arial, sans-serif;
     font-size: 12px;

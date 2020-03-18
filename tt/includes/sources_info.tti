@@ -5,13 +5,13 @@
 
 <table class="iface" style="margin-bottom: 3px;">
   <tr class="main_menu top">
-    <td>
-    &nbsp;[% IF left_menu %][ [% menu(left_menu, 'main_menu_selected') %]][% END %]
+    <td>[% IF left_menu; menu(left_menu, 'main_menu_selected'); END ~%]
     </td>
-    <td>[
-      [% FOR l IN langs %]<a href="[% l.href %]"[% ' class="main_menu_selected"' IF l.name == lang %]
+    <td>
+      [%~ FOR l IN langs %]<a href="[% l.href %]"[% ' class="main_menu_selected"' IF l.name == lang %]
       onclick="document.location = document.location.pathname + '?lang=[% l.name %];' + document.location.search.replace(/lang=\w+;?/, '').replace('?', ''); return false;">
-      [% l.name; '</a> '; ' | ' UNLESS loop.last; END %] ]&nbsp;</td>
+      [%~ l.name; '</a>'; END ~%]
+    </td>
   </tr>
 </table>
 

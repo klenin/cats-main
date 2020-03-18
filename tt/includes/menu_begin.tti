@@ -28,12 +28,12 @@
 
 <table class="iface">
   <tr class="main_menu top">
-    <td>&nbsp;[% IF left_menu %][ [% menu(left_menu, 'main_menu_selected') %]][% END %]</td>
-    <td>[ [% menu(right_menu, 'main_menu_selected') %]]&nbsp;</td>
+    <td>[% IF left_menu; menu(left_menu, 'main_menu_selected'); END %]</td>
+    <td>[% menu(right_menu, 'main_menu_selected') %]</td>
   </tr>
   [%- IF submenu && submenu.size %]
   <tr class="sub_menu">
-    <td colspan="2">&nbsp;[% menu(submenu, 'sub_menu_selected') ~%]
+    <td colspan="2">[% menu(submenu, 'sub_menu_selected') ~%]
     </td>
   </tr>
   [%- END %]

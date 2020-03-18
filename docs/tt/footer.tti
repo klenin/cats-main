@@ -16,9 +16,9 @@
     &nbsp;[% capt.Docs %] - CATS
   </td>
   <td>
-    <a href="https://github.com/klenin/cats-main">[% PROCESS includes/github_icon.tti %] [% capt.development %]</a> |
-    <a href="index.[% lang %].html">[% capt.docs %]</a> |
-    <a href="authors.html">&copy; 2002-2018 [% capt.authors %]</a>&nbsp;
+    <a href="https://github.com/klenin/cats-main">[% PROCESS includes/github_icon.tti %] [% capt.development %]</a>[%
+    %]<a href="index.[% lang %].html">[% capt.docs %]</a>[%
+    %]<a href="authors.html">&copy; 2002-2018 [% capt.authors %]</a>
   </td>
 </tr>
 <tr class="footer2">
