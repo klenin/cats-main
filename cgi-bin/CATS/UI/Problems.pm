@@ -221,14 +221,17 @@ sub problems_frame {
     }
 
     my $wikis = $dbh->selectall_arrayref(q~
-        SELECT CW.wiki_id, CW.allow_edit, WP.name, WT.title
+        SELECT CW.id, CW.wiki_id, CW.allow_edit, WP.name, WT.title
         FROM contest_wikis CW
         INNER JOIN wiki_pages WP ON CW.wiki_id = WP.id
         LEFT JOIN wiki_texts WT ON WT.wiki_id = WP.id AND WT.lang = ?
         WHERE CW.contest_id = ?
         ORDER BY CW.ordering, WP.name~, { Slice => {} },
         CATS::Settings::lang, $cid);
-    $_->{href} = url_f('wiki', name => $_->{name}) for @$wikis;
+    for (@$wikis) {
+        $_->{href} = url_f('wiki', name => $_->{name});
+        $_->{href_edit} = url_f('contest_wikis_edit', id => $_->{id}) if $is_jury;
+    }
     $t->param(wikis => $wikis);
 
     $lv->default_sort(0)->define_columns([
