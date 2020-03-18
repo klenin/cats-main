@@ -44,7 +44,7 @@
 <p>[% capt.queue_length %]: <b>[% queue_length %]</b>.</p>
 <p>[% capt.problem_count %]: <b>[% problem_count %]</b>.</p>
 
-<p>[% capt.need_register %] <a href="main.pl?f=registration;cid=500001">[% capt.register %]</a>.</p>
+<p>[% capt.need_register %] [% href(href_register, capt.register) %].</p>
 [% capt.account_you_can %]:
   <ul>
     [% FOREACH f IN capt.features %]<li>[% f %]</li>[% END %]

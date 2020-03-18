@@ -37,6 +37,7 @@ sub about_frame {
         judges_total => $jtotal,
         contests => $contests,
         title_suffix => res_str(1000),
+        href_register => url_f_cid('registration'),
     );
 }
 
