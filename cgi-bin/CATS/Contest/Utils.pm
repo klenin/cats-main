@@ -75,6 +75,7 @@ sub _contest_searches {
     my ($p) = @_;
 
     $p->{listview}->define_db_searches({
+        parent_or_id => 'COALESCE(C.parent_id, C.id)',
         (map { $_ => "C.$_" } contest_fields, _contest_search_fields),
         since_start => '(CURRENT_TIMESTAMP - start_date)',
         since_finish => '(CURRENT_TIMESTAMP - finish_date)',
@@ -84,6 +85,7 @@ sub _contest_searches {
     $p->{listview}->define_enums({
         rules => { icpc => 0, school => 1 },
         parent_id => { this => $cid },
+        parent_or_id => { this => $cid },
     });
     my $cp_hidden = $is_root ? '' : " AND CP1.status < $cats::problem_st_hidden";
     $p->{listview}->define_subqueries({
@@ -148,7 +150,7 @@ sub _common_contests_view {
         show_points => $c->{rules},
         href_params => url_f('contest_params', id => $c->{id}),
         href_children => ($c->{child_count} ?
-            url_function('contests', sid => $sid, cid => $c->{id}, search => "parent_id=$c->{id}") : undef),
+            url_function('contests', sid => $sid, cid => $c->{id}, search => "parent_or_id=$c->{id}") : undef),
         href_problems => url_function('problems', sid => $sid, cid => $c->{id}),
         href_problems_text => CATS::StaticPages::url_static('problem_text', cid => $c->{id}),
         href_start_date => CATS::Time::href_time_zone($start_date_iso, $c->{title}, $c->{duration_hours}),
