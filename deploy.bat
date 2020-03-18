@@ -406,7 +406,7 @@ __END__
 
 		# Apache allows only absolute URL-path^
 
-		ErrorDocument 404 /cats/main.pl?f=static^
+		ErrorDocument 404 /cats/?f=static^
 
 		#Options FollowSymLinks^
 

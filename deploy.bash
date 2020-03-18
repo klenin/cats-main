@@ -168,7 +168,7 @@ PerlSetEnv CATS_DIR ${CATS_ROOT}/cgi-bin/
 	Alias /cats/static/ "${CATS_ROOT}/static/"
 	<Directory "${CATS_ROOT}/static">
 		# Apache allows only absolute URL-path
-		ErrorDocument 404 /cats/main.pl?f=static
+		ErrorDocument 404 /cats/?f=static
 		#Options FollowSymLinks
 		AddDefaultCharset utf-8
 		Require all granted

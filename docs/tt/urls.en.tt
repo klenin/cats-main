@@ -3,10 +3,10 @@
 <p>To provide stable external links, future versions of our system are guaranteed
 to support following URL formats:
 <ul>
-  <li>rank table: <pre>http://imcs.dvfu.ru/cats/main.pl?f=rank_table;cid=<i>contest_id</i></pre></li>
-  <li>official rank table: <pre>http://imcs.dvfu.ru/cats/main.pl?f=rank_table;cid=<i>contest_id</i>;hide_ooc=1</pre></li>
-  <li>problem list: <pre>http://imcs.dvfu.ru/cats/main.pl?f=problems;cid=<i>contest_id</i></pre></li>
-  <li>contest list with filtering: <pre>http://imcs.dvfu.ru/cats/main.pl?f=contests;search=<i>filter</i></pre></li>
+  <li>rank table: <pre>http://imcs.dvfu.ru/cats/?f=rank_table;cid=<i>contest_id</i></pre></li>
+  <li>official rank table: <pre>http://imcs.dvfu.ru/cats/?f=rank_table;cid=<i>contest_id</i>;hide_ooc=1</pre></li>
+  <li>problem list: <pre>http://imcs.dvfu.ru/cats/?f=problems;cid=<i>contest_id</i></pre></li>
+  <li>contest list with filtering: <pre>http://imcs.dvfu.ru/cats/?f=contests;search=<i>filter</i></pre></li>
 </ul>
 Additionaly, contest ids are guaranteed to never change.
 All other deep links may potentially stop functioning in the future versions,
