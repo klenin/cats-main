@@ -341,7 +341,7 @@ a.delete { background-image: url(../images/icons/delete.png); }
 a.checked { background-image: url(../images/icons/checked.png); }
 a.datepicker { background-image: url(../images/icons/datepicker.png); margin-left: 3px; }
 
-a.contest_selected { color: black; background-color: #ccccff; }
+a.contest_selected { color: black; background-color: #ccccff; padding: 2px; }
 
 p { margin-top: 5px; margin-bottom: 5px } 
 

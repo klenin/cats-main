@@ -491,6 +491,10 @@ sub problems_frame {
         $parent_contest->{href} = url_f_cid('problems', cid => $parent_contest->{id});
     }
 
+    my $child_contest_count = $dbh->selectrow_array(q~
+        SELECT COUNT(*) FROM contests C WHERE C.parent_id = ? AND C.is_hidden = 0~, undef,
+        $cid);
+
     $t->param(
         href_login => url_f('login', redir => CATS::Redirect::pack_params($p)),
         href_set_problem_color => url_f('set_problem_color'),
@@ -504,6 +508,8 @@ sub problems_frame {
         parent_contest => $parent_contest,
         source_text => $p->{source_text},
         no_listview_header => !$is_jury && !$lv->total_row_count && $lv->settings->{search} eq '',
+        child_contest_count => $child_contest_count,
+        href_child_contests => $child_contest_count && url_f('contests', search => "parent_or_id=$cid", filter=> 'all'),
      );
 }
 

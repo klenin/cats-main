@@ -117,6 +117,10 @@ function chg_code(st_sel, pid) {
 </p>
 [%- END %]
 
+[% IF child_contest_count -%]
+<p>[% href(href_child_contests, capt.child_contests _ ': ' _ child_contest_count) %]</p>
+[%- END %]
+
 [% PROCESS includes/listview_header.tti form_name='problems_form' %]
 <table class="listview bordered highlight">
 [% IF can_submit %]
