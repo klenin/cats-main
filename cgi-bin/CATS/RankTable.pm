@@ -155,7 +155,10 @@ sub get_results {
 
     my $select_fields = qq~
         R.state, R.problem_id, R.points, R.testsets, R.contest_id,
-        MAXVALUE((R.submit_time - $CATS::Time::contest_start_offset_sql) * 1440, 0) AS time_elapsed,
+        MAXVALUE(
+            CAST(R.submit_time - $CATS::Time::contest_start_offset_sql AS DOUBLE PRECISION) * 1440,
+            CAST(0 AS DOUBLE PRECISION)
+        ) AS time_elapsed,
         CASE WHEN R.submit_time >= C.freeze_date THEN 1 ELSE 0 END AS is_frozen~;
 
     my $joins = q~
@@ -196,8 +199,8 @@ sub get_results {
                 P.run_method <> $cats::rm_competitive AND
                 $where
             $select_competitive_query
-        )
-        ORDER BY id~, { Slice => {} },
+        ) AS x
+        ORDER BY x.id~, { Slice => {} },
         ($cats::problem_st_hidden, $cats::request_processed, $max_cached_req_id, @params) x
             ($self->{has_competitive} ? 2 : 1));
 }

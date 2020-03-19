@@ -322,18 +322,18 @@ sub problem_test_data_frame {
 
     if ($p->{clear_test_data}) {
         $dbh->do(q~
-            UPDATE tests T SET T.in_file = NULL, T.in_file_size = NULL
+            UPDATE tests T SET in_file = NULL, in_file_size = NULL
             WHERE T.in_file_size IS NOT NULL AND T.problem_id = ?~, undef,
             $p->{pid});
         $dbh->do(q~
-            UPDATE tests T SET T.out_file = NULL, T.out_file_size = NULL
+            UPDATE tests T SET out_file = NULL, out_file_size = NULL
             WHERE T.out_file_size IS NOT NULL AND T.problem_id = ?~, undef,
             $p->{pid});
         $dbh->commit;
     }
     if ($p->{clear_input_hashes}) {
         $dbh->do(q~
-            UPDATE tests T SET T.in_file_hash = NULL WHERE T.problem_id = ?~, undef,
+            UPDATE tests T SET in_file_hash = NULL WHERE T.problem_id = ?~, undef,
             $p->{pid});
         $dbh->commit;
     }

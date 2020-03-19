@@ -77,9 +77,9 @@ sub _contest_searches {
     $p->{listview}->define_db_searches({
         parent_or_id => 'COALESCE(C.parent_id, C.id)',
         (map { $_ => "C.$_" } contest_fields, _contest_search_fields),
-        since_start => '(CURRENT_TIMESTAMP - start_date)',
-        since_finish => '(CURRENT_TIMESTAMP - finish_date)',
-        since_offset_start_until => '(CURRENT_TIMESTAMP - offset_start_until)',
+        since_start => 'CAST(CURRENT_TIMESTAMP - start_date AS DOUBLE PRECISION)',
+        since_finish => 'CAST(CURRENT_TIMESTAMP - finish_date AS DOUBLE PRECISION)',
+        since_offset_start_until => 'CAST(CURRENT_TIMESTAMP - offset_start_until AS DOUBLE PRECISION)',
         duration_hours => 'CAST((finish_date - start_date) * 24 AS DECIMAL(15,1))',
     });
     $p->{listview}->define_enums({

@@ -372,7 +372,7 @@ sub set_tag {
         UPDATE contest_accounts SET tag = ? WHERE id = ?~);
     my $set_count = 0;
     for my $user_id (@{$p{user_set}}) {
-        $s->bind_param(1, $p{tag}, { ora_type => 113 });
+        $s->bind_param(1, $p{tag});
         $s->bind_param(2, $user_id);
         $set_count += $s->execute;
     }

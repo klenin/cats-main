@@ -27,7 +27,8 @@ sub add {
 
 sub days {
     my ($self, $field) = @_;
-    $self->add("CURRENT_TIMESTAMP - $field < ?", $self->{day_count}) if defined $self->{day_count};
+    $self->add("CAST(CURRENT_TIMESTAMP - $field AS DOUBLE PRECISION) < ?",
+        $self->{day_count}) if defined $self->{day_count};
     $self;
 }
 
@@ -327,7 +328,7 @@ sub select_all_reqs {
     $dbh->selectall_arrayref(qq~
         SELECT
             R.id AS id, R.submit_time, R.state, R.failed_test, R.points,
-            R.submit_time - $CATS::Time::contest_start_offset_sql AS time_since_start,
+            CAST(R.submit_time - $CATS::Time::contest_start_offset_sql AS DOUBLE PRECISION) AS time_since_start,
             CP.code, P.title AS problem_title,
             A.id AS team_id, A.team_name,
             COALESCE(E.ip, A.last_ip) AS last_ip,
