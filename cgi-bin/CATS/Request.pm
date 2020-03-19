@@ -315,7 +315,7 @@ sub delete {
 
     my $group_req_id_list = join ', ', @$group_req_ids;
     $dbh->do(qq~
-        UPDATE reqs R SET R.elements_count = R.elements_count - 1
+        UPDATE reqs R SET elements_count = R.elements_count - 1
         WHERE R.id IN ($group_req_id_list)~) if @$group_req_ids;
 
     $dbh->do(q~

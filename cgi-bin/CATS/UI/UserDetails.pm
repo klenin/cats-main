@@ -256,7 +256,7 @@ sub user_vdiff_finish_now {
     ($is_jury || $user->{is_site_org}) && $p->{finish_now} && can_finish_now($u) or return;
     $dbh->do(q~
         UPDATE contest_accounts CA
-        SET CA.ext_time = COALESCE(CA.ext_time, 0) + ?
+        SET ext_time = COALESCE(CA.ext_time, 0) + ?
         WHERE CA.account_id = ? AND CA.contest_id = ?~, undef,
         $u->{since_finish}, $u->{id}, $cid);
     msg(1162, $u->{team_name});
