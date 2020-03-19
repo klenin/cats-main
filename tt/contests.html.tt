@@ -45,9 +45,9 @@ try {
   [% ELSE %]
   <a href="[% c.href_params %]" class="icon view" title="[% capt.alt_params %]"></a>
   [% END %]
-  [% '<a href="' _ c.href_parent _ '">&#x21E1;</a>' IF c.href_parent # Avoid quoting. %]
   <a href="[% c.href_problems %]" title="[% c.short_descr | html %]"[% ' class="contest_selected"' IF c.selected %]>
     [%- c.contest_name | html %]</a>
+  [% '<a href="' _ c.href_parent _ '">&#x21E1;</a>' IF c.href_parent # Avoid quoting. %]
   [% IF c.child_count %][<a href="[% c.href_children %]">[% c.child_count %]</a>][% END %]
 </td>
 [% IF user.privs.is_root && visible_cols.Pc %]<td class="num">[% c.problems_count %]</td>[% END %]
