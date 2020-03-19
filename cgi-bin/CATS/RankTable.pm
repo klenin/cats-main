@@ -199,8 +199,8 @@ sub get_results {
                 P.run_method <> $cats::rm_competitive AND
                 $where
             $select_competitive_query
-        )
-        ORDER BY id~, { Slice => {} },
+        ) AS x
+        ORDER BY x.id~, { Slice => {} },
         ($cats::problem_st_hidden, $cats::request_processed, $max_cached_req_id, @params) x
             ($self->{has_competitive} ? 2 : 1));
 }
