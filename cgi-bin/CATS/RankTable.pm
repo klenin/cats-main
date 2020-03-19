@@ -155,7 +155,10 @@ sub get_results {
 
     my $select_fields = qq~
         R.state, R.problem_id, R.points, R.testsets, R.contest_id,
-        MAXVALUE((R.submit_time - $CATS::Time::contest_start_offset_sql) * 1440, 0) AS time_elapsed,
+        MAXVALUE(
+            CAST(R.submit_time - $CATS::Time::contest_start_offset_sql AS DOUBLE PRECISION) * 1440,
+            CAST(0 AS DOUBLE PRECISION)
+        ) AS time_elapsed,
         CASE WHEN R.submit_time >= C.freeze_date THEN 1 ELSE 0 END AS is_frozen~;
 
     my $joins = q~

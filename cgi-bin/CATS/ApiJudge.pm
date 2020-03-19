@@ -192,7 +192,8 @@ sub select_request {
     (
         $response->{was_pinged}, $response->{pin_mode}, my $jid, my $time_since_alive
     ) = $dbh->selectrow_array(q~
-        SELECT 1 - J.is_alive, J.pin_mode, J.id, CURRENT_TIMESTAMP - J.alive_date
+        SELECT 1 - J.is_alive, J.pin_mode, J.id,
+            CAST(CURRENT_TIMESTAMP - J.alive_date AS DOUBLE PRECISION)
         FROM judges J INNER JOIN accounts A ON J.account_id = A.id WHERE A.sid = ?~, undef,
         $sid) or return print_json($bad_sid);
 
