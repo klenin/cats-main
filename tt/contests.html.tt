@@ -7,6 +7,7 @@
   .ct_school { color: green; }
   .ct_hidden { color: gray; }
   .ct_offset_start_until { color: darkblue; }
+  .contest_flags { font-size: small; }
   .date { text-align: center; }
   .finished { color: #901010; }
   div.action { display: inline-block; }
@@ -47,7 +48,7 @@ try {
   [% END %]
   <a href="[% c.href_problems %]" title="[% c.short_descr | html %]"[% ' class="contest_selected"' IF c.selected %]>
     [%- c.contest_name | html %]</a>
-  [% '<a href="' _ c.href_parent _ '">&#x21E1;</a>' IF c.href_parent # Avoid quoting. %]
+  [% '[<a href="' _ c.href_parent _ '">&#x21E1;</a>]' IF c.href_parent # Avoid quoting. %]
   [% IF c.child_count %][<a href="[% c.href_children %]">[% c.child_count %]</a>][% END %]
 </td>
 [% IF user.privs.is_root && visible_cols.Pc %]<td class="num">[% c.problems_count %]</td>[% END %]
@@ -65,7 +66,7 @@ try {
 [%- END %]
 [% IF visible_cols.Nt -%]
 [%- MACRO flag(name) BLOCK %]<span class="[% name %]">[% capt.$name %]</span>[% END %]
-<td>
+<td class="contest_flags">
   [% IF user.privs.is_root; ELSIF c.is_jury; capt.ct_jury; ELSIF c.registered_online; capt.ct_participant; END =%]
   [% IF c.registered_virtual; capt.ct_virtual; END =%]
   [% IF c.is_official; flag('ct_official'); END =%]
