@@ -144,11 +144,10 @@ div.select_cols > label {
     color: white;
     text-decoration: none;
     display: inline-block;
-    padding: 5px 5px;
-    border-right: 1px solid #bbbbff;
+    padding: 5px 4px;
 }
-.top a:last-child { border-right: none; }
-.top a:hover { color: #3030a0; background-color: #bbbbff; }
+.top a::first-letter { text-transform: capitalize; }
+.top a:hover { background-color: #8d8dff; }
 
 a, a:link {
     color: #4040ff;
@@ -165,11 +164,12 @@ a, a:link {
 .sub_menu a {
     color: #3030a0;
     display: inline-block;
-    padding: 5px 4px;
-    border-right: 1px solid white;
+    padding: 4px 4px;
 }
+.sub_menu a::first-letter { text-transform: capitalize; }
+.sub_menu .sub_sub_menu a { padding: 1px; }
 
-.sub_menu a:hover, .sub_menu a.new:hover { color: white; background-color: #3030a0; }
+.sub_menu a:hover, .sub_menu a.new:hover { background-color: #afaff5; }
 
 .sub_menu a.new {
     background: no-repeat 4px center url(../images/icons/plus.png);
@@ -177,7 +177,7 @@ a, a:link {
 }
 
 .main_menu a.main_menu_selected, .main_menu a.main_menu_selected:visited { color: yellow; }
-a.sub_menu_selected, a.sub_menu_selected:visited { color: white; }
+a.sub_menu_selected, a.sub_menu_selected:visited { color: yellow; }
 
 tr.footer, tr.footer td {
     background-color: #7070ff;
