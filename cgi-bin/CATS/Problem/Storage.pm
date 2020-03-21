@@ -37,6 +37,8 @@ sub get_remote_url {
     defined $_[0] && $_[0] !~ /^\d+$/ ? $_[0] : undef;
 }
 
+sub _repo_path { File::Spec->catdir($CATS::Config::repos_dir, $_[0]) . '/' }
+
 sub get_repo_id {
     my ($id, $sha) = @_;
     my ($db_id, $db_sha) = $dbh->selectrow_array(q~
@@ -44,21 +46,20 @@ sub get_repo_id {
        $id);
     my $p = $CATS::Config::repos_dir;
     $db_id //= '';
-    warn "Repository not found for problem $id" unless ($db_id ne '' && -d "$p$db_id/") || -d "$p$id/";
+    -d _repo_path($db_id || $id) or warn "Repository not found for problem $id";
     $db_id =~ /^\d+$/ ? ($db_id, $db_sha) : ($id, $sha // '');
 }
 
 sub get_repo {
     my ($pid, $sha, $need_find, %opts) = @_;
     ($pid, $sha) = get_repo_id($pid, $sha) if $need_find;
-    $opts{dir} = $CATS::Config::repos_dir . "$pid/";
-    return CATS::Problem::Repository->new(%opts);
+    return CATS::Problem::Repository->new(%opts, dir => _repo_path($pid));
 }
 
 sub get_repo_archive {
     my ($pid, $sha) = @_;
     ($pid) = get_repo_id($pid);
-    return CATS::Problem::Repository->new(dir => $CATS::Config::repos_dir . "$pid/")->archive($sha, 1);
+    return CATS::Problem::Repository->new(dir => _repo_path($pid))->archive($sha, 1);
 }
 
 sub get_latest_master_sha {
