@@ -98,6 +98,7 @@ sub generate {
         { item => res_str(406), href => url_f('problems_all') },
         { item => res_str(501), href => url_f('registration') } );
 
+    $t->param(href_header_about => url_f('about'));
     $self->_attach_menu('left_menu', undef, \@left_menu);
     $self->_attach_menu('right_menu', 'about', \@right_menu);
 }
