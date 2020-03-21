@@ -3,6 +3,7 @@
     want_to_delete => 'Do you really want to delete contest',
     virtual_warning => 'Warning! Second virtual participation will remove all submits of the first one. Continue?',
     alt_params => 'Parameters',
+    alt_results => 'Rank table',
     problems => 'problems',
     ct_jury => 'jury',
     ct_participant => 'participant',

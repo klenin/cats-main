@@ -17,6 +17,7 @@ use CATS::Utils qw(url_function date_to_iso);
 
 # Avoid CATS::Output to work on Travis.
 sub url_f { CATS::Utils::url_function(@_, sid => $sid, cid => $cid) }
+sub url_f_cid { CATS::Utils::url_function(@_, sid => $sid) }
 
 sub common_seq_prefix {
     my ($pa, $pb) = @_;
@@ -149,6 +150,7 @@ sub _common_contests_view {
         is_official => $c->{is_official},
         show_points => $c->{rules},
         href_params => url_f('contest_params', id => $c->{id}),
+        href_results => !$c->{ctype} && url_f_cid('rank_table', cid => $c->{id}),
         href_children => ($c->{child_count} ?
             url_function('contests', sid => $sid, cid => $c->{id}, search => "parent_or_id=$c->{id}") : undef),
         href_problems => url_function('problems', sid => $sid, cid => $c->{id}),

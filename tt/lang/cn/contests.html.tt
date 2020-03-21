@@ -3,6 +3,7 @@
     want_to_delete => '你真的要删除比赛吗？',
     virtual_warning => '警告！ 第二次虚拟参与将删除第一个参与所有的提交。 继续吗？',
     alt_params => '参数',
+    alt_results => '排名表',
     problems => '任务',
     ct_jury => '陪审团',
     ct_participant => '参与者',
