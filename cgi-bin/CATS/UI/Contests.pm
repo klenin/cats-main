@@ -29,7 +29,7 @@ sub contests_new_frame {
     init_template($p, 'contests_new.html.tt');
 
     my $date = $dbh->selectrow_array(qq~
-        SELECT CURRENT_TIMESTAMP $FROM_DUMMY~);
+        SELECT CURRENT_TIMESTAMP $db->{FROM_DUMMY}~);
     $date =~ s/\s*$//;
     my $verdicts = [ map +{ short => $_->[0], checked => 0 }, @$CATS::Verdicts::name_to_state_sorted ];
     $t->param(
@@ -117,7 +117,7 @@ sub _validate {
                 $check_pub_reqs_date
                 $check_offset_start_until
                 CASE WHEN $d BETWEEN $d AND $d THEN 1 ELSE 0 END
-            $FROM_DUMMY~, undef,
+            $db->{FROM_DUMMY}~, undef,
             @$c{
                 qw(start_date finish_date),
                 qw(freeze_date defreeze_date),
