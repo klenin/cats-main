@@ -175,7 +175,7 @@ sub get_sources_info {
     my @limits = map { my $l = $_; map "$_.$l AS @{[$_]}_$l", qw(lr lcp p) } @cats::limits_fields;
 
     # Source code can be in arbitary or broken encoding, we need to decode it explicitly.
-    $dbh->{ib_enable_utf8} = 0;
+    $db->disable_utf8;
 
     my $req_tree = CATS::JudgeDB::get_req_tree(\@req_ids, {
         fields => [
@@ -219,7 +219,7 @@ sub get_sources_info {
             'LEFT JOIN limits LR ON LR.id = R.limits_id',
         ]
     });
-    $dbh->{ib_enable_utf8} = 1;  # Resume "normal" operation.
+    $db->enable_utf8;  # Resume "normal" operation.
 
     # User must be either jury or request owner to access a request.
     # Cache is_jury_in_contest since it requires a database request.
