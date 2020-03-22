@@ -66,7 +66,7 @@ sub sql {
 
 package CATS::Console;
 
-use CATS::DB qw(:DEFAULT $BLOB_TYPE $TEXT_TYPE);
+use CATS::DB qw(:DEFAULT $db);
 use CATS::Globals qw($is_jury $t $uid $user);
 use CATS::Messages qw(res_str);
 use CATS::Time;
@@ -148,9 +148,9 @@ sub build_query {
             $de_sql AS de,
             $time_sql AS time_used,
             R.points AS clarified,
-            CAST(NULL AS $BLOB_TYPE) AS question,
-            CAST(NULL AS $BLOB_TYPE) AS answer,
-            CAST(R.tag AS $TEXT_TYPE) AS jury_message,
+            CAST(NULL AS $db->{BLOB_TYPE}) AS question,
+            CAST(NULL AS $db->{BLOB_TYPE}) AS answer,
+            CAST(R.tag AS $db->{TEXT_TYPE}) AS jury_message,
             A.id AS team_id,
             A.team_name$city_sql AS team_name,
             A.country AS country,
@@ -176,7 +176,7 @@ sub build_query {
             Q.clarified AS clarified,
             Q.question AS question,
             Q.answer AS answer,
-            CAST(NULL AS $TEXT_TYPE) AS jury_message,
+            CAST(NULL AS $db->{TEXT_TYPE}) AS jury_message,
             A.id AS team_id,
             A.team_name AS team_name,
             A.country AS country,
@@ -197,8 +197,8 @@ sub build_query {
             $dummy_req_block,
             $no_de,
             CAST(NULL AS INTEGER) AS clarified,
-            CAST(NULL AS $BLOB_TYPE) AS question,
-            CAST(NULL AS $BLOB_TYPE) AS answer,
+            CAST(NULL AS $db->{BLOB_TYPE}) AS question,
+            CAST(NULL AS $db->{BLOB_TYPE}) AS answer,
             M.text AS jury_message,
             A.id AS team_id,
             A.team_name AS team_name,
@@ -221,8 +221,8 @@ sub build_query {
             $dummy_req_block,
             $no_de,
             CAST(NULL AS INTEGER) AS clarified,
-            CAST(NULL AS $BLOB_TYPE) AS question,
-            CAST(NULL AS $BLOB_TYPE) AS answer,
+            CAST(NULL AS $db->{BLOB_TYPE}) AS question,
+            CAST(NULL AS $db->{BLOB_TYPE}) AS answer,
             M.text AS jury_message,
             $dummy_account_block,
             M.contest_id
@@ -242,9 +242,9 @@ sub build_query {
             C.title AS problem_title,
             $no_de,
             CAST(NULL AS INTEGER) AS clarified,
-            CAST(NULL AS $BLOB_TYPE) AS question,
-            CAST(NULL AS $BLOB_TYPE) AS answer,
-            CAST(NULL AS $TEXT_TYPE) AS jury_message,
+            CAST(NULL AS $db->{BLOB_TYPE}) AS question,
+            CAST(NULL AS $db->{BLOB_TYPE}) AS answer,
+            CAST(NULL AS $db->{TEXT_TYPE}) AS jury_message,
             $dummy_account_block,
             C.id AS contest_id
             FROM contests C
