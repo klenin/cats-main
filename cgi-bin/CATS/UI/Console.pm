@@ -10,7 +10,7 @@ use CATS::Console;
 use CATS::Constants;
 use CATS::Contest::Participate qw(get_registered_contestant);
 use CATS::Countries;
-use CATS::DB qw(:DEFAULT $KW_LIMIT);
+use CATS::DB qw(:DEFAULT $db);
 use CATS::Globals qw($cid $contest $is_jury $is_root $t $uid $user);
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
@@ -33,7 +33,7 @@ sub send_question_to_jury {
 
     my ($previous_question_text) = $dbh->selectrow_array(qq~
         SELECT question FROM questions
-        WHERE account_id = ? ORDER BY submit_time DESC $KW_LIMIT 1~, undef,
+        WHERE account_id = ? ORDER BY submit_time DESC $db->{LIMIT} 1~, undef,
         $user->{ca_id});
     ($previous_question_text || '') ne $question_text or return msg(1061);
 
@@ -163,7 +163,7 @@ sub _console_content {
         next => qq~COALESCE((
             SELECT R1.id FROM reqs R1
             WHERE $same_contest_problem_account R1.id > R.id
-            $KW_LIMIT 1), 0)~,
+            $db->{LIMIT} 1), 0)~,
         tag => q~COALESCE(R.tag, '')~,
         contest_title => 'C.title',
         account_id => 'A.id',

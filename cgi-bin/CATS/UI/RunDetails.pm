@@ -422,7 +422,7 @@ sub get_last_verdicts_api {
     my $state_sth = $dbh->prepare(qq~
         SELECT R.state, R.failed_test, R.id FROM reqs R
         WHERE R.contest_id = ? AND R.account_id = ? AND R.problem_id = ?
-        ORDER BY R.submit_time DESC $CATS::DB::KW_LIMIT 1~);
+        ORDER BY R.submit_time DESC $CATS::DB::db->{LIMIT} 1~);
     my $result = { can_submit => CATS::Problem::Submit::can_submit };
     for (@{$p->{problem_ids}}) {
         $cp_sth->execute($_, $uid);

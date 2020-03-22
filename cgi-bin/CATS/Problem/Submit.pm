@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use CATS::Constants;
-use CATS::DB qw(:DEFAULT $KW_LIMIT);
+use CATS::DB qw(:DEFAULT $db);
 use CATS::DevEnv;
 use CATS::Globals qw($cid $contest $is_jury $t $uid $user);
 use CATS::IP;
@@ -33,7 +33,7 @@ sub too_frequent {
         SELECT CAST(CURRENT_TIMESTAMP - R.submit_time AS DOUBLE PRECISION) FROM reqs R
         WHERE R.account_id = ?
         ORDER BY R.submit_time DESC
-        $KW_LIMIT 2~, {},
+        $db->{LIMIT} 2~, {},
         $submit_uid);
     my $SECONDS_PER_DAY = 24 * 60 * 60;
     ($prev->[0] || 1) < 3/$SECONDS_PER_DAY ||
@@ -45,7 +45,7 @@ sub user_is_banned {
     $uid or return;
     scalar $dbh->selectrow_array(qq~
         SELECT 1 FROM reqs
-        WHERE account_id = ? AND contest_id = ? AND problem_id = ? AND state = ? $KW_LIMIT 1~, undef,
+        WHERE account_id = ? AND contest_id = ? AND problem_id = ? AND state = ? $db->{LIMIT} 1~, undef,
         $uid, $cid, $problem_id, $cats::st_banned);
 }
 
@@ -58,7 +58,7 @@ sub _determine_state {
 sub _get_DEs {
     my ($contest_id, $de_id) = @_;
     my ($has_de_tags) = $dbh->selectrow_array(qq~
-        SELECT 1 FROM contest_de_tags CDT WHERE CDT.contest_id = ? $KW_LIMIT 1~, undef,
+        SELECT 1 FROM contest_de_tags CDT WHERE CDT.contest_id = ? $db->{LIMIT} 1~, undef,
         $contest_id);
     my $tag_sql = $has_de_tags ? q~
         SELECT 1 FROM de_de_tags DDT
@@ -234,7 +234,7 @@ sub problems_submit {
         WHERE
             R.account_id = ? AND R.problem_id = ? AND
             R.contest_id = ? AND S.hash = ? AND S.de_id = ?
-        $KW_LIMIT 1~, undef,
+        $db->{LIMIT} 1~, undef,
         $submit_uid, $pid, $cid, $source_hash, $did);
     $same_source and return msg(1132, $prev_submit_time);
 
