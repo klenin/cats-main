@@ -42,7 +42,7 @@ sub send_question_to_jury {
         VALUES (?, ?, CURRENT_TIMESTAMP, ?, 0, 0)~);
     $s->bind_param(1, new_id);
     $s->bind_param(2, $user->{ca_id});
-    $s->bind_param(3, $question_text, { ora_type => 113 } );
+    $db->bind_blob($s, 3, $question_text);
     $s->execute;
     $s->finish;
     $dbh->commit;

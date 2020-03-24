@@ -246,7 +246,7 @@ sub problems_submit {
         INSERT INTO sources(req_id, de_id, src, fname, hash) VALUES (?, ?, ?, ?, ?)~);
     $s->bind_param(1, $rid);
     $s->bind_param(2, $did);
-    $s->bind_param(3, $source_text, { ora_type => 113 } ); # blob
+    $db->bind_blob($s, 3, $source_text);
     $s->bind_param(4, $file ? $file->remote_file_name :
         "$rid." . CATS::DevEnv->new(CATS::JudgeDB::get_DEs({ id => $did }))->default_extension($did));
     $s->bind_param(5, $source_hash);
@@ -296,7 +296,7 @@ sub problems_submit_std_solution {
             INSERT INTO sources(req_id, de_id, src, fname) VALUES (?, ?, ?, ?)~);
         $s->bind_param(1, $rid);
         $s->bind_param(2, $did);
-        $s->bind_param(3, $src, { ora_type => 113 } ); # blob
+        $db->bind_blob($s, 3, $src);
         $s->bind_param(4, $fname);
         $s->execute;
 

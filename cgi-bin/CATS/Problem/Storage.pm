@@ -8,7 +8,7 @@ use Encode qw();
 
 use CATS::Config qw(cats_dir);
 use CATS::Constants;
-use CATS::DB;
+use CATS::DB qw(:DEFAULT $db);
 use CATS::DevEnv;
 use CATS::Globals qw($user);
 use CATS::Messages qw(msg);
@@ -304,9 +304,9 @@ sub save {
             title lang time_limit memory_limit write_limit
             save_output_prefix save_input_prefix save_answer_prefix difficulty author
             input_file output_file statement_url explanation_url);
-    $c->bind_param($i++, $problem->{$_}, { ora_type => 113 })
+    $db->bind_blob($c, $i++, $problem->{$_})
         for qw(statement constraints input_format output_format formal_input json_data explanation);
-    $c->bind_param($i++, $self->{parser}->get_zip);
+    $db->bind_blob($c, $i++, $self->{parser}->get_zip);
     $c->bind_param($i++, $problem->{description}{std_checker});
     $c->bind_param($i++, $user->id);
     $c->bind_param($i++, $problem->{description}{max_points});
@@ -369,7 +369,7 @@ sub insert_problem_source {
 
     $c->bind_param(1, $s->{id});
     $c->bind_param(2, $self->get_de_id($s->{de_code}, $s->{path}));
-    $c->bind_param(3, $s->{src}, { ora_type => 113 });
+    $db->bind_blob($c, 3, $s->{src});
     $c->bind_param(4, $s->{path});
     $c->bind_param(5, $s->{name});
     $c->bind_param(6, $p{source_type});
@@ -470,7 +470,7 @@ sub insert_problem_content {
         $c->bind_param(2, $problem->{id});
         $c->bind_param(3, $_->{ext});
         $c->bind_param(4, $_->{name} );
-        $c->bind_param(5, $_->{src}, { ora_type => 113 });
+        $db->bind_blob($c, 5, $_->{src});
         $c->execute;
 
         $self->note("Picture '$_->{path}' added");
@@ -487,7 +487,7 @@ sub insert_problem_content {
         $c->bind_param(2, $problem->{id});
         $c->bind_param(3, $_->{name});
         $c->bind_param(4, $_->{file_name});
-        $c->bind_param(5, $_->{src}, { ora_type => 113 });
+        $db->bind_blob($c, 5, $_->{src});
         $c->execute;
 
         $self->note("Attachment '$_->{path}' added");
@@ -527,8 +527,8 @@ sub insert_problem_content {
         $c->bind_param(++$i, $_->{generator_id});
         $c->bind_param(++$i, $_->{param});
         $c->bind_param(++$i, $_->{std_solution_id} );
-        $c->bind_param(++$i, $_->{in_file}, { ora_type => 113 });
-        $c->bind_param(++$i, $_->{out_file}, { ora_type => 113 });
+        $db->bind_blob($c, ++$i, $_->{in_file});
+        $db->bind_blob($c, ++$i, $_->{out_file});
         $c->bind_param(++$i, $_->{points});
         $c->bind_param(++$i, $_->{gen_group});
         $c->bind_param(++$i, $_->{hash});
@@ -545,8 +545,8 @@ sub insert_problem_content {
     for (values %{$problem->{samples}}) {
         $c->bind_param(1, $problem->{id});
         $c->bind_param(2, $_->{rank});
-        $c->bind_param(3, $_->{in_file}, { ora_type => 113 });
-        $c->bind_param(4, $_->{out_file}, { ora_type => 113 });
+        $db->bind_blob($c, 3, $_->{in_file});
+        $db->bind_blob($c, 4, $_->{out_file});
         $c->execute;
         $self->note("Sample test $_->{rank} added");
     }
