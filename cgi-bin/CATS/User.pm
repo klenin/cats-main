@@ -99,11 +99,11 @@ sub generate_login {
 sub any_official_contest_by_team {
     my ($account_id) = @_;
     $dbh->selectrow_array(q~
-        SELECT FIRST 1 C.title FROM contests C
+        SELECT C.title FROM contests C
             INNER JOIN contest_accounts CA ON CA.contest_id = C.id
             INNER JOIN accounts A ON A.id = CA.account_id
             WHERE C.is_official = 1 AND CA.is_ooc = 0 AND CA.is_jury = 0 AND
-            C.finish_date < CURRENT_TIMESTAMP AND A.id = ?~, undef,
+            C.finish_date < CURRENT_TIMESTAMP AND A.id = ? $db->{LIMIT} 1~, undef,
         $account_id);
 }
 
