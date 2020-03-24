@@ -186,7 +186,7 @@ sub get_run_info {
                 UPDATE reqs SET points = ? WHERE id = ? AND points IS DISTINCT FROM ?~, undef,
                 $req->{points}, $req->{req_id}, $req->{points});
             1;
-        } or CATS::DB::catch_deadlock_error("get_run_info $req->{req_id}");
+        } or $CATS::DB::db->catch_deadlock_error("get_run_info $req->{req_id}");
     }
 
     return {

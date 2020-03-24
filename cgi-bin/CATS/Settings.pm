@@ -54,7 +54,7 @@ sub save {
             UPDATE accounts SET settings = ? WHERE id = ?~, undef,
             $new_enc_settings, $uid);
         $dbh->commit;
-    } or CATS::DB::catch_deadlock_error("save settings for $uid");
+    } or $CATS::DB::db->catch_deadlock_error("save settings for $uid");
 }
 
 sub _apply_rec {

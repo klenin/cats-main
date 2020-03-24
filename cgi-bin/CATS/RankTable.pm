@@ -276,7 +276,7 @@ sub cache_req_points {
             $total, $req->{ref_id} || $req->{id}, $total);
         $dbh->commit;
         1;
-    } or return CATS::DB::catch_deadlock_error("cache_req_points $req->{id}");
+    } or return $CATS::DB::db->catch_deadlock_error("cache_req_points $req->{id}");
     $total;
 }
 
