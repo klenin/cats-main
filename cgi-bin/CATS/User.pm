@@ -10,7 +10,7 @@ use CATS::Config;
 use CATS::Constants;
 use CATS::Contest::Participate qw(get_registered_contestant is_jury_in_contest);
 use CATS::Countries;
-use CATS::DB qw(:DEFAULT next_sequence_value);
+use CATS::DB qw(:DEFAULT $db);
 use CATS::Form qw(validate_fixed_point validate_integer validate_string_length);
 use CATS::Globals qw($cid $is_jury $is_root $t $uid $user);
 use CATS::Messages qw(msg res_str);
@@ -92,7 +92,7 @@ sub add_to_contest {
 }
 
 sub generate_login {
-    my $login_num = next_sequence_value('login_seq');
+    my $login_num = $db->next_sequence_value('login_seq');
     return "team$login_num";
 }
 
