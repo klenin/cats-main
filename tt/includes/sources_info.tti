@@ -100,9 +100,9 @@ $(document).ready(update_request_status);
   <th>[% capt.time %]</th>
   [% FOREACH si IN sources_info; IF si %]
     <td colspan="[% si.colspan %]">
-      [% IF si.href_prev_attempt %] <a href="[% si.href_prev_attempt %]">[% si.prev_attempt_time %]&lt;&lt;</a>[% END %]
+      [% IF si.href_prev_attempt %] <a href="[% si.href_prev_attempt %]" title="[% si.nearby.prev.title %]">[% si.prev_attempt_time %]&lt;&lt;</a>[% END %]
       [% si.submit_time; " ($si.formatted_time_since_start)" IF si.time_since_start %]
-      [% IF si.href_next_attempt %] <a href="[% si.href_next_attempt %]">[% si.next_attempt_time %]&gt;&gt;</a>[% END %]
+      [% IF si.href_next_attempt %] <a href="[% si.href_next_attempt %]" title="[% si.nearby.next.title %]">[% si.next_attempt_time %]&gt;&gt;</a>[% END %]
     </td>
   [% END; END %]
 </tr>

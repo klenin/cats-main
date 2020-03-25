@@ -115,7 +115,7 @@ sub _get_nearby_attempt {
     my ($p, $si, $prevnext, $cmp, $ord, $diff, $extra_params) = @_;
     # TODO: Сheck neighbour's contest to ensure correct access privileges.
     my $na = $dbh->selectrow_hashref(qq~
-        SELECT id, submit_time FROM reqs
+        SELECT id, submit_time, state, points FROM reqs
         WHERE account_id = ? AND problem_id = ? AND id $cmp ?
         ORDER BY id $ord $KW_LIMIT 1~, { Slice => {} },
         $si->{account_id}, $si->{problem_id}, $si->{req_id}
@@ -137,6 +137,10 @@ sub _get_nearby_attempt {
         push @ep, (rid => $na->{id});
     }
     $si->{"href_${prevnext}_attempt"} = url_f($p->{f}, @ep);
+    $si->{nearby}->{$prevnext} = $na;
+    $na->{title} =
+        $CATS::Verdicts::state_to_name->{$na->{state}} .
+        (defined $na->{points} ? " $na->{points}" : '');
     $si->{href_diff_runs} = url_f('diff_runs', r1 => $na->{id}, r2 => $si->{req_id}) if $diff && $uid;
 }
 
