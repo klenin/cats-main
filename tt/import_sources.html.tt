@@ -2,7 +2,7 @@
 
 [% PROCESS includes/listview_header.tti %]
 
-<table class="listview bordered highlight">
+<table class="listview bordered cell_search highlight">
 [% PROCESS includes/listview_col_defs.tti sel_col = user.is_jury %]
 
 [% FOREACH is IN import_sources %]
@@ -11,8 +11,8 @@
   [% IF is.is_jury %]<a href="[% is.href_problems %]" title="[% is.title | html %]" class="icon view"></a>[% END %]
 </td>[% END %]
 <td><a href="[% is.href_source %]" title="[% is.fname | html %]">[% is.guid | html %] ([% is.fname | html %])</a></td>
-<td>[% is.stype_name %]</td>
-<td>[% is.code %]</td>
+<td>[% is.stype_name; cell_search('stype', is) %]</td>
+<td>[% is.code; cell_search('code', is) %]</td>
 <td>[% is.ref_count %]</td>
 </tr>
 [% END %]

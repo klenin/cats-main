@@ -22,6 +22,9 @@ sub import_sources_frame {
         { caption => res_str(643), order_by => '5', width => '10%' },
     ]);
     $lv->define_db_searches([ qw(PS.id guid stype code fname problem_id title contest_id) ]);
+    $lv->define_enums({
+        stype => { reverse %cats::source_module_names },
+    });
 
     my $sth = $dbh->prepare(q~
         SELECT ps.id, psl.guid, psl.stype, de.code,
