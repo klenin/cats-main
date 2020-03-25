@@ -481,6 +481,7 @@ table.edit_form td { vertical-align: top; }
 table.edit_form td p.form_error { color: red; font-size: small; }
 
 .ace_highlight_errors { position: absolute; background: #FFC0C0; }
+.ace_marker-layer .ace_link_marker { position: absolute; padding: 0 1px; border-bottom: 1px solid blue; border-radius: 0; }
 
 .resizable { position: relative; background-color: #cccccc; margin-bottom: 20px; }
 .resizable_line { position: absolute; z-index: 10; }
