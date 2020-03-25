@@ -330,9 +330,10 @@ ace.define('hoverlink', [], function(require, exports, module) {
       return match;
     };
 
-    this.onClick = function() {
+    this.onClick = function(evt) {
       if (this.link) {
         this.link.editor = this.editor;
+        this.link.ctrlKey = evt.ctrlKey;
         this._signal('open', this.link);
         this.clear()
       }
@@ -383,6 +384,9 @@ function _linkify(editor) {
   var HoverLink = ace.require('hoverlink').HoverLink;
   editor.hoverLink = new HoverLink(editor);
   editor.hoverLink.on('open', function(link) {
-    document.location.href = link.value;
+    if (link.ctrlKey)
+      window.open(link.value);
+    else
+      document.location.href = link.value;
   })
 }
