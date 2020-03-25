@@ -179,6 +179,7 @@ $(document).ready(update_request_status);
         [% IF si.is_jury && si.short_state == 'AW' -%]
         <td><form method="POST" action="[% si.href_quick_verdict %]">
           <input type="hidden" name="set_state" value="1"/>
+          [% IF si.rules %]<input type="text" size="2" name="points" />[% END -%]
           [% FOREACH qv IN ['OK', 'MR']; t = capt.set_verdict _ ': '_ capt.verdicts.item(qv) %]
           <button name="state" value="[% qv %]" title="[% t %]" class="button run_details_[% qv %]">[% qv %]</button>
           [% END %]
