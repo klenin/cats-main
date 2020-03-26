@@ -341,7 +341,8 @@ files with tests, solutions etc.
   <td>Linter runs either before or after compilation, depending on 'stage' attribute.
     Linter accepts source file names on command line and exits with non-zero code
     if the source does not pass the check.
-    Standard output of linter may contain error message.</td>
+    Standard output of linter may contain error message.
+    Linter can be imported by its global identifier. See [% tag_ref('Import') %].</td>
 </tr>
 <tr>
   <td>[% tag_in('Run', 'Problem', v19) %]</td>
@@ -466,7 +467,7 @@ files with tests, solutions etc.
       <li>name — identifier of the [% tag_ref('Module') %] object.</li>
       <li>src — path to the source code file.</li>
       <li>de_code[% opt %] — development environment code.</li>
-      <li>type — module type (generator, checker, solution).</li>
+      <li>type — module type (generator, checker, solution, linter).</li>
       <li>export[% opt %] [% v14 %] — globally unique identifier.</li>
       <li>main[% opt %] [% v110 %] — use this module as main file, and submitted code as a module with given name.
         For modules of type 'solution' only.</li>
