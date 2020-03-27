@@ -321,7 +321,7 @@ ace.define('hoverlink', [], function(require, exports, module) {
       var match;
       regExp.lastIndex = 0;
       string.replace(regExp, function(str) {
-        var offset = arguments[arguments.length-2];
+        var offset = arguments[arguments.length - 2];
         var length = str.length;
         if (offset <= col && offset + length >= col)
           match = { start: offset, value: str };
@@ -339,12 +339,13 @@ ace.define('hoverlink', [], function(require, exports, module) {
       }
     };
 
+    var urlRe = /\bhttps?:\/\/[\-A-Za-z0-9+&@#\/%?=~_|!:,.;]*[\-A-Za-z0-9+&@#\/%=~_|]/g;
     this.findLink = function(row, column) {
       var editor = this.editor;
       var session = editor.session;
       var line = session.getLine(row);
 
-      var match = this.getMatchAround(/https?:\/\/[^\s'']+/g, line, column);
+      var match = this.getMatchAround(urlRe, line, column);
       if (!match)
           return;
 
