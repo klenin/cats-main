@@ -8,7 +8,7 @@ use XML::Parser::Expat;
 
 use CATS::Constants;
 use CATS::Config qw(cats_dir);
-use CATS::DB qw(:DEFAULT $TEXT_TYPE);
+use CATS::DB qw(:DEFAULT $db);
 use CATS::Globals qw($cid $contest $is_jury $is_root $t $uid);
 use CATS::Messages qw(res_str);
 use CATS::Output qw(downloads_path downloads_url init_template url_f);
@@ -374,8 +374,8 @@ sub problem_text {
 
         $problem->{samples} = $dbh->selectall_arrayref(qq~
             SELECT rank,
-                CAST(in_file AS $TEXT_TYPE) AS in_file,
-                CAST(out_file AS $TEXT_TYPE) AS out_file
+                CAST(in_file AS $db->{TEXT_TYPE}) AS in_file,
+                CAST(out_file AS $db->{TEXT_TYPE}) AS out_file
             FROM samples WHERE problem_id = ? ORDER BY rank~, { Slice => {} },
             $problem->{problem_id});
 

@@ -186,7 +186,7 @@ sub get_run_info {
                 UPDATE reqs SET points = ? WHERE id = ? AND points IS DISTINCT FROM ?~, undef,
                 $req->{points}, $req->{req_id}, $req->{points});
             1;
-        } or CATS::DB::catch_deadlock_error("get_run_info $req->{req_id}");
+        } or $CATS::DB::db->catch_deadlock_error("get_run_info $req->{req_id}");
     }
 
     return {
@@ -422,7 +422,7 @@ sub get_last_verdicts_api {
     my $state_sth = $dbh->prepare(qq~
         SELECT R.state, R.failed_test, R.id FROM reqs R
         WHERE R.contest_id = ? AND R.account_id = ? AND R.problem_id = ?
-        ORDER BY R.submit_time DESC $CATS::DB::KW_LIMIT 1~);
+        ORDER BY R.submit_time DESC $CATS::DB::db->{LIMIT} 1~);
     my $result = { can_submit => CATS::Problem::Submit::can_submit };
     for (@{$p->{problem_ids}}) {
         $cp_sth->execute($_, $uid);

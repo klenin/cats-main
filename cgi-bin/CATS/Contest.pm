@@ -74,7 +74,7 @@ sub current_official {
         SELECT id, title FROM contests
             WHERE CURRENT_TIMESTAMP BETWEEN start_date AND finish_date AND is_official = 1
             ORDER BY CASE WHEN id = ? THEN 0 ELSE 1 END
-            $CATS::DB::KW_LIMIT 1~, undef,
+            $CATS::DB::db->{LIMIT} 1~, undef,
          $cid);
 }
 

@@ -294,7 +294,7 @@ sub delete_or_saved {
             $dbh->do(_u $sql->delete($self->{table}, { id => $id }));
         };
         if (my $err = $@) {
-            my $ref_table = CATS::DB::foreign_key_violation($err);
+            my $ref_table = $CATS::DB::db->foreign_key_violation($err);
             return $ref_table ? msg(1201, $ref_table, @descr) : CATS::Messages::msg_debug($err);
         }
         $self->{after_delete}->($p, $id, descr => \@descr) if $self->{after_delete};

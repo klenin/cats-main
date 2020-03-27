@@ -8,7 +8,7 @@ use Storable qw(freeze thaw);
 
 use CATS::Constants;
 use CATS::Countries;
-use CATS::DB qw(:DEFAULT $KW_LIMIT);
+use CATS::DB qw(:DEFAULT $db);
 use CATS::Globals qw($cid $contest $is_jury $is_root $t $uid $user);
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
@@ -258,7 +258,7 @@ sub users_frame {
         $lv->define_db_searches({ map {
             $_->{name} => qq~(
                 SELECT CT.handle FROM contacts CT
-                WHERE CT.account_id = A.id AND CT.contact_type_id = $_->{id} ORDER BY is_actual DESC $KW_LIMIT 1)~,
+                WHERE CT.account_id = A.id AND CT.contact_type_id = $_->{id} ORDER BY is_actual DESC $db->{LIMIT} 1)~,
         } @$contact_types });
     }
     $lv->define_db_searches({
@@ -281,7 +281,7 @@ sub users_frame {
         my $s = $is_jury  && $lv->visible_cols->{Ip} || $user->{is_site_org} ? qq~
             SELECT E.ip FROM reqs R INNER JOIN events E ON E.id = R.id
             WHERE R.account_id = A.id AND R.contest_id = C.id
-            ORDER BY R.submit_time DESC $KW_LIMIT 1~ : 'NULL';
+            ORDER BY R.submit_time DESC $db->{LIMIT} 1~ : 'NULL';
         $check_site_id ? qq~CASE WHEN CA.site_id = ? THEN ($s) ELSE NULL END~ : $s;
     };
 

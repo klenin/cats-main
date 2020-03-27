@@ -127,7 +127,7 @@ sub find_users_api {
         SELECT A.id, A.login, A.team_name FROM accounts A
         WHERE (A.login STARTS WITH ? OR A.team_name STARTS WITH ?)$root_cond$contest_cond
         ORDER BY A.login
-        $CATS::DB::KW_LIMIT 100~,
+        $CATS::DB::db->{LIMIT} 100~,
         { Slice => {} },
         $p->{query}, $p->{query}, ($contest_cond ? $p->{in_contest} : ()));
     $p->print_json({ suggestions =>

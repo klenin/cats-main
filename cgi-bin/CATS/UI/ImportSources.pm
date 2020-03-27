@@ -58,14 +58,16 @@ sub download_frame {
     my ($p) = @_;
     $p->{psid} or return;
     # Source encoding may be arbitrary.
-    local $dbh->{ib_enable_utf8} = 0;
-    my ($fname, $src) = $dbh->selectrow_array(q~
+    $CATS::DB::db->disable_utf8;
+    my @row = $dbh->selectrow_array(q~
         SELECT fname, src FROM problem_sources_local WHERE id = ? AND guid IS NOT NULL~, undef,
-        $p->{psid}) or return;
+        $p->{psid});
+    $CATS::DB::db->enable_utf8;
+    @row or return;
     $p->print_file(
         content_type => 'text/plain',
-        file_name => $fname,
-        content => Encode::encode_utf8($src));
+        file_name => $row[0],
+        content => Encode::encode_utf8($row[1]));
 }
 
 1;

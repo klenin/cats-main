@@ -7,7 +7,7 @@ use Encode;
 
 use CATS::Contest;
 use CATS::Contest::Participate;
-use CATS::DB qw(:DEFAULT $KW_LIMIT);
+use CATS::DB qw(:DEFAULT $db);
 use CATS::Form qw(validate_string_length);
 use CATS::Globals qw($cid $contest $t $is_jury $is_root $user);
 use CATS::ListView;
@@ -46,7 +46,7 @@ our $form = CATS::Form->new(
                 WHERE CA.contest_id = C.id AND CA.site_id = CS.site_id AND CA.is_site_org = 1) AS orgs
             FROM contests C
             INNER JOIN contest_sites CS ON CS.contest_id = C.id AND CS.site_id = ?
-            ORDER BY C.start_date DESC $KW_LIMIT 50~, { Slice => {} },
+            ORDER BY C.start_date DESC $db->{LIMIT} 50~, { Slice => {} },
             $fd->{id}) : [];
         if (@{$fd->{contests}} && !$dbh->selectrow_array(q~
             SELECT 1 FROM contest_sites WHERE contest_id = ? AND site_id = ?~, undef,
@@ -225,7 +225,7 @@ sub contest_sites_delete {
         $site_id) or return;
 
     $dbh->selectrow_array(qq~
-        SELECT 1 FROM contest_accounts CA WHERE CA.contest_id = ? AND CA.site_id = ? $KW_LIMIT 1~, undef,
+        SELECT 1 FROM contest_accounts CA WHERE CA.contest_id = ? AND CA.site_id = ? $db->{LIMIT} 1~, undef,
         $cid, $site_id) and return msg(1025);
     $dbh->do(q~
         DELETE FROM contest_sites WHERE contest_id = ? AND site_id = ?~, undef,

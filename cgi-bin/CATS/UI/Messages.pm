@@ -5,7 +5,7 @@ use warnings;
 
 use Encode;
 
-use CATS::DB;
+use CATS::DB qw(:DEFAULT $db);
 use CATS::Globals qw($cid $t $is_jury $uid $user);
 use CATS::Messages qw(res_str);
 use CATS::Output qw(init_template);
@@ -69,7 +69,7 @@ sub answer_box_frame {
             UPDATE questions
             SET clarification_time = CURRENT_TIMESTAMP, answer = ?, received = 0, clarified = 1
             WHERE id = ?~);
-        $s->bind_param(1, $r->{answer}, { ora_type => 113 });
+        $db->bind_blob($s, 1, $r->{answer});
         $s->bind_param(2, $p->{qid});
         $s->execute;
         $dbh->commit;

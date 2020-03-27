@@ -10,7 +10,7 @@ use CATS::Config;
 use CATS::Constants;
 use CATS::Contest::Participate qw(get_registered_contestant is_jury_in_contest);
 use CATS::Countries;
-use CATS::DB qw(:DEFAULT next_sequence_value);
+use CATS::DB qw(:DEFAULT $db);
 use CATS::Form qw(validate_fixed_point validate_integer validate_string_length);
 use CATS::Globals qw($cid $is_jury $is_root $t $uid $user);
 use CATS::Messages qw(msg res_str);
@@ -92,18 +92,18 @@ sub add_to_contest {
 }
 
 sub generate_login {
-    my $login_num = next_sequence_value('login_seq');
+    my $login_num = $db->next_sequence_value('login_seq');
     return "team$login_num";
 }
 
 sub any_official_contest_by_team {
     my ($account_id) = @_;
     $dbh->selectrow_array(q~
-        SELECT FIRST 1 C.title FROM contests C
+        SELECT C.title FROM contests C
             INNER JOIN contest_accounts CA ON CA.contest_id = C.id
             INNER JOIN accounts A ON A.id = CA.account_id
             WHERE C.is_official = 1 AND CA.is_ooc = 0 AND CA.is_jury = 0 AND
-            C.finish_date < CURRENT_TIMESTAMP AND A.id = ?~, undef,
+            C.finish_date < CURRENT_TIMESTAMP AND A.id = ? $db->{LIMIT} 1~, undef,
         $account_id);
 }
 
