@@ -344,7 +344,7 @@ ace.define('hoverlink', [], function(require, exports, module) {
       var session = editor.session;
       var line = session.getLine(row);
 
-      var match = this.getMatchAround(/https?:\/\/[^\s'']+/g, line, column);
+      var match = this.getMatchAround(/https?:\/\/[^\s''<]+/g, line, column);
       if (!match)
           return;
 
