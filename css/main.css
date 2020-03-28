@@ -17,25 +17,25 @@ table.header {
     background-position: right;
     color: #333300;
 }
-table.header td.contest_title a {
-    padding-left: 4px;
-    background-repeat: no-repeat;
-    background-position: left center;
-    font-size: large;
-    height: 72px;
-    color: inherit;
+
+table.header td.logo a {
     display: block;
     width: 100%;
+    height: 72px;
 }
-table.header td.contest_title a div { display: table; height: 100%;  width: 100%; }
-table.header td.contest_title a div div { display: table-cell; vertical-align: middle; }
+table.header td.contest_title {
+    padding-left: 4px;
+    font-size: large;
+    color: inherit;
+}
 @media (min-width: 700px) {
-    table.header td.contest_title a {
+    table.header td.logo {
+        width: 102px;
         background-image: url(../images/logo.gif);
-        padding-left: 104px;
+        background-repeat: no-repeat;
     }
 }
-table.header td.contest_title a span { font-size: medium; }
+table.header td.contest_title span { font-size: medium; }
 table.header td.elapsed {
     font-size: small;
     padding-right: 4px;

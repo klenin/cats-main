@@ -8,10 +8,11 @@
 <body>
 <table class="iface header">
   <tr>
-    <td class="contest_title"><a href="[% href_header_about %]"><div><div>
+    <td class="logo"><a href="[% href_header_about %]"></a></td>
+    <td class="contest_title">
       [% IF contest.title; contest.title | html; ELSE; title_suffix || '&nbsp;'; END %]
       [% IF problem_title %]<span> / [% problem_title | html %]</span>[% END %]
-    </div></div></a></td>
+    </td>
     <td class="elapsed">
       <p>[% FOR l IN langs %]<a href="[% l.href %]"[% class({ selected => l.name == lang }) %]
       onclick="document.location = document.location.pathname + '?lang=[% l.name %];' + document.location.search.replace(/lang=\w+;?/, '').replace('?', ''); return false;">
