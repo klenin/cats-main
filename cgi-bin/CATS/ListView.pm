@@ -105,7 +105,7 @@ sub _subquery_msg_raw {
     $r;
 }
 
-sub search_hints {
+sub _search_hints {
     my ($self, $row_keys) = @_;
     $is_jury or return;
     $row_keys ||= [];
@@ -123,7 +123,7 @@ sub search_hints {
             push @{$rows->[$i]}, $s[$j * $row_count + $i];
         }
     }
-    $t->param(
+    (
         search_hints => $rows,
         search_enums => $self->qb->{enums},
     );
@@ -132,12 +132,12 @@ sub search_hints {
 sub common_param {
     my ($self, $row_keys) = @_;
     my $s = $settings->{$self->{name}} ||= {};
-    $t->param(
+    (
         search => $s->{search},
         display_rows => [ map { value => $_, text => $_, selected => $s->{rows} == $_ }, @display_rows ],
         lv_settings => $self->settings,
+        $self->_search_hints($row_keys),
     );
-    $self->search_hints($row_keys);
 }
 
 sub attach {
@@ -198,8 +198,8 @@ sub attach {
     }
 
     $self->{visible_data} = \@data;
-    $self->common_param($row_keys);
     $t->param(
+        $self->common_param($row_keys),
         page => $$page, pages => \@pages,
         href_lv_action => $self->{url} . $page_extra_params,
         ($range_start > 0 ? (href_prev_pages => $href_page->($range_start - 1)) : ()),

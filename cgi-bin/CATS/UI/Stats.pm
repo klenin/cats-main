@@ -226,10 +226,10 @@ sub similarity_frame {
     ]);
 
     unless(($lv->submitted || $p->{cont}) && ($s->{pid} || $s->{account_id} && !$s->{all_contests})) {
-        $lv->common_param([
+        $t->param($lv->common_param([
             qw(s score),
             map { ($_ . 1, $_ . 2) } qw(city de_code id name points req site t tag verdict),
-        ]);
+        ]));
         return;
     }
 
