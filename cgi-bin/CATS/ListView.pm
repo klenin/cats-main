@@ -28,6 +28,7 @@ sub new {
         extra_settings => $p{extra_settings} || {},
         qb => CATS::QueryBuilder->new,
         url => $p{url},
+        template => $p{template} // $t,
     };
     bless $self, $class;
     $self->init_params;
@@ -198,7 +199,7 @@ sub attach {
     }
 
     $self->{visible_data} = \@data;
-    $t->param(
+    $self->{template}->param(
         $self->common_param($row_keys),
         page => $$page, pages => \@pages,
         href_lv_action => $self->{url} . $page_extra_params,
@@ -313,7 +314,7 @@ sub define_columns {
         delete $s->{cols};
     }
 
-    $t->param(
+    $self->{template}->param(
         col_defs => $col_defs,
         can_change_cols => ($is_jury && scalar %{$self->{visible_cols}}),
         visible_cols => $self->{visible_cols});
