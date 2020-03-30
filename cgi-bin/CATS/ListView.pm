@@ -17,25 +17,32 @@ use CATS::Utils;
 my $visible_pages = 5;
 my @display_rows = (10, 20, 30, 40, 50, 100, 200, 300);
 
-# Params: name, template, array_name, extra, extra_settings.
+# Params:
+# name -- settings name, pass empty string to ignore settings,
+# template, array_name, extra, extra_settings.
 sub new {
     my ($class, %p) = @_;
     my $self = {
         web => $p{web} || die,
-        name => $p{name} || die,
+        name => $p{name} // die,
         array_name => $p{array_name} || $p{name},
         col_defs => undef,
         extra_settings => $p{extra_settings} || {},
         qb => CATS::QueryBuilder->new,
         url => $p{url},
         template => $p{template} // $t,
+        settings => {},
     };
+    if ($settings && $p{name}) {
+        $_ && ref $_ eq 'HASH' or $_ = {} for $settings->{$p{name}};
+        $self->{settings} = $settings->{$p{name}};
+    }
     bless $self, $class;
     $self->init_params;
     $self;
 }
 
-sub settings { $settings->{$_[0]->{name}} }
+sub settings { $_[0]->{settings} }
 sub visible_cols { $_[0]->{visible_cols} }
 sub qb { $_[0]->{qb} }
 sub submitted { $_[0]->{submitted} }
@@ -48,7 +55,6 @@ my $route = [ 1,
 sub init_params {
     my ($self) = @_;
 
-    $_ && ref $_ eq 'HASH' or $_ = {} for $settings->{$self->{name}};
     my $s = $self->settings;
     $s->{search} ||= '';
 
@@ -132,10 +138,10 @@ sub _search_hints {
 
 sub common_param {
     my ($self, $row_keys) = @_;
-    my $s = $settings->{$self->{name}} ||= {};
     (
-        search => $s->{search},
-        display_rows => [ map { value => $_, text => $_, selected => $s->{rows} == $_ }, @display_rows ],
+        search => $self->settings->{search},
+        display_rows => [
+            map { value => $_, text => $_, selected => $self->settings->{rows} == $_ }, @display_rows ],
         lv_settings => $self->settings,
         $self->_search_hints($row_keys),
     );
@@ -145,13 +151,11 @@ sub attach {
     my ($self, $fetch_row, $sth, $p) = @_;
     $self->{url} or die;
 
-    my $s = $settings->{$self->{name}} ||= {};
-
     my ($row_count, $fetch_count, $page_count, @data) = (0, 0, 0);
     my $range = { first_row => 0, last_row => 0 };
-    my $page = \$s->{page};
+    my $page = \$self->settings->{page};
     $$page ||= 0;
-    my $rows = $s->{rows} || 1;
+    my $rows = $self->settings->{rows} || 1;
 
     my %mask = %{$self->qb->get_mask};
 
@@ -211,6 +215,7 @@ sub attach {
     );
 
     # Suppose that attach call comes last, so we modify settings in-place.
+    my $s = $self->settings;
     defined $s->{$_} && $s->{$_} ne '' or delete $s->{$_} for keys %$s;
 }
 
