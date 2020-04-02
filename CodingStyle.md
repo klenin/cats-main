@@ -79,10 +79,11 @@ Some historical code, mostly located in `unused` directory, does not conform to 
 * All other identifiers MUST use `snake_case`.
 * Object instance variable MUST be named `$self`.
 * Packages MUST NOT export anything by default (exception: `CATS::DB`).
-* `use` statements MUST be sorted alphabetically inside of each category. Categories MUST be listed in the following order:
-    * directives
+* `use` statements MUST be sorted alphabetically inside of each category. Categories MUST be listed in the following order, separated by empty line:
+    * `use strict` and `use warnings` directives
     * `Exporter`
     * standard and external packages
+    * `use lib` directives
     * CATS packages.
 * Import lists MUST use `qw()` and MUST be sorted alphabetically.
 * New code SHOULD NOT introduce new global variables.
