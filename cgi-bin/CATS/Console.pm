@@ -5,6 +5,7 @@ package CATS::Console::Part;
 
 use CATS::DB qw(:DEFAULT $db);
 use CATS::Globals qw($cid $is_root);
+use CATS::Problem::Utils;
 
 sub new {
     my ($class, $sql, $globals) = @_;
@@ -67,7 +68,7 @@ sub sql {
 package CATS::Console;
 
 use CATS::DB qw(:DEFAULT $db);
-use CATS::Globals qw($is_jury $t $uid $user);
+use CATS::Globals qw($cid $is_jury $uid $user);
 use CATS::Messages qw(res_str);
 use CATS::Time;
 use CATS::Utils qw(escape_xml);
@@ -76,7 +77,7 @@ use CATS::Verdicts;
 our @contest_date_types = qw(start freeze finish);
 
 sub _time_interval_days {
-    my ($s) = @_;
+    my ($s, $t) = @_;
     my ($v, $u) = @$s{qw(i_value i_unit)};
     my @text = split /\|/, res_str(1121);
     my $units = [
@@ -104,6 +105,95 @@ sub _time_interval_days {
     );
 
     return $v > 0 ? $v * $selected_unit->{k} : undef;
+}
+
+sub console_searches {
+    my ($lv) = @_;
+
+    $lv->define_db_searches([ qw(
+        R.submit_time
+        R.id
+        R.state
+        R.failed_test
+        R.problem_id
+        R.points
+        R.judge_id
+        R.elements_count
+        P.title
+        A.team_name
+        A.city
+        A.login
+        CA.is_jury
+        CA.site_id
+    ) ]);
+
+    my $de_select = q~
+        (SELECT %s FROM sources S INNER JOIN default_de DE ON DE.id = S.de_id WHERE S.req_id = R.id)~;
+    my $same_contest_problem_account = q~
+        R1.contest_id = R.contest_id AND
+        R1.problem_id = R.problem_id AND
+        R1.account_id = R.account_id AND~;
+    my $src_prefix_len = 2000;
+    my $from_src = sub { "(SELECT $_[0] FROM sources S WHERE S.req_id = R.id)" };
+
+    $lv->define_db_searches({
+        de_code => sprintf($de_select, 'DE.code'),
+        de_name => sprintf($de_select, 'DE.description'),
+        run_method => 'P.run_method',
+        last_ip => 'COALESCE(E.ip, A.last_ip)',
+        code => q~(
+            SELECT CP.code FROM contest_problems CP
+            WHERE CP.contest_id = C.id AND CP.problem_id = P.id)~,
+        source => $from_src->(
+            "CAST(SUBSTRING(S.src FROM 1 FOR $src_prefix_len) AS VARCHAR($src_prefix_len))"),
+        source_length => $from_src->('OCTET_LENGTH(S.src)'),
+        next => qq~COALESCE((
+            SELECT R1.id FROM reqs R1
+            WHERE $same_contest_problem_account R1.id > R.id
+            $db->{LIMIT} 1), 0)~,
+        tag => q~COALESCE(R.tag, '')~,
+        contest_title => 'C.title',
+        account_id => 'A.id',
+        contest_id => 1, # Handled manually.
+        submit_year => 'EXTRACT(YEAR FROM R.submit_time)',
+        submit_month => 'EXTRACT(MONTH FROM R.submit_time)',
+        submit_day => 'EXTRACT(DAY FROM R.submit_time)',
+        jobs => '(SELECT COUNT(*) FROM jobs J WHERE J.req_id = R.id)',
+        jobs_failed => qq~(
+            SELECT COUNT(*) FROM jobs J WHERE J.req_id = R.id AND J.state = $cats::job_st_failed)~,
+        jobs_queue => q~
+            (SELECT COUNT(*)
+            FROM jobs J INNER JOIN jobs_queue JQ ON J.id = JQ.id
+            WHERE J.req_id = R.id)~,
+        judge_name => '(SELECT JD.nick FROM judges JD WHERE JD.id = R.judge_id)',
+        cp_id => q~(
+            SELECT CP.id FROM contest_problems CP
+            WHERE CP.contest_id = R.contest_id AND CP.problem_id = R.problem_id)~,
+        ($uid ? (can_see_reqs => qq~(
+            SELECT RL.from_ok * RL.to_ok FROM relations RL
+            WHERE RL.from_id = $uid AND RL.to_id = R.account_id)~) : ()),
+        problem_accepted => qq~(
+            SELECT COUNT(*) FROM reqs R1
+            WHERE $same_contest_problem_account R1.state = $cats::st_accepted)~,
+        problem_solved => qq~(
+            SELECT COUNT(*) FROM reqs R1
+            WHERE $same_contest_problem_account
+                R1.state = $cats::st_accepted AND R1.points = CP.max_points)~,
+    });
+
+    $lv->define_enums({
+        state => $CATS::Verdicts::name_to_state,
+        run_method => CATS::Problem::Utils::run_method_enum,
+        contest_id => { this => $cid },
+        account_id => { this => $uid },
+    });
+
+    my $tested_on_sql = q~
+        SELECT 1 FROM req_details RD WHERE RD.req_id = R.id AND RD.test_rank = ?~;
+    $lv->define_subqueries({
+        tested_on => { sq => qq~EXISTS ($tested_on_sql)~, m => 1199, t => undef },
+        not_tested_on => { sq => qq~NOT EXISTS ($tested_on_sql)~, m => 1200, t => undef },
+    });
 }
 
 sub build_query {
@@ -252,7 +342,7 @@ sub build_query {
     );
 
     my $globals = {
-        day_count => _time_interval_days($s),
+        day_count => _time_interval_days($s, $lv->{template}),
         search_cid => $lv->qb->extract_search_values('contest_id'),
         lv => $lv,
     };
@@ -317,7 +407,7 @@ sub build_query {
     my $sql = join ' UNION ', map $parts{$_}->sql($subquery_id++), @selected_parts;
     #warn $sql;
     my $sth = $dbh->prepare("$sql ORDER BY 2 DESC");
-    #warn join ',', map @{$console_params{$_}}, @selected_parts;
+    #warn join ',', map @{$parts{$_}->{params}}, @selected_parts;
     $sth->execute(map @{$parts{$_}->{params}}, @selected_parts);
     $sth;
 }
