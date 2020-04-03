@@ -8,7 +8,7 @@ use warnings;
 use Data::Dumper;
 use DBI::Profile;
 use FindBin;
-use SQL::Abstract; # Actually used by CATS::DB, bit is optional there.
+use SQL::Abstract; # Actually used by CATS::DB, but is optional there.
 
 my $cats_lib_dir;
 my $cats_problem_lib_dir;
