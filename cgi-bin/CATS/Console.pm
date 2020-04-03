@@ -58,10 +58,11 @@ sub contest {
 sub sql {
     my ($self, $subquery_id) = @_;
     my $simple_q = "SELECT $self->{sql}" . ($self->{cond} ? " WHERE $self->{cond}" : '');
-    my $max_fetch = CATS::Globals::max_fetch_row_count;
-    $is_root && !defined $self->{day_count} ?
-        # Prevent server overload by limiting each subquery separately.
-        "SELECT * FROM ($simple_q ORDER BY 2 DESC $db->{LIMIT} $max_fetch) AS x$subquery_id" :
+    # Prevent server overload by limiting each subquery separately.
+    $is_root && !defined $self->{day_count} ? qq~
+        SELECT * FROM (
+            $simple_q ORDER BY 2 DESC $db->{LIMIT} $CATS::Globals::max_fetch_row_count
+        ) AS x$subquery_id~ :
         $simple_q;
 }
 

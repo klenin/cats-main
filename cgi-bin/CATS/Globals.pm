@@ -20,7 +20,7 @@ our (
 );
 
 # Optimization: limit datasets by both maximum row count and maximum visible pages.
-sub max_fetch_row_count() { 1000 }
+our $max_fetch_row_count = 1000;
 
 our $default_de_tag = 7;
 

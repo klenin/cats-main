@@ -32,6 +32,7 @@ sub new {
         url => $p{url},
         template => $p{template} // $t,
         settings => {},
+        visible_cols => {},
     };
     if ($settings && $p{name}) {
         $_ && ref $_ eq 'HASH' or $_ = {} for $settings->{$p{name}};
@@ -168,7 +169,7 @@ sub attach {
             }
             $row_keys = [ sort grep !/^href_/, keys %row ];
         }
-        msg(1166), last if ++$fetch_count > CATS::Globals::max_fetch_row_count;
+        msg(1166), last if ++$fetch_count > $CATS::Globals::max_fetch_row_count;
         last if $page_count > $$page + $visible_pages;
         for my $key (keys %mask) {
             defined first { ($_ // '') =~ $mask{$key} }
