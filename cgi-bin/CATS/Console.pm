@@ -126,6 +126,7 @@ sub console_searches {
         A.login
         CA.is_jury
         CA.site_id
+        CP.code
     ) ]);
 
     my $de_select = q~
@@ -142,9 +143,6 @@ sub console_searches {
         de_name => sprintf($de_select, 'DE.description'),
         run_method => 'P.run_method',
         last_ip => 'COALESCE(E.ip, A.last_ip)',
-        code => q~(
-            SELECT CP.code FROM contest_problems CP
-            WHERE CP.contest_id = C.id AND CP.problem_id = P.id)~,
         source => $from_src->(
             "CAST(SUBSTRING(S.src FROM 1 FOR $src_prefix_len) AS VARCHAR($src_prefix_len))"),
         source_length => $from_src->('OCTET_LENGTH(S.src)'),
@@ -213,7 +211,8 @@ sub build_query {
         CAST(NULL AS INTEGER) AS failed_test,
         CAST(NULL AS INTEGER) AS problem_id,
         CAST(NULL AS INTEGER) AS elements_count,
-        CAST(NULL AS VARCHAR(200)) AS problem_title
+        CAST(NULL AS VARCHAR(200)) AS problem_title,
+        CAST(NULL AS VARCHAR(10)) AS code
     ~;
     my $no_de = q~
         CAST(NULL AS INTEGER) AS de,
@@ -236,6 +235,7 @@ sub build_query {
             R.problem_id AS problem_id,
             R.elements_count,
             P.title AS problem_title,
+            CP.code,
             $de_sql AS de,
             $time_sql AS time_used,
             R.points AS clarified,
@@ -331,6 +331,7 @@ sub build_query {
             CAST(NULL AS INTEGER) AS problem_id,
             CAST(NULL AS INTEGER) AS elements_count,
             C.title AS problem_title,
+            CAST(NULL AS VARCHAR(10)) AS code,
             $no_de,
             CAST(NULL AS INTEGER) AS clarified,
             CAST(NULL AS $db->{BLOB_TYPE}) AS question,

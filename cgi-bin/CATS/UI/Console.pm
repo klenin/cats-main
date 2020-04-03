@@ -113,10 +113,6 @@ sub _console_content {
 
     $t->param($_ => $s->{$_}) for qw(show_contests show_messages show_results i_value);
 
-    # Optimization: Only display problem codes from the currect contest to avoid another JOIN.
-    my $problem_codes = !$contest->is_practice ? $dbh->selectall_hashref(q~
-        SELECT problem_id, code FROM contest_problems WHERE contest_id = ?~, 'problem_id', undef, $cid) : {};
-
     $lv->default_sort(0)->define_columns([
         { caption => res_str(654), col => 'Cy' },
         { caption => res_str(632), col => 'Tm' },
@@ -143,7 +139,7 @@ sub _console_content {
 
     my $fetch_console_record = sub {
         my ($rtype, $rank, $submit_time, $id, $request_state, $failed_test,
-            $problem_id, $elements_count, $problem_title,
+            $problem_id, $elements_count, $problem_title, $code,
             $de_id, $time_used, $clarified, $question, $answer, $jury_message,
             $team_id, $team_name, $country_abbr, $last_ip, $caid, $site_id, $contest_id
         ) = $_[0]->fetchrow_array
@@ -183,7 +179,7 @@ sub _console_content {
             # Hack: re-use 'clarified' field since it is relevant for questions only.
             points =>               $clarified,
             clarified =>            $clarified,
-            (($contest_id // 0) == $cid && $problem_id ? (code => $problem_codes->{$problem_id}->{code}) : ()),
+            code =>                 $code,
             href_details =>         ($show_details ? url_f('run_details', rid => $id) : undef),
             href_source =>          ($show_details ? url_f('view_source', rid => $id) : undef),
             href_problems =>        url_f_cid('problems', cid => $id),
