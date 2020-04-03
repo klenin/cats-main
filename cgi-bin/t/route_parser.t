@@ -10,12 +10,12 @@ use lib File::Spec->catdir($FindBin::Bin);
 use lib File::Spec->catdir($FindBin::Bin, '..');
 use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
 
-use MockupWeb;
-
 use CATS::RouteParser;
+use CATS::Web::Mockup;
 
 *pr = *CATS::RouteParser::parse_route;
 
+*MockupWeb:: = *CATS::Web::Mockup::;
 is pr(MockupWeb->new, 'zz'), 'zz', 'no params';
 
 {

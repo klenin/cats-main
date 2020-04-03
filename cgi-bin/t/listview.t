@@ -12,13 +12,13 @@ use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
 use CATS::Globals qw($t);
 use CATS::ListView;
 use CATS::Messages qw(res_str);
+use CATS::Web::Mockup qw(res_str);
 
-use MockupWeb;
 use MockupTemplate;
 
 $t = MockupTemplate->new;
 
-my $lv = CATS::ListView->new(web => MockupWeb->new, name => 'test', url => 'localhost');
+my $lv = CATS::ListView->new(web => CATS::Web::Mockup->new, name => 'test', url => 'localhost');
 ok $lv, 'new';
 
 $lv->default_sort(0)->define_columns([ { caption => 'colA', order_by => 'colA' } ]);

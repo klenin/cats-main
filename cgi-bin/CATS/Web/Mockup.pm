@@ -1,4 +1,4 @@
-package MockupWeb;
+package CATS::Web::Mockup;
 
 sub new {
     my ($class, %rest) = @_;
