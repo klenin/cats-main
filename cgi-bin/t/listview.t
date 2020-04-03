@@ -12,11 +12,10 @@ use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
 use CATS::Globals qw($t);
 use CATS::ListView;
 use CATS::Messages qw(res_str);
+use CATS::Template;
 use CATS::Web::Mockup qw(res_str);
 
-use MockupTemplate;
-
-$t = MockupTemplate->new;
+$t = CATS::Template->new_dummy;
 
 my $lv = CATS::ListView->new(web => CATS::Web::Mockup->new, name => 'test', url => 'localhost');
 ok $lv, 'new';

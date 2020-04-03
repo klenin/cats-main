@@ -32,8 +32,12 @@ sub new {
 
     my $self = { vars => {}, file_name => $file_name };
     bless $self, $class;
+}
 
-    return $self;
+sub new_dummy {
+    my ($class) = @_;
+    my $self = { vars => {}, file_name => '' };
+    bless $self, $class;
 }
 
 sub param {
@@ -60,5 +64,7 @@ sub output {
         or die $tt->error();
     $res;
 }
+
+sub get_params { $_[0]->{vars} }
 
 1;
