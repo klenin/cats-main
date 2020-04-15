@@ -169,6 +169,7 @@ a, a:link {
     color: #3030a0;
     display: inline-block;
     padding: 4px 4px;
+    white-space: nowrap;
 }
 .sub_menu a::first-letter { text-transform: capitalize; }
 .sub_menu .sub_sub_menu a { padding: 1px; }
