@@ -35,6 +35,7 @@ sub init_user {
     $user = CATS::CurrentUser->new({ privs => {}, id => undef });
     my $bad_sid = length $sid > 30;
     my $enc_settings;
+    my $current_ip = CATS::IP::get_ip;
     if ($sid ne '' && !$bad_sid) {
         (
             $uid, $user->{name}, my $srole, my $last_ip, my $locked,
@@ -44,7 +45,7 @@ sub init_user {
                 SELECT id, team_name, srole, last_ip, locked, git_author_name, git_author_email, settings
                 FROM accounts WHERE sid = ?~, undef,
                 $sid);
-        $bad_sid = !defined($uid) || ($last_ip || '') ne CATS::IP::get_ip() || $locked;
+        $bad_sid = !defined($uid) || ($last_ip || '') ne $current_ip || $locked;
         if (!$bad_sid) {
             $user->{privs} = CATS::Privileges::unpack_privs($srole);
             $is_root = $user->is_root;
