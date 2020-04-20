@@ -6,6 +6,7 @@ use Encode;
 use File::Spec;
 use FindBin;
 use Getopt::Long;
+use SQL::Abstract;
 
 use lib File::Spec->catdir($FindBin::Bin, 'cats-problem');
 use lib $FindBin::Bin;
@@ -14,8 +15,12 @@ use CATS::Config;
 use CATS::Console;
 use CATS::Constants;
 use CATS::DB;
+use CATS::Globals qw($is_jury $is_root);
+use CATS::ListView;
+use CATS::Messages;
 use CATS::Template;
 use CATS::Verdicts;
+use CATS::Web::Mockup;
 
 my $file_pattern_default = '%code%_%id%_%verdict%';
 
@@ -28,6 +33,7 @@ GetOptions(
     'encoding=s' => \(my $encoding = 'UTF-8'),
     'file-pattern=s' => \(my $file_pattern = $file_pattern_default),
     'site=i' => \(my $site),
+    'search=s' => \(my $search = ''),
 );
 
 sub usage {
@@ -54,7 +60,11 @@ else {
     usage(q~Error: mode must be 'log' or 'runs'~);
 }
 
-CATS::DB::sql_connect({});
+CATS::DB::sql_connect({
+    ib_timestampformat => '%d.%m.%Y %H:%M',
+    ib_dateformat => '%d.%m.%Y',
+    ib_timeformat => '%H:%M:%S',
+});
 
 my ($contest_title) = $dbh->selectrow_array(q~
     SELECT title FROM contests WHERE id = ?~, undef, $contest_id) or usage('Error: Unknown contest');
@@ -73,15 +83,31 @@ if ($mode eq 'log') {
     print Encode::encode($encoding, $t->output);
 }
 elsif ($mode eq 'runs') {
-    my $reqs = CATS::Console::select_all_reqs($contest_id, { site_id => $site });
+    CATS::Messages::init;
+    my $t = CATS::Template->new_dummy;
+    my $p = CATS::Web::Mockup->new(search => $search . ",contest_id=$contest_id", i_value => -1);
+    my $lv = CATS::ListView->new(web => $p, name => '', template => $t);
+    $is_jury = $is_root = 1;
+    CATS::Console::console_searches($lv);
+    $CATS::Globals::max_fetch_row_count = 100000;
+    my $reqs_sth = CATS::Console::build_query({
+        show_results => 1, show_contests => 0, show_messages => 0, i_value => -1, i_unit => 'hours' },
+        $lv, []);
     my $count = 0;
     my $src_sth = $dbh->prepare(q~
         SELECT src, fname FROM sources WHERE req_id = ?~);
-    for my $r (@$reqs) {
+    while (my $r = $reqs_sth->fetchrow_hashref) {
+        #say "$_ : ", $r->{$_} // 'undef' for sort keys %$r; last;
         $src_sth->execute($r->{id});
-        while (my ($src, $orig_fname) = $src_sth->fetchrow_array) {
+        while (1) {
+            my ($src, $orig_fname) = eval { $src_sth->fetchrow_array };
+            if (my $err = $@) {
+                say "Error: $err";
+                next;
+            }
+            $orig_fname or last;
             ($r->{orig_fname}, my $ext) = $orig_fname =~ /^(.*?)(\.[a-zA-Z0-9]+)?$/;
-            $r->{verdict} = $CATS::Verdicts::state_to_name->{$r->{state}};
+            $r->{verdict} = $CATS::Verdicts::state_to_name->{$r->{request_state}};
             (my $fn = $file_pattern) =~ s~%([a-z_]+)%~$r->{$1} // ''~ge;
             if ($dry_run) {
                 print Encode::encode_utf8($fn), (8 < length $fn ? "\t\t" : "\t");
