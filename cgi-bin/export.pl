@@ -22,7 +22,7 @@ use CATS::Template;
 use CATS::Verdicts;
 use CATS::Web::Mockup;
 
-my $file_pattern_default = '%code%_%id%_%verdict%';
+my $file_pattern_default = '%code%_%id%_%verdict%.%ext%';
 
 GetOptions(
     help => \(my $help = 0),
@@ -32,6 +32,7 @@ GetOptions(
     'dry-run' => \(my $dry_run),
     'encoding=s' => \(my $encoding = 'UTF-8'),
     'file-pattern=s' => \(my $file_pattern = $file_pattern_default),
+    'header-pattern=s' => \(my $header_pattern = ''),
     'site=i' => \(my $site),
     'search=s' => \(my $search = ''),
 );
@@ -77,6 +78,8 @@ if ($site) {
     say STDERR 'Site: ', Encode::encode_utf8($site_name);
 }
 
+sub apply_pattern { $_[0] =~ s~%([a-z_]+)%~$_[1]->{$1} // ''~ge }
+
 if ($mode eq 'log') {
     my $t = CATS::Template->new('console_export.xml.tt', cats_dir, { compile_dir => '' });
     $t->param(encoding => $encoding, reqs => CATS::Console::export($contest_id, { site_id => $site }));
@@ -106,14 +109,17 @@ elsif ($mode eq 'runs') {
                 next;
             }
             $orig_fname or last;
-            ($r->{orig_fname}, my $ext) = $orig_fname =~ /^(.*?)(\.[a-zA-Z0-9]+)?$/;
+            ($r->{orig_fname}, $r->{ext}) = $orig_fname =~ /^(.*?)\.([a-zA-Z0-9]+)?$/;
             $r->{verdict} = $CATS::Verdicts::state_to_name->{$r->{request_state}};
-            (my $fn = $file_pattern) =~ s~%([a-z_]+)%~$r->{$1} // ''~ge;
+            apply_pattern(my $fn = $file_pattern, $r);
+            apply_pattern(my $header = $header_pattern, $r);
             if ($dry_run) {
                 print Encode::encode_utf8($fn), (8 < length $fn ? "\t\t" : "\t");
             }
             else {
-                open my $f, '>', File::Spec->catfile($dest, $fn . ($ext // ''));
+                my $full_name = File::Spec->catfile($dest, $fn);
+                open my $f, '>>', $full_name;
+                print $f Encode::encode_utf8("\n$header\n") if $header;
                 print $f $src;
             }
             ++$count;
