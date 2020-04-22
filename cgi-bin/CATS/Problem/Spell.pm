@@ -36,6 +36,7 @@ sub pop_lang {
 }
 
 my $known_langs = { ru => 'ru_RU', en => 'en_US' };
+my $checkers = {};
 
 sub _make_checker {
     my ($self, $lang) = @_;
@@ -60,13 +61,11 @@ sub check_word {
         return $word;
     }
 
-    # Aspell currently supports only KOI8-R russian encoding.
-    my $koi = Encode::encode('KOI8-R', $word);
-    my $checker = $self->{checkers}->{$lang} //= $self->_make_checker($lang)
+    my $checker = $checkers->{$lang} //= $self->_make_checker($lang)
         or return $word;
-    return $word if $checker->check($koi);
-    my $suggestion = Encode::decode('KOI8-R',
-        join ' | ', grep $_, ($checker->suggest($koi))[0..9]);
+    return $word if $checker->check($word);
+    my $suggestion = Encode::decode_utf8(
+        join ' | ', grep $_, ($checker->suggest($word))[0..9]);
     return qq~<a class="spell" title="$suggestion">$word</a>~;
 }
 
