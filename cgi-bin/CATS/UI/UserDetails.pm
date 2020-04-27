@@ -8,7 +8,7 @@ use Storable qw(thaw);
 use CATS::Constants;
 use CATS::Contest::Participate;
 use CATS::Countries;
-use CATS::DB;
+use CATS::DB qw(:DEFAULT $db);
 use CATS::Form;
 use CATS::Globals qw ($cid $is_jury $is_root $t $uid $user);
 use CATS::IP;
@@ -62,7 +62,10 @@ sub _tokens {
         SELECT token, last_used, usages_left, referer FROM account_tokens
         WHERE account_id = ?~, { Slice => {} },
         $p->{uid});
-    $_->{href_login} = url_function('login', token => $_->{token}) for @$tokens;
+    for (@$tokens) {
+        $_->{href_login} = url_function('login', token => $_->{token});
+        $_->{last_used} = $db->format_date($_->{last_used});
+    }
     $t->param(
         href_make_token => url_f('user_stats', uid => $p->{uid}),
         tokens => $tokens,
@@ -82,6 +85,7 @@ sub user_stats_frame {
             $envelopes_sql
         FROM accounts A WHERE A.id = ?~, { Slice => {} },
         $cid, $p->{uid}) or return;
+    $u->{last_login_date} = $db->format_date($u->{last_login_date});
     my $hidden_cond = $is_root ? '' :
         'AND C.is_hidden = 0 AND (CA.is_hidden = 0 OR CA.is_hidden IS NULL) ' .
         'AND C.defreeze_date < CURRENT_TIMESTAMP';
@@ -120,6 +124,7 @@ sub user_stats_frame {
         $_->{href_submits} = url_f_cid('console', cid => $_->{id},
             uf => $p->{uid}, i_value => -1, se => 'user_stats',
             show_results => 1, rows => 30, search => "contest_id=$_->{id}");
+        $_->{start_date} = $db->format_date($_->{start_date});
     }
 
     _tokens($p);
@@ -198,6 +203,7 @@ sub user_ip_frame {
     for my $e (@$events) {
         my %linkified = CATS::IP::linkify_ip($e->{ip});
         $e->{$_} = $linkified{$_} for keys %linkified;
+        $e->{ts} = $db->format_date($e->{ts});
     }
     $t->param(
         CATS::User::submenu('user_ip', $p->{uid}, $u->{site_id}),
@@ -209,7 +215,7 @@ sub user_ip_frame {
 
 sub user_vdiff_load {
     my ($p) = @_;
-    $dbh->selectrow_hashref(qq~
+    my $u = $dbh->selectrow_hashref(qq~
         SELECT A.id, A.team_name, CA.diff_time, CA.ext_time, CA.is_virtual, CA.site_id,
             C.start_date AS contest_start,
             $CATS::Time::contest_start_offset_sql AS contest_start_offset,
@@ -228,6 +234,9 @@ sub user_vdiff_load {
         LEFT JOIN sites S ON S.id = CA.site_id
         WHERE A.id = ? AND CA.contest_id = ?~, { Slice => {} },
         $p->{uid}, $cid);
+    $u->{$_} = $db->format_date($u->{$_})
+        for qw(contest_start contest_start_offset contest_finish contest_finish_offset);
+    $u;
 }
 
 sub user_vdiff_save {
