@@ -6,7 +6,7 @@ use warnings;
 use Encode ();
 use List::Util qw(first min max);
 
-use CATS::DB;
+use CATS::DB qw(:DEFAULT $db);
 use CATS::Globals qw($is_jury $t);
 use CATS::Messages qw(msg);
 use CATS::RouteParser;
@@ -33,6 +33,8 @@ sub new {
         template => $p{template} // $t,
         settings => {},
         visible_cols => {},
+        date_fields => [],
+        date_fields_iso => [],
     };
     if ($settings && $p{name}) {
         $_ && ref $_ eq 'HASH' or $_ = {} for $settings->{$p{name}};
@@ -148,6 +150,18 @@ sub common_param {
     );
 }
 
+sub date_fields { 
+    my ($self, @fields) = @_;
+    $self->{date_fields} = \@fields;
+    $self;
+}
+
+sub date_fields_iso {
+    my ($self, @fields) = @_;
+    $self->{date_fields_iso} = \@fields;
+    $self;
+}
+
 sub attach {
     my ($self, $fetch_row, $sth, $p) = @_;
     $self->{url} or die;
@@ -162,6 +176,10 @@ sub attach {
 
     my $row_keys;
     ROWS: while (my %row = $fetch_row->($sth)) {
+        $row{$_} = $db->format_date($row{$_}) for @{$self->{date_fields}};
+        $row{$_} = CATS::Utils::date_to_iso($db->format_date($row{$_}))
+            for @{$self->{date_fields_iso}};
+
         if (!$row_keys) {
             if (my @unknown_searches = grep $_ && !exists $row{$_}, sort keys %mask) {
                 delete $mask{$_} for @unknown_searches;
