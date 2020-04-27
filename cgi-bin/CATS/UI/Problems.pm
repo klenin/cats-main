@@ -28,7 +28,7 @@ use CATS::Redirect;
 use CATS::Request;
 use CATS::Settings;
 use CATS::StaticPages;
-use CATS::Utils qw(file_type date_to_iso redirect_url_function);
+use CATS::Utils qw(file_type redirect_url_function);
 use CATS::Verdicts;
 
 sub _href_problem_console {
@@ -427,7 +427,7 @@ sub problems_frame {
             tle_count => $c->{time_limit_count},
             aw_count => $c->{awaiting_verification_count},
             upload_date => $c->{upload_date},
-            upload_date_iso => date_to_iso($c->{upload_date}),
+            upload_date_iso => $c->{upload_date},
             judges_installed => $c->{judges_installed},
             last_modified_by => $c->{last_modified_by},
             testsets => $c->{testsets} || '*',
@@ -446,6 +446,7 @@ sub problems_frame {
             color => $c->{color},
         );
     };
+    $lv->date_fields(qw(upload_date))->date_fields_iso(qw(upload_date_iso));
 
     $lv->attach($fetch_record, $sth);
 

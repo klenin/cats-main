@@ -20,7 +20,6 @@ use CATS::RankTable;
 use CATS::Request;
 use CATS::Settings qw($settings);
 use CATS::Time;
-use CATS::Utils qw(date_to_iso);
 use CATS::Verdicts;
 
 # This is called before init_template to display submitted question immediately.
@@ -193,7 +192,7 @@ sub _console_content {
             href_send_message_box =>
                 ($is_jury && $caid ? url_f('send_message_box', caid => $caid) : undef),
             'time' =>               $submit_time,
-            time_iso =>             date_to_iso($submit_time),
+            time_iso =>             $submit_time,
             problem_id =>           $problem_id,
             elements_count =>       $elements_count,
             problem_title =>        $problem_title,
@@ -212,7 +211,7 @@ sub _console_content {
             contest_id =>           $contest_id,
         );
     };
-
+    $lv->date_fields(qw(time))->date_fields_iso(qw(time_iso));
     $lv->attach(
         ($sth ? $fetch_console_record : sub { () }), $sth,
         { page_params => { se => $p->{se}, uf => join(',', @{$p->{uf}}) || undef } });

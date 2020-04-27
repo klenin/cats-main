@@ -121,6 +121,7 @@ sub acc_group_users_frame {
             %$row,
          );
     };
+    $lv->date_fields(qw(date_start date_finish));
 
     $lv->attach($fetch_record, $sth);
     $sth->finish;
