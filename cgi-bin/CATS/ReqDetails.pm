@@ -251,6 +251,7 @@ sub get_sources_info {
             ($can_see //= $uid ? CATS::Request::can_see_by_relation($uid) : {})->{$r->{account_id}} ||
             $is_solved->($r)
             or delete $req_tree->{$_};
+        $r->{$_} = $db->format_date($r->{$_}) for qw(submit_time test_time result_time)
     }
 
     my %user_cache;
@@ -430,7 +431,11 @@ sub get_log_dump {
         ORDER BY J.id DESC~, { Slice => {} },
         @bind) or return [];
 
-    $_->{dump} = Encode::decode_utf8($_->{dump}) for @$logs;
+    for my $log (@$logs) {
+        $log->{dump} = Encode::decode_utf8($log->{dump});
+        $log->{$_} = $db->format_date($log->{$_})
+            for qw(create_time start_time finish_time);
+    }
     $logs;
 }
 

@@ -216,7 +216,7 @@ sub snippets_frame {
             href_view => url_f('problem_text', uid => $c->{account_id}, cpid => $c->{cpid}),
         );
     };
-
+    $lv->date_fields(qw(finish_time));
     $lv->attach($fetch_record, $sth);
 
     $sth->finish;
