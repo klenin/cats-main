@@ -30,7 +30,7 @@ sub contests_new_frame {
 
     my $date = $dbh->selectrow_array(qq~
         SELECT CURRENT_TIMESTAMP $db->{FROM_DUMMY}~);
-    $date =~ s/\s*$//;
+    $date = $db->format_date($date);
     my $verdicts = [ map +{ short => $_->[0], checked => 0 }, @$CATS::Verdicts::name_to_state_sorted ];
     $t->param(
         start_date => $date,
@@ -66,10 +66,15 @@ sub contest_string_params() {qw(
     rules req_selection max_reqs
 )}
 
+sub contest_date_params() {qw(
+    start_date finish_date freeze_date defreeze_date pub_reqs_date offset_start_until
+)}
+
 sub get_contest_html_params {
     my ($p) = @_;
     my $c = { map { $_ => $p->{$_} } contest_string_params(), 'penalty' };
     $c->{$_} = $p->{$_} ? 1 : 0 for contest_checkbox_params();
+    $c->{$_} = $db->parse_date($c->{$_}) for contest_date_params();
 
     for ($c->{title}) {
         $_ //= '';
@@ -235,7 +240,8 @@ sub contest_problems_installed_frame {
         $cid);
 
     my $judge_problems = {};
-    $judge_problems->{$_->{judge_id}}->{$_->{problem_id}} = $_->{finish_time} for @$already_installed;
+    $judge_problems->{$_->{judge_id}}->{$_->{problem_id}} = $db->format_date($_->{finish_time})
+        for @$already_installed;
 
     my $problems_to_install = { map { $_->{id} => [] } @$judges };
 
@@ -284,6 +290,7 @@ sub contest_params_frame {
     my $c = $dbh->selectrow_hashref(q~
         SELECT * FROM contests WHERE id = ?~, { Slice => {} },
         $p->{id}) or return;
+    $c->{$_} = $db->format_date($c->{$_}) for CATS::Contest::Utils::contest_date_fields;
     $c->{free_registration} = !$c->{closed};
 
     my %verdicts_excluded_max_reqs =
@@ -424,6 +431,7 @@ sub contests_rss_frame {
         WHERE is_official = 1 AND is_hidden = 0
         ORDER BY start_date DESC $db->{LIMIT} 100~, { Slice => {} });
     for my $c (@$contests) {
+        $c->{start_date} = $db->format_date($c->{start_date});
         $c->{start_date_rfc822} = CATS::Utils::date_to_rfc822($c->{start_date});
         $c->{href_link} = _abs_url_f('problems', cid => $c->{id});
     }
@@ -566,6 +574,7 @@ sub contest_xml_frame {
     my $c = $dbh->selectrow_hashref(q~
         SELECT * FROM contests WHERE id = ?~, { Slice => {} },
         $cid) or return;
+    $c->{$_} = $db->format_date($c->{$_}) for CATS::Contest::Utils::contest_date_fields;
 
     $c->{tags} = $dbh->selectall_arrayref(q~
         SELECT CT.name FROM contest_tags CT

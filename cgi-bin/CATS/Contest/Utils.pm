@@ -8,7 +8,7 @@ use List::Util qw(reduce);
 
 use CATS::Config;
 use CATS::Constants;
-use CATS::DB;
+use CATS::DB qw(:DEFAULT $db);
 use CATS::Globals qw($cid $is_root $sid $t $uid);
 use CATS::Messages qw(msg res_str);
 #use CATS::Output qw(url_f);
@@ -55,6 +55,10 @@ sub contest_fields_str {
         'CAST(CURRENT_TIMESTAMP - offset_start_until AS DOUBLE PRECISION) AS since_offset_start_until',
         'CAST(finish_date - start_date AS DOUBLE PRECISION) AS duration',
         'CAST((finish_date - start_date) * 24 AS DECIMAL(15,1)) AS duration_hours',
+}
+
+sub contest_date_fields {
+    qw(start_date finish_date freeze_date defreeze_date pub_reqs_date offset_start_until);
 }
 
 sub _contest_search_fields() {qw(
@@ -134,6 +138,7 @@ sub _contest_searches {
 
 sub _common_contests_view {
     my ($c, $p) = @_;
+    $c->{$_} = $db->format_date($c->{$_}) for contest_date_fields;
     my $start_date_iso = date_to_iso($c->{start_date});
     return (
         %$c,
