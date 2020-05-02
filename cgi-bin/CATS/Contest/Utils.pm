@@ -12,6 +12,7 @@ use CATS::DB;
 use CATS::Globals qw($cid $is_root $sid $t $uid);
 use CATS::Messages qw(msg res_str);
 #use CATS::Output qw(url_f);
+use CATS::StaticPages;
 use CATS::Time;
 use CATS::Utils qw(url_function date_to_iso);
 
@@ -291,6 +292,7 @@ sub contest_submenu {
 
 sub add_remove_tags {
     my ($p, $table) = @_;
+    $p->{add} || $p->{remove} or die;
     my $existing = $dbh->selectcol_arrayref(qq~
         SELECT tag_id FROM $table WHERE contest_id = ?~, undef,
         $cid);
@@ -319,6 +321,7 @@ sub add_remove_tags {
         $dbh->commit;
         msg(1190, $count);
     }
+    CATS::StaticPages::invalidate_problem_text(cid => $cid, all => 1) if $count;
 }
 
 sub add_remove_groups {
