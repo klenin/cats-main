@@ -417,7 +417,7 @@ function gen_forms(problems, callback) {
   [% FOREACH p IN problems %] gen_form('de[% p.id %]', 'ed_pt[% p.cpid %]', '[% p.id %]', '[% p.cpid %]'); [% END %]
   $('.submit_form').toggleClass('hidden');
   init_editors(callback);
-  [% IF has_quizzes %] init_quizzes('[% quiz_de.de_id %]');  [% END %]
+  [% IF has_quizzes %] init_quizzes();  [% END %]
 }
 
 function process_submit(e) {
@@ -434,6 +434,11 @@ function process_submit(e) {
   form_data.append(file_tag.name, file_tag.files[0]);
 
   for (var i = 0; i < form_params.length; i++) {
+    [% IF has_quizzes %]
+    if (form_params[i].name === 'de_id') {
+      form_params[i].value = '[% quiz_de.de_id %]';
+    }
+    [% END %]
     if (form_params[i].name === 'source_text') {
       var editor_id = get_editor(form).attr('data-id');
       form_params[i].value = ace.edit(editor_id).getSession().getValue();
