@@ -26,7 +26,7 @@ sub parse_search {
     $self->{search} = [];
     $self->{search_subqueries} = [];
     for (split /,\s*/, $search) {
-        /^($ident)([!~^=><]?=|>|<|\?\??|!~)(.*)$/ ? push @{$self->{search}}, [ $1, $3, $2 ] :
+        /^($ident)([!~^=><]?=|>|<|\?\??|!~|\!\^)(.*)$/ ? push @{$self->{search}}, [ $1, $3, $2 ] :
         /^(\!)?($ident)\(((?:\p{L}|\d|[_.])+)\)$/ ?
             push @{$self->{search_subqueries}}, [ $2, $3, $1 ? 1 : 0 ] :
         push @{$self->{search}}, [ '', $_, '' ];
@@ -37,8 +37,9 @@ sub parse_search {
 sub regex_op {
     my ($op, $v) = @_;
     $op eq '=' || $op eq '==' ? "^\Q$v\E\$" :
-    $op eq '!=' ? "^(?!\Q$v\E).*\$" :
+    $op eq '!=' ? "^(?!\Q$v\E\$).*\$" :
     $op eq '^=' ? "^\Q$v\E" :
+    $op eq '!^' ? "^(?!\Q$v\E).*\$" :
     $op eq '~=' || $op eq '' ? "\Q$v\E" :
     $op eq '!~' ? "^(?!.*\Q$v\E)" :
     $op eq '?' ? '.' :
@@ -52,6 +53,7 @@ sub sql_op {
     $op eq '=' || $op eq '==' ? { '=', $v } :
     $op eq '!=' ? { '!=', $v } :
     $op eq '^=' ? { 'STARTS WITH', $v } :
+    $op eq '!^' ? { 'NOT STARTS WITH', $v } :
     $op eq '~=' ? { 'LIKE', '%' . "$v%" } :
     $op eq '!~' ? { 'NOT LIKE', '%' . "$v%" } :
     $op eq '?' ? { '!=', undef } :

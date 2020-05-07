@@ -5,7 +5,7 @@ use Encode;
 use File::Spec;
 use FindBin;
 use Test::Exception;
-use Test::More tests => 28;
+use Test::More tests => 34;
 
 use lib File::Spec->catdir($FindBin::Bin, '..');
 use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
@@ -25,7 +25,14 @@ is_deeply qb_mask('zz??'), { zz => qr/^$/i }, 'mask NULL';
 {
     my $mask = qb_mask('a!=b')->{a};
     unlike 'b', $mask, 'mask != 1';
-    like 'c', $mask, 'mask != 2';
+    like 'bс', $mask, 'mask != 2';
+    like 'c', $mask, 'mask != 3';
+}
+{
+    my $mask = qb_mask('a!^b')->{a};
+    unlike 'b', $mask, 'mask !^ 1';
+    unlike 'bс', $mask, 'mask !^ 2';
+    like 'cb', $mask, 'mask !^ 3';
 }
 {
     my $mask = qb_mask('a>3')->{a};
@@ -54,6 +61,11 @@ is_deeply qb_mask('zz??'), { zz => qr/^$/i }, 'mask NULL';
     is_deeply $qb->make_where, { a => [ { '!=', undef } ] }, 'db not null';
     $qb->parse_search('a??');
     is_deeply $qb->make_where, { a => [ { '=', undef } ] }, 'db null';
+
+    $qb->parse_search('a^=sss');
+    is_deeply $qb->make_where, { a => [ { 'STARTS WITH', 'sss' } ] }, 'db starts with';
+    $qb->parse_search('a!^sss');
+    is_deeply $qb->make_where, { a => [ { 'NOT STARTS WITH', 'sss' } ] }, 'db not starts with';
 
     $qb->parse_search('a=1,b=x,a=2,b=y');
     is_deeply $qb->extract_search_values('b'), [ 'x', 'y' ], 'extract_search_values';
