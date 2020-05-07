@@ -1,4 +1,4 @@
-function init_quizzes(answer_text_env_id) {
+function init_quizzes() {
   Survey.StylesManager.applyTheme('default');
   $('.problem_text').each(function() {
     var survey_models = [];
@@ -49,7 +49,6 @@ function init_quizzes(answer_text_env_id) {
       var check_box = problem_text.find('.show_editor');
       check_box[0].checked = false;
       toggle_editor_visibility.bind(check_box).call();
-      problem_text.find('select[name=de_id]').val(answer_text_env_id);
       problem_text.find('.editor_only').hide();
       problem_text.data('survey_models', survey_models);
       editor.getSession().addEventListener('change', editor_changed_callback);
