@@ -151,6 +151,7 @@ sub console_searches {
             WHERE $same_contest_problem_account R1.id > R.id
             $db->{LIMIT} 1), 0)~,
         tag => q~COALESCE(R.tag, '')~,
+        ca_tag => 'CA.tag',
         contest_title => 'C.title',
         account_id => 'A.id',
         contest_id => 1, # Handled manually.
