@@ -3,6 +3,8 @@ package CATS::UI::Snippets;
 use strict;
 use warnings;
 
+use Encode;
+
 use CATS::Globals qw($cid $is_jury $is_root $t $uid);
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
@@ -190,7 +192,7 @@ sub snippets_frame {
     my $sth = $dbh->prepare(qq~
         SELECT
             S.id, S.name, S.problem_id, S.account_id,
-            SUBSTRING(S.text FROM 1 FOR 100) AS text,
+            SUBSTRING(CAST(S.text AS $CATS::DB::db->{BLOB_TYPE}) FROM 1 FOR 100) AS text,
             P.title,
             CP.code,
             CP.id AS cpid,
@@ -211,6 +213,7 @@ sub snippets_frame {
         my $c = $_[0]->fetchrow_hashref or return ();
         return (
             %$c,
+            text => Encode::decode_utf8($c->{text}, Encode::FB_QUIET),
             href_edit => url_f('snippets_edit', id => $c->{id}),
             href_delete => url_f('snippets', delete => $c->{id}),
             href_view => url_f('problem_text', uid => $c->{account_id}, cpid => $c->{cpid}),
