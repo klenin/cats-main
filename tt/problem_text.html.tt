@@ -1,5 +1,5 @@
 [%- js.jquery = 1; js.ace = 1; -%]
-[%- js.quizzes = 1 IF has_quizzes %]
+[%- js.quizzes = 1 IF has_quizzes || has_snippets %]
 [%- PROCESS includes/header.tti -%]
 [%- PROCESS includes/html.tti -%]
 [%- PROCESS "lang/$lang/problems.html.tt" -%]
@@ -67,7 +67,7 @@ MathJax.Hub.Register.StartupHook('onLoad', function () {
 [% IF has_static_highlight -%]
 <script src="js/lib/ace/ext-static_highlight.js"></script>
 [% END %]
-[% IF has_quizzes -%]
+[% IF has_quizzes || has_snippets -%]
 <script type="text/javascript" src="https://surveyjs.azureedge.net/1.0.9/survey.jquery.min.js"></script>
 [% END %]
 [% END %]
@@ -347,33 +347,38 @@ $(document).ready(static_highlight);
 [% END %]
 
 [%- IF href_get_last_verdicts -%]
-if (sid)
-  $(document).ready(function () {
-    $.get('[% href_get_last_verdicts %];sid=' + sid).success(function(result) {
-      if (!result) return;
-      for (var cpid in result) {
-        if (!result[cpid]) continue;
-        var r = result[cpid];
-        if (r.verdict) {
-          var v = $('#p' + cpid + ' .last_verdict > .verdict');
-          v.addClass('run_details_' + r.verdict);
-          v.find('a').attr('href', '[% href_static_path %]' + r.href_run_details).text(r.verdict);
-          v.find('div').html(r.failed_test || '.&nbsp;');
-          v.parent().show();
-          $('#p' + cpid + '_verdict').addClass('run_details_' + r.verdict);
-        }
-        if (r.href_problem_details) {
-          var pd = $('#p' + cpid + ' .problem_details_link');
-          pd.find('a').attr('href', '[% href_static_path %]' + r.href_problem_details);
-          pd.show();
-        }
+var has_quizzes = false;
+[%- IF has_quizzes -%] has_quizzes = true; [%- END -%]
+[%- IF !has_snippets -%] $(document).ready(get_last_verdicts); [%- END -%]
+
+function get_last_verdicts() {
+  if (!sid) return;
+  $.get('[% href_get_last_verdicts %];sid=' + sid).success(function(result) {
+    if (!result) return;
+    for (var cpid in result) {
+      if (!result[cpid]) continue;
+      var r = result[cpid];
+      if (r.verdict) {
+        var v = $('#p' + cpid + ' .last_verdict > .verdict');
+        v.addClass('run_details_' + r.verdict);
+        v.find('a').attr('href', '[% href_static_path %]' + r.href_run_details).text(r.verdict);
+        v.find('div').html(r.failed_test || '.&nbsp;');
+        v.parent().show();
+        $('#p' + cpid + '_verdict').addClass('run_details_' + r.verdict);
       }
-      if (result.can_submit && has_submit)
-        gen_forms(result, function() {
-          if (rid) get_sources_info_api(rid);
-        });
-    });
+      if (r.href_problem_details) {
+        var pd = $('#p' + cpid + ' .problem_details_link');
+        pd.find('a').attr('href', '[% href_static_path %]' + r.href_problem_details);
+        pd.show();
+      }
+    }
+    if (result.can_submit && has_submit) {
+      gen_forms(result, function() {
+        if (rid) get_sources_info_api(rid);
+      });
+    }
   });
+}
 
 function gen_forms(problems, callback) {
   var gen_form = function(select_id, editor_id, problem_id, cpid) {
@@ -417,7 +422,7 @@ function gen_forms(problems, callback) {
   [% FOREACH p IN problems %] gen_form('de[% p.id %]', 'ed_pt[% p.cpid %]', '[% p.id %]', '[% p.cpid %]'); [% END %]
   $('.submit_form').toggleClass('hidden');
   init_editors(callback);
-  [% IF has_quizzes %] init_quizzes();  [% END %]
+  if (has_quizzes) init_quizzes();
 }
 
 function process_submit(e) {
@@ -434,11 +439,9 @@ function process_submit(e) {
   form_data.append(file_tag.name, file_tag.files[0]);
 
   for (var i = 0; i < form_params.length; i++) {
-    [% IF has_quizzes %]
-    if (form_params[i].name === 'de_id') {
+    if (has_quizzes && form_params[i].name === 'de_id') {
       form_params[i].value = '[% quiz_de.de_id %]';
     }
-    [% END %]
     if (form_params[i].name === 'source_text') {
       var editor_id = get_editor(form).attr('data-id');
       form_params[i].value = ace.edit(editor_id).getSession().getValue();
@@ -570,8 +573,10 @@ function fill_snippets(data, snippet_list) {
   all_snippets_received = 1;
   for (var i = 0; i < snippet_list.length; ++i) {
     var snippet_data = data[snippet_list[i].getAttribute('cats-snippet')];
-    if (snippet_data !== undefined && snippet_data !== null)
+    if (snippet_data !== undefined && snippet_data !== null) {
       snippet_list[i].innerHTML = htmlWithCDATASectionsToHtmlWithout(snippet_data);
+      has_quizzes = $(snippet_list[i]).find('Quiz').length ? true : has_quizzes;
+    }
     else
       all_snippets_received = 0;
   }
@@ -596,6 +601,8 @@ function get_snippets_data(problem_id, request_url) {
       setTimeout(update_snippets, timeout_interval);
       timeout_interval *= 2;
     }
+    if (all_snippets_received)
+      get_last_verdicts();
   });
 }
 
