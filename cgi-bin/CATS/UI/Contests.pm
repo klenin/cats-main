@@ -61,14 +61,13 @@ sub contest_checkbox_params() {qw(
     show_all_for_solved
 )}
 
-sub contest_string_params() {qw(
-    title short_descr start_date freeze_date finish_date defreeze_date pub_reqs_date offset_start_until
-    rules req_selection max_reqs
-)}
-
 sub contest_date_params() {qw(
     start_date finish_date freeze_date defreeze_date pub_reqs_date offset_start_until
 )}
+
+sub contest_string_params() {
+    (qw(title short_descr rules req_selection max_reqs), contest_date_params());
+}
 
 sub get_contest_html_params {
     my ($p) = @_;
