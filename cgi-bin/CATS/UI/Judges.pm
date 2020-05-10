@@ -172,6 +172,7 @@ sub judges_frame {
                 search => "judge_id=$jid,type=$cats::job_type_update_self"),
         );
     };
+    $lv->date_fields(qw(alive_date));
 
     $lv->attach($fetch_record, $sth);
 

@@ -8,7 +8,7 @@ use List::Util qw(sum);
 
 use CATS::BinaryFile;
 use CATS::Constants;
-use CATS::DB;
+use CATS::DB qw(:DEFAULT $db);
 use CATS::DeGrid;
 use CATS::Globals qw($cid $contest $is_jury $is_root $t);
 use CATS::ListView;
@@ -62,6 +62,7 @@ sub problem_details_frame {
         LEFT JOIN limits L ON L.id = CP.limits_id
         WHERE P.id = ?~, { Slice => {} },
         $cid, $p->{pid}) or return;
+    $pr->{upload_date} = $db->format_date($pr->{upload_date});
 
     CATS::Problem::Utils::round_time_limit($pr->{overridden_time_limit});
 

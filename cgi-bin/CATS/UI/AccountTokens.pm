@@ -50,6 +50,7 @@ sub account_tokens_frame {
                 href_delete => url_f('account_tokens', 'delete' => $row->{token})) : ()),
         );
     };
+    $lv->date_fields(qw(last_used));
     $lv->attach($fetch_record, $sth);
     $t->param(submenu => [ CATS::References::menu('account_tokens') ]);
 }

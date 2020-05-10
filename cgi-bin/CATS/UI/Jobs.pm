@@ -132,6 +132,7 @@ sub jobs_frame {
             # href_delete => url_f('jobs', 'delete' => $row->{id}),
         );
     };
+    $lv->date_fields(qw(create_time start_time finish_time));
     $lv->attach($fetch_record, $sth);
 }
 

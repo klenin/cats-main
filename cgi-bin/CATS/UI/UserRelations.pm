@@ -187,6 +187,7 @@ sub user_relations_frame {
                 _url_accept($row, from_ok => $row->{from_ok}, to_ok => 1) : undef,
         );
     };
+    $lv->date_fields(qw(ts));
     $lv->attach($fetch_record, $sth, { page_params => { @pp } });
     $t->param(
         CATS::User::submenu('user_relations', $p->{uid}),

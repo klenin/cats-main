@@ -121,6 +121,7 @@ sub files_frame {
             href_download => downloads_url . "f/$row->{guid}",
         );
     };
+    $lv->date_fields(qw(last_modified));
 
     $lv->attach($fetch_record, $sth);
 

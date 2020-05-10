@@ -3,7 +3,7 @@ package CATS::UI::About;
 use strict;
 use warnings;
 
-use CATS::DB;
+use CATS::DB qw(:DEFAULT $db);
 use CATS::Globals qw($t);
 use CATS::Judge;
 use CATS::Messages qw(res_str);
@@ -27,6 +27,7 @@ sub about_frame {
         WHERE C.is_hidden = 0 AND C.is_official = 1 AND C.finish_date > CURRENT_TIMESTAMP
         ORDER BY C.start_date~, { Slice => {} });
     for (@$contests) {
+        $_->{start_date} = $db->format_date($_->{start_date});
         $_->{href_contest} = url_f_cid('problems', cid => $_->{id});
         $_->{since_start_text} = CATS::Time::since_contest_start_text($_->{since_start});
     }

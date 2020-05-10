@@ -48,6 +48,7 @@ sub _get_question {
         $p->{qid}) or return;
     # BLOBs are not auto-decoded.
     $_ = Encode::decode_utf8($_) for @$r{qw(question answer)};
+    $r->{submit_time} = $db->format_date($r->{submit_time});
     $r;
 }
 
@@ -99,6 +100,7 @@ sub envelope_frame {
             INNER JOIN problems P ON P.id = R.problem_id
         WHERE R.id = ? AND R.account_id = ?~, { Slice => {} },
         $p->{rid}, $uid) or return;
+    $r->{$_} = $db->format_date($r->{$_}) for qw(submit_time test_time);
     $t->param(%$r, verdict => $CATS::Verdicts::state_to_name->{$r->{state}});
 }
 
@@ -115,6 +117,7 @@ sub questions_api {
         WHERE CA.contest_id = ? AND Q.clarified = ?~, { Slice => {} },
         $cid, $p->{clarified} ? 1 : 0);
     for my $q (@$questions) {
+        $q->{$_} = $db->format_date($q->{$_}) for qw(submit_time clarification_time);
         $q->{$_} = Encode::decode_utf8($q->{$_}) for qw(answer question team_name);
     }
     $p->print_json({ questions => $questions });

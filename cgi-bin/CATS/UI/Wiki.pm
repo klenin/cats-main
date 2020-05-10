@@ -6,7 +6,7 @@ use warnings;
 use Encode;
 
 use CATS::Constants;
-use CATS::DB;
+use CATS::DB qw(:DEFAULT $db);
 use CATS::Form;
 use CATS::Globals qw($contest $is_jury $sid $t $uid $user);
 use CATS::ListView;
@@ -65,6 +65,7 @@ our $page_form = CATS::Form->new(
             $r->{id} or next;
             $r->{href_delete} = url_f('wiki_pages_edit', id => $fd->{id}, delete => $r->{id});
             $r->{href_view} = url_f('wiki', name => $fd->{indexed}->{name}->{value}, lang => $_);
+            $r->{last_modified} = $db->format_date($r->{last_modified});
         }
         $t->param(submenu => [ CATS::References::menu('wiki_pages') ]);
     },
@@ -122,6 +123,7 @@ sub wiki_pages_frame {
                 href_delete => url_f('wiki_pages', 'delete' => $row->{id})) : ()),
         );
     };
+    $lv->date_fields(qw(last_modified));
     $lv->attach($fetch_record, $sth);
 
     $t->param(submenu => [ CATS::References::menu('wiki_pages') ]);
@@ -160,9 +162,11 @@ our $text_form = CATS::Form->new(
         my $pn = $form_data->{page_name} = Encode::decode_utf8($dbh->selectrow_array(q~
             SELECT name FROM wiki_pages WHERE id = ?~, undef,
             $wt->{wiki_id}->{value}));
-        $wt->{last_modified}->{value} ||= $form_data->{id} && $dbh->selectrow_array(q~
+        my $lm = $wt->{last_modified};
+        $lm->{value} ||= $form_data->{id} && $dbh->selectrow_array(q~
             SELECT last_modified FROM wiki_texts WHERE id = ?~, undef,
             $form_data->{id});
+        $lm->{value} = $db->format_date($lm->{value});
         $form_data->{markdown} = _prepare_text($wt->{text}->{value});
         $t->param(
             title_suffix => $pn,

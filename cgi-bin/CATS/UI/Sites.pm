@@ -48,14 +48,14 @@ our $form = CATS::Form->new(
             INNER JOIN contest_sites CS ON CS.contest_id = C.id AND CS.site_id = ?
             ORDER BY C.start_date DESC $db->{LIMIT} 50~, { Slice => {} },
             $fd->{id}) : [];
-        if (@{$fd->{contests}} && !$dbh->selectrow_array(q~
+
+        my $empty_contest_sites = !$dbh->selectrow_array(q~
             SELECT 1 FROM contest_sites WHERE contest_id = ? AND site_id = ?~, undef,
-            $cid, $fd->{id}))
-        {
-            for (@{$fd->{contests}}) {
-                $_->{href_add} = url_f('contest_sites',
-                    add => 1, check => $fd->{id}, with_org => $_->{id});
-            }
+            $cid, $fd->{id});
+        for (@{$fd->{contests}}) {
+            $_->{start_date} = $db->format_date($_->{start_date});
+            $_->{href_add} = url_f('contest_sites', add => 1, check => $fd->{id}, with_org => $_->{id})
+                if $empty_contest_sites;
         }
         $t->param(submenu => [ CATS::References::menu('sites') ]);
     },
@@ -176,6 +176,8 @@ sub contest_sites_edit_frame {
         INNER JOIN contests C ON C.id = CS.contest_id
         WHERE CS.site_id = ? AND CS.contest_id = ?~, { Slice => {} },
         $site_id, $cid) or return;
+    $s->{$_} = $db->format_date($s->{$_})
+        for qw(contest_start contest_start_offset contest_finish contest_finish_offset);
     contest_sites_edit_save($p, $s);
 
     $t->param(

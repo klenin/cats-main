@@ -395,6 +395,7 @@ sub users_all_settings_frame {
             settings_full => $full,
         );
     };
+    $lv->date_fields(qw(last_login));
     $lv->attach($fetch_record, $sth);
     $t->param(title_suffix => res_str(575), users_submenu);
 }
