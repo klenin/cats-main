@@ -31,8 +31,17 @@
 </tr>
 [% END %]
 </table>
-<br/>
+<p>
 <input type="hidden" name="pid" value="[% problem_id %]" />
 <button type="submit" name="save" value="1" class="button">[% capt.save %]</button>
+</p>
+<hr/>
+<table>
+<tr><td>[% capt.for_check %]: </td>
+  <td><input type="text" size="80" name="testsets_text" value="[% problem_testsets %]" class="bordered"/></td></tr>
+<tr><td>[% capt.for_points %]: </td>
+  <td><input type="text" size="80" name="points_testsets_text" value="[% problem_points_testsets %]" class="bordered"/></td></tr>
+</table>
+<button type="submit" name="save_text" value="1" class="button">[% capt.save %]</button>
 </form>
 [% PROCESS includes/menu_end.tti %]

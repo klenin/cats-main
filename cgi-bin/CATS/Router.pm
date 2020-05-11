@@ -136,6 +136,7 @@ my $main_routes = {
         pid => integer, save => bool, from_problems => bool,
         sel_testsets => array_of integer,
         sel_points_testsets => array_of integer,
+        save_text => bool, testsets_text => str, points_testsets_text => str,
     ],
     problem_select_tags => [
         \&CATS::UI::ProblemDetails::problem_select_tags_frame,

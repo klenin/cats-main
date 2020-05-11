@@ -198,6 +198,19 @@ sub problem_select_testsets_frame {
     my $testsets = $dbh->selectall_arrayref(q~
         SELECT * FROM testsets WHERE problem_id = ? ORDER BY name~, { Slice => {} },
         $problem->{id});
+    my $all_testsets = {};
+    $all_testsets->{$_->{name}} = $_ for @$testsets;
+
+    my @ts_fields = qw(testsets points_testsets);
+    my $testset_text_error;
+    if ($p->{save_text}) {
+        for my $f (@ts_fields) {
+            my $t = $p->{$f . '_text'};
+            CATS::Testset::parse_test_rank(
+                $all_testsets, $t, sub { msg(1149, $f, $_[0]); $testset_text_error = 1; });
+            $problem->{$f} = $t;
+        }
+    }
 
     my $param_to_list = sub {
         my ($field) = @_;
@@ -205,11 +218,14 @@ sub problem_select_testsets_frame {
         @sel{@{$p->{"sel_$field"}}} = undef;
         $problem->{$field} = join ',', map $_->{name}, grep exists $sel{$_->{id}}, @$testsets;
     };
-    if ($p->{save}) {
+    if ($p->{save} || !$testset_text_error && $p->{save_text}) {
+        my @testset_text = $p->{save} ?
+            map($param_to_list->($_), @ts_fields) :
+            map($p->{$_ . '_text'}, @ts_fields);
         $dbh->do(q~
             UPDATE contest_problems SET testsets = ?, points_testsets = ?, max_points = NULL
             WHERE id = ?~, undef,
-            map($param_to_list->($_), qw(testsets points_testsets)), $problem->{cpid});
+            @testset_text, $problem->{cpid});
         $dbh->commit;
         CATS::StaticPages::invalidate_problem_text(cid => $cid, cpid => $problem->{cpid});
         return $p->redirect(url_f 'problems') if $p->{from_problems};
@@ -221,10 +237,8 @@ sub problem_select_testsets_frame {
         @sel{split ',', $problem->{$_[0]} || ''} = undef;
         $_->{"sel_$_[0]"} = exists $sel{$_->{name}} for @$testsets;
     };
-    $list_to_selected->($_) for qw(testsets points_testsets);
+    $list_to_selected->($_) for @ts_fields;
 
-    my $all_testsets = {};
-    $all_testsets->{$_->{name}} = $_ for @$testsets;
     for (@$testsets) {
         $_->{count} = scalar keys %{CATS::Testset::parse_test_rank($all_testsets, $_->{name}, sub {})};
     }
