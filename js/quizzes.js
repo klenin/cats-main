@@ -98,22 +98,22 @@ function survey_value_changed(editor, question_number, survey, editor_changed_ca
   editor.getSession().addEventListener('change', editor_changed_callback);
 }
   
-function is_quiz_input_valid(quiz) {
+function is_quiz_input_valid(quiz, msg) {
   var input = quiz.find('input[type="text"]')[0];
   if (!input) return true;
   input.setCustomValidity('');
   if (input.checkValidity()) return true;
-  input.setCustomValidity('[% c.spaces_in_answer %]');
+  input.setCustomValidity(msg);
   quiz.find('input[type="submit"]').click();
   return false;
 }
   
-function is_all_quiz_input_valid(form) {
+function is_all_quiz_input_valid(form, msg) {
   var is_valid = true;
   var problem_text = form.parents('.problem_text');
   problem_text.find('Quiz').each(function(_, quiz) {
-  if (!is_quiz_input_valid($(quiz)))
-    is_valid = false;
+    if (!is_quiz_input_valid($(quiz), msg))
+      is_valid = false;
   });
   return is_valid;
 }

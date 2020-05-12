@@ -427,7 +427,8 @@ function gen_forms(problems, callback) {
 function process_submit(e) {
   e.preventDefault();
   var form = $(this);
-  if (has_quizzes && !is_all_quiz_input_valid(form)) return;
+  if (has_quizzes && !is_all_quiz_input_valid(form, '[% capt.problem_text.item(lang).spaces_in_answer %]'))
+    return;
   var request_url = '[% href_submit_problem %]';
   if (!sid) return;
   request_url += ';sid=' + sid;
