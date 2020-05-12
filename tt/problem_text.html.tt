@@ -347,8 +347,7 @@ $(document).ready(static_highlight);
 [% END %]
 
 [%- IF href_get_last_verdicts -%]
-var has_quizzes = false;
-[%- IF has_quizzes -%] has_quizzes = true; [%- END -%]
+var has_quizzes = [% has_quizzes ? 'true' : 'false' %];
 [%- IF !has_snippets -%] $(document).ready(get_last_verdicts); [%- END -%]
 
 function get_last_verdicts() {
@@ -428,7 +427,7 @@ function gen_forms(problems, callback) {
 function process_submit(e) {
   e.preventDefault();
   var form = $(this);
-  [% IF has_quizzes %]if (!is_all_quiz_input_valid(form)) return;[% END %]
+  if (has_quizzes && !is_all_quiz_input_valid(form)) return;
   var request_url = '[% href_submit_problem %]';
   if (!sid) return;
   request_url += ';sid=' + sid;
@@ -519,7 +518,8 @@ function get_sources_info_api(rid_param) {
       }
       if (response.de_id)
         form.find('select[name=de_id]').val(response.de_id).change();
-      [% IF has_quizzes %] fill_quiz_forms(editor, form.parents('.problem_text')); [% END %]
+      if (has_quizzes)
+        fill_quiz_forms(editor, form.parents('.problem_text'));
     }
   });
 }
@@ -575,7 +575,8 @@ function fill_snippets(data, snippet_list) {
     var snippet_data = data[snippet_list[i].getAttribute('cats-snippet')];
     if (snippet_data !== undefined && snippet_data !== null) {
       snippet_list[i].innerHTML = htmlWithCDATASectionsToHtmlWithout(snippet_data);
-      has_quizzes = $(snippet_list[i]).find('Quiz').length ? true : has_quizzes;
+      if (!has_quizzes && $(snippet_list[i]).find('Quiz').length)
+        has_quizzes = true;
     }
     else
       all_snippets_received = 0;
