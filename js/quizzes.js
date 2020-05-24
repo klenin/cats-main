@@ -9,6 +9,7 @@ function init_quizzes() {
     var editor_changed_callback = fill_quiz_forms.bind(null, editor, problem_text);
     problem_text.find('Quiz').each(function() {
       var quiz = $(this);
+      if (quiz.find('form').length) return;
       quiz.find('Text').each(function() {
         $(this).replaceWith($('<p></p>', {html: $(this).html()}));
       });

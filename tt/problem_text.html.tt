@@ -383,6 +383,7 @@ function gen_forms(problems, callback) {
   var gen_form = function(select_id, editor_id, problem_id, cpid) {
     if (!problems[cpid].allowed) return;
     var container = $('#p' + cpid).find('.submit');
+    if (container.find('form').length) return;
     var form = $('<form>').attr({ enctype: 'multipart/form-data', class: 'submit_form hidden' });
 
     var select = $('<select>').attr({ name: 'de_id', id: select_id, class: 'toolbar_item editor_only' });
@@ -419,7 +420,7 @@ function gen_forms(problems, callback) {
     set_syntax(editor_id, select_id);
   }
   [% FOREACH p IN problems %] gen_form('de[% p.id %]', 'ed_pt[% p.cpid %]', '[% p.id %]', '[% p.cpid %]'); [% END %]
-  $('.submit_form').toggleClass('hidden');
+  $('.submit_form').removeClass('hidden');
   init_editors(callback);
   if (has_quizzes) init_quizzes();
 }
@@ -600,7 +601,7 @@ function get_snippets_data(problem_id, request_url) {
     success: function(result) { fill_snippets(result, snippets); }
   }).then(function() {
     if (!all_snippets_received) {
-      setTimeout(update_snippets, timeout_interval);
+      setTimeout(function() { get_snippets_data(problem_id, request_url); }, timeout_interval);
       timeout_interval *= 2;
     }
     if (all_snippets_received)
