@@ -27,6 +27,7 @@ function init_editors(callback) {
   } catch (exception) {}
   get_editor($('body')).each(function() {
     var textarea = $(this);
+    if (textarea.is(":hidden")) return;
     var mode = textarea.data('editor');
     textarea.width(Math.min(textarea.width(), document.body.clientWidth - 8));
     var editorContainer = $('<div>', {
