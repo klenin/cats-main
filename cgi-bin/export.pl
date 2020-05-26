@@ -23,9 +23,10 @@ use CATS::Verdicts;
 use CATS::Web::Mockup;
 
 my $file_pattern_default = '%code%_%id%_%verdict%.%ext%';
+#my $header_pattern_default = '%id% %submit_time% %verdict% %orig_fname%.%ext%';
 
 GetOptions(
-    help => \(my $help = 0),
+    'help|h' => \(my $help = 0),
     'contest=i' => \(my $contest_id = 0),
     'mode=s' => \(my $mode = ''),
     'dest=s' => \(my $dest),
@@ -34,7 +35,7 @@ GetOptions(
     'file-pattern=s' => \(my $file_pattern = $file_pattern_default),
     'header-pattern=s' => \(my $header_pattern = ''),
     'site=i' => \(my $site),
-    'search=s' => \(my $search = ''),
+    'search|s=s' => \(my $search = ''),
 );
 
 sub usage {
@@ -45,7 +46,9 @@ Usage: $0 [--help] --contest=<contest id> --mode={log|runs}
     [--dry-run]
     [--encoding=<encoding>]
     [--file-pattern=<file name pattern>, default is $file_pattern_default]
+    [--header-pattern=<in-file header pattern>, default is none]
     [--site=<site id>]
+    [--search=<search expression>, search expression, same syntax as a web console]
 ~;
     exit;
 }
@@ -111,6 +114,7 @@ elsif ($mode eq 'runs') {
             $orig_fname or last;
             ($r->{orig_fname}, $r->{ext}) = $orig_fname =~ /^(.*?)\.([a-zA-Z0-9]+)?$/;
             $r->{verdict} = $CATS::Verdicts::state_to_name->{$r->{request_state}};
+            $r->{points} = $r->{clarified} // 0;
             apply_pattern(my $fn = $file_pattern, $r);
             apply_pattern(my $header = $header_pattern, $r);
             if ($dry_run) {
