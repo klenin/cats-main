@@ -44,7 +44,8 @@ sub _make_checker {
     # Per Text::Aspell docs, we cannot change options of the existing object,
     # so create a new one per language.
     my $spellchecker = Text::Aspell->new;
-    $spellchecker->set_option('lang', $kl);
+    $spellchecker->set_option(lang => $kl);
+    $spellchecker->set_option(encoding => 'UTF-8');
     $spellchecker;
 }
 
