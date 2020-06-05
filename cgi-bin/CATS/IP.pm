@@ -34,6 +34,16 @@ sub linkify_ip {
     )
 }
 
+sub is_blocked {
+    my ($ip_list) = @_;
+    for my $ip (split /[,\s]+/, $ip_list) {
+        for my $block (@CATS::Config::ip_blocked_regexps) {
+            return 1 if $ip =~ $block;
+        }
+    }
+    0;
+}
+
 # See https://2019.www.torproject.org/projects/tordnsel.html.en
 
 my $https_port = 443;

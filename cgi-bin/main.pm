@@ -26,6 +26,7 @@ use lib $cats_problem_lib_dir;
 use CATS::DB;
 use CATS::Globals qw($t);
 use CATS::Init;
+use CATS::IP;
 use CATS::MainMenu;
 use CATS::Output;
 use CATS::Proxy;
@@ -61,6 +62,8 @@ sub accept_request {
 
 sub handler {
     my ($r) = @_;
+
+    return if CATS::IP::is_blocked(CATS::IP::get_ip);
 
     my $p = CATS::Web->new;
     $p->init_request($r);
