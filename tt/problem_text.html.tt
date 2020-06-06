@@ -271,18 +271,9 @@ function toggle_wide_text() {
 }
 $('.wide_text').click(toggle_wide_text).each(toggle_wide_text);
 
-function toggle_editor_visibility() {
-  var editor_container = get_editor_container($(this).parents('.problem_text'));
-  if (this.checked) {
-    editor_container.show();
-    var editor_id = get_editor($(this).parents('.problem_text')).attr('data-id');
-    var editor = ace.edit(editor_id);
-    editor.resize();
-  }
-  else
-    editor_container.hide();
-}
-$('.show_editor').click(toggle_editor_visibility);
+$('.show_editor').click(function() {
+  Editor.toggle_editors_visibility($(this).parents('.problem_text'));
+});
 
 $('.problem_text div.problem_menu li.langs a').click(function() {
   var p = document.location.pathname;

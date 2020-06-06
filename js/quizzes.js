@@ -3,8 +3,7 @@ function init_quizzes() {
   $('.problem_text').each(function() {
     var survey_models = [];
     var problem_text = $(this);
-    var editor_id = get_editor(problem_text).attr('data-id');
-    var editor = ace.edit(editor_id);
+    var editor = Editor.get_editor(problem_text);
     var quiz_count = 0;
     var editor_changed_callback = fill_quiz_forms.bind(null, editor, problem_text);
     problem_text.find('Quiz').each(function() {
@@ -49,7 +48,7 @@ function init_quizzes() {
     if (quiz_count) {
       var check_box = problem_text.find('.show_editor');
       check_box[0].checked = false;
-      toggle_editor_visibility.bind(check_box).call();
+      check_box.click();
       problem_text.find('.editor_only').hide();
       problem_text.data('survey_models', survey_models);
       editor.getSession().addEventListener('change', editor_changed_callback);
