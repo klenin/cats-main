@@ -7,9 +7,9 @@
   if (!ace) return;
   Editor.set_syntax('ed_pe[% pid %]_[% file %]', 'de_id');
   var editor = Editor.get_editor($('.page_body'));
-  if ($('option:selected', $('#de_id')).attr('editor-syntax') === 'xml') {
-    Editor.highlight_errors('log', [ /at\sline\s(\d+)/ ], 'editor');
-  }
+  if (!editor) return;
+  if ($('option:selected', $('#de_id')).attr('editor-syntax') === 'xml')
+    Editor.highlight_errors('log', [ /at\sline\s(\d+)/ ], 'ed_pe[% pid %]_[% file %]');
   var langTools = ace.require('ace/ext/language_tools');
   var cats_tags = [ [% FOREACH a IN cats_tags; "'$a'"; ', ' UNLESS loop.last; END %] ];
   var keywords = [ [% FOREACH kw IN keywords; "'$kw.code'"; ', ' UNLESS loop.last; END %] ];
@@ -87,11 +87,11 @@
     <button type="button" id="wrap_button" class="button toolbar_item">[% capt.wrap %]</button>
     <button type="button" id="keyword_button" class="button toolbar_item">[% capt.keyword %]</button>
     <a class="problem_menu_trigger toolbar_item">&#x2261
-      <div class="editor_menu"><button class="button" type="button" onclick="Editor.reset_localstorage('ed_pe[% pid %]_[% file %]')">[% capt.reset %]</button></div>
+      <div class="editor_menu"><button class="button" type="button" onclick="Editor.reset_localstorage('ed_pe[% pid %]_[% IF edit_file; file; ELSE; hash; END; %]')">[% capt.reset %]</button></div>
     </a>
   </div>
     <div>
-<textarea rows="40" cols="100" name="src" data-editor="[% de_selected.syntax || 'text' %]" data-gutter="1" data-id="ed_pe[% pid %]_[%- IF edit_file; path.file_name; ELSE; hash; END; %]">
+<textarea rows="40" cols="100" name="src" data-editor="[% de_selected.syntax || 'text' %]" data-gutter="1" data-id="ed_pe[% pid %]_[% IF edit_file; file; ELSE; hash; END; %]">
 [%- IF blob.content; blob.content | html; ELSE; FOREACH line IN blob.lines %]
 [% line.text | html %]
 [%- END; END ~%]
