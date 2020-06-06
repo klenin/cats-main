@@ -167,7 +167,7 @@ function Editor() {
         sess.doc.setValue(textarea_value);
         sess.selection.moveTo(0, 0);
       }
-      // Wait until ace-mode is loaded
+      // Wait until ace-mode is loaded.
       setTimeout(save_editor_to_storage, 500);
     }
 
@@ -177,7 +177,7 @@ function Editor() {
     if (!old_hash) localStorage.setItem(hash_key, new_hash);
     var state = JSON.parse(localStorage.getItem(editor_id));
     if (!state) return;
-    if (new_hash !== old_hash) {
+    if (old_hash && (new_hash !== old_hash)) {
       var msg = $('#different_versions_msg').text();
       if (msg) $('.messages').text(msg);
       localStorage.setItem(hash_key, new_hash);
