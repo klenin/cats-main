@@ -397,7 +397,7 @@ function gen_forms(problems) {
 
     $('<textarea>').attr({
       name: 'source_text', cols: 100, rows: 15,
-      'data-editor': 'text', 'data-gutter': '1', 'data-id': editor_id
+      'data-editor': 'text', 'data-gutter': '1', 'data-id': editor_id, 'data-init-defer': '1'
     }).appendTo(form);
     $('<input>').attr({ type: 'hidden', name: 'problem_id', value: problem_id }).appendTo(form);
 

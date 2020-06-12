@@ -26,6 +26,7 @@ function Editor() {
   this.init_editors = function() {
     var self = this;
     $('body').find('textarea[data-id]').each(function() {
+      if ($(this).data('init-defer')) return;
       self.init_editor($(this).data('id'));
     });
   };
