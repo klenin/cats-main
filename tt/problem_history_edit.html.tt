@@ -5,10 +5,10 @@
 </style>
 <script>window.addEventListener('load', function () {
   if (!ace) return;
-  set_syntax('ed_pe[% pid %]_[% file %]', 'de_id');
-  var editor = ace.edit(get_editor($('.page_body')).attr('data-id'));
+  Editor.set_syntax('ed_pe[% pid %]_[% file %]', 'de_id');
+  var editor = Editor.get_editor($('.page_body'));
   if ($('option:selected', $('#de_id')).attr('editor-syntax') === 'xml') {
-    highlight_errors('log', [ /at\sline\s(\d+)/ ], 'editor');
+    Editor.highlight_errors('log', [ /at\sline\s(\d+)/ ], 'editor');
   }
   var langTools = ace.require('ace/ext/language_tools');
   var cats_tags = [ [% FOREACH a IN cats_tags; "'$a'"; ', ' UNLESS loop.last; END %] ];
@@ -87,7 +87,7 @@
     <button type="button" id="wrap_button" class="button toolbar_item">[% capt.wrap %]</button>
     <button type="button" id="keyword_button" class="button toolbar_item">[% capt.keyword %]</button>
     <a class="problem_menu_trigger toolbar_item">&#x2261
-      <div class="editor_menu"><button class="button" type="button" onclick="reset_localstorage('ed_pe[% pid %]_[% file %]')">[% capt.reset %]</button></div>
+      <div class="editor_menu"><button class="button" type="button" onclick="Editor.reset_localstorage('ed_pe[% pid %]_[% file %]')">[% capt.reset %]</button></div>
     </a>
   </div>
     <div>

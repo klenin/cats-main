@@ -294,7 +294,7 @@ function chg_code(st_sel, pid) {
 [% END %]
 </form>
 <script type="text/javascript">
-  $(document).on('ready', (function() { set_syntax('ed_p[% contest_id %]', 'de_id'); }));
+  $(document).on('ready', (function() { Editor.set_syntax('ed_p[% contest_id %]', 'de_id'); }));
 </script>
 [% IF editable %]
 <script type="text/javascript">

@@ -43,7 +43,7 @@
         [% END %]
       [% END %]
         <a class="problem_menu_trigger toolbar_item" onclick="$(this).toggleClass('problem_menu_hovered')">&#x2261;
-          <div class="editor_menu"><button class="button" type="button" onclick="reset_localstorage('ed_vs[% si.req_id %]')">[% capt.reset %]</button></div>
+          <div class="editor_menu"><button class="button" type="button" onclick="Editor.reset_localstorage('ed_vs[% si.req_id %]')">[% capt.reset %]</button></div>
         </a>
       </div>
       <textarea name="source_text" cols="[% source_width %]" rows="40"
@@ -56,8 +56,8 @@
     ([% si.src_len | group_digits %] b) [% si.sha1 IF user.is_root %]
   </td>
   <script>window.addEventListener('load', function () {
-    highlight_errors('co[% si.req_id %]', [ [% si.err_regexp_js.join(', ') %] ], 'ed_vs[% si.req_id %]');
-    set_syntax('ed_vs[% si.req_id %]', 'de[% si.req_id %]');
+    Editor.highlight_errors('co[% si.req_id %]', [ [% si.err_regexp_js.join(', ') %] ], 'ed_vs[% si.req_id %]');
+    Editor.set_syntax('ed_vs[% si.req_id %]', 'de[% si.req_id %]');
   })</script>
 [% END %]
 </tr>
