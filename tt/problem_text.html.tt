@@ -328,7 +328,7 @@ function static_highlight() {
   $('code[language]').each(function() {
     ace_static_highlight(this, {
       mode: 'ace/mode/' + this.getAttribute('language'),
-      theme: 'ace/theme/' + (editor_theme || 'chrome'),
+      theme: 'ace/theme/' + Editor.theme,
       showGutter: false,
       fontSize: "14pt",
     }, do_nothing);

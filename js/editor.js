@@ -15,6 +15,7 @@ function Editor() {
   } catch (exception) {}
 
   this._editors = {};
+  this.theme = 'chrome';
 
   this.get_editor = function(context) {
     var textarea = context.find('textarea[data-id]');
@@ -242,7 +243,7 @@ function Editor() {
 
   this._configurate_editor = function(ace_editor, textarea) {
     ace_editor.renderer.setShowGutter(textarea.data('gutter'));
-    ace_editor.setTheme('ace/theme/chrome');
+    ace_editor.setTheme('ace/theme/' + this.theme);
     ace_editor.setOptions({
       enableBasicAutocompletion: true,
       fontSize: '14px',
