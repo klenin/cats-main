@@ -271,18 +271,9 @@ function toggle_wide_text() {
 }
 $('.wide_text').click(toggle_wide_text).each(toggle_wide_text);
 
-function toggle_editor_visibility() {
-  var editor_container = get_editor_container($(this).parents('.problem_text'));
-  if (this.checked) {
-    editor_container.show();
-    var editor_id = get_editor($(this).parents('.problem_text')).attr('data-id');
-    var editor = ace.edit(editor_id);
-    editor.resize();
-  }
-  else
-    editor_container.hide();
-}
-$('.show_editor').click(toggle_editor_visibility);
+$('.show_editor').click(function() {
+  Editor.toggle_editors_visibility($(this).parents('.problem_text'));
+});
 
 $('.problem_text div.problem_menu li.langs a').click(function() {
   var p = document.location.pathname;
@@ -371,15 +362,11 @@ function get_last_verdicts() {
         pd.show();
       }
     }
-    if (result.can_submit && has_submit) {
-      gen_forms(result, function() {
-        if (rid) get_sources_info_api(rid);
-      });
-    }
+    if (result.can_submit && has_submit) gen_forms(result);
   });
 }
 
-function gen_forms(problems, callback) {
+function gen_forms(problems) {
   var gen_form = function(select_id, editor_id, problem_id, cpid) {
     if (!problems[cpid].allowed) return;
     var container = $('#p' + cpid).find('.submit');
@@ -397,31 +384,33 @@ function gen_forms(problems, callback) {
     $('<button>').
       attr({ type: 'submit', name: 'submit', class: 'button toolbar_item' }).
       text('[% capt.submit %]').appendTo(form);
-    $('<button>').
-      attr({ type: 'button', class: 'button toolbar_item' }).text('[% capt.last_submit %]').
-      click(get_sources_info_api).appendTo(form);
+    var sources_info_btn = $('<button>').attr({ type: 'button', class: 'button toolbar_item' })
+      .text('[% capt.last_submit %]')
+      .click(get_sources_info_api).appendTo(form);
 
     var menu_trigger = $('<a>').attr({ class: 'problem_menu_trigger toolbar_item' }).
       html('&#x2261').click(function() { $(this).toggleClass('problem_menu_hovered'); }).appendTo(form);
     var editor_menu = $('<div>').attr('class', 'editor_menu').appendTo(menu_trigger);
     $('<button>').attr({ class: 'button', type: 'button' }).
-      text('[% capt.reset %]').click(function() { reset_localstorage(editor_id) }).appendTo(editor_menu);
+      text('[% capt.reset %]').click(function() { Editor.reset_localstorage(editor_id) }).appendTo(editor_menu);
     $('<br><br>').appendTo(form);
 
     $('<textarea>').attr({
       name: 'source_text', cols: 100, rows: 15,
-      'data-editor': 'text', 'data-gutter': '1', 'data-id': editor_id
+      'data-editor': 'text', 'data-gutter': '1', 'data-id': editor_id, 'data-init-defer': '1'
     }).appendTo(form);
     $('<input>').attr({ type: 'hidden', name: 'problem_id', value: problem_id }).appendTo(form);
 
     $('<div>').attr({ 'class' : 'submit_messages'}).appendTo(container);
     form.on('submit', process_submit);
     form.appendTo(container);
-    set_syntax(editor_id, select_id);
+    form.removeClass('hidden');
+    Editor.init_editor(editor_id);
+    Editor.set_syntax(editor_id, select_id);
+    // Load to editor source code of requested submission.
+    if (rid) sources_info_btn.click();
   }
   [% FOREACH p IN problems %] gen_form('de[% p.id %]', 'ed_pt[% p.cpid %]', '[% p.id %]', '[% p.cpid %]'); [% END %]
-  $('.submit_form').removeClass('hidden');
-  init_editors(callback);
   if (has_quizzes) init_quizzes();
 }
 
@@ -444,8 +433,9 @@ function process_submit(e) {
       form_params[i].value = '[% quiz_de.de_id %]';
     }
     if (form_params[i].name === 'source_text') {
-      var editor_id = get_editor(form).attr('data-id');
-      form_params[i].value = ace.edit(editor_id).getSession().getValue();
+      var editor = Editor.get_editor(form);
+      if (!editor) return false;
+      form_params[i].value = editor.getSession().getValue();
     }
     form_data.append(form_params[i].name, form_params[i].value);
   }
@@ -501,7 +491,7 @@ function fill_messages(response, form) {
 function get_sources_info_api(rid_param) {
   if (!sid) return;
   var form = $(this).parent();
-  var editor = ace.edit(get_editor(form).attr('data-id'));
+  var editor = Editor.get_editor(form);
   if (!ace || !editor) return;
   var request_url = '[% href_get_sources_info %]' + ';sid=' + sid;
   if (uid) request_url += ';uid=' + uid;
@@ -510,10 +500,6 @@ function get_sources_info_api(rid_param) {
     url: request_url,
     data: { problem_id: form.find('input[name=problem_id]').val() },
     success: function(response) {
-      if (rid_param && response.cp_id) {
-        form = $('#p' + response.cp_id);
-        editor = ace.edit(get_editor(form).attr('data-id'));
-      }
       if (response.src) {
         editor.session.doc.setValue(response.src);
         editor.focus();
