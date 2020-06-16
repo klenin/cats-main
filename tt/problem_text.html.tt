@@ -272,7 +272,7 @@ function toggle_wide_text() {
 $('.wide_text').click(toggle_wide_text).each(toggle_wide_text);
 
 $('.show_editor').click(function() {
-  Editor.toggle_editors_visibility($(this).parents('.problem_text'));
+  Editor.toggle_editor_visibility($(this).parents('.problem_text'));
 });
 
 $('.problem_text div.problem_menu li.langs a').click(function() {
