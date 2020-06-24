@@ -89,6 +89,8 @@ sub wiki_pages_frame {
         { caption => res_str(634), order_by => 'last_modified', width => '5%', col => 'Lm' },
     ]);
     $lv->define_db_searches($page_form->{sql_fields});
+    $lv->define_db_searches({ map { +"text_$_" => qq~(
+        SELECT WT.text FROM wiki_texts WT WHERE WT.wiki_id = WP.id AND WT.lang = '$_')~ } @cats::langs });
 
     my ($q, @bind) = $sql->select('wiki_pages WP', [
         'WP.id', @{$page_form->{sql_fields}},
