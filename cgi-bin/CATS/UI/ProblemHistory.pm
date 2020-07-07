@@ -263,6 +263,8 @@ sub _save_content {
     !$p->{upload} || $p->{source}
         or return (Encode::decode($p->{enc} // 'UTF-8', $p->{src}), res_str(1205));
 
+    $p->{new_name} or return msg(1209) if $p->{new};
+
     my $hash_base = $p->{hb};
     $p->{src} = $p->{source}->content if $p->{upload};
     my $content = $p->{src};
