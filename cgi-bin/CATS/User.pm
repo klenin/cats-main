@@ -98,7 +98,7 @@ sub generate_login {
 
 sub any_official_contest_by_team {
     my ($account_id) = @_;
-    $dbh->selectrow_array(q~
+    $dbh->selectrow_array(qq~
         SELECT C.title FROM contests C
             INNER JOIN contest_accounts CA ON CA.contest_id = C.id
             INNER JOIN accounts A ON A.id = CA.account_id
