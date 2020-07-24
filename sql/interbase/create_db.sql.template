@@ -5,6 +5,9 @@ CREATE DATABASE 'localhost:<path-to-your-database>' USER '<your-username>' PASSW
 INPUT init_relations.sql;
 COMMIT;
 
+INPUT init_misc.sql;
+COMMIT;
+
 INPUT init_roles.sql;
 COMMIT;
 

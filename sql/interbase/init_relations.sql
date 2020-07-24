@@ -35,7 +35,6 @@ CREATE TABLE accounts (
     affiliation      VARCHAR(200),
     affiliation_year INTEGER
 );
-CREATE INDEX accounts_sid_idx ON accounts(sid);
 
 CREATE TABLE account_tokens (
     token       VARCHAR(40) NOT NULL PRIMARY KEY,
@@ -136,8 +135,6 @@ CREATE TABLE contest_tags (
     id       INTEGER NOT NULL PRIMARY KEY,
     name     VARCHAR(100) NOT NULL
 );
-
-CREATE INDEX contest_tags_name_idx ON contest_tags(name);
 
 CREATE TABLE contest_contest_tags (
     contest_id   INTEGER NOT NULL,
@@ -329,8 +326,6 @@ CREATE TABLE problem_sources_imported (
     guid        VARCHAR(100) /* For cross-contest references. */
 );
 
-CREATE INDEX ps_guid_idx ON problem_sources_local(guid);
-
 CREATE TABLE problem_attachments (
     id          INTEGER NOT NULL PRIMARY KEY,
     problem_id  INTEGER REFERENCES problems(id) ON DELETE CASCADE,
@@ -396,7 +391,6 @@ CREATE TABLE events (
     account_id INTEGER REFERENCES accounts(id) ON DELETE CASCADE,
     ip         VARCHAR(100) DEFAULT ''
 );
-CREATE DESCENDING INDEX idx_events_ts ON events(ts);
 
 CREATE TABLE questions (
     id          INTEGER NOT NULL PRIMARY KEY,
@@ -408,7 +402,6 @@ CREATE TABLE questions (
     account_id  INTEGER REFERENCES contest_accounts(id) ON DELETE CASCADE,
     received    INTEGER DEFAULT 0 CHECK (received IN (0, 1))
 );
-CREATE DESCENDING INDEX idx_questions_submit_time ON questions(submit_time);
 
 CREATE TABLE messages (
     id          INTEGER NOT NULL PRIMARY KEY,
@@ -437,7 +430,6 @@ CREATE TABLE reqs (
     elements_count INTEGER DEFAULT 0,
     tag         VARCHAR(200)
 );
-CREATE DESCENDING INDEX idx_reqs_submit_time ON reqs(submit_time);
 
 CREATE TABLE jobs (
     id          INTEGER NOT NULL PRIMARY KEY,
@@ -551,7 +543,6 @@ CREATE TABLE contest_groups (
     /* Comma-separated sorted list of contest ids. */
     clist  VARCHAR(200)
 );
-CREATE INDEX idx_contest_groups_clist ON contest_groups(clist);
 
 CREATE TABLE prizes (
     id     INTEGER NOT NULL PRIMARY KEY,
@@ -664,8 +655,6 @@ CREATE TABLE de_tags (
     description   BLOB SUB_TYPE TEXT
 );
 
-CREATE INDEX de_tags_name_idx ON de_tags(name);
-
 CREATE TABLE de_de_tags (
     de_id         INTEGER NOT NULL,
     tag_id        INTEGER NOT NULL,
@@ -685,11 +674,3 @@ CREATE TABLE contest_de_tags (
     CONSTRAINT contest_de_tags_tag_fk
         FOREIGN KEY (tag_id) REFERENCES de_tags(id)
 );
-
-CREATE GENERATOR key_seq;
-CREATE GENERATOR login_seq;
-
-SET GENERATOR key_seq TO 1000;
-
-CREATE SEQUENCE de_bitmap_cache_seq;
-ALTER SEQUENCE de_bitmap_cache_seq RESTART WITH 1000;
