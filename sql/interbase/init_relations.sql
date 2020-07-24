@@ -19,7 +19,7 @@ CREATE TABLE accounts (
     passwd           VARCHAR(100) DEFAULT '',
     sid              VARCHAR(30),
     srole            INTEGER NOT NULL, /* 0 - root, 1 - user, 2 - can create contests, 4 - can delete messages */
-    last_login       TIMESTAMP,
+    last_login       CATS_TIMESTAMP,
     last_ip          VARCHAR(100) DEFAULT '',
     restrict_ips     VARCHAR(200), /* NULL - unrestricted */
     locked           INTEGER DEFAULT 0 CHECK (locked IN (0, 1)),
@@ -29,7 +29,7 @@ CREATE TABLE accounts (
     country          VARCHAR(30),
     motto            VARCHAR(200),
     git_author_email VARCHAR(200) DEFAULT NULL,
-    settings         BLOB SUB_TYPE 0,
+    settings         CATS_BLOB,
     city             VARCHAR(200),
     tz_offset        FLOAT,
     affiliation      VARCHAR(200),
@@ -39,7 +39,7 @@ CREATE TABLE accounts (
 CREATE TABLE account_tokens (
     token       VARCHAR(40) NOT NULL PRIMARY KEY,
     account_id  INTEGER NOT NULL REFERENCES accounts(id),
-    last_used   TIMESTAMP,
+    last_used   CATS_TIMESTAMP,
     usages_left INTEGER,
     referer     VARCHAR(200)
 );
@@ -48,7 +48,7 @@ CREATE TABLE contact_types (
     id      INTEGER NOT NULL PRIMARY KEY,
     name    VARCHAR(100) NOT NULL,
     url     VARCHAR(100),
-    icon    BLOB
+    icon    CATS_BLOB
 );
 
 CREATE TABLE contacts (
@@ -67,7 +67,7 @@ CREATE TABLE judges (
     version          VARCHAR(100),
     pin_mode         INTEGER DEFAULT 0,
     is_alive         INTEGER DEFAULT 0 CHECK (is_alive IN (0, 1)),
-    alive_date       TIMESTAMP
+    alive_date       CATS_TIMESTAMP
 );
 ALTER TABLE judges ADD CONSTRAINT chk_judge_pin_mode
     CHECK (pin_mode IN (0, 1, 2, 3));
@@ -82,13 +82,13 @@ CREATE TABLE judge_de_bitmap_cache (
 CREATE TABLE contests (
     id            INTEGER NOT NULL PRIMARY KEY,
     title         VARCHAR(200) NOT NULL,
-    short_descr   BLOB SUB_TYPE TEXT,
-    start_date    TIMESTAMP,
-    finish_date   TIMESTAMP,
-    freeze_date   TIMESTAMP,
-    defreeze_date TIMESTAMP,
-    pub_reqs_date TIMESTAMP,
-    offset_start_until   TIMESTAMP,
+    short_descr   CATS_TEXT,
+    start_date    CATS_TIMESTAMP,
+    finish_date   CATS_TIMESTAMP,
+    freeze_date   CATS_TIMESTAMP,
+    defreeze_date CATS_TIMESTAMP,
+    pub_reqs_date CATS_TIMESTAMP,
+    offset_start_until   CATS_TIMESTAMP,
     closed               INTEGER DEFAULT 0 CHECK (closed IN (0, 1)),
     is_hidden            SMALLINT DEFAULT 0 CHECK (is_hidden IN (0, 1)),
     penalty              INTEGER,
@@ -149,7 +149,7 @@ CREATE TABLE contest_contest_tags (
 CREATE TABLE acc_groups (
     id          INTEGER NOT NULL PRIMARY KEY,
     name        VARCHAR(200),
-    description BLOB SUB_TYPE TEXT
+    description CATS_TEXT
 );
 
 CREATE TABLE acc_group_accounts (
@@ -182,7 +182,7 @@ CREATE TABLE sites (
     region   VARCHAR(200),
     city     VARCHAR(200),
     org_name VARCHAR(200),
-    address  BLOB SUB_TYPE TEXT
+    address  CATS_TEXT
 );
 
 CREATE TABLE contest_sites (
@@ -242,16 +242,16 @@ CREATE TABLE problems (
     commit_sha         CHAR(40),
     input_file         VARCHAR(200) NOT NULL,
     output_file        VARCHAR(200) NOT NULL,
-    upload_date        TIMESTAMP,
+    upload_date        CATS_TIMESTAMP,
     std_checker        VARCHAR(60),
-    statement          BLOB,
-    explanation        BLOB,
-    pconstraints       BLOB,
-    input_format       BLOB,
-    output_format      BLOB,
-    formal_input       BLOB,
-    json_data          BLOB,
-    zip_archive        BLOB,
+    statement          CATS_BLOB,
+    explanation        CATS_BLOB,
+    pconstraints       CATS_BLOB,
+    input_format       CATS_BLOB,
+    output_format      CATS_BLOB,
+    formal_input       CATS_BLOB,
+    json_data          CATS_BLOB,
+    zip_archive        CATS_BLOB,
     last_modified_by   INTEGER REFERENCES accounts(id) ON DELETE SET NULL ON UPDATE CASCADE,
     max_points         INTEGER,
     hash               VARCHAR(200),
@@ -309,7 +309,7 @@ CREATE TABLE problem_sources_local (
     id           INTEGER NOT NULL PRIMARY KEY REFERENCES problem_sources(id) ON DELETE CASCADE,
     stype        INTEGER, /* stype: See Constants.pm */
     de_id        INTEGER NOT NULL REFERENCES default_de(id) ON DELETE CASCADE,
-    src          BLOB,
+    src          CATS_BLOB,
     fname        VARCHAR(200),
     name         VARCHAR(60),
     input_file   VARCHAR(200),
@@ -331,7 +331,7 @@ CREATE TABLE problem_attachments (
     problem_id  INTEGER REFERENCES problems(id) ON DELETE CASCADE,
     name        VARCHAR(200) NOT NULL,
     file_name   VARCHAR(200) NOT NULL,
-    data        BLOB
+    data        CATS_BLOB
 );
 
 CREATE TABLE pictures (
@@ -339,7 +339,7 @@ CREATE TABLE pictures (
     problem_id  INTEGER REFERENCES problems(id) ON DELETE CASCADE,
     name        VARCHAR(30) NOT NULL,
     extension   VARCHAR(20),
-    pic         BLOB
+    pic         CATS_BLOB
 );
 
 CREATE TABLE tests (
@@ -350,10 +350,10 @@ CREATE TABLE tests (
     generator_id    INTEGER DEFAULT NULL REFERENCES problem_sources(id) ON DELETE CASCADE,
     param           VARCHAR(200) DEFAULT NULL,
     std_solution_id INTEGER DEFAULT NULL REFERENCES problem_sources(id) ON DELETE CASCADE,
-    in_file         BLOB, /* For generated input, length = min(in_file_size, save_input_prefix). */
+    in_file         CATS_BLOB, /* For generated input, length = min(in_file_size, save_input_prefix). */
     in_file_size    INTEGER, /* Size of generated input, else NULL. */
     in_file_hash    VARCHAR(100) DEFAULT NULL,
-    out_file        BLOB, /* For generated answer, length = min(out_file_size, save_answer_prefix). */
+    out_file        CATS_BLOB, /* For generated answer, length = min(out_file_size, save_answer_prefix). */
     out_file_size   INTEGER, /* Size of generated answer, else NULL. */
     points          INTEGER,
     gen_group       INTEGER,
@@ -378,8 +378,8 @@ CREATE TABLE testsets (
 CREATE TABLE samples (
     problem_id      INTEGER REFERENCES problems(id) ON DELETE CASCADE,
     rank            INTEGER CHECK (rank > 0),
-    in_file         BLOB,
-    out_file        BLOB
+    in_file         CATS_BLOB,
+    out_file        CATS_BLOB
 );
 
 /* id is the same as reqs, questions or messages */
@@ -387,7 +387,7 @@ CREATE TABLE events (
     id         INTEGER NOT NULL PRIMARY KEY,
     /* 1 - req, 3 - message */
     event_type SMALLINT DEFAULT 0 NOT NULL,
-    ts         TIMESTAMP NOT NULL,
+    ts         CATS_TIMESTAMP NOT NULL,
     account_id INTEGER REFERENCES accounts(id) ON DELETE CASCADE,
     ip         VARCHAR(100) DEFAULT ''
 );
@@ -395,17 +395,17 @@ CREATE TABLE events (
 CREATE TABLE questions (
     id          INTEGER NOT NULL PRIMARY KEY,
     clarified   INTEGER DEFAULT 0 CHECK (clarified IN (0, 1)),
-    submit_time TIMESTAMP,
-    clarification_time  TIMESTAMP,
-    question    BLOB,
-    answer      BLOB,
+    submit_time CATS_TIMESTAMP,
+    clarification_time  CATS_TIMESTAMP,
+    question    CATS_BLOB,
+    answer      CATS_BLOB,
     account_id  INTEGER REFERENCES contest_accounts(id) ON DELETE CASCADE,
     received    INTEGER DEFAULT 0 CHECK (received IN (0, 1))
 );
 
 CREATE TABLE messages (
     id          INTEGER NOT NULL PRIMARY KEY,
-    text        BLOB SUB_TYPE TEXT,
+    text        CATS_TEXT,
     received    INTEGER DEFAULT 0 CHECK (received IN (0, 1)),
     broadcast   INTEGER DEFAULT 0 CHECK (broadcast IN (0, 1)),
     contest_id  INTEGER REFERENCES contests(id) ON DELETE CASCADE,
@@ -417,9 +417,9 @@ CREATE TABLE reqs (
     account_id  INTEGER NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
     problem_id  INTEGER NOT NULL REFERENCES problems(id) ON DELETE CASCADE,
     contest_id  INTEGER REFERENCES contests(id) ON DELETE CASCADE,
-    submit_time TIMESTAMP,
-    test_time   TIMESTAMP, /* Time of testing start. */
-    result_time TIMESTAMP, /* Time of testing finish. */
+    submit_time CATS_TIMESTAMP,
+    test_time   CATS_TIMESTAMP, /* Time of testing start. */
+    result_time CATS_TIMESTAMP, /* Time of testing finish. */
     state       INTEGER,
     failed_test INTEGER,
     judge_id    INTEGER REFERENCES judges(id) ON DELETE SET NULL,
@@ -437,9 +437,9 @@ CREATE TABLE jobs (
     parent_id   INTEGER,
     type        INTEGER NOT NULL,
     state       INTEGER NOT NULL, /* 0 - waiting, 1 - in progress, 2 - finished(?) */
-    create_time TIMESTAMP,
-    start_time  TIMESTAMP,
-    finish_time TIMESTAMP,
+    create_time CATS_TIMESTAMP,
+    start_time  CATS_TIMESTAMP,
+    finish_time CATS_TIMESTAMP,
 
     judge_id    INTEGER, /* several(?) */
     testsets    VARCHAR(200),
@@ -466,7 +466,7 @@ CREATE TABLE jobs (
 
 CREATE TABLE logs (
     id      INTEGER NOT NULL PRIMARY KEY,
-    dump    BLOB,
+    dump    CATS_BLOB,
     job_id  INTEGER,
 
     CONSTRAINT logs_job_id_fk FOREIGN KEY (job_id)
@@ -509,9 +509,9 @@ CREATE TABLE req_details (
 CREATE TABLE solution_output (
     req_id          INTEGER NOT NULL,
     test_rank       INTEGER NOT NULL,
-    output          BLOB NOT NULL,
+    output          CATS_BLOB NOT NULL,
     output_size     INTEGER NOT NULL, /* Size is reserved */
-    create_time     TIMESTAMP NOT NULL,
+    create_time     CATS_TIMESTAMP NOT NULL,
 
     CONSTRAINT so_fk FOREIGN KEY (req_id, test_rank) REFERENCES req_details(req_id, test_rank) ON DELETE CASCADE
 );
@@ -519,7 +519,7 @@ CREATE TABLE solution_output (
 CREATE TABLE sources (
     req_id  INTEGER NOT NULL REFERENCES reqs(id) ON DELETE CASCADE,
     de_id   INTEGER NOT NULL REFERENCES default_de(id) ON DELETE CASCADE,
-    src     BLOB,
+    src     CATS_BLOB,
     fname   VARCHAR(200),
     hash    CHAR(32) /* md5_hex */
 );
@@ -570,9 +570,9 @@ CREATE TABLE wiki_texts (
     wiki_id       INTEGER NOT NULL,
     lang          VARCHAR(20) NOT NULL,
     author_id     INTEGER,
-    last_modified TIMESTAMP,
-    title         BLOB SUB_TYPE TEXT,
-    text          BLOB SUB_TYPE TEXT,
+    last_modified CATS_TIMESTAMP,
+    title         CATS_TEXT,
+    text          CATS_TEXT,
 
     CONSTRAINT wiki_texts_wiki_fk
         FOREIGN KEY (wiki_id) REFERENCES wiki_pages(id) ON DELETE CASCADE,
@@ -586,7 +586,7 @@ CREATE TABLE snippets (
     problem_id      INTEGER NOT NULL,
     contest_id      INTEGER NOT NULL,
     name            VARCHAR(200) NOT NULL,
-    text            BLOB SUB_TYPE TEXT,
+    text            CATS_TEXT,
 
     CONSTRAINT snippets_account_id_fk
         FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE,
@@ -602,7 +602,7 @@ CREATE TABLE problem_snippets (
     problem_id      INTEGER NOT NULL,
     snippet_name    VARCHAR(200) NOT NULL,
     generator_id    INTEGER,
-    in_file         BLOB SUB_TYPE TEXT,
+    in_file         CATS_TEXT,
 
     CONSTRAINT problem_snippets_problem_id_fk
         FOREIGN KEY (problem_id) REFERENCES problems(id) ON DELETE CASCADE,
@@ -619,7 +619,7 @@ CREATE TABLE relations (
     to_id    INTEGER NOT NULL,
     from_ok  SMALLINT NOT NULL,
     to_ok    SMALLINT NOT NULL,
-    ts       TIMESTAMP,
+    ts       CATS_TIMESTAMP,
 
     CONSTRAINT relations_from_id_fk
         FOREIGN KEY (from_id) REFERENCES accounts(id) ON DELETE CASCADE,
@@ -643,16 +643,16 @@ CREATE TABLE contest_wikis (
 CREATE TABLE files (
     id            INTEGER NOT NULL PRIMARY KEY,
     name          VARCHAR(200) NOT NULL,
-    last_modified TIMESTAMP,
+    last_modified CATS_TIMESTAMP,
     guid          VARCHAR(50) NOT NULL,
     file_size     INTEGER NOT NULL,
-    description   BLOB SUB_TYPE TEXT
+    description   CATS_TEXT
 );
 
 CREATE TABLE de_tags (
     id            INTEGER NOT NULL PRIMARY KEY,
     name          VARCHAR(200) NOT NULL,
-    description   BLOB SUB_TYPE TEXT
+    description   CATS_TEXT
 );
 
 CREATE TABLE de_de_tags (
