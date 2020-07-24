@@ -5,13 +5,13 @@ CREATE DATABASE 'localhost:<path-to-your-database>' USER '<your-username>' PASSW
 INPUT init_domains.sql;
 COMMIT;
 
-INPUT init_relations.sql;
+INPUT ../common/init_relations.sql;
 COMMIT;
 
 INPUT init_misc.sql;
 COMMIT;
 
-INPUT init_roles.sql;
+INPUT ../common/init_roles.sql;
 COMMIT;
 
 INPUT init_data.sql;

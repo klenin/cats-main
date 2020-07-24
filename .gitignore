@@ -10,3 +10,4 @@ docs/*.html
 *.ttc
 # Created from template
 sql/interbase/create_db.sql
+sql/interbase/init_data.sql

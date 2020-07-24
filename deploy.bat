@@ -492,6 +492,10 @@ __END__
 	@set CREATE_DB="%CREATE_DB_ROOT%\%CREATE_DB_NAME%"
 	@copy "%CREATE_DB_ROOT%\%CREATE_DB_NAME%.template" %CREATE_DB% > nul 
 
+	@set INIT_DATA="%CREATE_DB_ROOT%\init_data.sql"
+	@copy "%CATS_ROOT%\sql\common\init_data.sql.template" %INIT_DATA% > nul
+	@perl -pi.bak -e "s/<NEXT_ID>/GEN_ID(key_seq, 1)/g" %INIT_DATA%
+
 	@echo[
 	@echo[
 	@echo[

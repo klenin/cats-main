@@ -284,6 +284,10 @@ if [[ ($step =~ (^|,)8(,|$) || $step == "*") && $FB_DEV_VERSION ]]; then
 	CREATE_DB="$CREATE_DB_ROOT/$CREATE_DB_NAME"
 	cp "$CREATE_DB_ROOT/${CREATE_DB_NAME}.template" $CREATE_DB
 
+	INIT_DATA="$CREATE_DB_ROOT/init_data.sql"
+	cp "$CATS_ROOT/sql/common/init_data.sql.template" $INIT_DATA
+	sed -i -e "s/<NEXT_ID>/GEN_ID(key_seq, 1)/g" $INIT_DATA
+
 	echo -e "...\n...\n..."
 
 	answer=""
