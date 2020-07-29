@@ -8,7 +8,7 @@ COMMIT;
 INPUT ../common/init_relations.sql;
 COMMIT;
 
-INPUT init_misc.sql;
+INPUT init_idx_gens.sql;
 COMMIT;
 
 INPUT ../common/init_roles.sql;
