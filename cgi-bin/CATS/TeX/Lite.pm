@@ -9,6 +9,7 @@ sub ss { "<span>@_</span>" }
 sub sc { my $class = shift; qq~<span class="$class">@_</span>~ }
 
 my $large_sym = sub { my $f = sc(($_[1] // 'large_sym'), $CATS::TeX::Data::symbols{$_[0]}); sub { $f }; };
+my $sqrt_sym = sc(sqrt_sym => '&#x221A;');
 
 my %generators = (
     var    => sub { ($_[1] || '') . "<i>$_[0]</i>" },
@@ -25,7 +26,7 @@ my %generators = (
     ) },
     subsup => sub { sc('tbl hilo', ss(ss($_[0])) . ss(ss($_[1]))) },
     block  => sub { join '', @_ },
-    'sqrt' => sub { sc(sqrt_sym => '&#x221A;') . sc(sqrt => @_) },
+    'sqrt' => sub { ($_[1] ? qq~<sup class="root">$_[1]</sup>~ : '') . $sqrt_sym . sc(sqrt => $_[0]) },
     overline => sub { sc(over => @_) },
     frac   => sub { sc('frac sfrac', sc(nom => ss($_[0]))  . ss(ss($_[1]))) },
     dfrac  => sub { sc('frac dfrac', sc(nom => ss($_[0]))  . ss(ss($_[1]))) },
@@ -84,9 +85,15 @@ my %simple_commands = (
     overline => 1,
     prod => 0,
     right => 1,
-    'sqrt' => 1,
     sum => 0,
 );
+
+sub parse_optional {
+    $source =~ s/^\[// or return ();
+    my @optional = parse_token;
+    $source =~ s/^]//;
+    @optional;
+}
 
 sub parse_block {
     my @res = ();
@@ -111,6 +118,10 @@ sub parse_block {
             my ($lsp, $f, $rsp) = ($1, $2, $3);
             if (defined(my $args_count = $simple_commands{$f})) {
                 push @res, [ $f, map parse_token, 1 .. $args_count ]
+            }
+            elsif ($f eq 'sqrt') {
+                my @optional = parse_optional;
+                push @res, [ 'sqrt' => parse_token, @optional ];
             }
             elsif ($f eq 'texttt') {
                 $source =~ s/^{([^{]*)}//;
