@@ -227,7 +227,9 @@ sub users_frame {
         ($is_jury || $contest->{show_flags} ? (
             { caption => res_str(607), order_by => 'country', width => '5%', col => 'Fl' },
         ) : ()),
-        { caption => res_str(609), order_by => 'rating', width => '5%', col => 'Rt' },
+        ($is_jury || $contest->{show_all_results} ? (
+            { caption => res_str(609), order_by => 'rating', width => '5%', col => 'Rt' },
+        ) : ()),
         { caption => res_str(632), order_by => 'diff_time', width => '5%', col => 'Dt' },
     ]);
 
