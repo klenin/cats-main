@@ -208,7 +208,7 @@ sub users_frame {
             $cid, @site_param));
     }
 
-    $lv->default_sort($is_jury ? 3 : 2, 1)->define_columns([
+    $lv->default_sort(0)->define_columns([
         ($is_jury ?
             { caption => res_str(616), order_by => 'login', width => '20%' } : ()),
         { caption => res_str(608), order_by => 'team_name', width => '30%', checkbox => $is_jury && '[name=sel]' },
