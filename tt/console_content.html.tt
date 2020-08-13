@@ -28,12 +28,15 @@
     <td><div>[% c.failed_test %]</div></td>
   </tr></table></td>
   <td class="pts">[% c.points IF user.is_jury || user.id == c.team_id %]</td>
-  <td>[%
+  <td style="position: relative;">[%
     "$c.code: " IF c.code;
     maybe_href(c.href_source, c.problem_title, user.privs.is_root ? c.contest_title : '');
     " [$c.message_text]" IF user.is_jury && c.message_text;
     cell_search('problem_id', c) IF user.is_jury;
+    IF user.privs.is_root %]<div style="position: absolute; right: 2em; top: 2px;">[% cell_search('contest_id', c) %]</div>[% END
   %]</td>
+  [% IF user.is_root %]<td>[% c.contest_title %]</td>
+  [% END %]
   [% IF user.is_jury %]
   <td title="[% c.de.code %]">[% IF visible_cols.De; c.de.description; IF c.elements_count; '=>'; c.elements_count; END; END %]
   [%- cell_search_ex('de_code', c.de.code) %]</td>
@@ -53,7 +56,7 @@
     [%~ ELSE; c.team_name | html; END %]
     &gt; [% capt.jury %]]
   </td>
-  <td colspan="[% user.is_jury ? colspan - 1 : colspan %]">
+  <td colspan="[% colspan %]">
     <a title="[% c.contest_title | html %]" class="question">[% c.question_text | html %]</a> -
     [% IF c.clarified %]<span class="jury_message">[% c.answer_text | html %]</span>[% END %]
     [% IF c.href_answer_box %]
