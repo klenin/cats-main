@@ -191,6 +191,15 @@ sub define_kw_subquery {
             m => 1224,
             t => undef,
         },
+        has_de_code_local => {
+            sq => q~(EXISTS (
+                SELECT 1 FROM problem_sources PS
+                INNER JOIN problem_sources_local PSL ON PS.id = PSL.id
+                INNER JOIN default_de DE ON PSL.de_id = DE.id
+                WHERE PS.problem_id = P.id AND DE.code = ?))~,
+            m => 1225,
+            t => q~SELECT DE.description FROM default_de DE WHERE DE.code = ?~,
+        },
     });
 }
 
