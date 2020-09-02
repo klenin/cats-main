@@ -146,6 +146,14 @@ sub contests_new_save {
     $c->{id} = new_id;
     $is_root or $c->{is_official} = 0;
 
+    my $insert_contest_tag_sth;
+    my $insert_contest_tag = sub {
+        my (%values) = @_;
+        $insert_contest_tag_sth //=
+            $dbh->prepare(scalar $sql->insert(contest_contest_tags => \%values));
+        $insert_contest_tag_sth->execute($sql->values(\%values));
+    };
+
     if ($p->{original_id}) {
         # Make sure the title of copied contest differs from the original.
         my ($original_title) = $dbh->selectrow_array(q~
@@ -156,6 +164,13 @@ sub contests_new_save {
         }
     }
     eval { $dbh->do(_u $sql->insert('contests', $c)); 1 } or return msg(1026, $@);
+    if ($p->{original_id}) {
+        # Copy tags from original.
+        my $original_tags = $dbh->selectcol_arrayref(q~
+            SELECT tag_id FROM contest_contest_tags WHERE contest_id = ?~, undef,
+            $p->{original_id});
+        $insert_contest_tag->(contest_id => $c->{id}, tag_id => $_) for @$original_tags;
+    }
 
     # Automatically register all admins as jury.
     my $root_accounts = CATS::Privileges::get_root_account_ids;
@@ -170,8 +185,7 @@ sub contests_new_save {
         my $tag_id = $dbh->selectrow_array(q~
             SELECT id FROM contest_tags WHERE name = ?~, undef,
             $p->{tag_name});
-        $dbh->do(_u $sql->insert(contest_contest_tags => { contest_id => $c->{id}, tag_id => $tag_id }))
-            if $tag_id;
+        $insert_contest_tag->(contest_id => $c->{id}, tag_id => $tag_id) if $tag_id;
     }
 
     $dbh->commit;
