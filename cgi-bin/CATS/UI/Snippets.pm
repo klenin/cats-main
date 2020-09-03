@@ -189,10 +189,12 @@ sub snippets_frame {
             J.account_id = S.account_id
         ORDER BY J.finish_time DESC $CATS::DB::db->{LIMIT} 1~ : 'NULL';
 
+    my $text_prefix_len = 100;
     my $sth = $dbh->prepare(qq~
         SELECT
             S.id, S.name, S.problem_id, S.account_id,
-            SUBSTRING(CAST(S.text AS $CATS::DB::db->{BLOB_TYPE}) FROM 1 FOR 100) AS text,
+            SUBSTRING(CAST(S.text AS $CATS::DB::db->{BLOB_TYPE}) FROM 1 FOR $text_prefix_len) AS text,
+            CASE WHEN CHARACTER_LENGTH(S.text) > $text_prefix_len THEN 1 ELSE 0 END AS text_overflow,
             P.title,
             CP.code,
             CP.id AS cpid,
