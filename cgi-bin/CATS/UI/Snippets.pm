@@ -174,14 +174,17 @@ sub snippets_frame {
         { caption => res_str(632), order_by => 'finish_time', width => '10%', col => 'Ft' },
     ]);
 
-    $lv->define_db_searches([ 'code', 'name' ]);
+    $lv->define_db_searches([ 'code', 'name', 'text', 'team_name', 'S.id', 'cpid' ]);
     $lv->define_db_searches({
         # Disambiguate between snippets and contest_problems.
         problem_id => 'S.problem_id',
         contest_id => 'S.contest_id',
         account_id => 'S.account_id',
         text_len => 'COALESCE(CHARACTER_LENGTH(text), 0)',
+        problem_title => 'P.title',
+        contest_title => 'C.title',
     });
+    $lv->define_enums({ contest_id => { this => $cid } });
 
     my $finish_time = $lv->visible_cols->{Ft} ? qq~
         SELECT J.finish_time FROM jobs J

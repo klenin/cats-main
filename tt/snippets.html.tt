@@ -19,10 +19,10 @@ function delete_snippet(href, name) {
   <td>
     <a href="javascript:delete_snippet('[% s.href_delete %]', '[% s.name | html %]');" class="icon delete"></a>
     <a href="[% s.href_edit %]" class="icon edit"></a>
-    [% href(s.href_view, s.code _ ': ' _ s.title) %]
+    [% href(s.href_view, s.code _ ': ' _ s.title); cell_search('problem_id', s) %]
   </td>
-  <td>[% s.team_name | html %]</td>
-  <td>[% s.name | html %]</td>
+  <td>[% s.team_name | html; cell_search('account_id', s) %]</td>
+  <td>[% s.name | html; cell_search('name', s) %]</td>
   <td>[% s.text | html ; '…' IF s.text_overflow %]</td>
   [% IF visible_cols.Ft %]<td>[% s.finish_time | html %]</td>[% END %]
 </tr>
