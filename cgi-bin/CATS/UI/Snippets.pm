@@ -170,7 +170,7 @@ sub snippets_frame {
         { caption => res_str(602), order_by => 'title', width => '20%' },
         { caption => res_str(608), order_by => 'team_name', width => '20%' },
         { caption => res_str(601), order_by => 'name', width => '20%' },
-        { caption => res_str(672), order_by => 'text', width => '30%' },
+        { caption => res_str(672), order_by => 'text', width => '30%', col => 'Tx' },
         { caption => res_str(632), order_by => 'finish_time', width => '10%', col => 'Ft' },
     ]);
 
@@ -193,15 +193,19 @@ sub snippets_frame {
         ORDER BY J.finish_time DESC $CATS::DB::db->{LIMIT} 1~ : 'NULL';
 
     my $text_prefix_len = 100;
+    my $text_sql = $lv->visible_cols->{Tx} ? qq~
+        SUBSTRING(CAST(S.text AS $CATS::DB::db->{BLOB_TYPE}) FROM 1 FOR $text_prefix_len) AS text,
+        CASE WHEN CHARACTER_LENGTH(S.text) > $text_prefix_len THEN 1 ELSE 0 END AS text_overflow,
+    ~ : '';
+
     my $sth = $dbh->prepare(qq~
         SELECT
             S.id, S.name, S.problem_id, S.account_id,
-            SUBSTRING(CAST(S.text AS $CATS::DB::db->{BLOB_TYPE}) FROM 1 FOR $text_prefix_len) AS text,
-            CASE WHEN CHARACTER_LENGTH(S.text) > $text_prefix_len THEN 1 ELSE 0 END AS text_overflow,
             P.title,
             CP.code,
             CP.id AS cpid,
             A.team_name,
+            $text_sql
             ($finish_time) AS finish_time
         FROM snippets S
         INNER JOIN contests C ON C.id = S.contest_id

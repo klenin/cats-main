@@ -23,7 +23,7 @@ function delete_snippet(href, name) {
   </td>
   <td>[% s.team_name | html; cell_search('account_id', s) %]</td>
   <td>[% s.name | html; cell_search('name', s) %]</td>
-  <td>[% s.text | html ; '…' IF s.text_overflow %]</td>
+  [% IF visible_cols.Tx %]<td>[% s.text | html ; '…' IF s.text_overflow %]</td>[% END %]
   [% IF visible_cols.Ft %]<td>[% s.finish_time | html %]</td>[% END %]
 </tr>
 [% END %]
