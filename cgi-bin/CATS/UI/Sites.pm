@@ -49,7 +49,7 @@ our $form = CATS::Form->new(
             ORDER BY C.start_date DESC $db->{LIMIT} 50~, { Slice => {} },
             $fd->{id}) : [];
 
-        my $empty_contest_sites = !$dbh->selectrow_array(q~
+        my $empty_contest_sites = $fd->{id} && !$dbh->selectrow_array(q~
             SELECT 1 FROM contest_sites WHERE contest_id = ? AND site_id = ?~, undef,
             $cid, $fd->{id});
         for (@{$fd->{contests}}) {
