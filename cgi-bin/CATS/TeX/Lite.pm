@@ -63,6 +63,7 @@ sub parse_token {
         s/^(\s*)([+*\/><=])(\s*)// && return [ op => sp($1), $2, sp($3) ];
         s/^(\s*)\\([a-zA-Z]+|\{|\})(\s*)// && return make_token($1, $2, $3);
         s/^\s*//;
+        s/^\\%/%/;
         s/^\\(,|;|\s+)// && return [ space => $1 ];
         s/^([()\[\]])// && return [ op => $1 ];
         s/^([a-zA-Z]+)// && return [ var => $1 ];

@@ -3,7 +3,7 @@ use warnings;
 
 use File::Spec;
 use FindBin;
-use Test::More tests => 35;
+use Test::More tests => 36;
 
 use lib File::Spec->catdir($FindBin::Bin, '..');
 use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
@@ -27,6 +27,7 @@ is_ 'abc+def', '<i>abc</i>+<i>def</i>';
 is_ 'a-b', '<i>a</i>&minus;<i>b</i>';
 is_ 'a \le b', '<i>a</i>&nbsp;&le;&nbsp;<i>b</i>';
 is_ 'a \texttt{c+1} b', '<i>a</i><span class="tt">c+1</span><i>b</i>';
+is_ '10\%', '<span class="num">10</span>%';
 
 is_ 'a b c', '<i>a</i> <i>b</i> <i>c</i>';
 is_ 'a b+c', '<i>a</i> <i>b</i>+<i>c</i>';
