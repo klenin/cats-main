@@ -15,6 +15,7 @@ our @router_bool_params = qw(
     hide_ooc
     hide_virtual
     notime
+    nostats
     points
     printable
     show_flags

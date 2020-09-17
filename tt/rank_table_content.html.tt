@@ -138,6 +138,7 @@ document.write(html);
 --></script>
 [% END %]
 [% END %]
+[% IF !nostats %]
 <tr [% UNLESS problem_stats_color %]class="even"[% END %]>
   <td>&nbsp;</td>
   [% IF show_points %]
@@ -156,4 +157,5 @@ document.write(html);
   <td colspan="[% notime ? 3 : 4 %]">&nbsp;</td>
   [% END %]
 </tr>
+[% END %]
 </table>
