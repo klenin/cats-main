@@ -72,7 +72,7 @@
 [% ELSE ~%]
   [% FOREACH c IN r.columns ~%]
     [%~ fc = c.td.substr(0, 1); cls = fc == '+' ? 'ok' : fc == '-' ? 'fail' : fc == '?' ? 'unproc' : '' ~%]
-    [% IF !notime %]<td class="[% cls %]"><p>[% c.time | html %]</p>[% c.td | html %]</td>[% END %]
+    <td class="[% cls %]">[% IF !notime %]<p>[% c.time | html %]</p>[% END; c.td | html %]</td>
   [% END -%]
 [% END -%]
 <td>[% IF show_points; r.total_points ~%]
@@ -95,7 +95,7 @@ var rank_table = [
   }[% UNLESS loop.last %],[% END %][% END %]
 ];
 var problem_ids = [
-  [%- FOREACH p IN problems; '['; p.problem_id; ','; p.contest_id; ']'; ', ' UNLESS loop.last; END -%]
+  [%- FOREACH p IN problems; '['; p.problem_id; ','; p.contest_id; ",'"; p.code; "']"; ', ' UNLESS loop.last; END -%]
 ];
 
 var html = '';
@@ -129,7 +129,8 @@ for(var i = 0; i < rank_table.length; ++i) {
     var fc = r.td[j].substr(0, 1);
     var cls = fc  === '+' ? 'ok' : fc  === '-' ? 'fail' : fc  === '?' ? 'unproc' : '';
     var time_str = [% IF notime %]''[% ELSE %]'<p>' + r.tm[j] + '</p>'[% END %];
-    td(href(url_problem(j) + ';uf=' + r.id, time_str + r.td[j]), 'class="' + cls + '"');
+    td(href(url_problem(j) + ';uf=' + r.id, time_str + r.td[j], 'title="' + problem_ids[j][2] + '"'),
+      'class="' + cls + '"');
   }
   td(r.ts);[% IF !notime %] td(r.ttm);[% END %]
   [% END %]
