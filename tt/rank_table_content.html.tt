@@ -31,10 +31,12 @@
 </table>
 [% END -%]
 
+<div class="rank_table_container">
 <table class="bordered rank_table highlight">
 [%- IF contests.size > 1 %]
   <tr class="col_defs">
-  <th colspan="2"></th>
+  <th></th>
+  <th class="sticky"></th>
   [% FOREACH c IN contest_order; -%]
   <th colspan="[% c.count %]"><a href="[% c.href_problems %]" title="[% c.title | html %]">[% c.start_date %]</a></th>
   [%- END %]
@@ -42,7 +44,7 @@
 [% END -%]
 <tr class="col_defs">
 <th class="narrow"></th>
-<th>[% capt.team_name %]</th>
+<th class="sticky">[% capt.team_name %]</th>
 [% FOREACH p IN problems %]
 <th style="width: [% problem_column_width %]%;">
   <a href="[% p.problem_text %]" title="[% p.title | html %]">
@@ -58,7 +60,7 @@
 </tr>
 [% IF printable %]
 [% FOREACH r IN rank %]
-<tr class="rank_row[% ' even' UNLESS r.row_color %]">
+<tr class="rank_row [% r.row_color ? 'odd' : 'even' %]">
 <td>[% r.contestant_number %]&nbsp;</td>
 <td>
   [%- IF show_flags && r.flag %]<img src="[% r.flag %]" alt="[% r.country | html %]"> [% END %]
@@ -110,14 +112,14 @@ function url_problem(j) {
 
 for(var i = 0; i < rank_table.length; ++i) {
   var r = rank_table[i];
-  html += '<tr class="rank_row' + (r.rc ? '' : ' even') + '">';
+  html += '<tr class="rank_row ' + (r.rc ? 'odd' : 'even') + '">';
   td(href('[% href_submits %];uf=' + r.id, (i + 1) + '&nbsp;'));
   td(
     [% IF show_flags %]'<img src="' + r.fl + '"/> ' +[% END %]
     href(
       '[% href_user_stats %];uid=' + r.id,
       r.n[% IF show_regions %] + (r.t ? ' <small>(' + r.t + ')</small>' : '')[% END %],
-      'title="' + r.t + '"'));
+      'title="' + r.t + '"'), 'class="sticky"');
   [% IF show_points %]
   for (var j = 0; j < r.pt.length; ++j)
     td(href(url_problem(j) + ';uf=' + r.id, r.pt[j]));
@@ -139,16 +141,17 @@ document.write(html);
 [% END %]
 [% END %]
 [% IF !nostats %]
-<tr [% UNLESS problem_stats_color %]class="even"[% END %]>
+<tr class="[% problem_stats_color ? 'odd' : 'even' %]">
   <td>&nbsp;</td>
+  <td class="sticky">
   [% IF show_points %]
-  <td>[% capt.average_points %]</td>
+  [% capt.average_points %]</td>
   [% FOREACH ps IN problem_stats %]
     <td class="center stats"><a href="[% ps.href_submits %]">[% ps.average_points %]</a></td>
   [% END %]
   <td colspan="3">&nbsp;</td>
   [% ELSE %]
-  <td>[% capt.successful_submits %]</td>
+  [% capt.successful_submits %]</td>
   [% FOREACH ps IN problem_stats %]
     <td class="center stats">
       <a href="[% ps.href_submits %]"><p>[% ps.total_accepted %] / [% ps.total_runs %]</p>[% ps.percent_accepted %]%</a>
@@ -159,3 +162,4 @@ document.write(html);
 </tr>
 [% END %]
 </table>
+</div>
