@@ -52,7 +52,7 @@
 </th>
 [% END %]
 <th style="width: [% problem_column_width %]%;">[% IF show_points; capt.total %] ([% max_total_points %])[% ELSE %]=[% END %]</th>
-[% UNLESS show_points %]<th>[% capt.time %]</th>[% END %]
+[% IF !show_points && !notime %]<th>[% capt.time %]</th>[% END %]
 <th>[% capt.place %]</th>
 <th>[% capt.status %]</th>
 </tr>
@@ -70,11 +70,11 @@
 [% ELSE ~%]
   [% FOREACH c IN r.columns ~%]
     [%~ fc = c.td.substr(0, 1); cls = fc == '+' ? 'ok' : fc == '-' ? 'fail' : fc == '?' ? 'unproc' : '' ~%]
-    <td class="[% cls %]"><p>[% c.time | html %]</p>[% c.td | html %]</td>
+    [% IF !notime %]<td class="[% cls %]"><p>[% c.time | html %]</p>[% c.td | html %]</td>[% END %]
   [% END -%]
 [% END -%]
-<td>[% IF show_points %][% r.total_points ~%]
-  [% ELSE %][% r.total_solved %]<td>[% r.total_time %][% END -%]
+<td>[% IF show_points; r.total_points ~%]
+  [% ELSE; r.total_solved; IF !notime; %]<td>[% r.total_time; END; END -%]
 </td><td>[% r.place %]</td><td class="ts">
   [%~ capt.ooc IF r.is_ooc %] [% capt.remote IF r.is_remote %] [% capt.virtual IF r.is_virtual %] [% r.prize ~%]
 </td></tr>
@@ -126,9 +126,10 @@ for(var i = 0; i < rank_table.length; ++i) {
   for (var j = 0; j < r.tm.length; ++j) {
     var fc = r.td[j].substr(0, 1);
     var cls = fc  === '+' ? 'ok' : fc  === '-' ? 'fail' : fc  === '?' ? 'unproc' : '';
-    td(href(url_problem(j) + ';uf=' + r.id, '<p>' + r.tm[j] + '</p>' + r.td[j]), 'class="' + cls + '"');
+    var time_str = [% IF notime %]''[% ELSE %]'<p>' + r.tm[j] + '</p>'[% END %];
+    td(href(url_problem(j) + ';uf=' + r.id, time_str + r.td[j]), 'class="' + cls + '"');
   }
-  td(r.ts); td(r.ttm);
+  td(r.ts);[% IF !notime %] td(r.ttm);[% END %]
   [% END %]
   td(r.pl); td(r.st, 'class="ts"'); html += '</tr>';
 }
@@ -152,7 +153,7 @@ document.write(html);
       <a href="[% ps.href_submits %]"><p>[% ps.total_accepted %] / [% ps.total_runs %]</p>[% ps.percent_accepted %]%</a>
     </td>
   [% END %]
-  <td colspan="4">&nbsp;</td>
+  <td colspan="[% notime ? 3 : 4 %]">&nbsp;</td>
   [% END %]
 </tr>
 </table>

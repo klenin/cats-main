@@ -21,7 +21,7 @@ use fields qw(
     clist contests contest_list hide_ooc hide_virtual show_points frozen
     title has_practice not_started filter sites use_cache
     rank problems problems_idx show_all_results show_prizes has_competitive
-    show_regions show_flags show_logins sort p
+    show_regions show_flags show_logins sort p notime
 );
 
 sub new {
@@ -340,6 +340,7 @@ sub parse_params {
     $self->{show_logins} = $p->{show_logins};
     $self->{show_flags} = $p->{show_flags} if defined $p->{show_flags};
     $self->{sort} = $p->{sort} // '';
+    $self->{notime} = $p->{notime};
 }
 
 sub prepare_ranks {
@@ -595,6 +596,7 @@ sub rank_table {
         show_flags => $self->{show_flags},
         show_logins => $self->{show_logins},
         req_selection => same_or_default(map $_->{req_selection}, values %{$self->{contests}}),
+        notime => $self->{notime},
     );
     # Results must not include practice contest.
     !$self->{has_practice} && $self->{contest_list} or return;
