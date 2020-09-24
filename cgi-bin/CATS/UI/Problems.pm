@@ -251,9 +251,9 @@ sub problems_frame {
         : ()
         ),
         ($contest->is_practice ?
-        { caption => res_str(603), order_by => '5', width => '15%' } : () # contest
+        { caption => res_str(603), order_by => 'contest_title', width => '15%' } : ()
         ),
-        { caption => res_str(604), order_by => '6', width => '12%', col => 'Vc' }, # ok/wa/tl
+        { caption => res_str(604), order_by => 'accepted_count', width => '12%', col => 'Vc' }, # ok/wa/tl
     ]);
     CATS::Problem::Utils::define_common_searches($lv);
     if ($is_jury || $contest->has_finished_for($user)) {
