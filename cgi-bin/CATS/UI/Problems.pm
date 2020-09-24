@@ -65,11 +65,14 @@ sub problems_all_frame {
         };
     my $where_cond = join(' AND ', @{$where->{cond}}) || '1=1';
 
+    my $accepted_sql = qq~SUM(CASE R.state WHEN $cats::st_accepted THEN 1 ELSE 0 END)~;
+    my $accepted_orderby = qq~(SELECT $accepted_sql FROM reqs R WHERE R.problem_id = P.id)~;
+
     $lv->default_sort(0)->define_columns([
         { caption => res_str(602), order_by => 'P.title', width => '30%',
             checkbox => $is_jury && $p->{link} && '[name=problems_selection]' },
         { caption => res_str(603), order_by => 'C.title', width => '30%' },
-        { caption => res_str(604), order_by => 'ok_wa_tl', width => '10%', col => 'Ok' },
+        { caption => res_str(604), order_by => $accepted_orderby, width => '10%', col => 'Ok' },
         { caption => res_str(667), order_by => 'keywords', width => '20%', col => 'Kw' },
     ]);
     CATS::Problem::Utils::define_common_searches($lv);
@@ -82,7 +85,7 @@ sub problems_all_frame {
     });
     my $ok_wa_tl = $lv->visible_cols->{Ok} ? qq~
         SELECT
-            SUM(CASE R.state WHEN $cats::st_accepted THEN 1 ELSE 0 END) || ' / ' ||
+            $accepted_sql || ' / ' ||
             SUM(CASE R.state WHEN $cats::st_wrong_answer THEN 1 ELSE 0 END) || ' / ' ||
             SUM(CASE R.state WHEN $cats::st_time_limit_exceeded THEN 1 ELSE 0 END)
             FROM reqs R WHERE R.problem_id = P.id~ : 'NULL';
