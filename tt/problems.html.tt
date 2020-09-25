@@ -12,11 +12,38 @@
   input[type=color] {
     width: 1.5em; padding: 0; margin: 0; border: 0; background-color: inherit; vertical-align: middle; }
   .yscroll { display: block; overflow-y: scroll; max-height: 7ex; }
+
   .problem_submit table { border-collapse: collapse; }
   .problem_submit table tr.sep { border-top: 1px dotted #4040ff; padding-top: 10px; }
   .problem_submit table tr.sep td { padding-top: 10px; }
   .problem_submit table td { padding: 3px; }
   .problem_submit table td input[type!=checkbox] { width: 97%; }
+
+  div#tabbed_header > a {
+    border: 1px solid blue;
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+    background-color: white;
+    display: block;
+    float: left;
+    height: 20px;
+    color: black;
+    padding: 2px 5px;
+  }
+  div#tabbed_header div {
+    float: left;
+    border-bottom: 2px solid blue;
+    height: 24px;
+    width: 8px;
+  }
+  div#tabbed_header div:last-child {
+    float: none;
+    overflow: hidden;
+    width: auto;
+  }
+  div#tabbed_header { padding: 0; width: 100%; overflow: hidden; }
+  div#edit_tabs > div { margin-top: 5px; min-width: 300px; }
+}
 </style>
 [%- END -%]
 [% PROCESS includes/menu_begin.tti %]
@@ -224,57 +251,70 @@ function chg_code(st_sel, pid) {
 </div>
 [% IF editable %]
 <div class="problem_submit">
-  <p>[% capt.replace_problem %]</p>
-  <table class="weak_border">
-  <tr>
-    <td><label for="zip">[% capt.problem_file %]:</label></td><td><input type="file" id="zip" name="zip" class="file" size="25"/></td>
-  </tr><tr>
-    <td><button type="submit" name="replace" value="1" class="button">[% capt.replace %]</button></td><td>
-    <label><input type="checkbox" name="allow_rename" value="1"/> [% capt.rename %]</label></td>
-  </tr>
-  </table>
-</div>
-<div class="problem_submit">
-  <p>[% capt.add_problem %]</p>
-  <table class="weak_border">
-  <tr>
-    <td><label for="add_zip">[% capt.problem_file %]:</label></td>
-    <td><input type="file" id="add_zip" name="add_zip" class="file" size="25"/></td>
-  </tr><tr>
-    <td colspan="2">
-      <button type="submit" name="add_new" value="1" class="button">[% capt.add_new_package %]</button>
-    </td>
-  </tr>
-  <tr class="sep">
-    <td><label>[% capt.new_title %]:</td>
-    <td><input type="text" name="new_title" size="35" class="bordered"/></label></td>
-  </tr><tr>
-    <td><label for="new_lang">[% capt.new_lang %]:</label></td>
-    <td><select id="new_lang" name="new_lang">
-      [%- FOREACH l IN langs; option(l.name, l.name, l.name == lang); END -%]
-    </select></td>
-  </tr><tr>
-    <td colspan="2">
-      <button type="submit" name="add_new_template" value="1" class="button">[% capt.add_new_template %]</button>
-    </td>
-  </tr>
-  <tr class="sep">
-    <td><label for="remote_url">[% capt.problem_url %]:</label></td>
-    <td><input type="text" id="remote_url" name="remote_url" size="35" class="bordered"/></td>
-  </tr>
-  <tr>
-    <td><label for="repo_path">[% capt.repo_path %]:</label></td>
-    <td><input type="text" id="repo_path" name="repo_path" size="35" class="bordered"/></td>
-  </tr>
-  <tr>
-    <td colspan="2">
-      <button type="submit" name="add_remote" value="1" class="button">[% capt.add_new_repo %]</button>
-    </td>
-  </tr>
-  </table>
-</div>
-<div class="problem_submit">
-  <button type="button" name="delete_problem" value="1" class="button" onclick="d()">[% capt.delete %]</button>
+  <div id="tabbed_header" class="hidden">
+    <div></div>
+    <a href="#" id="add_tab_btn" onclick="return select_edit_tab('add')">[% capt.add_problem %]</a>
+    <div></div>
+    <a href="#" id="replace_tab_btn" onclick="return select_edit_tab('replace')">[% capt.replace_problem %]</a>
+    <div></div>
+    <a href="#" id="delete_tab_btn" onclick="return select_edit_tab('delete')">[% capt.delete %]</a>
+    <div class="filler"></div>
+  </div>
+  <div id="edit_tabs">
+  <div id="replace_tab">
+    <p class="edit_tabs_subheader">[% capt.replace_problem %]</p>
+    <table class="weak_border">
+    <tr>
+      <td><label for="zip">[% capt.problem_file %]:</label></td><td><input type="file" id="zip" name="zip" class="file" size="25"/></td>
+    </tr><tr>
+      <td><button type="submit" name="replace" value="1" class="button">[% capt.replace %]</button></td><td>
+      <label><input type="checkbox" name="allow_rename" value="1"/> [% capt.rename %]</label></td>
+    </tr>
+    </table>
+  </div>
+  <div id="add_tab">
+    <p class="edit_tabs_subheader">[% capt.add_problem %]</p>
+    <table class="weak_border">
+    <tr>
+      <td><label for="add_zip">[% capt.problem_file %]:</label></td>
+      <td><input type="file" id="add_zip" name="add_zip" class="file" size="25"/></td>
+    </tr><tr>
+      <td colspan="2">
+        <button type="submit" name="add_new" value="1" class="button">[% capt.add_new_package %]</button>
+      </td>
+    </tr>
+    <tr class="sep">
+      <td><label>[% capt.new_title %]:</td>
+      <td><input type="text" name="new_title" size="35" class="bordered"/></label></td>
+    </tr><tr>
+      <td><label for="new_lang">[% capt.new_lang %]:</label></td>
+      <td><select id="new_lang" name="new_lang">
+        [%- FOREACH l IN langs; option(l.name, l.name, l.name == lang); END -%]
+      </select></td>
+    </tr><tr>
+      <td colspan="2">
+        <button type="submit" name="add_new_template" value="1" class="button">[% capt.add_new_template %]</button>
+      </td>
+    </tr>
+    <tr class="sep">
+      <td><label for="remote_url">[% capt.problem_url %]:</label></td>
+      <td><input type="text" id="remote_url" name="remote_url" size="35" class="bordered"/></td>
+    </tr>
+    <tr>
+      <td><label for="repo_path">[% capt.repo_path %]:</label></td>
+      <td><input type="text" id="repo_path" name="repo_path" size="35" class="bordered"/></td>
+    </tr>
+    <tr>
+      <td colspan="2">
+        <button type="submit" name="add_remote" value="1" class="button">[% capt.add_new_repo %]</button>
+      </td>
+    </tr>
+    </table>
+  </div>
+  <div id="delete_tab">
+    <button type="button" name="delete_problem" value="1" class="button" onclick="d()">[% capt.delete.lower %]</button>
+  </div>
+  </div>
 </div>
 [% END %]
 <div style="clear: both;"></div>
@@ -313,6 +353,21 @@ function chg_code(st_sel, pid) {
     }
   });
 })();
+
+function select_edit_tab(name) {
+  $('#edit_tabs > div').each(function(_, tab) {
+    tab.style.display = tab.id === name + '_tab' ? 'block' : 'none';
+  });
+  $('#tabbed_header > a').each(function(_, btn) {
+    btn.style['border-bottom'] = btn.id === name + '_tab_btn' ? 'none' : '1px solid blue';
+  });
+  return false;
+}
+$(function() {
+  $('#tabbed_header').show();
+  select_edit_tab('add');
+  $('#edit_tabs .edit_tabs_subheader').hide();
+});
 
 var used_codes = { [% FOREACH p IN problems %]"[% p.code %]": 1[% ', ' UNLESS loop.last; END %] };
 [% PROCESS includes/select_problem_code.tti %]
