@@ -114,8 +114,9 @@ sub _console_content {
 
     $lv->default_sort(0)->define_columns([
         { caption => res_str(654), col => 'Cy' },
-        { caption => res_str(632), col => 'Tm' },
+        { caption => res_str(603), col => 'Ct' },
         { caption => res_str(641), col => 'De' },
+        { caption => res_str(632), col => 'Tm' },
         { caption => res_str(671), col => 'Ip' },
     ]);
     CATS::Console::console_searches($lv);
