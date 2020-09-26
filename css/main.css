@@ -550,3 +550,12 @@ table.edit_form td p.form_error { color: red; font-size: small; }
 
 .problem_menu_trigger .editor_menu { display: none; }
 .problem_menu_trigger.problem_menu_hovered .editor_menu { display: block; }
+
+.keywords_cell a {
+    display: inline-block;
+    color: black;
+    border-radius: 3px;
+    padding: 0 2px;
+}
+
+.keywords_cell a:hover { color: #e0e0e0; background-color: black; }

@@ -3,7 +3,7 @@
 [% PROCESS includes/listview_header.tti %]
 </form>
 <form method="post" enctype="multipart/form-data" action="[% href_action %]">
-<table class="listview highlight bordered">
+<table class="listview highlight bordered cell_search">
 [% PROCESS includes/listview_col_defs.tti %]
 [% FOREACH p IN link_problem %]
 <tr class="[% loop.parity() %]">
@@ -13,9 +13,13 @@
 [% IF p.href_problem_history %]&nbsp;[<a href="[% p.href_problem_history %]">[% capt.problem_history %]</a>][% END %]
 [% IF p.href_download %]&nbsp;[<a href="[% p.href_download %]">[% capt.package %]</a>][% END %]
 </td>
-<td><a href="[% p.href_view_contest %]">[% p.contest_title | html %]</a></td>
+<td><a href="[% p.href_view_contest %]">[% p.contest_title | html; cell_search('contest_id', p) %]</a></td>
 [% IF visible_cols.Ok %]<td class="center">[% maybe_href(p.href_problem_console, p.counts) %]</td>[% END %]
-[% IF visible_cols.Kw %]<td>[% p.keywords %]</td>[% END %]
+[% IF visible_cols.Kw -%]
+<td class="keywords_cell">
+[%- FOREACH kw IN p.keywords.split; cell_search_any_text('has_kw_code(' _ kw _ ')', kw); ' '; END -%]
+</td>
+[%- END %]
 </tr>
 [% END %]
 </table>
