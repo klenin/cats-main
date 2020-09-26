@@ -120,7 +120,7 @@ sub get_problems {
 
     $t->param(
         problems => $problems,
-        problem_column_width => min(max(int(60 / max(scalar @$problems, 1)), 2), 7),
+        problem_column_width => min(max(int(600 / max(scalar @$problems, 1)) / 10, 1), 7),
         contests => $self->{contests},
         contest_order => \@contest_order,
         max_total_points => $max_total_points
