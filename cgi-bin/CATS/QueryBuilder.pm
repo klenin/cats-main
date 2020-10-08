@@ -34,6 +34,12 @@ sub parse_search {
     $self;
 }
 
+sub number_like_filter {
+    my ($v) = @_;
+    $v =~ tr/0-9.eE+-//cd;
+    $v || 0;
+}
+
 sub regex_op {
     my ($op, $v) = @_;
     $op eq '=' || $op eq '==' ? "^\Q$v\E\$" :
@@ -44,7 +50,7 @@ sub regex_op {
     $op eq '!~' ? "^(?!.*\Q$v\E)" :
     $op eq '?' ? '.' :
     $op eq '??' ? '^$' :
-    $op =~ /^>|>=|<|<=$/ ? "^(.+)(?(?{\$1$op\Q$v\E})|(*F))\$" :
+    $op =~ /^>|>=|<|<=$/ ? sprintf('^(.+)(?(?{$1%s%s})|(*F))$', $op, number_like_filter($v)) :
     die "Unknown search op '$op'";
 }
 

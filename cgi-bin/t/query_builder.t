@@ -5,7 +5,7 @@ use Encode;
 use File::Spec;
 use FindBin;
 use Test::Exception;
-use Test::More tests => 34;
+use Test::More tests => 36;
 
 use lib File::Spec->catdir($FindBin::Bin, '..');
 use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
@@ -39,7 +39,11 @@ is_deeply qb_mask('zz??'), { zz => qr/^$/i }, 'mask NULL';
     unlike 2, $mask, 'mask gt 1';
     like 5, $mask, 'mask gt 2';
 }
-
+{
+    my $mask = qb_mask('a>3.5')->{a};
+    unlike 3, $mask, 'pt mask gt 3';
+    like 4, $mask, 'pt mask gt 4';
+}
 {
     my $qb = CATS::QueryBuilder->new;
     $qb->define_db_searches([ 'a', 't.id' ]);
