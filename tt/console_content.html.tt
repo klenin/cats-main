@@ -3,12 +3,12 @@
 [%- PROCESS "lang/$lang/verdicts.tti" -%]
 
 <span id="messages_update" style="display: none">[% FOREACH m IN messages %][% m | html %]<br>[% END %]</span>
-<table class="bordered console highlight cell_search">
+<table id="console_content" class="bordered console highlight cell_search">
 [%- colspan = user.is_jury ? 6 : 3 -%]
 [% FOREACH c IN console %]
 <tr>
 [% IF c.is_submit_result %]
-  <td>
+  <td class="tsl">
     [% IF user.is_jury %]
       <a href="#" onclick="add_id([% c.id %]); return false;" title="[% c.id %]">[% c.time %]</a>
     [% ELSE; maybe_href(c.href_details, c.time, DEs.item(c.de).description) %]

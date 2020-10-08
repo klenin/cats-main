@@ -4,6 +4,7 @@
 table.console td.pts { text-align: right; width: 0; }
 td.name { text-align: left; white-space: nowrap; width: 1px; }
 a.question { color: black; font-style: italic; }
+table.console tbody tr td.tsl { border: 1px solid white; border-radius: 3px; padding: 1px 2px 1px 1px; }
 </style>
 [%- END %]
 [% PROCESS includes/menu_begin.tti %]
@@ -47,7 +48,7 @@ function get_element(name) {
 [% IF user.is_jury %]
 <div>
     [% capt.selection %]:
-    <input type="text" id="selection" name="selection" size="35" value="[% selection %]" class="bordered" />
+    <input type="text" id="selection" name="selection" size="35" value="[% selection %]" class="bordered" onblur="mark_selection()" />
     [ <a href="#" onclick="clear_selection(); return false;">[% capt.clear %]</a>
     | <a id="a_source" href="[% href_view_source %]" target="_blank"
       onclick="return fill_1('a_source', '[% href_view_source %];rid=');">[% capt.source %]</a>
@@ -78,13 +79,26 @@ function get_element(name) {
 
 var sel = get_element('selection');
 
+function mark_selection() {
+    var time_sels = get_element('console_content').getElementsByClassName('tsl');
+    for (var i = 0; i < time_sels.length; ++i) {
+        var tsl = time_sels[i].getElementsByTagName('a');
+        if (!tsl.length) continue;
+        tsl[0].style.color = time_sels[i].style['border-color'] =
+            sel.value.indexOf(tsl[0].getAttribute('title')) >= 0 ? 'green' : '';
+    }
+}
+[% IF user.is_jury %]mark_selection();[% END %]
+
 function add_id(id) {
     if (sel.value != '') sel.value += ',';
     sel.value += id;
+    mark_selection();
 }
 
 function clear_selection() {
     sel.value = '';
+    mark_selection();
 }
 
 function fill_diff() {
@@ -96,7 +110,7 @@ function fill_diff() {
         return false;
     }
     a.href = '[% href_diff %];r1=' + rs[1] + ';r2=' + rs[2];
-    sel.value = '';
+    clear_selection();
     return true;
 }
 
@@ -107,7 +121,7 @@ function fill_1(aid, arg) {
         return false;
     }
     a.href = arg + sel.value;
-    sel.value = '';
+    clear_selection();
     return true;
 }
 
@@ -148,6 +162,7 @@ function update_content(response) {
     get_element('server_time').innerHTML = get_element('server_time_update').innerHTML;
     get_element('elapsed').innerHTML = get_element('elapsed_update').innerHTML;
     get_element('messages').innerHTML = get_element('messages_update').innerHTML;
+    mark_selection();
     refresh();
 }
 
