@@ -3,6 +3,7 @@
     add_participants => 'Add participants',
     logins_to_add => 'Login list, comma-separated',
     make_jury => 'add to jury',
+    view_added => 'view added participants',
     by_login => 'Add by logins',
     from_contest => 'Copy from contest',
     include_ooc => 'including out-of-contest',
