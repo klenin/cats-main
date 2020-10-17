@@ -121,6 +121,7 @@ sub problems_all_frame {
             title => $title,
             contest_title => $contest_title,
             counts => $counts,
+            contest_id => $contest_id,
         );
     };
 
