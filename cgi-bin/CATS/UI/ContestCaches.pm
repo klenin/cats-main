@@ -9,7 +9,7 @@ use CATS::Globals qw($cid $is_root $t);
 use CATS::ListView;
 use CATS::Messages qw(res_str);
 use CATS::Output qw(init_template url_f);
-use CATS::RankTable;
+use CATS::RankTable::Cache;
 use CATS::StaticPages;
 use CATS::Utils;
 
@@ -18,7 +18,7 @@ sub _clear_text_cache {
 }
 
 sub _clear_rank_cache {
-    CATS::RankTable::remove_cache($cid);
+    CATS::RankTable::Cache::remove($cid);
 }
 
 sub _name_size { [ map { n => $_, s => CATS::Utils::group_digits(-s $_) }, @_ ] }
@@ -48,7 +48,7 @@ sub contest_caches_frame {
     $t->param(
         text_caches => _text_cache_files(cid => $cid),
         problems => $problems,
-        rank_caches => _name_size(CATS::RankTable::cache_files($cid)),
+        rank_caches => _name_size(CATS::RankTable::Cache::files($cid)),
         form_action => url_f('contest_caches'),
     );
     CATS::Contest::Utils::contest_submenu('contest_caches', $cid);

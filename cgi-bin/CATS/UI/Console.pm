@@ -16,7 +16,7 @@ use CATS::ListView;
 use CATS::Messages qw(msg res_str);
 use CATS::Output qw(init_template url_f url_f_cid);
 use CATS::Problem::Utils;
-use CATS::RankTable;
+use CATS::RankTable::Cache;
 use CATS::Request;
 use CATS::Settings qw($settings);
 use CATS::Time;
@@ -286,7 +286,7 @@ sub _retest_submissions {
             $affected_contests{$contest_id} = 1;
             ++$count;
         }
-        CATS::RankTable::remove_cache($_) for keys %affected_contests;
+        CATS::RankTable::Cache::remove($_) for keys %affected_contests;
     }
 
     $dbh->commit;

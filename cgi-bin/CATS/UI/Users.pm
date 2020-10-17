@@ -14,7 +14,7 @@ use CATS::ListView;
 use CATS::Messages qw(msg res_str);
 use CATS::Output qw(init_template url_f);
 use CATS::Privileges;
-use CATS::RankTable;
+use CATS::RankTable::Cache;
 use CATS::Time;
 use CATS::User;
 
@@ -128,7 +128,7 @@ sub users_delete {
         msg(1094, $name);
     }
     $dbh->commit;
-    CATS::RankTable::remove_cache($cid);
+    CATS::RankTable::Cache::remove($cid);
 }
 
 sub users_add_participants_frame {

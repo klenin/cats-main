@@ -16,7 +16,7 @@ use CATS::Messages qw(msg res_str);
 use CATS::Output qw(init_template url_f);
 use CATS::Problem::Save;
 use CATS::Problem::Storage;
-use CATS::RankTable;
+use CATS::RankTable::Cache;
 use CATS::Redirect;
 use CATS::Settings qw($settings);
 use CATS::StaticPages;
@@ -393,7 +393,7 @@ sub contests_edit_save {
         1;
     } or return msg(1035, $@);
     CATS::StaticPages::invalidate_problem_text(cid => $p->{id}, all => 1);
-    CATS::RankTable::remove_cache($p->{id});
+    CATS::RankTable::Cache::remove($p->{id});
     my $contest_name = Encode::decode_utf8($c->{title});
     # Change page title immediately if the current contest is renamed.
     $contest->{title} = $contest_name if $p->{id} == $cid;

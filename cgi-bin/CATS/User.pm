@@ -16,8 +16,8 @@ use CATS::Globals qw($cid $is_jury $is_root $t $uid $user);
 use CATS::Messages qw(msg res_str);
 use CATS::Output qw(url_f);
 use CATS::Privileges;
+use CATS::RankTable::Cache;
 use CATS::Settings qw($settings);
-use CATS::RankTable;
 
 my $hash_password;
 BEGIN {
@@ -409,7 +409,7 @@ sub set_site {
     $s->finish;
     if ($count) {
         $dbh->commit;
-        CATS::RankTable::remove_cache($cid);
+        CATS::RankTable::Cache::remove($cid);
     }
     msg(1024, $count);
 }
@@ -463,7 +463,7 @@ sub save_attributes_finalize {
     my ($changed_count) = @_;
     if ($changed_count) {
         $dbh->commit;
-        CATS::RankTable::remove_cache($cid);
+        CATS::RankTable::Cache::remove($cid);
     }
     msg(1018, $changed_count);
 }

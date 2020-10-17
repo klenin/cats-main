@@ -13,7 +13,7 @@ use CATS::Output qw(init_template url_f url_f_cid);
 use CATS::Job;
 use CATS::JudgeDB;
 use CATS::Messages qw(msg);
-use CATS::RankTable;
+use CATS::RankTable::Cache;
 use CATS::ReqDetails qw(
     get_sources_info
     sources_info_param
@@ -53,7 +53,7 @@ sub diff_runs_frame {
             CATS::ReqDetails::update_verdict($r);
         }
         $dbh->commit;
-        CATS::RankTable::remove_cache($_) for keys %remove_cache;
+        CATS::RankTable::Cache::remove($_) for keys %remove_cache;
     }
     if ($both_jury) {
         my %ml = (max_lines => 20000);
@@ -129,7 +129,7 @@ sub view_source_frame {
         }
         if ($p->{replace_and_submit}) {
             CATS::Request::retest($sources_info->{req_id});
-            CATS::RankTable::remove_cache($sources_info->{contest_id}) unless $sources_info->{is_hidden};
+            CATS::RankTable::Cache::remove($sources_info->{contest_id}) unless $sources_info->{is_hidden};
         }
         if ($u || $p->{replace_and_submit}) {
             $dbh->commit;

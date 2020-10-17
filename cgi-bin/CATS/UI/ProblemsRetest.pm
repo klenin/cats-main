@@ -10,7 +10,7 @@ use CATS::ListView;
 use CATS::Messages qw(msg res_str);
 use CATS::Output qw(init_template url_f);
 use CATS::Problem::Utils;
-use CATS::RankTable;
+use CATS::RankTable::Cache;
 use CATS::Request;
 use CATS::Verdicts;
 use CATS::Job;
@@ -24,7 +24,7 @@ sub problems_mass_retest {
         $ignore_states{$st} = 1 if defined $st;
     }
     # Since we perform multiple commits, clear cache ahead of time.
-    CATS::RankTable::remove_cache($cid);
+    CATS::RankTable::Cache::remove($cid);
     my $count = 0;
     for my $retest_pid (@retest_pids) {
         my $runs = $dbh->selectall_arrayref(q~
@@ -50,7 +50,7 @@ sub problems_recalc_points {
     my $reqs_count = $dbh->do(_u $sql->update(
         reqs => { points => undef }, { contest_id => $cid, problem_id => $p->{problem_id} }
     ));
-    CATS::RankTable::remove_cache($cid);
+    CATS::RankTable::Cache::remove($cid);
     $dbh->commit;
     msg(1128, $reqs_count);
 }

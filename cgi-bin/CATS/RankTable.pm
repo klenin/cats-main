@@ -13,6 +13,7 @@ use CATS::Countries;
 use CATS::DB;
 use CATS::Globals qw($cid $contest $is_jury $is_root $t $uid $user);
 use CATS::Output qw(url_f url_f_cid);
+use CATS::RankTable::Cache;
 use CATS::RouteParser qw();
 use CATS::Testset;
 use CATS::Time;
@@ -441,27 +442,6 @@ sub prepare_ranks {
     ($row_num - 1, $row_color);
 }
 
-sub cache_file_name {
-    cats_dir() . './rank_cache/' . join ('#', @_, '');
-}
-
-sub cache_files {
-    my ($contest_id) = @_ or die;
-    my @result;
-    for my $virt (0, 1) {
-        for my $ooc (0, 1) {
-            my $f = cache_file_name($contest_id, $ooc, $virt);
-            push @result, $f if -f $f;
-        }
-    }
-    @result;
-}
-
-sub remove_cache {
-    my ($contest_id) = @_ or die;
-    unlink for cache_files(@_);
-}
-
 sub same_or_default { @_ > 1 ? -1 : $_[0]; }
 
 sub search_clist {
@@ -609,7 +589,7 @@ sub rank_table {
     my $unprocessed = $self->_get_unprocessed;
     my $first_unprocessed = $self->_get_first_unprocessed;
 
-    my $cache_file = cache_file_name(@$self{qw(contest_list hide_ooc hide_virtual)});
+    my $cache_file = CATS::RankTable::Cache::file_name(@$self{qw(contest_list hide_ooc hide_virtual)});
 
     my ($teams, $problem_stats, $max_cached_req_id) = $self->_read_cache($cache_file, $first_unprocessed);
 

@@ -11,7 +11,7 @@ use CATS::Globals qw($is_root $t $uid);
 use CATS::JudgeDB;
 use CATS::Messages qw(msg);
 use CATS::Output qw(init_template url_f);
-use CATS::RankTable;
+use CATS::RankTable::Cache;
 use CATS::Request;
 use CATS::ReqDetails qw(
     get_sources_info
@@ -103,7 +103,7 @@ sub request_params_frame {
         CATS::Request::delete_limits($si->{limits_id}) if $need_clear_limits && $si->{limits_id};
         maybe_reinstall($p, $si);
         maybe_status_ok($p, $si);
-        CATS::RankTable::remove_cache($si->{contest_id}) unless $si->{is_hidden};
+        CATS::RankTable::Cache::remove($si->{contest_id}) unless $si->{is_hidden};
         $dbh->commit;
         $si = get_sources_info($p, request_id => $si->{req_id});
     }
@@ -125,7 +125,7 @@ sub request_params_frame {
     $t->param(can_delete => $can_delete);
     if ($p->{delete_request} && $can_delete) {
         CATS::Request::delete($si->{req_id});
-        CATS::RankTable::remove_cache($si->{contest_id});
+        CATS::RankTable::Cache::remove($si->{contest_id});
         $dbh->commit;
         msg(1056, $si->{req_id});
         return;
@@ -193,7 +193,7 @@ sub try_set_state {
         failed_test => $p->{failed_test}, state => $state, points => $p->{points}
     });
     $dbh->commit;
-    CATS::RankTable::remove_cache($si->{contest_id}) unless $si->{is_hidden};
+    CATS::RankTable::Cache::remove($si->{contest_id}) unless $si->{is_hidden};
     msg(1055);
     1;
 }
