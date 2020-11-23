@@ -35,7 +35,7 @@ sub init_template {
     $ext //=
         $p->{json} ? 'json' :
         $p->{ical} ? 'ics' :
-        $user->is_root && @{$p->{csv}} ? 'csv':
+        $user && $user->is_root && @{$p->{csv}} ? 'csv':
         'html';
 
     $http_mime_type = {
@@ -106,7 +106,9 @@ sub generate {
     $p->content_type($http_mime_type, $enc);
     $p->headers(cookie => $cookie, %extra_headers);
 
-    my $decoded_out = $user->is_root && $http_mime_type eq 'text/csv' ? _generate_csv($p) : $t->output;
+    my $decoded_out =
+        $user && $user->is_root && $http_mime_type eq 'text/csv' ?
+        _generate_csv($p) : $t->output;
     my $out = $enc eq 'UTF-8' ? $decoded_out : Encode::encode($enc, $decoded_out, Encode::FB_XMLCREF);
     $p->print($out);
     if ($output_file) {
