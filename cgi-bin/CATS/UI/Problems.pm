@@ -425,6 +425,7 @@ sub problems_frame {
             is_linked => $c->{is_linked},
             remote_url => $remote_url,
             usage_count => $c->{usage_count},
+            original_contest_id => $c->{original_contest_id},
             contest_title => $c->{contest_title},
             accept_count => $c->{accepted_count},
             wa_count => $c->{wrong_answer_count},

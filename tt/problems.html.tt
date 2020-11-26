@@ -149,7 +149,7 @@ function chg_code(st_sel, pid) {
 [%- END %]
 
 [% PROCESS includes/listview_header.tti form_name='problems_form' %]
-<table class="listview bordered highlight">
+<table class="listview bordered cell_search highlight">
 [% IF can_submit %]
 [% PROCESS includes/listview_col_defs.tti sel_col = 1 nocheckbox = 1 %]
 [% END %]
@@ -212,7 +212,9 @@ function chg_code(st_sel, pid) {
 [% IF visible_cols.Ad %]<td[% ' class="yscroll"' IF p.allow_des.length > 20 %]><div>
 [% href(p.href_allow_des, p.allow_des, p.allow_des_names) %]</div></td>[% END %]
 [% END %]
-[% IF contest.is_practice %]<td>[% p.contest_title | html %]</td>[% END %]
+[% IF contest.is_practice %]<td>
+[%- href(p.href_original_contest, p.contest_title); cell_search_ex('contest_id', p.original_contest_id) -%]
+</td>[% END %]
 [% IF (is_user || contest.is_practice) && visible_cols.Vc %]
 <td class="problem_req_count">
   <div>
