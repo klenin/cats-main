@@ -210,9 +210,18 @@ sub contest_sites_add {
             WHERE contest_id = ? AND site_id = ? AND is_site_org = 1~, undef,
             $with_org, $site_id) or return;
         for (@$orgs) {
-            CATS::Contest::Participate::get_registered_contestant(contest_id => $cid, account_id => $_)
-                or $contest->register_account(
+            my ($exists, $is_site_org) = CATS::Contest::Participate::get_registered_contestant(
+                fields => '1, is_site_org', contest_id => $cid, account_id => $_);
+            if (!$exists) {
+                $contest->register_account(
                     account_id => $_, site_id => $site_id, is_site_org => 1, is_hidden => 1);
+            }
+            elsif (!$is_site_org) {
+                $dbh->do(q~
+                    UPDATE contest_accounts SET is_site_org = 1, is_hidden = 1, site_id = ?
+                    WHERE contest_id = ? AND account_id = ?~, undef,
+                    $site_id, $cid, $_);
+            }
         }
     }
     $dbh->commit;
