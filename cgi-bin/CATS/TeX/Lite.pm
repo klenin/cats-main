@@ -35,6 +35,7 @@ my %generators = (
     right  => sub { sc(large => @_) },
     mathcal=> sub { sc(mathcal => @_) },
     texttt => sub { sc(tt => @_) },
+    mbox   => \&ss,
     mathbf => sub { sc(b => @_) },
     sum    => $large_sym->('sum'),
     prod   => $large_sym->('prod'),
@@ -127,6 +128,10 @@ sub parse_block {
             elsif ($f eq 'texttt') {
                 $source =~ s/^{([^{]*)}//;
                 push @res, [ texttt => $1 ];
+            }
+            elsif ($f eq 'mbox') {
+                $source =~ s/^{([^{]*)}//;
+                push @res, [ mbox => $1 ];
             }
             elsif ($f eq 'over') {
                 my $d = [ frac => $res[-1] // '', parse_token() ];
