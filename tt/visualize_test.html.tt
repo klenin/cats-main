@@ -31,3 +31,5 @@
 [% END %]
 
 </body>
+[% PROCESS includes/timing.tti %]
+</html>
