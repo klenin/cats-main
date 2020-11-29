@@ -131,12 +131,14 @@ sub get_run_info {
         return \%r;
     };
 
+    # INNER JOIN must come first to avoid confusing Firebird optimizer.
     my $visualizers = $dbh->selectall_arrayref(q~
-        SELECT PS.id, COALESCE(PSL.name, PSLE.name) AS name FROM problem_sources PS
+        SELECT PS.id, COALESCE(PSL.name, PSLE.name) AS name
+        FROM problem_sources PS
+        INNER JOIN reqs R ON R.problem_id = PS.problem_id
         LEFT JOIN problem_sources_local PSL ON PSL.id = PS.id
         LEFT JOIN problem_sources_imported PSI ON PSI.id = PS.id
         LEFT JOIN problem_sources_local PSLE ON PSLE.guid = PSI.guid
-        INNER JOIN reqs R ON R.problem_id = PS.problem_id
         WHERE R.id = ? AND COALESCE(PSL.stype, PSLE.stype) = ?~, { Slice => {} },
         $req->{req_id}, $cats::visualizer);
 
@@ -271,11 +273,11 @@ sub visualize_test_frame {
             COALESCE(PSL.fname, PSLE.fname) AS fname,
         P.id AS problem_id, P.hash
         FROM problem_sources PS
+        INNER JOIN problems P ON PS.problem_id = P.id
+        INNER JOIN reqs R ON R.problem_id = P.id
         LEFT JOIN problem_sources_local PSL ON PSL.id = PS.id
         LEFT JOIN problem_sources_imported PSI ON PSI.id = PS.id
         LEFT JOIN problem_sources_local PSLE ON PSLE.guid = PSI.guid
-        INNER JOIN problems P ON PS.problem_id = P.id
-        INNER JOIN reqs R ON R.problem_id = P.id
         WHERE R.id = ? AND PS.id = ? AND COALESCE(PSL.stype, PSLE.stype) = ?~, { Slice => {} },
         $rid, $vid, $cats::visualizer) or return;
 
@@ -285,10 +287,10 @@ sub visualize_test_frame {
             COALESCE(PSL.src, PSLE.src) AS src,
         PS.problem_id, P.hash
         FROM problem_sources PS
+        INNER JOIN problems P ON P.id = PS.problem_id
         LEFT JOIN problem_sources_local PSL ON PSL.id = PS.id
         LEFT JOIN problem_sources_imported PSI ON PSI.id = PS.id
         LEFT JOIN problem_sources_local PSLE ON PSLE.guid = PSI.guid
-        INNER JOIN problems P ON P.id = PS.problem_id
         WHERE PS.problem_id = ? AND COALESCE(PSL.stype, PSLE.stype) = ?~, { Slice => {} },
         $visualizer->{problem_id}, $cats::visualizer_module)}, $visualizer);
 
