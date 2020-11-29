@@ -54,6 +54,7 @@ sub get_contest_info {
 sub get_contest_tests {
     my ($c, $problem_id) = @_;
 
+    my $cut = $cats::test_file_cut + 1;
     my $fields = join ', ',
         ($c->{show_all_tests} ? 'T.points' : ()),
         ($c->{show_test_data} ? qq~
@@ -63,8 +64,9 @@ sub get_contest_tests {
             LEFT JOIN problem_sources_local PSLE on PSLE.guid = PSI.guid
             WHERE PS.id = T.generator_id) AS gen_name,
             T.param, T.gen_group, T.in_file_size AS input_file_size, T.out_file_size AS answer_file_size,
-            SUBSTRING(T.in_file FROM 1 FOR $cats::test_file_cut + 1) AS input,
-            SUBSTRING(T.out_file FROM 1 FOR $cats::test_file_cut + 1) AS answer ~ : ());
+            CAST(LEFT(T.in_file, $cut) AS VARCHAR($cut)) AS input,
+            CAST(LEFT(T.out_file, $cut) AS VARCHAR($cut)) AS answer
+            ~ : ());
     my $tests = $c->{tests} = $fields ?
         $dbh->selectall_arrayref(qq~
             SELECT $fields FROM tests T WHERE T.problem_id = ? ORDER BY T.rank~, { Slice => {} },
