@@ -3,6 +3,7 @@
 [%- PROCESS includes/header.tti -%]
 [%- PROCESS includes/html.tti -%]
 [%- PROCESS "lang/$lang/problems.html.tt" -%]
+[%- PROCESS "lang/$lang/editor_menu.tti" -%]
 [% tex_styles %]
 [% IF mathjax %]
 <script type="text/javascript">
@@ -391,8 +392,12 @@ function gen_forms(problems) {
     var menu_trigger = $('<a>').attr({ class: 'problem_menu_trigger toolbar_item' }).
       html('&#x2261').click(function() { $(this).toggleClass('problem_menu_hovered'); }).appendTo(form);
     var editor_menu = $('<div>').attr('class', 'editor_menu').appendTo(menu_trigger);
-    $('<button>').attr({ class: 'button', type: 'button' }).
-      text('[% capt.reset %]').click(function() { Editor.reset_localstorage(editor_id) }).appendTo(editor_menu);
+    var add_btn = function(capt, onclick) {
+      $('<button>').attr({ class: 'button', type: 'button' }).text(capt).click(onclick).appendTo(editor_menu);
+    };
+    add_btn('[% capt.reset %]', function() { Editor.reset_localstorage(editor_id) });
+    add_btn('[% capt.invisible_chars %]', function() { Editor.toggle_invisible_chars(editor_id) });
+    add_btn('[% capt.auto_wrap %]', function() { Editor.toggle_auto_wrap(editor_id) });
     $('<br><br>').appendTo(form);
 
     $('<textarea>').attr({

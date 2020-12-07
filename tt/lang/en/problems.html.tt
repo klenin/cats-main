@@ -48,7 +48,6 @@
     wrap => 'wrap',
     keyword => 'keyword',
     upload => 'upload',
-    reset => 'reset editor',
     want_to_delete_file => 'Do you really want to delete file ',
     different_versions => 'Files on server and client did not match',
   });
