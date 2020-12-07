@@ -165,6 +165,8 @@ sub console_searches {
             (SELECT COUNT(*)
             FROM jobs J INNER JOIN jobs_queue JQ ON J.id = JQ.id
             WHERE J.req_id = R.id)~,
+        retests => qq~(
+            SELECT COUNT(*) FROM jobs J WHERE J.req_id = R.id AND J.type = $cats::job_type_submission)~,
         judge_name => '(SELECT JD.nick FROM judges JD WHERE JD.id = R.judge_id)',
         cp_id => q~(
             SELECT CP.id FROM contest_problems CP
