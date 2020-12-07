@@ -43,7 +43,7 @@
         [% END %]
       [% END %]
         <a class="problem_menu_trigger toolbar_item" onclick="$(this).toggleClass('problem_menu_hovered')">&#x2261;
-          <div class="editor_menu"><button class="button" type="button" onclick="Editor.reset_localstorage('ed_vs[% si.req_id %]')">[% capt.reset %]</button></div>
+          [%- PROCESS includes/editor_menu.tti editor_id = 'ed_vs' _ si.req_id -%]
         </a>
       </div>
       <textarea name="source_text" cols="[% source_width %]" rows="40"

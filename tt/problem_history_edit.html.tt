@@ -87,7 +87,7 @@
     <button type="button" id="wrap_button" class="button toolbar_item">[% capt.wrap %]</button>
     <button type="button" id="keyword_button" class="button toolbar_item">[% capt.keyword %]</button>
     <a class="problem_menu_trigger toolbar_item">&#x2261
-      <div class="editor_menu"><button class="button" type="button" onclick="Editor.reset_localstorage('ed_pe[% pid %]_[% IF edit_file; file; ELSE; hash; END; %]')">[% capt.reset %]</button></div>
+      [%- PROCESS includes/editor_menu.tti editor_id = 'ed_pe' _ pid _ '_' _ (edit_file ? file : hash) -%]
     </a>
   </div>
     <div>

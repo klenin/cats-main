@@ -22,7 +22,7 @@
   </textarea>
   [% PROCESS includes/edit_save_cancel.tti %]
   <a class="problem_menu_trigger" onclick="$(this).toggleClass('problem_menu_hovered')">&#x2261
-    <div class="editor_menu"><button class="button" type="button" onclick="Editor.reset_localstorage('ed_wi[% wt.indexed.wiki_id.value %]')">[% capt.reset %]</button></div>
+    [%- PROCESS includes/editor_menu.tti editor_id = 'ed_wi' _ wt.indexed.wiki_id.value -%]
   </a>
   </form>
   </div>

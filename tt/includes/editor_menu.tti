@@ -1,0 +1,6 @@
+[%- PROCESS "lang/$lang/editor_menu.tti" -%]
+<div class="editor_menu">
+  <button class="button" type="button" onclick="Editor.reset_localstorage('[% editor_id %]')">[% capt.reset %]</button>
+  <button class="button" type="button" onclick="Editor.toggle_invisible_chars('[% editor_id %]')">[% capt.invisible_chars %]</button>
+  <button class="button" type="button" onclick="Editor.toggle_wrap_mode('[% editor_id %]')">[% capt.auto_wrap %]</button>
+</div>

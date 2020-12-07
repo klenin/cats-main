@@ -241,6 +241,15 @@ function Editor() {
     return editor_container[0];
   }
 
+  this._toggle_wrap_mode = function(ed) {
+    ed.getSession().setUseWrapMode(!ed.getSession().getUseWrapMode()); };
+  this._toggle_invisible_chars = function(ed) { ed.setShowInvisibles(!ed.getShowInvisibles()); };
+
+  this.toggle_wrap_mode = function(editor_id) {
+    this._toggle_wrap_mode(this._editors[editor_id]); };
+  this.toggle_invisible_chars = function(editor_id) {
+    this._toggle_invisible_chars(this._editors[editor_id]); };
+
   this._configurate_editor = function(ace_editor, textarea) {
     ace_editor.renderer.setShowGutter(textarea.data('gutter'));
     ace_editor.setTheme('ace/theme/' + this.theme);
@@ -256,12 +265,12 @@ function Editor() {
       {
         name: 'toggleWrapMode',
         bindKey: { win: 'Ctrl-Alt-w', mac: 'Command-Alt-w' },
-        exec: function(ed) { ed.getSession().setUseWrapMode(!ed.getSession().getUseWrapMode()); }
+        exec: this._toggle_wrap_mode
       },
       {
         name: 'toggleInvisibleChars',
         bindKey: { win: 'Ctrl-Alt-v', mac: 'Command-Alt-v' },
-        exec: function(ed) { ed.setShowInvisibles(!ed.getShowInvisibles()); }
+        exec: this._toggle_invisible_chars
       }
     ]);
     ace_editor.commands.addCommand({

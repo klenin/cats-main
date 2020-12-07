@@ -1,0 +1,7 @@
+[%
+  capt.import({
+    reset => 'reset editor',
+    invisible_chars => 'invisible chars',
+    auto_wrap => 'auto wrap',
+  })
+%]
