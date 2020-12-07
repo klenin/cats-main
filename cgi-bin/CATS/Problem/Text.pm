@@ -28,6 +28,7 @@ my $wrapper = 'cats-wrapper';
 my @parsed_fields = qw(statement pconstraints input_format output_format explanation);
 
 my $verbatim_tags = { code => 1, script => 1, svg => 1, style => 1 };
+my $empty_tags = { br => 1, hr => 1, img => 1 };
 
 sub process_text {
     if (!$verbatim_depth) {
@@ -169,7 +170,13 @@ sub _on_end {
     --$verbatim_depth if $verbatim_tags->{lc($el)};
     return if $el eq $wrapper;
     $spellchecker->pop_lang if $spellchecker;
-    $html_code .= "</$el>";
+    # <br></br> is interpreted by browser as two <br>s, enforce <br/> form.
+    if ($empty_tags->{$el} && $html_code =~ />$/) {
+        substr($html_code, length($html_code) - 1, 1) = '/>';
+    }
+    else {
+        $html_code .= "</$el>";
+    }
 }
 
 sub _parse {
