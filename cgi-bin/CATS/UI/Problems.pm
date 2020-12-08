@@ -272,7 +272,8 @@ sub problems_frame {
     my $select_code = $contest->is_practice ? 'NULL' : 'CP.code';
     my $hidden_problems = $is_jury ? '' : " AND CP.status < $cats::problem_st_hidden";
     # TODO: take testsets into account
-    my $test_count_sql = $is_jury ? '(SELECT COUNT(*) FROM tests T WHERE T.problem_id = P.id) AS test_count,' : '';
+    my $test_count_sql = $is_jury ?
+        '(SELECT COUNT(*) FROM tests T WHERE T.problem_id = P.id) AS test_count,' : '';
     my $limits_str = join ', ', map "P.$_", @cats::limits_fields;
     my $counts = $lv->visible_cols->{Vc} ? qq~
         ($reqs_count_sql $cats::st_accepted$account_condition) AS accepted_count,
@@ -413,7 +414,8 @@ sub problems_frame {
             status_text => $psn->{$c->{status}},
             disabled => !$is_jury &&
                 ($c->{status} == $cats::problem_st_disabled || $last_state == $cats::st_banned),
-            href_view_problem => $hrefs_view{statement} || $text_link_f->('problem_text', cpid => $c->{cpid}),
+            href_view_problem =>
+                $hrefs_view{statement} || $text_link_f->('problem_text', cpid => $c->{cpid}),
             problem_langs => $problem_langs,
             href_explanation => $show_packages && $c->{has_explanation} ?
                 $hrefs_view{explanation} || url_f('problem_text', cpid => $c->{cpid}, explain => 1) : '',
@@ -473,7 +475,8 @@ sub problems_frame {
     my @submenu = grep $_,
         ($is_jury ? (
             !$pr && $pt_url->([ 'problem_text',
-                nospell => 1, nokw => 1, notime => 1, noformal => 1, noauthor => 1, nosubmit => 1, nonav => 1 ]),
+                nospell => 1, nokw => 1, notime => 1, noformal => 1,
+                noauthor => 1, nosubmit => 1, nonav => 1 ]),
             !$pr && $pt_url->([ 'problem_text' ], res_str(555)),
             $is_jury && !$pr && $pt_url->(
                 [ 'problem_text', cid => $cid ], res_str(515), \&CATS::StaticPages::url_static),
@@ -515,7 +518,8 @@ sub problems_frame {
         source_text => $p->{source_text},
         no_listview_header => !$is_jury && !$lv->total_row_count && $lv->settings->{search} eq '',
         child_contest_count => $child_contest_count,
-        href_child_contests => $child_contest_count && url_f('contests', search => "parent_or_id=$cid", filter=> 'all'),
+        href_child_contests =>
+            $child_contest_count && url_f('contests', search => "parent_or_id=$cid", filter=> 'all'),
      );
 }
 
