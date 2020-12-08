@@ -1,76 +1,76 @@
 INSERT INTO default_de (id, code, description, file_ext)
-    VALUES (GEN_ID(key_seq, 1), 1, 'Do not compile this file', 'h;inc');
+    VALUES (<NEXT_ID>, 1, 'Do not compile this file', 'h;inc');
 INSERT INTO default_de (id, code, description, file_ext)
-    VALUES (GEN_ID(key_seq, 1), 3, 'Answer text', '');
+    VALUES (<NEXT_ID>, 3, 'Answer text', '');
 INSERT INTO default_de (id, code, description, file_ext, in_contests, syntax)
-    VALUES (GEN_ID(key_seq, 1), 5, 'XML', 'xml', 0, 'xml');
+    VALUES (<NEXT_ID>, 5, 'XML', 'xml', 0, 'xml');
 INSERT INTO default_de (id, code, description, file_ext)
-    VALUES (GEN_ID(key_seq, 1), 6, 'Quiz', 'quiz');
+    VALUES (<NEXT_ID>, 6, 'Quiz', 'quiz');
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
-    VALUES (GEN_ID(key_seq, 1), 101, 'Cross-platform C/C++ compiler', 'cc', 'c_cpp', '^~FILE~:~LINE~:~POS~:');
+    VALUES (<NEXT_ID>, 101, 'Cross-platform C/C++ compiler', 'cc', 'c_cpp', '^~FILE~:~LINE~:~POS~:');
 
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
-    VALUES (GEN_ID(key_seq, 1), 102, 'GNU C++', 'cc;cxx', 'c_cpp', '^~FILE~:~LINE~:~POS~:');
+    VALUES (<NEXT_ID>, 102, 'GNU C++', 'cc;cxx', 'c_cpp', '^~FILE~:~LINE~:~POS~:');
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
-    VALUES (GEN_ID(key_seq, 1), 103, 'MS Visual C++', 'cpp', 'c_cpp', '^~FILE~\(~LINE~\)\s?:');
+    VALUES (<NEXT_ID>, 103, 'MS Visual C++', 'cpp', 'c_cpp', '^~FILE~\(~LINE~\)\s?:');
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
-    VALUES (GEN_ID(key_seq, 1), 104, 'Borland C++ 3.1', '', 'c_cpp', 'Error\s~FILE~\s~LINE~:');
+    VALUES (<NEXT_ID>, 104, 'Borland C++ 3.1', '', 'c_cpp', 'Error\s~FILE~\s~LINE~:');
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
-    VALUES (GEN_ID(key_seq, 1), 105, 'GNU C', 'c', 'c_cpp', '^~FILE~:~LINE~:~POS~:');
+    VALUES (<NEXT_ID>, 105, 'GNU C', 'c', 'c_cpp', '^~FILE~:~LINE~:~POS~:');
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
-    VALUES (GEN_ID(key_seq, 1), 106, 'LLVM/CLang', '', 'c_cpp', '^~FILE~:~LINE~:~POS~:');
+    VALUES (<NEXT_ID>, 106, 'LLVM/CLang', '', 'c_cpp', '^~FILE~:~LINE~:~POS~:');
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp, memory_handicap)
-    VALUES (GEN_ID(key_seq, 1), 107, 'LLVM/CLang with Address Sanitizer', '', 'c_cpp', '^~FILE~:~LINE~:~POS~:', -1);
+    VALUES (<NEXT_ID>, 107, 'LLVM/CLang with Address Sanitizer', '', 'c_cpp', '^~FILE~:~LINE~:~POS~:', -1);
 
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
-    VALUES (GEN_ID(key_seq, 1), 120, 'Rust', 'rs', 'rust', '^\s+-->\s~FILE~:~LINE~:~POS~');
+    VALUES (<NEXT_ID>, 120, 'Rust', 'rs', 'rust', '^\s+-->\s~FILE~:~LINE~:~POS~');
 
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
-    VALUES (GEN_ID(key_seq, 1), 201, 'Borland Pascal', '', 'pascal', '\(~LINE~\):\sError');
+    VALUES (<NEXT_ID>, 201, 'Borland Pascal', '', 'pascal', '\(~LINE~\):\sError');
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
-    VALUES (GEN_ID(key_seq, 1), 202, 'Free Pascal', 'lpr;pp', 'pascal', '^~FILE~\(~LINE~,~POS~\)\s');
+    VALUES (<NEXT_ID>, 202, 'Free Pascal', 'lpr;pp', 'pascal', '^~FILE~\(~LINE~,~POS~\)\s');
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
-    VALUES (GEN_ID(key_seq, 1), 203, 'Borland Delphi', '', 'pascal', '^~FILE~\(~LINE~\)\sE');
+    VALUES (<NEXT_ID>, 203, 'Borland Delphi', '', 'pascal', '^~FILE~\(~LINE~\)\sE');
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
-    VALUES (GEN_ID(key_seq, 1), 204, 'Free Pascal in Delphi mode', 'dpr', 'pascal', '^~FILE~\(~LINE~,~POS~\)\s');
+    VALUES (<NEXT_ID>, 204, 'Free Pascal in Delphi mode', 'dpr', 'pascal', '^~FILE~\(~LINE~,~POS~\)\s');
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
-    VALUES (GEN_ID(key_seq, 1), 205, 'PascalABC', '', 'pascal', '^\[~LINE~,~POS~\]\s~FILE~:');
+    VALUES (<NEXT_ID>, 205, 'PascalABC', '', 'pascal', '^\[~LINE~,~POS~\]\s~FILE~:');
 
 INSERT INTO default_de (id, code, description, syntax, file_ext)
-    VALUES (GEN_ID(key_seq, 1), 301, 'Quick Basic 4.5', 'vbscript', 'qb');
+    VALUES (<NEXT_ID>, 301, 'Quick Basic 4.5', 'vbscript', 'qb');
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
-    VALUES (GEN_ID(key_seq, 1), 302, 'Free Basic', 'bas', 'vbscript', '^~FILE~\(~LINE~\)\s');
+    VALUES (<NEXT_ID>, 302, 'Free Basic', 'bas', 'vbscript', '^~FILE~\(~LINE~\)\s');
 
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
-    VALUES (GEN_ID(key_seq, 1), 401, 'Java', 'java', 'java', '^~FILE~:~LINE~:\s');
+    VALUES (<NEXT_ID>, 401, 'Java', 'java', 'java', '^~FILE~:~LINE~:\s');
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
-    VALUES (GEN_ID(key_seq, 1), 402, 'Microsoft Visual C#', 'cs', 'csharp', '^~FILE~\(~LINE~,~POS~\):');
+    VALUES (<NEXT_ID>, 402, 'Microsoft Visual C#', 'cs', 'csharp', '^~FILE~\(~LINE~,~POS~\):');
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
-    VALUES (GEN_ID(key_seq, 1), 404, 'Go', 'go', 'golang', '^~FILE~:~LINE~:~POS~:');
+    VALUES (<NEXT_ID>, 404, 'Go', 'go', 'golang', '^~FILE~:~LINE~:~POS~:');
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
-    VALUES (GEN_ID(key_seq, 1), 406, 'Kotlin', 'kt', 'kotlin', '^~FILE~:~LINE~:~POS~:');
+    VALUES (<NEXT_ID>, 406, 'Kotlin', 'kt', 'kotlin', '^~FILE~:~LINE~:~POS~:');
 
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
-    VALUES (GEN_ID(key_seq, 1), 501, 'Perl', 'pl', 'perl', 'at\s~FILE~\sline\s~LINE~');
+    VALUES (<NEXT_ID>, 501, 'Perl', 'pl', 'perl', 'at\s~FILE~\sline\s~LINE~');
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
-    VALUES (GEN_ID(key_seq, 1), 502, 'Python', 'py', 'python', '^(?:\s+File\s\"\S+\",|Sorry:.+)\sline\s~LINE~');
+    VALUES (<NEXT_ID>, 502, 'Python', 'py', 'python', '^(?:\s+File\s\"\S+\",|Sorry:.+)\sline\s~LINE~');
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
-    VALUES (GEN_ID(key_seq, 1), 503, 'Haskell', 'hs', 'haskell', '^~FILE~:~LINE~:~POS~:');
+    VALUES (<NEXT_ID>, 503, 'Haskell', 'hs', 'haskell', '^~FILE~:~LINE~:~POS~:');
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
-    VALUES (GEN_ID(key_seq, 1), 504, 'Ruby', 'rb', 'ruby', '');
+    VALUES (<NEXT_ID>, 504, 'Ruby', 'rb', 'ruby', '');
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
-    VALUES (GEN_ID(key_seq, 1), 505, 'PHP', 'php', 'php', 'in\s~FILE~\son\sline\s~LINE~');
+    VALUES (<NEXT_ID>, 505, 'PHP', 'php', 'php', 'in\s~FILE~\son\sline\s~LINE~');
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
-    VALUES (GEN_ID(key_seq, 1), 506, 'Erlang', 'erl', 'erlang', '\/~FILE~:~LINE~:');
+    VALUES (<NEXT_ID>, 506, 'Erlang', 'erl', 'erlang', '\/~FILE~:~LINE~:');
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
-    VALUES (GEN_ID(key_seq, 1), 507, 'NodeJS', 'js', 'javascript', '[\\\/]~FILE~:~LINE~');
+    VALUES (<NEXT_ID>, 507, 'NodeJS', 'js', 'javascript', '[\\\/]~FILE~:~LINE~');
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
-    VALUES (GEN_ID(key_seq, 1), 509, 'SWI Prolog', 'pro', 'prolog', '^ERROR:\s.+~FILE~:~LINE~:~POS~:');
+    VALUES (<NEXT_ID>, 509, 'SWI Prolog', 'pro', 'prolog', '^ERROR:\s.+~FILE~:~LINE~:~POS~:');
 
 INSERT INTO default_de (id, code, description, syntax, err_regexp)
-    VALUES (GEN_ID(key_seq, 1), 602, 'Unity', 'csharp', '^(?:.*)\\\w+\.cs\(~LINE~,~POS~\):\serror');
+    VALUES (<NEXT_ID>, 602, 'Unity', 'csharp', '^(?:.*)\\\w+\.cs\(~LINE~,~POS~\):\serror');
 INSERT INTO default_de (id, code, description)
-    VALUES (GEN_ID(key_seq, 1), 604, 'OBJ');
+    VALUES (<NEXT_ID>, 604, 'OBJ');
 
 /* All users are participants here. */
 INSERT INTO contests(id, title, ctype, start_date, finish_date) VALUES(101, 'Archive', 1, CURRENT_DATE - 100, CURRENT_DATE + 1000000);

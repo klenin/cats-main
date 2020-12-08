@@ -269,20 +269,38 @@ fi
 
 echo "8. Configure and init cats database... "
 if [[ ($step =~ (^|,)8(,|$) || $step == "*") && $FB_DEV_VERSION ]]; then
+	firebird="1"
+	dbms=""
+	while [ "$dbms" != "1" -a "$dbms" != "2" ]; do
+		echo -e "Choose DBMS:\n  1. Firebird\n  2. Postgres"
+		read dbms
+	done
+
 	CONFIG_NAME="Config.pm"
 	CONFIG_ROOT="${CATS_ROOT}/cgi-bin/cats-problem/CATS"
 	CREATE_DB_NAME="create_db.sql"
-	CREATE_DB_ROOT="${CATS_ROOT}/sql/interbase"
-	FB_ALIASES="/etc/firebird/${FB_DEV_VERSION}/"
-	# aliases.conf is replaced by databases.conf in firebird 3.x
-	FB_ALIASES=$FB_ALIASES$([ `echo "$FB_DEV_VERSION < 3.0" | bc` -eq 1 ] && 
-						       echo "aliases.conf" || echo "databases.conf")
+	CREATE_DB_ROOT="${CATS_ROOT}/sql/"
+	if [[ "$dbms" = "$firebird" ]]; then
+		CREATE_DB_ROOT+="interbase"
+	else
+		sudo apt-get -y install "postgresql" "libpq-dev"
+		sudo cpanm -S "DBD::Pg"
+		CREATE_DB_ROOT+="postgres"
+	fi
 
 	CONFIG="$CONFIG_ROOT/$CONFIG_NAME"
 	cp "$CONFIG_ROOT/${CONFIG_NAME}.template" $CONFIG
 
 	CREATE_DB="$CREATE_DB_ROOT/$CREATE_DB_NAME"
 	cp "$CREATE_DB_ROOT/${CREATE_DB_NAME}.template" $CREATE_DB
+
+	INIT_DATA="$CREATE_DB_ROOT/init_data.sql"
+	cp "$CATS_ROOT/sql/common/init_data.sql.template" $INIT_DATA
+	if [[ "$dbms" = "$firebird" ]]; then
+		sed -i -e "s/<NEXT_ID>/GEN_ID(key_seq, 1)/g" $INIT_DATA
+	else
+		sed -i -e "s/<NEXT_ID>/NEXTVAL('key_seq')/g" $INIT_DATA
+	fi
 
 	echo -e "...\n...\n..."
 
@@ -301,32 +319,45 @@ if [[ ($step =~ (^|,)8(,|$) || $step == "*") && $FB_DEV_VERSION ]]; then
 	   exit 0
 	fi
 
-	def_path_to_db="$HOME/.cats/cats.fdb"
 	def_db_host="localhost"
-
-	read -e -p "Path to database: " -i $def_path_to_db path_to_db
 	read -e -p "Host: " -i $def_db_host db_host
 	read -e -p "Username: " db_user
 	read -e -p "Password: " db_pass
 
-	sudo sh -c "echo 'cats = $path_to_db' >> $FB_ALIASES"
+	if [[ "$dbms" = "$firebird" ]]; then
+		def_path_to_db="$HOME/.cats/cats.fdb"
+		read -e -p "Path to database: " -i $def_path_to_db path_to_db
 
-	if [[ "$path_to_db" = "$def_path_to_db" ]]; then
-		mkdir "$HOME/.cats"
+		FB_ALIASES="/etc/firebird/${FB_DEV_VERSION}/"
+		# aliases.conf is replaced by databases.conf in firebird 3.x
+		FB_ALIASES=$FB_ALIASES$([ `echo "$FB_DEV_VERSION < 3.0" | bc` -eq 1 ] && 
+							       echo "aliases.conf" || echo "databases.conf")
+		sudo sh -c "echo 'cats = $path_to_db' >> $FB_ALIASES"
+		if [[ "$path_to_db" = "$def_path_to_db" ]]; then
+			mkdir "$HOME/.cats"
+		fi
+		sudo chown firebird.firebird $(dirname "$path_to_db")
+
+		sed -i -e "s/<your-db-driver>/Firebird/g" $CONFIG
+	else
+		sed -i -e "s/<your-db-driver>/Pg/g" $CONFIG
 	fi
 
-	sed -i -e "s/<path-to-your-database>/cats/g" $CONFIG
-	sed -i -e "s/<your-host>/$db_host/g" $CONFIG
-	sed -i -e "s/<your-username>/$db_user/g" $CONFIG
-	sed -i -e "s/<your-password>/$db_pass/g" $CONFIG
+	sed -i -e "s/<your-db-username>/$db_user/g" $CONFIG
+	sed -i -e "s/<your-db-password>/$db_pass/g" $CONFIG
+	sed -i -e "s/<your-db-host>/$db_host/g" $CONFIG
+	sed -i -e "s/<your-db-name>/cats/g" $CONFIG
 
 	sed -i -e "s/<path-to-your-database>/cats/g" $CREATE_DB
 	sed -i -e "s/<your-username>/$db_user/g" $CREATE_DB
 	sed -i -e "s/<your-password>/$db_pass/g" $CREATE_DB
 
-	sudo chown firebird.firebird $(dirname "$path_to_db")
 	cd "$CREATE_DB_ROOT"
-	sudo isql-fb -i "$CREATE_DB_NAME"
+	if [[ "$dbms" = "$firebird" ]]; then
+		sudo isql-fb -i "$CREATE_DB_NAME"
+	else
+		sudo -u postgres psql -f "$CREATE_DB_NAME"
+	fi
 	cd "$CATS_ROOT"
 	echo "ok"
 else

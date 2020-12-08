@@ -111,12 +111,12 @@ sub apply_migration() {
     my $isql = $^O eq 'Win32' ? 'isql' : 'isql-fb';
     IPC::Cmd::can_run($isql) or die "Error: $isql not found";
 
-    my ($db, $host) = $CATS::Config::db_dsn =~ /dbname=(\S+?);host=(\S+?);/
-        or die "Bad config DSN: $CATS::Config::db_dsn";
+    my $db = $CATS::Config::db->{name};
+    my $host = $CATS::Config::db->{host};
     say "Host: $host\nDatabase: $db";
 
     my $cmd = [ $isql, '-b', '-i', $file,
-        '-u', $CATS::Config::db_user, '-p', $CATS::Config::db_password, '-q', "$host:$db" ];
+        '-u', $CATS::Config::db->{user}, '-p', $CATS::Config::db->{password}, '-q', "$host:$db" ];
     # say join ' ', 'Running:', @$cmd;
     my ($ok, $err, $full) = IPC::Cmd::run command => $cmd;
     $ok or die join "\n", $err, @$full;

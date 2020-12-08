@@ -101,8 +101,8 @@ sub work {
 
     $full && $full->[0] =~ /gbak:gbak version/ or die "Error: gbak not correct: @$full";
 
-    my ($db, $host) = $CATS::Config::db_dsn =~ /dbname=(\S+?);host=(\S+?);/
-        or die "Bad config DSN: $CATS::Config::db_dsn";
+    my $db = $CATS::Config::db->{name};
+    my $host = $CATS::Config::db->{host};
     print "Host: $host\nDatabase: $db\n" if !$quiet;
 
     -d $dest or die "Bad destination: $dest";
@@ -111,7 +111,7 @@ sub work {
 
     print "Destination: $file\n" if !$quiet;
     my $cmd = [ 'gbak', '-B', "$host:$db", $file,
-        '-USER', $CATS::Config::db_user, '-PAS', $CATS::Config::db_password ];
+        '-USER', $CATS::Config::db->{user}, '-PAS', $CATS::Config::db->{password} ];
 
     my $start_ts = [ gettimeofday ];
 

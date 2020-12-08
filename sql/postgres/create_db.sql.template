@@ -1,0 +1,10 @@
+CREATE USER <your-username> WITH SUPERUSER ENCRYPTED PASSWORD '<your-password>';
+CREATE DATABASE <path-to-your-database>;
+
+\connect <path-to-your-database>
+\i init_domains.sql
+\i ../common/init_relations.sql
+\i init_idx_gens.sql
+\i ../common/init_roles.sql
+\i init_udf.sql
+\i init_data.sql

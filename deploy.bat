@@ -481,16 +481,41 @@ __END__
 :cats_setup
 @setlocal
 	@echo Configuring CATS...
+	@set firebird=1
+	@set dbms=
+	:loop_dbms
+		@if "%dbms%" equ "1" goto :done_dbms
+		@if "%dbms%" equ "2" goto :done_dbms
+		@echo Choose DBMS:
+		@echo   1. Firebird
+		@echo   2. Postgres
+	   	@set /p dbms=
+	   	@goto :loop_dbms
+	:done_dbms
+
 	@set CONFIG_NAME=Config.pm
-	@set CONFIG_ROOT=%CATS_ROOT%\cgi-bin\CATS
+	@set CONFIG_ROOT=%CATS_ROOT%\cgi-bin\cats-problem\CATS
 	@set CREATE_DB_NAME=create_db.sql
 	@set CREATE_DB_ROOT=%CATS_ROOT%\sql\interbase
+	@if "%dbms%" neq "%firebird%" (
+		@call cpanm DBD::Pg
+		@set CREATE_DB_ROOT=%CATS_ROOT%\sql\postgres
+	)
 
 	@set CONFIG="%CONFIG_ROOT%\%CONFIG_NAME%"
 	@copy "%CONFIG_ROOT%\%CONFIG_NAME%.template" %CONFIG% > nul
 
 	@set CREATE_DB="%CREATE_DB_ROOT%\%CREATE_DB_NAME%"
 	@copy "%CREATE_DB_ROOT%\%CREATE_DB_NAME%.template" %CREATE_DB% > nul 
+
+	@set INIT_DATA="%CREATE_DB_ROOT%\init_data.sql"
+	@copy "%CATS_ROOT%\sql\common\init_data.sql.template" %INIT_DATA% > nul
+
+	@if "%dbms%" equ "%firebird%" (
+		@perl -pi.bak -e "s/<NEXT_ID>/GEN_ID(key_seq, 1)/g" %INIT_DATA%
+	) else (
+		@perl -pi.bak -e "s/<NEXT_ID>/NEXTVAL('key_seq')/g" %INIT_DATA%
+	)
 
 	@echo[
 	@echo[
@@ -513,23 +538,35 @@ __END__
 	   @exit 0
 	)
 
-	@set /p path_to_db=Specify path to database [%CATS_ROOT%\ib_data\cats.gdb]: 
 	@set /p db_host=Specify host for database [localhost]: 
 	@set /p db_user=Specify username for database [sysdba]: 
 	@set /p db_pass=Specify password for database [masterkey]: 
-	@if "%path_to_db%"=="" set path_to_db=%CATS_ROOT%\ib_data\cats.gdb
 	@if "%db_host%"=="" set db_host=localhost
 	@if "%db_user%"=="" set db_user=sysdba
 	@if "%db_pass%"=="" set db_pass=masterkey
 
-	@if not exist "%path_to_db%" echo You'll need to create %path_to_db% manually.
+	@if "%dbms%" equ "%firebird%" (
+		@goto :fb_setup
+	) else (
+		@goto :pg_setup
+	)
+	:fb_setup
+		@set /p path_to_db=Specify path to database [%CATS_ROOT%\ib_data\cats.gdb]: 
+		@if "%path_to_db%"=="" set path_to_db=%CATS_ROOT%\ib_data\cats.gdb
+		@if not exist "%path_to_db%" echo You'll need to create %path_to_db% manually.
+		@set path_to_db=%path_to_db:\=\\\\%
+		@perl -pi.bak -e "s/<your-db-driver>/Firebird/g" %CONFIG%
+		@goto :done_setup
+	:pg_setup
+		@set path_to_db=cats
+		@perl -pi.bak -e "s/<your-db-driver>/Pg/g" %CONFIG%
+		@goto :done_setup
+	:done_setup
 
-	@set path_to_db=%path_to_db:\=\\\\%
-
-	@perl -pi.bak -e "s/<path-to-your-database>/%path_to_db%/g" %CONFIG%
-	@perl -pi.bak -e "s/<your-host>/%db_host%/g" %CONFIG%
-	@perl -pi.bak -e "s/<your-username>/%db_user%/g" %CONFIG%
-	@perl -pi.bak -e "s/<your-password>/%db_pass%/g" %CONFIG%
+	@perl -pi.bak -e "s/<your-db-username>/%db_user%/g" %CONFIG%
+	@perl -pi.bak -e "s/<your-db-password>/%db_pass%/g" %CONFIG%
+	@perl -pi.bak -e "s/<your-db-host>/%db_host%/g" %CONFIG%
+	@perl -pi.bak -e "s/<your-db-name>/%path_to_db%/g" %CONFIG%
 
 	@perl -pi.bak -e "s/<path-to-your-database>/%path_to_db%/g" %CREATE_DB%
 	@perl -pi.bak -e "s/<your-username>/%db_user%/g" %CREATE_DB%
