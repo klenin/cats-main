@@ -121,6 +121,7 @@ sub prepare_de {
 }
 
 sub prepare_de_list {
+    my ($p) = @_;
     my $de_list = CATS::DevEnv->new(_get_DEs($cid));
 
     my ($allowed_des) = $dbh->selectall_arrayref(_u $sql->select(
@@ -146,7 +147,7 @@ sub prepare_de_list {
     my @de = (
         { de_id => 'by_extension', de_name => res_str(536) },
          map {{ de_id => $_->{id}, de_name => $_->{description}, syntax => $_->{syntax}, code => $_->{code} }} @all_des );
-    (de_list => \@de, (@all_des == 1 ? (de_selected => $all_des[0]->{id}) : ()));
+    (de_list => \@de, de_selected => @all_des == 1 ? $all_des[0]->{id} : $p->{de_id});
 }
 
 sub can_submit {

@@ -512,7 +512,7 @@ sub problems_frame {
         submenu => \@submenu, title_suffix => res_str(525),
         is_user => $uid,
         can_submit => CATS::Problem::Submit::can_submit,
-        CATS::Problem::Submit::prepare_de_list(),
+        CATS::Problem::Submit::prepare_de_list($p),
         contest_id => $cid, no_judges => !$jactive,
         parent_contest => $parent_contest,
         source_text => Encode::decode_utf8($p->{source_text}),
