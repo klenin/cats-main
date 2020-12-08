@@ -555,16 +555,18 @@ __END__
 		@if "%path_to_db%"=="" set path_to_db=%CATS_ROOT%\ib_data\cats.gdb
 		@if not exist "%path_to_db%" echo You'll need to create %path_to_db% manually.
 		@set path_to_db=%path_to_db:\=\\\\%
-		@perl -pi.bak -e "s/<db-dsn>/dbi:Firebird:dbname=%path_to_db%;host=%db_host%;ib_charset=UTF8;ib_role=/g" %CONFIG%
+		@perl -pi.bak -e "s/<your-db-driver>/Firebird/g" %CONFIG%
 		@goto :done_setup
 	:pg_setup
 		@set path_to_db=cats
-		@perl -pi.bak -e "s/<db-dsn>/dbi:Pg:dbname=%path_to_db%;host=%db_host%;/g" %CONFIG%
+		@perl -pi.bak -e "s/<your-db-driver>/Pg/g" %CONFIG%
 		@goto :done_setup
 	:done_setup
 
-	@perl -pi.bak -e "s/<your-username>/%db_user%/g" %CONFIG%
-	@perl -pi.bak -e "s/<your-password>/%db_pass%/g" %CONFIG%
+	@perl -pi.bak -e "s/<your-db-username>/%db_user%/g" %CONFIG%
+	@perl -pi.bak -e "s/<your-db-password>/%db_pass%/g" %CONFIG%
+	@perl -pi.bak -e "s/<your-db-host>/%db_host%/g" %CONFIG%
+	@perl -pi.bak -e "s/<your-db-name>/%path_to_db%/g" %CONFIG%
 
 	@perl -pi.bak -e "s/<path-to-your-database>/%path_to_db%/g" %CREATE_DB%
 	@perl -pi.bak -e "s/<your-username>/%db_user%/g" %CREATE_DB%

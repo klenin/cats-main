@@ -338,13 +338,15 @@ if [[ ($step =~ (^|,)8(,|$) || $step == "*") && $FB_DEV_VERSION ]]; then
 		fi
 		sudo chown firebird.firebird $(dirname "$path_to_db")
 
-		sed -i -e "s/<db-dsn>/dbi:Firebird:dbname=cats;host=$db_host;ib_charset=UTF8;ib_role=/g" $CONFIG
+		sed -i -e "s/<your-db-driver>/Firebird/g" $CONFIG
 	else
-		sed -i -e "s/<db-dsn>/dbi:Pg:dbname=cats;host=$db_host;/g" $CONFIG
+		sed -i -e "s/<your-db-driver>/Pg/g" $CONFIG
 	fi
 
-	sed -i -e "s/<your-username>/$db_user/g" $CONFIG
-	sed -i -e "s/<your-password>/$db_pass/g" $CONFIG
+	sed -i -e "s/<your-db-username>/$db_user/g" $CONFIG
+	sed -i -e "s/<your-db-password>/$db_pass/g" $CONFIG
+	sed -i -e "s/<your-db-host>/$db_host/g" $CONFIG
+	sed -i -e "s/<your-db-name>/cats/g" $CONFIG
 
 	sed -i -e "s/<path-to-your-database>/cats/g" $CREATE_DB
 	sed -i -e "s/<your-username>/$db_user/g" $CREATE_DB
