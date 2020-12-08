@@ -515,7 +515,7 @@ sub problems_frame {
         CATS::Problem::Submit::prepare_de_list(),
         contest_id => $cid, no_judges => !$jactive,
         parent_contest => $parent_contest,
-        source_text => $p->{source_text},
+        source_text => Encode::decode_utf8($p->{source_text}),
         no_listview_header => !$is_jury && !$lv->total_row_count && $lv->settings->{search} eq '',
         child_contest_count => $child_contest_count,
         href_child_contests =>
