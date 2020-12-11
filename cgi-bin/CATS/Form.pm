@@ -63,7 +63,8 @@ sub str_length {
     my ($min, $max) = @_;
     sub {
         my ($value, $field) = @_;
-        $value //= '';
+        # Firebird measures field length in bytes, not characters.
+        $value = Encode::encode_utf8($value // '');
         return if $min <= length($value) && length($value) <= $max;
         my $fn = $field->caption_msg;
         $min ? res_str(1044, $fn, $min, $max) : res_str(1043, $fn, $max);
