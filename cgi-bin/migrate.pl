@@ -111,9 +111,7 @@ sub make_migration {
     my $pg_diff = `git diff -- sql/postgres`;
     $common_diff || $ib_diff || $pg_diff or die 'No diff';
 
-    if ($dry_run) {
-        say 'Dry run';
-    }
+    say 'Dry run' if $dry_run;
 
     my $name = POSIX::strftime('%Y%m%d', localtime) . "-$make";
     my $common_name;
@@ -122,11 +120,11 @@ sub make_migration {
         write_migration($common_name, '', $common_diff);
     }
     if ($ib_diff) {
-        my $header = $common_name ? "INPUT $common_name;" : "";
+        my $header = $common_name ? "INPUT $common_name;" : '';
         write_migration("$name.firebird.sql", $header, $ib_diff);
     }
     if ($pg_diff) {
-        my $header = $common_name ? "\\i $common_name" : "";
+        my $header = $common_name ? "\\i $common_name" : '';
         write_migration("$name.postgres.sql", $header, $pg_diff);
     }
 }
@@ -198,7 +196,7 @@ sub show_migrations {
     my @migrations = get_migrations;
     my $show = $show > $#migrations ? $#migrations : $show - 1;
     @migrations = @migrations[$#migrations - $show .. $#migrations];
-    
+
     my $len = $#migrations;
     my $max_len = length("$len") + 2;
     for my $i (0 .. $len) {
@@ -219,5 +217,5 @@ sub show_migrations {
 $help || $make && $apply ? usage :
     $make ? make_migration :
     $apply ? apply_migration :
-    $show ? show_migrations : 
+    $show ? show_migrations :
     usage;
