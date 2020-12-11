@@ -26,7 +26,7 @@ sub web_data {
 }
 
 sub caption_res { $_[0]->{caption} =~ /^\d+$/ ? res_str($_[0]->{caption}) : '' }
-sub caption_msg { $_[0]->caption_res || $_->{name} }
+sub caption_msg { $_[0]->caption_res || $_[0]->{name} }
 
 sub parse_web_param {
     my ($self, $p) = @_;
