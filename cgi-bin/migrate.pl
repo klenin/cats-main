@@ -194,23 +194,14 @@ sub apply_migration {
 
 sub show_migrations {
     my @migrations = get_migrations;
-    my $show = $show > $#migrations ? $#migrations : $show - 1;
-    @migrations = @migrations[$#migrations - $show .. $#migrations];
+    splice(@migrations, 0, -$show);
 
-    my $len = $#migrations;
-    my $max_len = length("$len") + 2;
-    for my $i (0 .. $len) {
-        my $m = $migrations[$i];
-        my $index = $len - $i + 1;
-        my $prefix = "$index.";
-        print $prefix;
-        my $prefix_len = length $prefix;
-        foreach (qw(common firebird postgres)) {
-            if ($m->{$_}) {
-                say ' ' x ($max_len - $prefix_len), filename($m->{$_});
-                $prefix_len = 0;
-            }
-        }
+    my $i = @migrations;
+    my $max_len = length($i);
+    my $sep = "\n" . ' ' x ($max_len + 2);
+    for my $m (@migrations) {
+        printf "%*d. %s\n", $max_len, $i--,
+            join $sep, map filename($_), grep $_, @$m{qw(common firebird postgres)};
     }
 }
 
