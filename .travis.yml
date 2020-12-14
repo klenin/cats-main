@@ -1,10 +1,17 @@
+dist: bionic
 sudo: required
 before_install:
 - sudo apt-get update -q
-- sudo apt-get install -q firebird2.5-classic firebird2.5-dev
-- sudo rm -r /tmp/firebird
-- perl install_test.pl
+- sudo apt-get install -q firebird3.0 firebird-dev
+- export $(sudo cat /etc/firebird/3.0/SYSDBA.password | grep ISC_PASSWORD | sed -e 's/\"//g')
+- mkdir /tmp/cats
+- sudo chown firebird.firebird /tmp/cats
+services:
+- postgresql
 language: perl
 perl:
 - "5.22"
-script: prove -r cgi-bin/t
+script: perl install_test.pl --pg &&
+        prove cgi-bin/t/database.t &&
+        perl install_test.pl &&
+        prove -r cgi-bin/t
