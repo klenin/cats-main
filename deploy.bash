@@ -332,7 +332,13 @@ if [[ ($step =~ (^|,)8(,|$) || $step == "*") && $FB_DEV_VERSION ]]; then
 		# aliases.conf is replaced by databases.conf in firebird 3.x
 		FB_ALIASES=$FB_ALIASES$([ `echo "$FB_DEV_VERSION < 3.0" | bc` -eq 1 ] && 
 							       echo "aliases.conf" || echo "databases.conf")
+		
+		alias="cats = $path_to_db"
+		has_alias=$(sudo cat $FB_ALIASES | grep -c "$alias")
+		if [ $has_alias -eq 0 ]; then
 		sudo sh -c "echo 'cats = $path_to_db' >> $FB_ALIASES"
+		fi
+
 		if [[ "$path_to_db" = "$def_path_to_db" ]]; then
 			mkdir "$HOME/.cats"
 		fi
