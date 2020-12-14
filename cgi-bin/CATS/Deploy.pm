@@ -52,7 +52,6 @@ sub create_db {
     my $init_config = $p{init_config} // 0;
     my $driver = $p{driver};
     my $host = $p{host};
-    my $sudo_psql = $p{sudo_psql} // 0;
     my $pg_auth_type = $p{pg_auth_type} // 'peer';
 
     my ($next_id, $path);
