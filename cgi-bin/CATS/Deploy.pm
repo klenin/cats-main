@@ -22,7 +22,7 @@ sub substitute_template_parameters {
 }
 
 sub run_sql {
-    my ($file, $quiet) = @_;
+    my ($file, $quiet, $pg_auth_type) = @_;
     my $cmd;
     if ($file =~ /interbase/) {
         my $isql = $^O eq 'Win32' ? 'isql' : 'isql-fb';
@@ -30,8 +30,12 @@ sub run_sql {
         $cmd = [$isql, '-i', $file];
     } elsif ($file =~ /postgres/) {
         die 'Todo: psql windows command' if $^O eq 'Win32';
+        $pg_auth_type =~ m/^md5|peer|trust$/ or die "Unknown authentication type: $pg_auth_type";
+
         IPC::Cmd::can_run('psql') or die 'Error: psql not found';
-        $cmd = ['psql', '-U', 'postgres', '-f', $file];
+        $cmd = $pg_auth_type eq 'peer'
+            ? ['sudo', '-u', 'postgres', 'psql', '-f', $file]
+            : ['psql', '-U', 'postgres', '-f', $file];
     }
     push(@$cmd, '-q') if $quiet;
     my ($ok, $err, $full) = IPC::Cmd::run command => $cmd;
@@ -48,6 +52,8 @@ sub create_db {
     my $init_config = $p{init_config} // 0;
     my $driver = $p{driver};
     my $host = $p{host};
+    my $sudo_psql = $p{sudo_psql} // 0;
+    my $pg_auth_type = $p{pg_auth_type} // 'peer';
 
     my ($next_id, $path);
     if ($sql_subdir eq 'interbase') {
@@ -90,7 +96,7 @@ sub create_db {
 
     if (!$no_run) {
         chdir File::Spec->catdir($sql_dir, $sql_subdir) or die "Unable to chdir 'sql/$sql_subdir': $!";
-        run_sql($create_db_sql, $quiet);
+        run_sql($create_db_sql, $quiet, $pg_auth_type);
     }
 
     1;
