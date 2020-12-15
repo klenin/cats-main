@@ -383,7 +383,9 @@ sub insert_problem_source {
     $c->execute;
 
     my $g = $s->{guid} ? ", guid=$s->{guid}" : '';
-    $self->note("$p{type_name} '$s->{path}' added$g");
+    my $de = $s->{de_code} ?
+        ', de="' . $self->{de_list}->by_code($s->{de_code})->{description} . '"' : '';
+    $self->note("$p{type_name} '$s->{path}' added$g$de");
 }
 
 sub insert_problem_content {
