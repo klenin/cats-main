@@ -332,33 +332,26 @@ if [[ ($step =~ (^|,)8(,|$) || $step == "*") && $FB_DEV_VERSION ]]; then
 		# aliases.conf is replaced by databases.conf in firebird 3.x
 		FB_ALIASES=$FB_ALIASES$([ `echo "$FB_DEV_VERSION < 3.0" | bc` -eq 1 ] && 
 							       echo "aliases.conf" || echo "databases.conf")
-		sudo sh -c "echo 'cats = $path_to_db' >> $FB_ALIASES"
+		
+		alias="cats = $path_to_db"
+		has_alias=$(sudo cat $FB_ALIASES | grep -c "$alias")
+		if [ $has_alias -eq 0 ]; then
+			sudo sh -c "echo 'cats = $path_to_db' >> $FB_ALIASES"
+		fi
+
 		if [[ "$path_to_db" = "$def_path_to_db" ]]; then
 			mkdir "$HOME/.cats"
 		fi
 		sudo chown firebird.firebird $(dirname "$path_to_db")
 
-		sed -i -e "s/<your-db-driver>/Firebird/g" $CONFIG
+		perl -I "$CATS_ROOT/cgi-bin" -MCATS::Deploy -e \
+			"CATS::Deploy::create_db interbase, cats, '$db_user', '$db_pass', init_config => 1,
+				host => '$db_host', quiet => 1"
 	else
-		sed -i -e "s/<your-db-driver>/Pg/g" $CONFIG
+		perl -I "$CATS_ROOT/cgi-bin" -MCATS::Deploy -e \
+			"CATS::Deploy::create_db postgres, cats, '$db_user', '$db_pass', pg_auth_type => peer,
+				init_config => 1, host => '$db_host', quiet => 1"
 	fi
-
-	sed -i -e "s/<your-db-username>/$db_user/g" $CONFIG
-	sed -i -e "s/<your-db-password>/$db_pass/g" $CONFIG
-	sed -i -e "s/<your-db-host>/$db_host/g" $CONFIG
-	sed -i -e "s/<your-db-name>/cats/g" $CONFIG
-
-	sed -i -e "s/<path-to-your-database>/cats/g" $CREATE_DB
-	sed -i -e "s/<your-username>/$db_user/g" $CREATE_DB
-	sed -i -e "s/<your-password>/$db_pass/g" $CREATE_DB
-
-	cd "$CREATE_DB_ROOT"
-	if [[ "$dbms" = "$firebird" ]]; then
-		sudo isql-fb -i "$CREATE_DB_NAME"
-	else
-		sudo -u postgres psql -f "$CREATE_DB_NAME"
-	fi
-	cd "$CATS_ROOT"
 	echo "ok"
 else
 	echo "skip"

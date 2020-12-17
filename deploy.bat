@@ -555,22 +555,15 @@ __END__
 		@if "%path_to_db%"=="" set path_to_db=%CATS_ROOT%\ib_data\cats.gdb
 		@if not exist "%path_to_db%" echo You'll need to create %path_to_db% manually.
 		@set path_to_db=%path_to_db:\=\\\\%
-		@perl -pi.bak -e "s/<your-db-driver>/Firebird/g" %CONFIG%
+		
+		@perl -I "%CATS_ROOT%\\cgi-bin" -MCATS::Deploy -e^
+			"CATS::Deploy::create_db interbase, cats, '%db_user%', '%db_pass%', init_config => 1, host => '%db_host%', quiet => 1, no_run => 1"
 		@goto :done_setup
 	:pg_setup
-		@set path_to_db=cats
-		@perl -pi.bak -e "s/<your-db-driver>/Pg/g" %CONFIG%
+		@perl -I "%CATS_ROOT%\\cgi-bin" -MCATS::Deploy -e^
+			"CATS::Deploy::create_db postgres, cats, '%db_user%', '%db_pass%', pg_auth_type => peer, init_config => 1, host => '%db_host%', quiet => 1, no_run => 1"
 		@goto :done_setup
 	:done_setup
-
-	@perl -pi.bak -e "s/<your-db-username>/%db_user%/g" %CONFIG%
-	@perl -pi.bak -e "s/<your-db-password>/%db_pass%/g" %CONFIG%
-	@perl -pi.bak -e "s/<your-db-host>/%db_host%/g" %CONFIG%
-	@perl -pi.bak -e "s/<your-db-name>/%path_to_db%/g" %CONFIG%
-
-	@perl -pi.bak -e "s/<path-to-your-database>/%path_to_db%/g" %CREATE_DB%
-	@perl -pi.bak -e "s/<your-username>/%db_user%/g" %CREATE_DB%
-	@perl -pi.bak -e "s/<your-password>/%db_pass%/g" %CREATE_DB%
 	@echo Configuration written to %CONFIG% and %CREATE_DB%.
 
 @endlocal
