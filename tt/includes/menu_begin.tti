@@ -8,7 +8,7 @@
 <body>
 <table class="iface header">
   <tr>
-    <td class="logo"><a href="[% href_header_about %]"></a></td>
+    <td class="logo"><a href="[% href_header_about %]" title="CATS"></a></td>
     <td class="contest_title">
       [% IF contest.title; contest.title | html; ELSE; title_suffix || '&nbsp;'; END %]
       [% IF problem_title %]<span> / [% problem_title | html %]</span>[% END %]
