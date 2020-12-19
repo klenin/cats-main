@@ -48,7 +48,7 @@ table.header td.elapsed p a.selected { font-weight: bold; border: 1px solid blac
 table.header td.elapsed p a:hover { background-color: #ffcc55; }
 
 .main_menu {
-    background-color: #7070ff;
+    background-color: #6262f2;
 }
 
 .main_menu > td:first-child { text-align: left; }
@@ -174,7 +174,7 @@ a, a:link {
 .sub_menu a::first-letter { text-transform: capitalize; }
 .sub_menu .sub_sub_menu a { padding: 1px; }
 
-.sub_menu a:hover, .sub_menu a.new:hover { background-color: #afaff5; }
+.sub_menu a:hover, .sub_menu a.new:hover, a.sub_menu_selected:hover { background-color: #afaff5; }
 
 .sub_menu a.new {
     background: no-repeat 4px center url(../images/icons/plus.png);
@@ -182,10 +182,10 @@ a, a:link {
 }
 
 .main_menu a.main_menu_selected, .main_menu a.main_menu_selected:visited { color: yellow; }
-a.sub_menu_selected, a.sub_menu_selected:visited { color: yellow; }
+a.sub_menu_selected, a.sub_menu_selected:visited { color: #ffff80; background-color: #6262f2; }
 
 tr.footer, tr.footer td {
-    background-color: #7070ff;
+    background-color: #6262f2;
     color: white;
     font-family: Arial, sans-serif;
     font-size: 12px;
@@ -273,7 +273,7 @@ table > tbody > tr > td.nested table { border-style: hidden; height: 100%; width
 .button2 {
     border: 1px solid #ffffff;
     color: #ffffff;
-    background-color: #7070ff;
+    background-color: #6262f2;
 }
 td:hover .copy_button { display: block; }
 .copy_button { display: none; position: absolute; top: 4px; right: 4px; }
