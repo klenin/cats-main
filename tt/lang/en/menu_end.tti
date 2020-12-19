@@ -6,5 +6,6 @@
     docs => 'documentation',
     authors => 'Authors',
     university => 'Far Eastern Federal University',
+    github => 'GitHub repository',
   })
 %]
