@@ -272,6 +272,7 @@ sub problem_limits_frame {
 
     $t->param(
         p => $problem,
+        problem_title => $problem->{title},
         href_action => url_f('problem_limits', pid => $problem->{id}, cid => $cid,
             from_problems => $p->{from_problems})
     );
@@ -393,7 +394,7 @@ sub problem_test_data_frame {
         $_->{href_test_diff} = url_f('test_diff', pid => $p->{pid}, test => $_->{rank});
     };
 
-    $t->param(p => $problem, tests => $tests);
+    $t->param(p => $problem, problem_title => $problem->{title}, tests => $tests);
 
     CATS::Problem::Utils::problem_submenu('problem_test_data', $p->{pid});
 }
@@ -428,6 +429,7 @@ sub problem_select_tags_frame {
 
     $t->param(
         problem => $problem,
+        problem_title => $problem->{title},
         href_action => url_f('problem_select_tags',
             from_problems => $p->{from_problems}, pid => $p->{pid}),
         available_tags => CATS::Problem::Text::get_tags($p->{pid}),
