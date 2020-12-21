@@ -26,7 +26,7 @@ Options:
   [--help]\t\tDisplay this help.
   --report={std|mail}\tPrint report to stdout or send it by email.
   [--quiet]\t\tDo not print progress info.
-  [--dest=<path>]\tStore backups in a given folder, default is '../ib_data'.
+  [--dest=<path>]\tStore backups in a given folder, default is '../backups'.
   [--zip]\t\tCompress backup.
   [--chown=<user>]\tChange backup file ownership.
   [--max=<number>]\tRemove oldest backup when maximum count is reached.
@@ -53,7 +53,8 @@ if (!$report || $report !~ /^(std|mail)$/) {
     usage;
 }
 
-$dest ||= File::Spec->catdir($FindBin::Bin, '..', 'ib_data');
+my $db = $CATS::Config::db;
+$dest ||= File::Spec->catdir($FindBin::Bin, '..', 'backups');
 
 sub fmt_interval {
     my $s = Time::HiRes::tv_interval(@_);
@@ -83,8 +84,9 @@ sub remove_old_backup {
 
 sub find_file {
     for (my $i = 0; $i < 10; ++$i) {
+        my $ext = $db->{driver} =~ /Firebird/ ? '.fbk' : '.sql';
         my $n = File::Spec->catfile($dest,
-            $prefix . strftime('%Y-%m-%d', localtime) . ($i ? "-$i" : '') . '.fbk');
+            $prefix . strftime('%Y-%m-%d', localtime) . ($i ? "-$i" : '') . $ext);
         next if -f $n;
         next if -f "$n.gz" && $zip;
         return $n;
@@ -93,25 +95,35 @@ sub find_file {
 }
 
 sub work {
-    IPC::Cmd::can_run('gbak') or die 'Error: gbak not found';
-
-    my ($ok, $err, $full) = IPC::Cmd::run command => [ 'gbak', '-Z' ];
-    # Given -Z, gbak exits with 1 instead of 0.
-    $ok || $err =~ /value 1/ or die "Error running gbak: $err";
-
-    $full && $full->[0] =~ /gbak:gbak version/ or die "Error: gbak not correct: @$full";
-
-    my $db = $CATS::Config::db->{name};
-    my $host = $CATS::Config::db->{host};
-    print "Host: $host\nDatabase: $db\n" if !$quiet;
+    printf "DBI: %s\nHost: %s\nDatabase: %s\n\n",
+        $db->{driver}, $db->{host}, $db->{name} if !$quiet;
 
     -d $dest or die "Bad destination: $dest";
 
     my $file = find_file;
-
     print "Destination: $file\n" if !$quiet;
-    my $cmd = [ 'gbak', '-B', "$host:$db", $file,
-        '-USER', $CATS::Config::db->{user}, '-PAS', $CATS::Config::db->{password} ];
+
+    my ($cmd, $ok, $err, $full);
+    if ($db->{driver} =~ /Firebird/) {
+        IPC::Cmd::can_run('gbak') or die 'Error: gbak not found';
+
+        ($ok, $err, $full) = IPC::Cmd::run command => [ 'gbak', '-Z' ];
+        # Given -Z, gbak exits with 1 instead of 0.
+        $ok || $err =~ /value 1/ or die "Error running gbak: $err";
+
+        $full && "@$full" =~ /gbak:gbak version/ or die "Error: gbak not correct: @$full";
+
+        $cmd = [ 'gbak', '-B', "$db->{host}:$db->{name}", $file, 
+            '-USER', $db->{user}, '-PAS', $db->{password} ];
+    } elsif ($db->{driver} =~ /Pg/) {
+        IPC::Cmd::can_run('pg_dump') or die 'Error: pg_dump not found';
+
+        my $dbname = sprintf "postgresql://%s:%s@%s:5432/%s",
+            $db->{user}, $db->{password}, $db->{host}, $db->{name};
+        $cmd = [ 'pg_dump', '-f', $file, '--dbname', $dbname ];
+    } else {
+        die "Unknown driver: '$db->{driver}'";
+    }
 
     my $start_ts = [ gettimeofday ];
 
