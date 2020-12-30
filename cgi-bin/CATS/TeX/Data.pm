@@ -59,6 +59,7 @@ my %arrows = (
     rightarrow => 'rarr',
     uparrow => 'uarr',
     downarrow => 'darr',
+    mapsto => '#8614',
 );
 
 my %special = (
