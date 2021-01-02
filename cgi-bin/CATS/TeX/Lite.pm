@@ -3,6 +3,8 @@ package CATS::TeX::Lite;
 use strict;
 use warnings;
 
+use List::Util qw(max);
+
 use CATS::TeX::Data;
 
 sub ss { "<span>@_</span>" }
@@ -45,9 +47,9 @@ my %generators = (
     sum    => $large_sym->('sum'),
     prod   => $large_sym->('prod'),
     int    => $large_sym->('int', 'int'),
-    array  => sub { sc(array => sc("tbl $_[0]" => ss(ss($_[1])))) },
+    array  => sub { sc(array => sc("tbl $_[0]" => join '', @_[1..$#_])) },
     cell   => sub { '</span><span>' },
-    row    => sub { '</span></span><span><span>' },
+    row    => sub { ss(ss(@_)) },
     prime  => sub { length($_[0]) == 2 ? '&#8243;' : '&prime;' x length($_[0]) },
 );
 
@@ -172,7 +174,17 @@ sub parse_block {
                     if ($env eq 'array') {
                         $source =~ s/^\{([a-zA-Z]+)\}\s*//;
                         my $cols = join ' ', map substr($1, $_ - 1, 1) . $_, 1 .. length($1);
-                        push @res, [ array => $cols // '', parse_block() ];
+                        my @rows = ([ 'row', [ 'block' ] ]);
+                        my (undef, @content) = @{parse_block()};
+                        for (@content) {
+                            if (ref $_ eq 'ARRAY' && $_->[0] eq 'row') {
+                                push @rows, [ 'row', [ 'block' ] ];
+                            }
+                            else {
+                                push @{$rows[-1]->[-1]}, $_;
+                            }
+                        }
+                        push @res, [ array => $cols // '', @rows ];
                     }
                     else {
                         # Unknown environment, ignore.

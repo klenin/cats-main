@@ -3,7 +3,7 @@ use warnings;
 
 use File::Spec;
 use FindBin;
-use Test::More tests => 40;
+use Test::More tests => 41;
 
 use lib File::Spec->catdir($FindBin::Bin, '..');
 use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
@@ -112,6 +112,11 @@ is_ 'a \mod b \bmod c', '<i>a</i>&nbsp;<b>mod</b>&nbsp;<i>b</i>&nbsp;<b>mod</b>&
 
 is_ '\int\sum\prod',
     '<span class="int">&int;</span><span class="large_sym">&sum;</span><span class="large_sym">&prod;</span>';
+
+is_ q~\begin{array}{l}a\end{array}~,
+    '<span class="array"><span class="tbl l1">' .
+    '<span><span><i>a</i></span></span>' .
+    '</span></span>';
 
 is_ q~\begin{array}{lr}123&a \\\\ b & c\end{array}~,
     '<span class="array"><span class="tbl l1 r2">' .
