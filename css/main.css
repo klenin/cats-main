@@ -390,7 +390,7 @@ span.TeX span.large { display: inline-block; font-size: 150%; transform: scaleY(
 span.TeX span.tt { font-weight: bold; font-family: Courier New, monospace; }
 span.TeX span.b { font-weight: bold; }
 span.TeX span.mathbb { font-family: MJXc-TeX-ams-Rw, serif; }
-span.TeX span.mathbb i { font-style: normal; }
+span.TeX span.mathbb i, span.TeX span.mathrm i { font-style: normal; }
 
 span.TeX span.array { display: inline-block; vertical-align: middle; }
 span.TeX span.tbl { display: inline-table; }
