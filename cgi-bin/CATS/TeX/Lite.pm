@@ -28,6 +28,8 @@ my %generators = (
     block  => sub { join '', @_ },
     'sqrt' => sub { ($_[1] ? qq~<sup class="root">$_[1]</sup>~ : '') . $sqrt_sym . sc(sqrt => $_[0]) },
     overline => sub { sc(over => @_) },
+    hat_1 => sub { "@_&#770;" },
+    hat_large => sub { sc(hat => @_) },
     frac   => sub { sc('frac sfrac', sc(nom => ss($_[0]))  . ss(ss($_[1]))) },
     dfrac  => sub { sc('frac dfrac', sc(nom => ss($_[0]))  . ss(ss($_[1]))) },
     space  => sub { '&nbsp;' },
@@ -99,6 +101,11 @@ sub parse_optional {
     @optional;
 }
 
+sub _token_as {
+    my ($token, $type, $len) = @_;
+    ref $token eq 'ARRAY' && @$token == 2 && $token->[0] eq $type ? $token->[1] : undef;
+}
+
 sub parse_block {
     my @res = ();
     my $limits = '';
@@ -138,6 +145,14 @@ sub parse_block {
             elsif ($f eq 'over') {
                 my $d = [ frac => $res[-1] // '', parse_token() ];
                 @res ? ($res[-1] = $d) : push @res, $d;
+            }
+            elsif ($f eq 'hat') {
+                # Single-character hat via Unicode combining circumflex accent.
+                my $arg = parse_token;
+                my $block = _token_as($arg, 'block');
+                my $var = $block && _token_as($block, 'var') || _token_as($arg, 'var');
+                push @res, $var && length($var) == 1 ?
+                    [ var => [ hat_1 => $var ] ] : [ hat_large => $arg ];
             }
             elsif ($f eq 'limits') {
                 $res[-1] ? $res[-1] = [ limits => $res[-1] ] : push @res, [ limits => '' ];
@@ -199,6 +214,7 @@ sub as_html {
         }
     }
     my @html_params = map { as_html($_) } @$tree;
+    $generators{$name} or die $name;
     $generators{$name}->(@html_params);
 }
 

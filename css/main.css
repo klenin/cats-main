@@ -372,6 +372,7 @@ span.TeX sup { white-space: nowrap; position: relative; left: 1px; }
 span.TeX sup.root { position: relative; left: 6px; top: -7px; }
 span.TeX sub { white-space: nowrap; position: relative; top: 2px; }
 span.TeX span.over { border-top: 1px solid black; padding: 0 2px 0 1px; margin: 0; }
+span.TeX span.hat:before { position: relative; left: 50%; top: -7px; content: '^'; font-size: smaller; }
 span.TeX span.num { font-family: Times New Roman, serif; }
 span.TeX span.sqrt { border-top: 1px solid black; padding: 4px 2px 0 0; }
 span.TeX span.sqrt_sym { font-size: 19px; }
@@ -385,7 +386,7 @@ span.TeX span.limits.hh { vertical-align: middle; }
 span.TeX span.limits > span { display: table-row; }
 span.TeX span.limits > .hi { font-size: 80%; line-height: 80%; }
 span.TeX span.limits > .lo { font-size: 80%; line-height: 80%; }
-span.TeX span.large { display: inline-block; font-size: 150%; transform: scaleY(2.0) }
+span.TeX span.large { display: inline-block; font-size: 150%; transform: scaleY(2.0); }
 span.TeX span.tt { font-weight: bold; font-family: Courier New, monospace; }
 span.TeX span.b { font-weight: bold; }
 span.TeX span.mathbb { font-family: MJXc-TeX-ams-Rw, serif; }

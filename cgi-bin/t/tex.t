@@ -3,7 +3,7 @@ use warnings;
 
 use File::Spec;
 use FindBin;
-use Test::More tests => 38;
+use Test::More tests => 40;
 
 use lib File::Spec->catdir($FindBin::Bin, '..');
 use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
@@ -121,3 +121,6 @@ is_ q~\begin{array}{lr}123&a \\\\ b & c\end{array}~,
 
 is_ '\mathbb{R}\mathcal{C}',
     '<span class="mathbb"><i>R</i></span><span class="mathcal"><i>C</i></span>';
+
+is_ '\hat{x}', '<i>x&#770;</i>';
+is_ '\hat{x + y}', '<span class="hat"><i>x</i>&nbsp;+&nbsp;<i>y</i></span>';
