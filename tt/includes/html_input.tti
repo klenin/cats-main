@@ -1,6 +1,7 @@
-[%- MACRO input_tr(field, size) BLOCK -%]
+[%- MACRO input_tr(field, size, comment) BLOCK -%]
   <tr><td>[% capt.$field %]</td>
-  <td><input type="text" name="[% field %]" size="[% size || 50 %]" value="[% $field | html %]" class="bordered"></td></tr>
+  <td><input type="text" name="[% field %]" size="[% size || 50 %]" value="[% $field | html %]" class="bordered">
+  [% comment %]</td></tr>
 [%- END -%]
 
 [%- MACRO maybe_err(f) BLOCK; IF f.error %] <p class="form_error">[% f.error %]</p>[% END; END -%]

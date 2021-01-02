@@ -39,7 +39,8 @@ sub users_edit_frame {
     $is_jury or return;
 
     $p->{uid} or return;
-    my $u = CATS::User->new->contest_fields([ 'site_id' ])->load($p->{uid}, [ qw(locked settings srole) ])
+    my $u = CATS::User->new->contest_fields([ 'site_id' ])->
+        load($p->{uid}, [ qw(locked settings srole last_ip) ])
         or return;
     $t->param(
         CATS::User::submenu('edit', $p->{uid}, $u->{site_id}),
