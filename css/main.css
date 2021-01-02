@@ -386,7 +386,10 @@ span.TeX span.limits.hh { vertical-align: middle; }
 span.TeX span.limits > span { display: table-row; }
 span.TeX span.limits > .hi { font-size: 80%; line-height: 80%; }
 span.TeX span.limits > .lo { font-size: 80%; line-height: 80%; }
-span.TeX span.large { display: inline-block; font-size: 150%; transform: scaleY(2.0); }
+span.TeX span.large { display: inline-block; font-size: 150%; }
+span.TeX span.large.hh2 { transform: scaleY(2.0); }
+span.TeX span.large.hh3 { transform: scaleY(3.0); }
+span.TeX span.large.hh4 { transform: scaleY(4.0); }
 span.TeX span.tt { font-weight: bold; font-family: Courier New, monospace; }
 span.TeX span.b { font-weight: bold; }
 span.TeX span.mathbb { font-family: MJXc-TeX-ams-Rw, serif; }

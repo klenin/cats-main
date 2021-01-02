@@ -13,6 +13,13 @@ sub sc { my $class = shift; qq~<span class="$class">@_</span>~ }
 my $large_sym = sub { my $f = sc(($_[1] // 'large_sym'), $CATS::TeX::Data::symbols{$_[0]}); sub { $f }; };
 my $sqrt_sym = sc(sqrt_sym => '&#x221A;');
 
+sub left_right {
+    my ($text, $height) = @_;
+    !$height || $height <= 1 ? $text :
+    $height <= 4 ? qq~<span class="large hh$height">$text</span>~ :
+    qq~<span class="large" style="transform: scaleY($height);">$text</span>~;
+}
+
 my %generators = (
     var    => sub { ($_[1] || '') . "<i>$_[0]</i>" },
     num    => sub { ($_[1] || '') . sc(num => $_[0]) },
@@ -35,8 +42,8 @@ my %generators = (
     frac   => sub { sc('frac sfrac', sc(nom => ss($_[0]))  . ss(ss($_[1]))) },
     dfrac  => sub { sc('frac dfrac', sc(nom => ss($_[0]))  . ss(ss($_[1]))) },
     space  => sub { '&nbsp;' },
-    left   => sub { sc(large => @_) },
-    right  => sub { sc(large => @_) },
+    left   => \&left_right,
+    right  => \&left_right,
     mathcal=> sub { sc(mathcal => @_) },
     texttt => sub { sc(tt => @_) },
     mbox   => \&ss,
@@ -52,6 +59,8 @@ my %generators = (
     row    => sub { ss(ss(@_)) },
     prime  => sub { length($_[0]) == 2 ? '&#8243;' : '&prime;' x length($_[0]) },
 );
+
+my $high_gens = { limits => 1 };
 
 my $source;
 
@@ -106,6 +115,8 @@ sub parse_optional {
     $source =~ s/^]//;
     @optional;
 }
+
+sub _is_token { ref $_[0] eq 'ARRAY' && $_[0]->[0] eq $_[1] }
 
 sub _token_as {
     my ($token, $type, $len) = @_;
@@ -177,7 +188,7 @@ sub parse_block {
                         my @rows = ([ 'row', [ 'block' ] ]);
                         my (undef, @content) = @{parse_block()};
                         for (@content) {
-                            if (ref $_ eq 'ARRAY' && $_->[0] eq 'row') {
+                            if (_is_token($_, 'row')) {
                                 push @rows, [ 'row', [ 'block' ] ];
                             }
                             else {
@@ -212,7 +223,51 @@ sub parse_block {
 sub parse {
     ($source) = @_;
     $source =~ s/\n|\r/ /g;
-    return parse_block();
+    my $parsed = parse_block();
+    update_height($parsed);
+    $parsed;
+}
+
+sub _set_height {
+    my ($left, $height) = @_;
+    $left->[2] = $height;
+}
+
+sub update_height {
+    my ($tree) = @_;
+    ref $tree eq 'ARRAY' or return 1;
+    my ($name, @args) = @$tree;
+    $name or return 1;
+    if ($name eq 'block') {
+        my $max = 0;
+        my @stack;
+        for my $el (@args) {
+            if (_is_token($el, 'left')) {
+                push @stack, [ $el, 1 ];
+            }
+            elsif (_is_token($el, 'right')) {
+                $el->[2] = @stack ? _set_height(@{pop @stack}) : $max; # Maybe unopened \right.
+            }
+            else {
+                my $cur = update_height($el);
+                $_->[1] = max($_->[1], $cur) for @stack;
+                $max = max($max, $cur);
+            }
+        }
+        _set_height(@$_) for @stack; # Unclosed \left.
+        return $max;
+    }
+    elsif ($name =~ /^(frac|dfrac)$/) {
+        return update_height($args[0]) + update_height($args[1]);
+    }
+    elsif ($name eq 'array') {
+        my $sum = 0;
+        $sum += update_height($_) for @args[1..$#args];
+        return $sum;
+    }
+    else {
+        return ($high_gens->{$name} ? 1 : 0) + (@args ? update_height($args[0]) : 1);
+    }
 }
 
 sub as_html {

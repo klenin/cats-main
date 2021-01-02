@@ -3,7 +3,7 @@ use warnings;
 
 use File::Spec;
 use FindBin;
-use Test::More tests => 41;
+use Test::More tests => 49;
 
 use lib File::Spec->catdir($FindBin::Bin, '..');
 use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
@@ -20,6 +20,11 @@ sub is_ {
         is tex($_[0]), $_[1], "tex $_[0]";
     }
 }
+
+sub is_u {
+    is CATS::TeX::Lite::update_height(CATS::TeX::Lite::parse($_[0])), $_[1], "height $_[0]";
+}
+
 
 is_ '1', '<span class="num">1</span>';
 is_ 'a', '<i>a</i>';
@@ -106,7 +111,7 @@ is_ '\sqrt[3]{5}',
     '<span class="sqrt"><span class="num">5</span></span>';
 
 is_ 'a\leftarrow b\rightarrow c', '<i>a</i>&larr;&nbsp;<i>b</i>&rarr;&nbsp;<i>c</i>';
-is_ '\left((a)\right)', '<span class="large">(</span>(<i>a</i>)<span class="large">)</span>';
+is_ '\left((a)\right)', '((<i>a</i>))';
 
 is_ 'a \mod b \bmod c', '<i>a</i>&nbsp;<b>mod</b>&nbsp;<i>b</i>&nbsp;<b>mod</b>&nbsp;<i>c</i>';
 
@@ -116,6 +121,12 @@ is_ '\int\sum\prod',
 is_ q~\begin{array}{l}a\end{array}~,
     '<span class="array"><span class="tbl l1">' .
     '<span><span><i>a</i></span></span>' .
+    '</span></span>';
+is_ '\left\{\begin{array}{l}x\\\\y\end{array}',
+    '<span class="large hh2">{</span>' .
+    '<span class="array"><span class="tbl l1">' .
+    '<span><span><i>x</i></span></span>' .
+    '<span><span><i>y</i></span></span>' .
     '</span></span>';
 
 is_ q~\begin{array}{lr}123&a \\\\ b & c\end{array}~,
@@ -129,3 +140,13 @@ is_ '\mathbb{R}\mathcal{C}',
 
 is_ '\hat{x}', '<i>x&#770;</i>';
 is_ '\hat{x + y}', '<span class="hat"><i>x</i>&nbsp;+&nbsp;<i>y</i></span>';
+
+
+is_u 'a + b', 1;
+is_u '\frac{a}{b}', 2;
+is_u '\hat{\frac{a}{b}}', 2;
+is_u '\frac{a}{\frac{b}{c}}', 3;
+is_u '\frac{\sum\limits_1^2}{\frac{b}{c}}', 4;
+is_u '\begin{array}{l}1\\\\2\\\\3\end{array}', 3;
+is_u '\begin{array}{l}\frac{1}{\frac{b}{c}}\\\\x & \prod\limits_1^2\end{array}', 5;
+
