@@ -64,7 +64,7 @@ my $high_gens = { limits => 1 };
 
 my $source;
 
-sub sp { $_[0] eq '' ? '' : '&nbsp;' }
+sub sp { $_[0] eq '' ? '&#8239;' : '&nbsp;' }
 
 sub is_binop { exists $CATS::TeX::Data::binary{$_[0]} }
 

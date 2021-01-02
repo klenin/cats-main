@@ -25,19 +25,18 @@ sub is_u {
     is CATS::TeX::Lite::update_height(CATS::TeX::Lite::parse($_[0])), $_[1], "height $_[0]";
 }
 
-
 is_ '1', '<span class="num">1</span>';
 is_ 'a', '<i>a</i>';
-is_ 'abc+def', '<i>abc</i>+<i>def</i>';
-is_ 'a-b', '<i>a</i>&minus;<i>b</i>';
+is_ 'abc + def', '<i>abc</i>&nbsp;+&nbsp;<i>def</i>';
+is_ 'a-b', '<i>a</i>&#8239;&minus;&#8239;<i>b</i>';
 is_ 'a \le b', '<i>a</i>&nbsp;&le;&nbsp;<i>b</i>';
 is_ 'a \texttt{c+1} b', '<i>a</i><span class="tt">c+1</span><i>b</i>';
 is_ 'a \mbox{any text} b', '<i>a</i><span>any text</span><i>b</i>';
 is_ '10\%', '<span class="num">10</span>%';
 
 is_ 'a b c', '<i>a</i> <i>b</i> <i>c</i>';
-is_ 'a b+c', '<i>a</i> <i>b</i>+<i>c</i>';
-is_ 'f(b+c)', '<i>f</i>(<i>b</i>+<i>c</i>)';
+is_ 'a b+c', '<i>a</i> <i>b</i>&#8239;+&#8239;<i>c</i>';
+is_ 'f(b+c)', '<i>f</i>(<i>b</i>&#8239;+&#8239;<i>c</i>)';
 is_ 'a,b,  c, d', '<i>a</i>,<i>b</i>, <i>c</i>, <i>d</i>';
 
 is_ 'a_i', '<i>a</i><sub><i>i</i></sub>';
@@ -46,7 +45,7 @@ is_ 'a^2', '<i>a</i><sup><span class="num">2</span></sup>';
 is_ 'a^22', '<i>a</i><sup><span class="num">22</span></sup>';
 
 is_ 'a^{22}', '<i>a</i><sup><span class="num">22</span></sup>';
-is_ 'a_{b+c}', '<i>a</i><sub><i>b</i>+<i>c</i></sub>';
+is_ 'a_{b+c}', '<i>a</i><sub><i>b</i>&#8239;+&#8239;<i>c</i></sub>';
 is_ '\overline S', '<span class="over"><i>S</i></span>';
 is_ '\frac 1 a',
     '<span class="frac sfrac">' .
@@ -56,7 +55,7 @@ is_ '\frac 1 a',
 is_ '\frac {x}  {y+z}',
     '<span class="frac sfrac">' .
     '<span class="nom"><span><i>x</i></span></span>' .
-    '<span><span><i>y</i>+<i>z</i></span></span>' .
+    '<span><span><i>y</i>&#8239;+&#8239;<i>z</i></span></span>' .
     '</span>';
 is_ '1 \over a',
     '<span class="frac sfrac">' .
@@ -100,7 +99,7 @@ is_ '\max\limits_a^b',
 is_ 'S\limits_{i+1} + 1',
     '<span class="limits">' .
     '<span class="mid"><span><i>S</i></span></span>' .
-    '<span class="lo"><span><i>i</i>+<span class="num">1</span></span></span>' .
+    '<span class="lo"><span><i>i</i>&#8239;+&#8239;<span class="num">1</span></span></span>' .
     '</span>&nbsp;+&nbsp;<span class="num">1</span>';
 
 is_ '\sqrt{\overline Q} + \sqrt \alpha',

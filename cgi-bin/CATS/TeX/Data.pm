@@ -101,7 +101,9 @@ my %special = (
 my %spaces = (
     ';' => 'nbsp',
     ':' => 'nbsp',
-    ',' => 'nbsp',
+    ',' => '#x202F',
+    quad => '#x2001',
+    qquad => '#x2001;&#x2001',
 );
 
 my %greek = (
