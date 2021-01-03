@@ -194,6 +194,6 @@ $symbols{' '} = '&nbsp;';
 $symbols{'-'} = '&minus;',
 $symbols{rbrace} = $symbols{'}'} = '}';
 $symbols{lbrace} = $symbols{'{'} = '{';
-$symbols{backslash} = "\\";
+$symbols{backslash} = $symbols{setminus} = '\\';
 
 1;

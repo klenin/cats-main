@@ -16,7 +16,7 @@ my $sqrt_sym = sc(sqrt_sym => '&#x221A;');
 sub left_right {
     my ($text, $height) = @_;
     !$height || $height <= 1 ? $text :
-    $height <= 4 ? qq~<span class="large hh$height">$text</span>~ :
+    $height <= 4 ? sc("large hh$height", $text) :
     qq~<span class="large" style="transform: scaleY($height);">$text</span>~;
 }
 
@@ -37,13 +37,17 @@ my %generators = (
     block  => sub { join '', @_ },
     'sqrt' => sub { ($_[1] ? qq~<sup class="root">$_[1]</sup>~ : '') . $sqrt_sym . sc(sqrt => $_[0]) },
     overline => sub { sc(over => @_) },
-    hat_1 => sub { "@_&#770;" },
+    hat_1  => sub { "@_&#770;" },
     hat_large => sub { sc(hat => @_) },
     frac   => sub { sc('frac sfrac', sc(nom => ss($_[0]))  . ss(ss($_[1]))) },
     dfrac  => sub { sc('frac dfrac', sc(nom => ss($_[0]))  . ss(ss($_[1]))) },
     space  => sub { '&nbsp;' },
     left   => \&left_right,
     right  => \&left_right,
+    big    => sub { sc("large" => @_) },
+    Big    => sub { sc("large hh2" => @_) },
+    bigg   => sub { sc("large hh3" => @_) },
+    Bigg   => sub { sc("large hh4" => @_) },
     mathcal=> sub { sc(mathcal => @_) },
     texttt => sub { sc(tt => @_) },
     mbox   => \&ss,
@@ -94,6 +98,7 @@ sub parse_token {
 }
 
 my %simple_commands = (
+    big => 1, Big => 1, bigg => 1, Bigg => 1,
     dfrac => 2,
     frac => 2,
     int => 0,
