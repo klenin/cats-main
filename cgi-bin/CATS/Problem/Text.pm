@@ -39,14 +39,14 @@ sub process_text {
         }
     }
     if ($spellchecker) {
-        my @tex_parts = split /\$/, $text_span;
+        my @tex_parts = split /\$\$?/, $text_span;
         my $i = 0;
         for (@tex_parts) {
             $spellchecker->check_topicalizer if $i ^= 1;
         }
         $html_code .= join '$', @tex_parts;
         # split ignores separator at EOL, m// ignores \n at EOL, hence \z
-        $html_code .= '$' if $text_span =~ /\$\z/s;
+        $html_code .= '$' if $text_span =~ /\$\$?\z/s;
     }
     else {
         $html_code .= $text_span;
