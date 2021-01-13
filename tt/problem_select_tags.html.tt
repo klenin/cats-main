@@ -13,7 +13,7 @@ function add_tag(elem) {
 }
 </script>
 
-[% capt.select_tags %] (<a href="docs/format.[% lang %].html#cats_if">?</a>):
+[% capt.select_tags %] (<a href="docs/format.[% lang %].html#cats-if">?</a>):
 <form method="post" action="[% href_action %]">
 <input type="text" size="60" maxlength="200" name="tags" id="tags" value="[% problem.tags %]" class="bordered"/>
 <br/><br/>
