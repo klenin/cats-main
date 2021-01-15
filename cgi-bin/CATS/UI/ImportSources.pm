@@ -44,7 +44,7 @@ sub import_sources_frame {
         return (
             %$f,
             stype_name => $cats::source_module_names{$f->{stype}},
-            href_problems => url_f_cid('problems', cid => $f->{contest_id}),
+            href_problem => url_f_cid('problem_details', cid => $f->{contest_id}, pid => $f->{problem_id}),
             href_source => url_f('download_import_source', psid => $f->{id}),
         );
     };

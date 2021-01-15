@@ -8,7 +8,7 @@
 [% FOREACH is IN import_sources %]
 <tr class="[% loop.parity() %]">
 [% IF user.is_jury %]<td>
-  [% IF is.is_jury %]<a href="[% is.href_problems %]" title="[% is.title | html %]" class="icon view"></a>[% END %]
+  [% IF is.is_jury %]<a href="[% is.href_problem %]" title="[% is.title | html %]" class="icon view"></a>[% END %]
 </td>[% END %]
 <td><a href="[% is.href_source %]" title="[% is.fname | html %]">[% is.guid | html %] ([% is.fname | html %])</a></td>
 <td>[% is.stype_name; cell_search('stype', is) %]</td>
