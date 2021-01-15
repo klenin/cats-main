@@ -1,6 +1,6 @@
 [%
   capt.import({
-    team_name => 'Participant / team name',
+    team_name => 'Participant <i>or</i> team name',
     login => 'Login',
   })
 %]
