@@ -255,6 +255,7 @@ sub contest_problems_installed_frame {
     my $judge_problems = {};
     $judge_problems->{$_->{judge_id}}->{$_->{problem_id}} = $db->format_date($_->{finish_time})
         for @$already_installed;
+    my $judge_problems_now = {};
 
     my $problems_to_install = { map { $_->{id} => [] } @$judges };
 
@@ -267,9 +268,11 @@ sub contest_problems_installed_frame {
             row => [ map {
                 push @{$problems_to_install->{$judge_id}}, $_->{id}
                     if !$hr->{$_->{id}} && $p->{install_missing};
+                $judge_problems_now->{$judge_id}->{$_->{id}} = my $now = [];
                 {
                     judge_problem => $judge_id . '_' . $_->{id},
-                    value => $hr->{$_->{id}} || '-'
+                    value => $hr->{$_->{id}} || '',
+                    now => $now,
                 }
             } @$problems ],
         }
@@ -285,10 +288,21 @@ sub contest_problems_installed_frame {
 
     _install_problems($problems_to_install) if $p->{install_missing} || $p->{install_selected};
 
+    my $installing_now = $dbh->selectall_arrayref(qq~
+        SELECT J.id as judge_id , P.id as problem_id, JB.state FROM jobs JB
+        INNER JOIN judges J on J.id = JB.judge_id
+        INNER JOIN problems P on P.id = JB.problem_id
+        INNER JOIN contest_problems CP on CP.problem_id = P.id
+        WHERE JB.type = $cats::job_type_initialize_problem AND CP.contest_id = ? AND
+            JB.state IN ($cats::job_st_waiting, $cats::job_st_in_progress)~, { Slice => {} },
+        $cid);
+    push @{$judge_problems_now->{$_->{judge_id}}->{$_->{problem_id}}}, $_->{state} for @$installing_now;
+
     $t->param(
+        href_action => url_f('contest_problems_installed', id => $cid),
         problems_installed => $problems_installed,
         problems => $problems,
-        href_action => url_f('contest_problems_installed', id => $cid)
+        job_state_to_name => $CATS::Globals::jobs->{state_to_name},
     );
 
     CATS::Contest::Utils::contest_submenu('contest_problems_installed', $cid);

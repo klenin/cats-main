@@ -6,6 +6,7 @@
 [% END %]
 
 [% PROCESS includes/menu_begin.tti %]
+[%- PROCESS "lang/$lang/jobs.html.tt" -%]
 
 <form method="post" enctype="multipart/form-data" action="[% href_action %]">
 
@@ -22,6 +23,7 @@
       [% FOREACH d IN line.row %]
         <td>
           [% d.value %]
+          [% capt.jobs.states.item(job_state_to_name.item(d.now.0)) IF d.now.size %]
           <input type="checkbox" name="selected_problems" value="[% d.judge_problem %]"/>
         </td>
       [% END %]
