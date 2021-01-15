@@ -419,7 +419,11 @@ files with tests, solutions etc.
     </ul>
   </td>
   <td>Test input description.
+    <br/>
     If the "use" attribute is present, input file is produced by running the given test generator.
+    If the "param" attribute contains "<code>|</code>" character, then generation is performed by a pipeline,
+    starting with test generator, followed by generator modules. For example:
+    <pre><code>&lt;Test rank="10"&gt;&lt;In use="gen" param="100 | shuffle 19234"/&gt;&lt;/Test&gt;</code></pre>
     If neither "src" nor "use" attribute is present, input text is nested inside the tag[% v19 %].
     Whitespace is preserved exactly.
   </td>
