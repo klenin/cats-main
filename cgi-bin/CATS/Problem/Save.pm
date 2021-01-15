@@ -28,7 +28,8 @@ sub _unused_problem_code {
     my ($c) = @_;
     my %used_codes;
     @used_codes{@{$c->used_problem_codes}} = undef;
-    for ('A'..'Z', '1'..'9') {
+    my $digits = 0 < grep /\d/, keys %used_codes;
+    for ($digits ? 1..99 : 'A'..'ZZ') {
         return $_ if !exists $used_codes{$_};
     }
     msg(1017);
