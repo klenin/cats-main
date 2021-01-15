@@ -380,37 +380,7 @@ function chg_color(input, cpid) {
   $.post('[% href_set_problem_color %]', { cpid: cpid, color: input.value });
 }
 
-[%#
-  HTML 'download' attriblte does not work across redirect, so emulate it.
-  jQuery does not support binary downloads, so use XMLHttpRequest directly.
--%]
-function emulate_download() {
-  $('a[download]').each(function(_, a) {
-    $(a).click(function() {
-      var xhr = new XMLHttpRequest();
-      if (!xhr) return true;
-      xhr.open('GET', a.href);
-      xhr.responseType = 'blob';
-      xhr.onreadystatechange = function () {
-        if(xhr.readyState === 4 && xhr.status === 200) {
-          var blob = new Blob([xhr.response], { type: 'application/zip' });
-          var emulated = $('<a>').attr({
-            href: window.URL.createObjectURL(blob),
-            download: a.download,
-          }).hide().appendTo($('body')); [%# Required by Firefox %]
-          emulated.click(function() {
-            emulated.remove();
-            return true;
-          });
-          emulated[0].click();
-        }
-      };
-      xhr.send();
-      return false;
-    });
-  });
-}
-$(emulate_download);
+[%- PROCESS includes/download.tti -%]
 
 $(function() { autocomplete($('#submit_as')); });
 </script>

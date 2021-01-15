@@ -1,3 +1,4 @@
+[%- js.jquery = 1 -%]
 [% extra_head = BLOCK %]
 <style>
   table.request_count { text-align: right; }
@@ -30,8 +31,8 @@
 <tr><td>[% capt.original_contest %]</td><td>[% maybe_href(href_original_contest, p.contest_name) %]</td></tr>
 [% IF p.repo_path %]<tr><td>[% capt.repo_path %]</td><td>[% p.repo_path %]</td></tr>[% END %]
 <tr><td>[% capt.download %]</td><td>
-[% IF href_download %][<a href="[% href_download %]">[% capt.package %]</a>][% END %]
-[% IF href_git_package %][<a href="[% href_git_package %]">[% capt.git_package %]</a>][% END %]
+[% IF href_download %][<a href="[% href_download %]" download="[% p.code %]_[% p.id %].zip">[% capt.package %]</a>][% END %]
+[% IF href_git_package %][<a href="[% href_git_package %]" download="[% p.code %]_[% p.id %]_[% p.commit_sha %].zip">[% capt.git_package %]</a>][% END %]
 ([% capt.package_size %]: [% p.package_size | group_digits %])
 </td></tr>
 <tr><td>[% capt.text %]</td><td class="nested"><table class="internal_borders padded">
@@ -72,5 +73,9 @@
 </td></tr>
 </table>
 </form>
+
+<script type="text/javascript">
+[%- PROCESS includes/download.tti -%]
+</script>
 
 [% PROCESS includes/menu_end.tti %]

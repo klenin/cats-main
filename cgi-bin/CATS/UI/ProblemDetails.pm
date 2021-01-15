@@ -42,15 +42,15 @@ sub problem_details_frame {
     $is_jury && $p->{pid} or return;
     my $pr = $dbh->selectrow_hashref(q~
         SELECT
-            P.title, P.lang, P.contest_id, P.author, P.last_modified_by, P.upload_date,
+            P.id, P.title, P.lang, P.contest_id, P.author, P.last_modified_by, P.upload_date,
             P.run_method, P.save_input_prefix, P.save_answer_prefix, P.save_output_prefix,
-            P.time_limit, P.memory_limit, P.write_limit, P.repo_path,
+            P.time_limit, P.memory_limit, P.write_limit, P.repo_path, P.commit_sha,
             OCTET_LENGTH(P.zip_archive) AS package_size,
             L.time_limit AS overridden_time_limit,
             L.memory_limit AS overridden_memory_limit,
             L.write_limit as overridden_write_limit,
             C.title AS contest_name, A.team_name,
-            CP.id AS cpid, CP.testsets, CP.points_testsets, CP.tags,
+            CP.id AS cpid, CP.testsets, CP.points_testsets, CP.tags, CP.code,
             (SELECT COUNT(*) FROM problem_snippets PS
                 WHERE PS.problem_id = P.id) AS snippets_declared,
             (SELECT COUNT(*) FROM snippets S
