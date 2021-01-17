@@ -133,7 +133,10 @@ sub parse_block {
     my $limits = '';
     while ($source ne '') {
         last if $source =~ s/^\s*(?:\\end\{[a-zA-Z]+)?}//;
-        if ($source =~ s/^\s*([_^])//) {
+        if ($source =~ s/^(\s*)\\([_^])//) {
+            push @res, [ op => '', $2, '' ];
+        }
+        elsif ($source =~ s/^\s*([_^])//) {
             my $f = $1 eq '_' ? 'sub' : 'sup';
             if (@res && $res[-1]->[0] eq 'limits') {
                 $res[-1]->[$f eq 'sup' ? 2 : 3] = parse_token;

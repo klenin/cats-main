@@ -3,7 +3,7 @@ use warnings;
 
 use File::Spec;
 use FindBin;
-use Test::More tests => 50;
+use Test::More tests => 51;
 
 use lib File::Spec->catdir($FindBin::Bin, '..');
 use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
@@ -40,6 +40,7 @@ is_ 'f(b+c)', '<i>f</i>(<i>b</i>&#8239;+&#8239;<i>c</i>)';
 is_ 'a,b,  c, d', '<i>a</i>,<i>b</i>, <i>c</i>, <i>d</i>';
 
 is_ 'a_i', '<i>a</i><sub><i>i</i></sub>';
+is_ 'a\_i', '<i>a</i>_<i>i</i>';
 is_ 'a^2', '<i>a</i><sup><span class="num">2</span></sup>';
 # Non-compliant, TeX gives a^{2}2.
 is_ 'a^22', '<i>a</i><sup><span class="num">22</span></sup>';
