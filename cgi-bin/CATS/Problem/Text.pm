@@ -31,25 +31,26 @@ my $verbatim_tags = { code => 1, script => 1, svg => 1, style => 1 };
 my $empty_tags = { br => 1, hr => 1, img => 1 };
 
 sub process_text {
-    if (!$verbatim_depth) {
-        for ($text_span) {
-            s/(\s|~)(:?-){2,3}(?!-)/($1 ? '&nbsp;' : '') . '&#8212;'/ge; # Em-dash.
-            s/``/\xAB/g; # Left guillemet.
-            s/''/\xBB/g; # Right guillemet.
-        }
-    }
-    if ($spellchecker) {
-        my @tex_parts = split /\$\$?/, $text_span;
-        my $i = 0;
-        for (@tex_parts) {
-            $spellchecker->check_topicalizer if $i ^= 1;
-        }
-        $html_code .= join '$', @tex_parts;
-        # split ignores separator at EOL, m// ignores \n at EOL, hence \z
-        $html_code .= '$' if $text_span =~ /\$\$?\z/s;
-    }
-    else {
+    if ($verbatim_depth) {
         $html_code .= $text_span;
+        $text_span = '';
+        return;
+    }
+    while ($text_span =~ /([^\$]*)(?:(\$+)([^\$]+)(\$*))?/g) {
+        my ($text, $tex_sep1, $tex, $tex_sep2) = ($1, $2, $3, $4);
+        if ($text ne '') {
+            for ($text) {
+                s/(\s|~)(:?-){2,3}(?!-)/($1 ? '&nbsp;' : '') . '&#8212;'/ge; # Em-dash.
+                s/``/\xAB/g; # Left guillemet.
+                s/''/\xBB/g; # Right guillemet.
+                $spellchecker->check_topicalizer if $spellchecker;
+            }
+            $html_code .= $text;
+        }
+        if ($tex_sep1) {
+            $html_code .= '<b>Unbalanced TeX</b>' if $tex_sep1 ne $tex_sep2;
+            $html_code .= CATS::TeX::Lite::convert_one($tex);
+        }
     }
     $text_span = '';
 }
@@ -397,7 +398,6 @@ sub problem_text {
                 defined $_ or next;
                 $text_span = '';
                 $_ = $_ eq '' ? undef : _parse($_) unless $is_root && $p->{raw};
-                CATS::TeX::Lite::convert_all($_);
             }
         }
         $spellchecker->pop_lang if $spellchecker;
