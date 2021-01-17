@@ -30,8 +30,13 @@ my @parsed_fields = qw(statement pconstraints input_format output_format explana
 my $verbatim_tags = { code => 1, script => 1, svg => 1, style => 1 };
 my $empty_tags = { br => 1, hr => 1, img => 1 };
 
+sub _xml_quote_topicalizer {
+    s/&/&amp;/g; s/</&lt;/g; s/>/&gt;/g;
+}
+
 sub process_text {
     if ($verbatim_depth) {
+        _xml_quote_topicalizer for $text_span;
         $html_code .= $text_span;
         $text_span = '';
         return;
@@ -40,6 +45,7 @@ sub process_text {
         my ($text, $tex_sep1, $tex, $tex_sep2) = ($1, $2, $3, $4);
         if ($text ne '') {
             for ($text) {
+                _xml_quote_topicalizer;
                 s/(\s|~)(:?-){2,3}(?!-)/($1 ? '&nbsp;' : '') . '&#8212;'/ge; # Em-dash.
                 s/``/\xAB/g; # Left guillemet.
                 s/''/\xBB/g; # Right guillemet.
