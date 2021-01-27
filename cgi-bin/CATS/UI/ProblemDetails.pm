@@ -10,6 +10,7 @@ use CATS::BinaryFile;
 use CATS::Constants;
 use CATS::DB qw(:DEFAULT $db);
 use CATS::DeGrid;
+use CATS::Form;
 use CATS::Globals qw($cid $contest $is_jury $is_root $t);
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
@@ -261,7 +262,7 @@ sub problem_limits_frame {
     my $overridden_limits_str = join ', ', map "L.$_ AS overridden_$_", @fields;
 
     my $problem = $dbh->selectrow_hashref(qq~
-        SELECT P.id, P.title, CP.id AS cpid, CP.tags, CP.limits_id,
+        SELECT P.id, P.title, CP.id AS cpid, CP.tags, CP.limits_id, CP.max_reqs,
         $original_limits_str, $overridden_limits_str
         FROM problems P
         INNER JOIN contest_problems CP ON P.id = CP.problem_id
@@ -278,6 +279,13 @@ sub problem_limits_frame {
     );
 
     CATS::Problem::Utils::problem_submenu('problem_limits', $p->{pid});
+
+    my $max_reqs_f = CATS::Field->new(
+        name => 'max_reqs', caption => 688, editor => { size => 4 },
+        validators => CATS::Field::int_range(min => 0, max => 1e6, allow_empty => 1));
+    $t->param(fd => { max_reqs => my $max_reqs_w = $max_reqs_f->parse_web_param($p) });
+    $max_reqs_w->{caption} .= " ($contest->{max_reqs})" if $contest->{max_reqs};
+    $p->{override_contest} or $max_reqs_w->{value} //= $problem->{max_reqs};
 
     if ($p->{override}) {
         my $new_limits = !defined $problem->{limits_id};
@@ -309,7 +317,8 @@ sub problem_limits_frame {
 
         msg($new_limits ? 1145 : 1146, $problem->{title});
         return $p->redirect(url_f 'problems') if $p->{from_problems} && !$new_limits;
-    } elsif ($p->{clear_override}) {
+    }
+    elsif ($p->{clear_override}) {
         if ($problem->{limits_id}) {
             $dbh->do(q~
                 UPDATE contest_problems SET limits_id = NULL
@@ -327,6 +336,14 @@ sub problem_limits_frame {
         }
 
         msg(1147, $problem->{title});
+        return $p->redirect(url_f 'problems') if $p->{from_problems};
+    }
+    elsif ($p->{override_contest}) {
+        return if $max_reqs_w->{error};
+        $dbh->do(q~
+            UPDATE contest_problems SET max_reqs = ? WHERE id = ?~, undef,
+            $p->{max_reqs} || undef, $problem->{cpid});
+        $dbh->commit;
         return $p->redirect(url_f 'problems') if $p->{from_problems};
     }
 }

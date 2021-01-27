@@ -1,5 +1,6 @@
 [% PROCESS includes/menu_begin.tti %]
 [% PROCESS includes/limits_string.tti %]
+[% PROCESS includes/html_input.tti %]
 
 <h3>[% p.title | html %]</h3>
 <form method="post" enctype="multipart/form-data" action="[% href_action %]">
@@ -44,6 +45,13 @@
     [% END %]
   </td>
 </tr>
+</table>
+</form>
+<br/>
+<form method="post" enctype="multipart/form-data" action="[% href_action %]">
+<table class="edit_form bordered">
+  [% tr_text(fd.max_reqs, fd) %]
+  <tr><td colspan="2"><button type="submit" name="override_contest" value="1" class="button">[% capt.override %]</button></td></tr>
 </table>
 </form>
 
