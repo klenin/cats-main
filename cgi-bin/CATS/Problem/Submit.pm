@@ -180,8 +180,8 @@ sub problems_submit {
         $pid, $uid // $user->{anonymous_id}, $cid) and return msg(1168);
 
     my $contest_finished = $contest->has_finished_for($user);
-    my ($cpid, $status, $title) = $dbh->selectrow_array(q~
-        SELECT CP.id, CP.status, P.title
+    my ($cpid, $status, $max_reqs, $title) = $dbh->selectrow_array(q~
+        SELECT CP.id, CP.status, CP.max_reqs, P.title
         FROM contest_problems CP
         INNER JOIN problems P ON P.id = CP.problem_id
         WHERE CP.contest_id = ? AND CP.problem_id = ?~, undef,
@@ -212,7 +212,8 @@ sub problems_submit {
     return msg(1131) if too_frequent($submit_uid);
 
     my $prev_reqs_count;
-    if ($contest->{max_reqs} && !$is_jury && !$user->{is_virtual}) {
+    $max_reqs //= $contest->{max_reqs};
+    if ($max_reqs && !$is_jury && !$user->{is_virtual}) {
         my @excluded_verdicts = split /,/, $contest->{max_reqs_except} // '';
         $prev_reqs_count = $dbh->selectrow_array(_u $sql->select('reqs', 'COUNT(*)', {
             account_id => $submit_uid,
@@ -221,7 +222,7 @@ sub problems_submit {
             state => { -not_in => \@excluded_verdicts },
         }));
 
-        return msg(1137) if $prev_reqs_count >= $contest->{max_reqs};
+        return msg(1137) if $prev_reqs_count >= $max_reqs;
     }
 
     my ($did, $result) = _prepare_de($p, $file ? $file->remote_file_name : '', $cpid);
@@ -259,7 +260,7 @@ sub problems_submit {
         SELECT submit_time FROM reqs WHERE id = ?~, { Slice => {} },
         $rid);
     $contest_finished ? msg(1087) :
-    defined $prev_reqs_count ? msg(1088, $contest->{max_reqs} - $prev_reqs_count - 1) :
+    defined $prev_reqs_count ? msg(1088, $max_reqs - $prev_reqs_count - 1) :
     msg(1014, $submit_time);
     ($rid, $result);
 }
