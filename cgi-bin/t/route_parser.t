@@ -3,7 +3,7 @@ use warnings;
 
 use File::Spec;
 use FindBin;
-use Test::More tests => 40;
+use Test::More tests => 41;
 
 use lib $FindBin::Bin;
 use lib File::Spec->catdir($FindBin::Bin);
@@ -20,12 +20,13 @@ is pr(MockupWeb->new, 'zz'), 'zz', 'no params';
 
 {
     my $w = MockupWeb->new(x => 3, z => 'z', bb => 1, id => 'abc1');
-    is pr($w, [ 'y', x => integer, z => integer, bb => bool, id => ident ]), 'y', 'route 1';
+    is pr($w, [ 'y', x => integer, z => integer, bb => bool, id => ident, n => integer ]), 'y', 'route 1';
     ok !exists $w->{zz}, 'unknown';
     is $w->{x}, 3, 'integer val';
     ok !exists $w->{z}, 'integer bad';
     is $w->{bb}, 1, 'bool';
     is $w->{id}, 'abc1', 'ident';
+    is $w->{n}, undef, 'absent';
 }
 
 {
