@@ -202,6 +202,9 @@ function chg_code(st_sel, pid) {
 [% IF visible_cols.St -%]
 <td>[% href(p.href_select_strategy, p.strategy) %]</td>
 [%- END %]
+[% IF visible_cols.Mr -%]
+<td>[% href(p.href_problem_limits, p.max_reqs) %]</td>
+[%- END %]
 [% IF visible_cols.Kw -%]
 <td class="keywords_cell">
 [%- FOREACH kw IN p.keywords.split; cell_search_any_text('has_kw_code(' _ kw _ ')', kw); ' '; END -%]

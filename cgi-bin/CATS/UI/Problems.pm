@@ -242,10 +242,11 @@ sub problems_frame {
         { caption => res_str(602), order_by => ($contest->is_practice ? 'P.title' : 3), width => '25%' },
         ($is_jury ?
         (
-            { caption => res_str(622), order_by => 'CP.status', width => '8%' },
+            { caption => res_str(622), order_by => 'CP.status', width => '5%' },
             { caption => res_str(605), order_by => 'CP.testsets', width => '12%', col => 'Ts' },
-            { caption => res_str(629), order_by => 'CP.tags', width => '8%', col => 'Tg' },
-            { caption => res_str(638), order_by => 'job_split_strategy', width => '8%', col => 'St' },
+            { caption => res_str(629), order_by => 'CP.tags', width => '5%', col => 'Tg' },
+            { caption => res_str(638), order_by => 'job_split_strategy', width => '5%', col => 'St' },
+            { caption => res_str(688), order_by => 'max_reqs', width => '5%', col => 'Mr' },
             { caption => res_str(667), order_by => 'keywords', width => '10%', col => 'Kw' },
             { caption => res_str(635), order_by => 'last_modified_by', width => '5%', col => 'Mu' },
             { caption => res_str(634), order_by => 'P.upload_date', width => '10%', col => 'Mt' },
@@ -329,7 +330,7 @@ sub problems_frame {
             SUBSTRING(P.explanation FROM 1 FOR 1) AS has_explanation,
             $test_count_sql CP.testsets, CP.points_testsets, P.lang, $limits_str,
             $job_split_strategy_sql AS job_split_strategy,
-            CP.max_points, P.repo, CP.tags, P.statement_url, P.explanation_url, CP.color
+            CP.max_points, P.repo, CP.tags, P.statement_url, P.explanation_url, CP.color, CP.max_reqs
         FROM problems P
         INNER JOIN contest_problems CP ON CP.problem_id = P.id
         INNER JOIN contests OC ON OC.id = P.contest_id
@@ -408,6 +409,7 @@ sub problems_frame {
                 from_problems => 1),
             href_last_request => ($last_request ? url_f('run_details', rid => $last_request) : ''),
             href_allow_des => url_f('problem_des', pid => $c->{pid}),
+            href_problem_limits => $is_jury && url_f('problem_limits', pid => $c->{pid}),
 
             show_packages => $show_packages,
             status => $c->{status},
@@ -446,6 +448,7 @@ sub problems_frame {
             max_points => $c->{max_points},
             tags => $c->{tags},
             strategy => $c->{job_split_strategy} // '*',
+            max_reqs => $c->{max_reqs} // '*',
             last_verdict => $last_verdict,
             keywords => $c->{keywords},
             allow_des => $c->{allow_des} // '*',
