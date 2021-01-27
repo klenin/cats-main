@@ -162,6 +162,13 @@ sub users_add_participants_frame {
     );
 }
 
+sub _contact_field_sql {
+    qq~(
+        SELECT CT.handle FROM contacts CT
+        WHERE CT.account_id = A.id AND CT.contact_type_id = $_[0]->{id}
+        ORDER BY is_actual DESC $db->{LIMIT} 1)~,
+}
+
 sub users_frame {
     my ($p) = @_;
 
@@ -213,12 +220,20 @@ sub users_frame {
             $cid, @site_param));
     }
 
+    my $contact_types = $is_jury ? $dbh->selectall_arrayref(q~
+        SELECT id, name FROM contact_types~, { Slice => {} }) : [];
+    ($_->{sql} = $_->{name}) =~ tr/a-zA-Z0-9/_/c for @$contact_types;
+
     $lv->default_sort(0)->define_columns([
         ($is_jury ?
             { caption => res_str(616), order_by => 'login', width => '20%' } : ()),
         { caption => res_str(608), order_by => 'team_name', width => '30%', checkbox => $is_jury && '[name=sel]' },
         { caption => res_str(627), order_by => 'COALESCE(S.name, A.city)', width => '20%', col => 'Si' },
         { caption => res_str(629), order_by => 'tag', width => '5%', col => 'Tg' },
+        ($is_jury ? (
+            map +{ caption => $_->{name}, order_by => "CT_$_->{sql}", width => '10%', col => "Ct$_->{sql}" },
+            @$contact_types
+        ) : ()),
         ($is_jury || $user->{is_site_org} ? (
             { caption => res_str(671), order_by => 'ip', width => '5%', col => 'Ip' },
             { caption => res_str(612), order_by => 'is_ooc', width => '1%', checkbox => '.is_ooc input' },
@@ -259,15 +274,7 @@ sub users_frame {
             WHERE R.account_id = A.id AND R.contest_id = C.id AND E.ip LIKE '%' || ? || '%')~,
         },
     });
-    if ($is_jury) {
-        my $contact_types = $dbh->selectall_arrayref(q~
-            SELECT id, name FROM contact_types~, { Slice => {} });
-        $lv->define_db_searches({ map {
-            $_->{name} => qq~(
-                SELECT CT.handle FROM contacts CT
-                WHERE CT.account_id = A.id AND CT.contact_type_id = $_->{id} ORDER BY is_actual DESC $db->{LIMIT} 1)~,
-        } @$contact_types });
-    }
+    $lv->define_db_searches({ map { +"CT_$_->{sql}" => _contact_field_sql($_), } @$contact_types });
     $lv->define_db_searches({
         'CA.id' => 'CA.id',
         is_judge => q~
@@ -292,8 +299,13 @@ sub users_frame {
         $check_site_id ? qq~CASE WHEN CA.site_id = ? THEN ($s) ELSE NULL END~ : $s;
     };
 
+    my @visible_contacts = grep $lv->visible_cols->{"Ct$_->{sql}"}, @$contact_types;
+    $t->param(contacts => \@visible_contacts);
+    my $contacts_sql = join '', map ', (' . _contact_field_sql($_) . ") AS CT_$_->{sql}", @visible_contacts;
+
     my $sql = sprintf qq~
-        SELECT ($rating_sql) AS rating, ($ip_sql) AS ip, CA.id, $fields, CA.site_id, S.name AS site_name
+        SELECT ($rating_sql) AS rating, ($ip_sql) AS ip, CA.id, $fields,
+        CA.site_id, S.name AS site_name$contacts_sql
         FROM accounts A
             INNER JOIN contest_accounts CA ON CA.account_id = A.id
             INNER JOIN contests C ON CA.contest_id = C.id
@@ -312,7 +324,7 @@ sub users_frame {
         my (
             $accepted, $ip, $caid, $aid, $country_abbr, $motto, $login, $team_name, $city, $last_ip,
             $admin, $jury, $ooc, $remote, $hidden, $site_org, $virtual, $diff_time, $ext_time,
-            $tag, $site_id, $site_name
+            $tag, $site_id, $site_name, @contacts
         ) = $_[0]->fetchrow_array
             or return ();
         my ($country, $flag) = CATS::Countries::get_flag($country_abbr);
@@ -325,6 +337,7 @@ sub users_frame {
                 (href_contest_site => url_f('contest_sites_edit', site_id => $site_id)) : ()),
             ($is_jury || $user->{is_site_org} ? (href_vdiff => url_f('user_vdiff', uid => $aid)) : ()),
             href_rank_table_filter => $is_jury ? url_f('rank_table', filter => $tag) : undef,
+            href_contacts => url_f('user_contacts', uid => $aid, search => 'type_name=~type_name~'),
 
             motto => $motto,
             id => $caid,
@@ -350,6 +363,7 @@ sub users_frame {
                 ($is_jury || (!$user->{site_id} || $user->{site_id} == ($site_id // 0)) && $uid && $aid != $uid),
             virtual => $virtual,
             formatted_time => CATS::Time::format_diff_ext($diff_time, $ext_time, display_plus => 1),
+            (map { +"CT_$_->{sql}" => shift @contacts } @visible_contacts),
          );
     };
 
