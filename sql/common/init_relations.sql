@@ -283,6 +283,7 @@ CREATE TABLE contest_problems (
     tags            VARCHAR(200),
     limits_id       INTEGER REFERENCES limits(id),
     color           VARCHAR(50),
+    max_reqs        INTEGER,
     UNIQUE (problem_id, contest_id)
 );
 ALTER TABLE contest_problems
