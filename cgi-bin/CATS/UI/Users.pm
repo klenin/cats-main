@@ -229,6 +229,7 @@ sub users_frame {
             { caption => res_str(616), order_by => 'login', width => '20%' } : ()),
         { caption => res_str(608), order_by => 'team_name', width => '30%', checkbox => $is_jury && '[name=sel]' },
         { caption => res_str(627), order_by => 'COALESCE(S.name, A.city)', width => '20%', col => 'Si' },
+        { caption => res_str(689), order_by => 'affiliation', width => '5%', col => 'Af' },
         { caption => res_str(629), order_by => 'tag', width => '5%', col => 'Tg' },
         ($is_jury ? (
             map +{ caption => $_->{name}, order_by => "CT_$_->{sql}", width => '10%', col => "Ct$_->{sql}" },
@@ -256,12 +257,12 @@ sub users_frame {
     return if !$is_jury && $p->{json} && $contest->is_practice;
 
     my @fields = qw(
-        A.id A.country A.motto A.login A.team_name A.city A.last_ip
+        A.id A.country A.motto A.login A.team_name A.city A.last_ip A.affiliation
         CA.is_admin CA.is_jury CA.is_ooc CA.is_remote CA.is_hidden CA.is_site_org
         CA.is_virtual CA.diff_time CA.ext_time CA.tag
     );
     $lv->define_db_searches([ @fields, qw(
-        A.affiliation A.affiliation_year A.capitan_name A.git_author_email A.git_author_name A.tz_offset
+        A.affiliation_year A.capitan_name A.git_author_email A.git_author_name A.tz_offset
     ) ]);
     $lv->define_db_searches([ qw(A.sid) ]) if $is_root;
     $lv->define_subqueries({
@@ -322,7 +323,8 @@ sub users_frame {
 
     my $fetch_record = sub {
         my (
-            $accepted, $ip, $caid, $aid, $country_abbr, $motto, $login, $team_name, $city, $last_ip,
+            $accepted, $ip, $caid,
+            $aid, $country_abbr, $motto, $login, $team_name, $city, $last_ip, $affiliation,
             $admin, $jury, $ooc, $remote, $hidden, $site_org, $virtual, $diff_time, $ext_time,
             $tag, $site_id, $site_name, @contacts
         ) = $_[0]->fetchrow_array
@@ -349,6 +351,7 @@ sub users_frame {
             site_id => $site_id,
             site_name => $site_name,
             country => $country,
+            affiliation => $affiliation,
             flag => $flag,
             accepted => $accepted,
             CATS::IP::linkify_ip($ip // $last_ip),

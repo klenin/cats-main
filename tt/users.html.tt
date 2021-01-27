@@ -45,6 +45,7 @@ function delete_team(href, name) {
   [%- cell_search('site_id', u) IF user.is_jury -%]
 </td>
 [%~ END %]
+[% IF visible_cols.Af %]<td>[% u.affiliation; cell_search('affiliation', u) -%]</td>[% END %]
 [% IF visible_cols.Tg %]<td>[% maybe_href(u.href_rank_table_filter, u.tag); cell_search('tag', u) -%]</td>[% END %]
 [% IF user.is_jury || user.is_site_org %]
 [% FOREACH ct IN contacts -%]
