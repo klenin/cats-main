@@ -4,7 +4,7 @@ use utf8;
 
 use File::Spec;
 use FindBin;
-use Test::More tests => 8;
+use Test::More tests => 10;
 
 use lib File::Spec->catdir($FindBin::Bin, '..');
 use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
@@ -34,5 +34,12 @@ CATS::Messages::init;
     ok ir(8), 'int_range 8<7';
     is ir(5), undef, 'int_range 5=5';
 }
+{
+    my $f = CATS::Field->new(name => 'f');
 
+    is_deeply $f->parse_web_param({ f => 7 }),
+        { field => $f, value => 7, caption => '', error => undef }, 'field parse_web';
+    is_deeply $f->parse_web_param({ g => 7 }),
+        { field => $f, value => undef, caption => '', error => undef }, 'field parse_web missing';
+}
 1;
