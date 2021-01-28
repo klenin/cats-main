@@ -98,7 +98,7 @@ my $main_routes = {
     acc_groups_edit => [ \&CATS::UI::AccGroups::acc_groups_edit_frame,
         $CATS::UI::AccGroups::form->route, ],
     acc_group_users => [ \&CATS::UI::AccGroups::acc_group_users_frame,
-        group => integer, delete => integer, check => array_of integer,
+        group => integer, delete_user => integer, check => array_of integer,
     ],
     acc_group_add_users => [ \&CATS::UI::AccGroups::acc_group_add_users_frame,
         group => integer, logins_to_add => str, make_hidden => bool, by_login => bool,

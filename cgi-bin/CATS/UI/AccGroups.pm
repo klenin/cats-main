@@ -90,6 +90,21 @@ sub acc_group_users_frame {
     my ($p) = @_;
     init_template($p, 'acc_group_users');
     $is_root && $p->{group} or return;
+
+    if ($p->{delete_user}) {
+        my $user_name = $dbh->selectrow_array(q~
+            SELECT A.team_name
+            FROM accounts A INNER JOIN acc_group_accounts AGA ON A.id = AGA.account_id
+            WHERE AGA.account_id = ? AND AGA.acc_group_id = ?~, undef,
+            $p->{delete_user}, $p->{group}) or return;
+        $dbh->do(q~
+            DELETE FROM acc_group_accounts
+            WHERE account_id = ? AND acc_group_id = ?~, undef,
+            $p->{delete_user}, $p->{group}) or die;
+        $dbh->commit;
+        msg(1094, $user_name);
+    }
+
     my $lv = CATS::ListView->new(
         web => $p, name => 'users', url => url_f('acc_group_users', group => $p->{group}));
 
@@ -115,7 +130,7 @@ sub acc_group_users_frame {
     my $fetch_record = sub {
         my $row = $_[0]->fetchrow_hashref or return ();
         return (
-            href_delete => url_f('acc_group_users', delete_user => $row->{account_id}),
+            href_delete => url_f('acc_group_users', group => $p->{group}, delete_user => $row->{account_id}),
             href_edit => url_f('users_edit', uid => $row->{account_id}),
             href_stats => url_f('user_stats', uid => $row->{account_id}),
             %$row,
