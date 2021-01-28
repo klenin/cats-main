@@ -167,17 +167,18 @@ sub _add_accounts {
     my $add_sth = $dbh->prepare(q~
         INSERT INTO acc_group_accounts (acc_group_id, account_id, is_hidden, date_start)
         VALUES (?, ?, ?, CURRENT_DATE)~);
+    my @new_accounts;
     for (@$accounts) {
         $in_group_sth->execute($group_id, $_);
         my ($in_group) = $in_group_sth->fetchrow_array;
         $in_group_sth->finish;
-        $in_group and return msg(1120, $_);
+        $in_group ? msg(1120, $_) : push @new_accounts, $_;
     }
-    for (@$accounts) {
+    for (@new_accounts) {
         $add_sth->execute($group_id, $_, $make_hidden ? 1 : 0);
     }
     $dbh->commit;
-    $accounts;
+    \@new_accounts;
 }
 
 sub trim { s/^\s+|\s+$//; $_; }
