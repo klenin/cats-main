@@ -3,6 +3,7 @@
     add_users => 'Add users',
     logins_to_add => 'Login list, comma-separated',
     make_hidden => 'add and hide',
+    view_added => 'view added participants',
     by_login => 'Add by logins',
     from_contest => 'Add from contest',
     include_ooc => 'including out-of-contest',

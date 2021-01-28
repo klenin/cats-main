@@ -138,12 +138,7 @@ sub users_add_participants_frame {
     if ($p->{by_login}) {
         my $aids = CATS::User::register_by_login($p->{logins_to_add}, $cid,
             $p->{make_jury} && $user->privs->{grant_jury});
-        if ($aids) {
-            $t->param(href_view_added => url_f(users => search => join ',', map "id=$_", @$aids));
-        }
-        else {
-            $t->param(logins_to_add => Encode::decode_utf8($p->{logins_to_add}));
-        }
+        $t->param(CATS::User::logins_maybe_added($p, [ 'users' ], $aids // []));
     }
     CATS::User::copy_from_contest($p->{source_cid}, $p->{include_ooc}) if $p->{from_contest};
     my $contests = $dbh->selectall_arrayref(q~

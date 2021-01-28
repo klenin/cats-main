@@ -573,4 +573,11 @@ sub submenu {
     (submenu => \@m);
 }
 
+sub logins_maybe_added {
+    my ($p, $url_p, $account_ids) = @_;
+    @$account_ids ?
+        (href_view_added => url_f(@$url_p, search => join ',', map "id=$_", @$account_ids)) :
+        (logins_to_add => Encode::decode_utf8($p->{logins_to_add}));
+}
+
 1;

@@ -11,6 +11,7 @@ use CATS::ListView;
 use CATS::Messages qw(msg res_str);
 use CATS::Output qw(init_template url_f);
 use CATS::References;
+use CATS::User;
 
 our $form = CATS::Form->new(
     table => 'acc_groups',
@@ -168,7 +169,7 @@ sub _add_accounts {
         $add_sth->execute($group_id, $_, $make_hidden ? 1 : 0);
     }
     $dbh->commit;
-    1;
+    $accounts;
 }
 
 sub trim { s/^\s+|\s+$//; $_; }
@@ -208,11 +209,12 @@ sub acc_group_add_users_frame {
     my $accounts =
         $p->{by_login} ? _accounts_by_login($p->{logins_to_add}) :
         $p->{source_cid} ? _accounts_by_contest($p->{source_cid}, $p->{include_ooc}) : undef;
-    if ($accounts && _add_accounts($accounts, $p->{group}, $p->{make_hidden})) {
-        msg(1221, scalar @$accounts);
-    }
-    elsif ($p->{by_login}) {
-        $t->param(logins_to_add => Encode::decode_utf8($p->{logins_to_add}));
+    $accounts = $accounts && _add_accounts($accounts, $p->{group}, $p->{make_hidden}) // [];
+    msg(1221, scalar @$accounts) if @$accounts;
+
+    my @url_p = ('acc_group_users', group => $p->{group});
+    if ($p->{by_login}) {
+        $t->param(CATS::User::logins_maybe_added($p, \@url_p, $accounts));
     }
     my $contests = $dbh->selectall_arrayref(q~
         SELECT C.id, C.title FROM contests C
@@ -222,13 +224,13 @@ sub acc_group_add_users_frame {
             ORDER BY C.start_date DESC~, { Slice => {} },
         $uid);
     $t->param(
-        href_action => url_f('acc_group_add_users', group => $p->{group}),
+        href_action => url_f(acc_group_add_users => group => $p->{group}),
         title_suffix => res_str(584),
         contests => $contests,
         href_find_users => url_f('api_find_users', in_contest => 0),
         submenu => [
             { href => url_f('acc_groups'), item => res_str(410) },
-            { href => url_f('acc_group_users', group => $p->{group}), item => res_str(526) },
+            { href => url_f(@url_p), item => res_str(526) },
         ],
     );
 }
