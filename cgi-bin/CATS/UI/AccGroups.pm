@@ -92,6 +92,10 @@ sub acc_group_users_frame {
     init_template($p, 'acc_group_users');
     $is_root && $p->{group} or return;
 
+    my $group_name = $dbh->selectrow_array(q~
+        SELECT name FROM acc_groups WHERE id = ?~, undef,
+        $p->{group}) or return;
+
     if ($p->{delete_user}) {
         my $user_name = $dbh->selectrow_array(q~
             SELECT A.team_name
@@ -113,6 +117,7 @@ sub acc_group_users_frame {
         ($is_root ?
             { caption => res_str(616), order_by => 'login', width => '20%' } : ()),
         { caption => res_str(608), order_by => 'team_name', width => '30%', checkbox => $is_root && '[name=sel]' },
+        { caption => res_str(685), order_by => 'in_contest', width => '1%' },
         ($is_root ? (
             { caption => res_str(610), order_by => 'is_admin', width => '1%' },
             { caption => res_str(614), order_by => 'is_hidden', width => '1%' },
@@ -125,11 +130,13 @@ sub acc_group_users_frame {
 
     my $sth = $dbh->prepare(q~
         SELECT A.login, A.team_name,
-            AGA.account_id, AGA.is_admin, AGA.is_hidden, AGA.date_start, AGA.date_finish
+            AGA.account_id, AGA.is_admin, AGA.is_hidden, AGA.date_start, AGA.date_finish,
+            (SELECT 1 FROM contest_accounts CA
+                WHERE CA.contest_id = ? AND CA.account_id = AGA.account_id) AS in_contest
         FROM acc_group_accounts AGA
         INNER JOIN accounts A ON A.id = AGA.account_id
         WHERE AGA.acc_group_id = ?~ . $lv->maybe_where_cond . $lv->order_by);
-    $sth->execute($p->{group}, $lv->where_params);
+    $sth->execute($cid, $p->{group}, $lv->where_params);
 
     my $fetch_record = sub {
         my $row = $_[0]->fetchrow_hashref or return ();
@@ -145,6 +152,7 @@ sub acc_group_users_frame {
     $lv->attach($fetch_record, $sth);
     $sth->finish;
     $t->param(
+        problem_title => $group_name,
         submenu => [
             { href => url_f('users_new', group => $p->{group}), item => res_str(541), new => 1 },
             { href => url_f('acc_group_add_users', group => $p->{group}), item => res_str(584) },

@@ -24,6 +24,7 @@ function delete_acc_group_user(href, name) {
 </td>
 <td>[% u.login | html %]</td>
 <td>[% href(u.href_stats, u.team_name) %]</td>
+<td>[% IF u.in_contest %]<a href="#" class="icon checked"></a>[% END %]</td>
 <td>[% IF u.is_admin %]<a href="#" class="icon checked"></a>[% END %]</td>
 <td>[% IF u.is_hidden %]<a href="#" class="icon checked"></a>[% END %]</td>
 [% IF visible_cols.Ds %]<td>[% u.date_start %]</td>[% END %]
