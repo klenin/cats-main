@@ -106,7 +106,7 @@ sub acc_group_users_frame {
     }
 
     my $lv = CATS::ListView->new(
-        web => $p, name => 'users', url => url_f('acc_group_users', group => $p->{group}));
+        web => $p, name => 'acc_group_users', url => url_f('acc_group_users', group => $p->{group}));
 
     $lv->default_sort($is_root ? 1 : 0)->define_columns([
         ($is_root ?
@@ -119,6 +119,9 @@ sub acc_group_users_frame {
         { caption => res_str(600), order_by => 'date_start', width => '5%', col => 'Ds' },
         { caption => res_str(631), order_by => 'date_finish', width => '5%', col => 'Df' },
     ]);
+    $lv->define_db_searches([ qw(login team_name account_id is_admin is_hidden) ]);
+    $lv->define_db_searches({ id => 'account_id' });
+
     my $sth = $dbh->prepare(q~
         SELECT A.login, A.team_name,
             AGA.account_id, AGA.is_admin, AGA.is_hidden, AGA.date_start, AGA.date_finish
