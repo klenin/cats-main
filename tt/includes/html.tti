@@ -54,9 +54,9 @@ END -%]
 [%- MACRO span(text, class) BLOCK -%]<span[% " class=\"$class\"" IF class %]>[% text | html %]</span>[% END -%]
 
 [%- MACRO cell_search_ex(field, value) BLOCK -%]
-  <a href="#" class="add_search" onclick="add_search('[% field %]', '[% value | html %]')">&#8981;</a>
+  <a href="#" class="add_search" onclick="add_search('[% field %]', '[% value.squote | html %]')">&#8981;</a>
 [%- END -%]
 [%- MACRO cell_search_any_text(search, text) BLOCK -%]
-  <a href="#" onclick="_add_search('[% search %]', true)">[% text %]</a>
+  <a href="#" onclick="_add_search('[% search.squote | html %]', true)">[% text %]</a>
 [%- END -%]
 [%- MACRO cell_search(field, row) BLOCK; cell_search_ex(field, row.item(field)); END -%]
