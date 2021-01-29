@@ -10,7 +10,7 @@ CREATE TABLE default_de (
     in_tsess    INTEGER DEFAULT 1 CHECK (in_tsess IN (0, 1)),
     memory_handicap INTEGER DEFAULT 0,
     err_regexp  VARCHAR(200),
-    syntax      VARCHAR(200) /* For highilghter. */
+    syntax      VARCHAR(200) /* For highlighter. */
 );
 
 CREATE TABLE accounts (

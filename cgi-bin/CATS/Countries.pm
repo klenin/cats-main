@@ -101,7 +101,7 @@ our @countries = (
 { id => 'TH', name => 'THAILAND',       flag => 'th.gif' },
 { id => 'TT', name => 'TRINIDAD AND TOBAGO',    flag => 'tt.gif' },
 { id => 'TR', name => 'TURKEY', flag => 'tr.gif' },
-{ id => 'TM', name => 'TURKMENISTAN',   flag => undef },
+{ id => 'TM', name => 'TURKMENISTAN',   flag => 'tm.gif' },
 { id => 'UA', name => 'UKRAINE',        flag => 'ua.gif' },
 { id => 'AE', name => 'UNITED ARAB EMIRATES',   flag => 'ae.gif' },
 { id => 'UK', name => 'United Kingdom', flag => 'gb.gif' },
