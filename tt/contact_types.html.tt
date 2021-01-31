@@ -23,7 +23,7 @@ function delete_contact_type(href, name) {
   [%~ END %]
   [% ct.name | html %]
 </td>
-<td>[% ct.url | html %]</td>
+[% IF visible_cols.Ur %]<td>[% ct.url | html %]</td>[% END %]
 </tr>
 [% END %]
 </table>

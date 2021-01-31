@@ -49,7 +49,7 @@ sub contact_types_frame {
 
     $lv->default_sort(0)->define_columns([
         { caption => res_str(601), order_by => 'name', width => '40%' },
-        { caption => res_str(668), order_by => 'url', width => '40%' },
+        { caption => res_str(668), order_by => 'url', width => '40%', col => 'Ur' },
     ]);
 
     $lv->define_db_searches($form->{sql_fields});
