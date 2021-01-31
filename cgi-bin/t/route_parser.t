@@ -3,7 +3,7 @@ use warnings;
 
 use File::Spec;
 use FindBin;
-use Test::More tests => 41;
+use Test::More tests => 43;
 
 use lib $FindBin::Bin;
 use lib File::Spec->catdir($FindBin::Bin);
@@ -65,6 +65,9 @@ is pr(MockupWeb->new, 'zz'), 'zz', 'no params';
     my $w3 = MockupWeb->new;
     is pr($w3, $r), 'r2', 'route clist empty';
     is_deeply $w3->{clist}, [], 'clist empty';
+    my $w4 = MockupWeb->new(csv => 'city,formatted_date');
+    is pr($w4, [ 'ri', csv => clist_of ident ]), 'ri', 'route clist ident';
+    is_deeply $w4->{csv}, [ 'city', 'formatted_date'], 'clist ident';
 }
 
 {
