@@ -70,18 +70,19 @@ sub url_f_cid { CATS::Utils::url_function(@_, sid => $sid) }
 
 sub _csv_quote {
     my ($v) = @_;
-    $v =~ /\s|[,;]/ or return $v;
+    defined $v or return '';
+    $v =~ /["\s,;]/ or return $v;
     $v =~ s/"/""/g;
     qq~"$v"~;
 }
 
 sub _generate_csv {
-    my ($p) = @_;
+    my ($p, $vars) = @_;
     my @fields = @{$p->{csv}};
     my $sep = "\t";
     my @res = join $sep, @fields;
-    my $an = $t->{vars}->{lv_array_name} or return '';
-    for my $row (@{$t->{vars}->{$an}}) {
+    my $an = $vars->{lv_array_name} or return '';
+    for my $row (@{$vars->{$an}}) {
         push @res, join $sep, map _csv_quote($_), @$row{@fields};
     }
     join "\n", @res;
@@ -108,7 +109,7 @@ sub generate {
 
     my $decoded_out =
         $user && $user->is_root && $http_mime_type eq 'text/csv' ?
-        _generate_csv($p) : $t->output;
+        _generate_csv($p, $t->{vars}) : $t->output;
     my $out = $enc eq 'UTF-8' ? $decoded_out : Encode::encode($enc, $decoded_out, Encode::FB_XMLCREF);
     $p->print($out);
     if ($output_file) {
