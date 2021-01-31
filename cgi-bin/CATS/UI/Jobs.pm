@@ -31,7 +31,7 @@ sub jobs_frame {
     my ($p) = @_;
     $is_jury or return;
 
-    init_template($p, 'jobs.html.tt');
+    init_template($p, 'jobs');
     my $lv = CATS::ListView->new(web => $p, name => 'jobs', url => url_f('jobs'));
 
     $lv->default_sort(0)->define_columns([

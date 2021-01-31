@@ -46,7 +46,7 @@ sub keywords_frame {
         return $p->redirect(url_f('problems_all', _has_kw(@{$p->{sel}}), @search_link));
     }
 
-    init_template($p, 'keywords.html.tt');
+    init_template($p, 'keywords');
     my $lv = CATS::ListView->new(web => $p, name => 'keywords', url => url_f('keywords'));
 
     $lv->default_sort(0)->define_columns([

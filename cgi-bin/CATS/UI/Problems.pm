@@ -40,7 +40,7 @@ sub _href_problem_console {
 
 sub problems_all_frame {
     my ($p) = @_;
-    init_template($p, 'problems_all.html.tt');
+    init_template($p, 'problems_all');
     my $lv = CATS::ListView->new(
         web => $p, name => 'link_problem',
         url => url_f('problems_all', link => $p->{link}, move => $p->{move}));

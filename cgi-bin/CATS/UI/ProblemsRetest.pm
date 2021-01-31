@@ -60,7 +60,7 @@ my $retest_default_ignore = { IS => 1, SV => 1, MR => 1, BA => 1 };
 sub problems_retest_frame {
     my ($p) = @_;
     $is_jury && !$contest->is_practice or return;
-    init_template($p, 'problems_retest.html.tt');
+    init_template($p, 'problems_retest');
     my $lv = CATS::ListView->new(
         web => $p, name => 'problems_retest', array_name => 'problems', url => url_f('problems_retest'));
 

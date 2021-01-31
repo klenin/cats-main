@@ -79,7 +79,7 @@ sub prizes_frame {
     }
 
     $is_root && $p->{edit} and return prizes_edit_frame($p);
-    init_template($p, 'prizes.html.tt');
+    init_template($p, 'prizes');
     my $lv = CATS::ListView->new(web => $p, name => 'prizes', url => url_f('prizes'));
 
     $p->{edit_save} and prizes_edit_save($p);

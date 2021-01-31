@@ -13,7 +13,7 @@ use CATS::References;
 
 sub import_sources_frame {
     my ($p) = @_;
-    init_template($p, 'import_sources.html.tt');
+    init_template($p, 'import_sources');
     my $lv = CATS::ListView->new(web => $p, name => 'import_sources', url => url_f('import_sources'));
     $lv->default_sort(0)->define_columns([
         { caption => res_str(625), order_by => '2', width => '30%' },

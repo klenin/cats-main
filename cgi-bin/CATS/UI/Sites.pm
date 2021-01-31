@@ -63,7 +63,7 @@ our $form = CATS::Form->new(
 
 sub sites_edit_frame {
     my ($p) = @_;
-    init_template($p, 'sites_edit.html.tt');
+    init_template($p, 'sites_edit');
     $user->privs->{edit_sites} or return;
     $form->edit_frame($p, redirect => [ 'sites' ]);
 }
@@ -96,7 +96,7 @@ sub sites_frame {
     my ($p) = @_;
     $user->privs->{edit_sites} or return;
 
-    init_template($p, 'sites.html.tt');
+    init_template($p, 'sites');
     my $lv = CATS::ListView->new(web => $p, name => 'sites', url => url_f('sites'));
 
     $form->delete_or_saved($p);
@@ -254,7 +254,7 @@ sub _href_console {
 sub contest_sites_frame {
     my ($p) = @_;
 
-    init_template($p, 'contest_sites.html.tt');
+    init_template($p, 'contest_sites');
     my $lv = CATS::ListView->new(web => $p, name => 'contest_sites', url => url_f('contest_sites'));
     $is_jury || $user->{is_site_org} || $contest->{show_sites} or return;
 

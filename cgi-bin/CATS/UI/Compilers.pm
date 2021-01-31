@@ -53,7 +53,7 @@ sub compilers_edit_frame {
 sub compilers_frame {
     my ($p) = @_;
 
-    init_template($p, 'compilers.html.tt');
+    init_template($p, 'compilers');
     my $lv = CATS::ListView->new(web => $p, name => 'compilers', url => url_f('compilers'));
 
     $is_root and $form->delete_or_saved($p,

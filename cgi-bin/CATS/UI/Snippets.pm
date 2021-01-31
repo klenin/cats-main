@@ -162,7 +162,7 @@ sub snippets_frame {
 
     $is_jury or return;
 
-    init_template($p, 'snippets.html.tt');
+    init_template($p, 'snippets');
     $form->delete_or_saved($p);
     my $lv = CATS::ListView->new(web => $p, name => 'snippets', url => url_f('snippets'));
 

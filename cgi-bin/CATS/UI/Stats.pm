@@ -163,7 +163,7 @@ our %similarity_route = (
 sub similarity_frame {
     my ($p) = @_;
 
-    init_template($p, 'similarity.html.tt');
+    init_template($p, 'similarity');
     my $lv = CATS::ListView->new(web => $p, name => 'similarity', url => url_f('similarity'));
     $is_jury && !$contest->is_practice or return;
 

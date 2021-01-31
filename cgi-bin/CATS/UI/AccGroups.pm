@@ -40,7 +40,7 @@ sub acc_groups_frame {
 
     $is_jury or return;
     $form->delete_or_saved($p) if $is_root;
-    init_template($p, 'acc_groups.html.tt');
+    init_template($p, 'acc_groups');
     my $lv = CATS::ListView->new(web => $p, name => 'acc_groups', url => url_f('acc_groups'));
 
     CATS::Contest::Utils::add_remove_groups($p) if $p->{add} || $p->{remove};

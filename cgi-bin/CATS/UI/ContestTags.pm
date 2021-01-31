@@ -39,7 +39,7 @@ sub contest_tags_frame {
 
     $is_jury or return;
     $form->delete_or_saved($p) if $is_root;
-    init_template($p, 'contest_tags.html.tt');
+    init_template($p, 'contest_tags');
     my $lv = CATS::ListView->new(web => $p, name => 'contest_tags', url => url_f('contest_tags'));
 
     CATS::Contest::Utils::add_remove_tags($p, 'contest_contest_tags') if $p->{add} || $p->{remove};

@@ -75,7 +75,7 @@ sub wiki_pages_frame {
     my ($p) = @_;
     $user->privs->{edit_wiki} or return;
 
-    init_template($p, 'wiki_pages.html.tt');
+    init_template($p, 'wiki_pages');
     my $lv = CATS::ListView->new(web => $p, name => 'wiki_pages', url => url_f('wiki_pages'));
 
     $user->privs->{edit_wiki} and $page_form->delete_or_saved($p);
@@ -224,7 +224,7 @@ sub _choose_lang {
 
 sub wiki_frame {
     my ($p) = @_;
-    init_template($p, 'wiki.html.tt');
+    init_template($p, 'wiki');
 
     $p->{name} or return;
     my ($id, $is_public) = $dbh->selectrow_array(q~

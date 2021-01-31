@@ -92,7 +92,7 @@ sub files_frame {
 
     $is_root or return;
     $form->delete_or_saved($p) if $is_root;
-    init_template($p, 'files.html.tt');
+    init_template($p, 'files');
     my $lv = CATS::ListView->new(web => $p, name => 'files', url => url_f('files'));
 
     $lv->default_sort(0)->define_columns([

@@ -71,7 +71,7 @@ sub user_contacts_edit_frame {
 sub user_contacts_frame {
     my ($p) = @_;
 
-    init_template($p, 'user_contacts.html.tt');
+    init_template($p, 'user_contacts');
     $p->{uid} or return;
 
     my $editable = $is_root || _is_profile($p);

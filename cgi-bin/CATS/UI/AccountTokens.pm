@@ -13,7 +13,7 @@ use CATS::References;
 sub account_tokens_frame {
     my ($p) = @_;
     $is_root or return;
-    init_template($p, 'account_tokens.html.tt');
+    init_template($p, 'account_tokens');
     my $lv = CATS::ListView->new(web => $p, name => 'account_tokens', url => url_f('account_tokens'));
 
     #$is_root and $form->delete_or_saved($p);

@@ -42,7 +42,7 @@ sub contact_types_edit_frame {
 sub contact_types_frame {
     my ($p) = @_;
 
-    init_template($p, 'contact_types.html.tt');
+    init_template($p, 'contact_types');
     my $lv = CATS::ListView->new(web => $p, name => 'contact_types', url => url_f('contact_types'));
 
     $is_root and $form->delete_or_saved($p);

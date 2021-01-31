@@ -145,7 +145,7 @@ sub _url_accept {
 sub user_relations_frame {
     my ($p) = @_;
 
-    init_template($p, 'user_relations.html.tt');
+    init_template($p, 'user_relations');
     $is_root || ($user->{id} // 0) == $p->{uid} or return;
 
     $form->delete_or_saved($p);

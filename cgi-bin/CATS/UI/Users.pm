@@ -372,7 +372,7 @@ sub users_frame {
 sub users_all_settings_frame {
     my ($p) = @_;
 
-    init_template($p, 'users_all_settings.html.tt');
+    init_template($p, 'users_all_settings');
     $is_root or return;
 
     my $lv = CATS::ListView->new(

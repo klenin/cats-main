@@ -457,7 +457,7 @@ sub problem_select_tags_frame {
 sub problem_des_frame {
     my ($p) = @_;
 
-    init_template($p, 'problem_des.html.tt');
+    init_template($p, 'problem_des');
     my $lv = CATS::ListView->new(
         web => $p, name => 'problem_des', array_name => 'problem_sources',
         url => url_f('problem_des', pid => $p->{pid}));
@@ -532,7 +532,7 @@ sub problem_link_frame {
         WHERE P.id = ? AND CP.contest_id = ?~, undef,
         $p->{pid}, $cid) or return;
 
-    init_template($p, 'problem_link.html.tt');
+    init_template($p, 'problem_link');
     my $href_action = url_f('problem_link', pid => $p->{pid});
     $p->{listview} = my $lv = CATS::ListView->new(
         web => $p, name => 'problem_link', array_name => 'contests', url => $href_action);

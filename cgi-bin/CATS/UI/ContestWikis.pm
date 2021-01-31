@@ -69,7 +69,7 @@ sub contest_wikis_edit_frame {
 sub contest_wikis_frame {
     my ($p) = @_;
 
-    init_template($p, 'contest_wikis.html.tt');
+    init_template($p, 'contest_wikis');
     $is_jury or return;
 
     $form->delete_or_saved($p);

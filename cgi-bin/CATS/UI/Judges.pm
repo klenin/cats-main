@@ -111,7 +111,7 @@ sub judges_frame {
         $p->{set_pin_mode} && defined $p->{pin_mode} and set_pin_mode($p);
     }
 
-    init_template($p, 'judges.html.tt');
+    init_template($p, 'judges');
     my $lv = CATS::ListView->new(web => $p, name => 'judges', url => url_f('judges'));
 
     $editable and $form->delete_or_saved($p);
