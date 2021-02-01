@@ -3,8 +3,8 @@ package CATS::Deploy;
 use strict;
 use warnings;
 
+use File::Basename;
 use File::Spec;
-use FindBin qw($Bin);
 use IPC::Cmd;
 
 use constant FS => 'File::Spec';
@@ -69,7 +69,9 @@ sub create_db {
         die "Cannot determine DBMS for 'sql/$sql_subdir' directory.";
     }
 
-    my $sql_dir = FS->catdir($Bin, 'sql');
+    my $cats_root = FS->catdir(dirname(__FILE__), qw(.. ..));
+
+    my $sql_dir = FS->catdir($cats_root, 'sql');
     substitute_template_parameters(
         FS->catfile($sql_dir, 'common', 'init_data.sql.template'),
         FS->catfile($sql_dir, $sql_subdir, 'init_data.sql'),
@@ -83,7 +85,7 @@ sub create_db {
         '<path-to-your-database>' => $path,
     });
 
-    my $config_pm = FS->catfile($Bin, qw(cgi-bin cats-problem CATS Config.pm));
+    my $config_pm = FS->catfile($cats_root, qw(cgi-bin cats-problem CATS Config.pm));
     die 'Host is required' if !$host && $init_config;
     substitute_template_parameters($config_pm . '.template', $config_pm, {
         '<your-db-name>' => $path,
