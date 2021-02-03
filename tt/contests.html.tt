@@ -2,10 +2,10 @@
 [%- extra_head = BLOCK %]
 <link rel="alternate" type="application/rss+xml" title="RSS" href="[% href_rss %]">
 <style>
-  .ct_official { color: blue; }
-  .ct_denied { color: red; }
-  .ct_school { color: green; }
-  .ct_hidden { color: gray; }
+  .ct_official { color: green; font-weight: bold; }
+  .ct_denied { color: #d80000; }
+  .ct_school {}
+  .ct_hidden { font-style: italic; }
   .ct_offset_start_until { color: darkblue; }
   .contest_flags { font-size: small; }
   .date { text-align: center; }
