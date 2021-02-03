@@ -17,7 +17,7 @@ function delete_snippet(href, name) {
 [% FOREACH s IN snippets %]
 <tr class="[% loop.parity() %]">
   <td>
-    <a href="javascript:delete_snippet('[% s.href_delete %]', '[% s.name | html %]');" class="icon delete"></a>
+    <a href="javascript:delete_snippet('[% s.href_delete %]', '[% s.name.squote | html %]');" class="icon delete"></a>
     <a href="[% s.href_edit %]" class="icon edit"></a>
     [% href(s.href_view, s.code _ ': ' _ s.title); cell_search('problem_id', s) %]
   </td>

@@ -16,7 +16,7 @@ function delete_file(href, name) {
 <tr class="[% loop.parity() %]">
 [% IF editable %]
 <td class="nobr">
-  <a href="javascript:delete_file('[% f.href_delete %]', '[% f.name | html %]');" class="icon delete"></a>
+  <a href="javascript:delete_file('[% f.href_delete %]', '[% f.name.squote | html %]');" class="icon delete"></a>
   <a href="[% f.href_edit %]" class="icon edit"></a>
 </td>
 [% END %]

@@ -39,7 +39,7 @@ try {
   <label><input type="checkbox" class="listview_checkbox" name="contests_selection" value="[% c.id %]" /></label>
 </td><td>
   [% IF c.deletable %]
-  <a href="javascript:delete_contest('[% c.href_delete %]', '[% c.contest_name | html %]');" class="icon delete"></a>
+  <a href="javascript:delete_contest('[% c.href_delete %]', '[% c.contest_name.squote | html %]');" class="icon delete"></a>
   [% END %]
   [% IF c.editable %]
   <a href="[% c.href_params %]" class="icon edit"></a>

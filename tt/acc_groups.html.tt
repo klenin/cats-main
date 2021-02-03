@@ -17,7 +17,7 @@ function delete_acc_group(href, name) {
 <tr class="[% loop.parity() %]">
 <td class="nobr sel_col">
 [% IF user.is_root %]
-  <a href="javascript:delete_acc_group('[% ag.href_delete %]', '[% ag.name | html %]');" class="icon delete"></a>
+  <a href="javascript:delete_acc_group('[% ag.href_delete %]', '[% ag.name.squote | html %]');" class="icon delete"></a>
   <a href="[% ag.href_edit %]" class="icon edit"></a>
 [% END %]
   <input type="checkbox" name="check" value="[% ag.id %]" />

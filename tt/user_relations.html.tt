@@ -22,7 +22,8 @@ function delete_user_relation(href, name) {
 <tr class="[% loop.parity %]">
 <td class="nobr">
   [% IF ur.href_delete ~%]
-  <a href="javascript:delete_user_relation('[% ur.href_delete %]', '[% ur.from_name | html %] [% capt.relation.item(ur.type_name) %] [% ur.to_name | html %]');" class="icon delete"></a>
+  <a href="javascript:delete_user_relation('[% ur.href_delete %]',
+    '[% ur.from_name.squote | html %] [% capt.relation.item(ur.type_name) %] [% ur.to_name.squote | html %]');" class="icon delete"></a>
   [%~ END %]
   [% IF ur.href_edit ~%]
   <a href="[% ur.href_edit %]" class="icon edit"></a>

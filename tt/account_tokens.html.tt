@@ -16,7 +16,7 @@ function delete_account_token(href, name) {
 <tr class="[% loop.parity() %]">
 <td>
   [% IF at.href_delete ~%]
-  <a href="javascript:delete_account_token('[% at.href_delete %]', '[% at.token | html %]');" class="icon delete"></a>
+  <a href="javascript:delete_account_token('[% at.href_delete %]', '[% at.token.squote | html %]');" class="icon delete"></a>
   [%~ END %]
   [% IF at.href_edit ~%]
   <a href="[% at.href_edit %]" class="icon edit"></a>

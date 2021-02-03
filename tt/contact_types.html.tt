@@ -16,7 +16,7 @@ function delete_contact_type(href, name) {
 <tr class="[% loop.parity() %]">
 <td>
   [% IF ct.href_delete ~%]
-  <a href="javascript:delete_contact_type('[% ct.href_delete %]', '[% ct.name | html %]');" class="icon delete"></a>
+  <a href="javascript:delete_contact_type('[% ct.href_delete %]', '[% ct.name.squote | html %]');" class="icon delete"></a>
   [%~ END %]
   [% IF ct.href_edit ~%]
   <a href="[% ct.href_edit %]" class="icon edit"></a>

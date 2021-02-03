@@ -16,7 +16,7 @@ function delete_wiki_page(href, name) {
 <tr class="[% loop.parity() %]">
 <td>
   [% IF w.href_delete ~%]
-  <a href="javascript:delete_wiki_page('[% w.href_delete %]', '[% w.name | html %]');" class="icon delete"></a>
+  <a href="javascript:delete_wiki_page('[% w.href_delete %]', '[% w.name.squote | html %]');" class="icon delete"></a>
   [%~ END %]
   [% IF w.href_edit ~%]
   <a href="[% w.href_edit %]" class="icon edit"></a>

@@ -15,7 +15,7 @@ function delete_prize(href, name) {
 [% FOREACH p IN prizes %]
 <tr class="[% loop.parity() %]">
 <td>
-  <a href="javascript:delete_prize('[% p.href_delete %]', '[% p.name | html %]');" class="icon delete"></a>
+  <a href="javascript:delete_prize('[% p.href_delete %]', '[% p.name.squote | html %]');" class="icon delete"></a>
   <a href="[% p.href_edit %]" class="icon edit"></a>
   <a href="[% p.href_rank_table %]">[% p.name | html %]</a>
 </td>

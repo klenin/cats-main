@@ -16,7 +16,7 @@ function delete_kw(href, name) {
 <tr class="[% loop.parity() %]">
 [% IF editable %]
 <td class="nobr sel_col">
-  <a href="javascript:delete_kw('[% k.href_delete %]', '[% k.code | html %]');" class="icon delete"></a>
+  <a href="javascript:delete_kw('[% k.href_delete %]', '[% k.code.squote | html %]');" class="icon delete"></a>
   <a href="[% k.href_edit %]" class="icon edit"></a>
   <input type="checkbox" class="listview_checkbox" name="sel" value="[% k.kwid %]" />
 </td>

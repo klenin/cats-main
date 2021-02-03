@@ -30,7 +30,7 @@ function delete_team(href, name) {
 <tr class="[% loop.parity %]">
 [% IF user.is_jury %]
 <td>
-  <a href="javascript:delete_team('[% u.href_delete %]', '[% u.team_name | html %]');" class="icon delete"></a>
+  <a href="javascript:delete_team('[% u.href_delete %]', '[% u.team_name.squote | html %]');" class="icon delete"></a>
   <a href="[% u.href_edit %]" class="icon edit"></a>
   [% u.login | html %]
 </td>

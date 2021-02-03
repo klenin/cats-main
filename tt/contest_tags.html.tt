@@ -17,7 +17,7 @@ function delete_contest_tag(href, name) {
 <tr class="[% loop.parity() %]">
 <td class="nobr sel_col">
 [% IF user.is_root %]
-  <a href="javascript:delete_contest_tag('[% ct.href_delete %]', '[% ct.name | html %]');" class="icon delete"></a>
+  <a href="javascript:delete_contest_tag('[% ct.href_delete %]', '[% ct.name.squote | html %]');" class="icon delete"></a>
   <a href="[% ct.href_edit %]" class="icon edit"></a>
 [% END %]
   <input type="checkbox" name="check" value="[% ct.id %]" />

@@ -27,7 +27,7 @@ function delete_contest_site(href, name) {
   [% IF cs.is_used %]
   <a href="[% cs.href_edit %]" class="icon edit"></a>
   <a href="#" class="icon checked"></a>
-  <a href="javascript:delete_contest_site('[% cs.href_delete %]', '[% cs.name | html %]');" class="icon delete"></a>
+  <a href="javascript:delete_contest_site('[% cs.href_delete %]', '[% cs.name.squote | html %]');" class="icon delete"></a>
   [% END %]
 </td>
 [% END %]

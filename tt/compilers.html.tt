@@ -16,7 +16,7 @@ function delete_compiler(href, name) {
 <tr class="[% loop.parity() %]">
 <td>
   [% IF c.href_delete ~%]
-  <a href="javascript:delete_compiler('[% c.href_delete %]', '[% c.description | html %]');" class="icon delete"></a>
+  <a href="javascript:delete_compiler('[% c.href_delete %]', '[% c.description.squote | html %]');" class="icon delete"></a>
   [%~ END %]
   [% IF c.href_edit ~%]
   <a href="[% c.href_edit %]" class="icon edit"></a>

@@ -38,7 +38,7 @@
           [%- IF entry.href_edit %]<a href="[% entry.href_edit %]" target="_blank">edit</a> | [% END %]
           <a href="[% entry.href %]">[% entry.type %]</a>
           [%- IF entry.href_raw %] | <a href="[% entry.href_raw %]" target="_blank">raw</a>[% END %]
-          [%- IF entry.href_delete %] | <a href="javascript:delete_file('[% entry.href_delete %]', '[% entry.file_name %]');">delete</a>[% END %]
+          [%- IF entry.href_delete %] | <a href="javascript:delete_file('[% entry.href_delete %]', '[% entry.file_name.squote | html %]');">delete</a>[% END %]
         </td>
       </tr>
     [% END %]
