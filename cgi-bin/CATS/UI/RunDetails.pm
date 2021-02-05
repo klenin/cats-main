@@ -441,7 +441,7 @@ sub get_last_verdicts_api {
             href_problem_details => ($is_jury_in_contest ?
                 url_f_cid('problem_details', cid => $contest_id, pid => $problem_id) : ''),
             allowed => $is_jury ||
-                $problem_status != $cats::problem_st_disabled && ($state // 0) != $cats::st_banned,
+                $problem_status < $cats::problem_st_disabled && ($state // 0) != $cats::st_banned,
         };
     }
     $p->print_json($result);

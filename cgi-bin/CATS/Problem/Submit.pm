@@ -193,9 +193,9 @@ sub problems_submit {
         !$contest_finished || $user->{is_virtual}
             or return msg(1081);
         $status //= $cats::problem_st_ready;
-        return msg(1124, $title) if $status == $cats::problem_st_disabled;
-        # Do not leak the title of a hidden problem.
-        return msg(1124, '') if $status >= $cats::problem_st_hidden;
+        # Do not leak the presense of a hidden problem.
+        return msg(1012) if $status >= $cats::problem_st_hidden;
+        return msg(1124, $title) if $status >= $cats::problem_st_disabled;
 
         # During the official contest, do not accept submissions for other contests.
         if (!$contest->{is_official} || $user->{is_virtual}) {

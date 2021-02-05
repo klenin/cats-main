@@ -147,7 +147,7 @@ sub view_source_frame {
     CATS::ReqDetails::prepare_sources($p, $sources_info);
     
     if (
-        $sources_info->{is_jury} || $sources_info->{status} != $cats::problem_st_disabled &&
+        $sources_info->{is_jury} || $sources_info->{status} < $cats::problem_st_disabled &&
         !CATS::Problem::Submit::user_is_banned($p->{problem_id}) && CATS::Problem::Submit::can_submit
     ) {
         $t->param(prepare_de_list(), de_selected => $sources_info->{de_id}, can_submit => 1);

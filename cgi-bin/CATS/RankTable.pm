@@ -89,7 +89,7 @@ sub get_problems {
             INNER JOIN contests C ON C.id = CP.contest_id
             INNER JOIN problems P ON P.id = CP.problem_id
         WHERE
-            CP.contest_id IN ($self->{contest_list}) AND CP.status < ?
+            CP.contest_id IN ($self->{contest_list}) AND CP.status <= ?
         ORDER BY C.start_date, CP.code~, { Slice => {} },
         $cats::problem_st_disabled
     );

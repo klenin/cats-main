@@ -82,6 +82,7 @@ sub problem_status_names() {+{
     $cats::problem_st_compile   => res_str(705),
     $cats::problem_st_suspended => res_str(702),
     $cats::problem_st_disabled  => res_str(703),
+    $cats::problem_st_nosubmit  => res_str(706),
     $cats::problem_st_hidden    => res_str(704),
 }}
 

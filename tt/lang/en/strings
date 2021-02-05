@@ -185,6 +185,7 @@
 703 "disabled"
 704 "hidden"
 705 "compile"
+706 "nosubmit"
 800 "Participant / team name"
 801 "Team captain's full name"
 802 "Motto"
