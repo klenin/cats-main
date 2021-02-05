@@ -176,10 +176,10 @@ $(document).ready(update_request_status);
         [%- capt.verdicts.item(si.short_state); " $capt.on_test" _ maybe_href(si.href_test_diff, si.failed_test) IF si.failed_test -%]
         <div></div></td>
         [% IF si.points.defined() %]<td>[% capt.pts %]: [% si.points %]</td>[% END %]
-        [% IF si.is_jury && si.short_state == 'AW' -%]
+        [% IF si.is_jury && (si.short_state == 'AW' || si.short_state == 'NP') -%]
         <td><form method="POST" action="[% si.href_quick_verdict %]">
           <input type="hidden" name="set_state" value="1"/>
-          [% IF si.rules %]<input type="text" size="2" name="points" />[% END -%]
+          [% IF si.rules %]<input type="text" size="2" name="points" class="bordered"/>[% END -%]
           [% FOREACH qv IN ['OK', 'MR']; t = capt.set_verdict _ ': '_ capt.verdicts.item(qv) %]
           <button name="state" value="[% qv %]" title="[% t %]" class="button run_details_[% qv %]">[% qv %]</button>
           [% END %]
