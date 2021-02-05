@@ -47,6 +47,7 @@ sub acc_groups_frame {
 
     $lv->default_sort(0)->define_columns([
         { caption => res_str(601), order_by => 'name', width => '30%' },
+        { caption => res_str(620), order_by => 'description', width => '30%', col => 'Ds' },
         { caption => res_str(685), order_by => 'is_used', width => '10%' },
         { caption => res_str(643), order_by => 'ref_count', width => '10%', col => 'Rc' },
     ]);
@@ -63,18 +64,23 @@ sub acc_groups_frame {
 
     my $ref_count_sql = $lv->visible_cols->{Rc} ? q~
         SELECT COUNT(*) FROM acc_group_contests AGC2 WHERE AGC2.acc_group_id = AG.id~ : 'NULL';
+    my $descr_sql = $lv->visible_cols->{Ds} ? 'AG.description' : 'NULL';
     my $sth = $dbh->prepare(qq~
         SELECT AG.id, AG.name,
             (SELECT 1 FROM acc_group_contests AGC1
                 WHERE AGC1.acc_group_id = AG.id AND AGC1.contest_id = ?) AS is_used,
+            ($descr_sql) AS description,
             ($ref_count_sql) AS ref_count
         FROM acc_groups AG WHERE 1 = 1 ~ . $lv->maybe_where_cond . $lv->order_by);
     $sth->execute($cid, $lv->where_params);
 
+    my $descr_prefix_len = 50;
     my $fetch_record = sub {
         my $row = $_[0]->fetchrow_hashref or return ();
         return (
             %$row,
+            descr_prefix => substr($row->{description}, 0, $descr_prefix_len),
+            descr_cut => length($row->{description}) > $descr_prefix_len,
             href_edit=> url_f('acc_groups_edit', id => $row->{id}),
             href_delete => url_f('acc_groups', 'delete' => $row->{id}),
             href_view_users => url_f('acc_group_users', group => $row->{id}),
@@ -156,6 +162,7 @@ sub acc_group_users_frame {
         submenu => [
             { href => url_f('users_new', group => $p->{group}), item => res_str(541), new => 1 },
             { href => url_f('acc_group_add_users', group => $p->{group}), item => res_str(584) },
+            { href => url_f('acc_groups'), item => res_str(410) },
         ],
     );
 }
