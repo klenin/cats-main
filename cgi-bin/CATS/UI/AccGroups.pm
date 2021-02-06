@@ -49,6 +49,7 @@ sub acc_groups_frame {
         { caption => res_str(601), order_by => 'name', width => '30%' },
         { caption => res_str(620), order_by => 'description', width => '30%', col => 'Ds' },
         { caption => res_str(685), order_by => 'is_used', width => '10%' },
+        { caption => res_str(606), order_by => 'user_count', width => '10%', col => 'Uc' },
         { caption => res_str(643), order_by => 'ref_count', width => '10%', col => 'Rc' },
     ]);
     $lv->define_db_searches([ qw(id name description) ]);
@@ -62,6 +63,8 @@ sub acc_groups_frame {
     });
     $lv->define_enums({ in_contest => { this => $cid } });
 
+    my $user_count_sql = $lv->visible_cols->{Uc} ? q~
+        SELECT COUNT(*) FROM acc_group_accounts AGA1 WHERE AGA1.acc_group_id = AG.id~ : 'NULL';
     my $ref_count_sql = $lv->visible_cols->{Rc} ? q~
         SELECT COUNT(*) FROM acc_group_contests AGC2 WHERE AGC2.acc_group_id = AG.id~ : 'NULL';
     my $descr_sql = $lv->visible_cols->{Ds} ? 'AG.description' : 'NULL';
@@ -70,6 +73,7 @@ sub acc_groups_frame {
             (SELECT 1 FROM acc_group_contests AGC1
                 WHERE AGC1.acc_group_id = AG.id AND AGC1.contest_id = ?) AS is_used,
             ($descr_sql) AS description,
+            ($user_count_sql) AS user_count,
             ($ref_count_sql) AS ref_count
         FROM acc_groups AG WHERE 1 = 1 ~ . $lv->maybe_where_cond . $lv->order_by);
     $sth->execute($cid, $lv->where_params);
@@ -123,10 +127,10 @@ sub acc_group_users_frame {
         ($is_root ?
             { caption => res_str(616), order_by => 'login', width => '20%' } : ()),
         { caption => res_str(608), order_by => 'team_name', width => '30%', checkbox => $is_root && '[name=sel]' },
-        { caption => res_str(685), order_by => 'in_contest', width => '1%' },
+        { caption => res_str(685), order_by => 'in_contest', width => '5%' },
         ($is_root ? (
-            { caption => res_str(610), order_by => 'is_admin', width => '1%' },
-            { caption => res_str(614), order_by => 'is_hidden', width => '1%' },
+            { caption => res_str(610), order_by => 'is_admin', width => '5%' },
+            { caption => res_str(614), order_by => 'is_hidden', width => '5%' },
         ) : ()),
         { caption => res_str(600), order_by => 'date_start', width => '5%', col => 'Ds' },
         { caption => res_str(631), order_by => 'date_finish', width => '5%', col => 'Df' },
@@ -214,7 +218,7 @@ sub _accounts_by_contest {
     $dbh->selectrow_array(_u $sql->select('contest_accounts', '1',
         { contest_id => $contest_id, account_id => $uid, is_jury => 1 })) or return;
     $dbh->selectcol_arrayref(_u $sql->select('contest_accounts', 'account_id',
-        { contest_id => $contest_id, is_hidden => 0, is_jury => 0, $include_ooc ? (is_ooc => 0) : () }
+        { contest_id => $contest_id, is_hidden => 0, is_jury => 0, $include_ooc ? () : (is_ooc => 0) }
     ));
 }
 
