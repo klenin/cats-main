@@ -1,4 +1,4 @@
-[%- js.jquery = 1; IF user.privs.is_root; js.autocomplete = 1; END -%]
+[%- js.jquery = 1; SET js.autocomplete = 1 IF user.privs.is_root -%]
 [%- extra_head = BLOCK %]
 <link rel="alternate" type="application/rss+xml" title="RSS" href="[% href_rss %]">
 <style>
@@ -14,7 +14,7 @@
 </style>
 [%- END %]
 [% PROCESS includes/menu_begin.tti %]
-[%- PROCESS includes/autocomplete.tti href_find = href_find_tags IF user.privs.is_root -%]
+[%- PROCESS includes/autocomplete.tti -%]
 
 <script type="text/javascript">
 function delete_contest(href, name) {
@@ -112,7 +112,7 @@ END %]
 <button type="submit" name="remove_children" value="1" class="button">[% capt.children.remove %]</button>
 </div>
 <script>
-$(function() { autocomplete($('#tag_name'), {
+$(function() { autocomplete($('#tag_name'), '[% href_find_tags %]', {
   formatResult: function (suggestion, currentValue) {
     return bold_prefix(suggestion.data.name, currentValue);
   },

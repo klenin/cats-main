@@ -1,7 +1,7 @@
 [%- js.autocomplete = 1 -%]
 [% PROCESS includes/menu_begin.tti %]
 [% PROCESS includes/html_input.tti %]
-[%- PROCESS includes/autocomplete.tti href_find = ur.href_find_users -%]
+[%- PROCESS includes/autocomplete.tti -%]
 [%- PROCESS "lang/$lang/user_relations.html.tt" -%]
 
 [%- MACRO tr_autocomplete_user(f, fd, prefix, fcb) BLOCK -%]
@@ -31,7 +31,7 @@
 
 <script>
 function _autocomplete(name) {
-  autocomplete($('#' + name + '_login'), {
+  autocomplete($('#' + name + '_login'), '[% ur.href_find_users %]', {
     onSelect: function (suggestion) {
       $('#' + name + '_id').val(suggestion.data.id);
       $('#' + name + '_name').text(suggestion.data.team_name);

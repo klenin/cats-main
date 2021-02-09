@@ -48,7 +48,7 @@
 [%- END -%]
 [% PROCESS includes/menu_begin.tti %]
 [%- PROCESS includes/html.tti -%]
-[%- PROCESS includes/autocomplete.tti href_find = href_find_users -%]
+[%- PROCESS includes/autocomplete.tti IF editable -%]
 [%- PROCESS "lang/$lang/verdicts.tti" -%]
 [% IF editable %]
 <script type="text/javascript">
@@ -385,7 +385,7 @@ function chg_color(input, cpid) {
 
 [%- PROCESS includes/download.tti -%]
 
-$(function() { autocomplete($('#submit_as')); });
+$(function() { autocomplete($('#submit_as'), '[% href_find_users %]'); });
 </script>
 [% END %]
 [% PROCESS includes/menu_end.tti %]

@@ -1,6 +1,6 @@
 [%- js.autocomplete = 1 -%]
 [% PROCESS includes/menu_begin.tti %]
-[%- PROCESS includes/autocomplete.tti href_find = href_find_users -%]
+[%- PROCESS includes/autocomplete.tti -%]
 
 <h3>[% capt.add_users %]</h3>
 
@@ -29,6 +29,6 @@
 </form>
 
 <script>
-$(function () { autocomplete($('#logins_to_add'), { delimiter: ',' }); });
+$(function () { autocomplete($('#logins_to_add'), '[% href_find_users %]', { delimiter: ',' }); });
 </script>
 [% PROCESS includes/menu_end.tti %]

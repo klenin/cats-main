@@ -9,13 +9,13 @@ function bold_prefix(s, prefix) {
   return s_prefix === prefix ? '<b>' + _escape(prefix) + '</b>' + _escape(s.substr(len)) : _escape(s);
 }
 
-function autocomplete(input, extra) {
+function autocomplete(input, url, extra) {
   var params = {
     minChars: 2,
     deferRequestBy: 100,
     showNoSuggestionNotice: true,
     noSuggestionNotice: '[% capt.no_suggestion %]',
-    serviceUrl: '[% href_find %]',
+    serviceUrl: url,
     formatResult: function (suggestion, currentValue) {
       return bold_prefix(suggestion.data.login, currentValue) +
         ' (' + bold_prefix(suggestion.data.team_name, currentValue) + ')';

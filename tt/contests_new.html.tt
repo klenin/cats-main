@@ -1,6 +1,7 @@
 [%- js.datepicker = 1 -%]
 [%- IF user.privs.is_root;
-  js.jquery = 1; js.autocomplete = 1; PROCESS includes/autocomplete.tti href_find = href_find_tags;
+  js.jquery = 1; js.autocomplete = 1;
+  PROCESS includes/autocomplete.tti;
 END -%]
 [% PROCESS includes/menu_begin.tti %]
 
@@ -13,7 +14,7 @@ END -%]
 </div>
 <br/>
 <script>
-$(function() { autocomplete($('#tag_name'), {
+$(function() { autocomplete($('#tag_name'), '[% href_find_tags %]', {
   formatResult: function (suggestion, currentValue) {
     return bold_prefix(suggestion.data.name, currentValue);
   },

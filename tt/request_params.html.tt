@@ -7,7 +7,7 @@
 </head>
 <body>
 
-[% PROCESS includes/autocomplete.tti href_find = href_find_users %]
+[%- PROCESS includes/autocomplete.tti -%]
 [% PROCESS includes/sources_info.tti %]
 <br/>
 
@@ -136,7 +136,7 @@
   <input type="text" id="new_login" name="new_login" size="40" class="bordered"/>
 </p></form>
 <script>
-  $(function() { autocomplete($('#new_login')); });
+  $(function() { autocomplete($('#new_login'), '[% href_find_users %]'); });
 </script>
 
 [% IF de_cache %]
