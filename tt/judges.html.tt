@@ -13,7 +13,7 @@ function delete_judge(href, name) {
 
 [% PROCESS includes/listview_header.tti %]
 
-<table class="listview bordered highlight">
+<table class="listview bordered highlight cell_search">
 [% PROCESS includes/listview_col_defs.tti %]
 
 [% FOREACH j IN judges %]
@@ -43,10 +43,10 @@ function delete_judge(href, name) {
 [% END %]
 
 [% IF visible_cols.Re %]
-<td>[% j.is_alive; IF editable && j.is_alive %] [<a href="[% j.href_ping %]">[% capt.ping %]</a>][% END %]</td>
+<td>[% j.is_alive; IF editable && j.is_alive %] [<a href="[% j.href_ping %]">[% capt.ping %]</a>][% END; cell_search('is_alive', j) %]</td>
 [% END %]
 [% IF visible_cols.Ad %]<td>[% j.alive_date %]</td>[% END %]
-<td style="color: [% pin_colors.item(j.pin_mode) %];">[% capt.pin_mode_values.item(j.pin_mode) %]</td>
+<td style="color: [% pin_colors.item(j.pin_mode) %];">[% capt.pin_mode_values.item(j.pin_mode); cell_search('pin_mode', j)  %]</td>
 [% IF visible_cols.Vr %]<td>
   [%- href(j.href_update_jobs, j.version);
   up = updates_pending.item(j.jid).cnt;
