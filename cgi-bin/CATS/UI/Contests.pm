@@ -629,4 +629,19 @@ sub contest_xml_frame {
     CATS::Contest::Utils::contest_submenu('contest_xml', $cid);
 }
 
+sub find_contests_api {
+    my ($p) = @_;
+    my $contests = $dbh->selectall_arrayref(qq~
+        SELECT C.id, C.title FROM contests C
+        WHERE C.title CONTAINING ? AND EXISTS (
+            SELECT 1 FROM contest_accounts CA
+            WHERE CA.contest_id = C.id AND CA.account_id = ? AND CA.is_jury = 1)
+            ORDER BY C.title
+            $CATS::DB::db->{LIMIT} 100~, { Slice => {} },
+        $p->{query}, $uid);
+    $p->print_json({ suggestions =>
+        [ map { value => $_->{title}, data => $_ }, @$contests ]
+    });
+}
+
 1;

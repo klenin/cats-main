@@ -52,6 +52,7 @@ my $main_routes = {
         add_children => bool, remove_children => bool,
     ],
     api_find_contest_tags => [ \&CATS::UI::ContestTags::find_contest_tags_api, query => str, ],
+    api_find_contests => [ \&CATS::UI::Contests::find_contests_api, query => str, ],
     contests_rss => [ \&CATS::UI::Contests::contests_rss_frame, ],
     contests_new => [ \&CATS::UI::Contests::contests_new_frame, ],
     contest_params => [ \&CATS::UI::Contests::contest_params_frame, id => integer, ],
