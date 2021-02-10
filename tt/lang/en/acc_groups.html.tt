@@ -1,6 +1,7 @@
 [%
   capt.import({
     want_to_delete => 'Do you really want to delete group',
+    rank_table => 'rank table',
     add => 'add to contest',
     remove => 'remove from contest',
   })
