@@ -37,7 +37,7 @@ $(function () {
   sc.removeClass('hidden');
   autocomplete(sc, '[% href_find_contests %]', {
     formatResult: function (suggestion, currentValue) {
-      return bold_substr(suggestion.data.title, currentValue);
+      return AutoComplete.bold_substr(suggestion.data.title, currentValue);
     },
     onSelect: function (suggestion) {
       $('#source_cid').val(suggestion.data.id);
