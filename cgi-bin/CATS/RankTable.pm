@@ -20,7 +20,7 @@ use CATS::Time;
 
 use fields qw(
     clist contests contest_list hide_ooc hide_virtual show_points frozen
-    title has_practice not_started filter sites use_cache
+    title has_practice not_started filter sites groups use_cache
     rank problems problems_idx show_all_results show_prizes has_competitive
     show_regions show_flags show_logins sort p notime nostats
 );
@@ -335,6 +335,7 @@ sub parse_params {
     $self->{use_cache} = 1 if !defined $self->{use_cache} && !defined $uid;
     $self->{use_cache} = 0 unless $self->{show_all_results};
     $self->{filter} = $p->{filter};
+    $self->{groups} = $p->{groups};
     $self->{sites} = $p->{sites};
     $self->{show_prizes} = $p->{show_prizes};
     $self->{show_regions} = $p->{show_regions};
@@ -360,6 +361,14 @@ sub prepare_ranks {
     if (@{$self->{sites}}) {
         my %sites = map { $_ => 1 } @{$self->{sites}};
         @rank = grep $sites{$_->{site_id} // 0}, @rank;
+    }
+
+    if (@{$self->{groups}}) {
+        my $accounts_by_groups = $dbh->selectcol_arrayref(_u $sql->select('acc_group_accounts',
+            'account_id', { acc_group_id => $self->{groups} }));
+        my %h;
+        @h{@$accounts_by_groups} = undef;
+        @rank = grep exists $h{$_->{account_id}}, @rank;
     }
 
     my $sort_criteria = $self->{sort} eq 'name' ?

@@ -52,7 +52,9 @@ sub rank_table_frame {
 
     my $sites = @{$p->{sites}} ? $dbh->selectall_arrayref(_u $sql->select(
         'sites', 'id, name', { id => $p->{sites} }, 'name')) : [];
-    $t->param(problem_title => join '; ', map $_->{name}, @$sites);
+    my $groups = @{$p->{groups}} ? $dbh->selectall_arrayref(_u $sql->select(
+        'acc_groups', 'id, name', { id => $p->{groups} }, 'name')) : [];
+    $t->param(problem_title => join '; ', (map $_->{name}, @$sites), (map $_->{name}, @$groups));
 
     my $url = sub {
         url_f(shift, CATS::RouteParser::reconstruct($p, clist => $rt->{contest_list}, @_));
