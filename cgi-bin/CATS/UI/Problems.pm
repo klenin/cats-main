@@ -184,9 +184,7 @@ sub _check_inaccessible {
 sub problems_frame {
     my ($p) = @_;
 
-    my $show_packages = 1;
     unless ($is_jury) {
-        $show_packages = $contest->{show_packages};
         if (my $reason = _check_inaccessible) {
             init_template($p, 'problems_inaccessible');
             if ($p->{participate_online}) {
@@ -411,7 +409,6 @@ sub problems_frame {
             href_allow_des => url_f('problem_des', pid => $c->{pid}),
             href_problem_limits => $is_jury && url_f('problem_limits', pid => $c->{pid}),
 
-            show_packages => $show_packages,
             status => $c->{status},
             status_text => $psn->{$c->{status}},
             disabled => !$is_jury &&
@@ -419,7 +416,7 @@ sub problems_frame {
             href_view_problem =>
                 $hrefs_view{statement} || $text_link_f->('problem_text', cpid => $c->{cpid}),
             problem_langs => $problem_langs,
-            href_explanation => $show_packages && $c->{has_explanation} ?
+            href_explanation => ($is_jury || $contest->{show_explanations}) && $c->{has_explanation} ?
                 $hrefs_view{explanation} || url_f('problem_text', cpid => $c->{cpid}, explain => 1) : '',
             problem_id => $c->{pid},
             cpid => $c->{cpid},

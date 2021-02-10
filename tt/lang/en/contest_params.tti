@@ -28,6 +28,7 @@
     show_test_data => 'test data',
     show_checker_comment => 'checker comments',
     show_packages => 'problem packages',
+    show_explanations => 'problem explanations',
     show_flags => 'flags',
     show_sites => 'sites',
     show_all_for_solved => 'others\' submissions after solving',

@@ -28,6 +28,7 @@
     show_test_data => 'содержимое тестов',
     show_checker_comment => "комментарии checker'а",
     show_packages => 'пакеты задач',
+    show_explanations => 'разбор задач',
     show_flags => 'флаги',
     show_sites => 'площадки',
     show_all_for_solved => 'чужие попытки после решения',

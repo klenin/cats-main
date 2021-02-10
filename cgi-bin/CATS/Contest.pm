@@ -8,8 +8,9 @@ sub database_fields {qw(
     start_date finish_date freeze_date defreeze_date offset_start_until
     closed penalty ctype rules max_reqs
     is_official run_all_tests
-    show_all_tests show_test_resources show_checker_comment show_packages show_test_data show_flags show_sites
-    local_only is_hidden max_reqs_except show_all_results show_all_for_solved
+    show_all_tests show_test_resources show_checker_comment show_packages show_explanations
+    show_test_data show_flags show_sites show_all_results show_all_for_solved
+    local_only is_hidden max_reqs_except
 )}
 
 use fields (database_fields(), qw(

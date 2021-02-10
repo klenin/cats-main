@@ -177,7 +177,7 @@ function chg_code(st_sel, pid) {
   [% END %][% p.title | html %]</a>
   [% IF p.problem_langs.size %][[% FOREACH pl IN p.problem_langs; href(pl.href, pl.name); ' ' UNLESS loop.last; END %]][% END -%]
   [% IF p.href_explanation %]&nbsp;[<a href="[% p.href_explanation %]" target="_blank">[% capt.explanation %]</a>][% END -%]
-  [% IF p.show_packages -%]
+  [% IF p.href_download -%]
     &nbsp;[<a href="[% p.href_download %]" download="[% p.code %]_[% p.problem_id %].zip">[% capt.package %]</a>]
   [%- END -%]
 </td>

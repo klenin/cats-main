@@ -255,7 +255,7 @@ sub _contest_visible {
         SELECT
             CAST(CURRENT_TIMESTAMP - $CATS::Time::contest_start_offset_sql AS DOUBLE PRECISION) AS since_start,
             CAST(CURRENT_TIMESTAMP - $CATS::Time::contest_finish_offset_sql AS DOUBLE PRECISION) AS since_finish,
-            C.local_only, C.id AS orig_cid, C.show_packages, C.is_hidden, C.is_official,
+            C.local_only, C.id AS orig_cid, C.show_explanations, C.is_hidden, C.is_official,
             CA.id AS caid, CA.is_jury, CA.is_remote, CA.is_ooc
             FROM contests C $s
             LEFT JOIN contest_accounts CA ON CA.contest_id = C.id AND CA.account_id = ?
@@ -265,7 +265,7 @@ sub _contest_visible {
     return _all_visible($p) if $c->{is_jury};
     ($c->{since_start} || 0) > 0 && (!$c->{is_hidden} || $c->{caid}) or return;
     my $res = {
-        explain => $c->{show_packages} && $p->{explain},
+        explain => $c->{show_explanations} && $p->{explain},
         author => !$c->{is_official} || $c->{since_finish} > 0,
     };
     $c->{local_only} or return $res;

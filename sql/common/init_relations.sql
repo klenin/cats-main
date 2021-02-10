@@ -105,6 +105,7 @@ CREATE TABLE contests (
     show_test_resources  INTEGER DEFAULT 0 CHECK (show_test_resources IN (0, 1)),
     show_checker_comment INTEGER DEFAULT 0 CHECK (show_checker_comment IN (0, 1)),
     show_packages        INTEGER DEFAULT 0 CHECK (show_packages IN (0, 1)),
+    show_explanations    SMALLINT DEFAULT 0 NOT NULL CHECK (show_explanations IN (0, 1)),
     show_all_results     SMALLINT DEFAULT 1 NOT NULL CHECK (show_all_results IN (0, 1)),
     rules                INTEGER DEFAULT 0, /* 0 - ACM, 1 - school */
     local_only           SMALLINT DEFAULT 0 CHECK (local_only IN (0, 1)),
@@ -112,7 +113,6 @@ CREATE TABLE contests (
     /* Maximum requests per participant per problem. */
     max_reqs             INTEGER DEFAULT 0,
     max_reqs_except      VARCHAR(100),
-    /* TODO: output runs in a frozen table. */
     show_frozen_reqs     SMALLINT DEFAULT 0 CHECK (show_frozen_reqs IN (0, 1)),
     show_test_data       SMALLINT DEFAULT 0 CHECK (show_test_data IN (0, 1)),
     /* 0 - last, 1 - best */

@@ -67,6 +67,7 @@ sub _contest_search_fields() {qw(
     show_test_resources
     show_checker_comment
     show_packages
+    show_explanations
     show_all_results
     local_only
     show_flags
