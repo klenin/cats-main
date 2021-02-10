@@ -149,6 +149,7 @@ CREATE TABLE contest_contest_tags (
 CREATE TABLE acc_groups (
     id          INTEGER NOT NULL PRIMARY KEY,
     name        VARCHAR(200),
+    is_actual   SMALLINT DEFAULT 0,
     description CATS_TEXT
 );
 

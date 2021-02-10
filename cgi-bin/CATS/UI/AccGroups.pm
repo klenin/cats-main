@@ -18,6 +18,7 @@ our $form = CATS::Form->new(
     fields => [
         [ name => 'name',
             validators => [ CATS::Field::str_length(1, 200) ], editor => { size => 50 }, caption => 601 ],
+        [ name => 'is_actual', validators => $CATS::Field::bool, caption => 670 ],
         [ name => 'description', caption => 620 ],
     ],
     href_action => 'acc_groups_edit',
@@ -48,11 +49,12 @@ sub acc_groups_frame {
     $lv->default_sort(0)->define_columns([
         { caption => res_str(601), order_by => 'name', width => '30%' },
         { caption => res_str(620), order_by => 'description', width => '30%', col => 'Ds' },
-        { caption => res_str(685), order_by => 'is_used', width => '10%' },
-        { caption => res_str(606), order_by => 'user_count', width => '10%', col => 'Uc' },
-        { caption => res_str(643), order_by => 'ref_count', width => '10%', col => 'Rc' },
+        { caption => res_str(685), order_by => 'is_used', width => '5%' },
+        { caption => res_str(670), order_by => 'is_actual', width => '5%', col => 'Ac' },
+        { caption => res_str(606), order_by => 'user_count', width => '5%', col => 'Uc' },
+        { caption => res_str(643), order_by => 'ref_count', width => '5%', col => 'Rc' },
     ]);
-    $lv->define_db_searches([ qw(id name description) ]);
+    $lv->define_db_searches([ qw(id name is_actual description) ]);
     $lv->define_subqueries({
         in_contest => { sq => qq~EXISTS (
             SELECT 1 FROM acc_group_contests AGC
@@ -69,7 +71,7 @@ sub acc_groups_frame {
         SELECT COUNT(*) FROM acc_group_contests AGC2 WHERE AGC2.acc_group_id = AG.id~ : 'NULL';
     my $descr_sql = $lv->visible_cols->{Ds} ? 'AG.description' : 'NULL';
     my $sth = $dbh->prepare(qq~
-        SELECT AG.id, AG.name,
+        SELECT AG.id, AG.name, AG.is_actual,
             (SELECT 1 FROM acc_group_contests AGC1
                 WHERE AGC1.acc_group_id = AG.id AND AGC1.contest_id = ?) AS is_used,
             ($descr_sql) AS description,

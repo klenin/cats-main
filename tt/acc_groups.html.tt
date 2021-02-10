@@ -25,6 +25,7 @@ function delete_acc_group(href, name) {
 <td>[% href(ag.href_view_users, ag.name) %]</td>
 [% IF visible_cols.Ds %]<td>[% ag.descr_prefix | html; '&hellip;' IF ag.descr_cut %]</td>[% END %]
 <td>[% IF ag.is_used %]<a href="#" class="icon checked"></a>[% END %]</td>
+[% IF visible_cols.Ac %]<td>[% IF ag.is_actual %]<a href="#" class="icon checked"></a>[% END %]</td>[% END %]
 [% IF visible_cols.Uc %]<td>[% ag.user_count %]</td>[% END %]
 [% IF visible_cols.Rc %]<td>[% href(ag.href_view_contests, ag.ref_count) %]</td>[% END %]
 </tr>
