@@ -105,6 +105,7 @@ my $main_routes = {
     acc_group_add_users => [ \&CATS::UI::AccGroups::acc_group_add_users_frame,
         group => integer, logins_to_add => str, make_hidden => bool, by_login => bool,
         source_cid => integer, from_contest => bool, include_ooc => bool,
+        source_group_id => integer, from_group => bool, include_admins => bool,
     ],
 
     problems => [
@@ -204,6 +205,7 @@ my $main_routes = {
     users_add_participants => [ \&CATS::UI::Users::users_add_participants_frame,
         logins_to_add => str, make_jury => bool, by_login => bool,
         source_cid => integer, from_contest => bool, include_ooc => bool,
+        source_group_id => integer, from_group => bool, include_admins => bool,
     ],
     users_new => \&CATS::UI::UserDetails::users_new_frame,
     users_edit => [ \&CATS::UI::UserDetails::users_edit_frame, uid => integer, ],

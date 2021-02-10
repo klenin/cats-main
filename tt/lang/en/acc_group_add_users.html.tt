@@ -5,7 +5,11 @@
     make_hidden => 'add and hide',
     view_added => 'view added participants',
     by_login => 'Add by logins',
+    contest => 'Contest',
     from_contest => 'Add from contest',
     include_ooc => 'including out-of-contest',
+    group => 'Group',
+    from_group => 'Add from group',
+    include_admins => 'including admins',
   })
 %]

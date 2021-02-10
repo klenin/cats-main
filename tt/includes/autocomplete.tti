@@ -21,8 +21,11 @@ var AutoComplete = (function() {
   };
 
   var formatResult = {
+    acc_groups: function (suggestion, currentValue) {
+      return bold_substr(suggestion.data.name, currentValue);
+    },
     contest_tags: function (suggestion, currentValue) {
-      return AutoComplete.bold_prefix(suggestion.data.name, currentValue);
+      return bold_prefix(suggestion.data.name, currentValue);
     },
     contests: function (suggestion, currentValue) {
       return bold_substr(suggestion.data.title, currentValue);

@@ -224,13 +224,22 @@ sub _accounts_by_contest {
     ));
 }
 
+sub _accounts_by_acc_group {
+    my ($group_id, $include_admins) = @_;
+    $dbh->selectcol_arrayref(_u $sql->select('acc_group_accounts', 'account_id',
+        { acc_group_id => $group_id, $include_admins ? () : (is_admin => 0) }
+    ));
+}
+
 sub acc_group_add_users_frame {
     my ($p) = @_;
     $is_root && $p->{group} or return;
     init_template($p, 'acc_group_add_users.html.tt');
     my $accounts =
         $p->{by_login} ? _accounts_by_login($p->{logins_to_add}) :
-        $p->{source_cid} ? _accounts_by_contest($p->{source_cid}, $p->{include_ooc}) : undef;
+        $p->{source_cid} ? _accounts_by_contest($p->{source_cid}, $p->{include_ooc}) :
+        $p->{source_group_id} ? _accounts_by_acc_group($p->{source_group_id}, $p->{include_admins}) :
+        undef;
     $accounts = $accounts && _add_accounts($accounts, $p->{group}, $p->{make_hidden}) // [];
     msg(1221, scalar @$accounts) if @$accounts;
 
@@ -243,6 +252,7 @@ sub acc_group_add_users_frame {
         title_suffix => res_str(584),
         href_find_users => url_f('api_find_users', in_contest => 0),
         href_find_contests => url_f('api_find_contests'),
+        href_find_acc_groups => url_f('api_find_acc_groups'),
         submenu => [
             { href => url_f('acc_groups'), item => res_str(410) },
             { href => url_f(@url_p), item => res_str(526) },

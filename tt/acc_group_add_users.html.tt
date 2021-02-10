@@ -30,6 +30,19 @@
 </p>
 </form>
 
+<hr/>
+<form method="post" action="[% href_action %]">
+<div>
+<label>[% capt.group %]: <input name="source_group" id="source_group" size="100" class="bordered hidden" /></label>
+<label>Id: <input name="source_group_id" id="source_group_id" size="10" class="bordered" />
+</label>
+</div>
+<p>
+<button type="submit" class="button" name="from_group" value="1">[% capt.from_group %]</button>
+<label>[% checkbox_1('include_admins'); capt.include_admins %]</label>
+</p>
+</form>
+
 <script>
 $(function () {
   autocomplete($('#logins_to_add'), '[% href_find_users %]', { delimiter: ',' });
@@ -40,6 +53,15 @@ $(function () {
     onSelect: function (suggestion) {
       $('#source_cid').val(suggestion.data.id);
       $('#source_contest').text(suggestion.data.title);
+    },
+  });
+  var sg = $('#source_group');
+  sg.removeClass('hidden');
+  autocomplete(sg, '[% href_find_acc_groups %]', {
+    formatResult: AutoComplete.formatResult.acc_groups,
+    onSelect: function (suggestion) {
+      $('#source_group_id').val(suggestion.data.id);
+      $('#source_group').text(suggestion.data.name);
     },
   });
 });

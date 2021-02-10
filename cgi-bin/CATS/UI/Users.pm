@@ -140,13 +140,19 @@ sub users_add_participants_frame {
             $p->{make_jury} && $user->privs->{grant_jury});
         $t->param(CATS::User::logins_maybe_added($p, [ 'users' ], $aids // []));
     }
-    CATS::User::copy_from_contest($p->{source_cid}, $p->{include_ooc}) if $p->{from_contest};
+    elsif ($p->{from_contest}) {
+        CATS::User::copy_from_contest($p->{source_cid}, $p->{include_ooc});
+    }
+    elsif ($p->{from_group}) {
+        CATS::User::copy_from_acc_group($p->{source_group_id}, $p->{include_admins});
+    }
     $t->param(
         href_action => url_f('users_add_participants'),
         title_suffix => res_str(584),
         users_submenu,
         href_find_users => url_f('api_find_users', in_contest => 0),
         href_find_contests => url_f('api_find_contests'),
+        href_find_acc_groups => url_f('api_find_acc_groups'),
     );
 }
 

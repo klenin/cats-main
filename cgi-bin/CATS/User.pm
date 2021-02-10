@@ -85,7 +85,7 @@ sub add_to_contest {
     $p{contest_id} && $p{account_id} or die;
     $dbh->do(_u $sql->insert('contest_accounts', {
         id => new_id, contest_id => $p{contest_id}, account_id => $p{account_id}, site_id => $p{site_id},
-        is_jury => $p{is_jury} || 0, is_pop => 0, is_hidden => $p{is_hidden} || 0, is_ooc => $p{is_ooc},
+        is_jury => $p{is_jury} || 0, is_pop => 0, is_hidden => $p{is_hidden} || 0, is_ooc => $p{is_ooc} || 0,
         is_remote => $p{is_remote} || 0, is_site_org => $p{is_site_org} || 0,
         is_virtual => 0, diff_time => 0,
     }));
@@ -504,20 +504,8 @@ sub save_attributes_org {
     save_attributes_finalize($changed_count);
 }
 
-sub copy_from_contest {
-    my ($source_cid, $include_ooc) = @_;
-    $source_cid && $source_cid != $cid && $is_jury or return;
-    is_jury_in_contest(contest_id => $source_cid) or return;
-    my $sites = $dbh->selectall_hashref(q~
-        SELECT site_id FROM contest_sites WHERE contest_id = ?~, 'site_id', undef,
-        $cid);
-    my $ooc_cond = $include_ooc ? '' : ' AND is_ooc = 0';
-    my $source_users = $dbh->selectall_arrayref(qq~
-        SELECT account_id, site_id, is_ooc, is_remote, is_site_org
-        FROM contest_accounts
-        WHERE is_jury = 0 AND is_hidden = 0 AND is_virtual = 0$ooc_cond AND
-            contest_id = ?~, { Slice => {} },
-        $source_cid);
+sub _add_multiple {
+    my ($source_users, $sites) = @_;
     my $dest_sth = $dbh->prepare(q~
         SELECT 1 FROM contest_accounts WHERE contest_id = ? AND account_id = ?~);
     my ($count, $already) = (0, 0);
@@ -536,6 +524,34 @@ sub copy_from_contest {
     $dbh->commit if $count;
     msg(1096, $count);
     msg(1097, $already) if $already;
+}
+
+sub copy_from_contest {
+    my ($source_cid, $include_ooc) = @_;
+    $source_cid && $source_cid != $cid && $is_jury or return;
+    is_jury_in_contest(contest_id => $source_cid) or return;
+    my $sites = $dbh->selectall_hashref(q~
+        SELECT site_id FROM contest_sites WHERE contest_id = ?~, 'site_id', undef,
+        $cid);
+    my $ooc_cond = $include_ooc ? '' : ' AND is_ooc = 0';
+    my $source_users = $dbh->selectall_arrayref(qq~
+        SELECT account_id, site_id, is_ooc, is_remote, is_site_org
+        FROM contest_accounts
+        WHERE is_jury = 0 AND is_hidden = 0 AND is_virtual = 0$ooc_cond AND
+            contest_id = ?~, { Slice => {} },
+        $source_cid);
+    _add_multiple($source_users, $sites);
+}
+
+sub copy_from_acc_group {
+    my ($source_group_id, $include_admins) = @_;
+    $source_group_id && $is_jury or return;
+    my $admin_cond = $include_admins ? '' : ' AND is_admin = 0';
+    my $source_users = $dbh->selectall_arrayref(qq~
+        SELECT account_id FROM acc_group_accounts
+        WHERE acc_group_id = ?$admin_cond~, { Slice => {} },
+        $source_group_id);
+    _add_multiple($source_users, {});
 }
 
 sub submenu {
