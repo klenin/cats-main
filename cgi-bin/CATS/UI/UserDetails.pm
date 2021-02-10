@@ -128,10 +128,20 @@ sub user_stats_frame {
         $_->{start_date} = $db->format_date($_->{start_date});
     }
 
+    my $groups = $dbh->selectall_arrayref(q~
+        SELECT AG.id, AG.name, AGA.date_start, AGA.is_admin FROM acc_groups AG
+        INNER JOIN acc_group_accounts AGA ON AGA.acc_group_id = AG.id
+        WHERE AGA.account_id = ?~, { Slice => {} },
+        $p->{uid});
+    for (@$groups) {
+        $_->{href_acc_group_users} = url_f('acc_group_users', group => $_->{id}) if $is_root;
+    }
+
     _tokens($p);
     $t->param(
         CATS::User::submenu('user_stats', $p->{uid}, $u->{site_id}),
         %$u, contests => $contests,
+        groups => $groups,
         CATS::IP::linkify_ip($u->{last_ip}),
         ($is_jury ? (href_edit => url_f('users_edit', uid => $p->{uid})) : ()),
         ($user->privs->{edit_sites} ? (

@@ -10,6 +10,7 @@
     solved => 'решённые',
     contests => 'Турниры',
     send_message => 'сообщение',
+    groups => 'Группы',
     tokens => 'Токены',
     make_token => 'создать токен',
   })

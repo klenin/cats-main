@@ -10,6 +10,7 @@
     solved => 'solved',
     contests => 'Contests',
     send_message => 'message',
+    groups => 'Groups',
     tokens => 'Tokens',
     make_token => 'make token',
   })

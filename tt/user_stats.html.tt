@@ -27,6 +27,18 @@
 [%- END %]
 </table>
 
+[% IF groups %]
+<h3>[% capt.groups %]</h3>
+<table class="internal_borders padded">
+[% FOREACH g IN groups -%]
+<tr>
+<td>[% g.date_start %]</td>
+<td>[% maybe_href(g.href_acc_group_users, g.name); '* ' IF g.is_admin && user.privs.is_root %]</td>
+</tr>
+[%- END %]
+</table>
+[% END %]
+
 [% IF tokens %]
 <h3>[% capt.tokens %]</h3>
 <form method="post" enctype="multipart/form-data" action="[% href_make_token %]">
