@@ -250,4 +250,17 @@ sub acc_group_add_users_frame {
     );
 }
 
+sub find_acc_groups_api {
+    my ($p) = @_;
+    my $acc_groups = $dbh->selectall_arrayref(qq~
+        SELECT AG.id, AG.name FROM acc_groups AG
+        WHERE POSITION(? IN AG.name) > 0 AND AG.is_actual = 1
+        ORDER BY AG.name
+        $CATS::DB::db->{LIMIT} 100~, { Slice => {} },
+        $p->{query});
+    $p->print_json({ suggestions =>
+        [ map { value => $_->{name}, data => $_ }, @$acc_groups ]
+    });
+}
+
 1;

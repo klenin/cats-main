@@ -96,6 +96,7 @@ my $main_routes = {
         delete => integer, saved => integer,
         add => bool, remove => bool, check => array_of integer,
     ],
+    api_find_acc_groups => [ \&CATS::UI::AccGroups::find_acc_groups_api, query => str, ],
     acc_groups_edit => [ \&CATS::UI::AccGroups::acc_groups_edit_frame,
         $CATS::UI::AccGroups::form->route, ],
     acc_group_users => [ \&CATS::UI::AccGroups::acc_group_users_frame,
