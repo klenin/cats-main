@@ -246,6 +246,9 @@ sub get_sources_info {
     for (keys %$req_tree) {
         my $r = $req_tree->{$_};
         $r->{sha1} = Digest::SHA::sha1_hex($r->{src} // '');
+        $r->{src} = join "\n",
+            map CATS::Similarity::preprocess_line({ collapse_idents => 1 }), split "\n", $r->{src}
+            if $p->web_param('preprocess');
         $r->{is_jury} = $is_jury_cached->($r->{contest_id});
         $r->{is_jury} || $r->{account_id} == ($uid || 0) ||
             $p->{hash} && $p->{hash} eq $r->{sha1} ||
