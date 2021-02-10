@@ -43,7 +43,7 @@ sub validate {
             my $error = $v->($value, $self);
             return $error if $error;
         }
-        elsif ($value !~ $v) {
+        elsif (($value // '') !~ $v) {
             return res_str(1198, $self->caption_msg, $v);
         }
     }
