@@ -90,6 +90,7 @@ sub acc_groups_frame {
             href_edit=> url_f('acc_groups_edit', id => $row->{id}),
             href_delete => url_f('acc_groups', 'delete' => $row->{id}),
             href_view_users => url_f('acc_group_users', group => $row->{id}),
+            href_view_users_in_contest => url_f('users', search => "in_group($row->{id})"),
             href_view_contests => url_f('contests', search => "has_group($row->{id})"),
         );
     };
