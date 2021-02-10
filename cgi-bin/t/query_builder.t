@@ -5,7 +5,7 @@ use Encode;
 use File::Spec;
 use FindBin;
 use Test::Exception;
-use Test::More tests => 36;
+use Test::More tests => 37;
 
 use lib File::Spec->catdir($FindBin::Bin, '..');
 use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
@@ -93,6 +93,8 @@ is_deeply qb_mask('zz??'), { zz => qr/^$/i }, 'mask NULL';
     is_deeply $qb->make_where, { -and => [ \[ $sq, 'x_1' ] ] }, 'db subquery digit underscore';
     $qb->parse_search(Encode::decode_utf8('has_v(.5)'));
     is_deeply $qb->make_where, { -and => [ \[ $sq, '.5' ] ] }, 'db subquery start dot';
+    $qb->parse_search(Encode::decode_utf8('has_v(a-b)'));
+    is_deeply $qb->make_where, { -and => [ \[ $sq, 'a-b' ] ] }, 'db subquery minus';
 }
 
 1;
