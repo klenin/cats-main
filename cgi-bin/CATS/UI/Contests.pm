@@ -633,7 +633,7 @@ sub find_contests_api {
     my ($p) = @_;
     my $contests = $dbh->selectall_arrayref(qq~
         SELECT C.id, C.title FROM contests C
-        WHERE C.title CONTAINING ? AND EXISTS (
+        WHERE POSITION(? IN C.title) > 0 AND EXISTS (
             SELECT 1 FROM contest_accounts CA
             WHERE CA.contest_id = C.id AND CA.account_id = ? AND CA.is_jury = 1)
             ORDER BY C.title
