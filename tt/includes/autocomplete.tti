@@ -20,6 +20,19 @@ var AutoComplete = (function() {
       escape(s);
   };
 
+  var formatResult = {
+    contest_tags: function (suggestion, currentValue) {
+      return AutoComplete.bold_prefix(suggestion.data.name, currentValue);
+    },
+    contests: function (suggestion, currentValue) {
+      return bold_substr(suggestion.data.title, currentValue);
+    },
+    users: function (suggestion, currentValue) {
+      return bold_prefix(suggestion.data.login, currentValue) +
+        ' (' + bold_prefix(suggestion.data.team_name, currentValue) + ')';
+    },
+  };
+
   var apply = function(input, url, extra) {
     var params = {
       minChars: 2,
@@ -27,10 +40,7 @@ var AutoComplete = (function() {
       showNoSuggestionNotice: true,
       noSuggestionNotice: '[% capt.no_suggestion %]',
       serviceUrl: url,
-      formatResult: function (suggestion, currentValue) {
-        return bold_prefix(suggestion.data.login, currentValue) +
-          ' (' + bold_prefix(suggestion.data.team_name, currentValue) + ')';
-      }
+      formatResult: formatResult.users,
     };
     if (extra)
       for (var p in extra)
@@ -44,9 +54,10 @@ var AutoComplete = (function() {
   };
 
   return {
-    bold_prefix: bold_prefix,
-    bold_substr: bold_substr,
     apply: apply,
+    bold_substr: bold_substr,
+    bold_prefix: bold_prefix,
+    formatResult: formatResult,
   };
 })();
 

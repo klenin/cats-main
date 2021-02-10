@@ -113,9 +113,7 @@ END %]
 </div>
 <script>
 $(function() { autocomplete($('#tag_name'), '[% href_find_tags %]', {
-  formatResult: function (suggestion, currentValue) {
-    return AutoComplete.bold_prefix(suggestion.data.name, currentValue);
-  },
+  formatResult: AutoComplete.formatResult.contest_tags,
 }); });
 </script>
 [%- END %]
