@@ -1,5 +1,7 @@
 [%
   capt.import({
     want_to_delete => 'Do you really want to exclude participant',
+    set_admin => 'Set admin',
+    set_hidden => 'Set hidden',
   })
 %]

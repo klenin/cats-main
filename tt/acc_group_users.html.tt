@@ -20,7 +20,7 @@ function delete_acc_group_user(href, name) {
   <a href="javascript:delete_acc_group_user('[% u.href_delete %]', '[% u.team_name.squote | html %]');" class="icon delete"></a>
   <a href="[% u.href_edit %]" class="icon edit"></a>
 [% END %]
-  <input type="checkbox" name="check" value="[% u.id %]" />
+  <input type="checkbox" name="user_selection" value="[% u.account_id %]" />
 </td>
 <td>[% u.login | html %]</td>
 <td>[% href(u.href_stats, u.team_name) %]</td>
@@ -33,8 +33,12 @@ function delete_acc_group_user(href, name) {
 [% END %]
 </table>
 <br/>
-<button name="add" value="1" class="button">[% capt.add %]</button>
-<button name="remove" value="1" class="button">[% capt.remove %]</button>
+<div class="send_message action_group">
+<input type="checkbox" name="is_admin" value="1"><button name="set_admin" value="1" class="button">[% capt.set_admin %]</button>
+</div>
+<div class="send_message action_group">
+<input type="checkbox" name="is_hidden" value="1"><button name="set_hidden" value="1" class="button">[% capt.set_hidden %]</button>
+</div>
 [% PROCESS includes/pages.tti %]
 </form>
 

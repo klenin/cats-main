@@ -101,6 +101,20 @@ sub acc_groups_frame {
     $t->param(submenu => [ CATS::References::menu('acc_groups') ], editable => $is_root);
 }
 
+sub _set_field {
+    my ($p, $field) = @_;
+    my $set_sth = $dbh->prepare(qq~
+        UPDATE acc_group_accounts SET $field = ?
+        WHERE $field <> ? AND acc_group_id = ? AND account_id = ?~);
+    my $value = $p->{$field} ? 1 : 0;
+    my $count = 0;
+    for (@{$p->{user_selection}}) {
+        $count += $set_sth->execute($value, $value, $p->{group}, $_);
+    }
+    $dbh->commit if $count;
+    msg(1018, $count);
+}
+
 sub acc_group_users_frame {
     my ($p) = @_;
     init_template($p, 'acc_group_users');
@@ -109,6 +123,9 @@ sub acc_group_users_frame {
     my $group_name = $dbh->selectrow_array(q~
         SELECT name FROM acc_groups WHERE id = ?~, undef,
         $p->{group}) or return;
+
+    _set_field($p, 'is_admin') if $p->{set_admin};
+    _set_field($p, 'is_hidden') if $p->{set_hidden};
 
     if ($p->{delete_user}) {
         my $user_name = $dbh->selectrow_array(q~
@@ -133,7 +150,7 @@ sub acc_group_users_frame {
         { caption => res_str(608), order_by => 'team_name', width => '30%', checkbox => $is_root && '[name=sel]' },
         { caption => res_str(685), order_by => 'in_contest', width => '5%' },
         ($is_root ? (
-            { caption => res_str(610), order_by => 'is_admin', width => '5%' },
+            { caption => res_str(615), order_by => 'is_admin', width => '5%' },
             { caption => res_str(614), order_by => 'is_hidden', width => '5%' },
         ) : ()),
         { caption => res_str(600), order_by => 'date_start', width => '5%', col => 'Ds' },
