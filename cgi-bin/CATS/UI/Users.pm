@@ -26,6 +26,7 @@ sub users_submenu {
             { href => url_f('users_add_participants'), item => res_str(584) },
             ($is_root ?
                 { href => url_f('users_all_settings'), item => res_str(575) } : ()),
+            { href => url_f('acc_groups', search => 'in_contest(this)'), item => res_str(410) },
         ];
     }
     elsif ($user->{is_site_org}) {
@@ -264,6 +265,10 @@ sub users_frame {
             SELECT 1 FROM contest_accounts CA1 WHERE CA1.account_id = A.id AND CA1.contest_id = ?)~,
             m => 1213, t => q~SELECT title FROM contests WHERE id = ?~
         },
+        in_group => { sq => q~EXISTS (
+            SELECT 1 FROM acc_group_accounts AG WHERE AG.account_id = A.id AND AG.acc_group_id = ?)~,
+            m => 1226, t => q~SELECT name FROM acc_groups WHERE id = ?~
+        },
         used_ip => { sq => q~EXISTS(
             SELECT 1 FROM reqs R INNER JOIN events E ON E.id = R.id
             WHERE R.account_id = A.id AND R.contest_id = C.id AND E.ip LIKE '%' || ? || '%')~,
@@ -278,6 +283,18 @@ sub users_frame {
         site_id => 'COALESCE(CA.site_id, 0)',
     });
     $lv->define_enums({ site_id => { 'my' => $user->{site_id} } }) if $user->{site_id};
+    if ($is_jury) {
+        my $acc_groups = $dbh->selectall_arrayref(q~
+            SELECT AG.id, AG.name FROM acc_groups AG
+            INNER JOIN acc_group_contests AGC ON AGC.acc_group_id = AG.id
+            WHERE AGC.contest_id = ?~, { Slice => {} },
+            $cid);
+        if (@$acc_groups) {
+            my %acc_groups_h;
+            $acc_groups_h{$_->{name}} = $_->{id} for @$acc_groups;
+            $lv->define_enums({ in_group => \%acc_groups_h });
+        }
+    }
 
     my $fields = join ', ', @fields;
     my $rating_sql = !$lv->visible_cols->{Rt} ? 'NULL' : qq~

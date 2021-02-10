@@ -405,3 +405,4 @@
 1223 "Last offset start date must be no earlier than start date."
 1224 "Problems used before '%s'."
 1225 "Problems using development environment '%s'."
+1226 "Users from group '%s'."
