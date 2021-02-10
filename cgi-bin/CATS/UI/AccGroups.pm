@@ -237,6 +237,9 @@ sub acc_group_add_users_frame {
     my ($p) = @_;
     $is_root && $p->{group} or return;
     init_template($p, 'acc_group_add_users.html.tt');
+    my $group_name = $dbh->selectrow_array(q~
+        SELECT name FROM acc_groups WHERE id = ?~, undef,
+        $p->{group}) or return;
     my $accounts =
         $p->{by_login} ? _accounts_by_login($p->{logins_to_add}) :
         $p->{source_cid} ? _accounts_by_contest($p->{source_cid}, $p->{include_ooc}) :
@@ -251,6 +254,7 @@ sub acc_group_add_users_frame {
     }
     $t->param(
         href_action => url_f(acc_group_add_users => group => $p->{group}),
+        problem_title => $group_name,
         title_suffix => res_str(584),
         href_find_users => url_f('api_find_users', in_contest => 0),
         href_find_contests => url_f('api_find_contests'),
