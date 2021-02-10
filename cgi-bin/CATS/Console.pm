@@ -3,6 +3,7 @@ use warnings;
 
 package CATS::Console::Part;
 
+use CATS::AccGroups;
 use CATS::DB qw(:DEFAULT $db);
 use CATS::Globals qw($cid $is_root);
 use CATS::Problem::Utils;
@@ -196,6 +197,9 @@ sub console_searches {
         tested_on => { sq => qq~EXISTS ($tested_on_sql)~, m => 1199, t => undef },
         not_tested_on => { sq => qq~NOT EXISTS ($tested_on_sql)~, m => 1200, t => undef },
     });
+
+    CATS::AccGroups::subquery($lv, 'R.account_id');
+    CATS::AccGroups::enum($lv) if $is_jury;
 }
 
 sub build_query {
