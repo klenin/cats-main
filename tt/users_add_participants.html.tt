@@ -8,7 +8,7 @@
 <form method="post" action="[% href_action %]">
 <div>
 <p>[% capt.logins_to_add %]:</p>
-<input name="logins_to_add" id="logins_to_add" size="100" value="[% logins_to_add | html %]"/>
+<input name="logins_to_add" id="logins_to_add" size="100" value="[% logins_to_add | html %]" class="bordered"/>
 </div>
 <p>
 <button type="submit" class="button" name="by_login" value="1">[% capt.by_login %]</button>
@@ -20,15 +20,30 @@
 <hr/>
 <form method="post" action="[% href_action %]">
 <div>
-<select name="source_cid"><option>&nbsp;</option>
-[% FOREACH c IN contests; option(c.id, c.title); END %]
-</select>
+<input name="source_contest" id="source_contest" size="100" class="bordered hidden" />
+<label>Id: <input name="source_cid" id="source_cid" size="10" class="bordered" />
+</label>
 </div>
+<p>
 <button type="submit" class="button" name="from_contest" value="1">[% capt.from_contest %]</button>
 <label>[% checkbox_1('include_ooc'); capt.include_ooc %]</label>
+</p>
 </form>
 
 <script>
-$(function () { autocomplete($('#logins_to_add'), '[% href_find_users %]', { delimiter: ',' }); });
+$(function () {
+  autocomplete($('#logins_to_add'), '[% href_find_users %]', { delimiter: ',' });
+  var sc = $('#source_contest');
+  sc.removeClass('hidden');
+  autocomplete(sc, '[% href_find_contests %]', {
+    formatResult: function (suggestion, currentValue) {
+      return bold_substr(suggestion.data.title, currentValue);
+    },
+    onSelect: function (suggestion) {
+      $('#source_cid').val(suggestion.data.id);
+      $('#source_contest').text(suggestion.data.title);
+    },
+  });
+});
 </script>
 [% PROCESS includes/menu_end.tti %]

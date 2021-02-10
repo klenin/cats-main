@@ -141,19 +141,12 @@ sub users_add_participants_frame {
         $t->param(CATS::User::logins_maybe_added($p, [ 'users' ], $aids // []));
     }
     CATS::User::copy_from_contest($p->{source_cid}, $p->{include_ooc}) if $p->{from_contest};
-    my $contests = $dbh->selectall_arrayref(q~
-        SELECT C.id, C.title FROM contests C
-        WHERE C.id <> ? AND EXISTS (
-            SELECT 1 FROM contest_accounts CA
-            WHERE CA.contest_id = C.id AND CA.account_id = ? AND CA.is_jury = 1)
-            ORDER BY C.start_date DESC~, { Slice => {} },
-        $cid, $uid);
     $t->param(
         href_action => url_f('users_add_participants'),
         title_suffix => res_str(584),
         users_submenu,
-        contests => $contests,
         href_find_users => url_f('api_find_users', in_contest => 0),
+        href_find_contests => url_f('api_find_contests'),
     );
 }
 

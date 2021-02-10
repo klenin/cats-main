@@ -2,11 +2,20 @@
 [%- PROCESS "lang/$lang/autocomplete.tti" -%]
 <script>
 function _escape(s) { return s.replace(/</g, '&lt;').replace(/\"/g, '&quot;'); }
+function _escape_all(a) { return $.map(a, _escape); }
+function _fmt(fmt, a) { return fmt.replace(/{(\d+)}/g, function(m, i) { return a[i]; }); }
 
 function bold_prefix(s, prefix) {
-  var len = prefix.length;
-  var s_prefix = s.substr(0, len);
-  return s_prefix === prefix ? '<b>' + _escape(prefix) + '</b>' + _escape(s.substr(len)) : _escape(s);
+  return s.substr(0, prefix.length) === prefix ?
+    _fmt('<b>{0}</b>{1}', _escape_all([ prefix, s.substr(prefix.length) ])) :
+    _escape(s);
+}
+
+function bold_substr(s, substr) {
+  var p = s.indexOf(substr);
+  return p >= 0 ?
+    _fmt('{0}<b>{1}</b>{2}', _escape_all([ s.substr(0, p), substr, s.substr(p + substr.length) ])) :
+    _escape(s);
 }
 
 function autocomplete(input, url, extra) {

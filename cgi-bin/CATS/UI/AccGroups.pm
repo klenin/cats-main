@@ -236,18 +236,11 @@ sub acc_group_add_users_frame {
     if ($p->{by_login}) {
         $t->param(CATS::User::logins_maybe_added($p, \@url_p, $accounts));
     }
-    my $contests = $dbh->selectall_arrayref(q~
-        SELECT C.id, C.title FROM contests C
-        WHERE EXISTS (
-            SELECT 1 FROM contest_accounts CA
-            WHERE CA.contest_id = C.id AND CA.account_id = ? AND CA.is_jury = 1)
-            ORDER BY C.start_date DESC~, { Slice => {} },
-        $uid);
     $t->param(
         href_action => url_f(acc_group_add_users => group => $p->{group}),
         title_suffix => res_str(584),
-        contests => $contests,
         href_find_users => url_f('api_find_users', in_contest => 0),
+        href_find_contests => url_f('api_find_contests'),
         submenu => [
             { href => url_f('acc_groups'), item => res_str(410) },
             { href => url_f(@url_p), item => res_str(526) },
