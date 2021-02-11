@@ -166,7 +166,7 @@ sub acc_group_users_frame {
         ),
         { caption => res_str(600), order_by => 'date_start', width => '5%', col => 'Ds' },
         { caption => res_str(631), order_by => 'date_finish', width => '5%', col => 'Df' },
-    ]);
+    ])->date_fields(qw(date_start date_finish));
     $lv->define_db_searches([ qw(login team_name account_id is_admin is_hidden) ]);
     $lv->define_db_searches({ id => 'account_id' });
 

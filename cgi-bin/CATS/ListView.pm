@@ -342,6 +342,7 @@ sub define_columns {
         col_defs => $col_defs,
         can_change_cols => ($is_jury && scalar %{$self->{visible_cols}}),
         visible_cols => $self->{visible_cols});
+    $self;
 }
 
 1;
