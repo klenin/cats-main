@@ -11,9 +11,12 @@ use CATS::Messages qw(msg res_str);
 sub new {
     my ($class, %p) = @_;
     my $self = {
+        query => '',
         search => [],
         search_subqueries => [],
+        search_defaults => [],
         db_searches => {},
+        default_searches => [],
         subqueries => {},
         enums => {},
     };
@@ -21,18 +24,23 @@ sub new {
 }
 
 sub parse_search {
-    my ($self, $search) = @_;
+    my ($self, $query) = @_;
+    $self->{query} = $query;
     my $ident = '[a-zA-Z][a-zA-Z0-9_]*';
     $self->{search} = [];
     $self->{search_subqueries} = [];
-    for (split /,\s*/, $search) {
-        /^($ident)([!~^=><]?=|>|<|\?\??|!~|\!\^)(.*)$/ ? push @{$self->{search}}, [ $1, $3, $2 ] :
+    $self->{search_defaults} = [];
+    for (split /,\s*/, $query) {
+        /^($ident|\*)([!~^=><]?=|>|<|\?\??|!~|\!\^)(.*)$/ ?
+            push @{$self->{search}}, [ $1 eq '*' ? '' : $1, $3, $2 ] :
         /^(\!)?($ident)\(((?:\p{L}|\d|[_.-])+)\)$/ ?
             push @{$self->{search_subqueries}}, [ $2, $3, $1 ? 1 : 0 ] :
-        push @{$self->{search}}, [ '', $_, '' ];
+            push @{$self->{search_defaults}}, $_;
     }
     $self;
 }
+
+sub search { $_[0]->{search} }
 
 sub number_like_filter {
     my ($v) = @_;
@@ -46,7 +54,7 @@ sub regex_op {
     $op eq '!=' ? "^(?!\Q$v\E\$).*\$" :
     $op eq '^=' ? "^\Q$v\E" :
     $op eq '!^' ? "^(?!\Q$v\E).*\$" :
-    $op eq '~=' || $op eq '' ? "\Q$v\E" :
+    $op eq '~=' ? "\Q$v\E" :
     $op eq '!~' ? "^(?!.*\Q$v\E)" :
     $op eq '?' ? '.' :
     $op eq '??' ? '^$' :
@@ -69,16 +77,31 @@ sub sql_op {
 }
 
 # <search> ::= <condition> { ',' <condition> }
-# <condition> ::= <value> | <field name> { '=' | '==' | '!=' | '^=' | '~=' | '!~' } <value> | <func>(<integer>)
+# <condition> ::=
+#     <value> |
+#     { <field name> | '*' } <op> <value> |
+#     <field name> <suffix> |
+#     { '!' | } <func name>(<atom>)
+# <op> ::= '=' | '==' | '!=' | '^=' | '!^' | '~=' | '!~' | '>' | '<' | '>=' | '<='
+# <suffix> = '?' | '??'
+# <atom> = <number> | <identifier>
 # Spaces are significant around values, but not around keys.
-# Values without field name are searched in all fields.
+# Values without field name are searched in default fields.
+# Values with '*' field name are searched in all fields.
 # Different fields are AND'ed, multiple values of the same field are OR'ed.
 sub get_mask {
     my ($self) = @_;
     my %mask;
-    for my $q (@{$self->{search}}) {
+    for my $q (@{$self->search}) {
         my ($k, $v, $op) = @$q;
         $self->{db_searches}->{$k} or push @{$mask{$k} ||= []}, regex_op($op, $v);
+    }
+    for my $v (@{$self->{search_defaults}}) {
+        my $re = regex_op('~=', $v);
+        for my $k (@{$self->{default_searches}}) {
+            $self->{db_searches}->{$k} or push @{$mask{$k} ||= []}, $re;
+        }
+        @{$self->{default_searches}} or push @{$mask{''} ||= []}, $re;
     }
     for (values %mask) {
         my $s = join '|', @$_;
@@ -101,13 +124,17 @@ sub _where_msg {
 
 sub make_where {
     my ($self) = @_;
+    my @cond;
+
     my %result;
-    for my $q (@{$self->{search}}) {
+    for my $q (@{$self->search}) {
         my ($k, $v, $op) = @$q;
         my $f = $self->{db_searches}->{$k} or next;
         $v = $self->{enums}->{$k}->{$v} // $v;
         push @{$result{$f} //= []}, sql_op($op, $v);
     }
+    push @cond, \%result if %result;
+
     my (@sq_list, @sq_unknown);
     for my $d (@{$self->{search_subqueries}}) {
         my ($name, $value, $negate) = @$d;
@@ -120,7 +147,19 @@ sub make_where {
         push @sq_list, $negate ? { -not_bool => $sql_sq } : $sql_sq;
     }
     msg(1143, join ',', @sq_unknown) if @sq_unknown;
-    @sq_list ? { -and => [ (%result ? \%result : ()), @sq_list ] } : \%result;
+    push @cond, @sq_list;
+
+    my %default_result;
+    for my $v (@{$self->{search_defaults}}) {
+        for my $k (@{$self->{default_searches}}) {
+            my $f = $self->{db_searches}->{$k} or next;
+            $v = $self->{enums}->{$k}->{$v} // $v;
+            push @{$default_result{$f} //= []}, sql_op('~=', $v);
+        }
+    }
+    push @cond, { -or => [ %default_result ] } if %default_result;
+
+    @cond > 1 ? { -and => \@cond } : @cond ? $cond[0] : {};
 }
 
 sub add_db_search {
@@ -144,6 +183,16 @@ sub define_db_searches {
     else {
         die;
     }
+}
+
+sub default_searches {
+    my ($self, $searches, %opts) = @_;
+    if (!$opts{nodb}) {
+        for (@$searches) {
+            $self->{db_searches}->{$_} or croak "Unknown search: $_";
+        }
+    }
+    push @{$self->{default_searches}}, @$searches;
 }
 
 # sql OR { sq => sql, m => msg id, t => msg arguments sql }
@@ -170,8 +219,8 @@ sub extract_search_values {
     my @result = map {
         my ($k, $v) = @$_;
         $self->{enums}->{$k}->{$v} // $v;
-    } grep $_->[0] eq $name, @{$self->{search}};
-    $self->{search} = [ grep $_->[0] ne $name, @{$self->{search}} ];
+    } grep $_->[0] eq $name, @{$self->search};
+    $self->{search} = [ grep $_->[0] ne $name, @{$self->search} ];
     \@result;
 }
 
@@ -183,7 +232,7 @@ sub search_subquery_value {
 
 sub searches_subset_of {
     my ($self, $set) = @_;
-    for (@{$self->{search}}, @{$self->{search_subqueries}}) {
+    for (@{$self->search}, @{$self->{search_subqueries}}) {
         $set->{$_->[0]} or return 0;
     }
     1;
