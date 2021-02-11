@@ -11,34 +11,40 @@ function delete_acc_group_user(href, name) {
 [% PROCESS includes/listview_header.tti %]
 
 <table class="listview bordered highlight">
-[% PROCESS includes/listview_col_defs.tti sel_col = 1 %]
+[% PROCESS includes/listview_col_defs.tti sel_col = can_edit %]
 
 [% FOREACH u IN acc_group_users %]
 <tr class="[% loop.parity() %]">
+[% IF can_edit -%]
 <td class="nobr sel_col">
-[% IF user.is_root %]
   <a href="javascript:delete_acc_group_user('[% u.href_delete %]', '[% u.team_name.squote | html %]');" class="icon delete"></a>
+[% IF user.is_root -%]
   <a href="[% u.href_edit %]" class="icon edit"></a>
-[% END %]
+[%- END %]
   <input type="checkbox" name="user_selection" value="[% u.account_id %]" />
 </td>
-<td>[% u.login | html %]</td>
+[%- END %]
+[% IF can_edit %]<td>[% u.login | html %]</td>[% END %]
 <td>[% href(u.href_stats, u.team_name) %]</td>
 <td>[% IF u.in_contest %]<a href="#" class="icon checked"></a>[% END %]</td>
-<td>[% IF u.is_admin %]<a href="#" class="icon checked"></a>[% END %]</td>
-<td>[% IF u.is_hidden %]<a href="#" class="icon checked"></a>[% END %]</td>
+[% IF can_edit %]<td>[% IF u.is_admin %]<a href="#" class="icon checked"></a>[% END %]</td>[% END %]
+[% IF can_edit %]<td>[% IF u.is_hidden %]<a href="#" class="icon checked"></a>[% END %]</td>[% END %]
 [% IF visible_cols.Ds %]<td>[% u.date_start %]</td>[% END %]
 [% IF visible_cols.Df %]<td>[% u.date_finish %]</td>[% END %]
 </tr>
 [% END %]
 </table>
+[% IF can_edit -%]
 <br/>
+[% IF user.privs.is_root -%]
 <div class="send_message action_group">
 <input type="checkbox" name="is_admin" value="1"><button name="set_admin" value="1" class="button">[% capt.set_admin %]</button>
 </div>
+[% END -%]
 <div class="send_message action_group">
 <input type="checkbox" name="is_hidden" value="1"><button name="set_hidden" value="1" class="button">[% capt.set_hidden %]</button>
 </div>
+[% END -%]
 [% PROCESS includes/pages.tti %]
 </form>
 

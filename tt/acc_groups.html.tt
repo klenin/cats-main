@@ -16,11 +16,13 @@ function delete_acc_group(href, name) {
 [% FOREACH ag IN acc_groups %]
 <tr class="[% loop.parity() %]">
 <td class="nobr sel_col">
-[% IF user.is_root %]
-  <a href="javascript:delete_acc_group('[% ag.href_delete %]', '[% ag.name.squote | html %]');" class="icon delete"></a>
-  <a href="[% ag.href_edit %]" class="icon edit"></a>
-[% END %]
   <input type="checkbox" name="check" value="[% ag.id %]" />
+[% IF user.privs.is_root -%]
+  <a href="javascript:delete_acc_group('[% ag.href_delete %]', '[% ag.name.squote | html %]');" class="icon delete"></a>
+[% END -%]
+[% IF ag.href_edit -%]
+  <a href="[% ag.href_edit %]" class="icon edit"></a>
+[% END -%]
 </td>
 <td>[% href(ag.href_view_users, ag.name) %]</td>
 [% IF visible_cols.Ds %]<td>[% ag.descr_prefix | html; '&hellip;' IF ag.descr_cut %]</td>[% END %]

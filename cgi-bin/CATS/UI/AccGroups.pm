@@ -27,11 +27,20 @@ our $form = CATS::Form->new(
     msg_saved => 1215,
     msg_deleted => 1216,
     before_display => sub { $t->param(submenu => [ CATS::References::menu('acc_groups') ]) },
+    before_delete => sub { $is_root },
 );
+
+sub _can_edit_group {
+    my ($group_id) = @_;
+    $is_root || $group_id && $uid && $dbh->selectrow_array(q~
+        SELECT is_admin FROM acc_group_accounts
+        WHERE acc_group_id = ? AND account_id = ?~, undef,
+        $group_id, $uid);
+}
 
 sub acc_groups_edit_frame {
     my ($p) = @_;
-    $is_root or return;
+    _can_edit_group($p->{id}) or return;
     init_template($p, 'acc_groups_edit.html.tt');
     $form->edit_frame($p, redirect => [ 'acc_groups' ]);
 }
@@ -41,10 +50,11 @@ sub acc_groups_frame {
 
     $is_jury or return;
     $form->delete_or_saved($p) if $is_root;
+
     init_template($p, 'acc_groups');
     my $lv = CATS::ListView->new(web => $p, name => 'acc_groups', url => url_f('acc_groups'));
 
-    CATS::Contest::Utils::add_remove_groups($p) if $p->{add} || $p->{remove};
+    CATS::Contest::Utils::add_remove_groups($p) if $is_jury && ($p->{add} || $p->{remove});
 
     $lv->default_sort(0)->define_columns([
         { caption => res_str(601), order_by => 'name', width => '30%' },
@@ -74,11 +84,13 @@ sub acc_groups_frame {
         SELECT AG.id, AG.name, AG.is_actual,
             (SELECT 1 FROM acc_group_contests AGC1
                 WHERE AGC1.acc_group_id = AG.id AND AGC1.contest_id = ?) AS is_used,
+            (SELECT is_admin FROM acc_group_accounts AGA2
+                WHERE AGA2.acc_group_id = AG.id AND AGA2.account_id = ?) AS is_admin,
             ($descr_sql) AS description,
             ($user_count_sql) AS user_count,
             ($ref_count_sql) AS ref_count
         FROM acc_groups AG WHERE 1 = 1 ~ . $lv->maybe_where_cond . $lv->order_by);
-    $sth->execute($cid, $lv->where_params);
+    $sth->execute($cid, $uid, $lv->where_params);
 
     my $descr_prefix_len = 50;
     my $fetch_record = sub {
@@ -87,8 +99,8 @@ sub acc_groups_frame {
             %$row,
             descr_prefix => substr($row->{description}, 0, $descr_prefix_len),
             descr_cut => length($row->{description}) > $descr_prefix_len,
-            href_edit=> url_f('acc_groups_edit', id => $row->{id}),
-            href_delete => url_f('acc_groups', 'delete' => $row->{id}),
+            href_edit => ($is_root || $row->{is_admin}) && url_f('acc_groups_edit', id => $row->{id}),
+            href_delete => $is_root && url_f('acc_groups', 'delete' => $row->{id}),
             href_view_users => url_f('acc_group_users', group => $row->{id}),
             href_view_users_in_contest => url_f('users', search => "in_group($row->{id})"),
             href_view_contests => url_f('contests', search => "has_group($row->{id})"),
@@ -118,16 +130,15 @@ sub _set_field {
 sub acc_group_users_frame {
     my ($p) = @_;
     init_template($p, 'acc_group_users');
-    $is_root && $p->{group} or return;
-
-    my $group_name = $dbh->selectrow_array(q~
+    my $group_name = $p->{group} && $dbh->selectrow_array(q~
         SELECT name FROM acc_groups WHERE id = ?~, undef,
         $p->{group}) or return;
+    my $can_edit = _can_edit_group($p->{group});
 
-    _set_field($p, 'is_admin') if $p->{set_admin};
-    _set_field($p, 'is_hidden') if $p->{set_hidden};
+    _set_field($p, 'is_admin') if $p->{set_admin} && $is_root;
+    _set_field($p, 'is_hidden') if $p->{set_hidden} && $can_edit;
 
-    if ($p->{delete_user}) {
+    if ($p->{delete_user} && $can_edit) {
         my $user_name = $dbh->selectrow_array(q~
             SELECT A.team_name
             FROM accounts A INNER JOIN acc_group_accounts AGA ON A.id = AGA.account_id
@@ -144,15 +155,15 @@ sub acc_group_users_frame {
     my $lv = CATS::ListView->new(
         web => $p, name => 'acc_group_users', url => url_f('acc_group_users', group => $p->{group}));
 
-    $lv->default_sort($is_root ? 1 : 0)->define_columns([
-        ($is_root ?
-            { caption => res_str(616), order_by => 'login', width => '20%' } : ()),
-        { caption => res_str(608), order_by => 'team_name', width => '30%', checkbox => $is_root && '[name=sel]' },
+    $lv->default_sort($is_root ? 1 : 0)->define_columns([ grep $_,
+        $can_edit && +{ caption => res_str(616), order_by => 'login', width => '20%' },
+        { caption => res_str(608), order_by => 'team_name', width => '30%',
+            checkbox => $can_edit && '[name=sel]' },
         { caption => res_str(685), order_by => 'in_contest', width => '5%' },
-        ($is_root ? (
+        $can_edit && (
             { caption => res_str(615), order_by => 'is_admin', width => '5%' },
             { caption => res_str(614), order_by => 'is_hidden', width => '5%' },
-        ) : ()),
+        ),
         { caption => res_str(600), order_by => 'date_start', width => '5%', col => 'Ds' },
         { caption => res_str(631), order_by => 'date_finish', width => '5%', col => 'Df' },
     ]);
@@ -172,8 +183,10 @@ sub acc_group_users_frame {
     my $fetch_record = sub {
         my $row = $_[0]->fetchrow_hashref or return ();
         return (
-            href_delete => url_f('acc_group_users', group => $p->{group}, delete_user => $row->{account_id}),
-            href_edit => url_f('users_edit', uid => $row->{account_id}),
+            href_delete => $can_edit &&
+                url_f('acc_group_users', group => $p->{group}, delete_user => $row->{account_id}),
+            href_edit => $is_jury && $row->{in_contest} &&
+                url_f('users_edit', uid => $row->{account_id}),
             href_stats => url_f('user_stats', uid => $row->{account_id}),
             %$row,
          );
@@ -184,10 +197,12 @@ sub acc_group_users_frame {
     $sth->finish;
     $t->param(
         problem_title => $group_name,
-        submenu => [
-            { href => url_f('users_new', group => $p->{group}), item => res_str(541), new => 1 },
-            { href => url_f('acc_group_add_users', group => $p->{group}), item => res_str(584) },
-            { href => url_f('acc_groups'), item => res_str(410) },
+        can_edit => $can_edit,
+        submenu => [ grep $_,
+            $can_edit && (
+                { href => url_f('users_new', group => $p->{group}), item => res_str(541), new => 1 },
+                { href => url_f('acc_group_add_users', group => $p->{group}), item => res_str(584) }),
+            $is_jury && +{ href => url_f('acc_groups'), item => res_str(410) },
         ],
     );
 }
@@ -252,9 +267,9 @@ sub _accounts_by_acc_group {
 
 sub acc_group_add_users_frame {
     my ($p) = @_;
-    $is_root && $p->{group} or return;
+    _can_edit_group($p->{group}) or return;
     init_template($p, 'acc_group_add_users.html.tt');
-    my $group_name = $dbh->selectrow_array(q~
+    my $group_name = $p->{group} && $dbh->selectrow_array(q~
         SELECT name FROM acc_groups WHERE id = ?~, undef,
         $p->{group}) or return;
     my $accounts =
