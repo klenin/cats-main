@@ -22,6 +22,7 @@ sub import_sources_frame {
         { caption => res_str(643), order_by => '5', width => '10%' },
     ]);
     $lv->define_db_searches([ qw(PS.id guid stype code fname problem_id title contest_id) ]);
+    $lv->default_searches([ qw(guid fname title) ]);
     $lv->define_enums({
         stype => { reverse %cats::source_module_names },
     });

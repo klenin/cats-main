@@ -103,6 +103,7 @@ sub files_frame {
         { caption => res_str(634), order_by => 'last_modified', width => '15%', col => 'Lm' },
     ]);
     $lv->define_db_searches([ qw(id name guid description file_size) ]);
+    $lv->default_searches([ qw(name description) ]);
 
     my $sth = $dbh->prepare(qq~
         SELECT

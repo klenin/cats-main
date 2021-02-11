@@ -174,7 +174,7 @@ sub snippets_frame {
         { caption => res_str(632), order_by => 'finish_time', width => '10%', col => 'Ft' },
     ]);
 
-    $lv->define_db_searches([ 'code', 'name', 'text', 'team_name', 'S.id', 'cpid' ]);
+    $lv->define_db_searches([ qw(code name text team_name S.id cpid) ]);
     $lv->define_db_searches({
         # Disambiguate between snippets and contest_problems.
         problem_id => 'S.problem_id',
@@ -184,6 +184,7 @@ sub snippets_frame {
         problem_title => 'P.title',
         contest_title => 'C.title',
     });
+    $lv->default_searches([ qw(name text problem_title contest_title) ]);
     $lv->define_enums({ contest_id => { this => $cid } });
 
     my $finish_time = $lv->visible_cols->{Ft} ? qq~

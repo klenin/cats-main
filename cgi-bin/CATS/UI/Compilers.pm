@@ -73,6 +73,7 @@ sub compilers_frame {
     ]);
 
     $lv->define_db_searches($form->{sql_fields});
+    $lv->default_searches([ qw(code description) ]);
 
     my ($q, @bind) = $sql->select('default_de', [ 'id as did', @{$form->{sql_fields}} ],
         $is_jury ? $lv->where : { %{$lv->where}, in_contests => 1 });

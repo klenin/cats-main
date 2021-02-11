@@ -81,7 +81,8 @@ sub contest_wikis_frame {
         { caption => res_str(681), order_by => 'allow_edit', width => '15%', col => 'Ae' },
         { caption => res_str(682), order_by => 'ordering', width => '15%', col => 'Or' },
     ]);
-    #$lv->define_db_searches($form->{sql_fields});
+    $lv->define_db_searches([ qw (id wiki_id allow_edit ordering name ) ]);
+    $lv->default_searches([ qw(name) ]);
     my $sth = $dbh->prepare(q~
         SELECT CW.id, CW.wiki_id, CW.allow_edit, CW.ordering, W.name
         FROM contest_wikis CW

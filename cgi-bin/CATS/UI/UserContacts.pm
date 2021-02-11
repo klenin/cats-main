@@ -89,6 +89,8 @@ sub user_contacts_frame {
         { caption => res_str(670), order_by => 'is_actual', width => '15%', col => 'Ia' },
     ]);
     $lv->define_db_searches($user_contact_form->{sql_fields});
+    $lv->default_searches([ qw(handle) ]);
+
     my $public_cond = $editable ? '' : ' AND C.is_public = 1';
     my $sth = $dbh->prepare(qq~
         SELECT C.id, C.contact_type_id, C.handle, C.is_public, C.is_actual, CT.name AS type_name, CT.url

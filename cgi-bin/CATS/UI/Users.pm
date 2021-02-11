@@ -259,6 +259,7 @@ sub users_frame {
     $lv->define_db_searches([ @fields, qw(
         A.affiliation_year A.capitan_name A.git_author_email A.git_author_name A.tz_offset
     ) ]);
+    $lv->default_searches([ qw(login team_name) ]);
     $lv->define_db_searches([ qw(A.sid) ]) if $is_root;
     $lv->define_subqueries({
         in_contest => { sq => q~EXISTS (
@@ -391,6 +392,8 @@ sub users_all_settings_frame {
         { caption => res_str(661), order_by => 'team_name', width => '55%' },
     ]);
     $lv->define_db_searches([ qw(id login team_name last_login settings) ]);
+    $lv->default_searches([ qw(login team_name) ]);
+
     my $sth = $dbh->prepare(q~
         SELECT A.id, A.login, A.team_name, A.last_login, A.settings
         FROM accounts A

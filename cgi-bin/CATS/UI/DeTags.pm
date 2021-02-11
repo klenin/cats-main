@@ -95,6 +95,7 @@ sub de_tags_frame {
         { caption => res_str(641), order_by => 'de_count', width => '10%', col => 'Dc' },
     ]);
     $lv->define_db_searches([ qw(id name) ]);
+    $lv->default_searches([ qw(name) ]);
     $lv->define_subqueries({
         in_contest => { sq => qq~EXISTS (
             SELECT 1 FROM contest_de_tags CDT1

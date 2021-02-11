@@ -83,6 +83,7 @@ sub problems_all_frame {
             (SELECT LIST(DISTINCT CP1.tags) FROM contest_problems CP1
                 WHERE CP1.problem_id = P.id AND CP1.tags IS NOT NULL)~) : ()),
     });
+    $lv->default_searches([ qw(contest_title) ]);
     my $ok_wa_tl = $lv->visible_cols->{Ok} ? qq~
         SELECT
             $accepted_sql || ' / ' ||

@@ -483,6 +483,7 @@ sub problem_des_frame {
         { caption => res_str(641), order_by => 'description', width => '20%' },
     ]);
     $lv->define_db_searches([qw(stype name fname D.id code description)]);
+    $lv->default_searches([ qw(name code description) ]);
 
     my $sth = $dbh->prepare(q~
         SELECT

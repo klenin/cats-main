@@ -129,6 +129,7 @@ sub judges_frame {
         { caption => res_str(676), order_by => 'version', width => '25%', col => 'Vr' },
     ]);
     $lv->define_db_searches([ qw(J.id nick login version is_alive alive_date pin_mode account_id last_ip) ]);
+    $lv->default_searches([ qw(nick login) ]);
     my @pin_mode_values = qw(locked request contest any);
     $lv->define_enums({ pin_mode => { map { $pin_mode_values[$_] => $_ } 0 .. $#pin_mode_values } });
 

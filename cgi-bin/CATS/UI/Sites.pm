@@ -71,6 +71,7 @@ sub sites_edit_frame {
 sub common_searches {
     my ($lv) = @_;
     $lv->define_db_searches($form->{sql_fields});
+    $lv->default_searches([ qw(name region city) ]);
     my $name_sql = q~
         SELECT A.team_name FROM accounts A WHERE A.id = ?~;
     $lv->define_subqueries({

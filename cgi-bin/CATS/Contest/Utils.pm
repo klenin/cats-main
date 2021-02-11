@@ -89,6 +89,7 @@ sub _contest_searches {
         since_offset_start_until => 'CAST(CURRENT_TIMESTAMP - offset_start_until AS DOUBLE PRECISION)',
         duration_hours => 'CAST((finish_date - start_date) * 24 AS DECIMAL(15,1))',
     });
+    $p->{listview}->default_searches([ qw(title) ]);
     $p->{listview}->define_enums({
         rules => { icpc => 0, school => 1 },
         parent_id => { this => $cid },

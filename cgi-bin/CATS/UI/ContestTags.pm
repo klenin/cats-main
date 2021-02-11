@@ -50,6 +50,7 @@ sub contest_tags_frame {
         { caption => res_str(643), order_by => 'ref_count', width => '10%', col => 'Rc' },
     ]);
     $lv->define_db_searches([ qw(id name) ]);
+    $lv->default_searches([ qw(name) ]);
     $lv->define_subqueries({
         in_contest => { sq => qq~EXISTS (
             SELECT 1 FROM contest_contest_tags CCT1

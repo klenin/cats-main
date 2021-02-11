@@ -56,6 +56,7 @@ sub keywords_frame {
         { caption => res_str(643), order_by => 'ref_count', width => '10%', col => 'Rc' },
     ]);
     $lv->define_db_searches([ qw(K.id code name_ru name_en) ]);
+    $lv->default_searches([ qw(code name_ru name_en) ]);
 
     my $ref_count_sql = $lv->visible_cols->{Rc} ? q~
         SELECT COUNT(*) FROM problem_keywords PK WHERE PK.keyword_id = K.id~ : 'NULL';

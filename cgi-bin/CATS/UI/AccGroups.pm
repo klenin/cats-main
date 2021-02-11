@@ -65,6 +65,7 @@ sub acc_groups_frame {
         { caption => res_str(643), order_by => 'ref_count', width => '5%', col => 'Rc' },
     ]);
     $lv->define_db_searches([ qw(id name is_actual description) ]);
+    $lv->default_searches([ qw(name) ]);
     $lv->define_subqueries({
         in_contest => { sq => qq~EXISTS (
             SELECT 1 FROM acc_group_contests AGC
@@ -169,6 +170,7 @@ sub acc_group_users_frame {
     ])->date_fields(qw(date_start date_finish));
     $lv->define_db_searches([ qw(login team_name account_id is_admin is_hidden) ]);
     $lv->define_db_searches({ id => 'account_id' });
+    $lv->default_searches([ qw(login team_name) ]);
 
     my $sth = $dbh->prepare(q~
         SELECT A.login, A.team_name,

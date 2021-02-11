@@ -53,6 +53,7 @@ sub contact_types_frame {
     ]);
 
     $lv->define_db_searches($form->{sql_fields});
+    $lv->default_searches([ qw(name) ]);
 
     my ($q, @bind) = $sql->select('contact_types', [ 'id AS ct_id', @{$form->{sql_fields}} ], $lv->where);
     my $sth = $dbh->prepare("$q " . $lv->order_by);
