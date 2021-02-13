@@ -57,8 +57,9 @@ sub fb_connect {
         {
             LongReadLen => 10*1024*1024,
             RaiseError => 1,
+            FetchHashKeyName => 'NAME_lc',
             ib_timestampformat => '%Y-%m-%d %H:%M:00+10',
-            ib_dateformat => '%Y-%m-%d',            
+            ib_dateformat => '%Y-%m-%d',
         }
     ) or die "Cannot connect to firebird database: $DBI::errstr";
 }
@@ -92,13 +93,14 @@ sub find_table_index {
 
 sub bind_row {
     my ($pg, $sth, $row, $field_info) = @_;
-    foreach my $i (0 .. $#$field_info) {
+    my ($BLOB_SUBTYPE, $VARCHAR, $PG_BYTEA) = (261, 37, 17);
+    for my $i (0 .. $#$field_info) {
         my $fi = $field_info->[$i];
         my $data = $row->[$i];
         my $att = {};
-        if ($fi->[1] == 261 && $fi->[2] == 0) { # BLOB SUB_TYPE 0
-            $att = { pg_type => 17 };
-        } elsif ($fi->[1] == 37) { # VARCHAR
+        if ($fi->{type} == $BLOB_SUBTYPE && $fi->{subtype} == 0) {
+            $att = { pg_type => $PG_BYTEA };
+        } elsif ($fi->{type} == $VARCHAR) {
             $data = Encode::decode_utf8($data);
         } 
         $sth->bind_param($i + 1, $data, $att);
@@ -107,7 +109,7 @@ sub bind_row {
 
 sub handle_insert_error {
     my ($row_no, $row, $field_info) = @_;
-    my $row_info = $field_info->[0]->[0] eq 'ID'
+    my $row_info = $field_info->[0]->{name} eq 'ID'
         ? "id: $row->[0], number: $row_no" : "number: $row_no";
     die "Failed to insert row ($row_info): $@\n";
 }
@@ -116,7 +118,7 @@ sub migrate_table {
     my ($fb, $pg, $table) = @_;
     say $table;
 
-    my ($num_rows) = $fb->selectrow_array("SELECT COUNT(*) FROM $table", undef);
+    my ($num_rows) = $fb->selectrow_array(qq~SELECT COUNT(*) FROM $table~, undef);
     if ($num_rows == 0) {
         say "  EMPTY\n  OK";
         return;
@@ -124,29 +126,29 @@ sub migrate_table {
 
     if ($clear) {
         say '  CLEANING...';
-        $pg->do("DELETE FROM $table");
+        $pg->do(qq~DELETE FROM $table~);
     }
 
     my $field_info = $fb->selectall_arrayref(q~
         SELECT
-            TRIM(RF.RDB$FIELD_NAME),
-            F.RDB$FIELD_TYPE,
-            F.RDB$FIELD_SUB_TYPE
+            TRIM(RF.RDB$FIELD_NAME) as name,
+            F.RDB$FIELD_TYPE AS type,
+            F.RDB$FIELD_SUB_TYPE AS subtype
         FROM RDB$RELATION_FIELDS RF, RDB$FIELDS F
         WHERE 
             RF.RDB$RELATION_NAME = ? AND
             F.RDB$FIELD_NAME = RF.RDB$FIELD_SOURCE AND
             RF.RDB$SYSTEM_FLAG = 0
-        ORDER BY RDB$FIELD_POSITION~, undef, $table);
+        ORDER BY RDB$FIELD_POSITION~, { Slice => {} }, $table);
 
-    my $fields = join ',', map { $_->[0] } @$field_info;
+    my $fields = join ',', map { $_->{name} } @$field_info;
     my $values = join ',', map { '?' } @$field_info; 
-    my $insert_sth = $pg->prepare("INSERT INTO $table ($fields) VALUES ($values)");
-    my $select_sth = $fb->prepare("SELECT $fields FROM $table");
+    my $insert_sth = $pg->prepare(qq~INSERT INTO $table ($fields) VALUES ($values)~);
+    my $select_sth = $fb->prepare(qq~SELECT $fields FROM $table~);
     $select_sth->execute;
 
     my $batch_size = 256;
-    foreach my $i (1 .. $num_rows) {
+    for my $i (1 .. $num_rows) {
         my $row = $select_sth->fetchrow_arrayref or die 'Expected row';
         eval {
             bind_row($pg, $insert_sth, $row, $field_info);
@@ -171,11 +173,11 @@ sub migrate_generators {
         WHERE RDB$SYSTEM_FLAG = 0
         ORDER BY name~);
 
-    foreach my $generator (@$generators) {
+    for my $generator (@$generators) {
         say $generator;
-        my ($val) = $fb->selectrow_array("SELECT GEN_ID($generator, 0) FROM RDB\$DATABASE");
+        my ($val) = $fb->selectrow_array(qq~SELECT GEN_ID($generator, 0) FROM RDB\$DATABASE~);
         $val = 1 if $val == 0; # Default minimal generator value is 1 in postgres.
-        $pg->do("ALTER SEQUENCE $generator RESTART WITH $val");
+        $pg->do(qq~ALTER SEQUENCE $generator RESTART WITH $val~);
         say '  OK';
     }
     $pg->commit;
@@ -199,7 +201,7 @@ sub migrate_all {
     my $start = 0;
     if ($start_from) {
         $start = find_table_idx($tables, $start_from);
-        $pg->do("DELETE FROM $start_from");
+        $pg->do(qq~DELETE FROM $start_from~);
     }
     say "\nMigrating tables:";
     migrate_table($fb, $pg, $tables->[$_]) for $start..$#$tables;
@@ -213,11 +215,11 @@ sub main {
     say "Postgres database: $pgdb, host: $pghost";
 
     # Disable foreign key checks (requires super user permissions). 
-    $pg->do('SET SESSION_REPLICATION_ROLE TO REPLICA');
+    $pg->do(q~SET SESSION_REPLICATION_ROLE TO REPLICA~);
     eval {
         migrate_all($fb, $pg);
     } or print STDERR "$@";
-    $pg->do('SET SESSION_REPLICATION_ROLE TO DEFAULT');
+    $pg->do(q~SET SESSION_REPLICATION_ROLE TO DEFAULT~);
 
     $fb->disconnect;
     $pg->disconnect;
