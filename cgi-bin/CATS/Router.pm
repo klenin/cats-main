@@ -151,7 +151,7 @@ my $main_routes = {
         pid => integer, allow => array_of integer, save => bool, ],
     problem_limits => [ \&CATS::UI::ProblemDetails::problem_limits_frame,
         pid => integer, cpid => integer, override => bool, clear_override => bool,
-        override_contest => bool, max_reqs => integer,
+        override_contest => bool, max_reqs => integer, scaled_points => fixed, weight => fixed,
         (map { $_ => str } @cats::limits_fields), job_split_strategy => str, from_problems => bool,
     ],
     problem_download => [ \&CATS::UI::ProblemDetails::problem_download, pid => integer, ],

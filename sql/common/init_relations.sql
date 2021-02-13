@@ -281,6 +281,8 @@ CREATE TABLE contest_problems (
     testsets        VARCHAR(200),
     points_testsets VARCHAR(200),
     max_points      INTEGER,
+    scaled_points   FLOAT,
+    weight          FLOAT,
     tags            VARCHAR(200),
     limits_id       INTEGER REFERENCES limits(id),
     color           VARCHAR(50),

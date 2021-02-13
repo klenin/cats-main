@@ -50,7 +50,9 @@
 <br/>
 <form method="post" enctype="multipart/form-data" action="[% href_action %]">
 <table class="edit_form bordered">
-  [% tr_text(fd.max_reqs, fd) %]
+  [% tr_text(fd.indexed.max_reqs, fd) %]
+  [% tr_text(fd.indexed.scaled_points, fd) %]
+  [% tr_text(fd.indexed.weight, fd) %]
   <tr><td colspan="2"><button type="submit" name="override_contest" value="1" class="button">[% capt.override %]</button></td></tr>
 </table>
 </form>
