@@ -231,6 +231,12 @@ sub _set_form_data {
     my ($form_data, $ordered) = @_;
     $form_data->{ordered} = $ordered;
     $form_data->{indexed} = { map { $_->{field}->{name} => $_ } @$ordered };
+    $form_data;
+}
+
+sub parse_form_data {
+    my ($self, $p) = @_;
+    _set_form_data({}, $self->parse_params($p));
 }
 
 sub _redirect {
