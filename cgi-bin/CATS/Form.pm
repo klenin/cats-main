@@ -87,6 +87,22 @@ sub int_range {
     };
 }
 
+sub fixed {
+    my (%opts) = @_;
+    sub {
+        my ($value, $field) = @_;
+        if (($value // '') ne '') {
+            return if $value =~ /^-?\d+(\.\d+)?$/ &&
+                (!defined $opts{min} || $opts{min} <= $value) &&
+                (!defined $opts{max} || $value <= $opts{max});
+        }
+        elsif ($opts{allow_empty}) {
+            return;
+        }
+        res_str(1051, $field->caption_msg, $opts{min} // '-Inf', $opts{max} // '+Inf');
+    };
+}
+
 sub unique {
     my ($field) = @_;
     $field or die;
@@ -174,6 +190,7 @@ sub load {
     ];
 }
 
+# Params: opts { debug, commit }
 sub save {
     my ($self, $id, $data, %opts) = @_;
     return $self->{override_save}->($self, $data, $id) if $self->{override_save};

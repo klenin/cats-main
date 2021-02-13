@@ -4,7 +4,7 @@ use utf8;
 
 use File::Spec;
 use FindBin;
-use Test::More tests => 10;
+use Test::More tests => 14;
 
 use lib File::Spec->catdir($FindBin::Bin, '..');
 use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
@@ -33,6 +33,16 @@ CATS::Messages::init;
     ok ir(4), 'int_range 4<5';
     ok ir(8), 'int_range 8<7';
     is ir(5), undef, 'int_range 5=5';
+}
+{
+    my $f = CATS::Field->new(name => 'f');
+
+    sub fx { CATS::Field::fixed(min => 5, max => 7)->($_[0], $f) }
+
+    ok fx('1e6'), 'not fixed';
+    ok fx(4.3), 'fixed 4.3<5';
+    ok fx(8.1), 'fixed 8.1<7';
+    is fx(5), undef, 'fixed 5=5';
 }
 {
     my $f = CATS::Field->new(name => 'f');
