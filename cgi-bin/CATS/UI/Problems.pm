@@ -245,6 +245,7 @@ sub problems_frame {
             { caption => res_str(605), order_by => 'CP.testsets', width => '12%', col => 'Ts' },
             { caption => res_str(629), order_by => 'CP.tags', width => '5%', col => 'Tg' },
             { caption => res_str(638), order_by => 'job_split_strategy', width => '5%', col => 'St' },
+            { caption => res_str(687), order_by => 'max_points', width => '5%', col => 'Mp' },
             { caption => res_str(688), order_by => 'max_reqs', width => '5%', col => 'Mr' },
             { caption => res_str(667), order_by => 'keywords', width => '10%', col => 'Kw' },
             { caption => res_str(635), order_by => 'last_modified_by', width => '5%', col => 'Mu' },
@@ -329,7 +330,8 @@ sub problems_frame {
             SUBSTRING(P.explanation FROM 1 FOR 1) AS has_explanation,
             $test_count_sql CP.testsets, CP.points_testsets, P.lang, $limits_str,
             $job_split_strategy_sql AS job_split_strategy,
-            CP.max_points, P.repo, CP.tags, P.statement_url, P.explanation_url, CP.color, CP.max_reqs
+            CP.max_points, CP.scaled_points,
+            P.repo, CP.tags, P.statement_url, P.explanation_url, CP.color, CP.max_reqs
         FROM problems P
         INNER JOIN contest_problems CP ON CP.problem_id = P.id
         INNER JOIN contests OC ON OC.id = P.contest_id
@@ -391,6 +393,7 @@ sub problems_frame {
         };
 
         my $can_download = CATS::Problem::Utils::can_download_package;
+        my $max_points = $c->{max_points} // '*';
 
         return (
             href_delete => url_f('problems', delete_problem => $c->{cpid}),
@@ -443,7 +446,7 @@ sub problems_frame {
             memory_limit => $c->{memory_limit} * 1024 * 1024,
             time_limit => $c->{time_limit},
             write_limit => $c->{write_limit},
-            max_points => $c->{max_points},
+            max_points => $c->{scaled_points} ? "$c->{scaled_points} ($max_points)" : $max_points,
             tags => $c->{tags},
             strategy => $c->{job_split_strategy} // '*',
             max_reqs => $c->{max_reqs} // '*',
