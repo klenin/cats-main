@@ -80,6 +80,7 @@ sub pg_connect_or_create {
         CATS::Deploy::create_db('postgres', $pgdb, $pglogin, $pgpassword,
             host => $pghost, pg_auth_type => 'peer', quiet => 1
         );
+        $clear = 1; # Database is not empty when created.
         $pg = pg_try_connect or die "Cannot connect to postgres database: $DBI::errstr";
     }
     $pg;
