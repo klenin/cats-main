@@ -63,7 +63,8 @@ sub cache_max_points {
     }
     else {
         $max_points = $dbh->selectrow_array(q~
-            SELECT SUM(points) FROM tests WHERE problem_id = ?~, undef, $pid);
+            SELECT SUM(points) FROM tests WHERE problem_id = ?~, undef,
+            $pid);
     }
     $max_points ||= $problem->{max_points_def} || 1;
     if ($problem->{cpid}) {
@@ -79,7 +80,7 @@ sub get_problems {
     my ($self) = @_;
     my $problems = $self->{problems} = $dbh->selectall_arrayref(qq~
         SELECT
-            CP.id, CP.problem_id, CP.code, CP.contest_id,
+            CP.id AS cpid, CP.problem_id, CP.code, CP.contest_id,
             CP.testsets, CP.points_testsets, CP.color, C.start_date,
             CAST(CURRENT_TIMESTAMP - C.start_date AS DOUBLE PRECISION) AS since_start,
             CP.max_points, P.title, P.max_points AS max_points_def, P.run_method,
@@ -107,7 +108,7 @@ sub get_problems {
         $c->{count}++;
         # Optimization: do not output tooltip in local_only contests to avoid extra query.
         $_->{title} = '' if ($_->{since_start} < 0 || $_->{local_only}) && !$is_jury;
-        $_->{problem_text} = url_f('problem_text', cpid => $_->{id});
+        $_->{problem_text} = url_f('problem_text', cpid => $_->{cpid});
         if ($self->{show_points} && !$_->{max_points}) {
             $_->{max_points} = cache_max_points($_);
             $need_commit = 1;
