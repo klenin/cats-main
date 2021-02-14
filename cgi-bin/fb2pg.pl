@@ -69,7 +69,7 @@ sub pg_try_connect {
         DBI->connect(
             "dbi:Pg:dbname=$pgdb;host=$pghost;",
             $pglogin, $pgpassword,
-            { AutoCommit => 0, RaiseError => 1, }
+            { AutoCommit => 0, RaiseError => 1, PrintError => 0 }
         );
     }
 }
@@ -218,7 +218,11 @@ sub main {
     $pg->do(q~SET SESSION_REPLICATION_ROLE TO REPLICA~);
     eval {
         migrate_all($fb, $pg);
-    } or print STDERR "$@";
+    };
+    if ($@) {
+        $pg->rollback;
+        print STDERR "$@";
+    }
     $pg->do(q~SET SESSION_REPLICATION_ROLE TO DEFAULT~);
 
     $fb->disconnect;
