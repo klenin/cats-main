@@ -194,14 +194,14 @@ sub migrate_all {
         ORDER BY name~);
 
     if ($single_table) {
-        my $i = find_table_idx($tables, $single_table);
+        my $i = find_table_index($tables, $single_table);
         migrate_table($fb, $pg, $tables->[$i]);
         return;
     }
 
     my $start = 0;
     if ($start_from) {
-        $start = find_table_idx($tables, $start_from);
+        $start = find_table_index($tables, $start_from);
         $pg->do(qq~DELETE FROM $start_from~);
     }
     say "\nMigrating tables:";
