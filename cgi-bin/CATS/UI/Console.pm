@@ -18,6 +18,7 @@ use CATS::Output qw(init_template url_f url_f_cid);
 use CATS::Problem::Utils;
 use CATS::RankTable::Cache;
 use CATS::Request;
+use CATS::Score;
 use CATS::Settings qw($settings);
 use CATS::Time;
 use CATS::Verdicts;
@@ -139,11 +140,17 @@ sub _console_content {
 
     my $fetch_console_record = sub {
         my ($rtype, $rank, $submit_time, $id, $request_state, $failed_test,
-            $problem_id, $elements_count, $problem_title, $code,
+            $problem_id, $elements_count, $problem_title, $code, $cp_point_params,
             $de_id, $time_used, $clarified, $question, $answer, $jury_message,
             $team_id, $team_name, $country_abbr, $last_ip, $caid, $site_id, $contest_id
         ) = $_[0]->fetchrow_array
             or return ();
+
+        # Hack: re-use 'clarified' field since it is relevant for questions only.
+        my $unscaled_points = $clarified;
+        my %p;
+        @p{qw(max_points scaled_points)} = map 0 + $_, split /\s/, $cp_point_params if $cp_point_params;
+        my $points = CATS::Score::scale_points($unscaled_points, \%p);
 
         $request_state = -1 unless defined $request_state;
 
@@ -176,8 +183,8 @@ sub _console_content {
             is_contest =>           $rtype == 5,
             ($rtype == 5 ? (contest_date_type => $CATS::Console::contest_date_types[$failed_test]) : ()),
             is_official =>          $request_state,
-            # Hack: re-use 'clarified' field since it is relevant for questions only.
-            points =>               $clarified,
+            points =>               $points,
+            unscaled_points =>      $unscaled_points,
             clarified =>            $clarified,
             code =>                 $code,
             href_details =>         ($show_details ? url_f('run_details', rid => $id) : undef),

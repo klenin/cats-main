@@ -219,7 +219,8 @@ sub build_query {
         CAST(NULL AS INTEGER) AS problem_id,
         CAST(NULL AS INTEGER) AS elements_count,
         CAST(NULL AS VARCHAR(200)) AS problem_title,
-        CAST(NULL AS VARCHAR(10)) AS code
+        CAST(NULL AS VARCHAR(10)) AS code,
+        CAST(NULL AS VARCHAR(30)) AS cp_point_params
     ~;
     my $no_de = q~
         CAST(NULL AS INTEGER) AS de,
@@ -243,6 +244,7 @@ sub build_query {
             R.elements_count,
             P.title AS problem_title,
             CP.code,
+            COALESCE(CP.max_points, 0) || ' ' || COALESCE(CP.scaled_points, 0) AS cp_point_params,
             $de_sql AS de,
             $time_sql AS time_used,
             R.points AS clarified,
@@ -339,6 +341,7 @@ sub build_query {
             CAST(NULL AS INTEGER) AS elements_count,
             C.title AS problem_title,
             CAST(NULL AS VARCHAR(10)) AS code,
+            CAST(NULL AS VARCHAR(30)) AS cp_point_params,
             $no_de,
             CAST(NULL AS INTEGER) AS clarified,
             CAST(NULL AS $db->{BLOB_TYPE}) AS question,
