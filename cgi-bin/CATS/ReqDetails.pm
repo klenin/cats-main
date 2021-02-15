@@ -15,6 +15,7 @@ use CATS::Output qw(url_f url_f_cid);
 use CATS::Problem::Utils;
 use CATS::Request;
 use CATS::Time;
+use CATS::Score;
 use CATS::Utils qw(encodings source_encodings);
 use CATS::Verdicts;
 
@@ -142,7 +143,7 @@ sub _get_nearby_attempt {
     $si->{nearby}->{$prevnext} = $na;
     $na->{title} =
         $CATS::Verdicts::state_to_name->{$na->{state}} .
-        (defined $na->{points} ? " $na->{points}" : '');
+        (defined $na->{points} ? ' ' . CATS::Score::scale_points($na->{points}, $si) : '');
     $si->{href_diff_runs} = url_f('diff_runs', r1 => $na->{id}, r2 => $si->{req_id}) if $diff && $uid;
 }
 
@@ -204,7 +205,7 @@ sub get_sources_info {
             'CAST(CURRENT_TIMESTAMP - C.pub_reqs_date AS DOUBLE PRECISION) AS time_since_pub_reqs',
             'COALESCE(R.testsets, CP.testsets) AS testsets',
             'CP.id AS cp_id',
-            'CP.status', 'CP.code',
+            'CP.status', 'CP.code', 'CP.max_points', 'CP.scaled_points',
             'CA.id AS ca_id', 'CA.is_jury AS submitter_is_jury', 'CA.is_hidden', 'CA.tag AS ca_tag',
         ],
         tables => [
@@ -323,6 +324,8 @@ sub get_sources_info {
         $r->{href_test_diff} = url_f_cid('test_diff',
             pid => $r->{problem_id}, test => $r->{failed_test}, cid => $r->{contest_id})
             if $r->{is_jury} && $r->{failed_test};
+
+        $r->{scaled_points_v} = CATS::Score::scale_points($r->{points}, $r);
     }
 
     return ref $rid ? [ map { $req_tree->{$_} // () } @req_ids ] : $req_tree->{$rid};

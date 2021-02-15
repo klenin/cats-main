@@ -175,7 +175,10 @@ $(document).ready(update_request_status);
         <td class="verdict_long">
         [%- capt.verdicts.item(si.short_state); " $capt.on_test" _ maybe_href(si.href_test_diff, si.failed_test) IF si.failed_test -%]
         <div></div></td>
-        [% IF si.points.defined() %]<td>[% capt.pts %]: [% si.points %]</td>[% END %]
+        [% IF si.points.defined() -%]
+        <td>[% capt.pts %]:
+          [%- IF si.scaled_points_v == si.points; si.points; ELSE; si.scaled_points_v; " ($si.points)"; END %]</td>
+        [%- END %]
         [% IF si.is_jury && (si.short_state == 'AW' || si.short_state == 'NP') -%]
         <td><form method="POST" action="[% si.href_quick_verdict %]">
           <input type="hidden" name="set_state" value="1"/>

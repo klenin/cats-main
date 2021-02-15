@@ -27,6 +27,7 @@ use CATS::ReqDetails qw(
     sources_info_param
     source_links);
 use CATS::Request;
+use CATS::Score;
 use CATS::Settings qw($settings);
 use CATS::Testset;
 use CATS::Utils;
@@ -42,7 +43,7 @@ sub _decode_quietly {
     $result . ($s eq '' ? '' : "\x{fffd}$s");
 }
 
-sub get_run_info {
+sub _get_run_info {
     my ($p, $contest, $req) = @_;
     my $points = $contest->{points};
 
@@ -195,6 +196,7 @@ sub get_run_info {
         %$contest,
         id => $req->{req_id},
         total_points => $total_points,
+        scaled_points => CATS::Score::scale_points($total_points, $req),
         run_details => [ map $add_testdata->($run_row->($_)), 1..$last_test ],
         maximums => $maximums,
         testsets => [ sort { $a->{list}[0] <=> $b->{list}[0] } values %used_testsets ],
@@ -223,7 +225,7 @@ sub run_details_frame {
             next;
         }
         my $c = get_contest_tests(get_contest_info($p, $_, $contest_cache), $_->{problem_id});
-        push @runs, get_run_info($p, $c, $_);
+        push @runs, _get_run_info($p, $c, $_);
         $needs_commit ||= $_->{needs_commit};
     }
     $dbh->commit if $needs_commit;
