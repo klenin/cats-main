@@ -16,6 +16,7 @@ use CATS::Problem::Spell;
 use CATS::Problem::Submit qw(prepare_de_list);
 use CATS::Problem::Tags;
 use CATS::Problem::Utils;
+use CATS::Score;
 use CATS::StaticPages;
 use CATS::TeX::Lite;
 use CATS::Time;
@@ -382,7 +383,7 @@ sub problem_text {
 
         $problem->{show_points} = $show_points;
         if ($show_points && !$problem->{max_points}) {
-            $problem->{max_points} = CATS::RankTable::cache_max_points($problem);
+            $problem->{max_points} = CATS::Score::cache_max_points($problem);
             $need_commit = 1;
         }
 
