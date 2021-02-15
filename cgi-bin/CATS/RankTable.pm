@@ -15,6 +15,7 @@ use CATS::Globals qw($cid $contest $is_jury $is_root $t $uid $user);
 use CATS::Output qw(url_f url_f_cid);
 use CATS::RankTable::Cache;
 use CATS::RouteParser qw();
+use CATS::Score;
 use CATS::Testset;
 use CATS::Time;
 
@@ -83,6 +84,7 @@ sub get_problems {
             CP.id AS cpid, CP.problem_id, CP.code, CP.contest_id,
             CP.testsets, CP.points_testsets, CP.color, C.start_date,
             CAST(CURRENT_TIMESTAMP - C.start_date AS DOUBLE PRECISION) AS since_start,
+            CP.scaled_points, CP.weight,
             CP.max_points, P.title, P.max_points AS max_points_def, P.run_method,
             C.local_only, C.penalty, C.penalty_except
         FROM
@@ -115,7 +117,7 @@ sub get_problems {
         }
         $_->{exclude_penalty} = {
             $cats::st_accepted => 1, map { $_ => 1 } split ',', $_->{penalty_except} // '' };
-        $max_total_points += $_->{max_points} || 0;
+        $max_total_points += $_->{scaled_points} || $_->{max_points} || 0;
         $self->{has_competitive} = 1 if $_->{run_method} == $cats::rm_competitive;
     }
     $dbh->commit if $need_commit;
@@ -551,18 +553,19 @@ sub _process_single_run {
     $ap->{penalty_runs}++ unless $problem->{exclude_penalty}->{$r->{state}};
     $ap->{runs}++;
     $t->{total_runs}++;
+    my $points = CATS::Score::scale_points($r->{points} || 0, $problem);
     if ($r->{state} != $cats::st_security_violation && $r->{state} != $cats::st_manually_rejected) {
         $ap->{points} ||= 0;
 
         if ($problem->{run_method} == $cats::rm_competitive) {
-            $t->{total_points} += $r->{points};
-            $ap->{points} += $r->{points};
+            $t->{total_points} += $points;
+            $ap->{points} += $points;
         } else {
-            my $dp = ($r->{points} || 0) - $ap->{points};
+            my $dp = ($points || 0) - $ap->{points};
             # If req_selection is set to 'best', ignore negative point changes.
             if ($self->{contests}->{$r->{contest_id}}->{req_selection} == 0 || $dp > 0) {
                 $t->{total_points} += $dp;
-                $ap->{points} = $r->{points};
+                $ap->{points} = $points;
             }
         }
     }
