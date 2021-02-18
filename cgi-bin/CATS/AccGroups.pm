@@ -1,5 +1,8 @@
 package CATS::AccGroups;
 
+use strict;
+use warnings;
+
 use CATS::DB;
 use CATS::Globals qw($cid);
 

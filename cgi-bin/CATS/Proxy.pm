@@ -1,5 +1,8 @@
 package CATS::Proxy;
 
+use strict;
+use warnings;
+
 use JSON::XS;
 use LWP::UserAgent;
 

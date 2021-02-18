@@ -1,5 +1,8 @@
 package CATS::DeGrid;
 
+use strict;
+use warnings;
+
 use POSIX qw(ceil);
 
 sub matrix {
