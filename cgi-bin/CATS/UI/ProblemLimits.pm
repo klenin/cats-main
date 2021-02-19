@@ -62,6 +62,8 @@ sub problem_limits_frame {
         $fd->{indexed}->{$_}->{value} //= $problem->{$_} for keys %{$fd->{indexed}};
     }
 
+    my $redirect_url = $p->{from_problems} && url_f('problems', limits_cpid => $problem->{cpid});
+
     if ($p->{override}) {
         my $new_limits = !defined $problem->{limits_id};
 
@@ -91,7 +93,7 @@ sub problem_limits_frame {
         CATS::StaticPages::invalidate_problem_text(cid => $cid, cpid => $problem->{cpid});
 
         msg($new_limits ? 1145 : 1146, $problem->{title});
-        return $p->redirect(url_f 'problems') if $p->{from_problems} && !$new_limits;
+        return $p->redirect($redirect_url) if $p->{from_problems} && !$new_limits;
     }
     elsif ($p->{clear_override}) {
         if ($problem->{limits_id}) {
@@ -111,12 +113,13 @@ sub problem_limits_frame {
         }
 
         msg(1147, $problem->{title});
-        return $p->redirect(url_f 'problems') if $p->{from_problems};
+        return $p->redirect($redirect_url) if $p->{from_problems};
     }
     elsif ($p->{override_contest}) {
         return if grep $_->{error}, @{$fd->{ordered}};
         $form->save($problem->{cpid}, [ map $_->{value}, @{$fd->{ordered}} ], commit => 1);
-        return $p->redirect(url_f 'problems') if $p->{from_problems};
+        msg(1146, $problem->{title});
+        return $p->redirect($redirect_url) if $p->{from_problems};
     }
 }
 

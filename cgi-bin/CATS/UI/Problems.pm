@@ -153,6 +153,14 @@ sub problems_frame_jury_action {
         }
         return;
     }
+    if ($p->{limits_cpid}) {
+         my $title = $dbh->selectrow_array(q~
+            SELECT P.title FROM problems P
+            INNER JOIN contest_problems CP ON CP.problem_id = P.id
+            WHERE CP.contest_id = ? AND CP.id = ?~, undef,
+            $cid, $p->{limits_cpid});
+         msg(1145, $title) if $title;
+    }
     $p->{change_status} and return CATS::Problem::Utils::problems_change_status($p);
     $p->{change_code} and return CATS::Problem::Utils::problems_change_code($p);
     $p->{replace} and return CATS::Problem::Save::problems_replace($p, $p->{problem_id});
@@ -243,7 +251,7 @@ sub problems_frame {
     $t->param(wikis => $wikis);
 
     $lv->default_sort(0)->define_columns([
-        { caption => res_str(602), order_by => ($contest->is_practice ? 'P.title' : 3), width => '25%' },
+        { caption => res_str(602), order_by => ($contest->is_practice ? 'P.title' : 'CP.code'), width => '25%' },
         ($is_jury ?
         (
             { caption => res_str(622), order_by => 'CP.status', width => '5%' },

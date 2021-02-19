@@ -126,6 +126,7 @@ my $main_routes = {
         submit_as => str,
         source => upload, source_text => str,
         new_title => str, new_lang => ident, add_new_template => bool,
+        limits_cpid => integer,
     ],
     problems_all => [
         \&CATS::UI::Problems::problems_all_frame,
