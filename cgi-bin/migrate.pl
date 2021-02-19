@@ -12,6 +12,9 @@ use lib File::Spec->catdir($FindBin::Bin, 'cats-problem');
 
 use CATS::Config;
 
+my @verbose_options = qw(apply_run db_config none show_numbers);
+my $verbose_default = 'db_config,show_numbers';
+
 sub usage {
     print STDERR qq~CATS migration tool
 Usage: $0
@@ -21,6 +24,8 @@ Usage: $0
   --dry-run
   --force
   --show=<num>
+  --verbose=<options>, default is $verbose_default
+      available options: @{[ join ' ', @verbose_options ]}
 ~;
     exit;
 }
@@ -32,11 +37,22 @@ GetOptions(
     'dry-run' => \(my $dry_run = ''),
     force => \(my $force = 0),
     'show=i' => \(my $show = 0),
+    'verbose=s'=> \(my $verbose_str = $verbose_default),
 ) or usage;
+
+my %verbose = map { $_ => 1 } split /,/, $verbose_str;
+{
+    my %unknown = %verbose;
+    delete @unknown{@verbose_options};
+    if (%unknown) {
+        say 'Unknown verbose options: ', join ',', sort keys %unknown;
+        usage;
+    }
+}
 
 my $db = $CATS::Config::db;
 printf "DBI: %s\nHost: %s\nDatabase: %s\n\n",
-    $db->{driver}, $db->{host}, $db->{name};
+    $db->{driver}, $db->{host}, $db->{name} if $verbose{db_config};
 
 my $has_lines;
 sub say_c {
@@ -71,7 +87,7 @@ sub parse_diff {
                 say_c "    DROP $line1;";
             }
             else {
-                say; # Unable auto-convert this removal, trigger syntax error.
+                say; # Unable to auto-convert this removal, trigger syntax error.
             }
         }
         elsif (m/^(?:\s*|.+@@ )CREATE TABLE (\w+) \(/) {
@@ -186,7 +202,7 @@ sub apply_migration {
     $cmd or die "Unknown driver: $db->{driver}";
 
     chdir File::Spec->catdir($Bin, qw(.. sql migrations)) or die "Unable to chdir sql/migrations: $!";
-    # say join ' ', 'Running:', @$cmd;
+    say join ' ', 'Running:', @$cmd if $verbose{apply_run};
     my ($ok, $err, $full) = IPC::Cmd::run command => $cmd;
     $ok or die join "\n", $err, @$full;
     print '-' x 20, "\n", @$full;
@@ -198,9 +214,10 @@ sub show_migrations {
 
     my $i = @migrations;
     my $max_len = length($i);
-    my $sep = "\n" . ' ' x ($max_len + 2);
+    my $sep = "\n" . ($verbose{show_numbers} ? ' ' x ($max_len + 2) : '');
+    my $fmt = $verbose{show_numbers} ? "%*d. %s\n" : "%3\$s\n";
     for my $m (@migrations) {
-        printf "%*d. %s\n", $max_len, $i--,
+        printf $fmt, $max_len, $i--,
             join $sep, map filename($_), grep $_, @$m{qw(common firebird postgres)};
     }
 }
