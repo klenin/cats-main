@@ -15,16 +15,16 @@ use CATS::StaticPages;
 
 my $zero_undef = sub { $_[0] || undef };
 my $fixed = CATS::Field::fixed(min => 0, max => 1e6, allow_empty => 1);
+my @field_common = (editor => { size => 4 }, , before_save => $zero_undef);
 
 our $form = CATS::Form->new(
-    table => 'contest_problems',
+    table => 'contest_problems CP',
     fields => [
-        [ name => 'max_reqs', caption => 688, editor => { size => 4 }, before_save => $zero_undef,
+        [ name => 'max_reqs', caption => 688, @field_common,
             validators => CATS::Field::int_range(min => 0, max => 1e6, allow_empty => 1) ],
-        [ name => 'scaled_points', caption => 690, editor => { size => 4 }, before_save => $zero_undef,
-            validators => $fixed ],
-        [ name => 'weight', caption => 691, editor => { size => 4 }, before_save => $zero_undef,
-            validators => $fixed ],
+        [ name => 'scaled_points', caption => 690, @field_common, validators => $fixed ],
+        [ name => 'round_points_to', caption => 692, @field_common, validators => $fixed ],
+        [ name => 'weight', caption => 691, @field_common, validators => $fixed ],
     ],
     href_action => '-', # Stub.
 );
@@ -37,10 +37,11 @@ sub problem_limits_frame {
     my @fields = (@cats::limits_fields, 'job_split_strategy');
     my $original_limits_str = join ', ', 'NULL AS job_split_strategy', map "P.$_", @cats::limits_fields;
     my $overridden_limits_str = join ', ', map "L.$_ AS overridden_$_", @fields;
+    my $form_fields_sql = $form->fields_sql;
 
     my $problem = $dbh->selectrow_hashref(qq~
         SELECT P.id, P.title, CP.id AS cpid, CP.tags, CP.limits_id,
-        CP.max_reqs, CP.scaled_points, CP.weight,
+        $form_fields_sql,
         $original_limits_str, $overridden_limits_str
         FROM problems P
         INNER JOIN contest_problems CP ON P.id = CP.problem_id
