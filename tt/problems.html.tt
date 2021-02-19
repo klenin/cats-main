@@ -180,15 +180,17 @@ function chg_code(st_sel, pid) {
   [% IF p.href_download -%]
     &nbsp;[<a href="[% p.href_download %]" download="[% p.code %]_[% p.problem_id %].zip">[% capt.package %]</a>]
   [%- END -%]
+[% IF editable %]
+  [%- IF p.is_linked %] [<a href="[% p.href_original_contest %]" title="[% p.contest_title %]">L</a>][% END %]
+  [%- IF p.usage_count %] [<a href="[% p.href_usage %]" title="[% capt.used_in %]">[% p.usage_count %]</a>][% END %]
+  [% IF p.remote_url %] [<a href="[% p.remote_url %]" title="[% p.remote_url %]">R</a>][% END %]
+[% END %]
 </td>
 [% IF editable %]
 <td>
   <select onchange="chg_status(this, [% p.problem_id %])">
   [%~ FOREACH sl IN status_list; option(sl.id, sl.name, sl.id == p.status); END ~%]
   </select>
-  [%- IF p.is_linked %] [<a href="[% p.href_original_contest %]" title="[% p.contest_title %]">L</a>][% END %]
-  [%- IF p.usage_count %] [<a href="[% p.href_usage %]" title="[% capt.used_in %]">[% p.usage_count %]</a>][% END %]
-  [% IF p.remote_url %] [<a href="[% p.remote_url %]" title="[% p.remote_url %]">R</a>][% END %]
 </td>
 [% IF visible_cols.Ts -%]
 <td><a href="[% p.href_select_testsets %]">[% p.testsets %]</a> ([% p.test_count %])
