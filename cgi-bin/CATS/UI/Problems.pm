@@ -462,8 +462,8 @@ sub problems_frame {
             memory_limit => _combine_limits($c->{cp_memory_limit}, $c->{memory_limit}),
             time_limit => _combine_limits($c->{cp_time_limit}, $c->{time_limit}),
             write_limit => _combine_limits($c->{cp_write_limit}, $c->{write_limit}) // '*',
-            max_points => _combine_limits($c->{scaled_points}, $max_points) .
-                ($c->{round_points_to} ? " ~$c->{round_points_to}" : ''),
+            max_points => _combine_limits(0 + $c->{scaled_points}, $max_points) .
+                ($c->{round_points_to} ? ' ~' . (0 + $c->{round_points_to}) : ''),
             tags => $c->{tags},
             strategy => $c->{job_split_strategy} // '*',
             max_reqs => $c->{max_reqs} // '*',

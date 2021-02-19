@@ -75,6 +75,7 @@ sub get_problems {
         }
         $_->{exclude_penalty} = {
             $cats::st_accepted => 1, map { $_ => 1 } split ',', $_->{penalty_except} // '' };
+        $_->{scaled_points} += 0 if $_->{scaled_points};
         $max_total_points += $_->{scaled_points} || $_->{max_points} || 0;
         $self->{has_competitive} = 1 if $_->{run_method} == $cats::rm_competitive;
     }

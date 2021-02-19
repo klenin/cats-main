@@ -15,7 +15,7 @@ use CATS::StaticPages;
 
 my $zero_undef = sub { $_[0] || undef };
 my $fixed = CATS::Field::fixed(min => 0, max => 1e6, allow_empty => 1);
-my @field_common = (editor => { size => 4 }, , before_save => $zero_undef);
+my @field_common = (editor => { size => 8 }, before_save => $zero_undef);
 
 our $form = CATS::Form->new(
     table => 'contest_problems CP',
@@ -28,6 +28,8 @@ our $form = CATS::Form->new(
     ],
     href_action => '-', # Stub.
 );
+
+sub _to_num { $_ = $_[0] or return; s/\.(\d*?)0+$/$1 ? ".$1" : ''/e; $_; }
 
 sub problem_limits_frame {
     my ($p) = @_;
@@ -63,7 +65,7 @@ sub problem_limits_frame {
     $t->param(fd => $fd);
     $fd->{indexed}->{max_reqs}->{caption} .= " ($contest->{max_reqs})" if $contest->{max_reqs};
     if (!$p->{override_contest}) {
-        $fd->{indexed}->{$_}->{value} //= $problem->{$_} for keys %{$fd->{indexed}};
+        $fd->{indexed}->{$_}->{value} //= _to_num($problem->{$_}) for keys %{$fd->{indexed}};
     }
 
     my $redirect_url = $p->{from_problems} && url_f('problems', limits_cpid => $problem->{cpid});
