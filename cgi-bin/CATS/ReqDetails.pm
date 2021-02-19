@@ -205,7 +205,7 @@ sub get_sources_info {
             'CAST(CURRENT_TIMESTAMP - C.pub_reqs_date AS DOUBLE PRECISION) AS time_since_pub_reqs',
             'COALESCE(R.testsets, CP.testsets) AS testsets',
             'CP.id AS cp_id',
-            'CP.status', 'CP.code', 'CP.max_points', 'CP.scaled_points',
+            'CP.status', 'CP.code', 'CP.max_points', 'CP.scaled_points', 'CP.round_points_to',
             'CA.id AS ca_id', 'CA.is_jury AS submitter_is_jury', 'CA.is_hidden', 'CA.tag AS ca_tag',
         ],
         tables => [

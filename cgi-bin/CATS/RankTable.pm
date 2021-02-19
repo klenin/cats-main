@@ -42,7 +42,7 @@ sub get_problems {
             CP.id AS cpid, CP.problem_id, CP.code, CP.contest_id,
             CP.testsets, CP.points_testsets, CP.color, C.start_date,
             CAST(CURRENT_TIMESTAMP - C.start_date AS DOUBLE PRECISION) AS since_start,
-            CP.scaled_points, CP.weight,
+            CP.scaled_points, CP.round_points_to, CP.weight,
             CP.max_points, P.title, P.max_points AS max_points_def, P.run_method,
             C.local_only, C.penalty, C.penalty_except
         FROM

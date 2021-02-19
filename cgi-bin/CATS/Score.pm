@@ -6,14 +6,21 @@ use warnings;
 use CATS::DB qw(:DEFAULT);
 use CATS::Testset;
 
-sub _round { int($_[0] * 10 + 0.5) / 10 }
+my $eps = 1e-9;
+
+sub _round {
+    my ($points, $round_to) = @_;
+    int($points / $round_to + $eps) * $round_to;
+}
 
 sub scale_points {
     my ($points, $problem) = @_;
-    $points && (
-    $problem->{scaled_points} ?
-        _round($points * $problem->{scaled_points} / ($problem->{max_points} || 1)) : $points);
-
+    $points && $problem->{scaled_points} ?
+        _round($points * $problem->{scaled_points} / ($problem->{max_points} || 1),
+             $problem->{round_points_to} || 0.1) :
+    $points && ($problem->{round_points_to} // 0) >= 1 ?
+        _round($points, $problem->{round_points_to}) :
+    $points;
 }
 
 sub get_test_testsets {

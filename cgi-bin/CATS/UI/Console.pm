@@ -149,7 +149,8 @@ sub _console_content {
         # Hack: re-use 'clarified' field since it is relevant for questions only.
         my $unscaled_points = $clarified;
         my %p;
-        @p{qw(max_points scaled_points)} = map 0 + $_, split /\s/, $cp_point_params if $cp_point_params;
+        @p{qw(max_points scaled_points round_points_to)} =
+            map 0 + $_, split /\s/, $cp_point_params if $cp_point_params;
         my $points = CATS::Score::scale_points($unscaled_points, \%p);
 
         $request_state = -1 unless defined $request_state;

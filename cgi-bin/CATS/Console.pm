@@ -244,7 +244,9 @@ sub build_query {
             R.elements_count,
             P.title AS problem_title,
             CP.code,
-            COALESCE(CP.max_points, 0) || ' ' || COALESCE(CP.scaled_points, 0) AS cp_point_params,
+            COALESCE(CP.max_points, 0) || ' ' ||
+                COALESCE(CP.scaled_points, 0) || ' ' ||
+                COALESCE(CP.round_points_to, 0) AS cp_point_params,
             $de_sql AS de,
             $time_sql AS time_used,
             R.points AS clarified,
