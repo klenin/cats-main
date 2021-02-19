@@ -13,6 +13,22 @@ use CATS::Output qw(init_template url_f);
 use CATS::Problem::Utils;
 use CATS::StaticPages;
 
+my $zero_undef = sub { $_[0] || undef };
+my $fixed = CATS::Field::fixed(min => 0, max => 1e6, allow_empty => 1);
+
+our $form = CATS::Form->new(
+    table => 'contest_problems',
+    fields => [
+        [ name => 'max_reqs', caption => 688, editor => { size => 4 }, before_save => $zero_undef,
+            validators => CATS::Field::int_range(min => 0, max => 1e6, allow_empty => 1) ],
+        [ name => 'scaled_points', caption => 690, editor => { size => 4 }, before_save => $zero_undef,
+            validators => $fixed ],
+        [ name => 'weight', caption => 691, editor => { size => 4 }, before_save => $zero_undef,
+            validators => $fixed ],
+    ],
+    href_action => '-', # Stub.
+);
+
 sub problem_limits_frame {
     my ($p) = @_;
     init_template($p, 'problem_limits.html.tt');
@@ -42,19 +58,6 @@ sub problem_limits_frame {
 
     CATS::Problem::Utils::problem_submenu('problem_limits', $p->{pid});
 
-    my $zero_undef = sub { $_[0] || undef };
-    my $form = CATS::Form->new(
-        table => 'contest_problems',
-        fields => [
-            [ name => 'max_reqs', caption => 688, editor => { size => 4 }, before_save => $zero_undef,
-                validators => CATS::Field::int_range(min => 0, max => 1e6, allow_empty => 1) ],
-            [ name => 'scaled_points', caption => 690, editor => { size => 4 }, before_save => $zero_undef,
-                validators => CATS::Field::fixed(min => 0, max => 1e6, allow_empty => 1) ],
-            [ name => 'weight', caption => 691, editor => { size => 4 }, before_save => $zero_undef,
-                validators => CATS::Field::fixed(min => 0, max => 1e6, allow_empty => 1) ],
-        ],
-        href_action => '-', # Stub.
-    );
     my $fd = $form->parse_form_data($p);
     $t->param(fd => $fd);
     $fd->{indexed}->{max_reqs}->{caption} .= " ($contest->{max_reqs})" if $contest->{max_reqs};
