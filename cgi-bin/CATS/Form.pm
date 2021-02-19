@@ -218,8 +218,13 @@ sub make {
 
 sub route {
     my ($self) = @_;
+    (id => integer, edit_save => bool, edit_cancel => bool, $self->route_fields);
+}
+
+sub route_fields {
+    my ($self) = @_;
     # Validation is performed after routing.
-    (id => integer, edit_save => bool, edit_cancel => bool, map { $_->{name} => undef } $self->fields);
+    (map { $_->{name} => undef } $self->fields);
 }
 
 sub parse_params {
