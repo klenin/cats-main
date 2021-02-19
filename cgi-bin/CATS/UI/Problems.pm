@@ -346,7 +346,7 @@ sub problems_frame {
             SUBSTRING(P.explanation FROM 1 FOR 1) AS has_explanation,
             $test_count_sql CP.testsets, CP.points_testsets, P.lang,
             $limits_str, L.job_split_strategy,
-            CP.max_points, CP.scaled_points,
+            CP.max_points, CP.scaled_points, CP.round_points_to,
             P.repo, CP.tags, P.statement_url, P.explanation_url, CP.color, CP.max_reqs
         FROM problems P
         INNER JOIN contest_problems CP ON CP.problem_id = P.id
@@ -462,7 +462,8 @@ sub problems_frame {
             memory_limit => _combine_limits($c->{cp_memory_limit}, $c->{memory_limit}),
             time_limit => _combine_limits($c->{cp_time_limit}, $c->{time_limit}),
             write_limit => _combine_limits($c->{cp_write_limit}, $c->{write_limit}) // '*',
-            max_points => _combine_limits($c->{scaled_points}, $max_points),
+            max_points => _combine_limits($c->{scaled_points}, $max_points) .
+                ($c->{round_points_to} ? " ~$c->{round_points_to}" : ''),
             tags => $c->{tags},
             strategy => $c->{job_split_strategy} // '*',
             max_reqs => $c->{max_reqs} // '*',
