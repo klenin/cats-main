@@ -407,11 +407,10 @@ sub problems_frame {
             href_problem_console => _href_problem_console($c->{pid}),
             href_select_testsets => url_f('problem_select_testsets', pid => $c->{pid}, from_problems => 1),
             href_select_tags => url_f('problem_select_tags', pid => $c->{pid}, from_problems => 1),
-            href_select_strategy => url_f('problem_limits', pid => $c->{pid}, cid => $c->{cid},
-                from_problems => 1),
+            href_select_strategy => url_f('problem_limits', pid => $c->{pid}, from_problems => 1),
             href_last_request => ($last_request ? url_f('run_details', rid => $last_request) : ''),
             href_allow_des => url_f('problem_des', pid => $c->{pid}),
-            href_problem_limits => $is_jury && url_f('problem_limits', pid => $c->{pid}),
+            href_problem_limits => $is_jury && url_f('problem_limits', pid => $c->{pid}, from_problems => 1),
 
             status => $c->{status},
             status_text => $psn->{$c->{status}},
