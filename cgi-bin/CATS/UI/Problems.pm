@@ -182,6 +182,11 @@ sub _check_inaccessible {
     }
 }
 
+sub _combine_limits {
+    my ($override, $default) = @_;
+    defined $override && defined $default ? "$override ($default)" : $override // $default;
+}
+
 sub problems_frame {
     my ($p) = @_;
 
@@ -247,6 +252,9 @@ sub problems_frame {
             { caption => res_str(638), order_by => 'job_split_strategy', width => '5%', col => 'St' },
             { caption => res_str(687), order_by => 'max_points', width => '5%', col => 'Mp' },
             { caption => res_str(688), order_by => 'max_reqs', width => '5%', col => 'Mr' },
+            { caption => res_str(632), order_by => 'time_limit', width => '5%', col => 'Tl' },
+            { caption => res_str(628), order_by => 'memory_limit', width => '5%', col => 'Ml' },
+            { caption => res_str(617), order_by => 'write_limit', width => '5%', col => 'Wl' },
             { caption => res_str(667), order_by => 'keywords', width => '10%', col => 'Kw' },
             { caption => res_str(635), order_by => 'last_modified_by', width => '5%', col => 'Mu' },
             { caption => res_str(634), order_by => 'P.upload_date', width => '10%', col => 'Mt' },
@@ -275,7 +283,7 @@ sub problems_frame {
     # TODO: take testsets into account
     my $test_count_sql = $is_jury ?
         '(SELECT COUNT(*) FROM tests T WHERE T.problem_id = P.id) AS test_count,' : '';
-    my $limits_str = join ', ', map "P.$_", @cats::limits_fields;
+    my $limits_str = join ', ', map "P.$_, L.$_ AS cp_$_", @cats::limits_fields;
     my $counts = $lv->visible_cols->{Vc} ? qq~
         ($reqs_count_sql $cats::st_accepted$account_condition) AS accepted_count,
         ($reqs_count_sql $cats::st_wrong_answer$account_condition) AS wrong_answer_count,
@@ -328,13 +336,14 @@ sub problems_frame {
             P.upload_date, $judges_installed_sql AS judges_installed,
             (SELECT A.login FROM accounts A WHERE A.id = P.last_modified_by) AS last_modified_by,
             SUBSTRING(P.explanation FROM 1 FOR 1) AS has_explanation,
-            $test_count_sql CP.testsets, CP.points_testsets, P.lang, $limits_str,
-            $job_split_strategy_sql AS job_split_strategy,
+            $test_count_sql CP.testsets, CP.points_testsets, P.lang,
+            $limits_str, L.job_split_strategy,
             CP.max_points, CP.scaled_points,
             P.repo, CP.tags, P.statement_url, P.explanation_url, CP.color, CP.max_reqs
         FROM problems P
         INNER JOIN contest_problems CP ON CP.problem_id = P.id
         INNER JOIN contests OC ON OC.id = P.contest_id
+        LEFT JOIN limits L ON L.id = CP.limits_id
         WHERE CP.contest_id = ?$hidden_problems
         ~ . $lv->maybe_where_cond . $lv->order_by
     );
@@ -442,10 +451,10 @@ sub problems_frame {
             testsets => $c->{testsets} || '*',
             points_testsets => $c->{points_testsets},
             test_count => $c->{test_count},
-            memory_limit => $c->{memory_limit} * 1024 * 1024,
-            time_limit => $c->{time_limit},
-            write_limit => $c->{write_limit},
-            max_points => $c->{scaled_points} ? "$c->{scaled_points} ($max_points)" : $max_points,
+            memory_limit => _combine_limits($c->{cp_memory_limit}, $c->{memory_limit}),
+            time_limit => _combine_limits($c->{cp_time_limit}, $c->{time_limit}),
+            write_limit => _combine_limits($c->{cp_write_limit}, $c->{write_limit}) // '*',
+            max_points => _combine_limits($c->{scaled_points}, $max_points),
             tags => $c->{tags},
             strategy => $c->{job_split_strategy} // '*',
             max_reqs => $c->{max_reqs} // '*',
