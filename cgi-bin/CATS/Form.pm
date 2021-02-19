@@ -177,6 +177,8 @@ sub new {
 
 sub fields { @{$_[0]->{fields}} }
 
+sub fields_sql { join ', ', @{$_[0]->{select_fields}} }
+
 sub load {
     my ($self, $id) = @_;
     my $id_field = $self->{table_alias} ? "$self->{table_alias}.id" : 'id';

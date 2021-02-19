@@ -4,7 +4,7 @@ use utf8;
 
 use File::Spec;
 use FindBin;
-use Test::More tests => 16;
+use Test::More tests => 17;
 
 use lib File::Spec->catdir($FindBin::Bin, '..');
 use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
@@ -66,11 +66,12 @@ CATS::Messages::init;
 
 {
     my $f = CATS::Form->new(
-        table => 'tbl',
+        table => 'tbl T',
         fields => [ [ name => 'f' ], [ name => 'g' ] ],
         href_action => '-',
     );
     is_deeply [ $f->route_fields ], [ f => undef, g => undef ], 'route_fields';
+    is $f->fields_sql, 'T.f, T.g', 'fields_sql';
 }
 
 1;
