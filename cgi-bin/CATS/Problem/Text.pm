@@ -37,7 +37,7 @@ sub _xml_quote_topicalizer {
 
 sub process_text {
     if ($verbatim_depth) {
-        _xml_quote_topicalizer for $text_span;
+        #_xml_quote_topicalizer for $text_span;
         $html_code .= $text_span;
         $text_span = '';
         return;
@@ -46,7 +46,7 @@ sub process_text {
         my ($text, $tex_sep1, $tex, $tex_sep2) = ($1, $2, $3, $4);
         if ($text ne '') {
             for ($text) {
-                _xml_quote_topicalizer;
+                #_xml_quote_topicalizer;
                 s/(\s|~)(:?-){2,3}(?!-)/($1 ? '&nbsp;' : '') . '&#8212;'/ge; # Em-dash.
                 s/``/\xAB/g; # Left guillemet.
                 s/''/\xBB/g; # Right guillemet.
