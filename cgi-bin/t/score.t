@@ -3,7 +3,7 @@ use warnings;
 
 use File::Spec;
 use FindBin;
-use Test::More tests => 8;
+use Test::More tests => 11;
 
 use lib File::Spec->catdir($FindBin::Bin, '..');
 use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
@@ -22,5 +22,15 @@ is CATS::Score::scale_points(1,
     { scaled_points => 1, max_points => 3, round_points_to => 0.01 }), 0.33, 'scale_points rescale round';
 is CATS::Score::scale_points(75,
     { max_points => 100, round_points_to => 10 }), 70, 'scale_points round';
+
+{
+    *da = *CATS::Score::dependencies_accepted;
+    my $ts2 = { name => 't2', depends_on => 't1' };
+    my $all = [ { name => 't1' }, $ts2 ];
+    my $cache = {};
+    is da($all, $ts2, { t1 => 1 }, $cache), 1, 'dependencies_accepted 1';
+    is da($all, $ts2, {}, $cache), 1, 'dependencies_accepted cached';
+    is da($all, $ts2, {}, {}), 1, 'dependencies_accepted 0';
+}
 
 1;

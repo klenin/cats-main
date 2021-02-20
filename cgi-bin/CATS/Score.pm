@@ -66,4 +66,14 @@ sub cache_max_points {
     $max_points;
 }
 
+
+sub dependencies_accepted {
+    my ($all_testsets, $ts, $accepted_tests, $cache) = @_;
+    return 1 if !$ts->{depends_on} or $cache->{$ts->{name}};
+    my $tests = $ts->{parsed_depends_on} //=
+        CATS::Testset::parse_test_rank($all_testsets, $ts->{depends_on}, undef, include_deps => 1);
+    $accepted_tests->{$_} or return 0 for keys %$tests;
+    return $cache->{$ts->{name}} = 1;
+}
+
 1;

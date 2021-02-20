@@ -15,7 +15,6 @@ use CATS::IP;
 use CATS::Messages qw(msg res_str);
 use CATS::Output qw(init_template downloads_path downloads_url url_f url_f_cid);
 use CATS::Problem::Utils;
-use CATS::RankTable;
 use CATS::ReqDetails qw(
     get_compilation_error
     get_contest_info
@@ -77,7 +76,7 @@ sub _get_run_info {
             $used_testsets{$ts->{name}} = $ts;
             $ts->{accepted_count} //= 0;
             push @{$ts->{list} ||= []}, $last_test;
-            if (CATS::RankTable::dependencies_accepted($all_testsets, $ts, \%accepted_tests, \%accepted_deps)) {
+            if (CATS::Score::dependencies_accepted($all_testsets, $ts, \%accepted_tests, \%accepted_deps)) {
                 $ts->{accepted_count} += $row->{is_accepted};
                 if (!$row->{is_accepted} && ($ts->{failed_test} // 1e12) > $last_test) {
                     $ts->{failed_test} = $last_test;

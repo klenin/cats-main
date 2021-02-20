@@ -192,15 +192,6 @@ sub _get_first_unprocessed {
     ));
 }
 
-sub dependencies_accepted {
-    my ($all_testsets, $ts, $accepted_tests, $cache) = @_;
-    return 1 if !$ts->{depends_on} or $cache->{$ts->{name}};
-    my $tests = $ts->{parsed_depends_on} //=
-        CATS::Testset::parse_test_rank($all_testsets, $ts->{depends_on}, undef, include_deps => 1);
-    $accepted_tests->{$_} or return 0 for keys %$tests;
-    return $cache->{$ts->{name}} = 1;
-}
-
 sub cache_req_points {
     my ($req, $problem) = @_;
     my $test_points = $dbh->selectall_arrayref(q~
@@ -222,7 +213,7 @@ sub cache_req_points {
         my $t = $test_testsets->{$_->{rank}};
         $_->{test_points} //= 0;
         $_->{result} != $cats::st_accepted ? 0 :
-        $t && $t->{depends_on} && !dependencies_accepted(
+        $t && $t->{depends_on} && !CATS::Score::dependencies_accepted(
             $problem->{all_testsets}, $t, \%accepted_tests, \%accepted_deps) ? 0 :
         # Scoring groups have priority over partial checkers,
         # although they should not be used together.
