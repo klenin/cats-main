@@ -217,7 +217,8 @@ sub cache_req_points {
     for (@$test_points) {
         $accepted_tests{$_->{rank}} = 1 if $_->{result} == $cats::st_accepted;
     }
-    my $total = sum map {
+    # Write zero points in case of zero tests run (e.g. CE) to mark reqest as cached.
+    my $total = sum 0, map {
         my $t = $test_testsets->{$_->{rank}};
         $_->{test_points} //= 0;
         $_->{result} != $cats::st_accepted ? 0 :
