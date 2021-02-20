@@ -208,8 +208,10 @@ sub authenticated_contests_view {
                 (SELECT COUNT(*) FROM problems P WHERE P.contest_id = C.id)~,
         });
     }
-    my $tags_sql = $p->{listview}->visible_cols->{Tg} ? q~
-        SELECT LIST(CT.name, ', ') FROM contest_contest_tags CCT
+    my $max_tags_len = 100;
+    my $tags_sql = $p->{listview}->visible_cols->{Tg} ? qq~
+        SELECT CAST(LEFT(LIST(CT.name, ', '), $max_tags_len) AS VARCHAR($max_tags_len))
+        FROM contest_contest_tags CCT
         INNER JOIN contest_tags CT ON CT.id = CCT.tag_id
         WHERE CCT.contest_id = C.id~ : 'NULL';
 
@@ -239,6 +241,7 @@ sub authenticated_contests_view {
     my $fetch_contest = sub {
         my $c = $_[0]->fetchrow_hashref or return;
         $c->{tags_split} = [ split ', ', $c->{tags} // '' ];
+        delete $c->{tags_split}->[-1] if length($c->{tags}) >= $max_tags_len;
         return (
             _common_contests_view($c),
             editable => $c->{is_jury},
