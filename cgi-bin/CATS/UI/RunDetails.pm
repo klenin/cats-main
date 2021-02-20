@@ -182,11 +182,11 @@ sub _get_run_info {
         $req->{state} != $cats::st_manually_rejected &&
         (!defined $req->{points} || $req->{points} != $total_points)
     ) {
-        $req->{points} = $total_points;
+        $req->{points} //= $total_points;
         eval {
             $req->{needs_commit} = $dbh->do(q~
-                UPDATE reqs SET points = ? WHERE id = ? AND points IS DISTINCT FROM ?~, undef,
-                $req->{points}, $req->{req_id}, $req->{points});
+                UPDATE reqs SET points = ? WHERE id = ? AND points IS NULL~, undef,
+                $req->{points}, $req->{req_id});
             1;
         } or $CATS::DB::db->catch_deadlock_error("get_run_info $req->{req_id}");
     }
