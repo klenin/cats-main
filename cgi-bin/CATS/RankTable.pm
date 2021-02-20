@@ -540,6 +540,7 @@ sub rank_table {
         show_regions => $self->{show_regions},
         show_flags => $self->{show_flags},
         show_logins => $self->{show_logins},
+        show_place => ($self->{sort} // '') ne 'name',
         req_selection => same_or_default(map $_->{req_selection}, values %{$self->{contests}}),
         notime => $self->{notime},
         nostats => $self->{nostats},

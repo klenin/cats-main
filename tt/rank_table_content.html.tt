@@ -40,7 +40,7 @@
   [% FOREACH c IN contest_order; -%]
   <th colspan="[% c.count %]"><a href="[% c.href_problems %]" title="[% c.title | html %]">[% c.start_date %]</a></th>
   [%- END %]
-  <th colspan="4"></th>
+  <th colspan="[% show_place ? 4 : 3 %]"></th>
 [% END -%]
 <tr class="col_defs">
 <th class="narrow"></th>
@@ -55,7 +55,7 @@
 [% END %]
 <th style="width: [% problem_column_width %]%;">[% IF show_points; capt.total %] ([% max_total_points %])[% ELSE %]=[% END %]</th>
 [% IF !show_points && !notime %]<th>[% capt.time %]</th>[% END %]
-<th>[% capt.place %]</th>
+[% IF show_place %]<th>[% capt.place %]</th>[% END %]
 <th>[% capt.status %]</th>
 </tr>
 [% IF printable %]
@@ -77,7 +77,9 @@
 [% END -%]
 <td>[% IF show_points; r.total_points ~%]
   [% ELSE; r.total_solved; IF !notime; %]<td>[% r.total_time; END; END -%]
-</td><td>[% r.place %]</td><td class="ts">
+</td>
+[% IF show_place %]<td>[% r.place %]</td>[% END %]
+<td class="ts">
   [%~ capt.ooc IF r.is_ooc %] [% capt.remote IF r.is_remote %] [% capt.virtual IF r.is_virtual %] [% r.prize ~%]
 </td></tr>
 [% END %]
@@ -134,7 +136,7 @@ for(var i = 0; i < rank_table.length; ++i) {
   }
   td(r.ts);[% IF !notime %] td(r.ttm);[% END %]
   [% END %]
-  td(r.pl); td(r.st, 'class="ts"'); html += '</tr>';
+  [% IF show_place %]td(r.pl); [% END %]td(r.st, 'class="ts"'); html += '</tr>';
 }
 document.write(html);
 
