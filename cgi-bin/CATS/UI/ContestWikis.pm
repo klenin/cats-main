@@ -18,7 +18,7 @@ our $form = CATS::Form->new(
     fields => [
         [ name => 'contest_id', caption => 603, before_save => sub { $cid } ],
         [ name => 'wiki_id', validators => [ $CATS::Field::foreign_key ], caption => 601, ],
-        [ name => 'allow_edit', validators => [ $CATS::Field::bool ], caption => 681, ],
+        [ name => 'allow_edit', validators => [ $CATS::Field::bool ], before_save => sub { $_[0] ? 1 : 0 }, caption => 681, ],
         [ name => 'ordering', validators => [ $ordering ], caption => 682, ],
     ],
     href_action => 'contest_wikis_edit',
