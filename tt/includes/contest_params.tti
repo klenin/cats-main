@@ -1,18 +1,26 @@
 [%- PROCESS "lang/$lang/contest_params.tti" -%]
+[%- SET maybe_readonly = can_edit ? '' : ' readonly="readonly"' -%]
 [%- MACRO date_row(name, value) BLOCK -%]
   <tr>
     <td>[% capt.item(name) %]:</td>
     <td style="position: relative;"><input type="text" name="[% name %]" value="[% value | html %]" class="bordered"
-      [%- UNLESS can_edit %] readonly="readonly"[% END %]/>
+      [%- maybe_readonly %]/>
       [%- IF can_edit %]
       <a href="#" onclick="show_datepicker(this, '[% name %]')" class="icon icon_centered datepicker"></a>
       [% END -%]
     </td>
   </tr>
 [%- END %]
+[%- MACRO input_row(name, value) BLOCK -%]
+  <tr><td>[% capt.item(name) %]:</td>
+    <td><input type="text" name="[% name %]" value="[% value | html %]" class="bordered"[% maybe_readonly %]/></td>
+  </tr>
+[%- END %]
 <table>
-  <tr><td>[% capt.title %]:</td><td><input type="text" size="80" name="title" value="[% title | html %]" class="bordered" [% UNLESS can_edit %]readonly="readonly"[% END %]/></td></tr>
-  <tr><td>[% capt.short_descr %]:</td><td><textarea rows="2" cols="60" name="short_descr" class="bordered" [% UNLESS can_edit %]readonly="readonly"[% END %]/>[% short_descr | html %]</textarea></td></tr>
+  <tr><td>[% capt.title %]:</td><td><input type="text" size="80" name="title" value="[% title | html %]" class="bordered"[% maybe_readonly %]/></td></tr>
+  <tr><td>[% capt.short_descr %]:</td>
+    <td><textarea rows="2" cols="60" name="short_descr" class="bordered"[% maybe_readonly %]/>[% short_descr | html %]</textarea></td>
+  </tr>
   [% date_row('start_date', start_date) %]
   [% date_row('freeze_date', freeze_date) %]
   [% date_row('finish_date', finish_date) %]
@@ -67,7 +75,7 @@
 </div>
 <div style="clear: both;"/>
 <table class="bordered verdict_list">
-  <tr><td>[% capt.max_reqs %]:</td><td><input type="text" name="max_reqs" value="[% max_reqs | html %]" class="bordered" [% UNLESS can_edit %]readonly="readonly"[% END %]/></td></tr>
+  [% input_row('max_reqs', max_reqs) %]
   <tr><td>[% capt.exclude_verdicts %]:</td>
   <td>[% FOREACH v IN verdicts_max_reqs ~%]
   <label class="run_details_[% v.short %]" title="[% capt.verdicts.item(v.short) %]">
@@ -78,7 +86,7 @@
 </table>
 <br/>
 <table class="bordered verdict_list">
-  <tr><td>[% capt.penalty %]:</td><td><input type="text" name="penalty" value="[% penalty %]" class="bordered" [% UNLESS can_edit %]readonly="readonly"[% END %]/></td></tr>
+  [% input_row('penalty', penalty) %]
   <tr><td>[% capt.exclude_verdicts %]:</td>
   <td>[% FOREACH v IN verdicts_penalty ~%]
   <label class="run_details_[% v.short %]" title="[% capt.verdicts.item(v.short) %]">
