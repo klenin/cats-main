@@ -33,14 +33,15 @@ my %generators = (
     limits => sub { sc('limits' . ($_[1] ? ' hh' : '') =>
         ($_[1] ? sc(hi => ss($_[1])) : '') . sc(mid => ss($_[0])) . ($_[2] ? sc(lo => ss($_[2])) : '')
     ) },
+    underset => sub { sc(limits => sc(mid => ss($_[1])) . sc(lo => ss($_[0]))) },
     subsup => sub { sc('tbl hilo', ss(ss($_[0])) . ss(ss($_[1]))) },
     block  => sub { join '', @_ },
     'sqrt' => sub { ($_[1] ? qq~<sup class="root">$_[1]</sup>~ : '') . $sqrt_sym . sc(sqrt => $_[0]) },
     overline => sub { sc(over => @_) },
     hat_1  => sub { "@_&#770;" },
     hat_large => sub { sc(hat => @_) },
-    frac   => sub { sc('frac sfrac', sc(nom => ss($_[0]))  . ss(ss($_[1]))) },
-    dfrac  => sub { sc('frac dfrac', sc(nom => ss($_[0]))  . ss(ss($_[1]))) },
+    frac   => sub { sc('frac sfrac', sc(nom => ss($_[0])) . ss(ss($_[1]))) },
+    dfrac  => sub { sc('frac dfrac', sc(nom => ss($_[0])) . ss(ss($_[1]))) },
     space  => sub { '&nbsp;' },
     left   => \&left_right,
     right  => \&left_right,
@@ -56,6 +57,7 @@ my %generators = (
     mathbf => sub { sc(b => @_) },
     mathop => \&ss,
     mathrm => sub { sc(mathrm => @_) },
+    operatorname => sub { sc(mathrm => @_) },
     sum    => $large_sym->('sum'),
     prod   => $large_sym->('prod'),
     int    => $large_sym->('int', 'int'),
@@ -65,7 +67,7 @@ my %generators = (
     prime  => sub { length($_[0]) == 2 ? '&#8243;' : '&prime;' x length($_[0]) },
 );
 
-my $high_gens = { limits => 1 };
+my $high_gens = { limits => 1, underset => 1 };
 
 my $source;
 
@@ -110,10 +112,12 @@ my %simple_commands = (
     mathcal => 1,
     mathop => 1,
     mathrm => 1,
+    operatorname => 1,
     overline => 1,
     prod => 0,
     right => 1,
     sum => 0,
+    underset => 2,
 );
 
 sub parse_optional {
