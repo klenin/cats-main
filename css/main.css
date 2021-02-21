@@ -7,6 +7,32 @@ body {
     width: 100%;
 }
 
+.bordered input[type=checkbox] {
+    appearance: none;
+    -webkit-appearance: none;
+    margin-left: 0;
+    outline: none;
+}
+.bordered input[type=checkbox]::after {
+    border: 1px solid #4040ff;
+    border-radius: 3px;
+    width: 11px;
+    height: 11px;
+    vertical-align: middle;
+    display: inline-block;
+    background-color: white;
+    color: black;
+    font-size: 11px;
+    line-height: 10px;
+    content: '';
+}
+.bordered input[type=checkbox]:checked::after {
+    content: '\2714';
+}
+.bordered input[type=checkbox]:hover::after {
+    font-weight: bold;
+}
+
 table.iface { width: 100%; border-collapse : collapse; }
 table.iface tr td { padding: 0; }
 
