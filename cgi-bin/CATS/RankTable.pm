@@ -77,7 +77,8 @@ sub get_problems {
         $_->{exclude_penalty} = {
             $cats::st_accepted => 1, map { $_ => 1 } split ',', $_->{penalty_except} // '' };
         $_->{scaled_points} += 0 if $_->{scaled_points};
-        $self->{max_total_points} += $_->{scaled_points} || $_->{max_points} || 0;
+        $_->{weight} = 1 * $_->{weight} if $_->{weight};
+        $self->{max_total_points} += ($_->{scaled_points} || $_->{max_points} || 0) * ($_->{weight} || 1);
         $self->{has_competitive} = 1 if $_->{run_method} == $cats::rm_competitive;
     }
     $dbh->commit if $need_commit;
@@ -513,7 +514,7 @@ sub _process_single_run {
             $t->{total_points} += $points;
             $ap->{points} += $points;
         } else {
-            my $dp = ($points || 0) - $ap->{points};
+            my $dp = (($points || 0) - $ap->{points}) * ($problem->{weight} || 1);
             # If req_selection is set to 'best', ignore negative point changes.
             if ($self->{contests}->{$r->{contest_id}}->{req_selection} == 0 || $dp > 0) {
                 $t->{total_points} += $dp;

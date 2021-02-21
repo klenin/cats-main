@@ -50,7 +50,7 @@
   <a href="[% p.problem_text %]" title="[% p.title | html %]">
   [% IF p.color %]<span class="problem_color" style="background-color: [% p.color | html %];"></span>[% END %]
   [% p.code %]</a>
-  [%- IF show_points; mp = p.scaled_points || p.max_points; " ($mp)"; END -%]
+  [%- IF show_points; mp = p.scaled_points || p.max_points; w = p.weight ? " *$p.weight" : ''; " ($mp$w)"; END -%]
 </th>
 [% END %]
 <th style="width: [% problem_column_width %]%;">[% IF show_points; capt.total %] ([% max_total_points %])[% ELSE %]=[% END %]</th>
