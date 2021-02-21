@@ -48,6 +48,7 @@ my %generators = (
     Big    => sub { sc("large hh2" => @_) },
     bigg   => sub { sc("large hh3" => @_) },
     Bigg   => sub { sc("large hh4" => @_) },
+    boldsymbol => sub { sc(b => @_) },
     mathcal=> sub { sc(mathcal => @_) },
     texttt => sub { sc(tt => @_) },
     mbox   => \&ss,
@@ -99,6 +100,7 @@ sub parse_token {
 
 my %simple_commands = (
     big => 1, Big => 1, bigg => 1, Bigg => 1,
+    boldsymbol => 1,
     dfrac => 2,
     frac => 2,
     int => 0,
