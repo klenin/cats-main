@@ -240,7 +240,8 @@ sub authenticated_contests_view {
     }
     my $fetch_contest = sub {
         my $c = $_[0]->fetchrow_hashref or return;
-        $c->{tags_split} = [ split ', ', $c->{tags} // '' ];
+        $c->{tags} //= '';
+        $c->{tags_split} = [ split ', ', $c->{tags} ];
         delete $c->{tags_split}->[-1] if length($c->{tags}) >= $max_tags_len;
         return (
             _common_contests_view($c),
