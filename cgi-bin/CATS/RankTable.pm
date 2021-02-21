@@ -24,6 +24,7 @@ use fields qw(
     title has_practice not_started filter sites groups use_cache
     rank problems problems_idx show_all_results show_prizes has_competitive
     show_regions show_flags show_logins sort p notime nostats
+    max_total_points
 );
 
 sub new {
@@ -58,7 +59,7 @@ sub get_problems {
     my @contest_order;
     my $prev_cid = -1;
     my $need_commit = 0;
-    my $max_total_points = 0;
+    $self->{max_total_points} = 0;
     for (@$problems) {
         my $c = $self->{contests}->{$_->{contest_id}};
         if ($_->{contest_id} != $prev_cid) {
@@ -76,7 +77,7 @@ sub get_problems {
         $_->{exclude_penalty} = {
             $cats::st_accepted => 1, map { $_ => 1 } split ',', $_->{penalty_except} // '' };
         $_->{scaled_points} += 0 if $_->{scaled_points};
-        $max_total_points += $_->{scaled_points} || $_->{max_points} || 0;
+        $self->{max_total_points} += $_->{scaled_points} || $_->{max_points} || 0;
         $self->{has_competitive} = 1 if $_->{run_method} == $cats::rm_competitive;
     }
     $dbh->commit if $need_commit;
@@ -86,7 +87,7 @@ sub get_problems {
         problem_column_width => min(max(int(600 / max(scalar @$problems, 1)) / 10, 1), 7),
         contests => $self->{contests},
         contest_order => \@contest_order,
-        max_total_points => $max_total_points
+        max_total_points => 0 + ($contest->{scaled_points} // $self->{max_total_points}),
     );
 
     my $idx = $self->{problems_idx} = {};
@@ -578,6 +579,14 @@ sub rank_table {
     }
     $write_cache->() if !$first_unprocessed || $max_req_id < $first_unprocessed;
 
+    my $scale_params = {
+        max_points => $self->{max_total_points},
+        scaled_points => $contest->{scaled_points},
+        round_points_to => $contest->{round_points_to},
+    };
+    # Scale after caching to preserve unscaled values, but before ranking since rounding may affect that.
+    $_->{total_points} = CATS::Score::scale_points($_->{total_points}, $scale_params) for values %$teams;
+
     my ($row_num, $row_color) = $self->prepare_ranks($teams, $unprocessed);
     # Calculate stats.
     @$_{qw(total_runs total_accepted total_points)} = (0, 0, 0) for values %$problem_stats;
@@ -590,6 +599,7 @@ sub rank_table {
             $stat->{total_points} += $tp->{points} || 0;
         }
     }
+    CATS::Score::align_by_point($self->{rank}, 'total_points', "\x{2007}"); # Unicode figure space.
 
     my $search_contest = $is_root ? $self->search_clist : '';
     my @href_submits_params = (i_value => -1, se => 'user_stats', show_results => 1, rows => 30);

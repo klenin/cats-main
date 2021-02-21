@@ -75,9 +75,11 @@
     <td class="[% cls %]">[% IF !notime %]<p>[% c.time | html %]</p>[% END; c.td | html %]</td>
   [% END -%]
 [% END -%]
-<td>[% IF show_points; r.total_points ~%]
-  [% ELSE; r.total_solved; IF !notime; %]<td>[% r.total_time; END; END -%]
-</td>
+[% IF show_points -%]
+<td class="num">[% r.total_points ~%]</td>
+[% ELSE -%]
+<td>[% r.total_solved %]</td>[% IF !notime %]<td>[% r.total_time %]</td>[% END;
+END -%]
 [% IF show_place %]<td>[% r.place %]</td>[% END %]
 <td class="ts">
   [%~ capt.ooc IF r.is_ooc %] [% capt.remote IF r.is_remote %] [% capt.virtual IF r.is_virtual %] [% r.prize ~%]
@@ -88,7 +90,7 @@
 var rank_table = [
 [% FOREACH r IN rank %]
   { id: [% r.account_id %], n: "[% show_logins ? r.login : r.team_name | html | $Javascript %]", fl: "[% r.flag %]",[% IF show_points %]
-    pt: [[% FOREACH c IN r.columns %]'[% c.points %]'[% UNLESS loop.last %],[% END %][% END %]], tp: [% r.total_points %][% ELSE %]
+    pt: [[% FOREACH c IN r.columns %]'[% c.points %]'[% UNLESS loop.last %],[% END %][% END %]], tp: '[% r.total_points %]'[% ELSE %]
     tm: [[% FOREACH c IN r.columns %]'[% c.time %]'[% UNLESS loop.last %],[% END %][% END %]],
     td: [[% FOREACH c IN r.columns %]'[% c.td %]'[% UNLESS loop.last %],[% END %][% END %]],
     ts: [% r.total_solved %], ttm: [% r.total_time %][% END %], rc: [% r.row_color %],
@@ -125,7 +127,7 @@ for(var i = 0; i < rank_table.length; ++i) {
   [% IF show_points %]
   for (var j = 0; j < r.pt.length; ++j)
     td(href(url_problem(j) + ';uf=' + r.id, r.pt[j]));
-  td(r.tp);
+  td(r.tp, ' class="num"');
   [% ELSE %]
   for (var j = 0; j < r.tm.length; ++j) {
     var fc = r.td[j].substr(0, 1);
