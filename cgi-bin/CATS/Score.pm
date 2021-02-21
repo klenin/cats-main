@@ -3,6 +3,8 @@ package CATS::Score;
 use strict;
 use warnings;
 
+use List::Util qw(max);
+
 use CATS::DB qw(:DEFAULT);
 use CATS::Testset;
 
@@ -74,6 +76,22 @@ sub dependencies_accepted {
         CATS::Testset::parse_test_rank($all_testsets, $ts->{depends_on}, undef, include_deps => 1);
     $accepted_tests->{$_} or return 0 for keys %$tests;
     return $cache->{$ts->{name}} = 1;
+}
+
+sub align_by_point {
+    my ($data, $field, $char) = @_;
+    $char //= '0';
+    my $max_frac_len = 0;
+    my $frac_re = qr/\.(\d*)$/;
+    for my $row (@$data) {
+        $max_frac_len = max(length($1), $max_frac_len) if $row->{$field} =~ $frac_re;
+    }
+    $max_frac_len or return;
+
+    for my $row (@$data) {
+        $row->{$field} .= $row->{$field} =~ $frac_re ?
+            $char x ($max_frac_len - length($1)) : '.' . ($char x $max_frac_len);
+    }
 }
 
 1;

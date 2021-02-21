@@ -3,7 +3,7 @@ use warnings;
 
 use File::Spec;
 use FindBin;
-use Test::More tests => 11;
+use Test::More tests => 14;
 
 use lib File::Spec->catdir($FindBin::Bin, '..');
 use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
@@ -31,6 +31,18 @@ is CATS::Score::scale_points(75,
     is da($all, $ts2, { t1 => 1 }, $cache), 1, 'dependencies_accepted 1';
     is da($all, $ts2, {}, $cache), 1, 'dependencies_accepted cached';
     is da($all, $ts2, {}, {}), 1, 'dependencies_accepted 0';
+}
+
+sub abp {
+    my $d = [ map +{ f => $_ }, @_ ];
+    CATS::Score::align_by_point($d, 'f');
+    [ map $_->{f}, @$d ];
+}
+
+{
+    is_deeply abp(1, 0, 3), [ qw(1 0 3) ], 'abp 0';
+    is_deeply abp('1.0', 2, '3.'), [ qw(1.0 2.0 3.0) ], 'abp 1';
+    is_deeply abp(111.1, 2.34, '13'), [ qw(111.10 2.34 13.00) ], 'abp 2';
 }
 
 1;
