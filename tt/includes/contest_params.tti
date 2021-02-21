@@ -19,6 +19,10 @@
   [% date_row('defreeze_date', defreeze_date) %]
   [% date_row('pub_reqs_date', pub_reqs_date) %]
   [% date_row('offset_start_until', offset_start_until) %]
+</table>
+<div class="contest_params">
+[% capt.scoring %]:
+<table class="bordered">
   <tr><td>[% capt.rules %]:</td><td>[% IF can_edit %]
     <select name="rules" class="bordered">
       <option value="0"[% UNLESS rules %] selected="selected"[% END %]>[% capt.icpc %]</option>
@@ -33,19 +37,20 @@
     </select>[% ELSE %][% IF req_selection; capt.req_selection_best; ELSE; capt.req_selection_last; END %]
     [% END %]
   </td></tr>
+  <tr><td>[% capt.run_all_tests %]:</td><td>[% checkbox_1('run_all_tests', run_all_tests, can_edit) %]</td></tr>
 </table>
-<div style="margin: 10px; float: left;">
+</div>
+<div class="contest_params">
 [% capt.flags %]:
 <table class="bordered">
   <tr><td>[% capt.open_registration %]:</td><td>[% checkbox_1('free_registration', free_registration, can_edit) %]</td></tr>
   <tr><td>[% capt.is_official %]:</td><td>[% checkbox_1('is_official', is_official, user.privs.is_root) %]</td></tr>
-  <tr><td>[% capt.run_all_tests %]:</td><td>[% checkbox_1('run_all_tests', run_all_tests, can_edit) %]</td></tr>
   <tr><td>[% capt.local_only %]:</td><td>[% checkbox_1('local_only', local_only, can_edit) %]</td></tr>
   <tr><td>[% capt.is_hidden %]:</td><td>[% checkbox_1('is_hidden', is_hidden, can_edit) %]</td></tr>
   <tr><td>[% capt.pinned_judges_only %]:</td><td>[% checkbox_1('pinned_judges_only', pinned_judges_only, can_edit) %]</td></tr>
 </table>
 </div>
-<div style="margin: 10px;">
+<div class="contest_params">
 [% capt.show_to_teams %]:
 <table class="bordered">
   <tr><td>[% capt.show_all_results %]:</td><td>[% checkbox_1('show_all_results', show_all_results, can_edit) %]</td></tr>
@@ -60,6 +65,7 @@
   <tr><td>[% capt.show_all_for_solved %]:</td><td>[% checkbox_1('show_all_for_solved', show_all_for_solved, can_edit) %]</td></tr>
 </table>
 </div>
+<div style="clear: both;"/>
 <table class="bordered verdict_list">
   <tr><td>[% capt.max_reqs %]:</td><td><input type="text" name="max_reqs" value="[% max_reqs | html %]" class="bordered" [% UNLESS can_edit %]readonly="readonly"[% END %]/></td></tr>
   <tr><td>[% capt.exclude_verdicts %]:</td>
