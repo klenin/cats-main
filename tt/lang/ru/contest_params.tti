@@ -33,6 +33,8 @@
     show_flags => 'флаги',
     show_sites => 'площадки',
     show_all_for_solved => 'чужие попытки после решения',
+    scaled_points => 'Масштабированные баллы',
+    round_points_to => 'Округлять баллы до',
     max_reqs => 'Максимальное число попыток',
     exclude_verdicts => 'Исключить вердикты',
     penalty => 'Штраф',

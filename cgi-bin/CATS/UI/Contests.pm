@@ -52,6 +52,7 @@ sub contest_params() {qw(
     show_all_tests freeze_date defreeze_date show_test_data max_reqs_except show_frozen_reqs show_all_results
     pinned_judges_only show_test_resources show_checker_comment
     pub_reqs_date show_all_for_solved apikey login_prefix offset_start_until
+    scaled_points round_points_to
 )}
 
 sub contest_checkbox_params() {qw(
@@ -66,7 +67,7 @@ sub contest_date_params() {qw(
 )}
 
 sub contest_string_params() {
-    (qw(title short_descr rules req_selection max_reqs), contest_date_params());
+    (qw(title short_descr rules req_selection max_reqs scaled_points round_points_to), contest_date_params());
 }
 
 sub get_contest_html_params {
@@ -83,6 +84,8 @@ sub get_contest_html_params {
     $c->{closed} = $c->{free_registration} ? 0 : 1;
     delete $c->{free_registration};
     $c->{show_frozen_reqs} = 0;
+    $c->{scaled_points} ||= undef;
+    $c->{round_points_to} ||= undef;
 
     for my $e (qw(max_reqs penalty)) {
         my $val = join ',', sort { $a <=> $b }
@@ -308,6 +311,8 @@ sub contest_problems_installed_frame {
     CATS::Contest::Utils::contest_submenu('contest_problems_installed', $cid);
 }
 
+sub _to_num { $_[0] or return; $_[0] =~ s/\.(\d*?)0+$/$1 ? ".$1" : ''/e; $_[0] || undef; }
+
 sub contest_params_frame {
     my ($p) = @_;
 
@@ -319,6 +324,7 @@ sub contest_params_frame {
         $p->{id}) or return;
     $c->{$_} = $db->format_date($c->{$_}) for CATS::Contest::Utils::contest_date_fields;
     $c->{free_registration} = !$c->{closed};
+    $c->{$_} = _to_num($c->{$_}) for qw(scaled_points round_points_to);
 
     my %verdicts_excluded_max_reqs =
         map { $CATS::Verdicts::state_to_name->{$_} => 1 } split /,/, $c->{max_reqs_except} // '';

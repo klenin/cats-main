@@ -33,6 +33,8 @@
     show_flags => 'flags',
     show_sites => 'sites',
     show_all_for_solved => 'others\' submissions after solving',
+    scaled_points => 'Scaled points',
+    round_points_to => 'Round points to',
     max_reqs => 'Submissions limit',
     exclude_verdicts => 'Exclude verdicts',
     penalty => 'Penalty',

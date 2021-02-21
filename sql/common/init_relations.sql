@@ -121,6 +121,9 @@ CREATE TABLE contests (
     show_sites           SMALLINT DEFAULT 0 NOT NULL,
     show_all_for_solved  SMALLINT DEFAULT 0 NOT NULL,
 
+    scaled_points        DECIMAL(18, 6),
+    round_points_to      DECIMAL(18, 6),
+
     CHECK (
         start_date <= finish_date AND freeze_date >= start_date
         AND freeze_date <= finish_date AND defreeze_date >= freeze_date
