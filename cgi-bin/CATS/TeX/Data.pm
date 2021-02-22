@@ -188,6 +188,20 @@ my %old = (
     zayin => '#x5D6',
 );
 
+# Combining, large.
+our %accents = (
+    acute => [  769, '\'' ],
+    bar   => [  773, '&#175;' ],
+    breve => [  774, '&#728;' ],
+    check => [  780, 'v' ],
+    dot   => [  775, '&#183;' ],
+    ddot  => [  776, '&#183;' ],
+    grave => [  768, '`' ],
+    hat   => [  770, '^' ],
+    tilde => [  771, '~' ],
+    vec   => [ 8407, '&#8594;' ],
+);
+
 our %symbols = (%binary, %arrows, %special, %spaces, %greek, %old);
 %symbols = map { $_ => "\&$symbols{$_};" } keys %symbols;
 $symbols{' '} = '&nbsp;';

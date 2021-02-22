@@ -3,7 +3,7 @@ use warnings;
 
 use File::Spec;
 use FindBin;
-use Test::More tests => 52;
+use Test::More tests => 53;
 
 use lib File::Spec->catdir($FindBin::Bin, '..');
 use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
@@ -144,7 +144,8 @@ is_ '\mathbb{R}\mathcal{C}',
     '<span class="mathbb"><i>R</i></span><span class="mathcal"><i>C</i></span>';
 
 is_ '\hat{x}', '<i>x&#770;</i>';
-is_ '\hat{x + y}', '<span class="hat"><i>x</i>&nbsp;+&nbsp;<i>y</i></span>';
+is_ '\hat{x + y}', '<span class="accent"><span>^</span><i>x</i>&nbsp;+&nbsp;<i>y</i></span>';
+is_ '\tilde{x}', '<i>x&#771;</i>';
 
 is_ '\Big|', '<span class="large hh2">|</span>';
 

@@ -38,8 +38,8 @@ my %generators = (
     block  => sub { join '', @_ },
     'sqrt' => sub { ($_[1] ? qq~<sup class="root">$_[1]</sup>~ : '') . $sqrt_sym . sc(sqrt => $_[0]) },
     overline => sub { sc(over => @_) },
-    hat_1  => sub { "@_&#770;" },
-    hat_large => sub { sc(hat => @_) },
+    accent_1 => sub { "$_[0]&#$_[1];" },
+    accent_large => sub { sc(accent => ss($_[1]) . $_[0]) },
     frac   => sub { sc('frac sfrac', sc(nom => ss($_[0])) . ss(ss($_[1]))) },
     dfrac  => sub { sc('frac dfrac', sc(nom => ss($_[0])) . ss(ss($_[1]))) },
     space  => sub { '&nbsp;' },
@@ -177,13 +177,14 @@ sub parse_block {
                 my $d = [ frac => $res[-1] // '', parse_token() ];
                 @res ? ($res[-1] = $d) : push @res, $d;
             }
-            elsif ($f eq 'hat') {
-                # Single-character hat via Unicode combining circumflex accent.
+            elsif (my $accent = $CATS::TeX::Data::accents{$f}) {
+                # Single-character accent via Unicode combining.
                 my $arg = parse_token;
                 my $block = _token_as($arg, 'block');
                 my $var = $block && _token_as($block, 'var') || _token_as($arg, 'var');
                 push @res, $var && length($var) == 1 ?
-                    [ var => [ hat_1 => $var ] ] : [ hat_large => $arg ];
+                    [ var => [ accent_1 => $var, $accent->[0] ] ] :
+                    [ accent_large => $arg, $accent->[1] ];
             }
             elsif ($f eq 'limits') {
                 $res[-1] ? $res[-1] = [ limits => $res[-1] ] : push @res, [ limits => '' ];

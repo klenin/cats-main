@@ -400,7 +400,9 @@ span.TeX sup { white-space: nowrap; position: relative; left: 1px; }
 span.TeX sup.root { position: relative; left: 6px; top: -7px; }
 span.TeX sub { white-space: nowrap; position: relative; top: 2px; }
 span.TeX span.over { border-top: 1px solid black; padding: 0 2px 0 1px; margin: 0; }
-span.TeX span.hat:before { position: relative; left: 50%; top: -7px; content: '^'; font-size: smaller; }
+span.TeX span.accent { position: relative; display: inline-block; }
+span.TeX span.accent > span:first-child {
+    position: absolute; left: 50%; top: -3px; margin-left: -3px; font-size: smaller; }
 span.TeX span.num { font-family: Times New Roman, serif; }
 span.TeX span.sqrt { border-top: 1px solid black; padding: 4px 2px 0 0; }
 span.TeX span.sqrt_sym { font-size: 19px; }
