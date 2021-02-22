@@ -25,6 +25,7 @@ our $form = CATS::Form->new(
         [ name => 'scaled_points', caption => 690, @field_common, validators => $fixed ],
         [ name => 'round_points_to', caption => 692, @field_common, validators => $fixed ],
         [ name => 'weight', caption => 691, @field_common, validators => $fixed ],
+        [ name => 'is_extra', caption => 693, before_save => $zero_undef, validators => $CATS::Field::bool ],
     ],
     href_action => '-', # Stub.
 );

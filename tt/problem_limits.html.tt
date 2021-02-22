@@ -54,6 +54,7 @@
   [% tr_text(fd.indexed.scaled_points, fd) %]
   [% tr_text(fd.indexed.round_points_to, fd) %]
   [% tr_text(fd.indexed.weight, fd) %]
+  [% tr_checkbox1(fd.indexed.is_extra, fd) %]
   <tr><td colspan="2"><button type="submit" name="override_contest" value="1" class="button">[% capt.override %]</button></td></tr>
 </table>
 </form>

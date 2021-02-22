@@ -287,6 +287,7 @@ CREATE TABLE contest_problems (
     scaled_points   DECIMAL(18, 6),
     round_points_to DECIMAL(18, 6),
     weight          DECIMAL(18, 6),
+    is_extra        SMALLINT DEFAULT 0,
     tags            VARCHAR(200),
     limits_id       INTEGER REFERENCES limits(id),
     color           VARCHAR(50),
