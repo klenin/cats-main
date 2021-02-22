@@ -207,6 +207,9 @@ function chg_code(st_sel, pid) {
 [% IF visible_cols.Mp -%]
 <td>[% href(p.href_problem_limits, p.max_points) %]</td>
 [%- END %]
+[% IF visible_cols.We -%]
+<td>[% href(p.href_problem_limits, p.weight); ' +' IF p.is_extra %]</td>
+[%- END %]
 [% IF visible_cols.Mr -%]
 <td>[% href(p.href_problem_limits, p.max_reqs) %]</td>
 [%- END %]

@@ -259,6 +259,7 @@ sub problems_frame {
             { caption => res_str(629), order_by => 'CP.tags', width => '5%', col => 'Tg' },
             { caption => res_str(638), order_by => 'job_split_strategy', width => '5%', col => 'St' },
             { caption => res_str(687), order_by => 'max_points', width => '5%', col => 'Mp' },
+            { caption => res_str(691), order_by => 'weight', width => '5%', col => 'We' },
             { caption => res_str(688), order_by => 'max_reqs', width => '5%', col => 'Mr' },
             { caption => res_str(632), order_by => 'time_limit', width => '5%', col => 'Tl' },
             { caption => res_str(628), order_by => 'memory_limit', width => '5%', col => 'Ml' },
@@ -346,7 +347,7 @@ sub problems_frame {
             SUBSTRING(P.explanation FROM 1 FOR 1) AS has_explanation,
             $test_count_sql CP.testsets, CP.points_testsets, P.lang,
             $limits_str, L.job_split_strategy,
-            CP.max_points, CP.scaled_points, CP.round_points_to,
+            CP.max_points, CP.scaled_points, CP.round_points_to, CP.weight, CP.is_extra,
             P.repo, CP.tags, P.statement_url, P.explanation_url, CP.color, CP.max_reqs
         FROM problems P
         INNER JOIN contest_problems CP ON CP.problem_id = P.id
@@ -464,6 +465,8 @@ sub problems_frame {
             write_limit => _combine_limits($c->{cp_write_limit}, $c->{write_limit}) // '*',
             max_points => _combine_limits($c->{scaled_points} && (0 + $c->{scaled_points}), $max_points) .
                 ($c->{round_points_to} ? ' ~' . (0 + $c->{round_points_to}) : ''),
+            weight => $c->{weight} ? 0 + $c->{weight} : '*',
+            is_extra => $c->{is_extra},
             tags => $c->{tags},
             strategy => $c->{job_split_strategy} // '*',
             max_reqs => $c->{max_reqs} // '*',
