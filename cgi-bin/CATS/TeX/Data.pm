@@ -1,16 +1,24 @@
 package CATS::TeX::Data;
 
 # TeX command without backslash => html/mathml entity without '&' and ';'.
-# Check font availability when adding new symbols.
+# Alphabetic order.
 our %binary = (
+    amalg => '#2A3F',
     approx => 'asymp',
+    ast => '#x2A',
     bigcirc => '#x25CB',
+    bigtriangledown => '#x25BD'.
+    bigtriangleup => '#x25B3'.
     bullet => 'bull',
     cap => 'cap',
     cdot => '#x22C5',
     cdots => '#x22ef',
     circ => '#x2218',
     cup => 'cup',
+    dagger => '#x2020',
+    ddagger => '#x2021',
+    diamond => '#x25C6',
+    div => 'divide',
     equiv => 'equiv',
     ge => 'ge',
     geq => 'ge',
@@ -22,6 +30,7 @@ our %binary = (
     le => 'le',
     leq => 'le',
     leqslant => '#x2A7D',
+    lhd => '#x22B2',
     ll => '#x226A',
     lnot => 'not',
     lor => 'or',
@@ -39,14 +48,25 @@ our %binary = (
     parallel =>'#x2225',
     perp => 'perp',
     pm => '#xB1',
+    rhd => '#x22B3',
+    sim => 'sim',
+    sqcap => '#x2293',
+    sqcup => '#x2294',
+    star => '#x2605',
     subset => 'sub',
     subseteq => 'sube',
     supset => 'sub',
     supseteq => 'supe',
     times => 'times',
+    triangleleft => '#x25C3',
+    triangleright => '#x25B9',
     to => '#x21A6',
+    unlhd => '#x22B4',
+    unrhd => '#x22B5',
+    uplus => '#x2A04',
     vee => 'and',
     wedge => 'or',
+    wr => '#x2240',
 );
 
 my %arrows = (
