@@ -43,7 +43,7 @@ sub get_problems {
             CP.id AS cpid, CP.problem_id, CP.code, CP.contest_id,
             CP.testsets, CP.points_testsets, CP.color, C.start_date,
             CAST(CURRENT_TIMESTAMP - C.start_date AS DOUBLE PRECISION) AS since_start,
-            CP.scaled_points, CP.round_points_to, CP.weight,
+            CP.scaled_points, CP.round_points_to, CP.weight, CP.is_extra,
             CP.max_points, P.title, P.max_points AS max_points_def, P.run_method,
             C.local_only, C.penalty, C.penalty_except
         FROM
@@ -78,7 +78,8 @@ sub get_problems {
             $cats::st_accepted => 1, map { $_ => 1 } split ',', $_->{penalty_except} // '' };
         $_->{scaled_points} += 0 if $_->{scaled_points};
         $_->{weight} = 1 * $_->{weight} if $_->{weight};
-        $self->{max_total_points} += ($_->{scaled_points} || $_->{max_points} || 0) * ($_->{weight} || 1);
+        $self->{max_total_points} += ($_->{scaled_points} || $_->{max_points} || 0) * ($_->{weight} || 1)
+            unless $_->{is_extra};
         $self->{has_competitive} = 1 if $_->{run_method} == $cats::rm_competitive;
     }
     $dbh->commit if $need_commit;
