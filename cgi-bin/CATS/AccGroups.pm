@@ -5,6 +5,7 @@ use warnings;
 
 use CATS::DB;
 use CATS::Globals qw($cid);
+use CATS::Messages qw(msg);
 
 sub subquery {
     my ($lv, $join_field) = @_;
@@ -28,6 +29,27 @@ sub enum {
         $acc_groups_h{$_->{name}} = $_->{id} for @$acc_groups;
         $lv->define_enums({ in_group => \%acc_groups_h });
     }
+}
+
+sub exclude_users {
+    my ($group, $users) = @_;
+    my $name_sth = $dbh->prepare(q~
+        SELECT A.team_name
+        FROM accounts A INNER JOIN acc_group_accounts AGA ON A.id = AGA.account_id
+        WHERE AGA.acc_group_id = ? AND AGA.account_id = ?~);
+    my $exclude_sth = $dbh->prepare(q~
+        DELETE FROM acc_group_accounts
+        WHERE acc_group_id = ? AND account_id = ?~);
+    my @excluded;
+    for my $user_id (@$users) {
+        $name_sth->execute($group, $user_id);
+        my $user_name = $name_sth->fetch;
+        $name_sth->finish;
+        push @excluded, $user_name if $user_name && $exclude_sth->execute($group, $user_id);
+    }
+    @excluded or return;
+    $dbh->commit;
+    msg(1227, scalar @excluded);
 }
 
 1;

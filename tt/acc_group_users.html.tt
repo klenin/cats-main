@@ -17,7 +17,7 @@ function delete_acc_group_user(href, name) {
 <tr class="[% loop.parity() %]">
 [% IF can_edit -%]
 <td class="nobr sel_col">
-  <a href="javascript:delete_acc_group_user('[% u.href_delete %]', '[% u.team_name.squote | html %]');" class="icon delete"></a>
+  <a href="javascript:delete_acc_group_user('[% u.href_exclude %]', '[% u.team_name.squote | html %]');" class="icon delete"></a>
 [% IF user.is_root -%]
   <a href="[% u.href_edit %]" class="icon edit"></a>
 [%- END %]
@@ -43,6 +43,9 @@ function delete_acc_group_user(href, name) {
 [% END -%]
 <div class="send_message action_group">
 <input type="checkbox" name="is_hidden" value="1"><button name="set_hidden" value="1" class="button">[% capt.set_hidden %]</button>
+</div>
+<div class="send_message action_group">
+<button name="exclude_selected" value="1" class="button">[% capt.exclude_selected %]</button>
 </div>
 [% END -%]
 [% PROCESS includes/pages.tti %]

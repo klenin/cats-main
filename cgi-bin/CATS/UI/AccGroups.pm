@@ -136,21 +136,12 @@ sub acc_group_users_frame {
         $p->{group}) or return;
     my $can_edit = _can_edit_group($p->{group});
 
-    _set_field($p, 'is_admin') if $p->{set_admin} && $is_root;
-    _set_field($p, 'is_hidden') if $p->{set_hidden} && $can_edit;
+    if ($can_edit) {
+        _set_field($p, 'is_admin') if $p->{set_admin} && $is_root;
+        _set_field($p, 'is_hidden') if $p->{set_hidden};
 
-    if ($p->{delete_user} && $can_edit) {
-        my $user_name = $dbh->selectrow_array(q~
-            SELECT A.team_name
-            FROM accounts A INNER JOIN acc_group_accounts AGA ON A.id = AGA.account_id
-            WHERE AGA.account_id = ? AND AGA.acc_group_id = ?~, undef,
-            $p->{delete_user}, $p->{group}) or return;
-        $dbh->do(q~
-            DELETE FROM acc_group_accounts
-            WHERE account_id = ? AND acc_group_id = ?~, undef,
-            $p->{delete_user}, $p->{group}) or die;
-        $dbh->commit;
-        msg(1094, $user_name);
+        CATS::AccGroups::exclude_users($p->{group}, [ $p->{exclude_user} ]) if $p->{exclude_user};
+        CATS::AccGroups::exclude_users($p->{group}, $p->{user_selection}) if $p->{exclude_selected};
     }
 
     my $lv = CATS::ListView->new(
@@ -185,8 +176,8 @@ sub acc_group_users_frame {
     my $fetch_record = sub {
         my $row = $_[0]->fetchrow_hashref or return ();
         return (
-            href_delete => $can_edit &&
-                url_f('acc_group_users', group => $p->{group}, delete_user => $row->{account_id}),
+            href_exclude => $can_edit &&
+                url_f('acc_group_users', group => $p->{group}, exclude_user => $row->{account_id}),
             href_edit => $is_jury && $row->{in_contest} &&
                 url_f('users_edit', uid => $row->{account_id}),
             href_stats => url_f('user_stats', uid => $row->{account_id}),
