@@ -14,6 +14,7 @@
 
 <button type="submit" name="edit_cancel" value="1" class="button">[% capt.cancel %]</button>
 </form>
+<p></p>
 
 [% IF href_api_login_token; '<p>'; href(href_api_login_token, href_api_login_token); '</p>'; END %]
 
