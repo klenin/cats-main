@@ -3,7 +3,7 @@ use warnings;
 
 use File::Spec;
 use FindBin;
-use Test::More tests => 53;
+use Test::More tests => 54;
 
 use lib File::Spec->catdir($FindBin::Bin, '..');
 use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
@@ -125,6 +125,8 @@ is_ '\int\sum\prod\bigcup' =>
     '<span class="large_sym">&sum;</span>' .
     '<span class="large_sym">&prod;</span>' .
     '<span class="large_sym">&#x22C3;</span>';
+
+is_ 'a \not\equiv b', '<i>a</i>&nbsp;&nequiv;&nbsp;<i>b</i>';
 
 is_ q~\begin{array}{l}a\end{array}~,
     '<span class="array"><span class="tbl l1">' .

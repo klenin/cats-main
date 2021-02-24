@@ -219,6 +219,10 @@ sub parse_block {
                     }
                 }
             }
+            elsif ($f eq 'not' && $source =~ s/^\\([a-zA-Z]+)(\s*)//) {
+                ($f, $rsp) = ($1, $2);
+                push @res, make_token($lsp, "not_$f", $rsp);
+            }
             else {
                 push @res, make_token($lsp, $f, $rsp);
             }

@@ -49,6 +49,13 @@ our %binary = (
     neq => 'ne',
     ni => 'ni',
     notin => 'notin',
+
+    not_equiv => 'nequiv',
+    not_eq => 'ne',
+    not_in => 'notin',
+    not_subset => '#x2284',
+    not_supset => '#x2285',
+
     odot => '#x2299',
     ominus => '#x2296',
     oplus => 'oplus',
