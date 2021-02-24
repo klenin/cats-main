@@ -10,7 +10,12 @@ use CATS::TeX::Data;
 sub ss { "<span>@_</span>" }
 sub sc { my $class = shift; qq~<span class="$class">@_</span>~ }
 
-my $large_sym = sub { my $f = sc(($_[1] // 'large_sym'), $CATS::TeX::Data::symbols{$_[0]}); sub { $f }; };
+my %large_override_class = (int => 'int');
+
+my $large_sym = sub {
+    my $f = sc(($large_override_class{$_[0]} // 'large_sym'), $CATS::TeX::Data::large{$_[0]});
+    sub { $f };
+};
 my $sqrt_sym = sc(sqrt_sym => '&#x221A;');
 
 sub left_right {
@@ -58,13 +63,11 @@ my %generators = (
     mathop => \&ss,
     mathrm => sub { sc(mathrm => @_) },
     operatorname => sub { sc(mathrm => @_) },
-    sum    => $large_sym->('sum'),
-    prod   => $large_sym->('prod'),
-    int    => $large_sym->('int', 'int'),
     array  => sub { sc(array => sc("tbl $_[0]" => join '', @_[1..$#_])) },
     cell   => sub { '</span><span>' },
     row    => sub { ss(ss(@_)) },
     prime  => sub { length($_[0]) == 2 ? '&#8243;' : '&prime;' x length($_[0]) },
+    map { $_ => $large_sym->($_) } keys %CATS::TeX::Data::large,
 );
 
 my $high_gens = { limits => 1, underset => 1 };
@@ -105,7 +108,6 @@ my %simple_commands = (
     boldsymbol => 1,
     dfrac => 2,
     frac => 2,
-    int => 0,
     left => 1,
     mathbb => 1,
     mathbf => 1,
@@ -114,10 +116,9 @@ my %simple_commands = (
     mathrm => 1,
     operatorname => 1,
     overline => 1,
-    prod => 0,
     right => 1,
-    sum => 0,
     underset => 2,
+    map { $_ => 0 } keys %CATS::TeX::Data::large,
 );
 
 sub parse_optional {

@@ -104,11 +104,26 @@ my %arrows = (
     mapsto => '#8614',
 );
 
-my %special = (
-    deg => 'deg',
-    'int' => 'int',
+our %large = (
+    bigcap => '#x22C2',
+    bigcup => '#x22C3',
+    bigodot => '#x2A00',
+    bigoplus => '#x2A01',
+    bigotimes => '#x2A02',
+    bigsqcap => '#x2A05',
+    bigsqcup => '#x2A06',
+    biguplus => '#x2A04',
+    bigvee => '#x22C1',
+    bigwedge => '#x22C0',
+    coprod => 'coprod',
+    int => 'int',
+    oint => '#x222E',
     sum => 'sum',
     prod => 'prod',
+);
+
+my %special = (
+    deg => 'deg',
     'sqrt' => '#x221A',
     partial => 'part',
     triangle => '#x25B3',
@@ -245,7 +260,7 @@ our %accents = (
 );
 
 our %symbols = (%binary, %arrows, %special, %spaces, %greek, %old);
-%symbols = map { $_ => "\&$symbols{$_};" } keys %symbols;
+$_ = "\&$_;" for values %symbols, values %large;
 $symbols{' '} = '&nbsp;';
 $symbols{'-'} = '&minus;',
 $symbols{rbrace} = $symbols{'}'} = '}';

@@ -120,8 +120,11 @@ is_ '\left((a)\right)', '((<i>a</i>))';
 
 is_ 'a \mod b \bmod c', '<i>a</i>&nbsp;<b>mod</b>&nbsp;<i>b</i>&nbsp;<b>mod</b>&nbsp;<i>c</i>';
 
-is_ '\int\sum\prod',
-    '<span class="int">&int;</span><span class="large_sym">&sum;</span><span class="large_sym">&prod;</span>';
+is_ '\int\sum\prod\bigcup' =>
+    '<span class="int">&int;</span>' .
+    '<span class="large_sym">&sum;</span>' .
+    '<span class="large_sym">&prod;</span>' .
+    '<span class="large_sym">&#x22C3;</span>';
 
 is_ q~\begin{array}{l}a\end{array}~,
     '<span class="array"><span class="tbl l1">' .
