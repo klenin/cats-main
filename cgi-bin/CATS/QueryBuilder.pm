@@ -66,8 +66,8 @@ sub sql_op {
     my ($op, $v) = @_;
     $op eq '=' || $op eq '==' ? { '=', $v } :
     $op eq '!=' ? { '!=', $v } :
-    $op eq '^=' ? { 'STARTS WITH', $v } :
-    $op eq '!^' ? { 'NOT STARTS WITH', $v } :
+    $op eq '^=' ? { 'LIKE', "$v%" } :
+    $op eq '!^' ? { 'NOT LIKE', "$v%" } :
     $op eq '~=' ? { 'LIKE', '%' . "$v%" } :
     $op eq '!~' ? { 'NOT LIKE', '%' . "$v%" } :
     $op eq '?' ? { '!=', undef } :
