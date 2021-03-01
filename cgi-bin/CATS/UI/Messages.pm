@@ -64,7 +64,7 @@ sub answer_box_frame {
         participant_name => $r->{team_name},
         title_suffix => res_str(566) . " $r->{team_name}", contest_title => $r->{title});
 
-    if ($p->{clarify} && (my $ans = Encode::decode_utf8($p->{answer_text}) // '') ne '') {
+    if ($p->{clarify} && (my $ans = $p->{answer_text} // '') ne '') {
         $r->{answer} = $user->privs->{moderate_messages} ? $ans : ($r->{answer} // '') . " $ans";
         my $s = $dbh->prepare(q~
             UPDATE questions
@@ -118,7 +118,7 @@ sub questions_api {
         $cid, $p->{clarified} ? 1 : 0);
     for my $q (@$questions) {
         $q->{$_} = $db->format_date($q->{$_}) for qw(submit_time clarification_time);
-        $q->{$_} = Encode::decode_utf8($q->{$_}) for qw(answer question team_name);
+        $q->{$_} = Encode::decode_utf8($q->{$_}) for qw(answer question);
     }
     $p->print_json({ questions => $questions });
 }

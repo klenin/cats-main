@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use Digest::SHA;
+use Encode;
 
 use CATS::Config;
 use CATS::Constants;
@@ -21,6 +22,7 @@ BEGIN {
     $check_password = eval { require Authen::Passphrase; } ?
         sub {
             my ($password, $hash) = @_;
+            $password = Encode::is_utf8($password) ? Encode::encode_utf8($password) : $password;
             my $p = eval { Authen::Passphrase->from_rfc2307($hash) };
             $p ? $p->match($password) : $password eq $hash;
         } :
@@ -80,7 +82,7 @@ sub login_frame {
     else {
         $p->{login} or return $t->param(message => 'No login');
         $where->{login} = $p->{login};
-        $t->param(login => Encode::decode_utf8($p->{login} || ''));
+        $t->param(login => $p->{login} || '');
     }
 
     my ($aid, $hash, $locked, $restrict_ips, $last_ip, $last_sid, $srole) = $dbh->selectrow_array(

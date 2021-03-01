@@ -244,7 +244,7 @@ sub problem_history_edit_frame {
         src_enc => $enc,
         source_encodings => source_encodings($enc),
         last_commit => CATS::Problem::Storage::get_log($p->{pid}, $hash_base, 1)->[0],
-        message => Encode::decode_utf8($p->{message}),
+        message => $p->{message},
         is_amend => $p->{is_amend},
         problem_import_log => $log,
         cats_tags => $is_xml ? [ sort keys %{CATS::Problem::Parser::tag_handlers()} ] : [],
@@ -266,7 +266,7 @@ sub _save_content {
     $p->{new_name} or return msg(1209) if $p->{new};
 
     my $hash_base = $p->{hb};
-    $p->{src} = $p->{source}->content if $p->{upload};
+    $p->{src} = $p->{upload} ? $p->{source}->content : Encode::encode_utf8($p->{src});
     my $content = $p->{src};
     undef $p->{new_name} if $p->{file} and $p->{new_name} eq $p->{file};
     undef $p->{file} if $p->{new};

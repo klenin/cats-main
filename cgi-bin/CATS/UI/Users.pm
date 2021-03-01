@@ -54,7 +54,7 @@ sub users_import_frame {
         contact_types => $contact_types, user_fields => \%user_fields);
     $p->{go} or return;
 
-    my ($header, @lines) = split "\r\n", Encode::decode_utf8($p->{user_list});
+    my ($header, @lines) = split "\r\n", $p->{user_list};
     my ($i, @fields_idx, @field_names_idx, @contact_types_idx) = (0);
     for my $h (split "\t", $header) {
         if (my $uf = $user_fields{$h}) {
@@ -78,7 +78,7 @@ sub users_import_frame {
             $u->{login});
         my $r = $user_id ? 'exists' :
         eval {
-            $u->{password1} = CATS::User::hash_password(Encode::encode_utf8($u->{password1}))
+            $u->{password1} = CATS::User::hash_password($u->{password1})
                 if $u->{password1};
             $u->insert($contest->{id}, is_ooc => 0, commit => 0);
             $count++;
