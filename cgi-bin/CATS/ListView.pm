@@ -3,7 +3,6 @@ package CATS::ListView;
 use strict;
 use warnings;
 
-use Encode ();
 use List::Util qw(first min max);
 
 use CATS::DB qw(:DEFAULT $db);
@@ -66,7 +65,7 @@ sub init_params {
 
     $s->{page} = $w->{page} if defined $w->{page};
 
-    if (defined(my $search = Encode::decode_utf8 $w->{search})) {
+    if (defined(my $search = $w->{search})) {
         if ($s->{search} ne $search) {
             $s->{search} = $search;
             $s->{page} = 0;

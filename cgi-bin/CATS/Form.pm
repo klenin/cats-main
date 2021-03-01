@@ -30,7 +30,7 @@ sub caption_msg { $_[0]->caption_res || $_[0]->{name} }
 
 sub parse_web_param {
     my ($self, $p) = @_;
-    my $value = defined $p->{$self->{name}} ? Encode::decode_utf8($p->{$self->{name}}) : undef;
+    my $value = $p->{$self->{name}};
     $value = $self->{after_parse}->($value, $p) if $self->{after_parse};
     $self->web_data($value, $self->validate($value));
 }

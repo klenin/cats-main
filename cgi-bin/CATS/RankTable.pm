@@ -3,7 +3,6 @@ package CATS::RankTable;
 use strict;
 use warnings;
 
-use Encode;
 use List::Util qw(max min sum);
 
 use CATS::Config qw(cats_dir);
@@ -309,7 +308,7 @@ sub prepare_ranks {
 
     if ($self->{filter}) {
         my $negate = $self->{filter} =~ /^\!(.*)$/;
-        my $filter = Encode::decode_utf8($negate ? $1 : $self->{filter});
+        my $filter = $negate ? $1 : $self->{filter};
         my $filter_fields = sub { join '', map $_ || '', @{$_[0]}{qw(tag team_name city affiliation_year)} };
         @rank = grep $negate == (index($filter_fields->($_), $filter) < 0), @rank;
     }
