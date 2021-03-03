@@ -38,7 +38,7 @@ my %enums = (
     ctype => [ qw(normal training) ],
     rules => [ qw(icpc school) ],
     req_selection => [ qw(last best) ],
-    status => [ qw(manual ready compile suspended disabled hidden) ],
+    status => [ qw(manual ready compile suspended disabled nosubmit hidden) ],
 );
 
 sub maybe_enum { exists $enums{$_[0]} ? $enums{$_[0]}->[$_[1]] : $_[1] }
@@ -51,7 +51,7 @@ sub struct_to_string {
     my ($tag, $content) = @$struct;
     my $content_str = ref $content ?
         join("\n", '', (map struct_to_string($_, "  $depth"), @$content), '') . $depth :
-        $content;
+        $content // '';
     "$depth<$tag>$content_str</$tag>"
 }
 
@@ -176,6 +176,7 @@ sub tag_handlers() {{
     ContestType => { e => sub { assign_contest_prop(@_, \&to_enum) } },
     ReqSelection => { e => sub { assign_contest_prop(@_, \&to_enum) } },
     ShowPackages => { e => sub { assign_contest_prop(@_, \&to_bool) } },
+    ShowExplanations => { e => sub { assign_contest_prop(@_, \&to_bool) } },
     ShowAllTests => { e => sub { assign_contest_prop(@_, \&to_bool) } },
     FreezeDate => { e => sub { assign_contest_prop(@_, \&to_date) } },
     DefreezeDate => { e => sub { assign_contest_prop(@_, \&to_date) } },

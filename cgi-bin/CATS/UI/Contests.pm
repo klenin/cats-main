@@ -367,7 +367,7 @@ sub contests_edit_save_xml {
 
     contests_edit_save($c, { map { $_ => $c->{$_} } contest_params });
 
-    if (@{$c->{tags}}) {
+    if ($c->{tags} && @{$c->{tags}}) {
         $dbh->do(q~
             DELETE FROM contest_contest_tags WHERE contest_id = ?~, undef,
             $cid);
@@ -378,7 +378,7 @@ sub contests_edit_save_xml {
         $dbh->commit;
     }
 
-    for my $problem (@{$c->{problems}}) {
+    for my $problem (@{$c->{problems} // []}) {
         if ($problem->{problem_id}) {
             ($problem->{contest_id} // $cid) == $cid
                 or $logger->note(sprintf('Problem %d is from different context', $problem->{problem_id})), next;
