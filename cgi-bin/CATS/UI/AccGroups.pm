@@ -200,27 +200,6 @@ sub acc_group_users_frame {
     );
 }
 
-sub _add_accounts {
-    my ($accounts, $group_id, $make_hidden) = @_;
-    my $in_group_sth = $dbh->prepare(q~
-        SELECT 1 FROM acc_group_accounts WHERE acc_group_id = ? AND account_id = ?~);
-    my $add_sth = $dbh->prepare(q~
-        INSERT INTO acc_group_accounts (acc_group_id, account_id, is_hidden, date_start)
-        VALUES (?, ?, ?, CURRENT_DATE)~);
-    my @new_accounts;
-    for (@$accounts) {
-        $in_group_sth->execute($group_id, $_);
-        my ($in_group) = $in_group_sth->fetchrow_array;
-        $in_group_sth->finish;
-        $in_group ? msg(1120, $_) : push @new_accounts, $_;
-    }
-    for (@new_accounts) {
-        $add_sth->execute($group_id, $_, $make_hidden ? 1 : 0);
-    }
-    $dbh->commit;
-    \@new_accounts;
-}
-
 sub trim { s/^\s+|\s+$//; $_; }
 
 sub _accounts_by_login {
@@ -270,7 +249,7 @@ sub acc_group_add_users_frame {
         $p->{source_cid} ? _accounts_by_contest($p->{source_cid}, $p->{include_ooc}) :
         $p->{source_group_id} ? _accounts_by_acc_group($p->{source_group_id}, $p->{include_admins}) :
         undef;
-    $accounts = $accounts && _add_accounts($accounts, $p->{group}, $p->{make_hidden}) // [];
+    $accounts = $accounts && CATS::AccGroups::add_accounts($accounts, $p->{group}, $p->{make_hidden}) // [];
     msg(1221, scalar @$accounts) if @$accounts;
 
     my @url_p = ('acc_group_users', group => $p->{group});
