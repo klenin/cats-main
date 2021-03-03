@@ -3,6 +3,10 @@ function set_code() {
   a.parents('span').children('input').val(a.text()).trigger('change');
 }
 
+function _change_on_enter(e) {
+  if (e.key == 'Enter') { $(this).trigger('change'); return false; }
+}
+
 function make_code_tr(start_char, count) {
   var tr = $('<tr>');
   for (var i = 0; i < count; ++i) {
@@ -14,12 +18,14 @@ function make_code_tr(start_char, count) {
   return tr;
 }
 
-function choose_code(input) {
+function choose_code(input, change_on_enter) {
   var parent = $(input).parent();
   var hint = parent.children('div.search_hint');
   if (!hint.length) {
     hint = $('<div>', { 'class': 'search_hint bordered' }).appendTo(parent);
     $(input).blur(function() { hint.hide(); });
+    if (change_on_enter)
+      $(input).keydown(_change_on_enter);
     var table = $('<table>').appendTo(hint);
     make_code_tr(65, 26).appendTo(table); [%# Letters. %]
     make_code_tr(48, 10).appendTo(table); [%# Digits. %]

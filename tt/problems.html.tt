@@ -166,7 +166,7 @@ function chg_code(st_sel, pid) {
     [% IF p.code.defined ~%]
     <span class="pcode">
       <input type="text" maxlength="3" class="bordered" value="[% p.code %]"
-        onchange="chg_code(this, [% p.problem_id %])" onfocus="choose_code(this)"/>
+        onchange="chg_code(this, [% p.problem_id %])" onfocus="choose_code(this, 1)"/>
     </span>
     [% END %]
     <a href="[% p.href_view_problem %]" target="_blank">
