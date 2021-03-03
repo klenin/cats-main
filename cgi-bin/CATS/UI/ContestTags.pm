@@ -90,7 +90,7 @@ sub find_contest_tags_api {
     my ($p) = @_;
     my $r = $dbh->selectall_arrayref(qq~
         SELECT CT.id, CT.name FROM contest_tags CT
-        WHERE CT.name STARTS WITH ?
+        WHERE CT.name LIKE ? || '%'
         ORDER BY CT.name $CATS::DB::db->{LIMIT} 100~, { Slice => {} },
         $p->{query});
     $p->print_json({ suggestions =>

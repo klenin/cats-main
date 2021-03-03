@@ -30,7 +30,7 @@ sub problems_udebug_frame {
         WHERE
             C.is_official = 1 AND C.show_packages = 1 AND
             CURRENT_TIMESTAMP > C.finish_date AND (C.is_hidden = 0 OR C.is_hidden IS NULL) AND
-            CP.status < ? AND P.lang STARTS WITH 'en' ~ . $lv->order_by);
+            CP.status < ? AND P.lang LIKE 'en%' ~ . $lv->order_by);
     $sth->execute($cats::problem_st_hidden);
 
     my $sol_sth = $dbh->prepare(q~

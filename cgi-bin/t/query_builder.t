@@ -87,9 +87,9 @@ is_deeply qb_mask('zz??'), { zz => qr/^$/i }, 'mask NULL';
     is_deeply $qb->make_where, { a => [ { '=', undef } ] }, 'db null';
 
     $qb->parse_search('a^=sss');
-    is_deeply $qb->make_where, { a => [ { 'STARTS WITH', 'sss' } ] }, 'db starts with';
+    is_deeply $qb->make_where, { a => [ { 'LIKE', 'sss%' } ] }, 'db starts with';
     $qb->parse_search('a!^sss');
-    is_deeply $qb->make_where, { a => [ { 'NOT STARTS WITH', 'sss' } ] }, 'db not starts with';
+    is_deeply $qb->make_where, { a => [ { 'NOT LIKE', 'sss%' } ] }, 'db not starts with';
 
     $qb->parse_search('a=1,b=x,a=2,b=y');
     is_deeply $qb->extract_search_values('b'), [ 'x', 'y' ], 'extract_search_values';

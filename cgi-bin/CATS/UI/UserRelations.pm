@@ -125,7 +125,7 @@ sub find_users_api {
             " AND NOT EXISTS ($_contest_account_sql)";
     my $r = $dbh->selectall_arrayref(qq~
         SELECT A.id, A.login, A.team_name FROM accounts A
-        WHERE (A.login STARTS WITH ? OR A.team_name STARTS WITH ?)$root_cond$contest_cond
+        WHERE (A.login LIKE ? || '%' OR A.team_name LIKE ? || '%')$root_cond$contest_cond
         ORDER BY A.login
         $CATS::DB::db->{LIMIT} 100~,
         { Slice => {} },

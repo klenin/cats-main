@@ -162,7 +162,7 @@ sub define_kw_subquery {
             sq => q~(EXISTS (
                 SELECT 1 FROM problem_keywords PK
                 INNER JOIN keywords K ON K.id = PK.keyword_id
-                WHERE PK.problem_id = P.id AND K.code STARTS WITH ?))~,
+                WHERE PK.problem_id = P.id AND K.code LIKE ? || '%'))~,
             m => 1050,
             t => undef,
         },
@@ -170,7 +170,7 @@ sub define_kw_subquery {
             sq => q~(EXISTS (
                 SELECT 1 FROM problem_sources PS
                 INNER JOIN problem_sources_imported PSI ON PS.id = PSI.id
-                WHERE PS.problem_id = P.id AND PSI.guid STARTS WITH ?))~,
+                WHERE PS.problem_id = P.id AND PSI.guid LIKE ? || '%'))~,
             m => 1204,
             t => q~SELECT guid, fname FROM problem_sources_local WHERE guid = ?~,
         },
