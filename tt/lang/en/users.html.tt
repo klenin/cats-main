@@ -6,6 +6,7 @@
     login => 'Login',
     set_tag => 'Set tag',
     set_site => 'Set site',
+    add_to_group => 'Add to group',
     gen_passwords => 'Generate passwords',
     message_to_teams => 'Message to participants',
     send => 'Send',

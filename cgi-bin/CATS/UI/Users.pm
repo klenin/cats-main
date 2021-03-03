@@ -164,6 +164,19 @@ sub _contact_field_sql {
         ORDER BY is_actual DESC $db->{LIMIT} 1)~,
 }
 
+sub _add_to_group {
+    my ($p) = @_;
+    @{$p->{sel}} && $p->{to_group} or return;
+    $dbh->selectrow_array(q~
+        SELECT 1 FROM acc_group_contests
+        WHERE contest_id = ? AND acc_group_id = ?~, undef,
+        $cid, $p->{to_group}) or return;
+    my $accounts = $dbh->selectcol_arrayref(_u $sql->select(
+        'contest_accounts', 'account_id', { contest_id => $cid, id => $p->{sel} }));
+    my $added = CATS::AccGroups::add_accounts($accounts, $p->{to_group}) // [];
+    msg(1221, scalar @$added);
+}
+
 sub users_frame {
     my ($p) = @_;
 
@@ -184,6 +197,7 @@ sub users_frame {
         CATS::User::save_attributes_jury($p) if $p->{save_attributes};
         CATS::User::set_tag(user_set => $p->{sel}, tag => $p->{tag_to_set}) if $p->{set_tag};
         CATS::User::gen_passwords(user_set => $p->{sel}, len => $p->{password_len}) if $p->{gen_passwords};
+        _add_to_group($p) if $p->{add_to_group};
 
         if ($p->{send_message} && ($p->{message_text} // '') ne '') {
             my $contest_id = $is_root && $p->{send_all_contests} ? undef : $cid;
@@ -198,6 +212,13 @@ sub users_frame {
             }
             $dbh->commit;
         }
+
+        $t->param(acc_groups => $dbh->selectall_arrayref(q~
+            SELECT AG.id, AG.name FROM acc_groups AG
+            INNER JOIN acc_group_contests AGC ON AGC.acc_group_id = AG.id
+            WHERE AGC.contest_id = ?
+            ORDER BY AG.name~, { Slice => {} },
+            $cid));
     }
     elsif ($user->{is_site_org}) {
         CATS::User::save_attributes_org($p) if $p->{save_attributes};
@@ -372,7 +393,7 @@ sub users_frame {
                 ($is_jury || (!$user->{site_id} || $user->{site_id} == ($site_id // 0)) && $uid && $aid != $uid),
             virtual => $virtual,
             formatted_time => CATS::Time::format_diff_ext($diff_time, $ext_time, display_plus => 1),
-            groups => [ split /\s+/, $groups ],
+            groups => [ split /\s+/, $groups // '' ],
             (map { +"CT_$_->{sql}" => shift @contacts } @visible_contacts),
          );
     };

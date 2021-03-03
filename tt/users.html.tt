@@ -102,6 +102,12 @@ function delete_team(href, name) {
 </div>
 [% END %]
 [% IF user.is_jury %]
+[% IF acc_groups.size %]
+<div class="action send_message">
+<select name="to_group"><option>&nbsp;</option>[% FOREACH ag IN acc_groups; option(ag.id, ag.name); END %]</select>
+<button type="submit" value="1" name="add_to_group" class="button">[% capt.add_to_group %]</button>
+</div>
+[% END %]
 <div class="action send_message">
 <label><input type="text" name="password_len" class="bordered" value="20" /></label>
 <button type="submit" value="1" name="gen_passwords" class="button">[% capt.gen_passwords %]</button>
