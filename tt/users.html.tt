@@ -45,8 +45,8 @@ function delete_team(href, name) {
   [%- cell_search('site_id', u) IF user.is_jury -%]
 </td>
 [%~ END %]
-[% IF visible_cols.Af %]<td>[% u.affiliation; cell_search('affiliation', u) -%]</td>[% END %]
-[% IF visible_cols.Tg %]<td>[% maybe_href(u.href_rank_table_filter, u.tag); cell_search('tag', u) -%]</td>[% END %]
+[% IF visible_cols.Af %]<td>[% u.affiliation; cell_search('affiliation', u) %]</td>[% END %]
+[% IF visible_cols.Tg %]<td>[% maybe_href(u.href_rank_table_filter, u.tag); cell_search('tag', u) %]</td>[% END %]
 [% IF user.is_jury || user.is_site_org %]
 [% FOREACH ct IN contacts -%]
 <td>[% href(u.href_contacts.replace('~type_name~', ct.name), u.item('CT_' _ ct.sql)); cell_search('CT_' _ ct.sql, u) %]</td>
@@ -63,6 +63,9 @@ function delete_team(href, name) {
 <td class="user_checkbox center is_jury"><label>[% checkbox_1("jury$u.id", u.jury, user.privs.grant_jury) %]</label></td>
 <td class="user_checkbox center is_hidden"><label>[% checkbox_1("hidden$u.id", u.hidden) %]</label></td>
 [% END %]
+[% IF visible_cols.Gr %]<td class="keywords_cell">
+[%- FOREACH g IN u.groups; cell_search_any_text("in_group($g)", g); END -%]
+</td>[% END %]
 [% IF visible_cols.Fl %]
 <td class="flag">
 [% IF u.flag -%]

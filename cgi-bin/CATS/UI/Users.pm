@@ -239,6 +239,7 @@ sub users_frame {
         ($is_jury ? (
             { caption => res_str(611), order_by => 'is_jury', width => '1%', checkbox => '.is_jury input' },
             { caption => res_str(614), order_by => 'is_hidden', width => '1%', checkbox => '.is_hidden input' },
+            { caption => res_str(694), order_by => 'groups', width => '10%', col => 'Gr' },
         ) : ()),
         ($is_jury || $contest->{show_flags} ? (
             { caption => res_str(607), order_by => 'country', width => '5%', col => 'Fl' },
@@ -302,10 +303,16 @@ sub users_frame {
     my @visible_contacts = grep $lv->visible_cols->{"Ct$_->{sql}"}, @$contact_types;
     $t->param(contacts => \@visible_contacts);
     my $contacts_sql = join '', map ', (' . _contact_field_sql($_) . ") AS CT_$_->{sql}", @visible_contacts;
+    my $groups_sql = !$lv->visible_cols->{Gr} ? 'NULL' : qq~
+        SELECT LIST(AG.name, ' ') FROM acc_groups AG
+        INNER JOIN acc_group_accounts AGA ON AGA.acc_group_id = AG.id
+        INNER JOIN acc_group_contests AGC ON AGC.acc_group_id = AG.id
+        WHERE AGC.contest_id = CA.contest_id AND AGA.account_id = A.id
+        $db->{LIMIT} 5~;
 
     my $sql = sprintf qq~
         SELECT ($rating_sql) AS rating, ($ip_sql) AS ip, CA.id, $fields,
-        CA.site_id, S.name AS site_name$contacts_sql
+        CA.site_id, S.name AS site_name, ($groups_sql) AS groups$contacts_sql
         FROM accounts A
             INNER JOIN contest_accounts CA ON CA.account_id = A.id
             INNER JOIN contests C ON CA.contest_id = C.id
@@ -325,7 +332,7 @@ sub users_frame {
             $accepted, $ip, $caid,
             $aid, $country_abbr, $motto, $login, $team_name, $city, $last_ip, $affiliation,
             $admin, $jury, $ooc, $remote, $hidden, $site_org, $virtual, $diff_time, $ext_time,
-            $tag, $site_id, $site_name, @contacts
+            $tag, $site_id, $site_name, $groups, @contacts
         ) = $_[0]->fetchrow_array
             or return ();
         my ($country, $flag) = CATS::Countries::get_flag($country_abbr);
@@ -365,6 +372,7 @@ sub users_frame {
                 ($is_jury || (!$user->{site_id} || $user->{site_id} == ($site_id // 0)) && $uid && $aid != $uid),
             virtual => $virtual,
             formatted_time => CATS::Time::format_diff_ext($diff_time, $ext_time, display_plus => 1),
+            groups => [ split /\s+/, $groups ],
             (map { +"CT_$_->{sql}" => shift @contacts } @visible_contacts),
          );
     };
