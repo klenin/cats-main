@@ -50,7 +50,8 @@ var AutoComplete = (function() {
         params[p] = extra[p];
     input.autocomplete(params);
     var on_focus = function () {
-      input.autocomplete('setOptions', { width: input.width() * 2 });
+      input.autocomplete('setOptions', {
+        width: Math.min(input.width() * 2, window.innerWidth * 0.9 - input[0].offsetLeft) });
       input.off('focus', on_focus);
     };
     input.on('focus', on_focus);
