@@ -71,6 +71,7 @@ sub url_f_cid { CATS::Utils::url_function(@_, sid => $sid) }
 sub _csv_quote {
     my ($v) = @_;
     defined $v or return '';
+    $v = join ' ', @$v if ref $v eq 'ARRAY';
     $v =~ /["\s,;]/ or return $v;
     $v =~ s/"/""/g;
     qq~"$v"~;

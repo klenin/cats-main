@@ -3,7 +3,7 @@ use warnings;
 
 use File::Spec;
 use FindBin;
-use Test::More tests => 7;
+use Test::More tests => 8;
 
 use lib File::Spec->catdir($FindBin::Bin, '..');
 use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
@@ -18,6 +18,7 @@ is cq('a b'), '"a b"', 'csv quote space';
 is cq("a\tb"), qq~"a\tb"~, 'csv quote tab';
 is cq('"a"'), '"""a"""', 'csv quote quote';
 is cq('text "a" text'), '"text ""a"" text"', 'csv quote quote 2';
+is cq([ qw(a bc) ]), '"a bc"', 'csv array';
 
 is CATS::Output::_generate_csv(
     { csv => [ 'a' , 'b' ] }, { lv_array_name => 'r',
