@@ -15,7 +15,7 @@ use CATS::Config;
 use CATS::Console;
 use CATS::Constants;
 use CATS::DB;
-use CATS::Globals qw($is_jury $is_root);
+use CATS::Globals qw($cid $is_jury $is_root);
 use CATS::ListView;
 use CATS::Messages;
 use CATS::Template;
@@ -91,8 +91,9 @@ if ($mode eq 'log') {
 elsif ($mode eq 'runs') {
     CATS::Messages::init;
     my $t = CATS::Template->new_dummy;
-    my $p = CATS::Web::Mockup->new(search => $search . ",contest_id=$contest_id", i_value => -1);
+    my $p = CATS::Web::Mockup->new(search => "$search,contest_id=this", i_value => -1);
     my $lv = CATS::ListView->new(web => $p, name => '', template => $t);
+    $cid = $contest_id;
     $is_jury = $is_root = 1;
     CATS::Console::console_searches($lv);
     $CATS::Globals::max_fetch_row_count = 100000;
