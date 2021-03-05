@@ -43,3 +43,16 @@
   </td>
 </tr>
 [%- END -%]
+
+[%- MACRO tr_date(f, fd) BLOCK -%]
+  <tr>
+    <td>[% f.caption || capt.item(f.field.name) %]</td>
+    <td><div style="position: relative;"><input type="text" name="[% f.field.name %]" value="[% f.value | html %]"
+      size="[% f.field.editor.size || 20 %]"[% ' readonly="readonly"' IF fd.readonly %] class="bordered" />
+      [%- IF !fd.readonly %]
+      <a href="#" onclick="show_datepicker(this, '[% f.field.name %]')" class="icon icon_centered datepicker"></a>
+      [% END -%]</div>
+      [%- maybe_err(f) %]
+    </td>
+  </tr>
+[%- END %]
