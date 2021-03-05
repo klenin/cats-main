@@ -26,6 +26,8 @@ our $form = CATS::Form->new(
         [ name => 'round_points_to', caption => 692, @field_common, validators => $fixed ],
         [ name => 'weight', caption => 691, @field_common, validators => $fixed ],
         [ name => 'is_extra', caption => 693, before_save => $zero_undef, validators => $CATS::Field::bool ],
+        [ name => 'deadline', caption => 695, before_save => $zero_undef,
+            validators => $CATS::Field::date_time ],
     ],
     href_action => '-', # Stub.
 );
