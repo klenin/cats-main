@@ -4,7 +4,7 @@ use utf8;
 
 use File::Spec;
 use FindBin;
-use Test::More tests => 17;
+use Test::More tests => 29;
 
 use lib File::Spec->catdir($FindBin::Bin, '..');
 use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
@@ -43,6 +43,24 @@ CATS::Messages::init;
     ok fx(4.3), 'fixed 4.3<5';
     ok fx(8.1), 'fixed 8.1<7';
     is fx(5), undef, 'fixed 5=5';
+}
+{
+    my $f = CATS::Field->new(name => 'f');
+
+    sub dt { CATS::Field::date_time()->($_[0], $f) }
+
+    is CATS::Field::date_time(allow_empty => 1)->('', $f), undef, 'date_time allow empty';
+    ok dt(''), 'date_time empty';
+    ok dt('sldkfj'), 'date_time bad';
+    is dt('1.2.3'), undef, 'date_time no time';
+    ok dt('40.10.2000'), 'date_time bad day';
+    ok dt('4.15.2000'), 'date_time bad month';
+    ok dt('4.10.999999'), 'date_time bad year';
+    is dt('29.2.2000'), undef, 'date_time leap';
+    ok dt('29.2.2001'), 'date_time not leap';
+    is dt('1.2.3 5:6'), undef, 'date_time time';
+    ok dt('1.2.3 25:6'), 'date_time bad hour';
+    ok dt('1.2.3 5:60'), 'date_time bad minute';
 }
 {
     my $f = CATS::Field->new(name => 'f');

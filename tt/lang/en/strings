@@ -256,6 +256,7 @@
 1049 "Field '%s' must be a fixed point real number."
 1050 "Problems with '%s*' keywords."
 1051 "Field '%s' must be a fixed point number in range from %s до %s."
+1052 "Field '%s' must be date and time formatted DD.MM.YYYY HH:mm."
 1053 "Problem package file not selected."
 1055 "Testing result was changed."
 1056 "Submission '%d' was deleted."

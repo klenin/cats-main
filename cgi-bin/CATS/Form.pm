@@ -87,6 +87,7 @@ sub int_range {
     };
 }
 
+# Params:{ allow_empty, min, max }
 sub fixed {
     my (%opts) = @_;
     sub {
@@ -100,6 +101,30 @@ sub fixed {
             return;
         }
         res_str(1051, $field->caption_msg, $opts{min} // '-Inf', $opts{max} // '+Inf');
+    };
+}
+
+sub _in_range { $_[1] <= $_[0] && $_[0] <= $_[2] }
+my @month_days = (31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31);
+sub _is_leap { $_[0] % 4 == 0 && ($_[0] % 100 != 0 || $_[0] % 400 == 0) }
+
+# Params:{ allow_empty }
+sub date_time {
+    my (%opts) = @_;
+    sub {
+        my ($value, $field) = @_;
+        return $opts{allow_empty}  ? undef : res_str(1052, $field->caption_msg)
+            if ($value // '') eq '';
+        my ($day, $month, $year, $hour, $minute) =
+            $value =~ /^\s*(\d+)\.(\d+)\.(\d+)(?:\s*(\d+):(\d+)\s*)?$/;
+        $day &&
+        _in_range($month, 1, 12) &&
+        _in_range($day, 1, $month_days[$month - 1] + ($month == 2 && _is_leap($year) ? 1 : 0)) &&
+        _in_range($year, 1, 9999) &&
+        (!$hour || _in_range($hour, 0, 23)) &&
+        (!$minute || _in_range($minute, 0, 59))
+            or return res_str(1052, $field->caption_msg);
+        undef;
     };
 }
 
@@ -124,6 +149,8 @@ sub foreign_key { int_range(min => 1, max => 2e9, @_) }
 our $foreign_key = foreign_key;
 our $foreign_key_opt = foreign_key(allow_empty => 1);
 our $bool = int_range(min => 0, max => 1, allow_empty => 1);
+our $date_time_req = date_time;
+our $date_time = date_time(allow_empty => 1);
 
 package CATS::Form;
 
