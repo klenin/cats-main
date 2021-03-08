@@ -7,6 +7,7 @@ use Apache2::Const -compile => qw(OK REDIRECT NOT_FOUND FORBIDDEN);
 use Apache2::Cookie ();
 use Apache2::Request;
 use Apache2::Upload;
+use Encode;
 
 use 5.010;
 
@@ -44,7 +45,7 @@ sub print_json {
 
 sub get_uri { $r->uri }
 
-sub web_param { $qq->param($_[1]) }
+sub web_param { Encode::decode_utf8($qq->param($_[1])) // '' }
 
 sub web_param_names { $qq->param }
 

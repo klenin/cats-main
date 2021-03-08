@@ -204,7 +204,7 @@ sub trim { s/^\s+|\s+$//; $_; }
 
 sub _accounts_by_login {
     my ($login_str) = @_;
-    $login_str = Encode::decode_utf8($login_str || '');
+    $login_str = $login_str || '';
     my @logins = map trim, split(/,/, $login_str) or return msg(1101);
     my %aids;
     my $aid_sth = $dbh->prepare(q~

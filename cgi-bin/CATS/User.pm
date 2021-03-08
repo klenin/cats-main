@@ -23,8 +23,9 @@ my $hash_password;
 BEGIN {
     $hash_password = eval { require Authen::Passphrase::BlowfishCrypt; } ?
         sub {
+            my $octets = Encode::is_utf8($_[0]) ? Encode::encode_utf8($_[0]) : $_[0];
             Authen::Passphrase::BlowfishCrypt->new(
-                cost => 8, salt_random => 1, passphrase => $_[0])->as_rfc2307;
+                cost => 8, salt_random => 1, passphrase => $octets)->as_rfc2307;
         } :
         sub { $_[0] }
 }
@@ -131,7 +132,7 @@ sub validate_params {
         ($old_login, my $old_team_name) = $dbh->selectrow_array(q~
             SELECT login, team_name FROM accounts WHERE id = ?~, undef,
             $p{id});
-        if (($old_team_name ne Encode::decode_utf8($self->{team_name})) &&
+        if (($old_team_name ne $self->{team_name}) &&
             (my ($official_contest) = any_official_contest_by_team($p{id})))
         {
             # If the team participated in the official contest, forbid it to rename itself.
@@ -181,7 +182,7 @@ sub prepare_password {
     my ($u, $set_password) = @_;
     if ($set_password) {
         $u->{passwd} = hash_password($u->{password1});
-        msg(1085, Encode::decode_utf8($u->{team_name}));
+        msg(1085, $u->{team_name});
     }
     delete @$u{qw(password1 password2)};
 }
@@ -265,7 +266,7 @@ sub edit_save {
 
     $dbh->do(_u $sql->update('accounts', { %$u }, { id => $id }));
     $dbh->commit;
-    msg(1059, Encode::decode_utf8($u->{team_name}));
+    msg(1059, $u->{team_name});
 }
 
 sub profile_save {
@@ -288,7 +289,6 @@ sub trim { s/^\s+|\s+$//; $_; }
 sub register_by_login {
     my ($login, $contest_id, $make_jury) = @_;
     $is_jury or return;
-    $login = Encode::decode_utf8($login);
     my @logins = map trim, split(/,/, $login || '') or return msg(1101);
     my %aids;
     for (@logins) {
@@ -593,7 +593,7 @@ sub logins_maybe_added {
     my ($p, $url_p, $account_ids) = @_;
     @$account_ids ?
         (href_view_added => url_f(@$url_p, search => join ',', map "id=$_", @$account_ids)) :
-        (logins_to_add => Encode::decode_utf8($p->{logins_to_add}));
+        (logins_to_add => $p->{logins_to_add});
 }
 
 1;

@@ -167,7 +167,7 @@ sub problems_frame_jury_action {
     $p->{add_new} and return CATS::Problem::Save::problems_add_new($p);
     $p->{add_new_template} and return CATS::Problem::Save::problems_add_template(
         File::Spec->catdir(CATS::Config::cats_dir, 'cats-problem', 'templates', 'minimal'),
-        { title => Encode::decode_utf8($p->{new_title}), lang => $p->{new_lang} });
+        { title => $p->{new_title}, lang => $p->{new_lang} });
     $p->{add_remote} and return CATS::Problem::Save::problems_add_new_remote($p);
     $p->{std_solution} and return CATS::Problem::Submit::problems_submit_std_solution($p);
     CATS::Problem::Storage::delete($p->{delete_problem}) if $p->{delete_problem};
@@ -539,7 +539,7 @@ sub problems_frame {
         CATS::Problem::Submit::prepare_de_list($p),
         contest_id => $cid, no_judges => !$jactive,
         parent_contest => $parent_contest,
-        source_text => Encode::decode_utf8($p->{source_text}),
+        source_text => $p->{source_text},
         no_listview_header => !$is_jury && !$lv->total_row_count && ($lv->settings->{search} // '') eq '',
         child_contest_count => $child_contest_count,
         href_child_contests =>

@@ -31,7 +31,7 @@ sub personal_official_results {
             join(' OR ' => map 'title LIKE ?' => @names) . q~) ORDER BY start_date DESC~,
         { Slice => {} }, map "$_ %", @names);
 
-    my $search = Encode::decode_utf8($p->{search});
+    my $search = $p->{search};
     my $results;
     my $group_by_type = ($p->{group} || '') eq 'type';
     for (@$contests) {

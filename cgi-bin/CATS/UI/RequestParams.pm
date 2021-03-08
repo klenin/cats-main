@@ -136,7 +136,7 @@ sub request_params_frame {
             UPDATE reqs SET tag = ? WHERE id = ?~, undef,
             $p->{tag}, $si->{req_id});
         $dbh->commit;
-        $si->{tag} = Encode::decode_utf8($p->{tag});
+        $si->{tag} = $p->{tag};
     }
 
     $t->param(href_find_users => url_f('api_find_users', in_contest => $si->{contest_id}));

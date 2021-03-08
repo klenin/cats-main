@@ -162,7 +162,7 @@ sub contests_new_save {
         my ($original_title) = $dbh->selectrow_array(q~
             SELECT title FROM contests WHERE id = ?~, undef,
             $p->{original_id});
-        if ($original_title && $original_title eq Encode::decode_utf8($c->{title})) {
+        if ($original_title && $original_title eq $c->{title}) {
             $c->{title} =~ s/\((\d+)\)$/(@{[ $1 + 1 ]})/ or $c->{title} .= ' (1)';
         }
     }
@@ -192,7 +192,7 @@ sub contests_new_save {
     }
 
     $dbh->commit;
-    msg(1028, Encode::decode_utf8($c->{title}));
+    msg(1028, $c->{title});
 }
 
 sub _install_problems {
@@ -414,10 +414,9 @@ sub contests_edit_save {
     } or return msg(1035, $@);
     CATS::StaticPages::invalidate_problem_text(cid => $p->{id}, all => 1);
     CATS::RankTable::Cache::remove($p->{id});
-    my $contest_name = Encode::decode_utf8($c->{title});
     # Change page title immediately if the current contest is renamed.
-    $contest->{title} = $contest_name if $p->{id} == $cid;
-    msg(1036, $contest_name);
+    $contest->{title} = $c->{title} if $p->{id} == $cid;
+    msg(1036, $c->{title});
 }
 
 sub contest_delete {
@@ -627,9 +626,7 @@ sub contest_xml_frame {
         $cid
     );
     $t->param(
-        contest_xml =>
-            Encode::decode_utf8($p->{contest_xml}) //
-            CATS::Contest::XmlSerializer->new->serialize($c, $problems),
+        contest_xml => $p->{contest_xml} // CATS::Contest::XmlSerializer->new->serialize($c, $problems),
         form_action => url_f('contest_xml'),
     );
     CATS::Contest::Utils::contest_submenu('contest_xml', $cid);

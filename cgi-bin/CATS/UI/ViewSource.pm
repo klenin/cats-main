@@ -45,7 +45,7 @@ sub diff_runs_frame {
             CATS::Job::cancel_all($r->{req_id});
             my %update = (
                 failed_test => undef, state => $cats::st_manually_rejected,
-                points => 0, tag => Encode::decode_utf8($p->{reject_both_message}),
+                points => 0, tag => $p->{reject_both_message},
             );
             CATS::Request::enforce_state($r->{req_id}, \%update);
             $remove_cache{$r->{contest_id}} = 1 unless $r->{is_hidden};

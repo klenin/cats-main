@@ -5,8 +5,6 @@ use warnings;
 
 use Exporter qw(import);
 
-use Encode;
-
 use CATS::Utils;
 
 our @EXPORT = qw(
@@ -136,7 +134,7 @@ sub reconstruct {
         my $name = $route->[$i];
         exists $p->{$name} && !exists $override{$name} or next;
         my $type = $route->[$i + 1];
-        my $value = ref $p->{$name} ? $p->{$name} : Encode::decode_utf8($p->{$name});
+        my $value = $p->{$name};
         push @result, _reconstruct_one($name, $value, $type);
     }
     @result;
