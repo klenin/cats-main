@@ -362,6 +362,7 @@ sub contests_edit_save_xml {
     eval {
         $c = $s->parse_xml($p->{contest_xml});
         $c->{id} = $cid;
+        $c->{$_} = $db->parse_date($c->{$_}) for contest_date_params; 
         1;
     } or return $logger->note($@);
 
