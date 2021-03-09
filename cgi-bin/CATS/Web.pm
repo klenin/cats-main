@@ -45,7 +45,13 @@ sub print_json {
 
 sub get_uri { $r->uri }
 
-sub web_param { Encode::decode_utf8($qq->param($_[1])) // '' }
+sub web_param {
+    if (wantarray) {
+        map Encode::decode_utf8($_), $qq->param($_[1]);
+    } else {
+        Encode::decode_utf8($qq->param($_[1]));
+    }
+}
 
 sub web_param_names { $qq->param }
 
