@@ -354,7 +354,7 @@ sub view_test_details_frame {
             SELECT SO.output, SO.output_size FROM solution_output SO
             WHERE SO.req_id = ? AND SO.test_rank = ?~, { Slice => {} },
             $p->{rid}, $p->{test_rank});
-        CATS::DetectImage::add_image_data($output_data, 'output') or
+        !$p->{noimage} && CATS::DetectImage::add_image_data($output_data, 'output') or
             $output_data->{decoded} = _decode_quietly($p, $output_data->{output});
     }
 
@@ -370,7 +370,7 @@ sub view_test_details_frame {
 
     my $test_data = get_test_data($p) or return;
     for (qw(input answer)) {
-        CATS::DetectImage::add_image_data($test_data, $_) or
+        !$p->{noimage} && CATS::DetectImage::add_image_data($test_data, $_) or
             $test_data->{"decoded_$_"} = _decode_quietly($p, $test_data->{$_});
     }
 

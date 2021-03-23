@@ -314,7 +314,9 @@ my $main_routes = {
         \&CATS::UI::RunDetails::view_test_details_frame,
         comment_enc => encoding_default('UTF-8'),
         rid => integer, test_rank => integer,
-        delete_request_outputs => bool, delete_test_output => bool, as_user => bool, ],
+        delete_request_outputs => bool, delete_test_output => bool, as_user => bool,
+        noimage => bool,
+    ],
     request_params => [
         \&CATS::UI::RequestParams::request_params_frame,
         rid => integer,
