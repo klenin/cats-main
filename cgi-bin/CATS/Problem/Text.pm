@@ -162,8 +162,10 @@ sub _on_start {
     }
     $html_code .= "<$el";
     for my $name (keys %atts) {
-        my $attrib = $atts{$name};
-        $html_code .= qq~ $name="$attrib"~;
+        for ($atts{$name}) {
+            _xml_quote_topicalizer;
+            $html_code .= qq~ $name="$_"~;
+        }
     }
     $html_code .= '>';
 }
