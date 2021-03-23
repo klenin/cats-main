@@ -46,11 +46,10 @@ sub print_json {
 sub get_uri { $r->uri }
 
 sub web_param {
-    if (wantarray) {
-        map Encode::decode_utf8($_), $qq->param($_[1]);
-    } else {
-        Encode::decode_utf8($qq->param($_[1]));
-    }
+    my ($self, $name) = @_;
+    wantarray ?
+        map Encode::decode_utf8($_), $qq->param($name) :
+        Encode::decode_utf8($qq->param($name));
 }
 
 sub web_param_names { $qq->param }
