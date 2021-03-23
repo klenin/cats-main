@@ -110,6 +110,8 @@ sub define_common_searches {
         CP.code CP.testsets CP.tags CP.points_testsets CP.status
     ) ]);
 
+    my @sources =
+        map [ join('_', split(/\W+/, $cats::source_module_names{$_})), $_ ], keys %cats::source_modules;
     $lv->define_db_searches({
         test_count => q~
             (SELECT COUNT(*) FROM tests T WHERE T.problem_id = P.id)~,
@@ -117,20 +119,19 @@ sub define_common_searches {
             (SELECT COUNT(*) FROM problem_attachments PA WHERE PA.problem_id = P.id)~,
         contest_count => q~
             (SELECT COUNT(*) FROM contest_problems CP2 WHERE CP2.problem_id = P.id)~,
-        (map {
-            join('_', split(/\W+/, $cats::source_module_names{$_}), 'count') => qq~
+        (map { $_->[0] . '_count' => qq~
             (SELECT COUNT (*) FROM problem_sources PS
                 INNER JOIN problem_sources_local PSL on PS.id = PSL.id
-                WHERE PS.problem_id = P.id AND PSL.stype = $_)~
-        } keys %cats::source_modules),
-        (map {
-            join('_', split(/\W+/, $cats::source_module_names{$_})) => qq~
+                WHERE PS.problem_id = P.id AND PSL.stype = $_->[1])~
+        } @sources),
+        (map { $_->[0] => qq~
             (SELECT PSL.src FROM problem_sources PS
                 INNER JOIN problem_sources_local PSL on PS.id = PSL.id
-                WHERE PS.problem_id = P.id AND PSL.stype = $_
+                WHERE PS.problem_id = P.id AND PSL.stype = $_->[1]
                 ROWS 1)~
-        } keys %cats::source_modules),
+        } @sources),
     });
+    $lv->define_casts({ map { $_->[0] => 'VARCHAR(100)' } @sources });
 
     $lv->define_enums({ run_method => CATS::Problem::Utils::run_method_enum() });
 }
