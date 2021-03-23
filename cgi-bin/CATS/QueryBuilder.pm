@@ -15,6 +15,7 @@ sub new {
         search => [],
         search_subqueries => [],
         search_defaults => [],
+        search_casts => {},
         db_searches => {},
         default_searches => [],
         subqueries => {},
@@ -122,6 +123,19 @@ sub _where_msg {
     $negate ? msg(1212, res_str($sq->{m}, @msg_args)) : msg($sq->{m}, @msg_args);
 }
 
+sub _maybe_cast {
+    my ($self, $field, $value) = @_;
+    my $type = $self->{search_casts}->{$field};
+    $type ? \[ "CAST(? AS $type)", $value ] : $value;
+}
+
+sub _prepare_value {
+    my ($self, $field, $value, $op) = @_;
+    $value = $self->{enums}->{$field}->{$value} // $value;
+    if ($op) { my ($k, $v) = %{sql_op($op, $value)}; return { $k, $self->_maybe_cast($field, $v) }; };
+    $self->_maybe_cast($field, $value);
+}
+
 sub make_where {
     my ($self) = @_;
     my @cond;
@@ -130,8 +144,7 @@ sub make_where {
     for my $q (@{$self->search}) {
         my ($k, $v, $op) = @$q;
         my $f = $self->{db_searches}->{$k} or next;
-        $v = $self->{enums}->{$k}->{$v} // $v;
-        push @{$result{$f} //= []}, sql_op($op, $v);
+        push @{$result{$f} //= []}, $self->_prepare_value($k, $v, $op);
     }
     push @cond, \%result if %result;
 
@@ -140,10 +153,9 @@ sub make_where {
         my ($name, $value, $negate) = @$d;
         my $sq = $self->{subqueries}->{$name}
             or push @sq_unknown, $name and next;
-        $value = $self->{enums}->{$name}->{$value} // $value;
         _where_msg($sq, $value, $negate);
         # SQL::Abstract uses double reference to designate subquery.
-        my $sql_sq = \[ $sq->{sq} => $value ];
+        my $sql_sq = \[ $sq->{sq} => $self->_prepare_value($name, $value) ];
         push @sq_list, $negate ? { -not_bool => $sql_sq } : $sql_sq;
     }
     msg(1143, join ',', @sq_unknown) if @sq_unknown;
@@ -153,8 +165,7 @@ sub make_where {
     for my $v (@{$self->{search_defaults}}) {
         for my $k (@{$self->{default_searches}}) {
             my $f = $self->{db_searches}->{$k} or next;
-            $v = $self->{enums}->{$k}->{$v} // $v;
-            push @{$default_result{$f} //= []}, sql_op('~=', $v);
+            push @{$default_result{$f} //= []}, $self->_prepare_value($k, $v, '~=');
         }
     }
     push @cond, { -or => [ %default_result ] } if %default_result;
@@ -193,6 +204,15 @@ sub default_searches {
         }
     }
     push @{$self->{default_searches}}, @$searches;
+}
+
+sub define_casts {
+    my ($self, $casts) = @_;
+    for (keys %$casts) {
+        $self->{db_searches}->{$_} or croak "Unknown search to cast: $_";
+        $self->{search_casts}->{$_} and croak "Duplicate cast: $_";
+        $self->{search_casts}->{$_} = $casts->{$_};
+    }
 }
 
 # sql OR { sq => sql, m => msg id, t => msg arguments sql }

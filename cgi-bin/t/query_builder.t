@@ -6,7 +6,7 @@ use File::Spec;
 use FindBin;
 use SQL::Abstract;
 use Test::Exception;
-use Test::More tests => 44;
+use Test::More tests => 49;
 
 use lib File::Spec->catdir($FindBin::Bin, '..');
 use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
@@ -64,7 +64,7 @@ is_deeply qb_mask('zz??'), { zz => qr/^$/i }, 'mask NULL';
     $qb->default_searches([ 'a' ]);
     throws_ok { $qb->default_searches([ 'z' ]) } qr/unknown/i, 'unknown default_search';
 
-    $qb->define_enums({ a => { x => 22, y => 33 } });
+    $qb->define_enums({ a => { x => 22, y => 33, z => 'a' } });
     throws_ok { $qb->define_enums({ a => {} }) } qr/duplicate/i, 'duplicate enum';
 
     my $sq = 'EXISTS (SELECT * FROM table WHERE id = ?)';
@@ -97,6 +97,8 @@ is_deeply qb_mask('zz??'), { zz => qr/^$/i }, 'mask NULL';
 
     $qb->parse_search('a=x');
     is_deeply $qb->make_where, { a => [ { '=', 22 } ] }, 'enums';
+    $qb->parse_search('a=z');
+    is_deeply $qb->make_where, { a => [ { '=', 'a' } ] }, 'no recursion in enums';
 
     $qb->parse_search('sq>5');
     is_deeply $qb->make_where, { '(SELECT id FROM table)' => [ { '>', 5 } ] }, 'db search subquery';
@@ -117,6 +119,20 @@ is_deeply qb_mask('zz??'), { zz => qr/^$/i }, 'mask NULL';
     is_deeply $qb->make_where, \[ $sq, '.5' ], 'db subquery start dot';
     $qb->parse_search(Encode::decode_utf8('has_v(a-b)'));
     is_deeply $qb->make_where, \[ $sq, 'a-b' ], 'db subquery minus';
+}
+
+{
+    my $qb = CATS::QueryBuilder->new;
+
+    $qb->define_db_searches([ 'x', 'y' ]);
+    throws_ok { $qb->define_casts({ z => '1' }) } qr/unknown/i, 'unknown cast';
+    $qb->define_casts({ x => 'INTEGER' });
+    throws_ok { $qb->define_casts({ x => '2' }) } qr/duplicate/i, 'duplicate cast';
+
+    $qb->parse_search('x=5');
+    is where($qb->make_where), ' WHERE ( x = CAST(? AS INTEGER) )', 'cast';
+    $qb->parse_search('x~=5');
+    is_deeply $qb->make_where, { x => [ { LIKE => \[ 'CAST(? AS INTEGER)', '%5%' ] } ] }, 'cast like';
 }
 
 1;

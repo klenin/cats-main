@@ -294,6 +294,7 @@ sub sort_in_memory {
 sub define_db_searches { $_[0]->qb->define_db_searches($_[1]) }
 sub define_subqueries { $_[0]->qb->define_subqueries($_[1]) }
 sub define_enums { $_[0]->qb->define_enums($_[1]) }
+sub define_casts { $_[0]->qb->define_casts($_[1]) }
 sub default_searches { $_[0]->qb->default_searches($_[1]) }
 
 sub default_sort {
