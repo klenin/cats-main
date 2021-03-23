@@ -65,8 +65,8 @@ sub get_contest_tests {
             LEFT JOIN problem_sources_local PSLE on PSLE.guid = PSI.guid
             WHERE PS.id = T.generator_id) AS gen_name,
             T.param, T.gen_group, T.in_file_size AS input_file_size, T.out_file_size AS answer_file_size,
-            CAST(LEFT(T.in_file, $cut) AS VARCHAR($cut)) AS input,
-            CAST(LEFT(T.out_file, $cut) AS VARCHAR($cut)) AS answer
+            CAST(CAST(LEFT(T.in_file, $cut) AS $db->{TEXT_TYPE}) AS VARCHAR($cut)) AS input,
+            CAST(CAST(LEFT(T.out_file, $cut) AS $db->{TEXT_TYPE}) AS VARCHAR($cut)) AS answer
             ~ : ());
     my $tests = $c->{tests} = $fields ?
         $dbh->selectall_arrayref(qq~
