@@ -2,12 +2,15 @@
 [% PROCESS includes/header.tti %]
 <style>
   .scrollable { height: 200px; width: 700px; overflow: auto; }
+  img.data { max-width: 50%; max-height: 50%; }
 </style>
 </head>
 <body>
-
+[% MACRO img(data, title) BLOCK %]<img class="data bordered" src="data:image/[% data.format %];base64,[% data.base64 %]" title="[% title %]"></img>[% END %]
 [% PROCESS includes/sources_info.tti %]
 <br/>
+
+<div style="margin: 5px;">
 
 <div class="pages" style="float: none">
 [% capt.tests %]
@@ -39,7 +42,9 @@
     [% IF test_data.input_size %]
         [% capt.size %]: [% test_data.input.length | group_digits %] / [% test_data.input_size | group_digits %]<br>
     [% END %]
-    <textarea class="scrollable" wrap="off">[% test_data.decoded_input | html %]</textarea>
+    [% IF test_data.input_image; img(test_data.input_image, capt.input_data); ELSE %]
+    <textarea class="scrollable bordered" wrap="off">[% test_data.decoded_input | html %]</textarea>
+    [% END %]
 </div>
 
 <div>
@@ -47,7 +52,9 @@
     [% IF test_data.answer_size %]
         [% capt.size %]: [% test_data.answer.length | group_digits %] / [% test_data.answer_size | group_digits %]<br>
     [% END %]
-    <textarea class="scrollable" wrap="off">[% test_data.decoded_answer | html %]</textarea>
+    [% IF test_data.answer_image; img(test_data.answer_image, capt.answer_data); ELSE %]
+    <textarea class="scrollable bordered" wrap="off">[% test_data.decoded_answer | html %]</textarea>
+    [% END %]
 </div>
 
 <div>
@@ -55,7 +62,10 @@
     [% IF output_data.output_size %]
         [% capt.size %]: [% output_data.output.length | group_digits %] / [% output_data.output_size | group_digits %]<br>
     [% END %]
-    <textarea class="scrollable" wrap="off">[% output_data.decoded | html %]</textarea>
+    [% IF output_data.output_image; img(output_data.output_image, capt.output_data); ELSE %]
+    <textarea class="scrollable bordered" wrap="off">[% output_data.decoded | html %]</textarea>
+    [% END %]
+</div>
 </div>
 
 <div style="height: 50px"></div>

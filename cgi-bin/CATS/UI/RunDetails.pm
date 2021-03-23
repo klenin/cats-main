@@ -10,6 +10,7 @@ use JSON::XS;
 use CATS::BinaryFile;
 use CATS::Constants;
 use CATS::DB;
+use CATS::DetectImage;
 use CATS::Globals qw($cid $contest $is_jury $is_root $t $uid $user);
 use CATS::IP;
 use CATS::Messages qw(msg res_str);
@@ -353,7 +354,8 @@ sub view_test_details_frame {
             SELECT SO.output, SO.output_size FROM solution_output SO
             WHERE SO.req_id = ? AND SO.test_rank = ?~, { Slice => {} },
             $p->{rid}, $p->{test_rank});
-        $output_data->{decoded} = _decode_quietly($p, $output_data->{output});
+        CATS::DetectImage::add_image_data($output_data, 'output') or
+            $output_data->{decoded} = _decode_quietly($p, $output_data->{output});
     }
 
     my $save_prefix_lengths = $dbh->selectrow_hashref(q~
@@ -367,7 +369,10 @@ sub view_test_details_frame {
         $p->{rid});
 
     my $test_data = get_test_data($p) or return;
-    $test_data->{"decoded_$_"} = _decode_quietly($p, $test_data->{$_}) for qw(input answer);
+    for (qw(input answer)) {
+        CATS::DetectImage::add_image_data($test_data, $_) or
+            $test_data->{"decoded_$_"} = _decode_quietly($p, $test_data->{$_});
+    }
 
     my $tdhref = sub { url_f('view_test_details', rid => $p->{rid}, test_rank => $_[0]) };
 
