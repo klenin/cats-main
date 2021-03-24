@@ -15,7 +15,7 @@
 "package_url": "[% p.href_download %]",
 "disabled": [% IF p.disabled %]1[% ELSE %]0[% END %],
 "status": "[% p.status_text %]",
-[% IF p.max_points %]"max_points": [% p.max_points %],
+[% IF p.max_points %]"max_points": [% p.max_points.match('^\d+$') ? p.max_points : "\"$p.max_points\"" %],
 [% END -%]
 "last_update_time": "[% p.upload_date_iso %]",
 "limits": { "time": [% p.time_limit %], "memory": [% p.memory_limit %] }
