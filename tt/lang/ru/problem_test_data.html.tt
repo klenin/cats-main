@@ -2,7 +2,9 @@
   capt.import({
     test => 'Тест',
     input => 'Вход',
+    input_size => 'Размер входа',
     answer => 'Ответ',
+    answer_size => 'Размер ответа',
     generator_params => 'Параметры генератора',
     validator => 'Валидатор',
     input_hash => 'Хеш входа',

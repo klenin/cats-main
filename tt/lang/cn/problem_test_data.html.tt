@@ -2,7 +2,9 @@
   capt.import({
     test => 'Test',
     input => 'Input',
+    input_size => 'Input size',
     answer => 'Answer',
+    answer_size => 'Answer size',
     input_hash => 'Input hash',
     generator_params => 'Generator parameters',
     validator => 'Validator',

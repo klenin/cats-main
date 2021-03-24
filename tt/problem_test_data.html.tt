@@ -14,7 +14,9 @@
   <tr>
     <th>[% capt.test %]</th>
     <th>[% capt.input %]</th>
+    <th>[% capt.input_size %]</th>
     <th>[% capt.answer %]</th>
+    <th>[% capt.answer_size %]</th>
     <th>[% capt.generator_params %]</th>
     <th>[% capt.validator %]</th>
     <th>[% capt.input_hash %]</th>
@@ -23,12 +25,24 @@
   <tr>
     <td>[% href(t.href_test_diff, t.rank) %]</td>
     <td>[% t.input | html; '&hellip;' IF t.input_cut %]</td>
+    <td class="num">[% t.input_size | group_digits %]</td>
     <td>[% t.answer | html; '&hellip;' IF t.answer_cut %]</td>
+    <td class="num">[% t.answer_size | group_digits %]</td>
     <td>[% t.generator_params | html %]</td>
     <td>[% t.val_name | html %] [% t.input_validator_param | html %]</td>
     <td><code>[% t.input_hash | html %]</code></td>
   </tr>
 [% END %]
+  <tr>
+    <td></td>
+    <td></td>
+    <td class="num">[% total.input_size | group_digits %]</td>
+    <td></td>
+    <td class="num">[% total.answer_size | group_digits %]</td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
 </table>
 
 [% PROCESS includes/menu_end.tti %]

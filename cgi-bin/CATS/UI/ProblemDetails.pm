@@ -280,12 +280,12 @@ sub problem_test_data_frame {
             SUBSTRING(T.in_file FROM 1 FOR $cats::test_file_cut + 1) AS input,
             COALESCE(PSL1.fname, PSLE1.fname) AS gen_name,
             COALESCE(PSL2.fname, PSLE2.fname) AS val_name,
-            T.in_file_size AS input_file_size,
+            COALESCE(T.in_file_size, OCTET_LENGTH(T.in_file)) AS input_size,
             T.in_file_hash AS input_hash,
             T.input_validator_id,
             T.input_validator_param,
             SUBSTRING(T.out_file FROM 1 FOR $cats::test_file_cut + 1) AS answer,
-            T.out_file_size AS answer_file_size
+            COALESCE(T.out_file_size, OCTET_LENGTH(T.out_file)) AS answer_size
         FROM tests T
 
             LEFT JOIN problem_sources PS1 ON PS1.id = T.generator_id
@@ -301,14 +301,18 @@ sub problem_test_data_frame {
         WHERE T.problem_id = ? ORDER BY T.rank~, { Slice => {} },
         $p->{pid}) or return;
 
+    my $total = {};
     for (@$tests) {
         $_->{input_cut} = length($_->{input} || '') > $cats::test_file_cut;
         $_->{answer_cut} = length($_->{answer} || '') > $cats::test_file_cut;
         $_->{generator_params} = CATS::Problem::Utils::gen_group_text($_);
         $_->{href_test_diff} = url_f('test_diff', pid => $p->{pid}, test => $_->{rank});
+        $total->{input_size} += $_->{input_size} // 0;
+        $total->{answer_size} += $_->{answer_size} // 0;
     };
 
-    $t->param(p => $problem, problem_title => $problem->{title}, tests => $tests);
+    $t->param(
+        p => $problem, problem_title => $problem->{title}, tests => $tests, total => $total);
 
     CATS::Problem::Utils::problem_submenu('problem_test_data', $p->{pid});
 }
