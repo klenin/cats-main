@@ -385,8 +385,10 @@ sub view_test_details_frame {
         output_data => $output_data,
         test_data => $test_data,
         save_prefix_lengths => $save_prefix_lengths,
-        href_prev_pages => $p->{test_rank} > $tests[0]->{test_rank} ? $tdhref->($p->{test_rank} - 1) : undef,
-        href_next_pages => $p->{test_rank} < $tests[-1]->{test_rank} ? $tdhref->($p->{test_rank} + 1) : undef,
+        href_prev_pages =>
+            @tests && $p->{test_rank} > $tests[0]->{test_rank} && $tdhref->($p->{test_rank} - 1),
+        href_next_pages =>
+            @tests && $p->{test_rank} < $tests[-1]->{test_rank} && $tdhref->($p->{test_rank} + 1),
         test_ranks => [
             map +{
                 page_number => $_->{test_rank},
