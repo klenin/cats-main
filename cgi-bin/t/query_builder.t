@@ -6,12 +6,15 @@ use File::Spec;
 use FindBin;
 use SQL::Abstract;
 use Test::Exception;
-use Test::More tests => 49;
+use Test::More tests => 52;
 
 use lib File::Spec->catdir($FindBin::Bin, '..');
 use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
 
+use CATS::Messages;
 use CATS::QueryBuilder;
+
+CATS::Messages::init_mockup;
 
 my $sql = SQL::Abstract->new;
 sub where { ($sql->where(@_))[0] }
@@ -113,12 +116,24 @@ is_deeply qb_mask('zz??'), { zz => qr/^$/i }, 'mask NULL';
     is_deeply $qb->make_where, { -and => [ { a => [ { '<', 1 } ] }, \[ $sq, 5 ] ] }, 'db search and subquery';
     $qb->parse_search(Encode::decode_utf8('has_v(пример)'));
     is_deeply $qb->make_where, \[ $sq, Encode::decode_utf8('пример') ], 'db subquery ru';
-    $qb->parse_search(Encode::decode_utf8('has_v(x_1)'));
+    $qb->parse_search('has_v(x_1)');
     is_deeply $qb->make_where, \[ $sq, 'x_1' ], 'db subquery digit underscore';
-    $qb->parse_search(Encode::decode_utf8('has_v(.5)'));
+    $qb->parse_search('has_v(.5)');
     is_deeply $qb->make_where, \[ $sq, '.5' ], 'db subquery start dot';
-    $qb->parse_search(Encode::decode_utf8('has_v(a-b)'));
+    $qb->parse_search('has_v(a-b)');
     is_deeply $qb->make_where, \[ $sq, 'a-b' ], 'db subquery minus';
+}
+
+{
+    my $qb = CATS::QueryBuilder->new;
+    my $sq = 'EXISTS (SELECT * FROM table WHERE id = ?)';
+    $qb->define_subqueries({
+        has_v => { sq => $sq, m => 1111, t => '' }, bad_v => { sq => $sq, m => 2222 } });
+    $qb->parse_search('bad_v(99)');
+    throws_ok { $qb->make_where } qr/subquery/, 'subquery without t';
+    $qb->parse_search('has_v(55)');
+    is where($qb->make_where), " WHERE ( $sq )", 'subquery msg where';
+    is_deeply CATS::Messages::get, [ 'MOCKUP ru 1111: [55]' ], 'subquery msg';
 }
 
 {

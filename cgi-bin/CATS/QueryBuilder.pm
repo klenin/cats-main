@@ -116,7 +116,7 @@ sub _where_msg {
     my ($sq, $value, $negate) = @_;
     $sq->{m} or return;
     my @msg_args =
-        !exists $sq->{t} ? die :
+        !exists $sq->{t} ? die "No 't' for subquery '$sq->{m}'" :
         !$sq->{t} ? $value :
         $dbh->selectrow_array($sq->{t}, undef, $value)
         or return msg(1222, $value);
@@ -132,7 +132,10 @@ sub _maybe_cast {
 sub _prepare_value {
     my ($self, $field, $value, $op) = @_;
     $value = $self->{enums}->{$field}->{$value} // $value;
-    if ($op) { my ($k, $v) = %{sql_op($op, $value)}; return { $k, $self->_maybe_cast($field, $v) }; };
+    if ($op) {
+        my ($k, $v) = %{sql_op($op, $value)};
+        return { $k, $self->_maybe_cast($field, $v) };
+    };
     $self->_maybe_cast($field, $value);
 }
 
@@ -153,9 +156,10 @@ sub make_where {
         my ($name, $value, $negate) = @$d;
         my $sq = $self->{subqueries}->{$name}
             or push @sq_unknown, $name and next;
+        $value = $self->_prepare_value($name, $value);
         _where_msg($sq, $value, $negate);
         # SQL::Abstract uses double reference to designate subquery.
-        my $sql_sq = \[ $sq->{sq} => $self->_prepare_value($name, $value) ];
+        my $sql_sq = \[ $sq->{sq} => $value ];
         push @sq_list, $negate ? { -not_bool => $sql_sq } : $sql_sq;
     }
     msg(1143, join ',', @sq_unknown) if @sq_unknown;
