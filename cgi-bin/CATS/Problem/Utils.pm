@@ -222,4 +222,16 @@ sub can_download_package {
 
 sub round_time_limit { $_[0] = int($_[0] * 100) / 100 if $_[0] }
 
+sub clear_test_data {
+    my ($problem_id) = @_;
+    $dbh->do(q~
+        UPDATE tests T SET in_file = NULL, in_file_size = NULL
+        WHERE T.in_file_size IS NOT NULL AND T.problem_id = ?~, undef,
+        $problem_id);
+    $dbh->do(q~
+        UPDATE tests T SET out_file = NULL, out_file_size = NULL
+        WHERE T.out_file_size IS NOT NULL AND T.problem_id = ?~, undef,
+        $problem_id);
+}
+
 1;

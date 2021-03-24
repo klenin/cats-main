@@ -11,6 +11,7 @@ use CATS::Globals qw($is_root $t $uid);
 use CATS::JudgeDB;
 use CATS::Messages qw(msg);
 use CATS::Output qw(init_template url_f);
+use CATS::Problem::Utils;
 use CATS::RankTable::Cache;
 use CATS::Request;
 use CATS::ReqDetails qw(
@@ -23,6 +24,7 @@ sub maybe_reinstall {
     my ($p, $si) = @_;
     $p->{reinstall} && $si->{can_reinstall} or return;
     # Advance problem modification date to mark judges' cache stale.
+    CATS::Problem::Utils::clear_test_data($si->{problem_id});
     $dbh->do(q~
         UPDATE problems SET upload_date = CURRENT_TIMESTAMP WHERE id = ?~, undef,
         $si->{problem_id});

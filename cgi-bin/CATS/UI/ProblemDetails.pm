@@ -258,14 +258,7 @@ sub problem_test_data_frame {
     $p->{pid} && $is_jury or return;
 
     if ($p->{clear_test_data}) {
-        $dbh->do(q~
-            UPDATE tests T SET in_file = NULL, in_file_size = NULL
-            WHERE T.in_file_size IS NOT NULL AND T.problem_id = ?~, undef,
-            $p->{pid});
-        $dbh->do(q~
-            UPDATE tests T SET out_file = NULL, out_file_size = NULL
-            WHERE T.out_file_size IS NOT NULL AND T.problem_id = ?~, undef,
-            $p->{pid});
+        CATS::Problem::Utils::clear_test_data($p->{pid});
         $dbh->commit;
     }
     if ($p->{clear_input_hashes}) {
