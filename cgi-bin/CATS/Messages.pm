@@ -14,7 +14,7 @@ use CATS::Config qw(cats_dir);
 use CATS::Constants;
 use CATS::Settings;
 
-my ($resource_strings, $messages);
+my ($resource_strings, $messages, $is_mockup);
 
 sub _init_res_str_lang {
     my ($lang) = @_;
@@ -37,6 +37,10 @@ sub init {
     $messages = [];
 }
 
+sub init_mockup {
+    $is_mockup = 1;
+}
+
 sub res_str_lang_raw {
     my ($lang, $id) = @_;
     $resource_strings->{$lang}->[$id] or die "Unknown res_str id: $id";
@@ -44,6 +48,7 @@ sub res_str_lang_raw {
 
 sub res_str_lang {
     my ($lang, $id, @params) = @_;
+    $is_mockup and return join ' ', "MOCKUP $lang $id:", map "[$_]", @params;
     my $s = $resource_strings->{$lang}->[$id] or die "Unknown res_str id: $id";
     warn "Insufficient params for msg $id" if $s =~ /%/ && !@params;
     sprintf($s, @params);
