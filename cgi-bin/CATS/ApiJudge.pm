@@ -5,6 +5,7 @@ use warnings;
 
 use JSON::XS;
 use Math::BigInt;
+use MIME::Base64;
 
 use CATS::Constants;
 use CATS::DB;
@@ -19,6 +20,8 @@ sub Math::BigInt::TO_JSON { $_[0]->bstr }
 
 my $bad_sid = { error => 'bad sid' };
 my $stolen = { error => 'stolen' };
+
+sub _hex { join ' ', length($_[0]), map sprintf('%02X', $_), unpack '(C1)10', $_[0]; }
 
 sub bad_judge {
     $sid && CATS::JudgeDB::get_judge_id($sid) ? 0 : $_[0]->print_json($bad_sid);
@@ -247,6 +250,9 @@ sub insert_req_details {
 
     my %filtered_params =
         map { exists $p->{$_} ? ($_ => $p->{$_}) : () } keys %req_details_fields;
+    if (exists $filtered_params{output}) {
+        $filtered_params{output} = MIME::Base64::decode_base64($filtered_params{output});
+    }
 
     $p->print_json({ result =>
         CATS::JudgeDB::insert_req_details($p->{job_id}, %filtered_params, judge_id => $judge_id) // 0 });
@@ -256,8 +262,9 @@ sub save_input_test_data {
     my ($p) = @_;
     bad_judge($p) and return -1;
 
+    my $input_decoded = MIME::Base64::decode_base64($p->{input});
     CATS::JudgeDB::save_input_test_data(
-        $p->{problem_id}, $p->{test_rank}, $p->{input}, $p->{input_size}, $p->{hash});
+        $p->{problem_id}, $p->{test_rank}, $input_decoded, $p->{input_size}, $p->{hash});
 
     $p->print_json({ ok => 1 });
 }
@@ -266,8 +273,9 @@ sub save_answer_test_data {
     my ($p) = @_;
     bad_judge($p) and return -1;
 
+    my $answer_decoded = MIME::Base64::decode_base64($p->{answer});
     CATS::JudgeDB::save_answer_test_data(
-        $p->{problem_id}, $p->{test_rank}, $p->{answer}, $p->{answer_size});
+        $p->{problem_id}, $p->{test_rank}, $answer_decoded, $p->{answer_size});
 
     $p->print_json({ ok => 1 });
 }
