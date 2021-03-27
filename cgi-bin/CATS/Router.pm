@@ -44,6 +44,7 @@ my $main_routes = {
         contests_selection => array_of integer,
         (map { $_ => bool } CATS::UI::Contests::contest_checkbox_params),
         (map { $_ => str } CATS::UI::Contests::contest_string_params),
+        $CATS::UI::Contests::form->route,
         exclude_verdict_max_reqs => array_of ident,
         exclude_verdict_penalty => array_of ident,
         penalty => integer,

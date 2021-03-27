@@ -10,6 +10,7 @@ use CATS::Contest;
 use CATS::Contest::Utils;
 use CATS::Contest::XmlSerializer;
 use CATS::DB qw(:DEFAULT $db);
+use CATS::Form;
 use CATS::Globals qw($cid $contest $is_jury $is_root $t $uid $user);
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
@@ -22,6 +23,19 @@ use CATS::Settings qw($settings);
 use CATS::StaticPages;
 use CATS::Utils;
 use CATS::Verdicts;
+
+our $form = CATS::Form->new(
+    table => 'contests',
+    fields => [
+        [ name => 'start_date', validators => $CATS::Field::date_time_req, caption => 600 ],
+        [ name => 'finish_date', validators => $CATS::Field::date_time_req, caption => 631 ],
+        [ name => 'freeze_date', validators => $CATS::Field::date_time, ],
+        [ name => 'defreeze_date', validators => $CATS::Field::date_time, ],
+        [ name => 'pub_reqs_date', validators => $CATS::Field::date_time, ],
+        [ name => 'offset_start_until', validators => $CATS::Field::date_time, ],
+    ],
+    href_action => '-',
+);
 
 sub contests_new_frame {
     my ($p) = @_;
@@ -67,13 +81,17 @@ sub contest_date_params() {qw(
 )}
 
 sub contest_string_params() {
-    (qw(title short_descr rules req_selection max_reqs scaled_points round_points_to), contest_date_params());
+    (qw(title short_descr rules req_selection max_reqs scaled_points round_points_to));
 }
 
-sub get_contest_html_params {
+sub _get_contest_html_params {
     my ($p) = @_;
+
     my $c = { map { $_ => $p->{$_} } contest_string_params(), 'penalty' };
     $c->{$_} = $p->{$_} ? 1 : 0 for contest_checkbox_params();
+
+    my $fd = $form->parse_form_data($p);
+    $c->{$_->{field}->{name}} = $_->{value} for @{$fd->{ordered}};
     $c->{$_} = $db->parse_date($c->{$_}) for contest_date_params();
 
     for ($c->{title}) {
@@ -92,15 +110,18 @@ sub get_contest_html_params {
             grep $_, map $CATS::Verdicts::name_to_state->{$_}, @{$p->{"exclude_verdict_$e"}};
         $c->{$e . '_except'} = $val || undef;
     }
-    $c;
+    ($c, $fd);
 }
 
 sub _validate {
-    my ($c) = @_;
+    my ($c, $fd) = @_;
 
     if (!$is_root) {
         delete $c->{_} for qw(apikey login_prefix);
     }
+
+    map CATS::Messages::msg_debug($_), grep $_, map $_->{error}, @{$fd->{ordered}};
+    return if @{CATS::Messages::get()};
 
     my $req_fields = [
         { f => 'start_date', n => 600 },
@@ -143,8 +164,8 @@ sub _validate {
 
 sub contests_new_save {
     my ($p) = @_;
-    my $c = get_contest_html_params($p) or return;
-    _validate($c) or return;
+    my ($c, $fd) = _get_contest_html_params($p) or return;
+    _validate($c, $fd) or return;
     $c->{ctype} = 0;
     $c->{id} = new_id;
     $is_root or $c->{is_official} = 0;
@@ -405,8 +426,8 @@ sub contests_edit_save_xml {
 }
 
 sub contests_edit_save {
-    my ($p, $c) = @_;
-    _validate($c) or return;
+    my ($p, $c, $fd) = @_;
+    _validate($c, $fd) or return;
     $is_root or delete $c->{is_official};
     eval {
         $dbh->do(_u $sql->update(contests => $c, { id => $p->{id} }));
@@ -537,7 +558,7 @@ sub contests_frame {
     contest_delete($p->{'delete'}) and return $p->redirect(url_f 'contests') if $p->{'delete'};
 
     contests_new_save($p) if $p->{new_save} && $user->privs->{create_contests};
-    contests_edit_save($p, get_contest_html_params($p))
+    contests_edit_save($p, _get_contest_html_params($p))
         if $p->{edit_save} && $p->{id} && is_jury_in_contest(contest_id => $p->{id});
 
     CATS::Contest::Participate::online if $p->{online_registration};
