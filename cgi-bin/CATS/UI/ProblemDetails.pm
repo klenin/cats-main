@@ -257,6 +257,13 @@ sub problem_test_data_frame {
     init_template($p, 'problem_test_data.html.tt');
     $p->{pid} && $is_jury or return;
 
+    my $problem = $dbh->selectrow_hashref(qq~
+        SELECT P.id, P.title, CP.id AS cpid, CP.tags
+        FROM problems P
+            INNER JOIN contest_problems CP ON P.id = CP.problem_id
+        WHERE P.id = ? AND CP.contest_id = ?~, undef,
+        $p->{pid}, $cid) or return;
+
     if ($p->{clear_test_data}) {
         CATS::Problem::Utils::clear_test_data($p->{pid});
         $dbh->commit;
@@ -268,14 +275,30 @@ sub problem_test_data_frame {
         $dbh->commit;
     }
 
-    my $problem = $dbh->selectrow_hashref(qq~
-        SELECT P.id, P.title, CP.id AS cpid, CP.tags
-        FROM problems P
-            INNER JOIN contest_problems CP ON P.id = CP.problem_id
-        WHERE P.id = ? AND CP.contest_id = ?~, undef,
-        $p->{pid}, $cid) or return;
+    my $lv = CATS::ListView->new(
+        web => $p, name => 'problem_test_data',
+        array_name => 'tests', url => url_f('problem_test_data', pid => $p->{pid}));
 
-    my $tests = $dbh->selectall_arrayref(qq~
+    $lv->default_sort(0)->define_columns([
+        { caption => 'test', order_by => 'T.rank', },
+        { caption => 'input', order_by => 'input' },
+        { caption => 'input_size', order_by => 'input_size', col => 'Is' },
+        { caption => 'answer', order_by => 'answer', width => '5%' },
+        { caption => 'answer_size', order_by => 'answer_size', col => 'As' },
+        { caption => 'generator_params', order_by => 'gen_name' },
+        { caption => 'validator', order_by => 'val_name' },
+        { caption => 'input_hash', order_by => 'input_hash' },
+    ]);
+    $lv->define_db_searches([ qw(
+        rank gen_group param input_hash input_validator_param
+        in_file in_file_size out_file out_file_size
+    ) ]);
+    $lv->define_db_searches({
+        gen_name => 'COALESCE(PSL1.fname, PSLE1.fname)',
+        val_name => 'COALESCE(PSL2.fname, PSLE2.fname)',
+    });
+
+    my $sth = $dbh->prepare(qq~
         SELECT T.rank, T.gen_group, T.param,
             SUBSTRING(T.in_file FROM 1 FOR $cats::test_file_cut + 1) AS input,
             COALESCE(PSL1.fname, PSLE1.fname) AS gen_name,
@@ -298,21 +321,28 @@ sub problem_test_data_frame {
             LEFT JOIN problem_sources_imported PSI2 ON PSI2.id = PS2.id
             LEFT JOIN problem_sources_local PSLE2 ON PSLE2.guid = PSI2.guid
 
-        WHERE T.problem_id = ? ORDER BY T.rank~, { Slice => {} },
-        $p->{pid}) or return;
+        WHERE T.problem_id = ? ~ . $lv->maybe_where_cond . $lv->order_by
+    );
+    $sth->execute($p->{pid}, $lv->where_params);
 
     my $total = {};
-    for (@$tests) {
-        $_->{input_cut} = length($_->{input} || '') > $cats::test_file_cut;
-        $_->{answer_cut} = length($_->{answer} || '') > $cats::test_file_cut;
-        $_->{generator_params} = CATS::Problem::Utils::gen_group_text($_);
-        $_->{href_test_diff} = url_f('test_diff', pid => $p->{pid}, test => $_->{rank});
-        $total->{input_size} += $_->{input_size} // 0;
-        $total->{answer_size} += $_->{answer_size} // 0;
+
+    my $fetch_record = sub {
+        my $row = $_[0]->fetchrow_hashref or return ();
+        $row->{input_cut} = length($row->{input} || '') > $cats::test_file_cut;
+        $row->{answer_cut} = length($row->{answer} || '') > $cats::test_file_cut;
+        $row->{generator_params} = CATS::Problem::Utils::gen_group_text($row);
+        $row->{href_test_diff} = url_f('test_diff', pid => $p->{pid}, test => $row->{rank});
+        $total->{input_size} += $row->{input_size} // 0;
+        $total->{answer_size} += $row->{answer_size} // 0;
+        %$row;
     };
 
+    $lv->attach($fetch_record, $sth);
+    $sth->finish;
+
     $t->param(
-        p => $problem, problem_title => $problem->{title}, tests => $tests, total => $total);
+        p => $problem, problem_title => $problem->{title}, total => $total);
 
     CATS::Problem::Utils::problem_submenu('problem_test_data', $p->{pid});
 }

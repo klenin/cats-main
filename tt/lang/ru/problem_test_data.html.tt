@@ -1,13 +1,15 @@
 [%
   capt.import({
-    test => 'Тест',
-    input => 'Вход',
-    input_size => 'Размер входа',
-    answer => 'Ответ',
-    answer_size => 'Размер ответа',
-    generator_params => 'Параметры генератора',
-    validator => 'Валидатор',
-    input_hash => 'Хеш входа',
+    listview_captions => {
+      test => 'Тест',
+      input => 'Вход',
+      input_size => 'Размер входа',
+      answer => 'Ответ',
+      answer_size => 'Размер ответа',
+      generator_params => 'Параметры генератора',
+      validator => 'Валидатор',
+      input_hash => 'Хеш входа',
+    },
     clear_test_data => 'Удалить сгенерированные данные',
     confirm_clear_test_data => 'Удалить сгенерированные данные для всех тестов. Вы уверены?',
     clear_input_hashes => 'Удалить хеши входа',
