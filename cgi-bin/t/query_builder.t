@@ -6,7 +6,7 @@ use File::Spec;
 use FindBin;
 use SQL::Abstract;
 use Test::Exception;
-use Test::More tests => 52;
+use Test::More tests => 55;
 
 use lib File::Spec->catdir($FindBin::Bin, '..');
 use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
@@ -61,14 +61,17 @@ is_deeply qb_mask('zz??'), { zz => qr/^$/i }, 'mask NULL';
 }
 {
     my $qb = CATS::QueryBuilder->new;
-    $qb->define_db_searches([ 'a', 't.id' ]);
+    $qb->define_db_searches([ 'a', 't.id' , 'fn' ]);
     $qb->define_db_searches({ sq => '(SELECT id FROM table)' });
     throws_ok { $qb->define_db_searches([ 'a' ]) } qr/duplicate/i, 'duplicate db_search';
     $qb->default_searches([ 'a' ]);
     throws_ok { $qb->default_searches([ 'z' ]) } qr/unknown/i, 'unknown default_search';
 
     $qb->define_enums({ a => { x => 22, y => 33, z => 'a' } });
+    $qb->define_transforms({ fn => sub { $_[0] + 1 } });
     throws_ok { $qb->define_enums({ a => {} }) } qr/duplicate/i, 'duplicate enum';
+    throws_ok { $qb->define_enums({ b => [] }) } qr/hash/i, 'bad enum type';
+    throws_ok { $qb->define_transforms({ bfn => [] }) } qr/sub/i, 'bad transform type';
 
     my $sq = 'EXISTS (SELECT * FROM table WHERE id = ?)';
     $qb->define_subqueries({ has_v => { sq => $sq } });
@@ -99,7 +102,9 @@ is_deeply qb_mask('zz??'), { zz => qr/^$/i }, 'mask NULL';
     is_deeply $qb->make_where, { a => [ { '=', 1 }, { '=', 2 } ] }, 'db where or';
 
     $qb->parse_search('a=x');
-    is_deeply $qb->make_where, { a => [ { '=', 22 } ] }, 'enums';
+    is_deeply $qb->make_where, { a => [ { '=', 22 } ] }, 'enum';
+    $qb->parse_search('fn=7');
+    is_deeply $qb->make_where, { fn => [ { '=', 8 } ] }, 'transform';
     $qb->parse_search('a=z');
     is_deeply $qb->make_where, { a => [ { '=', 'a' } ] }, 'no recursion in enums';
 

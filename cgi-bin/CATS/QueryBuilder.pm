@@ -20,6 +20,7 @@ sub new {
         default_searches => [],
         subqueries => {},
         enums => {},
+        transforms => {},
     };
     bless $self, $class;
 }
@@ -129,9 +130,16 @@ sub _maybe_cast {
     $type ? \[ "CAST(? AS $type)", $value ] : $value;
 }
 
+sub _apply_enum_transform {
+    my ($self, $field, $value) = @_;
+    my $after_enum = $self->{enums}->{$field}->{$value} // $value;
+    my $tr = $self->{transforms}->{$field};
+    $tr ? $tr->($after_enum) : $after_enum;
+}
+
 sub _prepare_value {
     my ($self, $field, $value, $op) = @_;
-    $value = $self->{enums}->{$field}->{$value} // $value;
+    $value = $self->_apply_enum_transform($field, $value);
     if ($op) {
         my ($k, $v) = %{sql_op($op, $value)};
         return { $k, $self->_maybe_cast($field, $v) };
@@ -234,7 +242,17 @@ sub define_enums {
     my ($self, $enums) = @_;
     for my $k (keys %$enums) {
         croak "Duplicate enum: $k" if $self->{enums}->{$k};
+        ref $enums->{$k} eq 'HASH' or die "Enum must be hash: $k";
         $self->{enums}->{$k} = $enums->{$k};
+    }
+}
+
+sub define_transforms {
+    my ($self, $transforms) = @_;
+    for my $k (keys %$transforms) {
+        croak "Duplicate transform: $k" if $self->{transforms}->{$k};
+        ref $transforms->{$k} eq 'CODE' or die "Transform must be sub: $k";
+        $self->{transforms}->{$k} = $transforms->{$k};
     }
 }
 
@@ -242,7 +260,7 @@ sub extract_search_values {
     my ($self, $name) = @_;
     my @result = map {
         my ($k, $v) = @$_;
-        $self->{enums}->{$k}->{$v} // $v;
+        $self->_apply_enum_transform($k, $v);
     } grep $_->[0] eq $name, @{$self->search};
     $self->{search} = [ grep $_->[0] ne $name, @{$self->search} ];
     \@result;
