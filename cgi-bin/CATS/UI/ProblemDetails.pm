@@ -298,6 +298,15 @@ sub problem_test_data_frame {
         val_name => 'COALESCE(PSL2.fname, PSLE2.fname)',
     });
 
+    my $all_testsets = $dbh->selectall_hashref(q~
+        SELECT * FROM testsets WHERE problem_id = ? ORDER BY name~, 'name', { Slice => {} },
+        $problem->{id});
+    $lv->define_enums({ rank => { map { $_ => $_ } keys %$all_testsets } });
+    $lv->define_transforms({ rank => sub {
+            [ keys %{CATS::Testset::parse_test_rank(
+                $all_testsets, $_[0], sub { msg(1149, 'rank', $_[0]); })} ];
+    } });
+
     my $sth = $dbh->prepare(qq~
         SELECT T.rank, T.gen_group, T.param,
             SUBSTRING(T.in_file FROM 1 FOR $cats::test_file_cut + 1) AS input,
