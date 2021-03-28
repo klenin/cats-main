@@ -22,7 +22,7 @@
   <td><label style="display: block; width: 100%; height: 100%;">
     <input type="checkbox" name="sel_points_testsets" value="[% ts.id %]" [% IF ts.sel_points_testsets %]checked="checked"[% END %]/>
   </label></td>
-  <td>[% ts.name %]</td>
+  <td>[% href(ts.href_tests, ts.name) %]</td>
   <td>[% ts.tests.replace(',', ',&#8203;') %]</td>
   <td class="num">[% ts.count %]</td>
   <td class="num">[% ts.points %]</td>

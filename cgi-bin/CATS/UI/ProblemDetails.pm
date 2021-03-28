@@ -242,6 +242,7 @@ sub problem_select_testsets_frame {
 
     for (@$testsets) {
         $_->{count} = scalar keys %{CATS::Testset::parse_test_rank($all_testsets, $_->{name}, sub {})};
+        $_->{href_tests} = url_f(problem_test_data => pid => $p->{pid}, search => "rank=$_->{name}");
     }
 
     $t->param("problem_$_" => $problem->{$_}) for keys %$problem;
