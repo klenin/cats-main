@@ -330,6 +330,14 @@ sub problems_frame {
     my $job_split_strategy_sql = $is_jury && $lv->visible_cols->{St} ? q~
         (SELECT L.job_split_strategy FROM limits L WHERE L.id = CP.limits_id)~ : 'NULL';
 
+    my $child_contests = $dbh->selectall_arrayref(q~
+        SELECT id, title FROM contests C WHERE C.parent_id = ? AND C.is_hidden = 0~, { Slice => {} },
+        $cid);
+    my %child_contests_idx;
+    $child_contests_idx{$_->{id}} = $_ for @$child_contests;
+    my ($contests_sql, @contests_params) =
+        $sql->where({ 'CP.contest_id' => [ $cid, map $_->{id}, @$child_contests ] });
+
     # Concatenate last submission fields to work around absence of tuples.
     my $sth = $dbh->prepare(qq~
         SELECT
@@ -348,20 +356,22 @@ sub problems_frame {
             $test_count_sql CP.testsets, CP.points_testsets, P.lang,
             $limits_str, L.job_split_strategy,
             CP.max_points, CP.scaled_points, CP.round_points_to, CP.weight, CP.is_extra,
-            P.repo, CP.tags, P.statement_url, P.explanation_url, CP.color, CP.max_reqs
+            P.repo, CP.tags, P.statement_url, P.explanation_url, CP.color, CP.max_reqs,
+            CP.contest_id
         FROM problems P
         INNER JOIN contest_problems CP ON CP.problem_id = P.id
         INNER JOIN contests OC ON OC.id = P.contest_id
+        INNER JOIN contests CC ON CC.id = CP.contest_id
         LEFT JOIN limits L ON L.id = CP.limits_id
-        WHERE CP.contest_id = ?$hidden_problems
-        ~ . $lv->maybe_where_cond . $lv->order_by
+        $contests_sql$hidden_problems~ .
+        $lv->maybe_where_cond . $lv->order_by('CC.start_date')
     );
     my $aid = $uid || 0; # in a case of anonymous user
     my @params =
         !$lv->visible_cols->{Vc} ? () :
         $contest->is_practice ? ($aid, $cid) :
         (($aid) x 5, $cid);
-    $sth->execute(@params, $cid, $lv->where_params);
+    $sth->execute(@params, @contests_params, $lv->where_params);
 
     my @status_list;
     if ($is_jury) {
@@ -376,6 +386,8 @@ sub problems_frame {
         $is_jury || $contest->{is_hidden} || $contest->{local_only} || $contest->{time_since_start} < 0 ?
         \&url_f : \&CATS::StaticPages::url_static;
     my %any_langs;
+
+    my $prev_contest = 0;
 
     my $fetch_record = sub {
         my $c = $_[0]->fetchrow_hashref or return ();
@@ -413,6 +425,11 @@ sub problems_frame {
         my $can_download = CATS::Problem::Utils::can_download_package;
         my $max_points = $c->{max_points} // '*';
 
+        my $group_title =
+            $c->{contest_id} == $prev_contest ? '' : $child_contests_idx{$c->{contest_id}}->{title};
+        my $href_group = $group_title && url_f_cid('problems', cid => $c->{contest_id});
+        $prev_contest = $c->{contest_id};
+
         return (
             href_delete => url_f('problems', delete_problem => $c->{cpid}),
             href_change_status => url_f('problems', change_status => $c->{cpid}),
@@ -432,7 +449,7 @@ sub problems_frame {
 
             status => $c->{status},
             status_text => $psn->{$c->{status}},
-            disabled => !$is_jury &&
+            disabled => !$is_jury && $c->{contest_id} == $cid &&
                 ($c->{status} >= $cats::problem_st_disabled || $last_state == $cats::st_banned),
             href_view_problem =>
                 $hrefs_view{statement} || $text_link_f->('problem_text', cpid => $c->{cpid}),
@@ -475,6 +492,8 @@ sub problems_frame {
             allow_des => $c->{allow_des} // '*',
             allow_des_names => $c->{allow_des_names} // '',
             color => $c->{color},
+            group_title => $group_title,
+            href_group => $href_group,
         );
     };
     $lv->date_fields(qw(upload_date))->date_fields_iso(qw(upload_date_iso));
@@ -524,10 +543,6 @@ sub problems_frame {
         $parent_contest->{href} = url_f_cid('problems', cid => $parent_contest->{id});
     }
 
-    my $child_contest_count = $dbh->selectrow_array(q~
-        SELECT COUNT(*) FROM contests C WHERE C.parent_id = ? AND C.is_hidden = 0~, undef,
-        $cid);
-
     $t->param(
         href_login => url_f('login', redir => CATS::Redirect::pack_params($p)),
         href_set_problem_color => url_f('set_problem_color'),
@@ -541,9 +556,9 @@ sub problems_frame {
         parent_contest => $parent_contest,
         source_text => $p->{source_text},
         no_listview_header => !$is_jury && !$lv->total_row_count && ($lv->settings->{search} // '') eq '',
-        child_contest_count => $child_contest_count,
+        child_contest_count => scalar @$child_contests,
         href_child_contests =>
-            $child_contest_count && url_f('contests', search => "parent_or_id=$cid", filter=> 'all'),
+            @$child_contests && url_f('contests', search => "parent_or_id=$cid", filter=> 'all'),
      );
 }
 

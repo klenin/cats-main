@@ -154,6 +154,9 @@ function chg_code(st_sel, pid) {
 [% PROCESS includes/listview_col_defs.tti sel_col = 1 nocheckbox = 1 %]
 [% END %]
 [% FOREACH p IN problems %]
+[% IF p.group_title %]
+<tr class="col_defs"><th colspan="[% col_def_count + 1 %]">[% href(p.href_group, p.group_title) %]</th></tr>
+[% END %]
 <tr class="[% loop.parity() %] problem_row" id="pr_[% p.cpid %]">
 [% IF can_submit %]<td class="problem_radio nobr">
   <label><input type="radio" name="problem_id" value="[% p.problem_id %]"
