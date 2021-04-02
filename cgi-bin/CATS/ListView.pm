@@ -247,10 +247,13 @@ sub find_sorting_col {
 }
 
 sub order_by {
-    my ($self) = @_;
+    my ($self, $pre_sort) = @_;
     my $s = $self->settings;
-    my $c = $self->find_sorting_col($s) or return '';
-    sprintf 'ORDER BY %s %s', $c->{order_by}, ($s->{sort_dir} ? 'DESC' : 'ASC');
+    $pre_sort //= $self->{pre_sort};
+    $pre_sort = $pre_sort ? "$pre_sort, " : '';
+    my $c = $self->find_sorting_col($s);
+    $pre_sort || $c or return '';
+    sprintf 'ORDER BY %s%s %s', $pre_sort, $c->{order_by}, ($s->{sort_dir} ? 'DESC' : 'ASC');
 }
 
 sub where { $_[0]->{where} ||= $_[0]->make_where }
@@ -342,6 +345,7 @@ sub define_columns {
 
     $self->{template}->param(
         col_defs => $col_defs,
+        col_def_count => scalar(grep $_->{visible} && $_->{order_by}, @$col_defs),
         can_change_cols => ($is_jury && scalar %{$self->{visible_cols}}),
         visible_cols => $self->{visible_cols});
     $self;
