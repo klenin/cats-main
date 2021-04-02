@@ -190,7 +190,7 @@ sub get_sources_info {
             ),
             "CAST(R.result_time - R.test_time AS DOUBLE PRECISION) AS test_duration",
             "CAST(R.submit_time - $CATS::Time::contest_start_offset_sql AS DOUBLE PRECISION) AS time_since_start",
-            'DE.description AS de_name',
+            'DE.description AS de_name', 'DE.code AS de_code',
             'A.team_name', 'COALESCE(E.ip, A.last_ip) AS last_ip',
             'P.title AS problem_name', 'P.save_output_prefix',
             'P.contest_id AS orig_contest_id',
@@ -309,7 +309,7 @@ sub get_sources_info {
 
         if ($r->{elements_count} == 1) {
             $r->{$_} = $r->{elements}->[0]->{$_}
-                for qw(file_name de_id de_name), $opts{get_source} ? qw(src syntax) : ();
+                for qw(file_name de_id de_name de_code), $opts{get_source} ? qw(src syntax) : ();
         }
 
         $r->{file_name} //= '';
