@@ -6,6 +6,7 @@ use warnings;
 use Algorithm::Diff;
 use Encode;
 
+use CATS::Config;
 use CATS::DB;
 use CATS::DevEnv;
 use CATS::Globals qw($cid $contest $is_jury $user);
@@ -23,6 +24,7 @@ use CATS::Request;
 use CATS::Settings qw($settings);
 use CATS::Similarity;
 use CATS::Problem::Submit qw(prepare_de prepare_de_list);
+use CATS::Utils;
 
 sub diff_runs_frame {
     my ($p) = @_;
@@ -141,6 +143,9 @@ sub view_source_frame {
         msg(1014, $sources_info->{submit_time}) if $p->{submitted};
     }
     source_links($p, $sources_info);
+    $_->{href_download_source_abs} = $CATS::Config::absolute_url .
+        CATS::Utils::url_function(download_source => rid => $_->{req_id}, hash => $_->{sha1}, cid => $cid)
+        for $sources_info;
     sources_info_param([ $sources_info ]);
     @{$sources_info->{elements}} <= 1 or return msg(1155);
     $sources_info->{href_print} = url_f('print_source', rid => $p->{rid}, notime => 1);

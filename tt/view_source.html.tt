@@ -22,7 +22,11 @@
   <td>
     <table><tr>
       <td>[% PROCESS includes/encoding_form.html.tti capt_enc = capt.encoding %]</td>
-      <td>[ [% href(si.href_print, capt.print) %] | [% href(si.href_download_source, capt.download) %] ]</td>
+      <td>[ [% href(si.href_print, capt.print) %] | [% href(si.href_download_source, capt.download);
+        IF is_any_jury && si.de_code == 604;
+          ' | '; href('https://kovacsv.hu/3dviewer.net/#model=' _ si.href_download_source_abs _ ';x.obj', '3D');
+        END %] ]
+       </td>
     </tr></table>
   </td>
 </tr>
