@@ -12,7 +12,7 @@
 [% settings %]
 <table>
 <tr>
-[% FOREACH si IN sources_info;  %]
+[% FOREACH si IN sources_info %]
   [% IF si.compiler_output %]<td class="bordered"><pre id="co[% si.req_id %]">[% si.compiler_output | html %]</pre></td>
   [% ELSE %]<td></td>
   [% END %]
@@ -20,14 +20,25 @@
 </tr>
 <tr>
   <td>
+[% FOREACH si IN sources_info %]
     <table><tr>
       <td>[% PROCESS includes/encoding_form.html.tti capt_enc = capt.encoding %]</td>
       <td>[ [% href(si.href_print, capt.print) %] | [% href(si.href_download_source, capt.download);
-        IF is_any_jury && si.de_code == 604;
-          ' | '; href('https://kovacsv.hu/3dviewer.net/#model=' _ si.href_download_source_abs _ ';x.obj', '3D');
+        IF is_any_jury;
+          IF si.de_code == 604; # OBJ
+            ' | '; href('https://kovacsv.hu/3dviewer.net/#model=' _ si.href_download_source_abs _ ';x.obj', '3D');
+          END;
+          IF 100 <= si.de_code && si.de_code < 600;
+            paiza_translate = { c_cpp => 'cpp', python => 'python3', pascal => 'plain' };
+            paiza_lang = si.syntax.lower || 'plain';
+            paiza_lang = paiza_translate.item(paiza_lang) || paiza_lang;
+            IF paiza_lang != 'plain' %]
+              | <a href="https://paiza.io/en/projects/new?language=[% paiza_lang %]&source_code=[% si.src | url %]">online</a>
+          [% END; END;
         END %] ]
        </td>
     </tr></table>
+[% END %]
   </td>
 </tr>
 <tr>
@@ -50,7 +61,7 @@
           [%- PROCESS includes/editor_menu.tti editor_id = 'ed_vs' _ si.req_id -%]
         </a>
       </div>
-      <textarea name="source_text" cols="[% source_width %]" rows="40"
+      <textarea id="source_text_[% si.req_id %]" name="source_text" cols="[% source_width %]" rows="40"
         data-editor="[% si.syntax.lower || 'text' %]" data-gutter="1" data-id="ed_vs[% si.req_id %]">
         [%- si.src | html ~%]
       </textarea>
