@@ -359,6 +359,45 @@ print(a, b)
 print(p)
 print(q)',
   },
+  {
+    id => 'rust',
+    name => 'Rust',
+    infile => 'use std::io::*;
+
+fn main() -> Result<()> {
+    let mut buffer = String::new();
+    let f = std::fs::File::open("input.txt")?;
+    BufReader::new(f).read_line(&mut buffer)?;
+    let n: Vec<_> = buffer.split_whitespace().map(|x| x.parse::<i32>().unwrap()).collect();
+    Ok(())
+}',
+    stdin => 'use std::io::*;
+
+fn main() -> Result<()> {
+    let mut buffer = String::new();
+    stdin().read_line(&mut buffer)?;
+    let n: Vec<_> = buffer.split_whitespace().map(|x| x.parse::<i32>().unwrap()).collect();
+    Ok(())
+}',
+    outfile => 'use std::io::*;
+
+fn main() -> Result<()> {
+    let mut f = BufWriter::new(std::fs::File::create("output.txt")?);
+    let a = 1; let b = 1;
+    let p = String::from("zzz");
+    write!(f, "{} {}", a, b)?;
+    write!(f, "{}", p)?;
+    Ok(())
+}',
+    stdout => 'fn main() -> std::io::Result<()> {
+    let a = 1; let b = 1;
+    let p = String::from("zzz");
+    println!("{} {}", a, b);
+    println!("{}", p);
+    Ok(())
+}',
+  },
+
 ];
 
 extra_head = BLOCK %]
