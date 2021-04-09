@@ -49,6 +49,8 @@ INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
     VALUES (<NEXT_ID>, 404, 'Go', 'go', 'golang', '^~FILE~:~LINE~:~POS~:');
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
     VALUES (<NEXT_ID>, 406, 'Kotlin', 'kt', 'kotlin', '^~FILE~:~LINE~:~POS~:');
+INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
+    VALUES (<NEXT_ID>, 407, '.NET Core', '', 'csharp', '~FILE~\(~LINE~,~POS~\):');
 
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
     VALUES (<NEXT_ID>, 501, 'Perl', 'pl', 'perl', 'at\s~FILE~\sline\s~LINE~');
