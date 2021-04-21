@@ -43,6 +43,9 @@ sub _problem_commitdiff {
         ($p->{file} ? ({
             href => url_f('problem_history_edit', file => $new_name || $p->{file}, pid => $pid, hb => $sha),
             item => res_str(572) }) : ()),
+        ($p->{file} && $p->{file} =~ /\.xml$|^\*$/ ? ({
+            href => url_f('problem_text', pid => $pid),
+            item => res_str(411) }) : ()),
     ];
     $t->param(
         commit => CATS::Problem::Storage::show_commit($pid, $sha, $se),
