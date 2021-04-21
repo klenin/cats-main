@@ -14,16 +14,54 @@
   var cats_tags = [ [% FOREACH a IN cats_tags; "'$a'"; ', ' UNLESS loop.last; END %] ];
   var keywords = [ [% FOREACH kw IN keywords; "'$kw.code'"; ', ' UNLESS loop.last; END %] ];
 
-  var completer = function(data, meta) {
+  var acceptable_prefix_keyword = function(session, pos, prefix) {
+    if (prefix != "") return true;
+    if (pos.column == 0) return false;
+    var line = session.getLine(pos.row);
+    if (line[pos.column - 1] == '"') {
+        var suffix = ' code="';
+        var actual_suffix = line.substr(pos.column - suffix.length, suffix.length);
+        return suffix.length < pos.column && actual_suffix == suffix;
+    }
+    return line[pos.column - 1] == '.';
+  };
+  var acceptable_prefix_tag = function(session, pos, prefix) {
+    if (prefix != "") return true;
+    if (pos.column == 0) return false;
+    return session.getLine(pos.row)[pos.column - 1] == '<';
+  };
+  var re_ident = /[a-zA-Z_\-]/;
+  var prefilter_keyword = function(data, session, pos) {
+    if (pos.column == 0) return data;
+    var line = session.getLine(pos.row);
+    for (var i = pos.column; i > 0 && re_ident.test(line[i - 1]); --i);
+    for (var j = i; j > 0 && re_ident.test(line[j - 1]) || line[j - 1] == '.' ; --j);
+    var prefix = line.substring(j, i);
+    var result = [];
+    for (var i = 0; i < data.length; ++i) {
+      if (data[i].startsWith(prefix)) result.push(data[i].substr(prefix.length));
+    }
+    return result;
+  };
+  var prefilter_none = function(data) { return data; };
+  var completer = function(data, meta, is_acceptable_prefix, prefilter) {
     return {
       getCompletions: function(editor, session, pos, prefix, callback) {
-        if (prefix.length === 0) { callback(null, []); return }
-        callback(null, $.map(data, function (c) { return { value: c, score: 1, meta: meta }; }));
+        if (!is_acceptable_prefix(session, pos, prefix)) {
+          callback(null, []);
+          return;
+        }
+        callback(null, $.map(
+          prefilter(data, session, pos),
+          function (c) { return { value: c, score: 1, meta: meta }; }
+        ));
       }
     }
   };
-
-  langTools.setCompleters([completer(cats_tags, 'cats'), completer(keywords, 'keyword')]);
+  langTools.setCompleters([
+    completer(cats_tags, 'cats', acceptable_prefix_tag, prefilter_none),
+    completer(keywords, 'keyword', acceptable_prefix_keyword, prefilter_keyword)
+  ]);
 
   var add_keyword = function() {
     editor.focus();
@@ -63,7 +101,10 @@
 [% END %]
 
 <form id="edit_file_form" method="post" accept-charset="UTF-8" enctype="multipart/form-data" style="margin: 0">
-<div class="commit_header">[% IF !edit_file; capt.file_creating; ELSE; capt.file_editing; END %]<input name="new_name" style="margin-left: 5px;" type="text" size="25" value="[% file %]"></div>
+<div class="commit_header">
+[%- IF !edit_file; capt.file_creating; ELSE; capt.file_editing; END -%]
+<input name="new_name" style="margin-left: 5px;" type="text" size="25" value="[% file %]">
+</div>
 [% IF edit_file %]
 <div class="page_path">
   [% FOREACH path IN blob.paths %]
