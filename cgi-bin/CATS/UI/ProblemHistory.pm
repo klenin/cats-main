@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use Encode qw();
+use JSON::XS qw(encode_json);
 
 use CATS::DB;
 use CATS::Globals qw($cid $is_jury $is_root $t $uid);
@@ -236,8 +237,14 @@ sub problem_history_edit_frame {
     my @text_item = $is_xml ?
         { href => url_f('problem_text', pid => $p->{pid}), item => res_str(411) } : ();
     set_submenu_for_tree_frame($p->{pid}, $hash_base, @text_item);
-    my $keywords = $dbh->selectall_arrayref(q~
-        SELECT code FROM keywords~, { Slice => {} });
+    my $autocomplete = {};
+    if ($is_xml) {
+        $autocomplete->{cats_tags} = [ sort keys %{CATS::Problem::Parser::tag_handlers()} ];
+        $autocomplete->{keywords} = $dbh->selectcol_arrayref(q~
+            SELECT code FROM keywords~);
+        $autocomplete->{guids} = $dbh->selectcol_arrayref(q~
+            SELECT guid FROM problem_sources_local WHERE guid IS NOT NULL~);
+    }
     my $de_list = CATS::DevEnv->new(CATS::JudgeDB::get_DEs({ fields => 'syntax' }));
     my $de = $de_list->by_file_extension($p->{file});
     $t->param(
@@ -250,8 +257,7 @@ sub problem_history_edit_frame {
         message => $p->{message},
         is_amend => $p->{is_amend},
         problem_import_log => $log,
-        cats_tags => $is_xml ? [ sort keys %{CATS::Problem::Parser::tag_handlers()} ] : [],
-        keywords => $keywords,
+        autocomplete => encode_json($autocomplete),
         de_list => $de_list,
         de_selected => $de,
         pid => $p->{pid},
