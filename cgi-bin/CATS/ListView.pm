@@ -249,11 +249,12 @@ sub find_sorting_col {
 sub order_by {
     my ($self, $pre_sort) = @_;
     my $s = $self->settings;
-    $pre_sort //= $self->{pre_sort};
-    $pre_sort = $pre_sort ? "$pre_sort, " : '';
     my $c = $self->find_sorting_col($s);
-    $pre_sort || $c or return '';
-    sprintf 'ORDER BY %s%s %s', $pre_sort, $c->{order_by}, ($s->{sort_dir} ? 'DESC' : 'ASC');
+    my @order = (
+        $pre_sort // $self->{pre_sort} // (),
+        $c ? $c->{order_by} . ($s->{sort_dir} ? ' DESC' : ' ASC') : (),
+    );
+    @order ? 'ORDER BY ' . join(', ', @order) : '';
 }
 
 sub where { $_[0]->{where} ||= $_[0]->make_where }

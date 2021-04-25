@@ -3,7 +3,7 @@ use warnings;
 
 use File::Spec;
 use FindBin;
-use Test::More tests => 5;
+use Test::More tests => 7;
 
 use lib File::Spec->catdir($FindBin::Bin);
 use lib File::Spec->catdir($FindBin::Bin, '..');
@@ -32,6 +32,9 @@ $lv->default_sort(0)->define_columns([ { caption => 'colA', order_by => 'colA' }
     is $lv->order_by('x'), 'ORDER BY x, colA ASC', 'order_by pre_sort';
     $lv->settings->{sort_dir} = 1;
     is $lv->order_by, 'ORDER BY colA DESC', 'order_by desc';
+    $lv->settings->{sort_by} = 99;
+    is $lv->order_by, '', 'order_by none';
+    is $lv->order_by('y'), 'ORDER BY y', 'order_by pre_sort only';
 }
 
 1;
