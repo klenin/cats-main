@@ -161,6 +161,7 @@ sub tag_handlers() {{
     Title => { e => sub { assign_contest_prop(@_, \&to_string) } },
     Closed => { e => sub { assign_contest_prop(@_, \&to_bool) } },
     Penalty => { e => sub { assign_contest_prop(@_, \&to_int) } },
+    PenaltyExcept => { e => sub { assign_contest_prop(@_, \&to_string) } },
     MaxReqs => { e => sub { assign_contest_prop(@_, \&to_int) } },
     IsHidden => { e => sub { assign_contest_prop(@_, \&to_bool) } },
     LocalOnly => { e => sub { assign_contest_prop(@_, \&to_bool) } },
