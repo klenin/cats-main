@@ -73,6 +73,7 @@ sub users_import_frame {
         my @cols = split "\t", $line;
         my $u = CATS::User->new;
         @$u{@field_names_idx} = @cols[@fields_idx];
+        $u->{login} or push @report, 'No login' and next;
         my ($user_id) = $dbh->selectrow_array(q~
             SELECT id FROM accounts WHERE login = ?~, undef,
             $u->{login});
@@ -87,10 +88,11 @@ sub users_import_frame {
         my $contact_count = 0;
         for my $ct (@contact_types_idx) {
             my ($i, $ct_id) = @$ct;
+            my $handle = $cols[$i] or next;
             $contact_count += $dbh->do(_u $sql->insert('contacts', {
                 id => new_id,
                 account_id => $u->{id}, contact_type_id => $ct_id,
-                handle => $cols[$i], is_actual => 1,
+                handle => $handle, is_actual => 1,
             }));
         }
         push @report, "$u->{team_name} -- $r (contacts=$contact_count)";
