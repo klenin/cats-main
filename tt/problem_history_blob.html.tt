@@ -18,9 +18,19 @@
   <img src="[% blob.image %]">
   [% ELSE %]
     [% PROCESS includes/encoding_form.html.tti capt_enc = capt.enc %]
-  [% FOREACH line IN blob.lines %]
-    <div class="pre"><span class="linenr">[% line.number %]</span> [% line.text | html | quote_controls %]</div>
+  <table><tr class="pre">
+  <td>
+  [% FOREACH line IN blob.lines -%]
+    <div class="pre"><span class="linenr">[% line.number %]</span></div>
   [% END %]
+  </td>
+  <td>
+  [% FOREACH line IN blob.lines -%]
+     <div class="pre">[% IF line.text.length > 1; line.text | html | quote_controls; ELSE; '&nbsp;'; END %]</div>
+  [% END %]
+  </td>
+  </tr>
+  </table>
   [% END %]
 </div>
 [% PROCESS includes/menu_end.tti %]
