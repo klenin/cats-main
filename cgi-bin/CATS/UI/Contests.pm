@@ -403,7 +403,7 @@ sub contests_edit_save_xml {
     for my $problem (@{$c->{problems} // []}) {
         if ($problem->{problem_id}) {
             ($problem->{contest_id} // $cid) == $cid
-                or $logger->note(sprintf('Problem %d is from different context', $problem->{problem_id})), next;
+                or $logger->note(sprintf('Problem %d is from different contest', $problem->{problem_id})), next;
             my %cp_update_values = %$problem;
             delete $cp_update_values{$_} for qw(repo_path repo_url allow_des);
             $dbh->do(_u $sql->update('contest_problems', \%cp_update_values,
