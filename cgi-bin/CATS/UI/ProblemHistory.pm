@@ -263,6 +263,7 @@ sub problem_history_edit_frame {
         pid => $p->{pid},
         edit_file => !$p->{new},
         hash => $hash_base,
+        href_edit_prefix => url_f('problem_history_edit', pid => $p->{pid}, hb => $hash_base),
     );
 }
 

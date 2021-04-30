@@ -8,8 +8,11 @@
   Editor.set_syntax('ed_pe[% pid %]_[% file %]', 'de_id');
   var editor = Editor.get_editor($('.page_body'));
   if (!editor) return;
-  if ($('option:selected', $('#de_id')).attr('editor-syntax') === 'xml')
+  if ($('option:selected', $('#de_id')).attr('editor-syntax') === 'xml') {
     Editor.highlight_errors('log', [ /at\sline\s(\d+)/ ], 'ed_pe[% pid %]_[% file %]');
+    editor.hoverLink.registerLink(
+      /src="([a-zA-Z0-9_\-\.]+)"/, function (s) { return '[% href_edit_prefix %];file=' + s; } );
+  }
   var langTools = ace.require('ace/ext/language_tools');
   var complete_lists = [% autocomplete %];
 
