@@ -286,10 +286,11 @@ function Editor() {
     var HoverLink = ace.require('hoverlink').HoverLink;
     ace_editor.hoverLink = new HoverLink(ace_editor);
     ace_editor.hoverLink.on('open', function(link) {
+      var url = link.preprocess(link.value);
       if (link.ctrlKey)
-        window.open(link.value);
+        window.open(url);
       else
-        document.location.href = link.value;
+        document.location.href = url;
     })
   }
 }
@@ -377,13 +378,11 @@ ace.define('hoverlink', [], function(require, exports, module) {
     this.getMatchAround = function(regExp, string, col) {
       var match;
       regExp.lastIndex = 0;
-      string.replace(regExp, function(str) {
-        var offset = arguments[arguments.length - 2];
-        var length = str.length;
-        if (offset <= col && offset + length >= col)
-          match = { start: offset, value: str };
+      string.replace(regExp, function(m, p1, offset) {
+        offset += m.indexOf(p1);
+        if (offset <= col && col <= offset + p1.length)
+          match = { start: offset, value: p1 };
       });
-
       return match;
     };
 
@@ -396,18 +395,29 @@ ace.define('hoverlink', [], function(require, exports, module) {
       }
     };
 
-    var urlRe = /\bhttps?:\/\/[\-A-Za-z0-9+&@#\/%?=~_|!:,.;]*[\-A-Za-z0-9+&@#\/%=~_|]/g;
+    var identity = function(x) { return x; };
+    var linkRegExps = [
+      { re: /\b(https?:\/\/[\-A-Za-z0-9+&@#\/%?=~_|!:,.;]*[\-A-Za-z0-9+&@#\/%=~_|])/g, preprocess: identity }
+    ];
+
+    this.registerLink = function(re, preprocess) {
+      linkRegExps.push({ re: re, preprocess: preprocess });
+    };
+
     this.findLink = function(row, column) {
       var editor = this.editor;
       var session = editor.session;
       var line = session.getLine(row);
 
-      var match = this.getMatchAround(urlRe, line, column);
-      if (!match)
-          return;
-
-      match.row = row;
-      return match;
+      for (var i = 0; i < linkRegExps.length; ++i) {
+        var re = linkRegExps[i];
+        var match = this.getMatchAround(re.re, line, column);
+        if (match) {
+          match.row = row;
+          match.preprocess = re.preprocess;
+          return match;
+        }
+      }
     };
 
     this.onMouseMove = function(e) {
