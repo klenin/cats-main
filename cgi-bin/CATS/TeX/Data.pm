@@ -195,11 +195,12 @@ my %greek = (
     Upsilon => 'Upsilon',
     Xi => 'Xi',
     Zeta => 'Zeta',
+
     alpha => 'alpha',
     beta => 'beta',
     chi => 'chi',
     delta => 'delta',
-    epsilon => 'epsilon',
+    epsilon => '#x03F5',
     eta => 'eta',
     gamma => 'gamma',
     iota => 'iota',
@@ -209,7 +210,7 @@ my %greek = (
     nu => 'nu',
     omega => 'omega',
     omicron => 'omicron',
-    phi => 'phi',
+    phi => '#x03D5',
     pi => 'pi',
     psi => 'psi',
     rho => 'rho',
@@ -217,9 +218,14 @@ my %greek = (
     tau => 'tau',
     theta => 'theta',
     upsilon => 'upsilon',
-    varsigma => 'sigmaf',
     xi => 'xi',
     zeta => 'zeta',
+
+    varepsilon => 'epsilon',
+    varphi => 'phi',
+    varsigma => 'sigmaf',
+    varrho => '#x3F1',
+    vartheta => '#x03D1',
 );
 
 my %old = (
