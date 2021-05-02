@@ -13,6 +13,7 @@
         install => 'установка',
         submission_part => 'часть',
         update_self => 'обновиться',
+        manual_verdict => 'ручной вердикт',
       },
       states => {
         waiting => 'ожидает',

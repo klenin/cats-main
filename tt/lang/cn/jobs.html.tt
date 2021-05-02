@@ -13,6 +13,7 @@
         install => 'install',
         submission_part => 'part',
         update_self => 'update self',
+        manual_verdict => 'manual verdict',
       },
       states => {
         waiting => 'waiting',

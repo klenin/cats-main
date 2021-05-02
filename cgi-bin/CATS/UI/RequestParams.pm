@@ -7,7 +7,7 @@ use JSON::XS;
 
 use CATS::Constants;
 use CATS::DB;
-use CATS::Globals qw($is_root $t $uid);
+use CATS::Globals qw($is_root $t $uid $user);
 use CATS::JudgeDB;
 use CATS::Messages qw(msg);
 use CATS::Output qw(init_template url_f);
@@ -194,6 +194,19 @@ sub try_set_state {
     CATS::Request::enforce_state($p->{rid}, {
         failed_test => $p->{failed_test}, state => $state, points => $p->{points}
     });
+    my $job_id = CATS::Job::create($cats::job_type_manual_verdict, {
+        state => $cats::job_st_finished,
+        req_id => $p->{rid},
+        start_time => \'CURRENT_TIME',
+        finish_time => \'CURRENT_TIME',
+    });
+    my $msg = join ', ', map sprintf('%s: %s', @$_), grep $_->[1],
+        [ verdict => $p->{state} ], [ points => $p->{points} ],
+        [ on_test => $p->{failed_test} ], [ by => $user->{name} ],
+    ;
+    $dbh->do(q~
+        INSERT INTO logs(id, job_id, dump) VALUES (?, ?, ?)~, undef,
+        new_id, $job_id, $msg);
     $dbh->commit;
     CATS::RankTable::Cache::remove($si->{contest_id}) unless $si->{is_hidden};
     msg(1055);
