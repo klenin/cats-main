@@ -18,7 +18,9 @@ use CATS::Problem::Repository;
 use CATS::Problem::Source::PlainFiles;
 use CATS::StaticPages;
 
-use fields qw(old_title import_log debug parser de_list);
+use fields qw(
+    de_list debug import_log old_title parser
+);
 
 sub new {
     my ($self) = @_;

@@ -244,6 +244,9 @@ sub problem_history_edit_frame {
             SELECT code FROM keywords~);
         $autocomplete->{guids} = $dbh->selectcol_arrayref(q~
             SELECT guid FROM problem_sources_local WHERE guid IS NOT NULL~);
+        $autocomplete->{files} = [
+            map substr($_, 0, -1),
+            CATS::Problem::Storage::get_repo($p->{pid}, $hash_base, 1)->git('ls-files') ];
     }
     my $de_list = CATS::DevEnv->new(CATS::JudgeDB::get_DEs({ fields => 'syntax' }));
     my $de = $de_list->by_file_extension($p->{file});

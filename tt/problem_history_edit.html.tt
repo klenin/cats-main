@@ -16,10 +16,12 @@ window.addEventListener('load', function () {
   if (!editor) return;
   if ($('option:selected', $('#de_id')).attr('editor-syntax') === 'xml') {
     Editor.highlight_errors('log', [ /at\sline\s(\d+)/ ], 'ed_pe[% pid %]_[% file %]');
-    editor.hoverLink.registerLink(/src="([a-zA-Z0-9_\-\.]+)"/, preproces_file_link);
+    editor.hoverLink.registerLink(/src="([a-zA-Z0-9_\-\.\/]+)"/, preproces_file_link);
   }
   var langTools = ace.require('ace/ext/language_tools');
   var complete_lists = [% autocomplete %];
+
+  var is_dot = function(s) { return './'.indexOf(s) >= 0; };
 
   var acceptable_prefix_attr = function(attr) { return function(session, pos, prefix) {
     if (prefix != "") return true;
@@ -30,7 +32,7 @@ window.addEventListener('load', function () {
         var actual_suffix = line.substr(pos.column - suffix.length, suffix.length);
         return suffix.length < pos.column && actual_suffix == suffix;
     }
-    return line[pos.column - 1] == '.';
+    return is_dot(line[pos.column - 1]);
   };};
   var acceptable_prefix_tag = function(session, pos, prefix) {
     if (prefix != "") return true;
@@ -42,7 +44,7 @@ window.addEventListener('load', function () {
     if (pos.column == 0) return data;
     var line = session.getLine(pos.row);
     for (var i = pos.column; i > 0 && re_ident.test(line[i - 1]); --i);
-    for (var j = i; j > 0 && re_ident.test(line[j - 1]) || line[j - 1] == '.' ; --j);
+    for (var j = i; j > 0 && re_ident.test(line[j - 1]) || is_dot(line[j - 1]); --j);
     var prefix = line.substring(j, i);
     var result = [];
     for (var i = 0; i < data.length; ++i) {
@@ -68,7 +70,8 @@ window.addEventListener('load', function () {
   langTools.setCompleters([
     completer(complete_lists.cats_tags, 'cats', acceptable_prefix_tag, prefilter_none),
     completer(complete_lists.keywords, 'keyword', acceptable_prefix_attr('code'), prefilter_dotted),
-    completer(complete_lists.guids, 'guid', acceptable_prefix_attr('guid'), prefilter_dotted)
+    completer(complete_lists.guids, 'guid', acceptable_prefix_attr('guid'), prefilter_dotted),
+    completer(complete_lists.files, 'file', acceptable_prefix_attr('src'), prefilter_dotted)
   ]);
 
   var add_keyword = function() {
