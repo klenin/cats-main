@@ -4,20 +4,12 @@
   @import 'css/git.css';
 </style>
 <script>
-function preproces_file_link(filename) {
-  var p = filename.match(/\.(jpe?g|png|bmp|gif)$/) ? '[% href_blob_prefix %]' : '[% href_edit_prefix %]';
-  return p + ';file=' + filename;
-}
-
 window.addEventListener('load', function () {
   if (!ace) return;
   Editor.set_syntax('ed_pe[% pid %]_[% file %]', 'de_id');
   var editor = Editor.get_editor($('.page_body'));
   if (!editor) return;
-  if ($('option:selected', $('#de_id')).attr('editor-syntax') === 'xml') {
-    Editor.highlight_errors('log', [ /at\sline\s(\d+)/ ], 'ed_pe[% pid %]_[% file %]');
-    editor.hoverLink.registerLink(/src="([a-zA-Z0-9_\-\.\/]+)"/, preproces_file_link);
-  }
+
   var langTools = ace.require('ace/ext/language_tools');
   var complete_lists = [% autocomplete %];
 
@@ -73,6 +65,17 @@ window.addEventListener('load', function () {
     completer(complete_lists.guids, 'guid', acceptable_prefix_attr('guid'), prefilter_dotted),
     completer(complete_lists.files, 'file', acceptable_prefix_attr('src'), prefilter_dotted)
   ]);
+
+  var preproces_file_link = function(filename) {
+    var p = filename.match(/\.(jpe?g|png|bmp|gif)$/) ? '[% href_blob_prefix %]' : '[% href_edit_prefix %]';
+    var p_new = complete_lists.files.indexOf(filename) >= 0 ? '' : ';new=1';
+    return p + p_new + ';file=' + filename;
+  };
+
+  if ($('option:selected', $('#de_id')).attr('editor-syntax') === 'xml') {
+    Editor.highlight_errors('log', [ /at\sline\s(\d+)/ ], 'ed_pe[% pid %]_[% file %]');
+    editor.hoverLink.registerLink(/src="([a-zA-Z0-9_\-\.\/]+)"/, preproces_file_link);
+  }
 
   var add_keyword = function() {
     editor.focus();
