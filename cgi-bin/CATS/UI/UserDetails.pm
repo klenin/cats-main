@@ -150,6 +150,7 @@ sub user_stats_frame {
         ) : ()),
         href_all_problems => $pr->(''),
         href_solved_problems => $pr->('state=OK'),
+        href_contests => url_f(contests => search => "has_user($p->{uid})"),
         title_suffix => $u->{team_name},
     );
 }

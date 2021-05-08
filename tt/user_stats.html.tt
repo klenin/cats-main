@@ -14,7 +14,7 @@
 <tr><td>[% capt.sites %]:</td><td>[% maybe_href(href_sites, sites_count) %] / [% maybe_href(href_sites_org, sites_org_count) %]</td></tr>
 </table>
 
-<h3>[% capt.contests %]</h3>
+<h3>[% capt.contests %] [[% href(href_contests, capt.all) %]]</h3>
 <table class="internal_borders padded">
 [% FOREACH c IN contests -%]
 <tr>
