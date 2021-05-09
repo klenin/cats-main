@@ -143,13 +143,19 @@ sub validate_params {
     return $old_login eq $self->{login} || $self->validate_login($p{id});
 }
 
+sub is_login_available {
+    my ($login, $id) = @_;
+    $login // '' ne '' or return;
+    my $dups = $dbh->selectcol_arrayref(q~
+        SELECT id FROM accounts WHERE login = ?~,
+        undef, $login) or return 1;
+    # Several logins, or a single login with different id => error.
+    @$dups > 1 || @$dups == 1 && (!$id || $id != $dups->[0]) ? 0 : 1;
+}
+
 sub validate_login {
     my ($self, $id) = @_;
-    my $dups = $dbh->selectcol_arrayref(q~
-        SELECT id FROM accounts WHERE login = ?~, {}, $self->{login}) or return 1;
-    # Several logins, or a single login with different id => error.
-    return
-        @$dups > 1 || @$dups == 1 && (!$id || $id != $dups->[0]) ? msg(1103) : 1;
+    is_login_available($self->{login}, $id) || msg(1103);
 }
 
 # p: save_settings, is_ooc, commit.

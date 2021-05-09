@@ -312,7 +312,11 @@ sub registration_frame {
     my ($p) = @_;
     init_template($p, 'registration.html.tt');
 
-    $t->param(countries => \@CATS::Countries::countries, href_login => url_f('login'));
+    $t->param(
+        countries => \@CATS::Countries::countries,
+        href_login => url_f('login'),
+        href_login_available => url_function('api_login_available', login => ''),
+    );
 
     $p->{register} or return;
 

@@ -1,3 +1,4 @@
+[% js.jquery = 1 -%]
 [% PROCESS includes/menu_begin.tti %]
 [%- PROCESS includes/html.tti -%]
 
@@ -16,5 +17,19 @@
 <button type="submit" name="register" value="1" class="button">[% capt.do_register %]</button>
 </form>
 [% END %]
+<script>
+  $('#login').change(function() {
+    var login = $('#login').val();
+    if (!login) {
+        $('#login_available').hide();
+        $('#login_unavailable').hide();
+        return;
+    }
+    $.get('[% href_login_available %]' + encodeURIComponent(login), function(result) {
+        $('#login_available').toggle(result.available === 1);
+        $('#login_unavailable').toggle(result.available === 0);
+    });
+  });
+</script>
 
 [% PROCESS includes/menu_end.tti %]

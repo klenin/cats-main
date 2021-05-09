@@ -182,4 +182,10 @@ sub login_token_api {
     $p->print_json($ok ? { url => $res } : { error => $res });
 }
 
+sub login_available_api {
+    my ($p) = @_;
+    $p->print_json({
+        available => CATS::User::is_login_available($p->{login}, $p->{id}) ? 1 : 0 });
+}
+
 1;

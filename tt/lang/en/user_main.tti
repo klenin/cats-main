@@ -2,5 +2,7 @@
   capt.import({
     team_name => 'Participant <i>or</i> team name',
     login => 'Login',
+    login_available => 'Login is available',
+    login_unavailable => 'Login is already taken',
   })
 %]

@@ -2,5 +2,7 @@
   capt.import({
     team_name => 'Ф.И.О. участника <i>либо</i> название&nbsp;команды',
     login => 'Логин',
+    login_available => 'Логин свободен',
+    login_unavailable => 'Логин занят',
   })
 %]

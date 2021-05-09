@@ -33,6 +33,7 @@ my $main_routes = {
         login => str, redir => str, cid => integer, apikey => str,
         team_id => str, token => str, # ONTI
     ],
+    api_login_available => [ \&CATS::UI::LoginLogout::login_available_api, login => str, ],
     logout => \&CATS::UI::LoginLogout::logout_frame,
     registration => [ \&CATS::UI::UserDetails::registration_frame, %user_params, register => bool, ],
     profile => [ \&CATS::UI::UserDetails::profile_frame, %user_params,
