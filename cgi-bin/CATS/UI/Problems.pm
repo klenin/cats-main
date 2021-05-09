@@ -114,7 +114,7 @@ sub problems_all_frame {
             href_view_contest => url_f_cid('problems', cid => $contest_id),
             # Jury can download package for any problem after linking, but not before.
             ($is_root ? (href_download => url_f_cid('problem_download', %pp)) : ()),
-            ($is_jury ? (href_problem_history => url_f_cid('problem_history', %pp)) : ()),
+            ($is_root ? (href_problem_details => url_f_cid('problem_details', %pp)) : ()),
             href_problem_console => _href_problem_console($pid),
             keywords => $keywords,
             linked => $linked || !$p->{link},

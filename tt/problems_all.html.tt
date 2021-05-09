@@ -9,8 +9,8 @@
 <tr class="[% loop.parity() %]">
 <td>
 [% IF user.is_jury && link %]<input type="checkbox" name="problems_selection" value="[% p.problem_id %]" [% IF p.linked %]disabled[% END %] />[% END %]
+[%~ IF p.href_problem_details %]<a href="[% p.href_problem_details %]" class="icon edit"></a>[% END %]</label>
 <a href="[% p.href_view_problem %]" target="_blank">[% p.title | html %]</a>
-[% IF p.href_problem_history %]&nbsp;[<a href="[% p.href_problem_history %]">[% capt.problem_history %]</a>][% END %]
 [% IF p.href_download %]&nbsp;[<a href="[% p.href_download %]">[% capt.package %]</a>][% END %]
 </td>
 <td><a href="[% p.href_view_contest %]">[% p.contest_title | html; cell_search('contest_id', p) %]</a></td>

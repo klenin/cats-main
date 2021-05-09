@@ -2,7 +2,6 @@
   capt.import({
     problem_code => 'Код задачи',
     package => 'пакет',
-    problem_history => 'история',
     move => 'Переместить',
     link => 'Прилинковать',
     cancel => 'Отмена',
