@@ -99,6 +99,17 @@ sub _shortened_team_name {
         (team_name => $team_name);
 }
 
+sub _format_submit_time {
+    my ($lv, $submit_time, $submit_time_since_start) = @_;
+    my @dt = split ' ', $submit_time;
+    join ' ',
+        !$is_jury || $lv->visible_cols->{Sbd} ? $dt[0] : (),
+        !$is_jury || $lv->visible_cols->{Sbt} ? $dt[1] : (),
+        $is_jury && $lv->visible_cols->{Sbs} ?
+            CATS::Time::format_diff($submit_time_since_start, display_plus => 1) : (),
+    ;
+}
+
 sub _console_content {
     my ($p) = @_;
 
@@ -114,6 +125,9 @@ sub _console_content {
     $t->param($_ => $s->{$_}) for qw(show_contests show_messages show_results i_value);
 
     $lv->default_sort(0)->define_columns([
+        { caption => res_str(696), col => 'Sbd' },
+        { caption => res_str(632), col => 'Sbt' },
+        { caption => res_str(697), col => 'Sbs' },
         { caption => res_str(654), col => 'Cy' },
         { caption => res_str(603), col => 'Ct' },
         { caption => res_str(641), col => 'De' },
@@ -139,7 +153,7 @@ sub _console_content {
     my $sth = CATS::Console::build_query($s, $lv, $uf);
 
     my $fetch_console_record = sub {
-        my ($rtype, $rank, $submit_time, $id, $request_state, $failed_test,
+        my ($rtype, $rank, $submit_time, $submit_since_start, $id, $request_state, $failed_test,
             $problem_id, $elements_count, $problem_title, $code, $cp_point_params,
             $de_id, $time_used, $clarified, $question, $answer, $jury_message,
             $team_id, $team_name, $country_abbr, $last_ip, $caid, $site_id, $contest_id
@@ -200,7 +214,7 @@ sub _console_content {
                 url_f('answer_box', qid => $id) : undef,
             href_send_message_box =>
                 ($is_jury && $caid ? url_f('send_message_box', caid => $caid) : undef),
-            'time' =>               $submit_time,
+            'time' =>               _format_submit_time($lv, $submit_time, $submit_since_start),
             time_iso =>             $submit_time,
             problem_id =>           $problem_id,
             elements_count =>       $elements_count,
