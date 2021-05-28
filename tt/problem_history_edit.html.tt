@@ -77,29 +77,38 @@ window.addEventListener('load', function () {
     editor.hoverLink.registerLink(/src="([a-zA-Z0-9_\-\.\/]+)"/, preproces_file_link);
   }
 
-  var add_keyword = function() {
-    editor.focus();
-    var search = function() { return editor.$search.findAll(editor.session); }
-    editor.$search.setOptions({ needle: /<Keyword code=/ });
-    var matches = search();
-    var offset = 1;
-    if (!matches.length) {
-      editor.$search.setOptions({ needle: /<ProblemStatement>/ });
+  function add_button_function(is_repeat, tag, prefix, suffix, prev, next ){
+    return function() {
+      editor.focus();
+      var search = function() {return editor.$search.findAll(editor.session); }
+      if (!is_repeat){
+        editor.$search.setOptions({ needle: tag });
+        var matches = search();
+        if (matches.length){
+          return 0;
+        }
+      }
+      editor.$search.setOptions({ needle: prev });
       matches = search();
-      offset = 0;
+      var offset = 1;
+      if (!matches.length) {
+        editor.$search.setOptions({ needle: next });
+        matches = search();
+        offset = 0;
+      }
+      if (!matches) return;
+      var match = matches[matches.length - 1].start;
+      var keyword_position = { row: match.row + offset, column: match.column  };
+      editor.session.insert(keyword_position, prefix + suffix);
+      editor.selection.moveTo(keyword_position.row, prefix.length);
+      // 0.5 centers the line on screen
+      editor.renderer.scrollCursorIntoView(keyword_position, 0.5);
+      } 
     }
-    if (!matches) return;
-    var match = matches[matches.length - 1].start;
-    var keyword_position = { row: match.row + offset, column: match.column  };
-    var prefix = '<Keyword code="';
-    var suffix = '" />\n';
-    editor.session.insert(keyword_position, prefix + suffix);
-    editor.selection.moveTo(keyword_position.row, prefix.length);
-    // 0.5 centers the line on screen
-    editor.renderer.scrollCursorIntoView(keyword_position, 0.5);
-  }
-  $('#wrap_button').click(function() { editor.execCommand('toggleWrapMode'); });
-  $('#keyword_button').click(add_keyword);
+
+  $('#keyword_button').click(add_button_function(1,/<Keyword code=/, '<Keyword code="', '" />\n', /<Keyword code=/, /<ProblemStatement>/));
+  $('#output_button').click(add_button_function(0,/<OutputFormat>/, '<OutputFormat>', '</OutputFormat>\n', /InputFormat>/, /<ProblemConstraints>/));
+  $('#input_button').click(add_button_function(0,/<InputFormat>/, '<InputFormat>', '</InputFormat>\n', /ProblemStatement>/, /<OutputFormat>/));
   $('.problem_menu_trigger').click(function() { $(this).toggleClass('problem_menu_hovered'); });
 })</script>
 [%- END %]
@@ -139,8 +148,13 @@ window.addEventListener('load', function () {
     <select id="de_id" class="toolbar_item">
       [% FOREACH de IN de_list.des; editor_select_option(de.id, de.description, de.syntax, de.id == de_selected.id); END %]
     </select>
-    <button type="button" id="wrap_button" class="button toolbar_item">[% capt.wrap %]</button>
-    <button type="button" id="keyword_button" class="button toolbar_item">[% capt.keyword %]</button>
+    <a class="problem_menu_trigger toolbar_item">[% capt.add %]
+      <div class="editor_menu">
+        <button type="button" id="keyword_button" class="button toolbar_item">[% capt.keyword %]</button>
+        <button type="button" id="output_button" class="button toolbar_item">[% capt.output_format %]</button>
+        <button type="button" id="input_button" class="button toolbar_item">[% capt.input_format %]</button>
+      </div>
+    </a>
     <a class="problem_menu_trigger toolbar_item">&#x2261
       [%- PROCESS includes/editor_menu.tti editor_id = 'ed_pe' _ pid _ '_' _ (edit_file ? file : hash) -%]
     </a>
