@@ -77,16 +77,14 @@ window.addEventListener('load', function () {
     editor.hoverLink.registerLink(/src="([a-zA-Z0-9_\-\.\/]+)"/, preproces_file_link);
   }
 
-  function add_button_function(is_repeat, tag, prefix, suffix, prev, next ){
+  var add_button_function = function(is_repeat, tag, prefix, suffix, prev, next) {
     return function() {
       editor.focus();
-      var search = function() {return editor.$search.findAll(editor.session); }
-      if (!is_repeat){
+      var search = function() { return editor.$search.findAll(editor.session); };
+      if (!is_repeat) {
         editor.$search.setOptions({ needle: tag });
-        var matches = search();
-        if (matches.length){
-          return 0;
-        }
+        if (search().length)
+          return;
       }
       editor.$search.setOptions({ needle: prev });
       matches = search();
@@ -98,17 +96,20 @@ window.addEventListener('load', function () {
       }
       if (!matches) return;
       var match = matches[matches.length - 1].start;
-      var keyword_position = { row: match.row + offset, column: match.column  };
-      editor.session.insert(keyword_position, prefix + suffix);
-      editor.selection.moveTo(keyword_position.row, prefix.length);
+      var insert_position = { row: match.row + offset, column: match.column };
+      editor.session.insert(insert_position, prefix + suffix);
+      editor.selection.moveTo(insert_position.row, prefix.length);
       // 0.5 centers the line on screen
-      editor.renderer.scrollCursorIntoView(keyword_position, 0.5);
-      } 
+      editor.renderer.scrollCursorIntoView(insert_position, 0.5);
     }
+  }
 
-  $('#keyword_button').click(add_button_function(1,/<Keyword code=/, '<Keyword code="', '" />\n', /<Keyword code=/, /<ProblemStatement>/));
-  $('#output_button').click(add_button_function(0,/<OutputFormat>/, '<OutputFormat>', '</OutputFormat>\n', /InputFormat>/, /<ProblemConstraints>/));
-  $('#input_button').click(add_button_function(0,/<InputFormat>/, '<InputFormat>', '</InputFormat>\n', /ProblemStatement>/, /<OutputFormat>/));
+  $('#keyword_button').click(add_button_function(true,
+    /<Keyword code=/, '<Keyword code="', '" />\n', /<Keyword code=/, /<ProblemStatement>/));
+  $('#input_button').click(add_button_function(false,
+    /<InputFormat>/, '<InputFormat>', '</InputFormat>\n', /ProblemStatement>/, /<OutputFormat>/));
+  $('#output_button').click(add_button_function(false,
+    /<OutputFormat>/, '<OutputFormat>', '</OutputFormat>\n', /InputFormat>/, /<ProblemConstraints>/));
   $('.problem_menu_trigger').click(function() { $(this).toggleClass('problem_menu_hovered'); });
 })</script>
 [%- END %]
@@ -151,8 +152,8 @@ window.addEventListener('load', function () {
     <a class="problem_menu_trigger toolbar_item">[% capt.add %]
       <div class="editor_menu">
         <button type="button" id="keyword_button" class="button toolbar_item">[% capt.keyword %]</button>
-        <button type="button" id="output_button" class="button toolbar_item">[% capt.output_format %]</button>
         <button type="button" id="input_button" class="button toolbar_item">[% capt.input_format %]</button>
+        <button type="button" id="output_button" class="button toolbar_item">[% capt.output_format %]</button>
       </div>
     </a>
     <a class="problem_menu_trigger toolbar_item">&#x2261
