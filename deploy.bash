@@ -284,6 +284,7 @@ if [[ ($step =~ (^|,)8(,|$) || $step == "*") && $FB_DEV_VERSION ]]; then
 		CREATE_DB_ROOT+="interbase"
 	else
 		sudo apt-get -y install "postgresql" "libpq-dev"
+		sudo service postgresql restart
 		sudo cpanm -S "DBD::Pg"
 		CREATE_DB_ROOT+="postgres"
 	fi
