@@ -83,7 +83,13 @@ window.addEventListener('load', function () {
       var search = function() { return editor.$search.findAll(editor.session); };
       if (!is_repeat) {
         editor.$search.setOptions({ needle: tag });
-        if (search().length)
+        var matches = search();
+        if (matches.length)
+          var match = matches[matches.length - 1].start;
+          var insert_position = { row: match.row, column: match.column };
+          editor.selection.moveTo(insert_position.row, prefix.length);
+          // 0.5 centers the line on screen
+          editor.renderer.scrollCursorIntoView(insert_position, 0.5);
           return;
       }
       editor.$search.setOptions({ needle: prev });
