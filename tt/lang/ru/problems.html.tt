@@ -50,6 +50,8 @@
     keyword => 'ключевое слово',
     input_format => 'формат ввода',
     output_format => 'формат вывода',
+    formatting => 'форматирование',
+    renum_tests => 'перенумеровать тесты',
     upload => 'загрузить',
     want_to_delete_file => 'Вы действительно желаете удалить файл ',
     different_versions => 'Файлы на сервере и клиенте не совпали',

@@ -109,6 +109,92 @@ window.addEventListener('load', function () {
       editor.renderer.scrollCursorIntoView(insert_position, 0.5);
     }
   }
+  
+  function renum_tests_function(){
+
+    var  get_rank = function(new_line){
+      var first_mark = new_line.indexOf('rank="') + 5;
+      var second_mark = new_line.indexOf('"', first_mark + 1);
+      return new_line.slice(first_mark + 1, second_mark);
+    }
+    
+    var is_valid = function(new_line){
+      if (new_line==null){
+        return false;
+      }
+      if (new_line.match(/<Test/) == null){
+        return false;
+      }
+      if (new_line.match(/rank=/) == null){
+        return false;
+      }
+      return true;
+    }
+
+    var find_min_rank = function(start, end){
+      var min_rank = 0;
+      for (var i = start; i <= end; i++) {
+        new_line = editor.session.getLine(i);
+        if (!is_valid(new_line)){
+          continue;
+        }
+        var rank = get_rank(new_line);
+        if (rank.indexOf('-') > 0) {
+          rank = rank.slice(0, rank.indexOf('-'));
+        }
+        if (!min_rank) {
+          min_rank = rank;
+        }
+        if (rank < min_rank) {
+          min_rank = rank;
+        }
+      }
+      return min_rank;
+    }
+
+    var editorLines = editor.selection.getAllRanges();
+    var start = editorLines[0].start.row;
+    var end = editorLines[0].end.row;
+    var text = "";
+    var new_line = editor.session.getLine(start);
+    while (!is_valid(new_line)) {
+      text += new_line + "\n";
+      start++;
+      new_line = editor.session.getLine(start);
+    }
+    var count = find_min_rank(start, end) - 1;
+    for (var i = start; i <= end; i++) {
+      new_line = editor.session.getLine(i);
+      if (!is_valid(new_line)) {
+        text += new_line + "\n";
+        continue;
+      }
+      count++;
+      var rank = get_rank(new_line);
+      var first_mark = new_line.indexOf('rank="') + 5;
+      var second_mark = new_line.indexOf('"', first_mark + 1);
+      prefix = new_line.slice(0,first_mark+1);
+      suffix = new_line.slice(second_mark, new_line.length);
+      if (rank.indexOf('-') < 0) {
+        rank = count;
+      } else {
+        var first_rank = rank.slice(0, rank.indexOf('-'));
+        var second_rank = rank.slice(rank.indexOf('-') + 1, rank.length);
+        var diff = second_rank - first_rank;
+        first_rank = count;
+        second_rank = first_rank + diff;
+        rank = first_rank +"-"+ second_rank;
+        count = second_rank;
+      }
+      text+=prefix + rank + suffix+"\n";
+    }
+    text = text.slice(0,text.length - 1);
+    //delete "\n" in the end of text
+    editorLines = editor.selection.getRange();
+    editorLines.start.column = 0;
+    editorLines.end.column = new_line.length;
+    editor.session.replace(editorLines, text);
+  }
 
   $('#keyword_button').click(add_button_function(true,
     /<Keyword code=/, '<Keyword code="', '" />\n', /<Keyword code=/, /<ProblemStatement>/));
@@ -116,6 +202,8 @@ window.addEventListener('load', function () {
     /<InputFormat>/, '<InputFormat>', '</InputFormat>\n', /ProblemStatement>/, /<OutputFormat>/));
   $('#output_button').click(add_button_function(false,
     /<OutputFormat>/, '<OutputFormat>', '</OutputFormat>\n', /InputFormat>/, /<ProblemConstraints>/));
+
+  $('#renum_tests_button').click(renum_tests_function);
 
   $('.problem_menu_trigger').click(function() { $(this).toggleClass('problem_menu_hovered'); });
   $('.button_menu_trigger').click(function() { $(this).toggleClass('button_menu_hovered'); });
@@ -165,6 +253,12 @@ window.addEventListener('load', function () {
         <button type="button" id="output_button" class="button toolbar_item">[% capt.output_format %]</button>
       </div>
     </a>
+    <a class="button_menu_trigger button toolbar_item ">[% capt.formatting %]
+      <div class="editor_menu">
+        <button type="button" id="renum_tests_button" class="button toolbar_item">[% capt.renum_tests %]</button>
+      </div>
+    </a>
+   
     <a class="problem_menu_trigger toolbar_item">&#x2261
       [%- PROCESS includes/editor_menu.tti editor_id = 'ed_pe' _ pid _ '_' _ (edit_file ? file : hash) -%]
     </a>
