@@ -116,7 +116,10 @@ window.addEventListener('load', function () {
     /<InputFormat>/, '<InputFormat>', '</InputFormat>\n', /ProblemStatement>/, /<OutputFormat>/));
   $('#output_button').click(add_button_function(false,
     /<OutputFormat>/, '<OutputFormat>', '</OutputFormat>\n', /InputFormat>/, /<ProblemConstraints>/));
+
   $('.problem_menu_trigger').click(function() { $(this).toggleClass('problem_menu_hovered'); });
+  $('.button_menu_trigger').click(function() { $(this).toggleClass('button_menu_hovered'); });
+
 })</script>
 [%- END %]
 [% PROCESS includes/menu_begin.tti %]
@@ -155,7 +158,7 @@ window.addEventListener('load', function () {
     <select id="de_id" class="toolbar_item">
       [% FOREACH de IN de_list.des; editor_select_option(de.id, de.description, de.syntax, de.id == de_selected.id); END %]
     </select>
-    <a class="problem_menu_trigger toolbar_item">[% capt.add %]
+    <a class="button_menu_trigger button toolbar_item ">[% capt.add %]
       <div class="editor_menu">
         <button type="button" id="keyword_button" class="button toolbar_item">[% capt.keyword %]</button>
         <button type="button" id="input_button" class="button toolbar_item">[% capt.input_format %]</button>
