@@ -285,6 +285,12 @@ sub users_frame {
     ) ]);
     $lv->default_searches([ qw(login team_name) ]);
     $lv->define_db_searches([ qw(A.sid) ]) if $is_root;
+    $lv->define_db_searches({ groups_count => q~(
+        SELECT COUNT(*)
+        FROM acc_group_accounts AGA
+        INNER JOIN acc_group_contests AGC ON AGC.acc_group_id = AGA.acc_group_id AND AGC.contest_id = C.id
+        WHERE AGA.account_id = A.id)~
+    });
     $lv->define_subqueries({
         in_contest => { sq => q~EXISTS (
             SELECT 1 FROM contest_accounts CA1 WHERE CA1.account_id = A.id AND CA1.contest_id = ?)~,
