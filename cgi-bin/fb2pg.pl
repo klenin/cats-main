@@ -99,11 +99,20 @@ sub bind_row {
         my $fi = $field_info->[$i];
         my $data = $row->[$i];
         my $att = {};
-        if ($fi->{type} == $BLOB_SUBTYPE && $fi->{subtype} == 0) {
-            $att = { pg_type => $PG_BYTEA };
-        } elsif ($fi->{type} == $VARCHAR) {
+
+        my $is_blob = $fi->{type} == $BLOB_SUBTYPE;
+        my $is_text_blob = $is_blob && $fi->{subtype} == 1;
+        my $is_text = $is_text_blob || $fi->{type} == $VARCHAR;
+        if ($is_text_blob && $fi->{name} eq 'FORMAL_INPUT') {
+            # formal_input may have BLOB SUB_TYPE TEXT type
+            # and we need to convert it to BYTEA.
             $data = Encode::decode_utf8($data);
-        } 
+            $att = { pg_type => $PG_BYTEA };
+        } elsif ($is_text) {
+            $data = Encode::decode_utf8($data);
+        } elsif ($is_blob && $fi->{subtype} == 0) {
+            $att = { pg_type => $PG_BYTEA };
+        }
         $sth->bind_param($i + 1, $data, $att);
     }
 }
