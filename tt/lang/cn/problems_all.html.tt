@@ -1,6 +1,6 @@
 [%
   capt.import({
-    problem_code => 'Problem code',
+    problem_code => 'Assign problem code',
     package => 'package',
     move => 'Move',
     link => 'Link',

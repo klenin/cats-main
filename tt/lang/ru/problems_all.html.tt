@@ -1,6 +1,6 @@
 [%
   capt.import({
-    problem_code => 'Код задачи',
+    problem_code => 'Присвоить задаче код',
     package => 'пакет',
     move => 'Переместить',
     link => 'Прилинковать',
