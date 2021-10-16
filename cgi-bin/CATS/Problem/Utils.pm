@@ -104,11 +104,11 @@ sub define_common_searches {
         statement explanation pconstraints input_format output_format formal_input json_data
         statement_url explanation_url
     ), @cats::limits_fields ]);
-    $lv->default_searches([ qw(title) ]);
 
     $lv->define_db_searches([ qw(
         CP.code CP.testsets CP.tags CP.points_testsets CP.status
     ) ]);
+    $lv->default_searches([ qw(code title) ]);
 
     my @sources =
         map [ join('_', split(/\W+/, $cats::source_module_names{$_})), $_ ], keys %cats::source_modules;
