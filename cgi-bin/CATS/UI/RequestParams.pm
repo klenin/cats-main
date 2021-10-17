@@ -54,8 +54,6 @@ sub _try_set_user {
     $dbh->commit;
 }
 
-my $settable_verdicts = [ qw(NP AW OK WA PE TL ML WL RE CE SV IS IL MR LI BA) ];
-
 sub request_params_frame {
     my ($p) = @_;
 
@@ -154,7 +152,7 @@ sub request_params_frame {
 
     source_links($p, $si);
     sources_info_param([ $si ]);
-    $t->param(settable_verdicts => $settable_verdicts);
+    $t->param(settable_verdicts => $CATS::Verdicts::settable);
 
     if ($is_root) {
         my $judge_de_bitmap =
@@ -187,7 +185,7 @@ sub request_params_frame {
 sub try_set_state {
     my ($p, $si) = @_;
     $p->{set_state} && $p->{state} or return;
-    grep $_ eq $p->{state}, @$settable_verdicts or return;
+    grep $_ eq $p->{state}, @$CATS::Verdicts::settable or return;
     my $state = $CATS::Verdicts::name_to_state->{$p->{state}};
 
     CATS::Job::cancel_all($si->{req_id});

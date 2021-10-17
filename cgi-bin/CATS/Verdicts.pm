@@ -60,6 +60,8 @@ my $hidden_verdicts_self = {
     P  => 'NP',
 };
 
+our $settable = [ qw(NP AW OK WA PE TL ML WL RE CE SV IS IL MR LI BA) ];
+
 sub hide_verdict_self {
     my ($jury, $true_verdict) = @_;
     $jury ? $true_verdict : ($hidden_verdicts_self->{$true_verdict} // $true_verdict);
