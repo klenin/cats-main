@@ -132,11 +132,14 @@ sub enforce_state {
 }
 
 sub retest {
-    my ($request_id) = @_;
+    my ($request_id, $state) = @_;
+    $state //= $cats::st_not_processed;
     my $fields = {
-        state => $cats::st_not_processed, judge_id => undef, points => undef, testsets => undef };
-    enforce_state($request_id, $fields) &&
-    CATS::Job::create_or_replace($cats::job_type_submission, { req_id => $request_id });
+        state => $state, judge_id => undef, points => undef, testsets => undef };
+    enforce_state($request_id, $fields) and
+        $state == $cats::st_not_processed ?
+            CATS::Job::create_or_replace($cats::job_type_submission, { req_id => $request_id }) :
+            CATS::Job::cancel_all($request_id);
 }
 
 # Params: problem_id (required), contest_id (required), submit_uid (required), de_bitmap (required),
