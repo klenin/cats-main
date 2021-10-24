@@ -137,7 +137,7 @@ my $main_routes = {
     ],
     problems_udebug => [ \&CATS::UI::ProblemsUdebug::problems_udebug_frame, ],
     problems_retest => [ \&CATS::UI::ProblemsRetest::problems_retest_frame,
-        mass_retest => bool, recalc_points => bool, all_runs => bool,
+        mass_retest => bool, recalc_points => bool, new_state => ident, all_runs => bool,
         problem_id => array_of integer, ignore_states => array_of ident,
     ],
     problem_select_testsets => [

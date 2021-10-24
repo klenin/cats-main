@@ -28,6 +28,12 @@
 <button type="submit" name="recalc_points" value="1" class="button">[% capt.recalc %]</button>
 <br/>
 <button type="submit" name="mass_retest" value="1" class="button">[% capt.retest %]</button>
+<select name="new_state">
+<option>&nbsp;</option>
+[% capt.verdicts.NP = capt.retest; FOREACH v IN settable_verdicts %]
+<option value="[% v %]">[% "$v: "; capt.verdicts.item(v) %]</option>
+[% END %]
+</select>
 <label><input type="checkbox" name="all_runs" value="1"/> [% capt.all_runs %]</label>
 <div class="verdict_list">
 <label><input type="checkbox" onclick="toggle_all_cb(this, '.verdict_list input[name=ignore_states]')"/>

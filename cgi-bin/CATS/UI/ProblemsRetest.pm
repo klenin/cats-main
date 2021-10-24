@@ -23,6 +23,11 @@ sub problems_mass_retest {
         my $st = $CATS::Verdicts::name_to_state->{$_ // ''};
         $ignore_states{$st} = 1 if defined $st;
     }
+
+    $p->{new_state} ||= 'NP';
+    grep $_ eq $p->{new_state}, @$CATS::Verdicts::settable or return;
+    my $new_state = $CATS::Verdicts::name_to_state->{$p->{new_state}};
+
     # Since we perform multiple commits, clear cache ahead of time.
     CATS::RankTable::Cache::remove($cid);
     my $count = 0;
@@ -37,7 +42,7 @@ sub problems_mass_retest {
         for (@$runs) {
             next if !$p->{all_runs} && $accounts{$_->{account_id}}++;
             next if $ignore_states{$_->{state} // 0};
-            ++$count if CATS::Request::retest($_->{id});
+            ++$count if CATS::Request::retest($_->{id}, $new_state);
         }
         $dbh->commit;
     }
@@ -128,6 +133,7 @@ sub problems_retest_frame {
         total_queue => $total_queue,
         verdicts => [ map +{ short => $_->[0], checked => $retest_default_ignore->{$_->[0]} },
             @$CATS::Verdicts::name_to_state_sorted ],
+        settable_verdicts => $CATS::Verdicts::settable,
     );
 }
 1;
