@@ -268,7 +268,7 @@ sub get_sources_info {
     my $se = $p->{src_enc};
 
     for my $r (values %$req_tree) {
-        $_ = Encode::decode_utf8($_) for @$r{'tag', grep /_name$/, keys %$r};
+        $_ = Encode::decode_utf8($_) for @$r{'tag', 'ca_tag', grep /_name$/, keys %$r};
 
         my %additional_info = (
             CATS::IP::linkify_ip($r->{last_ip}),
