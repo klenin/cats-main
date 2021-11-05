@@ -30,8 +30,8 @@
     %]</td>
     [% IF visible_cols.As %]<td class="num">[% t.answer_size | group_digits %]</td>[% END %]
     <td>[% t.generator_params | html %]</td>
-    <td>[% t.val_name | html %] [% t.input_validator_param | html %]</td>
-    <td><code>[% t.input_hash | html %]</code></td>
+    [% IF visible_cols.Vn %]<td>[% t.val_name | html %] [% t.input_validator_param | html %]</td>[% END %]
+    [% IF visible_cols.Ih %]<td><code>[% t.input_hash | html %]</code></td>[% END %]
   </tr>
 [% END %]
   <tr class="col_defs">

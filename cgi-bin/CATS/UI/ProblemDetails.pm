@@ -287,8 +287,8 @@ sub problem_test_data_frame {
         { caption => 'answer', order_by => 'answer', width => '5%' },
         { caption => 'answer_size', order_by => 'answer_size', col => 'As' },
         { caption => 'generator_params', order_by => 'gen_name' },
-        { caption => 'validator', order_by => 'val_name' },
-        { caption => 'input_hash', order_by => 'input_hash' },
+        { caption => 'validator', order_by => 'val_name', col => 'Vn' },
+        { caption => 'input_hash', order_by => 'input_hash', col => 'Ih' },
     ]);
     $lv->define_db_searches([ qw(
         rank gen_group param input_hash input_validator_param
