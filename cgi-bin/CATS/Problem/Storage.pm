@@ -121,6 +121,25 @@ sub fail_loading {
     return (-1, undef, $problem);
 }
 
+sub parse_problem {
+    my ($self, $cid, $pid) = @_;
+
+    my $repo = get_repo($pid);
+    my $id = 0;
+    $self->{parser} = CATS::Problem::Parser->new(
+        source => CATS::Problem::Source::PlainFiles->new(
+            dir => $repo->get_dir, logger => $self),
+        import_source => CATS::Problem::ImportSource::DB->new,
+        logger => $self,
+        id_gen => sub { ++$id },
+        problem_desc => {
+            id => $pid,
+            contest_id => $cid,
+        },
+    );
+    ($self->{parser}->parse, $repo->get_latest_master_sha);
+}
+
 sub load_problem {
     my ($self, $source, $cid, $pid, $replace, $remote_url, $message, $is_amend) = @_;
 

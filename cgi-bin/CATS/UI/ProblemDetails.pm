@@ -335,7 +335,15 @@ sub problem_test_data_frame {
     );
     $sth->execute($p->{pid}, $lv->where_params);
 
+    my ($parsed, $sha) = CATS::Problem::Storage->new->parse_problem($cid, $p->{pid});
+
     my $total = {};
+
+    my $set_file_name = sub {
+        my ($row, $field) = @_;
+        $row->{$field} = $parsed->{tests}->{$row->{rank}}->{$field} and
+            url_f('problem_history_edit', file => $row->{$field}, pid => $p->{pid}, hb => $sha);
+    };
 
     my $fetch_record = sub {
         my $row = $_[0]->fetchrow_hashref or return ();
@@ -343,6 +351,8 @@ sub problem_test_data_frame {
         $row->{answer_cut} = length($row->{answer} || '') > $cats::test_file_cut;
         $row->{generator_params} = CATS::Problem::Utils::gen_group_text($row);
         $row->{href_test_diff} = url_f('test_diff', pid => $p->{pid}, test => $row->{rank});
+        $row->{href_edit_in} = $set_file_name->($row, 'in_file_name');
+        $row->{href_edit_out} = $set_file_name->($row, 'out_file_name');
         $total->{input_size} += $row->{input_size} // 0;
         $total->{answer_size} += $row->{answer_size} // 0;
         %$row;
