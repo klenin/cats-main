@@ -161,7 +161,8 @@ function chg_code(st_sel, pid) {
 [% IF can_submit %]<td class="problem_radio nobr">
   <label><input type="radio" name="problem_id" value="[% p.problem_id %]"
     [%- ' disabled="disabled"' IF p.disabled; ' checked="checked"' IF p.selected %] />
-    [%~ IF p.href_problem_details %]<a href="[% p.href_problem_details %]" class="icon edit"></a>[% END %]</label>
+    [%~ IF p.href_problem_details %]<a href="[% p.href_problem_details %]" class="icon edit"></a>[% END ~%]
+  </label>
 </td>[% END %]
 <td>
   [% IF editable %]
