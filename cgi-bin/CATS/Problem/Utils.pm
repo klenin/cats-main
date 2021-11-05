@@ -131,7 +131,7 @@ sub define_common_searches {
                 ROWS 1)~
         } @sources),
     });
-    $lv->define_casts({ map { $_->[0] => 'VARCHAR(100)' } @sources });
+    $lv->define_casts({ map { $_ => 'VARCHAR(100)' } 'code', map $_->[0], @sources });
 
     $lv->define_enums({ run_method => CATS::Problem::Utils::run_method_enum() });
 }
