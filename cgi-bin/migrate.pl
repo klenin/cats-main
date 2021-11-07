@@ -69,7 +69,7 @@ sub parse_diff {
     my $table;
     for (split "\n", $diff) {
         if (my ($line) = m/^\+([^+].+)$/) {
-            if (m/(:?CREATE|ALTER) (:?TABLE|INDEX)/) {
+            if (m/(:?CREATE|ALTER)\s+(:?TABLE|INDEX)/ || m/(:?GRANT|REVOKE)\s/) {
                 undef $table;
                 say_n $line;
             } elsif ($table) {
@@ -197,7 +197,7 @@ sub apply_migration {
         IPC::Cmd::can_run('psql') or die 'Error: psql not found';
         my $dbname = sprintf "postgresql://%s:%s@%s:5432/%s",
             $db->{user}, $db->{password}, $db->{host}, $db->{name};
-        $cmd = [ 'psql', '-f', $file, '--dbname', $dbname];
+        $cmd = [ 'psql', '-f', $file, '--dbname', $dbname ];
     }
     $cmd or die "Unknown driver: $db->{driver}";
 
