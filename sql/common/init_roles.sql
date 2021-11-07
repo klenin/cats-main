@@ -24,6 +24,7 @@ GRANT SELECT ON TABLE logs TO judge;
 GRANT SELECT ON TABLE sources TO judge;
 GRANT SELECT ON TABLE jobs TO judge;
 GRANT SELECT ON TABLE jobs_queue TO judge;
+GRANT SELECT ON TABLE job_sources TO judge;
 
 GRANT UPDATE(sid, last_login, last_ip)
     ON TABLE accounts TO judge;

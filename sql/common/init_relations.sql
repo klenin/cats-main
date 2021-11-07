@@ -471,7 +471,14 @@ CREATE TABLE jobs (
         FOREIGN KEY (contest_id) REFERENCES contests(id) ON DELETE CASCADE,
     CONSTRAINT jobs_problem_id_fk
         FOREIGN KEY (problem_id) REFERENCES problems(id) ON DELETE CASCADE
+);
 
+CREATE TABLE job_sources (
+    job_id  INTEGER NOT NULL,
+    src     CATS_BLOB,
+
+    CONSTRAINT job_sources_job_id_fk
+        FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE
 );
 
 CREATE TABLE logs (
