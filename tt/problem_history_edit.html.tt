@@ -2,7 +2,11 @@
 [% extra_head = BLOCK %]
 <style>
   @import 'css/git.css';
+  #mathjax_preview {
+    position: absolute; top: 5px; right: 5px; padding: 3px;
+  }
 </style>
+[% IF is_xml; PROCESS includes/mathjax.tti; END %]
 <script>
 window.addEventListener('load', function () {
   if (!ace) return;
@@ -72,9 +76,40 @@ window.addEventListener('load', function () {
     return p + p_new + ';file=' + filename;
   };
 
+  var find_tex_block = function(session) {
+    var pos = editor.getCursorPosition();
+    var line = session.getLine(pos.row);
+    var right = line.indexOf('$', pos.column);
+    if (right < 0) return '';
+    var parts = line.substring(0, right).split('$');
+    if (parts.length % 2) return '';
+    return parts[parts.length - 1];
+  };
+
+  var check_selected_tex_block = function(text) {
+    var m = /^\s*\$([^]+)\$\s*$/.exec(text);
+    return m ? m[1] : '';
+  };
+
+  [%# When both changeCursor and changeSelection happen, prioritize latter. %]
+  var current_tex = [ '', '' ];
+  function update_mathjax_preview(new_tex, idx) {
+    if (new_tex == current_tex[idx]) return;
+    current_tex[idx] = new_tex;
+    var t = current_tex[1] == '' ? current_tex[0] : current_tex[1];
+    var mathjax_preview = $('#mathjax_preview');
+    mathjax_preview.children("span.TeX").attr('title', t).html('');
+    apply_mathjax(mathjax_preview);
+  }
+
   if ($('option:selected', $('#de_id')).attr('editor-syntax') === 'xml') {
     Editor.highlight_errors('log', [ /at\sline\s(\d+)/ ], 'ed_pe[% pid %]_[% file %]');
     editor.hoverLink.registerLink(/src="([a-zA-Z0-9_\-\.\/]+)"/, preproces_file_link);
+    editor.selection.on('changeCursor', function(ev, editor) {
+      update_mathjax_preview(find_tex_block(editor.session), 0); });
+    editor.selection.on('changeSelection', function(ev, sel) {
+      var t = editor.session.doc.getTextRange(sel.getRange());
+      update_mathjax_preview(check_selected_tex_block(t), 1); });
   }
 
   var add_button_function = function(is_repeat, tag, prefix, suffix, prev, next) {
@@ -137,13 +172,14 @@ window.addEventListener('load', function () {
   @ [% last_commit.subject | html %] ([% last_commit.author | html %], [% last_commit.sha %])
 </div>
 [% END %]
-<div class="page_body">
+<div class="page_body" style="position: relative;">
   <select name="src_enc">
     [%- FOREACH se IN source_encodings %]
     <option value="[% se.enc %]"[% ' selected="selected"' IF se.selected %]>[% se.enc %]</option>
     [%- END %]
   </select>
   <button type="submit" value="1" class="button">[% capt.enc %]</button>
+  [% IF is_xml %]<span id="mathjax_preview" class="bordered"><span class="TeX"></span></span>[% END %]
   <br/><br/>
   <div class="toolbar_container">
     <select id="de_id" class="toolbar_item">
@@ -160,7 +196,7 @@ window.addEventListener('load', function () {
       [%- PROCESS includes/editor_menu.tti editor_id = 'ed_pe' _ pid _ '_' _ (edit_file ? file : hash) -%]
     </a>
   </div>
-    <div>
+  <div>
 <textarea rows="40" cols="100" name="src" data-editor="[% de_selected.syntax || 'text' %]" data-gutter="1" data-id="ed_pe[% pid %]_[% IF edit_file; file; ELSE; hash; END; %]">
 [%- IF blob.content; blob.content | html; ELSE; FOREACH line IN blob.lines %]
 [% line.text | html %]

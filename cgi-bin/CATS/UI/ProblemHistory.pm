@@ -261,6 +261,7 @@ sub problem_history_edit_frame {
         is_amend => $p->{is_amend},
         problem_import_log => $log,
         autocomplete => encode_json($autocomplete),
+        is_xml => $is_xml,
         de_list => $de_list,
         de_selected => $de,
         pid => $p->{pid},
