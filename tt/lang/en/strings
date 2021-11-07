@@ -420,3 +420,4 @@
 1225 "Problems using development environment '%s'."
 1226 "Users from group '%s'."
 1227 "Users excluded: %d."
+1228 "Created 'run command' jobs: %d."

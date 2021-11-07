@@ -14,6 +14,7 @@
         submission_part => 'часть',
         update_self => 'обновиться',
         manual_verdict => 'ручной вердикт',
+        run_command => 'запуск команды',
       },
       states => {
         waiting => 'ожидает',

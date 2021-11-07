@@ -42,6 +42,7 @@ BEGIN {
         submission_part => $cats::job_type_submission_part,
         update_self => $cats::job_type_update_self,
         manual_verdict => $cats::job_type_manual_verdict,
+        run_command => $cats::job_type_run_command,
     };
     my $name_to_state = {
         waiting => $cats::job_st_waiting,

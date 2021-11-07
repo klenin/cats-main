@@ -59,6 +59,7 @@ function delete_judge(href, name) {
 [% PROCESS includes/pages.tti %]
 [% IF editable %]
 <div style="clear: both;">
+  <div class="action_group send_message">
   <button type="submit" name="set_pin_mode" class="button" value="1">[% capt.pin_mode %]:</button>
   [%
     pin_modes = [];
@@ -67,7 +68,15 @@ function delete_judge(href, name) {
     END;
     select_value('pin_mode', pin_modes, pin_mode);
   %]
+  </div>
+  <div class="action_group send_message">
   <button type="submit" name="update" class="button" value="1">[% capt.update %]</button>
+  </div>
+  <br/><br/>
+  <div class="action_group send_message">
+  <div><button type="submit" name="run_command" class="button" value="1">[% capt.run_command %]</button></div>
+  <textarea class="bordered" name="command" cols="80" rows="3"></textarea>
+  </div>
 
 </div>
 [% END %]

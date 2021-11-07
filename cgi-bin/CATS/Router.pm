@@ -256,6 +256,7 @@ my $main_routes = {
         delete => integer, saved => integer,
         ping => integer, pin_mode => integer,
         selected => array_of integer, update => bool, set_pin_mode => bool,
+        run_command => bool, command => str,
     ],
     judges_edit => [ \&CATS::UI::Judges::judges_edit_frame,
         account_name => str, $CATS::UI::Judges::form->route,

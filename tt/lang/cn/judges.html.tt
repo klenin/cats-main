@@ -4,5 +4,6 @@
     ping => 'ping',
     queue => 'Queue',
     update => 'update to last version',
+    run_command => 'run command',
   })
 %]

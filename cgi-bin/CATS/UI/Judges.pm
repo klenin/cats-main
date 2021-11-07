@@ -3,7 +3,7 @@ package CATS::UI::Judges;
 use strict;
 use warnings;
 
-use CATS::DB;
+use CATS::DB qw(:DEFAULT $db);
 use CATS::DeBitmaps;
 use CATS::DevEnv;
 use CATS::Form;
@@ -85,6 +85,24 @@ sub update_judges {
     msg(1171, $count);
 }
 
+sub run_command {
+    my ($p) = @_;
+
+    my $count = 0;
+    my $insert_sth = $dbh->prepare(q~
+        INSERT INTO job_sources(job_id, src) VALUES (?, ?)~);
+    for my $judge_id (@{$p->{selected}}) {
+        my $job_id = CATS::Job::create(7, { judge_id => $judge_id, account_id => $user->{id} }) or next;
+        $insert_sth->bind_param(1, $job_id);
+        $db->bind_blob($insert_sth, 2, $p->{command});
+        $insert_sth->execute;
+        ++$count;
+    }
+    $count or return;
+    $dbh->commit;
+    msg(1228, $count);
+}
+
 sub set_pin_mode {
     my ($p) = @_;
 
@@ -108,6 +126,7 @@ sub judges_frame {
             return $p->redirect(url_f 'judges');
         }
         $p->{update} and update_judges($p);
+        $p->{run_command} && $p->{command} and run_command($p);
         $p->{set_pin_mode} && defined $p->{pin_mode} and set_pin_mode($p);
     }
 
