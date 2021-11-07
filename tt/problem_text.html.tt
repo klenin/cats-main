@@ -6,65 +6,7 @@
 [%- PROCESS "lang/$lang/editor_menu.tti" -%]
 [% tex_styles %]
 [% IF mathjax %]
-<script type="text/javascript">
-function set_tex() {
-[%#
-  CATS::TeX::Lite preserves spaces between identifiers.
-  Emulate that for compatibility by replacing such spaces with "\,".
-  Future problems should use "\," or "\ " explicitly.
-  Since JavaScript RegExp does not support lookbehind, use magic
-  to distinguish identifiers (abc) from TeX commands (\abc).
--%]
-  var tex = $(this);
-  tex.data({ lite: tex.html() });
-  var magic = '~!!!~';
-  var t = tex.attr('title');
-  t = t.replace(/(\\[a-zA-Z]+)/g, '$1' + magic);
-  t = t.replace(/([a-zA-Z0-9},])\s+(?=[a-zA-Z])/g, '$1\\,');
-  t = t.replace(new RegExp(magic, 'g'), '');
-  tex.html("\\(" + t + '\\)');
-}
-
-function unset_tex() {
-  var tex = $(this);
-  var lite = tex.data().lite;
-  if (lite)
-    tex.html(lite);
-}
-
-function apply_mathjax(p) {
-  MathJax.Hub.Queue(
-    function() { p.find('span.TeX').each(set_tex); },
-    [ 'Typeset', MathJax.Hub, p[0] ]);
-}
-</script>
-<script type="text/x-mathjax-config">
-MathJax.Hub.Config({
-  TeX: {
-    Macros: { deg: '^\\circ', sgn: [ '\\operatorname\{sgn\}' ] }
-  },
-  'HTML-CSS': { scale: 100 },
-  SVG: { scale: 100 },
-  CommonHTML: { scale: 100 },
-  tex2jax: { ignoreClass: 'problem_text', processClass: 'TeX' },
-  skipStartupTypeset: true
-});
-[%#
-MathJax.Hub.Startup.signal.Interest(function (message) { console.log("Startup: " + message); });
-MathJax.Hub.signal.Interest(function (message) { console.log("Hub: " + message); });
--%]
-MathJax.Hub.Register.StartupHook('onLoad', function () {
-  [%# Convert math one problem at a time as a compromise between speed and stability. -%]
-  $('div.problem_text').each(function() {
-    var p = $(this);
-    if (!p.find('.basic_math')[0].checked)
-      apply_mathjax(p);
-  });
-});
-</script>
-<script type="text/javascript" src="https://cdn.rawgit.com/mathjax/MathJax/2.7.1/MathJax.js?config=TeX-AMS_CHTML"></script>
-<script type="text/javascript">window.MathJax || document.write('<script src="js/lib/MathJax/MathJax.js?config=TeX-AMS_CHTML"><\/script>')</script>
-<script type="text/javascript" src="js/lib/jquery.min.js"></script>
+[% PROCESS includes/mathjax.tti onload = 1 %]
 [% IF has_static_highlight -%]
 <script src="js/lib/ace/ext-static_highlight.js"></script>
 [% END %]
