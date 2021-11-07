@@ -6,7 +6,6 @@
   td.user_checkbox label { display: block; width: 100%; height: 100%; }
   td.user_checkbox input { margin: 0; padding: 0; }
   td.full_href a { display: block; width: 100%; height: 100%; }
-  div.action { display: inline-block; }
 </style>
 [%- END %]
 [% PROCESS includes/menu_begin.tti %]
@@ -90,25 +89,25 @@ function delete_team(href, name) {
 <button type="submit" value="1" name="save_attributes" class="button">[% capt.save_attributes %]</button>
 [% END %]
 [% IF user.is_jury %]
-<div class="action send_message">
+<div class="action_group send_message">
 <label><input type="text" name="tag_to_set" class="bordered" /></label>
 <button type="submit" value="1" name="set_tag" class="button">[% capt.set_tag %]</button>
 </div>
 [% END %]
 [% IF sites.size && (user.is_jury || user.is_site_org) %]
-<div class="action send_message">
+<div class="action_group send_message">
 <select name="site_id"><option>&nbsp;</option>[% FOREACH s IN sites; option(s.id, s.name); END %]</select>
 <button type="submit" value="1" name="set_site" class="button">[% capt.set_site %]</button>
 </div>
 [% END %]
 [% IF user.is_jury %]
 [% IF acc_groups.size %]
-<div class="action send_message">
+<div class="action_group send_message">
 <select name="to_group"><option>&nbsp;</option>[% FOREACH ag IN acc_groups; option(ag.id, ag.name); END %]</select>
 <button type="submit" value="1" name="add_to_group" class="button">[% capt.add_to_group %]</button>
 </div>
 [% END %]
-<div class="action send_message">
+<div class="action_group send_message">
 <label><input type="text" name="password_len" class="bordered" value="20" /></label>
 <button type="submit" value="1" name="gen_passwords" class="button">[% capt.gen_passwords %]</button>
 </div>
