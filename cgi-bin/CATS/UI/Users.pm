@@ -301,8 +301,14 @@ sub users_frame {
             WHERE R.account_id = A.id AND R.contest_id = C.id AND E.ip LIKE '%' || ? || '%')~,
         },
     });
+
+    my $accepted_count_sql = qq~
+        SELECT COUNT(DISTINCT R.problem_id) FROM reqs R
+        WHERE R.state = $cats::st_accepted AND R.account_id = A.id AND R.contest_id = C.id~ .
+        ($is_jury ? '' : ' AND (R.submit_time < C.freeze_date OR C.defreeze_date < CURRENT_TIMESTAMP)');
     $lv->define_db_searches({ map { +"CT_$_->{sql}" => _contact_field_sql($_), } @$contact_types });
     $lv->define_db_searches({
+        accepted => "($accepted_count_sql)",
         'CA.id' => 'CA.id',
         is_judge => q~
             CASE WHEN EXISTS (SELECT * FROM judges J WHERE J.account_id = A.id) THEN 1 ELSE 0 END~,
@@ -315,10 +321,7 @@ sub users_frame {
     CATS::AccGroups::enum($lv) if $is_jury;
 
     my $fields = join ', ', @fields;
-    my $rating_sql = !$lv->visible_cols->{Rt} ? 'NULL' : qq~
-        SELECT COUNT(DISTINCT R.problem_id) FROM reqs R
-        WHERE R.state = $cats::st_accepted AND R.account_id = A.id AND R.contest_id = C.id~ .
-        ($is_jury ? '' : ' AND (R.submit_time < C.freeze_date OR C.defreeze_date < CURRENT_TIMESTAMP)');
+    my $rating_sql = $lv->visible_cols->{Rt} ? $accepted_count_sql : 'NULL';
 
     my $check_site_id = !$is_jury && $user->{is_site_org} && $user->{site_id};
     my $ip_sql = do {
