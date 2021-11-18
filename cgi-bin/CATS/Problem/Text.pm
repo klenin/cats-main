@@ -327,7 +327,7 @@ sub problem_text {
         my $prs = $dbh->selectall_arrayref(qq~
             SELECT
                 CP.id AS cpid, CP.contest_id, CP.problem_id, CP.code,
-                CP.testsets, CP.points_testsets, CP.max_points, CP.tags,
+                CP.testsets, CP.points_testsets, CP.max_points, CP.tags, CP.status,
                 $overridden_limits_str
             FROM contest_problems CP
                 LEFT JOIN limits L ON L.id = CP.limits_id
@@ -384,7 +384,10 @@ sub problem_text {
         }
 
         $problem->{show_points} = $show_points;
-        if ($show_points && !$problem->{max_points}) {
+        if ($problem->{status} == $cats::problem_st_nosubmit) {
+            $problem->{max_points} = undef;
+        }
+        elsif ($show_points && !$problem->{max_points}) {
             $problem->{max_points} = CATS::Score::cache_max_points($problem);
             $need_commit = 1;
         }

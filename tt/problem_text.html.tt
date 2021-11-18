@@ -88,7 +88,7 @@
         t => p.interactive_io ? c.interactive : p.input_file == '*STDIN' ? c.standard_input : p.input_file },
       { n => p.output_file == '*NONE' || p.interactive_io ? '' : c.output_file,
         t => p.interactive_io ? '' : p.output_file == '*STDOUT' ? c.standard_output : p.output_file },
-      { n => p.show_points ? c.max_points : '',
+      { n => p.show_points && p.max_points ? c.max_points : '',
         t => p.max_points },
     ];
     lc_nonempty = 0; FOREACH lc IN left_col; SET lc_nonempty = 1 IF lc.n; END;
