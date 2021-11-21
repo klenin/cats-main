@@ -6,7 +6,7 @@ use File::Spec;
 use FindBin;
 use SQL::Abstract;
 use Test::Exception;
-use Test::More tests => 55;
+use Test::More tests => 56;
 
 use lib File::Spec->catdir($FindBin::Bin, '..');
 use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
@@ -35,6 +35,14 @@ is_deeply qb_mask('zz??'), { zz => qr/^$/i }, 'mask NULL';
     is_deeply $qb->parse_search('tt')->get_mask, { 'a' => qr/tt/i }, 'mask any default';
     is_deeply qb_mask('1,2'), { '' => qr/1|2/i }, 'mask any nodefault';
     is_deeply qb_mask('*=z'), { '' => qr/^z$/i }, 'mask any';
+}
+
+{
+    my $qb = CATS::QueryBuilder->new;
+    $qb->define_db_searches([ 'x' ]);
+    $qb->define_subqueries({ sss => { sq => 'if(?)' } });
+    $qb->default_searches([ 'x', 'sss' ]);
+    is where($qb->parse_search('tt')->make_where), ' WHERE ( ( x LIKE ? OR if(?) ) )', 'default subquery';
 }
 
 {

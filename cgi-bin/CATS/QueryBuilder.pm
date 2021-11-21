@@ -101,7 +101,8 @@ sub get_mask {
     for my $v (@{$self->{search_defaults}}) {
         my $re = regex_op('~=', $v);
         for my $k (@{$self->{default_searches}}) {
-            $self->{db_searches}->{$k} or push @{$mask{$k} ||= []}, $re;
+            $self->{db_searches}->{$k} || $self->{subqueries}->{$k}
+                or push @{$mask{$k} ||= []}, $re;
         }
         @{$self->{default_searches}} or push @{$mask{''} ||= []}, $re;
     }
@@ -147,6 +148,9 @@ sub _prepare_value {
     $self->_maybe_cast($field, $value);
 }
 
+# SQL::Abstract uses double reference to designate subquery.
+sub _make_sq { \[ $_[0]->{sq} => $_[1] ] }
+
 sub make_where {
     my ($self) = @_;
     my @cond;
@@ -166,21 +170,34 @@ sub make_where {
             or push @sq_unknown, $name and next;
         $value = $self->_prepare_value($name, $value);
         _where_msg($sq, $value, $negate);
-        # SQL::Abstract uses double reference to designate subquery.
-        my $sql_sq = \[ $sq->{sq} => $value ];
+        my $sql_sq = _make_sq($sq, $value);
         push @sq_list, $negate ? { -not_bool => $sql_sq } : $sql_sq;
     }
     msg(1143, join ',', @sq_unknown) if @sq_unknown;
     push @cond, @sq_list;
 
-    my %default_result;
+    my (%default_dbsearch, @default_sq);
     for my $v (@{$self->{search_defaults}}) {
         for my $k (@{$self->{default_searches}}) {
-            my $f = $self->{db_searches}->{$k} or next;
-            push @{$default_result{$f} //= []}, $self->_prepare_value($k, $v, '~=');
+            if (my $f = $self->{db_searches}->{$k}) {
+                push @{$default_dbsearch{$f} //= []}, $self->_prepare_value($k, $v, '~=');
+            }
+            elsif (my $sq = $self->{subqueries}->{$k}) {
+                my $value = $self->_prepare_value($k, $v);
+                push @default_sq, _make_sq($sq, $value);
+            }
         }
     }
-    push @cond, { -or => [ %default_result ] } if %default_result;
+    # Split cases to make simplest query.
+    if (%default_dbsearch && !@default_sq) {
+        push @cond, { -or => [ %default_dbsearch ] };
+    }
+    elsif (!%default_dbsearch && @default_sq) {
+        push @cond, { -or => \@default_sq };
+    }
+    elsif (%default_dbsearch && @default_sq) {
+        push @cond, { -or => [ { %default_dbsearch }, @default_sq ] };
+    }
 
     @cond > 1 ? { -and => \@cond } : @cond ? $cond[0] : {};
 }
@@ -212,7 +229,8 @@ sub default_searches {
     my ($self, $searches, %opts) = @_;
     if (!$opts{nodb}) {
         for (@$searches) {
-            $self->{db_searches}->{$_} or croak "Unknown search: $_";
+            $self->{db_searches}->{$_} || $self->{subqueries}->{$_}
+                or croak "Unknown search: $_";
         }
     }
     push @{$self->{default_searches}}, @$searches;
