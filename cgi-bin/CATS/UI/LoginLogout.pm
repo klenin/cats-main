@@ -156,30 +156,35 @@ sub _login_token {
     # ONTI compatibility.
     $p->{apikey} ||= $p->{token};
 
-    $p->{$_} or return [ 0, "no param '$_'" ] for qw(apikey cid);
+    $p->{$_} or return { ok => 0, erro => "no param '$_'" } for qw(apikey cid);
     my ($apikey, $login_prefix) = $dbh->selectrow_array(q~
         SELECT C.apikey, C.login_prefix FROM contests C WHERE C.id = ?~, undef,
         $p->{cid});
-    $p->{apikey} eq ($apikey // '') or return [ 0, 'bad api key' ];
+    $p->{apikey} eq ($apikey // '') or return { ok => 0, error => 'bad api key' };
 
     $p->{login} ||= ($login_prefix // '') . ($p->{team_id} // '')
-        or return [ 0, "no param 'login'" ];
+        or return { ok => 0, msg => "no param 'login'" };
 
-    my ($account_id, $is_jury_in_contest) = $dbh->selectrow_array(q~
-        SELECT CA.account_id, CA.is_jury FROM contest_accounts CA
+    my ($account_id, $is_jury_in_contest, $name) = $dbh->selectrow_array(q~
+        SELECT CA.account_id, CA.is_jury, A.team_name FROM contest_accounts CA
         INNER JOIN accounts A ON A.id = CA.account_id
         WHERE A.login = ? AND CA.contest_id = ?~, undef,
-        $p->{login}, $p->{cid}) or return [ 0, 'bad login' ];
-    $is_jury_in_contest and return [ 0, 'bad user' ];
+        $p->{login}, $p->{cid}) or return { ok => 0, error => 'bad login' };
+    $is_jury_in_contest and return { ok => 0, error => 'bad user' };
     my $token = CATS::User::make_token($account_id);
-    [ 1, $CATS::Config::absolute_url .
-        url_function('login', cid => $p->{cid}, token => $token, redir => $p->{redir}) ];
+    {
+        ok => 1,
+        url => $CATS::Config::absolute_url .
+            url_function('login', cid => $p->{cid}, token => $token, redir => $p->{redir}),
+        name => $name,
+        id => $account_id,
+    };
 }
 
 sub login_token_api {
     my ($p) = @_;
-    my ($ok, $res) = @{_login_token($p)};
-    $p->print_json($ok ? { url => $res } : { error => $res });
+    my $r = _login_token($p);
+    $p->print_json($r);
 }
 
 sub login_available_api {
