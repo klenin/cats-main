@@ -209,7 +209,7 @@ my $main_routes = {
     ],
     users_all_settings => [ \&CATS::UI::Users::users_all_settings_frame, ],
     users_import => [ \&CATS::UI::Users::users_import_frame,
-        go => bool, do_import => bool, user_list => str, ],
+        go => bool, do_import => bool, update => bool, user_list => str, ],
     users_add_participants => [ \&CATS::UI::Users::users_add_participants_frame,
         logins_to_add => str, make_jury => bool, by_login => bool,
         source_cid => integer, from_contest => bool, include_ooc => bool,

@@ -77,23 +77,42 @@ sub users_import_frame {
         my ($user_id) = $dbh->selectrow_array(q~
             SELECT id FROM accounts WHERE login = ?~, undef,
             $u->{login});
-        my $r = $user_id ? 'exists' :
-        eval {
-            $u->{password1} = CATS::User::hash_password($u->{password1})
-                if $u->{password1};
-            $u->insert($contest->{id}, is_ooc => 0, commit => 0);
-            $count++;
-            'ok';
-        } || $@;
+        my $r =
+            !$user_id ? eval {
+                $u->{password1} = CATS::User::hash_password($u->{password1})
+                    if $u->{password1};
+                $u->insert($contest->{id}, is_ooc => 0, commit => 0);
+                ++$count;
+                'insert ok';
+            } || $@ :
+            $p->{update} ? eval {
+                my $update;
+                $update->{$_} = $u->{$_} for CATS::User::param_names;
+                $update->{passwd} = CATS::User::hash_password($u->{password1})
+                    if $u->{password1};
+                $dbh->do(_u $sql->update('accounts', $update, { id => $user_id }));
+                $u->{id} = $user_id;
+                ++$count;
+                'update ok' ;
+            } || $@
+            : 'exists';
         my $contact_count = 0;
         for my $ct (@contact_types_idx) {
             my ($i, $ct_id) = @$ct;
             my $handle = $cols[$i] or next;
-            $contact_count += $dbh->do(_u $sql->insert('contacts', {
-                id => new_id,
-                account_id => $u->{id}, contact_type_id => $ct_id,
-                handle => $handle, is_actual => 1,
-            }));
+            my %pk = (account_id => $u->{id}, contact_type_id => $ct_id);
+            if ($p->{update} && $user_id &&
+                $dbh->selectrow_array(_u $sql->select('contacts', 'COUNT(*)', \%pk)) == 1
+            ) {
+                $contact_count += $dbh->do(_u $sql->update('contacts', { handle => $handle }, \%pk));
+            }
+            else {
+                $contact_count += $dbh->do(_u $sql->insert('contacts', {
+                    id => new_id,
+                    account_id => $u->{id}, contact_type_id => $ct_id,
+                    handle => $handle, is_actual => 1,
+                }));
+            }
         }
         push @report, "$u->{team_name} -- $r (contacts=$contact_count)";
     }

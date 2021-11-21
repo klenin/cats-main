@@ -3,5 +3,6 @@
     create_and_add => 'Create and add users',
     headers => 'First line must contain headers',
     do_import => 'Import',
+    update => 'Update existing',
   })
 %]
