@@ -256,6 +256,8 @@ sub users_frame {
             ORDER BY S.name~, { Slice => {} },
             $cid, @site_param));
     }
+    return if $p->{json} && 0 < grep $p->{$_},
+        qw(new_save edit_save save_attributes set_tag gen_passwords send_message set_site);
 
     my $contact_types = $is_jury ? $dbh->selectall_arrayref(q~
         SELECT id, name FROM contact_types~, { Slice => {} }) : [];

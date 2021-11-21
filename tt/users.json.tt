@@ -1,6 +1,8 @@
 [%- WRAPPER includes/jsonp.tti -%]
 [%- USE Javascript -%]
-[
+{
+"messages": [[% FOREACH m IN messages; '"'; m | $Javascript ; '"'; ', ' UNLESS loop.last; END %]],
+"users":[
 [% FOREACH u IN users -%]
 {
 "id": [% u.id %],
@@ -22,4 +24,5 @@
 [%- ',' UNLESS loop.last %]
 [% END -%]
 ]
+}
 [%- END -%]
