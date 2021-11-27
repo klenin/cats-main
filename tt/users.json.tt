@@ -19,7 +19,8 @@
 "remote": [% IF u.remote %]1[% ELSE %]0[% END %],
 "virtual": [% IF u.virtual %]1[% ELSE %]0[% END %],
 "jury": [% IF u.jury %]1[% ELSE %]0[% END %],
-"role": [% IF u.jury %]"jury"[% ELSIF u.ooc %]"out_of_contest"[% ELSIF u.virtual %]"vitrual"[% ELSE %]"in_contest"[% END %]
+"role": [% IF u.jury %]"jury"[% ELSIF u.ooc %]"out_of_contest"[% ELSIF u.virtual %]"vitrual"[% ELSE %]"in_contest"[% END %],
+"tag": "[% u.tag | $Javascript %]"
 }
 [%- ',' UNLESS loop.last %]
 [% END -%]
