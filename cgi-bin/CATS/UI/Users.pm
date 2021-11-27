@@ -271,7 +271,9 @@ sub users_frame {
         { caption => res_str(689), order_by => 'affiliation', width => '5%', col => 'Af' },
         { caption => res_str(629), order_by => 'tag', width => '5%', col => 'Tg' },
         ($is_jury ? (
-            map +{ caption => $_->{name}, order_by => "CT_$_->{sql}", width => '10%', col => "Ct$_->{sql}" },
+            map +{ caption => $_->{name},
+                order_by => $lv->visible_cols->{"Ct$_->{sql}"} ? "CT_$_->{sql}" : _contact_field_sql($_),
+                width => '10%', col => "Ct$_->{sql}" },
             @$contact_types
         ) : ()),
         ($is_jury || $user->{is_site_org} ? (
