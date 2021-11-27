@@ -132,7 +132,7 @@ sub validate_params {
         ($old_login, my $old_team_name) = $dbh->selectrow_array(q~
             SELECT login, team_name FROM accounts WHERE id = ?~, undef,
             $p{id});
-        if (($old_team_name ne $self->{team_name}) &&
+        if ((($old_team_name // '') ne $self->{team_name}) &&
             (my ($official_contest) = any_official_contest_by_team($p{id})))
         {
             # If the team participated in the official contest, forbid it to rename itself.
