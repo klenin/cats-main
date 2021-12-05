@@ -217,6 +217,12 @@ function chg_code(st_sel, pid) {
 [% IF visible_cols.Mr -%]
 <td>[% href(p.href_problem_limits, p.max_reqs) %]</td>
 [%- END %]
+[% IF visible_cols.If -%]
+<td>[% p.input_file %]</td>
+[%- END %]
+[% IF visible_cols.Of -%]
+<td>[% p.output_file %]</td>
+[%- END %]
 [% IF visible_cols.Tl -%]
 <td>[% href(p.href_problem_limits, p.time_limit) %]</td>
 [%- END %]

@@ -261,6 +261,8 @@ sub problems_frame {
             { caption => res_str(687), order_by => 'max_points', width => '5%', col => 'Mp' },
             { caption => res_str(691), order_by => 'weight', width => '5%', col => 'We' },
             { caption => res_str(688), order_by => 'max_reqs', width => '5%', col => 'Mr' },
+            { caption => res_str(811), order_by => 'input_file', width => '5%', col => 'If' },
+            { caption => res_str(812), order_by => 'output_file', width => '5%', col => 'Of' },
             { caption => res_str(632), order_by => 'time_limit', width => '5%', col => 'Tl' },
             { caption => res_str(628), order_by => 'memory_limit', width => '5%', col => 'Ml' },
             { caption => res_str(617), order_by => 'write_limit', width => '5%', col => 'Wl' },
@@ -342,6 +344,7 @@ sub problems_frame {
     my $sth = $dbh->prepare(qq~
         SELECT
             CP.id AS cpid, P.id AS pid,
+            P.input_file, P.output_file,
             $select_code AS code, P.title, OC.title AS contest_title,
             $counts,
             $keywords
@@ -477,6 +480,8 @@ sub problems_frame {
             testsets => $c->{testsets} || '*',
             points_testsets => $c->{points_testsets},
             test_count => $c->{test_count},
+            input_file => $c->{input_file},
+            output_file => $c->{output_file},
             memory_limit => _combine_limits($c->{cp_memory_limit}, $c->{memory_limit}),
             time_limit => _combine_limits($c->{cp_time_limit}, $c->{time_limit}),
             write_limit => _combine_limits($c->{cp_write_limit}, $c->{write_limit}) // '*',
