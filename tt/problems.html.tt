@@ -206,7 +206,7 @@ function chg_code(st_sel, pid) {
 </td>
 [%- END %]
 [% IF visible_cols.St -%]
-<td>[% href(p.href_select_strategy, p.strategy) %]</td>
+<td>[% href(p.href_select_strategy, p.strategy); cell_search('strategy', p) %]</td>
 [%- END %]
 [% IF visible_cols.Mp -%]
 <td>[% href(p.href_problem_limits, p.max_points) %]</td>
@@ -218,10 +218,10 @@ function chg_code(st_sel, pid) {
 <td>[% href(p.href_problem_limits, p.max_reqs) %]</td>
 [%- END %]
 [% IF visible_cols.If -%]
-<td>[% p.input_file %]</td>
+<td>[% p.input_file; cell_search('input_file', p) %]</td>
 [%- END %]
 [% IF visible_cols.Of -%]
-<td>[% p.output_file %]</td>
+<td>[% p.output_file; cell_search('output_file', p) %]</td>
 [%- END %]
 [% IF visible_cols.Tl -%]
 <td>[% href(p.href_problem_limits, p.time_limit) %]</td>
@@ -237,7 +237,7 @@ function chg_code(st_sel, pid) {
 [%- FOREACH kw IN p.keywords.split; cell_search_any_text('has_kw_code(' _ kw _ ')', kw); ' '; END -%]
 </td>
 [%- END %]
-[% IF visible_cols.Mu %]<td>[% p.last_modified_by %]</td>[% END %]
+[% IF visible_cols.Mu %]<td>[% p.last_modified_by_name; cell_search('last_modified_by', p) %]</td>[% END %]
 [% IF visible_cols.Mt %]<td class="num">[% p.upload_date %]</td>[% END %]
 [% IF visible_cols.Ad %]<td[% ' class="yscroll"' IF p.allow_des.length > 20 %]><div>
 [% href(p.href_allow_des, p.allow_des, p.allow_des_names) %]</div></td>[% END %]
