@@ -600,8 +600,8 @@ sub rank_table {
             $stat->{total_points} += $tp->{points} || 0;
         }
     }
-    CATS::Score::align_by_point($self->{rank}, 'total_points', "\x{2007}"); # Unicode figure space.
-
+    CATS::Score::align_by_point($self->{rank}, 'total_points', "\x{2007}") # Unicode figure space.
+        unless $self->{p}->{json};
     my $search_contest = $is_root ? $self->search_clist : '';
     my @href_submits_params = (i_value => -1, se => 'user_stats', show_results => 1, rows => 30);
 
