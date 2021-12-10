@@ -88,11 +88,15 @@ sub _contest_searches {
         since_finish => 'CAST(CURRENT_TIMESTAMP - finish_date AS DOUBLE PRECISION)',
         since_offset_start_until => 'CAST(CURRENT_TIMESTAMP - offset_start_until AS DOUBLE PRECISION)',
         duration_hours => 'CAST((finish_date - start_date) * 24 AS DECIMAL(15,1))',
+        creator => qq~(
+            SELECT CA.account_id FROM contest_accounts CA
+            WHERE CA.contest_id = C.id AND CA.is_admin = 1 $db->{LIMIT} 1)~,
     });
     $p->{listview}->define_enums({
         rules => { icpc => 0, school => 1 },
         parent_id => { this => $cid },
         parent_or_id => { this => $cid },
+        creator => { me => $uid },
     });
     my $cp_hidden = $is_root ? '' : " AND CP1.status < $cats::problem_st_hidden";
     $p->{listview}->define_subqueries({
