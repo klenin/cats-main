@@ -136,7 +136,7 @@ sub unique {
         my $f = $fd->{indexed}->{$field} or die;
         $f->{value} or return 1;
         my @id_cond = $fd->{id} ? ('id' => { '!=', $fd->{id} }) : ();
-        my $conflicts = $dbh->selectall_arrayref(_u $sql->select('files',
+        my $conflicts = $dbh->selectall_arrayref(_u $sql->select($fd->{form}->{table},
             'id', { $f->{field}->{db_name} => $f->{value}, @id_cond }
         )) or return 1;
         @$conflicts or return 1;
