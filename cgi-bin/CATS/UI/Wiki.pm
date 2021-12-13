@@ -159,7 +159,7 @@ our $text_form = CATS::Form->new(
     before_display => sub {
         my ($form_data, $p) = @_;
         my $wt = $form_data->{indexed};
-        $form_data->{author} = $wt->{author_id} && $dbh->selectrow_array(q~
+        $form_data->{author} = $wt->{author_id}->{value} && $dbh->selectrow_array(q~
             SELECT team_name FROM accounts WHERE id = ?~, undef,
             $wt->{author_id}->{value});
         my $pn = $form_data->{page_name} = Encode::decode_utf8($dbh->selectrow_array(q~
