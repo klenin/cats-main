@@ -1,0 +1,8 @@
+[%- WRAPPER includes/jsonp.tti -%]
+[%- USE Javascript -%]
+{
+"messages": [[% FOREACH m IN messages; '"'; m | $Javascript ; '"'; ', ' UNLESS loop.last; END %]],
+"report": "[% report | $Javascript %]",
+"complete" : [% complete %]
+}
+[%- END -%]

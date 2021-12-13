@@ -45,7 +45,7 @@ my %user_fields = (password => 'password1', map { $_ => $_ } CATS::User::param_n
 
 sub users_import_frame {
     my ($p) = @_;
-    init_template($p, 'users_import.html.tt');
+    init_template($p, 'users_import');
     $is_jury or return;
     my $contact_types = $dbh->selectall_hashref(q~
         SELECT id, name FROM contact_types~, 'name');
@@ -119,7 +119,7 @@ sub users_import_frame {
 
     $p->{do_import} ? $dbh->commit : $dbh->rollback;
     push @report, ($p->{do_import} ? 'Import' : 'Test') . " complete: $count";
-    $t->param(report => join "\n", @report);
+    $t->param(complete => $count, report => join "\n", @report);
 }
 
 sub users_delete {
