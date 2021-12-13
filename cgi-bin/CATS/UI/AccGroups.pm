@@ -18,7 +18,8 @@ our $form = CATS::Form->new(
     fields => [
         [ name => 'name',
             validators => [ CATS::Field::str_length(1, 200) ], editor => { size => 50 }, caption => 601 ],
-        [ name => 'is_actual', validators => $CATS::Field::bool, caption => 670 ],
+        [ name => 'is_actual', validators => $CATS::Field::bool, %CATS::Field::default_zero,
+            caption => 670 ],
         [ name => 'description', caption => 620 ],
     ],
     href_action => 'acc_groups_edit',

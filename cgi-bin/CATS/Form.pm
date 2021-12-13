@@ -151,6 +151,7 @@ our $foreign_key_opt = foreign_key(allow_empty => 1);
 our $bool = int_range(min => 0, max => 1, allow_empty => 1);
 our $date_time_req = date_time;
 our $date_time = date_time(allow_empty => 1);
+our %default_zero = (before_save => sub { $_[0] // 0 });
 
 package CATS::Form;
 

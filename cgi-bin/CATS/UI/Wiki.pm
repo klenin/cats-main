@@ -45,8 +45,8 @@ our $page_form = CATS::Form->new(
     table => 'wiki_pages',
     fields => [
         [ name => 'name', validators => [ $str1_200 ], caption => 601, ],
-        [ name => 'is_public', validators => [ qr/^1?$/ ], caption => 669,
-            before_save => sub { $_[0] // 0 } ],
+        [ name => 'is_public', validators => $CATS::Field::bool,, caption => 669,
+             %CATS::Field::default_zero ],
     ],
     href_action => 'wiki_pages_edit',
     descr_field => 'name',
