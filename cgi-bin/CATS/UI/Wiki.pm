@@ -45,7 +45,7 @@ our $page_form = CATS::Form->new(
     table => 'wiki_pages',
     fields => [
         [ name => 'name', validators => [ $str1_200 ], caption => 601, ],
-        [ name => 'is_public', validators => $CATS::Field::bool,, caption => 669,
+        [ name => 'is_public', validators => $CATS::Field::bool, caption => 669,
              %CATS::Field::default_zero ],
     ],
     href_action => 'wiki_pages_edit',
@@ -53,6 +53,7 @@ our $page_form = CATS::Form->new(
     template_var => 'wp',
     msg_deleted => 1073,
     msg_saved => 1074,
+    validators => [ CATS::Field::unique('name') ],
     before_display => sub {
         my ($fd, $p) = @_;
         my $ts = $fd->{texts} = $fd->{id} ? $dbh->selectall_hashref(q~
