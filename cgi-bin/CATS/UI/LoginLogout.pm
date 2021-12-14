@@ -79,10 +79,12 @@ sub login_frame {
     if ($p->{token} && !$p->{salt}) {
         $where->{id} = _token_no_salt($p) or return;
     }
-    else {
-        $p->{login} or return $t->param(message => 'No login');
+    elsif ($p->{login}) {
         $where->{login} = $p->{login};
         $t->param(login => $p->{login} || '');
+    }
+    else {
+        return $p->{json} && msg(1040);
     }
 
     my ($aid, $hash, $locked, $restrict_ips, $last_ip, $last_sid, $srole) = $dbh->selectrow_array(
