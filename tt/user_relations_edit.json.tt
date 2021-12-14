@@ -1,0 +1,16 @@
+[%- WRAPPER includes/jsonp.tti -%]
+[%- USE Javascript -%]
+{
+[% IF messages.size %]"message": "[% messages.join(',') | $Javascript %]",[% END %]
+"fields":{
+[% FOREACH f IN ur.ordered %]
+"[% f.field.name %]": "[% f.value | $Javascript %]"[% ',' UNLESS loop.last %]
+[% END %]
+},
+"errors":{
+[% FOREACH f IN ur.ordered %]
+"[% f.field.name %]": "[% f.error | $Javascript %]"[% ',' UNLESS loop.last %]
+[% END %]
+}
+}
+[%- END -%]

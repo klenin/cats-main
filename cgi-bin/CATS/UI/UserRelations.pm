@@ -108,10 +108,12 @@ our $form = CATS::Form->new(
 
 sub user_relations_edit_frame {
     my ($p) = @_;
-    init_template($p, 'user_relations_edit.html.tt');
+    init_template($p, 'user_relations_edit');
     $is_root || ($user->{id} // 0) == $p->{uid} or return;
     my @puid = (uid => $p->{uid});
-    $form->edit_frame($p, redirect => [ 'user_relations', @puid ], href_action_params => \@puid);
+    $form->edit_frame($p,
+        (!$p->{json} ? (redirect => [ 'user_relations', @puid ]) : ()),
+        href_action_params => \@puid);
 }
 
 my $_contest_account_sql = q~
