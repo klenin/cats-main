@@ -574,7 +574,10 @@ sub problem_text_frame { goto \&CATS::Problem::Text::problem_text }
 sub submit_problem_api {
     my ($p) = @_;
     my ($rid, $result) = CATS::Problem::Submit::problems_submit($p);
-    $p->print_json({ messages => CATS::Messages::get, $result ? %$result : () });
+    $p->print_json({
+        messages => CATS::Messages::get,
+        status => $rid ? 'ok' : 'error',
+        $result ? %$result : () });
 }
 
 sub set_problem_color {
