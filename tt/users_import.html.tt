@@ -3,8 +3,8 @@
 <h3>[% capt.create_and_add %]</h3>
 <p>[% capt.headers %].</p>
 [% SET sep = ' <tt>&lt;tab&gt;</tt> ' %]
-<p>[% user_fields.keys.join(sep) %]</p>
-<p>[% contact_types.keys.join(sep) %]</p>
+<p>[% user_fields.keys.sort.join(sep) %]</p>
+<p>[% contact_types.keys.sort.join(sep) %]</p>
 <form method="post" action="[% href_action %]">
 <div>
 <textarea name="user_list" style="width: 80%" rows="20">[% report %]</textarea>

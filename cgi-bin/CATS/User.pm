@@ -158,7 +158,7 @@ sub validate_login {
     is_login_available($self->{login}, $id) || msg(1103);
 }
 
-# p: save_settings, is_ooc, commit.
+# p: save_settings, is_ooc, is_hidden, commit.
 sub insert {
     my ($self, $contest_id, %p) = @_;
     my $training_contests = $dbh->selectall_arrayref(q~
@@ -177,7 +177,8 @@ sub insert {
     add_to_contest(contest_id => $_->{id}, account_id => $aid, is_ooc => 1)
         for @$training_contests;
     if ($contest_id && !grep $_->{id} == $contest_id, @$training_contests) {
-        add_to_contest(contest_id => $contest_id, account_id => $aid, is_ooc => $p{is_ooc} // 1);
+        add_to_contest(contest_id => $contest_id, account_id => $aid,
+            is_ooc => $p{is_ooc} // 1, is_hidden => $p{is_hidden} // 0);
     }
 
     $dbh->commit if $p{commit} // 1;

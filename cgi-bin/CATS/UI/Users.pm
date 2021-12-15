@@ -42,6 +42,7 @@ sub users_submenu {
 }
 
 my %user_fields = (password => 'password1', map { $_ => $_ } CATS::User::param_names);
+my %ca_fields = (is_ooc => 1, is_hidden => 1);
 
 sub users_import_frame {
     my ($p) = @_;
@@ -51,11 +52,12 @@ sub users_import_frame {
         SELECT id, name FROM contact_types~, 'name');
     $t->param(
         href_action => url_f('users_import'), title_suffix => res_str(564), users_submenu,
-        contact_types => $contact_types, user_fields => \%user_fields);
+        contact_types => $contact_types, user_fields => { %user_fields, %ca_fields });
     $p->{go} or return;
 
+    my @report;
     my ($header, @lines) = split "\r\n", $p->{user_list};
-    my ($i, @fields_idx, @field_names_idx, @contact_types_idx) = (0);
+    my ($i, @fields_idx, @field_names_idx, @contact_types_idx, %ca_fields_idx) = (0);
     for my $h (split "\t", $header) {
         if (my $uf = $user_fields{$h}) {
             push @fields_idx, $i;
@@ -64,10 +66,15 @@ sub users_import_frame {
         elsif (my $ct = $contact_types->{$h}) {
             push @contact_types_idx, [ $i, $ct->{id} ];
         }
+        elsif ($ca_fields{$h}) {
+            $ca_fields_idx{$h} = $i;
+        }
+        else {
+            push @report, "Unknown field: $h";
+        }
         $i++;
     }
 
-    my @report;
     my $count = 0;
     for my $line (@lines) {
         my @cols = split "\t", $line;
@@ -81,7 +88,9 @@ sub users_import_frame {
             !$user_id ? eval {
                 $u->{password1} = CATS::User::hash_password($u->{password1})
                     if $u->{password1};
-                $u->insert($contest->{id}, is_ooc => 0, commit => 0);
+                $u->insert($contest->{id}, commit => 0,
+                    map { $_ => ($ca_fields_idx{$_} ? $cols[$ca_fields_idx{$_}] : 0) }
+                        qw(is_ooc is_hidden));
                 ++$count;
                 'insert ok';
             } || $@ :
@@ -92,6 +101,11 @@ sub users_import_frame {
                     if $u->{password1};
                 $dbh->do(_u $sql->update('accounts', $update, { id => $user_id }));
                 $u->{id} = $user_id;
+                if (%ca_fields_idx) {
+                    $dbh->do(_u $sql->update('contest_accounts',
+                        { map { $_ => $cols[$ca_fields_idx{$_}] } keys %ca_fields_idx },
+                        { contest_id => $cid, account_id => $user_id }));
+                }
                 ++$count;
                 'update ok' ;
             } || $@
