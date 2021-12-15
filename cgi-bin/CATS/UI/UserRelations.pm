@@ -8,7 +8,7 @@ use List::Util qw(max min);
 
 use CATS::DB;
 use CATS::Form;
-use CATS::Globals qw ($cid $is_root $t $user);
+use CATS::Globals qw ($cid $is_jury $is_root $t $user);
 use CATS::Messages qw(msg res_str);
 use CATS::Output qw(init_template url_f);
 use CATS::User;
@@ -144,6 +144,41 @@ sub _url_accept {
     url_f('user_relations_edit', uid => $user->{id},
         (map { $_ => $row->{$_} } qw(id rel_type from_id to_id)),
         js => 1, edit_save => 1, @rest);
+}
+
+sub user_set_team_api {
+    my ($p) = @_;
+    my $err = sub { $p->print_json({ status => 'error', error => $_[0] }) };
+    my $ok = sub { $p->print_json({ status => 'ok' }) };
+    $p->{user_login} && $p->{team_login} or return $err->('No params');
+    $is_jury or return $err->('No access');
+    my $by_login_sth = $dbh->prepare(q~
+        SELECT A.id FROM accounts A
+        INNER JOIN contest_accounts CA ON CA.account_id = A.id
+        WHERE CA.contest_id = ? AND A.login = ?~);
+    $by_login_sth->execute($cid, $p->{user_login});
+    my ($user_id) = $by_login_sth->fetchrow_array or return $err->('No user');
+    $by_login_sth->finish;
+    $by_login_sth->execute($cid, $p->{team_login});
+    my ($team_id) = $by_login_sth->fetchrow_array or return $err->('No team');
+    $by_login_sth->finish;
+    my $rel = $dbh->selectrow_array(q~
+        SELECT id FROM relations
+        WHERE from_id = ? AND to_id = ? AND from_ok = 1 AND to_ok = 1 AND rel_type = ?~, undef,
+        $user_id, $team_id, $CATS::Globals::relation->{is_member_of}) and return $ok->();
+    $dbh->do(q~
+        DELETE FROM relations R
+        WHERE R.from_id = ? AND
+            R.to_id IN (SELECT CA.account_id FROM contest_accounts CA WHERE CA.contest_id = ?) AND
+            rel_type = ?~, undef,
+        $user_id, $cid, $CATS::Globals::relation->{is_member_of});
+    $dbh->do(q~
+        INSERT INTO relations (id, from_id, to_id, from_ok, to_ok, rel_type, ts)
+        VALUES (?, ?, ?, 1, 1, ?, CURRENT_TIMESTAMP)~, undef,
+        new_id, $user_id, $team_id, $CATS::Globals::relation->{is_member_of})
+        or return $err->('Insert failed');
+    $dbh->commit;
+    $ok->();
 }
 
 sub user_relations_frame {

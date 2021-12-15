@@ -240,6 +240,8 @@ my $main_routes = {
     ],
     api_find_users => [ \&CATS::UI::UserRelations::find_users_api,
         query => str, in_contest => integer, ],
+    api_user_set_team => [ \&CATS::UI::UserRelations::user_set_team_api,
+        user_login => str, team_login => str, ],
     impersonate => [ \&CATS::UI::UserDetails::impersonate_frame, uid => integer, ],
     contact_types => [
         \&CATS::UI::ContactTypes::contact_types_frame,
