@@ -29,7 +29,7 @@ sub bad_judge {
 
 sub get_judge_id {
     my ($p) = @_;
-    my $id = $sid && CATS::JudgeDB::get_judge_id($sid) or $p->print_json($bad_sid);
+    my $id = $sid && CATS::JudgeDB::get_judge_id($sid) or return $p->print_json($bad_sid);
 
     my $old_version = $dbh->selectrow_array(q~
         SELECT version FROM judges WHERE id = ?~, undef,
