@@ -33,6 +33,7 @@ sub run_method_enum() {+{
     default => $cats::rm_default,
     interactive => $cats::rm_interactive,
     competitive => $cats::rm_competitive,
+    competitive_modules => $cats::rm_competitive_modules,
 }}
 
 my $problem_submenu = [

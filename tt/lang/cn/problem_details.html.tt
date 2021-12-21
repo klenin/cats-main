@@ -10,6 +10,7 @@
         '0' => 'single',
         '1' => 'interactive',
         '2' => 'competitive',
+        '3' => 'competitive with modules',
     },
     keywords => 'Keywords',
     repo_path => 'Path in repository',
