@@ -211,7 +211,7 @@ sub _get_run_info {
 
 sub run_details_frame {
     my ($p) = @_;
-    init_template($p, 'run_details.html.tt');
+    init_template($p, 'run_details');
 
     my $sources_info = get_sources_info($p, request_id => $p->{rid}) or return;
     my @runs;

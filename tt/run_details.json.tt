@@ -1,0 +1,30 @@
+[%- WRAPPER includes/jsonp.tti -%]
+[%- USE Javascript -%]
+{
+"messages": [[% FOREACH m IN messages; '"'; m | $Javascript ; '"'; ', ' UNLESS loop.last; END %]],
+"sources":[
+[% FOREACH si IN sources_info %]
+{
+[% IF si.original_team_name %]"orig_team": "[% si.original_team_name || $Javascript %]",[% END %]
+"team": "[% si.team_name || $Javascript %]"
+}
+[%- ', ' UNLESS loop.last; END %]
+],
+"runs": [
+[% FOREACH r IN runs %]
+{
+"id": [% r.id %],
+"total_points" : [% r.total_points || 0 %],
+"tests": [
+[% FOREACH t IN r.run_details %]{
+"test_rank": [% t.test_rank || 0 %],
+"verdict": "[% t.short_state || $Javascript %]",
+"points": [% t.points || 0 %]
+}
+[%- ', ' UNLESS loop.last; END %]
+]
+}
+[%- END -%]
+]
+}
+[%- END -%]
