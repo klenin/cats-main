@@ -1,0 +1,9 @@
+[%- WRAPPER includes/jsonp.tti -%]
+[%- USE Javascript -%]
+{
+"messages": [[% FOREACH m IN messages; '"'; m | $Javascript ; '"'; ', ' UNLESS loop.last; END %]],
+"input": { "size": [% test_data.input_size || 0 %], "data": "[% test_data.decoded_input | $Javascript %]" },
+"answer": { "size": [% test_data.answer_size || 0 %], "data": "[% test_data.decoded_answer | $Javascript %]" },
+"output": { "size": [% output_data.output_size || 0 %], "data": "[% output_data.decoded | $Javascript %]" }
+}
+[%- END -%]

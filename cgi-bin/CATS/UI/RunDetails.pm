@@ -329,7 +329,7 @@ sub visualize_test_frame {
 
 sub view_test_details_frame {
     my ($p) = @_;
-    init_template($p, 'view_test_details.html.tt');
+    init_template($p, 'view_test_details');
 
     $p->{rid} or return;
     $p->{test_rank} //= 1;
