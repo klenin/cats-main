@@ -19,6 +19,8 @@
 [% END -%]
 [% IF c.points.defined %]"points": [% c.points %],
 [% END -%]
+[% IF c.elements_count %]"elements_count": [% c.elements_count %],
+[% END -%]
 "problem_title" : "[% c.problem_title | $Javascript %]"
 [% END -%]
 [% IF c.is_question -%]

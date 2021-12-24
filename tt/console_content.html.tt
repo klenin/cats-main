@@ -41,7 +41,8 @@
   [% IF user.is_root %]<td>[% IF visible_cols.Ct; c.contest_title; cell_search('contest_id', c); END %]</td>
   [% END %]
   [% IF user.is_jury %]
-  <td title="[% c.de.code %]">[% IF visible_cols.De; c.de.description; IF c.elements_count; '=>'; c.elements_count; END; END %]
+  <td title="[% c.de.code %]">
+  [%- IF visible_cols.De; c.de.description; IF c.elements_count; '→ '; c.elements_count; END; END %]
   [%- cell_search_ex('de_code', c.de.code) %]</td>
   <td class="num">[% IF visible_cols.Tm -%]
     <small>[% c.time_used %]</small>
