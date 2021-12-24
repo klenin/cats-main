@@ -129,6 +129,9 @@ sub console_searches {
         CA.site_id
         CP.code
     ) ]);
+    $lv->define_db_searches({
+        parent_id => q~(SELECT RG.group_id FROM req_groups RG WHERE RG.element_id = R.id)~,
+    });
 
     my $de_select = q~
         (SELECT %s FROM sources S INNER JOIN default_de DE ON DE.id = S.de_id WHERE S.req_id = R.id)~;
