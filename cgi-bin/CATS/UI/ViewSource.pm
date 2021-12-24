@@ -169,13 +169,12 @@ sub download_source_frame {
     my $si = get_sources_info($p, request_id => $p->{rid}, get_source => 1, encode_source => 1);
 
     unless ($si) {
-        init_template($p, 'view_source.html.tt');
-        return;
+        return $p->{json} ? $p->print_json({}) : init_template($p, 'view_source.html.tt');
     }
 
     $si->{file_name} =~ m/\.([^.]+)$/;
     my $ext = lc($1 || 'unknown');
-    if ($p->{hash}) {
+    if ($p->{hash} || $p->{json}) {
         $p->headers('Access-Control-Allow-Origin' => '*');
     }
     $p->print_file(
