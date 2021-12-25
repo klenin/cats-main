@@ -316,7 +316,7 @@ sub _retest_submissions {
 }
 
 sub _group_submissions {
-    $is_root or return;
+    $is_jury or return;
     my ($selection, $by_reference) = @_;
     my $count = 0;
     CATS::Request::create_group(

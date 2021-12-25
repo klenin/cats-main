@@ -61,9 +61,7 @@ function get_element(name) {
     ]
     <label><input id="by_reference" name="by_reference" value="1" type="checkbox" />[% capt.by_reference %]</label>
     <button id="retest" name="retest" value="1" type="submit" class="button">[% capt.retest %]</button>
-    [% IF user.privs.is_root %]
-        <button id="create_group" name="create_group" value="1" type="submit" class="button">[% capt.create_group %]</button>
-    [% END %]
+    <button id="create_group" name="create_group" value="1" type="submit" class="button">[% capt.create_group %]</button>
 </div>
 [% END %]
 </form>
