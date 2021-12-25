@@ -249,8 +249,7 @@ sub create_group {
 
     my @req_de_bitmap = (0) x $cats::de_req_bitfields_count;
     for my $req_id (@element_request_ids) {
-        $req_de_bitmap[$_] |= $req_tree->{$req_id}->{bitmap}->[$_]
-            for 0 .. $cats::de_req_bitfields_count - 1;
+        CATS::DevEnv::merge_bitmaps(\@req_de_bitmap, $req_tree->{$req_id}->{bitmap});
     }
 
     $fields->{elements_count} = @element_request_ids;
