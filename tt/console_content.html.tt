@@ -43,7 +43,7 @@
   [% IF user.is_jury %]
   <td title="[% c.de.code %]">
   [%- IF visible_cols.De; c.de.description; IF c.elements_count; '→ '; c.elements_count; END; END %]
-  [%- cell_search_ex('de_code', c.de.code) %]</td>
+  [%- IF c.elements_count; cell_search_ex('parent_id', c.id); ELSE; cell_search_ex('de_code', c.de.code); END %]</td>
   <td class="num">[% IF visible_cols.Tm -%]
     <small>[% c.time_used %]</small>
   [%- END %]</td>
