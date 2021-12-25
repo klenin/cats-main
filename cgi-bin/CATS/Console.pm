@@ -130,7 +130,8 @@ sub console_searches {
         CP.code
     ) ]);
     $lv->define_db_searches({
-        parent_id => q~(SELECT RG.group_id FROM req_groups RG WHERE RG.element_id = R.id)~,
+        parent_id => qq~
+            (SELECT RG.group_id FROM req_groups RG WHERE RG.element_id = R.id $db->{LIMIT} 1)~,
     });
 
     my $de_select = q~
