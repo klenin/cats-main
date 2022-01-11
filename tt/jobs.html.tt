@@ -23,7 +23,7 @@ function delete_job(href, name) {
   [% IF j.href_delete ~%]
   <a href="javascript:delete_job('[% j.href_delete %]', '[% j.id.squote | html %]');" class="icon delete"></a>
   [%~ END %]
-  [% capt.jobs.types.item(job_type_to_name.item(j.type)) %]
+  [% capt.jobs.types.item(job_type_to_name.item(j.type)); cell_search_ex('type', job_type_to_name.item(j.type)) %]
 </td>
 <td>[% href(j.href_details, j.id) %]</td>
 <td[% class({ in_queue => j.in_queue }) %]>[% capt.jobs.states.item(job_state_to_name.item(j.state)); cell_search('state', j) %]</td>
