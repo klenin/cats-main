@@ -95,34 +95,29 @@ sub problems_all_frame {
         INNER JOIN problem_keywords PK ON PK.keyword_id = K.id AND PK.problem_id = P.id~ : 'NULL';
     my $sth = $dbh->prepare(qq~
         SELECT
-            P.id, P.title, C.title, C.id,
-            ($ok_wa_tl) AS ok_wa_tl,
+            P.id AS problem_id, P.title, C.title AS contest_title, P.contest_id,
+            ($ok_wa_tl) AS counts,
             ($keywords) AS keywords,
-            (SELECT COUNT(*) FROM contest_problems CP
-                WHERE CP.problem_id = P.id AND CP.contest_id = ?) AS linked
+            (SELECT 1 FROM contest_problems CP1
+                WHERE CP1.problem_id = P.id AND CP1.contest_id = ?) AS linked
         FROM problems P INNER JOIN contests C ON C.id = P.contest_id
         INNER JOIN contest_problems CP ON CP.contest_id = C.id AND CP.problem_id = P.id
         WHERE $where_cond ~ . $lv->maybe_where_cond . $lv->order_by);
     $sth->execute($cid, @{$where->{params}}, $lv->where_params);
 
     my $fetch_record = sub {
-        my ($pid, $title, $contest_title, $contest_id, $counts, $keywords, $linked) = $_[0]->fetchrow_array
-            or return ();
-        my %pp = (cid => $contest_id, pid => $pid);
+        my $row = $_[0]->fetchrow_hashref or return ();
+        my $pid = $row->{problem_id};
+        my %pp = (cid => $row->{contest_id}, pid => $pid);
         return (
             href_view_problem => url_f('problem_text', pid => $pid),
-            href_view_contest => url_f_cid('problems', cid => $contest_id),
+            href_view_contest => url_f_cid('problems', cid => $row->{contest_id}),
             # Jury can download package for any problem after linking, but not before.
             ($is_root ? (href_download => url_f_cid('problem_download', %pp)) : ()),
             ($is_root ? (href_problem_details => url_f_cid('problem_details', %pp)) : ()),
             href_problem_console => _href_problem_console($pid),
-            keywords => $keywords,
-            linked => $linked || !$p->{link},
-            problem_id => $pid,
-            title => $title,
-            contest_title => $contest_title,
-            counts => $counts,
-            contest_id => $contest_id,
+            %$row,
+            linked => $row->{linked} || !$p->{link},
         );
     };
 
