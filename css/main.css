@@ -32,6 +32,9 @@ body {
 .bordered input[type=checkbox]:hover::after {
     font-weight: bold;
 }
+.bordered input[type=checkbox][disabled]::after {
+    background-color: lightgray;
+}
 
 table.iface { width: 100%; border-collapse : collapse; }
 table.iface tr td { padding: 0; }
