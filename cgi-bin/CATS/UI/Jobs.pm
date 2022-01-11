@@ -46,10 +46,11 @@ sub jobs_frame {
         { caption => res_str(602), order_by => 'problem_title', width => '15%', col => 'Pr' },
         { caption => res_str(603), order_by => 'contest_title', width => '15%', col => 'Ct' },
         { caption => res_str(608), order_by => 'team_name', width => '15%', col => 'Ac' },
+        { caption => res_str(813), order_by => 'parent_id', width => '5%', col => 'Pi' },
     ]);
     $lv->define_db_searches([ qw(
         J1.id type state create_time start_time finish_time time_len judge_id judge_name
-        J1.contest_id contest_title account_id team_name req_id
+        J1.contest_id contest_title account_id team_name req_id J1.parent_id
         in_queue
     ) ]);
     $lv->define_db_searches({
@@ -89,7 +90,7 @@ sub jobs_frame {
         ($lv->visible_cols->{Jn} ? ' LEFT JOIN judges JD ON J.judge_id = JD.id' : '') .
         ($lv->visible_cols->{Pr} || $lv->visible_cols->{Ct} || $lv->visible_cols->{Ac} ?
             ' LEFT JOIN reqs R ON J.req_id = R.id' : ''),
-        [ qw(J.id J.type J.state J.create_time J.start_time J.finish_time J.req_id J.judge_id),
+        [ qw(J.id J.type J.state J.create_time J.start_time J.finish_time J.req_id J.judge_id J.parent_id),
           'CAST(J.finish_time - J.start_time AS DOUBLE PRECISION) AS time_len',
           'CASE WHEN JQ.id IS NULL THEN 0 ELSE 1 END AS in_queue',
           ($lv->visible_cols->{Jn} ?  'JD.nick' : 'NULL') . ' AS judge_name',
@@ -115,16 +116,19 @@ sub jobs_frame {
     my $sth = $dbh->prepare($q1 . $lv->order_by);
     $sth->execute(@bind);
 
+    my $href_details = sub {
+        my ($row) = @_;
+        (grep $row->{type} == $_, $cats::job_type_submission, $cats::job_type_submission_part) ?
+            url_f('run_log', rid => $row->{req_id}) . "#job$row->{id}" :
+            url_f('job_details', jid => $row->{id});
+    };
+
     my $fetch_record = sub {
         my $row = $_[0]->fetchrow_hashref or return ();
         return (
             %$row,
             time_len_fmt => CATS::Time::format_diff($row->{time_len}, seconds => 1),
-            href_details => (
-                (grep $row->{type} == $_, $cats::job_type_submission, $cats::job_type_submission_part) ?
-                url_f('run_log', rid => $row->{req_id}) . "#job$row->{id}" :
-                url_f('job_details', jid => $row->{id})
-            ),
+            href_details => $href_details->($row),
             href_problem_text => url_f_cid('problem_text',
                 pid => $row->{problem}, cpid => $row->{cpid},
                 uid => $row->{account_id}),

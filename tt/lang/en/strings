@@ -211,6 +211,7 @@
 810 "Source editor width, characters"
 811 "Input"
 812 "Output"
+813 "Parent job"
 1000 "Programming contest control system"
 1001 "Problem '%s' was successfully linked."
 1002 "Session code is wrong or expired. Please login again."

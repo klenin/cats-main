@@ -44,6 +44,7 @@ BEGIN {
         manual_verdict => $cats::job_type_manual_verdict,
         run_command => $cats::job_type_run_command,
     };
+
     my $name_to_state = {
         waiting => $cats::job_st_waiting,
         running => $cats::job_st_in_progress,
@@ -51,7 +52,6 @@ BEGIN {
         failed => $cats::job_st_failed,
         waiting_for_verdict => $cats::job_st_waiting_for_verdict,
         canceled => $cats::job_st_canceled,
-
     };
 
     $jobs = {

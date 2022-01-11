@@ -211,6 +211,7 @@
 810 "Source editor width, characters"
 811 "输入"
 812 "输出"
+813 "Parent job"
 1000 "Programming contest control system"
 1001 "Problem '%s' was successfully linked."
 1002 "会话代码错误或已过期，请重新登录。"
