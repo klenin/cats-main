@@ -6,7 +6,7 @@ use File::Spec;
 use FindBin;
 use SQL::Abstract;
 use Test::Exception;
-use Test::More tests => 56;
+use Test::More tests => 60;
 
 use lib File::Spec->catdir($FindBin::Bin, '..');
 use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
@@ -126,7 +126,9 @@ is_deeply qb_mask('zz??'), { zz => qr/^$/i }, 'mask NULL';
     $qb->parse_search('!has_v(99)');
     is_deeply $qb->make_where, { -not_bool => \[ $sq, 99 ] }, 'db subquery negated';
     $qb->parse_search('has_v(5),a<1');
-    is_deeply $qb->make_where, { -and => [ { a => [ { '<', 1 } ] }, \[ $sq, 5 ] ] }, 'db search and subquery';
+    is_deeply $qb->make_where, { -and => [ { a => [ { '<', 1 } ] }, \[ $sq, 5 ] ] }, 'db search and subquery 1';
+    $qb->parse_search('a=x,has_v(5)');
+    is_deeply $qb->make_where, { -and => [ { a => [ { '=', 22 } ] }, \[ $sq, 5 ] ] }, 'db search and subquery 2';
     $qb->parse_search(Encode::decode_utf8('has_v(пример)'));
     is_deeply $qb->make_where, \[ $sq, Encode::decode_utf8('пример') ], 'db subquery ru';
     $qb->parse_search('has_v(x_1)');
@@ -141,12 +143,25 @@ is_deeply qb_mask('zz??'), { zz => qr/^$/i }, 'mask NULL';
     my $qb = CATS::QueryBuilder->new;
     my $sq = 'EXISTS (SELECT * FROM table WHERE id = ?)';
     $qb->define_subqueries({
-        has_v => { sq => $sq, m => 1111, t => '' }, bad_v => { sq => $sq, m => 2222 } });
+        has_v => { sq => $sq, m => 1111, t => '' },
+        bad_v => { sq => $sq, m => 2222 },
+        tt => { sq => $sq, m => 1113, t => { 77 => 'zzz' } },
+    });
     $qb->parse_search('bad_v(99)');
     throws_ok { $qb->make_where } qr/subquery/, 'subquery without t';
+
+    CATS::Messages::init;
     $qb->parse_search('has_v(55)');
     is where($qb->make_where), " WHERE ( $sq )", 'subquery msg where';
     is_deeply CATS::Messages::get, [ 'MOCKUP ru 1111: [55]' ], 'subquery msg';
+    $qb->parse_search('has_v(55)');
+    is where($qb->make_where), " WHERE ( $sq )", 'subquery msg where';
+
+    CATS::Messages::init;
+    $qb->parse_search('tt(77),tt(13)');
+    is where($qb->make_where), " WHERE ( ( $sq AND $sq ) )", 'subquery t hash where';
+    is_deeply CATS::Messages::get,
+        [ 'MOCKUP ru 1113: [zzz]', 'MOCKUP ru 1113: [13]' ], 'subquery t hash msg';
 }
 
 {

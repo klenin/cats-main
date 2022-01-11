@@ -117,10 +117,12 @@ sub get_mask {
 sub _where_msg {
     my ($sq, $value, $negate) = @_;
     $sq->{m} or return;
+    exists $sq->{t} or die "No 't' for subquery '$sq->{m}'";
+    my $t = $sq->{t};
     my @msg_args =
-        !exists $sq->{t} ? die "No 't' for subquery '$sq->{m}'" :
-        !$sq->{t} ? $value :
-        $dbh->selectrow_array($sq->{t}, undef, $value)
+        !$t ? $value :
+        ref $t eq 'HASH' ? $t->{$value} // $value :
+        $dbh->selectrow_array($t, undef, $value)
         or return msg(1222, $value);
     $negate ? msg(1212, res_str($sq->{m}, @msg_args)) : msg($sq->{m}, @msg_args);
 }
