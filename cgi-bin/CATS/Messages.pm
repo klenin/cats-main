@@ -39,6 +39,7 @@ sub init {
 
 sub init_mockup {
     $is_mockup = 1;
+    $resource_strings = {};
 }
 
 sub res_str_lang_raw {
