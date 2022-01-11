@@ -291,6 +291,9 @@ sub problems_frame {
     my $account_condition = $contest->is_practice ? '' : ' AND D.account_id = ?';
     my $select_code = $contest->is_practice ? 'NULL' : 'CP.code';
     my $hidden_problems = $is_jury ? '' : " AND CP.status < $cats::problem_st_hidden";
+    my $original_contest_code_sql = $is_jury ? q~
+        (SELECT OCP.code FROM contest_problems OCP
+        WHERE OCP.problem_id = P.id AND OCP.contest_id = P.contest_id)~ : 'NULL';
     # TODO: take testsets into account
     my $test_count_sql = $is_jury ?
         '(SELECT COUNT(*) FROM tests T WHERE T.problem_id = P.id) AS test_count,' : '';
@@ -346,6 +349,7 @@ sub problems_frame {
             CP.id AS cpid, P.id AS pid,
             P.input_file, P.output_file,
             $select_code AS code, P.title, OC.title AS contest_title,
+            $original_contest_code_sql AS original_code,
             $counts,
             $keywords
             $allow_des
@@ -465,6 +469,7 @@ sub problems_frame {
             selected => $c->{pid} == ($p->{problem_id} || 0),
             code => $c->{code},
             title => $c->{title},
+            original_code => $c->{original_code},
             is_linked => $c->{is_linked},
             remote_url => $remote_url,
             usage_count => $c->{usage_count},
