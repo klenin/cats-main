@@ -37,10 +37,11 @@ sub days {
 sub search {
     my ($self) = @_;
     my $w = $self->{lv}->where;
-    %$w or return $self;
     my ($search_where, @search_params) = $sql->where($w);
-    $search_where =~ s/^\s*WHERE\s*//;
-    $self->add($search_where, @search_params);
+    if ($search_where) {
+        $search_where =~ s/^\s*WHERE\s*//;
+        $self->add($search_where, @search_params);
+    }
     $self;
 }
 
@@ -193,6 +194,7 @@ sub console_searches {
         run_method => CATS::Problem::Utils::run_method_enum,
         contest_id => { this => $cid },
         account_id => { this => $uid },
+        has_job_type => $CATS::Globals::jobs->{name_to_type},
     });
 
     my $tested_on_sql = q~
@@ -200,6 +202,14 @@ sub console_searches {
     $lv->define_subqueries({
         tested_on => { sq => qq~EXISTS ($tested_on_sql)~, m => 1199, t => undef },
         not_tested_on => { sq => qq~NOT EXISTS ($tested_on_sql)~, m => 1200, t => undef },
+        has_job_type => { sq => q~(CAST(? AS INTEGER) IN (
+            SELECT J.type FROM jobs J
+            WHERE J.req_id = R.id
+            UNION
+            SELECT J.type FROM jobs J INNER JOIN jobs PJ ON PJ.id = J.parent_id
+            WHERE PJ.req_id = R.id
+            )
+        )~, m => 1229, t => $CATS::Globals::jobs->{type_to_name} },
     });
 
     CATS::AccGroups::subquery($lv, 'R.account_id');

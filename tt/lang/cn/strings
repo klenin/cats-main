@@ -424,3 +424,4 @@
 1226 "Users from group '%s'."
 1227 "Users excluded: %d."
 1228 "Created 'run command' jobs: %d."
+1229 "Includes job of type: %s."
