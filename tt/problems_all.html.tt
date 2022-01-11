@@ -13,6 +13,7 @@
 <a href="[% p.href_view_problem %]" target="_blank">[% p.title | html %]</a>
 [% IF p.href_download %]&nbsp;[<a href="[% p.href_download %]">[% capt.package %]</a>][% END %]
 </td>
+[% IF visible_cols.Co %]<td>[% p.code | html; cell_search('code', p) %]</td>[% END %]
 <td><a href="[% p.href_view_contest %]">[% p.contest_title | html; cell_search('contest_id', p) %]</a></td>
 [% IF visible_cols.Ok %]<td class="center">[% maybe_href(p.href_problem_console, p.counts) %]</td>[% END %]
 [% IF visible_cols.Kw -%]

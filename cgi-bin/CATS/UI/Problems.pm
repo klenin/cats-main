@@ -71,6 +71,7 @@ sub problems_all_frame {
     $lv->default_sort(0)->define_columns([
         { caption => res_str(602), order_by => 'P.title', width => '30%',
             checkbox => $is_jury && $p->{link} && '[name=problems_selection]' },
+        { caption => res_str(619), order_by => 'CP.code', width => '1%', col => 'Co' },
         { caption => res_str(603), order_by => 'C.title', width => '30%' },
         { caption => res_str(604), order_by => $accepted_orderby, width => '10%', col => 'Ok' },
         { caption => res_str(667), order_by => 'keywords', width => '20%', col => 'Kw' },
@@ -95,7 +96,7 @@ sub problems_all_frame {
         INNER JOIN problem_keywords PK ON PK.keyword_id = K.id AND PK.problem_id = P.id~ : 'NULL';
     my $sth = $dbh->prepare(qq~
         SELECT
-            P.id AS problem_id, P.title, C.title AS contest_title, P.contest_id,
+            P.id AS problem_id, P.title, C.title AS contest_title, P.contest_id, CP.code,
             ($ok_wa_tl) AS counts,
             ($keywords) AS keywords,
             (SELECT 1 FROM contest_problems CP1
