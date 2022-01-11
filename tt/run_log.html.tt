@@ -18,7 +18,7 @@
 
 [% IF logs.size %]
 <div class="jobs_header">
-<p><a name="log_top"></a>[[% href(href_jobs, capt.jobs_link) %]]</p>
+[% IF href_jobs %]<p><a name="log_top"></a>[[% href(href_jobs, capt.jobs_link) %]]</p>[% END %]
 <table class="internal_borders highlight">
   [% FOREACH log IN logs %]
   <tr class="job_id [% log.parent_id ? 'child' : 'parent' %]">

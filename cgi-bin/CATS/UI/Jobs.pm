@@ -50,12 +50,14 @@ sub jobs_frame {
     ]);
     $lv->define_db_searches([ qw(
         J1.id type state create_time start_time finish_time time_len judge_id judge_name
-        J1.contest_id contest_title account_id team_name req_id J1.parent_id
+        J1.contest_id contest_title account_id team_name J1.parent_id
         in_queue
     ) ]);
     $lv->define_db_searches({
         problem_title => 'P.title',
         problem_id => 'P.id',
+        req_id => q~
+            COALESCE(J1.req_id, (SELECT PJ.req_id FROM jobs PJ WHERE PJ.id = J1.parent_id))~,
     });
     $lv->default_searches([ qw(problem_title contest_title team_name) ]);
 
