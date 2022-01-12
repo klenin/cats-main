@@ -24,7 +24,7 @@ our $form = CATS::Form->new(
             validators => CATS::Field::int_range(min => 0, max => 1e6, allow_empty => 1) ],
         [ name => 'scaled_points', caption => 690, @field_common, validators => $fixed ],
         [ name => 'round_points_to', caption => 692, @field_common, validators => $fixed ],
-        [ name => 'weight', caption => 691, @field_common, validators => $fixed ],
+        [ name => 'weight', caption => 691, editor => { size => 8 }, validators => $fixed ],
         [ name => 'is_extra', caption => 693, before_save => $zero_undef, validators => $CATS::Field::bool ],
         [ name => 'deadline', caption => 695, before_save => $zero_undef,
             validators => $CATS::Field::date_time ],
