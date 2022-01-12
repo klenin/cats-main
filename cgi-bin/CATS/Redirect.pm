@@ -17,7 +17,7 @@ sub pack_params {
 sub unpack_params {
     my ($redir) = @_;
     $redir or return ();
-    my $params = Storable::thaw(decode_base64($redir));
+    my $params = eval { Storable::thaw(decode_base64($redir)) };
     defined $params and return %$params;
     warn "Unable to decode redir '$redir'";
     return ();

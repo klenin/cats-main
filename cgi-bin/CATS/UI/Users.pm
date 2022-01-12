@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use Encode;
-use Storable qw(freeze thaw);
+use Storable;
 
 use CATS::Constants;
 use CATS::Countries;
@@ -481,7 +481,7 @@ sub users_all_settings_frame {
     my $selector = $lv->settings->{selector};
     my $fetch_record = sub {
         my $row = $_[0]->fetchrow_hashref or return ();
-        my $all_settings = $row->{settings} ? thaw($row->{settings}) : '';
+        my $all_settings = $row->{settings} && eval { Storable::thaw($row->{settings}) } || '';
         if ($all_settings && $selector) {
             for (split /\./, $selector) {
                 $all_settings = $all_settings->{$_} or last;

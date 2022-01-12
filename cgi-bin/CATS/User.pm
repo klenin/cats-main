@@ -73,7 +73,7 @@ sub load {
         ($self->{contest_id} // ()), $id
     ) or return;
     $self->{country} ||= $CATS::Countries::countries[0]->{id};
-    $self->{settings} = Storable::thaw($self->{frozen_settings} = $self->{settings})
+    $self->{settings} = eval { Storable::thaw($self->{frozen_settings} = $self->{settings}) } // {}
         if $self->{settings};
     $_->{selected} = $_->{id} eq $self->{country} for @CATS::Countries::countries;
     $self;
@@ -268,7 +268,7 @@ sub edit_save {
 
     $u->{locked} = $p->{locked} ? 1 : 0 if $is_root;
 
-    my $new_settings = Storable::freeze($old_user->{settings});
+    my $new_settings = Storable::nfreeze($old_user->{settings});
     $u->{settings} = $new_settings if $new_settings ne ($old_user->{frozen_settings} // '');
 
     $dbh->do(_u $sql->update('accounts', { %$u }, { id => $id }));

@@ -3,7 +3,7 @@ package CATS::UI::UserDetails;
 use strict;
 use warnings;
 
-use Storable qw(thaw);
+use Storable;
 
 use CATS::Constants;
 use CATS::Contest::Participate;
@@ -180,7 +180,7 @@ sub user_settings_frame {
         $p->{uid});
 
     msg(1029, $team_name) if $cleared;
-    display_settings(thaw($user_settings)) if $user_settings;
+    display_settings(eval { Storable::thaw($user_settings) } || {}) if $user_settings;
     my $site_id = $is_jury ? 0 : $dbh->selectrow_array(q~
         SELECT CA.site_id FROM contest_accounts CA
         WHERE CA.account_id = ? AND CA.contest_id = ?~, undef,

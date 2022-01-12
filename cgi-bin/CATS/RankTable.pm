@@ -460,7 +460,7 @@ sub _read_cache {
     my ($self, $cache_file, $first_unprocessed) = @_;
 
     $self->{use_cache} && !$user->{is_virtual} &&  -f $cache_file &&
-        (my $cache = Storable::lock_retrieve($cache_file))
+        (my $cache = eval { Storable::lock_retrieve($cache_file) })
         or return $self->_empty_cache;
     my ($teams, $problem_stats, $max_cached_req_id) = @{$cache}{qw(t p r)};
     !$first_unprocessed || $max_cached_req_id > $first_unprocessed
@@ -566,7 +566,7 @@ sub rank_table {
     my $write_cache = sub {
         !$self->{frozen} && !$user->{is_virtual} && @$results && $self->{show_all_results} && !$cache_written
             or return;
-        Storable::lock_store({ t => $teams, p => $problem_stats, r => $max_req_id }, $cache_file);
+        Storable::lock_nstore({ t => $teams, p => $problem_stats, r => $max_req_id }, $cache_file);
         $cache_written  = 1;
     };
 

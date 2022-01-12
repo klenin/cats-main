@@ -37,11 +37,11 @@ sub lang { $settings->{lang} || 'ru' }
 sub as_cookie {
     $uid && lang() eq 'ru' ? undef : (
         -name => 'settings',
-        -value => encode_base64($uid ? Storable::freeze({ lang => lang() }) : $enc_settings),
+        -value => encode_base64($uid ? Storable::nfreeze({ lang => lang() }) : $enc_settings),
         -expires => '+1h');
 }
 
-sub as_storable { Storable::freeze($settings) }
+sub as_storable { Storable::nfreeze($settings) }
 
 sub save {
     my $new_enc_settings = as_storable;
