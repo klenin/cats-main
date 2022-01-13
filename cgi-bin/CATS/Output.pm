@@ -84,7 +84,8 @@ sub _generate_csv {
     my @res = join $sep, @fields;
     my $an = $vars->{lv_array_name} or return '';
     for my $row (@{$vars->{$an}}) {
-        push @res, join $sep, map _csv_quote($_), @$row{@fields};
+        push @res, join $sep, map _csv_quote($_),
+            ref $row eq 'HASH' ? @$row{@fields} : @$row;
     }
     join "\n", @res;
 }
