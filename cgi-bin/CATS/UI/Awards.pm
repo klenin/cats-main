@@ -10,7 +10,6 @@ use CATS::ListView;
 use CATS::Messages qw(msg res_str);
 use CATS::Output qw(init_template url_f);
 use CATS::References;
-#use CATS::User;
 
 our $form = CATS::Form->new(
     table => 'awards',
@@ -21,7 +20,7 @@ our $form = CATS::Form->new(
         [ name => 'is_public', validators => $CATS::Field::bool, %CATS::Field::default_zero,
             caption => 669 ],
         [ name => 'color',
-            validators => [ CATS::Field::str_length(1, 50) ], editor => { size => 10 }, caption => 675 ],
+            validators => [ CATS::Field::str_length(0, 50) ], editor => { size => 10 }, caption => 675 ],
         [ name => 'descr', caption => 620 ],
     ],
     href_action => 'awards_edit',

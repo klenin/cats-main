@@ -210,6 +210,7 @@ my $main_routes = {
         set_site => bool, site_id => integer,
         to_group => integer, add_to_group => bool,
         gen_passwords => bool, password_len => integer,
+        award => integer, add_award => bool, remove_award => bool,
         send_message => bool, message_text => str, send_all => bool, send_all_contests => bool,
         delete_user => integer, new_save => bool, edit_save => bool,
         user_set => clist_of integer, sel => array_of integer,

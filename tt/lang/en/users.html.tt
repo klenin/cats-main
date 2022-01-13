@@ -7,6 +7,8 @@
     set_tag => 'Set tag',
     set_site => 'Set site',
     add_to_group => 'Add to group',
+    add_award => 'Add award',
+    remove_award => 'Remove award',
     gen_passwords => 'Generate passwords',
     message_to_teams => 'Message to participants',
     send => 'Send',

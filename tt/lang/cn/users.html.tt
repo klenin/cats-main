@@ -8,6 +8,8 @@
     set_site => 'Set site',
     add_to_group => 'Add to group',
     gen_passwords => 'Generate passwords',
+    add_award => 'Add award',
+    remove_award => 'Remove award',
     message_to_teams => 'Message to participants',
     send => 'Send',
     send_to_all => 'broadcast',

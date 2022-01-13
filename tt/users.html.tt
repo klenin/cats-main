@@ -64,7 +64,8 @@ function delete_team(href, name) {
 [% END %]
 [% IF visible_cols.Gr %]<td class="keywords_cell">
 [%- FOREACH g IN u.groups; cell_search_any_text("in_group($g)", g); END -%]
-</td>[% END %]
+</td>
+[%- END %]
 [% IF visible_cols.Fl %]
 <td class="flag">
 [% IF u.flag -%]
@@ -75,6 +76,10 @@ function delete_team(href, name) {
 [% IF visible_cols.Rt %]
 <td class="center">[% u.accepted %]</td>
 [% END %]
+[% IF visible_cols.Aw %]<td class="keywords_cell">
+[%- FOREACH aw IN u.awards; cell_search_any_text("has_award($aw)", awards_idx.item(aw)); END -%]
+</td>
+[%- END %]
 [% IF visible_cols.Dt %]
 <td class="center full_href">[% "<a href=\"$u.href_vdiff\">" IF u.href_vdiff; capt.virtual IF u.virtual %]
 <span class="nobr">[% u.formatted_time || '-' %]</span>[% '</a>' IF u.href_vdiff %]</td>
@@ -110,6 +115,12 @@ function delete_team(href, name) {
 <div class="action_group send_message">
 <label><input type="text" name="password_len" class="bordered" value="20" /></label>
 <button type="submit" value="1" name="gen_passwords" class="button">[% capt.gen_passwords %]</button>
+</div>
+<br/>
+<div class="action_group send_message">
+<select name="award"><option>&nbsp;</option>[% FOREACH aw IN awards; option(aw.id, aw.name); END %]</select>
+<button type="submit" value="1" name="add_award" class="button">[% capt.add_award %]</button>
+<button type="submit" value="1" name="remove_award" class="button">[% capt.remove_award %]</button>
 </div>
 <br/>
 <br/>

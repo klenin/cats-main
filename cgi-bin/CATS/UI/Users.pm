@@ -6,6 +6,7 @@ use warnings;
 use Encode;
 use Storable;
 
+use CATS::Awards;
 use CATS::Constants;
 use CATS::Countries;
 use CATS::DB qw(:DEFAULT $db);
@@ -223,6 +224,12 @@ sub users_frame {
     );
     $t->param(title_suffix => res_str(526), users_submenu);
 
+    my $awards = $dbh->selectall_arrayref(_u $sql->select(
+        'awards', 'id, name, color', { contest_id => $cid, ($is_jury ? () : (is_public => 1)) }, 'name'));
+    my $awards_idx;
+    $awards_idx->{$_->{id}} = $_->{name} for @$awards;
+    $t->param(awards => $awards, awards_idx => $awards_idx);
+
     if ($is_jury) {
         users_delete($p);
         CATS::User::new_save($p) if $p->{new_save};
@@ -231,6 +238,9 @@ sub users_frame {
         CATS::User::save_attributes_jury($p) if $p->{save_attributes};
         CATS::User::set_tag(user_set => $p->{sel}, tag => $p->{tag_to_set}) if $p->{set_tag};
         CATS::User::gen_passwords(user_set => $p->{sel}, len => $p->{password_len}) if $p->{gen_passwords};
+
+        CATS::Awards::add_award($p->{sel}, $p->{award}) if $p->{add_award};
+        CATS::Awards::remove_award($p->{sel}, $p->{award}) if $p->{remove_award};
 
         if ($p->{send_message} && ($p->{message_text} // '') ne '') {
             my $contest_id = $is_root && $p->{send_all_contests} ? undef : $cid;
@@ -308,6 +318,7 @@ sub users_frame {
         ($is_jury || $contest->{show_all_results} ? (
             { caption => res_str(609), order_by => 'rating', width => '5%', col => 'Rt' },
         ) : ()),
+        { caption => res_str(814), order_by => 'awards', width => '10%', col => 'Aw' },
         { caption => res_str(632), order_by => 'diff_time', width => '5%', col => 'Dt' },
     ]);
 
@@ -338,6 +349,10 @@ sub users_frame {
             SELECT 1 FROM reqs R INNER JOIN events E ON E.id = R.id
             WHERE R.account_id = A.id AND R.contest_id = C.id AND E.ip LIKE '%' || ? || '%')~,
         },
+        has_award => { sq => q~EXISTS(
+            SELECT 1 FROM contest_account_awards CAA
+            WHERE CAA.ca_id = CA.id AND CAA.award_id = ?)~,
+        },
     });
 
     my $accepted_count_sql = qq~
@@ -354,6 +369,7 @@ sub users_frame {
         site_id => 'COALESCE(CA.site_id, 0)',
     });
     $lv->define_enums({ site_id => { 'my' => $user->{site_id} } }) if $user->{site_id};
+    $lv->define_enums({ has_award => { map { $_->{name} => $_->{id} } @$awards } });
 
     CATS::AccGroups::subquery($lv, 'A.id');
     CATS::AccGroups::enum($lv) if $is_jury;
@@ -380,10 +396,16 @@ sub users_frame {
         WHERE AGC.contest_id = CA.contest_id AND AGA.account_id = A.id
         $db->{LIMIT} 5~;
 
+    my $awards_public_cond = $is_jury ? '' : ' AND AW.is_public = 1';
+    my $awards_sql = !$lv->visible_cols->{Aw} ? 'NULL' : qq~
+        SELECT LIST(CAA.award_id, ' ') FROM contest_account_awards CAA
+        INNER JOIN awards AW ON AW.id = CAA.award_id
+        WHERE CAA.ca_id = CA.id$awards_public_cond $db->{LIMIT} 5~;
     my $sql = sprintf qq~
         SELECT
             ($rating_sql) AS rating, ($ip_sql) AS ip, CA.id, $fields,
-            CA.site_id, S.name AS site_name, ($groups_sql) AS groups$contacts_sql
+            CA.site_id, S.name AS site_name, ($groups_sql) AS groups,
+            ($awards_sql) AS awards$contacts_sql
         FROM accounts A
             INNER JOIN contest_accounts CA ON CA.account_id = A.id
             INNER JOIN contests C ON CA.contest_id = C.id
@@ -403,7 +425,7 @@ sub users_frame {
             $accepted, $ip, $caid,
             $aid, $country_abbr, $motto, $login, $team_name, $city, $last_ip, $affiliation,
             $admin, $jury, $ooc, $remote, $hidden, $site_org, $virtual, $diff_time, $ext_time,
-            $tag, $site_id, $site_name, $groups, @contacts
+            $tag, $site_id, $site_name, $groups, $awards, @contacts
         ) = $_[0]->fetchrow_array
             or return ();
         my ($country, $flag) = CATS::Countries::get_flag($country_abbr);
@@ -444,6 +466,7 @@ sub users_frame {
             virtual => $virtual,
             formatted_time => CATS::Time::format_diff_ext($diff_time, $ext_time, display_plus => 1),
             groups => [ split /\s+/, $groups // '' ],
+            awards => [ split /\s+/, $awards // '' ],
             (map { +"CT_$_->{sql}" => shift @contacts } @visible_contacts),
          );
     };
