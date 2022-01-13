@@ -19,26 +19,22 @@ use CATS::Time;
 use CATS::User;
 
 sub users_submenu {
-    if ($is_jury)  {
-        submenu => [
+    submenu => [
+        ($is_jury ? (
             { href => url_f('users_new'), item => res_str(541), new => 1 },
             { href => url_f('users_import'), item => res_str(564) },
             { href => url_f('users_add_participants'), item => res_str(584) },
             ($is_root ?
                 { href => url_f('users_all_settings'), item => res_str(575) } : ()),
-            { href => url_f('acc_groups', search => 'in_contest(this)'), item => res_str(410) },
-        ];
-    }
-    elsif ($user->{is_site_org}) {
-        submenu => [
+        ) : ()),
+        ($user->{is_site_org} ? (
             ($user->{site_id} ?
                 { href => url_f('users', search => 'site_id=my'), item => res_str(582) } : ()),
             { href => url_f('users', search => 'site_id=0'), item => res_str(583) },
-        ];
-    }
-    else {
-        ();
-    }
+        ) : ()),
+        { href => url_f('acc_groups', $is_root ? (search => 'in_contest(this)') : ()),
+            item => res_str(410) },
+    ]
 }
 
 my %user_fields = (password => 'password1', map { $_ => $_ } CATS::User::param_names);
