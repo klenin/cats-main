@@ -501,7 +501,9 @@ sub parse_uri { $_[0]->get_uri =~ m~/cats/(|main.pl)$~ }
 
 my $common_params = [ 1,
     f => ident, enc => encoding, cid => integer, cpid => integer, json => qr/^[a-zA-Z0-9_]+$/,
-    lang => ident, clist => clist_of integer, notime => bool, noiface => bool, csv => clist_of ident ];
+    lang => ident, clist => clist_of integer, notime => bool, noiface => bool,
+    csv => clist_of ident, csv_sep => str,
+];
 
 sub common_params {
     my ($p) = @_;

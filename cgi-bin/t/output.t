@@ -3,7 +3,7 @@ use warnings;
 
 use File::Spec;
 use FindBin;
-use Test::More tests => 8;
+use Test::More tests => 9;
 
 use lib File::Spec->catdir($FindBin::Bin, '..');
 use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
@@ -23,4 +23,8 @@ is cq([ qw(a bc) ]), '"a bc"', 'csv array';
 is CATS::Output::_generate_csv(
     { csv => [ 'a' , 'b' ] }, { lv_array_name => 'r',
     r => [ { a => 1, b => '2 3', c => 4 }, { b => '"' } ] }),
-    qq~a\tb\n1\t"2 3"\n\t""""~, 'generaet_csv';
+    qq~a\tb\n1\t"2 3"\n\t""""~, 'generate_csv';
+is CATS::Output::_generate_csv(
+    { csv => [ 'a' , 'b' ], csv_sep => ',' }, { lv_array_name => 'r',
+    r => [ { a => 1, b => '2' } ] }),
+    qq~a,b\n1,2~, 'generate_csv sep';

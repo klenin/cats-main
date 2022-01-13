@@ -80,7 +80,7 @@ sub _csv_quote {
 sub _generate_csv {
     my ($p, $vars) = @_;
     my @fields = @{$p->{csv}};
-    my $sep = "\t";
+    my $sep = $p->{csv_sep} || "\t";
     my @res = join $sep, @fields;
     my $an = $vars->{lv_array_name} or return '';
     for my $row (@{$vars->{$an}}) {
