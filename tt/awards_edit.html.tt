@@ -6,7 +6,7 @@
 [%
   tr_text(aw.indexed.name);
   tr_checkbox1(aw.indexed.is_public);
-  tr_text(aw.indexed.color);
+  tr_color(aw.indexed.color);
   tr_textarea(aw.indexed.descr);
 %]
 </table>

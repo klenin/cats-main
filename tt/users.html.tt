@@ -77,7 +77,11 @@ function delete_team(href, name) {
 <td class="center">[% u.accepted %]</td>
 [% END %]
 [% IF visible_cols.Aw %]<td class="keywords_cell">
-[%- FOREACH aw IN u.awards; cell_search_any_text("has_award($aw)", awards_idx.item(aw)); END -%]
+[%- FOREACH aw IN u.awards;
+  awi = awards_idx.item(aw);
+  cell_search_any_text("has_award($aw)", colored(awi.name, awi.color));
+  END
+-%]
 </td>
 [%- END %]
 [% IF visible_cols.Dt %]

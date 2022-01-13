@@ -227,7 +227,7 @@ sub users_frame {
     my $awards = $dbh->selectall_arrayref(_u $sql->select(
         'awards', 'id, name, color', { contest_id => $cid, ($is_jury ? () : (is_public => 1)) }, 'name'));
     my $awards_idx;
-    $awards_idx->{$_->{id}} = $_->{name} for @$awards;
+    $awards_idx->{$_->{id}} = $_ for @$awards;
     $t->param(awards => $awards, awards_idx => $awards_idx);
 
     if ($is_jury) {
