@@ -6,6 +6,7 @@ use warnings;
 use CATS::DB;
 use CATS::Globals qw($cid);
 use CATS::Messages qw(msg);
+use CATS::RankTable::Cache;
 
 sub add_award {
     my ($accounts, $award_id) = @_;
@@ -34,6 +35,7 @@ sub add_award {
         }
     }
     $dbh->commit;
+    CATS::RankTable::Cache::remove($cid) if $added;
     msg(1234, $added);
 }
 
@@ -47,6 +49,7 @@ sub remove_award {
         $removed += $remove_sth->execute($award_id, $_);
     }
     $dbh->commit;
+    CATS::RankTable::Cache::remove($cid) if $removed;
     msg(1235, $removed);
 }
 

@@ -312,6 +312,7 @@ td:hover .copy_button { display: block; }
 th { font-size: 11pt; font-weight: bold; color:#000000; }
 td { font-size: 11pt }
 td.ts { font-size: 10pt; font-style: italic; }
+td.ts span { font-style: normal; }
 
 .run_details_NT { color: #808080; font-style: italic; }
 

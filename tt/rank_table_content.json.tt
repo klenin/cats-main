@@ -5,7 +5,7 @@
 [% FOREACH r IN rank %]
   {
     "id": [% r.account_id %],
-    "lg": "[% r.login %]",
+    "lg": "[% r.login | html | $Javascript %]",
     "n": "[% show_logins ? r.login : r.team_name | html | $Javascript %]",
     "fl": "[% r.flag %]",
     [% IF show_points %]
@@ -18,6 +18,7 @@
     "rc": [% r.row_color %],
     "pl": [% r.place %],
     "st": "[% capt.ooc IF r.is_ooc %] [% capt.remote IF r.is_remote %] [% capt.virtual IF r.is_virtual %] [% r.prize %]",
+    "aw": [[% FOREACH aw IN r.awards %]"[% aw.name %]"[% UNLESS loop.last %],[% END %][% END %]],
     "t": "[% r.city | html | $Javascript %]"
   }[% UNLESS loop.last %],[% END %][% END %]
 ],

@@ -1,3 +1,4 @@
+[% PROCESS includes/html.tti %]
 [%- capt = {}; PROCESS "lang/$lang/${template.name}" -%]
 [%- USE Javascript -%]
 
@@ -30,6 +31,11 @@
 </tr>
 </table>
 [% END -%]
+
+[%- MACRO status(r) BLOCK %]
+  [%~ capt.ooc IF r.is_ooc %] [% capt.remote IF r.is_remote %] [% capt.virtual IF r.is_virtual %] [% r.prize ~%]
+  [%- FOREACH aw IN r.awards; colored(aw.name, aw.color); END ~%]
+[% END %]
 
 <div class="rank_table_container">
 <table class="bordered rank_table highlight">
@@ -81,9 +87,7 @@
 <td>[% r.total_solved %]</td>[% IF !notime %]<td>[% r.total_time %]</td>[% END;
 END -%]
 [% IF show_place %]<td>[% r.place %]</td>[% END %]
-<td class="ts">
-  [%~ capt.ooc IF r.is_ooc %] [% capt.remote IF r.is_remote %] [% capt.virtual IF r.is_virtual %] [% r.prize ~%]
-</td></tr>
+<td class="ts">[% status(r) %]</td></tr>
 [% END %]
 [% ELSE %]
 [% IF rank %]<script type="text/javascript"><!--
@@ -94,7 +98,7 @@ var rank_table = [
     tm: [[% FOREACH c IN r.columns %]'[% c.time %]'[% UNLESS loop.last %],[% END %][% END %]],
     td: [[% FOREACH c IN r.columns %]'[% c.td %]'[% UNLESS loop.last %],[% END %][% END %]],
     ts: [% r.total_solved %], ttm: [% r.total_time %][% END %], rc: [% r.row_color %],
-    pl: [% r.place %], st: '[% capt.ooc IF r.is_ooc %] [% capt.remote IF r.is_remote %] [% capt.virtual IF r.is_virtual %] [% r.prize %]',
+    pl: [% r.place %], st: '[% status(r) %]',
     t: "[% r.city | html | $Javascript %]"
   }[% UNLESS loop.last %],[% END %][% END %]
 ];

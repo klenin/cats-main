@@ -9,7 +9,7 @@ use CATS::Config qw(cats_dir);
 use CATS::Constants;
 use CATS::Contest::Utils;
 use CATS::Countries;
-use CATS::DB;
+use CATS::DB qw(:DEFAULT $db);
 use CATS::Globals qw($cid $contest $is_jury $is_root $t $uid $user);
 use CATS::Output qw(url_f url_f_cid);
 use CATS::RankTable::Cache;
@@ -430,13 +430,21 @@ sub _select_teams {
         SELECT
             $account_fields,
             MAX(CA.is_virtual) AS is_virtual, MAX(CA.is_ooc) AS is_ooc, MAX(CA.is_remote) AS is_remote,
-            CA.account_id, CA.tag, CA.site_id
+            CA.account_id, CA.tag, CA.site_id,
+            LIST((SELECT LIST(CAA.award_id, ' ')
+                FROM contest_account_awards CAA
+                INNER JOIN awards AW ON AW.id = CAA.award_id
+                WHERE CAA.ca_id = CA.id AND AW.is_public = 1 $db->{LIMIT} 5), ' ') AS awards
         FROM accounts A INNER JOIN contest_accounts CA ON A.id = CA.account_id
         WHERE CA.contest_id IN ($self->{contest_list}) AND CA.is_hidden = 0
             $virtual_ooc_cond $acc_cond
         GROUP BY CA.account_id, CA.tag, CA.site_id, $account_fields~, 'account_id', { Slice => {} },
         ($account_id || ())
     );
+    my $awards = $dbh->selectall_hashref(qq~
+        SELECT AW.id, AW.name, AW.color FROM awards AW
+        WHERE AW.contest_id IN ($self->{contest_list}) AND AW.is_public = 1~,
+        'id', { Slice => {} });
 
     for my $team (values %$res) {
         # Since virtual team is always ooc, do not output extra string.
@@ -444,6 +452,7 @@ sub _select_teams {
         $team->{$_} = 0 for qw(total_solved total_runs total_time total_points);
         ($team->{country}, $team->{flag}) = CATS::Countries::get_flag($team->{country});
         $team->{problems} = { map { $_->{problem_id} => { %init_problem } } @{$self->{problems}} };
+        $team->{awards} = [ grep $_, map $awards->{0 + $_}, split /\s+/, $team->{awards} // '' ];
     }
 
     $res;
