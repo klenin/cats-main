@@ -425,3 +425,4 @@
 1227 "Users excluded: %d."
 1228 "Created 'run command' jobs: %d."
 1229 "Includes job of type: %s."
+1230 "Export error: %s."

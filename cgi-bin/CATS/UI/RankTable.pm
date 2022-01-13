@@ -3,8 +3,10 @@ package CATS::UI::RankTable;
 use strict;
 use warnings;
 
+use Text::CSV;
+
 use CATS::DB;
-use CATS::Globals qw($cid $contest $is_jury $t $uid);
+use CATS::Globals qw($cid $contest $is_jury $is_root $t $uid);
 use CATS::Messages qw(msg res_str);
 use CATS::Output qw(init_template url_f);
 use CATS::RankTable;
@@ -24,6 +26,13 @@ our @router_bool_params = qw(
     show_regions
 );
 
+our @router_params = (
+    filter => str,
+    groups => clist_of integer,
+    sites => clist_of integer,
+    sort => ident,
+);
+
 sub rank_table {
     my ($p, $template_name) = @_;
     init_template($p, 'rank_table_content');
@@ -37,6 +46,52 @@ sub rank_table {
 
     init_template($p, $template_name);
     $t->param(rank_table_content => $s, printable => $p->{printable});
+}
+
+sub _rank_table_icpc_export {
+    my ($p) = @_;
+    $p->{do_export} or return;
+    $p->{icpc_teams} or return 'No teams';
+    my $csv = Text::CSV->new({ binary => 1 });
+    open my $fh, '<', \$p->{icpc_teams};
+    $csv->parse(scalar <$fh>) or return $csv->error_diag;
+    2 == grep /^(?:id|name)$/, $csv->fields
+        or return 'Must have "id" and "name" columns: ' . join('|', $csv->fields);
+    $csv->column_names($csv->fields);
+    my $teams = $csv->getline_hr_all($fh) or return $csv->error_diag;
+    close $fh;
+    @$teams or return 'No teams';
+    my $rt = CATS::RankTable->new($p);
+    $rt->parse_params($p);
+    $rt->rank_table;
+    my %team_idx;
+    $team_idx{$_->{team_name}} = $_ for @{$rt->{rank}};
+    my $rank_export = [ map {
+        my $r = $team_idx{$_->{name}} or return "Unknown team: '$_->{name}'";
+        my ($inst) = $_->{name} =~ /^(.+)(?:\:.+|\s+\d+)$/;
+        [
+            $_->{id}, $r->{place}, $_->{name}, $inst, '',
+            $r->{total_solved}, $r->{total_time}, '', '', '',
+        ];
+    } @$teams ];
+    $p->{csv} = [ qw(
+        teamId rank teamName institution medalCitation
+        problemsSolved totalTime lastProblemTime siteCitation citation) ];
+    init_template($p, 'rank_table_icpc_export');
+    $t->param(
+        icpc_teams => $p->{icpc_teams},
+        lv_array_name => 'rank_export',
+        rank_export => $rank_export,
+    );
+    undef;
+}
+
+sub rank_table_icpc_export_frame {
+    my ($p) = @_;
+    $is_root or return;
+    init_template($p, 'rank_table_icpc_export');
+    my $err = _rank_table_icpc_export($p);
+    msg(1230, $err) if $err;
 }
 
 sub rank_table_frame {
@@ -66,6 +121,10 @@ sub rank_table_frame {
         push @$submenu,
             { href => $url->('rank_table', cache => ($p->{cache} ? 0 : 1)), item => res_str(553) },
             { href => $url->('rank_table', points => ($p->{points} ? 0 : 1)), item => res_str(554) };
+    }
+    if ($is_root) {
+        push @$submenu,
+            { href => $url->('rank_table_icpc_export', csv_sep => ','), item => 'ICPC Export' },
     }
     $t->param(submenu => $submenu, title_suffix => res_str(529));
 }

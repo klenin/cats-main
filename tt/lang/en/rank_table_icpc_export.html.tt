@@ -1,0 +1,7 @@
+[%
+  capt.import({
+    export_for => 'Export for',
+    exported_csv => 'Exported to CSV tead list with id and name fields',
+    do_export => 'Export',
+  })
+%]

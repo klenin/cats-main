@@ -1,0 +1,7 @@
+[%
+  capt.import({
+    export_for => 'Выгрузка для',
+    exported_csv => 'Экспортированный в CSV список команд с полями id и name',
+    do_export => 'Экспортировать',
+  })
+%]

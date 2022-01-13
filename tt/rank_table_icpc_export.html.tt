@@ -1,0 +1,12 @@
+[% PROCESS includes/menu_begin.tti %]
+
+<h3>[% capt.export_for %] <a href="https://icpc.global">icpc.global</a></h3>
+<p>[% capt.exported_csv %].</p>
+<form method="post" action="[% href_action %]">
+<div>
+<textarea name="icpc_teams" style="width: 80%" rows="20">[% icpc_teams %]</textarea>
+</div>
+<button type="submit" name="do_export" value="1" class="button">[% capt.do_export %]</button>
+</form>
+
+[% PROCESS includes/menu_end.tti %]
