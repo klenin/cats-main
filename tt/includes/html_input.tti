@@ -56,3 +56,13 @@
     </td>
   </tr>
 [%- END %]
+
+[%- MACRO tr_color(f, fd) BLOCK -%]
+<tr>
+  <td>[% f.caption || capt.item(f.field.name) %]</td>
+  <td><input type="color" name="[% f.field.name %]" value="[% f.value | html %]" size="[% f.field.editor.size || 10 %]"
+    [%- ' readonly="readonly"' IF fd.readonly %] class="bordered" />
+    [%- maybe_err(f) %]
+  </td>
+</tr>
+[%- END -%]

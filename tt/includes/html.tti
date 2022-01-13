@@ -69,3 +69,6 @@ END -%]
   <a href="#" onclick="_add_search('[% search.squote | html %]', true)">[% text %]</a>
 [%- END -%]
 [%- MACRO cell_search(field, row) BLOCK; cell_search_ex(field, row.item(field)); END -%]
+
+[%- MACRO colored(text, color) BLOCK -%]
+  [% IF color %]<span style="color: [% color %];">[% END; text | html; '</span>' IF color; END -%]
