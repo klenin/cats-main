@@ -206,9 +206,8 @@ sub _add_to_group {
         SELECT is_admin FROM acc_group_accounts
         WHERE account_id = ? AND acc_group_id = ?~, undef,
         $uid, $p->{to_group}) or return;
-    my $accounts = $dbh->selectcol_arrayref(_u $sql->select(
-        'contest_accounts', 'account_id', { contest_id => $cid, id => $p->{sel} }));
-    my $added = CATS::AccGroups::add_accounts($accounts, $p->{to_group}) // [];
+    my $added = CATS::AccGroups::add_accounts(
+        CATS::User::ca_ids_to_accounts($p->{sel}), $p->{to_group}) // [];
     msg(1221, scalar @$added);
 }
 

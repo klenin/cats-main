@@ -603,4 +603,10 @@ sub logins_maybe_added {
         (logins_to_add => $p->{logins_to_add});
 }
 
+sub ca_ids_to_accounts {
+    my ($accounts) = @_;
+    $dbh->selectcol_arrayref(_u $sql->select(
+        'contest_accounts', 'account_id', { contest_id => $cid, id => $accounts }));
+}
+
 1;
