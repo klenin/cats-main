@@ -95,6 +95,7 @@ if [[ $step =~ (^|,)2(,|$) || $step == "*" ]]; then
 		SQL::Abstract
 		Template
 		Text::Aspell
+		Text::CSV
 		Text::MultiMarkdown
 		XML::Parser::Expat
 		YAML::Syck
