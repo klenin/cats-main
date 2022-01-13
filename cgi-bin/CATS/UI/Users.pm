@@ -202,6 +202,10 @@ sub _add_to_group {
         SELECT 1 FROM acc_group_contests
         WHERE contest_id = ? AND acc_group_id = ?~, undef,
         $cid, $p->{to_group}) or return;
+    $is_root || $dbh->selectrow_array(q~
+        SELECT is_admin FROM acc_group_accounts
+        WHERE account_id = ? AND acc_group_id = ?~, undef,
+        $uid, $p->{to_group}) or return;
     my $accounts = $dbh->selectcol_arrayref(_u $sql->select(
         'contest_accounts', 'account_id', { contest_id => $cid, id => $p->{sel} }));
     my $added = CATS::AccGroups::add_accounts($accounts, $p->{to_group}) // [];
@@ -228,7 +232,6 @@ sub users_frame {
         CATS::User::save_attributes_jury($p) if $p->{save_attributes};
         CATS::User::set_tag(user_set => $p->{sel}, tag => $p->{tag_to_set}) if $p->{set_tag};
         CATS::User::gen_passwords(user_set => $p->{sel}, len => $p->{password_len}) if $p->{gen_passwords};
-        _add_to_group($p) if $p->{add_to_group};
 
         if ($p->{send_message} && ($p->{message_text} // '') ne '') {
             my $contest_id = $is_root && $p->{send_all_contests} ? undef : $cid;
@@ -243,19 +246,22 @@ sub users_frame {
             }
             $dbh->commit;
         }
-
-        $t->param(acc_groups => $dbh->selectall_arrayref(q~
-            SELECT AG.id, AG.name FROM acc_groups AG
-            INNER JOIN acc_group_contests AGC ON AGC.acc_group_id = AG.id
-            WHERE AGC.contest_id = ?
-            ORDER BY AG.name~, { Slice => {} },
-            $cid));
     }
     elsif ($user->{is_site_org}) {
         CATS::User::save_attributes_org($p) if $p->{save_attributes};
     }
 
     if ($is_jury || $user->{is_site_org}) {
+        _add_to_group($p) if $p->{add_to_group};
+        my $is_admin_cond = $is_root ? '' : ' AND AGA.is_admin = 1';
+        $t->param(acc_groups => $dbh->selectall_arrayref(qq~
+            SELECT AG.id, AG.name FROM acc_groups AG
+            INNER JOIN acc_group_contests AGC ON AGC.acc_group_id = AG.id
+            LEFT JOIN acc_group_accounts AGA ON AGA.acc_group_id = AG.id AND AGA.account_id = ?
+            WHERE AGC.contest_id = ?$is_admin_cond
+            ORDER BY AG.name~, { Slice => {} },
+            $uid, $cid));
+
         CATS::User::set_site(user_set => $p->{sel}, site_id => $p->{site_id}) if $p->{set_site};
         # Consider site_org without site_id as 'all sites organizer'.
         my ($site_cond, @site_param) = $is_jury || !$user->{site_id} ? ('') : (' AND S.id = ?', $user->{site_id});
@@ -295,8 +301,8 @@ sub users_frame {
         ($is_jury ? (
             { caption => res_str(611), order_by => 'is_jury', width => '1%', checkbox => '.is_jury input' },
             { caption => res_str(614), order_by => 'is_hidden', width => '1%', checkbox => '.is_hidden input' },
-            { caption => res_str(694), order_by => 'groups', width => '10%', col => 'Gr' },
         ) : ()),
+        { caption => res_str(694), order_by => 'groups', width => '10%', col => 'Gr' },
         ($is_jury || $contest->{show_flags} ? (
             { caption => res_str(607), order_by => 'country', width => '5%', col => 'Fl' },
         ) : ()),
@@ -376,8 +382,9 @@ sub users_frame {
         $db->{LIMIT} 5~;
 
     my $sql = sprintf qq~
-        SELECT ($rating_sql) AS rating, ($ip_sql) AS ip, CA.id, $fields,
-        CA.site_id, S.name AS site_name, ($groups_sql) AS groups$contacts_sql
+        SELECT
+            ($rating_sql) AS rating, ($ip_sql) AS ip, CA.id, $fields,
+            CA.site_id, S.name AS site_name, ($groups_sql) AS groups$contacts_sql
         FROM accounts A
             INNER JOIN contest_accounts CA ON CA.account_id = A.id
             INNER JOIN contests C ON CA.contest_id = C.id
