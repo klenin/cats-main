@@ -1,0 +1,17 @@
+[% PROCESS includes/menu_begin.tti %]
+[% PROCESS includes/html_input.tti %]
+
+<form method="post" enctype="multipart/form-data" action="[% aw.href_action %]">
+<table class="edit_form">
+[%
+  tr_text(aw.indexed.name);
+  tr_checkbox1(aw.indexed.is_public);
+  tr_text(aw.indexed.color);
+  tr_textarea(aw.indexed.descr);
+%]
+</table>
+<br/>
+[% PROCESS includes/edit_save_cancel.tti %]
+</form>
+
+[% PROCESS includes/menu_end.tti %]

@@ -94,6 +94,12 @@ my $main_routes = {
     console_export => \&CATS::UI::Console::export_frame,
     console_graphs => \&CATS::UI::Console::graphs_frame,
 
+    awards => [ \&CATS::UI::Awards::awards_frame,
+        delete => integer, saved => integer,
+    ],
+    awards_edit => [ \&CATS::UI::Awards::awards_edit_frame,
+        $CATS::UI::Awards::form->route, ],
+
     acc_groups => [ \&CATS::UI::AccGroups::acc_groups_frame,
         delete => integer, saved => integer,
         add => bool, remove => bool, check => array_of integer,

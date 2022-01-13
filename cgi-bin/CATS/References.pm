@@ -25,6 +25,7 @@ sub reference_names() {
         ($is_jury ? { name => 'de_tags', new_if_root(403), item => 402 } : ()),
         ($user->is_root ? { name => 'files', new => 401, item => 570 } : ()),
         { name => 'acc_groups', new_if_root(409), item => 410 },
+        { name => 'awards', ($is_jury ? (new => 412) : ()), item => 413 },
     )
 }
 

@@ -1,0 +1,39 @@
+[% js.jquery = 1 %]
+[% PROCESS includes/menu_begin.tti %]
+
+<script>
+function delete_award(href, name) {
+  if (confirm( "[% capt.want_to_delete %] '" + name + "'?" ))
+    document.location = href;
+}
+</script>
+
+[% PROCESS includes/listview_header.tti %]
+
+<table class="listview bordered highlight">
+[% PROCESS includes/listview_col_defs.tti sel_col = user.is_jury %]
+
+[% FOREACH aw IN awards %]
+<tr class="[% loop.parity() %]">
+[% IF user.is_jury -%]
+<td class="nobr sel_col">
+[% IF aw.href_delete -%]
+  <a href="javascript:delete_award('[% aw.href_delete %]', '[% aw.name.squote | html %]');" class="icon delete"></a>
+[% END -%]
+[% IF aw.href_edit -%]
+  <a href="[% aw.href_edit %]" class="icon edit"></a>
+[% END -%]
+</td>
+[% END %]
+<td>[% aw.name | html %]</td>
+[% IF visible_cols.Cl %]<td>[% aw.color %]</td>[% END %]
+[% IF visible_cols.Ds %]<td>[% aw.descr_prefix | html; '&hellip;' IF aw.descr_cut %]</td>[% END %]
+[% IF visible_cols.Pu %]<td>[% IF aw.is_public %]<a href="#" class="icon checked"></a>[% END %]</td>[% END %]
+[% IF visible_cols.Uc %]<td>[% href(aw.href_users, aw.user_count) %]</td>[% END %]
+</tr>
+[% END %]
+</table>
+[% PROCESS includes/pages.tti %]
+</form>
+
+[% PROCESS includes/menu_end.tti %]
