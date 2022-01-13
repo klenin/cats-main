@@ -76,6 +76,7 @@ sub _contest_search_fields() {qw(
     req_selection
     pinned_judges_only
     show_sites
+    show_is_remote
 )}
 
 sub _contest_searches {

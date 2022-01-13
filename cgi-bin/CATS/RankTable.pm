@@ -22,7 +22,7 @@ use fields qw(
     clist contests contest_list hide_ooc hide_virtual show_points frozen
     title has_practice not_started filter sites groups use_cache
     rank problems problems_idx show_all_results show_prizes has_competitive
-    show_regions show_flags show_logins sort p notime nostats
+    show_regions show_flags show_is_remote show_logins sort p notime nostats
     max_total_points
 );
 
@@ -247,7 +247,7 @@ sub get_contests_info {
           CAST(CURRENT_TIMESTAMP - C.defreeze_date AS DOUBLE PRECISION) AS since_defreeze,
           CAST(CURRENT_TIMESTAMP - $CATS::Time::contest_start_offset_sql AS DOUBLE PRECISION) AS since_start,
           CA.is_jury, CA.id AS caid,
-          C.is_hidden, C.rules, C.ctype, C.show_all_results, C.show_flags, C.req_selection
+          C.is_hidden, C.rules, C.ctype, C.show_all_results, C.show_flags, C.req_selection, C.show_is_remote
         FROM contests C
         LEFT JOIN contest_accounts CA ON CA.contest_id = C.id AND CA.account_id = ?
         LEFT JOIN contest_sites CS ON CS.contest_id = C.id AND CS.site_id = CA.site_id
@@ -267,6 +267,7 @@ sub get_contests_info {
         $self->{show_points} ||= $c->{rules};
         $self->{show_all_results} &&= $c->{show_all_results};
         $self->{show_flags} ||= $c->{show_flags};
+        $self->{show_is_remote} ||= $c->{show_is_remote};
         $c->{href_problems} = url_f_cid('problems', cid => $c->{id});
         push @names, $c->{title};
     }
@@ -297,6 +298,7 @@ sub parse_params {
     $self->{show_regions} = $p->{show_regions};
     $self->{show_logins} = $p->{show_logins};
     $self->{show_flags} = $p->{show_flags} if defined $p->{show_flags};
+    $self->{show_is_remote} = 0;
     $self->{sort} = $p->{sort} // '';
     $self->{notime} = $p->{notime};
     $self->{nostats} = $p->{nostats};
@@ -449,6 +451,7 @@ sub _select_teams {
     for my $team (values %$res) {
         # Since virtual team is always ooc, do not output extra string.
         $team->{is_ooc} = 0 if $team->{is_virtual};
+        $team->{is_remote} = 0 if !$self->{show_is_remote};
         $team->{$_} = 0 for qw(total_solved total_runs total_time total_points);
         ($team->{country}, $team->{flag}) = CATS::Countries::get_flag($team->{country});
         $team->{problems} = { map { $_->{problem_id} => { %init_problem } } @{$self->{problems}} };

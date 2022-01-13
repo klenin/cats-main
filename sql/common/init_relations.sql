@@ -123,6 +123,7 @@ CREATE TABLE contests (
 
     scaled_points        DECIMAL(18, 6),
     round_points_to      DECIMAL(18, 6),
+    show_is_remote       SMALLINT DEFAULT 0 NOT NULL,
 
     CHECK (
         start_date <= finish_date AND freeze_date >= start_date

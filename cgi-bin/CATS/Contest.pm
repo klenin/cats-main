@@ -9,7 +9,7 @@ sub database_fields {qw(
     closed penalty ctype rules max_reqs
     is_official run_all_tests
     show_all_tests show_test_resources show_checker_comment show_packages show_explanations
-    show_test_data show_flags show_sites show_all_results show_all_for_solved
+    show_test_data show_flags show_sites show_all_results show_all_for_solved show_is_remote
     local_only is_hidden max_reqs_except
     scaled_points round_points_to
 )}

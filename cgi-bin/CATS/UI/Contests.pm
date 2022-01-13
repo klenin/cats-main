@@ -61,7 +61,7 @@ sub contests_new_frame {
 }
 
 sub contest_params() {qw(
-    rules title closed penalty max_reqs is_hidden local_only show_sites show_flags
+    rules title closed penalty max_reqs is_hidden local_only show_sites show_flags show_is_remote
     start_date short_descr is_official finish_date run_all_tests req_selection show_packages show_explanations
     show_all_tests freeze_date defreeze_date show_test_data max_reqs_except show_frozen_reqs show_all_results
     pinned_judges_only show_test_resources show_checker_comment
@@ -71,7 +71,7 @@ sub contest_params() {qw(
 
 sub contest_checkbox_params() {qw(
     free_registration run_all_tests
-    show_all_tests show_test_resources show_checker_comment show_all_results show_flags
+    show_all_tests show_test_resources show_checker_comment show_all_results show_flags show_is_remote
     show_packages show_explanations show_test_data pinned_judges_only show_sites show_all_for_solved
     is_official local_only is_hidden 
 )}
