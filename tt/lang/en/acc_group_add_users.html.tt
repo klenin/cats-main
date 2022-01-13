@@ -2,7 +2,8 @@
   capt.import({
     add_users => 'Add users',
     logins_to_add => 'Login list, comma-separated',
-    make_hidden => 'add and hide',
+    make_hidden => 'hide',
+    make_admin => 'make admin',
     view_added => 'view added participants',
     by_login => 'Add by logins',
     contest => 'Contest',

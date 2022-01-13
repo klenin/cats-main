@@ -13,6 +13,7 @@
 <p>
 <button type="submit" class="button" name="by_login" value="1">[% capt.by_login %]</button>
 <label>[% checkbox_1('make_hidden'); capt.make_hidden %]</label>
+<label>[% checkbox_1('make_admin'); capt.make_admin %]</label>
 </p>
 [% IF href_view_added %]<p><a href="[% href_view_added %]">[% capt.view_added %]</a></p>[% END %]
 </form>

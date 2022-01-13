@@ -257,7 +257,8 @@ sub acc_group_add_users_frame {
         $p->{source_cid} ? _accounts_by_contest($p->{source_cid}, $p->{include_ooc}) :
         $p->{source_group_id} ? _accounts_by_acc_group($p->{source_group_id}, $p->{include_admins}) :
         undef;
-    $accounts = $accounts && CATS::AccGroups::add_accounts($accounts, $p->{group}, $p->{make_hidden}) // [];
+    $accounts = $accounts && CATS::AccGroups::add_accounts(
+        $accounts, $p->{group}, $p->{make_hidden}, $p->{make_admin}) // [];
     msg(1221, scalar @$accounts) if @$accounts;
 
     my @url_p = ('acc_group_users', group => $p->{group});

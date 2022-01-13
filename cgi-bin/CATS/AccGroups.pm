@@ -53,12 +53,12 @@ sub exclude_users {
 }
 
 sub add_accounts {
-    my ($accounts, $group_id, $make_hidden) = @_;
+    my ($accounts, $group_id, $make_hidden, $make_admin) = @_;
     my $in_group_sth = $dbh->prepare(q~
         SELECT 1 FROM acc_group_accounts WHERE acc_group_id = ? AND account_id = ?~);
     my $add_sth = $dbh->prepare(q~
-        INSERT INTO acc_group_accounts (acc_group_id, account_id, is_hidden, date_start)
-        VALUES (?, ?, ?, CURRENT_DATE)~);
+        INSERT INTO acc_group_accounts (acc_group_id, account_id, is_hidden, is_admin, date_start)
+        VALUES (?, ?, ?, ?, CURRENT_DATE)~);
     my @new_accounts;
     for (@$accounts) {
         $in_group_sth->execute($group_id, $_);
@@ -67,7 +67,7 @@ sub add_accounts {
         $in_group ? msg(1120, $_) : push @new_accounts, $_;
     }
     for (@new_accounts) {
-        $add_sth->execute($group_id, $_, $make_hidden ? 1 : 0);
+        $add_sth->execute($group_id, $_, $make_hidden ? 1 : 0, $make_admin ? 1 : 0);
     }
     $dbh->commit;
     \@new_accounts;
