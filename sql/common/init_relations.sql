@@ -38,10 +38,13 @@ CREATE TABLE accounts (
 
 CREATE TABLE account_tokens (
     token       VARCHAR(40) NOT NULL PRIMARY KEY,
-    account_id  INTEGER NOT NULL REFERENCES accounts(id),
+    account_id  INTEGER NOT NULL,
     last_used   CATS_TIMESTAMP,
     usages_left INTEGER,
-    referer     VARCHAR(200)
+    referer     VARCHAR(200),
+
+    CONSTRAINT account_tokens_accounts_fk
+        FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
 );
 
 CREATE TABLE contact_types (
