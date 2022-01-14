@@ -1,12 +1,15 @@
+[% MACRO maybe_selected(sel) BLOCK; ' selected="selected"' IF sel; END %]
+[% MACRO maybe_checked(chk) BLOCK; ' checked="checked"' IF chk; END %]
+
 [%- MACRO option(value, text, selected) BLOCK ~%]
-  <option value="[% value %]"[% ' selected="selected"' IF selected %]>
+  <option value="[% value %]"[% maybe_selected(selected) %]>
     [%- IF text; text | html; ELSE; '&nbsp;'; END -%]
   </option>
 [%~ END -%]
 
 [%- MACRO editor_select_option(value, text, editor_syntax, selected) BLOCK ~%]
   <option value="[% value %]"
-    [%- IF editor_syntax %] editor-syntax="[% editor_syntax %]" [% END; ' selected="selected"' IF selected %]>
+    [%- IF editor_syntax %] editor-syntax="[% editor_syntax %]" [% END; maybe_selected(selected) %]>
     [%- IF text; text | html; ELSE; '&nbsp;'; END -%]
   </option>
 [%~ END -%]
@@ -26,7 +29,7 @@
 
 [%- MACRO checkbox(name, value, checked, enabled) BLOCK; SET enabled = 1 UNLESS enabled.defined ~%]
   <input type="checkbox" name="[% name %]" value="[% value | html %]"
-    [%- ' checked="checked"' IF checked; ' disabled="disabled"' UNLESS enabled %] />
+    [%- maybe_checked(checked); ' disabled="disabled"' UNLESS enabled %] />
 [%- END -%]
 
 [%- MACRO checkbox_1(name, checked, enabled) BLOCK;
