@@ -25,7 +25,7 @@ function delete_award(href, name) {
 [% END -%]
 </td>
 [% END %]
-<td>[% aw.name | html %]</td>
+<td>[% colored(aw.name, aw.color) %]</td>
 [% IF visible_cols.Cl %]<td>[% aw.color %]</td>[% END %]
 [% IF visible_cols.Ds %]<td>[% aw.descr_prefix | html; '&hellip;' IF aw.descr_cut %]</td>[% END %]
 [% IF visible_cols.Pu %]<td>[% IF aw.is_public %]<a href="#" class="icon checked"></a>[% END %]</td>[% END %]
