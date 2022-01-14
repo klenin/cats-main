@@ -6,7 +6,7 @@ use warnings;
 use CATS::Contest::Utils;
 use CATS::DB;
 use CATS::Form;
-use CATS::Globals qw($cid $is_jury $is_root $t $uid);
+use CATS::Globals qw($cid $is_jury $is_root $t $uid $user);
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
 use CATS::Output qw(init_template url_f);
@@ -28,12 +28,12 @@ our $form = CATS::Form->new(
     msg_saved => 1215,
     msg_deleted => 1216,
     before_display => sub { $t->param(submenu => [ CATS::References::menu('acc_groups') ]) },
-    before_delete => sub { $is_root },
+    before_delete => sub { $user->privs->{manage_groups} },
 );
 
 sub _can_edit_group {
     my ($group_id) = @_;
-    $is_root || $group_id && $uid && $dbh->selectrow_array(q~
+    $user->privs->{manage_groups} || $group_id && $uid && $dbh->selectrow_array(q~
         SELECT is_admin FROM acc_group_accounts
         WHERE acc_group_id = ? AND account_id = ?~, undef,
         $group_id, $uid);
@@ -49,7 +49,7 @@ sub acc_groups_edit_frame {
 sub acc_groups_frame {
     my ($p) = @_;
 
-    $form->delete_or_saved($p) if $is_root;
+    $form->delete_or_saved($p) if $user->privs->{manage_groups};
 
     init_template($p, 'acc_groups');
     my $lv = CATS::ListView->new(web => $p, name => 'acc_groups', url => url_f('acc_groups'));
@@ -64,7 +64,7 @@ sub acc_groups_frame {
             { caption => res_str(670), order_by => 'is_actual', width => '5%', col => 'Ac' },
         ) : ()),
         { caption => res_str(606), order_by => 'user_count', width => '5%', col => 'Uc' },
-        ($is_root ?
+        ($user->privs->{manage_groups} ?
             ({ caption => res_str(643), order_by => 'ref_count', width => '5%', col => 'Rc' }) : ()),
     ]);
     $lv->define_db_searches([ qw(id name is_actual description) ]);
@@ -107,8 +107,10 @@ sub acc_groups_frame {
             %$row,
             descr_prefix => substr($row->{description}, 0, $descr_prefix_len),
             descr_cut => length($row->{description}) > $descr_prefix_len,
-            href_edit => ($is_root || $row->{is_admin}) && url_f('acc_groups_edit', id => $row->{id}),
-            href_delete => $is_root && url_f('acc_groups', 'delete' => $row->{id}),
+            href_edit => ($user->privs->{manage_groups} || $row->{is_admin}) &&
+                url_f('acc_groups_edit', id => $row->{id}),
+            href_delete => $user->privs->{manage_groups} &&
+                url_f('acc_groups', 'delete' => $row->{id}),
             href_view_users => url_f('acc_group_users', group => $row->{id}),
             href_view_users_in_contest => url_f('users', search => "in_group($row->{id})"),
             href_view_contests => url_f('contests', search => "has_group($row->{id})"),
@@ -118,7 +120,10 @@ sub acc_groups_frame {
 
     $lv->attach($fetch_record, $sth);
 
-    $t->param(submenu => [ CATS::References::menu('acc_groups') ], editable => $is_root);
+    $t->param(
+        submenu => [ CATS::References::menu('acc_groups') ],
+        editable => $user->privs->{manage_groups},
+    );
 }
 
 sub _set_field {
@@ -144,7 +149,7 @@ sub acc_group_users_frame {
     my $can_edit = _can_edit_group($p->{group});
 
     if ($can_edit) {
-        _set_field($p, 'is_admin') if $p->{set_admin} && $is_root;
+        _set_field($p, 'is_admin') if $p->{set_admin} && $user->privs->{manage_groups};
         _set_field($p, 'is_hidden') if $p->{set_hidden};
 
         CATS::AccGroups::exclude_users($p->{group}, [ $p->{exclude_user} ]) if $p->{exclude_user};
@@ -154,10 +159,10 @@ sub acc_group_users_frame {
     my $lv = CATS::ListView->new(
         web => $p, name => 'acc_group_users', url => url_f('acc_group_users', group => $p->{group}));
 
-    $lv->default_sort($is_root ? 1 : 0)->define_columns([ grep $_,
-        $can_edit && +{ caption => res_str(616), order_by => 'login', width => '20%' },
+    $lv->default_sort(0)->define_columns([ grep $_,
         { caption => res_str(608), order_by => 'team_name', width => '30%',
             checkbox => $can_edit && '[name=sel]' },
+        $can_edit && +{ caption => res_str(616), order_by => 'login', width => '20%' },
         { caption => res_str(685), order_by => 'in_contest', width => '5%' },
         $can_edit && (
             { caption => res_str(615), order_by => 'is_admin', width => '5%' },
@@ -258,7 +263,8 @@ sub acc_group_add_users_frame {
         $p->{source_group_id} ? _accounts_by_acc_group($p->{source_group_id}, $p->{include_admins}) :
         undef;
     $accounts = $accounts && CATS::AccGroups::add_accounts(
-        $accounts, $p->{group}, $p->{make_hidden}, $p->{make_admin}) // [];
+        $accounts, $p->{group}, $p->{make_hidden},
+        $p->{make_admin} && $user->privs->{manage_groups}) // [];
     msg(1221, scalar @$accounts) if @$accounts;
 
     my @url_p = ('acc_group_users', group => $p->{group});

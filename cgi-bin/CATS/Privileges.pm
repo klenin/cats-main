@@ -9,6 +9,7 @@ my $srole_root = 0;
 our $srole_user = 1;
 
 # Bit flag values for accounts.srole. Root includes all other roles.
+# Order corresponds to bit fields.
 my @flag_names = qw(
     create_contests
     moderate_messages
@@ -18,6 +19,7 @@ my @flag_names = qw(
     grant_jury
     link_problems
     edit_wiki
+    manage_groups
 );
 
 my %flags = map { $flag_names[$_] => 2 << $_ } 0..$#flag_names;

@@ -203,7 +203,7 @@ sub _add_to_group {
         SELECT 1 FROM acc_group_contests
         WHERE contest_id = ? AND acc_group_id = ?~, undef,
         $cid, $p->{to_group}) or return;
-    $is_root || $dbh->selectrow_array(q~
+    $user->{privs}->{manage_groups} || $dbh->selectrow_array(q~
         SELECT is_admin FROM acc_group_accounts
         WHERE account_id = ? AND acc_group_id = ?~, undef,
         $uid, $p->{to_group}) or return;
@@ -262,7 +262,7 @@ sub users_frame {
 
     if ($is_jury || $user->{is_site_org}) {
         _add_to_group($p) if $p->{add_to_group};
-        my $is_admin_cond = $is_root ? '' : ' AND AGA.is_admin = 1';
+        my $is_admin_cond = $user->{privs}->{manage_groups} ? '' : ' AND AGA.is_admin = 1';
         $t->param(acc_groups => $dbh->selectall_arrayref(qq~
             SELECT AG.id, AG.name FROM acc_groups AG
             INNER JOIN acc_group_contests AGC ON AGC.acc_group_id = AG.id

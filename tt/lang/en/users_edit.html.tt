@@ -13,6 +13,7 @@
       grant_jury => 'can grant jury rights',
       link_problems => 'can link problems',
       edit_wiki => 'can edit wiki',
+      manage_groups => 'can manage groups',
     },
   })
 %]

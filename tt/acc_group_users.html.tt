@@ -18,14 +18,14 @@ function delete_acc_group_user(href, name) {
 [% IF can_edit -%]
 <td class="nobr sel_col">
   <a href="javascript:delete_acc_group_user('[% u.href_exclude %]', '[% u.team_name.squote | html %]');" class="icon delete"></a>
-[% IF user.is_root -%]
+[% IF user.privs.manage_groups -%]
   <a href="[% u.href_edit %]" class="icon edit"></a>
 [%- END %]
   <input type="checkbox" name="user_selection" value="[% u.account_id %]" />
 </td>
 [%- END %]
-[% IF can_edit %]<td>[% u.login | html %]</td>[% END %]
 <td>[% href(u.href_stats, u.team_name) %]</td>
+[% IF can_edit %]<td>[% u.login | html %]</td>[% END %]
 <td>[% IF u.in_contest %]<a href="#" class="icon checked"></a>[% END %]</td>
 [% IF can_edit %]<td>[% IF u.is_admin %]<a href="#" class="icon checked"></a>[% END %]</td>[% END %]
 [% IF can_edit %]<td>[% IF u.is_hidden %]<a href="#" class="icon checked"></a>[% END %]</td>[% END %]
@@ -36,7 +36,7 @@ function delete_acc_group_user(href, name) {
 </table>
 [% IF can_edit -%]
 <br/>
-[% IF user.privs.is_root -%]
+[% IF user.privs.manage_groups -%]
 <div class="send_message action_group">
 <input type="checkbox" name="is_admin" value="1"><button name="set_admin" value="1" class="button">[% capt.set_admin %]</button>
 </div>
