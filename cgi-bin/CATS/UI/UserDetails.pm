@@ -91,7 +91,7 @@ sub user_stats_frame {
         'AND C.is_hidden = 0 AND (CA.is_hidden = 0 OR CA.is_hidden IS NULL) ' .
         'AND C.defreeze_date < CURRENT_TIMESTAMP';
     my $contests = $dbh->selectall_arrayref(qq~
-        SELECT C.id, C.title, CA.id AS caid, CA.is_jury,
+        SELECT C.id, C.title, CA.id AS caid, CA.is_jury, CA.is_ooc,
             $CATS::Time::contest_start_offset_sql AS start_date,
             S.name AS site_name,
             (SELECT COUNT(DISTINCT R.problem_id) FROM reqs R

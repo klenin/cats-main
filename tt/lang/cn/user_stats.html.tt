@@ -9,6 +9,7 @@
     all => 'all',
     solved => 'solved',
     contests => 'Contests',
+    ooc => 'ooc',
     send_message => 'message',
     groups => 'Groups',
     tokens => 'Tokens',

@@ -9,6 +9,7 @@
     all => 'все',
     solved => 'решённые',
     contests => 'Турниры',
+    ooc => 'внек.',
     send_message => 'сообщение',
     groups => 'Группы',
     tokens => 'Токены',
