@@ -5,6 +5,16 @@
     sites => 'Sites',
     name_tag => 'Name / tag',
     sort => { n => 'Sort by', rank => 'rank', name => 'name' },
+    show => {
+      n => 'Show',
+      flags => 'flags',
+      regions => 'regions',
+      logins => 'logins',
+      ooc => 'ooc',
+      virtual => 'virtual',
+      time => 'time',
+      stats => 'statistics',
+    },
     search => 'search',
     loading => 'Loading...',
   })

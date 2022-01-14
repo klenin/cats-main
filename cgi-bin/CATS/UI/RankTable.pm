@@ -146,14 +146,16 @@ sub rank_table_frame {
             WHERE CS.contest_id IN ($rt->{contest_list}) ORDER BY S.name~, { Slice => {} });
         _set_selected($sites, $p->{sites});
 
+        my @ui_fields = qw(
+            filter sort show_flags show_logins show_regions
+            hide_ooc hide_virtual notime nostats);
         my %route = CATS::RouteParser::reconstruct($p);
-        delete @route{qw(groups sites filter sort)};
+        delete @route{qw(groups sites), @ui_fields};
         $t->param(
             route => { %route, cid => $cid, sid => $sid },
             groups => $groups,
             sites => $sites,
-            filter => $p->{filter},
-            'sort' => $p->{sort},
+            map { $_ => $p->{$_} } @ui_fields,
         );
     }
     $t->param(submenu => $submenu, title_suffix => res_str(529));

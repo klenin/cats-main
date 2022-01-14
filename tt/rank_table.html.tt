@@ -46,6 +46,32 @@ function toggle_all(value, id) {
   <label><input name="sort" type="radio" value=""[% maybe_checked(sort != 'name') %]/>[% capt.sort.rank %]</label>
   <label><input name="sort" type="radio" value="name"[% maybe_checked(sort == 'name') %]/>[% capt.sort.name %]</label>
 </div>
+
+[%- MACRO label_cb(name, checked, label) BLOCK %]
+  <label>[% checkbox_1(name, checked, label) %][% capt.show.item(label) %]</label>
+[% END %]
+
+[%- MACRO label_cb_inverted(name, checked, label) BLOCK %]
+  <label>
+    <input type="checkbox"[% maybe_checked(!checked) %] onclick="$('#show input[name=[% name %]]').val(this.checked ? 0 : 1)"/>
+    [%- capt.show.item(label) %]
+  </label>
+  <input type="hidden" name="[% name %]" value="[% checked ? 1 : 0 %]"/>
+[% END %]
+
+<div id="show" class="bordered padded">
+  [% capt.show.n %]:
+  [%-
+  FOREACH sh IN [ 'flags', 'regions', 'logins' ];
+    label_cb('show_' _ sh, ${"show_$sh"}, sh);
+  END;
+  label_cb_inverted('hide_ooc', hide_ooc, 'ooc');
+  label_cb_inverted('hide_virtual', hide_virtual, 'virtual');
+  label_cb_inverted('notime', notime, 'time');
+  label_cb_inverted('nostats', nostats, 'stats');
+  -%]
+</div>
+
 <button type="submit" value="1" class="button">[% capt.search %]</button>
 </form>
 </div>
