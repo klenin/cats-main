@@ -147,12 +147,13 @@ sub rank_table_frame {
         _set_selected($sites, $p->{sites});
 
         my %route = CATS::RouteParser::reconstruct($p);
-        delete $route{groups};
-        delete $route{sites};
+        delete @route{qw(groups sites filter sort)};
         $t->param(
             route => { %route, cid => $cid, sid => $sid },
             groups => $groups,
             sites => $sites,
+            filter => $p->{filter},
+            'sort' => $p->{sort},
         );
     }
     $t->param(submenu => $submenu, title_suffix => res_str(529));

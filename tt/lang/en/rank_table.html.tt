@@ -3,6 +3,8 @@
     filter => 'filter',
     groups => 'Groups',
     sites => 'Sites',
+    name_tag => 'Name / tag',
+    sort => { n => 'Sort by', rank => 'rank', name => 'name' },
     search => 'search',
     loading => 'Loading...',
   })

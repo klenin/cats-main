@@ -1,6 +1,7 @@
 [%- js.jquery = 1 -%]
-[% PROCESS includes/menu_begin.tti %]
-[% IF user.is_root %]
+[%- PROCESS includes/menu_begin.tti -%]
+
+[%- IF user.is_root %]
 <button class="button" onclick="$('#search').toggle()">[% PROCESS includes/filter_icon.tti title=capt.filter %]</button>
 <div id="search" class="hidden">
 <form method="GET">
@@ -8,41 +9,49 @@
 [% FOREACH r IN route %]<input type="hidden" name="[% r.key | html %]" value="[% r.value | html %]"/>[% END %]
 <script>
 function update(id) {
-  var s = $('#' + id + ' input[type=checkbox]').map(function(_, v) {
+  var s = $('#' + id + ' ._items input[type=checkbox]').map(function(_, v) {
     return v.checked ? v.value : null;
   });
   $('#' + id + ' input[name=' + id + ']').val(s.get().join(','));
 }
+function toggle_all(value, id) {
+  $('#' + id + ' ._items input[type=checkbox]').each(function(_, v) {
+    v.checked = value;
+  });
+}
 </script>
-[% IF groups %]
-<script>$(function() { update('groups'); });</script>
-<div id="groups" class="bordered padded">
-[% capt.groups %]:
-  [% FOREACH g IN groups -%]
-  <label class="nobr">
-    <input type="checkbox"[% ' checked="checked"' IF g.selected %] value="[% g.id %]" onclick="update('groups')"/>[% g.name | html %]
+
+[% MACRO multi_select(list, name) BLOCK -%]
+[%- IF list.size -%]
+<script>$(function() { update('[% name %]'); });</script>
+<div id="[% name %]" class="bordered padded">
+  <label><input type="checkbox" onclick="toggle_all(this.checked, '[% name %]')"/> [% capt.item(name) %]</label>:
+  [% FOREACH i IN list -%]
+  <label class="nobr _items">
+    <input type="checkbox"[% ' checked="checked"' IF i.selected %] value="[% i.id %]" onclick="update('[% name %]')"/>
+    [%- i.name | html -%]
   </label>
   [%- END %]
-  <input type="hidden" name="groups"/>
+  <input type="hidden" name="[% name %]"/>
 </div>
-[% END %]
-[% IF sites %]
-<script>$(function() { update('sites'); });</script>
-<div id="sites" class="bordered padded">
-[% capt.sites %]:
-  [% FOREACH s IN sites -%]
-  <label class="nobr">
-    <input type="checkbox"[% ' checked="checked"' IF s.selected %] value="[% s.id %]" onclick="update('sites')"/>[% s.name | html %]
-  </label>
-  [%- END %]
-  <input type="hidden" name="sites"/>
+[%- END -%]
+[%- END -%]
+
+[% multi_select(groups, 'groups') %]
+[% multi_select(sites, 'sites') %]
+
+<div class="bordered padded">
+  [% capt.name_tag %]: <input name="filter" type="text" class="bordered" value="[% filter | html %]" size="30" />
+  [% capt.sort.n %]:
+  <label><input name="sort" type="radio" value=""[% maybe_checked(sort != 'name') %]/>[% capt.sort.rank %]</label>
+  <label><input name="sort" type="radio" value="name"[% maybe_checked(sort == 'name') %]/>[% capt.sort.name %]</label>
 </div>
-[% END %]
 <button type="submit" value="1" class="button">[% capt.search %]</button>
 </form>
 </div>
 <div>
-[% END %]
+[% END -%]
+
 <span id='refreshable_content'>
 <br/>[% loading %]<br/><br/>
 <!-- xTMPL_VAR rank_table_content -->
