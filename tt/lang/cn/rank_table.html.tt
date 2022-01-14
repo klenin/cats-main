@@ -1,5 +1,9 @@
 [%
   capt.import({
+    filter => 'filter',
+    groups => 'Groups',
+    sites => 'Sites',
+    search => 'search',
     loading => 'Loading...',
   })
 %]

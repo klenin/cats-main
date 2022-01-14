@@ -269,6 +269,8 @@ input.listview_checkbox {
     border-radius: 3px;
 }
 
+.padded { padding: 3px; }
+
 .weak_border {
     border: 1px dotted #4040ff;
     padding: 2px;
