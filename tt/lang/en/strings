@@ -337,7 +337,7 @@
 1135 "Insufficient privileges to move problem."
 1136 "Must remove all links before removing problem '%s'."
 1137 "Maximum allowed number of submissions exceeded. Please contact jury."
-1138 "Official contest '%s' is running, runs form other contests are temporarily inaccessible."
+1138 "Official contest '%s' is running (until %s), runs form other contests are temporarily inaccessible."
 1139 "Unable to find an account with login '%s'."
 1140 "Judge '%s' changed successfully."
 1141 "Testsets changed for problem '%s'."

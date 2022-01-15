@@ -337,7 +337,7 @@
 1135 "Insufficient privileges to move problem."
 1136 "Must remove all links before removing problem '%s'."
 1137 "允许的尝试最大数量超过了。请联系陪审团。"
-1138 "'%s'官方比赛正在运行，其他比赛的尝试暂时无法使用。"
+1138 "'%s'官方比赛正在运行，其他比赛的尝试暂时无法使用直到%s。"
 1139 "Unable to find an account with login '%s'."
 1140 "Judge '%s' changed successfully."
 1141 "Testsets changed for problem '%s'."
