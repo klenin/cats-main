@@ -141,7 +141,11 @@ sub contest_sites_edit_save {
     CATS::Time::set_diff_time($s, $p, 'ext') or return;
 
     $dbh->do(_u $sql->update('contest_sites',
-        { diff_time => $s->{diff_time}, ext_time => $s->{ext_time} },
+        {
+            problem_tag => $p->{problem_tag},
+            diff_time => $s->{diff_time},
+            ext_time => $s->{ext_time},
+        },
         { site_id => $p->{site_id}, contest_id => $cid }
     ));
     ($s->{contest_start_offset}, $s->{contest_finish_offset}) = $dbh->selectrow_array(q~
@@ -164,7 +168,8 @@ sub contest_sites_edit_frame {
 
     my $s = $dbh->selectrow_hashref(qq~
         SELECT
-            S.id, S.name AS site_name, CS.diff_time, CS.ext_time, CS.contest_id,
+            S.id, S.name AS site_name,
+            CS.problem_tag, CS.diff_time, CS.ext_time, CS.contest_id,
             C.title AS contest_name,
             C.start_date AS contest_start,
             C.start_date + COALESCE(CS.diff_time, 0) AS contest_start_offset,
@@ -272,6 +277,7 @@ sub contest_sites_frame {
         ($is_jury || $user->{is_site_org} ? (
         { caption => res_str(659), order_by => 'org_person' , width => '15%', col => 'Op' },
         { caption => res_str(632), order_by => 'diff_time'  , width => '15%', col => 'Dt' },
+        { caption => res_str(629), order_by => 'problem_tag' , width => '5%', col => 'Tg' },
         ): ()),
         { caption => res_str(658), order_by => 'users_count', width => '15%', col => 'Pt' },
     ]);
@@ -299,7 +305,8 @@ sub contest_sites_frame {
     my $sth = $dbh->prepare(qq~
         SELECT
             S.id, (CASE WHEN CS.site_id IS NULL THEN 0 ELSE 1 END) AS is_used,
-            S.name, S.region, S.city, S.org_name, CS.diff_time, CS.ext_time,
+            S.name, S.region, S.city, S.org_name,
+            CS.problem_tag, CS.diff_time, CS.ext_time,
             ($org_person_sql) AS org_person,
             ($users_count_sql) AS users_count,
             ($users_count_ooc_sql) AS users_count_ooc

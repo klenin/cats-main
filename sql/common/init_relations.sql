@@ -196,6 +196,7 @@ CREATE TABLE sites (
 CREATE TABLE contest_sites (
     contest_id  INTEGER NOT NULL REFERENCES contests(id) ON DELETE CASCADE,
     site_id     INTEGER NOT NULL REFERENCES sites(id),
+    problem_tag VARCHAR(200),
     diff_time   DOUBLE PRECISION,
     ext_time    DOUBLE PRECISION
 );

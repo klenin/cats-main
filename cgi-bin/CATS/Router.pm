@@ -65,7 +65,7 @@ my $main_routes = {
         add => bool, delete => integer, check => array_of integer, with_org => integer,
         multi_console => bool, multi_rank_table => bool, ],
     contest_sites_edit => [ \&CATS::UI::Sites::contest_sites_edit_frame,
-        site_id => integer,
+        site_id => integer, problem_tag => str,
         diff_time => fixed, diff_units => ident,
         ext_time => fixed, ext_units => ident,
         save => bool, ],

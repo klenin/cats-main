@@ -3,5 +3,6 @@
     contest_name => 'Турнир',
     site_name => 'Площадка',
     users_count => 'Пользователи',
+    problem_tag => 'Тег варианта задач',
   })
 %]

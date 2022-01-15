@@ -3,5 +3,6 @@
     contest_name => 'Contest',
     site_name => 'Site',
     users_count => 'Users',
+    problem_tag => 'Problems variant tag',
   })
 %]
