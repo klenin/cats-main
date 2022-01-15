@@ -12,6 +12,18 @@ use CATS::Output qw(init_template);
 use CATS::Verdicts;
 use CATS::User;
 
+sub _get_groups {
+    my ($account_id, $contest_id) = @_;
+
+    my $groups = $dbh->selectcol_arrayref(q~
+        SELECT AG.name FROM acc_groups AG
+        INNER JOIN acc_group_accounts AGA ON AGA.acc_group_id = AG.id
+        INNER JOIN acc_group_contests AGC ON AGC.acc_group_id = AG.id
+        WHERE AGA.account_id = ? AND AGC.contest_id = ?
+        ORDER BY AG.name~, undef,
+        $account_id, $contest_id);
+}
+
 sub send_message_box_frame {
     my ($p) = @_;
     init_template($p, 'send_message_box.html.tt');
@@ -19,8 +31,8 @@ sub send_message_box_frame {
 
     my $caid = $p->{caid} or return;
 
-    my ($team_name, $site) = $dbh->selectrow_array(q~
-        SELECT A.team_name, S.name
+    my ($account_id, $contest_id, $team_name, $site) = $dbh->selectrow_array(q~
+        SELECT A.id, CA.contest_id, A.team_name, S.name
         FROM accounts A INNER JOIN contest_accounts CA ON CA.account_id = A.id
         LEFT JOIN sites S ON S.id = CA.site_id
         WHERE CA.id = ?~, undef,
@@ -29,6 +41,7 @@ sub send_message_box_frame {
     $t->param(
         team => $team_name,
         site => $site,
+        groups => _get_groups($account_id, $contest_id),
         title_suffix => res_str(567, $team_name),
     );
 
@@ -86,6 +99,7 @@ sub answer_box_frame {
     }
     else {
         $t->param(
+            groups => _get_groups($r->{aid}, $r->{contest_id}),
             submit_time => $r->{submit_time},
             question_text => $r->{question},
             answer => $r->{answer});

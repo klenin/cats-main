@@ -5,6 +5,7 @@
 <form method="post" enctype="multipart/form-data">
   [% capt.message_for_team %] [% team | html %]<br/>
   [% IF site; site | html %]<br/>[% END %]
+  [% IF groups; groups.join(',') | html %]<br/>[% END %]
   <br/>
   <textarea cols="50" rows="3" name="message_text" class="bordered"></textarea>
   <br/><br/>
