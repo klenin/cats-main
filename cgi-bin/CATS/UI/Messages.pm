@@ -109,11 +109,12 @@ sub questions_api {
     $is_jury or return $p->print_json({});
     my $questions = $dbh->selectall_arrayref(q~
         SELECT
-            CA.contest_id, A.team_name,
+            CA.contest_id, A.team_name, S.name AS site_name,
             Q.id, Q.submit_time, Q.clarification_time, Q.clarified, Q.question, Q.answer
         FROM questions Q
         INNER JOIN contest_accounts CA ON CA.id = Q.account_id
         INNER JOIN accounts A ON A.id = CA.account_id
+        LEFT JOIN sites S ON S.id = CA.site_id
         WHERE CA.contest_id = ? AND Q.clarified = ?~, { Slice => {} },
         $cid, $p->{clarified} ? 1 : 0);
     for my $q (@$questions) {
