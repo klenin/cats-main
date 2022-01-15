@@ -133,7 +133,7 @@ sub rank_table_frame {
         push @$submenu,
             { href => $url->('rank_table_icpc_export', csv_sep => ','), item => 'ICPC Export' },
     }
-    if ($is_root) {
+    if ($is_jury) {
         my $groups = $dbh->selectall_arrayref(qq~
             SELECT AG.id, AG.name FROM acc_groups AG
             INNER JOIN acc_group_contests AGC ON AGC.acc_group_id = AG.id
