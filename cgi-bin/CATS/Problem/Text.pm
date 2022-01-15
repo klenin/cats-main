@@ -339,6 +339,12 @@ sub problem_text {
         push @problems, @$prs;
     }
 
+    my $site = $uid && $dbh->selectrow_array(q~
+        SELECT CS.problem_tag FROM contest_accounts CA
+        INNER JOIN contest_sites CS ON CS.site_id = CA.site_id AND CS.contest_id = CA.contest_id
+        WHERE CA.contest_id = ? AND account_id = ?~, undef,
+        $problems[0]->{contest_id}, $uid);
+
     $spellchecker = $v->{is_jury_in_contest} && !$p->{nospell} ? CATS::Problem::Spell->new : undef;
     $noif = $v->{is_jury_in_contest} && $p->{noif};
 
@@ -369,6 +375,7 @@ sub problem_text {
         $problem->{lang} = choose_lang($problem, $p, $v->{is_jury_in_contest});
         $problem->{iface_lang} = (grep $_ eq $problem->{lang}, @cats::langs) ? $problem->{lang} : 'en';
         $tags->{lang} = [ 0, $problem->{lang} ];
+        $tags->{site} ||= [ 0, $site || 'none' ];
         $problem->{interactive_io} = $problem->{run_method} != $cats::rm_default;
         CATS::Problem::Utils::round_time_limit($problem->{time_limit});
 
