@@ -201,7 +201,7 @@ sub problems_submit {
         if (!$contest->{is_official} || $user->{is_virtual}) {
             my ($current_official) = $contest->current_official;
             !$current_official
-                or return msg(1123, $current_official->{title});
+                or return msg(1123, $current_official->{title}, $current_official->{finish_date});
         }
 
         return msg(1203) if user_is_banned($pid);

@@ -326,7 +326,7 @@
 1120 "User '%s' is already participating in this contest."
 1121 "hours|days|months"
 1122 "Virtual participation will be available after the finish of official contest."
-1123 "Official contest '%s' is running now, submitting problems to other contests is temporarily forbidden."
+1123 "Official contest '%s' is running now (until %s), submitting problems to other contests is temporarily forbidden."
 1124 "Sorry, solutions for problem '%s' are not accepted temporarily."
 1125 "User(s) '%s' were added to contest jury."
 1129 "Error while trying to move problem."

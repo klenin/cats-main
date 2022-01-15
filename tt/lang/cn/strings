@@ -326,7 +326,7 @@
 1120 "User '%s' is already participating in this contest."
 1121 "小时|天|月"
 1122 "官方比赛结束后，虚拟参与将会提供。"
-1123 "'%s'官方比赛现在运行，提交问题到其他比赛是暂时禁止的。"
+1123 "'%s'官方比赛现在运行，提交问题到其他比赛是暂时禁止的直到%s。"
 1124 "对不起，'%s'问题的解决方案暂时不被接受。"
 1125 "User(s) '%s' were added to contest jury."
 1129 "Error while trying to move problem."
