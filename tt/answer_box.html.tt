@@ -6,6 +6,7 @@
   <h3>[% contest_title | html %]</h3>
   <br/>
   <p>[% participant_name | html %], [% submit_time %]</p>
+  [% IF site %]<p>[% site | html %]</p>[% END %]
   <div class="bordered" style="width: 100%">[% question_text | html %]</div>
   [% IF answer %]<br/>[% capt.answered %]: [% answer | html %]<br/>[% END %]<br/>
   <form method="post" enctype="multipart/form-data">

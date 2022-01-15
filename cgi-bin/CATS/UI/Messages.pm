@@ -19,13 +19,18 @@ sub send_message_box_frame {
 
     my $caid = $p->{caid} or return;
 
-    my $team_name = $dbh->selectrow_array(q~
-        SELECT A.team_name
+    my ($team_name, $site) = $dbh->selectrow_array(q~
+        SELECT A.team_name, S.name
         FROM accounts A INNER JOIN contest_accounts CA ON CA.account_id = A.id
+        LEFT JOIN sites S ON S.id = CA.site_id
         WHERE CA.id = ?~, undef,
         $caid) or return;
 
-    $t->param(team => $team_name, title_suffix => res_str(567, $team_name));
+    $t->param(
+        team => $team_name,
+        site => $site,
+        title_suffix => res_str(567, $team_name),
+    );
 
     $p->{send} or return;
     my $message_text = $p->{message_text} or return;
@@ -39,11 +44,13 @@ sub _get_question {
     my $r = $dbh->selectrow_hashref(q~
         SELECT
             Q.account_id AS caid, CA.account_id AS aid, A.login, A.team_name,
+            S.name AS site_name,
             Q.submit_time, Q.question, Q.clarified, Q.answer, C.title, CA.contest_id
         FROM questions Q
         INNER JOIN contest_accounts CA ON CA.id = Q.account_id
         INNER JOIN accounts A ON A.id = CA.account_id
         INNER JOIN contests C ON C.id = CA.contest_id
+        LEFT JOIN sites S ON S.id = CA.site_id
         WHERE Q.id = ?~, { Slice => {} },
         $p->{qid}) or return;
     # BLOBs are not auto-decoded.
@@ -62,6 +69,7 @@ sub answer_box_frame {
 
     $t->param(
         participant_name => $r->{team_name},
+        site => $r->{site_name},
         title_suffix => res_str(566) . " $r->{team_name}", contest_title => $r->{title});
 
     if ($p->{clarify} && (my $ans = $p->{answer_text} // '') ne '') {
