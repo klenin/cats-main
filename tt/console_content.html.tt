@@ -54,21 +54,22 @@
 [% ELSIF c.is_question %]
   <td>[% c.time %]</td>
   <td class="name">[
-    [%~ IF user.is_jury ~%]
-    <a href="javascript:send_message('[% c.href_send_message_box %]')">[% c.team_name | html %]</a>
-    [%- cell_search_ex('account_id', c.team_id) %]
-    [%~ ELSE; c.team_name | html; END %]
+    [%~ maybe_href(c.href_user_stats, c.team_name) -%]
+    [%- cell_search_ex('account_id', c.team_id) IF user.is_jury %]
     &gt; [% capt.jury %]]
   </td>
   <td colspan="[% colspan %]">
     <a title="[% c.contest_title | html %]" class="question">[% c.question_text | html %]</a> -
     [% IF c.clarified %]<span class="jury_message">[% c.answer_text | html %]</span>[% END %]
-    [% IF c.href_answer_box %]
-      <a href="[% c.href_answer_box %]" target="_blank">[[% capt.answer %]]</a>
-    [% END %]
-    [% IF c.href_delete_question %]
-      <a href="[% c.href_delete_question %]">[[% capt.delete %]]</a>
-    [% END %]
+    [% IF c.href_answer_box -%]
+      [<a href="[% c.href_answer_box %]" target="_blank">[% capt.answer %]</a>]
+    [%- END %]
+    [% IF c.href_delete_question -%]
+      [<a href="[% c.href_delete_question %]">[% capt.delete %]</a>]
+    [%- END %]
+    [% IF c.href_send_message_box -%]
+      [<a href="javascript:send_message('[% c.href_send_message_box %]')">[% capt.message %]</a>]
+    [%- END %]
   </td>
   [% IF user.is_jury %]
   <td>[% IF visible_cols.Ip %][
@@ -80,12 +81,12 @@
 [% ELSIF c.is_message %]
   <td>[% c.time %]</td>
   <td class="name">
-    [[% capt.jury %] &gt; [% c.team_name | html %]]
+    [[% capt.jury %] &gt; [% maybe_href(c.href_user_stats, c.team_name) %]]
     [%- cell_search_ex('account_id', c.team_id) IF user.is_jury -%]
   </td>
   <td colspan="[% colspan %]">
     <a title="[% c.contest_title | html  %]"><span class="jury_message">[% c.message_text | html %]</span></a>
-    [% IF c.href_delete_message %]<a href="[% c.href_delete_message %]">[[% capt.delete %]]</a>[% END %]
+    [% IF c.href_delete_message %][<a href="[% c.href_delete_message %]">[% capt.delete %]</a>][% END %]
   </td>
 [% ELSIF c.is_broadcast %]
   <td>[% c.time %]</td>

@@ -3,6 +3,7 @@
     jury => 'жюри',
     answer => 'ответить',
     delete => 'удалить',
+    message => 'сообщение',
     all_teams => 'всем участникам',
     contest_dates => {
       start => 'Начался',

@@ -214,6 +214,9 @@ sub _console_content {
                 url_f('answer_box', qid => $id) : undef,
             href_send_message_box =>
                 ($is_jury && $caid ? url_f('send_message_box', caid => $caid) : undef),
+            href_user_stats =>
+                $uid && $team_id && ($is_jury || $uid == $team_id) ?
+                url_f('user_stats', uid => $team_id) : undef,
             'time' =>               _format_submit_time($lv, $submit_time, $submit_since_start),
             time_iso =>             $submit_time,
             problem_id =>           $problem_id,

@@ -3,6 +3,7 @@
     jury => 'jury',
     answer => 'answer',
     delete => 'delete',
+    message => 'message',
     all_teams => 'to all participants',
     contest_dates => {
       start => 'Start of',
