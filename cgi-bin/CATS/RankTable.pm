@@ -66,9 +66,9 @@ sub get_problems {
             $prev_cid = $_->{contest_id};
         }
         $c->{count}++;
-        # Optimization: do not output tooltip in local_only contests to avoid extra query.
-        $_->{title} = '' if ($_->{since_start} < 0 || $_->{local_only}) && !$is_jury;
-        $_->{problem_text} = url_f('problem_text', cpid => $_->{cpid});
+        # Optimization: do not link to problem text in local_only contests to avoid extra query.
+        my $local_only = ($_->{since_start} < 0 || $_->{local_only}) && !$is_jury;
+        $_->{problem_text} = $local_only ? '' : url_f('problem_text', cpid => $_->{cpid});
         if ($self->{show_points} && !$_->{max_points}) {
             $_->{max_points} = CATS::Score::cache_max_points($_);
             $need_commit = 1;
