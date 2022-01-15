@@ -1,0 +1,44 @@
+[%- WRAPPER includes/jsonp.tti -%]
+[%- MACRO row_bool(v) BLOCK; "\"$v\": "; $v ? 'true': 'false'; END -%]
+[%- MACRO row_str(v) BLOCK; "\"$v\": \""; $v; '"'; END -%]
+[%- MACRO row_quot(v) BLOCK; "\"$v\": \""; $v | $Javascript; '"'; END -%]
+[%- MACRO row(v) BLOCK; "\"$v\": "; $v; END -%]
+[%- USE Javascript -%]
+{
+  [% row_quot('title') %],
+  [% row_quot('short_descr') %],
+  [% row_str('start_date') %],
+  [% row_str('freeze_date') %],
+  [% row_str('finish_date') %],
+  [% row_str('defreeze_date') %],
+  [% row_str('pub_reqs_date') %],
+  [% row_str('offset_start_until') %],
+  "rules": "[% rules ? 'school' : 'icpc' %]",
+  "req_selection": "[% req_selection ? 'best' : 'last' %]",
+  [% row_bool('run_all_tests') %],
+  [% row_bool('open_registration') %],
+  [% row_bool('is_official') %],
+  [% row_bool('local_only') %],
+  [% row_bool('is_hidden') %],
+  [% row_bool('pinned_judges_only') %],
+  [% row_bool('show_all_results') %],
+  [% row_bool('show_all_tests') %],
+  [% row_bool('show_test_resource') %],
+  [% row_bool('show_test_data') %],
+  [% row_bool('show_checker_comme') %],
+  [% row_bool('show_packages') %],
+  [% row_bool('show_explanations') %],
+  [% row_bool('show_flags') %],
+  [% row_bool('show_sites') %],
+  [% row_bool('show_all_for_solve') %],
+  [% row_bool('show_is_remote') %],
+  [%- IF scaled_points; row('scaled_points'); ','; END %]
+  [%- IF round_points; row('round_points_to'); ','; END %]
+  [%- IF max_reqs; row('max_reqs'); ','; END %]
+  "exclude_verdict_max_reqs" : "
+    [%- e = 0; FOREACH v IN verdicts_max_reqs; NEXT IF !v.checked; ',' IF e; e = 1; v.short; END %]",
+  [%  IF penalty; row('penalty'); ','; END %]
+  "exclude_verdict_penalty" : "
+    [%- e = 0; FOREACH v IN verdicts_penalty; NEXT IF !v.checked; ',' IF e; e = 1; v.short; END %]"
+}
+[%- END -%]

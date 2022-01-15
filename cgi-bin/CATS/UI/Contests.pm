@@ -337,7 +337,7 @@ sub _to_num { $_[0] or return; $_[0] =~ s/\.(\d*?)0+$/$1 ? ".$1" : ''/e; $_[0] |
 sub contest_params_frame {
     my ($p) = @_;
 
-    init_template($p, 'contest_params.html.tt');
+    init_template($p, 'contest_params');
     $p->{id} //= $cid;
 
     my $c = $dbh->selectrow_hashref(q~
