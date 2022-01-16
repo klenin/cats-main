@@ -137,8 +137,13 @@ sub sites_frame {
 sub contest_sites_edit_save {
     my ($p, $s) = @_;
     $p->{save} or return;
-    CATS::Time::set_diff_time($s, $p, 'diff') or return;
-    CATS::Time::set_diff_time($s, $p, 'ext') or return;
+    my ($changed_diff, $changed_ext);
+    eval {
+        $changed_diff = CATS::Time::set_diff_time($s, $p, 'diff');
+        $changed_ext = CATS::Time::set_diff_time($s, $p, 'ext');
+        1;
+    } or return CATS::Messages::msg_debug($@);
+
     $s->{problem_tag} = $p->{problem_tag};
 
     $dbh->do(_u $sql->update('contest_sites',
@@ -156,8 +161,8 @@ sub contest_sites_edit_save {
         WHERE CS.site_id = ? AND CS.contest_id = ?~, undef,
         $s->{id}, $cid) or return;
     $dbh->commit;
-    msg($s->{diff_time} ? 1160 : 1161, $s->{site_name});
-    msg($s->{ext_time} ? 1164 : 1165, $s->{site_name});
+    $changed_diff and msg($s->{diff_time} ? 1160 : 1161, $s->{site_name});
+    $changed_ext and msg($s->{ext_time} ? 1164 : 1165, $s->{site_name});
 }
 
 sub contest_sites_edit_frame {

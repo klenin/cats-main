@@ -3,7 +3,8 @@ use warnings;
 
 use File::Spec;
 use FindBin;
-use Test::More tests => 14;
+use Test::Exception;
+use Test::More tests => 19;
 
 use lib File::Spec->catdir($FindBin::Bin, '..');
 use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
@@ -38,4 +39,18 @@ is fd(1.9999999), '2 d.', 'rounding';
 is fd(-1.9999999), '-2 d.', 'negative rounding';
 
 is fd(1 + 1/24/60), '1 d. 00:01', 'day + minute';
+
+*sdt = *CATS::Time::set_diff_time;
+
+throws_ok { sdt({}, { ext_units => 'zzz', ext_time => 5 }, 'ext') }
+    qr/units/, 'set_diff_time bad units';
+
+{
+    my $p = { ext_time => undef };
+    ok !sdt($p, { ext_units => 'day', ext_time => undef }, 'ext'),
+        'set_diff_time undef no change';
+    ok sdt($p, { ext_units => 'day', ext_time => 1 }, 'ext'), 'set_diff_time day change';
+    is $p->{ext_time}, 1, 'set_diff_time day';
+    ok !sdt($p, { ext_units => 'day', ext_time => 1 }, 'ext'), 'set_diff_time day no change';
+}
 1;

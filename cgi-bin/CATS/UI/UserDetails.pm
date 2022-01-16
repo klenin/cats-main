@@ -254,15 +254,19 @@ sub user_vdiff_load {
 sub user_vdiff_save {
     my ($p, $u) = @_;
     $is_jury && $p->{save} or return;
-    CATS::Time::set_diff_time($u, $p, 'diff') or return;
-    CATS::Time::set_diff_time($u, $p, 'ext') or return;
+    my ($changed_diff, $changed_ext);
+    eval {
+        $changed_diff = CATS::Time::set_diff_time($u, $p, 'diff');
+        $changed_ext = CATS::Time::set_diff_time($u, $p, 'ext');
+        1;
+    } or return CATS::Messages::msg_debug($@);
     $u->{is_virtual} = $p->{is_virtual} ? 1 : 0;
     $dbh->do(_u $sql->update('contest_accounts',
         { diff_time => $u->{diff_time}, ext_time => $u->{ext_time}, is_virtual => $u->{is_virtual} },
         { account_id => $p->{uid}, contest_id => $cid }
     ));
-    msg($u->{diff_time} ? 1157 : 1158, $u->{team_name});
-    msg($u->{ext_time} ? 1162 : 1163, $u->{team_name});
+    $changed_diff and msg($u->{diff_time} ? 1157 : 1158, $u->{team_name});
+    $changed_ext and msg($u->{ext_time} ? 1162 : 1163, $u->{team_name});
     1;
 }
 

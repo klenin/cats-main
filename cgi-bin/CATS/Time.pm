@@ -68,10 +68,12 @@ my $diff_units = { min => 1 / 24 / 60, hour => 1 / 24, day => 1, week => 7 };
 
 sub set_diff_time {
     my ($obj, $p, $prefix) = @_;
-    my $k = $diff_units->{$p->{$prefix . '_units'} // ''} or return;
+    my $k = $diff_units->{$p->{$prefix . '_units'} // ''} or die 'Bad units';
     my $n = $prefix . '_time';
-    $obj->{$n} = $p->{$n} ? $p->{$n} * $k : undef;
-    1;
+    my $val = $p->{$n} ? $p->{$n} * $k : undef;
+    my $changed = ($val // 'undef') ne ($obj->{$n} // 'undef');
+    $obj->{$n} = $val;
+    $changed;
 }
 
 sub href_time_zone {
