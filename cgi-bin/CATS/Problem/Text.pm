@@ -293,6 +293,8 @@ sub choose_lang {
     $lang_tag || $langs[0];
 }
 
+sub _ignore_errors {}
+
 sub problem_text {
     my ($p) = @_;
     my $v = _contest_visible($p) or return $p->not_found;
@@ -339,7 +341,7 @@ sub problem_text {
         push @problems, @$prs;
     }
 
-    my $site = $uid && $dbh->selectrow_array(q~
+    my $site_tags = @problems && $uid && $dbh->selectrow_array(q~
         SELECT CS.problem_tag FROM contest_accounts CA
         INNER JOIN contest_sites CS ON CS.site_id = CA.site_id AND CS.contest_id = CA.contest_id
         WHERE CA.contest_id = ? AND account_id = ?~, undef,
@@ -371,11 +373,15 @@ sub problem_text {
             $problem = { %$problem, %$p_orig };
         }
         $problem->{tags} = $p->{tags} if $v->{is_jury_in_contest} && defined $p->{tags};
-        $problem->{parsed_tags} = $tags = CATS::Problem::Tags::parse_tag_condition($problem->{tags}, sub {});
+        $problem->{parsed_tags} = $tags = CATS::Problem::Tags::parse_tag_condition(
+            $problem->{tags}, _ignore_errors);
+        if ($site_tags) {
+            my $t = CATS::Problem::Tags::parse_tag_condition($site_tags, _ignore_errors);
+            $tags->{$_} = $t->{$_} for keys %$t;
+        }
         $problem->{lang} = choose_lang($problem, $p, $v->{is_jury_in_contest});
         $problem->{iface_lang} = (grep $_ eq $problem->{lang}, @cats::langs) ? $problem->{lang} : 'en';
         $tags->{lang} = [ 0, $problem->{lang} ];
-        $tags->{site} ||= [ 0, $site || 'none' ];
         $problem->{interactive_io} = $problem->{run_method} != $cats::rm_default;
         CATS::Problem::Utils::round_time_limit($problem->{time_limit});
 

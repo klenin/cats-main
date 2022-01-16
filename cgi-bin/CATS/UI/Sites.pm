@@ -139,10 +139,11 @@ sub contest_sites_edit_save {
     $p->{save} or return;
     CATS::Time::set_diff_time($s, $p, 'diff') or return;
     CATS::Time::set_diff_time($s, $p, 'ext') or return;
+    $s->{problem_tag} = $p->{problem_tag};
 
     $dbh->do(_u $sql->update('contest_sites',
         {
-            problem_tag => $p->{problem_tag},
+            problem_tag => $s->{problem_tag},
             diff_time => $s->{diff_time},
             ext_time => $s->{ext_time},
         },
