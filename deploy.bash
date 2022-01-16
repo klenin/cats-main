@@ -94,6 +94,7 @@ if [[ $step =~ (^|,)2(,|$) || $step == "*" ]]; then
 		JSON::XS
 		SQL::Abstract
 		Template
+		Test::Exception
 		Text::Aspell
 		Text::CSV
 		Text::MultiMarkdown
