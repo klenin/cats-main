@@ -5,12 +5,14 @@ use warnings;
 
 use Encode;
 
+use CATS::Config;
 use CATS::DB qw(:DEFAULT $db);
 use CATS::Globals qw($cid $t $is_jury $uid $user);
 use CATS::Messages qw(res_str);
-use CATS::Output qw(init_template);
+use CATS::Output qw(init_template url_f);
 use CATS::Verdicts;
 use CATS::User;
+use CATS::Utils;
 
 sub _get_groups {
     my ($account_id, $contest_id) = @_;
@@ -131,7 +133,7 @@ sub questions_api {
     $is_jury or return $p->print_json({});
     my $questions = $dbh->selectall_arrayref(q~
         SELECT
-            CA.contest_id, A.team_name, S.name AS site_name,
+            CA.contest_id, CA.account_id, A.team_name, S.name AS site_name,
             Q.id, Q.submit_time, Q.clarification_time, Q.clarified, Q.question, Q.answer
         FROM questions Q
         INNER JOIN contest_accounts CA ON CA.id = Q.account_id
@@ -142,6 +144,10 @@ sub questions_api {
     for my $q (@$questions) {
         $q->{$_} = $db->format_date($q->{$_}) for qw(submit_time clarification_time);
         $q->{$_} = Encode::decode_utf8($q->{$_}) for qw(answer question);
+        $q->{href_console} = CATS::Utils::redirect_url_function($CATS::Config::absolute_url,
+            f => 'console', se => 'user_stats',
+            uf => $q->{account_id}, i_value => -1, search => 'contest_id=this',
+            cid => $cid, sid => 'z');
     }
     $p->print_json({ questions => $questions });
 }
