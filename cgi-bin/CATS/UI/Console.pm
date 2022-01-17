@@ -35,7 +35,7 @@ sub send_question_to_jury {
         SELECT question FROM questions
         WHERE account_id = ? ORDER BY submit_time DESC $db->{LIMIT} 1~, undef,
         $user->{ca_id});
-    ($previous_question_text || '') ne $question_text or return msg(1061);
+    Encode::decode_utf8($previous_question_text || '') ne $question_text or return msg(1061);
 
     my $s = $dbh->prepare(q~
         INSERT INTO questions(id, account_id, submit_time, question, received, clarified)
