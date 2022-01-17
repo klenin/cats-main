@@ -27,6 +27,7 @@ our @router_bool_params = qw(
 );
 
 our @router_params = (
+    #accounts => clist_of integer,
     filter => str,
     groups => clist_of integer,
     sites => clist_of integer,
@@ -135,13 +136,13 @@ sub rank_table_frame {
     }
     if ($is_jury) {
         my $groups = $dbh->selectall_arrayref(qq~
-            SELECT AG.id, AG.name FROM acc_groups AG
+            SELECT DISTINCT AG.id, AG.name FROM acc_groups AG
             INNER JOIN acc_group_contests AGC ON AGC.acc_group_id = AG.id
             WHERE AGC.contest_id IN ($rt->{contest_list}) ORDER BY AG.name~, { Slice => {} });
         _set_selected($groups, $p->{groups});
 
         my $sites = $dbh->selectall_arrayref(qq~
-            SELECT S.id, S.name FROM sites S
+            SELECT DISTINCT S.id, S.name FROM sites S
             INNER JOIN contest_sites CS ON CS.site_id = S.id
             WHERE CS.contest_id IN ($rt->{contest_list}) ORDER BY S.name~, { Slice => {} });
         _set_selected($sites, $p->{sites});
@@ -152,7 +153,7 @@ sub rank_table_frame {
         my %route = CATS::RouteParser::reconstruct($p);
         delete @route{qw(groups sites), @ui_fields};
         $t->param(
-            route => { %route, cid => $cid, sid => $sid },
+            route => { %route, cid => $cid, sid => $sid, clist => $rt->{contest_list} },
             groups => $groups,
             sites => $sites,
             map { $_ => $p->{$_} } @ui_fields,
