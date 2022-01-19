@@ -14,3 +14,4 @@ CREATE INDEX de_tags_name_idx ON de_tags(name);
 CREATE DESCENDING INDEX idx_events_ts ON events(ts);
 CREATE DESCENDING INDEX idx_questions_submit_time ON questions(submit_time);
 CREATE DESCENDING INDEX idx_reqs_submit_time ON reqs(submit_time);
+CREATE DESCENDING INDEX idx_jobs_id ON jobs(id);
