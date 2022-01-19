@@ -36,6 +36,7 @@ function delete_job(href, name) {
 [% IF visible_cols.Ct %]<td>[% href(j.href_contest, j.contest_title); cell_search('contest_id', j) %]</td>[% END %]
 [% IF visible_cols.Ac %]<td>[% href(j.href_user, j.team_name); cell_search('account_id', j) %]</td>[% END %]
 [% IF visible_cols.Pi %]<td>[% j.parent_id; cell_search('parent_id', j) %]</td>[% END %]
+[% IF visible_cols.Ls %]<td class="num">[% j.log_size | group_digits %]</td>[% END %]
 </tr>
 [% END %]
 </table>

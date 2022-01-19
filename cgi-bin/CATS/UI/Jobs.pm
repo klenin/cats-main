@@ -47,6 +47,7 @@ sub jobs_frame {
         { caption => res_str(603), order_by => 'contest_title', width => '15%', col => 'Ct' },
         { caption => res_str(608), order_by => 'team_name', width => '15%', col => 'Ac' },
         { caption => res_str(813), order_by => 'parent_id', width => '5%', col => 'Pi' },
+        { caption => res_str(684), order_by => 'log_size', width => '5%', col => 'Ls' },
     ]);
     $lv->define_db_searches([ qw(
         J1.id type state create_time start_time finish_time time_len judge_id judge_name
@@ -99,6 +100,8 @@ sub jobs_frame {
           $maybe_field->('Pr', 'problem_id'),
           $maybe_field->('Ct', 'contest_id'),
           $maybe_field->('Ac', 'account_id'),
+          ($lv->visible_cols->{Ls} ?
+            '(SELECT SUM(OCTET_LENGTH(dump)) FROM logs L WHERE L.job_id = J.id)' : 'NULL') . ' AS log_size',
         ]
     );
     my ($q1, @bind) = $sql->select("($q) J1 " .
