@@ -61,8 +61,12 @@ sub awards_frame {
     $lv->define_db_searches([ qw(id name color is_public descr) ]);
     $lv->default_searches([ qw(name) ]);
 
+    my $user_count_sql = $lv->visible_cols->{Uc} ? q~
+        (SELECT COUNT(*) FROM contest_account_awards CAA WHERE CAA.award_id = AW.id)~ : 'NULL';
     my $sth = $dbh->prepare(qq~
-        SELECT AW.id, AW.name, AW.is_public, AW.color, AW.descr
+        SELECT
+            AW.id, AW.name, AW.is_public, AW.color, AW.descr,
+            $user_count_sql AS user_count
         FROM awards AW
         WHERE AW.contest_id = ? ~ . $lv->maybe_where_cond . $lv->order_by);
     $sth->execute($cid, $lv->where_params);
