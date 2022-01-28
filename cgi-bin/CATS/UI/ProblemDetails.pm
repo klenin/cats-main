@@ -90,7 +90,8 @@ sub problem_details_frame {
             name => $name,
             all => $rc_all->{$st},
             contest => $rc_contest->{$st},
-            href_all => url_f('console', search => $search, %p),
+            href_all => url_f('console',
+                search => $search, %p, , show_contests => 0, show_messages => 0),
             href_contest => url_f('console', search => "$search,contest_id=$cid", %p),
         }
     };
