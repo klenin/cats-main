@@ -67,14 +67,17 @@ sub _rank_table_icpc_export {
     $rt->rank_table;
     my %team_idx;
     $team_idx{$_->{team_name}} = $_ for @{$rt->{rank}};
+    my @unknown;
     my $rank_export = [ map {
-        my $r = $team_idx{$_->{name}} or return "Unknown team: '$_->{name}'";
+        my $r = $team_idx{$_->{name}} or push @unknown, $_->{name};
+        $r //= {};
         my ($inst) = $_->{name} =~ /^(.+)(?:\:.+|\s+\d+)$/;
         [
             $_->{id}, $r->{place}, $_->{name}, $inst, '',
             $r->{total_solved}, $r->{total_time}, '', '', '',
         ];
     } @$teams ];
+    return 'Unknown teams: ' . join ' | ', @unknown if @unknown;
     $p->{csv} = [ qw(
         teamId rank teamName institution medalCitation
         problemsSolved totalTime lastProblemTime siteCitation citation) ];
