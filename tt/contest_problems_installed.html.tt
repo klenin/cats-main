@@ -27,11 +27,11 @@
     <tr class="[% loop.parity %]">
       <td>[% maybe_href(line.href_judge, line.judge_name) %]</td>
       [% FOREACH d IN line.row %]
-        <td>
+        <td><label>
           [% d.value %]
           [% capt.jobs.states.item(job_state_to_name.item(d.now.0)) IF d.now.size %]
           <input type="checkbox" name="selected_problems" value="[% d.judge_problem %]"/>
-        </td>
+        </label></td>
       [% END %]
     </tr>
   [% END %]
