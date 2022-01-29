@@ -46,7 +46,7 @@
 </td>
 <td>
   [% IF can_change_cols %]
-  <a href="#" class="listview_dropper" onclick="return toggle_csv()">&#x1f5d0;</a>
+  <a href="#" class="listview_dropper" onclick="return toggle_csv()" style="font-stretch: condensed;">csv</a>
   <div id="csv" class="bordered select_cols" style="display: none;">
     [% FOREACH col IN ${lv_array_name}.0.keys.sort %]
     <label><input type="checkbox" name="csv" value="[% col %]"> [% col %]</label>
