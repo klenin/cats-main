@@ -220,14 +220,14 @@ sub attach {
         $_->{href_sort} .= $page_extra_params for @{$self->{col_defs}};
     }
 
-    $self->{visible_data} = \@data;
+    $self->{visible_data} = $self->post_sort(\@data);
     $self->{template}->param(
         $self->common_param($row_keys),
         page => $$page, pages => \@pages,
         href_lv_action => $self->{url} . $page_extra_params,
         ($range_start > 0 ? (href_prev_pages => $href_page->($range_start - 1)) : ()),
         ($range_end < $page_count - 1 ? (href_next_pages => $href_page->($range_end + 1)) : ()),
-        $self->{array_name} => \@data,
+        $self->{array_name} => $self->{visible_data},
         lv_array_name => $self->{array_name},
         lv_range => $range,
     );
@@ -252,7 +252,7 @@ sub order_by {
     my $c = $self->find_sorting_col($s);
     my @order = (
         $pre_sort // $self->{pre_sort} // (),
-        $c ? $c->{order_by} . ($s->{sort_dir} ? ' DESC' : ' ASC') : (),
+        $c && !ref $c->{order_by} ? $c->{order_by} . ($s->{sort_dir} ? ' DESC' : ' ASC') : (),
     );
     @order ? 'ORDER BY ' . join(', ', @order) : '';
 }
@@ -277,6 +277,15 @@ sub where_params {
     my ($self) = @_;
     my (undef, @params) = $sql->where($self->where);
     @params;
+}
+
+sub post_sort {
+    my ($self, $data) = @_;
+    my $s = $self->settings;
+    my $col_def = $self->find_sorting_col($s) or return $data;
+    my $order_by = $col_def->{order_by};
+    my $dir = $col_def->{sort_dir} ? -1 : 1;
+    $order_by && ref $order_by eq 'CODE' ? [ sort { $dir * $order_by->($a, $b) } @$data ] : $data;
 }
 
 sub sort_in_memory {
