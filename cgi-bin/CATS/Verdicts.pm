@@ -67,4 +67,6 @@ sub hide_verdict_self {
     $jury ? $true_verdict : ($hidden_verdicts_self->{$true_verdict} // $true_verdict);
 }
 
+our $problem_list_stats = [ qw(AW OK WA TL) ];
+
 1;

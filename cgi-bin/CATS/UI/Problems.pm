@@ -191,6 +191,32 @@ sub _combine_limits {
     defined $override && defined $default ? "$override ($default)" : $override // $default;
 }
 
+sub _collect_req_stats {
+    my ($aid) = @_;
+    my $req_state_vals = join ',', map $CATS::Verdicts::name_to_state->{$_},
+        @$CATS::Verdicts::problem_list_stats;
+    my $reqs = $dbh->selectall_arrayref(qq~
+        SELECT R.problem_id, R.state, COUNT(*) cnt FROM reqs R
+        WHERE R.contest_id = ? AND R.account_id = ? AND R.state IN ($req_state_vals)
+        GROUP BY R.problem_id, R.state~, { Slice => {} },
+        $cid, $aid);
+    my $reqs_idx = {};
+    for (@$reqs) {
+        $reqs_idx->{$_->{problem_id}}->{$CATS::Verdicts::state_to_name->{$_->{state}}} = $_->{cnt};
+    }
+
+    my $last_submits = $dbh->selectall_hashref(q~
+        SELECT L.problem_id, R1.id, R1.state FROM reqs R1 INNER JOIN (
+            SELECT CP.problem_id, MAX(R.submit_time) AS last FROM reqs R
+            INNER JOIN contest_problems CP ON CP.contest_id = R.contest_id AND CP.problem_id = R.problem_id
+            WHERE CP.contest_id = ? AND R.account_id = ?
+            GROUP BY CP.problem_id) L
+        ON R1.problem_id = L.problem_id AND R1.submit_time = L.last AND R1.account_id = ?~,
+        'problem_id', { Slice => {} },
+        $cid, $aid, $aid);
+    ($reqs_idx, $last_submits);
+}
+
 sub problems_frame {
     my ($p) = @_;
 
@@ -246,6 +272,13 @@ sub problems_frame {
     }
     $t->param(wikis => $wikis);
 
+    my $aid = $uid || 0; # in a case of anonymous user
+
+    my $rc_order_by = sprintf qq~
+        (SELECT R.state FROM reqs R
+            WHERE R.problem_id = P.id AND R.account_id = %d AND R.contest_id = %d
+            ORDER BY R.submit_time DESC $CATS::DB::db->{LIMIT} 1)~, $aid, $cid;
+
     $lv->default_sort(0)->define_columns([
         { caption => res_str(602), order_by => ($contest->is_practice ? 'P.title' : 'CP.code'), width => '25%' },
         ($is_jury ?
@@ -273,7 +306,7 @@ sub problems_frame {
         ($contest->is_practice ?
         { caption => res_str(603), order_by => 'contest_title', width => '15%' } : ()
         ),
-        { caption => res_str(604), order_by => 'accepted_count', width => '12%', col => 'Vc' }, # ok/wa/tl
+        { caption => res_str(604), order_by => $rc_order_by, width => '12%', col => 'Vc' }, # ok/wa/tl
     ]);
     CATS::Problem::Utils::define_common_searches($lv);
     if ($is_jury || $contest->has_finished_for($user)) {
@@ -283,8 +316,8 @@ sub problems_frame {
     $lv->define_db_searches({ contest_title => 'OC.title' });
     my $psn = CATS::Problem::Utils::problem_status_names_enum($lv);
 
-    my $reqs_count_sql = 'SELECT COUNT(*) FROM reqs D WHERE D.problem_id = P.id AND D.state =';
-    my $account_condition = $contest->is_practice ? '' : ' AND D.account_id = ?';
+    my ($req_stats_idx, $last_submits) = $lv->visible_cols->{Vc} ? _collect_req_stats($aid) : ({}, {});
+
     my $select_code = $contest->is_practice ? 'NULL' : 'CP.code';
     my $hidden_problems = $is_jury ? '' : " AND CP.status < $cats::problem_st_hidden";
     my $original_contest_code_sql = $is_jury ? q~
@@ -294,20 +327,6 @@ sub problems_frame {
     my $test_count_sql = $is_jury ?
         '(SELECT COUNT(*) FROM tests T WHERE T.problem_id = P.id) AS test_count,' : '';
     my $limits_str = join ', ', map "P.$_, L.$_ AS cp_$_", @cats::limits_fields;
-    my $counts = $lv->visible_cols->{Vc} ? qq~
-        ($reqs_count_sql $cats::st_accepted$account_condition) AS accepted_count,
-        ($reqs_count_sql $cats::st_wrong_answer$account_condition) AS wrong_answer_count,
-        ($reqs_count_sql $cats::st_time_limit_exceeded$account_condition) AS time_limit_count,
-        ($reqs_count_sql $cats::st_awaiting_verification$account_condition) AS awaiting_verification_count,
-        (SELECT R.id || ' ' || R.state FROM reqs R
-            WHERE R.problem_id = P.id AND R.account_id = ? AND R.contest_id = ?
-            ORDER BY R.submit_time DESC $CATS::DB::db->{LIMIT} 1) AS last_submission~
-    : q~
-        NULL AS accepted_count,
-        NULL AS wrong_answer_count,
-        NULL AS time_limit_count,
-        NULL AS awaiting_verification_count,
-        NULL AS last_submission~;
     my $keywords = $is_jury && $lv->visible_cols->{Kw} ? q~(
         SELECT LIST(DISTINCT K.code, ' ') FROM keywords K
         INNER JOIN problem_keywords PK ON PK.keyword_id = K.id AND PK.problem_id = P.id
@@ -346,7 +365,6 @@ sub problems_frame {
             P.input_file, P.output_file,
             $select_code AS code, P.title, OC.title AS contest_title,
             $original_contest_code_sql AS original_code,
-            $counts,
             $keywords
             $allow_des
             P.contest_id - CP.contest_id AS is_linked,
@@ -370,12 +388,7 @@ sub problems_frame {
         $contests_sql$hidden_problems~ .
         $lv->maybe_where_cond . $lv->order_by('CC.start_date')
     );
-    my $aid = $uid || 0; # in a case of anonymous user
-    my @params =
-        !$lv->visible_cols->{Vc} ? () :
-        $contest->is_practice ? ($aid, $cid) :
-        (($aid) x 5, $cid);
-    $sth->execute(@params, @contests_params, $lv->where_params);
+    $sth->execute(@contests_params, $lv->where_params);
 
     my @status_list;
     if ($is_jury) {
@@ -419,11 +432,11 @@ sub problems_frame {
         }
         $any_langs{$lang_tag->[1] // $c->{lang}} = undef if !@$problem_langs && !$hrefs_view{statement};
 
-        my ($last_request, $last_state) = split ' ', $c->{last_submission} || '';
-        $last_state //= 0;
+        my $last_request = $last_submits->{$c->{pid}}->{id};
+        my $last_state = $last_submits->{$c->{pid}}->{state} // 0;
         my $last_verdict = do {
-            my $lv = $last_state ? $CATS::Verdicts::state_to_name->{$last_state} : '';
-            CATS::Verdicts::hide_verdict_self($is_jury, $lv);
+            my $lastv = $last_state ? $CATS::Verdicts::state_to_name->{$last_state} : '';
+            CATS::Verdicts::hide_verdict_self($is_jury, $lastv);
         };
 
         my $can_download = CATS::Problem::Utils::can_download_package;
@@ -434,6 +447,7 @@ sub problems_frame {
         my $href_group = $group_title && url_f_cid('problems', cid => $c->{contest_id});
         $prev_contest = $c->{contest_id};
 
+        my $rc = $req_stats_idx->{$c->{pid}} // {};
         return (
             href_delete => url_f('problems', delete_problem => $c->{cpid}),
             href_change_status => url_f('problems', change_status => $c->{cpid}),
@@ -471,10 +485,7 @@ sub problems_frame {
             usage_count => $c->{usage_count},
             original_contest_id => $c->{original_contest_id},
             contest_title => $c->{contest_title},
-            accept_count => $c->{accepted_count},
-            wa_count => $c->{wrong_answer_count},
-            tle_count => $c->{time_limit_count},
-            aw_count => $c->{awaiting_verification_count},
+            reqs_count => sprintf('%s + %s / %s / %s', map $_ // '0', @$rc{qw(OK AW WA TL)}),
             upload_date => $c->{upload_date},
             upload_date_iso => $c->{upload_date},
             judges_installed => $c->{judges_installed},
