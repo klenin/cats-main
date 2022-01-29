@@ -465,6 +465,8 @@ sub problems_frame {
             href_last_request => ($last_request ? url_f('run_details', rid => $last_request) : ''),
             href_allow_des => url_f('problem_des', pid => $c->{pid}),
             href_problem_limits => $is_jury && url_f('problem_limits', pid => $c->{pid}, from_problems => 1),
+            href_judges_installed => $is_jury &&
+                url_f('contest_problems_installed', search => 'problem_id=' . $c->{pid}),
 
             status => $c->{status},
             status_text => $psn->{$c->{status}},
