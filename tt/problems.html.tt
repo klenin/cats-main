@@ -243,6 +243,7 @@ function chg_code(st_sel, pid) {
 [% IF visible_cols.Mt %]<td class="num">[% p.upload_date %]</td>[% END %]
 [% IF visible_cols.Ad %]<td[% ' class="yscroll"' IF p.allow_des.length > 20 %]><div>
 [% href(p.href_allow_des, p.allow_des, p.allow_des_names) %]</div></td>[% END %]
+[% IF visible_cols.Ju %]<td class="num">[% p.judges_installed %]</td>[% END %]
 [% END %]
 [% IF contest.is_practice %]<td>
 [%- href(p.href_original_contest, p.contest_title); cell_search_ex('contest_id', p.original_contest_id) -%]
@@ -256,7 +257,6 @@ function chg_code(st_sel, pid) {
   [%- IF p.href_problem_console %]<a href="[% p.href_problem_console %]">[% END -%]
   [% p.reqs_count %]
   [%- IF p.href_problem_console %]</a>[% END -%]
-  [% IF p.judges_installed %][[% p.judges_installed %]][% END -%]
   </div>
 </td>
 [% END %]

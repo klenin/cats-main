@@ -299,6 +299,7 @@ sub problems_frame {
             { caption => res_str(635), order_by => 'last_modified_by_name', width => '5%', col => 'Mu' },
             { caption => res_str(634), order_by => 'P.upload_date', width => '10%', col => 'Mt' },
             { caption => res_str(641), order_by => 'allow_des', width => '5%', col => 'Ad' },
+            { caption => res_str(618), order_by => 'judges', width => '5%', col => 'Ju' },
             { caption => res_str(675), col => 'Cl' },
         )
         : ()
@@ -342,7 +343,7 @@ sub problems_frame {
         ) AS allow_des_names,~ : '';
     # Use result_time to account for re-testing standard solutions,
     # but also limit by sumbit_time to speed up since there is no index on result_time.
-    my $judges_installed_sql = $is_jury && $lv->visible_cols->{Vc} ? qq~
+    my $judges_installed_sql = $is_jury && $lv->visible_cols->{Ju} ? qq~
         (SELECT COUNT(DISTINCT R.judge_id) FROM reqs R
         WHERE R.problem_id = P.id AND R.state > $cats::request_processed AND
             R.result_time > P.upload_date AND R.submit_time > P.upload_date - 30)~ :
