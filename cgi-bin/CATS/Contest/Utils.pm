@@ -302,6 +302,7 @@ sub contest_submenu {
                 ({ href => 'contest_wikis_edit', item => 590, new => 1 }) : ()),
             @$contest_submenu,
             ($is_root ? { href => 'contest_caches', item => 515 } : ()),
+            ($is_root ? { href => 'contest_proctoring', item => 815 } : ()),
         ]
     );
 }

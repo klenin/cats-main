@@ -216,6 +216,7 @@
 812 "Output"
 813 "Parent job"
 814 "Awards"
+815 "Proctoring"
 1000 "Programming contest control system"
 1001 "Problem '%s' was successfully linked."
 1002 "Session code is wrong or expired. Please login again."
@@ -435,3 +436,4 @@
 1233 "User '%s' already has this award."
 1234 "Awards addeed: %d."
 1235 "Awards removed: %d."
+1236 "JSON error: %s."

@@ -85,6 +85,8 @@ my $main_routes = {
     ],
     contest_tags_edit => [ \&CATS::UI::ContestTags::contest_tags_edit_frame,
         $CATS::UI::ContestTags::form->route, ],
+    contest_proctoring => [ \&CATS::UI::ContestProctoring::contest_proctoring_frame,
+        params => undef, save => bool, ],
     console_content => [ \&CATS::UI::Console::console_content_frame,
         %console_params,
     ],

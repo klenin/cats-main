@@ -1,0 +1,6 @@
+[% PROCESS includes/menu_begin.tti %]
+<form method="post" enctype="multipart/form-data" action="[% form_action %]" accept-charset="UTF-8">
+  <textarea rows="30" cols="80" name="params" class="bordered">[% params | html %]</textarea>
+  <p><button type="submit" name="save" value="1" class="button">[% capt.save %]</button></p>
+</form>
+[% PROCESS includes/menu_end.tti %]
