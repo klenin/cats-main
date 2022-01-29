@@ -10,6 +10,12 @@
 
 <form method="post" enctype="multipart/form-data" action="[% href_action %]">
 
+<p>
+  <button type="submit" name="do_search" id="do_search" value="1" style="min-width: 50px;" class="button">[% capt.search %]</button>
+  <span class="nobr">
+  <input type="text" name="search" id="search" value="[% search | html %]" style="min-width: 100px;" size="50" maxlength="100" class="bordered" />
+</p>
+
 <table class="judges_problems internal_borders highlight">
 <thead>
   <tr class="[% loop.parity %]">

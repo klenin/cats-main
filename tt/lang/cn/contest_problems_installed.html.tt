@@ -1,5 +1,6 @@
 [%
   capt.import({
+    search => '搜索',
     install_missing => 'install missing',
     install_selected => 'install selected',
   })

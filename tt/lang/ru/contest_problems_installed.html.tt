@@ -1,5 +1,6 @@
 [%
   capt.import({
+    search => 'найти',
     install_missing => 'установить недостающие',
     install_selected => 'установить выбранные',
   })

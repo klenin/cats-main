@@ -17,6 +17,7 @@ use CATS::Messages qw(msg res_str);
 use CATS::Output qw(init_template url_f);
 use CATS::Problem::Save;
 use CATS::Problem::Storage;
+use CATS::QueryBuilder;
 use CATS::RankTable::Cache;
 use CATS::Redirect;
 use CATS::Settings qw($settings);
@@ -234,12 +235,25 @@ sub _install_problems {
     msg(1170, $jobs_created);
 }
 
+sub _qb {
+    my ($p, $searches) = @_;
+    my $qb = CATS::QueryBuilder->new;
+    $qb->define_db_searches($searches);
+    $qb->parse_search($p->{search});
+    my ($where, @params) = $sql->where($qb->make_where);
+    $where =~ s/^\s*WHERE/ AND/;
+    ($where, @params);
+}
+
 sub contest_problems_installed_frame {
     my ($p) = @_;
 
     $is_jury or return;
 
     init_template($p, 'contest_problems_installed.html.tt');
+
+    my ($j_where, @j_params) = _qb($p, { judge_id => 'J.id', nick => 'J.nick' });
+    my ($p_where, @p_params) = _qb($p, [ qw(CP.problem_id P.title CP.code) ]);
 
     my $pinned_judges_only = $dbh->selectrow_array(q~
         SELECT pinned_judges_only FROM contests WHERE id = ?~, undef,
@@ -248,8 +262,8 @@ sub contest_problems_installed_frame {
     my $pin_any_cond = $pinned_judges_only ? '' : "J.pin_mode = $cats::judge_pin_any OR";
 
     my $judges = $dbh->selectall_arrayref(qq~
-        SELECT J.id, J.nick FROM judges J
-        WHERE J.is_alive = 1 AND
+        SELECT J.id AS judge_id, J.nick FROM judges J
+        WHERE J.is_alive = 1$j_where AND
             ($pin_any_cond
                 J.pin_mode = $cats::judge_pin_contest AND EXISTS (
                     SELECT 1 FROM contest_accounts CA
@@ -257,14 +271,14 @@ sub contest_problems_installed_frame {
                 )
             )
         ORDER BY J.nick~, { Slice => {} },
-        $cid);
+        @j_params, $cid);
 
-    my $problems = $dbh->selectall_arrayref(q~
+    my $problems = $dbh->selectall_arrayref(qq~
         SELECT P.id, P.title, CP.code FROM problems P
         INNER JOIN contest_problems CP ON P.id = CP.problem_id
-        WHERE CP.contest_id = ?
+        WHERE CP.contest_id = ?$p_where
         ORDER BY CP.code~, { Slice => {} },
-        $cid);
+        $cid, @p_params);
 
     my $already_installed = $dbh->selectall_arrayref(qq~
         SELECT J.id as judge_id , P.id as problem_id, JB.finish_time FROM jobs JB
@@ -273,18 +287,19 @@ sub contest_problems_installed_frame {
         INNER JOIN contest_problems CP on CP.problem_id = P.id
         WHERE JB.type = $cats::job_type_initialize_problem AND
             JB.state = $cats::job_st_finished AND
-            P.upload_date < JB.finish_time AND CP.contest_id = ?~, { Slice => {} },
-        $cid);
+            P.upload_date < JB.finish_time AND CP.contest_id = ?
+            $j_where$p_where~, { Slice => {} },
+        $cid, @j_params, @p_params);
 
     my $judge_problems = {};
     $judge_problems->{$_->{judge_id}}->{$_->{problem_id}} = $db->format_date($_->{finish_time})
         for @$already_installed;
     my $judge_problems_now = {};
 
-    my $problems_to_install = { map { $_->{id} => [] } @$judges };
+    my $problems_to_install = { map { $_->{judge_id} => [] } @$judges };
 
     my $problems_installed = [ map {
-        my $judge_id = $_->{id};
+        my $judge_id = $_->{judge_id};
         my $hr = $judge_problems->{$judge_id} || {};
         {
             judge_name => $_->{nick},
@@ -318,8 +333,9 @@ sub contest_problems_installed_frame {
         INNER JOIN problems P on P.id = JB.problem_id
         INNER JOIN contest_problems CP on CP.problem_id = P.id
         WHERE JB.type = $cats::job_type_initialize_problem AND CP.contest_id = ? AND
-            JB.state IN ($cats::job_st_waiting, $cats::job_st_in_progress)~, { Slice => {} },
-        $cid);
+            JB.state IN ($cats::job_st_waiting, $cats::job_st_in_progress)
+            $j_where$p_where~, { Slice => {} },
+        $cid, @j_params, @p_params);
     push @{$judge_problems_now->{$_->{judge_id}}->{$_->{problem_id}}}, $_->{state} for @$installing_now;
 
     $t->param(
@@ -327,6 +343,7 @@ sub contest_problems_installed_frame {
         problems_installed => $problems_installed,
         problems => $problems,
         job_state_to_name => $CATS::Globals::jobs->{state_to_name},
+        search => $p->{search},
     );
 
     CATS::Contest::Utils::contest_submenu('contest_problems_installed', $cid);

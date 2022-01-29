@@ -71,6 +71,7 @@ my $main_routes = {
         save => bool, ],
     contest_problems_installed => [
         \&CATS::UI::Contests::contest_problems_installed_frame,
+        search => undef,
         install_missing => bool,
         install_selected => bool,
         selected_problems => array_of qr/^\d+_\d+$/,
