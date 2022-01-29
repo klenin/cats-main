@@ -112,7 +112,9 @@ div.pages span { padding: 2px 0px; }
 div.pages a { padding: 2px; }
 div.pages a:hover { background-color: #bbbbff; }
 
+a.listview_dropper { padding: 0 2px; }
 a.listview_dropper, a.listview_dropper:link { font-size: small; width: 1px; }
+a.listview_dropper:hover { color: black; background-color: #f0f0ff; }
 
 table.listview { width: 100%; border-spacing: 1px; }
 table.listview > tbody > tr > td { padding: 2px; }
@@ -302,6 +304,10 @@ table > tbody > tr > td.nested table { border-style: hidden; height: 100%; width
     vertical-align: middle;
     cursor: pointer;
     border-radius: 3px;
+}
+.button:hover {
+    background-color: #f0f0ff;
+    color: black;
 }
 .button2 {
     border: 1px solid #ffffff;

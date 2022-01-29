@@ -12,7 +12,7 @@
   <span class="nobr">
   <input type="text" name="search" id="search" value="[% search | html %]" style="min-width: 100px; width: 70%;" maxlength="100" class="bordered" />
   <a href="#" class="listview_dropper" onclick="clear_search()" title="[% capt.clear_search %]">&#xD7;</a>
-  [% IF search_hints ~%]
+  [%- IF search_hints ~%]
   <a href="#" class="listview_dropper" onclick="return toggle_search_hints()">&#8981;</a>
   [% END -%]
   </span>
@@ -46,7 +46,8 @@
 </td>
 <td>
   [% IF can_change_cols %]
-  <a href="#" class="listview_dropper" onclick="return toggle_csv()" style="font-stretch: condensed;">csv</a>
+  <a href="#" class="listview_dropper" onclick="return toggle_csv()" style="font-stretch: condensed;">csv</a>[%-~%]
+  <a href="#" class="listview_dropper" onclick="return toggle_select_cols()">?</a>
   <div id="csv" class="bordered select_cols" style="display: none;">
     [% FOREACH col IN ${lv_array_name}.0.keys.sort %]
     <label><input type="checkbox" name="csv" value="[% col %]"> [% col %]</label>
@@ -54,7 +55,6 @@
     <hr/>
     <label><a href="#" onclick="return link_to_csv()">CSV</a></label>
   </div>
-  <a href="#" class="listview_dropper" onclick="return toggle_select_cols()">?</a>
   <div id="select_cols" class="bordered select_cols" style="display: none;">
     [% FOREACH cd IN col_defs; NEXT UNLESS cd.col %]
     <label>
