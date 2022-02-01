@@ -99,7 +99,11 @@ sub user_stats_frame {
             ) AS accepted_count,
             (SELECT COUNT(*) FROM contest_problems CP
                 WHERE CP.contest_id = C.id AND CP.status < $cats::problem_st_hidden
-            ) AS problem_count
+            ) AS problem_count,
+            (SELECT LIST(AW.name || ',' || AW.color, ' ') FROM contest_account_awards CAA
+                INNER JOIN awards AW ON AW.id = CAA.award_id
+                WHERE CAA.ca_id = CA.id
+            ) AS awards
         FROM contests C
         INNER JOIN contest_accounts CA ON CA.contest_id = C.id
         LEFT JOIN contest_sites CS ON CS.contest_id = C.id AND CS.site_id = CA.site_id
@@ -109,7 +113,8 @@ sub user_stats_frame {
         ORDER BY start_date DESC~,
         { Slice => {} }, $p->{uid});
     my $pr = sub { url_f(
-        'console', uf => $p->{uid}, i_value => -1, se => 'user_stats', show_results => 1, search => $_[0], rows => 30
+        'console', uf => $p->{uid}, i_value => -1, se => 'user_stats',
+        show_results => 1, search => $_[0], rows => 30
     ) };
     $u->{sites_count} = $dbh->selectrow_array(q~
         SELECT COUNT(DISTINCT site_id) FROM contest_accounts
@@ -126,6 +131,7 @@ sub user_stats_frame {
             uf => $p->{uid}, i_value => -1, se => 'user_stats',
             show_results => 1, rows => 30, search => "contest_id=$_->{id}");
         $_->{start_date} = $db->format_date($_->{start_date});
+        $_->{awards} = [ map /^(\S+),(.*)$/ && { name => $1, color => $2 }, split /\s+/, $_->{awards} ];
     }
 
     my $groups = $dbh->selectall_arrayref(q~

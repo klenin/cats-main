@@ -23,7 +23,10 @@
 <td>[% c.site_name %]</td>
 [% IF c.href_send_message; '<td>'; href(c.href_send_message, capt.send_message); '</td>'; END %]
 <td>[% href(c.href_submits, c.accepted_count _ ' / ' _ c.problem_count) %]</td>
-<td>[% capt.ooc IF c.is_ooc %]</td>
+<td>[% capt.ooc IF c.is_ooc %]
+[% FOREACH aw IN c.awards %]
+<span style="color: [% aw.color | html %];">[% aw.name | html %]</span>
+[% END %]</td>
 </tr>
 [%- END %]
 </table>
