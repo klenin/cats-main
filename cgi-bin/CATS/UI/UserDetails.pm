@@ -131,7 +131,8 @@ sub user_stats_frame {
             uf => $p->{uid}, i_value => -1, se => 'user_stats',
             show_results => 1, rows => 30, search => "contest_id=$_->{id}");
         $_->{start_date} = $db->format_date($_->{start_date});
-        $_->{awards} = [ map /^(\S+),(.*)$/ && { name => $1, color => $2 }, split /\s+/, $_->{awards} ];
+        $_->{awards} = [
+            map /^(\S+),(.*)$/ && { name => $1, color => $2 }, split /\s+/, $_->{awards} // '' ];
     }
 
     my $groups = $dbh->selectall_arrayref(q~
