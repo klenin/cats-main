@@ -99,9 +99,7 @@ function Editor() {
     var ace_editor = this._editors[editor_id];
     $('#' + select_id).on('change', function() {
       var mode = $('option:selected', this).attr('editor-syntax');
-      ace_editor.getSession().setMode({
-        path: mode ? 'ace/mode/' + mode : 'ace/mode/plain_text',
-      });
+      ace_editor.getSession().setMode('ace/mode/' + (mode || 'plain_text'));
     });
   };
 
@@ -259,8 +257,8 @@ function Editor() {
     });
     var sess = ace_editor.getSession();
     sess.setValue(textarea.val());
-    sess.setMode('ace/mode/' + textarea.data('editor'));
     sess.setOption('useWorker', false);
+    sess.setMode('ace/mode/' + textarea.data('editor'));
     ace_editor.commands.addCommands([
       {
         name: 'toggleWrapMode',
