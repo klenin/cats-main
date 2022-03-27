@@ -24,6 +24,8 @@ INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp, mem
 
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
     VALUES (<NEXT_ID>, 120, 'Rust', 'rs', 'rust', '^\s+-->\s~FILE~:~LINE~:~POS~');
+INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
+    VALUES (<NEXT_ID>, 130, 'Nasm', 'asm', 'assembly_x86', '^~FILE~:~LINE~:\s*error:');
 
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
     VALUES (<NEXT_ID>, 201, 'Borland Pascal', '', 'pascal', '\(~LINE~\):\sError');
