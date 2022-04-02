@@ -172,6 +172,8 @@ my $main_routes = {
     problem_download => [ \&CATS::UI::ProblemDetails::problem_download, pid => integer, ],
     problem_git_package => [ \&CATS::UI::ProblemDetails::problem_git_package, pid => integer, sha => sha, ],
     problem_details => [ \&CATS::UI::ProblemDetails::problem_details_frame, pid => integer, ],
+    problem_test_gen_script => [
+        \&CATS::UI::ProblemDetails::problem_test_gen_script_frame, pid => integer, ],
     problem_test_data => [
         \&CATS::UI::ProblemDetails::problem_test_data_frame,
         pid => integer, test_rank => integer, clear_test_data => bool, clear_input_hashes => bool, ],

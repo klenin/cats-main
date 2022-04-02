@@ -13,6 +13,7 @@
     onclick="return confirm('[% capt.confirm_clear_test_data %]')">[% capt.clear_test_data %]</button>
   <button type="submit" name="clear_input_hashes" class="button" value="1"
     onclick="return confirm('[% capt.confirm_clear_input_hashes %]')">[% capt.clear_input_hashes %]</button>
+  [% href(href_test_gen_script, 'Script') %]
 </p>
 </form>
 

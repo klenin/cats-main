@@ -254,6 +254,83 @@ sub problem_select_testsets_frame {
     CATS::Problem::Utils::problem_submenu('problem_select_testsets', $p->{pid});
 }
 
+my $test_data_sql = qq~
+    SELECT T.rank, T.gen_group, T.param,
+        SUBSTRING(T.in_file FROM 1 FOR $cats::test_file_cut + 1) AS input,
+        COALESCE(PSL1.fname, PSLE1.fname) AS gen_name,
+        COALESCE(PSL2.fname, PSLE2.fname) AS val_name,
+        COALESCE(PSL3.fname, PSLE3.fname) AS sol_name,
+        COALESCE(T.in_file_size, OCTET_LENGTH(T.in_file)) AS input_size,
+        T.in_file_hash AS input_hash,
+        T.input_validator_id,
+        T.input_validator_param,
+        SUBSTRING(T.out_file FROM 1 FOR $cats::test_file_cut + 1) AS answer,
+        COALESCE(T.out_file_size, OCTET_LENGTH(T.out_file)) AS answer_size
+    FROM tests T
+
+        LEFT JOIN problem_sources PS1 ON PS1.id = T.generator_id
+        LEFT JOIN problem_sources_local PSL1 ON PSL1.id = PS1.id
+        LEFT JOIN problem_sources_imported PSI1 ON PSI1.id = PS1.id
+        LEFT JOIN problem_sources_local PSLE1 ON PSLE1.guid = PSI1.guid
+
+        LEFT JOIN problem_sources PS2 ON PS2.id = T.input_validator_id
+        LEFT JOIN problem_sources_local PSL2 ON PSL2.id = PS2.id
+        LEFT JOIN problem_sources_imported PSI2 ON PSI2.id = PS2.id
+        LEFT JOIN problem_sources_local PSLE2 ON PSLE2.guid = PSI2.guid
+
+        LEFT JOIN problem_sources PS3 ON PS3.id = T.std_solution_id
+        LEFT JOIN problem_sources_local PSL3 ON PSL3.id = PS3.id
+        LEFT JOIN problem_sources_imported PSI3 ON PSI3.id = PS3.id
+        LEFT JOIN problem_sources_local PSLE3 ON PSLE3.guid = PSI3.guid
+
+    WHERE T.problem_id = ? ~;
+
+sub _to_exe {
+    my ($src) = @_;
+    $src =~ s/^([^\s\.]+\.)([a-z]+)/$1exe/;
+    $src;
+}
+
+sub _test_gen_line {
+    my ($test, $problem, $len) = @_;
+    my $fmt = "\%0${len}d";
+    my @result;
+    if (!$test->{input}) {
+        push @result, sprintf("%s %s >$fmt.in",
+            _to_exe($test->{gen_name}), $test->{param}, $test->{rank});
+    }
+    if ($problem->{input_file} eq '*STDIN') {
+        push @result, sprintf("%s <$fmt.in >$fmt.out",
+            _to_exe($test->{sol_name}), $test->{rank}, $test->{rank});
+    }
+    else {
+        push @result, sprintf("copy $fmt.in %s", $test->{rank}, $problem->{input_file});
+        push @result, _to_exe($test->{sol_name});
+        push @result, sprintf("ren %s $fmt.out", $problem->{output_file}, $test->{rank});
+    }
+    @result;
+}
+
+sub problem_test_gen_script_frame {
+    my ($p) = @_;
+    $p->{pid} && $is_jury or return;
+    my $problem = $dbh->selectrow_hashref(qq~
+        SELECT P.id, P.title, P.input_file, P.output_file, CP.id AS cpid, CP.tags
+        FROM problems P
+            INNER JOIN contest_problems CP ON P.id = CP.problem_id
+        WHERE P.id = ? AND CP.contest_id = ?~, undef,
+        $p->{pid}, $cid) or return;
+    my $tests = $dbh->selectall_arrayref(
+        $test_data_sql . ' ORDER BY T.rank', { Slice => {} },
+        $p->{pid});
+    my $len = @$tests > 99 ? 3 : 2;
+    my $script = join '', map "$_\n", map _test_gen_line($_, $problem, $len), @$tests;
+    $p->print_file(
+        content_type => 'text/plain', charset => 'UTF-8',
+        inline => 1, file_name => "gen_tests_$p->{pid}.cmd",
+        content => Encode::encode_utf8($script));
+}
+
 sub problem_test_data_frame {
     my ($p) = @_;
     init_template($p, 'problem_test_data.html.tt');
@@ -309,31 +386,7 @@ sub problem_test_data_frame {
                 $all_testsets, $_[0], sub { msg(1149, 'rank', $_[0]); })} ];
     } });
 
-    my $sth = $dbh->prepare(qq~
-        SELECT T.rank, T.gen_group, T.param,
-            SUBSTRING(T.in_file FROM 1 FOR $cats::test_file_cut + 1) AS input,
-            COALESCE(PSL1.fname, PSLE1.fname) AS gen_name,
-            COALESCE(PSL2.fname, PSLE2.fname) AS val_name,
-            COALESCE(T.in_file_size, OCTET_LENGTH(T.in_file)) AS input_size,
-            T.in_file_hash AS input_hash,
-            T.input_validator_id,
-            T.input_validator_param,
-            SUBSTRING(T.out_file FROM 1 FOR $cats::test_file_cut + 1) AS answer,
-            COALESCE(T.out_file_size, OCTET_LENGTH(T.out_file)) AS answer_size
-        FROM tests T
-
-            LEFT JOIN problem_sources PS1 ON PS1.id = T.generator_id
-            LEFT JOIN problem_sources_local PSL1 ON PSL1.id = PS1.id
-            LEFT JOIN problem_sources_imported PSI1 ON PSI1.id = PS1.id
-            LEFT JOIN problem_sources_local PSLE1 ON PSLE1.guid = PSI1.guid
-
-            LEFT JOIN problem_sources PS2 ON PS2.id = T.input_validator_id
-            LEFT JOIN problem_sources_local PSL2 ON PSL2.id = PS2.id
-            LEFT JOIN problem_sources_imported PSI2 ON PSI2.id = PS2.id
-            LEFT JOIN problem_sources_local PSLE2 ON PSLE2.guid = PSI2.guid
-
-        WHERE T.problem_id = ? ~ . $lv->maybe_where_cond . $lv->order_by
-    );
+    my $sth = $dbh->prepare($test_data_sql . $lv->maybe_where_cond . $lv->order_by);
     $sth->execute($p->{pid}, $lv->where_params);
 
     my ($parsed, $sha) = CATS::Problem::Storage->new->parse_problem($cid, $p->{pid});
@@ -363,7 +416,9 @@ sub problem_test_data_frame {
     $sth->finish;
 
     $t->param(
-        p => $problem, problem_title => $problem->{title}, total => $total);
+        p => $problem, problem_title => $problem->{title}, total => $total,
+        href_test_gen_script => url_f('problem_test_gen_script', pid => $p->{pid}),
+    );
 
     CATS::Problem::Utils::problem_submenu('problem_test_data', $p->{pid});
 }
