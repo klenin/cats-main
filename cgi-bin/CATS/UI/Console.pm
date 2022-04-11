@@ -381,6 +381,7 @@ sub console_frame {
         href_run_details => url_f('run_details'),
         href_run_log => url_f('run_log'),
         href_diff => url_f('diff_runs'),
+        href_leaderboard => url_f('leaderboard'),
         title_suffix => res_str(510),
         initial_content => $cc,
         autoupdate => $lv->settings->{autoupdate} // 30,
