@@ -62,7 +62,7 @@ function get_element(name) {
     <label><input id="by_reference" name="by_reference" value="1" type="checkbox" />[% capt.by_reference %]</label>
     <button id="retest" name="retest" value="1" type="submit" class="button">[% capt.retest %]</button>
     <button id="create_group" name="create_group" value="1" type="submit" class="button">[% capt.create_group %]</button>
-    <button id="leaderboard" name="leaderboard" value="1" type="submit" class="button">Leaderboard</button>
+    <button id="leaderboard" name="leaderboard" value="1" type="submit" class="button">[% capt.leaderboard %]</button>
 </div>
 [% END %]
 </form>
@@ -189,8 +189,7 @@ function create_group() {
 }
 
 function leaderboard() {
-    document.location = leaderboard_url + ';req_ids=' + get_element('selection').value;
-    return;
+    document.location = leaderboard_url + ';req_ids=' + encodeURIComponent(get_element('selection').value);
 }
 
 

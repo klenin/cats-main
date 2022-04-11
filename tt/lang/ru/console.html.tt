@@ -12,6 +12,7 @@
     retest = 'перетестировать',
     by_reference = 'ссылка',
     create_group = 'сгруппировать',
+    leaderboard = 'таблицы результатов',
     question = 'Вопрос к жюри',
     send = 'Отправить',
     filter => 'выбирать',

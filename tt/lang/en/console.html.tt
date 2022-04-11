@@ -12,6 +12,7 @@
     retest => 'retest',
     by_reference => 'reference',
     create_group => 'create group',
+    leaderboard = 'leaderboard',
     question => 'Question to jury',
     send => 'Send',
     filter => 'filter',
