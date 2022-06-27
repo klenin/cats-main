@@ -62,6 +62,7 @@ function get_element(name) {
     <label><input id="by_reference" name="by_reference" value="1" type="checkbox" />[% capt.by_reference %]</label>
     <button id="retest" name="retest" value="1" type="submit" class="button">[% capt.retest %]</button>
     <button id="create_group" name="create_group" value="1" type="submit" class="button">[% capt.create_group %]</button>
+    <button id="leaderboard" name="leaderboard" value="1" type="submit" class="button">[% capt.leaderboard %]</button>
 </div>
 [% END %]
 </form>
@@ -125,6 +126,7 @@ function fill_1(aid, arg) {
 
 autoupdate_interval = [% autoupdate %];
 console_url = '[% href_console_content %]';
+leaderboard_url = '[% href_leaderboard %]';
 main_form = get_element('console_form');
 
 function error_message(error_code) {
@@ -186,6 +188,11 @@ function create_group() {
     xhr_request(console_url, 'POST', fd, update_content);
 }
 
+function leaderboard() {
+    document.location = leaderboard_url + ';req_ids=' + encodeURIComponent(get_element('selection').value);
+}
+
+
 var msie = document.documentMode;
 
 if (autoupdate_interval && (!msie || msie >= 9)) {
@@ -199,6 +206,10 @@ if (autoupdate_interval && (!msie || msie >= 9)) {
 [% IF user.privs.is_root %]
     get_element('create_group').addEventListener('click', function(e) {
         create_group();
+        e.preventDefault();
+    });
+    get_element('leaderboard').addEventListener('click', function(e) {
+        leaderboard();
         e.preventDefault();
     });
 [% END %]
