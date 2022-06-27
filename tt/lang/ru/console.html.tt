@@ -13,6 +13,7 @@
     by_reference = 'ссылка',
     create_group = 'сгруппировать',
     leaderboard = 'таблицы результатов',
+    tag_leaderboard = 'таблицы результатов по тегу',
     question = 'Вопрос к жюри',
     send = 'Отправить',
     filter => 'выбирать',

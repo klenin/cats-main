@@ -4,16 +4,15 @@ table td { min-width: 40px; }
 </style>
 [%- END %]
 [% PROCESS includes/menu_begin.tti %]
-
 [% FOREACH g IN groups %]
 <h4>Group [% loop.index + 1 %]</h4>
 <table class="bordered highlight">
 <tr class="col_defs">
-<th>Name</th>[% FOREACH t IN g.tests %]<th>[% t %]</th>[% END %]<th>Total</th>
+<th></th><th>Name</th>[% FOREACH t IN g.tests %]<th>[% t %]</th>[% END %]<th>Total</th>
 </tr>
 [% FOREACH team IN g.teams %]
 <tr class="[% loop.parity() %]">
-<td>[% team.name %]</td>[% FOREACH t IN g.tests %]<td class="num">[% team.details.item(t) %]</td>[% END %]<td class="num">[% team.total %]</td>
+<td>[% loop.index + 1 %]&nbsp;</td><td><a href="[% href_user_stats %];uid=[% team.id %]" style="color: black">[% team.name %]</a></td>[% FOREACH t IN g.tests %]<td class="num">[% team.details.item(t) %]</td>[% END %]<td class="num">[% team.total %]</td>
 </tr>
 [% END %]
 </table>
