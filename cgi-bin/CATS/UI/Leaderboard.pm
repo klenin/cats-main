@@ -79,7 +79,7 @@ sub leaderboard_frame {
     	for (@tagged_ids) {
     		push(@tagged_ids_array, $_->{id});
     	}
-    	$t->param(groups => [ map _group_table($_), @tagged_ids_array ], href_user_stats => url_f('user_stats'), debug_var => $debug_var);
+    	$t->param(groups => [ map _group_table($_), @tagged_ids_array ], href_user_stats => url_f('user_stats'));
     } else {
     	$t->param(groups => [ map _group_table($_), @{$p->{req_ids}} ], href_user_stats => url_f('user_stats'));
     }
