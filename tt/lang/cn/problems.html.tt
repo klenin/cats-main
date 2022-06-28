@@ -51,6 +51,8 @@
     keyword => 'keyword',
     input_format => 'input format',
     output_format => 'output format',
+    formatting => 'formatting',
+    renum_tests => 'renum tests',
     upload => 'upload',
     want_to_delete_file => 'Do you really want to delete file ',
     different_versions => 'Files on server and client did not match',
