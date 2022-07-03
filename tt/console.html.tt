@@ -63,8 +63,7 @@ function get_element(name) {
     <button id="retest" name="retest" value="1" type="submit" class="button">[% capt.retest %]</button>
     <button id="create_group" name="create_group" value="1" type="submit" class="button">[% capt.create_group %]</button>
     <button id="leaderboard" name="leaderboard" value="1" type="submit" class="button">[% capt.leaderboard %]</button>
-    <input type="checkbox" id="by_tag" name="by_tag"><label>[% capt.tag_leaderboard %]</label>
-    [% debug_var %]
+    <label><input id="by_tag" name="by_tag" value="1"  type="checkbox" />[% capt.tag_leaderboard %]</label>
 </div>
 [% END %]
 </form>
@@ -193,7 +192,7 @@ function create_group() {
 function leaderboard() {
 	tag_checkbox = get_element('by_tag');
 	if (tag_checkbox.checked){
-		document.location = leaderboard_url + ';req_ids=' + encodeURIComponent("tag");
+		document.location = leaderboard_url + ';by_tag=1';
 	}
 	else {
 		document.location = leaderboard_url + ';req_ids=' + encodeURIComponent(get_element('selection').value);

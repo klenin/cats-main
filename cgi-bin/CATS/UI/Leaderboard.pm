@@ -6,15 +6,14 @@ use warnings;
 use CATS::DB qw(:DEFAULT $db);
 use CATS::Globals qw($cid $is_jury $t);
 use CATS::Output qw(init_template url_f url_f_cid);
+use CATS::Messages qw(msg res_str);
 
 sub get_tables_by_tag {
 	my $tag = 'tournament';
-	my $tagged_ids = $dbh->selectall_arrayref(q~
-            SELECT id
-            FROM reqs
-            WHERE tag = ? AND elements_count > ?~, { Slice => {} },
-            $tag, 1);
-     return @$tagged_ids;
+	my $tagged_ids = $dbh->selectcol_arrayref(q~
+            SELECT id FROM reqs
+            WHERE tag = ? AND elements_count > 1 AND contest_id = ?~, undef,
+            $tag, $cid);
 }
 
 sub _group_table {
@@ -28,25 +27,19 @@ sub _group_table {
     	SELECT element_id FROM req_groups
     	WHERE group_id = ?~, undef,
     	$req_id);
-    
-    #my $children = $dbh->selectcol_arrayref(q~
-    #    SELECT RG.element_id FROM req_groups RG
-    #    INNER JOIN reqs R on R.id = RG.group_id
-    #    WHERE R.tag = ?~, undef,
-    #    "tournament");
     my (@teams, %tests);
     for my $c (@$children) {
         my $orig_team = $dbh->selectrow_array(q~
             SELECT A.team_name FROM accounts A
             INNER JOIN reqs R ON R.account_id = A.id
             INNER JOIN req_groups RG ON RG.element_id = R.id
-            WHERE R.id = ?~, undef,
-            $c);
+            WHERE RG.group_id = ?~, undef,
+            $c) or return msg(1237);
          my $team_id = $dbh->selectrow_array(q~
             SELECT A.id FROM accounts A
             INNER JOIN reqs R ON R.account_id = A.id
             INNER JOIN req_groups RG ON RG.element_id = R.id
-            WHERE R.id = ?~, undef,
+            WHERE RG.group_id = ?~, undef,
             $c);
          my $details = $dbh->selectall_arrayref(q~
             SELECT test_rank, points
@@ -72,17 +65,9 @@ sub leaderboard_frame {
    	my ($p) = @_;
     init_template($p, 'leaderboard');
     $is_jury or return;
-    @{$p->{req_ids}} or return;
-    if ($p->{req_ids}[0] == "tag") {
-    	my @tagged_ids = get_tables_by_tag;
-    	my @tagged_ids_array;
-    	for (@tagged_ids) {
-    		push(@tagged_ids_array, $_->{id});
-    	}
-    	$t->param(groups => [ map _group_table($_), @tagged_ids_array ], href_user_stats => url_f('user_stats'));
-    } else {
-    	$t->param(groups => [ map _group_table($_), @{$p->{req_ids}} ], href_user_stats => url_f('user_stats'));
-    }
+    @{$p->{req_ids}} or $p->{by_tag} or return;
+    my $tagged_ids = $p->{by_tag} ? get_tables_by_tag : $p->{req_ids};
+    $t->param(groups => [ map _group_table($_), @$tagged_ids ], href_user_stats => url_f('user_stats'));
 }
 
 1;
