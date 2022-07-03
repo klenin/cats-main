@@ -18,10 +18,10 @@ sub get_tables_by_tag {
 
 sub _group_table {
     my ($req_id) = @_;
-    #my $root_req = $dbh->selectrow_hashref(q~
-     #   SELECT id, elements_count FROM reqs
-     #   WHERE id = ? AND contest_id = ?~, undef,
-     #   $req_id, $cid) or return;
+    my $root_req = $dbh->selectrow_hashref(q~
+        SELECT id, elements_count FROM reqs
+        WHERE id = ? AND contest_id = ?~, undef,
+        $req_id, $cid) or return;
         
     my $children = $dbh->selectcol_arrayref(q~
     	SELECT element_id FROM req_groups
@@ -65,7 +65,7 @@ sub leaderboard_frame {
    	my ($p) = @_;
     init_template($p, 'leaderboard');
     $is_jury or return;
-    #@{$p->{req_ids}} or $p->{by_tag} or return;
+    @{$p->{req_ids}} or $p->{by_tag} or return;
     my $tagged_ids = $p->{by_tag} ? get_tables_by_tag : $p->{req_ids};
     $t->param(groups => [ map _group_table($_), @$tagged_ids ], href_user_stats => url_f('user_stats'));
 }
