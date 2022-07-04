@@ -16,6 +16,12 @@ our @EXPORT_OK = qw(prepare_de prepare_de_list);
 
 sub _get_submit_uid {
     my ($p) = @_;
+    if ($is_jury && $p->{submit_as_id}) {
+        return scalar $dbh->selectrow_array(q~
+            SELECT account_id FROM contest_accounts
+            WHERE contest_id = ? AND account_id = ?~, undef,
+            $cid, $p->{submit_as_id}) || msg(1139, $p->{submit_as_id});
+    }
     if ($is_jury && $p->{submit_as}) {
         return scalar $dbh->selectrow_array(q~
             SELECT A.id FROM accounts A

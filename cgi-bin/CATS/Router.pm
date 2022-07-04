@@ -136,7 +136,7 @@ my $main_routes = {
         link_save => bool, move => bool,
         zip => upload, allow_rename => bool, add_zip => upload,
         remote_url => str, repo_path => qr/[A-Za-z0-9_\/]*/,
-        submit_as => str,
+        submit_as => str, submit_as_id => integer,
         submit_points => integer,
         source => upload, source_text => str,
         new_title => str, new_lang => ident, add_new_template => bool,
