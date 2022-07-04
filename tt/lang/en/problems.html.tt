@@ -18,6 +18,7 @@
     solution_file => 'Solution file',
     dev_env => 'Dev. environment',
     submit_as => 'Submit as user',
+    points => 'Points',
     solution_text => 'Solution text',
     submit => 'submit',
     std_solution => 'standard solution',

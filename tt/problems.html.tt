@@ -272,7 +272,10 @@ function chg_code(st_sel, pid) {
     </select>
   </p>
   [% IF editable %]
-  <p><label>[% capt.submit_as %]: <input type="text" id="submit_as" name="submit_as" class="bordered" size="40"/></label></p>
+  <p><label>[% capt.submit_as %]: <input type="text" id="submit_as" name="submit_as" class="bordered" size="40"/></label>
+    [% IF contest.rules -%]
+      <label>[% capt.points %]: <input type="text" id="submit_points" name="submit_points" class="bordered" size="4"/></label>[% END -%]
+  </p>
   [% END %]
   <p><label for="source_text">[% capt.solution_text %]:</label><br/>
   <textarea id="source_text" name="source_text" cols="50" rows="5"

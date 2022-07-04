@@ -45,14 +45,18 @@ sub user_is_banned {
     $uid or return;
     scalar $dbh->selectrow_array(qq~
         SELECT 1 FROM reqs
-        WHERE account_id = ? AND contest_id = ? AND problem_id = ? AND state = ? $db->{LIMIT} 1~, undef,
+        WHERE account_id = ? AND contest_id = ? AND
+            problem_id = ? AND state = ? $db->{LIMIT} 1~, undef,
         $uid, $cid, $problem_id, $cats::st_banned);
 }
 
+sub _has_submit_points { $is_jury && defined $_[0]->{submit_points} }
+
 sub _determine_state {
     my ($p) = @_;
-    $p->{ignore} || !$is_jury && CATS::IP::is_tor(CATS::IP::get_ip) ?
-        $cats::st_ignore_submit : $cats::st_not_processed;
+    $p->{ignore} || !$is_jury && CATS::IP::is_tor(CATS::IP::get_ip) ? $cats::st_ignore_submit :
+    _has_submit_points($p) ? $cats::st_accepted :
+    $cats::st_not_processed;
 }
 
 sub _get_DEs {
@@ -253,12 +257,21 @@ sub problems_submit {
         "$rid." . CATS::DevEnv->new(CATS::JudgeDB::get_DEs({ id => $did }))->default_extension($did));
     $s->bind_param(5, $source_hash);
     $s->execute;
+
+    if (_has_submit_points($p)) {
+        $dbh->do(q~
+            INSERT INTO req_details (req_id, test_rank, result, points)
+            VALUES (?, ?, ?, ?)~, undef,
+            $rid, 1, $cats::st_accepted, $p->{submit_points});
+    }
+
     $dbh->commit;
     $result->{href_run_details} = url_f('run_details', rid => $rid);
     $t->param(%$result) if $t;
     my $submit_time = $dbh->selectrow_array(q~
         SELECT submit_time FROM reqs WHERE id = ?~, { Slice => {} },
         $rid);
+    _has_submit_points($p) ? msg(1237, $p->{submit_points}) :
     $contest_finished ? msg(1087) :
     defined $prev_reqs_count ? msg(1088, $max_reqs - $prev_reqs_count - 1) :
     msg(1014, $submit_time);

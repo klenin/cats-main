@@ -21,6 +21,7 @@
     submit_as => '提交 as user',
     solution_text => '解决方案文本',
     submit => '提交',
+    points => 'Points',
     std_solution => '标准解决方案',
     ignore_submit => '不要测试',
     problem_file => '问题文件',
