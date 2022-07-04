@@ -13,6 +13,7 @@
     by_reference => 'reference',
     create_group => 'create group',
     leaderboard = 'leaderboard',
+    tag_leaderboard = 'leaderboard by tag',
     question => 'Question to jury',
     send => 'Send',
     filter => 'filter',

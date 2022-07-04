@@ -376,6 +376,7 @@ my $main_routes = {
     ],
     leaderboard => [ \&CATS::UI::Leaderboard::leaderboard_frame,
         req_ids => clist_of integer,
+        by_tag => bool,
     ],
     api_submit_problem => [ \&CATS::UI::Problems::submit_problem_api,
         source => upload, source_text => str, problem_id => integer, de_id => qr/\d+|by_extension/,

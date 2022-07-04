@@ -1,23 +1,188 @@
 [% extra_head = BLOCK %]
 <style>
 table td { min-width: 40px; }
+.leaderboard_content {
+    display: flex;
+    flex-direction: row;
+    margin: 0;
+}
+.round{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    margin: 20px;
+}
 </style>
 [%- END %]
+<svg id="canvas" style='position: absolute; width: 100vw; height: 100vh; pointer-events: none'></svg>
 [% PROCESS includes/menu_begin.tti %]
-
+<div class="leaderboard_content" id="leaderboard_content">
 [% FOREACH g IN groups %]
+<div id="tab_[% loop.index %]">
 <h4>Group [% loop.index + 1 %]</h4>
 <table class="bordered highlight">
 <tr class="col_defs">
-<th>Name</th>[% FOREACH t IN g.tests %]<th>[% t %]</th>[% END %]<th>Total</th>
+<th></th><th>Name</th>[% FOREACH t IN g.tests %]<th>[% t %]</th>[% END %]<th>Total</th>
 </tr>
 [% FOREACH team IN g.teams %]
 <tr class="[% loop.parity() %]">
-<td>[% team.name %]</td>[% FOREACH t IN g.tests %]<td class="num">[% team.details.item(t) %]</td>[% END %]<td class="num">[% team.total %]</td>
+<td>[% loop.index + 1 %]&nbsp;</td><td><a href="[% href_user_stats %];uid=[% team.id %]" style="color: black">[% team.name %]</a></td>[% FOREACH t IN g.tests %]<td class="num">[% team.details.item(t) %]</td>[% END %]<td class="num">[% team.total %]</td>
 </tr>
 [% END %]
 </table>
 <br/>
+</div>
 [% END %]
+</div>
+<script>
+
+    function getTeams(groupsHash){
+        var teamsArray = [];
+        for (const [key, value] of Object.entries(groupsHash)) {
+            teamsArray = Array.from(new Set(teamsArray.concat(value)));
+        }
+            return teamsArray;
+    }
+
+    function getTeamOccurences(teams, groups) {
+        occurenceTable = {};
+        teams.forEach(function (team) {
+            for (const [key, value] of Object.entries(groups)) {
+                if (value.indexOf(team) != -1){
+                    occurenceTable[team] ? ++occurenceTable[team] : occurenceTable[team] = 1;
+                }
+            }
+        })
+        return occurenceTable;
+    }
+
+    function sortTeamsByRound(occurenceTable) {
+        teamsByRound = {};
+        for (const [key, value] of Object.entries(occurenceTable)) {
+            teamsByRound[value] ? teamsByRound[value].push(key) : teamsByRound[value] = [key];
+        }
+        return teamsByRound;
+    }
+
+    function sortGroupsByRound(groups, occurences){
+        groupsByRound = {};
+        tempGroups = structuredClone(groups);
+        for (const [key, value] of Object.entries(occurences)) {
+            value.forEach(function (team) {
+                for (const [keyG, valueG] of Object.entries(tempGroups)) {
+                    if (valueG.indexOf(parseInt(team)) != -1) {
+                        groupsByRound[key] ? groupsByRound[key].push(keyG) : groupsByRound[key] = [keyG];
+                        delete tempGroups[keyG];
+                        break;
+                    }
+                }
+            })
+        }
+
+        return groupsByRound;
+    }
+
+    function getConnection(groups, groupsByRound){
+        tempGroups = structuredClone(groupsByRound);
+        delete tempGroups[1];
+        for (const [key, value] of Object.entries(tempGroups)) {
+            value.forEach(function (group) {
+                groups[group].forEach(function (team) {
+                    groupsByRound[parseInt(key)-1].forEach(function (groupPrev) {
+                        if (groups[groupPrev].indexOf(parseInt(team)) != -1){
+                            connections[groupPrev] ? connections[groupPrev].push(group) : connections[groupPrev] = [group];
+                            connections[groupPrev] = Array.from(new Set(connections[groupPrev].concat([])));
+                        }
+                    })
+
+                })
+            })
+        }
+    }
+
+    function drawTables(groupsByRound) {
+        for (const [key, value] of Object.entries(groupsByRound)) {
+            document.getElementById("leaderboard_content").innerHTML += "<div class='round' id='round_" + key + "'></div>";
+            value.forEach(function (group) {
+                var elem = document.getElementById("tab_" + group);
+                var new_elem = elem.cloneNode(true);
+                elem.remove();
+                document.getElementById("round_" + key).appendChild(new_elem);
+            })
+        }
+    }
+    
+    function getCoords(elem) {
+        let box = elem.getBoundingClientRect();
+
+        return {
+            top: box.top + window.pageYOffset,
+            right: box.right + window.pageXOffset,
+            bottom: box.bottom + window.pageYOffset,
+            left: box.left + window.pageXOffset,
+            width: box.width,
+            height: box.height
+        };
+    }
+
+    function getCoordinates(idString, groups) {
+        coordinates = {};
+
+        for (const [key, value] of Object.entries(groups)) {
+            var elem = document.getElementById(idString + "_" + (parseInt(key)));
+
+            coordinates[idString + "_" + parseInt(key)] = getCoords(elem);
+        }
+        return coordinates;
+    }
+
+    function drawConnection(divCoords1, divCoords2) {
+        document.getElementById("canvas").innerHTML += "<line stroke='black' x1='" + (divCoords1.left + divCoords1.width) + "' y1='" + (divCoords1.top + divCoords1.height/2) + "' x2='" + (divCoords1.left + divCoords1.width + 20) + "' y2='" + (divCoords1.top + divCoords1.height/2) + "'></line>" + 
+        "<line stroke='black' x1='" + (divCoords1.left + divCoords1.width + 20) + "' y1='" + (divCoords1.top + divCoords1.height/2) + "' x2='" + (divCoords1.left + divCoords1.width + 20) + "' y2='" + (divCoords2.top + divCoords2.height/2) + "'></line>" + 
+        "<line stroke='black' x1='" + (divCoords1.left + divCoords1.width + 20) + "' y1='" + (divCoords2.top + divCoords2.height/2) + "' x2='" + (divCoords2.left) + "' y2='" + (divCoords2.top + divCoords2.height/2) + "'></line>";
+    }
+
+    function createConnections(connectionsArray, coordsArray) {
+        for (const [key, value] of Object.entries(connectionsArray)) {
+            value.forEach(function (next) {
+                drawConnection(coordsArray["tab_" + key], coordsArray["tab_" + next]);
+            })
+        }
+    }
+    
+    function updateCanvas() {
+        document.getElementById("canvas").innerHTML = "";
+        coords = getCoordinates("tab", groups);
+        createConnections(connections, coords);
+    }
+
+
+    
+    var groups = {};
+    
+    [% FOREACH g IN groups %]
+    group_index = [% loop.index %];
+    [% FOREACH team IN g.teams %]
+    groups[group_index] ? groups[group_index].push([% team.id %]) : groups[group_index] = [[% team.id %]];
+    [% END %]
+    [% END %]
+
+    var teams = getTeams(groups);
+    var occurences = getTeamOccurences(teams, groups);
+    var teamsByRound = sortTeamsByRound(occurences);
+    var groupsByRound = sortGroupsByRound(groups, teamsByRound);
+
+    drawTables(groupsByRound);
+    
+    var coords = getCoordinates("tab", groups);
+    var connections = {};
+
+    getConnection(groups, groupsByRound);
+
+    updateCanvas();
+
+
+
+</script>
 
 [% PROCESS includes/menu_end.tti %]
