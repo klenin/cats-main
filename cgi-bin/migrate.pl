@@ -122,9 +122,11 @@ sub make_migration {
     $make =~ /^[a-z0-9\-_]+$/ or die "Bad migration name: $make";
     $make =~ s/_/-/g;
 
-    my $common_diff = `git diff -- sql/common`;
-    my $ib_diff = `git diff -- sql/interbase`;
-    my $pg_diff = `git diff -- sql/postgres`;
+    my $sql_path = File::Spec->catdir($Bin, qw(.. sql));
+
+    my $common_diff = `git diff -- $sql_path/common`;
+    my $ib_diff = `git diff -- $sql_path/interbase`;
+    my $pg_diff = `git diff -- $sql_path/postgres`;
     $common_diff || $ib_diff || $pg_diff or die 'No diff';
 
     say 'Dry run' if $dry_run;
