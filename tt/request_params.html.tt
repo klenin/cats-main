@@ -128,7 +128,7 @@
 
 <form method="post"><p>
   <button type="submit" value="1" class="button" name="set_tag">[% capt.set_tag %]:</button>
-  <input type="text" name="tag" value="[% si.tag %]" size="40" class="bordered"/>
+  <input type="text" name="tag" value="[% si.tag | html %]" size="40" class="bordered"/>
 </p></form>
 
 <form method="post"><p>
