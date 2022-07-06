@@ -130,7 +130,7 @@ my $main_routes = {
         participate_online => bool, participate_virtual => bool, start_offset => bool,
         submit => bool, replace => bool, add_new => bool,
         add_remote => bool, std_solution => bool, delete_problem => integer,
-        de_id => qr/\d+|by_extension/, ignore => bool,
+        de_id => qr/\d+|by_extension/, de_code => integer, ignore => bool,
         change_status => integer, status => integer,
         change_code => integer, code => problem_code,
         link_save => bool, move => bool,

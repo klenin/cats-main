@@ -90,11 +90,17 @@ sub _get_DEs {
     }
 }
 
+sub _de_by_code {
+    $_[0] && $dbh->selectrow_array(q~
+        SELECT id FROM default_de WHERE code = ?~, undef,
+        $_[0]);
+}
+
 sub _prepare_de {
     my ($p, $file, $cpid) = @_;
     my $result = {};
 
-    my $did = $p->{de_id} or return msg(1013);
+    my $did = $p->{de_id} || _de_by_code($p->{de_code}) or return msg(1013);
     if ($did eq 'by_extension') {
         my $de = CATS::DevEnv->new(_get_DEs($cid))->by_file_extension($file)
             or return msg(1013);
