@@ -3,14 +3,16 @@ package CATS::UI::Problems;
 use strict;
 use warnings;
 
+use JSON::XS;
 use List::Util qw(max);
 
 use CATS::Config qw(cats_dir);
 use CATS::Constants;
 use CATS::Contest::Participate;
 use CATS::DB;
-use CATS::Globals qw($cid $contest $is_jury $is_root $sid $t $uid $user);
 use CATS::DevEnv;
+use CATS::Examus;
+use CATS::Globals qw($cid $contest $is_jury $is_root $sid $t $uid $user);
 use CATS::Judge;
 use CATS::JudgeDB;
 use CATS::ListView;
@@ -217,6 +219,26 @@ sub _collect_req_stats {
     ($reqs_idx, $last_submits);
 }
 
+sub _proctoring {
+    my ($p) = @_;
+    $is_root or return;
+    my ($params) = $dbh->selectrow_array(q~
+        SELECT params FROM proctoring WHERE contest_id = ?~, undef,
+        $cid) or return;
+    $params = eval { decode_json($params) } or return;
+    $params->{type} eq 'examus' or return;
+    $params->{$_} or return for qw(secret);
+    my $e = CATS::Examus->new(
+        (map { $_ => $contest->{$_} } qw(start_date finish_date)),
+        (map { $_ => $params->{$_} } qw(secret examus_url integration_name)),
+    );
+    $t->param(proctoring => {
+        url => $e->start_session_url,
+        token => $e->make_jws_token,
+        payload => $e->payload,
+    });
+}
+
 sub problems_frame {
     my ($p) = @_;
 
@@ -248,6 +270,7 @@ sub problems_frame {
     CATS::Problem::Submit::problems_submit($p) if $p->{submit};
     CATS::Contest::Participate::online if $p->{participate_online};
     CATS::Contest::Participate::virtual if $p->{participate_virtual};
+    _proctoring($p);
 
     if ($uid && !$is_jury) {
         if ($contest->has_finished_for($user)) {

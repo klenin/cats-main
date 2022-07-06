@@ -41,5 +41,14 @@
 [% IF js.quizzes -%]
   <script src="js/quizzes.js"></script>
 [%- END %]
+[% IF js.proctoring -%]
+<script>
+  let origin = new URL(location.href).searchParams.get('examus-client-origin');
+  let isProctored = x => x === 'proctoringReady_n6EY';
+  window.addEventListener('message', e => {
+    //console.log(e.origin, origin, e.data);
+  });
+</script>
+[%- END %]
 
 [%- extra_head -%]

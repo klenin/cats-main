@@ -125,6 +125,16 @@ function chg_code(st_sel, pid) {
 <p><b>[% capt.no_judges %]</b></p>
 [% END %]
 
+[% IF proctoring %]
+<p>
+<form method="post" enctype="multipart/form-data" action="[% proctoring.url %]" accept-charset="UTF-8">
+<input type="hidden" name="token" value="[% proctoring.token | html %]"/>
+<span>[% proctoring.payload %]</span>
+<button class="button" type="submit" >[% capt.start_proctoring %]start proctoring</button>
+</form>
+</p>
+[% END %]
+
 [% IF !is_user && !contest.is_practice %]
 <p>[% capt.login_to_participate.replace('\[\[(.*)\]\]', href(href_login, '$1')) %]</p>
 [% END %]
