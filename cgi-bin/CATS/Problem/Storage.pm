@@ -537,8 +537,8 @@ sub insert_problem_content {
         INSERT INTO tests (
             problem_id, rank, input_validator_id, input_validator_param,
             generator_id, param, std_solution_id, in_file, out_file,
-            points, gen_group, in_file_hash, snippet_name
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)~
+            points, descr, gen_group, in_file_hash, snippet_name
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)~
     );
 
     for (sort { $a->{rank} <=> $b->{rank} } values %{$problem->{tests}}) {
@@ -553,6 +553,7 @@ sub insert_problem_content {
         $db->bind_blob($c, ++$i, $_->{in_file});
         $db->bind_blob($c, ++$i, $_->{out_file});
         $c->bind_param(++$i, $_->{points});
+        $c->bind_param(++$i, $_->{descr});
         $c->bind_param(++$i, $_->{gen_group});
         $c->bind_param(++$i, $_->{hash});
         $c->bind_param(++$i, $_->{snippet_name});

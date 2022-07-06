@@ -371,6 +371,7 @@ CREATE TABLE tests (
     out_file        CATS_BLOB, /* For generated answer, length = min(out_file_size, save_answer_prefix). */
     out_file_size   INTEGER, /* Size of generated answer, else NULL. */
     points          INTEGER,
+    descr           CATS_TEXT,
     gen_group       INTEGER,
     snippet_name    VARCHAR(100) DEFAULT NULL
 );
