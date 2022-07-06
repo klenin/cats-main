@@ -154,6 +154,7 @@ sub _get_run_info {
         my ($row) = @_ or return ();
         $contest->{show_test_data} or return $row;
         my $t = $contest->{tests}->[$row->{test_rank} - 1] or return $row;
+        $row->{descr} = $t->{descr};
         $t->{param} //= '';
         $row->{input_gen_params} = CATS::Problem::Utils::gen_group_text($t);
         $row->{input_data_cut} = length($t->{input} || '') > $cats::test_file_cut;

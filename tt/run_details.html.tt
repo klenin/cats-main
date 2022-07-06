@@ -130,7 +130,7 @@
       <td class="num">[% rd.disk_used | group_digits %]</td>
     [% END %]
     [% END %]
-    [% IF r.show_checker_comment %]<td><pre>[% rd.checker_comment | html %]</pre></td>[% END %]
+    [% IF r.show_checker_comment %]<td>[% rd.descr %] <pre>[% rd.checker_comment | html %]</pre></td>[% END %]
     [% IF r.show_test_data %]
       <td class="test_data input_data"><a href="[% rd.href_view_test_details %]#input_d"
         [%- IF rd.input_gen_params; ' title="'; rd.input_gen_params | html; '"'; END %]>
