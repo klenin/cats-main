@@ -2,7 +2,8 @@
 [%- PROCESS includes/html.tti -%]
 
 <table>
-<tr><td>[% capt.name %]:</td><td>[% maybe_href(href_edit, team_name) %]</td></tr>
+<tr><td>[% capt.name %]:</td><td>[% maybe_href(href_edit, team_name) %]
+  <a href="[% href_filtered_users %]">[% PROCESS includes/filter_icon.tti title=capt.in_list %]</a></td></tr>
 [% IF user.privs.is_root %]
 <tr><td>[% capt.last_login %]:</td><td>[% last_login_date %]</td></tr>
 <tr><td>[% capt.last_ip %]:</td><td>

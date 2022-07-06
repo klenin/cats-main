@@ -1,6 +1,7 @@
 [%
   capt.import({
     name => 'Name',
+    in_list => 'In user list',
     last_login => 'Last login',
     last_ip => 'Last IP',
     problems => 'Problems',
