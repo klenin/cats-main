@@ -647,6 +647,8 @@ sub rank_table {
             (cid => $is_root ? $cid : 0),
             search => join(',', 'problem_id=0', $search_contest || ()),
         ),
+        href_users_filtered => @{$self->{rank}} < 100 && url_f('users',
+            search => join ',', map "id=$_->{account_id}", @{$self->{rank}}),
     );
     $t->param(cache_since => $max_req_id) if $is_jury;
 }

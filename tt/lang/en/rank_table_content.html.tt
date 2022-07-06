@@ -5,6 +5,7 @@
     show_ooc => 'show ooc',
     hide_virtual => 'hide virtual',
     show_virtual => 'show virtual',
+    user_list => 'user list',
     rules => 'rules',
     school => 'school',
     req_selection_last => 'last',

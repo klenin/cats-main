@@ -11,10 +11,12 @@
 <table style="width: 100%;">
 <tr>
 <td>
-  [% IF hide_ooc %]<a href="[% href_hide_ooc %]" target=_top>[% capt.hide_ooc %]</a>
-  [% ELSE %]<a href="[% href_show_ooc %]" target=_top>[% capt.show_ooc %]</a>[% END %] |
-  [% IF hide_virtual %]<a href="[% href_hide_virtual %]" target=_top>[% capt.hide_virtual %]</a>
-  [% ELSE %]<a href="[% href_show_virtual %]" target=_top>[% capt.show_virtual %]</a>[% END %]
+  [% IF hide_ooc %]<a href="[% href_hide_ooc %]">[% capt.hide_ooc %]</a>
+  [% ELSE %]<a href="[% href_show_ooc %]">[% capt.show_ooc %]</a>[% END %] |
+  [% IF hide_virtual %]<a href="[% href_hide_virtual %]">[% capt.hide_virtual %]</a>
+  [% ELSE %]<a href="[% href_show_virtual %]">[% capt.show_virtual %]</a>[% END %]
+  [% IF user.is_root && href_users_filtered && href_users_filtered.length < 1000; ' | ';
+    href(href_users_filtered, capt.user_list); END %]
 </td>
 <td style="text-align: right;">
 [% capt.rules %]:
