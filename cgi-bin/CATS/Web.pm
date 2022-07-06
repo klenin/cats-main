@@ -115,11 +115,13 @@ sub log_info {
 # Params: { content_type, charset (opt), file_name, len (opt), content (must be encoded) }
 sub print_file {
     my ($self, %p) = @_;
+    $p{file_name} or die;
+    my $disposition = $p{inline} ? 'inline' : 'attachment';
     $self->content_type($p{content_type}, $p{charset});
     $self->headers(
         'Accept-Ranges' => 'bytes',
         'Content-Length' => $p{len} // length($p{content}),
-        'Content-Disposition' => "attachment; filename=$p{file_name}",
+        'Content-Disposition' => "$disposition; filename=$p{file_name}",
     );
     $self->print($p{content});
 }
