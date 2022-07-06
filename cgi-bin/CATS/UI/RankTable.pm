@@ -30,6 +30,8 @@ our @router_params = (
     #accounts => clist_of integer,
     filter => str,
     groups => clist_of integer,
+    points_max => integer,
+    points_min => integer,
     sites => clist_of integer,
     sort => ident,
 );
@@ -157,7 +159,7 @@ sub rank_table_frame {
         _set_selected($sites, $p->{sites});
 
         my @ui_fields = qw(
-            filter sort show_flags show_logins show_regions
+            filter sort show_flags show_logins show_regions points_min points_max
             hide_ooc hide_virtual notime nostats);
         my %route = CATS::RouteParser::reconstruct($p);
         delete @route{qw(groups sites), @ui_fields};

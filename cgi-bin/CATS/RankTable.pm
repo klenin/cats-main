@@ -23,6 +23,7 @@ use fields qw(
     title has_practice not_started filter sites groups use_cache
     rank problems problems_idx show_all_results show_prizes has_competitive
     show_regions show_flags show_is_remote show_logins sort p notime nostats
+    points_min points_max
     max_total_points
 );
 
@@ -299,6 +300,8 @@ sub parse_params {
     $self->{show_logins} = $p->{show_logins};
     $self->{show_flags} = $p->{show_flags} if defined $p->{show_flags};
     $self->{show_is_remote} = 0;
+    $self->{points_min} = $p->{points_min};
+    $self->{points_max} = $p->{points_max};
     $self->{sort} = $p->{sort} // '';
     $self->{notime} = $p->{notime};
     $self->{nostats} = $p->{nostats};
@@ -327,6 +330,12 @@ sub prepare_ranks {
         my %h;
         @h{@$accounts_by_groups} = undef;
         @rank = grep exists $h{$_->{account_id}}, @rank;
+    }
+
+    if ($self->{show_points} && ($self->{points_min} || $self->{points_max})) {
+        my $pmin = $self->{points_min} // -1e100;
+        my $pmax = $self->{points_max} // +1e100;
+        @rank = grep $pmin <= $_->{total_points} && $_->{total_points} <= $pmax, @rank;
     }
 
     my $sort_criteria = $self->{sort} eq 'name' ?
@@ -555,6 +564,8 @@ sub rank_table {
         show_flags => $self->{show_flags},
         show_logins => $self->{show_logins},
         show_place => ($self->{sort} // '') ne 'name',
+        points_min => $self->{points_min},
+        points_max => $self->{points_max},
         req_selection => same_or_default(map $_->{req_selection}, values %{$self->{contests}}),
         notime => $self->{notime},
         nostats => $self->{nostats},

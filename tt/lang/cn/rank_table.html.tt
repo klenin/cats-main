@@ -4,6 +4,7 @@
     groups => 'Groups',
     sites => 'Sites',
     name_tag => 'Name / tag',
+    points => 'Points',
     sort => { n => 'Sort by', rank => 'rank', name => 'name' },
     show => {
       n => 'Show',
