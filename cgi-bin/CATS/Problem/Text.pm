@@ -432,7 +432,7 @@ sub problem_text {
 
     my %de = prepare_de_list;
     ($de{quiz_de}) =
-        grep $_->{code} && $_->{code} == $CATS::Globals::quiz_de_code, @{$de{de_list}};
+        grep $_->{code} && $_->{code} == $CATS::Globals::de_code_quiz, @{$de{de_list}};
     $t->param(
         title_suffix => (@problems == 1 ? $problems[0]->{title} : res_str(524)),
         problems => \@problems,
