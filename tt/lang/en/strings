@@ -438,3 +438,4 @@
 1235 "Awards removed: %d."
 1236 "JSON error: %s."
 1237 "Solution is accepted, points: %d."
+1238 "Groups of user '%s'."

@@ -76,6 +76,12 @@ sub acc_groups_frame {
             m => 1217, t => q~
             SELECT C.title FROM contests C WHERE C.id = ?~
         },
+        has_user => { sq => qq~EXISTS (
+            SELECT 1 FROM acc_group_accounts AGA1
+            WHERE AGA1.account_id = ? AND AGA1.acc_group_id = AG.id)~,
+            m => 1238, t => q~
+            SELECT A.team_name FROM accounts A WHERE A.id = ?~
+        },
     });
     $lv->define_enums({ in_contest => { this => $cid } });
 
