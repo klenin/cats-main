@@ -209,10 +209,56 @@ sub _get_run_info {
     };
 }
 
+sub _set_points {
+    my ($p) = @_;
+    $is_jury && $p->{set_points} && $p->{set_points_req_id} or return;
+    my ($req_id, $pid) = $dbh->selectrow_array(q~
+        SELECT id, problem_id FROM reqs WHERE contest_id = ? AND id = ?~, undef,
+        $cid, $p->{set_points_req_id}) or return;
+    my @points = @{$p->{points}};
+    my @ranks = @{$p->{rank}};
+    @points && @points == @ranks or return;
+    my $test_ranks = $dbh->selectcol_arrayref(q~
+        SELECT rank FROM tests WHERE problem_id = ?~, undef,
+        $pid);
+    my %existing_tests;
+    $existing_tests{$_} = 1 for @$test_ranks;
+    my $update_sth = $dbh->prepare(q~
+        UPDATE req_details SET result = ?, points = ?
+        WHERE req_id = ? AND test_rank = ?~);
+    my $insert_sth = $dbh->prepare(q~
+        INSERT INTO req_details (req_id, test_rank, result, points)
+        VALUES (?, ?, ?, ?)~);
+    my $delete_sth = $dbh->prepare(q~
+        DELETE FROM req_details WHERE req_id = ? AND test_rank = ?~);
+    my $count = 0;
+    for (my $i = 0; $i < @points; ++$i) {
+        my $rank = $ranks[$i];
+        $existing_tests{$rank} or next;
+        my $pts = $points[$i];
+
+        if ($pts eq '') {
+            $count += $delete_sth->execute($req_id, $rank);
+        }
+        elsif ($update_sth->execute($cats::st_accepted, $pts, $req_id, $rank) > 0) {
+            $count += 1;
+        }
+        else {
+            $count += $insert_sth->execute($req_id, $rank, $cats::st_accepted, $pts);
+        }
+    }
+    $count or return;
+    $dbh->do(q~
+        UPDATE reqs SET points = NULL WHERE id = ? AND points IS NOT NULL~, undef,
+        $req_id);
+    $dbh->commit;
+}
+
 sub run_details_frame {
     my ($p) = @_;
     init_template($p, 'run_details');
 
+    _set_points($p);
     my $sources_info = get_sources_info($p, request_id => $p->{rid}) or return;
     my @runs;
     my $contest_cache = {};

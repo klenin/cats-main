@@ -7,6 +7,8 @@
   .details a { color: inherit; width: 100%; display: block; }
   .details .test_data a { font-family: "Courier New", Courier, monospace; }
   .req > tbody > tr > td { vertical-align: top; }
+  .points { position: relative; }
+  .points:hover::before { position: absolute; content: '\270D  '; font-size: large; left: 0; top: -2px; }
 </style>
 </head>
 <body>
@@ -82,6 +84,9 @@
     </table>
   [% END %]
   <h3 id="tf[% r.id %]"></h3>
+  [% can_edit_points = is_any_jury && r.show_points %]
+  <form method="POST">
+  <input type="hidden" name="set_points_req_id" value="[% r.id %]"/>
   <table id="details[% r.id %]" class="details bordered">
   <tr>
     <th>[% capt.test %]</th>
@@ -113,7 +118,12 @@
     <td colspan="[% 1 + (r.show_points ? 1 : 0) + (r.show_test_resources ? 3 : 0) %]">[% capt.verdicts.NT %]</td>
     [% ELSE %]
     <td title="[% rd.is_hidden ? capt.hidden : capt.verdicts.item(rd.short_state) %]">[% rd.is_hidden ? '?' : rd.short_state %]</td>
-    [% IF r.show_points %]<td>[% rd.points %]</td>[% END %]
+    [% IF r.show_points %]<td class="num points" data-test-rank="[% rd.test_rank %]">
+      [%- IF can_edit_points %]<span>[% rd.points %]</span>
+        <input1 type="text" size="3" value="[% rd.points %]" name="points" class="hidden bordered"/>
+        <input1 type="hidden" value="[% rd.test_rank %]" name="rank"/>
+      [%- ELSE; rd.points; END -%]
+    </td>[% END %]
     [% IF r.show_test_resources %]
       <td>[% rd.time_used %]</td>
       <td class="num">[% rd.memory_used | group_digits %]</td>
@@ -142,7 +152,7 @@
   [% END %]
   [% IF r.show_points || r.show_test_resources -%]
   <tr><td colspan="2">[% capt.total %]</td>
-    [% IF r.show_points %]<td>[% r.total_points %]</td>[% END %]
+    [% IF r.show_points %]<td class="num">[% r.total_points %]</td>[% END %]
     [% IF r.show_test_resources %]
       <td>[% r.maximums.time_used %]</td>
       <td class="num">[% r.maximums.memory_used | group_digits %]</td>
@@ -151,6 +161,10 @@
   </tr>
   [%- END %]
   </table>
+  [%- IF can_edit_points -%]
+  <p><button type="submit" name="set_points" id="set_points" class="hidden button" value="1">[% capt.set_points %]</button></p>
+  [%- END %]
+  </form>
 [% END %]
 </td>
 [% END %]
@@ -222,11 +236,24 @@ function filter_testset(rid, ts) {
   $('#tf' + rid).text(ts);
 }
 
+function edit_points() {
+    var cell = $(this);
+    if (cell.children('input').length) return;
+
+    var pts = cell.children('span');
+    var input_pts = $('<input type="text" size="2" name="points" class="bordered" pattern="^[0-9]*$"/>').
+        val(pts.text()).insertAfter(pts).focus().select();
+    $('<input type="hidden" name="rank"/>').val(cell.data('test-rank')).insertAfter(input_pts);
+    pts.hide();
+    $('#set_points').show();
+}
+
 $(document).ready(function() {
     $('#filter_form').show();
     toggle_show_input_data();
     toggle_show_answer_data();
     toggle_show_output_data();
+    $('td.num.points').click(edit_points);
 });
 </script>
 [% END -%]

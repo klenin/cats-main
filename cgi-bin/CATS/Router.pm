@@ -317,6 +317,9 @@ my $main_routes = {
         rid => required clist_of integer,
         comment_enc => encoding_default('UTF-8'),
         as_user => bool,
+        set_points => bool, set_points_req_id => integer,
+        points => array_of qr/^[0-9]*$/, # integer or empty
+        rank => array_of integer,
     ],
     job_details => [ \&CATS::UI::Jobs::job_details_frame,
         jid => integer, delete_log => bool, delete_jobs => bool,

@@ -21,5 +21,6 @@
     disk => 'Disk',
     hidden => 'Hidden',
     total => 'Total',
+    set_points => 'Set points',
   })
 %]
