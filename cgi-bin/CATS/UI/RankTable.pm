@@ -127,7 +127,11 @@ sub rank_table_frame {
     my $url = sub {
         url_f(shift, CATS::RouteParser::reconstruct($p, clist => $rt->{contest_list}, @_));
     };
-    $t->param(href_rank_table_content => $url->('rank_table_content'));
+    $t->param(
+        href_rank_table_content => $url->('rank_table_content'),
+        href_problem_submit => url_f('problems',
+            source_text => 1, de_code => $CATS::Globals::de_code_answer_text),
+    );
     my $submenu =
         [ { href => $url->('rank_table_content', printable => 1), item => res_str(538) } ];
     if ($is_jury) {

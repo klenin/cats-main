@@ -90,7 +90,7 @@ END -%]
 [% IF show_place %]<td>[% r.place %]</td>[% END %]
 <td class="ts">[% status(r) %]</td></tr>
 [% END %]
-[% ELSE %]
+[% ELSE # !printable %]
 [% IF rank %]<script type="text/javascript"><!--
 var rank_table = [
 [% FOREACH r IN rank %]
@@ -131,7 +131,9 @@ for(var i = 0; i < rank_table.length; ++i) {
       'title="' + r.t + '"'), 'class="sticky"');
   [% IF show_points %]
   for (var j = 0; j < r.pt.length; ++j)
-    td(href(url_problem(j) + ';uf=' + r.id, r.pt[j]));
+    td(href(url_problem(j) + ';uf=' + r.id, r.pt[j])
+      [%- IF user.is_root %], ' class="rel" onclick="cell_click(event, this, ' + r.id + ',' + problem_ids[j][0] + ')"'
+      [%- END %]);
   td(r.tp, ' class="num"');
   [% ELSE %]
   for (var j = 0; j < r.tm.length; ++j) {

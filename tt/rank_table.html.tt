@@ -1,6 +1,17 @@
 [%- js.jquery = 1 -%]
 [%- PROCESS includes/menu_begin.tti -%]
 
+[% IF user.is_root -%]
+<div id="enter_points" class="hidden bordered popup">
+  <form method="POST" action="[% href_problem_submit %]" class="bordered">
+    <input type="hidden" name="problem_id" />
+    <input type="hidden" name="submit_as_id" />
+    <input type="text" name="submit_points" size="4" />
+    <button type="submit" name="submit" value="1" class="button">OK</button>
+  </form>
+</div>
+[%- END %]
+
 [%- IF user.is_jury %]
 <button class="button" onclick="$('#search').toggle()">[% PROCESS includes/filter_icon.tti title=capt.filter %]</button>
 <div id="search" class="hidden">
@@ -8,6 +19,7 @@
 <input type="hidden" name="f" value="rank_table" />
 [% FOREACH r IN route %]<input type="hidden" name="[% r.key | html %]" value="[% r.value | html %]"/>[% END %]
 <script>
+
 function update(id) {
   var s = $('#' + id + ' ._items input[type=checkbox]').map(function(_, v) {
     return v.checked ? v.value : null;
@@ -78,9 +90,34 @@ function toggle_all(value, id) {
 <div>
 [% END -%]
 
-<span id='refreshable_content'>
+<span id="refreshable_content">
 <br/>[% loading %]<br/><br/>
 <!-- xTMPL_VAR rank_table_content -->
 </span>
 <iframe width=0 height=0 src="[% href_rank_table_content %]"></iframe>
+
+[% IF user.is_root %]
+<script>
+var enter_points_div = $('#enter_points');
+enter_points_div.find('button').click(function (e) {
+  enter_points_div.hide();
+  return true;
+});
+enter_points_div.keyup(function(ev) {
+  if (ev.keyCode == 27) enter_points_div.hide();
+});
+
+function cell_click(event, el, uid, pid) {
+  if (el != event.target || !event.ctrlKey) return;
+  var d = el.getBoundingClientRect();
+  enter_points_div.css({
+    left: d.left + window.pageXOffset + 'px',
+    top: d.top + window.pageYOffset + 'px' }).show();
+  enter_points_div.find('input[name=problem_id]').val(pid);
+  enter_points_div.find('input[name=submit_as_id]').val(uid);
+  enter_points_div.find('input[name=submit_points]').val('').focus();
+}
+</script>
+[% END %]
+
 [% PROCESS includes/menu_end.tti %]

@@ -1,4 +1,5 @@
 Ace editor: 10
 search hint: 11
-datepicker: 1000
 editor menu: 12
+popup (rank table): 1000
+datepicker: 1000

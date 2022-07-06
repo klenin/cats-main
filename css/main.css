@@ -492,6 +492,9 @@ a.problem_req_count_udebug {
     background-repeat: no-repeat;
 }
 
+.rel { position: relative; }
+.popup { position: absolute; top: 0; left: 0; z-index: 1000; }
+
 table.rank_table { width: 100%; border-spacing: 1px; }
 table.rank_table tr td p { padding: 0; margin: 0; font-size: 9px; font-weight: normal; color: black; }
 table.rank_table .col_defs a { display: block; width: 100%; height: 100%; }
