@@ -367,21 +367,22 @@ files with tests, solutions etc.
     <li>rank — <a href="#rankSpec">test ranks specifier</a>.
       If rank attribute is equal to "*", parameters given in the text are set as defaults for all tests. [% v16 %]</li>
     <li>points[% opt %] — number of points for the test.</li>
+    <li>descr[% opt %] [% v110 %] — test description.</li>
   </ul></td>
-  <td>Test description.
+  <td>
   Problem must have tests with ranks from 1 upto some N.
-  If there is no tests, any compilable submission will be judged WA.
+  If there is no tests, any compilable submission will be judged OK.
   Since version 1.5 attributes of [% tag_ref('In') %] and [% tag_ref('Out') %] tags,
   nested inside [% tag_ref('Test') %] tag,
   may contain context variables which are expanded to the current test number.
   For example:<pre>&lt;Test rank="1-10"&gt;
   &lt;In src="%0n.in"/&gt;&lt;Out use="solution"/&gt;
 &lt;/Test&gt;</pre>
-  To avoid duplication, test description may be split between several tags, for example:
+  To avoid duplication, test properties may be split between several tags, for example:
   <pre>&lt;Test rank="1-5" points="1" /&gt;
 &lt;Test rank="6-10" points="2" /&gt;
 &lt;Test rank="1-10"&gt;&lt;Out use="sol"&gt;&lt;/Test&gt;</pre>
-  Despite of that, the data about each test must not overlap between tags.
+  However the data about each test must not overlap between tags.
 </td>
 </tr>
 <tr>
