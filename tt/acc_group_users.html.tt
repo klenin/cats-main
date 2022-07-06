@@ -31,6 +31,7 @@ function delete_acc_group_user(href, name) {
 [% IF can_edit %]<td>[% IF u.is_hidden %]<a href="#" class="icon checked"></a>[% END %]</td>[% END %]
 [% IF visible_cols.Ds %]<td>[% u.date_start %]</td>[% END %]
 [% IF visible_cols.Df %]<td>[% u.date_finish %]</td>[% END %]
+[% IF visible_cols.Gr %]<td class="num">[% href(u.href_groups, u.groups) %]</td>[% END %]
 </tr>
 [% END %]
 </table>

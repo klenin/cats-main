@@ -176,17 +176,21 @@ sub acc_group_users_frame {
         ),
         { caption => res_str(600), order_by => 'date_start', width => '5%', col => 'Ds' },
         { caption => res_str(631), order_by => 'date_finish', width => '5%', col => 'Df' },
+        { caption => res_str(694), order_by => 'groups', width => '5%', col => 'Gr' },
     ])->date_fields(qw(date_start date_finish));
     $lv->define_db_searches([ qw(login team_name account_id is_admin is_hidden) ]);
     $lv->define_db_searches({ id => 'account_id' });
     $lv->default_searches([ qw(login team_name) ]);
 
     my $hidden_cond = $can_edit ? '' : ' AND AGA.is_hidden = 0';
+    my $groups_sql = $lv->visible_cols->{Gr} ?
+        q~(SELECT COUNT(*) FROM acc_group_accounts AGA1 WHERE AGA1.account_id = A.id)~ : 'NULL';
     my $sth = $dbh->prepare(qq~
         SELECT A.login, A.team_name,
             AGA.account_id, AGA.is_admin, AGA.is_hidden, AGA.date_start, AGA.date_finish,
             (SELECT 1 FROM contest_accounts CA
-                WHERE CA.contest_id = ? AND CA.account_id = AGA.account_id) AS in_contest
+                WHERE CA.contest_id = ? AND CA.account_id = AGA.account_id) AS in_contest,
+            $groups_sql AS groups
         FROM acc_group_accounts AGA
         INNER JOIN accounts A ON A.id = AGA.account_id
         WHERE AGA.acc_group_id = ?$hidden_cond~ . $lv->maybe_where_cond . $lv->order_by);
@@ -200,6 +204,7 @@ sub acc_group_users_frame {
             href_edit => $is_jury && $row->{in_contest} &&
                 url_f('users_edit', uid => $row->{account_id}),
             href_stats => url_f('user_stats', uid => $row->{account_id}),
+            href_groups => url_f('acc_groups', search => "has_user($row->{account_id})"),
             %$row,
          );
     };
