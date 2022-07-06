@@ -11,7 +11,7 @@
 <script src="js/lib/ace/ext-static_highlight.js"></script>
 [% END %]
 [% IF has_quizzes || has_snippets -%]
-<script type="text/javascript" src="https://surveyjs.azureedge.net/1.0.9/survey.jquery.min.js"></script>
+<script type="text/javascript" src="js/lib/survey.jquery.js"></script>
 [% END %]
 [% END %]
 [%- text_width = '1000px' -%]

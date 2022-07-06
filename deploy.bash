@@ -262,6 +262,9 @@ if [[ $step =~ (^|,)7(,|$) || $step == "*" ]]; then
 	unzip v1.4.9.zip
 	mv jQuery-Autocomplete-1.4.9/dist ../js/lib/autocomplete
 
+	wget https://unpkg.com/survey-jquery@1.9.39/survey.jquery.js
+	mv survey.jquery.js ../js/lib/survey.jquery.js
+
 	cd $CATS_ROOT
 	rm -rf tmp_js/
 	echo "ok"
