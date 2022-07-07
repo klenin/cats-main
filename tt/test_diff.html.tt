@@ -3,7 +3,7 @@
 [% PROCESS "lang/$lang/verdicts.tti" %]
 
 <p>Problem: [% problem.id %] [% problem.title | html %]</p>
-<p>Test: [% test %]</p>
+<p>Test: [% test; IF descr %] ([% descr | html %])[% END %]</p>
 
 <table class="bordered internal_borders highlight padded">
   <tr class="header">

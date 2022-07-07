@@ -315,6 +315,9 @@ sub test_diff_frame {
     my $problem = $dbh->selectrow_hashref(q~
         SELECT P.id, P.title FROM problems P WHERE id = ?~, { Slice => {} },
         $p->{pid}) or return;
+    my (undef, $descr) =  $dbh->selectrow_array(q~
+        SELECT rank, descr FROM tests WHERE problem_id = ? AND rank = ?~, undef,
+        $p->{pid}, $p->{test}) or return;
     my $reqs = $dbh->selectall_arrayref(q~
         SELECT R.id, R.account_id, R.problem_id, R.state, R.failed_test, A.team_name
         FROM reqs r
@@ -338,7 +341,7 @@ sub test_diff_frame {
         $r->{prev} = $prev;
         $prev = $r;
     }
-    $t->param(reqs => \@fr, problem => $problem, test => $p->{test});
+    $t->param(reqs => \@fr, problem => $problem, test => $p->{test}, descr => $descr);
     CATS::Problem::Utils::problem_submenu('compare_tests', $p->{pid});
 }
 
