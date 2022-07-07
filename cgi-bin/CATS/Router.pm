@@ -249,7 +249,7 @@ my $main_routes = {
         uid => required integer, delete => integer, saved => integer,
     ],
     user_relations_edit => [ \&CATS::UI::UserRelations::user_relations_edit_frame,
-        uid => required integer, $CATS::UI::UserRelations::form->route,
+        uid => integer, $CATS::UI::UserRelations::form->route,
         from_login => str, to_login => str, js => bool,
     ],
     api_find_users => [ \&CATS::UI::UserRelations::find_users_api,
