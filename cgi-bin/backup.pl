@@ -129,7 +129,7 @@ sub work {
 
     if ($imitate) {
         printf "Command: %s\n", join ' ', @$cmd if !$quiet;
-        open my $f, '>', $file;
+        open my $f, '>', $file or die $!;
         print $f 'testtest' x 10;
         $ok = 1;
         $err = 0;
