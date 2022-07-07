@@ -4,16 +4,15 @@ use warnings;
 
 use Encode;
 use File::Spec;
-use File::stat;
 use FindBin;
 use Getopt::Long;
 use IPC::Cmd;
-use POSIX qw(strftime);
 use Time::HiRes qw(gettimeofday);
 
 use lib File::Spec->catdir($FindBin::Bin, 'cats-problem');
 use lib $FindBin::Bin;
 
+use CATS::Backup;
 use CATS::Config;
 use CATS::Mail;
 use CATS::Problem::Repository;
@@ -23,14 +22,7 @@ sub usage {
     print STDERR "CATS Repository backup tool
 Usage: $0 <options>
 Options:
-  [--help]\t\tDisplay this help.
-  --report={std|mail}\tPrint report to stdout or send it by email.
-  [--quiet]\t\tDo not print progress info.
-  [--dest=<path>]\tStore backups in a given folder, default is '../backups/repo'.
-  [--zip]\t\tCompress backup.
-  [--chown=<user>]\tChange backup file ownership.
-  [--max=<number>]\tRemove oldest backup when maximum count is reached.
-  [--imitate]\t\tCreate dummy backup file for testing.
+$CATS::Backup::options
 ";
     exit;
 }
@@ -55,42 +47,7 @@ if (!$report || $report !~ /^(std|mail)$/) {
 
 $dest ||= File::Spec->catdir($FindBin::Bin, '..', 'backups', 'repo');
 
-sub fmt_interval {
-    my $s = Time::HiRes::tv_interval(@_);
-    my $ms = int(1000 * ($s - int($s)));
-    my $m = int($s / 60);
-    $s %= 60;
-    sprintf '%02d:%02d.%03d', $m, $s, $ms;
-}
-
 my $prefix = 'catsr-';
-
-sub remove_old_backup {
-    my @all_backups = glob(File::Spec->catfile($dest, "$prefix*.*"));
-    print "Backups total: " . @all_backups . ", max = $max\n" if !$quiet;
-    return if $max >=  @all_backups;
-    my ($oldest_mtime, $oldest);
-    for (@all_backups) {
-        my $mtime = stat($_)->mtime;
-        next if $oldest_mtime && $mtime > $oldest_mtime;
-        $oldest = $_;
-        $oldest_mtime = $mtime;
-    }
-    $oldest or return;
-    unlink $oldest or die "Remove error: $!";
-    return "Removed: $oldest\n";
-}
-
-sub find_file {
-    for (my $i = 0; $i < 10; ++$i) {
-        my $n = File::Spec->catfile($dest,
-            $prefix . strftime('%Y-%m-%d', localtime) . ($i ? "-$i" : ''));
-        next if -d $n;
-        next if -f "$n.zip" && $zip;
-        return $n;
-    }
-    die "Too many backups at $dest";
-}
 
 sub work {
     IPC::Cmd::can_run('git') or die 'Error: git not found';
@@ -100,7 +57,7 @@ sub work {
 
     -d $dest or die "Bad destination: $dest";
 
-    my $file = find_file;
+    my $file = CATS::Backup::find_file($dest, $prefix, $zip, '', 'zip');
 
     print "Destination: $file\n" if !$quiet;
 
@@ -133,7 +90,7 @@ sub work {
     }
     $result .= sprintf "File: %s\nSize: %s\n", $file, group_digits($uncompressed_size, '_');
     my $backup_ts = [ gettimeofday ];
-    my $result_time = sprintf "Backup time: %s\n", fmt_interval($start_ts, $backup_ts);
+    my $result_time = sprintf "Backup time: %s\n", CATS::Backup::fmt_interval($start_ts, $backup_ts);
 
     if ($zip) {
         ($ok, $err, $full) = IPC::Cmd::run command => [ qw(zip -j -1 -q -m -r), $file, $file ];
@@ -142,15 +99,11 @@ sub work {
         my $compressed_size = group_digits(-s "$file.zip", '_');
         $result .= "Zipped: $compressed_size\n";
         my $zip_ts = [ gettimeofday ];
-        $result_time .= sprintf "Zip time: %s\n", fmt_interval($backup_ts, $zip_ts);
+        $result_time .= sprintf "Zip time: %s\n", CATS::Backup::fmt_interval($backup_ts, $zip_ts);
         $file .= '.zip';
     }
-    if ($chown) {
-        print "chown $chown:$chown $file\n" if !$quiet;
-        my (undef, undef, $uid, $gid) = getpwnam($chown) or die "User not found: $chown";
-        chown $uid, $gid, $file or die "Error: chown: $!";
-    }
-    $result .= remove_old_backup() // '' if $max;
+    CATS::Backup::maybe_chown($chown, $file, $quiet);
+    $result .= CATS::Backup::remove_old_backup($dest, $prefix, $max, $quiet) // '' if $max;
     print "\n" if !$quiet;
     $result . $result_time;
 }
