@@ -51,6 +51,9 @@ sub compare_tests_frame {
     $pt or return;
     $t->param(problem_title => $pt);
 
+    my $tests = $dbh->selectall_hashref(q~
+        SELECT rank, descr FROM tests WHERE problem_id = ?~, 'rank', undef,
+        $p->{pid});
     my $totals = $dbh->selectall_hashref(qq~
         SELECT
             SUM(CASE rd.result WHEN $cats::st_accepted THEN 1 ELSE 0 END) AS passed_count,
@@ -109,6 +112,7 @@ sub compare_tests_frame {
     }
 
     $t->param(
+        tests => $tests,
         comparison_matrix => $cm,
         equiv_lists => greedy_cliques(@equiv_tests),
         simple_tests => \@simple_tests,
