@@ -255,7 +255,7 @@ sub problem_select_testsets_frame {
 }
 
 my $test_data_sql = qq~
-    SELECT T.rank, T.gen_group, T.param,
+    SELECT T.rank, T.gen_group, T.param, T.descr,
         SUBSTRING(T.in_file FROM 1 FOR $cats::test_file_cut + 1) AS input,
         COALESCE(PSL1.fname, PSLE1.fname) AS gen_name,
         COALESCE(PSL2.fname, PSLE2.fname) AS val_name,
@@ -367,10 +367,11 @@ sub problem_test_data_frame {
         { caption => 'generator_params', order_by => 'gen_name' },
         { caption => 'validator', order_by => 'val_name', col => 'Vn' },
         { caption => 'input_hash', order_by => 'input_hash', col => 'Ih' },
+        { caption => 'descr', order_by => 'descr', col => 'De' },
     ]);
     $lv->define_db_searches([ qw(
         rank gen_group param input_hash input_validator_param
-        in_file in_file_size out_file out_file_size
+        in_file in_file_size out_file out_file_size descr
     ) ]);
     $lv->define_db_searches({
         gen_name => 'COALESCE(PSL1.fname, PSLE1.fname)',
