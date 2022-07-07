@@ -46,10 +46,10 @@
     <td></td>
     [% IF visible_cols.Is %]<td class="num">[% total.input_size | group_digits %]</td>[% END %]
     <td></td>
-    [% IF visible_cols.Is %]<td class="num">[% total.answer_size | group_digits %]</td>[% END %]
+    [% IF visible_cols.As %]<td class="num">[% total.answer_size | group_digits %]</td>[% END %]
     <td></td>
-    <td></td>
-    <td></td>
+    [% IF visible_cols.Vn %]<td></td>[% END %]
+    [% IF visible_cols.Ih %]<td></td>[% END %]
     [% IF visible_cols.De %]<td></td>[% END %]
   </tr>
 </table>
