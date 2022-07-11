@@ -16,6 +16,8 @@
 [% END %]
 [%- text_width = '1000px' -%]
 <style>
+  @media print { div.problem_menu.jsonly, a.problem_menu_trigger.jsonly { display: none; } }
+
   div.problem_menu { display: none; width: 100%; background-color: #eeeeee; }
   div.problem_menu ul { list-style-type: none; padding: 0; }
   div.problem_menu ul li { display: inline-block; padding: 3px 10px; border-right: 1px solid; }
