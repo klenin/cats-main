@@ -9,6 +9,7 @@
     sudden_changes => 'Резкие изменения',
     collapse_idents => 'Игнорировать идентификаторы',
     collapse_nums => 'Игнорировать числа',
+    ignore_upsolve => 'Игнорировать дорешивание',
     max_lines => 'Макс. строк',
     min_chars => 'Мин. символов',
     all_contests => 'Все турниры',

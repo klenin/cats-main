@@ -30,6 +30,7 @@ p.params label { white-space: nowrap; margin-right: 8px; }
 <label>[% checkbox_1('self_diff', params.self_diff) %] [% capt.sudden_changes %]</label>
 <label>[% checkbox_1('collapse_idents', params.collapse_idents) %] [% capt.collapse_idents %]</label>
 <label>[% checkbox_1('collapse_nums', params.collapse_nums) %] [% capt.collapse_nums %]</label>
+<label>[% checkbox_1('ignore_upsolve', params.ignore_upsolve) %] [% capt.ignore_upsolve %]</label>
 <label><input type="text" name="max_lines" value="[% params.max_lines | html %]" size="3" class="bordered" /> [% capt.max_lines %]</label>
 <label><input type="text" name="min_chars" value="[% params.min_chars | html %]" size="3" class="bordered" /> [% capt.min_chars %]</label>
 [% IF user.privs.is_root %]<label>[% checkbox_1('all_contests', params.all_contests) %] [% capt.all_contests %]</label>[% END %]

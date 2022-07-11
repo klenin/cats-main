@@ -156,6 +156,7 @@ our %similarity_route = (
     collapse_nums => bool,
     group => bool,
     jury => bool,
+    ignore_upsolve => bool,
     max_lines => integer,
     min_chars => integer,
     pid => integer,
@@ -163,6 +164,14 @@ our %similarity_route = (
     threshold => integer,
     virtual => bool,
 );
+
+sub _is_upsolve {
+    my ($ai, $aj, $users_idx) = @_;
+    my $ui = $users_idx->{$ai} or return;
+    my $uj = $users_idx->{$aj} or return;
+    ($ui->{upsolver} // 0) == $aj ||
+    ($uj->{upsolver} // 0) == $ai;
+}
 
 sub similarity_frame {
     my ($p) = @_;
@@ -198,9 +207,13 @@ sub similarity_frame {
         WHERE CP.contest_id = ? ORDER BY CP.code~, { Slice => {} },
         $cid);
 
-    my $users_sql = q~
+    my $users_sql = qq~
         SELECT CA.account_id, CA.is_jury, CA.is_virtual, A.team_name AS name, A.city,
-            CA.site_id, S.name AS site
+            CA.site_id, S.name AS site,
+            (SELECT RL.from_id FROM relations RL
+            WHERE RL.rel_type = $CATS::Globals::relation->{upsolves_for} AND
+                RL.to_id = CA.account_id AND RL.from_ok = 1 AND RL.to_ok = 1
+                ROWS 1) AS upsolver
         FROM contest_accounts CA INNER JOIN accounts A ON CA.account_id = A.id
         LEFT JOIN sites S ON CA.site_id = S.id ~;
     my $users = $dbh->selectall_arrayref(qq~
@@ -254,6 +267,7 @@ sub similarity_frame {
             next if $s->{self_diff} ? $ai != $aj : $ai == $aj && $i->{contest_id} == $j->{contest_id};
             my $score = CATS::Similarity::similarity_score($i->{hash}, $j->{hash});
             ($score * 100 > $s->{threshold}) ^ $s->{self_diff} or next;
+            next if $s->{ignore_upsolve} && _is_upsolve($ai, $aj, $users_idx);
             my $search =
                 "account_id=$ai" . ($ai == $aj ? '' : ",account_id=$aj") .
                 ",problem_id=$i->{problem_id}" .

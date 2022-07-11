@@ -9,6 +9,7 @@
     sudden_changes => 'Sudden changes',
     collapse_idents => 'Collapse identifiers',
     collapse_nums => 'Collapse numbers',
+    ignore_upsolve => 'Ignore upsolve',
     max_lines => 'Max. lines',
     min_chars => 'Min. chars',
     all_contests => 'All contests',
