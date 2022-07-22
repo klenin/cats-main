@@ -36,6 +36,7 @@
     snippets => 'Snippets',
     snippets_declared => 'Declared',
     snippets_generated => 'Generated',
+    snippet_jobs => 'Jobs',
     request_count => 'Verdict counts',
   })
 %]

@@ -62,6 +62,7 @@
 <tr><td>[% capt.snippets %]</td><td class="nested"><table class="internal_borders padded"><tr>
   <td>[% capt.snippets_declared %]: [% p.snippets_declared %]</td>
   <td>[% capt.snippets_generated %]: [% href(href_snippets, p.snippets_generated) %]</td>
+  <td>[% capt.snippet_jobs %]: [% href(href_snippet_jobs, p.snippet_jobs) %]</td>
 </tr></table></td></tr>
 [% END -%]
 <tr><td>[% capt.request_count %]</td><td class="nested">

@@ -36,6 +36,7 @@
     snippets => 'Фрагменты',
     snippets_declared => 'Определено',
     snippets_generated => 'Сгенерировано',
+    snippet_jobs => 'Поручений',
     request_count => 'Количество вердиктов',
   })
 %]

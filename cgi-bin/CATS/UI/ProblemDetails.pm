@@ -55,14 +55,17 @@ sub problem_details_frame {
             (SELECT COUNT(*) FROM problem_snippets PS
                 WHERE PS.problem_id = P.id) AS snippets_declared,
             (SELECT COUNT(*) FROM snippets S
-                WHERE S.problem_id = P.id AND S.contest_id = CP.contest_id) AS snippets_generated
+                WHERE S.problem_id = P.id AND S.contest_id = CP.contest_id) AS snippets_generated,
+            (SELECT COUNT(*) FROM jobs J
+                WHERE J.problem_id = P.id AND J.contest_id = CP.contest_id AND J.type = ?
+            ) AS snippet_jobs
         FROM problems P
         INNER JOIN contests C ON C.id = P.contest_id
         INNER JOIN contest_problems CP ON CP.problem_id = P.id AND CP.contest_id = ?
         LEFT JOIN accounts A ON A.id = P.last_modified_by
         LEFT JOIN limits L ON L.id = CP.limits_id
         WHERE P.id = ?~, { Slice => {} },
-        $cid, $p->{pid}) or return;
+        $cats::job_type_generate_snippets, $cid, $p->{pid}) or return;
     $pr->{upload_date} = $db->format_date($pr->{upload_date});
 
     CATS::Problem::Utils::round_time_limit($pr->{overridden_time_limit});
@@ -139,6 +142,7 @@ sub problem_details_frame {
         href_problem_limits => url_f('problem_limits', pid => $p->{pid}),
         href_tags => url_f('problem_select_tags', pid => $p->{pid}),
         href_snippets => url_f('snippets', search => "problem_id=$p->{pid},contest_id=$cid"),
+        href_snippet_jobs => url_f('jobs', search => "problem_id=$p->{pid},contest_id=$cid,type=snippets"),
     );
     CATS::Problem::Utils::problem_submenu('problem_details', $p->{pid});
 }
