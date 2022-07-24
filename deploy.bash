@@ -236,37 +236,8 @@ fi
 
 echo "7. Download JS... "
 if [[ $step =~ (^|,)7(,|$) || $step == "*" ]]; then
-	mkdir tmp_js
-	cd tmp_js/
-
-	wget https://code.jquery.com/jquery-3.6.0.min.js
-	mv jquery-3.6.0.min.js ../js/lib/jquery.min.js
-
-	wget http://www.flotcharts.org/downloads/flot-0.8.3.zip
-	unzip flot-0.8.3.zip
-	mv flot/jquery.flot.min.js ../js/lib/
-
-	wget https://github.com/mathjax/MathJax/archive/2.7.1.zip
-	unzip 2.7.1.zip
-	mv MathJax-2.7.1 ../js/lib/MathJax
-
-	wget https://github.com/ajaxorg/ace-builds/archive/v1.3.3.zip
-	unzip v1.3.3.zip
-	mv ace-builds-1.3.3/src-min-noconflict ../js/lib/ace
-
-	wget https://github.com/fengyuanchen/datepicker/archive/v1.0.0.zip
-	unzip v1.0.0.zip
-	mv datepicker-1.0.0/dist ../js/lib/datepicker
-
-	wget https://github.com/devbridge/jQuery-Autocomplete/archive/v1.4.9.zip
-	unzip v1.4.9.zip
-	mv jQuery-Autocomplete-1.4.9/dist ../js/lib/autocomplete
-
-	wget https://unpkg.com/survey-jquery@1.9.39/survey.jquery.js
-	mv survey.jquery.js ../js/lib/survey.jquery.js
-
+    perl -e 'install_js.pl --install=all'
 	cd $CATS_ROOT
-	rm -rf tmp_js/
 	echo "ok"
 else
 	echo "skip"
