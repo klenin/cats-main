@@ -292,6 +292,7 @@
 1076 "Snippet '%s' deleted."
 1077 "Snippet '%s' already exists."
 1078 "Incorrect page."
+1079 "Deleted snippets: %d."
 1080 "无法提交解决方案：比赛还没有开始。"
 1081 "无法提交解决方案：比赛结束了。"
 1084 "Incorrect keyword parameters."

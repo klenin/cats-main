@@ -164,6 +164,14 @@ sub snippets_frame {
 
     init_template($p, 'snippets');
     $form->delete_or_saved($p);
+
+    if ($p->{delete_sel} && @{$p->{sel}}) {
+        my $count = $dbh->do(_u $sql->delete(
+            'snippets', { id => $p->{sel}, $is_root ? () : (contest_id => $cid) }));
+        $dbh->commit if $count;
+        msg(1079, $count);
+    }
+
     my $lv = CATS::ListView->new(web => $p, name => 'snippets', url => url_f('snippets'));
 
     $lv->default_sort(0)->define_columns([

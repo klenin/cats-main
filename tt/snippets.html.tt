@@ -1,6 +1,5 @@
-[% PROCESS includes/menu_begin.tti %]
-
-<form method=post enctype='multipart/form-data'>
+[%- js.jquery = 1 -%]
+[%- PROCESS includes/menu_begin.tti -%]
 
 <script type="text/javascript">
 function delete_snippet(href, name) {
@@ -9,13 +8,16 @@ function delete_snippet(href, name) {
 }
 </script>
 
-[% PROCESS includes/listview_header.tti %]
+[%- PROCESS includes/listview_header.tti -%]
 
 <table class="listview bordered highlight">
-[% PROCESS includes/listview_col_defs.tti%]
+[% PROCESS includes/listview_col_defs.tti sel_col = 1 %]
 
 [% FOREACH s IN snippets %]
 <tr class="[% loop.parity() %]">
+  <td class="nobr sel_col">
+    <input type="checkbox" class="listview_checkbox" name="sel" value="[% s.id %]">
+  </td>
   <td>
     <a href="javascript:delete_snippet('[% s.href_delete %]', '[% s.name.squote | html %]');" class="icon delete"></a>
     <a href="[% s.href_edit %]" class="icon edit"></a>
@@ -28,7 +30,9 @@ function delete_snippet(href, name) {
 </tr>
 [% END %]
 </table>
-
+<div class="action_group send_message">
+  <button type="submit" name="delete_sel" value="1" class="button">[% capt.delete %]</button>
+</div>
 [% PROCESS includes/pages.tti %]
 </form>
 
