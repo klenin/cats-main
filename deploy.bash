@@ -239,8 +239,8 @@ if [[ $step =~ (^|,)7(,|$) || $step == "*" ]]; then
 	mkdir tmp_js
 	cd tmp_js/
 
-	wget https://code.jquery.com/jquery-1.12.4.min.js
-	mv jquery-1.12.4.min.js ../js/lib/jquery.min.js
+	wget https://code.jquery.com/jquery-3.6.0.min.js
+	mv jquery-3.6.0.min.js ../js/lib/jquery.min.js
 
 	wget http://www.flotcharts.org/downloads/flot-0.8.3.zip
 	unzip flot-0.8.3.zip
