@@ -17,7 +17,8 @@ function init_quizzes() {
       form.attr('onsubmit', 'return false;');
       var question = { 
         type: quiz.attr('type'), 
-        name: 'Quiz' + quiz_count
+        name: 'Quiz' + quiz_count,
+        titleLocation: 'hidden'
       };
       if (question.type === 'radiogroup' || question.type === 'checkbox')
         question.choices = $.map(quiz.children('Choice').remove(), function(choice, i) {
