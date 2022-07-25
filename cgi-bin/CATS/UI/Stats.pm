@@ -10,7 +10,7 @@ use CATS::DB;
 use CATS::Globals qw($cid $contest $is_jury $is_root $t);
 use CATS::ListView;
 use CATS::Messages qw(res_str);
-use CATS::Output qw(init_template url_f);
+use CATS::Output qw(init_template search url_f);
 use CATS::Problem::Utils;
 use CATS::RouteParser;
 use CATS::Similarity;
@@ -268,15 +268,15 @@ sub similarity_frame {
             my $score = CATS::Similarity::similarity_score($i->{hash}, $j->{hash});
             ($score * 100 > $s->{threshold}) ^ $s->{self_diff} or next;
             next if $s->{ignore_upsolve} && _is_upsolve($ai, $aj, $users_idx);
-            my $search =
-                "account_id=$ai" . ($ai == $aj ? '' : ",account_id=$aj") .
-                ",problem_id=$i->{problem_id}" .
-                ($i->{problem_id} == $j->{problem_id} ? '' : ",problem_id=$j->{problem_id}");
+            my @search = search(
+                account_id => $ai, ($ai == $aj ? () : (account_id => $aj)),
+                problem_id => $i->{problem_id},
+                ($i->{problem_id} == $j->{problem_id} ? () : problem_id => $j->{problem_id}));
             my $pair = {
                 score => sprintf('%.1f', $score * 100), s => $score,
                 href_diff => url_f('diff_runs', r1 => $i->{id}, r2 => $j->{id}, similar => 1),
                 href_console => url_f('console',
-                    se => 'user_stats', search => $search, i_value => -1, show_results => 1),
+                    se => 'user_stats', @search, i_value => -1, show_results => 1),
                 t1 => $ai, t2 => $aj, req1 => $i, req2 => $j,
             };
             exists $users_idx->{$_} or $missing_users{$_} = 1 for $ai, $aj;
