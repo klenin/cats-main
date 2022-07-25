@@ -324,6 +324,7 @@ sub problems_frame {
             { caption => res_str(641), order_by => 'allow_des', width => '5%', col => 'Ad' },
             { caption => res_str(618), order_by => 'judges', width => '5%', col => 'Ju' },
             { caption => res_str(698), order_by => 'snippets', width => '5%', col => 'Sn' },
+            { caption => res_str(816), order_by => 'save_output_prefix', width => '5%', col => 'Op' },
             { caption => res_str(675), col => 'Cl' },
         )
         : ()
@@ -520,6 +521,7 @@ sub problems_frame {
             memory_limit => _combine_limits($c->{cp_memory_limit}, $c->{memory_limit}),
             time_limit => _combine_limits($c->{cp_time_limit}, $c->{time_limit}),
             write_limit => _combine_limits($c->{cp_write_limit}, $c->{write_limit}) // '*',
+            save_output_prefix => _combine_limits($c->{cp_save_output_prefix}, $c->{save_output_prefix}) // '*',
             max_points => _combine_limits($c->{scaled_points} && (0 + $c->{scaled_points}), $max_points) .
                 ($c->{round_points_to} ? ' ~' . (0 + $c->{round_points_to}) : ''),
             weight => $c->{weight} ? 0 + $c->{weight} : '*',
