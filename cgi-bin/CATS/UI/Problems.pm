@@ -498,6 +498,8 @@ sub problems_frame {
                 url_f('contest_problems_installed', search(problem_id => $c->{pid})),
             href_snippets => $is_jury &&
                 url_f('snippets', search(problem_id => $c->{pid}, contest_id => $c->{contest_id})),
+            href_last_modified_by => $is_jury && $lv->visible_cols->{Mu} &&
+                url_f('user_stats', uid => $c->{last_modified_by}),
 
             status => $c->{status},
             status_text => $psn->{$c->{status}},
