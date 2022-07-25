@@ -396,14 +396,14 @@ sub problems_frame {
             $original_contest_code_sql AS original_code,
             $keywords
             $allow_des
-            P.contest_id - CP.contest_id AS is_linked,
+            (CASE WHEN P.contest_id = CP.contest_id THEN 0 ELSE 1 END) AS is_linked,
             (SELECT COUNT(*) FROM contest_problems CP1
                 WHERE CP1.contest_id <> CP.contest_id AND CP1.problem_id = P.id) AS usage_count,
             OC.id AS original_contest_id, CP.status,
             P.upload_date, $judges_installed_sql AS judges_installed,
             P.last_modified_by,
             (SELECT A.login FROM accounts A WHERE A.id = P.last_modified_by) AS last_modified_by_name,
-            SUBSTRING(P.explanation FROM 1 FOR 1) AS has_explanation,
+            (CASE WHEN P.explanation IS NULL THEN 0 ELSE 1 END) AS has_explanation,
             $test_count_sql CP.testsets, CP.points_testsets, P.lang,
             $limits_str, L.job_split_strategy,
             $snippets_sql,
