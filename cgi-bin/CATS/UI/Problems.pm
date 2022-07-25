@@ -607,7 +607,7 @@ sub problems_frame {
         is_user => $uid,
         can_submit => CATS::Problem::Submit::can_submit,
         CATS::Problem::Submit::prepare_de_list($p),
-        contest_id => $cid, no_judges => !$jactive,
+        no_judges => !$jactive,
         parent_contest => $parent_contest,
         source_text => $p->{source_text},
         no_listview_header => !$is_jury &&

@@ -292,7 +292,7 @@ function chg_code(st_sel, pid) {
   [% END %]
   <p><label for="source_text">[% capt.solution_text %]:</label><br/>
   <textarea id="source_text" name="source_text" cols="50" rows="5"
-        data-editor="plain_text" data-gutter="1" data-id="ed_p[% contest_id %]">[% source_text | html %]</textarea></p>
+        data-editor="plain_text" data-gutter="1" data-id="ed_p[% contest.id %]">[% source_text | html %]</textarea></p>
   <button type="submit" name="submit" value="1" class="button">
     [%~ capt.submit ~%]
   </button>
@@ -386,7 +386,7 @@ function chg_code(st_sel, pid) {
 [% END %]
 </form>
 <script type="text/javascript">
-  $(document).on('ready', (function() { Editor.set_syntax('ed_p[% contest_id %]', 'de_id'); }));
+  $(document).on('ready', (function() { Editor.set_syntax('ed_p[% contest.id %]', 'de_id'); }));
 </script>
 [% IF editable %]
 <script type="text/javascript">
