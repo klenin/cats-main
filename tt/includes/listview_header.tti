@@ -6,7 +6,7 @@
 [%- UNLESS no_listview_header -%]
 <table class="listview_header">
 <tr>
-<td>
+<td width="40%">
   <input type="hidden" name="submitted" value="1" />
   <button type="submit" name="do_search" id="do_search" value="1" style="min-width: 50px; width: 15%;" class="button">[% capt.search %]</button>
   <span class="nobr">
