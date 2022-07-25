@@ -500,6 +500,7 @@ sub problems_frame {
                 url_f('snippets', search(problem_id => $c->{pid}, contest_id => $c->{contest_id})),
             href_last_modified_by => $is_jury && $lv->visible_cols->{Mu} &&
                 url_f('user_stats', uid => $c->{last_modified_by}),
+            href_history => $is_jury && $lv->visible_cols->{Mt} && url_f('problem_history', pid => $c->{pid}),
 
             status => $c->{status},
             status_text => $psn->{$c->{status}},
