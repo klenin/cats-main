@@ -323,6 +323,7 @@ sub problems_frame {
             { caption => res_str(634), order_by => 'P.upload_date', width => '10%', col => 'Mt' },
             { caption => res_str(641), order_by => 'allow_des', width => '5%', col => 'Ad' },
             { caption => res_str(618), order_by => 'judges', width => '5%', col => 'Ju' },
+            { caption => res_str(698), order_by => 'snippets', width => '5%', col => 'Sn' },
             { caption => res_str(675), col => 'Cl' },
         )
         : ()
@@ -373,6 +374,10 @@ sub problems_frame {
         'NULL';
     my $job_split_strategy_sql = $is_jury && $lv->visible_cols->{St} ? q~
         (SELECT L.job_split_strategy FROM limits L WHERE L.id = CP.limits_id)~ : 'NULL';
+    my $snippets_sql = $is_jury && $lv->visible_cols->{Sn} ?
+        join ', ', map sprintf('(%s) AS %s', $lv->qb->get_db_search($_), $_),
+            qw(problem_snippets snippets) :
+        'NULL AS problem_snippets, NULL AS snippets';
 
     my $child_contests = $dbh->selectall_arrayref(q~
         SELECT id, title FROM contests C WHERE C.parent_id = ? AND C.is_hidden = 0~, { Slice => {} },
@@ -401,6 +406,7 @@ sub problems_frame {
             SUBSTRING(P.explanation FROM 1 FOR 1) AS has_explanation,
             $test_count_sql CP.testsets, CP.points_testsets, P.lang,
             $limits_str, L.job_split_strategy,
+            $snippets_sql,
             CP.max_points, CP.scaled_points, CP.round_points_to, CP.weight, CP.is_extra,
             P.repo, CP.tags, P.statement_url, P.explanation_url, CP.color, CP.max_reqs,
             CP.contest_id
@@ -490,6 +496,8 @@ sub problems_frame {
             href_problem_limits => $is_jury && url_f('problem_limits', pid => $c->{pid}, from_problems => 1),
             href_judges_installed => $is_jury &&
                 url_f('contest_problems_installed', search => 'problem_id=' . $c->{pid}),
+            href_snippets => $is_jury &&
+                url_f('snippets', search => "problem_id=$c->{pid},contest_id=$c->{contest_id}"),
 
             status => $c->{status},
             status_text => $psn->{$c->{status}},
@@ -522,6 +530,8 @@ sub problems_frame {
             test_count => $c->{test_count},
             input_file => $c->{input_file},
             output_file => $c->{output_file},
+            snippets => $c->{snippets},
+            problem_snippets => $c->{problem_snippets},
             memory_limit => _combine_limits($c->{cp_memory_limit}, $c->{memory_limit}),
             time_limit => _combine_limits($c->{cp_time_limit}, $c->{time_limit}),
             write_limit => _combine_limits($c->{cp_write_limit}, $c->{write_limit}) // '*',
