@@ -130,6 +130,11 @@ sub define_common_searches {
                 WHERE PS.problem_id = P.id AND PSL.stype = $_->[1]
                 ROWS 1)~
         } @sources),
+        problem_snippets => q~
+            (SELECT COUNT(*) FROM problem_snippets PSN WHERE PSN.problem_id = CP.problem_id)~,
+        snippets => q~
+            (SELECT COUNT(*) FROM snippets SN
+                WHERE SN.problem_id = CP.problem_id AND SN.contest_id = CP.contest_id)~,
     });
     $lv->define_casts({ map { $_ => 'VARCHAR(100)' } 'code', map $_->[0], @sources });
 
