@@ -3,7 +3,7 @@ use warnings;
 
 use File::Spec;
 use FindBin;
-use Test::More tests => 10;
+use Test::More tests => 11;
 
 use lib File::Spec->catdir($FindBin::Bin, '..');
 use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
@@ -31,3 +31,5 @@ is CATS::Output::_generate_csv(
 is CATS::Output::_generate_csv(
     { csv => [ 'a' , 'b' ] }, { lv_array_name => 'r', r => [ [ 5, 6 ] ] }),
     qq~a\tb\n5\t6~, 'generate_csv array';
+
+is_deeply [ CATS::Output::search(a => 1, b => 2) ], [ search => 'a=1,b=2' ], 'search';

@@ -9,6 +9,7 @@ our @EXPORT_OK = qw(
     downloads_path
     downloads_url
     init_template
+    search
     url_f
     url_f_cid
 );
@@ -67,6 +68,10 @@ sub init_template {
 
 sub url_f { CATS::Utils::url_function(@_, sid => $sid, cid => $cid) }
 sub url_f_cid { CATS::Utils::url_function(@_, sid => $sid) }
+
+sub search {
+    (search => join ',', map "$_[$_ * 2]=$_[$_ * 2 + 1]", 0 .. int(@_ / 2) - 1)
+}
 
 sub _csv_quote {
     my ($v) = @_;
