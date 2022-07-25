@@ -47,9 +47,7 @@ function init_quizzes() {
       quiz_count++;
     });
     if (quiz_count) {
-      var check_box = problem_text.find('.show_editor');
-      check_box[0].checked = false;
-      check_box.click();
+      problem_text.find('.show_editor').click(); // Toggle editor to hidden.
       problem_text.find('.editor_only').hide();
       problem_text.data('survey_models', survey_models);
       editor.getSession().addEventListener('change', editor_changed_callback);
