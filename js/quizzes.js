@@ -1,3 +1,5 @@
+"use strict";
+
 function init_quizzes() {
   Survey.StylesManager.applyTheme('default');
   $('.problem_text').each(function() {
