@@ -210,6 +210,11 @@ sub add_db_search {
     $self->{db_searches}->{$k} = $v;
 }
 
+sub get_db_search {
+    my ($self, $k) = @_;
+    $self->{db_searches}->{$k} or die "Unknown search: $k";
+}
+
 sub define_db_searches {
     my ($self, $db_searches) = @_;
     if (ref $db_searches eq 'ARRAY') {

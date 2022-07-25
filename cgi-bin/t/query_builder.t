@@ -6,7 +6,7 @@ use File::Spec;
 use FindBin;
 use SQL::Abstract;
 use Test::Exception;
-use Test::More tests => 60;
+use Test::More tests => 63;
 
 use lib File::Spec->catdir($FindBin::Bin, '..');
 use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
@@ -74,6 +74,10 @@ is_deeply qb_mask('zz??'), { zz => qr/^$/i }, 'mask NULL';
     throws_ok { $qb->define_db_searches([ 'a' ]) } qr/duplicate/i, 'duplicate db_search';
     $qb->default_searches([ 'a' ]);
     throws_ok { $qb->default_searches([ 'z' ]) } qr/unknown/i, 'unknown default_search';
+
+    is $qb->get_db_search('a'), 'a', 'get_db_search a';
+    is $qb->get_db_search('sq'), '(SELECT id FROM table)', 'get_db_search sq';
+    throws_ok { $qb->get_db_search('yy') } qr/unknown/i, 'unknown get_db_search';
 
     $qb->define_enums({ a => { x => 22, y => 33, z => 'a' } });
     $qb->define_transforms({ fn => sub { $_[0] + 1 } });
