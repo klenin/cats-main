@@ -10,7 +10,7 @@ function delete_snippet(href, name) {
 
 [%- PROCESS includes/listview_header.tti -%]
 
-<table class="listview bordered highlight">
+<table class="listview bordered cell_search highlight">
 [% PROCESS includes/listview_col_defs.tti sel_col = 1 %]
 
 [% FOREACH s IN snippets %]
