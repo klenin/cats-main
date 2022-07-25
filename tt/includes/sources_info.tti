@@ -37,7 +37,7 @@ function update_request_status() {
     req_ids += (req_ids ? ',' : '') + r;
   }
   if (!req_ids) return;
-  $.get('[% href_get_request_state %];req_ids=' + req_ids).success(function (resp) {
+  $.get('[% href_get_request_state %];req_ids=' + req_ids).done(function (resp) {
     np_requests = {};
     var manual_only = 1;
     for (var i = 0; i < resp.length; ++i) {

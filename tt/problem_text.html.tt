@@ -289,7 +289,7 @@ var has_quizzes = [% has_quizzes ? 'true' : 'false' %];
 
 function get_last_verdicts() {
   if (!sid) return;
-  $.get('[% href_get_last_verdicts %];sid=' + sid).success(function(result) {
+  $.get('[% href_get_last_verdicts %];sid=' + sid).done(function(result) {
     if (!result) return;
     for (var cpid in result) {
       if (!result[cpid]) continue;
