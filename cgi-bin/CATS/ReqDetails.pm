@@ -11,7 +11,7 @@ use CATS::Contest::Participate qw(is_jury_in_contest);
 use CATS::DB qw(:DEFAULT $db);
 use CATS::Globals qw($contest $is_jury $is_root $t $uid);
 use CATS::Messages qw(res_str);
-use CATS::Output qw(url_f url_f_cid);
+use CATS::Output qw(search url_f url_f_cid);
 use CATS::Problem::Utils;
 use CATS::Request;
 use CATS::Time;
@@ -208,6 +208,7 @@ sub get_sources_info {
             'CP.id AS cp_id',
             'CP.status', 'CP.code', 'CP.max_points', 'CP.scaled_points', 'CP.round_points_to',
             'CA.id AS ca_id', 'CA.is_jury AS submitter_is_jury', 'CA.is_hidden', 'CA.tag AS ca_tag',
+            '(SELECT COUNT(*) FROM problem_snippets PSN WHERE PSN.problem_id = P.id) AS problem_snippets'
         ],
         tables => [
             'LEFT JOIN sources S ON S.req_id = R.id',
@@ -327,6 +328,12 @@ sub get_sources_info {
             if $r->{is_jury} && $r->{failed_test};
 
         $r->{scaled_points_v} = CATS::Score::scale_points($r->{points}, $r);
+
+        $r->{href_snippets} = url_f_cid('snippets', cid => $r->{contest_id}, search(
+            problem_id => $r->{problem_id},
+            account_id => $r->{account_id},
+            contest_id => $r->{contest_id},
+        ));
     }
 
     return ref $rid ? [ map { $req_tree->{$_} // () } @req_ids ] : $req_tree->{$rid};

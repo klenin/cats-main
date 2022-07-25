@@ -10,6 +10,7 @@
     file => 'File',
     contest => 'Contest',
     problem => 'Problem',
+    snippets => 'snippets',
     testset => 'Testset',
     limits => 'Limits',
     status => 'Status',
