@@ -89,6 +89,7 @@ sub _contest_searches {
         since_finish => 'CAST(CURRENT_TIMESTAMP - finish_date AS DOUBLE PRECISION)',
         since_offset_start_until => 'CAST(CURRENT_TIMESTAMP - offset_start_until AS DOUBLE PRECISION)',
         duration_hours => 'CAST((finish_date - start_date) * 24 AS DECIMAL(15,1))',
+        sites => q~(SELECT COUNT(*) FROM contest_sites CS WHERE CS.contest_id = C.id)~,
         creator => qq~(
             SELECT CA.account_id FROM contest_accounts CA
             WHERE CA.contest_id = C.id AND CA.is_admin = 1 $db->{LIMIT} 1)~,
