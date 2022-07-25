@@ -14,7 +14,7 @@ use CATS::DetectImage;
 use CATS::Globals qw($cid $contest $is_jury $is_root $t $uid $user);
 use CATS::IP;
 use CATS::Messages qw(msg res_str);
-use CATS::Output qw(init_template downloads_path downloads_url url_f url_f_cid);
+use CATS::Output qw(init_template downloads_path downloads_url search url_f url_f_cid);
 use CATS::Problem::Utils;
 use CATS::ReqDetails qw(
     get_compilation_error
@@ -465,7 +465,13 @@ sub run_log_frame {
     CATS::Request::delete_jobs({ req_id => $rid }) if $p->{delete_jobs};
 
     $t->param(
-        href_jobs => url_f('jobs', search => "req_id=$rid"),
+        href_jobs => url_f('jobs', search(req_id => $rid)),
+        href_snippet_jobs => $si->{problem_snippets} && url_f('jobs', search(
+            problem_id => $si->{problem_id},
+            account_id => $si->{account_id},
+            contest_id => $si->{contest_id},
+            type => $cats::job_type_generate_snippets,
+        )),
         logs => get_log_dump({ req_id => $rid, parent_id => undef }),
         job_enums => $CATS::Globals::jobs,
     );

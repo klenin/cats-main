@@ -1,6 +1,7 @@
 [%
   capt.import({
     jobs_link => 'jobs',
+    snippet_jobs_link => 'snippet jobs',
     length => 'Length',
     no_log => 'No log',
     delete_log => 'delete log',

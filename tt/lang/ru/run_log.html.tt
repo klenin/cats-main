@@ -1,6 +1,7 @@
 [%
   capt.import({
     jobs_link => 'поручения',
+    snippet_jobs_link => 'поручения фрагментов',
     length => 'Длина',
     no_log => 'Лог отсутствует',
     delete_log => 'удалить лог',
