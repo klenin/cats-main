@@ -17,7 +17,7 @@ use CATS::Judge;
 use CATS::JudgeDB;
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
-use CATS::Output qw(init_template url_f url_f_cid);
+use CATS::Output qw(init_template search url_f url_f_cid);
 use CATS::Problem::Save;
 use CATS::Problem::Source::Git;
 use CATS::Problem::Source::Zip;
@@ -36,7 +36,7 @@ use CATS::Verdicts;
 sub _href_problem_console {
     my ($pid) = @_;
     $uid && url_f('console',
-        search => "problem_id=$pid", uf => ($is_jury ? undef : $uid),
+        search(problem_id => $pid), uf => ($is_jury ? undef : $uid),
         se => 'problem', i_value => -1, show_results => 1)
 }
 
@@ -495,9 +495,9 @@ sub problems_frame {
             href_allow_des => url_f('problem_des', pid => $c->{pid}),
             href_problem_limits => $is_jury && url_f('problem_limits', pid => $c->{pid}, from_problems => 1),
             href_judges_installed => $is_jury &&
-                url_f('contest_problems_installed', search => 'problem_id=' . $c->{pid}),
+                url_f('contest_problems_installed', search(problem_id => $c->{pid})),
             href_snippets => $is_jury &&
-                url_f('snippets', search => "problem_id=$c->{pid},contest_id=$c->{contest_id}"),
+                url_f('snippets', search(problem_id => $c->{pid}, contest_id => $c->{contest_id})),
 
             status => $c->{status},
             status_text => $psn->{$c->{status}},
@@ -610,10 +610,11 @@ sub problems_frame {
         contest_id => $cid, no_judges => !$jactive,
         parent_contest => $parent_contest,
         source_text => $p->{source_text},
-        no_listview_header => !$is_jury && !$lv->total_row_count && ($lv->settings->{search} // '') eq '',
+        no_listview_header => !$is_jury &&
+            !$lv->total_row_count && ($lv->settings->{search} // '') eq '',
         child_contest_count => scalar @$child_contests,
         href_child_contests =>
-            @$child_contests && url_f('contests', search => "parent_or_id=$cid", filter=> 'all'),
+            @$child_contests && url_f('contests', search(parent_or_id => $cid), filter => 'all'),
      );
 }
 
