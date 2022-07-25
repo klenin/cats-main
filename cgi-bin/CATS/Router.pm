@@ -185,7 +185,7 @@ my $main_routes = {
     ],
 
     problem_history => [ \&CATS::UI::ProblemHistory::problem_history_frame,
-        a => ident, pid => integer, pull => bool, replace => bool,
+        a => ident, pid => required integer, pull => bool, replace => bool,
         message => str, is_amend => bool, allow_rename => bool, zip => upload, ],
     problem_history_edit => [ \&CATS::UI::ProblemHistory::problem_history_edit_frame,
         pid => required integer, hb => required sha, file => str,
