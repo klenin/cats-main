@@ -14,7 +14,7 @@ use CATS::Form;
 use CATS::Globals qw($cid $contest $is_jury $is_root $t);
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
-use CATS::Output qw(downloads_path downloads_url init_template url_f url_f_cid);
+use CATS::Output qw(downloads_path downloads_url init_template search url_f url_f_cid);
 use CATS::Problem::Save;
 use CATS::Problem::Storage;
 use CATS::Problem::Tags;
@@ -86,7 +86,7 @@ sub problem_details_frame {
 
     my $make_rc = sub {
         my ($short, $name, $st, $state_search) = @_;
-        my $search = "problem_id=$p->{pid}" . ($state_search ? ",state=$state_search" : '');
+        my @search = (problem_id => $p->{pid}, $state_search ? ('state' => $state_search) : ());
         my %p = (se => 'problem', i_value => -1, show_results => 1);
         {
             short => $short,
@@ -94,8 +94,8 @@ sub problem_details_frame {
             all => $rc_all->{$st},
             contest => $rc_contest->{$st},
             href_all => url_f('console',
-                search => $search, %p, , show_contests => 0, show_messages => 0),
-            href_contest => url_f('console', search => "$search,contest_id=$cid", %p),
+                search(@search), %p, , show_contests => 0, show_messages => 0),
+            href_contest => url_f('console', search(@search, contest_id => $cid), %p),
         }
     };
     $pr->{request_count} = [
@@ -121,6 +121,7 @@ sub problem_details_frame {
     }};
     $pr->{commit_sha} = eval { CATS::Problem::Storage::get_latest_master_sha($p->{pid}); } || 'error';
     warn $@ if $@;
+    my @snippet_search = (problem_id => $p->{pid}, contest_id => $cid);
     $t->param(
         p => $pr,
         problem_title => $pr->{title},
@@ -141,8 +142,8 @@ sub problem_details_frame {
         href_test_data => url_f('problem_test_data', pid => $p->{pid}),
         href_problem_limits => url_f('problem_limits', pid => $p->{pid}),
         href_tags => url_f('problem_select_tags', pid => $p->{pid}),
-        href_snippets => url_f('snippets', search => "problem_id=$p->{pid},contest_id=$cid"),
-        href_snippet_jobs => url_f('jobs', search => "problem_id=$p->{pid},contest_id=$cid,type=snippets"),
+        href_snippets => url_f('snippets', search(@snippet_search)),
+        href_snippet_jobs => url_f('jobs', search(@snippet_search, type => 'snippets')),
     );
     CATS::Problem::Utils::problem_submenu('problem_details', $p->{pid});
 }
@@ -247,7 +248,7 @@ sub problem_select_testsets_frame {
 
     for (@$testsets) {
         $_->{count} = scalar keys %{CATS::Testset::parse_test_rank($all_testsets, $_->{name}, sub {})};
-        $_->{href_tests} = url_f(problem_test_data => pid => $p->{pid}, search => "rank=$_->{name}");
+        $_->{href_tests} = url_f(problem_test_data => pid => $p->{pid}, search(rank => $_->{name}));
     }
 
     $t->param("problem_$_" => $problem->{$_}) for keys %$problem;
