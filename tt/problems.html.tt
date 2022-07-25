@@ -218,7 +218,7 @@ function chg_code(st_sel, pid) {
 </td>
 [%- END %]
 [% IF visible_cols.St -%]
-<td>[% href(p.href_select_strategy, p.strategy); cell_search('strategy', p) %]</td>
+<td>[% href(p.href_select_strategy, p.job_split_strategy); cell_search('job_split_strategy', p) %]</td>
 [%- END %]
 [% IF visible_cols.Mp -%]
 <td>[% href(p.href_problem_limits, p.max_points) %]</td>
