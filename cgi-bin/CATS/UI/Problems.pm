@@ -390,7 +390,7 @@ sub problems_frame {
     # Concatenate last submission fields to work around absence of tuples.
     my $sth = $dbh->prepare(qq~
         SELECT
-            CP.id AS cpid, P.id AS pid,
+            CP.id AS cpid, P.id AS problem_id,
             P.input_file, P.output_file,
             $select_code AS code, P.title, OC.title AS contest_title,
             $original_contest_code_sql AS original_code,
@@ -438,6 +438,7 @@ sub problems_frame {
 
     my $fetch_record = sub {
         my $c = $_[0]->fetchrow_hashref or return ();
+        my $pid = $c->{problem_id};
         $c->{status} ||= 0;
         my $remote_url = CATS::Problem::Storage::get_remote_url($c->{repo});
 
@@ -445,8 +446,8 @@ sub problems_frame {
         for (qw(statement explanation)) {
             if (my $h = $c->{"${_}_url"}) {
                 $hrefs_view{$_} = $h =~ s|^file://|| ?
-                    CATS::Problem::Text::save_attachment($h, 0, $c->{pid}) :
-                    redirect_url_function($h, pid => $c->{pid}, sid => $sid, cid => $cid);
+                    CATS::Problem::Text::save_attachment($h, 0, $pid) :
+                    redirect_url_function($h, pid => $pid, sid => $sid, cid => $cid);
             }
         }
         $c->{has_explanation} ||= $hrefs_view{explanation};
@@ -462,8 +463,8 @@ sub problems_frame {
         }
         $any_langs{$lang_tag->[1] // $c->{lang}} = undef if !@$problem_langs && !$hrefs_view{statement};
 
-        my $last_request = $last_submits->{$c->{pid}}->{id};
-        my $last_state = $last_submits->{$c->{pid}}->{state} // 0;
+        my $last_request = $last_submits->{$pid}->{id};
+        my $last_state = $last_submits->{$pid}->{state} // 0;
         my $last_verdict = do {
             my $lastv = $last_state ? $CATS::Verdicts::state_to_name->{$last_state} : '';
             CATS::Verdicts::hide_verdict_self($is_jury, $lastv);
@@ -477,31 +478,31 @@ sub problems_frame {
         my $href_group = $group_title && url_f_cid('problems', cid => $c->{contest_id});
         $prev_contest = $c->{contest_id};
 
-        my $rc = $req_stats_idx->{$c->{pid}} // {};
+        my $rc = $req_stats_idx->{$pid} // {};
         return (
             %$c,
             href_delete => url_f('problems', delete_problem => $c->{cpid}),
             href_change_status => url_f('problems', change_status => $c->{cpid}),
             href_change_code => url_f('problems', change_code => $c->{cpid}),
             href_replace  => url_f('problems', replace => $c->{cpid}),
-            href_download => $can_download && url_f('problem_download', pid => $c->{pid}),
-            href_problem_details => $is_jury && url_f('problem_details', pid => $c->{pid}),
+            href_download => $can_download && url_f('problem_download', pid => $pid),
+            href_problem_details => $is_jury && url_f('problem_details', pid => $pid),
             href_original_contest => url_f_cid('problems', cid => $c->{original_contest_id}),
-            href_usage => url_f('contests', search => "has_problem($c->{pid})", filter => 'all'),
-            href_problem_console => _href_problem_console($c->{pid}),
-            href_select_testsets => url_f('problem_select_testsets', pid => $c->{pid}, from_problems => 1),
-            href_select_tags => url_f('problem_select_tags', pid => $c->{pid}, from_problems => 1),
-            href_select_strategy => url_f('problem_limits', pid => $c->{pid}, from_problems => 1),
+            href_usage => url_f('contests', search => "has_problem($pid)", filter => 'all'),
+            href_problem_console => _href_problem_console($pid),
+            href_select_testsets => url_f('problem_select_testsets', pid => $pid, from_problems => 1),
+            href_select_tags => url_f('problem_select_tags', pid => $pid, from_problems => 1),
+            href_select_strategy => url_f('problem_limits', pid => $pid, from_problems => 1),
             href_last_request => ($last_request ? url_f('run_details', rid => $last_request) : ''),
-            href_allow_des => url_f('problem_des', pid => $c->{pid}),
-            href_problem_limits => $is_jury && url_f('problem_limits', pid => $c->{pid}, from_problems => 1),
+            href_allow_des => url_f('problem_des', pid => $pid),
+            href_problem_limits => $is_jury && url_f('problem_limits', pid => $pid, from_problems => 1),
             href_judges_installed => $is_jury &&
-                url_f('contest_problems_installed', search(problem_id => $c->{pid})),
+                url_f('contest_problems_installed', search(problem_id => $pid)),
             href_snippets => $is_jury &&
-                url_f('snippets', search(problem_id => $c->{pid}, contest_id => $c->{contest_id})),
+                url_f('snippets', search(problem_id => $pid, contest_id => $c->{contest_id})),
             href_last_modified_by => $is_jury && $lv->visible_cols->{Mu} &&
                 url_f('user_stats', uid => $c->{last_modified_by}),
-            href_history => $is_jury && $lv->visible_cols->{Mt} && url_f('problem_history', pid => $c->{pid}),
+            href_history => $is_jury && $lv->visible_cols->{Mt} && url_f('problem_history', pid => $pid),
 
             status_text => $psn->{$c->{status}},
             disabled => !$is_jury && $c->{contest_id} == $cid &&
@@ -511,8 +512,7 @@ sub problems_frame {
             problem_langs => $problem_langs,
             href_explanation => ($is_jury || $contest->{show_explanations}) && $c->{has_explanation} ?
                 $hrefs_view{explanation} || url_f('problem_text', cpid => $c->{cpid}, explain => 1) : '',
-            problem_id => $c->{pid},
-            selected => $c->{pid} == ($p->{problem_id} || 0),
+            selected => $pid == ($p->{problem_id} || 0),
             remote_url => $remote_url,
             reqs_count => sprintf('%s + %s / %s / %s', map $_ // '0', @$rc{qw(OK AW WA TL)}),
             upload_date_iso => $c->{upload_date},
