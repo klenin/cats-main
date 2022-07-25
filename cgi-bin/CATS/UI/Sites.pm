@@ -12,7 +12,7 @@ use CATS::Form qw(validate_string_length);
 use CATS::Globals qw($cid $contest $t $is_jury $is_root $user);
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
-use CATS::Output qw(init_template url_f);
+use CATS::Output qw(init_template search url_f);
 use CATS::References;
 use CATS::Time;
 
@@ -194,7 +194,7 @@ sub contest_sites_edit_frame {
 
     $t->param(
         href_contest => url_f('contest_params', id => $s->{contest_id}),
-        href_users => url_f('users', search => "site_id=$s->{id}"),
+        href_users => url_f('users', search(site_id => $s->{id})),
         ($user->privs->{edit_sites} ? (href_site => url_f('sites_edit', id => $s->{id})) : ()),
         s => $s,
         formatted_diff_time => CATS::Time::format_diff($s->{diff_time}, display_plus => 1),
@@ -260,7 +260,7 @@ sub contest_sites_delete {
 sub _href_console {
     url_f('console',
         i_value => -1, se => 'sites', show_results => 1,
-        search => join(',', map "site_id=$_", @_) . ($is_root ? ',contest_id=this' : ''));
+        search((map { +site_id => $_ } @_), $is_root ? (contest_id => 'this') : ()));
 }
 
 sub contest_sites_frame {
@@ -329,7 +329,7 @@ sub contest_sites_frame {
             ($user->privs->{edit_sites} ? (href_site => url_f('sites_edit', id => $row->{id})) : ()),
             ($is_jury ? (href_delete => url_f('contest_sites', 'delete' => $row->{id})) : ()),
             href_edit => url_f('contest_sites_edit', site_id => $row->{id}),
-            href_users => url_f('users', search => "site_id=$row->{id}"),
+            href_users => url_f('users', search(site_id => $row->{id})),
             href_console => _href_console($row->{id}),
             href_rank_table => url_f('rank_table', sites => $row->{id}),
         );
