@@ -117,7 +117,7 @@ function Editor() {
     var editor_container = textarea.prev();
     if (editor_container.is(':hidden')) {
       editor_container.show();
-      this._editors[editor_id].resize();
+      ace_editor.resize();
     } else
       editor_container.hide();
   };
