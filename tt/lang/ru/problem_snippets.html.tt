@@ -1,0 +1,13 @@
+[%
+  capt.import({
+    listview_captions => {
+      generator => 'Генератор',
+      gen_count => 'Сгенерировано',
+      gen_count_all => 'Сгенерировано всего',
+    },
+    clear_snippets => 'Удалить сгенерированные фрагменты',
+    confirm_clear_snippets => 'Удалить сгенерированные фрагменты. Вы уверены?',
+    clear_snippets_all => 'Удалить все сгенерированные фрагменты',
+    confirm_clear_snippets_all => 'Удалить сгенерированные фрагменты во всех турнирах. Вы уверены?',
+  })
+%]

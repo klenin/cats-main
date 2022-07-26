@@ -1,0 +1,32 @@
+[%- js.jquery = 1 -%]
+[% PROCESS includes/menu_begin.tti %]
+[% PROCESS includes/html.tti %]
+
+<h3>[% p.title | html %]</h3>
+
+[% PROCESS includes/listview_header.tti %]
+
+<table class="listview bordered highlight">
+[% PROCESS includes/listview_col_defs.tti sel_col = 1 %]
+
+[% FOREACH s IN snippets %]
+  <tr class="[% loop.parity() %]">
+    <td class="nobr sel_col"><input type="checkbox" name="sel" value="[% s.snippet_name %]" /></td>
+    <td>[% s.snippet_name | html %]</td>
+    <td>[% s.generator_name | html %]</td>
+    [% IF visible_cols.Gc %]<td class="num">[% href(s.href_snippets, s.gen_count) %]</td>[% END %]
+    [% IF visible_cols.Ga %]<td class="num">[% href(s.href_snippets_all, s.gen_count_all) %]</td>[% END %]
+  </tr>
+[% END %]
+</table>
+<p>
+<button type="submit" name="clear_snippets" class="button" value="1"
+  onclick="return confirm('[% capt.confirm_clear_snippets %]')">[% capt.clear_snippets %]</button>
+
+<button type="submit" name="clear_snippets_all" class="button" value="1"
+  onclick="return confirm('[% capt.confirm_clear_snippets_all %]')">[% capt.clear_snippets_all %]</button>
+</p>
+[% PROCESS includes/pages.tti %]
+</form>
+
+[% PROCESS includes/menu_end.tti %]

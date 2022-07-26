@@ -601,4 +601,116 @@ sub problem_link_frame {
     $lv->attach(CATS::Contest::Utils::authenticated_contests_view($p));
 }
 
+sub _clear_snippets {
+    my ($p, $where) = @_;
+    my $count = $dbh->do(_u $sql->delete(
+        'snippets', { name => $p->{sel}, problem_id => $p->{pid}, %$where }));
+    msg(1079, $count);
+    $dbh->commit if $count;
+}
+
+sub problem_snippets_frame {
+    my ($p) = @_;
+    init_template($p, 'problem_snippets.html.tt');
+    $p->{pid} && $is_jury or return;
+
+    my $problem = $dbh->selectrow_hashref(qq~
+        SELECT P.id, P.title, CP.id AS cpid
+        FROM problems P
+            INNER JOIN contest_problems CP ON P.id = CP.problem_id
+        WHERE P.id = ? AND CP.contest_id = ?~, undef,
+        $p->{pid}, $cid) or return;
+
+    _clear_snippets($p, { contest_id => $cid }) if $p->{clear_snippets} && @{$p->{sel}};
+    _clear_snippets($p) if $is_root && $p->{clear_all_snippets} && @{$p->{sel}};
+
+    my $lv = CATS::ListView->new(
+        web => $p, name => 'problem_snippets',
+        array_name => 'snippets', url => url_f('problem_snippets', pid => $p->{pid}));
+
+    $lv->default_sort(0)->define_columns([
+        { caption => res_str(601), order_by => 'snippet_name', },
+        { caption => 'generator', order_by => 'generator_name' },
+        { caption => 'gen_count', order_by => 'gen_count', col => 'Gc' },
+        ($is_root ? { caption => 'gen_count_all', order_by => 'gen_count_all', col => 'Ga' } : ()),
+    ]);
+    $lv->define_db_searches([ qw(
+        name generator_id gen_count gen_count_all
+    ) ]);
+
+    my $gen_count = $lv->visible_cols->{Gc} ?
+        {
+            name => 'SN1.name',
+            field => 'SN1.gen_count',
+            sql => q~
+                FULL OUTER JOIN (
+                    SELECT SN.name, COUNT(*) AS gen_count FROM snippets SN
+                    WHERE SN.problem_id = ? AND contest_id = ?
+                    GROUP BY SN.name) SN1
+                ON PS.snippet_name = SN1.name~,
+            params => [ $p->{pid}, $cid ],
+        } :
+        {
+            field => 'NULL AS gen_count',
+            sql => '',
+            params => [],
+        };
+    my $gen_count_all = $lv->visible_cols->{Ga} ?
+        {
+            name => 'SN2.name',
+            field => 'SN2.gen_count_all',
+            sql => q~
+                FULL OUTER JOIN (
+                    SELECT SN.name, COUNT(*) AS gen_count_all FROM snippets SN
+                    WHERE SN.problem_id = ?
+                    GROUP BY SN.name) SN2
+                ON PS.snippet_name = SN2.name~,
+            params => [ $p->{pid} ],
+        } :
+        {
+            field => 'NULL AS gen_count_all',
+            sql => '',
+            params => [],
+        };
+
+    my @names = 'PS.snippet_name', grep $_, $gen_count->{name}, $gen_count_all->{name};
+    my $names_sql = @names > 1 ? sprintf('COALESCE(%s)', join ', ', @names) : $names[0];
+    my $sth = $dbh->prepare(qq~
+        SELECT
+            $names_sql AS snippet_name,
+            PS.generator_id, PS.generator_name,
+            $gen_count->{field}, $gen_count_all->{field}
+        FROM
+            (SELECT PS.snippet_name, PS.generator_id,
+                (SELECT PSL.name FROM problem_sources_local PSL
+                    WHERE PSL.id = PS.generator_id) AS generator_name
+            FROM problem_snippets PS
+            WHERE PS.problem_id = ?) PS
+        $gen_count->{sql}
+        $gen_count_all->{sql}
+    ~ . $lv->maybe_where_cond . $lv->order_by);
+    $sth->execute($p->{pid},
+        (map @{$_->{params}}, ($gen_count, $gen_count_all)),
+        $lv->where_params);
+
+    my $fetch_record = sub {
+        my $row = $_[0]->fetchrow_hashref or return ();
+        my @search = (name => $row->{snippet_name}, problem_id => $p->{pid});
+        $row->{href_snippets} = url_f('snippets',
+            search(@search, contest_id => $cid));
+        $row->{href_snippets_all} = $lv->visible_cols->{Ga} &&
+            url_f('snippets', search(@search));
+        %$row;
+    };
+
+    $lv->attach($fetch_record, $sth);
+    $sth->finish;
+
+    $t->param(
+        p => $problem, problem_title => $problem->{title},
+    );
+
+    CATS::Problem::Utils::problem_submenu('problem_snippets', $p->{pid});
+}
+
 1;

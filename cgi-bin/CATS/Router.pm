@@ -183,6 +183,9 @@ my $main_routes = {
         link_to => bool, move_to => bool, move_from => bool,
         code => problem_code,
     ],
+    problem_snippets => [
+        \&CATS::UI::ProblemDetails::problem_snippets_frame,
+        pid => integer, sel => array_of ident, clear_snippets => bool, ],
 
     problem_history => [ \&CATS::UI::ProblemHistory::problem_history_frame,
         a => ident, pid => required integer, pull => bool, replace => bool,

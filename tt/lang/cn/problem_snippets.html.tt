@@ -1,0 +1,13 @@
+[%
+  capt.import({
+    listview_captions => {
+      generator => 'Generator',
+      gen_count => 'Generated',
+      gen_count_all => 'Generated total',
+    },
+    clear_snippets => 'Clear generated snippets',
+    confirm_clear_snippets => 'Clear generated snippets. Are you sure?',
+    clear_snippets => 'Clear all generated snippets',
+    confirm_clear_snippets => 'Clear generated snippets in all contests. Are you sure?',
+  })
+%]
