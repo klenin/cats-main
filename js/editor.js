@@ -102,7 +102,7 @@ function Editor() {
     $('#' + select_id).on('change', function() {
       var mode = $('option:selected', this).attr('editor-syntax');
       ace_editor.getSession().setMode('ace/mode/' + (mode || 'plain_text'));
-    });
+    }).change();
   };
 
   this.reset_localstorage = function(editor_id) {
