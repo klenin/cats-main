@@ -16,7 +16,7 @@ sub new {
     $self->{caption} = $r{caption} || $r{name};
     $self->{validators} = $r{validators} // [];
     ref $self->{validators} eq 'ARRAY' or $self->{validators} = [ $self->{validators} ];
-    $self->{$_} = $r{$_} for qw(after_load after_parse before_save editor);
+    $self->{$_} = $r{$_} for qw(after_load after_parse before_save default editor);
     $self;
 }
 
@@ -47,6 +47,11 @@ sub validate {
             return res_str(1198, $self->caption_msg, $v);
         }
     }
+}
+
+sub default {
+    my ($self) = @_;
+    return !defined($_) ? '' : ref $_ eq 'CODE' ? $_->() : $_ for $self->{default};
 }
 
 sub load {
@@ -243,7 +248,7 @@ sub save {
 
 sub make {
     my ($self) = @_;
-    [ map '', $self->fields ];
+    [ map $_->default, $self->fields ];
 }
 
 sub route {

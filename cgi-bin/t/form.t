@@ -4,7 +4,7 @@ use utf8;
 
 use File::Spec;
 use FindBin;
-use Test::More tests => 29;
+use Test::More tests => 31;
 
 use lib File::Spec->catdir($FindBin::Bin, '..');
 use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
@@ -81,7 +81,18 @@ CATS::Messages::init;
     my $d = { field => ($f->fields)[0], value => 8, caption => '', error => undef };
     is_deeply $f->parse_form_data({ f1 => 8 }), { ordered => [ $d ], indexed => { f1 => $d } }, 'parse_form_data';
 }
+{
+    my $f = CATS::Form->new(
+        table => 'tbl',
+        fields => [ [ name => 'f1' ], [ name => 'f2', default => 5 ], [ name => 'f3', default => sub { 7 } ], ],
+        href_action => '-',
+    );
 
+    my @fields = $f->fields;
+    is $fields[1]->default, 5, 'field default';
+    my $fs = $f->make;
+    is_deeply $f->make, [ '', 5, 7 ], 'make default';
+}
 {
     my $f = CATS::Form->new(
         table => 'tbl T',
