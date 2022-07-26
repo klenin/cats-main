@@ -136,16 +136,17 @@ sub detect_encoding_by_xml_header {
     $_[0] =~ /^(?:\xEF\xBB\xBF)?\s*<\?xml.*encoding="([a-zA-Z0-9\-]+)"\s*\?>/ ? uc $1 : 'WINDOWS-1251'
 }
 
-sub _is_latest_sha_or_redirect {
+sub _is_latest_sha {
     my ($p, $pr) = @_;
-    !CATS::Problem::Storage::get_remote_url($pr->{repo}) &&
-        $p->{hb} eq CATS::Problem::Storage::get_latest_master_sha($p->{pid})
-        or return $p->redirect(url_f 'problem_history', pid => $p->{pid});
+    CATS::Problem::Storage::get_remote_url($pr->{repo}) and return;
+    my $latest = CATS::Problem::Storage::get_latest_master_sha($p->{pid});
+    $p->{hb} = $latest if $p->{hb} =~ /^0+$/;
+    $p->{hb} eq $latest;
 }
 
 sub _delete_file {
     my ($p, $pr) = @_;
-    _is_latest_sha_or_redirect($p, $pr);
+    _is_latest_sha($p, $pr) or return (1, '');
     my $message = 'Delete file ' . $p->{delete_file};
 
     my CATS::Problem::Storage $ps = CATS::Problem::Storage->new;
@@ -201,16 +202,17 @@ sub problem_history_raw_frame {
 sub problem_history_edit_frame {
     my ($p) = @_;
     $is_jury or return;
-    my $hash_base = $p->{hb};
 
     my $pr = _get_problem_info($p)
         or return $p->redirect(url_f 'contests');
     $pr->{is_jury} or return;
 
-    _is_latest_sha_or_redirect($p, $pr);
+    _is_latest_sha($p, $pr)
+        or return $p->redirect(url_f 'problem_history', pid => $p->{pid});
 
     init_template($p, 'problem_history_edit.html.tt');
 
+    my $hash_base = $p->{hb};
     if ($p->{file} && $p->{file} eq '*') {
         $p->{file} = CATS::Problem::Storage::find_xml($p->{pid}, $hash_base) or return;
     }
