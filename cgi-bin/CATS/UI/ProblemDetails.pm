@@ -637,62 +637,48 @@ sub problem_snippets_frame {
         ($is_root ? { caption => 'gen_count_all', order_by => 'gen_count_all', col => 'Ga' } : ()),
     ]);
     $lv->define_db_searches([ qw(
-        name generator_id gen_count gen_count_all
+        snippet_name generator_id gen_count gen_count_all
     ) ]);
 
+    my $names = $is_root ?
+        { sql => '', params => [] } :
+        { sql => q~ contest_id = ? AND ~, params => [ $cid ] };
     my $gen_count = $lv->visible_cols->{Gc} ?
         {
-            name => 'SN1.name',
-            field => 'SN1.gen_count',
             sql => q~
-                FULL OUTER JOIN (
-                    SELECT SN.name, COUNT(*) AS gen_count FROM snippets SN
-                    WHERE SN.problem_id = ? AND contest_id = ?
-                    GROUP BY SN.name) SN1
-                ON PS.snippet_name = SN1.name~,
+                SELECT COUNT(*) FROM snippets SN
+                WHERE SN.problem_id = ? AND SN.name = N.snippet_name AND SN.contest_id = ?~,
             params => [ $p->{pid}, $cid ],
         } :
-        {
-            field => 'NULL AS gen_count',
-            sql => '',
-            params => [],
-        };
+        { sql => 'NULL', params => [] };
     my $gen_count_all = $lv->visible_cols->{Ga} ?
         {
-            name => 'SN2.name',
-            field => 'SN2.gen_count_all',
             sql => q~
-                FULL OUTER JOIN (
-                    SELECT SN.name, COUNT(*) AS gen_count_all FROM snippets SN
-                    WHERE SN.problem_id = ?
-                    GROUP BY SN.name) SN2
-                ON PS.snippet_name = SN2.name~,
+                SELECT COUNT(*) FROM snippets SN
+                WHERE SN.problem_id = ? AND SN.name = N.snippet_name~,
             params => [ $p->{pid} ],
         } :
-        {
-            field => 'NULL AS gen_count_all',
-            sql => '',
-            params => [],
-        };
+        { sql => 'NULL', params => [] };
 
-    my @names = 'PS.snippet_name', grep $_, $gen_count->{name}, $gen_count_all->{name};
-    my $names_sql = @names > 1 ? sprintf('COALESCE(%s)', join ', ', @names) : $names[0];
     my $sth = $dbh->prepare(qq~
-        SELECT
-            $names_sql AS snippet_name,
-            PS.generator_id, PS.generator_name, PS.fname,
-            $gen_count->{field}, $gen_count_all->{field}
+        SELECT * FROM (SELECT
+            N.problem_id, N.snippet_name,
+            PS.generator_id, PSL.name AS generator_name, PSL.fname,
+            ($gen_count->{sql}) AS gen_count,
+            ($gen_count_all->{sql}) AS gen_count_all
         FROM
-            (SELECT PS.snippet_name, PS.generator_id,
-                PSL.name AS generator_name, PSL.fname
-            FROM problem_snippets PS
-            INNER JOIN problem_sources_local PSL ON PSL.id = PS.generator_id
-            WHERE PS.problem_id = ?) PS
-        $gen_count->{sql}
-        $gen_count_all->{sql}
-    ~ . $lv->maybe_where_cond . $lv->order_by);
-    $sth->execute($p->{pid},
-        (map @{$_->{params}}, ($gen_count, $gen_count_all)),
+            (SELECT DISTINCT problem_id, name AS snippet_name FROM (
+                SELECT problem_id, name FROM snippets WHERE $names->{sql}problem_id = ?
+                UNION
+                SELECT problem_id, snippet_name FROM problem_snippets WHERE problem_id = ?
+            )) N
+            LEFT JOIN problem_snippets PS
+                ON PS.snippet_name = N.snippet_name AND PS.problem_id = N.problem_id
+            LEFT JOIN problem_sources_local PSL ON PSL.id = PS.generator_id
+        ) WHERE 1 = 1~ . $lv->maybe_where_cond . $lv->order_by);
+    $sth->execute(
+        (map @{$_->{params}}, ($gen_count, $gen_count_all, $names)),
+        $p->{pid}, $p->{pid},
         $lv->where_params);
 
     my $fetch_record = sub {
