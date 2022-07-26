@@ -136,7 +136,10 @@
         [%- IF rd.input_gen_params; ' title="'; rd.input_gen_params | html; '"'; END %]>
         [% rd.input_data | html; '&hellip;' IF rd.input_data_cut || rd.input_data == '' %]</a>
       </td>
-      <td class="test_data answer_data"><a href="[% rd.href_view_test_details %]#answer_d">[% rd.answer_data | html; '&hellip;' IF rd.answer_data_cut %]</a></td>
+      <td class="test_data answer_data"><a href="[% rd.href_view_test_details %]#answer_d"
+        [%- ' title="' _ rd.snippet_name _'"' IF rd.snippet_name %]>
+      [%- rd.answer_data | html; '&hellip;' IF rd.answer_data_cut -%]
+      </a></td>
       [% IF r.has_output %]
         <td class="test_data output_data"><a href="[% rd.href_view_test_details %]#output_d">[% rd.output_data | html; '&hellip;' IF rd.output_data_cut %]</a></td>
       [% END %]

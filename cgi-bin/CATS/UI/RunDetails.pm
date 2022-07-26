@@ -149,6 +149,14 @@ sub _get_run_info {
         FROM solution_output SO WHERE SO.req_id = ? AND SO.test_rank <= ?~, { Slice => {} },
         $req->{req_id}, $last_test)};
 
+    my $snippet_answers = $contest->{show_test_data} ? $dbh->selectall_hashref(q~
+        SELECT T.rank, S.text
+        FROM tests T INNER JOIN snippets S
+            ON T.snippet_name = S.name AND
+            S.contest_id = ? AND S.problem_id = T.problem_id AND S.account_id = ?
+        WHERE T.problem_id = ?~, 'rank', { Slice => {} },
+        $contest->{id}, $req->{account_id}, $req->{problem_id}) : {};
+
     my $maximums = { map { $_ => 0 } @resources };
     my $add_testdata = sub {
         my ($row) = @_ or return ();
@@ -157,11 +165,13 @@ sub _get_run_info {
         $row->{descr} = $t->{descr};
         $t->{param} //= '';
         $row->{input_gen_params} = CATS::Problem::Utils::gen_group_text($t);
-        $row->{input_data_cut} = length($t->{input} || '') > $cats::test_file_cut;
+        $row->{input_data_cut} = length($t->{input} // '') > $cats::test_file_cut;
         $row->{input_data} =
             _decode_quietly($p, defined $t->{input} ? $t->{input} : $row->{input_gen_params});
-        $row->{answer_data_cut} = length($t->{answer} || '') > $cats::test_file_cut;
-        $row->{answer_data} = _decode_quietly($p, $t->{answer});
+        $row->{snippet_name} = $t->{snippet_name};
+        my $answer = $snippet_answers->{$row->{test_rank}}->{text} // $t->{answer};
+        $row->{answer_data_cut} = length($answer // '') > $cats::test_file_cut;
+        $row->{answer_data} = _decode_quietly($p, $answer);
         $row->{visualize_test_hrefs} =
             defined $t->{input} ? [ map +{
                 href => url_f('visualize_test',
