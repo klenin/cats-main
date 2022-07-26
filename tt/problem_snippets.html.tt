@@ -16,6 +16,7 @@
     <td>[% maybe_href(s.href_generator, s.generator_name) %]</td>
     [% IF visible_cols.Gc %]<td class="num">[% href(s.href_snippets, s.gen_count) %]</td>[% END %]
     [% IF visible_cols.Ga %]<td class="num">[% href(s.href_snippets_all, s.gen_count_all) %]</td>[% END %]
+    [% IF visible_cols.Ts %]<td class="num">[% href(s.href_tests, s.tests) %]</td>[% END %]
   </tr>
 [% END %]
 </table>

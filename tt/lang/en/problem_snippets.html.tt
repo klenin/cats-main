@@ -4,6 +4,7 @@
       generator => 'Generator',
       gen_count => 'Generated',
       gen_count_all => 'Generated total',
+      tests => 'Tests',
     },
     clear_snippets => 'Clear generated snippets',
     confirm_clear_snippets => 'Clear generated snippets. Are you sure?',

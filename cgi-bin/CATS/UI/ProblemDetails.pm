@@ -635,6 +635,7 @@ sub problem_snippets_frame {
         { caption => 'generator', order_by => 'generator_name' },
         { caption => 'gen_count', order_by => 'gen_count', col => 'Gc' },
         ($is_root ? { caption => 'gen_count_all', order_by => 'gen_count_all', col => 'Ga' } : ()),
+        { caption => 'tests', order_by => 'tests', col => 'Ts' },
     ]);
     $lv->define_db_searches([ qw(
         snippet_name generator_id gen_count gen_count_all
@@ -659,13 +660,17 @@ sub problem_snippets_frame {
             params => [ $p->{pid} ],
         } :
         { sql => 'NULL', params => [] };
+    my $tests_sql = $lv->visible_cols->{Ts} ? q~
+        (SELECT COUNT(*) FROM tests T
+        WHERE T.problem_id = N.problem_id AND T.snippet_name = N.snippet_name)~ : 'NULL';
 
     my $sth = $dbh->prepare(qq~
         SELECT * FROM (SELECT
             N.problem_id, N.snippet_name,
             PS.generator_id, PSL.name AS generator_name, PSL.fname,
             ($gen_count->{sql}) AS gen_count,
-            ($gen_count_all->{sql}) AS gen_count_all
+            ($gen_count_all->{sql}) AS gen_count_all,
+            $tests_sql AS tests
         FROM
             (SELECT DISTINCT problem_id, name AS snippet_name FROM (
                 SELECT problem_id, name FROM snippets WHERE $names->{sql}problem_id = ?
@@ -686,10 +691,11 @@ sub problem_snippets_frame {
         my @search = (name => $row->{snippet_name}, problem_id => $p->{pid});
         $row->{href_generator} = $row->{fname} &&
             url_f('problem_history_edit', file => $row->{fname}, pid => $p->{pid}, hb => 0);
-        $row->{href_snippets} = url_f('snippets',
-            search(@search, contest_id => $cid));
+        $row->{href_snippets} = url_f('snippets', search(@search, contest_id => $cid));
         $row->{href_snippets_all} = $lv->visible_cols->{Ga} &&
             url_f('snippets', search(@search));
+        $row->{href_tests} = url_f('problem_test_data',
+            pid => $p->{pid}, search(snippet_name => $row->{snippet_name}));
         %$row;
     };
 
