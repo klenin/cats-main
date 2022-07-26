@@ -81,10 +81,18 @@ sub get_contest_tests {
 
 sub get_test_data {
     my ($p) = @_;
-    $dbh->selectrow_hashref(q~
+    $dbh->selectrow_hashref(qq~
         SELECT
             T.in_file AS input, T.in_file_size AS input_size,
-            T.out_file AS answer, T.out_file_size AS answer_size
+            COALESCE(T.out_file, CAST(
+                (SELECT S.text FROM snippets S
+                WHERE S.name = T.snippet_name AND
+                    S.contest_id = R.contest_id AND
+                    S.problem_id = R.problem_id AND
+                    S.account_id = R.account_id
+            ) AS $db->{BLOB_TYPE})) AS answer,
+            T.out_file_size AS answer_size,
+            T.snippet_name
         FROM tests T
         LEFT JOIN reqs R ON R.problem_id = T.problem_id
         WHERE R.id = ? AND T.rank = ?~, { Slice => {} },
