@@ -44,7 +44,7 @@ our $form = CATS::Form->new(
         [ name => 'account_id', after_parse => \&_parse_login,
             validators => [ $CATS::Field::foreign_key ], caption => 608, ],
         [ name => 'problem_id', validators => [ $CATS::Field::foreign_key ], caption => 602 ],
-        [ name => 'contest_id',
+        [ name => 'contest_id', default => sub { $cid },
             validators => [ $CATS::Field::foreign_key, \&_must_be_current_contest ], caption => 603, ],
         [ name => 'name', validators => [ $str1_200 ], caption => 601, ],
         [ name => 'text', caption => 672, editor => { cols => 100, rows => 5 }, ],
