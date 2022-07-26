@@ -235,6 +235,7 @@ sub snippets_frame {
             href_edit => url_f('snippets_edit', id => $c->{id}),
             href_delete => url_f('snippets', delete => $c->{id}),
             href_view => url_f('problem_text', uid => $c->{account_id}, cpid => $c->{cpid}),
+            href_problem_snippets => url_f('problem_snippets', pid => $c->{problem_id}),
             href_user => url_f('user_stats', uid => $c->{account_id}),
         );
     };

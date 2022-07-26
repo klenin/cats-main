@@ -17,11 +17,13 @@ function delete_snippet(href, name) {
 <tr class="[% loop.parity() %]">
   <td class="nobr sel_col">
     <input type="checkbox" class="listview_checkbox" name="sel" value="[% s.id %]">
-  </td>
-  <td>
     <a href="javascript:delete_snippet('[% s.href_delete %]', '[% s.name.squote | html %]');" class="icon delete"></a>
     <a href="[% s.href_edit %]" class="icon edit"></a>
-    [% href(s.href_view, s.code _ ': ' _ s.title); cell_search('problem_id', s) %]
+  </td>
+  <td>
+    [% href(s.href_view, s.code _ ': ' _ s.title) %]
+    <a href="[% s.href_problem_snippets %]" class="icon edit"></a>
+    [%- cell_search('problem_id', s) %]
   </td>
   <td>[% href(s.href_user, s.team_name); cell_search('account_id', s) %]</td>
   <td>[% s.name | html; cell_search('name', s) %]</td>
