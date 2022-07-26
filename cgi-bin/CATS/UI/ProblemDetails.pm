@@ -678,13 +678,13 @@ sub problem_snippets_frame {
     my $sth = $dbh->prepare(qq~
         SELECT
             $names_sql AS snippet_name,
-            PS.generator_id, PS.generator_name,
+            PS.generator_id, PS.generator_name, PS.fname,
             $gen_count->{field}, $gen_count_all->{field}
         FROM
             (SELECT PS.snippet_name, PS.generator_id,
-                (SELECT PSL.name FROM problem_sources_local PSL
-                    WHERE PSL.id = PS.generator_id) AS generator_name
+                PSL.name AS generator_name, PSL.fname
             FROM problem_snippets PS
+            INNER JOIN problem_sources_local PSL ON PSL.id = PS.generator_id
             WHERE PS.problem_id = ?) PS
         $gen_count->{sql}
         $gen_count_all->{sql}
@@ -696,6 +696,8 @@ sub problem_snippets_frame {
     my $fetch_record = sub {
         my $row = $_[0]->fetchrow_hashref or return ();
         my @search = (name => $row->{snippet_name}, problem_id => $p->{pid});
+        $row->{href_generator} = $row->{fname} &&
+            url_f('problem_history_edit', file => $row->{fname}, pid => $p->{pid}, hb => 0);
         $row->{href_snippets} = url_f('snippets',
             search(@search, contest_id => $cid));
         $row->{href_snippets_all} = $lv->visible_cols->{Ga} &&
