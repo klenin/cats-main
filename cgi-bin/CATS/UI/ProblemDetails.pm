@@ -269,6 +269,7 @@ my $test_data_sql = qq~
         T.in_file_hash AS input_hash,
         T.input_validator_id,
         T.input_validator_param,
+        T.snippet_name,
         SUBSTRING(T.out_file FROM 1 FOR $cats::test_file_cut + 1) AS answer,
         COALESCE(T.out_file_size, OCTET_LENGTH(T.out_file)) AS answer_size
     FROM tests T
@@ -372,11 +373,12 @@ sub problem_test_data_frame {
         { caption => 'generator_params', order_by => 'gen_name' },
         { caption => 'validator', order_by => 'val_name', col => 'Vn' },
         { caption => 'input_hash', order_by => 'input_hash', col => 'Ih' },
+        { caption => 'snippet', order_by => 'snippet_name', col => 'Sn' },
         { caption => 'descr', order_by => 'descr', col => 'De' },
     ]);
     $lv->define_db_searches([ qw(
         rank gen_group param input_hash input_validator_param
-        in_file in_file_size out_file out_file_size descr
+        in_file in_file_size out_file out_file_size snippet_name descr
     ) ]);
     $lv->define_db_searches({
         gen_name => 'COALESCE(PSL1.fname, PSLE1.fname)',

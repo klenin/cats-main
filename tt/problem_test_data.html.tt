@@ -38,6 +38,7 @@
     <td>[% t.generator_params | html %]</td>
     [% IF visible_cols.Vn %]<td>[% t.val_name | html %] [% t.input_validator_param | html %]</td>[% END %]
     [% IF visible_cols.Ih %]<td><code>[% t.input_hash | html %]</code></td>[% END %]
+    [% IF visible_cols.Sn %]<td>[% t.snippet_name | html %]</td>[% END %]
     [% IF visible_cols.De %]<td>[% t.descr | html %]</td>[% END %]
   </tr>
 [% END %]
@@ -50,6 +51,7 @@
     <td></td>
     [% IF visible_cols.Vn %]<td></td>[% END %]
     [% IF visible_cols.Ih %]<td></td>[% END %]
+    [% IF visible_cols.Sn %]<td></td>[% END %]
     [% IF visible_cols.De %]<td></td>[% END %]
   </tr>
 </table>

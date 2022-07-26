@@ -9,6 +9,7 @@
       generator_params => 'Параметры генератора',
       validator => 'Валидатор',
       input_hash => 'Хеш входа',
+      snippet => 'Фрагмент',
       descr => 'Описание',
     },
     clear_test_data => 'Удалить сгенерированные данные',
