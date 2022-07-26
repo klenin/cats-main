@@ -8,7 +8,7 @@
 </style>
 [% IF is_xml; PROCESS includes/mathjax.tti; END %]
 <script>
-window.addEventListener('load', function () {
+$(document).ready(function () {
   if (!ace) return;
   Editor.set_syntax('ed_pe[% pid %]_[% file %]', 'de_id');
   var editor = Editor.get_editor($('.page_body'));
