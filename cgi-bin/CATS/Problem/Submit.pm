@@ -109,8 +109,11 @@ sub _prepare_de {
     }
     else {
         @{_get_DEs($cid, $did)->{des}} or do {
-            $t->param(de_not_allowed => _get_DEs($cid)->{des});
-            return;
+            my $des = _get_DEs($cid)->{des};
+            $t->param(de_not_allowed => $des) if $t;
+            $result->{de_not_allowed} =
+                [ map +{ de_id => $_->{de_id}, description => $_->{description} }, @$des ];
+            return (undef, $result);
         };
     }
 
