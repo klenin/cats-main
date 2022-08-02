@@ -67,7 +67,7 @@ sub get_problem_tags {
     my ($p) = @_;
     bad_judge($p) and return -1;
 
-    $p->print_json({ tags => CATS::JudgeDB::get_problem_tags($p->{pid}, $p->{cid}) });
+    $p->print_json({ tags => CATS::JudgeDB::get_problem_tags($p->{pid}, $p->{cid}, $p->{aid}) });
 }
 
 sub get_snippet_text {
