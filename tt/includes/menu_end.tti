@@ -13,7 +13,7 @@
   <td>
     <a href="https://github.com/klenin/cats-main">[% PROCESS includes/github_icon.tti %] [% capt.development %]</a>[%
     %]<a href="docs/index.[% lang  == 'ru' ? 'ru' : 'en' %].html">[% capt.docs %]</a>[%
-    %]<a href="docs/authors.html">&copy; 2002-2020 [% capt.authors %]</a>
+    %]<a href="docs/authors.html">&copy; 2002-2022 [% capt.authors %]</a>
   </td>
 </tr>
 <tr class="footer2">
