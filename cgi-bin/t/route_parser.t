@@ -3,7 +3,7 @@ use warnings;
 
 use File::Spec;
 use FindBin;
-use Test::More tests => 43;
+use Test::More tests => 45;
 
 use lib $FindBin::Bin;
 use lib File::Spec->catdir($FindBin::Bin);
@@ -43,7 +43,7 @@ is pr(MockupWeb->new, 'zz'), 'zz', 'no params';
 
 {
     my $r = [ 'rar', ar => array_of integer ];
-    my $w1 = MockupWeb->new(ar => [1, 5]);
+    my $w1 = MockupWeb->new(ar => [ 1, 5 ]);
     is pr($w1, $r), 'rar', 'route array 1';
     is_deeply $w1->{ar}, [ 1, 5 ], 'array 1';
     my $w2 = MockupWeb->new(ar => []);
@@ -52,6 +52,13 @@ is pr(MockupWeb->new, 'zz'), 'zz', 'no params';
     my $w3 = MockupWeb->new;
     is pr($w3, $r), 'rar', 'route array empty';
     is_deeply $w3->{ar}, [], 'array empty';
+}
+
+{
+    my $r = [ 'rar', au => array_of undef ];
+    my $w1 = MockupWeb->new(au => [ '', '', 7 ]);
+    is pr($w1, $r), 'rar', 'route array undef';
+    is_deeply $w1->{au}, [ '', '', 7 ], 'array undef';
 }
 
 {
