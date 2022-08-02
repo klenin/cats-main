@@ -296,10 +296,10 @@ sub as_html {
     my $name = shift @$tree;
     $name or return '???';
     my $prev = 0;
-    # Insert space between directly adjacent variables and numbers.
+    # Insert space between directly adjacent variables.
     if ($name eq 'block') {
         for (@$tree) {
-            my $cur = ref $_ eq 'ARRAY' && $_->[0] =~ /^(var|num|sub|sup)$/;
+            my $cur = ref $_ eq 'ARRAY' && $_->[0] =~ /^(var|sub|sup)$/;
             push @$_, ' ' if $prev && $cur;
             $prev = $cur;
         }

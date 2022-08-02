@@ -3,7 +3,7 @@ use warnings;
 
 use File::Spec;
 use FindBin;
-use Test::More tests => 54;
+use Test::More tests => 55;
 
 use lib File::Spec->catdir($FindBin::Bin, '..');
 use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
@@ -27,6 +27,7 @@ sub is_u {
 
 is_ '1', '<span class="num">1</span>';
 is_ 'a', '<i>a</i>';
+is_ '2x', '<span class="num">2</span><i>x</i>';
 is_ 'abc + def', '<i>abc</i>&nbsp;+&nbsp;<i>def</i>';
 is_ 'a-b', '<i>a</i>&#8239;&minus;&#8239;<i>b</i>';
 is_ 'a \le b', '<i>a</i>&nbsp;&le;&nbsp;<i>b</i>';
