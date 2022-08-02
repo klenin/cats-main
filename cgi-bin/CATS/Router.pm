@@ -506,13 +506,13 @@ my $api_judge_routes = {
         answer => undef,
         answer_size => integer,
     ],
-    api_judge_save_problem_snippet => [
-        \&CATS::ApiJudge::save_problem_snippet,
+    api_judge_save_problem_snippets => [
+        \&CATS::ApiJudge::save_problem_snippets,
         problem_id => integer,
         contest_id => integer,
         account_id => integer,
-        snippet_name => ident,
-        text => undef,
+        name => array_of ident,
+        text => array_of undef,
     ],
     api_judge_get_testset => [
         \&CATS::ApiJudge::get_testset,

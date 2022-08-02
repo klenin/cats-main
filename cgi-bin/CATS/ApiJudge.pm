@@ -137,7 +137,8 @@ sub is_set_req_state_allowed {
     my ($p) = @_;
     bad_judge($p) and return -1;
 
-    my ($parent_id, $allow_set_req_state) = CATS::JudgeDB::is_set_req_state_allowed($p->{job_id}, $p->{force});
+    my ($parent_id, $allow_set_req_state) =
+        CATS::JudgeDB::is_set_req_state_allowed($p->{job_id}, $p->{force});
     $p->print_json({ parent_id => $parent_id, allow_set_req_state => $allow_set_req_state });
 }
 
@@ -218,7 +219,8 @@ sub delete_req_details {
     my $judge_id = $sid && CATS::JudgeDB::get_judge_id($sid)
         or return $p->print_json($bad_sid);
 
-    $p->print_json({ result => CATS::JudgeDB::delete_req_details($p->{req_id}, $judge_id, $p->{job_id}) // 0 });
+    $p->print_json({
+        result => CATS::JudgeDB::delete_req_details($p->{req_id}, $judge_id, $p->{job_id}) // 0 });
 }
 
 sub get_tests_req_details {
@@ -280,12 +282,15 @@ sub save_answer_test_data {
     $p->print_json({ ok => 1 });
 }
 
-sub save_problem_snippet {
+sub save_problem_snippets {
     my ($p) = @_;
     bad_judge($p) and return -1;
+    my ($n, $t) = @$p{qw(name text)};
+    @$n == @$t or return -1;
 
-    CATS::JudgeDB::save_problem_snippet(
-        $p->{problem_id}, $p->{contest_id}, $p->{account_id}, $p->{snippet_name}, $p->{text});
+    my $snippets = { map { $n->[$_] => $t->[$_] } 0 .. $#$n };
+    CATS::JudgeDB::save_problem_snippets(
+        $p->{problem_id}, $p->{contest_id}, $p->{account_id}, $snippets);
 
     $p->print_json({ ok => 1 });
 }
