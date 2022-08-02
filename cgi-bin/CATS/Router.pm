@@ -440,7 +440,7 @@ my $api_judge_routes = {
     api_judge_get_problem_sources => [ \&CATS::ApiJudge::get_problem_sources, pid => integer, ],
     api_judge_get_problem_tests => [ \&CATS::ApiJudge::get_problem_tests, pid => integer, ],
     api_judge_get_snippet_text => [ \&CATS::ApiJudge::get_snippet_text, pid => integer, cid => integer,
-        uid => integer, name => ident, ],
+        uid => integer, name => array_of ident, ],
     api_judge_get_problem_tags => [ \&CATS::ApiJudge::get_problem_tags, pid => integer, cid => integer, ],
     api_judge_get_problem_snippets => [ \&CATS::ApiJudge::get_problem_snippets, pid => integer, ],
     api_judge_is_problem_uptodate => [ \&CATS::ApiJudge::is_problem_uptodate, pid => integer, date => str, ],

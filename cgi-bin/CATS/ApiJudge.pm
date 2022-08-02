@@ -75,7 +75,7 @@ sub get_snippet_text {
     bad_judge($p) and return -1;
 
     $p->print_json({
-        text => CATS::JudgeDB::get_snippet_text($p->{pid}, $p->{cid}, $p->{uid}, $p->{name}) });
+        texts => CATS::JudgeDB::get_snippet_text($p->{pid}, $p->{cid}, $p->{uid}, $p->{name}) });
 }
 
 sub get_problem_sources {
