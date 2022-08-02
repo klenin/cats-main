@@ -3,6 +3,7 @@ CREATE ROLE judge;
 GRANT SELECT ON TABLE accounts TO judge;
 GRANT SELECT ON TABLE contest_accounts TO judge;
 GRANT SELECT ON TABLE contest_problems TO judge;
+GRANT SELECT ON TABLE contest_sites TO judge;
 GRANT SELECT ON TABLE contests TO judge;
 GRANT SELECT ON TABLE default_de TO judge;
 GRANT SELECT ON TABLE job_sources TO judge;
