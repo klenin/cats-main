@@ -13,6 +13,7 @@
 [%- MACRO v18 BLOCK %]<sup><a href="#v18" title="С версии 1.8">1.8</a></sup>[% END -%]
 [%- MACRO v19 BLOCK %]<sup><a href="#v19" title="С версии 1.9">1.9</a></sup>[% END -%]
 [%- MACRO v110 BLOCK %]<sup><a href="#v110" title="С версии 1.10">1.10</a></sup>[% END -%]
+[%- MACRO v111 BLOCK %]<sup><a href="#v111" title="С версии 1.11">1.11</a></sup>[% END -%]
 [%- MACRO tag_in(t1, t2, m1, m2) BLOCK
 %]<code>&lt;<a name="[% t1 %]">[% t1 %]</a>&gt;[% IF t2 != '';
   IF m1 != '' %]</code>[% m1 %]<br/><code>[% ELSE %]<br/>[% END
@@ -21,7 +22,7 @@ END -%]
 [%- MACRO tag_ref(t) BLOCK %]<code>&lt;<a href="#[% t %]">[% t %]</a>&gt;</code>[% END -%]
 [%- MACRO mem_units BLOCK %](в <a href="#memoryUnits">мегабайтах или других единицах</a>)[% END -%]
 [%- MACRO stml BLOCK %]<a href="#STML">STML</a>[% END -%]
-<h2>Версия 1.10</h2>
+<h2>Версия 1.11</h2>
 
 <p><a href="sample.zip">скачать пример пакета с заданием</a></p>
 <p>Для хранения задачи используется ZIP-файл, в корне которого обязательно
@@ -362,6 +363,17 @@ END -%]
   </td>
 </tr>
 <tr>
+  <td>[% tag_in('Snippet', 'Problem', v111) %]</td>
+  <td>
+    <ul>
+      <li>name — идентификатор объекта [% tag_ref('Snippet') %].</li>
+      <li>generator[% opt %] — идентификатор объекта [% tag_ref('Generator') %].</li>
+    </ul>
+  </td>
+  <td>Фрагмент условия или теста к задаче. Может отличаться для каждого участника.
+  </td>
+</tr>
+<tr>
   <td>[% tag_in('Test', 'Problem') %]</td>
   <td><ul>
     <li>rank — <a href="#rankSpec">спецификация порядковых номеров тестов</a>.
@@ -417,6 +429,7 @@ END -%]
       <li>hash[% s(opt, v110) %] — хеш входного файла в формате <code>$alg$hex</code>,
         где 'alg' это одно из значений 'sha' либо 'md5',
         и 'hex' это последовательность шестнадцатеричных цифр в нижнем регистре, представляющих значение хеша.</li>
+      <li>snippet[% s(opt, v111) %] — идентификатор объекта [% tag_ref('Snippet') %].</li>
     </ul>
   </td>
   <td>Описание входного файла теста.
@@ -695,6 +708,7 @@ END -%]
   since('v15', '1.5'); since('v16', '1.6');
   since('v17', '1.7'); since('v18', '1.8');
   since('v19', '1.9'); since('v110', '1.10');
+  since('v111', '1.11');
 %]
 <a name="dv14"></a><p><a href="" onclick="javascript:history.back(-1)"><sup>&minus;1.4</sup></a>
   Данная возможность считается устаревшей начиная с версии 1.4.</p>

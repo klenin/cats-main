@@ -13,6 +13,7 @@
 [%- MACRO v18 BLOCK %]<sup><a href="#v18" title="Since version 1.8">1.8</a></sup>[% END -%]
 [%- MACRO v19 BLOCK %]<sup><a href="#v19" title="Since version 1.9">1.9</a></sup>[% END -%]
 [%- MACRO v110 BLOCK %]<sup><a href="#v110" title="Since version 1.10">1.10</a></sup>[% END -%]
+[%- MACRO v111 BLOCK %]<sup><a href="#v111" title="Since version 1.11">1.11</a></sup>[% END -%]
 [%- MACRO tag_in(t1, t2, m1, m2) BLOCK
 %]<code>&lt;<a name="[% t1 %]">[% t1 %]</a>&gt;[% IF t2 != '';
   IF m1 != '' %]</code>[% m1 %]<br/><code>[% ELSE %]<br/>[% END
@@ -21,7 +22,7 @@ END -%]
 [%- MACRO tag_ref(t) BLOCK %]<code>&lt;<a href="#[% t %]">[% t %]</a>&gt;</code>[% END -%]
 [%- MACRO mem_units BLOCK %](in <a href="#memoryUnits">megabytes or other units</a>)[% END -%]
 [%- MACRO stml BLOCK %]<a href="#STML">STML</a>[% END -%]
-<h2>Version 1.10</h2>
+<h2>Version 1.11</h2>
 
 <p><a href="sample.zip">download sample problem package</a></p>
 
@@ -362,6 +363,17 @@ files with tests, solutions etc.
   </td>
 </tr>
 <tr>
+  <td>[% tag_in('Snippet', 'Problem', v111) %]</td>
+  <td>
+    <ul>
+      <li>name — identifier of the [% tag_ref('Snippet') %] object.</li>
+      <li>generator[% opt %] — identifier of the [% tag_ref('Generator') %] object.</li>
+    </ul>
+  </td>
+  <td>Snippet of the problem statement or test. May be different for each participant.
+  </td>
+</tr>
+<tr>
   <td>[% tag_in('Test', 'Problem') %]</td>
   <td><ul>
     <li>rank — <a href="#rankSpec">test ranks specifier</a>.
@@ -417,6 +429,7 @@ files with tests, solutions etc.
       <li>hash[% s(opt, v110) %] — input file hash in the format <code>$alg$hex</code>,
         where 'alg' is one of 'sha' or 'md5',
         and 'hex' is a sequence of lowcase hexadecimal digits representing hash value.</li>
+      <li>snippet[% s(opt, v111) %] — identifier of the [% tag_ref('Snippet') %] object.</li>
     </ul>
   </td>
   <td>Test input description.
@@ -693,6 +706,7 @@ have explicit <code>lang</code> attribute.
   since('v15', '1.5'); since('v16', '1.6');
   since('v17', '1.7'); since('v18', '1.8');
   since('v19', '1.9'); since('v110', '1.10');
+  since('v111', '1.11');
 %]
 <a name="dv14"></a><p><a href="" onclick="javascript:history.back(-1)"><sup>&minus;1.4</sup></a>
   This feature is deprecated since version 1.4.</p>
