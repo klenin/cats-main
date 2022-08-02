@@ -47,12 +47,14 @@ MathJax.Hub.Startup.signal.Interest(function (message) { console.log("Startup: "
 MathJax.Hub.signal.Interest(function (message) { console.log("Hub: " + message); });
 -%]
 
+function is_basic_math(p) { return p.find('.basic_math')[0].checked; }
+
 [% IF onload %]
 function mathjax_onload() {
   [%# Convert math one problem at a time as a compromise between speed and stability. -%]
   $('div.problem_text').each(function() {
     var p = $(this);
-    if (!p.find('.basic_math')[0].checked)
+    if (!is_basic_math(p))
       apply_mathjax(p);
   });
 }

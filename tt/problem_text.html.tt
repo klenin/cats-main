@@ -505,7 +505,8 @@ function htmlWithCDATASectionsToHtmlWithout(html) {
 }
 
 function update_problem_snippets(problem_id, request_url) {
-  var snippets = $('#p' + problem_id + ' [cats-snippet]');
+  var problem = $('div.problem_text#p' + problem_id);
+  var snippets = problem.find('[cats-snippet]');
   if (sid)
     request_url += ';sid=' + sid;
   if (uid)
@@ -525,6 +526,8 @@ function update_problem_snippets(problem_id, request_url) {
         this.innerHTML = htmlWithCDATASectionsToHtmlWithout(snippet_data);
         if (!has_quizzes && $(this).find('Quiz').length)
           has_quizzes = true;
+        if (!is_basic_math(problem))
+          apply_mathjax($(this));
       }
       else
         all_snippets_received = 0;

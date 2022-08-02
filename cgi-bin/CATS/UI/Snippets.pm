@@ -5,12 +5,13 @@ use warnings;
 
 use Encode;
 
+use CATS::DB;
 use CATS::Globals qw($cid $is_jury $is_root $t $uid);
+use CATS::Job;
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
 use CATS::Output qw(init_template url_f);
-use CATS::DB;
-use CATS::Job;
+use CATS::TeX::Lite;
 
 my $str1_200 = CATS::Field::str_length(1, 200);
 my $str0_200 = CATS::Field::str_length(0, 200);
@@ -124,6 +125,9 @@ sub get_snippets {
         INNER JOIN contest_problems CP ON S.contest_id = CP.contest_id AND S.problem_id = CP.problem_id~,
         'name, text',
         { name => $p->{snippet_names}, 'CP.id' => $p->{cpid}, account_id => $account_id }));
+
+    $_->{text} && $_->{text} =~ s/^(\s*)\$(.*)\$(\s*)$/$1 . CATS::TeX::Lite::convert_one($2) . $3/e
+        for @$snippets;
 
     my $res = {};
     $res->{$_->{name}} = $_->{text} for @$snippets;
