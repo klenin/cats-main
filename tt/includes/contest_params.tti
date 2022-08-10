@@ -82,19 +82,15 @@
   <tr><td>[% capt.exclude_verdicts %]:</td>
   <td>[% FOREACH v IN verdicts_max_reqs ~%]
   <label class="run_details_[% v.short %]" title="[% capt.verdicts.item(v.short) %]">
-    <input type="checkbox" name="exclude_verdict_max_reqs" value="[% v.short %]" [% ' checked="checked"' IF v.checked; ' disabled="disabled"' UNLESS can_edit %]/>
-    [% v.short %]
+    [% checkbox('exclude_verdict_max_reqs', v.short, v.checked, can_edit); v.short %]
   </label>
   [%~ END %]</td></tr>
-</table>
-<br/>
-<table class="bordered verdict_list">
+  <tr><td colspan="2"/></tr>
   [% input_row('penalty', penalty, 8) %]
   <tr><td>[% capt.exclude_verdicts %]:</td>
   <td>[% FOREACH v IN verdicts_penalty ~%]
   <label class="run_details_[% v.short %]" title="[% capt.verdicts.item(v.short) %]">
-    <input type="checkbox" name="exclude_verdict_penalty" value="[% v.short %]" [% ' checked="checked"' IF v.checked; ' disabled="disabled"' UNLESS can_edit %]/>
-    [% v.short %]
+    [% checkbox('exclude_verdict_penalty', v.short, v.checked, can_edit); v.short %]
   </label>
   [%~ END %]</td></tr>
 </table>
