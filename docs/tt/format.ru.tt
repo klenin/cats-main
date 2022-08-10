@@ -687,6 +687,10 @@ END -%]
 <h2>Атрибут <code>cats-dict</code> [% v110 %]</h2>
 <p>Слова, находящиеся внутри тега с атрибутом <code>cats-dict="1"</code>, добавляются к словарю текущего языка.</p>
 
+<a name="cats-snippet"></a>
+<h2>Атрибут <code>cats-snippet</code> [% v111 %]</h2>
+<p>Содержимое тега с атрибутом <code>cats-snippet="<i>snippet_name</i>"</code> заменяется фрагментом <i>snippet_name</i>.</p>
+
 <a name="memoryUnits"></a>
 <h2>Единицы измерения памяти [% v19 %]</h2>
 <p>

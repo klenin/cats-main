@@ -683,7 +683,11 @@ have explicit <code>lang</code> attribute.
 
 <a name="cats-dict"></a>
 <h2><code>cats-dict</code> attribute [% v110 %]</h2>
-<p>Words inside of tag with attribute <code>cats-dict="1"</code> are added to the dictionary of the current language.</p>
+<p>Words inside of tag with <code>cats-dict="1"</code> attribute are added to the dictionary of the current language.</p>
+
+<a name="cats-snippet"></a>
+<h2><code>cats-snippet</code> attribute [% v111 %]</h2>
+<p>Contents of the tag with <code>cats-snippet="<i>snippet_name</i>"</code> attribute are replaced by the snippet <i>snippet_name</i>.</p>
 
 <a name="memoryUnits"></a>
 <h2>Memory units [% v19 %]</h2>
