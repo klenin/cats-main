@@ -1,5 +1,6 @@
-[% MACRO maybe_selected(sel) BLOCK; ' selected="selected"' IF sel; END %]
-[% MACRO maybe_checked(chk) BLOCK; ' checked="checked"' IF chk; END %]
+[% MACRO maybe_selected(sel) BLOCK; ' selected="selected"' IF sel; END -%]
+[% MACRO maybe_checked(chk) BLOCK; ' checked="checked"' IF chk; END -%]
+[% MACRO maybe_disabled(enabled) BLOCK; ' disabled="disabled"' IF enabled.defined && !enabled; END -%]
 
 [%- MACRO option(value, text, selected) BLOCK ~%]
   <option value="[% value %]"[% maybe_selected(selected) %]>
@@ -22,14 +23,14 @@
 
 [%- MACRO select_value(name, options, selected_value, enabled) BLOCK;
   SET enabled = 1 UNLESS enabled.defined -%]
-  <select name="[% name %]"[% ' disabled="disabled"' UNLESS enabled %]>
+  <select name="[% name %]"[% maybe_disabled(enabled) %]>
     [%- FOREACH opt IN options; option(opt.value, opt.text, opt.value == selected_value); END -%]
   </select>
 [%- END -%]
 
-[%- MACRO checkbox(name, value, checked, enabled) BLOCK; SET enabled = 1 UNLESS enabled.defined ~%]
+[%- MACRO checkbox(name, value, checked, enabled) BLOCK ~%]
   <input type="checkbox" name="[% name %]" value="[% value | html %]"
-    [%- maybe_checked(checked); ' disabled="disabled"' UNLESS enabled %] />
+    [%- maybe_checked(checked); maybe_disabled(enabled) %] />
 [%- END -%]
 
 [%- MACRO checkbox_1(name, checked, enabled) BLOCK;
