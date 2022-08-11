@@ -29,7 +29,7 @@
 [%- MACRO tr_checkbox1(f, fd) BLOCK -%]
 <tr>
   <td>[% f.caption || capt.item(f.field.name) %]</td>
-  <td>[% checkbox_1(f.field.name, f.value, !fd.readonly && !f.readonly) %]
+  <td>[% checkbox_1(f.field.name, f.value, disabled = fd.readonly || f.readonly) %]
     [%- maybe_err(f) %]
   </td>
 </tr>
@@ -38,7 +38,7 @@
 [%- MACRO tr_select_value(f, fd, select_items) BLOCK -%]
 <tr>
   <td>[% f.caption || capt.item(f.field.name) %]</td>
-  <td>[% select_value(f.field.name, select_items, f.value, !fd.readonly) %]
+  <td>[% select_value(f.field.name, select_items, f.value, disabled = fd.readonly) %]
     [%- maybe_err(f) %]
   </td>
 </tr>

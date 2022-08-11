@@ -11,7 +11,7 @@
     <input type="text" name="[% prefix %]_login" id="[% prefix %]_login" class="bordered" size="40" value="[% fd.accounts.item(f.value).login %]" />
     (<span id="[% prefix %]_name">[% fd.accounts.item(f.value).team_name %]</span>)
     <input type="hidden" name="[% f.field.name %]" id="[% f.field.name %]" value="[% f.value %]" />
-    [% checkbox_1(fcb.field.name, fcb.value, !fd.readonly) %]
+    [% checkbox_1(fcb.field.name, fcb.value, disabled = fd.readonly) %]
     [%- maybe_err(f); maybe_err(fcb); %]
   </td>
 </tr>

@@ -26,7 +26,8 @@
   [% PROCESS includes/time_units.tti name = 'ext_units' %]
 </td>[% IF u.site_id %]<td></td>[% END %]</tr>
 [%- END %]
-<tr><td>[% capt.is_virtual %]</td><td>[% checkbox_1('is_virtual', u.is_virtual, user.is_jury) %]</td>[% IF u.site_id %]<td></td>[% END %]</tr>
+<tr><td>[% capt.is_virtual %]</td>
+  <td>[% checkbox_1('is_virtual', u.is_virtual, disabled = !user.is_jury) %]</td>[% IF u.site_id %]<td></td>[% END %]</tr>
 </table>
 <br/>
 [% IF user.is_jury %]<button type="submit" value="1" name="save" class="button">[% capt.save %]</button>[% END %]

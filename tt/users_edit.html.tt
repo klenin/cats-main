@@ -12,7 +12,7 @@
   [% capt.roles.root %]
   [% ELSE %]
   [% FOREACH pn IN priv_names -%]
-    <label class="nobr">[% checkbox_1(pn, privs.$pn, 0); capt.roles.$pn %]</label>
+    <label class="nobr">[% checkbox_1(pn, privs.$pn, disabled = 1); capt.roles.$pn %]</label>
   [% END -%]
   [% END %]
   <code class="small nobr">set_privs.pl --id=[% id %] --login=[% login %]</code>

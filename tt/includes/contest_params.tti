@@ -38,14 +38,16 @@
     </select>[% ELSE %][% IF rules; capt.school; ELSE; capt.icpc; END %]
     [% END %]
   </td></tr>
-  <tr><td>[% capt.req_selection %]:</td><td>[% IF can_edit %]
+  <tr><td>[% capt.req_selection %]:</td><td>
+    [%- IF can_edit %]
     <select name="req_selection" class="bordered">
       <option value="0"[% UNLESS req_selection %] selected="selected"[% END %]>[% capt.req_selection_last %]</option>
       <option value="1"[% IF req_selection == 1 %] selected="selected"[% END %]>[% capt.req_selection_best %]</option>
-    </select>[% ELSE %][% IF req_selection; capt.req_selection_best; ELSE; capt.req_selection_last; END %]
-    [% END %]
+    </select>
+    [%- ELSE; req_selection ? capt.req_selection_best : capt.req_selection_last -%]
+    [%- END %]
   </td></tr>
-  <tr><td>[% capt.run_all_tests %]:</td><td>[% checkbox_1('run_all_tests', run_all_tests, can_edit) %]</td></tr>
+  <tr><td>[% capt.run_all_tests %]:</td><td>[% checkbox_1('run_all_tests', run_all_tests, disabled = !can_edit) %]</td></tr>
   [% input_row('scaled_points', scaled_points, 8) %]
   [% input_row('round_points_to', round_points_to, 8) %]
 </table>
@@ -53,27 +55,27 @@
 <div class="contest_params">
 [% capt.flags %]:
 <table class="bordered">
-  <tr><td>[% capt.open_registration %]:</td><td>[% checkbox_1('free_registration', free_registration, can_edit) %]</td></tr>
-  <tr><td>[% capt.is_official %]:</td><td>[% checkbox_1('is_official', is_official, user.privs.is_root) %]</td></tr>
-  <tr><td>[% capt.local_only %]:</td><td>[% checkbox_1('local_only', local_only, can_edit) %]</td></tr>
-  <tr><td>[% capt.is_hidden %]:</td><td>[% checkbox_1('is_hidden', is_hidden, can_edit) %]</td></tr>
-  <tr><td>[% capt.pinned_judges_only %]:</td><td>[% checkbox_1('pinned_judges_only', pinned_judges_only, can_edit) %]</td></tr>
+  <tr><td>[% capt.open_registration %]:</td><td>[% checkbox_1('free_registration', free_registration, disabled = !can_edit) %]</td></tr>
+  <tr><td>[% capt.is_official %]:</td><td>[% checkbox_1('is_official', is_official, disabled = !user.privs.is_root) %]</td></tr>
+  <tr><td>[% capt.local_only %]:</td><td>[% checkbox_1('local_only', local_only, disabled = !can_edit) %]</td></tr>
+  <tr><td>[% capt.is_hidden %]:</td><td>[% checkbox_1('is_hidden', is_hidden, disabled = !can_edit) %]</td></tr>
+  <tr><td>[% capt.pinned_judges_only %]:</td><td>[% checkbox_1('pinned_judges_only', pinned_judges_only, disabled = !can_edit) %]</td></tr>
 </table>
 </div>
 <div class="contest_params">
 [% capt.show_to_teams %]:
 <table class="bordered">
-  <tr><td>[% capt.show_all_results %]:</td><td>[% checkbox_1('show_all_results', show_all_results, can_edit) %]</td></tr>
-  <tr><td>[% capt.show_all_tests %]:</td><td>[% checkbox_1('show_all_tests', show_all_tests, can_edit) %]</td></tr>
-  <tr><td>[% capt.show_test_resources %]:</td><td>[% checkbox_1('show_test_resources', show_test_resources, can_edit) %]</td></tr>
-  <tr><td>[% capt.show_test_data %]:</td><td>[% checkbox_1('show_test_data', show_test_data, can_edit) %]</td></tr>
-  <tr><td>[% capt.show_checker_comment %]:</td><td>[% checkbox_1('show_checker_comment', show_checker_comment, can_edit) %]</td></tr>
-  <tr><td>[% capt.show_packages %]:</td><td>[% checkbox_1('show_packages', show_packages, can_edit) %]</td></tr>
-  <tr><td>[% capt.show_explanations %]:</td><td>[% checkbox_1('show_explanations', show_explanations, can_edit) %]</td></tr>
-  <tr><td>[% capt.show_flags %]:</td><td>[% checkbox_1('show_flags', show_flags, can_edit) %]</td></tr>
-  <tr><td>[% capt.show_sites %]:</td><td>[% checkbox_1('show_sites', show_sites, can_edit) %]</td></tr>
-  <tr><td>[% capt.show_all_for_solved %]:</td><td>[% checkbox_1('show_all_for_solved', show_all_for_solved, can_edit) %]</td></tr>
-  <tr><td>[% capt.show_is_remote %]:</td><td>[% checkbox_1('show_is_remote', show_is_remote, can_edit) %]</td></tr>
+  <tr><td>[% capt.show_all_results %]:</td><td>[% checkbox_1('show_all_results', show_all_results, disabled = !can_edit) %]</td></tr>
+  <tr><td>[% capt.show_all_tests %]:</td><td>[% checkbox_1('show_all_tests', show_all_tests, disabled = !can_edit) %]</td></tr>
+  <tr><td>[% capt.show_test_resources %]:</td><td>[% checkbox_1('show_test_resources', show_test_resources, disabled = !can_edit) %]</td></tr>
+  <tr><td>[% capt.show_test_data %]:</td><td>[% checkbox_1('show_test_data', show_test_data, disabled = !can_edit) %]</td></tr>
+  <tr><td>[% capt.show_checker_comment %]:</td><td>[% checkbox_1('show_checker_comment', show_checker_comment, disabled = !can_edit) %]</td></tr>
+  <tr><td>[% capt.show_packages %]:</td><td>[% checkbox_1('show_packages', show_packages, disabled = !can_edit) %]</td></tr>
+  <tr><td>[% capt.show_explanations %]:</td><td>[% checkbox_1('show_explanations', show_explanations, disabled = !can_edit) %]</td></tr>
+  <tr><td>[% capt.show_flags %]:</td><td>[% checkbox_1('show_flags', show_flags, disabled = !can_edit) %]</td></tr>
+  <tr><td>[% capt.show_sites %]:</td><td>[% checkbox_1('show_sites', show_sites, disabled = !can_edit) %]</td></tr>
+  <tr><td>[% capt.show_all_for_solved %]:</td><td>[% checkbox_1('show_all_for_solved', show_all_for_solved, disabled = !can_edit) %]</td></tr>
+  <tr><td>[% capt.show_is_remote %]:</td><td>[% checkbox_1('show_is_remote', show_is_remote, disabled = !can_edit) %]</td></tr>
 </table>
 </div>
 <div style="clear: both;"/>
@@ -82,7 +84,7 @@
   <tr><td>[% capt.exclude_verdicts %]:</td>
   <td>[% FOREACH v IN verdicts_max_reqs ~%]
   <label class="run_details_[% v.short %]" title="[% capt.verdicts.item(v.short) %]">
-    [% checkbox('exclude_verdict_max_reqs', v.short, v.checked, can_edit); v.short %]
+    [% checkbox('exclude_verdict_max_reqs', v.short, v.checked, disabled = !can_edit); v.short %]
   </label>
   [%~ END %]</td></tr>
   <tr><td colspan="2"/></tr>
@@ -90,7 +92,7 @@
   <tr><td>[% capt.exclude_verdicts %]:</td>
   <td>[% FOREACH v IN verdicts_penalty ~%]
   <label class="run_details_[% v.short %]" title="[% capt.verdicts.item(v.short) %]">
-    [% checkbox('exclude_verdict_penalty', v.short, v.checked, can_edit); v.short %]
+    [% checkbox('exclude_verdict_penalty', v.short, v.checked, disabled = !can_edit); v.short %]
   </label>
   [%~ END %]</td></tr>
 </table>

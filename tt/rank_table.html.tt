@@ -62,7 +62,7 @@ function toggle_all(value, id) {
 </div>
 
 [%- MACRO label_cb(name, checked, label) BLOCK %]
-  <label>[% checkbox_1(name, checked, label) %][% capt.show.item(label) %]</label>
+  <label>[% checkbox_1(name, checked); capt.show.item(label) %]</label>
 [% END %]
 
 [%- MACRO label_cb_inverted(name, checked, label) BLOCK %]

@@ -35,8 +35,8 @@ function delete_team(href, name) {
 </td>
 [% END %]
 <td class="user_checkbox"><label>
-[%- IF user.is_jury || user.is_site_org -%]
-<input type="checkbox" name="sel" value="[% u.id %]"> [% END; href(u.href_stats, u.team_name); ' *' IF (user.is_jury || user.is_site_org) && u.admin -%]
+[%- checkbox('sel', u.id) IF user.is_jury || user.is_site_org %]
+[% href(u.href_stats, u.team_name); ' *' IF (user.is_jury || user.is_site_org) && u.admin -%]
 [%- cell_search('team_name', u) IF user.is_jury -%]
 </label></td>
 [% IF visible_cols.Si ~%]
@@ -54,12 +54,12 @@ function delete_team(href, name) {
 <td>[<a href="[% u.href_whois %]" title="[% u.last_ip %]">[% u.last_ip_short %]
   [%- '*' UNLESS u.last_ip_submission %]</a>][% cell_search('last_ip_short', u) %]</td>
 [%- END %]
-<td class="user_checkbox center is_ooc"><label>[% checkbox_1("ooc$u.id", u.ooc, u.editable_attrs) %]</label></td>
-<td class="user_checkbox center is_remote"><label>[% checkbox_1("remote$u.id", u.remote, u.editable_attrs) %]</label></td>
-<td class="user_checkbox center is_site_org"><label>[% checkbox_1("site_org$u.id", u.site_org, user.is_jury) %]</label></td>
+<td class="user_checkbox center is_ooc"><label>[% checkbox_1("ooc$u.id", u.ooc, disabled = !u.editable_attrs) %]</label></td>
+<td class="user_checkbox center is_remote"><label>[% checkbox_1("remote$u.id", u.remote, disabled = !u.editable_attrs) %]</label></td>
+<td class="user_checkbox center is_site_org"><label>[% checkbox_1("site_org$u.id", u.site_org, disabled = !user.is_jury) %]</label></td>
 [% END %]
 [% IF user.is_jury %]
-<td class="user_checkbox center is_jury"><label>[% checkbox_1("jury$u.id", u.jury, user.privs.grant_jury) %]</label></td>
+<td class="user_checkbox center is_jury"><label>[% checkbox_1("jury$u.id", u.jury, disabled = !user.privs.grant_jury) %]</label></td>
 <td class="user_checkbox center is_hidden"><label>[% checkbox_1("hidden$u.id", u.hidden) %]</label></td>
 [% END %]
 [% IF visible_cols.Gr %]<td class="keywords_cell">
