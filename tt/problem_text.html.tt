@@ -42,6 +42,7 @@
   [%- PROCESS includes/verdicts.css.tti class='last_verdict' IF href_get_last_verdicts -%]
   .cond_true { color: #008000; }
   .cond_false { color: #800000; }
+  .missing { border: 1px solid black; padding: 1px 5px; background: #ffe0e0; }
   .submit_messages { margin: 15px 0; }
   .submit_form { margin-top: 15px; }
   .submit_input { margin-right: 5px; }
@@ -507,6 +508,10 @@ function htmlWithCDATASectionsToHtmlWithout(html) {
 function update_problem_snippets(problem_id, request_url) {
   var problem = $('div.problem_text#p' + problem_id);
   var snippets = problem.find('[cats-snippet]');
+  if (!sid && !uid) {
+    snippets.addClass('missing');
+    return;
+  }
   if (sid)
     request_url += ';sid=' + sid;
   if (uid)
