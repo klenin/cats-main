@@ -57,8 +57,8 @@ function toggle_all(value, id) {
   [% capt.points %]: <input name="points_min" type="text" class="bordered" value="[% points_min | html %]" size="3" />
   .. <input name="points_max" type="text" class="bordered" value="[% points_max | html %]" size="3" />
   [% capt.sort.n %]:
-  <label><input name="sort" type="radio" value=""[% maybe_checked(sort != 'name') %]/>[% capt.sort.rank %]</label>
-  <label><input name="sort" type="radio" value="name"[% maybe_checked(sort == 'name') %]/>[% capt.sort.name %]</label>
+  <label>[% radio('sort', '', sort) %][% capt.sort.rank %]</label>
+  <label>[% radio('sort', 'name', sort) %][% capt.sort.name %]</label>
 </div>
 
 [%- MACRO label_cb(name, checked, label) BLOCK %]
