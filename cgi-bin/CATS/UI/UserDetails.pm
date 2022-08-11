@@ -259,12 +259,30 @@ sub user_vdiff_load {
     $u;
 }
 
+my $new_start_fld = CATS::Field->new(
+    name => 'new_start', caption => 817, validators => [ CATS::Field::date_time(allow_empty => 1) ]);
+
+sub _set_diff_time_val {
+    my ($u, $new_start) = @_;
+    $new_start or return;
+    my $msg = $new_start_fld->validate($new_start);
+    die $msg if $msg;
+    my $old_diff_time = $u->{diff_time};
+    $u->{diff_time} = $dbh->selectrow_array(q~
+        SELECT CAST(? AS TIMESTAMP) - C.start_date FROM contests C WHERE C.id = ?~, undef,
+        $new_start, $cid);
+    ($old_diff_time // 'undef') ne ($u->{diff_time} // 'undef');
+}
+
 sub user_vdiff_save {
     my ($p, $u) = @_;
     $is_jury && $p->{save} or return;
     my ($changed_diff, $changed_ext);
     eval {
-        $changed_diff = CATS::Time::set_diff_time($u, $p, 'diff');
+        $changed_diff =
+            $p->{diff_time_method} eq 'diff' ? CATS::Time::set_diff_time($u, $p, 'diff') :
+            $p->{diff_time_method} eq 'val' ? _set_diff_time_val($u, $p->{new_start}) :
+            die "diff_time_method: $p->{diff_time_method}";
         $changed_ext = CATS::Time::set_diff_time($u, $p, 'ext');
         1;
     } or return CATS::Messages::msg_debug($@);
@@ -312,6 +330,9 @@ sub user_vdiff_frame {
     $t->param(
         CATS::User::submenu('user_vdiff', $p->{uid}, $u->{site_id}),
         u => $u,
+        diff_time_method => $p->{diff_time_method} || 'diff',
+        new_start => $p->{new_start},
+        new_start_fld => $new_start_fld,
         (map { +"formatted_$_" => CATS::Time::format_diff($u->{$_}, display_plus => 1) }
             qw(diff_time site_diff_time ext_time site_ext_time since_start since_finish) ),
         can_finish_now => can_finish_now($u),

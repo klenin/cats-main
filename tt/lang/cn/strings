@@ -219,6 +219,7 @@
 814 "奖项"
 815 "监考"
 816 "Output prefix"
+817 "New contest start with offset"
 1000 "Programming contest control system"
 1001 "Problem '%s' was successfully linked."
 1002 "会话代码错误或已过期，请重新登录。"
