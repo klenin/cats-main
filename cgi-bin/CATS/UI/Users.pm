@@ -19,26 +19,6 @@ use CATS::RankTable::Cache;
 use CATS::Time;
 use CATS::User;
 
-sub users_submenu {
-    submenu => [
-        ($is_jury ? (
-            { href => url_f('users_new'), item => res_str(541), new => 1 },
-            { href => url_f('users_import'), item => res_str(564) },
-            { href => url_f('users_add_participants'), item => res_str(584) },
-            ($is_root ?
-                { href => url_f('users_all_settings'), item => res_str(575) } : ()),
-            { href => url_f('users_snippets'), item => res_str(698) },
-        ) : ()),
-        ($user->{is_site_org} ? (
-            ($user->{site_id} ?
-                { href => url_f('users', search => 'site_id=my'), item => res_str(582) } : ()),
-            { href => url_f('users', search => 'site_id=0'), item => res_str(583) },
-        ) : ()),
-        { href => url_f('acc_groups', $is_root ? (search => 'in_contest(this)') : ()),
-            item => res_str(410) },
-    ]
-}
-
 my %user_fields = (password => 'password1', map { $_ => $_ } CATS::User::param_names);
 my %ca_fields = (is_ooc => 1, is_hidden => 1);
 
@@ -49,7 +29,8 @@ sub users_import_frame {
     my $contact_types = $dbh->selectall_hashref(q~
         SELECT id, name FROM contact_types~, 'name');
     $t->param(
-        href_action => url_f('users_import'), title_suffix => res_str(564), users_submenu,
+        href_action => url_f('users_import'), title_suffix => res_str(564),
+        CATS::User::users_submenu,
         contact_types => $contact_types, user_fields => { %user_fields, %ca_fields });
     $p->{go} or return;
 
@@ -183,7 +164,7 @@ sub users_add_participants_frame {
     $t->param(
         href_action => url_f('users_add_participants'),
         title_suffix => res_str(584),
-        users_submenu,
+        CATS::User::users_submenu,
         href_find_users => url_f('api_find_users', in_contest => 0),
         href_find_contests => url_f('api_find_contests'),
         href_find_acc_groups => url_f('api_find_acc_groups'),
@@ -223,7 +204,7 @@ sub users_frame {
         array_name => 'users',
         url => url_f('users'),
     );
-    $t->param(title_suffix => res_str(526), users_submenu);
+    $t->param(title_suffix => res_str(526), CATS::User::users_submenu);
 
     my $awards = $dbh->selectall_arrayref(_u $sql->select(
         'awards', 'id, name, color', { contest_id => $cid, ($is_jury ? () : (is_public => 1)) }, 'name'));
@@ -525,7 +506,7 @@ sub users_all_settings_frame {
     };
     $lv->date_fields(qw(last_login));
     $lv->attach($fetch_record, $sth);
-    $t->param(title_suffix => res_str(575), users_submenu);
+    $t->param(title_suffix => res_str(575), CATS::User::users_submenu);
 }
 
 1;

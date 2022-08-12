@@ -12,6 +12,7 @@ use CATS::ListView;
 use CATS::Messages qw(msg res_str);
 use CATS::Output qw(init_template search url_f);
 use CATS::TeX::Lite;
+use CATS::User;
 
 my $str1_200 = CATS::Field::str_length(1, 200);
 my $str0_200 = CATS::Field::str_length(0, 200);
@@ -327,7 +328,7 @@ sub users_snippets_frame {
     $lv->attach($fetch_record, $sth);
     $sth->finish;
 
-    #_submenu;
+    $t->param(CATS::User::users_submenu);
 }
 
 1;

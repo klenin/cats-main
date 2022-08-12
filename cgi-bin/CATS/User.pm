@@ -596,6 +596,26 @@ sub submenu {
     (submenu => \@m);
 }
 
+sub users_submenu {
+    submenu => [
+        ($is_jury ? (
+            { href => url_f('users_new'), item => res_str(541), new => 1 },
+            { href => url_f('users_import'), item => res_str(564) },
+            { href => url_f('users_add_participants'), item => res_str(584) },
+            ($is_root ?
+                { href => url_f('users_all_settings'), item => res_str(575) } : ()),
+            { href => url_f('users_snippets'), item => res_str(698) },
+        ) : ()),
+        ($user->{is_site_org} ? (
+            ($user->{site_id} ?
+                { href => url_f('users', search => 'site_id=my'), item => res_str(582) } : ()),
+            { href => url_f('users', search => 'site_id=0'), item => res_str(583) },
+        ) : ()),
+        { href => url_f('acc_groups', $is_root ? (search => 'in_contest(this)') : ()),
+            item => res_str(410) },
+    ]
+}
+
 sub logins_maybe_added {
     my ($p, $url_p, $account_ids) = @_;
     @$account_ids ?
