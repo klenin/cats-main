@@ -24,15 +24,15 @@ function delete_team(href, name) {
 
 [% PROCESS includes/listview_header.tti %]
 <table class="listview bordered cell_search highlight">
-[% PROCESS includes/listview_col_defs.tti %]
+[% PROCESS includes/listview_col_defs.tti sel_col = user.is_jury nocheckbox = 1 %]
 [% FOREACH u IN users %]
 <tr class="[% loop.parity %]">
 [% IF user.is_jury %]
-<td>
+<td class="nobr">
   <a href="javascript:delete_team('[% u.href_delete %]', '[% u.team_name.squote | html %]');" class="icon delete"></a>
   <a href="[% u.href_edit %]" class="icon edit"></a>
-  [% u.login | html %]
 </td>
+[% IF visible_cols.Lg %]<td>[% u.login | html %]</td>[% END %]
 [% END %]
 <td class="user_checkbox"><label>
 [%- checkbox('sel', u.id) IF user.is_jury || user.is_site_org %]

@@ -290,7 +290,7 @@ sub users_frame {
 
     $lv->default_sort(0)->define_columns([
         ($is_jury ?
-            { caption => res_str(616), order_by => 'login', width => '20%' } : ()),
+            { caption => res_str(616), order_by => 'login', width => '20%', col => 'Lg' } : ()),
         { caption => res_str(608), order_by => 'team_name', width => '30%', checkbox => $is_jury && '[name=sel]' },
         { caption => res_str(627), order_by => 'COALESCE(S.name, A.city)', width => '20%', col => 'Si' },
         { caption => res_str(689), order_by => 'affiliation', width => '5%', col => 'Af' },
