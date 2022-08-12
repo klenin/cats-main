@@ -278,6 +278,7 @@ sub users_frame {
         { caption => res_str(689), order_by => 'affiliation', width => '5%', col => 'Af' },
         { caption => res_str(629), order_by => 'tag', width => '5%', col => 'Tg' },
         ($is_jury ? (
+            { caption => res_str(698), order_by => 'snippets', width => '5%', col => 'Sn' },
             map +{ caption => $_->{name},
                 order_by => $lv->visible_cols->{"Ct$_->{sql}"} ? "CT_$_->{sql}" : _contact_field_sql($_),
                 width => '10%', col => "Ct$_->{sql}" },
@@ -350,6 +351,23 @@ sub users_frame {
         site_name => 'S.name',
         site_id => 'COALESCE(CA.site_id, 0)',
     });
+
+    my $view_snippets;
+    if ($is_jury) {
+        $view_snippets = $dbh->selectall_arrayref(q~
+            SELECT JVS.*, CP.code FROM jury_view_snippets JVS
+            INNER JOIN contest_problems CP ON CP.problem_id = JVS.problem_id AND CP.contest_id = ?
+            WHERE JVS.ca_id = ?~, { Slice => {} },
+            $cid, $user->{ca_id});
+        $lv->define_db_searches({
+            map { +"snip_$_->{code}_$_->{snippet_name}" => qq~(
+                SELECT text FROM snippets S
+                WHERE S.contest_id = CA.contest_id AND S.problem_id = $_->{problem_id} AND
+                    S.account_id = A.id AND S.name = '$_->{snippet_name}')~ }
+            grep $_->{snippet_name} =~ /^[a-zA-Z0-9_]+$/, @$view_snippets
+        });
+    }
+
     $lv->define_enums({ site_id => { 'my' => $user->{site_id} } }) if $user->{site_id};
     $lv->define_enums({ has_award => { map { $_->{name} => $_->{id} } @$awards } });
 
@@ -367,6 +385,17 @@ sub users_frame {
             ORDER BY R.submit_time DESC $db->{LIMIT} 1~ : 'NULL';
         $check_site_id ? qq~CASE WHEN CA.site_id = ? THEN ($s) ELSE NULL END~ : $s;
     };
+
+    my $snippet_single_sql = qq~
+        SELECT CAST(SUBSTRING(S.text FROM 1 FOR 200) AS VARCHAR(200)) AS text FROM snippets S
+        INNER JOIN jury_view_snippets JVS ON
+            JVS.ca_id = $user->{ca_id} AND JVS.snippet_name = S.name AND JVS.problem_id = S.problem_id
+        WHERE S.contest_id = CA.contest_id AND S.account_id = CA.account_id~;
+    my $snippets_sql =
+        !$lv->visible_cols->{Sn} || !$view_snippets ? 'NULL' :
+        @$view_snippets == 1 ? $snippet_single_sql : # Optimization & allow for correct sorting.
+        qq~
+            SELECT LIST(text, ' | ') FROM ($snippet_single_sql ORDER BY S.name)~;
 
     my @visible_contacts = grep $lv->visible_cols->{"Ct$_->{sql}"}, @$contact_types;
     $t->param(contacts => \@visible_contacts);
@@ -387,6 +416,7 @@ sub users_frame {
         SELECT
             ($rating_sql) AS rating, ($ip_sql) AS ip, CA.id, $fields,
             CA.site_id, S.name AS site_name, ($groups_sql) AS groups,
+            ($snippets_sql) AS snippets,
             ($awards_sql) AS awards$contacts_sql
         FROM accounts A
             INNER JOIN contest_accounts CA ON CA.account_id = A.id
@@ -407,7 +437,7 @@ sub users_frame {
             $accepted, $ip, $caid,
             $aid, $country_abbr, $motto, $login, $team_name, $city, $last_ip, $affiliation,
             $admin, $jury, $ooc, $remote, $hidden, $site_org, $virtual, $diff_time, $ext_time,
-            $tag, $site_id, $site_name, $groups, $awards, @contacts
+            $tag, $site_id, $site_name, $groups, $snippets, $awards, @contacts
         ) = $_[0]->fetchrow_array
             or return ();
         my ($country, $flag) = CATS::Countries::get_flag($country_abbr);
@@ -447,6 +477,7 @@ sub users_frame {
                 ($is_jury || (!$user->{site_id} || $user->{site_id} == ($site_id // 0)) && $uid && $aid != $uid),
             virtual => $virtual,
             formatted_time => CATS::Time::format_diff_ext($diff_time, $ext_time, display_plus => 1),
+            snippets => $snippets,
             groups => [ split /\s+/, $groups // '' ],
             awards => [ split /\s+/, $awards // '' ],
             (map { +"CT_$_->{sql}" => shift @contacts } @visible_contacts),
