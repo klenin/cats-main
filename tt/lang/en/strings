@@ -443,3 +443,4 @@
 1236 "JSON error: %s."
 1237 "Solution is accepted, points: %d."
 1238 "Groups of user '%s'."
+1239 "Viewable snippets changed: %d."

@@ -650,6 +650,17 @@ CREATE TABLE problem_snippets (
     CONSTRAINT problem_snippets_uniq UNIQUE (problem_id, snippet_name)
 );
 
+CREATE TABLE jury_view_snippets (
+    ca_id           INTEGER NOT NULL,
+    problem_id      INTEGER NOT NULL,
+    snippet_name    VARCHAR(200) NOT NULL,
+
+    CONSTRAINT jury_view_ca_id_fk
+        FOREIGN KEY (ca_id) REFERENCES contest_accounts(id) ON DELETE CASCADE,
+    CONSTRAINT jury_view_problem_id_fk
+        FOREIGN KEY (problem_id) REFERENCES problems(id) ON DELETE CASCADE
+);
+
 CREATE TABLE relations (
     id       INTEGER NOT NULL PRIMARY KEY,
     rel_type INTEGER NOT NULL, /* enum */

@@ -30,9 +30,9 @@
   </select>
 [%- END -%]
 
-[%- MACRO checkbox(name, value, checked) BLOCK # disabled = 0 ~%]
+[%- MACRO checkbox(name, value, checked) BLOCK # disabled = 0, attrs ~%]
   <input type="checkbox" name="[% name %]" value="[% value | html %]"
-    [%- maybe_checked(checked); maybe_disabled(disabled) %] />
+    [%- maybe_checked(checked); maybe_disabled(disabled); tag_attrs(attrs) %] />
 [%- END -%]
 
 [%- MACRO checkbox_1(name, checked) BLOCK; # disabled = 0

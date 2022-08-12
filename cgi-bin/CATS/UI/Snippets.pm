@@ -6,11 +6,11 @@ use warnings;
 use Encode;
 
 use CATS::DB;
-use CATS::Globals qw($cid $is_jury $is_root $t $uid);
+use CATS::Globals qw($cid $is_jury $is_root $t $uid $user);
 use CATS::Job;
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
-use CATS::Output qw(init_template url_f);
+use CATS::Output qw(init_template search url_f);
 use CATS::TeX::Lite;
 
 my $str1_200 = CATS::Field::str_length(1, 200);
@@ -249,6 +249,85 @@ sub snippets_frame {
     $sth->finish;
 
     _submenu;
+}
+
+sub _unpack_snippet_id {
+    return my ($pid, $name) = $_[0] =~ /^p(\d+)_(\w+)$/ or die;
+}
+
+sub _users_snippets_save {
+    my ($p) = @_;
+    my %sel = map { +$_ => 1 } @{$p->{sel}};
+    my %old = map { +$_ => 1 } @{$p->{old}};
+
+    my $count = 0;
+
+    my $del_sth = $dbh->prepare(q~
+        DELETE FROM jury_view_snippets WHERE ca_id = ? AND problem_id = ? AND snippet_name = ?~);
+    for (sort keys %old) {
+        next if $sel{$_};
+        $count += $del_sth->execute($user->{ca_id}, _unpack_snippet_id($_));
+    }
+
+    my $add_sth = $dbh->prepare(q~
+        INSERT INTO jury_view_snippets(ca_id, problem_id, snippet_name) VALUES (?, ?, ?)~);
+    for (sort keys %sel) {
+        next if $old{$_};
+        $count += $add_sth->execute($user->{ca_id}, _unpack_snippet_id($_));
+    }
+
+    $dbh->commit if $count;
+
+    msg(1239, $count);
+}
+
+sub users_snippets_frame {
+    my ($p) = @_;
+    $is_jury or return;
+
+    init_template($p, 'users_snippets');
+
+    _users_snippets_save($p) if $p->{save};
+
+    my $lv = CATS::ListView->new(web => $p, name => 'users_snippets', url => url_f('users_snippets'));
+
+    $lv->default_sort(0)->define_columns([
+        { caption => res_str(602), order_by => 'title', width => '20%' },
+        { caption => res_str(601), order_by => 'snippet_name', width => '20%' },
+    ]);
+    $lv->define_db_searches([ qw(PS.problem_id code title snippet_name is_used) ]);
+    $lv->default_searches([ qw(code title snippet_name) ]);
+
+    my $sth = $dbh->prepare(q~
+        SELECT
+            CP.code, P.title, PS.snippet_name, PS.problem_id,
+            (CASE WHEN JVS.snippet_name IS NULL THEN 0 ELSE 1 END) AS is_used
+        FROM problem_snippets PS
+        INNER JOIN problems P ON P.id = PS.problem_id
+        INNER JOIN contest_problems CP ON P.id = CP.problem_id AND CP.contest_id = ?
+        LEFT JOIN jury_view_snippets JVS ON
+            JVS.problem_id = PS.problem_id AND
+            JVS.snippet_name = PS.snippet_name AND
+            JVS.ca_id = ?
+        WHERE 1 = 1~ . $lv->maybe_where_cond . $lv->order_by
+    );
+    $sth->execute($cid, $user->{ca_id}, $lv->where_params);
+
+    my $fetch_record = sub {
+        my $c = $_[0]->fetchrow_hashref or return ();
+        return (
+            %$c,
+            id => "p$c->{problem_id}_$c->{snippet_name}",
+            href_problem => url_f('problem_details', pid => $c->{problem_id}),
+            href_snippet => url_f('snippets', search(
+                contest_id => 'this', problem_id => $c->{problem_id}, name => $c->{snippet_name})),
+        );
+    };
+
+    $lv->attach($fetch_record, $sth);
+    $sth->finish;
+
+    #_submenu;
 }
 
 1;

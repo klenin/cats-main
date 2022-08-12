@@ -27,6 +27,7 @@ sub users_submenu {
             { href => url_f('users_add_participants'), item => res_str(584) },
             ($is_root ?
                 { href => url_f('users_all_settings'), item => res_str(575) } : ()),
+            { href => url_f('users_snippets'), item => res_str(698) },
         ) : ()),
         ($user->{is_site_org} ? (
             ($user->{site_id} ?
