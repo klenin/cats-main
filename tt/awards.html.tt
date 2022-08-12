@@ -11,7 +11,7 @@ function delete_award(href, name) {
 [% PROCESS includes/listview_header.tti %]
 
 <table class="listview bordered highlight">
-[% PROCESS includes/listview_col_defs.tti sel_col = user.is_jury %]
+[% PROCESS includes/listview_col_defs.tti sel_col = user.is_jury nocheckbox = 1 %]
 
 [% FOREACH aw IN awards %]
 <tr class="[% loop.parity() %]">
