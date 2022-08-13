@@ -293,8 +293,8 @@ sub users_snippets_frame {
     my $lv = CATS::ListView->new(web => $p, name => 'users_snippets', url => url_f('users_snippets'));
 
     $lv->default_sort(0)->define_columns([
-        { caption => res_str(602), order_by => 'title', width => '20%' },
-        { caption => res_str(601), order_by => 'snippet_name', width => '20%' },
+        { caption => res_str(602), order_by => 'code, snippet_name', width => '20%' },
+        { caption => res_str(601), order_by => 'snippet_name, code', width => '20%' },
     ]);
     $lv->define_db_searches([ qw(PS.problem_id code title snippet_name is_used) ]);
     $lv->default_searches([ qw(code title snippet_name) ]);

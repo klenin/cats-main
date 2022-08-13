@@ -11,9 +11,9 @@
 <tr class="[% loop.parity() %]">
 <td class="nobr sel_col">
   [% IF s.is_used %]<input type="hidden" name="old" value="[% s.id | html %]">[% END %]
-  [%- checkbox('sel', s.id, s.is_used, attrs => { class => 'listview_checkbox' }) -%]
+  <label>[%- checkbox('sel', s.id, s.is_used, attrs => { class => 'listview_checkbox' }) -%]</label>
 </td>
-<td>[% maybe_href(s.href_problem, s.title) %]</td>
+<td>[% maybe_href(s.href_problem, s.code _ ': ' _ s.title) %]</td>
 <td>[% maybe_href(s.href_snippet, s.snippet_name) %]</td>
 </tr>
 [% END %]
