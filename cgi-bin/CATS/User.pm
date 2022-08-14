@@ -561,6 +561,11 @@ sub copy_from_acc_group {
     _add_multiple($source_users, {});
 }
 
+sub _url_f_selected {
+    my ($f, @rest) = @_;
+    (href => url_f($f, @rest), selected => $f);
+}
+
 sub submenu {
     my ($selected, $user_id, $site_id) = @_;
     $site_id //= 0;
@@ -576,20 +581,19 @@ sub submenu {
             $is_jury ?
                 ({ href => url_f('users_edit', uid => $user_id), item => res_str(573), selected => 'edit' }) :
             $is_profile ?
-                ({ href => url_f('profile'), item => res_str(518), selected => 'profile' }) :
+                ({ _url_f_selected('profile'), item => res_str(518) }) :
                 ()
         ),
-        { href => url_f('user_stats', uid => $user_id), item => res_str(574), selected => 'user_stats' },
+        { _url_f_selected('user_stats', uid => $user_id), item => res_str(574) },
         (!$is_root ? () : (
-            { href => url_f('user_settings', uid => $user_id), item => res_str(575), selected => 'user_settings' },
+            { _url_f_selected('user_settings', uid => $user_id), item => res_str(575) },
         )),
-        { href => url_f('user_contacts', uid => $user_id), item => res_str(586), selected => 'user_contacts' },
+        { _url_f_selected('user_contacts', uid => $user_id), item => res_str(586) },
         ($is_root || $is_profile ?
-            ({ href => url_f('user_relations', uid => $user_id),
-                item => res_str(597), selected => 'user_relations' }) : ()),
+            ({ _url_f_selected('user_relations', uid => $user_id), item => res_str(597) }) : ()),
         ($is_jury || $user->{is_site_org} && (!$user->{site_id} || $user->{site_id} == $site_id) ? (
-            { href => url_f('user_vdiff', uid => $user_id), item => res_str(580), selected => 'user_vdiff' },
-            { href => url_f('user_ip', uid => $user_id), item => res_str(576), selected => 'user_ip' },
+            { _url_f_selected('user_vdiff', uid => $user_id), item => res_str(580) },
+            { _url_f_selected('user_ip', uid => $user_id), item => res_str(576) },
         ) : ()),
     );
     $_->{selected} = $_->{selected} eq $selected for @m;
@@ -597,14 +601,16 @@ sub submenu {
 }
 
 sub users_submenu {
-    submenu => [
+    my ($p, $selected) = @_;
+    $selected //= $p->{f} if $p;
+    my @m = (
         ($is_jury ? (
             { href => url_f('users_new'), item => res_str(541), new => 1 },
-            { href => url_f('users_import'), item => res_str(564) },
-            { href => url_f('users_add_participants'), item => res_str(584) },
+            { _url_f_selected('users_import'), item => res_str(564) },
+            { _url_f_selected('users_add_participants'), item => res_str(584) },
             ($is_root ?
-                { href => url_f('users_all_settings'), item => res_str(575) } : ()),
-            { href => url_f('users_snippets'), item => res_str(698) },
+                { _url_f_selected('users_all_settings'), item => res_str(575) } : ()),
+            { _url_f_selected('users_snippets'), item => res_str(698) },
         ) : ()),
         ($user->{is_site_org} ? (
             ($user->{site_id} ?
@@ -613,7 +619,9 @@ sub users_submenu {
         ) : ()),
         { href => url_f('acc_groups', $is_root ? (search => 'in_contest(this)') : ()),
             item => res_str(410) },
-    ]
+    );
+    $_->{selected} = $_->{selected} eq $selected for @m;
+    (submenu => \@m);
 }
 
 sub logins_maybe_added {

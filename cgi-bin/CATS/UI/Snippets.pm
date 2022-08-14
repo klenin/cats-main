@@ -328,7 +328,7 @@ sub users_snippets_frame {
     $lv->attach($fetch_record, $sth);
     $sth->finish;
 
-    $t->param(CATS::User::users_submenu);
+    $t->param(CATS::User::users_submenu($p));
 }
 
 1;

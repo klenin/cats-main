@@ -30,7 +30,7 @@ sub users_import_frame {
         SELECT id, name FROM contact_types~, 'name');
     $t->param(
         href_action => url_f('users_import'), title_suffix => res_str(564),
-        CATS::User::users_submenu,
+        CATS::User::users_submenu($p),
         contact_types => $contact_types, user_fields => { %user_fields, %ca_fields });
     $p->{go} or return;
 
@@ -164,7 +164,7 @@ sub users_add_participants_frame {
     $t->param(
         href_action => url_f('users_add_participants'),
         title_suffix => res_str(584),
-        CATS::User::users_submenu,
+        CATS::User::users_submenu($p),
         href_find_users => url_f('api_find_users', in_contest => 0),
         href_find_contests => url_f('api_find_contests'),
         href_find_acc_groups => url_f('api_find_acc_groups'),
@@ -204,7 +204,7 @@ sub users_frame {
         array_name => 'users',
         url => url_f('users'),
     );
-    $t->param(title_suffix => res_str(526), CATS::User::users_submenu);
+    $t->param(title_suffix => res_str(526), CATS::User::users_submenu($p));
 
     my $awards = $dbh->selectall_arrayref(_u $sql->select(
         'awards', 'id, name, color', { contest_id => $cid, ($is_jury ? () : (is_public => 1)) }, 'name'));
@@ -537,7 +537,7 @@ sub users_all_settings_frame {
     };
     $lv->date_fields(qw(last_login));
     $lv->attach($fetch_record, $sth);
-    $t->param(title_suffix => res_str(575), CATS::User::users_submenu);
+    $t->param(title_suffix => res_str(575), CATS::User::users_submenu($p));
 }
 
 1;
