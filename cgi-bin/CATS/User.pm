@@ -14,7 +14,7 @@ use CATS::DB qw(:DEFAULT $db);
 use CATS::Form qw(validate_fixed_point validate_integer validate_string_length);
 use CATS::Globals qw($cid $is_jury $is_root $t $uid $user);
 use CATS::Messages qw(msg res_str);
-use CATS::Output qw(url_f);
+use CATS::Output qw(search url_f);
 use CATS::Privileges;
 use CATS::RankTable::Cache;
 use CATS::Settings qw($settings);
@@ -594,6 +594,7 @@ sub submenu {
         ($is_jury || $user->{is_site_org} && (!$user->{site_id} || $user->{site_id} == $site_id) ? (
             { _url_f_selected('user_vdiff', uid => $user_id), item => res_str(580) },
             { _url_f_selected('user_ip', uid => $user_id), item => res_str(576) },
+            { href => url_f('users', search(id => $user_id)), item => res_str(599) },
         ) : ()),
     );
     $_->{selected} = $_->{selected} eq $selected for @m;
