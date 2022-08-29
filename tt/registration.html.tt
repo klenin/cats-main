@@ -7,6 +7,9 @@
 [% you_now_can(href(href_login, capt.login)) %]
 [% ELSE %]
 <h3>[% capt.new_user %]</h3>
+[% IF contest_names -%]
+[% FOREACH cn IN contest_names %]<p>[% cn %]</p>[% END %]
+[% END -%]
 <form method="post" enctype="multipart/form-data">
 <h4>[% capt.required_fields %]</h4>
 [% PROCESS includes/user_main.tti %]

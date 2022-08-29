@@ -345,8 +345,11 @@ sub registration_frame {
     my ($p) = @_;
     init_template($p, 'registration.html.tt');
 
+    my $has_clist = @{$p->{clist}} > 0;
     $t->param(
         countries => \@CATS::Countries::countries,
+        contest_names => $has_clist && $dbh->selectcol_arrayref(_u $sql->select(
+            'contests', 'title', { id => $p->{clist}, is_hidden => 0 })),
         href_login => url_f('login'),
         href_login_available => url_function('api_login_available', login => ''),
     );
@@ -356,7 +359,6 @@ sub registration_frame {
     my $u = CATS::User->new->parse_params($p);
     $u->validate_params(validate_password => 1) or return;
     $u->{password1} = CATS::User::hash_password($u->{password1});
-    my $has_clist = @{$p->{clist}} > 0;
     $settings->{contests}->{filter} = 'my' if $has_clist;
     $u->insert(undef, save_settings => 1, commit => !$has_clist) or return;
     CATS::Contest::Participate::multi_online($u->{id}, $p->{clist});
