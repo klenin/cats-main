@@ -17,7 +17,10 @@
   <input type="text" name="title" value="[% wt.indexed.title.value | html %]" size="80" class="bordered"/>
   [% maybe_err(wt.indexed.title) %]
 </td>
-<td>[% href(href_view, capt.view); IF href_page; ' | '; href(href_page, capt.page); END %]</td>
+<td>
+  [%- href(href_view, capt.view); IF href_page; ' | '; href(href_page, capt.page); END %]
+  | <label><input type="checkbox" id="sync" class="hidden" />[% capt.synchronize %]</label>
+</td>
 </tr>
 <tr>
 <td>
@@ -32,7 +35,7 @@
   </a>
 </td>
 <td>
-  <div id="render" style="height: auto; overflow: scroll;">
+  <div id="render" style="overflow-y: scroll;">
   [% wt.markdown %]
   </div>
 </td>
@@ -47,6 +50,46 @@ $(function() {
   var resize = function() { div_render.height(div_editor.height()); }
   resize();
   div_editor.children('textarea').data('onresize', resize);
+
+  if (!ace) return;
+  var editor = Editor.get_editor(div_editor);
+  if (!editor) return;
+  var session = editor.session;
+  var renderer = editor.renderer;
+  var scrollBarV = renderer.scrollBarV;
+  var sync = $('#sync').show();
+
+  var locked = false;
+
+  var sync_render = function() {
+    if (!sync[0].checked) return;
+    if (locked) {
+      locked = false;
+      return;
+    }
+    var pos = scrollBarV.scrollTop / Math.max(scrollBarV.scrollHeight, 1);
+    locked = true;
+    div_render[0].scrollTop = div_render[0].scrollHeight * pos;
+  };
+  var sync_editor = function() {
+    if (!sync[0].checked) return;
+    if (locked) {
+      locked = false;
+      return;
+    }
+    var pos = div_render[0].scrollTop / Math.max(div_render[0].scrollHeight, 1);
+    locked = true;
+    renderer.scrollToLine(session.getLength() * pos);
+  };
+  sync.click(function () {
+    if (!sync[0].checked) return;
+    locked = false;
+    sync_render();
+  });
+
+  sync_render();
+  scrollBarV.element.addEventListener('scroll', sync_render);
+  div_render.scroll(sync_editor);
 });
 </script>
 [% PROCESS includes/menu_end.tti %]

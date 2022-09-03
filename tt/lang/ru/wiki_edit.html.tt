@@ -2,6 +2,7 @@
   capt.import({
     view => 'просмотр',
     page => 'страница',
+    synchronize => 'синхронизировать',
     author => 'Автор',
     last_modified => 'Последнее изменение',
   })
