@@ -7,38 +7,46 @@
 [% PROCESS includes/menu_begin.tti %]
 [% PROCESS includes/html_input.tti %]
 
-<table class="wiki_edit edit_form"><tr>
+<form method="post" enctype="multipart/form-data" action="[% wt.href_action %]">
+<table class="wiki_edit edit_form">
+<tr>
 <td>
-  <div id="editor_fixed">
-  <form method="post" enctype="multipart/form-data" action="[% wt.href_action %]">
   <input type="hidden" name="wiki_lang" value="[% wt.indexed.wiki_lang.value | html %]"/>
   <input type="hidden" name="wiki_id" value="[% wt.indexed.wiki_id.value %]"/>
   [% wt.indexed.title.caption %] ([% wt.indexed.wiki_lang.value %]):<br>
   <input type="text" name="title" value="[% wt.indexed.title.value | html %]" size="80" class="bordered"/>
-  [% maybe_err(wt.indexed.title) %]<br>
-  <br>
+  [% maybe_err(wt.indexed.title) %]
+</td>
+<td>[% href(href_view, capt.view); IF href_page; ' | '; href(href_page, capt.page); END %]</td>
+</tr>
+<tr>
+<td>
+  <div id="editor">
   <textarea name="text" cols="80" rows="30" data-editor="markdown" data-gutter="1" data-id="ed_wi[% wt.indexed.wiki_id.value %]">
     [%- wt.indexed.text.value | html ~%]
   </textarea>
+  </div>
   [% PROCESS includes/edit_save_cancel.tti %]
   <a class="problem_menu_trigger" onclick="$(this).toggleClass('problem_menu_hovered')">&#x2261
     [%- PROCESS includes/editor_menu.tti editor_id = 'ed_wi' _ wt.indexed.wiki_id.value -%]
   </a>
-  </form>
-  </div>
 </td>
 <td>
-  <p>[% href(href_view, capt.view); IF href_page; ' | '; href(href_page, capt.page); END %]</p>
+  <div id="render" style="height: auto; overflow: scroll;">
   [% wt.markdown %]
+  </div>
 </td>
 </tr></table>
+</form>
 [% capt.author %]: [% wt.author %]<br>
 [% capt.last_modified %]: [% wt.indexed.last_modified.value %]
 <script>
 $(function() {
-  var d = $('#editor_fixed');
-  d.parent().css({ width: Math.floor(d.parent().width()) + 'px' });
-  d.css({ position: 'fixed' });
+  var div_editor = $('#editor');
+  var div_render = $('#render');
+  var resize = function() { div_render.height(div_editor.height()); }
+  resize();
+  div_editor.children('textarea').data('onresize', resize);
 });
 </script>
 [% PROCESS includes/menu_end.tti %]
