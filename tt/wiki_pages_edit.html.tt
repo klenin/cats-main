@@ -20,6 +20,7 @@ function delete_wiki_text(href, name) {
 [% IF wp.indexed.name.value %]
 <br>
 <table class="listview bordered">
+<tr class="col_defs">[% FOREACH c IN capt.headers %]<th>[% c %]</th>[% END %]</tr>
 [% FOREACH lng IN langs %]
 <tr class="[% loop.parity() %]">
 <td class="narrow nobr">
