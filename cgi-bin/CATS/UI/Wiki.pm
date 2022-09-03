@@ -73,6 +73,12 @@ our $page_form = CATS::Form->new(
     },
 );
 
+sub _search_per_lang {
+    my ($field) = @_;
+    map { +"${field}_$_" => qq~(
+        SELECT WT.text FROM wiki_texts WT WHERE WT.wiki_id = WP.id AND WT.lang = '$_')~ } @cats::langs;
+}
+
 sub wiki_pages_frame {
     my ($p) = @_;
     $user->privs->{edit_wiki} or return;
@@ -91,8 +97,7 @@ sub wiki_pages_frame {
         { caption => res_str(634), order_by => 'last_modified', width => '5%', col => 'Lm' },
     ]);
     $lv->define_db_searches($page_form->{sql_fields});
-    $lv->define_db_searches({ map { +"text_$_" => qq~(
-        SELECT WT.text FROM wiki_texts WT WHERE WT.wiki_id = WP.id AND WT.lang = '$_')~ } @cats::langs });
+    $lv->define_db_searches({ _search_per_lang('text'), _search_per_lang('title') });
     $lv->default_searches([ qw(name) ]);
 
     my ($q, @bind) = $sql->select('wiki_pages WP', [
