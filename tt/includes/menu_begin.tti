@@ -4,6 +4,14 @@
 [%- IF noiface %]
 <style> .iface { display: none !important; }</style>
 [% END -%]
+<script>
+function switch_lang(lang) {
+  var d = document;
+  d.location = d.location.pathname + '?lang=' + lang + ';' +
+    d.location.search.replace(/([\?&;])lang=\w+[&;]?/, '$1').replace('?', '');
+  return false;
+}
+</script>
 </head>
 <body>
 <table class="iface header">
@@ -14,9 +22,10 @@
       [% IF problem_title %]<span> / [% problem_title | html %]</span>[% END %]
     </td>
     <td class="elapsed">
-      <p>[% FOR l IN langs %]<a href="[% l.href %]"[% class({ selected => l.name == lang }) %]
-      onclick="document.location = document.location.pathname + '?lang=[% l.name %];' + document.location.search.replace(/lang=\w+;?/, '').replace('?', ''); return false;">
-      [% l.name; '</a> '; END %]</p>
+      <p>[% FOR l IN langs -%]
+        <a href="[% l.href %]"[% class({ selected => l.name == lang }) %] onclick="return switch_lang('[% l.name %]')">
+        [%- l.name; '</a> '; END -%]
+      </p>
       [% IF server_time ~%]
         <span>
         <span id="elapsed">[% elapsed_msg %]</span><br>
