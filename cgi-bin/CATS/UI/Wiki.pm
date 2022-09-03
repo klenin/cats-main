@@ -56,6 +56,7 @@ our $page_form = CATS::Form->new(
     validators => [ CATS::Field::unique('name') ],
     before_display => sub {
         my ($fd, $p) = @_;
+        $fd->{href_public} = CATS::Utils::url_function('wiki', name => $fd->{indexed}->{name}->{value} || 'xx', lang => 'xx');
         my $ts = $fd->{texts} = $fd->{id} ? $dbh->selectall_hashref(q~
             SELECT id, lang, title, last_modified, OCTET_LENGTH(text) AS text_length
             FROM wiki_texts WHERE wiki_id = ?~, 'lang', undef,

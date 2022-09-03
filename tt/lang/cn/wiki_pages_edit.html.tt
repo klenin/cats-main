@@ -1,5 +1,6 @@
 [%
   capt.import({
     want_to_delete => 'Do you really want to delete wiki text',
+    public_url => 'Public URL',
   })
 %]

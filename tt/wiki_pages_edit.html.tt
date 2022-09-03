@@ -11,9 +11,10 @@ function delete_wiki_text(href, name) {
 <form method="post" enctype="multipart/form-data" action="[% wp.href_action %]">
 <table class="edit_form">
 [% tr_text(wp.indexed.name, wp) %]
+<tr><td>[% capt.public_url %]</td><td>[% href(wp.href_public, wp.href_public) %]</td></tr>
 [% tr_checkbox1(wp.indexed.is_public, wp) %]
 </table>
-<br>
+<br/>
 [% PROCESS includes/edit_save_cancel.tti %]
 </form>
 [% IF wp.indexed.name.value %]
@@ -24,7 +25,7 @@ function delete_wiki_text(href, name) {
 <td class="narrow nobr">
   [%- t = wp.texts.item(lng.name) -%]
   [% IF t.href_delete -%]
-    <a href="#" class="icon delete" onclick="delete_wiki_text('[% t.href_delete %]', '[% t.title %] ([% t.lang %])')"></a>
+    <a href="#" class="icon delete" onclick="delete_wiki_text('[% t.href_delete %]', '[% t.title.dquote %] ([% t.lang %])')"></a>
   [%- END %]
   <a href="[% t.href_edit %]" class="icon edit"></a>
 </td>
