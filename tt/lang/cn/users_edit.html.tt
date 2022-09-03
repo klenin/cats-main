@@ -12,7 +12,8 @@
       manage_judges => 'can manage judges',
       grant_jury => 'can grant jury rights',
       link_problems => 'can link problems',
-      edit_wiki => 'can edit wiki',
+      edit_wiki => 'can edit wiki and files',
+      manage_groups => 'can manage groups',
     },
   })
 %]
