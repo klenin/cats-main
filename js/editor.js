@@ -209,6 +209,9 @@ function Editor() {
         e.pageX : e.pageY - editor_container.offset().top;
       editor_container.css(width_or_height, value);
       resizable.css(width_or_height, value);
+      var onresize = textarea.data('onresize');
+      if (typeof(onresize) == 'function')
+        onresize(width_or_height, value);
     };
   
     var doc = $(document);
