@@ -7,7 +7,7 @@ use File::Copy qw();
 
 use CATS::DB;
 use CATS::Form;
-use CATS::Globals qw($cid $is_root $t);
+use CATS::Globals qw($cid $t $user);
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
 use CATS::Output qw(downloads_path downloads_url init_template url_f);
@@ -82,16 +82,16 @@ our $form = CATS::Form->new(
 
 sub files_edit_frame {
     my ($p) = @_;
-    $is_root or return;
+    $user->privs->{edit_wiki} or return;
     init_template($p, 'files_edit.html.tt');
     $form->edit_frame($p, redirect => [ 'files' ]);
 }
 
 sub files_frame {
     my ($p) = @_;
+    $user->privs->{edit_wiki} or return;
 
-    $is_root or return;
-    $form->delete_or_saved($p) if $is_root;
+    $form->delete_or_saved($p) if $user->privs->{is_root} || !$p->{delete};
     init_template($p, 'files');
     my $lv = CATS::ListView->new(web => $p, name => 'files', url => url_f('files'));
 
@@ -126,7 +126,7 @@ sub files_frame {
 
     $lv->attach($fetch_record, $sth);
 
-    $t->param(submenu => [ CATS::References::menu('files') ], editable => $is_root);
+    $t->param(submenu => [ CATS::References::menu('files') ]);
 }
 
 1;

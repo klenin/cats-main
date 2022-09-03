@@ -10,16 +10,16 @@ function delete_file(href, name) {
 [% PROCESS includes/listview_header.tti %]
 
 <table class="listview bordered highlight">
-[% PROCESS includes/listview_col_defs.tti sel_col = editable %]
+[% PROCESS includes/listview_col_defs.tti sel_col = 1 %]
 
 [% FOREACH f IN files %]
 <tr class="[% loop.parity() %]">
-[% IF editable %]
 <td class="nobr">
+  [% IF user.privs.is_root -%]
   <a href="javascript:delete_file('[% f.href_delete %]', '[% f.name.squote | html %]');" class="icon delete"></a>
+  [% END -%]
   <a href="[% f.href_edit %]" class="icon edit"></a>
 </td>
-[% END %]
 <td>[% f.name | html %]</td>
 <td><a href="[% f.href_download %]">[% f.guid | html %]</a></td>
 [% IF visible_cols.De -%]
