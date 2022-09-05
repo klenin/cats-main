@@ -57,6 +57,7 @@ our $page_form = CATS::Form->new(
     before_display => sub {
         my ($fd, $p) = @_;
         $fd->{href_public} = CATS::Utils::url_function('wiki', name => $fd->{indexed}->{name}->{value} || 'xx', lang => 'xx');
+
         my $ts = $fd->{texts} = $fd->{id} ? $dbh->selectall_hashref(q~
             SELECT id, lang, title, last_modified, OCTET_LENGTH(text) AS text_length
             FROM wiki_texts WHERE wiki_id = ?~, 'lang', undef,
@@ -217,6 +218,10 @@ sub wiki_edit_frame {
     my ($p) = @_;
     $p->{wiki_id} && _can_edit($p->{wiki_id}) or return $p->redirect(url_f 'contests');
     init_template($p, 'wiki_edit.html.tt');
+    my $s = $CATS::Settings::settings->{wiki_edit} //= {};
+    $s->{rows} = $p->{settings_rows} if $p->{settings_rows};
+    $s->{sync} = $p->{sync} if defined $p->{sync};
+    $t->param(settings => $s);
     $text_form->edit_frame($p, redirect_cancel => [ 'wiki_pages_edit', id => $p->{wiki_id} ]);
 }
 

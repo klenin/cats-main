@@ -13,19 +13,23 @@
 <td>
   <input type="hidden" name="wiki_lang" value="[% wt.indexed.wiki_lang.value | html %]"/>
   <input type="hidden" name="wiki_id" value="[% wt.indexed.wiki_id.value %]"/>
+  <input type="hidden" name="settings_rows" value="[% settings.rows %]"/>
   [% wt.indexed.title.caption %] ([% wt.indexed.wiki_lang.value %]):<br>
   <input type="text" name="title" value="[% wt.indexed.title.value | html %]" size="80" class="bordered"/>
   [% maybe_err(wt.indexed.title) %]
 </td>
 <td>
   [%- href(href_view, capt.view); IF href_page; ' | '; href(href_page, capt.page); END %]
-  | <label><input type="checkbox" id="sync" class="hidden" />[% capt.synchronize %]</label>
+  | <label>
+    [%- checkbox_1('sync', settings.sync, attrs = { id => 'sync', class => 'hidden' }); capt.synchronize -%]
+    </label>
 </td>
 </tr>
 <tr>
 <td>
   <div id="editor">
-  <textarea name="text" cols="80" rows="30" data-editor="markdown" data-gutter="1" data-id="ed_wi[% wt.indexed.wiki_id.value %]">
+  <textarea name="text" cols="80" rows="[% settings.rows || 35 %]"
+    data-editor="markdown" data-gutter="1" data-id="ed_wi[% wt.indexed.wiki_id.value %]">
     [%- wt.indexed.text.value | html ~%]
   </textarea>
   </div>
@@ -45,21 +49,28 @@
 [% capt.last_modified %]: [% wt.indexed.last_modified.value %]
 <script>
 $(function() {
+
   var div_editor = $('#editor');
   var div_render = $('#render');
-  var resize = function() { div_render.height(div_editor.height()); }
-  resize();
-  div_editor.children('textarea').data('onresize', resize);
+  var settings_rows = $('input[name=settings_rows]');
 
   if (!ace) return;
   var editor = Editor.get_editor(div_editor);
   if (!editor) return;
+
   var session = editor.session;
   var renderer = editor.renderer;
   var scrollBarV = renderer.scrollBarV;
   var sync = $('#sync').show();
 
   var locked = false;
+
+  var resize = function() {
+    div_render.height(div_editor.height());
+    settings_rows.val(Math.floor(div_editor.height() / renderer.lineHeight));
+  }
+  resize();
+  div_editor.children('textarea').data('onresize', resize);
 
   var sync_render = function() {
     if (!sync[0].checked) return;
