@@ -621,7 +621,7 @@ sub users_submenu {
         { href => url_f('acc_groups', $is_root ? (search => 'in_contest(this)') : ()),
             item => res_str(410) },
     );
-    $_->{selected} = $_->{selected} eq $selected for @m;
+    $_->{selected} = $_->{selected} && $_->{selected} eq $selected for @m;
     (submenu => \@m);
 }
 

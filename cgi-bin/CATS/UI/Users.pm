@@ -386,11 +386,12 @@ sub users_frame {
         $check_site_id ? qq~CASE WHEN CA.site_id = ? THEN ($s) ELSE NULL END~ : $s;
     };
 
-    my $snippet_single_sql = qq~
+    my $snippet_single_sql = sprintf q~
         SELECT CAST(SUBSTRING(S.text FROM 1 FOR 200) AS VARCHAR(200)) AS text FROM snippets S
         INNER JOIN jury_view_snippets JVS ON
-            JVS.ca_id = $user->{ca_id} AND JVS.snippet_name = S.name AND JVS.problem_id = S.problem_id
-        WHERE S.contest_id = CA.contest_id AND S.account_id = CA.account_id~;
+            JVS.ca_id = %d AND JVS.snippet_name = S.name AND JVS.problem_id = S.problem_id
+        WHERE S.contest_id = CA.contest_id AND S.account_id = CA.account_id~,
+        $user->{ca_id} // 0;
     my $snippets_sql =
         !$lv->visible_cols->{Sn} || !$view_snippets ? 'NULL' :
         @$view_snippets == 1 ? $snippet_single_sql : # Optimization & allow for correct sorting.
