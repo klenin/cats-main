@@ -1,0 +1,23 @@
+[% jdoodle = {
+  href => 'https://www.jdoodle.com/api/redirect-to-post/',
+  langs => {
+    c_cpp => 'online-compiler-c++17',
+    rust => 'execute-rust-online',
+    assembly_x86 => 'compile-assembler-nasm-online',
+    pascal => 'execute-pascal-online',
+    vbscript => 'execute-freebasic-online',
+    java => 'online-java-compiler',
+    csharp => 'compile-c-sharp-online',
+    golang => 'execute-go-online',
+    kotlin => 'compile-kotlin-online',
+    perl => 'execute-perl-online',
+    python => 'python3-programming-online',
+    haskell => 'execute-haskell-online',
+    ruby => 'execute-ruby-online',
+    php => 'php-online-editor',
+    erlang => 'execute-erlang-online',
+    javascript => 'execute-nodejs-online',
+    prolog => 'execute-prolog-online',
+    sql => 'execute-sql-online',
+  },
+} %]
