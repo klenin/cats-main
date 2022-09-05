@@ -49,7 +49,7 @@ function Editor() {
     var ace_editor = ace.edit(this._init_dom_elements(textarea));
     this._editors[editor_id] = ace_editor;
 
-    this._configurate_editor(ace_editor, textarea);
+    this._configure_editor(ace_editor, textarea);
     this._linkify(ace_editor);
 
     textarea.closest('form').on('submit', function() {
@@ -253,12 +253,12 @@ function Editor() {
   this.toggle_invisible_chars = function(editor_id) {
     this._toggle_invisible_chars(this._editors[editor_id]); };
 
-  this._configurate_editor = function(ace_editor, textarea) {
+  this._configure_editor = function(ace_editor, textarea) {
     ace_editor.renderer.setShowGutter(textarea.data('gutter'));
     ace_editor.setTheme('ace/theme/' + this.theme);
     ace_editor.setOptions({
       enableBasicAutocompletion: true,
-      fontSize: '14px',
+      fontSize: window.getComputedStyle(textarea[0]).fontSize,
     });
     var sess = ace_editor.getSession();
     sess.setValue(textarea.val());

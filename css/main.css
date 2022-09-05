@@ -618,3 +618,5 @@ table.edit_form td p.form_error { color: red; font-size: small; }
 }
 
 .keywords_cell a:hover { color: #e0e0e0; background-color: black; }
+
+textarea { font-size: 14px; font-family: "Monaco", "Menlo", "Ubuntu Mono", "Consolas", "source-code-pro", monospace; }
