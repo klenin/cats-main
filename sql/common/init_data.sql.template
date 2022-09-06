@@ -70,6 +70,10 @@ INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
     VALUES (<NEXT_ID>, 507, 'NodeJS', 'js', 'javascript', '[\\\/]~FILE~:~LINE~');
 INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
     VALUES (<NEXT_ID>, 509, 'SWI Prolog', 'pro', 'prolog', '^ERROR:\s.+~FILE~:~LINE~:~POS~:');
+INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
+    VALUES (<NEXT_ID>, 510, 'Pypy', 'pypy', 'python', '^(?:\s+File\s\"\S+\",|Sorry:.+)\sline\s~LINE~');
+INSERT INTO default_de (id, code, description, file_ext, syntax, err_regexp)
+    VALUES (<NEXT_ID>, 511, 'R', 'r', 'r', '^Error\sin.+:\s+~FILE~:~LINE~:~POS~:');
 
 INSERT INTO default_de (id, code, description, syntax, err_regexp)
     VALUES (<NEXT_ID>, 602, 'Unity', 'csharp', '^(?:.*)\\\w+\.cs\(~LINE~,~POS~\):\serror');

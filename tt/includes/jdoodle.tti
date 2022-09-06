@@ -18,6 +18,7 @@
     erlang => 'execute-erlang-online',
     javascript => 'execute-nodejs-online',
     prolog => 'execute-prolog-online',
+    r => 'execute-r-online',
     sql => 'execute-sql-online',
   },
 } %]

@@ -368,6 +368,27 @@ print(a, b)
 print(p)
 print(q)',
   },
+
+  {
+    id => 'r',
+    name => 'R',
+    infile => 'input <- file("input.txt", "r")
+ab <- scan(input, nlines=1, quiet=TRUE) # numbers
+pq <- readLines(input, n=2, warn=FALSE)) # strings',
+    stdin => 'input <- file("stdin", "r")
+ab <- scan(input, nlines=1, quiet=TRUE) # numbers
+pq <- readLines(input, n=2, warn=FALSE)) # strings',
+    outfile => 'a <- b <- 1
+p <- q <- "zzz"
+fout <- file("output.txt", "w")
+cat(a, b, file=fout)
+cat(p, q, file=fout, sep="\n")',
+    stdout => 'a <- b <- 1
+p <- q <- "zzz"
+cat(a, b)
+cat(p, q, sep="\n")',
+  },
+
   {
     id => 'rust',
     name => 'Rust',
