@@ -1,6 +1,7 @@
 [%
   capt.import({
     want_to_delete => 'Do you really want to delete judge',
+    run_command_jobs => 'View job results',
     ping => 'ping',
     queue => 'Queue',
     update => 'update to last version',

@@ -87,20 +87,33 @@ sub update_judges {
 
 sub run_command {
     my ($p) = @_;
+    @{$p->{selected}} or return;
 
-    my $count = 0;
     my $insert_sth = $dbh->prepare(q~
         INSERT INTO job_sources(job_id, src) VALUES (?, ?)~);
-    for my $judge_id (@{$p->{selected}}) {
-        my $job_id = CATS::Job::create(7, { judge_id => $judge_id, account_id => $user->{id} }) or next;
-        $insert_sth->bind_param(1, $job_id);
-        $db->bind_blob($insert_sth, 2, $p->{command});
-        $insert_sth->execute;
-        ++$count;
+    my $multi = @{$p->{selected}} > 1;
+    my $job_id = CATS::Job::create(
+        $cats::job_type_run_command, {
+            account_id => $user->{id},
+            judge_id => $multi ? undef : $p->{selected}->[0],
+            state => $multi ? $cats::job_st_finished : $cats::job_st_waiting,
+        }) or return;
+    $insert_sth->bind_param(1, $job_id);
+    $db->bind_blob($insert_sth, 2, $p->{command});
+    $insert_sth->execute;
+    my $count = 0;
+    if ($multi) {
+        for my $judge_id (@{$p->{selected}}) {
+            CATS::Job::create(
+                $cats::job_type_run_command,
+                { judge_id => $judge_id, account_id => $user->{id}, parent_id => $job_id }) or next;
+            ++$count;
+        }
+        $count or return;
     }
-    $count or return;
     $dbh->commit;
-    msg(1228, $count);
+    $t->param(href_jobs => url_f('job_details', jid => $job_id));
+    msg(1228, $multi ? $count : 1);
 }
 
 sub set_pin_mode {
@@ -120,20 +133,19 @@ sub judges_frame {
     $is_jury or return;
     my $editable = $user->privs->{manage_judges};
 
-    if ($editable) {
-        if ($p->{ping}) {
-            CATS::Judge::ping($p->{ping});
-            return $p->redirect(url_f 'judges');
-        }
-        $p->{update} and update_judges($p);
-        $p->{run_command} && $p->{command} and run_command($p);
-        $p->{set_pin_mode} && defined $p->{pin_mode} and set_pin_mode($p);
+    if ($editable && $p->{ping}) {
+        CATS::Judge::ping($p->{ping});
+        return $p->redirect(url_f 'judges');
     }
 
     init_template($p, 'judges');
+    if ($editable) {
+        $p->{update} and update_judges($p);
+        $p->{run_command} && $p->{command} and run_command($p);
+        $p->{set_pin_mode} && defined $p->{pin_mode} and set_pin_mode($p);
+        $form->delete_or_saved($p);
+    }
     my $lv = CATS::ListView->new(web => $p, name => 'judges', url => url_f('judges'));
-
-    $editable and $form->delete_or_saved($p);
 
     $lv->default_sort(0)->define_columns([
         { caption => res_str(625), order_by => 'nick', width => '15%',

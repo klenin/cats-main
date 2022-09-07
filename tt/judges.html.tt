@@ -11,6 +11,8 @@ function delete_judge(href, name) {
 }
 </script>
 
+[% IF href_jobs; '<p>'; href(href_jobs, capt.run_command_jobs); '</p>'; END %]
+
 [% PROCESS includes/listview_header.tti %]
 
 <table class="listview bordered highlight cell_search">

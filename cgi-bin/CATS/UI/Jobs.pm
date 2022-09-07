@@ -63,6 +63,7 @@ sub jobs_frame {
         problem_title => 'P.title',
         req_id => q~
             COALESCE(J.req_id, (SELECT PJ.req_id FROM jobs PJ WHERE PJ.id = J.parent_id))~,
+        parent_or_id => 'COALESCE(J.parent_id, J.id)',
         %$fields_sql,
     });
     $lv->default_searches([ qw(problem_title contest_title team_name) ]);
