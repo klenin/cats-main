@@ -36,7 +36,7 @@ sub jobs_frame {
 
     $lv->default_sort(0)->define_columns([
         { caption => res_str(642), order_by => 'type', width => '5%' },
-        { caption => res_str(619), order_by => 'id', width => '5%' },
+        { caption => res_str(619), order_by => 'J.id', width => '5%' },
         { caption => res_str(622), order_by => 'state', width => '5%' },
         { caption => 'create_time', order_by => 'create_time', width => '5%', col => 'Tc' },
         { caption => 'start_time' , order_by => 'start_time' , width => '5%', col => 'Ts' },
@@ -50,15 +50,14 @@ sub jobs_frame {
         { caption => res_str(684), order_by => 'log_size', width => '5%', col => 'Ls' },
     ]);
     $lv->define_db_searches([ qw(
-        J1.id type state create_time start_time finish_time time_len judge_id judge_name
-        J1.contest_id contest_title account_id team_name J1.parent_id
-        in_queue
+        J.id type state create_time start_time finish_time time_len judge_id judge_name
+        J.problem_id J.contest_id contest_title account_id team_name J.parent_id
     ) ]);
     $lv->define_db_searches({
         problem_title => 'P.title',
-        problem_id => 'P.id',
         req_id => q~
-            COALESCE(J1.req_id, (SELECT PJ.req_id FROM jobs PJ WHERE PJ.id = J1.parent_id))~,
+            COALESCE(J.req_id, (SELECT PJ.req_id FROM jobs PJ WHERE PJ.id = J.parent_id))~,
+        in_queue => 'CASE WHEN JQ.id IS NULL THEN 0 ELSE 1 END',
     });
     $lv->default_searches([ qw(problem_title contest_title team_name) ]);
 
@@ -79,46 +78,47 @@ sub jobs_frame {
         submenu => [ { item => res_str(408), href => url_f('jobs', 'search' => 'in_queue=1') } ],
     );
 
-    my $maybe_field = sub {
-        ($lv->visible_cols->{$_[0]} ? "COALESCE(J.$_[1], R.$_[1])" : 'NULL') . " AS $_[1]"
-    };
     my $where = $lv->where;
-    $is_root or $where->{'J1.contest_id'} = $cid;
-
+    $is_root && %$where or $where->{'J.contest_id'} = $cid;
     my $in_queue_val = $lv->qb->extract_search_values('in_queue');
-    my $jq_join = @$in_queue_val == 1 && $in_queue_val->[0] ? 'INNER' : 'LEFT';
+    my $in_queue = @$in_queue_val == 1 && $in_queue_val->[0];
 
-    my ($q) = $sql->select(
-        qq~jobs J $jq_join JOIN jobs_queue JQ ON JQ.id = J.id~ .
+    my @job_common_fields =
+        qw(id type state create_time start_time finish_time req_id judge_id parent_id);
+    my $jobs_sql = sprintf q~(
+        SELECT %s, J1.contest_id, J1.problem_id, J1.account_id
+        FROM jobs J1%s WHERE J1.req_id IS NULL
+        UNION
+        SELECT %s, R.contest_id, R.problem_id, R.account_id
+        FROM jobs J2%s INNER JOIN reqs R ON J2.req_id = R.id) J
+        %s JOIN jobs_queue JQ ON JQ.id = J.id~,
+        (join ', ', map "J1.$_", @job_common_fields),
+        $in_queue ? ' INNER JOIN jobs_queue JQ ON JQ.id = J1.id' : '',
+        (join ', ', map "J2.$_", @job_common_fields),
+        $in_queue ? ' INNER JOIN jobs_queue JQ ON JQ.id = J2.id' : '',
+        $in_queue ? 'INNER' : 'LEFT';
+    my ($q, @bind) = $sql->select($jobs_sql .
         ($lv->visible_cols->{Jn} ? ' LEFT JOIN judges JD ON J.judge_id = JD.id' : '') .
-        ($lv->visible_cols->{Pr} || $lv->visible_cols->{Ct} || $lv->visible_cols->{Ac} ?
-            ' LEFT JOIN reqs R ON J.req_id = R.id' : ''),
-        [ qw(J.id J.type J.state J.create_time J.start_time J.finish_time J.req_id J.judge_id J.parent_id),
-          'CAST(J.finish_time - J.start_time AS DOUBLE PRECISION) AS time_len',
-          'CASE WHEN JQ.id IS NULL THEN 0 ELSE 1 END AS in_queue',
-          ($lv->visible_cols->{Jn} ?  'JD.nick' : 'NULL') . ' AS judge_name',
-          $maybe_field->('Pr', 'problem_id'),
-          $maybe_field->('Ct', 'contest_id'),
-          $maybe_field->('Ac', 'account_id'),
-          ($lv->visible_cols->{Ls} ?
-            '(SELECT SUM(OCTET_LENGTH(dump)) FROM logs L WHERE L.job_id = J.id)' : 'NULL') . ' AS log_size',
-        ]
-    );
-    my ($q1, @bind) = $sql->select("($q) J1 " .
         ($lv->visible_cols->{Pr} ? q~
-            LEFT JOIN problems P ON P.id = J1.problem_id
+            LEFT JOIN problems P ON P.id = J.problem_id
             LEFT JOIN contest_problems CP ON
-                CP.problem_id = J1.problem_id AND CP.contest_id = J1.contest_id ~ : '') .
-        ($lv->visible_cols->{Ct} ? q~LEFT JOIN contests C ON C.id = J1.contest_id ~ : '') .
-        ($lv->visible_cols->{Ac} ? q~LEFT JOIN accounts A ON A.id = J1.account_id ~ : ''),
-        [ 'J1.*',
+                CP.problem_id = J.problem_id AND CP.contest_id = J.contest_id ~ : '') .
+        ($lv->visible_cols->{Ct} ? q~LEFT JOIN contests C ON C.id = J.contest_id ~ : '') .
+        ($lv->visible_cols->{Ac} ? q~LEFT JOIN accounts A ON A.id = J.account_id ~ : ''),
+        [
+            (map "J.$_", @job_common_fields, qw(problem_id contest_id account_id)),
+            'CAST(J.finish_time - J.start_time AS DOUBLE PRECISION) AS time_len',
+            'CASE WHEN JQ.id IS NULL THEN 0 ELSE 1 END AS in_queue',
+            ($lv->visible_cols->{Jn} ? 'JD.nick' : 'NULL') . ' AS judge_name',
             ($lv->visible_cols->{Pr} ? 'P.title' : 'NULL') . ' AS problem_title',
             ($lv->visible_cols->{Pr} ? 'CP.id' : 'NULL') . ' AS cpid',
             ($lv->visible_cols->{Ct} ? 'C.title' : 'NULL') . ' AS contest_title',
             ($lv->visible_cols->{Ac} ? 'A.team_name' : 'NULL') . ' AS team_name',
+            ($lv->visible_cols->{Ls} ?
+                '(SELECT SUM(OCTET_LENGTH(dump)) FROM logs L WHERE L.job_id = J.id)' : 'NULL') . ' AS log_size',
         ], $where
     );
-    my $sth = $dbh->prepare($q1 . $lv->order_by);
+    my $sth = $dbh->prepare($q . $lv->order_by);
     $sth->execute(@bind);
 
     my $href_details = sub {
