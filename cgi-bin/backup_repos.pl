@@ -82,7 +82,13 @@ sub work {
             my $repo = CATS::Problem::Repository->new(
                 dir => File::Spec->catdir($CATS::Config::repos_dir, $repo_name) . '/');
             my $bundle = File::Spec->catfile($file, "$repo_name.bundle");
-            $repo->bundle($bundle);
+            eval { $repo->bundle($bundle); };
+            if (my $err = $@) {
+                open my $ferr, '>', File::Spec->catfile($file, "$repo_name.err");
+                print $ferr $err;
+                print " ... error\n" if !$quiet;
+                next;
+            }
             my $size = -s $bundle;
             printf " ... ok %d\n", $size if !$quiet;
             $uncompressed_size += $size;
