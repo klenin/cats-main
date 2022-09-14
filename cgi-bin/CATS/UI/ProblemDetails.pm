@@ -260,7 +260,7 @@ sub problem_select_testsets_frame {
 }
 
 my $test_data_sql = qq~
-    SELECT T.rank, T.gen_group, T.param, T.descr,
+    SELECT T.rank, T.gen_group, T.param, T.points, T.descr,
         SUBSTRING(T.in_file FROM 1 FOR $cats::test_file_cut + 1) AS input,
         COALESCE(PSL1.fname, PSLE1.fname) AS gen_name,
         COALESCE(PSL2.fname, PSLE2.fname) AS val_name,
@@ -374,11 +374,12 @@ sub problem_test_data_frame {
         { caption => 'validator', order_by => 'val_name', col => 'Vn' },
         { caption => 'input_hash', order_by => 'input_hash', col => 'Ih' },
         { caption => 'snippet', order_by => 'snippet_name', col => 'Sn' },
+        { caption => res_str(687), order_by => 'T.points', col => 'Pt' },
         { caption => 'descr', order_by => 'descr', col => 'De' },
     ]);
     $lv->define_db_searches([ qw(
         rank gen_group param input_hash input_validator_param
-        in_file in_file_size out_file out_file_size snippet_name descr
+        in_file in_file_size out_file out_file_size snippet_name points descr
     ) ]);
     $lv->define_db_searches({
         gen_name => 'COALESCE(PSL1.fname, PSLE1.fname)',
@@ -417,6 +418,7 @@ sub problem_test_data_frame {
         $row->{href_edit_out} = $set_file_name->($row, 'out_file_name');
         $total->{input_size} += $row->{input_size} // 0;
         $total->{answer_size} += $row->{answer_size} // 0;
+        $total->{points} += $row->{points} // 0;
         %$row;
     };
 
