@@ -76,6 +76,7 @@ sub problems_all_frame {
         { caption => res_str(619), order_by => 'CP.code', width => '1%', col => 'Co' },
         { caption => res_str(603), order_by => 'C.title', width => '30%' },
         { caption => res_str(604), order_by => $accepted_orderby, width => '10%', col => 'Ok' },
+        { caption => res_str(634), order_by => 'upload_date', width => '10%', col => 'Mt' },
         { caption => res_str(667), order_by => 'keywords', width => '20%', col => 'Kw' },
     ]);
     CATS::Problem::Utils::define_common_searches($lv);
@@ -87,6 +88,8 @@ sub problems_all_frame {
                 WHERE CP1.problem_id = P.id AND CP1.tags IS NOT NULL)~) : ()),
     });
     $lv->default_searches([ qw(contest_title) ]);
+    $lv->date_fields(qw(upload_date));
+
     my $ok_wa_tl = $lv->visible_cols->{Ok} ? qq~
         SELECT
             $accepted_sql || ' / ' ||
@@ -98,7 +101,7 @@ sub problems_all_frame {
         INNER JOIN problem_keywords PK ON PK.keyword_id = K.id AND PK.problem_id = P.id~ : 'NULL';
     my $sth = $dbh->prepare(qq~
         SELECT
-            P.id AS problem_id, P.title, C.title AS contest_title, P.contest_id, CP.code,
+            P.id AS problem_id, P.title, C.title AS contest_title, P.contest_id, CP.code, P.upload_date,
             ($ok_wa_tl) AS counts,
             ($keywords) AS keywords,
             (SELECT 1 FROM contest_problems CP1
