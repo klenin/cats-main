@@ -554,6 +554,42 @@ END -%]
     Пробелы и переводы строк сохраняются в точности.
   </td>
 </tr>
+<tr>
+  <td>[% tag_in('Quiz', 'ProblemStatement', v111) %]</td>
+  <td>
+    <ul>
+      <li>type — тип вопроса, возможные типы: <code>text</code>, <code>radiogroup</code>, <code>checkbox</code>.</li>
+      <li>rank[% opt %] — номер теста (см. [% tag_ref('Test') %]), по умолчанию берётся порядковый номер тега.</li>
+      <li>points[% opt %] — количество баллов за тест.</li>
+      <li>descr[% opt %] — описание теста.</li>
+    </ul>
+  </td>
+  <td>Вопрос из опроса. Если указан хотя бы один из атрибутов <code>rank</code>, <code>points</code>, <code>descr</code>,
+    либо использован тег [% tag_ref('Answer') %] или тег [% tag_ref('Choice') %]
+    с атрибутом <code>correct</code>, автоматически создаётся тест.
+  </td>
+</tr>
+<tr>
+  <td>[% tag_in('Text', 'Quiz', v111) %]</td>
+  <td></td>
+  <td>Текст вопроса.</td>
+</tr>
+<tr>
+  <td>[% tag_in('Answer', 'Quiz', v111) %]</td>
+  <td></td>
+  <td>Правильный ответ на вопрос типа <code>text</code>.
+  </td>
+</tr>
+<tr>
+  <td>[% tag_in('Choice', 'Quiz', v111) %]</td>
+  <td>
+    <ul>
+      <li>correct[% opt %] — если атрибут равен 1, вариант ответа считается правильным.</li>
+    </ul>
+  </td>
+  <td>Вариант ответа на вопрос типа <code>radiogroup</code> или <code>checkbox</code>.
+  </td>
+</tr>
 </table>
 
 <a name="rankSpec"></a>

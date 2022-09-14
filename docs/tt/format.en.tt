@@ -552,6 +552,42 @@ files with tests, solutions etc.
     Whitespace is preserved exactly.
   </td>
 </tr>
+<tr>
+  <td>[% tag_in('Quiz', 'ProblemStatement', v111) %]</td>
+  <td>
+    <ul>
+      <li>type — question type, possible types are: <code>text</code>, <code>radiogroup</code>, <code>checkbox</code>.</li>
+      <li>rank[% opt %] — test rank (see [% tag_ref('Test') %]), by default the serial number of the tag is used.</li>
+      <li>points[% opt %] — number of points for the test.</li>
+      <li>descr[% opt %] — test description.</li>
+    </ul>
+  </td>
+  <td>Question from the quiz. If at least one of the attributes <code>rank</code>, <code>points</code>, <code>descr</code> is given,
+    or either tag [% tag_ref('Answer') %] or tag [% tag_ref('Choice') %]
+    with the <code>correct</code> attribute is used, test will be created automatically.
+  </td>
+</tr>
+<tr>
+  <td>[% tag_in('Text', 'Quiz', v111) %]</td>
+  <td></td>
+  <td>Question text.</td>
+</tr>
+<tr>
+  <td>[% tag_in('Answer', 'Quiz', v111) %]</td>
+  <td></td>
+  <td>Correct answer for the question of type <code>text</code>.
+  </td>
+</tr>
+<tr>
+  <td>[% tag_in('Choice', 'Quiz', v111) %]</td>
+  <td>
+    <ul>
+      <li>correct[% opt %] — if the attribute is equal to 1, the variant is accepted as correct.</li>
+    </ul>
+  </td>
+  <td>Answer variant for the question of type <code>radiogroup</code> or <code>checkbox</code>.
+  </td>
+</tr>
 </table>
 
 <a name="rankSpec"></a>
