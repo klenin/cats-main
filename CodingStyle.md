@@ -59,6 +59,7 @@ Some historical code, mostly located in `unused` directory, does not conform to 
 * Subroutines MUST NOT use prototypes (exception: `()` for constants).
 * Single-statement subroutines SHOULD omit trailing semicolon.
 * Subroutines SHOULD omit the `return` keyword in the final statement.
+* Multi-level array and hash dereferencing MUST NOT omit `->` operator (`$x->{y}->[z]`, not `$x->{y}[z]`).
 
 ## Comments
 * Comments MUST be worded as full English sentences, with capitalization and periods.
@@ -100,7 +101,7 @@ Some historical code, mostly located in `unused` directory, does not conform to 
 
 ## Security
 * User-supplied values MUST be passed to SQL via parameters only.
-* User-supplied strings MUST be quoted with either `html` or `$Javascript` filter in templates.
+* User-supplied strings MUST be quoted with either `html` or `$Javascript` filter or `dquote` method in templates.
 * HTTP parameters SHOULD be verified using `CATS::Router`.
 
 ## Templates
