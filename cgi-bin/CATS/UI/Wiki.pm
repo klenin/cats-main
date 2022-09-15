@@ -44,9 +44,10 @@ my $str1_200 = CATS::Field::str_length(1, 200);
 our $page_form = CATS::Form->new(
     table => 'wiki_pages',
     fields => [
-        [ name => 'name', validators => [ $str1_200 ], caption => 601, ],
+        [ name => 'name', validators => [ $str1_200 ], caption => 601,
+            editor => { attrs => { id => 'name' } } ],
         [ name => 'is_public', validators => $CATS::Field::bool, caption => 669,
-             %CATS::Field::default_zero ],
+            %CATS::Field::default_zero ],
     ],
     href_action => 'wiki_pages_edit',
     descr_field => 'name',
@@ -56,7 +57,9 @@ our $page_form = CATS::Form->new(
     validators => [ CATS::Field::unique('name') ],
     before_display => sub {
         my ($fd, $p) = @_;
-        $fd->{href_public} = CATS::Utils::url_function('wiki', name => $fd->{indexed}->{name}->{value} || 'xx', lang => 'xx');
+        my $name = $fd->{indexed}->{name}->{value};
+        $fd->{href_public_initial} = CATS::Utils::url_function('wiki', name => $name);
+        $fd->{href_public_template} = CATS::Utils::url_function('wiki', name => '$name$');
 
         my $ts = $fd->{texts} = $fd->{id} ? $dbh->selectall_hashref(q~
             SELECT id, lang, title, last_modified, OCTET_LENGTH(text) AS text_length
@@ -67,7 +70,7 @@ our $page_form = CATS::Form->new(
             $r->{href_edit} = url_f('wiki_edit', wiki_id => $fd->{id}, wiki_lang => $_, id => $r->{id});
             $r->{id} or next;
             $r->{href_delete} = url_f('wiki_pages_edit', id => $fd->{id}, delete => $r->{id});
-            $r->{href_view} = url_f('wiki', name => $fd->{indexed}->{name}->{value}, lang => $_);
+            $r->{href_view} = url_f('wiki', name => $name, lang => $_);
             $r->{last_modified} = $db->format_date($r->{last_modified});
         }
         $t->param(submenu => [ CATS::References::menu('wiki_pages') ]);

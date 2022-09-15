@@ -6,13 +6,24 @@ function delete_wiki_text(href, name) {
   if (confirm("[% capt.want_to_delete %] '" + name + "'?" ))
     document.location = href;
 }
+
+window.addEventListener('load', function() {
+  var td = document.getElementById('href_public');
+  var a = td.getElementsByTagName('a')[0];
+  var input_name = document.getElementById('name');
+  var update_href = function() {
+    a.innerText = '[% wp.href_public_template %]'.replace('$name$', input_name.value);
+  };
+  input_name.addEventListener('input', update_href);
+  update_href();
+});
 </script>
 
 <form method="post" enctype="multipart/form-data" action="[% wp.href_action %]">
 <table class="edit_form">
 [% tr_text(wp.indexed.name, wp) %]
-<tr><td>[% capt.public_url %]</td><td>[% href(wp.href_public, wp.href_public) %]</td></tr>
-[% tr_checkbox1(wp.indexed.is_public, wp) %]
+<tr><td>[% capt.public_url %]</td><td id="href_public">[% href(wp.href_public_initial, wp.href_public_initial) %]</td></tr>
+[% tr_checkbox1(wp.indexed.is_public, wp ) %]
 </table>
 <br/>
 [% PROCESS includes/edit_save_cancel.tti %]
