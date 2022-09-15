@@ -8,6 +8,7 @@
 </style>
 [% IF is_xml; PROCESS includes/mathjax.tti; END %]
 <script>
+"use strict";
 $(document).ready(function () {
   if (!ace) return;
   Editor.set_syntax('ed_pe[% pid %]_[% file %]', 'de_id');
@@ -118,18 +119,22 @@ $(document).ready(function () {
       var search = function() { return editor.$search.findAll(editor.session); };
       if (!is_repeat) {
         editor.$search.setOptions({ needle: tag });
-        if (search().length)
+        var matches = search();
+        if (matches.length) {
+          var match = matches[0].start;
+          editor.selection.moveTo(match.row, match.column + prefix.length);
           return;
+        }
       }
       editor.$search.setOptions({ needle: prev });
-      matches = search();
+      var matches = search();
       var offset = 1;
       if (!matches.length) {
         editor.$search.setOptions({ needle: next });
         matches = search();
         offset = 0;
       }
-      if (!matches) return;
+      if (!matches.length) return;
       var match = matches[matches.length - 1].start;
       var insert_position = { row: match.row + offset, column: match.column };
       editor.session.insert(insert_position, prefix + suffix);
