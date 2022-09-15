@@ -9,7 +9,8 @@
 [%- MACRO tr_text(f, fd) BLOCK -%]
 <tr>
   <td>[% f.caption || capt.item(f.field.name) %]</td>
-  <td><input type="text" name="[% f.field.name %]" value="[% f.value | html %]" size="[% f.field.editor.size || 50 %]"
+  <td><input type="text" name="[% f.field.name %]" value="[% f.value | html %]" size="[% f.field.editor.item('size') || 50 %]"
+    [%- tag_attrs(f.field.editor.attrs) -%]
     [%- ' readonly="readonly"' IF fd.readonly %] class="bordered" />
     [%- maybe_err(f) %]
   </td>
@@ -20,6 +21,7 @@
 <tr>
   <td>[% f.caption || capt.item(f.field.name) %]</td>
   <td><textarea name="[% f.field.name %]" cols="[% f.field.editor.cols || 50 %]" rows="[% f.field.editor.rows || 10 %]"
+    [%- tag_attrs(f.field.editor.attrs) -%]
     [%- ' readonly="readonly"' IF fd.readonly %] class="bordered" />[% f.value | html %]</textarea>
     [%- maybe_err(f) %]
   </td>
@@ -29,7 +31,7 @@
 [%- MACRO tr_checkbox1(f, fd) BLOCK -%]
 <tr>
   <td>[% f.caption || capt.item(f.field.name) %]</td>
-  <td>[% checkbox_1(f.field.name, f.value, disabled = fd.readonly || f.readonly) %]
+  <td>[% checkbox_1(f.field.name, f.value, disabled = fd.readonly || f.readonly, attrs = f.field.editor.attrs) %]
     [%- maybe_err(f) %]
   </td>
 </tr>
@@ -48,7 +50,9 @@
   <tr>
     <td>[% f.caption || capt.item(f.field.name) %]</td>
     <td><div style="position: relative;"><input type="text" name="[% f.field.name %]" value="[% f.value | html %]"
-      size="[% f.field.editor.size || 20 %]"[% ' readonly="readonly"' IF fd.readonly %] class="bordered" />
+      size="[% f.field.editor.item('size') || 20 %]"
+      [%- tag_attrs(f.field.editor.attrs) -%]
+      [%- ' readonly="readonly"' IF fd.readonly %] class="bordered" />
       [%- IF !fd.readonly %]
       <a href="#" onclick="show_datepicker(this, '[% f.field.name %]')" class="icon icon_centered datepicker"></a>
       [% END -%]</div>
@@ -60,7 +64,8 @@
 [%- MACRO tr_color(f, fd) BLOCK -%]
 <tr>
   <td>[% f.caption || capt.item(f.field.name) %]</td>
-  <td><input type="color" name="[% f.field.name %]" value="[% f.value | html %]" size="[% f.field.editor.size || 10 %]"
+  <td><input type="color" name="[% f.field.name %]" value="[% f.value | html %]" size="[% f.field.editor.item('size') || 10 %]"
+    [%- tag_attrs(f.field.editor.attrs) -%]
     [%- ' readonly="readonly"' IF fd.readonly %] class="bordered" />
     [%- maybe_err(f) %]
   </td>
