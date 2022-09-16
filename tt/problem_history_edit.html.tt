@@ -113,16 +113,18 @@ $(document).ready(function () {
       update_mathjax_preview(check_selected_tex_block(t), 1); });
   }
 
-  var add_button_function = function(is_repeat, tag, prefix, suffix, prev, next) {
+  var add_button_function = function(singleton_tag, prefix, suffix, prev, next) {
     return function() {
       editor.focus();
       var search = function() { return editor.$search.findAll(editor.session); };
-      if (!is_repeat) {
-        editor.$search.setOptions({ needle: tag });
+      if (singleton_tag) {
+        editor.$search.setOptions({ needle: singleton_tag });
         var matches = search();
         if (matches.length) {
           var match = matches[0].start;
           editor.selection.moveTo(match.row, match.column + prefix.length);
+          // 0.5 centers the line on screen
+          editor.renderer.scrollCursorIntoView(match, 0.5);
           return;
         }
       }
@@ -144,21 +146,21 @@ $(document).ready(function () {
     }
   }
 
-  $('#keyword_button').click(add_button_function(true,
-    /<Keyword code=/, '<Keyword code="', '" />\n', /<Keyword code=/, /<ProblemStatement>/));
-  $('#input_button').click(add_button_function(false,
+  var add_button_quiz = function(id, prefix, suffix) {
+      $(id).click(add_button_function(null, prefix, suffix, /<\/Quiz>/, /<\/ProblemStatement>/));
+  };
+
+  $('#keyword_button').click(add_button_function(
+    null, '<Keyword code="', '" />\n', /<Keyword code=/, /<ProblemStatement>/));
+  $('#input_button').click(add_button_function(
     /<InputFormat>/, '<InputFormat>', '</InputFormat>\n', /ProblemStatement>/, /<OutputFormat>/));
-  $('#output_button').click(add_button_function(false,
+  $('#output_button').click(add_button_function(
     /<OutputFormat>/, '<OutputFormat>', '</OutputFormat>\n', /InputFormat>/, /<ProblemConstraints>/));
-  $('#quiz_text_button').click(add_button_function(true,
-    /<Quiz type=/, '<Quiz type="text"><Text>', '</Text><Answer></Answer></Quiz>\n',
-    /<\/Quiz>/, /<\/ProblemStatement>/));
-  $('#quiz_radiogroup_button').click(add_button_function(true,
-    /<Quiz type=/, '<Quiz type="radiogroup"><Text>', '</Text>\n<Choice></Choice>\n<Choice></Choice>\n</Quiz>\n',
-    /<\/Quiz>/, /<\/ProblemStatement>/));
-  $('#quiz_checkbox_button').click(add_button_function(true,
-    /<Quiz type=/, '<Quiz type="checkbox"><Text>', '</Text>\n<Choice></Choice>\n<Choice></Choice>\n</Quiz>\n',
-    /<\/Quiz>/, /<\/ProblemStatement>/));
+  add_button_quiz('#quiz_text_button', '<Quiz type="text"><Text>', '</Text><Answer></Answer></Quiz>\n');
+  add_button_quiz('#quiz_radiogroup_button',
+    '<Quiz type="radiogroup"><Text>', '</Text>\n<Choice></Choice>\n<Choice></Choice>\n</Quiz>\n');
+  add_button_quiz('#quiz_checkbox_button',
+    '<Quiz type="checkbox"><Text>', '</Text>\n<Choice></Choice>\n<Choice></Choice>\n</Quiz>\n');
   $('.problem_menu_trigger').click(function() { $(this).toggleClass('problem_menu_hovered'); });
 })</script>
 [%- END %]
