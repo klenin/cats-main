@@ -426,6 +426,7 @@ my $main_routes = {
     ],
     files_edit => [ \&CATS::UI::Files::files_edit_frame,
         $CATS::UI::Files::form->route, file => upload, ],
+    api_find_files => [ \&CATS::UI::Files::find_files_api, query => str, ],
     de_tags => [ \&CATS::UI::DeTags::de_tags_frame,
         delete => integer, saved => integer,
         add => bool, remove => bool, check => array_of integer,

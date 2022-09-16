@@ -129,4 +129,18 @@ sub files_frame {
     $t->param(submenu => [ CATS::References::menu('files') ]);
 }
 
+sub find_files_api {
+    my ($p) = @_;
+    $user->privs->{edit_wiki} or return;
+    my $f = $dbh->selectall_arrayref(qq~
+        SELECT F.id, F.name, F.guid, F.description FROM files F
+        WHERE F.name LIKE ? || '%'
+        ORDER BY F.name
+        $CATS::DB::db->{LIMIT} 100~, { Slice => {} },
+        $p->{query});
+    $p->print_json({ suggestions =>
+        [ map { value => $_->{name}, data => $_ }, @$f ]
+    });
+}
+
 1;
