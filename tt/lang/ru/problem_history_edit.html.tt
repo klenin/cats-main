@@ -1,10 +1,16 @@
 [%
   capt.import({
+    add => 'добавить',
+    keyword => 'ключевое слово',
+    input_format => 'формат ввода',
+    output_format => 'формат вывода',
     quiz => {
         quiz => 'вопрос',
         text => 'текст',
         radiogroup => 'единcтвенный выбор',
         checkbox => 'множественный выбор',
     },
+    upload => 'загрузить',
+    different_versions => 'Файлы на сервере и клиенте не совпали',
   })
 %]

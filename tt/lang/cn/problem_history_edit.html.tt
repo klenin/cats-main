@@ -1,10 +1,16 @@
 [%
   capt.import({
+    add => 'add',
+    keyword => 'keyword',
+    input_format => 'input format',
+    output_format => 'output format',
     quiz => {
-        quiz => 'quiz',
+        quiz => '测试',
         text => 'text',
         radiogroup => 'single choice',
         checkbox => 'multiple choice',
     },
+    upload => '上传',
+    different_versions => 'Files on server and client did not match',
   })
 %]

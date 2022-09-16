@@ -46,13 +46,6 @@
     participate => 'participate',
     participate_virtually => 'participate virtually',
     virtual_warning => 'Warning! Second virtual participation will remove all submits of the first one. Continue?',
-    wrap => 'wrap',
-    add => 'add',
-    keyword => 'keyword',
-    input_format => 'input format',
-    output_format => 'output format',
-    upload => 'upload',
     want_to_delete_file => 'Do you really want to delete file ',
-    different_versions => 'Files on server and client did not match',
   });
 %]
