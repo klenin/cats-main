@@ -201,19 +201,19 @@ $(document).ready(function () {
     <select id="de_id" class="toolbar_item">
       [% FOREACH de IN de_list.des; editor_select_option(de.id, de.description, de.syntax, de.id == de_selected.id); END %]
     </select>
-    <a class="problem_menu_trigger toolbar_item">[% capt.add %]
+    <a class="problem_menu_trigger toolbar_item" title="[% capt.add %]">&#x2795;
       <div class="editor_menu">
-        <button type="button" id="keyword_button" class="button toolbar_item">[% capt.keyword %]</button>
-        <button type="button" id="input_button" class="button toolbar_item">[% capt.input_format %]</button>
-        <button type="button" id="output_button" class="button toolbar_item">[% capt.output_format %]</button>
+        <button type="button" id="keyword_button" class="button">[% capt.keyword %]</button>
+        <button type="button" id="input_button" class="button">[% capt.input_format %]</button>
+        <button type="button" id="output_button" class="button">[% capt.output_format %]</button>
         [%- FOREACH qt IN [ 'text', 'radiogroup', 'checkbox' ] -%]
-        <button type="button" id="quiz_[% qt %]_button" class="button toolbar_item">
+        <button type="button" id="quiz_[% qt %]_button" class="button">
           [%- capt.quiz.quiz; ': '; capt.quiz.item(qt) -%]
         </button>
         [%- END -%]
       </div>
     </a>
-    <a class="problem_menu_trigger toolbar_item">&#x2261
+    <a class="problem_menu_trigger toolbar_item">&#x2261;
       [%- PROCESS includes/editor_menu.tti editor_id = 'ed_pe' _ pid _ '_' _ (edit_file ? file : hash) -%]
     </a>
   </div>
