@@ -30,6 +30,10 @@ var AutoComplete = (function() {
     contests: function (suggestion, currentValue) {
       return bold_substr(suggestion.data.title, currentValue);
     },
+    files: function (suggestion, currentValue) {
+      return bold_prefix(suggestion.data.name, currentValue) + ' ' +
+        suggestion.data.description.substr(0, 20);
+    },
     users: function (suggestion, currentValue) {
       return bold_prefix(suggestion.data.login, currentValue) +
         ' (' + bold_prefix(suggestion.data.team_name, currentValue) + ')';
@@ -61,6 +65,7 @@ var AutoComplete = (function() {
     apply: apply,
     bold_substr: bold_substr,
     bold_prefix: bold_prefix,
+    fmt: fmt,
     formatResult: formatResult,
   };
 })();

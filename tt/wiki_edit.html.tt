@@ -1,11 +1,12 @@
-[%- js.jquery = 1; js.ace = 1 -%]
+[%- js.jquery = 1; js.ace = 1; js.autocomplete = 1 -%]
 [%- extra_head = BLOCK %]
 <style>
   table.wiki_edit tr td { vertical-align: top; padding-right: 1em; }
 </style>
 [% END -%]
 [% PROCESS includes/menu_begin.tti %]
-[% PROCESS includes/html_input.tti %]
+[%- PROCESS includes/html_input.tti -%]
+[%- PROCESS includes/autocomplete.tti -%]
 
 <form method="post" enctype="multipart/form-data" action="[% wt.href_action %]">
 <table class="wiki_edit edit_form">
@@ -34,7 +35,18 @@
   </textarea>
   </div>
   [% PROCESS includes/edit_save_cancel.tti %]
-  <a class="problem_menu_trigger" onclick="$(this).toggleClass('problem_menu_hovered')">&#x2261
+  <a class="problem_menu_trigger toolbar_item">&#x2795;
+  <div class="editor_menu">
+    <button type="button" id="insert_link" class="button toolbar_item">[% capt.insert_link %]</button>
+    <button type="button" id="insert_image" class="button toolbar_item">[% capt.insert_image %]</button>
+  </div>
+  </a>
+
+  <label>[% capt.file %]: <input id="file" type="text" size="20" class="bordered toolbar_item"/></label>
+  <input id="file_guid" type="hidden" />
+  <input id="file_description" type="hidden" />
+
+  <a class="problem_menu_trigger toolbar_item">&#x2261;
     [%- PROCESS includes/editor_menu.tti editor_id = 'ed_wi' _ wt.indexed.wiki_id.value -%]
   </a>
 </td>
@@ -101,6 +113,30 @@ $(function() {
   sync_render();
   scrollBarV.element.addEventListener('scroll', sync_render);
   div_render.scroll(sync_editor);
+
+  var insert_function = function(prefix, default_text) {
+    return function() {
+      editor.focus();
+      var name = $('#file').val();
+      var guid = $('#file_guid').val();
+      var descr = $('#file_description').val();
+      editor.insert(AutoComplete.fmt('{0}[{1}]({2}{3})', [
+        prefix, descr || default_text,
+        guid ? '[% href_download %]' + guid : 'https://url',
+        name ? ' "' + name + '"' : ''
+      ]));
+    }
+  }
+  $('.problem_menu_trigger').click(function() { $(this).toggleClass('problem_menu_hovered'); });
+  $('#insert_link').click(insert_function('', 'text'));
+  $('#insert_image').click(insert_function('!', 'img alt'));
+  autocomplete($('#file'), '[% href_find_files %]', {
+    formatResult: AutoComplete.formatResult.files,
+    onSelect: function (suggestion) {
+      $('#file_guid').val(suggestion.data.guid);
+      $('#file_description').val(suggestion.data.description);
+    }
+  });
 });
 </script>
 [% PROCESS includes/menu_end.tti %]

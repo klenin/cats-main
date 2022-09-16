@@ -3,6 +3,9 @@
     view => 'view',
     page => 'page',
     synchronize => 'synchronize',
+    insert_link => 'link',
+    insert_image => 'image',
+    file => 'File',
     author => 'Author',
     last_modified => 'Last modified',
   })

@@ -3,6 +3,9 @@
     view => 'просмотр',
     page => 'страница',
     synchronize => 'синхронизировать',
+    insert_link => 'ссылка',
+    insert_image => 'изображение',
+    file => 'Файл',
     author => 'Автор',
     last_modified => 'Последнее изменение',
   })
