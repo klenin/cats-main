@@ -1,0 +1,10 @@
+[%
+  capt.import({
+    quiz => {
+        quiz => 'quiz',
+        text => 'text',
+        radiogroup => 'single choice',
+        checkbox => 'multiple choice',
+    },
+  })
+%]

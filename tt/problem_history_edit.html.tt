@@ -136,7 +136,7 @@ $(document).ready(function () {
       }
       if (!matches.length) return;
       var match = matches[matches.length - 1].start;
-      var insert_position = { row: match.row + offset, column: match.column };
+      var insert_position = { row: match.row + offset, column: 0 };
       editor.session.insert(insert_position, prefix + suffix);
       editor.selection.moveTo(insert_position.row, prefix.length);
       // 0.5 centers the line on screen
@@ -150,6 +150,15 @@ $(document).ready(function () {
     /<InputFormat>/, '<InputFormat>', '</InputFormat>\n', /ProblemStatement>/, /<OutputFormat>/));
   $('#output_button').click(add_button_function(false,
     /<OutputFormat>/, '<OutputFormat>', '</OutputFormat>\n', /InputFormat>/, /<ProblemConstraints>/));
+  $('#quiz_text_button').click(add_button_function(true,
+    /<Quiz type=/, '<Quiz type="text"><Text>', '</Text><Answer></Answer></Quiz>\n',
+    /<\/Quiz>/, /<\/ProblemStatement>/));
+  $('#quiz_radiogroup_button').click(add_button_function(true,
+    /<Quiz type=/, '<Quiz type="radiogroup"><Text>', '</Text>\n<Choice></Choice>\n<Choice></Choice>\n</Quiz>\n',
+    /<\/Quiz>/, /<\/ProblemStatement>/));
+  $('#quiz_checkbox_button').click(add_button_function(true,
+    /<Quiz type=/, '<Quiz type="checkbox"><Text>', '</Text>\n<Choice></Choice>\n<Choice></Choice>\n</Quiz>\n',
+    /<\/Quiz>/, /<\/ProblemStatement>/));
   $('.problem_menu_trigger').click(function() { $(this).toggleClass('problem_menu_hovered'); });
 })</script>
 [%- END %]
@@ -195,6 +204,11 @@ $(document).ready(function () {
         <button type="button" id="keyword_button" class="button toolbar_item">[% capt.keyword %]</button>
         <button type="button" id="input_button" class="button toolbar_item">[% capt.input_format %]</button>
         <button type="button" id="output_button" class="button toolbar_item">[% capt.output_format %]</button>
+        [%- FOREACH qt IN [ 'text', 'radiogroup', 'checkbox' ] -%]
+        <button type="button" id="quiz_[% qt %]_button" class="button toolbar_item">
+          [%- capt.quiz.quiz; ': '; capt.quiz.item(qt) -%]
+        </button>
+        [%- END -%]
       </div>
     </a>
     <a class="problem_menu_trigger toolbar_item">&#x2261
