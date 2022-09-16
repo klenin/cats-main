@@ -28,6 +28,7 @@ my ($http_mime_type, %extra_headers);
 
 sub downloads_path { cats_dir() . '../download/' }
 sub downloads_url { 'download/' }
+sub downloads_url_files { downloads_url . 'f/' }
 
 sub init_template {
     my ($p, $file_name, $extra) = @_;

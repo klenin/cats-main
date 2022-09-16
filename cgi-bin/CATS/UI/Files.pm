@@ -10,7 +10,7 @@ use CATS::Form;
 use CATS::Globals qw($cid $t $user);
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
-use CATS::Output qw(downloads_path downloads_url init_template url_f);
+use CATS::Output qw(downloads_path init_template url_f);
 use CATS::References;
 use CATS::User;
 
@@ -119,7 +119,7 @@ sub files_frame {
             %$row,
             href_edit=> url_f('files_edit', id => $row->{id}),
             href_delete => url_f('files', 'delete' => $row->{id}),
-            href_download => downloads_url . "f/$row->{guid}",
+            href_download => CATS::Output::downloads_url_files . $row->{guid},
         );
     };
     $lv->date_fields(qw(last_modified));
