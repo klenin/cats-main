@@ -34,6 +34,19 @@ function Editor() {
     });
   };
 
+  this.init_editor_menu = function(editor_id) {
+    var self = this;
+    $('.editor_menu.standard_menu').each(function(i, menu) {
+      menu = $(menu);
+      if (menu.data('editor') != editor_id) return;
+      var buttons = menu.children('button');
+      // Hardcoded order, see editor_menu.tti.
+      $(buttons[0]).click(function() { self.reset_localstorage(editor_id); });
+      $(buttons[1]).click(function() { self.toggle_invisible_chars(editor_id); });
+      $(buttons[2]).click(function() { self.toggle_wrap_mode(editor_id); });
+    });
+  };
+
   this.init_editor = function(editor_id) {
     if (
       !ace ||
@@ -59,6 +72,7 @@ function Editor() {
     if (this.storage) this._setup_localstorage(editor_id);
 
     textarea.hide();
+    this.init_editor_menu(editor_id);
   };
 
   this.highlight_errors = function(error_list_id, error_list_regexp, editor_id) {
