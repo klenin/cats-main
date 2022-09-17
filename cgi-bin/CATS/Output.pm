@@ -30,6 +30,11 @@ sub downloads_path { cats_dir() . '../download/' }
 sub downloads_url { 'download/' }
 sub downloads_url_files { downloads_url . 'f/' }
 
+my @nonce_ch = ('A'..'Z', 'a'..'z', '0'..'9');
+sub make_nonce {
+    join '', map { $nonce_ch[rand @nonce_ch] } 1..32;
+}
+
 sub init_template {
     my ($p, $file_name, $extra) = @_;
 
@@ -62,6 +67,7 @@ sub init_template {
         user => $user,
         contest => $contest,
         noiface => $p->{noiface},
+        nonce => make_nonce,
     );
 
     $t;

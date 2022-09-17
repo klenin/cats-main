@@ -71,7 +71,7 @@
 </table>
 [%- END %]
 
-<script>
+<script nonce="[% nonce %]">
 
 function _hide(el) { el.style.display = 'none'; }
 function _toggle(el) { el.style.display = el.style.display === 'block' ? 'none' : 'block'; }

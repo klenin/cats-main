@@ -1,6 +1,6 @@
 [% IF js.autocomplete %]
 [%- PROCESS "lang/$lang/autocomplete.tti" -%]
-<script>
+<script nonce="[% nonce %]">
 
 var AutoComplete = (function() {
   var escape = function(s) { return s.replace(/</g, '&lt;').replace(/\"/g, '&quot;'); };

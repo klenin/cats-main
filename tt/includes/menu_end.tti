@@ -26,7 +26,7 @@
 </tr>
 </table>
 [% IF js.datepicker %]
-<script>
+<script nonce="[% nonce %]">
   $(document).ready(init_datepickers('[% lang %]'));
 </script>
 [% END %]

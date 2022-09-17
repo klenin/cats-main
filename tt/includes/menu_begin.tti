@@ -4,13 +4,20 @@
 [%- IF noiface %]
 <style> .iface { display: none !important; }</style>
 [% END -%]
-<script>
-function switch_lang(lang) {
-  var d = document;
-  d.location = d.location.pathname + '?lang=' + lang + ';' +
-    d.location.search.replace(/([\?&;])lang=\w+[&;]?/, '$1').replace('?', '');
-  return false;
-}
+<script nonce="[% nonce %]">
+window.addEventListener('load', function() {
+  var switch_lang = function(e) {
+    e.preventDefault();
+    var lang = this.innerText;
+    var d = document;
+    d.location = d.location.pathname + '?lang=' + lang + ';' +
+      d.location.search.replace(/([\?&;])lang=\w+[&;]?/, '$1').replace('?', '');
+  };
+  var langs = document.getElementById('switch_lang').getElementsByTagName('a');
+  for (var i = 0; i < langs.length; ++i) {
+    langs[i].addEventListener('click', switch_lang);
+  }
+});
 </script>
 </head>
 <body>
@@ -22,9 +29,8 @@ function switch_lang(lang) {
       [% IF problem_title %]<span> / [% problem_title | html %]</span>[% END %]
     </td>
     <td class="elapsed">
-      <p>[% FOR l IN langs -%]
-        <a href="[% l.href %]"[% class({ selected => l.name == lang }) %] onclick="return switch_lang('[% l.name %]')">
-        [%- l.name; '</a> '; END -%]
+      <p id="switch_lang">[% FOR l IN langs -%]
+        <a href="[% l.href %]"[% class({ selected => l.name == lang }); '>'; l.name; '</a> '; END -%]
       </p>
       [% IF server_time ~%]
         <span>

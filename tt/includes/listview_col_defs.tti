@@ -16,7 +16,7 @@
 [% END %]
 </tr>
 [% IF sel_col || need_toggle_all_cb -%]
-<script>
+<script nonce="[% nonce %]">
 function toggle_all_cb(cb, selector) {
   $(selector).prop('checked', cb.checked);
 }
