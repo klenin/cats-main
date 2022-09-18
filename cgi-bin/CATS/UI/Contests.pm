@@ -363,6 +363,11 @@ sub contest_params_frame {
     $c->{$_} = $db->format_date($c->{$_}) for CATS::Contest::Utils::contest_date_fields;
     $c->{free_registration} = !$c->{closed};
     $c->{$_} = _to_num($c->{$_}) for qw(scaled_points round_points_to);
+    $c->{admin_name} = $is_root && $dbh->selectrow_array(q~
+        SELECT A.team_name FROM accounts A
+        INNER JOIN contest_accounts CA ON CA.account_id = A.id
+        WHERE CA.contest_id = ? AND CA.is_admin = 1~ . " $db->{LIMIT} 1", undef,
+        $p->{id});
 
     my %verdicts_excluded_max_reqs =
         map { $CATS::Verdicts::state_to_name->{$_} => 1 } split /,/, $c->{max_reqs_except} // '';

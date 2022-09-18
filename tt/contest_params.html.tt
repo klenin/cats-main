@@ -17,5 +17,6 @@
 <p></p>
 
 [% IF href_api_login_token; '<p>'; href(href_api_login_token, href_api_login_token); '</p>'; END %]
+[% IF admin_name %]<p>[% capt.admin_name %]: [% admin_name | html %]</p>[% END %]
 
 [% PROCESS includes/menu_end.tti %]

@@ -43,5 +43,6 @@
     ok => '     Ok     ',
     create_copy => 'Create a copy',
     cancel => 'Cancel',
+    admin_name => 'Administrator',
   })
 %]
