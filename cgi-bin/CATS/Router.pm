@@ -526,7 +526,12 @@ my $api_judge_routes = {
     ],
 };
 
-sub parse_uri { $_[0]->get_uri =~ m~/cats/(|main.pl)$~ }
+sub parse_uri {
+    my ($p) = @_;
+    $p->get_uri =~ qr~/cats/(?:([a-zA-Z][a-zA-Z_0-9]*)||main\.pl)$~ or return;
+    $p->{f} = $1 if $1;
+    1;
+}
 
 my $common_params = [ 1,
     f => ident, enc => encoding, cid => integer, cpid => integer, json => qr/^[a-zA-Z0-9_]+$/,
