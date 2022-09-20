@@ -6,7 +6,6 @@ use warnings;
 use Algorithm::Diff;
 use Encode;
 
-use CATS::Config;
 use CATS::DB;
 use CATS::DevEnv;
 use CATS::Globals qw($cid $contest $is_jury $user);
@@ -143,8 +142,8 @@ sub view_source_frame {
         msg(1014, $sources_info->{submit_time}) if $p->{submitted};
     }
     source_links($p, $sources_info);
-    $_->{href_download_source_abs} = $CATS::Config::absolute_url .
-        CATS::Utils::url_function(download_source => rid => $_->{req_id}, hash => $_->{sha1}, cid => $cid)
+    $_->{href_download_source_abs} = CATS::Utils::absolute_url_function(
+        download_source => rid => $_->{req_id}, hash => $_->{sha1}, cid => $cid)
         for $sources_info;
     sources_info_param([ $sources_info ]);
     @{$sources_info->{elements}} <= 1 or return msg(1155);

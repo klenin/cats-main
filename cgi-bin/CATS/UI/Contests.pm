@@ -496,8 +496,6 @@ sub contests_submenu_filter {
     }->{$f} || '';
 }
 
-sub _abs_url_f { $CATS::Config::absolute_url . CATS::Utils::url_function(@_) }
-
 sub contests_rss_frame {
     my ($p) = @_;
     init_template($p, 'contests_rss.xml.tt');
@@ -509,7 +507,7 @@ sub contests_rss_frame {
     for my $c (@$contests) {
         $c->{start_date} = $db->format_date($c->{start_date});
         $c->{start_date_rfc822} = CATS::Utils::date_to_rfc822($c->{start_date});
-        $c->{href_link} = _abs_url_f('problems', cid => $c->{id});
+        $c->{href_link} = CATS::Utils::absolute_url_function('problems', cid => $c->{id});
     }
     $t->param(href_root => $CATS::Config::absolute_url, contests => $contests);
 }
@@ -632,7 +630,7 @@ sub contests_frame {
     ];
     $t->param(
         submenu => $submenu,
-        href_rss => _abs_url_f('contests_rss'),
+        href_rss => CATS::Utils::absolute_url_function('contests_rss'),
         href_find_tags => url_f('api_find_contest_tags'),
         href_has_tag_named => url_f('contests', search => 'has_tag_named(%s)'),
         CATS::Contest::Participate::flags_can_participate,

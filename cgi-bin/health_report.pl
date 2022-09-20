@@ -35,7 +35,7 @@ use CATS::Constants;
 use CATS::Config;
 use CATS::DB;
 use CATS::Mail;
-use CATS::Utils qw(group_digits url_function);
+use CATS::Utils qw(group_digits);
 
 use CATS::Judge;
 
@@ -87,8 +87,8 @@ CATS::DB::sql_connect({
 }
 
 sub log_url {
-    $CATS::Config::absolute_url .
-        url_function('run_log', rid => $_[0]->{id}, cid => $_[0]->{contest_id}, sid => 'z')
+    CATS::Utils::absolute_url_function(
+        'run_log', rid => $_[0]->{id}, cid => $_[0]->{contest_id}, sid => 'z')
 }
 
 {

@@ -144,7 +144,7 @@ sub questions_api {
     for my $q (@$questions) {
         $q->{$_} = $db->format_date($q->{$_}) for qw(submit_time clarification_time);
         $q->{$_} = Encode::decode_utf8($q->{$_}) for qw(answer question);
-        $q->{href_console} = CATS::Utils::redirect_url_function($CATS::Config::absolute_url,
+        $q->{href_console} = CATS::Utils::absolute_url_function(
             f => 'console', se => 'user_stats',
             uf => $q->{account_id}, i_value => -1, search => 'contest_id=this',
             cid => $cid, sid => 'z');

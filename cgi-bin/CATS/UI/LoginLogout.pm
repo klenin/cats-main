@@ -176,8 +176,8 @@ sub _login_token {
     my $token = CATS::User::make_token($account_id);
     {
         ok => 1,
-        url => $CATS::Config::absolute_url .
-            url_function('login', cid => $p->{cid}, token => $token, redir => $p->{redir}),
+        url => CATS::Utils::absolute_url_function(
+            'login', cid => $p->{cid}, token => $token, redir => $p->{redir}),
         name => $name,
         id => $account_id,
     };
