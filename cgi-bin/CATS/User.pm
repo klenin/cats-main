@@ -551,12 +551,13 @@ sub copy_from_contest {
 }
 
 sub copy_from_acc_group {
-    my ($source_group_id, $include_admins) = @_;
+    my ($source_group_id, $include_hidden, $include_admins) = @_;
     $source_group_id && $is_jury or return;
+    my $hidden_cond = $include_hidden ? '' : ' AND is_hidden = 0';
     my $admin_cond = $include_admins ? '' : ' AND is_admin = 0';
     my $source_users = $dbh->selectall_arrayref(qq~
         SELECT account_id FROM acc_group_accounts
-        WHERE acc_group_id = ?$admin_cond~, { Slice => {} },
+        WHERE acc_group_id = ?$hidden_cond$admin_cond~, { Slice => {} },
         $source_group_id);
     _add_multiple($source_users, {});
 }

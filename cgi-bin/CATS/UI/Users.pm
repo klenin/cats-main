@@ -159,7 +159,8 @@ sub users_add_participants_frame {
         CATS::User::copy_from_contest($p->{source_cid}, $p->{include_ooc});
     }
     elsif ($p->{from_group}) {
-        CATS::User::copy_from_acc_group($p->{source_group_id}, $p->{include_admins});
+        CATS::User::copy_from_acc_group(
+            $p->{source_group_id}, $p->{include_hidden}, $p->{include_admins});
     }
     $t->param(
         href_action => url_f('users_add_participants'),

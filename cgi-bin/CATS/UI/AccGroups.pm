@@ -259,9 +259,12 @@ sub _accounts_by_contest {
 }
 
 sub _accounts_by_acc_group {
-    my ($group_id, $include_admins) = @_;
+    my ($group_id, $include_hidden, $include_admins) = @_;
     $dbh->selectcol_arrayref(_u $sql->select('acc_group_accounts', 'account_id',
-        { acc_group_id => $group_id, $include_admins ? () : (is_admin => 0) }
+        { acc_group_id => $group_id,
+            $include_hidden ? () : (is_hidden => 0),
+            $include_admins ? () : (is_admin => 0),
+        }
     ));
 }
 
@@ -275,12 +278,13 @@ sub acc_group_add_users_frame {
     my $accounts =
         $p->{by_login} ? _accounts_by_login($p->{logins_to_add}) :
         $p->{source_cid} ? _accounts_by_contest($p->{source_cid}, $p->{include_ooc}) :
-        $p->{source_group_id} ? _accounts_by_acc_group($p->{source_group_id}, $p->{include_admins}) :
+        $p->{source_group_id} ? _accounts_by_acc_group(
+            $p->{source_group_id}, $p->{include_hidden}, $p->{include_admins}) :
         undef;
     $accounts = $accounts && CATS::AccGroups::add_accounts(
         $accounts, $p->{group}, $p->{make_hidden},
         $p->{make_admin} && $user->privs->{manage_groups}) // [];
-    msg(1221, scalar @$accounts) if @$accounts;
+    msg(1221, scalar @$accounts);
 
     my @url_p = ('acc_group_users', group => $p->{group});
     if ($p->{by_login}) {

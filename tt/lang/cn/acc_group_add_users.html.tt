@@ -11,6 +11,7 @@
     include_ooc => 'including out-of-contest',
     group => 'Group',
     from_group => 'Add from group',
+    include_hidden => 'including hidden',
     include_admins => 'including admins',
   })
 %]

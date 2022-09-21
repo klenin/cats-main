@@ -39,6 +39,7 @@
 </div>
 <p>
 <button type="submit" class="button" name="from_group" value="1">[% capt.from_group %]</button>
+<label>[% checkbox_1('include_hidden'); capt.include_hidden %]</label>
 <label>[% checkbox_1('include_admins'); capt.include_admins %]</label>
 </p>
 </form>
