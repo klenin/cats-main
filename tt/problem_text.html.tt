@@ -188,8 +188,12 @@ var uid = query_params.uid;
 var has_submit = !query_params.nosubmit;
 var rid = query_params.rid;
 
+function add_param(href, name, value) {
+  return href + (href.indexOf('?') >= 0 ? ';' : '?') + name + '=' + value;
+}
+
 if (sid) {
-  $('.problem_list_link').each(function() { this.href += ';sid=' + sid; });
+  $('.problem_list_link').each(function() { this.href = add_param(this.href, 'sid', sid); });
 }
 
 function toggle_whitespace() {
@@ -235,7 +239,7 @@ $('.problem_text div.problem_menu li.langs a').click(function() {
   else {
     var s = document.location.search;
     document.location.search =
-      s.indexOf('pl=') < 0  ? s + ';pl=' + this.innerText : s.replace(/pl=[a-z]+/, 'pl=' + this.innerText);
+      s.indexOf('pl=') < 0 ? add_param(s, 'pl', this.innerText) : s.replace(/pl=[a-z]+/, 'pl=' + this.innerText);
   }
 });
 
@@ -374,7 +378,7 @@ function process_submit(e) {
     return;
   var request_url = '[% href_submit_problem %]';
   if (!sid) return;
-  request_url += ';sid=' + sid;
+  request_url = add_param(request_url, 'sid', sid);
 
   var form_params = form.serializeArray();
   var form_data = new FormData();
@@ -446,7 +450,7 @@ function get_sources_info_api(rid_param) {
   var form = $(this).parent();
   var editor = Editor.get_editor(form);
   if (!ace || !editor) return;
-  var request_url = '[% href_get_sources_info %]' + ';sid=' + sid;
+  var request_url = add_param('[% href_get_sources_info %]', 'sid', sid);
   if (uid) request_url += ';uid=' + uid;
   if (rid_param) request_url += ';rid=' + rid_param;
   $.ajax({
