@@ -18,7 +18,7 @@ function delete_acc_group_user(href, name) {
 [% IF can_edit -%]
 <td class="nobr sel_col">
   <a href="javascript:delete_acc_group_user('[% u.href_exclude %]', '[% u.team_name.squote | html %]');" class="icon delete"></a>
-[% IF user.privs.manage_groups -%]
+[% IF u.href_edit -%]
   <a href="[% u.href_edit %]" class="icon edit"></a>
 [%- END %]
   <input type="checkbox" name="user_selection" value="[% u.account_id %]" />
