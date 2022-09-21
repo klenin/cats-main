@@ -19,7 +19,7 @@ sub _get_groups {
 
     my $groups = $dbh->selectcol_arrayref(q~
         SELECT AG.name FROM acc_groups AG
-        INNER JOIN acc_group_accounts AGA ON AGA.acc_group_id = AG.id
+        INNER JOIN acc_group_accounts AGA ON AGA.acc_group_id = AG.id AND AGA.is_hidden = 0
         INNER JOIN acc_group_contests AGC ON AGC.acc_group_id = AG.id
         WHERE AGA.account_id = ? AND AGC.contest_id = ?
         ORDER BY AG.name~, undef,

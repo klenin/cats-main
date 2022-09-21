@@ -9,11 +9,17 @@ use CATS::Messages qw(msg);
 
 sub subquery {
     my ($lv, $join_field) = @_;
-    $lv->define_subqueries({
-        in_group => { sq => qq~EXISTS (
-            SELECT 1 FROM acc_group_accounts AG WHERE AG.account_id = $join_field AND AG.acc_group_id = ?)~,
+    my $sq = sub {
+        my ($alias, $cond) = @_;
+        { sq => qq~EXISTS (
+            SELECT 1 FROM acc_group_accounts $alias
+            WHERE $alias.account_id = $join_field AND $alias.acc_group_id = ?$cond)~,
             m => 1226, t => q~SELECT name FROM acc_groups WHERE id = ?~
-        },
+        };
+    };
+    $lv->define_subqueries({
+        in_group => $sq->('AGA1', q~ AND AGA1.is_hidden = 0~),
+        in_group_hidden => $sq->('AGA2', ''),
     });
 }
 
@@ -27,7 +33,7 @@ sub enum {
     if (@$acc_groups) {
         my %acc_groups_h;
         $acc_groups_h{$_->{name}} = $_->{id} for @$acc_groups;
-        $lv->define_enums({ in_group => \%acc_groups_h });
+        $lv->define_enums({ in_group => \%acc_groups_h, in_group_hidden => \%acc_groups_h });
     }
 }
 

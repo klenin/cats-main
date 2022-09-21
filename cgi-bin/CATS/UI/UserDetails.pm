@@ -135,10 +135,11 @@ sub user_stats_frame {
             map /^(\S+),(.*)$/ && { name => $1, color => $2 }, split /\s+/, $_->{awards} // '' ];
     }
 
+    my $groups_hidden_cond = $user->privs->{manage_groups} ? '' : q~ AND AGA.is_hidden = 0~;
     my $groups = $dbh->selectall_arrayref(q~
-        SELECT AG.id, AG.name, AGA.date_start, AGA.is_admin FROM acc_groups AG
+        SELECT AG.id, AG.name, AGA.date_start, AGA.is_admin, AGA.is_hidden FROM acc_groups AG
         INNER JOIN acc_group_accounts AGA ON AGA.acc_group_id = AG.id
-        WHERE AGA.account_id = ?~, { Slice => {} },
+        WHERE AGA.account_id = ?~ . $groups_hidden_cond, { Slice => {} },
         $p->{uid});
     for (@$groups) {
         $_->{href_acc_group_users} = url_f('acc_group_users', group => $_->{id}) if $is_root;

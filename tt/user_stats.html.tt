@@ -32,13 +32,15 @@
 [%- END %]
 </table>
 
-[% IF groups %]
+[% IF groups.size %]
 <h3>[% capt.groups %]</h3>
 <table class="internal_borders padded">
 [% FOREACH g IN groups -%]
 <tr>
 <td>[% g.date_start %]</td>
-<td>[% maybe_href(g.href_acc_group_users, g.name); '* ' IF g.is_admin && user.privs.is_root %]</td>
+<td[% ' style="font-style: italic;"' IF g.is_hidden %]>
+[%- maybe_href(g.href_acc_group_users, g.name); '* ' IF g.is_admin && user.privs.manage_groups -%]
+</td>
 </tr>
 [%- END %]
 </table>

@@ -321,7 +321,7 @@ sub users_frame {
         SELECT COUNT(*)
         FROM acc_group_accounts AGA
         INNER JOIN acc_group_contests AGC ON AGC.acc_group_id = AGA.acc_group_id AND AGC.contest_id = C.id
-        WHERE AGA.account_id = A.id)~
+        WHERE AGA.account_id = A.id AND AGA.is_hidden = 0)~
     });
     $lv->define_subqueries({
         in_contest => { sq => q~EXISTS (
@@ -405,7 +405,7 @@ sub users_frame {
         SELECT LIST(AG.name, ' ') FROM acc_groups AG
         INNER JOIN acc_group_accounts AGA ON AGA.acc_group_id = AG.id
         INNER JOIN acc_group_contests AGC ON AGC.acc_group_id = AG.id
-        WHERE AGC.contest_id = CA.contest_id AND AGA.account_id = A.id
+        WHERE AGC.contest_id = CA.contest_id AND AGA.account_id = A.id AND AGA.is_hidden = 0
         $db->{LIMIT} 5~;
 
     my $awards_public_cond = $is_jury ? '' : ' AND AW.is_public = 1';

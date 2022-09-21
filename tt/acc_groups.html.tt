@@ -23,6 +23,7 @@ function delete_acc_group(href, name) {
 [% IF ag.href_edit -%]
   <a href="[% ag.href_edit %]" class="icon edit"></a>
 [% END -%]
+  <a href="[% c.href_results %]" class="icon leaderboard" title="[% capt.rank_table %]"></a>
   <input type="checkbox" name="check" value="[% ag.id %]" />
 </td>
 [% END %]
@@ -32,7 +33,10 @@ function delete_acc_group(href, name) {
 <td>[% IF ag.is_used %]<a href="[% ag.href_view_users_in_contest %]" class="icon checked"></a>[% END %]</td>
 [%- END %]
 [% IF visible_cols.Ac %]<td>[% IF ag.is_actual %]<a href="#" class="icon checked"></a>[% END %]</td>[% END %]
-[% IF visible_cols.Uc %]<td>[% ag.user_count %] [[% href(ag.href_rank_table, capt.rank_table) %]]</td>[% END %]
+[% IF visible_cols.Uc %]<td>
+ [%- ag.user_count -%]
+ [%- IF ag.user_count_hidden != ag.user_count %] ([% ag.user_count_hidden %])[% END -%]
+</td>[% END %]
 [% IF visible_cols.Rc %]<td>[% href(ag.href_view_contests, ag.ref_count) %]</td>[% END %]
 </tr>
 [% END %]

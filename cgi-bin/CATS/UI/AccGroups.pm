@@ -88,8 +88,11 @@ sub acc_groups_frame {
     my $admin_sql = $uid ? q~
         SELECT is_admin FROM acc_group_accounts AGA2
         WHERE AGA2.acc_group_id = AG.id AND AGA2.account_id = ?~ : 'NULL';
-    my $user_count_sql = $lv->visible_cols->{Uc} ? q~
-        SELECT COUNT(*) FROM acc_group_accounts AGA1 WHERE AGA1.acc_group_id = AG.id~ : 'NULL';
+    my $user_count_hidden_sql = $lv->visible_cols->{Uc} ? q~
+        SELECT COUNT(*) FROM acc_group_accounts AGA1
+        WHERE AGA1.acc_group_id = AG.id~ : 'NULL';
+    my $user_count_sql = $lv->visible_cols->{Uc} ?
+        $user_count_hidden_sql . q~ AND AGA1.is_hidden = 0~ : 'NULL';
     my $ref_count_sql = $lv->visible_cols->{Rc} ? q~
         SELECT COUNT(*) FROM acc_group_contests AGC2 WHERE AGC2.acc_group_id = AG.id~ : 'NULL';
     my $descr_sql = $lv->visible_cols->{Ds} ? 'AG.description' : 'NULL';
@@ -99,6 +102,7 @@ sub acc_groups_frame {
             CASE WHEN AGC.acc_group_id IS NULL THEN 0 ELSE 1 END AS is_used,
             ($admin_sql) AS is_admin,
             ($descr_sql) AS description,
+            ($user_count_hidden_sql) AS user_count_hidden,
             ($user_count_sql) AS user_count,
             ($ref_count_sql) AS ref_count
         FROM acc_groups AG
