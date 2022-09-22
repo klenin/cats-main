@@ -7,8 +7,13 @@ sub new {
 
 sub web_param {
     my ($self, $name) = @_;
+    return wantarray ? () : undef if !exists $self->{p}->{$name};
     my $v = $self->{p}->{$name};
-    !wantarray ? $v : $v ? @$v : ();
+    wantarray && ref $v eq 'ARRAY' ? @$v : $v;
 }
+
+sub web_param_names { sort keys %{$_[0]->{p}} }
+
+sub has_upload { 0 }
 
 1;

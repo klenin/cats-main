@@ -3,13 +3,14 @@ use warnings;
 
 use File::Spec;
 use FindBin;
-use Test::More tests => 45;
+use Test::More tests => 46;
 
 use lib $FindBin::Bin;
 use lib File::Spec->catdir($FindBin::Bin);
 use lib File::Spec->catdir($FindBin::Bin, '..');
 use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
 
+use CATS::Redirect;
 use CATS::RouteParser;
 use CATS::Web::Mockup;
 
@@ -119,6 +120,13 @@ is pr(MockupWeb->new, [ 'rreq', x => required integer ]), undef, 'required';
         is_deeply [ CATS::RouteParser::reconstruct($w1, s => 'yy') ],
             [ s => 'yy', a => 3, a => 4 ], 'reconstruct 2';
     }
+}
+
+{
+    my %orig = (x => 7, y => 'abc');
+    my $p = MockupWeb->new(%orig);
+    my $packed = CATS::Redirect::pack_params($p);
+    is_deeply { CATS::Redirect::unpack_params($packed) }, \%orig, 'redirect';
 }
 
 1;
