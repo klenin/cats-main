@@ -413,8 +413,14 @@ ace.define('hoverlink', [], function(require, exports, module) {
     };
 
     var identity = function(x) { return x; };
+    var local_link = function(url) {
+      var sid = new RegExp('[\?&;](sid=[a-zA-Z0-9]+)').exec(window.location.search);
+      return sid ? url + ';' + sid[1] : url;
+    };
     var linkRegExps = [
-      { re: /\b(https?:\/\/[\-A-Za-z0-9+&@#\/%?=~_|!:,.;]*[\-A-Za-z0-9+&@#\/%=~_|])/g, preprocess: identity }
+      { re: /\b(https?:\/\/[\-A-Za-z0-9+&@#\/%?=~_|!:,.;]*[\-A-Za-z0-9+&@#\/%=~_|])/g, preprocess: identity },
+      { re: /((?:\?f=|\b[a-z][a-z0-9_]+\?)[\-A-Za-z0-9+&@#\/%?=~_|!:,.;]*[\-A-Za-z0-9+&@#\/%=~_|])/g,
+         preprocess: local_link },
     ];
 
     this.registerLink = function(re, preprocess) {
