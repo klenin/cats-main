@@ -10,8 +10,12 @@ sub encode { encode_base64(Storable::nfreeze($_[0]), '') }
 
 sub pack_params {
     my ($p) = @_;
-    encode { map
-        { $_ eq 'sid' || $p->has_upload($_) ? () : ($_ => $p->web_param($_)) } $p->web_param_names };
+    my %params =
+        map { +$_ => $p->web_param($_) }
+        grep !($_ eq 'sid' || $p->has_upload($_)),
+        $p->web_param_names;
+    $params{f} //= $p->{f} if $p->{f}; # New url format.
+    encode \%params;
 }
 
 sub unpack_params {
