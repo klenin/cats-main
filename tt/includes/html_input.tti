@@ -49,12 +49,12 @@
 [%- MACRO tr_date(f, fd) BLOCK -%]
   <tr>
     <td>[% f.caption || capt.item(f.field.name) %]</td>
-    <td><div style="position: relative;"><input type="text" name="[% f.field.name %]" value="[% f.value | html %]"
+    <td><div><input type="text" name="[% f.field.name %]" value="[% f.value | html %]"
       size="[% f.field.editor.item('size') || 20 %]"
       [%- tag_attrs(f.field.editor.attrs) -%]
       [%- ' readonly="readonly"' IF fd.readonly %] class="bordered" />
       [%- IF !fd.readonly %]
-      <a href="#" onclick="show_datepicker(this, '[% f.field.name %]')" class="icon icon_centered datepicker"></a>
+      <a href="#" onclick="show_datepicker(this, '[% f.field.name %]')" class="icon datepicker"></a>
       [% END -%]</div>
       [%- maybe_err(f) %]
     </td>
