@@ -13,6 +13,8 @@
     width: 1.5em; padding: 0; margin: 0; border: 0; background-color: inherit; vertical-align: middle; }
   .yscroll { display: block; overflow-y: scroll; max-height: 7ex; }
 
+  .dl_missed a { color: #901010; }
+
   .problem_submit table { border-collapse: collapse; }
   .problem_submit table tr.sep { border-top: 1px dotted #4040ff; padding-top: 10px; }
   .problem_submit table tr.sep td { padding-top: 10px; }
@@ -266,6 +268,17 @@ function chg_code(st_sel, pid) {
 [% IF contest.is_practice %]<td>
 [%- href(p.href_original_contest, p.contest_title); cell_search_ex('contest_id', p.original_contest_id) -%]
 </td>[% END %]
+[% IF !contest.is_practice && visible_cols.Dl -%]
+<td class="num[% ' dl_missed' IF p.until_deadline < 0 %]">
+  [%- deadline_text = BLOCK;
+    IF !p.deadline && !editable; '';
+    ELSE; p.deadline | html %] <span class="small nobr">([% p.until_deadline_text | html %])</span>
+  [%- END; END -%]
+  [%- IF p.href_problem_limits -%]
+    <a href="[% p.href_problem_limits %]">[% deadline_text %]</a>
+  [%- ELSE; deadline_text; END -%]
+</td>
+[%- END %]
 [% IF (is_user || contest.is_practice) && visible_cols.Vc %]
 <td class="problem_req_count">
   <div>

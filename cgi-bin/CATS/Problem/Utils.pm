@@ -107,7 +107,7 @@ sub define_common_searches {
     ), @cats::limits_fields ]);
 
     $lv->define_db_searches([ qw(
-        CP.code CP.testsets CP.tags CP.points_testsets CP.status
+        CP.code CP.testsets CP.tags CP.points_testsets CP.status CP.deadline
     ) ]);
     $lv->default_searches([ qw(code title) ]);
 
@@ -136,6 +136,7 @@ sub define_common_searches {
         snippets => q~
             (SELECT COUNT(*) FROM snippets SN
                 WHERE SN.problem_id = CP.problem_id AND SN.contest_id = CP.contest_id)~,
+        until_deadline => q~CAST(CP.deadline - CURRENT_TIMESTAMP AS DOUBLE PRECISION)~,
     });
     $lv->define_casts({ map { $_ => 'VARCHAR(100)' } 'code', map $_->[0], @sources });
 

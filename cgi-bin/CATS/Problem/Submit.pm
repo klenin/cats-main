@@ -59,8 +59,9 @@ sub user_is_banned {
 sub _has_submit_points { $is_jury && defined $_[0]->{submit_points} }
 
 sub _determine_state {
-    my ($p) = @_;
-    $p->{ignore} || !$is_jury && CATS::IP::is_tor(CATS::IP::get_ip) ? $cats::st_ignore_submit :
+    my ($p, $missed_deadline) = @_;
+    $p->{ignore} || !$is_jury && (CATS::IP::is_tor(CATS::IP::get_ip) || $missed_deadline) ?
+        $cats::st_ignore_submit :
     _has_submit_points($p) ? $cats::st_accepted :
     $cats::st_not_processed;
 }
@@ -199,12 +200,15 @@ sub problems_submit {
         $pid, $uid // $user->{anonymous_id}, $cid) and return msg(1168);
 
     my $contest_finished = $contest->has_finished_for($user);
-    my ($cpid, $status, $max_reqs, $title) = $dbh->selectrow_array(q~
-        SELECT CP.id, CP.status, CP.max_reqs, P.title
+    my ($cpid, $status, $max_reqs, $title, $until_deadline) = $dbh->selectrow_array(q~
+        SELECT
+            CP.id, CP.status, CP.max_reqs, P.title,
+            CAST(CP.deadline - CURRENT_TIMESTAMP AS DOUBLE PRECISION) AS until_deadline
         FROM contest_problems CP
         INNER JOIN problems P ON P.id = CP.problem_id
         WHERE CP.contest_id = ? AND CP.problem_id = ?~, undef,
         $cid, $pid) or return msg(1012);
+    my $missed_deadline = ($until_deadline // 0) < 0;
 
     unless ($is_jury) {
         $contest->has_started($user->{diff_time})
@@ -261,7 +265,7 @@ sub problems_submit {
 
     my $rid = CATS::Request::insert($pid, $cid, $submit_uid,
         [ CATS::DevEnv->new(CATS::JudgeDB::get_DEs())->bitmap_by_ids($did) ],
-        { state => _determine_state($p) });
+        { state => _determine_state($p, $missed_deadline) });
 
     my $s = $dbh->prepare(q~
         INSERT INTO sources(req_id, de_id, src, fname, hash) VALUES (?, ?, ?, ?, ?)~);
@@ -288,6 +292,7 @@ sub problems_submit {
         $rid);
     _has_submit_points($p) ? msg(1237, $p->{submit_points}) :
     $contest_finished ? msg(1087) :
+    !$is_jury && $missed_deadline ? msg(1240) :
     defined $prev_reqs_count ? msg(1088, $max_reqs - $prev_reqs_count - 1) :
     msg(1014, $submit_time);
     ($rid, $result);
@@ -320,7 +325,7 @@ sub problems_submit_std_solution {
             next;
         }
         my $rid = CATS::Request::insert($pid, $cid, $uid,
-            [ $de_list->bitmap_by_ids($did) ], { state => _determine_state($p), tag => $name });
+            [ $de_list->bitmap_by_ids($did) ], { state => _determine_state($p, 0), tag => $name });
 
         my $s = $dbh->prepare(q~
             INSERT INTO sources(req_id, de_id, src, fname) VALUES (?, ?, ?, ?)~);

@@ -30,6 +30,7 @@ use CATS::Redirect;
 use CATS::Request;
 use CATS::Settings;
 use CATS::StaticPages;
+use CATS::Time;
 use CATS::Utils qw(file_type redirect_url_function);
 use CATS::Verdicts;
 
@@ -333,7 +334,8 @@ sub problems_frame {
         : ()
         ),
         ($contest->is_practice ?
-        { caption => res_str(603), order_by => 'contest_title', width => '15%' } : ()
+        { caption => res_str(603), order_by => 'contest_title', width => '15%' } :
+        { caption => res_str(695), order_by => 'deadline', width => '10%', col => 'Dl' }
         ),
         { caption => res_str(604), order_by => $rc_order_by, width => '12%', col => 'Vc' }, # ok/wa/tl
     ]);
@@ -413,7 +415,8 @@ sub problems_frame {
             $snippets_sql,
             CP.max_points, CP.scaled_points, CP.round_points_to, CP.weight, CP.is_extra,
             P.repo, CP.tags, P.statement_url, P.explanation_url, CP.color, CP.max_reqs,
-            CP.contest_id
+            CP.contest_id, CP.deadline,
+            CAST(CP.deadline - CURRENT_TIMESTAMP AS DOUBLE PRECISION) AS until_deadline
         FROM problems P
         INNER JOIN contest_problems CP ON CP.problem_id = P.id
         INNER JOIN contests OC ON OC.id = P.contest_id
@@ -519,6 +522,8 @@ sub problems_frame {
             selected => $pid == ($p->{problem_id} || 0),
             remote_url => $remote_url,
             reqs_count => sprintf('%s + %s / %s / %s', map $_ // '0', @$rc{qw(OK AW WA TL)}),
+            until_deadline_text => CATS::Time::format_diff($c->{until_deadline}),
+            deadline_iso => $c->{deadline},
             upload_date_iso => $c->{upload_date},
             testsets => $c->{testsets} || '*',
             memory_limit => _combine_limits($c->{cp_memory_limit}, $c->{memory_limit}),
@@ -536,7 +541,7 @@ sub problems_frame {
             href_group => $href_group,
         );
     };
-    $lv->date_fields(qw(upload_date))->date_fields_iso(qw(upload_date_iso));
+    $lv->date_fields(qw(deadline upload_date))->date_fields_iso(qw(deadline_iso upload_date_iso));
 
     $lv->attach($fetch_record, $sth);
 
