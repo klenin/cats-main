@@ -2,9 +2,8 @@
 <html lang="[% lang %]"><head>
 <meta http-equiv="Content-type" content="text/html; charset=[% encoding %]">
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-[%- IF js.nonce -%]
-<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'nonce-[% nonce %]'">
-[%- END -%]
+<meta http-equiv="Content-Security-Policy" content="script-src [% web.get_host %]/cats/js/ [% js.csp_sources %]
+  [%- IF js.nonce -%]'nonce-[% nonce %]'[% ELSE %]'unsafe-inline'[% END %]">
 <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon">
 [%- capt = {}; TRY; PROCESS "lang/$lang/${template.name}"; CATCH; ''; END -%]
 <title>

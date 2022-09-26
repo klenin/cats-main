@@ -1,4 +1,4 @@
-[%- js.jquery = 1; js.ace = 1; -%]
+[%- js.jquery = 1; js.ace = 1; js.csp_sources = "cdn.jsdelivr.net/gh/mathjax/ 'unsafe-eval' " -%]
 [%- js.quizzes = 1 IF has_quizzes || has_snippets %]
 [%- PROCESS includes/header.tti -%]
 [%- PROCESS includes/html.tti -%]

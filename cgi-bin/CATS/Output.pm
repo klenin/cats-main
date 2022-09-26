@@ -68,6 +68,7 @@ sub init_template {
         contest => $contest,
         noiface => $p->{noiface},
         nonce => make_nonce,
+        web => $p,
     );
 
     $t;
