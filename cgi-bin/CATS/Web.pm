@@ -43,6 +43,7 @@ sub print_json {
     -1;
 }
 
+sub get_host { $r->hostname }
 sub get_uri { $r->uri }
 
 sub web_param {
