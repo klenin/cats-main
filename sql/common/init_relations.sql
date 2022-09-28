@@ -395,7 +395,9 @@ CREATE TABLE samples (
     problem_id      INTEGER REFERENCES problems(id) ON DELETE CASCADE,
     rank            INTEGER CHECK (rank > 0),
     in_file         CATS_BLOB,
-    out_file        CATS_BLOB
+    out_file        CATS_BLOB,
+    in_html         SMALLINT,
+    out_html        SMALLINT
 );
 
 /* id is the same as reqs, questions or messages */
