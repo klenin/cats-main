@@ -533,6 +533,7 @@ files with tests, solutions etc.
   <td>
     <ul>
       <li>src[% opt %] [% v16 %] — path to the sample input file.</li>
+      <li>html[% opt %] [% v111 %] — flag to apply formatting inside sample text. If not set, special characters in the text are reproduced literally.</li>
     </ul>
   </td>
   <td>
@@ -545,6 +546,7 @@ files with tests, solutions etc.
   <td>
     <ul>
       <li>src[% opt %] [% v16 %] — path to the sample input file.</li>
+      <li>html[% opt %] [% v111 %] — flag to apply formatting inside sample text. If not set, special characters in the text are reproduced literally.</li>
     </ul>
   </td>
   <td>

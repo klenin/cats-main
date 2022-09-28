@@ -408,7 +408,8 @@ sub problem_text {
         $problem->{samples} = $dbh->selectall_arrayref(qq~
             SELECT rank,
                 CAST(in_file AS $db->{TEXT_TYPE}) AS in_file,
-                CAST(out_file AS $db->{TEXT_TYPE}) AS out_file
+                CAST(out_file AS $db->{TEXT_TYPE}) AS out_file,
+                in_html, out_html
             FROM samples WHERE problem_id = ? ORDER BY rank~, { Slice => {} },
             $problem->{problem_id});
 
@@ -418,11 +419,20 @@ sub problem_text {
             url_function('get_snippets', cpid => $problem->{cpid});
 
         $spellchecker->push_lang($problem->{lang}) if $spellchecker;
-        for my $field_name (@parsed_fields) {
-            for ($problem->{$field_name}) {
-                defined $_ or next;
-                $text_span = '';
-                $_ = $_ eq '' ? undef : _parse($_) unless $is_root && $p->{raw};
+        unless ($is_root && $p->{raw}) {
+            for my $field_name (@parsed_fields) {
+                for ($problem->{$field_name}) {
+                    defined $_ or next;
+                    $text_span = '';
+                    $_ = $_ eq '' ? undef : _parse($_);
+                }
+            }
+            for my $in_out (qw(in out)) {
+                for my $sample (@{$problem->{samples}}) {
+                    $sample->{$in_out . '_html'} or next;
+                    $text_span = '';
+                    $_ = _parse($_) for $sample->{$in_out . '_file'};
+                }
             }
         }
         $spellchecker->pop_lang if $spellchecker;

@@ -150,11 +150,15 @@
     <tr>
       <td>[% s.rank %]</td>
       <td>
+        [%- IF s.in_html; s.in_file; ELSE -%]
         <pre><code>[% s.in_file | html %]</code></pre>
+        [%- END -%]
         <button type="button" class="button copy_button">[% c.copy %]</button>
       </td>
       <td>
+        [%- IF s.out_html; s.out_file; ELSE -%]
         <pre><code>[% s.out_file | html %]</code></pre>
+        [%- END -%]
         <button type='button' class="button copy_button">[% c.copy %]</button>
       </td>
     </tr>

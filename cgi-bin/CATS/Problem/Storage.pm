@@ -563,14 +563,16 @@ sub insert_problem_content {
     }
 
     $c = $dbh->prepare(q~
-        INSERT INTO samples (problem_id, rank, in_file, out_file)
-        VALUES (?, ?, ?, ?)~
+        INSERT INTO samples (problem_id, rank, in_file, out_file, in_html, out_html)
+        VALUES (?, ?, ?, ?, ?, ?)~
     );
     for (values %{$problem->{samples}}) {
         $c->bind_param(1, $problem->{id});
         $c->bind_param(2, $_->{rank});
         $db->bind_blob($c, 3, $_->{in_file});
         $db->bind_blob($c, 4, $_->{out_file});
+        $c->bind_param(5, $_->{in_html} ? 1 : 0);
+        $c->bind_param(6, $_->{out_html} ? 1 : 0);
         $c->execute;
         $self->note("Sample test $_->{rank} added");
     }
