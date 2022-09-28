@@ -30,9 +30,8 @@ function apply_mathjax(p) {
     function() { p.find('span.TeX').each(set_tex); },
     [ 'Typeset', MathJax.Hub, p[0] ]);
 }
-</script>
-<script type="text/x-mathjax-config">
-MathJax.Hub.Config({
+
+var MathJax = {
   TeX: {
     Macros: { deg: '^\\circ', sgn: [ '\\operatorname\{sgn\}' ] }
   },
@@ -41,15 +40,19 @@ MathJax.Hub.Config({
   CommonHTML: { scale: 100 },
   tex2jax: { ignoreClass: 'problem_text', processClass: 'TeX' },
   skipStartupTypeset: true
-});
+};
 [%#
 MathJax.Hub.Startup.signal.Interest(function (message) { console.log("Startup: " + message); });
 MathJax.Hub.signal.Interest(function (message) { console.log("Hub: " + message); });
 -%]
 
 function is_basic_math(p) { return p.find('.basic_math')[0].checked; }
+</script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/mathjax/MathJax@2.7.1/MathJax.js?config=TeX-AMS_CHTML"></script>
+<script type="text/javascript">window.MathJax || document.write('<script src="js/lib/MathJax/MathJax.js?config=TeX-AMS_CHTML"><\/script>')</script>
 
-[% IF onload %]
+[%- IF onload %]
+<script type="text/javascript">
 function mathjax_onload() {
   [%# Convert math one problem at a time as a compromise between speed and stability. -%]
   $('div.problem_text').each(function() {
@@ -59,7 +62,5 @@ function mathjax_onload() {
   });
 }
 MathJax.Hub.Register.StartupHook('onLoad', mathjax_onload);
-[% END %]
 </script>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/mathjax/MathJax@2.7.1/MathJax.js?config=TeX-AMS_CHTML"></script>
-<script type="text/javascript">window.MathJax || document.write('<script src="js/lib/MathJax/MathJax.js?config=TeX-AMS_CHTML"><\/script>')</script>
+[% END %]
