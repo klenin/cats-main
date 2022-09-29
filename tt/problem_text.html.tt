@@ -1,18 +1,16 @@
-[%- js.jquery = 1; js.ace = 1; js.csp_sources = web.get_host _ '/cats/static/js/' _ " cdn.jsdelivr.net/gh/mathjax/ " -%]
+[%- js.jquery = 1; js.ace = 1; js.csp_sources = ' ' _ web.get_host _ '/cats/static/js/';
+  js.mathjax = mathjax; js.mathjax_onload = 1 -%]
 [%- js.quizzes = 1 IF has_quizzes || has_snippets %]
 [%- PROCESS includes/header.tti -%]
 [%- PROCESS includes/html.tti -%]
 [%- PROCESS "lang/$lang/problems.html.tt" -%]
 [%- PROCESS "lang/$lang/editor_menu.tti" -%]
 [% tex_styles %]
-[% IF mathjax %]
-[% PROCESS includes/mathjax.tti onload = 1 %]
 [% IF has_static_highlight -%]
 <script src="js/lib/ace/ext-static_highlight.js"></script>
 [% END %]
 [% IF has_quizzes || has_snippets -%]
 <script type="text/javascript" src="js/lib/survey.jquery.js"></script>
-[% END %]
 [% END %]
 [%- text_width = '1000px' -%]
 <style>

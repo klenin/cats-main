@@ -2,8 +2,10 @@
 <html lang="[% lang %]"><head>
 <meta http-equiv="Content-type" content="text/html; charset=[% encoding %]">
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<meta http-equiv="Content-Security-Policy" content="script-src [% web.get_host %]/cats/js/ [% js.csp_sources %]
-  [%- IF js.nonce -%]'nonce-[% nonce %]'[% ELSE %]'unsafe-inline'[% END %]">
+<meta http-equiv="Content-Security-Policy" content="script-src [% web.get_host %]/cats/js/
+  [%- ' cdn.jsdelivr.net/gh/mathjax/' IF js.mathjax -%]
+  [%- js.csp_sources -%]
+  [%- IF js.nonce -%] 'nonce-[% nonce %]'[% ELSE %] 'unsafe-inline'[% END %]">
 <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon">
 [%- capt = {}; TRY; PROCESS "lang/$lang/${template.name}"; CATCH; ''; END -%]
 <title>
@@ -43,6 +45,7 @@
 [% IF js.quizzes -%]
   <script src="js/quizzes.js"></script>
 [%- END %]
+[%- PROCESS includes/mathjax.tti IF js.mathjax %]
 [% IF js.proctoring -%]
 <script nonce="[% nonce %]">
   let origin = new URL(location.href).searchParams.get('examus-client-origin');

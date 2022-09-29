@@ -1,4 +1,4 @@
-[%- js.jquery = 1; js.ace = 1 -%]
+[%- js.jquery = 1; js.ace = 1; js.mathjax = is_xml -%]
 [% extra_head = BLOCK %]
 <style>
   @import 'css/git.css';
@@ -6,7 +6,6 @@
     position: absolute; top: 5px; right: 5px; padding: 3px;
   }
 </style>
-[% IF is_xml; PROCESS includes/mathjax.tti; END %]
 <script>
 "use strict";
 $(document).ready(function () {
