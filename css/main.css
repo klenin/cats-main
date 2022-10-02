@@ -590,6 +590,7 @@ table.edit_form td p.form_error { color: red; font-size: small; }
     display: inline-block;
     vertical-align: middle;
     cursor: pointer;
+    user-select: none;
 }
 .problem_menu_trigger:hover,
 .problem_menu_hovered { font-size: medium; }
