@@ -54,74 +54,67 @@
 [%- PROCESS "lang/$lang/verdicts.tti" -%]
 [% IF editable %]
 <script type="text/javascript">
-function getSelectedButton(button) {
-  if (button == null) return -1;
-  if (button.checked) return button.value;
-  for (var i = 0; i < button.length; i++)
-    if (button[i].checked)
-      return button[i].value;
-  return -1; //no button selected
-}
-
-var a = [];
-[% FOREACH p IN problems %]
-a[[% p.problem_id %]] = [
-   "[% p.title | html %]", "[% p.href_delete %]", "[% p.href_replace %]",
-  "[% p.href_change_status %]", "[% p.href_change_code %]"];
-[% END %]
+var problems = {
+[%- FOREACH p IN problems %]
+[% p.problem_id %]: {
+  t: "[% p.title | html %]", d: "[% p.href_delete %]", r: "[% p.href_replace %]",
+  s: "[% p.href_change_status %]", c: "[% p.href_change_code %]" },
+[%- END %]
+};
 
 function d() {
-  var v = getSelectedButton(document.problems_form.problem_id);
-  if (v < 0) {
+  var v = $('input[name=problem_id]:checked').val();
+  if (!v) {
     alert('[% capt.no_problem_delete %]');
     return;
   }
-  if (confirm("[% capt.want_to_delete %] '" + a[v][0] + "'?"))
-    document.location = a[v][1];
+  if (confirm("[% capt.want_to_delete %] '" + problems[v].t + "'?"))
+    document.location = problems[v].d;
 }
 
 function r() {
-  var v = getSelectedButton(document.problems_form.problem_id);
-  if (v < 0)
+  var v = $('input[name=problem_id]:checked').val();
+  if (!v)
     alert('[% capt.no_problem_replace %]');
   else
-    document.location = a[v][2];
+    document.location = problems[v].r;
 }
 
 function chg_status(st_sel, pid) {
-  document.location = a[pid][3] + '&status=' + st_sel.value;
+  document.location = problems[pid].s + ';status=' + st_sel.value;
 }
 
 function chg_code(st_sel, pid) {
-  document.location = a[pid][4] + '&code=' + st_sel.value;
+  document.location = problems[pid].c + ';code=' + st_sel.value;
 }
 </script>
-[% END %]
+[%- END -%]
 
-[% IF problem_import_diff %]
+[%- IF problem_import_diff -%]
 <div>
   <span>[% capt.problem_import_diff %]: </span>
   <a href="[% problem_import_diff.href_commit %]" title="[% problem_import_diff.sha %]" >[% problem_import_diff.abbreviated_sha %]&hellip;</a>
 </div>
-[% END %]
+[%- END %]
 
-[% IF problem_import_log %]
+[%- IF problem_import_log -%]
 [% capt.problem_import_log %]:<br/>
 <textarea cols="100" rows="10" readonly="readonly">
 [% problem_import_log | html %]
 </textarea>
-[% END %]
+[%- END -%]
 
 [% IF de_name; capt.dev_env_detected; ": '"; de_name | html %]'.<br/>[% END %]
-[% IF de_not_allowed; capt.de_not_allowed %]
+[% IF de_not_allowed; capt.de_not_allowed -%]
 <ul>
   [% FOREACH de IN de_not_allowed; "<li>$de.description</li>"; END %]
 </ul>
-[% END %]
-[% IF href_run_details %]
+[%- END -%]
+
+[%- IF href_run_details -%]
 [% href(href_run_details, capt.view_results) %].
 <hr/>
-[% END %]
+[%- END -%]
 
 [% IF no_judges %]
 <p><b>[% capt.no_judges %]</b></p>
