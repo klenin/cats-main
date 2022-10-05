@@ -364,8 +364,8 @@ function gen_forms(problems) {
     form.on('submit', process_submit);
     form.appendTo(container);
     form.removeClass('hidden');
-    Editor.init_editor(editor_id);
-    Editor.set_syntax(editor_id, select_id);
+    if (Editor.init_editor(editor_id))
+      Editor.set_syntax(editor_id, select_id);
     // Load to editor source code of requested submission.
     if (rid) sources_info_btn.click();
   }
@@ -393,8 +393,8 @@ function process_submit(e) {
     }
     if (form_params[i].name === 'source_text') {
       var editor = Editor.get_editor(form);
-      if (!editor) return false;
-      form_params[i].value = editor.getSession().getValue();
+      if (editor)
+        form_params[i].value = editor.getSession().getValue();
     }
     form_data.append(form_params[i].name, form_params[i].value);
   }
