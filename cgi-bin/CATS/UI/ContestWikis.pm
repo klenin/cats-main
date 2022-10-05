@@ -6,7 +6,7 @@ use warnings;
 use CATS::Contest::Utils;
 use CATS::DB;
 use CATS::Form;
-use CATS::Globals qw($cid $is_jury $is_root $t);
+use CATS::Globals qw($cid $is_jury $t $user);
 use CATS::ListView;
 use CATS::Messages qw(res_str);
 use CATS::Output qw(init_template url_f);
@@ -35,7 +35,7 @@ our $form = CATS::Form->new(
             WHERE W.is_public = 1
             ORDER BY W.name~, { Slice => {} });
         unshift @{$fd->{wikis}}, { value => 0, text => '' };
-        $fd->{indexed}->{allow_edit}->{readonly} = !$is_root;
+        $fd->{indexed}->{allow_edit}->{readonly} = !$user->privs->{edit_wiki};
     },
     validators => [ sub {
         my ($fd, $p) = @_;
@@ -44,7 +44,7 @@ our $form = CATS::Form->new(
             SELECT id FROM wiki_pages
             WHERE id = ? AND is_public = 1~, undef,
             $wiki_id->{value}) or return ($wiki_id->{error} = res_str(1078) and undef);
-        return 1 if $is_root;
+        return 1 if $user->privs->{edit_wiki};
         if (!$fd->{id}) {
             $fd->{indexed}->{allow_edit}->{value} = 0;
             return 1;
