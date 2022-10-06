@@ -95,7 +95,7 @@ function survey_value_changed(editor, question_number, survey, editor_changed_ca
   if (question.getType() === 'checkbox')
     editor.insert(question.value.join(' '));
   else
-    editor.insert(question.value);
+    editor.insert(question.value.toString());
   editor.getSession().addEventListener('change', editor_changed_callback);
 }
   
