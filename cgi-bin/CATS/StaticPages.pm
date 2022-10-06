@@ -58,7 +58,7 @@ sub full_name_glob { path() . _name(@_) . '*.html' }
 sub invalidate_problem_text {
     my (%p) = @_;
     my @contest_ids = $p{cid} ? ($p{cid}) : ();
-    my @cpids = $p{cpid} ? ($p{cpid}) : ();
+    my @cpids = !$p{cpid} ? () : ref $p{cpid} eq 'ARRAY' ? @{$p{cpid}} : ($p{cpid});
 
     if ($p{pid}) {
         my $records = $dbh->selectall_arrayref(q~
