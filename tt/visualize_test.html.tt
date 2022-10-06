@@ -1,3 +1,4 @@
+[%- js.csp_sources = ' ' _ web.get_host _ '/cats/download/vis/' -%]
 [%- PROCESS includes/sources_styles.tti -%]
 [% PROCESS includes/header.tti %]
 
