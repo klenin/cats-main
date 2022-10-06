@@ -1,6 +1,9 @@
 [%- js.jquery = 1; js.ace = 1; js.csp_sources = ' ' _ web.get_host _ '/cats/static/js/';
   js.mathjax = mathjax; js.mathjax_onload = 1 -%]
-[%- js.quizzes = 1 IF has_quizzes || has_snippets %]
+[%- IF has_quizzes || has_snippets;
+  js.quizzes = 1;
+  js.csp_sources = js.csp_sources _ " 'unsafe-eval'";
+END -%]
 [%- PROCESS includes/header.tti -%]
 [%- PROCESS includes/html.tti -%]
 [%- PROCESS "lang/$lang/problems.html.tt" -%]
