@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use CATS::Constants;
-use CATS::DB;
+use CATS::DB qw(:DEFAULT $db);
 use CATS::Globals qw($cid $contest $is_jury $t $user);
 use CATS::Messages qw(res_str msg);
 use CATS::Output qw(url_f);
@@ -78,13 +78,34 @@ sub problems_change_status {
 sub problems_change_code {
     my ($p) = @_;
     my $cpid = $p->{change_code} or return msg(1012);
-    defined $p->{code} or return msg(1134);
+    defined $p->{code} || defined $p->{move} or return msg(1134);
 
-    $dbh->do(q~
-        UPDATE contest_problems SET code = ? WHERE contest_id = ? AND id = ?~, undef,
-        $p->{code}, $cid, $cpid);
-    $dbh->commit;
-    CATS::StaticPages::invalidate_problem_text(cid => $cid, cpid => $cpid);
+    if ($p->{code}) {
+        $dbh->do(q~
+            UPDATE contest_problems SET code = ? WHERE contest_id = ? AND id = ?~, undef,
+            $p->{code}, $cid, $cpid);
+        $dbh->commit;
+        CATS::StaticPages::invalidate_problem_text(cid => $cid, cpid => $cpid);
+    }
+    elsif ($p->{move}) {
+        my ($old_code) = $dbh->selectrow_array(q~
+            SELECT code FROM contest_problems WHERE contest_id = ? AND id = ?~, undef,
+            $cid, $cpid);
+        my ($cmp, $dir) = $p->{move} eq 'up' ? ('<', 'DESC') : ('>', 'ASC');
+        my ($neighbor_id, $neighbor_code) = $dbh->selectrow_array(qq~
+            SELECT id, code FROM contest_problems
+            WHERE contest_id = ? AND code $cmp ? ORDER BY code $dir $db->{LIMIT} 1~, undef,
+            $cid, $old_code) or return;
+        defined $old_code && defined $neighbor_code && $old_code ne $neighbor_code or return;
+        $dbh->do(q~
+            UPDATE contest_problems SET code = ? WHERE contest_id = ? AND id = ?~, undef,
+            $old_code, $cid, $neighbor_id);
+        $dbh->do(q~
+            UPDATE contest_problems SET code = ? WHERE contest_id = ? AND id = ?~, undef,
+            $neighbor_code, $cid, $cpid);
+        $dbh->commit;
+        CATS::StaticPages::invalidate_problem_text(cid => $cid, cpid => [ $cpid, $neighbor_id ]);
+    }
 }
 
 sub problem_status_names_enum {

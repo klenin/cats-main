@@ -87,6 +87,10 @@ function chg_status(st_sel, pid) {
 function chg_code(st_sel, pid) {
   document.location = problems[pid].c + ';code=' + st_sel.value;
 }
+
+function move_code(pid, dir) {
+  document.location = problems[pid].c + ';move=' + dir;
+}
 </script>
 [%- END -%]
 
@@ -175,7 +179,7 @@ function chg_code(st_sel, pid) {
     [% IF p.code.defined ~%]
     <span class="pcode">
       <input type="text" maxlength="3" class="bordered" value="[% p.code %]"
-        onchange="chg_code(this, [% p.problem_id %])" onfocus="choose_code(this, 1)"/>
+        onchange="chg_code(this, [% p.problem_id %])" onfocus="choose_code(this, true)"/>
     </span>
     [% END %]
     <a href="[% p.href_view_problem %]" target="_blank">
@@ -433,7 +437,7 @@ $(function() {
 });
 
 var used_codes = { [% FOREACH p IN problems %]"[% p.code %]": 1[% ', ' UNLESS loop.last; END %] };
-[% PROCESS includes/select_problem_code.tti %]
+[% PROCESS includes/select_problem_code.tti up_down = 1 %]
 
 function chg_color(input, cpid) {
   $.post('[% href_set_problem_color %]', { cpid: cpid, color: input.value });

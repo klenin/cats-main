@@ -133,7 +133,7 @@ my $main_routes = {
         add_remote => bool, std_solution => bool, delete_problem => integer,
         de_id => qr/\d+|by_extension/, de_code => integer, ignore => bool,
         change_status => integer, status => integer,
-        change_code => integer, code => problem_code,
+        change_code => integer, code => problem_code, move => qr/^(?:up|down)$/,
         link_save => bool, move => bool,
         zip => upload, allow_rename => bool, add_zip => upload,
         remote_url => str, repo_path => qr/[A-Za-z0-9_\/]*/,

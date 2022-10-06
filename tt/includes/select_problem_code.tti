@@ -7,18 +7,25 @@ function _change_on_enter(e) {
   if (e.key == 'Enter') { $(this).trigger('change'); return false; }
 }
 
+[%# Use onmousedown because onclick happens after onblur. %]
+function _code_cell(t, fn) { return $('<a></a>', { href: '#' }).text(t).mousedown(fn); }
+
 function make_code_tr(start_char, count) {
   var tr = $('<tr>');
   for (var i = 0; i < count; ++i) {
     var t = String.fromCharCode(start_char + i);
-    [%# Use onmousedown because onclick happens after onblur. %]
-    $('<a></a>', { href: '#' }).text(t).mousedown(set_code).
+    _code_cell(t, set_code).
       appendTo($('<td>', { 'class': used_codes[t] ? 'sh1' : 'sh0' }).appendTo(tr));
   }
   return tr;
 }
 
-function choose_code(input, change_on_enter) {
+function _move_code(a, dir) {
+  var pid = $(a).parents('tr.problem_row').find('input[name=problem_id]').val();
+  move_code(pid, dir);
+}
+
+function choose_code(input, change_on_enter, up_down) {
   var parent = $(input).parent();
   var hint = parent.children('div.search_hint');
   if (!hint.length) {
@@ -27,6 +34,12 @@ function choose_code(input, change_on_enter) {
     if (change_on_enter)
       $(input).keydown(_change_on_enter);
     var table = $('<table>').appendTo(hint);
+    [%- IF up_down %]
+    var tr = $('<tr>');
+    _code_cell('↑', function() { _move_code(this, 'up') }).appendTo($('<td>').appendTo(tr));
+    _code_cell('↓', function() { _move_code(this, 'down') }).appendTo($('<td>').appendTo(tr));
+    tr.appendTo(table);
+    [%- END %]
     make_code_tr(65, 26).appendTo(table); [%# Letters. %]
     make_code_tr(48, 10).appendTo(table); [%# Digits. %]
   }

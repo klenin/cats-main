@@ -30,7 +30,7 @@
 [% IF user.is_jury && link %]
 [% capt.problem_code %]:
 <span class="pcode">
-<input name="code" size="3" maxlength="3" onfocus="choose_code(this)" />
+<input name="code" size="3" maxlength="3" onfocus="choose_code(this, false)" />
 </span>
 <br/><br/>
 [% IF move %]<input type="hidden" name="move" value="1" />[% END %]
