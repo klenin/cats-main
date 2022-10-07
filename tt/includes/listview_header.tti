@@ -170,6 +170,19 @@ window.addEventListener('load', function() {
     var onclick = function() { activate_search_hint(this, true, t); };
     search_hint.querySelectorAll('td.sh' + type + ' > a').forEach(add_click_fn(onclick));
   })(); }
+
+  var cell_search = function (e) {
+    var a = this;
+    e.preventDefault();
+    add_search(a.getAttribute('data-field'), a.getAttribute('data-value'));
+  };
+  document.querySelectorAll('a.add_search').forEach(add_click_fn(cell_search));
+  var cell_search_any = function (e) {
+    var a = this;
+    e.preventDefault();
+    _add_search(a.getAttribute('data-search'), true);
+  };
+  document.querySelectorAll('a.add_search_any').forEach(add_click_fn(cell_search_any));
   [%- END %]
   [% IF capt.want_to_delete && table_selector && name_selector- %]
   var del_confirm = function(table_selector, name_selector, want_to_delete) {
