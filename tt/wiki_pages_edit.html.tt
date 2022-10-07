@@ -1,12 +1,7 @@
 [% PROCESS includes/menu_begin.tti %]
 [% PROCESS includes/html_input.tti %]
 
-<script>
-function delete_wiki_text(href, name) {
-  if (confirm("[% capt.want_to_delete %] '" + name + "'?" ))
-    document.location = href;
-}
-
+<script nonce="[% nonce %]">
 window.addEventListener('load', function() {
   var td = document.getElementById('href_public');
   var a = td.getElementsByTagName('a')[0];
@@ -16,6 +11,26 @@ window.addEventListener('load', function() {
   };
   input_name.addEventListener('input', update_href);
   update_href();
+
+  var title_lang = function (tr) {
+    var t = tr.querySelector('td.title'), l = tr.querySelector('td.lng');
+    return t && l && t.innerText + ' (' + l.innerText + ')';
+  };
+  var del_confirm = function(table_selector, want_to_delete) {
+    document.querySelectorAll(table_selector + ' tr').forEach(function (tr) {
+      var del_button = tr.querySelector('a.delete');
+      if (!del_button) return;
+      var name = title_lang(tr);
+      if (!name) return;
+      var del_href = del_button.href;
+      del_button.addEventListener('click', function() {
+        if (confirm(want_to_delete + " '" + name + "'?"))
+          document.location = del_href;
+      });
+      del_button.href = '#';
+    });
+  };
+  del_confirm('#wiki_texts', '[% capt.want_to_delete.squote %]');
 });
 </script>
 
@@ -30,19 +45,17 @@ window.addEventListener('load', function() {
 </form>
 [% IF wp.indexed.name.value %]
 <br>
-<table class="listview bordered">
+<table class="listview bordered" id="wiki_texts">
 <tr class="col_defs">[% FOREACH c IN capt.headers %]<th>[% c %]</th>[% END %]</tr>
 [% FOREACH lng IN langs %]
 <tr class="[% loop.parity() %]">
 <td class="narrow nobr">
   [%- t = wp.texts.item(lng.name) -%]
-  [% IF t.href_delete -%]
-    <a href="#" class="icon delete" onclick="delete_wiki_text('[% t.href_delete %]', '[% t.title.dquote %] ([% t.lang %])')"></a>
-  [%- END %]
+  [%- href(t.href_delete, '', '', class='icon delete') IF t.href_delete %]
   <a href="[% t.href_edit %]" class="icon edit"></a>
 </td>
-<td>[% lng.name %]</td>
-<td>
+<td class="lng">[% lng.name %]</td>
+<td class="title">
   [% maybe_href(t.href_view, t.title || '-') %]
 </td>
 <td>[% t.last_modified %]</td>

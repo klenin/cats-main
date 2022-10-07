@@ -1,27 +1,18 @@
 [% PROCESS includes/menu_begin.tti %]
 
-<script>
-function delete_wiki_page(href, name) {
-  if (confirm("[% capt.want_to_delete %] '" + name + "'?" ))
-      document.location = href;
-}
-</script>
+[% PROCESS includes/listview_header.tti table_selector = '#wiki_pages' name_selector = 'a.page_name' %]
 
-[% PROCESS includes/listview_header.tti %]
-
-<table class="listview bordered highlight">
+<table class="listview bordered highlight" id="wiki_pages">
 [% PROCESS includes/listview_col_defs.tti %]
 
 [% FOREACH w IN wiki_pages %]
 <tr class="[% loop.parity() %]">
 <td>
-  [% IF w.href_delete ~%]
-  <a href="javascript:delete_wiki_page('[% w.href_delete %]', '[% w.name.squote | html %]');" class="icon delete"></a>
-  [%~ END %]
+  [% href(w.href_delete, '', '', class='icon delete') IF w.href_delete %]
   [% IF w.href_edit ~%]
   <a href="[% w.href_edit %]" class="icon edit"></a>
   [%~ END %]
-  [% href(w.href_text, w.name) %]
+  [% href(w.href_text, w.name, '', class='page_name') %]
 </td>
 [% IF visible_cols.Pb %]<td>
   [%- IF w.is_public %]<a href="[% w.href_public %]" class="icon checked"></a>[% END -%]
