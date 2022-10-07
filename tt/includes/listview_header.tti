@@ -1,7 +1,9 @@
 [%- PROCESS "lang/$lang/listview_header.tti" -%]
+[%- UNLESS no_form -%]
 <form method="post" enctype="multipart/form-data" action="[% href_lv_action %]" accept-charset="UTF-8"
   [%- " id=\"$form_id\"" IF form_id %]
   [%- " name=\"$form_name\"" IF form_name %]>
+[%- END %]
 [%- UNLESS no_listview_header -%]
 <table class="listview_header">
 <tr>
@@ -70,7 +72,7 @@
 [%- END %]
 
 <script nonce="[% nonce %]">
-
+[%- UNLESS no_listview_header -%]
 function _hide(el) { el.style.display = 'none'; }
 function _toggle(el) { el.style.display = el.style.display === 'block' ? 'none' : 'block'; }
 
@@ -152,6 +154,7 @@ var handlers = {
     return false;
   }
 };
+[% END -%]
 
 window.addEventListener('load', function() {
   [%- UNLESS no_listview_header -%]
@@ -183,14 +186,16 @@ window.addEventListener('load', function() {
   };
   document.querySelectorAll('a.add_search_any').forEach(add_click_fn(cell_search_any));
   [%- END %]
-  [% IF capt.want_to_delete && table_selector && name_selector- %]
-  var del_confirm = function(table_selector, name_selector, want_to_delete) {
+  [% IF capt.want_to_delete && table_selector && name_selector -%]
+  var fmt = function(fmt, a) { return fmt.replace(/{(\d+)}/g, function(m, i) { return a[i]; }); };
+  var del_confirm = function(table_selector, name_selector, name_format, want_to_delete) {
     document.querySelectorAll(table_selector + ' tr').forEach(function (tr) {
         var del_button = tr.querySelector('a.delete');
         if (!del_button) return;
-        var name = tr.querySelector(name_selector);
-        if (!name) return;
-        name = name.innerText;
+        var name_parts = Array.from(
+          tr.querySelectorAll(name_selector), function (n) { return n.innerText; });
+        if (!name_parts.length) return;
+        var name = name_format ? fmt(name_format, name_parts) : name_parts.join(' ');
         var del_href = del_button.href;
         del_button.addEventListener('click', function() {
           if (confirm(want_to_delete + " '" + name + "'?"))
@@ -199,7 +204,9 @@ window.addEventListener('load', function() {
         del_button.href = '#';
     });
   };
-  del_confirm('[% table_selector %]', '[% name_selector %]', '[% capt.want_to_delete.squote %]');
+  del_confirm(
+    '[% table_selector %]', '[% name_selector %]', '[% name_format %]',
+    '[% capt.want_to_delete.squote %]');
   [% END -%]
 });
 
