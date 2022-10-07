@@ -161,14 +161,13 @@ window.addEventListener('load', function() {
   });
   var add_search_op = function() { _add_search(this.innerText, false); };
   var add_click_fn = function(fn) { return function (a) { a.addEventListener('click', fn); }; };
-  document.getElementById('search_ops').querySelectorAll('a').forEach(add_click_fn(add_search_op));
+  document.querySelectorAll('#search_ops a').forEach(add_click_fn(add_search_op));
 
-  var search_hint = document.getElementById('search_hint');
-  search_hint.querySelectorAll('td.drop ul li a').forEach(add_click_fn(click_enum));
+  document.querySelectorAll('#search_hint td.drop ul li a').forEach(add_click_fn(click_enum));
   for (var type = 0; type <= 2; ++type) { (function() {
     var t = type;
     var onclick = function() { activate_search_hint(this, true, t); };
-    search_hint.querySelectorAll('td.sh' + type + ' > a').forEach(add_click_fn(onclick));
+    document.querySelectorAll('#search_hint td.sh' + type + ' > a').forEach(add_click_fn(onclick));
   })(); }
 
   var cell_search = function (e) {
