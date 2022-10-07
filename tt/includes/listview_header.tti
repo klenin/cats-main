@@ -1,5 +1,4 @@
 [%- PROCESS "lang/$lang/listview_header.tti" -%]
-[% PROCESS includes/html.tti %]
 <form method="post" enctype="multipart/form-data" action="[% href_lv_action %]" accept-charset="UTF-8"
   [%- " id=\"$form_id\"" IF form_id %]
   [%- " name=\"$form_name\"" IF form_name %]>
@@ -11,32 +10,31 @@
   <button type="submit" name="do_search" id="do_search" value="1" style="min-width: 50px; width: 15%;" class="button">[% capt.search %]</button>
   <span class="nobr">
   <input type="text" name="search" id="search" value="[% search | html %]" style="min-width: 100px; width: 70%;" maxlength="100" class="bordered" />
-  <a href="#" class="listview_dropper" onclick="clear_search()" title="[% capt.clear_search %]">&#xD7;</a>
+  <a href="[% href_lv_action %];search=" class="listview_dropper" id="clear_search" title="[% capt.clear_search %]">&#xD7;</a>
   [%- IF search_hints ~%]
-  <a href="#" class="listview_dropper" onclick="return toggle_search_hints()">&#8981;</a>
+  <a href="#" class="listview_dropper" id="toggle_search_hints">&#8981;</a>
   [% END -%]
   </span>
   [% IF search_hints -%]
   <div id="search_hint" class="bordered search_hint" style="display: none;">
     <table>
-      <tr>
-      [% FOREACH op IN capt.ops %]
-        <td><a href="#" onclick="activate_search_hint(this, 0);" title="[% op.1 %]">[% op.0 %]</a></td>
-      [% END %]
+      <tr id="search_ops">
+      [%- FOREACH op IN capt.ops %]
+        <td><a href="#" title="[% op.1 %]">[% op.0 %]</a></td>
+      [%- END %]
       </tr>
-    [% FOREACH row IN search_hints %]
+      [%- FOREACH row IN search_hints %]
       <tr>
-      [% FOREACH col IN row %]
+      [%- FOREACH col IN row -%]
         [%- UNLESS col; '<td></td>'; NEXT; END -%]
-        [%- enum = search_enums.item(col.0) -%]
-        <td class="sh[% col.1;' drop' IF enum.keys.size %]">
-          <a href="#" onclick="activate_search_hint(this, 1, [% col.1 %]);"[% IF col.2 %] title="[% col.2 | html %]"[% END %]>[% col.0 | html %]</a>
-          [% IF enum.keys.size %]
-          <ul>[% FOREACH e IN enum %]<li><a href="#" onclick="click_enum(this)">[% e.key | html %]</a></li>[% END %]</ul>
-          [% END %]
+        [%- enum = search_enums.item(col.0) %]
+        <td class="sh[% col.1;' drop' IF enum.keys.size %]">[% href('#', col.0, col.2) %]
+          [%- IF enum.keys.size %]
+          <ul>[% FOREACH e IN enum %]<li><a href="#">[% e.key | html %]</a></li>[% END %]</ul>
+          [%- END %]
         </td>
-      [% END %]
-    [% END %]
+        [%- END %]
+      [%- END %]
     </table>
   </div>
   [%- END %]
@@ -46,14 +44,14 @@
 </td>
 <td>
   [% IF can_change_cols %]
-  <a href="#" class="listview_dropper" onclick="return toggle_csv()" style="font-stretch: condensed;">csv</a>[%-~%]
-  <a href="#" class="listview_dropper" onclick="return toggle_select_cols()">?</a>
+  <a href="#" class="listview_dropper" id="toggle_csv" style="font-stretch: condensed;">csv</a>[%-~%]
+  <a href="#" class="listview_dropper" id="toggle_select_cols">?</a>
   <div id="csv" class="bordered select_cols" style="display: none;">
     [% FOREACH col IN ${lv_array_name}.0.keys.sort %]
     <label><input type="checkbox" name="csv" value="[% col %]"> [% col %]</label>
     [% END %]
     <hr/>
-    <label><a href="#" onclick="return link_to_csv()">CSV</a></label>
+    <label><a href="#" id="link_to_csv">CSV</a></label>
   </div>
   <div id="select_cols" class="bordered select_cols" style="display: none;">
     [% FOREACH cd IN col_defs; NEXT UNLESS cd.col %]
@@ -104,7 +102,8 @@ function activate_search_hint(a, comma, type) {
 
 function add_search(field, value) { _add_search(field + '=' + value, true); }
 
-function click_enum(a) {
+function click_enum() {
+  var a = this;
   var i = document.getElementById('search');
   if (i.value && i.value.substring (i.value.length - 2) === '()')
     i.value = i.value.substring(0, i.value.length - 1) + a.text + ')';
@@ -143,7 +142,8 @@ function link_to_csv() {
   }
 }
 
-function clear_search() {
+function clear_search(e) {
+  e.preventDefault();
   var s = document.getElementById('search');
   if (s.value === '') return;
   s.value = '';
@@ -151,8 +151,26 @@ function clear_search() {
   return false;
 }
 
-[% IF capt.want_to_delete && table_selector && name_selector- %]
 window.addEventListener('load', function() {
+  [%- UNLESS no_listview_header -%]
+  document.getElementById('clear_search').addEventListener('click', clear_search);
+  document.getElementById('toggle_search_hints').addEventListener('click', toggle_search_hints);
+  document.getElementById('toggle_csv').addEventListener('click', toggle_csv);
+  document.getElementById('link_to_csv').addEventListener('click', link_to_csv);
+  document.getElementById('toggle_select_cols').addEventListener('click', toggle_select_cols);
+  var add_search_op = function() { _add_search(this.innerText, false); };
+  var add_click_fn = function(fn) { return function (a) { a.addEventListener('click', fn); }; };
+  document.getElementById('search_ops').querySelectorAll('a').forEach(add_click_fn(add_search_op));
+
+  var search_hint = document.getElementById('search_hint');
+  search_hint.querySelectorAll('td.drop ul li a').forEach(add_click_fn(click_enum));
+  for (var type = 0; type <= 2; ++type) { (function() {
+    var t = type;
+    var onclick = function() { activate_search_hint(this, true, t); };
+    search_hint.querySelectorAll('td.sh' + type + ' > a').forEach(add_click_fn(onclick));
+  })(); }
+  [%- END %]
+  [% IF capt.want_to_delete && table_selector && name_selector- %]
   var del_confirm = function(table_selector, name_selector, want_to_delete) {
     document.querySelectorAll(table_selector + ' tr').forEach(function (tr) {
         var del_button = tr.querySelector('a.delete');
@@ -169,7 +187,7 @@ window.addEventListener('load', function() {
     });
   };
   del_confirm('[% table_selector %]', '[% name_selector %]', '[% capt.want_to_delete.squote %]');
+  [% END -%]
 });
-[% END -%]
 
 </script>
