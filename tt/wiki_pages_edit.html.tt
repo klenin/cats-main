@@ -1,5 +1,6 @@
-[% PROCESS includes/menu_begin.tti %]
-[% PROCESS includes/html_input.tti %]
+[%- js.nonce = 1 -%]
+[%- PROCESS includes/menu_begin.tti -%]
+[%- PROCESS includes/html_input.tti -%]
 
 <script nonce="[% nonce %]">
 window.addEventListener('load', function() {
@@ -11,26 +12,6 @@ window.addEventListener('load', function() {
   };
   input_name.addEventListener('input', update_href);
   update_href();
-
-  var title_lang = function (tr) {
-    var t = tr.querySelector('td.title'), l = tr.querySelector('td.lng');
-    return t && l && t.innerText + ' (' + l.innerText + ')';
-  };
-  var del_confirm = function(table_selector, want_to_delete) {
-    document.querySelectorAll(table_selector + ' tr').forEach(function (tr) {
-      var del_button = tr.querySelector('a.delete');
-      if (!del_button) return;
-      var name = title_lang(tr);
-      if (!name) return;
-      var del_href = del_button.href;
-      del_button.addEventListener('click', function() {
-        if (confirm(want_to_delete + " '" + name + "'?"))
-          document.location = del_href;
-      });
-      del_button.href = '#';
-    });
-  };
-  del_confirm('#wiki_texts', '[% capt.want_to_delete.squote %]');
 });
 </script>
 
@@ -45,17 +26,20 @@ window.addEventListener('load', function() {
 </form>
 [% IF wp.indexed.name.value %]
 <br>
+[% PROCESS includes/listview_header.tti
+  no_form = 1 no_listview_header = 1
+  table_selector = '#wiki_texts' name_selector = 'td.dn' name_format = '{1} ({0})' %]
 <table class="listview bordered" id="wiki_texts">
 <tr class="col_defs">[% FOREACH c IN capt.headers %]<th>[% c %]</th>[% END %]</tr>
 [% FOREACH lng IN langs %]
 <tr class="[% loop.parity() %]">
 <td class="narrow nobr">
   [%- t = wp.texts.item(lng.name) -%]
-  [%- href(t.href_delete, '', '', class='icon delete') IF t.href_delete %]
+  [%- href(t.href_delete, '', '', class = 'icon delete') IF t.href_delete %]
   <a href="[% t.href_edit %]" class="icon edit"></a>
 </td>
-<td class="lng">[% lng.name %]</td>
-<td class="title">
+<td class="dn">[% lng.name %]</td>
+<td class="dn">
   [% maybe_href(t.href_view, t.title || '-') %]
 </td>
 <td>[% t.last_modified %]</td>

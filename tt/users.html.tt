@@ -1,3 +1,4 @@
+[%- js.nonce = 1 -%]
 [%- js.jquery = 1 IF user.is_jury || user.is_site_org -%]
 [% extra_head = BLOCK %]
 <style>
@@ -16,25 +17,26 @@
 </textarea>[% END %]
 
 [% PROCESS includes/listview_header.tti
-  table_selector = user.is_jury && '#users' name_selector = 'td.user_checkbox a' %]
+  table_selector = user.is_jury && '#users' name_selector = 'td.user_checkbox a.tn' %]
 <table class="listview bordered cell_search highlight" id="users">
 [% PROCESS includes/listview_col_defs.tti sel_col = user.is_jury nocheckbox = 1 %]
 [% FOREACH u IN users %]
 <tr class="[% loop.parity %]">
 [% IF user.is_jury %]
 <td class="nobr">
-  [% href(u.href_delete, '', '', class='icon delete') %]
-  [% href(u.href_edit, '', '', class='icon edit') %]
+  [% href(u.href_delete, '', '', class = 'icon delete') %]
+  [% href(u.href_edit, '', '', class = 'icon edit') %]
 </td>
 [% IF visible_cols.Lg %]<td>[% u.login | html %]</td>[% END %]
 [% END %]
 <td class="user_checkbox"><label>
 [%- checkbox('sel', u.id) IF user.is_jury || user.is_site_org %]
-[% href(u.href_stats, u.team_name); ' *' IF (user.is_jury || user.is_site_org) && u.admin -%]
+[% href(u.href_stats, u.team_name, '', class = 'tn'); ' *' IF (user.is_jury || user.is_site_org) && u.admin -%]
 [%- cell_search('team_name', u) IF user.is_jury -%]
 </label></td>
 [% IF visible_cols.Si ~%]
-<td>[% maybe_href(u.href_contest_site, u.site_name || u.city); IF u.href_site %] <a href="[% u.href_site %]" class="icon edit"></a>[% END %]
+<td>[% maybe_href(u.href_contest_site, u.site_name || u.city);
+  IF u.href_site %] <a href="[% u.href_site %]" class="icon edit"></a>[% END %]
   [%- cell_search('site_id', u) IF user.is_jury -%]
 </td>
 [%~ END %]
