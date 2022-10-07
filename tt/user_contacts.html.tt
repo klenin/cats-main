@@ -1,29 +1,20 @@
 [% PROCESS includes/menu_begin.tti %]
 [% PROCESS includes/html.tti %]
 
-<script>
-function delete_user_contact(href, name) {
-    if (confirm("[% capt.want_to_delete %] '" + name + "'?" ))
-        document.location = href;
-}
-</script>
+[% PROCESS includes/listview_header.tti table_selector = '#user_contacts' name_selector = 'td.handle a' %]
 
-[% PROCESS includes/listview_header.tti %]
-
-<table class="listview bordered highlight">
+<table class="listview bordered highlight" id="user_contacts">
 [% PROCESS includes/listview_col_defs.tti %]
 [% FOREACH uc IN user_contacts %]
 <tr class="[% loop.parity %]">
 <td>
-  [% IF uc.href_delete ~%]
-  <a href="javascript:delete_user_contact('[% uc.href_delete %]', '[% uc.handle.squote | html %]');" class="icon delete"></a>
-  [%~ END %]
+  [% href(uc.href_delete, '', '', class='icon delete') IF uc.href_delete ~%]
   [% IF uc.href_edit ~%]
   <a href="[% uc.href_edit %]" class="icon edit"></a>
   [%~ END %]
   [% uc.type_name | html %]
 </td>
-<td>[% maybe_href(uc.href_contact, uc.handle) %]</td>
+<td class="handle">[% maybe_href(uc.href_contact, uc.handle) %]</td>
 [% IF visible_cols.Ip %]<td class="center">[% IF uc.is_public %]<a href="#" class="icon checked"></a>[% END %]</td>[% END %]
 [% IF visible_cols.Ia %]<td class="center">[% IF uc.is_actual %]<a href="#" class="icon checked"></a>[% END %]</td>[% END %]
 </tr>

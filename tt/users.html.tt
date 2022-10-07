@@ -10,27 +10,21 @@
 [%- END %]
 [% PROCESS includes/menu_begin.tti %]
 
-<script>
-function delete_team(href, name) {
-  if (confirm("[% capt.want_to_delete %] '" + name + "'?"))
-    document.location=href;
-}
-</script>
-
 [%- IF new_passwords %]<textarea rows="[% new_passwords.size > 20 ? 20 : new_passwords.size %]" cols="50">
 [%- FOREACH p IN new_passwords; p.1 | html; ' '; p.2; %]
 [% END -%]
 </textarea>[% END %]
 
-[% PROCESS includes/listview_header.tti %]
-<table class="listview bordered cell_search highlight">
+[% PROCESS includes/listview_header.tti
+  table_selector = user.is_jury && '#users' name_selector = 'td.user_checkbox a' %]
+<table class="listview bordered cell_search highlight" id="users">
 [% PROCESS includes/listview_col_defs.tti sel_col = user.is_jury nocheckbox = 1 %]
 [% FOREACH u IN users %]
 <tr class="[% loop.parity %]">
 [% IF user.is_jury %]
 <td class="nobr">
-  <a href="javascript:delete_team('[% u.href_delete %]', '[% u.team_name.squote | html %]');" class="icon delete"></a>
-  <a href="[% u.href_edit %]" class="icon edit"></a>
+  [% href(u.href_delete, '', '', class='icon delete') %]
+  [% href(u.href_edit, '', '', class='icon edit') %]
 </td>
 [% IF visible_cols.Lg %]<td>[% u.login | html %]</td>[% END %]
 [% END %]
