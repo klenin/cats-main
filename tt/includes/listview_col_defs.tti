@@ -1,13 +1,13 @@
 <tr class="col_defs">
 [% IF sel_col %]<th class="sel_col">
   [%- UNLESS nocheckbox -%]
-  <label><input class="toggle_all_cb" type="checkbox" onclick="toggle_all_cb(this, 'td.sel_col input')"/></label>
+  <label><input class="toggle_all_cb" type="checkbox" data-cb_selector="td.sel_col input"/></label>
   [%- END -%]
 </th>[% END %]
 [% FOREACH col_def IN col_defs; NEXT IF !col_def.visible || !col_def.order_by %]
 <th[% IF col_def.width %] style="width: [% col_def.width %];"[% END %]>
   [%- IF col_def.checkbox; need_toggle_all_cb = 1 -%]
-    <input class="toggle_all_cb" type="checkbox" onclick="toggle_all_cb(this, '[% col_def.checkbox %]')"/>
+    <input class="toggle_all_cb" type="checkbox" data-cb_selector="[% col_def.checkbox | html %]"/>
   [%- END -%]
   <a href="[% col_def.href_sort %]">[% capt.listview_captions.item(col_def.caption) || col_def.caption -%]
 [% IF col_def.sort_up %]&nbsp;&#x25B2;[% END -%]
@@ -20,5 +20,12 @@
 function toggle_all_cb(cb, selector) {
   $(selector).prop('checked', cb.checked);
 }
+window.addEventListener('load', function() {
+  document.querySelectorAll('.toggle_all_cb').forEach(function (el) {
+    var selector = el.getAttribute('data-cb_selector');
+    if (!selector) return;
+    el.addEventListener('click', function () { toggle_all_cb(this, selector); });
+  });
+});
 </script>
 [%- END %]
