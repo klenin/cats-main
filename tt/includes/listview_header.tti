@@ -151,4 +151,25 @@ function clear_search() {
   return false;
 }
 
+[% IF capt.want_to_delete && table_selector && name_selector- %]
+window.addEventListener('load', function() {
+  var del_confirm = function(table_selector, name_selector, want_to_delete) {
+    document.querySelectorAll(table_selector + ' tr').forEach(function (tr) {
+        var del_button = tr.querySelector('a.delete');
+        if (!del_button) return;
+        var name = tr.querySelector(name_selector);
+        if (!name) return;
+        name = name.innerText;
+        var del_href = del_button.href;
+        del_button.addEventListener('click', function() {
+          if (confirm(want_to_delete + " '" + name + "'?"))
+            document.location = del_href;
+        });
+        del_button.href = '#';
+    });
+  };
+  del_confirm('[% table_selector %]', '[% name_selector %]', '[% capt.want_to_delete.squote %]');
+});
+[% END -%]
+
 </script>
