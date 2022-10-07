@@ -44,8 +44,12 @@ END -%]
     [%- maybe_checked(selected_value == value); maybe_disabled(disabled); tag_attrs(attrs) %] />
 [%- END -%]
 
-[%- MACRO href(url, text, title) BLOCK ~%]
-  <a[% IF url %] href="[% url %]"[% END; IF title %] title="[% title | html %]"[% END %]>[% text | html %]</a>
+[%- MACRO href(url, text, title) BLOCK # class ~%]
+  <a[% IF url %] href="[% url %]"[% END -%]
+  [%- IF title %] title="[% title | html %]"[% END -%]
+  [%- IF class %] class="[% class | html %]"[% END %]>
+  [%- text | html ~%]
+  </a>
 [%- END -%]
 [%- MACRO maybe_href(url, text, title) BLOCK; IF url; href(url, text, title); ELSE; text | html ; END; END -%]
 
