@@ -5,6 +5,9 @@
   [%- " name=\"$form_name\"" IF form_name %]>
 [%- END %]
 [%- UNLESS no_listview_header -%]
+
+[%- MACRO href_delete_icon(url) BLOCK; href(url, '', capt.delete, class = 'icon delete'); END -%]
+
 <table class="listview_header">
 <tr>
 <td width="40%">

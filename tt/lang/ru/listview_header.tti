@@ -1,5 +1,6 @@
 [%
   capt.import({
+    delete => 'удалить',
     search => 'найти',
     clear_search => 'очистить поиск',
     pages => 'страницы',

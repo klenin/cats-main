@@ -1,5 +1,6 @@
 [%
   capt.import({
+    delete => 'delete',
     search => 'search',
     clear_search => 'clear search',
     pages => 'pages',
