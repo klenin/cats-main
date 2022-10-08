@@ -9,15 +9,15 @@
 <tr>
 [% IF c.is_submit_result %]
   <td class="tsl">
-    [% IF user.is_jury %]
-      <a href="#" onclick="add_id([% c.id %]); return false;" title="[% c.id %]">[% c.time %]</a>
-    [% ELSE; maybe_href(c.href_details, c.time, DEs.item(c.de).description) %]
+    [% IF user.is_jury -%]
+      <a href="#" title="[% c.id %]">[% c.time %]</a>
+    [%- ELSE; maybe_href(c.href_details, c.time, DEs.item(c.de).description) %]
     [% END %]
   </td>
   <td class="name">
     [% IF user.is_jury %]
-    [% h = c.href_send_message_box ? "javascript:send_message('$c.href_send_message_box')" : '';
-      maybe_href(h, c.team_name, c.team_name_full); cell_search_ex('account_id', c.team_id) -%]
+    [% maybe_href(c.href_send_message_box, c.team_name, c.team_name_full, class = 'msg_win');
+      cell_search_ex('account_id', c.team_id) -%]
     [%- ELSE; c.team_name | html; END %]
   </td>
   <td class="verdict run_details_[% c.short_state %]"><table><tr>
@@ -68,7 +68,7 @@
       [<a href="[% c.href_delete_question %]">[% capt.delete %]</a>]
     [%- END %]
     [% IF c.href_send_message_box -%]
-      [<a href="javascript:send_message('[% c.href_send_message_box %]')">[% capt.message %]</a>]
+      [[% href(c.href_send_message_box, capt.message, '', class = 'msg_win') %]]
     [%- END %]
   </td>
   [% IF user.is_jury %]
@@ -110,13 +110,11 @@
 </tr>
 [% END %]
 </table>
-[% PROCESS includes/pages.tti id="pages_bottom" %]
+[% INCLUDE includes/pages.tti id = 'pages_bottom' %]
 [% PROCESS includes/timing.tti %]
 <br/>
-<script>
-[% FOREACH e IN envelopes %]
-send_message('[% e.href_envelope %]');
-[% END %]
-</script>
+<div id="envelopes">
+[%- FOREACH e IN envelopes; href(e.href_envelope); END -%]
+</div>
 <div style="display: none" id="server_time_update">[% server_time %]</div>
 <div style="display: none" id="elapsed_update">[% elapsed_msg %]</div>
