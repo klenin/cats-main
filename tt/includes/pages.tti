@@ -1,5 +1,6 @@
-[% IF pages && pages.size > 0 -%]
-  <div[% ' id="' _ id _ '"' IF id %] class="pages" title="[% "${lv_range.first_row} .. ${lv_range.last_row}" %]">
+<div[% ' id="' _ id _ '"' IF id %] class="pages"
+  [%- IF lv_range %] title="[% "${lv_range.first_row} .. ${lv_range.last_row}" %]"[% END %]>
+[%- IF pages && pages.size > 0 -%]
   [% capt.pages %]:
   <span class="bordered">[%# Must have spaces inside. ~%]
   [%~ href(href_prev_pages, '<<') IF href_prev_pages ~%]
@@ -7,5 +8,6 @@
   <a href="[% p.href_page %]"[% ' class="current_link"' IF p.current_page %]>[% p.page_number %]</a>
   [%~ END ~%]
   [%~ href(href_next_pages, '>>') IF href_next_pages ~%]
-  </span></div>
-[%- END %]
+  </span>
+[%- END -%]
+</div>

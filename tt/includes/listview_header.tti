@@ -76,6 +76,7 @@
 
 <script nonce="[% nonce %]">
 [%- UNLESS no_listview_header -%]
+
 function _hide(el) { el.style.display = 'none'; }
 function _toggle(el) { el.style.display = el.style.display === 'block' ? 'none' : 'block'; }
 
