@@ -1,14 +1,14 @@
-[% js.jquery = 1; js.jquery_flot = 1 %]
-[% PROCESS includes/menu_begin.tti %]
-<div>
+[%- js.jquery = 1; js.jquery_flot = 1; js.nonce = 1 -%]
+[%- PROCESS includes/menu_begin.tti -%]
+<div id="controls">
 [% FOREACH c IN codes -%]
-<label id="codes"><input type="checkbox" value="1" checked="checked" onclick="graph()"/>[% c %]</label>
+<label id="codes"><input type="checkbox" value="1" checked="checked"/>[% c %]</label>
 [% END -%]
 <br/>
-[% capt.steps_per_hour %]: <input type="text" value="1" id="steps" size="2"  onchange="graph()" />
+[% capt.steps_per_hour %]: <input type="text" value="1" id="steps" size="2" />
 <div id="verdicts">
 [% FOREACH v IN verdicts -%]
-<label><input type="checkbox" value="1" checked="checked" onclick="graph()" />[% v %]</label>
+<label><input type="checkbox" value="1" checked="checked" />[% v %]</label>
 [% END -%]
 </div>
 </div>
@@ -17,7 +17,7 @@
 <div id="plot-legend" style="float: left;"></div>
 <div style="clear: both;"></div>
 
-<script type="text/javascript">
+<script nonce="[% nonce %]">
 
 var reqs = [
 [% FOREACH r IN reqs -%]
@@ -64,6 +64,15 @@ function graph() {
   return false;
 }
 graph();
+
+window.addEventListener('load', function () {
+  document.querySelectorAll('#controls input[type=checkbox]').forEach(function (i) {
+    i.addEventListener('click', graph);
+  });
+  document.querySelectorAll('#controls input[type=text]').forEach(function (i) {
+    i.addEventListener('change', graph);
+  });
+});
 </script>
 
 [% PROCESS includes/menu_end.tti %]
