@@ -158,6 +158,24 @@ var handlers = {
     return false;
   }
 };
+
+function add_click_fn(fn) { return function (a) { a.addEventListener('click', fn); }; }
+
+function apply_cell_search(root) {
+  var cell_search = function (e) {
+    var a = this;
+    e.preventDefault();
+    add_search(a.getAttribute('data-field'), a.getAttribute('data-value'));
+  };
+  root.querySelectorAll('a.add_search').forEach(add_click_fn(cell_search));
+  var cell_search_any = function (e) {
+    var a = this;
+    e.preventDefault();
+    _add_search(a.getAttribute('data-search'), true);
+  };
+  root.querySelectorAll('a.add_search_any').forEach(add_click_fn(cell_search_any));
+}
+
 [% END -%]
 
 window.addEventListener('load', function() {
@@ -167,7 +185,6 @@ window.addEventListener('load', function() {
     if (el) el.addEventListener('click', handlers[h]);
   });
   var add_search_op = function() { _add_search(this.innerText, false); };
-  var add_click_fn = function(fn) { return function (a) { a.addEventListener('click', fn); }; };
   document.querySelectorAll('#search_ops a').forEach(add_click_fn(add_search_op));
 
   document.querySelectorAll('#search_hint td.drop ul li a').forEach(add_click_fn(click_enum));
@@ -177,18 +194,7 @@ window.addEventListener('load', function() {
     document.querySelectorAll('#search_hint td.sh' + type + ' > a').forEach(add_click_fn(onclick));
   })(); }
 
-  var cell_search = function (e) {
-    var a = this;
-    e.preventDefault();
-    add_search(a.getAttribute('data-field'), a.getAttribute('data-value'));
-  };
-  document.querySelectorAll('a.add_search').forEach(add_click_fn(cell_search));
-  var cell_search_any = function (e) {
-    var a = this;
-    e.preventDefault();
-    _add_search(a.getAttribute('data-search'), true);
-  };
-  document.querySelectorAll('a.add_search_any').forEach(add_click_fn(cell_search_any));
+  apply_cell_search(document);
   [%- END %]
   [% IF capt.want_to_delete && table_selector && name_selector -%]
   var fmt = function(fmt, a) { return fmt.replace(/{(\d+)}/g, function(m, i) { return a[i]; }); };

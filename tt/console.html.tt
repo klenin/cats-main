@@ -198,6 +198,7 @@ function update_content(response) {
   get_element('messages').innerHTML = get_element('messages_update').innerHTML;
   mark_selection();
   apply_onclick();
+  apply_cell_search(refreshable);
   refresh();
 }
 
