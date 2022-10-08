@@ -35,7 +35,7 @@ window.addEventListener('load', function() {
 <tr class="[% loop.parity() %]">
 <td class="narrow nobr">
   [%- t = wp.texts.item(lng.name) -%]
-  [%- href(t.href_delete, '', '', class = 'icon delete') IF t.href_delete %]
+  [%- href_delete_icon(t.href_delete) IF t.href_delete %]
   <a href="[% t.href_edit %]" class="icon edit"></a>
 </td>
 <td class="dn">[% lng.name %]</td>

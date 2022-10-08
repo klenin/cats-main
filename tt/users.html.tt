@@ -24,7 +24,7 @@
 <tr class="[% loop.parity %]">
 [% IF user.is_jury %]
 <td class="nobr">
-  [% href(u.href_delete, '', '', class = 'icon delete') %]
+  [% href_delete_icon(u.href_delete) %]
   [% href(u.href_edit, '', '', class = 'icon edit') %]
 </td>
 [% IF visible_cols.Lg %]<td>[% u.login | html %]</td>[% END %]

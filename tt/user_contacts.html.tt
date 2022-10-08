@@ -8,7 +8,7 @@
 [% FOREACH uc IN user_contacts %]
 <tr class="[% loop.parity %]">
 <td>
-  [% href(uc.href_delete, '', '', class = 'icon delete') IF uc.href_delete ~%]
+  [% href_delete_icon(uc.href_delete) IF uc.href_delete ~%]
   [% IF uc.href_edit ~%]
   <a href="[% uc.href_edit %]" class="icon edit"></a>
   [%~ END %]

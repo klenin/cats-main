@@ -9,7 +9,7 @@
 [% FOREACH w IN wiki_pages %]
 <tr class="[% loop.parity() %]">
 <td>
-  [% href(w.href_delete, '', '', class = 'icon delete') IF w.href_delete %]
+  [% href_delete_icon(w.href_delete) IF w.href_delete %]
   [% IF w.href_edit ~%]
   <a href="[% w.href_edit %]" class="icon edit"></a>
   [%~ END %]
