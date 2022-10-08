@@ -1,29 +1,21 @@
-[% PROCESS includes/menu_begin.tti %]
+[%- js.nonce = 1 -%]
+[%- PROCESS includes/menu_begin.tti -%]
 
-<script>
-function delete_compiler(href, name) {
-  if (confirm("[% capt.want_to_delete %] '" + name + "'?" ))
-    document.location=href;
-}
-</script>
+[% PROCESS includes/listview_header.tti table_selector = '#compilers' name_selector = 'td.dsc' %]
 
-[% PROCESS includes/listview_header.tti %]
-
-<table class="listview bordered highlight">
+<table class="listview bordered highlight" id="compilers">
 [% PROCESS includes/listview_col_defs.tti %]
 
 [% FOREACH c IN compilers %]
 <tr class="[% loop.parity() %]">
 <td>
-  [% IF c.href_delete ~%]
-  <a href="javascript:delete_compiler('[% c.href_delete %]', '[% c.description.squote | html %]');" class="icon delete"></a>
-  [%~ END %]
+  [% href_delete_icon(c.href_delete) IF c.href_delete %]
   [% IF c.href_edit ~%]
   <a href="[% c.href_edit %]" class="icon edit"></a>
   [%~ END %]
   [% c.code | html %]
 </td>
-<td>[% c.description | html %]</td>
+<td class="dsc">[% c.description | html %]</td>
 <td>[% c.file_ext | html %]</td>
 [% IF visible_cols.De %]<td>[% c.default_file_ext | html %]</td>[% END %]
 [% IF visible_cols.Er %]<td><pre>[% c.err_regexp | html %]</pre></td>[% END %]

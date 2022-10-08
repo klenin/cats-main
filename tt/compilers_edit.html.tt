@@ -1,5 +1,6 @@
-[% PROCESS includes/menu_begin.tti %]
-[% PROCESS includes/html_input.tti %]
+[%- js.nonce = 1 -%]
+[%- PROCESS includes/menu_begin.tti -%]
+[%- PROCESS includes/html_input.tti -%]
 
 [% idx = cp.indexed %]
 <form method="post" enctype="multipart/form-data" action="[% cp.href_action %]">

@@ -1,8 +1,9 @@
-[% extra_head = BLOCK %]
+[%- js.nonce = 1 -%]
+[%- extra_head = BLOCK -%]
   <style>
     td.cmp { width: 20px; }
   </style>
-[% END %]
+[%- END -%]
 [% PROCESS includes/menu_begin.tti %]
 <h3>[% capt.problem %]: [% problem_title %]</h3>
 <table style="text-align: right" class="bordered compare_tests highlight">
