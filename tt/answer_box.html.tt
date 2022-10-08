@@ -1,7 +1,7 @@
+[%- js.nonce = 1 -%]
 [%- PROCESS includes/header.tti %]
 </head>
 <body>
-[% UNLESS clarified %]
 <div style="padding: 10px">
   <h3>[% contest_title | html %]</h3>
   <br/>
@@ -14,11 +14,15 @@
     <input type="text" size="70" value="[% capt.no_comments %]" name="answer_text" class="bordered" />
     <br/><br/>
     <button type="submit" value="1" name="clarify" class="button">[% capt.clarify %]</button>
-    <button type="button" onclick="javascript:window.close();" class="button">[% capt.close %]</button>
+    <button type="button" id="close" class="button hidden">[% capt.close %]</button>
   </form>
 </div>
-[% ELSE %]
-<script>window.close();</script>
-[% END %]
+<script nonce="[% nonce %]">
+window.addEventListener('load', function () {
+  var btn = document.getElementById('close');
+  btn.style.display = 'inline';
+  btn.addEventListener('click', function() { window.close(); });
+});
+</script>
 </body>
 </html>
