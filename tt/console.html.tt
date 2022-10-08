@@ -13,17 +13,17 @@ table.console tbody tr td.tsl { border: 1px solid white; border-radius: 3px; pad
 <script type="text/javascript">
 
 if (performance.navigation.type == PerformanceNavigation.TYPE_BACK_FORWARD)
-   location.reload(true);
+  location.reload(true);
 
 function send_message(href) {
-    window.open(href, '', 'width=500,height=400,location=no,menubar=no,resizable=yes,scrollbars=no,status=no,toolbar=no');
+  window.open(href, '', 'width=500,height=400,location=no,menubar=no,resizable=yes,scrollbars=no,status=no,toolbar=no');
 }
 
 function get_element(name) {
   if (document.all)
-      return document.all(name);
+    return document.all(name);
   else
-      return document.getElementById(name);
+    return document.getElementById(name);
 }
 </script>
 [% WRAPPER includes/listview_header.tti form_id='console_form' %]
@@ -32,9 +32,9 @@ function get_element(name) {
 [% ELSE %]<a href="[% href_my_events_only %]">[% capt.filter_my %]</a>[% END %]
 [% IF user.is_jury %]
 <span class="nobr">
-    <label title="[% capt.contests %]">[% checkbox_1('show_contests', show_contests) %] [% capt.contests_short %]</label>
-    <label title="[% capt.messages %]">[% checkbox_1('show_messages', show_messages) %] [% capt.messages_short %]</label>
-    <label title="[% capt.results %]">[% checkbox_1('show_results', show_results) %] [% capt.results_short %]</label>
+  <label title="[% capt.contests %]">[% checkbox_1('show_contests', show_contests) %] [% capt.contests_short %]</label>
+  <label title="[% capt.messages %]">[% checkbox_1('show_messages', show_messages) %] [% capt.messages_short %]</label>
+  <label title="[% capt.results %]">[% checkbox_1('show_results', show_results) %] [% capt.results_short %]</label>
 </span>
 [% END %]
 <span class="nobr">[% capt.for %] [% select_value('i_value', i_values, i_value) %] [% select('i_unit', i_units) %]</span>
@@ -47,30 +47,30 @@ function get_element(name) {
 <br/>
 [% IF user.is_jury %]
 <div>
-    [% capt.selection %]:
-    <input type="text" id="selection" name="selection" size="35" value="[% selection %]" class="bordered" onblur="mark_selection()" />
-    [ <a href="#" onclick="clear_selection(); return false;">[% capt.clear %]</a>
-    | <a id="a_source" href="[% href_view_source %]" target="_blank"
-      onclick="return fill_1('a_source', '[% href_view_source %];rid=');">[% capt.source %]</a>
-    | <a id="a_run_details" href="[% href_run_details %]" target="_blank"
-      onclick="return fill_1('a_run_details', '[% href_run_details %];rid=');">[% capt.results %]</a>
-    | <a id="a_run_log" href="[% href_run_log %]" target="_blank"
-      onclick="return fill_1('a_run_log', '[% href_run_log %];rid=');">[% capt.log %]</a>
-    | <a id="a_diff" href="[% href_diff %]" target="_blank"
-      onclick="return fill_diff();">[% capt.compare %]</a>
-    ]
-    <label><input id="by_reference" name="by_reference" value="1" type="checkbox" />[% capt.by_reference %]</label>
-    <button id="retest" name="retest" value="1" type="submit" class="button">[% capt.retest %]</button>
-    <button id="create_group" name="create_group" value="1" type="submit" class="button">[% capt.create_group %]</button>
-    <button id="leaderboard" name="leaderboard" value="1" type="submit" class="button">[% capt.leaderboard %]</button>
+  [% capt.selection %]:
+  <input type="text" id="selection" name="selection" size="35" value="[% selection %]" class="bordered" onblur="mark_selection()" />
+  [ <a href="#" onclick="clear_selection(); return false;">[% capt.clear %]</a>
+  | <a id="a_source" href="[% href_view_source %]" target="_blank"
+    onclick="return fill_1('a_source', '[% href_view_source %];rid=');">[% capt.source %]</a>
+  | <a id="a_run_details" href="[% href_run_details %]" target="_blank"
+    onclick="return fill_1('a_run_details', '[% href_run_details %];rid=');">[% capt.results %]</a>
+  | <a id="a_run_log" href="[% href_run_log %]" target="_blank"
+    onclick="return fill_1('a_run_log', '[% href_run_log %];rid=');">[% capt.log %]</a>
+  | <a id="a_diff" href="[% href_diff %]" target="_blank"
+    onclick="return fill_diff();">[% capt.compare %]</a>
+  ]
+  <label><input id="by_reference" name="by_reference" value="1" type="checkbox" />[% capt.by_reference %]</label>
+  <button id="retest" name="retest" value="1" type="submit" class="button">[% capt.retest %]</button>
+  <button id="create_group" name="create_group" value="1" type="submit" class="button">[% capt.create_group %]</button>
+  <button id="leaderboard" name="leaderboard" value="1" type="submit" class="button">[% capt.leaderboard %]</button>
 </div>
 [% END %]
 </form>
 <form method="POST" enctype="multipart/form-data">
 <div class="send_message">
-    [% capt.question %]:
-    <input size="100" maxlength="200" name="question_text" class="bordered" />
-    <button type="submit" value="1" name="send_question" class="button">[% capt.send %]</button>
+  [% capt.question %]:
+  <input size="100" maxlength="200" name="question_text" class="bordered" />
+  <button type="submit" value="1" name="send_question" class="button">[% capt.send %]</button>
 </div>
 [% END %]
 </form>
@@ -79,49 +79,49 @@ function get_element(name) {
 var sel = get_element('selection');
 
 function mark_selection() {
-    var time_sels = get_element('console_content').getElementsByClassName('tsl');
-    for (var i = 0; i < time_sels.length; ++i) {
-        var tsl = time_sels[i].getElementsByTagName('a');
-        if (!tsl.length) continue;
-        tsl[0].style.color = time_sels[i].style['border-color'] =
-            sel.value.indexOf(tsl[0].getAttribute('title')) >= 0 ? 'green' : '';
-    }
+  var time_sels = get_element('console_content').getElementsByClassName('tsl');
+  for (var i = 0; i < time_sels.length; ++i) {
+    var tsl = time_sels[i].getElementsByTagName('a');
+    if (!tsl.length) continue;
+    tsl[0].style.color = time_sels[i].style['border-color'] =
+      sel.value.indexOf(tsl[0].getAttribute('title')) >= 0 ? 'green' : '';
+  }
 }
 [% IF user.is_jury %]mark_selection();[% END %]
 
 function add_id(id) {
-    if (sel.value != '') sel.value += ',';
-    sel.value += id;
-    mark_selection();
+  if (sel.value != '') sel.value += ',';
+  sel.value += id;
+  mark_selection();
 }
 
 function clear_selection() {
-    sel.value = '';
-    mark_selection();
+  sel.value = '';
+  mark_selection();
 }
 
 function fill_diff() {
-    var a = get_element('a_diff');
-    var re = /^(\d+),(\d+)$/;
-    var rs = re.exec(sel.value);
-    if (rs == null || rs.length != 3 || 0 >= rs[1] || 0 >= rs[2]) {
-        alert('[% capt.two_reqs %]');
-        return false;
-    }
-    a.href = '[% href_diff %];r1=' + rs[1] + ';r2=' + rs[2];
-    clear_selection();
-    return true;
+  var a = get_element('a_diff');
+  var re = /^(\d+),(\d+)$/;
+  var rs = re.exec(sel.value);
+  if (rs == null || rs.length != 3 || 0 >= rs[1] || 0 >= rs[2]) {
+      alert('[% capt.two_reqs %]');
+      return false;
+  }
+  a.href = '[% href_diff %];r1=' + rs[1] + ';r2=' + rs[2];
+  clear_selection();
+  return true;
 }
 
 function fill_1(aid, arg) {
-    var a = get_element(aid);
-    if (!sel.value.match([% IF user.is_jury %]/^[0-9,]+$/[% ELSE %]/^\d+$/[% END %])) {
-        alert('[% capt.no_req %]');
-        return false;
-    }
-    a.href = arg + sel.value;
-    clear_selection();
-    return true;
+  var a = get_element(aid);
+  if (!sel.value.match([% IF user.is_jury %]/^[0-9,]+$/[% ELSE %]/^\d+$/[% END %])) {
+    alert('[% capt.no_req %]');
+    return false;
+  }
+  a.href = arg + sel.value;
+  clear_selection();
+  return true;
 }
 
 autoupdate_interval = [% autoupdate %];
@@ -130,103 +130,103 @@ leaderboard_url = '[% href_leaderboard %]';
 main_form = get_element('console_form');
 
 function error_message(error_code) {
-    get_element('update_error').innerHTML = '[% ajax_error_msg | $Javascript %]' + error_code;
+  get_element('update_error').innerHTML = '[% ajax_error_msg | $Javascript %]' + error_code;
 }
 
 function xhr_request(url, method, data, callback) {
-    var xhr = new XMLHttpRequest();
-    if (!xhr && method == 'GET') {
-        error_message('No XMLHttpRequest');
-        return false;
+  var xhr = new XMLHttpRequest();
+  if (!xhr && method == 'GET') {
+    error_message('No XMLHttpRequest');
+    return false;
+  }
+  xhr.onreadystatechange = function () {
+    if (xhr.readyState === XMLHttpRequest.DONE) {
+      if (xhr.status == 200) {
+        get_element('update_error').innerHTML = '';
+        callback(xhr.response);
+      }
+      else
+        error_message(xhr.status);
     }
-    xhr.onreadystatechange = function(){
-        if (xhr.readyState === XMLHttpRequest.DONE) {
-            if (xhr.status == 200) {
-                get_element('update_error').innerHTML = '';
-                callback(xhr.response);
-            }
-            else
-                error_message(xhr.status);
-        }
-    };
-    xhr.open(method, url);
-    xhr.send(data);
+  };
+  xhr.open(method, url);
+  xhr.send(data);
 }
 
 function update_content(response) {
-    var refreshable = get_element('refreshable_content');
-    refreshable.innerHTML = response;
-    var pages_top = get_element('pages_top');
-    var pages_bottom = get_element('pages_bottom');
-    pages_top.innerHTML = pages_bottom.innerHTML;
-    get_element('server_time').innerHTML = get_element('server_time_update').innerHTML;
-    get_element('elapsed').innerHTML = get_element('elapsed_update').innerHTML;
-    get_element('messages').innerHTML = get_element('messages_update').innerHTML;
-    mark_selection();
-    refresh();
+  var refreshable = get_element('refreshable_content');
+  refreshable.innerHTML = response;
+  var pages_top = get_element('pages_top');
+  var pages_bottom = get_element('pages_bottom');
+  pages_top.innerHTML = pages_bottom.innerHTML;
+  get_element('server_time').innerHTML = get_element('server_time_update').innerHTML;
+  get_element('elapsed').innerHTML = get_element('elapsed_update').innerHTML;
+  get_element('messages').innerHTML = get_element('messages_update').innerHTML;
+  mark_selection();
+  refresh();
 }
 
 function form_submit_handler(e) {
-    get_element('search_hint').style.display = 'none';
-    get_element('select_cols').style.display = 'none';
-    var fd = new FormData(e.target);
-    xhr_request(console_url, 'POST', fd, update_content);
-    e.preventDefault();
+  get_element('search_hint').style.display = 'none';
+  get_element('select_cols').style.display = 'none';
+  var fd = new FormData(e.target);
+  xhr_request(console_url, 'POST', fd, update_content);
+  e.preventDefault();
 }
 
 function retest() {
-    var fd = new FormData(main_form);
-    fd.set('retest', 1);
-    get_element('selection').value = '';
-    xhr_request(console_url, 'POST', fd, update_content);
+  var fd = new FormData(main_form);
+  fd.set('retest', 1);
+  get_element('selection').value = '';
+  xhr_request(console_url, 'POST', fd, update_content);
 }
 
 function create_group() {
-    var fd = new FormData(main_form);
-    fd.set('create_group', 1);
-    get_element('selection').value = '';
-    xhr_request(console_url, 'POST', fd, update_content);
+  var fd = new FormData(main_form);
+  fd.set('create_group', 1);
+  get_element('selection').value = '';
+  xhr_request(console_url, 'POST', fd, update_content);
 }
 
 function leaderboard() {
-    document.location = leaderboard_url + ';req_ids=' + encodeURIComponent(get_element('selection').value);
+  document.location = leaderboard_url + ';req_ids=' + encodeURIComponent(get_element('selection').value);
 }
 
 
 var msie = document.documentMode;
 
 if (autoupdate_interval && (!msie || msie >= 9)) {
-    main_form.addEventListener('submit', form_submit_handler);
+  main_form.addEventListener('submit', form_submit_handler);
 [% IF user.is_jury %]
-    get_element('retest').addEventListener('click', function(e) {
-        retest();
-        e.preventDefault();
-    });
+  get_element('retest').addEventListener('click', function(e) {
+      retest();
+      e.preventDefault();
+  });
 [% END %]
 [% IF user.privs.is_root %]
-    get_element('create_group').addEventListener('click', function(e) {
-        create_group();
-        e.preventDefault();
-    });
-    get_element('leaderboard').addEventListener('click', function(e) {
-        leaderboard();
-        e.preventDefault();
-    });
+  get_element('create_group').addEventListener('click', function(e) {
+    create_group();
+    e.preventDefault();
+  });
+  get_element('leaderboard').addEventListener('click', function(e) {
+    leaderboard();
+    e.preventDefault();
+  });
 [% END %]
 }
 
 function console_update() {
-    xhr_request(console_url, 'GET', undefined, update_content);
+  xhr_request(console_url, 'GET', undefined, update_content);
 }
 
 var refresh_timeout;
 function refresh() {
-    clearTimeout(refresh_timeout);
-    refresh_timeout = setTimeout(console_update, 1000 * autoupdate_interval);
+  clearTimeout(refresh_timeout);
+  refresh_timeout = setTimeout(console_update, 1000 * autoupdate_interval);
 }
 
 if (autoupdate_interval != 0 ) {
-    refresh();
+  refresh();
 }
 
 </script>
