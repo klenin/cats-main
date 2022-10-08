@@ -275,20 +275,22 @@ sub acc_group_add_users_frame {
     my $group_name = $p->{group} && $dbh->selectrow_array(q~
         SELECT name FROM acc_groups WHERE id = ?~, undef,
         $p->{group}) or return;
+    my @url_p = ('acc_group_users', group => $p->{group});
     my $accounts =
         $p->{by_login} ? _accounts_by_login($p->{logins_to_add}) :
         $p->{source_cid} ? _accounts_by_contest($p->{source_cid}, $p->{include_ooc}) :
         $p->{source_group_id} ? _accounts_by_acc_group(
             $p->{source_group_id}, $p->{include_hidden}, $p->{include_admins}) :
         undef;
-    $accounts = $accounts && CATS::AccGroups::add_accounts(
-        $accounts, $p->{group}, $p->{make_hidden},
-        $p->{make_admin} && $user->privs->{manage_groups}) // [];
-    msg(1221, scalar @$accounts);
+    if ($accounts) {
+        my $added = CATS::AccGroups::add_accounts(
+            $accounts, $p->{group}, $p->{make_hidden},
+            $p->{make_admin} && $user->privs->{manage_groups}) // [];
+        msg(1221, scalar @$added);
 
-    my @url_p = ('acc_group_users', group => $p->{group});
-    if ($p->{by_login}) {
-        $t->param(CATS::User::logins_maybe_added($p, \@url_p, $accounts));
+        if ($p->{by_login}) {
+            $t->param(CATS::User::logins_maybe_added($p, \@url_p, $added));
+        }
     }
     $t->param(
         href_action => url_f(acc_group_add_users => group => $p->{group}),
