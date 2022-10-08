@@ -1,16 +1,9 @@
-[% js.jquery = 1 %]
-[% PROCESS includes/menu_begin.tti %]
+[%- js.jquery = 1; js.nonce = 1 -%]
+[%- PROCESS includes/menu_begin.tti -%]
 
-<script>
-function delete_acc_group(href, name) {
-  if (confirm( "[% capt.want_to_delete %] '" + name + "'?" ))
-    document.location = href;
-}
-</script>
+[% PROCESS includes/listview_header.tti table_selector = '#acc_groups' name_selector = 'a.agn' %]
 
-[% PROCESS includes/listview_header.tti %]
-
-<table class="listview bordered highlight">
+<table class="listview bordered highlight" id="acc_groups">
 [% PROCESS includes/listview_col_defs.tti sel_col = user.is_jury %]
 
 [% FOREACH ag IN acc_groups %]
@@ -18,7 +11,7 @@ function delete_acc_group(href, name) {
 [% IF user.is_jury -%]
 <td class="nobr sel_col">
 [% IF user.privs.is_root -%]
-  <a href="javascript:delete_acc_group('[% ag.href_delete %]', '[% ag.name.squote | html %]');" class="icon delete"></a>
+  [% href_delete_icon(ag.href_delete) %]
 [% END -%]
 [% IF ag.href_edit -%]
   <a href="[% ag.href_edit %]" class="icon edit"></a>
@@ -27,7 +20,7 @@ function delete_acc_group(href, name) {
   <input type="checkbox" name="check" value="[% ag.id %]" />
 </td>
 [% END %]
-<td>[% href(ag.href_view_users, ag.name) %]</td>
+<td>[% href(ag.href_view_users, ag.name, '', class = 'agn') %]</td>
 [% IF visible_cols.Ds %]<td>[% ag.descr_prefix | html; '&hellip;' IF ag.descr_cut %]</td>[% END %]
 [% IF user.is_jury -%]
 <td>[% IF ag.is_used %]<a href="[% ag.href_view_users_in_contest %]" class="icon checked"></a>[% END %]</td>

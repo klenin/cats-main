@@ -1,30 +1,23 @@
-[% js.jquery = 1 %]
-[% PROCESS includes/menu_begin.tti %]
+[%- js.jquery = 1; js.nonce = 1 -%]
+[%- PROCESS includes/menu_begin.tti -%]
 
-<script>
-function delete_acc_group_user(href, name) {
-  if (confirm( "[% capt.want_to_delete %] '" + name + "'?" ))
-    document.location = href;
-}
-</script>
+[% PROCESS includes/listview_header.tti table_selector = '#acc_group_users' name_selector = 'a.tn' %]
 
-[% PROCESS includes/listview_header.tti %]
-
-<table class="listview bordered highlight">
+<table class="listview bordered highlight" id="acc_group_users">
 [% PROCESS includes/listview_col_defs.tti sel_col = can_edit %]
 
 [% FOREACH u IN acc_group_users %]
 <tr class="[% loop.parity() %]">
 [% IF can_edit -%]
 <td class="nobr sel_col">
-  <a href="javascript:delete_acc_group_user('[% u.href_exclude %]', '[% u.team_name.squote | html %]');" class="icon delete"></a>
+  [% href_delete_icon(u.href_exclude) %]
 [% IF u.href_edit -%]
   <a href="[% u.href_edit %]" class="icon edit"></a>
 [%- END %]
   <input type="checkbox" name="user_selection" value="[% u.account_id %]" />
 </td>
 [%- END %]
-<td>[% href(u.href_stats, u.team_name) %]</td>
+<td>[% href(u.href_stats, u.team_name, '', class = 'tn') %]</td>
 [% IF can_edit %]<td>[% u.login | html %]</td>[% END %]
 <td>[% IF u.in_contest %]<a href="#" class="icon checked"></a>[% END %]</td>
 [% IF can_edit %]<td>[% IF u.is_admin %]<a href="#" class="icon checked"></a>[% END %]</td>[% END %]
