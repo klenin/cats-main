@@ -289,7 +289,8 @@ sub _save_content {
     undef $p->{file} if $p->{new};
 
     my CATS::Problem::Storage $ps = CATS::Problem::Storage->new;
-    Encode::from_to($content, $p->{enc} // 'UTF-8', $p->{src_enc});
+    my $is_raw = $p->{src_enc} eq 'HEX';
+    Encode::from_to($content, $p->{enc} // 'UTF-8', $p->{src_enc}) unless $is_raw;
     my ($error, $latest_sha, $parsed_problem) = $ps->change_file(
         $pr->{contest_id}, $p->{pid}, $p->{file} // '', $content,
         $p->{message}, $p->{is_amend} || 0, $p->{new_name}
@@ -300,7 +301,8 @@ sub _save_content {
         CATS::StaticPages::invalidate_problem_text(pid => $p->{pid});
         return _problem_commitdiff(
             $p, $parsed_problem->{description}->{title},
-            $latest_sha, $p->{src_enc}, $ps->encoded_import_log, $p->{new_name});
+            $latest_sha, $is_raw ? 'UTF-8' : $p->{src_enc},
+            $ps->encoded_import_log, $p->{new_name});
     }
 
     $content = Encode::decode($p->{enc} // 'UTF-8', $p->{src});
