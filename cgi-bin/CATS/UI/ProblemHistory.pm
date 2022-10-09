@@ -285,15 +285,17 @@ sub _save_content {
     my $hash_base = $p->{hb};
     $p->{src} = $p->{upload} ? $p->{source}->content : Encode::encode_utf8($p->{src});
     my $content = $p->{src};
-    undef $p->{new_name} if $p->{file} and $p->{new_name} eq $p->{file};
+    undef $p->{new_name} if $p->{file} && $p->{new_name} eq $p->{file};
     undef $p->{file} if $p->{new};
 
     my CATS::Problem::Storage $ps = CATS::Problem::Storage->new;
     my $is_raw = $p->{src_enc} eq 'HEX';
     Encode::from_to($content, $p->{enc} // 'UTF-8', $p->{src_enc}) unless $is_raw;
+
+    my $message = $p->{message} // ($p->{new} && "Add file $p->{new_name}");
     my ($error, $latest_sha, $parsed_problem) = $ps->change_file(
         $pr->{contest_id}, $p->{pid}, $p->{file} // '', $content,
-        $p->{message}, $p->{is_amend} || 0, $p->{new_name}
+        $message, $p->{is_amend} || 0, $p->{new_name}
     );
 
     unless ($error) {
