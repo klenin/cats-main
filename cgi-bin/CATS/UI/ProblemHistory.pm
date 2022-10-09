@@ -7,6 +7,7 @@ use Encode qw();
 use JSON::XS qw(encode_json);
 
 use CATS::DB;
+use CATS::DetectImage;
 use CATS::Globals qw($cid $is_jury $is_root $t $uid);
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
@@ -289,7 +290,8 @@ sub _save_content {
     undef $p->{file} if $p->{new};
 
     my CATS::Problem::Storage $ps = CATS::Problem::Storage->new;
-    my $is_raw = $p->{src_enc} eq 'HEX';
+    my $is_raw = $p->{src_enc} eq 'HEX' ||
+        $p->{new} && CATS::DetectImage::has_image_extension($p->{new_name});
     Encode::from_to($content, $p->{enc} // 'UTF-8', $p->{src_enc}) unless $is_raw;
 
     my $message = $p->{message} // ($p->{new} && "Add file $p->{new_name}");

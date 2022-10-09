@@ -9,6 +9,8 @@ my $headers = {
     # bmp => 'BM', # Too weak.
 };
 
+sub has_image_extension { $_[0] =~ /\.(?:jpe?g|png|gif|bmp)$/ }
+
 sub detect {
     my ($bytes) = @_;
     for my $name (keys %$headers) {
