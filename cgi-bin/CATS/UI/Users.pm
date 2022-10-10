@@ -403,11 +403,12 @@ sub users_frame {
     $t->param(contacts => \@visible_contacts);
     my $contacts_sql = join '', map ', (' . _contact_field_sql($_) . ") AS CT_$_->{sql}", @visible_contacts;
     my $groups_sql = !$lv->visible_cols->{Gr} ? 'NULL' : qq~
-        SELECT LIST(AG.name, ' ') FROM acc_groups AG
-        INNER JOIN acc_group_accounts AGA ON AGA.acc_group_id = AG.id
-        INNER JOIN acc_group_contests AGC ON AGC.acc_group_id = AG.id
-        WHERE AGC.contest_id = CA.contest_id AND AGA.account_id = A.id AND AGA.is_hidden = 0
-        $db->{LIMIT} 5~;
+        SELECT LIST(name, ' ') FROM (
+            SELECT AG.name FROM acc_groups AG
+            INNER JOIN acc_group_accounts AGA ON AGA.acc_group_id = AG.id
+            INNER JOIN acc_group_contests AGC ON AGC.acc_group_id = AG.id
+            WHERE AGC.contest_id = CA.contest_id AND AGA.account_id = A.id AND AGA.is_hidden = 0
+            $db->{LIMIT} 5)~;
 
     my $awards_public_cond = $is_jury ? '' : ' AND AW.is_public = 1';
     my $awards_sql = !$lv->visible_cols->{Aw} ? 'NULL' : qq~
