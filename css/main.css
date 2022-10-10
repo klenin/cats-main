@@ -366,7 +366,7 @@ tr.col_defs th a { color: black; }
 table.console > tbody > tr > td { margin: 0; padding: 2px 4px 2px 2px; }
 table.console > tbody > tr > td:first-child { width: 1%; white-space: nowrap; }
 table.console td, table.console td a { font-size: 10pt; }
-table.cell_search td a.add_search { display: none; }
+table.cell_search td a.add_search { display: none; user-select: none; }
 table.cell_search td:hover a.add_search {
     display: inline;
     position: absolute;
