@@ -28,7 +28,7 @@
     repo_path => 'Path in repository',
     replace_problem => 'Replace problem',
     rename => 'rename',
-    delete => 'Delete problem',
+    delete_problem => 'Delete problem',
     new_title => 'Title',
     new_lang => 'Language',
     pull => 'pull',

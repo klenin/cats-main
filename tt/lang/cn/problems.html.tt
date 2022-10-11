@@ -29,7 +29,7 @@
     repo_path => 'Path in repository',
     replace_problem => 'Replace problem',
     rename => '改名',
-    delete => '删除',
+    delete_problem => '删除',
     new_title => '名',
     new_lang => 'Language',
     pull => '拉',

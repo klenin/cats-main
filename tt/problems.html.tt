@@ -324,7 +324,7 @@ function move_code(pid, dir) {
     <div></div>
     <a href="#" id="replace_tab_btn" onclick="return select_edit_tab('replace')">[% capt.replace_problem %]</a>
     <div></div>
-    <a href="#" id="delete_tab_btn" onclick="return select_edit_tab('delete')">[% capt.delete %]</a>
+    <a href="#" id="delete_tab_btn" onclick="return select_edit_tab('delete')">[% capt.delete_problem %]</a>
     <div class="filler"></div>
   </div>
   <div id="edit_tabs">
