@@ -147,7 +147,7 @@ sub prepare_de_list {
     my ($allowed_des) = $dbh->selectall_arrayref(_u $sql->select(
         'contest_problems CP LEFT JOIN contest_problem_des CPD ON CP.id = CPD.cp_id',
         'CP.id, CPD.de_id',
-        { 'CP.contest_id' => $cid,
+        { 'CP.contest_id' => $cid, ($p->{cpid} ? ('CP.id' => $p->{cpid}) : ()),
             ($is_jury ? () : ('CP.status' => { '<', $cats::problem_st_disabled })) }
     ));
 
@@ -165,8 +165,8 @@ sub prepare_de_list {
 
     my @all_des = $allow_all ? @{$de_list->des} : grep $allowed{$_->{id}}, @{$de_list->des};
     my @de = (
-        { de_id => 'by_extension', de_name => res_str(536) },
          map {{ de_id => $_->{id}, de_name => $_->{description}, syntax => $_->{syntax}, code => $_->{code} }} @all_des );
+    unshift @de, { de_id => 'by_extension', de_name => res_str(536) } if @de > 1;
     (de_list => \@de, de_selected => @all_des == 1 ? $all_des[0]->{id} : $p->{de_id});
 }
 

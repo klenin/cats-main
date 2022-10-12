@@ -440,7 +440,7 @@ sub problem_text {
     }
     $dbh->commit if $need_commit;
 
-    my %de = prepare_de_list;
+    my %de = prepare_de_list($p);
     ($de{quiz_de}) =
         grep $_->{code} && $_->{code} == $CATS::Globals::de_code_quiz, @{$de{de_list}};
     $t->param(
