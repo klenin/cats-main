@@ -1,27 +1,19 @@
-[% PROCESS includes/menu_begin.tti %]
+[%- js.nonce = 1 -%]
+[%- PROCESS includes/menu_begin.tti -%]
 
-<script>
-function delete_contact_type(href, name) {
-    if (confirm("[% capt.want_to_delete %] '" + name + "'?" ))
-        document.location=href;
-}
-</script>
+[% PROCESS includes/listview_header.tti table_selector = '#contact_types' name_selector = 'span.nm' %]
 
-[% PROCESS includes/listview_header.tti %]
-
-<table class="listview bordered highlight">
+<table class="listview bordered highlight" id="contact_types">
 [% PROCESS includes/listview_col_defs.tti %]
 
 [% FOREACH ct IN contact_types %]
 <tr class="[% loop.parity() %]">
 <td>
-  [% IF ct.href_delete ~%]
-  <a href="javascript:delete_contact_type('[% ct.href_delete %]', '[% ct.name.squote | html %]');" class="icon delete"></a>
-  [%~ END %]
+  [% href_delete_icon(ct.href_delete) IF ct.href_delete %]
   [% IF ct.href_edit ~%]
   <a href="[% ct.href_edit %]" class="icon edit"></a>
   [%~ END %]
-  [% ct.name | html %]
+  <span class="nm">[% ct.name | html %]</span>
 </td>
 [% IF visible_cols.Ur %]<td>[% ct.url | html %]</td>[% END %]
 </tr>
