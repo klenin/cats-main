@@ -167,6 +167,7 @@ sub tag_handlers() {{
     LocalOnly => { e => sub { assign_contest_prop(@_, \&to_bool) } },
     ShowSites => { e => sub { assign_contest_prop(@_, \&to_bool) } },
     ShowFlags => { e => sub { assign_contest_prop(@_, \&to_bool) } },
+    ShowIsRemote => { e => sub { assign_contest_prop(@_, \&to_bool) } },
     StartDate => { e => sub { assign_contest_prop(@_, \&to_date) } },
     ShortDescr => { e => sub { assign_contest_prop(@_, \&to_string) } },
     IsOfficial => { e => sub { assign_contest_prop(@_, \&to_bool) } },
