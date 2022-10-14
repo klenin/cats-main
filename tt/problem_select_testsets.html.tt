@@ -1,19 +1,22 @@
-[% PROCESS includes/menu_begin.tti %]
+[%= js.nonce = 1; js.jquery = 1 -%]
+[%- PROCESS includes/menu_begin.tti -%]
 
 <h3>[% problem_title %]</h3>
 [% capt.select_testsets %]:
 <form action="[% href_action %]" method="POST">
 <table class="bordered highlight">
-<tr class="col_defs">
-  <th>[% capt.for_check %]</th>
-  <th>[% capt.for_points %]</th>
-  <th>[% capt.name %]</th>
-  <th>[% capt.tests %]</th>
-  <th>[% capt.count %]</th>
-  <th>[% capt.points %]</th>
-  <th>[% capt.hide_details %]</th>
-  <th>[% capt.depends_on %]</th>
-</tr>
+[%
+  col_defs = [
+    { caption => 'for_check', checkbox => 'input[name=sel_testsets]' }
+    { caption => 'for_points', checkbox => 'input[name=sel_points_testsets]' }
+    { caption => 'name' },
+    { caption => 'tests' },
+    { caption => 'count' },
+    { caption => 'points' },
+    { caption => 'hide_details' },
+    { caption => 'depends_on' },
+  ];
+  PROCESS includes/listview_col_defs.tti all_visible = 1 %]
 [% FOREACH ts IN testsets %]
 <tr class="[% loop.parity() %]">
   <td><label style="display: block; width: 100%; height: 100%;">
@@ -37,9 +40,9 @@
 </p>
 <hr/>
 <table>
-<tr><td>[% capt.for_check %]: </td>
+<tr><td>[% capt.listview_captions.for_check %]: </td>
   <td><input type="text" size="80" name="testsets_text" value="[% problem_testsets %]" class="bordered"/></td></tr>
-<tr><td>[% capt.for_points %]: </td>
+<tr><td>[% capt.listview_captions.for_points %]: </td>
   <td><input type="text" size="80" name="points_testsets_text" value="[% problem_points_testsets %]" class="bordered"/></td></tr>
 </table>
 <button type="submit" name="save_text" value="1" class="button">[% capt.save %]</button>

@@ -1,14 +1,16 @@
 [%
   capt.import({
     select_testsets => 'Выберите тестовые наборы',
-    for_check => 'Проверять',
-    for_points => 'Ставить баллы',
-    name => 'Название',
-    tests => 'Тесты',
-    count => 'Кол-во',
-    points => 'Баллы',
-    hide_details => 'Скрывать детали',
-    depends_on => 'Зависит от',
+    listview_captions => {
+      for_check => 'Проверять',
+      for_points => 'Ставить баллы',
+      name => 'Название',
+      tests => 'Тесты',
+      count => 'Кол-во',
+      points => 'Баллы',
+      hide_details => 'Скрывать детали',
+      depends_on => 'Зависит от',
+    },
     save => 'Сохранить',
   })
 %]
