@@ -55,5 +55,21 @@
   });
 </script>
 [%- END %]
-
+[% IF js.switch_lang -%]
+<script nonce="[% nonce %]">
+window.addEventListener('load', function() {
+  var switch_lang = function(e) {
+    e.preventDefault();
+    var lang = this.innerText.toLowerCase();
+    var d = document;
+    d.location = d.location.pathname + '?lang=' + lang + ';' +
+      d.location.search.replace(/([\?&;])lang=\w+[&;]?/, '$1').replace('?', '');
+  };
+  var langs = document.getElementById('switch_lang').getElementsByTagName('a');
+  for (var i = 0; i < langs.length; ++i) {
+    langs[i].addEventListener('click', switch_lang);
+  }
+});
+</script>
+[%- END -%]
 [%- extra_head -%]
