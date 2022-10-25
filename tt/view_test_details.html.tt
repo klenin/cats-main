@@ -37,8 +37,10 @@
 [% END %]
 </form>
 
-<div>
-    <h3 id="input_d">[% capt.input_data %]</h3>
+<label><h3 id="input_d">[% capt.input_data -%]
+  <input type="checkbox" id="show_input_data"[% maybe_checked(display_input) %]/>
+</h3></label>
+<div id="input_data">
     [% IF test_data.input_size %]
         [% capt.size %]: [% test_data.input.length | group_digits %] / [% test_data.input_size | group_digits %]<br>
     [% END %]
@@ -47,8 +49,10 @@
     [% END %]
 </div>
 
-<div>
-    <h3 id="answer_d">[% capt.answer_data %]</h3>
+<label><h3 id="answer_d">[% capt.answer_data -%]
+  <input type="checkbox" id="show_answer_data"[% maybe_checked(display_answer) %]/>
+</h3></label>
+<div id="answer_data">
     [% IF test_data.answer_size %]
         [% capt.size %]: [% test_data.answer.length | group_digits %] / [% test_data.answer_size | group_digits %]<br>
     [% END %]
@@ -57,8 +61,10 @@
     [% END %]
 </div>
 
-<div>
-    <h3 id="output_d">[% capt.output_data %]</h3>
+<label><h3 id="output_d">[% capt.output_data -%]
+  <input type="checkbox" id="show_output_data"[% maybe_checked(display_output) %]/>
+</h3></label>
+<div id="output_data">
     [% IF output_data.output_size %]
         [% capt.size %]: [% output_data.output.length | group_digits %] / [% output_data.output_size | group_digits %]<br>
     [% END %]
@@ -67,6 +73,23 @@
     [% END %]
 </div>
 </div>
+
+<script nonce="[% nonce %]">
+  window.addEventListener('load', function () {
+    var toggle_div = function(div) {
+      div.style.display  = div.style.display == 'none' ? 'block' : 'none';
+    };
+    var apply_div = function (kind) {
+      var cb = document.getElementById('show_' + kind + '_data');
+      var div = document.getElementById(kind + '_data');
+      if (!cb.checked) toggle_div(div);
+      cb.addEventListener('click', function () { toggle_div(div); });
+    };
+    apply_div('input');
+    apply_div('answer');
+    apply_div('output');
+  });
+</script>
 
 <div style="height: 50px"></div>
 [% PROCESS includes/timing.tti %]

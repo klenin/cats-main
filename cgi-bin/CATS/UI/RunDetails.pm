@@ -265,6 +265,15 @@ sub _set_points {
     $dbh->commit;
 }
 
+sub _get_display_settings {
+    my ($settings) = @_;
+    return (
+        display_input => $settings->{display_input},
+        display_answer => $settings->{display_input},
+        display_output => $settings->{display_input}, #TODO: Add this params to settings
+    );
+}
+
 sub run_details_frame {
     my ($p) = @_;
     init_template($p, 'run_details');
@@ -289,11 +298,7 @@ sub run_details_frame {
     }
     $dbh->commit if $needs_commit;
     sources_info_param($sources_info);
-    $t->param(runs => \@runs,
-        display_input => $settings->{display_input},
-        display_answer => $settings->{display_input},
-        display_output => $settings->{display_input}, #TODO: Add this params to settings
-    );
+    $t->param(runs => \@runs, _get_display_settings($settings));
 }
 
 sub save_visualizer {
@@ -456,6 +461,7 @@ sub view_test_details_frame {
                 short_verdict => $CATS::Verdicts::state_to_name->{$_->{result}},
             }, @tests
         ],
+        _get_display_settings($settings),
     );
 }
 
