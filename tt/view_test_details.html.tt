@@ -1,3 +1,4 @@
+[%- js.nonce = 1 -%]
 [%- PROCESS includes/sources_styles.tti -%]
 [% PROCESS includes/header.tti %]
 <style>
@@ -22,16 +23,16 @@
 [%~ href(href_next_pages, '>>') IF href_next_pages ~%]
 </span></div>
 
-<form method="post">
 [% PROCESS includes/encoding_form.html.tti
     capt_enc = capt.encoding
     select_name = 'comment_enc'
 %]
-<p><button type="submit" name="delete_request_outputs" class="button" value="1" onclick="return confirm('[% capt.confirm_delete_for_request %]')">
+<form method="post">
+<p><button type="submit" name="delete_request_outputs" class="button" value="1" data-confirm="[% capt.confirm_delete_for_request %]">
 [%- capt.delete_request_outputs -%]
 </button></p>
 [% IF output_data %]
-<p><button type="submit" name="delete_test_output" class="button" value="1" onclick="return confirm('[% capt.confirm_delete_for_test %]')">
+<p><button type="submit" name="delete_test_output" class="button" value="1" data-confirm="[% capt.confirm_delete_for_test %]">
 [%- capt.delete_test_output -%]
 </button></p>
 [% END %]
@@ -88,6 +89,13 @@
     apply_div('input');
     apply_div('answer');
     apply_div('output');
+
+    var confirm_data = function () {
+        return confirm(this.getAttribute('data-confirm'));
+    };
+    var confirms = document.querySelectorAll('button[data-confirm]');
+    for (var i = 0; i < confirms.length; ++i)
+      confirms[i].addEventListener('click', confirm_data);
   });
 </script>
 
