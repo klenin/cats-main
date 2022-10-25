@@ -18,14 +18,20 @@
 <div class="messages">[% FOREACH m IN messages %]<i>[% m | html %]</i><br/>[% END %]</div>
 
 [% IF is_any_jury %]
-<script type="text/javascript">
-function send_message(href) {
-  window.open(href, '', 'width=500,height=400,location=no,menubar=no,resizable=yes,scrollbars=no,status=no,toolbar=no');
+<script nonce="[% nonce %]">
+function send_message(e) {
+  e.preventDefault();
+  window.open(this.href, '', 'width=500,height=400,location=no,menubar=no,resizable=yes,scrollbars=no,status=no,toolbar=no');
 }
+window.addEventListener('load', function () {
+  var hrefs = document.querySelectorAll('a._send_message');
+  for (var i = 0; i < hrefs.length; ++i)
+    hrefs[i].addEventListener('click', send_message);
+});
 </script>
 [% END %]
 [% IF unprocessed_sources.size > 0 %]
-<script type="text/javascript">
+<script nonce="[% nonce %]">
 var verdict_descrs = {
 [% FOREACH v IN capt.verdicts; "${v.key}:'${v.value}'"; ', ' UNLESS loop.last; END %]
 };
