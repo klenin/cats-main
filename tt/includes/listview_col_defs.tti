@@ -27,6 +27,9 @@ window.addEventListener('load', function() {
   document.querySelectorAll('.toggle_all_cb').forEach(function (el) {
     var selector = el.getAttribute('data-cb_selector');
     if (!selector) return;
+    var a = Array.from(document.querySelectorAll(selector));
+    if (a.length > 0 && a.every(function (cb) { return cb.checked; }))
+      el.checked = true;
     el.addEventListener('click', function () { toggle_all_cb(this, selector); });
   });
 });
