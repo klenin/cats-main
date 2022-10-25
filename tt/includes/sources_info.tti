@@ -89,7 +89,7 @@ $(document).ready(update_request_status);
     [% IF si.is_jury %]
       [<a href="[% si.href_whois %]" title="[% si.last_ip %]">[% si.last_ip_short %]</a>]
       [[% IF si.href_send_message ~%]
-        <a href="javascript:send_message('[% si.href_send_message %]')">[% capt.message %]</a>
+        <a href="[% si.href_send_message %]" title="[% capt.message %]" class="_send_message"><div class="inline_svg">[% PROCESS includes/icon/envelope.tti %]</div></a>
         [%~ FOREACH c IN si.contacts; ' '; href(c.href, c.name, c.handle); END %]
         [%~ ELSE; capt.disqualified; END %]]
     [% END %]

@@ -16,5 +16,7 @@
       width: 100%;
     }
     .verdict_short { width: 1px; }
+    div.inline_svg { display: inline-block; }
+    div.inline_svg svg { vertical-align: bottom; }
   </style>
 [%- END; END; SET extra_head = extra_head _ e %]
