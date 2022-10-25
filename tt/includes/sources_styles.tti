@@ -1,4 +1,4 @@
-[% js.jquery = 1; -%]
+[%- js.jquery = 1; js.switch_lang = 1 -%]
 [% IF is_any_jury; e = BLOCK %]
   <style>
     .limits {
