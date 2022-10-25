@@ -8,7 +8,9 @@
   .details .test_data a { font-family: "Courier New", Courier, monospace; }
   .req > tbody > tr > td { vertical-align: top; }
   .points { position: relative; }
+  [% IF is_any_jury -%]
   .points:hover::before { position: absolute; content: '\270D  '; font-size: large; left: 0; top: -2px; }
+  [%- END %]
 </style>
 </head>
 <body>
