@@ -84,6 +84,7 @@ if [[ $step =~ (^|,)2(,|$) || $step == "*" ]]; then
 	cpan_packages=(
 		Module::Install
 		DBI
+		DBI::Profile
 		DBD::Firebird
 
 		Algorithm::Diff
