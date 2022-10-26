@@ -466,6 +466,7 @@ my $api_judge_routes = {
         req_id => integer,
         state => integer,
         job_id => integer,
+        account_id => integer,
         problem_id => integer,
         contest_id => integer,
         failed_test => integer,

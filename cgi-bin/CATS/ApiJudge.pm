@@ -123,6 +123,7 @@ sub set_request_state {
         req_id      => $p->{req_id},
         state       => $p->{state},
         job_id      => $p->{job_id},
+        account_id  => $p->{account_id},
         contest_id  => $p->{contest_id},
         problem_id  => $p->{problem_id},
         failed_test => $p->{failed_test},
