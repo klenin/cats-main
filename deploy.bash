@@ -99,7 +99,6 @@ if [[ $step =~ (^|,)2(,|$) || $step == "*" ]]; then
 		Text::CSV
 		Text::MultiMarkdown
 		XML::Parser::Expat
-		YAML::Syck
 	)
 	sudo cpanm -S ${cpan_packages[@]}
 	echo "ok"
