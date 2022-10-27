@@ -1,4 +1,4 @@
-[%- js.jquery = 1; SET js.autocomplete = 1 IF user.privs.is_root -%]
+[%- js.nonce = 1; js.jquery = 1; SET js.autocomplete = 1 IF user.privs.is_root -%]
 [%- extra_head = BLOCK %]
 <link rel="alternate" type="application/rss+xml" title="RSS" href="[% href_rss %]">
 <style>
@@ -16,21 +16,9 @@
 [% PROCESS includes/menu_begin.tti %]
 [%- PROCESS includes/autocomplete.tti -%]
 
-<script type="text/javascript">
-function delete_contest(href, name) {
-  if (confirm("[% capt.want_to_delete %] '" + name + "'?" ))
-    document.location = href;
-}
-try {
-  var sid = (new RegExp('sid=([a-zA-Z0-9]{30})')).exec(window.location.href)[1];
-  if (localStorage.getItem('sid') != sid) localStorage.clear();
-  localStorage.setItem('sid', sid);
-} catch (exception) {}
-</script>
+[% PROCESS includes/listview_header.tti form_id='contest_form' table_selector = '#contests' name_selector = 'a.ctn' %]
 
-[% PROCESS includes/listview_header.tti form_id='contest_form' %]
-
-<table class="listview bordered highlight">
+<table class="listview bordered highlight" id="contests">
 [% PROCESS includes/listview_col_defs.tti sel_col = 1 %]
 
 [% FOREACH c IN contests %]
@@ -38,16 +26,14 @@ try {
 <td class="sel_col">
   <label><input type="checkbox" class="listview_checkbox" name="contests_selection" value="[% c.id %]" /></label>
 </td><td>
-  [% IF c.deletable %]
-  <a href="javascript:delete_contest('[% c.href_delete %]', '[% c.contest_name.squote | html %]');" class="icon delete"></a>
-  [% END %]
+  [% href_delete_icon(c.href_delete) IF c.deletable %]
   [% IF c.editable %]
   <a href="[% c.href_params %]" class="icon edit"></a>
   [% ELSE %]
   <a href="[% c.href_params %]" class="icon view" title="[% capt.alt_params %]"></a>
   [% END %]
   [% IF c.href_results %]<a href="[% c.href_results %]" class="icon leaderboard" title="[% capt.alt_results %]"></a>[% END -%]
-  <a href="[% c.href_problems %]" title="[% c.short_descr | html %]"[% ' class="contest_selected"' IF c.selected %]>
+  <a href="[% c.href_problems %]" title="[% c.short_descr | html %]" class="ctn[% ' contest_selected' IF c.selected %]">
     [%- c.contest_name | html %]</a>
   [% '[<a href="' _ c.href_parent _ '">&#x21E1;</a>]' IF c.href_parent # Avoid quoting. %]
   [% IF c.child_count %][<a href="[% c.href_children %]">[% c.child_count %]</a>][% END %]
@@ -111,7 +97,7 @@ END %]
 <button type="submit" name="add_children" value="1" class="button">[% capt.children.add %]</button>
 <button type="submit" name="remove_children" value="1" class="button">[% capt.children.remove %]</button>
 </div>
-<script>
+<script nonce="[% nonce %]">
 $(function() { autocomplete($('#tag_name'), '[% href_find_tags %]', {
   formatResult: AutoComplete.formatResult.contest_tags,
 }); });
