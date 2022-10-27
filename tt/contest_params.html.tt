@@ -1,4 +1,4 @@
-[%- js.datepicker = 1 -%]
+[%- js.nonce = 1; js.datepicker = 1 -%]
 [% PROCESS includes/menu_begin.tti %]
 
 <form method="post" enctype="multipart/form-data" action="[% href_action %]">

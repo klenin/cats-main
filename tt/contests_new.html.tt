@@ -1,9 +1,6 @@
-[%- js.datepicker = 1 -%]
-[%- IF user.privs.is_root;
-  js.jquery = 1; js.autocomplete = 1;
-  PROCESS includes/autocomplete.tti;
-END -%]
-[% PROCESS includes/menu_begin.tti %]
+[%- js.nonce = 1; js.jquery = 1; js.datepicker = 1; js.autocomplete =user.privs.is_root -%]
+[%- PROCESS includes/menu_begin.tti -%]
+[%- PROCESS includes/autocomplete.tti IF user.privs.is_root -%]
 
 <form method="post" enctype="multipart/form-data" action="[% href_action %]">
 [% PROCESS includes/contest_params.tti %]
@@ -13,7 +10,7 @@ END -%]
 [% capt.set_tag %]: <input type="text" id="tag_name" name="tag_name" size="30" class="bordered"/>
 </div>
 <br/>
-<script>
+<script nonce="[% nonce %]">
 $(function() { autocomplete($('#tag_name'), '[% href_find_tags %]', {
   formatResult: AutoComplete.formatResult.contest_tags,
 }); });

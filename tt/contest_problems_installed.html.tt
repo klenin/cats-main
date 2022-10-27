@@ -1,4 +1,5 @@
-[% extra_head = BLOCK %]
+[%- js.nonce = 1 -%]
+[%- extra_head = BLOCK -%]
   <style>
     table.judges_problems td { text-align: right; }
     table.judges_problems th { max-width: 20em; vertical-align: top; }
