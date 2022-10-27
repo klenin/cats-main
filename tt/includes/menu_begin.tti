@@ -4,6 +4,7 @@
 [%- IF noiface %]
 <style> .iface { display: none !important; }</style>
 [% END -%]
+<style>/*<body>*/[%# Prevent tracker injection. %]</style>
 </head>
 <body>
 <table class="iface header">
