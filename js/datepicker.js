@@ -1,4 +1,7 @@
-function show_datepicker(el, name) {
+function show_datepicker(e) {
+  e.preventDefault();
+  var el = this;
+  var name = $(el).data('datepicker');
   var input = $(el).parent().children('[name=' + name + ']');
   var date_time = input.val().split(/\s+/);
   var time = date_time[1] ? ' ' + date_time[1] : '';
@@ -38,4 +41,5 @@ function init_datepickers(lang) {
     yearSuffix: '年'
   };
   $.fn.datepicker.setDefaults({language: lang});
+  $('a[data-datepicker]').click(show_datepicker);
 }

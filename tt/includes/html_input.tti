@@ -54,7 +54,7 @@
       [%- tag_attrs(f.field.editor.attrs) -%]
       [%- ' readonly="readonly"' IF fd.readonly %] class="bordered" />
       [%- IF !fd.readonly %]
-      <a href="#" onclick="show_datepicker(this, '[% f.field.name %]')" class="icon datepicker"></a>
+      <a href="#" data-datepicker="[% f.field.name %]" class="icon datepicker"></a>
       [% END -%]</div>
       [%- maybe_err(f) %]
     </td>

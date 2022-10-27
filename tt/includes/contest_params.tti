@@ -6,7 +6,7 @@
     <td><input type="text" name="[% name %]" value="[% value | html %]" class="bordered"
       [%- maybe_readonly %]/>
       [%- IF can_edit %]
-      <a href="#" onclick="show_datepicker(this, '[% name %]')" class="icon datepicker"></a>
+      <a href="#" data-datepicker="[% name %]" class="icon datepicker"></a>
       [% END -%]
     </td>
   </tr>
