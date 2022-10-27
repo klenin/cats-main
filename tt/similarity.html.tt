@@ -41,14 +41,14 @@ p.params label { white-space: nowrap; margin-right: 8px; }
 [% PROCESS includes/listview_col_defs.tti sel_col = 0 %]
 [% FOREACH s IN similarity; u1 = users_idx.item(s.t1); u2 = users_idx.item(s.t2) %]
   <tr><td class="num">[% href(s.href_diff, s.score _ '%') %]</td>
-  <td>[% u1.name %]</td>
+  <td>[% href(u1.href_stats, u1.name); " [${u1.ca_tag}]" IF u1.ca_tag %]</td>
   [% IF visible_cols.S1 %]<td>[% IF u1.site; href(u1.href_site, u1.site, u1.city); ELSE; u1.city; END %]</td>[% END %]
   <td class="verdict run_details_[% s.verdict1 %]"><table><tr>
     <td>[% href(s.href_view_source1, s.verdict1, capt.verdicts.item(s.verdict1) _ (s.tag1 ? " [${s.tag1}]" : '')) %]</td>
     <td><div>[% s.req1.failed_test %]</div></td>
   </tr></table></td>
   [% IF visible_cols.P1 %]<td class="num">[% s.points1 %]</td>[% END %]
-  <td>[% IF s.t1 != s.t2; u2.name; END %]</td>
+  <td>[% IF s.t1 != s.t2; href(u2.href_stats, u2.name); ; " <span>[${u2.ca_tag}]</span>" IF u2.ca_tag; END %]</td>
   [% IF visible_cols.S1 %]<td>[% IF s.t1 != s.t2; IF u2.site; href(u2.href_site, u2.site, u2.city); ELSE; u2.city; END; END %]</td>[% END %]
   <td class="verdict run_details_[% s.verdict2 %]"><table><tr>
     <td>[% href(s.href_view_source2, s.verdict2, capt.verdicts.item(s.verdict2) _ (s.tag2 ? " [${s.tag2}]" : '')) %]</td>

@@ -208,8 +208,9 @@ sub similarity_frame {
         $cid);
 
     my $users_sql = qq~
-        SELECT CA.account_id, CA.is_jury, CA.is_virtual, A.team_name AS name, A.city,
-            CA.site_id, S.name AS site,
+        SELECT
+            CA.account_id, CA.is_jury, CA.is_virtual, CA.tag AS ca_tag, CA.site_id,
+            A.team_name AS name, A.city, S.name AS site,
             (SELECT RL.from_id FROM relations RL
             WHERE RL.rel_type = $CATS::Globals::relation->{upsolves_for} AND
                 RL.to_id = CA.account_id AND RL.from_ok = 1 AND RL.to_ok = 1
@@ -224,6 +225,7 @@ sub similarity_frame {
     for my $u (@$users) {
         $users_idx->{$u->{account_id}} = $u;
         $u->{href_site} = $is_root ? url_f('sites_edit', id => $u->{site_id}) : '#';
+        $u->{href_stats} = url_f('user_stats', uid => $u->{account_id});
     }
 
     $t->param(
@@ -298,7 +300,7 @@ sub similarity_frame {
     @similar = values %$by_account if $s->{group};
     for my $r (@similar) {
         for my $i (1, 2) {
-            $r->{"$_$i"} = $users_idx->{$r->{"t$i"}}->{$_} for qw(name city site);
+            $r->{"$_$i"} = $users_idx->{$r->{"t$i"}}->{$_} for qw(name city site ca_tag);
             $r->{"verdict$i"} = $CATS::Verdicts::state_to_name->{$r->{"req$i"}->{state}};
 
             $r->{"$_$i"} = $r->{"req$i"}->{$_} for qw(de_code id points tag);
