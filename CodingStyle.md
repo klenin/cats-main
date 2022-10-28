@@ -133,8 +133,8 @@ Some historical code, mostly located in `unused` directory, does not conform to 
 * Migrations MUST be located in `migrations` subdirectory and MUST be named according to pattern `YYYYMMDD-migration-name.sql`.
 
 ## Compatibility
-* Code from `cats-main` and `cats-problem` repositories MUST be compatible with Perl v5.10.
-* Code from `cats-judge` repository MUST be compatible with Perl v5.14.
+* Code from `cats-main` and `cats-problem` repositories MUST be compatible with Perl v5.14.
+* Code from `cats-judge` repository MUST be compatible with Perl v5.20.
 * Contributions SHOULD NOT add dependency on new non-standard modules without prior discussion.
 
 ## Architecture
