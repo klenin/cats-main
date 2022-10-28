@@ -207,7 +207,8 @@ window.addEventListener('load', function() {
         if (!name_parts.length) return;
         var name = name_format ? fmt(name_format, name_parts) : name_parts.join(' ');
         var del_href = del_button.href;
-        del_button.addEventListener('click', function() {
+        del_button.addEventListener('click', function (e) {
+          e.preventDefault();
           if (confirm(want_to_delete + " '" + name + "'?"))
             document.location = del_href;
         });
