@@ -23,7 +23,7 @@ our $form = CATS::Form->new(
         [ name => 'ordering', validators => [ $ordering ], caption => 682, ],
     ],
     href_action => 'contest_wikis_edit',
-    descr_field => 'wiki_id',
+    descr_field => '(SELECT name FROM wiki_pages WHERE id = wiki_id) AS wiki_name',
     template_var => 'cw',
     msg_deleted => 1073,
     msg_saved => 1074,
