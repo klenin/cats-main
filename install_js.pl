@@ -52,10 +52,6 @@ my $modules = [
         dest => 'datepicker',
     },
     {
-        name => 'excanvas',
-        url => 'https://cdnjs.cloudflare.com/ajax/libs/flot/0.8.3/excanvas.min.js',
-    },
-    {
         name => 'flot',
         url => 'http://www.flotcharts.org/downloads/flot-0.8.3.zip',
         src => 'flot/jquery.flot.min.js',
