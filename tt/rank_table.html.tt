@@ -121,5 +121,6 @@ function cell_click(event, el, uid, pid) {
 }
 </script>
 [% END %]
+</div>
 
 [% PROCESS includes/menu_end.tti %]

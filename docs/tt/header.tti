@@ -43,4 +43,4 @@
   </tr>
 </table>
 
-<div style="margin: 5px">
+<div  style="margin: 5px; flex: 1 0 auto;">
