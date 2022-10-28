@@ -1,28 +1,21 @@
-[% js.jquery = 1 %]
-[% PROCESS includes/menu_begin.tti %]
+[%- js.nonce = 1; js.jquery = 1 -%]
+[%- PROCESS includes/menu_begin.tti -%]
 
-<script>
-function delete_contest_tag(href, name) {
-  if (confirm( "[% capt.want_to_delete %] '" + name + "'?" ))
-    document.location = href;
-}
-</script>
+[% PROCESS includes/listview_header.tti table_selector = '#contest_tags' name_selector = 'td.nm a' %]
 
-[% PROCESS includes/listview_header.tti %]
-
-<table class="listview bordered highlight">
+<table class="listview bordered highlight" id="contest_tags">
 [% PROCESS includes/listview_col_defs.tti sel_col = 1 %]
 
 [% FOREACH ct IN contest_tags %]
 <tr class="[% loop.parity() %]">
 <td class="nobr sel_col">
 [% IF user.is_root %]
-  <a href="javascript:delete_contest_tag('[% ct.href_delete %]', '[% ct.name.squote | html %]');" class="icon delete"></a>
+  [% href_delete_icon(ct.href_delete) %]
   <a href="[% ct.href_edit %]" class="icon edit"></a>
 [% END %]
   <input type="checkbox" name="check" value="[% ct.id %]" />
 </td>
-<td><a href="[% ct.href_view_contests %]">[% ct.name | html %]</a></td>
+<td class="nm"><a href="[% ct.href_view_contests %]">[% ct.name | html %]</a></td>
 <td>[% IF ct.is_used %]<a href="#" class="icon checked"></a>[% END %]</td>
 [% IF visible_cols.Rc %]<td>[% ct.ref_count %]</td>[% END %]
 </tr>

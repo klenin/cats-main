@@ -1,24 +1,18 @@
-[% PROCESS includes/menu_begin.tti %]
+[%- js.nonce = 1 -%]
+[%- PROCESS includes/menu_begin.tti -%]
 [% PROCESS includes/html.tti %]
 
-<script>
-function delete_contest_wiki(href, name) {
-  if (confirm("[% capt.want_to_delete %] '" + name + "'?" ))
-    document.location = href;
-}
-</script>
+[% PROCESS includes/listview_header.tti table_selector = '#contest_wikis' name_selector = 'a.nm' %]
 
-[% PROCESS includes/listview_header.tti %]
-
-<table class="listview bordered highlight">
+<table class="listview bordered highlight" id="contest_wikis">
 [% PROCESS includes/listview_col_defs.tti %]
 
 [% FOREACH cw IN contest_wikis %]
 <tr class="[% loop.parity() %]">
 <td class="nobr">
   <a href="[% cw.href_edit %]" class="icon edit"></a>
-  <a href="javascript:delete_contest_wiki('[% cw.href_delete %]', '[% cw.name.squote | html %]');" class="icon delete"></a>
-  [% href(cw.href_view, cw.name) %]
+  [% href_delete_icon(cw.href_delete) %]
+  [% href(cw.href_view, cw.name, '', class = 'nm') %]
 </td>
 [% IF visible_cols.Ae %]<td style="position: relative;">[% IF cw.allow_edit %]<a class="icon checked icon_centered"></a>[% END %]</td>[% END %]
 [% IF visible_cols.Or %]<td>[% cw.ordering | html %]</td>[% END %]

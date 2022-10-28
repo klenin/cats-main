@@ -1,5 +1,5 @@
-[%- js.jquery = 1 IF user.is_jury -%]
-[% extra_head = BLOCK %]
+[%- js.nonce = 1; js.jquery = 1 IF user.is_jury -%]
+[%- extra_head = BLOCK %]
 <style>
   tr.unused td { color: grey; }
 </style>
@@ -7,16 +7,9 @@
 [% PROCESS includes/menu_begin.tti %]
 [% PROCESS includes/html.tti %]
 
-<script>
-function delete_contest_site(href, name) {
-  if (confirm("[% capt.want_to_delete %] '" + name + "'?" ))
-    document.location=href;
-}
-</script>
+[% PROCESS includes/listview_header.tti table_selector = '#contest_sites' name_selector = 'td.nm a' %]
 
-[% PROCESS includes/listview_header.tti %]
-
-<table class="listview cell_search bordered highlight">
+<table class="listview cell_search bordered highlight" id="contest_sites">
 [% PROCESS includes/listview_col_defs.tti sel_col = user.is_jury %]
 
 [% FOREACH cs IN contest_sites %]
@@ -24,15 +17,15 @@ function delete_contest_site(href, name) {
 [% IF user.is_jury %]
 <td class="nobr sel_col">
   <label>[% checkbox('check', cs.id) %]
-  [% IF cs.is_used %]
+  [%- IF cs.is_used %]
   <a href="[% cs.href_edit %]" class="icon edit"></a>
   <a href="#" class="icon checked"></a>
-  <a href="javascript:delete_contest_site('[% cs.href_delete %]', '[% cs.name.squote | html %]');" class="icon delete"></a>
-  [% END %]
+  [% href_delete_icon(cs.href_delete) %]
+  [%- END -%]
   </label>
 </td>
 [% END %]
-<td>[% maybe_href(cs.href_site, cs.name) %]</td>
+<td class="nm">[% maybe_href(cs.href_site, cs.name) %]</td>
 [% IF visible_cols.Rg %]<td>[% cs.region | html; cell_search('region', cs) %]</td>[% END %]
 [% IF visible_cols.Ci %]<td>[% cs.city | html; cell_search('city', cs) %]</td>[% END %]
 [% IF visible_cols.Oc %]<td>[% cs.org_name | html; cell_search('org_name', cs) %]</td>[% END %]
