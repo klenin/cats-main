@@ -127,6 +127,7 @@ Some historical code, mostly located in `unused` directory, does not conform to 
 * Table and field names MUST use `snake_case`.
 * Comments SHOULD use `/* ... */` style.
 * Joins MUST use `JOIN` keyword, not comma.
+* Subqueries MUST have aliases (`SELECT ... FROM (SELECT ...) ALIAS`).
 * `CHECK`, `FOREIGN KEY` and `UNIQUE` constraints SHOULD be named.
 * Each foreign key MUST contain `ON DELETE` clause.
 * Migrations MUST be located in `migrations` subdirectory and MUST be named according to pattern `YYYYMMDD-migration-name.sql`.
