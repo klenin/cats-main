@@ -397,7 +397,7 @@ sub users_frame {
         !$lv->visible_cols->{Sn} || !$view_snippets ? 'NULL' :
         @$view_snippets == 1 ? $snippet_single_sql : # Optimization & allow for correct sorting.
         qq~
-            SELECT LIST(text, ' | ') FROM ($snippet_single_sql ORDER BY S.name)~;
+            SELECT LIST(text, ' | ') FROM ($snippet_single_sql ORDER BY S.name) SNP~;
 
     my @visible_contacts = grep $lv->visible_cols->{"Ct$_->{sql}"}, @$contact_types;
     $t->param(contacts => \@visible_contacts);
