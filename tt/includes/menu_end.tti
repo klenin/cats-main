@@ -1,6 +1,6 @@
 [%- PROCESS "lang/$lang/menu_end.tti" -%]
 </div>
-<table class="iface">
+<table class="iface" style="flex-shrink: 0;">
 <tr class="footer top">
   <td>
     &nbsp;[% capt.current_user %]:
