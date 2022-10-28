@@ -201,6 +201,7 @@ PerlSetEnv CATS_DIR ${CATS_ROOT}/cgi-bin/
 		Require all granted
 	</Directory>
 
+	Alias /favicon.ico "${CATS_ROOT}/images/favicon.ico"
 	Alias /cats/images/ "${CATS_ROOT}/images/"
 	<Directory "${CATS_ROOT}/images/">
 		AllowOverride Options=Indexes,MultiViews,ExecCGI FileInfo
