@@ -326,9 +326,11 @@ sub edit_frame {
             return _redirect($p, $redir{save}, saved => $id);
         }
         $form_data->{href_action} = $self->_href_action($id, $opts{href_action_params});
-        if ($self->{descr_field} && $self->{msg_saved}) {
-            my $descr = $form_data->{indexed}->{$self->{descr_field}}->{value};
-            msg($self->{msg_saved}, $descr);
+        if ($self->{msg_saved} && (my $d = $self->{descr_field})) {
+            my @descr = $d =~ m/^\w+$/ && $form_data->{indexed}->{$d} ?
+                ($form_data->{indexed}->{$d}->{value}) :
+                $dbh->selectrow_array(_u $sql->select($self->{table}, $d, { id => $id }));
+            msg($self->{msg_saved}, @descr);
         }
     }
     else {
