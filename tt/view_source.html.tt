@@ -1,10 +1,16 @@
 [%- PROCESS includes/sources_styles.tti -%]
-[%- js.jquery = 1; js.ace = 1; PROCESS includes/header.tti -%]
-<script>
-function online_editor(form_id) {
+[%- js.nonce = 1; js.jquery = 1; js.ace = 1; PROCESS includes/header.tti -%]
+
+<script nonce="[% nonce %]">
+function online_editor() {
+  var form_id = $(this).data('online_editor');
   var online_form = $('#of' + form_id);
   online_form.children('textarea').text(Editor.get_editor($('#source_text_' + form_id).parent()).getValue());
 }
+$(function() {
+  $('button[data-online_editor]').click(online_editor);
+  $('a.problem_menu_trigger.toolbar_item').click(function () { $(this).toggleClass('problem_menu_hovered') });
+});
 </script>
 </head>
 <body>
@@ -41,7 +47,7 @@ function online_editor(form_id) {
             |
             <form id="of[% si.req_id %]" enctype="multipart/form-data" method="POST" action="[% href %]" style="display: inline;">
               <textarea style="display: none;" name="initScript"></textarea>
-              <button class="button" type="submit" onclick="online_editor([% si.req_id %])">online</button>
+              <button class="button" type="submit" data-online_editor="[% si.req_id %]">online</button>
             </form>
      [% END %] ]
        </td>
@@ -65,7 +71,7 @@ function online_editor(form_id) {
           <label>+ [% capt.submit %] <input type="checkbox" name="replace_and_submit" value="1" checked="checked"/></label>
         [% END %]
       [% END %]
-        <a class="problem_menu_trigger toolbar_item" onclick="$(this).toggleClass('problem_menu_hovered')">&#x2261;
+        <a class="problem_menu_trigger toolbar_item">&#x2261;
           [%- PROCESS includes/editor_menu.tti editor_id = 'ed_vs' _ si.req_id -%]
         </a>
       </div>
@@ -78,7 +84,7 @@ function online_editor(form_id) {
     <div id="different_versions_msg" class="hidden">[% capt.different_versions %]</div>
     ([% si.src_len | group_digits %] b) [% si.sha1 IF user.is_root %]
   </td>
-  <script>$(function () {
+  <script nonce="[% nonce %]">$(function () {
     Editor.highlight_errors('co[% si.req_id %]', [ [% si.err_regexp_js.join(', ') %] ], 'ed_vs[% si.req_id %]');
     Editor.set_syntax('ed_vs[% si.req_id %]', 'de[% si.req_id %]');
   })</script>
