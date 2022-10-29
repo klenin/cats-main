@@ -23,7 +23,7 @@ function _show_message_window(href) {
 
 function show_message_window(e) {
   e.preventDefault();
-  show_message_window(this.href);
+  _show_message_window(this.href);
 }
 
 function get_element(name) { return document.getElementById(name); }
