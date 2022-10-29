@@ -1,28 +1,21 @@
-[% js.jquery = 1 %]
-[% PROCESS includes/menu_begin.tti %]
+[%- js.nonce = 1; js.jquery = 1 -%]
+[%- PROCESS includes/menu_begin.tti -%]
 
-<script>
-function delete_de_tag(href, name) {
-  if (confirm( "[% capt.want_to_delete %] '" + name + "'?" ))
-    document.location = href;
-}
-</script>
+[% PROCESS includes/listview_header.tti table_selector = '#de_tags' name_selector = 'td.nm' %]
 
-[% PROCESS includes/listview_header.tti %]
-
-<table class="listview bordered highlight">
+<table class="listview bordered highlight" id="de_tags">
 [% PROCESS includes/listview_col_defs.tti sel_col = 1 %]
 
 [% FOREACH dt IN de_tags %]
 <tr class="[% loop.parity() %]">
 <td class="nobr sel_col">
   [% IF editable -%]
-  <a href="javascript:delete_de_tag('[% dt.href_delete %]', '[% dt.name.squote | html %]');" class="icon delete"></a>
+  [% href_delete_icon(dt.href_delete) %]
   <a href="[% dt.href_edit %]" class="icon edit"></a>
   [%- END %]
   <input type="checkbox" name="check" value="[% dt.id %]" />
 </td>
-<td>[% dt.name | html %]</td>
+<td class="nm">[% dt.name | html %]</td>
 <td>[% IF dt.is_used %]<a href="#" class="icon checked"></a>[% END %]</td>
 [% IF visible_cols.Rc %]<td class="num"><a href="[% dt.href_view_contests %]">[% dt.ref_count %]</a></td>[% END %]
 [% IF visible_cols.Dc %]<td class="num">[% dt.de_count %]</td>[% END %]
