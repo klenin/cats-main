@@ -130,7 +130,7 @@ sub _where_msg {
 sub _maybe_cast {
     my ($self, $field, $value) = @_;
     my $type = $self->{search_casts}->{$field};
-    $type ? \[ "CAST(? AS $type)", $value ] : $value;
+    $type && defined $value ? \[ "CAST(? AS $type)", $value ] : $value;
 }
 
 sub _apply_enum_transform {

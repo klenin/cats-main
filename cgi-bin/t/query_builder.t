@@ -6,7 +6,7 @@ use File::Spec;
 use FindBin;
 use SQL::Abstract;
 use Test::Exception;
-use Test::More tests => 63;
+use Test::More tests => 64;
 
 use lib File::Spec->catdir($FindBin::Bin, '..');
 use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
@@ -180,6 +180,8 @@ is_deeply qb_mask('zz??'), { zz => qr/^$/i }, 'mask NULL';
     is where($qb->make_where), ' WHERE ( x = CAST(? AS INTEGER) )', 'cast';
     $qb->parse_search('x~=5');
     is_deeply $qb->make_where, { x => [ { LIKE => \[ 'CAST(? AS INTEGER)', '%5%' ] } ] }, 'cast like';
+    $qb->parse_search('x?');
+    is where($qb->make_where), ' WHERE ( x IS NOT NULL )', 'cast null';
 }
 
 1;
