@@ -1,31 +1,23 @@
-[% extra_head = BLOCK %]
+[%- js.nonce = 1 -%]
+[%- extra_head = BLOCK -%]
 <style>
   td.in_queue { background: #fffd9d; }
 </style>
-[% END %]
-[% PROCESS includes/menu_begin.tti %]
+[%- END -%]
+[%- PROCESS includes/menu_begin.tti -%]
 
-<script>
-function delete_job(href, name) {
-  if (confirm("[% capt.want_to_delete %] '" + name + "'?" ))
-    document.location = href;
-}
-</script>
+[% PROCESS includes/listview_header.tti table_selector = '#jobs' name_selector = 'td.jid a' %]
 
-[% PROCESS includes/listview_header.tti %]
-
-<table class="listview bordered cell_search highlight">
+<table class="listview bordered cell_search highlight" id="jobs">
 [% PROCESS includes/listview_col_defs.tti %]
 
 [% FOREACH j IN jobs %]
 <tr class="[% loop.parity() %]">
 <td>
-  [% IF j.href_delete ~%]
-  <a href="javascript:delete_job('[% j.href_delete %]', '[% j.id.squote | html %]');" class="icon delete"></a>
-  [%~ END %]
+  [% href_delete_icon(j.href_delete) IF j.href_delete %]
   [% capt.jobs.types.item(job_type_to_name.item(j.type)); cell_search_ex('type', job_type_to_name.item(j.type)) %]
 </td>
-<td>[% href(j.href_details, j.id) %]</td>
+<td class="jid">[% href(j.href_details, j.id) %]</td>
 <td[% class({ in_queue => j.in_queue }) %]>[% capt.jobs.states.item(job_state_to_name.item(j.state)); cell_search('state', j) %]</td>
 [% IF visible_cols.Tc %]<td>[% j.create_time %]</td>[% END %]
 [% IF visible_cols.Ts %]<td>[% j.start_time %]</td>[% END %]
