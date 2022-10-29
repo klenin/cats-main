@@ -7,7 +7,12 @@
 function show_ab(e) {
   e.preventDefault();
 
-  var sel_str = this.getAttribute('data-diff');
+  var that = this;
+  document.querySelectorAll('a[data-diff]').forEach(function (a) {
+    a.className  = a == that ? 'inline_menu_selected' : '';
+  });
+
+  var sel_str = that.getAttribute('data-diff');
   var selectors = {};
   for (var re = /(\w+):\s*(\d+)/g, match; match = re.exec(sel_str);)
       selectors[match[1]] = 1 * match[2];
@@ -54,11 +59,12 @@ window.addEventListener('load', function() {
 [% END %]
 </p>
 [% capt.show %]:
-[ <a data-diff="diff_only_a: 2, diff_only_b: 2, diff_both: 2" href="#">[% capt.both %]</a>
+[<span class="inline_menu">
+<a data-diff="diff_only_a: 2, diff_only_b: 2, diff_both: 2" href="#" class="inline_menu_selected">[% capt.both %]</a>
 | <a data-diff="diff_only_a: 2, diff_only_b: 2, diff_both: 0" href="#">[% capt.diff %]</a>
 | <a data-diff="diff_only_a: 2, diff_only_b: 1, diff_both: 2" href="#">[% capt.a_only %]</a>
 | <a data-diff="diff_only_a: 1, diff_only_b: 2, diff_both: 2" href="#">[% capt.b_only %]</a>
-]
+</span>]
 </form>
 <table class="internal_borders">
 <tr>
