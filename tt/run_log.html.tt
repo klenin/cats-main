@@ -1,5 +1,6 @@
+[%- js.nonce = 1 -%]
 [%- PROCESS includes/sources_styles.tti -%]
-[% PROCESS includes/header.tti %]
+[%- PROCESS includes/header.tti -%]
 <style>
   code.judge_log b { color: #ff7070; }
   code.judge_log i { color: #108010; font-style: normal; }
@@ -55,7 +56,7 @@
 [% ELSE; capt.no_log %]
 [% END %]
 
-<script type="text/javascript">
+<script nonce="[% nonce %]>
 $('.judge_log').each(function (i, log) {
   log.innerHTML = log.innerHTML.
     replace(/(?:^(\[.+\])$)/mg, '<b>$1</b>').
