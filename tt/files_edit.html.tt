@@ -1,4 +1,5 @@
-[% PROCESS includes/menu_begin.tti %]
+[%- js.nonce = 1 -%]
+[%- PROCESS includes/menu_begin.tti -%]
 [% PROCESS includes/html_input.tti %]
 
 <form method="post" enctype="multipart/form-data" action="[% f.href_action %]">

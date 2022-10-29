@@ -1,27 +1,19 @@
-[% PROCESS includes/menu_begin.tti %]
+[%- js.nonce = 1 -%]
+[%- PROCESS includes/menu_begin.tti -%]
 
-<script>
-function delete_file(href, name) {
-  if (confirm( "[% capt.want_to_delete %] '" + name + "'?" ))
-    document.location = href;
-}
-</script>
+[% PROCESS includes/listview_header.tti table_selector = '#files' name_selector = 'td.nm' %]
 
-[% PROCESS includes/listview_header.tti %]
-
-<table class="listview bordered highlight">
+<table class="listview bordered highlight" id="files">
 [% PROCESS includes/listview_col_defs.tti sel_col = 1 %]
 
 [% FOREACH f IN files %]
 <tr class="[% loop.parity() %]">
 <td class="nobr">
-  [% IF user.privs.is_root -%]
-  <a href="javascript:delete_file('[% f.href_delete %]', '[% f.name.squote | html %]');" class="icon delete"></a>
-  [% END -%]
+  [% href_delete_icon(f.href_delete) IF user.privs.is_root %]
   <a href="[% f.href_edit %]" class="icon edit"></a>
 </td>
-<td>[% f.name | html %]</td>
-<td><a href="[% f.href_download %]">[% f.guid | html %]</a></td>
+<td class="nm">[% f.name | html %]</td>
+<td>[% href(f.href_download, f.guid) %]</a></td>
 [% IF visible_cols.De -%]
 <td>[% f.description | html; '&hellip;' IF f.description_len > f.description.length %]</td>
 [%- END %]
