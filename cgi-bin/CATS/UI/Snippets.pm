@@ -197,6 +197,7 @@ sub snippets_frame {
         problem_title => 'P.title',
         contest_title => 'C.title',
     });
+    $lv->define_casts({ text => 'VARCHAR(200)' });
     $lv->default_searches([ qw(name text problem_title contest_title) ]);
     $lv->define_enums({ contest_id => { this => $cid } });
 
@@ -253,7 +254,8 @@ sub snippets_frame {
 }
 
 sub _unpack_snippet_id {
-    return my ($pid, $name) = $_[0] =~ /^p(\d+)_(\w+)$/ or die;
+    my ($pid, $name) = $_[0] =~ /^p(\d+)_(\w+)$/ or die;
+    return ($pid, $name);
 }
 
 sub _users_snippets_save {
