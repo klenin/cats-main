@@ -1,3 +1,4 @@
-[% PROCESS includes/menu_begin.tti %]
+[%- js.nonce = 1 -%]
+[%- PROCESS includes/menu_begin.tti -%]
 [% capt.down %]
 [% PROCESS includes/menu_end.tti %]

@@ -1,12 +1,17 @@
-[%- PROCESS includes/sources_styles.tti -%]
-[% PROCESS includes/header.tti %]
-[%- USE Javascript -%]
+[%- js.nonce = 1; PROCESS includes/sources_styles.tti -%]
+[%- PROCESS includes/header.tti -%]
 </head>
 <body>
-<script type="text/javascript">
+<script nonce="[% nonce %]">
 <!--
-function show_ab(selectors, a, b, ab)
-{
+function show_ab(e) {
+    e.preventDefault();
+
+    var sel_str = this.getAttribute('data-diff');
+    var selectors = {};
+    for (var re = /(\w+):\s*(\d+)/g, match; match = re.exec(sel_str);)
+        selectors[match[1]] = 1 * match[2];
+
     var line_numbers = document.getElementById('line_numbers');
     var lines = document.getElementById('lines');
     if (!line_numbers || !lines) return;
@@ -28,9 +33,14 @@ function show_ab(selectors, a, b, ab)
 }
 var diff_lines = [
     [% FOREACH dl IN diff_lines -%]
-    [ "[% dl.class | $Javascript %]", "[% dl.line | $Javascript %]" ][% ',' UNLESS loop.last %]
+    [ '[% dl.class.squote %]', '[% dl.line.squote %]' ][% ',' UNLESS loop.last %]
     [% END -%]
 ];
+window.addEventListener('load', function() {
+    document.querySelectorAll('a[data-diff]').forEach(function (a) {
+        a.addEventListener('click', show_ab);
+    });
+});
 //-->
 </script>
 [% PROCESS includes/sources_info.tti subcaption=capt.compare_submissions %]
@@ -44,10 +54,10 @@ var diff_lines = [
 [% END %]
 </p>
 [% capt.show %]:
-[ <a onclick="show_ab({ diff_only_a: 2, diff_only_b: 2, diff_both: 2 }); return false" href="#">[% capt.both %]</a>
-| <a onclick="show_ab({ diff_only_a: 2, diff_only_b: 2, diff_both: 0 }); return false" href="#">[% capt.diff %]</a>
-| <a onclick="show_ab({ diff_only_a: 2, diff_only_b: 1, diff_both: 2 }); return false" href="#">[% capt.a_only %]</a>
-| <a onclick="show_ab({ diff_only_a: 1, diff_only_b: 2, diff_both: 2 }); return false" href="#">[% capt.b_only %]</a>
+[ <a data-diff="diff_only_a: 2, diff_only_b: 2, diff_both: 2" href="#">[% capt.both %]</a>
+| <a data-diff="diff_only_a: 2, diff_only_b: 2, diff_both: 0" href="#">[% capt.diff %]</a>
+| <a data-diff="diff_only_a: 2, diff_only_b: 1, diff_both: 2" href="#">[% capt.a_only %]</a>
+| <a data-diff="diff_only_a: 1, diff_only_b: 2, diff_both: 2" href="#">[% capt.b_only %]</a>
 ]
 </form>
 <table class="internal_borders">
