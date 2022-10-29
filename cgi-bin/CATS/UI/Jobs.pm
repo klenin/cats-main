@@ -15,15 +15,35 @@ use CATS::Time;
 
 sub job_details_frame {
     my ($p) = @_;
+    $is_jury && $p->{jid} or return;
     init_template($p, 'run_log.html.tt');
-    my $lv = CATS::ListView->new(web => $p, name => 'job_details');
 
-    CATS::Request::delete_logs({ id => $p->{jid} }) if $p->{delete_log};
-    CATS::Request::delete_jobs({ id => $p->{jid} }) if $p->{delete_jobs};
+    my ($job_id, $state, $job_contest) = $dbh->selectrow_array(q~
+        SELECT id, state, contest_id FROM jobs WHERE id = ?~, undef,
+        $p->{jid});
+    $job_id or return;
+    ($job_contest // 0) == $cid or $is_root or return;
+
+    CATS::Request::delete_logs({ id => $job_id }) if $p->{delete_log};
+    CATS::Request::delete_jobs({ id => $job_id }) if $p->{delete_jobs};
+    if ($p->{restart_job} && $state != $cats::job_st_waiting) {
+        my $updated = ($dbh->do(q~
+            UPDATE jobs SET state = ?, finish_time = NULL
+            WHERE id = ? AND state <> ?~, undef,
+            $cats::job_st_waiting, $job_id, $cats::job_st_waiting) // 0) > 0;
+        if ($updated) {
+            $dbh->do(q~
+                INSERT INTO jobs_queue (id) VALUES (?)~, undef,
+                $p->{jid});
+            $dbh->commit;
+        }
+        msg(1241, $updated);
+    }
 
     $t->param(
         logs => CATS::ReqDetails::get_log_dump({ id => $p->{jid} }),
         job_enums => $CATS::Globals::jobs,
+        restart_job => $state != $cats::job_st_waiting,
     );
 }
 

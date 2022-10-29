@@ -6,5 +6,6 @@
     no_log => 'No log',
     delete_log => 'delete log',
     delete_jobs => 'delete jobs',
+    restart_job => 'restart job',
   })
 %]

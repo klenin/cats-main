@@ -333,7 +333,7 @@ my $main_routes = {
         rank => array_of integer,
     ],
     job_details => [ \&CATS::UI::Jobs::job_details_frame,
-        jid => integer, delete_log => bool, delete_jobs => bool,
+        jid => integer, delete_log => bool, delete_jobs => bool, restart_job => bool,
     ],
     visualize_test => [ \&CATS::UI::RunDetails::visualize_test_frame,
         rid => integer, vid => integer, test_rank => integer, as_user => bool, ],

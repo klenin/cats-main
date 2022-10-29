@@ -446,3 +446,4 @@
 1238 "Groups of user '%s'."
 1239 "Viewable snippets changed: %d."
 1240 "Problem deadline has been missed, solution will be ignored."
+1241 "Jobs restarted: %d."
