@@ -1,0 +1,8 @@
+[%
+  capt.import({
+    want_to_delete_file => 'Do you really want to delete file ',
+    edit => 'edit',
+    download => 'download',
+    delete => 'delete',
+  })
+%]

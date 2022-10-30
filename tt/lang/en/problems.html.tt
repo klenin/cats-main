@@ -46,6 +46,5 @@
     participate => 'participate',
     participate_virtually => 'participate virtually',
     virtual_warning => 'Warning! Second virtual participation will remove all submits of the first one. Continue?',
-    want_to_delete_file => 'Do you really want to delete file ',
   });
 %]

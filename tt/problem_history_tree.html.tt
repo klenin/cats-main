@@ -5,8 +5,7 @@
 </style>
 [%- END -%]
 [%- PROCESS includes/menu_begin.tti -%]
-[%- PROCESS includes/html.tti -%]
-[% PROCESS "lang/$lang/problems.html.tt" %]
+
 <script nonce="[% nonce %]">
 window.addEventListener('load', function () {
   document.querySelectorAll('table.tree tr').forEach(function (tr) {
@@ -38,16 +37,16 @@ window.addEventListener('load', function () {
   <table class="tree">
     [% FOREACH entry IN tree.entries %]
       <tr class="light">
-        <td class="mode">[% entry.mode %]</td>
-        <td class="size">[% entry.size %]</td>
         <td class="list"><a class="list" href="[% entry.href %]">[% entry.file_name | html %]</a></td>
         <td class="link">
-          [%- IF entry.href_edit %]<a href="[% entry.href_edit %]">edit</a> | [% END %]
           <a href="[% entry.href %]">[% entry.type %]</a>
-          [%- IF entry.href_raw %] | <a href="[% entry.href_raw %]">raw</a>[% END %]
-          [%- IF entry.href_delete -%] | [% href(entry.href_delete, 'delete', '', class = 'js_delete');
+          [%- IF entry.href_raw %] | <a href="[% entry.href_raw %]">[% capt.download %]</a>[% END %]
+          [%- IF entry.href_edit %] | <a href="[% entry.href_edit %]" class="icon edit" title="[% capt.edit %]"></a>[% END %]
+          [%- IF entry.href_delete -%] | [% href(entry.href_delete, '', capt.delete, class = 'icon delete js_delete');
           END %]
         </td>
+        <td class="size">[% entry.size %]</td>
+        <td class="mode">[% entry.mode %]</td>
       </tr>
     [% END %]
   </table>
