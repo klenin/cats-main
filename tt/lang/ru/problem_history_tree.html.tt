@@ -1,6 +1,7 @@
 [%
   capt.import({
     want_to_delete_file => 'Вы действительно желаете удалить файл ',
+    entry => { blob => 'файл', tree => 'каталог' },
     edit => 'редактировать',
     download => 'скачать',
     delete => 'удалить',

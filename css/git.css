@@ -87,11 +87,6 @@ a.list {
     color: #000000;
 }
 
-a.list:hover {
-    text-decoration: underline !important;
-    color: #880000;
-}
-
 /* styling of diffs (patchsets): commitdiff */
 div.patchset {
     font-family: monospace;

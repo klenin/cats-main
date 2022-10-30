@@ -110,14 +110,15 @@ sub problem_history_tree_frame {
             $_->{href} = url_f('problem_history_blob', %url_params);
             $_->{href_raw} = url_f('problem_history_raw', %url_params);
             if ($pr->{is_jury} && is_allow_editing($tree, $p->{hb})) {
-                $_->{href_edit} = url_f('problem_history_edit', %url_params);
+                $_->{href_name} = $_->{href_edit} = url_f('problem_history_edit', %url_params);
                 my %del_url = (delete_file => $_->{name}, pid => $p->{pid}, hb => $p->{hb});
                 $_->{href_delete} = url_f('problem_history_tree', %del_url);
             }
         }
         elsif ($_->{type} eq 'tree') {
-            $_->{href} = url_f('problem_history_tree', %url_params)
+            $_->{href} = $_->{href_type} = url_f('problem_history_tree', %url_params)
         }
+        $_->{href_name} //= $_->{href};
     }
     set_history_paths_urls($p->{pid}, $tree->{paths});
     my @items = {
