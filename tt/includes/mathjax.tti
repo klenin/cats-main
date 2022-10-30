@@ -49,7 +49,7 @@ MathJax.Hub.signal.Interest(function (message) { console.log("Hub: " + message);
 function is_basic_math(p) { return p.find('.basic_math')[0].checked; }
 </script>
 <script src="https://cdn.jsdelivr.net/gh/mathjax/MathJax@2.7.1/MathJax.js?config=TeX-AMS_CHTML"></script>
-<script nonce="[% nonce %]">window.MathJax || document.write('<script src="js/lib/MathJax/MathJax.js?config=TeX-AMS_CHTML"><\/script>')</script>
+<script nonce="[% nonce %]">window.MathJax.Hub || document.write('<script src="js/lib/MathJax/MathJax.js?config=TeX-AMS_CHTML"><\/script>')</script>
 
 [%- IF js.mathjax_onload %]
 <script nonce="[% nonce %]">
