@@ -1,15 +1,22 @@
-[% extra_head = BLOCK %]
+[%- js.nonce = 1 -%]
+[%- extra_head = BLOCK -%]
 <style>
   @import 'css/git.css';
 </style>
-[%- END %]
-[% PROCESS includes/menu_begin.tti %]
+[%- END -%]
+[%- PROCESS includes/menu_begin.tti -%]
 [%- PROCESS includes/html.tti -%]
 [% PROCESS "lang/$lang/problems.html.tt" %]
-<script>
-  function delete_file(href, name) {
-    if (confirm("[% capt.want_to_delete_file %] '" + name + "'?")) document.location = href;
-  }
+<script nonce="[% nonce %]">
+window.addEventListener('load', function () {
+  document.querySelectorAll('table.tree tr').forEach(function (tr) {
+    var file_name = tr.querySelector('td.list a.list').innerText;
+    tr.querySelector('td.link a.js_delete').addEventListener('click', function(e) {
+      if (!confirm("[% capt.want_to_delete_file %] '" + file_name + "'?"))
+        e.preventDefault();
+    });
+  });
+});
 </script>
 
 <div class="commit_header">[% tree.commit.title | html %]</div>
@@ -33,12 +40,13 @@
       <tr class="light">
         <td class="mode">[% entry.mode %]</td>
         <td class="size">[% entry.size %]</td>
-        <td class="list"><a class="list" href="[% entry.href %]">[% entry.file_name %]</a></td>
+        <td class="list"><a class="list" href="[% entry.href %]">[% entry.file_name | html %]</a></td>
         <td class="link">
           [%- IF entry.href_edit %]<a href="[% entry.href_edit %]">edit</a> | [% END %]
           <a href="[% entry.href %]">[% entry.type %]</a>
           [%- IF entry.href_raw %] | <a href="[% entry.href_raw %]">raw</a>[% END %]
-          [%- IF entry.href_delete %] | <a href="javascript:delete_file('[% entry.href_delete %]', '[% entry.file_name.squote | html %]');">delete</a>[% END %]
+          [%- IF entry.href_delete -%] | [% href(entry.href_delete, 'delete', '', class = 'js_delete');
+          END %]
         </td>
       </tr>
     [% END %]

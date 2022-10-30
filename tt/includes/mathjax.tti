@@ -1,5 +1,5 @@
 [%# MathJax %]
-<script type="text/javascript">
+<script nonce="[% nonce %]">
 function set_tex() {
 [%#
   CATS::TeX::Lite preserves spaces between identifiers.
@@ -48,11 +48,11 @@ MathJax.Hub.signal.Interest(function (message) { console.log("Hub: " + message);
 
 function is_basic_math(p) { return p.find('.basic_math')[0].checked; }
 </script>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/mathjax/MathJax@2.7.1/MathJax.js?config=TeX-AMS_CHTML"></script>
-<script type="text/javascript">window.MathJax || document.write('<script src="js/lib/MathJax/MathJax.js?config=TeX-AMS_CHTML"><\/script>')</script>
+<script src="https://cdn.jsdelivr.net/gh/mathjax/MathJax@2.7.1/MathJax.js?config=TeX-AMS_CHTML"></script>
+<script nonce="[% nonce %]">window.MathJax || document.write('<script src="js/lib/MathJax/MathJax.js?config=TeX-AMS_CHTML"><\/script>')</script>
 
 [%- IF js.mathjax_onload %]
-<script type="text/javascript">
+<script nonce="[% nonce %]">
 function mathjax_onload() {
   [%# Convert math one problem at a time as a compromise between speed and stability. -%]
   $('div.problem_text').each(function() {

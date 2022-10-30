@@ -1,9 +1,10 @@
-[% extra_head = BLOCK %]
+[%- js.nonce = 1 -%]
+[%- extra_head = BLOCK -%]
 <style>
   @import 'css/git.css';
 </style>
 [%- END %]
-[% PROCESS includes/menu_begin.tti %]
+[%- PROCESS includes/menu_begin.tti -%]
 [%- PROCESS "lang/$lang/problems.html.tt" -%]
 [%- PROCESS includes/html.tti -%]
 

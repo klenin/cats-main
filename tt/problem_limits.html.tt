@@ -1,4 +1,4 @@
-[%- js.datepicker = 1 -%]
+[%- js.nonce = 1; js.datepicker = 1 -%]
 [% PROCESS includes/menu_begin.tti %]
 [% PROCESS includes/limits_string.tti %]
 [% PROCESS includes/html_input.tti %]

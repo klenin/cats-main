@@ -1,11 +1,11 @@
-[%- js.jquery = 1 -%]
-[% extra_head = BLOCK %]
+[%- js.nonce = 1; js.jquery = 1 -%]
+[%- extra_head = BLOCK -%]
 <style>
   table.request_count { text-align: right; }
   table.request_count td { width: 2em; }
 </style>
-[% END %]
-[% PROCESS includes/menu_begin.tti %]
+[%- END -%]
+[%- PROCESS includes/menu_begin.tti -%]
 [% PROCESS includes/html.tti %]
 [% PROCESS includes/limits_string.tti %]
 
@@ -75,7 +75,7 @@
 </table>
 </form>
 
-<script type="text/javascript">
+<script nonce=[% nonce %]>
 [%- PROCESS includes/download.tti -%]
 </script>
 

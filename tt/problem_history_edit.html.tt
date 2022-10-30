@@ -1,12 +1,12 @@
-[%- js.jquery = 1; js.ace = 1; js.mathjax = is_xml -%]
-[% extra_head = BLOCK %]
+[%- js.nonce = 1; js.jquery = 1; js.ace = 1; js.mathjax = is_xml -%]
+[%- extra_head = BLOCK -%]
 <style>
   @import 'css/git.css';
   #mathjax_preview {
     position: absolute; top: 5px; right: 5px; padding: 3px;
   }
 </style>
-<script>
+<script nonce="[% nonce %]">
 "use strict";
 $(document).ready(function () {
   if (!ace) return;
@@ -162,8 +162,8 @@ $(document).ready(function () {
     '<Quiz type="checkbox"><Text>', '</Text>\n<Choice></Choice>\n<Choice></Choice>\n</Quiz>\n');
   $('.problem_menu_trigger').click(function() { $(this).toggleClass('problem_menu_hovered'); });
 })</script>
-[%- END %]
-[% PROCESS includes/menu_begin.tti %]
+[%- END -%]
+[%- PROCESS includes/menu_begin.tti -%]
 [%- PROCESS "lang/$lang/problems.html.tt" -%]
 [%- PROCESS includes/html.tti -%]
 
@@ -227,7 +227,7 @@ $(document).ready(function () {
     <input type="hidden" name="src_enc" value="[% src_enc %]" />
     <p><label>
       <input type="checkbox" id="is_amend" name="is_amend" value="1"
-        [%- ' checked="checked"' IF is_amend %] onclick="javascript:toggle_amend()"/> [% capt.amend %]
+        [%- ' checked="checked"' IF is_amend %] /> [% capt.amend %]
       </label></p>
     <p>
       <label for="message">[% capt.message %]:</label><br/>

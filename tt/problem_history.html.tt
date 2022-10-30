@@ -1,4 +1,5 @@
-[% PROCESS includes/menu_begin.tti %]
+[%- js.nonce = 1 -%]
+[%- PROCESS includes/menu_begin.tti -%]
 [%- PROCESS "lang/$lang/problems.html.tt" -%]
 [%- PROCESS includes/html.tti -%]
 
@@ -41,7 +42,7 @@
   <p><label for="zip">[% capt.problem_file %]:</label><input type="file" id="zip" name="zip" class="file" size="25"/></p>
   <p>
     <label><input type="checkbox" name="allow_rename" value="1"/> [% capt.rename %]</label>
-    <label><input type="checkbox" id="is_amend" name="is_amend" value="1" onclick="toggle_amend()"/> [% capt.amend %]</label>
+    <label><input type="checkbox" id="is_amend" name="is_amend" value="1"/> [% capt.amend %]</label>
   </p>
   <p>
     <label for="message">[% capt.message %]:</label><br/>
