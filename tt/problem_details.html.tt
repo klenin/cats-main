@@ -14,7 +14,7 @@
 <tr><td>[% capt.title %]</td><td>[% p.code | html %]: [% p.title | html %]</td></tr>
 <tr><td>[% capt.last_change %]</td><td class="nested">
   <table class="internal_borders padded"><tr>
-   <td>[% href(href_edit, p.upload_date, p.commit_sha) %] [[% href(href_edit_xml, capt.edit _ ' xml') %]]</td>
+   <td>[% href(href_tree, p.upload_date, p.commit_sha) %] [[% href(href_xml, (can_edit ? capt.edit _ ' ' : '') _ 'xml') %]]</td>
    <td>[% href(href_modifier, p.team_name) %]</td>
   </tr></table>
 </td></tr>

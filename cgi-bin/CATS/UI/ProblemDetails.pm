@@ -11,7 +11,7 @@ use CATS::Constants;
 use CATS::DB qw(:DEFAULT $db);
 use CATS::DeGrid;
 use CATS::Form;
-use CATS::Globals qw($cid $contest $is_jury $is_root $t);
+use CATS::Globals qw($cid $contest $is_jury $is_root $t $user);
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
 use CATS::Output qw(downloads_path downloads_url init_template search url_f url_f_cid);
@@ -52,6 +52,7 @@ sub problem_details_frame {
             L.write_limit as overridden_write_limit,
             C.title AS contest_name, A.team_name,
             CP.id AS cpid, CP.testsets, CP.points_testsets, CP.tags, CP.code,
+            CA.is_jury,
             (SELECT COUNT(*) FROM problem_snippets PS
                 WHERE PS.problem_id = P.id) AS snippets_declared,
             (SELECT COUNT(*) FROM snippets S
@@ -64,8 +65,9 @@ sub problem_details_frame {
         INNER JOIN contest_problems CP ON CP.problem_id = P.id AND CP.contest_id = ?
         LEFT JOIN accounts A ON A.id = P.last_modified_by
         LEFT JOIN limits L ON L.id = CP.limits_id
+        LEFT JOIN contest_accounts CA ON CA.contest_id = P.contest_id AND CA.account_id = ?
         WHERE P.id = ?~, { Slice => {} },
-        $cats::job_type_generate_snippets, $cid, $p->{pid}) or return;
+        $cats::job_type_generate_snippets, $cid, $user->id, $p->{pid}) or return;
     $pr->{upload_date} = $db->format_date($pr->{upload_date});
 
     CATS::Problem::Utils::round_time_limit($pr->{overridden_time_limit});
@@ -126,9 +128,11 @@ sub problem_details_frame {
         p => $pr,
         problem_title => $pr->{title},
         title_suffix => $pr->{title},
+        can_edit => $pr->{is_jury},
         href_modifier => url_f('users_edit', uid => $pr->{last_modified_by}),
-        href_edit => url_f('problem_history_tree', pid => $p->{pid}, hb => $pr->{commit_sha}),
-        href_edit_xml => url_f('problem_history_edit', pid => $p->{pid}, hb => $pr->{commit_sha}, file => '*'),
+        href_tree => url_f('problem_history_tree', pid => $p->{pid}, hb => $pr->{commit_sha}),
+        href_xml => url_f(($pr->{is_jury} ? 'problem_history_edit' : 'problem_history_blob'),
+            pid => $p->{pid}, hb => $pr->{commit_sha}, file => '*'),
         href_original_contest => url_f_cid('problems', cid => $pr->{contest_id}),
         href_download => url_f('problem_download', pid => $p->{pid}),
         href_git_package => url_f('problem_git_package', pid => $p->{pid}),

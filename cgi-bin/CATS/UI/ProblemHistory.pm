@@ -173,6 +173,9 @@ sub problem_history_blob_frame {
     init_template($p, 'problem_history_blob.html.tt');
     my $pr = _get_problem_info($p) or return $p->redirect(url_f 'contests');
 
+    if ($p->{file} && $p->{file} eq '*') {
+        $p->{file} = CATS::Problem::Storage::find_xml($p->{pid}, $p->{hb}) or return;
+    }
     my $blob = CATS::Problem::Storage::show_blob(
         $p->{pid}, $p->{hb}, $p->{file}, $p->{src_enc} || \&detect_encoding_by_xml_header);
     set_history_paths_urls($p->{pid}, $blob->{paths});
