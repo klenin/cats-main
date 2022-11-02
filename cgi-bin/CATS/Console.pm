@@ -180,13 +180,16 @@ sub console_searches {
         ($uid ? (can_see_reqs => qq~(
             SELECT RL.from_ok * RL.to_ok FROM relations RL
             WHERE RL.from_id = $uid AND RL.to_id = R.account_id)~) : ()),
-        problem_accepted => qq~(
+        accepted_count => qq~(
             SELECT COUNT(*) FROM reqs R1
             WHERE $same_contest_problem_account R1.state = $cats::st_accepted)~,
-        problem_solved => qq~(
+        solved_count => qq~(
             SELECT COUNT(*) FROM reqs R1
             WHERE $same_contest_problem_account
                 R1.state = $cats::st_accepted AND R1.points = CP.max_points)~,
+        failed_count => qq~(
+            SELECT COUNT(*) FROM reqs R1
+            WHERE $same_contest_problem_account R1.state <> $cats::st_accepted)~,
     });
 
     $lv->define_enums({
@@ -437,7 +440,7 @@ sub build_query {
 
     @selected_parts or return;
     my $subquery_id = 0;
-    my $sql = join ' UNION ', map $parts{$_}->sql($subquery_id++), @selected_parts;
+    my $sql = join ' UNION ALL ', map $parts{$_}->sql($subquery_id++), @selected_parts;
     #warn $sql;
     my $sth = $dbh->prepare("$sql ORDER BY 2 DESC");
     #warn join ',', map @{$parts{$_}->{params}}, @selected_parts;
