@@ -10,7 +10,7 @@
 <tr class="[% loop.parity() %]">
 [% IF user.is_jury -%]
 <td class="nobr sel_col">
-[% IF user.privs.is_root -%]
+[% IF user.privs.manage_groups -%]
   [% href_delete_icon(ag.href_delete) %]
 [% END -%]
 [% IF ag.href_edit -%]
