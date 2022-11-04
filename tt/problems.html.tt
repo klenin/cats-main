@@ -156,6 +156,10 @@ function move_code(pid, dir) {
 [% IF child_contest_count -%]
 <p>[% href(href_child_contests, capt.child_contests _ ': ' _ child_contest_count) %]</p>
 [%- END %]
+[% IF topics.size -%]
+<div class="weak_border">[% capt.listview_captions.topics %]: <span class="inline_menu">
+[% FOR tp IN topics %] [% href(tp.href, tp.code_prefix _ ':' _ tp.name, '', class = tp.selected ? 'inline_menu_selected' : '') %] [% END %]</span></div>
+[%- END %]
 
 [% PROCESS includes/listview_header.tti form_name='problems_form' %]
 <table class="listview bordered cell_search highlight">
