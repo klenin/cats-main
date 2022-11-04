@@ -272,7 +272,7 @@ function move_code(pid, dir) {
 [%- href(p.href_original_contest, p.contest_title); cell_search_ex('contest_id', p.original_contest_id) -%]
 </td>[% END %]
 [% IF !contest.is_practice && visible_cols.Dl -%]
-<td class="num[% ' dl_missed' IF p.until_deadline < 0 %]">
+<td class="num[% ' dl_missed' IF defined(p.until_deadline) && p.until_deadline < 0 %]">
   [%- deadline_text = BLOCK;
     IF !p.deadline && !editable; '';
     ELSE; p.deadline | html %] <span class="small nobr">([% p.until_deadline_text | html %])</span>
