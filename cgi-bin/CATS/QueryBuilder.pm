@@ -282,14 +282,19 @@ sub define_transforms {
     }
 }
 
-sub extract_search_values {
-    my ($self, $name) = @_;
-    my @result = map {
+sub search_values {
+    my ($self, $name, $op) = @_;
+    [ map {
         my ($k, $v) = @$_;
         $self->_apply_enum_transform($k, $v);
-    } grep $_->[0] eq $name, @{$self->search};
+    } grep $_->[0] eq $name && (!$op || $_->[2] eq $op), @{$self->search} ];
+}
+
+sub extract_search_values {
+    my ($self, $name) = @_;
+    my $result = $self->search_values($name);
     $self->{search} = [ grep $_->[0] ne $name, @{$self->search} ];
-    \@result;
+    $result;
 }
 
 sub search_subquery_value {

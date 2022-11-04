@@ -6,7 +6,7 @@ use File::Spec;
 use FindBin;
 use SQL::Abstract;
 use Test::Exception;
-use Test::More tests => 64;
+use Test::More tests => 66;
 
 use lib File::Spec->catdir($FindBin::Bin, '..');
 use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
@@ -109,7 +109,9 @@ is_deeply qb_mask('zz??'), { zz => qr/^$/i }, 'mask NULL';
     $qb->parse_search('a!^sss');
     is_deeply $qb->make_where, { a => [ { 'NOT LIKE', 'sss%' } ] }, 'db not starts with';
 
-    $qb->parse_search('a=1,b=x,a=2,b=y');
+    $qb->parse_search('a=1,b=x,a=2,b!=y');
+    is_deeply $qb->search_values('b'), [ 'x', 'y' ], 'search_values';
+    is_deeply $qb->search_values('b', '!='), [ 'y' ], 'search_values op';
     is_deeply $qb->extract_search_values('b'), [ 'x', 'y' ], 'extract_search_values';
     is_deeply $qb->make_where, { a => [ { '=', 1 }, { '=', 2 } ] }, 'db where or';
 
