@@ -1,0 +1,26 @@
+[%- js.nonce = 1 -%]
+[%- PROCESS includes/menu_begin.tti -%]
+[% PROCESS includes/html.tti %]
+
+[% PROCESS includes/listview_header.tti table_selector = '#topics' name_selector = 'a.nm' %]
+
+<table class="listview bordered highlight" id="topics">
+[% PROCESS includes/listview_col_defs.tti %]
+
+[% FOREACH tp IN topics %]
+<tr class="[% loop.parity() %]">
+<td class="nobr">
+  <a href="[% tp.href_edit %]" class="icon edit"></a>
+  [% href_delete_icon(tp.href_delete) %]
+  [% tp.code_prefix | html %]
+</td>
+<td>[% href(tp.href_problems, tp.name, '', class = 'nm') %]</td>
+[% IF visible_cols.De %]<td>[% tp.description | html %]</td>[% END %]
+[% IF visible_cols.Hd %]<td style="position: relative;">[% IF tp.is_hidden %]<a class="icon checked icon_centered"></a>[% END %]</td>[% END %]
+</tr>
+[% END %]
+</table>
+[% PROCESS includes/pages.tti %]
+</form>
+
+[% PROCESS includes/menu_end.tti %]

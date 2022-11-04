@@ -288,19 +288,20 @@ my $contest_submenu = [
     { href => 'contest_problems_installed', item => 595 },
     { href => 'contest_xml', item => 596 },
     { href => 'contest_wikis', item => 589 },
+    { href => 'contest_wikis_edit', item => 590, new => 'contest_wikis' },
+    { href => 'topics', item => 520 },
+    { href => 'topics_edit', item => 521, new => 'topics' },
 ];
 
 sub contest_submenu {
     my ($selected_href, $contest_id) = @_;
     $t->param(
-        submenu => [ (map +{
+        submenu => [ (map !$_->{new} || $selected_href =~ /^$_->{new}/ ? ({
             href => CATS::Utils::url_function($_->{href}, sid => $sid, cid => $contest_id),
             item => res_str($_->{item}),
             selected => $_->{href} eq $selected_href,
-            new => $_->{new},
-        },
-            ($selected_href =~ /^contest_wikis/ ?
-                ({ href => 'contest_wikis_edit', item => 590, new => 1 }) : ()),
+            new => $_->{new} ? 1 : 0,
+        }) : (),
             @$contest_submenu,
             ($is_root ? { href => 'contest_caches', item => 515 } : ()),
             ($is_root ? { href => 'contest_proctoring', item => 815 } : ())),

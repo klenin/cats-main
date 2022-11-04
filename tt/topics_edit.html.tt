@@ -1,0 +1,17 @@
+[%- js.nonce = 1 -%]
+[%- PROCESS includes/menu_begin.tti -%]
+[% PROCESS includes/html_input.tti %]
+
+[% idx = cp.indexed %]
+<form method="post" enctype="multipart/form-data" action="[% cw.href_action %]">
+<table class="edit_form">
+[% tr_text(tp.indexed.code_prefix, tp) %]
+[% tr_text(tp.indexed.name, tp) %]
+[% tr_checkbox1(tp.indexed.is_hidden, tp) %]
+[% tr_textarea(tp.indexed.description) %]
+</table>
+<br>
+[% PROCESS includes/edit_save_cancel.tti %]
+</form>
+
+[% PROCESS includes/menu_end.tti %]

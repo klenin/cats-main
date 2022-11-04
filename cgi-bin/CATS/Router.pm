@@ -88,6 +88,12 @@ my $main_routes = {
         $CATS::UI::ContestTags::form->route, ],
     contest_proctoring => [ \&CATS::UI::ContestProctoring::contest_proctoring_frame,
         params => undef, save => bool, ],
+
+    topics => [ \&CATS::UI::Topics::topics_frame,
+        delete => integer, saved => integer, ],
+    topics_edit => [ \&CATS::UI::Topics::topics_edit_frame,
+        $CATS::UI::Topics::form->route, ],
+
     console_content => [ \&CATS::UI::Console::console_content_frame,
         %console_params,
     ],
