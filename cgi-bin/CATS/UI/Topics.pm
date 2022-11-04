@@ -26,8 +26,8 @@ our $form = CATS::Form->new(
     href_action => 'topics_edit',
     descr_field => 'name',
     template_var => 'tp',
-    msg_deleted => 1073,
-    msg_saved => 1074,
+    msg_deleted => 1242,
+    msg_saved => 1243,
     before_display => sub {
         my ($fd, $p) = @_;
     },
