@@ -16,7 +16,7 @@
 [% IF ag.href_edit -%]
   <a href="[% ag.href_edit %]" class="icon edit"></a>
 [% END -%]
-  <a href="[% c.href_results %]" class="icon leaderboard" title="[% capt.rank_table %]"></a>
+  <a href="[% ag.href_rank_table %]" class="icon leaderboard" title="[% capt.rank_table %]"></a>
   <input type="checkbox" name="check" value="[% ag.id %]" />
 </td>
 [% END %]
