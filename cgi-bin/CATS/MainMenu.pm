@@ -15,13 +15,12 @@ sub new {
 
 sub _selected_menu_item {
     my ($self, $default, $href) = @_;
-    $default //= '';
 
-    my ($pf) = ($href =~ /[?;]f=([a-z_]+)/);
+    my ($pf) = ($href =~ /(?:[?;]f=|^)([a-z_]+)/);
     $pf ||= '';
 
     (defined $self->{f} && $pf eq $self->{f}) ||
-    (!defined $self->{f} && $pf eq $default);
+    (!defined $self->{f} && defined $default && $pf eq $default);
 }
 
 sub _mark_selected {
