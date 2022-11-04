@@ -166,6 +166,12 @@ function move_code(pid, dir) {
 [% IF p.group_title %]
 <tr class="col_defs"><th colspan="[% col_def_count + 1 %]">[% href(p.href_group, p.group_title) %]</th></tr>
 [% END %]
+[% IF p.topic %]
+<tr class="col_defs"><th colspan="[% col_def_count + 1 %]">
+  [%- href(p.topic.href_edit, '', '', class = 'icon edit') IF p.topic.href_edit %]
+  [% p.topic.code_prefix | html; '. '; p.topic.name | html -%]
+</th></tr>
+[% END %]
 <tr class="[% loop.parity() %] problem_row" id="pr_[% p.cpid %]">
 [% IF can_submit %]<td class="problem_radio nobr">
   <label><input type="radio" name="problem_id" value="[% p.problem_id %]"

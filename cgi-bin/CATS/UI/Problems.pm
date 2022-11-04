@@ -243,6 +243,32 @@ sub _proctoring {
     });
 }
 
+sub _build_topics {
+    my $hidden_cond = $is_jury ? '' : ' AND T.is_hidden = 0';
+    my $topics = $dbh->selectall_arrayref(qq~
+        SELECT T.id, T.code_prefix, T.name, T.is_hidden FROM topics T
+        WHERE T.contest_id = ?$hidden_cond
+        ORDER BY CHARACTER_LENGTH(T.code_prefix) DESC~, { Slice => {} },
+        $cid);
+    my $topic_idx;
+    for (@$topics) {
+        $_->{href_edit} = url_f('topics_edit', id => $_->{id}) if $is_jury;
+        my $start = substr($_->{code_prefix}, 0, 1);
+        $topic_idx->{$start} //= [];
+        push $topic_idx->{$start}, $_;
+    }
+    $topic_idx;
+}
+
+sub _get_topic {
+    my ($topics, $row) = @_;
+    my $candidates = defined $row->{code} && $topics->{substr($row->{code}, 0, 1)} or return;
+    for my $topic (@$candidates) {
+        return $topic if $row->{code} =~ /^\Q$topic->{code_prefix}\E/;
+    }
+    return undef;
+}
+
 sub problems_frame {
     my ($p) = @_;
 
@@ -330,6 +356,7 @@ sub problems_frame {
             { caption => res_str(698), order_by => 'snippets', width => '5%', col => 'Sn' },
             { caption => res_str(816), order_by => 'save_output_prefix', width => '5%', col => 'Op' },
             { caption => res_str(675), col => 'Cl' },
+            { caption => 'topics', col => 'Tp' },
         )
         : ()
         ),
@@ -346,6 +373,8 @@ sub problems_frame {
     }
     $lv->define_db_searches({ contest_title => 'OC.title' });
     my $psn = CATS::Problem::Utils::problem_status_names_enum($lv);
+
+    my $topics = !$is_jury || $lv->visible_cols->{Tp} ? _build_topics : {};
 
     my ($req_stats_idx, $last_submits) = $lv->visible_cols->{Vc} ? _collect_req_stats($aid) : ({}, {});
 
@@ -442,6 +471,7 @@ sub problems_frame {
     my %any_langs;
 
     my $prev_contest = 0;
+    my $prev_topic_prefix = '';
 
     my $fetch_record = sub {
         my $c = $_[0]->fetchrow_hashref or return ();
@@ -484,6 +514,10 @@ sub problems_frame {
             $c->{contest_id} == $prev_contest ? '' : $child_contests_idx{$c->{contest_id}}->{title};
         my $href_group = $group_title && url_f_cid('problems', cid => $c->{contest_id});
         $prev_contest = $c->{contest_id};
+
+        my $topic = _get_topic($topics, $c);
+        $c->{topic} = $topic if $topic && $topic->{code_prefix} ne $prev_topic_prefix;
+        $prev_topic_prefix = $topic ? $topic->{code_prefix} : '';
 
         my $rc = $req_stats_idx->{$pid} // {};
         return (

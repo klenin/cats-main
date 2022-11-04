@@ -9,6 +9,7 @@
     last_submit => 'last submit',
     login_to_participate => '您必须[[登录]]参与此次比赛',
     child_contests => 'This event includes contests',
+    listview_captions => { topics => '主题', }
     dev_env_detected => '开发环境被发现',
     de_not_allowed => 'This development environment is forbidden. Allowed development environments:'
     view_results => '查看提交结果',
