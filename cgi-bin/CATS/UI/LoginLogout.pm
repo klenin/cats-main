@@ -82,6 +82,8 @@ sub login_frame {
     elsif ($p->{login}) {
         $where->{login} = $p->{login};
         $t->param(login => $p->{login} || '');
+        length(Encode::encode_utf8($p->{login})) <= 50
+            or return msg(1040);
     }
     else {
         return $p->{json} && msg(1040);

@@ -143,6 +143,7 @@ sub _apply_enum_transform {
 sub _prepare_value {
     my ($self, $field, $value, $op) = @_;
     $value = $self->_apply_enum_transform($field, $value);
+    $value = substr($value, 0, 50) if length($value) > 50;
     if ($op) {
         my ($k, $v) = %{sql_op($op, $value)};
         return { $k, $self->_maybe_cast($field, $v) };
