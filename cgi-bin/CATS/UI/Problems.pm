@@ -252,7 +252,6 @@ sub _build_topics {
         ORDER BY T.code_prefix~, { Slice => {} },
         $cid);
     my %selected_idx = map { $_ => 1 } @{$lv->qb->search_values('code', '^=')};
-    warn %selected_idx;
     my $topic_idx;
     for (sort {length($b->{code_prefix}) <=> length($a->{code_prefix}) } @$topics) {
         $_->{href_edit} = url_f('topics_edit', id => $_->{id}) if $is_jury;
