@@ -175,7 +175,8 @@ div.select_cols {
     padding-right: 10px;
     scrollbar-width: thin;
 }
-div.select_cols > div {
+div.select_cols > label:hover {
+    background-color: #ffcc55;
 }
 div.select_cols > label {
     display: block;
@@ -183,6 +184,7 @@ div.select_cols > label {
     padding: 0 5px;
     text-align: left;
     width: 100%;
+    user-select: none;
 }
 
 .top a, .top a:link, .top a:visited, .top a:active {
