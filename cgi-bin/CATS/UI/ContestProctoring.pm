@@ -22,7 +22,7 @@ sub contest_proctoring_frame {
     $t->param(
         params => ($p->{save} ? $p->{params} : $old_params),
     );
-    CATS::Contest::Utils::contest_submenu('contest_proctoring', $cid);
+    CATS::Contest::Utils::contest_submenu('contest_proctoring');
 
     if ($p->{save} && ($p->{params} // '') ne ($old_params // '')) {
         eval { decode_json($p->{params}); 1 }

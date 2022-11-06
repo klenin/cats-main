@@ -346,7 +346,7 @@ sub contest_problems_installed_frame {
         search => $p->{search},
     );
 
-    CATS::Contest::Utils::contest_submenu('contest_problems_installed', $cid);
+    CATS::Contest::Utils::contest_submenu('contest_problems_installed');
 }
 
 sub _to_num { $_[0] or return; $_[0] =~ s/\.(\d*?)0+$/$1 ? ".$1" : ''/e; $_[0] || undef; }
@@ -671,7 +671,7 @@ sub contest_xml_frame {
         contest_xml => $p->{contest_xml} // CATS::Contest::XmlSerializer->new->serialize($c, $problems),
         form_action => url_f('contest_xml'),
     );
-    CATS::Contest::Utils::contest_submenu('contest_xml', $cid);
+    CATS::Contest::Utils::contest_submenu('contest_xml');
 }
 
 sub find_contests_api {

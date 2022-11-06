@@ -295,6 +295,7 @@ my $contest_submenu = [
 
 sub contest_submenu {
     my ($selected_href, $contest_id) = @_;
+    $contest_id //= $cid;
     $t->param(
         submenu => [ (map !$_->{new} || $selected_href =~ /^$_->{new}/ ? ({
             href => CATS::Utils::url_function($_->{href}, sid => $sid, cid => $contest_id),

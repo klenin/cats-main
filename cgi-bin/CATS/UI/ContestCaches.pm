@@ -51,7 +51,7 @@ sub contest_caches_frame {
         rank_caches => _name_size(CATS::RankTable::Cache::files($cid)),
         form_action => url_f('contest_caches'),
     );
-    CATS::Contest::Utils::contest_submenu('contest_caches', $cid);
+    CATS::Contest::Utils::contest_submenu('contest_caches');
 }
 
 1;
