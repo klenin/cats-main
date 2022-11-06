@@ -233,6 +233,7 @@ a.sub_menu_selected, a.sub_menu_selected:visited { color: #ffff80; background-co
     margin: 4px 0;
     white-space: nowrap;
     border: 1px solid transparent;
+    border-radius: 3px;
 }
 .inline_menu a:hover { color: #3030a0; background-color: #afaff5; }
 a.inline_menu_selected, a.inline_menu_selected:visited { border-color: #3030a0; }
