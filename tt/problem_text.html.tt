@@ -63,7 +63,7 @@ END -%]
 <body>
 [% FOREACH p IN problems; il = p.iface_lang; PROCESS "lang/$il/problem_text_p.html.tt" UNLESS capt.problem_text.item(il); END; %]
 [% FOREACH p IN problems; c = capt.problem_text.item(p.iface_lang) %]
-<div class="problem_text" id="p[% p.cpid %]" [% UNLESS loop.first %]style="page-break-before: always"[% END %] lang="[% p.lang %]">
+<div class="problem_text" id="p[% p.cpid %]" [% UNLESS loop.first %]style="page-break-before: always;"[% END %] lang="[% p.lang %]">
   <a name="pr[% p.code || p.cpid || p.id %]"></a>
 
   <h2>

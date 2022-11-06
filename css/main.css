@@ -9,9 +9,14 @@ body {
     font-size: 14px;
     margin: 0;
     width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
+}
+
+@media screen {
+    body {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
 }
 
 .bordered input[type=checkbox] {
