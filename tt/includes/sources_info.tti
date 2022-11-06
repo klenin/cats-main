@@ -8,9 +8,9 @@
     <td>[% IF left_menu; menu(left_menu, 'main_menu_selected'); END ~%]
     </td>
     <td>
-      <p id="switch_lang">[% FOR l IN langs -%]
+      <span id="switch_lang">[% FOR l IN langs -%]
         <a href="[% l.href %]"[% class({ main_menu_selected => l.name == lang }); '>'; l.name; '</a> '; END -%]
-      </p>
+      </span>
     </td>
   </tr>
 </table>
