@@ -90,6 +90,7 @@ sub user_stats_frame {
     my $hidden_cond = $is_root ? '' :
         'AND C.is_hidden = 0 AND (CA.is_hidden = 0 OR CA.is_hidden IS NULL) ' .
         'AND C.defreeze_date < CURRENT_TIMESTAMP';
+    my $award_splitter = '#~#';
     my $contests = $dbh->selectall_arrayref(qq~
         SELECT C.id, C.title, CA.id AS caid, CA.is_jury, CA.is_ooc,
             $CATS::Time::contest_start_offset_sql AS start_date,
@@ -100,7 +101,7 @@ sub user_stats_frame {
             (SELECT COUNT(*) FROM contest_problems CP
                 WHERE CP.contest_id = C.id AND CP.status < $cats::problem_st_hidden
             ) AS problem_count,
-            (SELECT LIST(AW.name || ',' || AW.color, ' ') FROM contest_account_awards CAA
+            (SELECT LIST(AW.name || ',' || AW.color, '$award_splitter') FROM contest_account_awards CAA
                 INNER JOIN awards AW ON AW.id = CAA.award_id
                 WHERE CAA.ca_id = CA.id
             ) AS awards
@@ -132,7 +133,7 @@ sub user_stats_frame {
             show_results => 1, rows => 30, search => "contest_id=$_->{id}");
         $_->{start_date} = $db->format_date($_->{start_date});
         $_->{awards} = [
-            map /^(\S+),(.*)$/ && { name => $1, color => $2 }, split /\s+/, $_->{awards} // '' ];
+            map /^(.+),(.*)$/ && { name => $1, color => $2 }, split $award_splitter, $_->{awards} // '' ];
     }
 
     my $groups_hidden_cond = $user->privs->{manage_groups} ? '' : q~ AND AGA.is_hidden = 0~;

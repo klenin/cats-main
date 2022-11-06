@@ -26,7 +26,7 @@
 <td>[% href(c.href_submits, c.accepted_count _ ' / ' _ c.problem_count) %]</td>
 <td>[% capt.ooc IF c.is_ooc %]
 [% FOREACH aw IN c.awards %]
-<span style="color: [% aw.color | html %];">[% aw.name | html %]</span>
+<span style="color: [% aw.color | html %];">[% aw.name | html %]</span>[% ', ' UNLESS loop.last %]
 [% END %]</td>
 </tr>
 [%- END %]
