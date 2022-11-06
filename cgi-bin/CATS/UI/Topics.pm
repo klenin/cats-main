@@ -30,6 +30,14 @@ our $form = CATS::Form->new(
     msg_saved => 1243,
     before_display => sub {
         my ($fd, $p) = @_;
+        my $prefix = $fd->{indexed}->{code_prefix}->{value} // '';
+        $fd->{data}->{problems} = $prefix ne '' && $dbh->selectall_arrayref(q~
+            SELECT P.id, CP.code, P.title
+            FROM problems P INNER JOIN contest_problems CP ON CP.problem_id = P.id
+            WHERE CP.contest_id = ? AND CP.code STARTS WITH ?
+            ORDER BY Cp.code~, { Slice => {} },
+            $cid, $prefix);
+        $fd->{data}->{href_problems} = $prefix ne '' && url_f('problems', search => 'code^=' . $prefix);
     },
     validators => [ sub {
         my ($fd, $p) = @_;

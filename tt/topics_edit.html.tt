@@ -14,4 +14,15 @@
 [% PROCESS includes/edit_save_cancel.tti %]
 </form>
 
+[%- IF tp.data.problems && tp.data.problems.size > 0 %]
+<p>[[% href(tp.data.href_problems, capt.problems) %]]</p>
+<p>
+<table class="internal_borders padded">
+[%- FOREACH p IN tp.data.problems %]
+  <tr><td>[% p.code | html %]</td><td>[% p.title | html %]</td></tr>
+[%- END %]
+</table>
+</p>
+[%- END %]
+
 [% PROCESS includes/menu_end.tti %]
