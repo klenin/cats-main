@@ -79,6 +79,8 @@ INSERT INTO default_de (id, code, description, syntax, err_regexp)
     VALUES (<NEXT_ID>, 602, 'Unity', 'csharp', '^(?:.*)\\\w+\.cs\(~LINE~,~POS~\):\serror');
 INSERT INTO default_de (id, code, description)
     VALUES (<NEXT_ID>, 604, 'OBJ');
+INSERT INTO default_de (id, code, description)
+    VALUES (<NEXT_ID>, 606, 'TeX', 'latex', '^l\.~LINE~');
 
 /* All users are participants here. */
 INSERT INTO contests(id, title, ctype, start_date, finish_date) VALUES(101, 'Archive', 1, CURRENT_DATE - 100, CURRENT_DATE + 1000000);
