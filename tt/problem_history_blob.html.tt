@@ -27,10 +27,13 @@
   </div>
   <div>
   [% FOREACH line IN blob.lines -%]
-     <div class="pre">[% IF line.text.length > 1; line.text | html | quote_controls; ELSE; '&nbsp;'; END %]</div>
+     <div class="pre">
+     [%- IF line.text.length; line.text | html | quote_controls; ELSE; '&nbsp;'; END ~%]
+     </div>
   [% END %]
   </div>
   </div>
   [% END %]
 </div>
+
 [% PROCESS includes/menu_end.tti %]
