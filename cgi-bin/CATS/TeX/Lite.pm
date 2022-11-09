@@ -233,6 +233,9 @@ sub parse_block {
         elsif ($source =~ s/^(\s*)\\\\(\s*)//) {
             push @res, [ 'row' ],
         }
+        elsif ($source =~ s/^(\s*)~(\s*)//) {
+            push @res, [ space => '~' ],
+        }
         else {
             push @res, parse_token();
         }
