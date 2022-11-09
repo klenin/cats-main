@@ -87,3 +87,7 @@ END -%]
 
 [%- MACRO colored(text, color) BLOCK -%]
   [% IF color %]<span style="color: [% color %];">[% END; text | html; '</span>' IF color; END -%]
+
+[%- MACRO svg_icon(name) BLOCK ~%]
+  <svg width="15" height="15"><use xlink:href="#[% name %]_icon"/></svg>
+[%- END -%]

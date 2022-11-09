@@ -2,6 +2,7 @@
 [%- PROCESS includes/menu_begin.tti -%]
 [%- PROCESS "lang/$lang/problems.html.tt" -%]
 [%- PROCESS includes/html.tti -%]
+[%- PROCESS includes/icon/download.tti -%]
 
 [% IF problem_import_log %]
 [% capt.problem_import_log %]:<br/>
@@ -23,7 +24,9 @@
   <a href="[% h.href_commit %]" title="[% h.sha %]" >[% h.abbreviated_sha %]&hellip;</a>
   <span style="float:right;">[<a href="[% h.href_tree %]">[% capt.files %]</a>]</span>
   [% IF p.repo_path %]<span style="float:right; margin-right: 2px">[<a href="[% h.href_problem_tree %]">p-tree</a>]</span>[% END %]
-  <span style="float:right; margin-right: 2px">[<a href="[% h.href_git_package %]" title="[% capt.package %]">&#11123;</a>]</span>
+  <span style="float:right; margin-right: 2px">[<a href="[% h.href_git_package %]" title="[% capt.package %]">
+    [%- svg_icon('download') ~%]
+  </a>]</span>
 </td>
 <td title="[% h.body | html | replace("\n", '&#10;') %]">[% h.subject| html %]</td>
 </tr>

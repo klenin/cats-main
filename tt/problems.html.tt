@@ -50,6 +50,8 @@
 [%- END -%]
 [% PROCESS includes/menu_begin.tti %]
 [%- PROCESS includes/html.tti -%]
+[%- PROCESS includes/icon/download.tti -%]
+[%- PROCESS includes/icon/external_link.tti -%]
 [%- PROCESS includes/autocomplete.tti IF editable -%]
 [%- PROCESS "lang/$lang/verdicts.tti" -%]
 [% IF editable %]
@@ -203,13 +205,19 @@ function move_code(pid, dir) {
     [% IF p.code; p.code %] - [% END %]
   [% END %][% p.title | html %]</a>
   [% IF p.problem_langs.size %][[% FOREACH pl IN p.problem_langs; href(pl.href, pl.name); ' ' UNLESS loop.last; END %]][% END -%]
-  [% IF p.href_explanation %]&nbsp;[<a href="[% p.href_explanation %]" target="_blank">[% capt.explanation %]</a>][% END -%]
+  [% IF p.href_explanation %][<a href="[% p.href_explanation %]" target="_blank">[% capt.explanation %]</a>][% END -%]
   [% IF p.href_download -%]
-    &nbsp;[<a href="[% p.href_download %]" title="[% capt.package %]" download="[% p.code %]_[% p.problem_id %].zip">&#11123;</a>]
+    <span class="nobr">[
+    [%-#%]<a href="[% p.href_download %]" title="[% capt.package %]" download="[% p.code %]_[% p.problem_id %].zip">
+    [%- svg_icon('download') %]</a>
+    [%-#%]]</span>
   [%- END -%]
 [% IF editable %]
   [%- IF p.is_linked %]
-    [<a href="[% p.href_original_contest %]" title="[% p.contest_title %]: [% p.original_code %]">&#8663;</a>]
+    <span class="nobr">[
+    [%-#%]<a href="[% p.href_original_contest %]" title="[% p.contest_title %]: [% p.original_code %]">
+    [%- svg_icon('external_link') %]</a>
+    [%-#%]]</span>
   [%- END %]
   [%- IF p.usage_count %] [<a href="[% p.href_usage %]" title="[% capt.used_in %]">[% p.usage_count %]</a>][% END %]
   [% IF p.remote_url %] [<a href="[% p.remote_url %]" title="[% p.remote_url %]">R</a>][% END %]
