@@ -19,6 +19,8 @@ body {
     }
 }
 
+hr { width: 100%; }
+
 .bordered input[type=checkbox] {
     appearance: none;
     -webkit-appearance: none;
