@@ -4,10 +4,18 @@
 <style>
   .scrollable { height: 200px; width: 700px; overflow: auto; }
   img.data { max-width: 50%; max-height: 50%; }
+  iframe.data { width: 100%; height: 400px; }
 </style>
 </head>
 <body>
-[% MACRO img(data, title) BLOCK %]<img class="data bordered" src="data:image/[% data.format %];base64,[% data.base64 %]" title="[% title %]"></img>[% END %]
+[% MACRO img(data, title) BLOCK -%]
+  [%- IF data.format == 'pdf' %]
+    <iframe class="data bordered" src="data:application/pdf;base64,[% data.base64 %]" title="[% title %]">PDF</iframe>
+  [%- ELSE %]
+    <img class="data bordered" src="data:image/[% data.format %];base64,[% data.base64 %]" title="[% title %]"></img>
+  [%- END -%]
+[%- END -%]
+
 [% PROCESS includes/sources_info.tti %]
 <br/>
 

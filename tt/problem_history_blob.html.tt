@@ -2,21 +2,26 @@
 [%- extra_head = BLOCK -%]
 <style>
   @import 'css/git.css';
+  div.main_page { display: flex; flex-direction: column; }
+  div.page_body iframe { width: 100%; height: 100%; }
 </style>
-[%- END %]
+[%- END -%]
 [%- PROCESS includes/menu_begin.tti -%]
 [%- PROCESS "lang/$lang/problems.html.tt" -%]
 [%- PROCESS includes/html.tti -%]
-
 <div class="page_path">
   [% FOREACH path IN blob.paths %]
     <a href="[% path.href %]">[% path.file_name %]</a>
     /
   [% END %]
 </div>
-<div class="page_body">
+<div class="page_body" style="flex: 1 0 auto;">
   [% IF blob.image %]
-  <img src="[% blob.image %]">
+    [%- IF blob.mimetype == 'application/pdf' -%]
+    <iframe src="[% blob.image %]#view=fitH"></iframe>
+    [%- ELSE -%]
+    <img src="[% blob.image %]"/>
+    [%- END -%]
   [% ELSE %]
   [% PROCESS includes/encoding_form.html.tti capt_enc = capt.enc %]
   <div style="display: flex;">
@@ -35,5 +40,4 @@
   </div>
   [% END %]
 </div>
-
 [% PROCESS includes/menu_end.tti %]
