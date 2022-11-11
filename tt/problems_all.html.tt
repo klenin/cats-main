@@ -1,5 +1,7 @@
 [% js.jquery = 1 %]
 [% PROCESS includes/menu_begin.tti %]
+[%- PROCESS includes/icon/download.tti -%]
+
 [% PROCESS includes/listview_header.tti %]
 </form>
 <form method="post" enctype="multipart/form-data" action="[% href_action %]">
@@ -11,7 +13,12 @@
 [% IF user.is_jury && link %]<input type="checkbox" name="problems_selection" value="[% p.problem_id %]" [% IF p.linked %]disabled[% END %] />[% END %]
 [%~ IF p.href_problem_details %]<a href="[% p.href_problem_details %]" class="icon edit"></a>[% END %]</label>
 <a href="[% p.href_view_problem %]" target="_blank">[% p.title | html %]</a>
-[% IF p.href_download %]&nbsp;[<a href="[% p.href_download %]">[% capt.package %]</a>][% END %]
+[% IF p.href_download -%]
+    <span class="nobr">[
+    [%-#%]<a href="[% p.href_download %]" title="[% capt.package %]" download="[% p.code %]_[% p.problem_id %].zip">
+    [%- svg_icon('download') %]</a>
+    [%-#%]]</span>
+[% END %]
 </td>
 [% IF visible_cols.Co %]<td>[% p.code | html; cell_search('code', p) %]</td>[% END %]
 <td><a href="[% p.href_view_contest %]">[% p.contest_title | html; cell_search('contest_id', p) %]</a></td>
