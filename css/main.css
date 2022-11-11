@@ -19,6 +19,8 @@ body {
     }
 }
 
+div.main_page { width: 99%; padding: 4px; flex: 1 0 auto; }
+
 hr { width: 100%; }
 
 .bordered input[type=checkbox] {
