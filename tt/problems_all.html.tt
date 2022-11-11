@@ -1,4 +1,4 @@
-[% js.jquery = 1 %]
+[% js.nonce = 1; js.jquery = 1 %]
 [% PROCESS includes/menu_begin.tti %]
 [%- PROCESS includes/icon/download.tti -%]
 
@@ -37,16 +37,17 @@
 [% IF user.is_jury && link %]
 [% capt.problem_code %]:
 <span class="pcode">
-<input name="code" size="3" maxlength="3" onfocus="choose_code(this, false)" />
+<input name="code" size="3" maxlength="3" />
 </span>
 <br/><br/>
 [% IF move %]<input type="hidden" name="move" value="1" />[% END %]
 <button type="submit" name="link_save" value="1" class="button">[% move ? capt.move : capt.link %]</button>
 <button type="submit" name="link_cancel" value="1" class="button">[% capt.cancel %]</button>
 
-<script type="text/javascript">
+<script nonce="[% nonce %]">
 var used_codes = { [% FOREACH u IN used_codes %]"[% u %]": 1[% ', ' UNLESS loop.last; END %] };
 [% PROCESS includes/select_problem_code.tti %]
+$(function () {  $('input[name=code]').focus(function () { choose_code(this, false); }); });
 </script>
 
 [% END %]
