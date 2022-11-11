@@ -18,9 +18,9 @@
 <div class="page_body" style="flex: 1 0 auto;">
   [% IF blob.image %]
     [%- IF blob.mimetype == 'application/pdf' -%]
-    <iframe src="[% blob.image %]#view=fitH"></iframe>
+    <iframe src="[% blob.paths.last.href %];inline=1#view=fitH"></iframe>
     [%- ELSE -%]
-    <img src="[% blob.image %]"/>
+    <img src="[% blob.paths.last.href %];inline=1"/>
     [%- END -%]
   [% ELSE %]
   [% PROCESS includes/encoding_form.html.tti capt_enc = capt.enc %]
