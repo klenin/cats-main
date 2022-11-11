@@ -201,7 +201,9 @@ sub problem_history_raw_frame {
     $p->print_file(
         content_type => $blob->{type},
         file_name => $p->{file},
-        content => $blob->{content});
+        content => $blob->{content},
+        inline => $p->{inline},
+    );
 }
 
 sub problem_history_edit_frame {

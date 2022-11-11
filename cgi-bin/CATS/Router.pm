@@ -207,7 +207,7 @@ my $main_routes = {
         pid => required integer, hb => required sha, file => required str, src_enc => str,
     ],
     problem_history_raw => [ \&CATS::UI::ProblemHistory::problem_history_raw_frame,
-        pid => required integer, hb => required sha, file => required str,
+        pid => required integer, hb => required sha, file => required str, inline => bool,
     ],
     problem_history_commit => [ \&CATS::UI::ProblemHistory::problem_history_commit_frame,
         pid => required integer, h => required sha, src_enc => str,
