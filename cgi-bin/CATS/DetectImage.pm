@@ -6,10 +6,11 @@ my $headers = {
     jpeg => '\xFF.\xFF\xE0..JFIF\0',
     png => '\x89PNG', #\x0D\x0A\x1A',
     gif => 'GIF8[79]a',
+    pdf => '%PDF-1\.5',
     # bmp => 'BM', # Too weak.
 };
 
-sub has_image_extension { $_[0] =~ /\.(?:jpe?g|png|gif|bmp)$/ }
+sub has_image_extension { $_[0] =~ /\.(?:jpe?g|png|gif|bmp|pdf)$/ }
 
 sub detect {
     my ($bytes) = @_;
