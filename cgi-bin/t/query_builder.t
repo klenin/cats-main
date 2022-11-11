@@ -141,8 +141,8 @@ is_deeply qb_mask('zz??'), { zz => qr/^$/i }, 'mask NULL';
     is_deeply $qb->make_where, \[ $sq, 'x_1' ], 'db subquery digit underscore';
     $qb->parse_search('has_v(.5)');
     is_deeply $qb->make_where, \[ $sq, '.5' ], 'db subquery start dot';
-    $qb->parse_search('has_v(a-b)');
-    is_deeply $qb->make_where, \[ $sq, 'a-b' ], 'db subquery minus';
+    $qb->parse_search('has_v(a-b%)');
+    is_deeply $qb->make_where, \[ $sq, 'a-b%' ], 'db subquery minus percent';
 }
 
 {
