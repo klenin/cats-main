@@ -261,7 +261,7 @@ sub problems_submit {
             R.contest_id = ? AND S.hash = ? AND S.de_id = ?
         $db->{LIMIT} 1~, undef,
         $submit_uid, $pid, $cid, $source_hash, $did);
-    $same_source and return msg(1132, $prev_submit_time);
+    $same_source and return (msg(1132, $prev_submit_time), { prev_req_id => $same_source });
 
     my $rid = CATS::Request::insert($pid, $cid, $submit_uid,
         [ CATS::DevEnv->new(CATS::JudgeDB::get_DEs())->bitmap_by_ids($did) ],
