@@ -274,6 +274,7 @@ sub problem_history_edit_frame {
         pid => $p->{pid},
         edit_file => !$p->{new},
         hash => $hash_base,
+        image_extension_re => substr($CATS::DetectImage::image_extension_re, 4, -1), # Strip (?^:...).
         href_blob_prefix => url_f('problem_history_blob', pid => $p->{pid}, hb => $hash_base),
         href_edit_prefix => url_f('problem_history_edit', pid => $p->{pid}, hb => $hash_base),
     );

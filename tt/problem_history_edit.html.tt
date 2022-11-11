@@ -69,9 +69,9 @@ $(document).ready(function () {
     completer(complete_lists.guids, 'guid', acceptable_prefix_attr('guid'), prefilter_dotted),
     completer(complete_lists.files, 'file', acceptable_prefix_attr('src'), prefilter_dotted)
   ]);
-
+  var image_extension_re = new RegExp('[% image_extension_re %]');
   var preproces_file_link = function(filename) {
-    var p = filename.match(/\.(jpe?g|png|bmp|gif)$/) ? '[% href_blob_prefix %]' : '[% href_edit_prefix %]';
+    var p = filename.match(image_extension_re) ? '[% href_blob_prefix %]' : '[% href_edit_prefix %]';
     var p_new = complete_lists.files.indexOf(filename) >= 0 ? '' : ';new=1';
     return p + p_new + ';file=' + filename;
   };

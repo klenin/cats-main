@@ -10,7 +10,9 @@ my $headers = {
     # bmp => 'BM', # Too weak.
 };
 
-sub has_image_extension { $_[0] =~ /\.(?:jpe?g|png|gif|bmp|pdf)$/ }
+our $image_extension_re = qr/\.(?:jpe?g|png|gif|bmp|pdf)$/;
+
+sub has_image_extension { $_[0] =~ $image_extension_re }
 
 sub detect {
     my ($bytes) = @_;
