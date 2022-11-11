@@ -240,6 +240,13 @@ sub define_kw_subquery {
             m => 1225,
             t => q~SELECT DE.description FROM default_de DE WHERE DE.code = ?~,
         },
+        has_attachment_like => {
+            sq => q~(EXISTS (
+                SELECT 1 FROM problem_attachments PA
+                WHERE PA.problem_id = P.id AND PA.file_name LIKE ?))~,
+            m => 1244,
+            t => undef,
+        },
     });
 }
 

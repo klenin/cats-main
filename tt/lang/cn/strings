@@ -452,3 +452,4 @@
 1241 "Jobs restarted: %d."
 1242 "Topic '%s' saved."
 1243 "Topic '%s' deleted."
+1244 "Problems containing attachment file '%s'"
