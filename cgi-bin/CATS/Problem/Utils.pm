@@ -117,6 +117,13 @@ sub problem_status_names_enum {
     $psn;
 }
 
+our $queries = {
+    usage_count => q~
+        SELECT COUNT(*) FROM contest_problems CP1
+        WHERE CP1.contest_id <> CP.contest_id AND CP1.problem_id = P.id~,
+};
+
+
 sub define_common_searches {
     my ($lv) = @_;
 
@@ -141,6 +148,7 @@ sub define_common_searches {
             (SELECT COUNT(*) FROM problem_attachments PA WHERE PA.problem_id = P.id)~,
         contest_count => q~
             (SELECT COUNT(*) FROM contest_problems CP2 WHERE CP2.problem_id = P.id)~,
+        usage_count => "($queries->{usage_count})",
         (map { $_->[0] . '_count' => qq~
             (SELECT COUNT (*) FROM problem_sources PS
                 INNER JOIN problem_sources_local PSL on PS.id = PSL.id

@@ -437,8 +437,7 @@ sub problems_frame {
             $keywords
             $allow_des
             (CASE WHEN P.contest_id = CP.contest_id THEN 0 ELSE 1 END) AS is_linked,
-            (SELECT COUNT(*) FROM contest_problems CP1
-                WHERE CP1.contest_id <> CP.contest_id AND CP1.problem_id = P.id) AS usage_count,
+            ($CATS::Problem::Utils::queries->{usage_count}) AS usage_count,
             OC.id AS original_contest_id, CP.status,
             P.upload_date, $judges_installed_sql AS judges_installed,
             P.last_modified_by,
