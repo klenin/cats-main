@@ -44,7 +44,7 @@ our $hidden_verdicts_others = {
     TL => 'RJ',
     RE => 'RJ',
     CE => 'RJ',
-    SV => 'RJ',
+    SV => 'NP',
     ML => 'RJ',
     IS => 'RJ',
     IL => 'RJ',
@@ -58,6 +58,7 @@ our $hidden_verdicts_others = {
 my $hidden_verdicts_self = {
     UH => 'NP',
     P  => 'NP',
+    SV => 'NP',
 };
 
 our $settable = [ qw(NP AW OK WA PE TL ML WL RE CE SV IS IL MR LI BA) ];
