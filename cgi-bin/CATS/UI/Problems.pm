@@ -76,8 +76,10 @@ sub problems_all_frame {
             checkbox => $is_jury && $p->{link} && '[name=problems_selection]' },
         { caption => res_str(619), order_by => 'CP.code', width => '1%', col => 'Co' },
         { caption => res_str(603), order_by => 'C.title', width => '30%' },
+        ($is_jury ?
+            ({ caption => res_str(645), order_by => 'usage_count', width => '5%', col => 'Uc' }) : ()),
         { caption => res_str(604), order_by => $accepted_orderby, width => '10%', col => 'Ok' },
-        { caption => res_str(634), order_by => 'upload_date', width => '10%', col => 'Mt' },
+        { caption => res_str(634), order_by => 'upload_date', width => '15%', col => 'Mt' },
         { caption => res_str(667), order_by => 'keywords', width => '20%', col => 'Kw' },
     ]);
     CATS::Problem::Utils::define_common_searches($lv);
@@ -91,6 +93,7 @@ sub problems_all_frame {
     $lv->default_searches([ qw(contest_title) ]);
     $lv->date_fields(qw(upload_date));
 
+    my $used_count_sql = $lv->visible_cols->{Uc} ? $CATS::Problem::Utils::queries->{usage_count} : 'NULL';
     my $ok_wa_tl = $lv->visible_cols->{Ok} ? qq~
         SELECT
             $accepted_sql || ' / ' ||
@@ -103,6 +106,7 @@ sub problems_all_frame {
     my $sth = $dbh->prepare(qq~
         SELECT
             P.id AS problem_id, P.title, C.title AS contest_title, P.contest_id, CP.code, P.upload_date,
+            ($used_count_sql) AS usage_count,
             ($ok_wa_tl) AS counts,
             ($keywords) AS keywords,
             (SELECT 1 FROM contest_problems CP1
@@ -123,6 +127,7 @@ sub problems_all_frame {
             ($is_root ? (href_download => url_f_cid('problem_download', %pp)) : ()),
             ($is_root ? (href_problem_details => url_f_cid('problem_details', %pp)) : ()),
             href_problem_console => _href_problem_console($pid),
+            href_used_by => url_f('contests', search => "has_problem($row->{problem_id})"),
             %$row,
             linked => $row->{linked} || !$p->{link},
         );
