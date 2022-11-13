@@ -366,6 +366,7 @@ sub problems_frame {
             { caption => res_str(698), order_by => 'snippets', width => '5%', col => 'Sn' },
             { caption => res_str(816), order_by => 'save_output_prefix', width => '5%', col => 'Op' },
             { caption => res_str(675), col => 'Cl' },
+            { caption => res_str(645), col => 'Uc' },
             { caption => 'topics', col => 'Tp' },
         )
         : ()
@@ -410,6 +411,9 @@ sub problems_frame {
         INNER JOIN contest_problem_des CPD ON CPD.cp_id = CP.id AND CPD.de_id = D.id
         ORDER BY 1
         ) AS allow_des_names,~ : '';
+    my $usage_count_sql = $is_jury && $lv->visible_cols->{Uc} ?
+        $CATS::Problem::Utils::queries->{usage_count} : 'NULL';
+
     # Use result_time to account for re-testing standard solutions,
     # but also limit by sumbit_time to speed up since there is no index on result_time.
     my $judges_installed_sql = $is_jury && $lv->visible_cols->{Ju} ? qq~
@@ -442,7 +446,7 @@ sub problems_frame {
             $keywords
             $allow_des
             (CASE WHEN P.contest_id = CP.contest_id THEN 0 ELSE 1 END) AS is_linked,
-            ($CATS::Problem::Utils::queries->{usage_count}) AS usage_count,
+            ($usage_count_sql) AS usage_count,
             OC.id AS original_contest_id, CP.status,
             P.upload_date, $judges_installed_sql AS judges_installed,
             P.last_modified_by,
