@@ -248,11 +248,14 @@ $('.problem_text div.problem_menu li.langs a').click(function() {
   }
 });
 
-function copy_button_click() {
-  var td = $(this).parents('td');
-  navigator.clipboard.writeText(td.find('code')[0].innerText);
-}
-$('.copy_button').click(copy_button_click);
+function copy_button_text(btn) { return btn.parents('td').find('code').text(); }
+function copy_button_click() { navigator.clipboard.writeText(copy_button_text($(this))); }
+$(function() {
+  $('.copy_button').click(copy_button_click).each(function(i, btn) {
+    var b = $(btn);
+    if (copy_button_text(b).trim() === '') b.hide();
+  });
+});
 
 var enable_navigation = function() {
   if (query_params.nonav) return;
