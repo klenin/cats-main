@@ -1,4 +1,4 @@
-[%- js.jquery = 1; js.ace = 1; js.csp_sources = ' ' _ web.get_host _ '/cats/static/js/';
+[%- js.nonce = 1; js.jquery = 1; js.ace = 1; js.csp_sources = ' ' _ web.get_host _ '/cats/static/js/';
   js.mathjax = mathjax; js.mathjax_onload = 1 -%]
 [%- IF has_quizzes || has_snippets;
   js.quizzes = 1;
@@ -13,7 +13,7 @@ END -%]
 <script src="js/lib/ace/ext-static_highlight.js"></script>
 [% END %]
 [% IF has_quizzes || has_snippets -%]
-<script type="text/javascript" src="js/lib/survey.jquery.js"></script>
+<script src="js/lib/survey.jquery.js"></script>
 [% END %]
 [%- text_width = '1000px' -%]
 <style>
@@ -176,7 +176,7 @@ END -%]
   <div class="n_item" id="p[% p.cpid %]_verdict"><a href="#p[% p.cpid %]" class="n_button" title="[% p.title | html %]">[% p.code %]</a></div>
   [% END %]
 </div>
-<script type="text/javascript">
+<script nonce="[% nonce %]">
 $('.problem_menu_click').click(function() { $(this).parent().next().toggle(); $(this).toggleClass('problem_menu_hovered'); });
 
 var query_params = (function() {
@@ -580,7 +580,7 @@ function update_snippets() {
   update_problem_snippets([% p.cpid %], '[% p.href_get_snippets %]');
   [%- END %]
 }
-$(document).ready(update_snippets);
+$(update_snippets);
 [% END %]
 
 </script>
