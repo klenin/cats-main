@@ -62,6 +62,7 @@ END -%]
 </head>
 <body>
 [% FOREACH p IN problems; il = p.iface_lang; PROCESS "lang/$il/problem_text_p.html.tt" UNLESS capt.problem_text.item(il); END; %]
+[%- PROCESS includes/icon/copy.tti -%]
 [% FOREACH p IN problems; c = capt.problem_text.item(p.iface_lang) %]
 <div class="problem_text" id="p[% p.cpid %]" [% UNLESS loop.first %]style="page-break-before: always;"[% END %] lang="[% p.lang %]">
   <a name="pr[% p.code || p.cpid || p.id %]"></a>
@@ -154,13 +155,13 @@ END -%]
         [%- IF s.in_html; s.in_file; ELSE -%]
         <pre><code>[% s.in_file | html %]</code></pre>
         [%- END -%]
-        <button type="button" class="button copy_button">[% c.copy %]</button>
+        <button type="button" class="button copy_button" title="[% c.copy %]">[% svg_icon('copy') %]</button>
       </td>
       <td>
         [%- IF s.out_html; s.out_file; ELSE -%]
         <pre><code>[% s.out_file | html %]</code></pre>
         [%- END -%]
-        <button type='button' class="button copy_button">[% c.copy %]</button>
+        <button type='button' class="button copy_button" title="[% c.copy %]">[% svg_icon('copy') %]</button>
       </td>
     </tr>
     [% END %]
