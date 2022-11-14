@@ -5,7 +5,7 @@ use warnings;
 
 use CATS::Constants;
 use CATS::DB;
-use CATS::Globals qw($cid $is_jury $is_root $t);
+use CATS::Globals qw($cid $is_jury $is_root $t $user);
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
 use CATS::Output qw(init_template url_f url_f_cid);
@@ -22,7 +22,8 @@ sub job_details_frame {
         SELECT id, state, contest_id FROM jobs WHERE id = ?~, undef,
         $p->{jid});
     $job_id or return;
-    ($job_contest // 0) == $cid or $is_root or return;
+    ($job_contest // 0) == $cid || $is_root || !defined($job_contest) && $user->privs->{manage_judges}
+        or return;
 
     CATS::Request::delete_logs({ id => $job_id }) if $p->{delete_log};
     CATS::Request::delete_jobs({ id => $job_id }) if $p->{delete_jobs};
