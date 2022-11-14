@@ -40,15 +40,49 @@
 <span class="pcode">
 <input name="code" size="3" maxlength="3" />
 </span>
+
+[%- IF topics.size -%]
+<br/><br/>
+<div class="weak_border hidden">[% capt.topics %]: <span class="inline_menu topics">
+</span></div>
+[%- END -%]
+
 <br/><br/>
 [% IF move %]<input type="hidden" name="move" value="1" />[% END %]
 <button type="submit" name="link_save" value="1" class="button">[% move ? capt.move : capt.link %]</button>
 <button type="submit" name="link_cancel" value="1" class="button">[% capt.cancel %]</button>
 
 <script nonce="[% nonce %]">
-var used_codes = { [% FOREACH u IN used_codes %]"[% u %]": 1[% ', ' UNLESS loop.last; END %] };
+var used_codes = { [% FOREACH u IN used_codes %]"[% u.dquote %]": 1[% ', ' UNLESS loop.last; END %] };
 [% PROCESS includes/select_problem_code.tti %]
-$(function () {  $('input[name=code]').focus(function () { choose_code(this, false); }); });
+
+var input_code = $('input[name=code]');
+
+[%- IF topics.size -%]
+var topics_data = [
+  [%- FOR tp IN topics -%]
+  { p: "[% tp.code_prefix.dquote %]", n: "[% tp.name.dquote %] ([% tp.min_code.dquote %] - [% tp.max_code.dquote %])" }
+  [%- ', ' UNLESS loop.last; END -%]
+];
+function topic_clicked(e) {
+  e.preventDefault();
+  input_code.val($(this).data('prefix'));
+}
+$(function () {
+  var span = $('span.topics');
+  span.parent().show();
+  for (var i = 0; i < topics_data.length; ++i) {
+    var tp = topics_data[i];
+    $('<a href="#">').data('prefix', tp.p).text(tp.n).click(topic_clicked).appendTo(span);
+    $('<span> | </span>').appendTo(span);
+  }
+});
+[% END -%]
+
+$(function () {
+  input_code.focus(function () { choose_code(this, false); });
+});
+
 </script>
 
 [% END %]

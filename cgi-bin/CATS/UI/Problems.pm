@@ -136,6 +136,20 @@ sub problems_all_frame {
     $lv->attach($fetch_record, $sth);
     $sth->finish;
 
+    if ($is_jury && ($p->{link} || $p->{move})) {
+        my $topics = $dbh->selectall_arrayref(qq~
+            SELECT T.id, T.code_prefix, T.name, T.is_hidden,
+                (SELECT MIN(CP1.code) FROM contest_problems CP1
+                WHERE CP1.contest_id = T.contest_id AND CP1.code STARTS WITH T.code_prefix) AS min_code,
+                (SELECT MAX(CP2.code) FROM contest_problems CP2
+                WHERE CP2.contest_id = T.contest_id AND CP2.code STARTS WITH T.code_prefix) AS max_code
+            FROM topics T
+            WHERE T.contest_id = ?
+            ORDER BY T.code_prefix~, { Slice => {} },
+            $cid);
+        $t->param(topics => $topics);
+    }
+
     my @submenu = !$p->{link} ? () :
         { href => url_f('problems_all',
             search => sprintf('is_used_by_contest(%d)', $cid), link => $p->{link}, move => $p->{move}),
