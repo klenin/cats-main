@@ -1,7 +1,8 @@
-[% PROCESS includes/html.tti %]
-[% PROCESS includes/menu_begin.tti %]
+[%- js.nonce = 1 -%]
+[%- PROCESS includes/menu_begin.tti -%]
+[%- PROCESS includes/icon/copy.tti -%]
 
-<form method=post enctype='multipart/form-data' action='[% href_action %]'>
+<form method="post" enctype="multipart/form-data" action="[% href_action %]">
 [% PROCESS includes/user_main.tti %]
 [% PROCESS includes/user_extra.tti %]
 [%- IF user.privs.is_root -%]
@@ -15,10 +16,23 @@
     <label class="nobr">[% checkbox_1(pn, privs.$pn, disabled = 1); capt.roles.$pn %]</label>
   [% END -%]
   [% END %]
-  <code class="small nobr">set_privs.pl --id=[% id %] --login=[% login %]</code>
+  <span id="set_privs" class="nobr"><code class="small">set_privs.pl --id=[% id %] --login=[% login %]</code>
+  <button class="button hidden" title="copy">[% svg_icon('copy') %]</button></span>
 </td></tr>
 </table>
 [% PROCESS includes/password.tti change_password = 1 %]
+<script nonce="[% nonce %]">
+  window.addEventListener('load', function() {
+    var span = document.getElementById('set_privs');
+    var code = span.querySelector('code');
+    var btn = span.querySelector('button');
+    btn.classList = 'button';
+    btn.addEventListener('click', function (e) {
+      e.preventDefault();
+      navigator.clipboard.writeText(code.innerText);
+    });
+  });
+</script>
 [%- END -%]
 <br/>
 [% PROCESS includes/edit_save_cancel.tti %]
