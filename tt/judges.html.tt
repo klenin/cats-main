@@ -1,32 +1,25 @@
-[% js.jquery = 1 IF editable %]
-[% PROCESS includes/menu_begin.tti %]
-[% PROCESS "lang/$lang/judges_common.tti" %]
+[% js.nonce = 1; js.jquery = 1 IF editable %]
+[%- PROCESS includes/menu_begin.tti -%]
+[%- PROCESS "lang/$lang/judges_common.tti" -%]
 
 [% pin_colors = [ 'red', '#cc7a00', '#cc7a00', 'green' ] %]
 
-<script>
-function delete_judge(href, name) {
-  if (confirm("[% capt.want_to_delete %] '" + name + "'?" ))
-    document.location = href;
-}
-</script>
-
 [% IF href_jobs; '<p>'; href(href_jobs, capt.run_command_jobs); '</p>'; END %]
 
-[% PROCESS includes/listview_header.tti %]
+[% PROCESS includes/listview_header.tti table_selector = '#judges' name_selector = 'span.nm' %]
 
-<table class="listview bordered highlight cell_search">
+<table class="listview bordered highlight cell_search" id="judges">
 [% PROCESS includes/listview_col_defs.tti %]
 
 [% FOREACH j IN judges %]
 <tr class="[% loop.parity() %]">
 <td>
   [% IF editable %]
-  <a href="javascript:delete_judge('[% j.href_delete %]', '[% j.judge_name | html %]');" class="icon delete"></a>
+  [% href_delete_icon('-' _ j.href_delete) %]
   <a href="[% j.href_edit %]" class="icon edit"></a>
   <input type="checkbox" class="listview_checkbox" name="selected" value="[% j.jid %]"/>
   [% END %]
-  [% j.judge_name | html -%]
+  <span class="nm">[% j.judge_name | html %]</span>
 </td>
 [% IF editable %]
 [% IF visible_cols.Lg %]

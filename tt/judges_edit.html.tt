@@ -1,7 +1,7 @@
-[%- js.autocomplete = 1 -%]
-[% PROCESS includes/menu_begin.tti %]
-[% PROCESS includes/html_input.tti %]
-[% PROCESS includes/de_bitmap.tti %]
+[%- js.nonce = 1; js.autocomplete = 1 -%]
+[%- PROCESS includes/menu_begin.tti -%]
+[%- PROCESS includes/html_input.tti -%]
+[%- PROCESS includes/de_bitmap.tti -%]
 [%- PROCESS includes/autocomplete.tti -%]
 [%- PROCESS "lang/$lang/judges_common.tti" -%]
 
@@ -37,7 +37,7 @@
 [% PROCESS includes/edit_save_cancel.tti %]
 </form>
 
-<script>
+<script nonce="[% nonce %]">
 $(function() { autocomplete($('#account_name'), '[% j.href_find_users %]'); });
 </script>
 [% PROCESS includes/menu_end.tti %]
