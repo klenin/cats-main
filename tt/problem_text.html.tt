@@ -74,7 +74,7 @@ END -%]
   </h2>
   <div class="jsonly problem_menu"><ul>
     <li><a class="problem_list_link" href="[% p.href_problem_list %]">[% c.problem_list %]</a></li>
-    <li class="problem_details_link" style="display: none"><a href="#">[% c.problem_details %]</a></li>
+    <li class="problem_details_link" style="display: none"><a href="#" class="icon edit" title="[% c.problem_details %]"></a></li>
     <li><label><input type="checkbox" class="whitespace"><span></span> [% c.visible_spaces %]</label></li>
     <li><label><input type="checkbox" class="basic_math"><span></span> [% c.basic_math %]</label></li>
     <li><label><input type="checkbox" class="wide_text"><span></span> [% c.wide_text %]</label></li>
