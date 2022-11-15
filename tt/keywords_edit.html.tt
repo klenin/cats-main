@@ -1,5 +1,6 @@
-[% PROCESS includes/menu_begin.tti %]
-[% PROCESS includes/html_input.tti %]
+[%- js.nonce = 1 -%]
+[%- PROCESS includes/menu_begin.tti -%]
+[%- PROCESS includes/html_input.tti -%]
 
 <form method="post" enctype="multipart/form-data" action="[% kw.href_action %]">
 <table class="edit_form">

@@ -1,27 +1,22 @@
-[% js.jquery = 1 IF editable %]
-[% PROCESS includes/menu_begin.tti %]
-<script>
-function delete_kw(href, name) {
-  if (confirm( "[% capt.want_to_delete %] '" + name + "'?" ))
-    document.location=href;
-}
-</script>
+[%- js.nonce = 1 -%]
+[%- js.jquery = 1 IF editable -%]
+[%- PROCESS includes/menu_begin.tti -%]
 
-[% PROCESS includes/listview_header.tti %]
+[% PROCESS includes/listview_header.tti  table_selector = '#keywords' name_selector = 'a.kcd' %]
 
-<table class="listview bordered highlight">
+<table class="listview bordered highlight" id="keywords">
 [% PROCESS includes/listview_col_defs.tti sel_col = editable %]
 
 [% FOREACH k IN keywords %]
 <tr class="[% loop.parity() %]">
 [% IF editable %]
 <td class="nobr sel_col">
-  <a href="javascript:delete_kw('[% k.href_delete %]', '[% k.code.squote | html %]');" class="icon delete"></a>
+  [% href_delete_icon(k.href_delete) %]
   <a href="[% k.href_edit %]" class="icon edit"></a>
   <input type="checkbox" class="listview_checkbox" name="sel" value="[% k.kwid %]" />
 </td>
 [% END %]
-<td><a href="[% k.href_view_problems %]">[% k.code | html %]</a></td>
+<td><a href="[% k.href_view_problems %]" class="kcd">[% k.code | html %]</a></td>
 <td>[% k.name_ru | html %]</td>
 <td>[% k.name_en | html %]</td>
 [% IF visible_cols.Rc %]<td>[% k.ref_count %]</td>[% END %]
