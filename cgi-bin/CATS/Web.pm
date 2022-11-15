@@ -82,7 +82,7 @@ sub headers {
     my ($self, @args) = @_;
     while (my ($header, $value) = splice @args, 0, 2) {
         if ($header eq 'cookie') {
-            $r->err_headers_out->add('Set-Cookie' => $value->as_string) if $value;
+            $r->err_headers_out->add('Set-Cookie' => $value->as_string . '; SameSite=Lax') if $value;
         } else {
             $r->headers_out->set($header => $value);
         }
