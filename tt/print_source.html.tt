@@ -1,4 +1,4 @@
-[%- js.jquery = 1; js.ace = 1; PROCESS includes/header.tti -%]
+[%- js.nonce = 1; js.jquery = 1; js.ace = 1; PROCESS includes/header.tti -%]
 <script src="js/lib/ace/ext-static_highlight.js"></script>
 
 <style>
@@ -40,7 +40,7 @@ html, body {
     [%- sources_info.src | html ~%]
   </div>
 
-  <script>window.addEventListener('load', function () {
+  <script nonce="[% nonce %]">window.addEventListener('load', function () {
     var highlight = ace.require('ace/ext/static_highlight');
     var e = document.getElementById('source_text');
     highlight(e, {
