@@ -52,6 +52,7 @@
 [%- PROCESS includes/html.tti -%]
 [%- PROCESS includes/icon/download.tti -%]
 [%- PROCESS includes/icon/external_link.tti -%]
+[%- PROCESS includes/icon/hide.tti -%]
 [%- PROCESS includes/autocomplete.tti IF editable -%]
 [%- PROCESS "lang/$lang/verdicts.tti" -%]
 [% IF editable %]
@@ -180,6 +181,7 @@ function move_code(pid, dir) {
 <tr class="col_defs"><th colspan="[% col_def_count + 1 %]">
   [%- href(p.topic.href_edit, '', '', class = 'icon edit') IF p.topic.href_edit %]
   [% p.topic.code_prefix | html; '. '; p.topic.name | html -%]
+  [% svg_icon('hide') IF p.topic.is_hidden %]
 </th></tr>
 [% END %]
 <tr class="[% loop.parity() %] problem_row" id="pr_[% p.cpid %]">
