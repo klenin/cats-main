@@ -5,6 +5,7 @@
 </style>
 [%- END -%]
 [%- PROCESS includes/menu_begin.tti -%]
+[%- PROCESS includes/icon/download.tti -%]
 
 <script nonce="[% nonce %]">
 window.addEventListener('load', function () {
@@ -42,7 +43,7 @@ window.addEventListener('load', function () {
         <td class="list"><a class="list" href="[% entry.href_name %]">[% entry.file_name | html %]</a></td>
         <td class="link">
           <a href="[% entry.href %]">[% capt.entry.item(entry.type) || entry.type %]</a>
-          [%- IF entry.href_raw %] | <a href="[% entry.href_raw %]">[% capt.download %]</a>[% END %]
+          [%- IF entry.href_raw %] | <a href="[% entry.href_raw %]" title="[% capt.download %]">[% svg_icon('download') %]</a>[% END %]
           [%- IF entry.href_edit %] | <a href="[% entry.href_edit %]" class="icon edit" title="[% capt.edit %]"></a>[% END %]
           [%- IF entry.href_delete -%] | [% href(entry.href_delete, '', capt.delete, class = 'icon delete js_delete');
           END %]
