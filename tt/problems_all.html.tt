@@ -10,7 +10,9 @@
 [% FOREACH p IN link_problem %]
 <tr class="[% loop.parity() %]">
 <td>
-[% IF user.is_jury && link %]<input type="checkbox" name="problems_selection" value="[% p.problem_id %]" [% IF p.linked %]disabled[% END %] />[% END %]
+[% IF user.is_jury && link -%]
+<input type="checkbox" name="problems_selection" value="[% p.problem_id %]" [% IF p.linked %]disabled[% END %] />
+[%- END %]
 [%~ IF p.href_problem_details %]<a href="[% p.href_problem_details %]" class="icon edit"></a>[% END %]</label>
 <a href="[% p.href_view_problem %]" target="_blank">[% p.title | html %]</a>
 [% IF p.href_download -%]
@@ -61,7 +63,9 @@ var input_code = $('input[name=code]');
 [%- IF topics.size -%]
 var topics_data = [
   [%- FOR tp IN topics -%]
-  { p: "[% tp.code_prefix.dquote %]", n: "[% tp.name.dquote %] ([% tp.min_code.dquote %] - [% tp.max_code.dquote %])" }
+  { p: "[% tp.code_prefix.dquote %]", n: "[% tp.name.dquote %] (
+  [%~ IF tp.min_code == ''; tp.code_prefix.dquote; ELSE ~%]
+  [%~ tp.min_code.dquote %] - [% tp.max_code.dquote; END %])" }
   [%- ', ' UNLESS loop.last; END -%]
 ];
 function topic_clicked(e) {
