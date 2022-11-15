@@ -10,10 +10,12 @@
 window.addEventListener('load', function () {
   document.querySelectorAll('table.tree tr').forEach(function (tr) {
     var file_name = tr.querySelector('td.list a.list').innerText;
-    tr.querySelector('td.link a.js_delete').addEventListener('click', function(e) {
-      if (!confirm("[% capt.want_to_delete_file %] '" + file_name + "'?"))
-        e.preventDefault();
-    });
+    var delBtn = tr.querySelector('td.link a.js_delete');
+    if (delBtn)
+      delBtn.addEventListener('click', function(e) {
+        if (!confirm("[% capt.want_to_delete_file %] '" + file_name + "'?"))
+          e.preventDefault();
+      });
   });
 });
 </script>
