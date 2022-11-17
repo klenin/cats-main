@@ -189,7 +189,7 @@ PerlSetEnv CATS_DIR ${CATS_ROOT}/cgi-bin/
 		Require all granted
 	</Directory>
 
-	Alias /cats/ev/ "${CATS_ROOT}/ev/"
+	Alias /cats/junior/ "${CATS_ROOT}/junior/"
 	<Directory "${CATS_ROOT}/ev">
 		AddDefaultCharset utf-8
 		Require all granted
@@ -215,6 +215,7 @@ PerlSetEnv CATS_DIR ${CATS_ROOT}/cgi-bin/
 	</Directory>
 
 	Alias /cats/ "${CATS_ROOT}/cgi-bin/"
+	Alias /cats "${CATS_ROOT}/cgi-bin/"
 </VirtualHost>
 EOF
 )
