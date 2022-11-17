@@ -279,7 +279,7 @@ sub _build_topics {
 
         my $start = substr($_->{code_prefix}, 0, 1);
         $topic_idx->{$start} //= [];
-        push $topic_idx->{$start}, $_;
+        push @{$topic_idx->{$start}}, $_;
     }
     { topics => $topics, idx => $topic_idx };
 }
