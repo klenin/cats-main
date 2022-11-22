@@ -10,7 +10,11 @@
   td.problem_radio label a { vertical-align: middle; }
   span.pcode input { width: 2em; }
   input[type=color] {
-    width: 1.5em; padding: 0; margin: 0; border: 0; background-color: inherit; vertical-align: middle; }
+    width: 1.2em;
+    height: 1.2em;
+    padding: 0; margin: 0; border: 0; background-color: inherit;
+    vertical-align: middle;
+  }
   .yscroll { display: block; overflow-y: scroll; max-height: 7ex; }
 
   .dl_missed a { color: #901010; }
