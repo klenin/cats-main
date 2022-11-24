@@ -49,6 +49,12 @@
   }
   div#tabbed_header { padding: 0; width: 100%; overflow: hidden; }
   div#edit_tabs > div { margin-top: 5px; min-width: 300px; }
+  a.js_toggle_topic {
+    display: block; float: right;
+    transition: 0.2s ease-in-out;
+  }
+  a.js_toggle_topic:after { content: 'v'; }
+  a.js_toggle_topic.collapsed { transform: rotate(90deg); }
 }
 </style>
 [%- END -%]
@@ -108,10 +114,10 @@ function move_code(pid, dir) {
 }
 
 $(function() {
-    $('#delete_tab button').click(delete_problem);
-    $('#replace_tab button').click(replace_problem);
-    $('select.chg_status').change(chg_status);
-    $('input.js_code').change(chg_code).focus(function() { choose_code(this, true); });
+  $('#delete_tab button').click(delete_problem);
+  $('#replace_tab button').click(replace_problem);
+  $('select.chg_status').change(chg_status);
+  $('input.js_code').change(chg_code).focus(function() { choose_code(this, true); });
 });
 </script>
 [%- END -%]
@@ -197,13 +203,14 @@ $(function() {
 <tr class="col_defs"><th colspan="[% col_def_count + 1 %]">[% href(p.href_group, p.group_title) %]</th></tr>
 [% END %]
 [% IF p.topic %]
-<tr class="col_defs"><th colspan="[% col_def_count + 1 %]">
+<tr class="col_defs"><th colspan="[% col_def_count + 1 %]" data-topic="[% p.topic.code_prefix | html %]">
   [%- href(p.topic.href_edit, '', '', class = 'icon edit') IF p.topic.href_edit %]
   [% p.topic.code_prefix | html; '. '; p.topic.name | html -%]
   [% svg_icon('hide') IF p.topic.is_hidden %]
+  [%- href('#', '', '', class = 'js_toggle_topic') %]
 </th></tr>
 [% END %]
-<tr class="[% loop.parity() %] problem_row" id="pr_[% p.cpid %]">
+<tr class="[% loop.parity() %] problem_row" id="pr_[% p.cpid %]" data-code="[% p.code %]">
 [% IF can_submit %]<td class="problem_radio nobr">
   <label><input type="radio" name="problem_id" value="[% p.problem_id %]"
     [%- ' disabled="disabled"' IF p.disabled; ' checked="checked"' IF p.selected %] />
@@ -500,4 +507,28 @@ $(function() { $('input[type=color]').change(chg_color); });
 $(function() { autocomplete($('#submit_as'), '[% href_find_users %]'); });
 </script>
 [% END %]
+<script nonce="[% nonce %]">
+function toggle_topic(e) {
+  e.preventDefault();
+  var el = $(this);
+  var prefix = el.parents('th').data('topic');
+  var rows = $('tr.problem_row').filter(function (_, tr) {
+    var code = $(tr).data('code');
+    return code !== undefined && code.startsWith(prefix);
+  });
+  var topic_headers = $('tr.col_defs').filter(function (_, tr) {
+    return $(tr).children('th').data('topic') === prefix;
+  }).find('a.js_toggle_topic');
+
+  if (el.hasClass('collapsed')) {
+    topic_headers.removeClass('collapsed');
+    rows.show();
+  }
+  else {
+    topic_headers.addClass('collapsed');
+    rows.hide();
+  }
+}
+$(function() { $('a.js_toggle_topic').click(toggle_topic); });
+</script>
 [% PROCESS includes/menu_end.tti %]
