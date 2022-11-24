@@ -62,7 +62,7 @@
     <a title="[% c.contest_title | html %]" class="question">[% c.question_text | html %]</a> -
     [% IF c.clarified %]<span class="jury_message">[% c.answer_text | html %]</span>[% END %]
     [% IF c.href_answer_box -%]
-      [<a href="[% c.href_answer_box %]" target="_blank">[% capt.answer %]</a>]
+      [[% href(c.href_answer_box, capt.answer, '', class = 'msg_win') %]]
     [%- END %]
     [% IF c.href_delete_question -%]
       [<a href="[% c.href_delete_question %]">[% capt.delete %]</a>]

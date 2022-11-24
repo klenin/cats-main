@@ -2,6 +2,9 @@
 [%- PROCESS includes/header.tti %]
 </head>
 <body>
+[% IF clarified %]
+<script nonce="[% nonce %]">window.close();</script>
+[% ELSE %]
 <div style="padding: 10px">
   <h3>[% contest_title | html %]</h3>
   <br/>
@@ -24,5 +27,6 @@ window.addEventListener('load', function () {
   btn.addEventListener('click', function() { window.close(); });
 });
 </script>
+[% END %]
 </body>
 </html>
