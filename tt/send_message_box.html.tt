@@ -1,9 +1,9 @@
 [%- js.nonce = 1 -%]
 [%- PROCESS includes/header.tti -%]
 </head>
-<body style="margin: 10px">
+<body>
 [% UNLESS sent %]
-<form method="post" enctype="multipart/form-data">
+<form method="post" enctype="multipart/form-data" style="padding: 10px">
   [% capt.message_for_team %] [% team | html %]<br/>
   [% IF site; site | html %]<br/>[% END %]
   [% IF groups; groups.join(',') | html %]<br/>[% END %]
