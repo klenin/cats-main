@@ -1,4 +1,4 @@
-[%- js.jquery = 1; js.ace = 1 -%]
+[%- js.nonce = 1; js.jquery = 1; js.ace = 1 -%]
 [%- SET js.autocomplete = 1 IF editable -%]
 [%- extra_head = BLOCK %]
 <style>
@@ -60,16 +60,17 @@
 [%- PROCESS includes/autocomplete.tti IF editable -%]
 [%- PROCESS "lang/$lang/verdicts.tti" -%]
 [% IF editable %]
-<script type="text/javascript">
+<script nonce="[% nonce %]">
 var problems = {
 [%- FOREACH p IN problems %]
 [% p.problem_id %]: {
-  t: "[% p.title | html %]", d: "[% p.href_delete %]", r: "[% p.href_replace %]",
+  t: "[% p.title.dquote %]", d: "[% p.href_delete %]",
   s: "[% p.href_change_status %]", c: "[% p.href_change_code %]" },
 [%- END %]
 };
 
-function d() {
+function delete_problem(e) {
+  e.preventDefault();
   var v = $('input[name=problem_id]:checked').val();
   if (!v) {
     alert('[% capt.no_problem_delete %]');
@@ -79,25 +80,39 @@ function d() {
     document.location = problems[v].d;
 }
 
-function r() {
+function replace_problem(e) {
   var v = $('input[name=problem_id]:checked').val();
-  if (!v)
+  if (!v) {
     alert('[% capt.no_problem_replace %]');
-  else
-    document.location = problems[v].r;
+    e.preventDefault();
+  }
 }
 
-function chg_status(st_sel, pid) {
-  document.location = problems[pid].s + ';status=' + st_sel.value;
+function chg_status(e) {
+  e.preventDefault();
+  var sel = $(this);
+  if (sel.children('option[selected]').val() === sel.val()) return;
+  var pid = sel.parents('tr').find('input[name=problem_id]').val();
+  document.location = problems[pid].s + ';status=' + sel.val();
 }
 
-function chg_code(st_sel, pid) {
-  document.location = problems[pid].c + ';code=' + st_sel.value;
+function chg_code(e) {
+  e.preventDefault();
+  var inp = $(this);
+  var pid = inp.parents('tr').find('input[name=problem_id]').val();
+  document.location = problems[pid].c + ';code=' + inp.val();
 }
 
 function move_code(pid, dir) {
   document.location = problems[pid].c + ';move=' + dir;
 }
+
+$(function() {
+    $('#delete_tab button').click(delete_problem);
+    $('#replace_tab button').click(replace_problem);
+    $('select.chg_status').change(chg_status);
+    $('input.js_code').change(chg_code).focus(function() { choose_code(this, true); });
+});
 </script>
 [%- END -%]
 
@@ -197,11 +212,10 @@ function move_code(pid, dir) {
 </td>[% END %]
 <td>
   [% IF editable %]
-    [% IF visible_cols.Cl %]<input type="color" value="[% p.color %]" onchange="chg_color(this, [% p.cpid %])"/>[% END %]
+    [% IF visible_cols.Cl %]<input type="color" value="[% p.color %]"/>[% END %]
     [% IF p.code.defined ~%]
     <span class="pcode">
-      <input type="text" maxlength="3" class="bordered" value="[% p.code %]"
-        onchange="chg_code(this, [% p.problem_id %])" onfocus="choose_code(this, true)"/>
+      <input type="text" maxlength="3" class="js_code bordered" value="[% p.code %]"/>
     </span>
     [% END %]
     <a href="[% p.href_view_problem %]" target="_blank">
@@ -231,7 +245,7 @@ function move_code(pid, dir) {
 </td>
 [% IF editable %]
 <td>
-  <select onchange="chg_status(this, [% p.problem_id %])">
+  <select class="chg_status">
   [%~ FOREACH sl IN status_list; option(sl.id, sl.name, sl.id == p.status); END ~%]
   </select>
 </td>
@@ -348,11 +362,11 @@ function move_code(pid, dir) {
 <div class="problem_submit">
   <div id="tabbed_header" class="hidden">
     <div></div>
-    <a href="#" id="add_tab_btn" onclick="return select_edit_tab('add')">[% capt.add_problem %]</a>
+    <a href="#" id="add_tab_btn">[% capt.add_problem %]</a>
     <div></div>
-    <a href="#" id="replace_tab_btn" onclick="return select_edit_tab('replace')">[% capt.replace_problem %]</a>
+    <a href="#" id="replace_tab_btn">[% capt.replace_problem %]</a>
     <div></div>
-    <a href="#" id="delete_tab_btn" onclick="return select_edit_tab('delete')">[% capt.delete_problem %]</a>
+    <a href="#" id="delete_tab_btn">[% capt.delete_problem %]</a>
     <div class="filler"></div>
   </div>
   <div id="edit_tabs">
@@ -407,7 +421,7 @@ function move_code(pid, dir) {
     </table>
   </div>
   <div id="delete_tab">
-    <button type="button" name="delete_problem" value="1" class="button" onclick="d()">[% capt.delete.lower %]</button>
+    <button type="button" name="delete_problem" value="1" class="button">[% capt.delete.lower %]</button>
   </div>
   </div>
 </div>
@@ -428,11 +442,11 @@ function move_code(pid, dir) {
 </div>
 [% END %]
 </form>
-<script type="text/javascript">
-  $(document).on('ready', (function() { Editor.set_syntax('ed_p[% contest.id %]', 'de_id'); }));
+<script nonce="[% nonce %]">
+  $(function() { Editor.set_syntax('ed_p[% contest.id %]', 'de_id'); });
 </script>
 [% IF editable %]
-<script type="text/javascript">
+<script nonce="[% nonce %]">
 (function add_udebug_hrefs() {
   $.get('https://www.udebug.com/api/CATS').then(function (json) {
     var h = {};
@@ -456,10 +470,17 @@ function select_edit_tab(name) {
   $('#tabbed_header > a').each(function(_, btn) {
     btn.style['border-bottom'] = btn.id === name + '_tab_btn' ? 'none' : '1px solid blue';
   });
-  return false;
 }
+
 $(function() {
   $('#tabbed_header').show();
+  $('#tabbed_header > a').each(function(_, btn) {
+    var n = btn.id.substr(0, btn.id.indexOf('_'));
+    $(btn).click(function(e) {
+      e.preventDefault();
+      select_edit_tab(n);
+    });
+  });
   select_edit_tab('add');
   $('#edit_tabs .edit_tabs_subheader').hide();
 });
@@ -467,9 +488,12 @@ $(function() {
 var used_codes = { [% FOREACH p IN problems %]"[% p.code %]": 1[% ', ' UNLESS loop.last; END %] };
 [% PROCESS includes/select_problem_code.tti up_down = 1 %]
 
-function chg_color(input, cpid) {
-  $.post('[% href_set_problem_color %]', { cpid: cpid, color: input.value });
+function chg_color() {
+  var input = $(this);
+  var cpid = input.parents('tr.problem_row')[0].id.substr(3);
+  $.post('[% href_set_problem_color %]', { cpid: cpid, color: input.val() });
 }
+$(function() { $('input[type=color]').change(chg_color); });
 
 [%- PROCESS includes/download.tti -%]
 
