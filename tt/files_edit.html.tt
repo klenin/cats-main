@@ -7,7 +7,7 @@
 [% tr_text(f.indexed.name, f) %]
 [% d = f.indexed.description; d.field.editor = { rows = 3 }; tr_textarea(d, f) %]
 [% tr_text(f.indexed.guid, f) %]
-<tr><td>[% capt.file %]</td><td><input type="file" name="file" /></td></tr>
+<tr><td>[% capt.file %]</td><td><input type="file" name="file" /> [% maybe_err(f.extra.file) %]</td></tr>
 <tr><td>[% capt.file_size %]</td><td class="num">[% f.indexed.file_size.value %]</td></tr>
 </table>
 <br/>

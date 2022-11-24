@@ -48,12 +48,19 @@ sub _upload_file {
     File::Copy::move($f->local_file_name, guid_to_fn($guid)) or die $!;
 }
 
+sub _new_has_file {
+    my ($fd, $p) = @_;
+    return 1 if $fd->{id} || $p->{file};
+    $fd->{extra}->{file}->{error} = res_str(1205);
+    undef;
+}
+
 our $form = CATS::Form->new(
     table => 'files',
     fields => [
         [ name => 'name', @str_1_200, editor => { size => 50 }, caption => 601 ],
         [ name => 'description', caption => 620 ],
-        [ name => 'guid', validators => [ qr/^[a-zA-Z0-9\.]{0,50}$/ ],
+        [ name => 'guid', validators => [ qr/^[_a-zA-Z0-9\.]{0,50}$/ ],
             editor => { size => 50 }, caption => 619, ],
         [ name => 'file_size', caption => 684, ],
         [ name => 'last_modified', before_save => sub { \'CURRENT_TIMESTAMP' } ],
@@ -64,7 +71,7 @@ our $form = CATS::Form->new(
     msg_saved => 1195,
     msg_deleted => 1196,
     before_display => sub { $t->param(submenu => [ CATS::References::menu('files') ]) },
-    validators => [ CATS::Field::unique('guid') ],
+    validators => [ CATS::Field::unique('guid'), \&_new_has_file ],
     before_save => sub {
         _remove_old_guid(@_);
         _upload_file(@_);
@@ -76,7 +83,7 @@ our $form = CATS::Form->new(
         }
     },
     before_save_db => sub {
-        $_[0]->{file_size} ne '' or delete $_[0]->{file_size};
+        ($_[0]->{file_size} // '') ne '' or delete $_[0]->{file_size};
     },
 );
 
