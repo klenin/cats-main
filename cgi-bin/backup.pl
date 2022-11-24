@@ -71,7 +71,7 @@ sub work {
         $full && "@$full" =~ /gbak:\s*gbak version/ or die "Error: gbak not correct: @$full";
 
         $cmd = [ 'gbak', '-B', "$db->{host}:$db->{name}", $file, 
-            '-USER', $db->{user}, '-PAS', $db->{password} ];
+            '-USER', $db->{user}, '-PAS', $db->{password}, '-RO', 'RDB$ADMIN' ];
     } elsif ($db->{driver} =~ /Pg/) {
         IPC::Cmd::can_run('pg_dump') or die 'Error: pg_dump not found';
 
