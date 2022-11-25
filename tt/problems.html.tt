@@ -50,8 +50,10 @@
   div#tabbed_header { padding: 0; width: 100%; overflow: hidden; }
   div#edit_tabs > div { margin-top: 5px; min-width: 300px; }
   a.js_toggle_topic {
-    display: block; float: right;
-    transition: 0.2s ease-in-out;
+    display: block;
+    float: right;
+    padding: 1px;
+    transition: 0.25s ease-in-out;
   }
   a.js_toggle_topic:after { content: 'v'; }
   a.js_toggle_topic.collapsed { transform: rotate(90deg); }
@@ -508,6 +510,22 @@ $(function() { autocomplete($('#submit_as'), '[% href_find_users %]'); });
 </script>
 [% END %]
 <script nonce="[% nonce %]">
+function tr_animate(rows, total_time_sec, visible) {
+  var i = 0;
+  var steps = 5;
+  var rows_per_step = Math.ceil(rows.length / steps);
+  var interval = setInterval(function () {
+    for (var j = 0; j < rows_per_step; ++j) {
+      if (i >= rows.length) {
+        clearInterval(interval);
+        return;
+      }
+      if (visible) $(rows[i]).show();
+      else $(rows[i]).hide();
+      ++i;
+    }
+  }, total_time_sec / steps * 1000);
+}
 function toggle_topic(e) {
   e.preventDefault();
   var el = $(this);
@@ -520,13 +538,15 @@ function toggle_topic(e) {
     return $(tr).children('th').data('topic') === prefix;
   }).find('a.js_toggle_topic');
 
+  var dur_str = el.css('transition-duration');
+  var duration = dur_str.substr(0, dur_str.length - 1) * 1;
   if (el.hasClass('collapsed')) {
     topic_headers.removeClass('collapsed');
-    rows.show();
+    tr_animate(rows, duration, true);
   }
   else {
     topic_headers.addClass('collapsed');
-    rows.hide();
+    tr_animate(rows, duration, false);
   }
 }
 $(function() { $('a.js_toggle_topic').click(toggle_topic); });
