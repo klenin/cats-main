@@ -384,6 +384,7 @@ sub problem_text {
         $tags->{lang} = [ 0, $problem->{lang} ];
         $problem->{interactive_io} = $problem->{run_method} != $cats::rm_default;
         CATS::Problem::Utils::round_time_limit($problem->{time_limit});
+        $problem->{nosubmit} = $problem->{status} == $cats::problem_st_nosubmit;
 
         if ($v->{is_jury_in_contest} && !$p->{nokw}) {
             my $lang_col = $problem->{lang} eq 'ru' ? 'name_ru' : 'name_en';
