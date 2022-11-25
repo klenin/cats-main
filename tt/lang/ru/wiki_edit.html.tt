@@ -1,6 +1,7 @@
 [%
   capt.import({
     view => 'просмотр',
+    contests => 'турниры',
     page => 'страница',
     synchronize => 'синхронизировать',
     insert_link => 'ссылка',

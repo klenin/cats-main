@@ -189,6 +189,8 @@ our $text_form = CATS::Form->new(
             href_public_view => $wt->{is_publc}->{value} && url_function('wiki', name => $pn),
             href_page => $user->privs->{edit_wiki} &&
                 url_f('wiki_pages_edit', id => $wt->{wiki_id}->{value}),
+            href_contests => $user->privs->{edit_wiki} &&
+                url_f('contests', search => sprintf 'has_wiki(%d)', $wt->{wiki_id}->{value}),
             href_find_files => url_f('api_find_files'),
             href_download => CATS::Output::downloads_url_files,
             submenu => [ CATS::References::menu('wiki_pages') ],

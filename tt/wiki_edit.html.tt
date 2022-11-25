@@ -19,10 +19,10 @@
   <input type="text" name="title" value="[% wt.indexed.title.value | html %]" size="80" class="bordered"/>
   [% maybe_err(wt.indexed.title) %]
 </td>
-<td>
-  [%- href(href_view, capt.view); IF href_page; ' | '; href(href_page, capt.page); END %]
-  | <label>
-    [%- checkbox_1('sync', settings.sync, attrs = { id => 'sync', class => 'hidden' }); capt.synchronize -%]
+<td class="inline_menu">
+  [%- href(href_view, capt.view); ' | '; href(href_contests, capt.contests); IF href_page; ' | '; href(href_page, capt.page); END %]
+  | <label class="nobr hidden">
+    [%- checkbox_1('sync', settings.sync, attrs = { id => 'sync' }); capt.synchronize -%]
     </label>
 </td>
 </tr>
@@ -73,7 +73,7 @@ $(function() {
   var session = editor.session;
   var renderer = editor.renderer;
   var scrollBarV = renderer.scrollBarV;
-  var sync = $('#sync').show();
+  var sync = $('#sync').parents('label').removeClass('hidden');
 
   var locked = false;
 
