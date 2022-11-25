@@ -248,7 +248,7 @@ sub wiki_frame {
     my ($id, $is_public) = $dbh->selectrow_array(q~
         SELECT id, is_public FROM wiki_pages WHERE name = ?~, undef,
         $p->{name});
-    $id && ($is_public || $user->privs->{edit_wiki}) or return;
+    $id && ($is_public || $user->privs->{edit_wiki}) or return $p->not_found;
     my $langs = $dbh->selectall_arrayref(q~
         SELECT id, lang FROM wiki_texts WHERE wiki_id = ?~, { Slice => {} },
         $id);
