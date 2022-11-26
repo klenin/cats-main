@@ -27,17 +27,21 @@ sub run_sql {
     if ($file =~ /interbase/) {
         my $isql = $^O eq 'Win32' ? 'isql' : 'isql-fb';
         IPC::Cmd::can_run($isql) or die "Error: $isql not found";
-        $cmd = [$isql, '-i', $file];
-    } elsif ($file =~ /postgres/) {
+        $cmd = [ $isql, '-i', $file ];
+    }
+    elsif ($file =~ /postgres/) {
         die 'Todo: psql windows command' if $^O eq 'Win32';
         $pg_auth_type =~ m/^md5|peer|trust$/ or die "Unknown authentication type: $pg_auth_type";
 
         IPC::Cmd::can_run('psql') or die 'Error: psql not found';
-        $cmd = $pg_auth_type eq 'peer'
-            ? ['sudo', '-u', 'postgres', 'psql', '-f', $file]
-            : ['psql', '-U', 'postgres', '-f', $file];
+        $cmd = $pg_auth_type eq 'peer' ?
+            [ 'sudo', '-u', 'postgres', 'psql', '-f', $file ] :
+            [ 'psql', '-U', 'postgres', '-f', $file ];
     }
-    push(@$cmd, '-q') if $quiet;
+    else {
+        die "Cannot determine DBMS for '$file'";
+    }
+    push @$cmd, '-q' if $quiet;
     my ($ok, $err, $full) = IPC::Cmd::run command => $cmd;
     $ok or die join "\n", $err, @$full;
     print '-' x 20, "\n", @$full if !$quiet;
@@ -59,13 +63,15 @@ sub create_db {
         $next_id = 'GEN_ID(key_seq, 1)';
         $path = $dir ? FS->catfile($dir, $dbname . '.fdb') : $dbname;
         $driver //= 'Firebird';
-    } elsif ($sql_subdir eq 'postgres') {
+    }
+    elsif ($sql_subdir eq 'postgres') {
         $next_id = "NEXTVAL('key_seq')";
         $path = $dbname;
         print STDERR 'Warning: Setting directory currently has no effect when PostgreSQL is selected'
             if $dir && !$quiet;
         $driver //= 'Pg';
-    } else {
+    }
+    else {
         die "Cannot determine DBMS for 'sql/$sql_subdir' directory.";
     }
 
