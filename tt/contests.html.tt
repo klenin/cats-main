@@ -80,10 +80,17 @@ END %]
 <button type="submit" name="online_registration" value="1" class="button">[% capt.participate %]</button>
 [%- END %]
 [% IF can_participate_virtual -%]
-<button type="submit" name="virtual_registration" value="1" class="button"
-  [% IF user.is_virtual %]onclick="return confirm('[% capt.virtual_warning %]')"[% END %]>
+<button type="submit" name="virtual_registration" value="1" class="button">
 [%- capt.participate_virtually -%]
 </button>
+[% IF user.is_virtual %]
+<script nonce="[% nonce %]">
+function confirm_virtual(e) {
+  if (!confirm('[% capt.virtual_warning %]')) e.preventDefault();
+}
+$(function() { $('button[name=virtual_registration]').click(confirm_virtual); });
+[% END %]
+</script>
 [%- END %]
 <button type="submit" name="summary_rank" value="1" class="button">[% capt.summary_rank %]</button>
 [% IF user.privs.is_root -%]

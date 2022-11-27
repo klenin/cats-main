@@ -443,10 +443,17 @@ $(function() {
 <button class="button" type="submit" name="participate_online" value="1">[% capt.participate %]</button>
 [%- END %]
 [% IF can_participate_virtual -%]
-<button type="submit" name="participate_virtual" value="1" class="button"
-  [% IF user.is_virtual %]onclick="return confirm('[% capt.virtual_warning %]')"[% END %]>
+<button type="submit" name="participate_virtual" value="1" class="button">
 [%- capt.participate_virtually -%]
 </button>
+[% IF user.is_virtual -%]
+<script nonce="[% nonce %]">
+function confirm_virtual(e) {
+  if (!confirm('[% capt.virtual_warning %]')) e.preventDefault();
+}
+$(function() { $('button[name=participate_virtual]').click(confirm_virtual); });
+</script>
+[%- END %]
 [%- END %]
 </div>
 [% END %]
