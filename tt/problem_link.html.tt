@@ -1,11 +1,11 @@
-[% js.jquery = 1;
+[%- js.nonce = 1; js.jquery = 1;
 extra_head = BLOCK %]
 <style>
   .date { text-align: center; }
   .finished { color: #901010; }
 </style>
-[%- END %]
-[% PROCESS includes/menu_begin.tti %]
+[%- END -%]
+[%- PROCESS includes/menu_begin.tti -%]
 
 [% IF problem.is_original %]
 [% capt.choose_contest %]:
@@ -31,12 +31,13 @@ extra_head = BLOCK %]
 <button type="submit" name="move_to" value="1" class="button">[% capt.move_to %]</button>
 [% capt.problem_code %]:
 <span class="pcode">
-<input name="code" size="3" maxlength="3" onfocus="choose_code(this)" />
+<input name="code" size="3" maxlength="3" class="js_code" />
 </span>
 
-<script type="text/javascript">
+<script nonce="[% nonce %]">
 var used_codes = {};
 [% PROCESS includes/select_problem_code.tti %]
+$(function() { $('input.js_code').focus(function() { choose_code(this); }); });
 </script>
 
 [% PROCESS includes/pages.tti %]

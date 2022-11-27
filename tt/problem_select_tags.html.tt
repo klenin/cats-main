@@ -1,16 +1,25 @@
-[% PROCESS includes/menu_begin.tti %]
+[%- js.nonce = 1 -%]
+[%- PROCESS includes/menu_begin.tti -%]
 
 <h3>[% problem.title %]</h3>
-<p>[% capt.available_tags %]:
+<p id="available_tags">[% capt.available_tags %]:
   [% FOREACH at IN available_tags -%]
-    <a href="#" onclick="add_tag(this)"><code>[% at %]</code></a>
+    <a href="#"><code>[% at %]</code></a>
   [% END -%]
 </p>
-<script>
-function add_tag(elem) {
+
+<script nonce="[% nonce %]">
+function add_tag(e) {
+  e.preventDefault();
+  var elem = this;
   var t = document.getElementById('tags');
-  t.value += (t.value ? ',' : '') + elem.firstChild.innerHTML;
+  t.value += (t.value ? ',' : '') + elem.firstChild.innerText;
 }
+window.addEventListener('load', function () {
+  document.querySelectorAll('#available_tags a').forEach(function (a) {
+    a.addEventListener('click', add_tag);
+  });
+});
 </script>
 
 [% capt.select_tags %] (<a href="docs/format.[% lang %].html#cats-if">?</a>):
