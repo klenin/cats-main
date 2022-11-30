@@ -202,6 +202,13 @@ sub authenticated_contests_view {
             m => 1031, t => q~
             SELECT A.team_name FROM accounts A WHERE A.id = ?~
         },
+        has_user_named => { sq => qq~EXISTS (
+            SELECT 1 FROM contest_accounts CA1
+            INNER JOIN accounts A1 ON A1.id = CA1.account_id
+            WHERE CA1.contest_id = C.id AND A1.login = ?$ca_hidden)~,
+            m => 1031, t => q~
+            SELECT A.team_name FROM accounts A WHERE A.login = ?~
+        },
     });
     $p->{listview}->define_enums({ has_user => { this => $uid } });
     my $extra_fields = $p->{extra_fields} ? join ',', '', @{$p->{extra_fields}} : '';
