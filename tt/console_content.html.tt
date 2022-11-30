@@ -6,7 +6,7 @@
 <table id="console_content" class="bordered console highlight cell_search">
 [%- colspan = user.is_jury ? 6 : 3 -%]
 [% FOREACH c IN console %]
-<tr>
+<tr class="[% loop.parity() %]">
 [% IF c.is_submit_result %]
   <td class="tsl">
     [% IF user.is_jury -%]
