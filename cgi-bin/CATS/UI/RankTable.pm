@@ -75,14 +75,14 @@ sub _rank_table_icpc_export {
         $r //= {};
         my ($inst) = $_->{name} =~ /^(.+)(?:\:.+|\s+\d+)$/;
         [
-            $_->{id}, $r->{place}, $_->{name}, $inst,
+            $_->{id}, $r->{place}, # $_->{name}, $inst,
             join(' ', map $_->{name}, @{$r->{awards}}),
             $r->{total_solved}, $r->{total_time}, '', '', '',
         ];
     } @$teams ];
     return 'Unknown teams: ' . join ' | ', @unknown if @unknown;
     $p->{csv} = [ qw(
-        teamId rank teamName institution
+        teamId rank
         medalCitation
         problemsSolved totalTime lastProblemTime siteCitation citation) ];
     init_template($p, 'rank_table_icpc_export');
