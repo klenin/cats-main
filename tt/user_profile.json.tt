@@ -1,11 +1,16 @@
 [%- WRAPPER includes/jsonp.tti -%]
 [%- USE Javascript -%]
 {
+"id": "[% user.id | $Javascript %]",
 "login": "[% login | $Javascript %]",
 "name": "[% team_name | $Javascript %]",
 "capitan_name": "[% capitan_name | $Javascript %]",
 "email": "[% email | $Javascript %]",
 "country": "[% country | $Javascript %]",
-"lang": "[% lang %]"
+"lang": "[% lang %]",
+"affiliation": "[% affiliation | $Javascript %]",
+"affiliation_year": "[% affiliation_year | $Javascript %]",
+"city": "[% city | $Javascript %]",
+"tz_offset": "[% tz_offset | $Javascript %]"
 }
 [%- END -%]
