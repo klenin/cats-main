@@ -224,7 +224,7 @@
 816 "Output prefix"
 817 "New contest start with offset"
 818 "Codes prefix"
-1000 "Programming contest control system"
+1000 "Learning automation system"
 1001 "Problem '%s' was successfully linked."
 1002 "Session code is wrong or expired. Please login again."
 1003 "Unable to link the same problem twice."
