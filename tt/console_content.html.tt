@@ -44,8 +44,8 @@
   <td title="[% c.de.code %]">
   [%- IF visible_cols.De; c.de.description; IF c.elements_count; '→ '; c.elements_count; END; END %]
   [%- IF c.elements_count; cell_search_ex('parent_id', c.id); ELSE; cell_search_ex('de_code', c.de.code); END %]</td>
-  <td class="num">[% IF visible_cols.Tm -%]
-    <small>[% c.time_used %]</small>
+  <td class="num">[% IF visible_cols.Tm && c.time_used != '' -%]
+    <small>[% c.time_used %]s</small>
   [%- END %]</td>
   <td>[% IF visible_cols.Ip -%]
     [<a href="[% c.href_whois %]" title="[% c.last_ip %]">[% c.last_ip_short %]</a>]
