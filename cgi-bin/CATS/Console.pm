@@ -29,7 +29,7 @@ sub add {
 
 sub days {
     my ($self, $field) = @_;
-    $self->add("CAST(CURRENT_TIMESTAMP - $field AS DOUBLE PRECISION) < ?",
+    $self->add("CURRENT_TIMESTAMP - CAST(? AS DOUBLE PRECISION) < $field",
         $self->{day_count}) if defined $self->{day_count};
     $self;
 }
@@ -441,7 +441,7 @@ sub build_query {
     @selected_parts or return;
     my $subquery_id = 0;
     my $sql = join ' UNION ALL ', map $parts{$_}->sql($subquery_id++), @selected_parts;
-    #warn $sql;
+    #warn $sql if $user->privs->{is_root};
     my $sth = $dbh->prepare("$sql ORDER BY 2 DESC");
     #warn join ',', map @{$parts{$_}->{params}}, @selected_parts;
     $sth->execute(map @{$parts{$_}->{params}}, @selected_parts);
