@@ -202,10 +202,10 @@ $(function() {
 [% END %]
 [% FOREACH p IN problems %]
 [% IF p.group_title %]
-<tr class="col_defs"><th colspan="[% col_def_count + 1 %]">[% href(p.href_group, p.group_title) %]</th></tr>
+<tr class="col_defs"><th colspan="[% col_def_count + (editable ? 1 : 2) %]">[% href(p.href_group, p.group_title) %]</th></tr>
 [% END %]
 [% IF p.topic %]
-<tr class="col_defs"><th colspan="[% col_def_count + 1 %]" data-topic="[% p.topic.code_prefix | html %]">
+<tr class="col_defs"><th colspan="[% col_def_count + (editable ? 1 : 2) %]" data-topic="[% p.topic.code_prefix | html %]">
   [%- href(p.topic.href_edit, '', '', class = 'icon edit') IF p.topic.href_edit %]
   [% p.topic.code_prefix | html; '. '; p.topic.name | html -%]
   [% svg_icon('hide') IF p.topic.is_hidden %]
@@ -219,6 +219,13 @@ $(function() {
     [%~ IF p.href_problem_details %]<a href="[% p.href_problem_details %]" class="icon edit"></a>[% END ~%]
   </label>
 </td>[% END %]
+[% IF !editable -%]
+<td class="narrow nobr">
+  <a href="[% p.href_view_problem %]" target="_blank">
+  [% IF p.color %]<span class="problem_color" style="background-color: [% p.color | html %];"></span>[% END %]
+  [% IF p.code; p.code %][% END %]</a>
+</td>
+[%- END %]
 <td>
   [% IF editable %]
     [% IF visible_cols.Cl %]<input type="color" value="[% p.color %]"/>[% END %]
@@ -227,12 +234,8 @@ $(function() {
       <input type="text" maxlength="3" class="js_code bordered" value="[% p.code %]"/>
     </span>
     [% END %]
-    <a href="[% p.href_view_problem %]" target="_blank">
-  [% ELSE ~%]
-    <a href="[% p.href_view_problem %]" target="_blank">
-    [% IF p.color %]<span class="problem_color" style="background-color: [% p.color | html %];"></span>[% END %]
-    [% IF p.code; p.code %] - [% END %]
-  [% END %][% p.title | html %]</a>
+  [% END %]
+  <a href="[% p.href_view_problem %]" target="_blank">[% p.title | html %]</a>
   [% IF p.problem_langs.size %][[% FOREACH pl IN p.problem_langs; href(pl.href, pl.name); ' ' UNLESS loop.last; END %]][% END -%]
   [% IF p.href_explanation %][<a href="[% p.href_explanation %]" target="_blank">[% capt.explanation %]</a>][% END -%]
   [% IF p.href_download -%]
