@@ -1,4 +1,4 @@
-[%= js.nonce = 1; js.jquery = 1 -%]
+[%- js.nonce = 1; js.jquery = 1 -%]
 [%- PROCESS includes/menu_begin.tti -%]
 
 <h3>[% problem_title %]</h3>
