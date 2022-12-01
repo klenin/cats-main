@@ -21,7 +21,8 @@ use CATS::Time;
 use fields qw(
     clist contests contest_list hide_ooc hide_virtual show_points frozen
     title has_practice not_started filter sites groups use_cache
-    rank problems problems_idx show_all_results show_prizes has_competitive
+    rank problems problems_idx topics
+    show_all_results show_prizes has_competitive
     show_regions show_flags show_is_remote show_logins sort p notime nostats
     points_min points_max
     max_total_points
@@ -34,6 +35,24 @@ sub new {
     $self->{clist} = [ @{$p->{clist}} ? sort { $a <=> $b } @{$p->{clist}} : $cid ];
     $self->{contest_list} = join ',', @{$self->{clist}};
     return $self;
+}
+
+sub _get_topics {
+    my ($self) = @_;
+    my $topics_data = $dbh->selectall_arrayref(qq~
+        SELECT T.id, T.code_prefix, T.name, T.contest_id
+        FROM topics T
+        INNER JOIN contests C ON T.contest_id = C.id
+        WHERE C.id IN ($self->{contest_list}) AND T.is_hidden = 0
+        ORDER BY C.start_date, T.code_prefix~, { Slice => {} });
+    $self->{topics} = [];
+    my $contest_topics = {};
+    for (@$topics_data) {
+        my $topics = $contest_topics->{$_->{contest_id}} //= CATS::Topics->new;
+        $topics->add($_);
+        $_->{href} = url_f_cid('problems', cid => $_->{contest_id}, search => 'code^=' . $_->{code_prefix});
+    }
+    $contest_topics;
 }
 
 sub get_problems {
@@ -55,11 +74,13 @@ sub get_problems {
         ORDER BY C.start_date, CP.code~, { Slice => {} },
         $cats::problem_st_disabled
     );
+    my $contest_topics = $self->_get_topics;
 
     my @contest_order;
     my $prev_cid = -1;
     my $need_commit = 0;
     $self->{max_total_points} = 0;
+    my $prev_topic;
     for (@$problems) {
         my $c = $self->{contests}->{$_->{contest_id}};
         if ($_->{contest_id} != $prev_cid) {
@@ -81,6 +102,15 @@ sub get_problems {
         $self->{max_total_points} += ($_->{scaled_points} || $_->{max_points} || 0) * ($_->{weight} // 1)
             unless $_->{is_extra};
         $self->{has_competitive} = 1 if $_->{run_method} == $cats::rm_competitive;
+
+        my $topics = $contest_topics->{$_->{contest_id}};
+        my $topic = $topics && $topics->get($_->{code});
+        if (($topic // '') eq ($prev_topic->{topic} // '')) {
+            ++$prev_topic->{count};
+        }
+        else {
+            push @{$self->{topics}}, $prev_topic = { topic => $topic, count => 1 };
+        }
     }
     $dbh->commit if $need_commit;
 
@@ -88,6 +118,7 @@ sub get_problems {
         problems => $problems,
         problem_column_width => min(max(int(600 / max(scalar @$problems, 1)) / 10, 1), 7),
         contests => $self->{contests},
+        topics => $self->{topics},
         contest_order => \@contest_order,
         max_total_points => 0 + ($contest->{scaled_points} // $self->{max_total_points}),
     );

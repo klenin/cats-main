@@ -50,6 +50,15 @@
   [%- END %]
   <th colspan="[% show_place ? 4 : 3 %]"></th>
 [% END -%]
+[%- IF topics.size > 1 %]
+  <tr class="col_defs">
+  <th></th>
+  <th class="sticky"></th>
+  [% FOREACH t IN topics -%]
+  <th[% IF t.count > 1 %] colspan="[% t.count %]"[% END %]><a href="[% t.topic.href %]">[% t.topic.name | html %]</a></th>
+  [%- END %]
+  <th colspan="[% show_place ? 4 : 3 %]"></th>
+[% END -%]
 <tr class="col_defs">
 <th class="narrow"></th>
 <th class="sticky">[% capt.team_name %]</th>
