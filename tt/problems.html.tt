@@ -2,7 +2,7 @@
 [%- SET js.autocomplete = 1 IF editable -%]
 [%- extra_head = BLOCK %]
 <style>
-  .last_verdict { display: inline-block; width: 2em; padding: 2px; }
+  .last_verdict { display: inline-block; width: 2em; padding: 2px; border-radius: 3px; }
   .last_verdict a { color: inherit; font-weight: inherit; }
 
   td.problem_radio { width: 3%; height: 100%; padding: 0; margin: 0; }
