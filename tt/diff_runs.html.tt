@@ -49,8 +49,9 @@ window.addEventListener('load', function() {
 //-->
 </script>
 [% PROCESS includes/sources_info.tti subcaption=capt.compare_submissions %]
-<br/>
+<p>
 [% PROCESS includes/encoding_form.html.tti capt_enc = capt.encoding %]
+</p>
 <form method="POST">
 <p>[% capt.similarity %]: [% similarity.basic %] [% similarity.collapse_idents %]
 [% IF similar %]
