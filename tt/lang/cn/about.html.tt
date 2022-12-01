@@ -1,6 +1,6 @@
 [%
   capt.import({
-    welcome => 'Welcome to the automated program testing system with a problem archive',
+    welcome => 'Welcome to the learning automation system',
     upcoming => 'Upcoming events',
     judges_active => 'Active judging computers',
     queue_length => 'Submissions queued for evaluation',
