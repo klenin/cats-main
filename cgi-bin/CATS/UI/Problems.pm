@@ -31,6 +31,7 @@ use CATS::Request;
 use CATS::Settings;
 use CATS::StaticPages;
 use CATS::Time;
+use CATS::Topics;
 use CATS::Utils qw(file_type redirect_url_function);
 use CATS::Verdicts;
 
@@ -271,26 +272,13 @@ sub _build_topics {
         ORDER BY T.code_prefix~, { Slice => {} },
         $cid);
     my %selected_idx = map { $_ => 1 } @{$lv->qb->search_values('code', '^=')};
-    my $topic_idx;
-    for (sort {length($b->{code_prefix}) <=> length($a->{code_prefix}) } @$topics) {
+    for (@$topics) {
         $_->{href_edit} = url_f('topics_edit', id => $_->{id}) if $is_jury;
         $_->{href} = url_f('problems', search => 'code^=' . $_->{code_prefix});
         $_->{selected} = $selected_idx{$_->{code_prefix}};
-
-        my $start = substr($_->{code_prefix}, 0, 1);
-        $topic_idx->{$start} //= [];
-        push @{$topic_idx->{$start}}, $_;
     }
-    { topics => $topics, idx => $topic_idx };
-}
-
-sub _get_topic {
-    my ($topics, $row) = @_;
-    my $candidates = defined $row->{code} && $topics->{idx}->{substr($row->{code}, 0, 1)} or return;
-    for my $topic (@$candidates) {
-        return $topic if $row->{code} =~ /^\Q$topic->{code_prefix}\E/;
-    }
-    return undef;
+    $t->param(topics => $topics);
+    CATS::Topics->new($topics);
 }
 
 sub problems_frame {
@@ -399,7 +387,7 @@ sub problems_frame {
     $lv->define_db_searches({ contest_title => 'OC.title' });
     my $psn = CATS::Problem::Utils::problem_status_names_enum($lv);
 
-    my $topics = !$is_jury || $lv->visible_cols->{Tp} ? _build_topics($lv) : {};
+    my $topics = !$is_jury || $lv->visible_cols->{Tp} ? _build_topics($lv) : CATS::Topics->new;
 
     my ($req_stats_idx, $last_submits) = $lv->visible_cols->{Vc} ? _collect_req_stats($aid) : ({}, {});
 
@@ -542,7 +530,7 @@ sub problems_frame {
         my $href_group = $group_title && url_f_cid('problems', cid => $c->{contest_id});
         $prev_contest = $c->{contest_id};
 
-        my $topic = _get_topic($topics, $c);
+        my $topic = $topics->get($c->{code});
         $c->{topic} = $topic if $topic && $topic->{code_prefix} ne $prev_topic_prefix;
         $prev_topic_prefix = $topic ? $topic->{code_prefix} : '';
 
@@ -666,7 +654,6 @@ sub problems_frame {
         child_contest_count => scalar @$child_contests,
         href_child_contests =>
             @$child_contests && url_f('contests', search(parent_or_id => $cid), filter => 'all'),
-        topics => $topics->{topics},
      );
 }
 
