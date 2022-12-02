@@ -1,5 +1,6 @@
 [%
   capt.import({
+    rename => '重命名任务',
     problems => '任务',
   })
 %]

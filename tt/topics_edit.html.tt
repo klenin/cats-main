@@ -2,10 +2,12 @@
 [%- PROCESS includes/menu_begin.tti -%]
 [% PROCESS includes/html_input.tti %]
 
-[% idx = cp.indexed %]
-<form method="post" enctype="multipart/form-data" action="[% cw.href_action %]">
+<form method="post" enctype="multipart/form-data" action="[% tp.href_action %]">
 <table class="edit_form">
 [% tr_text(tp.indexed.code_prefix, tp) %]
+[% IF tp.id -%]
+<tr><td>[% capt.rename %]</td><td>[% checkbox_1('rename') %]</td></tr>
+[%- END %]
 [% tr_text(tp.indexed.name, tp) %]
 [% tr_checkbox1(tp.indexed.is_hidden, tp) %]
 [% tr_textarea(tp.indexed.description) %]

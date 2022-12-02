@@ -90,9 +90,9 @@ my $main_routes = {
         params => undef, save => bool, ],
 
     topics => [ \&CATS::UI::Topics::topics_frame,
-        delete => integer, saved => integer, ],
+        delete => integer, saved => integer, renamed => integer ],
     topics_edit => [ \&CATS::UI::Topics::topics_edit_frame,
-        $CATS::UI::Topics::form->route, ],
+        $CATS::UI::Topics::form->route, rename => bool, ],
 
     console_content => [ \&CATS::UI::Console::console_content_frame,
         %console_params,
