@@ -4,7 +4,7 @@ use utf8;
 
 use File::Spec;
 use FindBin;
-use Test::More tests => 31;
+use Test::More tests => 34;
 
 use lib File::Spec->catdir($FindBin::Bin, '..');
 use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
@@ -98,6 +98,29 @@ CATS::Messages::init;
     );
     is_deeply [ $f->route_fields ], [ f => undef, g => undef ], 'route_fields';
     is $f->fields_sql, 'T.f, T.g', 'fields_sql';
+}
+
+{
+    my $saved = 0;
+    my $f = CATS::Form->new(
+        table => 'tbl',
+        fields => [ [ name => 'f1' ] ],
+        override_load => sub {},
+        override_save => sub {
+            my ($self, $id, $data) = @_;
+            $saved = 1;
+            is_deeply $data, [ 8 ], 'save';
+            57;
+        },
+        before_display => sub {
+            my ($form_data, $p) = @_;
+            is $form_data->{href_action}, 'action?id=57', 'href_action';
+        },
+        href_action => 'action',
+    );
+
+    $f->edit_frame({ f1 => 8, edit_save => 1 });
+    ok $saved, 'saved';
 }
 
 1;

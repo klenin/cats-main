@@ -203,7 +203,7 @@ sub new {
         after_delete after_load after_make after_save
         before_commit before_delete before_display before_save before_save_db
         debug href_action msg_deleted msg_saved
-        override_get_id override_save
+        override_get_id override_load override_save
         redirect redirect_cancel redirect_save
     );
     $self;
@@ -215,6 +215,7 @@ sub fields_sql { join ', ', @{$_[0]->{select_fields}} }
 
 sub load {
     my ($self, $id) = @_;
+    return $self->{override_load}->($self, $id) if $self->{override_load};
     my $id_field = $self->{table_alias} ? "$self->{table_alias}.id" : 'id';
     my @db_data = $dbh->selectrow_array(_u $sql->select(
         $self->{table} . join('', map " $_->{sql}", @{$self->{joins}}),
@@ -229,7 +230,7 @@ sub load {
 # Params: opts { debug, commit }
 sub save {
     my ($self, $id, $data, %opts) = @_;
-    return $self->{override_save}->($self, $data, $id) if $self->{override_save};
+    return $self->{override_save}->($self, $id, $data, %opts) if $self->{override_save};
     my $i = 0;
     my $db_data = { map { $_->{db_name} => $_->save($data->[$i++]) } $self->fields };
     $self->{before_save_db}->($db_data, $id, $self) if $self->{before_save_db};
@@ -315,7 +316,7 @@ sub edit_frame {
         $self->{id_param} => $id,
     };
     $self->_href_action($form_data, $id, $opts{href_action_params});
-    $t->param($self->{template_var} => $form_data);
+    $t and $t->param($self->{template_var} => $form_data);
     if ($p->{edit_save} && !$opts{readonly}) {
         _set_form_data($form_data, my $data = $self->parse_params($p));
         if ((grep $_->{error}, @$data) || !$self->validate($form_data, $p)) {
