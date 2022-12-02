@@ -103,7 +103,6 @@ CATS::Messages::init;
 {
     my $saved = 0;
     my $f = CATS::Form->new(
-        table => 'tbl',
         fields => [ [ name => 'f1' ] ],
         override_load => sub {},
         override_save => sub {

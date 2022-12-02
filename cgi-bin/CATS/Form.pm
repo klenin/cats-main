@@ -183,8 +183,9 @@ sub new {
     my ($class, %r) = @_;
     bless my $self = {}, $class;
 
-    $self->{$_} = $r{$_} or die "No $_" for qw(table);
-    if ($self->{table} =~ /\s+(\w+)$/) {
+    $self->{table} = $r{table};
+    $self->{table} || $r{override_load} && $r{override_save} or die 'No table';
+    if ($self->{table} && $self->{table} =~ /\s+(\w+)$/) {
         $self->{table_alias} = $1;
     }
     $self->{joins} = $r{joins} // [];
