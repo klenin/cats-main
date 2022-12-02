@@ -6,7 +6,7 @@
   [%- END -%]
 </th>[% END %]
 [% FOREACH col_def IN col_defs; NEXT IF !all_visible && (!col_def.visible || !col_def.order_by) %]
-<th[% IF col_def.width %] style="width: [% col_def.width %];"[% END %]>
+<th[% IF col_def.width %] style="width: [% col_def.width %];"[% END %][% IF col_def.span %] colspan="[% col_def.span %]"[% END %]>
   [%- IF col_def.checkbox; need_toggle_all_cb = 1 -%]
     <input class="toggle_all_cb" type="checkbox" data-cb_selector="[% col_def.checkbox | html %]"/>
   [%- END -%]
