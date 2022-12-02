@@ -4,7 +4,7 @@ use utf8;
 
 use File::Spec;
 use FindBin;
-use Test::More tests => 34;
+use Test::More tests => 36;
 
 use lib File::Spec->catdir($FindBin::Bin, '..');
 use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
@@ -24,6 +24,12 @@ CATS::Messages::init;
 
     ok sl(1, 4)->('эюя', $f), 'str_length ru 6>4';
     is sl(1, 4)->('эю', $f), undef, 'str_length ru 4=4';
+}
+{
+    my $f = CATS::Field->new(name => 'f');
+    local *rg = *CATS::Field::regexp;
+    is rg(1246, qr/^\d+$/)->('213', $f), undef, 'regexp valid';
+    ok rg(1246, qr/^\d+$/)->('abc', $f), 'regexp nonvalid';
 }
 {
     my $f = CATS::Field->new(name => 'f');

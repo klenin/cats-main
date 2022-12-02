@@ -76,6 +76,15 @@ sub str_length {
     };
 }
 
+sub regexp {
+    my ($msg, $regexp) = @_;
+    sub {
+        my ($value, $field) = @_;
+        return if $value =~ $regexp;
+        res_str($msg, $field->caption_msg);
+    };
+}
+
 # Params:{ allow_empty, min, max }
 sub int_range {
     my (%opts) = @_;
