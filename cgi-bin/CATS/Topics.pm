@@ -24,6 +24,7 @@ sub add {
 
 sub get {
     my ($self, $code) = @_;
+    $code or return;
     for (my $i = length $code; $i > 0; --$i) {
         my $level = $self->{levels}->{$i} or next;
         my $prefix = substr($code, 0, $i);

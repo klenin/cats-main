@@ -4,7 +4,7 @@ use warnings;
 use File::Spec;
 use FindBin;
 use Test::Exception;
-use Test::More tests => 9;
+use Test::More tests => 10;
 
 use lib File::Spec->catdir($FindBin::Bin, '..');
 use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
@@ -28,6 +28,7 @@ use CATS::Topics;
     is_deeply $t->get('B3'), $t2, 'B3';
     is_deeply $t->get('B213'), $t4, 'B213';
     is $t->get('Z'), undef, 'Z';
+    is $t->get(undef), undef, 'undef';
 }
 
 1;
