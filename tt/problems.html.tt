@@ -49,10 +49,13 @@
   }
   div#tabbed_header { padding: 0; width: 100%; overflow: hidden; }
   div#edit_tabs > div { margin-top: 5px; min-width: 300px; }
+
+  tr.topic_row { position: relative; }
+  div.toggle_topic { position: absolute; right: 0; top: 3px; }
+  div.toggle_topic > span { font-weight: normal; font-size: small; }
   a.js_toggle_topic {
-    display: block;
-    float: right;
-    padding: 1px;
+    display: inline-block;
+    padding: 1px 5px;
     transition: 0.25s ease-in-out;
   }
   a.js_toggle_topic:after { content: 'v'; }
@@ -205,11 +208,11 @@ $(function() {
 <tr class="col_defs"><th colspan="[% col_def_count + (editable ? 1 : 2) %]">[% href(p.href_group, p.group_title) %]</th></tr>
 [% END %]
 [% IF p.topic %]
-<tr class="col_defs"><th colspan="[% col_def_count + (editable ? 1 : 2) %]" data-topic="[% p.topic.code_prefix | html %]">
+<tr class="col_defs topic_row"><th colspan="[% col_def_count + (editable ? 1 : 2) %]" data-topic="[% p.topic.code_prefix | html %]">
   [%- href(p.topic.href_edit, '', '', class = 'icon edit') IF p.topic.href_edit %]
   [% p.topic.code_prefix | html; '. '; p.topic.name | html -%]
   [% svg_icon('hide') IF p.topic.is_hidden %]
-  [%- href('#', '', '', class = 'js_toggle_topic') %]
+  <div class="toggle_topic"><span></span>[%- href('#', '', '', class = 'js_toggle_topic') %]</div>
 </th></tr>
 [% END %]
 <tr class="[% loop.parity() %] problem_row" id="pr_[% p.cpid %]" data-code="[% p.code %]">
@@ -520,7 +523,8 @@ $(function() { autocomplete($('#submit_as'), '[% href_find_users %]'); });
 </script>
 [% END %]
 <script nonce="[% nonce %]">
-function tr_animate(rows, total_time_sec, visible) {
+
+function tr_animate(rows, total_time_sec, onrow, onfinish) {
   var i = 0;
   var steps = 5;
   var rows_per_step = Math.ceil(rows.length / steps);
@@ -528,14 +532,14 @@ function tr_animate(rows, total_time_sec, visible) {
     for (var j = 0; j < rows_per_step; ++j) {
       if (i >= rows.length) {
         clearInterval(interval);
+        onfinish();
         return;
       }
-      if (visible) $(rows[i]).show();
-      else $(rows[i]).hide();
-      ++i;
+      onrow($(rows[i++]));
     }
   }, total_time_sec / steps * 1000);
 }
+
 function toggle_topic(e) {
   e.preventDefault();
   var el = $(this);
@@ -550,15 +554,22 @@ function toggle_topic(e) {
 
   var dur_str = el.css('transition-duration');
   var duration = dur_str.substr(0, dur_str.length - 1) * 1;
-  if (el.hasClass('collapsed')) {
+  var was_collapsed = el.hasClass('collapsed');
+  if (was_collapsed)
     topic_headers.removeClass('collapsed');
-    tr_animate(rows, duration, true);
-  }
-  else {
+  else
     topic_headers.addClass('collapsed');
-    tr_animate(rows, duration, false);
-  }
+  tr_animate(rows, duration,
+    function (row) {
+      if (was_collapsed) row.show(); else row.hide();
+    },
+    function() {
+      el.parent().children('span').text(
+        was_collapsed || !rows.length ? '' : '+' + rows.length);
+    });
 }
+
 $(function() { $('a.js_toggle_topic').click(toggle_topic); });
+
 </script>
 [% PROCESS includes/menu_end.tti %]
