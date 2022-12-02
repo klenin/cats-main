@@ -21,7 +21,6 @@ $(function() {
   [% FOREACH de IN de_not_allowed; "<li>$de.description</li>"; END %]
 </ul>
 [% END %]
-[% settings %]
 <table>
 <tr>
 [% FOREACH si IN sources_info %]

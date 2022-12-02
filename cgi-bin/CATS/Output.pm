@@ -67,6 +67,7 @@ sub init_template {
         user => $user,
         contest => $contest,
         noiface => $p->{noiface},
+        settings => $CATS::Settings::settings,
         nonce => make_nonce,
         web => $p,
     );
