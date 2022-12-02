@@ -204,6 +204,7 @@ sub new {
         before_commit before_delete before_display before_save before_save_db
         debug msg_deleted msg_saved
         override_get_id override_save
+        redirect redirect_cancel redirect_save
     );
     $self;
 }
@@ -301,7 +302,9 @@ sub _href_action {
 sub edit_frame {
     my ($self, $p, %opts) = @_;
 
-    my %redir = map { $_ => $opts{"redirect_$_"} // $opts{redirect} } qw(cancel save);
+    my %redir = map {
+        $_ => $opts{"redirect_$_"} // $opts{redirect} // $self->{"redirect_$_"} // $self->{redirect}
+    } qw(cancel save);
     return _redirect($p, $redir{cancel}) if $p->{edit_cancel};
 
     my $id = $self->{override_get_id} ? $self->{override_get_id}->($self, $p) : $p->{$self->{id_param}};
@@ -322,8 +325,9 @@ sub edit_frame {
         $form_data->{$self->{id_param}} = $id =
             $self->save($id, [ map $_->{value}, @$data ], commit => 1);
         $self->{after_save}->($form_data, $p) if $self->{after_save};
-        if ($redir{save}) {
-            return _redirect($p, $redir{save}, saved => $id);
+        if (my $rs = $redir{save}) {
+            return _redirect($p,
+                ref $rs eq 'CODE' ? $rs->($form_data, $p) : $rs, saved => $id);
         }
         $form_data->{href_action} = $self->_href_action($id, $opts{href_action_params});
         if ($self->{msg_saved} && (my $d = $self->{descr_field})) {
