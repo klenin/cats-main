@@ -61,7 +61,7 @@ function update_request_status() {
         vl.removeClass('progress');
     }
     if (np_requests)
-      setTimeout(update_request_status, manual_only ? 30000 : 1000);
+      setTimeout(update_request_status, manual_only ? 60000 : 3000);
   });
 }
 $(document).ready(update_request_status);
