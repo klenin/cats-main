@@ -1,12 +1,14 @@
-[% PROCESS includes/menu_begin.tti %]
-[%- PROCESS includes/html.tti -%]
+[%- js.nonce = 1 -%]
+[%- PROCESS includes/menu_begin.tti -%]
 
 <p>[% capt.name %]: [% team_name %]</p>
 <p>[% capt.settings %]</p>
 [% IF settings_dump %]<div><pre>[% settings_dump | html %]</pre></div>[% END %]
 
+<p>
 <form method="post" enctype="multipart/form-data">
 <button type="submit" name="clear" value="1" class="button">[% capt.clear %]</button>
 </form>
+</p>
 
 [% PROCESS includes/menu_end.tti %]

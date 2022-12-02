@@ -1,5 +1,5 @@
-[% PROCESS includes/menu_begin.tti %]
-[%- PROCESS includes/html.tti -%]
+[%- js.nonce = 1 -%]
+[%- PROCESS includes/menu_begin.tti -%]
 
 <table>
 <tr><td>[% capt.name %]:</td><td>[% maybe_href(href_edit, team_name) %]

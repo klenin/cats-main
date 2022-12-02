@@ -1,6 +1,5 @@
-[% js.jquery = 1 -%]
-[% PROCESS includes/menu_begin.tti %]
-[%- PROCESS includes/html.tti -%]
+[%- js.nonce = 1; js.jquery = 1 -%]
+[%- PROCESS includes/menu_begin.tti -%]
 
 [% IF successfully_registered %]
 [% capt.successful %]<br/>
@@ -20,7 +19,7 @@
 <button type="submit" name="register" value="1" class="button">[% capt.do_register %]</button>
 </form>
 [% END %]
-<script>
+<script nonce="[% nonce %]">
   $('#login').change(function() {
     var login = $('#login').val();
     if (!login) {

@@ -1,5 +1,5 @@
-[% PROCESS includes/menu_begin.tti %]
-[%- PROCESS includes/html.tti -%]
+[%- js.nonce = 1 -%]
+[%- PROCESS includes/menu_begin.tti -%]
 
 <form method="post" enctype="multipart/form-data">
 [% PROCESS includes/user_main.tti %]
