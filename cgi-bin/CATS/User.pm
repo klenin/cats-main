@@ -207,6 +207,8 @@ sub update_settings_item {
         $h->{$k} = $v : delete $h->{$k};
 }
 
+my $html_units = join '|', qw(cm mm in px pt pc em ex ch rem vw vmin vmax %);
+
 my @editable_settings = (
     { name => 'hide_envelopes', default => 0 },
     { name => 'display_input', default => 0 },
@@ -217,6 +219,10 @@ my @editable_settings = (
     {
         name => 'source_width', default => 90,
         validate => sub { $_[0] eq '' || $_[0] =~ /^\d+$/ && $_[0] <= 200 ? 1 : msg(1045, res_str(810), 0, 200) }
+    },
+    {
+        name => 'listview.row_height', default => '',
+        validate => sub { $_[0] eq '' || $_[0] =~ /^\d+(?:$html_units)?$/ ? 1 : msg(1246, '') }
     },
 );
 

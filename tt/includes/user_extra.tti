@@ -13,7 +13,7 @@
     'city', 'tz_offset',
     'affiliation', 'affiliation_year',
     'motto', 'capitan_name',
-    'settings.console.autoupdate', 'settings.source_width' ];
+    'settings.console.autoupdate', 'settings.source_width', 'settings.listview.row_height' ];
   fields.push('git_author_name', 'git_author_email') IF is_some_jury || user.privs.is_root || git_author_name || git_author_email;
   FOREACH f IN fields; input_tr(f); END
 %]

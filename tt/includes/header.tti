@@ -69,4 +69,9 @@ window.addEventListener('load', function() {
 });
 </script>
 [%- END -%]
+[%- IF settings.listview.row_height -%]
+<style>
+  table.listview > tbody > tr, table.console > tbody > tr { height: [% settings.listview.row_height %]; }
+</style>
+[%- END -%]
 [%- extra_head -%]

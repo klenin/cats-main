@@ -454,3 +454,4 @@
 1243 "Topic '%s' deleted."
 1244 "Problems containing attachment file '%s'"
 1245 "Problems renamed: %d."
+1246 "Field '%s' must be integer with optional HTML units."
