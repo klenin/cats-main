@@ -35,7 +35,6 @@ our $form = CATS::Form->new(
         [ name => 'pub_reqs_date', validators => $CATS::Field::date_time, ],
         [ name => 'offset_start_until', validators => $CATS::Field::date_time, ],
     ],
-    href_action => '-',
 );
 
 sub contests_new_frame {

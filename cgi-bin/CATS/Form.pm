@@ -183,7 +183,7 @@ sub new {
     my ($class, %r) = @_;
     bless my $self = {}, $class;
 
-    $self->{$_} = $r{$_} or die "No $_" for qw(table href_action);
+    $self->{$_} = $r{$_} or die "No $_" for qw(table);
     if ($self->{table} =~ /\s+(\w+)$/) {
         $self->{table_alias} = $1;
     }
@@ -202,7 +202,7 @@ sub new {
     $self->{$_} = $r{$_} for qw(
         after_delete after_load after_make after_save
         before_commit before_delete before_display before_save before_save_db
-        debug msg_deleted msg_saved
+        debug href_action msg_deleted msg_saved
         override_get_id override_save
         redirect redirect_cancel redirect_save
     );
@@ -294,8 +294,9 @@ sub validate {
 }
 
 sub _href_action {
-    my ($self, $id, $params) = @_;
-    url_f($self->{href_action}, $self->{id_param} => $id, @{$params || []});
+    my ($self, $form_data, $id, $params) = @_;
+    $self->{href_action} or return;
+    $form_data->{href_action} =  url_f($self->{href_action}, $self->{id_param} => $id, @{$params || []});
 }
 
 # Params: opts { href_action_params, readonly, redirect, redirect_cancel, redirect_save }
@@ -312,8 +313,8 @@ sub edit_frame {
         form => $self,
         readonly => $opts{readonly},
         $self->{id_param} => $id,
-        href_action => $self->_href_action($id, $opts{href_action_params}),
     };
+    $self->_href_action($form_data, $id, $opts{href_action_params});
     $t->param($self->{template_var} => $form_data);
     if ($p->{edit_save} && !$opts{readonly}) {
         _set_form_data($form_data, my $data = $self->parse_params($p));
@@ -329,7 +330,7 @@ sub edit_frame {
             return _redirect($p,
                 ref $rs eq 'CODE' ? $rs->($form_data, $p) : $rs, saved => $id);
         }
-        $form_data->{href_action} = $self->_href_action($id, $opts{href_action_params});
+        $self->_href_action($form_data, $id, $opts{href_action_params});
         if ($self->{msg_saved} && (my $d = $self->{descr_field})) {
             my @descr = $d =~ m/^\w+$/ && $form_data->{indexed}->{$d} ?
                 ($form_data->{indexed}->{$d}->{value}) :

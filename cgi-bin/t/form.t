@@ -75,7 +75,6 @@ CATS::Messages::init;
     my $f = CATS::Form->new(
         table => 'tbl',
         fields => [ [ name => 'f1' ] ],
-        href_action => '-',
     );
 
     my $d = { field => ($f->fields)[0], value => 8, caption => '', error => undef };
@@ -85,7 +84,6 @@ CATS::Messages::init;
     my $f = CATS::Form->new(
         table => 'tbl',
         fields => [ [ name => 'f1' ], [ name => 'f2', default => 5 ], [ name => 'f3', default => sub { 7 } ], ],
-        href_action => '-',
     );
 
     my @fields = $f->fields;
@@ -97,7 +95,6 @@ CATS::Messages::init;
     my $f = CATS::Form->new(
         table => 'tbl T',
         fields => [ [ name => 'f' ], [ name => 'g' ] ],
-        href_action => '-',
     );
     is_deeply [ $f->route_fields ], [ f => undef, g => undef ], 'route_fields';
     is $f->fields_sql, 'T.f, T.g', 'fields_sql';
