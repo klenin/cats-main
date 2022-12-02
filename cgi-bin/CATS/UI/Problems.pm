@@ -345,7 +345,8 @@ sub problems_frame {
             ORDER BY R.submit_time DESC $CATS::DB::db->{LIMIT} 1)~, $aid, $cid;
 
     $lv->default_sort(0)->define_columns([
-        { caption => res_str(602), order_by => ($contest->is_practice ? 'P.title' : 'CP.code'), width => '25%' },
+        { caption => res_str(602), order_by => ($contest->is_practice ? 'P.title' : 'CP.code'), width => '25%',
+            ($is_jury ? () : (span => 2)) },
         ($is_jury ?
         (
             { caption => res_str(622), order_by => 'CP.status', width => '5%' },
