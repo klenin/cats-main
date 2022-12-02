@@ -333,6 +333,7 @@ sub edit_frame {
             $self->{before_display}->($form_data, $p) if $self->{before_display};
             return;
         }
+        $form_data->{is_validated} = 1;
         $self->{before_save}->($form_data, $p) if $self->{before_save};
         $form_data->{$self->{id_param}} = $id =
             $self->save($id, [ map $_->{value}, @$data ], commit => 1);
