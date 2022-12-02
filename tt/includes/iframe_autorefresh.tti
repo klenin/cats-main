@@ -1,5 +1,5 @@
 [% UNLESS printable %]
-<script>
+<script nonce="[% nonce %]">
   function topSet(id, value) {
     var el = top.document.getElementById(id);
     if (el)
@@ -8,6 +8,6 @@
   topSet('server_time', "[% server_time %]");
   topSet('elapsed', "[% elapsed_msg %]");
   topSet('refreshable_content', document.getElementById('refreshable_content').innerHTML);
-  setTimeout(function() { document.location.reload(1); }, 30000);
+  setTimeout(function() { document.location.reload(1); }, 60000);
 </script>
 [% END %]
