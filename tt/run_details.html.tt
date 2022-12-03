@@ -1,5 +1,7 @@
-[% extra_head = BLOCK %]<style>[% PROCESS includes/verdicts.css.tti class='testsets' %]</style>[% END %]
-[%- PROCESS includes/sources_styles.tti -%]
+[%- extra_head = BLOCK -%]
+<style>[% PROCESS includes/verdicts.css.tti class='testsets' %]</style>
+[%- END -%]
+[%- js.nonce = 1; PROCESS includes/sources_styles.tti -%]
 [%- PROCESS "lang/$lang/verdicts.tti" -%]
 [%- js.jquery_flot = 1 IF is_any_jury %]
 [% PROCESS includes/header.tti %]
@@ -24,22 +26,22 @@
 
 [% IF is_any_jury %]
 <div id="filter_form" style="display: none;">
-<form onsubmit="return filter([% runs.0.id %])">
+<form>
 <div id="plot" style="width: 600px; height: 150px; display: none; float: left;"></div>
 <div id="plot-legend" style="float: left;"></div>
 <div style="clear: both;"></div>
 <input type="text" name="n_regexp" id="n_regexp" size="40" class="bordered"/>
 <button type="submit" class="button">filter</button>
 <label>
-<input type="checkbox" id="show_input_data" onclick="toggle_show_input_data()" [% ' checked="checked"' IF display_input %]/>
+<input type="checkbox" id="show_input_data" [% ' checked="checked"' IF display_input %]/>
 [% capt.show_input_data %]
 </label>
 <label>
-<input type="checkbox" id="show_answer_data" onclick="toggle_show_answer_data()" [% ' checked="checked"' IF display_answer %]/>
+<input type="checkbox" id="show_answer_data" [% ' checked="checked"' IF display_answer %]/>
 [% capt.show_answer_data %]
 </label>
 <label>
-<input type="checkbox" id="show_output_data" onclick="toggle_show_output_data()" [% ' checked="checked"' IF display_output %]/>
+<input type="checkbox" id="show_output_data" [% ' checked="checked"' IF display_output %]/>
 [% capt.show_output_data %]
 </label>
 </form>
@@ -47,7 +49,7 @@
 [% END %]
 <table class="req"><tr>
 [% FOREACH r IN runs %]
-<td>
+<td data-req-id="[% r.id %]">
 [% IF r.compiler_output %]
   <table class="bordered">
   <tr><td><pre>[% r.compiler_output | html %]</pre></td></tr>
@@ -64,7 +66,7 @@
     </tr>
     [% FOREACH ts IN r.testsets %]
     <tr>
-      <td><a href="#" onclick="filter_testset([% r.id %], '[% ts.name %]')">[% ts.name %]</a></td>
+      <td><a href="#" class="js_filter_testset">[% ts.name %]</a></td>
       <td class="verdict run_details_[% ts.verdict || (ts.earned_points ? 'OK' : 'IS') %]"><table><tr>
         <td>[% href('#', ts.verdict, capt.verdicts.item(ts.verdict)) %]</td>
         <td><div>[% ts.failed_test %]</div></td>
@@ -78,7 +80,7 @@
     </tr>
     [% END %]
     <tr>
-      <td colspan="2"><a href="#" onclick="filter_testset([% r.id %], '')">[% capt.total %]</a></td>
+      <td colspan="2"><a href="#" class="js_filter_testset ts_clear">[% capt.total %]</a></td>
       <td class="num">[% r.total_points %]</td>
       <td></td>
       [%- IF r.has_depends_on %]<td></td>[% END %]
@@ -178,7 +180,7 @@
 [% PROCESS includes/timing.tti %]
 [%- IF is_any_jury -%]
 
-<script type="text/javascript">
+<script nonce="[% nonce %]">
 function filter(rid) {
     var series = [];
     var dataIndexes = [];
@@ -253,11 +255,28 @@ function edit_points() {
     $('#set_points').show();
 }
 
-$(document).ready(function() {
-    $('#filter_form').show();
+$(function() {
+    $('#filter_form').show().submit(function (e) {
+        e.preventDefault();
+        filter([% runs.0.id %]);
+    });
+
+    $('table.req > tbody > tr > td').each(function (_, r) {
+      var rid = $(r).data('req-id');
+      $(r).find('a.js_filter_testset').click(function (e) {
+        e.preventDefault();
+        var a = $(this);
+        filter_testset(rid, a.hasClass('ts_clear') ? '' : a.text());
+      });
+    });
+
+    $('#show_input_data').click(toggle_show_input_data);
     toggle_show_input_data();
+    $('#show_answer_data').click(toggle_show_answer_data);
     toggle_show_answer_data();
+    $('#show_output_data').click(toggle_show_output_data);
     toggle_show_output_data();
+
     $('td.num.points').click(edit_points);
 });
 </script>
