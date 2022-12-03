@@ -60,6 +60,7 @@ sub exclude_users {
 
 sub add_accounts {
     my ($accounts, $group_id, $make_hidden, $make_admin) = @_;
+    $group_id or die 'No group_id';
     my $in_group_sth = $dbh->prepare(q~
         SELECT 1 FROM acc_group_accounts WHERE acc_group_id = ? AND account_id = ?~);
     my $add_sth = $dbh->prepare(q~
