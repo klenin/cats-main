@@ -5,6 +5,7 @@ use warnings;
 
 use Storable;
 
+use CATS::AccGroups;
 use CATS::Constants;
 use CATS::Contest::Participate;
 use CATS::Countries;
@@ -25,6 +26,12 @@ sub _settings_validated {
     $p->{edit_save} && $t->{vars}->{$CATS::User::settings_form->{template_var}}->{is_validated};
 }
 
+sub _add_to_group {
+    my ($p, $u) = @_;
+    $p->{group} && $user->privs->{manage_groups} or return;
+    CATS::AccGroups::add_accounts([ $u->{id} ], $p->{group});
+}
+
 sub users_edit_frame {
     my ($p) = @_;
 
@@ -41,6 +48,7 @@ sub users_edit_frame {
     if ($p->{edit_save} && _settings_validated($p)) {
         my ($new_user, $validated) = CATS::User::edit_save($p, $u->{settings});
         if ($validated) {
+            _add_to_group($p, $new_user);
             return $p->redirect(url_f('users', saved => $new_user->{id})) if $p->{from_users};
             msg(1059, $new_user->{team_name});
         }
@@ -50,14 +58,14 @@ sub users_edit_frame {
 
     delete $u->{settings}; # Do not clobber global settings.
     $t->param(
-        CATS::User::submenu('edit', $id, $u->{site_id}),
+        CATS::User::submenu('edit', $u->{id}, $u->{site_id}),
         title_suffix => $u->{team_name},
         %$u,
         privs => $u->{srole} && CATS::Privileges::unpack_privs($u->{srole}),
         priv_names => CATS::Privileges::ui_names,
         id => $id,
         countries => \@CATS::Countries::countries,
-        href_action => url_f('users_edit', from_users => $p->{from_users}),
+        href_action => url_f('users_edit', from_users => $p->{from_users}, group => $p->{group}),
         href_impersonate => $id && url_f('impersonate', uid => $id),
     );
 }

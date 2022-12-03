@@ -584,6 +584,7 @@ sub _url_f_selected {
 
 sub submenu {
     my ($selected, $user_id, $site_id) = @_;
+    $user_id or return ();
     $site_id //= 0;
     my $is_profile = $uid && $uid == $user_id;
     my @m = (
