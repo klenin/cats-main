@@ -12,7 +12,7 @@ sub new_if_root { $user->is_root ? (new => $_[0]) : () }
 sub reference_names() {
     (
         { name => 'compilers', new_if_root(542), item => 517 },
-        { name => 'judges', new_if_root(512), item => 511 },
+        { name => 'judges', $user->privs->{manage_judges} ? (new => 512) : (), item => 511 },
         { name => 'keywords', new_if_root(550), item => 549 },
         { name => 'import_sources', item => 557 },
         ($user->is_root ? { name => 'prizes', item => 565 } : ()),

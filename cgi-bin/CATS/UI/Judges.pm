@@ -68,7 +68,7 @@ our $form = CATS::Form->new(
 
 sub judges_edit_frame {
     my ($p) = @_;
-    init_template($p, 'judges_edit.html.tt');
+    init_template($p, 'judges_edit');
     $user->privs->{manage_judges} or return;
     $form->edit_frame($p, redirect => [ 'judges' ]);
 }
