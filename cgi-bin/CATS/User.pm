@@ -221,10 +221,8 @@ my $html_units = join '|', qw(cm mm in px pt pc em ex ch rem vw vmin vmax %);
 
 our $settings_form = CATS::Form->new(
     fields => [
-        [ name => 'hide_envelopes',
-            validators => $CATS::Field::bool, %CATS::Field::default_zero, caption => 601 ],
-        [ name => 'display_input',
-            validators => $CATS::Field::bool, %CATS::Field::default_zero, caption => 601 ],
+        [ name => 'hide_envelopes', validators => $CATS::Field::bool, default => 0 ],
+        [ name => 'display_input', validators => $CATS::Field::bool, default => 0 ],
         [ name => 'console.autoupdate',
             validators => CATS::Field::int_range(min => 20, max => 1e6, allow_empty => 1),
             default => 30, caption => 809 ],
@@ -233,7 +231,7 @@ our $settings_form = CATS::Form->new(
             default => 90, caption => 810 ],
         [ name => 'listview.row_height',
             validators => CATS::Field::regexp(1246, qr/^(?:\d+(?:$html_units)?|)$/),
-            default => 90, caption => 819 ],
+            default => '', caption => 819 ],
     ],
     template_var => 'user_settings',
     id_param => 'user_settings_data',
