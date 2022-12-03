@@ -4,10 +4,12 @@
 
 <form method="post" enctype="multipart/form-data" action="[% href_action %]">
 [% PROCESS includes/user_main.tti %]
+[% PROCESS includes/password.tti IF !id %]
 [% PROCESS includes/user_extra.tti %]
 [%- IF user.privs.is_root -%]
 <table class="registration">
-<tr><td>[% capt.locked %]</td><td><input type="checkbox" name="locked" value="1" [% ' checked="checked"' IF locked %]/></td></tr>
+<tr><td>[% capt.locked %]</td><td>[% checkbox_1('locked', locked) %]</td></tr>
+[%- IF id %]
 <tr><td>[% capt.roles.roles %]</td><td>
   [% IF privs.is_root %]
   [% capt.roles.root %]
@@ -18,26 +20,27 @@
   [% END %]
   <span id="set_privs" class="nobr"><code class="small">set_privs.pl --id=[% id %] --login=[% login %]</code>
   <button class="button hidden" title="copy">[% svg_icon('copy') %]</button></span>
-</td></tr>
-</table>
-[% PROCESS includes/password.tti change_password = 1 %]
-<script nonce="[% nonce %]">
-  window.addEventListener('load', function() {
-    var span = document.getElementById('set_privs');
-    var code = span.querySelector('code');
-    var btn = span.querySelector('button');
-    btn.classList = 'button';
-    btn.addEventListener('click', function (e) {
-      e.preventDefault();
-      navigator.clipboard.writeText(code.innerText);
+  <script nonce="[% nonce %]">
+    window.addEventListener('load', function() {
+      var span = document.getElementById('set_privs');
+      var code = span.querySelector('code');
+      var btn = span.querySelector('button');
+      btn.classList = 'button';
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        navigator.clipboard.writeText(code.innerText);
+      });
     });
-  });
-</script>
+  </script>
+</td></tr>
+[%- END %]
+</table>
+[% IF id; PROCESS includes/password.tti change_password = 1; END %]
 [%- END -%]
 <br/>
 [% PROCESS includes/edit_save_cancel.tti %]
 </form>
-[% IF user.privs.is_root %]
+[% IF user.privs.is_root && id %]
 <p>[ <a href="[% href_impersonate %]">[% capt.impersonate %]</a> ]</p>
 [% END %]
 [% PROCESS includes/menu_end.tti %]

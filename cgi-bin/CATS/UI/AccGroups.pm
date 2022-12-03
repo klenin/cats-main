@@ -221,7 +221,7 @@ sub acc_group_users_frame {
         can_edit => $can_edit,
         submenu => [ grep $_,
             $can_edit && (
-                { href => url_f('users_new', group => $p->{group}), item => res_str(541), new => 1 },
+                { href => url_f('users_edit', group => $p->{group}), item => res_str(541), new => 1 },
                 { href => url_f('acc_group_add_users', group => $p->{group}), item => res_str(584) }),
             $is_jury && +{ href => url_f('acc_groups'), item => res_str(410) },
         ],

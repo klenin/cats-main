@@ -171,7 +171,8 @@ sub insert {
         INSERT INTO accounts (
             id, srole, passwd, settings, ~ . join (', ', param_names()) . q~
         ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)~, {},
-        $aid, $CATS::Privileges::srole_user, $self->{password1}, $new_settings, $self->values
+        $aid, $CATS::Privileges::srole_user, $self->{password1} // $self->{passwd},
+        $new_settings, $self->values
     );
     $self->{id} = $aid;
     add_to_contest(contest_id => $_->{id}, account_id => $aid, is_ooc => 1)
@@ -254,29 +255,21 @@ our $settings_form = CATS::Form->new(
     },
 );
 
-# Admin adds new user to current contest
-sub new_save {
-    my ($p) = @_;
-    $is_jury or return;
-    my $u = CATS::User->new->parse_params($p);
-    $u->validate_params(validate_password => 1) or return;
-    $u->{password1} = hash_password($u->{password1});
-    $u->insert($cid) or return;
-}
-
+# Admin of current contest adds new or edits existing user.
 sub edit_save {
     my ($p, $new_settings) = @_;
+    $is_jury or return;
     my $u = CATS::User->new->parse_params($p);
     if (!$is_root) {
         delete $u->{restrict_ips};
     }
+    my $id = $p->{uid} || $p->{id};
     # Simple $is_jury check is insufficient since jury member
     # can add any team to his contest.
-    my $set_password = $p->{set_password} && $is_root;
-    my $id = $p->{id};
+    my $set_password = !$id || $p->{set_password} && $is_root;
     my $old_user = $id ? CATS::User->new->load($id, [ qw(settings srole) ]) : undef;
     # Only admins may edit other admins.
-    return if !$is_root && CATS::Privileges::unpack_privs($old_user->{srole})->{is_root};
+    return if !$is_root && $old_user && CATS::Privileges::unpack_privs($old_user->{srole})->{is_root};
 
     $u->validate_params(
         validate_password => $set_password, id => $id,
@@ -290,9 +283,15 @@ sub edit_save {
     $new_settings = Storable::nfreeze($new_settings);
     $u->{settings} = $new_settings if $new_settings ne ($old_user->{frozen_settings} // '');
 
-    $dbh->do(_u $sql->update('accounts', { %$u }, { id => $id }));
+    if ($id) {
+        $dbh->do(_u $sql->update('accounts', { %$u }, { id => $id }));
+        $u->{id} = $id;
+    }
+    else {
+        $u->insert($cid);
+    }
     $dbh->commit;
-    msg(1059, $u->{team_name});
+    $u;
 }
 
 sub profile_save {
@@ -598,7 +597,8 @@ sub submenu {
         ) : ()),
         (
             $is_jury ?
-                ({ href => url_f('users_edit', uid => $user_id), item => res_str(573), selected => 'edit' }) :
+                ({ href => url_f('users_edit', id => $user_id),
+                    item => res_str(573), selected => 'edit' }) :
             $is_profile ?
                 ({ _url_f_selected('profile'), item => res_str(518) }) :
                 ()
@@ -625,7 +625,7 @@ sub users_submenu {
     $selected //= $p->{f} if $p;
     my @m = (
         ($is_jury ? (
-            { href => url_f('users_new'), item => res_str(541), new => 1 },
+            { href => url_f('users_edit', from_users => 1), item => res_str(541), new => 1 },
             { _url_f_selected('users_import'), item => res_str(564) },
             { _url_f_selected('users_add_participants'), item => res_str(584) },
             ($is_root ?

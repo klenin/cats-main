@@ -25,46 +25,40 @@ sub _settings_validated {
     $p->{edit_save} && $t->{vars}->{$CATS::User::settings_form->{template_var}}->{is_validated};
 }
 
-sub users_new_frame {
-    my ($p) = @_;
-
-    init_template($p, 'users_new');
-    $is_jury or return;
-
-    my $s = $p->{$CATS::User::settings_form->{id_param}} = {};
-    $CATS::User::settings_form->edit_frame($p);
-    $t->param(
-        login => CATS::User::generate_login,
-        countries => \@CATS::Countries::countries,
-        href_action => url_f('users'),
-    );
-}
-
 sub users_edit_frame {
     my ($p) = @_;
 
     init_template($p, 'users_edit');
     $is_jury or return;
 
-    my $id = $p->{uid} || $p->{id} or return;
-    my $u = CATS::User->new->contest_fields([ 'site_id' ])->
-        load($id, [ qw(locked settings srole last_ip) ])
-        or return;
+    my $id = $p->{uid} || $p->{id};
+    my $u = $id ? CATS::User->new->contest_fields([ 'site_id' ])->
+        load($id, [ qw(locked settings srole last_ip) ]) : {};
+    $u or return;
 
-    my $s = $p->{$CATS::User::settings_form->{id_param}} = $u->{settings} // {};
+    my $s = $p->{$CATS::User::settings_form->{id_param}}= $u->{settings} || {};
     delete $u->{settings};
     $CATS::User::settings_form->edit_frame($p);
-    CATS::User::edit_save($p, $s) if $p->{edit_save} && _settings_validated($p);
+    if ($p->{edit_save} && _settings_validated($p)) {
+        if (my $new_user = CATS::User::edit_save($p, $s)) {
+            return $p->redirect(url_f('users', saved => $new_user->{id})) if $p->{from_users};
+            $u = $new_user;
+            msg(1059, $u->{team_name});
+        }
+    }
 
     $t->param(
         CATS::User::submenu('edit', $id, $u->{site_id}),
         title_suffix => $u->{team_name},
-        %$u, privs => CATS::Privileges::unpack_privs($u->{srole}),
+        login => !$id && CATS::User::generate_login, # TODO
+        %$u,
+        privs => $u->{srole} && CATS::Privileges::unpack_privs($u->{srole}),
         priv_names => CATS::Privileges::ui_names,
         id => $id,
         countries => \@CATS::Countries::countries,
-        href_action => url_f('users_edit'),
-        href_impersonate => url_f('impersonate', uid => $id));
+        href_action => url_f('users_edit', from_users => $p->{from_users}),
+        href_impersonate => $id && url_f('impersonate', uid => $id),
+    );
 }
 
 sub _tokens {

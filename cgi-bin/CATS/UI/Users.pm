@@ -195,6 +195,15 @@ sub _add_to_group {
     msg(1221, scalar @$added);
 }
 
+sub _saved_msg {
+    my ($p) = @_;
+    $p->{saved} or return;
+    my $name = $dbh->selectrow_array(q~
+        SELECT team_name FROM accounts WHERE id = ?~, undef,
+        $p->{saved});
+    msg(1059, $name) if $name;
+}
+
 sub users_frame {
     my ($p) = @_;
 
@@ -215,8 +224,7 @@ sub users_frame {
 
     if ($is_jury) {
         users_delete($p);
-        CATS::User::new_save($p) if $p->{new_save};
-        #CATS::User::edit_save($p) if $p->{edit_save};
+        _saved_msg($p);
 
         CATS::User::save_attributes_jury($p) if $p->{save_attributes};
         CATS::User::set_tag(user_set => $p->{sel}, tag => $p->{tag_to_set}) if $p->{set_tag};
@@ -446,7 +454,7 @@ sub users_frame {
         my ($country, $flag) = CATS::Countries::get_flag($country_abbr);
         return (
             href_delete => url_f('users', delete_user => $caid),
-            href_edit => url_f('users_edit', uid => $aid),
+            href_edit => url_f('users_edit', id => $aid, from_users => 1),
             href_stats => url_f('user_stats', uid => $aid),
             ($user->privs->{edit_sites} && $site_id ? (href_site => url_f('sites_edit', id => $site_id)) : ()),
             ($is_jury && $site_id ?
@@ -531,7 +539,7 @@ sub users_all_settings_frame {
         my $full = CATS::Settings::as_dump($all_settings, 0);
         my $short = length($full) < 120 ? $full : substr($full, 0, 120) . '...';
         (
-            href_edit => url_f('users_edit', uid => $row->{id}),
+            href_edit => url_f('users_edit', id => $row->{id}),
             href_settings => url_f('user_settings', uid => $row->{id}),
             %$row,
             settings_short => $short,
