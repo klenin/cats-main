@@ -140,8 +140,9 @@ $(document).ready(update_request_status);
     <td colspan="[% si.colspan %]">
       [% si.code; ': ' IF si.code != ''; maybe_href(si.href_problem_text, si.problem_name) %]
       [%- IF si.is_jury %]
-        ([% maybe_href(si.href_problem_details, si.status_name) %])
+        ([% si.status_name %])
         [% IF si.problem_snippets %][[% capt.snippets %]: [% href(si.href_snippets, si.problem_snippets)%]][% END %]
+        [% href(si.href_problem_details, '', 'edit', class = 'icon edit') IF si.href_problem_details -%]
       [%- END %]
     </td>
   [% END; END %]
