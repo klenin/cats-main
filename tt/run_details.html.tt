@@ -32,18 +32,14 @@
 <div style="clear: both;"></div>
 <input type="text" name="n_regexp" id="n_regexp" size="40" class="bordered"/>
 <button type="submit" class="button">filter</button>
-<label>
-<input type="checkbox" id="show_input_data" [% ' checked="checked"' IF display_input %]/>
-[% capt.show_input_data %]
+<span class="weak_border" style="margin-left: 10px;">[% capt.display_data.display %]:
+[%- FOREACH d IN [ 'input', 'answer', 'output' ] %]
+<label class="nobr">
+<input type="checkbox" id="show_data_[% d %]" [% maybe_checked(settings.display.$d) %]/>
+[% capt.display_data.$d %]
 </label>
-<label>
-<input type="checkbox" id="show_answer_data" [% ' checked="checked"' IF display_answer %]/>
-[% capt.show_answer_data %]
-</label>
-<label>
-<input type="checkbox" id="show_output_data" [% ' checked="checked"' IF display_output %]/>
-[% capt.show_output_data %]
-</label>
+[% END %]
+</span>
 </form>
 </div>
 [% END %]
@@ -221,16 +217,6 @@ function filter(rid) {
     return false;
 }
 
-function toggle_show_input_data() {
-    $('.input_data').toggleClass('hidden', !($('#show_input_data')[0]).checked);
-}
-function toggle_show_answer_data() {
-    $('.answer_data').toggleClass('hidden', !($('#show_answer_data')[0]).checked);
-}
-function toggle_show_output_data() {
-    $('.output_data').toggleClass('hidden', !($('#show_output_data')[0]).checked);
-}
-
 function filter_testset(rid, ts) {
   $('#details' + rid + ' tr').each(function (i, v) {
     var r = $(v).attr('data-ts');
@@ -270,12 +256,14 @@ $(function() {
       });
     });
 
-    $('#show_input_data').click(toggle_show_input_data);
-    toggle_show_input_data();
-    $('#show_answer_data').click(toggle_show_answer_data);
-    toggle_show_answer_data();
-    $('#show_output_data').click(toggle_show_output_data);
-    toggle_show_output_data();
+    [ 'input', 'answer', 'output' ].forEach(function (type) {
+      var cb = $('#show_data_' + type);
+      var toggle_data = function () {
+        $('.' + type + '_data').toggleClass('hidden', !cb[0].checked);
+      };
+      cb.click(toggle_data);
+      toggle_data();
+    });
 
     $('td.num.points').click(edit_points);
 });

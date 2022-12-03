@@ -47,7 +47,7 @@
 </form>
 
 <label><h3 id="input_d">[% capt.input_data -%]
-  <input type="checkbox" id="show_input_data"[% maybe_checked(display_input) %]/>
+  <input type="checkbox" id="show_input_data"[% maybe_checked(settings.display.input) %]/>
 </h3></label>
 <div id="input_data">
     [% IF test_data.input_size %]
@@ -59,7 +59,7 @@
 </div>
 
 <label><h3 id="answer_d">[% capt.answer_data -%]
-  <input type="checkbox" id="show_answer_data"[% maybe_checked(display_answer) %]/>
+  <input type="checkbox" id="show_answer_data"[% maybe_checked(settings.display.answer) %]/>
 </h3></label>
 <div id="answer_data">
     [% IF test_data.answer_size %]
@@ -71,7 +71,7 @@
 </div>
 
 <label><h3 id="output_d">[% capt.output_data -%]
-  <input type="checkbox" id="show_output_data"[% maybe_checked(display_output) %]/>
+  <input type="checkbox" id="show_output_data"[% maybe_checked(settings.display.output) %]/>
 </h3></label>
 <div id="output_data">
     [% IF output_data.output_size %]

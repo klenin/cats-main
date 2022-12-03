@@ -26,7 +26,12 @@
   <tr><td>[% capt.hide_envelopes %]</td>
   <td>[% checkbox_1('hide_envelopes', idx.hide_envelopes.value) %]</td></tr>
   [% IF is_some_jury || user.privs.is_root %]
-  <tr><td>[% capt.display_input %]</td>
-  <td>[% checkbox_1('display_input', idx.display_input.value) %]</td></tr>
+  <tr><td>[% capt.display.display %]</td>
+  <td>
+    [%- FOREACH d IN [ 'input', 'answer', 'output' ] -%]
+      <label class="nobr">
+        [%- checkbox_1('display.' _ d, idx.item('display.' _ d).value) -%] [% capt.display.$d %]</label>
+    [%- END -%]
+  </td></tr>
   [% END %]
 </table>

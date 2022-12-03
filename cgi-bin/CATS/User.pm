@@ -222,7 +222,8 @@ my $html_units = join '|', qw(cm mm in px pt pc em ex ch rem vw vmin vmax %);
 our $settings_form = CATS::Form->new(
     fields => [
         [ name => 'hide_envelopes', validators => $CATS::Field::bool, default => 0 ],
-        [ name => 'display_input', validators => $CATS::Field::bool, default => 0 ],
+        (map [ name => "display.$_", validators => $CATS::Field::bool, default => 0 ],
+            qw(input output answer)),
         [ name => 'console.autoupdate',
             validators => CATS::Field::int_range(min => 20, max => 1e6, allow_empty => 1),
             default => 30, caption => 809 ],

@@ -15,6 +15,11 @@
     phone => '電話號碼',
     restrict_ips => 'Restricted to IP',
     hide_envelopes => 'Hide envelopes',
-    display_input => 'Display input data',
+    display => {
+      display => 'Display by default',
+      input => 'input',
+      output => 'output',
+      answer => 'answer',
+    },
   })
 %]
