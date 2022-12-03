@@ -38,7 +38,7 @@ sub users_edit_frame {
     init_template($p, 'users_edit');
     $is_jury or return;
 
-    my $id = $p->{uid} || $p->{id};
+    my $id = $p->{id};
     my $u = $id ? CATS::User->new->contest_fields([ 'site_id' ])->
         load($id, [ qw(locked settings srole last_ip) ]) : {};
     $u or return;
@@ -58,7 +58,7 @@ sub users_edit_frame {
 
     delete $u->{settings}; # Do not clobber global settings.
     $t->param(
-        CATS::User::submenu('edit', $u->{id}, $u->{site_id}),
+        CATS::User::submenu('edit', $id || $u->{id}, $u->{site_id}),
         title_suffix => $u->{team_name},
         %$u,
         privs => $u->{srole} && CATS::Privileges::unpack_privs($u->{srole}),
@@ -169,7 +169,7 @@ sub user_stats_frame {
         %$u, contests => $contests,
         groups => $groups,
         CATS::IP::linkify_ip($u->{last_ip}),
-        ($is_jury ? (href_edit => url_f('users_edit', uid => $p->{uid})) : ()),
+        ($is_jury ? (href_edit => url_f('users_edit', id => $p->{uid})) : ()),
         ($user->privs->{edit_sites} ? (
             href_sites => url_f('sites', search => "has_user($p->{uid})"),
             href_sites_org => url_f('sites', search => "has_org($p->{uid})"),

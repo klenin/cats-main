@@ -206,7 +206,7 @@ sub acc_group_users_frame {
             href_exclude => $can_edit &&
                 url_f('acc_group_users', group => $p->{group}, exclude_user => $row->{account_id}),
             href_edit => ($user->privs->{is_root} || $is_jury && $row->{in_contest}) &&
-                url_f('users_edit', uid => $row->{account_id}),
+                url_f('users_edit', id => $row->{account_id}),
             href_stats => url_f('user_stats', uid => $row->{account_id}),
             href_groups => url_f('acc_groups', search => "has_user($row->{account_id})"),
             %$row,

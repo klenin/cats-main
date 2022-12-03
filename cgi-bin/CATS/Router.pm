@@ -243,7 +243,7 @@ my $main_routes = {
         include_hidden => bool, include_admins => bool,
     ],
     users_edit => [ \&CATS::UI::UserDetails::users_edit_frame,
-        %user_params, id => integer, uid => integer, locked => bool, group => integer,
+        %user_params, id => integer, locked => bool, group => integer,
         from_users => bool, edit_save => bool, ],
     users_snippets => [ \&CATS::UI::Snippets::users_snippets_frame,
         sel => array_of ident, old => array_of ident, save => bool, ],

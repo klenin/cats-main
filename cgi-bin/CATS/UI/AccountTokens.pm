@@ -44,7 +44,7 @@ sub account_tokens_frame {
         my $row = $_[0]->fetchrow_hashref or return ();
         return (
             %$row,
-            href_user => url_f('users_edit', uid => $row->{account_id}),
+            href_user => url_f('users_edit', id => $row->{account_id}),
             ($is_root ? (
                 #href_edit => url_f('account_tokens', id => $row->{did}),
                 href_delete => url_f('account_tokens', 'delete' => $row->{token})) : ()),

@@ -197,7 +197,7 @@ sub judges_frame {
             href_ping => url_f('judges', ping => $jid),
             href_edit => url_f('judges_edit', id => $jid),
             href_delete => url_f('judges', 'delete' => $jid),
-            href_account => url_f('users_edit', uid => $row->{account_id}),
+            href_account => url_f('users_edit', id => $row->{account_id}),
             href_console => url_f('console',
                 search => "judge_id=$jid,state<=T", se => 'judge', i_value => -1, show_results => 1),
             href_update_jobs => url_f('jobs',
