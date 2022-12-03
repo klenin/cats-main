@@ -1,5 +1,6 @@
+[%- js.nonce = 1 -%]
 [%- js.jquery = 1 -%]
-[% PROCESS includes/menu_begin.tti %]
+[%- PROCESS includes/menu_begin.tti -%]
 [%- PROCESS "lang/$lang/verdicts.tti" -%]
 <i>[% capt.in_queue %]: [% total_queue %]</i><br/>
 
@@ -36,8 +37,7 @@
 </select>
 <label><input type="checkbox" name="all_runs" value="1"/> [% capt.all_runs %]</label>
 <div class="verdict_list">
-<label><input type="checkbox" onclick="toggle_all_cb(this, '.verdict_list input[name=ignore_states]')"/>
-[% capt.ignore_verdicts %]:</label>
+<label><input type="checkbox" id="verdict_list_cb"/> [% capt.ignore_verdicts %]:</label>
 <br/>
 [% FOREACH v IN verdicts ~%]
 <label class="run_details_[% v.short %]" title="[% capt.verdicts.item(v.short) %]">
@@ -47,4 +47,9 @@
 [%~ END %]
 </div>
 </form>
+<script nonce="[% nonce %]">
+  $(function () { $('#verdict_list_cb').click(function () {
+    toggle_all_cb(this, '.verdict_list input[name=ignore_states]');
+  }); });
+</script>
 [% PROCESS includes/menu_end.tti %]
