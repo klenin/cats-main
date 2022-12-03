@@ -18,14 +18,15 @@
 <body>
 
 [% PROCESS includes/sources_info.tti %]
-<br/>
+<div style="margin: 4px;">
 [% PROCESS includes/encoding_form.html.tti
   capt_enc = capt.encoding
   select_name = 'comment_enc'
 %]
+</div>
 
 [% IF is_any_jury %]
-<div id="filter_form" style="display: none;">
+<div id="filter_form" style="display: none; margin-left: 4px;">
 <form>
 <div id="plot" style="width: 600px; height: 150px; display: none; float: left;"></div>
 <div id="plot-legend" style="float: left;"></div>
