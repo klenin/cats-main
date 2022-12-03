@@ -158,7 +158,7 @@ sub validate_login {
     is_login_available($self->{login}, $id) || msg(1103);
 }
 
-# p: save_settings, is_ooc, is_hidden, commit.
+# p: is_ooc, is_hidden, commit.
 sub insert {
     my ($self, $contest_id, %p) = @_;
     my $training_contests = $dbh->selectall_arrayref(q~
@@ -166,13 +166,13 @@ sub insert {
     @$training_contests or return msg(1092);
 
     my $aid = new_id;
-    my $new_settings = $p{save_settings} ? CATS::Settings::as_storable : '';
+    #my $new_settings = $p{save_settings} ? CATS::Settings::as_storable : '';
     $dbh->do(q~
         INSERT INTO accounts (
             id, srole, passwd, settings, ~ . join (', ', param_names()) . q~
         ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)~, {},
         $aid, $CATS::Privileges::srole_user, $self->{password1} // $self->{passwd},
-        $new_settings, $self->values
+        $self->{settings} || '', $self->values
     );
     $self->{id} = $aid;
     add_to_contest(contest_id => $_->{id}, account_id => $aid, is_ooc => 1)
@@ -273,12 +273,12 @@ sub edit_save {
         validate_password => $set_password, id => $id,
         # Need at least $is_jury in all official contests where $u participated.
         allow_official_rename => $is_root)
-        or return;
+        or return ($u, undef);
     prepare_password($u, $set_password);
 
     $u->{locked} = $p->{locked} ? 1 : 0 if $is_root;
 
-    $new_settings = Storable::nfreeze($new_settings);
+    $new_settings =  Storable::nfreeze($new_settings);
     $u->{settings} = $new_settings if $new_settings ne ($old_user->{frozen_settings} // '');
 
     if ($id) {
@@ -289,7 +289,7 @@ sub edit_save {
         $u->insert($cid);
     }
     $dbh->commit;
-    $u;
+    ($u, 1);
 }
 
 sub profile_save {

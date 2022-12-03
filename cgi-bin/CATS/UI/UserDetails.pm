@@ -36,21 +36,22 @@ sub users_edit_frame {
         load($id, [ qw(locked settings srole last_ip) ]) : {};
     $u or return;
 
-    my $s = $p->{$CATS::User::settings_form->{id_param}}= $u->{settings} || {};
-    delete $u->{settings};
+    my $s = $p->{$CATS::User::settings_form->{id_param}} = $u->{settings} ||= {};
     $CATS::User::settings_form->edit_frame($p);
     if ($p->{edit_save} && _settings_validated($p)) {
-        if (my $new_user = CATS::User::edit_save($p, $s)) {
+        my ($new_user, $validated) = CATS::User::edit_save($p, $u->{settings});
+        if ($validated) {
             return $p->redirect(url_f('users', saved => $new_user->{id})) if $p->{from_users};
-            $u = $new_user;
-            msg(1059, $u->{team_name});
+            msg(1059, $new_user->{team_name});
         }
+        $u = $new_user if $new_user;
     }
+    $u->{login} ||= !$id && CATS::User::generate_login; # TODO
 
+    delete $u->{settings}; # Do not clobber global settings.
     $t->param(
         CATS::User::submenu('edit', $id, $u->{site_id}),
         title_suffix => $u->{team_name},
-        login => !$id && CATS::User::generate_login, # TODO
         %$u,
         privs => $u->{srole} && CATS::Privileges::unpack_privs($u->{srole}),
         priv_names => CATS::Privileges::ui_names,
@@ -367,7 +368,8 @@ sub registration_frame {
     $u->validate_params(validate_password => 1) or return;
     $u->{password1} = CATS::User::hash_password($u->{password1});
     $settings->{contests}->{filter} = 'my' if $has_clist;
-    $u->insert(undef, save_settings => 1, commit => !$has_clist) or return;
+    $u->{settings} = CATS::Settings::as_storable($settings);
+    $u->insert(undef, commit => !$has_clist) or return;
     CATS::Contest::Participate::multi_online($u->{id}, $p->{clist});
     $t->param(successfully_registered => 1);
 }
