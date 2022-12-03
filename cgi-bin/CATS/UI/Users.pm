@@ -216,7 +216,7 @@ sub users_frame {
     if ($is_jury) {
         users_delete($p);
         CATS::User::new_save($p) if $p->{new_save};
-        CATS::User::edit_save($p) if $p->{edit_save};
+        #CATS::User::edit_save($p) if $p->{edit_save};
 
         CATS::User::save_attributes_jury($p) if $p->{save_attributes};
         CATS::User::set_tag(user_set => $p->{sel}, tag => $p->{tag_to_set}) if $p->{set_tag};

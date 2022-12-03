@@ -16,8 +16,5 @@
     restrict_ips => 'Ограничен по IP',
     hide_envelopes => 'Скрывать оповещения',
     display_input => 'Показывать входные данные',
-    'settings.console.autoupdate' => 'Интервал обновления консоли, сек.',
-    'settings.source_width' => 'Ширина редактора кода, символов',
-    'settings.listview.row_height' => 'Высота строки в списках',
   })
 %]

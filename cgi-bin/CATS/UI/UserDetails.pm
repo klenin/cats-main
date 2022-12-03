@@ -20,11 +20,19 @@ use CATS::Time;
 use CATS::User;
 use CATS::Utils qw(url_function);
 
+sub _settings_validated {
+    my ($p) = @_;
+    $p->{edit_save} && $t->{vars}->{$CATS::User::settings_form->{template_var}}->{is_validated};
+}
+
 sub users_new_frame {
     my ($p) = @_;
 
     init_template($p, 'users_new.html.tt');
     $is_jury or return;
+
+    my $s = $p->{$CATS::User::settings_form->{id_param}} = {};
+    $CATS::User::settings_form->edit_frame($p);
     $t->param(
         login => CATS::User::generate_login,
         countries => \@CATS::Countries::countries,
@@ -38,19 +46,25 @@ sub users_edit_frame {
     init_template($p, 'users_edit.html.tt');
     $is_jury or return;
 
-    $p->{uid} or return;
+    my $id = $p->{uid} || $p->{id} or return;
     my $u = CATS::User->new->contest_fields([ 'site_id' ])->
-        load($p->{uid}, [ qw(locked settings srole last_ip) ])
+        load($id, [ qw(locked settings srole last_ip) ])
         or return;
+
+    my $s = $p->{$CATS::User::settings_form->{id_param}} = $u->{settings} // {};
+    delete $u->{settings};
+    $CATS::User::settings_form->edit_frame($p);
+    CATS::User::edit_save($p, $s) if $p->{edit_save} && _settings_validated($p);
+
     $t->param(
-        CATS::User::submenu('edit', $p->{uid}, $u->{site_id}),
+        CATS::User::submenu('edit', $id, $u->{site_id}),
         title_suffix => $u->{team_name},
         %$u, privs => CATS::Privileges::unpack_privs($u->{srole}),
         priv_names => CATS::Privileges::ui_names,
-        id => $p->{uid},
+        id => $id,
         countries => \@CATS::Countries::countries,
-        href_action => url_f('users'),
-        href_impersonate => url_f('impersonate', uid => $p->{uid}));
+        href_action => url_f('users_edit'),
+        href_impersonate => url_f('impersonate', uid => $id));
 }
 
 sub _tokens {
@@ -165,13 +179,6 @@ sub user_stats_frame {
     );
 }
 
-sub display_settings {
-    my ($s) = @_;
-    $t->param(settings => $s);
-    $is_root or return;
-    $t->param(settings_dump => CATS::Settings::as_dump($s));
-}
-
 sub user_settings_frame {
     my ($p) = @_;
     init_template($p, 'user_settings.html.tt');
@@ -190,7 +197,6 @@ sub user_settings_frame {
         $p->{uid});
 
     msg(1029, $team_name) if $cleared;
-    display_settings(eval { Storable::thaw($user_settings) } || {}) if $user_settings;
     my $site_id = $is_jury ? 0 : $dbh->selectrow_array(q~
         SELECT CA.site_id FROM contest_accounts CA
         WHERE CA.account_id = ? AND CA.contest_id = ?~, undef,
@@ -199,6 +205,8 @@ sub user_settings_frame {
         CATS::User::submenu('user_settings', $p->{uid}, $site_id),
         team_name => $team_name,
         title_suffix => $team_name,
+        settings_dump => $user_settings &&
+            CATS::Settings::as_dump(eval { Storable::thaw($user_settings) } || {}),
     );
 }
 
@@ -347,6 +355,9 @@ sub registration_frame {
     my ($p) = @_;
     init_template($p, 'registration.html.tt');
 
+    $p->{$CATS::User::settings_form->{id_param}} = $settings;
+    $CATS::User::settings_form->edit_frame($p);
+
     my $has_clist = @{$p->{clist}} > 0;
     $t->param(
         countries => \@CATS::Countries::countries,
@@ -375,7 +386,9 @@ sub profile_frame {
         $settings = {};
         msg(1029, $user->{name});
     }
-    CATS::User::profile_save($p) if $p->{edit_save};
+    $p->{$CATS::User::settings_form->{id_param}} = $settings;
+    $CATS::User::settings_form->edit_frame($p);
+    CATS::User::profile_save($p) if $p->{edit_save} && _settings_validated($p);
 
     my $u = CATS::User->new->load($uid) or return;
     my ($is_some_jury) = $is_jury || $dbh->selectrow_array(q~
@@ -395,7 +408,6 @@ sub profile_frame {
         %$u,
         email => $email,
     );
-    display_settings($settings);
 }
 
 sub impersonate_frame {

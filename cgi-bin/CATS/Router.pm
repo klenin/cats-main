@@ -8,6 +8,7 @@ use File::Spec;
 
 use CATS::ApiJudge;
 use CATS::RouteParser;
+use CATS::User;
 
 BEGIN {
     require $_ for glob File::Spec->catfile($ENV{CATS_DIR} || $FindBin::Bin, 'CATS', 'UI', '*.pm');
@@ -21,7 +22,8 @@ my %console_params = (
 );
 
 my %user_params = (
-    (map { $_ => str } CATS::User::param_names, CATS::User::setting_names, qw(password1 password2)),
+    (map { $_ => str } CATS::User::param_names, qw(password1 password2)),
+    $CATS::User::settings_form->route,
     set_password => bool,
 );
 
@@ -242,7 +244,8 @@ my $main_routes = {
         include_hidden => bool, include_admins => bool,
     ],
     users_new => \&CATS::UI::UserDetails::users_new_frame,
-    users_edit => [ \&CATS::UI::UserDetails::users_edit_frame, uid => integer, ],
+    users_edit => [ \&CATS::UI::UserDetails::users_edit_frame,
+        %user_params, id => integer, uid => integer, edit_save => bool, ],
     users_snippets => [ \&CATS::UI::Snippets::users_snippets_frame,
         sel => array_of ident, old => array_of ident, save => bool, ],
     user_stats => [ \&CATS::UI::UserDetails::user_stats_frame, uid => integer, make_token => bool, ],

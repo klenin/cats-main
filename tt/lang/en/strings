@@ -224,6 +224,7 @@
 816 "Output prefix"
 817 "New contest start with offset"
 818 "Codes prefix"
+819 "List row height"
 1000 "Learning automation system"
 1001 "Problem '%s' was successfully linked."
 1002 "Session code is wrong or expired. Please login again."

@@ -203,41 +203,56 @@ sub update_settings_item {
     $h = $h->{$_} //= {} for @path;
 
     $v = 1 if $v && $v eq 'on';
-    defined $v && $v ne '' && (!defined($item->{default}) || $v != $item->{default}) ?
+    defined $v && $v ne '' && (!defined($item->{default}) || $v ne $item->{default}) ?
         $h->{$k} = $v : delete $h->{$k};
+}
+
+sub get_settings_item {
+    my ($h, $item) = @_;
+    $h or die;
+    for (split /\./, $item->{name}) {
+        $h = $h->{$_} or last;
+    }
+    $h;
 }
 
 my $html_units = join '|', qw(cm mm in px pt pc em ex ch rem vw vmin vmax %);
 
-my @editable_settings = (
-    { name => 'hide_envelopes', default => 0 },
-    { name => 'display_input', default => 0 },
-    {
-        name => 'console.autoupdate', default => 30,
-        validate => sub { $_[0] eq '' || $_[0] =~ /^\d+$/ && $_[0] >= 20 ? 1 : msg(1046, res_str(809), 20) }
+our $settings_form = CATS::Form->new(
+    fields => [
+        [ name => 'hide_envelopes',
+            validators => $CATS::Field::bool, %CATS::Field::default_zero, caption => 601 ],
+        [ name => 'display_input',
+            validators => $CATS::Field::bool, %CATS::Field::default_zero, caption => 601 ],
+        [ name => 'console.autoupdate',
+            validators => CATS::Field::int_range(min => 20, max => 1e6, allow_empty => 1),
+            default => 30, caption => 809 ],
+        [ name => 'source_width',
+            validators => CATS::Field::int_range(min => 0, max => 200, allow_empty => 1),
+            default => 90, caption => 810 ],
+        [ name => 'listview.row_height',
+            validators => CATS::Field::regexp(1246, qr/^(?:\d+(?:$html_units)?|)$/),
+            default => 90, caption => 819 ],
+    ],
+    template_var => 'user_settings',
+    id_param => 'user_settings_data',
+    override_load => sub {
+        my ($form, $id) = @_;
+        [ map get_settings_item($id, $_), $form->fields ];
     },
-    {
-        name => 'source_width', default => 90,
-        validate => sub { $_[0] eq '' || $_[0] =~ /^\d+$/ && $_[0] <= 200 ? 1 : msg(1045, res_str(810), 0, 200) }
+    override_save => sub {
+        my ($form, $id, $data) = @_;
+        my @fields = $form->fields;
+        for (my $i = 0; $i < @fields; ++$i) {
+            update_settings_item($id, $fields[$i], $data->[$i]);
+        }
+        $id;
     },
-    {
-        name => 'listview.row_height', default => '',
-        validate => sub { $_[0] eq '' || $_[0] =~ /^\d+(?:$html_units)?$/ ? 1 : msg(1246, '') }
+    before_display => sub {
+        my ($fd, $p) = @_;
+        $fd->{data}->{dump} = CATS::Settings::as_dump($p->{$fd->{form}->{id_param}}) if $is_root;
     },
 );
-
-sub setting_names { map "settings.$_->{name}", @editable_settings }
-
-sub update_settings {
-    my ($p, $settings_root) = @_;
-    for (@editable_settings) {
-        return if $_->{validate} && !$_->{validate}->($p->{"settings.$_->{name}"} // '');
-    }
-    for (@editable_settings) {
-        update_settings_item($settings_root, $_, $p->{"settings.$_->{name}"});
-    }
-    1;
-}
 
 # Admin adds new user to current contest
 sub new_save {
@@ -250,7 +265,7 @@ sub new_save {
 }
 
 sub edit_save {
-    my ($p) = @_;
+    my ($p, $new_settings) = @_;
     my $u = CATS::User->new->parse_params($p);
     if (!$is_root) {
         delete $u->{restrict_ips};
@@ -268,13 +283,11 @@ sub edit_save {
         # Need at least $is_jury in all official contests where $u participated.
         allow_official_rename => $is_root)
         or return;
-    $old_user->{settings} ||= {};
-    update_settings($p, $old_user->{settings}) or return;
     prepare_password($u, $set_password);
 
     $u->{locked} = $p->{locked} ? 1 : 0 if $is_root;
 
-    my $new_settings = Storable::nfreeze($old_user->{settings});
+    $new_settings = Storable::nfreeze($new_settings);
     $u->{settings} = $new_settings if $new_settings ne ($old_user->{frozen_settings} // '');
 
     $dbh->do(_u $sql->update('accounts', { %$u }, { id => $id }));
@@ -290,7 +303,6 @@ sub profile_save {
     }
 
     $u->validate_params(validate_password => $p->{set_password}, id => $uid) or return;
-    update_settings($p, $settings) or return;
     prepare_password($u, $p->{set_password});
     $dbh->do(_u $sql->update('accounts', { %$u }, { id => $uid }));
     $dbh->commit;

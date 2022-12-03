@@ -1,6 +1,6 @@
 [%- PROCESS includes/html_input.tti -%]
 [%- PROCESS "lang/$lang/user_extra.tti" -%]
-<table class="registration">
+<table class="registration edit_form">
   <tr><td>[% capt.country %]</td><td>
     <select name="country">
     [% FOREACH c IN countries %]
@@ -12,18 +12,21 @@
   fields = [
     'city', 'tz_offset',
     'affiliation', 'affiliation_year',
-    'motto', 'capitan_name',
-    'settings.console.autoupdate', 'settings.source_width', 'settings.listview.row_height' ];
+    'motto', 'capitan_name' ];
   fields.push('git_author_name', 'git_author_email') IF is_some_jury || user.privs.is_root || git_author_name || git_author_email;
   FOREACH f IN fields; input_tr(f); END
 %]
 [% IF user.privs.is_root -%]
 [% input_tr('restrict_ips', 50, last_ip) %]
 [%- END %]
+  [%- idx = user_settings.indexed -%]
+  [% tr_text(idx.item('console.autoupdate'), user_settings) %]
+  [% tr_text(idx.item('source_width'), user_settings) %]
+  [% tr_text(idx.item('listview.row_height'), user_settings) %]
   <tr><td>[% capt.hide_envelopes %]</td>
-  <td>[% checkbox_1('settings.hide_envelopes', settings.hide_envelopes) %]</td></tr>
+  <td>[% checkbox_1('hide_envelopes', idx.hide_envelopes.value) %]</td></tr>
   [% IF is_some_jury || user.privs.is_root %]
   <tr><td>[% capt.display_input %]</td>
-  <td>[% checkbox_1('settings.display_input', settings.display_input) %]</td></tr>
+  <td>[% checkbox_1('display_input', idx.display_input.value) %]</td></tr>
   [% END %]
 </table>

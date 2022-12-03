@@ -15,6 +15,6 @@
 FOR l IN profile_langs; IF l.name == lang; '<b>'; l.name.upper; '</b>'; ELSE; href(l.href, l.name.upper); END; ' ';
 END; %]</p>
 [%- END %]
-[% IF settings_dump %]<div><pre>[% settings_dump %]</pre></div>[% END %]
+[% IF user_settings.data.dump %]<div><pre>[% user_settings.data.dump %]</pre></div>[% END %]
 
 [% PROCESS includes/menu_end.tti %]
