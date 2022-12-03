@@ -149,7 +149,7 @@ sub users_delete {
 sub users_add_participants_frame {
     my ($p) = @_;
     $is_jury or return;
-    init_template($p, 'users_add_participants.html.tt');
+    init_template($p, 'users_add_participants');
     if ($p->{by_login}) {
         my $aids = CATS::User::register_by_login($p->{logins_to_add}, $cid,
             $p->{make_jury} && $user->privs->{grant_jury});

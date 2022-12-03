@@ -28,7 +28,7 @@ sub _settings_validated {
 sub users_new_frame {
     my ($p) = @_;
 
-    init_template($p, 'users_new.html.tt');
+    init_template($p, 'users_new');
     $is_jury or return;
 
     my $s = $p->{$CATS::User::settings_form->{id_param}} = {};
@@ -43,7 +43,7 @@ sub users_new_frame {
 sub users_edit_frame {
     my ($p) = @_;
 
-    init_template($p, 'users_edit.html.tt');
+    init_template($p, 'users_edit');
     $is_jury or return;
 
     my $id = $p->{uid} || $p->{id} or return;
@@ -89,7 +89,7 @@ sub _tokens {
 
 sub user_stats_frame {
     my ($p) = @_;
-    init_template($p, 'user_stats.html.tt');
+    init_template($p, 'user_stats');
     $p->{uid} or return;
     my $envelopes_sql = $is_root ?
         ', (SELECT COUNT(*) FROM reqs R WHERE R.account_id = A.id AND R.received = 0) AS envelopes' : '';
@@ -181,7 +181,7 @@ sub user_stats_frame {
 
 sub user_settings_frame {
     my ($p) = @_;
-    init_template($p, 'user_settings.html.tt');
+    init_template($p, 'user_settings');
     $is_root && $p->{uid} or return;
 
     my $cleared;
@@ -212,7 +212,7 @@ sub user_settings_frame {
 
 sub user_ip_frame {
     my ($p) = @_;
-    init_template($p, 'user_ip.html.tt');
+    init_template($p, 'user_ip');
     $is_jury || $user->{is_site_org} or return;
     $p->{uid} or return;
     my $u = CATS::User->new->contest_fields([ qw(site_id last_login last_ip) ])->load($p->{uid}) or return;
@@ -329,7 +329,7 @@ sub user_vdiff_frame {
     $is_jury || $user->{is_site_org} or return;
     $p->{uid} or return;
 
-    init_template($p, 'user_vdiff.html.tt');
+    init_template($p, 'user_vdiff');
 
     my $u = user_vdiff_load($p) or return;
     if (user_vdiff_save($p, $u) || user_vdiff_finish_now($p, $u)) {
@@ -353,7 +353,7 @@ sub user_vdiff_frame {
 
 sub registration_frame {
     my ($p) = @_;
-    init_template($p, 'registration.html.tt');
+    init_template($p, 'registration');
 
     $p->{$CATS::User::settings_form->{id_param}} = $settings;
     $CATS::User::settings_form->edit_frame($p);

@@ -61,7 +61,7 @@ our $user_contact_form = CATS::Form->new(
 
 sub user_contacts_edit_frame {
     my ($p) = @_;
-    init_template($p, 'user_contacts_edit.html.tt');
+    init_template($p, 'user_contacts_edit');
     $is_root || _is_profile($p) or return;
     my @puid = (uid => $p->{uid});
     $user_contact_form->edit_frame($p,
