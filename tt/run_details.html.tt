@@ -20,8 +20,8 @@
 [% PROCESS includes/sources_info.tti %]
 <br/>
 [% PROCESS includes/encoding_form.html.tti
-    capt_enc = capt.encoding
-    select_name = 'comment_enc'
+  capt_enc = capt.encoding
+  select_name = 'comment_enc'
 %]
 
 [% IF is_any_jury %]
@@ -34,10 +34,10 @@
 <button type="submit" class="button">filter</button>
 <span class="weak_border" style="margin-left: 10px;">[% capt.display_data.display %]:
 [%- FOREACH d IN [ 'input', 'answer', 'output' ] %]
-<label class="nobr">
-<input type="checkbox" id="show_data_[% d %]" [% maybe_checked(settings.display.$d) %]/>
-[% capt.display_data.$d %]
-</label>
+  <label class="nobr">
+  <input type="checkbox" id="show_data_[% d %]" [% maybe_checked(settings.display.$d) %]/>
+  [% capt.display_data.$d %]
+  </label>
 [% END %]
 </span>
 </form>
@@ -117,7 +117,8 @@
     [% IF rd.short_state == 'NT' %]
     <td colspan="[% 1 + (r.show_points ? 1 : 0) + (r.show_test_resources ? 3 : 0) %]">[% capt.verdicts.NT %]</td>
     [% ELSE %]
-    <td title="[% rd.is_hidden ? capt.hidden : capt.verdicts.item(rd.short_state) %]">[% rd.is_hidden ? '?' : rd.short_state %]</td>
+    <td title="[% rd.is_hidden ? capt.hidden : capt.verdicts.item(rd.short_state) %]">
+      [%- rd.is_hidden ? '?' : rd.short_state %]</td>
     [% IF r.show_points %]<td class="num points" data-test-rank="[% rd.test_rank %]">
       [%- IF can_edit_points %]<span>[% rd.points %]</span>
         <input1 type="text" size="3" value="[% rd.points %]" name="points" class="hidden bordered"/>
@@ -141,7 +142,8 @@
       [%- rd.answer_data | html; '&hellip;' IF rd.answer_data_cut -%]
       </a></td>
       [% IF r.has_output %]
-        <td class="test_data output_data"><a href="[% rd.href_view_test_details %]#output_d">[% rd.output_data | html; '&hellip;' IF rd.output_data_cut %]</a></td>
+        <td class="test_data output_data"><a href="[% rd.href_view_test_details %]#output_d"
+          [%~%]>[% rd.output_data | html; '&hellip;' IF rd.output_data_cut %]</a></td>
       [% END %]
       [% IF r.has_visualizer %]
         <td>
@@ -178,43 +180,44 @@
 
 <script nonce="[% nonce %]">
 function filter(rid) {
-    var series = [];
-    var dataIndexes = [];
-    var details_id = '#details' + rid;
-    $(details_id + ' tr th').each(function (i, h) {
-        var qh = $(h);
-        if (qh.hasClass('resource'))
-            series.push({ label: qh.text(), idx: i, data: [], yaxis: series.length + 1 });
-        else if (qh.hasClass('data'))
-            dataIndexes.push(i);
-    });
-    if (!dataIndexes.length) return false;
-    var re = new RegExp($('#n_regexp').val());
-    $(details_id + ' tr').each(function (i, v) {
-        var row = $(v).children('td');
-        var dataStr = '';
-        for (var j = 0; j < dataIndexes.length; ++j) {
-            if (row.length <= dataIndexes[j]) return true;
-            if (dataStr !== '') dataStr += ' ';
-            dataStr += $(row[dataIndexes[j]]).text();
-        }
-        var matches = re.exec(dataStr);
-        if (!matches) return true;
-        var maxN = 0;
-        for (var j = 1; j < matches.length; ++j)
-            maxN = Math.max(matches[j], maxN);
-        if (maxN <= 0) return true;
-        for (var j = 0; j < series.length; ++j) {
-            var value = $(row[series[j].idx]).text();
-            if (value > 0)
-                series[j].data.push([maxN, value]);
-        }
-    });
-    for (var i = 0; i < series.length; ++i)
-        series[i].data.sort(function (a, b) { return a[0] - b[0]; });
-    $('#plot').show();
-    $.plot($('#plot'), series, { series: { lines: { show: true }, points: { show: true } }, legend: { container: '#plot-legend' } });
-    return false;
+  var series = [];
+  var dataIndexes = [];
+  var details_id = '#details' + rid;
+  $(details_id + ' tr th').each(function (i, h) {
+    var qh = $(h);
+    if (qh.hasClass('resource'))
+      series.push({ label: qh.text(), idx: i, data: [], yaxis: series.length + 1 });
+    else if (qh.hasClass('data'))
+      dataIndexes.push(i);
+  });
+  if (!dataIndexes.length) return false;
+  var re = new RegExp($('#n_regexp').val());
+  $(details_id + ' tr').each(function (i, v) {
+    var row = $(v).children('td');
+    var dataStr = '';
+    for (var j = 0; j < dataIndexes.length; ++j) {
+      if (row.length <= dataIndexes[j]) return true;
+      if (dataStr !== '') dataStr += ' ';
+      dataStr += $(row[dataIndexes[j]]).text();
+    }
+    var matches = re.exec(dataStr);
+    if (!matches) return true;
+    var maxN = 0;
+    for (var j = 1; j < matches.length; ++j)
+      maxN = Math.max(matches[j], maxN);
+    if (maxN <= 0) return true;
+    for (var j = 0; j < series.length; ++j) {
+      var value = $(row[series[j].idx]).text();
+      if (value > 0)
+        series[j].data.push([maxN, value]);
+    }
+  });
+  for (var i = 0; i < series.length; ++i)
+    series[i].data.sort(function (a, b) { return a[0] - b[0]; });
+  $('#plot').show();
+  $.plot($('#plot'), series,
+    { series: { lines: { show: true }, points: { show: true } }, legend: { container: '#plot-legend' } });
+  return false;
 }
 
 function filter_testset(rid, ts) {
@@ -230,42 +233,42 @@ function filter_testset(rid, ts) {
 }
 
 function edit_points() {
-    var cell = $(this);
-    if (cell.children('input').length) return;
+  var cell = $(this);
+  if (cell.children('input').length) return;
 
-    var pts = cell.children('span');
-    var input_pts = $('<input type="text" size="2" name="points" class="bordered" pattern="^[0-9]*$"/>').
-        val(pts.text()).insertAfter(pts).focus().select();
-    $('<input type="hidden" name="rank"/>').val(cell.data('test-rank')).insertAfter(input_pts);
-    pts.hide();
-    $('#set_points').show();
+  var pts = cell.children('span');
+  var input_pts = $('<input type="text" size="2" name="points" class="bordered" pattern="^[0-9]*$"/>').
+    val(pts.text()).insertAfter(pts).focus().select();
+  $('<input type="hidden" name="rank"/>').val(cell.data('test-rank')).insertAfter(input_pts);
+  pts.hide();
+  $('#set_points').show();
 }
 
 $(function() {
-    $('#filter_form').show().submit(function (e) {
-        e.preventDefault();
-        filter([% runs.0.id %]);
-    });
+  $('#filter_form').show().submit(function (e) {
+    e.preventDefault();
+    filter([% runs.0.id %]);
+  });
 
-    $('table.req > tbody > tr > td').each(function (_, r) {
-      var rid = $(r).data('req-id');
-      $(r).find('a.js_filter_testset').click(function (e) {
-        e.preventDefault();
-        var a = $(this);
-        filter_testset(rid, a.hasClass('ts_clear') ? '' : a.text());
-      });
+  $('table.req > tbody > tr > td').each(function (_, r) {
+    var rid = $(r).data('req-id');
+    $(r).find('a.js_filter_testset').click(function (e) {
+      e.preventDefault();
+      var a = $(this);
+      filter_testset(rid, a.hasClass('ts_clear') ? '' : a.text());
     });
+  });
 
-    [ 'input', 'answer', 'output' ].forEach(function (type) {
-      var cb = $('#show_data_' + type);
-      var toggle_data = function () {
-        $('.' + type + '_data').toggleClass('hidden', !cb[0].checked);
-      };
-      cb.click(toggle_data);
-      toggle_data();
-    });
+  [ 'input', 'answer', 'output' ].forEach(function (type) {
+    var cb = $('#show_data_' + type);
+    var toggle_data = function () {
+      $('.' + type + '_data').toggleClass('hidden', !cb[0].checked);
+    };
+    cb.click(toggle_data);
+    toggle_data();
+  });
 
-    $('td.num.points').click(edit_points);
+  $('td.num.points').click(edit_points);
 });
 </script>
 [% END -%]
