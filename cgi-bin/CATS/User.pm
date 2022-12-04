@@ -195,28 +195,6 @@ sub prepare_password {
     delete @$u{qw(password1 password2)};
 }
 
-sub update_settings_item {
-    my ($h, $item, $v) = @_;
-    $h or die;
-
-    my @path = split /\./, $item->{name};
-    my $k = pop @path;
-    $h = $h->{$_} //= {} for @path;
-
-    $v = 1 if $v && $v eq 'on';
-    defined $v && $v ne '' && (!defined($item->{default}) || $v ne $item->{default}) ?
-        $h->{$k} = $v : delete $h->{$k};
-}
-
-sub get_settings_item {
-    my ($h, $item) = @_;
-    $h or die;
-    for (split /\./, $item->{name}) {
-        $h = $h->{$_} or last;
-    }
-    $h;
-}
-
 my $html_units = join '|', qw(cm mm in px pt pc em ex ch rem vw vmin vmax %);
 
 our $settings_form = CATS::Form->new(
@@ -238,13 +216,13 @@ our $settings_form = CATS::Form->new(
     id_param => 'user_settings_data',
     override_load => sub {
         my ($form, $id) = @_;
-        [ map get_settings_item($id, $_), $form->fields ];
+        [ map CATS::Settings::get_item($id, $_), $form->fields ];
     },
     override_save => sub {
         my ($form, $id, $data) = @_;
         my @fields = $form->fields;
         for (my $i = 0; $i < @fields; ++$i) {
-            update_settings_item($id, $fields[$i], $data->[$i]);
+            CATS::Settings::update_item($id, $fields[$i], $data->[$i]);
         }
         $id;
     },

@@ -76,4 +76,28 @@ sub as_dump {
     Encode::decode_utf8($d->Dump);
 }
 
+# item: name, default.
+sub update_item {
+    my ($h, $item, $v) = @_;
+    $h or die;
+
+    my @path = split /\./, $item->{name};
+    my $k = pop @path;
+    $h = $h->{$_} //= {} for @path;
+
+    defined $v && $v ne '' && (!defined($item->{default}) || $v ne $item->{default}) ?
+        $h->{$k} = $v : delete $h->{$k};
+}
+
+# item: name, default.
+sub get_item {
+    my ($h, $item) = @_;
+    $h or die;
+
+    for (split /\./, $item->{name}) {
+        $h = $h->{$_} or last;
+    }
+    $h;
+}
+
 1;
