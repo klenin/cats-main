@@ -96,7 +96,7 @@ sub content_type {
 
 sub get_cookie {
     my ($self, $name) = @_;
-    my $cookie = $jar->cookies(@_);
+    my $cookie = $jar->cookies($name);
     $cookie ? $cookie->value : '';
 }
 
