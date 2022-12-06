@@ -76,17 +76,38 @@ sub as_dump {
     Encode::decode_utf8($d->Dump);
 }
 
+sub _make_path { split /\./, $_[0]->{name} }
+
 # item: name, default.
 sub update_item {
     my ($h, $item, $v) = @_;
     $h or die;
 
-    my @path = split /\./, $item->{name};
-    my $k = pop @path;
-    $h = $h->{$_} //= {} for @path;
+    if (defined $v && $v ne '' && (!defined($item->{default}) || $v ne $item->{default})) {
+        my @path = _make_path($item);
+        my $k = pop @path;
+        $h = $h->{$_} //= {} for @path;
+        $h->{$k} = $v;
+    }
+    else {
+        remove_item($h, $item);
+    }
+}
 
-    defined $v && $v ne '' && (!defined($item->{default}) || $v ne $item->{default}) ?
-        $h->{$k} = $v : delete $h->{$k};
+sub _remove_item_rec {
+    my ($h, $path, $depth) = @_;
+    my $k = $path->[$depth];
+    $h || !exists $h->{$k} or return;
+    _remove_item_rec($h->{$k}, $path, $depth + 1) if $depth + 1 < @$path;
+    delete $h->{$k} if $depth + 1 == @$path || ref $h->{$k} eq 'HASH' && !%{$h->{$k}};
+}
+
+# item: name.
+sub remove_item {
+    my ($h, $item) = @_;
+    $h or die;
+
+    _remove_item_rec($h, [ _make_path($item) ], 0);
 }
 
 # item: name, default.
@@ -94,7 +115,7 @@ sub get_item {
     my ($h, $item) = @_;
     $h or die;
 
-    for (split /\./, $item->{name}) {
+    for (_make_path($item)) {
         $h = $h->{$_} or last;
     }
     $h;
