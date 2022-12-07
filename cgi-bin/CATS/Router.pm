@@ -340,6 +340,9 @@ my $main_routes = {
         points => array_of qr/^[0-9]*$/, # integer or empty
         rank => array_of integer,
     ],
+    api_modify_settings => [ \&CATS::UI::UserDetails::modify_settings_api,
+        path => qr/^[a-z0-9_\.]+$/, value => str,
+    ],
     job_details => [ \&CATS::UI::Jobs::job_details_frame,
         jid => integer, delete_log => bool, delete_jobs => bool, restart_job => bool,
     ],

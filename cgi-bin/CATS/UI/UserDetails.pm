@@ -428,4 +428,12 @@ sub impersonate_frame {
     $p->redirect(url_function 'contests', sid => $new_sid, cid => $cid);
 }
 
+sub modify_settings_api {
+    my ($p) = @_;
+    $p->{path} or return $p->print_json({ error => 1 });
+    CATS::Settings::update_item($settings, { name => $p->{path} }, $p->{value});
+    CATS::Settings::save; # Settings are not auto-saved for API calls.
+    $p->print_json({ ok => 1, s => $settings });
+}
+
 1;
