@@ -14,6 +14,7 @@ use CATS::Problem::Utils;
 use CATS::StaticPages;
 
 my $zero_undef = sub { $_[0] || undef };
+my $zero_empty = sub { $_[0] eq '' ? undef : $_[0] };
 my $fixed = CATS::Field::fixed(min => 0, max => 1e6, allow_empty => 1);
 my @field_common = (editor => { size => 8 }, before_save => $zero_undef);
 
@@ -24,12 +25,12 @@ our $form = CATS::Form->new(
             validators => CATS::Field::int_range(min => 0, max => 1e6, allow_empty => 1) ],
         [ name => 'scaled_points', caption => 690, @field_common, validators => $fixed ],
         [ name => 'round_points_to', caption => 692, @field_common, validators => $fixed ],
-        [ name => 'weight', caption => 691, editor => { size => 8 }, validators => $fixed ],
+        [ name => 'weight', caption => 691,
+            editor => { size => 8 }, before_save => $zero_empty, validators => $fixed ],
         [ name => 'is_extra', caption => 693, before_save => $zero_undef, validators => $CATS::Field::bool ],
         [ name => 'deadline', caption => 695, before_save => $zero_undef,
             validators => $CATS::Field::date_time ],
     ],
-    href_action => '-', # Stub.
 );
 
 sub _to_num { $_ = $_[0] or return; s/\.(\d*?)0+$/$1 ? ".$1" : ''/e; $_; }
