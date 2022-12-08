@@ -400,14 +400,6 @@ $(function() {
     <p class="edit_tabs_subheader">[% capt.add_problem %]</p>
     <table class="weak_border">
     <tr>
-      <td><label for="add_zip">[% capt.problem_file %]:</label></td>
-      <td><input type="file" id="add_zip" name="add_zip" class="file" size="25"/></td>
-    </tr><tr>
-      <td colspan="2">
-        <button type="submit" name="add_new" value="1" class="button">[% capt.add_new_package %]</button>
-      </td>
-    </tr>
-    <tr class="sep">
       <td><label>[% capt.new_title %]:</td>
       <td><input type="text" name="new_title" size="35" class="bordered"/></label></td>
     </tr><tr>
@@ -418,6 +410,14 @@ $(function() {
     </tr><tr>
       <td colspan="2">
         <button type="submit" name="add_new_template" value="1" class="button">[% capt.add_new_template %]</button>
+      </td>
+    </tr>
+    <tr class="sep">
+      <td><label for="add_zip">[% capt.problem_file %]:</label></td>
+      <td><input type="file" id="add_zip" name="add_zip" class="file" size="25"/></td>
+    </tr><tr>
+      <td colspan="2">
+        <button type="submit" name="add_new" value="1" class="button">[% capt.add_new_package %]</button>
       </td>
     </tr>
     <tr class="sep">
