@@ -3,6 +3,8 @@
 [%- PROCESS includes/html.tti -%]
 [%- PROCESS includes/limits_string.tti -%]
 
+[%- PROCESS includes/icon/save.tti -%]
+
 <table class="iface" style="margin-bottom: 3px;">
   <tr class="main_menu top">
     <td>[% IF left_menu; menu(left_menu, 'main_menu_selected'); END ~%]
@@ -205,7 +207,8 @@ $(update_request_status);
   [% IF second_row -%]
     <th>&nbsp;</th>
   [%- ELSE -%]
-    <th class="refs"><a class="save_settings hidden" href="[% href_modify_settings %]" title="[% capt.save_settings %]">S</a></th>
+    <th class="refs"><a class="save_settings hidden" href="[% href_modify_settings %]" title="[% capt.save_settings %]">
+      [%- svg_icon('save') %]</a></th>
   [%- END %]
   [% FOREACH si IN sources_info; IF si %]
     <td colspan="[% si.colspan %]">
