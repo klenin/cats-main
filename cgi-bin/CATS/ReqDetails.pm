@@ -16,6 +16,7 @@ use CATS::Problem::Utils;
 use CATS::Request;
 use CATS::Time;
 use CATS::Score;
+use CATS::Settings qw($settings);
 use CATS::Utils qw(encodings source_encodings);
 use CATS::Verdicts;
 
@@ -379,8 +380,10 @@ sub sources_info_param {
     $t->param(
         title_suffix => build_title_suffix($sources_info),
         sources_info => $sources_info,
+        hidden_rows => { map { $_ => 1 } split ',', $settings->{sources_info}->{hidden_rows} // '' },
         unprocessed_sources => [ grep $_->{state} < $cats::request_processed, @$sources_info ],
         href_get_request_state => url_f('api_get_request_state'),
+        href_modify_settings => url_f('api_modify_settings'),
     );
     my $elements_info = [
         map { @{$_->{elements}} > 0 ? @{$_->{elements}} : undef } @$sources_info ];

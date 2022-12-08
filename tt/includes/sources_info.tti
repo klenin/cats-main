@@ -64,13 +64,17 @@ function update_request_status() {
       setTimeout(update_request_status, manual_only ? 60000 : 3000);
   });
 }
-$(document).ready(update_request_status);
+$(update_request_status);
 </script>
 [% END %]
 
+[%- MACRO si_row_th(code, name, extra) BLOCK -%]
+  <tr[% ' style="display: none;"' IF hidden_rows.item(code) %][%' class="first_row"' UNLESS second_row %]>
+    <th data-row-code="[% code %]">[% name; extra %]</th>
+[%- END -%]
+
 [% BLOCK sources_info_row %]
-<tr [% IF second_row %] style="border-top-style: solid" [% END %]>
-  <th>ID</th>
+[% si_row_th('Id', 'ID') %]
   [% FOREACH si IN sources_info; IF si %]
     [%- IF si.debug_dump %]<!-- [% si.debug_dump %] -->[% END %]
     <td colspan="[% si.colspan %]">
@@ -84,8 +88,7 @@ $(document).ready(update_request_status);
     <td rowspan="11" />
   [% END; END %]
 </tr>
-<tr>
-  <th>[% capt.team %]</th>
+[% si_row_th('Us', capt.team) %]
   [% FOREACH si IN sources_info; IF si %]
     <td colspan="[% si.colspan %]">
       <a href="[% si.href_stats %]">[% si.team_name %]</a>
@@ -102,8 +105,7 @@ $(document).ready(update_request_status);
     </td>
   [% END; END %]
 </tr>
-<tr>
-  <th>[% capt.time %]</th>
+[% si_row_th('Tm', capt.time) %]
   [% FOREACH si IN sources_info; IF si %]
     <td colspan="[% si.colspan %]">
       [% IF si.href_prev_attempt %] <a href="[% si.href_prev_attempt %]" title="[% si.nearby.prev.title %]">[% si.prev_attempt_time %]&lt;&lt;</a>[% END %]
@@ -112,8 +114,7 @@ $(document).ready(update_request_status);
     </td>
   [% END; END %]
 </tr>
-<tr>
-  <th>[% capt.processing %]</th>
+[% si_row_th('Pc', capt.processing) %]
   [% FOREACH si IN sources_info; IF si %]
     <td colspan="[% si.colspan %]">
       [% IF si.is_jury; si.judge_name %]: [% END %]
@@ -122,20 +123,17 @@ $(document).ready(update_request_status);
     </td>
   [% END; END %]
 </tr>
-<tr>
-  <th>[% capt.file %]</th>
+[% si_row_th('Fl', capt.file) %]
   [% FOREACH si IN sources_info; IF si %]
     <td colspan="[% si.colspan %]">[% IF si.file_name; si.file_name %] ([% si.de_name %])[% ELSE; '-'; END %]</td>
   [% END; END %]
 </tr>
-<tr>
-  <th>[% capt.contest %]</th>
+[% si_row_th('Ct', capt.contest) %]
   [% FOREACH si IN sources_info; IF si %]
     <td colspan="[% si.colspan %]">[% maybe_href(si.href_contest, si.contest_name) %]</td>
   [% END; END %]
 </tr>
-<tr>
-  <th>[% capt.problem %]</th>
+[% si_row_th('Pr', capt.problem) %]
   [% FOREACH si IN sources_info; IF si %]
     <td colspan="[% si.colspan %]">
       [% si.code; ': ' IF si.code != ''; maybe_href(si.href_problem_text, si.problem_name) %]
@@ -147,16 +145,14 @@ $(document).ready(update_request_status);
     </td>
   [% END; END %]
 </tr>
-<tr>
-  <th>[% capt.testset %]</th>
+[% si_row_th('Ts', capt.testset) %]
   [% FOREACH si IN sources_info; IF si %]
     <td colspan="[% si.colspan %]">
       [% si.testsets %]
     </td>
   [% END; END %]
 </tr>
-<tr>
-  <th>[% capt.limits %]</th>
+[% si_row_th('Lm', capt.limits) %]
   [% FOREACH si IN sources_info; IF si %]
     <td class="nested" colspan="[% si.colspan %]">
       [% IF si.is_jury %]
@@ -176,8 +172,10 @@ $(document).ready(update_request_status);
     </td>
   [% END; END %]
 </tr>
-<tr>
-  <th>[% capt.status %]<span style="font-weight: normal;">&nbsp;[<a href="docs/verdicts.[% lang %].html">?</a>]</span></th>
+[%- status_help = BLOCK -%]
+  <span style="font-weight: normal;">&nbsp;[<a href="docs/verdicts.[% lang %].html">?</a>]</span>
+[%- END -%]
+[% si_row_th('St', capt.status, status_help) %]
   [% FOREACH si IN sources_info; IF si %]
     <td class="nested" colspan="[% si.colspan %]">
       <table class="internal_borders padded state_[% si.req_id %]"><tr>
@@ -193,7 +191,7 @@ $(document).ready(update_request_status);
         <td><form method="POST" action="[% si.href_quick_verdict %]">
           <input type="hidden" name="set_state" value="1"/>
           [% IF si.rules %]<input type="text" size="2" name="points" class="bordered"/>[% END -%]
-          [% FOREACH qv IN ['OK', 'MR']; t = capt.set_verdict _ ': '_ capt.verdicts.item(qv) %]
+          [% FOREACH qv IN [ 'OK', 'MR' ]; t = capt.set_verdict _ ': '_ capt.verdicts.item(qv) %]
           <button name="state" value="[% qv %]" title="[% t %]" class="button run_details_[% qv %]">[% qv %]</button>
           [% END %]
           </form>
@@ -203,8 +201,10 @@ $(document).ready(update_request_status);
     </td>
   [% END; END %]
 </tr>
-<tr>
-  <th>[% capt.refs %]</th>
+<tr[% ' style="border-bottom-style: solid;"' IF has_second_row %][% ' class="first_row"' UNLESS second_row %]>
+  [% IF second_row %]<th>&nbsp;</th>
+  [%- ELSE %]<th class="refs"><a class="save_settings hidden" href="[% href_modify_settings %]"> Save</a></th>
+  [%- END %]
   [% FOREACH si IN sources_info; IF si %]
     <td colspan="[% si.colspan %]">
       <a href="[% si.href_view_source %]" class="[% si.href_class_view_source %]">[% capt.source %]</a> |
@@ -221,7 +221,49 @@ $(document).ready(update_request_status);
 [% UNLESS sources_info.size; capt.no_sources; RETURN; END %]
 [% subcaption %]
 
-<table class="internal_borders padded">
-[% INCLUDE sources_info_row sources_info = sources_info %]
+<table id="sources_info" class="internal_borders padded">
+[% INCLUDE sources_info_row sources_info = sources_info has_second_row = elements_info ? 1 : 0 %]
 [% IF elements_info; INCLUDE sources_info_row sources_info = elements_info second_row = 1; END %]
 </table>
+
+<script nonce="[% nonce %]">
+$(function() {
+  var save_settings_btn = $('#sources_info .save_settings');
+  var show_all_text = '^';
+
+  var si_show_all = function () {
+    $('#sources_info tr').show();
+    $('#sources_info tr th.refs div.toggler').text(show_all_text);
+    save_settings_btn.show();
+  };
+
+  var get_hidden_rows = function () {
+    return $('#sources_info tr.first_row:hidden th[data-row-code]').map(
+      function (_, th) { return $(th).data('row-code'); }
+    );
+  };
+
+  $('#sources_info tr.first_row').each(function (_, tr) {
+    var th = $(tr).children('th');
+    var toggler = $('<div class="toggler"></div>').prependTo(th);
+    if (th.hasClass('refs'))
+      toggler.text(show_all_text + get_hidden_rows().length).click(si_show_all);
+    else {
+      toggler.text('☓').click(function () {
+        var code = $(this).parent().data('row-code');
+        $('#sources_info tr').children('[data-row-code=' + code + ']').parent().hide();
+        $('#sources_info tr.first_row th.refs div.toggler').text(show_all_text + get_hidden_rows().length);
+        save_settings_btn.show();
+      });
+    }
+  });
+  save_settings_btn.click(function (e) {
+    e.preventDefault();
+    save_settings_btn.hide();
+    var href = this.href;
+    $.post(href, {
+      path: 'sources_info.hidden_rows',
+      value: get_hidden_rows().toArray().join() });
+  });
+});
+</script>
