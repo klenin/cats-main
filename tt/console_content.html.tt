@@ -4,7 +4,7 @@
 
 <span id="messages_update" style="display: none">[% FOREACH m IN messages %][% m | html %]<br>[% END %]</span>
 <table id="console_content" class="bordered console highlight cell_search">
-[%- colspan = user.is_jury ? 6 : 3 -%]
+[%- colspan = user.is_jury ? 7 : 3 -%]
 [% FOREACH c IN console %]
 <tr class="[% loop.parity() %]">
 [% IF c.is_submit_result %]
