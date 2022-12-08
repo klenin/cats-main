@@ -231,11 +231,15 @@ $(update_request_status);
 <script nonce="[% nonce %]">
 $(function() {
   var save_settings_btn = $('#sources_info .save_settings');
-  var show_all_text = '^';
 
-  var si_show_all = function () {
+  var set_show_all_text = function () {
+    $('#sources_info tr.first_row th.refs div.toggler').text(
+      '^' + (get_hidden_rows().length || ''));
+  };
+
+  var show_all_click = function () {
     $('#sources_info tr').show();
-    $('#sources_info tr th.refs div.toggler').text(show_all_text);
+    set_show_all_text();
     save_settings_btn.show();
   };
 
@@ -245,20 +249,23 @@ $(function() {
     );
   };
 
+  var hide_row_click = function () {
+    var code = $(this).parent().data('row-code');
+    $('#sources_info tr').children('[data-row-code=' + code + ']').parent().hide();
+    set_show_all_text();
+    save_settings_btn.show();
+  };
+
   $('#sources_info tr.first_row').each(function (_, tr) {
     var th = $(tr).children('th');
     var toggler = $('<div class="toggler"></div>').prependTo(th);
     if (th.hasClass('refs'))
-      toggler.text(show_all_text + get_hidden_rows().length).click(si_show_all);
+      toggler.click(show_all_click);
     else {
-      toggler.text('☓').click(function () {
-        var code = $(this).parent().data('row-code');
-        $('#sources_info tr').children('[data-row-code=' + code + ']').parent().hide();
-        $('#sources_info tr.first_row th.refs div.toggler').text(show_all_text + get_hidden_rows().length);
-        save_settings_btn.show();
-      });
+      toggler.text('☓').click(hide_row_click);
     }
   });
+  set_show_all_text();
   save_settings_btn.click(function (e) {
     e.preventDefault();
     save_settings_btn.hide();
