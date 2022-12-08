@@ -202,8 +202,10 @@ $(update_request_status);
   [% END; END %]
 </tr>
 <tr[% ' style="border-bottom-style: solid;"' IF has_second_row %][% ' class="first_row"' UNLESS second_row %]>
-  [% IF second_row %]<th>&nbsp;</th>
-  [%- ELSE %]<th class="refs"><a class="save_settings hidden" href="[% href_modify_settings %]"> Save</a></th>
+  [% IF second_row -%]
+    <th>&nbsp;</th>
+  [%- ELSE -%]
+    <th class="refs"><a class="save_settings hidden" href="[% href_modify_settings %]" title="[% capt.save_settings %]">S</a></th>
   [%- END %]
   [% FOREACH si IN sources_info; IF si %]
     <td colspan="[% si.colspan %]">

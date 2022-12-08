@@ -16,7 +16,7 @@
     status => 'Состояние',
     pts => 'баллов',
     set_verdict => 'Установить вердикт',
-    refs => 'Ссылки',
+    save_settings => 'Сохранить настройки',
     source => 'код',
     download => 'скачать',
     run_details => 'результаты',

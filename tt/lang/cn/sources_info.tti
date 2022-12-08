@@ -16,7 +16,7 @@
     status => 'Status',
     pts => 'points',
     set_verdict => 'Set verdict',
-    refs => 'Refs',
+    save_settings => 'Save settings',
     source => 'source',
     download => 'download',
     run_details => 'results',
