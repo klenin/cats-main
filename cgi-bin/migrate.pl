@@ -194,7 +194,8 @@ sub apply_migration {
         my $isql = $^O eq 'Win32' ? 'isql' : 'isql-fb';
         IPC::Cmd::can_run($isql) or die "Error: $isql not found";
         $cmd = [ $isql, '-b', '-i', $file,
-            '-u', $db->{user}, '-p', $db->{password}, '-q', "$db->{host}:$db->{name}" ];
+            '-u', $db->{user}, '-p', $db->{password}, '-r', 'RDB$ADMIN', '-q',
+            "$db->{host}:$db->{name}" ];
     } elsif ($db->{driver} eq 'Pg') {
         IPC::Cmd::can_run('psql') or die 'Error: psql not found';
         my $dbname = sprintf "postgresql://%s:%s@%s:5432/%s",
