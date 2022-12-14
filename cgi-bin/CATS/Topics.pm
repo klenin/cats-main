@@ -16,7 +16,8 @@ my $empty = { code_prefix => '', name => '' };
 
 sub add {
     my ($self, $topic) = @_;
-    my $code = $topic->{code_prefix} or die;
+    my $code = $topic->{code_prefix};
+    defined $code or die;
     my $level = $self->{levels}->{length $code} //= {};
     die "Duplicate topic: $code" if exists $level->{$code};
     $level->{$code} = $topic;
