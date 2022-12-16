@@ -554,7 +554,7 @@ function update_problem_snippets(problem_id, request_url) {
       else
         all_snippets_received = 0;
     });
-    if (all_snippets_received) static_highlight();
+    [% IF has_static_highlight %]if (all_snippets_received) static_highlight();[% END %]
   }
 
   var get_snippets_data = function () {
