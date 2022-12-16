@@ -1,5 +1,57 @@
 "use strict";
 
+function draw_svg_line(svg, x1, y1, x2, y2, w, data, onclick) {
+    const path_line = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    var s_line = `M ${x1} ${y1} L ${x2} ${y2} `;
+    path_line.setAttribute('d', s_line);
+    path_line.setAttribute('stroke-linecap', 'round');
+    path_line.setAttribute('stroke-linejoin', 'round');
+    path_line.setAttribute('stroke-width', w);
+    svg.appendChild(path_line);
+    if (data)
+      path_line.setAttribute('data-match', data);
+    if (onclick)
+      path_line.addEventListener('click', onclick);
+}
+
+function matching_line_click() {
+  var root_div = $(this).parents('div.match_root');
+  $(this).remove();
+  root_div.trigger('change');
+}
+
+function make_match(root_div, left, right) {
+  var svg = root_div.find('svg');
+  var pair = left.data('quiz-num') + ',' + right.data('quiz-num');
+  draw_svg_line(svg[0],
+    0, (left[0].offsetTop + left[0].offsetHeight / 2) / root_div[0].offsetHeight * 1000,
+    1000, (right[0].offsetTop + right[0].offsetHeight / 2) / root_div[0].offsetHeight * 1000,
+    '15', pair, matching_line_click);
+}
+
+function matching_click() {
+  var d = $(this);
+  var root_div = d.parent().parent();
+  var selected = root_div.find('div.match_side.match_selected');
+  if (selected.length == 0) {
+    d.addClass('match_selected');
+  }
+  else if (selected.length == 1 && selected[0] == d[0]) {
+    selected.removeClass('match_selected');
+  }
+  else if (selected.length == 1 && selected.data('match-side') == d.data('match-side')) {
+    selected.removeClass('match_selected');
+    d.addClass('match_selected');
+  }
+  else if (selected.length == 1 && selected.data('match-side') != d.data('match-side')) {
+    selected.removeClass('match_selected');
+    var left = selected.data('match-side') == 'left' ? selected : d;
+    var right = selected.data('match-side') == 'right' ? selected : d;
+    make_match(root_div, left, right);
+    root_div.trigger('change');
+  }
+}
+
 function init_quizzes() {
   $('.problem_text').each(function() {
     var cpid = this.id.substr(1);
@@ -29,17 +81,19 @@ function init_quizzes() {
         return function () { quiz_value_changed(editor, this, quiz_number, editor_changed_callback); };
       }();
 
-      if (question.type === 'radiogroup' || question.type === 'checkbox') {
+      if (question.type === 'radiogroup' || question.type === 'checkbox' || question.type === 'matching') {
         question.choices = $.map(quiz.children('Choice').remove(), function(choice, i) {
-          return { value: i + 1, text: choice.innerHTML };
+          return { value: i + 1, text: choice.innerHTML, side: choice.getAttribute('side') };
         });
       }
+      var qid = 'p' + cpid + '_q' + quiz_count;
       var make_choices = function (type) {
         var choices_div = $('<div>').appendTo(quiz);
         for (var i = 0; i < question.choices.length; ++i) {
           var para = $('<p>').appendTo(choices_div);
           var label = $('<label>').html(question.choices[i].text).appendTo(para);
-          var inp = $('<input type="' + type + '" name="p' + cpid + '_q' + quiz_count + '" value="' + question.choices[i].value + '"/>').
+          var inp = $('<input type="' + type + '" name="' + qid +
+            '" value="' + question.choices[i].value + '"/>').
             prependTo(label).change(changed_callback);
         }
       };
@@ -50,8 +104,25 @@ function init_quizzes() {
         make_choices('checkbox');
       }
       else if (question.type === 'text') {
-        var inp = $('<input type="text" name="p' + cpid + '_q' + quiz_count + '" class="bordered"/>').attr('pattern', '\\S+').
+        var inp = $('<input type="text" name="' + qid + '" class="bordered"/>').
+          attr('pattern', '\\S+').
           appendTo(quiz).change(changed_callback);
+      }
+      else if (question.type === 'matching') {
+        var choices_div = $('<div class="match_root" id="' + qid + '">').appendTo(quiz).change(changed_callback);
+        var choices_div_left = $('<div>').appendTo(choices_div);
+        var drawing_space = $(
+          '<svg version="1.1" viewBox="0 0 1000 1000" preserveAspectRatio="none" class="match_drawing_space"></svg>').
+          appendTo(choices_div);
+        var choices_div_right = $('<div>').appendTo(choices_div);
+        var left_count = 0, right_count = 0;
+        for (var i = 0; i < question.choices.length; ++i) {
+          var cnt = question.choices[i].side === 'left' ? ++left_count : ++right_count;
+          var ch_div = $('<div class="match_side bordered">').html(question.choices[i].text).data('quiz-num', cnt).
+            appendTo(question.choices[i].side === 'left' ? choices_div_left : choices_div_right).
+            data('match-side', question.choices[i].side).
+            click(matching_click);
+        }
       }
       questions.push(question);
     });
@@ -90,6 +161,20 @@ function fill_quiz_forms(editor, problem_text) {
     else if (question.type === 'text') {
       inp.val(answers[i]);
     }
+    else if (question.type === 'matching') {
+      var root_div = $('div#p' + cpid + '_q' + (i + 1));
+      root_div.find('svg path').remove();
+      if (answers[i])
+        answers[i].split(' ').forEach(function (a) {
+          var lr = a.split(',');
+          var left = root_div.find('div.match_side').filter(
+            function (_, e) { return $(e).data('match-side') == 'left' && $(e).data('quiz-num') == lr[0]; });
+          var right = root_div.find('div.match_side').filter(
+            function (_, e) { return $(e).data('match-side') == 'right' && $(e).data('quiz-num') == lr[1]; })
+          if (left.length && right.length)
+            make_match(root_div, left, right);
+        });
+    }
   }
 }
 
@@ -106,7 +191,6 @@ function quiz_value_changed(editor, question, question_number, editor_changed_ca
     for (var i = answers.length; i < question_number; ++i)
       editor.insert('\n');
   }
-
   var q_elem = $(question);
   // TODO: Add UI for unanswering question.
   var value;
@@ -116,8 +200,12 @@ function quiz_value_changed(editor, question, question_number, editor_changed_ca
     value = q_elem.parent().parent().parent().find('input:checked').
       map(function (_, el) { return el.value; }).toArray().join(' ');
   }
-  else if (q_elem.attr('type') === "checkbox") {
+  else if (q_elem.attr('type') === "text") {
     value = q_elem.val()
+  }
+  else if (q_elem.hasClass('match_root')) {
+    value = q_elem.find('svg path').
+      map(function (_, el) { return el.getAttribute('data-match'); }).toArray().join(' ');
   }
   if (value !== undefined)
     editor.insert(value);

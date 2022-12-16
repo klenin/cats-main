@@ -51,6 +51,13 @@
   Quiz[type=checkbox] Choice:before { content: '\2610';}
   Quiz[type=radiogroup] Choice:before { content: '\25EF';}
   Quiz[type=text]:not(.active) { display: block; width: 50em; height: 4ex; border: 1px solid black; }
+  Quiz[type=matching] div.match_root { display: flex; flex-direction: row; position: relative; }
+  Quiz[type=matching] div.match_side { padding: 5px; margin: 10px 0; text-align: center; max-width: 240px; }
+  Quiz[type=matching] div.match_side:hover { box-shadow: 3px 3px 3px gray; }
+  Quiz[type=matching] div.match_side.match_selected { background: #E0E0FF; }
+  Quiz[type=matching] svg.match_drawing_space { width: 150px; }
+  Quiz[type=matching] svg.match_drawing_space path { stroke: blue; }
+  Quiz[type=matching] svg.match_drawing_space path:hover { stroke: red; cursor: not-allowed; }
   @media only screen and (max-device-width: 736px) { .nav_container { display: none; } }
 </style>
 </head>
