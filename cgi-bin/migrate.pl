@@ -73,9 +73,9 @@ sub parse_diff {
                 undef $table;
                 say_n $line;
             } elsif ($table) {
-                $line =~ s/^\s*(.+?),?$/$1/;
+                $line =~ s/^\s*(.+?),?(\s*\/\*.*\*\/)?$/$1/;
                 say_n "ALTER TABLE $table";
-                say_c "    ADD $line;";
+                say_c "    ADD $line;$2";
             }
             else {
                 say_c $line;
