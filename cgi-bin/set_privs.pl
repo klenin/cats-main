@@ -20,13 +20,14 @@ GetOptions(
     'login=s' => \(my $user_login = ''),
     'add=s@' => (my $add = []),
     'remove=s@' => (my $remove = []),
+    'multi-ip=i' => \(my $multi_ip),
 );
 
 sub usage {
     print STDERR qq~CATS Priviledge management tool
 Usage: $0
   --help
-  --id=<user id> --login=<user login> [--add=<priv>...] [--remove=<priv>...]
+  --id=<user id> --login=<user login> [--add=<priv>...] [--remove=<priv>...] [--multi-ip=<count>]
   --find=<priv>|any_jury
 Privileges:\n~;
     say "  $_" for CATS::Privileges::all_names;
@@ -59,11 +60,14 @@ if ($find) {
 }
 
 my $users = $dbh->selectall_arrayref(q~
-    SELECT id, login, srole FROM accounts
+    SELECT id, login, srole, multi_ip FROM accounts
     WHERE id = ? AND login = ?~, { Slice => {} },
     $user_id, $user_login);
 
 @$users == 1 or die "User not found";
+
+my $need_commit = 0;
+
 my $u = $users->[0];
 my $p = CATS::Privileges::unpack_privs($u->{srole});
 
@@ -97,12 +101,24 @@ if ($srole != $u->{srole}) {
         UPDATE accounts SET srole = ?
         WHERE id = ? AND login = ?~, undef,
         $srole, $user_id, $user_login) == 1 or die;
-    $dbh->commit;
+    $need_commit = 1;
 }
 
-say "Id:\t$u->{id}";
-say "Login:\t$u->{login}";
-say "SRole:\t$u->{srole}", ($srole != $u->{srole} ? " => $srole" : '');
+if (defined $multi_ip) {
+    $dbh->do(q~
+        UPDATE accounts SET multi_ip = ?
+        WHERE id = ? AND login = ?~, undef,
+        $multi_ip, $user_id, $user_login) == 1 or die;
+    $need_commit = 1;
+}
+
+$dbh->commit if $need_commit;
+
+say "Id      :  $u->{id}";
+say "Login   :  $u->{login}";
+say "SRole   :  $u->{srole}", ($srole != $u->{srole} ? " => $srole" : '');
+say "Multi-IP:  ", $u->{multi_ip} // '0',
+    (defined $multi_ip &&  $multi_ip != ($u->{multi_ip} // 0) ? " => $multi_ip" : '') if $u->{multi_ip} || defined $multi_ip;
 say 'Privileges:';
 
 for (sort keys %$p) {
