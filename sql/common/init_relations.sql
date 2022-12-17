@@ -22,6 +22,7 @@ CREATE TABLE accounts (
     last_login       CATS_TIMESTAMP,
     last_ip          VARCHAR(100) DEFAULT '',
     restrict_ips     VARCHAR(200), /* NULL - unrestricted */
+    multi_ip         INTEGER, /* >0 -- allow multiple ip */
     locked           INTEGER DEFAULT 0 CHECK (locked IN (0, 1)),
     team_name        VARCHAR(200),
     capitan_name     VARCHAR(200),
