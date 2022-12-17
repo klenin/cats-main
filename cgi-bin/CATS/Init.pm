@@ -38,14 +38,16 @@ sub init_user {
     my $current_ip = CATS::IP::get_ip;
     if ($sid ne '' && !$bad_sid) {
         (
-            $uid, $user->{name}, my $srole, my $last_ip, my $locked,
+            $uid, $user->{name}, my $srole, my $last_ip, my $multi_ip, my $locked,
             $user->{git_author_name}, $user->{git_author_email}, $enc_settings
         ) =
             $dbh->selectrow_array(q~
-                SELECT id, team_name, srole, last_ip, locked, git_author_name, git_author_email, settings
+                SELECT id, team_name, srole, last_ip, multi_ip, locked,
+                git_author_name, git_author_email, settings
                 FROM accounts WHERE sid = ?~, undef,
                 $sid);
-        $bad_sid = !defined($uid) || ($last_ip || '') ne $current_ip || $locked;
+        my $bad_ip = !$multi_ip && ($last_ip || '') ne $current_ip;
+        $bad_sid = !defined($uid) || $bad_ip || $locked;
         if (!$bad_sid) {
             $user->{privs} = CATS::Privileges::unpack_privs($srole);
             $is_root = $user->is_root;

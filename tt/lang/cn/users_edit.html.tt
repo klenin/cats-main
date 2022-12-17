@@ -15,5 +15,6 @@
       edit_wiki => 'can edit wiki and files',
       manage_groups => 'can manage groups',
     },
+    multi_ip => 'can use multiple IP simultaneously',
   })
 %]

@@ -18,6 +18,7 @@
     <label class="nobr">[% checkbox_1(pn, privs.$pn, disabled = 1); capt.roles.$pn %]</label>
   [% END -%]
   [% END %]
+  <label class="nobr">[% checkbox_1('multi_ip', multi_ip, disabled = 1); capt.multi_ip %]</label>
   <span id="set_privs" class="nobr"><code class="small">set_privs.pl --id=[% id %] --login=[% login %]</code>
   <button class="button hidden" title="copy">[% svg_icon('copy') %]</button></span>
   <script nonce="[% nonce %]">

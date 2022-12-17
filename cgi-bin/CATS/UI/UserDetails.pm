@@ -40,7 +40,7 @@ sub users_edit_frame {
 
     my $id = $p->{id};
     my $u = $id ? CATS::User->new->contest_fields([ 'site_id' ])->
-        load($id, [ qw(locked settings srole last_ip) ]) : {};
+        load($id, [ qw(locked settings srole last_ip multi_ip) ]) : {};
     $u or return;
 
     my $s = $p->{$CATS::User::settings_form->{id_param}} = $u->{settings} ||= {};
@@ -61,7 +61,7 @@ sub users_edit_frame {
         CATS::User::submenu('edit', $id || $u->{id}, $u->{site_id}),
         title_suffix => $u->{team_name},
         %$u,
-        privs => $u->{srole} && CATS::Privileges::unpack_privs($u->{srole}),
+        privs => CATS::Privileges::unpack_privs($u->{srole}),
         priv_names => CATS::Privileges::ui_names,
         id => $id,
         countries => \@CATS::Countries::countries,
