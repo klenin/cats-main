@@ -403,6 +403,13 @@ sub insert_problem_source {
     $c->bind_param(13, $s->{main});
     $c->execute;
 
+    for my $r (@{$s->{resources}}) {
+        $dbh->do(q~
+            INSERT INTO problem_source_resources (problem_source_id, problem_resource_id)
+            VALUES (?, ?)~, undef,
+            $s->{id}, $r->[0]);
+    }
+
     my $g = $s->{guid} ? ", guid=$s->{guid}" : '';
     my $de = $s->{de_code} ?
         ', de="' . $self->{de_list}->by_code($s->{de_code})->{description} . '"' : '';
@@ -413,6 +420,43 @@ sub insert_problem_content {
     my ($self, $problem) = @_;
 
     $problem->{has_checker} or $self->error('No checker specified');
+
+    my $c = $dbh->prepare(q~
+        INSERT INTO resources (id, res_type, url) VALUES (?, ?, ?)~);
+    my $res_sth = $dbh->prepare(q~
+        SELECT id, res_type FROM resources WHERE url = ?~);
+    for my $r (@{$problem->{resources}}) {
+        $res_sth->execute($r->{url});
+        my ($id, $res_type) = $res_sth->fetchrow_array;
+        if ($id) {
+            $res_type == $r->{res_type} or $self->error(
+                sprintf q~Resource type conflict: '%s' at '%s', new type '%s', old type '%s'~,
+                $r->{name}, $r->{url}, map $cats::res_types_names->{$_}, $r->{res_type}, $res_type);
+            $r->{resource_id} = $id;
+        }
+        else {
+            $r->{resource_id} = new_id;
+            $c->execute($r->{resource_id}, $r->{res_type}, $r->{url})
+                or $self->error("Can not globally add Resource '$r->{name}': $dbh->errstr");
+        }
+        $res_sth->finish;
+    }
+
+    $c = $dbh->prepare(q~
+        INSERT INTO problem_resources (id, problem_id, resource_id, name)
+        VALUES (?, ?, ?, ?)~
+    );
+
+    for (@{$problem->{resources}}) {
+        $c->bind_param(1, $_->{id});
+        $c->bind_param(2, $problem->{id});
+        $c->bind_param(3, $_->{resource_id});
+        $c->bind_param(4, $_->{name});
+
+        $c->execute
+            or $self->error("Can not add Resource '$_->{name}': $dbh->errstr");
+        $self->note("Resource '$_->{name}' added");
+    }
 
     if ($problem->{description}{std_checker}) {
         $self->note("Checker: $problem->{description}{std_checker}");
@@ -484,7 +528,7 @@ sub insert_problem_content {
             $ts->{id}, $problem->{id}, @{$ts}{qw(name tests points comment hideDetails depends_on)});
     }
 
-    my $c = $dbh->prepare(q~
+    $c = $dbh->prepare(q~
         INSERT INTO pictures(id, problem_id, extension, name, pic)
         VALUES (?, ?, ?, ?, ?)~);
     for (@{$problem->{pictures}}) {
