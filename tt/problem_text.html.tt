@@ -100,11 +100,11 @@
     ];
     lc_nonempty = 0; FOREACH lc IN left_col; SET lc_nonempty = 1 IF lc.n; END;
     right_col => [
-      { n => !p.nosubmit && p.time_limit > 0 ? c.time_limit : '',
+      { n => !p.parsed_tags.hide_time_limit && !p.nosubmit && p.time_limit > 0 ? c.time_limit : '',
         t => "${p.time_limit} ${c.seconds}" },
-      { n => !p.nosubmit && p.time_limit > 0 ? c.memory_limit : '', # memory_limit defaults to 200 in legacy problems.
+      { n => !p.parsed_tags.hide_memory_limit && !p.nosubmit && p.time_limit > 0 ? c.memory_limit : '', # memory_limit defaults to 200 in legacy problems.
         t => "${p.memory_limit} ${c.megabytes}" },
-      { n => !p.nosubmit && p.write_limit ? c.write_limit : ''
+      { n => !p.parsed_tags.hide_write_limit && !p.nosubmit && p.write_limit ? c.write_limit : ''
         t => "${p.write_limit} ${c.bytes}" },
     ];
   -%]
