@@ -51,7 +51,7 @@ function Editor() {
     if (
       !ace ||
       // Ace is broken on mobile browsers.
-      /Mobi|Android/i.test(navigator.userAgent) ||
+      ///Mobi|Android/i.test(navigator.userAgent) ||
       this._has_editor(editor_id)
     ) return null;
 
