@@ -449,6 +449,7 @@ sub problem_text {
         problems => \@problems,
         tex_styles => CATS::TeX::Lite::styles(),
         mathjax => !$p->{nomath},
+        capt_days => res_str(577),
         has_snippets => $has_snippets,
         has_quizzes => $has_quizzes,
         has_static_highlight => $has_static_highlight,

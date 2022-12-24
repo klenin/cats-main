@@ -494,7 +494,10 @@ sub get_last_verdicts_api {
         SELECT R.state, R.failed_test, R.id FROM reqs R
         WHERE R.contest_id = ? AND R.account_id = ? AND R.problem_id = ?
         ORDER BY R.submit_time DESC $CATS::DB::db->{LIMIT} 1~);
-    my $result = { can_submit => CATS::Problem::Submit::can_submit };
+    my $result = {
+        can_submit => CATS::Problem::Submit::can_submit,
+        time_until_finish_sec => $contest->time_until_finish_for($user) * 24 * 60 * 60,
+    };
     for (@{$p->{problem_ids}}) {
         $cp_sth->execute($_, $uid);
         my ($problem_id, $contest_id, $problem_status, $is_jury_in_contest) = $cp_sth->fetchrow_array or next;

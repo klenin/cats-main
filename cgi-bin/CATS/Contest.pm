@@ -70,6 +70,11 @@ sub has_finished_for {
     $self->has_finished($u->{diff_time} + $u->{ext_time});
 }
 
+sub time_until_finish_for {
+    my ($self, $u) = @_;
+    (($u->{diff_time} + $u->{ext_time}) || 0) - $self->{time_since_finish};
+}
+
 sub current_official {
     # If several official contests are in progress, prefer current contest.
     $dbh->selectrow_hashref(qq~

@@ -47,6 +47,7 @@
   .submit_input { margin-right: 5px; }
   .n_item .current { border: 1px solid #4040ff; box-sizing: border-box; }
   .nav_container { position: fixed; top: 0; right: 0; overflow: auto; max-height: 100vh; }
+  #until_finish { position: fixed; right: 0; background-color: white; }
   .n_item { border: 1px solid #4040ff; border-top: none; }
   .n_item:first-of-type { border-top: 1px solid #4040ff; }
   .n_button { width: 35px; height: 18px;  text-align: center; text-decoration: none; display: inline-block; cursor: pointer; }
@@ -181,6 +182,7 @@
   [% FOREACH p IN problems %]
   <div class="n_item" id="p[% p.cpid %]_verdict"><a href="#p[% p.cpid %]" class="n_button" title="[% p.title | html %]">[% p.code %]</a></div>
   [% END %]
+  <div id="until_finish"></div>
 </div>
 <script nonce="[% nonce %]">
 $('.problem_menu_click').click(function() { $(this).parent().next().toggle(); $(this).toggleClass('problem_menu_hovered'); });
@@ -264,6 +266,23 @@ $(function() {
   });
 });
 
+var until_finish_sec = 0, until_finish_ts_sec = 0;
+
+function fmt_dd(d) { return d < 10 ? '0' + d : '' + d; };
+
+function until_finish_timer() {
+  var t = until_finish_sec + until_finish_ts_sec - Date.now() / 1000;
+
+  var sign = t < 0 ? '−' : '';
+  t =  Math.floor(Math.abs(t) / 60);
+  var minutes = t % 60;
+  t = Math.floor(t / 60);
+  var hours = t % 24;
+  t = Math.floor(t / 24);
+  var fmt = sign + (t ? t + '[% capt_days %] ' + fmt_dd(hours) : hours) + ':' + fmt_dd(minutes);
+  $('#until_finish').text(fmt);
+};
+
 var enable_navigation = function() {
   if (query_params.nonav) return;
   $('.nav_container').removeClass('hidden');
@@ -315,6 +334,8 @@ function get_last_verdicts() {
   if (!sid) return;
   $.get('[% href_get_last_verdicts %];sid=' + sid).done(function(result) {
     if (!result) return;
+    until_finish_sec = result.time_until_finish_sec;
+    until_finish_ts_sec = Date.now() / 1000;
     for (var cpid in result) {
       if (!result[cpid]) continue;
       var r = result[cpid];
@@ -385,6 +406,8 @@ function gen_forms(problems) {
     if (rid) sources_info_btn.click();
   }
   [% FOREACH p IN problems %] gen_form('de[% p.id %]', 'ed_pt[% p.cpid %]', '[% p.id %]', '[% p.cpid %]'); [% END %]
+  until_finish_timer();
+  setInterval(until_finish_timer, 5000);
   if (has_quizzes) init_quizzes();
 }
 
