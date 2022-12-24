@@ -9,7 +9,7 @@
 [% IF has_static_highlight -%]
 <script src="js/lib/ace/ext-static_highlight.js"></script>
 [% END %]
-[%- text_width = '1000px' -%]
+[%- text_width = 1000; list_padding = 30; -%]
 <style>
   @media print { div.problem_menu.jsonly, a.problem_menu_trigger.jsonly { display: none; } }
 
@@ -27,9 +27,13 @@
 
   div.problem_text table.problem_header { width: 100%; }
   div.problem_text p, div.problem_text ul, div.problem_text ol {
-    hyphens: auto; max-width: [% text_width %]; text-align: justify; text-indent1: 3em;
+    hyphens: auto; text-align: justify;
   }
-  div.problem_text > table { max-width: [% text_width %]; }
+  div.problem_text p { max-width: [% text_width %]px; }
+  div.problem_text ul, div.problem_text ol {
+    max-width: [% text_width - list_padding %]px; padding-left: [% list_padding %]px;
+  }
+  div.problem_text > table { max-width: [% text_width %]px; }
   div.problem_text p span { text-indent: 0; }
   div.problem_text table.thin_border { border-collapse: collapse; border: 1px; }
   div.problem_text table.thin_border td, div.problem_text table.thin_border th { border: 1px solid black; padding: 2px; }
@@ -227,7 +231,8 @@ $('.basic_math').click(function() {
 
 function toggle_wide_text() {
   var p = $(this).parents('.problem_text');
-  p.children('p, ul, ol').css({ 'max-width': this.checked ? 'none' : '[% text_width %]' });
+  p.children('p').css({ 'max-width': this.checked ? 'none' : '[% text_width %]' });
+  p.children('ul, ol').css({ 'max-width': this.checked ? 'none' : '[% text_width - list_padding %]' });
 }
 $('.wide_text').click(toggle_wide_text).each(toggle_wide_text);
 
