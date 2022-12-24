@@ -448,9 +448,12 @@ my $main_routes = {
         clarified => bool, ],
     api_answer => [ \&CATS::UI::Messages::answer_api,
         qid => integer, answer => str, ],
+
     api_integration_bkd_user_import => [ \&CATS::UI::Integrations::integration_bkd_user_import_api,
         bkd_id => integer, name => str, email => str, age_group => integer, ],
     api_integration_bkd_start => [ \&CATS::UI::Integrations::integration_bkd_start_api,
+        bkd_id => integer, problem => integer, ],
+    api_integration_bkd_get_points => [ \&CATS::UI::Integrations::integration_bkd_get_points_api,
         bkd_id => integer, problem => integer, ],
 };
 
