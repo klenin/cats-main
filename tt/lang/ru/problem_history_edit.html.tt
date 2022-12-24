@@ -1,5 +1,7 @@
 [%
   capt.import({
+    file_editing => 'Редактирование файла',
+    file_creating => 'Создание файла',
     add => 'добавить',
     keyword => 'ключевое слово',
     input_format => 'формат ввода',

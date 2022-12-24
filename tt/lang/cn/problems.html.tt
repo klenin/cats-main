@@ -42,8 +42,6 @@
     add_new_repo => '加 from repository',
     amend => '修改 last commit',
     message => 'Commit 信息',
-    file_editing => '编辑文件',
-    file_creating => 'Create file',
     enc => '编码',
     participate => '参与',
     participate_virtually => '虚拟参与',

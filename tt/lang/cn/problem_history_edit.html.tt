@@ -1,5 +1,7 @@
 [%
   capt.import({
+    file_editing => '编辑文件',
+    file_creating => 'Create file',
     add => 'add',
     keyword => 'keyword',
     input_format => 'input format',

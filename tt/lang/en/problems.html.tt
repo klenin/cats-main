@@ -41,8 +41,6 @@
     add_new_repo => 'add from repository',
     amend => 'amend last commit',
     message => 'Commit message',
-    file_editing => 'Edit file',
-    file_creating => 'Create file',
     enc => 'Encoding',
     participate => 'participate',
     participate_virtually => 'participate virtually',
