@@ -49,5 +49,6 @@
     participate_virtually => '虚拟参与',
     virtual_warning => '警告！ 第二次虚拟参与将删除第一个参与所有的提交。 继续吗？',
     files => 'files',
+    until_finish => '剩余时间',
   });
 %]

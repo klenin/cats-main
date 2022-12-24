@@ -48,5 +48,6 @@
     participate_virtually => 'participate virtually',
     virtual_warning => 'Warning! Second virtual participation will remove all submits of the first one. Continue?',
     files => 'files',
+    until_finish => 'time until finish',
   });
 %]

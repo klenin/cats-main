@@ -182,7 +182,7 @@
   [% FOREACH p IN problems %]
   <div class="n_item" id="p[% p.cpid %]_verdict"><a href="#p[% p.cpid %]" class="n_button" title="[% p.title | html %]">[% p.code %]</a></div>
   [% END %]
-  <div id="until_finish"></div>
+  <div id="until_finish" title="[% capt.until_finish %]"></div>
 </div>
 <script nonce="[% nonce %]">
 $('.problem_menu_click').click(function() { $(this).parent().next().toggle(); $(this).toggleClass('problem_menu_hovered'); });
