@@ -6,6 +6,7 @@
     last_ip => 'Last IP',
     problems => 'Problems',
     sites => 'Sites',
+    snippets => 'Snippets',
     envelopes => 'Envelopes not received',
     all => 'all',
     solved => 'solved',

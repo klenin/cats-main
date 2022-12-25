@@ -163,6 +163,17 @@ sub user_stats_frame {
         $_->{href_acc_group_users} = url_f('acc_group_users', group => $_->{id}) if $is_root;
     }
 
+    $u->{snippets_count} = $dbh->selectrow_array(q~
+        SELECT COUNT(*) FROM snippets
+        WHERE contest_id = ? AND account_id = ?~, undef,
+        $cid, $p->{uid}
+    );
+    $u->{snippets_count_all} = $is_root && $dbh->selectrow_array(q~
+        SELECT COUNT(*) FROM snippets
+        WHERE account_id = ?~, undef,
+        $p->{uid}
+    );
+
     _tokens($p);
     $t->param(
         CATS::User::submenu('user_stats', $p->{uid}, $u->{site_id}),
@@ -178,6 +189,8 @@ sub user_stats_frame {
         href_solved_problems => $pr->('state=OK'),
         href_contests => url_f(contests => search => "has_user($p->{uid})"),
         href_filtered_users => url_f(users => search => "id=$p->{uid}"),
+        href_snippets => url_f(snippets => search => "contest_id=this,account_id=$p->{uid}"),
+        href_snippets_all => $is_root && url_f(snippets => search => "account_id=$p->{uid}"),
         title_suffix => $u->{team_name},
     );
 }

@@ -13,6 +13,9 @@
 <tr><td>[% capt.envelopes %]:</td><td>[% envelopes %]</td></tr>
 [% END %]
 <tr><td>[% capt.sites %]:</td><td>[% maybe_href(href_sites, sites_count) %] / [% maybe_href(href_sites_org, sites_org_count) %]</td></tr>
+<tr><td>[% capt.snippets %]:</td><td>
+[%- href(href_snippets, snippets_count); IF href_snippets_all; ' / '; href(href_snippets_all, snippets_count_all); END -%]
+</td></tr>
 </table>
 
 <h3>[% capt.contests %] [[% href(href_contests, capt.all) %]]</h3>
