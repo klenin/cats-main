@@ -33,7 +33,8 @@ sub integration_bkd_start_api {
     if (!$user_sid) {
         $user_sid = CATS::User::make_sid;
         $dbh->do(q~
-            UPDATE accounts SET sid = ? WHERE id = ?~, undef,
+            UPDATE accounts SET sid = ?, last_login = CURRENT_TIMESTAMP
+            WHERE id = ?~, undef,
             $user_sid, $aid);
         $need_commit = 1;
     }
