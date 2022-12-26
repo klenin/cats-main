@@ -306,7 +306,9 @@ sub get_sources_info {
             $r->{src} = res_str(1138, $current_official->{title}, $current_official->{finish_date});
         }
         elsif ($opts{encode_source}) {
-            if (encodings()->{$se} && $r->{file_name} && $r->{file_name} !~ m/\.zip$/) {
+            if (encodings()->{$se} && $r->{file_name} &&
+                $r->{file_name} !~ m/\.(?:$CATS::Globals::binary_exts->{re})$/
+            ) {
                 if ($se eq 'HEX') {
                     $r->{src} = CATS::Utils::hex_dump($r->{src}, 16);
                 }

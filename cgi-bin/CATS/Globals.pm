@@ -35,6 +35,8 @@ our $relation_to_name = { reverse %$relation };
 
 our $jobs;
 
+our $binary_exts;
+
 BEGIN {
     my $name_to_type = {
         submission => $cats::job_type_submission,
@@ -60,6 +62,33 @@ BEGIN {
         name_to_state => $name_to_state,
         type_to_name => { reverse %$name_to_type },
         state_to_name => { reverse %$name_to_state },
+    };
+
+    my $ext_to_mime = {
+        bmp  => 'image/bmp',
+        doc  => 'application/msword',
+        docx => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        gif  => 'image/gif',
+        jpeg => 'image/jpeg',
+        jpg  => 'image/jpeg',
+        odp  => 'application/vnd.oasis.opendocument.presentation',
+        ods  => 'application/vnd.oasis.opendocument.spreadsheet',
+        odt  => 'application/vnd.oasis.opendocument.text',
+        png  => 'image/png',
+        pdf  => 'application/pdf',
+        ppt  => 'application/vnd.ms-powerpoint',
+        pptx => 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        rar  => 'application/vnd.rar',
+        rtf  => 'application/rtf',
+        webp => 'image/webp',
+        xls  => 'application/vnd.ms-excel',
+        xlsx => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        zip  => 'application/zip',
+        '7z' => 'application/x-7z-compressed',
+    };
+    $binary_exts = {
+        ext_to_mime => $ext_to_mime,
+        re => join '|', sort keys %$ext_to_mime,
     };
 };
 

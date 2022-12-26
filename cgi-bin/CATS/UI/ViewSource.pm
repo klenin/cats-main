@@ -176,12 +176,13 @@ sub download_source_frame {
     if ($p->{hash} || $p->{json}) {
         $p->headers('Access-Control-Allow-Origin' => '*');
     }
+    my $content_type = $CATS::Globals::binary_exts->{ext_to_mime}->{$ext};
     $p->print_file(
-        ($ext eq 'zip' ?
-            (content_type => 'application/zip') :
+        ($content_type ?
+            (content_type => $content_type) :
             (content_type => 'text/plain', charset => 'UTF-8')),
         file_name => "$si->{req_id}.$ext",
-        content => $ext eq 'zip' ? $si->{src} : Encode::encode_utf8($si->{src}));
+        content => $content_type ? $si->{src} : Encode::encode_utf8($si->{src}));
 }
 
 sub print_source_frame {
