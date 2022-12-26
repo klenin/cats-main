@@ -152,6 +152,7 @@ sub console_searches {
         source => $from_src->(
             "CAST(SUBSTRING(S.src FROM 1 FOR $src_prefix_len) AS VARCHAR($src_prefix_len))"),
         source_length => $from_src->('OCTET_LENGTH(S.src)'),
+        file_name => $from_src->('S.fname'),
         next => qq~COALESCE((
             SELECT R1.id FROM reqs R1
             WHERE $same_contest_problem_account R1.id > R.id
