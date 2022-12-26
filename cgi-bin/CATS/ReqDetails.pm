@@ -499,7 +499,7 @@ sub get_compilation_error {
 sub prepare_sources {
     my ($p, $sources_info) = @_;
     if ($sources_info->{is_binary}) {
-        $sources_info->{src} = $sources_info->{is_image} ?
+        $sources_info->{src} = $sources_info->{is_image} || $sources_info->{mime_type} eq 'application/pdf' ?
             MIME::Base64::encode_base64($sources_info->{src}) :
             sprintf 'binary, %d bytes', $sources_info->{src_len};
     }

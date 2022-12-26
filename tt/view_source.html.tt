@@ -77,14 +77,16 @@ $(function() {
           [%- PROCESS includes/editor_menu.tti editor_id = 'ed_vs' _ si.req_id -%]
         </a>
       </div>
-      [% IF si.is_image %]
+      [%- IF si.mime_type == 'application/pdf' %]
+      <iframe class="bordered" style="max-width: 100%; height: 800px; width: 600px;" src="data:application/pdf;base64,[% si.src %]" title="[% si.file_name %]">PDF</iframe>
+      [%- ELSIF si.is_image %]
       <img class="bordered" style="max-width: 100%;" src="data:[% si.mime_type %];base64,[% si.src %]" title="[% si.file_name %]"></img>
-      [% ELSE %]
+      [%- ELSE %]
       <textarea id="source_text_[% si.req_id %]" name="source_text" cols="[% source_width %]" rows="40"
         data-editor="[% si.syntax.lower || 'text' %]" data-gutter="1" data-id="ed_vs[% si.req_id %]">
         [%- si.src | html ~%]
       </textarea>
-      [% END %]
+      [%- END %]
       <input type="hidden" name="np" value="0"/>
     </form>
     <div id="different_versions_msg" class="hidden">[% capt.different_versions %]</div>
