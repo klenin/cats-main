@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use Digest::SHA;
+use MIME::Base64;
 
 use CATS::Constants;
 use CATS::Contest;
@@ -174,6 +175,21 @@ sub update_verdict {
         $r->{is_jury}, $CATS::Verdicts::state_to_name->{$r->{state}});
 }
 
+sub _encode_source {
+    my ($r, $se) = @_;
+    $r->{mime_type} = $CATS::Globals::binary_exts->{ext_to_mime}->{$r->{ext}};
+    $r->{is_binary} = defined $r->{mime_type};
+    $r->{is_image} = defined $r->{mime_type} && $r->{mime_type} =~ /^image\//;
+    encodings()->{$se} or return;
+    if ($se eq 'HEX') {
+        $r->{src} = CATS::Utils::hex_dump($r->{src}, 16);
+    }
+    elsif (!$r->{is_binary}) {
+        Encode::from_to($r->{src}, $se, 'utf-8');
+        $r->{src} = Encode::decode_utf8($r->{src});
+    }
+}
+
 # Load information about one or several runs.
 # Parameters: request_id, may be either scalar or array ref.
 sub get_sources_info {
@@ -300,23 +316,18 @@ sub get_sources_info {
 
         _get_nearby_attempt($p, $r, 'prev', '<', 'DESC', 1, $opts{extra_params});
         _get_nearby_attempt($p, $r, 'next', '>', 'ASC' , 0, $opts{extra_params});
+
+        $r->{file_name} //= '';
+        $r->{file_name} =~ m/\.([^.]+)$/;
+        $r->{ext} = lc($1 || '');
+
         # During the official contest, viewing sources from other contests
         # is disallowed to prevent cheating.
         if ($current_official && $r->{contest_id} != $current_official->{id}) {
             $r->{src} = res_str(1138, $current_official->{title}, $current_official->{finish_date});
         }
         elsif ($opts{encode_source}) {
-            if (encodings()->{$se} && $r->{file_name} &&
-                $r->{file_name} !~ m/\.(?:$CATS::Globals::binary_exts->{re})$/
-            ) {
-                if ($se eq 'HEX') {
-                    $r->{src} = CATS::Utils::hex_dump($r->{src}, 16);
-                }
-                else {
-                    Encode::from_to($r->{src}, $se, 'utf-8');
-                    $r->{src} = Encode::decode_utf8($r->{src});
-                }
-            }
+            _encode_source($r, $se);
         }
         $r->{status_name} = CATS::Messages::problem_status_names->{$r->{status}};
 
@@ -325,7 +336,6 @@ sub get_sources_info {
                 for qw(file_name de_id de_name de_code), $opts{get_source} ? qw(src syntax) : ();
         }
 
-        $r->{file_name} //= '';
         $r->{src} //= '';
         $r->{de_id} //= 0;
         $r->{$_} = $r->{"lr_$_"} || $r->{"lcp_$_"} || $r->{"p_$_"} for @cats::limits_fields, 'job_split_strategy';
@@ -488,8 +498,10 @@ sub get_compilation_error {
 
 sub prepare_sources {
     my ($p, $sources_info) = @_;
-    if ($sources_info->{file_name} =~ m/\.zip$/) {
-        $sources_info->{src} = sprintf 'ZIP, %d bytes', length ($sources_info->{src});
+    if ($sources_info->{is_binary}) {
+        $sources_info->{src} = $sources_info->{is_image} ?
+            MIME::Base64::encode_base64($sources_info->{src}) :
+            sprintf 'binary, %d bytes', $sources_info->{src_len};
     }
     if (my $r = $sources_info->{err_regexp}) {
         my (undef, undef, $file_name) = CATS::Utils::split_fname($sources_info->{file_name});
