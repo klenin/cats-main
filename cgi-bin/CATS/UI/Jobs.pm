@@ -12,6 +12,7 @@ use CATS::Output qw(init_template url_f url_f_cid);
 use CATS::ReqDetails;
 use CATS::Request;
 use CATS::Time;
+use CATS::Utils qw(source_encodings);
 
 sub job_details_frame {
     my ($p) = @_;
@@ -42,9 +43,10 @@ sub job_details_frame {
     }
 
     $t->param(
-        logs => CATS::ReqDetails::get_log_dump({ id => $p->{jid} }),
+        logs => CATS::ReqDetails::get_log_dump($p, { id => $p->{jid} }),
         job_enums => $CATS::Globals::jobs,
         restart_job => $state != $cats::job_st_waiting,
+        source_encodings => source_encodings($p->{src_enc} // ''),
     );
 }
 

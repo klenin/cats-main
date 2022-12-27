@@ -1,5 +1,6 @@
 [%
   capt.import({
+    encoding => 'encoding',
     jobs_link => 'jobs',
     snippet_jobs_link => 'snippet jobs',
     length => 'Length',

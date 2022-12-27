@@ -1,5 +1,6 @@
 [%
   capt.import({
+    encoding => 'кодировка',
     jobs_link => 'поручения',
     snippet_jobs_link => 'поручения фрагментов',
     length => 'Длина',

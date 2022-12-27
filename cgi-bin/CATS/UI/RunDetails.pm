@@ -279,7 +279,7 @@ sub run_details_frame {
         source_links($p, $_);
         my $st = $_->{state};
         if ($st == $cats::st_compilation_error || $st == $cats::st_lint_error) {
-            my $logs = get_log_dump({ req_id => $_->{req_id} });
+            my $logs = get_log_dump($p, { req_id => $_->{req_id} });
             push @runs, { compiler_output => get_compilation_error($logs, $st) };
             next;
         }
@@ -478,7 +478,7 @@ sub run_log_frame {
             contest_id => $si->{contest_id},
             type => $cats::job_type_generate_snippets,
         )),
-        logs => get_log_dump({ req_id => $rid, parent_id => undef }),
+        logs => get_log_dump($p, { req_id => $rid, parent_id => undef }),
         job_enums => $CATS::Globals::jobs,
     );
 }

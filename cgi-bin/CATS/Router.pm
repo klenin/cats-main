@@ -318,7 +318,9 @@ my $main_routes = {
         caid => integer, send => bool, message_text => str, ],
 
     run_log => [ \&CATS::UI::RunDetails::run_log_frame,
-        rid => integer, delete_log => bool, delete_jobs => bool, ],
+        rid => integer, delete_log => bool, delete_jobs => bool,
+        src_enc => encoding_default('UTF-8'),
+    ],
     view_source => [ \&CATS::UI::ViewSource::view_source_frame,
         rid => integer, replace => bool, replace_and_submit => bool,
         de_id => qr/\d+|by_extension/, syntax => ident,
@@ -345,6 +347,7 @@ my $main_routes = {
     ],
     job_details => [ \&CATS::UI::Jobs::job_details_frame,
         jid => integer, delete_log => bool, delete_jobs => bool, restart_job => bool,
+        src_enc => encoding_default('UTF-8'),
     ],
     visualize_test => [ \&CATS::UI::RunDetails::visualize_test_frame,
         rid => integer, vid => integer, test_rank => integer, as_user => bool, ],

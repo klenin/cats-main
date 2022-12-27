@@ -452,7 +452,7 @@ sub source_links {
 }
 
 sub get_log_dump {
-    my ($cond) = @_;
+    my ($p, $cond) = @_;
     my ($job_tree_sql, @bind) = CATS::Request::get_job_tree_sql($cond);
 
     my $logs = $dbh->selectall_arrayref(qq~
@@ -472,7 +472,9 @@ sub get_log_dump {
         @bind) or return [];
 
     for my $log (@$logs) {
-        $log->{dump} = Encode::decode_utf8($log->{dump});
+        my $se = ($p && $p->{src_enc}) // '';
+        encodings()->{$se} or $se = 'UTF-8';
+        $log->{dump} = Encode::decode($se, $log->{dump});
         $log->{$_} = $db->format_date($log->{$_})
             for qw(create_time start_time finish_time);
     }
@@ -517,7 +519,7 @@ sub prepare_sources {
     $sources_info->{syntax} = $p->{syntax} if $p->{syntax};
     my $st = $sources_info->{state};
     if ($st == $cats::st_compilation_error || $st == $cats::st_lint_error) {
-        my $logs = get_log_dump({ req_id => $sources_info->{req_id} });
+        my $logs = get_log_dump($p, { req_id => $sources_info->{req_id} });
         $sources_info->{compiler_output} = get_compilation_error($logs, $st)
     }
     $sources_info;

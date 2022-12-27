@@ -17,6 +17,10 @@
 [% END %]
 [% PROCESS "lang/$lang/jobs.html.tt" %]
 
+<div style="margin: 4px;">
+[% PROCESS includes/encoding_form.html.tti capt_enc = capt.encoding || 'enc' %]
+</div>
+
 [% IF logs.size %]
 <div class="jobs_header">
 <p><a name="log_top"></a>
