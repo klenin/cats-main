@@ -60,7 +60,7 @@ if ($find) {
 }
 
 my $users = $dbh->selectall_arrayref(q~
-    SELECT id, login, srole, multi_ip FROM accounts
+    SELECT id, login, srole, multi_ip, sid FROM accounts
     WHERE id = ? AND login = ?~, { Slice => {} },
     $user_id, $user_login);
 
@@ -116,6 +116,7 @@ $dbh->commit if $need_commit;
 
 say "Id      :  $u->{id}";
 say "Login   :  $u->{login}";
+say "SID     :  $u->{sid}";
 say "SRole   :  $u->{srole}", ($srole != $u->{srole} ? " => $srole" : '');
 say "Multi-IP:  ", $u->{multi_ip} // '0',
     (defined $multi_ip &&  $multi_ip != ($u->{multi_ip} // 0) ? " => $multi_ip" : '') if $u->{multi_ip} || defined $multi_ip;
