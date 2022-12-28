@@ -366,7 +366,8 @@ files with tests, solutions etc.
   <td>[% tag_in('Snippet', 'Problem', v111) %]</td>
   <td>
     <ul>
-      <li>name — identifier of the [% tag_ref('Snippet') %] object.</li>
+      <li>name — identifier of the [% tag_ref('Snippet') %] object, can use <a href="#contextVars">context variables</a>.</li>
+      <li>rank[% opt %] [% v111 %] — <a href="#rankSpec">ranks specifier</a> of [% tag_ref('Snippet') %] objects.</li>
       <li>generator[% opt %] — identifier of the [% tag_ref('Generator') %] object.</li>
     </ul>
   </td>
@@ -595,16 +596,16 @@ files with tests, solutions etc.
 </table>
 
 <a name="rankSpec"></a>
-<h2>Test case ranks specification</h2>
+<h2>Ranks specification</h2>
 <p>
   Specifier is a comma-separated list of elements.
   Each element may be one of:
 </p>
 <ul>
-  <li>Test number,</li>
-  <li>Range of test numbers, separated by "<code>-</code>" character [% v15 %],</li>
-  <li>Range of test numbers and step, separated by "<code>-</code>" character [% v110 %],</li>
-  <li>Testset name ([% tag_ref('Testset') %])[% v18 %].</li>
+  <li>Integer number,</li>
+  <li>Range of numbers, separated by "<code>-</code>" character [% v15 %],</li>
+  <li>Range of numbers and step, separated by "<code>-</code>" character [% v110 %],</li>
+  <li>For test case rank specifications — testset name ([% tag_ref('Testset') %])[% v18 %].</li>
 </ul>
 
 <a name="contextVars"></a>
