@@ -46,7 +46,7 @@
 [% FOREACH ct IN contacts -%]
 <td>[% href(u.href_contacts.replace('~type_name~', ct.name), u.item('CT_' _ ct.sql)); cell_search('CT_' _ ct.sql, u) %]</td>
 [%- END %]
-[% IF visible_cols.Sn %]<td>[% u.snippets | html %]</td>[% END %]
+[% IF visible_cols.Sn %]<td>[% maybe_href(u.href_snippets, u.snippets) %]</td>[% END %]
 [% IF visible_cols.Ip -%]
 <td>[<a href="[% u.href_whois %]" title="[% u.last_ip %]">[% u.last_ip_short %]
   [%- '*' UNLESS u.last_ip_submission %]</a>][% cell_search('last_ip_short', u) %]</td>

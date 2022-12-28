@@ -13,7 +13,7 @@ use CATS::DB qw(:DEFAULT $db);
 use CATS::Globals qw($cid $contest $is_jury $is_root $t $uid $user);
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
-use CATS::Output qw(init_template url_f);
+use CATS::Output qw(init_template search url_f);
 use CATS::Privileges;
 use CATS::RankTable::Cache;
 use CATS::Time;
@@ -462,6 +462,7 @@ sub users_frame {
             ($is_jury || $user->{is_site_org} ? (href_vdiff => url_f('user_vdiff', uid => $aid)) : ()),
             href_rank_table_filter => $is_jury ? url_f('rank_table', filter => $tag) : undef,
             href_contacts => url_f('user_contacts', uid => $aid, search => 'type_name=~type_name~'),
+            href_snippets => url_f('snippets', search(($is_root ? (contest_id => 'this') : ()), account_id => $aid)),
 
             motto => $motto,
             id => $caid,
