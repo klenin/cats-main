@@ -74,7 +74,7 @@ sub jobs_frame {
     ]);
     $lv->define_db_searches([ qw(
         J.id type state create_time start_time finish_time judge_id judge_name
-        J.problem_id J.contest_id contest_title J.account_id team_name J.parent_id
+        J.problem_id J.contest_id J.account_id team_name J.parent_id
     ) ]);
 
     my $fields_sql = {
@@ -83,7 +83,10 @@ sub jobs_frame {
         time_len => 'CAST(J.finish_time - J.start_time AS DOUBLE PRECISION)',
     };
     $lv->define_db_searches({
-        problem_title => 'P.title',
+        contest_title => ($lv->visible_cols->{Ct} ?
+            'C.title' : q~(SELECT C.title FROM contests C WHERE C.id = J.contest_id)~),
+        problem_title => ($lv->visible_cols->{Pr} ?
+            'P.title' : q~(SELECT P.title FROM problems P WHERE P.id = J.problem_id)~),
         req_id => q~
             COALESCE(J.req_id, (SELECT PJ.req_id FROM jobs PJ WHERE PJ.id = J.parent_id))~,
         parent_or_id => 'COALESCE(J.parent_id, J.id)',
@@ -138,7 +141,7 @@ sub jobs_frame {
         $jobs_reqs_sql,
         $in_queue ? 'INNER' : 'LEFT';
     my ($q, @bind) = $sql->select($jobs_sql .
-        ($lv->visible_cols->{Jn} ? ' LEFT JOIN judges JD ON J.judge_id = JD.id' : '') .
+        ($lv->visible_cols->{Jn} ? ' LEFT JOIN judges JD ON J.judge_id = JD.id ' : '') .
         ($lv->visible_cols->{Pr} ? q~
             LEFT JOIN problems P ON P.id = J.problem_id
             LEFT JOIN contest_problems CP ON
