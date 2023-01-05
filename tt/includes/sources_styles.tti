@@ -1,5 +1,5 @@
 [%- js.jquery = 1; js.switch_lang = 1 -%]
-[% IF is_any_jury; e = BLOCK %]
+[% e = BLOCK %]
   <style>
     .limits {
       float: left;
@@ -32,4 +32,4 @@
     }
     #sources_info th:hover div.toggler { display: block; }
   </style>
-[%- END; END; SET extra_head = extra_head _ e %]
+[%- END; SET extra_head = extra_head _ e %]
