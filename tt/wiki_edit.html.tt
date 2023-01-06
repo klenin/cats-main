@@ -51,9 +51,9 @@
   </a>
 </td>
 <td>
-  <div id="render" style="overflow-y: scroll;">
+  <div class="wiki"><div id="render" style="overflow-y: scroll;">
   [% wt.markdown %]
-  </div>
+  </div></div>
 </td>
 </tr></table>
 </form>
