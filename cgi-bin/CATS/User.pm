@@ -32,6 +32,8 @@ BEGIN {
 
 sub hash_password { $hash_password->(@_); }
 
+sub trim { $_[0] =~ s/^\s+|\s+$//r; }
+
 sub param_names () {qw(
     login team_name capitan_name country motto restrict_ips
     city tz_offset affiliation affiliation_year
@@ -48,7 +50,8 @@ sub new {
 
 sub parse_params {
     my ($self, $p) = @_;
-    $self->{$_} = $p->{$_} || '' for param_names(), qw(password1 password2);
+    $self->{$_} = trim($p->{$_} || '') for param_names;
+    $self->{$_} = $p->{$_} || '' for qw(password1 password2);
     $self;
 }
 
@@ -284,13 +287,11 @@ sub profile_save {
     $dbh->commit;
 }
 
-sub trim { s/^\s+|\s+$//; $_; }
-
 # (Mass-)register users by jury.
 sub register_by_login {
     my ($login, $contest_id, $make_jury) = @_;
     $is_jury or return;
-    my @logins = map trim, split(/,/, $login || '') or return msg(1101);
+    my @logins = map trim($_), split(/,/, $login || '') or return msg(1101);
     my %aids;
     for (@logins) {
         length $_ <= 50 or return msg(1101);

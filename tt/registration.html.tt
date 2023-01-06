@@ -21,7 +21,7 @@
 [% END %]
 <script nonce="[% nonce %]">
   $('#login').change(function() {
-    var login = $('#login').val();
+    var login = $('#login').val().trim();
     if (!login) {
         $('#login_available').hide();
         $('#login_unavailable').hide();
