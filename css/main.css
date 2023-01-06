@@ -603,7 +603,9 @@ table.edit_form td p.form_error { color: red; font-size: small; }
 .autocomplete-no-suggestion { padding: 2px 5px;}
 .autocomplete-selected { background: #F0F0F0; }
 .autocomplete-suggestions strong { font-weight: bold; color: #000; }
-.autocomplete-group { padding: 2px 5px; font-weight: bold; font-size: 16px; color: #000; display: block; border-bottom: 1px solid #000; }
+.autocomplete-group {
+    padding: 2px 5px; font-weight: bold; font-size: 16px; color: #000;
+    display: block; border-bottom: 1px solid #000; }
 
 .wiki { padding: 0px 16px; margin: 0 auto; max-width: 1012px; box-sizing: border-box; }
 .wiki > div { padding: 24px 40px; border: 1px solid #bbbbff; }

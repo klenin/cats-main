@@ -1,14 +1,15 @@
 [%- js.nonce = 1 -%]
 [%- PROCESS includes/menu_begin.tti -%]
 
-<div class="wiki"><div>
-
+<div class="wiki">
+<div>
 <h1>[% page.title | html %]</h1>
 
 <div>
 [% page.markdown %]
 </div>
 
-</div></div>
+</div>
+</div>
 
 [% PROCESS includes/menu_end.tti %]
