@@ -1,0 +1,73 @@
+[%- js.nonce = 1 -%]
+[%- contest.title = 'Ближе к Дальнему'; title_suffix = 'регистрация' -%]
+[%- extra_head = BLOCK %]
+<style>
+  @import "css/skin/bkd.css"
+</style>
+[%- END -%]
+[%- PROCESS includes/menu_begin.tti -%]
+<div class="wiki"><div>
+
+<div class="bkd_menu">
+<div><img src="download/f/bkd_logo.png"></div>
+<div><a href="wiki?name=bkd_2022_main;noiface=1"/>Главная</a></div>
+<div><a href="wiki?name=bkd_2022_main;noiface=1"/>Сроки проведения</a></div>
+<div><a href="bkd_registration?noiface=1"/>Пройти олимпиаду</a></div>
+<div style="margin-left: auto;"><a href="wiki?name=bkd_2022_main;noiface=1" class="bkd_button bkd_button_more"/>Личный кабинет</a></div>
+</div>
+
+<form method="post" enctype="multipart/form-data" action="[% href_action %]" class="bkd_form">
+
+<label>Фамилия</label>
+<input type="text" name="last_name" required="required" placeholder="Введите фамилию" pattern="[А-Я][а-я\-\s]+" />
+
+<label>Имя</label>
+<input type="text" name="first_name" required="required" placeholder="Введите имя" pattern="[А-Я][а-я\-\s]+" />
+
+<label>Отчество</label>
+<input type="text" name="second_name" required="required" placeholder="Введите отчество" pattern="[А-Я][а-я\-\s]+" />
+
+<label>Класс обучения</label>
+<select name="age_group" required="required" placeholder="Выберите класс из списка">
+<option value="6 класс">6 класс</option>
+<option value="7 класс">7 класс</option>
+<option value="8 класс">8 класс</option>
+<option value="9 класс">9 класс</option>
+<option value="10 класс">10 класс</option>
+<option value="11 класс">11 класс</option>
+<option value="1 курс спо">1 курс спо</option>
+<option value="2 курс спо">2 курс спо</option>
+</select>
+
+<label>Образовательное учреждение</label>
+<input type="text" name="first_name" required="required" placeholder="Введите полное название ОУ" />
+
+<label>Регион РФ</label>
+<select name="region" required="required" placeholder="Выберите регион из списка">
+<option value="Приморский край">Приморский край</option>
+<option value="Хабаровский край">Хабаровский край</option>
+</select>
+
+<label>Номер телефона</label>
+<input type="text" name="first_name" required="required" placeholder="Введите номер телефона" pattern="\+?[0-9]{11}" />
+
+<label>Электронная почта</label>
+<input type="text" name="first_name" required="required" placeholder="@pochta.ru" pattern="\S+@\S+\.\w+" />
+
+<label>Логин</label>
+<input type="text" name="first_name" required="required" placeholder="Введите ваш логин" pattern="\w+" />
+
+<label>Пароль</label>
+<input type="password" name="first_name" required="required" placeholder="Введите пароль, не менее 8 символов" pattern=".{8,}" />
+
+<label>Повторите пароль</label>
+<input type="password" name="first_name" required="required" placeholder="Повторите пароль" />
+
+<label><input type="checkbox">Я согласен с <a href="https://s3.timeweb.com/cg73291-bkd/docs/user_info.docx">политикой конфиденциальности</a></label>
+
+<br/>
+<button class="bkd_button bkd_button_registration">Зарегистрироваться</button>
+</form>
+
+</div></div>
+[% PROCESS includes/menu_end.tti %]

@@ -4,8 +4,8 @@ use strict;
 use warnings;
 
 use CATS::DB;
-use CATS::Globals qw($cid $contest $is_jury);
-use CATS::Output qw(url_f);
+use CATS::Globals qw($cid $contest $is_jury $t);
+use CATS::Output qw(init_template url_f);
 use CATS::User;
 use CATS::Utils;
 
@@ -159,6 +159,60 @@ sub integration_bkd_user_import_api {
     $dbh->commit;
 
     $p->print_json({ ok => $u->{id} });
+}
+
+our $form = CATS::Form->new(
+    table => 'accounts A',
+    fields => [
+        [ name => 'team_name', caption => 625 ],
+        [ name => 'first_name', db_name => '', validators => [ CATS::Field::str_length(1, 50) ] ],
+        [ name => 'second_name', db_name => '', validators => [ CATS::Field::str_length(1, 50) ] ],
+        [ name => 'last_name', db_name => '', validators => [ CATS::Field::str_length(1, 50) ] ],
+        [ name => 'account_id', ],
+    ],
+    joins => [ { sql => 'LEFT JOIN accounts A ON A.id = J.account_id', fields => 'A.login AS account_name' } ],
+    href_action => 'judges_edit',
+    descr_field => 'nick',
+    template_var => 'j',
+    msg_saved => 1140,
+    msg_deleted => 1020,
+    before_save_db => sub {
+        my ($data, $id) = @_;
+        $id and return;
+        $data->{is_alive} = 0;
+        $data->{alive_date} = \'CURRENT_TIMESTAMP';
+    },
+    before_display => sub {
+        my ($fd, $p) = @_;
+        $fd->{de_bitmap} = $fd->{id} &&
+            CATS::DB::select_row('judge_de_bitmap_cache', '*', { judge_id => $fd->{id} });
+        if ($fd->{de_bitmap}) {
+            my $dev_env = CATS::DevEnv->new(CATS::JudgeDB::get_DEs);
+            $fd->{supported_DEs} = [
+                $dev_env->by_bitmap([ CATS::DeBitmaps::extract_de_bitmap($fd->{de_bitmap}) ]) ],
+        }
+        if (my $aid = $fd->{indexed}->{account_id}->{value}) {
+            $fd->{href_contests} = url_f('contests', search => "has_user($aid)");
+        }
+        $fd->{href_find_users} = url_f('api_find_users');
+        $fd->{extra_fields}->{account_name} = $p->{account_name} if $p->{account_name};
+    },
+    validators => [ sub {
+        my ($fd, $p) = @_;
+        $fd->{indexed}->{account_id}->{value} = undef;
+        $p->{account_name} or return 1;
+        $fd->{indexed}->{account_id}->{value} = $dbh->selectrow_array(q~
+            SELECT id FROM accounts WHERE login = ?~, undef,
+            $p->{account_name}) and return 1;
+        $fd->{account}->{error} = res_str(1139, $p->{account_name});
+        undef;
+    } ],
+);
+
+sub bkd_registration {
+    my ($p) = @_;
+    init_template($p, 'bkd_registration');
+    $t->param(title => 'Ближе к Дальнему');
 }
 
 1;

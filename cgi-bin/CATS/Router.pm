@@ -458,6 +458,8 @@ my $main_routes = {
         bkd_id => integer, problem => integer, ],
     api_integration_bkd_get_points => [ \&CATS::UI::Integrations::integration_bkd_get_points_api,
         bkd_id => integer, problem => integer, ],
+    bkd_registration => [ \&CATS::UI::Integrations::bkd_registration,
+        bkd_id => integer, problem => integer, ],
 };
 
 my $api_judge_routes = {
