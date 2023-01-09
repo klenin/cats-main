@@ -20,12 +20,15 @@ window.addEventListener('load', function() {
 [% tr_text(wp.indexed.name, wp) %]
 <tr><td>[% capt.public_url %]</td><td id="href_public">[% href(wp.href_public_initial, wp.href_public_initial) %]</td></tr>
 [% tr_checkbox1(wp.indexed.is_public, wp ) %]
+[% tr_textarea(wp.indexed.style, wp) %]
+[% tr_text(wp.indexed.options, wp) %]
 </table>
 <br/>
 [% PROCESS includes/edit_save_cancel.tti %]
 </form>
-[% IF wp.indexed.name.value %]
-<br>
+
+[%- IF wp.indexed.name.value %]
+<br/>
 [% PROCESS includes/listview_header.tti
   no_form = 1 no_listview_header = 1
   table_selector = '#wiki_texts' name_selector = 'td.dn' name_format = '{1} ({0})' %]

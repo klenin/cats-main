@@ -48,6 +48,8 @@ our $page_form = CATS::Form->new(
             editor => { attrs => { id => 'name' } } ],
         [ name => 'is_public', validators => $CATS::Field::bool, caption => 669,
             %CATS::Field::default_zero ],
+        [ name => 'options', validators => [ CATS::Field::str_length(0, 200) ], caption => 821 ],
+        [ name => 'style', caption => 820, editor => { rows => 3 } ],
     ],
     href_action => 'wiki_pages_edit',
     descr_field => 'name',
@@ -98,14 +100,15 @@ sub wiki_pages_frame {
         { caption => res_str(672), order_by => 'langs', width => '5%', col => 'Ls' },
         { caption => res_str(645), order_by => 'contest_count', width => '5%', col => 'Ct' },
         { caption => res_str(684), order_by => 'total_size', width => '5%', col => 'Sz' },
-        { caption => res_str(634), order_by => 'last_modified', width => '5%', col => 'Lm' },
+        { caption => res_str(634), order_by => 'last_modified', width => '7%', col => 'Lm' },
+        { caption => res_str(821), order_by => 'options', width => '5%', col => 'Op' },
     ]);
     $lv->define_db_searches($page_form->{sql_fields});
     $lv->define_db_searches({ _search_per_lang('text'), _search_per_lang('title') });
     $lv->default_searches([ qw(name) ]);
 
     my ($q, @bind) = $sql->select('wiki_pages WP', [
-        'WP.id', @{$page_form->{sql_fields}},
+        (map "WP.$_", qw(id name is_public options)),
         ($lv->visible_cols->{Ls} ? q~(
             SELECT LIST(WT.lang) FROM wiki_texts WT
             WHERE WT.wiki_id = WP.id) AS langs~ : ()),
