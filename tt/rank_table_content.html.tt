@@ -143,7 +143,7 @@ for(var i = 0; i < rank_table.length; ++i) {
   [% IF show_points %]
   for (var j = 0; j < r.pt.length; ++j)
     td(href(url_problem(j) + ';uf=' + r.id, r.pt[j])
-      [%- IF user.is_root %], ' class="rel" onclick="cell_click(event, this, ' + r.id + ',' + problem_ids[j][0] + ')"'
+      [%- IF user.is_jury %], ' class="rel" onclick="cell_click(event, this, ' + r.id + ',' + problem_ids[j][0] + ')"'
       [%- END %]);
   td(r.tp, ' class="num"');
   [% ELSE %]

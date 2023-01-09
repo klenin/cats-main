@@ -1,7 +1,7 @@
 [%- js.jquery = 1 -%]
 [%- PROCESS includes/menu_begin.tti -%]
 
-[% IF user.is_root -%]
+[% IF user.is_jury -%]
 <div id="enter_points" class="hidden bordered popup">
   <form method="POST" action="[% href_problem_submit %]" class="bordered">
     <input type="hidden" name="problem_id" />
@@ -10,9 +10,7 @@
     <button type="submit" name="submit" value="1" class="button">OK</button>
   </form>
 </div>
-[%- END %]
 
-[%- IF user.is_jury %]
 <button class="button" onclick="$('#search').toggle()">[% PROCESS includes/filter_icon.tti title=capt.filter %]</button>
 <div id="search" class="hidden">
 <form method="GET">
@@ -98,7 +96,7 @@ function toggle_all(value, id) {
 </span>
 <iframe width=0 height=0 src="[% href_rank_table_content %]"></iframe>
 
-[% IF user.is_root %]
+[% IF user.is_jury %]
 <script>
 var enter_points_div = $('#enter_points');
 enter_points_div.find('button').click(function (e) {
