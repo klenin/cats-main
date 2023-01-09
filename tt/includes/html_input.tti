@@ -17,11 +17,11 @@
 </tr>
 [%- END -%]
 
-[%- MACRO tr_textarea(f, fd) BLOCK -%]
+[%- MACRO tr_textarea(f, fd) BLOCK # attrs -%]
 <tr>
   <td>[% f.caption || capt.item(f.field.name) %]</td>
   <td><textarea name="[% f.field.name %]" cols="[% f.field.editor.cols || 50 %]" rows="[% f.field.editor.rows || 10 %]"
-    [%- tag_attrs(f.field.editor.attrs) -%]
+    [%- tag_attrs(f.field.editor.attrs); tag_attrs(attrs) -%]
     [%- ' readonly="readonly"' IF fd.readonly %] class="bordered" />[% f.value | html %]</textarea>
     [%- maybe_err(f) %]
   </td>
