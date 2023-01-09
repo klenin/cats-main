@@ -11,34 +11,19 @@
   </form>
 </div>
 
-<button class="button" onclick="$('#search').toggle()">[% PROCESS includes/filter_icon.tti title=capt.filter %]</button>
+<button id="search_toggle" class="button">[% PROCESS includes/filter_icon.tti title=capt.filter %]</button>
 <div id="search" class="hidden">
 <form method="GET">
 <input type="hidden" name="f" value="rank_table" />
 [% FOREACH r IN route %]<input type="hidden" name="[% r.key | html %]" value="[% r.value | html %]"/>[% END %]
-<script>
-
-function update(id) {
-  var s = $('#' + id + ' ._items input[type=checkbox]').map(function(_, v) {
-    return v.checked ? v.value : null;
-  });
-  $('#' + id + ' input[name=' + id + ']').val(s.get().join(','));
-}
-function toggle_all(value, id) {
-  $('#' + id + ' ._items input[type=checkbox]').each(function(_, v) {
-    v.checked = value;
-  });
-}
-</script>
 
 [% MACRO multi_select(list, name) BLOCK -%]
 [%- IF list.size -%]
-<script>$(function() { update('[% name %]'); });</script>
-<div id="[% name %]" class="bordered padded">
-  <label><input type="checkbox" onclick="toggle_all(this.checked, '[% name %]')"/> [% capt.item(name) %]</label>:
+<div id="[% name %]" class="bordered padded js_filter">
+  <label><input type="checkbox" class="_toggle_all"/> [% capt.item(name) %]</label>:
   [% FOREACH i IN list -%]
   <label class="nobr _items">
-    <input type="checkbox"[% ' checked="checked"' IF i.selected %] value="[% i.id %]" onclick="update('[% name %]')"/>
+    <input type="checkbox"[% ' checked="checked"' IF i.selected %] value="[% i.id %]" />
     [%- i.name | html -%]
   </label>
   [%- END %]
@@ -49,6 +34,27 @@ function toggle_all(value, id) {
 
 [% multi_select(groups, 'groups') %]
 [% multi_select(sites, 'sites') %]
+
+<script nonce="[% nonce %]">
+$(function() {
+  var parent = function(el) { return $(el).parents('.js_filter'); }
+  var items = function(filter) { return filter.find('._items input[type=checkbox]'); }
+  var update = function(filter) {
+    var checked_values = items(filter).map(function(_, v) { return v.checked ? v.value : null; });
+    filter.find('input[name=' + filter[0].id + ']').val(checked_values.get().join(','));
+  };
+  var toggle_all = function() {
+    var value = this.checked;
+    var filter = parent(this);
+    items(filter).each(function(_, v) { v.checked = value; });
+    update(filter);
+  };
+  $('#search_toggle').click(function() { $('#search').toggle(); });
+  $('.js_filter ._items input[type=checkbox]').click(function() { update(parent(this)); });
+  $('.js_filter ._toggle_all').click(toggle_all);
+  $('.js_filter').each(function (_, f) { update($(f)); });
+});
+</script>
 
 <div class="bordered padded">
   [% capt.name_tag %]: <input name="filter" type="text" class="bordered" value="[% filter | html %]" size="30" />
