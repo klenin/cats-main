@@ -1,4 +1,4 @@
-[%- js.nonce = 1 -%]
+[%- js.nonce = 1; js.jquery = 1; js.ace = 1 -%]
 [%- PROCESS includes/menu_begin.tti -%]
 [%- PROCESS includes/html_input.tti -%]
 
@@ -17,17 +17,18 @@ window.addEventListener('load', function() {
 
 <form method="post" enctype="multipart/form-data" action="[% wp.href_action %]">
 <table class="edit_form">
-[% tr_text(wp.indexed.name, wp) %]
+[%- wpi = wp.indexed -%]
+[% tr_text(wpi.name, wp) %]
 <tr><td>[% capt.public_url %]</td><td id="href_public">[% href(wp.href_public_initial, wp.href_public_initial) %]</td></tr>
-[% tr_checkbox1(wp.indexed.is_public, wp ) %]
-[% tr_textarea(wp.indexed.style, wp) %]
-[% tr_text(wp.indexed.options, wp) %]
+[% tr_checkbox1(wpi.is_public, wp ) %]
+[% tr_textarea(wpi.style, wp, attrs = { 'data-editor' => 'css', 'data-gutter1' => 0, 'data-id' => 'ed_wiki' _ wp.id }) %]
+[% tr_text(wpi.options, wp) %]
 </table>
 <br/>
 [% PROCESS includes/edit_save_cancel.tti %]
 </form>
 
-[%- IF wp.indexed.name.value %]
+[%- IF wpi.name.value %]
 <br/>
 [% PROCESS includes/listview_header.tti
   no_form = 1 no_listview_header = 1
