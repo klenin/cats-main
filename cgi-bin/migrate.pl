@@ -75,7 +75,7 @@ sub parse_diff {
             } elsif ($table) {
                 $line =~ s/^\s*(.+?),?(\s*\/\*.*\*\/)?$/$1/;
                 say_n "ALTER TABLE $table";
-                say_c "    ADD $line;$2";
+                say_c sprintf '    ADD %s;%s', $line, ($2 // '');
             }
             else {
                 say_c $line;
