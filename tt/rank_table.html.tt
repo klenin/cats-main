@@ -71,7 +71,7 @@ $(function() {
 
 [%- MACRO label_cb_inverted(name, checked, label) BLOCK %]
   <label>
-    <input type="checkbox"[% maybe_checked(!checked) %] onclick="$('#show input[name=[% name %]]').val(this.checked ? 0 : 1)"/>
+    <input type="checkbox"[% maybe_checked(!checked) %] data-inverted="[% name %]"/>
     [%- capt.show.item(label) %]
   </label>
   <input type="hidden" name="[% name %]" value="[% checked ? 1 : 0 %]"/>
@@ -89,6 +89,14 @@ $(function() {
   label_cb_inverted('nostats', nostats, 'stats');
   -%]
 </div>
+
+<script nonce="[% nonce %]">
+$(function() {
+  $('#show [data-inverted]').click(function() {
+    $('#show input[name=' + this.getAttribute('data-inverted') + ']').val(this.checked ? 0 : 1);
+  });
+});
+</script>
 
 <button type="submit" value="1" class="button">[% capt.search %]</button>
 </form>
