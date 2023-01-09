@@ -4,6 +4,7 @@ use warnings;
 package CATS::Field;
 
 use Encode;
+use JSON::XS;
 
 use CATS::DB;
 use CATS::Messages qw(msg res_str);
@@ -83,6 +84,25 @@ sub regexp {
         return if $value =~ $regexp;
         res_str($msg, $field->caption_msg);
     };
+}
+
+sub json_allow_empty {
+    my ($value, $field) = @_;
+    ($value // '') eq '' ? undef : json_nonempty($value, $field);
+}
+
+sub json_nonempty {
+    my ($value, $field) = @_;
+    eval { JSON::XS::decode_json($value); 1; } and return;
+    my $err = $@;
+    $err =~ s/\sat\s\S+\sline\s\d+\.$//;
+    res_str(1247, $field->caption_msg, $err);
+}
+
+# Params:{ allow_empty }
+sub json {
+    my %opts = @_;
+    $opts{allow_empty} ? \&json_allow_empty : \&json_nonempty;
 }
 
 # Params:{ allow_empty, min, max }

@@ -4,7 +4,7 @@ use utf8;
 
 use File::Spec;
 use FindBin;
-use Test::More tests => 36;
+use Test::More tests => 41;
 
 use lib File::Spec->catdir($FindBin::Bin, '..');
 use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
@@ -67,6 +67,17 @@ CATS::Messages::init;
     is dt('1.2.3 5:6'), undef, 'date_time time';
     ok dt('1.2.3 25:6'), 'date_time bad hour';
     ok dt('1.2.3 5:60'), 'date_time bad minute';
+}
+{
+    my $f = CATS::Field->new(name => 'f');
+
+    my $j = CATS::Field::json();
+    my $je = CATS::Field::json(allow_empty => 1);
+    ok $j->('{', $f), 'bad json 1';
+    ok $je->('}', $f), 'bad json 2';
+    ok $j->('', $f), 'bad empty json';
+    is $j->('[1]', $f), undef, 'valid json';
+    is $je->('', $f), undef, 'empty json';
 }
 {
     my $f = CATS::Field->new(name => 'f');
