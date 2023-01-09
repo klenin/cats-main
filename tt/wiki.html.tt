@@ -1,4 +1,7 @@
 [%- js.nonce = 1 -%]
+[%- IF page.style; extra_head = BLOCK -%]
+<style>[% page.style %]</style>
+[%- END; END -%]
 [%- PROCESS includes/menu_begin.tti -%]
 
 <div class="wiki">

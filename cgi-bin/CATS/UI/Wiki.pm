@@ -176,9 +176,9 @@ our $text_form = CATS::Form->new(
         $form_data->{author} = $wt->{author_id}->{value} && $dbh->selectrow_array(q~
             SELECT team_name FROM accounts WHERE id = ?~, undef,
             $wt->{author_id}->{value});
-        my $pn = $form_data->{page_name} = Encode::decode_utf8($dbh->selectrow_array(q~
-            SELECT name FROM wiki_pages WHERE id = ?~, undef,
-            $wt->{wiki_id}->{value}));
+        my ($pn) = ($form_data->{page_name}, $form_data->{style}) = $dbh->selectrow_array(q~
+            SELECT name, style FROM wiki_pages WHERE id = ?~, undef,
+            $wt->{wiki_id}->{value});
         my $lm = $wt->{last_modified};
         $lm->{value} ||= $form_data->{id} && $dbh->selectrow_array(q~
             SELECT last_modified FROM wiki_texts WHERE id = ?~, undef,
@@ -250,8 +250,8 @@ sub wiki_frame {
     init_template($p, 'wiki');
 
     $p->{name} or return;
-    my ($id, $is_public) = $dbh->selectrow_array(q~
-        SELECT id, is_public FROM wiki_pages WHERE name = ?~, undef,
+    my ($id, $is_public, $style) = $dbh->selectrow_array(q~
+        SELECT id, is_public, style FROM wiki_pages WHERE name = ?~, undef,
         $p->{name});
     $id && ($is_public || $user->privs->{edit_wiki}) or return $p->not_found;
     my $langs = $dbh->selectall_arrayref(q~
@@ -270,6 +270,7 @@ sub wiki_frame {
     }
     $page->{name} = $p->{name};
     $page->{markdown} = _prepare_text($page->{text});
+    $page->{style} = $style;
     delete $contest->{title};
     $t->param(
         page => $page,
