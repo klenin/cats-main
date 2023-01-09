@@ -559,7 +559,7 @@ sub parse_uri {
 
 my $common_params = [ 1,
     f => ident, enc => encoding, cid => integer, cpid => integer, json => qr/^[a-zA-Z0-9_]+$/,
-    lang => ident, clist => clist_of integer, notime => bool, noiface => bool,
+    lang => ident, clist => clist_of integer, notime => bool0, noiface => bool0,
     csv => clist_of ident, csv_sep => str,
 ];
 
