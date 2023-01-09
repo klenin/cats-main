@@ -640,6 +640,8 @@ CREATE TABLE wiki_pages (
     contest_id INTEGER,
     problem_id INTEGER,
     is_public  SMALLINT DEFAULT 0 NOT NULL,
+    options    VARCHAR(200),
+    style      CATS_TEXT,
 
     CONSTRAINT wiki_pages_name_uniq UNIQUE (name),
     CONSTRAINT wiki_pages_contests_fk
