@@ -48,7 +48,8 @@ our $page_form = CATS::Form->new(
             editor => { attrs => { id => 'name' } } ],
         [ name => 'is_public', validators => $CATS::Field::bool, caption => 669,
             %CATS::Field::default_zero ],
-        [ name => 'options', validators => [ CATS::Field::str_length(0, 200) ], caption => 821 ],
+        [ name => 'options', caption => 821, validators => [
+            CATS::Field::str_length(0, 200), CATS::Field::json(allow_empty => 1) ] ],
         [ name => 'style', caption => 820, editor => { rows => 3 } ],
     ],
     href_action => 'wiki_pages_edit',
@@ -250,8 +251,8 @@ sub wiki_frame {
     init_template($p, 'wiki');
 
     $p->{name} or return;
-    my ($id, $is_public, $style) = $dbh->selectrow_array(q~
-        SELECT id, is_public, style FROM wiki_pages WHERE name = ?~, undef,
+    my ($id, $is_public, $style, $opts_raw) = $dbh->selectrow_array(q~
+        SELECT id, is_public, style, options FROM wiki_pages WHERE name = ?~, undef,
         $p->{name});
     $id && ($is_public || $user->privs->{edit_wiki}) or return $p->not_found;
     my $langs = $dbh->selectall_arrayref(q~
@@ -272,9 +273,11 @@ sub wiki_frame {
     $page->{markdown} = _prepare_text($page->{text});
     $page->{style} = $style;
     delete $contest->{title};
+    my $opts = eval { JSON::XS::decode_json($opts_raw); } // {};
     $t->param(
         page => $page,
         title_suffix => $page->{title},
+        (!exists $p->{noiface} && exists $opts->{noiface} ? (noiface => $opts->{noiface}) : ()),
         submenu => [
             (_can_edit($id) ? ({
                 href => url_f('wiki_edit',
