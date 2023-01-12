@@ -119,7 +119,7 @@ sub log_url {
         SELECT id, title
             FROM problems P WHERE CURRENT_TIMESTAMP - P.upload_date <= 1~, { Slice => {} });
     if (@$p) {
-        $r->{long}->{'Problems changed'} = join ', ', map '"' . Encode::decode_utf8($_->{title}) . '"', @$p;
+        $r->{long}->{'Problems changed'} = join ', ', map qq~"$_->{title}"~, @$p;
     }
 }
 
