@@ -23,6 +23,7 @@ sub construct_long {
 
 package main;
 
+use Carp;
 use Encode;
 use File::Spec;
 use FindBin;
@@ -39,14 +40,23 @@ use CATS::Utils qw(group_digits);
 
 use CATS::Judge;
 
-GetOptions(help => \(my $help = 0), 'output=s' => \(my $output = ''));
+GetOptions(
+    help => \(my $help = 0),
+    'output=s' => \(my $output = ''),
+    verbose => \(my $verbose = 0),
+);
 
 sub usage {
-    print STDERR "CATS Reporting tool\nUsage: $0 [--help] --output={std|mail}\n";
+    print STDERR qq~
+CATS Reporting tool
+Usage: $0 [--help] --output={std|mail} [--verbose]
+~;
     exit;
 }
 
 usage if $help;
+
+$SIG{__DIE__} = \&Carp::confess if $verbose;
 
 if (!$output || $output !~ /^(std|mail)$/) {
     print STDERR "Wrong or missing --output parameter\n";
@@ -138,7 +148,7 @@ $dbh->disconnect;
 my $text = sprintf "Subject: CATS Health Report (%s)\n\n%s\n", $r->construct_short, $r->construct_long;
 
 if ($output eq 'mail') {
-    CATS::Mail::send($CATS::Config::health_report_email, $text);
+    CATS::Mail::send($CATS::Config::health_report_email, $text, verbose => $verbose);
 }
 else {
     print Encode::encode_utf8($text);
