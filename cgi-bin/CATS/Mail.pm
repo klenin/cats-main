@@ -3,6 +3,7 @@ package CATS::Mail;
 use strict;
 use warnings;
 
+use Authen::SASL;
 use Net::SMTP::SSL;
 
 use CATS::Config;
@@ -19,8 +20,31 @@ sub send {
         Debug => $opts{verbose},
     ) or die $@ || 'SMTP initialization failed';
 
+    # Remove in Perl 2.24+.
+    # https://stackoverflow.com/questions/45284306/perl-netsmtp-force-auth-method
+    my $auth = Authen::SASL->new(
+        mechanism => 'LOGIN PLAIN CRAM-MD5', # GSSAPI
+        callback  => { user => $s->{login}, pass => $s->{password} },
+        debug => $opts{verbose},
+    );
+    {
+        no warnings 'redefine';
+        my $count;
+        local *Authen::SASL::mechanism = sub {
+            my $self = shift;
 
-    $mailer->auth($s->{login}, $s->{password}) or die $mailer->message;
+            # Fix Begin
+            # ignore first setting of mechanism
+            if ( !$count++ && @_ && $Net::SMTP::VERSION =~ /^2\./ ) {
+                return;
+            }
+
+            # Fix End
+            @_ ? $self->{mechanism} = shift : $self->{mechanism};
+        };
+
+        $mailer->auth($auth) or die $mailer->message;
+    }
     $mailer->mail($s->{email}) or die $mailer->message;
     $mailer->to($to) or die $mailer->message;
     $mailer->data or die $mailer->message;
