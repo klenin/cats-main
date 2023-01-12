@@ -7,15 +7,18 @@ use Net::SMTP::SSL;
 
 use CATS::Config;
 
+# opts: verbose
 sub send {
-    my ($to, $text) = @_;
+    my ($to, $text, %opts) = @_;
     my $s = $CATS::Config::smtp;
 
     my $mailer = Net::SMTP::SSL->new(
         $s->{server},
         Hello => $s->{server},
         Port => $s->{port},
-    );
+        Debug => $opts{verbose},
+    ) or die $@ || 'SMTP initialization failed';
+
 
     $mailer->auth($s->{login}, $s->{password}) or die $mailer->message;
     $mailer->mail($s->{email}) or die $mailer->message;
