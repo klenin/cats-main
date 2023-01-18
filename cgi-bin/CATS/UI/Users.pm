@@ -124,7 +124,6 @@ sub users_delete {
             WHERE CA.id = ?~, undef,
         $caid);
     $aid or return;
-    $name = Encode::decode_utf8($name);
     CATS::Privileges::is_root($srole) and return msg(1095, $name);
 
     $dbh->do(q~
