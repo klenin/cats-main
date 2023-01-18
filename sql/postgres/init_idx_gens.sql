@@ -3,6 +3,7 @@ CREATE SEQUENCE login_seq;
 CREATE SEQUENCE de_bitmap_cache_seq START WITH 1000;
 
 CREATE INDEX accounts_sid_idx ON accounts(sid);
+CREATE INDEX accounts_name_idx ON accounts(team_name);
 CREATE INDEX contest_tags_name_idx ON contest_tags(name);
 CREATE INDEX ps_guid_idx ON problem_sources_local(guid);
 CREATE INDEX idx_contest_groups_clist ON contest_groups(clist);
