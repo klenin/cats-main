@@ -67,6 +67,7 @@ sub say_n {
 sub parse_diff {
     my $diff = shift;
     my $table;
+    $has_lines = 0;
     for (split "\n", $diff) {
         if (my ($line) = m/^\+([^+].+)$/) {
             if (m/(:?CREATE|ALTER)\s+(:?TABLE|INDEX)/ || m/(:?GRANT|REVOKE)\s/) {
