@@ -160,7 +160,7 @@ sub answer_api {
     my $r = _get_question($p) or return $p->print_json({});
     $r->{contest_id} == $cid or return $p->print_json({});
 
-    my $ans = Encode::decode_utf8($p->{answer});
+    my $ans = $p->{answer};
     $dbh->do(q~
         UPDATE questions
         SET clarification_time = CURRENT_TIMESTAMP, answer = ?, received = 0, clarified = 1
