@@ -542,6 +542,7 @@ div.rank_table_container { position: relative; overflow: auto; }
         position: sticky;
         left: 0;
         background-color: inherit;
+        z-index: 1;
     }
 }
 
