@@ -67,9 +67,8 @@ function init_quizzes() {
     problem_text.find('Quiz').each(function() {
       var quiz = $(this);
       if (quiz.hasClass('active')) return;
-      quiz.addClass('active');
-      quiz.find('Text').each(function() {
-        $(this).replaceWith($('<p></p>', { html: $(this).html() }));
+      quiz.addClass('active').find('Text').replaceWith(function() {
+        return $('<p>').append($(this).content());
       });
       quiz_count++;
       var question = { 
