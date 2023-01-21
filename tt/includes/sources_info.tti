@@ -187,7 +187,7 @@ $(update_request_status);
         <div></div></td>
         [% IF si.points.defined() -%]
         <td>[% capt.pts %]:
-          [%- IF si.scaled_points_v == si.points; si.points; ELSE; si.scaled_points_v; " ($si.points)"; END %]</td>
+          [% IF si.scaled_points_v == si.points; si.points; ELSE; si.scaled_points_v; " ($si.points)"; END %]</td>
         [%- END %]
         [% IF si.is_jury && (si.short_state == 'AW' || si.short_state == 'NP' || si.short_state == 'OK') -%]
         <td><form method="POST" action="[% si.href_quick_verdict %]">
