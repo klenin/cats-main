@@ -57,6 +57,9 @@ my %generators = (
     boldsymbol => sub { sc(b => @_) },
     mathcal=> sub { sc(mathcal => @_) },
     texttt => sub { sc(tt => @_) },
+    textbf => sub { sc(b => @_) },
+    textit => sub { sc(em => @_) },
+    text   => \&ss,
     mbox   => \&ss,
     mathbb => sub { sc(mathbb => @_) },
     mathbf => sub { sc(b => @_) },
@@ -166,13 +169,9 @@ sub parse_block {
                 my @optional = parse_optional;
                 push @res, [ 'sqrt' => parse_token, @optional ];
             }
-            elsif ($f eq 'texttt') {
+            elsif ($f =~ /^(texttt|textbf|textit|text|mbox)$/) {
                 $source =~ s/^{([^{]*)}//;
-                push @res, [ texttt => $1 ];
-            }
-            elsif ($f eq 'mbox') {
-                $source =~ s/^{([^{]*)}//;
-                push @res, [ mbox => $1 ];
+                push @res, [ $f => $1 ];
             }
             elsif ($f eq 'over') {
                 my $d = [ frac => $res[-1] // '', parse_token() ];

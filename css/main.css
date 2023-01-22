@@ -469,6 +469,7 @@ span.TeX span.large.hh3 { transform: scaleY(3.0); }
 span.TeX span.large.hh4 { transform: scaleY(4.0); }
 span.TeX span.tt { font-weight: bold; font-family: Courier New, monospace; }
 span.TeX span.b { font-weight: bold; }
+span.TeX span.em { font-style: italic; }
 span.TeX span.mathbb { font-family: MJXc-TeX-ams-Rw, serif; }
 span.TeX span.mathbb i, span.TeX span.mathrm i { font-style: normal; }
 
