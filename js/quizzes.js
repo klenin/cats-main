@@ -68,7 +68,7 @@ function init_quizzes() {
       var quiz = $(this);
       if (quiz.hasClass('active')) return;
       quiz.addClass('active').find('Text').replaceWith(function() {
-        return $('<p>').append($(this).content());
+        return $('<p>').append($(this).contents());
       });
       quiz_count++;
       var question = { 
