@@ -372,6 +372,19 @@ sub problem_text {
                 $problem->{problem_id}) or next;
             $problem = { %$problem, %$p_orig };
         }
+        # Validated by router.
+        my $sol_names_cond =
+            !@{$p->{explain_solutions}} ? '' :
+            sprintf ' AND PSL.name IN (%s)', join ',', map "'$_'", @{$p->{explain_solutions}};
+        $problem->{solutions} = $v->{explain} && @{$p->{explain_solutions}} ? $dbh->selectall_arrayref(qq~
+            SELECT PSL.name, PSL.src, PSL.name, PSL.fname, DE.syntax FROM problem_sources_local PSL
+            INNER JOIN problem_sources PS ON PSL.id = PS.id
+            inner JOIN default_de DE ON PSL.de_id = DE.id
+            WHERE PS.problem_id = ? AND PSL.stype = ?$sol_names_cond~,
+            { Slice => {} },
+            $problem->{problem_id}, $cats::solution) : [];
+        $has_static_highlight = 1 if @{$problem->{solutions}};
+
         $problem->{tags} = $p->{tags} if $v->{is_jury_in_contest} && defined $p->{tags};
         $problem->{parsed_tags} = $tags = CATS::Problem::Tags::parse_tag_condition(
             $problem->{tags}, _ignore_errors);

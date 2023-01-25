@@ -418,6 +418,7 @@ my $main_routes = {
         pid => integer, cpid => integer, cid => integer,
         explain => bool, nospell => bool, noformal => bool, noif => bool, pl => ident, nokw => bool,
         tags => str, raw => bool, nomath => bool, uid => integer, noauthor => bool, noformats => bool,
+        explain_solutions => clist_of ident,
     ],
     get_snippets => [ \&CATS::UI::Snippets::get_snippets,
         cpid => integer, snippet_names => array_of ident, uid => integer,
