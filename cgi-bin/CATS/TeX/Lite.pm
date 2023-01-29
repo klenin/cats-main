@@ -332,6 +332,41 @@ sub convert_all {
     $_[0] =~ s/(\$([^\$]*[^\$\\])\$)/convert_one($2)/eg;
 }
 
+sub tag { "<$_[0]>$_[1]</$_[0]>" }
+
+my %text_commands = (
+    t => 'code',
+    textbf => 'b',
+    textit => 'em',
+    texttt => 'code',
+);
+my $text_cmd_re = join '|', sort keys %text_commands;
+
+my %text_envs = (
+    center => 'center',
+    enumerate => 'ol',
+    itemize => 'ul',
+);
+my $text_env_re = join '|', sort keys %text_envs;
+
+sub convert_text {
+    my ($text) = @_;
+
+    $text =~ s/<</\x{AB}/g;
+    $text =~ s/>>/\x{BB}/g;
+    $text =~ s/\s<\s/ \\lt /g;
+    while ($text =~ s/\\($text_cmd_re){([^{}]+)}/tag($text_commands{$1}, $2)/eg) {}
+    $text =~ s/\\subsection\*?{([^}]+)}/<h4>$1<\/h4>/g;
+    $text =~ s~\\(begin|end){($text_env_re)}~'<' . ($1 eq 'end' ? '/' : '') . "$text_envs{$2}>"~eg;
+    $text =~ s/\\begin{verbatim}/<pre><code language="">/g;
+    $text =~ s/\\end{verbatim}/<\/code><\/pre>/g;
+    $text =~ s/\\item\s(.*)\n/<li>$1<\/li>\n/g;
+    $text =~ s/\\includegraphics(?:\[[^\]]+\])?{([^}]+)}/<img src="$1"\/>/g;
+
+    my @paragraphs = split /(?:\n\r?){2,}/m, $text;
+    join "\n", map m~^\s*<(\w+)>.+<\/\1>\s*$~m ? $_ : "<p>$_\n</p>", @paragraphs;
+}
+
 sub styles() { '' }
 
 1;

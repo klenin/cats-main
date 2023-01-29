@@ -3,7 +3,7 @@ use warnings;
 
 use File::Spec;
 use FindBin;
-use Test::More tests => 55;
+use Test::More tests => 58;
 
 use lib File::Spec->catdir($FindBin::Bin, '..');
 use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
@@ -11,6 +11,7 @@ use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
 use CATS::TeX::Lite;
 
 sub tex { CATS::TeX::Lite::as_html(CATS::TeX::Lite::parse($_[0])) }
+sub text_tex { CATS::TeX::Lite::convert_text($_[0]) }
 
 sub is_ {
     if (($ARGV[0] // '') eq 'gen') {
@@ -18,6 +19,15 @@ sub is_ {
     }
     else {
         is tex($_[0]), $_[1], "tex $_[0]";
+    }
+}
+
+sub is_t {
+    if (($ARGV[0] // '') eq 'gen') {
+        print "<p>Text \$$_[0]\$ text></p>\n";
+    }
+    else {
+        is text_tex($_[0]), $_[1], join ' ', 'tex', split "\n", $_[0];
     }
 }
 
@@ -164,3 +174,6 @@ is_u '\frac{\sum\limits_1^2}{\frac{b}{c}}', 4;
 is_u '\begin{array}{l}1\\\\2\\\\3\end{array}', 3;
 is_u '\begin{array}{l}\frac{1}{\frac{b}{c}}\\\\x & \prod\limits_1^2\end{array}', 5;
 
+is_t "<\<text>> < 5", "<p>\xABtext\xBB \\lt 5\n</p>";
+is_t '\\textbf{\\texttt{a}b}', '<b><code>a</code>b</b>';
+is_t "\\begin{itemize}\n\\item aa\n\\item bb\n\\end{itemize}", "<ul>\n<li>aa</li>\n<li>bb</li>\n</ul>";
