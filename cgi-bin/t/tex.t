@@ -3,7 +3,7 @@ use warnings;
 
 use File::Spec;
 use FindBin;
-use Test::More tests => 59;
+use Test::More tests => 61;
 
 use lib File::Spec->catdir($FindBin::Bin, '..');
 use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
@@ -140,6 +140,8 @@ is_ '\int\sum\prod\bigcup' =>
 
 is_ 'a \not\equiv b', '<i>a</i>&nbsp;&nequiv;&nbsp;<i>b</i>';
 
+is_ q~\begin{unknownenv}a\end{unknownenv}~, '<i>a</i>';
+
 is_ q~\begin{array}{l}a\end{array}~,
     '<span class="array"><span class="tbl l1">' .
     '<span><span><i>a</i></span></span>' .
@@ -155,6 +157,13 @@ is_ q~\begin{array}{lr}123&a \\\\ b & c\end{array}~,
     '<span class="array"><span class="tbl l1 r2">' .
     '<span><span><span class="num">123</span></span><span><i>a</i></span></span>' .
     '<span><span><i>b</i></span><span><i>c</i></span></span>' .
+    '</span></span>';
+
+is_ q~\begin{cases}x \\\\ y \end{cases}~,
+    '<span class="large hh2">{</span>' .
+    '<span class="array"><span class="tbl l1">' .
+    '<span><span><i>x</i></span></span>' .
+    '<span><span><i>y</i></span></span>' .
     '</span></span>';
 
 is_ '\mathbb{R}\mathcal{C}',

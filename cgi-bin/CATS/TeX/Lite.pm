@@ -138,11 +138,25 @@ sub _token_as {
     ref $token eq 'ARRAY' && @$token == 2 && $token->[0] eq $type ? $token->[1] : undef;
 }
 
+sub parse_rows {
+    my @rows = ([ 'row', [ 'block' ] ]);
+    my (undef, @content) = @{parse_block()};
+    for (@content) {
+        if (_is_token($_, 'row')) {
+            push @rows, [ 'row', [ 'block' ] ];
+        }
+        else {
+            push @{$rows[-1]->[-1]}, $_;
+        }
+    }
+    @rows;
+}
+
 sub parse_block {
     my @res = ();
     my $limits = '';
     while ($source ne '') {
-        last if $source =~ s/^\s*(?:\\end\{[a-zA-Z]+)?}//;
+        last if $source =~ s/^\s*(?:\\end\{[a-zA-Z]+\*?)?}//;
         if ($source =~ s/^(\s*)\\([_^])//) {
             push @res, [ op => '', $2, '' ];
         }
@@ -195,22 +209,15 @@ sub parse_block {
                 push @res, [ spec => sp($lsp), 'mod', sp($rsp) ];
             }
             elsif ($f eq 'begin') {
-                if ($source =~ s/^\{([a-zA-Z]+)\}\s*//) {
+                if ($source =~ s/^\{([a-zA-Z]+)\*?\}\s*//) {
                     my $env= $1;
                     if ($env eq 'array') {
                         $source =~ s/^\{([a-zA-Z]+)\}\s*//;
                         my $cols = join ' ', map substr($1, $_ - 1, 1) . $_, 1 .. length($1);
-                        my @rows = ([ 'row', [ 'block' ] ]);
-                        my (undef, @content) = @{parse_block()};
-                        for (@content) {
-                            if (_is_token($_, 'row')) {
-                                push @rows, [ 'row', [ 'block' ] ];
-                            }
-                            else {
-                                push @{$rows[-1]->[-1]}, $_;
-                            }
-                        }
-                        push @res, [ array => $cols // '', @rows ];
+                        push @res, [ array => $cols // '', parse_rows ];
+                    }
+                    elsif ($env eq 'cases') {
+                        push @res, [ left => '{' ], [ array => 'l1', parse_rows ];
                     }
                     else {
                         # Unknown environment, ignore.
