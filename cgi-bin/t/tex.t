@@ -3,7 +3,7 @@ use warnings;
 
 use File::Spec;
 use FindBin;
-use Test::More tests => 58;
+use Test::More tests => 59;
 
 use lib File::Spec->catdir($FindBin::Bin, '..');
 use lib File::Spec->catdir($FindBin::Bin, '..', 'cats-problem');
@@ -58,6 +58,7 @@ is_ 'a^22', '<i>a</i><sup><span class="num">22</span></sup>';
 
 is_ 'a^{22}', '<i>a</i><sup><span class="num">22</span></sup>';
 is_ 'a_{b+c}', '<i>a</i><sub><i>b</i>&#8239;+&#8239;<i>c</i></sub>';
+is_ 'a_{\mbox{bc}}', '<i>a</i><sub><span>bc</span></sub>';
 is_ '\overline S', '<span class="over"><i>S</i></span>';
 is_ '\frac 1 a',
     '<span class="frac sfrac">' .

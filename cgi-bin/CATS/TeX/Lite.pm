@@ -170,7 +170,7 @@ sub parse_block {
                 push @res, [ 'sqrt' => parse_token, @optional ];
             }
             elsif ($f =~ /^(texttt|textbf|textit|text|mbox)$/) {
-                $source =~ s/^{([^{]*)}//;
+                $source =~ s/^{([^}]*)}//;
                 push @res, [ $f => $1 ];
             }
             elsif ($f eq 'over') {
