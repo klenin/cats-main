@@ -1,0 +1,27 @@
+[%- js.nonce = 1 -%]
+[%- PROCESS includes/menu_begin.tti -%]
+[%- PROCESS includes/icon/download.tti -%]
+
+[%- IF converted %]
+<p>[% capt.result %]:</p>
+<textarea cols="100" rows="20" readonly="readonly">
+  [%- converted | html %]
+</textarea>
+[%- END %]
+
+<form method="POST" accept-charset="UTF-8" enctype="multipart/form-data">
+<p>[% capt.source %]:</p>
+<textarea cols="100" rows="20" name="text">
+  [%- text | html %]
+</textarea>
+
+<p>
+  <label>[% capt.mode %]:</label>
+  <select name="method">
+    <option value="tex">TeX</tex>
+  </select>
+  <button type="submit" name="do_import" value="1" class="button">[% capt.do_import %]</button>
+</p>
+</form>
+
+[% PROCESS includes/menu_end.tti %]

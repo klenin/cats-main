@@ -17,6 +17,7 @@ use CATS::Problem::Save;
 use CATS::Problem::Storage;
 use CATS::Problem::Utils;
 use CATS::StaticPages;
+use CATS::TeX::Lite;
 use CATS::Utils qw(source_encodings);
 
 sub _get_problem_info {
@@ -243,9 +244,11 @@ sub problem_history_edit_frame {
     }
 
     my $is_xml = $p->{file} && ($p->{file} =~ m/\.xml$/);
-    my @text_item = $is_xml ?
-        { href => url_f('problem_text', pid => $p->{pid}), item => res_str(411) } : ();
-    set_submenu_for_tree_frame($p->{pid}, $hash_base, @text_item);
+    my @text_items = !$is_xml ? () : (
+        { href => url_f('problem_text', pid => $p->{pid}), item => res_str(411) },
+        { href => url_f('problem_text_import', pid => $p->{pid}), item => res_str(564) },
+    );
+    set_submenu_for_tree_frame($p->{pid}, $hash_base, @text_items);
     my $autocomplete = {};
     if ($is_xml) {
         $autocomplete->{cats_tags} = [ sort keys %{CATS::Problem::Parser::tag_handlers()} ];
@@ -368,6 +371,35 @@ sub problem_history_frame {
         );
     };
     $lv->attach($fetch_record, $lv->sort_in_memory(CATS::Problem::Storage::get_log($p->{pid})));
+}
+
+sub problem_text_import_frame {
+    my ($p) = @_;
+    $is_jury or return;
+    my $pr = _get_problem_info($p) or return;
+    $pr->{is_jury} or return;
+
+    init_template($p, 'problem_text_import');
+    CATS::Problem::Utils::problem_submenu('problem_history', $p->{pid});
+
+    my $text = $p->{text} // '';
+    $t->param(text => $text);
+    $p->{do_import} && $p->{method} or return;
+
+    my $converter = {
+        tex => \&CATS::TeX::Lite::convert_text,
+    }->{$p->{method}} or return;
+
+    my @pid = (pid => $p->{pid});
+    my $href_xml = url_f('problem_history_edit', @pid, hb => '0', file => '*');
+    $t->param(
+        converted => $converter->($text),
+        submenu => [
+            { href => url_f('problem_details', @pid), item => res_str(504) },
+            { href => url_f('problem_history', @pid), item => res_str(568) },
+            { href => $href_xml, item => res_str(572) },
+        ],
+    );
 }
 
 1;

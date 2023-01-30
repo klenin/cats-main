@@ -1,0 +1,8 @@
+[%
+  capt.import({
+    source => 'Source text',
+    result => 'Result',
+    mode => 'Mode',
+    do_import => 'import',
+  })
+%]
