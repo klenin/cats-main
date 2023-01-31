@@ -14,7 +14,7 @@ use CATS::Form;
 use CATS::Globals qw ($cid $is_jury $is_root $t $uid $user);
 use CATS::IP;
 use CATS::Messages qw(msg res_str);
-use CATS::Output qw(init_template url_f url_f_cid);
+use CATS::Output qw(init_template url_f url_f_cid search);
 use CATS::Privileges;
 use CATS::Settings qw($settings);
 use CATS::Time;
@@ -159,8 +159,11 @@ sub user_stats_frame {
         INNER JOIN acc_group_accounts AGA ON AGA.acc_group_id = AG.id
         WHERE AGA.account_id = ?~ . $groups_hidden_cond, { Slice => {} },
         $p->{uid});
-    for (@$groups) {
-        $_->{href_acc_group_users} = url_f('acc_group_users', group => $_->{id}) if $is_root;
+    if ($user->privs->{manage_groups}) {
+        for (@$groups) {
+            $_->{href_acc_group_users} =
+                url_f('acc_group_users', group => $_->{id}, search(account_id => $p->{uid}));
+        }
     }
 
     $u->{snippets_count} = $dbh->selectrow_array(q~
