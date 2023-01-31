@@ -122,15 +122,22 @@ my $_contest_account_sql = q~
 sub find_users_api {
     my ($p) = @_;
     my $root_cond = $is_root ? '' : ' AND srole > 0';
+    # Optimization: Use INNER JOIN instead of EXISTS subquery.
     my $contest_join = ($p->{in_contest} // 0) > 0 ?
         ' INNER JOIN contest_accounts CA ON CA.account_id = A.id' : '';
     my $contest_cond =
         !exists $p->{in_contest} ? '' :
         $p->{in_contest} > 0 ? ' AND CA.contest_id = ?' :
         " AND NOT EXISTS ($_contest_account_sql)";
+    # Optimization: Use UNION instead of OR to utilize both indexes.
     my $r = $dbh->selectall_arrayref(qq~
-        SELECT A.id, A.login, A.team_name FROM accounts A$contest_join
-        WHERE (A.login LIKE ? || '%' OR A.team_name LIKE ? || '%')$root_cond$contest_cond
+        SELECT A.id, A.login, A.team_name FROM (
+            SELECT * FROM accounts A1$contest_join
+            WHERE A1.login LIKE ? || '%'
+            UNION
+            SELECT * FROM accounts A2$contest_join
+            WHERE A2.team_name LIKE ? || '%') A
+        WHERE 1 = 1$root_cond$contest_cond
         ORDER BY A.login
         $CATS::DB::db->{LIMIT} 100~,
         { Slice => {} },
