@@ -37,6 +37,10 @@ sub init {
     $messages = [];
 }
 
+sub clear {
+    $messages = [];
+}
+
 sub init_mockup {
     $is_mockup = 1;
     $resource_strings = {};
