@@ -147,7 +147,7 @@ var handlers = {
     }
     if (p) {
       var dl = document.location;
-      window.open([ dl.protocol, '//', dl.host, dl.pathname, dl.search, ';csv=', p ].join(''));
+      window.open([ dl.protocol, '//', dl.host, dl.pathname, dl.search, ';csv=', p ].join(''), '_blank');
     }
   },
 
