@@ -1,9 +1,9 @@
-[% PROCESS includes/menu_begin.tti %]
-[% PROCESS includes/html.tti %]
+[%- PROCESS includes/menu_begin.tti -%]
+[%- PROCESS includes/html.tti -%]
 
 [% PROCESS includes/listview_header.tti table_selector = '#user_contacts' name_selector = 'td.handle a' %]
 
-<table class="listview bordered highlight" id="user_contacts">
+<table class="listview bordered cell_search highlight" id="user_contacts">
 [% PROCESS includes/listview_col_defs.tti %]
 [% FOREACH uc IN user_contacts %]
 <tr class="[% loop.parity %]">
@@ -12,7 +12,7 @@
   [% IF uc.href_edit ~%]
   <a href="[% uc.href_edit %]" class="icon edit"></a>
   [%~ END %]
-  [% uc.type_name | html %]
+  [% uc.type_name | html; cell_search('contact_type_id', uc) %]
 </td>
 <td class="handle">[% maybe_href(uc.href_contact, uc.handle) %]</td>
 [% IF visible_cols.Ip %]<td class="center">[% IF uc.is_public %]<a href="#" class="icon checked"></a>[% END %]</td>[% END %]
