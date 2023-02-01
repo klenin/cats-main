@@ -12,7 +12,7 @@
   [% IF uc.href_edit ~%]
   <a href="[% uc.href_edit %]" class="icon edit"></a>
   [%~ END %]
-  [% uc.type_name | html; cell_search('contact_type_id', uc) %]
+  [% maybe_href(uc.href_type, uc.type_name); cell_search('contact_type_id', uc) %]
 </td>
 <td class="handle">[% maybe_href(uc.href_contact, uc.handle) %]</td>
 [% IF visible_cols.Ip %]<td class="center">[% IF uc.is_public %]<a href="#" class="icon checked"></a>[% END %]</td>[% END %]

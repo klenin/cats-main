@@ -102,6 +102,8 @@ sub user_contacts_frame {
     my $fetch_record = sub {
         my $row = $_[0]->fetchrow_hashref or return ();
         (
+            ($is_root ? (
+                href_type => url_f('contact_types_edit', id => $row->{contact_type_id})) : ()),
             ($editable ? (
                 href_edit => url_f('user_contacts_edit', id => $row->{id}, uid => $p->{uid}),
                 href_delete => url_f('user_contacts', 'delete' => $row->{id}, uid => $p->{uid})) : ()),
