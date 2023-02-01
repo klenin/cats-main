@@ -39,7 +39,7 @@ our $user_contact_form = CATS::Form->new(
     fields => [
         [ name => 'account_id' ],
         [ name => 'contact_type_id', validators => [ $CATS::Field::foreign_key ], caption => 642 ],
-        [ name => 'handle', validators => [ CATS::Field::str_length(1, 200) ], caption => 657 ],
+        [ name => 'handle', validators => [ CATS::Field::str_length(1, 200) ], caption => 699 ],
         [ name => 'is_public', validators => [ qr/^1?$/ ], caption => 669 ],
         [ name => 'is_actual', validators => [ qr/^1?$/ ], caption => 670 ],
     ],
@@ -83,7 +83,7 @@ sub user_contacts_frame {
 
     $lv->default_sort(0)->define_columns([
         { caption => res_str(642), order_by => 'type_name', width => '20%' },
-        { caption => res_str(657), order_by => 'handle', width => '30%' },
+        { caption => res_str(699), order_by => 'handle', width => '30%' },
         ($editable ?
             ({ caption => res_str(669), order_by => 'is_public', width => '15%', col => 'Ip' }) : ()),
         { caption => res_str(670), order_by => 'is_actual', width => '15%', col => 'Ia' },
