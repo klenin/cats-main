@@ -165,7 +165,7 @@ sub users_add_participants_frame {
         href_action => url_f('users_add_participants'),
         title_suffix => res_str(584),
         CATS::User::users_submenu($p),
-        href_find_users => url_f('api_find_users', in_contest => 0),
+        href_find_users => url_f('api_find_users', in_contest => -$cid),
         href_find_contests => url_f('api_find_contests'),
         href_find_acc_groups => url_f('api_find_acc_groups'),
     );

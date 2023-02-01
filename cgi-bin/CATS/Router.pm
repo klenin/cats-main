@@ -274,7 +274,7 @@ my $main_routes = {
         from_login => str, to_login => str, js => bool,
     ],
     api_find_users => [ \&CATS::UI::UserRelations::find_users_api,
-        query => str, in_contest => integer, ],
+        query => str, in_contest => signed_integer, ],
     api_user_set_team => [ \&CATS::UI::UserRelations::user_set_team_api,
         user_login => str, team_login => str, ],
     impersonate => [ \&CATS::UI::UserDetails::impersonate_frame, uid => integer, ],

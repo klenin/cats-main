@@ -116,32 +116,34 @@ sub user_relations_edit_frame {
         href_action_params => \@puid);
 }
 
-my $_contest_account_sql = q~
-    SELECT 1 FROM contest_accounts CA
-    WHERE CA.contest_id = ? AND CA.account_id = A.id~;
+# in_contest: >0 -- in given contest, <0 -- NOT in given contest, =0 - any
 sub find_users_api {
     my ($p) = @_;
-    my $root_cond = $is_root ? '' : ' AND srole > 0';
+    my $root_cond = $is_root ? '' : ' AND A.srole > 0';
+    my $in_contest = $p->{in_contest} // 0;
     # Optimization: Use INNER JOIN instead of EXISTS subquery.
-    my $contest_join = ($p->{in_contest} // 0) > 0 ?
-        ' INNER JOIN contest_accounts CA ON CA.account_id = A.id' : '';
-    my $contest_cond =
-        !exists $p->{in_contest} ? '' :
-        $p->{in_contest} > 0 ? ' AND CA.contest_id = ?' :
-        " AND NOT EXISTS ($_contest_account_sql)";
+    my @contest_joins = $in_contest > 0 ?
+        map qq~ INNER JOIN contest_accounts CA$_ ON CA$_.account_id = A$_.id~, 1..2:
+        ('', '');
+    my @contest_conds = map {
+        !$in_contest ? '' :
+        $in_contest > 0 ? " AND CA$_.contest_id = ?" :
+        qq~ AND NOT EXISTS (SELECT 1 FROM contest_accounts CA$_
+            WHERE CA$_.contest_id = ? AND CA$_.account_id = A$_.id)~ } 1..2;
     # Optimization: Use UNION instead of OR to utilize both indexes.
     my $r = $dbh->selectall_arrayref(qq~
         SELECT A.id, A.login, A.team_name FROM (
-            SELECT * FROM accounts A1$contest_join
-            WHERE A1.login LIKE ? || '%'
+            SELECT A1.* FROM accounts A1$contest_joins[0]
+            WHERE A1.login LIKE ? || '%'$contest_conds[0]
             UNION
-            SELECT * FROM accounts A2$contest_join
-            WHERE A2.team_name LIKE ? || '%') A
-        WHERE 1 = 1$root_cond$contest_cond
+            SELECT A2.* FROM accounts A2$contest_joins[1]
+            WHERE A2.team_name LIKE ? || '%'$contest_conds[1]
+        ) A
+        WHERE 1 = 1$root_cond
         ORDER BY A.login
         $CATS::DB::db->{LIMIT} 100~,
         { Slice => {} },
-        $p->{query}, $p->{query}, ($contest_cond ? $p->{in_contest} : ()));
+        map { ($p->{query}, $in_contest ? abs($in_contest) : ()) } 1..2);
     $p->print_json({ suggestions =>
         [ map { value => $_->{login}, data => $_ }, @$r ]
     });
