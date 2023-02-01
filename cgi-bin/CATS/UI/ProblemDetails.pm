@@ -168,7 +168,7 @@ sub problem_download {
     my $already_hashed = CATS::Problem::Utils::ensure_problem_hash($pid, \$hash, 1);
     my $fname = "pr/problem_$hash.zip";
     my $fpath = downloads_path . $fname;
-    unless($already_hashed && -f $fpath) {
+    unless ($already_hashed && -f $fpath && -s $fpath) {
         my ($zip) = $dbh->selectrow_array(qq~
             SELECT zip_archive FROM problems WHERE id = ?~, undef,
             $pid);
@@ -182,7 +182,7 @@ sub problem_git_package {
     my $pid = $p->{pid};
     my $sha = $p->{sha};
     $is_jury && $pid or return $p->redirect(url_f 'contests');
-    my ($status) = $dbh->selectrow_array(qq~
+    my ($status) = $dbh->selectrow_array(q~
         SELECT status FROM contest_problems
         WHERE contest_id = ? AND problem_id = ?~, undef,
         $cid, $pid) or return;
