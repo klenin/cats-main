@@ -83,7 +83,11 @@
 <td>
   [%- IF show_flags && r.flag %]<img src="[% r.flag %]" alt="[% r.country | html %]"> [% END %]
   [%- IF 0 %]<a href="[% href_user_stats %];uid=[% r.id %]" title="[% r.city %]"></a>[% END -%]
-  [%- show_logins ? r.login : r.team_name | html; IF show_regions && r.city; ' <small>('; r.city; ')</small>'; END -%]
+  [%-
+    show_logins ? r.login : r.team_name | html;
+    IF show_regions && r.city; ' <small>('; r.city | html; ')</small>'; END;
+    IF show_motto && r.motto; ' <small>('; r.motto | html; ')</small>'; END
+  -%]
 </td>
 [% IF show_points ~%]
   [% FOREACH c IN r.columns %]<td>[% c.points %]</td>[% END -%]
@@ -111,7 +115,8 @@ var rank_table = [
     td: [[% FOREACH c IN r.columns %]'[% c.td %]'[% UNLESS loop.last %],[% END %][% END %]],
     ts: [% r.total_solved %], ttm: [% r.total_time %][% END %], rc: [% r.row_color %],
     pl: [% r.place %], st: '[% status(r) %]',
-    t: "[% r.city | html | $Javascript %]"
+    t: "[% r.city | html | $Javascript %]",
+    m: "[% r.motto | html | $Javascript %]"
   }[% UNLESS loop.last %],[% END %][% END %]
 ];
 var problem_ids = [
@@ -138,7 +143,9 @@ for(var i = 0; i < rank_table.length; ++i) {
     [% IF show_flags %]'<img src="' + r.fl + '"/> ' +[% END %]
     href(
       '[% href_user_stats %];uid=' + r.id,
-      r.n[% IF show_regions %] + (r.t ? ' <small>(' + r.t + ')</small>' : '')[% END %],
+      r.n
+      [%~ IF show_regions %] + (r.t ? ' <small>(' + r.t + ')</small>' : '')[% END -%]
+      [%~ IF show_motto %] + (r.m ? ' <small>(' + r.m + ')</small>' : '')[% END -%],
       'title="' + r.t + '"'), 'class="sticky"');
   [% IF show_points %]
   for (var j = 0; j < r.pt.length; ++j)

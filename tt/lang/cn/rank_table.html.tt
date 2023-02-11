@@ -10,6 +10,7 @@
       n => 'Show',
       flags => 'flags',
       regions => 'regions',
+      motto => 'mottos',
       logins => 'logins',
       ooc => 'ooc',
       virtual => 'virtual',

@@ -80,7 +80,7 @@ $(function() {
 <div id="show" class="bordered padded">
   [% capt.show.n %]:
   [%-
-  FOREACH sh IN [ 'flags', 'regions', 'logins' ];
+  FOREACH sh IN [ 'flags', 'regions', 'motto', 'logins' ];
     label_cb('show_' _ sh, ${"show_$sh"}, sh);
   END;
   label_cb_inverted('hide_ooc', hide_ooc, 'ooc');

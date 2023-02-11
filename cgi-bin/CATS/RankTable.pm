@@ -23,7 +23,7 @@ use fields qw(
     title has_practice not_started filter sites groups use_cache
     rank problems problems_idx topics
     show_all_results show_prizes has_competitive
-    show_regions show_flags show_is_remote show_logins sort p notime nostats
+    show_regions show_motto show_flags show_is_remote show_logins sort p notime nostats
     points_min points_max
     max_total_points
 );
@@ -328,6 +328,7 @@ sub parse_params {
     $self->{sites} = $p->{sites};
     $self->{show_prizes} = $p->{show_prizes};
     $self->{show_regions} = $p->{show_regions};
+    $self->{show_motto} = $p->{show_motto};
     $self->{show_logins} = $p->{show_logins};
     $self->{show_flags} = $p->{show_flags} if defined $p->{show_flags};
     $self->{show_is_remote} = 0;
@@ -592,6 +593,7 @@ sub rank_table {
         href_show_virtual => $url->(hide_virtual => 0, hide_ooc => $self->{hide_ooc}),
         show_points => $self->{show_points},
         show_regions => $self->{show_regions},
+        show_motto => $self->{show_motto},
         show_flags => $self->{show_flags},
         show_logins => $self->{show_logins},
         show_place => ($self->{sort} // '') ne 'name',

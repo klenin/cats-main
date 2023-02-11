@@ -22,6 +22,7 @@ our @router_bool_params = qw(
     printable
     show_flags
     show_logins
+    show_motto
     show_prizes
     show_regions
 );
@@ -159,7 +160,7 @@ sub rank_table_frame {
         _set_selected($sites, $p->{sites});
 
         my @ui_fields = qw(
-            filter sort show_flags show_logins show_regions points_min points_max
+            filter sort show_flags show_logins show_motto show_regions points_min points_max
             hide_ooc hide_virtual notime nostats);
         my %route = CATS::RouteParser::reconstruct($p);
         delete @route{qw(groups sites), @ui_fields};
