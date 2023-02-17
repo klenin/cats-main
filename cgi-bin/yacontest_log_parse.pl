@@ -1,26 +1,29 @@
 use strict;
 use warnings;
 
+use Text::CSV;
 use Getopt::Long;
 use XML::Parser::Expat;
 
 GetOptions(
     help => \(my $help = 0),
     'users=s' => \(my $users_fn = 'users.csv'),
-    'log=s' => \(my $log_fn = 'external.xml'),
+    'log=s' => \(my $log_fn),
 );
+
+my $yc_col_name = 'CT_Yandex_Contest';
 
 sub usage {
     print STDERR qq~CATS Yandex Contest log parser
 Usage: $0
   --help
-  --log=<file>, Yandex log, XML; deafult is '$log_fn'
-  --users=<file>, tab-seprated, columns should be: Yandex login, CATS login; default is '$users_fn'
+  --log=<file>, Yandex log, XML'
+  --users=<csv file>, columns must contain: $yc_col_name, login; default is '$users_fn'
 ~;
     exit;
 }
 
-usage if $help;
+usage if $help || !$log_fn;
 
 my $parser = XML::Parser::Expat->new;
 
@@ -39,11 +42,16 @@ sub _on_start {
 }
 
 {
+    my $csv = Text::CSV->new({ binary => 1 });
     open my $fh, '<', $users_fn or die "Couldn't open users '$users_fn': $!";
-    while (<$fh>) {
-        chomp;
-        my ($yc, $login) = split /\t/;
-        $logins{$yc} = $login;
+    $csv->header($fh, {
+        sep_set => [ ';', ',', '|', "\t" ],
+        munge_column_names => 'none',
+    });
+    grep $_ eq $yc_col_name, $csv->column_names or die "Column $yc_col_name not found";
+    while (my $row = $csv->getline_hr($fh)) {
+        my $yc = $row->{$yc_col_name} or next;
+        $logins{$yc} = $row->{login};
         $users{$yc} = '?';
     }
 }
@@ -54,6 +62,7 @@ $parser->setHandlers(Start => \&_on_start);
     $parser->parse($fh);
 }
 
+print "login\tpoints\tsource\n";
 for my $yc (sort keys %users) {
     my $r = $results{$users{$yc}} or next;
     print $logins{$yc}, "\t", $r->{points}, "\t", $r->{solved}, "\n";
