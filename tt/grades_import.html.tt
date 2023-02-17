@@ -1,0 +1,23 @@
+[%- PROCESS includes/menu_begin.tti -%]
+
+<h4>[% capt.headers %]:</h4>
+[% SET sep = ' <tt>&lt;tab&gt;</tt> ' %]
+<p>[% user_fields.keys.sort.join(sep) %]</p>
+<p>[% contact_types.keys.sort.join(sep) %]</p>
+<p>points[% sep %]source</p>
+<form method="post" action="[% href_action %]">
+<p>[% capt.problem %]:
+<select name="problem_id">
+[% FOREACH pr IN problems -%]
+  <option value="[% pr.id %]"[% maybe_selected(pr.id == problem_id) %]>[% pr.code | html %]: [% pr.title | html %]</option>
+[%- END %]
+</select>
+</p>
+<div>
+<textarea name="grades" style="width: 80%" rows="25">[% report.join("\n") %]</textarea>
+</div>
+<input type="checkbox" name="apply_changes" value="1" />
+<button type="submit" name="go" value="1" class="button">[% capt.do_import %]</button>
+</form>
+
+[%- PROCESS includes/menu_end.tti -%]

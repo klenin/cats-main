@@ -1,0 +1,7 @@
+[%
+  capt.import({
+    headers => 'Заголовки',
+    problem => 'Задача',
+    do_import => 'Импортировать',
+  })
+%]
