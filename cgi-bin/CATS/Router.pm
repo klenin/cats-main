@@ -288,7 +288,7 @@ my $main_routes = {
     ],
     account_tokens => [ \&CATS::UI::AccountTokens::account_tokens_frame, delete => str, ],
     grades_import => [ \&CATS::UI::Grades::grades_import_frame,
-        go => bool, apply_changes => bool, grades => undef, problem_id => integer, de_code => integer,
+        go => bool, apply_changes => bool, grades => undef, pid => integer,
     ],
     compilers => [ \&CATS::UI::Compilers::compilers_frame, delete => integer, saved => integer, ],
     compilers_edit => [ \&CATS::UI::Compilers::compilers_edit_frame, $CATS::UI::Compilers::form->route, ],

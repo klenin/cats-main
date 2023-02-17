@@ -38,7 +38,7 @@ sub init {
 }
 
 sub clear {
-    $messages = [];
+    splice @$messages;
 }
 
 sub init_mockup {

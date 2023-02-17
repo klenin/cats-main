@@ -36,13 +36,13 @@ sub grades_import_frame {
     $t->param(
         href_action => url_f('grades_import'), #title_suffix => res_str(564),
         problems => $problems,
-        problem_id => $p->{problem_id},
+        problem_id => $p->{pid},
         report => \@report,
         CATS::User::users_submenu($p),
         contact_types => $contact_types, user_fields => \%user_fields,
     );
 
-    $p->{problem_id} && $p->{go} or return;
+    $p->{pid} && $p->{go} or return;
 
     my ($header, @lines) = split "\r\n", $p->{grades};
     my (@header_fields) = split "\t", $header;
@@ -92,6 +92,7 @@ sub grades_import_frame {
         $p->{de_code} = $CATS::Globals::de_code_answer_text;
         $p->{submit_as_id} = $user_id;
         $p->{submit_points} = $cols[$points_idx] if $points_idx;
+        $p->{problem_id} = $p->{pid};
 
         my ($rid, $result) = $p->{apply_changes} ? CATS::Problem::Submit::problems_submit($p) : (1, {});
         push @report,

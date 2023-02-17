@@ -7,7 +7,7 @@
 <p>points[% sep %]source</p>
 <form method="post" action="[% href_action %]">
 <p>[% capt.problem %]:
-<select name="problem_id">
+<select name="pid">
 [% FOREACH pr IN problems -%]
   <option value="[% pr.id %]"[% maybe_selected(pr.id == problem_id) %]>[% pr.code | html %]: [% pr.title | html %]</option>
 [%- END %]
