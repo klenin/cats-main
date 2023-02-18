@@ -107,8 +107,8 @@ $(document).ready(function () {
 
   if ($('option:selected', $('#de_id')).attr('editor-syntax') === 'xml') {
     Editor.highlight_errors('log', [ /at\sline\s(\d+)/ ], 'ed_pe[% pid %]_[% file %]');
-    editor.hoverLink.registerLink(/\ssrc="([a-zA-Z0-9_\-\.\/]+)"/, preproces_file_link);
-    editor.hoverLink.registerLink(/\sguid="([a-zA-Z0-9_\-\.\/]+)"/, preproces_guid_link);
+    editor.hoverLink.registerLink(/\ssrc="([a-zA-Z0-9_\-\.\/]+)"/g, preproces_file_link);
+    editor.hoverLink.registerLink(/\sguid="([a-zA-Z0-9_\-\.\/]+)"/g, preproces_guid_link);
     editor.selection.on('changeCursor', function(ev, editor) {
       update_mathjax_preview(find_tex_block(editor.session), 0); });
     editor.selection.on('changeSelection', function(ev, sel) {
