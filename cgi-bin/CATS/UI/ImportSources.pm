@@ -30,7 +30,7 @@ sub import_sources_frame {
     });
 
     my $ref_count_sql = $lv->visible_cols->{Rc} ? q~
-        SELECT COUNT(*) FROM problem_sources_imported psi WHERE PSL.guid = PSI.guid~ : 'NULL';
+        SELECT COUNT(*) FROM problem_sources_imported PSI WHERE PSL.guid = PSI.guid~ : 'NULL';
     my $sth = $dbh->prepare(qq~
         SELECT
             PS.id, PSL.guid, PSL.stype, DE.code, DE.description,
@@ -49,6 +49,7 @@ sub import_sources_frame {
         return (
             %$f,
             stype_name => $cats::source_module_names{$f->{stype}},
+            href_refs => url_f('problems_all', search => "is_using_guid($f->{guid})"),
             href_problem => url_f_cid('problem_details', cid => $f->{contest_id}, pid => $f->{problem_id}),
             href_source => url_f('import_source_view', guid => $f->{guid}),
             href_download => url_f('download_import_source', psid => $f->{id}),

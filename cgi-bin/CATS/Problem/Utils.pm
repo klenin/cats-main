@@ -249,6 +249,14 @@ sub define_kw_subquery {
             m => 1225,
             t => q~SELECT DE.description FROM default_de DE WHERE DE.code = ?~,
         },
+        is_using_guid => {
+            sq => q~(EXISTS (
+                SELECT 1 FROM problem_sources PS
+                INNER JOIN problem_sources_imported PSI ON PS.id = PSI.id
+                WHERE PS.problem_id = P.id AND PSI.guid = ?))~,
+            m => 1248,
+            t => undef,
+        },
         has_attachment_like => {
             sq => q~(EXISTS (
                 SELECT 1 FROM problem_attachments PA

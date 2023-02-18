@@ -19,7 +19,7 @@
 [% IF visible_cols.De -%]
 <td title="[% is.code | html %]">[% is.description | html; cell_search('code', is) %]</td>
 [%- END %]
-[% IF visible_cols.Rc %]<td class="num">[% is.ref_count %]</td>[% END %]
+[% IF visible_cols.Rc %]<td class="num">[% href(is.href_refs, is.ref_count) %]</td>[% END %]
 </tr>
 [% END %]
 </table>
