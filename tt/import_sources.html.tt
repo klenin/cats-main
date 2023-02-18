@@ -1,17 +1,22 @@
 [%- js.nonce = 1 -%]
 [%- PROCESS includes/menu_begin.tti -%]
+[%- PROCESS includes/icon/download.tti -%]
 
 [% PROCESS includes/listview_header.tti %]
 
 <table class="listview bordered cell_search highlight">
-[% PROCESS includes/listview_col_defs.tti sel_col = user.is_jury %]
+[% PROCESS includes/listview_col_defs.tti sel_col = 1 nocheckbox = 1 %]
 
 [% FOREACH is IN import_sources %]
 <tr class="[% loop.parity() %]">
-[% IF user.is_jury %]<td>
+<td class="nobr">
+  <a href="[% is.href_download %]" title="[% capt.download %]">[% svg_icon('download') %]</a>
   [% IF is.is_jury %]<a href="[% is.href_problem %]" title="[% is.title | html %]" class="icon view"></a>[% END %]
-</td>[% END %]
-<td><a href="[% is.href_source %]" title="[% is.fname | html %]">[% is.guid | html %] ([% is.fname | html %])</a></td>
+</td>
+<td>[% is.guid | html %]</td>
+<td>
+  <a href="[% is.href_source %]">[% is.fname | html %]</a>
+</td>
 <td>[% is.stype_name; cell_search('stype', is) %]</td>
 <td>[% is.code; cell_search('code', is) %]</td>
 <td>[% is.ref_count %]</td>

@@ -16,10 +16,11 @@ sub import_sources_frame {
     init_template($p, 'import_sources');
     my $lv = CATS::ListView->new(web => $p, name => 'import_sources', url => url_f('import_sources'));
     $lv->default_sort(0)->define_columns([
-        { caption => res_str(625), order_by => '2', width => '30%' },
-        { caption => res_str(642), order_by => '3', width => '30%' },
-        { caption => res_str(641), order_by => '4', width => '30%' },
-        { caption => res_str(643), order_by => '5', width => '10%' },
+        { caption => res_str(625), order_by => 'guid', width => '20%' },
+        { caption => res_str(601), order_by => 'fname', width => '20%' },
+        { caption => res_str(642), order_by => 'stype', width => '20%' },
+        { caption => res_str(641), order_by => 'code', width => '20%' },
+        { caption => res_str(643), order_by => 'ref_count', width => '10%' },
     ]);
     $lv->define_db_searches([ qw(PS.id guid stype code fname problem_id title contest_id) ]);
     $lv->default_searches([ qw(guid fname title) ]);
@@ -46,7 +47,8 @@ sub import_sources_frame {
             %$f,
             stype_name => $cats::source_module_names{$f->{stype}},
             href_problem => url_f_cid('problem_details', cid => $f->{contest_id}, pid => $f->{problem_id}),
-            href_source => url_f('download_import_source', psid => $f->{id}),
+            href_source => url_f('import_source_view', guid => $f->{guid}),
+            href_download => url_f('download_import_source', psid => $f->{id}),
         );
     };
 
