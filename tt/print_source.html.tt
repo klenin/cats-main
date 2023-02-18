@@ -36,9 +36,9 @@ html, body {
     [[% sources_info.req_id %]]
     <hr/>
   </div>
-  <div style="" id="source_text">
+  <pre><code id="source_text">
     [%- sources_info.src | html ~%]
-  </div>
+  </code></pre>
 
   <script nonce="[% nonce %]">window.addEventListener('load', function () {
     var highlight = ace.require('ace/ext/static_highlight');
