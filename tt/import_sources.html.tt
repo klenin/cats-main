@@ -14,12 +14,12 @@
   [% IF is.is_jury %]<a href="[% is.href_problem %]" title="[% is.title | html %]" class="icon view"></a>[% END %]
 </td>
 <td>[% is.guid | html %]</td>
-<td>
-  <a href="[% is.href_source %]">[% is.fname | html %]</a>
-</td>
+<td>[% href(is.href_source, is.fname) %]</a></td>
 <td>[% is.stype_name; cell_search('stype', is) %]</td>
-<td>[% is.code; cell_search('code', is) %]</td>
-<td>[% is.ref_count %]</td>
+[% IF visible_cols.De -%]
+<td title="[% is.code | html %]">[% is.description | html; cell_search('code', is) %]</td>
+[%- END %]
+[% IF visible_cols.Rc %]<td class="num">[% is.ref_count %]</td>[% END %]
 </tr>
 [% END %]
 </table>

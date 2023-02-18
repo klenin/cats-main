@@ -19,26 +19,29 @@ sub import_sources_frame {
         { caption => res_str(625), order_by => 'guid', width => '20%' },
         { caption => res_str(601), order_by => 'fname', width => '20%' },
         { caption => res_str(642), order_by => 'stype', width => '20%' },
-        { caption => res_str(641), order_by => 'code', width => '20%' },
-        { caption => res_str(643), order_by => 'ref_count', width => '10%' },
+        { caption => res_str(641), order_by => 'code', width => '20%', col => 'De' },
+        ($is_jury ? { caption => res_str(643), order_by => 'ref_count', width => '10%', col => 'Rc' } : ()),
     ]);
-    $lv->define_db_searches([ qw(PS.id guid stype code fname problem_id title contest_id) ]);
+    $lv->define_db_searches([ qw(
+        PS.id guid stype code description fname problem_id title contest_id is_jury) ]);
     $lv->default_searches([ qw(guid fname title) ]);
     $lv->define_enums({
         stype => { reverse %cats::source_module_names },
     });
 
-    my $sth = $dbh->prepare(q~
-        SELECT ps.id, psl.guid, psl.stype, de.code,
-            (SELECT COUNT(*) FROM problem_sources_imported psi WHERE psl.guid = psi.guid) AS ref_count,
-            psl.fname, ps.problem_id, p.title, p.contest_id,
-            (SELECT CA.is_jury FROM contest_accounts CA
-                WHERE CA.account_id = ? AND CA.contest_id = p.contest_id)
-            FROM problem_sources ps
-            INNER JOIN problem_sources_local psl ON psl.id = ps.id
-            INNER JOIN default_de de ON de.id = psl.de_id
-            INNER JOIN problems p ON p.id = ps.problem_id
-            WHERE psl.guid IS NOT NULL ~ . $lv->maybe_where_cond . $lv->order_by);
+    my $ref_count_sql = $lv->visible_cols->{Rc} ? q~
+        SELECT COUNT(*) FROM problem_sources_imported psi WHERE PSL.guid = PSI.guid~ : 'NULL';
+    my $sth = $dbh->prepare(qq~
+        SELECT
+            PS.id, PSL.guid, PSL.stype, DE.code, DE.description,
+            ($ref_count_sql) AS ref_count,
+            PSL.fname, PS.problem_id, P.title, P.contest_id, CA.is_jury
+        FROM problem_sources PS
+        INNER JOIN problem_sources_local PSL ON PSL.id = PS.id
+        INNER JOIN default_de DE ON DE.id = PSL.de_id
+        INNER JOIN problems P ON P.id = PS.problem_id
+        LEFT JOIN contest_accounts CA ON CA.contest_id = P.contest_id AND CA.account_id = ?
+        WHERE PSL.guid IS NOT NULL ~ . $lv->maybe_where_cond . $lv->order_by);
     $sth->execute($uid // 0, $lv->where_params);
 
     my $fetch_record = sub {
