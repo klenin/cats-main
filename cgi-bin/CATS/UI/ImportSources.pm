@@ -55,6 +55,44 @@ sub import_sources_frame {
     $t->param(submenu => [ CATS::References::menu('import_sources') ]) if $is_jury;
 }
 
+sub _jury_submenu {
+    my ($is) = @_;
+    my %c = (cid => $is->{contest_id}, pid => $is->{problem_id});
+    (
+        { href => url_f_cid('problem_details', %c), item => res_str(504) },
+        { href => url_f_cid('problem_history_edit', %c, file => $is->{fname}, hb => '0'),
+            item => res_str(572) },
+    );
+}
+
+sub import_source_view_frame {
+    my ($p) = @_;
+    $p->{guid} or return;
+    init_template($p, 'import_source_view');
+    my $rows = $dbh->selectall_arrayref(q~
+        SELECT
+            PSL.guid, PSL.fname, PSL.src,
+            D.syntax, PS.id AS psid, PS.problem_id, P.contest_id, CA.is_jury
+        FROM problem_sources_local PSL
+        INNER JOIN problem_sources PS ON PS.id = PSL.id
+        INNER JOIN default_de D ON D.id = PSL.de_id
+        INNER JOIN problems P ON P.id = PS.problem_id
+        LEFT JOIN contest_accounts CA ON CA.contest_id = P.contest_id AND CA.account_id = ?
+        WHERE PSL.guid = ?~, { Slice => {} },
+        $uid, $p->{guid}) or return;
+    my $is = $rows->[0];
+    $t->param(
+        import_source => $is,
+        problem_title => $p->{guid},
+        title_suffix => $p->{guid},
+        submenu => [
+            ($is->{is_jury} ? _jury_submenu($is) : ()),
+            { href => url_f('download_import_source', psid => $is->{psid}), item => res_str(569) },
+            { href => url_f('import_sources'), item => res_str(557) },
+        ],
+    );
+}
+
 sub download_frame {
     my ($p) = @_;
     $p->{psid} or return;

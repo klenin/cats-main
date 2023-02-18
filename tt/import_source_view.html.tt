@@ -1,0 +1,17 @@
+[%- js.nonce = 1; js.jquery = 1; js.ace = 1; js.ace_static_highlight = 1 -%]
+[%- PROCESS includes/menu_begin.tti -%]
+
+<p>[% import_source.guid %]: [% import_source.fname %]</p>
+<pre class="bordered padded"><code id="source_text">[% import_source.src %]</code></pre>
+
+<script nonce="[% nonce %]">window.addEventListener('load', function () {
+  var highlight = ace.require('ace/ext/static_highlight');
+  var e = document.getElementById('source_text');
+  highlight(e, {
+    mode: 'ace/mode/[% import_source.syntax.lower || 'text' %]',
+    showGutter: false,
+  }, function () {});
+})</script>
+
+
+[% PROCESS includes/menu_end.tti %]

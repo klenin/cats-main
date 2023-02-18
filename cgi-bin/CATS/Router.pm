@@ -305,8 +305,11 @@ my $main_routes = {
         delete => integer, saved => integer,
         sel => array_of integer, search_selected => bool, ],
     keywords_edit => [ \&CATS::UI::Keywords::keywords_edit_frame, $CATS::UI::Keywords::form->route, ],
+
     import_sources => [ \&CATS::UI::ImportSources::import_sources_frame, ],
+    import_source_view => [ \&CATS::UI::ImportSources::import_source_view_frame, guid => str, ],
     download_import_source => [ \&CATS::UI::ImportSources::download_frame, psid => integer, ],
+
     prizes => [ \&CATS::UI::Prizes::prizes_frame,
         edit => integer, delete => integer, edit_save => bool, id => integer,
         clist => clist_of integer, name => str, ],
