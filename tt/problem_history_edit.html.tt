@@ -75,6 +75,9 @@ $(document).ready(function () {
     var p_new = complete_lists.files.indexOf(filename) >= 0 ? '' : ';new=1';
     return p + p_new + ';file=' + filename;
   };
+  var preproces_guid_link = function(guid) {
+    return '[% href_import_source_prefix %]' + ';guid=' + guid;
+  };
 
   var find_tex_block = function(session) {
     var pos = editor.getCursorPosition();
@@ -104,7 +107,8 @@ $(document).ready(function () {
 
   if ($('option:selected', $('#de_id')).attr('editor-syntax') === 'xml') {
     Editor.highlight_errors('log', [ /at\sline\s(\d+)/ ], 'ed_pe[% pid %]_[% file %]');
-    editor.hoverLink.registerLink(/src="([a-zA-Z0-9_\-\.\/]+)"/, preproces_file_link);
+    editor.hoverLink.registerLink(/\ssrc="([a-zA-Z0-9_\-\.\/]+)"/, preproces_file_link);
+    editor.hoverLink.registerLink(/\sguid="([a-zA-Z0-9_\-\.\/]+)"/, preproces_guid_link);
     editor.selection.on('changeCursor', function(ev, editor) {
       update_mathjax_preview(find_tex_block(editor.session), 0); });
     editor.selection.on('changeSelection', function(ev, sel) {
