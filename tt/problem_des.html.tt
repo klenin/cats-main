@@ -10,7 +10,8 @@
   <tr class="[% loop.parity() %]">
     <td>[% ps.type_name %]</td>
     <td>[% ps.name %]</td>
-    <td>[% href(ps.href_edit, ps.fname) %]</td>
+    <td>[% ps.import_guid %] [% ps.export_guid %]</td>
+    <td>[% maybe_href(ps.href_edit, ps.fname) %]</td>
     <td>[% ps.code %]</td>
     <td>[% ps.description %]</td>
   </tr>

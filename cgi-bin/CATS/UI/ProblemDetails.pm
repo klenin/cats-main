@@ -490,17 +490,18 @@ sub problem_des_frame {
         FROM problems P INNER JOIN contest_problems CP ON P.id = CP.problem_id
         WHERE P.id = ? AND CP.contest_id = ?~, undef,
         $p->{pid}, $cid) or return;
-    $problem->{commit_sha} = eval { CATS::Problem::Storage::get_latest_master_sha($p->{pid}); } || 'error';
+    #$problem->{commit_sha} = eval { CATS::Problem::Storage::get_latest_master_sha($p->{pid}); } || 'error';
 
     my $des = $p->{save} ?
         CATS::Problem::Save::set_contest_problem_des($problem->{cpid}, $p->{allow}, 'id') :
         CATS::Problem::Save::get_all_des($problem->{cpid});
 
     $lv->default_sort(0)->define_columns([
-        { caption => res_str(642), order_by => 'stype', width => '10%' },
-        { caption => res_str(601), order_by => 'name', width => '20%' },
+        { caption => res_str(642), order_by => 'stype', width => '20%' },
+        { caption => res_str(601), order_by => 'name', width => '10%' },
+        { caption => res_str(625), order_by => 'import_guid, export_guid', width => '20%' },
         { caption => res_str(674), order_by => 'fname', width => '20%' },
-        { caption => res_str(619), order_by => 'code', width => '20%' },
+        { caption => res_str(619), order_by => 'code', width => '10%' },
         { caption => res_str(641), order_by => 'description', width => '20%' },
     ]);
     $lv->define_db_searches([qw(stype name fname D.id code description)]);
@@ -511,22 +512,32 @@ sub problem_des_frame {
             COALESCE(PSL.stype, PSLE.stype) AS stype,
             COALESCE(PSL.name, PSLE.name) AS name,
             COALESCE(PSL.fname, PSLE.fname) AS fname,
-            D.id, D.code, D.description
+            D.id, D.code, D.description,
+            PSL.guid AS export_guid, PSI.guid AS import_guid,
+            PSE.problem_id AS orig_problem, PE.contest_id AS orig_contest,
+            PSE.id AS orig_psid, CA.is_jury AS orig_jury
         FROM problem_sources PS
         LEFT JOIN problem_sources_local PSL ON PSL.id = PS.id
         LEFT JOIN problem_sources_imported PSI ON PSI.id = PS.id
         LEFT JOIN problem_sources_local PSLE ON PSLE.guid = PSI.guid
+        LEFT JOIN problem_sources PSE ON PSE.id = PSLE.id
+        LEFT JOIN problems PE ON PE.id = PSE.problem_id
+        LEFT JOIN contest_accounts CA ON CA.contest_id = PE.contest_id AND CA.account_id = ?
         INNER JOIN default_de D ON COALESCE(PSL.de_id, PSLE.de_id) = D.id
         WHERE PS.problem_id = ? ~ . $lv->maybe_where_cond . $lv->order_by);
-    $sth->execute($p->{pid}, $lv->where_params);
+    $sth->execute($user->{id}, $p->{pid}, $lv->where_params);
 
     my $fetch_record = sub {
         my $c = $_[0]->fetchrow_hashref or return ();
+        my %fh = (file => $c->{fname}, hb => '0');
         return (
             %$c,
             type_name => $cats::source_module_names{$c->{stype}},
-            href_edit => url_f('problem_history_edit',
-                pid => $p->{pid}, file => $c->{fname}, hb => $problem->{commit_sha}),
+            href_edit =>
+                !$c->{orig_problem} ? url_f('problem_history_edit', pid => $p->{pid}, %fh) :
+                $c->{orig_jury} ? url_f_cid('problem_history_edit',
+                    cid => $c->{orig_contest}, pid => $c->{orig_problem}, %fh) :
+                url_f('download_import_source', psid => $c->{orig_psid}),
         );
     };
 
