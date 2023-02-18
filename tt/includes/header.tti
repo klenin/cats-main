@@ -38,6 +38,7 @@
   <script src="js/lib/ace/ace.js"></script>
   <script src="js/lib/ace/ext-language_tools.js"></script>
   <script src="js/editor.js"></script>
+  [% IF js.ace_static_highlight %]<script src="js/lib/ace/ext-static_highlight.js"></script>[% END %]
 [%- END %]
 [% IF js.quizzes -%]
   <script src="js/quizzes.js"></script>

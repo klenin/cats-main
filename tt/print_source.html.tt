@@ -1,5 +1,5 @@
-[%- js.nonce = 1; js.jquery = 1; js.ace = 1; PROCESS includes/header.tti -%]
-<script src="js/lib/ace/ext-static_highlight.js"></script>
+[%- js.nonce = 1; js.jquery = 1; js.ace = 1; js.ace_static_highlight = 1 -%]
+[%- PROCESS includes/header.tti -%]
 
 <style>
 @page {

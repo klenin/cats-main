@@ -1,14 +1,12 @@
 [%- js.nonce = 1; js.jquery = 1; js.ace = 1; js.csp_sources = ' ' _ web.get_host _ '/cats/static/js/';
   js.mathjax = mathjax; js.mathjax_onload = 1 -%]
 [%- js.quizzes = 1 IF has_quizzes || has_snippets -%]
+[% js.ace_static_highlight = has_static_highlight %]
 [%- PROCESS includes/header.tti -%]
 [%- PROCESS includes/html.tti -%]
 [%- PROCESS "lang/$lang/problems.html.tt" -%]
 [%- PROCESS "lang/$lang/editor_menu.tti" -%]
 [% tex_styles %]
-[% IF has_static_highlight -%]
-<script src="js/lib/ace/ext-static_highlight.js"></script>
-[% END %]
 [%- text_width = 1000; list_padding = 30; -%]
 <style>
   @media print { div.problem_menu.jsonly, a.problem_menu_trigger.jsonly { display: none; } }
