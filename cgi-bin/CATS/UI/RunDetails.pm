@@ -216,7 +216,6 @@ sub _get_run_info {
         accepted_deps => \%accepted_deps,
         has_depends_on => 0 < grep($_->{depends_on}, values %used_testsets),
         has_visualizer => @$visualizers > 0,
-        has_output => $req->{save_output_prefix},
     };
 }
 
