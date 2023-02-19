@@ -462,3 +462,4 @@
 1246 "Field '%s' must be integer with optional HTML units."
 1247 "Field '%s' must be valid JSON, however: %s."
 1248 "Uses import source '%s'."
+1249 "Registration failed."

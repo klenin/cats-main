@@ -381,7 +381,7 @@ sub registration_frame {
     $t->param(
         countries => \@CATS::Countries::countries,
         contest_names => $has_clist && $dbh->selectcol_arrayref(_u $sql->select(
-            'contests', 'title', { id => $p->{clist}, is_hidden => 0 })),
+            'contests', 'title', { id => $p->{clist}, is_hidden => 0, closed => 0 })),
         href_login => url_f('login'),
         href_login_available => url_function('api_login_available', login => ''),
     );
@@ -393,8 +393,8 @@ sub registration_frame {
     $u->{password1} = CATS::User::hash_password($u->{password1});
     $settings->{contests}->{filter} = 'my' if $has_clist;
     $u->{settings} = CATS::Settings::as_storable($settings);
-    $u->insert(undef, commit => !$has_clist) or return;
-    CATS::Contest::Participate::multi_online($u->{id}, $p->{clist});
+    $u->insert(undef, commit => !$has_clist) or return msg(1249);
+    CATS::Contest::Participate::multi_online($u->{id}, $p->{clist}) or return msg(1249);
     $t->param(successfully_registered => 1);
 }
 
