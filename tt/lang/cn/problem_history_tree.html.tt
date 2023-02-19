@@ -3,7 +3,7 @@
     want_to_delete_file => 'Do you really want to delete file ',
     entry => { blob => 'file', tree => 'directory' },
     edit => 'edit',
-    download => 'download',
+    download => '下载',
     delete => 'delete',
   })
 %]

@@ -18,7 +18,7 @@
     set_verdict => 'Set verdict',
     save_settings => 'Save settings',
     source => 'source',
-    download => 'download',
+    download => '下载',
     run_details => 'results',
     diff_runs => 'diff',
     log => 'log',
