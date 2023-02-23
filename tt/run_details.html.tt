@@ -12,6 +12,7 @@
   .points { position: relative; }
   [% IF is_any_jury -%]
   .points:hover::before { position: absolute; content: '\270D  '; font-size: large; left: 0; top: -2px; }
+  #save_show_data { vertical-align: middle; }
   [%- END %]
 </style>
 </head>
@@ -33,13 +34,15 @@
 <div style="clear: both;"></div>
 <input type="text" name="n_regexp" id="n_regexp" size="40" class="bordered"/>
 <button type="submit" class="button">filter</button>
-<span class="weak_border" style="margin-left: 10px;">[% capt.display_data.display %]:
+<span class="nobr weak_border padded" style="margin-left: 10px;">[% capt.display_data.display %]:
 [%- FOREACH d IN [ 'input', 'answer', 'output' ] %]
   <label class="nobr">
   <input type="checkbox" id="show_data_[% d %]" [% maybe_checked(settings.display.$d) %]/>
   [% capt.display_data.$d %]
   </label>
 [% END %]
+<a id="save_show_data" class="hidden" href="[% href_modify_settings %]" title="[% capt.save_settings %]">
+[%~ svg_icon('save') %]</a>
 </span>
 </form>
 </div>
@@ -164,7 +167,10 @@
   [%- END %]
   </table>
   [%- IF can_edit_points -%]
-  <p><button type="submit" name="set_points" id="set_points" class="hidden button" value="1">[% capt.set_points %]</button></p>
+  <p>
+    <button type="submit" name="set_points" id="set_points" class="hidden button" value="1">[% capt.set_points %]</button>
+    <label><input type="checkbox" name="set_ok" id="set_ok" class="hidden" value="1"/>[% capt.set_points %]1</label>
+  </p>
   [%- END %]
   </form>
 [% END %]
@@ -256,12 +262,26 @@ $(function() {
     });
   });
 
+  var new_settings = {};
+
+  var save_show_data_btn = $('#save_show_data');
+  save_show_data_btn.click(function(e) {
+    e.preventDefault();
+    save_show_data_btn.addClass('hidden');
+    var href = this.href;
+    $.post(href, { data: JSON.stringify([{ path: 'display', value: new_settings }]) });
+  });
+
   [ 'input', 'answer', 'output' ].forEach(function (type) {
     var cb = $('#show_data_' + type);
     var toggle_data = function () {
-      $('.' + type + '_data').toggleClass('hidden', !cb[0].checked);
+      new_settings[type] = cb[0].checked;
+      $('.' + type + '_data').toggleClass('hidden', !new_settings[type]);
     };
-    cb.click(toggle_data);
+    cb.click(function () {
+      toggle_data();
+      save_show_data_btn.removeClass('hidden');
+    });
     toggle_data();
   });
 
