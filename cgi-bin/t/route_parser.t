@@ -3,7 +3,7 @@ use warnings;
 
 use File::Spec;
 use FindBin;
-use Test::More tests => 46;
+use Test::More tests => 50;
 
 use lib $FindBin::Bin;
 use lib File::Spec->catdir($FindBin::Bin);
@@ -127,6 +127,17 @@ is pr(MockupWeb->new, [ 'rreq', x => required integer ]), undef, 'required';
     my $p = MockupWeb->new(%orig);
     my $packed = CATS::Redirect::pack_params($p);
     is_deeply { CATS::Redirect::unpack_params($packed) }, \%orig, 'redirect';
+}
+
+{
+    my $r = [ 'js', j => json ];
+    my $w1 = MockupWeb->new(j => '{ x => }');
+    is pr($w1, $r), 'js', 'bad json';
+    ok !exists $w1->{j}, 'bad json ignored';
+
+    my $w2 = MockupWeb->new(j => '{ "x": 7 }');
+    is pr($w2, $r), 'js', 'json';
+    is_deeply $w2->{j}, { x => 7 }, 'json value';
 }
 
 1;

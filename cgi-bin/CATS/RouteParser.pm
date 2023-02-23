@@ -5,6 +5,8 @@ use warnings;
 
 use Exporter qw(import);
 
+use JSON::XS;
+
 use CATS::Utils;
 
 our @EXPORT = qw(
@@ -17,6 +19,7 @@ our @EXPORT = qw(
     fixed
     ident
     integer
+    json
     problem_code
     required
     sha
@@ -43,6 +46,7 @@ sub encoding_default($) {
 }
 
 sub upload() {{ upload => 1 }}
+sub json() {{ json => 1 }}
 
 BEGIN {
     for my $name (qw(array_of clist_of required)) {
@@ -81,6 +85,10 @@ sub parse_route {
 
         if ($type->{upload}) {
             $p->{$name} = $p->make_upload($name);
+            next;
+        }
+        if ($type->{json}) {
+            eval { $p->{$name} = JSON::XS::decode_json($p->web_param($name)); 1; };
             next;
         }
         if ($type->{array_of}) {
