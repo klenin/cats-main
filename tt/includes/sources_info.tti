@@ -273,9 +273,9 @@ $(function() {
     e.preventDefault();
     save_settings_btn.hide();
     var href = this.href;
-    $.post(href, {
+    $.post(href, { data: JSON.stringify([{
       path: 'sources_info.hidden_rows',
-      value: get_hidden_rows().toArray().join() });
+      value: get_hidden_rows().toArray().join() }]) });
   });
 });
 </script>

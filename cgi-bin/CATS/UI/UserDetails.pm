@@ -446,8 +446,11 @@ sub impersonate_frame {
 
 sub modify_settings_api {
     my ($p) = @_;
-    $p->{path} or return $p->print_json({ error => 1 });
-    CATS::Settings::update_item($settings, { name => $p->{path} }, $p->{value});
+    $p->{data} && ref $p->{data} eq 'ARRAY' or return $p->print_json({ error => 1 });
+    for (@{$p->{data}}) {
+        ref $_ eq 'HASH' or next;
+        CATS::Settings::update_item($settings, { name => $_->{path} }, $_->{value});
+    }
     CATS::Settings::save; # Settings are not auto-saved for API calls.
     $p->print_json({ ok => 1, s => $settings });
 }

@@ -352,7 +352,7 @@ my $main_routes = {
         rank => array_of integer,
     ],
     api_modify_settings => [ \&CATS::UI::UserDetails::modify_settings_api,
-        path => qr/^[a-z0-9_\.]+$/, value => str,
+        data => json, # { path => qr/^[a-z0-9_\.]+$/, value }
     ],
     job_details => [ \&CATS::UI::Jobs::job_details_frame,
         jid => integer, delete_log => bool, delete_jobs => bool, restart_job => bool,
