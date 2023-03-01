@@ -67,7 +67,7 @@ sub check_word {
     return $word if $checker->check($word);
     my $suggestion = Encode::decode_utf8(
         join ' | ', grep $_, ($checker->suggest($word))[0..9]);
-    return qq~<a class="spell" title="$suggestion">$word</a>~;
+    return qq~<span class="spell" title="$suggestion"> $word</span>~;
 }
 
 # Check $_, add hints for unknown words.

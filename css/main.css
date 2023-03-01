@@ -507,7 +507,7 @@ td.center { text-align: center; }
 th.narrow, td.narrow { width: 1px; }
 .small { font-size: small; }
 
-a.spell { text-decoration: underline; color: red; }
+.spell, a > span.spell { text-decoration: underline wavy red; text-underline-position: under; }
 
 td.problem_req_count { text-align: left; }
 td.problem_req_count > div { position: relative; }
