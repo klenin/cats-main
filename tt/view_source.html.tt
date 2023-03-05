@@ -30,12 +30,12 @@ $(function() {
 [% END %]
 </tr>
 <tr>
-  <td>
 [% FOREACH si IN sources_info %]
+  <td>
     <table><tr>
       <td>[% PROCESS includes/encoding_form.html.tti capt_enc = capt.encoding %]</td>
       <td>[ [% href(si.href_print, capt.print) %] |
-[% href(si.href_download_source, capt.download);
+       [% href(si.href_download_source, capt.download);
         IF si.de_code == 604; # OBJ
           ' | '; href('https://kovacsv.hu/3dviewer.net/#model=' _ si.href_download_source_abs _ ';/' _ si.req_id _ '.obj', '3D');
         END;
@@ -44,18 +44,16 @@ $(function() {
         END;
         IF 100 <= si.de_code && si.de_code < 600;
           PROCESS includes/jdoodle.tti;
-          href = jdoodle.href _ jdoodle.langs.item(si.syntax.lower || 'c_cpp')
-%]
-            |
-            <form id="of[% si.req_id %]" enctype="multipart/form-data" method="POST" action="[% href %]" style="display: inline;">
-              <textarea style="display: none;" name="initScript"></textarea>
-              <button class="button" type="submit" data-online_editor="[% si.req_id %]">online</button>
-            </form>
+          href = jdoodle.href _ jdoodle.langs.item(si.syntax.lower || 'c_cpp') %] |
+          <form id="of[% si.req_id %]" enctype="multipart/form-data" method="POST" action="[% href %]" style="display: inline;">
+            <textarea style="display: none;" name="initScript"></textarea>
+            <button class="button" type="submit" data-online_editor="[% si.req_id %]">online</button>
+          </form>
      [% END %] ]
        </td>
     </tr></table>
-[% END %]
   </td>
+[% END %]
 </tr>
 <tr>
 [% FOREACH si IN sources_info %]
