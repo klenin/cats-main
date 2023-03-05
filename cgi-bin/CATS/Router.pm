@@ -416,6 +416,7 @@ my $main_routes = {
         req_ids => clist_of integer,
     ],
     api_submit_problem => [ \&CATS::UI::Problems::submit_problem_api,
+        submit_as => str, submit_as_id => integer,
         source => upload, source_text => str, problem_id => integer,
         de_id => qr/^(?:\d+|by_extension)$/, de_code => integer,
     ],

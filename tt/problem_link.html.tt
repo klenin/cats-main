@@ -18,7 +18,7 @@ extra_head = BLOCK %]
   <td>
     [% radio('contest_id', c.id, 0, disabled = c.has_this_problem) %]
     <a href="[% c.href_params %]" class="icon edit"></a>
-    <a href="[% c.href_contest %]" title="[% c.short_descr | html %]">[% c.contest_name | html %]</a>
+    <a href="[% c.href_problems %]" title="[% c.short_descr | html %]">[% c.contest_name | html %]</a>
   </td>
   <td class="num">[% href(c.href_problems, c.problems_count); ' *' IF c.has_this_problem %]</td>
   <td class="date">[% c.start_date | html %]</td>
