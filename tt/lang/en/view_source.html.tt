@@ -1,6 +1,7 @@
 [%
   capt.import({
     encoding => 'encoding',
+    similarity => 'similarity',
     print => 'print',
     replace => 'replace',
     submit => 'submit',

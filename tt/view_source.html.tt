@@ -35,7 +35,9 @@ $(function() {
   <td>
     <table><tr>
       <td>[% PROCESS includes/encoding_form.html.tti capt_enc = capt.encoding %]</td>
-      <td>[ [% href(si.href_print, capt.print) %] |
+      <td>[
+        [%- IF si.is_jury; ' '; href(si.href_similarity, capt.similarity); ' | '; END -%]
+        [%- href(si.href_print, capt.print) %] |
         <a href="[% si.href_download_source %]" title="[% capt.download %]">[% svg_icon('download') %]</a>
         [%~ IF si.de_code == 604; # OBJ
           ' | '; href('https://kovacsv.hu/3dviewer.net/#model=' _ si.href_download_source_abs _ ';/' _ si.req_id _ '.obj', '3D');

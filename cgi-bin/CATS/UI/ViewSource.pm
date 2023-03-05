@@ -142,9 +142,12 @@ sub view_source_frame {
         msg(1014, $sources_info->{submit_time}) if $p->{submitted};
     }
     source_links($p, $sources_info);
-    $_->{href_download_source_abs} = CATS::Utils::absolute_url_function(
-        download_source => rid => $_->{req_id}, hash => $_->{sha1}, cid => $cid)
-        for $sources_info;
+    for ($sources_info) {
+        $_->{href_download_source_abs} = CATS::Utils::absolute_url_function(
+            download_source => rid => $_->{req_id}, hash => $_->{sha1}, cid => $cid);
+        $_->{href_similarity} = url_f('similarity',
+            pid => $_->{problem_id}, account_id => $_->{account_id}, submitted => 1) if $_->{is_jury};
+    }
     sources_info_param([ $sources_info ]);
     @{$sources_info->{elements}} <= 1 or return msg(1155);
     $sources_info->{href_print} = url_f('print_source', rid => $p->{rid}, notime => 1);

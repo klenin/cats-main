@@ -1,6 +1,7 @@
 [%
   capt.import({
     encoding => 'encoding',
+    similarity => '类似',
     print => '打印',
     replace => 'replace',
     submit => '提交',

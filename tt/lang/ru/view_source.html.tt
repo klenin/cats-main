@@ -1,6 +1,7 @@
 [%
   capt.import({
     encoding => 'кодировка',
+    similarity => 'сходство',
     print => 'печатать',
     replace => 'заменить',
     submit => 'отправить',
