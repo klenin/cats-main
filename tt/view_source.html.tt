@@ -1,5 +1,6 @@
 [%- PROCESS includes/sources_styles.tti -%]
 [%- js.nonce = 1; js.jquery = 1; js.ace = 1; PROCESS includes/header.tti -%]
+[%- PROCESS includes/icon/download.tti -%]
 
 <script nonce="[% nonce %]">
 function online_editor() {
@@ -35,8 +36,8 @@ $(function() {
     <table><tr>
       <td>[% PROCESS includes/encoding_form.html.tti capt_enc = capt.encoding %]</td>
       <td>[ [% href(si.href_print, capt.print) %] |
-       [% href(si.href_download_source, capt.download);
-        IF si.de_code == 604; # OBJ
+        <a href="[% si.href_download_source %]" title="[% capt.download %]">[% svg_icon('download') %]</a>
+        [%~ IF si.de_code == 604; # OBJ
           ' | '; href('https://kovacsv.hu/3dviewer.net/#model=' _ si.href_download_source_abs _ ';/' _ si.req_id _ '.obj', '3D');
         END;
         IF si.de_code == 606; # TeX
