@@ -80,7 +80,11 @@ $(update_request_status);
   [% FOREACH si IN sources_info; IF si %]
     [%- IF si.debug_dump %]<!-- [% si.debug_dump %] -->[% END %]
     <td colspan="[% si.colspan %]">
-      [% IF si.is_jury %]<a href="#" title="[% si.db_hash %]">[% si.req_id %]</a>[% " [$si.ca_tag]" IF si.ca_tag; ELSE; si.req_id; END %]
+      [% IF si.is_jury %]
+        <a href="#" title="[% si.db_hash %]">[% si.req_id %]</a>
+        [%- " [$si.ca_tag]" IF si.ca_tag %]
+        [<a href="[% si.href_whois %]" title="[% si.last_ip %]">[% si.last_ip_short %]</a>]
+      [%- ELSE; si.req_id; END %]
       [% IF si.original_req_id %]
       (<a href = "[% si.href_original_req_run_details %]">[% si.original_req_id %]</a>)
       [% END %]
@@ -98,7 +102,8 @@ $(update_request_status);
       <a href="[% si.href_original_stats %]">([% si.original_team_name %])</a>
     [% END %]
     [% IF si.is_jury %]
-      [<a href="[% si.href_whois %]" title="[% si.last_ip %]">[% si.last_ip_short %]</a>]
+      [<a href="[% si.href_console_filtered %]">c</a>]
+      [<a href="[% si.href_rank_table_filtered %]">r</a>]
       [[% IF si.href_send_message ~%]
         <a href="[% si.href_send_message %]" title="[% capt.message %]" class="_send_message"><div class="inline_svg">[% PROCESS includes/icon/envelope.tti %]</div></a>
         [%~ FOREACH c IN si.contacts; ' '; href(c.href, c.name, c.handle); END %]

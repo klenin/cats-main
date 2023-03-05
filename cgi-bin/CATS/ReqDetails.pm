@@ -300,6 +300,8 @@ sub get_sources_info {
         my %additional_info = (
             CATS::IP::linkify_ip($r->{last_ip}),
             href_stats => url_f('user_stats', uid => $r->{account_id}),
+            href_console_filtered => url_f('console', search => "contest_id=this,account_id=$r->{account_id}"),
+            href_rank_table_filtered => url_f('rank_table', filter => substr($r->{team_name}, 0, 10)),
             (href_send_message => $r->{ca_id} ? url_f('send_message_box', caid => $r->{ca_id}) : undef),
         );
 
