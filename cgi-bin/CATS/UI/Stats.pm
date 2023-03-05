@@ -193,7 +193,7 @@ sub similarity_frame {
 
     my $s = $lv->settings;
     if ($lv->submitted) {
-        $s->{$_} = $p->{$_} for keys %similarity_route;
+        exists $p->{$_} and $s->{$_} = $p->{$_} for keys %similarity_route;
     }
     $s->{threshold} //= 50;
     $s->{self_diff} //= 0;
