@@ -4,7 +4,50 @@ use strict;
 use warnings;
 
 use Encode;
-use Text::Aspell;
+use File::Spec;
+
+use CATS::Config;
+
+my $known_langs = { ru => 'ru_RU', en => 'en_US' };
+
+sub _hunspell_dict_files {
+    map File::Spec->catdir($CATS::Config::spellcheck_dir, "$_[0].$_"), 'aff', 'dic' }
+
+sub _check_hunspell_dicts {
+    for (values %$known_langs) {
+        2 == grep -f, _hunspell_dict_files($_) or return;
+    }
+    1;
+}
+
+my $spell_module;
+BEGIN {
+    # Neither Text::Aspell nor Text::Hunspell can change options of the existing object,
+    # so create a new one per language.
+    my $spell_modules = {
+        hunspell => {
+            make => sub {
+                Text::Hunspell->new(_hunspell_dict_files($_[0]));
+            },
+        },
+        aspell => {
+            make => sub {
+                my $spellchecker = Text::Aspell->new;
+                $spellchecker->set_option(lang => $_[0]);
+                $spellchecker->set_option(encoding => 'UTF-8');
+                $spellchecker;
+            },
+        },
+        none => {
+            make => sub {},
+        },
+    };
+
+    $spell_module = $spell_modules->{
+        eval { require Text::Hunspell; } && _check_hunspell_dicts() ? 'hunspell' :
+        eval { require Text::Aspell; } ? 'aspell' :
+        'none'};
+}
 
 sub new {
     my ($class) = @_;
@@ -35,18 +78,12 @@ sub pop_lang {
     $self->{dict_depth}-- if $self->{dict_depth};
 }
 
-my $known_langs = { ru => 'ru_RU', en => 'en_US' };
 my $checkers = {};
 
 sub _make_checker {
     my ($self, $lang) = @_;
     my $kl = $known_langs->{$lang} or return;
-    # Per Text::Aspell docs, we cannot change options of the existing object,
-    # so create a new one per language.
-    my $spellchecker = Text::Aspell->new;
-    $spellchecker->set_option(lang => $kl);
-    $spellchecker->set_option(encoding => 'UTF-8');
-    $spellchecker;
+    $spell_module->{'make'}->($kl);
 }
 
 sub check_word {
@@ -67,7 +104,7 @@ sub check_word {
     return $word if $checker->check($word);
     my $suggestion = Encode::decode_utf8(
         join ' | ', grep $_, ($checker->suggest($word))[0..9]);
-    return qq~<span class="spell" title="$suggestion"> $word</span>~;
+    return qq~<span class="spell" title="$suggestion">$word</span>~;
 }
 
 # Check $_, add hints for unknown words.
