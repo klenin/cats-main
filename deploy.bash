@@ -69,8 +69,11 @@ if [[ $step =~ (^|,)1(,|$)  || $step == "*" ]]; then
 		echo "Can't find a proper firebird-dev package"
 	fi
 
-	packages+=(git unzip wget build-essential libaspell-dev
-		aspell-en aspell-ru apache2 libapache2-mod-perl2 libapreq2-3 libapreq2-dev
+	packages+=(
+		git unzip wget build-essential
+		libaspell-dev aspell-en aspell-ru
+		libhunspell hunspell-en hunspell-ru
+		apache2 libapache2-mod-perl2 libapreq2-3 libapreq2-dev
 		libapache2-mod-perl2-dev libexpat1 libexpat1-dev libapache2-request-perl cpanminus)
 	sudo apt-get -y install ${packages[@]}
 	sudo dpkg-reconfigure $FB_PACKAGE # In some cases default dialog just doesn't configure SYSDBA user
@@ -98,6 +101,7 @@ if [[ $step =~ (^|,)2(,|$) || $step == "*" ]]; then
 		Test::Exception
 		Text::Aspell
 		Text::CSV
+		Text::Hunspell
 		Text::MultiMarkdown
 		XML::Parser::Expat
 	)
