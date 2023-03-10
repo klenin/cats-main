@@ -195,6 +195,9 @@ $(function() {
   [% href(tp.href, tp.code_prefix _ ':' _ tp.name, '', class = tp.selected ? 'inline_menu_selected' : '') %]
   [% ' | ' UNLESS loop.last %]
 [% END -%]
+[% IF href_new_topic -%]
+<a href="[% href_new_topic %]" title="[% capt.new_topic %]" class="new">&nbsp;</a>
+[%- END -%]
 </span></div>
 [%- END %]
 

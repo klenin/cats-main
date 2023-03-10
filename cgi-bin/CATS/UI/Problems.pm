@@ -642,6 +642,7 @@ sub problems_frame {
         href_login => url_f('login', redir => CATS::Redirect::pack_params($p)),
         href_set_problem_color => url_f('set_problem_color'),
         href_find_users => url_f('api_find_users', in_contest => $cid),
+        href_new_topic => $is_jury && url_f('topics_edit'),
         CATS::Contest::Participate::flags_can_participate,
         submenu => \@submenu, title_suffix => res_str(525),
         is_user => $uid,
