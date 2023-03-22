@@ -487,7 +487,7 @@ sub problems_frame {
     my %any_langs;
 
     my $prev_contest = 0;
-    my $prev_topic_prefix = '';
+    my $prev_topic_stack = [];
 
     my $fetch_record = sub {
         my $c = $_[0]->fetchrow_hashref or return ();
@@ -531,9 +531,9 @@ sub problems_frame {
         my $href_group = $group_title && url_f_cid('problems', cid => $c->{contest_id});
         $prev_contest = $c->{contest_id};
 
-        my $topic = $topics->get($c->{code});
-        $c->{topic} = $topic if $topic && $topic->{code_prefix} ne $prev_topic_prefix;
-        $prev_topic_prefix = $topic ? $topic->{code_prefix} : '';
+        my $topic_stack = $topics->get($c->{code});
+        $c->{topic_stack} = CATS::Topics::diff($prev_topic_stack, $topic_stack);
+        $prev_topic_stack = $topic_stack;
 
         my $rc = $req_stats_idx->{$pid} // {};
         return (

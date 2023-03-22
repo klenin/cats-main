@@ -210,11 +210,11 @@ $(function() {
 [% IF p.group_title %]
 <tr class="col_defs"><th colspan="[% col_def_count + (editable ? 1 : 2) %]">[% href(p.href_group, p.group_title) %]</th></tr>
 [% END %]
-[% IF p.topic %]
-<tr class="col_defs topic_row"><th colspan="[% col_def_count + (editable ? 1 : 2) %]" data-topic="[% p.topic.code_prefix | html %]">
-  [%- href(p.topic.href_edit, '', '', class = 'icon edit') IF p.topic.href_edit %]
-  [% p.topic.code_prefix | html; '. '; p.topic.name | html -%]
-  [% svg_icon('hide') IF p.topic.is_hidden %]
+[% FOREACH topic IN p.topic_stack %]
+<tr class="col_defs topic_row"><th colspan="[% col_def_count + (editable ? 1 : 2) %]" data-topic="[% topic.code_prefix | html %]">
+  [%- href(topic.href_edit, '', '', class = 'icon edit') IF topic.href_edit %]
+  [% topic.code_prefix | html; '. '; topic.name | html -%]
+  [% svg_icon('hide') IF topic.is_hidden %]
   <div class="toggle_topic"><span></span>[%- href('#', '', '', class = 'js_toggle_topic') %]</div>
 </th></tr>
 [% END %]

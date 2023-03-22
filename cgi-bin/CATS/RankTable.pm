@@ -104,7 +104,7 @@ sub get_problems {
         $self->{has_competitive} = 1 if $_->{run_method} == $cats::rm_competitive;
 
         my $topics = $contest_topics->{$_->{contest_id}};
-        my $topic = $topics && $topics->get($_->{code});
+        my $topic = $topics && $topics->get($_->{code})->[-1];
         if (($topic // '') eq ($prev_topic->{topic} // '')) {
             ++$prev_topic->{count};
         }

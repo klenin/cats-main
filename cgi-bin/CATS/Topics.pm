@@ -19,19 +19,26 @@ sub add {
     my $code = $topic->{code_prefix};
     defined $code or die;
     my $level = $self->{levels}->{length $code} //= {};
-    die "Duplicate topic: $code" if exists $level->{$code};
-    $level->{$code} = $topic;
+    push @{$level->{$code} //= []}, $topic;
 }
 
 sub get {
     my ($self, $code) = @_;
-    $code or return;
+    $code or return [];
+    my $topics = [];
     for (my $i = length $code; $i > 0; --$i) {
         my $level = $self->{levels}->{$i} or next;
         my $prefix = substr($code, 0, $i);
-        return $level->{$prefix} if exists $level->{$prefix};
+        push @$topics, @{$level->{$prefix}} if exists $level->{$prefix};
     }
-    undef;
+    $topics;
+}
+
+sub diff {
+    my ($old, $new) = @_;
+    my $i = 1;
+    ++$i while $i <= @$new && $i <= @$old && @$old[-$i]->{code_prefix} eq @$new[-$i]->{code_prefix};
+    [ @{$new}[0 .. @$new - $i] ];
 }
 
 1;
