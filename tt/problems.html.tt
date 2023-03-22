@@ -549,7 +549,7 @@ function toggle_topic(e) {
   var prefix = el.parents('th').data('topic');
   var rows = $('tr.problem_row').filter(function (_, tr) {
     var code = $(tr).data('code');
-    return code !== undefined && code.startsWith(prefix);
+    return code !== undefined && code.toString().startsWith(prefix);
   });
   var topic_headers = $('tr.col_defs').filter(function (_, tr) {
     return $(tr).children('th').data('topic') === prefix;
