@@ -84,7 +84,7 @@ $(function () {
 [% END -%]
 
 $(function () {
-  input_code.focus(function () { choose_code(this, false); });
+  input_code.focus(function () { choose_code(this); });
 });
 
 </script>

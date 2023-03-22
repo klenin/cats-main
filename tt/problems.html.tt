@@ -118,11 +118,17 @@ function move_code(pid, dir) {
   document.location = problems[pid].c + ';move=' + dir;
 }
 
+function _change_on_enter(e) {
+  if (e.key == 'Enter') { $(this).trigger('change'); return false; }
+}
+
 $(function() {
   $('#delete_tab button').click(delete_problem);
   $('#replace_tab button').click(replace_problem);
   $('select.chg_status').change(chg_status);
-  $('input.js_code').change(chg_code).focus(function() { choose_code(this, true); });
+
+  $('input.js_code').change(chg_code).focus(function() { choose_code(this); }).
+    keydown(_change_on_enter);
 });
 </script>
 [%- END -%]

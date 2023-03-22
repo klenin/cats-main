@@ -25,14 +25,12 @@ function _move_code(a, dir) {
   move_code(pid, dir);
 }
 
-function choose_code(input, change_on_enter, up_down) {
+function choose_code(input) {
   var parent = $(input).parent();
   var hint = parent.children('div.search_hint');
   if (!hint.length) {
     hint = $('<div>', { 'class': 'search_hint bordered' }).appendTo(parent);
     $(input).blur(function() { hint.hide(); });
-    if (change_on_enter)
-      $(input).keydown(_change_on_enter);
     var table = $('<table>').appendTo(hint);
     [%- IF up_down %]
     var tr = $('<tr>');
