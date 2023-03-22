@@ -81,7 +81,7 @@ sub problems_change_code {
     my $cpid = $p->{change_code} or return msg(1012);
     defined $p->{code} || defined $p->{move} or return msg(1134);
 
-    if ($p->{code}) {
+    if (defined $p->{code}) {
         $dbh->do(q~
             UPDATE contest_problems SET code = ? WHERE contest_id = ? AND id = ?~, undef,
             $p->{code}, $cid, $cpid);
