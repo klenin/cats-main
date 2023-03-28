@@ -229,7 +229,7 @@ a, a:link {
 
 .sub_menu a:hover, .sub_menu a.new:hover, a.sub_menu_selected:hover { background-color: #afaff5; }
 
-.sub_menu a.new {
+.inline_menu a.new, .sub_menu a.new {
     background: no-repeat 4px center url(../images/icons/plus.png);
     padding-left: 20px;
 }
