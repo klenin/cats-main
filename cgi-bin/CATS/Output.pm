@@ -66,6 +66,7 @@ sub init_template {
         messages => CATS::Messages::get,
         user => $user,
         contest => $contest,
+        href_contest_title => url_f($user->{is_jury} ? 'contest_params' : 'problems'),
         noiface => $p->{noiface},
         settings => $CATS::Settings::settings,
         nonce => make_nonce,

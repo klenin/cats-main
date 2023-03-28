@@ -11,8 +11,10 @@
   <tr>
     <td class="logo"><a href="[% href_header_about %]" title="CATS"></a></td>
     <td class="contest_title">
-      [% IF contest.title; contest.title | html; ELSE; title_suffix || '&nbsp;'; END %]
-      [% IF problem_title %]<span> / [% problem_title | html %]</span>[% END %]
+      [%~ IF href_contest_title && contest.title %]<a href="[% href_contest_title %]">[% END ~%]
+      [%~ IF contest.title; contest.title | html; ELSE; title_suffix || '&nbsp;'; END ~%]
+      [%~ '</a>' IF href_contest_title && contest.title ~%]
+      [%~ IF problem_title %]<span> / [% problem_title | html %]</span>[% END ~%]
     </td>
     <td class="elapsed">
       <p id="switch_lang">[% FOR l IN langs -%]

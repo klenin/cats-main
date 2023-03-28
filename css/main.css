@@ -91,6 +91,10 @@ table.header td.elapsed {
 table.header td.elapsed p a { color: #333300; padding: 1px; }
 table.header td.elapsed p a.selected { font-weight: bold; border: 1px solid black; }
 table.header td.elapsed p a:hover { background-color: #ffcc55; }
+table.header td.contest_title > a {
+    font-size: inherit;
+    color: inherit;
+}
 
 .main_menu {
     background-color: #6262f2;
