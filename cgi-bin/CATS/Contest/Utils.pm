@@ -141,6 +141,11 @@ sub _contest_searches {
             m => 1211, t => q~
             SELECT W.name FROM wiki_pages W WHERE W.id = ?~
         },
+        has_topic_like => { sq => q~EXISTS (
+            SELECT 1 FROM topics T
+            WHERE T.contest_id = C.id AND T.name LIKE ?)~,
+            m => 1250, t => undef
+        },
     });
     $p->{listview}->default_searches([ qw(title has_tag_named) ]);
 }

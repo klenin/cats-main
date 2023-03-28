@@ -463,3 +463,4 @@
 1247 "Field '%s' must be valid JSON, however: %s."
 1248 "Uses import source '%s'."
 1249 "Registration failed."
+1250 "Contests containing topic '%s'."
