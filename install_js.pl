@@ -72,6 +72,14 @@ my $modules = [
         url => 'https://unpkg.com/survey-jquery@1.9.39/survey.jquery.js',
         dest => 'survey.jquery.js',
     },
+    {
+        name => 'hunspell_aff',
+        url => 'https://github.com/LibreOffice/dictionaries/blob/master/ru_RU/ru_RU.aff',
+    },
+    {
+        name => 'hunspell_dic',
+        url => 'https://github.com/LibreOffice/dictionaries/raw/master/ru_RU/ru_RU.dic',
+    },
 ];
 
 if ($list) {
