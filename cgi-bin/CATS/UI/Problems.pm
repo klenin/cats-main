@@ -77,8 +77,10 @@ sub problems_all_frame {
             checkbox => $is_jury && $p->{link} && '[name=problems_selection]' },
         { caption => res_str(619), order_by => 'code', width => '1%', col => 'Co' },
         { caption => res_str(603), order_by => 'C.title', width => '30%' },
-        ($is_jury ?
-            ({ caption => res_str(645), order_by => 'usage_count', width => '5%', col => 'Uc' }) : ()),
+        ($is_jury ? (
+            { caption => res_str(645), order_by => 'usage_count', width => '5%', col => 'Uc' },
+            { caption => res_str(629), order_by => 'tags', width => '10%', col => 'Tg' },
+        ) : ()),
         { caption => res_str(604), order_by => $accepted_orderby, width => '10%', col => 'Ok' },
         { caption => res_str(634), order_by => 'upload_date', width => '15%', col => 'Mt' },
         { caption => res_str(667), order_by => 'keywords', width => '20%', col => 'Kw' },
@@ -114,10 +116,16 @@ sub problems_all_frame {
         WHERE CPS.contest_id = ? AND CPS.problem_id = P.id~ : 'NULL';
     my @code_param = $lv->visible_cols->{Co} && $source_cid ? ($source_cid) : ();
 
+    my $tags_sql = $lv->visible_cols->{Tg} && $source_cid ? q~
+        SELECT CPS.tags FROM contest_problems CPS
+        WHERE CPS.contest_id = ? AND CPS.problem_id = P.id~ : 'NULL';
+    my @tags_param = $lv->visible_cols->{Tg} && $source_cid ? ($source_cid) : ();
+
     my $sth = $dbh->prepare(qq~
         SELECT
-            P.id AS problem_id, P.title, C.title AS contest_title, P.contest_id,
-            COALESCE(($code_sql), CP.code) code, P.upload_date,
+            P.id AS problem_id, P.title, C.title AS contest_title, P.contest_id, P.upload_date,
+            COALESCE(($code_sql), CP.code) code,
+            COALESCE(($tags_sql), CP.tags) tags,
             ($used_count_sql) AS usage_count,
             ($ok_wa_tl) AS counts,
             ($keywords) AS keywords,
@@ -126,7 +134,7 @@ sub problems_all_frame {
         FROM problems P INNER JOIN contests C ON C.id = P.contest_id
         INNER JOIN contest_problems CP ON CP.contest_id = C.id AND CP.problem_id = P.id
         WHERE $where_cond ~ . $lv->maybe_where_cond . $lv->order_by);
-    $sth->execute(@code_param, $cid, @{$where->{params}}, $lv->where_params);
+    $sth->execute(@code_param, @tags_param, $cid, @{$where->{params}}, $lv->where_params);
 
     my $fetch_record = sub {
         my $row = $_[0]->fetchrow_hashref or return ();

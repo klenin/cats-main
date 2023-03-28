@@ -25,6 +25,7 @@
 [% IF visible_cols.Co %]<td>[% p.code | html; cell_search('code', p) %]</td>[% END %]
 <td><a href="[% p.href_view_contest %]">[% p.contest_title | html; cell_search('contest_id', p) %]</a></td>
 [% IF visible_cols.Uc %]<td class="num">[% maybe_href(p.href_used_by, p.usage_count) %]</td>[% END %]
+[% IF visible_cols.Tg %]<td>[% p.tags | html; cell_search('tags', p) %]</td>[% END %]
 [% IF visible_cols.Ok %]<td class="center">[% maybe_href(p.href_problem_console, p.counts) %]</td>[% END %]
 [% IF visible_cols.Mt %]<td class="num">[% p.upload_date %]</td>[% END %]
 [% IF visible_cols.Kw -%]
