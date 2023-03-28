@@ -1,4 +1,4 @@
-[%- js.autocomplete = 1 -%]
+[%- js.nonce = 1; js.autocomplete = 1 -%]
 [% PROCESS includes/menu_begin.tti %]
 [%- PROCESS includes/autocomplete.tti -%]
 
@@ -44,7 +44,7 @@
 </p>
 </form>
 
-<script>
+<script nonce="[% nonce %]">
 $(function () {
   autocomplete($('#logins_to_add'), '[% href_find_users %]', { delimiter: ',' });
   var sc = $('#source_contest');
