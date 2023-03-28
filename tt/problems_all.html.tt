@@ -1,4 +1,4 @@
-[% js.nonce = 1; js.jquery = 1 %]
+[%- js.nonce = 1; js.jquery = 1 -%]
 [% PROCESS includes/menu_begin.tti %]
 [%- PROCESS includes/icon/download.tti -%]
 
@@ -38,18 +38,25 @@
 [% PROCESS includes/pages.tti %]
 <br>
 [% IF user.is_jury && link %]
-[% capt.problem_code %]:
+<p>[% capt.problem_code %]:
 <span class="pcode">
 <input name="code" size="3" maxlength="3" />
-</span>
+</span></p>
+
+[% IF source_cid -%]
+<p><label>
+<input type="checkbox" value="[% source_cid | html %]" name="source_cid" />
+  [% capt.code_from_contest %]: [% source_contest_name %]</label>
+</p>
+[%- END %]
 
 [%- IF topics.size -%]
-<br/><br/>
+<br/>
 <div class="weak_border hidden">[% capt.topics %]: <span class="inline_menu topics">
 </span></div>
 [%- END -%]
 
-<br/><br/>
+<br/>
 [% IF move %]<input type="hidden" name="move" value="1" />[% END %]
 <button type="submit" name="link_save" value="1" class="button">[% move ? capt.move : capt.link %]</button>
 <button type="submit" name="link_cancel" value="1" class="button">[% capt.cancel %]</button>

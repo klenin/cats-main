@@ -144,6 +144,7 @@ my $main_routes = {
         de_id => qr/\d+|by_extension/, de_code => integer, ignore => bool,
         change_status => integer, status => integer,
         change_code => integer, code => problem_code, move => qr/^(?:up|down)$/,
+        source_cid => integer,
         link_save => bool, move => bool,
         zip => upload, allow_rename => bool, add_zip => upload,
         remote_url => str, repo_path => qr/[A-Za-z0-9_\/]*/,

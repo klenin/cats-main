@@ -171,6 +171,8 @@ sub problems_all_frame {
         link => !$contest->is_practice && $p->{link},
         move => $p->{move},
         submenu => \@submenu,
+        source_cid => $source_cid,
+        source_contest_name => $source_contest_name,
     );
 }
 
@@ -179,10 +181,15 @@ sub problems_frame_jury_action {
     $is_jury or return;
 
     if ($p->{link_save}) {
+        my $src_contest_codes = $p->{source_cid} ? $dbh->selectall_hashref(q~
+            SELECT problem_id, code FROM contest_problems
+            WHERE contest_id = ?~, 'problem_id', { Slice => {} },
+            $p->{source_cid}) : {};
         for (@{$p->{problems_selection}}) {
+            my $code = $src_contest_codes->{$_}->{code} // $p->{code};
             $p->{move} ?
-                CATS::Problem::Save::move_problem($_, $p->{code}, $cid) :
-                CATS::Problem::Save::link_problem($_, $p->{code}, $cid);
+                CATS::Problem::Save::move_problem($_, $code, $cid) :
+                CATS::Problem::Save::link_problem($_, $code, $cid);
         }
         return;
     }

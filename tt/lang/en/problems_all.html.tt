@@ -5,6 +5,7 @@
     move => 'Move',
     link => 'Link',
     cancel => 'Cancel',
+    code_from_contest => 'use code from contest'
     topics => 'Topics',
   })
 %]
