@@ -49,6 +49,7 @@ our $form = CATS::Form->new(
     before_display => sub {
         my ($fd, $p) = @_;
         my $prefix = $fd->{indexed}->{code_prefix}->{value} // '';
+        my $name = $fd->{indexed}->{name}->{value} // '';
         $fd->{data}->{problems} = $prefix ne '' && $dbh->selectall_arrayref(q~
             SELECT P.id, CP.code, P.title
             FROM problems P INNER JOIN contest_problems CP ON CP.problem_id = P.id
@@ -56,6 +57,9 @@ our $form = CATS::Form->new(
             ORDER BY CP.code~, { Slice => {} },
             $cid, $prefix);
         $fd->{data}->{href_problems} = $prefix ne '' && url_f('problems', search => 'code^=' . $prefix);
+        $name =~ s/\s/_/g;
+        $fd->{data}->{href_contests} =
+            $name ne '' && url_f('contests', search => "has_topic_like($name)");
     },
     validators => [ sub {
         my ($fd, $p) = @_;

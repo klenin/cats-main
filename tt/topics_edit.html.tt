@@ -27,4 +27,6 @@
 </p>
 [%- END %]
 
+<p>[[% href(tp.data.href_contests, capt.contests) %]]</p>
+
 [% PROCESS includes/menu_end.tti %]

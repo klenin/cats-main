@@ -2,5 +2,6 @@
   capt.import({
     rename => 'Переименовать задачи',
     problems => 'задачи',
+    contests => 'турниры',
   })
 %]
