@@ -92,7 +92,8 @@ my $main_routes = {
         params => undef, save => bool, ],
 
     topics => [ \&CATS::UI::Topics::topics_frame,
-        delete => integer, saved => integer, renamed => integer ],
+        delete => integer, saved => integer, renamed => integer,
+        from_contest => bool, source_cid => integer, include_hidden => bool ],
     topics_edit => [ \&CATS::UI::Topics::topics_edit_frame,
         $CATS::UI::Topics::form->route, rename => bool, ],
 

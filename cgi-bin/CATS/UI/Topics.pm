@@ -6,7 +6,7 @@ use warnings;
 use CATS::Contest::Utils;
 use CATS::DB;
 use CATS::Form;
-use CATS::Globals qw($cid $is_jury $t);
+use CATS::Globals qw($cid $is_jury $t $user);
 use CATS::ListView;
 use CATS::Messages qw(msg res_str);
 use CATS::Output qw(init_template url_f);
@@ -93,6 +93,36 @@ sub topics_edit_frame {
     $form->edit_frame($p);
 }
 
+sub _import_from_contest {
+    my ($source_cid, $include_hidden) = @_;
+
+    my ($source_cid_found, $source_is_jury) = $dbh->selectrow_array(q~
+        SELECT C.id, CA.is_jury
+        FROM contests C
+        LEFT JOIN contest_accounts CA ON CA.contest_id = C.id and CA.account_id = ?
+        WHERE C.id = ? AND (C.is_hidden = 0 OR CA.is_jury = 1)~, undef,
+        $user->{id}, $source_cid);
+
+    $source_cid_found or return;
+
+    my $hidden_cond = $source_is_jury && $include_hidden ? '' : ' AND is_hidden = 0';
+    my $topics = $dbh->selectall_arrayref(qq~
+        SELECT id, code_prefix, name, description, is_hidden
+        FROM topics
+        WHERE contest_id = ?$hidden_cond~, { Slice => {} },
+        $source_cid);
+    @$topics or return;
+    my $insert_sth = $dbh->prepare(q~
+        INSERT INTO topics (id, contest_id, code_prefix, name, description, is_hidden)
+        VALUES (?, ?, ?, ?, ?, ?)~);
+    my $cnt = 0;
+    for (@$topics) {
+        $cnt += $insert_sth->execute(new_id, $cid, @$_{qw(code_prefix name description is_hidden)});
+    }
+    $dbh->commit if $cnt;
+    msg(1251, $cnt);
+}
+
 sub topics_frame {
     my ($p) = @_;
 
@@ -101,6 +131,8 @@ sub topics_frame {
 
     $form->delete_or_saved($p);
     msg(1245, $p->{renamed}) if defined $p->{renamed};
+
+    _import_from_contest($p->{source_cid}, $p->{include_hidden}) if $p->{from_contest};
 
     my $lv = CATS::ListView->new(web => $p, name => 'topics', url => url_f('topics'));
 
@@ -129,7 +161,9 @@ sub topics_frame {
     };
     $lv->attach($fetch_record, $sth);
     CATS::Contest::Utils::contest_submenu('topics');
-    #$t->param(title_suffix => res_str(589));
+    $t->param(
+        href_find_contests => url_f('api_find_contests'),
+    );
 }
 
 1;

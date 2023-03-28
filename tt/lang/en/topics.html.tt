@@ -1,5 +1,8 @@
 [%
   capt.import({
     want_to_delete => 'Do you really want to delete topic',
+    contest => 'Contest',
+    from_contest => 'import from contest',
+    include_hidden => 'include hidden',
   })
 %]

@@ -1,6 +1,6 @@
-[%- js.nonce = 1 -%]
+[%- js.nonce = 1; js.autocomplete = 1 -%]
 [%- PROCESS includes/menu_begin.tti -%]
-[% PROCESS includes/html.tti %]
+[%- PROCESS includes/autocomplete.tti -%]
 
 [% PROCESS includes/listview_header.tti table_selector = '#topics' name_selector = 'a.nm' %]
 
@@ -22,5 +22,32 @@
 </table>
 [% PROCESS includes/pages.tti %]
 </form>
+
+<hr/>
+<form method="post" action="[% href_action %]">
+<div>
+<label>[% capt.contest %]: <input name="source_contest" id="source_contest" size="100" class="bordered hidden" /></label>
+<label>Id: <input name="source_cid" id="source_cid" size="10" class="bordered" />
+</label>
+</div>
+<p>
+<button type="submit" class="button" name="from_contest" value="1">[% capt.from_contest %]</button>
+<label>[% checkbox_1('include_hidden'); capt.include_hidden %]</label>
+</p>
+</form>
+
+<script nonce="[% nonce %]">
+$(function () {
+  var sc = $('#source_contest');
+  sc.removeClass('hidden');
+  autocomplete(sc, '[% href_find_contests %]', {
+    formatResult: AutoComplete.formatResult.contests,
+    onSelect: function (suggestion) {
+      $('#source_cid').val(suggestion.data.id);
+      $('#source_contest').text(suggestion.data.title);
+    },
+  });
+});
+</script>
 
 [% PROCESS includes/menu_end.tti %]

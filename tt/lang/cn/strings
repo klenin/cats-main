@@ -464,3 +464,4 @@
 1248 "Uses import source '%s'."
 1249 "Registration failed."
 1250 "Contests containing topic '%s'."
+1251 "Topics added: %d."
