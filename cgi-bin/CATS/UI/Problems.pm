@@ -75,7 +75,7 @@ sub problems_all_frame {
     $lv->default_sort(0)->define_columns([
         { caption => res_str(602), order_by => 'P.title', width => '30%',
             checkbox => $is_jury && $p->{link} && '[name=problems_selection]' },
-        { caption => res_str(619), order_by => 'CP.code', width => '1%', col => 'Co' },
+        { caption => res_str(619), order_by => 'code', width => '1%', col => 'Co' },
         { caption => res_str(603), order_by => 'C.title', width => '30%' },
         ($is_jury ?
             ({ caption => res_str(645), order_by => 'usage_count', width => '5%', col => 'Uc' }) : ()),
@@ -104,9 +104,20 @@ sub problems_all_frame {
     my $keywords = $lv->visible_cols->{Kw} ? q~
         SELECT LIST(DISTINCT K.code, ' ') FROM keywords K
         INNER JOIN problem_keywords PK ON PK.keyword_id = K.id AND PK.problem_id = P.id~ : 'NULL';
+
+    my $is_used_by_contest = $lv->qb->search_subquery_value('is_used_by_contest');
+    my ($source_cid, $source_contest_name) = $is_used_by_contest && $dbh->selectrow_array(q~
+        SELECT id, title FROM contests WHERE id = ?~, undef,
+        $is_used_by_contest);
+    my $code_sql = $lv->visible_cols->{Co} && $source_cid ? q~
+        SELECT CPS.code FROM contest_problems CPS
+        WHERE CPS.contest_id = ? AND CPS.problem_id = P.id~ : 'NULL';
+    my @code_param = $lv->visible_cols->{Co} && $source_cid ? ($source_cid) : ();
+
     my $sth = $dbh->prepare(qq~
         SELECT
-            P.id AS problem_id, P.title, C.title AS contest_title, P.contest_id, CP.code, P.upload_date,
+            P.id AS problem_id, P.title, C.title AS contest_title, P.contest_id,
+            COALESCE(($code_sql), CP.code) code, P.upload_date,
             ($used_count_sql) AS usage_count,
             ($ok_wa_tl) AS counts,
             ($keywords) AS keywords,
@@ -115,7 +126,7 @@ sub problems_all_frame {
         FROM problems P INNER JOIN contests C ON C.id = P.contest_id
         INNER JOIN contest_problems CP ON CP.contest_id = C.id AND CP.problem_id = P.id
         WHERE $where_cond ~ . $lv->maybe_where_cond . $lv->order_by);
-    $sth->execute($cid, @{$where->{params}}, $lv->where_params);
+    $sth->execute(@code_param, $cid, @{$where->{params}}, $lv->where_params);
 
     my $fetch_record = sub {
         my $row = $_[0]->fetchrow_hashref or return ();
