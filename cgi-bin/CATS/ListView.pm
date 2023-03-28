@@ -246,13 +246,19 @@ sub find_sorting_col {
         for $s->{sort_by};
 }
 
+sub _order_by_apply_dir {
+    my ($order_by, $dir) = @_;
+    my $suffix = $dir ? 'DESC' : 'ASC';
+    join ', ', map /[\s](DESC|ASC)$/ ? $_ : "$_ $suffix", split /,\s*/, $order_by;
+}
+
 sub order_by {
     my ($self, $pre_sort) = @_;
     my $s = $self->settings;
     my $c = $self->find_sorting_col($s);
     my @order = (
         $pre_sort // $self->{pre_sort} // (),
-        $c && !ref $c->{order_by} ? $c->{order_by} . ($s->{sort_dir} ? ' DESC' : ' ASC') : (),
+        $c && !ref $c->{order_by} ? _order_by_apply_dir($c->{order_by}, $s->{sort_dir}) : (),
     );
     @order ? 'ORDER BY ' . join(', ', @order) : '';
 }
