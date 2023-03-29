@@ -25,7 +25,7 @@ my $web = CATS::Web::Mockup->new;
 
     $lv->default_sort(0)->define_columns([
         { caption => 'colA', order_by => 'colA' },
-        { caption => 'colB', order_by => '1, 2' },
+        { caption => 'colB', order_by => [ 1, 2 ] },
     ]);
     my $i = 0;
     my $raw = [ 5, 6, 7 ];
