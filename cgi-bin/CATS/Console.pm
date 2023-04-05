@@ -127,6 +127,8 @@ sub console_searches {
         A.city
         A.login
         CA.is_jury
+        CA.is_ooc
+        CA.is_remote
         CA.site_id
         CP.code
     ) ]);
