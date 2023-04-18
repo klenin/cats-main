@@ -6,6 +6,7 @@ use Encode;
 use File::Spec;
 use FindBin;
 use Getopt::Long;
+use SQL::Abstract; # Actually used by CATS::DB, but is optional there.
 
 use lib File::Spec->catdir($FindBin::Bin, 'cats-problem');
 use lib $FindBin::Bin;
@@ -66,8 +67,6 @@ my $users = $dbh->selectall_arrayref(q~
 
 @$users == 1 or die "User not found";
 
-my $need_commit = 0;
-
 my $u = $users->[0];
 my $p = CATS::Privileges::unpack_privs($u->{srole});
 
@@ -96,19 +95,17 @@ for (@$remove) {
 }
 
 my $srole = CATS::Privileges::pack_privs($p);
-if ($srole != $u->{srole}) {
-    $dbh->do(q~
-        UPDATE accounts SET srole = ?
-        WHERE id = ? AND login = ?~, undef,
-        $srole, $user_id, $user_login) == 1 or die;
-    $need_commit = 1;
-}
 
-if (defined $multi_ip) {
-    $dbh->do(q~
-        UPDATE accounts SET multi_ip = ?
-        WHERE id = ? AND login = ?~, undef,
-        $multi_ip, $user_id, $user_login) == 1 or die;
+my $update = {
+    ($srole != $u->{srole} ? (srole => $srole) : ()),
+    (defined $multi_ip ? (multi_ip => $multi_ip) : ()),
+};
+
+my $need_commit = 0;
+
+if (%$update) {
+    $dbh->do(_u $sql->update('accounts', $update, { id => $user_id, login => $user_login }))
+        or die 'Update failed';
     $need_commit = 1;
 }
 
