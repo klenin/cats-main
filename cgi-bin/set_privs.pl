@@ -21,6 +21,7 @@ GetOptions(
     'login=s' => \(my $user_login = ''),
     'add=s@' => (my $add = []),
     'remove=s@' => (my $remove = []),
+    'sid=s' => \(my $new_sid = ''),
     'multi-ip=i' => \(my $multi_ip),
 );
 
@@ -28,7 +29,8 @@ sub usage {
     print STDERR qq~CATS Priviledge management tool
 Usage: $0
   --help
-  --id=<user id> --login=<user login> [--add=<priv>...] [--remove=<priv>...] [--multi-ip=<count>]
+  --id=<user id> --login=<user login>
+    [--add=<priv>...] [--remove=<priv>...] [--multi-ip=<count>] [--sid=<sid>]
   --find=<priv>|any_jury
 Privileges:\n~;
     say "  $_" for CATS::Privileges::all_names;
@@ -98,7 +100,8 @@ my $srole = CATS::Privileges::pack_privs($p);
 
 my $update = {
     ($srole != $u->{srole} ? (srole => $srole) : ()),
-    (defined $multi_ip ? (multi_ip => $multi_ip) : ()),
+    (defined $multi_ip && $multi_ip != ($u->{multi_ip} // 0) ? (multi_ip => $multi_ip) : ()),
+    ($new_sid ne '' && $new_sid ne $u->{sid} ? (sid => $new_sid) : ()),
 };
 
 my $need_commit = 0;
@@ -106,17 +109,20 @@ my $need_commit = 0;
 if (%$update) {
     $dbh->do(_u $sql->update('accounts', $update, { id => $user_id, login => $user_login }))
         or die 'Update failed';
+    say 'Update successfull';
     $need_commit = 1;
 }
 
 $dbh->commit if $need_commit;
 
+sub _display_new { exists $update->{$_[0]} ? " => $update->{$_[0]}" : '' }
+
 say "Id      :  $u->{id}";
 say "Login   :  $u->{login}";
-say "SID     :  $u->{sid}";
-say "SRole   :  $u->{srole}", ($srole != $u->{srole} ? " => $srole" : '');
-say "Multi-IP:  ", $u->{multi_ip} // '0',
-    (defined $multi_ip &&  $multi_ip != ($u->{multi_ip} // 0) ? " => $multi_ip" : '') if $u->{multi_ip} || defined $multi_ip;
+say "SID     :  $u->{sid}", _display_new('sid');
+say "SRole   :  $u->{srole}", _display_new('srole');
+say "Multi-IP:  ", $u->{multi_ip} // '0', _display_new('multi_ip')
+    if $u->{multi_ip} || defined $multi_ip;
 say 'Privileges:';
 
 for (sort keys %$p) {
