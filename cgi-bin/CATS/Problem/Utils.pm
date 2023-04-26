@@ -128,10 +128,10 @@ our $queries = {
 sub define_common_searches {
     my ($lv) = @_;
 
-    $lv->define_db_searches([ map "P.$_", qw(
+    my @sections = qw(statement explanation pconstraints input_format output_format formal_input json_data);
+    $lv->define_db_searches([ map "P.$_", @sections, qw(
         id title contest_id author upload_date lang run_method last_modified_by max_points
         input_file output_file
-        statement explanation pconstraints input_format output_format formal_input json_data
         statement_url explanation_url
     ), @cats::limits_fields ]);
 
@@ -168,7 +168,7 @@ sub define_common_searches {
                 WHERE SN.problem_id = CP.problem_id AND SN.contest_id = CP.contest_id)~,
         until_deadline => q~CAST(CP.deadline - CURRENT_TIMESTAMP AS DOUBLE PRECISION)~,
     });
-    $lv->define_casts({ map { $_ => 'VARCHAR(100)' } 'code', map $_->[0], @sources });
+    $lv->define_casts({ map { $_ => 'VARCHAR(100)' } 'code', @sections, map $_->[0], @sources });
 
     $lv->define_enums({
         run_method => CATS::Problem::Utils::run_method_enum(),
