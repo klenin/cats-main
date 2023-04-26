@@ -11,8 +11,12 @@ use SQL::Abstract; # Actually used by CATS::DB, but is optional there.
 use lib File::Spec->catdir($FindBin::Bin, 'cats-problem');
 use lib $FindBin::Bin;
 
+use CATS::ConsoleColor qw(colored maybe_colored);
 use CATS::DB;
 use CATS::Privileges;
+
+use constant COLOR_SUCCESS => 'green';
+use constant COLOR_MARK => { '+' => 'green', '-' => 'red' };
 
 GetOptions(
     help => \(my $help = 0),
@@ -27,11 +31,13 @@ GetOptions(
 
 sub usage {
     print STDERR qq~CATS Priviledge management tool
+
 Usage: $0
   --help
   --id=<user id> --login=<user login>
     [--add=<priv>...] [--remove=<priv>...] [--multi-ip=<count>] [--sid=<sid>]
   --find=<priv>|any_jury
+
 Privileges:\n~;
     say "  $_" for CATS::Privileges::all_names;
     exit;
@@ -109,13 +115,13 @@ my $need_commit = 0;
 if (%$update) {
     $dbh->do(_u $sql->update('accounts', $update, { id => $user_id, login => $user_login }))
         or die 'Update failed';
-    say 'Update successfull';
+    say colored('Update successfull', COLOR_SUCCESS);
     $need_commit = 1;
 }
 
 $dbh->commit if $need_commit;
 
-sub _display_new { exists $update->{$_[0]} ? " => $update->{$_[0]}" : '' }
+sub _display_new { exists $update->{$_[0]} ? colored(" => $update->{$_[0]}", COLOR_SUCCESS) : '' }
 
 say "Id      :  $u->{id}";
 say "Login   :  $u->{login}";
@@ -126,7 +132,9 @@ say "Multi-IP:  ", $u->{multi_ip} // '0', _display_new('multi_ip')
 say 'Privileges:';
 
 for (sort keys %$p) {
-    say $marks{$_} || '', "\t$_" if $p->{$_} || $marks{$_};
+    $p->{$_} || $marks{$_} or next;
+    my $m = $marks{$_} || '';
+    say maybe_colored("$m\t$_", COLOR_MARK->{$m});
 }
 
 $dbh->disconnect;
