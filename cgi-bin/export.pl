@@ -36,6 +36,7 @@ GetOptions(
     'header-pattern=s' => \(my $header_pattern = ''),
     'site=i' => \(my $site),
     'search|s=s' => \(my $search = ''),
+    'names' => \(my $names),
 );
 
 sub usage {
@@ -47,6 +48,7 @@ Usage: $0 [--help] --contest=<contest id> --mode={log|runs}
     [--encoding=<encoding>]
     [--file-pattern=<file name pattern>, default is $file_pattern_default]
     [--header-pattern=<in-file header pattern>, default is none]
+    [--names, display field names available for pattern usage]
     [--site=<site id>]
     [--search=<search expression>, search expression, same syntax as a web console]
 ~;
@@ -58,7 +60,8 @@ usage if $help || !$contest_id;
 if ($mode eq 'log') {
 }
 elsif ($mode eq 'runs') {
-    $dest && -d $dest or usage('Error: destination dir required for mode=runs');
+    $dest or usage('Error: destination dir required for mode=runs');
+    -d $dest or usage("Error: destination dir '$dest' must exist");
 }
 else {
     usage(q~Error: mode must be 'log' or 'runs'~);
@@ -100,6 +103,10 @@ elsif ($mode eq 'runs') {
     my $reqs_sth = CATS::Console::build_query({
         show_results => 1, show_contests => 0, show_messages => 0, i_value => -1, i_unit => 'hours' },
         $lv, []);
+    if ($names) {
+        print join "\n", sort map lc, @{$reqs_sth->{NAME}};
+        exit;
+    }
     my $count = 0;
     my $src_sth = $dbh->prepare(q~
         SELECT src, fname FROM sources WHERE req_id = ?~);
