@@ -12,7 +12,7 @@ use lib File::Spec->catdir($FindBin::Bin, 'cats-problem');
 
 use CATS::Config;
 
-my @verbose_options = qw(apply_run db_config none show_numbers);
+my @verbose_options = qw(apply_run db_config none show_numbers sql);
 my $verbose_default = 'db_config,show_numbers';
 
 sub usage {
@@ -101,6 +101,12 @@ sub get_migrations_path {
     File::Spec->catdir($Bin, qw(.. sql migrations));
 }
 
+sub display_migration {
+    my ($path) = @_;
+    open my $f, '<', $path or die $!;
+    print while <$f>;
+}
+
 sub write_migration {
     my ($migration_path, $header, $diff) = @_;
     $migration_path = File::Spec->catfile(get_migrations_path, $migration_path);
@@ -117,6 +123,7 @@ sub write_migration {
     say $header if $header;
     parse_diff($diff);
     select STDOUT;
+    display_migration($migration_path) if $verbose{sql} && !$dry_run;
 }
 
 sub make_migration {
@@ -221,8 +228,14 @@ sub show_migrations {
     my $sep = "\n" . ($verbose{show_numbers} ? ' ' x ($max_len + 2) : '');
     my $fmt = $verbose{show_numbers} ? "%*d. %s\n" : "%3\$s\n";
     for my $m (@migrations) {
-        printf $fmt, $max_len, $i--,
-            join $sep, map filename($_), grep $_, @$m{qw(common firebird postgres)};
+        my @paths = grep $_, @$m{qw(common firebird postgres)};
+        printf $fmt, $max_len, $i--, join $sep, map filename($_), @paths;
+        if ($verbose{sql}) {
+            for (@paths) {
+                say "--- $_";
+                display_migration($_) ;
+            }
+        }
     }
 }
 
