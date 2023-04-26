@@ -419,8 +419,6 @@ sub insert_problem_source {
 sub insert_problem_content {
     my ($self, $problem) = @_;
 
-    $problem->{has_checker} or $self->error('No checker specified');
-
     my $c = $dbh->prepare(q~
         INSERT INTO resources (id, res_type, url) VALUES (?, ?, ?)~);
     my $res_sth = $dbh->prepare(q~
@@ -460,7 +458,8 @@ sub insert_problem_content {
 
     if ($problem->{description}{std_checker}) {
         $self->note("Checker: $problem->{description}{std_checker}");
-    } elsif (my $c = $problem->{checker}) {
+    }
+    elsif (my $c = $problem->{checker}) {
         $self->insert_problem_source(
             source_object => $c, type_name => 'Checker', pid => $problem->{id},
             source_type => CATS::Problem::checker_type_names()->{$c->{style}},
