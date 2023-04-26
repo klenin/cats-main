@@ -283,7 +283,7 @@ CREATE TABLE problems (
     explanation_url    VARCHAR(200) DEFAULT '',
     repo_path          VARCHAR(200) DEFAULT ''
 );
-ALTER TABLE problems ADD CONSTRAINT chk_run_method CHECK (run_method IN (0, 1, 2, 3));
+ALTER TABLE problems ADD CONSTRAINT chk_run_method CHECK (run_method >= 0);
 
 CREATE TABLE problem_de_bitmap_cache (
     problem_id  INTEGER NOT NULL REFERENCES problems(id) ON DELETE CASCADE,
