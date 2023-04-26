@@ -359,6 +359,9 @@ files with tests, solutions etc.
         exchanging data via standard input/output streams.</li>
       <li>competitive[% v110 %] — run controller (see [% tag_ref('Interactor') %]) and several solutions (agents) simultaneously,
         exchanging data via standard input/output streams.</li>
+      <li>competitive_modules[% v111 %] — run controller and several solutions (agents) simultaneously,
+        exchanging data via API inside of a single process.</li>
+      <li>none[% v111 %] — run is not performed.</li>
     </ul>
   </td>
 </tr>
