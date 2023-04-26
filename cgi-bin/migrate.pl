@@ -82,7 +82,7 @@ sub parse_diff {
                 say_c $line;
             }
         }
-        elsif (my ($line1) = m/^\-([^\-].+?),?$/) {
+        elsif (my ($line1) = m/^\-([^\-].+?)[,;]?$/) {
             if ($table) {
                 say_n "ALTER TABLE $table";
                 say_c "    DROP $line1;";
