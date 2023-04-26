@@ -11,6 +11,10 @@ use POSIX qw();
 use lib File::Spec->catdir($FindBin::Bin, 'cats-problem');
 
 use CATS::Config;
+use CATS::ConsoleColor qw(colored maybe_colored);
+
+use constant COLOR_KEYWORD => 'bold white';
+use constant COLOR_SEP => 'cyan';
 
 my @verbose_options = qw(apply_run db_config none show_numbers sql);
 my $verbose_default = 'db_config,show_numbers';
@@ -54,9 +58,24 @@ my $db = !$help && $CATS::Config::db;
 printf "DBI: %s\nHost: %s\nDatabase: %s\n\n",
     $db->{driver}, $db->{host}, $db->{name} if $verbose{db_config} && !$help;
 
+my %keywords;
+$keywords{$_} = 1 for qw(
+    ADD ALTER BIGINT CASCADE CHAR CHECK CONSTRAINT CREATE DATE DECIMAL DEFAULT DELETE DOUBLE DROP
+    GRANT FLOAT FOREIGN IN INDEX INSERT INTEGER KEY NOT NULL ON PRECISION PRIMARY
+    REFERENCES REVOKE ROLE SMALLINT TABLE TIMESTAMP UNIQUE UPDATE VARCHAR);
+
+sub print_colorized_sql {
+    my ($line) = @_;
+    -t select or return print $line;
+    for (split /\b/, $line) {
+        print maybe_colored($_, $keywords{$_} && COLOR_KEYWORD);
+    }
+}
+
 my $has_lines;
 sub say_c {
-    say @_;
+    print_colorized_sql @_;
+    say '';
     $has_lines = 1;
 }
 sub say_n {
@@ -104,7 +123,7 @@ sub get_migrations_path {
 sub display_migration {
     my ($path) = @_;
     open my $f, '<', $path or die $!;
-    print while <$f>;
+    print_colorized_sql $_ while <$f>;
 }
 
 sub write_migration {
@@ -193,7 +212,7 @@ sub apply_migration {
     my $file = $migration->{$dbms} // $migration->{common};
     say "Applying migration: $file";
     if ($dry_run) {
-        say 'Dry run';
+        say colored('Dry run', COLOR_SEP);
         return;
     }
 
@@ -216,7 +235,7 @@ sub apply_migration {
     say join ' ', 'Running:', @$cmd if $verbose{apply_run};
     my ($ok, $err, $full) = IPC::Cmd::run command => $cmd;
     $ok or die join "\n", $err, @$full;
-    print '-' x 20, "\n", @$full;
+    print colored('-' x 20, COLOR_SEP), "\n", @$full;
 }
 
 sub show_migrations {
@@ -232,7 +251,7 @@ sub show_migrations {
         printf $fmt, $max_len, $i--, join $sep, map filename($_), @paths;
         if ($verbose{sql}) {
             for (@paths) {
-                say "--- $_";
+                say colored("--- $_", COLOR_SEP);
                 display_migration($_) ;
             }
         }
