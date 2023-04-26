@@ -50,9 +50,9 @@ my %verbose = map { $_ => 1 } split /,/, $verbose_str;
     }
 }
 
-my $db = $CATS::Config::db;
+my $db = !$help && $CATS::Config::db;
 printf "DBI: %s\nHost: %s\nDatabase: %s\n\n",
-    $db->{driver}, $db->{host}, $db->{name} if $verbose{db_config};
+    $db->{driver}, $db->{host}, $db->{name} if $verbose{db_config} && !$help;
 
 my $has_lines;
 sub say_c {
