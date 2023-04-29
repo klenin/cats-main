@@ -31,6 +31,7 @@
   div.problem_text ul, div.problem_text ol {
     max-width: [% text_width - list_padding %]px; padding-left: [% list_padding %]px;
   }
+  div.problem_text .problem_menu ul { padding-left: 0; }
   div.problem_text > table { max-width: [% text_width %]px; }
   div.problem_text p span { text-indent: 0; }
   div.problem_text table.thin_border { border-collapse: collapse; border: 1px; }
