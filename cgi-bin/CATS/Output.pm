@@ -35,6 +35,9 @@ sub make_nonce {
     join '', map { $nonce_ch[rand @nonce_ch] } 1..32;
 }
 
+# When Config::DOWN = 1, $user might be auto-vivified to an empty hash.
+sub is_root_safe { $user && ref $user eq 'CATS::CurrentUser' && $user->is_root }
+
 sub init_template {
     my ($p, $file_name, $extra) = @_;
 
@@ -42,7 +45,7 @@ sub init_template {
     $ext //=
         $p->{json} ? 'json' :
         $p->{ical} ? 'ics' :
-        $user && $user->is_root && @{$p->{csv}} ? 'csv':
+        is_root_safe && @{$p->{csv}} ? 'csv':
         'html';
 
     $http_mime_type = {
@@ -125,7 +128,7 @@ sub generate {
     $p->headers(cookie => $cookie, %extra_headers);
 
     my $decoded_out =
-        $user && $user->is_root && $http_mime_type eq 'text/csv' ?
+        is_root_safe && $http_mime_type eq 'text/csv' ?
         _generate_csv($p, $t->{vars}) : $t->output;
     my $out = $enc eq 'UTF-8' ? $decoded_out : Encode::encode($enc, $decoded_out, Encode::FB_XMLCREF);
     $p->print($out);
