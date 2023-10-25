@@ -402,7 +402,12 @@ sub problem_test_data_frame {
     my $sth = $dbh->prepare($test_data_sql . $lv->maybe_where_cond . $lv->order_by);
     $sth->execute($p->{pid}, $lv->where_params);
 
-    my ($parsed, $sha) = CATS::Problem::Storage->new->parse_problem($cid, $p->{pid});
+    my $ps = CATS::Problem::Storage->new;
+    my ($parsed, $sha) = eval { $ps->parse_problem($cid, $p->{pid}) };
+    if (my $err = $@) {
+      msg(1008);
+      CATS::Messages::msg_debug($ps->encoded_import_log);
+    }
 
     my $total = {};
 
