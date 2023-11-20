@@ -240,21 +240,41 @@ sub contest_sites_add {
     msg(1068, $count);
 }
 
-sub contest_sites_delete {
-    my ($p) = @_;
-    my $site_id = $p->{delete} or return;
-    my ($name) = $dbh->selectrow_array(q~
-        SELECT name FROM sites WHERE id = ?~, undef,
-        $site_id) or return;
-
+sub _delete_site {
+    my ($site_id) = @_;
     $dbh->selectrow_array(qq~
         SELECT 1 FROM contest_accounts CA WHERE CA.contest_id = ? AND CA.site_id = ? $db->{LIMIT} 1~, undef,
         $cid, $site_id) and return msg(1025);
     $dbh->do(q~
         DELETE FROM contest_sites WHERE contest_id = ? AND site_id = ?~, undef,
         $cid, $site_id);
+}
+
+sub contest_sites_delete {
+    my ($p) = @_;
+    my $site_id = $p->{delete} or return;
+
+    my ($name) = $dbh->selectrow_array(q~
+        SELECT name FROM sites WHERE id = ?~, undef,
+        $site_id) or return;
+    _delete_site($site_id) or return;
+
     $dbh->commit;
     msg(1066, $name);
+}
+
+sub contest_sites_mass_delete {
+    my ($p) = @_;
+    $p->{mass_delete} or return;
+
+    my $sites = [ grep $_ && $_ > 0, @{$p->{check}} ];
+    my $count = 0;
+
+    for my $site_id (@$sites) {
+        $count += _delete_site($site_id) // 0;
+    }
+    $dbh->commit;
+    msg(1054, $count) if $count;
 }
 
 sub _href_console {
@@ -291,6 +311,7 @@ sub contest_sites_frame {
 
     if ($is_jury) {
         contest_sites_delete($p);
+        contest_sites_mass_delete($p);
         contest_sites_add([ grep $_ && $_ > 0, @{$p->{check}} ], $p->{with_org}) if $p->{add};
     }
 

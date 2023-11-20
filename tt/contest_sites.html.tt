@@ -42,6 +42,7 @@
 [% IF user.is_jury %]
 <br/>
 <button name="add" value="1" class="button">[% capt.add_sites %]</button>
+<button name="mass_delete" value="1" class="button">[% capt.delete_sites %]</button>
 [% END %]
 <button name="multi_console" value="1" class="button">[% capt.console %]</button>
 <button name="multi_rank_table" value="1" class="button">[% capt.rank_table %]</button>
