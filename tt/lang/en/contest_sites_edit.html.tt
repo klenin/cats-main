@@ -3,6 +3,8 @@
     contest_name => 'Contest',
     site_name => 'Site',
     users_count => 'Users',
+    console => 'console',
+    rank_table => 'rank table',
     problem_tag => 'Problems variant tag',
   })
 %]

@@ -166,6 +166,12 @@ sub contest_sites_edit_save {
     $changed_ext and msg($s->{ext_time} ? 1164 : 1165, $s->{site_name});
 }
 
+sub _href_console {
+    url_f('console',
+        i_value => -1, se => 'sites', show_results => 1,
+        search((map { +site_id => $_ } @_), $is_root ? (contest_id => 'this') : ()));
+}
+
 sub contest_sites_edit_frame {
     my ($p) = @_;
     $is_jury or return;
@@ -196,6 +202,9 @@ sub contest_sites_edit_frame {
     $t->param(
         href_contest => url_f('contest_params', id => $s->{contest_id}),
         href_users => url_f('users', search(site_id => $s->{id})),
+        href_console => _href_console($s->{id}),
+        href_rank_table => url_f('rank_table', sites => $s->{id}),
+
         ($user->privs->{edit_sites} ? (href_site => url_f('sites_edit', id => $s->{id})) : ()),
         s => $s,
         formatted_diff_time => CATS::Time::format_diff($s->{diff_time}, display_plus => 1),
@@ -276,12 +285,6 @@ sub contest_sites_mass_delete {
     }
     $dbh->commit;
     msg(1054, $count) if $count;
-}
-
-sub _href_console {
-    url_f('console',
-        i_value => -1, se => 'sites', show_results => 1,
-        search((map { +site_id => $_ } @_), $is_root ? (contest_id => 'this') : ()));
 }
 
 sub contest_sites_frame {

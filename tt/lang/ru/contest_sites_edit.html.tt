@@ -3,6 +3,8 @@
     contest_name => 'Турнир',
     site_name => 'Площадка',
     users_count => 'Пользователи',
+    console => 'консоль',
+    rank_table => 'результаты',
     problem_tag => 'Тег варианта задач',
   })
 %]
