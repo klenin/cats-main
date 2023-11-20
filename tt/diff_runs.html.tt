@@ -1,5 +1,6 @@
 [%- js.nonce = 1; PROCESS includes/sources_styles.tti -%]
 [%- PROCESS includes/header.tti -%]
+[%- replace_arrow = '→' -%]
 </head>
 <body>
 <script nonce="[% nonce %]">
@@ -36,14 +37,32 @@ function show_ab(e) {
     lines.appendChild(span);
   }
 }
+
 var diff_lines = [
   [% FOREACH dl IN diff_lines -%]
   [ '[% dl.class.squote %]', '[% dl.line.squote %]' ][% ',' UNLESS loop.last %]
   [% END -%]
 ];
+
+function _add_spaced(input, text) {
+  input.value += (input.value === '' || input.value.endsWith(' ') ? '' : ' ') + text;
+}
+
+function add_replacement(e) {
+  e.preventDefault();
+  var that = this;
+
+  var from_to = that.innerText.split('[% replace_arrow %]');
+  _add_spaced(document.querySelector('input[name=replace_from]'), from_to[0]);
+  _add_spaced(document.querySelector('input[name=replace_to]'), from_to[1]);
+}
+
 window.addEventListener('load', function() {
   document.querySelectorAll('a[data-diff]').forEach(function (a) {
     a.addEventListener('click', show_ab);
+  });
+  document.querySelectorAll('div.recommended_replacements a').forEach(function (a) {
+    a.addEventListener('click', add_replacement);
   });
 });
 //-->
@@ -53,9 +72,13 @@ window.addEventListener('load', function() {
 [% PROCESS includes/encoding_form.html.tti capt_enc = capt.encoding %]
 <form method="POST" class="weak_border">
 <input type="text" name="replace_from" value="[% replace_from | html %]" placeholder="[% capt.replace_placeholder %]" class="bordered"/>
-→
+<button name="replace" class="button" title="[% capt.replace %]">[% replace_arrow %]</button>
 <input type="text" name="replace_to" value="[% replace_to | html %]" placeholder="[% capt.replace_placeholder %]" class="bordered" />
-<button name="replace" class="button">[% capt.replace %]</button>
+[% IF recommended_replacements.size -%]
+<div class="recommended_replacements inline_menu">
+[%- FOREACH rr IN recommended_replacements; href('#', rr.replace(' ', replace_arrow)); ' '; END -%]
+</div>
+[%- END %]
 </form>
 </div>
 <form method="POST">

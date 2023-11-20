@@ -26,6 +26,11 @@ use CATS::Similarity;
 use CATS::Problem::Submit qw(prepare_de prepare_de_list);
 use CATS::Utils;
 
+sub take_n {
+    my ($n, $array) = @_;
+    @$array <= $n ? $array : [ @$array[0 .. $n - 1] ];
+}
+
 sub diff_runs_frame {
     my ($p) = @_;
     my $t = init_template($p, 'diff_runs.html.tt');
@@ -41,10 +46,13 @@ sub diff_runs_frame {
     return msg(1155) if grep @{$_->{elements}} > 1, @$si;
 
     my $both_jury = 2 == grep $_->{is_jury}, @$si;
+    my $replaced = {};
     if ($p->{replace_from} || $p->{replace_to}) {
       my @from_list = split /\s+/, $p->{replace_from} // '';
       my @to_list = split /\s+/, $p->{replace_to} // '';
       for (my $i = 0; $i < min(scalar(@from_list), scalar(@to_list)); ++$i) {
+          $replaced->{$from_list[$i]} = 1;
+          $replaced->{$to_list[$i]} = 1;
           $si->[0]->{src} =~ s/\b\Q$from_list[$i]\E\b/\Q$to_list[$i]\E/g;
       }
       $t->param(
@@ -105,7 +113,11 @@ sub diff_runs_frame {
         }
     );
 
-    $t->param(diff_lines => \@diff, similar => $p->{similar} && $both_jury);
+    $t->param(
+        diff_lines => \@diff, similar => $p->{similar} && $both_jury,
+        recommended_replacements =>
+          take_n(5, CATS::Similarity::recommend_replacements(@$si, {}, $replaced)),
+    );
 }
 
 sub view_source_frame {
