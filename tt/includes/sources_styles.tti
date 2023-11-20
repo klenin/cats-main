@@ -31,5 +31,9 @@
         margin: auto 0;
     }
     #sources_info th:hover div.toggler { display: block; }
+    div.diff_runs_replace form {
+      margin: 8px;
+      display: inline-block;
+    }
   </style>
 [%- END; SET extra_head = extra_head _ e %]

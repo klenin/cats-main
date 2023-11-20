@@ -2,6 +2,8 @@
   capt.import({
     compare_submissions => 'Compare submissions',
     encoding => 'encoding',
+    replace_placeholder => '空格分隔的标识符',
+    replace => '替换文本',
     similarity => 'Similarity',
     reject_both => 'reject',
     reject_both_message => 'plagiarized',

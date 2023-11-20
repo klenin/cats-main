@@ -5,6 +5,7 @@ use warnings;
 
 use Algorithm::Diff;
 use Encode;
+use List::Util qw(min);
 
 use CATS::DB;
 use CATS::DevEnv;
@@ -40,6 +41,17 @@ sub diff_runs_frame {
     return msg(1155) if grep @{$_->{elements}} > 1, @$si;
 
     my $both_jury = 2 == grep $_->{is_jury}, @$si;
+    if ($p->{replace_from} || $p->{replace_to}) {
+      my @from_list = split /\s+/, $p->{replace_from} // '';
+      my @to_list = split /\s+/, $p->{replace_to} // '';
+      for (my $i = 0; $i < min(scalar(@from_list), scalar(@to_list)); ++$i) {
+          $si->[0]->{src} =~ s/\b\Q$from_list[$i]\E\b/\Q$to_list[$i]\E/g;
+      }
+      $t->param(
+        replace_from => $p->{replace_from},
+        replace_to => $p->{replace_to},
+      );
+    }
     if ($p->{reject_both} && $both_jury) {
         my %remove_cache;
         for my $r (@$si) {

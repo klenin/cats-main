@@ -2,6 +2,8 @@
   capt.import({
     compare_submissions => 'Compare submissions',
     encoding => 'encoding',
+    replace_placeholder => 'space-separated idents',
+    replace => 'replace',
     similarity => 'Similarity',
     reject_both => 'reject',
     reject_both_message => 'plagiarized',

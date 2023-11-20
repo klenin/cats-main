@@ -2,6 +2,8 @@
   capt.import({
     compare_submissions => 'Сравнение отправленных файлов',
     encoding => 'кодировка',
+    replace_placeholder => 'идент. через пробел',
+    replace => 'заменить',
     similarity => 'Сходство',
     reject_both => 'отвергнуть',
     reject_both_message => 'списано',

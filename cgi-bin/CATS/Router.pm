@@ -367,6 +367,7 @@ my $main_routes = {
         src_enc => encoding_default('UTF-8'),
         ignore_ws => bool,
         similar => bool, reject_both => bool, reject_both_message => str,
+        replace_from => str, replace_to => str,
     ],
     view_test_details => [
         \&CATS::UI::RunDetails::view_test_details_frame,

@@ -49,9 +49,15 @@ window.addEventListener('load', function() {
 //-->
 </script>
 [% PROCESS includes/sources_info.tti subcaption=capt.compare_submissions %]
-<p>
+<div class="diff_runs_replace">
 [% PROCESS includes/encoding_form.html.tti capt_enc = capt.encoding %]
-</p>
+<form method="POST" class="weak_border">
+<input type="text" name="replace_from" value="[% replace_from | html %]" placeholder="[% capt.replace_placeholder %]" class="bordered"/>
+→
+<input type="text" name="replace_to" value="[% replace_to | html %]" placeholder="[% capt.replace_placeholder %]" class="bordered" />
+<button name="replace" class="button">[% capt.replace %]</button>
+</form>
+</div>
 <form method="POST">
 <p>[% capt.similarity %]: [% similarity.basic %] [% similarity.collapse_idents %]
 [% IF similar %]
