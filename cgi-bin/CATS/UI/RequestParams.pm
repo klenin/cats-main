@@ -107,6 +107,13 @@ sub request_params_frame {
         $dbh->commit;
         $si = get_sources_info($p, request_id => $si->{req_id});
     }
+    if ($p->{recalc}) {
+        $dbh->do(q~
+            UPDATE reqs SET points = NULL WHERE id = ?~, undef,
+            $si->{req_id});
+        $dbh->commit;
+        $si = get_sources_info($p, request_id => $si->{req_id});
+    }
     if ($p->{clone}) {
         if (!$need_clear_limits) {
             if ($si->{limits_id}) {

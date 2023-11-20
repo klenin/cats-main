@@ -94,6 +94,7 @@
   <tr>
     <td colspan="2">
       <button type="submit" value="1" class="button[% ' btn_warning' IF si.need_status_ok %]" name="retest">[% capt.retest %]</button>
+      <button type="submit" value="1" class="button" name="recalc">[% capt.recalc %]</button>
       <button type="submit" value="1" class="button" name="clone">[% capt.clone %]</button>
     </td>
   </tr>

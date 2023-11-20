@@ -4,6 +4,7 @@
     need_status_ok => 'it is paused currently',
     reinstall => 'Reinstall problem',
     retest => 'Retest',
+    recalc => 'Recalculate points',
     clone => 'Clone',
     judge => 'Judge',
     single_judge => 'Single judge',

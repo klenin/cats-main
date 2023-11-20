@@ -383,6 +383,7 @@ my $main_routes = {
         reinstall => bool,
         single_judge => bool,
         retest => bool,
+        recalc => bool,
         clone => bool,
         delete_request => bool,
         set_state => bool,
