@@ -57,6 +57,7 @@ our $form = CATS::Form->new(
             $_->{href_add} = url_f('contest_sites', add => 1, check => $fd->{id}, with_org => $_->{id})
                 if $empty_contest_sites;
         }
+        $fd->{href_add} = url_f('contest_sites', add => 1, check => $fd->{id});
         $t->param(submenu => [ CATS::References::menu('sites') ]);
     },
 );

@@ -17,6 +17,8 @@
   [% IF c.href_add; '['; href(c.href_add, '+'); ']'; END %]</td></tr>
 [% END %]
 </table>
+[% ELSE %]
+  <p>[[% href(site.href_add, '+') %]]</p>
 [% END %]
 </form>
 
