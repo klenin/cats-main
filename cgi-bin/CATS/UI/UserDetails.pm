@@ -109,9 +109,11 @@ sub user_stats_frame {
         'AND C.defreeze_date < CURRENT_TIMESTAMP';
     my $award_splitter = '#~#';
     my $contests = $dbh->selectall_arrayref(qq~
-        SELECT C.id, C.title, CA.id AS caid, CA.is_jury, CA.is_ooc,
+        SELECT C.id, C.title, CA.id AS caid, CA.is_jury, CA.is_ooc, CA.site_id,
             $CATS::Time::contest_start_offset_sql AS start_date,
             S.name AS site_name,
+            (SELECT CA1.is_jury FROM contest_accounts CA1
+                WHERE CA1.contest_id = C.id AND CA1.account_id = ?) AS is_jury_me,
             (SELECT COUNT(DISTINCT R.problem_id) FROM reqs R
                 WHERE R.contest_id = C.id AND R.account_id = CA.account_id AND R.state = $cats::st_accepted
             ) AS accepted_count,
@@ -129,7 +131,7 @@ sub user_stats_frame {
         WHERE
             CA.account_id = ? AND C.ctype = 0 $hidden_cond
         ORDER BY start_date DESC~,
-        { Slice => {} }, $p->{uid});
+        { Slice => {} }, $uid || 0, $p->{uid});
     my $pr = sub { url_f(
         'console', uf => $p->{uid}, i_value => -1, se => 'user_stats',
         show_results => 1, search => $_[0], rows => 30
@@ -145,6 +147,8 @@ sub user_stats_frame {
     for (@$contests) {
         $_->{href_send_message} = url_f('send_message_box', caid => $_->{caid}) if $is_root;
         $_->{href_problems} = url_f_cid('problems', cid => $_->{id});
+        $_->{href_site} = $_->{is_jury_me} &&
+            url_f_cid('contest_sites_edit', cid => $_->{id}, site_id => $_->{site_id});
         $_->{href_submits} = url_f_cid('console', cid => $_->{id},
             uf => $p->{uid}, i_value => -1, se => 'user_stats',
             show_results => 1, rows => 30, search => "contest_id=$_->{id}");

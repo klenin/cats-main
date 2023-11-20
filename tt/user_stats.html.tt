@@ -24,7 +24,7 @@
 <tr>
 <td>[% c.start_date %]</td>
 <td>[% href(c.href_problems, c.title); '* ' IF c.is_jury && user.privs.is_root %]</td>
-<td>[% c.site_name %]</td>
+<td>[% maybe_href(c.href_site, c.site_name) %]</td>
 [% IF c.href_send_message; '<td>'; href(c.href_send_message, capt.send_message); '</td>'; END %]
 <td>[% href(c.href_submits, c.accepted_count _ ' / ' _ c.problem_count) %]</td>
 <td>[% capt.ooc IF c.is_ooc %]
