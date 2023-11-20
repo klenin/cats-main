@@ -116,7 +116,7 @@ sub diff_runs_frame {
     $t->param(
         diff_lines => \@diff, similar => $p->{similar} && $both_jury,
         recommended_replacements =>
-          take_n(5, CATS::Similarity::recommend_replacements(@$si, {}, $replaced)),
+          $both_jury && take_n(5, CATS::Similarity::recommend_replacements(@$si, {}, $replaced)),
     );
 }
 
